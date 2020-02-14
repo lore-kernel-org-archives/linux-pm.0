@@ -2,128 +2,227 @@ Return-Path: <SRS0=AHLa=4C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 942E8C3B1B1
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:55:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1595C2BA83
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:58:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 79686206B6
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:55:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73C8520848
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Feb 2020 17:58:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1581703116;
+	bh=KtHUM5HyImmGo6KestKDTwrLLid3F9tW3NA7FWlzLew=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=YP3YBjFYLSvgQYbLP1bNmKERyp03GZOJi6YzbX9yaVFHUownsdOy5c0YP+fx/q8t2
+	 SH7QHAUcb8EKxKIEw3EZ0CO0dkMQV53EPUOwjSOT7tNaDzbc82Gu0xisj8lDijs//m
+	 s/ScacNBi46KpxRyOkDpQWZaFe+7xFBH3+9Yw/pE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388364AbgBNP5r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Feb 2020 10:57:47 -0500
-Received: from foss.arm.com ([217.140.110.172]:35872 "EHLO foss.arm.com"
+        id S2388339AbgBNR6Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Feb 2020 12:58:25 -0500
+Received: from mail.kernel.org ([198.145.29.99]:39634 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388237AbgBNP5r (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Feb 2020 10:57:47 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5E40D328;
-        Fri, 14 Feb 2020 07:57:46 -0800 (PST)
-Received: from localhost (e108754-lin.cambridge.arm.com [10.1.198.52])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F3AAF3F68E;
-        Fri, 14 Feb 2020 07:57:45 -0800 (PST)
-Date:   Fri, 14 Feb 2020 15:57:44 +0000
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Thomas Gleixner <tglx@linutronix.de>
-Cc:     catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-        maz@kernel.org, suzuki.poulose@arm.com, sudeep.holla@arm.com,
-        lukasz.luba@arm.com, valentin.schneider@arm.com, rjw@rjwysocki.net,
-        peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
-        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 7/7] clocksource/drivers/arm_arch_timer: validate
- arch_timer_rate
-Message-ID: <20200214155744.GA8784@arm.com>
-References: <20200211184542.29585-1-ionela.voinescu@arm.com>
- <20200211184542.29585-8-ionela.voinescu@arm.com>
- <87mu9mgg41.fsf@nanos.tec.linutronix.de>
- <20200214154525.GA21875@arm.com>
+        id S2388154AbgBNP5K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 14 Feb 2020 10:57:10 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 13EA624689;
+        Fri, 14 Feb 2020 15:57:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1581695828;
+        bh=KtHUM5HyImmGo6KestKDTwrLLid3F9tW3NA7FWlzLew=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=YLr/FtZsy760OaGuUu+Kj4dU+L3bxe0Jk5ipA6I3umAY8WfObjF2n81UE07XFpWMO
+         JQ+J2MNPtN3I0n35mNaS/diRBPwDIvCbp7tGXljJNaa5UVFiEB65qi51xhhpRXUTCW
+         vkiX9SK+qnSUcsq6q+1wKGYlazYUka0FJ792z8Mk=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        kbuild test robot <lkp@intel.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.5 382/542] PM / devfreq: Add debugfs support with devfreq_summary file
+Date:   Fri, 14 Feb 2020 10:46:14 -0500
+Message-Id: <20200214154854.6746-382-sashal@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200214154854.6746-1-sashal@kernel.org>
+References: <20200214154854.6746-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200214154525.GA21875@arm.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday 14 Feb 2020 at 15:45:25 (+0000), Ionela Voinescu wrote:
-> Hi Thomas,
-> 
-> On Friday 14 Feb 2020 at 01:35:58 (+0100), Thomas Gleixner wrote:
-> > Ionela Voinescu <ionela.voinescu@arm.com> writes:
-> > 
-> > > From: Valentin Schneider <valentin.schneider@arm.com>
-> > >
-> > > Using an arch timer with a frequency of less than 1MHz can result in an
-> > > incorrect functionality of the system which assumes a reasonable rate.
-> > >
-> > > One example is the use of activity monitors for frequency invariance
-> > > which uses the rate of the arch timer as the known rate of the constant
-> > > cycle counter in computing its ratio compared to the maximum frequency
-> > > of a CPU. For arch timer frequencies less than 1MHz this ratio could
-> > > end up being 0 which is an invalid value for its use.
-> > >
-> > > Therefore, warn if the arch timer rate is below 1MHz which contravenes
-> > > the recommended architecture interval of 1 to 50MHz.
-> > >
-> > > Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-> > 
-> > So this patch is from Valentin. Where is his Signed-off-by?
-> > 
-> 
-> Yes, sorry about this. This was based on a diff that Valentin provided
-> in v2. I'll change the author as agreed at:
-> https://lore.kernel.org/lkml/20200212103249.GA19041@arm.com/
-> 
-> > >  
-> > > +static int validate_timer_rate(void)
-> > > +{
-> > > +	if (!arch_timer_rate)
-> > > +		return -EINVAL;
-> > > +
-> > > +	/* Arch timer frequency < 1MHz can cause trouble */
-> > > +	WARN_ON(arch_timer_rate < 1000000);
-> > 
-> > This does not make sense to me. If the rate is out of bounds then why
-> > warn an just continue instead of making it fail?
-> > 
-> 
-> Because it's not a hard restriction, it's just atypical for the rate to
-> be below 1Mhz. The spec only mentions a typical range of 1 to 50MHz and
-> the warning is only here to flag a potentially problematic rate, below
-> what is assumed typical in the spec.
-> 
-> In [1], where I'm actually relying on arch_timer_rate being higher than
-> than 1/SCHED_CAPACITY_SCALE² of the maximum frequency, I am making it
-> fail, as, for that scenario, it is a hard restriction.
-> 
-> 
-> +	 * We use a factor of 2 * SCHED_CAPACITY_SHIFT -> SCHED_CAPACITY_SCALE²
-> +	 * in order to ensure a good resolution for arch_max_freq_scale for
-> +	 * very low arch timer frequencies (up to the KHz range which should be
-> +	 * unlikely).
-> +	 */
-> +	ratio = (u64)arch_timer_get_rate() << (2 * SCHED_CAPACITY_SHIFT);
-> +	ratio = div64_u64(ratio, max_freq_hz);
-> +	if (!ratio) {
-> +		pr_err("System timer frequency too low.\n");
-> +		return -EINVAL;
-> +	}
-> +
-> 
-> [1] https://lore.kernel.org/lkml/89339501-5ee4-e871-3076-c8b02c6fbf6e@arm.com/
+From: Chanwoo Choi <cw00.choi@samsung.com>
 
-I've mistakenly referenced a bad link ^
+[ Upstream commit 490a421bc575d1bf391a6ad5b582dcfbd0037724 ]
 
-It was supposed to be:
+Add debugfs interface to provide debugging information of devfreq device.
+It contains 'devfreq_summary' entry to show the summary of registered
+devfreq devices as following and the additional debugfs file will be added.
+- /sys/kernel/debug/devfreq/devfreq_summary
 
-[1] https://lore.kernel.org/lkml/20200211184542.29585-7-ionela.voinescu@arm.com/
+[Detailed description of each field of 'devfreq_summary' debugfs file]
+- dev_name	: Device name of h/w
+- dev		: Device name made by devfreq core
+- parent_dev	: If devfreq device uses the passive governor,
+		  show parent devfreq device name. Otherwise, show 'null'.
+- governor	: Devfreq governor name
+- polling_ms	: If devfreq device uses the simple_ondemand governor,
+		  polling_ms is necessary for the period. (unit: millisecond)
+- cur_freq_Hz	: Current frequency (unit: Hz)
+- min_freq_Hz	: Minimum frequency (unit: Hz)
+- max_freq_Hz	: Maximum frequency (unit: Hz)
 
-Thanks,
-Ionela.
+[For example on Exynos5422-based Odroid-XU3 board]
+$ cat /sys/kernel/debug/devfreq/devfreq_summary
+dev_name                       dev        parent_dev governor        polling_ms  cur_freq_Hz  min_freq_Hz  max_freq_Hz
+------------------------------ ---------- ---------- --------------- ---------- ------------ ------------ ------------
+10c20000.memory-controller     devfreq0   null       simple_ondemand          0    165000000    165000000    825000000
+soc:bus_wcore                  devfreq1   null       simple_ondemand         50    532000000     88700000    532000000
+soc:bus_noc                    devfreq2   devfreq1   passive                  0    111000000     66600000    111000000
+soc:bus_fsys_apb               devfreq3   devfreq1   passive                  0    222000000    111000000    222000000
+soc:bus_fsys                   devfreq4   devfreq1   passive                  0    200000000     75000000    200000000
+soc:bus_fsys2                  devfreq5   devfreq1   passive                  0    200000000     75000000    200000000
+soc:bus_mfc                    devfreq6   devfreq1   passive                  0    333000000     83250000    333000000
+soc:bus_gen                    devfreq7   devfreq1   passive                  0    266000000     88700000    266000000
+soc:bus_peri                   devfreq8   devfreq1   passive                  0     66600000     66600000     66600000
+soc:bus_g2d                    devfreq9   devfreq1   passive                  0    333000000     83250000    333000000
+soc:bus_g2d_acp                devfreq10  devfreq1   passive                  0    266000000     66500000    266000000
+soc:bus_jpeg                   devfreq11  devfreq1   passive                  0    300000000     75000000    300000000
+soc:bus_jpeg_apb               devfreq12  devfreq1   passive                  0    166500000     83250000    166500000
+soc:bus_disp1_fimd             devfreq13  devfreq1   passive                  0    200000000    120000000    200000000
+soc:bus_disp1                  devfreq14  devfreq1   passive                  0    300000000    120000000    300000000
+soc:bus_gscl_scaler            devfreq15  devfreq1   passive                  0    300000000    150000000    300000000
+soc:bus_mscl                   devfreq16  devfreq1   passive                  0    666000000     84000000    666000000
+
+[lkp: Reported the build error]
+Reported-by: kbuild test robot <lkp@intel.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/devfreq/devfreq.c | 82 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 82 insertions(+)
+
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 554d155106a5f..e99f082d15df5 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -10,6 +10,7 @@
+ #include <linux/kernel.h>
+ #include <linux/kmod.h>
+ #include <linux/sched.h>
++#include <linux/debugfs.h>
+ #include <linux/errno.h>
+ #include <linux/err.h>
+ #include <linux/init.h>
+@@ -33,6 +34,7 @@
+ #define HZ_PER_KHZ	1000
+ 
+ static struct class *devfreq_class;
++static struct dentry *devfreq_debugfs;
+ 
+ /*
+  * devfreq core provides delayed work based load monitoring helper
+@@ -1614,6 +1616,81 @@ static struct attribute *devfreq_attrs[] = {
+ };
+ ATTRIBUTE_GROUPS(devfreq);
+ 
++/**
++ * devfreq_summary_show() - Show the summary of the devfreq devices
++ * @s:		seq_file instance to show the summary of devfreq devices
++ * @data:	not used
++ *
++ * Show the summary of the devfreq devices via 'devfreq_summary' debugfs file.
++ * It helps that user can know the detailed information of the devfreq devices.
++ *
++ * Return 0 always because it shows the information without any data change.
++ */
++static int devfreq_summary_show(struct seq_file *s, void *data)
++{
++	struct devfreq *devfreq;
++	struct devfreq *p_devfreq = NULL;
++	unsigned long cur_freq, min_freq, max_freq;
++	unsigned int polling_ms;
++
++	seq_printf(s, "%-30s %-10s %-10s %-15s %10s %12s %12s %12s\n",
++			"dev_name",
++			"dev",
++			"parent_dev",
++			"governor",
++			"polling_ms",
++			"cur_freq_Hz",
++			"min_freq_Hz",
++			"max_freq_Hz");
++	seq_printf(s, "%30s %10s %10s %15s %10s %12s %12s %12s\n",
++			"------------------------------",
++			"----------",
++			"----------",
++			"---------------",
++			"----------",
++			"------------",
++			"------------",
++			"------------");
++
++	mutex_lock(&devfreq_list_lock);
++
++	list_for_each_entry_reverse(devfreq, &devfreq_list, node) {
++#if IS_ENABLED(CONFIG_DEVFREQ_GOV_PASSIVE)
++		if (!strncmp(devfreq->governor_name, DEVFREQ_GOV_PASSIVE,
++							DEVFREQ_NAME_LEN)) {
++			struct devfreq_passive_data *data = devfreq->data;
++
++			if (data)
++				p_devfreq = data->parent;
++		} else {
++			p_devfreq = NULL;
++		}
++#endif
++
++		mutex_lock(&devfreq->lock);
++		cur_freq = devfreq->previous_freq,
++		get_freq_range(devfreq, &min_freq, &max_freq);
++		polling_ms = devfreq->profile->polling_ms,
++		mutex_unlock(&devfreq->lock);
++
++		seq_printf(s,
++			"%-30s %-10s %-10s %-15s %10d %12ld %12ld %12ld\n",
++			dev_name(devfreq->dev.parent),
++			dev_name(&devfreq->dev),
++			p_devfreq ? dev_name(&p_devfreq->dev) : "null",
++			devfreq->governor_name,
++			polling_ms,
++			cur_freq,
++			min_freq,
++			max_freq);
++	}
++
++	mutex_unlock(&devfreq_list_lock);
++
++	return 0;
++}
++DEFINE_SHOW_ATTRIBUTE(devfreq_summary);
++
+ static int __init devfreq_init(void)
+ {
+ 	devfreq_class = class_create(THIS_MODULE, "devfreq");
+@@ -1630,6 +1707,11 @@ static int __init devfreq_init(void)
+ 	}
+ 	devfreq_class->dev_groups = devfreq_groups;
+ 
++	devfreq_debugfs = debugfs_create_dir("devfreq", NULL);
++	debugfs_create_file("devfreq_summary", 0444,
++				devfreq_debugfs, NULL,
++				&devfreq_summary_fops);
++
+ 	return 0;
+ }
+ subsys_initcall(devfreq_init);
+-- 
+2.20.1
+
