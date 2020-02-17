@@ -4,44 +4,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45C95C3402B
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EDBAFC3403D
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0D26B22525
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BAFE6227BF
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581956456;
-	bh=+kQWxUlZFb3eujYdi0+FSk8vyk8VwKL5jr9omATOppY=;
+	s=default; t=1581956457;
+	bh=2VkSt+i/ceAmRbb7r0Z7CfMPO40e2ED8vWxBa+oZDNM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=mtvLrSS1+HPL2Jwhat32nhmUjECqnCozAu8r6y0JJEC1hadiC/IQEF48//06ldoaO
-	 MdbcuDXA9fytmWO0p7NP2I2eyz+VMHnJFraUB/B4PzkPEEbF3tnekMD9bR8DtwzRQK
-	 HyvkbOZk37VaJ+PtJlcpceVlDKNrEjvz4/t4f7yE=
+	b=CBUdnZYLHRfuddcABf+iz+OZq5ULu0FdRHry7veZKnpjfPFYnVZTa+xlb4bIbF/kd
+	 jtb+mum1dCiQgy3S5oeBllcQmvconjClbtACj1LQVDGGgxFa7JX99a1Wer4zHzbe7r
+	 1ZWhiP/fbLvgKYpL335wFw9mjoT1ABXA6TODb0Bs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729125AbgBQQUz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:20:55 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:55368 "EHLO
+        id S1729242AbgBQQU4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:20:56 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:55358 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729021AbgBQQUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:52 -0500
+        with ESMTP id S1728789AbgBQQUv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:51 -0500
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
         Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=eKGr+SzBvJriuzc15mOH1CYYgTYnW9bXfV94KX7bnC8=; b=Q6Iq4L331Xpeld1KgX7bqPN7Wh
-        STvcmg5ZB/lqgtPFMcto+KKETrVEmso44Bh6S/xcSxbTbn6jHxmctUHDGmgfQmLGP8u5sbx4F9B9e
-        ELfQwvIFYiNWjnEFctySOYD1Z9dsjtrg5ys4FZgMT9l5mgTIrJHK4qLhG55qQmx14vsa8HEttQpOH
-        ympkjgw75YT25CphmtqhH55wvXBHNpsQ2wGzFCfXete/V5J9I0l6mzYLJz5O6BUUWgisPhiNg4Fid
-        D0+6L0YcNLv0c1Taqkvnoqf9n96Viz55awJrVHPVqu4wpxbsKgGmllwWWDeCM9KPh/gMyhFX1Rnog
-        qaVqvBWg==;
+        bh=jLWQhdjlNUCvPW2x0jtz8CREosgEHwxuovRUzRlgqDg=; b=hsSIlzNJdpuYMfFdAgTlQr4cMW
+        OBEQozCh2VV0JPvYBKObSHXd2OnmJ15hhPh06NffSd7dVkESle6A6+56gBRO8AoQWPk2DUTxFqgD3
+        rfhwg5p4XjO6+z2Pdv3GU4I6as2jlXa7SZtuFFTYEblb4q3ppiU8+ZVjcJUcP5dkE6vImtbM+fFWx
+        lYizYDJaZ1ySNMPoRyAS7qtQq7WAPi9VqFa75qWUN7Ya/jIq+E0ZzUMYrIe0peLvV5lyiK1ZmIRYR
+        cIP+1MKPMaPlofi/rUkhF0Zyj6CWm8bHkeH46zFGQ6sP+Z32/jGfF5+mLWpQgmNMx5Noz8tuIQFD5
+        Y5jc6IeA==;
 Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8Y-00042G-9T; Mon, 17 Feb 2020 16:20:51 +0000
+        id 1j3j8Y-00042J-Cn; Mon, 17 Feb 2020 16:20:51 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8W-000fpv-BL; Mon, 17 Feb 2020 17:20:44 +0100
+        id 1j3j8W-000fqA-Ef; Mon, 17 Feb 2020 17:20:44 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
@@ -49,9 +49,9 @@ Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 17/24] docs: cpu-freq: convert cpu-drivers.txt to ReST
-Date:   Mon, 17 Feb 2020 17:20:35 +0100
-Message-Id: <e323cd97bd3e7175e609b9b5aa2761f6b46031b7.1581956285.git.mchehab+huawei@kernel.org>
+Subject: [PATCH v2 20/24] docs: cpu-freq: convert pcc-cpufreq.txt to ReST
+Date:   Mon, 17 Feb 2020 17:20:38 +0100
+Message-Id: <63ed3462eb3083290d9bc41332ab45524a71b3d9.1581956285.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
 References: <cover.1581956285.git.mchehab+huawei@kernel.org>
@@ -65,249 +65,162 @@ X-Mailing-List: linux-pm@vger.kernel.org
 - Add a SPDX header;
 - Add a document title, based on the original contents of
   cpu-freq/index.txt;
-- Use lists where needed;
+- Add copyright symbol;
+- Remove a c-like comment, adding the useful info not covered
+  by the SPDX and document title headers as text;
 - Comment out the existing text-only index;
-- Adjust some title marks;
-- Add table markups;
-- Add notes markups;
 - Mark literal blocks as such;
-- use ``foo`` for literal texts;
 - Some whitespace fixes and new line breaks;
 - Add it to cpu-freq/index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- .../{cpu-drivers.txt => cpu-drivers.rst}      | 129 +++++++++---------
- Documentation/cpu-freq/index.rst              |   1 +
- 2 files changed, 64 insertions(+), 66 deletions(-)
- rename Documentation/cpu-freq/{cpu-drivers.txt => cpu-drivers.rst} (72%)
+ Documentation/cpu-freq/index.rst              |  1 +
+ .../{pcc-cpufreq.txt => pcc-cpufreq.rst}      | 86 ++++++++-----------
+ 2 files changed, 38 insertions(+), 49 deletions(-)
+ rename Documentation/cpu-freq/{pcc-cpufreq.txt => pcc-cpufreq.rst} (80%)
 
-diff --git a/Documentation/cpu-freq/cpu-drivers.txt b/Documentation/cpu-freq/cpu-drivers.rst
-similarity index 72%
-rename from Documentation/cpu-freq/cpu-drivers.txt
-rename to Documentation/cpu-freq/cpu-drivers.rst
-index 6e353d00cdc6..a697278ce190 100644
---- a/Documentation/cpu-freq/cpu-drivers.txt
-+++ b/Documentation/cpu-freq/cpu-drivers.rst
-@@ -1,35 +1,27 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
-+.. SPDX-License-Identifier: GPL-2.0
- 
-+===============================================
-+How to Implement a new CPUFreq Processor Driver
-+===============================================
- 
--		         L i n u x    C P U F r e q
-+Authors:
- 
--			   C P U   D r i v e r s 
- 
--		       - information for developers -
-+	- Dominik Brodowski  <linux@brodo.de>
-+	- Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-+	- Viresh Kumar <viresh.kumar@linaro.org>
- 
-+.. Contents
- 
--		    Dominik Brodowski  <linux@brodo.de>
--		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--		   Viresh Kumar <viresh.kumar@linaro.org>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--Contents:
-----------
--1.   What To Do?
--1.1  Initialization
--1.2  Per-CPU Initialization
--1.3  verify
--1.4  target/target_index or setpolicy?
--1.5  target/target_index
--1.6  setpolicy
--1.7  get_intermediate and target_intermediate
--2.   Frequency Table Helpers
-+   1.   What To Do?
-+   1.1  Initialization
-+   1.2  Per-CPU Initialization
-+   1.3  verify
-+   1.4  target/target_index or setpolicy?
-+   1.5  target/target_index
-+   1.6  setpolicy
-+   1.7  get_intermediate and target_intermediate
-+   2.   Frequency Table Helpers
- 
- 
- 
-@@ -49,7 +41,7 @@ function check whether this kernel runs on the right CPU and the right
- chipset. If so, register a struct cpufreq_driver with the CPUfreq core
- using cpufreq_register_driver()
- 
--What shall this struct cpufreq_driver contain? 
-+What shall this struct cpufreq_driver contain?
- 
-  .name - The name of this driver.
- 
-@@ -108,37 +100,42 @@ Whenever a new CPU is registered with the device model, or after the
- cpufreq driver registers itself, the per-policy initialization function
- cpufreq_driver.init is called if no cpufreq policy existed for the CPU.
- Note that the .init() and .exit() routines are called only once for the
--policy and not for each CPU managed by the policy. It takes a struct
--cpufreq_policy *policy as argument. What to do now?
-+policy and not for each CPU managed by the policy. It takes a ``struct
-+cpufreq_policy *policy`` as argument. What to do now?
- 
- If necessary, activate the CPUfreq support on your CPU.
- 
- Then, the driver must fill in the following values:
- 
--policy->cpuinfo.min_freq _and_
--policy->cpuinfo.max_freq -	the minimum and maximum frequency 
--				(in kHz) which is supported by 
--				this CPU
--policy->cpuinfo.transition_latency   the time it takes on this CPU to
--				switch between two frequencies in
--				nanoseconds (if appropriate, else
--				specify CPUFREQ_ETERNAL)
--
--policy->cur			The current operating frequency of
--				this CPU (if appropriate)
--policy->min, 
--policy->max, 
--policy->policy and, if necessary,
--policy->governor		must contain the "default policy" for
--				this CPU. A few moments later,
--				cpufreq_driver.verify and either
--				cpufreq_driver.setpolicy or
--				cpufreq_driver.target/target_index is called
--				with these values.
--policy->cpus			Update this with the masks of the
--				(online + offline) CPUs that do DVFS
--				along with this CPU (i.e.  that share
--				clock/voltage rails with it).
-++-----------------------------------+--------------------------------------+
-+|policy->cpuinfo.min_freq _and_	    |					   |
-+|policy->cpuinfo.max_freq	    | the minimum and maximum frequency	   |
-+|				    | (in kHz) which is supported by	   |
-+|				    | this CPU				   |
-++-----------------------------------+--------------------------------------+
-+|policy->cpuinfo.transition_latency | the time it takes on this CPU to	   |
-+|				    | switch between two frequencies in	   |
-+|				    | nanoseconds (if appropriate, else	   |
-+|				    | specify CPUFREQ_ETERNAL)		   |
-++-----------------------------------+--------------------------------------+
-+|policy->cur			    | The current operating frequency of   |
-+|				    | this CPU (if appropriate)		   |
-++-----------------------------------+--------------------------------------+
-+|policy->min,			    |					   |
-+|policy->max,			    |					   |
-+|policy->policy and, if necessary,  |					   |
-+|policy->governor		    | must contain the "default policy" for|
-+|				    | this CPU. A few moments later,       |
-+|				    | cpufreq_driver.verify and either     |
-+|				    | cpufreq_driver.setpolicy or          |
-+|				    | cpufreq_driver.target/target_index is|
-+|				    | called with these values.		   |
-++-----------------------------------+--------------------------------------+
-+|policy->cpus			    | Update this with the masks of the	   |
-+|				    | (online + offline) CPUs that do DVFS |
-+|				    | along with this CPU (i.e.  that share|
-+|				    | clock/voltage rails with it).	   |
-++-----------------------------------+--------------------------------------+
- 
- For setting some of these values (cpuinfo.min[max]_freq, policy->min[max]), the
- frequency table helpers might be helpful. See the section 2 for more information
-@@ -151,8 +148,8 @@ on them.
- When the user decides a new policy (consisting of
- "policy,governor,min,max") shall be set, this policy must be validated
- so that incompatible values can be corrected. For verifying these
--values cpufreq_verify_within_limits(struct cpufreq_policy *policy,
--unsigned int min_freq, unsigned int max_freq) function might be helpful.
-+values cpufreq_verify_within_limits(``struct cpufreq_policy *policy``,
-+``unsigned int min_freq``, ``unsigned int max_freq``) function might be helpful.
- See section 2 for details on frequency table helpers.
- 
- You need to make sure that at least one valid frequency (or operating
-@@ -163,7 +160,7 @@ policy->max first, and only if this is no solution, decrease policy->min.
- 1.4 target or target_index or setpolicy or fast_switch?
- -------------------------------------------------------
- 
--Most cpufreq drivers or even most cpu frequency scaling algorithms 
-+Most cpufreq drivers or even most cpu frequency scaling algorithms
- only allow the CPU frequency to be set to predefined fixed values. For
- these, you use the ->target(), ->target_index() or ->fast_switch()
- callbacks.
-@@ -175,8 +172,8 @@ limits on their own. These shall use the ->setpolicy() callback.
- 1.5. target/target_index
- ------------------------
- 
--The target_index call has two arguments: struct cpufreq_policy *policy,
--and unsigned int index (into the exposed frequency table).
-+The target_index call has two arguments: ``struct cpufreq_policy *policy``,
-+and ``unsigned int`` index (into the exposed frequency table).
- 
- The CPUfreq driver must set the new frequency when called here. The
- actual frequency must be determined by freq_table[index].frequency.
-@@ -184,9 +181,9 @@ actual frequency must be determined by freq_table[index].frequency.
- It should always restore to earlier frequency (i.e. policy->restore_freq) in
- case of errors, even if we switched to intermediate frequency earlier.
- 
--Deprecated:
-+Deprecated
- ----------
--The target call has three arguments: struct cpufreq_policy *policy,
-+The target call has three arguments: ``struct cpufreq_policy *policy``,
- unsigned int target_frequency, unsigned int relation.
- 
- The CPUfreq driver must set the new frequency when called here. The
-@@ -210,14 +207,14 @@ Not all drivers are expected to implement it, as sleeping from within
- this callback isn't allowed. This callback must be highly optimized to
- do switching as fast as possible.
- 
--This function has two arguments: struct cpufreq_policy *policy and
--unsigned int target_frequency.
-+This function has two arguments: ``struct cpufreq_policy *policy`` and
-+``unsigned int target_frequency``.
- 
- 
- 1.7 setpolicy
- -------------
- 
--The setpolicy call only takes a struct cpufreq_policy *policy as
-+The setpolicy call only takes a ``struct cpufreq_policy *policy`` as
- argument. You need to set the lower limit of the in-processor or
- in-chipset dynamic frequency switching to policy->min, the upper limit
- to policy->max, and -if supported- select a performance-oriented
-@@ -278,10 +275,10 @@ table.
- 
- cpufreq_for_each_valid_entry(pos, table) - iterates over all entries,
- excluding CPUFREQ_ENTRY_INVALID frequencies.
--Use arguments "pos" - a cpufreq_frequency_table * as a loop cursor and
--"table" - the cpufreq_frequency_table * you want to iterate over.
-+Use arguments "pos" - a ``cpufreq_frequency_table *`` as a loop cursor and
-+"table" - the ``cpufreq_frequency_table *`` you want to iterate over.
- 
--For example:
-+For example::
- 
- 	struct cpufreq_frequency_table *pos, *driver_freq_table;
- 
 diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-index 8babc5a212dd..1ab3fff53956 100644
+index d12ef0bb78a5..fb2db2eb7eaf 100644
 --- a/Documentation/cpu-freq/index.rst
 +++ b/Documentation/cpu-freq/index.rst
-@@ -16,6 +16,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
- 
-    amd-powernow
-    core
-+   cpu-drivers
+@@ -19,6 +19,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
+    cpu-drivers
+    cpufreq-nforce2
+    cpufreq-stats
++   pcc-cpufreq
  
  Mailing List
  ------------
+diff --git a/Documentation/cpu-freq/pcc-cpufreq.txt b/Documentation/cpu-freq/pcc-cpufreq.rst
+similarity index 80%
+rename from Documentation/cpu-freq/pcc-cpufreq.txt
+rename to Documentation/cpu-freq/pcc-cpufreq.rst
+index 9e3c3b33514c..6fd891f757a7 100644
+--- a/Documentation/cpu-freq/pcc-cpufreq.txt
++++ b/Documentation/cpu-freq/pcc-cpufreq.rst
+@@ -1,45 +1,29 @@
+-/*
+- *  pcc-cpufreq.txt - PCC interface documentation
+- *
+- *  Copyright (C) 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
+- *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
+- *      Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- *
+- *  This program is free software; you can redistribute it and/or modify
+- *  it under the terms of the GNU General Public License as published by
+- *  the Free Software Foundation; version 2 of the License.
+- *
+- *  This program is distributed in the hope that it will be useful, but
+- *  WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or NON
+- *  INFRINGEMENT. See the GNU General Public License for more details.
+- *
+- *  You should have received a copy of the GNU General Public License along
+- *  with this program; if not, write to the Free Software Foundation, Inc.,
+- *  675 Mass Ave, Cambridge, MA 02139, USA.
+- *
+- * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+- */
++.. SPDX-License-Identifier: GPL-2.0
++.. include:: <isonum.txt>
+ 
++=========================================================
++Processor Clocking Control (PCC) CPUFreq Driver Specifics
++=========================================================
+ 
+-			Processor Clocking Control Driver
+-			---------------------------------
++Copyright |copy| 2009 Red Hat, Matthew Garrett <mjg@redhat.com>
+ 
+-Contents:
+----------
+-1.	Introduction
+-1.1	PCC interface
+-1.1.1   Get Average Frequency
+-1.1.2	Set Desired Frequency
+-1.2	Platforms affected
+-2.	Driver and /sys details
+-2.1	scaling_available_frequencies
+-2.2	cpuinfo_transition_latency
+-2.3	cpuinfo_cur_freq
+-2.4	related_cpus
+-3.	Caveats
++Copyright |copy| 2009 Hewlett-Packard Development Company, L.P.,
++Nagananda Chumbalkar <nagananda.chumbalkar@hp.com>
++
++
++.. Contents:
++
++   1.	Introduction
++   1.1	PCC interface
++   1.1.1   Get Average Frequency
++   1.1.2	Set Desired Frequency
++   1.2	Platforms affected
++   2.	Driver and /sys details
++   2.1	scaling_available_frequencies
++   2.2	cpuinfo_transition_latency
++   2.3	cpuinfo_cur_freq
++   2.4	related_cpus
++   3.	Caveats
+ 
+ 1. Introduction:
+ ----------------
+@@ -140,7 +124,9 @@ Internally, there is no need for the driver to convert the "target" frequency
+ to a corresponding P-state.
+ 
+ The VERSION number for the driver will be of the format v.xy.ab.
+-eg: 1.00.02
++eg::
++
++   1.00.02
+    ----- --
+     |    |
+     |    -- this will increase with bug fixes/enhancements to the driver
+@@ -168,21 +154,21 @@ A) Often cpuinfo_cur_freq will show a value different than what is declared
+ in the scaling_available_frequencies or scaling_cur_freq, or scaling_max_freq.
+ This is due to "turbo boost" available on recent Intel processors. If certain
+ conditions are met the BIOS can achieve a slightly higher speed than requested
+-by OSPM. An example:
++by OSPM. An example::
+ 
+-scaling_cur_freq	: 2933000
+-cpuinfo_cur_freq	: 3196000
++	scaling_cur_freq	: 2933000
++	cpuinfo_cur_freq	: 3196000
+ 
+ B) There is a round-off error associated with the cpuinfo_cur_freq value.
+ Since the driver obtains the current frequency as a "percentage" (%) of the
+ nominal frequency from the BIOS, sometimes, the values displayed by
+-scaling_cur_freq and cpuinfo_cur_freq may not match. An example:
++scaling_cur_freq and cpuinfo_cur_freq may not match. An example::
+ 
+-scaling_cur_freq	: 1600000
+-cpuinfo_cur_freq	: 1583000
++	scaling_cur_freq	: 1600000
++	cpuinfo_cur_freq	: 1583000
+ 
+ In this example, the nominal frequency is 2933 MHz. The driver obtains the
+-current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency:
++current frequency, cpuinfo_cur_freq, as 54% of the nominal frequency::
+ 
+ 	54% of 2933 MHz = 1583 MHz
+ 
+@@ -193,8 +179,10 @@ corresponds to the frequency of the P0 P-state.
+ -----------------
+ The related_cpus field is identical to affected_cpus.
+ 
+-affected_cpus	: 4
+-related_cpus	: 4
++::
++
++	affected_cpus	: 4
++	related_cpus	: 4
+ 
+ Currently, the PCC driver does not evaluate _PSD. The platforms that support
+ PCC do not implement SW_ALL. So OSPM doesn't need to perform any coordination
 -- 
 2.24.1
 
