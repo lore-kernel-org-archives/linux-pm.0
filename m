@@ -2,280 +2,264 @@ Return-Path: <SRS0=PYkk=4F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B895C34039
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A675C34024
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:28:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F9562464E
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5B36A2464E
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:28:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581956456;
-	bh=YoUDnme6ZhOeyE6o5qv1tql4wkcsHSN4WhqRofzhtNY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=gpaBxZpjPxiDTeZp5Z11wm9JFft+dLxmFWABWyTdStcKJlwky5howMkQbY43q6iDD
-	 SbpzN/VEgbtwQvRdDq0PDkhsV4sLzNW6Zag3M1SH53VRTAIxytySv7+FmAbThKEq6B
-	 aBxZVtUn+cwNQNgW+su5JXR3gevQGggNejVcUjLU=
+	s=default; t=1581956892;
+	bh=C8RxAj56JzF+6V6vAmNXABlORocMkJ+b3XVRAMW2BTg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=2ETZcazyEvN+1b/BUuYd2GNmgtilGSSec/fTuWU5NzW7E3MfIjnjX3Baxfj4ro0wt
+	 bUvJyxntPEqt3zubAor74m2RtOUFbiQLvbUhGtiCMQHekCa0hZxlczcAZ+0pEiUlET
+	 vGSea9W3dIVt9dlXjwwW1IDbIWDUNSIxt5H9rCVo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729141AbgBQQUz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:20:55 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:55400 "EHLO
-        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728650AbgBQQUw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=us6g+pLPgZnPltIkGwqckqzYPJOrfV1h6bZ6PwDN8Os=; b=C2wSJw/HTd66nJe1+s6lriAanZ
-        5Duv6+4jKhE7Huz3MwT4rAc8TPbgGC4TGHybq8ayVIwtzXRF7fl2bi2YZy6sP//fR5oepOE066d+0
-        /dh6FePuJ1NBTcVfIyJ/G5owRO+aUaoFFqdZUo8n2plIA4urDtONpaOCYpUc9LkG31JGf1mklKO9B
-        BJCClVr9HzUA4iSaDR1vCDm9hCSpyeFe7oai2kxC4P6k89B0F5wAaL4KVTwof28HBtaJj1AEWeRt/
-        m8v8SAe850IRKhIQmycm657t7e80xUdpcMh5BsPAz7pwbEgGSfNwOJhZQvAUoOfOBHa99qPfhqkuN
-        O/F3qiwQ==;
-Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126] helo=bombadil.infradead.org)
-        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8Y-00042I-BP; Mon, 17 Feb 2020 16:20:51 +0000
-Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
-        (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8W-000fq5-Dl; Mon, 17 Feb 2020 17:20:44 +0100
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+        id S1726866AbgBQQ2H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:28:07 -0500
+Received: from mail.kernel.org ([198.145.29.99]:36710 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726633AbgBQQ2H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Feb 2020 11:28:07 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8216E2464E;
+        Mon, 17 Feb 2020 16:28:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1581956886;
+        bh=C8RxAj56JzF+6V6vAmNXABlORocMkJ+b3XVRAMW2BTg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Dx1gr2XBvM2rMWH+FcHhx+R+oWMUOPeRKI3UJIyvqbfaDyepXgE071vAFPeNtbnqY
+         rKxBDVeFIWaWlxJ+NLOl2aLl63VZ1rCf9Mb8GDV7ZCGB11uIw9ufMvrA4r6/BYy2w9
+         1KeGS2CBSe4Ermsxpoknh3NqNM6YdvbFKwnAizwY=
+Date:   Mon, 17 Feb 2020 17:28:03 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Christian Brauner <christian.brauner@ubuntu.com>
+Cc:     "David S. Miller" <davem@davemloft.net>,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 19/24] docs: cpu-freq: convert cpufreq-stats.txt to ReST
-Date:   Mon, 17 Feb 2020 17:20:37 +0100
-Message-Id: <75c274d922cc211b717e117f4b982c9b67820373.1581956285.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.24.1
-In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
-References: <cover.1581956285.git.mchehab+huawei@kernel.org>
+Subject: Re: [PATCH net-next v2 08/10] net-sysfs: add netdev_change_owner()
+Message-ID: <20200217162803.GA1502885@kroah.com>
+References: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
+ <20200217161436.1748598-9-christian.brauner@ubuntu.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200217161436.1748598-9-christian.brauner@ubuntu.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-- Add a SPDX header;
-- Add a document title, based on the original contents of
-  cpu-freq/index.txt;
-- Use lists where needed;
-- Comment out the existing text-only index;
-- Adjust some title marks;
-- Use bold on some places;
-- Mark literal blocks as such;
-- Some whitespace fixes and new line breaks;
-- Add it to cpu-freq/index.rst.
+On Mon, Feb 17, 2020 at 05:14:34PM +0100, Christian Brauner wrote:
+> Add a function to change the owner of a network device when it is moved
+> between network namespaces.
+> 
+> Currently, when moving network devices between network namespaces the
+> ownership of the corresponding sysfs entries is not changed. This leads
+> to problems when tools try to operate on the corresponding sysfs files.
+> This leads to a bug whereby a network device that is created in a
+> network namespaces owned by a user namespace will have its corresponding
+> sysfs entry owned by the root user of the corresponding user namespace.
+> If such a network device has to be moved back to the host network
+> namespace the permissions will still be set to the user namespaces. This
+> means unprivileged users can e.g. trigger uevents for such incorrectly
+> owned devices. They can also modify the settings of the device itself.
+> Both of these things are unwanted.
+> 
+> For example, workloads will create network devices in the host network
+> namespace. Other tools will then proceed to move such devices between
+> network namespaces owner by other user namespaces. While the ownership
+> of the device itself is updated in
+> net/core/net-sysfs.c:dev_change_net_namespace() the corresponding sysfs
+> entry for the device is not:
+> 
+> drwxr-xr-x 5 nobody nobody    0 Jan 25 18:08 .
+> drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_assign_type
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_len
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 address
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 broadcast
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_changes
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_down_count
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_up_count
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_id
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_port
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dormant
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 duplex
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 flags
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 gro_flush_timeout
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifalias
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifindex
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 iflink
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 link_mode
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 mtu
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 name_assign_type
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 netdev_group
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 operstate
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_id
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_name
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_switch_id
+> drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 power
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 proto_down
+> drwxr-xr-x 4 nobody nobody    0 Jan 25 18:09 queues
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 speed
+> drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 statistics
+> lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:08 subsystem -> ../../../../class/net
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 tx_queue_len
+> -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 type
+> -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:08 uevent
+> 
+> However, if a device is created directly in the network namespace then
+> the device's sysfs permissions will be correctly updated:
+> 
+> drwxr-xr-x 5 root   root      0 Jan 25 18:12 .
+> drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_assign_type
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_len
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 address
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 broadcast
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 carrier
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_changes
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_down_count
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_up_count
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_id
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_port
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 dormant
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 duplex
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 flags
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 gro_flush_timeout
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 ifalias
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 ifindex
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 iflink
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 link_mode
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 mtu
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 name_assign_type
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 netdev_group
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 operstate
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_id
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_name
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_switch_id
+> drwxr-xr-x 2 root   root      0 Jan 25 18:12 power
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 proto_down
+> drwxr-xr-x 4 root   root      0 Jan 25 18:12 queues
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 speed
+> drwxr-xr-x 2 root   root      0 Jan 25 18:12 statistics
+> lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:12 subsystem -> ../../../../class/net
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 tx_queue_len
+> -r--r--r-- 1 root   root   4096 Jan 25 18:12 type
+> -rw-r--r-- 1 root   root   4096 Jan 25 18:12 uevent
+> 
+> Now, when creating a network device in a network namespace owned by a
+> user namespace and moving it to the host the permissions will be set to
+> the id that the user namespace root user has been mapped to on the host
+> leading to all sorts of permission issues:
+> 
+> 458752
+> drwxr-xr-x 5 458752 458752      0 Jan 25 18:12 .
+> drwxr-xr-x 9 root   root        0 Jan 25 18:08 ..
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_assign_type
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_len
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 address
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 broadcast
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_changes
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_down_count
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_up_count
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_id
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_port
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dormant
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 duplex
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 flags
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 gro_flush_timeout
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 ifalias
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 ifindex
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 iflink
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 link_mode
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 mtu
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 name_assign_type
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 netdev_group
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 operstate
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_id
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_name
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_switch_id
+> drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 power
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 proto_down
+> drwxr-xr-x 4 458752 458752      0 Jan 25 18:12 queues
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 speed
+> drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 statistics
+> lrwxrwxrwx 1 root   root        0 Jan 25 18:12 subsystem -> ../../../../class/net
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 tx_queue_len
+> -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 type
+> -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 uevent
+> 
+> Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+> ---
+> /* v2 */
+> unchanged
+> ---
+>  net/core/net-sysfs.c | 27 +++++++++++++++++++++++++++
+>  net/core/net-sysfs.h |  2 ++
+>  2 files changed, 29 insertions(+)
+> 
+> diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+> index 4c826b8bf9b1..4fda021edf6d 100644
+> --- a/net/core/net-sysfs.c
+> +++ b/net/core/net-sysfs.c
+> @@ -1767,6 +1767,33 @@ int netdev_register_kobject(struct net_device *ndev)
+>  	return error;
+>  }
+>  
+> +/* Change owner for sysfs entries when moving network devices across network
+> + * namespaces owned by different user namespaces.
+> + */
+> +int netdev_change_owner(struct net_device *ndev, const struct net *net_old,
+> +			const struct net *net_new)
+> +{
+> +	struct device *dev = &ndev->dev;
+> +	kuid_t old_uid, new_uid;
+> +	kgid_t old_gid, new_gid;
+> +	int error;
+> +
+> +	net_ns_get_ownership(net_old, &old_uid, &old_gid);
+> +	net_ns_get_ownership(net_new, &new_uid, &new_gid);
+> +
+> +	/* The network namespace was changed but the owning user namespace is
+> +	 * identical so there's no need to change the owner of sysfs entries.
+> +	 */
+> +	if (uid_eq(old_uid, new_uid) && gid_eq(old_gid, new_gid))
+> +		return 0;
+> +
+> +	error = device_change_owner(dev);
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- .../{cpufreq-stats.txt => cpufreq-stats.rst}  | 121 ++++++++++--------
- Documentation/cpu-freq/index.rst              |   1 +
- 2 files changed, 66 insertions(+), 56 deletions(-)
- rename Documentation/cpu-freq/{cpufreq-stats.txt => cpufreq-stats.rst} (53%)
+Ok, maybe I'm slow here, but what actually changed the gid/uid here?
+How did it change?  All you did was look up the old uid/gid and the new
+uid/gid.  But what set the device to the new one?
 
-diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.rst
-similarity index 53%
-rename from Documentation/cpu-freq/cpufreq-stats.txt
-rename to Documentation/cpu-freq/cpufreq-stats.rst
-index 14378cecb172..9ad695b1c7db 100644
---- a/Documentation/cpu-freq/cpufreq-stats.txt
-+++ b/Documentation/cpu-freq/cpufreq-stats.rst
-@@ -1,21 +1,23 @@
-+.. SPDX-License-Identifier: GPL-2.0
- 
--     CPU frequency and voltage scaling statistics in the Linux(TM) kernel
-+==========================================
-+General Description of sysfs CPUFreq Stats
-+==========================================
- 
-+information for users
- 
--             L i n u x    c p u f r e q - s t a t s   d r i v e r
- 
--                       - information for users -
-+Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
- 
-+.. Contents
- 
--             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
--
--Contents
--1. Introduction
--2. Statistics Provided (with example)
--3. Configuring cpufreq-stats
-+   1. Introduction
-+   2. Statistics Provided (with example)
-+   3. Configuring cpufreq-stats
- 
- 
- 1. Introduction
-+===============
- 
- cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
- These statistics are provided in /sysfs as a bunch of read_only interfaces. This
-@@ -28,8 +30,10 @@ that may be running on your CPU. So, it will work with any cpufreq_driver.
- 
- 
- 2. Statistics Provided (with example)
-+=====================================
- 
- cpufreq stats provides following statistics (explained in detail below).
-+
- -  time_in_state
- -  total_trans
- -  trans_table
-@@ -39,53 +43,57 @@ All the statistics will be from the time the stats driver has been inserted
- statistic is done. Obviously, stats driver will not have any information
- about the frequency transitions before the stats driver insertion.
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
--total 0
--drwxr-xr-x  2 root root    0 May 14 16:06 .
--drwxr-xr-x  3 root root    0 May 14 15:58 ..
----w-------  1 root root 4096 May 14 16:06 reset
---r--r--r--  1 root root 4096 May 14 16:06 time_in_state
---r--r--r--  1 root root 4096 May 14 16:06 total_trans
---r--r--r--  1 root root 4096 May 14 16:06 trans_table
----------------------------------------------------------------------------------
-+::
-+
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
-+    total 0
-+    drwxr-xr-x  2 root root    0 May 14 16:06 .
-+    drwxr-xr-x  3 root root    0 May 14 15:58 ..
-+    --w-------  1 root root 4096 May 14 16:06 reset
-+    -r--r--r--  1 root root 4096 May 14 16:06 time_in_state
-+    -r--r--r--  1 root root 4096 May 14 16:06 total_trans
-+    -r--r--r--  1 root root 4096 May 14 16:06 trans_table
-+
-+- **reset**
- 
---  reset
- Write-only attribute that can be used to reset the stat counters. This can be
- useful for evaluating system behaviour under different governors without the
- need for a reboot.
- 
---  time_in_state
-+- **time_in_state**
-+
- This gives the amount of time spent in each of the frequencies supported by
- this CPU. The cat output will have "<frequency> <time>" pair in each line, which
- will mean this CPU spent <time> usertime units of time at <frequency>. Output
--will have one line for each of the supported frequencies. usertime units here 
-+will have one line for each of the supported frequencies. usertime units here
- is 10mS (similar to other time exported in /proc).
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
--3600000 2089
--3400000 136
--3200000 34
--3000000 67
--2800000 172488
----------------------------------------------------------------------------------
--
--
---  total_trans
--This gives the total number of frequency transitions on this CPU. The cat 
-+::
-+
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state
-+    3600000 2089
-+    3400000 136
-+    3200000 34
-+    3000000 67
-+    2800000 172488
-+
-+
-+- **total_trans**
-+
-+This gives the total number of frequency transitions on this CPU. The cat
- output will have a single count which is the total number of frequency
- transitions.
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
--20
----------------------------------------------------------------------------------
-+::
-+
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
-+    20
-+
-+- **trans_table**
- 
---  trans_table
- This will give a fine grained information about all the CPU frequency
- transitions. The cat output here is a two dimensional matrix, where an entry
--<i,j> (row i, column j) represents the count of number of transitions from 
-+<i,j> (row i, column j) represents the count of number of transitions from
- Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
- which the driver has provided the frequency table initially to the cpufreq core
- and so can be sorted (ascending or descending) or unsorted.  The output here
-@@ -95,26 +103,27 @@ readability.
- If the transition table is bigger than PAGE_SIZE, reading this will
- return an -EFBIG error.
- 
----------------------------------------------------------------------------------
--<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
--   From  :    To
--         :   3600000   3400000   3200000   3000000   2800000 
--  3600000:         0         5         0         0         0 
--  3400000:         4         0         2         0         0 
--  3200000:         0         1         0         2         0 
--  3000000:         0         0         1         0         3 
--  2800000:         0         0         0         2         0 
----------------------------------------------------------------------------------
-+::
- 
-+    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
-+    From  :    To
-+	    :   3600000   3400000   3200000   3000000   2800000
-+    3600000:         0         5         0         0         0
-+    3400000:         4         0         2         0         0
-+    3200000:         0         1         0         2         0
-+    3000000:         0         0         1         0         3
-+    2800000:         0         0         0         2         0
- 
- 3. Configuring cpufreq-stats
-+============================
- 
--To configure cpufreq-stats in your kernel
--Config Main Menu
--	Power management options (ACPI, APM)  --->
--		CPU Frequency scaling  --->
--			[*] CPU Frequency scaling
--			[*]   CPU frequency translation statistics
-+To configure cpufreq-stats in your kernel::
-+
-+	Config Main Menu
-+		Power management options (ACPI, APM)  --->
-+			CPU Frequency scaling  --->
-+				[*] CPU Frequency scaling
-+				[*]   CPU frequency translation statistics
- 
- 
- "CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
-diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-index 3fa69e6614f6..d12ef0bb78a5 100644
---- a/Documentation/cpu-freq/index.rst
-+++ b/Documentation/cpu-freq/index.rst
-@@ -18,6 +18,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
-    core
-    cpu-drivers
-    cpufreq-nforce2
-+   cpufreq-stats
- 
- Mailing List
- ------------
--- 
-2.24.1
+All of these functions are just really odd to me, one would think that a
+"change owner" function would have the new owner in the paramter to know
+what to change it to?  Your documentation says "owner must be changed
+before calling this function", but how did that get changed and who
+changed it?
 
+Why not just pass it as part of the function itself?
+
+Otherwise it looks really odd, like the above call.  As I can't see how
+anything changes here at all by reading this code.  And that's a huge
+sign of a bad API, when the maintainer of the subsystem can not even
+understand how someone is using it with a single function call :)
+
+thanks,
+
+greg k-h
