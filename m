@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67578C34022
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E95AFC34021
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3501320801
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA70A214D8
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728627AbgBQQPP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:15:15 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:49234 "EHLO
+        id S1727280AbgBQQPU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:15:20 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:49218 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727108AbgBQQOt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:49 -0500
+        with ESMTP id S1728778AbgBQQOr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:47 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j3j2k-0003Cp-MN; Mon, 17 Feb 2020 16:14:46 +0000
+        id 1j3j2j-0003Cp-F4; Mon, 17 Feb 2020 16:14:45 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -34,9 +34,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH net-next v2 08/10] net-sysfs: add netdev_change_owner()
-Date:   Mon, 17 Feb 2020 17:14:34 +0100
-Message-Id: <20200217161436.1748598-9-christian.brauner@ubuntu.com>
+Subject: [PATCH net-next v2 06/10] device: add device_change_owner()
+Date:   Mon, 17 Feb 2020 17:14:32 +0100
+Message-Id: <20200217161436.1748598-7-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.0
 In-Reply-To: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
 References: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
@@ -47,207 +47,121 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a function to change the owner of a network device when it is moved
-between network namespaces.
-
-Currently, when moving network devices between network namespaces the
-ownership of the corresponding sysfs entries is not changed. This leads
-to problems when tools try to operate on the corresponding sysfs files.
-This leads to a bug whereby a network device that is created in a
-network namespaces owned by a user namespace will have its corresponding
-sysfs entry owned by the root user of the corresponding user namespace.
-If such a network device has to be moved back to the host network
-namespace the permissions will still be set to the user namespaces. This
-means unprivileged users can e.g. trigger uevents for such incorrectly
-owned devices. They can also modify the settings of the device itself.
-Both of these things are unwanted.
-
-For example, workloads will create network devices in the host network
-namespace. Other tools will then proceed to move such devices between
-network namespaces owner by other user namespaces. While the ownership
-of the device itself is updated in
-net/core/net-sysfs.c:dev_change_net_namespace() the corresponding sysfs
-entry for the device is not:
-
-drwxr-xr-x 5 nobody nobody    0 Jan 25 18:08 .
-drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_assign_type
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_len
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 address
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 broadcast
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_changes
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_down_count
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_up_count
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_id
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_port
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dormant
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 duplex
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 flags
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 gro_flush_timeout
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifalias
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifindex
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 iflink
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 link_mode
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 mtu
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 name_assign_type
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 netdev_group
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 operstate
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_id
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_name
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_switch_id
-drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 power
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 proto_down
-drwxr-xr-x 4 nobody nobody    0 Jan 25 18:09 queues
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 speed
-drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 statistics
-lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:08 subsystem -> ../../../../class/net
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 tx_queue_len
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 type
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:08 uevent
-
-However, if a device is created directly in the network namespace then
-the device's sysfs permissions will be correctly updated:
-
-drwxr-xr-x 5 root   root      0 Jan 25 18:12 .
-drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
--r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_assign_type
--r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_len
--r--r--r-- 1 root   root   4096 Jan 25 18:12 address
--r--r--r-- 1 root   root   4096 Jan 25 18:12 broadcast
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 carrier
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_changes
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_down_count
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_up_count
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_id
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_port
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dormant
--r--r--r-- 1 root   root   4096 Jan 25 18:12 duplex
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 flags
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 gro_flush_timeout
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 ifalias
--r--r--r-- 1 root   root   4096 Jan 25 18:12 ifindex
--r--r--r-- 1 root   root   4096 Jan 25 18:12 iflink
--r--r--r-- 1 root   root   4096 Jan 25 18:12 link_mode
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 mtu
--r--r--r-- 1 root   root   4096 Jan 25 18:12 name_assign_type
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 netdev_group
--r--r--r-- 1 root   root   4096 Jan 25 18:12 operstate
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_id
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_name
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_switch_id
-drwxr-xr-x 2 root   root      0 Jan 25 18:12 power
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 proto_down
-drwxr-xr-x 4 root   root      0 Jan 25 18:12 queues
--r--r--r-- 1 root   root   4096 Jan 25 18:12 speed
-drwxr-xr-x 2 root   root      0 Jan 25 18:12 statistics
-lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:12 subsystem -> ../../../../class/net
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 tx_queue_len
--r--r--r-- 1 root   root   4096 Jan 25 18:12 type
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 uevent
-
-Now, when creating a network device in a network namespace owned by a
-user namespace and moving it to the host the permissions will be set to
-the id that the user namespace root user has been mapped to on the host
-leading to all sorts of permission issues:
-
-458752
-drwxr-xr-x 5 458752 458752      0 Jan 25 18:12 .
-drwxr-xr-x 9 root   root        0 Jan 25 18:08 ..
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_assign_type
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_len
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 address
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 broadcast
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_changes
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_down_count
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_up_count
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_id
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_port
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dormant
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 duplex
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 flags
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 gro_flush_timeout
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 ifalias
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 ifindex
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 iflink
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 link_mode
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 mtu
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 name_assign_type
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 netdev_group
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 operstate
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_id
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_name
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_switch_id
-drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 power
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 proto_down
-drwxr-xr-x 4 458752 458752      0 Jan 25 18:12 queues
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 speed
-drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 statistics
-lrwxrwxrwx 1 root   root        0 Jan 25 18:12 subsystem -> ../../../../class/net
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 tx_queue_len
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 type
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 uevent
+Add a helper to change the owner of a device's sysfs entries. This
+needs to happen when the ownership of a device is changed, e.g. when
+moving network devices between network namespaces.
+The ownership of a device is determined based on the ownership of
+the corresponding kobject, i.e. only if the ownership of a kobject is
+changed will this function change the ownership of the corresponding
+device's sysfs entries.
+This function will be used to correctly account for ownership changes,
+e.g. when moving network devices between network namespaces.
 
 Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
 /* v2 */
 unchanged
 ---
- net/core/net-sysfs.c | 27 +++++++++++++++++++++++++++
- net/core/net-sysfs.h |  2 ++
- 2 files changed, 29 insertions(+)
+ drivers/base/core.c    | 73 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/device.h |  1 +
+ 2 files changed, 74 insertions(+)
 
-diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
-index 4c826b8bf9b1..4fda021edf6d 100644
---- a/net/core/net-sysfs.c
-+++ b/net/core/net-sysfs.c
-@@ -1767,6 +1767,33 @@ int netdev_register_kobject(struct net_device *ndev)
- 	return error;
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 42a672456432..915766c20a47 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -3458,6 +3458,79 @@ int device_move(struct device *dev, struct device *new_parent,
  }
+ EXPORT_SYMBOL_GPL(device_move);
  
-+/* Change owner for sysfs entries when moving network devices across network
-+ * namespaces owned by different user namespaces.
-+ */
-+int netdev_change_owner(struct net_device *ndev, const struct net *net_old,
-+			const struct net *net_new)
++static int device_attrs_change_owner(struct device *dev)
 +{
-+	struct device *dev = &ndev->dev;
-+	kuid_t old_uid, new_uid;
-+	kgid_t old_gid, new_gid;
++	struct kobject *kobj = &dev->kobj;
++	struct class *class = dev->class;
++	const struct device_type *type = dev->type;
 +	int error;
 +
-+	net_ns_get_ownership(net_old, &old_uid, &old_gid);
-+	net_ns_get_ownership(net_new, &new_uid, &new_gid);
++	if (class) {
++		error = sysfs_groups_change_owner(kobj, class->dev_groups);
++		if (error)
++			return error;
++	}
 +
-+	/* The network namespace was changed but the owning user namespace is
-+	 * identical so there's no need to change the owner of sysfs entries.
-+	 */
-+	if (uid_eq(old_uid, new_uid) && gid_eq(old_gid, new_gid))
-+		return 0;
++	if (type) {
++		error = sysfs_groups_change_owner(kobj, type->groups);
++		if (error)
++			return error;
++	}
 +
-+	error = device_change_owner(dev);
++	error = sysfs_groups_change_owner(kobj, dev->groups);
 +	if (error)
 +		return error;
++
++	if (device_supports_offline(dev) && !dev->offline_disabled) {
++		error = sysfs_file_change_owner_by_name(kobj, dev_attr_online.attr.name);
++		if (error)
++			return error;
++	}
 +
 +	return 0;
 +}
 +
- int netdev_class_create_file_ns(const struct class_attribute *class_attr,
- 				const void *ns)
- {
-diff --git a/net/core/net-sysfs.h b/net/core/net-sysfs.h
-index 006876c7b78d..8a5b04c2699a 100644
---- a/net/core/net-sysfs.h
-+++ b/net/core/net-sysfs.h
-@@ -8,5 +8,7 @@ void netdev_unregister_kobject(struct net_device *);
- int net_rx_queue_update_kobjects(struct net_device *, int old_num, int new_num);
- int netdev_queue_update_kobjects(struct net_device *net,
- 				 int old_num, int new_num);
-+int netdev_change_owner(struct net_device *, const struct net *net_old,
-+			const struct net *net_new);
- 
- #endif
++/**
++ * device_change_owner - change the owner of an existing device.
++ * @dev: device.
++ */
++int device_change_owner(struct device *dev)
++{
++	int error;
++	struct kobject *kobj = &dev->kobj;
++
++	dev = get_device(dev);
++	if (!dev)
++		return -EINVAL;
++
++	error = sysfs_change_owner(kobj);
++	if (error)
++		goto out;
++
++	error = sysfs_file_change_owner_by_name(kobj, dev_attr_uevent.attr.name);
++	if (error)
++		goto out;
++
++	error = device_attrs_change_owner(dev);
++	if (error)
++		goto out;
++
++#ifdef CONFIG_BLOCK
++	if (sysfs_deprecated && dev->class == &block_class)
++		goto out;
++#endif
++
++	error = sysfs_link_change_owner(&dev->class->p->subsys.kobj, &dev->kobj,
++					dev_name(dev));
++	if (error)
++		goto out;
++
++out:
++	put_device(dev);
++	return error;
++}
++EXPORT_SYMBOL_GPL(device_change_owner);
++
+ /**
+  * device_shutdown - call ->shutdown() on each device to shutdown.
+  */
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 0cd7c647c16c..63ebd9e3f6b0 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -817,6 +817,7 @@ extern struct device *device_find_child_by_name(struct device *parent,
+ extern int device_rename(struct device *dev, const char *new_name);
+ extern int device_move(struct device *dev, struct device *new_parent,
+ 		       enum dpm_order dpm_order);
++extern int device_change_owner(struct device *dev);
+ extern const char *device_get_devnode(struct device *dev,
+ 				      umode_t *mode, kuid_t *uid, kgid_t *gid,
+ 				      const char **tmp);
 -- 
 2.25.0
 
