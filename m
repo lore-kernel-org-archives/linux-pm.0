@@ -2,690 +2,184 @@ Return-Path: <SRS0=JpcB=4G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 336F7C34033
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F166C34034
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 09:10:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EDE5121D56
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kEyGQnCg"
+	by mail.kernel.org (Postfix) with ESMTP id 2813524654
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 09:10:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582017037;
+	bh=qcx7hKSdA43lr91cefm69cgiRF+lTRlAhJkSkXl97uo=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=lXzS3E9I8oOKZQ09O5kaI+yNhDmStTGxMMKrEVw5DayxoSa8E+FGr2nffXow7LFEp
+	 KdWBVyHX4h+fn9XYTc9Vo+NDMdD4KFYaNrHmBqstTYl6T9IhCXDBoqAvJTr/W5RT2i
+	 S7oWYq2BMFSH52z68FcJAb8iI7/hc574/Op5ZTcE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726347AbgBRILi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 03:11:38 -0500
-Received: from mail-pl1-f194.google.com ([209.85.214.194]:45980 "EHLO
-        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726180AbgBRILi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 03:11:38 -0500
-Received: by mail-pl1-f194.google.com with SMTP id b22so7759611pls.12;
-        Tue, 18 Feb 2020 00:11:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :in-reply-to:references;
-        bh=hwKUIa+IraGb7oitddEV2OS+g5EhB7WgvdsqrnGHzJA=;
-        b=kEyGQnCgqIuPcNVqmz4KbBge1FdjZpMqklV60y0ybVWUAVoMnm5NWNy/z4Efq6KL88
-         aLBIRLrbwge+xhee6qSSEAOwZwgeGea5pjLag1JgkF8Hl5ZSZTBSd/U8qhL+oS9erk4M
-         L9YlfOy74hbdoNHgEHzinoNNmcXXjzk7hSgh91pLGrKIRVxWIVViHUjlH9FD33G8tD1a
-         wq9kfRl2CqO0C4EYSl+1Qeb1x6ZUtNZzi+m/VwdNed3G9YgNXFe0QoyI7Mlw09d6Ln5y
-         GHyK/VTKLoPiNSaaxH1MOBLh+Waaf/JkIcWlYuV0yY/DQUks/sHygb/pexnMypJJoKKC
-         41/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:in-reply-to:references;
-        bh=hwKUIa+IraGb7oitddEV2OS+g5EhB7WgvdsqrnGHzJA=;
-        b=YIXRcJLeCJyGir/TzS7JfwCKS/WUgg5wXcqEUkyqZtQxVpTYZUmvX2hhXuJKkNV0o5
-         cPYpF5wsHx2wNArnIo1HKp/GoH1NPZpIylShrODHcYGQJ44ZrLvwcnDn+mcMpoDrKYlt
-         0mZ2me8fEvWY0KazmPSk3nYqXodatXaazipe9FHZsq7yZfCEhPHLv5VAEylx/aByiQgW
-         uF6v7FftE986s3z4D8pufdx1ORIPKMfg++WXdkZknL+7gLgcICuj5L8i8RI5yPFMZYLC
-         PoKYDyqxEnek7fuO9ylUbwme20qwRDRweYhU0zFDghCBnktDjEZsOwu0R9ulXMvTqPHq
-         0jnw==
-X-Gm-Message-State: APjAAAUaZeXujFLwB10IqINaV1niiXAB6qlZlybnaQ3MVK/FXEeWPtOS
-        e2zy1yI9BweXjvSn6GpfwcO37dpROxc=
-X-Google-Smtp-Source: APXvYqxRwQDDsBMm3NShMv79zNqVZZFztAaowEDjBXDsyQ7Bk4ECRFDwT0pHhzuqrwWDhTNi/LmiEg==
-X-Received: by 2002:a17:90b:1245:: with SMTP id gx5mr1194589pjb.105.1582013496822;
-        Tue, 18 Feb 2020 00:11:36 -0800 (PST)
-Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
-        by smtp.gmail.com with ESMTPSA id z27sm3083411pfj.107.2020.02.18.00.11.33
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 18 Feb 2020 00:11:36 -0800 (PST)
-From:   Baolin Wang <baolin.wang7@gmail.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, robh+dt@kernel.org,
-        mark.rutland@arm.com
-Cc:     orsonzhai@gmail.com, baolin.wang7@gmail.com,
-        freeman.liu@unisoc.com, zhang.lyra@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/2] thermal: sprd: Add Spreadtrum thermal driver support
-Date:   Tue, 18 Feb 2020 16:10:28 +0800
-Message-Id: <ebeb2839cff4d4027b37e787427c5af0e11880c8.1582013101.git.baolin.wang7@gmail.com>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
-References: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
-In-Reply-To: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
-References: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
+        id S1726276AbgBRJKg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 04:10:36 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:35180 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726186AbgBRJKg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 04:10:36 -0500
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
+        MIME-Version:Message-Id:Date:Subject:Cc:To:From:Reply-To:Content-Type:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=gtxCElNvSCXWFICx33F89B+eF/cQ+L9FjqnWYk2rKuI=; b=h/D+gqw5OmQpGOwUjnu/fi4+kH
+        bT0h8EUVx9iIS8HNfPlJzJPk40KKUsFKNf009z67RPKZuDo+88sdToDM6wpb5+YlEa7V9G6OJvFol
+        R8RQl98kwCpA4ooFYQSURvPloAPXb0/KOMWODRXhBfm93RtLstFP639AaaseMhA7rBw6OI8LTEr+J
+        PXc4gR41BMqKLfnINKvS8pLmCqR3uXPMYK/daZvPEV9ynEWBeYzh1jVee6AgvUIOeV700uQ2EOPBg
+        z3vWEhpNHMY0ljZor0m1CokA7zJdOq2gDEs8oPaHQ9a9htLoD+FYLhrx/s8ITQGSuGwynWgVTIITp
+        vszoRJOw==;
+Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126] helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1j3ytn-00046s-Vd; Tue, 18 Feb 2020 09:10:36 +0000
+Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
+        (envelope-from <mchehab@bombadil.infradead.org>)
+        id 1j3j8V-000foa-PM; Mon, 17 Feb 2020 17:20:43 +0100
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Paul Mackerras <paulus@samba.org>,
+        linux-arm-kernel@lists.infradead.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-sh@vger.kernel.org,
+        Will Deacon <will@kernel.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        linux-crypto@vger.kernel.org,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        keyrings@vger.kernel.org, Viresh Kumar <viresh.kumar@linaro.org>,
+        linuxppc-dev@lists.ozlabs.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        David Howells <dhowells@redhat.com>, linux-pci@vger.kernel.org,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Yoshinori Sato <ysato@users.sourceforge.jp>,
+        Rich Felker <dalias@libc.org>, linux-pm@vger.kernel.org,
+        Javi Merino <javi.merino@kernel.org>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH v2 00/24] Manually convert  thermal, crypto and misc devices to ReST
+Date:   Mon, 17 Feb 2020 17:20:18 +0100
+Message-Id: <cover.1581956285.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.24.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Freeman Liu <freeman.liu@unisoc.com>
 
-This patch adds the support for Spreadtrum thermal sensor controller,
-which can support maximum 8 sensors.
+Manually convert some files from thermal, crypto and misc-devices
+to ReST format.
 
-Signed-off-by: Freeman Liu <freeman.liu@unisoc.com>
-Co-developed-with: Baolin Wang <baolin.wang@unisoc.com>
-Signed-off-by: Baolin Wang <baolin.wang7@gmail.com>
----
-Changes from v2:
- - Check the nvmem value's length.
- - Use clamp() macro instead of open codes.
- - Fix some typos.
- - Optimize the 'ratio' calculation formula.
- - Remove 'last_temp' variable.
- - Add some comments to explain why need enable interrupts.
- - Use THERMAL_DEVICE_ENABLED/DISABLED flag instead of 'ready' variable.
+This patch is against linux-next 20200217 tag.
 
-Changes from v1:
- - None.
----
- drivers/thermal/Kconfig        |    7 +
- drivers/thermal/Makefile       |    1 +
- drivers/thermal/sprd_thermal.c |  552 ++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 560 insertions(+)
- create mode 100644 drivers/thermal/sprd_thermal.c
+v2: 
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5a05db5..a2a940e 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -460,4 +460,11 @@ config UNIPHIER_THERMAL
- 	  Enable this to plug in UniPhier on-chip PVT thermal driver into the
- 	  thermal framework. The driver supports CPU thermal zone temperature
- 	  reporting and a couple of trip points.
-+
-+config SPRD_THERMAL
-+	tristate "Temperature sensor on Spreadtrum SoCs"
-+	depends on ARCH_SPRD || COMPILE_TEST
-+	help
-+	  Support for the Spreadtrum thermal sensor driver in the Linux thermal
-+	  framework.
- endif
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 9fb88e2..dbdd98c 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -57,3 +57,4 @@ obj-$(CONFIG_GENERIC_ADC_THERMAL)	+= thermal-generic-adc.o
- obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
- obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
- obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
-+obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
-diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-new file mode 100644
-index 0000000..a340374
---- /dev/null
-+++ b/drivers/thermal/sprd_thermal.c
-@@ -0,0 +1,552 @@
-+// SPDX-License-Identifier: GPL-2.0
-+// Copyright (C) 2020 Spreadtrum Communications Inc.
-+
-+#include <linux/clk.h>
-+#include <linux/io.h>
-+#include <linux/iopoll.h>
-+#include <linux/module.h>
-+#include <linux/nvmem-consumer.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+
-+#define SPRD_THM_CTL			0x0
-+#define SPRD_THM_INT_EN			0x4
-+#define SPRD_THM_INT_STS		0x8
-+#define SPRD_THM_INT_RAW_STS		0xc
-+#define SPRD_THM_DET_PERIOD		0x10
-+#define SPRD_THM_INT_CLR		0x14
-+#define SPRD_THM_INT_CLR_ST		0x18
-+#define SPRD_THM_MON_PERIOD		0x4c
-+#define SPRD_THM_MON_CTL		0x50
-+#define SPRD_THM_INTERNAL_STS1		0x54
-+#define SPRD_THM_RAW_READ_MSK		0x3ff
-+
-+#define SPRD_THM_OFFSET(id)		((id) * 0x4)
-+#define SPRD_THM_TEMP(id)		(SPRD_THM_OFFSET(id) + 0x5c)
-+#define SPRD_THM_THRES(id)		(SPRD_THM_OFFSET(id) + 0x2c)
-+
-+#define SPRD_THM_SEN(id)		BIT((id) + 2)
-+#define SPRD_THM_SEN_OVERHEAT_EN(id)	BIT((id) + 8)
-+#define SPRD_THM_SEN_OVERHEAT_ALARM_EN(id)	BIT((id) + 0)
-+
-+/* bits definitions for register THM_CTL */
-+#define SPRD_THM_SET_RDY_ST		BIT(13)
-+#define SPRD_THM_SET_RDY		BIT(12)
-+#define SPRD_THM_MON_EN			BIT(1)
-+#define SPRD_THM_EN			BIT(0)
-+
-+/* bits definitions for register THM_INT_CTL */
-+#define SPRD_THM_BIT_INT_EN		BIT(26)
-+#define SPRD_THM_OVERHEAT_EN		BIT(25)
-+#define SPRD_THM_OTP_TRIP_SHIFT		10
-+
-+/* bits definitions for register SPRD_THM_INTERNAL_STS1 */
-+#define SPRD_THM_TEMPER_RDY		BIT(0)
-+
-+#define SPRD_THM_DET_PERIOD_DATA	0x800
-+#define SPRD_THM_DET_PERIOD_MASK	GENMASK(19, 0)
-+#define SPRD_THM_MON_MODE		0x7
-+#define SPRD_THM_MON_MODE_MASK		GENMASK(3, 0)
-+#define SPRD_THM_MON_PERIOD_DATA	0x10
-+#define SPRD_THM_MON_PERIOD_MASK	GENMASK(15, 0)
-+#define SPRD_THM_THRES_MASK		GENMASK(19, 0)
-+#define SPRD_THM_INT_CLR_MASK		GENMASK(24, 0)
-+
-+/* thermal sensor calibration parameters */
-+#define SPRD_THM_TEMP_LOW		-40000
-+#define SPRD_THM_TEMP_HIGH		120000
-+#define SPRD_THM_OTP_TEMP		120000
-+#define SPRD_THM_HOT_TEMP		75000
-+#define SPRD_THM_RAW_DATA_LOW		0
-+#define SPRD_THM_RAW_DATA_HIGH		1000
-+#define SPRD_THM_SEN_NUM		8
-+#define SPRD_THM_DT_OFFSET		24
-+#define SPRD_THM_RATION_OFFSET		17
-+#define SPRD_THM_RATION_SIGN		16
-+
-+#define SPRD_THM_RDYST_POLLING_TIME	10
-+#define SPRD_THM_RDYST_TIMEOUT		700
-+#define SPRD_THM_TEMP_READY_POLL_TIME	10000
-+#define SPRD_THM_TEMP_READY_TIMEOUT	600000
-+#define SPRD_THM_MAX_SENSOR		8
-+
-+struct sprd_thermal_sensor {
-+	struct thermal_zone_device *tzd;
-+	struct sprd_thermal_data *data;
-+	struct device *dev;
-+	int cal_slope;
-+	int cal_offset;
-+	int id;
-+};
-+
-+struct sprd_thermal_data {
-+	const struct sprd_thm_variant_data *var_data;
-+	struct sprd_thermal_sensor *sensor[SPRD_THM_MAX_SENSOR];
-+	struct clk *clk;
-+	void __iomem *base;
-+	u32 ratio_off;
-+	int ratio_sign;
-+	int nr_sensors;
-+};
-+
-+/*
-+ * The conversion between ADC and temperature is based on linear relationship,
-+ * and use idea_k to specify the slope and ideal_b to specify the offset.
-+ *
-+ * Since different Spreadtrum SoCs have different ideal_k and ideal_b,
-+ * we should save ideal_k and ideal_b in the device data structure.
-+ */
-+struct sprd_thm_variant_data {
-+	u32 ideal_k;
-+	u32 ideal_b;
-+};
-+
-+static const struct sprd_thm_variant_data ums512_data = {
-+	.ideal_k = 262,
-+	.ideal_b = 66400,
-+};
-+
-+static inline void sprd_thm_update_bits(void __iomem *reg, u32 mask, u32 val)
-+{
-+	u32 tmp, orig;
-+
-+	orig = readl(reg);
-+	tmp = orig & ~mask;
-+	tmp |= val & mask;
-+	writel(tmp, reg);
-+}
-+
-+static int sprd_thm_cal_read(struct device_node *np, const char *cell_id,
-+			     u32 *val)
-+{
-+	struct nvmem_cell *cell;
-+	void *buf;
-+	size_t len;
-+
-+	cell = of_nvmem_cell_get(np, cell_id);
-+	if (IS_ERR(cell))
-+		return PTR_ERR(cell);
-+
-+	buf = nvmem_cell_read(cell, &len);
-+	nvmem_cell_put(cell);
-+	if (IS_ERR(buf))
-+		return PTR_ERR(buf);
-+
-+	if (len > sizeof(u32)) {
-+		kfree(buf);
-+		return -EINVAL;
-+	}
-+
-+	memcpy(val, buf, len);
-+
-+	kfree(buf);
-+	return 0;
-+}
-+
-+static int sprd_thm_sensor_calibration(struct device_node *np,
-+				       struct sprd_thermal_data *thm,
-+				       struct sprd_thermal_sensor *sen)
-+{
-+	int ret;
-+	/*
-+	 * According to thermal datasheet, the default calibration offset is 64,
-+	 * and the default ratio is 1000.
-+	 */
-+	int dt_offset = 64, ratio = 1000;
-+
-+	ret = sprd_thm_cal_read(np, "sen_delta_cal", &dt_offset);
-+	if (ret)
-+		return ret;
-+
-+	ratio += thm->ratio_sign * thm->ratio_off;
-+
-+	/*
-+	 * According to the ideal slope K and ideal offset B, combined with
-+	 * calibration value of thermal from efuse, then calibrate the real
-+	 * slope k and offset b:
-+	 * k_cal = (k * ratio) / 1000.
-+	 * b_cal = b + (dt_offset - 64) * 500.
-+	 */
-+	sen->cal_slope = (thm->var_data->ideal_k * ratio) / 1000;
-+	sen->cal_offset = thm->var_data->ideal_b + (dt_offset - 128) * 250;
-+
-+	return 0;
-+}
-+
-+static int sprd_thm_rawdata_to_temp(struct sprd_thermal_sensor *sen,
-+				    u32 rawdata)
-+{
-+	clamp(rawdata, (u32)SPRD_THM_RAW_DATA_LOW, (u32)SPRD_THM_RAW_DATA_HIGH);
-+
-+	/*
-+	 * According to the thermal datasheet, the formula of converting
-+	 * adc value to the temperature value should be:
-+	 * T_final = k_cal * x - b_cal.
-+	 */
-+	return sen->cal_slope * rawdata - sen->cal_offset;
-+}
-+
-+static int sprd_thm_temp_to_rawdata(int temp, struct sprd_thermal_sensor *sen)
-+{
-+	u32 val;
-+
-+	clamp(temp, (int)SPRD_THM_TEMP_LOW, (int)SPRD_THM_TEMP_HIGH);
-+
-+	/*
-+	 * According to the thermal datasheet, the formula of converting
-+	 * adc value to the temperature value should be:
-+	 * T_final = k_cal * x - b_cal.
-+	 */
-+	val = (temp + sen->cal_offset) / sen->cal_slope;
-+
-+	return clamp(val, val, (u32)(SPRD_THM_RAW_DATA_HIGH - 1));
-+}
-+
-+static int sprd_thm_read_temp(void *devdata, int *temp)
-+{
-+	struct sprd_thermal_sensor *sen = devdata;
-+	u32 data;
-+
-+	data = readl(sen->data->base + SPRD_THM_TEMP(sen->id)) &
-+		SPRD_THM_RAW_READ_MSK;
-+
-+	*temp = sprd_thm_rawdata_to_temp(sen, data);
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops sprd_thm_ops = {
-+	.get_temp = sprd_thm_read_temp,
-+};
-+
-+static int sprd_thm_poll_ready_status(struct sprd_thermal_data *thm)
-+{
-+	u32 val;
-+	int ret;
-+
-+	/*
-+	 * Wait for thermal ready status before configuring thermal parameters.
-+	 */
-+	ret = readl_poll_timeout(thm->base + SPRD_THM_CTL, val,
-+				 !(val & SPRD_THM_SET_RDY_ST),
-+				 SPRD_THM_RDYST_POLLING_TIME,
-+				 SPRD_THM_RDYST_TIMEOUT);
-+	if (ret)
-+		return ret;
-+
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL, SPRD_THM_MON_EN,
-+			     SPRD_THM_MON_EN);
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL, SPRD_THM_SET_RDY,
-+			     SPRD_THM_SET_RDY);
-+	return 0;
-+}
-+
-+static int sprd_thm_wait_temp_ready(struct sprd_thermal_data *thm)
-+{
-+	u32 val;
-+
-+	/* Wait for first temperature data ready before reading temperature */
-+	return readl_poll_timeout(thm->base + SPRD_THM_INTERNAL_STS1, val,
-+				  !(val & SPRD_THM_TEMPER_RDY),
-+				  SPRD_THM_TEMP_READY_POLL_TIME,
-+				  SPRD_THM_TEMP_READY_TIMEOUT);
-+}
-+
-+static int sprd_thm_set_ready(struct sprd_thermal_data *thm)
-+{
-+	int ret;
-+
-+	ret = sprd_thm_poll_ready_status(thm);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Clear interrupt status, enable thermal interrupt and enable thermal.
-+	 *
-+	 * The SPRD thermal controller integrates a hardware interrupt signal,
-+	 * which means if the temperature is overheat, it will generate an
-+	 * interrupt and notify the event to PMIC automatically to shutdown the
-+	 * system. So here we should enable the interrupt bits, though we have
-+	 * not registered an irq handler.
-+	 */
-+	writel(SPRD_THM_INT_CLR_MASK, thm->base + SPRD_THM_INT_CLR);
-+	sprd_thm_update_bits(thm->base + SPRD_THM_INT_EN,
-+			     SPRD_THM_BIT_INT_EN, SPRD_THM_BIT_INT_EN);
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL,
-+			     SPRD_THM_EN, SPRD_THM_EN);
-+	return 0;
-+}
-+
-+static void sprd_thm_sensor_init(struct sprd_thermal_data *thm,
-+				 struct sprd_thermal_sensor *sen)
-+{
-+	u32 otp_rawdata, hot_rawdata;
-+
-+	otp_rawdata = sprd_thm_temp_to_rawdata(SPRD_THM_OTP_TEMP, sen);
-+	hot_rawdata = sprd_thm_temp_to_rawdata(SPRD_THM_HOT_TEMP, sen);
-+
-+	/* Enable the sensor' overheat temperature protection interrupt */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_INT_EN,
-+			     SPRD_THM_SEN_OVERHEAT_ALARM_EN(sen->id),
-+			     SPRD_THM_SEN_OVERHEAT_ALARM_EN(sen->id));
-+
-+	/* Set the sensor' overheat and hot threshold temperature */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_THRES(sen->id),
-+			     SPRD_THM_THRES_MASK,
-+			     (otp_rawdata << SPRD_THM_OTP_TRIP_SHIFT) |
-+			     hot_rawdata);
-+
-+	/* Enable the corresponding sensor */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL, SPRD_THM_SEN(sen->id),
-+			     SPRD_THM_SEN(sen->id));
-+}
-+
-+static void sprd_thm_para_config(struct sprd_thermal_data *thm)
-+{
-+	/* Set the period of two valid temperature detection action */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_DET_PERIOD,
-+			     SPRD_THM_DET_PERIOD_MASK, SPRD_THM_DET_PERIOD);
-+
-+	/* Set the sensors' monitor mode */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_MON_CTL,
-+			     SPRD_THM_MON_MODE_MASK, SPRD_THM_MON_MODE);
-+
-+	/* Set the sensors' monitor period */
-+	sprd_thm_update_bits(thm->base + SPRD_THM_MON_PERIOD,
-+			     SPRD_THM_MON_PERIOD_MASK, SPRD_THM_MON_PERIOD);
-+}
-+
-+static void sprd_thm_toggle_sensor(struct sprd_thermal_sensor *sen, bool on)
-+{
-+	struct thermal_zone_device *tzd = sen->tzd;
-+
-+	tzd->ops->set_mode(tzd,
-+		on ? THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED);
-+}
-+
-+static int sprd_thm_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np = pdev->dev.of_node;
-+	struct device_node *sen_child;
-+	struct sprd_thermal_data *thm;
-+	struct sprd_thermal_sensor *sen;
-+	const struct sprd_thm_variant_data *pdata;
-+	int ret, i;
-+	u32 val;
-+
-+	pdata = of_device_get_match_data(&pdev->dev);
-+	if (!pdata) {
-+		dev_err(&pdev->dev, "No matching driver data found\n");
-+		return -EINVAL;
-+	}
-+
-+	thm = devm_kzalloc(&pdev->dev, sizeof(*thm), GFP_KERNEL);
-+	if (!thm)
-+		return -ENOMEM;
-+
-+	thm->var_data = pdata;
-+	thm->base = devm_platform_ioremap_resource(pdev, 0);
-+	if (!thm->base)
-+		return -ENOMEM;
-+
-+	thm->nr_sensors = of_get_child_count(np);
-+	if (thm->nr_sensors == 0 || thm->nr_sensors > SPRD_THM_MAX_SENSOR) {
-+		dev_err(&pdev->dev, "incorrect sensor count\n");
-+		return -EINVAL;
-+	}
-+
-+	thm->clk = devm_clk_get(&pdev->dev, "enable");
-+	if (IS_ERR(thm->clk)) {
-+		dev_err(&pdev->dev, "failed to get enable clock\n");
-+		return PTR_ERR(thm->clk);
-+	}
-+
-+	ret = clk_prepare_enable(thm->clk);
-+	if (ret)
-+		return ret;
-+
-+	sprd_thm_para_config(thm);
-+
-+	ret = sprd_thm_cal_read(np, "thm_sign_cal", &val);
-+	if (ret)
-+		goto disable_clk;
-+
-+	if (val > 0)
-+		thm->ratio_sign = -1;
-+	else
-+		thm->ratio_sign = 1;
-+
-+	ret = sprd_thm_cal_read(np, "thm_ratio_cal", &thm->ratio_off);
-+	if (ret)
-+		goto disable_clk;
-+
-+	for_each_child_of_node(np, sen_child) {
-+		sen = devm_kzalloc(&pdev->dev, sizeof(*sen), GFP_KERNEL);
-+		if (!sen) {
-+			ret = -ENOMEM;
-+			goto disable_clk;
-+		}
-+
-+		sen->data = thm;
-+		sen->dev = &pdev->dev;
-+
-+		ret = of_property_read_u32(sen_child, "reg", &sen->id);
-+		if (ret) {
-+			dev_err(&pdev->dev, "get sensor reg failed");
-+			goto disable_clk;
-+		}
-+
-+		ret = sprd_thm_sensor_calibration(sen_child, thm, sen);
-+		if (ret) {
-+			dev_err(&pdev->dev, "efuse cal analysis failed");
-+			goto disable_clk;
-+		}
-+
-+		sprd_thm_sensor_init(thm, sen);
-+
-+		sen->tzd = devm_thermal_zone_of_sensor_register(sen->dev,
-+								sen->id,
-+								sen,
-+								&sprd_thm_ops);
-+		if (IS_ERR(sen->tzd)) {
-+			dev_err(&pdev->dev, "register thermal zone failed %d\n",
-+				sen->id);
-+			ret = PTR_ERR(sen->tzd);
-+			goto disable_clk;
-+		}
-+
-+		thm->sensor[sen->id] = sen;
-+	}
-+
-+	ret = sprd_thm_set_ready(thm);
-+	if (ret)
-+		goto disable_clk;
-+
-+	ret = sprd_thm_wait_temp_ready(thm);
-+	if (ret)
-+		goto disable_clk;
-+
-+	for (i = 0; i < thm->nr_sensors; i++)
-+		sprd_thm_toggle_sensor(thm->sensor[i], true);
-+
-+	platform_set_drvdata(pdev, thm);
-+	return 0;
-+
-+disable_clk:
-+	clk_disable_unprepare(thm->clk);
-+	return ret;
-+}
-+
-+#ifdef CONFIG_PM_SLEEP
-+static void sprd_thm_hw_suspend(struct sprd_thermal_data *thm)
-+{
-+	int i;
-+
-+	for (i = 0; i < thm->nr_sensors; i++) {
-+		sprd_thm_update_bits(thm->base + SPRD_THM_CTL,
-+				     SPRD_THM_SEN(thm->sensor[i]->id), 0);
-+	}
-+
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL,
-+			     SPRD_THM_EN, 0x0);
-+}
-+
-+static int sprd_thm_suspend(struct device *dev)
-+{
-+	struct sprd_thermal_data *thm = dev_get_drvdata(dev);
-+	int i;
-+
-+	for (i = 0; i < thm->nr_sensors; i++)
-+		sprd_thm_toggle_sensor(thm->sensor[i], false);
-+
-+	sprd_thm_hw_suspend(thm);
-+	clk_disable_unprepare(thm->clk);
-+
-+	return 0;
-+}
-+
-+static int sprd_thm_hw_resume(struct sprd_thermal_data *thm)
-+{
-+	int ret, i;
-+
-+	for (i = 0; i < thm->nr_sensors; i++) {
-+		sprd_thm_update_bits(thm->base + SPRD_THM_CTL,
-+				     SPRD_THM_SEN(thm->sensor[i]->id),
-+				     SPRD_THM_SEN(thm->sensor[i]->id));
-+	}
-+
-+	ret = sprd_thm_poll_ready_status(thm);
-+	if (ret)
-+		return ret;
-+
-+	writel(SPRD_THM_INT_CLR_MASK, thm->base + SPRD_THM_INT_CLR);
-+	sprd_thm_update_bits(thm->base + SPRD_THM_CTL,
-+			     SPRD_THM_EN, SPRD_THM_EN);
-+	return sprd_thm_wait_temp_ready(thm);
-+}
-+
-+static int sprd_thm_resume(struct device *dev)
-+{
-+	struct sprd_thermal_data *thm = dev_get_drvdata(dev);
-+	int ret, i;
-+
-+	ret = clk_prepare_enable(thm->clk);
-+	if (ret)
-+		return ret;
-+
-+	ret = sprd_thm_hw_resume(thm);
-+	if (ret)
-+		goto disable_clk;
-+
-+	for (i = 0; i < thm->nr_sensors; i++)
-+		sprd_thm_toggle_sensor(thm->sensor[i], true);
-+
-+	return 0;
-+
-+disable_clk:
-+	clk_disable_unprepare(thm->clk);
-+	return ret;
-+}
-+#endif
-+
-+static int sprd_thm_remove(struct platform_device *pdev)
-+{
-+	struct sprd_thermal_data *thm = platform_get_drvdata(pdev);
-+	int i;
-+
-+	for (i = 0; i < thm->nr_sensors; i++) {
-+		sprd_thm_toggle_sensor(thm->sensor[i], false);
-+		devm_thermal_zone_of_sensor_unregister(&pdev->dev,
-+						       thm->sensor[i]->tzd);
-+	}
-+
-+	clk_disable_unprepare(thm->clk);
-+	return 0;
-+}
-+
-+static const struct of_device_id sprd_thermal_of_match[] = {
-+	{ .compatible = "sprd,ums512-thermal", .data = &ums512_data },
-+	{ },
-+};
-+
-+static const struct dev_pm_ops sprd_thermal_pm_ops = {
-+	SET_SYSTEM_SLEEP_PM_OPS(sprd_thm_suspend, sprd_thm_resume)
-+};
-+
-+static struct platform_driver sprd_thermal_driver = {
-+	.probe = sprd_thm_probe,
-+	.remove = sprd_thm_remove,
-+	.driver = {
-+		.name = "sprd-thermal",
-+		.pm = &sprd_thermal_pm_ops,
-+		.of_match_table = sprd_thermal_of_match,
-+	},
-+};
-+
-+module_platform_driver(sprd_thermal_driver);
-+
-+MODULE_AUTHOR("Freeman Liu <freeman.liu@unisoc.com>");
-+MODULE_DESCRIPTION("Spreadtrum thermal driver");
-+MODULE_LICENSE("GPL v2");
+- a small change at patch 2 to avoid uneeded whitespace changes;
+- added 13 new patches at the end
+
+Mauro Carvalho Chehab (24):
+  docs: thermal: convert cpu-idle-cooling.rst to ReST
+  docs: crypto: convert asymmetric-keys.txt to ReST
+  docs: crypto: convert api-intro.txt to ReST format
+  docs: crypto: convert async-tx-api.txt to ReST format
+  docs: crypto: descore-readme.txt: convert to ReST format
+  docs: misc-devices/spear-pcie-gadget.txt: convert to ReST
+  docs: misc-devices/pci-endpoint-test.txt: convert to ReST
+  docs: misc-devices/pci-endpoint-test.txt: convert to ReST
+  docs: misc-devices/c2port.txt: convert to ReST format
+  docs: misc-devices/bh1770glc.txt: convert to ReST
+  docs: misc-devices/apds990x.txt: convert to ReST format
+  docs: pci: endpoint/function/binding/pci-test.txt convert to ReST
+  docs: arm64: convert perf.txt to ReST format
+  docs: cpu-freq: convert index.txt to ReST
+  docs: cpu-freq: convert amd-powernow.txt to ReST
+  docs: cpu-freq: convert core.txt to ReST
+  docs: cpu-freq: convert cpu-drivers.txt to ReST
+  docs: cpu-freq: convert cpufreq-nforce2.txt to ReST
+  docs: cpu-freq: convert cpufreq-stats.txt to ReST
+  docs: cpu-freq: convert pcc-cpufreq.txt to ReST
+  docs: powerpc: convert vcpudispatch_stats.txt to ReST
+  docs: sh: convert new-machine.txt to ReST
+  docs: sh: convert register-banks.txt to ReST
+  docs: trace: ring-buffer-design.txt: convert to ReST format
+
+ .../endpoint/function/binding/pci-test.rst    |  26 +
+ .../endpoint/function/binding/pci-test.txt    |  19 -
+ Documentation/PCI/endpoint/index.rst          |   2 +
+ Documentation/arm64/index.rst                 |   1 +
+ Documentation/arm64/{perf.txt => perf.rst}    |   7 +-
+ .../{amd-powernow.txt => amd-powernow.rst}    |  12 +-
+ Documentation/cpu-freq/{core.txt => core.rst} |  65 +-
+ .../{cpu-drivers.txt => cpu-drivers.rst}      | 129 ++-
+ ...pufreq-nforce2.txt => cpufreq-nforce2.rst} |  18 +-
+ .../{cpufreq-stats.txt => cpufreq-stats.rst}  | 121 +--
+ Documentation/cpu-freq/index.rst              |  42 +
+ Documentation/cpu-freq/index.txt              |  56 --
+ .../{pcc-cpufreq.txt => pcc-cpufreq.rst}      |  86 +-
+ .../crypto/{api-intro.txt => api-intro.rst}   | 186 ++--
+ ...symmetric-keys.txt => asymmetric-keys.rst} |  91 +-
+ .../{async-tx-api.txt => async-tx-api.rst}    | 253 +++---
+ ...{descore-readme.txt => descore-readme.rst} | 152 +++-
+ Documentation/crypto/index.rst                |   5 +
+ .../driver-api/thermal/cpu-idle-cooling.rst   |  18 +-
+ Documentation/driver-api/thermal/index.rst    |   1 +
+ Documentation/index.rst                       |   1 +
+ .../{ad525x_dpot.txt => ad525x_dpot.rst}      |  24 +-
+ .../{apds990x.txt => apds990x.rst}            |  31 +-
+ .../{bh1770glc.txt => bh1770glc.rst}          |  45 +-
+ .../misc-devices/{c2port.txt => c2port.rst}   |  58 +-
+ Documentation/misc-devices/index.rst          |   6 +
+ .../misc-devices/pci-endpoint-test.rst        |  56 ++
+ .../misc-devices/pci-endpoint-test.txt        |  41 -
+ .../misc-devices/spear-pcie-gadget.rst        | 170 ++++
+ .../misc-devices/spear-pcie-gadget.txt        | 130 ---
+ Documentation/powerpc/index.rst               |   1 +
+ ...patch_stats.txt => vcpudispatch_stats.rst} |  17 +-
+ Documentation/sh/index.rst                    |   6 +
+ .../sh/{new-machine.txt => new-machine.rst}   | 193 +++--
+ ...{register-banks.txt => register-banks.rst} |  12 +-
+ Documentation/trace/index.rst                 |   1 +
+ ...ffer-design.txt => ring-buffer-design.rst} | 802 ++++++++++--------
+ 37 files changed, 1603 insertions(+), 1281 deletions(-)
+ create mode 100644 Documentation/PCI/endpoint/function/binding/pci-test.rst
+ delete mode 100644 Documentation/PCI/endpoint/function/binding/pci-test.txt
+ rename Documentation/arm64/{perf.txt => perf.rst} (95%)
+ rename Documentation/cpu-freq/{amd-powernow.txt => amd-powernow.rst} (89%)
+ rename Documentation/cpu-freq/{core.txt => core.rst} (69%)
+ rename Documentation/cpu-freq/{cpu-drivers.txt => cpu-drivers.rst} (72%)
+ rename Documentation/cpu-freq/{cpufreq-nforce2.txt => cpufreq-nforce2.rst} (55%)
+ rename Documentation/cpu-freq/{cpufreq-stats.txt => cpufreq-stats.rst} (53%)
+ create mode 100644 Documentation/cpu-freq/index.rst
+ delete mode 100644 Documentation/cpu-freq/index.txt
+ rename Documentation/cpu-freq/{pcc-cpufreq.txt => pcc-cpufreq.rst} (80%)
+ rename Documentation/crypto/{api-intro.txt => api-intro.rst} (70%)
+ rename Documentation/crypto/{asymmetric-keys.txt => asymmetric-keys.rst} (91%)
+ rename Documentation/crypto/{async-tx-api.txt => async-tx-api.rst} (55%)
+ rename Documentation/crypto/{descore-readme.txt => descore-readme.rst} (81%)
+ rename Documentation/misc-devices/{ad525x_dpot.txt => ad525x_dpot.rst} (85%)
+ rename Documentation/misc-devices/{apds990x.txt => apds990x.rst} (86%)
+ rename Documentation/misc-devices/{bh1770glc.txt => bh1770glc.rst} (83%)
+ rename Documentation/misc-devices/{c2port.txt => c2port.rst} (59%)
+ create mode 100644 Documentation/misc-devices/pci-endpoint-test.rst
+ delete mode 100644 Documentation/misc-devices/pci-endpoint-test.txt
+ create mode 100644 Documentation/misc-devices/spear-pcie-gadget.rst
+ delete mode 100644 Documentation/misc-devices/spear-pcie-gadget.txt
+ rename Documentation/powerpc/{vcpudispatch_stats.txt => vcpudispatch_stats.rst} (94%)
+ rename Documentation/sh/{new-machine.txt => new-machine.rst} (73%)
+ rename Documentation/sh/{register-banks.txt => register-banks.rst} (88%)
+ rename Documentation/trace/{ring-buffer-design.txt => ring-buffer-design.rst} (55%)
+
 -- 
-1.7.9.5
+2.24.1
+
 
