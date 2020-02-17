@@ -2,41 +2,59 @@ Return-Path: <SRS0=PYkk=4F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75442C34021
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FEB9C3402A
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4368620718
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAF9A24654
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1581956450;
+	bh=oSAwJuwZZke99vm8rocsC6A/BaGIh2GI4Jpuuu+iYYY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=PfzMdvIK4l3t/aUBxfo062ndo7/xl4CJn7EQ05s4LODzHJ68f9Zc+FnS/f0h/YD4R
+	 O61jDiAkBhEnZYNMOj3x0PZ8VS7nDZVLI0RQ4NkcNyz+mYUaTORDDVkRvIMLo2b9Ae
+	 LHtRei6YElJ+htCh4tq8RarCIwfrVNbuetJjuWos=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727217AbgBQQPm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:15:42 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:49197 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726707AbgBQQOq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:46 -0500
-Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j3j2f-0003Cp-DZ; Mon, 17 Feb 2020 16:14:41 +0000
-From:   Christian Brauner <christian.brauner@ubuntu.com>
-To:     "David S. Miller" <davem@davemloft.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
-        Eric Dumazet <edumazet@google.com>,
-        Stephen Hemminger <stephen@networkplumber.org>,
-        linux-pm@vger.kernel.org,
-        Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH net-next v2 00/10] net: fix sysfs permssions when device changes network
-Date:   Mon, 17 Feb 2020 17:14:26 +0100
-Message-Id: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
-X-Mailer: git-send-email 2.25.0
+        id S1728836AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:20:48 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:54984 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728602AbgBQQUr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:47 -0500
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+        Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=K50znw7T2d7ZLRRT/oJYwAV1nhjr/eNbyg/t950G8S8=; b=ZrcpYoaBUU5wE68Qol76U7axVb
+        N8WaDAIkWm1DmDmhXq7Usu+VgGCpsxddGPgANHDWFlB62qmc1ZPb8Tv3QLId1hyQLTWPq1torn3r6
+        3y0wu98eCbqhXbw+wJEa1vHjXGlQWdWltz43hddoTVNYScd+ZYPhTa8pxs3tr5YpcRKwO9uo0hVK5
+        y0UjF8cpYWGelX6BjVOahV++qmYGnGVoj8toTWUERh9IADTtQ0XLBVx0zA3drvtN2hWxgtv/S5qsB
+        ddup/9hbNI/4twqR7WXGZGH3+su74iq8YgAppg1Cop7PL/ii+xJpM8FUcdtChtCJCP5wVcZZKIwKk
+        Mkd5HpGA==;
+Received: from ip-109-41-129-189.web.vodafone.de ([109.41.129.189] helo=bombadil.infradead.org)
+        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1j3j8Y-00042D-2n; Mon, 17 Feb 2020 16:20:46 +0000
+Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
+        (envelope-from <mchehab@bombadil.infradead.org>)
+        id 1j3j8W-000fpg-8O; Mon, 17 Feb 2020 17:20:44 +0100
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2 14/24] docs: cpu-freq: convert index.txt to ReST
+Date:   Mon, 17 Feb 2020 17:20:32 +0100
+Message-Id: <7a89b0c82520d340d3c7f45bfd52ee9e6e23dbdf.1581956285.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.24.1
+In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
+References: <cover.1581956285.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -44,223 +62,135 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hey everyone,
+most of the stuff there can be re-used with ReST format,
+but we need to add an empty TOC and remove the existing
+entries, as the following conversion patches will be re-adding
+them, as they're converted.
 
-This is v2 with fixes based on Greg's and Rafael's review.
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+---
+ Documentation/cpu-freq/index.rst | 35 ++++++++++++++++++++
+ Documentation/cpu-freq/index.txt | 56 --------------------------------
+ Documentation/index.rst          |  1 +
+ 3 files changed, 36 insertions(+), 56 deletions(-)
+ create mode 100644 Documentation/cpu-freq/index.rst
+ delete mode 100644 Documentation/cpu-freq/index.txt
 
-(I've tagged this with net-next since it's triggered by a bug for
- network device files but it also touches driver core aspects so it's
- not clear-cut. I can of course split this series into separate
- patchsets.) 
-We have been struggling with a bug surrounding the ownership of network
-device sysfs files when moving network devices between network
-namespaces owned by different user namespaces reported by multiple
-users.
-
-Currently, when moving network devices between network namespaces the
-ownership of the corresponding sysfs entries is not changed. This leads
-to problems when tools try to operate on the corresponding sysfs files.
-
-I also causes a bug when creating a network device in a network
-namespaces owned by a user namespace and moving that network device back
-to the host network namespaces. Because when a network device is created
-in a network namespaces it will be owned by the root user of the user
-namespace and all its associated sysfs files will also be owned by the
-root user of the corresponding user namespace.
-If such a network device has to be moved back to the host network
-namespace the permissions will still be set to the root user of the
-owning user namespaces of the originating network namespace. This means
-unprivileged users can e.g. re-trigger uevents for such incorrectly
-owned devices on the host or in other network namespaces. They can also
-modify the settings of the device itself through sysfs when they
-wouldn't be able to do the same through netlink. Both of these things
-are unwanted.
-
-For example, quite a few workloads will create network devices in the
-host network namespace. Other tools will then proceed to move such
-devices between network namespaces owner by other user namespaces. While
-the ownership of the device itself is updated in
-net/core/net-sysfs.c:dev_change_net_namespace() the corresponding sysfs
-entry for the device is not. Below you'll find that moving a network
-device (here a veth device) from a network namespace into another
-network namespaces owned by a different user namespace with a different
-id mapping. As you can see the permissions are wrong even though it is
-owned by the userns root user after it has been moved and can be
-interacted with through netlink: 
-
-drwxr-xr-x 5 nobody nobody    0 Jan 25 18:08 .
-drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_assign_type
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 addr_len
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 address
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 broadcast
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_changes
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_down_count
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 carrier_up_count
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_id
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dev_port
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 dormant
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 duplex
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 flags
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 gro_flush_timeout
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifalias
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 ifindex
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 iflink
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 link_mode
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 mtu
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 name_assign_type
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 netdev_group
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 operstate
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_id
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_port_name
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 phys_switch_id
-drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 power
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 proto_down
-drwxr-xr-x 4 nobody nobody    0 Jan 25 18:09 queues
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 speed
-drwxr-xr-x 2 nobody nobody    0 Jan 25 18:09 statistics
-lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:08 subsystem -> ../../../../class/net
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:09 tx_queue_len
--r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 type
--rw-r--r-- 1 nobody nobody 4096 Jan 25 18:08 uevent
-
-Constrast this with creating a device of the same type in the network
-namespace directly. In this case the device's sysfs permissions will be
-correctly updated.
-(Please also note, that in a lot of workloads this strategy of creating
- the network device directly in the network device to workaround this
- issue can not be used. Either because the network device is dedicated
- after it has been created or because it used by a process that is
- heavily sandboxed and couldn't create network devices itself.):
-
-drwxr-xr-x 5 root   root      0 Jan 25 18:12 .
-drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
--r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_assign_type
--r--r--r-- 1 root   root   4096 Jan 25 18:12 addr_len
--r--r--r-- 1 root   root   4096 Jan 25 18:12 address
--r--r--r-- 1 root   root   4096 Jan 25 18:12 broadcast
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 carrier
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_changes
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_down_count
--r--r--r-- 1 root   root   4096 Jan 25 18:12 carrier_up_count
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_id
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dev_port
--r--r--r-- 1 root   root   4096 Jan 25 18:12 dormant
--r--r--r-- 1 root   root   4096 Jan 25 18:12 duplex
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 flags
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 gro_flush_timeout
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 ifalias
--r--r--r-- 1 root   root   4096 Jan 25 18:12 ifindex
--r--r--r-- 1 root   root   4096 Jan 25 18:12 iflink
--r--r--r-- 1 root   root   4096 Jan 25 18:12 link_mode
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 mtu
--r--r--r-- 1 root   root   4096 Jan 25 18:12 name_assign_type
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 netdev_group
--r--r--r-- 1 root   root   4096 Jan 25 18:12 operstate
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_id
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_port_name
--r--r--r-- 1 root   root   4096 Jan 25 18:12 phys_switch_id
-drwxr-xr-x 2 root   root      0 Jan 25 18:12 power
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 proto_down
-drwxr-xr-x 4 root   root      0 Jan 25 18:12 queues
--r--r--r-- 1 root   root   4096 Jan 25 18:12 speed
-drwxr-xr-x 2 root   root      0 Jan 25 18:12 statistics
-lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:12 subsystem -> ../../../../class/net
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 tx_queue_len
--r--r--r-- 1 root   root   4096 Jan 25 18:12 type
--rw-r--r-- 1 root   root   4096 Jan 25 18:12 uevent
-
-Now, when creating a network device in a network namespace owned by a
-user namespace and moving it to the host the permissions will be set to
-the id that the user namespace root user has been mapped to on the host
-leading to all sorts of permission issues mentioned above:
-
-458752
-drwxr-xr-x 5 458752 458752      0 Jan 25 18:12 .
-drwxr-xr-x 9 root   root        0 Jan 25 18:08 ..
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_assign_type
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 addr_len
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 address
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 broadcast
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_changes
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_down_count
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 carrier_up_count
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_id
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dev_port
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 dormant
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 duplex
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 flags
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 gro_flush_timeout
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 ifalias
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 ifindex
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 iflink
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 link_mode
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 mtu
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 name_assign_type
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 netdev_group
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 operstate
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_id
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_port_name
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 phys_switch_id
-drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 power
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 proto_down
-drwxr-xr-x 4 458752 458752      0 Jan 25 18:12 queues
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 speed
-drwxr-xr-x 2 458752 458752      0 Jan 25 18:12 statistics
-lrwxrwxrwx 1 root   root        0 Jan 25 18:12 subsystem -> ../../../../class/net
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 tx_queue_len
--r--r--r-- 1 458752 458752   4096 Jan 25 18:12 type
--rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 uevent
-
-Fix this by changing the basic sysfs files associated with network
-devices when moving them between network namespaces. To this end we add
-some infrastructure to sysfs.
-
-The patchset takes care to only do this when the owning user namespaces
-changes and the kids differ. So there's only a performance overhead,
-when the owning user namespace of the network namespace is different
-__and__ the kid mappings for the root user are different for the two
-user namespaces:
-Assume we have a netdev eth0 which we create in netns1 owned by userns1.
-userns1 has an id mapping of 0 100000 100000. Now we move eth0 into
-netns2 which is owned by userns2 which also defines an id mapping of 0
-100000 100000. In this case sysfs doesn't need updating. The patch will
-handle this case and not do any needless work. Now assume eth0 is moved
-into netns3 which is owned by userns3 which defines an id mapping of 0
-123456 65536. In this case the root user in each namespace corresponds
-to different kid and sysfs needs updating.
-
-Thanks!
-Christian
-
-Christian Brauner (10):
-  sysfs: add sysfs_file_change_owner{_by_name}()
-  sysfs: add sysfs_link_change_owner()
-  sysfs: add sysfs_group_change_owner()
-  sysfs: add sysfs_groups_change_owner()
-  sysfs: add sysfs_change_owner()
-  device: add device_change_owner()
-  drivers/base/power: add dpm_sysfs_change_owner()
-  net-sysfs: add netdev_change_owner()
-  net-sysfs: add queue_change_owner()
-  net: fix sysfs permssions when device changes network namespace
-
- drivers/base/core.c        |  77 +++++++++++++++++
- drivers/base/power/power.h |   2 +
- drivers/base/power/sysfs.c |  40 +++++++++
- fs/sysfs/file.c            | 171 +++++++++++++++++++++++++++++++++++++
- fs/sysfs/group.c           | 129 ++++++++++++++++++++++++++++
- include/linux/device.h     |   1 +
- include/linux/sysfs.h      |  45 ++++++++++
- net/core/dev.c             |   9 +-
- net/core/net-sysfs.c       | 128 +++++++++++++++++++++++++++
- net/core/net-sysfs.h       |   2 +
- 10 files changed, 603 insertions(+), 1 deletion(-)
-
-
-base-commit: bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9
+diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
+new file mode 100644
+index 000000000000..1bff3dfddd23
+--- /dev/null
++++ b/Documentation/cpu-freq/index.rst
+@@ -0,0 +1,35 @@
++.. SPDX-License-Identifier: GPL-2.0
++
++==============================================================================
++Linux CPUFreq - CPU frequency and voltage scaling code in the Linux(TM) kernel
++==============================================================================
++
++Author: Dominik Brodowski  <linux@brodo.de>
++
++   Clock scaling allows you to change the clock speed of the CPUs on the
++   fly. This is a nice method to save battery power, because the lower
++   the clock speed, the less power the CPU consumes.
++
++
++.. toctree::
++   :maxdepth: 1
++
++Mailing List
++------------
++There is a CPU frequency changing CVS commit and general list where
++you can report bugs, problems or submit patches. To post a message,
++send an email to linux-pm@vger.kernel.org.
++
++Links
++-----
++the FTP archives:
++* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
++
++how to access the CVS repository:
++* http://cvs.arm.linux.org.uk/
++
++the CPUFreq Mailing list:
++* http://vger.kernel.org/vger-lists.html#linux-pm
++
++Clock and voltage scaling for the SA-1100:
++* http://www.lartmaker.nl/projects/scaling
+diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
+deleted file mode 100644
+index c15e75386a05..000000000000
+--- a/Documentation/cpu-freq/index.txt
++++ /dev/null
+@@ -1,56 +0,0 @@
+-     CPU frequency and voltage scaling code in the Linux(TM) kernel
+-
+-
+-		         L i n u x    C P U F r e q
+-
+-
+-
+-
+-		    Dominik Brodowski  <linux@brodo.de>
+-
+-
+-
+-   Clock scaling allows you to change the clock speed of the CPUs on the
+-    fly. This is a nice method to save battery power, because the lower
+-            the clock speed, the less power the CPU consumes.
+-
+-
+-
+-Documents in this directory:
+-----------------------------
+-
+-amd-powernow.txt -	AMD powernow driver specific file.
+-
+-core.txt	-	General description of the CPUFreq core and
+-			of CPUFreq notifiers.
+-
+-cpu-drivers.txt -	How to implement a new cpufreq processor driver.
+-
+-cpufreq-nforce2.txt -	nVidia nForce2 platform specific file.
+-
+-cpufreq-stats.txt -	General description of sysfs cpufreq stats.
+-
+-index.txt	-	File index, Mailing list and Links (this document)
+-
+-pcc-cpufreq.txt -	PCC cpufreq driver specific file.
+-
+-
+-Mailing List
+-------------
+-There is a CPU frequency changing CVS commit and general list where
+-you can report bugs, problems or submit patches. To post a message,
+-send an email to linux-pm@vger.kernel.org.
+-
+-Links
+------
+-the FTP archives:
+-* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
+-
+-how to access the CVS repository:
+-* http://cvs.arm.linux.org.uk/
+-
+-the CPUFreq Mailing list:
+-* http://vger.kernel.org/vger-lists.html#linux-pm
+-
+-Clock and voltage scaling for the SA-1100:
+-* http://www.lartmaker.nl/projects/scaling
+diff --git a/Documentation/index.rst b/Documentation/index.rst
+index e99d0bd2589d..4cf37ad1cd1d 100644
+--- a/Documentation/index.rst
++++ b/Documentation/index.rst
+@@ -99,6 +99,7 @@ needed).
+    accounting/index
+    block/index
+    cdrom/index
++   cpu-freq/index
+    ide/index
+    fb/index
+    fpga/index
 -- 
-2.25.0
+2.24.1
 
