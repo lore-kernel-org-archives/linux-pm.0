@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6363C3402F
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D23E7C34031
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7674124673
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A70032465D
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581956450;
-	bh=FX48Z1Ik5WVd82CgE3i3aHXeVaoGspBecf6PJmoTDmY=;
+	s=default; t=1581956451;
+	bh=DhvH2HDDBA6dOWvJaW6zuGlf7URyPdl7Iyg01bc1q+A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=KtyqQh9Mm2MVbJU+RKdDXvyWmmJVbUJkP/9lxuQlBt85kriSUlJMoDDaqWPLrGwEi
-	 JnLkeWqX/cRxv/Z6jMCGQT9CYP1sIdar6dg+ev3qiHq2eWBM9RmiW4dsoNyA2xDwQa
-	 pHlpOoRgSonSGNoiHxhTSgmQ75OWkBLo5Nc85S0k=
+	b=B0f51FHMbtb76aCmIa1k+OHxuzyl8JTrnXJ6bKyon2tS1QxFtqOJ3UadUVhDN0PN2
+	 dbbvtDmv0A7OXODuNjTNfjq2aU1VvEgYostrApb74NP+j0rmlBHd9fJVHJOV9py6Jd
+	 tXgRbeOIIslhIiTeXyEjngACE+5VydpsvX6y/PZo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728567AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728764AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 17 Feb 2020 11:20:48 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:54980 "EHLO
+Received: from bombadil.infradead.org ([198.137.202.133]:54976 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728595AbgBQQUr (ORCPT
+        with ESMTP id S1728543AbgBQQUr (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
         Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=pENrwyQGCHPWk+g+UqB2N09eq+FHO8Q3ndgRkaIJy9U=; b=if92APgiWWGXM8hhz4IaBL4aHN
-        zHGIFA/aqE+RIP2rF699sP/uDX7uO/S2ef01vR2PIXxilAxU/Xr3gTZv80iXl6/aeSogc/U8r1KFk
-        lcWMxgAUNRxcdoq8gG21TpINMo8KfC3rRNS96j2ZPCjdodwiVqlRxmkN/ce40KKzmSMz6fgUSif4l
-        ma85VdpTDBGnf7sfeZhY6EL8OY00R2t5ZrrzVySva5nN+KQErHTFJBDT8tq799RlfKL7jq9n08rOI
-        5+a/mrA7fJAQDR3XLs6uox7K/n/F2e8FnQfjoPbO5NPNVclQBxupg2dyCX474rQGhulzw6vRLFrVM
-        FLAYx6kQ==;
-Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126] helo=bombadil.infradead.org)
+        bh=WOmy0+QMckhdBzIIN5N8aTIEyoanTMoTBxTpT7pGGt4=; b=huK7I9hhDe7HhUFZwPp1c1UBu2
+        D0Lm6ATDem2jUeAtxLA0b89zENifzaqGIplTVQQQPIRMCcT+K2BBQJ4Y7lQNOXQf4NNlX7FKWslRY
+        +3VtsowHd/VXi0l+unvLai/D8/m2lyx1PzfKn4uKXwVoCy/VsUl50MUASDDYOPeovvKhp49F90a3O
+        KoPMhg1/PksC8BqRov01NEVjjUjJHEADSS4l5glw/TpqUTtaTXmnG+WKu+OK7kGdwtqB8GQ0v2xPi
+        QuNNOcRb0PzZMItizAGQNxR6oZEzvqfxO/Ct2lTcR9nkd+pIDwatkn4p0S0E5y6gxRicfswo3kmDV
+        5/YG6XjQ==;
+Received: from ip-109-41-129-189.web.vodafone.de ([109.41.129.189] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8Y-00042H-9T; Mon, 17 Feb 2020 16:20:46 +0000
+        id 1j3j8Y-00042F-8I; Mon, 17 Feb 2020 16:20:46 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8W-000fq0-Ct; Mon, 17 Feb 2020 17:20:44 +0100
+        id 1j3j8W-000fpl-9P; Mon, 17 Feb 2020 17:20:44 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
@@ -49,9 +49,9 @@ Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 18/24] docs: cpu-freq: convert cpufreq-nforce2.txt to ReST
-Date:   Mon, 17 Feb 2020 17:20:36 +0100
-Message-Id: <11b5000d757b77393170edafc02e2c96d9516a52.1581956285.git.mchehab+huawei@kernel.org>
+Subject: [PATCH v2 15/24] docs: cpu-freq: convert amd-powernow.txt to ReST
+Date:   Mon, 17 Feb 2020 17:20:33 +0100
+Message-Id: <63e8b6ba6110901079916cbbfb804ca100eab46d.1581956285.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
 References: <cover.1581956285.git.mchehab+huawei@kernel.org>
@@ -65,69 +65,67 @@ X-Mailing-List: linux-pm@vger.kernel.org
 - Add a SPDX header;
 - Add a document title, based on the original contents of
   cpu-freq/index.txt;
-- Add table markups;
-- Add notes markups;
+- some whitespace fixes and new line breaks;
 - Add it to cpu-freq/index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- ...cpufreq-nforce2.txt => cpufreq-nforce2.rst} | 18 ++++++++++++++----
- Documentation/cpu-freq/index.rst               |  1 +
- 2 files changed, 15 insertions(+), 4 deletions(-)
- rename Documentation/cpu-freq/{cpufreq-nforce2.txt => cpufreq-nforce2.rst} (55%)
+ .../cpu-freq/{amd-powernow.txt => amd-powernow.rst}  | 12 ++++++++++--
+ Documentation/cpu-freq/index.rst                     |  2 ++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+ rename Documentation/cpu-freq/{amd-powernow.txt => amd-powernow.rst} (89%)
 
-diff --git a/Documentation/cpu-freq/cpufreq-nforce2.txt b/Documentation/cpu-freq/cpufreq-nforce2.rst
-similarity index 55%
-rename from Documentation/cpu-freq/cpufreq-nforce2.txt
-rename to Documentation/cpu-freq/cpufreq-nforce2.rst
-index babce1315026..aa0ef768a92e 100644
---- a/Documentation/cpu-freq/cpufreq-nforce2.txt
-+++ b/Documentation/cpu-freq/cpufreq-nforce2.rst
-@@ -1,3 +1,8 @@
+diff --git a/Documentation/cpu-freq/amd-powernow.txt b/Documentation/cpu-freq/amd-powernow.rst
+similarity index 89%
+rename from Documentation/cpu-freq/amd-powernow.txt
+rename to Documentation/cpu-freq/amd-powernow.rst
+index 254da155fa47..4a53612b62a2 100644
+--- a/Documentation/cpu-freq/amd-powernow.txt
++++ b/Documentation/cpu-freq/amd-powernow.rst
+@@ -1,3 +1,9 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+=================================
-+nVidia nForce2 Platform Specifics
-+=================================
- 
- The cpufreq-nforce2 driver changes the FSB on nVidia nForce2 platforms.
- 
-@@ -6,14 +11,19 @@ can be controlled independently from the PCI/AGP clock.
- 
- The module has two options:
- 
--	fid: 	 multiplier * 10 (for example 8.5 = 85)
--	min_fsb: minimum FSB
-+	=======  ======================================
-+	fid 	 multiplier * 10 (for example 8.5 = 85)
-+	min_fsb  minimum FSB
-+	=======  ======================================
- 
- If not set, fid is calculated from the current CPU speed and the FSB.
- min_fsb defaults to FSB at boot time - 50 MHz.
- 
--IMPORTANT: The available range is limited downwards!
--           Also the minimum available FSB can differ, for systems 
-+.. Important::
++=============================
++AMD PowerNow Driver Specifics
++=============================
 +
-+           The available range is limited downwards!
+ 
+ PowerNow! and Cool'n'Quiet are AMD names for frequency
+ management capabilities in AMD processors. As the hardware
+@@ -23,16 +29,18 @@ not supply these tables.
+ 7th Generation: powernow-k7: Athlon, Duron, Geode.
+ 
+ 8th Generation: powernow-k8: Athlon, Athlon 64, Opteron, Sempron.
 +
-+           Also the minimum available FSB can differ, for systems
-            booting with 200 MHz, 150 should always work.
+ Documentation on this functionality in 8th generation processors
+ is available in the "BIOS and Kernel Developer's Guide", publication
+-26094, in chapter 9, available for download from www.amd.com. 
++26094, in chapter 9, available for download from www.amd.com.
  
- 
+ BIOS supplied data, for powernow-k7 and for powernow-k8, may be
+ from either the PSB table or from ACPI objects. The ACPI support
+ is only available if the kernel config sets CONFIG_ACPI_PROCESSOR.
+ The powernow-k8 driver will attempt to use ACPI if so configured,
+ and fall back to PST if that fails.
++
+ The powernow-k7 driver will try to use the PSB support first, and
+ fall back to ACPI if the PSB support fails. A module parameter,
+-acpi_force, is provided to force ACPI support to be used instead 
++acpi_force, is provided to force ACPI support to be used instead
+ of PSB support.
 diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-index 1ab3fff53956..3fa69e6614f6 100644
+index 1bff3dfddd23..6f7c2a024447 100644
 --- a/Documentation/cpu-freq/index.rst
 +++ b/Documentation/cpu-freq/index.rst
-@@ -17,6 +17,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
-    amd-powernow
-    core
-    cpu-drivers
-+   cpufreq-nforce2
+@@ -14,6 +14,8 @@ Author: Dominik Brodowski  <linux@brodo.de>
+ .. toctree::
+    :maxdepth: 1
  
++   amd-powernow
++
  Mailing List
  ------------
+ There is a CPU frequency changing CVS commit and general list where
 -- 
 2.24.1
 
