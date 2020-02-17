@@ -4,163 +4,204 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03594C34025
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 470E3C34030
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CB4132465D
+	by mail.kernel.org (Postfix) with ESMTP id 1DFFE227BF
 	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=default; t=1581956452;
-	bh=GXfnyk+5mxcLxh7DS10kpV2zW4ajtTvIlfSvgF1m6HE=;
+	bh=9Mli4VlLwD2vLWTivcyaxXYgVyieqFNicdZqSlvF0xI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=ZUrc/zOfKSEWUnFzTMl0FAm7RHbpOlmU5Lcu3FS5skr8W5u6zJrOygJSIz0XA24Zt
-	 IXGyj7XmaesV6wHgObRRBZjhVeQUlSAl7XU05DUBhCd6Zej3Y12LJoLSUd+3fVHMW5
-	 b3ZsIiTrGkVq3JWEK3Yh06BWUVdIhV6VFv4WbyOo=
+	b=VUdFuRqhx+ltcjYYmn1XWzZm06k1Jq1iDK3ZdL9nP9KyyPcX40ULs+qGjCXUyY2yx
+	 aQfTe8AxUuxwrUlq2aamchFxGLw4YiHvodFRzpbTqg5tkmIM2JyBn0NRfa/IpaHDyT
+	 f+CkLIeeO+1uKCn+gKPCqrmnTmotu8Aj+lgMrqc8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728692AbgBQQUr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728476AbgBQQUr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 17 Feb 2020 11:20:47 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:54966 "EHLO
+Received: from bombadil.infradead.org ([198.137.202.133]:54974 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728476AbgBQQUr (ORCPT
+        with ESMTP id S1728567AbgBQQUr (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        Content-Type:MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:
-        To:From:Reply-To:Content-ID:Content-Description;
-        bh=bJnoUKgVIb6mtplglvS+byAU4SeZA8CY+LwJLXnSv9Q=; b=V8Gn2+nNEW0XD7O/RskUVtUmAc
-        5wOo0wKXc5QuWC8OTHgzcElE3z3DtOzZfXmqnanL8KD+0Y2q1YJrxMeGAZFGYEYlgnHPry06/IZyq
-        h0DQsINTAXRbx8AFw0stk3d06FMhkDQ/VnaZUwpO/XeCr5r5dVlbHpBvABw//guL5EL3+Ipwh2Hes
-        Wf7Cw0C5BzVCxyOkQGkGxctdRDfFPcuEZqv5VqMw9XR5gBt46Y3xI+mT4CSAgTAOoGzO+ahrEJqtT
-        M8lUiHFr5TM3POASvq+jzypM0Z4pOv+Oj6tSnE6s6j7EKxlMAbfHJADB99ygREBwLIzUwimFrmJ2d
-        SKFfodKg==;
+        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+        Reply-To:Content-Type:Content-ID:Content-Description;
+        bh=5fMHhLhtfxXOaPgcU7lG8IGkd6p13B5INTE+xMyZ9go=; b=lzXOBgAvMAStWUbm5UoDKjzdKF
+        19U+BgIFZpJt1A3cTJfEXojBHvicJN6KZLzcYn/oUHYfd2twbkklm2rmvS5ca2TptfnKXmsdQRwLh
+        ORFDCJXxWei1cThGOjmkh+r+P4a7KkSEB9YZ2Or/xNQpc9q3J6tuA9wX2R3MDdY30RzQ37l0BQ9fw
+        R8wjV04kO1vg0or9V0rb6cl7Ovxp4T7RzpdjTf1fDS92QVZPLbvWvnyXR0+ssVKEJC/sQTi5VQ+/Z
+        ASbhnvlwNxPFwEJHojR/3puXzjvhYYTIXQDEAoN/o5jPwifFvFVS4DYCWdwpbCsMCb+JsokWUzsko
+        Ij+aBwyQ==;
 Received: from ip-109-41-129-189.web.vodafone.de ([109.41.129.189] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8X-000420-QT; Mon, 17 Feb 2020 16:20:46 +0000
+        id 1j3j8Y-00042E-8M; Mon, 17 Feb 2020 16:20:46 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8V-000fod-QO; Mon, 17 Feb 2020 17:20:43 +0100
+        id 1j3j8W-000fpq-AM; Mon, 17 Feb 2020 17:20:44 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         Jonathan Corbet <corbet@lwn.net>,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        Javi Merino <javi.merino@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH v2 01/24] docs: thermal: convert cpu-idle-cooling.rst to ReST
-Date:   Mon, 17 Feb 2020 17:20:19 +0100
-Message-Id: <ff05e3ea32345c4c2d19c9a7c6191e31db685430.1581956285.git.mchehab+huawei@kernel.org>
+        linux-pm@vger.kernel.org
+Subject: [PATCH v2 16/24] docs: cpu-freq: convert core.txt to ReST
+Date:   Mon, 17 Feb 2020 17:20:34 +0100
+Message-Id: <a99fb2be78fa83236ed92d177d5d050dcbe0cc75.1581956285.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
 References: <cover.1581956285.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Despite being named with .rst extension, this file doesn't
-match the ReST standard. It actually causes a crash at
-Sphinx:
-
-	Sphinx parallel build error:
-	docutils.utils.SystemMessage: /devel/v4l/docs/Documentation/driver-api/thermal/cpu-idle-cooling.rst:69: (SEVERE/4) Unexpected section title.
-
-Add needed markups for it to be properly parsed.
-
-While here, add it to the thermal index.rst.
+- Add a SPDX header;
+- Adjust the  document title, based on the original contents of
+  cpu-freq/index.txt;
+- Use lists where needed;
+- Comment out the existing text-only index;
+- use ``foo`` to mark a literal expression with asterisk;
+- Adjust some title marks;
+- Add table markups;
+- Add notes markups;
+- Some whitespace fixes and new line breaks;
+- Add it to cpu-freq/index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- .../driver-api/thermal/cpu-idle-cooling.rst    | 18 ++++++++++++------
- Documentation/driver-api/thermal/index.rst     |  1 +
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ Documentation/cpu-freq/{core.txt => core.rst} | 65 ++++++++++---------
+ Documentation/cpu-freq/index.rst              |  1 +
+ 2 files changed, 34 insertions(+), 32 deletions(-)
+ rename Documentation/cpu-freq/{core.txt => core.rst} (69%)
 
-diff --git a/Documentation/driver-api/thermal/cpu-idle-cooling.rst b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
-index 9f0016ee4cfb..357d2f023605 100644
---- a/Documentation/driver-api/thermal/cpu-idle-cooling.rst
-+++ b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
-@@ -1,3 +1,9 @@
+diff --git a/Documentation/cpu-freq/core.txt b/Documentation/cpu-freq/core.rst
+similarity index 69%
+rename from Documentation/cpu-freq/core.txt
+rename to Documentation/cpu-freq/core.rst
+index ed577d9c154b..33cb90bd1d8f 100644
+--- a/Documentation/cpu-freq/core.txt
++++ b/Documentation/cpu-freq/core.rst
+@@ -1,31 +1,23 @@
+-     CPU frequency and voltage scaling code in the Linux(TM) kernel
 +.. SPDX-License-Identifier: GPL-2.0
+ 
++=============================================================
++General description of the CPUFreq core and CPUFreq notifiers
++=============================================================
+ 
+-		         L i n u x    C P U F r e q
++Authors:
++	- Dominik Brodowski  <linux@brodo.de>
++	- David Kimdon <dwhedon@debian.org>
++	- Rafael J. Wysocki <rafael.j.wysocki@intel.com>
++	- Viresh Kumar <viresh.kumar@linaro.org>
+ 
+-			  C P U F r e q    C o r e
++.. Contents:
+ 
+-
+-		    Dominik Brodowski  <linux@brodo.de>
+-		     David Kimdon <dwhedon@debian.org>
+-		Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+-		   Viresh Kumar <viresh.kumar@linaro.org>
+-
+-
+-
+-   Clock scaling allows you to change the clock speed of the CPUs on the
+-    fly. This is a nice method to save battery power, because the lower
+-            the clock speed, the less power the CPU consumes.
+-
+-
+-Contents:
+----------
+-1.  CPUFreq core and interfaces
+-2.  CPUFreq notifiers
+-3.  CPUFreq Table Generation with Operating Performance Point (OPP)
++   1.  CPUFreq core and interfaces
++   2.  CPUFreq notifiers
++   3.  CPUFreq Table Generation with Operating Performance Point (OPP)
+ 
+ 1. General Information
+-=======================
++======================
+ 
+ The CPUFreq core code is located in drivers/cpufreq/cpufreq.c. This
+ cpufreq code offers a standardized interface for the CPUFreq
+@@ -63,7 +55,7 @@ The phase is specified in the second argument to the notifier.  The phase is
+ CPUFREQ_CREATE_POLICY when the policy is first created and it is
+ CPUFREQ_REMOVE_POLICY when the policy is removed.
+ 
+-The third argument, a void *pointer, points to a struct cpufreq_policy
++The third argument, a ``void *pointer``, points to a struct cpufreq_policy
+ consisting of several values, including min, max (the lower and upper
+ frequencies (in kHz) of the new policy).
+ 
+@@ -80,10 +72,13 @@ CPUFREQ_POSTCHANGE.
+ 
+ The third argument is a struct cpufreq_freqs with the following
+ values:
+-cpu	- number of the affected CPU
+-old	- old frequency
+-new	- new frequency
+-flags	- flags of the cpufreq driver
 +
-+================
-+CPU Idle Cooling
-+================
++=====	===========================
++cpu	number of the affected CPU
++old	old frequency
++new	new frequency
++flags	flags of the cpufreq driver
++=====	===========================
+ 
+ 3. CPUFreq Table Generation with Operating Performance Point (OPP)
+ ==================================================================
+@@ -94,9 +89,12 @@ dev_pm_opp_init_cpufreq_table -
+ 	the OPP layer's internal information about the available frequencies
+ 	into a format readily providable to cpufreq.
+ 
+-	WARNING: Do not use this function in interrupt context.
++	.. Warning::
 +
++	   Do not use this function in interrupt context.
++
++	Example::
  
- Situation:
- ----------
-@@ -45,7 +51,7 @@ idle state target residency, we lead to dropping the static and the
- dynamic leakage for this period (modulo the energy needed to enter
- this state). So the sustainable power with idle cycles has a linear
- relation with the OPP’s sustainable power and can be computed with a
--coefficient similar to:
-+coefficient similar to::
+-	Example:
+ 	 soc_pm_init()
+ 	 {
+ 		/* Do things */
+@@ -106,7 +104,10 @@ dev_pm_opp_init_cpufreq_table -
+ 		/* Do other things */
+ 	 }
  
- 	    Power(IdleCycle) = Coef x Power(OPP)
+-	NOTE: This function is available only if CONFIG_CPU_FREQ is enabled in
+-	addition to CONFIG_PM_OPP.
++	.. note::
  
-@@ -136,7 +142,7 @@ Power considerations
- --------------------
- 
- When we reach the thermal trip point, we have to sustain a specified
--power for a specific temperature but at this time we consume:
-+power for a specific temperature but at this time we consume::
- 
-  Power = Capacitance x Voltage^2 x Frequency x Utilisation
- 
-@@ -145,7 +151,7 @@ wrong in the system setup). The ‘Capacitance’ and ‘Utilisation’ are a
- fixed value, ‘Voltage’ and the ‘Frequency’ are fixed artificially
- because we don’t want to change the OPP. We can group the
- ‘Capacitance’ and the ‘Utilisation’ into a single term which is the
--‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have:
-+‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have::
- 
-  Pdyn = Cdyn x Voltage^2 x Frequency
- 
-@@ -154,7 +160,7 @@ in order to target the sustainable power defined in the device
- tree. So with the idle injection mechanism, we want an average power
- (Ptarget) resulting in an amount of time running at full power on a
- specific OPP and idle another amount of time. That could be put in a
--equation:
-+equation::
- 
-  P(opp)target = ((Trunning x (P(opp)running) + (Tidle x P(opp)idle)) /
- 			(Trunning + Tidle)
-@@ -165,7 +171,7 @@ equation:
- 
- At this point if we know the running period for the CPU, that gives us
- the idle injection we need. Alternatively if we have the idle
--injection duration, we can compute the running duration with:
-+injection duration, we can compute the running duration with::
- 
-  Trunning = Tidle / ((P(opp)running / P(opp)target) - 1)
- 
-@@ -188,7 +194,7 @@ However, in this demonstration we ignore three aspects:
-    target residency, otherwise we end up consuming more energy and
-    potentially invert the mitigation effect
- 
--So the final equation is:
-+So the final equation is::
- 
-  Trunning = (Tidle - Twakeup ) x
- 		(((P(opp)dyn + P(opp)static ) - P(opp)target) / P(opp)target )
-diff --git a/Documentation/driver-api/thermal/index.rst b/Documentation/driver-api/thermal/index.rst
-index 5ba61d19c6ae..4cb0b9b6bfb8 100644
---- a/Documentation/driver-api/thermal/index.rst
-+++ b/Documentation/driver-api/thermal/index.rst
-@@ -8,6 +8,7 @@ Thermal
+-dev_pm_opp_free_cpufreq_table - Free up the table allocated by dev_pm_opp_init_cpufreq_table
++	   This function is available only if CONFIG_CPU_FREQ is enabled in
++	   addition to CONFIG_PM_OPP.
++
++dev_pm_opp_free_cpufreq_table
++	Free up the table allocated by dev_pm_opp_init_cpufreq_table
+diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
+index 6f7c2a024447..8babc5a212dd 100644
+--- a/Documentation/cpu-freq/index.rst
++++ b/Documentation/cpu-freq/index.rst
+@@ -15,6 +15,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
     :maxdepth: 1
  
-    cpu-cooling-api
-+   cpu-idle-cooling
-    sysfs-api
-    power_allocator
+    amd-powernow
++   core
  
+ Mailing List
+ ------------
 -- 
 2.24.1
 
