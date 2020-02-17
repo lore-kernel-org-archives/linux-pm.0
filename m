@@ -1,72 +1,86 @@
-Return-Path: <SRS0=zJKG=4E=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=PYkk=4F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50395C7619C
-	for <linux-pm@archiver.kernel.org>; Sun, 16 Feb 2020 18:06:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B025C7619B
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 04:54:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 389A7206E2
-	for <linux-pm@archiver.kernel.org>; Sun, 16 Feb 2020 18:06:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B0502072C
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 04:54:23 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nWc35DAB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725989AbgBPSGR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 16 Feb 2020 13:06:17 -0500
-Received: from ip-78-45-52-129.net.upcbroadband.cz ([78.45.52.129]:57260 "EHLO
-        ixit.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725899AbgBPSGR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 16 Feb 2020 13:06:17 -0500
-X-Greylist: delayed 521 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Feb 2020 13:06:16 EST
-Received: from [192.168.1.106] (227.146.230.94.awnet.cz [94.230.146.227])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-         key-exchange ECDHE (P-256) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-        (No client certificate requested)
-        by ixit.cz (Postfix) with ESMTPSA id 7B523251A6;
-        Sun, 16 Feb 2020 18:57:32 +0100 (CET)
-Date:   Sun, 16 Feb 2020 18:57:26 +0100
-From:   David Heidelberg <david@ixit.cz>
-Subject: smb347: issues with  IRQSTAT_D
-To:     john.stultz@linaro.org, ramakrishna.pallala@intel.com,
-        simhavcs@gmail.com, anton.vorontsov@linaro.org,
-        mika.westerberg@linux.intel.com
-Cc:     linux-pm@vger.kernel.org, Dmitry Osipenko <digetx@gmail.com>
-Message-Id: <1581875846.314698.0@ixit.cz>
-X-Mailer: geary/3.35.2
+        id S1728000AbgBQEyW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Feb 2020 23:54:22 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:42514 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727789AbgBQEyW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Feb 2020 23:54:22 -0500
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+        Content-Type:MIME-Version:Date:Message-ID:Subject:From:Cc:To:Sender:Reply-To:
+        Content-ID:Content-Description:In-Reply-To:References;
+        bh=k5opVoMpuRar8bobAnOBPFuQK3PPZAwrp6fhQdw1Y6E=; b=nWc35DABXLQ88LHytoOlqPLxTV
+        qEOe4DCb2+3I234jrA83WFNTHaSe5wmnHW40HxJQOrxHGZabQRu4N3LU6O9nywf0lAPxX9ixYXHMb
+        MpKvgFa+5S5w8X81fLPogjo2oOjR9Gtc0/MHWUSe+JChDTNm24+vdjdNSBHF+zS6QiUd+8bu24fnT
+        QB0liRDEAu25mXlYvHrIkWnXMVfkrsjnVqtUiSLatOq5yX4UecUUZz3lLhuI3/zhwvle0oZcODEnu
+        OWOGCgp1CW7uOGIi6xijrmcP1U0nXGrqDpoeqp5VAp0L3UJyEluYiSP7JFKwEKFw8+kTBODBI9wtK
+        c+wWmG3Q==;
+Received: from [2601:1c0:6280:3f0::19c2]
+        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1j3YQI-0005Hi-2E; Mon, 17 Feb 2020 04:54:22 +0000
+To:     Linux PM list <linux-pm@vger.kernel.org>,
+        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>
+Cc:     Jonathan Corbet <corbet@lwn.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From:   Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH -next] Documentation/power: fix pm_qos_interface.rst format
+ warning
+Message-ID: <561e2780-111a-1939-43fb-ae32d7abce8d@infradead.org>
+Date:   Sun, 16 Feb 2020 20:54:21 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+From: Randy Dunlap <rdunlap@infradead.org>
 
-after wiring smb347-charge into our DTS, I noticed issues with Safety 
-Timer Expiration[1].
-This functionality was added with commit 
-1502cfe19bac2f8490e4167f2b7cb50b9759b273.
-I suppose that it worked originally for Ramakrishna.
-I did also notice, that SMB345 patch omits functionality with IF.
-Since it fails for me even on SMB347 I guess there could be possible 
-that:
+Fix Sphinx warnings by indenting the bullet list (and making it
+unnumbered).
 
-- this funtionality is available only on some specific chips?
-- something must be configured (in HW or SW) differently to use it?
-- it wasn't working from begining (since I didn't found any user of 
-smb347 in tree).
+Documentation/power/pm_qos_interface.rst:12: WARNING: Unexpected indentation.
 
-I work with gathered patches [2] and preparing them for upstream.
-Testing is done on Nexus 7 2012, tilapia (grouper-nakasi3g).
-Charging and discharging is reported by driver correctly.
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: linux-pm@vger.kernel.org
+Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-doc@vger.kernel.org
+---
+ Documentation/power/pm_qos_interface.rst |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Any ideas welcome!
-Thank you
-David
-
-[1] "smb347 2-006a: reading IRQSTAT_D failed"
-[2] https://github.com/okias/linux/commits/smb3xx-charger
-
-
+--- linux-next-20200217.orig/Documentation/power/pm_qos_interface.rst
++++ linux-next-20200217/Documentation/power/pm_qos_interface.rst
+@@ -7,8 +7,8 @@ performance expectations by drivers, sub
+ one of the parameters.
+ 
+ Two different PM QoS frameworks are available:
+-1. CPU latency QoS.
+-2. The per-device PM QoS framework provides the API to manage the
++ * CPU latency QoS.
++ * The per-device PM QoS framework provides the API to manage the
+    per-device latency constraints and PM QoS flags.
+ 
+ The latency unit used in the PM QoS framework is the microsecond (usec).
 
