@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E95AFC34021
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBECCC34022
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CA70A214D8
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AAC7720801
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:15:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727280AbgBQQPU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:15:20 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:49218 "EHLO
+        id S1726646AbgBQQOq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:14:46 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:49203 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728778AbgBQQOr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:47 -0500
+        with ESMTP id S1727108AbgBQQOq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:46 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j3j2j-0003Cp-F4; Mon, 17 Feb 2020 16:14:45 +0000
+        id 1j3j2h-0003Cp-AT; Mon, 17 Feb 2020 16:14:43 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -34,9 +34,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH net-next v2 06/10] device: add device_change_owner()
-Date:   Mon, 17 Feb 2020 17:14:32 +0100
-Message-Id: <20200217161436.1748598-7-christian.brauner@ubuntu.com>
+Subject: [PATCH net-next v2 03/10] sysfs: add sysfs_group_change_owner()
+Date:   Mon, 17 Feb 2020 17:14:29 +0100
+Message-Id: <20200217161436.1748598-4-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.0
 In-Reply-To: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
 References: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
@@ -47,121 +47,158 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a helper to change the owner of a device's sysfs entries. This
-needs to happen when the ownership of a device is changed, e.g. when
-moving network devices between network namespaces.
-The ownership of a device is determined based on the ownership of
+Add a helper to change the owner of a sysfs group.
+The ownership of a sysfs object is determined based on the ownership of
 the corresponding kobject, i.e. only if the ownership of a kobject is
 changed will this function change the ownership of the corresponding
-device's sysfs entries.
-This function will be used to correctly account for ownership changes,
-e.g. when moving network devices between network namespaces.
+sysfs entry.
+This function will be used to correctly account for kobject ownership
+changes, e.g. when moving network devices between network namespaces.
 
 Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
 /* v2 */
-unchanged
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add comment how ownership of sysfs object is changed.
 ---
- drivers/base/core.c    | 73 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/device.h |  1 +
- 2 files changed, 74 insertions(+)
+ fs/sysfs/group.c      | 93 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |  8 ++++
+ 2 files changed, 101 insertions(+)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 42a672456432..915766c20a47 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -3458,6 +3458,79 @@ int device_move(struct device *dev, struct device *new_parent,
- }
- EXPORT_SYMBOL_GPL(device_move);
+diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
+index c4ab045926b7..7d158d59d097 100644
+--- a/fs/sysfs/group.c
++++ b/fs/sysfs/group.c
+@@ -13,6 +13,7 @@
+ #include <linux/dcache.h>
+ #include <linux/namei.h>
+ #include <linux/err.h>
++#include <linux/fs.h>
+ #include "sysfs.h"
  
-+static int device_attrs_change_owner(struct device *dev)
+ 
+@@ -457,3 +458,95 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
+ 	return PTR_ERR_OR_ZERO(link);
+ }
+ EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
++
++static int sysfs_group_attrs_change_owner(struct kernfs_node *grp_kn,
++					  const struct attribute_group *grp,
++					  struct iattr *newattrs)
 +{
-+	struct kobject *kobj = &dev->kobj;
-+	struct class *class = dev->class;
-+	const struct device_type *type = dev->type;
++	struct kernfs_node *kn;
 +	int error;
 +
-+	if (class) {
-+		error = sysfs_groups_change_owner(kobj, class->dev_groups);
-+		if (error)
-+			return error;
++	if (grp->attrs) {
++		struct attribute *const *attr;
++
++		for (attr = grp->attrs; *attr; attr++) {
++			kn = kernfs_find_and_get(grp_kn, (*attr)->name);
++			if (!kn)
++				return -ENOENT;
++
++			error = kernfs_setattr(kn, newattrs);
++			kernfs_put(kn);
++			if (error)
++				return error;
++		}
 +	}
 +
-+	if (type) {
-+		error = sysfs_groups_change_owner(kobj, type->groups);
-+		if (error)
-+			return error;
-+	}
++	if (grp->bin_attrs) {
++		struct bin_attribute *const *bin_attr;
 +
-+	error = sysfs_groups_change_owner(kobj, dev->groups);
-+	if (error)
-+		return error;
++		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++) {
++			kn = kernfs_find_and_get(grp_kn, (*bin_attr)->attr.name);
++			if (!kn)
++				return -ENOENT;
 +
-+	if (device_supports_offline(dev) && !dev->offline_disabled) {
-+		error = sysfs_file_change_owner_by_name(kobj, dev_attr_online.attr.name);
-+		if (error)
-+			return error;
++			error = kernfs_setattr(kn, newattrs);
++			kernfs_put(kn);
++			if (error)
++				return error;
++		}
 +	}
 +
 +	return 0;
 +}
 +
 +/**
-+ * device_change_owner - change the owner of an existing device.
-+ * @dev: device.
++ * sysfs_group_change_owner - change owner of an attribute group.
++ * @kobj:	The kobject containing the group.
++ * @grp:	The attribute group.
++ *
++ * To change the ownership of a sysfs object, the caller must first change the
++ * uid/gid of the kobject and then call this function. Usually this will be
++ * taken care of by the relevant subsystem, e.g. moving a network device
++ * between network namespaces owned by different user namespaces will change
++ * the uid/gid of the kobject to the uid/gid of the root user in the user
++ * namespace. Calling this function afterwards will cause the sysfs object to
++ * reflect the new uid/gid.
++ *
++ * Returns 0 on success or error code on failure.
 + */
-+int device_change_owner(struct device *dev)
++int sysfs_group_change_owner(struct kobject *kobj,
++			     const struct attribute_group *grp)
 +{
++	struct kernfs_node *grp_kn;
++	kuid_t uid;
++	kgid_t gid;
 +	int error;
-+	struct kobject *kobj = &dev->kobj;
++	struct iattr newattrs = {
++		.ia_valid = ATTR_UID | ATTR_GID,
++	};
 +
-+	dev = get_device(dev);
-+	if (!dev)
++	if (!kobj->state_in_sysfs)
 +		return -EINVAL;
 +
-+	error = sysfs_change_owner(kobj);
-+	if (error)
-+		goto out;
++	if (grp->name) {
++		grp_kn = kernfs_find_and_get(kobj->sd, grp->name);
++	} else {
++		kernfs_get(kobj->sd);
++		grp_kn = kobj->sd;
++	}
++	if (!grp_kn)
++		return -ENOENT;
 +
-+	error = sysfs_file_change_owner_by_name(kobj, dev_attr_uevent.attr.name);
-+	if (error)
-+		goto out;
++	kobject_get_ownership(kobj, &uid, &gid);
++	newattrs.ia_uid = uid;
++	newattrs.ia_gid = gid;
 +
-+	error = device_attrs_change_owner(dev);
-+	if (error)
-+		goto out;
++	error = kernfs_setattr(grp_kn, &newattrs);
++	if (!error)
++		error = sysfs_group_attrs_change_owner(grp_kn, grp, &newattrs);
 +
-+#ifdef CONFIG_BLOCK
-+	if (sysfs_deprecated && dev->class == &block_class)
-+		goto out;
-+#endif
++	kernfs_put(grp_kn);
 +
-+	error = sysfs_link_change_owner(&dev->class->p->subsys.kobj, &dev->kobj,
-+					dev_name(dev));
-+	if (error)
-+		goto out;
-+
-+out:
-+	put_device(dev);
 +	return error;
 +}
-+EXPORT_SYMBOL_GPL(device_change_owner);
++EXPORT_SYMBOL_GPL(sysfs_group_change_owner);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 238f3d7b1fa0..dd211f0a654b 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -314,6 +314,8 @@ int sysfs_file_change_owner(struct kobject *kobj);
+ int sysfs_file_change_owner_by_name(struct kobject *kobj, const char *name);
+ int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
+ 			    const char *name);
++int sysfs_group_change_owner(struct kobject *kobj,
++			     const struct attribute_group *groups);
+ 
+ #else /* CONFIG_SYSFS */
+ 
+@@ -545,6 +547,12 @@ static inline int sysfs_link_change_owner(struct kobject *kobj,
+ 	return 0;
+ }
+ 
++static inline int sysfs_group_change_owner(struct kobject *kobj,
++			 const struct attribute_group **groups)
++{
++	return 0;
++}
 +
- /**
-  * device_shutdown - call ->shutdown() on each device to shutdown.
-  */
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 0cd7c647c16c..63ebd9e3f6b0 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -817,6 +817,7 @@ extern struct device *device_find_child_by_name(struct device *parent,
- extern int device_rename(struct device *dev, const char *new_name);
- extern int device_move(struct device *dev, struct device *new_parent,
- 		       enum dpm_order dpm_order);
-+extern int device_change_owner(struct device *dev);
- extern const char *device_get_devnode(struct device *dev,
- 				      umode_t *mode, kuid_t *uid, kgid_t *gid,
- 				      const char **tmp);
+ #endif /* CONFIG_SYSFS */
+ 
+ static inline int __must_check sysfs_create_file(struct kobject *kobj,
 -- 
 2.25.0
 
