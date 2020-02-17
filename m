@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FEB9C3402A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6363C3402F
 	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EAF9A24654
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7674124673
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=default; t=1581956450;
-	bh=oSAwJuwZZke99vm8rocsC6A/BaGIh2GI4Jpuuu+iYYY=;
+	bh=FX48Z1Ik5WVd82CgE3i3aHXeVaoGspBecf6PJmoTDmY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=PfzMdvIK4l3t/aUBxfo062ndo7/xl4CJn7EQ05s4LODzHJ68f9Zc+FnS/f0h/YD4R
-	 O61jDiAkBhEnZYNMOj3x0PZ8VS7nDZVLI0RQ4NkcNyz+mYUaTORDDVkRvIMLo2b9Ae
-	 LHtRei6YElJ+htCh4tq8RarCIwfrVNbuetJjuWos=
+	b=KtyqQh9Mm2MVbJU+RKdDXvyWmmJVbUJkP/9lxuQlBt85kriSUlJMoDDaqWPLrGwEi
+	 JnLkeWqX/cRxv/Z6jMCGQT9CYP1sIdar6dg+ev3qiHq2eWBM9RmiW4dsoNyA2xDwQa
+	 pHlpOoRgSonSGNoiHxhTSgmQ75OWkBLo5Nc85S0k=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728836AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728567AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 17 Feb 2020 11:20:48 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:54984 "EHLO
+Received: from bombadil.infradead.org ([198.137.202.133]:54980 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728602AbgBQQUr (ORCPT
+        with ESMTP id S1728595AbgBQQUr (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
         MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
         Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=K50znw7T2d7ZLRRT/oJYwAV1nhjr/eNbyg/t950G8S8=; b=ZrcpYoaBUU5wE68Qol76U7axVb
-        N8WaDAIkWm1DmDmhXq7Usu+VgGCpsxddGPgANHDWFlB62qmc1ZPb8Tv3QLId1hyQLTWPq1torn3r6
-        3y0wu98eCbqhXbw+wJEa1vHjXGlQWdWltz43hddoTVNYScd+ZYPhTa8pxs3tr5YpcRKwO9uo0hVK5
-        y0UjF8cpYWGelX6BjVOahV++qmYGnGVoj8toTWUERh9IADTtQ0XLBVx0zA3drvtN2hWxgtv/S5qsB
-        ddup/9hbNI/4twqR7WXGZGH3+su74iq8YgAppg1Cop7PL/ii+xJpM8FUcdtChtCJCP5wVcZZKIwKk
-        Mkd5HpGA==;
-Received: from ip-109-41-129-189.web.vodafone.de ([109.41.129.189] helo=bombadil.infradead.org)
+        bh=pENrwyQGCHPWk+g+UqB2N09eq+FHO8Q3ndgRkaIJy9U=; b=if92APgiWWGXM8hhz4IaBL4aHN
+        zHGIFA/aqE+RIP2rF699sP/uDX7uO/S2ef01vR2PIXxilAxU/Xr3gTZv80iXl6/aeSogc/U8r1KFk
+        lcWMxgAUNRxcdoq8gG21TpINMo8KfC3rRNS96j2ZPCjdodwiVqlRxmkN/ce40KKzmSMz6fgUSif4l
+        ma85VdpTDBGnf7sfeZhY6EL8OY00R2t5ZrrzVySva5nN+KQErHTFJBDT8tq799RlfKL7jq9n08rOI
+        5+a/mrA7fJAQDR3XLs6uox7K/n/F2e8FnQfjoPbO5NPNVclQBxupg2dyCX474rQGhulzw6vRLFrVM
+        FLAYx6kQ==;
+Received: from tmo-109-126.customers.d1-online.com ([80.187.109.126] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8Y-00042D-2n; Mon, 17 Feb 2020 16:20:46 +0000
+        id 1j3j8Y-00042H-9T; Mon, 17 Feb 2020 16:20:46 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8W-000fpg-8O; Mon, 17 Feb 2020 17:20:44 +0100
+        id 1j3j8W-000fq0-Ct; Mon, 17 Feb 2020 17:20:44 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
@@ -49,9 +49,9 @@ Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 14/24] docs: cpu-freq: convert index.txt to ReST
-Date:   Mon, 17 Feb 2020 17:20:32 +0100
-Message-Id: <7a89b0c82520d340d3c7f45bfd52ee9e6e23dbdf.1581956285.git.mchehab+huawei@kernel.org>
+Subject: [PATCH v2 18/24] docs: cpu-freq: convert cpufreq-nforce2.txt to ReST
+Date:   Mon, 17 Feb 2020 17:20:36 +0100
+Message-Id: <11b5000d757b77393170edafc02e2c96d9516a52.1581956285.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
 References: <cover.1581956285.git.mchehab+huawei@kernel.org>
@@ -62,135 +62,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-most of the stuff there can be re-used with ReST format,
-but we need to add an empty TOC and remove the existing
-entries, as the following conversion patches will be re-adding
-them, as they're converted.
+- Add a SPDX header;
+- Add a document title, based on the original contents of
+  cpu-freq/index.txt;
+- Add table markups;
+- Add notes markups;
+- Add it to cpu-freq/index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- Documentation/cpu-freq/index.rst | 35 ++++++++++++++++++++
- Documentation/cpu-freq/index.txt | 56 --------------------------------
- Documentation/index.rst          |  1 +
- 3 files changed, 36 insertions(+), 56 deletions(-)
- create mode 100644 Documentation/cpu-freq/index.rst
- delete mode 100644 Documentation/cpu-freq/index.txt
+ ...cpufreq-nforce2.txt => cpufreq-nforce2.rst} | 18 ++++++++++++++----
+ Documentation/cpu-freq/index.rst               |  1 +
+ 2 files changed, 15 insertions(+), 4 deletions(-)
+ rename Documentation/cpu-freq/{cpufreq-nforce2.txt => cpufreq-nforce2.rst} (55%)
 
-diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-new file mode 100644
-index 000000000000..1bff3dfddd23
---- /dev/null
-+++ b/Documentation/cpu-freq/index.rst
-@@ -0,0 +1,35 @@
+diff --git a/Documentation/cpu-freq/cpufreq-nforce2.txt b/Documentation/cpu-freq/cpufreq-nforce2.rst
+similarity index 55%
+rename from Documentation/cpu-freq/cpufreq-nforce2.txt
+rename to Documentation/cpu-freq/cpufreq-nforce2.rst
+index babce1315026..aa0ef768a92e 100644
+--- a/Documentation/cpu-freq/cpufreq-nforce2.txt
++++ b/Documentation/cpu-freq/cpufreq-nforce2.rst
+@@ -1,3 +1,8 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+==============================================================================
-+Linux CPUFreq - CPU frequency and voltage scaling code in the Linux(TM) kernel
-+==============================================================================
++=================================
++nVidia nForce2 Platform Specifics
++=================================
+ 
+ The cpufreq-nforce2 driver changes the FSB on nVidia nForce2 platforms.
+ 
+@@ -6,14 +11,19 @@ can be controlled independently from the PCI/AGP clock.
+ 
+ The module has two options:
+ 
+-	fid: 	 multiplier * 10 (for example 8.5 = 85)
+-	min_fsb: minimum FSB
++	=======  ======================================
++	fid 	 multiplier * 10 (for example 8.5 = 85)
++	min_fsb  minimum FSB
++	=======  ======================================
+ 
+ If not set, fid is calculated from the current CPU speed and the FSB.
+ min_fsb defaults to FSB at boot time - 50 MHz.
+ 
+-IMPORTANT: The available range is limited downwards!
+-           Also the minimum available FSB can differ, for systems 
++.. Important::
 +
-+Author: Dominik Brodowski  <linux@brodo.de>
++           The available range is limited downwards!
 +
-+   Clock scaling allows you to change the clock speed of the CPUs on the
-+   fly. This is a nice method to save battery power, because the lower
-+   the clock speed, the less power the CPU consumes.
-+
-+
-+.. toctree::
-+   :maxdepth: 1
-+
-+Mailing List
-+------------
-+There is a CPU frequency changing CVS commit and general list where
-+you can report bugs, problems or submit patches. To post a message,
-+send an email to linux-pm@vger.kernel.org.
-+
-+Links
-+-----
-+the FTP archives:
-+* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
-+
-+how to access the CVS repository:
-+* http://cvs.arm.linux.org.uk/
-+
-+the CPUFreq Mailing list:
-+* http://vger.kernel.org/vger-lists.html#linux-pm
-+
-+Clock and voltage scaling for the SA-1100:
-+* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
-deleted file mode 100644
-index c15e75386a05..000000000000
---- a/Documentation/cpu-freq/index.txt
-+++ /dev/null
-@@ -1,56 +0,0 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
--
--
--		         L i n u x    C P U F r e q
--
--
--
--
--		    Dominik Brodowski  <linux@brodo.de>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--
--Documents in this directory:
------------------------------
--
--amd-powernow.txt -	AMD powernow driver specific file.
--
--core.txt	-	General description of the CPUFreq core and
--			of CPUFreq notifiers.
--
--cpu-drivers.txt -	How to implement a new cpufreq processor driver.
--
--cpufreq-nforce2.txt -	nVidia nForce2 platform specific file.
--
--cpufreq-stats.txt -	General description of sysfs cpufreq stats.
--
--index.txt	-	File index, Mailing list and Links (this document)
--
--pcc-cpufreq.txt -	PCC cpufreq driver specific file.
--
--
--Mailing List
--------------
--There is a CPU frequency changing CVS commit and general list where
--you can report bugs, problems or submit patches. To post a message,
--send an email to linux-pm@vger.kernel.org.
--
--Links
-------
--the FTP archives:
--* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
--
--how to access the CVS repository:
--* http://cvs.arm.linux.org.uk/
--
--the CPUFreq Mailing list:
--* http://vger.kernel.org/vger-lists.html#linux-pm
--
--Clock and voltage scaling for the SA-1100:
--* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index e99d0bd2589d..4cf37ad1cd1d 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -99,6 +99,7 @@ needed).
-    accounting/index
-    block/index
-    cdrom/index
-+   cpu-freq/index
-    ide/index
-    fb/index
-    fpga/index
++           Also the minimum available FSB can differ, for systems
+            booting with 200 MHz, 150 should always work.
+ 
+ 
+diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
+index 1ab3fff53956..3fa69e6614f6 100644
+--- a/Documentation/cpu-freq/index.rst
++++ b/Documentation/cpu-freq/index.rst
+@@ -17,6 +17,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
+    amd-powernow
+    core
+    cpu-drivers
++   cpufreq-nforce2
+ 
+ Mailing List
+ ------------
 -- 
 2.24.1
 
