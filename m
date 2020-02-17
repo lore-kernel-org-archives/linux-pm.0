@@ -4,79 +4,150 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61AB3C34022
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:12:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77E78C34022
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:14:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3A833227BF
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:12:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5402D215A4
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:14:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728819AbgBQQMU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:12:20 -0500
-Received: from mail-sh.amlogic.com ([58.32.228.43]:22542 "EHLO
-        mail-sh.amlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728776AbgBQQMU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:12:20 -0500
-Received: from droid13.amlogic.com (116.236.93.172) by mail-sh.amlogic.com
- (10.18.11.5) with Microsoft SMTP Server id 15.1.1591.10; Tue, 18 Feb 2020
- 00:12:41 +0800
-From:   Jianxin Pan <jianxin.pan@amlogic.com>
-To:     Kevin Hilman <khilman@baylibre.com>,
-        <linux-amlogic@lists.infradead.org>
-CC:     Jianxin Pan <jianxin.pan@amlogic.com>,
-        Stephen Rothwell <sfr@canb.auug.org.au>,
-        Rob Herring <robh+dt@kernel.org>,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        Jerome Brunet <jbrunet@baylibre.com>,
-        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, Jian Hu <jian.hu@amlogic.com>,
-        Hanjie Lin <hanjie.lin@amlogic.com>,
-        Victor Wan <victor.wan@amlogic.com>,
-        Xingyu Chen <xingyu.chen@amlogic.com>
-Subject: [PATCH] soc: amlogic: fix compile failure with MESON_SECURE_PM_DOMAINS & !MESON_SM
-Date:   Tue, 18 Feb 2020 00:12:13 +0800
-Message-ID: <1581955933-69832-1-git-send-email-jianxin.pan@amlogic.com>
-X-Mailer: git-send-email 2.7.4
+        id S1728101AbgBQQOp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:14:45 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:49200 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726760AbgBQQOp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:14:45 -0500
+Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1j3j2g-0003Cp-N3; Mon, 17 Feb 2020 16:14:42 +0000
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     "David S. Miller" <davem@davemloft.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
+        linux-pm@vger.kernel.org,
+        Christian Brauner <christian.brauner@ubuntu.com>
+Subject: [PATCH net-next v2 02/10] sysfs: add sysfs_link_change_owner()
+Date:   Mon, 17 Feb 2020 17:14:28 +0100
+Message-Id: <20200217161436.1748598-3-christian.brauner@ubuntu.com>
+X-Mailer: git-send-email 2.25.0
+In-Reply-To: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
+References: <20200217161436.1748598-1-christian.brauner@ubuntu.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [116.236.93.172]
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When MESON_SECURE_PM_DOMAINS & !MESON_SM, there will be compile failure:
-.../meson-secure-pwrc.o: In function `meson_secure_pwrc_on':
-.../meson-secure-pwrc.c:76: undefined reference to `meson_sm_call'
+Add a helper to change the owner of a sysfs link.
+The ownership of a sysfs object is determined based on the ownership of
+the corresponding kobject, i.e. only if the ownership of a kobject is
+changed will this function change the ownership of the corresponding
+sysfs entry.
+This function will be used to correctly account for kobject ownership
+changes, e.g. when moving network devices between network namespaces.
 
-Fix this by adding depends on MESON_SM for MESON_SECURE_PM_DOMAINS.
-
-Fixes: b3dde5013e13 ("soc: amlogic: Add support for Secure power domains controller")
-
-Reported-by: kbuild test robot <lkp@intel.com>
-Reported-by: patchwork-bot+linux-amlogic<patchwork-bot+linux-amlogic@kernel.org>
-Reported-by: Stephen Rothwell<sfr@canb.auug.org.au>
-Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
- drivers/soc/amlogic/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+/* v2 */
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add comment how ownership of sysfs object is changed.
+---
+ fs/sysfs/file.c       | 46 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |  9 +++++++++
+ 2 files changed, 55 insertions(+)
 
-diff --git a/drivers/soc/amlogic/Kconfig b/drivers/soc/amlogic/Kconfig
-index 6cb06e7..321c5e2 100644
---- a/drivers/soc/amlogic/Kconfig
-+++ b/drivers/soc/amlogic/Kconfig
-@@ -50,7 +50,7 @@ config MESON_EE_PM_DOMAINS
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 8f2607de2456..8b20245f359c 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -574,6 +574,52 @@ static int internal_change_owner(struct kernfs_node *kn, struct kobject *kobj)
+ 	return kernfs_setattr(kn, &newattrs);
+ }
  
- config MESON_SECURE_PM_DOMAINS
- 	bool "Amlogic Meson Secure Power Domains driver"
--	depends on ARCH_MESON || COMPILE_TEST
-+	depends on (ARCH_MESON || COMPILE_TEST) && MESON_SM
- 	depends on PM && OF
- 	depends on HAVE_ARM_SMCCC
- 	default ARCH_MESON
++/**
++ *	sysfs_link_change_owner - change owner of a link.
++ *	@kobj:	object of the kernfs_node the symlink is located in.
++ *	@targ:	object of the kernfs_node the symlink points to.
++ *	@name:	name of the link.
++ *
++ * To change the ownership of a sysfs object, the caller must first change the
++ * uid/gid of the kobject and then call this function. Usually this will be
++ * taken care of by the relevant subsystem, e.g. moving a network device
++ * between network namespaces owned by different user namespaces will change
++ * the uid/gid of the kobject to the uid/gid of the root user in the user
++ * namespace. Calling this function afterwards will cause the sysfs object to
++ * reflect the new uid/gid.
++ */
++int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
++			    const char *name)
++{
++	struct kernfs_node *parent, *kn = NULL;
++	int error;
++
++	if (!kobj)
++		parent = sysfs_root_kn;
++	else
++		parent = kobj->sd;
++
++	if (!targ->state_in_sysfs)
++		return -EINVAL;
++
++	error = -ENOENT;
++	kn = kernfs_find_and_get_ns(parent, name, targ->sd->ns);
++	if (!kn)
++		goto out;
++
++	error = -EINVAL;
++	if (kernfs_type(kn) != KERNFS_LINK)
++		goto out;
++	if (kn->symlink.target_kn->priv != targ)
++		goto out;
++
++	error = internal_change_owner(kn, targ);
++
++out:
++	kernfs_put(kn);
++	return error;
++}
++
+ /**
+  *	sysfs_file_change_owner_by_name - change owner of a file.
+  *	@kobj:	object.
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 4b3c3b76ff80..238f3d7b1fa0 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -312,6 +312,8 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
+ 
+ int sysfs_file_change_owner(struct kobject *kobj);
+ int sysfs_file_change_owner_by_name(struct kobject *kobj, const char *name);
++int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
++			    const char *name);
+ 
+ #else /* CONFIG_SYSFS */
+ 
+@@ -536,6 +538,13 @@ static inline int sysfs_file_change_owner_by_name(struct kobject *kobj,
+ 	return 0;
+ }
+ 
++static inline int sysfs_link_change_owner(struct kobject *kobj,
++					  struct kobject *targ,
++					  const char *name)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_SYSFS */
+ 
+ static inline int __must_check sysfs_create_file(struct kobject *kobj,
 -- 
-2.7.4
+2.25.0
 
