@@ -4,128 +4,163 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D23E7C34031
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03594C34025
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A70032465D
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB4132465D
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Feb 2020 16:20:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1581956451;
-	bh=DhvH2HDDBA6dOWvJaW6zuGlf7URyPdl7Iyg01bc1q+A=;
+	s=default; t=1581956452;
+	bh=GXfnyk+5mxcLxh7DS10kpV2zW4ajtTvIlfSvgF1m6HE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=B0f51FHMbtb76aCmIa1k+OHxuzyl8JTrnXJ6bKyon2tS1QxFtqOJ3UadUVhDN0PN2
-	 dbbvtDmv0A7OXODuNjTNfjq2aU1VvEgYostrApb74NP+j0rmlBHd9fJVHJOV9py6Jd
-	 tXgRbeOIIslhIiTeXyEjngACE+5VydpsvX6y/PZo=
+	b=ZUrc/zOfKSEWUnFzTMl0FAm7RHbpOlmU5Lcu3FS5skr8W5u6zJrOygJSIz0XA24Zt
+	 IXGyj7XmaesV6wHgObRRBZjhVeQUlSAl7XU05DUBhCd6Zej3Y12LJoLSUd+3fVHMW5
+	 b3ZsIiTrGkVq3JWEK3Yh06BWUVdIhV6VFv4WbyOo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728764AbgBQQUs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Feb 2020 11:20:48 -0500
-Received: from bombadil.infradead.org ([198.137.202.133]:54976 "EHLO
+        id S1728692AbgBQQUr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Feb 2020 11:20:47 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:54966 "EHLO
         bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728543AbgBQQUr (ORCPT
+        with ESMTP id S1728476AbgBQQUr (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Feb 2020 11:20:47 -0500
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=bombadil.20170209; h=Sender:Content-Transfer-Encoding:
-        MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        Reply-To:Content-Type:Content-ID:Content-Description;
-        bh=WOmy0+QMckhdBzIIN5N8aTIEyoanTMoTBxTpT7pGGt4=; b=huK7I9hhDe7HhUFZwPp1c1UBu2
-        D0Lm6ATDem2jUeAtxLA0b89zENifzaqGIplTVQQQPIRMCcT+K2BBQJ4Y7lQNOXQf4NNlX7FKWslRY
-        +3VtsowHd/VXi0l+unvLai/D8/m2lyx1PzfKn4uKXwVoCy/VsUl50MUASDDYOPeovvKhp49F90a3O
-        KoPMhg1/PksC8BqRov01NEVjjUjJHEADSS4l5glw/TpqUTtaTXmnG+WKu+OK7kGdwtqB8GQ0v2xPi
-        QuNNOcRb0PzZMItizAGQNxR6oZEzvqfxO/Ct2lTcR9nkd+pIDwatkn4p0S0E5y6gxRicfswo3kmDV
-        5/YG6XjQ==;
+        Content-Type:MIME-Version:References:In-Reply-To:Message-Id:Date:Subject:Cc:
+        To:From:Reply-To:Content-ID:Content-Description;
+        bh=bJnoUKgVIb6mtplglvS+byAU4SeZA8CY+LwJLXnSv9Q=; b=V8Gn2+nNEW0XD7O/RskUVtUmAc
+        5wOo0wKXc5QuWC8OTHgzcElE3z3DtOzZfXmqnanL8KD+0Y2q1YJrxMeGAZFGYEYlgnHPry06/IZyq
+        h0DQsINTAXRbx8AFw0stk3d06FMhkDQ/VnaZUwpO/XeCr5r5dVlbHpBvABw//guL5EL3+Ipwh2Hes
+        Wf7Cw0C5BzVCxyOkQGkGxctdRDfFPcuEZqv5VqMw9XR5gBt46Y3xI+mT4CSAgTAOoGzO+ahrEJqtT
+        M8lUiHFr5TM3POASvq+jzypM0Z4pOv+Oj6tSnE6s6j7EKxlMAbfHJADB99ygREBwLIzUwimFrmJ2d
+        SKFfodKg==;
 Received: from ip-109-41-129-189.web.vodafone.de ([109.41.129.189] helo=bombadil.infradead.org)
         by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1j3j8Y-00042F-8I; Mon, 17 Feb 2020 16:20:46 +0000
+        id 1j3j8X-000420-QT; Mon, 17 Feb 2020 16:20:46 +0000
 Received: from mchehab by bombadil.infradead.org with local (Exim 4.92.3)
         (envelope-from <mchehab@bombadil.infradead.org>)
-        id 1j3j8W-000fpl-9P; Mon, 17 Feb 2020 17:20:44 +0100
+        id 1j3j8V-000fod-QO; Mon, 17 Feb 2020 17:20:43 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 15/24] docs: cpu-freq: convert amd-powernow.txt to ReST
-Date:   Mon, 17 Feb 2020 17:20:33 +0100
-Message-Id: <63e8b6ba6110901079916cbbfb804ca100eab46d.1581956285.git.mchehab+huawei@kernel.org>
+        Javi Merino <javi.merino@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH v2 01/24] docs: thermal: convert cpu-idle-cooling.rst to ReST
+Date:   Mon, 17 Feb 2020 17:20:19 +0100
+Message-Id: <ff05e3ea32345c4c2d19c9a7c6191e31db685430.1581956285.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1581956285.git.mchehab+huawei@kernel.org>
 References: <cover.1581956285.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-- Add a SPDX header;
-- Add a document title, based on the original contents of
-  cpu-freq/index.txt;
-- some whitespace fixes and new line breaks;
-- Add it to cpu-freq/index.rst.
+Despite being named with .rst extension, this file doesn't
+match the ReST standard. It actually causes a crash at
+Sphinx:
+
+	Sphinx parallel build error:
+	docutils.utils.SystemMessage: /devel/v4l/docs/Documentation/driver-api/thermal/cpu-idle-cooling.rst:69: (SEVERE/4) Unexpected section title.
+
+Add needed markups for it to be properly parsed.
+
+While here, add it to the thermal index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- .../cpu-freq/{amd-powernow.txt => amd-powernow.rst}  | 12 ++++++++++--
- Documentation/cpu-freq/index.rst                     |  2 ++
- 2 files changed, 12 insertions(+), 2 deletions(-)
- rename Documentation/cpu-freq/{amd-powernow.txt => amd-powernow.rst} (89%)
+ .../driver-api/thermal/cpu-idle-cooling.rst    | 18 ++++++++++++------
+ Documentation/driver-api/thermal/index.rst     |  1 +
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/cpu-freq/amd-powernow.txt b/Documentation/cpu-freq/amd-powernow.rst
-similarity index 89%
-rename from Documentation/cpu-freq/amd-powernow.txt
-rename to Documentation/cpu-freq/amd-powernow.rst
-index 254da155fa47..4a53612b62a2 100644
---- a/Documentation/cpu-freq/amd-powernow.txt
-+++ b/Documentation/cpu-freq/amd-powernow.rst
+diff --git a/Documentation/driver-api/thermal/cpu-idle-cooling.rst b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+index 9f0016ee4cfb..357d2f023605 100644
+--- a/Documentation/driver-api/thermal/cpu-idle-cooling.rst
++++ b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
 @@ -1,3 +1,9 @@
 +.. SPDX-License-Identifier: GPL-2.0
 +
-+=============================
-+AMD PowerNow Driver Specifics
-+=============================
++================
++CPU Idle Cooling
++================
 +
  
- PowerNow! and Cool'n'Quiet are AMD names for frequency
- management capabilities in AMD processors. As the hardware
-@@ -23,16 +29,18 @@ not supply these tables.
- 7th Generation: powernow-k7: Athlon, Duron, Geode.
+ Situation:
+ ----------
+@@ -45,7 +51,7 @@ idle state target residency, we lead to dropping the static and the
+ dynamic leakage for this period (modulo the energy needed to enter
+ this state). So the sustainable power with idle cycles has a linear
+ relation with the OPP’s sustainable power and can be computed with a
+-coefficient similar to:
++coefficient similar to::
  
- 8th Generation: powernow-k8: Athlon, Athlon 64, Opteron, Sempron.
-+
- Documentation on this functionality in 8th generation processors
- is available in the "BIOS and Kernel Developer's Guide", publication
--26094, in chapter 9, available for download from www.amd.com. 
-+26094, in chapter 9, available for download from www.amd.com.
+ 	    Power(IdleCycle) = Coef x Power(OPP)
  
- BIOS supplied data, for powernow-k7 and for powernow-k8, may be
- from either the PSB table or from ACPI objects. The ACPI support
- is only available if the kernel config sets CONFIG_ACPI_PROCESSOR.
- The powernow-k8 driver will attempt to use ACPI if so configured,
- and fall back to PST if that fails.
-+
- The powernow-k7 driver will try to use the PSB support first, and
- fall back to ACPI if the PSB support fails. A module parameter,
--acpi_force, is provided to force ACPI support to be used instead 
-+acpi_force, is provided to force ACPI support to be used instead
- of PSB support.
-diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-index 1bff3dfddd23..6f7c2a024447 100644
---- a/Documentation/cpu-freq/index.rst
-+++ b/Documentation/cpu-freq/index.rst
-@@ -14,6 +14,8 @@ Author: Dominik Brodowski  <linux@brodo.de>
- .. toctree::
+@@ -136,7 +142,7 @@ Power considerations
+ --------------------
+ 
+ When we reach the thermal trip point, we have to sustain a specified
+-power for a specific temperature but at this time we consume:
++power for a specific temperature but at this time we consume::
+ 
+  Power = Capacitance x Voltage^2 x Frequency x Utilisation
+ 
+@@ -145,7 +151,7 @@ wrong in the system setup). The ‘Capacitance’ and ‘Utilisation’ are a
+ fixed value, ‘Voltage’ and the ‘Frequency’ are fixed artificially
+ because we don’t want to change the OPP. We can group the
+ ‘Capacitance’ and the ‘Utilisation’ into a single term which is the
+-‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have:
++‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have::
+ 
+  Pdyn = Cdyn x Voltage^2 x Frequency
+ 
+@@ -154,7 +160,7 @@ in order to target the sustainable power defined in the device
+ tree. So with the idle injection mechanism, we want an average power
+ (Ptarget) resulting in an amount of time running at full power on a
+ specific OPP and idle another amount of time. That could be put in a
+-equation:
++equation::
+ 
+  P(opp)target = ((Trunning x (P(opp)running) + (Tidle x P(opp)idle)) /
+ 			(Trunning + Tidle)
+@@ -165,7 +171,7 @@ equation:
+ 
+ At this point if we know the running period for the CPU, that gives us
+ the idle injection we need. Alternatively if we have the idle
+-injection duration, we can compute the running duration with:
++injection duration, we can compute the running duration with::
+ 
+  Trunning = Tidle / ((P(opp)running / P(opp)target) - 1)
+ 
+@@ -188,7 +194,7 @@ However, in this demonstration we ignore three aspects:
+    target residency, otherwise we end up consuming more energy and
+    potentially invert the mitigation effect
+ 
+-So the final equation is:
++So the final equation is::
+ 
+  Trunning = (Tidle - Twakeup ) x
+ 		(((P(opp)dyn + P(opp)static ) - P(opp)target) / P(opp)target )
+diff --git a/Documentation/driver-api/thermal/index.rst b/Documentation/driver-api/thermal/index.rst
+index 5ba61d19c6ae..4cb0b9b6bfb8 100644
+--- a/Documentation/driver-api/thermal/index.rst
++++ b/Documentation/driver-api/thermal/index.rst
+@@ -8,6 +8,7 @@ Thermal
     :maxdepth: 1
  
-+   amd-powernow
-+
- Mailing List
- ------------
- There is a CPU frequency changing CVS commit and general list where
+    cpu-cooling-api
++   cpu-idle-cooling
+    sysfs-api
+    power_allocator
+ 
 -- 
 2.24.1
 
