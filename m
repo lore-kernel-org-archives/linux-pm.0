@@ -2,52 +2,52 @@ Return-Path: <SRS0=JpcB=4G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D4C8C34026
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 211B4C3404B
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 58E0E2467C
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E416C2176D
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582046011;
-	bh=p5RYf9TBAgA92fDTAf+vaHyC7OQz7krvXxB4AQnSM+0=;
+	s=default; t=1582046014;
+	bh=FnKR5zpBy7wE5NA3ChCpJ+1zmGg+KAGqKyEyd/Piv6U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=hlSJaqJ7UWoxhJDQotrGJqSphJZww8KunXyLLKoE/YXRjdMuNQY9XKtpz/oZ5BwGZ
-	 dF9zeDLm6TSH7/o2TUGNgYoRYDpztMqwFlyY7r5G2Me5FcnrSGQdJKshdosIUeO6fw
-	 wfgUHk0l8MpXdcnBlQHR1ekXSlWbBF+MhacjeaIc=
+	b=SRRKndWM7HIjvjuqAeyXvKVf5mwRPkIDBVzxP6LdOl2Q8cjKGvWSajU4CmzmmRMYL
+	 +n0mEXC83YtrcYwxGZ10XLpMHCBbpuicyMi1lTL5w+r4PItW+BNjnaadMc1DU1rnER
+	 c5R2Z7IYJy7exX7L6uiVpFpt92vKKtzNMhBxqWWI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727086AbgBRRNa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 12:13:30 -0500
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:38483 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726963AbgBRRN3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:29 -0500
-Received: by mail-ot1-f65.google.com with SMTP id z9so20243638oth.5;
-        Tue, 18 Feb 2020 09:13:27 -0800 (PST)
+        id S1727285AbgBRRNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 12:13:32 -0500
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:41625 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727158AbgBRRNb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:31 -0500
+Received: by mail-ot1-f66.google.com with SMTP id r27so20205893otc.8;
+        Tue, 18 Feb 2020 09:13:30 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=VtNQPtbipsuMwKFOkITQFTxijny53xSg+1st3kaRJ70=;
-        b=ld111lcikpM2/46lkAWhNuMOypwNEWRO9oepV/zS9j10iMou6sLI7VoTpyo2vZMP4a
-         wXXET0/ajGJWumK+bB+65ot3S3QMu9Sb/szRCmcV0gpdzVz9/mkN1umV+34hVxEcBMNm
-         cEWlleBBNyvhqPOftRY2AHhPhhSFwV37pDVsfkwKhjmPzDS77EET61U0hnuwUilY0e/X
-         fKV7FB900uAGtm1bx1pAfQfCK7A0U7m+f4Rtc+hryJonT2rPxmSUTEhlBxqyJY6JI+39
-         2lfwO1bfdl1Q4c8NPEKN/Wp8sOZevQO4USZKOAmBqkQp2D8wQNELx/lkVU+FSdzjjMc/
-         17ZA==
-X-Gm-Message-State: APjAAAWoJQDy6MjiyVhjdbrYWnPt6WrylxhRx92nnYdWDniTrNTdPGU2
-        FDDEqZkajI0ft1S+Y+zYyg==
-X-Google-Smtp-Source: APXvYqxIgJEiGcrP9a/AzGpB/TQJQKJ5OUIjHj/qcJRzDQIshhUxZWM3aByoxTrV9DaB6xNB+e2CaA==
-X-Received: by 2002:a05:6830:2111:: with SMTP id i17mr15604572otc.24.1582046007043;
-        Tue, 18 Feb 2020 09:13:27 -0800 (PST)
+        bh=JusgAl5N6MihYqm5uluXtGjWepTJgZcRc57DbXhWS1c=;
+        b=Ht/DRUApfdDEJwkI1CWe6zG+5n/5CBDzitD9S6yyarok+Kp9wAB63tuZrGMMLIH/N9
+         wXAmamgg+ZjM2qhR6wf+pFSm5K3Xki266YKNrmeYG5oLxNR3sqgmTePHN78ZmxZkkNf1
+         8ngs5kPjsvEzzmsYq5DWckIUjYReme5RxQYZ5eNwpIkJDlL5Xe4ZqeF9lRAVvOSyfaDT
+         sX3Ze8goOk8ZtOs/ifo3lUN/FzP9OnrOv9l9Xs+shxHSxuypi4+5V7tSqxyGgqreaqHb
+         gIZGPfzd97pX3LtbUTHTdemQWCQG9SAe9nuwu7N6XyYOXUNAJciheIVU0aejiRHJ9lLP
+         ccdQ==
+X-Gm-Message-State: APjAAAVCh8Q2BvG+RaklQs0qBtDyP+RC/J+LULd4j245+6Zc5NyrRzVo
+        JO0IFO8czX3c3VJiKIBK0Q==
+X-Google-Smtp-Source: APXvYqxtfwdO5ZrwB57qMGPOEsnz4rhk/PhIK9UqQ1I24Sd3few+yqThLV3He9kZDSP4GnJqg66xxQ==
+X-Received: by 2002:a05:6830:1042:: with SMTP id b2mr16287928otp.306.1582046010353;
+        Tue, 18 Feb 2020 09:13:30 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.25
+        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2020 09:13:26 -0800 (PST)
+        Tue, 18 Feb 2020 09:13:29 -0800 (PST)
 From:   Rob Herring <robh@kernel.org>
 To:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         soc@kernel.org, Andre Przywara <andre.przywara@arm.com>,
@@ -74,9 +74,9 @@ Cc:     Alex Williamson <alex.williamson@redhat.com>,
         Tony Luck <tony.luck@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Will Deacon <will@kernel.org>
-Subject: [RFC PATCH 02/11] ata: Remove Calxeda AHCI driver
-Date:   Tue, 18 Feb 2020 11:13:12 -0600
-Message-Id: <20200218171321.30990-3-robh@kernel.org>
+Subject: [RFC PATCH 04/11] cpufreq: Remove Calxeda driver
+Date:   Tue, 18 Feb 2020 11:13:14 -0600
+Message-Id: <20200218171321.30990-5-robh@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200218171321.30990-1-robh@kernel.org>
 References: <20200218171321.30990-1-robh@kernel.org>
@@ -87,690 +87,187 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cc: Jens Axboe <axboe@kernel.dk>
-Cc: linux-ide@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Do not apply yet.
 
- drivers/ata/Kconfig         |   9 -
- drivers/ata/Makefile        |   1 -
- drivers/ata/sata_highbank.c | 635 ------------------------------------
- 3 files changed, 645 deletions(-)
- delete mode 100644 drivers/ata/sata_highbank.c
+ drivers/cpufreq/Kconfig.arm          |  10 ---
+ drivers/cpufreq/Makefile             |   3 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c |   3 -
+ drivers/cpufreq/highbank-cpufreq.c   | 106 ---------------------------
+ 4 files changed, 1 insertion(+), 121 deletions(-)
+ delete mode 100644 drivers/cpufreq/highbank-cpufreq.c
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index a6beb2c5a692..687ddd9f4188 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -395,15 +395,6 @@ config SATA_DWC_VDEBUG
- 	help
- 	  This option enables the taskfile dumping and NCQ debugging.
+diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
+index 3858d86cf409..27fdd5ac21da 100644
+--- a/drivers/cpufreq/Kconfig.arm
++++ b/drivers/cpufreq/Kconfig.arm
+@@ -79,16 +79,6 @@ config ARM_BRCMSTB_AVS_CPUFREQ
 
--config SATA_HIGHBANK
--	tristate "Calxeda Highbank SATA support"
--	depends on ARCH_HIGHBANK || COMPILE_TEST
+ 	  Say Y, if you have a Broadcom SoC with AVS support for DFS or DVFS.
+
+-config ARM_HIGHBANK_CPUFREQ
+-	tristate "Calxeda Highbank-based"
+-	depends on ARCH_HIGHBANK && CPUFREQ_DT && REGULATOR
+-	default m
 -	help
--	  This option enables support for the Calxeda Highbank SoC's
--	  onboard SATA.
+-	  This adds the CPUFreq driver for Calxeda Highbank SoC
+-	  based boards.
 -
--	  If unsure, say N.
+-	  If in doubt, say N.
 -
- config SATA_MV
- 	tristate "Marvell SATA support"
- 	depends on PCI || ARCH_DOVE || ARCH_MV78XX0 || \
-diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
-index d8cc2e04a6c7..08f26d674ed7 100644
---- a/drivers/ata/Makefile
-+++ b/drivers/ata/Makefile
-@@ -12,7 +12,6 @@ obj-$(CONFIG_SATA_GEMINI)	+= sata_gemini.o
- obj-$(CONFIG_SATA_INIC162X)	+= sata_inic162x.o
- obj-$(CONFIG_SATA_SIL24)	+= sata_sil24.o
- obj-$(CONFIG_SATA_DWC)		+= sata_dwc_460ex.o
--obj-$(CONFIG_SATA_HIGHBANK)	+= sata_highbank.o libahci.o
- obj-$(CONFIG_AHCI_BRCM)		+= ahci_brcm.o libahci.o libahci_platform.o
- obj-$(CONFIG_AHCI_CEVA)		+= ahci_ceva.o libahci.o libahci_platform.o
- obj-$(CONFIG_AHCI_DA850)	+= ahci_da850.o libahci.o libahci_platform.o
-diff --git a/drivers/ata/sata_highbank.c b/drivers/ata/sata_highbank.c
+ config ARM_IMX6Q_CPUFREQ
+ 	tristate "Freescale i.MX6 cpufreq support"
+ 	depends on ARCH_MXC
+diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+index f6670c4abbb0..47d773b9312a 100644
+--- a/drivers/cpufreq/Makefile
++++ b/drivers/cpufreq/Makefile
+@@ -5,7 +5,7 @@ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
+ # CPUfreq stats
+ obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
+
+-# CPUfreq governors
++# CPUfreq governors
+ obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
+ obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
+ obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= cpufreq_userspace.o
+@@ -52,7 +52,6 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
+ obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
+ obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
+ obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
+-obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
+ obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
+ obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
+ obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index f2ae9cd455c1..274294f83e7c 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -102,9 +102,6 @@ static const struct of_device_id whitelist[] __initconst = {
+ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "allwinner,sun50i-h6", },
+
+-	{ .compatible = "calxeda,highbank", },
+-	{ .compatible = "calxeda,ecx-2000", },
+-
+ 	{ .compatible = "fsl,imx7d", },
+ 	{ .compatible = "fsl,imx8mq", },
+ 	{ .compatible = "fsl,imx8mm", },
+diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
 deleted file mode 100644
-index ad3893c62572..000000000000
---- a/drivers/ata/sata_highbank.c
+index 5a7f6dafcddb..000000000000
+--- a/drivers/cpufreq/highbank-cpufreq.c
 +++ /dev/null
-@@ -1,635 +0,0 @@
+@@ -1,106 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Calxeda Highbank AHCI SATA platform driver
-- * Copyright 2012 Calxeda, Inc.
+- * Copyright (C) 2012 Calxeda, Inc.
 - *
-- * based on the AHCI SATA platform driver by Jeff Garzik and Anton Vorontsov
+- * This driver provides the clk notifier callbacks that are used when
+- * the cpufreq-dt driver changes to frequency to alert the highbank
+- * EnergyCore Management Engine (ECME) about the need to change
+- * voltage. The ECME interfaces with the actual voltage regulators.
 - */
+-
+-#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+-
 -#include <linux/kernel.h>
--#include <linux/gfp.h>
 -#include <linux/module.h>
--#include <linux/types.h>
+-#include <linux/clk.h>
+-#include <linux/cpu.h>
 -#include <linux/err.h>
--#include <linux/io.h>
--#include <linux/spinlock.h>
--#include <linux/device.h>
--#include <linux/of_device.h>
--#include <linux/of_address.h>
+-#include <linux/of.h>
+-#include <linux/pl320-ipc.h>
 -#include <linux/platform_device.h>
--#include <linux/libata.h>
--#include <linux/interrupt.h>
--#include <linux/delay.h>
--#include <linux/export.h>
--#include <linux/gpio/consumer.h>
 -
--#include "ahci.h"
+-#define HB_CPUFREQ_CHANGE_NOTE	0x80000001
+-#define HB_CPUFREQ_IPC_LEN	7
+-#define HB_CPUFREQ_VOLT_RETRIES	15
 -
--#define CPHY_MAP(dev, addr) ((((dev) & 0x1f) << 7) | (((addr) >> 9) & 0x7f))
--#define CPHY_ADDR(addr) (((addr) & 0x1ff) << 2)
--#define SERDES_CR_CTL			0x80a0
--#define SERDES_CR_ADDR			0x80a1
--#define SERDES_CR_DATA			0x80a2
--#define CR_BUSY				0x0001
--#define CR_START			0x0001
--#define CR_WR_RDN			0x0002
--#define CPHY_TX_INPUT_STS		0x2001
--#define CPHY_RX_INPUT_STS		0x2002
--#define CPHY_SATA_TX_OVERRIDE		0x8000
--#define CPHY_SATA_RX_OVERRIDE	 	0x4000
--#define CPHY_TX_OVERRIDE		0x2004
--#define CPHY_RX_OVERRIDE		0x2005
--#define SPHY_LANE			0x100
--#define SPHY_HALF_RATE			0x0001
--#define CPHY_SATA_DPLL_MODE		0x0700
--#define CPHY_SATA_DPLL_SHIFT		8
--#define CPHY_SATA_DPLL_RESET		(1 << 11)
--#define CPHY_SATA_TX_ATTEN		0x1c00
--#define CPHY_SATA_TX_ATTEN_SHIFT	10
--#define CPHY_PHY_COUNT			6
--#define CPHY_LANE_COUNT			4
--#define CPHY_PORT_COUNT			(CPHY_PHY_COUNT * CPHY_LANE_COUNT)
+-static int hb_voltage_change(unsigned int freq)
+-{
+-	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
 -
--static DEFINE_SPINLOCK(cphy_lock);
--/* Each of the 6 phys can have up to 4 sata ports attached to i. Map 0-based
-- * sata ports to their phys and then to their lanes within the phys
-- */
--struct phy_lane_info {
--	void __iomem *phy_base;
--	u8 lane_mapping;
--	u8 phy_devs;
--	u8 tx_atten;
--};
--static struct phy_lane_info port_data[CPHY_PORT_COUNT];
+-	return pl320_ipc_transmit(msg);
+-}
 -
--static DEFINE_SPINLOCK(sgpio_lock);
--#define SCLOCK				0
--#define SLOAD				1
--#define SDATA				2
--#define SGPIO_PINS			3
--#define SGPIO_PORTS			8
+-static int hb_cpufreq_clk_notify(struct notifier_block *nb,
+-				unsigned long action, void *hclk)
+-{
+-	struct clk_notifier_data *clk_data = hclk;
+-	int i = 0;
 -
--struct ecx_plat_data {
--	u32		n_ports;
--	/* number of extra clocks that the SGPIO PIC controller expects */
--	u32		pre_clocks;
--	u32		post_clocks;
--	struct gpio_desc *sgpio_gpiod[SGPIO_PINS];
--	u32		sgpio_pattern;
--	u32		port_to_sgpio[SGPIO_PORTS];
+-	if (action == PRE_RATE_CHANGE) {
+-		if (clk_data->new_rate > clk_data->old_rate)
+-			while (hb_voltage_change(clk_data->new_rate))
+-				if (i++ > HB_CPUFREQ_VOLT_RETRIES)
+-					return NOTIFY_BAD;
+-	} else if (action == POST_RATE_CHANGE) {
+-		if (clk_data->new_rate < clk_data->old_rate)
+-			while (hb_voltage_change(clk_data->new_rate))
+-				if (i++ > HB_CPUFREQ_VOLT_RETRIES)
+-					return NOTIFY_BAD;
+-	}
+-
+-	return NOTIFY_DONE;
+-}
+-
+-static struct notifier_block hb_cpufreq_clk_nb = {
+-	.notifier_call = hb_cpufreq_clk_notify,
 -};
 -
--#define SGPIO_SIGNALS			3
--#define ECX_ACTIVITY_BITS		0x300000
--#define ECX_ACTIVITY_SHIFT		0
--#define ECX_LOCATE_BITS			0x80000
--#define ECX_LOCATE_SHIFT		1
--#define ECX_FAULT_BITS			0x400000
--#define ECX_FAULT_SHIFT			2
--static inline int sgpio_bit_shift(struct ecx_plat_data *pdata, u32 port,
--				u32 shift)
+-static int hb_cpufreq_driver_init(void)
 -{
--	return 1 << (3 * pdata->port_to_sgpio[port] + shift);
--}
+-	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
+-	struct device *cpu_dev;
+-	struct clk *cpu_clk;
+-	struct device_node *np;
+-	int ret;
 -
--static void ecx_parse_sgpio(struct ecx_plat_data *pdata, u32 port, u32 state)
--{
--	if (state & ECX_ACTIVITY_BITS)
--		pdata->sgpio_pattern |= sgpio_bit_shift(pdata, port,
--						ECX_ACTIVITY_SHIFT);
--	else
--		pdata->sgpio_pattern &= ~sgpio_bit_shift(pdata, port,
--						ECX_ACTIVITY_SHIFT);
--	if (state & ECX_LOCATE_BITS)
--		pdata->sgpio_pattern |= sgpio_bit_shift(pdata, port,
--						ECX_LOCATE_SHIFT);
--	else
--		pdata->sgpio_pattern &= ~sgpio_bit_shift(pdata, port,
--						ECX_LOCATE_SHIFT);
--	if (state & ECX_FAULT_BITS)
--		pdata->sgpio_pattern |= sgpio_bit_shift(pdata, port,
--						ECX_FAULT_SHIFT);
--	else
--		pdata->sgpio_pattern &= ~sgpio_bit_shift(pdata, port,
--						ECX_FAULT_SHIFT);
--}
+-	if ((!of_machine_is_compatible("calxeda,highbank")) &&
+-		(!of_machine_is_compatible("calxeda,ecx-2000")))
+-		return -ENODEV;
 -
--/*
-- * Tell the LED controller that the signal has changed by raising the clock
-- * line for 50 uS and then lowering it for 50 uS.
-- */
--static void ecx_led_cycle_clock(struct ecx_plat_data *pdata)
--{
--	gpiod_set_value(pdata->sgpio_gpiod[SCLOCK], 1);
--	udelay(50);
--	gpiod_set_value(pdata->sgpio_gpiod[SCLOCK], 0);
--	udelay(50);
--}
--
--static ssize_t ecx_transmit_led_message(struct ata_port *ap, u32 state,
--					ssize_t size)
--{
--	struct ahci_host_priv *hpriv =  ap->host->private_data;
--	struct ecx_plat_data *pdata = hpriv->plat_data;
--	struct ahci_port_priv *pp = ap->private_data;
--	unsigned long flags;
--	int pmp, i;
--	struct ahci_em_priv *emp;
--	u32 sgpio_out;
--
--	/* get the slot number from the message */
--	pmp = (state & EM_MSG_LED_PMP_SLOT) >> 8;
--	if (pmp < EM_MAX_SLOTS)
--		emp = &pp->em_priv[pmp];
--	else
--		return -EINVAL;
--
--	if (!(hpriv->em_msg_type & EM_MSG_TYPE_LED))
--		return size;
--
--	spin_lock_irqsave(&sgpio_lock, flags);
--	ecx_parse_sgpio(pdata, ap->port_no, state);
--	sgpio_out = pdata->sgpio_pattern;
--	for (i = 0; i < pdata->pre_clocks; i++)
--		ecx_led_cycle_clock(pdata);
--
--	gpiod_set_value(pdata->sgpio_gpiod[SLOAD], 1);
--	ecx_led_cycle_clock(pdata);
--	gpiod_set_value(pdata->sgpio_gpiod[SLOAD], 0);
--	/*
--	 * bit-bang out the SGPIO pattern, by consuming a bit and then
--	 * clocking it out.
--	 */
--	for (i = 0; i < (SGPIO_SIGNALS * pdata->n_ports); i++) {
--		gpiod_set_value(pdata->sgpio_gpiod[SDATA], sgpio_out & 1);
--		sgpio_out >>= 1;
--		ecx_led_cycle_clock(pdata);
--	}
--	for (i = 0; i < pdata->post_clocks; i++)
--		ecx_led_cycle_clock(pdata);
--
--	/* save off new led state for port/slot */
--	emp->led_state = state;
--
--	spin_unlock_irqrestore(&sgpio_lock, flags);
--	return size;
--}
--
--static void highbank_set_em_messages(struct device *dev,
--					struct ahci_host_priv *hpriv,
--					struct ata_port_info *pi)
--{
--	struct device_node *np = dev->of_node;
--	struct ecx_plat_data *pdata = hpriv->plat_data;
--	int i;
--
--	for (i = 0; i < SGPIO_PINS; i++) {
--		struct gpio_desc *gpiod;
--
--		gpiod = devm_gpiod_get_index(dev, "calxeda,sgpio", i,
--					     GPIOD_OUT_HIGH);
--		if (IS_ERR(gpiod)) {
--			dev_err(dev, "failed to get GPIO %d\n", i);
--			continue;
--		}
--		gpiod_set_consumer_name(gpiod, "CX SGPIO");
--
--		pdata->sgpio_gpiod[i] = gpiod;
--	}
--	of_property_read_u32_array(np, "calxeda,led-order",
--						pdata->port_to_sgpio,
--						pdata->n_ports);
--	if (of_property_read_u32(np, "calxeda,pre-clocks", &pdata->pre_clocks))
--		pdata->pre_clocks = 0;
--	if (of_property_read_u32(np, "calxeda,post-clocks",
--				&pdata->post_clocks))
--		pdata->post_clocks = 0;
--
--	/* store em_loc */
--	hpriv->em_loc = 0;
--	hpriv->em_buf_sz = 4;
--	hpriv->em_msg_type = EM_MSG_TYPE_LED;
--	pi->flags |= ATA_FLAG_EM | ATA_FLAG_SW_ACTIVITY;
--}
--
--static u32 __combo_phy_reg_read(u8 sata_port, u32 addr)
--{
--	u32 data;
--	u8 dev = port_data[sata_port].phy_devs;
--	spin_lock(&cphy_lock);
--	writel(CPHY_MAP(dev, addr), port_data[sata_port].phy_base + 0x800);
--	data = readl(port_data[sata_port].phy_base + CPHY_ADDR(addr));
--	spin_unlock(&cphy_lock);
--	return data;
--}
--
--static void __combo_phy_reg_write(u8 sata_port, u32 addr, u32 data)
--{
--	u8 dev = port_data[sata_port].phy_devs;
--	spin_lock(&cphy_lock);
--	writel(CPHY_MAP(dev, addr), port_data[sata_port].phy_base + 0x800);
--	writel(data, port_data[sata_port].phy_base + CPHY_ADDR(addr));
--	spin_unlock(&cphy_lock);
--}
--
--static void combo_phy_wait_for_ready(u8 sata_port)
--{
--	while (__combo_phy_reg_read(sata_port, SERDES_CR_CTL) & CR_BUSY)
--		udelay(5);
--}
--
--static u32 combo_phy_read(u8 sata_port, u32 addr)
--{
--	combo_phy_wait_for_ready(sata_port);
--	__combo_phy_reg_write(sata_port, SERDES_CR_ADDR, addr);
--	__combo_phy_reg_write(sata_port, SERDES_CR_CTL, CR_START);
--	combo_phy_wait_for_ready(sata_port);
--	return __combo_phy_reg_read(sata_port, SERDES_CR_DATA);
--}
--
--static void combo_phy_write(u8 sata_port, u32 addr, u32 data)
--{
--	combo_phy_wait_for_ready(sata_port);
--	__combo_phy_reg_write(sata_port, SERDES_CR_ADDR, addr);
--	__combo_phy_reg_write(sata_port, SERDES_CR_DATA, data);
--	__combo_phy_reg_write(sata_port, SERDES_CR_CTL, CR_WR_RDN | CR_START);
--}
--
--static void highbank_cphy_disable_overrides(u8 sata_port)
--{
--	u8 lane = port_data[sata_port].lane_mapping;
--	u32 tmp;
--	if (unlikely(port_data[sata_port].phy_base == NULL))
--		return;
--	tmp = combo_phy_read(sata_port, CPHY_RX_INPUT_STS + lane * SPHY_LANE);
--	tmp &= ~CPHY_SATA_RX_OVERRIDE;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--}
--
--static void cphy_override_tx_attenuation(u8 sata_port, u32 val)
--{
--	u8 lane = port_data[sata_port].lane_mapping;
--	u32 tmp;
--
--	if (val & 0x8)
--		return;
--
--	tmp = combo_phy_read(sata_port, CPHY_TX_INPUT_STS + lane * SPHY_LANE);
--	tmp &= ~CPHY_SATA_TX_OVERRIDE;
--	combo_phy_write(sata_port, CPHY_TX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp |= CPHY_SATA_TX_OVERRIDE;
--	combo_phy_write(sata_port, CPHY_TX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp |= (val << CPHY_SATA_TX_ATTEN_SHIFT) & CPHY_SATA_TX_ATTEN;
--	combo_phy_write(sata_port, CPHY_TX_OVERRIDE + lane * SPHY_LANE, tmp);
--}
--
--static void cphy_override_rx_mode(u8 sata_port, u32 val)
--{
--	u8 lane = port_data[sata_port].lane_mapping;
--	u32 tmp;
--	tmp = combo_phy_read(sata_port, CPHY_RX_INPUT_STS + lane * SPHY_LANE);
--	tmp &= ~CPHY_SATA_RX_OVERRIDE;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp |= CPHY_SATA_RX_OVERRIDE;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp &= ~CPHY_SATA_DPLL_MODE;
--	tmp |= val << CPHY_SATA_DPLL_SHIFT;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp |= CPHY_SATA_DPLL_RESET;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	tmp &= ~CPHY_SATA_DPLL_RESET;
--	combo_phy_write(sata_port, CPHY_RX_OVERRIDE + lane * SPHY_LANE, tmp);
--
--	msleep(15);
--}
--
--static void highbank_cphy_override_lane(u8 sata_port)
--{
--	u8 lane = port_data[sata_port].lane_mapping;
--	u32 tmp, k = 0;
--
--	if (unlikely(port_data[sata_port].phy_base == NULL))
--		return;
--	do {
--		tmp = combo_phy_read(sata_port, CPHY_RX_INPUT_STS +
--						lane * SPHY_LANE);
--	} while ((tmp & SPHY_HALF_RATE) && (k++ < 1000));
--	cphy_override_rx_mode(sata_port, 3);
--	cphy_override_tx_attenuation(sata_port, port_data[sata_port].tx_atten);
--}
--
--static int highbank_initialize_phys(struct device *dev, void __iomem *addr)
--{
--	struct device_node *sata_node = dev->of_node;
--	int phy_count = 0, phy, port = 0, i;
--	void __iomem *cphy_base[CPHY_PHY_COUNT] = {};
--	struct device_node *phy_nodes[CPHY_PHY_COUNT] = {};
--	u32 tx_atten[CPHY_PORT_COUNT] = {};
--
--	memset(port_data, 0, sizeof(struct phy_lane_info) * CPHY_PORT_COUNT);
--
--	do {
--		u32 tmp;
--		struct of_phandle_args phy_data;
--		if (of_parse_phandle_with_args(sata_node,
--				"calxeda,port-phys", "#phy-cells",
--				port, &phy_data))
--			break;
--		for (phy = 0; phy < phy_count; phy++) {
--			if (phy_nodes[phy] == phy_data.np)
--				break;
--		}
--		if (phy_nodes[phy] == NULL) {
--			phy_nodes[phy] = phy_data.np;
--			cphy_base[phy] = of_iomap(phy_nodes[phy], 0);
--			if (cphy_base[phy] == NULL) {
--				return 0;
--			}
--			phy_count += 1;
--		}
--		port_data[port].lane_mapping = phy_data.args[0];
--		of_property_read_u32(phy_nodes[phy], "phydev", &tmp);
--		port_data[port].phy_devs = tmp;
--		port_data[port].phy_base = cphy_base[phy];
--		of_node_put(phy_data.np);
--		port += 1;
--	} while (port < CPHY_PORT_COUNT);
--	of_property_read_u32_array(sata_node, "calxeda,tx-atten",
--				tx_atten, port);
--	for (i = 0; i < port; i++)
--		port_data[i].tx_atten = (u8) tx_atten[i];
--	return 0;
--}
--
--/*
-- * The Calxeda SATA phy intermittently fails to bring up a link with Gen3
-- * Retrying the phy hard reset can work around the issue, but the drive
-- * may fail again. In less than 150 out of 15000 test runs, it took more
-- * than 10 tries for the link to be established (but never more than 35).
-- * Triple the maximum observed retry count to provide plenty of margin for
-- * rare events and to guarantee that the link is established.
-- *
-- * Also, the default 2 second time-out on a failed drive is too long in
-- * this situation. The uboot implementation of the same driver function
-- * uses a much shorter time-out period and never experiences a time out
-- * issue. Reducing the time-out to 500ms improves the responsiveness.
-- * The other timing constants were kept the same as the stock AHCI driver.
-- * This change was also tested 15000 times on 24 drives and none of them
-- * experienced a time out.
-- */
--static int ahci_highbank_hardreset(struct ata_link *link, unsigned int *class,
--				unsigned long deadline)
--{
--	static const unsigned long timing[] = { 5, 100, 500};
--	struct ata_port *ap = link->ap;
--	struct ahci_port_priv *pp = ap->private_data;
--	struct ahci_host_priv *hpriv = ap->host->private_data;
--	u8 *d2h_fis = pp->rx_fis + RX_FIS_D2H_REG;
--	struct ata_taskfile tf;
--	bool online;
--	u32 sstatus;
--	int rc;
--	int retry = 100;
--
--	hpriv->stop_engine(ap);
--
--	/* clear D2H reception area to properly wait for D2H FIS */
--	ata_tf_init(link->device, &tf);
--	tf.command = ATA_BUSY;
--	ata_tf_to_fis(&tf, 0, 0, d2h_fis);
--
--	do {
--		highbank_cphy_disable_overrides(link->ap->port_no);
--		rc = sata_link_hardreset(link, timing, deadline, &online, NULL);
--		highbank_cphy_override_lane(link->ap->port_no);
--
--		/* If the status is 1, we are connected, but the link did not
--		 * come up. So retry resetting the link again.
--		 */
--		if (sata_scr_read(link, SCR_STATUS, &sstatus))
--			break;
--		if (!(sstatus & 0x3))
--			break;
--	} while (!online && retry--);
--
--	hpriv->start_engine(ap);
--
--	if (online)
--		*class = ahci_dev_classify(ap);
--
--	return rc;
--}
--
--static struct ata_port_operations ahci_highbank_ops = {
--	.inherits		= &ahci_ops,
--	.hardreset		= ahci_highbank_hardreset,
--	.transmit_led_message   = ecx_transmit_led_message,
--};
--
--static const struct ata_port_info ahci_highbank_port_info = {
--	.flags          = AHCI_FLAG_COMMON,
--	.pio_mask       = ATA_PIO4,
--	.udma_mask      = ATA_UDMA6,
--	.port_ops       = &ahci_highbank_ops,
--};
--
--static struct scsi_host_template ahci_highbank_platform_sht = {
--	AHCI_SHT("sata_highbank"),
--};
--
--static const struct of_device_id ahci_of_match[] = {
--	{ .compatible = "calxeda,hb-ahci" },
--	{},
--};
--MODULE_DEVICE_TABLE(of, ahci_of_match);
--
--static int ahci_highbank_probe(struct platform_device *pdev)
--{
--	struct device *dev = &pdev->dev;
--	struct ahci_host_priv *hpriv;
--	struct ecx_plat_data *pdata;
--	struct ata_host *host;
--	struct resource *mem;
--	int irq;
--	int i;
--	int rc;
--	u32 n_ports;
--	struct ata_port_info pi = ahci_highbank_port_info;
--	const struct ata_port_info *ppi[] = { &pi, NULL };
--
--	mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	if (!mem) {
--		dev_err(dev, "no mmio space\n");
--		return -EINVAL;
+-	cpu_dev = get_cpu_device(0);
+-	if (!cpu_dev) {
+-		pr_err("failed to get highbank cpufreq device\n");
+-		return -ENODEV;
 -	}
 -
--	irq = platform_get_irq(pdev, 0);
--	if (irq <= 0) {
--		dev_err(dev, "no irq\n");
--		return -EINVAL;
+-	np = of_node_get(cpu_dev->of_node);
+-	if (!np) {
+-		pr_err("failed to find highbank cpufreq node\n");
+-		return -ENOENT;
 -	}
 -
--	hpriv = devm_kzalloc(dev, sizeof(*hpriv), GFP_KERNEL);
--	if (!hpriv) {
--		dev_err(dev, "can't alloc ahci_host_priv\n");
--		return -ENOMEM;
--	}
--	pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
--	if (!pdata) {
--		dev_err(dev, "can't alloc ecx_plat_data\n");
--		return -ENOMEM;
+-	cpu_clk = clk_get(cpu_dev, NULL);
+-	if (IS_ERR(cpu_clk)) {
+-		ret = PTR_ERR(cpu_clk);
+-		pr_err("failed to get cpu0 clock: %d\n", ret);
+-		goto out_put_node;
 -	}
 -
--	hpriv->irq = irq;
--	hpriv->flags |= (unsigned long)pi.private_data;
--
--	hpriv->mmio = devm_ioremap(dev, mem->start, resource_size(mem));
--	if (!hpriv->mmio) {
--		dev_err(dev, "can't map %pR\n", mem);
--		return -ENOMEM;
+-	ret = clk_notifier_register(cpu_clk, &hb_cpufreq_clk_nb);
+-	if (ret) {
+-		pr_err("failed to register clk notifier: %d\n", ret);
+-		goto out_put_node;
 -	}
 -
--	rc = highbank_initialize_phys(dev, hpriv->mmio);
--	if (rc)
--		return rc;
+-	/* Instantiate cpufreq-dt */
+-	platform_device_register_full(&devinfo);
 -
--
--	ahci_save_initial_config(dev, hpriv);
--
--	/* prepare host */
--	if (hpriv->cap & HOST_CAP_NCQ)
--		pi.flags |= ATA_FLAG_NCQ;
--
--	if (hpriv->cap & HOST_CAP_PMP)
--		pi.flags |= ATA_FLAG_PMP;
--
--	if (hpriv->cap & HOST_CAP_64)
--		dma_set_coherent_mask(dev, DMA_BIT_MASK(64));
--
--	/* CAP.NP sometimes indicate the index of the last enabled
--	 * port, at other times, that of the last possible port, so
--	 * determining the maximum port number requires looking at
--	 * both CAP.NP and port_map.
--	 */
--	n_ports = max(ahci_nr_ports(hpriv->cap), fls(hpriv->port_map));
--
--	pdata->n_ports = n_ports;
--	hpriv->plat_data = pdata;
--	highbank_set_em_messages(dev, hpriv, &pi);
--
--	host = ata_host_alloc_pinfo(dev, ppi, n_ports);
--	if (!host) {
--		rc = -ENOMEM;
--		goto err0;
--	}
--
--	host->private_data = hpriv;
--
--	if (!(hpriv->cap & HOST_CAP_SSS) || ahci_ignore_sss)
--		host->flags |= ATA_HOST_PARALLEL_SCAN;
--
--	for (i = 0; i < host->n_ports; i++) {
--		struct ata_port *ap = host->ports[i];
--
--		ata_port_desc(ap, "mmio %pR", mem);
--		ata_port_desc(ap, "port 0x%x", 0x100 + ap->port_no * 0x80);
--
--		/* set enclosure management message type */
--		if (ap->flags & ATA_FLAG_EM)
--			ap->em_message_type = hpriv->em_msg_type;
--
--		/* disabled/not-implemented port */
--		if (!(hpriv->port_map & (1 << i)))
--			ap->ops = &ata_dummy_port_ops;
--	}
--
--	rc = ahci_reset_controller(host);
--	if (rc)
--		goto err0;
--
--	ahci_init_controller(host);
--	ahci_print_info(host, "platform");
--
--	rc = ahci_host_activate(host, &ahci_highbank_platform_sht);
--	if (rc)
--		goto err0;
--
--	return 0;
--err0:
--	return rc;
+-out_put_node:
+-	of_node_put(np);
+-	return ret;
 -}
+-module_init(hb_cpufreq_driver_init);
 -
--#ifdef CONFIG_PM_SLEEP
--static int ahci_highbank_suspend(struct device *dev)
--{
--	struct ata_host *host = dev_get_drvdata(dev);
--	struct ahci_host_priv *hpriv = host->private_data;
--	void __iomem *mmio = hpriv->mmio;
--	u32 ctl;
--	int rc;
--
--	if (hpriv->flags & AHCI_HFLAG_NO_SUSPEND) {
--		dev_err(dev, "firmware update required for suspend/resume\n");
--		return -EIO;
--	}
--
--	/*
--	 * AHCI spec rev1.1 section 8.3.3:
--	 * Software must disable interrupts prior to requesting a
--	 * transition of the HBA to D3 state.
--	 */
--	ctl = readl(mmio + HOST_CTL);
--	ctl &= ~HOST_IRQ_EN;
--	writel(ctl, mmio + HOST_CTL);
--	readl(mmio + HOST_CTL); /* flush */
--
--	rc = ata_host_suspend(host, PMSG_SUSPEND);
--	if (rc)
--		return rc;
--
--	return 0;
--}
--
--static int ahci_highbank_resume(struct device *dev)
--{
--	struct ata_host *host = dev_get_drvdata(dev);
--	int rc;
--
--	if (dev->power.power_state.event == PM_EVENT_SUSPEND) {
--		rc = ahci_reset_controller(host);
--		if (rc)
--			return rc;
--
--		ahci_init_controller(host);
--	}
--
--	ata_host_resume(host);
--
--	return 0;
--}
--#endif
--
--static SIMPLE_DEV_PM_OPS(ahci_highbank_pm_ops,
--		  ahci_highbank_suspend, ahci_highbank_resume);
--
--static struct platform_driver ahci_highbank_driver = {
--	.remove = ata_platform_remove_one,
--        .driver = {
--                .name = "highbank-ahci",
--                .of_match_table = ahci_of_match,
--                .pm = &ahci_highbank_pm_ops,
--        },
--	.probe = ahci_highbank_probe,
--};
--
--module_platform_driver(ahci_highbank_driver);
--
--MODULE_DESCRIPTION("Calxeda Highbank AHCI SATA platform driver");
 -MODULE_AUTHOR("Mark Langsdorf <mark.langsdorf@calxeda.com>");
+-MODULE_DESCRIPTION("Calxeda Highbank cpufreq driver");
 -MODULE_LICENSE("GPL");
--MODULE_ALIAS("sata:highbank");
 --
 2.20.1
