@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 211B4C3404B
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 435B4C34048
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E416C2176D
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B316208C4
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:13:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582046014;
-	bh=FnKR5zpBy7wE5NA3ChCpJ+1zmGg+KAGqKyEyd/Piv6U=;
+	s=default; t=1582046031;
+	bh=bM8YN2ZfJudIpOdoYqa4P1Zkj3Pg0uPLLJygiEJ4s1o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=SRRKndWM7HIjvjuqAeyXvKVf5mwRPkIDBVzxP6LdOl2Q8cjKGvWSajU4CmzmmRMYL
-	 +n0mEXC83YtrcYwxGZ10XLpMHCBbpuicyMi1lTL5w+r4PItW+BNjnaadMc1DU1rnER
-	 c5R2Z7IYJy7exX7L6uiVpFpt92vKKtzNMhBxqWWI=
+	b=mMiuEAYhSGYZWcbldxTVhafzFlL4YDjGUYLzhsX03xdTKkkTW+SrwSD80dNebhIjF
+	 yopN+vNZcz7/284xOkjc6VdpAhzX46DlYdYTGLedNhlvc2SWSXNTnA8Pn+pf7++dI1
+	 FzriyXutWvgXk6tSDwsP/7M3uebKuOdjaR7hFoTI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727285AbgBRRNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 12:13:32 -0500
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:41625 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727158AbgBRRNb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:31 -0500
-Received: by mail-ot1-f66.google.com with SMTP id r27so20205893otc.8;
-        Tue, 18 Feb 2020 09:13:30 -0800 (PST)
+        id S1727785AbgBRRNn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 12:13:43 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:34869 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727727AbgBRRNm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:42 -0500
+Received: by mail-ot1-f65.google.com with SMTP id r16so20278718otd.2;
+        Tue, 18 Feb 2020 09:13:40 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=JusgAl5N6MihYqm5uluXtGjWepTJgZcRc57DbXhWS1c=;
-        b=Ht/DRUApfdDEJwkI1CWe6zG+5n/5CBDzitD9S6yyarok+Kp9wAB63tuZrGMMLIH/N9
-         wXAmamgg+ZjM2qhR6wf+pFSm5K3Xki266YKNrmeYG5oLxNR3sqgmTePHN78ZmxZkkNf1
-         8ngs5kPjsvEzzmsYq5DWckIUjYReme5RxQYZ5eNwpIkJDlL5Xe4ZqeF9lRAVvOSyfaDT
-         sX3Ze8goOk8ZtOs/ifo3lUN/FzP9OnrOv9l9Xs+shxHSxuypi4+5V7tSqxyGgqreaqHb
-         gIZGPfzd97pX3LtbUTHTdemQWCQG9SAe9nuwu7N6XyYOXUNAJciheIVU0aejiRHJ9lLP
-         ccdQ==
-X-Gm-Message-State: APjAAAVCh8Q2BvG+RaklQs0qBtDyP+RC/J+LULd4j245+6Zc5NyrRzVo
-        JO0IFO8czX3c3VJiKIBK0Q==
-X-Google-Smtp-Source: APXvYqxtfwdO5ZrwB57qMGPOEsnz4rhk/PhIK9UqQ1I24Sd3few+yqThLV3He9kZDSP4GnJqg66xxQ==
-X-Received: by 2002:a05:6830:1042:: with SMTP id b2mr16287928otp.306.1582046010353;
-        Tue, 18 Feb 2020 09:13:30 -0800 (PST)
+        bh=FoqaseM22NqKzdP6diWbwHzzLAglDjPvVApnWfidhno=;
+        b=cVH/YljX8Fkq2glbR+L1DlM9yhbPK0scnU/5LTLA5XkubLGU8P23KmW/yU8PSbXXuT
+         kEz/+jI7IYaGu1/kI1WHtiMHqBAxM+jG4gvzaplsQrjJv5snxsdW69BsvD1o1K+udpSp
+         1i+tilKQsTu1Yqgem8z+zPgmy8GYDcMLgdNb2Za90ouceJT9W9EVMRL4JSPYDjJX0KKe
+         XDMk3WnKcPmOXCDCnYOPqi4AMUZ7hO6/u9WYvu9TeC624hz8W06GnxqpYKYLVSXpoDtZ
+         Qau8/bQlxCkcpqlqt6XY6qL0UEVdjtK3iQYXP+J3xcpChDmddLuFbgzrZTa7mBd/XezD
+         Nw0Q==
+X-Gm-Message-State: APjAAAU/Bo3DNEb119gvRHV8oWRbfH0a9rj1BfKSzYyN9+v515fXluYZ
+        XVHIKwobc9LDb0NXKoSlaw==
+X-Google-Smtp-Source: APXvYqw4vgSmdpsSYxMVMymSrQmGp8BN32RULVNjVRuf9KGXenrEyhdhKj6dTUd1/cfRh69w0KzQXA==
+X-Received: by 2002:a9d:de9:: with SMTP id 96mr16562460ots.222.1582046020074;
+        Tue, 18 Feb 2020 09:13:40 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.28
+        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2020 09:13:29 -0800 (PST)
+        Tue, 18 Feb 2020 09:13:39 -0800 (PST)
 From:   Rob Herring <robh@kernel.org>
 To:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         soc@kernel.org, Andre Przywara <andre.przywara@arm.com>,
@@ -74,9 +74,9 @@ Cc:     Alex Williamson <alex.williamson@redhat.com>,
         Tony Luck <tony.luck@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Will Deacon <will@kernel.org>
-Subject: [RFC PATCH 04/11] cpufreq: Remove Calxeda driver
-Date:   Tue, 18 Feb 2020 11:13:14 -0600
-Message-Id: <20200218171321.30990-5-robh@kernel.org>
+Subject: [RFC PATCH 10/11] ARM: dts: Remove Calxeda platforms
+Date:   Tue, 18 Feb 2020 11:13:20 -0600
+Message-Id: <20200218171321.30990-11-robh@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200218171321.30990-1-robh@kernel.org>
 References: <20200218171321.30990-1-robh@kernel.org>
@@ -87,187 +87,544 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: linux-pm@vger.kernel.org
+Cc: devicetree@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
-Do not apply yet.
+ arch/arm/boot/dts/Makefile        |   3 -
+ arch/arm/boot/dts/ecx-2000.dts    | 103 -------------
+ arch/arm/boot/dts/ecx-common.dtsi | 230 ------------------------------
+ arch/arm/boot/dts/highbank.dts    | 161 ---------------------
+ 4 files changed, 497 deletions(-)
+ delete mode 100644 arch/arm/boot/dts/ecx-2000.dts
+ delete mode 100644 arch/arm/boot/dts/ecx-common.dtsi
+ delete mode 100644 arch/arm/boot/dts/highbank.dts
 
- drivers/cpufreq/Kconfig.arm          |  10 ---
- drivers/cpufreq/Makefile             |   3 +-
- drivers/cpufreq/cpufreq-dt-platdev.c |   3 -
- drivers/cpufreq/highbank-cpufreq.c   | 106 ---------------------------
- 4 files changed, 1 insertion(+), 121 deletions(-)
- delete mode 100644 drivers/cpufreq/highbank-cpufreq.c
-
-diff --git a/drivers/cpufreq/Kconfig.arm b/drivers/cpufreq/Kconfig.arm
-index 3858d86cf409..27fdd5ac21da 100644
---- a/drivers/cpufreq/Kconfig.arm
-+++ b/drivers/cpufreq/Kconfig.arm
-@@ -79,16 +79,6 @@ config ARM_BRCMSTB_AVS_CPUFREQ
-
- 	  Say Y, if you have a Broadcom SoC with AVS support for DFS or DVFS.
-
--config ARM_HIGHBANK_CPUFREQ
--	tristate "Calxeda Highbank-based"
--	depends on ARCH_HIGHBANK && CPUFREQ_DT && REGULATOR
--	default m
--	help
--	  This adds the CPUFreq driver for Calxeda Highbank SoC
--	  based boards.
--
--	  If in doubt, say N.
--
- config ARM_IMX6Q_CPUFREQ
- 	tristate "Freescale i.MX6 cpufreq support"
- 	depends on ARCH_MXC
-diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-index f6670c4abbb0..47d773b9312a 100644
---- a/drivers/cpufreq/Makefile
-+++ b/drivers/cpufreq/Makefile
-@@ -5,7 +5,7 @@ obj-$(CONFIG_CPU_FREQ)			+= cpufreq.o freq_table.o
- # CPUfreq stats
- obj-$(CONFIG_CPU_FREQ_STAT)             += cpufreq_stats.o
-
--# CPUfreq governors
-+# CPUfreq governors
- obj-$(CONFIG_CPU_FREQ_GOV_PERFORMANCE)	+= cpufreq_performance.o
- obj-$(CONFIG_CPU_FREQ_GOV_POWERSAVE)	+= cpufreq_powersave.o
- obj-$(CONFIG_CPU_FREQ_GOV_USERSPACE)	+= cpufreq_userspace.o
-@@ -52,7 +52,6 @@ obj-$(CONFIG_ARM_ARMADA_8K_CPUFREQ)	+= armada-8k-cpufreq.o
- obj-$(CONFIG_ARM_BRCMSTB_AVS_CPUFREQ)	+= brcmstb-avs-cpufreq.o
- obj-$(CONFIG_ACPI_CPPC_CPUFREQ)		+= cppc_cpufreq.o
- obj-$(CONFIG_ARCH_DAVINCI)		+= davinci-cpufreq.o
--obj-$(CONFIG_ARM_HIGHBANK_CPUFREQ)	+= highbank-cpufreq.o
- obj-$(CONFIG_ARM_IMX6Q_CPUFREQ)		+= imx6q-cpufreq.o
- obj-$(CONFIG_ARM_IMX_CPUFREQ_DT)	+= imx-cpufreq-dt.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUFREQ)	+= kirkwood-cpufreq.o
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index f2ae9cd455c1..274294f83e7c 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -102,9 +102,6 @@ static const struct of_device_id whitelist[] __initconst = {
- static const struct of_device_id blacklist[] __initconst = {
- 	{ .compatible = "allwinner,sun50i-h6", },
-
--	{ .compatible = "calxeda,highbank", },
--	{ .compatible = "calxeda,ecx-2000", },
--
- 	{ .compatible = "fsl,imx7d", },
- 	{ .compatible = "fsl,imx8mq", },
- 	{ .compatible = "fsl,imx8mm", },
-diff --git a/drivers/cpufreq/highbank-cpufreq.c b/drivers/cpufreq/highbank-cpufreq.c
+diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
+index d6546d2676b9..a78da2e25966 100644
+--- a/arch/arm/boot/dts/Makefile
++++ b/arch/arm/boot/dts/Makefile
+@@ -224,9 +224,6 @@ dtb-$(CONFIG_ARCH_GEMINI) += \
+ 	gemini-wbd222.dtb
+ dtb-$(CONFIG_ARCH_HI3xxx) += \
+ 	hi3620-hi4511.dtb
+-dtb-$(CONFIG_ARCH_HIGHBANK) += \
+-	highbank.dtb \
+-	ecx-2000.dtb
+ dtb-$(CONFIG_ARCH_HIP01) += \
+ 	hip01-ca9x2.dtb
+ dtb-$(CONFIG_ARCH_HIP04) += \
+diff --git a/arch/arm/boot/dts/ecx-2000.dts b/arch/arm/boot/dts/ecx-2000.dts
 deleted file mode 100644
-index 5a7f6dafcddb..000000000000
---- a/drivers/cpufreq/highbank-cpufreq.c
+index 5651ae6dc969..000000000000
+--- a/arch/arm/boot/dts/ecx-2000.dts
 +++ /dev/null
-@@ -1,106 +0,0 @@
+@@ -1,103 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Copyright (C) 2012 Calxeda, Inc.
-- *
-- * This driver provides the clk notifier callbacks that are used when
-- * the cpufreq-dt driver changes to frequency to alert the highbank
-- * EnergyCore Management Engine (ECME) about the need to change
-- * voltage. The ECME interfaces with the actual voltage regulators.
+- * Copyright 2011-2012 Calxeda, Inc.
 - */
 -
--#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
+-/dts-v1/;
 -
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/clk.h>
--#include <linux/cpu.h>
--#include <linux/err.h>
--#include <linux/of.h>
--#include <linux/pl320-ipc.h>
--#include <linux/platform_device.h>
+-/* First 4KB has pen for secondary cores. */
+-/memreserve/ 0x00000000 0x0001000;
 -
--#define HB_CPUFREQ_CHANGE_NOTE	0x80000001
--#define HB_CPUFREQ_IPC_LEN	7
--#define HB_CPUFREQ_VOLT_RETRIES	15
+-/ {
+-	model = "Calxeda ECX-2000";
+-	compatible = "calxeda,ecx-2000";
+-	#address-cells = <2>;
+-	#size-cells = <2>;
+-	clock-ranges;
 -
--static int hb_voltage_change(unsigned int freq)
--{
--	u32 msg[HB_CPUFREQ_IPC_LEN] = {HB_CPUFREQ_CHANGE_NOTE, freq / 1000000};
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
 -
--	return pl320_ipc_transmit(msg);
--}
+-		cpu@0 {
+-			compatible = "arm,cortex-a15";
+-			device_type = "cpu";
+-			reg = <0>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-		};
 -
--static int hb_cpufreq_clk_notify(struct notifier_block *nb,
--				unsigned long action, void *hclk)
--{
--	struct clk_notifier_data *clk_data = hclk;
--	int i = 0;
+-		cpu@1 {
+-			compatible = "arm,cortex-a15";
+-			device_type = "cpu";
+-			reg = <1>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-		};
 -
--	if (action == PRE_RATE_CHANGE) {
--		if (clk_data->new_rate > clk_data->old_rate)
--			while (hb_voltage_change(clk_data->new_rate))
--				if (i++ > HB_CPUFREQ_VOLT_RETRIES)
--					return NOTIFY_BAD;
--	} else if (action == POST_RATE_CHANGE) {
--		if (clk_data->new_rate < clk_data->old_rate)
--			while (hb_voltage_change(clk_data->new_rate))
--				if (i++ > HB_CPUFREQ_VOLT_RETRIES)
--					return NOTIFY_BAD;
--	}
+-		cpu@2 {
+-			compatible = "arm,cortex-a15";
+-			device_type = "cpu";
+-			reg = <2>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-		};
 -
--	return NOTIFY_DONE;
--}
+-		cpu@3 {
+-			compatible = "arm,cortex-a15";
+-			device_type = "cpu";
+-			reg = <3>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-		};
+-	};
 -
--static struct notifier_block hb_cpufreq_clk_nb = {
--	.notifier_call = hb_cpufreq_clk_notify,
+-	memory@0 {
+-		name = "memory";
+-		device_type = "memory";
+-		reg = <0x00000000 0x00000000 0x00000000 0xff800000>;
+-	};
+-
+-	memory@200000000 {
+-		name = "memory";
+-		device_type = "memory";
+-		reg = <0x00000002 0x00000000 0x00000003 0x00000000>;
+-	};
+-
+-	soc {
+-		ranges = <0x00000000 0x00000000 0x00000000 0xffffffff>;
+-
+-		timer {
+-			compatible = "arm,cortex-a15-timer", "arm,armv7-timer"; 			interrupts = <1 13 0xf08>,
+-				<1 14 0xf08>,
+-				<1 11 0xf08>,
+-				<1 10 0xf08>;
+-		};
+-
+-		memory-controller@fff00000 {
+-			compatible = "calxeda,ecx-2000-ddr-ctrl";
+-			reg = <0xfff00000 0x1000>;
+-			interrupts = <0 91 4>;
+-		};
+-
+-		intc: interrupt-controller@fff11000 {
+-			compatible = "arm,cortex-a15-gic";
+-			#interrupt-cells = <3>;
+-			#size-cells = <0>;
+-			#address-cells = <1>;
+-			interrupt-controller;
+-			interrupts = <1 9 0xf04>;
+-			reg = <0xfff11000 0x1000>,
+-			      <0xfff12000 0x2000>,
+-			      <0xfff14000 0x2000>,
+-			      <0xfff16000 0x2000>;
+-		};
+-
+-		pmu {
+-			compatible = "arm,cortex-a9-pmu";
+-			interrupts = <0 76 4  0 75 4  0 74 4  0 73 4>;
+-		};
+-	};
 -};
 -
--static int hb_cpufreq_driver_init(void)
--{
--	struct platform_device_info devinfo = { .name = "cpufreq-dt", };
--	struct device *cpu_dev;
--	struct clk *cpu_clk;
--	struct device_node *np;
--	int ret;
+-/include/ "ecx-common.dtsi"
+diff --git a/arch/arm/boot/dts/ecx-common.dtsi b/arch/arm/boot/dts/ecx-common.dtsi
+deleted file mode 100644
+index 66ee1d34f72b..000000000000
+--- a/arch/arm/boot/dts/ecx-common.dtsi
++++ /dev/null
+@@ -1,230 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright 2011-2012 Calxeda, Inc.
+- */
 -
--	if ((!of_machine_is_compatible("calxeda,highbank")) &&
--		(!of_machine_is_compatible("calxeda,ecx-2000")))
--		return -ENODEV;
+-/ {
+-	chosen {
+-		bootargs = "console=ttyAMA0";
+-	};
 -
--	cpu_dev = get_cpu_device(0);
--	if (!cpu_dev) {
--		pr_err("failed to get highbank cpufreq device\n");
--		return -ENODEV;
--	}
+-	psci {
+-		compatible	= "arm,psci";
+-		method		= "smc";
+-		cpu_suspend	= <0x84000002>;
+-		cpu_off		= <0x84000004>;
+-		cpu_on		= <0x84000006>;
+-	};
 -
--	np = of_node_get(cpu_dev->of_node);
--	if (!np) {
--		pr_err("failed to find highbank cpufreq node\n");
--		return -ENOENT;
--	}
+-	soc {
+-		#address-cells = <1>;
+-		#size-cells = <1>;
+-		compatible = "simple-bus";
+-		interrupt-parent = <&intc>;
 -
--	cpu_clk = clk_get(cpu_dev, NULL);
--	if (IS_ERR(cpu_clk)) {
--		ret = PTR_ERR(cpu_clk);
--		pr_err("failed to get cpu0 clock: %d\n", ret);
--		goto out_put_node;
--	}
+-		sata@ffe08000 {
+-			compatible = "calxeda,hb-ahci";
+-			reg = <0xffe08000 0x10000>;
+-			interrupts = <0 83 4>;
+-			dma-coherent;
+-			calxeda,port-phys = <&combophy5 0 &combophy0 0
+-					     &combophy0 1 &combophy0 2
+-					     &combophy0 3>;
+-			calxeda,sgpio-gpio =<&gpioh 5 1 &gpioh 6 1 &gpioh 7 1>;
+-			calxeda,led-order = <4 0 1 2 3>;
+-		};
 -
--	ret = clk_notifier_register(cpu_clk, &hb_cpufreq_clk_nb);
--	if (ret) {
--		pr_err("failed to register clk notifier: %d\n", ret);
--		goto out_put_node;
--	}
+-		sdhci@ffe0e000 {
+-			compatible = "calxeda,hb-sdhci";
+-			reg = <0xffe0e000 0x1000>;
+-			interrupts = <0 90 4>;
+-			clocks = <&eclk>;
+-			status = "disabled";
+-		};
 -
--	/* Instantiate cpufreq-dt */
--	platform_device_register_full(&devinfo);
+-		ipc@fff20000 {
+-			compatible = "arm,pl320", "arm,primecell";
+-			reg = <0xfff20000 0x1000>;
+-			interrupts = <0 7 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-		};
 -
--out_put_node:
--	of_node_put(np);
--	return ret;
--}
--module_init(hb_cpufreq_driver_init);
+-		gpioe: gpio@fff30000 {
+-			#gpio-cells = <2>;
+-			compatible = "arm,pl061", "arm,primecell";
+-			gpio-controller;
+-			reg = <0xfff30000 0x1000>;
+-			interrupts = <0 14 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-			status = "disabled";
+-		};
 -
--MODULE_AUTHOR("Mark Langsdorf <mark.langsdorf@calxeda.com>");
--MODULE_DESCRIPTION("Calxeda Highbank cpufreq driver");
--MODULE_LICENSE("GPL");
---
+-		gpiof: gpio@fff31000 {
+-			#gpio-cells = <2>;
+-			compatible = "arm,pl061", "arm,primecell";
+-			gpio-controller;
+-			reg = <0xfff31000 0x1000>;
+-			interrupts = <0 15 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-			status = "disabled";
+-		};
+-
+-		gpiog: gpio@fff32000 {
+-			#gpio-cells = <2>;
+-			compatible = "arm,pl061", "arm,primecell";
+-			gpio-controller;
+-			reg = <0xfff32000 0x1000>;
+-			interrupts = <0 16 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-			status = "disabled";
+-		};
+-
+-		gpioh: gpio@fff33000 {
+-			#gpio-cells = <2>;
+-			compatible = "arm,pl061", "arm,primecell";
+-			gpio-controller;
+-			reg = <0xfff33000 0x1000>;
+-			interrupts = <0 17 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-			status = "disabled";
+-		};
+-
+-		timer@fff34000 {
+-			compatible = "arm,sp804", "arm,primecell";
+-			reg = <0xfff34000 0x1000>;
+-			interrupts = <0 18 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-		};
+-
+-		rtc@fff35000 {
+-			compatible = "arm,pl031", "arm,primecell";
+-			reg = <0xfff35000 0x1000>;
+-			interrupts = <0 19 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-		};
+-
+-		serial@fff36000 {
+-			compatible = "arm,pl011", "arm,primecell";
+-			reg = <0xfff36000 0x1000>;
+-			interrupts = <0 20 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-		};
+-
+-		smic@fff3a000 {
+-			compatible = "ipmi-smic";
+-			device_type = "ipmi";
+-			reg = <0xfff3a000 0x1000>;
+-			interrupts = <0 24 4>;
+-			reg-size = <4>;
+-			reg-spacing = <4>;
+-		};
+-
+-		sregs@fff3c000 {
+-			compatible = "calxeda,hb-sregs";
+-			reg = <0xfff3c000 0x1000>;
+-
+-			clocks {
+-				#address-cells = <1>;
+-				#size-cells = <0>;
+-
+-				osc: oscillator {
+-					#clock-cells = <0>;
+-					compatible = "fixed-clock";
+-					clock-frequency = <33333000>;
+-				};
+-
+-				ddrpll: ddrpll {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-pll-clock";
+-					clocks = <&osc>;
+-					reg = <0x108>;
+-				};
+-
+-				a9pll: a9pll {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-pll-clock";
+-					clocks = <&osc>;
+-					reg = <0x100>;
+-				};
+-
+-				a9periphclk: a9periphclk {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-a9periph-clock";
+-					clocks = <&a9pll>;
+-					reg = <0x104>;
+-				};
+-
+-				a9bclk: a9bclk {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-a9bus-clock";
+-					clocks = <&a9pll>;
+-					reg = <0x104>;
+-				};
+-
+-				emmcpll: emmcpll {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-pll-clock";
+-					clocks = <&osc>;
+-					reg = <0x10C>;
+-				};
+-
+-				eclk: eclk {
+-					#clock-cells = <0>;
+-					compatible = "calxeda,hb-emmc-clock";
+-					clocks = <&emmcpll>;
+-					reg = <0x114>;
+-				};
+-
+-				pclk: pclk {
+-					#clock-cells = <0>;
+-					compatible = "fixed-clock";
+-					clock-frequency = <150000000>;
+-				};
+-			};
+-		};
+-
+-		dma@fff3d000 {
+-			compatible = "arm,pl330", "arm,primecell";
+-			reg = <0xfff3d000 0x1000>;
+-			interrupts = <0 92 4>;
+-			clocks = <&pclk>;
+-			clock-names = "apb_pclk";
+-		};
+-
+-		ethernet@fff50000 {
+-			compatible = "calxeda,hb-xgmac";
+-			reg = <0xfff50000 0x1000>;
+-			interrupts = <0 77 4  0 78 4  0 79 4>;
+-			dma-coherent;
+-		};
+-
+-		ethernet@fff51000 {
+-			compatible = "calxeda,hb-xgmac";
+-			reg = <0xfff51000 0x1000>;
+-			interrupts = <0 80 4  0 81 4  0 82 4>;
+-			dma-coherent;
+-		};
+-
+-		combophy0: combo-phy@fff58000 {
+-			compatible = "calxeda,hb-combophy";
+-			#phy-cells = <1>;
+-			reg = <0xfff58000 0x1000>;
+-			phydev = <5>;
+-		};
+-
+-		combophy5: combo-phy@fff5d000 {
+-			compatible = "calxeda,hb-combophy";
+-			#phy-cells = <1>;
+-			reg = <0xfff5d000 0x1000>;
+-			phydev = <31>;
+-		};
+-	};
+-};
+diff --git a/arch/arm/boot/dts/highbank.dts b/arch/arm/boot/dts/highbank.dts
+deleted file mode 100644
+index f4e4dca6f7e7..000000000000
+--- a/arch/arm/boot/dts/highbank.dts
++++ /dev/null
+@@ -1,161 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Copyright 2011-2012 Calxeda, Inc.
+- */
+-
+-/dts-v1/;
+-
+-/* First 4KB has pen for secondary cores. */
+-/memreserve/ 0x00000000 0x0001000;
+-
+-/ {
+-	model = "Calxeda Highbank";
+-	compatible = "calxeda,highbank";
+-	#address-cells = <1>;
+-	#size-cells = <1>;
+-	clock-ranges;
+-
+-	cpus {
+-		#address-cells = <1>;
+-		#size-cells = <0>;
+-
+-		cpu@900 {
+-			compatible = "arm,cortex-a9";
+-			device_type = "cpu";
+-			reg = <0x900>;
+-			next-level-cache = <&L2>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-			operating-points = <
+-				/* kHz    ignored */
+-				 1300000  1000000
+-				 1200000  1000000
+-				 1100000  1000000
+-				  800000  1000000
+-				  400000  1000000
+-				  200000  1000000
+-			>;
+-			clock-latency = <100000>;
+-		};
+-
+-		cpu@901 {
+-			compatible = "arm,cortex-a9";
+-			device_type = "cpu";
+-			reg = <0x901>;
+-			next-level-cache = <&L2>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-			operating-points = <
+-				/* kHz    ignored */
+-				 1300000  1000000
+-				 1200000  1000000
+-				 1100000  1000000
+-				  800000  1000000
+-				  400000  1000000
+-				  200000  1000000
+-			>;
+-			clock-latency = <100000>;
+-		};
+-
+-		cpu@902 {
+-			compatible = "arm,cortex-a9";
+-			device_type = "cpu";
+-			reg = <0x902>;
+-			next-level-cache = <&L2>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-			operating-points = <
+-				/* kHz    ignored */
+-				 1300000  1000000
+-				 1200000  1000000
+-				 1100000  1000000
+-				  800000  1000000
+-				  400000  1000000
+-				  200000  1000000
+-			>;
+-			clock-latency = <100000>;
+-		};
+-
+-		cpu@903 {
+-			compatible = "arm,cortex-a9";
+-			device_type = "cpu";
+-			reg = <0x903>;
+-			next-level-cache = <&L2>;
+-			clocks = <&a9pll>;
+-			clock-names = "cpu";
+-			operating-points = <
+-				/* kHz    ignored */
+-				 1300000  1000000
+-				 1200000  1000000
+-				 1100000  1000000
+-				  800000  1000000
+-				  400000  1000000
+-				  200000  1000000
+-			>;
+-			clock-latency = <100000>;
+-		};
+-	};
+-
+-	memory {
+-		name = "memory";
+-		device_type = "memory";
+-		reg = <0x00000000 0xff900000>;
+-	};
+-
+-	soc {
+-		ranges = <0x00000000 0x00000000 0xffffffff>;
+-
+-		memory-controller@fff00000 {
+-			compatible = "calxeda,hb-ddr-ctrl";
+-			reg = <0xfff00000 0x1000>;
+-			interrupts = <0 91 4>;
+-		};
+-
+-		timer@fff10600 {
+-			compatible = "arm,cortex-a9-twd-timer";
+-			reg = <0xfff10600 0x20>;
+-			interrupts = <1 13 0xf01>;
+-			clocks = <&a9periphclk>;
+-		};
+-
+-		watchdog@fff10620 {
+-			compatible = "arm,cortex-a9-twd-wdt";
+-			reg = <0xfff10620 0x20>;
+-			interrupts = <1 14 0xf01>;
+-			clocks = <&a9periphclk>;
+-		};
+-
+-		intc: interrupt-controller@fff11000 {
+-			compatible = "arm,cortex-a9-gic";
+-			#interrupt-cells = <3>;
+-			#size-cells = <0>;
+-			#address-cells = <1>;
+-			interrupt-controller;
+-			reg = <0xfff11000 0x1000>,
+-			      <0xfff10100 0x100>;
+-		};
+-
+-		L2: l2-cache {
+-			compatible = "arm,pl310-cache";
+-			reg = <0xfff12000 0x1000>;
+-			interrupts = <0 70 4>;
+-			cache-unified;
+-			cache-level = <2>;
+-		};
+-
+-		pmu {
+-			compatible = "arm,cortex-a9-pmu";
+-			interrupts = <0 76 4  0 75 4  0 74 4  0 73 4>;
+-		};
+-
+-
+-		sregs@fff3c200 {
+-			compatible = "calxeda,hb-sregs-l2-ecc";
+-			reg = <0xfff3c200 0x100>;
+-			interrupts = <0 71 4  0 72 4>;
+-		};
+-
+-	};
+-};
+-
+-/include/ "ecx-common.dtsi"
+-- 
 2.20.1
+
