@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76B51C3404B
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CBEFEC34048
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:15:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 42E0624658
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A387F2465D
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:15:01 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582046097;
-	bh=Es9N/A91dwDdIYeYVwDpx/CM30oJw39xtMBR/k8LVOk=;
+	s=default; t=1582046101;
+	bh=LePWQPdw0yLe3gcSpPm0E4sHYbV16oulKoL2D/G26dk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=yfsrkgr+0aq3HQfZXmWSKdxp99zA85+21IbKoTW4qjb7xdAVe24HTBtOEX7wxaAvk
-	 KFsMk1J167l3Dh33OrPDWxrLXN6u5JCn3t3naUWA7KWxn9Slck07A/MHItAAzgiR/V
-	 gfqDtAuyzL+yGaEdD5ucz61mJnAchehB2qnO3kcY=
+	b=vaNy/YBAke1X+OGaODwVWWC5VSKc6CEmGk58Z6ra1I+IWhqxpLf95euIYf4T7ym6k
+	 bX1I9TeEFEUlQFQwu2ciX9g1cg6UL2uWHUxaP20gm7LHe+f+W+yWcIM6R/hgxwcpVl
+	 s/ujFDokxedjm30LLp4WzB9H8dKI+0hgdz5J1nFQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727216AbgBRROu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 12:14:50 -0500
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:41620 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726697AbgBRRNa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:30 -0500
-Received: by mail-ot1-f65.google.com with SMTP id r27so20205783otc.8;
-        Tue, 18 Feb 2020 09:13:29 -0800 (PST)
+        id S1726826AbgBRRN0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 12:13:26 -0500
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:45975 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726750AbgBRRN0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:26 -0500
+Received: by mail-ot1-f68.google.com with SMTP id 59so20239284otp.12;
+        Tue, 18 Feb 2020 09:13:25 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=W1u4wUo3NLYAMgXHhQ1JWTN6DImeyb7sdgcLty9LTVA=;
-        b=pfon4pEJFXFUO0/WW0e/mDSzqxwQbhkJdAEHT5a7xHkvoi1vlN8kOGS7GIGU829JOD
-         +ygDH7eavAPibknYtWBXNd9jH0HwVIj0OyAHtrFUiXi6M0B7xVhslKavM/7uaebmLNOP
-         iBSHcoPArr/kMcFRDT3gLBPcK9jqSCPaLMzQbTkcM8xGr1FPJvWGprIF60Q5dB++fMcc
-         NaVSCHOxgrenzVyUx1tlr40ZkzHQNdOc6jamdBiMmNYip1kR0bQcpTYxIkbcpcJhWIUd
-         kjAw+/zQyUzHoC7kYEBRf7QFNQbVlwIqhtkDt94woigkJhTa97CttC41Z9Brl4zceuTk
-         EKHg==
-X-Gm-Message-State: APjAAAUlzTSO2PKgoKuxg6frM8ruhq1NOg9pBCr4op2XQ3FY5qfCdHJ0
-        Y2ib8BYyVGwd1mWOgM9YYg==
-X-Google-Smtp-Source: APXvYqz9vN5O196Hv3RX5j5QhodRWeWR1h2DBkM3xAqkcK92U7nZEFBLzVra3Zyy0nvATVFM6CGklA==
-X-Received: by 2002:a9d:7a89:: with SMTP id l9mr15588431otn.228.1582046008709;
-        Tue, 18 Feb 2020 09:13:28 -0800 (PST)
+        bh=4LxZR/H/qWaW6PLZe7czUDlSa5Ov9S/K1kfsaVdcFug=;
+        b=Y+eIkOh/8pk4ibBhldw3l0arntaaYotKXwiF29K9P325mXl//DMJJ5zkNVaug/4nYL
+         QxyS2BT+5uhwcpZtmXSQu1FoKhp0nGrIregfSKKiL08DsKekbeVrf7y2hwFGGm+4DrYo
+         RHHY3XwWgBgA7d+t4bgLWfob/LcH7cJqxt6wR4zwByA4gPE13GNyqyRfOTZ8WrimDQqH
+         NYgxtWncTVZP+7d/AE6vBllHbSITaEnfafPlsLurijhLCx0/L59iEL8CPkFQ3GA+2E9c
+         NyzHyiIEWshdjhFRa2oJhP3OPTD42OkWPS2qTSwTfqs5WKXla0V8vUr27tdnwNMs54Yx
+         nGYw==
+X-Gm-Message-State: APjAAAXtoWxEyliSONOWPlZayTiwMT1c2rBDm8UveOkJaugQbWyFOT0R
+        ei2xdoRadJxzUeyHpFYHMA==
+X-Google-Smtp-Source: APXvYqzcQiA7Kz1hw5DSMbv4x/r+JIz0TrIbtjHbvB5jqm2ONigiZ49RPglyPaLbn09y6q4zITnNIw==
+X-Received: by 2002:a05:6830:1f0c:: with SMTP id u12mr16226750otg.253.1582046005180;
+        Tue, 18 Feb 2020 09:13:25 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.27
+        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2020 09:13:28 -0800 (PST)
+        Tue, 18 Feb 2020 09:13:24 -0800 (PST)
 From:   Rob Herring <robh@kernel.org>
 To:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         soc@kernel.org, Andre Przywara <andre.przywara@arm.com>,
@@ -74,9 +74,9 @@ Cc:     Alex Williamson <alex.williamson@redhat.com>,
         Tony Luck <tony.luck@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Will Deacon <will@kernel.org>
-Subject: [RFC PATCH 03/11] cpuidle: Remove Calxeda driver
-Date:   Tue, 18 Feb 2020 11:13:13 -0600
-Message-Id: <20200218171321.30990-4-robh@kernel.org>
+Subject: [RFC PATCH 01/11] vfio: Remove Calxeda XGMAC reset driver
+Date:   Tue, 18 Feb 2020 11:13:11 -0600
+Message-Id: <20200218171321.30990-2-robh@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200218171321.30990-1-robh@kernel.org>
 References: <20200218171321.30990-1-robh@kernel.org>
@@ -87,126 +87,128 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-pm@vger.kernel.org
+Cc: Eric Auger <eric.auger@redhat.com>
+Cc: Alex Williamson <alex.williamson@redhat.com>
+Cc: Cornelia Huck <cohuck@redhat.com>
+Cc: kvm@vger.kernel.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Do not apply yet.
 
- drivers/cpuidle/Kconfig.arm       |  7 ---
- drivers/cpuidle/Makefile          |  1 -
- drivers/cpuidle/cpuidle-calxeda.c | 72 -------------------------------
- 3 files changed, 80 deletions(-)
- delete mode 100644 drivers/cpuidle/cpuidle-calxeda.c
+ drivers/vfio/platform/reset/Kconfig           |  8 --
+ drivers/vfio/platform/reset/Makefile          |  2 -
+ .../reset/vfio_platform_calxedaxgmac.c        | 74 -------------------
+ 3 files changed, 84 deletions(-)
+ delete mode 100644 drivers/vfio/platform/reset/vfio_platform_calxedaxgmac.c
 
-diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
-index 62272ecfa771..c2830d2ed44a 100644
---- a/drivers/cpuidle/Kconfig.arm
-+++ b/drivers/cpuidle/Kconfig.arm
-@@ -42,13 +42,6 @@ config ARM_CLPS711X_CPUIDLE
- 	help
- 	  Select this to enable cpuidle on Cirrus Logic CLPS711X SOCs.
-
--config ARM_HIGHBANK_CPUIDLE
--	bool "CPU Idle Driver for Calxeda processors"
--	depends on ARM_PSCI && !ARM64
--	select ARM_CPU_SUSPEND
+diff --git a/drivers/vfio/platform/reset/Kconfig b/drivers/vfio/platform/reset/Kconfig
+index 1edbe9ee7356..3668d1d92909 100644
+--- a/drivers/vfio/platform/reset/Kconfig
++++ b/drivers/vfio/platform/reset/Kconfig
+@@ -1,12 +1,4 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+-config VFIO_PLATFORM_CALXEDAXGMAC_RESET
+-	tristate "VFIO support for calxeda xgmac reset"
+-	depends on VFIO_PLATFORM
 -	help
--	  Select this to enable cpuidle on Calxeda processors.
+-	  Enables the VFIO platform driver to handle reset for Calxeda xgmac
 -
- config ARM_KIRKWOOD_CPUIDLE
- 	bool "CPU Idle Driver for Marvell Kirkwood SoCs"
- 	depends on (MACH_KIRKWOOD || COMPILE_TEST) && !ARM64
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index cc8c769d7fa9..eee5f276edf7 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -14,7 +14,6 @@ obj-$(CONFIG_HALTPOLL_CPUIDLE)		  += cpuidle-haltpoll.o
- obj-$(CONFIG_ARM_MVEBU_V7_CPUIDLE) += cpuidle-mvebu-v7.o
- obj-$(CONFIG_ARM_BIG_LITTLE_CPUIDLE)	+= cpuidle-big_little.o
- obj-$(CONFIG_ARM_CLPS711X_CPUIDLE)	+= cpuidle-clps711x.o
--obj-$(CONFIG_ARM_HIGHBANK_CPUIDLE)	+= cpuidle-calxeda.o
- obj-$(CONFIG_ARM_KIRKWOOD_CPUIDLE)	+= cpuidle-kirkwood.o
- obj-$(CONFIG_ARM_ZYNQ_CPUIDLE)		+= cpuidle-zynq.o
- obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
-diff --git a/drivers/cpuidle/cpuidle-calxeda.c b/drivers/cpuidle/cpuidle-calxeda.c
+-	  If you don't know what to do here, say N.
+-
+ config VFIO_PLATFORM_AMDXGBE_RESET
+ 	tristate "VFIO support for AMD XGBE reset"
+ 	depends on VFIO_PLATFORM
+diff --git a/drivers/vfio/platform/reset/Makefile b/drivers/vfio/platform/reset/Makefile
+index 7294c5ea122e..be7960ce5dbc 100644
+--- a/drivers/vfio/platform/reset/Makefile
++++ b/drivers/vfio/platform/reset/Makefile
+@@ -1,7 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+-vfio-platform-calxedaxgmac-y := vfio_platform_calxedaxgmac.o
+ vfio-platform-amdxgbe-y := vfio_platform_amdxgbe.o
+
+-obj-$(CONFIG_VFIO_PLATFORM_CALXEDAXGMAC_RESET) += vfio-platform-calxedaxgmac.o
+ obj-$(CONFIG_VFIO_PLATFORM_AMDXGBE_RESET) += vfio-platform-amdxgbe.o
+ obj-$(CONFIG_VFIO_PLATFORM_BCMFLEXRM_RESET) += vfio_platform_bcmflexrm.o
+diff --git a/drivers/vfio/platform/reset/vfio_platform_calxedaxgmac.c b/drivers/vfio/platform/reset/vfio_platform_calxedaxgmac.c
 deleted file mode 100644
-index b17d9a8418b0..000000000000
---- a/drivers/cpuidle/cpuidle-calxeda.c
+index 09a9453b75c5..000000000000
+--- a/drivers/vfio/platform/reset/vfio_platform_calxedaxgmac.c
 +++ /dev/null
-@@ -1,72 +0,0 @@
+@@ -1,74 +0,0 @@
 -// SPDX-License-Identifier: GPL-2.0-only
 -/*
-- * Copyright 2012 Calxeda, Inc.
+- * VFIO platform driver specialized for Calxeda xgmac reset
+- * reset code is inherited from calxeda xgmac native driver
 - *
-- * Based on arch/arm/plat-mxc/cpuidle.c: #v3.7
-- * Copyright 2012 Freescale Semiconductor, Inc.
-- * Copyright 2012 Linaro Ltd.
-- *
-- * Maintainer: Rob Herring <rob.herring@calxeda.com>
+- * Copyright 2010-2011 Calxeda, Inc.
+- * Copyright (c) 2015 Linaro Ltd.
+- *              www.linaro.org
 - */
 -
--#include <linux/cpuidle.h>
--#include <linux/cpu_pm.h>
+-#include <linux/module.h>
+-#include <linux/kernel.h>
 -#include <linux/init.h>
--#include <linux/mm.h>
--#include <linux/platform_device.h>
--#include <linux/psci.h>
+-#include <linux/io.h>
 -
--#include <asm/cpuidle.h>
--#include <asm/suspend.h>
+-#include "../vfio_platform_private.h"
 -
--#include <uapi/linux/psci.h>
+-#define DRIVER_VERSION  "0.1"
+-#define DRIVER_AUTHOR   "Eric Auger <eric.auger@linaro.org>"
+-#define DRIVER_DESC     "Reset support for Calxeda xgmac vfio platform device"
 -
--#define CALXEDA_IDLE_PARAM \
--	((0 << PSCI_0_2_POWER_STATE_ID_SHIFT) | \
--	 (0 << PSCI_0_2_POWER_STATE_AFFL_SHIFT) | \
--	 (PSCI_POWER_STATE_TYPE_POWER_DOWN << PSCI_0_2_POWER_STATE_TYPE_SHIFT))
+-/* XGMAC Register definitions */
+-#define XGMAC_CONTROL           0x00000000      /* MAC Configuration */
 -
--static int calxeda_idle_finish(unsigned long val)
+-/* DMA Control and Status Registers */
+-#define XGMAC_DMA_CONTROL       0x00000f18      /* Ctrl (Operational Mode) */
+-#define XGMAC_DMA_INTR_ENA      0x00000f1c      /* Interrupt Enable */
+-
+-/* DMA Control registe defines */
+-#define DMA_CONTROL_ST          0x00002000      /* Start/Stop Transmission */
+-#define DMA_CONTROL_SR          0x00000002      /* Start/Stop Receive */
+-
+-/* Common MAC defines */
+-#define MAC_ENABLE_TX           0x00000008      /* Transmitter Enable */
+-#define MAC_ENABLE_RX           0x00000004      /* Receiver Enable */
+-
+-static inline void xgmac_mac_disable(void __iomem *ioaddr)
 -{
--	return psci_ops.cpu_suspend(CALXEDA_IDLE_PARAM, __pa(cpu_resume));
+-	u32 value = readl(ioaddr + XGMAC_DMA_CONTROL);
+-
+-	value &= ~(DMA_CONTROL_ST | DMA_CONTROL_SR);
+-	writel(value, ioaddr + XGMAC_DMA_CONTROL);
+-
+-	value = readl(ioaddr + XGMAC_CONTROL);
+-	value &= ~(MAC_ENABLE_TX | MAC_ENABLE_RX);
+-	writel(value, ioaddr + XGMAC_CONTROL);
 -}
 -
--static int calxeda_pwrdown_idle(struct cpuidle_device *dev,
--				struct cpuidle_driver *drv,
--				int index)
+-static int vfio_platform_calxedaxgmac_reset(struct vfio_platform_device *vdev)
 -{
--	cpu_pm_enter();
--	cpu_suspend(0, calxeda_idle_finish);
--	cpu_pm_exit();
+-	struct vfio_platform_region *reg = &vdev->regions[0];
 -
--	return index;
+-	if (!reg->ioaddr) {
+-		reg->ioaddr =
+-			ioremap(reg->addr, reg->size);
+-		if (!reg->ioaddr)
+-			return -ENOMEM;
+-	}
+-
+-	/* disable IRQ */
+-	writel(0, reg->ioaddr + XGMAC_DMA_INTR_ENA);
+-
+-	/* Disable the MAC core */
+-	xgmac_mac_disable(reg->ioaddr);
+-
+-	return 0;
 -}
 -
--static struct cpuidle_driver calxeda_idle_driver = {
--	.name = "calxeda_idle",
--	.states = {
--		ARM_CPUIDLE_WFI_STATE,
--		{
--			.name = "PG",
--			.desc = "Power Gate",
--			.exit_latency = 30,
--			.power_usage = 50,
--			.target_residency = 200,
--			.enter = calxeda_pwrdown_idle,
--		},
--	},
--	.state_count = 2,
--};
+-module_vfio_reset_handler("calxeda,hb-xgmac", vfio_platform_calxedaxgmac_reset);
 -
--static int calxeda_cpuidle_probe(struct platform_device *pdev)
--{
--	return cpuidle_register(&calxeda_idle_driver, NULL);
--}
--
--static struct platform_driver calxeda_cpuidle_plat_driver = {
--        .driver = {
--                .name = "cpuidle-calxeda",
--        },
--        .probe = calxeda_cpuidle_probe,
--};
--builtin_platform_driver(calxeda_cpuidle_plat_driver);
+-MODULE_VERSION(DRIVER_VERSION);
+-MODULE_LICENSE("GPL v2");
+-MODULE_AUTHOR(DRIVER_AUTHOR);
+-MODULE_DESCRIPTION(DRIVER_DESC);
 --
 2.20.1
