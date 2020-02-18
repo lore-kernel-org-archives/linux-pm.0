@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4116C3404E
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD82EC3404C
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7FD692176D
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 826862176D
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 17:14:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582046069;
-	bh=nbHREpyg9JimnwnI/nPcT90CEwrvNVBdPizgOJxL6kE=;
+	s=default; t=1582046071;
+	bh=oj/PaeebHVoP2kF/x1Y4/iaEEHBzTRG4k0uuxQ3i2G0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=TmDCEDmx5Yt03Jl3WwMF3jES3YXoVZNH/918zCZ4JR8AzsBX15EBb+GBC8M/PM+5O
-	 qcalMxMkoaag/8PGOdlx/kwW+mRaI135ZqmLOS7m2fPag6xFcjvZpKxzeOLERGbqCa
-	 x0lq9rZ+iVbJMKRH6VF/JpgQf4iHM5kARZouK0UY=
+	b=rOHvgqwoxAuJZXqieTFRQ9xiS9e+5RtTwXyJtnT4R9fQ1kcfv/69DDrq0yTcyJLmM
+	 MuQKLwj9TK7fnKglIyMpnSvlg+2HcYpnlSUCHV3+KqRNrpBaUCZ0cHBlDrM5StXqRn
+	 ovEhsVrIsofEfi9ofYOOgBI9nQ/xlf94/R3lLCgA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727233AbgBRROW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 12:14:22 -0500
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:40361 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727488AbgBRRNi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:38 -0500
-Received: by mail-ot1-f68.google.com with SMTP id i6so20247025otr.7;
-        Tue, 18 Feb 2020 09:13:37 -0800 (PST)
+        id S1727525AbgBRRNh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 12:13:37 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:38278 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727393AbgBRRNe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 12:13:34 -0500
+Received: by mail-oi1-f194.google.com with SMTP id r137so1267245oie.5;
+        Tue, 18 Feb 2020 09:13:33 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=u8D2FPtNZ0VMBn5UkeqSg7CSDs/wZAjBSTTCQDmiSkY=;
-        b=eyn6Ia268py7xlpLA8tqbDqJJSSLK5C60VrqcXGDlAbKlm31cTS2Qv6bB5Jk3gSO00
-         XAeAxlrXmJTtbq3xnxOrexH4sS8b2aynAiSRLsGvvCQLDTr/vAJsmOdpBnZuH/UvKstq
-         JdHjXbpL1BhNuqYpsScd8nBLgjciEXsUnkQ1esdkgwSm1qYLSMkPXNFMf61jGBLdxP/a
-         968TK4URNPOXPP038wET6ShZ1+uvrihBvA8DacKgUWcjdNTQJvLqH6ZhGKtmxq7DhuWu
-         AWPW1ZULxnuntUDqhBrWuFouj2poa5YMUiYn3A2VcZiI/8F3rY2unUejlxaLsSclwcMA
-         +TrA==
-X-Gm-Message-State: APjAAAW8ExL+sPFYv+ek2ABsN6y2Db8CsNxHYl2j2lkIa9JlUvZDy+pK
-        3mCb7psTmDzgWGbcZa7kmA==
-X-Google-Smtp-Source: APXvYqw6TNQhn8784qV+7u3WFCDSuqFfYxpVsfN96SobcjyzzV4x9MxcI5ZxKLnqYBrEuZO3mSlkJg==
-X-Received: by 2002:a9d:7386:: with SMTP id j6mr16115366otk.336.1582046016817;
-        Tue, 18 Feb 2020 09:13:36 -0800 (PST)
+        bh=kW31qHj/OGRN2L4TXUUKIQPN57zbu2axU6XP0HsWl20=;
+        b=A00RgPnZTtgZXHrAdc6iFFkLWWmYcBvnyU8Y9x4KrQOMS2iySfepez+Hm9HSjrOgZy
+         4ybC7S86lz8wm2+Y/Snp9bVdxEpxtSgnwu9DbG+6DbV64XOJi7TuA/3hB9DmInfmE5vq
+         nlgOiF8+fxCTjrMIpFMhpcZLDgSlxiEoQfHjCz8OdLCi+wHYD1HdPXNNRGeKqbueQerr
+         Crk7kKtpPgcHyAxJ3DHtkwPMyJ2m0M+3vrCE8B/XdehNzQ7ZCdo3i+Hjpp5K6ZKRqLdY
+         YIVkWTwaIFe1kliERSlJhyo864sFAyNhjO6wjxsQCfsYao0BwwW1jSKPgq81MbijlmAJ
+         nQyQ==
+X-Gm-Message-State: APjAAAWbrp5gq2FTsX8aHaW6Y/f7rK2Keu2b/G8gE+2grPF+kJzh7rmE
+        L4JHPPIRMhMP8P/T2J84TQ==
+X-Google-Smtp-Source: APXvYqzM1O5/oeWQHJ8gT8Z9L53EKPDEEuwksZtS3dmhCEXg8KSK+0rIqhxLhSP9RCgQyZtde069lg==
+X-Received: by 2002:a05:6808:9ba:: with SMTP id e26mr1936616oig.81.1582046013542;
+        Tue, 18 Feb 2020 09:13:33 -0800 (PST)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.35
+        by smtp.googlemail.com with ESMTPSA id y25sm1545755oto.27.2020.02.18.09.13.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Feb 2020 09:13:36 -0800 (PST)
+        Tue, 18 Feb 2020 09:13:33 -0800 (PST)
 From:   Rob Herring <robh@kernel.org>
 To:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         soc@kernel.org, Andre Przywara <andre.przywara@arm.com>,
@@ -74,9 +74,9 @@ Cc:     Alex Williamson <alex.williamson@redhat.com>,
         Tony Luck <tony.luck@intel.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Will Deacon <will@kernel.org>
-Subject: [RFC PATCH 08/11] clk: Remove Calxeda driver
-Date:   Tue, 18 Feb 2020 11:13:18 -0600
-Message-Id: <20200218171321.30990-9-robh@kernel.org>
+Subject: [RFC PATCH 06/11] iommu: arm-smmu: Remove Calxeda secure mode quirk
+Date:   Tue, 18 Feb 2020 11:13:16 -0600
+Message-Id: <20200218171321.30990-7-robh@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200218171321.30990-1-robh@kernel.org>
 References: <20200218171321.30990-1-robh@kernel.org>
@@ -87,363 +87,77 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cc: Stephen Boyd <sboyd@kernel.org>
-Cc: linux-clk@vger.kernel.org
+Cc: Will Deacon <will@kernel.org>
+Cc: Robin Murphy <robin.murphy@arm.com>
+Cc: Joerg Roedel <joro@8bytes.org>
+Cc: iommu@lists.linux-foundation.org
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
 Do not apply yet.
 
- drivers/clk/Makefile       |   1 -
- drivers/clk/clk-highbank.c | 329 -------------------------------------
- 2 files changed, 330 deletions(-)
- delete mode 100644 drivers/clk/clk-highbank.c
+ drivers/iommu/arm-smmu-impl.c | 43 -----------------------------------
+ 1 file changed, 43 deletions(-)
 
-diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
-index f4169cc2fd31..cb71dfaf1ac7 100644
---- a/drivers/clk/Makefile
-+++ b/drivers/clk/Makefile
-@@ -33,7 +33,6 @@ obj-$(CONFIG_COMMON_CLK_FSL_SAI)	+= clk-fsl-sai.o
- obj-$(CONFIG_COMMON_CLK_GEMINI)		+= clk-gemini.o
- obj-$(CONFIG_COMMON_CLK_ASPEED)		+= clk-aspeed.o
- obj-$(CONFIG_MACH_ASPEED_G6)		+= clk-ast2600.o
--obj-$(CONFIG_ARCH_HIGHBANK)		+= clk-highbank.o
- obj-$(CONFIG_CLK_HSDK)			+= clk-hsdk-pll.o
- obj-$(CONFIG_COMMON_CLK_LOCHNAGAR)	+= clk-lochnagar.o
- obj-$(CONFIG_COMMON_CLK_MAX77686)	+= clk-max77686.o
-diff --git a/drivers/clk/clk-highbank.c b/drivers/clk/clk-highbank.c
-deleted file mode 100644
-index 2a0cea2946f9..000000000000
---- a/drivers/clk/clk-highbank.c
-+++ /dev/null
-@@ -1,329 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/*
-- * Copyright 2011-2012 Calxeda, Inc.
-- */
+diff --git a/drivers/iommu/arm-smmu-impl.c b/drivers/iommu/arm-smmu-impl.c
+index 74d97a886e93..a3be8712d27f 100644
+--- a/drivers/iommu/arm-smmu-impl.c
++++ b/drivers/iommu/arm-smmu-impl.c
+@@ -9,45 +9,6 @@
+
+ #include "arm-smmu.h"
+
 -
--#include <linux/kernel.h>
--#include <linux/slab.h>
--#include <linux/err.h>
--#include <linux/clk-provider.h>
--#include <linux/io.h>
--#include <linux/of.h>
--#include <linux/of_address.h>
--
--#define HB_PLL_LOCK_500		0x20000000
--#define HB_PLL_LOCK		0x10000000
--#define HB_PLL_DIVF_SHIFT	20
--#define HB_PLL_DIVF_MASK	0x0ff00000
--#define HB_PLL_DIVQ_SHIFT	16
--#define HB_PLL_DIVQ_MASK	0x00070000
--#define HB_PLL_DIVR_SHIFT	8
--#define HB_PLL_DIVR_MASK	0x00001f00
--#define HB_PLL_RANGE_SHIFT	4
--#define HB_PLL_RANGE_MASK	0x00000070
--#define HB_PLL_BYPASS		0x00000008
--#define HB_PLL_RESET		0x00000004
--#define HB_PLL_EXT_BYPASS	0x00000002
--#define HB_PLL_EXT_ENA		0x00000001
--
--#define HB_PLL_VCO_MIN_FREQ	2133000000
--#define HB_PLL_MAX_FREQ		HB_PLL_VCO_MIN_FREQ
--#define HB_PLL_MIN_FREQ		(HB_PLL_VCO_MIN_FREQ / 64)
--
--#define HB_A9_BCLK_DIV_MASK	0x00000006
--#define HB_A9_BCLK_DIV_SHIFT	1
--#define HB_A9_PCLK_DIV		0x00000001
--
--struct hb_clk {
--        struct clk_hw	hw;
--	void __iomem	*reg;
--	char *parent_name;
--};
--#define to_hb_clk(p) container_of(p, struct hb_clk, hw)
--
--static int clk_pll_prepare(struct clk_hw *hwclk)
--	{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 reg;
--
--	reg = readl(hbclk->reg);
--	reg &= ~HB_PLL_RESET;
--	writel(reg, hbclk->reg);
--
--	while ((readl(hbclk->reg) & HB_PLL_LOCK) == 0)
--		;
--	while ((readl(hbclk->reg) & HB_PLL_LOCK_500) == 0)
--		;
--
--	return 0;
--}
--
--static void clk_pll_unprepare(struct clk_hw *hwclk)
+-static int arm_smmu_gr0_ns(int offset)
 -{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 reg;
--
--	reg = readl(hbclk->reg);
--	reg |= HB_PLL_RESET;
--	writel(reg, hbclk->reg);
--}
--
--static int clk_pll_enable(struct clk_hw *hwclk)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 reg;
--
--	reg = readl(hbclk->reg);
--	reg |= HB_PLL_EXT_ENA;
--	writel(reg, hbclk->reg);
--
--	return 0;
--}
--
--static void clk_pll_disable(struct clk_hw *hwclk)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 reg;
--
--	reg = readl(hbclk->reg);
--	reg &= ~HB_PLL_EXT_ENA;
--	writel(reg, hbclk->reg);
--}
--
--static unsigned long clk_pll_recalc_rate(struct clk_hw *hwclk,
--					 unsigned long parent_rate)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	unsigned long divf, divq, vco_freq, reg;
--
--	reg = readl(hbclk->reg);
--	if (reg & HB_PLL_EXT_BYPASS)
--		return parent_rate;
--
--	divf = (reg & HB_PLL_DIVF_MASK) >> HB_PLL_DIVF_SHIFT;
--	divq = (reg & HB_PLL_DIVQ_MASK) >> HB_PLL_DIVQ_SHIFT;
--	vco_freq = parent_rate * (divf + 1);
--
--	return vco_freq / (1 << divq);
--}
--
--static void clk_pll_calc(unsigned long rate, unsigned long ref_freq,
--			u32 *pdivq, u32 *pdivf)
--{
--	u32 divq, divf;
--	unsigned long vco_freq;
--
--	if (rate < HB_PLL_MIN_FREQ)
--		rate = HB_PLL_MIN_FREQ;
--	if (rate > HB_PLL_MAX_FREQ)
--		rate = HB_PLL_MAX_FREQ;
--
--	for (divq = 1; divq <= 6; divq++) {
--		if ((rate * (1 << divq)) >= HB_PLL_VCO_MIN_FREQ)
--			break;
+-	switch(offset) {
+-	case ARM_SMMU_GR0_sCR0:
+-	case ARM_SMMU_GR0_sACR:
+-	case ARM_SMMU_GR0_sGFSR:
+-	case ARM_SMMU_GR0_sGFSYNR0:
+-	case ARM_SMMU_GR0_sGFSYNR1:
+-	case ARM_SMMU_GR0_sGFSYNR2:
+-		return offset + 0x400;
+-	default:
+-		return offset;
 -	}
--
--	vco_freq = rate * (1 << divq);
--	divf = (vco_freq + (ref_freq / 2)) / ref_freq;
--	divf--;
--
--	*pdivq = divq;
--	*pdivf = divf;
 -}
 -
--static long clk_pll_round_rate(struct clk_hw *hwclk, unsigned long rate,
--			       unsigned long *parent_rate)
+-static u32 arm_smmu_read_ns(struct arm_smmu_device *smmu, int page,
+-			    int offset)
 -{
--	u32 divq, divf;
--	unsigned long ref_freq = *parent_rate;
--
--	clk_pll_calc(rate, ref_freq, &divq, &divf);
--
--	return (ref_freq * (divf + 1)) / (1 << divq);
+-	if (page == ARM_SMMU_GR0)
+-		offset = arm_smmu_gr0_ns(offset);
+-	return readl_relaxed(arm_smmu_page(smmu, page) + offset);
 -}
 -
--static int clk_pll_set_rate(struct clk_hw *hwclk, unsigned long rate,
--			    unsigned long parent_rate)
+-static void arm_smmu_write_ns(struct arm_smmu_device *smmu, int page,
+-			      int offset, u32 val)
 -{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 divq, divf;
--	u32 reg;
--
--	clk_pll_calc(rate, parent_rate, &divq, &divf);
--
--	reg = readl(hbclk->reg);
--	if (divf != ((reg & HB_PLL_DIVF_MASK) >> HB_PLL_DIVF_SHIFT)) {
--		/* Need to re-lock PLL, so put it into bypass mode */
--		reg |= HB_PLL_EXT_BYPASS;
--		writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
--
--		writel(reg | HB_PLL_RESET, hbclk->reg);
--		reg &= ~(HB_PLL_DIVF_MASK | HB_PLL_DIVQ_MASK);
--		reg |= (divf << HB_PLL_DIVF_SHIFT) | (divq << HB_PLL_DIVQ_SHIFT);
--		writel(reg | HB_PLL_RESET, hbclk->reg);
--		writel(reg, hbclk->reg);
--
--		while ((readl(hbclk->reg) & HB_PLL_LOCK) == 0)
--			;
--		while ((readl(hbclk->reg) & HB_PLL_LOCK_500) == 0)
--			;
--		reg |= HB_PLL_EXT_ENA;
--		reg &= ~HB_PLL_EXT_BYPASS;
--	} else {
--		writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
--		reg &= ~HB_PLL_DIVQ_MASK;
--		reg |= divq << HB_PLL_DIVQ_SHIFT;
--		writel(reg | HB_PLL_EXT_BYPASS, hbclk->reg);
--	}
--	writel(reg, hbclk->reg);
--
--	return 0;
+-	if (page == ARM_SMMU_GR0)
+-		offset = arm_smmu_gr0_ns(offset);
+-	writel_relaxed(val, arm_smmu_page(smmu, page) + offset);
 -}
 -
--static const struct clk_ops clk_pll_ops = {
--	.prepare = clk_pll_prepare,
--	.unprepare = clk_pll_unprepare,
--	.enable = clk_pll_enable,
--	.disable = clk_pll_disable,
--	.recalc_rate = clk_pll_recalc_rate,
--	.round_rate = clk_pll_round_rate,
--	.set_rate = clk_pll_set_rate,
+-/* Since we don't care for sGFAR, we can do without 64-bit accessors */
+-static const struct arm_smmu_impl calxeda_impl = {
+-	.read_reg = arm_smmu_read_ns,
+-	.write_reg = arm_smmu_write_ns,
 -};
 -
--static unsigned long clk_cpu_periphclk_recalc_rate(struct clk_hw *hwclk,
--						   unsigned long parent_rate)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 div = (readl(hbclk->reg) & HB_A9_PCLK_DIV) ? 8 : 4;
--	return parent_rate / div;
--}
 -
--static const struct clk_ops a9periphclk_ops = {
--	.recalc_rate = clk_cpu_periphclk_recalc_rate,
--};
+ struct cavium_smmu {
+ 	struct arm_smmu_device smmu;
+ 	u32 id_base;
+@@ -166,10 +127,6 @@ struct arm_smmu_device *arm_smmu_impl_init(struct arm_smmu_device *smmu)
+ 		break;
+ 	}
+
+-	if (of_property_read_bool(smmu->dev->of_node,
+-				  "calxeda,smmu-secure-config-access"))
+-		smmu->impl = &calxeda_impl;
 -
--static unsigned long clk_cpu_a9bclk_recalc_rate(struct clk_hw *hwclk,
--						unsigned long parent_rate)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 div = (readl(hbclk->reg) & HB_A9_BCLK_DIV_MASK) >> HB_A9_BCLK_DIV_SHIFT;
--
--	return parent_rate / (div + 2);
--}
--
--static const struct clk_ops a9bclk_ops = {
--	.recalc_rate = clk_cpu_a9bclk_recalc_rate,
--};
--
--static unsigned long clk_periclk_recalc_rate(struct clk_hw *hwclk,
--					     unsigned long parent_rate)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 div;
--
--	div = readl(hbclk->reg) & 0x1f;
--	div++;
--	div *= 2;
--
--	return parent_rate / div;
--}
--
--static long clk_periclk_round_rate(struct clk_hw *hwclk, unsigned long rate,
--				   unsigned long *parent_rate)
--{
--	u32 div;
--
--	div = *parent_rate / rate;
--	div++;
--	div &= ~0x1;
--
--	return *parent_rate / div;
--}
--
--static int clk_periclk_set_rate(struct clk_hw *hwclk, unsigned long rate,
--				unsigned long parent_rate)
--{
--	struct hb_clk *hbclk = to_hb_clk(hwclk);
--	u32 div;
--
--	div = parent_rate / rate;
--	if (div & 0x1)
--		return -EINVAL;
--
--	writel(div >> 1, hbclk->reg);
--	return 0;
--}
--
--static const struct clk_ops periclk_ops = {
--	.recalc_rate = clk_periclk_recalc_rate,
--	.round_rate = clk_periclk_round_rate,
--	.set_rate = clk_periclk_set_rate,
--};
--
--static void __init hb_clk_init(struct device_node *node, const struct clk_ops *ops, unsigned long clkflags)
--{
--	u32 reg;
--	struct hb_clk *hb_clk;
--	const char *clk_name = node->name;
--	const char *parent_name;
--	struct clk_init_data init;
--	struct device_node *srnp;
--	int rc;
--
--	rc = of_property_read_u32(node, "reg", &reg);
--	if (WARN_ON(rc))
--		return;
--
--	hb_clk = kzalloc(sizeof(*hb_clk), GFP_KERNEL);
--	if (WARN_ON(!hb_clk))
--		return;
--
--	/* Map system registers */
--	srnp = of_find_compatible_node(NULL, NULL, "calxeda,hb-sregs");
--	hb_clk->reg = of_iomap(srnp, 0);
--	of_node_put(srnp);
--	BUG_ON(!hb_clk->reg);
--	hb_clk->reg += reg;
--
--	of_property_read_string(node, "clock-output-names", &clk_name);
--
--	init.name = clk_name;
--	init.ops = ops;
--	init.flags = clkflags;
--	parent_name = of_clk_get_parent_name(node, 0);
--	init.parent_names = &parent_name;
--	init.num_parents = 1;
--
--	hb_clk->hw.init = &init;
--
--	rc = clk_hw_register(NULL, &hb_clk->hw);
--	if (WARN_ON(rc)) {
--		kfree(hb_clk);
--		return;
--	}
--	of_clk_add_hw_provider(node, of_clk_hw_simple_get, &hb_clk->hw);
--}
--
--static void __init hb_pll_init(struct device_node *node)
--{
--	hb_clk_init(node, &clk_pll_ops, 0);
--}
--CLK_OF_DECLARE(hb_pll, "calxeda,hb-pll-clock", hb_pll_init);
--
--static void __init hb_a9periph_init(struct device_node *node)
--{
--	hb_clk_init(node, &a9periphclk_ops, 0);
--}
--CLK_OF_DECLARE(hb_a9periph, "calxeda,hb-a9periph-clock", hb_a9periph_init);
--
--static void __init hb_a9bus_init(struct device_node *node)
--{
--	hb_clk_init(node, &a9bclk_ops, CLK_IS_CRITICAL);
--}
--CLK_OF_DECLARE(hb_a9bus, "calxeda,hb-a9bus-clock", hb_a9bus_init);
--
--static void __init hb_emmc_init(struct device_node *node)
--{
--	hb_clk_init(node, &periclk_ops, 0);
--}
--CLK_OF_DECLARE(hb_emmc, "calxeda,hb-emmc-clock", hb_emmc_init);
+ 	if (of_device_is_compatible(smmu->dev->of_node, "qcom,sdm845-smmu-500"))
+ 		return qcom_smmu_impl_init(smmu);
+
 --
 2.20.1
