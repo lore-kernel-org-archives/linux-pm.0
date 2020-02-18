@@ -2,133 +2,207 @@ Return-Path: <SRS0=JpcB=4G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46B1FC34031
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BF79C34033
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A9D121D7D
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 64826206EF
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 08:11:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="P3hMbDeY"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mtwB5luA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726206AbgBRILV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 03:11:21 -0500
-Received: from mail-db8eur05on2054.outbound.protection.outlook.com ([40.107.20.54]:64449
-        "EHLO EUR05-DB8-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726186AbgBRILV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 18 Feb 2020 03:11:21 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Tc65fpjc2AtqGuK8lPSmKYqinfK42bit7OlEEKFRGlz+brepV55+znVGrzz9ouXAd5D/a0OePM5mjGftmUX+2gB9B1s9iZi6/L939d18S8zmxrzyruKqVS4BI8YS5QcUfMsoEyxS6yT6rW9lcrz6ytHqji7BXL2AgNQZMjb5YQx4FrxoKIgvWayylv4/97vOgN8/5g2zTFBrf6IMdmG+pj1oUHEvx2xJ6Wz7KFELeFvJUP2Me3M1kycs5mHzpHf8g5nhXtKBP1W+Z9YG+xic+odRBIHcz0vUwjVCQLQv7U8XDVGjP051aM9E9nvhh93bEk93HpuWlXwhTJH8jljRQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ntJjgxUZPVZjKP2rMHjoqXtdwsVmYaSuuaJ6B4S+J8I=;
- b=L5CKLmLFGkAs8qEol6+skzsXOe0TYU+csjyk3qmag/Ptybjf/+B1sF1VVAgJGA2XfO1uEDf9nPDSNGulum/zBxPvpLJKsR/LiiGS/xYHof4qTSj8Pe1btUzEb9n3vGh4cOrETLVd+7MB9YmkG6JxCXSBXIp8Bl5zp6JJzQ9ihS8XPXQZBgAQNo/fIVd1QDB39spL03IkSynzOXdBK1zIaiy8zwZ3/sISfg48gB+BOkgiyQgP3L87hWyfADtoyMD+yIzf5us8o/tjRGO7jbA/GnE3pTAhL2LEuFLAcL41KRZONsVwbMJKK3izjAIucJ709/3tAv5HqiB39l0iiluvlA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=ntJjgxUZPVZjKP2rMHjoqXtdwsVmYaSuuaJ6B4S+J8I=;
- b=P3hMbDeYw4C72xUdHemjlBujcXp6ZOST777aGbSHxJYj0GKR3Oy69plgvtyeBGnH3U2x1l1DwZLbKMIMijE183aRmKg3jqOFINk8qBOUxOZNNj6EXKlT+nYAsxu0R3ROWx9x2EOi66ZumSpWVw1x1a6Tq89RcoJEfOKtPVHFQHI=
-Received: from VI1PR04MB5327.eurprd04.prod.outlook.com (20.177.51.23) by
- VI1PR04MB6126.eurprd04.prod.outlook.com (20.179.28.141) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2729.22; Tue, 18 Feb 2020 08:11:18 +0000
-Received: from VI1PR04MB5327.eurprd04.prod.outlook.com
- ([fe80::c7d:58a2:7265:407e]) by VI1PR04MB5327.eurprd04.prod.outlook.com
- ([fe80::c7d:58a2:7265:407e%6]) with mapi id 15.20.2729.032; Tue, 18 Feb 2020
- 08:11:18 +0000
-From:   Peter Chen <peter.chen@nxp.com>
-To:     Greg KH <greg@kroah.com>
-CC:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
-Subject: RE: [PATCH 23/28] drivers: usb: Call cpu_latency_qos_*() instead of
- pm_qos_*()
-Thread-Topic: [PATCH 23/28] drivers: usb: Call cpu_latency_qos_*() instead of
- pm_qos_*()
-Thread-Index: AQHV4TRn3BXs86jgkEan911jMn55C6gX5NGAgAi8gwCAAAGMAIAAAGYw
-Date:   Tue, 18 Feb 2020 08:11:17 +0000
-Message-ID: <VI1PR04MB53272E34586DF3BA2981E4DD8B110@VI1PR04MB5327.eurprd04.prod.outlook.com>
-References: <1654227.8mz0SueHsU@kreacher> <19064076.ICumzjfW0v@kreacher>
- <20200212183827.GA1900941@kroah.com> <20200218080314.GB30350@b29397-desktop>
- <20200218080846.GA2186559@kroah.com>
-In-Reply-To: <20200218080846.GA2186559@kroah.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=peter.chen@nxp.com; 
-x-originating-ip: [101.229.0.15]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: a5f426e4-362e-4580-b98a-08d7b44a21ad
-x-ms-traffictypediagnostic: VI1PR04MB6126:
-x-microsoft-antispam-prvs: <VI1PR04MB612656F173C758446EFCD6A68B110@VI1PR04MB6126.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:4125;
-x-forefront-prvs: 031763BCAF
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(366004)(39860400002)(136003)(396003)(346002)(376002)(199004)(189003)(2906002)(9686003)(52536014)(33656002)(54906003)(66476007)(66446008)(64756008)(66556008)(76116006)(8936002)(7696005)(66946007)(316002)(71200400001)(4744005)(53546011)(6506007)(86362001)(186003)(55016002)(44832011)(6916009)(81166006)(4326008)(478600001)(26005)(5660300002)(8676002)(81156014);DIR:OUT;SFP:1101;SCL:1;SRVR:VI1PR04MB6126;H:VI1PR04MB5327.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: lDeKNJkMNjmToSMF5dCVB6Zhkgj0z7ebLTu0qIV2eZ77iub2epbsKo32UAwUlZ8btaP6gmTwGiI4UaLSQRWwZYx5jwq9DHuFfs1T9YOpaSFGOlcLF9Xg97rPSf2WEEzHc8E26orMWtKjlK/w4T9SuSJiKGDPI5HUk7PQQ9SInKz2Gsxeksxm4jU6H9h76Aw2m4gkZc1/fEBubwsfssL9pQlAcHsOik9jR3SK974oo6fANHWgAhtyGTWAaNzEAT5p2wg6oDdANg2M+lKGEmbRgx1m6//fgcezNEl36y8yHqxeUMFNoHKdMlWl2i2JH0ixPEk2cePSf20ulcIFVz22CNUiutCfXpnONT7kaYnOkyLnIW22ACSorwqMGrx7JK2Z0iHBFp0zrzMZ72VCqPlSNYAGlFP4KGbClCtCHUDBKZjYZeuJBlQ+2qMFVDPYEJHv
-x-ms-exchange-antispam-messagedata: VPVygAvhrvnIZj9v9SluGpcbzk/3W9swEKr+6qGdU9jjWu1K2ca9Jv9xy0cJKdKyyDrmn9KqjBJ0Z208de2+d5fOgXLMFOgnxiHY8nCcwdFb7pgj5VpHIHWM6GnyMPXbbUQfAk59DV8zQF19LlOvVw==
-x-ms-exchange-transport-forked: True
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a5f426e4-362e-4580-b98a-08d7b44a21ad
-X-MS-Exchange-CrossTenant-originalarrivaltime: 18 Feb 2020 08:11:18.0298
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: mMWuuBK5balll026jYM+fyecfH3gRRULKw/BM2lXikKqtJzTzqVT6xpmdu69PqlqEYqmnVn9FOKnQM21jRdsUA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB6126
+        id S1726312AbgBRILe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 03:11:34 -0500
+Received: from mail-pl1-f195.google.com ([209.85.214.195]:42693 "EHLO
+        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726186AbgBRILe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 03:11:34 -0500
+Received: by mail-pl1-f195.google.com with SMTP id e8so7761065plt.9;
+        Tue, 18 Feb 2020 00:11:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=QUPlxwKLP9HDsSXAYmsXVJM5TniLPju/R6y5R75AffU=;
+        b=mtwB5luAFOm5K7gzOCix+RXz1ZERgI7b1W1WEWuYrq6mbh15n2JrrS4LFvK3xJER91
+         BOZ0jFtv6kfg8fuIFHhvbjdG8G4bj8Se/XQPjSXtsOtUMOHyCW3rTb+Xvwh4uzYyVWIZ
+         NwuWwPTDDjre/6kpTtMMDln0D02xnLEX8Zfs+d5d85KHgQAqCt1pkjLGVADXLT07V9Qw
+         FUP4lS6vtT3VEGGda7R2nCJFr8x6DPkpl+a6bnrZ6tvJ2MkCUfnSwI/Y62K+C/vaeI1w
+         mz9S0gIqDJCZRdedJS/ifw3g4r5LlOxzWWkDjNFdRfkGs0fNLB5Pxd3n52ODSiuRhmyO
+         KF+w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=QUPlxwKLP9HDsSXAYmsXVJM5TniLPju/R6y5R75AffU=;
+        b=LjG5NPXcwztz/AudPo7+/W6sZiucA2upysBF4N3Rlibvyit7XLWIfSy5ZBI2kVDkol
+         Cqk2Fc5l3tx+RDob0GwGTogW+gfulCc9pWgEWprpbt1Ef0RHQDWxYpjbnk7Y1GLm/rEM
+         Vw7sfiXpvDEAxsIUk1oAcy1d25xyOZ8KTMO740LqOXbh/h8rB9LGKKjSQHH5R5Vzeib8
+         14zJTaee0+U+zyQuZrjJ+OPHtxEWZkR2Sa9QbjyHxM2VhWOLPrDz0TD65gYsB3BxdWlw
+         5N6DUaFWdW3yjMSno945sP61WhxMwHQD3lM+Xu+DrNO/J/+TkSu+dVoQVcp1iIpRojFk
+         g6TQ==
+X-Gm-Message-State: APjAAAV2Feie+d8053dsOtS3tyP6W7rEF/eMLVdRmZ6LTTwP+f63C5iP
+        utXQwDqefeJhLczZboPDvXA=
+X-Google-Smtp-Source: APXvYqz08UVvt9qDdWZuY7F9gk+8Up46fj2HHouxwZvVQcLav7iIEXePwSxmGfND/ZUTir9U1ie6Nw==
+X-Received: by 2002:a17:902:348:: with SMTP id 66mr19695770pld.137.1582013492909;
+        Tue, 18 Feb 2020 00:11:32 -0800 (PST)
+Received: from baolinwangubtpc.spreadtrum.com ([117.18.48.82])
+        by smtp.gmail.com with ESMTPSA id z27sm3083411pfj.107.2020.02.18.00.11.28
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 18 Feb 2020 00:11:32 -0800 (PST)
+From:   Baolin Wang <baolin.wang7@gmail.com>
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com, robh+dt@kernel.org,
+        mark.rutland@arm.com
+Cc:     orsonzhai@gmail.com, baolin.wang7@gmail.com,
+        freeman.liu@unisoc.com, zhang.lyra@gmail.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/2] dt-bindings: thermal: sprd: Add the Spreadtrum thermal documentation
+Date:   Tue, 18 Feb 2020 16:10:27 +0800
+Message-Id: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
+X-Mailer: git-send-email 1.7.9.5
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-=20
->=20
-> On Tue, Feb 18, 2020 at 08:03:13AM +0000, Peter Chen wrote:
-> > On 20-02-12 10:38:27, Greg KH wrote:
-> > > On Wed, Feb 12, 2020 at 12:28:44AM +0100, Rafael J. Wysocki wrote:
-> > > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > > >
-> > > > Call cpu_latency_qos_add/remove_request() instead of
-> > > > pm_qos_add/remove_request(), respectively, because the latter are
-> > > > going to be dropped.
-> > > >
-> > > > No intentional functional impact.
-> > > >
-> > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > > ---
-> > > >  drivers/usb/chipidea/ci_hdrc_imx.c | 12 +++++-------
-> > > >  1 file changed, 5 insertions(+), 7 deletions(-)
-> > >
-> > > Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> >
-> > Hi Greg,
-> >
-> > With this patch applied, the usb-next can't compile pass.
->=20
-> Did I apply this?  It looks to need to go through Rafael's tree which int=
-roduces the
-> new api, right?
->=20
+From: Baolin Wang <baolin.wang@unisoc.com>
 
-Not yet, I just try it at my local for my chipidea tree.
+Add the Spreadtrum thermal documentation.
 
-Peter
+Signed-off-by: Baolin Wang <baolin.wang@unisoc.com>
+Signed-off-by: Baolin Wang <baolin.wang7@gmail.com>
+---
+Changes from v2:
+ - Add missing #address-cells and #size-cells properties.
+ - Change the child node name with patternProperties.
+ - Simplify the nvmem-cells-names property.
+
+Changes from v1:
+ - Change to yaml format.
+---
+ .../devicetree/bindings/thermal/sprd-thermal.yaml  |  108 ++++++++++++++++++++
+ 1 file changed, 108 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+
+diff --git a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+new file mode 100644
+index 0000000..3bfe055
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+@@ -0,0 +1,108 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/sprd-thermal.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Spreadtrum thermal sensor controller bindings
++
++maintainers:
++  - Orson Zhai <orsonzhai@gmail.com>
++  - Baolin Wang <baolin.wang7@gmail.com>
++  - Chunyan Zhang <zhang.lyra@gmail.com>
++
++properties:
++  compatible:
++    const: sprd,ums512-thermal
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  clock-names:
++    items:
++      - const: enable
++
++  nvmem-cells:
++    maxItems: 2
++    description:
++      Reference to nvmem nodes for the calibration data.
++
++  nvmem-cell-names:
++    maxItems: 2
++    items:
++      - const: thm_sign_cal
++      - const: thm_ratio_cal
++
++  "#thermal-sensor-cells":
++    const: 1
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++patternProperties:
++  "^([a-z]*-)?sensor(-section)?@[0-9]+$":
++    type: object
++    description:
++      Represent one thermal sensor.
++
++    properties:
++      reg:
++        description: Specify the sensor id.
++        maxItems: 1
++
++      nvmem-cells:
++        maxItems: 1
++        description:
++          Reference to an nvmem node for the calibration data.
++
++      nvmem-cell-names:
++        const: sen_delta_cal
++
++    required:
++      - reg
++      - nvmem-cells
++      - nvmem-cell-names
++
++required:
++  - compatible
++  - reg
++  - clocks
++  - clock-names
++  - nvmem-cells
++  - nvmem-cell-names
++  - "#thermal-sensor-cells"
++  - "#address-cells"
++  - "#size-cells"
++
++examples:
++  - |
++        ap_thm0: thermal@32200000 {
++                compatible = "sprd,ums512-thermal";
++                reg = <0 0x32200000 0 0x10000>;
++                clock-names = "enable";
++                clocks = <&aonapb_gate 32>;
++                #thermal-sensor-cells = <1>;
++                nvmem-cells = <&thm0_sign>, <&thm0_ratio>;
++                nvmem-cell-names = "thm_sign_cal", "thm_ratio_cal";
++                #address-cells = <1>;
++                #size-cells = <0>;
++
++                prometheus-sensor@0 {
++                        reg = <0>;
++                        nvmem-cells = <&thm0_sen0>;
++                        nvmem-cell-names = "sen_delta_cal";
++                };
++
++                ank-sensor@1 {
++                        reg = <1>;
++                        nvmem-cells = <&thm0_sen1>;
++                        nvmem-cell-names = "sen_delta_cal";
++                };
++        };
++...
+-- 
+1.7.9.5
+
