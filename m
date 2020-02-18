@@ -4,25 +4,25 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44033C34026
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 16:30:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABEF1C34044
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 16:30:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 21C0E24658
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 16:30:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 86A492464E
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Feb 2020 16:30:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726648AbgBRQaI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Feb 2020 11:30:08 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:57195 "EHLO
+        id S1726980AbgBRQaY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Feb 2020 11:30:24 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:57249 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726463AbgBRQaI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 11:30:08 -0500
+        with ESMTP id S1726802AbgBRQaO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Feb 2020 11:30:14 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j45l7-0003h0-5w; Tue, 18 Feb 2020 16:30:05 +0000
+        id 1j45lC-0003h0-V7; Tue, 18 Feb 2020 16:30:11 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -33,9 +33,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH net-next v3 1/9] sysfs: add sysfs_file_change_owner{_by_name}()
-Date:   Tue, 18 Feb 2020 17:29:35 +0100
-Message-Id: <20200218162943.2488012-2-christian.brauner@ubuntu.com>
+Subject: [PATCH net-next v3 9/9] net: fix sysfs permssions when device changes network namespace
+Date:   Tue, 18 Feb 2020 17:29:43 +0100
+Message-Id: <20200218162943.2488012-10-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.0
 In-Reply-To: <20200218162943.2488012-1-christian.brauner@ubuntu.com>
 References: <20200218162943.2488012-1-christian.brauner@ubuntu.com>
@@ -46,141 +46,55 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add helpers to change the owner of a sysfs files.
-This function will be used to correctly account for kobject ownership
-changes, e.g. when moving network devices between network namespaces.
+Now that we moved all the helpers in place and make use netdev_change_owner()
+to fixup the permissions when moving network devices between network
+namespaces.
 
 Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
 /* v2 */
--  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
-   - Better naming for sysfs_file_change_owner() to reflect the fact that it
-     can be used to change the owner of the kobject itself by passing NULL as
-     argument.
-- Christian Brauner <christian.brauner@ubuntu.com>:
-  - Split sysfs_file_change_owner() into two helpers sysfs_change_owner() and
-    sysfs_change_owner_by_name(). The former changes the owner of the kobject
-    itself, the latter the owner of the kobject looked up via the name
-    argument.
+unchanged
 
 /* v3 */
--  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
-   - Add explicit uid/gid parameters.
+unchanged
 ---
- fs/sysfs/file.c       | 67 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/sysfs.h | 17 +++++++++++
- 2 files changed, 84 insertions(+)
+ net/core/dev.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 130fc6fbcc03..32bb04b4d9d9 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -558,3 +558,70 @@ void sysfs_remove_bin_file(struct kobject *kobj,
- 	kernfs_remove_by_name(kobj->sd, attr->attr.name);
- }
- EXPORT_SYMBOL_GPL(sysfs_remove_bin_file);
-+
-+static int internal_change_owner(struct kernfs_node *kn, struct kobject *kobj,
-+				 kuid_t kuid, kgid_t kgid)
-+{
-+	struct iattr newattrs = {
-+		.ia_valid = ATTR_UID | ATTR_GID,
-+		.ia_uid = kuid,
-+		.ia_gid = kgid,
-+	};
-+	return kernfs_setattr(kn, &newattrs);
-+}
-+
-+/**
-+ *	sysfs_file_change_owner_by_name - change owner of a file.
-+ *	@kobj:	object.
-+ *	@name:	name of the file to change.
-+ *	@kuid:	new owner's kuid
-+ *	@kgid:	new owner's kgid
-+ */
-+int sysfs_file_change_owner_by_name(struct kobject *kobj, const char *name,
-+				    kuid_t kuid, kgid_t kgid)
-+{
-+	struct kernfs_node *kn;
-+	int error;
-+
-+	if (!name)
-+		return -EINVAL;
-+
-+	if (!kobj->state_in_sysfs)
-+		return -EINVAL;
-+
-+	kn = kernfs_find_and_get(kobj->sd, name);
-+	if (!kn)
-+		return -ENOENT;
-+
-+	error = internal_change_owner(kn, kobj, kuid, kgid);
-+
-+	kernfs_put(kn);
-+
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_file_change_owner_by_name);
-+
-+/**
-+ *	sysfs_file_change_owner - change owner of a file.
-+ *	@kobj:	object.
-+ *	@kuid: new owner's kuid
-+ *	@kgid: new owner's kgid
-+ */
-+int sysfs_file_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid)
-+{
-+	struct kernfs_node *kn;
-+	int error;
-+
-+	if (!kobj->state_in_sysfs)
-+		return -EINVAL;
-+
-+	kernfs_get(kobj->sd);
-+
-+	kn = kobj->sd;
-+	error = internal_change_owner(kn, kobj, kuid, kgid);
-+
-+	kernfs_put(kn);
-+
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_file_change_owner);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index fa7ee503fb76..c11d11c78713 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -310,6 +310,10 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
- 	return kernfs_enable_ns(kn);
- }
+diff --git a/net/core/dev.c b/net/core/dev.c
+index a69e8bd7ed74..0f9c4684fcbd 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -10016,6 +10016,7 @@ EXPORT_SYMBOL(unregister_netdev);
  
-+int sysfs_file_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid);
-+int sysfs_file_change_owner_by_name(struct kobject *kobj, const char *name,
-+				    kuid_t kuid, kgid_t kgid);
-+
- #else /* CONFIG_SYSFS */
- 
- static inline int sysfs_create_dir_ns(struct kobject *kobj, const void *ns)
-@@ -522,6 +526,19 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
+ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char *pat)
  {
- }
++	struct net *net_old = dev_net(dev);
+ 	int err, new_nsid, new_ifindex;
  
-+static inline int int sysfs_file_change_owner(struct kobject *kobj, kuid_t kuid,
-+					      kgid_t kgid)
-+{
-+	return 0;
-+}
-+
-+static inline int sysfs_file_change_owner_by_name(struct kobject *kobj,
-+						  const char *name, kuid_t kuid,
-+						  kgid_t kgid)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_SYSFS */
+ 	ASSERT_RTNL();
+@@ -10031,7 +10032,7 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
  
- static inline int __must_check sysfs_create_file(struct kobject *kobj,
+ 	/* Get out if there is nothing todo */
+ 	err = 0;
+-	if (net_eq(dev_net(dev), net))
++	if (net_eq(net_old, net))
+ 		goto out;
+ 
+ 	/* Pick the destination device name, and ensure
+@@ -10107,6 +10108,12 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
+ 	err = device_rename(&dev->dev, dev->name);
+ 	WARN_ON(err);
+ 
++	/* Adapt owner in case owning user namespace of target network
++	 * namespace is different from the original one.
++	 */
++	err = netdev_change_owner(dev, net_old, net);
++	WARN_ON(err);
++
+ 	/* Add the device back in the hashes */
+ 	list_netdevice(dev);
+ 
 -- 
 2.25.0
 
