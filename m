@@ -2,156 +2,141 @@ Return-Path: <SRS0=QooN=4H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51FB3C3404D
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 07:43:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE7B7C3404D
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 07:50:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2B268208E4
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 07:43:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 879F321D56
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 07:50:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="d6XBh8b1"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vDd3UE8R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726779AbgBSHno (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Feb 2020 02:43:44 -0500
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:42330 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726593AbgBSHnn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2020 02:43:43 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01J7hSmU061552;
-        Wed, 19 Feb 2020 01:43:28 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1582098208;
-        bh=PNWw1vPsXXd7pyZC+YoP3S+7fl9U0ZvjIrhr2nCPkSI=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=d6XBh8b1W0tz3F4gcMV0sPJYNpUBuRfE5lsUd208QRix6+RAwu35PSApk6qov7apY
-         J7QV2O2LeH/UkTxhXwO29zDpzE5/3XP0yvcZq7m7OAlmICvNHysCAFnDy5yMaXIGeT
-         CTqsIcirupnKnsxPuPz7DBufpGDFFH58EEPmg8e8=
-Received: from DLEE104.ent.ti.com (dlee104.ent.ti.com [157.170.170.34])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01J7hS63125686
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 19 Feb 2020 01:43:28 -0600
-Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE104.ent.ti.com
- (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Wed, 19
- Feb 2020 01:43:28 -0600
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE104.ent.ti.com
- (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Wed, 19 Feb 2020 01:43:28 -0600
-Received: from a0393675ula.dhcp.ti.com (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01J7hKCZ068778;
-        Wed, 19 Feb 2020 01:43:24 -0600
-From:   Keerthy <j-keerthy@ti.com>
-To:     <rui.zhang@intel.com>, <robh+dt@kernel.org>,
-        <daniel.lezcano@linaro.org>
-CC:     <j-keerthy@ti.com>, <amit.kucheria@verdurent.com>,
-        <t-kristo@ti.com>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <mark.rutland@arm.com>
-Subject: [PATCH v3 1/4] dt-bindings: thermal: k3: Add VTM bindings documentation
-Date:   Wed, 19 Feb 2020 13:13:11 +0530
-Message-ID: <20200219074314.22829-2-j-keerthy@ti.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200219074314.22829-1-j-keerthy@ti.com>
+        id S1727099AbgBSHub (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Feb 2020 02:50:31 -0500
+Received: from bombadil.infradead.org ([198.137.202.133]:42458 "EHLO
+        bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726664AbgBSHua (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2020 02:50:30 -0500
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=bombadil.20170209; h=Content-Transfer-Encoding:
+        Content-Type:In-Reply-To:MIME-Version:Date:Message-ID:From:References:Cc:To:
+        Subject:Sender:Reply-To:Content-ID:Content-Description;
+        bh=8mFw61Czqg56/JxSmBKdUElYWIaIMTtisEbvrwNrP2k=; b=vDd3UE8R4dQygKI901pT7mIRLT
+        idFLmDlF/QiEq0wgvfbAD1gc9ivo1jGIjMKt3jONTogs+pWxEfvC6JN/gfmiLzyJ4bfCD8ufAIMiq
+        MYaebz1SFBThc64yw1bd5sP/m0EAHVXvi++NXX8sqylLQqo2R22QSdXPY4MBENp67jwJ1RHwfWuKv
+        WtEAT9w3xuQ7QEcDpU6HzzMF+BoHhI5H+OBM/+tdNi+CGqGd81YK71vRb6NG7QSKyDsm73PcqD0q1
+        2X3ipwMefMUaNNDeUxXOg7pYYMAo8LKz2L9rRqocTaG5G7lxa3sVz9qs318H5mChwfQr/M2XE/wrV
+        sElu2zAg==;
+Received: from [2601:1c0:6280:3f0::19c2]
+        by bombadil.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1j4K7q-0003cQ-2R; Wed, 19 Feb 2020 07:50:30 +0000
+Subject: Re: [PATCH v3 2/4] thermal: k3: Add support for bandgap sensors
+To:     Keerthy <j-keerthy@ti.com>, rui.zhang@intel.com,
+        robh+dt@kernel.org, daniel.lezcano@linaro.org
+Cc:     amit.kucheria@verdurent.com, t-kristo@ti.com,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        mark.rutland@arm.com
 References: <20200219074314.22829-1-j-keerthy@ti.com>
+ <20200219074314.22829-3-j-keerthy@ti.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+Message-ID: <ab0bc84b-189f-a9be-e838-a38c14fa702a@infradead.org>
+Date:   Tue, 18 Feb 2020 23:50:29 -0800
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <20200219074314.22829-3-j-keerthy@ti.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add VTM bindings documentation. In the Voltage Thermal
-Management Module(VTM), K3 AM654 supplies a voltage
-reference and a temperature sensor feature that are gathered in the band
-gap voltage and temperature sensor (VBGAPTS) module. The band
-gap provides current and voltage reference for its internal
-circuits and other analog IP blocks. The analog-to-digital
-converter (ADC) produces an output value that is proportional
-to the silicon temperature.
+On 2/18/20 11:43 PM, Keerthy wrote:
+> The bandgap provides current and voltage reference for its internal
+> circuits and other analog IP blocks. The analog-to-digital
+> converter (ADC) produces an output value that is proportional
+> to the silicon temperature.
+> 
+> Currently reading temperatures and trend computing is supported
+> as there are no active/passive cooling agent supported.
+> 
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> ---
+>  drivers/thermal/Kconfig      |  12 ++
+>  drivers/thermal/Makefile     |   1 +
+>  drivers/thermal/k3_bandgap.c | 342 +++++++++++++++++++++++++++++++++++
+>  3 files changed, 355 insertions(+)
+>  create mode 100644 drivers/thermal/k3_bandgap.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 5a05db5438d6..fa598eddc7ac 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -251,6 +251,18 @@ config IMX_THERMAL
+>  	  cpufreq is used as the cooling device to throttle CPUs when the
+>  	  passive trip is crossed.
+>  
+> +config K3_THERMAL
+> +	bool "Texas Instruments K3 thermal support"
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
----
+Hi,
+Why is this bool and not tristate?
 
-Changes in v3:
+> +	depends on THERMAL
+> +	depends on ARCH_K3 || COMPILE_TEST
+> +	help
+> +	  If you say yes here you get thermal support for the Texas Instruments
+> +	  K3 SoC family. The current chip supported is:
+> +	   - AM654
+> +
+> +	  This includes temperature reading functionality and also trend
+> +	  computation.
+> +
+>  config MAX77620_THERMAL
+>  	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
+>  	depends on MFD_MAX77620
 
-  * Fixed errors seen with:
-    dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+> diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
+> new file mode 100644
+> index 000000000000..35d904eb9857
+> --- /dev/null
+> +++ b/drivers/thermal/k3_bandgap.c
+> @@ -0,0 +1,342 @@
+> +// SPDX-License-Identifier: GPL-2.0
+> +/*
+> + * TI Bandgap temperature sensor driver for K3 SoC Family
+> + *
+> + * Copyright (C) 2020 Texas Instruments Incorporated - http://www.ti.com/
+> + */
 
- .../bindings/thermal/ti,am654-thermal.yaml    | 57 +++++++++++++++++++
- 1 file changed, 57 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+> +static int k3_bgp_read_temp(struct k3_thermal_data *devdata,
+> +			    int *temp)
+> +{
+> +	struct k3_bandgap *bgp;
+> +	unsigned int dtemp, s0, s1, s2;
+> +
+> +	bgp = devdata->bgp;
+> +	/**
 
-diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-new file mode 100644
-index 000000000000..b6dc95c3acab
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-@@ -0,0 +1,57 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Texas Instruments AM654 VTM (DTS) binding
-+
-+maintainers:
-+  - Keerthy <j-keerthy@ti.com>
-+
-+properties:
-+  compatible:
-+    const: ti,am654-vtm
-+
-+  reg:
-+    maxItems: 1
-+
-+  power-domains:
-+    maxItems: 1
-+    description: phandle to the associated power domain
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+
-+required:
-+  - "#thermal-sensor-cells"
-+  - compatible
-+  - reg
-+  - power-domains
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/soc/ti,sci_pm_domain.h>
-+    vtm: wkup_vtm0@42050000 {
-+        compatible = "ti,am654-vtm";
-+        reg = <0x0 0x42050000 0x0 0x25c>;
-+        power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
-+        #thermal-sensor-cells = <1>;
-+    };
-+
-+    mpu0_thermal: mpu0_thermal {
-+        polling-delay-passive = <250>; /* milliseconds */
-+        polling-delay = <500>; /* milliseconds */
-+        thermal-sensors = <&vtm0 0>;
-+
-+        trips {
-+                mpu0_crit: mpu0_crit {
-+                        temperature = <125000>; /* milliCelsius */
-+                        hysteresis = <2000>; /* milliCelsius */
-+                        type = "critical";
-+                };
-+        };
-+    };
-+...
+"/**" is used to indicate kernel-doc notation in the Linux kernel source files,
+but this comment is not kernel-doc notation, so please just use "/*".
+
+> +	 * Errata is applicable for am654 pg 1.0 silicon. There
+> +	 * is a variation of the order for 8-10 degree centigrade.
+> +	 * Work around that by getting the average of two closest
+> +	 * readings out of three readings everytime we want to
+> +	 * report temperatures.
+> +	 *
+> +	 * Errata workaround.
+> +	 */
+thanks.
 -- 
-2.17.1
+~Randy
 
