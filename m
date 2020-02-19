@@ -2,86 +2,135 @@ Return-Path: <SRS0=QooN=4H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 92910C34022
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 08:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A31EBC34047
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 09:59:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5A8B12464E
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 08:15:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582100117;
-	bh=2lJvgbRb9rP6Vhs0w8YL7pQP2f3DBRY6ioR0MgXbnAM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=PRsXD+W3xHSX7S87Lf9W7egbWjNDhDuIjkh4Rl3xBOJ42PlnmweSgHP9lrEIwgGUU
-	 uHu2iQJsE4yu5AH9XG5Ak5VzeUBlafNYLGcu4QKhWDuBZeowRsrDEgPKBl/tUTIRC2
-	 +Q/0gonbNoQ4FBJsHgiXFITYi9lvzPllQ3XdaoZk=
+	by mail.kernel.org (Postfix) with ESMTP id 8710E2465D
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 09:59:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726528AbgBSIPQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Feb 2020 03:15:16 -0500
-Received: from mail.kernel.org ([198.145.29.99]:34528 "EHLO mail.kernel.org"
+        id S1726672AbgBSJ7F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Feb 2020 04:59:05 -0500
+Received: from foss.arm.com ([217.140.110.172]:45050 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726156AbgBSIPQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 19 Feb 2020 03:15:16 -0500
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id C1E242176D;
-        Wed, 19 Feb 2020 08:15:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1582100116;
-        bh=2lJvgbRb9rP6Vhs0w8YL7pQP2f3DBRY6ioR0MgXbnAM=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=KsUc4mlSoOf5rkLOIyakA9xHsbeBxTx9HmoTKBL5+29cWoHsD++AiexBiih06GTzT
-         wbNMPotqi517j9MFy4wCrMP19VGEXYXceLGx8sDvgPBkp00r+Pb7da1tz28ua5QBoU
-         NEHviUetaGrJLSX/r7WtHJDI3agfb13actQrPl9E=
-Date:   Wed, 19 Feb 2020 09:15:14 +0100
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     John Stultz <john.stultz@linaro.org>,
-        lkml <linux-kernel@vger.kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Todd Kjos <tkjos@google.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 2/2] driver core: Make deferred_probe_timeout global
- so it can be shared
-Message-ID: <20200219081514.GA2735658@kroah.com>
-References: <20200218220748.54823-1-john.stultz@linaro.org>
- <20200218220748.54823-2-john.stultz@linaro.org>
- <20200219075730.GA2732797@kroah.com>
- <e67836f6-dcaa-c7b6-0779-35a9ff98ba38@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e67836f6-dcaa-c7b6-0779-35a9ff98ba38@infradead.org>
+        id S1726453AbgBSJ7E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 19 Feb 2020 04:59:04 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2728EFEC;
+        Wed, 19 Feb 2020 01:59:04 -0800 (PST)
+Received: from e123648.arm.com (unknown [10.37.12.28])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A9F373F6CF;
+        Wed, 19 Feb 2020 01:59:00 -0800 (PST)
+From:   lukasz.luba@arm.com
+To:     kgene@kernel.org, krzk@kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        cw00.choi@samsung.com, robh+dt@kernel.org, mark.rutland@arm.com,
+        b.zolnierkie@samsung.com, lukasz.luba@arm.com,
+        dietmar.eggemann@arm.com
+Subject: [PATCH 1/2] ARM: dts: exynos: Add dynamic-power-coefficient to Exynos5422 CPUs
+Date:   Wed, 19 Feb 2020 09:58:27 +0000
+Message-Id: <20200219095828.8063-2-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200219095828.8063-1-lukasz.luba@arm.com>
+References: <20200219095828.8063-1-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Feb 19, 2020 at 12:00:09AM -0800, Randy Dunlap wrote:
-> On 2/18/20 11:57 PM, Greg Kroah-Hartman wrote:
-> > On Tue, Feb 18, 2020 at 10:07:48PM +0000, John Stultz wrote:
-> >> --- a/include/linux/device/driver.h
-> >> +++ b/include/linux/device/driver.h
-> >> @@ -236,6 +236,7 @@ driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
-> >>  }
-> >>  #endif
-> >>  
-> >> +extern int deferred_probe_timeout;
-> >>  void driver_deferred_probe_add(struct device *dev);
-> > 
-> > If this is going to be global now, can you rename it to
-> > "driver_defferred_probe_timeout" to make it more in line with the other
-> 
-> or driver_deferred_probe_timeout please.
+From: Lukasz Luba <lukasz.luba@arm.com>
 
-Yes, that's spelt better :)
+To use Energy Aware Scheduler (EAS) the Energy Model (EM) should be
+registered for CPUs. Add dynamic-power-coefficient into CPU nodes which
+let CPUFreq subsystem register the EM structures. This will increase
+energy efficiency of big.LITTLE platforms.
+
+The 'dynamic-power-coefficient' values have been obtained experimenting
+with different workloads. The power measurements taken from big CPU
+Cluster and LITTLE CPU Cluster has been compared with official documents
+and synthetic workloads estimations. The effective power ratio between
+Cortex-A7 and Cortex-A15 CPUs (~3x) is also aligned with documentation.
+
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ arch/arm/boot/dts/exynos5422-cpus.dtsi | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/arch/arm/boot/dts/exynos5422-cpus.dtsi b/arch/arm/boot/dts/exynos5422-cpus.dtsi
+index 1b8605cf2407..4b641b9b8179 100644
+--- a/arch/arm/boot/dts/exynos5422-cpus.dtsi
++++ b/arch/arm/boot/dts/exynos5422-cpus.dtsi
+@@ -31,6 +31,7 @@
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <539>;
++			dynamic-power-coefficient = <90>;
+ 		};
+ 
+ 		cpu1: cpu@101 {
+@@ -43,6 +44,7 @@
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <539>;
++			dynamic-power-coefficient = <90>;
+ 		};
+ 
+ 		cpu2: cpu@102 {
+@@ -55,6 +57,7 @@
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <539>;
++			dynamic-power-coefficient = <90>;
+ 		};
+ 
+ 		cpu3: cpu@103 {
+@@ -67,6 +70,7 @@
+ 			operating-points-v2 = <&cluster_a7_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <539>;
++			dynamic-power-coefficient = <90>;
+ 		};
+ 
+ 		cpu4: cpu@0 {
+@@ -79,6 +83,7 @@
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <310>;
+ 		};
+ 
+ 		cpu5: cpu@1 {
+@@ -91,6 +96,7 @@
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <310>;
+ 		};
+ 
+ 		cpu6: cpu@2 {
+@@ -103,6 +109,7 @@
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <310>;
+ 		};
+ 
+ 		cpu7: cpu@3 {
+@@ -115,6 +122,7 @@
+ 			operating-points-v2 = <&cluster_a15_opp_table>;
+ 			#cooling-cells = <2>; /* min followed by max */
+ 			capacity-dmips-mhz = <1024>;
++			dynamic-power-coefficient = <310>;
+ 		};
+ 	};
+ };
+-- 
+2.17.1
+
