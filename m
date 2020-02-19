@@ -2,166 +2,96 @@ Return-Path: <SRS0=QooN=4H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC328C34047
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 12:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8032EC34051
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 13:50:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 9560D24656
-	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 12:44:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="mgC9phzE"
+	by mail.kernel.org (Postfix) with ESMTP id 4FBD020801
+	for <linux-pm@archiver.kernel.org>; Wed, 19 Feb 2020 13:50:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582120214;
+	bh=hA9urcjcTZ9xT7r14FRC9Xm37pN89/H+vVci8y+Mp8w=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=VwM04CFZkD0wCwUAKgQGzQfcZFPoPO82SaOv+P1ug+7RuYc24MK3XCNWcSnXuS7GA
+	 WL+Btt/b1LckWgm+LEJw3hF1z4QI3nPnqkQ9ZEzx6TFggrtZpcN5ne0tetqE4PdoWA
+	 TmHZTVCo+HbU6tUkPVyTVZ47JoFL8L6yELEKSD7M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727488AbgBSMoX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Feb 2020 07:44:23 -0500
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:59690 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726491AbgBSMoX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2020 07:44:23 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01JChssQ013710;
-        Wed, 19 Feb 2020 06:43:54 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1582116234;
-        bh=kuB+R4Zi2k9ASFrC2H+1rMHduNuNh5eA+AYg21v4g+Y=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=mgC9phzEV5AoGxOpxa9dqlRaMAh35GL8N/ozSJsrZkZ0AacLYwTRLnkd//EeSZ+td
-         4y9qgpiinOlXbKtKlim4XT6T0fOxNVLMJQjrjnro6tthhrlsIJ3dfXHfXY5+ramSIm
-         lh8X8J+xBm4c1c4M9+NFA94EAj0TX+F1dcjfFfqw=
-Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01JChsaV064935
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 19 Feb 2020 06:43:54 -0600
-Received: from DFLE109.ent.ti.com (10.64.6.30) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Wed, 19
- Feb 2020 06:43:54 -0600
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE109.ent.ti.com
- (10.64.6.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Wed, 19 Feb 2020 06:43:54 -0600
-Received: from [10.24.69.174] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01JChowE126704;
-        Wed, 19 Feb 2020 06:43:51 -0600
-Subject: Re: [PATCH v3 2/4] thermal: k3: Add support for bandgap sensors
-To:     Randy Dunlap <rdunlap@infradead.org>, <rui.zhang@intel.com>,
-        <robh+dt@kernel.org>, <daniel.lezcano@linaro.org>
-CC:     <amit.kucheria@verdurent.com>, <t-kristo@ti.com>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <mark.rutland@arm.com>
-References: <20200219074314.22829-1-j-keerthy@ti.com>
- <20200219074314.22829-3-j-keerthy@ti.com>
- <ab0bc84b-189f-a9be-e838-a38c14fa702a@infradead.org>
-From:   Keerthy <j-keerthy@ti.com>
-Message-ID: <6b4ce7aa-4211-218f-68c2-5c451d8b7677@ti.com>
-Date:   Wed, 19 Feb 2020 18:13:56 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        id S1726725AbgBSNuN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 19 Feb 2020 08:50:13 -0500
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:45791 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726622AbgBSNuN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2020 08:50:13 -0500
+Received: by mail-ot1-f68.google.com with SMTP id 59so131403otp.12;
+        Wed, 19 Feb 2020 05:50:12 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=PDadwaa2tCalOGhbrNe+eCFiucqxINzGz8b3IuyJVBo=;
+        b=EGsSEAtLKFuTpzxcIzJ29HQJY0zofaY7DnrDaCzc7Nd/0nu8bq6suOGmsO0EthPJAV
+         PGhvnjGpA5/ZIK3qeyAdbL7h5JPk3xQd7crvCg2N5MAQQVqw0AewtgjCrGFwU7upd5H2
+         mvFYsWCFIzwujge6bHVq31oy4SuOLrhah4CM6DJZOAAxmD9RVl1Cg3EBxnxuwVsNjptV
+         Tu8Pjx2ySkdxfYbn0AyVM96HhSWOxezRxW0ovZREXjGagS+TSuVVzxTPoTIwI9L+4ebM
+         Ewa+cwlsSien2ZeIP+zSBfNR/uezp5JYVdEb3/6atEBKZc8KCgRinPS2RvANxQLJIAcM
+         AQyQ==
+X-Gm-Message-State: APjAAAXpPUIsrR9PeRNpu6EluZpLJKPPIuKeGjYk8YKdc5UOJhyskEdL
+        A2ouHV31hQxMido4IsqBCg==
+X-Google-Smtp-Source: APXvYqx9tjudoBcfo2l2gjTj/tz/jOPKzWnJusxxw8qa+pcBGOCG323+8cZRapiKtJcy/ffY1jGT2Q==
+X-Received: by 2002:a05:6830:1c8:: with SMTP id r8mr6946584ota.63.1582120212489;
+        Wed, 19 Feb 2020 05:50:12 -0800 (PST)
+Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id a1sm654837oti.2.2020.02.19.05.50.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Feb 2020 05:50:11 -0800 (PST)
+Received: (nullmailer pid 9937 invoked by uid 1000);
+        Wed, 19 Feb 2020 13:50:10 -0000
+Date:   Wed, 19 Feb 2020 07:50:10 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Baolin Wang <baolin.wang7@gmail.com>
+Cc:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, orsonzhai@gmail.com, baolin.wang7@gmail.com,
+        freeman.liu@unisoc.com, zhang.lyra@gmail.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] dt-bindings: thermal: sprd: Add the Spreadtrum
+ thermal documentation
+Message-ID: <20200219135010.GA9880@bogus>
+References: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <ab0bc84b-189f-a9be-e838-a38c14fa702a@infradead.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <444e45ce0a9b390b2502dfcefd1ddb36948fa8e1.1582013101.git.baolin.wang7@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 19/02/20 1:20 pm, Randy Dunlap wrote:
-> On 2/18/20 11:43 PM, Keerthy wrote:
->> The bandgap provides current and voltage reference for its internal
->> circuits and other analog IP blocks. The analog-to-digital
->> converter (ADC) produces an output value that is proportional
->> to the silicon temperature.
->>
->> Currently reading temperatures and trend computing is supported
->> as there are no active/passive cooling agent supported.
->>
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
->>   drivers/thermal/Kconfig      |  12 ++
->>   drivers/thermal/Makefile     |   1 +
->>   drivers/thermal/k3_bandgap.c | 342 +++++++++++++++++++++++++++++++++++
->>   3 files changed, 355 insertions(+)
->>   create mode 100644 drivers/thermal/k3_bandgap.c
->>
->> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
->> index 5a05db5438d6..fa598eddc7ac 100644
->> --- a/drivers/thermal/Kconfig
->> +++ b/drivers/thermal/Kconfig
->> @@ -251,6 +251,18 @@ config IMX_THERMAL
->>   	  cpufreq is used as the cooling device to throttle CPUs when the
->>   	  passive trip is crossed.
->>   
->> +config K3_THERMAL
->> +	bool "Texas Instruments K3 thermal support"
+On Tue, 18 Feb 2020 16:10:27 +0800, Baolin Wang wrote:
+> From: Baolin Wang <baolin.wang@unisoc.com>
 > 
-> Hi,
-> Why is this bool and not tristate?
-
-Definitely can work as tristate. I will fix it next version.
-
+> Add the Spreadtrum thermal documentation.
 > 
->> +	depends on THERMAL
->> +	depends on ARCH_K3 || COMPILE_TEST
->> +	help
->> +	  If you say yes here you get thermal support for the Texas Instruments
->> +	  K3 SoC family. The current chip supported is:
->> +	   - AM654
->> +
->> +	  This includes temperature reading functionality and also trend
->> +	  computation.
->> +
->>   config MAX77620_THERMAL
->>   	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
->>   	depends on MFD_MAX77620
+> Signed-off-by: Baolin Wang <baolin.wang@unisoc.com>
+> Signed-off-by: Baolin Wang <baolin.wang7@gmail.com>
+> ---
+> Changes from v2:
+>  - Add missing #address-cells and #size-cells properties.
+>  - Change the child node name with patternProperties.
+>  - Simplify the nvmem-cells-names property.
 > 
->> diff --git a/drivers/thermal/k3_bandgap.c b/drivers/thermal/k3_bandgap.c
->> new file mode 100644
->> index 000000000000..35d904eb9857
->> --- /dev/null
->> +++ b/drivers/thermal/k3_bandgap.c
->> @@ -0,0 +1,342 @@
->> +// SPDX-License-Identifier: GPL-2.0
->> +/*
->> + * TI Bandgap temperature sensor driver for K3 SoC Family
->> + *
->> + * Copyright (C) 2020 Texas Instruments Incorporated - http://www.ti.com/
->> + */
+> Changes from v1:
+>  - Change to yaml format.
+> ---
+>  .../devicetree/bindings/thermal/sprd-thermal.yaml  |  108 ++++++++++++++++++++
+>  1 file changed, 108 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
 > 
->> +static int k3_bgp_read_temp(struct k3_thermal_data *devdata,
->> +			    int *temp)
->> +{
->> +	struct k3_bandgap *bgp;
->> +	unsigned int dtemp, s0, s1, s2;
->> +
->> +	bgp = devdata->bgp;
->> +	/**
-> 
-> "/**" is used to indicate kernel-doc notation in the Linux kernel source files,
-> but this comment is not kernel-doc notation, so please just use "/*".
 
-Okay
-
-> 
->> +	 * Errata is applicable for am654 pg 1.0 silicon. There
->> +	 * is a variation of the order for 8-10 degree centigrade.
->> +	 * Work around that by getting the average of two closest
->> +	 * readings out of three readings everytime we want to
->> +	 * report temperatures.
->> +	 *
->> +	 * Errata workaround.
->> +	 */
-> thanks.
-
-Thanks for the review.
-
-- Keerthy
-> 
+Reviewed-by: Rob Herring <robh@kernel.org>
