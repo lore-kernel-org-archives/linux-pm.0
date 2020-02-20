@@ -2,184 +2,140 @@ Return-Path: <SRS0=6Td0=4I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E47E3C3404C
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 04:13:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B997C3404C
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:04:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B8BB32467B
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 04:13:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 61BFB2467B
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:04:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="B722om15"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="D82B6Jl8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727637AbgBTENJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 19 Feb 2020 23:13:09 -0500
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:43230 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727576AbgBTENJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 19 Feb 2020 23:13:09 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01K4CuOG110720;
-        Wed, 19 Feb 2020 22:12:56 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1582171976;
-        bh=VnPvu6lppxPv2dAKzH9uu04g0NKMjMplhPQHKEVZkYQ=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=B722om15HqawzVDoJiHSFhM8PBZDDsGrXsRDRpnPmdR0juUnMEVWjSl2YfIv+igMb
-         OHh96HuFmTEpBHucnG08YMMrsPhGpb9S0mMq0Pb96VW/iPNmB3pX63P/kt8P4c8Gc9
-         snGryF61C+HuGEiobV1QYz+3+rFJ8G55bFbb+Wn0=
-Received: from DLEE103.ent.ti.com (dlee103.ent.ti.com [157.170.170.33])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01K4Cu4w025017
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 19 Feb 2020 22:12:56 -0600
-Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Wed, 19
- Feb 2020 22:12:56 -0600
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Wed, 19 Feb 2020 22:12:56 -0600
-Received: from [10.24.69.174] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01K4Cqv0056397;
-        Wed, 19 Feb 2020 22:12:53 -0600
-Subject: Re: [PATCH v3 1/4] dt-bindings: thermal: k3: Add VTM bindings
- documentation
-To:     Rob Herring <robh@kernel.org>
-CC:     <rui.zhang@intel.com>, <daniel.lezcano@linaro.org>,
-        <amit.kucheria@verdurent.com>, <t-kristo@ti.com>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <mark.rutland@arm.com>
-References: <20200219074314.22829-1-j-keerthy@ti.com>
- <20200219074314.22829-2-j-keerthy@ti.com> <20200219145227.GA1317@bogus>
-From:   Keerthy <j-keerthy@ti.com>
-Message-ID: <55b68963-b931-bf67-482e-146e42af4298@ti.com>
-Date:   Thu, 20 Feb 2020 09:42:58 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
-MIME-Version: 1.0
-In-Reply-To: <20200219145227.GA1317@bogus>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+        id S1726165AbgBTFEt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Feb 2020 00:04:49 -0500
+Received: from mail-pl1-f194.google.com ([209.85.214.194]:40133 "EHLO
+        mail-pl1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725811AbgBTFEr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 00:04:47 -0500
+Received: by mail-pl1-f194.google.com with SMTP id y1so1056846plp.7
+        for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2020 21:04:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=SnxfHJcH3dJfaGTadw6bDQp2VaipWSYONj5VWzxr75M=;
+        b=D82B6Jl8GzSqPhqK3gndl940M+e/p4RQ4dcJD+Il3Wl28R8uKElrD4Dcf4Ln1l1Jj5
+         tgh4qBdLTgNeP6q4cgXK6W6AhqUQi5QFV8P2OqsSgenyi8Tk4QT4WgYo7mtQw7N8aNLg
+         5IqJv+0BdKWBZYJVeHo0JB0frJE6SebarcgYR9A6H5TVZA49g825fAsaFUvcZFJT/c3/
+         f3Yq1QKFehUNcF3+V/5l2+HY7OnSBCA4BbsnEPxSTNDHNZToNb0eyW0f+hXSTpD0FHuJ
+         82BJBfgIfCF+UjlMuJyXcn2S3KLONmzUqYAbmPrihKNm2IDZnZ1qJcwx73ZNGClIuKCx
+         QKfA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=SnxfHJcH3dJfaGTadw6bDQp2VaipWSYONj5VWzxr75M=;
+        b=PS5KMNHsdTSDODLagkbaz7GYPZXmbugvfUx/6zzjI9nwl4/VTv1Dd2TmxQHssA2k6E
+         WKxYanitPwGKdA9wA+mIh599f4J8yOOYNjAztucyvtUtpsyvtr/DRgTeLrZNRNQxouvo
+         Jn/moMcAlxzwSFGKDAnrlzY54oyLxDNRSkIJHPes0TfNPxG431YCEQsAbb3VWqFfv96T
+         6fSt0zv4f/DNU4HBWTmlbU9okKZ1p4sGFzWVrIBgfCpLYSpOjsGaFgmXN+KEFm+tqB2s
+         v+DKG8crvS/2fWblwLEXhUkjKi6FI1XhipAxWp/vtomqTw0xIC9Ctw8eXhIqeq1s46x+
+         wVAQ==
+X-Gm-Message-State: APjAAAXHTTRtLjFk13ObFHkNhKqvQ8XMZxaKRTnAP8/D1puFdZUhttmk
+        ZQ3WW6nKUhgZBh6FjLvL3bq09A==
+X-Google-Smtp-Source: APXvYqzLkWrpUiPoCfJrHFXtM/ZLRzMES/WG77gcztnA8Jv+vkT8aXnXJVoRLKX27cVA5hi5qJHsWA==
+X-Received: by 2002:a17:90a:9311:: with SMTP id p17mr1466208pjo.140.1582175085036;
+        Wed, 19 Feb 2020 21:04:45 -0800 (PST)
+Received: from localhost.localdomain ([2601:1c2:680:1319:692:26ff:feda:3a81])
+        by smtp.gmail.com with ESMTPSA id z4sm1400847pfn.42.2020.02.19.21.04.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 19 Feb 2020 21:04:44 -0800 (PST)
+From:   John Stultz <john.stultz@linaro.org>
+To:     lkml <linux-kernel@vger.kernel.org>
+Cc:     John Stultz <john.stultz@linaro.org>,
+        Rob Herring <robh@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Todd Kjos <tkjos@google.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org
+Subject: [PATCH v4 0/6] driver core: Try to improve and cleanup driver_deferred_probe_check_state()
+Date:   Thu, 20 Feb 2020 05:04:34 +0000
+Message-Id: <20200220050440.45878-1-john.stultz@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This series tries to improve and cleanup the
+driver_deferred_probe_check_state() code in the driver core.
 
+This is most important for being able to support modules
+dependencies which may be loaded by userland, far after
+late_initcall is done. For instance, this series allows
+us to use successfully various clk drivers as modules on
+the db845c board. And without it, those drivers have to
+be statically built in to work.
 
-On 19/02/20 8:22 pm, Rob Herring wrote:
-> On Wed, Feb 19, 2020 at 01:13:11PM +0530, Keerthy wrote:
->> Add VTM bindings documentation. In the Voltage Thermal
->> Management Module(VTM), K3 AM654 supplies a voltage
->> reference and a temperature sensor feature that are gathered in the band
->> gap voltage and temperature sensor (VBGAPTS) module. The band
->> gap provides current and voltage reference for its internal
->> circuits and other analog IP blocks. The analog-to-digital
->> converter (ADC) produces an output value that is proportional
->> to the silicon temperature.
->>
->> Signed-off-by: Keerthy <j-keerthy@ti.com>
->> ---
->>
->> Changes in v3:
->>
->>    * Fixed errors seen with:
->>      dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
->>
->>   .../bindings/thermal/ti,am654-thermal.yaml    | 57 +++++++++++++++++++
->>   1 file changed, 57 insertions(+)
->>   create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
->> new file mode 100644
->> index 000000000000..b6dc95c3acab
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
->> @@ -0,0 +1,57 @@
->> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
->> +%YAML 1.2
->> +---
->> +$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
->> +$schema: http://devicetree.org/meta-schemas/core.yaml#
->> +
->> +title: Texas Instruments AM654 VTM (DTS) binding
->> +
->> +maintainers:
->> +  - Keerthy <j-keerthy@ti.com>
->> +
->> +properties:
->> +  compatible:
->> +    const: ti,am654-vtm
->> +
->> +  reg:
->> +    maxItems: 1
->> +
->> +  power-domains:
->> +    maxItems: 1
->> +    description: phandle to the associated power domain
-> 
-> No need to redefine a standard property description.
+The first patch (or two) is really the most critical for me,
+but as I was working to understand the code (and with some
+prodding), it seemed a further cleanup was in order.
 
-Okay.
+If folks have concerns about the tail end of the patch set, I'm
+fine to defer that. The main issue for me is the inability to
+load module dependencies after init starts. 
 
-> 
->> +
->> +  "#thermal-sensor-cells":
->> +    const: 1
->> +
->> +required:
->> +  - "#thermal-sensor-cells"
->> +  - compatible
->> +  - reg
->> +  - power-domains
->> +
->> +additionalProperties: false
->> +
->> +examples:
->> +  - |
->> +    #include <dt-bindings/soc/ti,sci_pm_domain.h>
->> +    vtm: wkup_vtm0@42050000 {
-> 
-> thermal-sensor@...
-> 
-> Use generic node names and don't use '_' in node names
+New in v4:
+* Split earlier version of the patches apart
+* Defaulting deferred_probe_timeout to 30 seconds if modules
+  are enabled.
+* Deeper cleanup on driver_deferred_probe_check_state_continue()
 
-vtm stands for voltage thermal manager and comprises of multiple 
-sensors. This is similar to omap bandgap. Should i replace vtm with more 
-generic name like thermal? as used in:
+Feedback would be greatly appreciated!
 
-Documentation/devicetree/bindings/thermal/st,stm32-thermal.yaml
+thanks
+-john
 
-- Keerthy
+Cc: Rob Herring <robh@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Kevin Hilman <khilman@kernel.org>
+Cc: Ulf Hansson <ulf.hansson@linaro.org>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <len.brown@intel.com>
+Cc: Todd Kjos <tkjos@google.com>
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: Liam Girdwood <lgirdwood@gmail.com>
+Cc: Mark Brown <broonie@kernel.org>
+Cc: Thierry Reding <treding@nvidia.com>
+Cc: Linus Walleij <linus.walleij@linaro.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: linux-pm@vger.kernel.org
 
-> 
->> +        compatible = "ti,am654-vtm";
->> +        reg = <0x0 0x42050000 0x0 0x25c>;
->> +        power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
->> +        #thermal-sensor-cells = <1>;
->> +    };
->> +
->> +    mpu0_thermal: mpu0_thermal {
->> +        polling-delay-passive = <250>; /* milliseconds */
->> +        polling-delay = <500>; /* milliseconds */
->> +        thermal-sensors = <&vtm0 0>;
->> +
->> +        trips {
->> +                mpu0_crit: mpu0_crit {
->> +                        temperature = <125000>; /* milliCelsius */
->> +                        hysteresis = <2000>; /* milliCelsius */
->> +                        type = "critical";
->> +                };
->> +        };
->> +    };
->> +...
->> -- 
->> 2.17.1
->>
+John Stultz (6):
+  driver core: Fix driver_deferred_probe_check_state() logic
+  driver core: Set deferred_probe_timeout to a longer default if
+    CONFIG_MODULES is set
+  pinctrl: Remove use of driver_deferred_probe_check_state_continue()
+  driver core: Remove driver_deferred_probe_check_state_continue()
+  driver core: Rename deferred_probe_timeout and make it global
+  regulator: Use driver_deferred_probe_timeout for
+    regulator_init_complete_work
+
+ drivers/base/dd.c             | 78 ++++++++++++-----------------------
+ drivers/pinctrl/devicetree.c  |  9 ++--
+ drivers/regulator/core.c      | 25 ++++++-----
+ include/linux/device/driver.h |  2 +-
+ 4 files changed, 47 insertions(+), 67 deletions(-)
+
+-- 
+2.17.1
+
