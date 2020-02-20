@@ -2,73 +2,74 @@ Return-Path: <SRS0=6Td0=4I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F05A7C11D20
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 20:59:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02CA8C11D20
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 21:06:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B3AE0222C4
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 20:59:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C5E9A24654
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 21:06:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="daXlJRZW"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZwAuFsVo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729057AbgBTU4g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Feb 2020 15:56:36 -0500
-Received: from mail-wm1-f67.google.com ([209.85.128.67]:38421 "EHLO
-        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728400AbgBTU4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 15:56:36 -0500
-Received: by mail-wm1-f67.google.com with SMTP id a9so28079wmj.3;
-        Thu, 20 Feb 2020 12:56:32 -0800 (PST)
+        id S1727721AbgBTVGf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Feb 2020 16:06:35 -0500
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:35286 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727561AbgBTVGe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 16:06:34 -0500
+Received: by mail-wm1-f68.google.com with SMTP id b17so66926wmb.0;
+        Thu, 20 Feb 2020 13:06:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=subject:to:cc:references:from:autocrypt:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=rcN4YXg4PN1EuxBI0LxG+o/DrptYwSPe5a6rXAFIt8w=;
-        b=daXlJRZWaekIkf9Msycpw40Er2QlcYj8e+AgVY2VWhoQq5Np02rSZ6IXE3QhxblhNx
-         QJe71fmNrjthh8JIqs7jrpyZfP005Du8lYDoQQdNV3nN6zT6Y/DkLBgOJqPo2I/z43k/
-         JIw7L1PFloN7aMb6wotnxees8q3+BWohbQpYrKqnQl3WWCoCeDXahdfQG5xOqgg+3vbN
-         bgqBs6KFaqggb5i+KO9mfp6+r3A5TtRQTzSb/uIHb5P/wZQjwmozSRWSILzclXgOUwHz
-         OVnj3H8Qr1bWVWjnCW1DHSeMCgUzlFHFIRW7osW7ijY/h0LPcfXfKRmreX/bhL62JmRZ
-         7CKA==
+        bh=9bvxNllD/h/tIfcnwcp/ikzTsK4qk40squRSx5BVJWI=;
+        b=ZwAuFsVo3Pe7ETQAAL4612rYE/HJ3sVsV1Mh3E711A2zkizXsTWHj9PxGshh7H2NsH
+         KwD8FZPL+FGbomqp3jJ1asbTshYPBJBEePQg4dwNYIPF/mgf9GrN3RSorv7pDD1gpUnI
+         v4px7zvo2T3jERww2WC+0KtG6WWqCJgMFvVXVc+wQSKhwETG8SHswD9SMf2/lNrzjUDf
+         W8h4w9+2DruCe7g2LWJTG+P+j9Ob8pdEw7aUT4LxjJU22iOIh+BVVyWg+GiBdu2O6eln
+         IwBYnRxfCwCjxhfNQSuNyeEG5qEpZJTaAOFiPMrsliJ7DyznxNvaJDC4NLiA2fIcQv4n
+         zjEA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:autocrypt
          :message-id:date:user-agent:mime-version:in-reply-to
          :content-language:content-transfer-encoding;
-        bh=rcN4YXg4PN1EuxBI0LxG+o/DrptYwSPe5a6rXAFIt8w=;
-        b=VFGz5I6S8KCZHM1GlF5z4AZEBufiHDxHj5MyEGI+KHEXRpYjFW5eezM9ASIEL5S5bj
-         mKua9jXiuYETu9X9MtTZ8NMg65SptBc3Hwqjs/rQtAzu8gtYZz98f0cgHEPtUC75IS2e
-         nRbvpFaSP6RF6byL4V9XCrvmygx4F1AA3ywy8qDlw1pinHNBjqNWNLycG4qERGzg0pqd
-         0Q2FlmTSTZHfPJARO54MGgWQea3EIFOq/POxskYAwzVbE9PY0gmEQkGQcJU7fx2KnS8N
-         /RTaL2ZzWTNBRCpXEXhcdpcezZM0Dh7sGUrCUEAecft3ZhEfDaiZR4fMEpxX8qYgM2DP
-         ooGA==
-X-Gm-Message-State: APjAAAUHE9Rfd5E4ttKqzpFhyAKJekWQCalHlLSTSiaG/spsqrWIndKa
-        yWymQk7lJ4r3QqI+5Go/OBM=
-X-Google-Smtp-Source: APXvYqwiND6BsPx+aK+Np8Rd2fpk+LBGXs2GATRdyDhVsYTlO/MdERkbcxhNF4WFCU92eHIBKcYn7g==
-X-Received: by 2002:a1c:a9c3:: with SMTP id s186mr6091559wme.64.1582232191903;
-        Thu, 20 Feb 2020 12:56:31 -0800 (PST)
+        bh=9bvxNllD/h/tIfcnwcp/ikzTsK4qk40squRSx5BVJWI=;
+        b=FsQfZRXjQ/lkW97fvhM8LYoEgSF1UO5Vnr7AMiExyszt50mP9IN7+0SOdThBTaNE0A
+         TbLzM6GfcXut+xWEZet1xe0M3TuKB/RJ3MeUhToDXlfjfSxXYP71sRflUP5SbFD8CtxU
+         xmQ1eQ3s9QRScWLK5DEPErbLpyXhkHMtRNdbUgPVCBUtj3i7CDQU6frYlUHtBVRuQf1r
+         mgIfh2o89+9DAzLQ3Iuaau9GEMbvaVQwoMqX57NnICr1AnBdiY9UynJB0GfEgpg89Rpv
+         1Q+nqEjEyybNr6sDm0GY6nDkFpFZ2jZGCiKxsocSJthmjAl0IXIDwhPSpphXtxNR8sab
+         aD0g==
+X-Gm-Message-State: APjAAAU1P3hFYc/DwIvqiFMuuLGTCqLXcYTFULc2MbpvzPnMwI+kS3Pj
+        ITi13793k2oeC6/U9teMOWc=
+X-Google-Smtp-Source: APXvYqyo9cnjdaNEnf4aNiIi8Adcr6dK9khtbv9hfozmotk1/mnuqtqR25hCoGJa+/65v0l7GDsIKQ==
+X-Received: by 2002:a1c:3b09:: with SMTP id i9mr6288475wma.31.1582232792577;
+        Thu, 20 Feb 2020 13:06:32 -0800 (PST)
 Received: from ziggy.stardust ([213.195.113.243])
-        by smtp.gmail.com with ESMTPSA id x6sm614595wmi.44.2020.02.20.12.56.29
+        by smtp.gmail.com with ESMTPSA id b17sm1018956wrp.49.2020.02.20.13.06.31
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 20 Feb 2020 12:56:31 -0800 (PST)
-Subject: Re: [PATCH v3,1/8] arm64: dts: mt8183: add thermal zone node
-To:     Michael Kao <michael.kao@mediatek.com>,
-        Zhang Rui <rui.zhang@intel.com>,
+        Thu, 20 Feb 2020 13:06:31 -0800 (PST)
+Subject: Re: [PATCH v3,2/8] arm64: dts: mt8183: add/update dynamic power
+ coefficients
+To:     Michael Kao <michael.kao@mediatek.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
         Eduardo Valentin <edubezval@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Mark Rutland <mark.rutland@arm.com>, hsinyi@chromium.org,
-        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
+        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com,
+        devicetree@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 References: <20200103064407.19861-1-michael.kao@mediatek.com>
- <20200103064407.19861-2-michael.kao@mediatek.com>
+ <20200103064407.19861-3-michael.kao@mediatek.com>
+ <963f6a16-152f-f3b0-56fc-4edb3f1023f3@gmail.com>
+ <1581386733.31005.6.camel@mtksdccf07>
 From:   Matthias Brugger <matthias.bgg@gmail.com>
 Autocrypt: addr=matthias.bgg@gmail.com; prefer-encrypt=mutual; keydata=
  mQINBFP1zgUBEAC21D6hk7//0kOmsUrE3eZ55kjc9DmFPKIz6l4NggqwQjBNRHIMh04BbCMY
@@ -144,15 +145,15 @@ Autocrypt: addr=matthias.bgg@gmail.com; prefer-encrypt=mutual; keydata=
  jzi+DzD9cvj2K6eD5j5kcKJJQactXqfJvF1Eb+OnxlB1BCLE8D1rNkPO5O742Mq3MgDmq19l
  +abzEL6QDAAxn9md8KwrA3RtucNh87cHlDXfUBKa7SRvBjTczDg+HEPNk2u3hrz1j3l2rliQ
  y1UfYx7Vk/TrdwUIJgKS8QAr8Lw9WuvY2hSqL9vEjx8VAkPWNWPwrQ==
-Message-ID: <218ccdd0-993e-f64a-2b86-4f668d8bace8@gmail.com>
-Date:   Thu, 20 Feb 2020 21:56:24 +0100
+Message-ID: <1ab274b4-22d0-98da-889c-f521ce5c30a5@gmail.com>
+Date:   Thu, 20 Feb 2020 22:06:30 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <20200103064407.19861-2-michael.kao@mediatek.com>
+In-Reply-To: <1581386733.31005.6.camel@mtksdccf07>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -160,123 +161,29 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 
-On 03/01/2020 07:44, Michael Kao wrote:
-> From: "michael.kao" <michael.kao@mediatek.com>
+On 11/02/2020 03:05, Michael Kao wrote:
+> On Fri, 2020-01-10 at 15:40 +0100, Matthias Brugger wrote:
+>> I suppose it need rewording.
 > 
-> Add thermal zone node to Mediatek MT8183 dts file.
+> Hi Matthias,
 > 
-> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-> ---
->  arch/arm64/boot/dts/mediatek/mt8183.dtsi | 85 ++++++++++++++++++++++++
->  1 file changed, 85 insertions(+)
+> This patch was resent following with the patch series,Add Mediatek
+> thermal driver and dtsi.
+> I have write all the changes in the cover letter.
+> There is no change in this patch.
 > 
-> diff --git a/arch/arm64/boot/dts/mediatek/mt8183.dtsi b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> index 10b32471bc7b..a2793cf3d994 100644
-> --- a/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> +++ b/arch/arm64/boot/dts/mediatek/mt8183.dtsi
-> @@ -570,6 +570,88 @@
->  			status = "disabled";
->  		};
->  
-> +		thermal: thermal@1100b000 {
-> +			#thermal-sensor-cells = <1>;
-> +			compatible = "mediatek,mt8183-thermal";
-> +			reg = <0 0x1100b000 0 0x1000>;
-> +			interrupts = <0 76 IRQ_TYPE_LEVEL_LOW>;
-> +			clocks = <&infracfg CLK_INFRA_THERM>,
-> +				 <&infracfg CLK_INFRA_AUXADC>;
-> +			clock-names = "therm", "auxadc";
-> +			resets = <&infracfg  MT8183_INFRACFG_AO_THERM_SW_RST>;
-> +			mediatek,auxadc = <&auxadc>;
-> +			mediatek,apmixedsys = <&apmixedsys>;
-> +			mediatek,hw-reset-temp = <117000>;
-
-Non uptream property, please delte
-
-> +			nvmem-cells = <&thermal_calibration>;
-> +			nvmem-cell-names = "calibration-data";
-> +		};
-> +
-> +		thermal-zones {
-> +			cpu_thermal: cpu_thermal {
-> +				polling-delay-passive = <1000>;
-> +				polling-delay = <1000>;
-> +				thermal-sensors = <&thermal 0>;
-> +				sustainable-power = <5000>;
-> +			};
-> +
-> +			/* The tzts1 ~ tzts6 don't need to polling */
-> +			/* The tzts1 ~ tzts6 don't need to thermal throttle */
-> +
-> +			tzts1: tzts1 {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 1>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +
-> +			tzts2: tzts2 {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 2>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +
-> +			tzts3: tzts3 {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 3>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +
-> +			tzts4: tzts4 {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 4>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +
-> +			tzts5: tzts5 {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 5>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +
-> +			tztsABB: tztsABB {
-> +				polling-delay-passive = <0>;
-> +				polling-delay = <0>;
-> +				thermal-sensors = <&thermal 6>;
-> +				sustainable-power = <5000>;
-> +				trips {};
-> +				cooling-maps {};
-> +			};
-> +		};
-> +
->  		audiosys: syscon@11220000 {
->  			compatible = "mediatek,mt8183-audiosys", "syscon";
->  			reg = <0 0x11220000 0 0x1000>;
-> @@ -580,6 +662,9 @@
->  			compatible = "mediatek,mt8183-efuse",
->  				     "mediatek,efuse";
->  			reg = <0 0x11f10000 0 0x1000>;
-
-New line here please.
-
-> +			thermal_calibration: calib@180 {
-> +				reg = <0x180 0xc>;
-> +			};
->  		};
->  
->  		mfgcfg: syscon@13000000 {
+> Do you mean that I need to add some word to commit message or
+> change the dynamic power coefficients?
 > 
+
+Your commit message says:
+"Add dynamic power coefficients for all cores and update those of CPU0 and CPU4."
+
+But the power coefficients for CPU0-4 are not updated, but added.
+
+I fixed the commit message and pushed to v5.6-next/dts64
+
+Please double check that everything is correct.
+
+Regards,
+Matthias
