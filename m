@@ -4,55 +4,55 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FE65C3404C
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:05:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0433C34031
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:05:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 35F302467E
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:05:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9078824683
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 05:05:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qDZfr9MC"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KWtAXqoH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726423AbgBTFFC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Feb 2020 00:05:02 -0500
-Received: from mail-pg1-f196.google.com ([209.85.215.196]:45930 "EHLO
-        mail-pg1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725811AbgBTFFC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 00:05:02 -0500
-Received: by mail-pg1-f196.google.com with SMTP id b9so1282689pgk.12
-        for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2020 21:05:02 -0800 (PST)
+        id S1726940AbgBTFFM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Feb 2020 00:05:12 -0500
+Received: from mail-pf1-f196.google.com ([209.85.210.196]:40238 "EHLO
+        mail-pf1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726893AbgBTFFM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 00:05:12 -0500
+Received: by mail-pf1-f196.google.com with SMTP id b185so1290393pfb.7
+        for <linux-pm@vger.kernel.org>; Wed, 19 Feb 2020 21:05:10 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=dyNzXT8jLD/h3SHy8a6cXUYQMkAeXAKSKv5N+Mj3VNM=;
-        b=qDZfr9MCt0H7vO2O2iGnZXpDtP5E3Qw9y7loJoWPu3Sj//W9D1V3bwpfmBtms4Xo0c
-         y6yfy3huIAtnE5UxWFpK65fS4DIrSHQFpLXMYKAj6NImy/HuUzvlH38b2SN336GjLW2P
-         +grV3nLOxp0DzcR0vqK1R92Ly+imwIohlL8Xpci5eFMJR0vPC9Q4YNZtns4C3XB1J/rT
-         iLYeXLknGxrnrOsXDUQuWLZ6vXxoXWbxjjXuLwZgC+dT9w/QcUb+OAsmwh1RW+9SLOgc
-         82NKg5tXDHCXkDfMmQbjifdqPgWa6yDzv1kwkFqvuVL6iPJ7/9X4UGYmWTylJYSBgUJG
-         DTGg==
+        bh=aW+BwlvCbf3aWaQh47QJ3yNM7VLxHMAzfks9zOaajkM=;
+        b=KWtAXqoH66/xVX33DhMaKTUdGX6Uf98AbL57ah+k6dEdauNQwApvPnNPHUiivq6Jdi
+         49xLg0mTm79BVYHbdcVGHKDyfCI7Yt8YhnlXGJHea2d2Y16+X+iCM76wvPNmXrV4dhfb
+         KKtxMQCoagp0X+c11lVO9afWRHTd6fPbsvUjdhWnY6dEPBMgam5bDsEJ0yD01A23gyxO
+         XyvFyW3dEfa9OwDK55NIUQRusiahMNtBIZGwbpxIjB1xAdamE56cpYEcFU/u6PxFnaWt
+         V6wbP8AjfqY2Y56H4t559cVNwx9C1p0h6Vw2CRmcPmowj7AN8PIhT+73joESZcCRHPmP
+         3dBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=dyNzXT8jLD/h3SHy8a6cXUYQMkAeXAKSKv5N+Mj3VNM=;
-        b=n8s3IjgsZ3ttJ3TU1KUvfvN5J9WOGmnrVjZrK6ZcFO2kb0XmLsJNPFAobxeU1phb7o
-         a+hKvQk00QLHgoXwGhKW+rwXtvoFTNhBGtb/CKPrPbvtvlMAaSzUb2f2Fv7+tbD0+g+q
-         knDdjRZ5Xgvm5426TyCJX6QjPXoZ/3O1lCSL+6k2d+wn8z3GjYDtV1yQyZrnJsPQa1fn
-         SkKlbqzX3gnAJIlj0MdfenUqfjgM+ekJVhSm6SNxsW+nPDjkJrq/IkYAiOZI6DLMlwE+
-         R2DeAbjAuewaX/0turyfyxCXXoqutp0vc3S+bnJnrkQR1bKU4gu+rSVacwiONE0bWP1P
-         ejpQ==
-X-Gm-Message-State: APjAAAVtxn8J6I+d2Ecbv11SvHfLGryHGT1F6Ol5bdQpr43fQ0X8/pAG
-        6k78NyXVL9i9fI2OQeMfllzk6w==
-X-Google-Smtp-Source: APXvYqwKxpJ3up3gMovM7cilewhjBB7h6jVLv5FEJQ5jkpiNN8ZLL6nciC7CXK+kdMoSse7byXh8eg==
-X-Received: by 2002:a63:ec07:: with SMTP id j7mr30998730pgh.187.1582175101605;
-        Wed, 19 Feb 2020 21:05:01 -0800 (PST)
+        bh=aW+BwlvCbf3aWaQh47QJ3yNM7VLxHMAzfks9zOaajkM=;
+        b=gsoPmPO2vtpgI78+fdx12iSB3DZytlt8YyDbPv6Nc1CphRUfU+dgjOc2RT3VAopt9Q
+         qEI0tYAmi4ohGLNvGX9Ib/VaLnAOlVJf2jFI72rK4xz4R3iqttVvUhlV4JlEUOIwJLLw
+         D8Mnk5144wYR76RNggB17/eBXEZFj+6HazuC+YapKgXzFPtpksXIiMUfPeKPi+whW0Ac
+         C5P+5jt1GnfjYOdxHy5phJSa9w6O7DTY37DWELydb41Lm873LN8CeltjsyxtmmwU5+Ff
+         1uY23B3O77BNwCsH2iJ+JMEw37V07TPz25dIJzVUOaLGzUHQZz7ScDvV9H6FKt2ruJFx
+         HrSw==
+X-Gm-Message-State: APjAAAWmZk5Mg5/eFg4Jzeme6Z7KBZLIgOTvmJGfOhyXKvh0vQZZbOFP
+        OeBgG7q5b1ZIbku/yLv0tJepTw==
+X-Google-Smtp-Source: APXvYqxtOMEIAg/0vMNdo4l2g1zhUCi8GqsKzxUcztilwfCWBSoXPh54dpJIreh60u0UmWS9iVnVSQ==
+X-Received: by 2002:a63:fc51:: with SMTP id r17mr31212077pgk.292.1582175109855;
+        Wed, 19 Feb 2020 21:05:09 -0800 (PST)
 Received: from localhost.localdomain ([2601:1c2:680:1319:692:26ff:feda:3a81])
-        by smtp.gmail.com with ESMTPSA id z4sm1400847pfn.42.2020.02.19.21.04.59
+        by smtp.gmail.com with ESMTPSA id z4sm1400847pfn.42.2020.02.19.21.05.06
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 19 Feb 2020 21:05:01 -0800 (PST)
+        Wed, 19 Feb 2020 21:05:09 -0800 (PST)
 From:   John Stultz <john.stultz@linaro.org>
 To:     lkml <linux-kernel@vger.kernel.org>
 Cc:     John Stultz <john.stultz@linaro.org>,
@@ -69,9 +69,9 @@ Cc:     John Stultz <john.stultz@linaro.org>,
         Linus Walleij <linus.walleij@linaro.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH v4 2/6] driver core: Set deferred_probe_timeout to a longer default if CONFIG_MODULES is set
-Date:   Thu, 20 Feb 2020 05:04:36 +0000
-Message-Id: <20200220050440.45878-3-john.stultz@linaro.org>
+Subject: [PATCH v4 5/6] driver core: Rename deferred_probe_timeout and make it global
+Date:   Thu, 20 Feb 2020 05:04:39 +0000
+Message-Id: <20200220050440.45878-6-john.stultz@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200220050440.45878-1-john.stultz@linaro.org>
 References: <20200220050440.45878-1-john.stultz@linaro.org>
@@ -80,15 +80,10 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When using modules, its common for the modules not to be loaded
-until quite late by userland. With the current code,
-driver_deferred_probe_check_state() will stop returning
-EPROBE_DEFER after late_initcall, which can cause module
-dependency resolution to fail after that.
-
-So allow a longer window of 30 seconds (picked somewhat
-arbitrarily, but influenced by the similar regulator core
-timeout value) in the case where modules are enabled.
+Since other subsystems (like regulator) have similar arbitrary
+timeouts for how long they try to resolve driver dependencies,
+rename deferred_probe_timeout to driver_deferred_probe_timeout
+and set it as global, so it can be shared.
 
 Cc: Rob Herring <robh@kernel.org>
 Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
@@ -105,36 +100,89 @@ Cc: Linus Walleij <linus.walleij@linaro.org>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: linux-pm@vger.kernel.org
 Signed-off-by: John Stultz <john.stultz@linaro.org>
-Change-Id: I9c5a02a54915ff53f9f14d49c601f41d7105e05e
+Change-Id: I92ee3b392004ecc9217c5337b54eda48c2d7f3ee
 ---
 v4:
 * Split out into its own patch as suggested by Mark
-* Made change conditional on CONFIG_MODULES
+* Renamed deferred_probe_timeout as suggested by Greg
 ---
- drivers/base/dd.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/base/dd.c             | 18 ++++++++++--------
+ include/linux/device/driver.h |  1 +
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
 diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index bb383dca39c1..fa138f24e2d3 100644
+index 408e4da081da..39f1ce6d4f1c 100644
 --- a/drivers/base/dd.c
 +++ b/drivers/base/dd.c
-@@ -224,7 +224,16 @@ static int deferred_devs_show(struct seq_file *s, void *data)
- }
- DEFINE_SHOW_ATTRIBUTE(deferred_devs);
- 
-+#ifdef CONFIG_MODULES
-+/*
-+ * In the case of modules, set the default probe timeout to
-+ * 30 seconds to give userland some time to load needed modules
-+ */
-+static int deferred_probe_timeout = 30;
-+#else
-+/* In the case of !modules, no probe timeout needed */
- static int deferred_probe_timeout = -1;
-+#endif
+@@ -229,17 +229,19 @@ DEFINE_SHOW_ATTRIBUTE(deferred_devs);
+  * In the case of modules, set the default probe timeout to
+  * 30 seconds to give userland some time to load needed modules
+  */
+-static int deferred_probe_timeout = 30;
++int driver_deferred_probe_timeout = 30;
+ #else
+ /* In the case of !modules, no probe timeout needed */
+-static int deferred_probe_timeout = -1;
++int driver_deferred_probe_timeout = -1;
+ #endif
++EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
++
  static int __init deferred_probe_timeout_setup(char *str)
  {
  	int timeout;
+ 
+ 	if (!kstrtoint(str, 10, &timeout))
+-		deferred_probe_timeout = timeout;
++		driver_deferred_probe_timeout = timeout;
+ 	return 1;
+ }
+ __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
+@@ -259,10 +261,10 @@ __setup("deferred_probe_timeout=", deferred_probe_timeout_setup);
+  */
+ int driver_deferred_probe_check_state(struct device *dev)
+ {
+-	if (!initcalls_done || deferred_probe_timeout > 0)
++	if (!initcalls_done || driver_deferred_probe_timeout > 0)
+ 		return -EPROBE_DEFER;
+ 
+-	if (!deferred_probe_timeout) {
++	if (!driver_deferred_probe_timeout) {
+ 		dev_WARN(dev, "deferred probe timeout, ignoring dependency");
+ 		return -ETIMEDOUT;
+ 	}
+@@ -276,7 +278,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
+ {
+ 	struct device_private *private, *p;
+ 
+-	deferred_probe_timeout = 0;
++	driver_deferred_probe_timeout = 0;
+ 	driver_deferred_probe_trigger();
+ 	flush_work(&deferred_probe_work);
+ 
+@@ -310,9 +312,9 @@ static int deferred_probe_initcall(void)
+ 	driver_deferred_probe_trigger();
+ 	flush_work(&deferred_probe_work);
+ 
+-	if (deferred_probe_timeout > 0) {
++	if (driver_deferred_probe_timeout > 0) {
+ 		schedule_delayed_work(&deferred_probe_timeout_work,
+-			deferred_probe_timeout * HZ);
++			driver_deferred_probe_timeout * HZ);
+ 	}
+ 	return 0;
+ }
+diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+index 5242afabfaba..ee7ba5b5417e 100644
+--- a/include/linux/device/driver.h
++++ b/include/linux/device/driver.h
+@@ -236,6 +236,7 @@ driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
+ }
+ #endif
+ 
++extern int driver_deferred_probe_timeout;
+ void driver_deferred_probe_add(struct device *dev);
+ int driver_deferred_probe_check_state(struct device *dev);
+ void driver_init(void);
 -- 
 2.17.1
 
