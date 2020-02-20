@@ -2,96 +2,91 @@ Return-Path: <SRS0=6Td0=4I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7332FC11D05
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 10:56:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E76CC11D05
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 10:57:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 42D8B2467B
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 10:56:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E13232465D
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Feb 2020 10:57:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582196160;
-	bh=qPsr2SWZlj8NnVvJey7tGh27YrIHO/JutMrOFdqCmio=;
+	s=default; t=1582196241;
+	bh=Zn1Lb3yQmJpeLKOyRscBdWNwYHqb6RetCMQK8g96jAM=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=yIQGHuHp4L3AMuz+iLBje0K7FUDsJZ7Xsqb/UQfEVwB9FSd5O+hpkR4pVDpXFByJ0
-	 U/AuIkD8LSBvpQlmy1HvLzDhEspJrR04CXnXK5beUKDa6Hb0bEg9P7EjsIq4i4vXU9
-	 deUbpnyC+u0IsJjzE6eRY411PbF1q9zWbo6gbObA=
+	b=TQ+Wn9ERemHOBEUuSkWT33I/mWLkUdDHBz6a1+7O2elVAft4OCw2WvJlkqyiuFijO
+	 lya/GJ3T7qNXaFXNs6NPezq01StO9GBVCAK4K4FwiG92Z6PVVhGv1CQ48+Bv0UJSS+
+	 M04/YjtCpts7sSS0JesMF78zl0olzRLDqpSjkW3E=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726825AbgBTKz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Feb 2020 05:55:59 -0500
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:33067 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726501AbgBTKz7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 05:55:59 -0500
-Received: by mail-oi1-f195.google.com with SMTP id q81so27148091oig.0;
-        Thu, 20 Feb 2020 02:55:58 -0800 (PST)
+        id S1727134AbgBTK5U convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Feb 2020 05:57:20 -0500
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:45916 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726882AbgBTK5U (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Feb 2020 05:57:20 -0500
+Received: by mail-ot1-f68.google.com with SMTP id 59so3198658otp.12;
+        Thu, 20 Feb 2020 02:57:19 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=G99URgKphVxwp7Ra7ZFOznbKMKp/kFSH0MuSo7Gxdb0=;
-        b=pfURzScUjgFxsmBdLH2h5Beg1Pds63EoEPRYgyy5qeRqH/9iJIsUEZV+HsGR5L96a5
-         HQYYXSbUEzXvelDMoflVdRlwjo8j1ezjF/F3r7SFfastvplkZMKUc0Dq9X/60FpHBh8K
-         EaByq4+ZhU8aI+26a4Zkl5upT/D3IDX+aoLu1J6BwywTFZX2obOzqTac/cgPRmlPp9H7
-         a5wLv9E9M/NSr5huXacdFyRyJvqcQd3OtZfPk6cMUSeLmTSZN9ABW7QMQltvvB5hb5Ov
-         BNfRTfhmnSAWklKGxgGitNJ2YJGxsYwx+/wTTmWeR3AP+xye69tIBop9v6dNPue/Pu1B
-         NaXQ==
-X-Gm-Message-State: APjAAAV2fRN1BhX6nlNjOveXSRnMJGKH8ax+K4JCpk4NvbfggGuHU8Yh
-        Sojpf4TvZBjanheuZE+jrLj0bQyQNlGNa7ho6Fg=
-X-Google-Smtp-Source: APXvYqwLmmbws9uz7Vla3YX3g5Wu8BZk334H6JmjpzH7fRjakCQh96hafjJ6EVIcNOYq5mnIwGSPliJ8FdSR6qDlIAE=
-X-Received: by 2002:a54:488d:: with SMTP id r13mr1438289oic.115.1582196158627;
- Thu, 20 Feb 2020 02:55:58 -0800 (PST)
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=oUm7pdkP7Z40yNU0+bCa9A5eNVIQpdLnF23GrSn2iwk=;
+        b=f3hXWZR3Hgc9JoPdVd35B4XTpiRolop8/siUgtSvyl6YikTULe5f0Q1VKRustk1AZK
+         Cor8gVk2TL0UX0iBI0u6F58X6/XCNn2ruI+JC6lTig0MN6qMwvViH4vi++2/iFps9L+D
+         kyNcGJ7xjIMm5j6j/HLLkKqTDhCpW9FfRdbBal2WKe26N6FOcLmimSyKJVzTUNIX4p5k
+         7OScjqydnM2YNtSagwE0DK/BR/6Yg+eJKtaDzkpVYoMImGK8OLZqggTQiLuWUtI4BoJR
+         9VfzK3gX/T9jktdxpA5rVLmSqeVFSJHhQhEN9ar2yAsBJrrzfXUYlB83Xo2oYdGhJ6pL
+         0nAw==
+X-Gm-Message-State: APjAAAUe3BqjKOMXVp4sngwxWQpnfc9bpMXTv7EnvWCNbc0dP1BSe9/R
+        oOwp7iIwy9IPabNeoWM/mKnkz/n7koA1zMG86jOneA==
+X-Google-Smtp-Source: APXvYqxqJppIyUd/OfZTqFpjgRZ7wJ/a32QzOMfYY2RxFL5PJ9ad0sUNFLEOiPEbk+atTo+IHeVpWl+zX0CASNRcELw=
+X-Received: by 2002:a05:6830:1651:: with SMTP id h17mr21822924otr.167.1582196239475;
+ Thu, 20 Feb 2020 02:57:19 -0800 (PST)
 MIME-Version: 1.0
-References: <561e2780-111a-1939-43fb-ae32d7abce8d@infradead.org>
-In-Reply-To: <561e2780-111a-1939-43fb-ae32d7abce8d@infradead.org>
+References: <20200218145819.17314-1-j.neuschaefer@gmx.net>
+In-Reply-To: <20200218145819.17314-1-j.neuschaefer@gmx.net>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 20 Feb 2020 11:55:47 +0100
-Message-ID: <CAJZ5v0ijpwHCysTHmG6t3y1XZY3DS0ySYNXa+2c+0Jczg85=GA@mail.gmail.com>
-Subject: Re: [PATCH -next] Documentation/power: fix pm_qos_interface.rst
- format warning
-To:     Randy Dunlap <rdunlap@infradead.org>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        "linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Date:   Thu, 20 Feb 2020 11:57:08 +0100
+Message-ID: <CAJZ5v0gQsZjHn4A2aSRL1Ap2PiUN0SC3h0Csfqd87aS9e6VpxA@mail.gmail.com>
+Subject: Re: [PATCH 1/2] docs: power: Drop reference to interface.rst
+To:     =?UTF-8?Q?Jonathan_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>
+Cc:     "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 17, 2020 at 5:54 AM Randy Dunlap <rdunlap@infradead.org> wrote:
+On Tue, Feb 18, 2020 at 3:59 PM Jonathan Neuschäfer
+<j.neuschaefer@gmx.net> wrote:
 >
-> From: Randy Dunlap <rdunlap@infradead.org>
+> It has been merged into sleep-states.rst.
 >
-> Fix Sphinx warnings by indenting the bullet list (and making it
-> unnumbered).
->
-> Documentation/power/pm_qos_interface.rst:12: WARNING: Unexpected indentation.
->
-> Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-> Cc: linux-pm@vger.kernel.org
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: linux-doc@vger.kernel.org
+> Fixes: c21502efdaed ("Documentation: admin-guide: PM: Update sleep states documentation")
+> Signed-off-by: Jonathan Neuschäfer <j.neuschaefer@gmx.net>
 > ---
->  Documentation/power/pm_qos_interface.rst |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+>  Documentation/power/index.rst | 1 -
+>  1 file changed, 1 deletion(-)
 >
-> --- linux-next-20200217.orig/Documentation/power/pm_qos_interface.rst
-> +++ linux-next-20200217/Documentation/power/pm_qos_interface.rst
-> @@ -7,8 +7,8 @@ performance expectations by drivers, sub
->  one of the parameters.
->
->  Two different PM QoS frameworks are available:
-> -1. CPU latency QoS.
-> -2. The per-device PM QoS framework provides the API to manage the
-> + * CPU latency QoS.
-> + * The per-device PM QoS framework provides the API to manage the
->     per-device latency constraints and PM QoS flags.
->
->  The latency unit used in the PM QoS framework is the microsecond (usec).
+> diff --git a/Documentation/power/index.rst b/Documentation/power/index.rst
+> index 002e42745263..ced8a8007434 100644
+> --- a/Documentation/power/index.rst
+> +++ b/Documentation/power/index.rst
+> @@ -13,7 +13,6 @@ Power Management
+>      drivers-testing
+>      energy-model
+>      freezing-of-tasks
+> -    interface
+>      opp
+>      pci
+>      pm_qos_interface
+> --
 
-Applied, thanks!
+Applied as a fix for 5.6, thanks!
