@@ -2,212 +2,114 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4956C35641
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9D1C35640
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 89C65207FD
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="GBOiX8Pt"
+	by mail.kernel.org (Postfix) with ESMTP id 5D00124670
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727046AbgBUJgQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 04:36:16 -0500
-Received: from mail27.static.mailgun.info ([104.130.122.27]:27083 "EHLO
-        mail27.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728073AbgBUJgP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 04:36:15 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1582277775; h=References: In-Reply-To: Message-Id: Date:
- Subject: Cc: To: From: Sender;
- bh=dlszzUGlv2unK5PKobKXkEQRus5tUEcWTbP60Jg5+dM=; b=GBOiX8PtxJPKJS6/ygYnfeMSNQgU1aLrofEjJfAQx9UCC8dTWe2ASvcYobdDQ8H/DISUXVFh
- w64+w+MI4ZWZhJasiyHWyJ8h48W0OEgGJNfaBZMeBAiNFHBmwNhqDol9eNjBJ37q3m/JqFkB
- B8mFHVxJAJ4804BzLcKNtzlAVj4=
-X-Mailgun-Sending-Ip: 104.130.122.27
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171])
- by mxa.mailgun.org with ESMTP id 5e4fa47a.7f0e2a30e8b8-smtp-out-n03;
- Fri, 21 Feb 2020 09:35:54 -0000 (UTC)
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 919A5C4479C; Fri, 21 Feb 2020 09:35:53 +0000 (UTC)
-Received: from okukatla1-linux.qualcomm.com (blr-c-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.19.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: okukatla)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 1E2C3C447A0;
-        Fri, 21 Feb 2020 09:35:46 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 1E2C3C447A0
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=okukatla@codeaurora.org
-From:   Odelu Kukatla <okukatla@codeaurora.org>
-To:     georgi.djakov@linaro.org, daidavid1@codeaurora.org,
-        bjorn.andersson@linaro.org, evgreen@google.com,
-        Andy Gross <agross@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     sboyd@kernel.org, ilina@codeaurora.org, seansw@qti.qualcomm.com,
-        elder@linaro.org, linux-pm@vger.kernel.org,
-        linux-arm-msm-owner@vger.kernel.org,
-        Odelu Kukatla <okukatla@codeaurora.org>
-Subject: [V3, 3/3] dt-bindings: interconnect: Add Qualcomm SC7180 DT bindings
-Date:   Fri, 21 Feb 2020 15:00:50 +0530
-Message-Id: <1582277450-27382-4-git-send-email-okukatla@codeaurora.org>
-X-Mailer: git-send-email 1.9.1
-In-Reply-To: <1582277450-27382-1-git-send-email-okukatla@codeaurora.org>
-References: <1582277450-27382-1-git-send-email-okukatla@codeaurora.org>
+        id S1727860AbgBUJg2 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 04:36:28 -0500
+Received: from mail.fireflyinternet.com ([77.68.26.236]:61518 "EHLO
+        fireflyinternet.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1727840AbgBUJg2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 04:36:28 -0500
+X-Greylist: delayed 989 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Feb 2020 04:36:27 EST
+X-Default-Received-SPF: pass (skip=forwardok (res=PASS)) x-ip-name=78.156.65.138;
+Received: from localhost (unverified [78.156.65.138]) 
+        by fireflyinternet.com (Firefly Internet (M1)) with ESMTP (TLS) id 20298788-1500050 
+        for multiple; Fri, 21 Feb 2020 09:19:51 +0000
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+From:   Chris Wilson <chris@chris-wilson.co.uk>
+In-Reply-To: <4974198.mf5Me8BlfX@kreacher>
+Cc:     linux-kernel@vger.kernel.org,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>
+References: <CAHk-=wgqwiBLGvwTqU2kJEPNmafPpPe_K0XgBU-A58M+mkwpgQ@mail.gmail.com>
+ <158197497594.2449.9692451182044632969@skylake-alporthouse-com>
+ <10791544.HYfhKnFLvn@kreacher> <4974198.mf5Me8BlfX@kreacher>
+Message-ID: <158227678951.3099.15076882205129643027@skylake-alporthouse-com>
+User-Agent: alot/0.6
+Subject: Re: Linux 5.6-rc2
+Date:   Fri, 21 Feb 2020 09:19:49 +0000
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SC7180 platform has several bus fabrics that could be
-controlled and tuned dynamically according to the bandwidth demand.
+Quoting Rafael J. Wysocki (2020-02-21 00:46:18)
+> On Thursday, February 20, 2020 11:41:22 PM CET Rafael J. Wysocki wrote:
+> > On Monday, February 17, 2020 10:29:35 PM CET Chris Wilson wrote:
+> > > Quoting Linus Torvalds (2020-02-17 21:20:27)
+> > > > On Mon, Feb 17, 2020 at 8:22 AM Chris Wilson <chris@chris-wilson.co.uk> wrote:
+> > > > >
+> > > > > Quoting Linus Torvalds (2020-02-16 21:32:32)
+> > > > > > Rafael J. Wysocki (4):
+> > > > > >       ACPI: EC: Fix flushing of pending work
+> > > > > >       ACPI: PM: s2idle: Avoid possible race related to the EC GPE
+> > > > > >       ACPICA: Introduce acpi_any_gpe_status_set()
+> > > > > >       ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system
+> > > > >
+> > > > > Our S0 testing broke on all platforms, so we've reverted
+> > > > > e3728b50cd9b ("ACPI: PM: s2idle: Avoid possible race related to the EC GPE")
+> > > > > fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system")
+> > > > >
+> > > > > There wasn't much in the logs, for example,
+> > > > > https://intel-gfx-ci.01.org/tree/drm-tip/IGT_5445/fi-kbl-7500u/igt@gem_exec_suspend@basic-s0.html
+> > > > 
+> > > > So the machine suspends, but never comes back?
+> > > > 
+> > > > Do you need to revert both for it to work for you? Or is the revert of
+> > > > fdde0ff8590b just to avoid the conflict?
+> > > 
+> > > fdde0ff85 was just to avoid conflicts.
+> > >  
+> > > > I'm assuming you bisected this, and the bisect indicated e3728b50cd9b,
+> > > > and then to revert it you reverted the other commit too..
+> > > 
+> > > Lucky guess based on diff rc1..rc2. Bisect was going to be painful, but
+> > > could be done if this is not enough clue for Rafael.
+> > 
+> > Sorry for the delayed response, was away.
+> > 
+> > I'm guessing that you are using rtcwake for wakeup, in which case reverting
+> > fdde0ff85 alone should unbreak it.
+> > 
+> > Can you please double check that?
+> 
+> And below is a patch that should fix it if I'm not mistaken (verified on my
+> system where I was able to reproduce the issue), so it would suffice to test
+> this one on top of the -rc2.
 
-Signed-off-by: Odelu Kukatla <okukatla@codeaurora.org>
----
- arch/arm64/boot/dts/qcom/sc7180.dtsi | 95 ++++++++++++++++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
+Correct on both accounts. Reverting fdde0ff85 alone was enough, and
+replacing the reverts with the suggested patch works.
 
-diff --git a/arch/arm64/boot/dts/qcom/sc7180.dtsi b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-index cc5a94f..3e28f34 100644
---- a/arch/arm64/boot/dts/qcom/sc7180.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sc7180.dtsi
-@@ -748,6 +748,69 @@
- 			};
- 		};
- 
-+		config_noc: interconnect@1500000 {
-+			compatible = "qcom,sc7180-config-noc";
-+			reg = <0 0x01500000 0 0x28000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		system_noc: interconnect@1620000 {
-+			compatible = "qcom,sc7180-system-noc";
-+			reg = <0 0x01620000 0 0x17080>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		mc_virt: interconnect@1638000 {
-+			compatible = "qcom,sc7180-mc-virt";
-+			reg = <0 0x01638000 0 0x1000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		qup_virt: interconnect@1650000 {
-+			compatible = "qcom,sc7180-qup-virt";
-+			reg = <0 0x01650000 0 0x1000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		aggre1_noc: interconnect@16e0000 {
-+			compatible = "qcom,sc7180-aggre1-noc";
-+			reg = <0 0x016e0000 0 0x15080>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		aggre2_noc: interconnect@1705000 {
-+			compatible = "qcom,sc7180-aggre2-noc";
-+			reg = <0 0x01705000 0 0x9000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		compute_noc: interconnect@170e000 {
-+			compatible = "qcom,sc7180-compute-noc";
-+			reg = <0 0x0170e000 0 0x6000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		mmss_noc: interconnect@1740000 {
-+			compatible = "qcom,sc7180-mmss-noc";
-+			reg = <0 0x01740000 0 0x1c100>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		ipa_virt: interconnect@1e00000 {
-+			compatible = "qcom,sc7180-ipa-virt";
-+			reg = <0 0x01e00000 0 0x1000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		tcsr_mutex_regs: syscon@1f40000 {
- 			compatible = "syscon";
- 			reg = <0 0x01f40000 0 0x40000>;
-@@ -1103,6 +1166,13 @@
- 			};
- 		};
- 
-+		dc_noc: interconnect@9160000 {
-+			compatible = "qcom,sc7180-dc-noc";
-+			reg = <0 0x09160000 0 0x03200>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		system-cache-controller@9200000 {
- 			compatible = "qcom,sc7180-llcc";
- 			reg = <0 0x09200000 0 0x200000>, <0 0x09600000 0 0x50000>;
-@@ -1110,6 +1180,20 @@
- 			interrupts = <GIC_SPI 582 IRQ_TYPE_LEVEL_HIGH>;
- 		};
- 
-+		gem_noc: interconnect@9680000 {
-+			compatible = "qcom,sc7180-gem-noc";
-+			reg = <0 0x09680000 0 0x3e200>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
-+		npu_noc: interconnect@9990000 {
-+			compatible = "qcom,sc7180-npu-noc";
-+			reg = <0 0x09990000 0 0x1600>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		usb_1: usb@a6f8800 {
- 			compatible = "qcom,sc7180-dwc3", "qcom,dwc3";
- 			reg = <0 0x0a6f8800 0 0x400>;
-@@ -1154,6 +1238,13 @@
- 			};
- 		};
- 
-+		camnoc_virt: interconnect@ac00000 {
-+			compatible = "qcom,sc7180-camnoc-virt";
-+			reg = <0 0x0ac00000 0 0x1000>;
-+			#interconnect-cells = <1>;
-+			qcom,bcm-voters = <&apps_bcm_voter>;
-+		};
-+
- 		pdc: interrupt-controller@b220000 {
- 			compatible = "qcom,sc7180-pdc", "qcom,pdc";
- 			reg = <0 0x0b220000 0 0x30000>;
-@@ -1481,6 +1572,10 @@
- 					};
- 				};
- 			};
-+
-+			apps_bcm_voter: bcm_voter {
-+				compatible = "qcom,bcm-voter";
-+			};
- 		};
- 
- 		cpufreq_hw: cpufreq@18323000 {
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> ---
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> Subject: [PATCH] ACPI: PM: s2idle: Check fixed wakeup events in acpi_s2idle_wake()
+> 
+> Commit fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from
+> waking up the system") overlooked the fact that fixed events can wake
+> up the system too and broke RTC wakeup from suspend-to-idle as a
+> result.
+> 
+> Fix this issue by checking the fixed events in acpi_s2idle_wake() in
+> addition to checking wakeup GPEs and break out of the suspend-to-idle
+> loop if the status bits of any enabled fixed events are set then.
+> 
+> Fixes: fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system")
+> Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
+> Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Chris Wilson <chris@chris-wilson.co.uk>
+-Chris
