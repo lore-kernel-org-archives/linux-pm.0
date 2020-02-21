@@ -2,121 +2,92 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CED69C35659
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D64FC35646
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:02:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A5BC3222C4
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:41:35 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vLOXiT3L"
+	by mail.kernel.org (Postfix) with ESMTP id 15C3E20722
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:02:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582308150;
+	bh=2iqlsfCU2xzdvKiMFOxsJfrFK/WCC507GMR5NHeQJ/g=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=N6e41N2iXSp7sy6pp70jMbMl/cLAjdG3ke92eUbFPaaPEAzL9yd9pdyF1YIy89qrH
+	 Z5YdoIh1ugdBkcAmECJQFVrtGtxw1j2KOEaq/0tqwXbFlpqyCkDo9L+oNVDgXaoRAB
+	 LaWn38yKhii+xSXubwEOaRb7lphIcjDh1mazkuWg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727799AbgBURle (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 12:41:34 -0500
-Received: from mail-wm1-f66.google.com ([209.85.128.66]:34274 "EHLO
-        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727855AbgBURle (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 12:41:34 -0500
-Received: by mail-wm1-f66.google.com with SMTP id s144so5672236wme.1
-        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 09:41:32 -0800 (PST)
+        id S1725995AbgBUSC3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 13:02:29 -0500
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:36691 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729442AbgBUSC2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 13:02:28 -0500
+Received: by mail-lj1-f193.google.com with SMTP id r19so3114127ljg.3
+        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 10:02:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to
-         :user-agent;
-        bh=WYt19hWbIa5Xu8CWd9oipzHMFzU2GBfzETdCcySKemk=;
-        b=vLOXiT3LsFWCymfBWSf00sI8eNVCzOAsnAYW2uMu2fl5aol6UNQA1cDd5eBMO6+E8X
-         cDJpIAGGZx0RA+9rmpmL2S7/RmM7BY0Y9qQ7thrXPF3b6AR+Ykj6cN27an4Hi7FKF2wN
-         NBlG16z/AfiNYeM7wwugQp1X1RtxgjPYHtspY6lEjAuL9pXH6WaOmthn6YgTAx/eIQhp
-         +TNVXXACeXcBBOEkEUvKjSL6RG6A+uLcldANURzXnA3MGyO8jpjF2QWiQvTQD0QP1ozd
-         98KvSuy1Oe+7jTHBZub6c5lA7xdKBc8ZDnx922r6+qRd9EiaogA+6Tz9MIobp6ObKwib
-         jKkg==
+        d=linux-foundation.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=AG9TJKXnTeZzyHlgjHVGK5jDlYOlKtakbHNOYDpKW9E=;
+        b=LtuqrNdxX93Kes55M7/V1nmMoOY/Am5rxlDligc40iz1+GEbCmeM7TuGyB0tTEcegn
+         UDZiT2MxYZWEAGTE0LovTMS1jqfnFBkPD3xPTU2e30E6da/H/mQbYfgawXH18yg2Guvv
+         l3o1EYHUu3z2m8B4mLtmpaElvsWWhBoRfpDBs=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        bh=WYt19hWbIa5Xu8CWd9oipzHMFzU2GBfzETdCcySKemk=;
-        b=RhAKlv6h9hc2onMXVWbCiPoHaMPPG514mwtw+u5CgnbLgsxCxBOVKTZkpQOCeOPsCI
-         hRbz+AbIAF0N1/qLzAupVLHq5npV08dEFN6HyJbIhSeF4jwr5GCY9Za/ry5pBaEg+4wm
-         RwbrXkgze4oUwMwPJ8maJj6yfX3oH24RtBMMy/fXrzK8iqBhnybGIfvSrqjodEf5dKag
-         YFAM4Weh2ZCY/0VF0DZFXYVUaU8e9yFKMbVtCR8qhLD6pQooPdzPvr8sLRdt00ZBpFHO
-         M0oevSIrfPXZCvh4sEr0n3lgmue2T1pyrBK9YUg2TLDFl+cTcZsN8MM3OXChinErpDL+
-         WiBw==
-X-Gm-Message-State: APjAAAW3yoJtGsZ4ml/z9sDQYATE9y/GItucIQwCqqZASg1KIb8Deast
-        gS6zPc9pAvWXuaZnTse3X3ZvqA==
-X-Google-Smtp-Source: APXvYqxS9rE7ngm9CQLvZpUgXpRRYzTQIAk89jaGKyx1v3OnFAHZORuHOe8eqf+brp+9uMmwLjbhbA==
-X-Received: by 2002:a05:600c:4105:: with SMTP id j5mr5150857wmi.28.1582306891123;
-        Fri, 21 Feb 2020 09:41:31 -0800 (PST)
-Received: from linaro.org ([2a01:e34:ed2f:f020:903b:a048:f296:e3ae])
-        by smtp.gmail.com with ESMTPSA id a5sm4658651wmb.37.2020.02.21.09.41.29
-        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
-        Fri, 21 Feb 2020 09:41:30 -0800 (PST)
-Date:   Fri, 21 Feb 2020 18:41:28 +0100
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
-        Jasper Korten <jja2000@gmail.com>,
-        David Heidelberg <david@ixit.cz>,
-        Peter Geis <pgwipeout@gmail.com>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v9 13/17] cpuidle: tegra: Squash Tegra30 driver into the
- common driver
-Message-ID: <20200221174128.GW10516@linaro.org>
-References: <20200212235134.12638-1-digetx@gmail.com>
- <20200212235134.12638-14-digetx@gmail.com>
- <20200221162951.GQ10516@linaro.org>
- <89a9838c-faf3-b890-cea2-aad53df1eac3@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=AG9TJKXnTeZzyHlgjHVGK5jDlYOlKtakbHNOYDpKW9E=;
+        b=WxuczffaAQChmgUFIHNTG7qJZ/FaefB0Pvd7LF3hszI1FycgFxvfamS9ct6S+67frc
+         UdnQi5aaRjGvPa0j6+7mm1uudLssFD24KmvrwjOCK1qj/HHVNBYeN2SEk6bvdRLvPod5
+         RdkVqU0Dt47y7z+5NxrpWdhpoTuBaLKFUBkoQWLts7Sj7QyC+jEc2v+F2MrvgbOQ43oX
+         0XcRhpvIqsVBfONB57FcwbHr2tcVUQTdjda1EJZ8KZbbh9ucT1U4SIT+IMaCNVcS4+lJ
+         LmguAs1V8aM4euVJOUoNVVT9GdM7uRhwxrrtpjH0vcuXzeQ4UYoN9NcbJykp4T6pec1e
+         eo5w==
+X-Gm-Message-State: APjAAAUXuoQeHj+flOa7fC+BD4fFVZ4qbSeMNZYas3Y3GFLqGZloSrA1
+        zB4KZ/SWllu1/ImCVSt9DdBU6eQToyo=
+X-Google-Smtp-Source: APXvYqxB63QzQaQZ0jYgQu91l9Vp3s42rQcVih2xIeYUr64T2Lvlk4xgMBQKJ0W0dQz3W1fTLANe2A==
+X-Received: by 2002:a05:651c:1bb:: with SMTP id c27mr23588650ljn.277.1582308146239;
+        Fri, 21 Feb 2020 10:02:26 -0800 (PST)
+Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com. [209.85.208.175])
+        by smtp.gmail.com with ESMTPSA id 19sm2391201lft.81.2020.02.21.10.02.24
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 21 Feb 2020 10:02:24 -0800 (PST)
+Received: by mail-lj1-f175.google.com with SMTP id x7so3128312ljc.1
+        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 10:02:24 -0800 (PST)
+X-Received: by 2002:a2e:580c:: with SMTP id m12mr22906965ljb.150.1582308144004;
+ Fri, 21 Feb 2020 10:02:24 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <89a9838c-faf3-b890-cea2-aad53df1eac3@gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <CAHk-=wgqwiBLGvwTqU2kJEPNmafPpPe_K0XgBU-A58M+mkwpgQ@mail.gmail.com>
+ <158197497594.2449.9692451182044632969@skylake-alporthouse-com>
+ <10791544.HYfhKnFLvn@kreacher> <4974198.mf5Me8BlfX@kreacher>
+ <158227678951.3099.15076882205129643027@skylake-alporthouse-com> <CAJZ5v0h07em8y5bXcnUTBcjie8pCttADK9QX9W_cB0WQRcDfGQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0h07em8y5bXcnUTBcjie8pCttADK9QX9W_cB0WQRcDfGQ@mail.gmail.com>
+From:   Linus Torvalds <torvalds@linux-foundation.org>
+Date:   Fri, 21 Feb 2020 10:02:07 -0800
+X-Gmail-Original-Message-ID: <CAHk-=wihfx015Rr-nrMmBtN--357cFRbS4rjXeKXvEfB=GYT5g@mail.gmail.com>
+Message-ID: <CAHk-=wihfx015Rr-nrMmBtN--357cFRbS4rjXeKXvEfB=GYT5g@mail.gmail.com>
+Subject: Re: Linux 5.6-rc2
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Chris Wilson <chris@chris-wilson.co.uk>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 21, 2020 at 07:59:14PM +0300, Dmitry Osipenko wrote:
-> 21.02.2020 19:29, Daniel Lezcano пишет:
-> > On Thu, Feb 13, 2020 at 02:51:30AM +0300, Dmitry Osipenko wrote:
-> >> Tegra20 and Terga30 SoCs have common C1 and CC6 idling states and thus
-> >> share the same code paths, there is no point in having separate drivers
-> >> for a similar hardware. This patch merely moves functionality of the old
-> >> driver into the new, although the CC6 state is kept disabled for now since
-> >> old driver had a rudimentary support for this state (allowing to enter
-> >> into CC6 only when secondary CPUs are put offline), while new driver can
-> >> provide a full-featured support. The new feature will be enabled by
-> >> another patch.
-> >>
-> >> Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
-> >> Tested-by: Peter Geis <pgwipeout@gmail.com>
-> >> Tested-by: Jasper Korten <jja2000@gmail.com>
-> >> Tested-by: David Heidelberg <david@ixit.cz>
-> >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> >> ---
-> >>  arch/arm/mach-tegra/Makefile          |   3 -
-> >>  arch/arm/mach-tegra/cpuidle-tegra30.c | 123 --------------------------
-> > 
-> > Add the -M option when resending please.
-> 
-> Okay, thank you very much for taking a look at the patches!
+On Fri, Feb 21, 2020 at 2:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> Please pick up this patch directly if you can.
 
-Yeah, sorry for the delay. Nice cleanup BTW.
+Done. Added Chris' tested-by too.
 
--- 
-
- <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+            Linus
