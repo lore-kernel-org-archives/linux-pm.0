@@ -2,146 +2,97 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CF7FC35646
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34FD5C35646
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:13:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4F80020722
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:13:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="qh8dozjs"
+	by mail.kernel.org (Postfix) with ESMTP id EE129222C4
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 17:13:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582305226;
+	bh=ClSnmbdLtqR6leem+D1hOzjaaJ0Onh+mXdiJUHo1EDU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=zIRDJsav3xnok1T7xIl+dhSNy8DrXVSQvBrSYx3iAzBTLDG3WJ3Lu6t3rIkFafK/A
+	 MxJFBJ6YS/0IHmZgEHuCbQ2SPrHDLbIDHBng6D06hRrQt/Geqhn5YHBW98/up5qbV9
+	 6SUaHjPqz50hUKybNmYihYsoof7736f9kZNcMzFA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727291AbgBURNX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 12:13:23 -0500
-Received: from mail-il1-f172.google.com ([209.85.166.172]:41170 "EHLO
-        mail-il1-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726672AbgBURNX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 12:13:23 -0500
-Received: by mail-il1-f172.google.com with SMTP id f10so2201855ils.8
-        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 09:13:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=bR4lHzdd7hFGSOfT6wjCLMaQmFgxgzcu/EhXcaZsebQ=;
-        b=qh8dozjsctmQVD6+hAItWi6rwODWcT0x8935378dY0i+7F68q4f1Z+nhwqWQzXUjon
-         0+mt4fMd+pKGWyPF70eeJ4So0QIP0Dz9/sFJTLb09DtfyKeu+iq5smh08/pok2huvcUe
-         Q4xkAeoNxwgjAH1amjvB/69GUAuET15/YzX4DFYC3X4Nr+5ZfeBmia3Uz7tQaHoPjze3
-         +PP20TlRmnZOr0VgrzghowxkW3e2P/nSmj0F8si25Wx/MEMvpUPuOuBOBUn6N5UX+a2v
-         ZGFXedWfKMeBXCHw9Dy3+7ujpOsJ2H8F8Gli2G3rfBxVbDhFPlLw4fwo0XkdCWCtPpBC
-         AZiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=bR4lHzdd7hFGSOfT6wjCLMaQmFgxgzcu/EhXcaZsebQ=;
-        b=AblpZSmnc8Plq15OviBKbvCToPMUvgD0TJVwG6V8lylUGQIqv7dvdUHaWABumvuDp/
-         /8ss44pmQ4/bx2m02iGsd3K2/c87QledImrW2RCV3EfB8S1Ka2cTBQeIbB+DoJtOwn/4
-         jOeJnsRwopKXRTZ0a3x6LmVKxQX1F3FEB9LVl69JsiH8Xm4aJ0UYAKfSLlkWcsJci2WQ
-         1g8M02q2k/TnOnbYTuz3pzjqHfpBVyEajx1a2hOGxqFACBJXHgXSGoJ4GTOv4smmsKIp
-         kEcZiV4819CTYHAHS1nNAclvZ3jqoYAmKnOCvTs5Hri68XfF7q5ZunZjT43ufrlH7N9f
-         TVtw==
-X-Gm-Message-State: APjAAAWKBZJMpmebAuzLqA97C9smTpi2KJvjoofIPH4m6cCBTCsfvmDG
-        FRrP2+oHbyAzvL2Ewvt9GaNmqRSMlF/3qb7sY9IWpw==
-X-Google-Smtp-Source: APXvYqztHZabXw7bx19dBMXUx8qWPmbjO8MeCOuuKPbKnHXSxH2rxcNkSfUoHY2wGoFbYsm+2JCRKB+YNw5gBeOb86w=
-X-Received: by 2002:a92:884e:: with SMTP id h75mr37619356ild.199.1582305202309;
- Fri, 21 Feb 2020 09:13:22 -0800 (PST)
+        id S1727799AbgBURNp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 12:13:45 -0500
+Received: from foss.arm.com ([217.140.110.172]:44062 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725957AbgBURNp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Feb 2020 12:13:45 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0986E30E;
+        Fri, 21 Feb 2020 09:13:45 -0800 (PST)
+Received: from localhost (unknown [10.37.6.21])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 73B143F68F;
+        Fri, 21 Feb 2020 09:13:44 -0800 (PST)
+Date:   Fri, 21 Feb 2020 17:13:42 +0000
+From:   Mark Brown <broonie@kernel.org>
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH 1/3] regulator: max14577: Add proper dt-compatible strings
+Message-ID: <20200221171342.GI5546@sirena.org.uk>
+References: <CGME20200220145134eucas1p288ae1910d3e8d12dc12f010ed0b07b45@eucas1p2.samsung.com>
+ <20200220145127.21273-1-m.szyprowski@samsung.com>
+ <20200220165614.GD3926@sirena.org.uk>
+ <964b8c4c-36ca-203d-e62b-4a8fc970e23d@samsung.com>
+ <20200221123813.GB5546@sirena.org.uk>
+ <b52332cd-1dec-fdfe-51fc-8605d94abe7d@samsung.com>
 MIME-Version: 1.0
-References: <CAJCQCtTPSC8666h5fuW=iSaVvuRq9to731W2-sAT6xUuESAzsw@mail.gmail.com>
- <CAA25o9TvFMEJnF45NFVqAfdxzKy5umzHHVDs+SCxrChGSKczTw@mail.gmail.com>
- <CAJCQCtQw7EJwREM8Fy_PWCwy3E7Jc=kLTRo_kgLNwNhYA32ABA@mail.gmail.com>
- <CAJCQCtQkK+J-6eoadBLr+CkJ6CLf3Kt+6CeTJANRiU+M7A9CNQ@mail.gmail.com>
- <CAA25o9T2wwqoopoNRySdZoYkD+vtqRPsB1YPnag=TkOp5D9sYA@mail.gmail.com>
- <CAA25o9SCanFH3nV52BwN=7EuSUFjX=Jrd+FCiV=6ThW=beKKMw@mail.gmail.com>
- <20200221084910.GM20509@dhcp22.suse.cz> <CAJZ5v0h5MnpK9YjO+Z7_M1Cj8tup4qPriALx-EHt4ypbmCWfUw@mail.gmail.com>
- <20200221093635.GN20509@dhcp22.suse.cz>
-In-Reply-To: <20200221093635.GN20509@dhcp22.suse.cz>
-From:   Luigi Semenzato <semenzato@google.com>
-Date:   Fri, 21 Feb 2020 09:13:10 -0800
-Message-ID: <CAA25o9SxajRaa+ZyhvTYdaKdXokcrNYXgEUimax4sUJGCmRYLA@mail.gmail.com>
-Subject: Re: is hibernation usable?
-To:     Michal Hocko <mhocko@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Chris Murphy <lists@colorremedies.com>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="16qp2B0xu0fRvRD7"
+Content-Disposition: inline
+In-Reply-To: <b52332cd-1dec-fdfe-51fc-8605d94abe7d@samsung.com>
+X-Cookie: Dead? No excuse for laying off work.
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 21, 2020 at 1:36 AM Michal Hocko <mhocko@kernel.org> wrote:
->
-> On Fri 21-02-20 10:04:18, Rafael J. Wysocki wrote:
-> > On Fri, Feb 21, 2020 at 9:49 AM Michal Hocko <mhocko@kernel.org> wrote:
-> > >
-> > > On Thu 20-02-20 09:38:06, Luigi Semenzato wrote:
-> > > > I was forgetting: forcing swap by eating up memory is dangerous
-> > > > because it can lead to unexpected OOM kills
-> > >
-> > > Could you be more specific what you have in mind? swapoff causing the
-> > > OOM killer?
 
-No, not swapoff, just fast allocation.
+--16qp2B0xu0fRvRD7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Also, in some earlier experiments I tried gradually increasing
-min_free_kbytes (precisely as suggested) and this would randomly
-trigger OOM kills when swap space was still available.
+On Fri, Feb 21, 2020 at 02:23:57PM +0100, Marek Szyprowski wrote:
+> On 21.02.2020 13:38, Mark Brown wrote:
 
-> > > > , but you can mitigate that
-> > > > by giving the memory-eaters a higher OOM kill score.  Still, some way
-> > > > of calling try_to_free_pages() directly from user-level would be
-> > > > preferable.  I wonder if such API has been discussed.
-> > >
-> > > No, there is no API to trigger the global memory reclaim. You could
-> > > start the reclaim by increasing min_free_kbytes but I wouldn't really
-> > > recommend that unless you know exactly what you are doing and also I
-> > > fail to see the point. If s2disk fails due to insufficient swap space
-> > > then how can a pro-active reclaim help in the first place?
-> >
-> > My understanding of the problem is that the size of swap is
-> > (theoretically) sufficient, but it is not used as expected during the
-> > preallocation of image memory.
-> >
-> > It was stated in one of the previous messages (not in this thread,
-> > cannot find it now) that swap (of the same size as RAM) was activated
-> > (swapon) right before hibernation, so theoretically that should be
-> > sufficient AFAICS.
+> > We could just remove the compatible strings from the binding
+> > documentation, they won't do any harm if we don't use them.
 
-Correct, those were my experiments.  Search the archives for
-"semenzato", there are a couple of threads on the topic.
+> Frankly I have no strong opinion on this. I've just wanted to fix the=20
+> broken autoloading of the drivers compiled as modules.
 
-But really, why not have a user-level interface for reclaim?  I find
-it very difficult to understand the behavior of the reclaim code, and
-any attempt to reclaim from user level (memory-eating processes,
-raising min_free_kbytes) can end in the OOM-kill path.  Using cgroups'
-memory.limit_in_bytes doesn't have this problem, precisely because it
-only calls try_to_free_pages(), which doesn't trigger OOM killing.  If
-I could make that call from user level (without cgroups) it would
-greatly simplify my current workaround, and would be useful in other
-situations as well.
+Shouldn't adding the relevant module table for the platform devices work
+just as well for that?  Possibly also deleting the of_compatible bits in
+the MFD as well, ISTR that's needed to make the platform device work.
 
-Something like
+--16qp2B0xu0fRvRD7
+Content-Type: application/pgp-signature; name="signature.asc"
 
-  echo $page_count > /proc/sys/vm/try_to_free_pages
-  cat /proc/sys/vm/pages_freed   # the number of pages freed at the
-latest request
+-----BEGIN PGP SIGNATURE-----
 
-> Hmm, this is interesting. Let me have a closer look...
->
-> pm_restrict_gfp_mask which would completely rule out any IO
-> happens after hibernate_preallocate_memory is done and my limited
-> understanding tells me that this is where all the reclaim happens
-> (via shrink_all_memory). It is quite possible that the MM decides to
-> not swap in that path - depending on the memory usage - and miss it's
-> target. More details would be needed. E.g. vmscan tracepoints could tell
-> us more.
->
-> --
-> Michal Hocko
-> SUSE Labs
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl5QD8YACgkQJNaLcl1U
+h9Bw3Qf+ICypwgqpOfbViorwhsNd3hYeovxUVDcqxnxihICh9+jgxBTl7heRL5hd
+QsO0mgj65HXPtElBIxhBtE7WZiKbT/WavCR8EHVpoST/q00zg4FKMWlVfbiP3Nqm
+2NcRBzx43XUlji4hEiwq4c4FI22PwMw84dqqWczq47rU7AdDX/vTfJEJzgs3jRDb
+LcZRK/8ShQjhv8nTDfNIm57atMXTraRQmnRLCH21RkhRo652Pz2oLnWhYamUJvtj
+WR/yFEXF20EkD1hAaHYwy2KnaQG5dJuBW9nvD+iFcOq9rQm+IlK+FHb3lG44wAAy
+nkIA9S0bNtrAzcebaglfcs3wtVORAA==
+=vq2s
+-----END PGP SIGNATURE-----
+
+--16qp2B0xu0fRvRD7--
