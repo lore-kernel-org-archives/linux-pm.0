@@ -2,114 +2,117 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9D1C35640
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31198C35640
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5D00124670
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 05F61222C4
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 09:36:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582277802;
+	bh=xCdRQ/OTwiAVZrTjfplF1IqcAipyVT0SY3eMPAJeat0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=FEfrywhxvxFQEmxG20VEKeRRSzSb8yZaapKJR3qy1hjeChQkFvlR71BFiJ9r5YZlh
+	 04xdH785zxvwWK4rFoep6QJYnaygtat/3RjFUGRMYdUigS1t9I83kU868sv5zNZ0XF
+	 c2MTtmCp3mxuVAS//XBspoYBwCZi0xX5lz0NAyyg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727860AbgBUJg2 convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 04:36:28 -0500
-Received: from mail.fireflyinternet.com ([77.68.26.236]:61518 "EHLO
-        fireflyinternet.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1727840AbgBUJg2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 04:36:28 -0500
-X-Greylist: delayed 989 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Feb 2020 04:36:27 EST
-X-Default-Received-SPF: pass (skip=forwardok (res=PASS)) x-ip-name=78.156.65.138;
-Received: from localhost (unverified [78.156.65.138]) 
-        by fireflyinternet.com (Firefly Internet (M1)) with ESMTP (TLS) id 20298788-1500050 
-        for multiple; Fri, 21 Feb 2020 09:19:51 +0000
-Content-Type: text/plain; charset="utf-8"
+        id S1727957AbgBUJgl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 04:36:41 -0500
+Received: from mail-wr1-f52.google.com ([209.85.221.52]:42697 "EHLO
+        mail-wr1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726984AbgBUJgl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 04:36:41 -0500
+Received: by mail-wr1-f52.google.com with SMTP id k11so1181135wrd.9
+        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 01:36:39 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=fttQOOv4xbgc3N7wuWKLpsK6IZKSEPyxzY4b9QO9DYU=;
+        b=IMqj2Yl0hEDrKfeqmpxtr1P8viwDcVAQYUbiYJc2kBAeIbp5Hhqp/BoS2/V6WC1RtL
+         APbAPzB1AwekuvLpxc5t+kRmhvcA1MDDAWw8U5R8nREWr/iVAhxtAYfpjrzQbXYY1JEm
+         ET46wbU2sOh3yMAri7zlqOmWq4JSizqEiSNiV+JtgUV8dcN1DJoshsr+pjWlQQ+m2O2Z
+         RNvL7VMSX2na/bn6Mx49Ts+355euET8Wq4TSGm5Dxj+HdbeYg78h43GKYzd/mCp+aqF6
+         muG+3TjIP29/K64TwljMYG6+mQhjFAwgZEy6KiJsHtJwcjOvOgT6jfjnQneczOmq0mmJ
+         1Vjw==
+X-Gm-Message-State: APjAAAX0skN1DfwhrmK/bjc03aPbRGm+ih3on+wTnj5JpyUUYJABV3LU
+        1zQNwLkNxnJqR8e24Hl1ZUI=
+X-Google-Smtp-Source: APXvYqwMB/j+4OtqvPIvMMYYGCukRtGpa/JsmfkBlrXsYAC/ivaoy+IatxHgOn7v0lN1eed3/4qMqA==
+X-Received: by 2002:a5d:540f:: with SMTP id g15mr45764094wrv.86.1582277798833;
+        Fri, 21 Feb 2020 01:36:38 -0800 (PST)
+Received: from localhost (prg-ext-pat.suse.com. [213.151.95.130])
+        by smtp.gmail.com with ESMTPSA id h13sm3293314wrw.54.2020.02.21.01.36.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Feb 2020 01:36:37 -0800 (PST)
+Date:   Fri, 21 Feb 2020 10:36:35 +0100
+From:   Michal Hocko <mhocko@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Luigi Semenzato <semenzato@google.com>,
+        Chris Murphy <lists@colorremedies.com>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: is hibernation usable?
+Message-ID: <20200221093635.GN20509@dhcp22.suse.cz>
+References: <CAJCQCtTPSC8666h5fuW=iSaVvuRq9to731W2-sAT6xUuESAzsw@mail.gmail.com>
+ <CAA25o9TvFMEJnF45NFVqAfdxzKy5umzHHVDs+SCxrChGSKczTw@mail.gmail.com>
+ <CAJCQCtQw7EJwREM8Fy_PWCwy3E7Jc=kLTRo_kgLNwNhYA32ABA@mail.gmail.com>
+ <CAJCQCtQkK+J-6eoadBLr+CkJ6CLf3Kt+6CeTJANRiU+M7A9CNQ@mail.gmail.com>
+ <CAA25o9T2wwqoopoNRySdZoYkD+vtqRPsB1YPnag=TkOp5D9sYA@mail.gmail.com>
+ <CAA25o9SCanFH3nV52BwN=7EuSUFjX=Jrd+FCiV=6ThW=beKKMw@mail.gmail.com>
+ <20200221084910.GM20509@dhcp22.suse.cz>
+ <CAJZ5v0h5MnpK9YjO+Z7_M1Cj8tup4qPriALx-EHt4ypbmCWfUw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-From:   Chris Wilson <chris@chris-wilson.co.uk>
-In-Reply-To: <4974198.mf5Me8BlfX@kreacher>
-Cc:     linux-kernel@vger.kernel.org,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-References: <CAHk-=wgqwiBLGvwTqU2kJEPNmafPpPe_K0XgBU-A58M+mkwpgQ@mail.gmail.com>
- <158197497594.2449.9692451182044632969@skylake-alporthouse-com>
- <10791544.HYfhKnFLvn@kreacher> <4974198.mf5Me8BlfX@kreacher>
-Message-ID: <158227678951.3099.15076882205129643027@skylake-alporthouse-com>
-User-Agent: alot/0.6
-Subject: Re: Linux 5.6-rc2
-Date:   Fri, 21 Feb 2020 09:19:49 +0000
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0h5MnpK9YjO+Z7_M1Cj8tup4qPriALx-EHt4ypbmCWfUw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Rafael J. Wysocki (2020-02-21 00:46:18)
-> On Thursday, February 20, 2020 11:41:22 PM CET Rafael J. Wysocki wrote:
-> > On Monday, February 17, 2020 10:29:35 PM CET Chris Wilson wrote:
-> > > Quoting Linus Torvalds (2020-02-17 21:20:27)
-> > > > On Mon, Feb 17, 2020 at 8:22 AM Chris Wilson <chris@chris-wilson.co.uk> wrote:
-> > > > >
-> > > > > Quoting Linus Torvalds (2020-02-16 21:32:32)
-> > > > > > Rafael J. Wysocki (4):
-> > > > > >       ACPI: EC: Fix flushing of pending work
-> > > > > >       ACPI: PM: s2idle: Avoid possible race related to the EC GPE
-> > > > > >       ACPICA: Introduce acpi_any_gpe_status_set()
-> > > > > >       ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system
-> > > > >
-> > > > > Our S0 testing broke on all platforms, so we've reverted
-> > > > > e3728b50cd9b ("ACPI: PM: s2idle: Avoid possible race related to the EC GPE")
-> > > > > fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system")
-> > > > >
-> > > > > There wasn't much in the logs, for example,
-> > > > > https://intel-gfx-ci.01.org/tree/drm-tip/IGT_5445/fi-kbl-7500u/igt@gem_exec_suspend@basic-s0.html
-> > > > 
-> > > > So the machine suspends, but never comes back?
-> > > > 
-> > > > Do you need to revert both for it to work for you? Or is the revert of
-> > > > fdde0ff8590b just to avoid the conflict?
-> > > 
-> > > fdde0ff85 was just to avoid conflicts.
-> > >  
-> > > > I'm assuming you bisected this, and the bisect indicated e3728b50cd9b,
-> > > > and then to revert it you reverted the other commit too..
-> > > 
-> > > Lucky guess based on diff rc1..rc2. Bisect was going to be painful, but
-> > > could be done if this is not enough clue for Rafael.
-> > 
-> > Sorry for the delayed response, was away.
-> > 
-> > I'm guessing that you are using rtcwake for wakeup, in which case reverting
-> > fdde0ff85 alone should unbreak it.
-> > 
-> > Can you please double check that?
+On Fri 21-02-20 10:04:18, Rafael J. Wysocki wrote:
+> On Fri, Feb 21, 2020 at 9:49 AM Michal Hocko <mhocko@kernel.org> wrote:
+> >
+> > On Thu 20-02-20 09:38:06, Luigi Semenzato wrote:
+> > > I was forgetting: forcing swap by eating up memory is dangerous
+> > > because it can lead to unexpected OOM kills
+> >
+> > Could you be more specific what you have in mind? swapoff causing the
+> > OOM killer?
+> >
+> > > , but you can mitigate that
+> > > by giving the memory-eaters a higher OOM kill score.  Still, some way
+> > > of calling try_to_free_pages() directly from user-level would be
+> > > preferable.  I wonder if such API has been discussed.
+> >
+> > No, there is no API to trigger the global memory reclaim. You could
+> > start the reclaim by increasing min_free_kbytes but I wouldn't really
+> > recommend that unless you know exactly what you are doing and also I
+> > fail to see the point. If s2disk fails due to insufficient swap space
+> > then how can a pro-active reclaim help in the first place?
 > 
-> And below is a patch that should fix it if I'm not mistaken (verified on my
-> system where I was able to reproduce the issue), so it would suffice to test
-> this one on top of the -rc2.
+> My understanding of the problem is that the size of swap is
+> (theoretically) sufficient, but it is not used as expected during the
+> preallocation of image memory.
+> 
+> It was stated in one of the previous messages (not in this thread,
+> cannot find it now) that swap (of the same size as RAM) was activated
+> (swapon) right before hibernation, so theoretically that should be
+> sufficient AFAICS.
 
-Correct on both accounts. Reverting fdde0ff85 alone was enough, and
-replacing the reverts with the suggested patch works.
+Hmm, this is interesting. Let me have a closer look...
 
-> ---
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> Subject: [PATCH] ACPI: PM: s2idle: Check fixed wakeup events in acpi_s2idle_wake()
-> 
-> Commit fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from
-> waking up the system") overlooked the fact that fixed events can wake
-> up the system too and broke RTC wakeup from suspend-to-idle as a
-> result.
-> 
-> Fix this issue by checking the fixed events in acpi_s2idle_wake() in
-> addition to checking wakeup GPEs and break out of the suspend-to-idle
-> loop if the status bits of any enabled fixed events are set then.
-> 
-> Fixes: fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system")
-> Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
-> Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Tested-by: Chris Wilson <chris@chris-wilson.co.uk>
--Chris
+pm_restrict_gfp_mask which would completely rule out any IO
+happens after hibernate_preallocate_memory is done and my limited
+understanding tells me that this is where all the reclaim happens
+(via shrink_all_memory). It is quite possible that the MM decides to
+not swap in that path - depending on the memory usage - and miss it's
+target. More details would be needed. E.g. vmscan tracepoints could tell
+us more.
+
+-- 
+Michal Hocko
+SUSE Labs
