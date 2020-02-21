@@ -2,101 +2,166 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7119BC3565B
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:12:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3E43C3565B
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:20:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 43C5B208E4
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:12:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB58924670
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:20:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XFlHOObl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725995AbgBUSM2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 13:12:28 -0500
-Received: from vps-vb.mhejs.net ([37.28.154.113]:50782 "EHLO vps-vb.mhejs.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725947AbgBUSM2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Feb 2020 13:12:28 -0500
-X-Greylist: delayed 1727 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Feb 2020 13:12:27 EST
-Received: from MUA
-        by vps-vb.mhejs.net with esmtps (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256)
-        (Exim 4.92.3)
-        (envelope-from <mail@maciej.szmigiero.name>)
-        id 1j5CKv-0002wU-0a; Fri, 21 Feb 2020 18:43:37 +0100
-From:   "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Joao Martins <joao.m.martins@oracle.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] cpuidle-haltpoll: allow force loading on hosts without the REALTIME hint
-Date:   Fri, 21 Feb 2020 18:43:31 +0100
-Message-Id: <20200221174331.1480468-1-mail@maciej.szmigiero.name>
-X-Mailer: git-send-email 2.25.1
+        id S1729305AbgBUSUJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 13:20:09 -0500
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:40700 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728759AbgBUSUJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 13:20:09 -0500
+Received: by mail-lf1-f65.google.com with SMTP id c23so2156530lfi.7;
+        Fri, 21 Feb 2020 10:20:07 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=FUjaUqxyiUgON33VsY6WWwS4Yfhr7OqQL1lnqu5PDUo=;
+        b=XFlHOOblbqwr7y7riUWmwEqug0A3tmqiCYT1aImiWk4YIOXEdeoD8vDRyhLvAesFbJ
+         akRSRq4jR2D7GgD9bmsCJDojb1LogbBFiY5WDLSvOLes334uvNJB6amLH3GZPtbQjMe+
+         IlZt4Bn2QE0BmN1phR01KBoo1XjeBioy5KWyQpxE74izc0g7t+FJMB1ZaIfjR3cMibhI
+         vOvYwQKz/qazCklv10E8xlMMReYXazO5IK28wAzAYEcycZcvDg76yMujWgMWo6GHFT/g
+         Pl3AVbuCEmlMbno2SLg223SqN0wtrCwCUv0iG7F1kFFu8K/p5abwXgDxlOmsuQxqlw2X
+         HCIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=FUjaUqxyiUgON33VsY6WWwS4Yfhr7OqQL1lnqu5PDUo=;
+        b=rLoQzM/9meEiikkuEcmnvjNMZBhlkwyEQLgqbIWvkXJKOnIkhp6rNNiZKNJgZ5gHfz
+         qx7x+0R6JMZit6V3NWP/etJfpB+xjeqy8UE/VCKfx1cjV/rZ18B15vjvGCHSN5fz0Tbk
+         5QBuKKFmh+K4ddUzUGMdjEiEJ4fZKKQdPagXmJXdiHdoMVtDpLUjQ1DJQofto5jb3uA2
+         SwQz0OL6l3Qk8bVtXXPlL3GJOTtNMacPru9i6coyB5h3F+8AYHE0Hc2pFPkqrHwQY2YB
+         pK/Sjh9O43sOTlFBFWYEiUoEYw/vIvHscduC9FElraob4wfW784hOGADqyEdLlsfJt6l
+         k9DQ==
+X-Gm-Message-State: APjAAAXLQy9NQKaLEvVJZqGmMZMprn0vQnfx8g1OdzRgO2IO0iez6Ahb
+        4IbdRxVUyxCogJKaMhXDGh07uBlt
+X-Google-Smtp-Source: APXvYqyT3JSqBAYUvkzb+dwmrCpPPqoj21helZR6dyy6a3B/se73aYcbnsLf0Y0Lj0wzBasjk0VtMg==
+X-Received: by 2002:ac2:434f:: with SMTP id o15mr3226832lfl.86.1582309206012;
+        Fri, 21 Feb 2020 10:20:06 -0800 (PST)
+Received: from [192.168.2.145] (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.googlemail.com with ESMTPSA id d26sm2037966lfa.44.2020.02.21.10.20.04
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 21 Feb 2020 10:20:05 -0800 (PST)
+Subject: Re: [PATCH v9 09/17] arm: tegra20: cpuidle: Handle case where
+ secondary CPU hangs on entering LP2
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+        Jasper Korten <jja2000@gmail.com>,
+        David Heidelberg <david@ixit.cz>,
+        Peter Geis <pgwipeout@gmail.com>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200212235134.12638-1-digetx@gmail.com>
+ <20200212235134.12638-10-digetx@gmail.com>
+ <20200221154318.GO10516@linaro.org>
+ <239a2b66-8da8-2e6c-d19d-9ed207ad0a64@gmail.com>
+ <20200221173649.GU10516@linaro.org>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <b51f3f6b-8287-5ce8-fcaa-77cbab507618@gmail.com>
+Date:   Fri, 21 Feb 2020 21:19:59 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.3.0
 MIME-Version: 1.0
+In-Reply-To: <20200221173649.GU10516@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>
+21.02.2020 20:36, Daniel Lezcano пишет:
+> On Fri, Feb 21, 2020 at 07:56:51PM +0300, Dmitry Osipenko wrote:
+>> Hello Daniel,
+>>
+>> 21.02.2020 18:43, Daniel Lezcano пишет:
+>>> On Thu, Feb 13, 2020 at 02:51:26AM +0300, Dmitry Osipenko wrote:
+>>>> It is possible that something may go wrong with the secondary CPU, in that
+>>>> case it is much nicer to get a dump of the flow-controller state before
+>>>> hanging machine.
+>>>>
+>>>> Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
+>>>> Tested-by: Peter Geis <pgwipeout@gmail.com>
+>>>> Tested-by: Jasper Korten <jja2000@gmail.com>
+>>>> Tested-by: David Heidelberg <david@ixit.cz>
+>>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>>> ---
+> 
+> [ ... ]
+> 
+>>>> +static int tegra20_wait_for_secondary_cpu_parking(void)
+>>>> +{
+>>>> +	unsigned int retries = 3;
+>>>> +
+>>>> +	while (retries--) {
+>>>> +		ktime_t timeout = ktime_add_ms(ktime_get(), 500);
+>>>
+>>> Oops I missed this one. Do not use ktime_get() in this code path, use jiffies.
+>>
+>> Could you please explain what benefits jiffies have over the ktime_get()?
+> 
+> ktime_get() is very slow, jiffies is updated every tick.
 
-Before commit 1328edca4a14 ("cpuidle-haltpoll: Enable kvm guest polling
-when dedicated physical CPUs are available") the cpuidle-haltpoll driver
-could also be used in scenarios when the host does not advertise the
-KVM_HINTS_REALTIME hint.
+But how jiffies are supposed to be updated if interrupts are disabled?
 
-While the behavior introduced by the aforementioned commit makes sense as
-the default there are cases where the old behavior is desired, for example,
-when other kernel changes triggered by presence by this hint are unwanted,
-for some workloads where the latency benefit from polling overweights the
-loss from idle CPU capacity that otherwise would be available, or just when
-running under older Qemu versions that lack this hint.
+Aren't jiffies actually slower than ktime_get() because jiffies are
+updating every 10/1ms (depending on CONFIG_HZ)?
 
-Let's provide a typical "force" module parameter that allows restoring the
-old behavior.
+We're kinda interesting here in getting into deep-idling state as quick
+as possible. I was checking how much time takes the busy-loop below and
+it takes ~40-150us in average, which is good enough.
 
-Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
----
- drivers/cpuidle/cpuidle-haltpoll.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+>>>> +
+>>>> +		/*
+>>>> +		 * The primary CPU0 core shall wait for the secondaries
+>>>> +		 * shutdown in order to power-off CPU's cluster safely.
+>>>> +		 * The timeout value depends on the current CPU frequency,
+>>>> +		 * it takes about 40-150us  in average and over 1000us in
+>>>> +		 * a worst case scenario.
+>>>> +		 */
+>>>> +		do {
+>>>> +			if (tegra_cpu_rail_off_ready())
+>>>> +				return 0;
+>>>> +
+>>>> +		} while (ktime_before(ktime_get(), timeout));
+>>>
+>>> So this loop will aggresively call tegra_cpu_rail_off_ready() and retry 3
+>>> times. The tegra_cpu_rail_off_ready() function can be called thoushand of times
+>>> here but the function will hang 1.5s :/
+>>>
+>>> I suggest something like:
+>>>
+>>> 	while (retries--i && !tegra_cpu_rail_off_ready()) 
+>>> 		udelay(100);
+>>>
+>>> So <retries> calls to tegra_cpu_rail_off_ready() and 100us x <retries> maximum
+>>> impact.
+>> But udelay() also results into CPU spinning in a busy-loop, and thus,
+>> what's the difference?
+> 
+> busy looping instead of register reads with all the hardware things involved behind.
 
-diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-index b0ce9bc78113..07e5b36076bb 100644
---- a/drivers/cpuidle/cpuidle-haltpoll.c
-+++ b/drivers/cpuidle/cpuidle-haltpoll.c
-@@ -18,6 +18,11 @@
- #include <linux/kvm_para.h>
- #include <linux/cpuidle_haltpoll.h>
- 
-+static bool force __read_mostly;
-+module_param(force, bool, 0444);
-+MODULE_PARM_DESC(force,
-+		 "Load even if the host does not provide the REALTIME hint");
-+
- static struct cpuidle_device __percpu *haltpoll_cpuidle_devices;
- static enum cpuhp_state haltpoll_hp_state;
- 
-@@ -90,6 +95,11 @@ static void haltpoll_uninit(void)
- 	haltpoll_cpuidle_devices = NULL;
- }
- 
-+static bool haltpool_want(void)
-+{
-+	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
-+}
-+
- static int __init haltpoll_init(void)
- {
- 	int ret;
-@@ -102,7 +112,7 @@ static int __init haltpoll_init(void)
- 	cpuidle_poll_state_init(drv);
- 
- 	if (!kvm_para_available() ||
--		!kvm_para_has_hint(KVM_HINTS_REALTIME))
-+	    !haltpool_want())
- 		return -ENODEV;
- 
- 	ret = cpuidle_register_driver(drv);
+Please notice that this code runs only on an older Cortex-A9/A15, which
+doesn't support WFE for the delaying, and thus, CPU always busy-loops
+inside udelay().
+
+What about if I'll add cpu_relax() to the loop? Do you think it it could
+have any positive effect?
