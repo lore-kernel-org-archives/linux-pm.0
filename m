@@ -2,92 +2,101 @@ Return-Path: <SRS0=Ee89=4J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D64FC35646
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:02:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7119BC3565B
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:12:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 15C3E20722
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:02:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582308150;
-	bh=2iqlsfCU2xzdvKiMFOxsJfrFK/WCC507GMR5NHeQJ/g=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=N6e41N2iXSp7sy6pp70jMbMl/cLAjdG3ke92eUbFPaaPEAzL9yd9pdyF1YIy89qrH
-	 Z5YdoIh1ugdBkcAmECJQFVrtGtxw1j2KOEaq/0tqwXbFlpqyCkDo9L+oNVDgXaoRAB
-	 LaWn38yKhii+xSXubwEOaRb7lphIcjDh1mazkuWg=
+	by mail.kernel.org (Postfix) with ESMTP id 43C5B208E4
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Feb 2020 18:12:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725995AbgBUSC3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 13:02:29 -0500
-Received: from mail-lj1-f193.google.com ([209.85.208.193]:36691 "EHLO
-        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729442AbgBUSC2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 13:02:28 -0500
-Received: by mail-lj1-f193.google.com with SMTP id r19so3114127ljg.3
-        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 10:02:27 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=AG9TJKXnTeZzyHlgjHVGK5jDlYOlKtakbHNOYDpKW9E=;
-        b=LtuqrNdxX93Kes55M7/V1nmMoOY/Am5rxlDligc40iz1+GEbCmeM7TuGyB0tTEcegn
-         UDZiT2MxYZWEAGTE0LovTMS1jqfnFBkPD3xPTU2e30E6da/H/mQbYfgawXH18yg2Guvv
-         l3o1EYHUu3z2m8B4mLtmpaElvsWWhBoRfpDBs=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=AG9TJKXnTeZzyHlgjHVGK5jDlYOlKtakbHNOYDpKW9E=;
-        b=WxuczffaAQChmgUFIHNTG7qJZ/FaefB0Pvd7LF3hszI1FycgFxvfamS9ct6S+67frc
-         UdnQi5aaRjGvPa0j6+7mm1uudLssFD24KmvrwjOCK1qj/HHVNBYeN2SEk6bvdRLvPod5
-         RdkVqU0Dt47y7z+5NxrpWdhpoTuBaLKFUBkoQWLts7Sj7QyC+jEc2v+F2MrvgbOQ43oX
-         0XcRhpvIqsVBfONB57FcwbHr2tcVUQTdjda1EJZ8KZbbh9ucT1U4SIT+IMaCNVcS4+lJ
-         LmguAs1V8aM4euVJOUoNVVT9GdM7uRhwxrrtpjH0vcuXzeQ4UYoN9NcbJykp4T6pec1e
-         eo5w==
-X-Gm-Message-State: APjAAAUXuoQeHj+flOa7fC+BD4fFVZ4qbSeMNZYas3Y3GFLqGZloSrA1
-        zB4KZ/SWllu1/ImCVSt9DdBU6eQToyo=
-X-Google-Smtp-Source: APXvYqxB63QzQaQZ0jYgQu91l9Vp3s42rQcVih2xIeYUr64T2Lvlk4xgMBQKJ0W0dQz3W1fTLANe2A==
-X-Received: by 2002:a05:651c:1bb:: with SMTP id c27mr23588650ljn.277.1582308146239;
-        Fri, 21 Feb 2020 10:02:26 -0800 (PST)
-Received: from mail-lj1-f175.google.com (mail-lj1-f175.google.com. [209.85.208.175])
-        by smtp.gmail.com with ESMTPSA id 19sm2391201lft.81.2020.02.21.10.02.24
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 21 Feb 2020 10:02:24 -0800 (PST)
-Received: by mail-lj1-f175.google.com with SMTP id x7so3128312ljc.1
-        for <linux-pm@vger.kernel.org>; Fri, 21 Feb 2020 10:02:24 -0800 (PST)
-X-Received: by 2002:a2e:580c:: with SMTP id m12mr22906965ljb.150.1582308144004;
- Fri, 21 Feb 2020 10:02:24 -0800 (PST)
+        id S1725995AbgBUSM2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 13:12:28 -0500
+Received: from vps-vb.mhejs.net ([37.28.154.113]:50782 "EHLO vps-vb.mhejs.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725947AbgBUSM2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Feb 2020 13:12:28 -0500
+X-Greylist: delayed 1727 seconds by postgrey-1.27 at vger.kernel.org; Fri, 21 Feb 2020 13:12:27 EST
+Received: from MUA
+        by vps-vb.mhejs.net with esmtps (TLSv1.2:ECDHE-RSA-AES256-GCM-SHA384:256)
+        (Exim 4.92.3)
+        (envelope-from <mail@maciej.szmigiero.name>)
+        id 1j5CKv-0002wU-0a; Fri, 21 Feb 2020 18:43:37 +0100
+From:   "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Joao Martins <joao.m.martins@oracle.com>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cpuidle-haltpoll: allow force loading on hosts without the REALTIME hint
+Date:   Fri, 21 Feb 2020 18:43:31 +0100
+Message-Id: <20200221174331.1480468-1-mail@maciej.szmigiero.name>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-References: <CAHk-=wgqwiBLGvwTqU2kJEPNmafPpPe_K0XgBU-A58M+mkwpgQ@mail.gmail.com>
- <158197497594.2449.9692451182044632969@skylake-alporthouse-com>
- <10791544.HYfhKnFLvn@kreacher> <4974198.mf5Me8BlfX@kreacher>
- <158227678951.3099.15076882205129643027@skylake-alporthouse-com> <CAJZ5v0h07em8y5bXcnUTBcjie8pCttADK9QX9W_cB0WQRcDfGQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0h07em8y5bXcnUTBcjie8pCttADK9QX9W_cB0WQRcDfGQ@mail.gmail.com>
-From:   Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Fri, 21 Feb 2020 10:02:07 -0800
-X-Gmail-Original-Message-ID: <CAHk-=wihfx015Rr-nrMmBtN--357cFRbS4rjXeKXvEfB=GYT5g@mail.gmail.com>
-Message-ID: <CAHk-=wihfx015Rr-nrMmBtN--357cFRbS4rjXeKXvEfB=GYT5g@mail.gmail.com>
-Subject: Re: Linux 5.6-rc2
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Chris Wilson <chris@chris-wilson.co.uk>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Feb 21, 2020 at 2:54 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> Please pick up this patch directly if you can.
+From: "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>
 
-Done. Added Chris' tested-by too.
+Before commit 1328edca4a14 ("cpuidle-haltpoll: Enable kvm guest polling
+when dedicated physical CPUs are available") the cpuidle-haltpoll driver
+could also be used in scenarios when the host does not advertise the
+KVM_HINTS_REALTIME hint.
 
-            Linus
+While the behavior introduced by the aforementioned commit makes sense as
+the default there are cases where the old behavior is desired, for example,
+when other kernel changes triggered by presence by this hint are unwanted,
+for some workloads where the latency benefit from polling overweights the
+loss from idle CPU capacity that otherwise would be available, or just when
+running under older Qemu versions that lack this hint.
+
+Let's provide a typical "force" module parameter that allows restoring the
+old behavior.
+
+Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+---
+ drivers/cpuidle/cpuidle-haltpoll.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
+index b0ce9bc78113..07e5b36076bb 100644
+--- a/drivers/cpuidle/cpuidle-haltpoll.c
++++ b/drivers/cpuidle/cpuidle-haltpoll.c
+@@ -18,6 +18,11 @@
+ #include <linux/kvm_para.h>
+ #include <linux/cpuidle_haltpoll.h>
+ 
++static bool force __read_mostly;
++module_param(force, bool, 0444);
++MODULE_PARM_DESC(force,
++		 "Load even if the host does not provide the REALTIME hint");
++
+ static struct cpuidle_device __percpu *haltpoll_cpuidle_devices;
+ static enum cpuhp_state haltpoll_hp_state;
+ 
+@@ -90,6 +95,11 @@ static void haltpoll_uninit(void)
+ 	haltpoll_cpuidle_devices = NULL;
+ }
+ 
++static bool haltpool_want(void)
++{
++	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
++}
++
+ static int __init haltpoll_init(void)
+ {
+ 	int ret;
+@@ -102,7 +112,7 @@ static int __init haltpoll_init(void)
+ 	cpuidle_poll_state_init(drv);
+ 
+ 	if (!kvm_para_available() ||
+-		!kvm_para_has_hint(KVM_HINTS_REALTIME))
++	    !haltpool_want())
+ 		return -ENODEV;
+ 
+ 	ret = cpuidle_register_driver(drv);
