@@ -2,268 +2,216 @@ Return-Path: <SRS0=Lz+R=4K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE7AC35673
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 281D7C35669
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:23:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6FD07208C4
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCD992467D
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:23:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="T6LfVdYo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727312AbgBVAP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 19:15:28 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:38904 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727213AbgBVAP1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Feb 2020 19:15:27 -0500
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 1CAC7200E74;
-        Sat, 22 Feb 2020 01:15:25 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6B42C201B3A;
-        Sat, 22 Feb 2020 01:15:09 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E6996402E0;
-        Sat, 22 Feb 2020 08:14:43 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-        catalin.marinas@arm.com, will@kernel.org, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
-        aisheng.dong@nxp.com, linux@roeck-us.net,
-        srinivas.kandagatla@linaro.org, krzk@kernel.org,
-        fugang.duan@nxp.com, peng.fan@nxp.com, daniel.baluta@nxp.com,
-        bjorn.andersson@linaro.org, olof@lixom.net, dinguyen@kernel.org,
-        leonard.crestez@nxp.com, marcin.juszkiewicz@linaro.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V16 3/5] thermal: imx_sc: add i.MX system controller thermal support
-Date:   Sat, 22 Feb 2020 08:08:50 +0800
-Message-Id: <1582330132-13461-3-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1582330132-13461-1-git-send-email-Anson.Huang@nxp.com>
-References: <1582330132-13461-1-git-send-email-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1726205AbgBVAX1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 19:23:27 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:33360 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726045AbgBVAX1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Feb 2020 19:23:27 -0500
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 01M0KBkn008088;
+        Sat, 22 Feb 2020 00:23:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to :
+ subject : message-id : references : mime-version : content-type :
+ content-transfer-encoding : in-reply-to; s=corp-2020-01-29;
+ bh=vDiPCHqXKwCE9vSLdBZ4WMbduef2QvIlgdwwC3JOIvM=;
+ b=T6LfVdYoPihUE7gqUVy37s9NdsUEMRBiAztT8UPl2EMwLivTrDy0Uho+P2I1HvAjDDP4
+ zN/vklyjrVYlWYnQXepdiD2B21HFYJJ/umpPlewBpQV5T5D7iL3qT2I8hkry4P8Bl6r6
+ IOkOI7mfbClXMPMz7I8vKiCxkZu0Qpotkj25ySptNSHdReaDvF2M5nswZtCu1HuvJ5Cx
+ eVsoUYJ75UZi1NmHq/MoHZ/EgcPwhQuiE+opVX4X1hT08JtHJhjwT9eYk/7uw+8WaoUb
+ 2MHl8OI+SFbDHIJO6mpbOQkcviswzfAkmFBI83fBbrB+OnY2UqxXzLtGyfMV/waOvRJg +w== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by userp2130.oracle.com with ESMTP id 2y8uddkj0f-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sat, 22 Feb 2020 00:23:22 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 01M0HuuO071147;
+        Sat, 22 Feb 2020 00:23:21 GMT
+Received: from aserv0121.oracle.com (aserv0121.oracle.com [141.146.126.235])
+        by aserp3020.oracle.com with ESMTP id 2y8udrdje8-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Sat, 22 Feb 2020 00:23:21 +0000
+Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
+        by aserv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 01M0NK8j021690;
+        Sat, 22 Feb 2020 00:23:20 GMT
+Received: from localhost (/10.145.179.117)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Fri, 21 Feb 2020 16:23:20 -0800
+Date:   Fri, 21 Feb 2020 16:23:19 -0800
+From:   "Darrick J. Wong" <darrick.wong@oracle.com>
+To:     Christoph Hellwig <hch@lst.de>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-pm@vger.kernel.org
+Subject: Re: Regression: hibernation is broken since
+ e6bc9de714972cac34daa1dc1567ee48a47a9342
+Message-ID: <20200222002319.GK9504@magnolia>
+References: <20200213172351.GA6747@dumbo>
+ <20200213175753.GS6874@magnolia>
+ <20200213183515.GA8798@dumbo>
+ <20200213193410.GB6868@magnolia>
+ <20200213194135.GF6870@magnolia>
+ <20200214211523.GA32637@dumbo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200214211523.GA32637@dumbo>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9538 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 mlxlogscore=999
+ phishscore=0 suspectscore=0 mlxscore=0 malwarescore=0 adultscore=0
+ bulkscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002220000
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9538 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 impostorscore=0
+ mlxlogscore=999 malwarescore=0 mlxscore=0 suspectscore=0
+ priorityscore=1501 bulkscore=0 adultscore=0 spamscore=0 lowpriorityscore=0
+ clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2002220000
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-i.MX8QXP is an ARMv8 SoC which has a Cortex-M4 system controller
-inside, the system controller is in charge of controlling power,
-clock and thermal sensors etc..
+On Fri, Feb 14, 2020 at 10:15:24PM +0100, Domenico Andreoli wrote:
+> [ added linux-pm ]
+> 
+> On Thu, Feb 13, 2020 at 11:41:35AM -0800, Darrick J. Wong wrote:
+> > On Thu, Feb 13, 2020 at 11:34:10AM -0800, Darrick J. Wong wrote:
+> > > 
+> > > Well ... you could try the in-kernel hibernate (which I think is what
+> > > 'systemctl hibernate' does), though you'd lose the nifty features of
+> > > µswsusp.
+> 
+> Indeed 'systemctl hibernate' works perfectly with v5.6-rc1 in my setup.
+> 
+> > > In the end, though, I'll probably have to revert all those IS_SWAPFILE
+> > > checks (at least if CONFIG_HIBERNATION=y) since it's not fair to force
+> > > you to totally reconfigure your hibernation setup.
+> > 
+> > Also, does the following partial revert fix uswsusp for you?  It'll
+> > allow the direct writes that uswsusp wants to do, while leaving the rest
+> > (mmap writes) in place.
+> > 
+> > --D
+> > 
+> > diff --git a/fs/block_dev.c b/fs/block_dev.c
+> > index 69bf2fb6f7cd..077d9fa6b87d 100644
+> > --- a/fs/block_dev.c
+> > +++ b/fs/block_dev.c
+> > @@ -2001,8 +2001,10 @@ ssize_t blkdev_write_iter(struct kiocb *iocb, struct iov_iter *from)
+> >  	if (bdev_read_only(I_BDEV(bd_inode)))
+> >  		return -EPERM;
+> >  
+> > +#ifndef CONFIG_HIBERNATION
+> >  	if (IS_SWAPFILE(bd_inode))
+> >  		return -ETXTBSY;
+> > +#endif
+> 
+> This alone is enough to make uswsusp work again.
+> 
+> I propose this alternative:
+> 
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -2001,7 +2001,8 @@ ssize_t blkdev_write_iter(struct kiocb *iocb, struct iov_iter *from)
+>         if (bdev_read_only(I_BDEV(bd_inode)))
+>                 return -EPERM;
+>  
+> -       if (IS_SWAPFILE(bd_inode))
+> +       /* Hibernation might happen via uswsusp, let it write to the swap */
+> +       if (IS_SWAPFILE(bd_inode) && !IS_ENABLED(CONFIG_HIBERNATION))
+>                 return -ETXTBSY;
+>  
+>         if (!iov_iter_count(from))
+> 
+> I looked for a more selective way to enable writes to swap at runtime,
+> so I tried with system_entering_hibernation() but it's not yet armed
+> at the point in which uswsusp wants to write to the swap and therefore
+> it does not work.
+> 
+> --- a/fs/block_dev.c
+> +++ b/fs/block_dev.c
+> @@ -34,6 +34,7 @@
+>  #include <linux/task_io_accounting_ops.h>
+>  #include <linux/falloc.h>
+>  #include <linux/uaccess.h>
+> +#include <linux/suspend.h>
+>  #include "internal.h"
+> 
+>  struct bdev_inode {
+> @@ -2001,7 +2002,8 @@ ssize_t blkdev_write_iter(struct kiocb *iocb, struct iov_iter *from)
+>         if (bdev_read_only(I_BDEV(bd_inode)))
+>                 return -EPERM;
+> 
+> -       if (IS_SWAPFILE(bd_inode))
+> +       /* Hibernation might happen via uswsusp, let it write to the swap */
+> +       if (IS_SWAPFILE(bd_inode) && !system_entering_hibernation())
+>                 return -ETXTBSY;
+> 
+>         if (!iov_iter_count(from))
+> 
+> >  	if (!iov_iter_count(from))
+> >  		return 0;
+> > diff --git a/mm/filemap.c b/mm/filemap.c
+> > index 1784478270e1..3df3211abe25 100644
+> > --- a/mm/filemap.c
+> > +++ b/mm/filemap.c
+> > @@ -2920,8 +2920,10 @@ inline ssize_t generic_write_checks(struct kiocb *iocb, struct iov_iter *from)
+> >  	loff_t count;
+> >  	int ret;
+> >  
+> > +#ifndef CONFIG_HIBERNATION
+> >  	if (IS_SWAPFILE(inode))
+> >  		return -ETXTBSY;
+> > +#endif
+> >  
+> >  	if (!iov_iter_count(from))
+> >  		return 0;
+> 
+> The above is not needed in my case but I'm not sure it would not be
+> needed in some other configuration of uswsusp.
 
-This patch adds i.MX system controller thermal driver support,
-Linux kernel has to communicate with system controller via MU
-(message unit) IPC to get each thermal sensor's temperature,
-it supports multiple sensors which are passed from device tree,
-please see the binding doc for details.
+Ok, third try.  Does the following work?  This is a little more
+selective in that it only disables the write protection on the swap
+device/file that uswusp is going to write to.
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-Changes since V15:
-	- Improve the compile dependency;
-	- Fix the copyright year;
-	- Add .remove callback.
----
- drivers/thermal/Kconfig          |  11 +++
- drivers/thermal/Makefile         |   1 +
- drivers/thermal/imx_sc_thermal.c | 148 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 160 insertions(+)
- create mode 100644 drivers/thermal/imx_sc_thermal.c
+--D
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 5a05db5..3502ee8 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -251,6 +251,17 @@ config IMX_THERMAL
- 	  cpufreq is used as the cooling device to throttle CPUs when the
- 	  passive trip is crossed.
- 
-+config IMX_SC_THERMAL
-+	tristate "Temperature sensor driver for NXP i.MX SoCs with System Controller"
-+	depends on IMX_SCU || COMPILE_TEST
-+	depends on OF
-+	help
-+	  Support for Temperature Monitor (TEMPMON) found on NXP i.MX SoCs with
-+	  system controller inside, Linux kernel has to communicate with system
-+	  controller via MU (message unit) IPC to get temperature from thermal
-+	  sensor. It supports one critical trip point and one
-+	  passive trip point for each thermal sensor.
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 77438954cc2b..a3ae9cbbfcf0 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -372,10 +372,17 @@ static long snapshot_ioctl(struct file *filp, unsigned int cmd,
+ 			 */
+ 			swdev = new_decode_dev(swap_area.dev);
+ 			if (swdev) {
++				struct block_device *bd;
 +
- config MAX77620_THERMAL
- 	tristate "Temperature sensor driver for Maxim MAX77620 PMIC"
- 	depends on MFD_MAX77620
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 9fb88e2..a11a6d8 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_DB8500_THERMAL)	+= db8500_thermal.o
- obj-$(CONFIG_ARMADA_THERMAL)	+= armada_thermal.o
- obj-$(CONFIG_TANGO_THERMAL)	+= tango_thermal.o
- obj-$(CONFIG_IMX_THERMAL)	+= imx_thermal.o
-+obj-$(CONFIG_IMX_SC_THERMAL)	+= imx_sc_thermal.o
- obj-$(CONFIG_MAX77620_THERMAL)	+= max77620_thermal.o
- obj-$(CONFIG_QORIQ_THERMAL)	+= qoriq_thermal.o
- obj-$(CONFIG_DA9062_THERMAL)	+= da9062-thermal.o
-diff --git a/drivers/thermal/imx_sc_thermal.c b/drivers/thermal/imx_sc_thermal.c
-new file mode 100644
-index 0000000..4955dfd
---- /dev/null
-+++ b/drivers/thermal/imx_sc_thermal.c
-@@ -0,0 +1,148 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Copyright 2018-2020 NXP.
-+ */
+ 				offset = swap_area.offset;
+-				data->swap = swap_type_of(swdev, offset, NULL);
++				data->swap = swap_type_of(swdev, offset, &bd);
+ 				if (data->swap < 0)
+ 					error = -ENODEV;
 +
-+#include <linux/err.h>
-+#include <linux/firmware/imx/sci.h>
-+#include <linux/firmware/imx/types.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+#include <linux/thermal.h>
-+
-+#include "thermal_core.h"
-+
-+#define IMX_SC_MISC_FUNC_GET_TEMP	13
-+
-+static struct imx_sc_ipc *thermal_ipc_handle;
-+
-+struct imx_sc_sensor {
-+	struct thermal_zone_device *tzd;
-+	u32 resource_id;
-+};
-+
-+struct req_get_temp {
-+	u16 resource_id;
-+	u8 type;
-+} __packed;
-+
-+struct resp_get_temp {
-+	u16 celsius;
-+	u8 tenths;
-+} __packed;
-+
-+struct imx_sc_msg_misc_get_temp {
-+	struct imx_sc_rpc_msg hdr;
-+	union {
-+		struct req_get_temp req;
-+		struct resp_get_temp resp;
-+	} data;
-+};
-+
-+static int imx_sc_thermal_get_temp(void *data, int *temp)
-+{
-+	struct imx_sc_msg_misc_get_temp msg;
-+	struct imx_sc_rpc_msg *hdr = &msg.hdr;
-+	struct imx_sc_sensor *sensor = data;
-+	int ret;
-+
-+	msg.data.req.resource_id = sensor->resource_id;
-+	msg.data.req.type = IMX_SC_C_TEMP;
-+
-+	hdr->ver = IMX_SC_RPC_VERSION;
-+	hdr->svc = IMX_SC_RPC_SVC_MISC;
-+	hdr->func = IMX_SC_MISC_FUNC_GET_TEMP;
-+	hdr->size = 2;
-+
-+	ret = imx_scu_call_rpc(thermal_ipc_handle, &msg, true);
-+	if (ret) {
-+		dev_err(&sensor->tzd->device, "read temp sensor %d failed, ret %d\n",
-+			sensor->resource_id, ret);
-+		return ret;
-+	}
-+
-+	*temp = msg.data.resp.celsius * 1000 + msg.data.resp.tenths * 100;
-+
-+	return 0;
-+}
-+
-+static const struct thermal_zone_of_device_ops imx_sc_thermal_ops = {
-+	.get_temp = imx_sc_thermal_get_temp,
-+};
-+
-+static int imx_sc_thermal_probe(struct platform_device *pdev)
-+{
-+	struct device_node *np, *child, *sensor_np;
-+	struct imx_sc_sensor *sensor;
-+	int ret;
-+
-+	ret = imx_scu_get_handle(&thermal_ipc_handle);
-+	if (ret)
-+		return ret;
-+
-+	np = of_find_node_by_name(NULL, "thermal-zones");
-+	if (!np)
-+		return -ENODEV;
-+
-+	sensor_np = of_node_get(pdev->dev.of_node);
-+
-+	for_each_available_child_of_node(np, child) {
-+		sensor = devm_kzalloc(&pdev->dev, sizeof(*sensor), GFP_KERNEL);
-+		if (!sensor) {
-+			of_node_put(sensor_np);
-+			return -ENOMEM;
-+		}
-+
-+		ret = thermal_zone_of_get_sensor_id(child,
-+						    sensor_np,
-+						    &sensor->resource_id);
-+		if (ret < 0) {
-+			dev_err(&pdev->dev,
-+				"failed to get valid sensor resource id: %d\n",
-+				ret);
-+			break;
-+		}
-+
-+		sensor->tzd = devm_thermal_zone_of_sensor_register(&pdev->dev,
-+								   sensor->resource_id,
-+								   sensor,
-+								   &imx_sc_thermal_ops);
-+		if (IS_ERR(sensor->tzd)) {
-+			dev_err(&pdev->dev, "failed to register thermal zone\n");
-+			ret = PTR_ERR(sensor->tzd);
-+			break;
-+		}
-+	}
-+
-+	of_node_put(sensor_np);
-+
-+	return ret;
-+}
-+
-+static int imx_sc_thermal_remove(struct platform_device *pdev)
-+{
-+	return 0;
-+}
-+
-+static const struct of_device_id imx_sc_thermal_table[] = {
-+	{ .compatible = "fsl,imx-sc-thermal", },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, imx_sc_thermal_table);
-+
-+static struct platform_driver imx_sc_thermal_driver = {
-+		.probe = imx_sc_thermal_probe,
-+		.remove	= imx_sc_thermal_remove,
-+		.driver = {
-+			.name = "imx-sc-thermal",
-+			.of_match_table = imx_sc_thermal_table,
-+		},
-+};
-+module_platform_driver(imx_sc_thermal_driver);
-+
-+MODULE_AUTHOR("Anson Huang <Anson.Huang@nxp.com>");
-+MODULE_DESCRIPTION("Thermal driver for NXP i.MX SoCs with system controller");
-+MODULE_LICENSE("GPL v2");
--- 
-2.7.4
-
++				inode_lock(bd->bd_inode);
++				bd->bd_inode->i_flags &= ~S_SWAPFILE;
++				inode_unlock(bd->bd_inode);
++				bdput(bd);
+ 			} else {
+ 				data->swap = -1;
+ 				error = -EINVAL;
