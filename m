@@ -6,27 +6,27 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B194AC3566F
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF833C3566F
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 93C9C207FD
-	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ADDA624676
+	for <linux-pm@archiver.kernel.org>; Sat, 22 Feb 2020 00:15:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726891AbgBVAPP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Feb 2020 19:15:15 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:38638 "EHLO inva021.nxp.com"
+        id S1727027AbgBVAPU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Feb 2020 19:15:20 -0500
+Received: from inva021.nxp.com ([92.121.34.21]:38736 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726045AbgBVAPO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 21 Feb 2020 19:15:14 -0500
+        id S1727039AbgBVAPS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 21 Feb 2020 19:15:18 -0500
 Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 80C2F200E2F;
-        Sat, 22 Feb 2020 01:15:11 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D728A2018CF;
+        Sat, 22 Feb 2020 01:15:16 +0100 (CET)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6D44C200E74;
-        Sat, 22 Feb 2020 01:14:55 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 73C0320196F;
+        Sat, 22 Feb 2020 01:15:01 +0100 (CET)
 Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E1794402DD;
-        Sat, 22 Feb 2020 08:14:41 +0800 (SGT)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id EBB67402E3;
+        Sat, 22 Feb 2020 08:14:45 +0800 (SGT)
 From:   Anson Huang <Anson.Huang@nxp.com>
 To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
         s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
@@ -40,9 +40,9 @@ To:     robh+dt@kernel.org, mark.rutland@arm.com, shawnguo@kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH V16 2/5] thermal: of-thermal: add API for getting sensor ID from DT
-Date:   Sat, 22 Feb 2020 08:08:49 +0800
-Message-Id: <1582330132-13461-2-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH V16 4/5] defconfig: arm64: add i.MX system controller thermal support
+Date:   Sat, 22 Feb 2020 08:08:51 +0800
+Message-Id: <1582330132-13461-4-git-send-email-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1582330132-13461-1-git-send-email-Anson.Huang@nxp.com>
 References: <1582330132-13461-1-git-send-email-Anson.Huang@nxp.com>
@@ -52,143 +52,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds new API thermal_zone_of_get_sensor_id() to
-provide the feature of getting sensor ID from DT thermal
-zone's node. It's useful for thermal driver to register the
-specific thermal zone devices from DT in a common way.
+This patch enables CONFIG_IMX_SC_THERMAL as module.
 
 Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Dong Aisheng <aisheng.dong@nxp.com>
 ---
-Changes since V15:
-	- Improve the logic of *id initializtion from sensor_specs.args_count.
+No change.
 ---
- drivers/thermal/of-thermal.c | 62 ++++++++++++++++++++++++++++++++------------
- include/linux/thermal.h      | 10 +++++++
- 2 files changed, 56 insertions(+), 16 deletions(-)
+ arch/arm64/configs/defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index ef0baa9..874a47d 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -449,6 +449,50 @@ thermal_zone_of_add_sensor(struct device_node *zone,
- }
- 
- /**
-+ * thermal_zone_of_get_sensor_id - get sensor ID from a DT thermal zone
-+ * @tz_np: a valid thermal zone device node.
-+ * @sensor_np: a sensor node of a valid sensor device.
-+ * @id: the sensor ID returned if success.
-+ *
-+ * This function will get sensor ID from a given thermal zone node and
-+ * the sensor node must match the temperature provider @sensor_np.
-+ *
-+ * Return: 0 on success, proper error code otherwise.
-+ */
-+
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id)
-+{
-+	struct of_phandle_args sensor_specs;
-+	int ret;
-+
-+	ret = of_parse_phandle_with_args(tz_np,
-+					 "thermal-sensors",
-+					 "#thermal-sensor-cells",
-+					 0,
-+					 &sensor_specs);
-+	if (ret)
-+		return ret;
-+
-+	if (sensor_specs.np != sensor_np) {
-+		of_node_put(sensor_specs.np);
-+		return -ENODEV;
-+	}
-+
-+	if (sensor_specs.args_count > 1)
-+		pr_warn("%pOFn: too many cells in sensor specifier %d\n",
-+		     sensor_specs.np, sensor_specs.args_count);
-+
-+	*id = sensor_specs.args_count ? sensor_specs.args[0] : 0;
-+
-+	of_node_put(sensor_specs.np);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(thermal_zone_of_get_sensor_id);
-+
-+/**
-  * thermal_zone_of_sensor_register - registers a sensor to a DT thermal zone
-  * @dev: a valid struct device pointer of a sensor device. Must contain
-  *       a valid .of_node, for the sensor node.
-@@ -499,36 +543,22 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 	sensor_np = of_node_get(dev->of_node);
- 
- 	for_each_available_child_of_node(np, child) {
--		struct of_phandle_args sensor_specs;
- 		int ret, id;
- 
- 		/* For now, thermal framework supports only 1 sensor per zone */
--		ret = of_parse_phandle_with_args(child, "thermal-sensors",
--						 "#thermal-sensor-cells",
--						 0, &sensor_specs);
-+		ret = thermal_zone_of_get_sensor_id(child, sensor_np, &id);
- 		if (ret)
- 			continue;
- 
--		if (sensor_specs.args_count >= 1) {
--			id = sensor_specs.args[0];
--			WARN(sensor_specs.args_count > 1,
--			     "%pOFn: too many cells in sensor specifier %d\n",
--			     sensor_specs.np, sensor_specs.args_count);
--		} else {
--			id = 0;
--		}
--
--		if (sensor_specs.np == sensor_np && id == sensor_id) {
-+		if (id == sensor_id) {
- 			tzd = thermal_zone_of_add_sensor(child, sensor_np,
- 							 data, ops);
- 			if (!IS_ERR(tzd))
- 				tzd->ops->set_mode(tzd, THERMAL_DEVICE_ENABLED);
- 
--			of_node_put(sensor_specs.np);
- 			of_node_put(child);
- 			goto exit;
- 		}
--		of_node_put(sensor_specs.np);
- 	}
- exit:
- 	of_node_put(sensor_np);
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 126913c6..53e6f67 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -364,6 +364,9 @@ struct thermal_trip {
- 
- /* Function declarations */
- #ifdef CONFIG_THERMAL_OF
-+int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+				  struct device_node *sensor_np,
-+				  u32 *id);
- struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops);
-@@ -375,6 +378,13 @@ struct thermal_zone_device *devm_thermal_zone_of_sensor_register(
- void devm_thermal_zone_of_sensor_unregister(struct device *dev,
- 					    struct thermal_zone_device *tz);
- #else
-+
-+static int thermal_zone_of_get_sensor_id(struct device_node *tz_np,
-+					 struct device_node *sensor_np,
-+					 u32 *id)
-+{
-+	return -ENOENT;
-+}
- static inline struct thermal_zone_device *
- thermal_zone_of_sensor_register(struct device *dev, int id, void *data,
- 				const struct thermal_zone_of_device_ops *ops)
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 1c74437..1ff479c 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -453,6 +453,7 @@ CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
+ CONFIG_QORIQ_THERMAL=m
++CONFIG_IMX_SC_THERMAL=m
+ CONFIG_ROCKCHIP_THERMAL=m
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_RCAR_GEN3_THERMAL=y
 -- 
 2.7.4
 
