@@ -2,285 +2,142 @@ Return-Path: <SRS0=4Unk=4M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5959EC38BFA
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 22:28:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C549C38BF9
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 22:42:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2829621927
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 22:28:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F288B2072D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 22:42:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mxDlH6Ly"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727459AbgBXW25 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 17:28:57 -0500
-Received: from mga12.intel.com ([192.55.52.136]:35898 "EHLO mga12.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726651AbgBXW25 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Feb 2020 17:28:57 -0500
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by fmsmga106.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 24 Feb 2020 14:28:56 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,481,1574150400"; 
-   d="scan'208";a="437858293"
-Received: from rjwysock-mobl1.ger.corp.intel.com (HELO [10.249.154.101]) ([10.249.154.101])
-  by fmsmga006.fm.intel.com with ESMTP; 24 Feb 2020 14:28:53 -0800
-Subject: Re: [PATCH v10 4/4] i2c: core: support bus regulator controlling in
- adapter
-To:     Bibby Hsieh <bibby.hsieh@mediatek.com>
-Cc:     Tomasz Figa <tfiga@chromium.org>,
+        id S1728260AbgBXWmi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 17:42:38 -0500
+Received: from mail-lf1-f67.google.com ([209.85.167.67]:34022 "EHLO
+        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727670AbgBXWmi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 17:42:38 -0500
+Received: by mail-lf1-f67.google.com with SMTP id l18so8090345lfc.1;
+        Mon, 24 Feb 2020 14:42:36 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=b03TRFQ9QN9uhCU3mXS9EkQey+lE2Pt2IOy2EIPzQuM=;
+        b=mxDlH6Lyrfi2/G/Bw2296CEMHOAkxAfb8ZGuFLGkbZYXCbSpDKazBfmqpBMSdJyg69
+         NYwwkoUCJpwlnyIHiaVhnPCLwwhuHfUY+qujASryWO0n4kNstg3doN6HAMRp6Bz98Hzk
+         Ay/ds3kl5Tzyi5Zo0j1Xk9C2DGSXJnoSmU9IxeLP36iwfK1jAsOzBVUswS3uTT/a+J1r
+         JkYGgjRjfPfXdfqHhUXa1uF/pjlLr+OuIHTUh0N4rIZJ4OqzfLOXelsaEeiZ+mv/IDLL
+         4Ycgde278nTpQOvG3574JNAdPTe70wWWkDRUqnSpbuVaKRIUBwemdIl/4kD3V4NT7I4e
+         QD6g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=b03TRFQ9QN9uhCU3mXS9EkQey+lE2Pt2IOy2EIPzQuM=;
+        b=qMew/mxKs0G6uBqahCVSb0umbNpHr6KNRxlB2EuR1Nd9F60O4KXlit6nsd65Bz58OQ
+         rHiWmr5VuxcD57wXkyewgvu6g1Q2rllRNcHcAnNzcXIf9o1Vw1N/I7NRLBAIpDN1/HZ6
+         cyCO6FdY5+I9JjVw8Y3eozMZCecJSh4awEuVn6+nC+UXrUCyY1IaR6ax7JiT5OI5W8dC
+         7ogwyxLksCPZ2f9rd6kNaAGffnZuSUEFrXOijRbwLj8DDqgNvlPPXRIITA/qsLQME3/Y
+         WhqXPJAGFDKOSZcMEzsRF05bQh+qg3Mmyk3wl+jZPwX7dDXfP70JD58HF4o2z7fx8wFo
+         Bfnw==
+X-Gm-Message-State: APjAAAXYosQ1vAIGff8z5k3irc/ivIWeNLlNASJBvb9p2LW4MJN7H+We
+        VH1Q9D+4qviJgmpqZEdP1I4=
+X-Google-Smtp-Source: APXvYqwCQm9EZ60/Re6nbi2dVA0+hwHW7+b9xcpHVtXq6tF2ZqWD44cVlR7FD+FbegAhbbKIbXx2yg==
+X-Received: by 2002:ac2:4857:: with SMTP id 23mr2748151lfy.200.1582584155714;
+        Mon, 24 Feb 2020 14:42:35 -0800 (PST)
+Received: from localhost.localdomain (79-139-233-37.dynamic.spd-mgts.ru. [79.139.233.37])
+        by smtp.gmail.com with ESMTPSA id j7sm6264833lfh.25.2020.02.24.14.42.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Feb 2020 14:42:35 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Wolfram Sang <wsa@the-dreams.de>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        linux-i2c <linux-i2c@vger.kernel.org>,
-        Nicolas Boichat <drinkcat@chromium.org>,
-        srv_heupstream <srv_heupstream@mediatek.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        linux-devicetree <devicetree@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-References: <20200116025637.3524-1-bibby.hsieh@mediatek.com>
- <20200116025637.3524-5-bibby.hsieh@mediatek.com>
- <CAAFQd5Bh9dUuu2fzxQSyuyRrEvN5o8PBqPCUTdrC5btN2Q1HVw@mail.gmail.com>
- <CAAFQd5DtnBhGV-VemTwudm7K-UtFsGg99YGuD-cyR93u0OAPuA@mail.gmail.com>
- <1582255353.19370.2.camel@mtksdaap41>
-From:   "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Organization: Intel Technology Poland Sp. z o. o., KRS 101882, ul. Slowackiego
- 173, 80-298 Gdansk
-Message-ID: <b11d1b1a-5d00-3200-6779-e54a828915f9@intel.com>
-Date:   Mon, 24 Feb 2020 23:28:52 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.1
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+        Jasper Korten <jja2000@gmail.com>,
+        David Heidelberg <david@ixit.cz>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v11 02/17] ARM: tegra: Add tegra_pm_park_secondary_cpu()
+Date:   Tue, 25 Feb 2020 01:40:42 +0300
+Message-Id: <20200224224057.21877-3-digetx@gmail.com>
+X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20200224224057.21877-1-digetx@gmail.com>
+References: <20200224224057.21877-1-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <1582255353.19370.2.camel@mtksdaap41>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2/21/2020 4:22 AM, Bibby Hsieh wrote:
-> Hi, Rafael,
->
-> I'm Sorry to bother you.
->
-> I'm not sure if you receive our email...
-> So I re-sent this email to your another email.
+This function resembles tegra_cpu_die() of the hotplug code, but
+this variant is more suitable to be used for CPU PM because it's made
+specifically to be used by cpu_suspend(). In short this function puts
+secondary CPU offline, it will be used by the new CPUIDLE driver.
 
-I actually have not realized that there was a question directly for me 
-in this thread.
+Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Tested-by: Jasper Korten <jja2000@gmail.com>
+Tested-by: David Heidelberg <david@ixit.cz>
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/mach-tegra/pm.c | 14 ++++++++++++++
+ arch/arm/mach-tegra/pm.h |  5 +++++
+ 2 files changed, 19 insertions(+)
 
-
-> On Mon, 2020-02-17 at 18:45 +0900, Tomasz Figa wrote:
->> Hi Rafael,
->>
->> On Tue, Jan 28, 2020 at 4:31 PM Tomasz Figa <tfiga@chromium.org> wrote:
->>> Hi Rafael,
->>>
->>> On Thu, Jan 16, 2020 at 11:56 AM Bibby Hsieh <bibby.hsieh@mediatek.com> wrote:
->>>> Although in the most platforms, the bus power of i2c
->>>> are alway on, some platforms disable the i2c bus power
->>>> in order to meet low power request.
->>>>
->>>> We get and enable bulk regulator in i2c adapter device.
->>>>
->>>> Signed-off-by: Bibby Hsieh <bibby.hsieh@mediatek.com>
->>>> ---
->>>>   drivers/i2c/i2c-core-base.c | 81 +++++++++++++++++++++++++++++++++++++
->>>>   include/linux/i2c.h         |  3 ++
->>>>   2 files changed, 84 insertions(+)
->>>>
->>> I posted some comments in a separate reply [1] and Wolfram confirmed
->>> that he's fine with the approach [2]. Would you have some time to take
->>> a look from the PM point of view? Thanks.
->>>
->>> [1] https://patchwork.ozlabs.org/patch/1223991/#2350984
->>> [2] https://patchwork.ozlabs.org/patch/1223991/#2351032
->>>
->>> Please let me know if you want me to CC you directly on any of those replies.
->> Would you have a few minutes to take a look at this?
->>
->> Thanks,
->> Tomasz
->>
->>> Best regards,
->>> Tomasz
->>>
->>>> diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
->>>> index 9333c865d4a9..9b9e96b094ca 100644
->>>> --- a/drivers/i2c/i2c-core-base.c
->>>> +++ b/drivers/i2c/i2c-core-base.c
->>>> @@ -306,6 +306,7 @@ static int i2c_smbus_host_notify_to_irq(const struct i2c_client *client)
->>>>   static int i2c_device_probe(struct device *dev)
->>>>   {
->>>>          struct i2c_client       *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter      *adap = client->adapter;
->>>>          struct i2c_driver       *driver;
->>>>          int status;
->>>>
->>>> @@ -371,6 +372,12 @@ static int i2c_device_probe(struct device *dev)
->>>>
->>>>          dev_dbg(dev, "probe\n");
->>>>
->>>> +       status = regulator_enable(adap->bus_reg);
->>>> +       if (status != 0) {
->>>> +               dev_err(&adap->dev, "Failed to enable power regulator\n");
->>>> +               goto err_clear_wakeup_irq;
->>>> +       }
->>>> +
->>>>          status = of_clk_set_defaults(dev->of_node, false);
->>>>          if (status < 0)
->>>>                  goto err_clear_wakeup_irq;
->>>> @@ -407,6 +414,7 @@ static int i2c_device_probe(struct device *dev)
->>>>   static int i2c_device_remove(struct device *dev)
->>>>   {
->>>>          struct i2c_client       *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter      *adap = client->adapter;
->>>>          struct i2c_driver       *driver;
->>>>          int status = 0;
->>>>
->>>> @@ -420,6 +428,8 @@ static int i2c_device_remove(struct device *dev)
->>>>          }
->>>>
->>>>          dev_pm_domain_detach(&client->dev, true);
->>>> +       if (!pm_runtime_status_suspended(&adap->dev))
->>>> +               regulator_disable(adap->bus_reg);
->>>>
->>>>          dev_pm_clear_wake_irq(&client->dev);
->>>>          device_init_wakeup(&client->dev, false);
->>>> @@ -431,6 +441,71 @@ static int i2c_device_remove(struct device *dev)
->>>>          return status;
->>>>   }
->>>>
->>>> +#ifdef CONFIG_PM_SLEEP
->>>> +static int i2c_resume(struct device *dev)
->>>> +{
->>>> +       struct i2c_client *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter *adap = client->adapter;
->>>> +       int err;
->>>> +
->>>> +       if (pm_runtime_status_suspended(&adap->dev)) {
-
-In general, this is racy, because the RPM status of the device may 
-change while it is running unless there are specific reasons why that 
-cannot happen.
-
-It generally is better to do such checks at the "early resume" and 
-(analogously) "late suspend" stages when RPM is disabled.
-
->>>> +               err = regulator_enable(adap->bus_reg);
->>>> +               if (err)
->>>> +                       return err;
->>>> +       }
->>>> +
->>>> +       return pm_generic_resume(dev);
->>>> +}
->>>> +
->>>> +static int i2c_suspend(struct device *dev)
->>>> +{
->>>> +       struct i2c_client *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter *adap = client->adapter;
->>>> +       int err;
->>>> +
->>>> +       if (!pm_runtime_status_suspended(&adap->dev)) {
->>>> +               err = regulator_disable(adap->bus_reg);
->>>> +               if (err)
->>>> +                       return err;
->>>> +       }
->>>> +
->>>> +       return pm_generic_suspend(dev);
->>>> +}
->>>> +#endif
->>>> +
->>>> +#ifdef CONFIG_PM
->>>> +static int i2c_runtime_resume(struct device *dev)
->>>> +{
->>>> +       struct i2c_client *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter *adap = client->adapter;
->>>> +       int err;
->>>> +
->>>> +       err = regulator_enable(adap->bus_reg);
->>>> +       if (err)
->>>> +               return err;
->>>> +
->>>> +       return pm_generic_runtime_resume(dev);
->>>> +}
->>>> +
->>>> +static int i2c_runtime_suspend(struct device *dev)
->>>> +{
->>>> +       struct i2c_client *client = i2c_verify_client(dev);
->>>> +       struct i2c_adapter *adap = client->adapter;
->>>> +       int err;
->>>> +
->>>> +       err = pm_generic_runtime_suspend(dev);
->>>> +       if (err)
->>>> +               return err;
->>>> +
->>>> +       return regulator_disable(adap->bus_reg);
->>>> +}
->>>> +#endif
->>>> +
->>>> +static const struct dev_pm_ops i2c_device_pm = {
->>>> +       SET_SYSTEM_SLEEP_PM_OPS(i2c_suspend, i2c_resume)
->>>> +       SET_RUNTIME_PM_OPS(i2c_runtime_suspend, i2c_runtime_resume, NULL)
->>>> +};
->>>> +
->>>>   static void i2c_device_shutdown(struct device *dev)
->>>>   {
->>>>          struct i2c_client *client = i2c_verify_client(dev);
->>>> @@ -488,6 +563,7 @@ struct bus_type i2c_bus_type = {
->>>>          .probe          = i2c_device_probe,
->>>>          .remove         = i2c_device_remove,
->>>>          .shutdown       = i2c_device_shutdown,
->>>> +       .pm             = &i2c_device_pm,
->>>>   };
->>>>   EXPORT_SYMBOL_GPL(i2c_bus_type);
->>>>
->>>> @@ -1351,6 +1427,11 @@ static int i2c_register_adapter(struct i2c_adapter *adap)
->>>>                  goto out_reg;
->>>>
->>>>          dev_dbg(&adap->dev, "adapter [%s] registered\n", adap->name);
->>>> +       adap->bus_reg = devm_regulator_get(&adap->dev, "bus");
->>>> +       if (IS_ERR(adap->bus_reg)) {
->>>> +               res = PTR_ERR(adap->bus_reg);
->>>> +               goto out_reg;
->>>> +       }
->>>>
->>>>          pm_runtime_no_callbacks(&adap->dev);
->>>>          pm_suspend_ignore_children(&adap->dev, true);
->>>> diff --git a/include/linux/i2c.h b/include/linux/i2c.h
->>>> index d2f786706657..833b81a680da 100644
->>>> --- a/include/linux/i2c.h
->>>> +++ b/include/linux/i2c.h
->>>> @@ -15,6 +15,7 @@
->>>>   #include <linux/device.h>      /* for struct device */
->>>>   #include <linux/sched.h>       /* for completion */
->>>>   #include <linux/mutex.h>
->>>> +#include <linux/regulator/consumer.h>
->>>>   #include <linux/rtmutex.h>
->>>>   #include <linux/irqdomain.h>           /* for Host Notify IRQ */
->>>>   #include <linux/of.h>          /* for struct device_node */
->>>> @@ -330,6 +331,7 @@ struct i2c_client {
->>>>          int init_irq;                   /* irq set at initialization    */
->>>>          int irq;                        /* irq issued by device         */
->>>>          struct list_head detected;
->>>> +
->>>>   #if IS_ENABLED(CONFIG_I2C_SLAVE)
->>>>          i2c_slave_cb_t slave_cb;        /* callback for slave mode      */
->>>>   #endif
->>>> @@ -723,6 +725,7 @@ struct i2c_adapter {
->>>>          const struct i2c_adapter_quirks *quirks;
->>>>
->>>>          struct irq_domain *host_notify_domain;
->>>> +       struct regulator *bus_reg;
->>>>   };
->>>>   #define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
->>>>
->>>> --
->>>> 2.18.0
-
+diff --git a/arch/arm/mach-tegra/pm.c b/arch/arm/mach-tegra/pm.c
+index 3cab81b82866..f5ff3dd1dd81 100644
+--- a/arch/arm/mach-tegra/pm.c
++++ b/arch/arm/mach-tegra/pm.c
+@@ -436,4 +436,18 @@ void __init tegra_init_suspend(void)
+ 
+ 	suspend_set_ops(&tegra_suspend_ops);
+ }
++
++int tegra_pm_park_secondary_cpu(unsigned long cpu)
++{
++	if (cpu > 0) {
++		tegra_disable_clean_inv_dcache(TEGRA_FLUSH_CACHE_LOUIS);
++
++		if (tegra_get_chip_id() == TEGRA20)
++			tegra20_hotplug_shutdown();
++		else
++			tegra30_hotplug_shutdown();
++	}
++
++	return -EINVAL;
++}
+ #endif
+diff --git a/arch/arm/mach-tegra/pm.h b/arch/arm/mach-tegra/pm.h
+index 569151b3edc0..9a790f00237f 100644
+--- a/arch/arm/mach-tegra/pm.h
++++ b/arch/arm/mach-tegra/pm.h
+@@ -31,8 +31,13 @@ extern void (*tegra_tear_down_cpu)(void);
+ 
+ #ifdef CONFIG_PM_SLEEP
+ void tegra_init_suspend(void);
++int tegra_pm_park_secondary_cpu(unsigned long cpu);
+ #else
+ static inline void tegra_init_suspend(void) {}
++static inline int tegra_pm_park_secondary_cpu(unsigned long cpu)
++{
++	return -ENOTSUPP;
++}
+ #endif
+ 
+ #endif /* _MACH_TEGRA_PM_H_ */
+-- 
+2.24.0
 
