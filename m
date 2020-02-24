@@ -2,100 +2,67 @@ Return-Path: <SRS0=4Unk=4M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CEDAC38BE2
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:40:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A6A7C38BE0
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:40:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 377CD21D56
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:40:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582569610;
-	bh=PEX+ELBPGmQLZKDttMc/4bvhTZXnLg0ng99PjqfYs7Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=coAay6A3wlvukL2VaX1MGuJBRE4oHtFBGNtOKKSE0hZx1KwLzhAkkW6VnYDiQfUdD
-	 0RXg93yrbgYPQMDYqbkFKCiIcnLavYv6UUDjYv5tfDeGwe3ggxhvyQ7hLzvYAKjjx2
-	 kSJG1i8C5l0em/0DJsxdy+AGQ3JNj6qyLUwRRuyM=
+	by mail.kernel.org (Postfix) with ESMTP id 307C521744
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:40:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727948AbgBXSkG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 13:40:06 -0500
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:34622 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727426AbgBXSkG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 13:40:06 -0500
-Received: by mail-ot1-f66.google.com with SMTP id j16so9680542otl.1;
-        Mon, 24 Feb 2020 10:40:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=bmMsO8zlhfDBXeD1Ui5z4nfH2lAIx0D2PEMJ+/JnHXU=;
-        b=ih0HDgQ7SByC9FkVNsyAS/Zpkj8okRneRRAARWBM0x0nbWuRWieOrYs2uUVbRuiTV7
-         sAdXE/4cAvg6iKYiHvv/9t/GnUdwP3GfECBgJCw6fpaLTkLaSUp2ihQKam2nTZNi7GxN
-         Bv2UzxENuIm/ejbsIZ+oKjl/X3AbdCpyFTAkh9B5OzXtaxuLH5H2yVYiE2K6/6MWts69
-         4kUfXRwbreZunazIAKRXeYh5T2/1FyI3MPlQ7XM/wxvG/6POffoNdVksx2LgmREPhnXD
-         GZ9WEgQ8WCpfZyjXZMNMukAcWgzYDrzfOzc3ip3RHOfL2Ts5ywyk3Idnt7YaPIXqEhrV
-         JOqQ==
-X-Gm-Message-State: APjAAAXAJYARRfDBUSKFV0+DB49f27xCyM5mvTBmRSri7KiT8i1DmArh
-        ytIccxiiRS2lwO834laQDQ==
-X-Google-Smtp-Source: APXvYqyG6ueUZmR3C1vGNtlbivBqFpkBHQuuCOLIGlv1vRi+ocXBU3uxirn1DsXLCV/bF2L7rqDPag==
-X-Received: by 2002:a05:6830:139a:: with SMTP id d26mr42724177otq.75.1582569604945;
-        Mon, 24 Feb 2020 10:40:04 -0800 (PST)
-Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id m19sm4737721otn.47.2020.02.24.10.40.03
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Feb 2020 10:40:04 -0800 (PST)
-Received: (nullmailer pid 4013 invoked by uid 1000);
-        Mon, 24 Feb 2020 18:40:03 -0000
-Date:   Mon, 24 Feb 2020 12:40:03 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Amit Kucheria <amit.kucheria@linaro.org>
-Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        swboyd@chromium.org, mka@chromium.org, daniel.lezcano@linaro.org,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org
-Subject: Re: [RFC PATCH v1 3/3] dt-bindings: thermal: Add yaml bindings for
- thermal zones
-Message-ID: <20200224184003.GA3607@bogus>
-References: <cover.1582528977.git.amit.kucheria@linaro.org>
- <59d24f8ec98e29d119c5cbdb2abe6d4644cc51cf.1582528977.git.amit.kucheria@linaro.org>
+        id S1728047AbgBXSkQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 13:40:16 -0500
+Received: from foss.arm.com ([217.140.110.172]:41732 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727426AbgBXSkQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Feb 2020 13:40:16 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0D4EA1FB;
+        Mon, 24 Feb 2020 10:40:16 -0800 (PST)
+Received: from e113632-lin (e113632-lin.cambridge.arm.com [10.1.194.46])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CFB0F3F703;
+        Mon, 24 Feb 2020 10:40:13 -0800 (PST)
+References: <20200224141142.25445-1-ionela.voinescu@arm.com> <20200224141142.25445-2-ionela.voinescu@arm.com>
+User-agent: mu4e 0.9.17; emacs 26.3
+From:   Valentin Schneider <valentin.schneider@arm.com>
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
+        maz@kernel.org, suzuki.poulose@arm.com, sudeep.holla@arm.com,
+        lukasz.luba@arm.com, dietmar.eggemann@arm.com, rjw@rjwysocki.net,
+        peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
+        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v4 1/7] arm64: add support for the AMU extension v1
+Message-ID: <jhjpne3ygmm.fsf@arm.com>
+In-reply-to: <20200224141142.25445-2-ionela.voinescu@arm.com>
+Date:   Mon, 24 Feb 2020 18:39:37 +0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <59d24f8ec98e29d119c5cbdb2abe6d4644cc51cf.1582528977.git.amit.kucheria@linaro.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Type: text/plain
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 24 Feb 2020 12:55:37 +0530, Amit Kucheria wrote:
-> As part of moving the thermal bindings to YAML, split it up into 3
-> bindings: thermal sensors, cooling devices and thermal zones.
-> 
-> The thermal-zone binding is a software abstraction to capture the
-> properties of each zone - how often they should be checked, the
-> temperature thresholds (trips) at which mitigation actions need to be
-> taken and the level of mitigation needed at those thresholds.
-> 
-> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-> ---
->  .../bindings/thermal/thermal-zones.yaml       | 302 ++++++++++++++++++
->  1 file changed, 302 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/thermal-zones.yaml
-> 
+Ionela Voinescu writes:
 
-My bot found errors running 'make dt_binding_check' on your patch:
+> The activity monitors extension is an optional extension introduced
+> by the ARMv8.4 CPU architecture. This implements basic support for
+> version 1 of the activity monitors architecture, AMUv1.
+>
+> This support includes:
+> - Extension detection on each CPU (boot, secondary, hotplugged)
+> - Register interface for AMU aarch64 registers
+> - amu=[0/1/on/off/y/n] kernel parameter to disable detection and
+>   counter access at runtime
+>
+> Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Suzuki K Poulose <suzuki.poulose@arm.com>
+> Cc: Marc Zyngier <maz@kernel.org>
+> Cc: Mark Rutland <mark.rutland@arm.com>
 
-Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-zones.example.dt.yaml: thermal-sensor@c263000: interrupt-names: ['uplow'] is too short
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-zones.example.dt.yaml: thermal-sensor@c263000: interrupts: [[0, 506, 4]] is too short
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-zones.example.dt.yaml: thermal-sensor@c265000: interrupt-names: ['uplow'] is too short
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-zones.example.dt.yaml: thermal-sensor@c265000: interrupts: [[0, 507, 4]] is too short
-
-See https://patchwork.ozlabs.org/patch/1242847
-Please check and re-submit.
+Reviewed-by: Valentin Schneider <valentin.schneider@arm.com>
