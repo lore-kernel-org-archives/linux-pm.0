@@ -4,26 +4,26 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 908A3C35671
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 14:12:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95788C11D30
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 14:13:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 67D6720866
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 14:12:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6CA992072D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 14:13:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727708AbgBXOMu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 09:12:50 -0500
-Received: from foss.arm.com ([217.140.110.172]:37668 "EHLO foss.arm.com"
+        id S1727756AbgBXOM5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 09:12:57 -0500
+Received: from foss.arm.com ([217.140.110.172]:37714 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727426AbgBXOMt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Feb 2020 09:12:49 -0500
+        id S1727426AbgBXOM4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Feb 2020 09:12:56 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4534130E;
-        Mon, 24 Feb 2020 06:12:49 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 45B7430E;
+        Mon, 24 Feb 2020 06:12:56 -0800 (PST)
 Received: from e108754-lin.cambridge.arm.com (unknown [10.1.198.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D45153F534;
-        Mon, 24 Feb 2020 06:12:46 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id EF1153F534;
+        Mon, 24 Feb 2020 06:12:53 -0800 (PST)
 From:   Ionela Voinescu <ionela.voinescu@arm.com>
 To:     catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
         maz@kernel.org, suzuki.poulose@arm.com, sudeep.holla@arm.com,
@@ -33,194 +33,348 @@ To:     catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
 Cc:     peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org,
         viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
         linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH v4 4/7] Documentation: arm64: document support for the AMU extension
-Date:   Mon, 24 Feb 2020 14:11:39 +0000
-Message-Id: <20200224141142.25445-5-ionela.voinescu@arm.com>
+        linux-pm@vger.kernel.org
+Subject: [PATCH v4 6/7] arm64: use activity monitors for frequency invariance
+Date:   Mon, 24 Feb 2020 14:11:41 +0000
+Message-Id: <20200224141142.25445-7-ionela.voinescu@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200224141142.25445-1-ionela.voinescu@arm.com>
 References: <20200224141142.25445-1-ionela.voinescu@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The activity monitors extension is an optional extension introduced
-by the ARMv8.4 CPU architecture.
+The Frequency Invariance Engine (FIE) is providing a frequency
+scaling correction factor that helps achieve more accurate
+load-tracking.
 
-Add initial documentation for the AMUv1 extension:
- - arm64/amu.txt: AMUv1 documentation
- - arm64/booting.txt: system registers initialisation
+So far, for arm and arm64 platforms, this scale factor has been
+obtained based on the ratio between the current frequency and the
+maximum supported frequency recorded by the cpufreq policy. The
+setting of this scale factor is triggered from cpufreq drivers by
+calling arch_set_freq_scale. The current frequency used in computation
+is the frequency requested by a governor, but it may not be the
+frequency that was implemented by the platform.
+
+This correction factor can also be obtained using a core counter and a
+constant counter to get information on the performance (frequency based
+only) obtained in a period of time. This will more accurately reflect
+the actual current frequency of the CPU, compared with the alternative
+implementation that reflects the request of a performance level from
+the OS.
+
+Therefore, implement arch_scale_freq_tick to use activity monitors, if
+present, for the computation of the frequency scale factor.
+
+The use of AMU counters depends on:
+ - CONFIG_ARM64_AMU_EXTN - depents on the AMU extension being present
+ - CONFIG_CPU_FREQ - the current frequency obtained using counter
+   information is divided by the maximum frequency obtained from the
+   cpufreq policy.
+
+While it is possible to have a combination of CPUs in the system with
+and without support for activity monitors, the use of counters for
+frequency invariance is only enabled for a CPU if all related CPUs
+(CPUs in the same frequency domain) support and have enabled the core
+and constant activity monitor counters. In this way, there is a clear
+separation between the policies for which arch_set_freq_scale (cpufreq
+based FIE) is used, and the policies for which arch_scale_freq_tick
+(counter based FIE) is used to set the frequency scale factor. For
+this purpose, a late_initcall_sync is registered to trigger validation
+work for policies that will enable or disable the use of AMU counters
+for frequency invariance. If CONFIG_CPU_FREQ is not defined, the use
+of counters is enabled on all CPUs only if all possible CPUs correctly
+support the necessary counters.
 
 Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Reviewed-by: Valentin Schneider <valentin.schneider@arm.com>
 Cc: Catalin Marinas <catalin.marinas@arm.com>
 Cc: Will Deacon <will@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
 ---
- Documentation/arm64/amu.rst     | 114 ++++++++++++++++++++++++++++++++
- Documentation/arm64/booting.rst |  14 ++++
- Documentation/arm64/index.rst   |   1 +
- 3 files changed, 129 insertions(+)
- create mode 100644 Documentation/arm64/amu.rst
+ arch/arm64/include/asm/topology.h |  15 +++
+ arch/arm64/kernel/cpufeature.c    |   4 +
+ arch/arm64/kernel/topology.c      | 174 ++++++++++++++++++++++++++++++
+ drivers/base/arch_topology.c      |   8 ++
+ include/linux/topology.h          |   7 ++
+ 5 files changed, 208 insertions(+)
 
-diff --git a/Documentation/arm64/amu.rst b/Documentation/arm64/amu.rst
-new file mode 100644
-index 000000000000..ad609ada2d8e
---- /dev/null
-+++ b/Documentation/arm64/amu.rst
-@@ -0,0 +1,114 @@
-+=======================================================
-+Activity Monitors Unit (AMU) extension in AArch64 Linux
-+=======================================================
-+
-+Author: Ionela Voinescu <ionela.voinescu@arm.com>
-+
-+Date: 2019-09-10
-+
-+This document briefly describes the provision of Activity Monitors Unit
-+support in AArch64 Linux.
-+
-+
-+Architecture overview
-+---------------------
-+
-+The activity monitors extension is an optional extension introduced by the
-+ARMv8.4 CPU architecture.
-+
-+The activity monitors unit, implemented in each CPU, provides performance
-+counters intended for system management use. The AMU extension provides a
-+system register interface to the counter registers and also supports an
-+optional external memory-mapped interface.
-+
-+Version 1 of the Activity Monitors architecture implements a counter group
-+of four fixed and architecturally defined 64-bit event counters.
-+  - CPU cycle counter: increments at the frequency of the CPU.
-+  - Constant counter: increments at the fixed frequency of the system
-+    clock.
-+  - Instructions retired: increments with every architecturally executed
-+    instruction.
-+  - Memory stall cycles: counts instruction dispatch stall cycles caused by
-+    misses in the last level cache within the clock domain.
-+
-+When in WFI or WFE these counters do not increment.
-+
-+The Activity Monitors architecture provides space for up to 16 architected
-+event counters. Future versions of the architecture may use this space to
-+implement additional architected event counters.
-+
-+Additionally, version 1 implements a counter group of up to 16 auxiliary
-+64-bit event counters.
-+
-+On cold reset all counters reset to 0.
-+
-+
-+Basic support
-+-------------
-+
-+The kernel can safely run a mix of CPUs with and without support for the
-+activity monitors extension. Therefore, if the capability is not disabled
-+at system level (either through CONFIG_ARM64_AMU_EXTN or kernel parameter)
-+we unconditionally enable the capability to allow any late CPU (secondary
-+or hotplugged) to detect and use the feature.
-+
-+When the feature is detected on a CPU, we flag the availability of the
-+feature but this does not guarantee the correct functionality of the
-+counters, only the presence of the extension.
-+
-+Firmware (code running at higher exception levels, e.g. arm-tf) support is
-+needed to:
-+ - Enable access for lower exception levels (EL2 and EL1) to the AMU
-+   registers.
-+ - Enable the counters. If not enabled these will read as 0.
-+ - Save/restore the counters before/after the CPU is being put/brought up
-+   from the 'off' power state.
-+
-+When using kernels that have this feature enabled but boot with broken
-+firmware the user may experience panics or lockups when accessing the
-+counter registers. Even if these symptoms are not observed, the values
-+returned by the register reads might not correctly reflect reality. Most
-+commonly, the counters will read as 0, indicating that they are not
-+enabled.
-+
-+If proper support is not provided in firmware it's best to disable
-+CONFIG_ARM64_AMU_EXTN or disable the capability at runtime through the
-+corresponding kernel parameter. To be noted that for security reasons,
-+this does not bypass the setting of AMUSERENR_EL0 to trap accesses from
-+EL0 (userspace) to EL1 (kernel). Therefore, firmware should still ensure
-+accesses to AMU registers are not trapped in EL2/EL3.
-+
-+The fixed counters of AMUv1 are accessible though the following system
-+register definitions:
-+ - SYS_AMEVCNTR0_CORE_EL0
-+ - SYS_AMEVCNTR0_CONST_EL0
-+ - SYS_AMEVCNTR0_INST_RET_EL0
-+ - SYS_AMEVCNTR0_MEM_STALL_EL0
-+
-+Auxiliary platform specific counters can be accessed using
-+SYS_AMEVCNTR1_EL0(n), where n is a value between 0 and 15.
-+
-+Details can be found in: arch/arm64/include/asm/sysreg.h.
-+
-+
-+Userspace access
-+----------------
-+
-+Currently, access from userspace to the AMU registers is disabled due to:
-+ - Security reasons: they might expose information about code executed in
-+   secure mode.
-+ - Purpose: AMU counters are intended for system management use.
-+
-+Also, the presence of the feature is not visible to userspace.
-+
-+
-+Virtualization
-+--------------
-+
-+Currently, access from userspace (EL0) and kernelspace (EL1) on the KVM
-+guest side is disabled due to:
-+ - Security reasons: they might expose information about code executed
-+   by other guests or the host.
-+
-+Any attempt to access the AMU registers will result in an UNDEFINED
-+exception being injected into the guest.
-diff --git a/Documentation/arm64/booting.rst b/Documentation/arm64/booting.rst
-index 5d78a6f5b0ae..a3f1a47b6f1c 100644
---- a/Documentation/arm64/booting.rst
-+++ b/Documentation/arm64/booting.rst
-@@ -248,6 +248,20 @@ Before jumping into the kernel, the following conditions must be met:
-     - HCR_EL2.APK (bit 40) must be initialised to 0b1
-     - HCR_EL2.API (bit 41) must be initialised to 0b1
+diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+index a4d945db95a2..6415a6eed96d 100644
+--- a/arch/arm64/include/asm/topology.h
++++ b/arch/arm64/include/asm/topology.h
+@@ -16,6 +16,21 @@ int pcibus_to_node(struct pci_bus *bus);
  
-+  For CPUs with Activity Monitors Unit v1 (AMUv1) extension present:
-+  - If EL3 is present:
-+    CPTR_EL3.TAM (bit 30) must be initialised to 0b0
-+    CPTR_EL2.TAM (bit 30) must be initialised to 0b0
-+    AMCNTENSET0_EL0 must be initialised to 0b1111
-+    AMCNTENSET1_EL0 must be initialised to a platform specific value
-+    having 0b1 set for the corresponding bit for each of the auxiliary
-+    counters present.
-+  - If the kernel is entered at EL1:
-+    AMCNTENSET0_EL0 must be initialised to 0b1111
-+    AMCNTENSET1_EL0 must be initialised to a platform specific value
-+    having 0b1 set for the corresponding bit for each of the auxiliary
-+    counters present.
-+
- The requirements described above for CPU mode, caches, MMUs, architected
- timers, coherency and system registers apply to all CPUs.  All CPUs must
- enter the kernel in the same exception level.
-diff --git a/Documentation/arm64/index.rst b/Documentation/arm64/index.rst
-index 5c0c69dc58aa..09cbb4ed2237 100644
---- a/Documentation/arm64/index.rst
-+++ b/Documentation/arm64/index.rst
-@@ -6,6 +6,7 @@ ARM64 Architecture
-     :maxdepth: 1
+ #include <linux/arch_topology.h>
  
-     acpi_object_usage
-+    amu
-     arm-acpi
-     booting
-     cpu-feature-registers
++#ifdef CONFIG_ARM64_AMU_EXTN
++/*
++ * Replace default function that signals use of counters
++ * for frequency invariance for given CPUs.
++ */
++bool topology_cpu_freq_counters(struct cpumask *cpus);
++#define arch_cpu_freq_counters topology_cpu_freq_counters
++/*
++ * Replace task scheduler's default counter-based
++ * frequency-invariance scale factor setting.
++ */
++void topology_scale_freq_tick(void);
++#define arch_scale_freq_tick topology_scale_freq_tick
++#endif /* CONFIG_ARM64_AMU_EXTN */
++
+ /* Replace task scheduler's default frequency-invariant accounting */
+ #define arch_scale_freq_capacity topology_get_freq_scale
+ 
+diff --git a/arch/arm64/kernel/cpufeature.c b/arch/arm64/kernel/cpufeature.c
+index 7560aad9e16b..d712004e0a67 100644
+--- a/arch/arm64/kernel/cpufeature.c
++++ b/arch/arm64/kernel/cpufeature.c
+@@ -1169,12 +1169,16 @@ bool cpu_has_amu_feat(int cpu)
+ 	return cpumask_test_cpu(cpu, &amu_cpus);
+ }
+ 
++/* Initialize the use of AMU counters for frequency invariance */
++extern void init_cpu_freq_invariance_counters(void);
++
+ static void cpu_amu_enable(struct arm64_cpu_capabilities const *cap)
+ {
+ 	if (has_cpuid_feature(cap, SCOPE_LOCAL_CPU)) {
+ 		pr_info("detected CPU%d: Activity Monitors Unit (AMU)\n",
+ 			smp_processor_id());
+ 		cpumask_set_cpu(smp_processor_id(), &amu_cpus);
++		init_cpu_freq_invariance_counters();
+ 	}
+ }
+ 
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index fa9528dfd0ce..7606cbd63517 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -14,6 +14,7 @@
+ #include <linux/acpi.h>
+ #include <linux/arch_topology.h>
+ #include <linux/cacheinfo.h>
++#include <linux/cpufreq.h>
+ #include <linux/init.h>
+ #include <linux/percpu.h>
+ 
+@@ -120,4 +121,177 @@ int __init parse_acpi_topology(void)
+ }
+ #endif
+ 
++#ifdef CONFIG_ARM64_AMU_EXTN
+ 
++#undef pr_fmt
++#define pr_fmt(fmt) "AMU: " fmt
++
++static DEFINE_PER_CPU_READ_MOSTLY(unsigned long, arch_max_freq_scale);
++static DEFINE_PER_CPU(u64, arch_const_cycles_prev);
++static DEFINE_PER_CPU(u64, arch_core_cycles_prev);
++static cpumask_var_t amu_fie_cpus;
++
++/* Initialize counter reference per-cpu variables for the current CPU */
++void init_cpu_freq_invariance_counters(void)
++{
++	this_cpu_write(arch_core_cycles_prev,
++		       read_sysreg_s(SYS_AMEVCNTR0_CORE_EL0));
++	this_cpu_write(arch_const_cycles_prev,
++		       read_sysreg_s(SYS_AMEVCNTR0_CONST_EL0));
++}
++
++static int validate_cpu_freq_invariance_counters(int cpu)
++{
++	u64 max_freq_hz, ratio;
++
++	if (!cpu_has_amu_feat(cpu)) {
++		pr_debug("CPU%d: counters are not supported.\n", cpu);
++		return -EINVAL;
++	}
++
++	if (unlikely(!per_cpu(arch_const_cycles_prev, cpu) ||
++		     !per_cpu(arch_core_cycles_prev, cpu))) {
++		pr_debug("CPU%d: cycle counters are not enabled.\n", cpu);
++		return -EINVAL;
++	}
++
++	/* Convert maximum frequency from KHz to Hz and validate */
++	max_freq_hz = cpufreq_get_hw_max_freq(cpu) * 1000;
++	if (unlikely(!max_freq_hz)) {
++		pr_debug("CPU%d: invalid maximum frequency.\n", cpu);
++		return -EINVAL;
++	}
++
++	/*
++	 * Pre-compute the fixed ratio between the frequency of the constant
++	 * counter and the maximum frequency of the CPU.
++	 *
++	 *			      const_freq
++	 * arch_max_freq_scale =   ---------------- * SCHED_CAPACITY_SCALE²
++	 *			   cpuinfo_max_freq
++	 *
++	 * We use a factor of 2 * SCHED_CAPACITY_SHIFT -> SCHED_CAPACITY_SCALE²
++	 * in order to ensure a good resolution for arch_max_freq_scale for
++	 * very low arch timer frequencies (down to the KHz range which should
++	 * be unlikely).
++	 */
++	ratio = (u64)arch_timer_get_rate() << (2 * SCHED_CAPACITY_SHIFT);
++	ratio = div64_u64(ratio, max_freq_hz);
++	if (!ratio) {
++		WARN_ONCE(1, "System timer frequency too low.\n");
++		return -EINVAL;
++	}
++
++	per_cpu(arch_max_freq_scale, cpu) = (unsigned long)ratio;
++
++	return 0;
++}
++
++static inline int
++enable_policy_freq_counters(int cpu, cpumask_var_t valid_cpus)
++{
++	struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
++
++	if (!policy) {
++		pr_debug("CPU%d: No cpufreq policy found.\n", cpu);
++		return false;
++	}
++
++	if (cpumask_subset(policy->related_cpus, valid_cpus))
++		cpumask_or(amu_fie_cpus, policy->related_cpus,
++			   amu_fie_cpus);
++
++	cpufreq_cpu_put(policy);
++
++	return true;
++}
++
++static DEFINE_STATIC_KEY_FALSE(amu_fie_key);
++#define amu_freq_invariant() static_branch_unlikely(&amu_fie_key)
++
++static int __init init_amu_fie(void)
++{
++	cpumask_var_t valid_cpus;
++	bool have_policy = false;
++	int cpu;
++
++	if (!zalloc_cpumask_var(&valid_cpus, GFP_KERNEL) ||
++	    !zalloc_cpumask_var(&amu_fie_cpus, GFP_KERNEL))
++		return -ENOMEM;
++
++	for_each_present_cpu(cpu) {
++		if (validate_cpu_freq_invariance_counters(cpu))
++			continue;
++		cpumask_set_cpu(cpu, valid_cpus);
++		have_policy |= enable_policy_freq_counters(cpu, valid_cpus);
++	}
++
++	/*
++	 * If we are not restricted by cpufreq policies, we only enable
++	 * the use of the AMU feature for FIE if all CPUs support AMU.
++	 * Otherwise, enable_policy_freq_counters has already enabled
++	 * policy cpus.
++	 */
++	if (!have_policy && cpumask_equal(valid_cpus, cpu_present_mask))
++		cpumask_or(amu_fie_cpus, amu_fie_cpus, valid_cpus);
++
++	if (!cpumask_empty(amu_fie_cpus)) {
++		pr_info("CPUs[%*pbl]: counters will be used for FIE.",
++			cpumask_pr_args(amu_fie_cpus));
++		static_branch_enable(&amu_fie_key);
++	}
++
++	free_cpumask_var(valid_cpus);
++
++	return 0;
++}
++late_initcall_sync(init_amu_fie);
++
++bool topology_cpu_freq_counters(struct cpumask *cpus)
++{
++	return amu_freq_invariant() &&
++	       cpumask_subset(cpus, amu_fie_cpus);
++}
++
++void topology_scale_freq_tick(void)
++{
++	u64 prev_core_cnt, prev_const_cnt;
++	u64 core_cnt, const_cnt, scale;
++	int cpu = smp_processor_id();
++
++	if (!amu_freq_invariant())
++		return;
++
++	if (!cpumask_test_cpu(cpu, amu_fie_cpus))
++		return;
++
++	const_cnt = read_sysreg_s(SYS_AMEVCNTR0_CONST_EL0);
++	core_cnt = read_sysreg_s(SYS_AMEVCNTR0_CORE_EL0);
++	prev_const_cnt = this_cpu_read(arch_const_cycles_prev);
++	prev_core_cnt = this_cpu_read(arch_core_cycles_prev);
++
++	if (unlikely(core_cnt <= prev_core_cnt ||
++		     const_cnt <= prev_const_cnt))
++		goto store_and_exit;
++
++	/*
++	 *	    /\core    arch_max_freq_scale
++	 * scale =  ------- * --------------------
++	 *	    /\const   SCHED_CAPACITY_SCALE
++	 *
++	 * See validate_cpu_freq_invariance_counters() for details on
++	 * arch_max_freq_scale and the use of SCHED_CAPACITY_SHIFT.
++	 */
++	scale = core_cnt - prev_core_cnt;
++	scale *= this_cpu_read(arch_max_freq_scale);
++	scale = div64_u64(scale >> SCHED_CAPACITY_SHIFT,
++			  const_cnt - prev_const_cnt);
++
++	scale = min_t(unsigned long, scale, SCHED_CAPACITY_SCALE);
++	this_cpu_write(freq_scale, (unsigned long)scale);
++
++store_and_exit:
++	this_cpu_write(arch_core_cycles_prev, core_cnt);
++	this_cpu_write(arch_const_cycles_prev, const_cnt);
++}
++#endif /* CONFIG_ARM64_AMU_EXTN */
+diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+index 1eb81f113786..1ab2b7503d63 100644
+--- a/drivers/base/arch_topology.c
++++ b/drivers/base/arch_topology.c
+@@ -29,6 +29,14 @@ void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
+ 	unsigned long scale;
+ 	int i;
+ 
++	/*
++	 * If the use of counters for FIE is enabled, just return as we don't
++	 * want to update the scale factor with information from CPUFREQ.
++	 * Instead the scale factor will be updated from arch_scale_freq_tick.
++	 */
++	if (arch_cpu_freq_counters(cpus))
++		return;
++
+ 	scale = (cur_freq << SCHED_CAPACITY_SHIFT) / max_freq;
+ 
+ 	for_each_cpu(i, cpus)
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index eb2fe6edd73c..397aad6ae163 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -227,5 +227,12 @@ static inline const struct cpumask *cpu_cpu_mask(int cpu)
+ 	return cpumask_of_node(cpu_to_node(cpu));
+ }
+ 
++#ifndef arch_cpu_freq_counters
++static __always_inline
++bool arch_cpu_freq_counters(struct cpumask *cpus)
++{
++	return false;
++}
++#endif
+ 
+ #endif /* _LINUX_TOPOLOGY_H */
 -- 
 2.17.1
 
