@@ -2,51 +2,51 @@ Return-Path: <SRS0=4Unk=4M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50977C35670
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 01:13:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31A3AC35673
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 01:14:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2961420880
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 01:13:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 09A0D2071C
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 01:14:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="G5rowaEp"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="Fa+M/SIx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727170AbgBXBNB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Feb 2020 20:13:01 -0500
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:48240 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727151AbgBXBNB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Feb 2020 20:13:01 -0500
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01O1Cl99116584;
-        Sun, 23 Feb 2020 19:12:47 -0600
+        id S1727168AbgBXBOV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Feb 2020 20:14:21 -0500
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:42156 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727167AbgBXBOV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 23 Feb 2020 20:14:21 -0500
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01O1ECQo043414;
+        Sun, 23 Feb 2020 19:14:12 -0600
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1582506767;
-        bh=IqVWASLT7aINSbL5SEyNqr9FEXULB8G5X7AY+iwQoX4=;
+        s=ti-com-17Q1; t=1582506852;
+        bh=aCaZolvO1w+gXgM4OXSdKxdcHp5kUxbatq1qbCcKguk=;
         h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=G5rowaEp6JlthuiWuocNqdJxXGH2PUygMpd9oymQNtxnZbSCwac80hGHlk7eU67vc
-         DyNpwvT26Uleu33CUthsYe7/cQhgmO9iInF7VMJjgqzZh8yJ48qVW71YfFOwdk4R/i
-         oZ5TNU8/m293ezyP2z/r8tritGHMOWDzjAXrM7vQ=
-Received: from DLEE107.ent.ti.com (dlee107.ent.ti.com [157.170.170.37])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01O1ClLZ121797
+        b=Fa+M/SIx0LExWCdad6tPnLXy2XVLj1ArJOWOWhS0wskMEcr2MaZ6I8cN12Pozxmzb
+         IjOrwlcfaTcDLAaSVFvWpQoVLOx3pOroeiDXRHW/9rOo7qAWxBKuQDGYwbf+BRtz6E
+         e8/bMOLG1XmEpfqEIHDiT7tt12xKV3de5D4qEcpo=
+Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01O1ECFO119648
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Sun, 23 Feb 2020 19:12:47 -0600
-Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE107.ent.ti.com
- (157.170.170.37) with Microsoft SMTP Server (version=TLS1_2,
+        Sun, 23 Feb 2020 19:14:12 -0600
+Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE100.ent.ti.com
+ (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Sun, 23
- Feb 2020 19:12:46 -0600
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+ Feb 2020 19:14:12 -0600
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Sun, 23 Feb 2020 19:12:46 -0600
+ Frontend Transport; Sun, 23 Feb 2020 19:14:12 -0600
 Received: from [10.250.132.7] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01O1ChMI046730;
-        Sun, 23 Feb 2020 19:12:43 -0600
-Subject: Re: [PATCH v2 1/4] dt-bindings: thermal: k3: Add VTM bindings
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01O1E8Xv050593;
+        Sun, 23 Feb 2020 19:14:09 -0600
+Subject: Re: [PATCH v3 1/4] dt-bindings: thermal: k3: Add VTM bindings
  documentation
 To:     Rob Herring <robh@kernel.org>
 CC:     Zhang Rui <rui.zhang@intel.com>,
@@ -58,17 +58,17 @@ CC:     Zhang Rui <rui.zhang@intel.com>,
         <linux-arm-kernel@lists.infradead.org>,
         "open list:THERMAL" <linux-pm@vger.kernel.org>,
         Mark Rutland <mark.rutland@arm.com>
-References: <20200214063443.23589-1-j-keerthy@ti.com>
- <20200214063443.23589-2-j-keerthy@ti.com> <20200218202048.GA32279@bogus>
- <6895cf5e-9195-c914-f4ce-a83f36027dbf@ti.com>
- <CAL_JsqLamx4hdXLJ5SCP1FPHRP11JP6V-1=NyRY2QM1bvtMtpg@mail.gmail.com>
+References: <20200219074314.22829-1-j-keerthy@ti.com>
+ <20200219074314.22829-2-j-keerthy@ti.com> <20200219145227.GA1317@bogus>
+ <55b68963-b931-bf67-482e-146e42af4298@ti.com>
+ <CAL_JsqJAdCT-xpqxYxkZO+JBHCcewhzb2ebiNJvPzSUyCcmP9g@mail.gmail.com>
 From:   "J, KEERTHY" <j-keerthy@ti.com>
-Message-ID: <fb571925-a4c7-d7ea-ddc4-d5573f1727e1@ti.com>
-Date:   Mon, 24 Feb 2020 06:42:42 +0530
+Message-ID: <3c1534b7-1ce4-8cf7-1e0a-9f566a66799f@ti.com>
+Date:   Mon, 24 Feb 2020 06:44:07 +0530
 User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
  Thunderbird/68.5.0
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqLamx4hdXLJ5SCP1FPHRP11JP6V-1=NyRY2QM1bvtMtpg@mail.gmail.com>
+In-Reply-To: <CAL_JsqJAdCT-xpqxYxkZO+JBHCcewhzb2ebiNJvPzSUyCcmP9g@mail.gmail.com>
 Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -80,13 +80,13 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 
-On 2/21/2020 1:58 AM, Rob Herring wrote:
-> On Wed, Feb 19, 2020 at 1:40 AM Keerthy <j-keerthy@ti.com> wrote:
+On 2/21/2020 1:10 AM, Rob Herring wrote:
+> On Wed, Feb 19, 2020 at 10:13 PM Keerthy <j-keerthy@ti.com> wrote:
 >>
 >>
 >>
->> On 19/02/20 1:50 am, Rob Herring wrote:
->>> On Fri, 14 Feb 2020 12:04:40 +0530, Keerthy wrote:
+>> On 19/02/20 8:22 pm, Rob Herring wrote:
+>>> On Wed, Feb 19, 2020 at 01:13:11PM +0530, Keerthy wrote:
 >>>> Add VTM bindings documentation. In the Voltage Thermal
 >>>> Management Module(VTM), K3 AM654 supplies a voltage
 >>>> reference and a temperature sensor feature that are gathered in the band
@@ -99,65 +99,85 @@ On 2/21/2020 1:58 AM, Rob Herring wrote:
 >>>> Signed-off-by: Keerthy <j-keerthy@ti.com>
 >>>> ---
 >>>>
->>>> Changes in v2:
+>>>> Changes in v3:
 >>>>
->>>>     * Fixed make dt_binding_check errors.
+>>>>     * Fixed errors seen with:
+>>>>       dt_binding_check DT_SCHEMA_FILES=Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
 >>>>
 >>>>    .../bindings/thermal/ti,am654-thermal.yaml    | 57 +++++++++++++++++++
 >>>>    1 file changed, 57 insertions(+)
 >>>>    create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
 >>>>
+>>>> diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+>>>> new file mode 100644
+>>>> index 000000000000..b6dc95c3acab
+>>>> --- /dev/null
+>>>> +++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+>>>> @@ -0,0 +1,57 @@
+>>>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>>>> +%YAML 1.2
+>>>> +---
+>>>> +$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
+>>>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>>>> +
+>>>> +title: Texas Instruments AM654 VTM (DTS) binding
+>>>> +
+>>>> +maintainers:
+>>>> +  - Keerthy <j-keerthy@ti.com>
+>>>> +
+>>>> +properties:
+>>>> +  compatible:
+>>>> +    const: ti,am654-vtm
+>>>> +
+>>>> +  reg:
+>>>> +    maxItems: 1
+>>>> +
+>>>> +  power-domains:
+>>>> +    maxItems: 1
+>>>> +    description: phandle to the associated power domain
 >>>
->>> My bot found errors running 'make dt_binding_check' on your patch:
+>>> No need to redefine a standard property description.
+>>
+>> Okay.
+>>
 >>>
->>> Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
->>> Error: Documentation/devicetree/bindings/thermal/ti,am654-thermal.example.dts:21.41-42 syntax error
->>> FATAL ERROR: Unable to parse input tree
->>> scripts/Makefile.lib:300: recipe for target 'Documentation/devicetree/bindings/thermal/ti,am654-thermal.example.dt.yaml' failed
->>> make[1]: *** [Documentation/devicetree/bindings/thermal/ti,am654-thermal.example.dt.yaml] Error 1
->>> Makefile:1263: recipe for target 'dt_binding_check' failed
->>> make: *** [dt_binding_check] Error 2
+>>>> +
+>>>> +  "#thermal-sensor-cells":
+>>>> +    const: 1
+>>>> +
+>>>> +required:
+>>>> +  - "#thermal-sensor-cells"
+>>>> +  - compatible
+>>>> +  - reg
+>>>> +  - power-domains
+>>>> +
+>>>> +additionalProperties: false
+>>>> +
+>>>> +examples:
+>>>> +  - |
+>>>> +    #include <dt-bindings/soc/ti,sci_pm_domain.h>
+>>>> +    vtm: wkup_vtm0@42050000 {
 >>>
->>> See https://patchwork.ozlabs.org/patch/1237882
->>> Please check and re-submit.
+>>> thermal-sensor@...
+>>>
+>>> Use generic node names and don't use '_' in node names
 >>
->> Rob,
->>
->> I am using:
->>
->> Tree: https//github.com/devicetree-org/dt-schema.git
->> branch: master
->>
->> I have make dt_binding_check working for
->> Documentation/devicetree/bindings/thermal/ti,am654-thermal.example.dt.yaml
->>
->> Documentation/devicetree/bindings/thermal/ti,am654-thermal.example.dts
->> is created without any errors :
->>
->> https://pastebin.ubuntu.com/p/6MkMbKPpbY/
->>
->> I did not see any errors as the other files erred out.
+>> vtm stands for voltage thermal manager and comprises of multiple
+>> sensors. This is similar to omap bandgap. Should i replace vtm with more
+>> generic name like thermal? as used in:
 > 
-> 'make -k' is your friend.
-> 
+> 'vtm' is a label and source construct only (until you do overlays), so
+> I don't care what you put really.
 
-Okay
+Okay.
 
-> What branch are you on. Only linux-next breaks generally.
+I will change in to:
 
-linux-next
+vtm: thermal@42050000 {
 
-Thanks,
+Regards,
 Keerthy
+
 > 
->> Today i tried with DT_SCHEMA_FILES option and then finally reproduced
->> the errors. It is a bit confusing for the first time users.
->>
->> Now i have it compiled without any errors.
->>
->> Posting v3 in a bit.
->>
->> - Keerthy
->>
->>
->>>
+> Rob
+> 
