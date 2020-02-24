@@ -4,132 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A18E7C11D37
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:14:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FAF7C38BE2
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:39:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 69AB821744
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:14:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E71BE20836
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 18:39:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582568086;
-	bh=pQEcnphSWAKNko84gSNKnOMi1Kplq6trr5YxbE4qBYg=;
+	s=default; t=1582569588;
+	bh=rBc7oyOo5CS8vryMxyfKSYhoxsl/9pWcYZB9zEe7+vQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=VcxOhwjITX/qanwimHftvnsLuyJpTglTUZKoIDduJJ10THRLglb9zl7Ndel0wiwP2
-	 MfvjKm//jfTrFaAiPDTK6vbpEMN4cnRWqk8RC2HH8ywHXH8hGiu+AZUyz62ha5muHp
-	 aiOUQmEezJEY7PY3iYsB+4f7rcc6nBX1ZBel2T7U=
+	b=qZ1K8atbNR3mlMTyCR54n0zSnEMgZ4JfXPxl/ht8Ww0bVdqwPd3tIQjyRK7QNJnp5
+	 65y8IhR4gncZEg4QpUjvquNXTF9hU2YkbFEyYctuDU9o++Xj2/leXKdrUqJYTnVasB
+	 uD9irQKaeaEfqgNgXScBihS24wwnH7IImLVNBJxU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727730AbgBXSOp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 13:14:45 -0500
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:34835 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726208AbgBXSOp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 13:14:45 -0500
-Received: by mail-ot1-f67.google.com with SMTP id r16so9602668otd.2;
-        Mon, 24 Feb 2020 10:14:44 -0800 (PST)
+        id S1727992AbgBXSjr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 13:39:47 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:39045 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727426AbgBXSjr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 13:39:47 -0500
+Received: by mail-oi1-f195.google.com with SMTP id 18so6959773oij.6;
+        Mon, 24 Feb 2020 10:39:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=4nmmGful+MegUr8aRgRCB1gCieEuCvrSiIBlqsABDmE=;
-        b=T58RVwbr4NQjeRTG7UBG+4HnEZ3Sm+n3CTBfK2ekFInD+UDcONAKcxlZZqX3cJCAKG
-         yQDx22hOOKsFO3bpC2vg12DTP2Cc70iIz8ge/GmMAzIFycnL48aqpdhSIu6SjIY6Jb/w
-         3CQLtymmGzu31yeSC1BxXM41upNqLNO7KQ3B6NY5hXwu0bLHZlKgJ9t13wfdGUymQSC7
-         gDxCrtZy1C6tPwuOQUncs7QGl1e7GG5jVQyCEeecIrl44DwDngTNWsEq3fA5YoZcRLqD
-         YoyAI+NerGPADjMn6sW/1o8Dat3u5XpUHkWmBhRu9PCviV1PbFSB4U/9m+xZeckDL6v3
-         AM9g==
-X-Gm-Message-State: APjAAAUgLTqsnYnob21W3Gc+mbH6Q9aO/Gm+TVoPxiuhq6T0fFVjlKQy
-        y1zplhlC2qKQJs+7Vcb+V1aYFIA=
-X-Google-Smtp-Source: APXvYqzSAV62BhNi363gv0daEbhuDKzBdde3JmEZAlbjVYZ9GcAmP/tY+ZpDRe7P2Ti1DpLoIK6ciQ==
-X-Received: by 2002:a9d:68d9:: with SMTP id i25mr29162204oto.135.1582568083899;
-        Mon, 24 Feb 2020 10:14:43 -0800 (PST)
+        bh=mJFZ+9Y1S3Z4K4VY5LKYC3aMRkdeTsjXfkgcvM8Uwqc=;
+        b=QW+Nfskcw+tUK9RR6/XVvFiU30x5/22pC/Ze7PrrIVv3KWjHXCtsrPgeHUfuy/BPjp
+         pWwsFpoNFo7e3hZIBCdm1qaX2vSE8gEmZjiXc+faGnet0NdCgQZ8NW44ATyS5btLzSSH
+         VGUYWfG9yX7h/ZJVOkya33djL1wTHMYdEw3z9NS0NdhLbE5/hAYDPgmhp/j6lU8x1IWQ
+         ySt2mC7KPsx+Pob6ZK+kdFypA8ZHkilsMc+wAAX9oMAaB9sk+jlJdEC9hpl3hwCzbnSm
+         aviG4r58O8z/hMylJEBdm+QhdRzgAUpdZF/B8YBZmTgz8MiK8Mdg0aPpVh/8PGqRLoIj
+         xfBQ==
+X-Gm-Message-State: APjAAAWhHPC6xOwbdXIqkPStf7qvRR9+emKH6PVdf50A8eKX4ajrJ+cT
+        hqMtH0I23NeZeOflE9hsyg==
+X-Google-Smtp-Source: APXvYqz/hPnka3x3uNnqj0ZN65CwvYlszHLNQqni4E+Ly0QlI++rlZAIObzFHIExjC+HN53ZmD00wg==
+X-Received: by 2002:a05:6808:b13:: with SMTP id s19mr318669oij.119.1582569585986;
+        Mon, 24 Feb 2020 10:39:45 -0800 (PST)
 Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id 60sm4761700otu.45.2020.02.24.10.14.41
+        by smtp.gmail.com with ESMTPSA id s83sm4265727oif.33.2020.02.24.10.39.45
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Feb 2020 10:14:43 -0800 (PST)
-Received: (nullmailer pid 24218 invoked by uid 1000);
-        Mon, 24 Feb 2020 18:14:41 -0000
-Date:   Mon, 24 Feb 2020 12:14:41 -0600
+        Mon, 24 Feb 2020 10:39:45 -0800 (PST)
+Received: (nullmailer pid 3349 invoked by uid 1000);
+        Mon, 24 Feb 2020 18:39:44 -0000
+Date:   Mon, 24 Feb 2020 12:39:44 -0600
 From:   Rob Herring <robh@kernel.org>
-To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Jyri Sarha <jsarha@ti.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Stuart Yoder <stuyoder@gmail.com>,
-        Laurentiu Tudor <laurentiu.tudor@nxp.com>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Joel Stanley <joel@jms.id.au>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
+To:     Amit Kucheria <amit.kucheria@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        swboyd@chromium.org, mka@chromium.org, daniel.lezcano@linaro.org,
         Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-leds@vger.kernel.org,
-        linux-aspeed@lists.ozlabs.org, openbmc@lists.ozlabs.org,
-        linux-gpio@vger.kernel.org, linux-amlogic@lists.infradead.org,
-        linux-stm32@st-md-mailman.stormreply.com, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/7] docs: dt: fix several broken references due to
- renames
-Message-ID: <20200224181441.GA23262@bogus>
-References: <cover.1582361737.git.mchehab+huawei@kernel.org>
- <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org
+Subject: Re: [RFC PATCH v1 1/3] dt-bindings: thermal: Add yaml bindings for
+ thermal sensors
+Message-ID: <20200224183944.GA2201@bogus>
+References: <cover.1582528977.git.amit.kucheria@linaro.org>
+ <11f9128efef92b427d93a563d5b53b62c4c01888.1582528977.git.amit.kucheria@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
+In-Reply-To: <11f9128efef92b427d93a563d5b53b62c4c01888.1582528977.git.amit.kucheria@linaro.org>
 User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Feb 22, 2020 at 10:00:02AM +0100, Mauro Carvalho Chehab wrote:
-> Several DT references got broken due to txt->yaml conversion.
+On Mon, 24 Feb 2020 12:55:35 +0530, Amit Kucheria wrote:
+> As part of moving the thermal bindings to YAML, split it up into 3
+> bindings: thermal sensors, cooling devices and thermal zones.
 > 
-> Those are auto-fixed by running:
+> The property #thermal-sensor-cells is required in each device that acts
+> as a thermal sensor. It is used to uniquely identify the instance of the
+> thermal sensor inside the system.
 > 
-> 	scripts/documentation-file-ref-check --fix
-> 
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> Reviewed-by: Dan Murphy <dmurphy@ti.com>
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 > ---
->  Documentation/devicetree/bindings/arm/arm,scmi.txt        | 2 +-
->  Documentation/devicetree/bindings/arm/arm,scpi.txt        | 2 +-
->  .../devicetree/bindings/arm/bcm/brcm,bcm63138.txt         | 2 +-
->  .../devicetree/bindings/arm/hisilicon/hi3519-sysctrl.txt  | 2 +-
->  .../devicetree/bindings/arm/msm/qcom,idle-state.txt       | 2 +-
->  Documentation/devicetree/bindings/arm/omap/mpu.txt        | 2 +-
->  Documentation/devicetree/bindings/arm/psci.yaml           | 2 +-
->  .../devicetree/bindings/clock/qcom,gcc-apq8064.yaml       | 2 +-
->  .../devicetree/bindings/display/tilcdc/tilcdc.txt         | 2 +-
->  Documentation/devicetree/bindings/leds/common.yaml        | 2 +-
->  .../devicetree/bindings/leds/register-bit-led.txt         | 2 +-
->  .../devicetree/bindings/memory-controllers/ti/emif.txt    | 2 +-
->  Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt   | 2 +-
->  .../bindings/pinctrl/aspeed,ast2400-pinctrl.yaml          | 2 +-
->  .../bindings/pinctrl/aspeed,ast2500-pinctrl.yaml          | 2 +-
->  .../bindings/pinctrl/aspeed,ast2600-pinctrl.yaml          | 2 +-
->  .../devicetree/bindings/power/amlogic,meson-ee-pwrc.yaml  | 2 +-
->  .../devicetree/bindings/reset/st,stm32mp1-rcc.txt         | 2 +-
->  .../devicetree/bindings/thermal/brcm,avs-ro-thermal.yaml  | 2 +-
->  MAINTAINERS                                               | 8 ++++----
->  20 files changed, 23 insertions(+), 23 deletions(-)
+>  .../bindings/thermal/thermal-sensor.yaml      | 70 +++++++++++++++++++
+>  1 file changed, 70 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/thermal-sensor.yaml
+> 
 
-Applied.
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Rob
+Documentation/devicetree/bindings/display/simple-framebuffer.example.dts:21.16-37.11: Warning (chosen_node_is_root): /example-0/chosen: chosen node must be at root node
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-sensor.example.dt.yaml: thermal-sensor@c263000: interrupt-names: ['uplow'] is too short
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-sensor.example.dt.yaml: thermal-sensor@c263000: interrupts: [[0, 506, 4]] is too short
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-sensor.example.dt.yaml: thermal-sensor@c265000: interrupt-names: ['uplow'] is too short
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/thermal/thermal-sensor.example.dt.yaml: thermal-sensor@c265000: interrupts: [[0, 507, 4]] is too short
+
+See https://patchwork.ozlabs.org/patch/1242845
+Please check and re-submit.
