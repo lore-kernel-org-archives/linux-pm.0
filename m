@@ -2,127 +2,84 @@ Return-Path: <SRS0=4Unk=4M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C9AC11D32
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 13:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A3D6C35671
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 13:09:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1B25520732
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 13:08:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="J8OaXTwY"
+	by mail.kernel.org (Postfix) with ESMTP id 027AB20836
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 13:09:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727699AbgBXNIN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 08:08:13 -0500
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:37492 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727329AbgBXNIK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 08:08:10 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 01OD7CsK028839;
-        Mon, 24 Feb 2020 07:07:12 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1582549632;
-        bh=Tx9NLTynxh7HMA5VHJWXsAof1AdXnE/KAs53Nqq7E70=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=J8OaXTwY6rJidCznLf2G/vSUju+4HU3kRW0QV+CMkL2fpPxI5mFwt5l1u7GY1i0cK
-         fhdwF15G4WtYxb0NBQQmKRDL/VCrdAXaZORkAKh4uNPMzhrjf4desB5yiRBKSQYI5e
-         lr23otClWqEaN2djtLEvvM3O3oRjPmZTJi+w6edQ=
-Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 01OD7CFB102821
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 24 Feb 2020 07:07:12 -0600
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Mon, 24
- Feb 2020 07:07:11 -0600
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Mon, 24 Feb 2020 07:07:12 -0600
-Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 01OD7B3m002482;
-        Mon, 24 Feb 2020 07:07:11 -0600
-Subject: Re: [PATCH 2/7] docs: dt: fix several broken references due to
- renames
-To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        Linux Doc Mailing List <linux-doc@vger.kernel.org>
-CC:     Jonathan Corbet <corbet@lwn.net>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, Jyri Sarha <jsarha@ti.com>,
-        Tomi Valkeinen <tomi.valkeinen@ti.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        Jacek Anaszewski <jacek.anaszewski@gmail.com>,
-        Pavel Machek <pavel@ucw.cz>, Stuart Yoder <stuyoder@gmail.com>,
-        Laurentiu Tudor <laurentiu.tudor@nxp.com>,
-        Andrew Jeffery <andrew@aj.id.au>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Joel Stanley <joel@jms.id.au>,
-        Kevin Hilman <khilman@baylibre.com>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <devicetree@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <linux-clk@vger.kernel.org>, <dri-devel@lists.freedesktop.org>,
-        <linux-leds@vger.kernel.org>, <linux-aspeed@lists.ozlabs.org>,
-        <openbmc@lists.ozlabs.org>, <linux-gpio@vger.kernel.org>,
-        <linux-amlogic@lists.infradead.org>,
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        <linux-pm@vger.kernel.org>
-References: <cover.1582361737.git.mchehab+huawei@kernel.org>
- <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
-From:   Dan Murphy <dmurphy@ti.com>
-Message-ID: <e9ae8125-3f8f-5f8c-c19c-34ac1bb5c982@ti.com>
-Date:   Mon, 24 Feb 2020 07:02:01 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        id S1727438AbgBXNJC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 08:09:02 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:49203 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727393AbgBXNJB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 08:09:01 -0500
+Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1j6DTm-0004on-OG; Mon, 24 Feb 2020 13:08:58 +0000
+Date:   Mon, 24 Feb 2020 14:08:57 +0100
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     "David S. Miller" <davem@davemloft.net>,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH net-next v3 1/9] sysfs: add
+ sysfs_file_change_owner{_by_name}()
+Message-ID: <20200224130857.pllstmqb6c2mz7wz@wittgenstein>
+References: <20200218162943.2488012-1-christian.brauner@ubuntu.com>
+ <20200218162943.2488012-2-christian.brauner@ubuntu.com>
+ <20200220112049.GF3374196@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <83c5df4acbbe0fa55a1d58d4c4a435b51cd2a7ad.1582361737.git.mchehab+huawei@kernel.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20200220112049.GF3374196@kroah.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Mauro
+On Thu, Feb 20, 2020 at 12:20:49PM +0100, Greg Kroah-Hartman wrote:
+> On Tue, Feb 18, 2020 at 05:29:35PM +0100, Christian Brauner wrote:
+> > +/**
+> > + *	sysfs_file_change_owner - change owner of a file.
+> > + *	@kobj:	object.
+> > + *	@kuid: new owner's kuid
+> > + *	@kgid: new owner's kgid
+> > + */
+> > +int sysfs_file_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid)
+> > +{
+> > +	struct kernfs_node *kn;
+> > +	int error;
+> > +
+> > +	if (!kobj->state_in_sysfs)
+> > +		return -EINVAL;
+> > +
+> > +	kernfs_get(kobj->sd);
+> > +
+> > +	kn = kobj->sd;
+> > +	error = internal_change_owner(kn, kobj, kuid, kgid);
+> > +
+> > +	kernfs_put(kn);
+> > +
+> > +	return error;
+> > +}
+> > +EXPORT_SYMBOL_GPL(sysfs_file_change_owner);
+> 
+> Oops, wait, what "file" are you changing here?  You aren't changing the
+> kobject's attributes, but rather a file in the kobject's directory,
+> right?  But kobj->sd is the directory of the kobject itself, so why
+> isn't this function just the same thing as sysfs_change_owner()?
 
-On 2/22/20 3:00 AM, Mauro Carvalho Chehab wrote:
-> Several DT references got broken due to txt->yaml conversion.
->
-> Those are auto-fixed by running:
->
-> 	scripts/documentation-file-ref-check --fix
->
-> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-> ---
->   Documentation/devicetree/bindings/arm/arm,scmi.txt        | 2 +-
->   Documentation/devicetree/bindings/arm/arm,scpi.txt        | 2 +-
->   .../devicetree/bindings/arm/bcm/brcm,bcm63138.txt         | 2 +-
->   .../devicetree/bindings/arm/hisilicon/hi3519-sysctrl.txt  | 2 +-
->   .../devicetree/bindings/arm/msm/qcom,idle-state.txt       | 2 +-
->   Documentation/devicetree/bindings/arm/omap/mpu.txt        | 2 +-
->   Documentation/devicetree/bindings/arm/psci.yaml           | 2 +-
->   .../devicetree/bindings/clock/qcom,gcc-apq8064.yaml       | 2 +-
->   .../devicetree/bindings/display/tilcdc/tilcdc.txt         | 2 +-
->   Documentation/devicetree/bindings/leds/common.yaml        | 2 +-
-
-For LEDs
-
-Reviewed-by: Dan Murphy <dmurphy@ti.com>
-
-
+I've moved it directly into sysfs_change_owner(), removed the function,
+and renamed "_by_name()" back to sysfs_file_change_owner() which is
+easier to parse and makes more sense.
