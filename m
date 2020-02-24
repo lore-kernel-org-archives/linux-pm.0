@@ -2,225 +2,226 @@ Return-Path: <SRS0=4Unk=4M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 330FFC11D2F
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 17:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AEB20C11D32
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 17:21:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 072DB20838
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 17:13:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582564431;
-	bh=Ai1gyeG8Ted5a1YKe7xePygaQZvcPxx/36/7ngnSPb0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=UOcEmyj92vjaO7o3xhC4XbwkOjYpGPZekUQiZHp8TOS0Hg9YpmTDW0q23rFTEeIpy
-	 RjixGPTSSplpv+oaUptNsql1PZfuq4iVrMtmwTGdaMJY+HURCWNHgjNoXnglTm0B3H
-	 lnKy5V90HhjgWhBCkWgoU4+dwEh9J/HcGmkpoLDQ=
+	by mail.kernel.org (Postfix) with ESMTP id 8E97E24649
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Feb 2020 17:21:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727619AbgBXRNu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Feb 2020 12:13:50 -0500
-Received: from mail.kernel.org ([198.145.29.99]:55350 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727090AbgBXRNu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Feb 2020 12:13:50 -0500
-Received: from earth.universe (dyndsl-091-096-061-166.ewe-ip-backbone.de [91.96.61.166])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id C9F8B20836;
-        Mon, 24 Feb 2020 17:13:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1582564429;
-        bh=Ai1gyeG8Ted5a1YKe7xePygaQZvcPxx/36/7ngnSPb0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=e2Pw6+wGpDTpdGNsCFI9u5iGeW6TtWpuvR/U5vwOenDcn+vVHi66lr61X9mpQu1aP
-         MwSAc2qAqDxLw3wc6m1abpsy9COGAwzo2kO8AoD7q2tJ78koAcfBekaYZ7tsa11R+8
-         45dQoIoacuT1mPw8ZyvETfUEPshjodWYrLSuLjbA=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 9034C3C0C83; Mon, 24 Feb 2020 18:13:47 +0100 (CET)
-Date:   Mon, 24 Feb 2020 18:13:47 +0100
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Prashant Malani <pmalani@chromium.org>
-Cc:     linux-kernel@vger.kernel.org, Benson Leung <bleung@chromium.org>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        Guenter Roeck <groeck@chromium.org>,
-        "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" 
-        <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2 12/17] power: supply: cros: Use cros_ec_cmd()
-Message-ID: <20200224171347.ghei34x5zn5umewg@earth.universe>
-References: <20200205190028.183069-1-pmalani@chromium.org>
- <20200205190028.183069-13-pmalani@chromium.org>
+        id S1728128AbgBXRV3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Feb 2020 12:21:29 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:57117 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728012AbgBXRV2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Feb 2020 12:21:28 -0500
+Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1j6HQ5-0004D9-SR; Mon, 24 Feb 2020 17:21:25 +0000
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     "David S. Miller" <davem@davemloft.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
+        linux-pm@vger.kernel.org,
+        Christian Brauner <christian.brauner@ubuntu.com>
+Subject: [PATCH v4 8/9] net-sysfs: add queue_change_owner()
+Date:   Mon, 24 Feb 2020 18:21:09 +0100
+Message-Id: <20200224172110.4121492-9-christian.brauner@ubuntu.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200224172110.4121492-1-christian.brauner@ubuntu.com>
+References: <20200224172110.4121492-1-christian.brauner@ubuntu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="bzw77mvqr2inibwn"
-Content-Disposition: inline
-In-Reply-To: <20200205190028.183069-13-pmalani@chromium.org>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Add a function to change the owner of the queue entries for a network device
+when it is moved between network namespaces.
 
---bzw77mvqr2inibwn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Currently, when moving network devices between network namespaces the
+ownership of the corresponding queue sysfs entries are not changed. This leads
+to problems when tools try to operate on the corresponding sysfs files. Fix
+this.
 
-Hi,
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+---
+/* v2 */
+- kbuild test robot <lkp@intel.com> via sparse:
+  - Make net_rx_queue_change_owner() static since it's not exported.
 
-On Wed, Feb 05, 2020 at 11:00:18AM -0800, Prashant Malani wrote:
-> Replace cros_usbpd_charger_ec_command() with cros_ec_cmd() which does
-> the same thing, but is defined in a common location in platform/chrome
-> and exposed for other modules to use. This allows us to remove
-> cros_usbpd_charger_ec_command() entirely.
->=20
-> Signed-off-by: Prashant Malani <pmalani@chromium.org>
-> ---
+/* v3 */
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add explicit uid/gid parameters.
 
-Acked-by: Sebastian Reichel <sre@kernel.org>
+/* v4 */
+unchanged
+---
+ net/core/net-sysfs.c | 106 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 106 insertions(+)
 
--- Sebastian
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index e19967665cb0..cf0215734ceb 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -944,6 +944,24 @@ static int rx_queue_add_kobject(struct net_device *dev, int index)
+ 	kobject_put(kobj);
+ 	return error;
+ }
++
++static int rx_queue_change_owner(struct net_device *dev, int index, kuid_t kuid,
++				 kgid_t kgid)
++{
++	struct netdev_rx_queue *queue = dev->_rx + index;
++	struct kobject *kobj = &queue->kobj;
++	int error;
++
++	error = sysfs_change_owner(kobj, kuid, kgid);
++	if (error)
++		return error;
++
++	if (dev->sysfs_rx_queue_group)
++		error = sysfs_group_change_owner(
++			kobj, dev->sysfs_rx_queue_group, kuid, kgid);
++
++	return error;
++}
+ #endif /* CONFIG_SYSFS */
+ 
+ int
+@@ -981,6 +999,29 @@ net_rx_queue_update_kobjects(struct net_device *dev, int old_num, int new_num)
+ #endif
+ }
+ 
++static int net_rx_queue_change_owner(struct net_device *dev, int num,
++				     kuid_t kuid, kgid_t kgid)
++{
++#ifdef CONFIG_SYSFS
++	int error = 0;
++	int i;
++
++#ifndef CONFIG_RPS
++	if (!dev->sysfs_rx_queue_group)
++		return 0;
++#endif
++	for (i = 0; i < num; i++) {
++		error = rx_queue_change_owner(dev, i, kuid, kgid);
++		if (error)
++			break;
++	}
++
++	return error;
++#else
++	return 0;
++#endif
++}
++
+ #ifdef CONFIG_SYSFS
+ /*
+  * netdev_queue sysfs structures and functions.
+@@ -1486,6 +1527,23 @@ static int netdev_queue_add_kobject(struct net_device *dev, int index)
+ 	kobject_put(kobj);
+ 	return error;
+ }
++
++static int tx_queue_change_owner(struct net_device *ndev, int index,
++				 kuid_t kuid, kgid_t kgid)
++{
++	struct netdev_queue *queue = ndev->_tx + index;
++	struct kobject *kobj = &queue->kobj;
++	int error;
++
++	error = sysfs_change_owner(kobj, kuid, kgid);
++	if (error)
++		return error;
++
++#ifdef CONFIG_BQL
++	error = sysfs_group_change_owner(kobj, &dql_group, kuid, kgid);
++#endif
++	return error;
++}
+ #endif /* CONFIG_SYSFS */
+ 
+ int
+@@ -1520,6 +1578,25 @@ netdev_queue_update_kobjects(struct net_device *dev, int old_num, int new_num)
+ #endif /* CONFIG_SYSFS */
+ }
+ 
++static int net_tx_queue_change_owner(struct net_device *dev, int num,
++				     kuid_t kuid, kgid_t kgid)
++{
++#ifdef CONFIG_SYSFS
++	int error = 0;
++	int i;
++
++	for (i = 0; i < num; i++) {
++		error = tx_queue_change_owner(dev, i, kuid, kgid);
++		if (error)
++			break;
++	}
++
++	return error;
++#else
++	return 0;
++#endif /* CONFIG_SYSFS */
++}
++
+ static int register_queue_kobjects(struct net_device *dev)
+ {
+ 	int error = 0, txq = 0, rxq = 0, real_rx = 0, real_tx = 0;
+@@ -1554,6 +1631,31 @@ static int register_queue_kobjects(struct net_device *dev)
+ 	return error;
+ }
+ 
++static int queue_change_owner(struct net_device *ndev, kuid_t kuid, kgid_t kgid)
++{
++	int error = 0, real_rx = 0, real_tx = 0;
++
++#ifdef CONFIG_SYSFS
++	if (ndev->queues_kset) {
++		error = sysfs_change_owner(&ndev->queues_kset->kobj, kuid, kgid);
++		if (error)
++			return error;
++	}
++	real_rx = ndev->real_num_rx_queues;
++#endif
++	real_tx = ndev->real_num_tx_queues;
++
++	error = net_rx_queue_change_owner(ndev, real_rx, kuid, kgid);
++	if (error)
++		return error;
++
++	error = net_tx_queue_change_owner(ndev, real_tx, kuid, kgid);
++	if (error)
++		return error;
++
++	return 0;
++}
++
+ static void remove_queue_kobjects(struct net_device *dev)
+ {
+ 	int real_rx = 0, real_tx = 0;
+@@ -1791,6 +1893,10 @@ int netdev_change_owner(struct net_device *ndev, const struct net *net_old,
+ 	if (error)
+ 		return error;
+ 
++	error = queue_change_owner(ndev, new_uid, new_gid);
++	if (error)
++		return error;
++
+ 	return 0;
+ }
+ 
+-- 
+2.25.1
 
-> Changes in v2:
-> - Updated to use new function name and parameter list.
->=20
->  drivers/power/supply/cros_usbpd-charger.c | 58 ++++-------------------
->  1 file changed, 10 insertions(+), 48 deletions(-)
->=20
-> diff --git a/drivers/power/supply/cros_usbpd-charger.c b/drivers/power/su=
-pply/cros_usbpd-charger.c
-> index 30c3d37511c9e1..4631d96fda2ca1 100644
-> --- a/drivers/power/supply/cros_usbpd-charger.c
-> +++ b/drivers/power/supply/cros_usbpd-charger.c
-> @@ -91,46 +91,13 @@ static bool cros_usbpd_charger_port_is_dedicated(stru=
-ct port_data *port)
->  	return port->port_number >=3D port->charger->num_usbpd_ports;
->  }
-> =20
-> -static int cros_usbpd_charger_ec_command(struct charger_data *charger,
-> -					 unsigned int version,
-> -					 unsigned int command,
-> -					 void *outdata,
-> -					 unsigned int outsize,
-> -					 void *indata,
-> -					 unsigned int insize)
-> -{
-> -	struct cros_ec_dev *ec_dev =3D charger->ec_dev;
-> -	struct cros_ec_command *msg;
-> -	int ret;
-> -
-> -	msg =3D kzalloc(sizeof(*msg) + max(outsize, insize), GFP_KERNEL);
-> -	if (!msg)
-> -		return -ENOMEM;
-> -
-> -	msg->version =3D version;
-> -	msg->command =3D ec_dev->cmd_offset + command;
-> -	msg->outsize =3D outsize;
-> -	msg->insize =3D insize;
-> -
-> -	if (outsize)
-> -		memcpy(msg->data, outdata, outsize);
-> -
-> -	ret =3D cros_ec_cmd_xfer_status(charger->ec_device, msg);
-> -	if (ret >=3D 0 && insize)
-> -		memcpy(indata, msg->data, insize);
-> -
-> -	kfree(msg);
-> -	return ret;
-> -}
-> -
->  static int cros_usbpd_charger_get_num_ports(struct charger_data *charger)
->  {
->  	struct ec_response_charge_port_count resp;
->  	int ret;
-> =20
-> -	ret =3D cros_usbpd_charger_ec_command(charger, 0,
-> -					    EC_CMD_CHARGE_PORT_COUNT,
-> -					    NULL, 0, &resp, sizeof(resp));
-> +	ret =3D cros_ec_cmd(charger->ec_device, 0, EC_CMD_CHARGE_PORT_COUNT, NU=
-LL,
-> +			  0, &resp, sizeof(resp), NULL);
->  	if (ret < 0)
->  		return ret;
-> =20
-> @@ -142,8 +109,8 @@ static int cros_usbpd_charger_get_usbpd_num_ports(str=
-uct charger_data *charger)
->  	struct ec_response_usb_pd_ports resp;
->  	int ret;
-> =20
-> -	ret =3D cros_usbpd_charger_ec_command(charger, 0, EC_CMD_USB_PD_PORTS,
-> -					    NULL, 0, &resp, sizeof(resp));
-> +	ret =3D cros_ec_cmd(charger->ec_device, 0, EC_CMD_USB_PD_PORTS, NULL, 0,
-> +			  &resp, sizeof(resp), NULL);
->  	if (ret < 0)
->  		return ret;
-> =20
-> @@ -159,10 +126,8 @@ static int cros_usbpd_charger_get_discovery_info(str=
-uct port_data *port)
-> =20
->  	req.port =3D port->port_number;
-> =20
-> -	ret =3D cros_usbpd_charger_ec_command(charger, 0,
-> -					    EC_CMD_USB_PD_DISCOVERY,
-> -					    &req, sizeof(req),
-> -					    &resp, sizeof(resp));
-> +	ret =3D cros_ec_cmd(charger->ec_device, 0, EC_CMD_USB_PD_DISCOVERY, &re=
-q,
-> +			  sizeof(req), &resp, sizeof(resp), NULL);
->  	if (ret < 0) {
->  		dev_err(charger->dev,
->  			"Unable to query discovery info (err:0x%x)\n", ret);
-> @@ -189,10 +154,8 @@ static int cros_usbpd_charger_get_power_info(struct =
-port_data *port)
->  	int ret;
-> =20
->  	req.port =3D port->port_number;
-> -	ret =3D cros_usbpd_charger_ec_command(charger, 0,
-> -					    EC_CMD_USB_PD_POWER_INFO,
-> -					    &req, sizeof(req),
-> -					    &resp, sizeof(resp));
-> +	ret =3D cros_ec_cmd(charger->ec_device, 0, EC_CMD_USB_PD_POWER_INFO, &r=
-eq,
-> +			  sizeof(req), &resp, sizeof(resp), NULL);
->  	if (ret < 0) {
->  		dev_err(dev, "Unable to query PD power info (err:0x%x)\n", ret);
->  		return ret;
-> @@ -334,9 +297,8 @@ static int cros_usbpd_charger_set_ext_power_limit(str=
-uct charger_data *charger,
->  	req.current_lim =3D current_lim;
->  	req.voltage_lim =3D voltage_lim;
-> =20
-> -	ret =3D cros_usbpd_charger_ec_command(charger, 0,
-> -					    EC_CMD_EXTERNAL_POWER_LIMIT,
-> -					    &req, sizeof(req), NULL, 0);
-> +	ret =3D cros_ec_cmd(charger->ec_device, 0, EC_CMD_EXTERNAL_POWER_LIMIT,
-> +			  &req, sizeof(req), NULL, 0, NULL);
->  	if (ret < 0)
->  		dev_err(charger->dev,
->  			"Unable to set the 'External Power Limit': %d\n", ret);
-> --=20
-> 2.25.0.341.g760bfbb309-goog
->=20
-
---bzw77mvqr2inibwn
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl5UBEMACgkQ2O7X88g7
-+ppZ2A/8Dx23pfIa3OCbkEH9B+vKKdGZhQQSTuZgRnX76RGhgmJ56xswQxcn97XR
-d95OxueYJC7NLXqGvJs4/UladL+5iEfa+rJrKcngFOYwKgVcPa8XeQrYVmVCrZbv
-odxkh7dcN/J9AGErdovc52qspQ/WiJVs+yw3x1a9WzdrEIX1WW3v60uWlIojKaNi
-KwQG7zaSEXlQZu7nrUyZ7fNb6yCc+DDhj04vSpWGEgYYa199aT5u2QvEgaj3pxEF
-SpZt4c4JhtNHlqbVJX/bixN2f5OQJWikoOPjYYnk8CnSNZWqPRtETpROHLi+pxo5
-C1sKf2+DryI/+z7yBONg/jqEYXEds9e9CERYxDtNa5ausTZvsEbLNpCZJoXW/lYU
-7joBxMOynx0xpU2MhCfsQuLhxTEDyBWO+Z45qElvs5eMnA8BJMzr57sq8Knju2bx
-BRiYQ82qEZ7duIe84YuuU1OywVfkKJADVXXYbIenOSh0GOqB6Izf39ANjgRlNIa+
-07RU1YHPWi5JmObJSC1HO/8Of1Up11CxtszBp/5hZZd1VqEBbdMgMiRYdO+gIWGy
-1O34uo5o20I3kRpobJthk89ZaBbIDUrVnF+ZUYOwl+j6p3/wPKjsbl60aLuNsSaK
-J9q5XxkDkeDnqkeuM5kVo+kypVfKjdCR0YNlP3bwXa/uLlZgI+g=
-=xsT6
------END PGP SIGNATURE-----
-
---bzw77mvqr2inibwn--
