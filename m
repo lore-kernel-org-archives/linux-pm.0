@@ -2,93 +2,155 @@ Return-Path: <SRS0=jPMq=4N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BBBA7C35E01
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 12:43:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D18C35DF5
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 12:50:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8DFE920637
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 12:43:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1582634598;
-	bh=PXzTH7KZxKOItfyn/9rstj3OLUD7ys7fVIMn3Z/PQLc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=AgISnQpNTo1jNAZHASCN5nYyCXWJFs0E010pjlU+0wK0osFi+AnD/BujzoQidLDBT
-	 vD7lWphHFP6i/0atEVVBPvTL27+bXiFlHZAXnjDeG4Ux1squAhp9LTlTIkLakWy0Gi
-	 OxZlysslv8zzy+kA1LozMaQzRVL2GXoyT1/DXPUU=
+	by mail.kernel.org (Postfix) with ESMTP id E3D2620726
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 12:50:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729206AbgBYMnS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Feb 2020 07:43:18 -0500
-Received: from foss.arm.com ([217.140.110.172]:50270 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729181AbgBYMnS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 25 Feb 2020 07:43:18 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6234030E;
-        Tue, 25 Feb 2020 04:43:17 -0800 (PST)
-Received: from localhost (unknown [10.37.6.21])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D96393F6CF;
-        Tue, 25 Feb 2020 04:43:16 -0800 (PST)
-Date:   Tue, 25 Feb 2020 12:43:15 +0000
-From:   Mark Brown <broonie@kernel.org>
-To:     John Stultz <john.stultz@linaro.org>
-Cc:     lkml <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Todd Kjos <tkjos@google.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Thierry Reding <treding@nvidia.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
+        id S1729800AbgBYMuF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Feb 2020 07:50:05 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:60247 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729671AbgBYMuF (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 07:50:05 -0500
+Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <christian.brauner@ubuntu.com>)
+        id 1j6Zf0-0005kT-5g; Tue, 25 Feb 2020 12:50:02 +0000
+From:   Christian Brauner <christian.brauner@ubuntu.com>
+To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v5 6/6] regulator: Use driver_deferred_probe_timeout for
- regulator_init_complete_work
-Message-ID: <20200225124315.GB4633@sirena.org.uk>
-References: <20200225050828.56458-1-john.stultz@linaro.org>
- <20200225050828.56458-7-john.stultz@linaro.org>
+        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
+        Eric Dumazet <edumazet@google.com>,
+        Stephen Hemminger <stephen@networkplumber.org>,
+        linux-pm@vger.kernel.org,
+        Christian Brauner <christian.brauner@ubuntu.com>
+Subject: [PATCH v5 2/9] sysfs: add sysfs_link_change_owner()
+Date:   Tue, 25 Feb 2020 13:49:41 +0100
+Message-Id: <20200225124948.80682-3-christian.brauner@ubuntu.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200225124948.80682-1-christian.brauner@ubuntu.com>
+References: <20200225124948.80682-1-christian.brauner@ubuntu.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="p4qYPpj5QlsIQJ0K"
-Content-Disposition: inline
-In-Reply-To: <20200225050828.56458-7-john.stultz@linaro.org>
-X-Cookie: Booths for two or more.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Add a helper to change the owner of a sysfs link.
+This function will be used to correctly account for kobject ownership
+changes, e.g. when moving network devices between network namespaces.
 
---p4qYPpj5QlsIQJ0K
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+---
+/* v2 */
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add comment how ownership of sysfs object is changed.
 
-On Tue, Feb 25, 2020 at 05:08:28AM +0000, John Stultz wrote:
-> The regulator_init_complete_work logic defers the cleanup for an
-> arbitrary 30 seconds of time to allow modules loaded by userland
-> to start.
+/* v3 */
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add explicit uid/gid parameters.
 
-Acked-by: Mark Brown <broonie@kernel.org>
+/* v4 */
+- Christian Brauner <christian.brauner@ubuntu.com>:
+  - Add more documentation.
 
---p4qYPpj5QlsIQJ0K
-Content-Type: application/pgp-signature; name="signature.asc"
+/* v5 */
+unchanged
+---
+ fs/sysfs/file.c       | 41 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h | 10 ++++++++++
+ 2 files changed, 51 insertions(+)
 
------BEGIN PGP SIGNATURE-----
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 4ca936ca3ba4..332cd69b378c 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -570,6 +570,47 @@ static int internal_change_owner(struct kernfs_node *kn, kuid_t kuid,
+ 	return kernfs_setattr(kn, &newattrs);
+ }
+ 
++/**
++ *	sysfs_link_change_owner - change owner of a sysfs file.
++ *	@kobj:	object of the kernfs_node the symlink is located in.
++ *	@targ:	object of the kernfs_node the symlink points to.
++ *	@name:	name of the link.
++ *	@kuid:	new owner's kuid
++ *	@kgid:	new owner's kgid
++ *
++ * This function looks up the sysfs symlink entry @name under @kobj and changes
++ * the ownership to @kuid/@kgid. The symlink is looked up in the namespace of
++ * @targ.
++ *
++ * Returns 0 on success or error code on failure.
++ */
++int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
++			    const char *name, kuid_t kuid, kgid_t kgid)
++{
++	struct kernfs_node *kn = NULL;
++	int error;
++
++	if (!name || !kobj->state_in_sysfs || !targ->state_in_sysfs)
++		return -EINVAL;
++
++	error = -ENOENT;
++	kn = kernfs_find_and_get_ns(kobj->sd, name, targ->sd->ns);
++	if (!kn)
++		goto out;
++
++	error = -EINVAL;
++	if (kernfs_type(kn) != KERNFS_LINK)
++		goto out;
++	if (kn->symlink.target_kn->priv != targ)
++		goto out;
++
++	error = internal_change_owner(kn, kuid, kgid);
++
++out:
++	kernfs_put(kn);
++	return error;
++}
++
+ /**
+  *	sysfs_file_change_owner - change owner of a sysfs file.
+  *	@kobj:	object.
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index a7884024a911..7e15ebfd750e 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -312,6 +312,8 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
+ 
+ int sysfs_file_change_owner(struct kobject *kobj, const char *name, kuid_t kuid,
+ 			    kgid_t kgid);
++int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
++			    const char *name, kuid_t kuid, kgid_t kgid);
+ 
+ #else /* CONFIG_SYSFS */
+ 
+@@ -532,6 +534,14 @@ static inline int sysfs_file_change_owner(struct kobject *kobj,
+ 	return 0;
+ }
+ 
++static inline int sysfs_link_change_owner(struct kobject *kobj,
++					  struct kobject *targ,
++					  const char *name, kuid_t kuid,
++					  kgid_t kgid)
++{
++	return 0;
++}
++
+ #endif /* CONFIG_SYSFS */
+ 
+ static inline int __must_check sysfs_create_file(struct kobject *kobj,
+-- 
+2.25.1
 
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl5VFmIACgkQJNaLcl1U
-h9DzrQf/faqtOS9TdPP0gkC5NRJPMYTyyP/T4QP2bdax55Uhogt8rQ1GleRuUfp+
-tkUWHP2MRfEzUkNR6wOMIDvmMIYijbn3an/laONAfMO5QRUHByFTF7tM4Vk8OuwL
-3EG9MceIYNXRvYx8rlWmyFjZQoq7H9JAcNW+0LBGLJyqgkvWCevXX/LDOzXE2gP8
-6wl8rHjqujyagDipgii40dM1287JWJKgBBGNSAqMQGkPCUIaaJkYYhPLWrf6PDy1
-YUl2ZnWGod/PsL5FQCCQiFnVlfElWkYOhKw0bMaXUAJruPai5wG3icR4WfKfRrzj
-ROwomfEBNpiaLPx9P4r2rRhZuhbmBQ==
-=sUYb
------END PGP SIGNATURE-----
-
---p4qYPpj5QlsIQJ0K--
