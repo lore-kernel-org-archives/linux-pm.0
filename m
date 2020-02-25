@@ -2,27 +2,28 @@ Return-Path: <SRS0=jPMq=4N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71FE1C35DF5
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:22:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22F9EC35E02
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:22:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 369F324650
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:22:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E9F0D20726
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:22:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730464AbgBYNWP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Feb 2020 08:22:15 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:33132 "EHLO
+        id S1730525AbgBYNWZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Feb 2020 08:22:25 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:33162 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726019AbgBYNWN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 08:22:13 -0500
+        with ESMTP id S1729553AbgBYNWQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 08:22:16 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j6aA4-0008Ie-Fi; Tue, 25 Feb 2020 13:22:08 +0000
+        id 1j6aA8-0008Ie-KZ; Tue, 25 Feb 2020 13:22:12 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -33,10 +34,12 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH v6 0/9] net: fix sysfs permssions when device changes network
-Date:   Tue, 25 Feb 2020 14:19:29 +0100
-Message-Id: <20200225131938.120447-1-christian.brauner@ubuntu.com>
+Subject: [PATCH v6 7/9] net-sysfs: add netdev_change_owner()
+Date:   Tue, 25 Feb 2020 14:19:36 +0100
+Message-Id: <20200225131938.120447-8-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200225131938.120447-1-christian.brauner@ubuntu.com>
+References: <20200225131938.120447-1-christian.brauner@ubuntu.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -44,62 +47,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hey everyone,
-
-/* v6 */
-This is v6 with two small fixups. I missed adapting the commit message
-to reflect the renamed helper for changing the owner of sysfs files and
-I also forgot to make the new dpm helper static inline.
-
-/* v5 */
-This is v5 with a small fixup requested by Rafael.
-
-/* v4 */
-This is v4 with more documentation and other fixes that Greg requested.
-
-/* v3 */
-This is v3 with explicit uid and gid parameters added to functions that
-change sysfs object ownership as Greg requested.
-
-(I've tagged this with net-next since it's triggered by a bug for
- network device files but it also touches driver core aspects so it's
- not clear-cut. I can of course split this series into separate
- patchsets.) 
-We have been struggling with a bug surrounding the ownership of network
-device sysfs files when moving network devices between network
-namespaces owned by different user namespaces reported by multiple
-users.
+Add a function to change the owner of a network device when it is moved
+between network namespaces.
 
 Currently, when moving network devices between network namespaces the
 ownership of the corresponding sysfs entries is not changed. This leads
 to problems when tools try to operate on the corresponding sysfs files.
-
-I also causes a bug when creating a network device in a network
-namespaces owned by a user namespace and moving that network device back
-to the host network namespaces. Because when a network device is created
-in a network namespaces it will be owned by the root user of the user
-namespace and all its associated sysfs files will also be owned by the
-root user of the corresponding user namespace.
+This leads to a bug whereby a network device that is created in a
+network namespaces owned by a user namespace will have its corresponding
+sysfs entry owned by the root user of the corresponding user namespace.
 If such a network device has to be moved back to the host network
-namespace the permissions will still be set to the root user of the
-owning user namespaces of the originating network namespace. This means
-unprivileged users can e.g. re-trigger uevents for such incorrectly
-owned devices on the host or in other network namespaces. They can also
-modify the settings of the device itself through sysfs when they
-wouldn't be able to do the same through netlink. Both of these things
-are unwanted.
+namespace the permissions will still be set to the user namespaces. This
+means unprivileged users can e.g. trigger uevents for such incorrectly
+owned devices. They can also modify the settings of the device itself.
+Both of these things are unwanted.
 
-For example, quite a few workloads will create network devices in the
-host network namespace. Other tools will then proceed to move such
-devices between network namespaces owner by other user namespaces. While
-the ownership of the device itself is updated in
+For example, workloads will create network devices in the host network
+namespace. Other tools will then proceed to move such devices between
+network namespaces owner by other user namespaces. While the ownership
+of the device itself is updated in
 net/core/net-sysfs.c:dev_change_net_namespace() the corresponding sysfs
-entry for the device is not. Below you'll find that moving a network
-device (here a veth device) from a network namespace into another
-network namespaces owned by a different user namespace with a different
-id mapping. As you can see the permissions are wrong even though it is
-owned by the userns root user after it has been moved and can be
-interacted with through netlink: 
+entry for the device is not:
 
 drwxr-xr-x 5 nobody nobody    0 Jan 25 18:08 .
 drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
@@ -138,14 +106,8 @@ lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:08 subsystem -> ../../../../class/net
 -r--r--r-- 1 nobody nobody 4096 Jan 25 18:09 type
 -rw-r--r-- 1 nobody nobody 4096 Jan 25 18:08 uevent
 
-Constrast this with creating a device of the same type in the network
-namespace directly. In this case the device's sysfs permissions will be
-correctly updated.
-(Please also note, that in a lot of workloads this strategy of creating
- the network device directly in the network device to workaround this
- issue can not be used. Either because the network device is dedicated
- after it has been created or because it used by a process that is
- heavily sandboxed and couldn't create network devices itself.):
+However, if a device is created directly in the network namespace then
+the device's sysfs permissions will be correctly updated:
 
 drwxr-xr-x 5 root   root      0 Jan 25 18:12 .
 drwxr-xr-x 9 nobody nobody    0 Jan 25 18:08 ..
@@ -187,7 +149,7 @@ lrwxrwxrwx 1 nobody nobody    0 Jan 25 18:12 subsystem -> ../../../../class/net
 Now, when creating a network device in a network namespace owned by a
 user namespace and moving it to the host the permissions will be set to
 the id that the user namespace root user has been mapped to on the host
-leading to all sorts of permission issues mentioned above:
+leading to all sorts of permission issues:
 
 458752
 drwxr-xr-x 5 458752 458752      0 Jan 25 18:12 .
@@ -227,52 +189,78 @@ lrwxrwxrwx 1 root   root        0 Jan 25 18:12 subsystem -> ../../../../class/ne
 -r--r--r-- 1 458752 458752   4096 Jan 25 18:12 type
 -rw-r--r-- 1 458752 458752   4096 Jan 25 18:12 uevent
 
-Fix this by changing the basic sysfs files associated with network
-devices when moving them between network namespaces. To this end we add
-some infrastructure to sysfs.
+Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
+---
+/* v2 */
+unchanged
 
-The patchset takes care to only do this when the owning user namespaces
-changes and the kids differ. So there's only a performance overhead,
-when the owning user namespace of the network namespace is different
-__and__ the kid mappings for the root user are different for the two
-user namespaces:
-Assume we have a netdev eth0 which we create in netns1 owned by userns1.
-userns1 has an id mapping of 0 100000 100000. Now we move eth0 into
-netns2 which is owned by userns2 which also defines an id mapping of 0
-100000 100000. In this case sysfs doesn't need updating. The patch will
-handle this case and not do any needless work. Now assume eth0 is moved
-into netns3 which is owned by userns3 which defines an id mapping of 0
-123456 65536. In this case the root user in each namespace corresponds
-to different kid and sysfs needs updating.
+/* v3 */
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add explicit uid/gid parameters.
 
-Thanks!
-Christian
+/* v4 */
+unchanged
 
-Christian Brauner (9):
-  sysfs: add sysfs_file_change_owner()
-  sysfs: add sysfs_link_change_owner()
-  sysfs: add sysfs_group{s}_change_owner()
-  sysfs: add sysfs_change_owner()
-  device: add device_change_owner()
-  drivers/base/power: add dpm_sysfs_change_owner()
-  net-sysfs: add netdev_change_owner()
-  net-sysfs: add queue_change_owner()
-  net: fix sysfs permssions when device changes network namespace
+/* v5 */
+unchanged
 
- drivers/base/core.c        | 120 ++++++++++++++++++++++++++++++
- drivers/base/power/power.h |   3 +
- drivers/base/power/sysfs.c |  55 +++++++++++++-
- fs/sysfs/file.c            | 148 +++++++++++++++++++++++++++++++++++++
- fs/sysfs/group.c           | 117 +++++++++++++++++++++++++++++
- include/linux/device.h     |   1 +
- include/linux/sysfs.h      |  46 ++++++++++++
- net/core/dev.c             |   9 ++-
- net/core/net-sysfs.c       | 133 +++++++++++++++++++++++++++++++++
- net/core/net-sysfs.h       |   2 +
- 10 files changed, 632 insertions(+), 2 deletions(-)
+/* v6 */
+unchanged
+---
+ net/core/net-sysfs.c | 27 +++++++++++++++++++++++++++
+ net/core/net-sysfs.h |  2 ++
+ 2 files changed, 29 insertions(+)
 
-
-base-commit: bb6d3fb354c5ee8d6bde2d576eb7220ea09862b9
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index 4c826b8bf9b1..e19967665cb0 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -1767,6 +1767,33 @@ int netdev_register_kobject(struct net_device *ndev)
+ 	return error;
+ }
+ 
++/* Change owner for sysfs entries when moving network devices across network
++ * namespaces owned by different user namespaces.
++ */
++int netdev_change_owner(struct net_device *ndev, const struct net *net_old,
++			const struct net *net_new)
++{
++	struct device *dev = &ndev->dev;
++	kuid_t old_uid, new_uid;
++	kgid_t old_gid, new_gid;
++	int error;
++
++	net_ns_get_ownership(net_old, &old_uid, &old_gid);
++	net_ns_get_ownership(net_new, &new_uid, &new_gid);
++
++	/* The network namespace was changed but the owning user namespace is
++	 * identical so there's no need to change the owner of sysfs entries.
++	 */
++	if (uid_eq(old_uid, new_uid) && gid_eq(old_gid, new_gid))
++		return 0;
++
++	error = device_change_owner(dev, new_uid, new_gid);
++	if (error)
++		return error;
++
++	return 0;
++}
++
+ int netdev_class_create_file_ns(const struct class_attribute *class_attr,
+ 				const void *ns)
+ {
+diff --git a/net/core/net-sysfs.h b/net/core/net-sysfs.h
+index 006876c7b78d..8a5b04c2699a 100644
+--- a/net/core/net-sysfs.h
++++ b/net/core/net-sysfs.h
+@@ -8,5 +8,7 @@ void netdev_unregister_kobject(struct net_device *);
+ int net_rx_queue_update_kobjects(struct net_device *, int old_num, int new_num);
+ int netdev_queue_update_kobjects(struct net_device *net,
+ 				 int old_num, int new_num);
++int netdev_change_owner(struct net_device *, const struct net *net_old,
++			const struct net *net_new);
+ 
+ #endif
 -- 
 2.25.1
 
