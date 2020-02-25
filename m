@@ -2,251 +2,130 @@ Return-Path: <SRS0=jPMq=4N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F1B4C35DF5
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9300EC35DF5
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:56:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1C8BB20726
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:23:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 699C021927
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Feb 2020 13:56:38 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582638998;
+	bh=HsjJvbTH+q59fYeim5ErNffTAszwiuMCgtA22AZPS8Y=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=XYTXuCkGLJOPQBuu43cLn3YNoSfjVRsozLTNxKZMvGFYpujmtK1fz4ZHXfPBGsRK3
+	 jADxqTTJ/adkAABaPVuoacjAdSw6M0Y31Gm2bCWkbHk6/EGPnCBsmDN5aOsX8E+K82
+	 vEBddLQgkvZG8mhFs524WVcZrMqZLHrI+Jl7IYWo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729760AbgBYNWM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Feb 2020 08:22:12 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:33141 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729553AbgBYNWM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 08:22:12 -0500
-Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j6aA6-0008Ie-9Z; Tue, 25 Feb 2020 13:22:10 +0000
-From:   Christian Brauner <christian.brauner@ubuntu.com>
-To:     "David S. Miller" <davem@davemloft.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Pavel Machek <pavel@ucw.cz>, Jakub Kicinski <kuba@kernel.org>,
-        Eric Dumazet <edumazet@google.com>,
-        Stephen Hemminger <stephen@networkplumber.org>,
-        linux-pm@vger.kernel.org,
-        Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH v6 3/9] sysfs: add sysfs_group{s}_change_owner()
-Date:   Tue, 25 Feb 2020 14:19:32 +0100
-Message-Id: <20200225131938.120447-4-christian.brauner@ubuntu.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200225131938.120447-1-christian.brauner@ubuntu.com>
-References: <20200225131938.120447-1-christian.brauner@ubuntu.com>
+        id S1730081AbgBYN4e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Feb 2020 08:56:34 -0500
+Received: from mail.kernel.org ([198.145.29.99]:34472 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729287AbgBYN4e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Feb 2020 08:56:34 -0500
+Received: from localhost (unknown [122.167.120.28])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 14BBC218AC;
+        Tue, 25 Feb 2020 13:56:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1582638992;
+        bh=HsjJvbTH+q59fYeim5ErNffTAszwiuMCgtA22AZPS8Y=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=HyufZEX6mJzQQ2vyo28R4iOHwTgc0pv8EAHYQTNtjGO44+qp3Nxhoa+Ku9yap4mA9
+         SQyzxEqPclvtceqUOlyz3nWTCs8/6LkNvYArUGMMe//cvZIvTHDSzYFUuP4rGm2zxD
+         tvvcHlC5eYRKSusIbkPuSzIfwIdXtSbSF1pQbaao=
+Date:   Tue, 25 Feb 2020 19:26:28 +0530
+From:   Vinod Koul <vkoul@kernel.org>
+To:     Amit Kucheria <amit.kucheria@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
+        sivaa@codeaurora.org, Andy Gross <agross@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 1/3] dt-bindings: thermal: tsens: Add entry for sc7180
+ tsens to binding
+Message-ID: <20200225135628.GP2618@vkoul-mobl>
+References: <cover.1582632110.git.amit.kucheria@linaro.org>
+ <3e760279e7152825d56f8b35160a9a55a5083ce1.1582632110.git.amit.kucheria@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3e760279e7152825d56f8b35160a9a55a5083ce1.1582632110.git.amit.kucheria@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add helpers to change the owner of sysfs groups.
-This function will be used to correctly account for kobject ownership
-changes, e.g. when moving network devices between network namespaces.
+On 25-02-20, 17:38, Amit Kucheria wrote:
+> The qcom-tsens binding requires a SoC-specific and a TSENS
+> family-specific binding to be specified in the compatible string.
+> 
+> Since qcom,sc7180-tsens is not listed in the YAML binding, we see the
+> following warnings in 'make dtbs_check'. Fix them.
+> 
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible: ['qcom,sc7180-tsens',
+> 'qcom,tsens-v2'] is not valid under any of the given schemas (Possible
+> causes of the failure):
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8916-tsens', 'qcom,msm8974-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8976-tsens', 'qcom,qcs404-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8996-tsens', 'qcom,msm8998-tsens', 'qcom,sdm845-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible:1: 'qcom,tsens-v0_1' was expected
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c263000: compatible:1: 'qcom,tsens-v1' was expected
+> 
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible: ['qcom,sc7180-tsens',
+> 'qcom,tsens-v2'] is not valid under any of the given schemas (Possible
+> causes of the failure):
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8916-tsens', 'qcom,msm8974-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8976-tsens', 'qcom,qcs404-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible:0: 'qcom,sc7180-tsens' is not one of
+> ['qcom,msm8996-tsens', 'qcom,msm8998-tsens', 'qcom,sdm845-tsens']
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible:1: 'qcom,tsens-v0_1' was expected
+> builds/arch/arm64/boot/dts/qcom/sc7180-idp.dt.yaml:
+> thermal-sensor@c265000: compatible:1: 'qcom,tsens-v1' was expected
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
----
-/* v2 */
--  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
-   - Add comment how ownership of sysfs object is changed.
+Reviewed-by: Vinod Koul <vkoul@kernel.org>
 
-/* v3 */
--  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
-   - Add explicit uid/gid parameters.
-- Christian Brauner <christian.brauner@ubuntu.com>:
-  - Collapse groups ownership helper patches into a single patch.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> index eef13b9446a8..13e294328932 100644
+> --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> @@ -39,6 +39,7 @@ properties:
+>                - qcom,msm8996-tsens
+>                - qcom,msm8998-tsens
+>                - qcom,sdm845-tsens
+> +              - qcom,sc7180-tsens
+>            - const: qcom,tsens-v2
+>  
+>    reg:
+> -- 
+> 2.20.1
 
-/* v4 */
-unchanged
-
-/* v5 */
-unchanged
-
-/* v6 */
-unchanged
----
- fs/sysfs/group.c      | 117 ++++++++++++++++++++++++++++++++++++++++++
- include/linux/sysfs.h |  20 ++++++++
- 2 files changed, 137 insertions(+)
-
-diff --git a/fs/sysfs/group.c b/fs/sysfs/group.c
-index c4ab045926b7..7436f729dd07 100644
---- a/fs/sysfs/group.c
-+++ b/fs/sysfs/group.c
-@@ -13,6 +13,7 @@
- #include <linux/dcache.h>
- #include <linux/namei.h>
- #include <linux/err.h>
-+#include <linux/fs.h>
- #include "sysfs.h"
- 
- 
-@@ -457,3 +458,119 @@ int __compat_only_sysfs_link_entry_to_kobj(struct kobject *kobj,
- 	return PTR_ERR_OR_ZERO(link);
- }
- EXPORT_SYMBOL_GPL(__compat_only_sysfs_link_entry_to_kobj);
-+
-+static int sysfs_group_attrs_change_owner(struct kernfs_node *grp_kn,
-+					  const struct attribute_group *grp,
-+					  struct iattr *newattrs)
-+{
-+	struct kernfs_node *kn;
-+	int error;
-+
-+	if (grp->attrs) {
-+		struct attribute *const *attr;
-+
-+		for (attr = grp->attrs; *attr; attr++) {
-+			kn = kernfs_find_and_get(grp_kn, (*attr)->name);
-+			if (!kn)
-+				return -ENOENT;
-+
-+			error = kernfs_setattr(kn, newattrs);
-+			kernfs_put(kn);
-+			if (error)
-+				return error;
-+		}
-+	}
-+
-+	if (grp->bin_attrs) {
-+		struct bin_attribute *const *bin_attr;
-+
-+		for (bin_attr = grp->bin_attrs; *bin_attr; bin_attr++) {
-+			kn = kernfs_find_and_get(grp_kn, (*bin_attr)->attr.name);
-+			if (!kn)
-+				return -ENOENT;
-+
-+			error = kernfs_setattr(kn, newattrs);
-+			kernfs_put(kn);
-+			if (error)
-+				return error;
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * sysfs_group_change_owner - change owner of an attribute group.
-+ * @kobj:	The kobject containing the group.
-+ * @grp:	The attribute group.
-+ * @kuid:	new owner's kuid
-+ * @kgid:	new owner's kgid
-+ *
-+ * Returns 0 on success or error code on failure.
-+ */
-+int sysfs_group_change_owner(struct kobject *kobj,
-+			     const struct attribute_group *grp, kuid_t kuid,
-+			     kgid_t kgid)
-+{
-+	struct kernfs_node *grp_kn;
-+	kuid_t uid;
-+	kgid_t gid;
-+	int error;
-+	struct iattr newattrs = {
-+		.ia_valid = ATTR_UID | ATTR_GID,
-+		.ia_uid = kuid,
-+		.ia_gid = kgid,
-+	};
-+
-+	if (!kobj->state_in_sysfs)
-+		return -EINVAL;
-+
-+	if (grp->name) {
-+		grp_kn = kernfs_find_and_get(kobj->sd, grp->name);
-+	} else {
-+		kernfs_get(kobj->sd);
-+		grp_kn = kobj->sd;
-+	}
-+	if (!grp_kn)
-+		return -ENOENT;
-+
-+	error = kernfs_setattr(grp_kn, &newattrs);
-+	if (!error)
-+		error = sysfs_group_attrs_change_owner(grp_kn, grp, &newattrs);
-+
-+	kernfs_put(grp_kn);
-+
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_group_change_owner);
-+
-+/**
-+ * sysfs_groups_change_owner - change owner of a set of attribute groups.
-+ * @kobj:	The kobject containing the groups.
-+ * @groups:	The attribute groups.
-+ * @kuid:	new owner's kuid
-+ * @kgid:	new owner's kgid
-+ *
-+ * Returns 0 on success or error code on failure.
-+ */
-+int sysfs_groups_change_owner(struct kobject *kobj,
-+			      const struct attribute_group **groups,
-+			      kuid_t kuid, kgid_t kgid)
-+{
-+	int error = 0, i;
-+
-+	if (!kobj->state_in_sysfs)
-+		return -EINVAL;
-+
-+	if (!groups)
-+		return 0;
-+
-+	for (i = 0; groups[i]; i++) {
-+		error = sysfs_group_change_owner(kobj, groups[i], kuid, kgid);
-+		if (error)
-+			break;
-+	}
-+
-+	return error;
-+}
-+EXPORT_SYMBOL_GPL(sysfs_groups_change_owner);
-diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 7e15ebfd750e..3fcaabdb05ef 100644
---- a/include/linux/sysfs.h
-+++ b/include/linux/sysfs.h
-@@ -314,6 +314,12 @@ int sysfs_file_change_owner(struct kobject *kobj, const char *name, kuid_t kuid,
- 			    kgid_t kgid);
- int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
- 			    const char *name, kuid_t kuid, kgid_t kgid);
-+int sysfs_groups_change_owner(struct kobject *kobj,
-+			      const struct attribute_group **groups,
-+			      kuid_t kuid, kgid_t kgid);
-+int sysfs_group_change_owner(struct kobject *kobj,
-+			     const struct attribute_group *groups, kuid_t kuid,
-+			     kgid_t kgid);
- 
- #else /* CONFIG_SYSFS */
- 
-@@ -542,6 +548,20 @@ static inline int sysfs_link_change_owner(struct kobject *kobj,
- 	return 0;
- }
- 
-+static inline int sysfs_groups_change_owner(struct kobject *kobj,
-+			  const struct attribute_group **groups,
-+			  kuid_t kuid, kgid_t kgid)
-+{
-+	return 0;
-+}
-+
-+static inline int sysfs_group_change_owner(struct kobject *kobj,
-+			 const struct attribute_group **groups,
-+			 kuid_t kuid, kgid_t kgid)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_SYSFS */
- 
- static inline int __must_check sysfs_create_file(struct kobject *kobj,
 -- 
-2.25.1
-
+~Vinod
