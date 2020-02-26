@@ -2,113 +2,141 @@ Return-Path: <SRS0=X62Z=4O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FC75C4BA09
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 01:58:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9686AC4BA09
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 02:11:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0691424650
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 01:58:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 671E124656
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 02:11:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=lca.pw header.i=@lca.pw header.b="p1b6DIB/"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="lmu0ChZ/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730028AbgBZB61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Feb 2020 20:58:27 -0500
-Received: from mail-qt1-f196.google.com ([209.85.160.196]:46959 "EHLO
-        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727809AbgBZB60 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 20:58:26 -0500
-Received: by mail-qt1-f196.google.com with SMTP id i14so1123105qtv.13
-        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2020 17:58:24 -0800 (PST)
+        id S1730014AbgBZCLq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Feb 2020 21:11:46 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:37291 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729998AbgBZCLq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Feb 2020 21:11:46 -0500
+Received: by mail-oi1-f195.google.com with SMTP id q84so1467184oic.4
+        for <linux-pm@vger.kernel.org>; Tue, 25 Feb 2020 18:11:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=lca.pw; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3W6dUjneFw3Iq5j0LRHddz/04ra8gT9SV1GqromcUcA=;
-        b=p1b6DIB/zaPCoKDbRHx56Ttn3E//aAfWWDn5ysoYfvW9M17pCbsmV09+Z/c1eYrgYT
-         RLTBR6fyj9srVTEglPmT6kRF5IjSO/9MH40LH7aL2K5L0ywykQNdGuGmcBoh7+g20L/S
-         4Hz0X55LGUiN8wlKC5ak0ibUvEkrv71+M1Ue6SrYDgJEVxuPB10/Dvy3waU+0NZTGszW
-         afkV03q05woG9KXAuYUXZPHO9kcMr2Wf0wussfbM34enqv7vS26F6o//x03jcLx9zOXc
-         QpBHg9A0nAt62FEphlR4ouYHAs0nsgfx0P/SuHe5AWaKE/CuSIpB55fBGtOCmOfS7LCj
-         ha0A==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=4u/uS1fMpbXSukMymnz41XCHPdcIu8TO2CU/VdEdie8=;
+        b=lmu0ChZ/FgDPtQGlWK6Rbqd83+DdMZgjE5nbcUq4IGpNTsD1zkXL2dTUlxIJN5wILC
+         06IuFW1ag+mdNilLpWx4948QwaoOg+eafZlc4nYzd97PXBHBe2ccQGB9u9v9sRPg/WsS
+         JSQxqVPzW61PyEO6v9vaWT5OAzh8uOwzYvZ9u1aXXQKwq+mOW5yHe+luKixTmR3CIyHz
+         LAvVan4VZ03VO6CVX1DbeqA8Corv8uE5bncIuqrIVp4wvUEGUPZvb8/42RPdm1IWAGWL
+         d5cEok/AA0bnc9KzhZK86HIdWB7c49mruzHN1N+O6wNtDhrqrEFI9AeQzIB6SadDtIxz
+         //oQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3W6dUjneFw3Iq5j0LRHddz/04ra8gT9SV1GqromcUcA=;
-        b=sEGP9luRy31WDL+ZFn1vp7TuMYTc0NoaT7gMKmQIjIUlvbrRyfWbhhfl7nMlFIt30o
-         S9Q+H4PVLE5KsAsdD7uuo+1sTgHlW5ZtNLtit+OJY+Tp4wKbw3z1pDsDmeWVAH4WVClp
-         SaGrwQDB7/EfiAa+WUAM4ZQfvSycu7A4WLCMGT0NFUt/oiA5j9U9iWRJiu22g6rIjrpz
-         VWjZTqnm1gFZG1wBbJogwWuTJ39eRr/Q3WtUUPjTNd/2+cPGtYVWyQmQbqYPBskkwnjO
-         4XhRsYok+1xStClsl0j0vJC6d3zfT0O+r+xARwOOx8JnkKPHlB9xVw2pISxwwX6KP8Qa
-         Uw8Q==
-X-Gm-Message-State: APjAAAX7wyZfvdjZvJ/Ui9kpgGxfnmU587rH8teDs1V1en1KMSXn4KZB
-        Z7smVvwCMwBAwUb/OdBe4p/xEw==
-X-Google-Smtp-Source: APXvYqzceBcyktKssUogh3JQAjPXAwym222xlUpuJoB/bKA9+80nAwe3RJB1ejMlWvXgtr7v8/21HA==
-X-Received: by 2002:ac8:1b18:: with SMTP id y24mr2071113qtj.158.1582682304323;
-        Tue, 25 Feb 2020 17:58:24 -0800 (PST)
-Received: from ovpn-121-122.rdu2.redhat.com (pool-71-184-117-43.bstnma.fios.verizon.net. [71.184.117.43])
-        by smtp.gmail.com with ESMTPSA id v80sm283450qka.15.2020.02.25.17.58.23
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 25 Feb 2020 17:58:23 -0800 (PST)
-From:   Qian Cai <cai@lca.pw>
-To:     rafael@kernel.org
-Cc:     elver@google.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Qian Cai <cai@lca.pw>
-Subject: [PATCH -next v2] power/qos: annotate data races in pm_qos_*_value
-Date:   Tue, 25 Feb 2020 20:58:13 -0500
-Message-Id: <20200226015813.987-1-cai@lca.pw>
-X-Mailer: git-send-email 2.21.0 (Apple Git-122.2)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=4u/uS1fMpbXSukMymnz41XCHPdcIu8TO2CU/VdEdie8=;
+        b=hxCYN5H49JWi6rS2OhscO3Qby0dRCKUyQ9lkct8eTOBDnkzG3b7MIsD8ou8swAH36F
+         Ulh1Obot0frveN8KISeH3WtWZz6j84MBOg+3e/Ug0lxHfd7aNwqTZZRHTTR6hSF5SbxU
+         OwTF+W2EVh7lq5N61PUgQ4cseHxBCUdE4/tXMgklljTJeeJcPkl4ueR3pz60nH5Msezg
+         egmz/01qpgwi2XfVW1KvuhOzCZayBtocstdkzBEzW0U7awN1GzdPvI3tbS4JB6IpCs+X
+         M+gmI1eQSFcpuaAEgvhzn/ETa/7O3cy2mSY+JUEOVRMuPbUU8I5PXi/BuRReNQmxAKA2
+         O/fA==
+X-Gm-Message-State: APjAAAVQrIyAPGT6eecOzqO1okSFVj63Hjw1vUY0dWaIQHn/zfyRwP42
+        sSoYyhetT0D1vyb/YFGCzJs8RgqYotmusiBhqzJ7SQ==
+X-Google-Smtp-Source: APXvYqzZdInnLy1DDni0f4aafChdUAgr22n+6IwChbEzWLmta8PK1dpLF7BWtYyYmXpKRVxz5b8I4y474iMM/AQarqA=
+X-Received: by 2002:aca:ea43:: with SMTP id i64mr1441788oih.30.1582683105454;
+ Tue, 25 Feb 2020 18:11:45 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200225050828.56458-1-john.stultz@linaro.org> <20200225050828.56458-4-john.stultz@linaro.org>
+In-Reply-To: <20200225050828.56458-4-john.stultz@linaro.org>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Tue, 25 Feb 2020 18:11:09 -0800
+Message-ID: <CAGETcx_x4O_M4OJvCSZNu_wroYoyog9nAW7OivS56qzEhFmnHg@mail.gmail.com>
+Subject: Re: [PATCH v5 3/6] pinctrl: Remove use of driver_deferred_probe_check_state_continue()
+To:     John Stultz <john.stultz@linaro.org>
+Cc:     lkml <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Todd Kjos <tkjos@google.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The target_value field in struct pm_qos_constraints is used for lockless
-access to the effective constraint value of a given QoS list, so the
-readers of it cannot expect it to always reflect the most recent
-effective constraint value.  However, they can and do expect it to be
-equal to a valid effective constraint value computed at a certain time
-in the past (event though it may not be the most recent one), so add
-READ|WRITE_ONCE() annotations around the target_value accesses to
-prevent the compiler from possibly causing that expectation to be unmet
-by generating code in an exceptionally convoluted way.
+Sending again because of accidental HTML email.
 
-Signed-off-by: Qian Cai <cai@lca.pw>
----
+On Mon, Feb 24, 2020 at 9:08 PM John Stultz <john.stultz@linaro.org> wrote:
+>
+> With the earlier sanity fixes to
+> driver_deferred_probe_check_state() it should be usable for the
+> pinctrl logic here.
+>
+> So tweak the logic to use driver_deferred_probe_check_state()
+> instead of driver_deferred_probe_check_state_continue()
+>
+> Cc: Rob Herring <robh@kernel.org>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Kevin Hilman <khilman@kernel.org>
+> Cc: Ulf Hansson <ulf.hansson@linaro.org>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Todd Kjos <tkjos@google.com>
+> Cc: Saravana Kannan <saravanak@google.com>
+> Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+> Cc: Liam Girdwood <lgirdwood@gmail.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Thierry Reding <treding@nvidia.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> Cc: linux-pm@vger.kernel.org
+> Acked-by: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: John Stultz <john.stultz@linaro.org>
+> ---
+>  drivers/pinctrl/devicetree.c | 9 +++++----
+>  1 file changed, 5 insertions(+), 4 deletions(-)
+>
+> diff --git a/drivers/pinctrl/devicetree.c b/drivers/pinctrl/devicetree.c
+> index 9357f7c46cf3..1ed20ac2243f 100644
+> --- a/drivers/pinctrl/devicetree.c
+> +++ b/drivers/pinctrl/devicetree.c
+> @@ -127,11 +127,12 @@ static int dt_to_map_one_config(struct pinctrl *p,
+>                 np_pctldev = of_get_next_parent(np_pctldev);
+>                 if (!np_pctldev || of_node_is_root(np_pctldev)) {
+>                         of_node_put(np_pctldev);
+> +                       ret = driver_deferred_probe_check_state(p->dev);
+>                         /* keep deferring if modules are enabled unless we've timed out */
+> -                       if (IS_ENABLED(CONFIG_MODULES) && !allow_default)
+> -                               return driver_deferred_probe_check_state_continue(p->dev);
+> -
+> -                       return driver_deferred_probe_check_state(p->dev);
+> +                       if (IS_ENABLED(CONFIG_MODULES) && !allow_default &&
 
-v2: borrow the commit log from Rafael.
+Is this IS_ENABLED(CONFIG_MODULES) still necessary? At the end of this
+series, doesn't driver_deferred_probe_check_state() already return
+-EPROBE_DEFER if modules are enabled and timeout hasn't happened?
 
- kernel/power/qos.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+-Saravana
 
-diff --git a/kernel/power/qos.c b/kernel/power/qos.c
-index 32927682bcc4..db0bed2cae26 100644
---- a/kernel/power/qos.c
-+++ b/kernel/power/qos.c
-@@ -52,7 +52,7 @@ static DEFINE_SPINLOCK(pm_qos_lock);
-  */
- s32 pm_qos_read_value(struct pm_qos_constraints *c)
- {
--	return c->target_value;
-+	return READ_ONCE(c->target_value);
- }
- 
- static int pm_qos_get_value(struct pm_qos_constraints *c)
-@@ -75,7 +75,7 @@ static int pm_qos_get_value(struct pm_qos_constraints *c)
- 
- static void pm_qos_set_value(struct pm_qos_constraints *c, s32 value)
- {
--	c->target_value = value;
-+	WRITE_ONCE(c->target_value, value);
- }
- 
- /**
--- 
-2.21.0 (Apple Git-122.2)
-
+> +                           (ret == -ENODEV))
+> +                               ret = -EPROBE_DEFER;
+> +                       return ret;
+>                 }
+>                 /* If we're creating a hog we can use the passed pctldev */
+>                 if (hog_pctldev && (np_pctldev == p->dev->of_node)) {
+> --
+> 2.17.1
+>
