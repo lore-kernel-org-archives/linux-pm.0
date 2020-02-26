@@ -2,94 +2,93 @@ Return-Path: <SRS0=X62Z=4O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C4FCC4BA21
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 21:39:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D006DC4BA21
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 21:47:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C9E3321D7E
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 21:39:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A054524672
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Feb 2020 21:47:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1582753668;
+	bh=lTM5DnJzX+o9VcncpqibMoTzvJCS8Sylu78pMF4X+zs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=YtSkt6+wtYRb8YjQq+dHYPIHYRoCFpA1XTYMbNAoYDHbFViURqWyWKP7j07z8iTuS
+	 UyW++CkK/d59n+LOtfjn2BBavVeM1OMnrjFWoqMgLZjQSzwaXDjjNmizpf/UyuMrX8
+	 RMmpwr10LQNZ1cdpi7oKmhvP4lSNyU2c8kLiZc5k=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727673AbgBZVja (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Feb 2020 16:39:30 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:52181 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727552AbgBZVja (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 16:39:30 -0500
-Received: from 79.184.237.30.ipv4.supernova.orange.pl (79.184.237.30) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 533bfd923ca1b9ab; Wed, 26 Feb 2020 22:39:27 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Artem Bityutskiy <dedekind1@gmail.com>
-Subject: [PATCH] cpufreq: Fix policy initialization for internal governor drivers
-Date:   Wed, 26 Feb 2020 22:39:27 +0100
-Message-ID: <3873122.F9s1CIEcb3@kreacher>
+        id S1727504AbgBZVrs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Feb 2020 16:47:48 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:46079 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727503AbgBZVrr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 16:47:47 -0500
+Received: by mail-ot1-f65.google.com with SMTP id 59so896477otp.12;
+        Wed, 26 Feb 2020 13:47:47 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=UTmslN9q8kSwBcWhEIJNY/U1Xxha6MDPKoxaq0risEc=;
+        b=EgXxqWgs+A9N0rf2PIRtzYHF1ZTCV+YCqrB9t7MZM1YwMa34/KHbPBXx9+9Kkl3W+Q
+         lklNApFkILb2hmfppRDf6a3MJvDh3DpvZBj+rpM3puCjQ6CzxF4DvEYm/CQ7Bc0RZ9vQ
+         /rHEB1owPeVEeY/cqEHJaf+Hu6mK2nNvJGKWjKekWrfwpPqzfKHNDRIEPOPnMNGfzI1O
+         ntGeUngZfn8mSCE+iaasYS23sSuFUT8oifqQ8aIMiP5XV6Y1vX4kKCP4R7rMuDSKnpWU
+         5i/ftI28oECfpOIf+lPuNl/6TCgGmN9+SJg5T3XuQocx9dDH0ZOLfqgAJ6+WVf9V2Rgh
+         bkMg==
+X-Gm-Message-State: APjAAAXwIkjVN5gEv3NLVL0VDRcVf1l8TUarH560SyPvWhvmAyw03r6D
+        oP3jKJMqCPEy2Ln+Y3oqCUCiU7JC8M/vmTkL8F8=
+X-Google-Smtp-Source: APXvYqwbzFXeIj/jl4xZ31G9VSia8iaKygXmbc/nxomxgNxKOm738/8bVAuBII2Eqj6ZLhW5V3sEXoKtU4J1YvG9Le4=
+X-Received: by 2002:a05:6830:1651:: with SMTP id h17mr657127otr.167.1582753666933;
+ Wed, 26 Feb 2020 13:47:46 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+References: <20200227013411.1.Ica3bb9fa898499d94e0b0a2bfa08ec46c89d84fa@changeid>
+In-Reply-To: <20200227013411.1.Ica3bb9fa898499d94e0b0a2bfa08ec46c89d84fa@changeid>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 26 Feb 2020 22:47:35 +0100
+Message-ID: <CAJZ5v0hX-DVLPQmjVAZkQUJy8gCBPTneJvaFHmjqqbCe66F_6w@mail.gmail.com>
+Subject: Re: [PATCH] intel_idle: Add Comet Lake support
+To:     Harry Pan <harry.pan@intel.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, Harry Pan <gs0622@gmail.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Wed, Feb 26, 2020 at 6:34 PM Harry Pan <harry.pan@intel.com> wrote:
+>
+> Add Comet Lake ID to enable intel_idle driver support.
+> This is required for PC10 and S0ix.
 
-Before commit 1e4f63aecb53 ("cpufreq: Avoid creating excessively
-large stack frames") the initial value of the policy field in struct
-cpufreq_policy set by the driver's ->init() callback was implicitly
-passed from cpufreq_init_policy() to cpufreq_set_policy() if the
-default governor was neither "performance" nor "powersave".  After
-that commit, however, cpufreq_init_policy() must take that case into
-consideration explicitly and handle it as appropriate, so make that
-happen.
+That shouldn't be the case for Linux 5.6-rc as long as the ACPI tables
+expose C10 in _CST, so have you checked that?
 
-Fixes: 1e4f63aecb53 ("cpufreq: Avoid creating excessively large stack frames")
-Link: https://lore.kernel.org/linux-pm/39fb762880c27da110086741315ca8b111d781cd.camel@gmail.com/
-Reported-by: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-Note that I'm going to fast-track this patch for 5.6-rc4 which means that
-it will go into my linux-next branch as soon as it shows up in the lists.
-
-Thanks and sorry for the breakage!
-
----
- drivers/cpufreq/cpufreq.c |   14 ++++++++++++--
- 1 file changed, 12 insertions(+), 2 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -1076,9 +1076,17 @@ static int cpufreq_init_policy(struct cp
- 			pol = policy->last_policy;
- 		} else if (def_gov) {
- 			pol = cpufreq_parse_policy(def_gov->name);
--		} else {
--			return -ENODATA;
-+			/*
-+			 * In case the default governor is neiter "performance"
-+			 * nor "powersave", fall back to the initial policy
-+			 * value set by the driver.
-+			 */
-+			if (pol == CPUFREQ_POLICY_UNKNOWN)
-+				pol = policy->policy;
- 		}
-+		if (pol != CPUFREQ_POLICY_PERFORMANCE &&
-+		    pol != CPUFREQ_POLICY_POWERSAVE)
-+			return -ENODATA;
- 	}
- 
- 	return cpufreq_set_policy(policy, gov, pol);
-
-
-
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
+>
+> ---
+>
+>  drivers/idle/intel_idle.c | 2 ++
+>  1 file changed, 2 insertions(+)
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index 347b08b56042..3cf292b2b7f1 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -1086,6 +1086,8 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+>         INTEL_CPU_FAM6(KABYLAKE_L,              idle_cpu_skl),
+>         INTEL_CPU_FAM6(KABYLAKE,                idle_cpu_skl),
+>         INTEL_CPU_FAM6(SKYLAKE_X,               idle_cpu_skx),
+> +       INTEL_CPU_FAM6(COMETLAKE_L,             idle_cpu_skl),
+> +       INTEL_CPU_FAM6(COMETLAKE,               idle_cpu_skl),
+>         INTEL_CPU_FAM6(XEON_PHI_KNL,            idle_cpu_knl),
+>         INTEL_CPU_FAM6(XEON_PHI_KNM,            idle_cpu_knl),
+>         INTEL_CPU_FAM6(ATOM_GOLDMONT,           idle_cpu_bxt),
+> --
+> 2.24.1
+>
