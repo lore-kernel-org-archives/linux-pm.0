@@ -6,23 +6,23 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ACC2C4BA3B
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 830B5C4BA24
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 004B024691
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 657A92467A
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728296AbgB0DkQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Feb 2020 22:40:16 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:40168 "EHLO
+        id S1728252AbgB0Dk2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Feb 2020 22:40:28 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:40157 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728252AbgB0Dj5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 22:39:57 -0500
+        with ESMTP id S1728344AbgB0Dj4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 22:39:56 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j7A1j-00030x-0D; Thu, 27 Feb 2020 03:39:55 +0000
+        id 1j7A1h-00030x-OL; Thu, 27 Feb 2020 03:39:53 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -33,9 +33,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH v7 6/9] drivers/base/power: add dpm_sysfs_change_owner()
-Date:   Thu, 27 Feb 2020 04:37:16 +0100
-Message-Id: <20200227033719.1652190-7-christian.brauner@ubuntu.com>
+Subject: [PATCH v7 4/9] sysfs: add sysfs_change_owner()
+Date:   Thu, 27 Feb 2020 04:37:14 +0100
+Message-Id: <20200227033719.1652190-5-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200227033719.1652190-1-christian.brauner@ubuntu.com>
 References: <20200227033719.1652190-1-christian.brauner@ubuntu.com>
@@ -46,169 +46,149 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a helper to change the owner of a device's power entries. This
-needs to happen when the ownership of a device is changed, e.g. when
-moving network devices between network namespaces.
-This function will be used to correctly account for ownership changes,
-e.g. when moving network devices between network namespaces.
+Add a helper to change the owner of sysfs objects.
+This function will be used to correctly account for kobject ownership
+changes, e.g. when moving network devices between network namespaces.
+
+This mirrors how a kobject is added through driver core which in its guts is
+done via kobject_add_internal() which in summary creates the main directory via
+create_dir(), populates that directory with the groups associated with the
+ktype of the kobject (if any) and populates the directory with the basic
+attributes associated with the ktype of the kobject (if any). These are the
+basic steps that are associated with adding a kobject in sysfs.
+Any additional properties are added by the specific subsystem itself (not by
+driver core) after it has registered the device. So for the example of network
+devices, a network device will e.g. register a queue subdirectory under the
+basic sysfs directory for the network device and than further subdirectories
+within that queues subdirectory.  But that is all specific to network devices
+and they call the corresponding sysfs functions to do that directly when they
+create those queue objects. So anything that a subsystem adds outside of what
+driver core does must also be changed by it (That's already true for removal of
+files it created outside of driver core.) and it's the same for ownership
+changes.
 
 Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Reviewed-by: "Rafael J. Wysocki" <rafael@kernel.org>
 Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
 /* v2 */
-- "Rafael J. Wysocki" <rafael@kernel.org>:
-  -  Fold if (dev->power.wakeup && dev->power.wakeup->dev) check into
-     if (device_can_wakeup(dev)) check since the former can never be true if
-     the latter is false.
-
-- Christian Brauner <christian.brauner@ubuntu.com>:
-  - Place (dev->power.wakeup && dev->power.wakeup->dev) check under
-    CONFIG_PM_SLEEP ifdefine since it will wakeup_source will only be available
-    when this config option is set.
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add comment how ownership of sysfs object is changed.
 
 /* v3 */
 -  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
    - Add explicit uid/gid parameters.
 
 /* v4 */
-- "Rafael J. Wysocki" <rafael@kernel.org>:
-   - Remove in-function #ifdef in favor of separate helper that is a nop
-     whenver !CONFIG_PM_SLEEP.
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Change the ownership of the kobject itself directly in
+     sysfs_change_owner() and do not rely on separate function to do that.
+   - Add more documentation.
 
 /* v5 */
-- "Rafael J. Wysocki" <rafael@kernel.org>:
-   - Return directly if condition is true in dpm_sysfs_wakeup_change_owner()
-     instead of using additional variable.
+unchanged
 
 /* v6 */
-- Christian Brauner <christian.brauner@ubuntu.com>:
-  - Make dpm_sysfs_wakeup_change_owner() static inline.
+unchanged
 
 /* v7 */
 unchanged
 ---
- drivers/base/core.c        |  4 +++
- drivers/base/power/power.h |  3 +++
- drivers/base/power/sysfs.c | 55 +++++++++++++++++++++++++++++++++++++-
- 3 files changed, 61 insertions(+), 1 deletion(-)
+ fs/sysfs/file.c       | 60 +++++++++++++++++++++++++++++++++++++++++++
+ include/linux/sysfs.h |  6 +++++
+ 2 files changed, 66 insertions(+)
 
-diff --git a/drivers/base/core.c b/drivers/base/core.c
-index 988f34ce2eb0..fb8b7990f6fd 100644
---- a/drivers/base/core.c
-+++ b/drivers/base/core.c
-@@ -3552,6 +3552,10 @@ int device_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
- 	if (error)
- 		goto out;
- 
-+	error = dpm_sysfs_change_owner(dev, kuid, kgid);
+diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
+index 332cd69b378c..26bbf960e2a2 100644
+--- a/fs/sysfs/file.c
++++ b/fs/sysfs/file.c
+@@ -646,3 +646,63 @@ int sysfs_file_change_owner(struct kobject *kobj, const char *name, kuid_t kuid,
+ 	return error;
+ }
+ EXPORT_SYMBOL_GPL(sysfs_file_change_owner);
++
++/**
++ *	sysfs_change_owner - change owner of the given object.
++ *	@kobj:	object.
++ *	@kuid:	new owner's kuid
++ *	@kgid:	new owner's kgid
++ *
++ * Change the owner of the default directory, files, groups, and attributes of
++ * @kobj to @kuid/@kgid. Note that sysfs_change_owner mirrors how the sysfs
++ * entries for a kobject are added by driver core. In summary,
++ * sysfs_change_owner() takes care of the default directory entry for @kobj,
++ * the default attributes associated with the ktype of @kobj and the default
++ * attributes associated with the ktype of @kobj.
++ * Additional properties not added by driver core have to be changed by the
++ * driver or subsystem which created them. This is similar to how
++ * driver/subsystem specific entries are removed.
++ *
++ * Returns 0 on success or error code on failure.
++ */
++int sysfs_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid)
++{
++	int error;
++	const struct kobj_type *ktype;
++
++	if (!kobj->state_in_sysfs)
++		return -EINVAL;
++
++	/* Change the owner of the kobject itself. */
++	error = internal_change_owner(kobj->sd, kuid, kgid);
 +	if (error)
-+		goto out;
++		return error;
 +
- #ifdef CONFIG_BLOCK
- 	if (sysfs_deprecated && dev->class == &block_class)
- 		goto out;
-diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
-index 444f5c169a0b..54292cdd7808 100644
---- a/drivers/base/power/power.h
-+++ b/drivers/base/power/power.h
-@@ -74,6 +74,7 @@ extern int pm_qos_sysfs_add_flags(struct device *dev);
- extern void pm_qos_sysfs_remove_flags(struct device *dev);
- extern int pm_qos_sysfs_add_latency_tolerance(struct device *dev);
- extern void pm_qos_sysfs_remove_latency_tolerance(struct device *dev);
-+extern int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
++	ktype = get_ktype(kobj);
++	if (ktype) {
++		struct attribute **kattr;
++
++		/*
++		 * Change owner of the default attributes associated with the
++		 * ktype of @kobj.
++		 */
++		for (kattr = ktype->default_attrs; kattr && *kattr; kattr++) {
++			error = sysfs_file_change_owner(kobj, (*kattr)->name,
++							kuid, kgid);
++			if (error)
++				return error;
++		}
++
++		/*
++		 * Change owner of the default groups associated with the
++		 * ktype of @kobj.
++		 */
++		error = sysfs_groups_change_owner(kobj, ktype->default_groups,
++						  kuid, kgid);
++		if (error)
++			return error;
++	}
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(sysfs_change_owner);
+diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
+index 3fcaabdb05ef..9e531ec76274 100644
+--- a/include/linux/sysfs.h
++++ b/include/linux/sysfs.h
+@@ -312,6 +312,7 @@ static inline void sysfs_enable_ns(struct kernfs_node *kn)
  
- #else /* CONFIG_PM */
- 
-@@ -88,6 +89,8 @@ static inline void pm_runtime_remove(struct device *dev) {}
- 
- static inline int dpm_sysfs_add(struct device *dev) { return 0; }
- static inline void dpm_sysfs_remove(struct device *dev) {}
-+static inline int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid,
-+					 kgid_t kgid) { return 0; }
- 
- #endif
- 
-diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
-index d7d82db2e4bc..2b99fe1eb207 100644
---- a/drivers/base/power/sysfs.c
-+++ b/drivers/base/power/sysfs.c
-@@ -480,6 +480,14 @@ static ssize_t wakeup_last_time_ms_show(struct device *dev,
- 	return enabled ? sprintf(buf, "%lld\n", msec) : sprintf(buf, "\n");
+ int sysfs_file_change_owner(struct kobject *kobj, const char *name, kuid_t kuid,
+ 			    kgid_t kgid);
++int sysfs_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid);
+ int sysfs_link_change_owner(struct kobject *kobj, struct kobject *targ,
+ 			    const char *name, kuid_t kuid, kgid_t kgid);
+ int sysfs_groups_change_owner(struct kobject *kobj,
+@@ -548,6 +549,11 @@ static inline int sysfs_link_change_owner(struct kobject *kobj,
+ 	return 0;
  }
  
-+static inline int dpm_sysfs_wakeup_change_owner(struct device *dev, kuid_t kuid,
-+						kgid_t kgid)
-+{
-+	if (dev->power.wakeup && dev->power.wakeup->dev)
-+		return device_change_owner(dev->power.wakeup->dev, kuid, kgid);
-+	return 0;
-+}
-+
- static DEVICE_ATTR_RO(wakeup_last_time_ms);
- 
- #ifdef CONFIG_PM_AUTOSLEEP
-@@ -501,7 +509,13 @@ static ssize_t wakeup_prevent_sleep_time_ms_show(struct device *dev,
- 
- static DEVICE_ATTR_RO(wakeup_prevent_sleep_time_ms);
- #endif /* CONFIG_PM_AUTOSLEEP */
--#endif /* CONFIG_PM_SLEEP */
-+#else /* CONFIG_PM_SLEEP */
-+static inline int dpm_sysfs_wakeup_change_owner(struct device *dev, kuid_t kuid,
-+						kgid_t kgid)
++static inline int sysfs_change_owner(struct kobject *kobj, kuid_t kuid, kgid_t kgid)
 +{
 +	return 0;
 +}
-+#endif
- 
- #ifdef CONFIG_PM_ADVANCED_DEBUG
- static ssize_t runtime_usage_show(struct device *dev,
-@@ -684,6 +698,45 @@ int dpm_sysfs_add(struct device *dev)
- 	return rc;
- }
- 
-+int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
-+{
-+	int rc;
 +
-+	if (device_pm_not_required(dev))
-+		return 0;
-+
-+	rc = sysfs_group_change_owner(&dev->kobj, &pm_attr_group, kuid, kgid);
-+	if (rc)
-+		return rc;
-+
-+	if (pm_runtime_callbacks_present(dev)) {
-+		rc = sysfs_group_change_owner(
-+			&dev->kobj, &pm_runtime_attr_group, kuid, kgid);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	if (device_can_wakeup(dev)) {
-+		rc = sysfs_group_change_owner(&dev->kobj, &pm_wakeup_attr_group,
-+					      kuid, kgid);
-+		if (rc)
-+			return rc;
-+
-+		rc = dpm_sysfs_wakeup_change_owner(dev, kuid, kgid);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	if (dev->power.set_latency_tolerance) {
-+		rc = sysfs_group_change_owner(
-+			&dev->kobj, &pm_qos_latency_tolerance_attr_group, kuid,
-+			kgid);
-+		if (rc)
-+			return rc;
-+	}
-+	return 0;
-+}
-+
- int wakeup_sysfs_add(struct device *dev)
- {
- 	return sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
+ static inline int sysfs_groups_change_owner(struct kobject *kobj,
+ 			  const struct attribute_group **groups,
+ 			  kuid_t kuid, kgid_t kgid)
 -- 
 2.25.1
 
