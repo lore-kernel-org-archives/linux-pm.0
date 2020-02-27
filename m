@@ -2,73 +2,99 @@ Return-Path: <SRS0=WjjV=4P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C60CC3F2C0
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 21:00:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A07C2C3F2C2
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 21:53:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E60BB2468E
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 21:00:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74917246A3
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 21:53:36 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="R9wmRG8Z"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729534AbgB0VAn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Feb 2020 16:00:43 -0500
-Received: from relay10.mail.gandi.net ([217.70.178.230]:54709 "EHLO
-        relay10.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728059AbgB0VAm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2020 16:00:42 -0500
-Received: from webmail.gandi.net (webmail15.sd4.0x35.net [10.200.201.15])
-        (Authenticated sender: contact@artur-rojek.eu)
-        by relay10.mail.gandi.net (Postfix) with ESMTPA id 4EB61240009;
-        Thu, 27 Feb 2020 21:00:39 +0000 (UTC)
+        id S1729501AbgB0Vxf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Feb 2020 16:53:35 -0500
+Received: from mail-lf1-f65.google.com ([209.85.167.65]:38847 "EHLO
+        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729991AbgB0Vxf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Feb 2020 16:53:35 -0500
+Received: by mail-lf1-f65.google.com with SMTP id r14so559434lfm.5
+        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2020 13:53:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=TciHlSTKGVGSwBjPpE6GdszVZvGGFdsKopsqP1eqA44=;
+        b=R9wmRG8Zsj0hupJPPywP6/bpn+fXxWpBBjyuLdxnZKe76Pvx+79KpCZfPuJ6m9zgIB
+         83dRXWqAbdH8mdUA2m5R6w1L5Jt/Nectudrnnm3VTIY8OxyPthplqvxqfFcG5SmgXxwL
+         hEhb8GB0mIoGzRzN/dD6W9G//QmE5GgVN2PmE=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=TciHlSTKGVGSwBjPpE6GdszVZvGGFdsKopsqP1eqA44=;
+        b=KD2/2g12v2q7Mh1MGFYtvmJYSeE++g1WajPfc/huCWZoTnbUMy/tEHNyyxDk8Z93Gf
+         rFTojOxxgdWQmEcFOfg64kntq4rGTBrNS3eTxjUQVYfhEBduOBmcO5wNJhBNOYYF32NI
+         ivNqXFkW7ZPmOwsPGLod13zR5imnp1ryuCQfn6EJo/qY+1NL/Az0bHjk1vKZpOHZT+kN
+         vqqVMqvVQgnOzl6pclX7ZAHGZ1DIpMCCoVfn77uqN3fN4fxFJx9vqL1toLlK7xJymNFW
+         Ju0QKsHzz22RGtsafvQ+ZTuiLCxy9PlLm8G6JAUCGxik7g+pLYR9L42Vuek1Vy6iVDXf
+         JbaA==
+X-Gm-Message-State: ANhLgQ0G/imgoEqJBRl6DnAJn4FsUWjjr8FyNtd4VmjvGcWjuRtoJ2Iz
+        ctzjxevXpPLLPGiZ9trmMAgCPGZ48u4=
+X-Google-Smtp-Source: ADFU+vsC8H6FQboonU3BeDyVNBD56rpBpcTu+kbs+xFHmWih9IfDN+JGCU21vYan7XrJi91hiyK0Kw==
+X-Received: by 2002:a05:6512:1085:: with SMTP id j5mr196647lfg.183.1582840412633;
+        Thu, 27 Feb 2020 13:53:32 -0800 (PST)
+Received: from mail-lj1-f174.google.com (mail-lj1-f174.google.com. [209.85.208.174])
+        by smtp.gmail.com with ESMTPSA id f14sm3481877lfh.40.2020.02.27.13.53.31
+        for <linux-pm@vger.kernel.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 27 Feb 2020 13:53:31 -0800 (PST)
+Received: by mail-lj1-f174.google.com with SMTP id e18so924995ljn.12
+        for <linux-pm@vger.kernel.org>; Thu, 27 Feb 2020 13:53:31 -0800 (PST)
+X-Received: by 2002:a2e:8702:: with SMTP id m2mr734336lji.278.1582840410701;
+ Thu, 27 Feb 2020 13:53:30 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Thu, 27 Feb 2020 22:00:39 +0100
-From:   Artur Rojek <contact@artur-rojek.eu>
-To:     Paul Cercueil <paul@crapouillou.net>
-Cc:     Sebastian Reichel <sre@kernel.org>, od@zcrc.me,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] power/supply: ingenic-battery: Don't print error on
- -EPROBE_DEFER
-In-Reply-To: <20200221005812.271187-1-paul@crapouillou.net>
-References: <20200221005812.271187-1-paul@crapouillou.net>
-Message-ID: <b90a4280727ee030fafb99a30a48c256@artur-rojek.eu>
-X-Sender: contact@artur-rojek.eu
-User-Agent: Roundcube Webmail/1.3.8
+References: <20200209183411.17195-1-sibis@codeaurora.org> <20200209183411.17195-7-sibis@codeaurora.org>
+In-Reply-To: <20200209183411.17195-7-sibis@codeaurora.org>
+From:   Evan Green <evgreen@chromium.org>
+Date:   Thu, 27 Feb 2020 13:52:54 -0800
+X-Gmail-Original-Message-ID: <CAE=gft5YrX9idSOgam5JR3m_R8OZ0ZG6KKe-w6GmtmxY83OPnQ@mail.gmail.com>
+Message-ID: <CAE=gft5YrX9idSOgam5JR3m_R8OZ0ZG6KKe-w6GmtmxY83OPnQ@mail.gmail.com>
+Subject: Re: [PATCH v3 6/6] arm64: dts: sdm845: Redefine interconnect provider
+ DT nodes
+To:     Sibi Sankar <sibis@codeaurora.org>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        David Dai <daidavid1@codeaurora.org>,
+        Saravana Kannan <saravanak@google.com>,
+        Matthias Kaehlcke <mka@chromium.org>, linux-pm@vger.kernel.org,
+        Odelu Kukatla <okukatla@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2020-02-21 01:58, Paul Cercueil wrote:
-> Don't print an error message if devm_power_supply_register() returns
-> -EPROBE_DEFER, since the driver will simply re-probe later.
-Hi Paul.
+On Sun, Feb 9, 2020 at 10:35 AM Sibi Sankar <sibis@codeaurora.org> wrote:
+>
+> From: David Dai <daidavid1@codeaurora.org>
+>
+> Add the DT nodes for each of the Network-On-Chip interconnect
+> buses found on SDM845 based platform and redefine the rsc_hlos
+> child node as a bcm-voter device to better represent the hardware.
+>
+> Signed-off-by: David Dai <daidavid1@codeaurora.org>
+> Signed-off-by: Odelu Kukatla <okukatla@codeaurora.org>
+> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 
-This looks alright.
-
-Acked-by: Artur Rojek <contact@artur-rojek.eu>
-> 
-> Signed-off-by: Paul Cercueil <paul@crapouillou.net>
-> ---
->  drivers/power/supply/ingenic-battery.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/power/supply/ingenic-battery.c
-> b/drivers/power/supply/ingenic-battery.c
-> index 2748715c4c75..dd3d93dfe3eb 100644
-> --- a/drivers/power/supply/ingenic-battery.c
-> +++ b/drivers/power/supply/ingenic-battery.c
-> @@ -148,7 +148,8 @@ static int ingenic_battery_probe(struct
-> platform_device *pdev)
-> 
->  	bat->battery = devm_power_supply_register(dev, desc, &psy_cfg);
->  	if (IS_ERR(bat->battery)) {
-> -		dev_err(dev, "Unable to register battery\n");
-> +		if (PTR_ERR(bat->battery) != -EPROBE_DEFER)
-> +			dev_err(dev, "Unable to register battery\n");
->  		return PTR_ERR(bat->battery);
->  	}
+Reviewed-by: Evan Green <evgreen@chromium.org>
