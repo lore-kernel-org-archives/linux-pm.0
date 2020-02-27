@@ -6,23 +6,23 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16507C4BA3B
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2433C4BA3B
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DCA622467B
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B38592467F
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Feb 2020 03:40:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728266AbgB0DkJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Feb 2020 22:40:09 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:40189 "EHLO
+        id S1728419AbgB0Dj6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Feb 2020 22:39:58 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:40180 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728414AbgB0Dj7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 22:39:59 -0500
+        with ESMTP id S1728316AbgB0Dj6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Feb 2020 22:39:58 -0500
 Received: from ip5f5bf7ec.dynamic.kabel-deutschland.de ([95.91.247.236] helo=wittgenstein.fritz.box)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <christian.brauner@ubuntu.com>)
-        id 1j7A1k-00030x-Ir; Thu, 27 Feb 2020 03:39:56 +0000
+        id 1j7A1k-00030x-2G; Thu, 27 Feb 2020 03:39:56 +0000
 From:   Christian Brauner <christian.brauner@ubuntu.com>
 To:     "David S. Miller" <davem@davemloft.net>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -33,9 +33,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Stephen Hemminger <stephen@networkplumber.org>,
         linux-pm@vger.kernel.org,
         Christian Brauner <christian.brauner@ubuntu.com>
-Subject: [PATCH v7 9/9] net: fix sysfs permssions when device changes network namespace
-Date:   Thu, 27 Feb 2020 04:37:19 +0100
-Message-Id: <20200227033719.1652190-10-christian.brauner@ubuntu.com>
+Subject: [PATCH v7 8/9] net-sysfs: add queue_change_owner()
+Date:   Thu, 27 Feb 2020 04:37:18 +0100
+Message-Id: <20200227033719.1652190-9-christian.brauner@ubuntu.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200227033719.1652190-1-christian.brauner@ubuntu.com>
 References: <20200227033719.1652190-1-christian.brauner@ubuntu.com>
@@ -46,17 +46,23 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that we moved all the helpers in place and make use netdev_change_owner()
-to fixup the permissions when moving network devices between network
-namespaces.
+Add a function to change the owner of the queue entries for a network device
+when it is moved between network namespaces.
+
+Currently, when moving network devices between network namespaces the
+ownership of the corresponding queue sysfs entries are not changed. This leads
+to problems when tools try to operate on the corresponding sysfs files. Fix
+this.
 
 Signed-off-by: Christian Brauner <christian.brauner@ubuntu.com>
 ---
 /* v2 */
-unchanged
+- kbuild test robot <lkp@intel.com> via sparse:
+  - Make net_rx_queue_change_owner() static since it's not exported.
 
 /* v3 */
-unchanged
+-  Greg Kroah-Hartman <gregkh@linuxfoundation.org>:
+   - Add explicit uid/gid parameters.
 
 /* v4 */
 unchanged
@@ -70,42 +76,160 @@ unchanged
 /* v7 */
 unchanged
 ---
- net/core/dev.c | 9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+ net/core/net-sysfs.c | 106 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 106 insertions(+)
 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index a69e8bd7ed74..0f9c4684fcbd 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -10016,6 +10016,7 @@ EXPORT_SYMBOL(unregister_netdev);
- 
- int dev_change_net_namespace(struct net_device *dev, struct net *net, const char *pat)
- {
-+	struct net *net_old = dev_net(dev);
- 	int err, new_nsid, new_ifindex;
- 
- 	ASSERT_RTNL();
-@@ -10031,7 +10032,7 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
- 
- 	/* Get out if there is nothing todo */
- 	err = 0;
--	if (net_eq(dev_net(dev), net))
-+	if (net_eq(net_old, net))
- 		goto out;
- 
- 	/* Pick the destination device name, and ensure
-@@ -10107,6 +10108,12 @@ int dev_change_net_namespace(struct net_device *dev, struct net *net, const char
- 	err = device_rename(&dev->dev, dev->name);
- 	WARN_ON(err);
- 
-+	/* Adapt owner in case owning user namespace of target network
-+	 * namespace is different from the original one.
-+	 */
-+	err = netdev_change_owner(dev, net_old, net);
-+	WARN_ON(err);
+diff --git a/net/core/net-sysfs.c b/net/core/net-sysfs.c
+index e19967665cb0..cf0215734ceb 100644
+--- a/net/core/net-sysfs.c
++++ b/net/core/net-sysfs.c
+@@ -944,6 +944,24 @@ static int rx_queue_add_kobject(struct net_device *dev, int index)
+ 	kobject_put(kobj);
+ 	return error;
+ }
 +
- 	/* Add the device back in the hashes */
- 	list_netdevice(dev);
++static int rx_queue_change_owner(struct net_device *dev, int index, kuid_t kuid,
++				 kgid_t kgid)
++{
++	struct netdev_rx_queue *queue = dev->_rx + index;
++	struct kobject *kobj = &queue->kobj;
++	int error;
++
++	error = sysfs_change_owner(kobj, kuid, kgid);
++	if (error)
++		return error;
++
++	if (dev->sysfs_rx_queue_group)
++		error = sysfs_group_change_owner(
++			kobj, dev->sysfs_rx_queue_group, kuid, kgid);
++
++	return error;
++}
+ #endif /* CONFIG_SYSFS */
+ 
+ int
+@@ -981,6 +999,29 @@ net_rx_queue_update_kobjects(struct net_device *dev, int old_num, int new_num)
+ #endif
+ }
+ 
++static int net_rx_queue_change_owner(struct net_device *dev, int num,
++				     kuid_t kuid, kgid_t kgid)
++{
++#ifdef CONFIG_SYSFS
++	int error = 0;
++	int i;
++
++#ifndef CONFIG_RPS
++	if (!dev->sysfs_rx_queue_group)
++		return 0;
++#endif
++	for (i = 0; i < num; i++) {
++		error = rx_queue_change_owner(dev, i, kuid, kgid);
++		if (error)
++			break;
++	}
++
++	return error;
++#else
++	return 0;
++#endif
++}
++
+ #ifdef CONFIG_SYSFS
+ /*
+  * netdev_queue sysfs structures and functions.
+@@ -1486,6 +1527,23 @@ static int netdev_queue_add_kobject(struct net_device *dev, int index)
+ 	kobject_put(kobj);
+ 	return error;
+ }
++
++static int tx_queue_change_owner(struct net_device *ndev, int index,
++				 kuid_t kuid, kgid_t kgid)
++{
++	struct netdev_queue *queue = ndev->_tx + index;
++	struct kobject *kobj = &queue->kobj;
++	int error;
++
++	error = sysfs_change_owner(kobj, kuid, kgid);
++	if (error)
++		return error;
++
++#ifdef CONFIG_BQL
++	error = sysfs_group_change_owner(kobj, &dql_group, kuid, kgid);
++#endif
++	return error;
++}
+ #endif /* CONFIG_SYSFS */
+ 
+ int
+@@ -1520,6 +1578,25 @@ netdev_queue_update_kobjects(struct net_device *dev, int old_num, int new_num)
+ #endif /* CONFIG_SYSFS */
+ }
+ 
++static int net_tx_queue_change_owner(struct net_device *dev, int num,
++				     kuid_t kuid, kgid_t kgid)
++{
++#ifdef CONFIG_SYSFS
++	int error = 0;
++	int i;
++
++	for (i = 0; i < num; i++) {
++		error = tx_queue_change_owner(dev, i, kuid, kgid);
++		if (error)
++			break;
++	}
++
++	return error;
++#else
++	return 0;
++#endif /* CONFIG_SYSFS */
++}
++
+ static int register_queue_kobjects(struct net_device *dev)
+ {
+ 	int error = 0, txq = 0, rxq = 0, real_rx = 0, real_tx = 0;
+@@ -1554,6 +1631,31 @@ static int register_queue_kobjects(struct net_device *dev)
+ 	return error;
+ }
+ 
++static int queue_change_owner(struct net_device *ndev, kuid_t kuid, kgid_t kgid)
++{
++	int error = 0, real_rx = 0, real_tx = 0;
++
++#ifdef CONFIG_SYSFS
++	if (ndev->queues_kset) {
++		error = sysfs_change_owner(&ndev->queues_kset->kobj, kuid, kgid);
++		if (error)
++			return error;
++	}
++	real_rx = ndev->real_num_rx_queues;
++#endif
++	real_tx = ndev->real_num_tx_queues;
++
++	error = net_rx_queue_change_owner(ndev, real_rx, kuid, kgid);
++	if (error)
++		return error;
++
++	error = net_tx_queue_change_owner(ndev, real_tx, kuid, kgid);
++	if (error)
++		return error;
++
++	return 0;
++}
++
+ static void remove_queue_kobjects(struct net_device *dev)
+ {
+ 	int real_rx = 0, real_tx = 0;
+@@ -1791,6 +1893,10 @@ int netdev_change_owner(struct net_device *ndev, const struct net *net_old,
+ 	if (error)
+ 		return error;
+ 
++	error = queue_change_owner(ndev, new_uid, new_gid);
++	if (error)
++		return error;
++
+ 	return 0;
+ }
  
 -- 
 2.25.1
