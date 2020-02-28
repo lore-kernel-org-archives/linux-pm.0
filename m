@@ -2,86 +2,140 @@ Return-Path: <SRS0=7C+u=4Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D035C3F2C6
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Feb 2020 03:00:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 89D7EC3F2D0
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Feb 2020 05:37:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 752D0246A0
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Feb 2020 03:00:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 54571246A6
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Feb 2020 05:37:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="m56oWDYK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730593AbgB1C7t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Feb 2020 21:59:49 -0500
-Received: from inva020.nxp.com ([92.121.34.13]:34728 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730445AbgB1C7t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 27 Feb 2020 21:59:49 -0500
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 6620A1A07C9;
-        Fri, 28 Feb 2020 03:59:47 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 8898C1A07B4;
-        Fri, 28 Feb 2020 03:59:31 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 4F690402DD;
-        Fri, 28 Feb 2020 10:59:18 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, robh+dt@kernel.org,
-        mark.rutland@arm.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
-        kernel@pengutronix.de, festevam@gmail.com, catalin.marinas@arm.com,
-        will@kernel.org, leonard.crestez@nxp.com, daniel.baluta@nxp.com,
-        aford173@gmail.com, shengjiu.wang@nxp.com, ping.bai@nxp.com,
-        jun.li@nxp.com, peng.fan@nxp.com, bjorn.andersson@linaro.org,
-        olof@lixom.net, dinguyen@kernel.org, marcin.juszkiewicz@linaro.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V2 1/4] dt-bindings: thermal: imx8mm-thermal: Add binding doc for i.MX8MM
-Date:   Fri, 28 Feb 2020 10:53:30 +0800
-Message-Id: <1582858413-11906-1-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1725861AbgB1Fhr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Feb 2020 00:37:47 -0500
+Received: from mail-qt1-f196.google.com ([209.85.160.196]:34014 "EHLO
+        mail-qt1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725805AbgB1Fhr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Feb 2020 00:37:47 -0500
+Received: by mail-qt1-f196.google.com with SMTP id l16so1240025qtq.1;
+        Thu, 27 Feb 2020 21:37:47 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=76wpTcV+LXA0Dyl54UG5BsW53npVN0WBYlbvd10TsrE=;
+        b=m56oWDYKo8U2gzUmdVaIuVwDYDH1S0NbqGtJxGC0Xrn3fn8ho6S2oL8qWWNALQetIM
+         uqyo2M47TbrDiO+VFYm0ulOAWEtDn6vNNAQ/dHu/Pw9kmLOaLNwn5cG7/3/MtIbEWSpW
+         fVOCJOfwASE1gDGQiNLoalDMAbVrBVP43vXFDA5HYIAGLGu8nOFC7hYBOFRBpFTrYxNI
+         ASliIuBzEzmhrIlS2na9tmr3QySr4JHhi8FXJ0AZqXNaVvcV2pYGSOmL7FiUo4juyd7S
+         Xy618Hsae7VRaQM6S7ic4uZ2OR6/GK64ON0zaxKjREicZeUC4vC798EXPyHMcLVnbmJJ
+         KqQw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=76wpTcV+LXA0Dyl54UG5BsW53npVN0WBYlbvd10TsrE=;
+        b=tiSSsifFNhCPKQ+4K3u9cz9sD8b04Mw2dQVnmrtEUzOMvy+eSoXM8o/JMF6T8F+T6Y
+         ZajEY2/wrtlqgOQpmyBdpHoNs+xr0OruB7Cj3EsUiYlQsKpdTUbysBqs0NmaFtAJJI3V
+         +66uXbXjguUy/cXZGxzRg8ZplT7oare7oeDfYnt4/t7N3wQ7IeTqLCtGj+46279a6e+/
+         IUrqhLw6ShrJyEBg+XQClNr8CJKh2IkRXIvkto97bDVFfBtaZYBEoeD9O/I7q5P1d2S5
+         ZAkJYsSqKdznKFe1PvI1Qo9dT+OFkJV1xmsUGy9ChhbZgOR5YKYbqKXkpTAcI23fHzFV
+         Qacw==
+X-Gm-Message-State: APjAAAW0WeMELilQxt5sUDtOQVHlbhK0+dOkcxwyGoq12kJYMiJLdC9X
+        YXmbYUpr2XPzcRCD8YbWFIwlJc3iWWuGJYQLYFQ=
+X-Google-Smtp-Source: APXvYqzdZ5n6FJrj5vA0szsVSQuMvUkyI8pNtv9isE32QqsWjw84Uy4YqANwFZmeFvuz0Yaz0msbBkkFnCPM66TEqVw=
+X-Received: by 2002:aed:2202:: with SMTP id n2mr3003286qtc.4.1582868266510;
+ Thu, 27 Feb 2020 21:37:46 -0800 (PST)
+MIME-Version: 1.0
+References: <2d0854b00d7f85e988aff4f8186e8ac5d8a9aff2.1581410798.git.baolin.wang7@gmail.com>
+ <CA+H2tpFAZuPSH0EErLt0Lj=TKLVq3XwEox06tbGzFaquSpKa0w@mail.gmail.com> <CAGETcx9695=uVkSmtym36t6jbFXcEGf2JPVqWBi+sLZNG4xzSg@mail.gmail.com>
+In-Reply-To: <CAGETcx9695=uVkSmtym36t6jbFXcEGf2JPVqWBi+sLZNG4xzSg@mail.gmail.com>
+From:   Baolin Wang <baolin.wang7@gmail.com>
+Date:   Fri, 28 Feb 2020 13:37:34 +0800
+Message-ID: <CADBw62oMztoidXGuv3YZ1Na9ouRAHfvuHc2yP30BccPh22443w@mail.gmail.com>
+Subject: Re: [PATCH] power: supply: Allow charger manager can be built as a module
+To:     Saravana Kannan <saravanak@google.com>
+Cc:     Orson Zhai <orsonzhai@gmail.com>, sre@kernel.org,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Lyra Zhang <zhang.lyra@gmail.com>,
+        Android Kernel Team <kernel-team@android.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add thermal binding doc for Freescale's i.MX8MM Thermal Monitoring Unit.
+On Fri, Feb 28, 2020 at 10:54 AM Saravana Kannan <saravanak@google.com> wrote:
+>
+> On Thu, Feb 27, 2020 at 8:06 AM Orson Zhai <orsonzhai@gmail.com> wrote:
+> >
+> > Hi Sebastian and other guys here,
+> >
+> > On Tue, Feb 11, 2020 at 4:51 PM Baolin Wang <baolin.wang7@gmail.com> wrote:
+> > >
+> > > Allow charger manager can be built as a module like other charger
+> > > drivers.
+> > >
+> > What do you think about this patch?
+> > We want to set charger-manager as module in our project for new Android devices.
+> >
+> > -Orson
+> >
+> > > Signed-off-by: Baolin Wang <baolin.wang7@gmail.com>
+> > > ---
+> > >  drivers/power/supply/Kconfig          |    2 +-
+> > >  include/linux/power/charger-manager.h |    7 +------
+> > >  2 files changed, 2 insertions(+), 7 deletions(-)
+> > >
+> > > diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
+> > > index 9a5591a..195bc04 100644
+> > > --- a/drivers/power/supply/Kconfig
+> > > +++ b/drivers/power/supply/Kconfig
+> > > @@ -480,7 +480,7 @@ config CHARGER_GPIO
+> > >           called gpio-charger.
+> > >
+> > >  config CHARGER_MANAGER
+> > > -       bool "Battery charger manager for multiple chargers"
+> > > +       tristate "Battery charger manager for multiple chargers"
+> > >         depends on REGULATOR
+> > >         select EXTCON
+> > >         help
+> > > diff --git a/include/linux/power/charger-manager.h b/include/linux/power/charger-manager.h
+> > > index ad19e68..40493b2 100644
+> > > --- a/include/linux/power/charger-manager.h
+> > > +++ b/include/linux/power/charger-manager.h
+> > > @@ -248,11 +248,6 @@ struct charger_manager {
+> > >         u64 charging_end_time;
+> > >  };
+> > >
+> > > -#ifdef CONFIG_CHARGER_MANAGER
+> > >  extern void cm_notify_event(struct power_supply *psy,
+> > > -                               enum cm_event_types type, char *msg);
+> > > -#else
+> > > -static inline void cm_notify_event(struct power_supply *psy,
+> > > -                               enum cm_event_types type, char *msg) { }
+> > > -#endif
+> > > +                           enum cm_event_types type, char *msg);
+> > >  #endif /* _CHARGER_MANAGER_H */
+>
+> You are breaking the kernel if CONFIG_CHARGER_MANAGER is disabled. Why
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
-No change.
----
- .../devicetree/bindings/thermal/imx8mm-thermal.txt        | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
+No, now no users in mainline have called cm_notify_event() function,
+and if some charger drivers want to use the charger manager, they
+should select CHARGER_MANAGER, like:
+config CHARGER_SC2731
+        tristate "Spreadtrum SC2731 charger driver"
+        depends on MFD_SC27XX_PMIC || COMPILE_TEST
+        select CHARGER_MANAGER
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-new file mode 100644
-index 0000000..d09ae82
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-@@ -0,0 +1,15 @@
-+* Thermal Monitoring Unit (TMU) on Freescale i.MX8MM SoC
-+
-+Required properties:
-+- compatible : Must be "fsl,imx8mm-tmu".
-+- reg : Address range of TMU registers.
-+- clocks : TMU's clock source.
-+- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
-+
-+Example:
-+tmu: tmu@30260000 {
-+	compatible = "fsl,imx8mm-tmu";
-+	reg = <0x30260000 0x10000>;
-+	clocks = <&clk IMX8MM_CLK_TMU_ROOT>;
-+	#thermal-sensor-cells = <0>;
-+};
--- 
-2.7.4
+> not simple change the #ifdef to
+> #if IS_ENABLED(CONFIG_CHARGER_MANAGER)
+> ?
 
+Yes, this also can work, and either way is okay for me. Sebastian,
+what do you prefer? Thanks.
