@@ -2,78 +2,120 @@ Return-Path: <SRS0=Q8oN=4R=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A093C3F2D4
-	for <linux-pm@archiver.kernel.org>; Sat, 29 Feb 2020 03:50:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D699FC3F2C6
+	for <linux-pm@archiver.kernel.org>; Sat, 29 Feb 2020 16:29:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id DE1AD24691
-	for <linux-pm@archiver.kernel.org>; Sat, 29 Feb 2020 03:50:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AD6BD24697
+	for <linux-pm@archiver.kernel.org>; Sat, 29 Feb 2020 16:29:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="SIEnl2c4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726860AbgB2Dup (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Feb 2020 22:50:45 -0500
-Received: from inva021.nxp.com ([92.121.34.21]:35406 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726857AbgB2Dup (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Feb 2020 22:50:45 -0500
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EB6ED2004F3;
-        Sat, 29 Feb 2020 04:50:43 +0100 (CET)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 79B502004ED;
-        Sat, 29 Feb 2020 04:50:27 +0100 (CET)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id AB07940246;
-        Sat, 29 Feb 2020 11:50:14 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, robh+dt@kernel.org,
-        mark.rutland@arm.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
-        kernel@pengutronix.de, festevam@gmail.com, catalin.marinas@arm.com,
-        will@kernel.org, leonard.crestez@nxp.com, daniel.baluta@nxp.com,
-        peng.fan@nxp.com, aford173@gmail.com, ping.bai@nxp.com,
-        jun.li@nxp.com, shengjiu.wang@nxp.com, bjorn.andersson@linaro.org,
-        olof@lixom.net, vkoul@kernel.org, dinguyen@kernel.org,
-        marcin.juszkiewicz@linaro.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V2 RESEND 3/4] arm64: defconfig: Enable CONFIG_IMX8MM_THERMAL as module
-Date:   Sat, 29 Feb 2020 11:44:21 +0800
-Message-Id: <1582947862-11073-3-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1582947862-11073-1-git-send-email-Anson.Huang@nxp.com>
-References: <1582947862-11073-1-git-send-email-Anson.Huang@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1727258AbgB2Q3E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 29 Feb 2020 11:29:04 -0500
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:52380 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727176AbgB2Q3E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 29 Feb 2020 11:29:04 -0500
+Received: by mail-wm1-f65.google.com with SMTP id p9so6767190wmc.2
+        for <linux-pm@vger.kernel.org>; Sat, 29 Feb 2020 08:29:02 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:in-reply-to:references:date:message-id
+         :mime-version;
+        bh=/nhS7fRXWHjddQ2mW6qgUCBhU766o/FgbNANhrsBC+c=;
+        b=SIEnl2c4LTlz56TnuowihDkAwHNgn0iRVkJm3p3VjdUo+NAOW0iAVBgUQCS93z+qC0
+         NT/o0F4dGyDIfEKjqkkST4MXWGElsz0Ms3ijH4V1bTcuhOe2N/ISC7T3Pw33rNt1yb6i
+         GoLFZG5G0clR5UIczr7iKW2GGVbFANq8SyTJzqmqYAgJBEFmyOo0FEBRgbcFXLdiVt9Q
+         UpniXAW9a39DtmI3q75R0yMYdeZHZEwOc8LSKN3YTICHjqoYUuBiPT1nralowAP0Tnnv
+         u38Hk6QCZptvhO+2BwbnflrKwueq3HYZMib9xY/OO2HWHKK8aubquWy/I7h3o0bMu9Kk
+         X00w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:in-reply-to:references:date
+         :message-id:mime-version;
+        bh=/nhS7fRXWHjddQ2mW6qgUCBhU766o/FgbNANhrsBC+c=;
+        b=XlYDiJDoH+u68B99/fMHea5e4b3F85HSoftJXSlV6CzTWqf52oo9HGVKIwyIhuqTS3
+         92/BmryPzwSjvvNNdEWKTLUwJSY/4TzCv3BjNQBu9FAYarjvgOvP0S/fIL9xkCM3vGPc
+         LKHgin11jAaT8yIDHuZcwSi2mZ47lUmc1tuoDrFuX9vazmZWfPaFUojxkUYbBgFXCCH6
+         MWmKl2E60mx3CKEbDT/M+uVJE2odvM6BBjWvEKywszBnXNpwlGjZn8XdnrCCD630FUmJ
+         Vve6BM1NYxJz2Hq+WMkipYStVhTr8tfqL9MAl6Dk9z7Kf9LWOK3IQ2jcbBPElFzs4S0E
+         25wg==
+X-Gm-Message-State: APjAAAWOFdXRK3o7wDwQ5Op+9TTu17A3qRQKLAX/Fl+yYvI4sRq1Ly2T
+        qd6PVb4gGCDuynmlKX2dy/JiZA==
+X-Google-Smtp-Source: APXvYqzfqcYtCrS+L+2YW0wCapvE4z22/nu0RMLPxck3ioY80N+w/B/BrxC//vE2fGmjFlcQRyFnqA==
+X-Received: by 2002:a7b:cc6a:: with SMTP id n10mr10430395wmj.170.1582993741675;
+        Sat, 29 Feb 2020 08:29:01 -0800 (PST)
+Received: from localhost (229.3.136.88.rev.sfr.net. [88.136.3.229])
+        by smtp.gmail.com with ESMTPSA id k7sm18113920wrq.12.2020.02.29.08.29.00
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Sat, 29 Feb 2020 08:29:00 -0800 (PST)
+From:   Kevin Hilman <khilman@baylibre.com>
+To:     Jianxin Pan <jianxin.pan@amlogic.com>,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        linux-amlogic@lists.infradead.org
+Cc:     Jianxin Pan <jianxin.pan@amlogic.com>,
+        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Jerome Brunet <jbrunet@baylibre.com>,
+        Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH RESEND] dt-bindings: power: Fix dt_binding_check error
+In-Reply-To: <1582856099-105484-1-git-send-email-jianxin.pan@amlogic.com>
+References: <1582856099-105484-1-git-send-email-jianxin.pan@amlogic.com>
+Date:   Sat, 29 Feb 2020 17:28:59 +0100
+Message-ID: <7h5zfpbbn8.fsf@baylibre.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable CONFIG_IMX8MM_THERMAL as module to support i.MX8MM
-thermal driver.
+Hi Jianxin,
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-No change.
----
- arch/arm64/configs/defconfig | 1 +
- 1 file changed, 1 insertion(+)
+Jianxin Pan <jianxin.pan@amlogic.com> writes:
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 31d0984..75c46b1 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -455,6 +455,7 @@ CONFIG_CPU_THERMAL=y
- CONFIG_THERMAL_EMULATION=y
- CONFIG_QORIQ_THERMAL=m
- CONFIG_IMX_SC_THERMAL=m
-+CONFIG_IMX8MM_THERMAL=m
- CONFIG_ROCKCHIP_THERMAL=m
- CONFIG_RCAR_THERMAL=y
- CONFIG_RCAR_GEN3_THERMAL=y
--- 
-2.7.4
+> Missing ';' in the end of secure-monitor example node.
+>
+> Fixes: f50b4108ede1 ("dt-bindings: power: add Amlogic secure power domains bindings")
 
+Thanks for the fix, but where did this commit ID come from?  I think
+this is the right upstream commit:
+
+Fixes: 165b5fb294e8 ("dt-bindings: power: add Amlogic secure power domains bindings")
+
+Also, when you resend, can you cc soc@kernel.org.  The soc maintainers
+are who queue my amlogic tree.  I will ack and they can submit to Linus
+for v5.7 so Stephen doesn't have to carry his local linux-next fix
+anymore.
+
+Thanks,
+
+Kevin
+
+> Reported-by: Rob Herring <robh+dt@kernel.org>
+> Signed-off-by: Jianxin Pan <jianxin.pan@amlogic.com>
+> Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
+> Acked-by: Rob Herring <robh@kernel.org>
+> ---
+>  Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+> index af32209..bc4e037 100644
+> --- a/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+> +++ b/Documentation/devicetree/bindings/power/amlogic,meson-sec-pwrc.yaml
+> @@ -36,5 +36,5 @@ examples:
+>              compatible = "amlogic,meson-a1-pwrc";
+>              #power-domain-cells = <1>;
+>          };
+> -    }
+> +    };
+>  
+> -- 
+> 2.7.4
