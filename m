@@ -2,68 +2,120 @@ Return-Path: <SRS0=VxX7=4T=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4136AC3F2D2
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:02:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04AD5C3F2D2
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:14:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 124F6246A1
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:02:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D72C7246B4
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:14:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726728AbgCBJCN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Mar 2020 04:02:13 -0500
-Received: from metis.ext.pengutronix.de ([85.220.165.71]:47281 "EHLO
-        metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726674AbgCBJCN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2020 04:02:13 -0500
-Received: from pty.hi.pengutronix.de ([2001:67c:670:100:1d::c5])
-        by metis.ext.pengutronix.de with esmtps (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1j8gxk-0002Vr-67; Mon, 02 Mar 2020 10:02:08 +0100
-Received: from ukl by pty.hi.pengutronix.de with local (Exim 4.89)
-        (envelope-from <ukl@pengutronix.de>)
-        id 1j8gxj-0003CI-P0; Mon, 02 Mar 2020 10:02:07 +0100
-Date:   Mon, 2 Mar 2020 10:02:07 +0100
-From:   Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-        <u.kleine-koenig@pengutronix.de>
-To:     Anson Huang <Anson.Huang@nxp.com>
-Cc:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, shawnguo@kernel.org,
-        s.hauer@pengutronix.de, kernel@pengutronix.de, festevam@gmail.com,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Linux-imx@nxp.com
-Subject: Re: [PATCH V3] thermal: imx_thermal: Use __maybe_unused instead of
- CONFIG_PM_SLEEP
-Message-ID: <20200302090207.v3qkjhfbmzpjybu5@pengutronix.de>
-References: <1583139266-23615-1-git-send-email-Anson.Huang@nxp.com>
+        id S1727095AbgCBJOx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Mar 2020 04:14:53 -0500
+Received: from szxga05-in.huawei.com ([45.249.212.191]:10708 "EHLO huawei.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1727030AbgCBJOx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 2 Mar 2020 04:14:53 -0500
+Received: from DGGEMS404-HUB.china.huawei.com (unknown [172.30.72.60])
+        by Forcepoint Email with ESMTP id 113917080579DB15C0D0;
+        Mon,  2 Mar 2020 17:14:50 +0800 (CST)
+Received: from euler.huawei.com (10.175.104.193) by
+ DGGEMS404-HUB.china.huawei.com (10.3.19.204) with Microsoft SMTP Server id
+ 14.3.439.0; Mon, 2 Mar 2020 17:14:40 +0800
+From:   Hongbo Yao <yaohongbo@huawei.com>
+To:     <gregkh@linuxfoundation.org>, <christian.brauner@ubuntu.com>
+CC:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <yaohongbo@huawei.com>, <chenzhou10@huawei.com>,
+        <rjw@rjwysocki.net>, <pavel@ucw.cz>
+Subject: [PATCH -next] drivers/base/power: fix build error without SYSFS
+Date:   Mon, 2 Mar 2020 17:29:18 +0800
+Message-ID: <20200302092918.40163-1-yaohongbo@huawei.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1583139266-23615-1-git-send-email-Anson.Huang@nxp.com>
-User-Agent: NeoMutt/20170113 (1.7.2)
-X-SA-Exim-Connect-IP: 2001:67c:670:100:1d::c5
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-pm@vger.kernel.org
+Content-Type: text/plain
+X-Originating-IP: [10.175.104.193]
+X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Mar 02, 2020 at 04:54:26PM +0800, Anson Huang wrote:
-> Use __maybe_unused for power management related functions instead
-> of #if CONFIG_PM_SLEEP to simplify the code.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-Acked-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+If CONFIG_SYSFS=n, the following error is seen while building 
+drivers/base/power/sysfs.c:
 
-Best regards
-Uwe
+drivers/base/power/sysfs.c: In function dpm_sysfs_change_owner:
+drivers/base/power/sysfs.c:708:44: error: passing argument 2 of
+sysfs_group_change_owner from incompatible pointer type
+[-Werror=incompatible-pointer-types]
+  rc = sysfs_group_change_owner(&dev->kobj, &pm_attr_group, kuid, kgid);
+                                            ^
+In file included from ./include/linux/kobject.h:20:0,
+                 from ./include/linux/device.h:17,
+                 from drivers/base/power/sysfs.c:3:
+./include/linux/sysfs.h:564:19: note: expected const struct
+attribute_group ** but argument is of type const struct attribute_group *
 
+dpm_sysfs_change_owner() should only used when CONFIG_SYSFS is
+defined.
+
+Reported-by: Hulk Robot <hulkci@huawei.com>
+Fixes: 3b52fc5d7876 ("drivers/base/power: add dpm_sysfs_change_owner()")
+Signed-off-by: Hongbo Yao <yaohongbo@huawei.com>
+---
+ drivers/base/power/power.h | 10 +++++++++-
+ drivers/base/power/sysfs.c |  2 ++
+ 2 files changed, 11 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/power.h b/drivers/base/power/power.h
+index 54292cdd7808..4bd88f696be9 100644
+--- a/drivers/base/power/power.h
++++ b/drivers/base/power/power.h
+@@ -74,7 +74,6 @@ extern int pm_qos_sysfs_add_flags(struct device *dev);
+ extern void pm_qos_sysfs_remove_flags(struct device *dev);
+ extern int pm_qos_sysfs_add_latency_tolerance(struct device *dev);
+ extern void pm_qos_sysfs_remove_latency_tolerance(struct device *dev);
+-extern int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
+ 
+ #else /* CONFIG_PM */
+ 
+@@ -89,6 +88,15 @@ static inline void pm_runtime_remove(struct device *dev) {}
+ 
+ static inline int dpm_sysfs_add(struct device *dev) { return 0; }
+ static inline void dpm_sysfs_remove(struct device *dev) {}
++
++#endif
++
++#if defined(CONFIG_PM) && defined(CONFIG_SYSFS)
++
++extern int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid);
++
++#else
++
+ static inline int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid,
+ 					 kgid_t kgid) { return 0; }
+ 
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 2b99fe1eb207..d6749f374ded 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -698,6 +698,7 @@ int dpm_sysfs_add(struct device *dev)
+ 	return rc;
+ }
+ 
++#ifdef CONFIG_SYSFS
+ int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
+ {
+ 	int rc;
+@@ -736,6 +737,7 @@ int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
+ 	}
+ 	return 0;
+ }
++#endif
+ 
+ int wakeup_sysfs_add(struct device *dev)
+ {
 -- 
-Pengutronix e.K.                           | Uwe Kleine-König            |
-Industrial Linux Solutions                 | https://www.pengutronix.de/ |
+2.17.1
+
