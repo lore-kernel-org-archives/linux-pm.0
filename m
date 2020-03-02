@@ -2,121 +2,88 @@ Return-Path: <SRS0=VxX7=4T=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C52CC3F2D2
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:23:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB19FC3F2D2
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:23:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 51D0124695
-	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:23:09 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="wN51pkEk"
+	by mail.kernel.org (Postfix) with ESMTP id B0E13246B4
+	for <linux-pm@archiver.kernel.org>; Mon,  2 Mar 2020 09:23:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1583140993;
+	bh=WdNgLQOUJ6VX5OtVOQNN869MeH5t74rvlLLGcpdCCDo=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=2JPYLEVYXz3Lm3ClhKVWh3QSub+fGR01a9+smYoJ/g1mQv8aXKG79krmj2rBpAq29
+	 R/ypUREK48rZRI90WczHRJ0jPLmiL2renGsDFoDJoGeNOTuTa0CEI1boI0xwmM6H9i
+	 E/OX75FFtJ7o3F2qOlpkyiIvi74WJhiLVISKy/e4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727426AbgCBJXG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 2 Mar 2020 04:23:06 -0500
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:56626 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726382AbgCBJXF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 2 Mar 2020 04:23:05 -0500
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 0229N1sO087046;
-        Mon, 2 Mar 2020 03:23:01 -0600
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1583140981;
-        bh=EN0Dk2LYuFwCwIullgFBLCxgS4RYp5ZL1N4I2VeJ7C4=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=wN51pkEkS8BjnL5hSOFowd9XkLW3DOn2DbHoZxqncY7BBCDmxnVtY/kW4JE09vB08
-         GhKqqooSn1wbKC95T0OS+9Agj5IRaDLOFpzLvZ+JEK4YeiPiFS0iKkC4uV05OzV8XH
-         +0eXHYo9kgeWiNmftF3/uQBtMCcNen/NukCg93Os=
-Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 0229N1iv124318
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 2 Mar 2020 03:23:01 -0600
-Received: from DLEE100.ent.ti.com (157.170.170.30) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Mon, 2 Mar
- 2020 03:23:01 -0600
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Mon, 2 Mar 2020 03:23:00 -0600
-Received: from [127.0.0.1] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 0229Mw01071647;
-        Mon, 2 Mar 2020 03:22:59 -0600
-Subject: Re: [PATCH] cpufreq: ti-cpufreq: Add support for OPP_PLUS
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-CC:     <rjw@rjwysocki.net>, <linux-pm@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, Lokesh Vutla <lokeshvutla@ti.com>
-References: <20200228144529.14548-1-t-kristo@ti.com>
- <20200302041933.uuoa5kbvgtde37oq@vireshk-i7>
-From:   Tero Kristo <t-kristo@ti.com>
-Message-ID: <99717846-743e-ba87-9dda-4cf39d562518@ti.com>
-Date:   Mon, 2 Mar 2020 11:22:58 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        id S1726956AbgCBJXN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 2 Mar 2020 04:23:13 -0500
+Received: from mail.kernel.org ([198.145.29.99]:44354 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726382AbgCBJXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 2 Mar 2020 04:23:12 -0500
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0808624695;
+        Mon,  2 Mar 2020 09:23:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1583140992;
+        bh=WdNgLQOUJ6VX5OtVOQNN869MeH5t74rvlLLGcpdCCDo=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=CDpjS0YvNXYTu5tjMmr8FSYqx7dJhkBDCzuxJB5z+PTPttOR9RgNDVH/rSSr2PArj
+         dwms1o7h1VMVAR/AEyUHlmDv/WzDik0r5FKQrXUo2UzRd+7qsXGpjMuFFnMiCqzOyB
+         mxRGAPbZKa+zFb73Ru5MV3tFmWWD9BUnGIcnJxrM=
+Date:   Mon, 2 Mar 2020 10:23:08 +0100
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     Hongbo Yao <yaohongbo@huawei.com>
+Cc:     christian.brauner@ubuntu.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, chenzhou10@huawei.com, rjw@rjwysocki.net,
+        pavel@ucw.cz
+Subject: Re: [PATCH -next] drivers/base/power: fix build error without SYSFS
+Message-ID: <20200302092308.GA1997164@kroah.com>
+References: <20200302092918.40163-1-yaohongbo@huawei.com>
 MIME-Version: 1.0
-In-Reply-To: <20200302041933.uuoa5kbvgtde37oq@vireshk-i7>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200302092918.40163-1-yaohongbo@huawei.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02/03/2020 06:19, Viresh Kumar wrote:
-> On 28-02-20, 16:45, Tero Kristo wrote:
->> From: Lokesh Vutla <lokeshvutla@ti.com>
->>
->> DRA762 SoC introduces OPP_PLUS which runs at 1.8GHz. Add
->> support for this OPP in ti-cpufreq driver.
->>
->> Acked-by: Dave Gerlach <d-gerlach@ti.com>
->> Signed-off-by: Lokesh Vutla <lokeshvutla@ti.com>
->> Signed-off-by: Tero Kristo <t-kristo@ti.com>
->> ---
->>   drivers/cpufreq/ti-cpufreq.c | 6 ++++++
->>   1 file changed, 6 insertions(+)
->>
->> diff --git a/drivers/cpufreq/ti-cpufreq.c b/drivers/cpufreq/ti-cpufreq.c
->> index 557cb513bf7f..d62b6b21325a 100644
->> --- a/drivers/cpufreq/ti-cpufreq.c
->> +++ b/drivers/cpufreq/ti-cpufreq.c
->> @@ -25,11 +25,14 @@
->>   
->>   #define DRA7_EFUSE_HAS_OD_MPU_OPP		11
->>   #define DRA7_EFUSE_HAS_HIGH_MPU_OPP		15
->> +#define DRA76_EFUSE_HAS_PLUS_MPU_OPP		18
->>   #define DRA7_EFUSE_HAS_ALL_MPU_OPP		2
->> +#define DRA76_EFUSE_HAS_ALL_MPU_OPP		24
->>   
->>   #define DRA7_EFUSE_NOM_MPU_OPP			BIT(0)
->>   #define DRA7_EFUSE_OD_MPU_OPP			BIT(1)
->>   #define DRA7_EFUSE_HIGH_MPU_OPP			BIT(2)
->> +#define DRA76_EFUSE_PLUS_MPU_OPP		BIT(3)
->>   
->>   #define OMAP3_CONTROL_DEVICE_STATUS		0x4800244C
->>   #define OMAP3_CONTROL_IDCODE			0x4830A204
->> @@ -80,6 +83,9 @@ static unsigned long dra7_efuse_xlate(struct ti_cpufreq_data *opp_data,
->>   	 */
->>   
->>   	switch (efuse) {
->> +	case DRA76_EFUSE_HAS_PLUS_MPU_OPP:
->> +	case DRA76_EFUSE_HAS_ALL_MPU_OPP:
->> +		calculated_efuse |= DRA76_EFUSE_PLUS_MPU_OPP;
->>   	case DRA7_EFUSE_HAS_ALL_MPU_OPP:
->>   	case DRA7_EFUSE_HAS_HIGH_MPU_OPP:
->>   		calculated_efuse |= DRA7_EFUSE_HIGH_MPU_OPP;
+On Mon, Mar 02, 2020 at 05:29:18PM +0800, Hongbo Yao wrote:
+> If CONFIG_SYSFS=n, the following error is seen while building 
+> drivers/base/power/sysfs.c:
 > 
-> This is already merged, why sending it again ?
+> drivers/base/power/sysfs.c: In function dpm_sysfs_change_owner:
+> drivers/base/power/sysfs.c:708:44: error: passing argument 2 of
+> sysfs_group_change_owner from incompatible pointer type
+> [-Werror=incompatible-pointer-types]
+>   rc = sysfs_group_change_owner(&dev->kobj, &pm_attr_group, kuid, kgid);
+>                                             ^
+> In file included from ./include/linux/kobject.h:20:0,
+>                  from ./include/linux/device.h:17,
+>                  from drivers/base/power/sysfs.c:3:
+> ./include/linux/sysfs.h:564:19: note: expected const struct
+> attribute_group ** but argument is of type const struct attribute_group *
+> 
+> dpm_sysfs_change_owner() should only used when CONFIG_SYSFS is
+> defined.
+> 
+> Reported-by: Hulk Robot <hulkci@huawei.com>
+> Fixes: 3b52fc5d7876 ("drivers/base/power: add dpm_sysfs_change_owner()")
+> Signed-off-by: Hongbo Yao <yaohongbo@huawei.com>
+> ---
+>  drivers/base/power/power.h | 10 +++++++++-
+>  drivers/base/power/sysfs.c |  2 ++
 
-Oops sorry, seems I was looking at stale local upstream branch when 
-checking what is still missing upstream. Please ignore.
+You shouldn't have to add #ifdefs to a .c file here, it should all be
+able to be fixed in the .h file by putting proper "empty" functions.
 
--Tero
---
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+thanks,
+
+greg k-h
