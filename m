@@ -2,182 +2,163 @@ Return-Path: <SRS0=OBSp=4U=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAA2FC3F2D1
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 17:06:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25E03C3F2C6
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 19:02:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B28962083E
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 17:06:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1583255211;
-	bh=bHx7WOw2u+pHo6r6BJrOT3vX91Lv+OGXAAZOfK8msnY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=tw/VXMczO1xO2MM6+H5vzutlwI8AEDK4BUAlwoIsyMhLuBRWQkHaj3CG0d2tOczMK
-	 eburWjpehECwYNGX2/ZIpQ1N5tbAzKZUUykTuNPkDAzBUgwFFlU1h5MYchCCE9gu2k
-	 +omS/n6ppmU7PVET/aLkun+PDEQWIlMPlyQ3pybU=
+	by mail.kernel.org (Postfix) with ESMTP id EECB620866
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 19:02:40 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="XCq6bFWg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730503AbgCCRGv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Mar 2020 12:06:51 -0500
-Received: from mail-oi1-f196.google.com ([209.85.167.196]:36273 "EHLO
-        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729755AbgCCRGv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2020 12:06:51 -0500
-Received: by mail-oi1-f196.google.com with SMTP id t24so3780514oij.3;
-        Tue, 03 Mar 2020 09:06:50 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=DsM/9fpFyAO2iYRTuSlT0pMCuni5v+nLkViTKnIpANc=;
-        b=hnc/nZN0fmOf6BTON898RdGb44m8ze7SokXyakqAVZ0YhsufiBrctXX3rZdn5qjXp4
-         0bvT6Trkm2FMdBcrKwgQvONIv2kZ7SHCLjVNux4ANW9brv2o4U4miawzYYcX0eOyOV28
-         iDo241g5LW94sja6MgJEmwelXLqyusbTeIdUbjHXlAABA70Aj/bJkgegiwAgRqrr3y81
-         STL19MoyP+X9snZO+HlBJuH8Aott1q+dnSgLkZ9mc7eZ0SgEB5gtTnuLGGwEfuAOe8mL
-         wvuAnefmw6wx9LB5QU2utsjyOx42dtM6Gr19b64sNM/sgdq6EFwunkj9TW34V1+x8Cmd
-         eVOw==
-X-Gm-Message-State: ANhLgQ1tWdRqxJY13SpT7pnnSpvD65scQM7b9hHoAHNIpnCRCbKw7lqk
-        f07O/f4PKJQAMFiUMcj0Vw==
-X-Google-Smtp-Source: ADFU+vtXzfjSUoQIMPTzsJQN6DazR7wiN8f6rigrCtFfxy3/pt1bNjvY6jtYyUv1/ycbuFFIr3wH4A==
-X-Received: by 2002:aca:4b47:: with SMTP id y68mr1756760oia.38.1583255210172;
-        Tue, 03 Mar 2020 09:06:50 -0800 (PST)
-Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id l8sm8049274otn.31.2020.03.03.09.06.42
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Mar 2020 09:06:43 -0800 (PST)
-Received: (nullmailer pid 11907 invoked by uid 1000);
-        Tue, 03 Mar 2020 17:06:41 -0000
-Date:   Tue, 3 Mar 2020 11:06:41 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        devicetree@vger.kernel.org,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Benjamin Gaignard <benjamin.gaignard@st.com>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 5/7] dt-bindings: arm: Fixup the DT bindings for
- hierarchical PSCI states
-Message-ID: <20200303170641.GC26191@bogus>
-References: <20200303150749.30566-1-ulf.hansson@linaro.org>
- <20200303150749.30566-6-ulf.hansson@linaro.org>
+        id S1728089AbgCCTCk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Mar 2020 14:02:40 -0500
+Received: from userp2130.oracle.com ([156.151.31.86]:54812 "EHLO
+        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727993AbgCCTCk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Mar 2020 14:02:40 -0500
+Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
+        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 023Ism57023677;
+        Tue, 3 Mar 2020 19:02:20 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
+ : subject : message-id : references : mime-version : content-type :
+ in-reply-to; s=corp-2020-01-29;
+ bh=oTkPNBpAzjaa07bjjcQ0CyjgwQohmsclEvvqNhFVktI=;
+ b=XCq6bFWgzAXgkdEpmxiuLWO77fbh4sQWOF3n0sGzC+bWNPpl1z5g2RnT6c7LJ9mrdE5C
+ GjrhU3hPIra10/NPPy88SYEv8dbdb+pgyldYyDUYh5SzyZTH5/tHVubymyu55NLNdYBq
+ K6GsdkkAkF2CaQt6iKaI9pl39aDfWPm/KFqH0Qr8shgqynX9Qaavyoze6VLEEnTI5umg
+ VOlNVhop/psdnnwVIeer+faw2ufPhyrhIwB8bvaLVkC9/O++707pYJ3bEVtPD/6FEQdq
+ ZVN5SBwgG0CvFkMjiW4zJLMjoFZpDbOeXf4682R62Zv44vS9c0BRkEMd7M6WsPKR7jLE CA== 
+Received: from userp3020.oracle.com (userp3020.oracle.com [156.151.31.79])
+        by userp2130.oracle.com with ESMTP id 2yffcuhe6n-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 03 Mar 2020 19:02:20 +0000
+Received: from pps.filterd (userp3020.oracle.com [127.0.0.1])
+        by userp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 023IqRNn071830;
+        Tue, 3 Mar 2020 19:02:20 GMT
+Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
+        by userp3020.oracle.com with ESMTP id 2yg1p55ham-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 03 Mar 2020 19:02:20 +0000
+Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
+        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 023J2Eh3013290;
+        Tue, 3 Mar 2020 19:02:14 GMT
+Received: from localhost (/67.169.218.210)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Tue, 03 Mar 2020 11:02:13 -0800
+Date:   Tue, 3 Mar 2020 11:02:12 -0800
+From:   "Darrick J. Wong" <darrick.wong@oracle.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Domenico Andreoli <domenico.andreoli@linux.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        linux-fsdevel@vger.kernel.org, mkleinsoft@gmail.com,
+        Christoph Hellwig <hch@lst.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH] hibernate: unlock swap bdev for writing when uswsusp is
+ active
+Message-ID: <20200303190212.GC8037@magnolia>
+References: <20200229170825.GX8045@magnolia>
+ <20200229180716.GA31323@dumbo>
+ <20200229183820.GA8037@magnolia>
+ <20200229200200.GA10970@dumbo>
+ <CAJZ5v0iHaZyfuTnqJyM6u=UU=+W6yRuM_Q6iUvB2UudANuwfgA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200303150749.30566-6-ulf.hansson@linaro.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <CAJZ5v0iHaZyfuTnqJyM6u=UU=+W6yRuM_Q6iUvB2UudANuwfgA@mail.gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9549 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 malwarescore=0
+ mlxlogscore=999 mlxscore=0 spamscore=0 adultscore=0 bulkscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2001150001 definitions=main-2003030124
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9549 signatures=668685
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 bulkscore=0
+ adultscore=0 suspectscore=0 spamscore=0 malwarescore=0 impostorscore=0
+ priorityscore=1501 mlxlogscore=999 lowpriorityscore=0 clxscore=1011
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2001150001
+ definitions=main-2003030124
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 03, 2020 at 04:07:47PM +0100, Ulf Hansson wrote:
-> The hierarchical topology with power-domain should be described through
-> child nodes, rather than as currently described in the PSCI root node. Fix
-> this by adding a patternProperties with a corresponding reference to the
-> power-domain DT binding.
+On Sun, Mar 01, 2020 at 10:35:36PM +0100, Rafael J. Wysocki wrote:
+> On Sat, Feb 29, 2020 at 9:02 PM Domenico Andreoli
+> <domenico.andreoli@linux.com> wrote:
+> >
+> > On Sat, Feb 29, 2020 at 10:38:20AM -0800, Darrick J. Wong wrote:
+> > > On Sat, Feb 29, 2020 at 07:07:16PM +0100, Domenico Andreoli wrote:
+> > > > On Sat, Feb 29, 2020 at 09:08:25AM -0800, Darrick J. Wong wrote:
+> > > > > From: Darrick J. Wong <darrick.wong@oracle.com>
+> > > > >
+> > > > > It turns out that there /is/ one use case for programs being able to
+> > > > > write to swap devices, and that is the userspace hibernation code.  The
+> > > > > uswsusp ioctls allow userspace to lease parts of swap devices, so turn
+> > > > > S_SWAPFILE off when invoking suspend.
+> > > > >
+> > > > > Fixes: 1638045c3677 ("mm: set S_SWAPFILE on blockdev swap devices")
+> > > > > Reported-by: Domenico Andreoli <domenico.andreoli@linux.com>
+> > > > > Reported-by: Marian Klein <mkleinsoft@gmail.com>
+> > > >
+> > > > I also tested it yesterday but was not satisfied, unfortunately I did
+> > > > not come with my comment in time.
+> > > >
+> > > > Yes, I confirm that the uswsusp works again but also checked that
+> > > > swap_relockall() is not triggered at all and therefore after the first
+> > > > hibernation cycle the S_SWAPFILE bit remains cleared and the whole
+> > > > swap_relockall() is useless.
+> > > >
+> > > > I'm not sure this patch should be merged in the current form.
+> > >
+> > > NNGGHHGGHGH /me is rapidly losing his sanity and will soon just revert
+> > > the whole security feature because I'm getting fed up with people
+> > > yelling at me *while I'm on vacation* trying to *restore* my sanity.  I
+> > > really don't want to be QAing userspace-directed hibernation right now.
+> >
+> > Maybe we could proceed with the first patch to amend the regression and
+> > postpone the improved fix to a later patch? Don't loose sanity for this.
 > 
-> Additionally, update the example to conform to the new pattern, but also to
-> the adjusted domain-idle-state DT binding.
+> I would concur here.
 > 
-> Fixes: a3f048b5424e ("dt: psci: Update DT bindings to support hierarchical PSCI states")
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
->  .../devicetree/bindings/arm/psci.yaml         | 33 +++++++++----------
->  1 file changed, 15 insertions(+), 18 deletions(-)
+> > > ...right, the patch is broken because we have to relock the swapfiles in
+> > > whatever code executes after we jump back to the restored kernel, not in
+> > > the one that's doing the restoring.  Does this help?
+> >
+> > I made a few unsuccessful attempts in kernel/power/hibernate.c and
+> > eventually I'm switching to qemu to speed up the test cycle.
+> >
+> > > OTOH, maybe we should just leave the swapfiles unlocked after resume.
+> > > Userspace has clearly demonstrated the one usecase for writing to the
+> > > swapfile, which means anyone could have jumped in while uswsusp was
+> > > running and written whatever crap they wanted to the parts of the swap
+> > > file that weren't leased for the hibernate image.
+> >
+> > Essentially, if the hibernation is supported the swapfile is not totally
+> > safe.
 > 
-> diff --git a/Documentation/devicetree/bindings/arm/psci.yaml b/Documentation/devicetree/bindings/arm/psci.yaml
-> index 0bc3c43a525a..cae668b61265 100644
-> --- a/Documentation/devicetree/bindings/arm/psci.yaml
-> +++ b/Documentation/devicetree/bindings/arm/psci.yaml
-> @@ -102,11 +102,15 @@ properties:
->        [1] Kernel documentation - ARM idle states bindings
->          Documentation/devicetree/bindings/arm/idle-states.yaml
->  
-> -  "#power-domain-cells":
-> -    description:
-> -      The number of cells in a PM domain specifier as per binding in [3].
-> -      Must be 0 as to represent a single PM domain.
-> +required:
-> +  - compatible
-> +  - method
+> But that's only the case with the userspace variant, isn't it?
 
-No need to move this.
+Yes.
 
->  
-> +patternProperties:
-> +  "^(power-controller|power-domain)([@-].*)?$":
-> +    $ref: "../power/power-domain.yaml#"
-
-This has to be under an 'allOf' or the rest of the properties are 
-ignored.
-
-> +    type: object
-> +    description: |
->        ARM systems can have multiple cores, sometimes in an hierarchical
->        arrangement. This often, but not always, maps directly to the processor
->        power topology of the system. Individual nodes in a topology have their
-> @@ -122,19 +126,9 @@ properties:
->        helps to implement support for OSI mode and OS implementations may choose
->        to mandate it.
->  
-> -      [3] Documentation/devicetree/bindings/power/power_domain.txt
-> +      [3] Documentation/devicetree/bindings/power/power-domain.yaml
->        [4] Documentation/devicetree/bindings/power/domain-idle-state.yaml
->  
-> -  power-domains:
-> -    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-> -    description:
-> -      List of phandles and PM domain specifiers, as defined by bindings of the
-> -      PM domain provider.
-> -
-> -required:
-> -  - compatible
-> -  - method
-> -
->  allOf:
->    - if:
->        properties:
-> @@ -224,6 +218,9 @@ examples:
->            exit-latency-us = <10>;
->            min-residency-us = <100>;
->          };
-> +      };
-> +
-> +      domain-idle-states {
->  
->          CLUSTER_RET: cluster-retention {
->            compatible = "domain-idle-state";
-> @@ -247,19 +244,19 @@ examples:
->        compatible = "arm,psci-1.0";
->        method = "smc";
->  
-> -      CPU_PD0: cpu-pd0 {
-> +      CPU_PD0: power-domain-cpu0 {
->          #power-domain-cells = <0>;
->          domain-idle-states = <&CPU_PWRDN>;
->          power-domains = <&CLUSTER_PD>;
->        };
->  
-> -      CPU_PD1: cpu-pd1 {
-> +      CPU_PD1: power-domain-cpu1 {
->          #power-domain-cells = <0>;
->          domain-idle-states =  <&CPU_PWRDN>;
->          power-domains = <&CLUSTER_PD>;
->        };
->  
-> -      CLUSTER_PD: cluster-pd {
-> +      CLUSTER_PD: power-domain-cluster {
->          #power-domain-cells = <0>;
->          domain-idle-states = <&CLUSTER_RET>, <&CLUSTER_PWRDN>;
->        };
-> -- 
-> 2.20.1
+> > Maybe user-space hibernation should be a separate option.
 > 
+> That actually is not a bad idea at all in my view.
+
+The trouble with kconfig options is that the distros will be pressued
+into setting CONFIG_HIBERNATE_USERSPACE=y to avoid regressing their
+uswsusp users, which makes the added security code pointless.  As this
+has clearly sucked me into a conflict that I don't have the resources to
+pursue, I'm going to revert the write patch checks and move on with
+life.
+
+--D
+
+> Thanks!
