@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 759E7C3F2D8
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 13:52:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54283C3F2DC
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 13:52:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 416B524658
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 13:52:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C75424671
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Mar 2020 13:52:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1583243532;
-	bh=oSAwJuwZZke99vm8rocsC6A/BaGIh2GI4Jpuuu+iYYY=;
+	s=default; t=1583243533;
+	bh=objKVpKHw0GyOrZuwLkpij67clPs3E6Zb+U1ueoSZWY=;
 	h=From:Cc:Subject:Date:In-Reply-To:References:To:List-ID:From;
-	b=b8M/awIiL3vY67GYS6BNbKVuSp79QgXFMEWU++CbAsyTuRnIpvbxQcjT/K1qsSuBl
-	 mrL/JaAB0ZypaWwhc0u08re5MOL8770h596lZIuqd/ZaZzMTVXbhMnExXSNaYfZrlP
-	 Y7XSsJfE5QelElrdoYpoTihSuHxTrbfZ1QUS7vUk=
+	b=euw9z1AYHlrPjGvvQQM4ZFWfwUnyarB2/QP+SBcc59B9g+l3ajwa99cqbcFaZaoeJ
+	 NhI2u2WiWbn0D2NHdQPGHcJxFU2Az8326XbhAqsx+9SujfJRMkLASPCc57K6kRXbRt
+	 E0b2g/YCGegyYdSsrctM7xpY98I9rs4dlZTyFXZM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728771AbgCCNwL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Mar 2020 08:52:11 -0500
-Received: from mail.kernel.org ([198.145.29.99]:40370 "EHLO mail.kernel.org"
+        id S1729058AbgCCNwM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Mar 2020 08:52:12 -0500
+Received: from mail.kernel.org ([198.145.29.99]:40404 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725932AbgCCNwL (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 3 Mar 2020 08:52:11 -0500
+        id S1728941AbgCCNwM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 3 Mar 2020 08:52:12 -0500
 Received: from mail.kernel.org (tmo-101-56.customers.d1-online.com [80.187.101.56])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4DD1620675;
+        by mail.kernel.org (Postfix) with ESMTPSA id 75C162086A;
         Tue,  3 Mar 2020 13:52:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
         s=default; t=1583243530;
-        bh=oSAwJuwZZke99vm8rocsC6A/BaGIh2GI4Jpuuu+iYYY=;
+        bh=objKVpKHw0GyOrZuwLkpij67clPs3E6Zb+U1ueoSZWY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=WxnENgzxwpXsmE3dtubVuBr9/LU6NSl+HbofJ79fS7inJ2vHZvsx+oUvF+ICTsB4P
-         hUUTN4p4anj0+UoOAQxj+eXT9JsQ/hkb5f07gv50OX2EuUammhXSXLP3sgDvYVSI4b
-         zYdiq+QwJ0jPigAsscEk/0K1FqKMWBUwo9WExpAs=
+        b=BD8Rrg8AuHeVmvtkjR0+0XIscuz8H+qsnA4wM5KNS7+1NmyNf9P6Gj1yh6dGv3VPZ
+         dTd0/sviH59zAiFXyvDH1ktWnSkFZMYrH8FKhFMefWNOteNLoE75zqzvr+afxoUzeC
+         dZ3l2G+GzTShyJ70k6yUV7rbPTma66owwp4NwIrs=
 Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
         (envelope-from <mchehab@kernel.org>)
-        id 1j97xw-001YXR-3Y; Tue, 03 Mar 2020 14:52:08 +0100
+        id 1j97xw-001YXe-8m; Tue, 03 Mar 2020 14:52:08 +0100
 From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Jonathan Corbet <corbet@lwn.net>, linux-pm@vger.kernel.org,
         linux-doc@vger.kernel.org
-Subject: [PATCH v2 2/5] docs: cpu-freq: convert index.txt to ReST
-Date:   Tue,  3 Mar 2020 14:52:03 +0100
-Message-Id: <7aed5eca5b3501328bc715c70613c21497467368.1583243272.git.mchehab+huawei@kernel.org>
+Subject: [PATCH v2 5/5] docs: cpu-freq: convert cpufreq-stats.txt to ReST
+Date:   Tue,  3 Mar 2020 14:52:06 +0100
+Message-Id: <71273e4caef915672dc85746db020bdb44f92dac.1583243272.git.mchehab+huawei@kernel.org>
 X-Mailer: git-send-email 2.24.1
 In-Reply-To: <cover.1583243272.git.mchehab+huawei@kernel.org>
 References: <cover.1583243272.git.mchehab+huawei@kernel.org>
@@ -61,135 +61,220 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-most of the stuff there can be re-used with ReST format,
-but we need to add an empty TOC and remove the existing
-entries, as the following conversion patches will be re-adding
-them, as they're converted.
+- Add a SPDX header;
+- Add a document title, based on the original contents of
+  cpu-freq/index.txt;
+- Use lists where needed;
+- Comment out the existing text-only index;
+- Adjust some title marks;
+- Use bold on some places;
+- Mark literal blocks as such;
+- Some whitespace fixes and new line breaks;
+- Add it to cpu-freq/index.rst.
 
 Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- Documentation/cpu-freq/index.rst | 35 ++++++++++++++++++++
- Documentation/cpu-freq/index.txt | 56 --------------------------------
- Documentation/index.rst          |  1 +
- 3 files changed, 36 insertions(+), 56 deletions(-)
- create mode 100644 Documentation/cpu-freq/index.rst
- delete mode 100644 Documentation/cpu-freq/index.txt
+ .../{cpufreq-stats.txt => cpufreq-stats.rst}  | 121 ++++++++++--------
+ Documentation/cpu-freq/index.rst              |   1 +
+ 2 files changed, 66 insertions(+), 56 deletions(-)
+ rename Documentation/cpu-freq/{cpufreq-stats.txt => cpufreq-stats.rst} (53%)
 
-diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
-new file mode 100644
-index 000000000000..1bff3dfddd23
---- /dev/null
-+++ b/Documentation/cpu-freq/index.rst
-@@ -0,0 +1,35 @@
+diff --git a/Documentation/cpu-freq/cpufreq-stats.txt b/Documentation/cpu-freq/cpufreq-stats.rst
+similarity index 53%
+rename from Documentation/cpu-freq/cpufreq-stats.txt
+rename to Documentation/cpu-freq/cpufreq-stats.rst
+index 14378cecb172..9ad695b1c7db 100644
+--- a/Documentation/cpu-freq/cpufreq-stats.txt
++++ b/Documentation/cpu-freq/cpufreq-stats.rst
+@@ -1,21 +1,23 @@
 +.. SPDX-License-Identifier: GPL-2.0
+ 
+-     CPU frequency and voltage scaling statistics in the Linux(TM) kernel
++==========================================
++General Description of sysfs CPUFreq Stats
++==========================================
+ 
++information for users
+ 
+-             L i n u x    c p u f r e q - s t a t s   d r i v e r
+ 
+-                       - information for users -
++Author: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+ 
++.. Contents
+ 
+-             Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+-
+-Contents
+-1. Introduction
+-2. Statistics Provided (with example)
+-3. Configuring cpufreq-stats
++   1. Introduction
++   2. Statistics Provided (with example)
++   3. Configuring cpufreq-stats
+ 
+ 
+ 1. Introduction
++===============
+ 
+ cpufreq-stats is a driver that provides CPU frequency statistics for each CPU.
+ These statistics are provided in /sysfs as a bunch of read_only interfaces. This
+@@ -28,8 +30,10 @@ that may be running on your CPU. So, it will work with any cpufreq_driver.
+ 
+ 
+ 2. Statistics Provided (with example)
++=====================================
+ 
+ cpufreq stats provides following statistics (explained in detail below).
 +
-+==============================================================================
-+Linux CPUFreq - CPU frequency and voltage scaling code in the Linux(TM) kernel
-+==============================================================================
+ -  time_in_state
+ -  total_trans
+ -  trans_table
+@@ -39,53 +43,57 @@ All the statistics will be from the time the stats driver has been inserted
+ statistic is done. Obviously, stats driver will not have any information
+ about the frequency transitions before the stats driver insertion.
+ 
+---------------------------------------------------------------------------------
+-<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
+-total 0
+-drwxr-xr-x  2 root root    0 May 14 16:06 .
+-drwxr-xr-x  3 root root    0 May 14 15:58 ..
+---w-------  1 root root 4096 May 14 16:06 reset
+--r--r--r--  1 root root 4096 May 14 16:06 time_in_state
+--r--r--r--  1 root root 4096 May 14 16:06 total_trans
+--r--r--r--  1 root root 4096 May 14 16:06 trans_table
+---------------------------------------------------------------------------------
++::
 +
-+Author: Dominik Brodowski  <linux@brodo.de>
++    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # ls -l
++    total 0
++    drwxr-xr-x  2 root root    0 May 14 16:06 .
++    drwxr-xr-x  3 root root    0 May 14 15:58 ..
++    --w-------  1 root root 4096 May 14 16:06 reset
++    -r--r--r--  1 root root 4096 May 14 16:06 time_in_state
++    -r--r--r--  1 root root 4096 May 14 16:06 total_trans
++    -r--r--r--  1 root root 4096 May 14 16:06 trans_table
 +
-+   Clock scaling allows you to change the clock speed of the CPUs on the
-+   fly. This is a nice method to save battery power, because the lower
-+   the clock speed, the less power the CPU consumes.
++- **reset**
+ 
+--  reset
+ Write-only attribute that can be used to reset the stat counters. This can be
+ useful for evaluating system behaviour under different governors without the
+ need for a reboot.
+ 
+--  time_in_state
++- **time_in_state**
++
+ This gives the amount of time spent in each of the frequencies supported by
+ this CPU. The cat output will have "<frequency> <time>" pair in each line, which
+ will mean this CPU spent <time> usertime units of time at <frequency>. Output
+-will have one line for each of the supported frequencies. usertime units here 
++will have one line for each of the supported frequencies. usertime units here
+ is 10mS (similar to other time exported in /proc).
+ 
+---------------------------------------------------------------------------------
+-<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state 
+-3600000 2089
+-3400000 136
+-3200000 34
+-3000000 67
+-2800000 172488
+---------------------------------------------------------------------------------
+-
+-
+--  total_trans
+-This gives the total number of frequency transitions on this CPU. The cat 
++::
++
++    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat time_in_state
++    3600000 2089
++    3400000 136
++    3200000 34
++    3000000 67
++    2800000 172488
 +
 +
-+.. toctree::
-+   :maxdepth: 1
++- **total_trans**
 +
-+Mailing List
-+------------
-+There is a CPU frequency changing CVS commit and general list where
-+you can report bugs, problems or submit patches. To post a message,
-+send an email to linux-pm@vger.kernel.org.
++This gives the total number of frequency transitions on this CPU. The cat
+ output will have a single count which is the total number of frequency
+ transitions.
+ 
+---------------------------------------------------------------------------------
+-<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
+-20
+---------------------------------------------------------------------------------
++::
 +
-+Links
-+-----
-+the FTP archives:
-+* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
++    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat total_trans
++    20
 +
-+how to access the CVS repository:
-+* http://cvs.arm.linux.org.uk/
++- **trans_table**
+ 
+--  trans_table
+ This will give a fine grained information about all the CPU frequency
+ transitions. The cat output here is a two dimensional matrix, where an entry
+-<i,j> (row i, column j) represents the count of number of transitions from 
++<i,j> (row i, column j) represents the count of number of transitions from
+ Freq_i to Freq_j. Freq_i rows and Freq_j columns follow the sorting order in
+ which the driver has provided the frequency table initially to the cpufreq core
+ and so can be sorted (ascending or descending) or unsorted.  The output here
+@@ -95,26 +103,27 @@ readability.
+ If the transition table is bigger than PAGE_SIZE, reading this will
+ return an -EFBIG error.
+ 
+---------------------------------------------------------------------------------
+-<mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
+-   From  :    To
+-         :   3600000   3400000   3200000   3000000   2800000 
+-  3600000:         0         5         0         0         0 
+-  3400000:         4         0         2         0         0 
+-  3200000:         0         1         0         2         0 
+-  3000000:         0         0         1         0         3 
+-  2800000:         0         0         0         2         0 
+---------------------------------------------------------------------------------
++::
+ 
++    <mysystem>:/sys/devices/system/cpu/cpu0/cpufreq/stats # cat trans_table
++    From  :    To
++	    :   3600000   3400000   3200000   3000000   2800000
++    3600000:         0         5         0         0         0
++    3400000:         4         0         2         0         0
++    3200000:         0         1         0         2         0
++    3000000:         0         0         1         0         3
++    2800000:         0         0         0         2         0
+ 
+ 3. Configuring cpufreq-stats
++============================
+ 
+-To configure cpufreq-stats in your kernel
+-Config Main Menu
+-	Power management options (ACPI, APM)  --->
+-		CPU Frequency scaling  --->
+-			[*] CPU Frequency scaling
+-			[*]   CPU frequency translation statistics
++To configure cpufreq-stats in your kernel::
 +
-+the CPUFreq Mailing list:
-+* http://vger.kernel.org/vger-lists.html#linux-pm
-+
-+Clock and voltage scaling for the SA-1100:
-+* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/cpu-freq/index.txt b/Documentation/cpu-freq/index.txt
-deleted file mode 100644
-index c15e75386a05..000000000000
---- a/Documentation/cpu-freq/index.txt
-+++ /dev/null
-@@ -1,56 +0,0 @@
--     CPU frequency and voltage scaling code in the Linux(TM) kernel
--
--
--		         L i n u x    C P U F r e q
--
--
--
--
--		    Dominik Brodowski  <linux@brodo.de>
--
--
--
--   Clock scaling allows you to change the clock speed of the CPUs on the
--    fly. This is a nice method to save battery power, because the lower
--            the clock speed, the less power the CPU consumes.
--
--
--
--Documents in this directory:
------------------------------
--
--amd-powernow.txt -	AMD powernow driver specific file.
--
--core.txt	-	General description of the CPUFreq core and
--			of CPUFreq notifiers.
--
--cpu-drivers.txt -	How to implement a new cpufreq processor driver.
--
--cpufreq-nforce2.txt -	nVidia nForce2 platform specific file.
--
--cpufreq-stats.txt -	General description of sysfs cpufreq stats.
--
--index.txt	-	File index, Mailing list and Links (this document)
--
--pcc-cpufreq.txt -	PCC cpufreq driver specific file.
--
--
--Mailing List
--------------
--There is a CPU frequency changing CVS commit and general list where
--you can report bugs, problems or submit patches. To post a message,
--send an email to linux-pm@vger.kernel.org.
--
--Links
-------
--the FTP archives:
--* ftp://ftp.linux.org.uk/pub/linux/cpufreq/
--
--how to access the CVS repository:
--* http://cvs.arm.linux.org.uk/
--
--the CPUFreq Mailing list:
--* http://vger.kernel.org/vger-lists.html#linux-pm
--
--Clock and voltage scaling for the SA-1100:
--* http://www.lartmaker.nl/projects/scaling
-diff --git a/Documentation/index.rst b/Documentation/index.rst
-index e99d0bd2589d..4cf37ad1cd1d 100644
---- a/Documentation/index.rst
-+++ b/Documentation/index.rst
-@@ -99,6 +99,7 @@ needed).
-    accounting/index
-    block/index
-    cdrom/index
-+   cpu-freq/index
-    ide/index
-    fb/index
-    fpga/index
++	Config Main Menu
++		Power management options (ACPI, APM)  --->
++			CPU Frequency scaling  --->
++				[*] CPU Frequency scaling
++				[*]   CPU frequency translation statistics
+ 
+ 
+ "CPU Frequency scaling" (CONFIG_CPU_FREQ) should be enabled to configure
+diff --git a/Documentation/cpu-freq/index.rst b/Documentation/cpu-freq/index.rst
+index fcc58b2eee01..aba7831ab1cb 100644
+--- a/Documentation/cpu-freq/index.rst
++++ b/Documentation/cpu-freq/index.rst
+@@ -16,6 +16,7 @@ Author: Dominik Brodowski  <linux@brodo.de>
+ 
+    core
+    cpu-drivers
++   cpufreq-stats
+ 
+ Mailing List
+ ------------
 -- 
 2.24.1
 
