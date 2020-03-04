@@ -2,222 +2,108 @@ Return-Path: <SRS0=FCtK=4V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1870AC3F2CD
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 09:33:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50202C3F2D1
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 09:53:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E28F620732
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 09:33:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 22C6D2072D
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 09:53:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1583315631;
+	bh=X+lFtpSez7M/cKFbU4vrFz0GRlLJa1zcIInskBBDy58=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=qY7rf2BG5n/1cB7KIeOAqO9Zavj4+fjq7t00hDIsZDQcTc3udYKGag16jggSs7nO6
+	 +Bu0xMgolEnoGgcziG8NSJ6l7tEGxfUJjf3gUsWK6w4t7ZqneGu1r7jK7oQk/8Thq6
+	 R/xcpJ8vaM3V8wLl1Kx8NPQM/cFz4kXlyaaTZCsU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729049AbgCDJd2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Mar 2020 04:33:28 -0500
-Received: from mga11.intel.com ([192.55.52.93]:14299 "EHLO mga11.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728916AbgCDJd2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Mar 2020 04:33:28 -0500
-X-Amp-Result: UNKNOWN
-X-Amp-Original-Verdict: FILE UNKNOWN
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by fmsmga102.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 04 Mar 2020 01:33:27 -0800
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.70,513,1574150400"; 
-   d="scan'208";a="352054757"
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.163])
-  by fmsmga001.fm.intel.com with SMTP; 04 Mar 2020 01:33:24 -0800
-Received: by lahna (sSMTP sendmail emulation); Wed, 04 Mar 2020 11:33:24 +0200
-Date:   Wed, 4 Mar 2020 11:33:24 +0200
-From:   Mika Westerberg <mika.westerberg@intel.com>
-To:     Karol Herbst <kherbst@redhat.com>
-Cc:     linux-kernel@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
-        Lyude Paul <lyude@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org
-Subject: Re: [PATCH v6] pci: prevent putting nvidia GPUs into lower device
- states on certain intel bridges
-Message-ID: <20200304093324.GI2540@lahna.fi.intel.com>
-References: <20200303101052.133631-1-kherbst@redhat.com>
+        id S2387736AbgCDJxu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Mar 2020 04:53:50 -0500
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:33149 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387730AbgCDJxu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2020 04:53:50 -0500
+Received: by mail-oi1-f196.google.com with SMTP id q81so1510909oig.0;
+        Wed, 04 Mar 2020 01:53:49 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=PWiXu1+kJXOlwOOpFNo5aE1XWbQqXbi+uifPWRjlrfo=;
+        b=RqAnTBJ0zv90EjnDJ2daFDK1OQOcKTp0W5oHkdnUnf4UhSfDRrT7yvGPcSWTlu6zYB
+         PfbJu0M6WDnS67PZm6BidVyYcdCFRuX25qGLm0Pkw3X2OYg1aZ58UadTp+upFi9WV2xq
+         VtTr5dVjGrF+M7RqmtkUtqHLdOk073Ac3ihvQVLNygKmZcAODXBLOkpDqREZW7GwXVSj
+         W1Byi33qA1UufVOi5tesRi0TgGP+UYVrR1KDCak24oUGTb8ciLrkiO4OWQhty8oqcCuh
+         pr+hsmeoC8fmxncqn8JNYpeFxbYDPlOLWuIk649lEsIMZeuN7Q07o+voSmvfycSTOrfl
+         yUjQ==
+X-Gm-Message-State: ANhLgQ1ErAOmQeWI+yeg5OknCgkt+mdzWOG48t2eHP1RSbyinVaXcdRY
+        rkrpO8fRFmJ85zs5buzp3NAx3JWe/PDlU6jO/Cg=
+X-Google-Smtp-Source: ADFU+vtVWZhGfGf6R94WwxIgGmV4KIpNe17sPVEV0Rt5PoQsGytvmiGxeM29nQ7TeQliq+SetX2cwwMlR+GafhuGbNg=
+X-Received: by 2002:aca:bfc2:: with SMTP id p185mr1182951oif.57.1583315629465;
+ Wed, 04 Mar 2020 01:53:49 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200303101052.133631-1-kherbst@redhat.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+References: <20200227013411.1.Ica3bb9fa898499d94e0b0a2bfa08ec46c89d84fa@changeid>
+ <20200303170948.1.I108734f38ade020c3e5da825839dca11d2a2ff87@changeid>
+In-Reply-To: <20200303170948.1.I108734f38ade020c3e5da825839dca11d2a2ff87@changeid>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 4 Mar 2020 10:53:38 +0100
+Message-ID: <CAJZ5v0j+bx5fh1wv738MNoui_SaZ-c21rDnZkWOqi_GCVg5stQ@mail.gmail.com>
+Subject: Re: [PATCH v3] intel_idle: Add Comet Lake support
+To:     Harry Pan <harry.pan@intel.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>, Harry Pan <gs0622@gmail.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
-
-On Tue, Mar 03, 2020 at 11:10:52AM +0100, Karol Herbst wrote:
-> Fixes state transitions of Nvidia Pascal GPUs from D3cold into higher device
-> states.
-
-I think it is good to explain bit more here why this fix is needed.
-
-> v2: convert to pci_dev quirk
->     put a proper technical explanation of the issue as a in-code comment
-> v3: disable it only for certain combinations of intel and nvidia hardware
-> v4: simplify quirk by setting flag on the GPU itself
-> v5: restructure quirk to make it easier to add new IDs
->     fix whitespace issues
->     fix potential NULL pointer access
->     update the quirk documentation
-> v6: move quirk into nouveau
-
-This information typically goes under the '---' line.
-
-> Signed-off-by: Karol Herbst <kherbst@redhat.com>
-> Cc: Bjorn Helgaas <bhelgaas@google.com>
-> Cc: Lyude Paul <lyude@redhat.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Mika Westerberg <mika.westerberg@intel.com>
-
-I have few minor comments but regardless,
-
-Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-
-> Cc: linux-pci@vger.kernel.org
-> Cc: linux-pm@vger.kernel.org
-> Cc: dri-devel@lists.freedesktop.org
-> Cc: nouveau@lists.freedesktop.org
-> Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=205623
+On Tue, Mar 3, 2020 at 10:10 AM Harry Pan <harry.pan@intel.com> wrote:
+>
+> Add a general C-state table in order to support Comet Lake.
+>
+> Signed-off-by: Harry Pan <harry.pan@intel.com>
+>
 > ---
->  drivers/gpu/drm/nouveau/nouveau_drm.c | 56 +++++++++++++++++++++++++++
->  drivers/pci/pci.c                     |  8 ++++
->  include/linux/pci.h                   |  1 +
->  3 files changed, 65 insertions(+)
-> 
-> diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-> index 2cd83849600f..51d3a7ba7731 100644
-> --- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-> +++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-> @@ -618,6 +618,59 @@ nouveau_drm_device_fini(struct drm_device *dev)
->  	kfree(drm);
->  }
->  
-> +/*
-> + * On some Intel PCIe bridge controllers doing a
-> + * D0 -> D3hot -> D3cold -> D0 sequence causes Nvidia GPUs to not reappear.
-> + * Skipping the intermediate D3hot step seems to make it work again. Thise is
-                                                                        ^^^^^
-Thise -> This
+>
+>  drivers/idle/intel_idle.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+>
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index d55606608ac8..05bce595fafe 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -1067,6 +1067,11 @@ static const struct idle_cpu idle_cpu_dnv = {
+>         .use_acpi = true,
+>  };
+>
+> +static const struct idle_cpu idle_cpu_cml = {
+> +       .state_table = skl_cstates,
+> +       .disable_promotion_to_c1e = true,
 
-> + * probably caused by not meeting the expectation the involved AML code has
-> + * when the GPU is put into D3hot state before invoking it.
-> + *
-> + * This leads to various manifestations of this issue:
-> + *  - AML code execution to power on the GPU hits an infinite loop (as the
-> + *    code waits on device memory to change).
-> + *  - kernel crashes, as all PCI reads return -1, which most code isn't able
-> + *    to handle well enough.
-> + *
-> + * In all cases dmesg will contain at least one line like this:
-> + * 'nouveau 0000:01:00.0: Refused to change power state, currently in D3'
-> + * followed by a lot of nouveau timeouts.
-> + *
-> + * In the \_SB.PCI0.PEG0.PG00._OFF code deeper down writes bit 0x80 to the not
-> + * documented PCI config space register 0x248 of the Intel PCIe bridge
-> + * controller (0x1901) in order to change the state of the PCIe link between
-> + * the PCIe port and the GPU. There are alternative code paths using other
-> + * registers, which seem to work fine (executed pre Windows 8):
-> + *  - 0xbc bit 0x20 (publicly available documentation claims 'reserved')
-> + *  - 0xb0 bit 0x10 (link disable)
-> + * Changing the conditions inside the firmware by poking into the relevant
-> + * addresses does resolve the issue, but it seemed to be ACPI private memory
-> + * and not any device accessible memory at all, so there is no portable way of
-> + * changing the conditions.
-> + * On a XPS 9560 that means bits [0,3] on \CPEX need to be cleared.
-> + *
-> + * The only systems where this behavior can be seen are hybrid graphics laptops
-> + * with a secondary Nvidia Maxwell, Pascal or Turing GPU. Its unclear wheather
-                                                             ^^^         ^^^^^^^^
-Its -> It's
-wheather -> whether
+.use_acpi = true,
 
-> + * this issue only occurs in combination with listed Intel PCIe bridge
-> + * controllers and the mentioned GPUs or other devices as well.
-> + *
-> + * documentation on the PCIe bridge controller can be found in the
-> + * "7th Generation Intel® Processor Families for H Platforms Datasheet Volume 2"
-> + * Section "12 PCI Express* Controller (x16) Registers"
-> + */
+missing?  Otherwise you can just use idle_cpu_skl as is, can't you?
+
+> +};
 > +
-> +static void quirk_broken_nv_runpm(struct pci_dev *dev)
-> +{
-> +	struct pci_dev *bridge = pci_upstream_bridge(dev);
-> +
-> +	if (!bridge || bridge->vendor != PCI_VENDOR_ID_INTEL)
-> +		return;
-> +
-> +	switch (bridge->device) {
-> +	case 0x1901:
-> +		dev->parent_d3cold = 1;
-
-I think it is better to add
-
-		break;
-
-here.
-
-> +	}
-> +}
-> +
->  static int nouveau_drm_probe(struct pci_dev *pdev,
->  			     const struct pci_device_id *pent)
->  {
-> @@ -699,6 +752,7 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
->  	if (ret)
->  		goto fail_drm_dev_init;
->  
-> +	quirk_broken_nv_runpm(pdev);
->  	return 0;
->  
->  fail_drm_dev_init:
-> @@ -737,6 +791,8 @@ nouveau_drm_remove(struct pci_dev *pdev)
->  {
->  	struct drm_device *dev = pci_get_drvdata(pdev);
->  
-> +	/* revert our workaround */
-> +	pdev->parent_d3cold = false;
->  	nouveau_drm_device_remove(dev);
->  }
->  
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 951099279192..6ece05723fa2 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -860,6 +860,14 @@ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
->  	   || (state == PCI_D2 && !dev->d2_support))
->  		return -EIO;
->  
-> +	/*
-> +	 * Power management can be disabled for certain devices as they don't
-> +	 * come back up later on runtime_resume. We rely on platform means to
-> +	 * cut power consumption instead (e.g. ACPI).
-> +	 */
-> +	if (state != PCI_D0 && dev->parent_d3cold)
-> +		return 0;
-> +
->  	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &pmcsr);
->  	if (pmcsr == (u16) ~0) {
->  		pci_err(dev, "can't change power state from %s to %s (config space inaccessible)\n",
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 930fab293073..3e5938b91966 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -340,6 +340,7 @@ struct pci_dev {
->  	unsigned int	no_d3cold:1;	/* D3cold is forbidden */
->  	unsigned int	bridge_d3:1;	/* Allow D3 for bridge */
->  	unsigned int	d3cold_allowed:1;	/* D3cold is allowed by user */
-> +	unsigned int	parent_d3cold:1;	/* power manage the parent instead */
-
-Just to be consistent with the other comments, start with a capital
-letter:
-
-	unsigned int	parent_d3cold:1;	/* Power manage the parent instead */
+>  static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+>         INTEL_CPU_FAM6(NEHALEM_EP,              idle_cpu_nhx),
+>         INTEL_CPU_FAM6(NEHALEM,                 idle_cpu_nehalem),
+> @@ -1105,6 +1110,8 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+>         INTEL_CPU_FAM6(ATOM_GOLDMONT_PLUS,      idle_cpu_bxt),
+>         INTEL_CPU_FAM6(ATOM_GOLDMONT_D,         idle_cpu_dnv),
+>         INTEL_CPU_FAM6(ATOM_TREMONT_D,          idle_cpu_dnv),
+> +       INTEL_CPU_FAM6(COMETLAKE_L,             idle_cpu_cml),
+> +       INTEL_CPU_FAM6(COMETLAKE,               idle_cpu_cml),
+>         {}
+>  };
+>
+> --
+> 2.24.1
+>
