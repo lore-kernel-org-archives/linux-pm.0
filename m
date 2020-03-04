@@ -2,102 +2,129 @@ Return-Path: <SRS0=FCtK=4V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F137C3F2D1
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 12:12:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21DAEC3F2CD
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 12:18:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E4A1921744
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 12:12:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E8F3C21741
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Mar 2020 12:18:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="dAcvZ6LI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728953AbgCDMMz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Mar 2020 07:12:55 -0500
-Received: from foss.arm.com ([217.140.110.172]:33446 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726502AbgCDMMz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 4 Mar 2020 07:12:55 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9D02731B;
-        Wed,  4 Mar 2020 04:12:54 -0800 (PST)
-Received: from bogus (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 15F823F534;
-        Wed,  4 Mar 2020 04:12:52 -0800 (PST)
-Date:   Wed, 4 Mar 2020 12:12:51 +0000
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
+        id S1729175AbgCDMS0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Mar 2020 07:18:26 -0500
+Received: from mail-ua1-f67.google.com ([209.85.222.67]:41406 "EHLO
+        mail-ua1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729118AbgCDMS0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Mar 2020 07:18:26 -0500
+Received: by mail-ua1-f67.google.com with SMTP id d19so572939uak.8
+        for <linux-pm@vger.kernel.org>; Wed, 04 Mar 2020 04:18:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=5ENDQdK0BnTgBrmbo1z33qY08hnGuLOjFToJM+EoACQ=;
+        b=dAcvZ6LIDOcMeA4h8UWulv+NWq+8i2LMIfn4ZJ/bK+tyXrXb63qiJ3FWzP2+iXu5AD
+         Bv2EGQi1kO/CG2yr6MHW18uOVD8P+728bCK6CcqUYAGPGnHaDDzRqriswg794wxTvJFj
+         4jJ4CJQP8cILOiZ4idsLda7HIE9ig7ZvfxHbw+Z7/nsNeolzjOebgBijlLOLiFXCenuZ
+         E2tjdHg5/NdwbqF3FxUlnn/j1EEav4+2q/GL4kf7BxvvYYSSnot6pRUYKUayaKMo9Qig
+         7nZqEuw69VfrGRIQ50xEb+2yABixBOayBmcG5hMLBPGWqrSzWhIRJUcJy7euMkBTI/Jh
+         FYAg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=5ENDQdK0BnTgBrmbo1z33qY08hnGuLOjFToJM+EoACQ=;
+        b=rrEoRQ8/Dtgg93ciVPaH2Dlcx24ygqjB5l3GEs+76jyd3Y+nlshgFXJ3po0jKz3DjA
+         7Xo/J74+yCIdAbJteAiIDMavvd2nq8o88QvKq2AD8psMY6W/3lvoAzhrk0KLKJrledt6
+         z3N8xazFc9NzLpYO0Wj4GxjOP4o/F0Q6xUNgE87uqnR5bMISCh0KLrAMnv4lJvX+vRV/
+         Ls54B4Deoc6AsOcMp5vqpcsNvrSbSc3nDaERjkB+zHuUy9utNmp495UameiQ366cux2H
+         2t48WLBHmI6UXU1zhglGYMuEqtkudQfA5ywF9pBfEC4WqcZy89ozBUgagT8EBSKKX2yu
+         Zkkg==
+X-Gm-Message-State: ANhLgQ083H+cAYjiZkQC2MfHSLUe/c4HEYYexihXYoGUf31FsqWrDPNy
+        0B/i2xvClNoyXJ6ZnBgjdS+H0tfvOU3epJGP8Ll4/w==
+X-Google-Smtp-Source: ADFU+vs64WAXYstjh/9mMgNerdas9d2I6hWXLhFl8/qXXr1kzUvzPo2E7WUlATihcSCippJscfqookVKFmvVz0feZLE=
+X-Received: by 2002:ab0:20a:: with SMTP id 10mr1206957uas.19.1583324304979;
+ Wed, 04 Mar 2020 04:18:24 -0800 (PST)
+MIME-Version: 1.0
+References: <20200303203559.23995-1-ulf.hansson@linaro.org>
+ <20200303203559.23995-3-ulf.hansson@linaro.org> <20200304105039.GC25004@bogus>
+In-Reply-To: <20200304105039.GC25004@bogus>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 4 Mar 2020 13:17:49 +0100
+Message-ID: <CAPDyKFqd0DswuyLCFQ1F6G7agCEEgf0vzofRVyBVVPQTn-vK+A@mail.gmail.com>
+Subject: Re: [PATCH v2 2/4] cpuidle: psci: Fixup support for domain idle
+ states being zero
+To:     Sudeep Holla <sudeep.holla@arm.com>
 Cc:     Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Lina Iyer <ilina@codeaurora.org>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Stephen Boyd <sboyd@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Benjamin Gaignard <benjamin.gaignard@st.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 3/4] cpuidle: psci: Split psci_dt_cpu_init_idle()
-Message-ID: <20200304121250.GD25004@bogus>
-References: <20200303203559.23995-1-ulf.hansson@linaro.org>
- <20200303203559.23995-4-ulf.hansson@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200303203559.23995-4-ulf.hansson@linaro.org>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        Linux ARM <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 03, 2020 at 09:35:58PM +0100, Ulf Hansson wrote:
-> To make the code a bit more readable, but also to prepare some code to be
-> re-used, let's move the OSI specific initialization out of the
-> psci_dt_cpu_init_idle() and into a separate function.
+On Wed, 4 Mar 2020 at 11:50, Sudeep Holla <sudeep.holla@arm.com> wrote:
 >
-> Fixes: a65a397f2451 ("cpuidle: psci: Add support for PM domains by using genpd")
-
-Not sure if this fixes anything but I am fine to have this if next one is
-a real fix.
-
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
-> ---
+> On Tue, Mar 03, 2020 at 09:35:57PM +0100, Ulf Hansson wrote:
+> > The current code intends to allow a PSCI PM domain to have none domain idle
+> > states defined in DT. However, a few minor things needs to be fixed to make
+> > this correctly supported, so let's do that.
+> >
+> > Reported-by: Benjamin Gaignard <benjamin.gaignard@st.com>
+> > Fixes: a65a397f2451 ("cpuidle: psci: Add support for PM domains by using genpd")
+> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+> > ---
+> >  drivers/cpuidle/cpuidle-psci-domain.c | 6 ++++++
+> >  1 file changed, 6 insertions(+)
+> >
+> > diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> > index 423f03bbeb74..c34b12c4069a 100644
+> > --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> > +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> > @@ -49,6 +49,9 @@ static int __init psci_pd_parse_state_nodes(struct genpd_power_state *states,
+> >       int i, ret;
+> >       u32 psci_state, *psci_state_buf;
+> >
+> > +     if (!states)
+> > +             return 0;
+> > +
 >
-> Changes in v2:
-> 	- Adopted suggestions from Stephen to use IS_ERR_OR_NULL and
-> 	PTR_ERR_OR_ZERO, which further clarified the code.
->
-> ---
->  drivers/cpuidle/cpuidle-psci.c | 46 ++++++++++++++++++++--------------
->  1 file changed, 27 insertions(+), 19 deletions(-)
->
-> diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-> index edd7a54ef0d3..bae9140a65a5 100644
-> --- a/drivers/cpuidle/cpuidle-psci.c
-> +++ b/drivers/cpuidle/cpuidle-psci.c
-> @@ -160,6 +160,29 @@ int __init psci_dt_parse_state_node(struct device_node *np, u32 *state)
->  	return 0;
->  }
->
-> +static int __init psci_dt_cpu_init_topology(struct cpuidle_driver *drv,
-> +					    struct psci_cpuidle_data *data,
-> +					    unsigned int state_count, int cpu)
-> +{
-> +	/* Currently limit the hierarchical topology to be used in OSI mode. */
-> +	if (!psci_has_osi_support())
-> +		return 0;
-> +
-> +	data->dev = psci_dt_attach_cpu(cpu);
-> +	if (IS_ERR_OR_NULL(data->dev))
-> +		return PTR_ERR_OR_ZERO(data->dev);
-> +
+> Was any issue found ? Or just code inspection ? If states = NULL,
+> state_count = 0, and I don't see anything blowing up. It may save couple
+> of extra instruction execution.
 
-This is what I was asking to do before this was merged when I meant to drop
-if(data->dev) check. So happy to see it :)
+Code inspection, the real problem was fixed in patch 1.
 
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+>
+> >       for (i = 0; i < state_count; i++) {
+> >               ret = psci_dt_parse_state_node(to_of_node(states[i].fwnode),
+> >                                       &psci_state);
+> > @@ -96,6 +99,9 @@ static void psci_pd_free_states(struct genpd_power_state *states,
+> >  {
+> >       int i;
+> >
+> > +     if (!states)
+> > +             return;
+> > +
+>
+> Same here and kfree(NULL) is also valid.
 
---
-Regards,
-Sudeep
+Yep, let's drop $subject patch from the series, it's not needed.
+
+Thanks for reviewing!
+
+Kind regards
+Uffe
