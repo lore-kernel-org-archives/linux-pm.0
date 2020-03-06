@@ -2,156 +2,245 @@ Return-Path: <SRS0=Ttsr=4X=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=DATE_IN_PAST_06_12,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3A51C3F2D6
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Mar 2020 19:52:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6E8BC10F27
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Mar 2020 19:56:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BA435206D7
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Mar 2020 19:52:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="QnNNdWHA"
+	by mail.kernel.org (Postfix) with ESMTP id 8737C206D7
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Mar 2020 19:56:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1583524604;
+	bh=BPfEbCn7SCZtVYMhZP5cF15MOUHjOncMp76kNq1znBA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=I6vVhfxswoVmPBcg+a/QgsDGdy8D4B2PU2nIDTPS1xzGlzMb0yixjN9Uj/kkd3id0
+	 OC1b7mao3n2voRR1N+Eqkvp/UGJgBc24qgZMkLoA/2i6p8DZnURN6/BcU6GmeKX5dv
+	 42Bl+Wrdfc8cUNUENF2YNpVaAlHLIT3FqpCT8bIo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726083AbgCFTwR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Mar 2020 14:52:17 -0500
-Received: from us-smtp-2.mimecast.com ([207.211.31.81]:41159 "EHLO
-        us-smtp-delivery-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726300AbgCFTwR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Mar 2020 14:52:17 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1583524337;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=7wshUEfGJ0oCbRrCm+psHycgVdvMv8N6eiO1mp9WFHQ=;
-        b=QnNNdWHApszNn9tSSprKo/y2RZLed6Td5sdpcCmmmj33n0tORFo6+qIK6h0lZfb1KHHlDu
-        ArVQ1eCIqwViufxHkqJu/xxxX5uzqwzw4BJgXDyOlTIdU0KFQvHDqIDGPZnXEWiNk81LFX
-        2YyAu1b1C3EgqxRYegXFrkt4kBIx9XI=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-235-ZbozAVvCPia2fE25-rWBtQ-1; Fri, 06 Mar 2020 14:52:13 -0500
-X-MC-Unique: ZbozAVvCPia2fE25-rWBtQ-1
-Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        id S1725922AbgCFT4n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Mar 2020 14:56:43 -0500
+Received: from mail.kernel.org ([198.145.29.99]:47550 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725873AbgCFT4n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 6 Mar 2020 14:56:43 -0500
+Received: from earth.universe (unknown [185.62.205.105])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id F2F7F800053;
-        Fri,  6 Mar 2020 19:52:11 +0000 (UTC)
-Received: from fuller.cnet (ovpn-116-16.gru2.redhat.com [10.97.116.16])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 6295B10027AB;
-        Fri,  6 Mar 2020 19:52:11 +0000 (UTC)
-Received: by fuller.cnet (Postfix, from userid 1000)
-        id 2562842FE410; Fri,  6 Mar 2020 06:56:17 -0300 (-03)
-Date:   Fri, 6 Mar 2020 06:56:17 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>,
-        Paolo Bonzini <pbonzini@redhat.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Joao Martins <joao.m.martins@oracle.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kvm@vger.kernel.org
-Subject: Re: [PATCH] cpuidle-haltpoll: allow force loading on hosts without
- the REALTIME hint
-Message-ID: <20200306095617.GD32190@fuller.cnet>
-References: <20200221174331.1480468-1-mail@maciej.szmigiero.name>
- <114f7b8d-6f88-222a-d1fa-abcfc0e6a1f2@maciej.szmigiero.name>
+        by mail.kernel.org (Postfix) with ESMTPSA id 3DE34206CC;
+        Fri,  6 Mar 2020 19:56:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1583524602;
+        bh=BPfEbCn7SCZtVYMhZP5cF15MOUHjOncMp76kNq1znBA=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=vm02SjTOrPZR4CjbjHvp0zknsAzgFh70ImQaeSVkyjvissTjNmCL0i6d5ywDOOqat
+         HCsF/MtKsvMcVYEp6aXq3UNTkij6JOfRBOYcrDWYTCkwLVwqJC9QicnG2sa5yk6xzx
+         M5UmcLpKEG7svK6mKleLs07Nu8crZ3pXOVEd7zak=
+Received: by earth.universe (Postfix, from userid 1000)
+        id CE06A3C0C83; Fri,  6 Mar 2020 20:56:38 +0100 (CET)
+Date:   Fri, 6 Mar 2020 20:56:38 +0100
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Sergey.Semin@baikalelectronics.ru
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Serge Semin <fancer.lancer@gmail.com>,
+        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Paul Burton <paulburton@kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/4] dt-bindings: power: reset: Replace SYSCON
+ reboot-mode legacy bindings with YAML-based one
+Message-ID: <20200306195638.45vwlgsf7pt3fcfy@earth.universe>
+References: <20200306130341.9585-1-Sergey.Semin@baikalelectronics.ru>
+ <20200306130401.C07838030795@mail.baikalelectronics.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mh23np6ztot7jlnh"
 Content-Disposition: inline
-In-Reply-To: <114f7b8d-6f88-222a-d1fa-abcfc0e6a1f2@maciej.szmigiero.name>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
+In-Reply-To: <20200306130401.C07838030795@mail.baikalelectronics.ru>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Feb 24, 2020 at 09:10:18PM +0100, Maciej S. Szmigiero wrote:
-> (CC'ing also Marcelo as the cpuidle-haltpoll driver author and the KVM ML).
 
-Hi Maciej,
+--mh23np6ztot7jlnh
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On 21.02.2020 18:43, Maciej S. Szmigiero wrote:
-> > From: "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>
-> > 
-> > Before commit 1328edca4a14 ("cpuidle-haltpoll: Enable kvm guest polling
-> > when dedicated physical CPUs are available") the cpuidle-haltpoll driver
-> > could also be used in scenarios when the host does not advertise the
-> > KVM_HINTS_REALTIME hint.
-> > 
-> > While the behavior introduced by the aforementioned commit makes sense as
-> > the default 
+Hi,
 
-It makes sense for the pCPU overcommitted case only.
+On Fri, Mar 06, 2020 at 04:03:39PM +0300, Sergey.Semin@baikalelectronics.ru=
+ wrote:
+> From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+>=20
+> Modern device tree bindings are supposed to be created as YAML-files
+> in accordance with dt-schema. This commit replaces SYSCON reboot-mode
+> legacy bare text bindings with YAML file. As before the bindings file
+> states that the corresponding dts node is supposed to be compatible
+> "syscon-reboot-mode" device and necessarily have an offset property
+> to determine which register from the regmap is supposed to keep the
+> mode on reboot.
+>=20
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> Signed-off-by: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Paul Burton <paulburton@kernel.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> ---
 
-> > there are cases where the old behavior is desired, for example,
-> > when other kernel changes triggered by presence by this hint are unwanted,
-> > for some workloads where the latency benefit from polling overweights the
-> > loss from idle CPU capacity that otherwise would be available, or just when
-> > running under older Qemu versions that lack this hint.
-> > 
-> > Let's provide a typical "force" module parameter that allows restoring the
-> > old behavior.
-> > 
-> > Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
+I'm missing patch 1 and would like an Acked-by from Rob Herring, so
+for now:
 
-I would rather: 
+Acked-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-1) Switch back to the default non-overcommitted case.
+-- Sebastian
 
-or even better (but requires more investment)
+>  .../power/reset/syscon-reboot-mode.txt        | 35 ------------
+>  .../power/reset/syscon-reboot-mode.yaml       | 55 +++++++++++++++++++
+>  2 files changed, 55 insertions(+), 35 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/power/reset/syscon-=
+reboot-mode.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/syscon-=
+reboot-mode.yaml
+>=20
+> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-=
+mode.txt b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode=
+=2Etxt
+> deleted file mode 100644
+> index f7ce1d8af04a..000000000000
+> --- a/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.txt
+> +++ /dev/null
+> @@ -1,35 +0,0 @@
+> -SYSCON reboot mode driver
+> -
+> -This driver gets reboot mode magic value form reboot-mode driver
+> -and stores it in a SYSCON mapped register. Then the bootloader
+> -can read it and take different action according to the magic
+> -value stored.
+> -
+> -This DT node should be represented as a sub-node of a "syscon", "simple-=
+mfd"
+> -node.
+> -
+> -Required properties:
+> -- compatible: should be "syscon-reboot-mode"
+> -- offset: offset in the register map for the storage register (in bytes)
+> -
+> -Optional property:
+> -- mask: bits mask of the bits in the register to store the reboot mode m=
+agic value,
+> -  default set to 0xffffffff if missing.
+> -
+> -The rest of the properties should follow the generic reboot-mode descrip=
+tion
+> -found in reboot-mode.txt
+> -
+> -Example:
+> -	pmu: pmu@20004000 {
+> -		compatible =3D "rockchip,rk3066-pmu", "syscon", "simple-mfd";
+> -		reg =3D <0x20004000 0x100>;
+> -
+> -		reboot-mode {
+> -			compatible =3D "syscon-reboot-mode";
+> -			offset =3D <0x40>;
+> -			mode-normal =3D <BOOT_NORMAL>;
+> -			mode-recovery =3D <BOOT_RECOVERY>;
+> -			mode-bootloader =3D <BOOT_FASTBOOT>;
+> -			mode-loader =3D <BOOT_BL_DOWNLOAD>;
+> -		};
+> -	};
+> diff --git a/Documentation/devicetree/bindings/power/reset/syscon-reboot-=
+mode.yaml b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mod=
+e.yaml
+> new file mode 100644
+> index 000000000000..e09bb07b1abb
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/reset/syscon-reboot-mode.ya=
+ml
+> @@ -0,0 +1,55 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/power/reset/syscon-reboot-mode.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Generic SYSCON reboot mode driver
+> +
+> +maintainers:
+> +  - Sebastian Reichel <sre@kernel.org>
+> +
+> +description: |
+> +  This driver gets reboot mode magic value from reboot-mode driver
+> +  and stores it in a SYSCON mapped register. Then the bootloader
+> +  can read it and take different action according to the magic
+> +  value stored. The SYSCON mapped register is retrieved from the
+> +  parental dt-node plus the offset. So the SYSCON reboot-mode node
+> +  should be represented as a sub-node of a "syscon", "simple-mfd" node.
+> +
+> +properties:
+> +  compatible:
+> +    const: syscon-reboot-mode
+> +
+> +  mask:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: Update only the register bits defined by the mask (32 b=
+it).
+> +
+> +  offset:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: Offset in the register map for the mode register (in by=
+tes).
+> +
+> +patternProperties:
+> +  "^mode-.+":
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: Vendor-specific mode value written to the mode register.
+> +
+> +additionalProperties: false
+> +
+> +required:
+> +  - compatible
+> +  - offset
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/soc/rockchip,boot-mode.h>
+> +
+> +    reboot-mode {
+> +      compatible =3D "syscon-reboot-mode";
+> +      offset =3D <0x40>;
+> +      mode-normal =3D <BOOT_NORMAL>;
+> +      mode-recovery =3D <BOOT_RECOVERY>;
+> +      mode-bootloader =3D <BOOT_FASTBOOT>;
+> +      mode-loader =3D <BOOT_BL_DOWNLOAD>;
+> +    };
+> +...
+> --=20
+> 2.25.1
+>=20
 
-2) Make on the flight dynamic configuration (after all pCPU
-overcommitment=true/false is a property that changes during
-the day, depending on system load).
+--mh23np6ztot7jlnh
+Content-Type: application/pgp-signature; name="signature.asc"
 
-But its up to Paolo to decide, really.
+-----BEGIN PGP SIGNATURE-----
 
-> > ---
-> >  drivers/cpuidle/cpuidle-haltpoll.c | 12 +++++++++++-
-> >  1 file changed, 11 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-> > index b0ce9bc78113..07e5b36076bb 100644
-> > --- a/drivers/cpuidle/cpuidle-haltpoll.c
-> > +++ b/drivers/cpuidle/cpuidle-haltpoll.c
-> > @@ -18,6 +18,11 @@
-> >  #include <linux/kvm_para.h>
-> >  #include <linux/cpuidle_haltpoll.h>
-> >  
-> > +static bool force __read_mostly;
-> > +module_param(force, bool, 0444);
-> > +MODULE_PARM_DESC(force,
-> > +		 "Load even if the host does not provide the REALTIME hint");
-> > +
-> >  static struct cpuidle_device __percpu *haltpoll_cpuidle_devices;
-> >  static enum cpuhp_state haltpoll_hp_state;
-> >  
-> > @@ -90,6 +95,11 @@ static void haltpoll_uninit(void)
-> >  	haltpoll_cpuidle_devices = NULL;
-> >  }
-> >  
-> > +static bool haltpool_want(void)
-> > +{
-> > +	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
-> > +}
-> > +
-> >  static int __init haltpoll_init(void)
-> >  {
-> >  	int ret;
-> > @@ -102,7 +112,7 @@ static int __init haltpoll_init(void)
-> >  	cpuidle_poll_state_init(drv);
-> >  
-> >  	if (!kvm_para_available() ||
-> > -		!kvm_para_has_hint(KVM_HINTS_REALTIME))
-> > +	    !haltpool_want())
-> >  		return -ENODEV;
-> >  
-> >  	ret = cpuidle_register_driver(drv);
-> > 
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl5iqvMACgkQ2O7X88g7
++ppHaxAAok3l+727X+6xh0wOQLONz4qdybMFkm2tVvS+v3hOLi95EH1EkSE/JU7Y
+DPGn9GI/vorhMcMhT3veS6izhw7Zed9Zk/9ySl0eWz8VVWcor0M7rLLtZHWEAZYA
+mHEmBmWxMoemVgVKTAIJxRGLGXAKd2tI2a9W72pKCr5J7Y/Sc06sGJdiEnA/vsDv
+x7IAGOOigjggbVs2C5afqrGxkEDwHDrFwkixH7GOhC6jq7u98Kmqm28hcPZHm2eD
+PC869XaV+D8rSq47TfFl4VBDZ96FyrzerFVqrhEn7czf2kQ+2jG6fGX8wLTUg99z
+WUpqBeXH9jxzlypRWzv3ShSy7YO8d066rxJatRyFDmUm7eKT7D3UV8qH5JYid4l2
+E/gbglffGhn7wt6HYeqgKFCBDSB2Rr6TKxY6xi26NJc9n6v9GvJtbf2EQylMhae4
+7hMxrgxi6gDn10l733EMLY+Y1vIna+HwyCgJqvtqhI5DGZtCZ66jVFncQ143cfaS
+Uax9EN+o2421DTWsJMroJftO6BeYHfsaYn0DDOGGC+SCpFfFLkd7knYoKemCy93T
+duftUY0wfwR8muJDzrHuxmw5u+XY1Q1TcZMG+ZYd+IRcVqzoZfwoIiiz5ipVbTdj
+qhnXBIkHZUhdKv0OVdMpzIROIjxtABNTOvGnqYfe4p4ljUXk9TY=
+=P2Vn
+-----END PGP SIGNATURE-----
 
+--mh23np6ztot7jlnh--
