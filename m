@@ -2,173 +2,126 @@ Return-Path: <SRS0=1lOE=4Y=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EDCAC10F25
-	for <linux-pm@archiver.kernel.org>; Sat,  7 Mar 2020 03:34:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C10B6C10F25
+	for <linux-pm@archiver.kernel.org>; Sat,  7 Mar 2020 23:54:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 172A92070A
-	for <linux-pm@archiver.kernel.org>; Sat,  7 Mar 2020 03:34:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=nxp.com header.i=@nxp.com header.b="RyTYxwpi"
+	by mail.kernel.org (Postfix) with ESMTP id 90DAB2073D
+	for <linux-pm@archiver.kernel.org>; Sat,  7 Mar 2020 23:54:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1583625280;
+	bh=VVsyNzo2F5KuxEt/5CP/yxqltHQWAAUGynUzhXuXthk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=osOzLEtnJH1UGM4Tw2NWtGx9Yk5wwIrpT/iCA/PCrc8Mb4ioYPY7u1mRjlFWA9/dw
+	 6dPBW2eyeF44FEGzjH3jysId76y8TaBg4XTYmnAo0TzlP1HVhlys5LvUFBNP0L/xrv
+	 1MyzgC7pB+csvlNiNdNKsI6GxzafR85VRRzfwUdI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726635AbgCGDd7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Mar 2020 22:33:59 -0500
-Received: from mail-db8eur05on2067.outbound.protection.outlook.com ([40.107.20.67]:6237
-        "EHLO EUR05-DB8-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726245AbgCGDd7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 6 Mar 2020 22:33:59 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=BE0V8OKClMyHoyqDFlDvAltzMVaUhA0XLgZKmz092hHWa6VewmLjV2VeOpJnl7++zJnZHGB+G9ea30uxp76SRBu2zggkrR5L7x4hRexnvnrtFHrqklDnexcE2n6IZDPIxe7jBC9uNCVualYNJmt1M62PeTjNv0EtqC2cf426/rgupHQZMG6Gng3EsbVhEsUAjAnY5LM98KWvHSN3CBGxOqRZc/O4v92+56ccJx6ceyV39OsYmAdfL2E4TfdzfaVewZciQSSLgA19N57D3UkfVENr3WvntPK19CQ5Ff5qdRI/2lzkIh0mBqeC1bqFJ32mkxeK6l4IKq0EDBrP3eCiCA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vLEiQOSUtp8iJ2N1iOGEfwWkny4ppPuBUaLFRdJtzIs=;
- b=D/sLdFOHLEVPC8ZrYa4ieqb04rKv4KIo/3nfg7wF1OBRVwHza3CGqULDR+BYKpjgVP3a5U1pqKI1uSSprBy3HfqJpE/uDR6vTydO0tbplT0Mj0E7tSKaGinNQdiDDdUUMvDcZ/qnhmy4Jt+vN0Z05xjHyAivQmiG+Ibm7QXGUhtxKp/yf7CKOiLZnB6uTZMVa4QAnLoN6KjGIq/MVuFmi9gMI3Pie8SdiSSc+7SyPLbR00eHaimywYZJL6be1KM/V/c0wi87QCZEAisAAgkD2dtpys6sWolqnY8e4nAP7aMg1gTkoazmV5guns6nZz0FQK4pPcJNgKChBW0eaAzmMg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vLEiQOSUtp8iJ2N1iOGEfwWkny4ppPuBUaLFRdJtzIs=;
- b=RyTYxwpioisoiuqSHVfbGnan8DDtOl3ozbunALvMp9TdfHDXC1JC4EXg8oBriV/ueyH8k7px4WKUk0vYK7uASklKkRNVeHBtm/CCAMi2LUaNIkEz6PeZGbTxkKXYlTqUJDU5k8qR3tSU165DKhyqFJWkfolnzQCCSRBFJqwVEdE=
-Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com (52.134.72.18) by
- DB3PR0402MB3899.eurprd04.prod.outlook.com (52.134.71.154) with Microsoft SMTP
- Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.2772.19; Sat, 7 Mar 2020 03:33:54 +0000
-Received: from DB3PR0402MB3916.eurprd04.prod.outlook.com
- ([fe80::e44d:fa34:a0af:d96]) by DB3PR0402MB3916.eurprd04.prod.outlook.com
- ([fe80::e44d:fa34:a0af:d96%5]) with mapi id 15.20.2772.019; Sat, 7 Mar 2020
- 03:33:54 +0000
-From:   Anson Huang <anson.huang@nxp.com>
-To:     Alexandre Belloni <alexandre.belloni@bootlin.com>
-CC:     Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sascha Hauer <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-        "wim@linux-watchdog.org" <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Daniel Baluta <daniel.baluta@nxp.com>,
-        Oleksij Rempel <linux@rempel-privat.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Marco Felsch <m.felsch@pengutronix.de>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        =?utf-8?B?Um9uYWxkIFRzY2hhbMOkcg==?= <ronald@innovation.ch>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        lkml <linux-kernel@vger.kernel.org>,
-        "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-        "linux-rtc@vger.kernel.org" <linux-rtc@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LINUXWATCHDOG <linux-watchdog@vger.kernel.org>,
-        dl-linux-imx <linux-imx@nxp.com>
-Subject: RE: [PATCH 3/5] input: keyboard: add COMPILE_TEST support for
- KEYBOARD_IMX_SC_KEY
-Thread-Topic: [PATCH 3/5] input: keyboard: add COMPILE_TEST support for
- KEYBOARD_IMX_SC_KEY
-Thread-Index: AQHV887MNanm8ugiD0KiUbBo9lnYDag79IUAgAAJFwCAABOKAIAASDdQgAAXQQCAAAmasA==
-Date:   Sat, 7 Mar 2020 03:33:54 +0000
-Message-ID: <DB3PR0402MB3916FCC28C5E49FE571226A3F5E00@DB3PR0402MB3916.eurprd04.prod.outlook.com>
-References: <1583509356-8265-1-git-send-email-Anson.Huang@nxp.com>
- <1583509356-8265-3-git-send-email-Anson.Huang@nxp.com>
- <20200306193310.GI217608@dtor-ws>
- <CAKdAkRRhXE6Hviqx90_5hWmP7YQnKO2QLJgDYnzt_CPjeH7D0A@mail.gmail.com>
- <20200306211538.GA8060@piout.net>
- <DB3PR0402MB39164192146D17327A45DA6CF5E00@DB3PR0402MB3916.eurprd04.prod.outlook.com>
- <20200307025720.GA52231@piout.net>
-In-Reply-To: <20200307025720.GA52231@piout.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-authentication-results: spf=none (sender IP is )
- smtp.mailfrom=anson.huang@nxp.com; 
-x-originating-ip: [119.31.174.68]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-ht: Tenant
-x-ms-office365-filtering-correlation-id: 550d3af9-9582-4b68-e2f6-08d7c2485cbc
-x-ms-traffictypediagnostic: DB3PR0402MB3899:|DB3PR0402MB3899:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <DB3PR0402MB3899927EAF5A63E2B147C2E9F5E00@DB3PR0402MB3899.eurprd04.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:7691;
-x-forefront-prvs: 03355EE97E
-x-forefront-antispam-report: SFV:NSPM;SFS:(10009020)(4636009)(376002)(346002)(39860400002)(136003)(396003)(366004)(199004)(189003)(86362001)(33656002)(55016002)(7416002)(71200400001)(76116006)(2906002)(6916009)(53546011)(6506007)(66446008)(7696005)(66556008)(66946007)(64756008)(54906003)(44832011)(81166006)(8936002)(9686003)(478600001)(81156014)(52536014)(316002)(186003)(26005)(4326008)(8676002)(5660300002)(66476007);DIR:OUT;SFP:1101;SCL:1;SRVR:DB3PR0402MB3899;H:DB3PR0402MB3916.eurprd04.prod.outlook.com;FPR:;SPF:None;LANG:en;PTR:InfoNoRecords;A:1;MX:1;
-received-spf: None (protection.outlook.com: nxp.com does not designate
- permitted sender hosts)
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: QFS+73QNtgV8NnFmcIbuKfy8DKK6TDU5De6RPfr8Vshxf8ymbtYhknxb4uMj/S8KznPlIdSjyLgOBlc/ZHblo1B1M03doWUSFXqDw1f+cu3J14TDVlKoRPfLLpRgdYAQueq0aztGNAFb8GY+dbeTBHQkSO46JSxs3JrcBPry+UP7TKq2mIBfgxb0EQc9t89ZshHsWiQujehVlfNInl+Nrt/IhcSDmmD0uCTjVst5NBLj4UYf5nlk+LsTSMzAVr67aEKEVig9PTsGyEwf7Py8434gR0s7DWZUmT1q700+fw6w8ht5txiyja7s1ritbkUp8/G26P+uuxOhqCZf8sV48WadApgddFl732JRNroDXVHjwWNSTInukfGY1gRb7mRVozMjFknZpS/9jJfPRM+W5+Q3iBfKov9MFyQ5PZ/OJ7OilaWHb+BZAewELfomM8T0
-x-ms-exchange-antispam-messagedata: phVcIBbvcq4rTZjuciAmylQ1fTJ2CJmkljLkevfUpZwn0O72yD/zl7gdzoip+GEctXtO3qJL1q/BqFCSuVczx8IEHKYCz1HMlf5FECa08izQi2Lsd2k4DKZ1AHnH+kNWIqf3G1tKEXRydCD/BLFZ7A==
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: base64
+        id S1726180AbgCGXyk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 7 Mar 2020 18:54:40 -0500
+Received: from mail.kernel.org ([198.145.29.99]:44036 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726174AbgCGXyj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 7 Mar 2020 18:54:39 -0500
+Received: from sol.localdomain (c-107-3-166-239.hsd1.ca.comcast.net [107.3.166.239])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 2F3A4206D7;
+        Sat,  7 Mar 2020 23:54:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1583625279;
+        bh=VVsyNzo2F5KuxEt/5CP/yxqltHQWAAUGynUzhXuXthk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=K5dd3gLjcMnryPgXE9LvLVQSTxHw08pryu4adtWNb/eHhq+mnCdgQKjRmfqPa+36Q
+         4Z4vN1lV1sFu/cx65Wc3MFqXpGNzfxSP3N5cgHO7IQTKhCHEgjcb5AWdRe0mhgGLQI
+         KhygizvaajFvQeLSdfIdrkPxWZ5ErhmOgNMHbNas=
+Date:   Sat, 7 Mar 2020 15:54:37 -0800
+From:   Eric Biggers <ebiggers@kernel.org>
+To:     glider@google.com
+Cc:     syzbot <syzbot+af962bf9e7e27bccd025@syzkaller.appspotmail.com>,
+        len.brown@intel.com, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, pavel@ucw.cz, rjw@rjwysocki.net,
+        syzkaller-bugs@googlegroups.com
+Subject: Re: KMSAN: uninit-value in snapshot_compat_ioctl
+Message-ID: <20200307235437.GW15444@sol.localdomain>
+References: <000000000000938a57059f7cafe4@google.com>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 550d3af9-9582-4b68-e2f6-08d7c2485cbc
-X-MS-Exchange-CrossTenant-originalarrivaltime: 07 Mar 2020 03:33:54.4841
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 8gtvQISnmNRpnTO+aFhi+9RN3EJ6cb/j/L4Z5bHiOuOpwmNWeeqFQvWENGtQ9TenDsgvEnyo4PX2r7lB4oUrTg==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DB3PR0402MB3899
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <000000000000938a57059f7cafe4@google.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGksIEFsZXhhbmRyZQ0KDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy81XSBpbnB1dDoga2V5Ym9h
-cmQ6IGFkZCBDT01QSUxFX1RFU1Qgc3VwcG9ydCBmb3INCj4gS0VZQk9BUkRfSU1YX1NDX0tFWQ0K
-PiANCj4gT24gMDcvMDMvMjAyMCAwMTozNjozOSswMDAwLCBBbnNvbiBIdWFuZyB3cm90ZToNCj4g
-PiBIaSwgQWxleGFuZHJlDQo+ID4NCj4gPiA+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMy81XSBpbnB1
-dDoga2V5Ym9hcmQ6IGFkZCBDT01QSUxFX1RFU1Qgc3VwcG9ydA0KPiA+ID4gZm9yIEtFWUJPQVJE
-X0lNWF9TQ19LRVkNCj4gPiA+DQo+ID4gPiBPbiAwNi8wMy8yMDIwIDEyOjA1OjQyLTA4MDAsIERt
-aXRyeSBUb3Jva2hvdiB3cm90ZToNCj4gPiA+ID4gT24gRnJpLCBNYXIgNiwgMjAyMCBhdCAxMToz
-MyBBTSBEbWl0cnkgVG9yb2tob3YNCj4gPiA+ID4gPGRtaXRyeS50b3Jva2hvdkBnbWFpbC5jb20+
-IHdyb3RlOg0KPiA+ID4gPiA+DQo+ID4gPiA+ID4gT24gRnJpLCBNYXIgMDYsIDIwMjAgYXQgMTE6
-NDI6MzRQTSArMDgwMCwgQW5zb24gSHVhbmcgd3JvdGU6DQo+ID4gPiA+ID4gPiBBZGQgQ09NUElM
-RV9URVNUIHN1cHBvcnQgdG8gaS5NWCBTQyBrZXlib2FyZCBkcml2ZXIgZm9yIGJldHRlcg0KPiA+
-ID4gPiA+ID4gY29tcGlsZSB0ZXN0aW5nIGNvdmVyYWdlLg0KPiA+ID4gPiA+ID4NCj4gPiA+ID4g
-PiA+IFNpZ25lZC1vZmYtYnk6IEFuc29uIEh1YW5nIDxBbnNvbi5IdWFuZ0BueHAuY29tPg0KPiA+
-ID4gPiA+DQo+ID4gPiA+ID4gQXBwbGllZCwgdGhhbmsgeW91Lg0KPiA+ID4gPg0KPiA+ID4gPiBB
-Y3R1YWxseSwgbm90Og0KPiA+ID4gPg0KPiA+ID4gPiBFUlJPUjogImlteF9zY3VfaXJxX3JlZ2lz
-dGVyX25vdGlmaWVyIg0KPiA+ID4gPiBbZHJpdmVycy9pbnB1dC9rZXlib2FyZC9pbXhfc2Nfa2V5
-LmtvXSB1bmRlZmluZWQhDQo+ID4gPiA+IEVSUk9SOiAiaW14X3NjdV9nZXRfaGFuZGxlIiBbZHJp
-dmVycy9pbnB1dC9rZXlib2FyZC9pbXhfc2Nfa2V5LmtvXQ0KPiA+ID4gdW5kZWZpbmVkIQ0KPiA+
-ID4gPiBFUlJPUjogImlteF9zY3VfY2FsbF9ycGMiIFtkcml2ZXJzL2lucHV0L2tleWJvYXJkL2lt
-eF9zY19rZXkua29dDQo+ID4gPiB1bmRlZmluZWQhDQo+ID4gPiA+IEVSUk9SOiAiaW14X3NjdV9p
-cnFfdW5yZWdpc3Rlcl9ub3RpZmllciINCj4gPiA+ID4gW2RyaXZlcnMvaW5wdXQva2V5Ym9hcmQv
-aW14X3NjX2tleS5rb10gdW5kZWZpbmVkIQ0KPiA+ID4gPiBFUlJPUjogImlteF9zY3VfaXJxX2dy
-b3VwX2VuYWJsZSINCj4gPiA+ID4gW2RyaXZlcnMvaW5wdXQva2V5Ym9hcmQvaW14X3NjX2tleS5r
-b10gdW5kZWZpbmVkIQ0KPiA+ID4gPiBtYWtlWzFdOiAqKiogW3NjcmlwdHMvTWFrZWZpbGUubW9k
-cG9zdDo5NDogX19tb2Rwb3N0XSBFcnJvciAxDQo+ID4gPiA+IG1ha2U6ICoqKiBbTWFrZWZpbGU6
-MTI4MjogbW9kdWxlc10gRXJyb3IgMg0KPiA+ID4gPg0KPiA+ID4gPiBJZiB5b3Ugd2FudCB0byBl
-bmFibGUgY29tcGlsZSB0ZXN0IGNvdmVyYWdlIHlvdSBuZWVkIHRvIHByb3ZpZGUNCj4gPiA+ID4g
-c3R1YnMgZm9yIHRoZSBhYm92ZSBmdW5jdGlvbnMuDQo+ID4gPiA+DQo+ID4gPg0KPiA+ID4gb3Ig
-c2VsZWN0IElNWF9TQ1UNCj4gPiA+DQo+ID4gPiBvciBsZWF2ZSBvdXQgQ09NUElMRV9URVNUIGZy
-b20gdGhlIGluZGl2aWR1YWwgZHJpdmVycyBhcyBoYXZpbmcNCj4gPiA+IENPTVBJTEVfVEVTVCBm
-b3IgSU1YX1NDVSBpcyBlbm91Z2ggdG8gYmUgYWJsZSB0byBzZWxlY3QgdGhlIGRyaXZlcnMuDQo+
-ID4NCj4gPiBUaGFua3MsIEkgYWxyZWFkeSBhZGRlZCB0aGUgQ09NUElMRV9URVNUIGZvciBJTVhf
-U0NVIHdoaWNoIGlzIGluIHRoaXMNCj4gPiBzYW1lIHBhdGNoIHNlcmllcywgd2l0aG91dCB0aGF0
-IElNWF9TQ1UgQ09NUElMRV9URVNUIHBhdGNoLCB0aGUgYnVpbGQNCj4gPiB3aWxsIGZhaWxlZCwg
-c28gaW4gVjIsIEkgYWxzbyBhZGRlZCB0aGUgc3R1YnMgaW50byB0aG9zZSBJTVggU0NVIEFQSXMN
-Cj4gPiB0byBtYWtlIHN1cmUgZXZlbiBJTVhfU0NVIGlzIE5PVCBlbmFibGVkLCBtb2R1bGVzIHdp
-dGggQ09NUElMRV9URVNUDQo+IGNhbiBzdGlsbCBwYXNzIGJ1aWxkLCBwbGVhc2UgaGVscCByZXZp
-ZXcgVjIgcGF0Y2ggc2V0Lg0KPiA+DQo+IA0KPiBNeSBwb2ludCBpcyB0aGF0IHRoZXJlIGlzIG5v
-IG5lZWQgZm9yIHRoZSBzdHVicy4gU2ltcGx5IGhhdmUgQ09NUElMRV9URVNUDQo+IGZvciBJTVhf
-U0NVIGFzIHRoaXMgaXMgZW5vdWdoIHRvIGV4dGVuZCBjb3ZlcmFnZSB0byBhbGwgdGhlIGRyaXZl
-cnMgYW5kDQo+IHNpZ25pZmljYW50bHkgcmVkdWNlcyB0aGUgY29kZSBzaXplIHZlcnN1cyB3aGF0
-IHlvdSBkaWQgaW4gdjIuDQoNCk9LLCB0aGVuIEkgdGhpbmsgVjEgcGF0Y2ggc2V0IGlzIGFscmVh
-ZHkgd2hhdCB5b3UgZXhwZWN0ZWQsIHBhdGNoIDEvNSBhZGRzIHRoZSBDT01QSUxFX1RFU1QNCmZv
-ciBJTVhfU0NVLiBJIHRoaW5rIG1haW50YWluZXJzIGNhbiBqdXN0IHBpY2sgdXAgdGhlIFYxIHBh
-dGNoIHNldC4NCg0KVGhhbmtzLA0KQW5zb24NCg==
+On Wed, Feb 26, 2020 at 07:59:13AM -0800, syzbot wrote:
+> Hello,
+> 
+> syzbot found the following crash on:
+> 
+> HEAD commit:    8bbbc5cf kmsan: don't compile memmove
+> git tree:       https://github.com/google/kmsan.git master
+> console output: https://syzkaller.appspot.com/x/log.txt?x=11514265e00000
+> kernel config:  https://syzkaller.appspot.com/x/.config?x=cd0e9a6b0e555cc3
+> dashboard link: https://syzkaller.appspot.com/bug?extid=af962bf9e7e27bccd025
+> compiler:       clang version 10.0.0 (https://github.com/llvm/llvm-project/ c2443155a0fb245c8f17f2c1c72b6ea391e86e81)
+> userspace arch: i386
+> syz repro:      https://syzkaller.appspot.com/x/repro.syz?x=16a89109e00000
+> C reproducer:   https://syzkaller.appspot.com/x/repro.c?x=176f774ee00000
+> 
+> IMPORTANT: if you fix the bug, please add the following tag to the commit:
+> Reported-by: syzbot+af962bf9e7e27bccd025@syzkaller.appspotmail.com
+> 
+> =====================================================
+> BUG: KMSAN: uninit-value in kmsan_check_memory+0xd/0x10 mm/kmsan/kmsan_hooks.c:413
+> CPU: 1 PID: 11659 Comm: syz-executor923 Not tainted 5.6.0-rc2-syzkaller #0
+> Hardware name: Google Google Compute Engine/Google Compute Engine, BIOS Google 01/01/2011
+> Call Trace:
+>  __dump_stack lib/dump_stack.c:77 [inline]
+>  dump_stack+0x1c9/0x220 lib/dump_stack.c:118
+>  kmsan_report+0xf7/0x1e0 mm/kmsan/kmsan_report.c:118
+>  kmsan_internal_check_memory+0x358/0x3d0 mm/kmsan/kmsan.c:457
+>  kmsan_check_memory+0xd/0x10 mm/kmsan/kmsan_hooks.c:413
+>  snapshot_compat_ioctl+0x559/0x650 kernel/power/user.c:422
+>  __do_compat_sys_ioctl fs/ioctl.c:857 [inline]
+>  __se_compat_sys_ioctl+0x57c/0xed0 fs/ioctl.c:808
+>  __ia32_compat_sys_ioctl+0xd9/0x110 fs/ioctl.c:808
+>  do_syscall_32_irqs_on arch/x86/entry/common.c:339 [inline]
+>  do_fast_syscall_32+0x3c7/0x6e0 arch/x86/entry/common.c:410
+>  entry_SYSENTER_compat+0x68/0x77 arch/x86/entry/entry_64_compat.S:139
+> RIP: 0023:0xf7f70d99
+> Code: 90 e8 0b 00 00 00 f3 90 0f ae e8 eb f9 8d 74 26 00 89 3c 24 c3 90 90 90 90 90 90 90 90 90 90 90 90 51 52 55 89 e5 0f 34 cd 80 <5d> 5a 59 c3 90 90 90 90 eb 0d 90 90 90 90 90 90 90 90 90 90 90 90
+> RSP: 002b:00000000ffec145c EFLAGS: 00000213 ORIG_RAX: 0000000000000036
+> RAX: ffffffffffffffda RBX: 0000000000000003 RCX: 0000000080083313
+> RDX: 0000000000000000 RSI: 00000000080ea078 RDI: 00000000ffec14b0
+> RBP: 0000000000000000 R08: 0000000000000000 R09: 0000000000000000
+> R10: 0000000000000000 R11: 0000000000000000 R12: 0000000000000000
+> R13: 0000000000000000 R14: 0000000000000000 R15: 0000000000000000
+> 
+> Uninit was stored to memory at:
+>  kmsan_save_stack_with_flags mm/kmsan/kmsan.c:144 [inline]
+>  kmsan_internal_chain_origin+0xad/0x130 mm/kmsan/kmsan.c:310
+>  __msan_chain_origin+0x50/0x90 mm/kmsan/kmsan_instr.c:165
+>  snapshot_compat_ioctl+0x5e0/0x650 kernel/power/user.c:422
+>  __do_compat_sys_ioctl fs/ioctl.c:857 [inline]
+>  __se_compat_sys_ioctl+0x57c/0xed0 fs/ioctl.c:808
+>  __ia32_compat_sys_ioctl+0xd9/0x110 fs/ioctl.c:808
+>  do_syscall_32_irqs_on arch/x86/entry/common.c:339 [inline]
+>  do_fast_syscall_32+0x3c7/0x6e0 arch/x86/entry/common.c:410
+>  entry_SYSENTER_compat+0x68/0x77 arch/x86/entry/entry_64_compat.S:139
+> 
+> Local variable ----offset@snapshot_compat_ioctl created at:
+>  get_current arch/x86/include/asm/current.h:15 [inline]
+>  snapshot_compat_ioctl+0x324/0x650 kernel/power/user.c:418
+>  get_current arch/x86/include/asm/current.h:15 [inline]
+>  snapshot_compat_ioctl+0x324/0x650 kernel/power/user.c:418
+> 
+> Bytes 0-7 of 8 are uninitialized
+> Memory access of size 8 starts at ffff9946c156bd30
+> =====================================================
+
+Looks like a KMSAN false positive?  As far as I can tell, the memory is being
+initialized by put_user() called under set_fs(KERNEL_DS).
