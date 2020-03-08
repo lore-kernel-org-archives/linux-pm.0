@@ -2,104 +2,73 @@ Return-Path: <SRS0=D+LV=4Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00DB6C10F25
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 03:27:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F006C10F28
+	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 15:33:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A6B902072C
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 03:27:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1583638077;
-	bh=5TXqc/wHOgpq3fBa+jiwOk9beKszHKLHMpxvbc3OoD4=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=SW2xKDhrypfGvZDdbAuuzii35JbutOAQdaBFgWe6+8QQJhTQQrsFGlWa7UQWliIls
-	 PwV+WD8sySeA9zav5RpjBHBaTh+C91aF18qLObz6ZXvbSmFZfavwPLfpIGudnHnYM3
-	 rkT9if+o2VNF6EZQFTOe1TD0lrzaNeKmv6b02VFs=
+	by mail.kernel.org (Postfix) with ESMTP id 43483208C3
+	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 15:33:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726259AbgCHD15 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 7 Mar 2020 22:27:57 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38802 "EHLO mail.kernel.org"
+        id S1726291AbgCHPdu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 8 Mar 2020 11:33:50 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:58108 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726138AbgCHD14 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 7 Mar 2020 22:27:56 -0500
-Received: from sol.hsd1.ca.comcast.net (c-107-3-166-239.hsd1.ca.comcast.net [107.3.166.239])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id E0D712070A;
-        Sun,  8 Mar 2020 03:27:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1583638076;
-        bh=5TXqc/wHOgpq3fBa+jiwOk9beKszHKLHMpxvbc3OoD4=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=o/7AWOvSLlzDiPa4iOe5/OS5yMWyBEL6gL8SJdyu/qF4RMsRlhR7g8vBPmfuZ9Myf
-         vVGRZcalA0mD5h9JX08vA3aGaDafGGqgUtkuiGB0k2otUTs/VQVbaDT5CypS/IgoPo
-         mrlwjEkI6jCzkC4HPYw9cwI3BzvjqZHgbiJnVfus=
-From:   Eric Biggers <ebiggers@kernel.org>
-To:     linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc:     glider@google.com, linux-kernel@vger.kernel.org,
-        syzbot+af962bf9e7e27bccd025@syzkaller.appspotmail.com
-Subject: [PATCH] PM / hibernate: Remove unnecessary compat ioctl overrides
-Date:   Sat,  7 Mar 2020 19:27:01 -0800
-Message-Id: <20200308032701.998434-1-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200308032434.GX15444@sol.localdomain>
-References: <20200308032434.GX15444@sol.localdomain>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726271AbgCHPdu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 8 Mar 2020 11:33:50 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 543A6200A42;
+        Sun,  8 Mar 2020 16:33:48 +0100 (CET)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 3EE982013C5;
+        Sun,  8 Mar 2020 16:33:41 +0100 (CET)
+Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 976C440294;
+        Sun,  8 Mar 2020 23:33:32 +0800 (SGT)
+From:   Anson Huang <Anson.Huang@nxp.com>
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com, robh+dt@kernel.org,
+        mark.rutland@arm.com, shawnguo@kernel.org, s.hauer@pengutronix.de,
+        kernel@pengutronix.de, festevam@gmail.com,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc:     Linux-imx@nxp.com
+Subject: [PATCH 1/3] dt-bindings: thermal: imx8mm-thermal: Add support for i.MX8MP
+Date:   Sun,  8 Mar 2020 23:27:18 +0800
+Message-Id: <1583681240-14782-1-git-send-email-Anson.Huang@nxp.com>
+X-Mailer: git-send-email 2.7.4
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Eric Biggers <ebiggers@google.com>
+Add thermal binding doc for Freescale's i.MX8MP Thermal Monitoring Unit.
 
-Since the SNAPSHOT_GET_IMAGE_SIZE, SNAPSHOT_AVAIL_SWAP_SIZE, and
-SNAPSHOT_ALLOC_SWAP_PAGE ioctls produce an loff_t result, and loff_t is
-always 64-bit even in the compat case, there's no reason to have the
-special compat handling for these ioctls.  Just remove this unneeded
-code so that these ioctls call into snapshot_ioctl() directly, doing
-just the compat_ptr() conversion on the argument.
-
-(This unnecessary code was also causing a KMSAN false positive.)
-
-Signed-off-by: Eric Biggers <ebiggers@google.com>
+Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 ---
- kernel/power/user.c | 16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
+ Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/power/user.c b/kernel/power/user.c
-index 77438954cc2b..58ed9478787f 100644
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -409,21 +409,7 @@ snapshot_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 	switch (cmd) {
- 	case SNAPSHOT_GET_IMAGE_SIZE:
- 	case SNAPSHOT_AVAIL_SWAP_SIZE:
--	case SNAPSHOT_ALLOC_SWAP_PAGE: {
--		compat_loff_t __user *uoffset = compat_ptr(arg);
--		loff_t offset;
--		mm_segment_t old_fs;
--		int err;
--
--		old_fs = get_fs();
--		set_fs(KERNEL_DS);
--		err = snapshot_ioctl(file, cmd, (unsigned long) &offset);
--		set_fs(old_fs);
--		if (!err && put_user(offset, uoffset))
--			err = -EFAULT;
--		return err;
--	}
--
-+	case SNAPSHOT_ALLOC_SWAP_PAGE:
- 	case SNAPSHOT_CREATE_IMAGE:
- 		return snapshot_ioctl(file, cmd,
- 				      (unsigned long) compat_ptr(arg));
+diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
+index d09ae82..3629d3c 100644
+--- a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
+@@ -1,10 +1,10 @@
+ * Thermal Monitoring Unit (TMU) on Freescale i.MX8MM SoC
+ 
+ Required properties:
+-- compatible : Must be "fsl,imx8mm-tmu".
++- compatible : Must be "fsl,imx8mm-tmu" or "fsl,imx8mp-tmu".
+ - reg : Address range of TMU registers.
+ - clocks : TMU's clock source.
+-- #thermal-sensor-cells : Should be 0. See ./thermal.txt for a description.
++- #thermal-sensor-cells : Should be 0 or 1. See ./thermal.txt for a description.
+ 
+ Example:
+ tmu: tmu@30260000 {
 -- 
-2.25.1
+2.7.4
 
