@@ -2,216 +2,123 @@ Return-Path: <SRS0=D+LV=4Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53375C10DCE
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 16:35:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3BCBC10DCE
+	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 18:54:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2CC4A20828
-	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 16:35:48 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ragnatech-se.20150623.gappssmtp.com header.i=@ragnatech-se.20150623.gappssmtp.com header.b="VBwElsPw"
+	by mail.kernel.org (Postfix) with ESMTP id AC5D02080C
+	for <linux-pm@archiver.kernel.org>; Sun,  8 Mar 2020 18:54:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1583693688;
+	bh=Q+kfL4mkXLvM4nEGnLgXVk4GKzZ0+K/A2ern3w+0xSU=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=cim3Pz4c1l09DIPE6bzx6kX2LEIhY9AxN4fG7sTO0fQ1/g0omxveZLSBC8mtfyXRk
+	 7xhRryGg9loGoR5wAlA8DucKxjDFEyrzoljbAFqm1UdQDO+d7OLwDmLOpOnFqYHhYe
+	 lIqeAylXZG74lRIhtJKlMtkCUhu6Ts6rB/+amSps=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726292AbgCHQfr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 8 Mar 2020 12:35:47 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:46610 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726303AbgCHQfr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 8 Mar 2020 12:35:47 -0400
-Received: by mail-lf1-f65.google.com with SMTP id v6so5628200lfo.13
-        for <linux-pm@vger.kernel.org>; Sun, 08 Mar 2020 09:35:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=SCn2CpVC/7ynZUWvGTDmpECNjpBPxtQHPMbxz1lBSOQ=;
-        b=VBwElsPwH4qLkHurgScNaHNHOiGUnQFVuXLs47+GzkvBpuVSogd92FF/MYnHIn9d/m
-         8F4fcpi2vppv8TT0bOMhzzYFk+CqYgNJWuH6q31JTUYoxqndZbhItF/tAC2EI5s8wpk/
-         o5onxJelZaDxOUI4COgA/C9cn76H2+iiQ487IQwrvdGPlAf/Un4T9vock+xKOwdy8Dj4
-         Uq8bXPLzu9T+WvWQU86PMi3FCRwPJrPOs+GGpi+cO0t32PuCDVFOp30dQsJqgmRbHCQg
-         KdzHi4WjOZ5F+W2hYQkNbxRiPcwg5yW2jz2fWDxOpaDSEBdv91NRKOFmtEnjlIT/GKm2
-         iNNg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=SCn2CpVC/7ynZUWvGTDmpECNjpBPxtQHPMbxz1lBSOQ=;
-        b=t+pcpBgpyImjoLuUrPgLY0XjJP7Pc6xIbGU4eyqIjtOOlogl9yn6CQB8eWXZcCIugN
-         2NyIZtyL6i33cvWzAwNzzKtUWG7B9kbQb3K6yfoRfOEQ9/hh+ijxiNSD951SSrdsHIP2
-         GIOTUtNCQqjGm0+2rlrkABwV4G8r+ZDLz9zYlYpiYqkN1N6kxDaFCw9QCUyY4teZLmSU
-         Py1RZnb1NuNzysff/rtZlsvaEXKn3iSIAzm+yXYThicLwIW0uc8COY6g2hgFrSGW6giT
-         hCyh71ShjOA5R5GksUCM6Z7QLmcqIybDGVvPc/3Fv2SMfPINn4b3W961AnefNcpvIyvy
-         4m2A==
-X-Gm-Message-State: ANhLgQ1tgwDWYKdLp/RgsKJaC1D2g9MJWpjs328CVzK/tvb0m7kxyuYz
-        gNThnFSxADVst04/B8Qbb5Fkig==
-X-Google-Smtp-Source: ADFU+vuo9cIWcyNT/HEu7Hn2mCrfDG0g9mOpd0bFl78MAIG7W5xNck5AJIKMHv1L7fu+OcBX7OdTfA==
-X-Received: by 2002:ac2:4201:: with SMTP id y1mr7412717lfh.92.1583685345015;
-        Sun, 08 Mar 2020 09:35:45 -0700 (PDT)
-Received: from localhost (h-200-138.A463.priv.bahnhof.se. [176.10.200.138])
-        by smtp.gmail.com with ESMTPSA id o4sm14989027lfl.62.2020.03.08.09.35.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 08 Mar 2020 09:35:44 -0700 (PDT)
-Date:   Sun, 8 Mar 2020 17:35:43 +0100
-From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
-        <niklas.soderlund@ragnatech.se>
-To:     Geert Uytterhoeven <geert+renesas@glider.be>
-Cc:     Magnus Damm <magnus.damm@gmail.com>,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH] arm64: dts: renesas: r8a77961: Add thermal nodes
-Message-ID: <20200308163543.GD2975348@oden.dyn.berto.se>
-References: <20200306110025.24747-1-geert+renesas@glider.be>
+        id S1726336AbgCHSyr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 8 Mar 2020 14:54:47 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54598 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726318AbgCHSyr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 8 Mar 2020 14:54:47 -0400
+Received: from earth.universe (unknown [185.62.205.105])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id C576E20663;
+        Sun,  8 Mar 2020 18:54:46 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1583693687;
+        bh=Q+kfL4mkXLvM4nEGnLgXVk4GKzZ0+K/A2ern3w+0xSU=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=GL42HVY51ZG+Fp9Jnf0GgKOU1R/rQc66l7JTQISLGNJHbMqKeLW+DTThTwAEk5JxL
+         zselZ4tkuwqc/tZOcqiKK1DhPGWmmEuB/ySZGmCypYcBkhrH0THm2TLNewIn4GaJWd
+         62mbeKY+pBVqH/rdXrd91X1p6Qo7HdhfgIZXDCT8=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 5DAAB3C0C82; Sun,  8 Mar 2020 19:54:44 +0100 (CET)
+Date:   Sun, 8 Mar 2020 19:54:44 +0100
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Claudiu.Beznea@microchip.com
+Cc:     Nicolas.Ferre@microchip.com, alexandre.belloni@bootlin.com,
+        Ludovic.Desroches@microchip.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 00/15] rework at91-reset driver
+Message-ID: <20200308185444.lpkpumgxhya7n356@earth.universe>
+References: <1579601001-5711-1-git-send-email-claudiu.beznea@microchip.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="kc3gxuytlvcwlxwg"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200306110025.24747-1-geert+renesas@glider.be>
+In-Reply-To: <1579601001-5711-1-git-send-email-claudiu.beznea@microchip.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Geert,
 
-Thanks for your work.
+--kc3gxuytlvcwlxwg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On 2020-03-06 12:00:25 +0100, Geert Uytterhoeven wrote:
-> Add a device node for the Thermal Sensor/Chip Internal Voltage Monitor
-> in the R-Car M3-W+ (R8A77961) SoC, and describe the thermal zones.
-> 
-> According to the R-Car Gen3 Hardware Manual Errata for Revision 2.00 of
-> Jan 31, 2020, the thermal parameters for R-Car M3-W+ are the same as for
-> R-Car M3-W.
-> 
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> ---
-> It's a bit cold in Magnus' lab:
-> 
-> / # grep . /sys/devices/virtual/thermal/thermal_zone?/temp
-> /sys/devices/virtual/thermal/thermal_zone0/temp:17000
-> /sys/devices/virtual/thermal/thermal_zone1/temp:19000
-> /sys/devices/virtual/thermal/thermal_zone2/temp:18000
-> ---
->  arch/arm64/boot/dts/renesas/r8a77961.dtsi | 80 +++++++++++++++++++++++
->  1 file changed, 80 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/renesas/r8a77961.dtsi b/arch/arm64/boot/dts/renesas/r8a77961.dtsi
-> index b6915319a61c8bf0..2f016458f57d3a33 100644
-> --- a/arch/arm64/boot/dts/renesas/r8a77961.dtsi
-> +++ b/arch/arm64/boot/dts/renesas/r8a77961.dtsi
-> @@ -474,6 +474,20 @@
->  			#power-domain-cells = <1>;
->  		};
->  
-> +		tsc: thermal@e6198000 {
-> +			compatible = "renesas,r8a77961-thermal";
-> +			reg = <0 0xe6198000 0 0x100>,
-> +			      <0 0xe61a0000 0 0x100>,
-> +			      <0 0xe61a8000 0 0x100>;
-> +			interrupts = <GIC_SPI 67 IRQ_TYPE_LEVEL_HIGH>,
-> +				     <GIC_SPI 68 IRQ_TYPE_LEVEL_HIGH>,
-> +				     <GIC_SPI 69 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks = <&cpg CPG_MOD 522>;
-> +			power-domains = <&sysc R8A77961_PD_ALWAYS_ON>;
-> +			resets = <&cpg 522>;
-> +			#thermal-sensor-cells = <1>;
-> +		};
-> +
->  		intc_ex: interrupt-controller@e61c0000 {
->  			#interrupt-cells = <2>;
->  			interrupt-controller;
-> @@ -785,6 +799,7 @@
->  			status = "disabled";
->  		};
->  
-> +
+Hi,
 
-This don't looks like it's needed :-) With this fixed,
+On Tue, Jan 21, 2020 at 10:03:29AM +0000, Claudiu.Beznea@microchip.com wrot=
+e:
+> The following patches rework the at91-reset driver and solves
+> the SAM9X60 VDDCORE fast drop in the first 100us after power down.
 
-Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Thanks, queued to power-supply's for-next branch.
 
->  		pwm1: pwm@e6e31000 {
->  			reg = <0 0xe6e31000 0 8>;
->  			#pwm-cells = <2>;
-> @@ -1073,6 +1088,71 @@
->  		};
->  	};
->  
-> +	thermal-zones {
-> +		sensor_thermal1: sensor-thermal1 {
-> +			polling-delay-passive = <250>;
-> +			polling-delay = <1000>;
-> +			thermal-sensors = <&tsc 0>;
-> +			sustainable-power = <3874>;
-> +
-> +			trips {
-> +				sensor1_crit: sensor1-crit {
-> +					temperature = <120000>;
-> +					hysteresis = <1000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		sensor_thermal2: sensor-thermal2 {
-> +			polling-delay-passive = <250>;
-> +			polling-delay = <1000>;
-> +			thermal-sensors = <&tsc 1>;
-> +			sustainable-power = <3874>;
-> +
-> +			trips {
-> +				sensor2_crit: sensor2-crit {
-> +					temperature = <120000>;
-> +					hysteresis = <1000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +
-> +		sensor_thermal3: sensor-thermal3 {
-> +			polling-delay-passive = <250>;
-> +			polling-delay = <1000>;
-> +			thermal-sensors = <&tsc 2>;
-> +			sustainable-power = <3874>;
-> +
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&target>;
-> +					cooling-device = <&a57_0 2 4>;
-> +					contribution = <1024>;
-> +				};
-> +				map1 {
-> +					trip = <&target>;
-> +					cooling-device = <&a53_0 0 2>;
-> +					contribution = <1024>;
-> +				};
-> +			};
-> +			trips {
-> +				target: trip-point1 {
-> +					temperature = <100000>;
-> +					hysteresis = <1000>;
-> +					type = "passive";
-> +				};
-> +
-> +				sensor3_crit: sensor3-crit {
-> +					temperature = <120000>;
-> +					hysteresis = <1000>;
-> +					type = "critical";
-> +				};
-> +			};
-> +		};
-> +	};
-> +
->  	timer {
->  		compatible = "arm,armv8-timer";
->  		interrupts-extended = <&gic GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(6) | IRQ_TYPE_LEVEL_LOW)>,
-> -- 
-> 2.17.1
-> 
+-- Sebastian
 
--- 
-Regards,
-Niklas Söderlund
+> Claudiu Beznea (15):
+>   power: reset: at91-reset: introduce struct at91_reset
+>   power: reset: at91-reset: add ramc_base[] to struct at91_reset
+>   power: reset: at91-reset: add sclk to struct at91_reset
+>   power: reset: at91-reset: add notifier block to struct at91_reset
+>   power: reset: at91-reset: convert reset in pointer to struct
+>     at91_reset
+>   power: reset: at91-reset: pass rstc base address to
+>     at91_reset_status()
+>   power: reset: at91-reset: devm_kzalloc() for at91_reset data structure
+>   power: reset: at91-reset: introduce struct at91_reset_data
+>   power: reset: at91-reset: introduce args member in at91_reset_data
+>   power: reset: at91-reset: use r4 as tmp argument
+>   power: reset: at91-reset: introduce ramc_lpr to struct at91_reset
+>   power: reset: at91-reset: make at91sam9g45_restart() generic
+>   power: reset: at91-reset: keep only one reset function
+>   power: reset: at91-reset: get rid of at91_reset_data
+>   power: reset: at91-reset: handle nrst async for sam9x60
+>=20
+>  drivers/power/reset/at91-reset.c | 190 +++++++++++++++++++--------------=
+------
+>  1 file changed, 94 insertions(+), 96 deletions(-)
+>=20
+> --=20
+> 2.7.4
+
+--kc3gxuytlvcwlxwg
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl5lP20ACgkQ2O7X88g7
++prHbg/+O0XOtdVGtEj+dgQdKkxCtRq/tHyIWB/3PAUQ3fAEGtBmQVdDZS6EHi9A
+xvKRTAIPw4NL4LvX3KLx90iyJdwokAU61/MX6aGcWUe7v5jgOGHsdXlfEIVlMzEo
+U7UEexjUAMEAgA2aG1Dl38GNY6q/Df1QKRg63D2x1n6wRD72lzgLTYpVxQVmeEoL
+FP6wYdjvYgBrvjHd0VVoUdrk218eQtzFBA/BsEyJ3Vh3RNiqTNJWamaxe83p10vb
+XMVfSkdyqc/hqBDx95+QkwFcsZM6y/B1iTfjaoc08uEh3GI3k0ggpRoZDm+S3aVr
+Y2n1CDekjlVisufZhwvTkDYijwyWelH4aXlUbyAK/TBJ0zOeESq7mJxHry5az5u2
++161MxZZivVZvklCh0QUgpgP0DOv1vWA4sX7thw7EXLz5HHIJacstKAQGnrUtZNL
+ohIZLEU4awX3xplOltncY0PqKztbv+BTfE9RN8K6EWFjqo76pkMgHoXE+J1VtZA7
+eSQiRvByrAWiWdftZGwoSjTgcO5BlqxAvzFK7nuyvAgrTkip28i+5QGs4ihgpLbz
+s6DWLgts47zHLA03Ymr0Cqw9Ej+2mSeZNhzR4yJAG/fmzoICs4kvfSin9uHJDHyZ
+wubsG9S0HGzZJoGQkm8458zN2GFus96QrGOwx4TLebvipvS69GU=
+=ox0n
+-----END PGP SIGNATURE-----
+
+--kc3gxuytlvcwlxwg--
