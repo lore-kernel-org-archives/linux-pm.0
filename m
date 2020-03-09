@@ -2,102 +2,152 @@ Return-Path: <SRS0=ABut=42=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED60FC18E5A
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Mar 2020 14:57:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F369FC10F27
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Mar 2020 16:25:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C728F222C3
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Mar 2020 14:57:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1583765845;
-	bh=lKI8Yb8uZ3tBIe9X4wlAKYTXm/yXMD/FBLCurx3Ybds=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=Cgj1lRY5rSA2FrzmKzs03S8pDbfut74a70pEyMaF3J39Eg1fsy8aU/SWgOWFteOqk
-	 XCUix1iV8P90jQmfC6TeVt8F3hqNPeKY2AJlMFDRoGpUC/68VJI4ULgp5L1sTjnKdl
-	 bI1lc+MaCiVe+HtmfEhB/meRlpA+Vgfr4tVSfbAc=
+	by mail.kernel.org (Postfix) with ESMTP id D3C5B2253D
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Mar 2020 16:25:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727026AbgCIO5Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Mar 2020 10:57:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45770 "EHLO mail.kernel.org"
+        id S1727154AbgCIQZF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Mar 2020 12:25:05 -0400
+Received: from mail.manjaro.org ([176.9.38.148]:44342 "EHLO mail.manjaro.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726967AbgCIO5Z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 9 Mar 2020 10:57:25 -0400
-Received: from disco-boy.misterjones.org (disco-boy.misterjones.org [51.254.78.96])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 5A1F421655;
-        Mon,  9 Mar 2020 14:57:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1583765844;
-        bh=lKI8Yb8uZ3tBIe9X4wlAKYTXm/yXMD/FBLCurx3Ybds=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=JhpMNSKzrpZSjcFxvL6Ii+nhacGswhk8gehCkK+Eu0AsQMpo2Bf4KZRdeAeibLrmQ
-         ZdB2DECIG4CtwARIQU1ytrj8fN+cvZyyaVFv7Ld7bc3gbmHuRdtqgIF6y5bY05dnbq
-         ztSx+ssyOK9hjHm0wZi1g0s/VeSN+lZ/Nuqla/dI=
-Received: from disco-boy.misterjones.org ([51.254.78.96] helo=www.loen.fr)
-        by disco-boy.misterjones.org with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.92)
-        (envelope-from <maz@kernel.org>)
-        id 1jBJqM-00BJCg-Ig; Mon, 09 Mar 2020 14:57:22 +0000
+        id S1726758AbgCIQZF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 9 Mar 2020 12:25:05 -0400
+X-Greylist: delayed 1243 seconds by postgrey-1.27 at vger.kernel.org; Mon, 09 Mar 2020 12:25:05 EDT
+Received: from localhost (localhost [127.0.0.1])
+        by mail.manjaro.org (Postfix) with ESMTP id C3FCE370239A;
+        Mon,  9 Mar 2020 17:04:37 +0100 (CET)
+X-Virus-Scanned: Debian amavisd-new at manjaro.org
+Received: from mail.manjaro.org ([127.0.0.1])
+        by localhost (manjaro.org [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id S4uHlTtv556r; Mon,  9 Mar 2020 17:04:34 +0100 (CET)
+From:   Tobias Schramm <t.schramm@manjaro.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Tobias Schramm <t.schramm@manjaro.org>
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: cw2015_battery: add device tree binding documentation
+Date:   Mon,  9 Mar 2020 17:03:45 +0100
+Message-Id: <20200309160346.2203680-2-t.schramm@manjaro.org>
+In-Reply-To: <20200309160346.2203680-1-t.schramm@manjaro.org>
+References: <20200309160346.2203680-1-t.schramm@manjaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Mon, 09 Mar 2020 14:57:22 +0000
-From:   Marc Zyngier <maz@kernel.org>
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com,
-        suzuki.poulose@arm.com, sudeep.holla@arm.com, lukasz.luba@arm.com,
-        valentin.schneider@arm.com, dietmar.eggemann@arm.com,
-        rjw@rjwysocki.net, pkondeti@codeaurora.org, peterz@infradead.org,
-        mingo@redhat.com, vincent.guittot@linaro.org,
-        viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, James Morse <james.morse@arm.com>,
-        Julien Thierry <julien.thierry.kdev@gmail.com>
-Subject: Re: [PATCH v5 3/7] arm64/kvm: disable access to AMU registers from
- kvm guests
-In-Reply-To: <20200309142529.GB13343@arm.com>
-References: <20200226132947.29738-1-ionela.voinescu@arm.com>
- <20200226132947.29738-4-ionela.voinescu@arm.com>
- <46b89d0c9704e0a0fb7a4ac2a1fb5b7a@kernel.org>
- <20200309142529.GB13343@arm.com>
-Message-ID: <e3c164afe9fdefe2a01ddbdf34e437a2@kernel.org>
-X-Sender: maz@kernel.org
-User-Agent: Roundcube Webmail/1.3.10
-X-SA-Exim-Connect-IP: 51.254.78.96
-X-SA-Exim-Rcpt-To: ionela.voinescu@arm.com, catalin.marinas@arm.com, will@kernel.org, mark.rutland@arm.com, suzuki.poulose@arm.com, sudeep.holla@arm.com, lukasz.luba@arm.com, valentin.schneider@arm.com, dietmar.eggemann@arm.com, rjw@rjwysocki.net, pkondeti@codeaurora.org, peterz@infradead.org, mingo@redhat.com, vincent.guittot@linaro.org, viresh.kumar@linaro.org, linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, james.morse@arm.com, julien.thierry.kdev@gmail.com
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2020-03-09 14:25, Ionela Voinescu wrote:
+This patch adds the dts binding schema for the cw2015 fuel gauge.
 
-Hi Ionela,
+Signed-off-by: Tobias Schramm <t.schramm@manjaro.org>
+---
+ .../bindings/power/supply/cw2015_battery.yaml | 84 +++++++++++++++++++
+ 1 file changed, 84 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
 
-[now with everyone on cc...]
-
->> This will definitely conflict with some of the ongoing rework I 
->> have[1].
->> I'm happy to provide this as a stable branch for you to rebase on top,
->> or use an arm64 provided branch to rebase my stoff on top.
->> 
->> Just let me know how you want to proceed.
->> 
-> 
-> Catalin added the AMU patches on top of 5.6-rc3 at [1].
-> Is this okay as a base branch for your patches?
-
-Sure, no problem. I still need to respin those...
-
-Thanks,
-
-         M.
+diff --git a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
+new file mode 100644
+index 000000000000..ebd4814ea58d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
+@@ -0,0 +1,84 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/cw2015_battery.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Battery driver for CW2015 shuntless fule gauge by CellWise.
++
++maintainers:
++  - Tobias Schramm <t.schramm@manjaro.org>
++
++description: |
++  The driver can utilize information from a simple-battery linked via a
++  phandle in monitored-battery. If specified the driver uses the
++  charge-full-design-microamp-hours property of the battery.
++
++  The contents of the byte array in cellwise,bat-config-info describes
++  characteristics of the battery used. The format of this binary blob
++  is not publicly descibed and currently unknown.
++
++properties:
++  compatible:
++    const: cellwise,cw2015
++
++  reg:
++    items:
++      - description: i2c address
++
++  cellwise,bat-config-info:
++    description:
++      Specifies the binary battery parameter blob
++    allOf:
++      - $ref: /schemas/types.yaml#definitions/uint8-array
++    items:
++      - minItems: 64
++        maxItems: 64
++
++  cellwise,monitor-interval-ms:
++    description:
++      Specifies the interval in milliseconds gauge values are polled at
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  power-supplies:
++    description:
++      Specifies supplies used for charging the battery connected to this gauge
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/phandle-array
++      - minItems: 1
++        maxItems: 8 # Should be enough
++
++  monitored-battery:
++    description:
++      Specifies the phandle of a simple-battery connected to this gauge
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++required:
++  - compatible
++  - reg
++
++examples:
++  - |
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        cw2015@62 {
++            compatible = "cellwise,cw201x";
++            reg = <0x62>;
++            cellwise,bat-config-info = /bits/ 8 <
++                0x17 0x67 0x80 0x73 0x6E 0x6C 0x6B 0x63
++                0x77 0x51 0x5C 0x58 0x50 0x4C 0x48 0x36
++                0x15 0x0C 0x0C 0x19 0x5B 0x7D 0x6F 0x69
++                0x69 0x5B 0x0C 0x29 0x20 0x40 0x52 0x59
++                0x57 0x56 0x54 0x4F 0x3B 0x1F 0x7F 0x17
++                0x06 0x1A 0x30 0x5A 0x85 0x93 0x96 0x2D
++                0x48 0x77 0x9C 0xB3 0x80 0x52 0x94 0xCB
++                0x2F 0x00 0x64 0xA5 0xB5 0x11 0xF0 0x11
++           >;
++           cellwise,monitor-interval-ms = <5000>;
++           monitored-battery = <&bat>;
++           power-supplies = <&mains_charger>, <&usb_charger>;
++       };
++    };
++
 -- 
-Jazz is not dead. It just smells funny...
+2.24.1
+
