@@ -2,107 +2,100 @@ Return-Path: <SRS0=5rfv=43=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23E3EC2BB57
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 10:11:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 499E4C10F27
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 10:27:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E3BD42464B
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 10:11:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 205B32467D
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 10:27:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="L18ESnSe"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="ETQhc7K9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726451AbgCJKKw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 06:10:52 -0400
-Received: from mailgw02.mediatek.com ([210.61.82.184]:33335 "EHLO
-        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726273AbgCJKKu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 06:10:50 -0400
-X-UUID: 2e22c60e38e644dfb4547a0a9fc79688-20200310
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=sNkHpXF8izKZUF7qsuSvErydtyfam/Pb0hpHXYo69zY=;
-        b=L18ESnSe2V9frc//cBdpfJLwMjd95acquRh/8O/Yc6t4TYWFlqg8QJ03SCDs9d+QcDN7tqifMr5gRa5+m17fojyCm524Mhlf/QXuOto2YqRO5/50d0SBebPZRkGgB9fjZlzSIfASsAH5rYACdeMdMZOjX6DjgR4WbkhsKAHYbPA=;
-X-UUID: 2e22c60e38e644dfb4547a0a9fc79688-20200310
-Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw02.mediatek.com
-        (envelope-from <hsin-hsiung.wang@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
-        with ESMTP id 1879422500; Tue, 10 Mar 2020 18:10:45 +0800
-Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
- mtkmbs05n1.mediatek.inc (172.21.101.15) with Microsoft SMTP Server (TLS) id
- 15.0.1395.4; Tue, 10 Mar 2020 18:09:31 +0800
-Received: from mtksdaap41.mediatek.inc (172.21.77.4) by MTKCAS06.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1395.4 via Frontend
- Transport; Tue, 10 Mar 2020 18:07:58 +0800
-From:   Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
-To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Matthias Brugger <matthias.bgg@gmail.com>
-CC:     Mark Rutland <mark.rutland@arm.com>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Eddie Huang <eddie.huang@mediatek.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>,
-        Frank Wunderlich <frank-w@public-files.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Richard Fontana <rfontana@redhat.com>,
-        Josef Friedl <josef.friedl@speed.at>,
-        Ran Bi <ran.bi@mediatek.com>, <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <linux-rtc@vger.kernel.org>,
-        Nicolas Boichat <drinkcat@chromium.org>,
-        <srv_heupstream@mediatek.com>
-Subject: [PATCH v9 2/5] dt-bindings: mfd: Add compatible for the MediaTek MT6358 PMIC
-Date:   Tue, 10 Mar 2020 18:10:37 +0800
-Message-ID: <1583835040-19157-3-git-send-email-hsin-hsiung.wang@mediatek.com>
-X-Mailer: git-send-email 2.6.4
-In-Reply-To: <1583835040-19157-1-git-send-email-hsin-hsiung.wang@mediatek.com>
-References: <1583835040-19157-1-git-send-email-hsin-hsiung.wang@mediatek.com>
+        id S1726100AbgCJK10 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 06:27:26 -0400
+Received: from mail-pf1-f195.google.com ([209.85.210.195]:38436 "EHLO
+        mail-pf1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725845AbgCJK10 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 06:27:26 -0400
+Received: by mail-pf1-f195.google.com with SMTP id z5so1395041pfn.5
+        for <linux-pm@vger.kernel.org>; Tue, 10 Mar 2020 03:27:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=UVxjDbJ8yG3WbrAvw48nY6/lmV1Vt18fzd7yy2pI2bk=;
+        b=ETQhc7K9vKkN5Q91wE7nOAB5omcJBCGYt3axAyhwtII2UsT6CLk+o7eaH/cz8GRk9v
+         pvXTf9MszeGwU56cOjDABAJ3m/bNF4AoIsgN+thhWb/c+2vqRiNjyYV9OhtbaH6nswse
+         EtG6DtU8InHx0exYjqPb5ztupXDSzad+qxdkvCYHIxI2nGCtuVjKlLRVEK7amL4wEX1J
+         zXo4dyODP3rWRHmbAkWgEDOSjvbYUJjmHJmLPkq3etgfvVFQcNsDlkNhphrLYpi9ha+A
+         o45mP3XskU0+uFWR4vSjmAcOsTnQ86z6gec+t6rQipq85Mq5wjeVEWh3RZ4tc/8TESp7
+         pHRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=UVxjDbJ8yG3WbrAvw48nY6/lmV1Vt18fzd7yy2pI2bk=;
+        b=laj/7z9wVmyRqOgiE1CdwnKXzJC725Wrxa/5aZINNMLOwf6//w7KZZQZpuQdP7nvUb
+         R0r3p7nIynHW4vBL5KR66/Rau30nD1lXEh7XzHO1CWCfTuiYClwEImVXeCUNTSWqpo2Y
+         wTP8SVVgReAeIWGecnC1CfkLUf1XjR+SVuqCzvlJa130QSplCTI58fKdlAi8b3craTXt
+         2GqafM5PpGa/k+VG8KBq9LHHWMzfjRwd2Q52qCJLPpn87MsUT9twfPrrnJSg8YasdsZJ
+         wgngOf1xuYU8FoAvzWQACTLZeKuTfuRtq0yvfNhbzrE3KQ/fnWnlVioHf7R6RpePJPCS
+         We7A==
+X-Gm-Message-State: ANhLgQ0TAesLB1X/m970KG+eU8HnheyehlG6+JdQIsdegM852yZDKEMM
+        xVkNtwcmvduIYGREmRD/JUnQUw==
+X-Google-Smtp-Source: ADFU+vvy7XsorDvH8Rj4cQbMNDnaeA3kylo+pPg9Z/bQGJVfX/NSC1p0DjZvvIM11anPSJdlXOfa3g==
+X-Received: by 2002:a63:441e:: with SMTP id r30mr19913058pga.51.1583836044146;
+        Tue, 10 Mar 2020 03:27:24 -0700 (PDT)
+Received: from [10.0.9.4] ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id k6sm1382563pje.8.2020.03.10.03.27.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Mar 2020 03:27:23 -0700 (PDT)
+Message-ID: <5e676b8b.1c69fb81.c359f.40db@mx.google.com>
+Date:   Tue, 10 Mar 2020 03:27:23 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.6-rc5-83-gabcd59902c64
+X-Kernelci-Report-Type: boot
+Subject: pm/testing boot: 25 boots: 0 failed,
+ 24 passed with 1 untried/unknown (v5.6-rc5-83-gabcd59902c64)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-VGhpcyBhZGRzIGNvbXBhdGlibGUgZm9yIHRoZSBNZWRpYVRlayBNVDYzNTggUE1JQy4NCg0KQWNr
-ZWQtZm9yLW1mZC1ieTogTGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz4NClJldmlld2Vk
-LWJ5OiBSb2IgSGVycmluZyA8cm9iaEBrZXJuZWwub3JnPg0KU2lnbmVkLW9mZi1ieTogSHNpbi1I
-c2l1bmcgV2FuZyA8aHNpbi1oc2l1bmcud2FuZ0BtZWRpYXRlay5jb20+DQotLS0NCiBEb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL210NjM5Ny50eHQgfCAxNCArKysrKysrKysr
-LS0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0K
-DQpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9tdDYz
-OTcudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9tdDYzOTcudHh0
-DQppbmRleCBhOWIxMDVhLi4wZGY0MzgyIDEwMDY0NA0KLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL21mZC9tdDYzOTcudHh0DQorKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvbWZkL210NjM5Ny50eHQNCkBAIC0xOCwyNCArMTgsMzAgQEAgU2VlIHRo
-ZSBmb2xsb3dpbmcgZm9yIHB3YXJwIG5vZGUgZGVmaW5pdGlvbnM6DQogVGhpcyBkb2N1bWVudCBk
-ZXNjcmliZXMgdGhlIGJpbmRpbmcgZm9yIE1GRCBkZXZpY2UgYW5kIGl0cyBzdWIgbW9kdWxlLg0K
-IA0KIFJlcXVpcmVkIHByb3BlcnRpZXM6DQotY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5NyIg
-b3IgIm1lZGlhdGVrLG10NjMyMyINCitjb21wYXRpYmxlOg0KKwkibWVkaWF0ZWssbXQ2MzIzIiBm
-b3IgUE1JQyBNVDYzMjMNCisJIm1lZGlhdGVrLG10NjM1OCIgZm9yIFBNSUMgTVQ2MzU4DQorCSJt
-ZWRpYXRlayxtdDYzOTciIGZvciBQTUlDIE1UNjM5Nw0KIA0KIE9wdGlvbmFsIHN1Ym5vZGVzOg0K
-IA0KIC0gcnRjDQogCVJlcXVpcmVkIHByb3BlcnRpZXM6IFNob3VsZCBiZSBvbmUgb2YgZm9sbG93
-cw0KIAkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2MzIzLXJ0YyINCisJCS0gY29tcGF0aWJs
-ZTogIm1lZGlhdGVrLG10NjM1OC1ydGMiDQogCQktIGNvbXBhdGlibGU6ICJtZWRpYXRlayxtdDYz
-OTctcnRjIg0KIAlGb3IgZGV0YWlscywgc2VlIC4uL3J0Yy9ydGMtbXQ2Mzk3LnR4dA0KIC0gcmVn
-dWxhdG9ycw0KIAlSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KLQkJLSBjb21wYXRpYmxlOiAibWVkaWF0
-ZWssbXQ2Mzk3LXJlZ3VsYXRvciINCi0Jc2VlIC4uL3JlZ3VsYXRvci9tdDYzOTctcmVndWxhdG9y
-LnR4dA0KIAkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2MzIzLXJlZ3VsYXRvciINCiAJc2Vl
-IC4uL3JlZ3VsYXRvci9tdDYzMjMtcmVndWxhdG9yLnR4dA0KKwkJLSBjb21wYXRpYmxlOiAibWVk
-aWF0ZWssbXQ2MzU4LXJlZ3VsYXRvciINCisJc2VlIC4uL3JlZ3VsYXRvci9tdDYzNTgtcmVndWxh
-dG9yLnR4dA0KKwkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2Mzk3LXJlZ3VsYXRvciINCisJ
-c2VlIC4uL3JlZ3VsYXRvci9tdDYzOTctcmVndWxhdG9yLnR4dA0KIC0gY29kZWMNCiAJUmVxdWly
-ZWQgcHJvcGVydGllczoNCi0JCS0gY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5Ny1jb2RlYyIN
-CisJCS0gY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5Ny1jb2RlYyIgb3IgIm1lZGlhdGVrLG10
-NjM1OC1zb3VuZCINCiAtIGNsaw0KIAlSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KIAkJLSBjb21wYXRp
-YmxlOiAibWVkaWF0ZWssbXQ2Mzk3LWNsayINCi0tIA0KMi42LjQNCg==
+pm/testing boot: 25 boots: 0 failed, 24 passed with 1 untried/unknown (v5.6=
+-rc5-83-gabcd59902c64)
 
+Full Boot Summary: https://kernelci.org/boot/all/job/pm/branch/testing/kern=
+el/v5.6-rc5-83-gabcd59902c64/
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+6-rc5-83-gabcd59902c64/
+
+Tree: pm
+Branch: testing
+Git Describe: v5.6-rc5-83-gabcd59902c64
+Git Commit: abcd59902c6467999041971af4ab14f30a2b3780
+Git URL: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Tested: 25 unique boards, 7 SoC families, 2 builds out of 6
+
+Boot Regressions Detected:
+
+arm64:
+
+    defconfig:
+        gcc-8:
+          sun50i-a64-pine64-plus:
+              lab-baylibre: new failure (last pass: v5.6-rc4-78-ge63a6b3d7d=
+38)
+
+---
+For more info write to <info@kernelci.org>
