@@ -7,34 +7,34 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1107BC3F2D2
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AA213C18E5B
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BD75A21655
+	by mail.kernel.org (Postfix) with ESMTP id 60455227BF
 	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="BEQDPbgw"
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="ahBzDH/l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727506AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727141AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 10 Mar 2020 17:46:24 -0400
-Received: from mx1.riseup.net ([198.252.153.129]:49240 "EHLO mx1.riseup.net"
+Received: from mx1.riseup.net ([198.252.153.129]:49224 "EHLO mx1.riseup.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727551AbgCJVqY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1727673AbgCJVqY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Tue, 10 Mar 2020 17:46:24 -0400
 Received: from bell.riseup.net (unknown [10.0.1.178])
         (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
         (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDw0378zFf59;
-        Tue, 10 Mar 2020 14:46:24 -0700 (PDT)
+        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDv2v8HzFf6D;
+        Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1583876784; bh=ltwuhymiRp0VE2eGHyBbW5dhX5HoTXYQ8tBDbkFknOM=;
+        t=1583876783; bh=Jz4j4rXwmY24uT7RUVUWzIpW3YCyx81EGlePfYaHr9U=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=BEQDPbgw4AFgInKuxEXiyG6FyPYZvsQhtCWhvbRFbNd1QwRwlwiaAucd5RGHSlcvb
-         +nwClGR6I18+Jef9P791Em/n0bngfm31Vd/R9TnNzvW8T/65UHLhtjtIAp30kxszpe
-         6xw6eKaGNg5QyLmzoVaZm/E2rOBI3pWsPvGibZFg=
-X-Riseup-User-ID: 27D01099CFA45474A2CF5CDB74DB5D1B94D423BF3BF6EE795CB3C483527536A2
+        b=ahBzDH/lbNIX7yWW3BIUwwu26RLDxx9fEW/+/NmT2TS61OKnvx91T4khRyCf8qY68
+         EpVR/IoSjGWaGToHXlNS8g4K2JJferjdALjhm4EZB2K+5JjQrxIl2xNDGxmSVm1urt
+         S8NlxoIfHDUZ2/qPY5jnHHfT2a8GsJO+EKFymWSc=
+X-Riseup-User-ID: C7F74CCE029929C25DCF61978D0E953392C596615385353591C57293F5D3D979
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDv5PBzzJs07;
+         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDv11mnzJs07;
         Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
 From:   Francisco Jerez <currojerez@riseup.net>
 To:     linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
@@ -42,9 +42,9 @@ Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>,
         "Vivi, Rodrigo" <rodrigo.vivi@intel.com>,
         Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 07/10] cpufreq: intel_pstate: Implement VLP controller for HWP parts.
-Date:   Tue, 10 Mar 2020 14:42:00 -0700
-Message-Id: <20200310214203.26459-8-currojerez@riseup.net>
+Subject: [PATCH 04/10] Revert "cpufreq: intel_pstate: Drop ->update_util from pstate_funcs"
+Date:   Tue, 10 Mar 2020 14:41:57 -0700
+Message-Id: <20200310214203.26459-5-currojerez@riseup.net>
 In-Reply-To: <20200310214203.26459-1-currojerez@riseup.net>
 References: <20200310214203.26459-1-currojerez@riseup.net>
 MIME-Version: 1.0
@@ -54,142 +54,100 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This implements a simple variably low-pass-filtering governor in
-control of the HWP MIN/MAX PERF range based on the previously
-introduced get_vlp_target_range().  See "cpufreq: intel_pstate:
-Implement VLP controller target P-state range estimation." for the
-rationale.
+This reverts commit c4f3f70cacba2fa19545389a12d09b606d2ad1cf.  A
+future commit will introduce a new update_util implementation, so the
+pstate_funcs table entry is going to be useful.
 
 Signed-off-by: Francisco Jerez <currojerez@riseup.net>
 ---
- drivers/cpufreq/intel_pstate.c | 79 +++++++++++++++++++++++++++++++++-
- 1 file changed, 77 insertions(+), 2 deletions(-)
+ drivers/cpufreq/intel_pstate.c | 17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index cecadfec8bc1..a01eed40d897 100644
+index 7fa869004cf0..8cb5bf419b40 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -1905,6 +1905,20 @@ static void intel_pstate_reset_vlp(struct cpudata *cpu)
- 	vlp->gain = max(1, div_fp(1000, vlp_params.setpoint_0_pml));
- 	vlp->target.p_base = 0;
- 	vlp->stats.last_response_frequency_hz = vlp_params.avg_hz;
-+
-+	if (hwp_active) {
-+		const uint32_t p0 = max(cpu->pstate.min_pstate,
-+					cpu->min_perf_ratio);
-+		const uint32_t p1 = max_t(uint32_t, p0, cpu->max_perf_ratio);
-+		const uint64_t hwp_req = (READ_ONCE(cpu->hwp_req_cached) &
-+					  ~(HWP_MAX_PERF(~0L) |
-+					    HWP_MIN_PERF(~0L) |
-+					    HWP_DESIRED_PERF(~0L))) |
-+					 HWP_MIN_PERF(p0) | HWP_MAX_PERF(p1);
-+
-+		wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, hwp_req);
-+		cpu->hwp_req_cached = hwp_req;
-+	}
+@@ -277,6 +277,7 @@ static struct cpudata **all_cpu_data;
+  * @get_scaling:	Callback to get frequency scaling factor
+  * @get_val:		Callback to convert P state to actual MSR write value
+  * @get_vid:		Callback to get VID data for Atom platforms
++ * @update_util:	Active mode utilization update callback.
+  *
+  * Core and Atom CPU models have different way to get P State limits. This
+  * structure is used to store those callbacks.
+@@ -290,6 +291,8 @@ struct pstate_funcs {
+ 	int (*get_aperf_mperf_shift)(void);
+ 	u64 (*get_val)(struct cpudata*, int pstate);
+ 	void (*get_vid)(struct cpudata *);
++	void (*update_util)(struct update_util_data *data, u64 time,
++			    unsigned int flags);
+ };
+ 
+ static struct pstate_funcs pstate_funcs __read_mostly;
+@@ -1877,6 +1880,7 @@ static struct pstate_funcs core_funcs = {
+ 	.get_turbo = core_get_turbo_pstate,
+ 	.get_scaling = core_get_scaling,
+ 	.get_val = core_get_val,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ static const struct pstate_funcs silvermont_funcs = {
+@@ -1887,6 +1891,7 @@ static const struct pstate_funcs silvermont_funcs = {
+ 	.get_val = atom_get_val,
+ 	.get_scaling = silvermont_get_scaling,
+ 	.get_vid = atom_get_vid,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ static const struct pstate_funcs airmont_funcs = {
+@@ -1897,6 +1902,7 @@ static const struct pstate_funcs airmont_funcs = {
+ 	.get_val = atom_get_val,
+ 	.get_scaling = airmont_get_scaling,
+ 	.get_vid = atom_get_vid,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ static const struct pstate_funcs knl_funcs = {
+@@ -1907,6 +1913,7 @@ static const struct pstate_funcs knl_funcs = {
+ 	.get_aperf_mperf_shift = knl_get_aperf_mperf_shift,
+ 	.get_scaling = core_get_scaling,
+ 	.get_val = core_get_val,
++	.update_util = intel_pstate_update_util,
+ };
+ 
+ #define ICPU(model, policy) \
+@@ -2013,9 +2020,7 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ 	/* Prevent intel_pstate_update_util() from using stale data. */
+ 	cpu->sample.time = 0;
+ 	cpufreq_add_update_util_hook(cpu_num, &cpu->update_util,
+-				     (hwp_active ?
+-				      intel_pstate_update_util_hwp :
+-				      intel_pstate_update_util));
++				     pstate_funcs.update_util);
+ 	cpu->update_util_set = true;
  }
  
- /**
-@@ -2222,6 +2236,46 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu)
- 		fp_toint(cpu->iowait_boost * 100));
+@@ -2584,6 +2589,7 @@ static void __init copy_cpu_funcs(struct pstate_funcs *funcs)
+ 	pstate_funcs.get_scaling = funcs->get_scaling;
+ 	pstate_funcs.get_val   = funcs->get_val;
+ 	pstate_funcs.get_vid   = funcs->get_vid;
++	pstate_funcs.update_util = funcs->update_util;
+ 	pstate_funcs.get_aperf_mperf_shift = funcs->get_aperf_mperf_shift;
  }
  
-+static void intel_pstate_adjust_pstate_range(struct cpudata *cpu,
-+					     const unsigned int range[])
-+{
-+	const int from = cpu->hwp_req_cached;
-+	unsigned int p0, p1, p_min, p_max;
-+	struct sample *sample;
-+	uint64_t hwp_req;
-+
-+	update_turbo_state();
-+
-+	p0 = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
-+	p1 = max_t(unsigned int, p0, cpu->max_perf_ratio);
-+	p_min = clamp_t(unsigned int, range[0], p0, p1);
-+	p_max = clamp_t(unsigned int, range[1], p0, p1);
-+
-+	trace_cpu_frequency(p_max * cpu->pstate.scaling, cpu->cpu);
-+
-+	hwp_req = (READ_ONCE(cpu->hwp_req_cached) &
-+		   ~(HWP_MAX_PERF(~0L) | HWP_MIN_PERF(~0L) |
-+		     HWP_DESIRED_PERF(~0L))) |
-+		  HWP_MIN_PERF(vlp_params.debug & 2 ? p0 : p_min) |
-+		  HWP_MAX_PERF(vlp_params.debug & 4 ? p1 : p_max);
-+
-+	if (hwp_req != cpu->hwp_req_cached) {
-+		wrmsrl(MSR_HWP_REQUEST, hwp_req);
-+		cpu->hwp_req_cached = hwp_req;
-+	}
-+
-+	sample = &cpu->sample;
-+	trace_pstate_sample(mul_ext_fp(100, sample->core_avg_perf),
-+			    fp_toint(sample->busy_scaled),
-+			    from,
-+			    hwp_req,
-+			    sample->mperf,
-+			    sample->aperf,
-+			    sample->tsc,
-+			    get_avg_frequency(cpu),
-+			    fp_toint(cpu->iowait_boost * 100));
-+}
-+
- static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 				     unsigned int flags)
- {
-@@ -2260,6 +2314,22 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
- 		intel_pstate_adjust_pstate(cpu);
- }
- 
-+/**
-+ * Implementation of the cpufreq update_util hook based on the VLP
-+ * controller (see get_vlp_target_range()).
-+ */
-+static void intel_pstate_update_util_hwp_vlp(struct update_util_data *data,
-+					     u64 time, unsigned int flags)
-+{
-+	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
-+
-+	if (update_vlp_sample(cpu, time, flags)) {
-+		const struct vlp_target_range *target =
-+			get_vlp_target_range(cpu);
-+		intel_pstate_adjust_pstate_range(cpu, target->value);
-+	}
-+}
-+
- static struct pstate_funcs core_funcs = {
- 	.get_max = core_get_max_pstate,
- 	.get_max_physical = core_get_max_pstate_physical,
-@@ -2389,6 +2459,9 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
- 
- 	intel_pstate_get_cpu_pstates(cpu);
- 
-+	if (pstate_funcs.update_util == intel_pstate_update_util_hwp_vlp)
-+		intel_pstate_reset_vlp(cpu);
-+
- 	pr_debug("controlling: cpu %d\n", cpunum);
- 
- 	return 0;
-@@ -2398,7 +2471,8 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
- {
- 	struct cpudata *cpu = all_cpu_data[cpu_num];
- 
--	if (hwp_active && !hwp_boost)
-+	if (hwp_active && !hwp_boost &&
-+	    pstate_funcs.update_util != intel_pstate_update_util_hwp_vlp)
- 		return;
- 
- 	if (cpu->update_util_set)
-@@ -2526,7 +2600,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
- 		 * was turned off, in that case we need to clear the
- 		 * update util hook.
- 		 */
--		if (!hwp_boost)
-+		if (!hwp_boost && pstate_funcs.update_util !=
-+				  intel_pstate_update_util_hwp_vlp)
- 			intel_pstate_clear_update_util_hook(policy->cpu);
- 		intel_pstate_hwp_set(policy->cpu);
- 	}
+@@ -2750,8 +2756,11 @@ static int __init intel_pstate_init(void)
+ 	id = x86_match_cpu(hwp_support_ids);
+ 	if (id) {
+ 		copy_cpu_funcs(&core_funcs);
+-		if (!no_hwp) {
++		if (no_hwp) {
++			pstate_funcs.update_util = intel_pstate_update_util;
++		} else {
+ 			hwp_active++;
++			pstate_funcs.update_util = intel_pstate_update_util_hwp;
+ 			hwp_mode_bdw = id->driver_data;
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			goto hwp_cpu_matched;
 -- 
 2.22.1
 
