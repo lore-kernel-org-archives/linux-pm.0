@@ -2,116 +2,362 @@ Return-Path: <SRS0=5rfv=43=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9D492C10DCE
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAAA8C18E5A
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 79FF6205C9
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:30:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6815124649
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="QwxoGYVE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726268AbgCJVay (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 17:30:54 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:50788 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726265AbgCJVax (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 17:30:53 -0400
+        id S1727677AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 17:46:24 -0400
+Received: from mx1.riseup.net ([198.252.153.129]:49184 "EHLO mx1.riseup.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726733AbgCJVqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Mar 2020 17:46:23 -0400
+Received: from bell.riseup.net (unknown [10.0.1.178])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
+        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDt53WnzFf56;
+        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
+        t=1583876782; bh=x6cAIXPzlQJJ1FEmSzTDuMyrZ/621gTCGn5sj7HNE1s=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=QwxoGYVERuVlEo8SG/MbDnITXtREUzWy7I2n5RXmF7UIfMHf7SD+dvdH2ykAPxEY3
+         DLEFB/5TCMruFongfqkFR5feO66QK5fJyR7tyI8+0R6m9jH52AsK3BvSDaQKKQ3qhQ
+         Vk7TIOdu42D0cWoJf2oQbkxnseSePq89bI+b39rI=
+X-Riseup-User-ID: 04B7BD3E2701800EA3348DB9A10F00A0673674E61C3EC69C9978ABF3E94FEBB4
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id 95993293E8E
-Received: by earth.universe (Postfix, from userid 1000)
-        id 6BF9A3C0C82; Tue, 10 Mar 2020 22:30:50 +0100 (CET)
-Date:   Tue, 10 Mar 2020 22:30:50 +0100
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Sandeep Patil <sspatil@android.com>
-Cc:     Dan Murphy <dmurphy@ti.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-team@android.com
-Subject: Re: [PATCH v4 2/4] power_supply: Add additional health properties to
- the header
-Message-ID: <20200310213050.si7gcr2wbmjgr7jf@earth.universe>
-References: <20200116175039.1317-1-dmurphy@ti.com>
- <20200116175039.1317-3-dmurphy@ti.com>
- <20200117010658.iqs2zpwl6bsomkuo@earth.universe>
- <20200306235548.GA187098@google.com>
+         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDt36kwzJsFM;
+        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
+From:   Francisco Jerez <currojerez@riseup.net>
+To:     linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>,
+        "Vivi, Rodrigo" <rodrigo.vivi@intel.com>,
+        Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH 01/10] PM: QoS: Add CPU_RESPONSE_FREQUENCY global PM QoS limit.
+Date:   Tue, 10 Mar 2020 14:41:54 -0700
+Message-Id: <20200310214203.26459-2-currojerez@riseup.net>
+In-Reply-To: <20200310214203.26459-1-currojerez@riseup.net>
+References: <20200310214203.26459-1-currojerez@riseup.net>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="35joe23zra66xihb"
-Content-Disposition: inline
-In-Reply-To: <20200306235548.GA187098@google.com>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The purpose of this PM QoS limit is to give device drivers additional
+control over the latency/energy efficiency trade-off made by the PM
+subsystem (particularly the CPUFREQ governor).  It allows device
+drivers to set a lower bound on the response latency of PM (defined as
+the time it takes from wake-up to the CPU reaching a certain
+steady-state level of performance [e.g. the nominal frequency] in
+response to a step-function load).  It reports to PM the minimum
+ramp-up latency considered of use to the application, and explicitly
+requests PM to filter out oscillations faster than the specified
+frequency.  It is somewhat complementary to the current
+CPU_DMA_LATENCY PM QoS class which can be understood as specifying an
+upper latency bound on the CPU wake-up time, instead of a lower bound
+on the CPU frequency ramp-up time.
 
---35joe23zra66xihb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Note that even though this provides a latency constraint it's
+represented as its reciprocal in Hz units for computational efficiency
+(since it would take a 64-bit division to compute the number of cycles
+elapsed from a time increment in nanoseconds and a time bound, while a
+frequency can simply be multiplied with the time increment).
 
-Hi Sandeep,
+This implements a MAX constraint so that the strictest (highest
+response frequency) request is honored.  This means that PM won't
+provide any guarantee that frequencies greater than the specified
+bound will be filtered, since that might be incompatible with the
+constraints specified by another more latency-sensitive application (A
+more fine-grained result could be achieved with a scheduling-based
+interface).  The default value needs to be equal to zero (best effort)
+for it to behave as identity of the MAX operation.
 
-On Fri, Mar 06, 2020 at 03:55:48PM -0800, Sandeep Patil wrote:
-> On Fri, Jan 17, 2020 at 02:06:58AM +0100, Sebastian Reichel wrote:
-> > Hi,
-> >=20
-> > On Thu, Jan 16, 2020 at 11:50:37AM -0600, Dan Murphy wrote:
-> > > Add HEALTH_WARM, HEALTH_COOL and HEALTH_HOT to the health enum.
-> > >=20
-> > > Signed-off-by: Dan Murphy <dmurphy@ti.com>
-> > > ---
-> >=20
-> > Looks good. But I will not merge it without a user and have comments
-> > for the driver.
->=20
-> Android has been looking for these properties for a while now [1].
-> It was added[2] when we saw that the manufacturers were implementing these
-> properties in the driver. I didn't know the properties were absent upstre=
-am
-> until yesterday. Somebody pointed out in our ongoing effort to make sure
-> all core kernel changes that android depends on are present upstream.
->=20
-> I think those values are also propagated in application facing APIs in
-> Android (but I am not sure yet, let me know if that's something you want
-> to find out).
->=20
-> I wanted to chime in and present you a 'user' for this if that helps.
+Signed-off-by: Francisco Jerez <currojerez@riseup.net>
+---
+ include/linux/pm_qos.h       |   9 +++
+ include/trace/events/power.h |  33 ++++----
+ kernel/power/qos.c           | 141 ++++++++++++++++++++++++++++++++++-
+ 3 files changed, 165 insertions(+), 18 deletions(-)
 
-With user I meant an upstream kernel driver, which exposes the
-values. But thanks for the pointer. This should be mentioned in
-the patch description, also the fact that the status values are
-directly taken from JEITA spec.
+diff --git a/include/linux/pm_qos.h b/include/linux/pm_qos.h
+index 4a69d4af3ff8..b522e2194c05 100644
+--- a/include/linux/pm_qos.h
++++ b/include/linux/pm_qos.h
+@@ -28,6 +28,7 @@ enum pm_qos_flags_status {
+ #define PM_QOS_LATENCY_ANY_NS	((s64)PM_QOS_LATENCY_ANY * NSEC_PER_USEC)
+ 
+ #define PM_QOS_CPU_LATENCY_DEFAULT_VALUE	(2000 * USEC_PER_SEC)
++#define PM_QOS_CPU_RESPONSE_FREQUENCY_DEFAULT_VALUE 0
+ #define PM_QOS_RESUME_LATENCY_DEFAULT_VALUE	PM_QOS_LATENCY_ANY
+ #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT	PM_QOS_LATENCY_ANY
+ #define PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS	PM_QOS_LATENCY_ANY_NS
+@@ -162,6 +163,14 @@ static inline void cpu_latency_qos_update_request(struct pm_qos_request *req,
+ static inline void cpu_latency_qos_remove_request(struct pm_qos_request *req) {}
+ #endif
+ 
++s32 cpu_response_frequency_qos_limit(void);
++bool cpu_response_frequency_qos_request_active(struct pm_qos_request *req);
++void cpu_response_frequency_qos_add_request(struct pm_qos_request *req,
++					    s32 value);
++void cpu_response_frequency_qos_update_request(struct pm_qos_request *req,
++					       s32 new_value);
++void cpu_response_frequency_qos_remove_request(struct pm_qos_request *req);
++
+ #ifdef CONFIG_PM
+ enum pm_qos_flags_status __dev_pm_qos_flags(struct device *dev, s32 mask);
+ enum pm_qos_flags_status dev_pm_qos_flags(struct device *dev, s32 mask);
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index af5018aa9517..7e4b52e8ca3a 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -359,45 +359,48 @@ DEFINE_EVENT(power_domain, power_domain_target,
+ );
+ 
+ /*
+- * CPU latency QoS events used for global CPU latency QoS list updates
++ * CPU latency/response frequency QoS events used for global CPU PM
++ * QoS list updates.
+  */
+-DECLARE_EVENT_CLASS(cpu_latency_qos_request,
++DECLARE_EVENT_CLASS(pm_qos_request,
+ 
+-	TP_PROTO(s32 value),
++	TP_PROTO(const char *name, s32 value),
+ 
+-	TP_ARGS(value),
++	TP_ARGS(name, value),
+ 
+ 	TP_STRUCT__entry(
++		__string(name,			 name		)
+ 		__field( s32,                    value          )
+ 	),
+ 
+ 	TP_fast_assign(
++		__assign_str(name, name);
+ 		__entry->value = value;
+ 	),
+ 
+-	TP_printk("CPU_DMA_LATENCY value=%d",
+-		  __entry->value)
++	TP_printk("pm_qos_class=%s value=%d",
++		  __get_str(name), __entry->value)
+ );
+ 
+-DEFINE_EVENT(cpu_latency_qos_request, pm_qos_add_request,
++DEFINE_EVENT(pm_qos_request, pm_qos_add_request,
+ 
+-	TP_PROTO(s32 value),
++	TP_PROTO(const char *name, s32 value),
+ 
+-	TP_ARGS(value)
++	TP_ARGS(name, value)
+ );
+ 
+-DEFINE_EVENT(cpu_latency_qos_request, pm_qos_update_request,
++DEFINE_EVENT(pm_qos_request, pm_qos_update_request,
+ 
+-	TP_PROTO(s32 value),
++	TP_PROTO(const char *name, s32 value),
+ 
+-	TP_ARGS(value)
++	TP_ARGS(name, value)
+ );
+ 
+-DEFINE_EVENT(cpu_latency_qos_request, pm_qos_remove_request,
++DEFINE_EVENT(pm_qos_request, pm_qos_remove_request,
+ 
+-	TP_PROTO(s32 value),
++	TP_PROTO(const char *name, s32 value),
+ 
+-	TP_ARGS(value)
++	TP_ARGS(name, value)
+ );
+ 
+ /*
+diff --git a/kernel/power/qos.c b/kernel/power/qos.c
+index 32927682bcc4..018491fecaac 100644
+--- a/kernel/power/qos.c
++++ b/kernel/power/qos.c
+@@ -271,7 +271,7 @@ void cpu_latency_qos_add_request(struct pm_qos_request *req, s32 value)
+ 		return;
+ 	}
+ 
+-	trace_pm_qos_add_request(value);
++	trace_pm_qos_add_request("CPU_DMA_LATENCY", value);
+ 
+ 	req->qos = &cpu_latency_constraints;
+ 	cpu_latency_qos_apply(req, PM_QOS_ADD_REQ, value);
+@@ -297,7 +297,7 @@ void cpu_latency_qos_update_request(struct pm_qos_request *req, s32 new_value)
+ 		return;
+ 	}
+ 
+-	trace_pm_qos_update_request(new_value);
++	trace_pm_qos_update_request("CPU_DMA_LATENCY", new_value);
+ 
+ 	if (new_value == req->node.prio)
+ 		return;
+@@ -323,7 +323,7 @@ void cpu_latency_qos_remove_request(struct pm_qos_request *req)
+ 		return;
+ 	}
+ 
+-	trace_pm_qos_remove_request(PM_QOS_DEFAULT_VALUE);
++	trace_pm_qos_remove_request("CPU_DMA_LATENCY", PM_QOS_DEFAULT_VALUE);
+ 
+ 	cpu_latency_qos_apply(req, PM_QOS_REMOVE_REQ, PM_QOS_DEFAULT_VALUE);
+ 	memset(req, 0, sizeof(*req));
+@@ -424,6 +424,141 @@ static int __init cpu_latency_qos_init(void)
+ late_initcall(cpu_latency_qos_init);
+ #endif /* CONFIG_CPU_IDLE */
+ 
++/* Definitions related to the CPU response frequency QoS. */
++
++static struct pm_qos_constraints cpu_response_frequency_constraints = {
++	.list = PLIST_HEAD_INIT(cpu_response_frequency_constraints.list),
++	.target_value = PM_QOS_CPU_RESPONSE_FREQUENCY_DEFAULT_VALUE,
++	.default_value = PM_QOS_CPU_RESPONSE_FREQUENCY_DEFAULT_VALUE,
++	.no_constraint_value = PM_QOS_CPU_RESPONSE_FREQUENCY_DEFAULT_VALUE,
++	.type = PM_QOS_MAX,
++};
++
++/**
++ * cpu_response_frequency_qos_limit - Return current system-wide CPU
++ *				      response frequency QoS limit.
++ */
++s32 cpu_response_frequency_qos_limit(void)
++{
++	return pm_qos_read_value(&cpu_response_frequency_constraints);
++}
++EXPORT_SYMBOL_GPL(cpu_response_frequency_qos_limit);
++
++/**
++ * cpu_response_frequency_qos_request_active - Check the given PM QoS request.
++ * @req: PM QoS request to check.
++ *
++ * Return: 'true' if @req has been added to the CPU response frequency
++ * QoS list, 'false' otherwise.
++ */
++bool cpu_response_frequency_qos_request_active(struct pm_qos_request *req)
++{
++	return req->qos == &cpu_response_frequency_constraints;
++}
++EXPORT_SYMBOL_GPL(cpu_response_frequency_qos_request_active);
++
++static void cpu_response_frequency_qos_apply(struct pm_qos_request *req,
++					     enum pm_qos_req_action action,
++					     s32 value)
++{
++	int ret = pm_qos_update_target(req->qos, &req->node, action, value);
++
++	if (ret > 0)
++		wake_up_all_idle_cpus();
++}
++
++/**
++ * cpu_response_frequency_qos_add_request - Add new CPU response
++ *					    frequency QoS request.
++ * @req: Pointer to a preallocated handle.
++ * @value: Requested constraint value.
++ *
++ * Use @value to initialize the request handle pointed to by @req,
++ * insert it as a new entry to the CPU response frequency QoS list and
++ * recompute the effective QoS constraint for that list.
++ *
++ * Callers need to save the handle for later use in updates and removal of the
++ * QoS request represented by it.
++ */
++void cpu_response_frequency_qos_add_request(struct pm_qos_request *req,
++					    s32 value)
++{
++	if (!req)
++		return;
++
++	if (cpu_response_frequency_qos_request_active(req)) {
++		WARN(1, KERN_ERR "%s called for already added request\n",
++		     __func__);
++		return;
++	}
++
++	trace_pm_qos_add_request("CPU_RESPONSE_FREQUENCY", value);
++
++	req->qos = &cpu_response_frequency_constraints;
++	cpu_response_frequency_qos_apply(req, PM_QOS_ADD_REQ, value);
++}
++EXPORT_SYMBOL_GPL(cpu_response_frequency_qos_add_request);
++
++/**
++ * cpu_response_frequency_qos_update_request - Modify existing CPU
++ *					       response frequency QoS
++ *					       request.
++ * @req : QoS request to update.
++ * @new_value: New requested constraint value.
++ *
++ * Use @new_value to update the QoS request represented by @req in the
++ * CPU response frequency QoS list along with updating the effective
++ * constraint value for that list.
++ */
++void cpu_response_frequency_qos_update_request(struct pm_qos_request *req,
++					       s32 new_value)
++{
++	if (!req)
++		return;
++
++	if (!cpu_response_frequency_qos_request_active(req)) {
++		WARN(1, KERN_ERR "%s called for unknown object\n", __func__);
++		return;
++	}
++
++	trace_pm_qos_update_request("CPU_RESPONSE_FREQUENCY", new_value);
++
++	if (new_value == req->node.prio)
++		return;
++
++	cpu_response_frequency_qos_apply(req, PM_QOS_UPDATE_REQ, new_value);
++}
++EXPORT_SYMBOL_GPL(cpu_response_frequency_qos_update_request);
++
++/**
++ * cpu_response_frequency_qos_remove_request - Remove existing CPU
++ *					       response frequency QoS
++ *					       request.
++ * @req: QoS request to remove.
++ *
++ * Remove the CPU response frequency QoS request represented by @req
++ * from the CPU response frequency QoS list along with updating the
++ * effective constraint value for that list.
++ */
++void cpu_response_frequency_qos_remove_request(struct pm_qos_request *req)
++{
++	if (!req)
++		return;
++
++	if (!cpu_response_frequency_qos_request_active(req)) {
++		WARN(1, KERN_ERR "%s called for unknown object\n", __func__);
++		return;
++	}
++
++	trace_pm_qos_remove_request("CPU_RESPONSE_FREQUENCY",
++				    PM_QOS_DEFAULT_VALUE);
++
++	cpu_response_frequency_qos_apply(req, PM_QOS_REMOVE_REQ,
++					 PM_QOS_DEFAULT_VALUE);
++	memset(req, 0, sizeof(*req));
++}
++EXPORT_SYMBOL_GPL(cpu_response_frequency_qos_remove_request);
++
+ /* Definitions related to the frequency QoS below. */
+ 
+ /**
+-- 
+2.22.1
 
-> Cc: kernel-team@android.com
->=20
-> - ssp
->=20
-> 1. https://android.googlesource.com/platform/system/core/+/refs/heads/mas=
-ter/healthd/BatteryMonitor.cpp#162
-> 2. https://android-review.googlesource.com/c/platform/system/core/+/414481
-
--- Sebastian
-
---35joe23zra66xihb
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl5oBwcACgkQ2O7X88g7
-+pqdpw/+Lcc4W0PsvkYpEfn0QKMOTsIdEV/XS+BPufOCcHNwB+J8VhlmicgdEpf6
-2zviAP4z/u6yz72Tb1zgQlJVplBlfmxYoWgWjUUYbscZ0YQNTFDanOyUHjyw9I5b
-S6Sx9z1jAbWkQk5tb5novx/eXpwYq/AScfKDAuwIqN+Aid8OXRB6vHi56nVCEuWH
-bQkt7CdHQCa6wodzcN5TEShhzXi3nMNHpAXHg1MRzyijzNEnH16G88vVtHfhflxw
-4zzSrGWVyyZAzqK8ap1tXEIOhTFvev4hSm69fUDPB5fF1rc43pTY78jzRcFbx+Qe
-0TBaJwP9pkaCxMEY4qJdNEIO8UnzL7Wcu76XrWEvcXJg/jFXzNo6p64lA+sfDoMl
-UFxh1WsAFLF3rAO0d5vj5pHojIZ0IAmp82ruzJEFPqmlGslSZ8bmbgFz4+bqc3J9
-45toClOMeAbp8QZvd8cVI+OriVGpjcOGaUtjbVSul9T2sWnqs7UuHgtyNI6oYRU3
-zpEkwk80aZAgb9MSpicykzBH8zTXaSDIKN6nhcWlcceyBGiD2VTZ9DRpxcgyD27y
-GMEo4kMf1W++TELOIhwJsB7MzHNc8e1nLcBK9TTy5YNDAqvMs/YWjVfYfy0VpfMh
-bm4wW6p52ufDicRSq2AwUl65InaRKRY3XRIVzfVe4bg8PihKD8E=
-=OK1D
------END PGP SIGNATURE-----
-
---35joe23zra66xihb--
