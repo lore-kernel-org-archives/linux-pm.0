@@ -7,44 +7,44 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BDA3C3F2D0
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0291C3F2C6
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3569221655
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A40002464B
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="c1z0yYRy"
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="PBy4iS8P"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727691AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 17:46:24 -0400
-Received: from mx1.riseup.net ([198.252.153.129]:49230 "EHLO mx1.riseup.net"
+        id S1726283AbgCJVqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 17:46:23 -0400
+Received: from mx1.riseup.net ([198.252.153.129]:49194 "EHLO mx1.riseup.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727506AbgCJVqY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Mar 2020 17:46:24 -0400
+        id S1727506AbgCJVqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Mar 2020 17:46:23 -0400
 Received: from bell.riseup.net (unknown [10.0.1.178])
         (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
         (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDv48vSzFf6s;
-        Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
+        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDt6gqJzFdkG;
+        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1583876783; bh=0yX01JJFStKAYRhSVlYvPVR/0Is5p2IQSnPOaQhexy0=;
+        t=1583876783; bh=JOWEXfrb9UFLH74QE5/WubqsiwOn7tHuUTjmrbOGpZQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=c1z0yYRywJe0yR/iqrAH57P7MVw0ePcf/4aZfypegv7+hwutrt7Djffd5gCFBn9rX
-         mPZhHgYYWpxZGLkR+LIAeRnB8dizURZpcd57A89SPM8n4ve+tsqkxPCK+p84Str5rF
-         Vio4YgXUNyjBONNcxItsVZx4f2/i7rnk8oAg3jvY=
-X-Riseup-User-ID: 7730B927CA4233461DB3793177BE823CBE662ADA5D87858D0448C0AEBCA798FD
+        b=PBy4iS8PUU5iVlG5k0ycH3oBaAc/XqVNoOh8MY5HHxA2Vkntb6binK6Wf72gpRvO2
+         /4P1BY2MHQtXYsnhABzgvb/+OMB7+JiR2CmpUyCvjrDjj6mQnpcfdz5UFSTFRQM7B1
+         02aFINuYN8SVJlZSmK1KHrNop0teNBwmG/bl6O9A=
+X-Riseup-User-ID: E9D8C4D7DC82611EFFCC156B3BA45C28F31077F6DF96799252081EE137E3455D
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDv2QLDzJrlc;
-        Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
+         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDt4mw5zJsJ5;
+        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
 From:   Francisco Jerez <currojerez@riseup.net>
 To:     linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>,
         "Vivi, Rodrigo" <rodrigo.vivi@intel.com>,
         Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 05/10] cpufreq: intel_pstate: Implement VLP controller statistics and status calculation.
-Date:   Tue, 10 Mar 2020 14:41:58 -0700
-Message-Id: <20200310214203.26459-6-currojerez@riseup.net>
+Subject: [PATCH 02/10] drm/i915: Adjust PM QoS response frequency based on GPU load.
+Date:   Tue, 10 Mar 2020 14:41:55 -0700
+Message-Id: <20200310214203.26459-3-currojerez@riseup.net>
 In-Reply-To: <20200310214203.26459-1-currojerez@riseup.net>
 References: <20200310214203.26459-1-currojerez@riseup.net>
 MIME-Version: 1.0
@@ -54,312 +54,275 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The goal of the helper code introduced here is to compute two
-informational data structures: struct vlp_input_stats aggregating
-various scheduling and PM statistics gathered in every call of the
-update_util() hook, and struct vlp_status_sample which contains status
-information derived from the former indicating whether the system is
-likely to have an IO or CPU bottleneck.  This will be used as main
-heuristic input by the new variably low-pass filtering controller (AKA
-VLP) that will assist the HWP at finding a reasonably energy-efficient
-P-state given the additional information available to the kernel about
-I/O utilization and scheduling behavior.
+This allows CPUFREQ governors to realize when the system becomes
+non-CPU-bound due to GPU rendering activity, and cause them to respond
+more conservatively to the workload by limiting their response
+frequency: CPU energy usage will be reduced when there isn't a good
+chance for system performance to scale with CPU frequency due to the
+GPU bottleneck.  This leaves additional TDP budget available for the
+GPU to reach higher frequencies, which is translated into an
+improvement in graphics performance to the extent that the workload
+remains TDP-limited (Most non-trivial graphics benchmarks out there
+improve significantly in the TDP-constrained platforms where this is
+currently enabled, see the cover letter for some numbers).  If the
+workload isn't (anymore) TDP-limited performance should stay roughly
+constant, but energy usage will be divided by a similar factor.
 
 Signed-off-by: Francisco Jerez <currojerez@riseup.net>
 ---
- drivers/cpufreq/intel_pstate.c | 230 +++++++++++++++++++++++++++++++++
- 1 file changed, 230 insertions(+)
+ drivers/gpu/drm/i915/gt/intel_engine_cs.c    |   1 +
+ drivers/gpu/drm/i915/gt/intel_engine_types.h |   7 ++
+ drivers/gpu/drm/i915/gt/intel_gt_pm.c        | 107 +++++++++++++++++++
+ drivers/gpu/drm/i915/gt/intel_gt_pm.h        |   3 +
+ drivers/gpu/drm/i915/gt/intel_gt_types.h     |  12 +++
+ drivers/gpu/drm/i915/gt/intel_lrc.c          |  14 +++
+ 6 files changed, 144 insertions(+)
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 8cb5bf419b40..12ee350db2a9 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -19,6 +19,7 @@
- #include <linux/list.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
-+#include <linux/debugfs.h>
- #include <linux/sysfs.h>
- #include <linux/types.h>
- #include <linux/fs.h>
-@@ -33,6 +34,8 @@
- #include <asm/cpufeature.h>
- #include <asm/intel-family.h>
+diff --git a/drivers/gpu/drm/i915/gt/intel_engine_cs.c b/drivers/gpu/drm/i915/gt/intel_engine_cs.c
+index 53ac3f00909a..16ebdfa1dfc9 100644
+--- a/drivers/gpu/drm/i915/gt/intel_engine_cs.c
++++ b/drivers/gpu/drm/i915/gt/intel_engine_cs.c
+@@ -504,6 +504,7 @@ void intel_engine_init_execlists(struct intel_engine_cs *engine)
  
-+#include "../../kernel/sched/sched.h"
-+
- #define INTEL_PSTATE_SAMPLING_INTERVAL	(10 * NSEC_PER_MSEC)
- 
- #define INTEL_CPUFREQ_TRANSITION_LATENCY	20000
-@@ -59,6 +62,11 @@ static inline int32_t mul_fp(int32_t x, int32_t y)
- 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+ 	execlists->queue_priority_hint = INT_MIN;
+ 	execlists->queue = RB_ROOT_CACHED;
++	atomic_set(&execlists->overload, 0);
  }
  
-+static inline int rnd_fp(int32_t x)
-+{
-+	return (x + (1 << (FRAC_BITS - 1))) >> FRAC_BITS;
-+}
-+
- static inline int32_t div_fp(s64 x, s64 y)
- {
- 	return div64_s64((int64_t)x << FRAC_BITS, y);
-@@ -169,6 +177,49 @@ struct vid_data {
- 	int32_t ratio;
- };
+ static void cleanup_status_page(struct intel_engine_cs *engine)
+diff --git a/drivers/gpu/drm/i915/gt/intel_engine_types.h b/drivers/gpu/drm/i915/gt/intel_engine_types.h
+index 80cdde712842..1b17b2f0c7a3 100644
+--- a/drivers/gpu/drm/i915/gt/intel_engine_types.h
++++ b/drivers/gpu/drm/i915/gt/intel_engine_types.h
+@@ -266,6 +266,13 @@ struct intel_engine_execlists {
+ 	 */
+ 	u8 csb_head;
  
-+/**
-+ * Scheduling and PM statistics gathered by update_vlp_sample() at
-+ * every call of the VLP update_state() hook, used as heuristic
-+ * inputs.
-+ */
-+struct vlp_input_stats {
-+	int32_t realtime_count;
-+	int32_t io_wait_count;
-+	uint32_t max_response_frequency_hz;
-+	uint32_t last_response_frequency_hz;
-+};
-+
-+enum vlp_status {
-+	VLP_BOTTLENECK_IO = 1 << 0,
-+	/*
-+	 * XXX - Add other status bits here indicating a CPU or TDP
-+	 * bottleneck.
++	/**
++	 * @overload: whether at least two execlist ports are
++	 * currently submitted to the hardware, indicating that CPU
++	 * latency isn't critical in order to maintain the GPU busy.
 +	 */
-+};
++	atomic_t overload;
 +
-+/**
-+ * Heuristic status information calculated by get_vlp_status_sample()
-+ * from struct vlp_input_stats above, indicating whether the system
-+ * has a potential IO or latency bottleneck.
-+ */
-+struct vlp_status_sample {
-+	enum vlp_status value;
-+	int32_t realtime_avg;
-+};
-+
-+/**
-+ * struct vlp_data - VLP controller parameters and state.
-+ * @sample_interval_ns:	 Update interval in ns.
-+ * @sample_frequency_hz: Reciprocal of the update interval in Hz.
-+ */
-+struct vlp_data {
-+	s64 sample_interval_ns;
-+	int32_t sample_frequency_hz;
-+
-+	struct vlp_input_stats stats;
-+	struct vlp_status_sample status;
-+};
-+
- /**
-  * struct global_params - Global parameters, mostly tunable via sysfs.
-  * @no_turbo:		Whether or not to use turbo P-states.
-@@ -239,6 +290,7 @@ struct cpudata {
- 
- 	struct pstate_data pstate;
- 	struct vid_data vid;
-+	struct vlp_data vlp;
- 
- 	u64	last_update;
- 	u64	last_sample_time;
-@@ -268,6 +320,18 @@ struct cpudata {
- 
- static struct cpudata **all_cpu_data;
- 
-+/**
-+ * struct vlp_params - VLP controller static configuration
-+ * @sample_interval_ms:	     Update interval in ms.
-+ * @avg*_hz:		     Exponential averaging frequencies of the various
-+ *			     low-pass filters as an integer in Hz.
-+ */
-+struct vlp_params {
-+	int sample_interval_ms;
-+	int avg_hz;
-+	int debug;
-+};
-+
- /**
-  * struct pstate_funcs - Per CPU model specific callbacks
-  * @get_max:		Callback to get maximum non turbo effective P state
-@@ -296,6 +360,11 @@ struct pstate_funcs {
+ 	I915_SELFTEST_DECLARE(struct st_preempt_hang preempt_hang;)
  };
  
- static struct pstate_funcs pstate_funcs __read_mostly;
-+static struct vlp_params vlp_params __read_mostly = {
-+	.sample_interval_ms = 10,
-+	.avg_hz = 2,
-+	.debug = 0,
-+};
- 
- static int hwp_active __read_mostly;
- static int hwp_mode_bdw __read_mostly;
-@@ -1793,6 +1862,167 @@ static inline int32_t get_target_pstate(struct cpudata *cpu)
- 	return target;
+diff --git a/drivers/gpu/drm/i915/gt/intel_gt_pm.c b/drivers/gpu/drm/i915/gt/intel_gt_pm.c
+index 8b653c0f5e5f..f1f859e89a8f 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gt_pm.c
++++ b/drivers/gpu/drm/i915/gt/intel_gt_pm.c
+@@ -107,6 +107,102 @@ void intel_gt_pm_init_early(struct intel_gt *gt)
+ 	intel_wakeref_init(&gt->wakeref, gt->uncore->rpm, &wf_ops);
  }
  
 +/**
-+ * Initialize the struct vlp_data of the specified CPU to the defaults
-+ * calculated from @vlp_params.
-+ */
-+static void intel_pstate_reset_vlp(struct cpudata *cpu)
-+{
-+	struct vlp_data *vlp = &cpu->vlp;
-+
-+	vlp->sample_interval_ns = vlp_params.sample_interval_ms * NSEC_PER_MSEC;
-+	vlp->sample_frequency_hz = max(1u, (uint32_t)MSEC_PER_SEC /
-+					   vlp_params.sample_interval_ms);
-+	vlp->stats.last_response_frequency_hz = vlp_params.avg_hz;
-+}
-+
-+/**
-+ * Fixed point representation with twice the usual number of
-+ * fractional bits.
-+ */
-+#define DFRAC_BITS 16
-+#define DFRAC_ONE (1 << DFRAC_BITS)
-+#define DFRAC_MAX_INT (0u - (uint32_t)DFRAC_ONE)
-+
-+/**
-+ * Fast but rather inaccurate piecewise-linear approximation of a
-+ * fixed-point inverse exponential:
++ * Time increment until the most immediate PM QoS response frequency
++ * update.
 + *
-+ *  exp2n(p) = int_tofp(1) * 2 ^ (-p / DFRAC_ONE) + O(1)
++ * May be in the future (return value > 0) if the GPU is currently
++ * active but we haven't updated the PM QoS request to reflect a
++ * bottleneck yet.  May be in the past (return value < 0) if the GPU
++ * isn't fully utilized and we've already reset the PM QoS request to
++ * the default value.  May be zero if a PM QoS request update is due.
 + *
-+ * The error term should be lower in magnitude than 0.044.
++ * The time increment returned by this function decreases linearly
++ * with time until it reaches either zero or a configurable limit.
 + */
-+static int32_t exp2n(uint32_t p)
++static int32_t time_to_rf_qos_update_ns(struct intel_gt *gt)
 +{
-+	if (p < 32 * DFRAC_ONE) {
-+		/* Interpolate between 2^-floor(p) and 2^-ceil(p). */
-+		const uint32_t floor_p = p >> DFRAC_BITS;
-+		const uint32_t ceil_p = (p + DFRAC_ONE - 1) >> DFRAC_BITS;
-+		const uint64_t frac_p = p - (floor_p << DFRAC_BITS);
++	const uint64_t t1 = ktime_get_ns();
++	const uint64_t dt1 = gt->rf_qos.delay_max_ns;
 +
-+		return ((int_tofp(1) >> floor_p) * (DFRAC_ONE - frac_p) +
-+			(ceil_p >= 32 ? 0 : int_tofp(1) >> ceil_p) * frac_p) >>
-+			DFRAC_BITS;
++	if (atomic_read_acquire(&gt->rf_qos.active_count)) {
++		const uint64_t t0 = atomic64_read(&gt->rf_qos.time_set_ns);
++
++		return min(dt1, t0 <= t1 ? 0 : t0 - t1);
++	} else {
++		const uint64_t t0 = atomic64_read(&gt->rf_qos.time_clear_ns);
++		const unsigned int shift = gt->rf_qos.delay_slope_shift;
++
++		return -(int32_t)(t1 <= t0 ? 1 :
++				  min(dt1, (t1 - t0) << shift));
 +	}
-+
-+	/* Short-circuit to avoid overflow. */
-+	return 0;
 +}
 +
 +/**
-+ * Calculate the exponential averaging weight for a new sample based
-+ * on the requested averaging frequency @hz and the delay since the
-+ * last update.
++ * Perform a delayed PM QoS response frequency update.
 + */
-+static int32_t get_last_sample_avg_weight(struct cpudata *cpu, unsigned int hz)
++static void intel_gt_rf_qos_update(struct intel_gt *gt)
 +{
-+	/*
-+	 * Approximate, but saves several 64-bit integer divisions
-+	 * below and should be fully evaluated at compile-time.
-+	 * Causes the exponential averaging to have an effective base
-+	 * of 1.90702343749, which has little functional implications
-+	 * as long as the hz parameter is scaled accordingly.
-+	 */
-+	const uint32_t ns_per_s_shift = order_base_2(NSEC_PER_SEC);
-+	const uint64_t delta_ns = cpu->sample.time - cpu->last_sample_time;
++	const uint32_t dt = max(0, time_to_rf_qos_update_ns(gt));
 +
-+	return exp2n(min((uint64_t)DFRAC_MAX_INT,
-+			 (hz * delta_ns) >> (ns_per_s_shift - DFRAC_BITS)));
++	timer_reduce(&gt->rf_qos.timer, jiffies + nsecs_to_jiffies(dt));
 +}
 +
 +/**
-+ * Calculate some status information heuristically based on the struct
-+ * vlp_input_stats statistics gathered by the update_state() hook.
++ * Timer that fires once the delay used to switch the PM QoS response
++ * frequency request has elapsed.
 + */
-+static const struct vlp_status_sample *get_vlp_status_sample(
-+	struct cpudata *cpu, const int32_t po)
++static void intel_gt_rf_qos_timeout(struct timer_list *timer)
 +{
-+	struct vlp_data *vlp = &cpu->vlp;
-+	struct vlp_input_stats *stats = &vlp->stats;
-+	struct vlp_status_sample *last_status = &vlp->status;
++	struct intel_gt *gt = container_of(timer, struct intel_gt,
++					   rf_qos.timer);
++	const int32_t dt = time_to_rf_qos_update_ns(gt);
 +
-+	/*
-+	 * Calculate the VLP_BOTTLENECK_IO state bit, which indicates
-+	 * whether some IO device driver has requested a PM response
-+	 * frequency bound, typically due to the device being under
-+	 * close to full utilization, which should cause the
-+	 * controller to make a more conservative trade-off between
-+	 * latency and energy usage, since performance isn't
-+	 * guaranteed to scale further with increasing CPU frequency
-+	 * whenever the system is close to IO-bound.
-+	 *
-+	 * Note that the maximum achievable response frequency is
-+	 * limited by the sampling frequency of the controller,
-+	 * response frequency requests greater than that will be
-+	 * promoted to infinity (i.e. no low-pass filtering) in order
-+	 * to avoid violating the response frequency constraint
-+	 * provided via PM QoS.
-+	 */
-+	const bool bottleneck_io = stats->max_response_frequency_hz <
-+				   vlp->sample_frequency_hz;
++	if (dt == 0)
++		cpu_response_frequency_qos_update_request(
++			&gt->rf_qos.req, gt->rf_qos.target_hz);
++	else
++		cpu_response_frequency_qos_update_request(
++			&gt->rf_qos.req, PM_QOS_DEFAULT_VALUE);
 +
-+	/*
-+	 * Calculate the realtime statistic that tracks the
-+	 * exponentially-averaged rate of occurrence of
-+	 * latency-sensitive events (like wake-ups from IO wait).
-+	 */
-+	const uint64_t delta_ns = cpu->sample.time - cpu->last_sample_time;
-+	const int32_t realtime_sample =
-+		div_fp((uint64_t)(stats->realtime_count +
-+				  (bottleneck_io ? 0 : stats->io_wait_count)) *
-+		       NSEC_PER_SEC,
-+		       100 * delta_ns);
-+	const int32_t alpha = get_last_sample_avg_weight(cpu,
-+							 vlp_params.avg_hz);
-+	const int32_t realtime_avg = realtime_sample +
-+		mul_fp(alpha, last_status->realtime_avg - realtime_sample);
-+
-+	/* Consume the input statistics. */
-+	stats->io_wait_count = 0;
-+	stats->realtime_count = 0;
-+	if (bottleneck_io)
-+		stats->last_response_frequency_hz =
-+			stats->max_response_frequency_hz;
-+	stats->max_response_frequency_hz = 0;
-+
-+	/* Update the state of the controller. */
-+	last_status->realtime_avg = realtime_avg;
-+	last_status->value = (bottleneck_io ? VLP_BOTTLENECK_IO : 0);
-+
-+	/* Update state used for tracing. */
-+	cpu->sample.busy_scaled = int_tofp(stats->max_response_frequency_hz);
-+	cpu->iowait_boost = realtime_avg;
-+
-+	return last_status;
++	if (dt > 0)
++		intel_gt_rf_qos_update(gt);
 +}
 +
 +/**
-+ * Collect some scheduling and PM statistics in response to an
-+ * update_state() call.
++ * Report the beginning of a period of GPU utilization to PM.
++ *
++ * May trigger a more energy-efficient response mode in CPU PM, but
++ * only after a certain delay has elapsed so we don't have a negative
++ * impact on the CPU ramp-up latency except after the GPU has been
++ * continuously utilized for a long enough period of time.
 + */
-+static bool update_vlp_sample(struct cpudata *cpu, u64 time, unsigned int flags)
++void intel_gt_pm_active_begin(struct intel_gt *gt)
 +{
-+	struct vlp_input_stats *stats = &cpu->vlp.stats;
++	const uint32_t dt = abs(time_to_rf_qos_update_ns(gt));
 +
-+	/* Update PM QoS request. */
-+	const uint32_t resp_hz = cpu_response_frequency_qos_limit();
++	atomic64_set(&gt->rf_qos.time_set_ns, ktime_get_ns() + dt);
 +
-+	stats->max_response_frequency_hz = !resp_hz ? UINT_MAX :
-+		max(stats->max_response_frequency_hz, resp_hz);
-+
-+	/* Update scheduling statistics. */
-+	if ((flags & SCHED_CPUFREQ_IOWAIT))
-+		stats->io_wait_count++;
-+
-+	if (cpu_rq(cpu->cpu)->rt.rt_nr_running)
-+		stats->realtime_count++;
-+
-+	/* Return whether a P-state update is due. */
-+	return smp_processor_id() == cpu->cpu &&
-+		time - cpu->sample.time >= cpu->vlp.sample_interval_ns &&
-+		intel_pstate_sample(cpu, time);
++	if (!atomic_fetch_inc_release(&gt->rf_qos.active_count))
++		intel_gt_rf_qos_update(gt);
 +}
 +
- static int intel_pstate_prepare_request(struct cpudata *cpu, int pstate)
++/**
++ * Report the end of a period of GPU utilization to PM.
++ *
++ * Must be called once after each call to intel_gt_pm_active_begin().
++ */
++void intel_gt_pm_active_end(struct intel_gt *gt)
++{
++	const uint32_t dt = abs(time_to_rf_qos_update_ns(gt));
++	const unsigned int shift = gt->rf_qos.delay_slope_shift;
++
++	atomic64_set(&gt->rf_qos.time_clear_ns, ktime_get_ns() - (dt >> shift));
++
++	if (!atomic_dec_return_release(&gt->rf_qos.active_count))
++		intel_gt_rf_qos_update(gt);
++}
++
+ void intel_gt_pm_init(struct intel_gt *gt)
  {
- 	int min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
+ 	/*
+@@ -116,6 +212,14 @@ void intel_gt_pm_init(struct intel_gt *gt)
+ 	 */
+ 	intel_rc6_init(&gt->rc6);
+ 	intel_rps_init(&gt->rps);
++
++	cpu_response_frequency_qos_add_request(&gt->rf_qos.req,
++					       PM_QOS_DEFAULT_VALUE);
++
++	gt->rf_qos.delay_max_ns = 250000;
++	gt->rf_qos.delay_slope_shift = 0;
++	gt->rf_qos.target_hz = 2;
++	timer_setup(&gt->rf_qos.timer, intel_gt_rf_qos_timeout, 0);
+ }
+ 
+ static bool reset_engines(struct intel_gt *gt)
+@@ -170,6 +274,9 @@ static void gt_sanitize(struct intel_gt *gt, bool force)
+ 
+ void intel_gt_pm_fini(struct intel_gt *gt)
+ {
++	del_timer_sync(&gt->rf_qos.timer);
++	cpu_response_frequency_qos_remove_request(&gt->rf_qos.req);
++
+ 	intel_rc6_fini(&gt->rc6);
+ }
+ 
+diff --git a/drivers/gpu/drm/i915/gt/intel_gt_pm.h b/drivers/gpu/drm/i915/gt/intel_gt_pm.h
+index 60f0e2fbe55c..43f1d45fb0db 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gt_pm.h
++++ b/drivers/gpu/drm/i915/gt/intel_gt_pm.h
+@@ -58,6 +58,9 @@ int intel_gt_resume(struct intel_gt *gt);
+ void intel_gt_runtime_suspend(struct intel_gt *gt);
+ int intel_gt_runtime_resume(struct intel_gt *gt);
+ 
++void intel_gt_pm_active_begin(struct intel_gt *gt);
++void intel_gt_pm_active_end(struct intel_gt *gt);
++
+ static inline bool is_mock_gt(const struct intel_gt *gt)
+ {
+ 	return I915_SELFTEST_ONLY(gt->awake == -ENODEV);
+diff --git a/drivers/gpu/drm/i915/gt/intel_gt_types.h b/drivers/gpu/drm/i915/gt/intel_gt_types.h
+index 96890dd12b5f..4bc80c55e6f0 100644
+--- a/drivers/gpu/drm/i915/gt/intel_gt_types.h
++++ b/drivers/gpu/drm/i915/gt/intel_gt_types.h
+@@ -10,6 +10,7 @@
+ #include <linux/list.h>
+ #include <linux/mutex.h>
+ #include <linux/notifier.h>
++#include <linux/pm_qos.h>
+ #include <linux/spinlock.h>
+ #include <linux/types.h>
+ 
+@@ -97,6 +98,17 @@ struct intel_gt {
+ 	 * Reserved for exclusive use by the kernel.
+ 	 */
+ 	struct i915_address_space *vm;
++
++	struct {
++		struct pm_qos_request req;
++		struct timer_list timer;
++		uint32_t target_hz;
++		uint32_t delay_max_ns;
++		uint32_t delay_slope_shift;
++		atomic64_t time_set_ns;
++		atomic64_t time_clear_ns;
++		atomic_t active_count;
++	} rf_qos;
+ };
+ 
+ enum intel_gt_scratch_field {
+diff --git a/drivers/gpu/drm/i915/gt/intel_lrc.c b/drivers/gpu/drm/i915/gt/intel_lrc.c
+index b9b3f78f1324..a5d7a80b826d 100644
+--- a/drivers/gpu/drm/i915/gt/intel_lrc.c
++++ b/drivers/gpu/drm/i915/gt/intel_lrc.c
+@@ -1577,6 +1577,11 @@ static void execlists_submit_ports(struct intel_engine_cs *engine)
+ 	/* we need to manually load the submit queue */
+ 	if (execlists->ctrl_reg)
+ 		writel(EL_CTRL_LOAD, execlists->ctrl_reg);
++
++	if (execlists_num_ports(execlists) > 1 &&
++	    execlists->pending[1] &&
++	    !atomic_xchg(&execlists->overload, 1))
++		intel_gt_pm_active_begin(&engine->i915->gt);
+ }
+ 
+ static bool ctx_single_port_submission(const struct intel_context *ce)
+@@ -2213,6 +2218,12 @@ cancel_port_requests(struct intel_engine_execlists * const execlists)
+ 	clear_ports(execlists->inflight, ARRAY_SIZE(execlists->inflight));
+ 
+ 	WRITE_ONCE(execlists->active, execlists->inflight);
++
++	if (atomic_xchg(&execlists->overload, 0)) {
++		struct intel_engine_cs *engine =
++			container_of(execlists, typeof(*engine), execlists);
++		intel_gt_pm_active_end(&engine->i915->gt);
++	}
+ }
+ 
+ static inline void
+@@ -2386,6 +2397,9 @@ static void process_csb(struct intel_engine_cs *engine)
+ 			/* port0 completed, advanced to port1 */
+ 			trace_ports(execlists, "completed", execlists->active);
+ 
++			if (atomic_xchg(&execlists->overload, 0))
++				intel_gt_pm_active_end(&engine->i915->gt);
++
+ 			/*
+ 			 * We rely on the hardware being strongly
+ 			 * ordered, that the breadcrumb write is
 -- 
 2.22.1
 
