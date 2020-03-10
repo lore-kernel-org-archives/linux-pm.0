@@ -2,72 +2,76 @@ Return-Path: <SRS0=5rfv=43=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50493C18E5A
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 11:47:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F0BFC18E5B
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 12:42:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 313D924655
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 11:47:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 753C524686
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 12:42:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726273AbgCJLr1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 07:47:27 -0400
-Received: from vsp-unauthed02.binero.net ([195.74.38.227]:26984 "EHLO
-        vsp-unauthed02.binero.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726265AbgCJLr1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 07:47:27 -0400
-X-Halon-ID: e5b57f30-62c4-11ea-9f85-005056917a89
-Authorized-sender: niklas@soderlund.pp.se
-Received: from bismarck.berto.se (p4fca2392.dip0.t-ipconnect.de [79.202.35.146])
-        by bin-vsp-out-01.atm.binero.net (Halon) with ESMTPA
-        id e5b57f30-62c4-11ea-9f85-005056917a89;
-        Tue, 10 Mar 2020 12:47:24 +0100 (CET)
-From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-To:     linux-pm@vger.kernel.org, linux-renesas-soc@vger.kernel.org
-Cc:     =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH] thermal: rcar_thermal: Handle probe error gracefully
-Date:   Tue, 10 Mar 2020 12:47:09 +0100
-Message-Id: <20200310114709.1483860-1-niklas.soderlund+renesas@ragnatech.se>
-X-Mailer: git-send-email 2.25.1
+        id S1727302AbgCJMm1 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 08:42:27 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:34347 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727333AbgCJMm1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 08:42:27 -0400
+Received: by mail-ot1-f68.google.com with SMTP id j16so12977268otl.1;
+        Tue, 10 Mar 2020 05:42:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=kfycomguv06VQCU+xSRo5ljDeRZeGd7uM5suR8zPJT8=;
+        b=i+XxgS/PlrmkKuZBAndzdnu7WjguRudMZfGm7Oe9aDDtzVxqYfLnteMGWSntXov7ac
+         heVds7mpSsh/IowBN6B3KdVQLHmw+uJ1RWaKwW4gtnK0KYUDcy3h/3ZEIWKscbmsom6D
+         YIIPGuEs1jnoaMqLzhi3nfDT28mqjH2ATAVe1BY7S4dkoG/K2ur4SNkPsSV8jIcbAlfC
+         nf97DYbgR4MGB2N/zdcBltPILRKilKs60j3CvKfJTgt/f5UEXEAYUg+8NyIw9mzT/fHv
+         EbmZjdud/Rh0f684hUZ+k20aBiVhv9fP+DkR8WJn1dtCpG7+MKEchST/ss/xUVTRvPDf
+         8HJA==
+X-Gm-Message-State: ANhLgQ2c8jzTcAcg6fP2hp0ZjgWO+qjkmNcnHVnwDTfNeCYRLRmd/ReG
+        aLinOzeTTgeLuzgdrBowNdYGLOKJs/HiHzggrUPCQQ==
+X-Google-Smtp-Source: ADFU+vvnhcQldBJ6bvtbZYYKQIcMnPQ0S+l+Ks1r53JQMhSecZyEzzMbVF/D0uzBc67W/q6oUZpf/0athU/jbcs6Who=
+X-Received: by 2002:a9d:4d02:: with SMTP id n2mr7133754otf.107.1583844146329;
+ Tue, 10 Mar 2020 05:42:26 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+References: <20200310114709.1483860-1-niklas.soderlund+renesas@ragnatech.se>
+In-Reply-To: <20200310114709.1483860-1-niklas.soderlund+renesas@ragnatech.se>
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+Date:   Tue, 10 Mar 2020 13:42:15 +0100
+Message-ID: <CAMuHMdUkF52DvL8YbnoBLetO7gMMyTxsB-yL2R3dhDHBLdeizg@mail.gmail.com>
+Subject: Re: [PATCH] thermal: rcar_thermal: Handle probe error gracefully
+To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If the common register memory resource is not available the driver needs
-to fail gracefully to disable PM. Instead of returning the error
-directly store it in ret and use the already existing error path.
+On Tue, Mar 10, 2020 at 12:47 PM Niklas Söderlund
+<niklas.soderlund+renesas@ragnatech.se> wrote:
+> If the common register memory resource is not available the driver needs
+> to fail gracefully to disable PM. Instead of returning the error
+> directly store it in ret and use the already existing error path.
+>
+> Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
----
- drivers/thermal/rcar_thermal.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
-index 8f1aafa2044e5ba7..4a48d1d2a31c9250 100644
---- a/drivers/thermal/rcar_thermal.c
-+++ b/drivers/thermal/rcar_thermal.c
-@@ -521,8 +521,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
- 			res = platform_get_resource(pdev, IORESOURCE_MEM,
- 						    mres++);
- 			common->base = devm_ioremap_resource(dev, res);
--			if (IS_ERR(common->base))
--				return PTR_ERR(common->base);
-+			if (IS_ERR(common->base)) {
-+				ret = PTR_ERR(common->base);
-+				goto error_unregister;
-+			}
- 
- 			idle = 0; /* polling delay is not needed */
- 		}
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
-2.25.1
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
