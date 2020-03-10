@@ -7,44 +7,44 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0291C3F2C6
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1107BC3F2D2
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A40002464B
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD75A21655
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="PBy4iS8P"
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="BEQDPbgw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726283AbgCJVqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 17:46:23 -0400
-Received: from mx1.riseup.net ([198.252.153.129]:49194 "EHLO mx1.riseup.net"
+        id S1727506AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 17:46:24 -0400
+Received: from mx1.riseup.net ([198.252.153.129]:49240 "EHLO mx1.riseup.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727506AbgCJVqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Mar 2020 17:46:23 -0400
+        id S1727551AbgCJVqY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Mar 2020 17:46:24 -0400
 Received: from bell.riseup.net (unknown [10.0.1.178])
         (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
         (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDt6gqJzFdkG;
-        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
+        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDw0378zFf59;
+        Tue, 10 Mar 2020 14:46:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1583876783; bh=JOWEXfrb9UFLH74QE5/WubqsiwOn7tHuUTjmrbOGpZQ=;
+        t=1583876784; bh=ltwuhymiRp0VE2eGHyBbW5dhX5HoTXYQ8tBDbkFknOM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PBy4iS8PUU5iVlG5k0ycH3oBaAc/XqVNoOh8MY5HHxA2Vkntb6binK6Wf72gpRvO2
-         /4P1BY2MHQtXYsnhABzgvb/+OMB7+JiR2CmpUyCvjrDjj6mQnpcfdz5UFSTFRQM7B1
-         02aFINuYN8SVJlZSmK1KHrNop0teNBwmG/bl6O9A=
-X-Riseup-User-ID: E9D8C4D7DC82611EFFCC156B3BA45C28F31077F6DF96799252081EE137E3455D
+        b=BEQDPbgw4AFgInKuxEXiyG6FyPYZvsQhtCWhvbRFbNd1QwRwlwiaAucd5RGHSlcvb
+         +nwClGR6I18+Jef9P791Em/n0bngfm31Vd/R9TnNzvW8T/65UHLhtjtIAp30kxszpe
+         6xw6eKaGNg5QyLmzoVaZm/E2rOBI3pWsPvGibZFg=
+X-Riseup-User-ID: 27D01099CFA45474A2CF5CDB74DB5D1B94D423BF3BF6EE795CB3C483527536A2
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDt4mw5zJsJ5;
-        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
+         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDv5PBzzJs07;
+        Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
 From:   Francisco Jerez <currojerez@riseup.net>
 To:     linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>,
         "Vivi, Rodrigo" <rodrigo.vivi@intel.com>,
         Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 02/10] drm/i915: Adjust PM QoS response frequency based on GPU load.
-Date:   Tue, 10 Mar 2020 14:41:55 -0700
-Message-Id: <20200310214203.26459-3-currojerez@riseup.net>
+Subject: [PATCH 07/10] cpufreq: intel_pstate: Implement VLP controller for HWP parts.
+Date:   Tue, 10 Mar 2020 14:42:00 -0700
+Message-Id: <20200310214203.26459-8-currojerez@riseup.net>
 In-Reply-To: <20200310214203.26459-1-currojerez@riseup.net>
 References: <20200310214203.26459-1-currojerez@riseup.net>
 MIME-Version: 1.0
@@ -54,275 +54,142 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This allows CPUFREQ governors to realize when the system becomes
-non-CPU-bound due to GPU rendering activity, and cause them to respond
-more conservatively to the workload by limiting their response
-frequency: CPU energy usage will be reduced when there isn't a good
-chance for system performance to scale with CPU frequency due to the
-GPU bottleneck.  This leaves additional TDP budget available for the
-GPU to reach higher frequencies, which is translated into an
-improvement in graphics performance to the extent that the workload
-remains TDP-limited (Most non-trivial graphics benchmarks out there
-improve significantly in the TDP-constrained platforms where this is
-currently enabled, see the cover letter for some numbers).  If the
-workload isn't (anymore) TDP-limited performance should stay roughly
-constant, but energy usage will be divided by a similar factor.
+This implements a simple variably low-pass-filtering governor in
+control of the HWP MIN/MAX PERF range based on the previously
+introduced get_vlp_target_range().  See "cpufreq: intel_pstate:
+Implement VLP controller target P-state range estimation." for the
+rationale.
 
 Signed-off-by: Francisco Jerez <currojerez@riseup.net>
 ---
- drivers/gpu/drm/i915/gt/intel_engine_cs.c    |   1 +
- drivers/gpu/drm/i915/gt/intel_engine_types.h |   7 ++
- drivers/gpu/drm/i915/gt/intel_gt_pm.c        | 107 +++++++++++++++++++
- drivers/gpu/drm/i915/gt/intel_gt_pm.h        |   3 +
- drivers/gpu/drm/i915/gt/intel_gt_types.h     |  12 +++
- drivers/gpu/drm/i915/gt/intel_lrc.c          |  14 +++
- 6 files changed, 144 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 79 +++++++++++++++++++++++++++++++++-
+ 1 file changed, 77 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/gt/intel_engine_cs.c b/drivers/gpu/drm/i915/gt/intel_engine_cs.c
-index 53ac3f00909a..16ebdfa1dfc9 100644
---- a/drivers/gpu/drm/i915/gt/intel_engine_cs.c
-+++ b/drivers/gpu/drm/i915/gt/intel_engine_cs.c
-@@ -504,6 +504,7 @@ void intel_engine_init_execlists(struct intel_engine_cs *engine)
- 
- 	execlists->queue_priority_hint = INT_MIN;
- 	execlists->queue = RB_ROOT_CACHED;
-+	atomic_set(&execlists->overload, 0);
- }
- 
- static void cleanup_status_page(struct intel_engine_cs *engine)
-diff --git a/drivers/gpu/drm/i915/gt/intel_engine_types.h b/drivers/gpu/drm/i915/gt/intel_engine_types.h
-index 80cdde712842..1b17b2f0c7a3 100644
---- a/drivers/gpu/drm/i915/gt/intel_engine_types.h
-+++ b/drivers/gpu/drm/i915/gt/intel_engine_types.h
-@@ -266,6 +266,13 @@ struct intel_engine_execlists {
- 	 */
- 	u8 csb_head;
- 
-+	/**
-+	 * @overload: whether at least two execlist ports are
-+	 * currently submitted to the hardware, indicating that CPU
-+	 * latency isn't critical in order to maintain the GPU busy.
-+	 */
-+	atomic_t overload;
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index cecadfec8bc1..a01eed40d897 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1905,6 +1905,20 @@ static void intel_pstate_reset_vlp(struct cpudata *cpu)
+ 	vlp->gain = max(1, div_fp(1000, vlp_params.setpoint_0_pml));
+ 	vlp->target.p_base = 0;
+ 	vlp->stats.last_response_frequency_hz = vlp_params.avg_hz;
 +
- 	I915_SELFTEST_DECLARE(struct st_preempt_hang preempt_hang;)
- };
- 
-diff --git a/drivers/gpu/drm/i915/gt/intel_gt_pm.c b/drivers/gpu/drm/i915/gt/intel_gt_pm.c
-index 8b653c0f5e5f..f1f859e89a8f 100644
---- a/drivers/gpu/drm/i915/gt/intel_gt_pm.c
-+++ b/drivers/gpu/drm/i915/gt/intel_gt_pm.c
-@@ -107,6 +107,102 @@ void intel_gt_pm_init_early(struct intel_gt *gt)
- 	intel_wakeref_init(&gt->wakeref, gt->uncore->rpm, &wf_ops);
- }
- 
-+/**
-+ * Time increment until the most immediate PM QoS response frequency
-+ * update.
-+ *
-+ * May be in the future (return value > 0) if the GPU is currently
-+ * active but we haven't updated the PM QoS request to reflect a
-+ * bottleneck yet.  May be in the past (return value < 0) if the GPU
-+ * isn't fully utilized and we've already reset the PM QoS request to
-+ * the default value.  May be zero if a PM QoS request update is due.
-+ *
-+ * The time increment returned by this function decreases linearly
-+ * with time until it reaches either zero or a configurable limit.
-+ */
-+static int32_t time_to_rf_qos_update_ns(struct intel_gt *gt)
-+{
-+	const uint64_t t1 = ktime_get_ns();
-+	const uint64_t dt1 = gt->rf_qos.delay_max_ns;
++	if (hwp_active) {
++		const uint32_t p0 = max(cpu->pstate.min_pstate,
++					cpu->min_perf_ratio);
++		const uint32_t p1 = max_t(uint32_t, p0, cpu->max_perf_ratio);
++		const uint64_t hwp_req = (READ_ONCE(cpu->hwp_req_cached) &
++					  ~(HWP_MAX_PERF(~0L) |
++					    HWP_MIN_PERF(~0L) |
++					    HWP_DESIRED_PERF(~0L))) |
++					 HWP_MIN_PERF(p0) | HWP_MAX_PERF(p1);
 +
-+	if (atomic_read_acquire(&gt->rf_qos.active_count)) {
-+		const uint64_t t0 = atomic64_read(&gt->rf_qos.time_set_ns);
-+
-+		return min(dt1, t0 <= t1 ? 0 : t0 - t1);
-+	} else {
-+		const uint64_t t0 = atomic64_read(&gt->rf_qos.time_clear_ns);
-+		const unsigned int shift = gt->rf_qos.delay_slope_shift;
-+
-+		return -(int32_t)(t1 <= t0 ? 1 :
-+				  min(dt1, (t1 - t0) << shift));
-+	}
-+}
-+
-+/**
-+ * Perform a delayed PM QoS response frequency update.
-+ */
-+static void intel_gt_rf_qos_update(struct intel_gt *gt)
-+{
-+	const uint32_t dt = max(0, time_to_rf_qos_update_ns(gt));
-+
-+	timer_reduce(&gt->rf_qos.timer, jiffies + nsecs_to_jiffies(dt));
-+}
-+
-+/**
-+ * Timer that fires once the delay used to switch the PM QoS response
-+ * frequency request has elapsed.
-+ */
-+static void intel_gt_rf_qos_timeout(struct timer_list *timer)
-+{
-+	struct intel_gt *gt = container_of(timer, struct intel_gt,
-+					   rf_qos.timer);
-+	const int32_t dt = time_to_rf_qos_update_ns(gt);
-+
-+	if (dt == 0)
-+		cpu_response_frequency_qos_update_request(
-+			&gt->rf_qos.req, gt->rf_qos.target_hz);
-+	else
-+		cpu_response_frequency_qos_update_request(
-+			&gt->rf_qos.req, PM_QOS_DEFAULT_VALUE);
-+
-+	if (dt > 0)
-+		intel_gt_rf_qos_update(gt);
-+}
-+
-+/**
-+ * Report the beginning of a period of GPU utilization to PM.
-+ *
-+ * May trigger a more energy-efficient response mode in CPU PM, but
-+ * only after a certain delay has elapsed so we don't have a negative
-+ * impact on the CPU ramp-up latency except after the GPU has been
-+ * continuously utilized for a long enough period of time.
-+ */
-+void intel_gt_pm_active_begin(struct intel_gt *gt)
-+{
-+	const uint32_t dt = abs(time_to_rf_qos_update_ns(gt));
-+
-+	atomic64_set(&gt->rf_qos.time_set_ns, ktime_get_ns() + dt);
-+
-+	if (!atomic_fetch_inc_release(&gt->rf_qos.active_count))
-+		intel_gt_rf_qos_update(gt);
-+}
-+
-+/**
-+ * Report the end of a period of GPU utilization to PM.
-+ *
-+ * Must be called once after each call to intel_gt_pm_active_begin().
-+ */
-+void intel_gt_pm_active_end(struct intel_gt *gt)
-+{
-+	const uint32_t dt = abs(time_to_rf_qos_update_ns(gt));
-+	const unsigned int shift = gt->rf_qos.delay_slope_shift;
-+
-+	atomic64_set(&gt->rf_qos.time_clear_ns, ktime_get_ns() - (dt >> shift));
-+
-+	if (!atomic_dec_return_release(&gt->rf_qos.active_count))
-+		intel_gt_rf_qos_update(gt);
-+}
-+
- void intel_gt_pm_init(struct intel_gt *gt)
- {
- 	/*
-@@ -116,6 +212,14 @@ void intel_gt_pm_init(struct intel_gt *gt)
- 	 */
- 	intel_rc6_init(&gt->rc6);
- 	intel_rps_init(&gt->rps);
-+
-+	cpu_response_frequency_qos_add_request(&gt->rf_qos.req,
-+					       PM_QOS_DEFAULT_VALUE);
-+
-+	gt->rf_qos.delay_max_ns = 250000;
-+	gt->rf_qos.delay_slope_shift = 0;
-+	gt->rf_qos.target_hz = 2;
-+	timer_setup(&gt->rf_qos.timer, intel_gt_rf_qos_timeout, 0);
- }
- 
- static bool reset_engines(struct intel_gt *gt)
-@@ -170,6 +274,9 @@ static void gt_sanitize(struct intel_gt *gt, bool force)
- 
- void intel_gt_pm_fini(struct intel_gt *gt)
- {
-+	del_timer_sync(&gt->rf_qos.timer);
-+	cpu_response_frequency_qos_remove_request(&gt->rf_qos.req);
-+
- 	intel_rc6_fini(&gt->rc6);
- }
- 
-diff --git a/drivers/gpu/drm/i915/gt/intel_gt_pm.h b/drivers/gpu/drm/i915/gt/intel_gt_pm.h
-index 60f0e2fbe55c..43f1d45fb0db 100644
---- a/drivers/gpu/drm/i915/gt/intel_gt_pm.h
-+++ b/drivers/gpu/drm/i915/gt/intel_gt_pm.h
-@@ -58,6 +58,9 @@ int intel_gt_resume(struct intel_gt *gt);
- void intel_gt_runtime_suspend(struct intel_gt *gt);
- int intel_gt_runtime_resume(struct intel_gt *gt);
- 
-+void intel_gt_pm_active_begin(struct intel_gt *gt);
-+void intel_gt_pm_active_end(struct intel_gt *gt);
-+
- static inline bool is_mock_gt(const struct intel_gt *gt)
- {
- 	return I915_SELFTEST_ONLY(gt->awake == -ENODEV);
-diff --git a/drivers/gpu/drm/i915/gt/intel_gt_types.h b/drivers/gpu/drm/i915/gt/intel_gt_types.h
-index 96890dd12b5f..4bc80c55e6f0 100644
---- a/drivers/gpu/drm/i915/gt/intel_gt_types.h
-+++ b/drivers/gpu/drm/i915/gt/intel_gt_types.h
-@@ -10,6 +10,7 @@
- #include <linux/list.h>
- #include <linux/mutex.h>
- #include <linux/notifier.h>
-+#include <linux/pm_qos.h>
- #include <linux/spinlock.h>
- #include <linux/types.h>
- 
-@@ -97,6 +98,17 @@ struct intel_gt {
- 	 * Reserved for exclusive use by the kernel.
- 	 */
- 	struct i915_address_space *vm;
-+
-+	struct {
-+		struct pm_qos_request req;
-+		struct timer_list timer;
-+		uint32_t target_hz;
-+		uint32_t delay_max_ns;
-+		uint32_t delay_slope_shift;
-+		atomic64_t time_set_ns;
-+		atomic64_t time_clear_ns;
-+		atomic_t active_count;
-+	} rf_qos;
- };
- 
- enum intel_gt_scratch_field {
-diff --git a/drivers/gpu/drm/i915/gt/intel_lrc.c b/drivers/gpu/drm/i915/gt/intel_lrc.c
-index b9b3f78f1324..a5d7a80b826d 100644
---- a/drivers/gpu/drm/i915/gt/intel_lrc.c
-+++ b/drivers/gpu/drm/i915/gt/intel_lrc.c
-@@ -1577,6 +1577,11 @@ static void execlists_submit_ports(struct intel_engine_cs *engine)
- 	/* we need to manually load the submit queue */
- 	if (execlists->ctrl_reg)
- 		writel(EL_CTRL_LOAD, execlists->ctrl_reg);
-+
-+	if (execlists_num_ports(execlists) > 1 &&
-+	    execlists->pending[1] &&
-+	    !atomic_xchg(&execlists->overload, 1))
-+		intel_gt_pm_active_begin(&engine->i915->gt);
- }
- 
- static bool ctx_single_port_submission(const struct intel_context *ce)
-@@ -2213,6 +2218,12 @@ cancel_port_requests(struct intel_engine_execlists * const execlists)
- 	clear_ports(execlists->inflight, ARRAY_SIZE(execlists->inflight));
- 
- 	WRITE_ONCE(execlists->active, execlists->inflight);
-+
-+	if (atomic_xchg(&execlists->overload, 0)) {
-+		struct intel_engine_cs *engine =
-+			container_of(execlists, typeof(*engine), execlists);
-+		intel_gt_pm_active_end(&engine->i915->gt);
++		wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, hwp_req);
++		cpu->hwp_req_cached = hwp_req;
 +	}
  }
  
- static inline void
-@@ -2386,6 +2397,9 @@ static void process_csb(struct intel_engine_cs *engine)
- 			/* port0 completed, advanced to port1 */
- 			trace_ports(execlists, "completed", execlists->active);
+ /**
+@@ -2222,6 +2236,46 @@ static void intel_pstate_adjust_pstate(struct cpudata *cpu)
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
  
-+			if (atomic_xchg(&execlists->overload, 0))
-+				intel_gt_pm_active_end(&engine->i915->gt);
++static void intel_pstate_adjust_pstate_range(struct cpudata *cpu,
++					     const unsigned int range[])
++{
++	const int from = cpu->hwp_req_cached;
++	unsigned int p0, p1, p_min, p_max;
++	struct sample *sample;
++	uint64_t hwp_req;
 +
- 			/*
- 			 * We rely on the hardware being strongly
- 			 * ordered, that the breadcrumb write is
++	update_turbo_state();
++
++	p0 = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
++	p1 = max_t(unsigned int, p0, cpu->max_perf_ratio);
++	p_min = clamp_t(unsigned int, range[0], p0, p1);
++	p_max = clamp_t(unsigned int, range[1], p0, p1);
++
++	trace_cpu_frequency(p_max * cpu->pstate.scaling, cpu->cpu);
++
++	hwp_req = (READ_ONCE(cpu->hwp_req_cached) &
++		   ~(HWP_MAX_PERF(~0L) | HWP_MIN_PERF(~0L) |
++		     HWP_DESIRED_PERF(~0L))) |
++		  HWP_MIN_PERF(vlp_params.debug & 2 ? p0 : p_min) |
++		  HWP_MAX_PERF(vlp_params.debug & 4 ? p1 : p_max);
++
++	if (hwp_req != cpu->hwp_req_cached) {
++		wrmsrl(MSR_HWP_REQUEST, hwp_req);
++		cpu->hwp_req_cached = hwp_req;
++	}
++
++	sample = &cpu->sample;
++	trace_pstate_sample(mul_ext_fp(100, sample->core_avg_perf),
++			    fp_toint(sample->busy_scaled),
++			    from,
++			    hwp_req,
++			    sample->mperf,
++			    sample->aperf,
++			    sample->tsc,
++			    get_avg_frequency(cpu),
++			    fp_toint(cpu->iowait_boost * 100));
++}
++
+ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 				     unsigned int flags)
+ {
+@@ -2260,6 +2314,22 @@ static void intel_pstate_update_util(struct update_util_data *data, u64 time,
+ 		intel_pstate_adjust_pstate(cpu);
+ }
+ 
++/**
++ * Implementation of the cpufreq update_util hook based on the VLP
++ * controller (see get_vlp_target_range()).
++ */
++static void intel_pstate_update_util_hwp_vlp(struct update_util_data *data,
++					     u64 time, unsigned int flags)
++{
++	struct cpudata *cpu = container_of(data, struct cpudata, update_util);
++
++	if (update_vlp_sample(cpu, time, flags)) {
++		const struct vlp_target_range *target =
++			get_vlp_target_range(cpu);
++		intel_pstate_adjust_pstate_range(cpu, target->value);
++	}
++}
++
+ static struct pstate_funcs core_funcs = {
+ 	.get_max = core_get_max_pstate,
+ 	.get_max_physical = core_get_max_pstate_physical,
+@@ -2389,6 +2459,9 @@ static int intel_pstate_init_cpu(unsigned int cpunum)
+ 
+ 	intel_pstate_get_cpu_pstates(cpu);
+ 
++	if (pstate_funcs.update_util == intel_pstate_update_util_hwp_vlp)
++		intel_pstate_reset_vlp(cpu);
++
+ 	pr_debug("controlling: cpu %d\n", cpunum);
+ 
+ 	return 0;
+@@ -2398,7 +2471,8 @@ static void intel_pstate_set_update_util_hook(unsigned int cpu_num)
+ {
+ 	struct cpudata *cpu = all_cpu_data[cpu_num];
+ 
+-	if (hwp_active && !hwp_boost)
++	if (hwp_active && !hwp_boost &&
++	    pstate_funcs.update_util != intel_pstate_update_util_hwp_vlp)
+ 		return;
+ 
+ 	if (cpu->update_util_set)
+@@ -2526,7 +2600,8 @@ static int intel_pstate_set_policy(struct cpufreq_policy *policy)
+ 		 * was turned off, in that case we need to clear the
+ 		 * update util hook.
+ 		 */
+-		if (!hwp_boost)
++		if (!hwp_boost && pstate_funcs.update_util !=
++				  intel_pstate_update_util_hwp_vlp)
+ 			intel_pstate_clear_update_util_hook(policy->cpu);
+ 		intel_pstate_hwp_set(policy->cpu);
+ 	}
 -- 
 2.22.1
 
