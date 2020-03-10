@@ -2,49 +2,49 @@ Return-Path: <SRS0=5rfv=43=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E086C10F27
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BDA3C3F2D0
 	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CD2E9222D9
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3569221655
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 21:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="a5msvmkc"
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="c1z0yYRy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726733AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727691AbgCJVqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 10 Mar 2020 17:46:24 -0400
-Received: from mx1.riseup.net ([198.252.153.129]:49210 "EHLO mx1.riseup.net"
+Received: from mx1.riseup.net ([198.252.153.129]:49230 "EHLO mx1.riseup.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727551AbgCJVqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Mar 2020 17:46:23 -0400
+        id S1727506AbgCJVqY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 10 Mar 2020 17:46:24 -0400
 Received: from bell.riseup.net (unknown [10.0.1.178])
         (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
         (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDv1DSDzFf5Q;
+        by mx1.riseup.net (Postfix) with ESMTPS id 48cTDv48vSzFf6s;
         Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1583876783; bh=Em3LQ/i9qE+XviHhjKpHAV1sZpQvpkA6BrliyYuH/uc=;
+        t=1583876783; bh=0yX01JJFStKAYRhSVlYvPVR/0Is5p2IQSnPOaQhexy0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=a5msvmkcIO57AAGJc89+HHSxVg2LIbloDxw/HvHznTUtSxduq7znS+NRbCQzRXf8N
-         84+oHm3B93XfbIv96eOdF3rcZDbFi1o3EAXlYfNtyfjQhv69SQRS6BPriZZgiaNjdR
-         5TptE3BvJsn21dZ6at3kNt6pbEjeLoAOPwj3pKKA=
-X-Riseup-User-ID: 583ABCE62A94267CFC14F2494EA6EFFB9D4D6D5C94C1D8E07D8BB2D22A43EFE3
+        b=c1z0yYRywJe0yR/iqrAH57P7MVw0ePcf/4aZfypegv7+hwutrt7Djffd5gCFBn9rX
+         mPZhHgYYWpxZGLkR+LIAeRnB8dizURZpcd57A89SPM8n4ve+tsqkxPCK+p84Str5rF
+         Vio4YgXUNyjBONNcxItsVZx4f2/i7rnk8oAg3jvY=
+X-Riseup-User-ID: 7730B927CA4233461DB3793177BE823CBE662ADA5D87858D0448C0AEBCA798FD
 Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDt6PcMzJrlc;
-        Tue, 10 Mar 2020 14:46:22 -0700 (PDT)
+         by bell.riseup.net (Postfix) with ESMTPSA id 48cTDv2QLDzJrlc;
+        Tue, 10 Mar 2020 14:46:23 -0700 (PDT)
 From:   Francisco Jerez <currojerez@riseup.net>
 To:     linux-pm@vger.kernel.org, intel-gfx@lists.freedesktop.org
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>,
         "Vivi, Rodrigo" <rodrigo.vivi@intel.com>,
         Peter Zijlstra <peterz@infradead.org>
-Subject: [PATCH 03/10] OPTIONAL: drm/i915: Expose PM QoS control parameters via debugfs.
-Date:   Tue, 10 Mar 2020 14:41:56 -0700
-Message-Id: <20200310214203.26459-4-currojerez@riseup.net>
+Subject: [PATCH 05/10] cpufreq: intel_pstate: Implement VLP controller statistics and status calculation.
+Date:   Tue, 10 Mar 2020 14:41:58 -0700
+Message-Id: <20200310214203.26459-6-currojerez@riseup.net>
 In-Reply-To: <20200310214203.26459-1-currojerez@riseup.net>
 References: <20200310214203.26459-1-currojerez@riseup.net>
 MIME-Version: 1.0
@@ -54,98 +54,312 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The goal of the helper code introduced here is to compute two
+informational data structures: struct vlp_input_stats aggregating
+various scheduling and PM statistics gathered in every call of the
+update_util() hook, and struct vlp_status_sample which contains status
+information derived from the former indicating whether the system is
+likely to have an IO or CPU bottleneck.  This will be used as main
+heuristic input by the new variably low-pass filtering controller (AKA
+VLP) that will assist the HWP at finding a reasonably energy-efficient
+P-state given the additional information available to the kernel about
+I/O utilization and scheduling behavior.
+
 Signed-off-by: Francisco Jerez <currojerez@riseup.net>
 ---
- drivers/gpu/drm/i915/i915_debugfs.c | 69 +++++++++++++++++++++++++++++
- 1 file changed, 69 insertions(+)
+ drivers/cpufreq/intel_pstate.c | 230 +++++++++++++++++++++++++++++++++
+ 1 file changed, 230 insertions(+)
 
-diff --git a/drivers/gpu/drm/i915/i915_debugfs.c b/drivers/gpu/drm/i915/i915_debugfs.c
-index 8f2525e4ce0f..e5c27b9302d9 100644
---- a/drivers/gpu/drm/i915/i915_debugfs.c
-+++ b/drivers/gpu/drm/i915/i915_debugfs.c
-@@ -1745,6 +1745,72 @@ static const struct file_operations i915_guc_log_relay_fops = {
- 	.release = i915_guc_log_relay_release,
- };
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8cb5bf419b40..12ee350db2a9 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -19,6 +19,7 @@
+ #include <linux/list.h>
+ #include <linux/cpu.h>
+ #include <linux/cpufreq.h>
++#include <linux/debugfs.h>
+ #include <linux/sysfs.h>
+ #include <linux/types.h>
+ #include <linux/fs.h>
+@@ -33,6 +34,8 @@
+ #include <asm/cpufeature.h>
+ #include <asm/intel-family.h>
  
-+static int
-+i915_rf_qos_delay_max_ns_set(void *data, u64 val)
-+{
-+	struct drm_i915_private *dev_priv = data;
++#include "../../kernel/sched/sched.h"
 +
-+	WRITE_ONCE(dev_priv->gt.rf_qos.delay_max_ns, val);
-+	return 0;
+ #define INTEL_PSTATE_SAMPLING_INTERVAL	(10 * NSEC_PER_MSEC)
+ 
+ #define INTEL_CPUFREQ_TRANSITION_LATENCY	20000
+@@ -59,6 +62,11 @@ static inline int32_t mul_fp(int32_t x, int32_t y)
+ 	return ((int64_t)x * (int64_t)y) >> FRAC_BITS;
+ }
+ 
++static inline int rnd_fp(int32_t x)
++{
++	return (x + (1 << (FRAC_BITS - 1))) >> FRAC_BITS;
 +}
 +
-+static int
-+i915_rf_qos_delay_max_ns_get(void *data, u64 *val)
-+{
-+	struct drm_i915_private *dev_priv = data;
-+
-+	*val = READ_ONCE(dev_priv->gt.rf_qos.delay_max_ns);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(i915_rf_qos_delay_max_ns_fops,
-+			i915_rf_qos_delay_max_ns_get,
-+			i915_rf_qos_delay_max_ns_set, "%llu\n");
-+
-+static int
-+i915_rf_qos_delay_slope_shift_set(void *data, u64 val)
-+{
-+	struct drm_i915_private *dev_priv = data;
-+
-+	WRITE_ONCE(dev_priv->gt.rf_qos.delay_slope_shift, val);
-+	return 0;
-+}
-+
-+static int
-+i915_rf_qos_delay_slope_shift_get(void *data, u64 *val)
-+{
-+	struct drm_i915_private *dev_priv = data;
-+
-+	*val = READ_ONCE(dev_priv->gt.rf_qos.delay_slope_shift);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(i915_rf_qos_delay_slope_shift_fops,
-+			i915_rf_qos_delay_slope_shift_get,
-+			i915_rf_qos_delay_slope_shift_set, "%llu\n");
-+
-+static int
-+i915_rf_qos_target_hz_set(void *data, u64 val)
-+{
-+	struct drm_i915_private *dev_priv = data;
-+
-+	WRITE_ONCE(dev_priv->gt.rf_qos.target_hz, val);
-+	return 0;
-+}
-+
-+static int
-+i915_rf_qos_target_hz_get(void *data, u64 *val)
-+{
-+	struct drm_i915_private *dev_priv = data;
-+
-+	*val = READ_ONCE(dev_priv->gt.rf_qos.target_hz);
-+	return 0;
-+}
-+
-+DEFINE_SIMPLE_ATTRIBUTE(i915_rf_qos_target_hz_fops,
-+			i915_rf_qos_target_hz_get,
-+			i915_rf_qos_target_hz_set, "%llu\n");
-+
- static int i915_runtime_pm_status(struct seq_file *m, void *unused)
+ static inline int32_t div_fp(s64 x, s64 y)
  {
- 	struct drm_i915_private *dev_priv = node_to_i915(m->private);
-@@ -2390,6 +2456,9 @@ static const struct i915_debugfs_files {
- #endif
- 	{"i915_guc_log_level", &i915_guc_log_level_fops},
- 	{"i915_guc_log_relay", &i915_guc_log_relay_fops},
-+	{"i915_rf_qos_delay_max_ns", &i915_rf_qos_delay_max_ns_fops},
-+	{"i915_rf_qos_delay_slope_shift", &i915_rf_qos_delay_slope_shift_fops},
-+	{"i915_rf_qos_target_hz", &i915_rf_qos_target_hz_fops}
+ 	return div64_s64((int64_t)x << FRAC_BITS, y);
+@@ -169,6 +177,49 @@ struct vid_data {
+ 	int32_t ratio;
  };
  
- int i915_debugfs_register(struct drm_i915_private *dev_priv)
++/**
++ * Scheduling and PM statistics gathered by update_vlp_sample() at
++ * every call of the VLP update_state() hook, used as heuristic
++ * inputs.
++ */
++struct vlp_input_stats {
++	int32_t realtime_count;
++	int32_t io_wait_count;
++	uint32_t max_response_frequency_hz;
++	uint32_t last_response_frequency_hz;
++};
++
++enum vlp_status {
++	VLP_BOTTLENECK_IO = 1 << 0,
++	/*
++	 * XXX - Add other status bits here indicating a CPU or TDP
++	 * bottleneck.
++	 */
++};
++
++/**
++ * Heuristic status information calculated by get_vlp_status_sample()
++ * from struct vlp_input_stats above, indicating whether the system
++ * has a potential IO or latency bottleneck.
++ */
++struct vlp_status_sample {
++	enum vlp_status value;
++	int32_t realtime_avg;
++};
++
++/**
++ * struct vlp_data - VLP controller parameters and state.
++ * @sample_interval_ns:	 Update interval in ns.
++ * @sample_frequency_hz: Reciprocal of the update interval in Hz.
++ */
++struct vlp_data {
++	s64 sample_interval_ns;
++	int32_t sample_frequency_hz;
++
++	struct vlp_input_stats stats;
++	struct vlp_status_sample status;
++};
++
+ /**
+  * struct global_params - Global parameters, mostly tunable via sysfs.
+  * @no_turbo:		Whether or not to use turbo P-states.
+@@ -239,6 +290,7 @@ struct cpudata {
+ 
+ 	struct pstate_data pstate;
+ 	struct vid_data vid;
++	struct vlp_data vlp;
+ 
+ 	u64	last_update;
+ 	u64	last_sample_time;
+@@ -268,6 +320,18 @@ struct cpudata {
+ 
+ static struct cpudata **all_cpu_data;
+ 
++/**
++ * struct vlp_params - VLP controller static configuration
++ * @sample_interval_ms:	     Update interval in ms.
++ * @avg*_hz:		     Exponential averaging frequencies of the various
++ *			     low-pass filters as an integer in Hz.
++ */
++struct vlp_params {
++	int sample_interval_ms;
++	int avg_hz;
++	int debug;
++};
++
+ /**
+  * struct pstate_funcs - Per CPU model specific callbacks
+  * @get_max:		Callback to get maximum non turbo effective P state
+@@ -296,6 +360,11 @@ struct pstate_funcs {
+ };
+ 
+ static struct pstate_funcs pstate_funcs __read_mostly;
++static struct vlp_params vlp_params __read_mostly = {
++	.sample_interval_ms = 10,
++	.avg_hz = 2,
++	.debug = 0,
++};
+ 
+ static int hwp_active __read_mostly;
+ static int hwp_mode_bdw __read_mostly;
+@@ -1793,6 +1862,167 @@ static inline int32_t get_target_pstate(struct cpudata *cpu)
+ 	return target;
+ }
+ 
++/**
++ * Initialize the struct vlp_data of the specified CPU to the defaults
++ * calculated from @vlp_params.
++ */
++static void intel_pstate_reset_vlp(struct cpudata *cpu)
++{
++	struct vlp_data *vlp = &cpu->vlp;
++
++	vlp->sample_interval_ns = vlp_params.sample_interval_ms * NSEC_PER_MSEC;
++	vlp->sample_frequency_hz = max(1u, (uint32_t)MSEC_PER_SEC /
++					   vlp_params.sample_interval_ms);
++	vlp->stats.last_response_frequency_hz = vlp_params.avg_hz;
++}
++
++/**
++ * Fixed point representation with twice the usual number of
++ * fractional bits.
++ */
++#define DFRAC_BITS 16
++#define DFRAC_ONE (1 << DFRAC_BITS)
++#define DFRAC_MAX_INT (0u - (uint32_t)DFRAC_ONE)
++
++/**
++ * Fast but rather inaccurate piecewise-linear approximation of a
++ * fixed-point inverse exponential:
++ *
++ *  exp2n(p) = int_tofp(1) * 2 ^ (-p / DFRAC_ONE) + O(1)
++ *
++ * The error term should be lower in magnitude than 0.044.
++ */
++static int32_t exp2n(uint32_t p)
++{
++	if (p < 32 * DFRAC_ONE) {
++		/* Interpolate between 2^-floor(p) and 2^-ceil(p). */
++		const uint32_t floor_p = p >> DFRAC_BITS;
++		const uint32_t ceil_p = (p + DFRAC_ONE - 1) >> DFRAC_BITS;
++		const uint64_t frac_p = p - (floor_p << DFRAC_BITS);
++
++		return ((int_tofp(1) >> floor_p) * (DFRAC_ONE - frac_p) +
++			(ceil_p >= 32 ? 0 : int_tofp(1) >> ceil_p) * frac_p) >>
++			DFRAC_BITS;
++	}
++
++	/* Short-circuit to avoid overflow. */
++	return 0;
++}
++
++/**
++ * Calculate the exponential averaging weight for a new sample based
++ * on the requested averaging frequency @hz and the delay since the
++ * last update.
++ */
++static int32_t get_last_sample_avg_weight(struct cpudata *cpu, unsigned int hz)
++{
++	/*
++	 * Approximate, but saves several 64-bit integer divisions
++	 * below and should be fully evaluated at compile-time.
++	 * Causes the exponential averaging to have an effective base
++	 * of 1.90702343749, which has little functional implications
++	 * as long as the hz parameter is scaled accordingly.
++	 */
++	const uint32_t ns_per_s_shift = order_base_2(NSEC_PER_SEC);
++	const uint64_t delta_ns = cpu->sample.time - cpu->last_sample_time;
++
++	return exp2n(min((uint64_t)DFRAC_MAX_INT,
++			 (hz * delta_ns) >> (ns_per_s_shift - DFRAC_BITS)));
++}
++
++/**
++ * Calculate some status information heuristically based on the struct
++ * vlp_input_stats statistics gathered by the update_state() hook.
++ */
++static const struct vlp_status_sample *get_vlp_status_sample(
++	struct cpudata *cpu, const int32_t po)
++{
++	struct vlp_data *vlp = &cpu->vlp;
++	struct vlp_input_stats *stats = &vlp->stats;
++	struct vlp_status_sample *last_status = &vlp->status;
++
++	/*
++	 * Calculate the VLP_BOTTLENECK_IO state bit, which indicates
++	 * whether some IO device driver has requested a PM response
++	 * frequency bound, typically due to the device being under
++	 * close to full utilization, which should cause the
++	 * controller to make a more conservative trade-off between
++	 * latency and energy usage, since performance isn't
++	 * guaranteed to scale further with increasing CPU frequency
++	 * whenever the system is close to IO-bound.
++	 *
++	 * Note that the maximum achievable response frequency is
++	 * limited by the sampling frequency of the controller,
++	 * response frequency requests greater than that will be
++	 * promoted to infinity (i.e. no low-pass filtering) in order
++	 * to avoid violating the response frequency constraint
++	 * provided via PM QoS.
++	 */
++	const bool bottleneck_io = stats->max_response_frequency_hz <
++				   vlp->sample_frequency_hz;
++
++	/*
++	 * Calculate the realtime statistic that tracks the
++	 * exponentially-averaged rate of occurrence of
++	 * latency-sensitive events (like wake-ups from IO wait).
++	 */
++	const uint64_t delta_ns = cpu->sample.time - cpu->last_sample_time;
++	const int32_t realtime_sample =
++		div_fp((uint64_t)(stats->realtime_count +
++				  (bottleneck_io ? 0 : stats->io_wait_count)) *
++		       NSEC_PER_SEC,
++		       100 * delta_ns);
++	const int32_t alpha = get_last_sample_avg_weight(cpu,
++							 vlp_params.avg_hz);
++	const int32_t realtime_avg = realtime_sample +
++		mul_fp(alpha, last_status->realtime_avg - realtime_sample);
++
++	/* Consume the input statistics. */
++	stats->io_wait_count = 0;
++	stats->realtime_count = 0;
++	if (bottleneck_io)
++		stats->last_response_frequency_hz =
++			stats->max_response_frequency_hz;
++	stats->max_response_frequency_hz = 0;
++
++	/* Update the state of the controller. */
++	last_status->realtime_avg = realtime_avg;
++	last_status->value = (bottleneck_io ? VLP_BOTTLENECK_IO : 0);
++
++	/* Update state used for tracing. */
++	cpu->sample.busy_scaled = int_tofp(stats->max_response_frequency_hz);
++	cpu->iowait_boost = realtime_avg;
++
++	return last_status;
++}
++
++/**
++ * Collect some scheduling and PM statistics in response to an
++ * update_state() call.
++ */
++static bool update_vlp_sample(struct cpudata *cpu, u64 time, unsigned int flags)
++{
++	struct vlp_input_stats *stats = &cpu->vlp.stats;
++
++	/* Update PM QoS request. */
++	const uint32_t resp_hz = cpu_response_frequency_qos_limit();
++
++	stats->max_response_frequency_hz = !resp_hz ? UINT_MAX :
++		max(stats->max_response_frequency_hz, resp_hz);
++
++	/* Update scheduling statistics. */
++	if ((flags & SCHED_CPUFREQ_IOWAIT))
++		stats->io_wait_count++;
++
++	if (cpu_rq(cpu->cpu)->rt.rt_nr_running)
++		stats->realtime_count++;
++
++	/* Return whether a P-state update is due. */
++	return smp_processor_id() == cpu->cpu &&
++		time - cpu->sample.time >= cpu->vlp.sample_interval_ns &&
++		intel_pstate_sample(cpu, time);
++}
++
+ static int intel_pstate_prepare_request(struct cpudata *cpu, int pstate)
+ {
+ 	int min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
 -- 
 2.22.1
 
