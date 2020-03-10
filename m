@@ -2,152 +2,189 @@ Return-Path: <SRS0=5rfv=43=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97EBBC18E5B
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 07:04:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 595F1C10F27
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 08:37:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7171F2468C
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 07:04:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 27C7124683
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Mar 2020 08:37:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1583823891;
-	bh=EEzHE5+Ej4Ntn//ujeATmWKpJYLdDKimf0zxr2e+Ajw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=mVBJD7DPyqkxg81Wm7yFwig8YwCLxv4XOTHoUc9KW/e9eZTxyL+nPWwFqIOTnxQRU
-	 NTLB4+nvNYRYavQ9FMnTwF4Io4J+yaLlxqGhcFZsz3+XnSCKKonjNW5YGyGSfOHRT5
-	 dRRM3k9Oz5XFOINmUNt+Lobz7hq4sOSj6BxpG3mU=
+	s=default; t=1583829447;
+	bh=Y6jQM7RVsO58Dx3weRXmbV8Gsl+HLdIqb3PDN6mkEAs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=lLYJbhDc5+/BtWKvYlJJIZCHmsfX6hlge83OpgvL+hugxzBuEHROT0pdj8r6iGVg1
+	 vzL2+NO6Le8MGnWiQwAQWFjD1mqXAxLXip1DG/FNsOOJRHs2T4Fy/dqKy+OeEyaCX0
+	 /FhxGJvyRMQ0EyqKaKufuTXIJzDSWPrdJ/ewgUoA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726205AbgCJHEu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Mar 2020 03:04:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:43084 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726199AbgCJHEu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Mar 2020 03:04:50 -0400
-Received: from dragon (80.251.214.228.16clouds.com [80.251.214.228])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 090892468A;
-        Tue, 10 Mar 2020 07:04:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1583823889;
-        bh=EEzHE5+Ej4Ntn//ujeATmWKpJYLdDKimf0zxr2e+Ajw=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=EXymqZ1VrUNLGskZXVzQs/HQA/VJBZJ0xkP996JzXmIt7G+I/x6DrvhfVjW7S25Vz
-         NQanULMljX2/3hH4IHyhrsmLLIjAJ55AL0CWASIuMmpdh30lz+IRyGlNZeesoYYBBs
-         bDh2ShGU7wyW9b/prVufhTopqGjse/s0uunD5Wj0=
-Date:   Tue, 10 Mar 2020 15:04:38 +0800
-From:   Shawn Guo <shawnguo@kernel.org>
-To:     Anson Huang <Anson.Huang@nxp.com>
-Cc:     robh+dt@kernel.org, mark.rutland@arm.com, s.hauer@pengutronix.de,
-        kernel@pengutronix.de, festevam@gmail.com, catalin.marinas@arm.com,
-        will@kernel.org, rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, aisheng.dong@nxp.com,
-        linux@roeck-us.net, srinivas.kandagatla@linaro.org,
-        krzk@kernel.org, fugang.duan@nxp.com, peng.fan@nxp.com,
-        daniel.baluta@nxp.com, bjorn.andersson@linaro.org, olof@lixom.net,
-        dinguyen@kernel.org, leonard.crestez@nxp.com,
-        marcin.juszkiewicz@linaro.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, Linux-imx@nxp.com
-Subject: Re: [PATCH V16 5/5] arm64: dts: imx: add i.MX8QXP thermal support
-Message-ID: <20200310070437.GC17772@dragon>
-References: <1582330132-13461-1-git-send-email-Anson.Huang@nxp.com>
- <1582330132-13461-5-git-send-email-Anson.Huang@nxp.com>
+        id S1726467AbgCJIh0 convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Mar 2020 04:37:26 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:36401 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726462AbgCJIh0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Mar 2020 04:37:26 -0400
+Received: by mail-ot1-f65.google.com with SMTP id j14so12376619otq.3;
+        Tue, 10 Mar 2020 01:37:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=DKzFIFLjLlsOT1OmyKxWh7fyVNk0UFpX9V9hd2JpLz4=;
+        b=WBlIK/bCvECWvCwAjSGNxDscoq64evFLsKbyKqB5dJPRYy8liUDE+zfOMJTQS9Qj+F
+         IbFG7Rs4kaL6AcsBxRof8k58RMyw2ySq5/8rVkuMML0X1c/Ro/F1NT3b/EyItgF7RzcX
+         hqOB1xh3ZXsRiaBkPBMC7jj7sLlqiswYuleoA2m00keR1NXG3AzmJMG5XR67fzoyo2ES
+         e66Ck4SG7lGbfgx5Yf3kfAzZobvecKTtMXR53/H5UfICPT1+nacJtnfUNTbvrskCTSnN
+         nKn/S6sgBZhSICdvj3ORQ1tO3pdyugah4Lu54AQNEMp4Qva6LppQD/n4RSTiII1spxrE
+         6MBQ==
+X-Gm-Message-State: ANhLgQ3UQzqc5Uh3/Rm+oTTa/jfmCGKgiDYQIt98HFYX8JGzYCrQExXT
+        EZCzqcXbH5wJ0hmXmBv8otnnNpXwN571WNiVafm9QF+z
+X-Google-Smtp-Source: ADFU+vvNPIef0MecvLmJCFpMsoRoZypHjlU4iKA6axUtECduLpHHeWQxLr9C/RfVQG+s0ay6fqFKHVpBXbTkTmNP8u4=
+X-Received: by 2002:a05:6830:110:: with SMTP id i16mr15503565otp.189.1583829445214;
+ Tue, 10 Mar 2020 01:37:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1582330132-13461-5-git-send-email-Anson.Huang@nxp.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+References: <20200227013411.1.Ica3bb9fa898499d94e0b0a2bfa08ec46c89d84fa@changeid>
+ <20200303170948.1.I108734f38ade020c3e5da825839dca11d2a2ff87@changeid>
+ <CAJZ5v0j+bx5fh1wv738MNoui_SaZ-c21rDnZkWOqi_GCVg5stQ@mail.gmail.com>
+ <F8C6368A-1537-482B-8FE5-350A18D936A8@intel.com> <CAJZ5v0iBMiGKeFXRTLkR8oFQbdCJq0TnhpFZkMBK4gF0VNjumA@mail.gmail.com>
+ <6089B7674E6F464F847AB76B599E0EAA78AB6A98@PGSMSX102.gar.corp.intel.com>
+In-Reply-To: <6089B7674E6F464F847AB76B599E0EAA78AB6A98@PGSMSX102.gar.corp.intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 10 Mar 2020 09:37:14 +0100
+Message-ID: <CAJZ5v0g6fAPZxX3MKGomjTWfWVMV-A+8yUC=ydOg5YwD-moDvQ@mail.gmail.com>
+Subject: Re: [PATCH v3] intel_idle: Add Comet Lake support
+To:     "Pan, Harry" <harry.pan@intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Harry Pan <gs0622@gmail.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Feb 22, 2020 at 08:08:52AM +0800, Anson Huang wrote:
-> Add i.MX8QXP CPU thermal zone support.
-> 
-> Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
-> ---
-> No change.
-> ---
->  arch/arm64/boot/dts/freescale/imx8qxp.dtsi | 36 ++++++++++++++++++++++++++++++
->  1 file changed, 36 insertions(+)
-> 
-> diff --git a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-> index fb5f752..0a14fe4 100644
-> --- a/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-> +++ b/arch/arm64/boot/dts/freescale/imx8qxp.dtsi
-> @@ -11,6 +11,7 @@
->  #include <dt-bindings/input/input.h>
->  #include <dt-bindings/interrupt-controller/arm-gic.h>
->  #include <dt-bindings/pinctrl/pads-imx8qxp.h>
-> +#include <dt-bindings/thermal/thermal.h>
->  
->  / {
->  	interrupt-parent = <&gic>;
-> @@ -189,6 +190,11 @@
->  			compatible = "fsl,imx8qxp-sc-wdt", "fsl,imx-sc-wdt";
->  			timeout-sec = <60>;
->  		};
-> +
-> +		tsens: thermal-sensor {
-> +			compatible = "fsl,imx8qxp-sc-thermal", "fsl,imx-sc-thermal";
-> +			#thermal-sensor-cells = <1>;
-> +		};
->  	};
->  
->  	timer {
-> @@ -586,4 +592,34 @@
->  			#clock-cells = <1>;
->  		};
->  	};
-> +
-> +	thermal_zones: thermal-zones {
-> +		cpu-thermal0 {
-> +			polling-delay-passive = <250>;
-> +			polling-delay = <2000>;
-> +			thermal-sensors = <&tsens IMX_SC_R_SYSTEM>;
+On Mon, Mar 9, 2020 at 10:07 AM Pan, Harry <harry.pan@intel.com> wrote:
+>
+> Hi Rafael,
+>
+> Thanks for the comments.
+> I have some questions, I am wondering if you can share upstream thought w.r.t the future development of intel_idle.
+>
+>  - It looks to me since v5.6 intel_idle will prefer _CST of ACPI rather than the general table embedded in this driver.
 
-newline
+Not exactly.
 
-> +			trips {
-> +				cpu_alert0: trip0 {
-> +					temperature = <107000>;
-> +					hysteresis = <2000>;
-> +					type = "passive";
-> +				};
+The rules are as follows:
+ * If there is a built-in table for the given processor in the driver,
+it will be used, but the C-states that are not exposed in _CST will be
+disabled by default (the state parameters come from the built-in table
+for all C-states).
+ * Otherwise (i.e. the driver does not recognized the given
+processor), C-state definitions will be based on the _CST data.
 
-newline
+See https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_idle.html
+for details.
 
-> +				cpu_crit0: trip1 {
-> +					temperature = <127000>;
-> +					hysteresis = <2000>;
-> +					type = "critical";
-> +				};
-> +			};
+>  - Any pros and cons of using the tables of _CST in firmware and embedded one in the kernel?
 
-newline
+Both can be used at the same time (see above).
 
-I fixed them up and applied the patch.
+The built-in table in the kernel must be suitable for all of the
+platforms shipped with the given processor (SoC).
 
-Shawn
+Obviously, the _CST table allows intel_idle to work if the processor
+included in the platform is not recognized by it.
 
-> +			cooling-maps {
-> +				map0 {
-> +					trip = <&cpu_alert0>;
-> +					cooling-device =
-> +						<&A35_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&A35_1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&A35_2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-> +						<&A35_3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-> +				};
-> +			};
-> +		};
-> +	};
->  };
-> -- 
-> 2.7.4
-> 
+Generally, our planned strategy is to provide built-in C-state tables
+for all new "mainstream" processors with the use_acpi flag set to
+avoid enabling C-states that may have not been validated on a given
+platform by default.
+
+>  - Can the table in _CST archive more optimal idle states management?
+
+Possibly, but not likely.
+
+> If there is already any reference, documents I missed, kindly enlighten me then I would like to read it first before refining the questions.
+
+See above. :-)
+
+Thanks!
+
+
+___________________________________
+> 從: Rafael J. Wysocki [rafael@kernel.org]
+> 寄件日期: 2020年3月5日 上午 05:14
+> 至: Pan, Harry
+> 副本: Rafael J. Wysocki; LKML; Harry Pan; Jacob Pan; Len Brown; Linux PM
+> 主旨: Re: [PATCH v3] intel_idle: Add Comet Lake support
+>
+> On Wed, Mar 4, 2020 at 12:57 PM Pan, Harry <harry.pan@intel.com> wrote:
+> >
+> > Hi Rafael,
+> >
+> > Yes, I skipped it considering to align CML-U V0 and A0 stepping w/ the same table; I sent v4 for your review.
+>
+> Skipping that flag is risky, because it may cause some C-states to be
+> enabled on systems where they have not been validated (e.g. systems
+> shipping with other OSes which only use _CST C-states).  There were
+> problems related to that in the past which is one of the reasons for
+> adding _CST support to intel_idle.  use_acpi should be set for all new
+> platforms going forward as a rule.
+>
+> > In the other hand, I am proposing using _CST as long term plan in CrOS dev teams.
+>
+> That I obviously agree with. :-)
+>
+>
+> > > On Mar 4, 2020, at 17:53, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > >
+> > > ﻿On Tue, Mar 3, 2020 at 10:10 AM Harry Pan <harry.pan@intel.com> wrote:
+> > >>
+> > >> Add a general C-state table in order to support Comet Lake.
+> > >>
+> > >> Signed-off-by: Harry Pan <harry.pan@intel.com>
+> > >>
+> > >> ---
+> > >>
+> > >> drivers/idle/intel_idle.c | 7 +++++++
+> > >> 1 file changed, 7 insertions(+)
+> > >>
+> > >> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> > >> index d55606608ac8..05bce595fafe 100644
+> > >> --- a/drivers/idle/intel_idle.c
+> > >> +++ b/drivers/idle/intel_idle.c
+> > >> @@ -1067,6 +1067,11 @@ static const struct idle_cpu idle_cpu_dnv = {
+> > >>        .use_acpi = true,
+> > >> };
+> > >>
+> > >> +static const struct idle_cpu idle_cpu_cml = {
+> > >> +       .state_table = skl_cstates,
+> > >> +       .disable_promotion_to_c1e = true,
+> > >
+> > > .use_acpi = true,
+> > >
+> > > missing?  Otherwise you can just use idle_cpu_skl as is, can't you?
+> > >
+> > >> +};
+> > >> +
+> > >> static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+> > >>        INTEL_CPU_FAM6(NEHALEM_EP,              idle_cpu_nhx),
+> > >>        INTEL_CPU_FAM6(NEHALEM,                 idle_cpu_nehalem),
+> > >> @@ -1105,6 +1110,8 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+> > >>        INTEL_CPU_FAM6(ATOM_GOLDMONT_PLUS,      idle_cpu_bxt),
+> > >>        INTEL_CPU_FAM6(ATOM_GOLDMONT_D,         idle_cpu_dnv),
+> > >>        INTEL_CPU_FAM6(ATOM_TREMONT_D,          idle_cpu_dnv),
+> > >> +       INTEL_CPU_FAM6(COMETLAKE_L,             idle_cpu_cml),
+> > >> +       INTEL_CPU_FAM6(COMETLAKE,               idle_cpu_cml),
+> > >>        {}
+> > >> };
+> > >>
+> > >> --
+> > >> 2.24.1
+> > >>
