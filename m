@@ -1,127 +1,202 @@
-Return-Path: <linux-pm-owner@vger.kernel.org>
+Return-Path: <SRS0=+pCq=44=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_NONE,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 064AFC0044D
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Mar 2020 19:54:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by archive.lwn.net (Postfix) with ESMTP id D4DFE7D910
-	for <lwn-linux-pm@archive.lwn.net>; Wed, 11 Mar 2020 16:43:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EEA5820737
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Mar 2020 19:54:35 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="S+Z6K9Gq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730031AbgCKQnH (ORCPT <rfc822;lwn-linux-pm@archive.lwn.net>);
-        Wed, 11 Mar 2020 12:43:07 -0400
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:39450 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726314AbgCKQnH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Mar 2020 12:43:07 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 02BGh3DL008631;
-        Wed, 11 Mar 2020 11:43:03 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1583944983;
-        bh=5r7Nvl/xrjYQj1VqSKcuLORKIAOHb4UzYX18VU3KmRY=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=Mpyr2LRJ+oX88+/vZHIWWMQMZwQ6JtIxsMPBDSYCopXvJ8+xtktMxuUMgf7JLpUHG
-         3DBRdyvVVjIX9iKvLBuMSFnFpuvDA0605pswoaapKr2Sj4hAXFVUyQUkxo/z8HemwQ
-         vzVNTWHxByVFzm32roGk2xKozmHacW0GHTRzPXg0=
-Received: from DLEE108.ent.ti.com (dlee108.ent.ti.com [157.170.170.38])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 02BGh3wj080363
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 11 Mar 2020 11:43:03 -0500
-Received: from DLEE102.ent.ti.com (157.170.170.32) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Wed, 11
- Mar 2020 11:43:02 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Wed, 11 Mar 2020 11:43:02 -0500
-Received: from [128.247.75.135] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 02BGh2o7084185;
-        Wed, 11 Mar 2020 11:43:02 -0500
-Subject: Re: [EXTERNAL] Re: [PATCH v4 2/4] power_supply: Add additional health
- properties to the header
-To:     Dan Murphy <dmurphy@ti.com>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sandeep Patil <sspatil@android.com>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <kernel-team@android.com>
-References: <20200116175039.1317-1-dmurphy@ti.com>
- <20200116175039.1317-3-dmurphy@ti.com>
- <20200117010658.iqs2zpwl6bsomkuo@earth.universe>
- <20200306235548.GA187098@google.com>
- <20200310213050.si7gcr2wbmjgr7jf@earth.universe>
- <de919edb-79b3-82ec-f55c-31a127d6c751@ti.com>
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Message-ID: <66b2ac86-8513-b540-8a2c-c2ebef4124dd@ti.com>
-Date:   Wed, 11 Mar 2020 11:43:00 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        id S2387420AbgCKTye (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Mar 2020 15:54:34 -0400
+Received: from mx1.riseup.net ([198.252.153.129]:52834 "EHLO mx1.riseup.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2387414AbgCKTye (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Mar 2020 15:54:34 -0400
+Received: from capuchin.riseup.net (unknown [10.0.1.176])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
+        by mx1.riseup.net (Postfix) with ESMTPS id 48d2jP3QlPzFfCG;
+        Wed, 11 Mar 2020 12:54:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
+        t=1583956473; bh=/oIm3+H/Gjkwq6nU0tK5HhT1pSrbvRCdCac1zwwzqA8=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=S+Z6K9Gqzjj6ynH6zFU95x6OzsWFilDVFnExkhyOpkSSO0oInk6wMEotPDwnx4vcU
+         xHZqVYowzPygtVsMVIqkbLKGhMLY0lpK6ELbB70jZ+7GCryh83MCbXHLA1pH9/ZStx
+         4QCQaEzJIacer5jEFMee0vth5nHQPkOL/XgwAZYs=
+X-Riseup-User-ID: 5B6453F7EC4DDC4A599452C8EF4E242FEA4225E013722DDFB12F86EB81309ED7
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+         by capuchin.riseup.net (Postfix) with ESMTPSA id 48d2jN4wDLz8tXp;
+        Wed, 11 Mar 2020 12:54:32 -0700 (PDT)
+From:   Francisco Jerez <currojerez@riseup.net>
+To:     Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com>,
+        Chris Wilson <chris@chris-wilson.co.uk>,
+        intel-gfx@lists.freedesktop.org, linux-pm@vger.kernel.org
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Pandruvada\, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [Intel-gfx] [PATCH 02/10] drm/i915: Adjust PM QoS response frequency based on GPU load.
+In-Reply-To: <ac5fdd3c-bf47-60d3-edef-82d451266dcb@linux.intel.com>
+References: <20200310214203.26459-1-currojerez@riseup.net> <20200310214203.26459-3-currojerez@riseup.net> <158387916218.28297.4489489879582782488@build.alporthouse.com> <ac5fdd3c-bf47-60d3-edef-82d451266dcb@linux.intel.com>
+Date:   Wed, 11 Mar 2020 12:54:35 -0700
+Message-ID: <878sk6acqs.fsf@riseup.net>
 MIME-Version: 1.0
-In-Reply-To: <de919edb-79b3-82ec-f55c-31a127d6c751@ti.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: multipart/signed; boundary="==-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
-Archived-At: <http://archive.lwn.net:8080/linux-pm/66b2ac86-8513-b540-8a2c-c2ebef4124dd@ti.com/>
-List-Archive: <http://archive.lwn.net:8080/linux-pm/>
-List-Post: <mailto:linux-pm@vger.kernel.org>
 
-Sebastian
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-On 3/11/20 6:29 AM, Dan Murphy wrote:
-> Sebastian
->
-> On 3/10/20 4:30 PM, Sebastian Reichel wrote:
->> Hi Sandeep,
->>
->> On Fri, Mar 06, 2020 at 03:55:48PM -0800, Sandeep Patil wrote:
->>> On Fri, Jan 17, 2020 at 02:06:58AM +0100, Sebastian Reichel wrote:
->>>> Hi,
->>>>
->>>> On Thu, Jan 16, 2020 at 11:50:37AM -0600, Dan Murphy wrote:
->>>>> Add HEALTH_WARM, HEALTH_COOL and HEALTH_HOT to the health enum.
->>>>>
->>>>> Signed-off-by: Dan Murphy <dmurphy@ti.com>
->>>>> ---
->>>> Looks good. But I will not merge it without a user and have comments
->>>> for the driver.
->>> Android has been looking for these properties for a while now [1].
->>> It was added[2] when we saw that the manufacturers were implementing 
->>> these
->>> properties in the driver. I didn't know the properties were absent 
->>> upstream
->>> until yesterday. Somebody pointed out in our ongoing effort to make 
->>> sure
->>> all core kernel changes that android depends on are present upstream.
->>>
->>> I think those values are also propagated in application facing APIs in
->>> Android (but I am not sure yet, let me know if that's something you 
->>> want
->>> to find out).
->>>
->>> I wanted to chime in and present you a 'user' for this if that helps.
->> With user I meant an upstream kernel driver, which exposes the
->> values. But thanks for the pointer. This should be mentioned in
->> the patch description, also the fact that the status values are
->> directly taken from JEITA spec.
->
-> I mentioned the JEITA in the cover letter but I guess you would like 
-> the description in the commit message as well
->
-> Dan
->
->
-I have added a note mentioning that the properties are taken from the 
-JEITA spec in the commit message and listing the bq2515x_charger driver 
-as a user. I am waiting for feedback on my other patches in the series 
-before sending you v5 patches.
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ricardo
+Tvrtko Ursulin <tvrtko.ursulin@linux.intel.com> writes:
 
+> On 10/03/2020 22:26, Chris Wilson wrote:
+>> Quoting Francisco Jerez (2020-03-10 21:41:55)
+>>> diff --git a/drivers/gpu/drm/i915/gt/intel_lrc.c b/drivers/gpu/drm/i915=
+/gt/intel_lrc.c
+>>> index b9b3f78f1324..a5d7a80b826d 100644
+>>> --- a/drivers/gpu/drm/i915/gt/intel_lrc.c
+>>> +++ b/drivers/gpu/drm/i915/gt/intel_lrc.c
+>>> @@ -1577,6 +1577,11 @@ static void execlists_submit_ports(struct intel_=
+engine_cs *engine)
+>>>          /* we need to manually load the submit queue */
+>>>          if (execlists->ctrl_reg)
+>>>                  writel(EL_CTRL_LOAD, execlists->ctrl_reg);
+>>> +
+>>> +       if (execlists_num_ports(execlists) > 1 &&
+>> pending[1] is always defined, the minimum submission is one slot, with
+>> pending[1] as the sentinel NULL.
+>>=20
+>>> +           execlists->pending[1] &&
+>>> +           !atomic_xchg(&execlists->overload, 1))
+>>> +               intel_gt_pm_active_begin(&engine->i915->gt);
+>>=20
+>> engine->gt
+>>=20
+>>>   }
+>>>=20=20=20
+>>>   static bool ctx_single_port_submission(const struct intel_context *ce)
+>>> @@ -2213,6 +2218,12 @@ cancel_port_requests(struct intel_engine_execlis=
+ts * const execlists)
+>>>          clear_ports(execlists->inflight, ARRAY_SIZE(execlists->infligh=
+t));
+>>>=20=20=20
+>>>          WRITE_ONCE(execlists->active, execlists->inflight);
+>>> +
+>>> +       if (atomic_xchg(&execlists->overload, 0)) {
+>>> +               struct intel_engine_cs *engine =3D
+>>> +                       container_of(execlists, typeof(*engine), execli=
+sts);
+>>> +               intel_gt_pm_active_end(&engine->i915->gt);
+>>> +       }
+>>>   }
+>>>=20=20=20
+>>>   static inline void
+>>> @@ -2386,6 +2397,9 @@ static void process_csb(struct intel_engine_cs *e=
+ngine)
+>>>                          /* port0 completed, advanced to port1 */
+>>>                          trace_ports(execlists, "completed", execlists-=
+>active);
+>>>=20=20=20
+>>> +                       if (atomic_xchg(&execlists->overload, 0))
+>>> +                               intel_gt_pm_active_end(&engine->i915->g=
+t);
+>>=20
+>> So this looses track if we preempt a dual-ELSP submission with a
+>> single-ELSP submission (and never go back to dual).
+>>=20
+>> If you move this to the end of the loop and check
+>>=20
+>> if (!execlists->active[1] && atomic_xchg(&execlists->overload, 0))
+>> 	intel_gt_pm_active_end(engine->gt);
+>>=20
+>> so that it covers both preemption/promotion and completion.
+>>=20
+>> However, that will fluctuate quite rapidly. (And runs the risk of
+>> exceeding the sentinel.)
+>>=20
+>> An alternative approach would be to couple along
+>> schedule_in/schedule_out
+>>=20
+>> atomic_set(overload, -1);
+>>=20
+>> __execlists_schedule_in:
+>> 	if (!atomic_fetch_inc(overload)
+>> 		intel_gt_pm_active_begin(engine->gt);
+>> __execlists_schedule_out:
+>> 	if (!atomic_dec_return(overload)
+>> 		intel_gt_pm_active_end(engine->gt);
+>>=20
+>> which would mean we are overloaded as soon as we try to submit an
+>> overlapping ELSP.
+>
+> Putting it this low-level into submission code also would not work well=20
+> with GuC.
+>
+
+I wrote a patch at some point that added calls to
+intel_gt_pm_active_begin() and intel_gt_pm_active_end() to the GuC
+submission code in order to obtain a similar effect.  However people
+requested me to leave GuC submission alone for the moment in order to
+avoid interference with SLPC.  At some point it might make sense to hook
+this up in combination with SLPC, because SLPC doesn't provide much of a
+CPU energy efficiency advantage in comparison to this series.
+
+> How about we try to keep some accounting one level higher, as the i915=20
+> scheduler is passing requests on to the backend for execution?
+>
+> Or number of runnable contexts, if the distinction between contexts and=20
+> requests is better for this purpose.
+>
+> Problematic bit in going one level higher though is that the exit point=20
+> is less precisely coupled to the actual state. Or maybe with aggressive=20
+> engine retire we have nowadays it wouldn't be a problem.
+>
+
+The main advantage of instrumenting the execlists submission code at a
+low level is that it gives us visibility over the number of ELSP ports
+pending execution, which can cause the performance of the workload to be
+substantially more or less latency-sensitive.  GuC submission shouldn't
+care about this variable, so it kind of makes sense for its behavior to
+be slightly different.
+
+Anyway if we're willing to give up the accuracy of keeping track of this
+at a low level (and give GuC submission exactly the same treatment) it
+should be possible to move the tracking one level up.
+
+> Regards,
+>
+> Tvrtko
+>
+
+Thank you.
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCXmlB+wAKCRCDmTidfVK/
+W+yRAQCEEl5/huRg6/K96fmimPaZ6hLZLH9hq0bjfbsg08kqkQEApGp1uqvIWQyZ
+9iFyXm7Q2ObDcqnwsW3XKTXNvpflwow=
+=6PB1
+-----END PGP SIGNATURE-----
+--==-=-=--
