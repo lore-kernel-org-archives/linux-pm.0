@@ -2,113 +2,179 @@ Return-Path: <SRS0=RZFD=45=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B009DC5ACC2
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:27:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB15EC10DCE
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:49:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 85DCA20737
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:27:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TjcM4aRz"
+	by mail.kernel.org (Postfix) with ESMTP id 995802071B
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:49:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726558AbgCLR1J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Mar 2020 13:27:09 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:56056 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726328AbgCLR1J (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2020 13:27:09 -0400
-Received: by mail-wm1-f65.google.com with SMTP id 6so6988378wmi.5;
-        Thu, 12 Mar 2020 10:27:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=tRTDOcE7fsHdxjFeBfBurtdDlWQU7ALainfjoKXuLXI=;
-        b=TjcM4aRz1p/IqKh4CQdcsbwb2mgAPvnbhOmgUrimuwIXMpQVbERUjJDZmrOpOarfsv
-         bn9yID81q+YU12MHrYQXR8vHmjsYXTPJ6WrrDgq6deBLyVCxPlAxvJPG1P6UEG9g0qvQ
-         47cqkrfUKaUa463o+u1JB8FrdF20ib0cHxUq6pHy/vtrtb0lrGflpK0bwe8+6nGpZrEu
-         oPtb89RqXEGkW1paPiSIgnTwfixG6EwyK9+i1ROtkjq4s2dffq7F61MlbP+LUuXtPMO/
-         MRI3h2tLYB+7Kc9T2ZWUt6ITMVSisKcshx0nTMN67inQyaA7Ms+5XhmZX3pKgYoOl2lk
-         ibzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=tRTDOcE7fsHdxjFeBfBurtdDlWQU7ALainfjoKXuLXI=;
-        b=MWHv6Pg7ToE7pJCnGr7WBLvo1iA6NS/RxQnryDMCmolaggStQg68guwUXge6Xf3cKL
-         2xoHwvWn+c47bs+syz36ja1vFkAU3B1ruEjdynDKYaqcLDCxeOiVaY/ILIqW1TtUzMIa
-         s9xQi91u7+QCz6XYwcA4sYAz8H0dDTpsr+DMjHgimQt29pLL43BrwTkvkNPO3q4VmnVc
-         Y6EMDlKAN8i27EiNrxGlPD7s3+iSR94prhpVpJ8jskfTJqu4WQbZHScwMQbsM35oAPPi
-         y9j4f0Nr9edFF83TjQlVzq8f1SL8NzBnU8nSOCmpthHTBouK9CAxIxLFNq0t6UMA+jEO
-         EzyQ==
-X-Gm-Message-State: ANhLgQ2+G9KdCSJUf0LOWMhEpSrJpLxPCNrEUOwV+f2MuknkFAYo46XH
-        gxAAAG+foyBhiH4HvcCZN5M=
-X-Google-Smtp-Source: ADFU+vv2JNeETUkjt4XRMjD4pOUY3SEKCruuQnXZ1av+RQOoWdPdemVl/9NQ0PuV5rljgBWWyEb1FA==
-X-Received: by 2002:a7b:ca58:: with SMTP id m24mr5661568wml.76.1584034027225;
-        Thu, 12 Mar 2020 10:27:07 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F6C4B.dip0.t-ipconnect.de. [91.63.108.75])
-        by smtp.gmail.com with ESMTPSA id c11sm76254500wrp.51.2020.03.12.10.27.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Mar 2020 10:27:05 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, robh+dt@kernel.org, jic23@kernel.org,
+        id S1726475AbgCLRtk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Mar 2020 13:49:40 -0400
+Received: from mga04.intel.com ([192.55.52.120]:16068 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726420AbgCLRtj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 12 Mar 2020 13:49:39 -0400
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/DHE-RSA-AES256-GCM-SHA384; 12 Mar 2020 10:49:40 -0700
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.70,545,1574150400"; 
+   d="scan'208";a="246448945"
+Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
+  by orsmga006.jf.intel.com with ESMTP; 12 Mar 2020 10:49:32 -0700
+Received: from andy by smile with local (Exim 4.93)
+        (envelope-from <andriy.shevchenko@linux.intel.com>)
+        id 1jCRxd-00944x-F9; Thu, 12 Mar 2020 19:49:33 +0200
+Date:   Thu, 12 Mar 2020 19:49:33 +0200
+From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To:     Saravanan Sekar <sravanhome@gmail.com>
+Cc:     lee.jones@linaro.org, robh+dt@kernel.org, jic23@kernel.org,
         knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net,
         sre@kernel.org, mchehab+huawei@kernel.org, davem@davemloft.net,
-        gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com,
-        fabrice.gasnier@st.com, beniamin.bia@analog.com,
-        linus.walleij@linaro.org, u.kleine-koenig@pengutronix.de,
-        fabrizio.castro@bp.renesas.com, info@metux.net,
-        hancock@sedsystems.ca, gregory.clement@bootlin.com,
+        gregkh@linuxfoundation.org, fabrice.gasnier@st.com,
+        beniamin.bia@analog.com, linus.walleij@linaro.org,
+        u.kleine-koenig@pengutronix.de, fabrizio.castro@bp.renesas.com,
+        info@metux.net, hancock@sedsystems.ca, gregory.clement@bootlin.com,
         renatogeh@gmail.com, plr.vincent@gmail.com,
         miquel.raynal@bootlin.com, marcelo.schmitt1@gmail.com,
-        paul@crapouillou.net
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH 0/5] Add battery charger driver support for MP2629
-Date:   Thu, 12 Mar 2020 18:26:44 +0100
-Message-Id: <20200312172649.13702-1-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
+        paul@crapouillou.net, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/5] mfd: mp2629: Add support for mps battery charger
+Message-ID: <20200312174933.GJ1922688@smile.fi.intel.com>
+References: <20200312172649.13702-1-sravanhome@gmail.com>
+ <20200312172649.13702-3-sravanhome@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200312172649.13702-3-sravanhome@gmail.com>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch series add support for Battery charger control driver for Monolithic
-Power System's MP2629 chipset, includes MFD driver for ADC battery & input
-power supply measurement and battery charger control driver.
+On Thu, Mar 12, 2020 at 06:26:46PM +0100, Saravanan Sekar wrote:
+> mp2629 is a highly-integrated switching-mode battery charge management
+> device for single-cell Li-ion or Li-polymer battery.
+> 
+> Add MFD core enables chip access for ADC driver for battery readings,
+> and a power supply battery-charger driver
 
-Thanks,
-Saravanan
+...
 
-Saravanan Sekar (5):
-  dt-bindings: mfd: add document bindings for mp2629
-  mfd: mp2629: Add support for mps battery charger
-  iio: adc: mp2629: Add support for mp2629 ADC driver
-  power: supply: Add support for mps mp2629 battery charger
-  MAINTAINERS: Add entry for mp2629 Battery Charger driver
+>  drivers/mfd/Kconfig        |  43 +++++----------
 
- .../devicetree/bindings/mfd/mps,mp2629.yaml   |  62 ++
- MAINTAINERS                                   |   5 +
- drivers/iio/adc/Kconfig                       |  10 +
- drivers/iio/adc/Makefile                      |   1 +
- drivers/iio/adc/mp2629_adc.c                  | 211 ++++++
- drivers/mfd/Kconfig                           |  43 +-
- drivers/mfd/Makefile                          |   4 +-
- drivers/mfd/mp2629.c                          | 109 +++
- drivers/power/supply/Kconfig                  |  14 +-
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/mp2629_charger.c         | 709 ++++++++++++++++++
- include/linux/mfd/mp2629.h                    |  34 +
- 12 files changed, 1169 insertions(+), 34 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
- create mode 100644 drivers/iio/adc/mp2629_adc.c
- create mode 100644 drivers/mfd/mp2629.c
- create mode 100644 drivers/power/supply/mp2629_charger.c
- create mode 100644 include/linux/mfd/mp2629.h
+Why do you have unrelated changes here?
+
+...
+
+> +int mp2629_set_value(struct regmap *map, u8 reg, u8 mask, unsigned int val)
+> +{
+> +	return regmap_update_bits(map, reg, mask, val);
+> +}
+> +EXPORT_SYMBOL(mp2629_set_value);
+> +
+> +int mp2629_get_value(struct regmap *map, u8 reg, unsigned int *val)
+> +{
+> +	return regmap_read(map, reg, val);
+> +}
+> +EXPORT_SYMBOL(mp2629_get_value);
+
+I'm wondering why a child can get access to parent's regmap?
+I.o.w. why is this being exported?
+
+...
+
+> +static int mp2629_probe(struct i2c_client *client)
+> +{
+> +	struct mp2629_info *info;
+> +	int ret;
+> +
+
+> +	info = devm_kzalloc(&client->dev, sizeof(struct mp2629_info),
+> +					 GFP_KERNEL);
+
+	info = devm_kzalloc(&client->dev, sizeof(*info), GFP_KERNEL);
+
+will be shorter.
+
+> +	if (!info)
+> +		return -ENOMEM;
+
+
+> +	ret = devm_mfd_add_devices(info->dev, -1, mp2629mfd,
+> +				ARRAY_SIZE(mp2629mfd), NULL,
+> +				0, NULL);
+
+-1 has a defined name in this case.
+
+> +	if (ret)
+> +		dev_err(info->dev, "Failed to add mfd %d\n", ret);
+> +
+> +	return ret;
+> +}
+
+...
+
+> +static const struct of_device_id mp2629_of_match[] = {
+> +	{ .compatible = "mps,mp2629"},
+
+> +	{},
+
+Terminator line doesn't require comma.
+
+> +};
+
+...
+
+> +static const struct i2c_device_id mp2629_id[] = {
+> +	{ "mp2629", },
+
+> +	{ },
+
+Ditto.
+
+> +};
+> +MODULE_DEVICE_TABLE(i2c, mp2629_id);
+
+...
+
+> +		.of_match_table = of_match_ptr(mp2629_of_match),
+
+of_match_ptr() is redundant and even might provoke compiler warning...
+
+> +	.probe_new	= mp2629_probe,
+
+...especially taking into consideration ->probe_new().
+
+...
+
+> +#include <linux/platform_device.h>
+
+No user here. (Hint: Use forward declaration of struct device instead)
+
+> +#include <linux/i2c.h>
+
+Ditto.
+
+> +#include <linux/regmap.h>
+
+Ditto. (Hint: Use forward declaration of struct regmap instead)
+
+But linux/types.h is actually missed.
+
+> +int mp2629_set_value(struct regmap *map, u8 reg, u8 mask, unsigned int val);
+> +int mp2629_get_value(struct regmap *map, u8 reg, unsigned int *val);
 
 -- 
-2.17.1
+With Best Regards,
+Andy Shevchenko
+
 
