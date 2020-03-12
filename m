@@ -2,136 +2,160 @@ Return-Path: <SRS0=RZFD=45=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCC32C1975A
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 16:36:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ADDD6C2BB1D
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:27:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8F52920724
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 16:36:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 80A4A2071B
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 17:27:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Hgih+I1u"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cVk2HL+k"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726442AbgCLQgL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Mar 2020 12:36:11 -0400
-Received: from us-smtp-delivery-1.mimecast.com ([207.211.31.120]:41341 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726437AbgCLQgL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2020 12:36:11 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1584030970;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=y+zp8ckYFu/JE3Ap00+bCw6jAqD/T1e+8NMqLw5Uqes=;
-        b=Hgih+I1unlcJAEbFwEkIu3/2X0d7meGLWWODaoM1Ih6dlmKB2yMY2QUQrHgZggK3O7aPEZ
-        BxtMwzxoQtzw346ou6bCc3QrxWmcNncEJ8mcU+gAoQvqhonnhJM/3+L1oLzsxF3cHP7HAH
-        sEJAMeaRWXPKOxOCWl/ct3w1TyRHFr8=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-319-UwYhNdmiPAqUzi-XPWcEPg-1; Thu, 12 Mar 2020 12:36:06 -0400
-X-MC-Unique: UwYhNdmiPAqUzi-XPWcEPg-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 90D63DBA3;
-        Thu, 12 Mar 2020 16:36:04 +0000 (UTC)
-Received: from fuller.cnet (ovpn-116-59.gru2.redhat.com [10.97.116.59])
-        by smtp.corp.redhat.com (Postfix) with ESMTPS id 38D6D19C6A;
-        Thu, 12 Mar 2020 16:36:04 +0000 (UTC)
-Received: by fuller.cnet (Postfix, from userid 1000)
-        id CEDAF418CC02; Thu, 12 Mar 2020 13:17:51 -0300 (-03)
-Date:   Thu, 12 Mar 2020 13:17:51 -0300
-From:   Marcelo Tosatti <mtosatti@redhat.com>
-To:     "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Joao Martins <joao.m.martins@oracle.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        kvm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] cpuidle-haltpoll: allow force loading on hosts
- without the REALTIME hint
-Message-ID: <20200312161751.GA5245@fuller.cnet>
-References: <20200304113248.1143057-1-mail@maciej.szmigiero.name>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200304113248.1143057-1-mail@maciej.szmigiero.name>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+        id S1726328AbgCLR1K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Mar 2020 13:27:10 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:37833 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726480AbgCLR1K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Mar 2020 13:27:10 -0400
+Received: by mail-wm1-f68.google.com with SMTP id a141so7271458wme.2;
+        Thu, 12 Mar 2020 10:27:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=V1IoBnnxV2Y83h2tlBdWy/1+5bjdle9P7nqs3bJI3i8=;
+        b=cVk2HL+kxXk7Atw8HmEIjfw8k4LlgSi0Jn8gtlJKgHoWup2Yd5XF6Fl8f9KzfDgRAu
+         4SYskopDZtIcX81U77BXs5PG4S4RIRMjjUbzPuhuq8JeFRS6BWPH6R6VhGZmyH2a8J+6
+         LGvdUIPxDNbprPetXrw38VflAWaBoHHALBLhfJrn9XPt+YSBP/rUHfw7NRRq8hHdVqTw
+         SS9S1YbZSnsuEiK5sj96VoqKy3UO4MTb75u2ROjTTO8QqGWAZl2LWZFgdfq0X+7Zf3zC
+         fDP8PJ7DzIV8JqfqTYpJb+yV49GsKjk92Q7FH8TaWTOoY65HDRIYk6Q2Jal79BppEb+T
+         ylmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=V1IoBnnxV2Y83h2tlBdWy/1+5bjdle9P7nqs3bJI3i8=;
+        b=D8spvneUrn4Zcv3fzHVw2F+46RdJb80VzejWRLjkHNBl1WuqDy5Ll7lU2fgpGjpn++
+         9JCVJNHVXTxGeylw+CkJT7bOERoVdI0Pf5WvkDSNlvrEFxXOiQRw4X0xsE5vOjIo/sAi
+         cT+hepqSU1ulXLUV4cA6mSnvjoSRq7ZRNWQHP6KI0xwmJihvLxHZr2jE1px2zEfupiQ/
+         NIrA42g9HxX3BafZZkaCxfOiQIsr3yq1zVr6ogbQqqZlX95d/kJE8fflsRZezLqKSy7W
+         QOpSy3CtrwlD+bhXxgdlVxiwhgkhQqldSDhU11ys8XdhC1Ud6GUgWzvwj99gOCT+hkTj
+         srVQ==
+X-Gm-Message-State: ANhLgQ0RisqbNb5Z9Ro3+SlFOGHdB5THRxOOk5igFCfyDWKJ2w0j9MSs
+        BTHt0eJqOXcBJelkN1D0bA4=
+X-Google-Smtp-Source: ADFU+vvLpARrQlN/+0++1RhBeG/jCbyY1pGG8gEUxOn4LHgTCwASBnZyTIyoszDHVWeoaOkEm0gP4g==
+X-Received: by 2002:a7b:c7cd:: with SMTP id z13mr5548646wmk.97.1584034028729;
+        Thu, 12 Mar 2020 10:27:08 -0700 (PDT)
+Received: from localhost.localdomain (p5B3F6C4B.dip0.t-ipconnect.de. [91.63.108.75])
+        by smtp.gmail.com with ESMTPSA id c11sm76254500wrp.51.2020.03.12.10.27.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Mar 2020 10:27:08 -0700 (PDT)
+From:   Saravanan Sekar <sravanhome@gmail.com>
+To:     lee.jones@linaro.org, robh+dt@kernel.org, jic23@kernel.org,
+        knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net,
+        sre@kernel.org, mchehab+huawei@kernel.org, davem@davemloft.net,
+        gregkh@linuxfoundation.org, andriy.shevchenko@linux.intel.com,
+        fabrice.gasnier@st.com, beniamin.bia@analog.com,
+        linus.walleij@linaro.org, u.kleine-koenig@pengutronix.de,
+        fabrizio.castro@bp.renesas.com, info@metux.net,
+        hancock@sedsystems.ca, gregory.clement@bootlin.com,
+        renatogeh@gmail.com, plr.vincent@gmail.com,
+        miquel.raynal@bootlin.com, marcelo.schmitt1@gmail.com,
+        paul@crapouillou.net
+Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
+        Saravanan Sekar <sravanhome@gmail.com>
+Subject: [PATCH 1/5] dt-bindings: mfd: add document bindings for mp2629
+Date:   Thu, 12 Mar 2020 18:26:45 +0100
+Message-Id: <20200312172649.13702-2-sravanhome@gmail.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200312172649.13702-1-sravanhome@gmail.com>
+References: <20200312172649.13702-1-sravanhome@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Mar 04, 2020 at 12:32:48PM +0100, Maciej S. Szmigiero wrote:
-> From: "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>
-> 
-> Before commit 1328edca4a14 ("cpuidle-haltpoll: Enable kvm guest polling
-> when dedicated physical CPUs are available") the cpuidle-haltpoll driver
-> could also be used in scenarios when the host does not advertise the
-> KVM_HINTS_REALTIME hint.
-> 
-> While the behavior introduced by the aforementioned commit makes sense as
-> the default there are cases where the old behavior is desired, for example,
-> when other kernel changes triggered by presence by this hint are unwanted,
-> for some workloads where the latency benefit from polling overweights the
-> loss from idle CPU capacity that otherwise would be available, or just when
-> running under older Qemu versions that lack this hint.
-> 
-> Let's provide a typical "force" module parameter that allows restoring the
-> old behavior.
-> 
-> Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
-> ---
->  drivers/cpuidle/cpuidle-haltpoll.c | 12 ++++++++++--
->  1 file changed, 10 insertions(+), 2 deletions(-)
-> 
-> Changes from v1:
-> Make the module parameter description more general, don't unnecessarily
-> break a line in haltpoll_init().
-> 
-> diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-> index b0ce9bc78113..db124bc1ca2c 100644
-> --- a/drivers/cpuidle/cpuidle-haltpoll.c
-> +++ b/drivers/cpuidle/cpuidle-haltpoll.c
-> @@ -18,6 +18,10 @@
->  #include <linux/kvm_para.h>
->  #include <linux/cpuidle_haltpoll.h>
->  
-> +static bool force __read_mostly;
-> +module_param(force, bool, 0444);
-> +MODULE_PARM_DESC(force, "Load unconditionally");
-> +
->  static struct cpuidle_device __percpu *haltpoll_cpuidle_devices;
->  static enum cpuhp_state haltpoll_hp_state;
->  
-> @@ -90,6 +94,11 @@ static void haltpoll_uninit(void)
->  	haltpoll_cpuidle_devices = NULL;
->  }
->  
-> +static bool haltpool_want(void)
-> +{
-> +	return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
-> +}
-> +
->  static int __init haltpoll_init(void)
->  {
->  	int ret;
-> @@ -101,8 +110,7 @@ static int __init haltpoll_init(void)
->  
->  	cpuidle_poll_state_init(drv);
->  
-> -	if (!kvm_para_available() ||
-> -		!kvm_para_has_hint(KVM_HINTS_REALTIME))
-> +	if (!kvm_para_available() || !haltpool_want())
->  		return -ENODEV;
->  
->  	ret = cpuidle_register_driver(drv);
+Add device tree binding information for mp2629 mfd driver.
 
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+---
+ .../devicetree/bindings/mfd/mps,mp2629.yaml   | 62 +++++++++++++++++++
+ 1 file changed, 62 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+
+diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+new file mode 100644
+index 000000000000..f5b8c73123c6
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+@@ -0,0 +1,62 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: MP2629 Battery Charger PMIC from Monolithic Power System.
++
++maintainers:
++  - Saravanan Sekar <sravanhome@gmail.com>
++
++description: |
++  MP2629 is an PMIC providing battery charging and power supply for smartphones,
++  Wireless camera and portable devices. Chip is contrlled over I2C.
++
++  The MFD device handles battery charger controller and ADC IIO device for
++  battery, system voltage
++
++properties:
++  compatible:
++    const: mps,mp2629
++
++  reg:
++    description:
++      I2C device address.
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  interrupt-controller: true
++
++  "#interrupt-cells":
++    const: 2
++    description:
++      The first cell is the IRQ number, the second cell is the trigger type.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - interrupt-controller
++  - "#interrupt-cells"
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    #include <dt-bindings/input/linux-event-codes.h>
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        pmic@4b {
++            compatible = "mps,mp2629";
++            reg = <0x4b>;
++
++            interrupt-controller;
++            interrupt-parent = <&gpio2>;
++            #interrupt-cells = <2>;
++            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
++        };
++    };
+-- 
+2.17.1
 
