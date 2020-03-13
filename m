@@ -1,157 +1,233 @@
-Return-Path: <SRS0=RZFD=45=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=GPgV=46=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85A40C2BB1D
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 22:25:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C020C10DCE
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Mar 2020 05:07:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6103F20716
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Mar 2020 22:25:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 667072073E
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Mar 2020 05:07:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726842AbgCLWZG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Mar 2020 18:25:06 -0400
-Received: from mail.manjaro.org ([176.9.38.148]:58904 "EHLO mail.manjaro.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726837AbgCLWZG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 12 Mar 2020 18:25:06 -0400
-Received: from localhost (localhost [127.0.0.1])
-        by mail.manjaro.org (Postfix) with ESMTP id BD4E337025EA;
-        Thu, 12 Mar 2020 23:25:04 +0100 (CET)
-X-Virus-Scanned: Debian amavisd-new at manjaro.org
-Received: from mail.manjaro.org ([127.0.0.1])
-        by localhost (manjaro.org [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Izw5plUVv6Rt; Thu, 12 Mar 2020 23:25:00 +0100 (CET)
-From:   Tobias Schramm <t.schramm@manjaro.org>
-To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Daniel Thompson <daniel.thompson@linaro.org>
-Cc:     Maxime Ripard <mripard@kernel.org>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Heiko Stuebner <heiko.stuebner@theobroma-systems.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Mark Brown <broonie@kernel.org>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Tobias Schramm <t.schramm@manjaro.org>
-Subject: [PATCH v4 2/3] dt-bindings: power: supply: add cw2015_battery bindings
-Date:   Thu, 12 Mar 2020 23:24:47 +0100
-Message-Id: <20200312222448.25097-3-t.schramm@manjaro.org>
-In-Reply-To: <20200312222448.25097-1-t.schramm@manjaro.org>
-References: <20200312222448.25097-1-t.schramm@manjaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726365AbgCMFHp convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Mar 2020 01:07:45 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:39700 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726331AbgCMFHo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Mar 2020 01:07:44 -0400
+Received: from mail-pl1-f198.google.com ([209.85.214.198])
+        by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <kai.heng.feng@canonical.com>)
+        id 1jCcXt-0006dd-KH
+        for linux-pm@vger.kernel.org; Fri, 13 Mar 2020 05:07:41 +0000
+Received: by mail-pl1-f198.google.com with SMTP id g5so4775884plq.17
+        for <linux-pm@vger.kernel.org>; Thu, 12 Mar 2020 22:07:41 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
+         :content-transfer-encoding:message-id:references:to;
+        bh=ncQzByjuwOcAKkawPEjHT5r1qKMEPZtwsVn5fEPFz1E=;
+        b=MH3743l8xECCTCbNeYnrdRIl9zwsZdGOx7aex/0i7VDAyJWSaNBhY2O8H/ESc+pyCd
+         oSy8l6PczZpCQ+8R78BOH1Op/iHaUntDYUsFI+pQ2GgU+ItxE0ohAfR9lWKGP3XQHQHk
+         Npq45X2Zw81zYbEH6/h52gbua/X5MBwLQGGFeDUQdoZHa0Y+MF1epRdGTMnFfO1DAN4w
+         3DNxPi3GabQ+VRllSiddsHPSht6xZrPdvOUfPEiC3SBeNmO+W4ZX5NFxSbcuC/IKNBBC
+         4YkMtNjCT/ygaKX3sLexigEFMlt4GfLxRO/Xx1oaG2WgEtbvOYcU9JrQMHQxGPhnW5of
+         DzLw==
+X-Gm-Message-State: ANhLgQ28RCu7cVjcgkXT41JH7+VVu2UtGIGnW2kVWsivYtlmbKw8vuJ5
+        FYYvNoeZLwULfvSC3F0KibwAgw2JKIl7g+jaa+In33fEJ/P8AZWkglRp0CFTfXsRSYtxzpXRXgm
+        Qes1qgzXDzxS/w/GhYs70i8k7uKKjeM9J72du
+X-Received: by 2002:a17:902:b497:: with SMTP id y23mr11533272plr.81.1584076059905;
+        Thu, 12 Mar 2020 22:07:39 -0700 (PDT)
+X-Google-Smtp-Source: ADFU+vuMJeZd+QaCu4khzw5Eqa7w9dixEYSS8h3WxUI+oPjopXK4CM4tuTtOTorwFo4uXVo0cOhpTg==
+X-Received: by 2002:a17:902:b497:: with SMTP id y23mr11533231plr.81.1584076059449;
+        Thu, 12 Mar 2020 22:07:39 -0700 (PDT)
+Received: from [192.168.1.208] (220-133-187-190.HINET-IP.hinet.net. [220.133.187.190])
+        by smtp.gmail.com with ESMTPSA id f69sm3931635pfa.124.2020.03.12.22.07.37
+        (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 12 Mar 2020 22:07:38 -0700 (PDT)
+Content-Type: text/plain;
+        charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 13.0 \(3608.60.0.2.5\))
+Subject: Re: Thunderbolt, direct-complete and long suspend/resume time of
+ Suspend-to-idle
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+In-Reply-To: <20200312104158.GS2540@lahna.fi.intel.com>
+Date:   Fri, 13 Mar 2020 13:07:35 +0800
+Cc:     Rafael Wysocki <rafael.j.wysocki@intel.com>,
+        "Shih-Yuan Lee (FourDollars)" <sylee@canonical.com>,
+        Tiffany <tiffany.wang@canonical.com>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <452D9D7F-A4D1-4628-8E9B-D88E2C919D7A@canonical.com>
+References: <02700895-048F-4EA1-9E18-4883E83AE210@canonical.com>
+ <20200311103840.GB2540@lahna.fi.intel.com>
+ <E3DA71C8-96A7-482E-B41F-8145979F88F4@canonical.com>
+ <20200312081509.GI2540@lahna.fi.intel.com>
+ <C687BE86-1CCB-417B-8546-77F76127B266@canonical.com>
+ <20200312104158.GS2540@lahna.fi.intel.com>
+To:     Mika Westerberg <mika.westerberg@linux.intel.com>
+X-Mailer: Apple Mail (2.3608.60.0.2.5)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds the dts binding schema for the cw2015 fuel gauge.
 
-Signed-off-by: Tobias Schramm <t.schramm@manjaro.org>
----
- .../bindings/power/supply/cw2015_battery.yaml | 83 +++++++++++++++++++
- 1 file changed, 83 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
 
-diff --git a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-new file mode 100644
-index 000000000000..f789882312da
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-@@ -0,0 +1,83 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/cw2015_battery.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Battery driver for CW2015 shuntless fuel gauge by CellWise.
-+
-+maintainers:
-+  - Tobias Schramm <t.schramm@manjaro.org>
-+
-+description: |
-+  The driver can utilize information from a simple-battery linked via a
-+  phandle in monitored-battery. If specified the driver uses the
-+  charge-full-design-microamp-hours property of the battery.
-+
-+properties:
-+  compatible:
-+    const: cellwise,cw2015
-+
-+  reg:
-+    items:
-+      - description: i2c address
-+
-+  cellwise,battery-profile:
-+    description: |
-+      This property specifies characteristics of the battery used. The format
-+      of this binary blob is kept secret by CellWise. The only way to obtain
-+      it is to mail two batteries to a test facility of CellWise and receive
-+      back a test report with the binary blob.
-+    allOf:
-+      - $ref: /schemas/types.yaml#definitions/uint8-array
-+    items:
-+      - minItems: 64
-+        maxItems: 64
-+
-+  cellwise,monitor-interval-ms:
-+    description:
-+      Specifies the interval in milliseconds gauge values are polled at
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  power-supplies:
-+    description:
-+      Specifies supplies used for charging the battery connected to this gauge
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/phandle-array
-+      - minItems: 1
-+        maxItems: 8 # Should be enough
-+
-+  monitored-battery:
-+    description:
-+      Specifies the phandle of a simple-battery connected to this gauge
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        cw2015@62 {
-+            compatible = "cellwise,cw201x";
-+            reg = <0x62>;
-+            cellwise,battery-profile = /bits/ 8 <
-+                0x17 0x67 0x80 0x73 0x6E 0x6C 0x6B 0x63
-+                0x77 0x51 0x5C 0x58 0x50 0x4C 0x48 0x36
-+                0x15 0x0C 0x0C 0x19 0x5B 0x7D 0x6F 0x69
-+                0x69 0x5B 0x0C 0x29 0x20 0x40 0x52 0x59
-+                0x57 0x56 0x54 0x4F 0x3B 0x1F 0x7F 0x17
-+                0x06 0x1A 0x30 0x5A 0x85 0x93 0x96 0x2D
-+                0x48 0x77 0x9C 0xB3 0x80 0x52 0x94 0xCB
-+                0x2F 0x00 0x64 0xA5 0xB5 0x11 0xF0 0x11
-+           >;
-+           cellwise,monitor-interval-ms = <5000>;
-+           monitored-battery = <&bat>;
-+           power-supplies = <&mains_charger>, <&usb_charger>;
-+       };
-+    };
-+
--- 
-2.24.1
+> On Mar 12, 2020, at 18:41, Mika Westerberg <mika.westerberg@linux.intel.com> wrote:
+> 
+> On Thu, Mar 12, 2020 at 06:10:45PM +0800, Kai-Heng Feng wrote:
+>> 
+>> 
+>>> On Mar 12, 2020, at 16:15, Mika Westerberg <mika.westerberg@linux.intel.com> wrote:
+>>> 
+>>> On Thu, Mar 12, 2020 at 12:41:08PM +0800, Kai-Heng Feng wrote:
+>>>> 
+>>>> 
+>>>>> On Mar 11, 2020, at 18:38, Mika Westerberg <mika.westerberg@linux.intel.com> wrote:
+>>>>> 
+>>>>> On Wed, Mar 11, 2020 at 01:39:51PM +0800, Kai-Heng Feng wrote:
+>>>>>> Hi,
+>>>>>> 
+>>>>>> I am currently investigating long suspend and resume time of suspend-to-idle.
+>>>>>> It's because Thunderbolt bridges need to wait for 1100ms [1] for runtime-resume on system suspend, and also for system resume.
+>>>>>> 
+>>>>>> I made a quick hack to the USB driver and xHCI driver to support direct-complete, but I failed to do so for the parent PCIe bridge as it always disables the direct-complete [2], since device_may_wakeup() returns true for the device:
+>>>>>> 
+>>>>>> 	/* Avoid direct_complete to let wakeup_path propagate. */
+>>>>>> 		if (device_may_wakeup(dev) || dev->power.wakeup_path)
+>>>>>> 			dev->power.direct_complete = false;
+>>>>> 
+>>>>> You need to be careful here because otherwise you end up situation where
+>>>>> the link is not properly trained and we tear down the whole tree of
+>>>>> devices which is worse than waiting bit more for resume.
+>>>> 
+>>>> My idea is to direct-complete when there's no PCI or USB device
+>>>> plugged into the TBT, and use pm_reuqest_resume() in complete() so it
+>>>> won't block resume() or resume_noirq().
+>>> 
+>>> Before doing that..
+>>> 
+>>>>>> Once the direct-complete is disabled, system suspend/resume is used hence the delay in [1] is making the resume really slow. 
+>>>>>> So how do we make suspend-to-idle faster? I have some ideas but I am not sure if they are feasible:
+>>>>>> - Make PM core know the runtime_suspend() already use the same wakeup as suspend(), so it doesn't need to use device_may_wakeup() check to determine direct-complete.
+>>>>>> - Remove the DPM_FLAG_NEVER_SKIP flag in pcieport driver, and use pm_request_resume() in its complete() callback to prevent blocking the resume process.
+>>>>>> - Reduce the 1100ms delay. Maybe someone knows the values used in macOS and Windows...
+>>>>> 
+>>>>> Which system this is? ICL?
+>>>> 
+>>>> CML-H + Titan Ridge.
+>>> 
+>>> .. we should really understand this better because CML-H PCH root ports
+>>> and Titan/Alpine Ridge downstream ports all support active link
+>>> reporting so instead of the 1000+100ms you should see something like
+>>> this:
+>> 
+>> Root port for discrete graphics:
+>> # lspci -vvnn -s 00:01.0                    
+>> 00:01.0 PCI bridge [0604]: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor PCIe Controller (x16) [8086:1901] (rev 02) (prog-if 00 [Normal decode])
+>>        Capabilities: [a0] Express (v2) Root Port (Slot+), MSI 00
+>>                LnkCap: Port #2, Speed 8GT/s, Width x16, ASPM L0s L1, Exit Latency L0s <256ns, L1 <8us
+>>                        ClockPM- Surprise- LLActRep- BwNot+ ASPMOptComp+
+>>                LnkCtl: ASPM L0s L1 Enabled; RCB 64 bytes Disabled- CommClk+
+>>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 
+> Interesting, Titan Ridge is connected to the graphics slot, no? What
+> system this is?
+
+No, TBT connects to another port, which supports link active reporting.
+This is just to show not all CML-H ports support that.
+
+> 
+>> Thunderbolt ports:
+>> # lspci -vvvv -s 04:00
+>> 04:00.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 2C 2018] [8086:15e7] (rev 06) (prog-if 00 [Normal decode])
+>>        Capabilities: [c0] Express (v2) Downstream Port (Slot+), MSI 00
+>>                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM L1, Exit Latency L0s <64ns, L1 <1us
+>>                        ClockPM- Surprise- LLActRep- BwNot+ ASPMOptComp+
+>>                LnkCtl: ASPM L1 Enabled; Disabled- CommClk+
+>>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 
+> This one leads to the TBT NHI.
+> 
+>> # lspci -vvnn -s 04:01
+>> 04:01.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 2C 2018] [8086:15e7] (rev 06) (prog-if 00 [Normal decode])
+>>        Capabilities: [c0] Express (v2) Downstream Port (Slot+), MSI 00
+>>                LnkCap: Port #1, Speed 2.5GT/s, Width x4, ASPM L1, Exit Latency L0s <64ns, L1 <1us
+>>                        ClockPM- Surprise- LLActRep+ BwNot+ ASPMOptComp+
+>>                LnkCtl: ASPM L1 Enabled; Disabled- CommClk-
+>>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 
+> This one is one of the extension downstream ports and it supports active
+> link reporting.
+> 
+>> # lspci -vvnn -s 04:02 
+>> 04:02.0 PCI bridge [0604]: Intel Corporation JHL7540 Thunderbolt 3 Bridge [Titan Ridge 2C 2018] [8086:15e7] (rev 06) (prog-if 00 [Normal decode])
+>>        Capabilities: [c0] Express (v2) Downstream Port (Slot+), MSI 00
+>>                LnkCap: Port #2, Speed 2.5GT/s, Width x4, ASPM L1, Exit Latency L0s <64ns, L1 <1us
+>>                        ClockPM- Surprise- LLActRep- BwNot+ ASPMOptComp+
+>>                LnkCtl: ASPM L1 Enabled; Disabled- CommClk+
+>>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+> 
+> This one leads to the xHCI.
+> 
+>> So both CML-H PCH and TBT ports report "LLActRep-".
+> 
+> So in pci_bridge_wait_for_secondary_bus() we only call
+> pcie_wait_for_link_delay() if the port supports speeds higher than 5
+> GT/s (gen2). Now if I read the above correct all the ports except the
+> root port support 2.5 GT/s (gen1) speeds so we should go to the
+> msleep(delay) branch and not call pcie_wait_for_link_delay() at all:
+> 
+>        if (pcie_get_speed_cap(dev) <= PCIE_SPEED_5_0GT) {
+>                pci_dbg(dev, "waiting %d ms for downstream link\n", delay);
+>                msleep(delay);
+>        } else {
+>                pci_dbg(dev, "waiting %d ms for downstream link, after activation\n",
+>                        delay);
+>                if (!pcie_wait_for_link_delay(dev, true, delay)) {
+>                        /* Did not train, no need to wait any further */
+>                        return;
+>                }
+>        }
+> 
+> Only explanation I have is that delay itself is set to 1000ms for some
+> reason. Can you check if that's the case and then maybe check where that
+> delay is coming from?
+> 
+>>> 1. Wait for the link + 100ms for the root port
+>>> 2. Wait for the link + 100ms for the Titan Ridge downstream ports
+>>>   (these are run paraller wrt all Titan Ridge downstream ports that have
+>>>    something connected)
+>>> 
+>>> If there is a TBT device connected then 2. is repeated for it and so on.
+>>> 
+>>> So the 1000ms+ is really unexpected. Are you running mainline kernel and
+>>> if so, can you share dmesg with CONFIG_PCI_DEBUG=y so we can see the
+>>> delays there? Maybe also add some debugging to
+>>> pcie_wait_for_link_delay() where it checks for the
+>>> !pdev->link_active_reporting and waits for 1100ms.
+>> 
+>> I added the debug log in another thread and it does reach !pdev->link_active_reporting.
+> 
+> Hmm, based on the above that should not happen :-(
+> 
+>> Let me see if patch link active reporting for the ports in PCI quirks can help.
+> 
+> Let's first investigate bit more to understand what is going on.
+> 
+> I suggest to create kernel.org bugzilla about this. Please include full
+> dmesg and 'sudo lspci -vv' output at least and of course the steps you
+> use to reproduce this.
+
+https://bugzilla.kernel.org/show_bug.cgi?id=206837
+
+Kai-Heng
 
