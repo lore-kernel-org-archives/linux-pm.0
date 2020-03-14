@@ -2,125 +2,89 @@ Return-Path: <SRS0=RDk4=5A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.6 required=3.0 tests=DATE_IN_PAST_06_12,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D71C1975A
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B82CDC0044D
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:13:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 682872076A
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="kJw3/eft"
+	by mail.kernel.org (Postfix) with ESMTP id 82B682071C
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:13:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1584238412;
+	bh=9m0+UmDXvLUZ0fCFtWbFpFf884ZXrp14/KB3enaFsLg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Tepe2f/HAId+6zfEdzPBjFuci8QHoKk5DL9U67C0aSvInZBYJJvAq0dxBE6O16riT
+	 TFoYXjSX99oZcfEuiLyaPPbSofPTu1bQqO/J7BEiqjXJIZIaBhmdPzo/Cp7uritIf/
+	 Gim/G8I/3USnY2gwTYiEBAOy/OtKZC65+pH4l87A=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726130AbgCOCF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Mar 2020 22:05:57 -0400
-Received: from mail-pf1-f194.google.com ([209.85.210.194]:45461 "EHLO
-        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727151AbgCOCF4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 22:05:56 -0400
-Received: by mail-pf1-f194.google.com with SMTP id 2so7684710pfg.12
-        for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2020 19:05:56 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=W0HmdiFzUuXI6TsJaEEd7vUDsJQgXWS0jN3ODGIwXBg=;
-        b=kJw3/eftt1jzD2AbkUnQFwq8ipOdhAx0Fi/17wKbv+yKRmBz86VOAd42A0tkR5aQIJ
-         LMrmX6nlsU3NlPX85ii+gtBXyFAQ78KTXd9V7ai1T/Oz8gfLRxsk6TozgmpNsIPbs9Mv
-         kp6wKuZeOUdhe0hPOFDNjrR+liHrxSF/gi20QImjstZ79kgvRclqk7hBatPuhYOw0J3F
-         XqdI/XiXPZt2GV8h/WbV6/mfxNIhYOWWPYxRMKpG9TbiAnSKDPMzIiI1N+4z1pYokyXV
-         jgPQu9bzDxpCbvYjuaQbJR4PG19dvmeNdzfXFFkjBAIpgpftOllPYq+E/ss0R8bs7VXf
-         Km3w==
+        id S1727266AbgCOCNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 14 Mar 2020 22:13:32 -0400
+Received: from mail-lf1-f66.google.com ([209.85.167.66]:37762 "EHLO
+        mail-lf1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726917AbgCOCNb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 22:13:31 -0400
+Received: by mail-lf1-f66.google.com with SMTP id j11so11078429lfg.4;
+        Sat, 14 Mar 2020 19:13:30 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=W0HmdiFzUuXI6TsJaEEd7vUDsJQgXWS0jN3ODGIwXBg=;
-        b=lromci1x1EdazbIb0QQGGKcAwuPJJ0WURVNgz96MoB9x1sQVjUViZbkyHkBnDc3GD0
-         3CCzJJfv4w87znPtSB6LhsBnZbM05QoFoeH3IrNBukRD1tLf8u59P5JoGpqU7+AgI7ov
-         qO6C2OqO5HchB14mREZvzVmSuVO3tf1lwL6xN0b2Ra2EtytovdbvNyqVUtg/sb8GL4MV
-         2VbzTDjNAYramI9c45m7+lf/AXxFLQADB4aWamUqWIVJAsKkF3owIt5kohn3aIQc5lML
-         29muB6a5i9Qupz6pUahPl3lhAnV9sGOmVTzasmDk7fzLiUXahjddCqOa8dWwF5UdEjuO
-         zP2g==
-X-Gm-Message-State: ANhLgQ1aIirYZXoHAQ6Cmw2J8tzLHjJr8S9Lpe/q2sTphC1zhK+jeBo4
-        rAJu/CxJT5UAdbHHpnhGaH4r0wzWUm8=
-X-Google-Smtp-Source: ADFU+vvKWpYgipx24Do2UayxbppEf0eHlu4JNz0e69jq61FiHHGJnBEOfjNKpm15VtyTj8AWALzecA==
-X-Received: by 2002:a63:f113:: with SMTP id f19mr19975661pgi.168.1584212804301;
-        Sat, 14 Mar 2020 12:06:44 -0700 (PDT)
-Received: from [10.0.9.4] ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id e204sm9707093pfh.199.2020.03.14.12.06.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Mar 2020 12:06:43 -0700 (PDT)
-Message-ID: <5e6d2b43.1c69fb81.35c02.18d1@mx.google.com>
-Date:   Sat, 14 Mar 2020 12:06:43 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=qTvsDZK0rxtwgZonA0VJoQgg0bPgzs3j6WHVwR4bqZI=;
+        b=e++v7FGumBHI5+HlPttacUzXNYkzBpwoSjrwE6ufSCCWq+gtInkpm0Bx9RD0GG59nI
+         4IZOu3SsjDH0yTUHVeYjGLZAST6etZTomFkJNYfRYf5qCC03mfK80Z2hbvTW+CQEoa8n
+         L88Cm+xJ3l71HpglYeMmaQmjLkInsaVMtKF5NPIN0ihfSwmD9jMkcQ3QUXgQWl072SLJ
+         eQ6WB2vf2Ycj/DCYenSBDFwktrDeErYWuW6Z5LPMhqrA73LaN3EPwhLON4OMQrl9CAPX
+         w9JXeiBVOh4vm/sn0W5sTSx433M/Ip+OPyHOOFNjYE/RSenUzXxj1dbuSt5v4PJGIVtW
+         JQnA==
+X-Gm-Message-State: ANhLgQ27Q1aa53TymneA/HvK1YsVsCsVlNGyDJkA6FTAzUYbpfTkboiW
+        hLsdhkGPVSsoj2WxY4XLkwOVuXDw
+X-Google-Smtp-Source: ADFU+vuapXjT+zS11FjAUnN+oE9D5lHJ2QsCXnjtSRTI8yMnWnss9ph50Wosr+69IEUAzQJDJH9pXQ==
+X-Received: by 2002:a17:906:7a55:: with SMTP id i21mr16361531ejo.303.1584211535391;
+        Sat, 14 Mar 2020 11:45:35 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.125])
+        by smtp.googlemail.com with ESMTPSA id d23sm1122777edr.33.2020.03.14.11.45.33
+        (version=TLS1_2 cipher=ECDHE-RSA-CHACHA20-POLY1305 bits=256/256);
+        Sat, 14 Mar 2020 11:45:34 -0700 (PDT)
+Date:   Sat, 14 Mar 2020 19:45:30 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Mark Brown <broonie@kernel.org>
+Subject: Re: [PATCH 2/3] extcon: max14577: Add proper dt-compatible strings
+Message-ID: <20200314184530.GD17580@kozik-lap>
+References: <20200220145127.21273-1-m.szyprowski@samsung.com>
+ <CGME20200220145135eucas1p123c4e4523e7e6eb86b64e728d6931cee@eucas1p1.samsung.com>
+ <20200220145127.21273-2-m.szyprowski@samsung.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: pm-5.6-rc6-81-g0b0cbef30e18
-X-Kernelci-Report-Type: build
-Subject: pm/testing build: 6 builds: 0 failed,
- 6 passed (pm-5.6-rc6-81-g0b0cbef30e18)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20200220145127.21273-2-m.szyprowski@samsung.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 6 builds: 0 failed, 6 passed (pm-5.6-rc6-81-g0b0cbef30e18)
+On Thu, Feb 20, 2020 at 03:51:26PM +0100, Marek Szyprowski wrote:
+> Add device tree compatible strings and create proper modalias structures
+> to let this driver load automatically if compiled as module, because
+> max14577 MFD driver creates MFD cells with such compatible strings.
+> 
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+>  drivers/extcon/extcon-max14577.c | 9 +++++++++
+>  1 file changed, 9 insertions(+)
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/pm-=
-5.6-rc6-81-g0b0cbef30e18/
+The approach is still being discussed (in patch #1) so this should be
+applied if patch #1 is also accepted. In such case:
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-Tree: pm
-Branch: testing
-Git Describe: pm-5.6-rc6-81-g0b0cbef30e18
-Git Commit: 0b0cbef30e1812bc567874888a4e71eb777fc51b
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 6 unique architectures
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
-tion mismatches
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----
-For more info write to <info@kernelci.org>
+Best regards,
+Krzysztof
