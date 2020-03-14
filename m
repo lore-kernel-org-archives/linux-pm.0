@@ -2,102 +2,125 @@ Return-Path: <SRS0=RDk4=5A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.6 required=3.0 tests=DATE_IN_PAST_06_12,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 398DCC0044D
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90D71C1975A
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 088992051A
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 682872076A
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:05:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OIJzVdRq"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="kJw3/eft"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727123AbgCOCFU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Mar 2020 22:05:20 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:45900 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726130AbgCOCFU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 22:05:20 -0400
-Received: by mail-lj1-f195.google.com with SMTP id e18so14764296ljn.12;
-        Sat, 14 Mar 2020 19:05:18 -0700 (PDT)
+        id S1726130AbgCOCF5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 14 Mar 2020 22:05:57 -0400
+Received: from mail-pf1-f194.google.com ([209.85.210.194]:45461 "EHLO
+        mail-pf1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727151AbgCOCF4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 22:05:56 -0400
+Received: by mail-pf1-f194.google.com with SMTP id 2so7684710pfg.12
+        for <linux-pm@vger.kernel.org>; Sat, 14 Mar 2020 19:05:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=6QvXfJZlpggMK4ANi6m9pBKzrWALkcbq78l8N8OifPg=;
-        b=OIJzVdRqmII3xpN14/wQN0Vvrs1lDoUVouTfyF1AzzfhS7PAX65NnJmEstFfAwHm0J
-         MEdvf9urGT/J4thuvj9vk11uUp5M1ygunTCQ40PysktE5qk6p49gkKWkoPYa8hbxlpZ+
-         8AHxeLhfVqkUX208e6r8trwKTkIzfc7jZVyFb0j7si5B/e5Q5XglfRDu7Lgva68dRazY
-         t3ksP3zdoG8z1pawPZeocy0I+666FiKRbaFcF5tdQuT+avWEfO4hptk359IUQ52E/0AL
-         Fyhc24SsfBPdJPaus75o3DysidczlxbECY0IAS4F8XJ5ZrpGp0mWMaE2ibqoijxKTHF0
-         TMKQ==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=W0HmdiFzUuXI6TsJaEEd7vUDsJQgXWS0jN3ODGIwXBg=;
+        b=kJw3/eftt1jzD2AbkUnQFwq8ipOdhAx0Fi/17wKbv+yKRmBz86VOAd42A0tkR5aQIJ
+         LMrmX6nlsU3NlPX85ii+gtBXyFAQ78KTXd9V7ai1T/Oz8gfLRxsk6TozgmpNsIPbs9Mv
+         kp6wKuZeOUdhe0hPOFDNjrR+liHrxSF/gi20QImjstZ79kgvRclqk7hBatPuhYOw0J3F
+         XqdI/XiXPZt2GV8h/WbV6/mfxNIhYOWWPYxRMKpG9TbiAnSKDPMzIiI1N+4z1pYokyXV
+         jgPQu9bzDxpCbvYjuaQbJR4PG19dvmeNdzfXFFkjBAIpgpftOllPYq+E/ss0R8bs7VXf
+         Km3w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=6QvXfJZlpggMK4ANi6m9pBKzrWALkcbq78l8N8OifPg=;
-        b=DvpDYDkZQW5E0JKHHq0vb4oxewJIyQvPWFfQMo/8bD8oXXLgOVOSOL+PE/lTjdehQr
-         V4VC7LazQ5sJhE5W4SGYH3JG2I/FrUtNQYhUx2+C1ES/yF6QpNnwtNqwPutNBsNDn895
-         p3iLvfFNIcFZS2wiM2eXa4dBPZGCoGkQp+cai4WlQGgxp0AktTpH120ACcDuk1pA/6/P
-         x9SJl2sd/L1Yqkf5wqhujO85C9RBOQalq65EpFC5Uw0AJ5t5PcfYQj7p7JkDA4Xpdvnv
-         vpWrQ0ycD3XETabaluWtpVuCxkf4yN53TgaW51Nut+4g6T5O730dosOfPqGFOUVkJ6OJ
-         sHEg==
-X-Gm-Message-State: ANhLgQ0stTElPSOqFS/HY90FHYnOFE+8kKoFTtPcOvZ8ZJLaVg7Iprs0
-        KNhcM5G2lxsZvpyYguDvRqn/Rw7mxR4=
-X-Google-Smtp-Source: ADFU+vsLbPyHg/3H2qHGT2azKEXr7tZwXNK8qhcJh9SO/kwPkfqvtObR5asqoXdlrz1UQKhDfB3WlA==
-X-Received: by 2002:a5d:5290:: with SMTP id c16mr25043929wrv.235.1584230432390;
-        Sat, 14 Mar 2020 17:00:32 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F731E.dip0.t-ipconnect.de. [91.63.115.30])
-        by smtp.gmail.com with ESMTPSA id 7sm11394469wmf.20.2020.03.14.17.00.31
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=W0HmdiFzUuXI6TsJaEEd7vUDsJQgXWS0jN3ODGIwXBg=;
+        b=lromci1x1EdazbIb0QQGGKcAwuPJJ0WURVNgz96MoB9x1sQVjUViZbkyHkBnDc3GD0
+         3CCzJJfv4w87znPtSB6LhsBnZbM05QoFoeH3IrNBukRD1tLf8u59P5JoGpqU7+AgI7ov
+         qO6C2OqO5HchB14mREZvzVmSuVO3tf1lwL6xN0b2Ra2EtytovdbvNyqVUtg/sb8GL4MV
+         2VbzTDjNAYramI9c45m7+lf/AXxFLQADB4aWamUqWIVJAsKkF3owIt5kohn3aIQc5lML
+         29muB6a5i9Qupz6pUahPl3lhAnV9sGOmVTzasmDk7fzLiUXahjddCqOa8dWwF5UdEjuO
+         zP2g==
+X-Gm-Message-State: ANhLgQ1aIirYZXoHAQ6Cmw2J8tzLHjJr8S9Lpe/q2sTphC1zhK+jeBo4
+        rAJu/CxJT5UAdbHHpnhGaH4r0wzWUm8=
+X-Google-Smtp-Source: ADFU+vvKWpYgipx24Do2UayxbppEf0eHlu4JNz0e69jq61FiHHGJnBEOfjNKpm15VtyTj8AWALzecA==
+X-Received: by 2002:a63:f113:: with SMTP id f19mr19975661pgi.168.1584212804301;
+        Sat, 14 Mar 2020 12:06:44 -0700 (PDT)
+Received: from [10.0.9.4] ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id e204sm9707093pfh.199.2020.03.14.12.06.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Mar 2020 17:00:31 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, robh+dt@kernel.org, jic23@kernel.org,
-        knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v2 5/5] MAINTAINERS: Add entry for mp2629 Battery Charger driver
-Date:   Sun, 15 Mar 2020 01:00:13 +0100
-Message-Id: <20200315000013.4440-6-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200315000013.4440-1-sravanhome@gmail.com>
-References: <20200315000013.4440-1-sravanhome@gmail.com>
+        Sat, 14 Mar 2020 12:06:43 -0700 (PDT)
+Message-ID: <5e6d2b43.1c69fb81.35c02.18d1@mx.google.com>
+Date:   Sat, 14 Mar 2020 12:06:43 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: pm-5.6-rc6-81-g0b0cbef30e18
+X-Kernelci-Report-Type: build
+Subject: pm/testing build: 6 builds: 0 failed,
+ 6 passed (pm-5.6-rc6-81-g0b0cbef30e18)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add MAINTAINERS entry for Monolithic Power Systems mp2629 Charger driver.
+pm/testing build: 6 builds: 0 failed, 6 passed (pm-5.6-rc6-81-g0b0cbef30e18)
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/pm-=
+5.6-rc6-81-g0b0cbef30e18/
+
+Tree: pm
+Branch: testing
+Git Describe: pm-5.6-rc6-81-g0b0cbef30e18
+Git Commit: 0b0cbef30e1812bc567874888a4e71eb777fc51b
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 6 unique architectures
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sec=
+tion mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
 ---
- MAINTAINERS | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 32a95d162f06..0f82d5a7a614 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -11358,10 +11358,15 @@ F:	drivers/tty/mxser.*
- MONOLITHIC POWER SYSTEM PMIC DRIVER
- M:	Saravanan Sekar <sravanhome@gmail.com>
- S:	Maintained
-+F:	Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
- F:	Documentation/devicetree/bindings/regulator/mps,mp*.yaml
-+F:	drivers/iio/adc/mp2629_adc.c
-+F:	drivers/mfd/mp2629.c
-+F:	drivers/power/supply/mp2629_charger.c
- F:	drivers/regulator/mp5416.c
- F:	drivers/regulator/mpq7920.c
- F:	drivers/regulator/mpq7920.h
-+F:	include/linux/mfd/mp2629.h
- 
- MR800 AVERMEDIA USB FM RADIO DRIVER
- M:	Alexey Klimov <klimov.linux@gmail.com>
--- 
-2.17.1
-
+For more info write to <info@kernelci.org>
