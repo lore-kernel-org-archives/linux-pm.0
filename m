@@ -4,34 +4,41 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.9 required=3.0 tests=DATE_IN_PAST_12_24,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77433C0044D
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:57:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2106EC4CECE
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 03:05:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 485A620578
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 02:57:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E8317206D5
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 03:05:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726916AbgCOC5Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Mar 2020 22:57:25 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:65071 "EHLO
+        id S1726370AbgCODFP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 14 Mar 2020 23:05:15 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:53683 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725793AbgCOC5Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 22:57:25 -0400
+        with ESMTP id S1726189AbgCODFP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 23:05:15 -0400
 Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 00af069952524629; Sat, 14 Mar 2020 11:57:23 +0100
+ id 18c27b0219204e13; Sat, 14 Mar 2020 12:05:13 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Eric Biggers <ebiggers@kernel.org>
-Cc:     linux-pm@vger.kernel.org, Len Brown <len.brown@intel.com>,
-        Pavel Machek <pavel@ucw.cz>, glider@google.com,
-        linux-kernel@vger.kernel.org,
-        syzbot+af962bf9e7e27bccd025@syzkaller.appspotmail.com
-Subject: Re: [PATCH] PM / hibernate: Remove unnecessary compat ioctl overrides
-Date:   Sat, 14 Mar 2020 11:57:23 +0100
-Message-ID: <5664624.X3QHRrgMSY@kreacher>
-In-Reply-To: <20200308032701.998434-1-ebiggers@kernel.org>
-References: <20200308032434.GX15444@sol.localdomain> <20200308032701.998434-1-ebiggers@kernel.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        linux-pm@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Benjamin Gaignard <benjamin.gaignard@st.com>,
+        linux-arm-kernel@lists.infradead.org, stable@vger.kernel.org
+Subject: Re: [PATCH v3 1/2] PM / Domains: Allow no domain-idle-states DT property in genpd when parsing
+Date:   Sat, 14 Mar 2020 12:05:13 +0100
+Message-ID: <2266717.MI9MQu89M6@kreacher>
+In-Reply-To: <20200310104023.4018-1-ulf.hansson@linaro.org>
+References: <20200310104023.4018-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -40,54 +47,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sunday, March 8, 2020 4:27:01 AM CET Eric Biggers wrote:
-> From: Eric Biggers <ebiggers@google.com>
+On Tuesday, March 10, 2020 11:40:23 AM CET Ulf Hansson wrote:
+> Commit 2c361684803e ("PM / Domains: Don't treat zero found compatible idle
+> states as an error"), moved of_genpd_parse_idle_states() towards allowing
+> none compatible idle state to be found for the device node, rather than
+> returning an error code.
 > 
-> Since the SNAPSHOT_GET_IMAGE_SIZE, SNAPSHOT_AVAIL_SWAP_SIZE, and
-> SNAPSHOT_ALLOC_SWAP_PAGE ioctls produce an loff_t result, and loff_t is
-> always 64-bit even in the compat case, there's no reason to have the
-> special compat handling for these ioctls.  Just remove this unneeded
-> code so that these ioctls call into snapshot_ioctl() directly, doing
-> just the compat_ptr() conversion on the argument.
+> However, it didn't consider that the "domain-idle-states" DT property may
+> be missing as it's optional, which makes of_count_phandle_with_args() to
+> return -ENOENT. Let's fix this to make the behaviour consistent.
 > 
-> (This unnecessary code was also causing a KMSAN false positive.)
-> 
-> Signed-off-by: Eric Biggers <ebiggers@google.com>
+> Reported-by: Benjamin Gaignard <benjamin.gaignard@st.com>
+> Fixes: 2c361684803e ("PM / Domains: Don't treat zero found compatible idle states as an error")
+> Cc: <stable@vger.kernel.org>
+> Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 > ---
->  kernel/power/user.c | 16 +---------------
->  1 file changed, 1 insertion(+), 15 deletions(-)
 > 
-> diff --git a/kernel/power/user.c b/kernel/power/user.c
-> index 77438954cc2b..58ed9478787f 100644
-> --- a/kernel/power/user.c
-> +++ b/kernel/power/user.c
-> @@ -409,21 +409,7 @@ snapshot_compat_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
->  	switch (cmd) {
->  	case SNAPSHOT_GET_IMAGE_SIZE:
->  	case SNAPSHOT_AVAIL_SWAP_SIZE:
-> -	case SNAPSHOT_ALLOC_SWAP_PAGE: {
-> -		compat_loff_t __user *uoffset = compat_ptr(arg);
-> -		loff_t offset;
-> -		mm_segment_t old_fs;
-> -		int err;
-> -
-> -		old_fs = get_fs();
-> -		set_fs(KERNEL_DS);
-> -		err = snapshot_ioctl(file, cmd, (unsigned long) &offset);
-> -		set_fs(old_fs);
-> -		if (!err && put_user(offset, uoffset))
-> -			err = -EFAULT;
-> -		return err;
-> -	}
-> -
-> +	case SNAPSHOT_ALLOC_SWAP_PAGE:
->  	case SNAPSHOT_CREATE_IMAGE:
->  		return snapshot_ioctl(file, cmd,
->  				      (unsigned long) compat_ptr(arg));
+> Changes in v3:
+> 	- Resending with reviewed-tags added.
+> 
+> ---
+>  drivers/base/power/domain.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+> index 959d6d5eb000..0a01df608849 100644
+> --- a/drivers/base/power/domain.c
+> +++ b/drivers/base/power/domain.c
+> @@ -2653,7 +2653,7 @@ static int genpd_iterate_idle_states(struct device_node *dn,
+>  
+>  	ret = of_count_phandle_with_args(dn, "domain-idle-states", NULL);
+>  	if (ret <= 0)
+> -		return ret;
+> +		return ret == -ENOENT ? 0 : ret;
+>  
+>  	/* Loop over the phandles until all the requested entry is found */
+>  	of_for_each_phandle(&it, ret, dn, "domain-idle-states", NULL, 0) {
 > 
 
-Applied as 5.7 material, thanks!
-
+Applied as 5.7 material along with the [2/2], thanks!
 
 
 
