@@ -2,143 +2,112 @@ Return-Path: <SRS0=RDk4=5A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=DATE_IN_PAST_12_24,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87CFAC0044D
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 03:40:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BC7DC10DCE
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 09:39:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 59E2520722
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 03:40:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584243652;
-	bh=zZ9bAR3baPAPuE8evlBpnNMKiF2jY5NR9uiWv2PkB4c=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=N0o/ct/jRHSozGnPfnQ7d9YXf10UpwJUtHvfK36ZWg0gJ6OTKNNAIZGwOwOz+RiJ8
-	 f/LI8FX5YtaBLl3y8WhtPFMUhfUv6dstTSCHA/l0Hy2mPJuHN0+9d5rLSwYXJh/Fyi
-	 dqUAjf6V9wdX0kWYjfxpfXeyxhowm9oRzSOYO7os=
+	by mail.kernel.org (Postfix) with ESMTP id 67F17206BE
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 09:39:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="deZEA2cq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727441AbgCODkv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Mar 2020 23:40:51 -0400
-Received: from mail-qk1-f193.google.com ([209.85.222.193]:37486 "EHLO
-        mail-qk1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726653AbgCODkv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Mar 2020 23:40:51 -0400
-Received: by mail-qk1-f193.google.com with SMTP id z25so15299879qkj.4;
-        Sat, 14 Mar 2020 20:40:50 -0700 (PDT)
+        id S1728118AbgCOJjI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 15 Mar 2020 05:39:08 -0400
+Received: from mail-qk1-f195.google.com ([209.85.222.195]:42325 "EHLO
+        mail-qk1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728116AbgCOJjH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Mar 2020 05:39:07 -0400
+Received: by mail-qk1-f195.google.com with SMTP id e11so20816665qkg.9;
+        Sun, 15 Mar 2020 02:39:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=Zle+AXTHHc8jvGKTvm1/uLrZYjwwT5iLZONbBDLgdjI=;
+        b=deZEA2cqlVslAyUp+XM9hrPXQGjNqXuxdRJ6RRNrUQWpLbIyqe7GDsg3lh5uhO8bZL
+         UHuM7rATjvPvJAUiTxA/2hV3MdFJoVO8HDBK5Lca3B7x2XxagObGG9agvkk3PnzUNXvF
+         2PI1wDsjxK5yIyojKkThAAoahTcEePAeabUhKkqwKzoAvSkHAu6rzWrB5TxYUEhbiYf3
+         d0BaFjmdKxV7lUvBpJyamB9vYekCd9FsJe0k0SpuyEN78rlPn3wpaFztM7+Ravt0qXst
+         JiUGVzGHlwDN1k06ekqf93AX0ku07JXppoR9XF4fbS0Um8Bc2Z0aHL+qYYGd4B0Gm738
+         oiYg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=xWfNlXspNXP/Z3scX2GkjvDWCTPuiHmONTso2D85LQ0=;
-        b=sGtaPxoOYlnTE5+b5zUoJ5Qn4z0EdmGqcfdkyzpvc+A+oNj2ctggTsHy7R5k5KZaSS
-         bJmMY5PSsrpz4laFSZ4Cvu1/UjYJvYiDHDndj8EmjUyw16JFuCWraRfLM2fLieGE1rw/
-         t4GXZD+7QD+JKa0naTB5pkynZPCLuLQGIggS7Itm3YqeYqhRene0PWAK7SwTR5eN9yQl
-         +vJlMoXeZ6j0Q6fHxZXu9BH5N9pQBpt0VboKIs4enjv3glrDqAwo24UUnZ50iNeQXMLS
-         LYpw3WcitaT3FUhFNW5aVWy/LP1RCkHJmHHxiXiFyS60KPOk0PPhc36PkRXhY7LOVeLY
-         VzFA==
-X-Gm-Message-State: ANhLgQ3XMB+dMlygbKdQ6riMKlTY/fWvpG4+Pa5qXNxz0mSZPa0BgrSc
-        UYxcEye81dVp7IqW0xfZETMUf2fnx688Aje0f6bitg==
-X-Google-Smtp-Source: ADFU+vt9NbYnSnppxGI7xOTmGfRR3RSs/QZOhkMGUVuMhiPSyyT3vdhguRYt/HjQ0hyrQs/pQ8sEHfBxb3po2QAZY0w=
-X-Received: by 2002:a9d:1d07:: with SMTP id m7mr6029839otm.167.1584182450168;
- Sat, 14 Mar 2020 03:40:50 -0700 (PDT)
+        bh=Zle+AXTHHc8jvGKTvm1/uLrZYjwwT5iLZONbBDLgdjI=;
+        b=K3yr9nfmhQH/pmI5dGIJHxZB+MTdv2KDjltQ5vE//3MFkzxVlhbi9FZllr/SxiF52b
+         e4OgiexoekuoVNrgDqwiaAxCn7cZNR86oLteonGKRpd6+7XG63dfyztGij21TLvkAwO5
+         dZnReXatIk1CTROXQXNBjwyVkUyXL9WImJesQFF7s9dBI9QT0eJdg9s9ndoiwGm7iWsL
+         DDpfpHi9VFgqjLRjrpZ7aO4j6NQgRlUav+ukl6QD2IqKIN95X+iB3ORikNjONAFOah/9
+         Nvw+kWYhad14EhtCgUKSlH0oEX9PkvsrwhrvKJTrmjKOZccjCO+8S0YLlEtAPd4VJuAq
+         9vBw==
+X-Gm-Message-State: ANhLgQ04unS/nlQ6XcpJv9JEpn7hgP0hiGxbmebLzGs1OxWutubYGWU4
+        hsL58aA51ZALfb/NWuTRCL6T62w0sB3+IlnpXa4=
+X-Google-Smtp-Source: ADFU+vuJPHfHU6s1UseuEr7Inqsk7XkYeVKkmL/siV5j8Bz3dKiby8xbiNRLCy60RE2b7R3GhofRw+cidTKfuDh3YHE=
+X-Received: by 2002:a05:620a:539:: with SMTP id h25mr14353887qkh.395.1584265145009;
+ Sun, 15 Mar 2020 02:39:05 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200304113248.1143057-1-mail@maciej.szmigiero.name>
- <20200312161751.GA5245@fuller.cnet> <CAJZ5v0jLOKj5LN5Kmredixomer4BKdBPNwP7gOf7A0tS_WMbDQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jLOKj5LN5Kmredixomer4BKdBPNwP7gOf7A0tS_WMbDQ@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Sat, 14 Mar 2020 11:40:38 +0100
-Message-ID: <CAJZ5v0gSLR+K2698rwbv0j9-sbSNX98HUFDQfTHoom+gYtHrdw@mail.gmail.com>
-Subject: Re: [PATCH v2] cpuidle-haltpoll: allow force loading on hosts without
- the REALTIME hint
-To:     "Maciej S. Szmigiero" <mail@maciej.szmigiero.name>,
-        Marcelo Tosatti <mtosatti@redhat.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+References: <20200313214552.845-1-robh@kernel.org>
+In-Reply-To: <20200313214552.845-1-robh@kernel.org>
+From:   Baolin Wang <baolin.wang7@gmail.com>
+Date:   Sun, 15 Mar 2020 17:38:53 +0800
+Message-ID: <CADBw62oL5hhw12bSAFv7Jnx39stXFeEuTMZ3hWvMCRKpt2vgXg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] dt-bindings: thermal: sprd: Remove redundant 'maxItems'
+To:     Rob Herring <robh@kernel.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>, Orson Zhai <orsonzhai@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Joao Martins <joao.m.martins@oracle.com>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        kvm-devel <kvm@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Linux PM <linux-pm@vger.kernel.org>, devicetree@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Mar 13, 2020 at 6:49 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Sat, Mar 14, 2020 at 5:45 AM Rob Herring <robh@kernel.org> wrote:
 >
-> On Thu, Mar 12, 2020 at 5:36 PM Marcelo Tosatti <mtosatti@redhat.com> wrote:
-> >
-> > On Wed, Mar 04, 2020 at 12:32:48PM +0100, Maciej S. Szmigiero wrote:
-> > > From: "Maciej S. Szmigiero" <maciej.szmigiero@oracle.com>
-> > >
-> > > Before commit 1328edca4a14 ("cpuidle-haltpoll: Enable kvm guest polling
-> > > when dedicated physical CPUs are available") the cpuidle-haltpoll driver
-> > > could also be used in scenarios when the host does not advertise the
-> > > KVM_HINTS_REALTIME hint.
-> > >
-> > > While the behavior introduced by the aforementioned commit makes sense as
-> > > the default there are cases where the old behavior is desired, for example,
-> > > when other kernel changes triggered by presence by this hint are unwanted,
-> > > for some workloads where the latency benefit from polling overweights the
-> > > loss from idle CPU capacity that otherwise would be available, or just when
-> > > running under older Qemu versions that lack this hint.
-> > >
-> > > Let's provide a typical "force" module parameter that allows restoring the
-> > > old behavior.
-> > >
-> > > Signed-off-by: Maciej S. Szmigiero <maciej.szmigiero@oracle.com>
-> > > ---
-> > >  drivers/cpuidle/cpuidle-haltpoll.c | 12 ++++++++++--
-> > >  1 file changed, 10 insertions(+), 2 deletions(-)
-> > >
-> > > Changes from v1:
-> > > Make the module parameter description more general, don't unnecessarily
-> > > break a line in haltpoll_init().
-> > >
-> > > diff --git a/drivers/cpuidle/cpuidle-haltpoll.c b/drivers/cpuidle/cpuidle-haltpoll.c
-> > > index b0ce9bc78113..db124bc1ca2c 100644
-> > > --- a/drivers/cpuidle/cpuidle-haltpoll.c
-> > > +++ b/drivers/cpuidle/cpuidle-haltpoll.c
-> > > @@ -18,6 +18,10 @@
-> > >  #include <linux/kvm_para.h>
-> > >  #include <linux/cpuidle_haltpoll.h>
-> > >
-> > > +static bool force __read_mostly;
-> > > +module_param(force, bool, 0444);
-> > > +MODULE_PARM_DESC(force, "Load unconditionally");
-> > > +
-> > >  static struct cpuidle_device __percpu *haltpoll_cpuidle_devices;
-> > >  static enum cpuhp_state haltpoll_hp_state;
-> > >
-> > > @@ -90,6 +94,11 @@ static void haltpoll_uninit(void)
-> > >       haltpoll_cpuidle_devices = NULL;
-> > >  }
-> > >
-> > > +static bool haltpool_want(void)
-> > > +{
-> > > +     return kvm_para_has_hint(KVM_HINTS_REALTIME) || force;
-> > > +}
-> > > +
-> > >  static int __init haltpoll_init(void)
-> > >  {
-> > >       int ret;
-> > > @@ -101,8 +110,7 @@ static int __init haltpoll_init(void)
-> > >
-> > >       cpuidle_poll_state_init(drv);
-> > >
-> > > -     if (!kvm_para_available() ||
-> > > -             !kvm_para_has_hint(KVM_HINTS_REALTIME))
-> > > +     if (!kvm_para_available() || !haltpool_want())
-> > >               return -ENODEV;
-> > >
-> > >       ret = cpuidle_register_driver(drv);
-> >
-> > Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
+> There's no need to specify 'maxItems' with the same value as the number
+> of entries in 'items'. A meta-schema update will catch future cases.
 >
-> I'm taking this as a Reviewed-by, thanks!
+> Cc: Orson Zhai <orsonzhai@gmail.com>
+> Cc: Baolin Wang <baolin.wang7@gmail.com>
+> Cc: Chunyan Zhang <zhang.lyra@gmail.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Amit Kucheria <amit.kucheria@verdurent.com>
+> Cc: linux-pm@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
 
-Patch applied as 5.7 material, thanks!
+Thanks Rob.
+Reviewed-by: Baolin Wang <baolin.wang7@gmail.com>
+
+> ---
+>  Documentation/devicetree/bindings/thermal/sprd-thermal.yaml | 1 -
+>  1 file changed, 1 deletion(-)
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> index 3bfe05504456..058c4cc06ba6 100644
+> --- a/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> +++ b/Documentation/devicetree/bindings/thermal/sprd-thermal.yaml
+> @@ -31,7 +31,6 @@ properties:
+>        Reference to nvmem nodes for the calibration data.
+>
+>    nvmem-cell-names:
+> -    maxItems: 2
+>      items:
+>        - const: thm_sign_cal
+>        - const: thm_ratio_cal
+> --
+> 2.20.1
+>
+
+
+-- 
+Baolin Wang
