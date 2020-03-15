@@ -2,29 +2,29 @@ Return-Path: <SRS0=RDk4=5A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E946FC5ACD3
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 19:19:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F762C10F29
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 19:19:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C8CD120737
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 19:19:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E346A206B1
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 19:19:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728993AbgCOTT3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 15 Mar 2020 15:19:29 -0400
-Received: from mail.manjaro.org ([176.9.38.148]:51282 "EHLO mail.manjaro.org"
+        id S1728695AbgCOTT1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 15 Mar 2020 15:19:27 -0400
+Received: from mail.manjaro.org ([176.9.38.148]:51206 "EHLO mail.manjaro.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728480AbgCOTT2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 15 Mar 2020 15:19:28 -0400
+        id S1728480AbgCOTT1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 15 Mar 2020 15:19:27 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by mail.manjaro.org (Postfix) with ESMTP id 122343782846;
-        Sun, 15 Mar 2020 20:19:27 +0100 (CET)
+        by mail.manjaro.org (Postfix) with ESMTP id 4FA77378284C;
+        Sun, 15 Mar 2020 20:19:25 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at manjaro.org
 Received: from mail.manjaro.org ([127.0.0.1])
         by localhost (manjaro.org [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id zDufdOZbQ_We; Sun, 15 Mar 2020 20:19:24 +0100 (CET)
+        with ESMTP id OX62Y5UzBv_L; Sun, 15 Mar 2020 20:19:22 +0100 (CET)
 From:   Tobias Schramm <t.schramm@manjaro.org>
 To:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Sebastian Reichel <sre@kernel.org>,
@@ -43,11 +43,9 @@ Cc:     Maxime Ripard <mripard@kernel.org>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org,
         Tobias Schramm <t.schramm@manjaro.org>
-Subject: [PATCH v5 2/3] dt-bindings: power: supply: add cw2015_battery bindings
-Date:   Sun, 15 Mar 2020 20:19:13 +0100
-Message-Id: <20200315191914.118565-3-t.schramm@manjaro.org>
-In-Reply-To: <20200315191914.118565-1-t.schramm@manjaro.org>
-References: <20200315191914.118565-1-t.schramm@manjaro.org>
+Subject: [PATCH v5 0/3] Add support for CellWise cw2015 fuel gauge
+Date:   Sun, 15 Mar 2020 20:19:11 +0100
+Message-Id: <20200315191914.118565-1-t.schramm@manjaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -55,103 +53,80 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds the dts binding schema for the cw2015 fuel gauge.
+This patchset adds support for the CellWise cw2015 fuel gauge.
 
-Signed-off-by: Tobias Schramm <t.schramm@manjaro.org>
----
- .../bindings/power/supply/cw2015_battery.yaml | 83 +++++++++++++++++++
- 1 file changed, 83 insertions(+)
+The CellWise cw2015 fuel gauge is a shuntless, single-cell Li-Ion fuel
+gauge. It is used in the pine64 Pinebook Pro laptop.
+
+This is v5 of the patchset. This version refactors device property parsing
+according to a suggestion by Andy and resolves some additional code style
+issues.
+
+I've kept the cellwise,battery-profile property in the device tree. Its
+content describes characteristics of the battery built into a device. The
+exact format is unknown and not publicly documented. It is likely
+comprised of some key parameters of the battery (chemistry, voltages,
+design capacity) and parameters for tuning the internal state of charge
+approximation function.
+Since v2 CellWise has confirmed to me that the only way to obtain the
+profile blob is to mail them batteries for testing. Thus we will need to
+keep that property.
+
+In general I'm not 100 % sure about my json-schema binding for the gauge.
+It is my first time ever writing a json-schema binding and I'm not sure
+whether properties like power-supplies or monitored-battery need to be
+added to a separate, common schema for power supplies or not.
+
+
+Best Regards,
+
+Tobias Schramm
+
+Changelog:
+ v2:
+  * Change subject to "Add support for CellWise cw2015 fuel gauge"
+  * Rewrite bindings as json-schema
+  * Use default power-supplies handling
+  * Use regmap for register access
+  * Use standard simple-battery node
+  * Replace printk/pr_* by dev_{dbg,info,warn,err}
+  * Use cancel_delayed_work_sync in remove
+  * General code cleanup
+ v3:
+  * Incorporate review by Andy
+  * Add cellwise vendor prefix
+  * Rename cellwise,bat-config-info property to cellwise,battery-profile
+  * Remove most state of charge post-processing
+  * Use fwnode interface
+  * General code cleanup
+  * Lots of code style fixes
+ v4:
+  * Implement additional changes requested by Andy
+  * Use fwnode inline wrappers
+  * Clean up waiting for gauge
+  * Minor code style fixes
+ v5:
+  * Clean up includes
+  * Handle errors during device property parsing
+  * Refactor device property parsing
+  * Replace i2c->probe by i2c->probe_new 
+  * More code style fixes
+
+Tobias Schramm (3):
+  dt-bindings: Document cellwise vendor-prefix
+  dt-bindings: power: supply: add cw2015_battery bindings
+  power: supply: add CellWise cw2015 fuel gauge driver
+
+ .../bindings/power/supply/cw2015_battery.yaml |  83 ++
+ .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
+ MAINTAINERS                                   |   6 +
+ drivers/power/supply/Kconfig                  |  11 +
+ drivers/power/supply/Makefile                 |   1 +
+ drivers/power/supply/cw2015_battery.c         | 749 ++++++++++++++++++
+ 6 files changed, 852 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
+ create mode 100644 drivers/power/supply/cw2015_battery.c
 
-diff --git a/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-new file mode 100644
-index 000000000000..f789882312da
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
-@@ -0,0 +1,83 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/cw2015_battery.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Battery driver for CW2015 shuntless fuel gauge by CellWise.
-+
-+maintainers:
-+  - Tobias Schramm <t.schramm@manjaro.org>
-+
-+description: |
-+  The driver can utilize information from a simple-battery linked via a
-+  phandle in monitored-battery. If specified the driver uses the
-+  charge-full-design-microamp-hours property of the battery.
-+
-+properties:
-+  compatible:
-+    const: cellwise,cw2015
-+
-+  reg:
-+    items:
-+      - description: i2c address
-+
-+  cellwise,battery-profile:
-+    description: |
-+      This property specifies characteristics of the battery used. The format
-+      of this binary blob is kept secret by CellWise. The only way to obtain
-+      it is to mail two batteries to a test facility of CellWise and receive
-+      back a test report with the binary blob.
-+    allOf:
-+      - $ref: /schemas/types.yaml#definitions/uint8-array
-+    items:
-+      - minItems: 64
-+        maxItems: 64
-+
-+  cellwise,monitor-interval-ms:
-+    description:
-+      Specifies the interval in milliseconds gauge values are polled at
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  power-supplies:
-+    description:
-+      Specifies supplies used for charging the battery connected to this gauge
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/phandle-array
-+      - minItems: 1
-+        maxItems: 8 # Should be enough
-+
-+  monitored-battery:
-+    description:
-+      Specifies the phandle of a simple-battery connected to this gauge
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        cw2015@62 {
-+            compatible = "cellwise,cw201x";
-+            reg = <0x62>;
-+            cellwise,battery-profile = /bits/ 8 <
-+                0x17 0x67 0x80 0x73 0x6E 0x6C 0x6B 0x63
-+                0x77 0x51 0x5C 0x58 0x50 0x4C 0x48 0x36
-+                0x15 0x0C 0x0C 0x19 0x5B 0x7D 0x6F 0x69
-+                0x69 0x5B 0x0C 0x29 0x20 0x40 0x52 0x59
-+                0x57 0x56 0x54 0x4F 0x3B 0x1F 0x7F 0x17
-+                0x06 0x1A 0x30 0x5A 0x85 0x93 0x96 0x2D
-+                0x48 0x77 0x9C 0xB3 0x80 0x52 0x94 0xCB
-+                0x2F 0x00 0x64 0xA5 0xB5 0x11 0xF0 0x11
-+           >;
-+           cellwise,monitor-interval-ms = <5000>;
-+           monitored-battery = <&bat>;
-+           power-supplies = <&mains_charger>, <&usb_charger>;
-+       };
-+    };
-+
 -- 
 2.24.1
 
