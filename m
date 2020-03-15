@@ -8,61 +8,61 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 032F9C2BB1D
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 15:14:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61EF6C5ACD3
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 15:14:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CF2E8206BE
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 15:14:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3919620578
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Mar 2020 15:14:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ePEUSzNM"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gOdMIEdc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728776AbgCOPOp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 15 Mar 2020 11:14:45 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:34318 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728678AbgCOPOp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Mar 2020 11:14:45 -0400
-Received: by mail-wr1-f66.google.com with SMTP id z15so18051605wrl.1;
-        Sun, 15 Mar 2020 08:14:43 -0700 (PDT)
+        id S1728769AbgCOPOm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 15 Mar 2020 11:14:42 -0400
+Received: from mail-wr1-f68.google.com ([209.85.221.68]:42269 "EHLO
+        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728678AbgCOPOm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Mar 2020 11:14:42 -0400
+Received: by mail-wr1-f68.google.com with SMTP id v11so18078850wrm.9;
+        Sun, 15 Mar 2020 08:14:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=ztqdauPgBR6/jJXcC/G4eAbGw7jHbgKj5fkmHyJg9TM=;
-        b=ePEUSzNMcY5d70nvKQ3K/OTrIlZZVKG+mZEFxdQTqlJ2ZsPDq8xz4OAVNZRpqn9fuu
-         OHBCZagBPP3buzt9EhAtKG3GnYDJV5+jPrJGjr5YlP0LenPPJZhxaIB/zlzYTC/TTjHy
-         dRZonpKDnREyiGnEion6Loyfurq4LdGvfI+JlBu47LeLIvbMEpuzYVHw6K+xfKXdPX/c
-         IF6w+479uPEzdJM/E3P3zw9t8GKh6xVtvo5ka+x0oro6GNDOrNnRJBq+yfAZyXK4AAsK
-         yTmjBLD+0OnJ9Rkbc42kRAOjfYZ4K9JCfZ9+FcuPRB+90+6AgycQAWDxNxicK7QIz5uy
-         Xw+Q==
+        bh=XdkapQL+yBOybxGhePAhyn5C5HK16exdBokBiPplJoM=;
+        b=gOdMIEdcRD6QOopL0Afs77sac4j9vlxRA9ihE7AHZF/iGfnsBPDNhlm2Imxm/msA80
+         kjp8L2k7gIVg4oT5iZkEkIWJPzE5yTtCPYSB3YncdBiAn7qPWUoIpihiLRvd76eXIdiv
+         6P2Opotuuw0+hVgPjIUXjN3piSOmWduW/yKG1KR27qX8Enm3MCYHtETWFTufhu8B5n//
+         eZQtRxVm2vjUZmH9js9/eqxlbJwRbDfzDUVy7FS6GbNC5PGqKy7oNGDVico4AI/Rltif
+         kgrEZPKhP866u94Nw8vMNLh1UIlv3JQgiTF3KjnbB7uEwXH0KZta5mzoZnrcRYxLMoOL
+         pPag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=ztqdauPgBR6/jJXcC/G4eAbGw7jHbgKj5fkmHyJg9TM=;
-        b=F+/BAjc9jjX2To6KYLHqKGVdCZmmkCbWldtvsEiWLm4+e0gOdFrWoo9m4bbe8Vlj6U
-         YfB1SFuy3CZNJ4kDNdjQxlBy1cXkXJsDk++U/Ak2DRcmteBd65c0Vl/YzVRn1iNy1zWu
-         LsZgSxehlfNpsvB4hxjwVKlLnZ39GqvJ5T+thm7vQUHlifG5Wv+5dLzOxQKo/XBxY4n1
-         VFy4ec6BytxZzahT+vdTLB1hg5LLivRZwEtyZ6hgahkVc4M6UkGRFUstp5+6F1sPQMqT
-         eEQ8wVzMniP7hfjVAqQz/EWZEkpLFLun44jkXH5FEzyvC7aXvMIKMQFdZeKElP4NqQGM
-         knCg==
-X-Gm-Message-State: ANhLgQ2ayWW175igyUv3eKkoSUsxYXHCUbEVUbtrZ77zTkNXAajUhxFb
-        n3SY12zCxjERdRCT2BawEbM=
-X-Google-Smtp-Source: ADFU+vvb3D9ekjFjtfjVelRtkTOOQvYVEtp3zqKRYT1UH6nvLnSQPSKmNJvziiEvJLJLryZ3y0eOmA==
-X-Received: by 2002:a5d:4cc6:: with SMTP id c6mr29734006wrt.30.1584285282838;
-        Sun, 15 Mar 2020 08:14:42 -0700 (PDT)
+        bh=XdkapQL+yBOybxGhePAhyn5C5HK16exdBokBiPplJoM=;
+        b=fSvT0PxI+JGeWI6VpNft06SBpewZJ+3uPwwgx3UWzYrdHbBQO1fFE6kgXsuqyKzdat
+         g1aHK3dQfffug6/YsnpVEBbMt79DLsieBr/DyCQwtD3lcuhpt3fLQgaDJTK5xv69Svit
+         xveGrwdT4Aksn6smqRkiERD2ZubGsxyC/+BUuWMWNFsuXD2fLjOUgjYpjOC6ieOlM8rP
+         5c4qxyxRVZ8Enqu0lS6RX9mstYpx9ZdnAPYE+OEGvcyft8vaNH/e8uWosyaol/89Px1y
+         xw6kzpE5KB/A97xp6qipiH7EW4exBygLYbndtvrcqyKX0lUlOq9XqM/KcZRqNA9pikAL
+         SQoQ==
+X-Gm-Message-State: ANhLgQ3CZV5Ba6eoKxQIo4L1YQcQp0IcUXAr8CGX5/cXLzm0GuF2L5ja
+        TvA7zSRrYE3XBcFmaB4WH8I=
+X-Google-Smtp-Source: ADFU+vulIJLGWZsnPgFBLWyFsQK9ORzdCgo4lIzw5GzDG5Mc3K5LOM+cWr9z04wXjDiJyPVe22ZFrA==
+X-Received: by 2002:a5d:5545:: with SMTP id g5mr13929668wrw.290.1584285280336;
+        Sun, 15 Mar 2020 08:14:40 -0700 (PDT)
 Received: from supervisor.net28 ([46.53.248.79])
-        by smtp.gmail.com with ESMTPSA id i67sm67746869wri.50.2020.03.15.08.14.41
+        by smtp.gmail.com with ESMTPSA id i67sm67746869wri.50.2020.03.15.08.14.39
         (version=TLS1_2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 15 Mar 2020 08:14:42 -0700 (PDT)
+        Sun, 15 Mar 2020 08:14:39 -0700 (PDT)
 From:   Arthur Demchenkov <spinal.by@gmail.com>
 To:     Tony Lindgren <tony@atomide.com>,
         Merlijn Wajer <merlijn@wizzup.org>,
         Pavel Machek <pavel@ucw.cz>, sre@kernel.org,
         linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
 Cc:     Arthur Demchenkov <spinal.by@gmail.com>
-Subject: [PATCH 09/15] power: supply: cpcap-battery: Increse low voltage bound
-Date:   Sun, 15 Mar 2020 18:12:00 +0300
-Message-Id: <20200315151206.30909-9-spinal.by@gmail.com>
+Subject: [PATCH 07/15] power: supply: cpcap-battery: Rewrite capacity reporting
+Date:   Sun, 15 Mar 2020 18:11:58 +0300
+Message-Id: <20200315151206.30909-7-spinal.by@gmail.com>
 X-Mailer: git-send-email 2.11.0
 In-Reply-To: <20200315151206.30909-1-spinal.by@gmail.com>
 References: <20200315151206.30909-1-spinal.by@gmail.com>
@@ -71,27 +71,62 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Thus, the user will have more time to start charging when calibrating
-the charge_full value.
+* Return -ENODATA instead of confusing rough values
+* Calculate percentage using charge_full value provided
 
 Signed-off-by: Arthur Demchenkov <spinal.by@gmail.com>
 ---
- drivers/power/supply/cpcap-battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/cpcap-battery.c | 27 +++++++--------------------
+ 1 file changed, 7 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
-index 2f4c6669c37d..da6138df2117 100644
+index 669ed1513201..f712a3bda315 100644
 --- a/drivers/power/supply/cpcap-battery.c
 +++ b/drivers/power/supply/cpcap-battery.c
-@@ -422,7 +422,7 @@ static bool cpcap_battery_low(struct cpcap_battery_ddata *ddata)
- 	struct cpcap_battery_state_data *state = cpcap_battery_latest(ddata);
- 	static bool is_low;
+@@ -573,10 +573,10 @@ static int cpcap_battery_get_property(struct power_supply *psy,
+ 				      union power_supply_propval *val)
+ {
+ 	struct cpcap_battery_ddata *ddata = power_supply_get_drvdata(psy);
+-	struct cpcap_battery_state_data *latest, *previous, *low, *high;
++	struct cpcap_battery_state_data *latest, *previous, *low;
+ 	u32 sample;
+ 	s32 accumulator;
+-	int cached, delta, est;
++	int cached;
+ 	s64 tmp;
  
--	if (state->current_ua > 0 && (state->voltage <= 3300000 || is_low))
-+	if (state->current_ua > 0 && (state->voltage <= 3350000 || is_low))
- 		is_low = true;
- 	else
- 		is_low = false;
+ 	cached = cpcap_battery_update_status(ddata);
+@@ -654,25 +654,12 @@ static int cpcap_battery_get_property(struct power_supply *psy,
+ 		val->intval = div64_s64(tmp, 100);
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY:
+-		est = cpcap_battery_get_rough_percentage(ddata);
+-		high = cpcap_battery_get_highest(ddata);
+-		if (high->voltage) {
+-			delta = latest->counter_uah - high->counter_uah;
+-			val->intval = (ddata->config.info.charge_full_design -
+-				       delta) * 100;
+-			val->intval /= ddata->config.info.charge_full_design;
+-			delta = abs(val->intval - est);
+-			break;
+-		}
+ 		low = cpcap_battery_get_lowest(ddata);
+-		if (low->voltage) {
+-			delta = low->counter_uah - latest->counter_uah;
+-			val->intval = (delta * 100) /
+-				ddata->config.info.charge_full_design;
+-			delta = abs(val->intval - est);
+-			break;
+-		}
+-		val->intval = est;
++		if (!low->voltage || !ddata->charge_full)
++			return -ENODATA;
++		val->intval = (low->counter_uah -
++			       latest->counter_uah) * 100;
++		val->intval /= ddata->charge_full;
+ 		break;
+ 	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
+ 		val->intval = cpcap_battery_get_rough_capacity(ddata);
 -- 
 2.11.0
 
