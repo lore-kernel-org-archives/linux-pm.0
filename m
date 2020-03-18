@@ -2,144 +2,146 @@ Return-Path: <SRS0=gBUe=5D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A9BFC4332E
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:09:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54E96C4332B
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:30:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4FF3C20409
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:09:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 237CA20773
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:30:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584565749;
-	bh=aajlEBPgsF9TWsTs1qzScjchYnUPHpC5ectjpFA3GQU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=zpqSquhGb7nLfiZrP4R67zoDTdDaKrMwe10AhXb51BY9WDJhpNmkzMxiz2Kx0mNP1
-	 hhMBzgTUgxIpYocoFSYAEcXdcbYCk/i7A+BjAe42iUCLzvxyABEHv3WtNdEAAac7m1
-	 l0R734riPW0px30lO9jK1dVXjX1DEadVQe7ckZk4=
+	s=default; t=1584567007;
+	bh=AKZ5wSrqySyD7FEQCwdnhmME3FkgJSof5Wl3vt7foe8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=Y0B9RxpHxwzNNRXXduPotWx7jpju6Zg0lDXfGae4VmSs2R35ri4nD2oA1OYtYSP1r
+	 L5z0f1M7GnXlkcRcUA3uq9UrURPtdU48JzYMFYVfhhTgkIbtVbs2Nbh0djK6vXZclb
+	 5d9XRtFvMit1I+IiSZv2EE3v1wKq1Lp3hkXrelL0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727456AbgCRVI6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Mar 2020 17:08:58 -0400
-Received: from mail.kernel.org ([198.145.29.99]:53130 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727368AbgCRUxz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 18 Mar 2020 16:53:55 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 9D3D0208FE;
-        Wed, 18 Mar 2020 20:53:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1584564834;
-        bh=aajlEBPgsF9TWsTs1qzScjchYnUPHpC5ectjpFA3GQU=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=g5sn7sqvsYzIG/3jGfI/8O77ri3oIF0uD4j39Js3c+nKQkLN6MqOO7BRjKcIIqGmo
-         gFbLdteqLnOHdCDLTBlyBFpwZttSgiJb6/wwuIUeo+ad2YbeLPNUDT3UjyLKtcXW5S
-         psT19leKhpME/33XG8FgfakN9PqI+Iz7SoBXSuwg=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Mike Gilbert <floppym@gentoo.org>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 14/73] cpupower: avoid multiple definition with gcc -fno-common
-Date:   Wed, 18 Mar 2020 16:52:38 -0400
-Message-Id: <20200318205337.16279-14-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200318205337.16279-1-sashal@kernel.org>
-References: <20200318205337.16279-1-sashal@kernel.org>
+        id S1726596AbgCRVaG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Mar 2020 17:30:06 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:35087 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726733AbgCRVaG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2020 17:30:06 -0400
+Received: by mail-ot1-f66.google.com with SMTP id k26so233761otr.2;
+        Wed, 18 Mar 2020 14:30:05 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=CLiBZtpr4e56p2g/o11hfAKRe9jeKBAJwiRBOQ3WAnY=;
+        b=BECAOQbJs7Cy+AZvv/gInHpkqj/nY6B/SO4zEjo9swMB39IZwShfeXaUI5UtK2biOP
+         vcmu85QGwCfcwZ4gFfmjmU/zCPsUiaXRdLMGFete/uEkJ019x38W1rRVcFkPwRza0YXO
+         bBgzAk5cvd8KE4B78vWOb/Lo9HTRhSjzxt2yQFwhz/abFJ5t79gMVDKcgaDvz5xSH0Eu
+         P2nQ3QyEbBfv7TazaMDGD3wZZsOjfzqwGTBvE9D2HHi95Sg3lCmh9NspTj33924Upsto
+         dZi4X/gIWtUw89D6RHH88HYAvpxC0kEqsQd3FYpBop0ksNT2pSOEuAnkcLnOQ+l8eOvo
+         ejNg==
+X-Gm-Message-State: ANhLgQ1wHxptzfSEyj0uUj3496uZaOpBXvWnlX6RU+dyvUhgJC4IyBkw
+        EsnGqPe+oNVwRVFtBjDfiPmYS8KtzjG6wfaM3J8=
+X-Google-Smtp-Source: ADFU+vuxickbFyRcIty7lM9IaclCHNf1VAH/8QnH6PATSgt1jsbljLQUn/9lceImpYF6c+RmcTIg7Ei6qm1POuD/8pY=
+X-Received: by 2002:a05:6830:1e96:: with SMTP id n22mr5524399otr.189.1584567005337;
+ Wed, 18 Mar 2020 14:30:05 -0700 (PDT)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <20200316210843.11678-1-daniel.lezcano@linaro.org>
+ <2605374.f08NWHE4iP@kreacher> <669fe03f-0d65-8ca9-53dc-1323e0397c53@linaro.org>
+ <93da445f-ebfd-4d2e-c8b4-cd81e54892c0@linaro.org>
+In-Reply-To: <93da445f-ebfd-4d2e-c8b4-cd81e54892c0@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 18 Mar 2020 22:29:53 +0100
+Message-ID: <CAJZ5v0g6fPu5mhUgy9ADb7fo7Q_WngVcADewVY9Pii3R=SMzZg@mail.gmail.com>
+Subject: Re: [PATCH RFC] cpuidle: consolidate calls to time capture
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Kevin Hilman <khilman@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Mike Gilbert <floppym@gentoo.org>
+On Wed, Mar 18, 2020 at 3:32 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 18/03/2020 12:04, Daniel Lezcano wrote:
+> >
+> > Hi Rafael,
+> >
+> > On 18/03/2020 11:17, Rafael J. Wysocki wrote:
+> >> On Monday, March 16, 2020 10:08:43 PM CET Daniel Lezcano wrote:
+> >>> A few years ago, we changed the code in cpuidle to replace ktime_get()
+> >>> by a local_clock() to get rid of potential seq lock in the path and an
+> >>> extra latency.
+> >>>
+> >>> Meanwhile, the code evolved and we are getting the time in some other
+> >>> places like the power domain governor and in the future break even
+> >>> deadline proposal.
+> >>
+> >> Hmm?
+> >>
+> >> Have any patches been posted for that?
+> >
+> > https://lkml.org/lkml/2020/3/11/1113
+> >
+> > https://lkml.org/lkml/2020/3/13/466
+> >
+> > but there is no consensus yet if that has a benefit or not.
+> >
+> >>> Unfortunately, as the time must be compared across the CPU, we have no
+> >>> other option than using the ktime_get() again. Hopefully, we can
+> >>> factor out all the calls to local_clock() and ktime_get() into a
+> >>> single one when the CPU is entering idle as the value will be reuse in
+> >>> different places.
+> >>
+> >> So there are cases in which it is not necessary to synchronize the time
+> >> between CPUs and those would take the overhead unnecessarily.
+> >>
+> >> This change looks premature to me at least.
+> >
+> > The idea is to call one time ktime_get() when entering idle and store
+> > the result in the struct cpuidle_device, so we have the information when
+> > we entered idle.
+> >
+> > Moreover, ktime_get() is called in do_idle() via:
+> >
+> > tick_nohz_idle_enter()
+> >   tick_nohz_start_idle()
+> >     ts->idle_entrytime = ktime_get();
+> >
+> > This is called at the first loop level. The idle loop is exiting and
+> > re-entering again without passing through tick_nohz_idle_enter() in the
+> > second loop level in case of interrupt processing, thus the
+> > idle_entrytime is not updated and the return of
+> > tick_nohz_get_sleep_length() will be greater than what is expected.
+> >
+> > May be we can consider ktime_get_mono_fast_ns() which is lockless with a
+> > particular care of the non-monotonic aspect if needed. Given the
+> > description at [1] the time jump could a few nanoseconds in case of NMI.
+> >
+> > The local_clock() can no be inspected across CPUs, the gap is too big
+> > and continues to increase during system lifetime.
+>
+> I took the opportunity to measure the duration to a call to ktime_get,
+> ktime_get_mono_fast_ns and local_clock.
 
-[ Upstream commit 2de7fb60a4740135e03cf55c1982e393ccb87b6b ]
+The results you get depend a good deal on the conditions of the test,
+the system on which they were obtained and so on.  Without this
+information it is hard to draw any conclusions from those results.  In
+particular, ktime_get() is not significantly slower than local_clock()
+if there is no contention AFAICS, and the lack of contention cannot be
+guaranteed here.
 
-Building cpupower with -fno-common in CFLAGS results in errors due to
-multiple definitions of the 'cpu_count' and 'start_time' variables.
+Generally speaking, the problem is that it is not sufficient to
+measure the time before running the governor and after the CPU wakes
+up, because in the cases that really care about the latency of that
+operation the time needed to run the governor may be a significant
+fraction of the entire overhead.  So it is necessary to take time
+stamps in several places and putting ktime_get() in all of them
+doesn't sound particularly attractive.
 
-./utils/idle_monitor/snb_idle.o:./utils/idle_monitor/cpupower-monitor.h:28:
-multiple definition of `cpu_count';
-./utils/idle_monitor/nhm_idle.o:./utils/idle_monitor/cpupower-monitor.h:28:
-first defined here
-...
-./utils/idle_monitor/cpuidle_sysfs.o:./utils/idle_monitor/cpuidle_sysfs.c:22:
-multiple definition of `start_time';
-./utils/idle_monitor/amd_fam14h_idle.o:./utils/idle_monitor/amd_fam14h_idle.c:85:
-first defined here
-
-The -fno-common option will be enabled by default in GCC 10.
-
-Bug: https://bugs.gentoo.org/707462
-Signed-off-by: Mike Gilbert <floppym@gentoo.org>
-Signed-off-by: Shuah Khan <skhan@linuxfoundation.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c  | 2 +-
- tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c    | 2 +-
- tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c | 2 ++
- tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h | 2 +-
- 4 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
-index 3f893b99b337c..555cb338a71a4 100644
---- a/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
-+++ b/tools/power/cpupower/utils/idle_monitor/amd_fam14h_idle.c
-@@ -82,7 +82,7 @@ static struct pci_access *pci_acc;
- static struct pci_dev *amd_fam14h_pci_dev;
- static int nbp1_entered;
- 
--struct timespec start_time;
-+static struct timespec start_time;
- static unsigned long long timediff;
- 
- #ifdef DEBUG
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index f634aeb65c5f6..7fb4f7a291ad5 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-@@ -19,7 +19,7 @@ struct cpuidle_monitor cpuidle_sysfs_monitor;
- 
- static unsigned long long **previous_count;
- static unsigned long long **current_count;
--struct timespec start_time;
-+static struct timespec start_time;
- static unsigned long long timediff;
- 
- static int cpuidle_get_count_percent(unsigned int id, double *percent,
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-index d3c3e6e7aa26c..3d54fd4336261 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-@@ -27,6 +27,8 @@ struct cpuidle_monitor *all_monitors[] = {
- 0
- };
- 
-+int cpu_count;
-+
- static struct cpuidle_monitor *monitors[MONITORS_MAX];
- static unsigned int avail_monitors;
- 
-diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-index a2d901d3bfaf9..eafef38f1982e 100644
---- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-+++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-@@ -25,7 +25,7 @@
- #endif
- #define CSTATE_DESC_LEN 60
- 
--int cpu_count;
-+extern int cpu_count;
- 
- /* Hard to define the right names ...: */
- enum power_range_e {
--- 
-2.20.1
-
+Anyway, there is no real need to make this change AFAICS, so I'm not
+really sure what the entire argument is about.
