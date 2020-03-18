@@ -2,118 +2,117 @@ Return-Path: <SRS0=gBUe=5D=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1372C5ACD6
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 17:56:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D47F2C10F29
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 19:11:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7F9BC20767
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 17:56:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2D6220768
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 19:11:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=metafoo.de header.i=@metafoo.de header.b="B0xM0xac"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="lkxzxSmP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726704AbgCRR4Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Mar 2020 13:56:24 -0400
-Received: from www381.your-server.de ([78.46.137.84]:60514 "EHLO
-        www381.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726506AbgCRR4Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2020 13:56:24 -0400
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=metafoo.de;
-         s=default2002; h=Content-Transfer-Encoding:Content-Type:In-Reply-To:
-        MIME-Version:Date:Message-ID:From:References:Cc:To:Subject:Sender:Reply-To:
-        Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
-        Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=55s4KdzIkIbrPk24SHC9GIhNl5gysbT015bgWowvoYE=; b=B0xM0xac8I/sAY/v4Fy1CC5a1d
-        IUZx+cRKdtENa8HeY/f41HzkgA37T0SiEPmsCqf92GOSYBIC/wzXZYqA+T8PsPMfgqFcqjp3Ba8Ln
-        0alyli/aojkBt9KY391U0dtUsPQnTvXT9zIlVsCC5bgULlR+Uxb67nKnV7kq6t7zAznYkwAQCHP7G
-        43VPflDV+bY3NloMR7c8wyLSE9TFDydqTX4iua24yizb7Nzb276m9+6MQ3YcwfnvGWumM1ePBMphQ
-        yJkFBIhWW9oqEax/H4z+YZKFiaOBA0RlH0aPrSSF3OVZOaSwIFUvri2zVmlB5F9xyyYNUkcvWc7iC
-        fCTCrmUA==;
-Received: from sslproxy05.your-server.de ([78.46.172.2])
-        by www381.your-server.de with esmtpsa (TLSv1.2:DHE-RSA-AES256-GCM-SHA384:256)
-        (Exim 4.89_1)
-        (envelope-from <lars@metafoo.de>)
-        id 1jEcZr-0004ZL-PW; Wed, 18 Mar 2020 18:34:00 +0100
-Received: from [93.104.115.49] (helo=[192.168.178.20])
-        by sslproxy05.your-server.de with esmtpsa (TLSv1.3:TLS_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <lars@metafoo.de>)
-        id 1jEcZr-000P08-Fy; Wed, 18 Mar 2020 18:33:59 +0100
-Subject: Re: [PATCH 2/3] iio: dac: ad5686: add of_match_table
-To:     Michael Auchter <michael.auchter@ni.com>,
-        Michael Hennerich <Michael.Hennerich@analog.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-pm@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20200318153434.62833-1-michael.auchter@ni.com>
- <20200318153434.62833-2-michael.auchter@ni.com>
-From:   Lars-Peter Clausen <lars@metafoo.de>
-Message-ID: <b67c7147-e35c-2408-8324-c688af4e82b7@metafoo.de>
-Date:   Wed, 18 Mar 2020 18:33:58 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.5.0
+        id S1726911AbgCRTLU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Mar 2020 15:11:20 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:41833 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726623AbgCRTLU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 18 Mar 2020 15:11:20 -0400
+Received: by mail-ot1-f65.google.com with SMTP id s15so26749922otq.8
+        for <linux-pm@vger.kernel.org>; Wed, 18 Mar 2020 12:11:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=YEcNvKoxRLNncmofEeVv4yeDWdrbk4dUuTY3/HM5SJg=;
+        b=lkxzxSmPoiFVrjW+D44Nlzoy7Y9BTyZ6PQpCllGw154b100MP5WuWaOD8/idtKRdN1
+         eW54dVH6b4J85Yh7iKi6bJJfbSelvRDFyXBx3wyvx0oFFus1AOlmctj2Z5JvbyIEHHUZ
+         /Jr09tDhinfXqXBq2oebzgol6mVeYcC+UyXyTHDzlp5RJD7V8dU38+VbiMAZuPGG6YF9
+         hvBVYwDFqmUd6ydHL8N8g88fq/GSAzaTFW8j6JuF/V3UyExsBxHJS4eMrACrNI4o5nLl
+         sC+7J1xx3mn9ikCZuhxsvKAh6qOSY243TaGZYevQ1VsO2EVhb25BOP3Gwdm7RCayZFKz
+         QIhA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=YEcNvKoxRLNncmofEeVv4yeDWdrbk4dUuTY3/HM5SJg=;
+        b=iKlXLZSxM/Sfg2Ux8b0eJxt2YWPEfsE62wMtpUJ96tn6EYWULVm0HuQ5Yi4lu16NDF
+         yXRKOwU2+TTFR6tuJrYXmoRL+V4w6yYZURMdQ4ull6WYkifkehfmlzpSWiqd0AjeEPYt
+         ZDmHEYuU+yIu3EyAkQ2UdSbWsICQAWRpAf2peXmYfRsaUtGsA6wAKQ3y+QDPT+egUCDb
+         mSRxX8s+/+gH8JW9+ge4ru46aqQiCQrB8cxf+n7Q3MIlncuQYQe9FSIhnmPQTIuDZ7So
+         NpkvwSKwEkX+oDyrQYMqVVLP6cPhgaqnSFsElVPINiH7icuap6a2zsxkBJIxQUFtEOXV
+         n6UQ==
+X-Gm-Message-State: ANhLgQ0aGolWPBoTeFeDcdnJe+bUNvYVC7AUnyU80+fONErc0HSMiFNM
+        ANhYacqqQ24aJfyPK1IxBTS17w88ULCIbMKZ4Zym1Q==
+X-Google-Smtp-Source: ADFU+vuQqQyKYY3GzReouxvk6jJyqQUm+Irep1pzseE+uxctbZi52pzI8VMFuxyNWh599gkbGFQoVDq1JwgQY4XyDz8=
+X-Received: by 2002:a9d:6186:: with SMTP id g6mr5088006otk.236.1584558679434;
+ Wed, 18 Mar 2020 12:11:19 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200318153434.62833-2-michael.auchter@ni.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: lars@metafoo.de
-X-Virus-Scanned: Clear (ClamAV 0.102.2/25755/Wed Mar 18 14:14:00 2020)
+References: <20200317065452.236670-1-saravanak@google.com>
+In-Reply-To: <20200317065452.236670-1-saravanak@google.com>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Wed, 18 Mar 2020 12:10:43 -0700
+Message-ID: <CAGETcx-uZ3YJHCYqFm3so8-woTvL3SSDY2deNonthTetcE+mXQ@mail.gmail.com>
+Subject: Re: [PATCH v1 0/6] Fix device links functional breakage in 4.19.99
+To:     stable <stable@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Matthias Brugger <matthias.bgg@gmail.com>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        "moderated list:ARM/Mediatek SoC support" 
+        <linux-mediatek@lists.infradead.org>,
+        Android Kernel Team <kernel-team@android.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 3/18/20 4:34 PM, Michael Auchter wrote:
-> Add of_match_table to this driver, so devices can be probed based on
-> device tree contents.
-> 
-> Signed-off-by: Michael Auchter <michael.auchter@ni.com>
-> ---
->   drivers/iio/dac/ad5696-i2c.c | 19 +++++++++++++++++++
->   1 file changed, 19 insertions(+)
-> 
-> diff --git a/drivers/iio/dac/ad5696-i2c.c b/drivers/iio/dac/ad5696-i2c.c
-> index f100a5fe4219..26818bccffa2 100644
-> --- a/drivers/iio/dac/ad5696-i2c.c
-> +++ b/drivers/iio/dac/ad5696-i2c.c
-> @@ -88,9 +88,28 @@ static const struct i2c_device_id ad5686_i2c_id[] = {
->   };
->   MODULE_DEVICE_TABLE(i2c, ad5686_i2c_id);
->   
-> +static const struct of_device_id ad5686_of_match[] = {
-> +	{ .compatible = "adi,ad5311r" },
-> +	{ .compatible = "adi,ad5671r" },
-> +	{ .compatible = "adi,ad5675r" },
-> +	{ .compatible = "adi,ad5691r" },
-> +	{ .compatible = "adi,ad5692r" },
-> +	{ .compatible = "adi,ad5693" },
-> +	{ .compatible = "adi,ad5693r" },
-> +	{ .compatible = "adi,ad5694" },
-> +	{ .compatible = "adi,ad5694r" },
-> +	{ .compatible = "adi,ad5695r" },
-> +	{ .compatible = "adi,ad5696" },
-> +	{ .compatible = "adi,ad5696r" },
-> +	{ .compatible = "adi,ad5338r" },
+On Mon, Mar 16, 2020 at 11:54 PM Saravana Kannan <saravanak@google.com> wrote:
+>
+> As mentioned in an earlier email thread [1], 4.19.99 broke the ability
+> to create stateful and stateless device links between the same set of
+> devices when it pulled in a valid bug fix [2]. While the fix was valid,
+> it removes a functionality that was present before the bug fix.
+>
+> This patch series attempts to fix that by pulling in more patches from
+> upstream. I've just done compilation testing so far. But wanted to send
+> out a v1 to see if this patch list was acceptable before I fixed up the
+> commit text format to match what's needed for stable mailing list.
+>
+> Some of the patches are new functionality, but for a first pass, it was
+> easier to pull these in than try and fix the conflicts. If these patches
+> are okay to pull into stable, then all I need to do is fix the commit
+> text.
 
-Same here, table should be ordered.
+I took a closer look at all the patches. Everyone of them is a bug fix
+except Patch 4/6. But Patch 4/6 is a fairly minimal change and I think
+it's easier/cleaner to just pick it up too instead of trying to
+resolve merge conflicts in the stable branch.
 
-> +	{}
-> +};
-> +MODULE_DEVICE_TABLE(of, ad5686_of_match);
-> +
->   static struct i2c_driver ad5686_i2c_driver = {
->   	.driver = {
->   		.name = "ad5696",
-> +		.of_match_table = of_match_ptr(ad5686_of_match),
->   	},
->   	.probe = ad5686_i2c_probe,
->   	.remove = ad5686_i2c_remove,
-> 
+1/6 - Fixes what appears to be a memory leak bug in upstream.
+2/6 - Fixes error in initial state of the device link if it's created
+under some circumstances.
+3/6 - Fixes a ref count bug in upstream. Looks like it can lead to memory leaks?
+4/6 - Adds a minor feature to kick off a probe attempt of a consumer
+5/6 - Fixes the break in functionality that happened in 4.19.99
+6/6 - Fixes bug in 5/6 (upstream bug)
 
+Greg
+
+Do these patches look okay for you to pull into 4.19 stable? If so,
+please let me know if you need me to send v2 with commit fix up.
+
+The only fix up needed is to these patches at this point is changing
+"(cherry picked from commit ...)" with "[ Upstream commit ... ]". The
+SHAs themselves are the correct SHAs from upstream.
+
+Thanks,
+Saravana
