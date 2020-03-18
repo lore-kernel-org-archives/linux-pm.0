@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D8C60C4332E
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68EA1C4332B
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:00:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AF80C20777
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3949E20409
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:00:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584565171;
-	bh=rKlS2ai3j6z/Og3rPCW/YL1QOjxzpZV/wM+ukN/KTlE=;
+	s=default; t=1584565230;
+	bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=QEN6ntUDlN7SEB3T9M3ouU7V9cMWK6Br+Ls+vW5M469MxbfP9fwpPBc877ugoUcRv
-	 6YWaYBaLMdDVbDZuc2jDds3ITYf75Vr+6c2CN6qgTDSVjU5yCAa7Tih/QKdw/HdNht
-	 4zQpOffNr61vT04rU7xFcRfU8srApsOipBYcwWxI=
+	b=o1lCoSDTlBlQJ+om6PZBmOUCQPJo7weAckivfco00VXKWuDALCfNxBEDsaGt58Iev
+	 Df69TAvTHXIcHqvw+8gAJw1+lRSI6WEIc1UPmtqs96iSIP/D/WsO5huIWWnIclzAj1
+	 jxbXcpRYwdFh3yUhGkn/iHQOSkWugg/Q5g1TlhZg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728702AbgCRU4w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Mar 2020 16:56:52 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58274 "EHLO mail.kernel.org"
+        id S1728630AbgCRU4g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Mar 2020 16:56:36 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57654 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728698AbgCRU4w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 18 Mar 2020 16:56:52 -0400
+        id S1727990AbgCRU4e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 18 Mar 2020 16:56:34 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id BCDD52137B;
-        Wed, 18 Mar 2020 20:56:50 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 1EA0120A8B;
+        Wed, 18 Mar 2020 20:56:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1584565011;
-        bh=rKlS2ai3j6z/Og3rPCW/YL1QOjxzpZV/wM+ukN/KTlE=;
+        s=default; t=1584564993;
+        bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=gJgX9qAeiLP08NtaUoFExLiaDv7iYs+CTCj5SgBdXJdYLscX9bovq1xo3jbfdS6dK
-         7mTvphGCSMDybRHqIuM1H7oUYDCwz0IKlqDumvHQT1ipI2+VVLvepBXXwXvmAQF/4e
-         T+IeXduF4Hb8fT4a0v4+2Dn4JJwF51Smk409f4gM=
+        b=T3RBPz+ID1umAXgzfJ6OG960u2jYixGKR8yxfYWZ7LE/cvoqNbLT4gRoegbAjg8iR
+         GSzROn6Y5G7pWXypkW7RTe32v1f6kyCwXN1Jnb7ZBRnd/7hQbJOyxvMhNBSE4rNhYq
+         X/Qp4utsh0vFHR1GmJPURvstS/0RSDFHXMwlCU3w=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Gilbert <floppym@gentoo.org>,
         Shuah Khan <skhan@linuxfoundation.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.4 02/12] cpupower: avoid multiple definition with gcc -fno-common
-Date:   Wed, 18 Mar 2020 16:56:38 -0400
-Message-Id: <20200318205648.17937-2-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 03/15] cpupower: avoid multiple definition with gcc -fno-common
+Date:   Wed, 18 Mar 2020 16:56:17 -0400
+Message-Id: <20200318205629.17750-3-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200318205648.17937-1-sashal@kernel.org>
-References: <20200318205648.17937-1-sashal@kernel.org>
+In-Reply-To: <20200318205629.17750-1-sashal@kernel.org>
+References: <20200318205629.17750-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -102,7 +102,7 @@ index 2116df9ad8325..c097a3748674f 100644
  
  #ifdef DEBUG
 diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index bcd22a1a39708..86e9647e4e686 100644
+index 5b3205f162174..5277df27191f3 100644
 --- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 +++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 @@ -21,7 +21,7 @@ struct cpuidle_monitor cpuidle_sysfs_monitor;
