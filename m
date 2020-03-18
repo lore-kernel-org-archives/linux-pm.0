@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEDB3C4332E
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:56:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8C60C4332E
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 93C5B20A8B
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:56:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AF80C20777
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 20:59:31 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584564966;
-	bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
+	s=default; t=1584565171;
+	bh=rKlS2ai3j6z/Og3rPCW/YL1QOjxzpZV/wM+ukN/KTlE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=xBW/DCwcjlcrbBwk/VHSTflQUD6feJlozLyiXCXEsE9923k0aZ/5WNAb0TzD1PoYc
-	 PS0DEjyrOi1JN05vG/khWhhrPL1Gr+mlSz21JTsVhGuWi8YtInR1/ynJdeZ3X8R6Rz
-	 l0vhi+OR04CZVT80JBQNpKYyvbl9FKRqjzxPaFRc=
+	b=QEN6ntUDlN7SEB3T9M3ouU7V9cMWK6Br+Ls+vW5M469MxbfP9fwpPBc877ugoUcRv
+	 6YWaYBaLMdDVbDZuc2jDds3ITYf75Vr+6c2CN6qgTDSVjU5yCAa7Tih/QKdw/HdNht
+	 4zQpOffNr61vT04rU7xFcRfU8srApsOipBYcwWxI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728520AbgCRU4F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Mar 2020 16:56:05 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56776 "EHLO mail.kernel.org"
+        id S1728702AbgCRU4w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Mar 2020 16:56:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:58274 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728511AbgCRU4E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 18 Mar 2020 16:56:04 -0400
+        id S1728698AbgCRU4w (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 18 Mar 2020 16:56:52 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 72050208E4;
-        Wed, 18 Mar 2020 20:56:03 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id BCDD52137B;
+        Wed, 18 Mar 2020 20:56:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1584564964;
-        bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
+        s=default; t=1584565011;
+        bh=rKlS2ai3j6z/Og3rPCW/YL1QOjxzpZV/wM+ukN/KTlE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=PZQu2EPx0ypEEj28i3hXPq+/vcC8uTUZpEGsln4mBoLquKXpg23Lk9Edh1TqxokvL
-         F2uz2xeffuLYez9kUFrbGTDnr1g0lKUgmfZF/NOPQJReaID6DwaXhgiR0jpHyEtoDG
-         LGHJUqGgaEOZlQAdU7rsc+YvfmoI2+t+Omfp9NvA=
+        b=gJgX9qAeiLP08NtaUoFExLiaDv7iYs+CTCj5SgBdXJdYLscX9bovq1xo3jbfdS6dK
+         7mTvphGCSMDybRHqIuM1H7oUYDCwz0IKlqDumvHQT1ipI2+VVLvepBXXwXvmAQF/4e
+         T+IeXduF4Hb8fT4a0v4+2Dn4JJwF51Smk409f4gM=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Gilbert <floppym@gentoo.org>,
         Shuah Khan <skhan@linuxfoundation.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 07/28] cpupower: avoid multiple definition with gcc -fno-common
-Date:   Wed, 18 Mar 2020 16:55:34 -0400
-Message-Id: <20200318205555.17447-7-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.4 02/12] cpupower: avoid multiple definition with gcc -fno-common
+Date:   Wed, 18 Mar 2020 16:56:38 -0400
+Message-Id: <20200318205648.17937-2-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200318205555.17447-1-sashal@kernel.org>
-References: <20200318205555.17447-1-sashal@kernel.org>
+In-Reply-To: <20200318205648.17937-1-sashal@kernel.org>
+References: <20200318205648.17937-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -102,7 +102,7 @@ index 2116df9ad8325..c097a3748674f 100644
  
  #ifdef DEBUG
 diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index 5b3205f162174..5277df27191f3 100644
+index bcd22a1a39708..86e9647e4e686 100644
 --- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 +++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 @@ -21,7 +21,7 @@ struct cpuidle_monitor cpuidle_sysfs_monitor;
