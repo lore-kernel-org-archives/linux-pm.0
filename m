@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68EA1C4332B
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:00:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A9BEC4332B
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:04:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3949E20409
-	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:00:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1B10320775
+	for <linux-pm@archiver.kernel.org>; Wed, 18 Mar 2020 21:04:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584565230;
-	bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
+	s=default; t=1584565474;
+	bh=1vIZZUIQ9NvBWPaWtYPGp4B+x2X5+UeS5d1aLHKvgDc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=o1lCoSDTlBlQJ+om6PZBmOUCQPJo7weAckivfco00VXKWuDALCfNxBEDsaGt58Iev
-	 Df69TAvTHXIcHqvw+8gAJw1+lRSI6WEIc1UPmtqs96iSIP/D/WsO5huIWWnIclzAj1
-	 jxbXcpRYwdFh3yUhGkn/iHQOSkWugg/Q5g1TlhZg=
+	b=sFuqK1E7+3WGCQi4EMKz4uIuqeq3uVx/GoPY8xIduhnxcA1KcSj64rKiXydaqCyzL
+	 Gjn2NnTufTE+MSJsYCbaCgGXcM64zn26iXTQcYh9zoBJBDQtHq3Z2dqdKx8BwMwYLL
+	 49q9Lpgsakra48Q9vfW5MAN8fOsP+1ASblScDy8E=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728630AbgCRU4g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 18 Mar 2020 16:56:36 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57654 "EHLO mail.kernel.org"
+        id S1727228AbgCRVEZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 18 Mar 2020 17:04:25 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55706 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727990AbgCRU4e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 18 Mar 2020 16:56:34 -0400
+        id S1728285AbgCRUzV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 18 Mar 2020 16:55:21 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 1EA0120A8B;
-        Wed, 18 Mar 2020 20:56:33 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 739AD208E4;
+        Wed, 18 Mar 2020 20:55:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1584564993;
-        bh=EY5R1QC2UFt4ZgEOuanrzEih+GHs096R2FsqatSo/3w=;
+        s=default; t=1584564921;
+        bh=1vIZZUIQ9NvBWPaWtYPGp4B+x2X5+UeS5d1aLHKvgDc=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=T3RBPz+ID1umAXgzfJ6OG960u2jYixGKR8yxfYWZ7LE/cvoqNbLT4gRoegbAjg8iR
-         GSzROn6Y5G7pWXypkW7RTe32v1f6kyCwXN1Jnb7ZBRnd/7hQbJOyxvMhNBSE4rNhYq
-         X/Qp4utsh0vFHR1GmJPURvstS/0RSDFHXMwlCU3w=
+        b=QAbEjf06Y9SNwpieSZYIGHQwzp4hzCG333kV5z5PqM+DCedV2HIRolJiR3uZMyoR1
+         Calfkh0PlbGM1YHTiDynweeLdxDkiML1Lyt9MrVQUZswSZMXfhSbbe0YqZt21lROro
+         khoYBzVt33JXEAbQBSZlFMuqTL1RxVU1bkV1NGGs=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Mike Gilbert <floppym@gentoo.org>,
         Shuah Khan <skhan@linuxfoundation.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.9 03/15] cpupower: avoid multiple definition with gcc -fno-common
-Date:   Wed, 18 Mar 2020 16:56:17 -0400
-Message-Id: <20200318205629.17750-3-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 09/37] cpupower: avoid multiple definition with gcc -fno-common
+Date:   Wed, 18 Mar 2020 16:54:41 -0400
+Message-Id: <20200318205509.17053-9-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200318205629.17750-1-sashal@kernel.org>
-References: <20200318205629.17750-1-sashal@kernel.org>
+In-Reply-To: <20200318205509.17053-1-sashal@kernel.org>
+References: <20200318205509.17053-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -102,7 +102,7 @@ index 2116df9ad8325..c097a3748674f 100644
  
  #ifdef DEBUG
 diff --git a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
-index 5b3205f162174..5277df27191f3 100644
+index 5b8c4956ff9a1..85a8f0cc01a19 100644
 --- a/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 +++ b/tools/power/cpupower/utils/idle_monitor/cpuidle_sysfs.c
 @@ -21,7 +21,7 @@ struct cpuidle_monitor cpuidle_sysfs_monitor;
@@ -115,7 +115,7 @@ index 5b3205f162174..5277df27191f3 100644
  
  static int cpuidle_get_count_percent(unsigned int id, double *percent,
 diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
-index 05f953f0f0a0c..80a21cb67d94f 100644
+index 051da0a7c4548..4a27c55d50d80 100644
 --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
 +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.c
 @@ -29,6 +29,8 @@ struct cpuidle_monitor *all_monitors[] = {
@@ -128,11 +128,11 @@ index 05f953f0f0a0c..80a21cb67d94f 100644
  static unsigned int avail_monitors;
  
 diff --git a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-index 9e43f3371fbc6..3558bbae2b5dc 100644
+index 2ae50b499e0a6..06b3cd6de0180 100644
 --- a/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
 +++ b/tools/power/cpupower/utils/idle_monitor/cpupower-monitor.h
-@@ -18,7 +18,7 @@
- #define CSTATE_NAME_LEN 5
+@@ -27,7 +27,7 @@
+ #endif
  #define CSTATE_DESC_LEN 60
  
 -int cpu_count;
