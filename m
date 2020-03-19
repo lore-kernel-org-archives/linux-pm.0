@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43233C4332E
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE989C43333
 	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 15C0620767
+	by mail.kernel.org (Postfix) with ESMTP id 7B2D32072C
 	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oSCaS/SY"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d1qtGLvq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727721AbgCSTE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1727745AbgCSTE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 19 Mar 2020 15:04:26 -0400
-Received: from mail-lj1-f195.google.com ([209.85.208.195]:34432 "EHLO
-        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727532AbgCSTEU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:04:20 -0400
-Received: by mail-lj1-f195.google.com with SMTP id s13so3803315ljm.1;
-        Thu, 19 Mar 2020 12:04:19 -0700 (PDT)
+Received: from mail-lf1-f68.google.com ([209.85.167.68]:43853 "EHLO
+        mail-lf1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727525AbgCSTEZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:04:25 -0400
+Received: by mail-lf1-f68.google.com with SMTP id n20so2557022lfl.10;
+        Thu, 19 Mar 2020 12:04:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=6NDM3y718xZuy8aOtgXuzMNzfqLpqznJlVGk7yDXVsI=;
-        b=oSCaS/SYuXxnhdgHKyWrJhoZyTBX5rU/amUONz2Ljsi/UiU7X9UhOb6QOCdMI9hK7Z
-         Eg3hP/HymfYWM547Fz875jonQgbas/3ZQDC5ZoVellGkCAKC6iMxYLEZy2J7oCaiNMfO
-         UH4+I/++JolujZGrZ3u0P+NaL0MOs+O3UH/4W41YsdjdP1mZUck7aEbkFrKmt4kg3fnB
-         2jashczYx/oyzhIf+uB/NYO8Tg0tUBEML5MWUDykUxQUfPDf9IHYoI+AHBCMt/kHYmjr
-         vx/lyT/ODByTEil/EPM2sM0/6PQi+94rfHaMEwPA5tI7OD+29A1P2F3RZQ9M0GSYohnw
-         TdNQ==
+        bh=NCItyd8yjMwPtwwQd4zzBNEoARaFlEvxh+OiOGd8HtY=;
+        b=d1qtGLvqLnU4YGXDa+6ltiSnOsN+uAC2wfCdh4DfRhRb4yiJlWqp3But/WMhc9h2FN
+         0vBG2xchq3N/jf0HJGpqlMPpiVF7pTM5qs78TJaAc0wsDzZ5Jx/j92qfuJi0G3n9btzk
+         GemnM26fj2voN77S85eLhsxb+n1zLB9fNGsl3gMpy5R0BwcAZNEqv0WRvwvFupg5zULG
+         xqtPJ+EzGotxRDPxuPanWXH/DsIQnBJRDgLU3v4uRb/U/4EOfWXKClTiY48+2cRcABxo
+         iRm558gtm8TVqt8gdg9Xgvyc7m23XXUznEGkc0wgstJwOf2Zj/ppbcMRvRUw3ZaIJ9//
+         +7Cw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=6NDM3y718xZuy8aOtgXuzMNzfqLpqznJlVGk7yDXVsI=;
-        b=USLp0Dj/KUc5kAXvkiCGWeoVwZ/TmDqEfeqkYMmoc9dR/x/d1dsL/Fls0eV3CYIvnJ
-         ngv9rrHN73I4yu1nY3qT/CuMP3R+/WdOdPklMhkEbHdgD2jGwyqWY1+EYAjVPgGrANza
-         HWFADgzF37GZXNsTY5xFlRJPh5Cb/IHUxi0aTzwMwnj2xZat8vRrXU2rZdSmQGoqEL7c
-         dUOQAQVrCdMN5IMNO7T9NMGjgWZ8y05taKEUsBiiFFQAQUY3JJNqSLsEbrgpSB8/kitW
-         G4tbbPgMYAO0tCtWBtDktRpAhgiApP/cMiErnLWmUm1r/SDT2Hp93H1ycW0KVYUpyNot
-         d+Vg==
-X-Gm-Message-State: ANhLgQ3ZBGjC3CMQZRrV63OjFrwm1uwDXIjT54tiQ1k/o5ZwcYgQWNQj
-        q3/mWv3SLm5tM6eL5NbIt9Q=
-X-Google-Smtp-Source: ADFU+vsT7jEftmMyIkFi6InTDoQcYx/pXDz1dObMgQwcHj/ITyzMDqlO3CNcFOHP4By0rSwhidK8Pg==
-X-Received: by 2002:a2e:860e:: with SMTP id a14mr2934829lji.218.1584644658471;
-        Thu, 19 Mar 2020 12:04:18 -0700 (PDT)
+        bh=NCItyd8yjMwPtwwQd4zzBNEoARaFlEvxh+OiOGd8HtY=;
+        b=RIdNXd1IpOGJCJA0KvaxPXHQgwGx5jxI6H5Q30cYYwemwQ5k3qbc7tRlZfCBZiRZRw
+         4vij9Kjus7xopug/wuLTJ1WqIalSY0SSgugoFrHcvX96hhUr51v2PS/cg3qEM2GW9DTZ
+         8X6U+r3rIx2KfOPnY04fZNUdmChYMwx3TqCE0zkSwI8L2FoQgOHnFKfhM+j8QtG3eTTv
+         QJ2GZUWPNZo0U6WtqdaFb62zR7AdxoxVzOLdKScB+bsL30KjN1/UeQc3c0jb4HIS0RIx
+         KxuFoeg0yjafyanj5U2prPHzSbeMurBnLS6MurqUpZHxZHnxbDglOCRbrTd+RWdYcfG7
+         cf1Q==
+X-Gm-Message-State: ANhLgQ1dFS2PDrTgCFbuEDeFlOsdl9Nu33AKGmgXQUuDcvTuV5U85gIr
+        C+hKwyg/PZ4sXf9SJCp7BdM=
+X-Google-Smtp-Source: ADFU+vvxSPaWv4tBpO5i7RMaYY3eDnGk+xIwwnnb+6Co4FNBIO7VuuPcyNLUArribUaZTbJTOeXpZA==
+X-Received: by 2002:ac2:4552:: with SMTP id j18mr3054551lfm.89.1584644663187;
+        Thu, 19 Mar 2020 12:04:23 -0700 (PDT)
 Received: from localhost.localdomain (94-29-39-224.dynamic.spd-mgts.ru. [94.29.39.224])
-        by smtp.gmail.com with ESMTPSA id k14sm2025380lfg.96.2020.03.19.12.04.16
+        by smtp.gmail.com with ESMTPSA id k14sm2025380lfg.96.2020.03.19.12.04.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 12:04:17 -0700 (PDT)
+        Thu, 19 Mar 2020 12:04:22 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -72,9 +72,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         David Heidelberg <david@ixit.cz>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 08/12] dt-bindings: cpufreq: Add binding for NVIDIA Tegra20/30
-Date:   Thu, 19 Mar 2020 22:02:25 +0300
-Message-Id: <20200319190229.32200-9-digetx@gmail.com>
+Subject: [PATCH v8 11/12] ARM: dts: tegra30: beaver: Set up voltage regulators for DVFS
+Date:   Thu, 19 Mar 2020 22:02:28 +0300
+Message-Id: <20200319190229.32200-12-digetx@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200319190229.32200-1-digetx@gmail.com>
 References: <20200319190229.32200-1-digetx@gmail.com>
@@ -85,80 +85,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device-tree binding that describes CPU frequency-scaling hardware
-found on NVIDIA Tegra20/30 SoCs.
+Set min/max voltage and couple CPU/CORE regulators.
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
-Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../cpufreq/nvidia,tegra20-cpufreq.txt        | 56 +++++++++++++++++++
- 1 file changed, 56 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
+ arch/arm/boot/dts/tegra30-beaver.dts | 16 +++++++++++++---
+ 1 file changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-new file mode 100644
-index 000000000000..daeca6ae6b76
---- /dev/null
-+++ b/Documentation/devicetree/bindings/cpufreq/nvidia,tegra20-cpufreq.txt
-@@ -0,0 +1,56 @@
-+Binding for NVIDIA Tegra20 CPUFreq
-+==================================
+diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
+index 45ef6002b225..a143cac22340 100644
+--- a/arch/arm/boot/dts/tegra30-beaver.dts
++++ b/arch/arm/boot/dts/tegra30-beaver.dts
+@@ -1806,9 +1806,14 @@ vdd2_reg: vdd2 {
+ 
+ 				vddctrl_reg: vddctrl {
+ 					regulator-name = "vdd_cpu,vdd_sys";
+-					regulator-min-microvolt = <1000000>;
+-					regulator-max-microvolt = <1000000>;
++					regulator-min-microvolt = <800000>;
++					regulator-max-microvolt = <1250000>;
++					regulator-coupled-with = <&core_vdd_reg>;
++					regulator-coupled-max-spread = <300000>;
++					regulator-max-step-microvolt = <100000>;
+ 					regulator-always-on;
 +
-+Required properties:
-+- clocks: Must contain an entry for the CPU clock.
-+  See ../clocks/clock-bindings.txt for details.
-+- operating-points-v2: See ../bindings/opp/opp.txt for details.
-+- #cooling-cells: Should be 2. See ../thermal/thermal.txt for details.
++					nvidia,tegra-cpu-regulator;
+ 				};
+ 
+ 				vio_reg: vio {
+@@ -1868,17 +1873,22 @@ ldo8_reg: ldo8 {
+ 			};
+ 		};
+ 
+-		tps62361@60 {
++		core_vdd_reg: tps62361@60 {
+ 			compatible = "ti,tps62361";
+ 			reg = <0x60>;
+ 
+ 			regulator-name = "tps62361-vout";
+ 			regulator-min-microvolt = <500000>;
+ 			regulator-max-microvolt = <1500000>;
++			regulator-coupled-with = <&vddctrl_reg>;
++			regulator-coupled-max-spread = <300000>;
++			regulator-max-step-microvolt = <100000>;
+ 			regulator-boot-on;
+ 			regulator-always-on;
+ 			ti,vsel0-state-high;
+ 			ti,vsel1-state-high;
 +
-+For each opp entry in 'operating-points-v2' table:
-+- opp-supported-hw: Two bitfields indicating:
-+	On Tegra20:
-+	1. CPU process ID mask
-+	2. SoC speedo ID mask
-+
-+	On Tegra30:
-+	1. CPU process ID mask
-+	2. CPU speedo ID mask
-+
-+	A bitwise AND is performed against these values and if any bit
-+	matches, the OPP gets enabled.
-+
-+- opp-microvolt: CPU voltage triplet.
-+
-+Optional properties:
-+- cpu-supply: Phandle to the CPU power supply.
-+
-+Example:
-+	regulators {
-+		cpu_reg: regulator0 {
-+			regulator-name = "vdd_cpu";
-+		};
-+	};
-+
-+	cpu0_opp_table: opp_table0 {
-+		compatible = "operating-points-v2";
-+
-+		opp@456000000 {
-+			clock-latency-ns = <125000>;
-+			opp-microvolt = <825000 825000 1125000>;
-+			opp-supported-hw = <0x03 0x0001>;
-+			opp-hz = /bits/ 64 <456000000>;
-+		};
-+
-+		...
-+	};
-+
-+	cpus {
-+		cpu@0 {
-+			compatible = "arm,cortex-a9";
-+			clocks = <&tegra_car TEGRA20_CLK_CCLK>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+			cpu-supply = <&cpu_reg>;
-+			#cooling-cells = <2>;
-+		};
-+	};
++			nvidia,tegra-core-regulator;
+ 		};
+ 	};
+ 
 -- 
 2.25.1
 
