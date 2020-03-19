@@ -8,53 +8,53 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35D88C4332E
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57B87C4332D
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 02B5220774
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3226520663
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="La/uSPx8"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RY2paf91"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727803AbgCSTE2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Mar 2020 15:04:28 -0400
-Received: from mail-lf1-f65.google.com ([209.85.167.65]:35735 "EHLO
-        mail-lf1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727605AbgCSTE2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:04:28 -0400
-Received: by mail-lf1-f65.google.com with SMTP id m15so2585204lfp.2;
-        Thu, 19 Mar 2020 12:04:25 -0700 (PDT)
+        id S1727743AbgCSTE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Mar 2020 15:04:26 -0400
+Received: from mail-lj1-f194.google.com ([209.85.208.194]:36155 "EHLO
+        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727634AbgCSTET (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:04:19 -0400
+Received: by mail-lj1-f194.google.com with SMTP id g12so3798190ljj.3;
+        Thu, 19 Mar 2020 12:04:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=FzD7KM1adJ8Gdad+SjbdNnB2giwK8d8O4lhpA1iChjI=;
-        b=La/uSPx8FTVei4FU1VbWMVxuNbaBvJfMTXeORDKylSu+QXDz+dxViJJlI31XLVT5fl
-         KADAGdkDgWWfN63q0601+IsmlJVBm4EHCl4LWxvjMiOf255nzjLer+RTZqMkhVzSe0rM
-         Q0sMbTnR6J+HgVFsZOYnjh+4FApTXfv0TxEqfTLQRg72QMPTrWcSpoZxdp2g8SkxFxs+
-         dLKBK4l0yEs7mnnMHD07skmYV9KkeYkvJjmLun/S1cWMHO+dPSK+yDD01dVeQQOrn/84
-         tnrh/Kws8GJU+XW2RSWWpqwa/Itc5fa0fkbV10PDe21uUPITgwmZqCJ3jnQrf3XAySqP
-         m0Qw==
+        bh=xuQCFAUGgCNgfRWuRofqyV6Hacg6YekuN6dbxQCNP6M=;
+        b=RY2paf91r5jWzSsQNP0zg+H0SLHwnzcSyzLAd6c0M+q22ayiEhFdHhwEH6NgeZaIoo
+         lm7T7ath6xuVnESAC8jjH9rQCs52R70pEXBGdgstnEWQePXZo359EqVl+VL94Jc2zfNP
+         pFfFbPBeUZIA3DU/RxsfgqwnKMFT2Zeg9jYrMWsWjsUzLgHI5jmc4b1wAwOQwTp2x5YU
+         YnWTziG6x5/aTumOvNYJbvOgn1PsObQaOxcSucSxWPUiKxdvL49vzeyQPJqwhC7+UU2w
+         hUqIx1ns5LkZLkmXWWMooozHfUZi+ibu1hBEh+EmfbZ3+Fjo/f3ikxxyJDIwn24LDjvq
+         sBDg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=FzD7KM1adJ8Gdad+SjbdNnB2giwK8d8O4lhpA1iChjI=;
-        b=X9MMtvrhf7ElfqQipc/TAcQaw9SHQUUcHvJNKt5cVhmAYir6jRQ57j20LWXQiLz/Tu
-         4xh8xSG1nGIkrRoFbAxi//UgBEO5X1tpDyMPS97oMdGPoKnYZc0Dc/Hyrh4cxmhaBVBQ
-         xODKCKgDV1xwjKbvV8MFw73OcS8UbVXSLxBWBOzbxjLJDp0cgVbkbJ0cH1EEOr8hXy+n
-         XdP8inDcZLICnkMp3d1bzzWJPPpJgv605MmmajS/wgG7INJMMVefA/O24dv44oHj4FhO
-         2bTYPXS3OHvGpVo9TLjGtBF7qWbJDSXqXaTzEfpc5sPOidoKkXp7qAnL3S7UsNHIYh4t
-         kjuA==
-X-Gm-Message-State: ANhLgQ0LDqDBMI5dYhZJyF/x0FjVO454urARoIHxQ8sk3v4XqV35Al5W
-        JbreBYcRcml/Px5zyLTxXpI=
-X-Google-Smtp-Source: ADFU+vvXgwoXHt8F4Hhxl+v/+A9sCmOkV1/dC6+JllXYIW1tUhx3W7HUxzuvar+MVCBV61kah2kmcA==
-X-Received: by 2002:a05:6512:68b:: with SMTP id t11mr3063580lfe.214.1584644664509;
-        Thu, 19 Mar 2020 12:04:24 -0700 (PDT)
+        bh=xuQCFAUGgCNgfRWuRofqyV6Hacg6YekuN6dbxQCNP6M=;
+        b=blDl6PVVEaWXO44i7giNqBSKBABfIdj/Y/3JV+RV8HhFHsDB5QCyXdCxmVycFnJ5HQ
+         Beh/hRYhEnR+EzFTk2YsBQz2d2MxloRQtE8t3BtsTQ1wbxUnC+IOFKQ6RB4T0EUzAe04
+         2Be0ROIxc8v7vgpK9VZ2ZhscZ7LIYI5eI1QjvvuflPbu2Z+GeGNlVlgTZNz5M+GwfWLb
+         5OJ67i7Tpm6wbIXngTL0WRcj5VniNM+l2UyhysVBKwrA5xkHPDgWtfAhI9h6E79SsMQr
+         D2z65wfIB5zXI1W91GOJOv/ckfmeGEEJGNmvPEBmIsN8ZdaZFSWqr+DN4K0cAiTo7WWd
+         Prsg==
+X-Gm-Message-State: ANhLgQ2D+bIGcmIGU2JWZxaiL57SA0DwxYDJHaESu/9IxUPLNlgMth8U
+        1lhFSah+f7P7gPMfJFb9pi0=
+X-Google-Smtp-Source: ADFU+vuAcWsH2NpVCmk1A29yzI5t9CR3MACNcvLowJJ5OPnvquLwIHYssOw/2X3SNkhRKIDFN3uADQ==
+X-Received: by 2002:a05:651c:2007:: with SMTP id s7mr3146298ljo.214.1584644656425;
+        Thu, 19 Mar 2020 12:04:16 -0700 (PDT)
 Received: from localhost.localdomain (94-29-39-224.dynamic.spd-mgts.ru. [94.29.39.224])
-        by smtp.gmail.com with ESMTPSA id k14sm2025380lfg.96.2020.03.19.12.04.23
+        by smtp.gmail.com with ESMTPSA id k14sm2025380lfg.96.2020.03.19.12.04.14
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 12:04:23 -0700 (PDT)
+        Thu, 19 Mar 2020 12:04:15 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -72,9 +72,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         David Heidelberg <david@ixit.cz>
 Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 12/12] ARM: dts: tegra30: beaver: Add CPU Operating Performance Points
-Date:   Thu, 19 Mar 2020 22:02:29 +0300
-Message-Id: <20200319190229.32200-13-digetx@gmail.com>
+Subject: [PATCH v8 07/12] ARM: tegra: Don't enable PLLX while resuming from LP1 on Tegra30
+Date:   Thu, 19 Mar 2020 22:02:24 +0300
+Message-Id: <20200319190229.32200-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200319190229.32200-1-digetx@gmail.com>
 References: <20200319190229.32200-1-digetx@gmail.com>
@@ -85,53 +85,55 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Utilize common Tegra30 CPU OPP table. CPU DVFS is available now on beaver.
+PLLX may be kept disabled if cpufreq driver selects some other clock for
+CPU. In that case PLLX will be disabled later in the resume path by the
+CLK driver, which also can enable PLLX if necessary by itself. Thus there
+is no need to enable PLLX early during resume. Tegra114/124 CLK drivers do
+not manage PLLX on resume and thus they are left untouched by this patch.
 
+Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Tested-by: Marcel Ziswiler <marcel@ziswiler.com>
+Tested-by: Jasper Korten <jja2000@gmail.com>
+Tested-by: David Heidelberg <david@ixit.cz>
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- arch/arm/boot/dts/tegra30-beaver.dts | 24 ++++++++++++++++++++++++
- 1 file changed, 24 insertions(+)
+ arch/arm/mach-tegra/sleep-tegra30.S | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra30-beaver.dts b/arch/arm/boot/dts/tegra30-beaver.dts
-index a143cac22340..6b6fd8a8058f 100644
---- a/arch/arm/boot/dts/tegra30-beaver.dts
-+++ b/arch/arm/boot/dts/tegra30-beaver.dts
-@@ -2,6 +2,8 @@
- /dts-v1/;
+diff --git a/arch/arm/mach-tegra/sleep-tegra30.S b/arch/arm/mach-tegra/sleep-tegra30.S
+index 9942265ed650..2667bcdb5dc6 100644
+--- a/arch/arm/mach-tegra/sleep-tegra30.S
++++ b/arch/arm/mach-tegra/sleep-tegra30.S
+@@ -361,7 +361,6 @@ _no_pll_iddq_exit:
  
- #include "tegra30.dtsi"
-+#include "tegra30-cpu-opp.dtsi"
-+#include "tegra30-cpu-opp-microvolt.dtsi"
+ 	pll_enable r1, r0, CLK_RESET_PLLM_BASE, CLK_RESET_PLLM_MISC
+ 	pll_enable r1, r0, CLK_RESET_PLLC_BASE, CLK_RESET_PLLC_MISC
+-	pll_enable r1, r0, CLK_RESET_PLLX_BASE, CLK_RESET_PLLX_MISC
  
- / {
- 	model = "NVIDIA Tegra30 Beaver evaluation board";
-@@ -2130,4 +2132,26 @@ sound {
- 		assigned-clock-parents = <&tegra_car TEGRA30_CLK_PLL_A_OUT0>,
- 					 <&tegra_car TEGRA30_CLK_EXTERN1>;
- 	};
+ _pll_m_c_x_done:
+ 	pll_enable r1, r0, CLK_RESET_PLLP_BASE, CLK_RESET_PLLP_MISC
+@@ -371,12 +370,18 @@ _pll_m_c_x_done:
+ 	pll_locked r1, r0, CLK_RESET_PLLP_BASE
+ 	pll_locked r1, r0, CLK_RESET_PLLA_BASE
+ 	pll_locked r1, r0, CLK_RESET_PLLC_BASE
+-	pll_locked r1, r0, CLK_RESET_PLLX_BASE
+ 
++	/*
++	 * CPUFreq driver could select other PLL for CPU. PLLX will be
++	 * enabled by the Tegra30 CLK driver on an as-needed basis, see
++	 * tegra30_cpu_clock_resume().
++	 */
+ 	tegra_get_soc_id TEGRA_APB_MISC_BASE, r1
+ 	cmp	r1, #TEGRA30
+ 	beq	1f
+ 
++	pll_locked r1, r0, CLK_RESET_PLLX_BASE
 +
-+	cpus {
-+		cpu0: cpu@0 {
-+			cpu-supply = <&vddctrl_reg>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+
-+		cpu@1 {
-+			cpu-supply = <&vddctrl_reg>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+
-+		cpu@2 {
-+			cpu-supply = <&vddctrl_reg>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+
-+		cpu@3 {
-+			cpu-supply = <&vddctrl_reg>;
-+			operating-points-v2 = <&cpu0_opp_table>;
-+		};
-+	};
- };
+ 	ldr	r1, [r0, #CLK_RESET_PLLP_BASE]
+ 	bic	r1, r1, #(1<<31)	@ disable PllP bypass
+ 	str	r1, [r0, #CLK_RESET_PLLP_BASE]
 -- 
 2.25.1
 
