@@ -2,134 +2,128 @@ Return-Path: <SRS0=+X/1=5E=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D349C4332B
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:12:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2493C4332E
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:56:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3269520663
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:12:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C517720767
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:56:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=embeddedor.com header.i=@embeddedor.com header.b="QwtrUKuo"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="n2qP4Xqt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726589AbgCSTMm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Mar 2020 15:12:42 -0400
-Received: from gateway20.websitewelcome.com ([192.185.51.6]:32953 "EHLO
-        gateway20.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725787AbgCSTMm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:12:42 -0400
-X-Greylist: delayed 1370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2020 15:12:41 EDT
-Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
-        by gateway20.websitewelcome.com (Postfix) with ESMTP id 1EC53400FF475
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 12:33:12 -0500 (CDT)
-Received: from gator4166.hostgator.com ([108.167.133.22])
-        by cmsmtp with SMTP
-        id F0DgjvLhs1s2xF0Dgjdkas; Thu, 19 Mar 2020 13:48:40 -0500
-X-Authority-Reason: nr=8
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=embeddedor.com; s=default; h=Content-Type:MIME-Version:Message-ID:Subject:
-        Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
-        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-        :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
-        List-Subscribe:List-Post:List-Owner:List-Archive;
-        bh=salDAP8ehHVtnoEEty5Lr7QuUQoBYqHUOZ9uNY3e1ZY=; b=QwtrUKuoVfkrES4TwRleFDy94M
-        aJ+tp9jr48joTJd7HG7UVcgVKan0i4lpwYXgJwGeGTcQ7OjColOH7y4UmQ+M0fqY+hFAHnxI21cZF
-        fe6Gn/BrMbtq/RjHIeKxorufNWKHE0psCAHvzo7E56VvIYal0JmyFttYgsMe0cON2FMNnY2kfW6tD
-        MvyKLNrso7A20RyREcX1ug3bbdBHhalPL3iYaGdmrjLWF+Emwp6jI+sHeqkXQbqfYGWU3ZAueTJSJ
-        PWlrePfL66XsmFAF6sDHlHIVYVDCGpCykzuVwpuPmRKvdo3UuUYtiYZ23qVgGgdEch0QnGghSc85M
-        qOasqU0w==;
-Received: from cablelink-189-218-116-241.hosts.intercable.net ([189.218.116.241]:51748 helo=embeddedor)
-        by gator4166.hostgator.com with esmtpa (Exim 4.92)
-        (envelope-from <gustavo@embeddedor.com>)
-        id 1jF0De-000G3A-Om; Thu, 19 Mar 2020 13:48:38 -0500
-Date:   Thu, 19 Mar 2020 13:48:38 -0500
-From:   "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: [PATCH] thermal: qcom: tsens.h: Replace zero-length array with
- flexible-array member
-Message-ID: <20200319184838.GA25767@embeddedor.com>
+        id S1727297AbgCST4a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Mar 2020 15:56:30 -0400
+Received: from mail-vk1-f195.google.com ([209.85.221.195]:34427 "EHLO
+        mail-vk1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725817AbgCST4a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:56:30 -0400
+Received: by mail-vk1-f195.google.com with SMTP id c8so1115657vkn.1
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 12:56:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=DLBNTBHIjEyXTiw55gKa/omvhkGIw8WPWOA9rE0GXXs=;
+        b=n2qP4XqtmbRkwTffuQFwXJ8Kyni1t5QKf1wQ8bKFluTixABW8LclzLmeroCG6blV/l
+         awphaC3e1tqOhhxG8oIRoFCgEHirN44udIlHn+jv7e/H0fLrNxw2T9El9mTkJTlcv2RH
+         kaN8TRp+3RuLDIfeopbdNQOj1rMzW0u0soesEQnHj/Q2gMVVlWsC6l51kX3+W5spG3/M
+         tSNiUojk//lSCskPzJvYQXr6JAidCMkL64aYox05L2ttTMQf7wFZIVJiuVZHwgdFPkWJ
+         5sFDbFx/h68TUjJujkzCTnqXHGiDDOZe0V5D/GioJ4LrIYoyAsPTvsoQLMLVns2QxzHQ
+         /L5g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=DLBNTBHIjEyXTiw55gKa/omvhkGIw8WPWOA9rE0GXXs=;
+        b=LXzZ6zMFBdWz50Z2Zf4csgt5+SSB+nSqnvva7bYDTfvRWjChrJadu4RDDelVI03qRt
+         H689ApCqorDYfqTSQnb6RfsZ9uY+cwTSEX5oQh6XKvTX3hDPqo/vr3fkeKDy93Y3YYqK
+         cbD6OD7kJiqjoMuBXdWM3J72c/NiYc7lIzQMy59f8+fux7Ss8Iih/9gjd/E3HO9N1qJn
+         ZHRzOGXIALEvmglwcwT2u6TfFalLJOIsgArTkjTbefj94Xsq57rTF9ICL6h5XTzzk+ad
+         fVwtOMWpR12xIEGQF86V5mnjeJF2qtBJmNyzCNHQKc8ff5GV0b3SIx3AqZaiOMkUVz3c
+         6Rag==
+X-Gm-Message-State: ANhLgQ0xhW+B9Z5169ejUMnVEho58NJ4x9mC8VEi6O/T9P/nWb70hC+X
+        0D6/Vq0F6Pf27mF2EoZiwn5d1wGqHpQsVXAvKYaneg==
+X-Google-Smtp-Source: ADFU+vsaENDE48G+5hFTrdcp8SdOg6jmNmlEKUXleLosv38MNvy4urf9d4m7YrrZOIG7TGgcaOW4KO2DKYZxBmH4lSc=
+X-Received: by 2002:a1f:e004:: with SMTP id x4mr3982623vkg.79.1584647781469;
+ Thu, 19 Mar 2020 12:56:21 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - embeddedor.com
-X-BWhitelist: no
-X-Source-IP: 189.218.116.241
-X-Source-L: No
-X-Exim-ID: 1jF0De-000G3A-Om
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
-X-Source-Sender: cablelink-189-218-116-241.hosts.intercable.net (embeddedor) [189.218.116.241]:51748
-X-Source-Auth: gustavo@embeddedor.com
-X-Email-Count: 7
-X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
-X-Local-Domain: yes
+References: <20200319184838.GA25767@embeddedor.com>
+In-Reply-To: <20200319184838.GA25767@embeddedor.com>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Fri, 20 Mar 2020 01:26:10 +0530
+Message-ID: <CAHLCerN0itdrifCGr95aynjYGOmH9EiJbR+7QCGN174aRTELZA@mail.gmail.com>
+Subject: Re: [PATCH] thermal: qcom: tsens.h: Replace zero-length array with
+ flexible-array member
+To:     "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The current codebase makes use of the zero-length array language
-extension to the C90 standard, but the preferred mechanism to declare
-variable-length types such as these ones is a flexible array member[1][2],
-introduced in C99:
+On Fri, Mar 20, 2020 at 12:18 AM Gustavo A. R. Silva
+<gustavo@embeddedor.com> wrote:
+>
+> The current codebase makes use of the zero-length array language
+> extension to the C90 standard, but the preferred mechanism to declare
+> variable-length types such as these ones is a flexible array member[1][2],
+> introduced in C99:
+>
+> struct foo {
+>         int stuff;
+>         struct boo array[];
+> };
+>
+> By making use of the mechanism above, we will get a compiler warning
+> in case the flexible array does not occur last in the structure, which
+> will help us prevent some kind of undefined behavior bugs from being
+> inadvertently introduced[3] to the codebase from now on.
+>
+> Also, notice that, dynamic memory allocations won't be affected by
+> this change:
+>
+> "Flexible array members have incomplete type, and so the sizeof operator
+> may not be applied. As a quirk of the original implementation of
+> zero-length arrays, sizeof evaluates to zero."[1]
+>
+> This issue was found with the help of Coccinelle.
+>
+> [1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+> [2] https://github.com/KSPP/linux/issues/21
+> [3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+>
+> Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 
-struct foo {
-        int stuff;
-        struct boo array[];
-};
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-By making use of the mechanism above, we will get a compiler warning
-in case the flexible array does not occur last in the structure, which
-will help us prevent some kind of undefined behavior bugs from being
-inadvertently introduced[3] to the codebase from now on.
-
-Also, notice that, dynamic memory allocations won't be affected by
-this change:
-
-"Flexible array members have incomplete type, and so the sizeof operator
-may not be applied. As a quirk of the original implementation of
-zero-length arrays, sizeof evaluates to zero."[1]
-
-This issue was found with the help of Coccinelle.
-
-[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
-[2] https://github.com/KSPP/linux/issues/21
-[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
-
-Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
----
- drivers/thermal/qcom/tsens.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
-index e24a865fbc34..92503712596a 100644
---- a/drivers/thermal/qcom/tsens.h
-+++ b/drivers/thermal/qcom/tsens.h
-@@ -488,7 +488,7 @@ struct tsens_priv {
- 	struct dentry			*debug_root;
- 	struct dentry			*debug;
- 
--	struct tsens_sensor		sensor[0];
-+	struct tsens_sensor		sensor[];
- };
- 
- char *qfprom_read(struct device *dev, const char *cname);
--- 
-2.23.0
-
+> ---
+>  drivers/thermal/qcom/tsens.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+> index e24a865fbc34..92503712596a 100644
+> --- a/drivers/thermal/qcom/tsens.h
+> +++ b/drivers/thermal/qcom/tsens.h
+> @@ -488,7 +488,7 @@ struct tsens_priv {
+>         struct dentry                   *debug_root;
+>         struct dentry                   *debug;
+>
+> -       struct tsens_sensor             sensor[0];
+> +       struct tsens_sensor             sensor[];
+>  };
+>
+>  char *qfprom_read(struct device *dev, const char *cname);
+> --
+> 2.23.0
+>
