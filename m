@@ -2,180 +2,134 @@ Return-Path: <SRS0=+X/1=5E=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40669C4332B
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D349C4332B
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:12:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 14EF820663
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:04:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3269520663
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Mar 2020 19:12:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Jv1nnxbM"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=embeddedor.com header.i=@embeddedor.com header.b="QwtrUKuo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727540AbgCSTE4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Mar 2020 15:04:56 -0400
-Received: from mail-lj1-f194.google.com ([209.85.208.194]:40077 "EHLO
-        mail-lj1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726934AbgCSTEP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:04:15 -0400
-Received: by mail-lj1-f194.google.com with SMTP id 19so3760963ljj.7;
-        Thu, 19 Mar 2020 12:04:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YQCiOS4Pyn9ED/MgeohcKz78uGXYycVKqXoXcDIM5iY=;
-        b=Jv1nnxbM/OsQc82UxjrfUi2g2dHNGyoVgg5OkVxcxKfYIZbC5n+m32dkr4geTnRB/g
-         jbEpd6oauDLjEjdZ27p1373wdu8IJmdAjzbV+FV27TQ7AibA0FvX7fpM71X0rJ06+wzV
-         GDQgpf/qy/7QNO04+jvB83vVBpr47VmIaQqCAkaV36kfJUjpRmKNfUh8J71rHEnBLPUr
-         VgXcb/9386+NQlZKl+RbH33hlbPeprXV8spb4YTxYDKxQWaI2Ta9kpTlPsm+jPQPYiqz
-         Gxs9ukwLavsQWNQCiZkiVa0FSQlrYLni3lVGybYhH80dfLBCXyNUG1HqPWX2tLoPIw+/
-         Sr/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YQCiOS4Pyn9ED/MgeohcKz78uGXYycVKqXoXcDIM5iY=;
-        b=LZd8pwLBmgCR2u3Fq7PlLdDCZQKsYrOVMdQgtNyU6MrFWNCYCzsDnJSvLgf+ZzKvec
-         Ih1FYR/IDXklyP1eGaZ2EgXIQvMVN1hQv8vsb8IHATJJupQOhIZ05sKAIaKWi+9C5BE+
-         2ADgL/etDrPXsyGavA9y2u8sZU3sHJo3bKQY+rWc6I+VVtVZRGu7/8T0NZyJxfFTyaek
-         wn7vOGhjD9NEavKeMuGtVf3BZ3CUH9F2Y7QFazTdBaZekvwPnhjaqhBvlrIBqQWMulj8
-         c80FoIYJP30c16j+v3ukTvd0vlTR7xFz5/BCBkm2VnmmcFU2lUCCxYjuQhZy8gX+nQK1
-         FYZQ==
-X-Gm-Message-State: ANhLgQ2GDZkdFZAAMhgDFIPlvDMSlUjESb3l1NOWuaDg9EVBfU+tiJWT
-        ik5iEEHv5ZrMg6Q/3+UhOvU=
-X-Google-Smtp-Source: ADFU+vtqJqyB9vPFtt9Xrh9pbzmrwmwrz/OOytKPu7fJKEQJa4/uVeXn4zJCxQGP+Vln8fAuCeKv5A==
-X-Received: by 2002:a2e:99d6:: with SMTP id l22mr2962336ljj.231.1584644650609;
-        Thu, 19 Mar 2020 12:04:10 -0700 (PDT)
-Received: from localhost.localdomain (94-29-39-224.dynamic.spd-mgts.ru. [94.29.39.224])
-        by smtp.gmail.com with ESMTPSA id k14sm2025380lfg.96.2020.03.19.12.04.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 12:04:10 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Prashant Gaikwad <pgaikwad@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Marcel Ziswiler <marcel.ziswiler@toradex.com>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
-        Jasper Korten <jja2000@gmail.com>,
-        David Heidelberg <david@ixit.cz>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v8 03/12] clk: tegra: cclk: Add helpers for handling PLLX rate changes
-Date:   Thu, 19 Mar 2020 22:02:20 +0300
-Message-Id: <20200319190229.32200-4-digetx@gmail.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200319190229.32200-1-digetx@gmail.com>
-References: <20200319190229.32200-1-digetx@gmail.com>
+        id S1726589AbgCSTMm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Mar 2020 15:12:42 -0400
+Received: from gateway20.websitewelcome.com ([192.185.51.6]:32953 "EHLO
+        gateway20.websitewelcome.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725787AbgCSTMm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 15:12:42 -0400
+X-Greylist: delayed 1370 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2020 15:12:41 EDT
+Received: from cm12.websitewelcome.com (cm12.websitewelcome.com [100.42.49.8])
+        by gateway20.websitewelcome.com (Postfix) with ESMTP id 1EC53400FF475
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 12:33:12 -0500 (CDT)
+Received: from gator4166.hostgator.com ([108.167.133.22])
+        by cmsmtp with SMTP
+        id F0DgjvLhs1s2xF0Dgjdkas; Thu, 19 Mar 2020 13:48:40 -0500
+X-Authority-Reason: nr=8
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=embeddedor.com; s=default; h=Content-Type:MIME-Version:Message-ID:Subject:
+        Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+        :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=salDAP8ehHVtnoEEty5Lr7QuUQoBYqHUOZ9uNY3e1ZY=; b=QwtrUKuoVfkrES4TwRleFDy94M
+        aJ+tp9jr48joTJd7HG7UVcgVKan0i4lpwYXgJwGeGTcQ7OjColOH7y4UmQ+M0fqY+hFAHnxI21cZF
+        fe6Gn/BrMbtq/RjHIeKxorufNWKHE0psCAHvzo7E56VvIYal0JmyFttYgsMe0cON2FMNnY2kfW6tD
+        MvyKLNrso7A20RyREcX1ug3bbdBHhalPL3iYaGdmrjLWF+Emwp6jI+sHeqkXQbqfYGWU3ZAueTJSJ
+        PWlrePfL66XsmFAF6sDHlHIVYVDCGpCykzuVwpuPmRKvdo3UuUYtiYZ23qVgGgdEch0QnGghSc85M
+        qOasqU0w==;
+Received: from cablelink-189-218-116-241.hosts.intercable.net ([189.218.116.241]:51748 helo=embeddedor)
+        by gator4166.hostgator.com with esmtpa (Exim 4.92)
+        (envelope-from <gustavo@embeddedor.com>)
+        id 1jF0De-000G3A-Om; Thu, 19 Mar 2020 13:48:38 -0500
+Date:   Thu, 19 Mar 2020 13:48:38 -0500
+From:   "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        "Gustavo A. R. Silva" <gustavo@embeddedor.com>
+Subject: [PATCH] thermal: qcom: tsens.h: Replace zero-length array with
+ flexible-array member
+Message-ID: <20200319184838.GA25767@embeddedor.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.9.4 (2018-02-28)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - gator4166.hostgator.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - embeddedor.com
+X-BWhitelist: no
+X-Source-IP: 189.218.116.241
+X-Source-L: No
+X-Exim-ID: 1jF0De-000G3A-Om
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
+X-Source-Sender: cablelink-189-218-116-241.hosts.intercable.net (embeddedor) [189.218.116.241]:51748
+X-Source-Auth: gustavo@embeddedor.com
+X-Email-Count: 7
+X-Source-Cap: Z3V6aWRpbmU7Z3V6aWRpbmU7Z2F0b3I0MTY2Lmhvc3RnYXRvci5jb20=
+X-Local-Domain: yes
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CCLK should be re-parented away from PLLX if PLLX's rate is changing.
-The PLLP parent is a common safe CPU parent for all Tegra SoCs, thus
-CCLK will be re-parented to PLLP before PLLX rate-change begins and then
-switched back to PLLX after the rate-change completion. This patch adds
-helper functions which perform CCLK re-parenting, these helpers will be
-utilized by further patches.
+The current codebase makes use of the zero-length array language
+extension to the C90 standard, but the preferred mechanism to declare
+variable-length types such as these ones is a flexible array member[1][2],
+introduced in C99:
 
-Acked-by: Peter De Schrijver <pdeschrijver@nvidia.com>
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Tested-by: Marcel Ziswiler <marcel@ziswiler.com>
-Tested-by: Jasper Korten <jja2000@gmail.com>
-Tested-by: David Heidelberg <david@ixit.cz>
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+struct foo {
+        int stuff;
+        struct boo array[];
+};
+
+By making use of the mechanism above, we will get a compiler warning
+in case the flexible array does not occur last in the structure, which
+will help us prevent some kind of undefined behavior bugs from being
+inadvertently introduced[3] to the codebase from now on.
+
+Also, notice that, dynamic memory allocations won't be affected by
+this change:
+
+"Flexible array members have incomplete type, and so the sizeof operator
+may not be applied. As a quirk of the original implementation of
+zero-length arrays, sizeof evaluates to zero."[1]
+
+This issue was found with the help of Coccinelle.
+
+[1] https://gcc.gnu.org/onlinedocs/gcc/Zero-Length.html
+[2] https://github.com/KSPP/linux/issues/21
+[3] commit 76497732932f ("cxgb3/l2t: Fix undefined behaviour")
+
+Signed-off-by: Gustavo A. R. Silva <gustavo@embeddedor.com>
 ---
- drivers/clk/tegra/clk-tegra-super-cclk.c | 34 ++++++++++++++++++++++++
- drivers/clk/tegra/clk.h                  |  2 ++
- 2 files changed, 36 insertions(+)
+ drivers/thermal/qcom/tsens.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/clk/tegra/clk-tegra-super-cclk.c b/drivers/clk/tegra/clk-tegra-super-cclk.c
-index 7bcb9e8d0860..a03119c30456 100644
---- a/drivers/clk/tegra/clk-tegra-super-cclk.c
-+++ b/drivers/clk/tegra/clk-tegra-super-cclk.c
-@@ -25,6 +25,9 @@
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index e24a865fbc34..92503712596a 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -488,7 +488,7 @@ struct tsens_priv {
+ 	struct dentry			*debug_root;
+ 	struct dentry			*debug;
  
- #define SUPER_CDIV_ENB		BIT(31)
+-	struct tsens_sensor		sensor[0];
++	struct tsens_sensor		sensor[];
+ };
  
-+static struct tegra_clk_super_mux *cclk_super;
-+static bool cclk_on_pllx;
-+
- static u8 cclk_super_get_parent(struct clk_hw *hw)
- {
- 	return tegra_clk_super_ops.get_parent(hw);
-@@ -115,6 +118,9 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 	struct clk_init_data init;
- 	u32 val;
- 
-+	if (WARN_ON(cclk_super))
-+		return ERR_PTR(-EBUSY);
-+
- 	super = kzalloc(sizeof(*super), GFP_KERNEL);
- 	if (!super)
- 		return ERR_PTR(-ENOMEM);
-@@ -173,6 +179,34 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 	clk = clk_register(NULL, &super->hw);
- 	if (IS_ERR(clk))
- 		kfree(super);
-+	else
-+		cclk_super = super;
- 
- 	return clk;
- }
-+
-+int tegra_cclk_pre_pllx_rate_change(void)
-+{
-+	if (IS_ERR_OR_NULL(cclk_super))
-+		return -EINVAL;
-+
-+	if (cclk_super_get_parent(&cclk_super->hw) == PLLX_INDEX)
-+		cclk_on_pllx = true;
-+	else
-+		cclk_on_pllx = false;
-+
-+	/*
-+	 * CPU needs to be temporarily re-parented away from PLLX if PLLX
-+	 * changes its rate. PLLP is a safe parent for CPU on all Tegra SoCs.
-+	 */
-+	if (cclk_on_pllx)
-+		cclk_super_set_parent(&cclk_super->hw, PLLP_INDEX);
-+
-+	return 0;
-+}
-+
-+void tegra_cclk_post_pllx_rate_change(void)
-+{
-+	if (cclk_on_pllx)
-+		cclk_super_set_parent(&cclk_super->hw, PLLX_INDEX);
-+}
-diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
-index e67c19eadb19..8ca215955bfa 100644
---- a/drivers/clk/tegra/clk.h
-+++ b/drivers/clk/tegra/clk.h
-@@ -771,6 +771,8 @@ struct clk *tegra_clk_register_super_cclk(const char *name,
- 		const char * const *parent_names, u8 num_parents,
- 		unsigned long flags, void __iomem *reg, u8 clk_super_flags,
- 		spinlock_t *lock);
-+int tegra_cclk_pre_pllx_rate_change(void);
-+void tegra_cclk_post_pllx_rate_change(void);
- 
- /**
-  * struct tegra_sdmmc_mux - switch divider with Low Jitter inputs for SDMMC
+ char *qfprom_read(struct device *dev, const char *cname);
 -- 
-2.25.1
+2.23.0
 
