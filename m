@@ -2,364 +2,214 @@ Return-Path: <SRS0=cFiq=5F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64CD1C4332E
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:42:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90617C4332D
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 02:46:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 2F24D2076C
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:42:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 560E220754
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 02:46:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pdylMiGC"
+	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="AIajsIg1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727299AbgCTBmV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Mar 2020 21:42:21 -0400
-Received: from mail-qt1-f193.google.com ([209.85.160.193]:34512 "EHLO
-        mail-qt1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727377AbgCTBlQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 21:41:16 -0400
-Received: by mail-qt1-f193.google.com with SMTP id 10so3738690qtp.1
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 18:41:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+q0Whneakoia71PzXBgxmZbnd+3OHmL7DK4XuhtZbsg=;
-        b=pdylMiGCq/devMh7m0Gj/CfkrdfdovRUED2arwHY3YZmdpuvoVo3Av7s+j6jPkG+86
-         giK4uCy+sHNGWyauJenzGi+z3wGZuAJ8bcKNnnQoJaclnCHVJIaMwGITOZBlWreZunkV
-         6Pwe6IkgjqlmEI/oy3VNeWVWWmF13j3Pu1fg7UqHLcM7/tu3pkFvJRFX04E9hSh9ndGP
-         Huls/g/UqdMz9EVRmzY51A+1AFhjsJ6HvCCXfHx8Y+Nky5il561TTptdGjt7CeNCM/Bc
-         Zv+EOnCfsGEOYxgEht3LDDBdHzZU6a31d6ChNYnfTp9zFedJb+nrl7SG3LTXVdPBQHJK
-         L0rw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+q0Whneakoia71PzXBgxmZbnd+3OHmL7DK4XuhtZbsg=;
-        b=jsequ0QOT+Vlcyv348g4kazrSUCKny0BP4kZxd8+R8QMtEtLakKWPJmw5JFLGufVVV
-         QlgbvKVAHGOXNgrsDIEgdFfitZwz5136qOJ6MqsDsBbOblDEdPi9bkzCjC/tJ8v6GPI9
-         0XU54P1jrNv2v9bccxB1ROJFO+kmZcyBCd2UbthJ9oM64Y4/a30EKFQtVhPX2WH+JXch
-         cghHYtYu7+e4EZNiR0Ood/H+1UIjDwX7euf80bMKmPmhF7zSlxAxVpzr3gdKuEarnw8Y
-         TIaMq/fFZ+iB1fCsDyyyXeC3g0z4PglG1EZUCm2GDycmK3CTimypqkx969d9iofQjVEv
-         1mkA==
-X-Gm-Message-State: ANhLgQ1gGragW1uzDWevqDAES6ud0xy68rlThi0CG0aDczF+DSqCmAFL
-        Lblue6g2oCN0929ZvfNslQxeFw==
-X-Google-Smtp-Source: ADFU+vvV3I4YxVq1xAymPLnOWFCy9dHEri/NXuJUV5hlLXACtlePaJg5MOBUPU7k00uY22SlISNjIQ==
-X-Received: by 2002:ac8:3f62:: with SMTP id w31mr5859372qtk.171.1584668473741;
-        Thu, 19 Mar 2020 18:41:13 -0700 (PDT)
-Received: from pop-os.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.googlemail.com with ESMTPSA id 2sm2706287qtp.33.2020.03.19.18.41.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 18:41:13 -0700 (PDT)
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-To:     rui.zhang@intel.com, ulf.hansson@linaro.org,
-        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
-        agross@kernel.org, robh@kernel.org
-Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
-        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [Patch v5 3/6] thermal: Add generic power domain warming device driver.
-Date:   Thu, 19 Mar 2020 21:41:04 -0400
-Message-Id: <20200320014107.26087-4-thara.gopinath@linaro.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200320014107.26087-1-thara.gopinath@linaro.org>
-References: <20200320014107.26087-1-thara.gopinath@linaro.org>
+        id S1726596AbgCTCqU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Mar 2020 22:46:20 -0400
+Received: from mx1.riseup.net ([198.252.153.129]:51986 "EHLO mx1.riseup.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725856AbgCTCqU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Mar 2020 22:46:20 -0400
+Received: from capuchin.riseup.net (unknown [10.0.1.176])
+        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+        (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
+        by mx1.riseup.net (Postfix) with ESMTPS id 48k7Sq4FSxzFdFq;
+        Thu, 19 Mar 2020 19:46:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
+        t=1584672379; bh=CVkasvIzn+5thv9quZ5c83PuBC12AWJxuBEDKD4gGI4=;
+        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+        b=AIajsIg1sy702R5E2B6yuPUT4SHfikEPpoeBP7jtouKZZaFWXGwv1NisVoxAzU65E
+         thdcx60p6XxtK5jq6kw8hW4cWakGPcPFGAvdA5yolsKsu0JUFcOd8H1PGF/UlRXJmA
+         3xCCuqnh6zF4zTi2r/09SHPmlvljzLrjU+6n48qg=
+X-Riseup-User-ID: C423D6455EADAB01BCED61C17DE3DE0E86927745834F2434DFDA7065D016F430
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+         by capuchin.riseup.net (Postfix) with ESMTPSA id 48k7Sp4VWBz8tq2;
+        Thu, 19 Mar 2020 19:46:18 -0700 (PDT)
+From:   Francisco Jerez <currojerez@riseup.net>
+To:     chris.p.wilson@intel.com, intel-gfx@lists.freedesktop.org,
+        linux-pm@vger.kernel.org
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Pandruvada\, Srinivas" <srinivas.pandruvada@intel.com>
+Subject: Re: [Intel-gfx] [PATCH 02/10] drm/i915: Adjust PM QoS response frequency based on GPU load.
+In-Reply-To: <87k13h78mk.fsf@riseup.net>
+References: <20200310214203.26459-1-currojerez@riseup.net> <20200310214203.26459-3-currojerez@riseup.net> <158387916218.28297.4489489879582782488@build.alporthouse.com> <87r1xzafwn.fsf@riseup.net> <87k13h78mk.fsf@riseup.net>
+Date:   Thu, 19 Mar 2020 19:46:19 -0700
+Message-ID: <874kuj68w4.fsf@riseup.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; boundary="==-=-=";
+        micalg=pgp-sha256; protocol="application/pgp-signature"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Resources modeled as power domains in linux kernel can  be used to warm the
-SoC(eg. mx power domain on sdm845).  To support this feature, introduce a
-generic power domain warming device driver that can be plugged into the
-thermal framework (The thermal framework itself requires further
-modifiction to support a warming device in place of a cooling device.
-Those extensions are not introduced in this patch series).
+--==-=-=
+Content-Type: multipart/mixed; boundary="=-=-="
 
-Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
----
+--=-=-=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-v3->v4:
-	- Removed late_init hook pd_warming_device_ops.
-	- Use of_genpd_add_device instead of pm_genpd_add_device to attach
-	  device to the generic power domain.
-	- Use thermal_of_cooling_device_parent_register to register the
-	  cooling device so that the device with genpd attached can be
-	  made parent of the cooling device.
-	- With above changes, remove reference to generic_pm_domain in
-	  pd_warming_device.
+Francisco Jerez <currojerez@riseup.net> writes:
 
-v4->v5:
-	- All the below changes are as per Ulf's review comments.
-	- Renamed pwr_domain_warming.c and pwr_domain_warming.h to
-	  pd_warming.c and pd_warming.h.
-	- Renamed pwr_domain_warming_register API to 
-	  of_pd_warming_register.
-	- Dropped in-param pd_name to of_pd_warming_register.
-	- Introduced ID allocator to uniquely identify each power domain
-	  warming device.
-	- Introduced pd_warming_release to handle device kfree for
-	  pd_warming_device.
-	- Introduced pm_genpd_remove_device in the error exit path
-	  of of_pd_warming_register.
+> Francisco Jerez <currojerez@riseup.net> writes:
+>
+>> Chris Wilson <chris@chris-wilson.co.uk> writes:
+>>
+>>> Quoting Francisco Jerez (2020-03-10 21:41:55)
+>>>> diff --git a/drivers/gpu/drm/i915/gt/intel_lrc.c b/drivers/gpu/drm/i91=
+5/gt/intel_lrc.c
+>>>> index b9b3f78f1324..a5d7a80b826d 100644
+>>>> --- a/drivers/gpu/drm/i915/gt/intel_lrc.c
+>>>> +++ b/drivers/gpu/drm/i915/gt/intel_lrc.c
+>>>> @@ -1577,6 +1577,11 @@ static void execlists_submit_ports(struct intel=
+_engine_cs *engine)
+>>>>         /* we need to manually load the submit queue */
+>>>>         if (execlists->ctrl_reg)
+>>>>                 writel(EL_CTRL_LOAD, execlists->ctrl_reg);
+>>>> +
+>>>> +       if (execlists_num_ports(execlists) > 1 &&
+>>> pending[1] is always defined, the minimum submission is one slot, with
+>>> pending[1] as the sentinel NULL.
+>>>
+>>>> +           execlists->pending[1] &&
+>>>> +           !atomic_xchg(&execlists->overload, 1))
+>>>> +               intel_gt_pm_active_begin(&engine->i915->gt);
+>>>
+>>> engine->gt
+>>>
+>>
+>> Applied your suggestions above locally, will probably wait to have a few
+>> more changes batched up before sending a v2.
+>>
+>>>>  }
+>>>>=20=20
+>>>>  static bool ctx_single_port_submission(const struct intel_context *ce)
+>>>> @@ -2213,6 +2218,12 @@ cancel_port_requests(struct intel_engine_execli=
+sts * const execlists)
+>>>>         clear_ports(execlists->inflight, ARRAY_SIZE(execlists->infligh=
+t));
+>>>>=20=20
+>>>>         WRITE_ONCE(execlists->active, execlists->inflight);
+>>>> +
+>>>> +       if (atomic_xchg(&execlists->overload, 0)) {
+>>>> +               struct intel_engine_cs *engine =3D
+>>>> +                       container_of(execlists, typeof(*engine), execl=
+ists);
+>>>> +               intel_gt_pm_active_end(&engine->i915->gt);
+>>>> +       }
+>>>>  }
+>>>>=20=20
+>>>>  static inline void
+>>>> @@ -2386,6 +2397,9 @@ static void process_csb(struct intel_engine_cs *=
+engine)
+>>>>                         /* port0 completed, advanced to port1 */
+>>>>                         trace_ports(execlists, "completed", execlists-=
+>active);
+>>>>=20=20
+>>>> +                       if (atomic_xchg(&execlists->overload, 0))
+>>>> +                               intel_gt_pm_active_end(&engine->i915->=
+gt);
+>>>
+>>> So this looses track if we preempt a dual-ELSP submission with a
+>>> single-ELSP submission (and never go back to dual).
+>>>
+>>
+>> Yes, good point.  You're right that if a dual-ELSP submission gets
+>> preempted by a single-ELSP submission "overload" will remain signaled
+>> until the first completion interrupt arrives (e.g. from the preempting
+>> submission).
+>>
+>>> If you move this to the end of the loop and check
+>>>
+>>> if (!execlists->active[1] && atomic_xchg(&execlists->overload, 0))
+>>> 	intel_gt_pm_active_end(engine->gt);
+>>>
+>>> so that it covers both preemption/promotion and completion.
+>>>
+>>
+>> That sounds reasonable.
+>>
+>>> However, that will fluctuate quite rapidly. (And runs the risk of
+>>> exceeding the sentinel.)
+>>>
+>>> An alternative approach would be to couple along
+>>> schedule_in/schedule_out
+>>>
+>>> atomic_set(overload, -1);
+>>>
+>>> __execlists_schedule_in:
+>>> 	if (!atomic_fetch_inc(overload)
+>>> 		intel_gt_pm_active_begin(engine->gt);
+>>> __execlists_schedule_out:
+>>> 	if (!atomic_dec_return(overload)
+>>> 		intel_gt_pm_active_end(engine->gt);
+>>>
+>>> which would mean we are overloaded as soon as we try to submit an
+>>> overlapping ELSP.
+>>>
+>>
+>> That sounds good to me too, and AFAICT would have roughly the same
+>> behavior as this metric except for the preemption corner case you
+>> mention above.  I'll try this and verify that I get approximately the
+>> same performance numbers.
+>>
+>
+> This suggestion seems to lead to some minor regressions, I'm
+> investigating the issue.  Will send a v2 as soon as I have something
+> along the lines of what you suggested running with equivalent
+> performance to v1.
 
- drivers/thermal/Kconfig      |  10 +++
- drivers/thermal/Makefile     |   2 +
- drivers/thermal/pd_warming.c | 168 +++++++++++++++++++++++++++++++++++
- include/linux/pd_warming.h   |  29 ++++++
- 4 files changed, 209 insertions(+)
- create mode 100644 drivers/thermal/pd_warming.c
- create mode 100644 include/linux/pd_warming.h
+I think I've figured out why both of the alternatives we were talking
+about above lead to a couple percent regressions in latency-sensitive
+workloads: In some scenarios it's possible for execlist_dequeue() to
+execute after the GPU has gone idle, but before we've processed the
+corresponding CSB entries, particularly when called from the
+submit_queue() path.  In that case __execlists_schedule_in() will think
+that the next request is overlapping, and tell CPU power management to
+relax, even though the GPU is starving intermittently.
 
-diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
-index 4d6753f2b18f..92522d541d0e 100644
---- a/drivers/thermal/Kconfig
-+++ b/drivers/thermal/Kconfig
-@@ -206,6 +206,16 @@ config DEVFREQ_THERMAL
- 
- 	  If you want this support, you should say Y here.
- 
-+config PWR_DOMAIN_WARMING_THERMAL
-+	bool "Power Domain based warming device"
-+	depends on PM_GENERIC_DOMAINS_OF
-+	help
-+	  This implements the generic power domain based warming
-+	  mechanism through increasing the performance state of
-+	  a power domain.
-+
-+	  If you want this support, you should say Y here.
-+
- config THERMAL_EMULATION
- 	bool "Thermal emulation mode support"
- 	help
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 8c8ed7b79915..7db87a779126 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -28,6 +28,8 @@ thermal_sys-$(CONFIG_CLOCK_THERMAL)	+= clock_cooling.o
- # devfreq cooling
- thermal_sys-$(CONFIG_DEVFREQ_THERMAL) += devfreq_cooling.o
- 
-+thermal_sys-$(CONFIG_PWR_DOMAIN_WARMING_THERMAL)	+= pd_warming.o
-+
- # platform thermal drivers
- obj-y				+= broadcom/
- obj-$(CONFIG_THERMAL_MMIO)		+= thermal_mmio.o
-diff --git a/drivers/thermal/pd_warming.c b/drivers/thermal/pd_warming.c
-new file mode 100644
-index 000000000000..c0854d2e4b92
---- /dev/null
-+++ b/drivers/thermal/pd_warming.c
-@@ -0,0 +1,168 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2019, Linaro Ltd
-+ */
-+#include <linux/err.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/of_device.h>
-+#include <linux/platform_device.h>
-+#include <linux/module.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/slab.h>
-+#include <linux/pd_warming.h>
-+
-+struct pd_warming_device {
-+	struct thermal_cooling_device *cdev;
-+	struct device dev;
-+	int id;
-+	int max_state;
-+	int cur_state;
-+	bool runtime_resumed;
-+};
-+
-+static DEFINE_IDA(pd_ida);
-+
-+static int pd_wdev_get_max_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pd_warming_device *pd_wdev = cdev->devdata;
-+
-+	*state = pd_wdev->max_state;
-+	return 0;
-+}
-+
-+static int pd_wdev_get_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long *state)
-+{
-+	struct pd_warming_device *pd_wdev = cdev->devdata;
-+
-+	*state = dev_pm_genpd_get_performance_state(&pd_wdev->dev);
-+
-+	return 0;
-+}
-+
-+static int pd_wdev_set_cur_state(struct thermal_cooling_device *cdev,
-+				 unsigned long state)
-+{
-+	struct pd_warming_device *pd_wdev = cdev->devdata;
-+	struct device *dev = &pd_wdev->dev;
-+	int ret;
-+
-+	ret = dev_pm_genpd_set_performance_state(dev, state);
-+
-+	if (ret)
-+		return ret;
-+
-+	if (state && !pd_wdev->runtime_resumed) {
-+		ret = pm_runtime_get_sync(dev);
-+		pd_wdev->runtime_resumed = true;
-+	} else if (!state && pd_wdev->runtime_resumed) {
-+		ret = pm_runtime_put(dev);
-+		pd_wdev->runtime_resumed = false;
-+	}
-+
-+	return ret;
-+}
-+
-+static struct thermal_cooling_device_ops pd_warming_device_ops = {
-+	.get_max_state	= pd_wdev_get_max_state,
-+	.get_cur_state	= pd_wdev_get_cur_state,
-+	.set_cur_state	= pd_wdev_set_cur_state,
-+};
-+
-+static void pd_warming_release(struct device *dev)
-+{
-+	kfree(dev);
-+}
-+
-+struct thermal_cooling_device *
-+of_pd_warming_register(struct device *parent, int pd_id)
-+{
-+	struct pd_warming_device *pd_wdev;
-+	struct of_phandle_args pd_args;
-+	char cdev_name[THERMAL_NAME_LENGTH];
-+	int ret;
-+
-+	pd_wdev = kzalloc(sizeof(*pd_wdev), GFP_KERNEL);
-+	if (!pd_wdev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	dev_set_name(&pd_wdev->dev, "%s_%d_warming_dev",
-+		     dev_name(parent), pd_id);
-+	pd_wdev->dev.parent = parent;
-+	pd_wdev->dev.release = pd_warming_release;
-+
-+	ret = device_register(&pd_wdev->dev);
-+	if (ret) {
-+		put_device(&pd_wdev->dev);
-+		goto free_pd_wdev;
-+	}
-+
-+	ret = ida_simple_get(&pd_ida, 0, 0, GFP_KERNEL);
-+	if (ret < 0)
-+		goto unregister_device;
-+
-+	pd_wdev->id = ret;
-+
-+	pd_args.np = parent->of_node;
-+	pd_args.args[0] = pd_id;
-+	pd_args.args_count = 1;
-+
-+	ret = of_genpd_add_device(&pd_args, &pd_wdev->dev);
-+
-+	if (ret)
-+		goto remove_ida;
-+
-+	ret = dev_pm_genpd_performance_state_count(&pd_wdev->dev);
-+	if (ret < 0)
-+		goto out_genpd;
-+
-+	pd_wdev->max_state = ret - 1;
-+	pm_runtime_enable(&pd_wdev->dev);
-+	pd_wdev->runtime_resumed = false;
-+
-+	snprintf(cdev_name, sizeof(cdev_name), "thermal-pd-%d", pd_wdev->id);
-+	pd_wdev->cdev = thermal_of_cooling_device_register
-+					(NULL, cdev_name, pd_wdev,
-+					 &pd_warming_device_ops);
-+	if (IS_ERR(pd_wdev->cdev)) {
-+		pr_err("unable to register %s cooling device\n", cdev_name);
-+		ret = PTR_ERR(pd_wdev->cdev);
-+		goto out_runtime_disable;
-+	}
-+
-+	return pd_wdev->cdev;
-+
-+out_runtime_disable:
-+	pm_runtime_disable(&pd_wdev->dev);
-+out_genpd:
-+	pm_genpd_remove_device(&pd_wdev->dev);
-+remove_ida:
-+	ida_simple_remove(&pd_ida, pd_wdev->id);
-+unregister_device:
-+	device_unregister(&pd_wdev->dev);
-+	pd_warming_release(&pd_wdev->dev);
-+free_pd_wdev:
-+	kfree(pd_wdev);
-+	return ERR_PTR(ret);
-+}
-+EXPORT_SYMBOL_GPL(of_pd_warming_register);
-+
-+void pd_warming_unregister(struct thermal_cooling_device *cdev)
-+{
-+	struct pd_warming_device *pd_wdev = cdev->devdata;
-+	struct device *dev = &pd_wdev->dev;
-+
-+	if (pd_wdev->runtime_resumed) {
-+		dev_pm_genpd_set_performance_state(dev, 0);
-+		pm_runtime_put(dev);
-+		pd_wdev->runtime_resumed = false;
-+	}
-+	pm_runtime_disable(dev);
-+	pm_genpd_remove_device(dev);
-+	ida_simple_remove(&pd_ida, pd_wdev->id);
-+	thermal_cooling_device_unregister(cdev);
-+	kfree(pd_wdev);
-+}
-+EXPORT_SYMBOL_GPL(pd_warming_unregister);
-diff --git a/include/linux/pd_warming.h b/include/linux/pd_warming.h
-new file mode 100644
-index 000000000000..550a5683b56d
---- /dev/null
-+++ b/include/linux/pd_warming.h
-@@ -0,0 +1,29 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright (c) 2019, Linaro Ltd.
-+ */
-+#ifndef __PWR_DOMAIN_WARMING_H__
-+#define __PWR_DOMAIN_WARMING_H__
-+
-+#include <linux/pm_domain.h>
-+#include <linux/thermal.h>
-+
-+#ifdef CONFIG_PWR_DOMAIN_WARMING_THERMAL
-+struct thermal_cooling_device *
-+of_pd_warming_register(struct device *parent, int pd_id);
-+
-+void pd_warming_unregister(struct thermal_cooling_device *cdev);
-+
-+#else
-+static inline struct thermal_cooling_device *
-+of_pd_warming_register(struct device *parent, int pd_id)
-+{
-+	return ERR_PTR(-ENOSYS);
-+}
-+
-+static inline void
-+pd_warming_unregister(struct thermal_cooling_device *cdev)
-+{
-+}
-+#endif /* CONFIG_PWR_DOMAIN_WARMING_THERMAL */
-+#endif /* __PWR_DOMAIN_WARMING_H__ */
--- 
-2.20.1
+How about we do the same:
 
+|       if (atomic_xchg(&execlists->overload, 0))
+|               intel_gt_pm_active_end(engine->gt);
+
+as in this patch from process_csb() in response to each completion CSB
+entry, which ensures that the system is considered non-GPU-bound as soon
+as the first context completes.  Subsequently if another CSB entry
+signals a dual-ELSP active-to-idle transition or a dual-ELSP preemption
+we call intel_gt_pm_active_begin() directly from process_csb().  If we
+hit a single-ELSP preemption CSB entry we call intel_gt_pm_active_end()
+instead, in order to avoid the problem you pointed out in your previous
+email.
+
+How does that sound to you?  [Still need to verify that it has
+comparable performance to this patch overall.]
+
+Thanks!
+
+--=-=-=--
+
+--==-=-=
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCXnQuewAKCRCDmTidfVK/
+WxXgAP9252cVgsoRyyqdvt7eGw2+bh8imJeFLWlOuS8CyfYJ/gD/fUskudgUkbJU
+y3wMKsCgIOJvzmAfV5/irlRbWLzQoLY=
+=NYsY
+-----END PGP SIGNATURE-----
+--==-=-=--
