@@ -2,90 +2,108 @@ Return-Path: <SRS0=cFiq=5F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BE8FC4332E
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 05:23:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A89CC4332D
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 05:23:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C6DA920739
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 05:23:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D6E3B20739
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 05:23:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1584681781;
-	bh=DhJVnI0DqcjPo+RjshehroaIdmZlkGl3rWbqE/8sd7I=;
-	h=From:To:Subject:Date:List-ID:From;
-	b=UytRT0NQaoLxBcSn+nvMlORT8DvTFLh0uXJ7O1OGLZ4UYaFb5FGvn0pC36rDiZSJV
-	 AvfLSEGy5rGk1qHwN+uiX2LJXt6WIXhzZ2brXm27iR7MJHOr1RAzpU44TK+EJaparF
-	 U3G/ISQbNF1GBzt654bxIAKdrXWlhqA1wGlOwCs0=
+	s=default; t=1584681782;
+	bh=6OhjbGaf8LjZTmnikiExjWjqLdqRgW3w5FuJGJijUuY=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:Reply-To:List-ID:
+	 From;
+	b=RU2gn0WQohUYpfv+92mb7oFR6GX1ICb+UzAPHXlbebQ8Zb9JeIAldRWdbSSjztbrv
+	 KBdQ2fGw1jPjgnRqF3+AXntnichc/vSwFY8cFfk77ONPSBX++ahP1qNKBbl5gITlWj
+	 PcW8CSHHMLziz0n3egWQYmeesQ7dLXN7dNfxccTA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726843AbgCTFXB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Mar 2020 01:23:01 -0400
-Received: from mail-qk1-f171.google.com ([209.85.222.171]:33362 "EHLO
-        mail-qk1-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725883AbgCTFXB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2020 01:23:01 -0400
-Received: by mail-qk1-f171.google.com with SMTP id p6so5765744qkm.0
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 22:23:00 -0700 (PDT)
+        id S1726851AbgCTFXC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Mar 2020 01:23:02 -0400
+Received: from mail-qv1-f67.google.com ([209.85.219.67]:34896 "EHLO
+        mail-qv1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725883AbgCTFXC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2020 01:23:02 -0400
+Received: by mail-qv1-f67.google.com with SMTP id q73so2373328qvq.2
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 22:23:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=sender:from:to:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=DhJVnI0DqcjPo+RjshehroaIdmZlkGl3rWbqE/8sd7I=;
-        b=sXA8XiuLvAm61ig3pTi/Aw6PPnOjwiqqe9K6JWMPlPitfN11iOUFhPil6jpKnvXM14
-         yC1FHHBMSHFRnvuVNRArwM6ST3a/babKOVs/wHpyK0584keaV2FIJecnkNULHh1Wftop
-         /KfZqHJgCHYjGy+4Z+lqci8oC/2+MisvZIV87L7gBnRuLmhMU7PoHNLWUYzKOrmLxiJg
-         RfNQZcLKNJsEGp+c0GTojMzm2Aiop5NCHnRoyRLfIprL/kYidyEs/ObhYGJzKE0H1QMb
-         zyW7FvKT25nLd4WZopwyNxIBbWy+N8xKttjNrMb1JXUqoq4+HQb/DTx+xDN7k/KB0VMO
-         G1hA==
+        h=sender:from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:reply-to:organization:content-transfer-encoding;
+        bh=mfq+jbDtLvNFwCkgXQFFx1U0KzFwGmwWgMQRhdX+ggg=;
+        b=SiaamRppyc1pLmbvwUZdKMI9A+G+P0pUeZNdCNotkhO9Ph+cxbI/2RIqzeYJQiHMaC
+         Ak1/14+8II800sgaDW8dJqJV1WE7m47icjWzBG0OunkehJPkOGYUswnL+0UI03r9XzJH
+         84uXz0SgxNxrNs98o0dpNrKkE3NSmSsUTTPHiruO0ham/BENaLX+thR75Vbx1uPZdSy1
+         rIiP2Q5OTfmK5K3g06rwu9wAzLZJGVwpMu/n+/8e9GnR+0RAyiLdsnLp6IkSOXyrDrxG
+         LyQsMq5jwpBZ6/YXE/iJqu0d51a+xmhNakc2Ld5Jz9BqJHkIZVPakN+6h/vBHXPJfsBj
+         ZCaA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:from:to:subject:date:message-id
-         :mime-version:content-transfer-encoding;
-        bh=DhJVnI0DqcjPo+RjshehroaIdmZlkGl3rWbqE/8sd7I=;
-        b=IAZ/5QZKYDKx4mrvUzfBGek9/wT5q2nGyD1pwV5SEhWYcGWXRYiWa8qMliBfdZShJH
-         5Yqmvap7X2OPW38/4e8KdMhynZPrHN0VlMxxrwAsIM/gK9DlkX0Xzc1c7MCBRAA3WN1j
-         eZ5qbGKur+lfa7BwCc5SpJjwSkBAcE7d0uI9/ngiBa64sVbG9jQhjwRucLFKETLZyttw
-         dasRhP6ptPNdU447ZiYCqZrX/tNkVpn/nZ9EFvtlgMDE6VIo2qbvdG+dCBxjcpaNWTKH
-         /aQRhnbp4YqlqPXreyq0pocQ7UfR+ehbU1FsDOjsq73d/VKa+hkZWUwx1Fb95A499P/p
-         ux9A==
-X-Gm-Message-State: ANhLgQ1V87HVYnIPQtoVThBRrut/4CclyeDmzbzExTpIO+fDLQLSB4iF
-        mqXcQ7bbGCuXboF3j2mvomF1ozAf
-X-Google-Smtp-Source: ADFU+vsjiaXDTSB8khPrA9ixQCQtcju51PUmSoA8uczPqPKgCb1dC53kOe3WLGjLyGAZcuR7CKoSWQ==
-X-Received: by 2002:a37:bfc2:: with SMTP id p185mr5768115qkf.428.1584681779412;
-        Thu, 19 Mar 2020 22:22:59 -0700 (PDT)
+        h=x-gm-message-state:sender:from:to:cc:subject:date:message-id
+         :in-reply-to:references:mime-version:reply-to:organization
+         :content-transfer-encoding;
+        bh=mfq+jbDtLvNFwCkgXQFFx1U0KzFwGmwWgMQRhdX+ggg=;
+        b=O1sPN7D4QNibQwAgXSwR6qBfofzdLhoIby4tFJKGjVpawILjZFhzfY8AkROkX2ZF1B
+         BYyKoayN4iVM4KzfbIVrniGXkiXMGVWSS0lFzX+i0Qc9MSBpls5RKlNNKuo5kjqwbqGg
+         CXxi5kq7ni2ku5s43b9Ql8y05sCEYMss3p325xfJq66zq5WfEqj2sSeTXuD94oOMCALF
+         Q+PaA+c9SquSL99fiXXEZGEKb53nUi9D0V5lpwj/cZpNDssTAfscdBDT+g3o+aRIedI9
+         ykAzwlXGfYJX1L0Hf6kizAkIkFenzTM8GAQOn1yDra5pSMGxvOF+H87IG1nt0GlgiqGW
+         faXw==
+X-Gm-Message-State: ANhLgQ0GXGb1k5lgreQ/fDrvTCzEoi0ITagykskS8B6pC+50SDelJMxe
+        EZF5uVvN/EPKWv4CDD6It7YiB8Li
+X-Google-Smtp-Source: ADFU+vtg2u8l3emT7GpQ2m/BkbMMXLs9pVFHi7/EGAP3N6di6XnZaw7fB7mHVm2G0jJyj7aiGQMnhQ==
+X-Received: by 2002:a0c:9b95:: with SMTP id o21mr6571501qve.175.1584681780729;
+        Thu, 19 Mar 2020 22:23:00 -0700 (PDT)
 Received: from localhost.localdomain (h96-61-82-19.cntcnh.dsl.dynamic.tds.net. [96.61.82.19])
-        by smtp.gmail.com with ESMTPSA id w134sm3273383qka.127.2020.03.19.22.22.58
-        for <linux-pm@vger.kernel.org>
+        by smtp.gmail.com with ESMTPSA id w134sm3273383qka.127.2020.03.19.22.22.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 22:22:58 -0700 (PDT)
+        Thu, 19 Mar 2020 22:23:00 -0700 (PDT)
 From:   Len Brown <lenb@kernel.org>
 To:     linux-pm@vger.kernel.org
-Subject: turbostat update to version 20.03.19
-Date:   Fri, 20 Mar 2020 01:22:38 -0400
-Message-Id: <20200320052248.13037-1-lenb@kernel.org>
+Cc:     Chen Yu <yu.c.chen@intel.com>, Rui Zhang <rui.zhang@intel.com>,
+        Len Brown <len.brown@intel.com>
+Subject: [PATCH 01/10] tools/power turbostat: Support Cometlake
+Date:   Fri, 20 Mar 2020 01:22:39 -0400
+Message-Id: <081c54323b27d8d4b40df6b2375b9e1f6846d827.1584679387.git.len.brown@intel.com>
 X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200320052248.13037-1-lenb@kernel.org>
+References: <20200320052248.13037-1-lenb@kernel.org>
 MIME-Version: 1.0
+Reply-To: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Please let me know if you see any issues with these patches.
+From: Chen Yu <yu.c.chen@intel.com>
 
-thanks!
--Len
+From a turbostat point of view, Cometlake is like Kabylake.
 
-[PATCH 01/10] tools/power turbostat: Support Cometlake
-[PATCH 02/10] tools/power turbostat: Fix gcc build warnings
-[PATCH 03/10] tools/power turbostat: Support Tiger Lake
-[PATCH 04/10] tools/power turbostat: Support Ice Lake server
-[PATCH 05/10] tools/power turbostat: Support Jasper Lake
-[PATCH 06/10] tools/power turbostat: Support Elkhart Lake
-[PATCH 07/10] tools/power turbostat: Fix missing SYS_LPI counter on
-[PATCH 08/10] tools/power turbostat: Fix 32-bit capabilities warning
-[PATCH 09/10] tools/power turbostat: Print cpuidle information
-[PATCH 10/10] turbostat: update version
+Suggested-by: Rui Zhang <rui.zhang@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 31c1ca0bb3ee..dd5ac9f52ac5 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -4610,6 +4610,8 @@ unsigned int intel_model_duplicates(unsigned int model)
+ 	case INTEL_FAM6_SKYLAKE:
+ 	case INTEL_FAM6_KABYLAKE_L:
+ 	case INTEL_FAM6_KABYLAKE:
++	case INTEL_FAM6_COMETLAKE_L:
++	case INTEL_FAM6_COMETLAKE:
+ 		return INTEL_FAM6_SKYLAKE_L;
+ 
+ 	case INTEL_FAM6_ICELAKE_L:
+-- 
+2.20.1
 
