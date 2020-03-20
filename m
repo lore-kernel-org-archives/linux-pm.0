@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F5ACC43332
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:41:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87159C4332D
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:42:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 76EDD20739
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:41:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 56E9C20740
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 01:42:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="oam8JWZ3"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bdm7Sshv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727469AbgCTBlU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Mar 2020 21:41:20 -0400
-Received: from mail-qv1-f65.google.com ([209.85.219.65]:36673 "EHLO
-        mail-qv1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727455AbgCTBlU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 21:41:20 -0400
-Received: by mail-qv1-f65.google.com with SMTP id z13so2204342qvw.3
-        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 18:41:18 -0700 (PDT)
+        id S1727265AbgCTBmQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Mar 2020 21:42:16 -0400
+Received: from mail-qv1-f68.google.com ([209.85.219.68]:46390 "EHLO
+        mail-qv1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727428AbgCTBlR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Mar 2020 21:41:17 -0400
+Received: by mail-qv1-f68.google.com with SMTP id m2so2166656qvu.13
+        for <linux-pm@vger.kernel.org>; Thu, 19 Mar 2020 18:41:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=52Uodj2SzxJW+qxs/0UIGlzA4a0LVLQTDw34ezZAhxU=;
-        b=oam8JWZ3B0HMyyED4XOyqJ7WO+9kN2B2G75Q+shvg5iuMD37rho/XK2LYyggtkp4FD
-         WLLv6b4KPs71RyTzlIkjmB0Y+jpXkv5l+VwdFp8K6M4W0sYJgSBh2ubme7mOgNyq6HRU
-         ImcCdBD//Tt2lG2ZYrtMXEE2lgL+lhLf6K9l4WgNkZw/lGi4E9UdlYg6yegHDsnoCQzn
-         WWYmrB5MtDtpE5dVQQknZYQidYDANdQg/sqlM1H8mMnMDid9eWmKexagz3yJJPdZr9tH
-         cSgac8HaxhEhshozUPLK0RuoeD8z/ns2MRFJ2tS7jF7Rl3WVu9xZ7pChvxrBxmqePMwc
-         k2ow==
+        bh=BmLDbgrQGRMcKnRjecEwvHf9acIPMdQPCuaUHQoEE9I=;
+        b=bdm7Sshv0U+VOsv1chWTcKaftld2B9J2S6C1Dzd267vnc2TrQbnx7sTDemjcSIdSIl
+         XP4Jb604+7eOnOxLy6k1txkJObvEWQVL6zB4R/+lc0qOj5LVcfgCjoMOpbuTaAS2gGeN
+         Du3KWhzgPiQnWCp8QomaVLBPjo0BzsFzj/4aGNjNpVX0NOLYiJrgukUq8/jecz0tT7+a
+         tVf8wJaYJnhV3eh7b7VAsBnrc2Nw5SmzprjSgV0/WsWcofm++w7V3xbXnGbsCz0ucVRu
+         pZo+pFLfUWafOSW5dPWRiBf/ngetpNfqqg9oEhwfV6SfLtV+lMlZJZZrsf+QpSFazJFS
+         R+mA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=52Uodj2SzxJW+qxs/0UIGlzA4a0LVLQTDw34ezZAhxU=;
-        b=GVlhCs95iilh95cuNvi7GBG1f2zotv0Qcgefg8KZlN3q0nT2bj16JEETDx0XjZOf7S
-         g+1U5g4yv3F21A46K47Rms0IjJyyReFP2do1+3zUS68BQAukKgkoTR/VBy7flHMWECik
-         YXu/LYXksIjdz/197n6Znihd/GAevyFMKlkw+FWaoHC09aFq0j2p5TcQIygLZjJQnovB
-         QNBduVQed8x3a40D+2mJF1XuoFTfSR7pIvYxJhF200fHsyr57XbM4hhu0n/YsNQ6I7bw
-         hJ9E8ddEiVqO6QPAnGC6BvhF9llMC5I5+GrhxddeBNeFpm95SL5e3m7cZRnwRYw031FK
-         VKXw==
-X-Gm-Message-State: ANhLgQ1p4ErPgxCTbASPq1Io0o/fjA/E0sefdM69/uD9znYYlYaKqFig
-        FDveO0LLXE+h8YjlQxUgOhMvAw==
-X-Google-Smtp-Source: ADFU+vuKKFrOz+rjU+KyncwIFd66K8roSktkMf0iaMaBQ+5F+Bkq/JoTPLHcji0jBMA8VXOSEirdhA==
-X-Received: by 2002:a05:6214:14a:: with SMTP id x10mr6086238qvs.158.1584668478038;
-        Thu, 19 Mar 2020 18:41:18 -0700 (PDT)
+        bh=BmLDbgrQGRMcKnRjecEwvHf9acIPMdQPCuaUHQoEE9I=;
+        b=pySYQQ0rjJZuWI1lXZ9sauLb6bnfotDDUJXNkZsPyR2qnGAsDDWjTp06CG1qYQ9PJT
+         VtNPxKK9PXatFuJb/dOhLXYdgQBdqflWHzuxBzmHzLxXTGrvDmcar5m6W7JH45h3MQ1b
+         yh7QF8EsFOxUzT5D/mgC9LCGa4gKnmK75WaxP9/WIFK/nRnCYUGxAEO8k7Zz4mmUVdqs
+         yJlA5tVVKWaoPqrFgJXirNeCuNkrgAtzgYOGgRDdDITPWjECcL02gCsiQqOYk00PVu5M
+         YtlAfKy+A9M2QkmQOOjxhRsZa3s+BWnArBFrV06ewF8/NxAlFj0eEBhCFTrO/WK5HLvA
+         6E1w==
+X-Gm-Message-State: ANhLgQ0Wy5P7HFfcFQrNKLLbT0YS1m3zQM2gP0faBhH4XKw0fPfY8aLc
+        TJgG8CrEAq39xI3b43ZR4ImmKw==
+X-Google-Smtp-Source: ADFU+vvLSkOdW7E5U5A5O6CcJJ7ZWJHOi0uG50WCDN6WNaQOvu8Lhdpvt6s/ZGRR/baXJawhCENi5A==
+X-Received: by 2002:a0c:9e41:: with SMTP id z1mr5918351qve.130.1584668476689;
+        Thu, 19 Mar 2020 18:41:16 -0700 (PDT)
 Received: from pop-os.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.googlemail.com with ESMTPSA id 2sm2706287qtp.33.2020.03.19.18.41.16
+        by smtp.googlemail.com with ESMTPSA id 2sm2706287qtp.33.2020.03.19.18.41.15
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Mar 2020 18:41:17 -0700 (PDT)
+        Thu, 19 Mar 2020 18:41:16 -0700 (PDT)
 From:   Thara Gopinath <thara.gopinath@linaro.org>
 To:     rui.zhang@intel.com, ulf.hansson@linaro.org,
         daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
@@ -62,9 +62,9 @@ Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
         rjw@rjwysocki.net, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [Patch v5 6/6] arm64: dts: qcom: Indicate rpmhpd hosts a power domain that can be used as a warming device.
-Date:   Thu, 19 Mar 2020 21:41:07 -0400
-Message-Id: <20200320014107.26087-7-thara.gopinath@linaro.org>
+Subject: [Patch v5 5/6] dt-bindings: power: Extend RPMh power controller binding to describe thermal warming device
+Date:   Thu, 19 Mar 2020 21:41:06 -0400
+Message-Id: <20200320014107.26087-6-thara.gopinath@linaro.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200320014107.26087-1-thara.gopinath@linaro.org>
 References: <20200320014107.26087-1-thara.gopinath@linaro.org>
@@ -75,10 +75,10 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RPMh hosts mx power domain that can be used to warm up the SoC.  Indicate
-this by using #cooling-cells property.
+RPMh power controller hosts mx domain that can be used as thermal warming
+device. Add #cooling-cells property to the power domain provider node to
+indicate this.
 
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
 ---
 
@@ -88,21 +88,26 @@ v3->v4:
 	  provider property to indicate if the provider hosts a power
 	  domain that can be used as a warming device.
 
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 1 +
- 1 file changed, 1 insertion(+)
+v4->v5:
+	Moved the property from .txt format to .yaml format.
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index fe35d37a11cc..0d878b2ca351 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -3703,6 +3703,7 @@
- 			rpmhpd: power-controller {
- 				compatible = "qcom,sdm845-rpmhpd";
- 				#power-domain-cells = <1>;
-+				#cooling-cells = <2>;
- 				operating-points-v2 = <&rpmhpd_opp_table>;
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index ba605310abeb..16b713d295c4 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -27,6 +27,9 @@ properties:
+   '#power-domain-cells':
+     const: 1
  
- 				rpmhpd_opp_table: opp-table {
++  '#cooling-cells':
++    const: 2
++
+   operating-points-v2: true
+ 
+   opp-table:
 -- 
 2.20.1
 
