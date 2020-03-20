@@ -2,167 +2,118 @@ Return-Path: <SRS0=cFiq=5F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9688C4332B
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 11:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CDA9C4332B
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 11:33:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A19C120732
-	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 11:10:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0434620739
+	for <linux-pm@archiver.kernel.org>; Fri, 20 Mar 2020 11:33:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fzmu3H7p"
+	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="qCJNcH7J"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726894AbgCTLKY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 20 Mar 2020 07:10:24 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:33099 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726893AbgCTLKX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2020 07:10:23 -0400
-Received: by mail-wr1-f66.google.com with SMTP id a25so6943417wrd.0
-        for <linux-pm@vger.kernel.org>; Fri, 20 Mar 2020 04:10:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=npvbIJpJHOU/QMgkt/j6Sgv7H0TDgogTzIcvDVQj27w=;
-        b=fzmu3H7pFVSFFysiTXVAEQYuqbqxZ9afscWkSb1Seia6EED+CdDzhHQavQu32saqp5
-         RUikxe3Q1Rj89zFFB8SCPStDtjsyxnFhp89DkQ2N1GLbZGkqEqKfxBw0tj5nBzsuZRqX
-         1PXMVa85Xfx+e8ftTg7IIp1jDkEvaj2gSJWq1dgDxZUGtwyh1Xe0IoMHuQeUTs8EEXWU
-         JKCtFnafHv1dxkfhIBKpGja9YwMigLvEyLyiTVRAmpb1XfuCS5oackWfnWU6VOf/35ht
-         u3PCgQ7G/ONhcAUvIrp3euFphTcCXzeRm+J3oxlv113vKu37MTq6kg97UJlf/wyFk5Gq
-         72TA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=npvbIJpJHOU/QMgkt/j6Sgv7H0TDgogTzIcvDVQj27w=;
-        b=cMDZTkGCnUXKGfWj16gqlP33MQ/Yw4SOxSGgzOglHdgMC2BJhCGcnUTVsZ12ga64YZ
-         Vm+oTr72l6BZGjO8ztolp51WKyNMcwTSNvweREiYKLfAdUcGPRS9/eUbOU7V3nMN70yM
-         jRFp9NbnK/z9PYOG0LbTC0ajl2TC+1unsI9PzlBZaQrdi5PF8tVDVeT7ZvT+tg/QupKW
-         JQa2hKajuKU2KqYWtULSVqi4WWSIXACDhtlwkimUgC4OmQ2B5xTTQ6hH5XcZ/TVMg3lT
-         bXzRpO/eKzmnPpwrRK/ykTnIpn5wfCrkanwM4f6K0N1hzIdy4qLl3oBMBikr3q5JDI/s
-         oFlA==
-X-Gm-Message-State: ANhLgQ34oasjml8cNHMqiTAvvH0zwh8Ay+ME/97PX6nCP5zfIlQFuYQo
-        70pcy85PJFkoMO3x9Kk2+v5KkQ==
-X-Google-Smtp-Source: ADFU+vsBXxedL1QEHc6ebD5VX+LL4n0+Y+nSWLwTCvzaVTDdF9DKGi8/fQqMPPkNXEYSnv8sZiuCVw==
-X-Received: by 2002:a5d:6104:: with SMTP id v4mr523369wrt.213.1584702620903;
-        Fri, 20 Mar 2020 04:10:20 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id d21sm7746814wrb.51.2020.03.20.04.10.19
-        (version=TLS1_2 cipher=ECDHE-RSA-AES128-SHA bits=128/128);
-        Fri, 20 Mar 2020 04:10:20 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     gregkh@linuxfoundation.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        georgi.djakov@linaro.org
-Subject: [GIT PULL] interconnect changes for 5.7
-Date:   Fri, 20 Mar 2020 13:10:19 +0200
-Message-Id: <20200320111019.10970-1-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.25.1
+        id S1726970AbgCTLc7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 20 Mar 2020 07:32:59 -0400
+Received: from mx07-00178001.pphosted.com ([62.209.51.94]:25034 "EHLO
+        mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726814AbgCTLc7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 20 Mar 2020 07:32:59 -0400
+Received: from pps.filterd (m0046037.ppops.net [127.0.0.1])
+        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 02KBS9l7024109;
+        Fri, 20 Mar 2020 12:32:56 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : cc : subject
+ : date : message-id : mime-version : content-type; s=STMicroelectronics;
+ bh=9JFlGiU/3onpGHyyQ9mKFWQ3/a8dPy+vRefEgTYZXMI=;
+ b=qCJNcH7JzjVbvCjknOM7z3yXzxEv3VCT7Opan2ZUd/PmdWGnaaYeOZ6jZ4EVWpDjRptI
+ mZ/n+xIOBsbPmYhAB0PFvZQ78NdKAiGIjyjVCi5z3X/faXnG1S8vj65tazqmYaefr7h7
+ 3xGOZ157dDRAYD7M8mxny1pge28bRcJo3i2YbfsvbSgp7NPLBWTcUHBetn/7of8v2KTF
+ 6Dags31i+CC22YpVevyzDhkIahyyCSr3KlhcAl+RvinmuuEBoC1lnvpT51EXj04nNAcb
+ AbuOvvkijTIRVg6TqInQBr/DJ3YFYs8cfgketZ0+LiYR4/KRB66irU2OmmX0NlRX8Y3E Cg== 
+Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
+        by mx07-00178001.pphosted.com with ESMTP id 2yu8etqf38-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Fri, 20 Mar 2020 12:32:56 +0100
+Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 2AF76100038;
+        Fri, 20 Mar 2020 12:32:51 +0100 (CET)
+Received: from Webmail-eu.st.com (sfhdag6node3.st.com [10.75.127.18])
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 1FB172A9700;
+        Fri, 20 Mar 2020 12:32:51 +0100 (CET)
+Received: from localhost (10.75.127.46) by SFHDAG6NODE3.st.com (10.75.127.18)
+ with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 20 Mar 2020 12:32:50
+ +0100
+From:   <patrice.chotard@st.com>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+CC:     <patrice.chotard@st.com>, Erwan Le Ray <erwan.leray@st.com>,
+        Alexandre TORGUE <alexandre.torgue@st.com>,
+        Fabrice Gasnier <fabrice.gasnier@st.com>
+Subject: PM / wakeup: Add dev_wakeup_path() helper
+Date:   Fri, 20 Mar 2020 12:32:33 +0100
+Message-ID: <20200320113233.10219-1-patrice.chotard@st.com>
+X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.75.127.46]
+X-ClientProxiedBy: SFHDAG5NODE1.st.com (10.75.127.13) To SFHDAG6NODE3.st.com
+ (10.75.127.18)
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.138,18.0.645
+ definitions=2020-03-20_03:2020-03-20,2020-03-20 signatures=0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Greg,
+From: Patrice Chotard <patrice.chotard@st.com>
 
-Here is a pull request with interconnect changes for the 5.7-rc1 merge
-window. It contains just driver updates, and these are:
+Add dev_wakeup_path() helper to avoid to spread
+dev->power.wakeup_path test in drivers.
 
-- Refactoring of the SDM845 driver, which is now improved to better
-represent the hardware.
-- New driver for SC7180 platforms.
-- New driver for OSM L3 interconnect hardware found on SDM845/SC7180
-platforms.
+In case CONFIG_PM_SLEEP is not set, wakeup_path is not defined,
+dev_wakeup_path() is returning false.
 
-All of these have been in linux-next for more than two weeks without any
-reported issues. Please pull into char-misc-next.
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+---
 
-Thanks,
-Georgi
+Currently, in mainline kernel, no drivers are testing dev->power.wakeup_path
+for PM purpose. A stm32 serial driver patch will be submitted soon and will 
+make usage of this helper.
 
-The following changes since commit 11a48a5a18c63fd7621bb050228cebf13566e4d8:
+ include/linux/pm_wakeup.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-  Linux 5.6-rc2 (2020-02-16 13:16:59 -0800)
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index aa3da6611533..d0bd13c19253 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -84,6 +84,11 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && !!dev->power.wakeup;
+ }
+ 
++static inline bool device_wakeup_path(struct device *dev)
++{
++	return !!dev->power.wakeup_path;
++}
++
+ static inline void device_set_wakeup_path(struct device *dev)
+ {
+ 	dev->power.wakeup_path = true;
+@@ -174,6 +179,11 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && dev->power.should_wakeup;
+ }
+ 
++static inline bool device_wakeup_path(struct device *dev)
++{
++	return false;
++}
++
+ static inline void device_set_wakeup_path(struct device *dev) {}
+ 
+ static inline void __pm_stay_awake(struct wakeup_source *ws) {}
+-- 
+2.17.1
 
-are available in the Git repository at:
-
-  https://git.linaro.org/people/georgi.djakov/linux.git tags/icc-5.7-rc1
-
-for you to fetch changes up to 03c4e6186bbbe639b5277077c26786069e9e2b89:
-
-  interconnect: qcom: Add OSM L3 support on SC7180 (2020-03-03 19:02:52 +0200)
-
-----------------------------------------------------------------
-interconnect changes for 5.7
-
-Here is a pull request with interconnect changes for the 5.7-rc1 merge
-window. It contains just driver updates, and these are:
-
-- Refactoring of the SDM845 driver, which is now improved to better
-represent the hardware.
-- New driver for SC7180 platforms.
-- New driver for OSM L3 interconnect hardware found on SDM845/SC7180
-platforms.
-
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-
-----------------------------------------------------------------
-David Dai (5):
-      dt-bindings: interconnect: Convert qcom,sdm845 to DT schema
-      dt-bindings: interconnect: Add YAML schemas for QCOM bcm-voter
-      dt-bindings: interconnect: Update Qualcomm SDM845 DT bindings
-      interconnect: qcom: Consolidate interconnect RPMh support
-      interconnect: qcom: sdm845: Split qnodes into their respective NoCs
-
-Odelu Kukatla (2):
-      dt-bindings: interconnect: Add Qualcomm SC7180 DT bindings
-      interconnect: qcom: Add SC7180 interconnect provider driver
-
-Sibi Sankar (5):
-      interconnect: qcom: Allow icc node to be used across icc providers
-      dt-bindings: interconnect: Add OSM L3 DT bindings
-      interconnect: qcom: Add OSM L3 interconnect provider support
-      dt-bindings: interconnect: Add OSM L3 DT binding on SC7180
-      interconnect: qcom: Add OSM L3 support on SC7180
-
- .../devicetree/bindings/interconnect/qcom,bcm-voter.yaml       |   45 +
- .../devicetree/bindings/interconnect/qcom,osm-l3.yaml          |   62 +
- .../devicetree/bindings/interconnect/qcom,sc7180.yaml          |   85 +
- Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt |   24 -
- .../devicetree/bindings/interconnect/qcom,sdm845.yaml          |   74 +
- drivers/interconnect/qcom/Kconfig                              |   25 +
- drivers/interconnect/qcom/Makefile                             |    8 +
- drivers/interconnect/qcom/bcm-voter.c                          |  366 +++
- drivers/interconnect/qcom/bcm-voter.h                          |   27 +
- drivers/interconnect/qcom/icc-rpmh.c                           |  150 +
- drivers/interconnect/qcom/icc-rpmh.h                           |  149 +
- drivers/interconnect/qcom/osm-l3.c                             |  276 ++
- drivers/interconnect/qcom/sc7180.c                             |  641 +++++
- drivers/interconnect/qcom/sc7180.h                             |  151 ++
- drivers/interconnect/qcom/sdm845.c                             | 1055 +++-----
- drivers/interconnect/qcom/sdm845.h                             |  142 +
- include/dt-bindings/interconnect/qcom,osm-l3.h                 |   12 +
- include/dt-bindings/interconnect/qcom,sc7180.h                 |  161 ++
- include/dt-bindings/interconnect/qcom,sdm845.h                 |  263 +-
- 19 files changed, 2875 insertions(+), 841 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,bcm-voter.yaml
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,osm-l3.yaml
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sc7180.yaml
- delete mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.txt
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm845.yaml
- create mode 100644 drivers/interconnect/qcom/bcm-voter.c
- create mode 100644 drivers/interconnect/qcom/bcm-voter.h
- create mode 100644 drivers/interconnect/qcom/icc-rpmh.c
- create mode 100644 drivers/interconnect/qcom/icc-rpmh.h
- create mode 100644 drivers/interconnect/qcom/osm-l3.c
- create mode 100644 drivers/interconnect/qcom/sc7180.c
- create mode 100644 drivers/interconnect/qcom/sc7180.h
- create mode 100644 drivers/interconnect/qcom/sdm845.h
- create mode 100644 include/dt-bindings/interconnect/qcom,osm-l3.h
- create mode 100644 include/dt-bindings/interconnect/qcom,sc7180.h
