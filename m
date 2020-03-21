@@ -6,29 +6,29 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C04C4332B
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47807C54FCD
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:35:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D3FB120754
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1ECEC20722
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:35:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728603AbgCULe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728614AbgCULe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 21 Mar 2020 07:34:58 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:38490 "EHLO
+Received: from Galois.linutronix.de ([193.142.43.55]:38487 "EHLO
         Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728497AbgCULe5 (ORCPT
+        with ESMTP id S1728492AbgCULe5 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2020 07:34:57 -0400
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11] helo=nanos.tec.linutronix.de)
         by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
         (Exim 4.80)
         (envelope-from <tglx@linutronix.de>)
-        id 1jFcOR-0001zT-Eh; Sat, 21 Mar 2020 12:34:19 +0100
+        id 1jFcOd-0002LQ-Fh; Sat, 21 Mar 2020 12:34:31 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
-        by nanos.tec.linutronix.de (Postfix) with ESMTP id 74A94FFBBF;
-        Sat, 21 Mar 2020 12:34:18 +0100 (CET)
-Message-Id: <20200321113241.246190285@linutronix.de>
+        by nanos.tec.linutronix.de (Postfix) with ESMTP id 2B9001040CB;
+        Sat, 21 Mar 2020 12:34:22 +0100 (CET)
+Message-Id: <20200321113242.643576700@linutronix.de>
 User-Agent: quilt/0.65
-Date:   Sat, 21 Mar 2020 12:25:49 +0100
+Date:   Sat, 21 Mar 2020 12:26:03 +0100
 From:   Thomas Gleixner <tglx@linutronix.de>
 To:     LKML <linux-kernel@vger.kernel.org>
 Cc:     Peter Zijlstra <peterz@infradead.org>,
@@ -38,21 +38,22 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Joel Fernandes <joel@joelfernandes.org>,
         Oleg Nesterov <oleg@redhat.com>,
         Davidlohr Bueso <dave@stgolabs.net>,
+        Logan Gunthorpe <logang@deltatee.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
+        linux-pci@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Felipe Balbi <balbi@kernel.org>, linux-usb@vger.kernel.org,
+        Kalle Valo <kvalo@codeaurora.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
         Darren Hart <dvhart@infradead.org>,
         Andy Shevchenko <andy@infradead.org>,
         platform-driver-x86@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Zhang Rui <rui.zhang@intel.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>,
-        linux-acpi@vger.kernel.org, Logan Gunthorpe <logang@deltatee.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
-        linux-pci@vger.kernel.org, Felipe Balbi <balbi@kernel.org>,
-        linux-usb@vger.kernel.org, Kalle Valo <kvalo@codeaurora.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-        kbuild test robot <lkp@intel.com>,
+        linux-acpi@vger.kernel.org, kbuild test robot <lkp@intel.com>,
         Nick Hu <nickhu@andestech.com>,
         Greentime Hu <green.hu@gmail.com>,
         Vincent Chen <deanbo422@gmail.com>,
@@ -69,7 +70,7 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Jonathan Corbet <corbet@lwn.net>,
         Randy Dunlap <rdunlap@infradead.org>,
         Davidlohr Bueso <dbueso@suse.de>
-Subject: [patch V3 05/20] acpi: Remove header dependency
+Subject: [patch V3 19/20] lockdep: Annotate irq_work
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -82,70 +83,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peter Zijlstra <peterz@infradead.org>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-In order to avoid future header hell, remove the inclusion of
-proc_fs.h from acpi_bus.h. All it needs is a forward declaration of a
-struct.
+Mark irq_work items with IRQ_WORK_HARD_IRQ which should be invoked in
+hardirq context even on PREEMPT_RT. IRQ_WORK without this flag will be
+invoked in softirq context on PREEMPT_RT.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Set ->irq_config to 1 for the IRQ_WORK items which are invoked in softirq
+context so lockdep knows that these can safely acquire a spinlock_t.
+
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Darren Hart <dvhart@infradead.org>
-Cc: Andy Shevchenko <andy@infradead.org>
-Cc: platform-driver-x86@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-Cc: linux-pm@vger.kernel.org
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org
 ---
- drivers/platform/x86/dell-smo8800.c                      |    1 +
- drivers/platform/x86/wmi.c                               |    1 +
- drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c |    1 +
- include/acpi/acpi_bus.h                                  |    2 +-
- 4 files changed, 4 insertions(+), 1 deletion(-)
+ include/linux/irq_work.h |    2 ++
+ include/linux/irqflags.h |   13 +++++++++++++
+ kernel/irq_work.c        |    2 ++
+ kernel/rcu/tree.c        |    1 +
+ kernel/time/tick-sched.c |    1 +
+ 5 files changed, 19 insertions(+)
 
---- a/drivers/platform/x86/dell-smo8800.c
-+++ b/drivers/platform/x86/dell-smo8800.c
-@@ -16,6 +16,7 @@
- #include <linux/interrupt.h>
- #include <linux/miscdevice.h>
- #include <linux/uaccess.h>
-+#include <linux/fs.h>
+--- a/include/linux/irq_work.h
++++ b/include/linux/irq_work.h
+@@ -18,6 +18,8 @@
  
- struct smo8800_device {
- 	u32 irq;                     /* acpi device irq */
---- a/drivers/platform/x86/wmi.c
-+++ b/drivers/platform/x86/wmi.c
-@@ -29,6 +29,7 @@
- #include <linux/uaccess.h>
- #include <linux/uuid.h>
- #include <linux/wmi.h>
-+#include <linux/fs.h>
- #include <uapi/linux/wmi.h>
+ /* Doesn't want IPI, wait for tick: */
+ #define IRQ_WORK_LAZY		BIT(2)
++/* Run hard IRQ context, even on RT */
++#define IRQ_WORK_HARD_IRQ	BIT(3)
  
- ACPI_MODULE_NAME("wmi");
---- a/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
-+++ b/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
-@@ -19,6 +19,7 @@
- #include <linux/acpi.h>
- #include <linux/uaccess.h>
- #include <linux/miscdevice.h>
-+#include <linux/fs.h>
- #include "acpi_thermal_rel.h"
+ #define IRQ_WORK_CLAIMED	(IRQ_WORK_PENDING | IRQ_WORK_BUSY)
  
- static acpi_handle acpi_thermal_rel_handle;
---- a/include/acpi/acpi_bus.h
-+++ b/include/acpi/acpi_bus.h
-@@ -80,7 +80,7 @@ bool acpi_dev_present(const char *hid, c
+--- a/include/linux/irqflags.h
++++ b/include/linux/irqflags.h
+@@ -69,6 +69,17 @@ do {						\
+ 			current->irq_config = 0;	\
+ 	  } while (0)
  
- #ifdef CONFIG_ACPI
++# define lockdep_irq_work_enter(__work)					\
++	  do {								\
++		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
++			current->irq_config = 1;			\
++	  } while (0)
++# define lockdep_irq_work_exit(__work)					\
++	  do {								\
++		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
++			current->irq_config = 0;			\
++	  } while (0)
++
+ #else
+ # define trace_hardirqs_on()		do { } while (0)
+ # define trace_hardirqs_off()		do { } while (0)
+@@ -83,6 +94,8 @@ do {						\
+ # define lockdep_softirq_exit()		do { } while (0)
+ # define lockdep_hrtimer_enter(__hrtimer)		do { } while (0)
+ # define lockdep_hrtimer_exit(__hrtimer)		do { } while (0)
++# define lockdep_irq_work_enter(__work)		do { } while (0)
++# define lockdep_irq_work_exit(__work)		do { } while (0)
+ #endif
  
--#include <linux/proc_fs.h>
-+struct proc_dir_entry;
+ #if defined(CONFIG_IRQSOFF_TRACER) || \
+--- a/kernel/irq_work.c
++++ b/kernel/irq_work.c
+@@ -153,7 +153,9 @@ static void irq_work_run_list(struct lli
+ 		 */
+ 		flags = atomic_fetch_andnot(IRQ_WORK_PENDING, &work->flags);
  
- #define ACPI_BUS_FILE_ROOT	"acpi"
- extern struct proc_dir_entry *acpi_root_dir;
++		lockdep_irq_work_enter(work);
+ 		work->func(work);
++		lockdep_irq_work_exit(work);
+ 		/*
+ 		 * Clear the BUSY bit and return to the free state if
+ 		 * no-one else claimed it meanwhile.
+--- a/kernel/rcu/tree.c
++++ b/kernel/rcu/tree.c
+@@ -1113,6 +1113,7 @@ static int rcu_implicit_dynticks_qs(stru
+ 		    !rdp->rcu_iw_pending && rdp->rcu_iw_gp_seq != rnp->gp_seq &&
+ 		    (rnp->ffmask & rdp->grpmask)) {
+ 			init_irq_work(&rdp->rcu_iw, rcu_iw_handler);
++			atomic_set(&rdp->rcu_iw.flags, IRQ_WORK_HARD_IRQ);
+ 			rdp->rcu_iw_pending = true;
+ 			rdp->rcu_iw_gp_seq = rnp->gp_seq;
+ 			irq_work_queue_on(&rdp->rcu_iw, rdp->cpu);
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -245,6 +245,7 @@ static void nohz_full_kick_func(struct i
+ 
+ static DEFINE_PER_CPU(struct irq_work, nohz_full_kick_work) = {
+ 	.func = nohz_full_kick_func,
++	.flags = ATOMIC_INIT(IRQ_WORK_HARD_IRQ),
+ };
+ 
+ /*
 
 
