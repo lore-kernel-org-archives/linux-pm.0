@@ -6,117 +6,54 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F169C4332D
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 12:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C49BAC4332D
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 12:57:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5F3A620757
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 12:53:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2A632072C
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 12:57:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726955AbgCUMx3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 21 Mar 2020 08:53:29 -0400
-Received: from mail.manjaro.org ([176.9.38.148]:37078 "EHLO mail.manjaro.org"
+        id S1726955AbgCUM51 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 21 Mar 2020 08:57:27 -0400
+Received: from mail.manjaro.org ([176.9.38.148]:37516 "EHLO mail.manjaro.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726192AbgCUMx3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 21 Mar 2020 08:53:29 -0400
+        id S1726192AbgCUM50 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 21 Mar 2020 08:57:26 -0400
 Received: from localhost (localhost [127.0.0.1])
-        by mail.manjaro.org (Postfix) with ESMTP id BA73237E5074;
-        Sat, 21 Mar 2020 13:53:27 +0100 (CET)
+        by mail.manjaro.org (Postfix) with ESMTP id 598A837E507D;
+        Sat, 21 Mar 2020 13:57:25 +0100 (CET)
 X-Virus-Scanned: Debian amavisd-new at manjaro.org
 Received: from mail.manjaro.org ([127.0.0.1])
         by localhost (manjaro.org [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id tcVmSE4T3BKl; Sat, 21 Mar 2020 13:53:25 +0100 (CET)
+        with ESMTP id o75kpYDVcgR2; Sat, 21 Mar 2020 13:57:23 +0100 (CET)
+Subject: Re: [PATCH v5 2/3] dt-bindings: power: supply: add cw2015_battery
+ bindings
+To:     Rob Herring <robh@kernel.org>
+Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Heiko Stuebner <heiko.stuebner@theobroma-systems.com>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20200315191914.118565-1-t.schramm@manjaro.org>
+ <20200315191914.118565-3-t.schramm@manjaro.org>
+ <20200320223108.GB32311@bogus>
 From:   Tobias Schramm <t.schramm@manjaro.org>
-To:     Rob Herring <robh+dt@kernel.org>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Tobias Schramm <t.schramm@manjaro.org>
-Subject: [PATCH v6 0/3] Add support for CellWise cw2015 fuel gauge
-Date:   Sat, 21 Mar 2020 13:52:38 +0100
-Message-Id: <20200321125241.3072123-1-t.schramm@manjaro.org>
+Message-ID: <05c068f5-9621-9879-b500-0a2dc242eefb@manjaro.org>
+Date:   Sat, 21 Mar 2020 13:57:38 +0100
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200320223108.GB32311@bogus>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US-large
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset adds support for the CellWise cw2015 fuel gauge.
+Hi Rob,
 
-The CellWise cw2015 fuel gauge is a shuntless, single-cell Li-Ion fuel
-gauge. It is used in the pine64 Pinebook Pro laptop.
+thanks for the review. I've just sent out v6 addressing the issues you
+have found.
 
-This is v6 of the patchset. This version fixes binding issues found
-by Rob.
-
-I've kept the cellwise,battery-profile property in the device tree. Its
-content describes characteristics of the battery built into a device. The
-exact format is unknown and not publicly documented. It is likely
-comprised of some key parameters of the battery (chemistry, voltages,
-design capacity) and parameters for tuning the internal state of charge
-approximation function.
-Since v2 CellWise has confirmed to me that the only way to obtain the
-profile blob is to mail them batteries for testing. Thus we will need to
-keep that property.
-
-In general I'm not 100 % sure about my json-schema binding for the gauge.
-It is my first time ever writing a json-schema binding and I'm not sure
-whether properties like power-supplies or monitored-battery need to be
-added to a separate, common schema for power supplies or not.
-
-
-Best Regards,
-
-Tobias Schramm
-
-Changelog:
- v2:
-  * Change subject to "Add support for CellWise cw2015 fuel gauge"
-  * Rewrite bindings as json-schema
-  * Use default power-supplies handling
-  * Use regmap for register access
-  * Use standard simple-battery node
-  * Replace printk/pr_* by dev_{dbg,info,warn,err}
-  * Use cancel_delayed_work_sync in remove
-  * General code cleanup
- v3:
-  * Incorporate review by Andy
-  * Add cellwise vendor prefix
-  * Rename cellwise,bat-config-info property to cellwise,battery-profile
-  * Remove most state of charge post-processing
-  * Use fwnode interface
-  * General code cleanup
-  * Lots of code style fixes
- v4:
-  * Implement additional changes requested by Andy
-  * Use fwnode inline wrappers
-  * Clean up waiting for gauge
-  * Minor code style fixes
- v5:
-  * Clean up includes
-  * Handle errors during device property parsing
-  * Refactor device property parsing
-  * Replace i2c->probe by i2c->probe_new 
-  * More code style fixes
- v6:
-  * Fix bindings according to review by Rob
-
-
-Tobias Schramm (3):
-  dt-bindings: Document cellwise vendor-prefix
-  dt-bindings: power: supply: add cw2015_battery bindings
-  power: supply: add CellWise cw2015 fuel gauge driver
-
- .../bindings/power/supply/cw2015_battery.yaml |  82 ++
- .../devicetree/bindings/vendor-prefixes.yaml  |   2 +
- MAINTAINERS                                   |   6 +
- drivers/power/supply/Kconfig                  |  11 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/cw2015_battery.c         | 749 ++++++++++++++++++
- 6 files changed, 851 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/cw2015_battery.yaml
- create mode 100644 drivers/power/supply/cw2015_battery.c
-
--- 
-2.24.1
+Tobias
 
