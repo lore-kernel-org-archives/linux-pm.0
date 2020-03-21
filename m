@@ -6,29 +6,29 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1992C43333
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2C04C4332B
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A402720722
-	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D3FB120754
+	for <linux-pm@archiver.kernel.org>; Sat, 21 Mar 2020 11:34:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728490AbgCULey (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 21 Mar 2020 07:34:54 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:38423 "EHLO
+        id S1728603AbgCULe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 21 Mar 2020 07:34:58 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:38490 "EHLO
         Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726652AbgCULex (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2020 07:34:53 -0400
+        with ESMTP id S1728497AbgCULe5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 21 Mar 2020 07:34:57 -0400
 Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11] helo=nanos.tec.linutronix.de)
         by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
         (Exim 4.80)
         (envelope-from <tglx@linutronix.de>)
-        id 1jFcOZ-0002Re-66; Sat, 21 Mar 2020 12:34:27 +0100
+        id 1jFcOR-0001zT-Eh; Sat, 21 Mar 2020 12:34:19 +0100
 Received: from nanos.tec.linutronix.de (localhost [IPv6:::1])
-        by nanos.tec.linutronix.de (Postfix) with ESMTP id 692651040CC;
-        Sat, 21 Mar 2020 12:34:22 +0100 (CET)
-Message-Id: <20200321113242.751182723@linutronix.de>
+        by nanos.tec.linutronix.de (Postfix) with ESMTP id 74A94FFBBF;
+        Sat, 21 Mar 2020 12:34:18 +0100 (CET)
+Message-Id: <20200321113241.246190285@linutronix.de>
 User-Agent: quilt/0.65
-Date:   Sat, 21 Mar 2020 12:26:04 +0100
+Date:   Sat, 21 Mar 2020 12:25:49 +0100
 From:   Thomas Gleixner <tglx@linutronix.de>
 To:     LKML <linux-kernel@vger.kernel.org>
 Cc:     Peter Zijlstra <peterz@infradead.org>,
@@ -38,22 +38,21 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Joel Fernandes <joel@joelfernandes.org>,
         Oleg Nesterov <oleg@redhat.com>,
         Davidlohr Bueso <dave@stgolabs.net>,
-        Logan Gunthorpe <logang@deltatee.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
-        linux-pci@vger.kernel.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Felipe Balbi <balbi@kernel.org>, linux-usb@vger.kernel.org,
-        Kalle Valo <kvalo@codeaurora.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
         Darren Hart <dvhart@infradead.org>,
         Andy Shevchenko <andy@infradead.org>,
         platform-driver-x86@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Zhang Rui <rui.zhang@intel.com>,
         "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>,
-        linux-acpi@vger.kernel.org, kbuild test robot <lkp@intel.com>,
+        linux-acpi@vger.kernel.org, Logan Gunthorpe <logang@deltatee.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
+        linux-pci@vger.kernel.org, Felipe Balbi <balbi@kernel.org>,
+        linux-usb@vger.kernel.org, Kalle Valo <kvalo@codeaurora.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+        kbuild test robot <lkp@intel.com>,
         Nick Hu <nickhu@andestech.com>,
         Greentime Hu <green.hu@gmail.com>,
         Vincent Chen <deanbo422@gmail.com>,
@@ -70,7 +69,7 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Jonathan Corbet <corbet@lwn.net>,
         Randy Dunlap <rdunlap@infradead.org>,
         Davidlohr Bueso <dbueso@suse.de>
-Subject: [patch V3 20/20] lockdep: Add posixtimer context tracing bits
+Subject: [patch V3 05/20] acpi: Remove header dependency
 References: <20200321112544.878032781@linutronix.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -83,77 +82,70 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+From: Peter Zijlstra <peterz@infradead.org>
 
-Splitting run_posix_cpu_timers() into two parts is work in progress which
-is stuck on other entry code related problems. The heavy lifting which
-involves locking of sighand lock will be moved into task context so the
-necessary execution time is burdened on the task and not on interrupt
-context.
+In order to avoid future header hell, remove the inclusion of
+proc_fs.h from acpi_bus.h. All it needs is a forward declaration of a
+struct.
 
-Until this work completes lockdep with the spinlock nesting rules enabled
-would emit warnings for this known context.
-
-Prevent it by setting "->irq_config = 1" for the invocation of
-run_posix_cpu_timers() so lockdep does not complain when sighand lock is
-acquried. This will be removed once the split is completed.
-
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Andy Shevchenko <andy@infradead.org>
+Cc: platform-driver-x86@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Cc: linux-pm@vger.kernel.org
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-acpi@vger.kernel.org
 ---
- include/linux/irqflags.h       |   12 ++++++++++++
- kernel/time/posix-cpu-timers.c |    6 +++++-
- 2 files changed, 17 insertions(+), 1 deletion(-)
+ drivers/platform/x86/dell-smo8800.c                      |    1 +
+ drivers/platform/x86/wmi.c                               |    1 +
+ drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c |    1 +
+ include/acpi/acpi_bus.h                                  |    2 +-
+ 4 files changed, 4 insertions(+), 1 deletion(-)
 
---- a/include/linux/irqflags.h
-+++ b/include/linux/irqflags.h
-@@ -69,6 +69,16 @@ do {						\
- 			current->irq_config = 0;	\
- 	  } while (0)
+--- a/drivers/platform/x86/dell-smo8800.c
++++ b/drivers/platform/x86/dell-smo8800.c
+@@ -16,6 +16,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/miscdevice.h>
+ #include <linux/uaccess.h>
++#include <linux/fs.h>
  
-+# define lockdep_posixtimer_enter()				\
-+	  do {							\
-+		  current->irq_config = 1;			\
-+	  } while (0)
-+
-+# define lockdep_posixtimer_exit()				\
-+	  do {							\
-+		  current->irq_config = 0;			\
-+	  } while (0)
-+
- # define lockdep_irq_work_enter(__work)					\
- 	  do {								\
- 		  if (!(atomic_read(&__work->flags) & IRQ_WORK_HARD_IRQ))\
-@@ -94,6 +104,8 @@ do {						\
- # define lockdep_softirq_exit()		do { } while (0)
- # define lockdep_hrtimer_enter(__hrtimer)		do { } while (0)
- # define lockdep_hrtimer_exit(__hrtimer)		do { } while (0)
-+# define lockdep_posixtimer_enter()		do { } while (0)
-+# define lockdep_posixtimer_exit()		do { } while (0)
- # define lockdep_irq_work_enter(__work)		do { } while (0)
- # define lockdep_irq_work_exit(__work)		do { } while (0)
- #endif
---- a/kernel/time/posix-cpu-timers.c
-+++ b/kernel/time/posix-cpu-timers.c
-@@ -1126,8 +1126,11 @@ void run_posix_cpu_timers(void)
- 	if (!fastpath_timer_check(tsk))
- 		return;
+ struct smo8800_device {
+ 	u32 irq;                     /* acpi device irq */
+--- a/drivers/platform/x86/wmi.c
++++ b/drivers/platform/x86/wmi.c
+@@ -29,6 +29,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/uuid.h>
+ #include <linux/wmi.h>
++#include <linux/fs.h>
+ #include <uapi/linux/wmi.h>
  
--	if (!lock_task_sighand(tsk, &flags))
-+	lockdep_posixtimer_enter();
-+	if (!lock_task_sighand(tsk, &flags)) {
-+		lockdep_posixtimer_exit();
- 		return;
-+	}
- 	/*
- 	 * Here we take off tsk->signal->cpu_timers[N] and
- 	 * tsk->cpu_timers[N] all the timers that are firing, and
-@@ -1169,6 +1172,7 @@ void run_posix_cpu_timers(void)
- 			cpu_timer_fire(timer);
- 		spin_unlock(&timer->it_lock);
- 	}
-+	lockdep_posixtimer_exit();
- }
+ ACPI_MODULE_NAME("wmi");
+--- a/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
++++ b/drivers/thermal/intel/int340x_thermal/acpi_thermal_rel.c
+@@ -19,6 +19,7 @@
+ #include <linux/acpi.h>
+ #include <linux/uaccess.h>
+ #include <linux/miscdevice.h>
++#include <linux/fs.h>
+ #include "acpi_thermal_rel.h"
  
- /*
+ static acpi_handle acpi_thermal_rel_handle;
+--- a/include/acpi/acpi_bus.h
++++ b/include/acpi/acpi_bus.h
+@@ -80,7 +80,7 @@ bool acpi_dev_present(const char *hid, c
+ 
+ #ifdef CONFIG_ACPI
+ 
+-#include <linux/proc_fs.h>
++struct proc_dir_entry;
+ 
+ #define ACPI_BUS_FILE_ROOT	"acpi"
+ extern struct proc_dir_entry *acpi_root_dir;
+
 
