@@ -7,65 +7,68 @@ X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0C6FC1975A
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Mar 2020 22:30:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A9DCCC54FCF
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Mar 2020 22:46:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C5E6520735
-	for <linux-pm@archiver.kernel.org>; Sun, 22 Mar 2020 22:30:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7DD9020775
+	for <linux-pm@archiver.kernel.org>; Sun, 22 Mar 2020 22:46:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qKvlR8UZ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i6q2zHw5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726816AbgCVWa2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Mar 2020 18:30:28 -0400
-Received: from mail-wm1-f65.google.com ([209.85.128.65]:38486 "EHLO
-        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726786AbgCVWa2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Mar 2020 18:30:28 -0400
-Received: by mail-wm1-f65.google.com with SMTP id l20so12691147wmi.3;
-        Sun, 22 Mar 2020 15:30:26 -0700 (PDT)
+        id S1726843AbgCVWqg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Mar 2020 18:46:36 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:44393 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726809AbgCVWqg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Mar 2020 18:46:36 -0400
+Received: by mail-wr1-f65.google.com with SMTP id m17so5718540wrw.11;
+        Sun, 22 Mar 2020 15:46:34 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id;
-        bh=KmhmWvbFQMFZ6mT9PflSCZYk2Q9MLpXo0b38vOV/huo=;
-        b=qKvlR8UZo869TWuxLhPj8rpzsiltXBzAlT8WI42WTOceU8atrga9CuPmv4Bnw3fn8F
-         bSsTGM7U+3owTwyqllmdY6qxE6nEnCqks8a5gYvS7+8mHpMZ9CliLDApm4zZ2omZAREh
-         ZTG2alF7LpL0izJGtBQzlEpPZaPvZgklu+gSMJN6Fzcsu/pGiQ2QOi/tHHYqUCZQZi0V
-         2l8+W/dEOJSWdzlIqJHFFW0odLvsqWLOd5y0rxEE7u9+nN8HVfDg4C9/li9kGKj0apAI
-         7Vy8fB2EdH3kMIgAy+79T+OWAaFW8rqptClSP7dBQpid9x3ghcjnwHwxx3Q+3iwIfYLK
-         hgxA==
+        bh=o2Zu+j8P+f4r+VMWXgJycgQcebRHifBm3aep97iCeYc=;
+        b=i6q2zHw5e3v/Bv1Ti8xb8UC3wrFZF5Y2NzXiYHoezWpnnmPMfBa11qJ/czxMjs0a4b
+         3ME0kmPo1YBv7Vi/ODRZzUS+SWH8gwKmTvsOZukUUNUiGmA/W7bPR77c2+XkWqCZ3dwp
+         tVtyzBaEjz1OKxq5Gh1OTHt9aTxHu1k/H/9lkQICjqh04OrRG5OvKaHTdq7E3KCLN7FE
+         QWNeIF2QcSHaBJNWNfPfYAUxy3S86BRbwDmnVxraqc4ANZf6DxiFwmIDRJz1loEoFqT7
+         4JyYhoFsGlSFlYiapUJ7Oz2v+Z7DhsLpFAdetPjM8NgGlWNCy1xqWzW9ltep8EOlPjhN
+         sggA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=KmhmWvbFQMFZ6mT9PflSCZYk2Q9MLpXo0b38vOV/huo=;
-        b=rgA9tv7uhWwGqA7H7HyYEuBnhnF7znuWIVW1x4Uz2i3N0dVSo+V8kfZ6ub5UM/jZe0
-         ds0B/Dl0JVSLY5p8b+Ta3DFxXKQqYrt3IN1WXxsWBwj4M/gZZVWmtTAHwDpme5RI7yHM
-         MCQr1KhBAvHe/nwynbcb5sD32UY+qVDIkuXYYZcTljN06WeHYdkQn+1dYBTx4ichnjdw
-         peh2UJ+LwSTWJuCo9ReSjeoEIVGMZwWx+tAU+mw4pEjxChsy79laY5/GGbX4qExpwZ2+
-         5Skff1bwLTfywklCylzGlGh62Tc8SyX02bptJfx9waBkigosee1nI4vyx6A43zxlXk5x
-         ZDDw==
-X-Gm-Message-State: ANhLgQ0U5km8VJfNxHKNZLr6eavigzpb+JFpOXEFp5hGuWTHnl9T9bMR
-        jgsHpIc3npw2WOxKTv9KJfD2pAa8OQ4=
-X-Google-Smtp-Source: ADFU+vuTT5bbQSh/KefTnt7J+1b6IkHfRE4nG4EyJnPppSag2VG4qFm60LoTifwIDV0fS0MH0Z8Fiw==
-X-Received: by 2002:a1c:a908:: with SMTP id s8mr24539211wme.133.1584916223913;
-        Sun, 22 Mar 2020 15:30:23 -0700 (PDT)
+        bh=o2Zu+j8P+f4r+VMWXgJycgQcebRHifBm3aep97iCeYc=;
+        b=aLgrPya4+O/y1DU81V+KA+/JEpBfGAY8ugesiDBrETQ0vVprs89LK5nqFPJGg5JxE7
+         UKU12bwh0jhDcU4TiUyevQcA7exqS+xdiDN7NQPUoFD3Gzoym7T845TKkKy1UcaVcTr3
+         RsYPAuHymRle5hYyDOTbQeECj1W2sqSX4vhX0/r6CUmyOirCwdZ8GXlcWoBvWBWdkliS
+         T4SfVbm1R2dBK7ixKmTOxiECmgf9HVKHGn7lWcHzvzieYsGLz7CW0cKFQXFw9uLutvpJ
+         cfBpdB0JXJypVahY5cPD6c4oSBai75kxv7z9hnZTUrdRqOD7QF3kr/I+wXp9k//ey2PZ
+         PP3Q==
+X-Gm-Message-State: ANhLgQ2gcyRlnMTWdteWVbrvEVceys6jZBRLhOeKSwdM5pIfFVRe8tZ0
+        NDpYPV5+EqewZ2kgV31OICA=
+X-Google-Smtp-Source: ADFU+vuF+nIMFx+uARwPok3PqoTGjFj7Z0HDAFVkthukCztCuVi9zZSn8kAKqjkr/uovgbT69PdRBA==
+X-Received: by 2002:a05:6000:10c6:: with SMTP id b6mr25536009wrx.130.1584917193906;
+        Sun, 22 Mar 2020 15:46:33 -0700 (PDT)
 Received: from localhost.localdomain (p5DCFFFE5.dip0.t-ipconnect.de. [93.207.255.229])
-        by smtp.gmail.com with ESMTPSA id p13sm8060517wru.3.2020.03.22.15.30.22
+        by smtp.gmail.com with ESMTPSA id r9sm19158549wma.47.2020.03.22.15.46.32
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Mar 2020 15:30:22 -0700 (PDT)
+        Sun, 22 Mar 2020 15:46:33 -0700 (PDT)
 From:   Saravanan Sekar <sravanhome@gmail.com>
 To:     lee.jones@linaro.org, robh+dt@kernel.org, jic23@kernel.org,
         knaack.h@gmx.de, lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
 Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
         Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v3 0/5] Add battery charger driver support for MP2629
-Date:   Sun, 22 Mar 2020 23:30:11 +0100
-Message-Id: <20200322223016.11509-1-sravanhome@gmail.com>
+Subject: [PATCH v4 0/5] Add battery charger driver support for MP2629
+Date:   Sun, 22 Mar 2020 23:46:21 +0100
+Message-Id: <20200322224626.13160-1-sravanhome@gmail.com>
 X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
+
+changes in v4:
+ - fixed capitalization in mfg Kconfig and documentation
 
 changes in v3:
  - regmap for children passed using platform data and remove mfd driver info
@@ -89,7 +92,7 @@ Saravanan Sekar (5):
   power: supply: Add support for mps mp2629 battery charger
   MAINTAINERS: Add entry for mp2629 Battery Charger driver
 
- .../devicetree/bindings/mfd/mps,mp2629.yaml   |  62 ++
+ .../devicetree/bindings/mfd/mps,mp2629.yaml   |  60 ++
  MAINTAINERS                                   |   5 +
  drivers/iio/adc/Kconfig                       |  10 +
  drivers/iio/adc/Makefile                      |   1 +
@@ -101,7 +104,7 @@ Saravanan Sekar (5):
  drivers/power/supply/Makefile                 |   1 +
  drivers/power/supply/mp2629_charger.c         | 697 ++++++++++++++++++
  include/linux/mfd/mp2629.h                    |  31 +
- 12 files changed, 1158 insertions(+)
+ 12 files changed, 1156 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
  create mode 100644 drivers/iio/adc/mp2629_adc.c
  create mode 100644 drivers/mfd/mp2629.c
