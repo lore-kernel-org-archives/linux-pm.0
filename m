@@ -2,110 +2,377 @@ Return-Path: <SRS0=R0/j=5J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A79BC18E5B
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9765C54FD2
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 23:14:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1E41520722
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:45:56 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ewxanhcY"
+	by mail.kernel.org (Postfix) with ESMTP id AF84C2051A
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 23:14:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728429AbgCXWpl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Mar 2020 18:45:41 -0400
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:39394 "EHLO
-        mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727554AbgCXWpl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2020 18:45:41 -0400
-Received: by mail-lj1-f196.google.com with SMTP id i20so450632ljn.6;
-        Tue, 24 Mar 2020 15:45:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1HxGR4IMpW8Yf3poFYJ0yW6+xXLZYxn2YNkddFlKXd8=;
-        b=ewxanhcY0YBuUPV3qNKUCNj/4v2hzLIcwwi86EkrozrqhCpg5IJYoahWTJnGZAIXF6
-         ttTSKp7gjG75aZqgGbe5LBfwrrd8fzZrwkBULjH1/ZPPRxSWTYGXhqPzeYxv2Nqvo0EX
-         kRmgThP9MKUL2TcM8wO+fUQcEcpUTszXjGTgz8tBhHy0ceTxlXCafpYAqJpGpb9w4VgM
-         3kB6J9mcwCRWPkCaS9abJ6jaARgTyMTpPa64bltRlAYwgd+2TPnSErWsPw9VlkWwRe7U
-         j/8U/sPfbueWtv9dM6hqkTFmgCQWt+5hh90bexsrCx0iE5TfmMRogdFM6nnhdLhCrgTF
-         bkKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1HxGR4IMpW8Yf3poFYJ0yW6+xXLZYxn2YNkddFlKXd8=;
-        b=oO/8s7aGB52Eg1VPrsK1srGv9nDM7VdGsS8RHkRRGNPBgED4HWOMzJrJYXuJqGxoKt
-         /j9tu2ca8iPp5xSi1g7a+VTHZeUrsz+Z+NeLUOF4uslRnTOrGEztz33TKuPM5OjzMg53
-         II9p4/0AzG1pEL8KCuwN7KoO08Ca+kZmFBreIPsfJogu809jtCJXrMYq5yPoDEPFin6g
-         qxfmldaBmcJNn/gBocCL4EVYV+QAi4RlZS0B10c7Bdc26/T1XbWOw/IfuoOumrjU2bs/
-         SiNKRJFUd5kbwRIphTcS+OLK1DWVC1AhL+k9yGv+8YS7odTtxRh18Iek2K8S0rsQfxWs
-         sc1Q==
-X-Gm-Message-State: ANhLgQ2gZPZ+Dkp9vOKfsFfmQb46REy+jhttJ9Qa6SLbdbYSWjyOJGvy
-        58VGPYuOcvS6eKb/LcuCBMbWaLbs
-X-Google-Smtp-Source: APiQypKK9aJ/vteGvqg2enrRQJOAVimwi3mKjNazUA694NM7Fj2SOo9y8bnfprMAWPe4Y0SRWaljDQ==
-X-Received: by 2002:a05:651c:1061:: with SMTP id y1mr4506ljm.285.1585089938878;
-        Tue, 24 Mar 2020 15:45:38 -0700 (PDT)
-Received: from localhost.localdomain (94-29-39-224.dynamic.spd-mgts.ru. [94.29.39.224])
-        by smtp.gmail.com with ESMTPSA id d4sm10534279lfa.75.2020.03.24.15.45.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 24 Mar 2020 15:45:38 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
-        Jasper Korten <jja2000@gmail.com>,
-        David Heidelberg <david@ixit.cz>,
-        Peter Geis <pgwipeout@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v1 0/3] Enable LP2 CPUIDLE state on NVIDIA Tegra30
-Date:   Wed, 25 Mar 2020 01:43:32 +0300
-Message-Id: <20200324224335.5825-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        id S1727297AbgCXXO1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Mar 2020 19:14:27 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:46547 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726204AbgCXXO1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2020 19:14:27 -0400
+Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11] helo=nanos.tec.linutronix.de)
+        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+        (Exim 4.80)
+        (envelope-from <tglx@linutronix.de>)
+        id 1jGsjn-0007lV-Qr; Wed, 25 Mar 2020 00:13:36 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+        id DC4A4100C51; Wed, 25 Mar 2020 00:13:34 +0100 (CET)
+From:   Thomas Gleixner <tglx@linutronix.de>
+To:     paulmck@kernel.org
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Sebastian Siewior <bigeasy@linutronix.de>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Joel Fernandes <joel@joelfernandes.org>,
+        Oleg Nesterov <oleg@redhat.com>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Randy Dunlap <rdunlap@infradead.org>,
+        Logan Gunthorpe <logang@deltatee.com>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Kurt Schwemmer <kurt.schwemmer@microsemi.com>,
+        linux-pci@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Felipe Balbi <balbi@kernel.org>, linux-usb@vger.kernel.org,
+        Kalle Valo <kvalo@codeaurora.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        platform-driver-x86@vger.kernel.org,
+        Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        linux-pm@vger.kernel.org, Len Brown <lenb@kernel.org>,
+        linux-acpi@vger.kernel.org, kbuild test robot <lkp@intel.com>,
+        Nick Hu <nickhu@andestech.com>,
+        Greentime Hu <green.hu@gmail.com>,
+        Vincent Chen <deanbo422@gmail.com>,
+        Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
+        Brian Cain <bcain@codeaurora.org>,
+        linux-hexagon@vger.kernel.org, Tony Luck <tony.luck@intel.com>,
+        Fenghua Yu <fenghua.yu@intel.com>, linux-ia64@vger.kernel.org,
+        Michal Simek <monstr@monstr.eu>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Geoff Levand <geoff@infradead.org>,
+        linuxppc-dev@lists.ozlabs.org, Davidlohr Bueso <dbueso@suse.de>
+Subject: Re: [patch V3 13/20] Documentation: Add lock ordering and nesting documentation
+In-Reply-To: <20200323025501.GE3199@paulmck-ThinkPad-P72>
+Date:   Wed, 25 Mar 2020 00:13:34 +0100
+Message-ID: <87r1xhz6qp.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+Paul,
 
-This series enables LP2 CPU idling state on Tegra30. Previously,
-Michał Mirosław reported that this wasn't working on ASUS Transformer
-device and we found that replicating the Transformer's downstream kernel
-behavior (in regards to the firmware) helps. Later on Michał told that
-LP2 works without the firmware changes using a different kernel version /
-config, we don't know for sure what was the cause of the original problem.
+"Paul E. McKenney" <paulmck@kernel.org> writes:
+> On Sat, Mar 21, 2020 at 12:25:57PM +0100, Thomas Gleixner wrote:
+> In the normal case where the task sleeps through the entire lock
+> acquisition, the sequence of events is as follows:
+>
+>      state = UNINTERRUPTIBLE
+>      lock()
+>        block()
+>          real_state = state
+>          state = SLEEPONLOCK
+>
+>                                lock wakeup
+>                                  state = real_state == UNINTERRUPTIBLE
+>
+> This sequence of events can occur when the task acquires spinlocks
+> on its way to sleeping, for example, in a call to wait_event().
+>
+> The non-lock wakeup can occur when a wakeup races with this wait_event(),
+> which can result in the following sequence of events:
+>
+>      state = UNINTERRUPTIBLE
+>      lock()
+>        block()
+>          real_state = state
+>          state = SLEEPONLOCK
+>
+>                              non lock wakeup
+>                                  real_state = RUNNING
+>
+>                                lock wakeup
+>                                  state = real_state == RUNNING
+>
+> Without this real_state subterfuge, the wakeup might be lost.
 
-This series makes the TF firmware changes that are known to work well
-in regards to LP2 idling on all devices and then the LP2 idling state
-is enabled.
+I added this with a few modifications which reflect the actual
+implementation. Conceptually the same.
 
-Please review and apply, thanks in advance.
+> rwsems have grown special-purpose interfaces that allow non-owner release.
+> This non-owner release prevents PREEMPT_RT from substituting RT-mutex
+> implementations, for example, by defeating priority inheritance.
+> After all, if the lock has no owner, whose priority should be boosted?
+> As a result, PREEMPT_RT does not currently support rwsem, which in turn
+> means that code using it must therefore be disabled until a workable
+> solution presents itself.
+>
+> [ Note: Not as confident as I would like to be in the above. ]
 
-Dmitry Osipenko (3):
-  ARM: tegra: Initialize r0 register for firmware wake-up
-  firmware: trusted_foundations: Different way of L2 cache enabling
-    after LP2 suspend
-  cpuidle: tegra: Support CPU cluster power-down state on Tegra30
+I'm not confident either especially not after looking at the actual
+code.
 
- arch/arm/mach-tegra/pm.c                     |  4 ++++
- arch/arm/mach-tegra/reset-handler.S          |  7 ++++++-
- drivers/cpuidle/cpuidle-tegra.c              |  1 -
- drivers/firmware/trusted_foundations.c       | 21 ++++++++++++++++++--
- include/linux/firmware/trusted_foundations.h |  1 +
- 5 files changed, 30 insertions(+), 4 deletions(-)
+In fact I feel really stupid because the rw_semaphore reader non-owner
+restriction on RT simply does not exist anymore and my history biased
+memory tricked me.
 
--- 
-2.25.1
+The first rw_semaphore implementation of RT was simple and restricted
+the reader side to a single reader to support PI on both the reader and
+the writer side. That obviosuly did not scale well and made mmap_sem
+heavy use cases pretty unhappy.
+
+The short interlude with multi-reader boosting turned out to be a failed
+experiment - Steven might still disagree though :)
+
+At some point we gave up and I myself (sic!) reimplemented the RT
+variant of rw_semaphore with a reader biased mechanism.
+
+The reader never holds the underlying rt_mutex accross the read side
+critical section. It merily increments the reader count and drops it on
+release.
+
+The only time a reader takes the rt_mutex is when it blocks on a
+writer. Writers hold the rt_mutex across the write side critical section
+to allow incoming readers to boost them. Once the writer releases the
+rw_semaphore it unlocks the rt_mutex which is then handed off to the
+readers. They increment the reader count and then drop the rt_mutex
+before continuing in the read side critical section.
+
+So while I changed the implementation it did obviously not occur to me
+that this also lifted the non-owner release restriction. Nobody else
+noticed either. So we kept dragging this along in both memory and
+implementation. Both will be fixed now :)
+
+The owner semantics of down/up_read() are only enforced by lockdep. That
+applies to both RT and !RT. The up/down_read_non_owner() variants are
+just there to tell lockdep about it.
+
+So, I picked up your other suggestions with slight modifications and
+adjusted the owner, semaphore and rw_semaphore docs accordingly.
+
+Please have a close look at the patch below (applies on tip core/locking).
+
+Thanks,
+
+        tglx, who is searching a brown paperbag
+
+8<----------
+
+ Documentation/locking/locktypes.rst |  148 +++++++++++++++++++++++-------------
+ 1 file changed, 98 insertions(+), 50 deletions(-)
+
+--- a/Documentation/locking/locktypes.rst
++++ b/Documentation/locking/locktypes.rst
+@@ -67,6 +67,17 @@ Spinning locks implicitly disable preemp
+  _irqsave/restore()   Save and disable / restore interrupt disabled state
+  ===================  ====================================================
+ 
++Owner semantics
++===============
++
++The aforementioned lock types except semaphores have strict owner
++semantics:
++
++  The context (task) that acquired the lock must release it.
++
++rw_semaphores have a special interface which allows non-owner release for
++readers.
++
+ 
+ rtmutex
+ =======
+@@ -83,6 +94,51 @@ interrupt handlers and soft interrupts.
+ and rwlock_t to be implemented via RT-mutexes.
+ 
+ 
++sempahore
++=========
++
++semaphore is a counting semaphore implementation.
++
++Semaphores are often used for both serialization and waiting, but new use
++cases should instead use separate serialization and wait mechanisms, such
++as mutexes and completions.
++
++sempahores and PREEMPT_RT
++----------------------------
++
++PREEMPT_RT does not change the sempahore implementation. That's impossible
++due to the counting semaphore semantics which have no concept of owners.
++The lack of an owner conflicts with priority inheritance. After all an
++unknown owner cannot be boosted. As a consequence blocking on semaphores
++can be subject to priority inversion.
++
++
++rw_sempahore
++============
++
++rw_semaphore is a multiple readers and single writer lock mechanism.
++
++On non-PREEMPT_RT kernels the implementation is fair, thus preventing
++writer starvation.
++
++rw_semaphore complies by default with the strict owner semantics, but there
++exist special-purpose interfaces that allow non-owner release for readers.
++These work independent of the kernel configuration.
++
++rw_sempahore and PREEMPT_RT
++---------------------------
++
++PREEMPT_RT kernels map rw_sempahore to a separate rt_mutex-based
++implementation, thus changing the fairness:
++
++ Because an rw_sempaphore writer cannot grant its priority to multiple
++ readers, a preempted low-priority reader will continue holding its lock,
++ thus starving even high-priority writers.  In contrast, because readers
++ can grant their priority to a writer, a preempted low-priority writer will
++ have its priority boosted until it releases the lock, thus preventing that
++ writer from starving readers.
++
++
+ raw_spinlock_t and spinlock_t
+ =============================
+ 
+@@ -140,7 +196,16 @@ On a PREEMPT_RT enabled kernel spinlock_
+    kernels leave task state untouched.  However, PREEMPT_RT must change
+    task state if the task blocks during acquisition.  Therefore, it saves
+    the current task state before blocking and the corresponding lock wakeup
+-   restores it.
++   restores it::
++
++    task->state = TASK_INTERRUPTIBLE
++     lock()
++       block()
++         task->saved_state = task->state
++	 task->state = TASK_UNINTERRUPTIBLE
++	 schedule()
++					lock wakeup
++					  task->state = task->saved_state
+ 
+    Other types of wakeups would normally unconditionally set the task state
+    to RUNNING, but that does not work here because the task must remain
+@@ -148,7 +213,22 @@ On a PREEMPT_RT enabled kernel spinlock_
+    wakeup attempts to awaken a task blocked waiting for a spinlock, it
+    instead sets the saved state to RUNNING.  Then, when the lock
+    acquisition completes, the lock wakeup sets the task state to the saved
+-   state, in this case setting it to RUNNING.
++   state, in this case setting it to RUNNING::
++
++    task->state = TASK_INTERRUPTIBLE
++     lock()
++       block()
++         task->saved_state = task->state
++	 task->state = TASK_UNINTERRUPTIBLE
++	 schedule()
++					non lock wakeup
++					  task->saved_state = TASK_RUNNING
++
++					lock wakeup
++					  task->state = task->saved_state
++
++   This ensures that the real wakeup cannot be lost.
++
+ 
+ rwlock_t
+ ========
+@@ -228,17 +308,16 @@ while holding normal non-raw spinlocks b
+ bit spinlocks
+ -------------
+ 
+-Bit spinlocks are problematic for PREEMPT_RT as they cannot be easily
+-substituted by an RT-mutex based implementation for obvious reasons.
+-
+-The semantics of bit spinlocks are preserved on PREEMPT_RT kernels and the
+-caveats vs. raw_spinlock_t apply.
+-
+-Some bit spinlocks are substituted by regular spinlock_t for PREEMPT_RT but
+-this requires conditional (#ifdef'ed) code changes at the usage site while
+-the spinlock_t substitution is simply done by the compiler and the
+-conditionals are restricted to header files and core implementation of the
+-locking primitives and the usage sites do not require any changes.
++PREEMPT_RT cannot substitute bit spinlocks because a single bit is too
++small to accommodate an RT-mutex.  Therefore, the semantics of bit
++spinlocks are preserved on PREEMPT_RT kernels, so that the raw_spinlock_t
++caveats also apply to bit spinlocks.
++
++Some bit spinlocks are replaced with regular spinlock_t for PREEMPT_RT
++using conditional (#ifdef'ed) code changes at the usage site.  In contrast,
++usage-site changes are not needed for the spinlock_t substitution.
++Instead, conditionals in header files and the core locking implemementation
++enable the compiler to do the substitution transparently.
+ 
+ 
+ Lock type nesting rules
+@@ -254,46 +333,15 @@ Lock type nesting rules
+ 
+   - Spinning lock types can nest inside sleeping lock types.
+ 
+-These rules apply in general independent of CONFIG_PREEMPT_RT.
++These constraints apply both in CONFIG_PREEMPT_RT and otherwise.
+ 
+-As PREEMPT_RT changes the lock category of spinlock_t and rwlock_t from
+-spinning to sleeping this has obviously restrictions how they can nest with
+-raw_spinlock_t.
+-
+-This results in the following nest ordering:
++The fact that PREEMPT_RT changes the lock category of spinlock_t and
++rwlock_t from spinning to sleeping means that they cannot be acquired while
++holding a raw spinlock.  This results in the following nesting ordering:
+ 
+   1) Sleeping locks
+   2) spinlock_t and rwlock_t
+   3) raw_spinlock_t and bit spinlocks
+ 
+-Lockdep is aware of these constraints to ensure that they are respected.
+-
+-
+-Owner semantics
+-===============
+-
+-Most lock types in the Linux kernel have strict owner semantics, i.e. the
+-context (task) which acquires a lock has to release it.
+-
+-There are two exceptions:
+-
+-  - semaphores
+-  - rwsems
+-
+-semaphores have no owner semantics for historical reason, and as such
+-trylock and release operations can be called from any context. They are
+-often used for both serialization and waiting purposes. That's generally
+-discouraged and should be replaced by separate serialization and wait
+-mechanisms, such as mutexes and completions.
+-
+-rwsems have grown interfaces which allow non owner release for special
+-purposes. This usage is problematic on PREEMPT_RT because PREEMPT_RT
+-substitutes all locking primitives except semaphores with RT-mutex based
+-implementations to provide priority inheritance for all lock types except
+-the truly spinning ones. Priority inheritance on ownerless locks is
+-obviously impossible.
+-
+-For now the rwsem non-owner release excludes code which utilizes it from
+-being used on PREEMPT_RT enabled kernels. In same cases this can be
+-mitigated by disabling portions of the code, in other cases the complete
+-functionality has to be disabled until a workable solution has been found.
++Lockdep will complain if these constraints are violated, both in
++CONFIG_PREEMPT_RT and otherwise.
 
