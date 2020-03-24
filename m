@@ -2,109 +2,118 @@ Return-Path: <SRS0=R0/j=5J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A994C18E5B
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F469C54FCE
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:45:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5C8042078A
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:07:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1585087660;
-	bh=UEhMSWFkGipA39wh92sj4uIKAlDFRxkAACDVOOVVRgY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=kjTnPbbFXtOpof1LUSXgtTR8yh165T1em9lbl7y4/s2rnF9B+S45zDgbvujulSlZO
-	 lrLPyJHdbZRymtiqPIRfmNWoOiLkzF4lFRZ8lnH8pbhkJJRjm/rdtbL0hnOFeukm5l
-	 XFRgOSkY9DBp38388Zp1nPdrDQsZuYW4+Fkj5pQw=
+	by mail.kernel.org (Postfix) with ESMTP id EB12C20722
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 22:45:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gLuEIvUm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728207AbgCXWHj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Mar 2020 18:07:39 -0400
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:42606 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727496AbgCXWHj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2020 18:07:39 -0400
-Received: by mail-ot1-f66.google.com with SMTP id s18so86557otr.9;
-        Tue, 24 Mar 2020 15:07:39 -0700 (PDT)
+        id S1728506AbgCXWpn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Mar 2020 18:45:43 -0400
+Received: from mail-lj1-f195.google.com ([209.85.208.195]:34808 "EHLO
+        mail-lj1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728428AbgCXWpm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2020 18:45:42 -0400
+Received: by mail-lj1-f195.google.com with SMTP id p10so232467ljn.1;
+        Tue, 24 Mar 2020 15:45:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=nZnryKytso1ZYRkSpMtMSAQGQFfGmBLvG2yuSqscEJw=;
+        b=gLuEIvUmPczlzxnWAp0Rql4/wGU4KU+CC7ROBviiX4S4CwdI6K/KMwJe9oik7yTw14
+         KDY/kUFSjLQCupaLkF5wkeFrhtfY8DCLN+xej1yj9jP5nNH2iRVSEvIM61kOEHkhW6VF
+         BcMaCJh6rVwKiMTB0LVqkDdBokDXPO9HoxRDUZH48rsQKrVlh/UpEwjZAprPkRA9qaNv
+         Zfzj16jqNhfEdidnPyrk9B/3LJi2rv5Bo62+Mg6m55L29iNE7tbYjVg1fefl9dg7LnYK
+         d5/hVcPdFoGRrOpSsWYvIatqzOXSOGxN2t7QmEI9uX8vF9EIiPLRGXso9C0FSfdd5xWn
+         kmIw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=JDJSZpzFwpVT/O1jCQRTBFHmVA+P37ZccabTXzq6UPI=;
-        b=U19r1nC9bPxbId9SACnyZiL6Qrl6xRqSEWDM9mGsR12tZDeBFPprR+XLM1f4CCuGPn
-         2CO/S+PxSlr7cmsignYKMiriFezU+/6tvg/+EaQPp64DBAS7TMQyBgpr4AIGbAqZvXn/
-         CYbz8KBhmKBiSpzGdE8l9KtWFldAPd1NrZHPOb7y3nQrlSgfGrLGX9JzdB2RjutJbOZo
-         my6iJlr3pl4e8pfwGn3rCSaEEoBCLZwFoaK/UMvsHVgn/843h2Jdh9Cv6KZULMbdFY9P
-         us3pTzPBEbM+2qvptDw3QjJqqb0zdpErjNKlurkFoY0LY29Nji9nsd5ITqgxOwSOVZva
-         i/3A==
-X-Gm-Message-State: ANhLgQ0RoI7ZAkISoJcgqg982DEQ5/Dhfl43EJZqeJIhncUgIAdxQmyP
-        GOu85414/hv0rIPodMK3FhyIh+kRTb1jFWcnBbo=
-X-Google-Smtp-Source: ADFU+vtOe1JNh0VtHDNLNJFdUcHDzagDQE4/GOCdvU4Y5JmryKd0ZROoys9KGxv8gRElcssrndfCZBZ4TovExBARyZM=
-X-Received: by 2002:a4a:7555:: with SMTP id g21mr183055oof.46.1585087658733;
- Tue, 24 Mar 2020 15:07:38 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200323181245.GJ4288@osiris> <CAJZ5v0hzf=kQBcR=K2KL1kEVtA6oLPtLDaeeaVuWMPsXomhJHw@mail.gmail.com>
- <20200324191128.GA3822@osiris>
-In-Reply-To: <20200324191128.GA3822@osiris>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 24 Mar 2020 23:07:27 +0100
-Message-ID: <CAJZ5v0jiz-YmULR+T3k38=WYkx83F=JAmNpc3r7=+N398FQOkQ@mail.gmail.com>
-Subject: Re: s390: removal of hibernate support
-To:     Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=nZnryKytso1ZYRkSpMtMSAQGQFfGmBLvG2yuSqscEJw=;
+        b=S6hyqSXs1dQC3YiVtR49sAngZrffCocVMF0qejrh2Z32KQkuclneUhfvLKkBP1XCMU
+         Og25C6lhZgexx+cinadyv/8ZA6p3Ce1LDZFJqHuI9ZkU5UltG97SR9TJy5AEfUSJQvoZ
+         GBq8RkSye+lLSQXKBbZSkE0Q+WNyK1B8huRhULPmDVfBYBeRwcKjlujhyJLMIuJTXkQa
+         4Zy6lzYXspgWVZrQLDP/RgF0syga97aABn8hQufCtYenlNB0Rxmmf4Qj8Jhc4bTAxT4S
+         PFYbwETrp/WmYJYMUWIkm4csnvPUbO89I0M8k1vMFzWAJ0856SUrkUoF86PvO8WeW/my
+         +HHA==
+X-Gm-Message-State: AGi0PuY4MqiGzn+cT1IBJ8tChXQMKSEn6ptQX0pS2ffk3IL8VoBZUuhE
+        zg7gl3/0jAYdUl4vEsD4CCP5ZiKy
+X-Google-Smtp-Source: APiQypJ8wQXTKirLKDTVstbN6/k+c8vXzM+qdDOvQd2IoLzp7nwIH82W8GtePSWRJfdjhfsAoYQ+xw==
+X-Received: by 2002:a2e:80cd:: with SMTP id r13mr28124ljg.224.1585089939928;
+        Tue, 24 Mar 2020 15:45:39 -0700 (PDT)
+Received: from localhost.localdomain (94-29-39-224.dynamic.spd-mgts.ru. [94.29.39.224])
+        by smtp.gmail.com with ESMTPSA id d4sm10534279lfa.75.2020.03.24.15.45.38
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 24 Mar 2020 15:45:39 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        Peter Oberparleiter <oberpar@linux.ibm.com>,
-        linux-s390@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>,
+        Jasper Korten <jja2000@gmail.com>,
+        David Heidelberg <david@ixit.cz>,
+        Peter Geis <pgwipeout@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v1 1/3] ARM: tegra: Initialize r0 register for firmware wake-up
+Date:   Wed, 25 Mar 2020 01:43:33 +0300
+Message-Id: <20200324224335.5825-2-digetx@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200324224335.5825-1-digetx@gmail.com>
+References: <20200324224335.5825-1-digetx@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 24, 2020 at 8:11 PM Heiko Carstens
-<heiko.carstens@de.ibm.com> wrote:
->
-> Hi Rafael,
->
-> > On Mon, Mar 23, 2020 at 7:12 PM Heiko Carstens
-> > <heiko.carstens@de.ibm.com> wrote:
-> > > we are going to remove hibernate support on s390, since it is
-> > > - broken since many years
-> > > - there is no real use case which justifies keeping and maintaining
-> > >   the code
-> > >
-> > > See also https://git.kernel.org/pub/scm/linux/kernel/git/s390/linux.git/commit/?h=features&id=394216275c7d503d966317da9a01ad6626a6091d
-> > >
-> > > This in turn allows also to remove s390 specific hooks in generic
-> > > power management code (see patch below). The patch below is currently
-> > > also on the same features branch.
-> > > I silently assume(d) that you don't mind to get rid of otherwise dead
-> > > code, or do you have any objections?
-> > >
-> > > From 086b2d78375cffe58f5341359bebec0650793811 Mon Sep 17 00:00:00 2001
-> > > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > Date: Wed, 18 Mar 2020 20:55:20 +0100
-> > > Subject: [PATCH] PM: remove s390 specific callbacks
-> > >
-> > > ARCH_SAVE_PAGE_KEYS has been introduced in order to be able to save
-> > > and restore s390 specific storage keys into a hibernation image.
-> > > With hibernation support removed from s390 there is no point in
-> > > keeping the callbacks.
-> > >
-> > > Acked-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> > > Acked-by: Peter Oberparleiter <oberpar@linux.ibm.com>
-> > > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > > Signed-off-by: Vasily Gorbik <gor@linux.ibm.com>
-> >
-> > Can I take this patch or would it be better to route it differently?
->
-> The patch is already on the s390 features branch and is supposed to be
-> part of the first pull request for the next merge window (actually the
-> patch is already in linux-next).
-> So I'd say the easiest thing would be to route it through the s390 tree.
+Downstream kernel of ASUS TF300T sets r0 to #3. There is no explanation in
+downstream code whether this is really needed and some of T30 downstream
+kernels have and explicit comment telling that all arguments are ignored
+by firmware. Let's take a safe side by replicating behavior of the TF300T
+downstream kernel. This change works fine on Ouya and Nexus 7 devices.
 
-OK
+Tested-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Tested-by: Jasper Korten <jja2000@gmail.com>
+Tested-by: David Heidelberg <david@ixit.cz>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/mach-tegra/reset-handler.S | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/arch/arm/mach-tegra/reset-handler.S b/arch/arm/mach-tegra/reset-handler.S
+index 53123ae4ac3b..06ca44b09381 100644
+--- a/arch/arm/mach-tegra/reset-handler.S
++++ b/arch/arm/mach-tegra/reset-handler.S
+@@ -98,7 +98,12 @@ ENTRY(tegra_resume_trusted_foundations)
+ 	reteq	lr
+ 
+  .arch_extension sec
+-	/* First call after suspend wakes firmware. No arguments required. */
++	/*
++	 * First call after suspend wakes firmware. No arguments required
++	 * for some firmware versions. Downstream kernel of ASUS TF300T uses
++	 * r0=3 for the wake-up notification.
++	 */
++	mov	r0, #3
+ 	smc	#0
+ 
+ 	b	cpu_resume
+-- 
+2.25.1
+
