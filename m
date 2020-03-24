@@ -6,106 +6,116 @@ X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DACFC4332B
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 10:36:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C5CCC41621
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 10:46:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 57F1820936
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 10:36:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F3D02098B
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Mar 2020 10:46:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727150AbgCXKgG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Mar 2020 06:36:06 -0400
-Received: from mga07.intel.com ([134.134.136.100]:62844 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727201AbgCXKgG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 24 Mar 2020 06:36:06 -0400
-IronPort-SDR: dcAOxkDoSZK05LN2jKE2yreu9ci2Af/De+eW6dywMIXZst/rDpaEMLosM6CbL9PxaGPb7PMHZX
- eXci96JS2C9g==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga004.jf.intel.com ([10.7.209.38])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2020 03:36:05 -0700
-IronPort-SDR: zht+CM67eDL0WyqMDvo8EzEqKBTQrdKyZEvlUHQrDxhdF91Nm+Yg/36Y4EV9R5v02T7UU2XIbV
- S8ba3qhgWZNQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,300,1580803200"; 
-   d="scan'208";a="393240574"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
-  by orsmga004.jf.intel.com with ESMTP; 24 Mar 2020 03:35:56 -0700
-Received: from andy by smile with local (Exim 4.93)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1jGgub-00CVDz-DA; Tue, 24 Mar 2020 12:35:57 +0200
-Date:   Tue, 24 Mar 2020 12:35:57 +0200
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc:     mazziesaccount@gmail.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Mikko Mutanen <mikko.mutanen@fi.rohmeurope.com>,
-        Markus Laine <markus.laine@fi.rohmeurope.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Ard Biesheuvel <ardb@kernel.org>, Borislav Petkov <bp@suse.de>,
-        Brendan Higgins <brendanhiggins@google.com>,
-        Changbin Du <changbin.du@intel.com>,
-        Dan Williams <dan.j.williams@intel.com>,
-        David Gow <davidgow@google.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        devicetree@vger.kernel.org, Gary Hook <Gary.Hook@amd.com>,
-        Herbert Xu <herbert@gondor.apana.org.au>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Mark Rutland <mark.rutland@arm.com>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Masami Hiramatsu <mhiramat@kernel.org>,
-        Mikhail Zaslonko <zaslonko@linux.ibm.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Shuah Khan <skhan@linuxfoundation.org>,
-        Tal Gilboa <talgi@mellanox.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <uwe@kleine-koenig.org>,
-        Vincenzo Frascino <vincenzo.frascino@arm.com>,
-        Vladimir Oltean <olteanv@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>
+        id S1726818AbgCXKqC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Mar 2020 06:46:02 -0400
+Received: from mailgate1.rohmeurope.com ([87.129.152.131]:61998 "EHLO
+        mailgate1.rohmeurope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726563AbgCXKqC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Mar 2020 06:46:02 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2020 06:46:01 EDT
+X-AuditID: c0a8fbf4-473ff70000004419-8b-5e79e1633674
+Received: from smtp.reu.rohmeu.com (will-cas002.reu.rohmeu.com [192.168.251.178])
+        by mailgate1.rohmeurope.com (Symantec Messaging Gateway) with SMTP id 2E.BD.17433.361E97E5; Tue, 24 Mar 2020 11:30:59 +0100 (CET)
+Received: from WILL-MAIL001.REu.RohmEu.com ([fe80::2915:304f:d22c:c6ba]) by
+ WILL-CAS002.REu.RohmEu.com ([fe80::fc24:4cbc:e287:8659%12]) with mapi id
+ 14.03.0487.000; Tue, 24 Mar 2020 11:30:54 +0100
+From:   "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
+To:     "andriy.shevchenko@linux.intel.com" 
+        <andriy.shevchenko@linux.intel.com>
+CC:     "tglx@linutronix.de" <tglx@linutronix.de>,
+        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
+        "robh+dt@kernel.org" <robh+dt@kernel.org>,
+        "talgi@mellanox.com" <talgi@mellanox.com>,
+        "brendanhiggins@google.com" <brendanhiggins@google.com>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "Gary.Hook@amd.com" <Gary.Hook@amd.com>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "davidgow@google.com" <davidgow@google.com>,
+        "changbin.du@intel.com" <changbin.du@intel.com>,
+        "broonie@kernel.org" <broonie@kernel.org>,
+        "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+        "olteanv@gmail.com" <olteanv@gmail.com>,
+        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+        "rdunlap@infradead.org" <rdunlap@infradead.org>,
+        "yamada.masahiro@socionext.com" <yamada.masahiro@socionext.com>,
+        "mark.rutland@arm.com" <mark.rutland@arm.com>,
+        "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>,
+        "bp@suse.de" <bp@suse.de>,
+        "mhiramat@kernel.org" <mhiramat@kernel.org>,
+        "krzk@kernel.org" <krzk@kernel.org>,
+        "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>,
+        "skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
+        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
+        "Laine, Markus" <Markus.Laine@fi.rohmeurope.com>,
+        "vincenzo.frascino@arm.com" <vincenzo.frascino@arm.com>,
+        "sre@kernel.org" <sre@kernel.org>,
+        "ardb@kernel.org" <ardb@kernel.org>,
+        "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+        "zaslonko@linux.ibm.com" <zaslonko@linux.ibm.com>,
+        "uwe@kleine-koenig.org" <uwe@kleine-koenig.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
 Subject: Re: [PATCH v6 09/10] power: supply: Support ROHM bd99954 charger
-Message-ID: <20200324103557.GH1922688@smile.fi.intel.com>
+Thread-Topic: [PATCH v6 09/10] power: supply: Support ROHM bd99954 charger
+Thread-Index: AQHWAbbAyLpT1a+wPEGvvo/J38Wk46hXbxYAgAAAaoCAAArrAA==
+Date:   Tue, 24 Mar 2020 10:30:53 +0000
+Message-ID: <e9d1cdafb6b048147eae318e0d6843601442725a.camel@fi.rohmeurope.com>
 References: <cover.1584977512.git.matti.vaittinen@fi.rohmeurope.com>
- <1bf2431b80489ae412e774519a92616a9aa2bcca.1584977512.git.matti.vaittinen@fi.rohmeurope.com>
- <20200324095024.GE1922688@smile.fi.intel.com>
+         <1bf2431b80489ae412e774519a92616a9aa2bcca.1584977512.git.matti.vaittinen@fi.rohmeurope.com>
+         <20200324095024.GE1922688@smile.fi.intel.com>
+         <20200324095153.GF1922688@smile.fi.intel.com>
+In-Reply-To: <20200324095153.GF1922688@smile.fi.intel.com>
+Accept-Language: en-US, de-DE
+Content-Language: de-DE
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [62.78.225.252]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <2BE73F2C85064547B8F97E281684098C@de.rohmeurope.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200324095024.GE1922688@smile.fi.intel.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+X-Brightmail-Tracker: H4sIAAAAAAAAA02TbVBUVRjH59x79t7Dy22uK8pptQ9saSMGZtHMqaHGmj5cc8oa8oOZSxe5
+        7JL7wuyLQVMTyZKI44gvhCwLbiCCtgksjhjtjrizo0ANK2gBzq5KMU3gQL6NG1HUXq4Kn87/
+        nP/ze/7Ph+cgWn2W1aBCs12ymkWjlkmEPa2zvowdYyW65wfLMom7zcuQ/btrKDJz/09ADh5Y
+        QwZHDtOkemycIR2DlyhSU30ZEHfYCUlvRzskx0IDKvLX1UOQlDW1MWTf5EoSDrez5MHVCooc
+        +aeFIle63Qy5tz8ESPPwIEXczb2QNLWsJu2dMYpMRWogKQ+EWBKoOaEiP/5gJ1/XB1jS6aum
+        yfDdaxQJzM1AErh+D5CLd2bAhjShfOhfRvA2eIFw5uQoJXzvirLC2Z5VgsfnEDpb04Um/wQl
+        +E7tZYRDJxpVQuQXPyNMDwywQu/RWShUNfYAoaHvPeF8vZd9N+WDpOw80b4rp1BvXvfaR0mG
+        qF9XdA0VO6eisBT4USVIQJjPwrfqLtOVIBGp+Z8BLrv9B1AuvQCP9nlUlQAhhs/GlaOsDKTw
+        m/Df0yPzNTTv53DFVIiSjaX8Rtx6Y0ilFL2FW74KMIp+A58ed87DkF+Fa7taoKw5/h08W/fl
+        w+RyCgf3zMwDCfwr+NvwdVrWgH8K7y2dng+g+VTs+z2mUsbm8XF/mFb0Mjzx29zD9zTcFTsN
+        5aFpfg1u616noBtw4MBhqOg0fGTfGKvMsAT31Y7DKrDctSjBtUC7FtGuRbRrEe0BqlMAm8RC
+        o160S+szrZIj02oxmOLHDovJB5Q9vH8O/BfcGAQUAkHwJKK0y7iPb5bo1E/kWfJLDKLNkGt1
+        GCVbEGBEa1O4TqlYp+byxZJPJavlkbUCQW0q9+zYwe1qXs7aKUlFkvWRuxIhLeZy5KZLrJJe
+        Ki4oNNoXbAolyM0TNSk2yZwvWUWH3ZAr70euLb4gspUcz90s45ytSDTFXxW0H6xFVRP1jTQK
+        1Tc30mpotpglTSpnlEt5udTgMD8OmgSpCGiXckWymxz/jI/7TMYjqHiE3vWJHGEXFyxNKfj8
+        9cgZsS5ni/D+yBcfvvTgTuQuE4tqnBkdGT/t8T/NdI1HoicvmZ7pF8+/ulOf7X4h4bu65KGq
+        7U23n9td8E2W/jjtTZoObRmIOWzHbvarq2E4yzO8CRWsfXvrjTfNSc7N58S8Cyu26Tz5L++6
+        ld59xffixK/L5z7bNloR7qplLjZc0EKbQVyfTltt4v+caEJkSQQAAA==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Mar 24, 2020 at 11:50:24AM +0200, Andy Shevchenko wrote:
-> On Tue, Mar 24, 2020 at 10:32:19AM +0200, Matti Vaittinen wrote:
-
-> > +#include <linux/acpi.h>
-> 
-> > +#include <linux/of.h>
-> 
-> I didn't find any evidence of use of those two, otherwise, missed property.h
-> and perhaps mod_devicetable.h.
-
-...
-
-> > +MODULE_DEVICE_TABLE(of, bd9995x_of_match);
-
-> > +MODULE_DEVICE_TABLE(acpi, bd9995x_acpi_match);
-
-I have to add since you are using those macros without ifdeffery, you should
-get warning in !ACPI and/or !OF cases.
-
-So, drop those of_match_ptr() / ACPI_PTR() and thus above headers.
-
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+SGVsbG8gQW5keSwNCg0KVGhhbmtzIGZvciB0YWtpbmcgdGhlIHRpbWUgYW5kIHJldmlld2luZyB0
+aGlzIDopIEFwcHJlY2lhdGVkLg0KDQpPbiBUdWUsIDIwMjAtMDMtMjQgYXQgMTE6NTEgKzAyMDAs
+IEFuZHkgU2hldmNoZW5rbyB3cm90ZToNCj4gT24gVHVlLCBNYXIgMjQsIDIwMjAgYXQgMTE6NTA6
+MjRBTSArMDIwMCwgQW5keSBTaGV2Y2hlbmtvIHdyb3RlOg0KPiA+IE9uIFR1ZSwgTWFyIDI0LCAy
+MDIwIGF0IDEwOjMyOjE5QU0gKzAyMDAsIE1hdHRpIFZhaXR0aW5lbiB3cm90ZToNCj4gPiA+ICtz
+dGF0aWMgaW50IGJkOTk5NXhfZ2V0X3Byb3BfYmF0dF9wcmVzZW50KHN0cnVjdCBiZDk5OTV4X2Rl
+dmljZQ0KPiA+ID4gKmJkKQ0KPiA+ID4gK3sNCj4gPiA+ICsJaW50IHJldCwgdG1wOw0KPiA+ID4g
+Kw0KPiA+ID4gKwlyZXQgPSByZWdtYXBfZmllbGRfcmVhZChiZC0+cm1hcF9maWVsZHNbRl9CQVRU
+RU1QXSwgJnRtcCk7DQo+ID4gPiArCWlmIChyZXQpDQo+ID4gPiArCQlyZXR1cm4gZmFsc2U7DQo+
+ID4gPiArDQo+ID4gPiArCXJldHVybiAodG1wICE9IEJBVFRfT1BFTikgPyB0cnVlIDogZmFsc2U7
+DQo+ID4gDQo+ID4gQyAxMDEgKEkgc2F3IHNvbWV3aGVyZSBjb2NjaW5lbGxlIHNjcmlwdCBmb3Ig
+dGhpcyk6DQo+ID4gDQo+ID4gCXJldHVybiB0bXAgIT0gQkFUVF9PUEVOOw0KPiA+IA0KPiA+ID4g
+K30NCj4gDQo+IEFoLCBhbmQgZXZlbiBtb3JlLiBNaXN0eXBlIG9mIGZ1bmN0aW9uIGFuZCByZXR1
+cm4gdmFsdWUuDQo+IA0KUmlnaHQuIEFuZCBzYW1lIGlzIGRvbmUgaW4gcmV0dXJuIGFib3ZlLiBJ
+J2xsIGZpeCB0aGlzLg0K
