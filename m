@@ -2,77 +2,118 @@ Return-Path: <SRS0=knII=5K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A589AC10DCE
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3015C54FCE
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 833322072E
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CC5E22073C
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 00:55:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="1pIxDude"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727116AbgCYAzC convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Mar 2020 20:55:02 -0400
-Received: from mga18.intel.com ([134.134.136.126]:29144 "EHLO mga18.intel.com"
+        id S1727113AbgCYAzl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Mar 2020 20:55:41 -0400
+Received: from cmta20.telus.net ([209.171.16.93]:53900 "EHLO cmta20.telus.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727113AbgCYAzC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 24 Mar 2020 20:55:02 -0400
-IronPort-SDR: FotC8jj35Dq1hLRr0MtcG6QXSxxwVII6oDiBqzAHxWVHklbVXBaLCHPlLJDIiqYHYdiIjJrW4W
- sKdvA/PPAWmw==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Mar 2020 17:54:01 -0700
-IronPort-SDR: QLDcRKjdWCfKMwcgnoJprG/6O/K2LOom7eYr7NGKx0MnmQNUxpE4Esd4OXX34AzQI+xilihWfx
- mBtktYiGhb8w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,302,1580803200"; 
-   d="scan'208";a="235789732"
-Received: from fmsmsx106.amr.corp.intel.com ([10.18.124.204])
-  by orsmga007.jf.intel.com with ESMTP; 24 Mar 2020 17:54:01 -0700
-Received: from fmsmsx117.amr.corp.intel.com (10.18.116.17) by
- FMSMSX106.amr.corp.intel.com (10.18.124.204) with Microsoft SMTP Server (TLS)
- id 14.3.439.0; Tue, 24 Mar 2020 17:54:00 -0700
-Received: from fmsmsx101.amr.corp.intel.com ([169.254.1.121]) by
- fmsmsx117.amr.corp.intel.com ([169.254.3.48]) with mapi id 14.03.0439.000;
- Tue, 24 Mar 2020 17:54:00 -0700
-From:   "Brown, Len" <len.brown@intel.com>
-To:     Doug Smythies <dsmythies@telus.net>, 'Len Brown' <lenb@kernel.org>
-CC:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
-Subject: RE: [PATCH 08/10] tools/power turbostat: Fix 32-bit capabilities
- warning
-Thread-Topic: [PATCH 08/10] tools/power turbostat: Fix 32-bit capabilities
- warning
-Thread-Index: AQHV/neoeuXA0oD9IE63vdznEZOzXqhY90sA//+K6sA=
-Date:   Wed, 25 Mar 2020 00:54:00 +0000
-Message-ID: <1A7043D5F58CCB44A599DFD55ED4C94881B9278A@fmsmsx101.amr.corp.intel.com>
-References: <081c54323b27d8d4b40df6b2375b9e1f6846d827.1584679387.git.len.brown@intel.com>
- <fcaa681c03ea82193e60d7f2cdfd94fbbcd4cae9.1584679387.git.len.brown@intel.com>
- <003201d6023f$71aff340$550fd9c0$@net>
-In-Reply-To: <003201d6023f$71aff340$550fd9c0$@net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-dlp-product: dlpe-windows
-dlp-version: 11.2.0.6
-dlp-reaction: no-action
-x-originating-ip: [10.1.200.108]
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+        id S1727261AbgCYAzk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 24 Mar 2020 20:55:40 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id GuFxjJjQxYkAEGuFyj2TCO; Tue, 24 Mar 2020 18:50:55 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1585097455; bh=vYUYZhWdzni3k9yF0sT6VpET+CBSIDMl//6cnXP+1wg=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=1pIxDudeOrDjFkNP5XxaFejmkvlZ+E1cQoMVR9cr8qIIbbNmvwxQ0LDCiiWXYkmnp
+         dWXwdoeW/nkYgMbmTMxhfy76b+dQK9nIY+9u+FhA7yVUaIzRJfLRNENys9z4oKyf8P
+         eVklh30GXWfyjg5xhFMAczkr3XNQsqTYxYrsZSBRfG/aQXfodoUwxPzz167hw6rpac
+         2rMLkxD6qViWdKruWqNtbNOiziGPyj8vPY0wVMTcJLN3LvWIvSUln0+XXijGeEy5cy
+         PODH4MVvNwBCdUsOuN6CGpUKb5/GBVLEhcYMhrKj07pfU/EN7On8I8vFO6MyOghQJS
+         KIWvLtawdpkzw==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=caqsUULM c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19
+ a=kj9zAlcOel0A:10 a=QyXUC8HyAAAA:8 a=ctVjbXThj1diqwFriuMA:9 a=CjuIK1q_8ugA:10
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Len Brown'" <lenb@kernel.org>, <linux-pm@vger.kernel.org>
+Cc:     "'Len Brown'" <len.brown@intel.com>,
+        "'Antti Laakso'" <antti.laakso@linux.intel.com>
+References: <081c54323b27d8d4b40df6b2375b9e1f6846d827.1584766216.git.len.brown@intel.com> <abdcbdb265264f736df316622a695ad30019c05f.1584766216.git.len.brown@intel.com>
+In-Reply-To: <abdcbdb265264f736df316622a695ad30019c05f.1584766216.git.len.brown@intel.com>
+Subject: RE: [PATCH v2 09/10] tools/power turbostat: Print cpuidle information
+Date:   Tue, 24 Mar 2020 17:50:52 -0700
+Message-ID: <003101d6023f$70975750$51c605f0$@net>
 MIME-Version: 1.0
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AdX/POAWdEVxnJZVR9KcDWu6dcP75QDAEhWQ
+Content-Language: en-ca
+X-CMAE-Envelope: MS4wfIcErS4gDKgkzEza4VkbIt2lttvNoDXqC9Hn0y/aimn0zkPB5xJXj0YQN6aif/EtkJvxb+uzekn2RWCVxHfdKbxuSBw76mXCSOwiAdAdOZ1ZVBN19/jy
+ AptOk/OLRie9kYLwxL4XWJg24xGMGvUUI2fQmIGIXgU94NjMH2srU6u2Nm1tn9y9jZFcCdunjClWANTzzUepHHzpxOQ9RKruhVhOVFkO/aSmAwDuI0Ggo4V0
+ 7C0CKO1BYzAkTEHwmkZSYv6pB6iPvy9bi5xcfC+CqrA=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-> +#include <sys/capability.h>
+Hi Len,
 
-> This seems to require a package, libcap-dev, to be installed.
+On 2020.03.20 21:55 Len Brown wrote:
 
-Yeah, sort of annoying that libcap-dev isn't installed by default.
-I've added it to the list of stuff that I install on new machines before they are usable...
+> From: Len Brown <len.brown@intel.com>
+>
+> Print cpuidle driver and governor.
+> 
+> Originally-by: Antti Laakso <antti.laakso@linux.intel.com>
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> ---
+> tools/power/x86/turbostat/turbostat.c | 26 ++++++++++++++++++++++++++
+> 1 file changed, 26 insertions(+)
+>
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index 77f89371ec5f..05dbe23570d4 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+
+
+... 
+
+> 
+> static void
+> dump_sysfs_cstate_config(void)
+> {
+> @@ -3516,6 +3533,15 @@ dump_sysfs_cstate_config(void)
+> 	if (!DO_BIC(BIC_sysfs))
+> 		return;
+
+I do not understand why this information needs to be
+a function of the --show options and not solely a
+function of the --quiet option.
+
+My reasoning is that I almost always want all the information
+possible in the start spew of stuff, and if I don't I'll
+use --quiet option. However, I rarely show more than
+about 6 columns at a time resulting in intermittent inclusion
+of this information.
+
+> 
+> +	if (access("/sys/devices/system/cpu/cpuidle", R_OK)) {
+> +		fprintf(outf, "cpuidle not loaded\n");
+> +		return;
+> +	}
+> +
+> +	dump_sysfs_file("/sys/devices/system/cpu/cpuidle/current_driver");
+> +	dump_sysfs_file("/sys/devices/system/cpu/cpuidle/current_governor");
+> +	dump_sysfs_file("/sys/devices/system/cpu/cpuidle/current_governor_ro");
+> +
+>  	for (state = 0; state < 10; ++state) {
+>  
+> 		sprintf(path, "/sys/devices/system/cpu/cpu%d/cpuidle/state%d/name",
 
 
