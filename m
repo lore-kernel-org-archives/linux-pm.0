@@ -2,256 +2,294 @@ Return-Path: <SRS0=knII=5K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 253C3C43331
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:56:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C08C1C54FD6
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 11:06:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 03418207FC
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:56:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9092720836
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 11:06:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727253AbgCYK4l convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 06:56:41 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:45404 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726154AbgCYK4k (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 06:56:40 -0400
-Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 832396319de3948e; Wed, 25 Mar 2020 11:56:38 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Erik Kaneda <erik.kaneda@intel.com>,
-        Bob Moore <robert.moore@intel.com>,
-        =?utf-8?B?T25kxZllag==?= Caletka <ondrej@caletka.cz>
-Subject: [PATCH 1/2] ACPICA: Allow acpi_any_gpe_status_set() to skip one GPE
-Date:   Wed, 25 Mar 2020 11:54:29 +0100
-Message-ID: <2501943.mi8mbN1kY1@kreacher>
-In-Reply-To: <9291082.ZuhHelrm8h@kreacher>
-References: <9291082.ZuhHelrm8h@kreacher>
+        id S1727380AbgCYLGc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 07:06:32 -0400
+Received: from foss.arm.com ([217.140.110.172]:46696 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726842AbgCYLGc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Mar 2020 07:06:32 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1164231B;
+        Wed, 25 Mar 2020 04:06:31 -0700 (PDT)
+Received: from [10.37.12.110] (unknown [10.37.12.110])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C30883F71F;
+        Wed, 25 Mar 2020 04:06:28 -0700 (PDT)
+Subject: Re: [PATCH v3 3/3] dt-bindings: thermal: Add yaml bindings for
+ thermal zones
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        swboyd@chromium.org, mka@chromium.org, daniel.lezcano@linaro.org,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+References: <cover.1585117436.git.amit.kucheria@linaro.org>
+ <9c447186008ef2e3f4c3e712458dc0ddcd8a8b03.1585117436.git.amit.kucheria@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <81b0cbe1-23c8-b4a3-4775-62e7d6c49b6b@arm.com>
+Date:   Wed, 25 Mar 2020 11:06:27 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <9c447186008ef2e3f4c3e712458dc0ddcd8a8b03.1585117436.git.amit.kucheria@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-
-The check carried out by acpi_any_gpe_status_set() is not precise enough
-for the suspend-to-idle implementation in Linux and in some cases it is
-necessary make it skip one GPE (specifically, the EC GPE) from the check
-to prevent a race condition leading to a premature system resume from
-occurring.
-
-For this reason, redefine acpi_any_gpe_status_set() to take the number
-of a GPE to skip as an argument.
-
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=206629
-Tested-by: Ondřej Caletka <ondrej@caletka.cz>
-Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/acpica/achware.h |  2 +-
- drivers/acpi/acpica/evxfgpe.c | 17 +++++++++++-----
- drivers/acpi/acpica/hwgpe.c   | 47 ++++++++++++++++++++++++++++++++++---------
- drivers/acpi/sleep.c          |  2 +-
- include/acpi/acpixf.h         |  2 +-
- 5 files changed, 53 insertions(+), 17 deletions(-)
-
-diff --git a/drivers/acpi/acpica/achware.h b/drivers/acpi/acpica/achware.h
-index 6ad0517553d5..ebf6453d0e21 100644
---- a/drivers/acpi/acpica/achware.h
-+++ b/drivers/acpi/acpica/achware.h
-@@ -101,7 +101,7 @@ acpi_status acpi_hw_enable_all_runtime_gpes(void);
- 
- acpi_status acpi_hw_enable_all_wakeup_gpes(void);
- 
--u8 acpi_hw_check_all_gpes(void);
-+u8 acpi_hw_check_all_gpes(acpi_handle gpe_skip_device, u32 gpe_skip_number);
- 
- acpi_status
- acpi_hw_enable_runtime_gpe_block(struct acpi_gpe_xrupt_info *gpe_xrupt_info,
-diff --git a/drivers/acpi/acpica/evxfgpe.c b/drivers/acpi/acpica/evxfgpe.c
-index f2de66bfd8a7..3be60673e461 100644
---- a/drivers/acpi/acpica/evxfgpe.c
-+++ b/drivers/acpi/acpica/evxfgpe.c
-@@ -799,17 +799,19 @@ ACPI_EXPORT_SYMBOL(acpi_enable_all_wakeup_gpes)
-  *
-  * FUNCTION:    acpi_any_gpe_status_set
-  *
-- * PARAMETERS:  None
-+ * PARAMETERS:  gpe_skip_number      - Number of the GPE to skip
-  *
-  * RETURN:      Whether or not the status bit is set for any GPE
-  *
-- * DESCRIPTION: Check the status bits of all enabled GPEs and return TRUE if any
-- *              of them is set or FALSE otherwise.
-+ * DESCRIPTION: Check the status bits of all enabled GPEs, except for the one
-+ *              represented by the "skip" argument, and return TRUE if any of
-+ *              them is set or FALSE otherwise.
-  *
-  ******************************************************************************/
--u32 acpi_any_gpe_status_set(void)
-+u32 acpi_any_gpe_status_set(u32 gpe_skip_number)
- {
- 	acpi_status status;
-+	acpi_handle gpe_device;
- 	u8 ret;
- 
- 	ACPI_FUNCTION_TRACE(acpi_any_gpe_status_set);
-@@ -819,7 +821,12 @@ u32 acpi_any_gpe_status_set(void)
- 		return (FALSE);
- 	}
- 
--	ret = acpi_hw_check_all_gpes();
-+	status = acpi_get_gpe_device(gpe_skip_number, &gpe_device);
-+	if (ACPI_FAILURE(status)) {
-+		gpe_device = NULL;
-+	}
-+
-+	ret = acpi_hw_check_all_gpes(gpe_device, gpe_skip_number);
- 	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
- 
- 	return (ret);
-diff --git a/drivers/acpi/acpica/hwgpe.c b/drivers/acpi/acpica/hwgpe.c
-index f4c285c2f595..49c46d4dd070 100644
---- a/drivers/acpi/acpica/hwgpe.c
-+++ b/drivers/acpi/acpica/hwgpe.c
-@@ -444,12 +444,19 @@ acpi_hw_enable_wakeup_gpe_block(struct acpi_gpe_xrupt_info *gpe_xrupt_info,
- 	return (AE_OK);
- }
- 
-+struct acpi_gpe_block_status_context {
-+	struct acpi_gpe_register_info *gpe_skip_register_info;
-+	u8 gpe_skip_mask;
-+	u8 retval;
-+};
-+
- /******************************************************************************
-  *
-  * FUNCTION:    acpi_hw_get_gpe_block_status
-  *
-  * PARAMETERS:  gpe_xrupt_info      - GPE Interrupt info
-  *              gpe_block           - Gpe Block info
-+ *              context             - GPE list walk context data
-  *
-  * RETURN:      Success
-  *
-@@ -460,12 +467,13 @@ acpi_hw_enable_wakeup_gpe_block(struct acpi_gpe_xrupt_info *gpe_xrupt_info,
- static acpi_status
- acpi_hw_get_gpe_block_status(struct acpi_gpe_xrupt_info *gpe_xrupt_info,
- 			     struct acpi_gpe_block_info *gpe_block,
--			     void *ret_ptr)
-+			     void *context)
- {
-+	struct acpi_gpe_block_status_context *c = context;
- 	struct acpi_gpe_register_info *gpe_register_info;
- 	u64 in_enable, in_status;
- 	acpi_status status;
--	u8 *ret = ret_ptr;
-+	u8 ret_mask;
- 	u32 i;
- 
- 	/* Examine each GPE Register within the block */
-@@ -485,7 +493,11 @@ acpi_hw_get_gpe_block_status(struct acpi_gpe_xrupt_info *gpe_xrupt_info,
- 			continue;
- 		}
- 
--		*ret |= in_enable & in_status;
-+		ret_mask = in_enable & in_status;
-+		if (ret_mask && c->gpe_skip_register_info == gpe_register_info) {
-+			ret_mask &= ~c->gpe_skip_mask;
-+		}
-+		c->retval |= ret_mask;
- 	}
- 
- 	return (AE_OK);
-@@ -561,24 +573,41 @@ acpi_status acpi_hw_enable_all_wakeup_gpes(void)
-  *
-  * FUNCTION:    acpi_hw_check_all_gpes
-  *
-- * PARAMETERS:  None
-+ * PARAMETERS:  gpe_skip_device      - GPE devoce of the GPE to skip
-+ *              gpe_skip_number      - Number of the GPE to skip
-  *
-  * RETURN:      Combined status of all GPEs
-  *
-- * DESCRIPTION: Check all enabled GPEs in all GPE blocks and return TRUE if the
-+ * DESCRIPTION: Check all enabled GPEs in all GPE blocks, except for the one
-+ *              represented by the "skip" arguments, and return TRUE if the
-  *              status bit is set for at least one of them of FALSE otherwise.
-  *
-  ******************************************************************************/
- 
--u8 acpi_hw_check_all_gpes(void)
-+u8 acpi_hw_check_all_gpes(acpi_handle gpe_skip_device, u32 gpe_skip_number)
- {
--	u8 ret = 0;
-+	struct acpi_gpe_block_status_context context = {
-+		.gpe_skip_register_info = NULL,
-+		.retval = 0,
-+	};
-+	struct acpi_gpe_event_info *gpe_event_info;
-+	acpi_cpu_flags flags;
- 
- 	ACPI_FUNCTION_TRACE(acpi_hw_check_all_gpes);
- 
--	(void)acpi_ev_walk_gpe_list(acpi_hw_get_gpe_block_status, &ret);
-+	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
-+
-+	gpe_event_info = acpi_ev_get_gpe_event_info(gpe_skip_device,
-+						    gpe_skip_number);
-+	if (gpe_event_info) {
-+		context.gpe_skip_register_info = gpe_event_info->register_info;
-+		context.gpe_skip_mask = acpi_hw_get_gpe_register_bit(gpe_event_info);
-+	}
-+
-+	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
- 
--	return (ret != 0);
-+	(void)acpi_ev_walk_gpe_list(acpi_hw_get_gpe_block_status, &context);
-+	return (context.retval != 0);
- }
- 
- #endif				/* !ACPI_REDUCED_HARDWARE */
-diff --git a/drivers/acpi/sleep.c b/drivers/acpi/sleep.c
-index e5f95922bc21..857a6165c534 100644
---- a/drivers/acpi/sleep.c
-+++ b/drivers/acpi/sleep.c
-@@ -1022,7 +1022,7 @@ static bool acpi_s2idle_wake(void)
- 		 * status bit from unset to set between the checks with the
- 		 * status bits of all the other GPEs unset.
- 		 */
--		if (acpi_any_gpe_status_set() && !acpi_ec_dispatch_gpe())
-+		if (acpi_any_gpe_status_set(U32_MAX) && !acpi_ec_dispatch_gpe())
- 			return true;
- 
- 		/*
-diff --git a/include/acpi/acpixf.h b/include/acpi/acpixf.h
-index 8e8be989c2a6..a50d6dea44c3 100644
---- a/include/acpi/acpixf.h
-+++ b/include/acpi/acpixf.h
-@@ -752,7 +752,7 @@ ACPI_HW_DEPENDENT_RETURN_UINT32(u32 acpi_dispatch_gpe(acpi_handle gpe_device, u3
- ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status acpi_disable_all_gpes(void))
- ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status acpi_enable_all_runtime_gpes(void))
- ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status acpi_enable_all_wakeup_gpes(void))
--ACPI_HW_DEPENDENT_RETURN_UINT32(u32 acpi_any_gpe_status_set(void))
-+ACPI_HW_DEPENDENT_RETURN_UINT32(u32 acpi_any_gpe_status_set(u32 gpe_skip_number))
- ACPI_HW_DEPENDENT_RETURN_UINT32(u32 acpi_any_fixed_event_status_set(void))
- 
- ACPI_HW_DEPENDENT_RETURN_STATUS(acpi_status
--- 
-2.16.4
 
 
+On 3/25/20 6:34 AM, Amit Kucheria wrote:
+> As part of moving the thermal bindings to YAML, split it up into 3
+> bindings: thermal sensors, cooling devices and thermal zones.
+> 
+> The thermal-zone binding is a software abstraction to capture the
+> properties of each zone - how often they should be checked, the
+> temperature thresholds (trips) at which mitigation actions need to be
+> taken and the level of mitigation needed at those thresholds.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+> Changes since v2:
+> - Addressed review comment from Rob
+> - Added required properties for thermal-zones node
+> - Added select: true to thermal-cooling-devices.yaml
+> - Fixed up example to pass dt_binding_check
+> 
+>   .../bindings/thermal/thermal-zones.yaml       | 324 ++++++++++++++++++
+>   1 file changed, 324 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> new file mode 100644
+> index 000000000000..5632304dcf62
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+> @@ -0,0 +1,324 @@
+> +# SPDX-License-Identifier: (GPL-2.0)
+> +# Copyright 2020 Linaro Ltd.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/thermal-zones.yaml#
+> +$schema: http://devicetree.org/meta-schemas/base.yaml#
+> +
+> +title: Thermal zone binding
+> +
+> +maintainers:
+> +  - Amit Kucheria <amitk@kernel.org>
+> +
+> +description: |
+> +  Thermal management is achieved in devicetree by describing the sensor hardware
+> +  and the software abstraction of cooling devices and thermal zones required to
+> +  take appropriate action to mitigate thermal overloads.
+> +
+> +  The following node types are used to completely describe a thermal management
+> +  system in devicetree:
+> +   - thermal-sensor: device that measures temperature, has SoC-specific bindings
+> +   - cooling-device: device used to dissipate heat either passively or actively
+> +   - thermal-zones: a container of the following node types used to describe all
+> +     thermal data for the platform
+> +
+> +  This binding describes the thermal-zones.
+> +
+> +  The polling-delay properties of a thermal-zone are bound to the maximum dT/dt
+> +  (temperature derivative over time) in two situations for a thermal zone:
+> +    1. when passive cooling is activated (polling-delay-passive)
+> +    2. when the zone just needs to be monitored (polling-delay) or when
+> +       active cooling is activated.
+> +
+> +  The maximum dT/dt is highly bound to hardware power consumption and
+> +  dissipation capability. The delays should be chosen to account for said
+> +  max dT/dt, such that a device does not cross several trip boundaries
+> +  unexpectedly between polls. Choosing the right polling delays shall avoid
+> +  having the device in temperature ranges that may damage the silicon structures
+> +  and reduce silicon lifetime.
+> +
+> +properties:
+> +  $nodename:
+> +    const: thermal-zones
+> +    description:
+> +      A /thermal-zones node is required in order to use the thermal framework to
+> +      manage input from the various thermal zones in the system in order to
+> +      mitigate thermal overload conditions. It does not represent a real device
+> +      in the system, but acts as a container to link thermal sensor devices,
 
+I would say 'thermal sensor device', since there is 1-to-1 mapping and
+aggregating a few sensors inside one tz is not allowed (or I missed
+some patches queuing).
 
+> +      platform-data regarding temperature thresholds and the mitigation actions
+> +      to take when the temperature crosses those thresholds.
+> +
+> +patternProperties:
+> +  "^[a-zA-Z][a-zA-Z0-9\\-]{1,12}-thermal$":
+> +    type: object
+> +    description:
+> +      Each thermal zone node contains information about how frequently it
+> +      must be checked, the sensor responsible for reporting temperature for
+> +      this zone, one sub-node containing the various trip points for this
+> +      zone and one sub-node containing all the zone cooling-maps.
+> +
+> +    properties:
+> +      polling-delay:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description:
+> +          The maximum number of milliseconds to wait between polls when
+> +          checking this thermal zone. Setting this to 0 disables the polling
+> +          timers setup by the thermal framework and assumes that the thermal
+> +          sensors in this zone support interrupts.
+> +
+> +      polling-delay-passive:
+> +        $ref: /schemas/types.yaml#/definitions/uint32
+> +        description:
+> +          The maximum number of milliseconds to wait between polls when
+> +          checking this thermal zone while doing passive cooling. Setting
+> +          this to 0 disables the polling timers setup by the thermal
+> +          framework and assumes that the thermal sensors in this zone
+> +          support interrupts.
+> +
+> +      thermal-sensors:
+> +        $ref: /schemas/types.yaml#/definitions/phandle-array
+> +        description:
+> +          A list of thermal sensor phandles and sensor specifiers used to
+> +          monitor this thermal zone.
+
+I don't know why it's not consistent with the actual code in
+of-thermal.c, where there is even a comment stated:
+/* For now, thermal framework supports only 1 sensor per zone */
+
+I think this is the place where developers should be informed about
+the limitation and not even try to put more sensors into the list.
+
+> +
+> +      trips:
+> +        type: object
+> +        description:
+> +          This node describes a set of points in the temperature domain at
+> +          which the thermal framework needs to takes action. The actions to
+
+s/needs to takes/needs to take/
+
+> +          be taken are defined in another node called cooling-maps.
+> +
+> +        patternProperties:
+> +          "^[a-zA-Z][a-zA-Z0-9\\-_]{0,63}$":
+> +            type: object
+> +
+> +            properties:
+> +              temperature:
+> +                $ref: /schemas/types.yaml#/definitions/int32
+> +                minimum: -273000
+> +                maximum: 200000
+> +                description:
+> +                  An integer expressing the trip temperature in millicelsius.
+> +
+> +              hysteresis:
+> +                $ref: /schemas/types.yaml#/definitions/uint32
+> +                description:
+> +                  An unsigned integer expressing the hysteresis delta with
+> +                  respect to the trip temperature property above, also in
+> +                  millicelsius.
+
+This property is worth a bit longer description.
+
+> +
+> +              type:
+> +                $ref: /schemas/types.yaml#/definitions/string
+> +                enum:
+> +                  - active   # enable active cooling e.g. fans
+> +                  - passive  # enable passive cooling e.g. throttling cpu
+> +                  - hot      # send notification to driver
+> +                  - critical # send notification to driver, trigger shutdown
+> +                description: |
+> +                  There are four valid trip types: active, passive, hot,
+> +                  critical.
+
+[snip]
+
+> +
+> +    thermal-zones {
+> +            cpu0-thermal {
+> +                    polling-delay-passive = <250>;
+> +                    polling-delay = <1000>;
+> +
+> +                    thermal-sensors = <&tsens0 1>;
+> +
+> +                    trips {
+> +                            cpu0_alert0: trip-point0 {
+> +                                    temperature = <90000>;
+> +                                    hysteresis = <2000>;
+> +                                    type = "passive";
+> +                            };
+> +
+> +                            cpu0_alert1: trip-point1 {
+> +                                    temperature = <95000>;
+> +                                    hysteresis = <2000>;
+> +                                    type = "passive";
+> +                            };
+> +
+> +                            cpu0_crit: cpu_crit {
+> +                                    temperature = <110000>;
+> +                                    hysteresis = <1000>;
+> +                                    type = "critical";
+> +                            };
+> +                    };
+> +
+> +                    cooling-maps {
+> +                            map0 {
+> +                                    trip = <&cpu0_alert0>;
+> +                                    cooling-device = <&CPU0 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU1 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU2 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU3 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>;
+> +                            };
+> +
+> +                            map1 {
+> +                                    trip = <&cpu0_alert1>;
+> +                                    cooling-device = <&CPU0 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU1 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU2 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>,
+> +                                                     <&CPU3 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>;
+
+ From this two examples of handling cpu0_alert0 and cpu0_alert1 you
+cannot conclude anything (if you don't understand thermal framework (and
+probably IPA). As a simple example it would be better to put a comment
+with a description and limit min, max to a specific OPP:
+
+map0 {
+     trip = <&cpu0_alert0>;
+     /* Corresponds to 1400MHz in OPP table */
+     cooling-device = <&CPU0 3 3>, <&CPU1 3 3>, <&CPU2 3 3>, <&CPU3 3 3>;
+};
+
+map1 {
+     trip = <&cpu0_alert1>;
+     /* Corresponds to 1000MHz in OPP table */
+     cooling-device = <&CPU0 5 5>, <&CPU1 5 5>, <&CPU2 5 5>, <&CPU3 5 5>;
+};
+
+IMHO this kind of example would tell more to an avg driver developer.
+
+Regards,
+Lukasz
