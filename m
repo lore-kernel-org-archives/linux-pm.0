@@ -2,135 +2,117 @@ Return-Path: <SRS0=knII=5K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7498C43331
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3507C54FD6
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:32:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7CC3220772
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:29:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B5E0D20772
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:32:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726206AbgCYK3p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 06:29:45 -0400
-Received: from mailgate1.rohmeurope.com ([87.129.152.131]:47664 "EHLO
-        mailgate1.rohmeurope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726073AbgCYK3o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 06:29:44 -0400
-X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2020 06:29:43 EDT
-X-AuditID: c0a8fbf4-473ff70000004419-ec-5e7b2f11fcf7
-Received: from smtp.reu.rohmeu.com (will-cas002.reu.rohmeu.com [192.168.251.178])
-        by mailgate1.rohmeurope.com (Symantec Messaging Gateway) with SMTP id E5.71.17433.11F2B7E5; Wed, 25 Mar 2020 11:14:41 +0100 (CET)
-Received: from WILL-MAIL001.REu.RohmEu.com ([fe80::2915:304f:d22c:c6ba]) by
- WILL-CAS002.REu.RohmEu.com ([fe80::fc24:4cbc:e287:8659%12]) with mapi id
- 14.03.0487.000; Wed, 25 Mar 2020 11:14:35 +0100
-From:   "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
-To:     "andriy.shevchenko@linux.intel.com" 
-        <andriy.shevchenko@linux.intel.com>
-CC:     "robh+dt@kernel.org" <robh+dt@kernel.org>,
-        "dan.j.williams@intel.com" <dan.j.williams@intel.com>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "brendanhiggins@google.com" <brendanhiggins@google.com>,
-        "olteanv@gmail.com" <olteanv@gmail.com>,
-        "davem@davemloft.net" <davem@davemloft.net>,
-        "talgi@mellanox.com" <talgi@mellanox.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "davidgow@google.com" <davidgow@google.com>,
-        "broonie@kernel.org" <broonie@kernel.org>,
-        "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
-        "rdunlap@infradead.org" <rdunlap@infradead.org>,
-        "mark.rutland@arm.com" <mark.rutland@arm.com>,
-        "yamada.masahiro@socionext.com" <yamada.masahiro@socionext.com>,
-        "Mutanen, Mikko" <Mikko.Mutanen@fi.rohmeurope.com>,
-        "bp@suse.de" <bp@suse.de>,
-        "mhiramat@kernel.org" <mhiramat@kernel.org>,
-        "krzk@kernel.org" <krzk@kernel.org>,
-        "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>,
-        "skhan@linuxfoundation.org" <skhan@linuxfoundation.org>,
-        "zaslonko@linux.ibm.com" <zaslonko@linux.ibm.com>,
-        "Laine, Markus" <Markus.Laine@fi.rohmeurope.com>,
-        "vincenzo.frascino@arm.com" <vincenzo.frascino@arm.com>,
-        "sre@kernel.org" <sre@kernel.org>,
-        "ardb@kernel.org" <ardb@kernel.org>,
-        "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
-        "gregkh@linuxfoundation.org" <gregkh@linuxfoundation.org>,
-        "uwe@kleine-koenig.org" <uwe@kleine-koenig.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH v6 09/10] power: supply: Support ROHM bd99954 charger
-Thread-Topic: [PATCH v6 09/10] power: supply: Support ROHM bd99954 charger
-Thread-Index: AQHWAbbAyLpT1a+wPEGvvo/J38Wk46hXbxYAgAARjYCAABHKgIABdcUA
-Date:   Wed, 25 Mar 2020 10:14:35 +0000
-Message-ID: <f3490f4e7900e463540330665ecf99737070fedd.camel@fi.rohmeurope.com>
-References: <cover.1584977512.git.matti.vaittinen@fi.rohmeurope.com>
-         <1bf2431b80489ae412e774519a92616a9aa2bcca.1584977512.git.matti.vaittinen@fi.rohmeurope.com>
-         <20200324095024.GE1922688@smile.fi.intel.com>
-         <03f7053576e60632d7ac3bc074afe5d8d63e3714.camel@fi.rohmeurope.com>
-         <20200324115653.GI1922688@smile.fi.intel.com>
-In-Reply-To: <20200324115653.GI1922688@smile.fi.intel.com>
-Accept-Language: en-US, de-DE
-Content-Language: de-DE
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-originating-ip: [62.78.225.252]
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <95FE951F5583494DB6C37EDE94106DDA@de.rohmeurope.com>
-Content-Transfer-Encoding: base64
+        id S1727346AbgCYKcy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 06:32:54 -0400
+Received: from Galois.linutronix.de ([193.142.43.55]:47439 "EHLO
+        Galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726103AbgCYKcy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 06:32:54 -0400
+Received: from p5de0bf0b.dip0.t-ipconnect.de ([93.224.191.11] helo=nanos.tec.linutronix.de)
+        by Galois.linutronix.de with esmtpsa (TLS1.2:DHE_RSA_AES_256_CBC_SHA256:256)
+        (Exim 4.80)
+        (envelope-from <tglx@linutronix.de>)
+        id 1jH3KR-0007j8-0u; Wed, 25 Mar 2020 11:32:07 +0100
+Received: by nanos.tec.linutronix.de (Postfix, from userid 1000)
+        id 25179100C51; Wed, 25 Mar 2020 11:32:06 +0100 (CET)
+From:   Thomas Gleixner <tglx@linutronix.de>
+To:     Rong Chen <rong.a.chen@intel.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        "maintainer\:X86 ARCHITECTURE \(32-BIT AND 64-BIT\)" <x86@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mark Gross <mgross@linux.intel.com>,
+        Tony Luck <tony.luck@intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        linux-edac@vger.kernel.org,
+        Platform Driver <platform-driver-x86@vger.kernel.org>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        linux-hwmon@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Adrian Hunter <adrian.hunter@intel.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-mmc <linux-mmc@vger.kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
+        Takashi Iwai <tiwai@suse.com>,
+        ALSA Development Mailing List <alsa-devel@alsa-project.org>,
+        Herbert Xu <herbert@gondor.apana.org.au>,
+        "David S. Miller" <davem@davemloft.net>,
+        linux-crypto <linux-crypto@vger.kernel.org>, lkp@lists.01.org
+Subject: Re: [cpufreq] 06c4d00466: will-it-scale.per_process_ops -53.4% regression
+In-Reply-To: <43a4189a-7153-18e8-4657-4a4400002c05@intel.com>
+References: <20200320131509.564059710@linutronix.de> <20200324060124.GC11705@shao2-debian> <CAHp75VeeKZLeZ8E3Py7LECN54SPFHaRgkxrMzBYQWXM8x+4JhA@mail.gmail.com> <43a4189a-7153-18e8-4657-4a4400002c05@intel.com>
+Date:   Wed, 25 Mar 2020 11:32:06 +0100
+Message-ID: <87zhc4ybbt.fsf@nanos.tec.linutronix.de>
 MIME-Version: 1.0
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Tf1AUVRzv7e7tPtCt5YC510WYV9poCNL0x6txir9qrdGJUWccZwJXWTkC
-        7pi9PUX5I8KDySNHROnq5u5wjvg5BOedJSGnzHnVETMQlYBlCWEO0ASmFEM42C6bwl/72e/n
-        13sz3wdJfRdjhAUWWZQsQpGJjqd6WxaDWxIyynK2Ln6eij2d7TQ+WeEi8MLcLMCnT23CQ6Nn
-        SFw3fovGrrrvAPYMOigcOx+gcH10QIePN3TSuHo6BQ8OBhj8z48fEPjs/WYC/9DtofG9k1GA
-        G0eGCOxpjFG4oXkjDoTmCfznDReFK8NRBoddTTrcf0nGH3nDDA4F60g8cvcnAoeXFigc/vUe
-        wF//tQCy1vHtvnbAX2i9TvBfun9h+C96N/DngnY+1LKZb+iZIvhg2wmar23y6/gbwz00PzMw
-        wPCxjxcpvsbfC3hfXzZ/xdvO8LddV4m3E/et2XZAkA/vKsi3ZLy6f405NvI7UdKhL20MOuhy
-        cCfBCeIg4l5CQ61OQsV67hpAgfPPOUG8gmMALU34FQJCmtuGnNcZVZPEvYX+nRkFqobkfBBN
-        9H2vU38e4yIUqg/5lpMSue2o5aZKqI43UXNVmNbw66jCESXVUIrbgH47VaaOWW4n+qzCQWrF
-        /QR6v9IDVCKOewVdc9QtZwLuaXSifGYZk5wBBW/P67QbcOjTnkFSw8loamLp//l6dHG+g1K7
-        SG4T6uzO0KxZaCz8M63h9ehs9TijnSEB9X1yi6oBBveqBveK273K7V7ldq9ynwO6NoCKhYKi
-        fEEWM9Ml0Z4uWc3FyuegtTgItE2c6wIPItsjgIAgAp6EhCmZdaWV5egfP2DNO2oWbOZcyV4k
-        2iIAQdKUxIbE0hw9myccPSZK1ofUU5AyGdjnx0+/o+fUrkJRLBGlh2wKhCbEOtTQBEnMF0sP
-        FRTJKzQB49TweGOSTbTkiZJgl8256q7k2pRlUam1Sq8rXbGzthKhWJlq1m/BC7BmyusnYdTb
-        6Cf1lMVqEY0GtmmLIuVUqdlueVQ0DQwQmBLZnSq7VnmOj3KmlQpCqch3H1ErZGGFMpYD4u8n
-        Us58NXvhvcz7naPv7kmtv3wzraX2w2xMO3HyN9aUB8NtW4/vXrh05WDX4uE70osdkbnJSCDL
-        V1X2bOueyavxtd69gns4jZRh4NiOqsqlyW5jqyG8TgqM7XvNko4KrdV5XalySUV2IbX/jWea
-        +3MmzMa7u/4Yk+lZ5sjLHdBE2cxC5mZSsgn/AayVSkJLBAAA
+Content-Type: text/plain
+X-Linutronix-Spam-Score: -1.0
+X-Linutronix-Spam-Level: -
+X-Linutronix-Spam-Status: No , -1.0 points, 5.0 required,  ALL_TRUSTED=-1,SHORTCIRCUIT=-0.0001
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-DQpPbiBUdWUsIDIwMjAtMDMtMjQgYXQgMTM6NTYgKzAyMDAsIGFuZHJpeS5zaGV2Y2hlbmtvQGxp
-bnV4LmludGVsLmNvbQ0Kd3JvdGU6DQo+IE9uIFR1ZSwgTWFyIDI0LCAyMDIwIGF0IDEwOjUzOjA5
-QU0gKzAwMDAsIFZhaXR0aW5lbiwgTWF0dGkgd3JvdGU6DQo+ID4gT24gVHVlLCAyMDIwLTAzLTI0
-IGF0IDExOjUwICswMjAwLCBBbmR5IFNoZXZjaGVua28gd3JvdGU6DQo+ID4gPiBPbiBUdWUsIE1h
-ciAyNCwgMjAyMCBhdCAxMDozMjoxOUFNICswMjAwLCBNYXR0aSBWYWl0dGluZW4gd3JvdGU6DQo+
-IA0KPiAuLi4NCj4gDQo+ID4gPiA+ICsJZm9yIChpID0gZmZzKHRtcCk7IGk7IGkgPSBmZnModG1w
-KSkgew0KPiA+ID4gDQo+ID4gPiBOSUggb2YgZm9yX2VhY2hfc2V0X2JpdCgpLg0KPiA+IA0KPiA+
-IFdoYXQgZG9lcyB0aGUgTklIIHN0YW5kIGZvcj8NCj4gDQo+IE5vdCBJbnZlbnRlZCBIZXJlIHN5
-bmRyb21lIDotKQ0KDQpBaC4gSSBkZWZpbml0ZWx5IHBsZWFkIGd1aWx0eSBmb3IgdGhhdCBpbiBn
-ZW5lcmFsLiBPciBldmVuIE5JQk0gKE5vdA0KSW52ZW50ZWQgQnkgTWUpIDpdIEJ1dCBhdCB0aGlz
-IHRpbWUgZm9yX2VhY2hfc2V0X2JpdCgpIGp1c3QgZGlkbid0IGNvbWUNCnRvIG15IG1pbmQgLSBh
-bmQgSSB1c2VkIGZmcygpIC0gZXZlbiB0aG91Z2ggdGhhdCdzIG5vdCBpbnZlbnRlZCBieSBtZQ0K
-ZWl0aGVyIDspDQoNCkkganVzdCBtb2RpZmllZCB0aGUgZHJpdmVyIHRvIHVzZSBmb3JfZWFjaF9z
-ZXRfYml0KCkgYW5kIHlvdSB3ZXJlDQpjb3JyZWN0LiBSZXN1bHQgaXMgX211Y2hfIHByZXR0aWVy
-LiBUaGFua3MhIFRoYXQnbGwgYmUgZml4ZWQgaW4gdjcuDQoNCj4gLi4uDQo+IA0KPiA+ID4gPiAr
-CWlmICghZGV2LT5wbGF0Zm9ybV9kYXRhKSB7DQo+ID4gPiANCj4gPiA+IGRldl9nZXRfcGxhdGRh
-dGEoKQ0KPiA+ID4gDQo+ID4gPiA+ICsJCXJldCA9IGJkOTk5NXhfZndfcHJvYmUoYmQpOw0KPiA+
-ID4gPiArCQlpZiAocmV0IDwgMCkgew0KPiA+ID4gPiArCQkJZGV2X2VycihkZXYsICJDYW5ub3Qg
-cmVhZCBkZXZpY2UNCj4gPiA+ID4gcHJvcGVydGllcy5cbiIpOw0KPiA+ID4gPiArCQkJcmV0dXJu
-IHJldDsNCj4gPiA+ID4gKwkJfQ0KPiA+ID4gPiArCX0gZWxzZSB7DQo+ID4gPiA+ICsJCXJldHVy
-biAtRU5PREVWOw0KPiA+ID4gDQo+ID4gPiBTbywgZXhpc3RpbmcgcGxhdGZvcm0gZGF0YSBsZWFk
-cyB0byBhbiBlcnJvcj8hDQo+ID4gDQo+ID4gWWVzLiBBcyBjdXJyZW50bHkgd2Ugb25seSB1c2Ug
-RFQuIElmIHNvbWVvbmUgbmVlZHMgcGxhdGRhdGEgdGhleQ0KPiA+IG5lZWQNCj4gPiB0byBpbXBy
-b3ZlIHRoZSBkcml2ZXINCj4gDQo+IEkgdGhpbmsgdGhlIGlkZWEgdG8gYXZvaWQgcGxhdGZvcm0g
-ZGF0YSBpbiBuZXcgY29kZSBhcyBtdWNoIGFzDQo+IHBvc3NpYmxlLg0KPiBBbmQgaXQncyB1bnVz
-dWFsIHRvIGhhdmUgc29tZWJvZHkgdG8gdXNlIHRoaXMgZHJpdmVyIHdpdGgNCj4gcGxhdGZvcm1f
-ZGF0YSBzZXQuDQo+IFdoeSBub3Qgc2ltcGxlIGlnbm9yZSBpdD8NCg0KQmVjYXVzZSBpZiBzb21l
-b25lIF9pc18gdXNpbmcgcGxhdGZvcm0gZGF0YSBoZXJlIChhbmQgd2Ugc3RpbGwgcHJvdmlkZQ0K
-dGhpcyBtZWNoYW5pc20pIC0gdGhlbiB3ZSBzaG91bGQgaW5mb3JtIGhpbSB0aGF0IGhlJ3MgZG9p
-bmcgc29tZXRoaW5nDQp3aGljaCBpcyBub3QgY29ycmVjdC4NCg0KQmVzdCBSZWdhcmRzDQoJTWF0
-dGkNCg==
+Rong Chen <rong.a.chen@intel.com> writes:
+> On 3/24/20 6:24 PM, Andy Shevchenko wrote:
+>> On Tue, Mar 24, 2020 at 8:02 AM kernel test robot <rong.a.chen@intel.com> wrote:
+>>> Greeting,
+>>>
+>>> FYI, we noticed a -53.4% regression of will-it-scale.per_process_ops due to commit:
+>>> commit: 06c4d00466eb374841bc84c39af19b3161ff6917 ("[patch 09/22] cpufreq: Convert to new X86 CPU match macros")
+>>> url: https://github.com/0day-ci/linux/commits/Thomas-Gleixner/x86-devicetable-Move-x86-specific-macro-out-of-generic-code/20200321-031729
+>>> base: https://git.kernel.org/cgit/linux/kernel/git/rafael/linux-pm.git linux-next
+>>>
+>>> in testcase: will-it-scale
+>>> on test machine: 4 threads Intel(R) Core(TM) i3-3220 CPU @ 3.30GHz with 8G memory
+>>> with following parameters:
+>>
+>> drivers/cpufreq/speedstep-centrino.c change missed the terminator,
+>> perhaps it's a culprit, because I don't believe removing dups and
+>> reordering lines may affect this.
+>> Can you restore terminator there and re-test?
+>>
+>
+> I have retested with the change, but it has no effect on the performance.
+
+Bah. The binary equivalence testing detected this, but I obvioulsy
+missed it. Delta fix below.
+
+Thanks,
+
+        tglx
+
+8<--------------
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2727,7 +2727,7 @@ static inline void intel_pstate_request_
+ 
+ #define X86_MATCH_HWP(model, hwp_mode)					\
+ 	X86_MATCH_VENDOR_FAM_MODEL_FEATURE(INTEL, 6, INTEL_FAM6_##model, \
+-					   X86_FEATURE_APERFMPERF, hwp_mode)
++					   X86_FEATURE_HWP, hwp_mode)
+ 
+ static const struct x86_cpu_id hwp_support_ids[] __initconst = {
+ 	X86_MATCH_HWP(BROADWELL_X,	INTEL_PSTATE_HWP_BROADWELL),
