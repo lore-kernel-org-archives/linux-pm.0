@@ -2,138 +2,160 @@ Return-Path: <SRS0=knII=5K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 06DDBC43331
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 21:28:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 051DDC2D0EE
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 22:05:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id CCB6E20719
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 21:28:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C56072076A
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 22:05:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1585171699;
-	bh=5K2E5w4ZAxUttugnFuAHbhicY1xyCyoKDUNqdcoJPBs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=uhabui18qalvughJKf0IdxoUjec70CsCPyPfEmpWQMqwQx18uNelzvSndKgcySRv9
-	 +P3pnd4/JAoP9jQLfjYAFWrJerccijSovkGGsfWvbzCAZz45GWSA0vOKfq9ZFc6Shp
-	 sFgKsFIjwBzRihDKxMctgyDaIJ7/CvhFKlHy7sdw=
+	s=default; t=1585173952;
+	bh=K5FXUgPFp2zVJwYRIWLrMG6m5759UHyUkE1YipOnLfk=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=tSN4vnp42Z7AeggSA4mLUNwcUo1ukVPaxmZfPsmW1sChg+2iTJw7XJhX4oax1pDAw
+	 dglkkYqDxffPBNlx0BIcfgS0WmQfK2LlebuzgkpdO2zX4XSWPm0kGwaTlZwHLmkrap
+	 oRZg5/V7Pf6ZXYUNqI3khq697TQPv5Qm2Bqypc1c=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727374AbgCYV2T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 17:28:19 -0400
-Received: from mail-oi1-f196.google.com ([209.85.167.196]:44175 "EHLO
-        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727351AbgCYV2T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 17:28:19 -0400
-Received: by mail-oi1-f196.google.com with SMTP id v134so3548502oie.11;
-        Wed, 25 Mar 2020 14:28:18 -0700 (PDT)
+        id S1727574AbgCYWFw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 18:05:52 -0400
+Received: from mail-io1-f67.google.com ([209.85.166.67]:44182 "EHLO
+        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727485AbgCYWFt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 18:05:49 -0400
+Received: by mail-io1-f67.google.com with SMTP id v3so3947013iot.11;
+        Wed, 25 Mar 2020 15:05:49 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=kMnQUhHsMUqkwZSy38drjBgyagt4hVHMEAtOg07ZQq8=;
-        b=X3OOwSWwF9exeyEaukuWVnthtnuCWkdj/NhnzgeqrAmzkzlpU2fT/VytfClj4jEFGJ
-         G5o4gBQdeEgLIC78xTNGk+ErRE3NP+lWB3eKoLn+VkXHURccNbfl2IDQooDC0N2FqxpP
-         1rSlrh4Lfm6leOlBEFzcsfCAw1tbbHxp731gtzTNtDy02Owu+V9KHo1qO7+HnfTeIrb+
-         jF8ouIms+DFnG0IazntOwmamZ+brj1YNWbwLkf1X6oRBRU0OMbDQ5r25hjyWp/LbPxQk
-         K1D7JZg1/HWdNehhcl35Poa+DQfvSFhSXkg3mqICk3/nxMCSvt6eki071DUhP8sx2BYE
-         kAfQ==
-X-Gm-Message-State: ANhLgQ1pUVY2M0FtB2Yw1Dhc97q49m1Z29krYAT8gHNAYsSASS5uAPUW
-        Sl3yUdcc7Ae7hb0le3d1rzRpVC7rBVQSt94Tcds=
-X-Google-Smtp-Source: ADFU+vvzKkZOnTfMVU8Sfwv/GSImVsJgGRvYaaTVayXvuwf+AsGAEnB58orlXTBPHO173efwnlO+Y+mX9i6UdjFRaiI=
-X-Received: by 2002:aca:f07:: with SMTP id 7mr2269427oip.68.1585171698442;
- Wed, 25 Mar 2020 14:28:18 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=AwF7FEOUbNvNk4mSehe5GSFcN0+uDrOJWlHbrUm2jl4=;
+        b=pxv7G0herYnThW09pyD7DYp4RI8JVvu7jYaN33KTOuLgkNv+3/nMj0yJ5veHQCt39N
+         oDt7O7mDwcObu8qZy6LIVkkkc98wzRAwclrDNQ0e1bqwWdaYKs6iJMb8tIhBXX+D9BeI
+         J2r2cmU5dIxAAU+eq3tlPrW3Y31VbwcF5MDwOUeZc4Th/RyWXQSSYlJYUajbxNOwoNIh
+         G4xolGeHUDw9cXUOZ0FQsV1XIhx4zXdwXsHEHKJv+yUPe3PTTkyCVZd7rM/jPw68Pq4X
+         9Urp2XjESJfCe7EHqB97Yfo+LysGH/euyVK9k1cGPiHcF9Ze2VZP+ShSkNaE5WOfhIlo
+         D4aQ==
+X-Gm-Message-State: ANhLgQ3QQ76rZ5PNb2Rue3g92sfGo/nu+Ag6kvksZtiOPKWlZXGBnviL
+        +mUCAeUwUoaJI40ikJuL5H2wBig=
+X-Google-Smtp-Source: ADFU+vsP1GIXWhv3Nn2746MnQvCz0PBygUKBaoaDtLTv4UJllArEZXEuLW2CGMWNrRni/irdN7azAg==
+X-Received: by 2002:a5e:8214:: with SMTP id l20mr5055871iom.54.1585173948584;
+        Wed, 25 Mar 2020 15:05:48 -0700 (PDT)
+Received: from xps15.herring.priv ([64.188.179.250])
+        by smtp.googlemail.com with ESMTPSA id v8sm102390ioh.40.2020.03.25.15.05.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Mar 2020 15:05:48 -0700 (PDT)
+From:   Rob Herring <robh@kernel.org>
+To:     devicetree@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Brian Masney <masneyb@onstation.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Mark Brown <broonie@kernel.org>,
+        Masahiro Yamada <yamada.masahiro@socionext.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        dri-devel@lists.freedesktop.org, linux-amlogic@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-arm-msm@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        netdev@vger.kernel.org
+Subject: [PATCH 2/4] dt-bindings: sram: qcom: Clean-up 'ranges' and child node names
+Date:   Wed, 25 Mar 2020 16:05:39 -0600
+Message-Id: <20200325220542.19189-3-robh@kernel.org>
+X-Mailer: git-send-email 2.20.1
+In-Reply-To: <20200325220542.19189-1-robh@kernel.org>
+References: <20200325220542.19189-1-robh@kernel.org>
 MIME-Version: 1.0
-References: <20200325150017.xhabucfo3v6i234o@e107158-lin> <Pine.LNX.4.44L0.2003251631360.1724-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.2003251631360.1724-100000@netrider.rowland.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 25 Mar 2020 22:28:06 +0100
-Message-ID: <CAJZ5v0gqNnoT41=Vm7AtbH8PMW+qPGighK7Up3q2rS+B0jBKFg@mail.gmail.com>
-Subject: Re: lockdep warning in urb.c:363 usb_submit_urb
-To:     Alan Stern <stern@rowland.harvard.edu>
-Cc:     Qais Yousef <qais.yousef@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Oliver Neukum <oneukum@suse.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        USB list <linux-usb@vger.kernel.org>,
-        Linux-pm mailing list <linux-pm@vger.kernel.org>,
-        Kernel development list <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Mar 25, 2020 at 9:49 PM Alan Stern <stern@rowland.harvard.edu> wrote:
->
-> On Wed, 25 Mar 2020, Qais Yousef wrote:
->
-> > Thanks for all the hints Alan.
-> >
-> > I think I figured it out, the below patch seems to fix it for me. Looking
-> > at other drivers resume functions it seems we're missing the
-> > pm_runtime_disable()->set_active()->enable() dance. Doing that fixes the
-> > warning and the dev_err() in driver/base/power.
->
-> Ah, yes.  This should have been added years ago; guess I forgot.  :-(
->
-> > I don't see xhci-plat.c doing that, I wonder if it needs it too.
-> >
-> > I'm not well versed about the details and the rules here. So my fix could be
-> > a hack, though it does seem the right thing to do.
-> >
-> > I wonder why the power core doesn't handle this transparently..
->
-> Initially, we didn't want the PM core to do this automatically because
-> we thought some devices might want to remain runtime-suspended
-> following a system resume, and only the device driver would know what
-> to do.
->
-> Raphael, now that we have the direct_complete mechanism, can we revisit
-> this?  Should the PM core automatically call pm_runtime_set_active() if
-> dev->power.direct_complete isn't set?  Perhaps in device_resume_early()
-> prior to the pm_runtime_enable() call?
->
-> It's possible we discussed this and decided against it at the time when
-> direct_complete was added, but if so I don't remember what was said.
+The regex for child nodes doesn't match the example. This wasn't flagged
+with 'additionalProperties: false' missing. The child node schema was also
+incorrect with 'ranges' property as it applies to child nodes and should
+be moved up to the parent node.
 
-Me neither. :-)
+Fixes: 957fd69d396b ("dt-bindings: soc: qcom: add On Chip MEMory (OCMEM) bindings")
+Cc: Brian Masney <masneyb@onstation.org>
+Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc: linux-arm-msm@vger.kernel.org
+Signed-off-by: Rob Herring <robh@kernel.org>
+---
+ .../devicetree/bindings/sram/qcom,ocmem.yaml         | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-That said complexity has grown since then and there are the
-DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED flags that can be
-used to control that behavior to some extent.
+diff --git a/Documentation/devicetree/bindings/sram/qcom,ocmem.yaml b/Documentation/devicetree/bindings/sram/qcom,ocmem.yaml
+index 222990f9923c..469cec133647 100644
+--- a/Documentation/devicetree/bindings/sram/qcom,ocmem.yaml
++++ b/Documentation/devicetree/bindings/sram/qcom,ocmem.yaml
+@@ -43,6 +43,9 @@ properties:
+   '#size-cells':
+     const: 1
+ 
++  ranges:
++    maxItems: 1
++
+ required:
+   - compatible
+   - reg
+@@ -51,9 +54,10 @@ required:
+   - clock-names
+   - '#address-cells'
+   - '#size-cells'
++  - ranges
+ 
+ patternProperties:
+-  "^.+-sram$":
++  "-sram@[0-9a-f]+$":
+     type: object
+     description: A region of reserved memory.
+ 
+@@ -61,12 +65,8 @@ patternProperties:
+       reg:
+         maxItems: 1
+ 
+-      ranges:
+-        maxItems: 1
+-
+     required:
+       - reg
+-      - ranges
+ 
+ examples:
+   - |
+@@ -88,9 +88,9 @@ examples:
+ 
+         #address-cells = <1>;
+         #size-cells = <1>;
++        ranges = <0 0xfec00000 0x100000>;
+ 
+         gmu-sram@0 {
+                 reg = <0x0 0x100000>;
+-                ranges = <0 0 0xfec00000 0x100000>;
+         };
+       };
+-- 
+2.20.1
 
-Setting DPM_FLAG_SMART_SUSPEND alone, in particular, causes
-pm_runtime_set_active() to be called at the noirq stage of device
-resume either by the core or by bus types (e.g. PCI) etc.
-
-It looks like ohci-platform might use DPM_FLAG_SMART_SUSPEND, but I
-need to take a closer look at that (possibly later this week).
-
-Cheers!
-
-
->
-> > diff --git a/drivers/usb/host/ohci-platform.c b/drivers/usb/host/ohci-platform.c
-> > index 7addfc2cbadc..eb92c8092fae 100644
-> > --- a/drivers/usb/host/ohci-platform.c
-> > +++ b/drivers/usb/host/ohci-platform.c
-> > @@ -299,6 +299,10 @@ static int ohci_platform_resume(struct device *dev)
-> >         }
-> >
-> >         ohci_resume(hcd, false);
-> > +
-> > +       pm_runtime_disable(dev);
-> > +       pm_runtime_set_active(dev);
-> > +       pm_runtime_enable(dev);
-> >         return 0;
-> >  }
-> >  #endif /* CONFIG_PM_SLEEP */
-> >
-> >
-> > Thanks
-> >
-> > --
-> > Qais Yousef
->
->
