@@ -2,86 +2,150 @@ Return-Path: <SRS0=knII=5K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63788C43331
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 09:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A482C54FD4
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:21:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3776B20772
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 09:57:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1585130278;
-	bh=VBlYmGDntmPnOzTL6eabTzbRIvqY0qeVA9siIV5zk+E=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=J2LcPU8hD6fLJK8RE8yPG4Jqdvuv6Z4GKjCUEOUPHKx/Zup1NIcOVOUhvA7F1y5qS
-	 5tCL/6/jpuvGJxo2LyuVQ3JXDAwpyJ48htU8iyTYcw1O9zbI1xDScpNEAVHmRPGOaI
-	 sVYAxKIo9z87tR0PFDOqayFmy3MitBgrZ5pCPR0I=
+	by mail.kernel.org (Postfix) with ESMTP id D17AD2078A
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Mar 2020 10:21:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726262AbgCYJ55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 05:57:57 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:38856 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725873AbgCYJ55 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 05:57:57 -0400
-Received: by mail-oi1-f195.google.com with SMTP id w2so1537101oic.5;
-        Wed, 25 Mar 2020 02:57:57 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=NrHDtRwPhSmDON/us38dmUQzHS32k9eLAFxKK6HSnl0=;
-        b=DP5Pw4stLMIJ3D8u9E+sYOz+ggv19+wfz6lhCAXn9J/q33q40xLDZrQSjmxJDmjwBE
-         8Tnb9BHJSb9wmbO5GJ94j3hoVDHOhtbzk+w1HMBVrrqhwbD2eZc597NxsIWgk3fDOT5/
-         d8F+BmwYAK/83jBMeMB8JZe+vVk8bBs7rE/BOV2B5Zj0NT0CHJgUBa7HDqWeV8TLWg+C
-         HieZTQZB1rRuPJ+EqpkSSWfSU+q78rX9KZasWs76i+0/DYP84s/fwLnU3uRisqGLQ1qo
-         AAHYSqHCWwdz+jbIOr4b+vrF2i0JSYJSgdpCevoF4ljn6md7OLwvMybM051VZDhEpZ91
-         j0Yg==
-X-Gm-Message-State: ANhLgQ2Br9vXkzBJDuzDPCpHnU2+KYGp1DEIi8rfR4TWw6WTPP1v5ZX5
-        q/4Nnn3T0S9pXF5ub7rogm8BgU19c7tGULEufek=
-X-Google-Smtp-Source: ADFU+vty5QelQ9Rhdv8R71W76aSaOFGqdoguN3P+mdffL711qq/q5fywvQlk5Zp4b94WCLMPnyxxHbnfrLJNF+Yh9dw=
-X-Received: by 2002:a05:6808:8f:: with SMTP id s15mr1941750oic.110.1585130276966;
- Wed, 25 Mar 2020 02:57:56 -0700 (PDT)
+        id S1726109AbgCYKVT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 06:21:19 -0400
+Received: from foss.arm.com ([217.140.110.172]:46010 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727450AbgCYKVT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Mar 2020 06:21:19 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A925631B;
+        Wed, 25 Mar 2020 03:21:18 -0700 (PDT)
+Received: from [10.37.12.110] (unknown [10.37.12.110])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4CE563F52E;
+        Wed, 25 Mar 2020 03:21:16 -0700 (PDT)
+Subject: Re: [PATCH v3 2/3] dt-bindings: thermal: Add yaml bindings for
+ thermal cooling-devices
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        swboyd@chromium.org, mka@chromium.org, daniel.lezcano@linaro.org,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org
+References: <cover.1585117436.git.amit.kucheria@linaro.org>
+ <1ee4240e29edefc36b5d410d4792971c2bb4c5d5.1585117436.git.amit.kucheria@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <a89df770-eeb9-e4f2-2a46-ee4389720597@arm.com>
+Date:   Wed, 25 Mar 2020 10:21:14 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <CGME20200324234525epcas1p28f4150423112c61645bc19e3742b22bf@epcas1p2.samsung.com>
- <21bd6b76-5a3e-96c1-4184-49e96ea5f594@samsung.com>
-In-Reply-To: <21bd6b76-5a3e-96c1-4184-49e96ea5f594@samsung.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 25 Mar 2020 10:57:45 +0100
-Message-ID: <CAJZ5v0gDJkH=TBE4tFTz94rLoCCUnN1UNOpeYxRNPjf8uQsOsg@mail.gmail.com>
-Subject: Re: [GIT PULL] devfreq next for v5.7
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     "Rafael J. Wysocki <rjw@rjwysocki.net>" <rjw@rjwysocki.net>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "Chanwoo Choi (samsung.com)" <chanwoo@kernel.org>,
-        =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1ee4240e29edefc36b5d410d4792971c2bb4c5d5.1585117436.git.amit.kucheria@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Mar 25, 2020 at 12:45 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
->
-> Dear Rafael,
->
-> This is devfreq-next pull request for v5.7-rc1. I add detailed description of
-> this pull request on the following tag. Please pull devfreq with following updates.
-> - tag name : devfreq-next-for-5.7
->
-> Best Regards,
-> Chanwoo Choi
->
-> The following changes since commit 16fbf79b0f83bc752cee8589279f1ebfe57b3b6e:
->
->   Linux 5.6-rc7 (2020-03-22 18:31:56 -0700)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git tags/devfreq-next-for-5.7
+Hi Amit,
 
-Pulled, thanks!
+On 3/25/20 6:34 AM, Amit Kucheria wrote:
+> As part of moving the thermal bindings to YAML, split it up into 3
+> bindings: thermal sensors, cooling devices and thermal zones.
+> 
+> The property #cooling-cells is required in each device that acts as a
+> cooling device - whether active or passive. So any device that can
+> throttle its performance to passively reduce heat dissipation (e.g.
+> cpus, gpus) and any device that can actively dissipate heat at different
+> levels (e.g. fans) will contain this property.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+>   .../thermal/thermal-cooling-devices.yaml      | 116 ++++++++++++++++++
+>   1 file changed, 116 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml b/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
+> new file mode 100644
+> index 000000000000..b5599f7859f8
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/thermal-cooling-devices.yaml
+> @@ -0,0 +1,116 @@
+> +# SPDX-License-Identifier: (GPL-2.0)
+> +# Copyright 2020 Linaro Ltd.
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/thermal-cooling-devices.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Thermal cooling device binding
+> +
+> +maintainers:
+> +  - Amit Kucheria <amitk@kernel.org>
+> +
+> +description: |
+> +  Thermal management is achieved in devicetree by describing the sensor hardware
+> +  and the software abstraction of cooling devices and thermal zones required to
+> +  take appropriate action to mitigate thermal overload.
+> +
+> +  The following node types are used to completely describe a thermal management
+> +  system in devicetree:
+> +   - thermal-sensor: device that measures temperature, has SoC-specific bindings
+> +   - cooling-device: device used to dissipate heat either passively or artively
+> +   - thermal-zones: a container of the following node types used to describe all
+> +     thermal data for the platform
+> +
+> +  This binding describes the cooling devices.
+> +
+> +  There are essentially two ways to provide control on power dissipation:
+> +    - Passive cooling: by means of regulating device performance. A typical
+> +      passive cooling mechanism is a CPU that has dynamic voltage and frequency
+> +      scaling (DVFS), and uses lower frequencies as cooling states.
+> +    - Active cooling: by means of activating devices in order to remove the
+> +      dissipated heat, e.g. regulating fan speeds.
+> +
+> +  Any cooling device has a range of cooling states (i.e. different levels of
+> +  heat dissipation). They also have a way to determine the state of cooling in
+> +  which the device is. For example, a fan's cooling states correspond to the
+> +  different fan speeds possible. Cooling states are referred to by single
+> +  unsigned integers, where larger numbers mean greater heat dissipation. The
+> +  precise set of cooling states associated with a device should be defined in
+> +  a particular device's binding.
+
+[snip]
+
+> +
+> +    thermal-zones {
+> +            cpu0-thermal {
+> +                    polling-delay-passive = <250>;
+> +                    polling-delay = <1000>;
+> +
+> +                    thermal-sensors = <&tsens0 1>;
+> +
+> +                    trips {
+> +                            cpu0_alert0: trip-point0 {
+> +                                    temperature = <90000>;
+> +                                    hysteresis = <2000>;
+> +                                    type = "passive";
+> +                            };
+> +                    };
+> +
+> +                    cooling-maps {
+> +                            map0 {
+> +                                    trip = <&cpu0_alert0>;
+> +                                    cooling-device = <&CPU0 THERMAL_NO_LIMIT
+> +                                                            THERMAL_NO_LIMIT>;
+
+Maybe add something like this, to better reflect the description:
+
+			trip = <&cpu0_alert0>;
+			/* Corresponds to 1000MHz in OPP table */
+			cooling-device = <&CPU0 5 5>;
+
+This is less confusing than THERMAL_NO_LIMIT.
+			
+Regards,
+Lukasz
