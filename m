@@ -4,50 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A49A8C2D0E7
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 23:26:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4200AC2D0E7
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 23:27:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 7C602208FE
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 23:26:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19D3B2082D
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 23:27:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1585265217;
-	bh=2SnIw+qa73YvKL5CuWhDtXX7O/rmDnHV2j0BMtChfm0=;
+	s=default; t=1585265274;
+	bh=WWPBWH6R7vqAyfkKB/N+fKzsFhjvBeypNxeA9gpyPj0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=ymrgj39ZUQzktxoznXBUyiAAUj3j0o4TYn2lMQrww56bK+E7yEP3Aoy/y9G+hb8RL
-	 3TtkKih2i/SbXlFAwIxmSpSv0ERV+hRUDoTO6Df4omQWs2lZpmtdi2Br94EXdOhI5n
-	 dEJqgWhU46U+X3zvXu0yeOTCJbAW0gRdcUi1d9lM=
+	b=LyhmA9l26yuZllgLPNRhQFcXVoeU2DFSHrE1/iTUnszJjeUlIDR3I2WBkYSmqbUru
+	 VYTnSle3OzmJhnYK2JlOOodutUEHHLkR0jPVqOizuREF3gDHt8ayAnIBhrFVRAyePO
+	 M9gl/JjkxiRC9ymFGQCYx52PKViSbsh9QRjpqahs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727600AbgCZXZJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Mar 2020 19:25:09 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45786 "EHLO mail.kernel.org"
+        id S1727919AbgCZX1x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Mar 2020 19:27:53 -0400
+Received: from mail.kernel.org ([198.145.29.99]:44914 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726067AbgCZXZJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 26 Mar 2020 19:25:09 -0400
+        id S1728014AbgCZXYq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 26 Mar 2020 19:24:46 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B1031208FE;
-        Thu, 26 Mar 2020 23:25:07 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 4E5492077D;
+        Thu, 26 Mar 2020 23:24:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1585265108;
-        bh=2SnIw+qa73YvKL5CuWhDtXX7O/rmDnHV2j0BMtChfm0=;
+        s=default; t=1585265085;
+        bh=WWPBWH6R7vqAyfkKB/N+fKzsFhjvBeypNxeA9gpyPj0=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=UIHILtaEFfu45B4VCv4vEOsk4r95gJZM1U15r24xgtdumnedSIFSQK0Q4it7fzTzL
-         20MhHY//1fxihAKiCaxO+SUDcSLT6CMjEnW2omLecl07WV+8NXJoISD2OIBXTLedsW
-         0FkpMA6wpSVxXLVyT8zO6NltFokMNb6PjsLLOpLQ=
+        b=oh2RZPL4T1tk78dyNGAGoaeV9dV0BPCBBew4f9lXwinYNSOjv0po6l9udntf4fZVG
+         /cA4pOh5RcSDYCxyqd9LUQ6+cnimg2FzLy8VY+nA9Sq81i9QM+xyskkAbrDakueARj
+         P2b2PDJV42yfl6M8TOXaQRrktGKtmTbEoYW+8OOM=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Len Brown <len.brown@intel.com>, Sasha Levin <sashal@kernel.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 11/15] tools/power turbostat: Fix missing SYS_LPI counter on some Chromebooks
-Date:   Thu, 26 Mar 2020 19:24:51 -0400
-Message-Id: <20200326232455.8029-11-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 12/19] tools/power turbostat: Fix missing SYS_LPI counter on some Chromebooks
+Date:   Thu, 26 Mar 2020 19:24:24 -0400
+Message-Id: <20200326232431.7816-12-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200326232455.8029-1-sashal@kernel.org>
-References: <20200326232455.8029-1-sashal@kernel.org>
+In-Reply-To: <20200326232431.7816-1-sashal@kernel.org>
+References: <20200326232431.7816-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -75,10 +75,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 14 insertions(+), 9 deletions(-)
 
 diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index fb665fdc722a4..2233cf722c692 100644
+index 78507cd479bb4..17e82eaf5c4f4 100644
 --- a/tools/power/x86/turbostat/turbostat.c
 +++ b/tools/power/x86/turbostat/turbostat.c
-@@ -299,6 +299,10 @@ int *irqs_per_cpu;		/* indexed by cpu_num */
+@@ -304,6 +304,10 @@ int *irqs_per_cpu;		/* indexed by cpu_num */
  
  void setup_all_buffers(void);
  
@@ -89,7 +89,7 @@ index fb665fdc722a4..2233cf722c692 100644
  int cpu_is_not_present(int cpu)
  {
  	return !CPU_ISSET_S(cpu, cpu_present_setsize, cpu_present_set);
-@@ -2844,8 +2848,6 @@ int snapshot_gfx_mhz(void)
+@@ -2916,8 +2920,6 @@ int snapshot_gfx_mhz(void)
   *
   * record snapshot of
   * /sys/devices/system/cpu/cpuidle/low_power_idle_cpu_residency_us
@@ -98,7 +98,7 @@ index fb665fdc722a4..2233cf722c692 100644
   */
  int snapshot_cpu_lpi_us(void)
  {
-@@ -2865,17 +2867,14 @@ int snapshot_cpu_lpi_us(void)
+@@ -2941,17 +2943,14 @@ int snapshot_cpu_lpi_us(void)
  /*
   * snapshot_sys_lpi()
   *
@@ -117,8 +117,8 @@ index fb665fdc722a4..2233cf722c692 100644
 +	fp = fopen_or_die(sys_lpi_file, "r");
  
  	retval = fscanf(fp, "%lld", &cpuidle_cur_sys_lpi_us);
- 	if (retval != 1)
-@@ -4743,10 +4742,16 @@ void process_cpuid()
+ 	if (retval != 1) {
+@@ -4907,10 +4906,16 @@ void process_cpuid()
  	else
  		BIC_NOT_PRESENT(BIC_CPU_LPI);
  
