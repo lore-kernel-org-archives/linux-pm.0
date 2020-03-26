@@ -2,198 +2,170 @@ Return-Path: <SRS0=yWkS=5L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 617C9C43331
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 18:46:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B400C43331
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 19:14:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 28FCD20714
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 18:46:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="BYXAsHe9"
+	by mail.kernel.org (Postfix) with ESMTP id 0625B2073E
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 19:14:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1585250088;
+	bh=dApfC/BGFaA1bhwnJYqIGGbxr9bhUJ1IHIm0PEL1xaE=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=1t8dJdFIL7YzEM/S4/AI01o5bXHBlAEuLMx/KMRTOZsn4DoJB/yQ3Dg5I0NvAmnAR
+	 DkOQUHpI+0d9nNtRO4aAlAt29jR4atOVmjhHESuU9Tf6gb9Z8z9VtP9aqL+b82Uk0X
+	 yAIg8M02tjwI/oObH0CZvsaFSX6MeMHf9SxikrSU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727719AbgCZSqG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Mar 2020 14:46:06 -0400
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:36420 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726340AbgCZSqG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2020 14:46:06 -0400
-Received: by mail-ot1-f65.google.com with SMTP id l23so7042486otf.3
-        for <linux-pm@vger.kernel.org>; Thu, 26 Mar 2020 11:46:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=DSaPi1qX32z4R5hBNdjTSka9jPbPxfHe58KpVQ2pneg=;
-        b=BYXAsHe9fDFiKQbkaEpYLrNdYpxCE2v5G6VFQHxCpBGHPCnN03bKIX0cr1VCAEu9Rg
-         0u0HgwpXi3GMGR9xw+I0FW42IlN/vuGOf9rb7J7W1mod/M2cK7tigZBbXm1OrZVZ5nF5
-         /ch76GZA+uxnx8Lv/5fIAE2nNlMg51xb2mLdTQV6oCrQ3rjG/1emnwYN5Ds+69xK8u6s
-         0ZQsdzsKiK7YSCcC0K9lvBJW742xWWN0ONeh5y/5Sfjg8CpsPRwf27PTuXTfV5HFD+34
-         l3TsxMQNM64kOstFhVSyTwfwxVG4Ux2OvdfP4KjKmtzL/f7ykX3qIRwtmt/hL+HXMQQM
-         EdXQ==
+        id S1726359AbgCZTOr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Mar 2020 15:14:47 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:38475 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726340AbgCZTOr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Mar 2020 15:14:47 -0400
+Received: by mail-oi1-f196.google.com with SMTP id w2so6592464oic.5;
+        Thu, 26 Mar 2020 12:14:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=DSaPi1qX32z4R5hBNdjTSka9jPbPxfHe58KpVQ2pneg=;
-        b=IVxfvZkDw+CR/AqE+xtJdvc3QAXwr7sVN2qeWrgcvGJ2IW94/g0dXoAWReX+3HmKmH
-         rORwnRw1qgUaR1o5YLAxOUJkp4FhxQB2Mz0i/2JQhZTVM47kziSk2LEs2/BpNgK2n60T
-         Wnllzgv/IhBDbe+6kDG8Jb+vUphoS7GBWmxLyFI4sF+4Xe6lL+PdYUaP+UvGX6zHaKam
-         MIv6Up1t/iPILLs93lSshQYZZb08WgMMBAQXM7zPMU2+u2OfsJYxAg+cYW2O7O+iXYUr
-         lr8duxe5SWDt9VzFnaAU6X6ejmhXOlhfJyc62kvTTLisFmIquvMNf+GPgqkYL9FhVgDM
-         80Mg==
-X-Gm-Message-State: ANhLgQ0fZ3o6ivHQ5L74p9Yxko6p0TrL4pWCnrP7MagL8VBsxuHSIGjB
-        ocjdUZhtJFOMXzDGnGmj1wFWlGnvmJA9uKXFZ/Ukqw==
-X-Google-Smtp-Source: ADFU+vtzg+a7ZQexHtE4pMNO2X9rdMsKebqldlLPwKcI7thZoZW5JdSClsEyMSIJZH29yvaoRdaCI/72/CgZLGRMZrE=
-X-Received: by 2002:a9d:42f:: with SMTP id 44mr7376213otc.236.1585248364557;
- Thu, 26 Mar 2020 11:46:04 -0700 (PDT)
+        bh=QXEle+ZD53+MFHWcLgdRW1ZIu+1OkbpjksE2lr+1gKg=;
+        b=WNF38S/M/dFbhm+YapzzoP5MEt1c3ageOc5gu4bQMXKoeRqwopcFbc/5AqfjBfrGDa
+         NVUdWFairNhwluzfIHXGGgqOGujiVE6SzivgmkQWy6j+rDEuNsPya2IQ2HiW7PXK69pG
+         vve/OJyoHD0jVf4/+attRuADZr7l3kDedXxT2r864xOBa7kEIxN23Q9f+s7EJuZld56/
+         8Imf3xW3lw1p+n/L9wvITImNYbg7Veo4J59vUQhRfv6rJ0iarhK3t4hEKrgeBO+cpeMK
+         zn6YAcjUWAU3W4K5zv+8fgBKn8eBYCy8tTzBmQrVI9RPMRFGCzrVunDP4FnTeuYu9P6v
+         /cnQ==
+X-Gm-Message-State: ANhLgQ3MV4WHCesfQSvo62CMpS2UnHRu4cgqjkO4qrYj/do0KHjcTH/b
+        Ry0S6yML3XkKZRGIfJy6wRPfqC8nlYxI6TRjCSA=
+X-Google-Smtp-Source: ADFU+vsfTSr1oKjoNtVzFV6kqJLSFnimlr7Skrn5pUSOrTjmvEX49Crb7bSqm4rySP49deJhBqwBJs2Mm4RbPbj6rDQ=
+X-Received: by 2002:aca:5155:: with SMTP id f82mr1398128oib.103.1585250086360;
+ Thu, 26 Mar 2020 12:14:46 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200324175719.62496-1-andriy.shevchenko@linux.intel.com>
- <20200325032901.29551-1-saravanak@google.com> <20200325125120.GX1922688@smile.fi.intel.com>
- <CAGETcx_TGw24UqX7pXZePyskrao6zwnKTq8mBk9g_7jokqAqkA@mail.gmail.com> <CAJZ5v0jB1hqzYK8ezjf1_1yMCudNXNS-CsrUJQcmL4W5mBD6fQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0jB1hqzYK8ezjf1_1yMCudNXNS-CsrUJQcmL4W5mBD6fQ@mail.gmail.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Thu, 26 Mar 2020 11:45:28 -0700
-Message-ID: <CAGETcx8kqBsqMLm4gqY83dd0mSxucVbk7VWGXu4dKqya9nsbsg@mail.gmail.com>
-Subject: Re: [PATCH v3] driver core: Break infinite loop when deferred probe
- can't be satisfied
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Andrzej Hajda <a.hajda@samsung.com>,
-        Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
-        Felipe Balbi <balbi@kernel.org>,
-        Mark Brown <broonie@kernel.org>, Ferry Toth <fntoth@gmail.com>,
-        grant.likely@arm.com,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Peter Ujfalusi <peter.ujfalusi@ti.com>,
-        Android Kernel Team <kernel-team@android.com>
+References: <20200326144630.15011-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20200326144630.15011-1-daniel.lezcano@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 26 Mar 2020 20:14:34 +0100
+Message-ID: <CAJZ5v0iDuv0doOzFd140A17fhLKsdgZXbc_XMOuhUeDt70Jz+g@mail.gmail.com>
+Subject: Re: [PATCH] powercap/drivers/idle_inject: Specify idle state max latency
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "open list:POWER MANAGEMENT CORE" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Mar 26, 2020 at 1:39 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+On Thu, Mar 26, 2020 at 3:48 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
 >
-> On Wed, Mar 25, 2020 at 11:09 PM Saravana Kannan <saravanak@google.com> wrote:
-> >
-> > On Wed, Mar 25, 2020 at 5:51 AM Andy Shevchenko
-> > <andriy.shevchenko@linux.intel.com> wrote:
-> > >
+> Currently the idle injection framework uses the play_idle() function
+> which puts the current CPU in an idle state. The idle state is the
+> deepest one, as specified by the latency constraint when calling the
+> subsequent play_idle_precise() function with the INT_MAX.
 >
-> [cut]
+> The idle_injection is used by the cpuidle_cooling device which
+> computes the idle / run duration to mitigate the temperature by
+> injecting idle cycles. The cooling device has no control on the depth
+> of the idle state.
 >
-> > >
-> > > Yes, it's (unlikely) possible (*), but it will give one more iteration per such
-> > > case. It's definitely better than infinite loop. Do you agree?
-> >
-> > Sorry I wasn't being clear (I was in a rush). I'm saying this patch
-> > can reintroduce the bug where the deferred probe isn't triggered when
-> > it should be.
-> >
-> > Let's take a simple execution flow.
-> >
-> > probe_okay is at 10.
-> >
-> > Thread-A
-> >   really_probe(Device-A)
-> >     local_probe_okay_count = 10
-> >     Device-A probe function is running...
-> >
-> > Thread-B
-> >   really_probe(Device-B)
-> >     Device-B probes successfully.
-> >     probe_okay incremented to 11
-> >
-> > Thread-C
-> >   Device-C (which had bound earlier) is unbound (say module is
-> > unloaded or a million other reasons).
-> >   probe_okay is decremented to 10.
-> >
-> > Thread-A continues
-> >   Device-A probe function returns -EPROBE_DEFER
-> >   driver_deferred_probe_add_trigger() doesn't do anything because
-> >     local_probe_okay_count == probe_okay
-> >   But Device-A might have deferred probe waiting on Device-B.
-> >   Device-A never probes.
-> >
-> > > *) It means during probe you have _intensive_ removing, of course you may keep
-> > > kernel busy with iterations, but it has no practical sense. DoS attacks more
-> > > effective in different ways.
-> >
-> > I wasn't worried about DoS attacks. More of a functional correctness
-> > issue what I explained above.
+> Allow finer control of the idle injection mechanism by allowing to
+> specify the latency for the idle state. Thus the cooling device has
+> the ability to have a guarantee on the exit latency of the idle states
+> it is injecting.
 >
-> The code is functionally incorrect as is already AFAICS.
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> ---
+>  drivers/powercap/idle_inject.c | 27 ++++++++++++++++++++++++++-
+>  include/linux/idle_inject.h    |  6 ++++++
+>  2 files changed, 32 insertions(+), 1 deletion(-)
 >
-> > Anyway, if your issue and similar issues can be handles in driver core
-> > in a clean way without breaking other cases, I don't have any problem
-> > with that. Just that, I think the current solution breaks other cases.
+> diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
+> index cd1270614cc6..15e6f9b8023f 100644
+> --- a/drivers/powercap/idle_inject.c
+> +++ b/drivers/powercap/idle_inject.c
+> @@ -61,12 +61,14 @@ struct idle_inject_thread {
+>   * @timer: idle injection period timer
+>   * @idle_duration_us: duration of CPU idle time to inject
+>   * @run_duration_us: duration of CPU run time to allow
+> + * @latency_us: max allowed latency
+>   * @cpumask: mask of CPUs affected by idle injection
+>   */
+>  struct idle_inject_device {
+>         struct hrtimer timer;
+>         unsigned int idle_duration_us;
+>         unsigned int run_duration_us;
+> +       unsigned int latency_us;
+>         unsigned long int cpumask[0];
+>  };
 >
-> OK, so the situation right now is that commit 58b116bce136 has
-> introduced a regression and so it needs to be fixed or reverted.  The
-> cases that were previously broken and were unbroken by that commit
-> don't matter here, so you cannot argue that they would be "broken".
+> @@ -138,7 +140,8 @@ static void idle_inject_fn(unsigned int cpu)
+>          */
+>         iit->should_run = 0;
 >
-> It looks to me like the original issue fixed by the commit in question
-> needs to be addressed differently, so I would vote for reverting it
-> and starting over.
+> -       play_idle(READ_ONCE(ii_dev->idle_duration_us));
+> +       play_idle_precise(READ_ONCE(ii_dev->idle_duration_us) * NSEC_PER_USEC,
+> +                         READ_ONCE(ii_dev->latency_us) * NSEC_PER_USEC);
+>  }
+>
+>  /**
+> @@ -169,6 +172,27 @@ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+>         *idle_duration_us = READ_ONCE(ii_dev->idle_duration_us);
+>  }
+>
+> +/**
+> + * idle_inject_set_latency - set the maximum latency allowed
+> + * @latency_us: set the latency requirement for the idle state
+> + */
+> +void idle_inject_set_latency(struct idle_inject_device *ii_dev,
+> +                            unsigned int latency_us)
+> +{
+> +       WRITE_ONCE(ii_dev->latency_us, latency_us);
+> +}
+> +
+> +/**
+> + * idle_inject_get_latency - get the allowed latency
+> + *
+> + * Return: an unsigned int corresponding to the latency requirement
+> + * for the idle state
+> + */
+> +unsigned int idle_inject_get_latency(struct idle_inject_device *ii_dev)
+> +{
+> +       return READ_ONCE(ii_dev->latency_us);
+> +}
+> +
+>  /**
+>   * idle_inject_start - start idle injections
+>   * @ii_dev: idle injection control device structure
+> @@ -297,6 +321,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
+>         cpumask_copy(to_cpumask(ii_dev->cpumask), cpumask);
+>         hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+>         ii_dev->timer.function = idle_inject_timer_fn;
+> +       ii_dev->latency_us = UINT_MAX;
+>
+>         for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
+>
+> diff --git a/include/linux/idle_inject.h b/include/linux/idle_inject.h
+> index a445cd1a36c5..b573fee589b9 100644
+> --- a/include/linux/idle_inject.h
+> +++ b/include/linux/idle_inject.h
+> @@ -26,4 +26,10 @@ void idle_inject_set_duration(struct idle_inject_device *ii_dev,
+>  void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+>                                  unsigned int *run_duration_us,
+>                                  unsigned int *idle_duration_us);
+> +
+> +void idle_inject_set_latency(struct idle_inject_device *ii_dev,
+> +                            unsigned int latency_ns);
+> +
+> +unsigned int idle_inject_get_latency(struct idle_inject_device *ii_dev);
+> +
+>  #endif /* __IDLE_INJECT_H__ */
+> --
 
-I'm fine with whatever approach. My only point is that code that's
-been there for 5+ years might be preventing that race in a multitude
-of platforms. So I'm just reviewing to make sure fixes aren't
-introducing regressions. I'm all for anyone cleaning up/redoing
-deferred probe.
-
-> > As an alternate solution, assuming "linux,extcon-name" is coming
-> > from some firmware, you might want to look into the fw_devlink
-> > feature.
->
-> That would be a workaround for a driver core issue, though, wouldn't it?
-
-I'm not saying don't fix it in the driver core if it can be done
-without adding regressions.
-
-> > That feature allows driver core to add device links from firmware
-> > information. If you can get that feature to create device links from
-> > your dwc3.0.auto (or its parent pci_dev?) to the extcon supplier
-> > device, all of this can be sidestepped and your dwc3.0.auto's (or the
-> > dwc pci_dev's) probe will be triggered only after extcon is probed.
-> >
-> > I have very little familiarity with PCI/ACPI. I spent about an hour or
-> > two poking at ACPI scan/property code. The relationship between a
-> > pci_dev and an acpi_device is a bit confusing to me because I see:
-> >
-> > static int dwc3_pci_probe(struct pci_dev *pci, const struct pci_device_id *id)
-> > {
-> >         struct property_entry *p = (struct property_entry *)id->driver_data;
-> >         struct dwc3_pci         *dwc;
-> >         struct resource         res[2];
-> >         int                     ret;
-> >         struct device           *dev = &pci->dev;
-> > ....
-> >         dwc->dwc3 = platform_device_alloc("dwc3", PLATFORM_DEVID_AUTO);
-> > ....
-> >         ACPI_COMPANION_SET(&dwc->dwc3->dev, ACPI_COMPANION(dev));
-> >
-> > And ACPI_COMPANION returns an acpi_device by looking at dev->fwnode.
-> > So how the heck is a pci_device.dev.fwnode pointing to an
-> > acpi_device.fwnode?
->
-> acpi_device is an of_node counterpart (or it is an fwnode itself if you will).
-
-If I understand correctly, you are saying it's similar to struct
-device_node for OF -- as in, a data struct that stores the unpacked
-ACPI firmware data. That helps me understand what is going on with
-ACPI_COMPANION_SET() in the PCI driver.
-
-But then, why does it have a "struct device dev" field embedded in it?
-Does the acpi_device.dev ever get registered with driver core?
-
-Thanks,
-Saravana
+I would like to see a user of idle_inject_get_latency() before this goes in.
