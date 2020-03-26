@@ -2,31 +2,31 @@ Return-Path: <SRS0=yWkS=5L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED1F9C2D0EB
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 668B8C2D0ED
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B9EC720775
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4430F208FE
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727706AbgCZCQb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 22:16:31 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:37264 "EHLO inva020.nxp.com"
+        id S1727705AbgCZCQa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 22:16:30 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:52688 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727592AbgCZCQ1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 25 Mar 2020 22:16:27 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 9FE2C1A078A;
-        Thu, 26 Mar 2020 03:16:25 +0100 (CET)
+        id S1727564AbgCZCQa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Mar 2020 22:16:30 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id EB33E200783;
+        Thu, 26 Mar 2020 03:16:27 +0100 (CET)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 923B41A0785;
-        Thu, 26 Mar 2020 03:16:25 +0100 (CET)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id D3DA2200782;
+        Thu, 26 Mar 2020 03:16:27 +0100 (CET)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 80CBB203CD;
-        Thu, 26 Mar 2020 03:16:24 +0100 (CET)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id C41D4203CD;
+        Thu, 26 Mar 2020 03:16:26 +0100 (CET)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -54,140 +54,222 @@ Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
         Silvano di Ninno <silvano.dininno@nxp.com>,
         linux-pm@vger.kernel.org, kernel@pengutronix.de, linux-imx@nxp.com,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH 0/8] interconnect: Add imx support via devfreq
-Date:   Thu, 26 Mar 2020 04:16:12 +0200
-Message-Id: <cover.1585188174.git.leonard.crestez@nxp.com>
+Subject: [PATCH 2/8] PM / devfreq: Add generic imx bus scaling driver
+Date:   Thu, 26 Mar 2020 04:16:14 +0200
+Message-Id: <e32290a36b31fbe922cc8ed48c33e89a5eb08804.1585188174.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1585188174.git.leonard.crestez@nxp.com>
+References: <cover.1585188174.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1585188174.git.leonard.crestez@nxp.com>
+References: <cover.1585188174.git.leonard.crestez@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds interconnect scaling support for imx8m series chips. It uses a
-per-SOC interconnect provider layered on top of multiple instances of devfreq
-for scalable nodes along the interconnect.
+Add initial support for dynamic frequency switching on pieces of the imx
+interconnect fabric.
 
-Existing qcom interconnect providers mostly translate bandwidth requests into
-firmware calls but equivalent firmware on imx8m is much thinner. Scaling
-support for individual nodes is implemented as distinct devfreq drivers
-instead.
+All this driver does is set a clk rate based on an opp table, it does
+not map register areas.
 
-The imx interconnect provider doesn't communicate with devfreq directly
-but rather computes "minimum frequencies" for nodes along the path and
-creates dev_pm_qos requests.
-
-Since there is no single devicetree node that can represent the
-"interconnect" the main NOC is picked as the "interconnect provider" and
-will probe the interconnect platform device if #interconnect-cells is
-present. This avoids introducing "virtual" devices but it means that DT
-bindings of main NOC includes properties for both devfreq and
-interconnect.
-
-Only the ddrc and main noc are scalable right now but more can be added.
-
-Also available on a github branch (with various unrelated changes):
-	https://github.com/cdleonard/linux/tree/next
-Testing currently requires NXP branch of atf+uboot
-
-Martin: I believe you should be able to use this to control DRAM
-frequency from video by just adding interconnect consumer code to
-nwl-dsi. Sample code:
-	https://github.com/cdleonard/linux/commit/43772762aa5045f1ce5623740f9a4baef988d083
-	https://github.com/cdleonard/linux/commit/7b601e981b1f517b5d98b43bde292972ded13086
-
-Changes since RFCv6:
-* Replace scalable-nodes stuff with just a fsl,ddrc property. Future
-scalable nodes can be added as additional phandles on the NOC
-* Allow building interconnect drivers as modules
-* Handle icc_provider_del errors in imx_icc_unregister (like EBUSY).
-* Rename imx-devfreq to imx-bus, similar to exynos-bus
-* Explain why imx bus clock enabling is not required
-* All dependencies accepted (some time ago).
-Link: https://patchwork.kernel.org/cover/11244421/
-
-Changes since RFCv5:
-* Replace scanning for interconnect-node-id with explicit
-scalable-nodes/scalable-node-ids property on NoC.
-* Now passes make `dtbs_check`
-* Remove struct imx_icc_provider
-* Switch to of_icc_xlate_onecell
-* Use of_find_device_by_node to fetch QoS target, this causes fewer probe
-deferrals, removes dependency on devfreq API and even allows reloading ddrc
-module at runtime
-* Add imx_icc_node_destroy helper
-* Remove 0/1 on DEFINE_BUS_SLAVE/MASTER which created spurious links
-Link: https://patchwork.kernel.org/cover/11222015/
-
-Changes since RFCv4:
-* Drop icc proxy nonsense
-* Make devfreq driver for NOC probe the ICC driver if
-#interconnect-cells is present
-* Move NOC support to interconnect series and rename the node in DT
-* Add support for all chips at once, differences are not intereseting
-and there is more community interest for 8mq than 8mm.
-Link: https://patchwork.kernel.org/cover/11111865/
-
-Changes since RFCv3:
-* Remove the virtual "icc" node and add devfreq nodes as proxy providers
-* Fix build on 32-bit arm (reported by kbuilt test robot)
-* Remove ARCH_MXC_ARM64 (never existed in upstream)
-* Remove _numlinks, calculate instead
-* Replace __BUSFREQ_H header guard
-* Improve commit message and comment spelling
-* Fix checkpatch issues
-Link to RFCv3: https://patchwork.kernel.org/cover/11078671/
-
-Changes since RFCv2 and initial work by Alexandre Bailon:
-* Relying on devfreq and dev_pm_qos instead of CLK
-* No more "platform opp" stuff
-* No more special suspend handling: use suspend-opp on devfreq instead
-* Replace all mentions of "busfreq" with "interconnect"
-Link to v2: https://patchwork.kernel.org/cover/11021563/
-
-Leonard Crestez (8):
-  dt-bindings: interconnect: Add bindings for imx8m noc
-  PM / devfreq: Add generic imx bus scaling driver
-  PM / devfreq: imx: Register interconnect device
-  interconnect: Add imx core driver
-  interconnect: imx: Add platform driver for imx8mm
-  interconnect: imx: Add platform driver for imx8mq
-  interconnect: imx: Add platform driver for imx8mn
-  arm64: dts: imx8m: Add NOC nodes
-
- .../bindings/interconnect/fsl,imx8m-noc.yaml  | 138 ++++++++
- arch/arm64/boot/dts/freescale/imx8mm.dtsi     |  24 ++
- arch/arm64/boot/dts/freescale/imx8mn.dtsi     |  24 ++
- arch/arm64/boot/dts/freescale/imx8mq.dtsi     |  24 ++
- drivers/devfreq/Kconfig                       |   9 +
- drivers/devfreq/Makefile                      |   1 +
- drivers/devfreq/imx-bus.c                     | 181 +++++++++++
- drivers/interconnect/Kconfig                  |   1 +
- drivers/interconnect/Makefile                 |   1 +
- drivers/interconnect/imx/Kconfig              |  17 +
- drivers/interconnect/imx/Makefile             |   9 +
- drivers/interconnect/imx/imx.c                | 298 ++++++++++++++++++
- drivers/interconnect/imx/imx.h                |  62 ++++
- drivers/interconnect/imx/imx8mm.c             | 108 +++++++
- drivers/interconnect/imx/imx8mn.c             |  97 ++++++
- drivers/interconnect/imx/imx8mq.c             | 106 +++++++
- include/dt-bindings/interconnect/imx8mm.h     |  49 +++
- include/dt-bindings/interconnect/imx8mn.h     |  41 +++
- include/dt-bindings/interconnect/imx8mq.h     |  48 +++
- 19 files changed, 1238 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/fsl,imx8m-noc.yaml
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ drivers/devfreq/Kconfig   |   9 +++
+ drivers/devfreq/Makefile  |   1 +
+ drivers/devfreq/imx-bus.c | 142 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 152 insertions(+)
  create mode 100644 drivers/devfreq/imx-bus.c
- create mode 100644 drivers/interconnect/imx/Kconfig
- create mode 100644 drivers/interconnect/imx/Makefile
- create mode 100644 drivers/interconnect/imx/imx.c
- create mode 100644 drivers/interconnect/imx/imx.h
- create mode 100644 drivers/interconnect/imx/imx8mm.c
- create mode 100644 drivers/interconnect/imx/imx8mn.c
- create mode 100644 drivers/interconnect/imx/imx8mq.c
- create mode 100644 include/dt-bindings/interconnect/imx8mm.h
- create mode 100644 include/dt-bindings/interconnect/imx8mn.h
- create mode 100644 include/dt-bindings/interconnect/imx8mq.h
 
+diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
+index 0b1df12e0f21..44d26192ddc4 100644
+--- a/drivers/devfreq/Kconfig
++++ b/drivers/devfreq/Kconfig
+@@ -99,10 +99,19 @@ config ARM_IMX8M_DDRC_DEVFREQ
+ 	select DEVFREQ_GOV_USERSPACE
+ 	help
+ 	  This adds the DEVFREQ driver for the i.MX8M DDR Controller. It allows
+ 	  adjusting DRAM frequency.
+ 
++config ARM_IMX_BUS_DEVFREQ
++	tristate "i.MX Generic Bus DEVFREQ Driver"
++	depends on ARCH_MXC || COMPILE_TEST
++	select DEVFREQ_GOV_PASSIVE
++	select DEVFREQ_GOV_USERSPACE
++	help
++	  This adds the generic DEVFREQ driver for i.MX interconnects. It
++	  allows adjusting NIC/NOC frequency.
++
+ config ARM_TEGRA_DEVFREQ
+ 	tristate "NVIDIA Tegra30/114/124/210 DEVFREQ Driver"
+ 	depends on ARCH_TEGRA_3x_SOC || ARCH_TEGRA_114_SOC || \
+ 		ARCH_TEGRA_132_SOC || ARCH_TEGRA_124_SOC || \
+ 		ARCH_TEGRA_210_SOC || \
+diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
+index 3eb4d5e6635c..3ca1ad0ecb97 100644
+--- a/drivers/devfreq/Makefile
++++ b/drivers/devfreq/Makefile
+@@ -7,10 +7,11 @@ obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
+ obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
+ obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
+ 
+ # DEVFREQ Drivers
+ obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
++obj-$(CONFIG_ARM_IMX_BUS_DEVFREQ)	+= imx-bus.o
+ obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)	+= imx8m-ddrc.o
+ obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
+ obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
+ obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
+ 
+diff --git a/drivers/devfreq/imx-bus.c b/drivers/devfreq/imx-bus.c
+new file mode 100644
+index 000000000000..285e0f1ae6b1
+--- /dev/null
++++ b/drivers/devfreq/imx-bus.c
+@@ -0,0 +1,142 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * Copyright 2019 NXP
++ */
++
++#include <linux/clk.h>
++#include <linux/devfreq.h>
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/pm_opp.h>
++#include <linux/platform_device.h>
++#include <linux/slab.h>
++
++struct imx_bus {
++	struct devfreq_dev_profile profile;
++	struct devfreq *devfreq;
++	struct clk *clk;
++	struct devfreq_passive_data passive_data;
++};
++
++static int imx_bus_target(struct device *dev,
++		unsigned long *freq, u32 flags)
++{
++	struct imx_bus *priv = dev_get_drvdata(dev);
++	struct dev_pm_opp *new_opp;
++	unsigned long new_freq;
++	int ret;
++
++	new_opp = devfreq_recommended_opp(dev, freq, flags);
++	if (IS_ERR(new_opp)) {
++		ret = PTR_ERR(new_opp);
++		dev_err(dev, "failed to get recommended opp: %d\n", ret);
++		return ret;
++	}
++	new_freq = dev_pm_opp_get_freq(new_opp);
++	dev_pm_opp_put(new_opp);
++
++	return clk_set_rate(priv->clk, new_freq);
++}
++
++static int imx_bus_get_cur_freq(struct device *dev, unsigned long *freq)
++{
++	struct imx_bus *priv = dev_get_drvdata(dev);
++
++	*freq = clk_get_rate(priv->clk);
++
++	return 0;
++}
++
++static int imx_bus_get_dev_status(struct device *dev,
++		struct devfreq_dev_status *stat)
++{
++	struct imx_bus *priv = dev_get_drvdata(dev);
++
++	stat->busy_time = 0;
++	stat->total_time = 0;
++	stat->current_frequency = clk_get_rate(priv->clk);
++
++	return 0;
++}
++
++static void imx_bus_exit(struct device *dev)
++{
++	dev_pm_opp_of_remove_table(dev);
++}
++
++static int imx_bus_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct imx_bus *priv;
++	const char *gov = DEVFREQ_GOV_USERSPACE;
++	int ret;
++
++	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	/*
++	 * Fetch the clock to adjust but don't explictly enable.
++	 *
++	 * For imx bus clock clk_set_rate is safe no matter if the clock is on
++	 * or off and some peripheral side-buses might be off unless enabled by
++	 * drivers for devices on those specific buses.
++	 *
++	 * Rate adjustment on a disabled bus clock just takes effect later.
++	 */
++	priv->clk = devm_clk_get(dev, NULL);
++	if (IS_ERR(priv->clk)) {
++		ret = PTR_ERR(priv->clk);
++		dev_err(dev, "failed to fetch clk: %d\n", ret);
++		return ret;
++	}
++	platform_set_drvdata(pdev, priv);
++
++	ret = dev_pm_opp_of_add_table(dev);
++	if (ret < 0) {
++		dev_err(dev, "failed to get OPP table\n");
++		return ret;
++	}
++
++	priv->profile.polling_ms = 1000;
++	priv->profile.target = imx_bus_target;
++	priv->profile.get_dev_status = imx_bus_get_dev_status;
++	priv->profile.exit = imx_bus_exit;
++	priv->profile.get_cur_freq = imx_bus_get_cur_freq;
++	priv->profile.initial_freq = clk_get_rate(priv->clk);
++
++	priv->devfreq = devm_devfreq_add_device(dev, &priv->profile,
++						gov, NULL);
++	if (IS_ERR(priv->devfreq)) {
++		ret = PTR_ERR(priv->devfreq);
++		dev_err(dev, "failed to add devfreq device: %d\n", ret);
++		goto err;
++	}
++
++	return 0;
++
++err:
++	dev_pm_opp_of_remove_table(dev);
++	return ret;
++}
++
++static const struct of_device_id imx_bus_of_match[] = {
++	{ .compatible = "fsl,imx8m-noc", },
++	{ .compatible = "fsl,imx8m-nic", },
++	{ /* sentinel */ },
++};
++MODULE_DEVICE_TABLE(of, imx_bus_of_match);
++
++static struct platform_driver imx_bus_platdrv = {
++	.probe		= imx_bus_probe,
++	.driver = {
++		.name	= "imx-bus-devfreq",
++		.of_match_table = of_match_ptr(imx_bus_of_match),
++	},
++};
++module_platform_driver(imx_bus_platdrv);
++
++MODULE_DESCRIPTION("Generic i.MX bus frequency scaling driver");
++MODULE_AUTHOR("Leonard Crestez <leonard.crestez@nxp.com>");
++MODULE_LICENSE("GPL v2");
 -- 
 2.17.1
 
