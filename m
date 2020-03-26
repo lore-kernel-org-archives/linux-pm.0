@@ -2,275 +2,233 @@ Return-Path: <SRS0=yWkS=5L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B67B9C43331
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 01:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C31EC43331
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 78B712076A
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 01:43:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="n+vFklgp"
+	by mail.kernel.org (Postfix) with ESMTP id E36152083E
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Mar 2020 02:16:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727593AbgCZBng (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Mar 2020 21:43:36 -0400
-Received: from mail-pl1-f180.google.com ([209.85.214.180]:44570 "EHLO
-        mail-pl1-f180.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727561AbgCZBnf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Mar 2020 21:43:35 -0400
-Received: by mail-pl1-f180.google.com with SMTP id h11so1521668plr.11
-        for <linux-pm@vger.kernel.org>; Wed, 25 Mar 2020 18:43:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=+tNo4SYfs6XqblFA7HgFFMes7vb2qMgYQcQMJGpz3gw=;
-        b=n+vFklgp/BaXWro7EUFxrJH0iwPd7RmawzIa5RqMt7zz1XS7TI3Y3eGk8sjP6xEgQl
-         fd4N3O5lAApRX1eoLLFj24Df19AB931ZGp1wxvHqyTaO57RYWXMV29//IBRF34hqzxZF
-         oy2VIMN480nZlYrf2SGzkCJpZ5ZFxmZRzVTczzC2dERIFnp8HHTSBnsSQ37Lhh5z/T6V
-         cMo9wbP4E9JNbZ6wq2h+R/f/8OZaTt8oFsB6TP85Zv4egnuA2EULJiy1WyR5UPu5bTe2
-         n78PmpYheWl/+SVdv3H1yXwsX4I4duMM12bA95NoVXXYzS/Qt186zR7Sl4LZWs9iAXLI
-         NGcw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=+tNo4SYfs6XqblFA7HgFFMes7vb2qMgYQcQMJGpz3gw=;
-        b=E197iEj8pQ0dy9adxzh1gd5AG+PNt0JXB7NH7B3Zp/ehF1mLZWqxz81HBf26wbYuGk
-         oJUvZqBfNBjhVt+kAQQJe7oCPGBXQzEvjNYxizsP5N/X40GiYoGld/DIejuOE8SRNUTm
-         u1qaJzEsA3abALwZOd+26zQJGRlqE7eSecJjP/z5+BNIzZl+SpwXIozze8WxntMKmO4c
-         HCn5MIO0LU9AZdCC8nCamtBeEAxJ9/sCfScxihCFf/IYthIk0VpFH9tjXvJegLVmJUu4
-         JivZnPwWSWXHnDydmqjb1ITHFgQ69jNIxaWzwNiNWGlutnQjN8vFbDl+mWPvzuHGOkll
-         P7MQ==
-X-Gm-Message-State: ANhLgQ1yFneIX/vsK3qs/4TeEM9BETVoiuzyfjlu6JA0lCEeg82OxzQG
-        49JSomLNfIca0zGad43UbphFPl4bA/g=
-X-Google-Smtp-Source: ADFU+vsacYSDcMB8RmEkbglmmxof+LuC9a3dqJx7Dqr78P9MwlMf84lo66YIxgzfeK5yo0d9ccjlgQ==
-X-Received: by 2002:a17:90a:cb87:: with SMTP id a7mr441164pju.114.1585187013350;
-        Wed, 25 Mar 2020 18:43:33 -0700 (PDT)
-Received: from [10.0.9.4] ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id z11sm339027pfa.149.2020.03.25.18.43.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Mar 2020 18:43:32 -0700 (PDT)
-Message-ID: <5e7c08c4.1c69fb81.588e4.1fbf@mx.google.com>
-Date:   Wed, 25 Mar 2020 18:43:32 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.6-rc7-121-ga4c3e5efdcaf
-X-Kernelci-Report-Type: test
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing sleep: 7 runs, 0 regressions (v5.6-rc7-121-ga4c3e5efdcaf)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org
-From:   "kernelci.org bot" <bot@kernelci.org>
+        id S1727702AbgCZCQa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Mar 2020 22:16:30 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:52626 "EHLO inva021.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727611AbgCZCQ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Mar 2020 22:16:29 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id C2FD1200776;
+        Thu, 26 Mar 2020 03:16:26 +0100 (CET)
+Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id B3654200775;
+        Thu, 26 Mar 2020 03:16:26 +0100 (CET)
+Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id A31CB203CD;
+        Thu, 26 Mar 2020 03:16:25 +0100 (CET)
+From:   Leonard Crestez <leonard.crestez@nxp.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Martin Kepplinger <martink@posteo.de>
+Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@partner.samsung.com>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Jacky Bai <ping.bai@nxp.com>,
+        Anson Huang <Anson.Huang@nxp.com>,
+        Abel Vesa <abel.vesa@nxp.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Dong Aisheng <aisheng.dong@nxp.com>,
+        Fabio Estevam <fabio.estevam@nxp.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Angus Ainslie <angus@akkea.ca>,
+        Silvano di Ninno <silvano.dininno@nxp.com>,
+        linux-pm@vger.kernel.org, kernel@pengutronix.de, linux-imx@nxp.com,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 1/8] dt-bindings: interconnect: Add bindings for imx8m noc
+Date:   Thu, 26 Mar 2020 04:16:13 +0200
+Message-Id: <b7a93b75a3ea57aadeeda766a0b729a4bc97ccc9.1585188174.git.leonard.crestez@nxp.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1585188174.git.leonard.crestez@nxp.com>
+References: <cover.1585188174.git.leonard.crestez@nxp.com>
+In-Reply-To: <cover.1585188174.git.leonard.crestez@nxp.com>
+References: <cover.1585188174.git.leonard.crestez@nxp.com>
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 7 runs, 0 regressions (v5.6-rc7-121-ga4c3e5efdcaf)
+Add initial dt bindings for the interconnects inside i.MX chips.
+Multiple external IPs are involved but SOC integration means the
+software controllable interfaces are very similar.
 
-Test results summary
---------------------
+Main NOC node acts as interconnect provider if #interconnect-cells is
+present. Currently there is a single imx interconnect provider for the
+whole SOC.
 
-run | platform             | arch  | lab           | compiler | defconfig  =
-        | results
-----+----------------------+-------+---------------+----------+------------=
---------+--------
-1   | bcm2836-rpi-2-b      | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 0/1    =
+Other pieces of scalable interconnects can be present, each with their
+own OPP table.
 
-2   | exynos5422-odroidxu3 | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 21/21  =
+Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
+---
+ .../bindings/interconnect/fsl,imx8m-noc.yaml  | 138 ++++++++++++++++++
+ 1 file changed, 138 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/interconnect/fsl,imx8m-noc.yaml
 
-3   | imx6q-sabrelite      | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 1/21   =
+diff --git a/Documentation/devicetree/bindings/interconnect/fsl,imx8m-noc.yaml b/Documentation/devicetree/bindings/interconnect/fsl,imx8m-noc.yaml
+new file mode 100644
+index 000000000000..6c192f1c0edd
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/fsl,imx8m-noc.yaml
+@@ -0,0 +1,138 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/fsl,imx8m-noc.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Generic i.MX bus frequency device
++
++maintainers:
++  - Leonard Crestez <leonard.crestez@nxp.com>
++
++description: |
++  The i.MX SoC family has multiple buses for which clock frequency (and
++  sometimes voltage) can be adjusted.
++
++  Some of those buses expose register areas mentioned in the memory maps as GPV
++  ("Global Programmers View") but not all. Access to this area might be denied
++  for normal (non-secure) world.
++
++  The buses are based on externally licensed IPs such as ARM NIC-301 and
++  Arteris FlexNOC but DT bindings are specific to the integration of these bus
++  interconnect IPs into imx SOCs.
++
++properties:
++  compatible:
++    oneOf:
++      - items:
++        - enum:
++          - fsl,imx8mn-nic
++          - fsl,imx8mm-nic
++          - fsl,imx8mq-nic
++        - const: fsl,imx8m-nic
++      - items:
++        - enum:
++          - fsl,imx8mn-noc
++          - fsl,imx8mm-noc
++          - fsl,imx8mq-noc
++        - const: fsl,imx8m-noc
++      - const: fsl, imx8m-nic
++
++  reg:
++    maxItems: 1
++
++  clocks:
++    maxItems: 1
++
++  operating-points-v2: true
++  opp-table: true
++
++  fsl,ddrc:
++    $ref: "/schemas/types.yaml#/definitions/phandle"
++    description:
++      Phandle to DDR Controller.
++
++  '#interconnect-cells':
++    description:
++      If specified then also act as an interconnect provider. Should only be
++      set once per soc on the main noc.
++    const: 1
++
++required:
++  - compatible
++  - clocks
++
++additionalProperties: false
++
++examples:
++  - |
++#include <dt-bindings/clock/imx8mm-clock.h>
++#include <dt-bindings/interconnect/imx8mm.h>
++#include <dt-bindings/interrupt-controller/arm-gic.h>
++
++noc: interconnect@32700000 {
++        compatible = "fsl,imx8mm-noc", "fsl,imx8m-noc";
++        reg = <0x32700000 0x100000>;
++        clocks = <&clk IMX8MM_CLK_NOC>;
++        #interconnect-cells = <1>;
++
++        /* Used to make requests for DEV_PM_QOS_MIN_FREQUENCY: */
++        fsl,scalable-node-ids = <IMX8MM_ICN_NOC>,
++                                <IMX8MM_ICN_MIPI>,
++                                <IMX8MM_ICS_DRAM>;
++        fsl,scalable-nodes = <&noc>,
++                             <&pl301_mipi>,
++                             <&ddrc>;
++
++        /* For passive governor: */
++        devfreq = <&ddrc>;
++
++        operating-points-v2 = <&noc_opp_table>;
++        noc_opp_table: opp-table {
++                compatible = "operating-points-v2";
++
++                opp-133M {
++                        opp-hz = /bits/ 64 <133333333>;
++                };
++                opp-800M {
++                        opp-hz = /bits/ 64 <800000000>;
++                };
++        };
++};
++
++pl301_mipi: interconnect@32500000 {
++        compatible = "fsl,imx8m-nic";
++        reg = <0x32500000 0x100000>;
++        clocks = <&clk IMX8MM_CLK_DISP_AXI>;
++        operating-points-v2 = <&pl301_mipi_opp_table>;
++
++        pl301_mipi_opp_table: opp-table {
++                compatible = "operating-points-v2";
++
++                opp-200M {
++                        opp-hz = /bits/ 64 <200000000>;
++                };
++                opp-500M {
++                        opp-hz = /bits/ 64 <500000000>;
++                };
++        };
++};
++
++ddrc: memory-controller@3d400000 {
++        compatible = "fsl,imx8mm-ddrc", "fsl,imx8m-ddrc";
++        reg = <0x3d400000 0x400000>;
++        glock-names = "core", "pll", "alt", "apb";
++        clocks = <&clk IMX8MM_CLK_DRAM_CORE>,
++                 <&clk IMX8MM_DRAM_PLL>,
++                 <&clk IMX8MM_CLK_DRAM_ALT>,
++                 <&clk IMX8MM_CLK_DRAM_APB>;
++        /* For ondemand governor: */
++        devfreq-events = <&ddr_pmu>;
++};
++
++ddr_pmu: ddr-pmu@3d800000 {
++        compatible = "fsl,imx8mm-ddr-pmu", "fsl,imx8m-ddr-pmu";
++        reg = <0x3d800000 0x400000>;
++        interrupt-parent = <&gic>;
++        interrupts = <GIC_SPI 98 IRQ_TYPE_LEVEL_HIGH>;
++};
+-- 
+2.17.1
 
-4   | rk3288-rock2-square  | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 1/21   =
-
-5   | rk3288-veyron-jaq    | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 21/21  =
-
-6   | rk3399-gru-kevin     | arm64 | lab-collabora | gcc-8    | defconfig  =
-        | 11/11  =
-
-7   | tegra124-nyan-big    | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 2/2    =
-
-
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.6-rc7-121-ga4c3e5efdcaf
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      a4c3e5efdcaf10511f1f8e03f59133fa32bddff1 =
-
-
-
-Test Failures
--------------
-  =
-
-
-run | platform             | arch  | lab           | compiler | defconfig  =
-        | results
-----+----------------------+-------+---------------+----------+------------=
---------+--------
-1   | bcm2836-rpi-2-b      | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 0/1    =
-
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-bcm2836-rpi-2-b.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-bcm2836-rpi-2-b.ht=
-ml
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-0325.0/armhf/rootfs.cpio.gz  =
-
-
-  1 tests: 0 PASS, 1 FAIL, 0 SKIP
-    * login:
-        never passed   =
-
-         =
-
-
-run | platform             | arch  | lab           | compiler | defconfig  =
-        | results
-----+----------------------+-------+---------------+----------+------------=
---------+--------
-3   | imx6q-sabrelite      | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 1/21   =
-
-
-  Results:     1 PASS, 20 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-imx6q-sabrelite.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-imx6q-sabrelite.ht=
-ml
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-0325.0/armhf/rootfs.cpio.gz  =
-
-
-  21 tests: 1 PASS, 20 FAIL, 0 SKIP
-    * rtcwake-mem-1:
-        never passed
-    * rtcwake-mem-2:
-        never passed
-    * rtcwake-mem-3:
-        never passed
-    * rtcwake-mem-4:
-        never passed
-    * rtcwake-mem-5:
-        never passed
-    * rtcwake-mem-6:
-        never passed
-    * rtcwake-mem-7:
-        never passed
-    * rtcwake-mem-8:
-        never passed
-    * rtcwake-mem-9:
-        never passed
-    * rtcwake-mem-10:
-        never passed
-    * rtcwake-freeze-1:
-        never passed
-    * rtcwake-freeze-2:
-        never passed
-    * rtcwake-freeze-3:
-        never passed
-    * rtcwake-freeze-4:
-        never passed
-    * rtcwake-freeze-5:
-        never passed
-    * rtcwake-freeze-6:
-        never passed
-    * rtcwake-freeze-7:
-        never passed
-    * rtcwake-freeze-8:
-        never passed
-    * rtcwake-freeze-9:
-        never passed
-    * rtcwake-freeze-10:
-        never passed   =
-
-      =
-
-
-run | platform             | arch  | lab           | compiler | defconfig  =
-        | results
-----+----------------------+-------+---------------+----------+------------=
---------+--------
-4   | rk3288-rock2-square  | arm   | lab-collabora | gcc-8    | multi_v7_de=
-fconfig | 1/21   =
-
-
-  Results:     1 PASS, 20 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squar=
-e.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.6-rc7-121-ga4c3e=
-5efdcaf/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-squar=
-e.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-0325.0/armhf/rootfs.cpio.gz  =
-
-
-  21 tests: 1 PASS, 20 FAIL, 0 SKIP
-    * rtcwake-mem-1:
-        never passed
-    * rtcwake-mem-2:
-        never passed
-    * rtcwake-mem-3:
-        never passed
-    * rtcwake-mem-4:
-        never passed
-    * rtcwake-mem-5:
-        never passed
-    * rtcwake-mem-6:
-        never passed
-    * rtcwake-mem-7:
-        never passed
-    * rtcwake-mem-8:
-        never passed
-    * rtcwake-mem-9:
-        never passed
-    * rtcwake-mem-10:
-        never passed
-    * rtcwake-freeze-1:
-        never passed
-    * rtcwake-freeze-2:
-        never passed
-    * rtcwake-freeze-3:
-        never passed
-    * rtcwake-freeze-4:
-        never passed
-    * rtcwake-freeze-5:
-        never passed
-    * rtcwake-freeze-6:
-        never passed
-    * rtcwake-freeze-7:
-        never passed
-    * rtcwake-freeze-8:
-        never passed
-    * rtcwake-freeze-9:
-        never passed
-    * rtcwake-freeze-10:
-        never passed   =
-
-              =20
