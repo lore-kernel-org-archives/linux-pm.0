@@ -2,151 +2,146 @@ Return-Path: <SRS0=oqst=5M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2009AC2D0E5
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 20:22:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 887A1C43331
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 20:26:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 048AA2072F
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 20:22:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 575E720716
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 20:26:42 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="jCs1582g"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727505AbgC0UWO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Mar 2020 16:22:14 -0400
-Received: from asavdk4.altibox.net ([109.247.116.15]:38568 "EHLO
-        asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726710AbgC0UWN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2020 16:22:13 -0400
-Received: from ravnborg.org (unknown [158.248.194.18])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by asavdk4.altibox.net (Postfix) with ESMTPS id 14C2B804E5;
-        Fri, 27 Mar 2020 21:22:01 +0100 (CET)
-Date:   Fri, 27 Mar 2020 21:21:59 +0100
-From:   Sam Ravnborg <sam@ravnborg.org>
-To:     Rob Herring <robh@kernel.org>
-Cc:     devicetree@vger.kernel.org,
-        Neil Armstrong <narmstrong@baylibre.com>,
-        linux-iio@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Guillaume La Roque <glaroque@baylibre.com>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Lee Jones <lee.jones@linaro.org>, linux-clk@vger.kernel.org,
-        Kevin Hilman <khilman@baylibre.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Brian Masney <masneyb@onstation.org>,
-        Michael Hennerich <michael.hennerich@analog.com>,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        linux-gpio@vger.kernel.org, Mark Brown <broonie@kernel.org>,
-        linux-amlogic@lists.infradead.org,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        linux-arm-kernel@lists.infradead.org,
-        Stephen Boyd <sboyd@kernel.org>, netdev@vger.kernel.org,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Hartmut Knaack <knaack.h@gmx.de>, linux-media@vger.kernel.org,
-        "David S. Miller" <davem@davemloft.net>,
-        Jonathan Cameron <jic23@kernel.org>
-Subject: Re: [PATCH 1/4] dt-bindings: iio/accel: Drop duplicate adi,
- adxl345/6 from trivial-devices.yaml
-Message-ID: <20200327202159.GA12749@ravnborg.org>
-References: <20200325220542.19189-1-robh@kernel.org>
- <20200325220542.19189-2-robh@kernel.org>
+        id S1727322AbgC0U0l (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Mar 2020 16:26:41 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:37357 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726710AbgC0U0l (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2020 16:26:41 -0400
+Received: by mail-wm1-f66.google.com with SMTP id d1so13861671wmb.2
+        for <linux-pm@vger.kernel.org>; Fri, 27 Mar 2020 13:26:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=ovuSRHyjTyYRmZNDzLWoRDZUeXXL5IWfbBzaBcdUcIE=;
+        b=jCs1582gbf3j3S/OwTqoqLG1lmlKh9EAV6E+imqq/J24VcxFKb1xW4EkiF89fvWhxJ
+         j5T4PprNeK8BOKHAjZsi8uoSWpsT1WNrAJ0JrBFZTirXOcV0pT4YhHMpSU4L07T4jl21
+         59OLcJzqD9rYzcCL8unW4VqoaxplkgUKsx44U=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=ovuSRHyjTyYRmZNDzLWoRDZUeXXL5IWfbBzaBcdUcIE=;
+        b=nkRYZWlpTS9yIFM7qvb3khJ0kgCB+dLZizTZxQoAP9eNDrZPMm8cwyiC3lhPFltzZr
+         ZSsPwN47Jp/DVc21rAT63Mgr10HZRvZz0XplHR3OkmdRgVCQ+hD8HaQmMk77aPEYY0pt
+         1Jm0Ip3x8kTqS1Zg34OOdwxsuI0ryEXztYZCiQCe3fYLy3R3HpCbyuhL7A2nyJIuOGS0
+         7ezK+w7rdNDGhliy6y+/Qo6womkWa02BUOE/EN7YDjMyB7QP1asfs7K/3oAvnCj94/Oj
+         +4qOnEJdaxGWx6OCW1aGFigUbiMZhtTNa3z0JQLSTCillUHo9ANLmQXvKeaEMa5AdDL/
+         Ct8w==
+X-Gm-Message-State: ANhLgQ3RrVhHALuzyzvFt8kQTtWG2AnuvFo5xHMfp39gc2cwk0+cF5FA
+        pIONBgLaJcPqWsrrB0rZQU/ITWu9zJJXYib+NXE29w==
+X-Google-Smtp-Source: ADFU+vsbz5mdJGGZGucacZuiWVFx6SyZ8S8yVfyM3SaRwdvYejw+NuiQtsPoZmRMs2T6SyNLZ9yRXtKfR+fF6iIRaWA=
+X-Received: by 2002:a1c:f205:: with SMTP id s5mr483778wmc.101.1585340798622;
+ Fri, 27 Mar 2020 13:26:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200325220542.19189-2-robh@kernel.org>
-User-Agent: Mutt/1.10.1 (2018-07-13)
-X-CMAE-Score: 0
-X-CMAE-Analysis: v=2.3 cv=XpTUx2N9 c=1 sm=1 tr=0
-        a=UWs3HLbX/2nnQ3s7vZ42gw==:117 a=UWs3HLbX/2nnQ3s7vZ42gw==:17
-        a=jpOVt7BSZ2e4Z31A5e1TngXxSK0=:19 a=kj9zAlcOel0A:10 a=gAnH3GRIAAAA:8
-        a=VwQbUJbxAAAA:8 a=DN42nk9sAAAA:8 a=e5mUnYsNAAAA:8 a=KWDWuRJ9IF3UujpQpV0A:9
-        a=CjuIK1q_8ugA:10 a=oVHKYsEdi7-vN-J5QA_j:22 a=AjGcO6oz07-iQ99wixmX:22
-        a=ee1JA_unvF1TMR62yWF-:22 a=Vxmtnl_E_bksehYqCbjh:22
+References: <20200327151951.18111-1-ricardo.canuelo@collabora.com> <20200327154345.GA3971@ninjato>
+In-Reply-To: <20200327154345.GA3971@ninjato>
+From:   "dbasehore ." <dbasehore@chromium.org>
+Date:   Fri, 27 Mar 2020 13:26:26 -0700
+Message-ID: <CAGAzgsqJznZi83ijxCgQg463Q4AnwiNX-a0Q9+Og9MW5OJ4Vew@mail.gmail.com>
+Subject: Re: [PATCH] i2c: enable async suspend/resume on i2c devices
+To:     Wolfram Sang <wsa@the-dreams.de>
+Cc:     =?UTF-8?Q?Ricardo_Ca=C3=B1uelo?= <ricardo.canuelo@collabora.com>,
+        linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rob.
+On Fri, Mar 27, 2020 at 8:43 AM Wolfram Sang <wsa@the-dreams.de> wrote:
+>
+> On Fri, Mar 27, 2020 at 04:19:51PM +0100, Ricardo Ca=C3=B1uelo wrote:
+> > This enables the async suspend property for i2c devices. This reduces
+> > the suspend/resume time considerably on platforms with multiple i2c
+> > devices (such as a trackpad or touchscreen).
+> >
+> > (am from https://patchwork.ozlabs.org/patch/949922/)
+> >
+> > Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> > Reviewed-on: https://chromium-review.googlesource.com/1152411
+> > Tested-by: Venkateswarlu V Vinjamuri <venkateswarlu.v.vinjamuri@intel.c=
+om>
+> > Reviewed-by: Venkateswarlu V Vinjamuri <venkateswarlu.v.vinjamuri@intel=
+.com>
+> > Reviewed-by: Justin TerAvest <teravest@chromium.org>
+> > Signed-off-by: Guenter Roeck <groeck@chromium.org>
+> > Signed-off-by: Ricardo Ca=C3=B1uelo <ricardo.canuelo@collabora.com>
+> > ---
+>
+> Adding linux-pm to CC. I don't know much about internals of async
+> suspend. Is there a guide like "what every maintainer needs to know
+> about"?
 
-On Wed, Mar 25, 2020 at 04:05:38PM -0600, Rob Herring wrote:
-> The 'adi,adxl345' definition is a duplicate as there's a full binding in:
-> Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
-> 
-> The trivial-devices binding doesn't capture that 'adi,adxl346' has a
-> fallback compatible 'adi,adxl345', so let's add it to adi,adxl345.yaml.
-> 
-> Cc: Michael Hennerich <michael.hennerich@analog.com>
-> Cc: Jonathan Cameron <jic23@kernel.org>
-> Cc: Hartmut Knaack <knaack.h@gmx.de>
-> Cc: Lars-Peter Clausen <lars@metafoo.de>
-> Cc: Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-> Cc: linux-iio@vger.kernel.org
-> Signed-off-by: Rob Herring <robh@kernel.org>
-> ---
->  .../devicetree/bindings/iio/accel/adi,adxl345.yaml     | 10 +++++++---
->  Documentation/devicetree/bindings/trivial-devices.yaml |  4 ----
->  2 files changed, 7 insertions(+), 7 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml b/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
-> index c602b6fe1c0c..d124eba1ce54 100644
-> --- a/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
-> +++ b/Documentation/devicetree/bindings/iio/accel/adi,adxl345.yaml
-> @@ -17,9 +17,13 @@ description: |
->  
->  properties:
->    compatible:
-> -    enum:
-> -      - adi,adxl345
-> -      - adi,adxl375
-> +    oneOf:
-> +      - items:
-> +          - const: adi,adxl346
-> +          - const: adi,adxl345
-> +      - enum:
-> +          - adi,adxl345
-> +          - adi,adxl375
+For more details, you can look at the function dpm_resume in the
+drivers/base/power/main.c file and follow from there.
 
-I assume it is my schema understanding that is poor.
-But I cannot parse the above.
+I can't find anything in Documentation/, so here's a short overview:
+Async devices have suspend/resume callbacks scheduled via
+async_schedule at every step (normal, late, noirq, etc.) for
+suspending/resuming devices. We wait for all device callbacks to
+complete at the end of each of these steps before moving onto the next
+one. This means that you won't have a resume_early callback running
+when you start the normal device resume callbacks.
 
-The mix of items, enum and const confuses me.
+The async callbacks still wait individually for children on suspend
+and parents on resume to complete their own callbacks before calling
+their own. Because some dependencies may not be tracked by the
+parent/child graph (or other unknown reasons), async is off by
+default.
 
-I guess that if I am confused then others may end in the same situation.
-Can we improve readability here or amybe add a comment?
+Enabling async is a confirmation that all dependencies to other
+devices are properly tracked, whether through the parent/child
+relationship or otherwise.
 
-	Sam
-
->  
->    reg:
->      maxItems: 1
-> diff --git a/Documentation/devicetree/bindings/trivial-devices.yaml b/Documentation/devicetree/bindings/trivial-devices.yaml
-> index 978de7d37c66..51d1f6e43c02 100644
-> --- a/Documentation/devicetree/bindings/trivial-devices.yaml
-> +++ b/Documentation/devicetree/bindings/trivial-devices.yaml
-> @@ -42,10 +42,6 @@ properties:
->            - adi,adt7476
->              # +/-1C TDM Extended Temp Range I.C
->            - adi,adt7490
-> -            # Three-Axis Digital Accelerometer
-> -          - adi,adxl345
-> -            # Three-Axis Digital Accelerometer (backward-compatibility value "adi,adxl345" must be listed too)
-> -          - adi,adxl346
->              # AMS iAQ-Core VOC Sensor
->            - ams,iaq-core
->              # i2c serial eeprom  (24cxx)
-> -- 
-> 2.20.1
-> 
-> _______________________________________________
-> dri-devel mailing list
-> dri-devel@lists.freedesktop.org
-> https://lists.freedesktop.org/mailman/listinfo/dri-devel
+>
+> > This patch was originally created for chromeos some time ago and I'm
+> > evaluating if it's a good candidate for upstreaming.
+> >
+> > By the looks of it I think it was done with chromebooks in mind, but
+> > AFAICT this would impact every i2c client in every platform, so I'd lik=
+e
+> > to know your opinion about it.
+> >
+> > As far as I know there was no further investigation or testing on it, s=
+o
+> > I don't know if it was tested on any other hardware.
+> >
+> > Best,
+> > Ricardo
+> >
+> >  drivers/i2c/i2c-core-base.c | 1 +
+> >  1 file changed, 1 insertion(+)
+> >
+> > diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.c
+> > index cefad0881942..643bc0fe0281 100644
+> > --- a/drivers/i2c/i2c-core-base.c
+> > +++ b/drivers/i2c/i2c-core-base.c
+> > @@ -769,6 +769,7 @@ i2c_new_client_device(struct i2c_adapter *adap, str=
+uct i2c_board_info const *inf
+> >       client->dev.of_node =3D of_node_get(info->of_node);
+> >       client->dev.fwnode =3D info->fwnode;
+> >
+> > +     device_enable_async_suspend(&client->dev);
+> >       i2c_dev_set_name(adap, client, info);
+> >
+> >       if (info->properties) {
+> > --
+> > 2.18.0
+> >
