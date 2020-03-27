@@ -2,87 +2,171 @@ Return-Path: <SRS0=oqst=5M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1A57C2D0EE
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 21:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21210C43331
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 21:50:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BE886206F6
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 21:34:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DED3F2073B
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Mar 2020 21:50:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pdZXvd9S"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727593AbgC0Vdp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Mar 2020 17:33:45 -0400
-Received: from mga06.intel.com ([134.134.136.31]:35671 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727423AbgC0Vdp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 27 Mar 2020 17:33:45 -0400
-IronPort-SDR: H9I635yBmUhWL24zUypg9OosVQFSKt7bvqFxFxSWuIeQ9ssK+7C+DpYBmcSvlB2ev2hzj/8eVC
- eCIaKvt1oytg==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Mar 2020 14:33:43 -0700
-IronPort-SDR: OhQc7XDvRNnOvb7TqkMaCQkgdqOHWj7ItCPIm9zSDCDGRMsmba0TazTQG/9vWe5Ep43dYI0KHq
- 2J7kuyt3W4Wg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,313,1580803200"; 
-   d="scan'208";a="358607252"
-Received: from gayuk-dev-mach.sc.intel.com ([10.3.79.171])
-  by fmsmga001.fm.intel.com with ESMTP; 27 Mar 2020 14:33:44 -0700
-From:   Gayatri Kammela <gayatri.kammela@intel.com>
-To:     linux-pm@vger.kernel.org
-Cc:     platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org,
-        lenb@kernel.org, dvhart@infradead.org, alex.hung@canonical.com,
-        rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, mika.westerberg@intel.com,
-        peterz@infradead.org, charles.d.prestopine@intel.com,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@intel.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: [PATCH v2 0/3] Fixes: update Tiger Lake ACPI device IDs
-Date:   Fri, 27 Mar 2020 14:28:18 -0700
-Message-Id: <cover.1585343507.git.gayatri.kammela@intel.com>
-X-Mailer: git-send-email 2.17.1
+        id S1727600AbgC0VuP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Mar 2020 17:50:15 -0400
+Received: from mail-wm1-f65.google.com ([209.85.128.65]:35399 "EHLO
+        mail-wm1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727548AbgC0VuP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2020 17:50:15 -0400
+Received: by mail-wm1-f65.google.com with SMTP id f74so3172438wmf.0;
+        Fri, 27 Mar 2020 14:50:14 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding:content-language;
+        bh=UPYvtOj75J2/EwYyRdsACxnYCpxt8+KWK2M/XYoASio=;
+        b=pdZXvd9Su0kL4ajBpbQhIkICRXk2LvR6We+EPwTHlA28wJaFShzFPgUbQyfbIvQYzS
+         qCb2jxZWlZtGMMB3i0soOBxEFuDWb5OOmYFnzDsUdohbwTn78iISXAdr1A3RR2TZyIA9
+         6sQXZhxryqyw/L1N0zaEiV4vTw3auzSzz/W4Y7T62olfteXivjxc24cBLIRiFW3e59tc
+         nJ88HMCApPVEI103oSLypkeNgbqgajMKdi5VBM0GM50k7Z80YAtNVZYzDg8s1zHxQokt
+         a7Via6LDcTS7TX2h9m2eJe+ZSFgE4aAMInaO7jb6oU23HjKwVQkFvxVy6+caePWjWE8r
+         zoxw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=UPYvtOj75J2/EwYyRdsACxnYCpxt8+KWK2M/XYoASio=;
+        b=ilAKCsV6fL3V1JbOYYZ3Dy4c8ywmX+BlYPZfMFYLDveJrpayr9b97numhWPMr2EawY
+         dVmZpyV5H0bvGDwQj2JKZycU0q8uLKrdinNSEcJ9VD9pWsA8sJDA4vpOVpCeV1iGUBJp
+         qyLJj1+RUqUoWffnJciohJHO57OGC2wbScFu7mITDK6YsTp0qLVW1nwDFYrinOiQN2uU
+         tVWAkPHeY+QnwrutDq3lfR9TVKmFs3GEolRaPG2qvHwLMb5YZ1LWT7NmMKHwG3Rc82xT
+         btuWlQGPvNuCKaM1jZwmj8OqLbxKtH2ddb7h750ksejb9ywImaYCKccHzRKkzguMd+Q1
+         Kwrw==
+X-Gm-Message-State: ANhLgQ2go0q9UYo2tmCC6mhoYVeFMC9+IXDiiSQ4AoSWI7fS/Q++68QP
+        KkNThrLs8wo3eRvkFrxkEei1f7UxF74=
+X-Google-Smtp-Source: ADFU+vvVtGIYGBhSlwePa09L/Ha1FQ2QJKkWLyhkmtaIy0xTyRFUFl97hefC/dNNhN9s8W0M89esSw==
+X-Received: by 2002:a1c:56d5:: with SMTP id k204mr869388wmb.13.1585345812891;
+        Fri, 27 Mar 2020 14:50:12 -0700 (PDT)
+Received: from [192.168.0.104] (p5B3F7536.dip0.t-ipconnect.de. [91.63.117.54])
+        by smtp.gmail.com with ESMTPSA id a2sm10228275wrp.13.2020.03.27.14.50.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 27 Mar 2020 14:50:11 -0700 (PDT)
+Subject: Re: [PATCH v4 1/5] dt-bindings: mfd: add document bindings for mp2629
+To:     Lee Jones <lee.jones@linaro.org>
+Cc:     robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
+        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org
+References: <20200322224626.13160-1-sravanhome@gmail.com>
+ <20200322224626.13160-2-sravanhome@gmail.com> <20200327080013.GG603801@dell>
+From:   saravanan sekar <sravanhome@gmail.com>
+Message-ID: <d449b567-bd5c-168d-83af-5ba38771f75a@gmail.com>
+Date:   Fri, 27 Mar 2020 22:50:10 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+In-Reply-To: <20200327080013.GG603801@dell>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Hi Lee,
 
-The hardware IDs for devices supported by Tiger Lake for various drivers
-such as DPTF, fan, Intel thermal and intel-hid are added with missing 'C'
-which makes them invalid. Hence fix these IDs by updating.
+On 27/03/20 9:00 am, Lee Jones wrote:
+> On Sun, 22 Mar 2020, Saravanan Sekar wrote:
+>
+>> Add device tree binding information for mp2629 mfd driver.
+>>
+>> Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+>> ---
+>>   .../devicetree/bindings/mfd/mps,mp2629.yaml   | 60 +++++++++++++++++++
+>>   1 file changed, 60 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>> new file mode 100644
+>> index 000000000000..314309ea91ac
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>> @@ -0,0 +1,60 @@
+>> +# SPDX-License-Identifier: GPL-2.0
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> Are these links supposed to work?
+Not really, but as far my understanding needed for dt-bindings check
+>> +title: MP2629 Battery Charger PMIC from Monolithic Power System.
+>> +
+>> +maintainers:
+>> +  - Saravanan Sekar <sravanhome@gmail.com>
+>> +
+>> +description: |
+>> +  MP2629 is an PMIC providing battery charging and power supply for smartphones,
+> s/an/a/
+>
+>> +  wireless camera and portable devices. Chip is contrlled over I2C.
+> Spell check!
+>
+>> +  The MFD device handles battery charger controller and ADC IIO device for
+>> +  battery, system voltage
+> MFD isn't a thing.  We made it up.  Please describe it as it is in the datasheet.
+>
+>> +properties:
+>> +  compatible:
+>> +    const: mps,mp2629
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  interrupt-controller: true
+>> +
+>> +  "#interrupt-cells":
+>> +    const: 2
+>> +    description:
+>> +      The first cell is the IRQ number, the second cell is the trigger type.
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +  - interrupts
+>> +  - interrupt-controller
+>> +  - "#interrupt-cells"
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/interrupt-controller/irq.h>
+>> +    #include <dt-bindings/input/linux-event-codes.h>
+>> +    i2c {
+> i2c@0x????????
 
-For instance, the updated ID now looks like
-INT1047 --> INTC1047
+Its a I2C controller node, I don't think address is needed. Mention like 
+this my previous other driver patches,
 
-Patch 1: Update Tiger Lake ACPI device IDs for DPTF and fan drivers
-Patch 2: Update Tiger Lake ACPI device ID for intel-hid driver
-Patch 3: Update Tiger Lake ACPI device IDs for thermal driver
+dt_binding_check is also passed
 
-Changes since v1:
-1) Added fixes tag to each patch
-
-Gayatri Kammela (3):
-  ACPI: fix: Update Tiger Lake ACPI device IDs
-  platform/x86: intel-hid: fix: Update Tiger Lake ACPI device ID
-  thermal: int340x_thermal: fix: Update Tiger Lake ACPI device IDs
-
- drivers/acpi/device_pm.c                                | 2 +-
- drivers/acpi/dptf/dptf_power.c                          | 2 +-
- drivers/acpi/dptf/int340x_thermal.c                     | 8 ++++----
- drivers/platform/x86/intel-hid.c                        | 2 +-
- drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 2 +-
- drivers/thermal/intel/int340x_thermal/int3403_thermal.c | 2 +-
- 6 files changed, 9 insertions(+), 9 deletions(-)
-
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Cc: Srinivas Pandruvada <srinivas.pandruvada@intel.com>
-Cc: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
--- 
-2.17.1
-
+>> +        #address-cells = <1>;
+>> +        #size-cells = <0>;
+>> +
+>> +        pmic@4b {
+>> +            compatible = "mps,mp2629";
+>> +            reg = <0x4b>;
+>> +
+>> +            interrupt-controller;
+>> +            interrupt-parent = <&gpio2>;
+>> +            #interrupt-cells = <2>;
+>> +            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
+>> +        };
+>> +    };
