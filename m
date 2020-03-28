@@ -2,153 +2,150 @@ Return-Path: <SRS0=/TLN=5N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 070E5C43331
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 11:29:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3676DC43331
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D033220723
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 11:29:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J7XK/uR9"
+	by mail.kernel.org (Postfix) with ESMTP id 13B7D2073B
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:27 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727137AbgC1L3s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Mar 2020 07:29:48 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:42397 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726315AbgC1L3r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 07:29:47 -0400
-Received: by mail-wr1-f68.google.com with SMTP id h15so14868352wrx.9;
-        Sat, 28 Mar 2020 04:29:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-transfer-encoding:content-language;
-        bh=48cUKb3hewA6YqxxcM8aRq1Cv5K4EWHquZ9kJ+7UoxA=;
-        b=J7XK/uR96SCZTbQlk5nx5a9xV0/oPjTVP6L+T791RLlhHdiAeFs/GwmPkcHngmgaGR
-         +Fjy4LENZQnIwA3gEmwwuLBtAeqeLdHljL/9qmaGka1WI57wWwzR+segwNCQW6ZlSfGG
-         PA9WYCZQ2QjuoyMTVkh4ivqRyvNBh13gmjvDipeiben/7eciS5nCvhahWJZ00F7Iq+xa
-         YDFGB+NjacR9xG3b28SpY22L86jMVeWKTV9sGRvzVDfbQJ6owCkP1GVX5iKMalmR3Ear
-         tRv+SkRfWds3vIP1zRbNlqXgmTXfs3SRSb0lxGM04zrvygExplOJMX1LBCj7K51P1ju4
-         goxA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-transfer-encoding
-         :content-language;
-        bh=48cUKb3hewA6YqxxcM8aRq1Cv5K4EWHquZ9kJ+7UoxA=;
-        b=aa9lcS2iBFs5InYerH5b1WEl3ANu4rLI8iMsV53v9pHnlRFKaRSuB1S0dFEBL2cx1y
-         7QYlO/ALKCKUMUu7RxcLr9t80/mp5hXuqxG7nyshBDEChPLCL5bewVJqi40L3NySluUC
-         VJUGFnz18VTqeRoY+VEMi4SafRJ82c5q2KS/F5dJtND5E2ZcHOXh+x/mBOc9dvRoKmqY
-         so6V1eWLZe3LByAdJiw1hOYk5SuZKQr3Ja5rq/ZhzfjP3dk7ilCOgWFHOiOGpxJahY+R
-         GwD6wol2mytoMcR8/bdi23dI2mw4GkWp7lYq674sw4Xy+45ZJZKfG/+2ic/tmSoU/Okv
-         6pvQ==
-X-Gm-Message-State: ANhLgQ1R2MpSIbcEc4vy7RuLW37bYDKIgUwA5ynszeaaC4Hvj+RPbTMS
-        4iB5Ze0Nl/w9600x/9796+wDp2rcXm4=
-X-Google-Smtp-Source: ADFU+vs4/LZ1qoi9tgNpOM9fvmW6ER9q3wSqLs/wu94Ztl/ULPfT1jcvMWdjNrRrQCO2/HtGqakGGA==
-X-Received: by 2002:a5d:4cc4:: with SMTP id c4mr4424245wrt.346.1585394984815;
-        Sat, 28 Mar 2020 04:29:44 -0700 (PDT)
-Received: from [192.168.0.104] (p5DCFFF1C.dip0.t-ipconnect.de. [93.207.255.28])
-        by smtp.gmail.com with ESMTPSA id m11sm12283575wmf.9.2020.03.28.04.29.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 28 Mar 2020 04:29:44 -0700 (PDT)
-Subject: Re: [PATCH v5 4/5] power: supply: Add support for mps mp2629 battery
- charger
-To:     Andy Shevchenko <andy.shevchenko@gmail.com>
-Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald <pmeerw@pmeerw.net>,
-        Sebastian Reichel <sre@kernel.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-iio <linux-iio@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-References: <20200328001154.17313-1-sravanhome@gmail.com>
- <20200328001154.17313-5-sravanhome@gmail.com>
- <CAHp75VefP3oPyRJ=Z9Y5Wv3rSc-nJdKFLJ60YLdUbP5dFikS+w@mail.gmail.com>
-From:   saravanan sekar <sravanhome@gmail.com>
-Message-ID: <36892440-99b2-10e8-1d7c-dd8c97e03a39@gmail.com>
-Date:   Sat, 28 Mar 2020 12:29:43 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        id S1726271AbgC1M60 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Mar 2020 08:58:26 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:58417 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726045AbgC1M60 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 08:58:26 -0400
+Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
+ id 9c4c29803feb8bf4; Sat, 28 Mar 2020 13:58:24 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Doug Smythies <dsmythies@telus.net>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: Use passive mode by default without HWP
+Date:   Sat, 28 Mar 2020 13:57:48 +0100
+Message-ID: <2988949.NgUrjYMkJj@kreacher>
+In-Reply-To: <2016232.ihCVsphvri@kreacher>
+References: <2016232.ihCVsphvri@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <CAHp75VefP3oPyRJ=Z9Y5Wv3rSc-nJdKFLJ60YLdUbP5dFikS+w@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Andy,
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-On 28/03/20 12:02 pm, Andy Shevchenko wrote:
-> On Sat, Mar 28, 2020 at 2:12 AM Saravanan Sekar <sravanhome@gmail.com> wrote:
->> The mp2629 provides switching-mode battery charge management for
->> single-cell Li-ion or Li-polymer battery. Driver supports the
->> access/control input source and battery charging parameters.
-> ...
->
->> +#include <linux/module.h>
->> +#include <linux/of_device.h>
-> Missed header bits.h.
->
-> ...
->
->> +       ret = iio_read_channel_processed(charger->iiochan[ch], &chval);
->> +       if (ret < 0)
-> Is it possible to get positive returned value?
-Really not for processed
->> +               return ret;
-> ...
->
->> +       val->intval = (rval * props[fld].step) + props[fld].min;
-> Too many parentheses.
->
-> ...
->
->> +       return ((psp == POWER_SUPPLY_PROP_PRECHARGE_CURRENT) ||
->> +               (psp == POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT) ||
->> +               (psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT) ||
->> +               (psp == POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE));
-> Ditto.
-I think I misunderstood you previous review comment "Redundant 
-parentheses", no sure what is the expectation
->
-> ...
->
->> +       return ((psp == POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT) ||
->> +               (psp == POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT));
-> Ditto.
->
-> ...
->
->> +       return sprintf(buf, "%d mohm\n", rval);
-> Hmm... For units we usually have separate node, but it is up to
-> maintainer, I dunno what the common practice is there.
->
-> ...
->
->> +       int val;
->> +       int ret;
->> +
->> +       ret = kstrtoint(buf, 10, &val);
->> +       if (ret)
->> +               return ret;
->> +
->> +       if (val < 0 && val > 140)
-> What the point to convert negative values in the first place? kstrtouint()
-Done
->> +               return -ERANGE;
-> ...
->
->> +       struct power_supply_config psy_cfg = {NULL};
-> { 0 }
->
-NULL to make compiler happy.
+After recent changes allowing scale-invariant utilization to be
+used on x86, the schedutil governor on top of intel_pstate in the
+passive mode should be on par with (or better than) the active mode
+"powersave" algorithm of intel_pstate on systems in which
+hardware-managed P-states (HWP) are not used, so it should not be
+necessary to use the internal scaling algorithm in those cases.
+
+Accordingly, modify intel_pstate to start in the passive mode by
+default if the processor at hand does not support HWP of if the driver
+is requested to avoid using HWP through the kernel command line.
+
+Among other things, that will allow utilization clamps and the
+support for RT/DL tasks in the schedutil governor to be utilized on
+systems in which intel_pstate is used.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ Documentation/admin-guide/pm/intel_pstate.rst | 32 ++++++++++++++++-----------
+ drivers/cpufreq/intel_pstate.c                |  3 ++-
+ 2 files changed, 21 insertions(+), 14 deletions(-)
+
+diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
+index ad392f3aee06..39d80bc29ccd 100644
+--- a/Documentation/admin-guide/pm/intel_pstate.rst
++++ b/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -62,9 +62,10 @@ on the capabilities of the processor.
+ Active Mode
+ -----------
+ 
+-This is the default operation mode of ``intel_pstate``.  If it works in this
+-mode, the ``scaling_driver`` policy attribute in ``sysfs`` for all ``CPUFreq``
+-policies contains the string "intel_pstate".
++This is the default operation mode of ``intel_pstate`` for processors with
++hardware-managed P-states (HWP) support.  If it works in this mode, the
++``scaling_driver`` policy attribute in ``sysfs`` for all ``CPUFreq`` policies
++contains the string "intel_pstate".
+ 
+ In this mode the driver bypasses the scaling governors layer of ``CPUFreq`` and
+ provides its own scaling algorithms for P-state selection.  Those algorithms
+@@ -138,12 +139,13 @@ internal P-state selection logic to be less performance-focused.
+ Active Mode Without HWP
+ ~~~~~~~~~~~~~~~~~~~~~~~
+ 
+-This is the default operation mode for processors that do not support the HWP
+-feature.  It also is used by default with the ``intel_pstate=no_hwp`` argument
+-in the kernel command line.  However, in this mode ``intel_pstate`` may refuse
+-to work with the given processor if it does not recognize it.  [Note that
+-``intel_pstate`` will never refuse to work with any processor with the HWP
+-feature enabled.]
++This operation mode is optional for processors that do not support the HWP
++feature or when the ``intel_pstate=no_hwp`` argument is passed to the kernel in
++the command line.  The active mode is used in those cases if the
++``intel_pstate=active`` argument is passed to the kernel in the command line.
++In this mode ``intel_pstate`` may refuse to work with processors that are not
++recognized by it.  [Note that ``intel_pstate`` will never refuse to work with
++any processor with the HWP feature enabled.]
+ 
+ In this mode ``intel_pstate`` registers utilization update callbacks with the
+ CPU scheduler in order to run a P-state selection algorithm, either
+@@ -188,10 +190,14 @@ is not set.
+ Passive Mode
+ ------------
+ 
+-This mode is used if the ``intel_pstate=passive`` argument is passed to the
+-kernel in the command line (it implies the ``intel_pstate=no_hwp`` setting too).
+-Like in the active mode without HWP support, in this mode ``intel_pstate`` may
+-refuse to work with the given processor if it does not recognize it.
++This is the default operation mode of ``intel_pstate`` for processors without
++hardware-managed P-states (HWP) support.  It is always used if the
++``intel_pstate=passive`` argument is passed to the kernel in the command line
++regardless of whether or not the given processor supports HWP.  [Note that the
++``intel_pstate=no_hwp`` setting implies ``intel_pstate=passive`` if it is used
++without ``intel_pstate=active``.]  Like in the active mode without HWP support,
++in this mode ``intel_pstate`` may refuse to work with processors that are not
++recognized by it.
+ 
+ If the driver works in this mode, the ``scaling_driver`` policy attribute in
+ ``sysfs`` for all ``CPUFreq`` policies contains the string "intel_cpufreq".
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index d2297839374d..b24a5c5ec4f9 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2769,6 +2769,8 @@ static int __init intel_pstate_init(void)
+ 		pr_info("Invalid MSRs\n");
+ 		return -ENODEV;
+ 	}
++	/* Without HWP start in the passive mode. */
++	default_driver = &intel_cpufreq;
+ 
+ hwp_cpu_matched:
+ 	/*
+@@ -2814,7 +2816,6 @@ static int __init intel_pstate_setup(char *str)
+ 	if (!strcmp(str, "disable")) {
+ 		no_load = 1;
+ 	} else if (!strcmp(str, "passive")) {
+-		pr_info("Passive mode enabled\n");
+ 		default_driver = &intel_cpufreq;
+ 		no_hwp = 1;
+ 	}
+-- 
+2.16.4
+
+
+
+
