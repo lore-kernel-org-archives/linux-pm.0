@@ -2,150 +2,161 @@ Return-Path: <SRS0=/TLN=5N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18761C2D0F1
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 00:12:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0AD1C2D0E8
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 07:25:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E1FE120B1F
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 00:12:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="AMoBlXtS"
+	by mail.kernel.org (Postfix) with ESMTP id B4F2A20857
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 07:25:15 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1585380315;
+	bh=SbDBfnoL0/mmeDa45luHtb8PCih2ewNS1ZZdxwtIQ48=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=X/G8PmcPc1SB3c840B993btuj451lzce9ejiTlwKjOCuoz4b+X2ii5HwrWgQ9nWAi
+	 D4V3RGRAV+INTBuOkCyyHB7PNBDkBN6NpMDc9YvTELFfnTU/aXzUj9jkTnYvLn5emd
+	 0eKLw0Be9XrXDd8JWQtdHw9ESCVuDLyUq2nm3zWs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727135AbgC1AMI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Mar 2020 20:12:08 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:33115 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727048AbgC1AMI (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Mar 2020 20:12:08 -0400
-Received: by mail-wr1-f67.google.com with SMTP id a25so13913326wrd.0;
-        Fri, 27 Mar 2020 17:12:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=GKapBrOlmEHVYhUBBTH0BCVxUR3q5V6xELfo4+ssQ3g=;
-        b=AMoBlXtS5fw2fDSHQJMxR9aMEo7eqSCEZeV03SmudGz0GdgSAQGTvIm4Pq+cwSL/z6
-         XjkPhe15wsn0oXx1WRKY1PG+EYJvrKeSxkW3glN5BaG4YzSFvDGbrXg3spnmdgiyeNN7
-         1w2ImGee78kpF31v26UanAwQMSiyLlpNrJnl0zDKjLWTopmonf/pjYZcLQrPMy3KcSsW
-         qkwyHOiTns+3zoVZw+tnZqC6rjQq+vry8eJkIlhZ2is8ixSloKzE1W7Nw1tyYXSnZKBG
-         31j8hKc1lsQET6CNSFUG2vlakQNxVhFE8aLq8iTiAhU5Xw5j55Xj26eH3m2yUwVfsgng
-         eGkQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=GKapBrOlmEHVYhUBBTH0BCVxUR3q5V6xELfo4+ssQ3g=;
-        b=JYVXdLgdYfyKaaZ2cSkigG2K7XWCmKWJjAfBK3xdFz98rA4YIPF3RFuRSBGhmxNpvf
-         wYGQ22earROuNJMpj3qmLKqt5E6W3Z9Uq5Rm3vg4qhyyhHPXDTaiB1S0kICZEJWy78wX
-         XLreDD8Y+9/0EoMU/KcOZCNO4zP/kaOsaeCvXc10GBKcGAZak7diFlyb/foVexrv2Dkp
-         g6dhdij+0yB/MVpkqhIwPVWrbPGixgD8UHMzwEpYUSWMmUruFsGOvXvBeDrcTdAYZiXL
-         7A/YPXUy3PF/V3K85IBOa7topNJ5fFWzty6u3u6wTA4QzWq39XIyZOQyMtLeVQ6g+svy
-         n28g==
-X-Gm-Message-State: ANhLgQ0leBhhaViz1E5uZrMBRbRyXQJXKiT5Z/64ukkZQkhYkaDIzCYy
-        D0dhOf+r8s1kyUVmhaS8JIQ=
-X-Google-Smtp-Source: ADFU+vuTwTn5FVvR7OQTGnDdGCcHc8D0OlhQwgAW0koy9bdPnu0aGtMNrPaMIcSr9wousCaReryslQ==
-X-Received: by 2002:adf:edcf:: with SMTP id v15mr2020212wro.309.1585354325335;
-        Fri, 27 Mar 2020 17:12:05 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F7536.dip0.t-ipconnect.de. [91.63.117.54])
-        by smtp.gmail.com with ESMTPSA id 61sm11237956wrn.82.2020.03.27.17.12.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Mar 2020 17:12:04 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v5 1/5] dt-bindings: mfd: add document bindings for mp2629
-Date:   Sat, 28 Mar 2020 01:11:50 +0100
-Message-Id: <20200328001154.17313-2-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200328001154.17313-1-sravanhome@gmail.com>
-References: <20200328001154.17313-1-sravanhome@gmail.com>
+        id S1725810AbgC1HZP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Mar 2020 03:25:15 -0400
+Received: from mail.kernel.org ([198.145.29.99]:60586 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725372AbgC1HZO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 28 Mar 2020 03:25:14 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id D48D520748;
+        Sat, 28 Mar 2020 07:25:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1585380313;
+        bh=SbDBfnoL0/mmeDa45luHtb8PCih2ewNS1ZZdxwtIQ48=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=l6ARgzjkzDFzI7W4oDXUDBkkOw5E2ey7pfwe9M3qzmNsaZIW+Yow4F6ON1/F+Xs7p
+         3otQUXjUoI4B/BU8Rc2+X+WTwBo+sxGFeYUEI2mSdvx4yad2iw9At4C09CD+6b0FH1
+         N+/A/BjvSf/a47vD8G4JTUy/YgHN8DJQfmjE+9k0=
+Date:   Sat, 28 Mar 2020 08:25:08 +0100
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Naresh Kamboju <naresh.kamboju@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Basil Eljuse <Basil.Eljuse@arm.com>,
+        lkft-triage@lists.linaro.org,
+        Linux-Next Mailing List <linux-next@vger.kernel.org>,
+        fntoth@gmail.com, Arnd Bergmann <arnd@arndb.de>,
+        Anders Roxell <anders.roxell@linaro.org>
+Subject: Re: [PATCH v2 3/3] driver core: Replace open-coded list_last_entry()
+Message-ID: <20200328072508.GB3651219@kroah.com>
+References: <20200324122023.9649-1-andriy.shevchenko@linux.intel.com>
+ <20200324122023.9649-3-andriy.shevchenko@linux.intel.com>
+ <CAJZ5v0gg=V8uDd4afJ3MULsgKYvWajKJioANk4jj7xEhBzrRrQ@mail.gmail.com>
+ <CA+G9fYvFnXqSnoQSJ-DkQvAFv87iWmhH6dT1N79qrq=Aeuv4rw@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CA+G9fYvFnXqSnoQSJ-DkQvAFv87iWmhH6dT1N79qrq=Aeuv4rw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree binding information for mp2629 mfd driver.
+On Fri, Mar 27, 2020 at 11:26:13PM +0530, Naresh Kamboju wrote:
+> The kernel warning noticed on arm64 juno-r2 device running linux
+> next-20200326 and next-20200327
+> 
+> [   36.077086] ------------[ cut here ]------------
+> [   36.081752] amba 20010000.etf: deferred probe timeout, ignoring dependency
+> [   36.081859] WARNING: CPU: 1 PID: 42 at drivers/base/dd.c:270
+> driver_deferred_probe_check_state+0x54/0x80
+> [   36.098242] Modules linked in: fuse
+> [   36.101753] CPU: 1 PID: 42 Comm: kworker/1:1 Not tainted
+> 5.6.0-rc7-next-20200327 #1
+> [   36.109427] Hardware name: ARM Juno development board (r2) (DT)
+> [   36.115372] Workqueue: events amba_deferred_retry_func
+> [   36.120526] pstate: 60000005 (nZCv daif -PAN -UAO)
+> [   36.125334] pc : driver_deferred_probe_check_state+0x54/0x80
+> [   36.131010] lr : driver_deferred_probe_check_state+0x54/0x80
+> [   36.136680] sp : ffff000934e0fae0
+> [   36.140001] x29: ffff000934e0fae0 x28: ffff000934db5608
+> [   36.145337] x27: ffffa00013c63240 x26: ffff000934f2a800
+> [   36.150668] x25: 0000000000000001 x24: fffffffffffffffe
+> [   36.155996] x23: ffff000934c6ab80 x22: ffffa00011b39ea0
+> [   36.161322] x21: ffff000934f2a800 x20: ffffa00011905fe0
+> [   36.166649] x19: ffff000934f2a800 x18: 0000000000000000
+> [   36.171974] x17: 0000000000000000 x16: 0000000000000000
+> [   36.177299] x15: 0000000000000000 x14: 003d090000000000
+> [   36.182625] x13: 00003d0900000000 x12: ffff9400027ef445
+> [   36.187952] x11: 1ffff400027ef444 x10: ffff9400027ef444
+> [   36.193278] x9 : dfffa00000000000 x8 : 0000000000000000
+> [   36.198603] x7 : 0000000000000001 x6 : ffffa00013f7a220
+> [   36.203929] x5 : 0000000000000004 x4 : dfffa00000000000
+> [   36.209255] x3 : ffffa000101a74ec x2 : ffff8001269c1f26
+> [   36.214581] x1 : da1107b7b6a8fb00 x0 : 0000000000000000
+> [   36.219906] Call trace:
+> [   36.222369]  driver_deferred_probe_check_state+0x54/0x80
+> [   36.227698]  __genpd_dev_pm_attach+0x264/0x2a0
+> [   36.232154]  genpd_dev_pm_attach+0x68/0x78
+> [   36.236265]  dev_pm_domain_attach+0x6c/0x70
+> [   36.240463]  amba_device_try_add+0xec/0x3f8
+> [   36.244659]  amba_deferred_retry_func+0x84/0x158
+> [   36.249301]  process_one_work+0x3f0/0x660
+> [   36.253326]  worker_thread+0x74/0x698
+> [   36.256997]  kthread+0x218/0x220
+> [   36.260236]  ret_from_fork+0x10/0x1c
+> [   36.263819] ---[ end trace c637c10e549bd716 ]---#
+> 
+> Full test log,
+> https://lkft.validation.linaro.org/scheduler/job/1317079#L981
+> 
+> On Tue, 24 Mar 2020 at 18:24, Rafael J. Wysocki <rafael@kernel.org> wrote:
+> >
+> > On Tue, Mar 24, 2020 at 1:20 PM Andy Shevchenko
+> > <andriy.shevchenko@linux.intel.com> wrote:
+> > >
+> > > There is a place in the code where open-coded version of list entry accessors
+> > > list_last_entry() is used.
+> > >
+> > > Replace that with the standard macro.
+> > >
+> > > Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> >
+> > Reviewed-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > > ---
+> > > v2: no change
+> > >  drivers/base/dd.c | 2 +-
+> > >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > >
+> > > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> > > index efd0e4c16ba5..27a4d51b5bba 100644
+> > > --- a/drivers/base/dd.c
+> > > +++ b/drivers/base/dd.c
+> > > @@ -1226,7 +1226,7 @@ void driver_detach(struct device_driver *drv)
+> > >                         spin_unlock(&drv->p->klist_devices.k_lock);
+> > >                         break;
+> > >                 }
+> > > -               dev_prv = list_entry(drv->p->klist_devices.k_list.prev,
+> > > +               dev_prv = list_last_entry(&drv->p->klist_devices.k_list,
+> > >                                      struct device_private,
+> > >                                      knode_driver.n_node);
+> > >                 dev = dev_prv->device;
+> 
+> metadata:
+>   git branch: master
+>   git repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+>   git describe: next-20200327
+>   kernel-config:
+> https://builds.tuxbuild.com/nqmmxorUbC1qTWp42iEKjQ/kernel.config
+> 
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
----
- .../devicetree/bindings/mfd/mps,mp2629.yaml   | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+And you bisected the warning to this patch?  If you revert it, does it
+go away?
 
-diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-new file mode 100644
-index 000000000000..3c3cd023256a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-@@ -0,0 +1,60 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MP2629 Battery Charger PMIC from Monolithic Power System.
-+
-+maintainers:
-+  - Saravanan Sekar <sravanhome@gmail.com>
-+
-+description: |
-+  MP2629 is a PMIC providing battery charging and power supply for smartphones,
-+  wireless camera and portable devices. Chip is contrlled over I2C.
-+
-+  The battery charge management device handles battery charger controller and
-+  ADC IIO device for battery, system voltage
-+
-+properties:
-+  compatible:
-+    const: mps,mp2629
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+    description:
-+      The first cell is the IRQ number, the second cell is the trigger type.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    #include <dt-bindings/input/linux-event-codes.h>
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        pmic@4b {
-+            compatible = "mps,mp2629";
-+            reg = <0x4b>;
-+
-+            interrupt-controller;
-+            interrupt-parent = <&gpio2>;
-+            #interrupt-cells = <2>;
-+            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-+        };
-+    };
--- 
-2.17.1
+confused,
 
+greg k-h
