@@ -2,38 +2,36 @@ Return-Path: <SRS0=/TLN=5N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3676DC43331
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E47B1C2D0E5
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 13B7D2073B
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BEE852073B
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726271AbgC1M60 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Mar 2020 08:58:26 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:58417 "EHLO
+        id S1726045AbgC1M61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Mar 2020 08:58:27 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:43443 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726045AbgC1M60 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 08:58:26 -0400
+        with ESMTP id S1726369AbgC1M61 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 08:58:27 -0400
 Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 9c4c29803feb8bf4; Sat, 28 Mar 2020 13:58:24 +0100
+ id 54b4ded94d5d9511; Sat, 28 Mar 2020 13:58:25 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
+To:     Linux PM <linux-pm@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Giovanni Gherdovich <ggherdovich@suse.cz>,
         Doug Smythies <dsmythies@telus.net>
-Subject: [PATCH 2/2] cpufreq: intel_pstate: Use passive mode by default without HWP
-Date:   Sat, 28 Mar 2020 13:57:48 +0100
-Message-ID: <2988949.NgUrjYMkJj@kreacher>
-In-Reply-To: <2016232.ihCVsphvri@kreacher>
-References: <2016232.ihCVsphvri@kreacher>
+Subject: [PATCH 0/2] cpufreq: intel_pstate: Run in the passive mode by default on systems without HWP
+Date:   Sat, 28 Mar 2020 13:54:35 +0100
+Message-ID: <2016232.ihCVsphvri@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -42,110 +40,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+Hi All,
 
-After recent changes allowing scale-invariant utilization to be
-used on x86, the schedutil governor on top of intel_pstate in the
-passive mode should be on par with (or better than) the active mode
-"powersave" algorithm of intel_pstate on systems in which
-hardware-managed P-states (HWP) are not used, so it should not be
-necessary to use the internal scaling algorithm in those cases.
+These two patches modify the intel_pstate driver to run in the passive mode by
+default on systems without HWP (refer to the changelog of patch [2/2] for the
+motivation part).
 
-Accordingly, modify intel_pstate to start in the passive mode by
-default if the processor at hand does not support HWP of if the driver
-is requested to avoid using HWP through the kernel command line.
+Internal testing of the system performance in 5.6-rc indicates that the
+difference between the active mode with the powersave scaling algorithm and the
+passive mode with the schedutil governor should be negligible for the majority
+of users, so it should be safe to change the default behavior of the driver as
+per the above.
 
-Among other things, that will allow utilization clamps and the
-support for RT/DL tasks in the schedutil governor to be utilized on
-systems in which intel_pstate is used.
+Patch [1/2] makes changes to select the schedutil governor and set it as the
+default one when intel_pstate is selected in Kconfig.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- Documentation/admin-guide/pm/intel_pstate.rst | 32 ++++++++++++++++-----------
- drivers/cpufreq/intel_pstate.c                |  3 ++-
- 2 files changed, 21 insertions(+), 14 deletions(-)
+Patch [2/2] changes intel_pstate to start in the passive by default if HWP is
+not supported (or if it is disabled via the kernel command line).
 
-diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
-index ad392f3aee06..39d80bc29ccd 100644
---- a/Documentation/admin-guide/pm/intel_pstate.rst
-+++ b/Documentation/admin-guide/pm/intel_pstate.rst
-@@ -62,9 +62,10 @@ on the capabilities of the processor.
- Active Mode
- -----------
- 
--This is the default operation mode of ``intel_pstate``.  If it works in this
--mode, the ``scaling_driver`` policy attribute in ``sysfs`` for all ``CPUFreq``
--policies contains the string "intel_pstate".
-+This is the default operation mode of ``intel_pstate`` for processors with
-+hardware-managed P-states (HWP) support.  If it works in this mode, the
-+``scaling_driver`` policy attribute in ``sysfs`` for all ``CPUFreq`` policies
-+contains the string "intel_pstate".
- 
- In this mode the driver bypasses the scaling governors layer of ``CPUFreq`` and
- provides its own scaling algorithms for P-state selection.  Those algorithms
-@@ -138,12 +139,13 @@ internal P-state selection logic to be less performance-focused.
- Active Mode Without HWP
- ~~~~~~~~~~~~~~~~~~~~~~~
- 
--This is the default operation mode for processors that do not support the HWP
--feature.  It also is used by default with the ``intel_pstate=no_hwp`` argument
--in the kernel command line.  However, in this mode ``intel_pstate`` may refuse
--to work with the given processor if it does not recognize it.  [Note that
--``intel_pstate`` will never refuse to work with any processor with the HWP
--feature enabled.]
-+This operation mode is optional for processors that do not support the HWP
-+feature or when the ``intel_pstate=no_hwp`` argument is passed to the kernel in
-+the command line.  The active mode is used in those cases if the
-+``intel_pstate=active`` argument is passed to the kernel in the command line.
-+In this mode ``intel_pstate`` may refuse to work with processors that are not
-+recognized by it.  [Note that ``intel_pstate`` will never refuse to work with
-+any processor with the HWP feature enabled.]
- 
- In this mode ``intel_pstate`` registers utilization update callbacks with the
- CPU scheduler in order to run a P-state selection algorithm, either
-@@ -188,10 +190,14 @@ is not set.
- Passive Mode
- ------------
- 
--This mode is used if the ``intel_pstate=passive`` argument is passed to the
--kernel in the command line (it implies the ``intel_pstate=no_hwp`` setting too).
--Like in the active mode without HWP support, in this mode ``intel_pstate`` may
--refuse to work with the given processor if it does not recognize it.
-+This is the default operation mode of ``intel_pstate`` for processors without
-+hardware-managed P-states (HWP) support.  It is always used if the
-+``intel_pstate=passive`` argument is passed to the kernel in the command line
-+regardless of whether or not the given processor supports HWP.  [Note that the
-+``intel_pstate=no_hwp`` setting implies ``intel_pstate=passive`` if it is used
-+without ``intel_pstate=active``.]  Like in the active mode without HWP support,
-+in this mode ``intel_pstate`` may refuse to work with processors that are not
-+recognized by it.
- 
- If the driver works in this mode, the ``scaling_driver`` policy attribute in
- ``sysfs`` for all ``CPUFreq`` policies contains the string "intel_cpufreq".
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index d2297839374d..b24a5c5ec4f9 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2769,6 +2769,8 @@ static int __init intel_pstate_init(void)
- 		pr_info("Invalid MSRs\n");
- 		return -ENODEV;
- 	}
-+	/* Without HWP start in the passive mode. */
-+	default_driver = &intel_cpufreq;
- 
- hwp_cpu_matched:
- 	/*
-@@ -2814,7 +2816,6 @@ static int __init intel_pstate_setup(char *str)
- 	if (!strcmp(str, "disable")) {
- 		no_load = 1;
- 	} else if (!strcmp(str, "passive")) {
--		pr_info("Passive mode enabled\n");
- 		default_driver = &intel_cpufreq;
- 		no_hwp = 1;
- 	}
--- 
-2.16.4
+Please refer to the patch changelogs for more information.
 
+Thanks!
 
 
 
