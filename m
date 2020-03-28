@@ -2,38 +2,37 @@ Return-Path: <SRS0=/TLN=5N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B1DBC2D0EE
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50F28C43331
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 14:15:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0E6B0212CC
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 12:58:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12910206DB
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Mar 2020 14:15:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726389AbgC1M61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Mar 2020 08:58:27 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:43401 "EHLO
+        id S1726373AbgC1OPW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Mar 2020 10:15:22 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:43131 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726268AbgC1M61 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 08:58:27 -0400
+        with ESMTP id S1726045AbgC1OPW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Mar 2020 10:15:22 -0400
 Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.341)
- id 5bf184116b0b3e6b; Sat, 28 Mar 2020 13:58:24 +0100
+ id 03b47b1560be92d4; Sat, 28 Mar 2020 15:15:19 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Giovanni Gherdovich <ggherdovich@suse.cz>,
-        Doug Smythies <dsmythies@telus.net>
-Subject: [PATCH 1/2] cpufreq: intel_pstate: Select schedutil as the default governor
-Date:   Sat, 28 Mar 2020 13:57:06 +0100
-Message-ID: <2084178.yfvgZJeXvx@kreacher>
-In-Reply-To: <2016232.ihCVsphvri@kreacher>
-References: <2016232.ihCVsphvri@kreacher>
+To:     Alan Stern <stern@rowland.harvard.edu>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Qais Yousef <qais.yousef@arm.com>,
+        USB list <linux-usb@vger.kernel.org>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>,
+        Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: lockdep warning in urb.c:363 usb_submit_urb
+Date:   Sat, 28 Mar 2020 15:15:18 +0100
+Message-ID: <10243663.e30Z2V8kAt@kreacher>
+In-Reply-To: <Pine.LNX.4.44L0.2003271515480.29819-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.2003271515480.29819-100000@netrider.rowland.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -42,55 +41,159 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On Friday, March 27, 2020 9:45:09 PM CET Alan Stern wrote:
+> On Thu, 26 Mar 2020, Qais Yousef wrote:
+> 
+> > On 03/25/20 22:28, Rafael J. Wysocki wrote:
+> > > On Wed, Mar 25, 2020 at 9:49 PM Alan Stern <stern@rowland.harvard.edu> wrote:
+> 
+> > > > Raphael, now that we have the direct_complete mechanism, can we revisit
+> > > > this?  Should the PM core automatically call pm_runtime_set_active() if
+> > > > dev->power.direct_complete isn't set?  Perhaps in device_resume_early()
+> > > > prior to the pm_runtime_enable() call?
+> > > >
+> > > > It's possible we discussed this and decided against it at the time when
+> > > > direct_complete was added, but if so I don't remember what was said.
+> > > 
+> > > Me neither. :-)
+> > > 
+> > > That said complexity has grown since then and there are the
+> > > DPM_FLAG_SMART_SUSPEND and DPM_FLAG_LEAVE_SUSPENDED flags that can be
+> > > used to control that behavior to some extent.
+> > > 
+> > > Setting DPM_FLAG_SMART_SUSPEND alone, in particular, causes
+> > > pm_runtime_set_active() to be called at the noirq stage of device
+> > > resume either by the core or by bus types (e.g. PCI) etc.
+> > > 
+> > > It looks like ohci-platform might use DPM_FLAG_SMART_SUSPEND, but I
+> > > need to take a closer look at that (possibly later this week).
+> > 
+> > Okay I take it this was root caused correctly and now it's a question of which
+> > is a better fix.
+> 
+> Indeed.
+> 
+> Raphael, I've been going over the PM core code, trying to figure out
+> what it's really doing.  It's kind of a mess.
 
-Modify cpufreq Kconfig to select schedutil as the default governor
-if the intel_pstate driver has been selected and SMP support is
-enabled (because schedutil depends on SMP).
+Well, sorry about that. 
 
-Also select schedutil as well as the performance governor from the
-intel_pstate Kconfig section to ensure the equivalence of the passive
-and active mode governor configuration options.
+> A large part of the problem is related to an inconsistency between the
+> documentation and the code.  include/linux/pm.h says that
+> DPM_FLAG_SMART_SUSPEND tells bus types and PM domains about what the
+> driver wants.  This strongly implies that the PM core will ignore
+> SMART_SUSPEND.  But in fact the core does check that flag and takes its
+> own actions if the device has no subsystem-level callbacks!
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/Kconfig     | 3 ++-
- drivers/cpufreq/Kconfig.x86 | 2 ++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+Right, which is because in those cases there is no "middle layer" between
+the driver and the core and if you want the driver to work both with
+something like genpd or the ACPI PM domain and without anything like that,
+the core needs to take those actions for consistency.
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index bff5295016ae..9f0e7e79ed14 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -37,10 +37,11 @@ config CPU_FREQ_STAT
- choice
- 	prompt "Default CPUFreq governor"
- 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if ARM_SA1100_CPUFREQ || ARM_SA1110_CPUFREQ
-+	default CPU_FREQ_DEFAULT_GOV_SCHEDUTIL if X86_INTEL_PSTATE && SMP
- 	default CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- 	help
- 	  This option sets which CPUFreq governor shall be loaded at
--	  startup. If in doubt, select 'performance'.
-+	  startup. If in doubt, use the default setting.
- 
- config CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- 	bool "performance"
-diff --git a/drivers/cpufreq/Kconfig.x86 b/drivers/cpufreq/Kconfig.x86
-index a6528388952e..758c69a2e1bf 100644
---- a/drivers/cpufreq/Kconfig.x86
-+++ b/drivers/cpufreq/Kconfig.x86
-@@ -8,6 +8,8 @@ config X86_INTEL_PSTATE
- 	depends on X86
- 	select ACPI_PROCESSOR if ACPI
- 	select ACPI_CPPC_LIB if X86_64 && ACPI && SCHED_MC_PRIO
-+	select CPU_FREQ_GOV_PERFORMANCE
-+	select CPU_FREQ_GOV_SCHEDUTIL if SMP
- 	help
- 	  This driver provides a P state for Intel core processors.
- 	  The driver implements an internal governor and will become
--- 
-2.16.4
+> Furthermore, the PM core's actions don't seem to make sense.  If the
+> flag is set and the device is runtime-suspended when the system sleep
+> begins, the core will skip issuing the suspend_late and suspend_noirq
+> callbacks to the driver.  But it doesn't skip issuing the suspend
+> callback!  I can't figure that out.
 
+That's because if the core gets to executing ->suspend_late, PM-runtime has
+been disabled for the device and if the device is runtime-suspended at that
+point, so (at least if SMART_SUSPEND is set for the device) there is no reason
+to do anything more to it.
+
+> Furthermore, the decisions about
+> whether to skip the resume_noirq, resume_early, and resume callbacks
+> are based on different criteria from the decisions on the suspend side.
+
+Right, because there are drivers that don't want devices to stay in suspend
+after system resume even though they have been left in suspend by it.
+
+Arguably, they could be left in suspend and then resumed after the completion
+of system suspend, but that would add quite a bit of latency if the device
+needs to be accessed right after the system suspend is complete.
+
+> That's not all: The SMART_SUSPEND decisions completely ignore the value
+> of DPM_FLAG_NEVER_SKIP!  NEVER_SKIP affects only the direct_completion
+> pathway.
+
+As documented AFAICS.
+
+> SMART_SUSPEND seems to have two different meanings.  (1) If the device 
+> is already in runtime suspend when a system sleep starts, skip the 
+> suspend_late and suspend_noirq callbacks.  (2) Under certain (similar) 
+> circumstances, skip the resume callbacks.  The documentation only 
+> mentions (1) but the code also handles (2).
+
+That's because (2) is the THAW case and I was distracted before I got
+to documenting it properly.  Sorry.
+
+The problem is that if you leave the device in runtime suspend, calling
+->freeze_late() or ->freeze_noirq() on it is not useful and if you have
+skipped those, running the corresponding "thaw" callbacks is not useful
+either (what would they do, specifically?).
+
+There is a whole problem of whether or not devices should be left in
+runtime suspend during hibernation and I have not had a chance to get
+to the bottom of that yet.
+
+> Other things in there also seem strange.  device_prepare() does a
+> WARN_ON if either SMART_SUSPEND or LEAVE_SUSPENDED is set and the
+> device is not runtime-PM-enabled.  That's understandable, but it's also
+> racy.
+
+I guess you mean the check in device_prepare().
+
+> A system sleep can begin at any time; how can a driver know when
+> it is safe to disable a device's runtime PM briefly?
+
+Well, fair enough, but then I'm not sure if there is a good place for this
+check at all, because drivers can briefly disable PM-runtime at any time in
+theory.
+
+> When device_prepare() calculates the power.direct_complete flag, it
+> checks to see whether the device is currently in runtime suspend in
+> some cases but not in others, as in the code added by your commit
+> c62ec4610c40 ("PM / core:  Fix direct_complete handling for devices
+> with no callbacks").  Since the runtime-PM state is going to checked in
+> __device_suspend() anyway, we shouldn't need to check it here at all.
+
+I guess the point is that in theory the device can be runtime-suspended
+between device_prepare() and _device_suspend(), is by checking the status
+in the former, we lose the opportunity to leave it in suspend if that
+happens.
+
+OK, fair enough.
+
+> At a couple of points in the code, THAW and RESTORE events are each
+> treatedly specially, with no explanation.
+
+Right, which is related to the kind of work in progress situation regarding
+the flags and hibernation mentioned above.  Again, sorry about that.
+
+> The power.may_skip_resume flag is used in only one place, when 
+> LEAVE_SUSPENDED is set and there are subsystem-level callbacks.  In 
+> particular, it is _not_ used by dev_pm_may_skip_resume().  That seems 
+> highly suspicious at best.
+
+That's because it's for the middle-layer (subsystem-level) code to let the
+core know that skipping the resume would be OK.
+
+The core doesn't need that flag when it decides by itself.
+
+> I think it would be worthwhile to expend some serious effort
+> straightening all this stuff out.  Perhaps we could start with a more
+> explicit description of what is supposed to happen at each step.  
+> (Things to be careful about include phrases like "leave suspended",
+> which is not the same as "don't call the resume callbacks", even though
+> the two are easily conflated.)
+> 
+> What do you think?
+
+I am certainly not going to reject any help. :-)
+
+Also, I'm not against clarifying anything that is not clear enough.
+
+Cheers!
 
 
 
