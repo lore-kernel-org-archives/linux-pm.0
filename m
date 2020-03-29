@@ -2,150 +2,170 @@ Return-Path: <SRS0=SyNq=5O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0C10C43331
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 12:31:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57FD0C2D0E9
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 12:49:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 958722076E
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 12:31:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2534F2074A
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 12:49:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="luWn4VxA"
+	dkim=pass (2048-bit key) header.d=vanguardiasur-com-ar.20150623.gappssmtp.com header.i=@vanguardiasur-com-ar.20150623.gappssmtp.com header.b="OV6apK94"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728199AbgC2MbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 29 Mar 2020 08:31:23 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:36556 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728065AbgC2MbU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 08:31:20 -0400
-Received: by mail-wr1-f66.google.com with SMTP id 31so17567636wrs.3;
-        Sun, 29 Mar 2020 05:31:19 -0700 (PDT)
+        id S1728185AbgC2Mt0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Mar 2020 08:49:26 -0400
+Received: from mail-ua1-f66.google.com ([209.85.222.66]:35005 "EHLO
+        mail-ua1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727951AbgC2Mt0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 08:49:26 -0400
+Received: by mail-ua1-f66.google.com with SMTP id a6so5267935uao.2
+        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2020 05:49:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=GKapBrOlmEHVYhUBBTH0BCVxUR3q5V6xELfo4+ssQ3g=;
-        b=luWn4VxAKy4BMYnYdqLUrCkt63SrzaWh6EqMAKjUtK8xE0ru4i7ApfWkdUQbtDXBgT
-         Ha4wm3V70sc1bAsUKo1+ujVuURtb03crrYALhV8kp9gDeXTuozFt8v+wwwRGaKr3PpPn
-         nwgzRGBBkwBP+fI4WR+FwUooSFbi80mP1avkhxS7payAmbjflmfrbAYEAZFVynLiNS+3
-         dloIumUUtPuoyUbl1FoICq/3/SW9WVlcu+PVP7B9bd4j6euBQsbcoBwVcJ7go2HnCBYU
-         cc7mBag5R4ab297eF9LlDh0cdjOBWaqzYZy8BHbYDHI7FiK1OsXp9bnX44TAgU5JIge+
-         G69w==
+        d=vanguardiasur-com-ar.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=BKv2gz0DsjMaF/Mz7s/wYq0JAaZxqtaW8p9A6zy8BFw=;
+        b=OV6apK94OvbjCTyL09DesQB0SGgOwrppqY2YP/LjETv74YzrTmpIDpOJvWHmExwB5h
+         LEoKJC806ZLIUlLPiq3RkMBDaGuD8ZCBKoxvdDFoObgNlAKC0np2EsVRE/zgl3K3wXha
+         gyT7VJMqwPu3Q31eiNmUmfT93kaqIlzUT2abneF2X/hIuNkAGpfmJexsRq6+MbVRc4US
+         XfzakhQbczj1TwgBERsCHFHtbguGFH5fiSqeXMMym9U5wctQjZJOFfEO6D3rBoLsjQv+
+         suHSUhgH38T9k3dspbM2gHSZlz+0qPi1Mjx23D80lVdRUZzJwlggKN525bcgVLQGAYqH
+         YMfw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=GKapBrOlmEHVYhUBBTH0BCVxUR3q5V6xELfo4+ssQ3g=;
-        b=o48HfwRL+8S6cWOmO4+/c1m33htyu+WGGTJhu+/UawAMup+7gOLDhIvsWhUxxsX2yj
-         PHHEndESeUPFpzPyNDnVmhM7Hr5wLP7uAjJQA9Ae1SQysEpqvTpobvU35NRMTVanIRKk
-         sUm1whnWW+TRrJBcECKq1xTXdc/pUgcEKzY31oM7z3ROiM6X1evNwok6NY9wdgYt34fl
-         V32CyZbUxmsPaQSQDTjjZzFAKtPovos1kEXA88L2ZN/I4gjc4JUgGEay9oulD1xus6qZ
-         suF9zyq3iXPxTfeMDAoacCa/9Pvw/ZyylCmam+pjRJe0rRiR/t4btJoiEPbTrCujpV7v
-         ETqg==
-X-Gm-Message-State: ANhLgQ0CKAUuw4UoftthZm8fxSGogTDYxUarla0EkAIrD98IjOazsgAA
-        QGbvrs4F+ad2QIpBd72YcF0=
-X-Google-Smtp-Source: ADFU+vtNyysNuarRctEs+jLSSz+ipgSiE9hlpQH+rJ096CnE78UdigIo4l6JvLOfcwjAw6ZxxuO1AQ==
-X-Received: by 2002:adf:aa92:: with SMTP id h18mr9960745wrc.139.1585485078601;
-        Sun, 29 Mar 2020 05:31:18 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F6BD9.dip0.t-ipconnect.de. [91.63.107.217])
-        by smtp.gmail.com with ESMTPSA id f9sm17259108wrc.71.2020.03.29.05.31.17
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 Mar 2020 05:31:17 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v6 1/5] dt-bindings: mfd: add document bindings for mp2629
-Date:   Sun, 29 Mar 2020 14:31:06 +0200
-Message-Id: <20200329123110.26482-2-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200329123110.26482-1-sravanhome@gmail.com>
-References: <20200329123110.26482-1-sravanhome@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=BKv2gz0DsjMaF/Mz7s/wYq0JAaZxqtaW8p9A6zy8BFw=;
+        b=nBxrchVCp8iINpJtdhLCXXiPVvH73EmFEKnLGwMxyKfRVcJkv9S22lJ7G3Z8bLTGDT
+         8wJBHRWOXJjKD/UCX2yqJ7O79ohpw58xyBppB4/XEcKlJiOhjitdgr9W4Vhnkp3m0m3X
+         dbAZ3NM1PRBgLTpX38gA70aU9XJYfHIi9oyBaVpg3/4oMJ4u9jVAEv5hePflwTvuzU+r
+         KKOIRVKpQYMuanUSYZHlPH1ER7iI3OEktHRha6dv7ZaFAODGUx6BtL+xlIMN8nEu74T+
+         MohQ08Uo33LdbN2UKtML9Eb8P+AMmGJoZbf7JZ8VfyZAnYa3Km6E1MIPScXmeu6ez1Qe
+         i0sw==
+X-Gm-Message-State: AGi0PuY8aBpoH3rkSIsPmvV3c1nFWKtIp2HD15ArxfUoOt5JTU1iSepK
+        hxRpBSnNLvWRT6VTA5uAfoykN7hPsGahyq5U5EvFt0v5/jR0qQ==
+X-Google-Smtp-Source: APiQypIsvN8DwSOa1DIIz7+YdpInfhwNZ+d14wjLvIXeAdQOQVTDA/uPRVxymSqmuAcTfP5nsyfk8CXNY8UbA5IjZWk=
+X-Received: by 2002:ab0:2b97:: with SMTP id q23mr4929382uar.74.1585486163437;
+ Sun, 29 Mar 2020 05:49:23 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200327151951.18111-1-ricardo.canuelo@collabora.com>
+ <20200327154345.GA3971@ninjato> <CAGAzgsqJznZi83ijxCgQg463Q4AnwiNX-a0Q9+Og9MW5OJ4Vew@mail.gmail.com>
+In-Reply-To: <CAGAzgsqJznZi83ijxCgQg463Q4AnwiNX-a0Q9+Og9MW5OJ4Vew@mail.gmail.com>
+From:   Ezequiel Garcia <ezequiel@vanguardiasur.com.ar>
+Date:   Sun, 29 Mar 2020 09:49:10 -0300
+Message-ID: <CAAEAJfCzquaiCkjxXYOJRH8tpGRkHJBSWnFD--S=C7uAvHwqUg@mail.gmail.com>
+Subject: Re: [PATCH] i2c: enable async suspend/resume on i2c devices
+To:     "dbasehore ." <dbasehore@chromium.org>
+Cc:     Wolfram Sang <wsa@the-dreams.de>,
+        =?UTF-8?Q?Ricardo_Ca=C3=B1uelo?= <ricardo.canuelo@collabora.com>,
+        linux-i2c@vger.kernel.org, Guenter Roeck <groeck@chromium.org>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        kernel@collabora.com
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree binding information for mp2629 mfd driver.
+Hi Derek,
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
----
- .../devicetree/bindings/mfd/mps,mp2629.yaml   | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+On Fri, 27 Mar 2020 at 17:26, dbasehore . <dbasehore@chromium.org> wrote:
+>
+> On Fri, Mar 27, 2020 at 8:43 AM Wolfram Sang <wsa@the-dreams.de> wrote:
+> >
+> > On Fri, Mar 27, 2020 at 04:19:51PM +0100, Ricardo Ca=C3=B1uelo wrote:
+> > > This enables the async suspend property for i2c devices. This reduces
+> > > the suspend/resume time considerably on platforms with multiple i2c
+> > > devices (such as a trackpad or touchscreen).
+> > >
+> > > (am from https://patchwork.ozlabs.org/patch/949922/)
+> > >
+> > > Signed-off-by: Derek Basehore <dbasehore@chromium.org>
+> > > Reviewed-on: https://chromium-review.googlesource.com/1152411
+> > > Tested-by: Venkateswarlu V Vinjamuri <venkateswarlu.v.vinjamuri@intel=
+.com>
+> > > Reviewed-by: Venkateswarlu V Vinjamuri <venkateswarlu.v.vinjamuri@int=
+el.com>
+> > > Reviewed-by: Justin TerAvest <teravest@chromium.org>
+> > > Signed-off-by: Guenter Roeck <groeck@chromium.org>
+> > > Signed-off-by: Ricardo Ca=C3=B1uelo <ricardo.canuelo@collabora.com>
+> > > ---
+> >
+> > Adding linux-pm to CC. I don't know much about internals of async
+> > suspend. Is there a guide like "what every maintainer needs to know
+> > about"?
+>
+> For more details, you can look at the function dpm_resume in the
+> drivers/base/power/main.c file and follow from there.
+>
+> I can't find anything in Documentation/, so here's a short overview:
+> Async devices have suspend/resume callbacks scheduled via
+> async_schedule at every step (normal, late, noirq, etc.) for
+> suspending/resuming devices. We wait for all device callbacks to
+> complete at the end of each of these steps before moving onto the next
+> one. This means that you won't have a resume_early callback running
+> when you start the normal device resume callbacks.
+>
+> The async callbacks still wait individually for children on suspend
+> and parents on resume to complete their own callbacks before calling
+> their own. Because some dependencies may not be tracked by the
+> parent/child graph (or other unknown reasons), async is off by
+> default.
+>
+> Enabling async is a confirmation that all dependencies to other
+> devices are properly tracked, whether through the parent/child
+> relationship or otherwise.
+>
 
-diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-new file mode 100644
-index 000000000000..3c3cd023256a
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-@@ -0,0 +1,60 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MP2629 Battery Charger PMIC from Monolithic Power System.
-+
-+maintainers:
-+  - Saravanan Sekar <sravanhome@gmail.com>
-+
-+description: |
-+  MP2629 is a PMIC providing battery charging and power supply for smartphones,
-+  wireless camera and portable devices. Chip is contrlled over I2C.
-+
-+  The battery charge management device handles battery charger controller and
-+  ADC IIO device for battery, system voltage
-+
-+properties:
-+  compatible:
-+    const: mps,mp2629
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+    description:
-+      The first cell is the IRQ number, the second cell is the trigger type.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    #include <dt-bindings/input/linux-event-codes.h>
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        pmic@4b {
-+            compatible = "mps,mp2629";
-+            reg = <0x4b>;
-+
-+            interrupt-controller;
-+            interrupt-parent = <&gpio2>;
-+            #interrupt-cells = <2>;
-+            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-+        };
-+    };
--- 
-2.17.1
+Have you noticed the async sysfs attribute [1]?
 
+Given this allows userspace to enable the async suspend/resume,
+wouldn't it be simpler to just do that in userspace, on the
+platforms you want to target (e.g. Apollolake Chromebook devices, and so on=
+) ?
+
+Thanks,
+Ezequiel
+
+[1] Documentation/ABI/testing/sysfs-devices-power
+
+> >
+> > > This patch was originally created for chromeos some time ago and I'm
+> > > evaluating if it's a good candidate for upstreaming.
+> > >
+> > > By the looks of it I think it was done with chromebooks in mind, but
+> > > AFAICT this would impact every i2c client in every platform, so I'd l=
+ike
+> > > to know your opinion about it.
+> > >
+> > > As far as I know there was no further investigation or testing on it,=
+ so
+> > > I don't know if it was tested on any other hardware.
+> > >
+> > > Best,
+> > > Ricardo
+> > >
+> > >  drivers/i2c/i2c-core-base.c | 1 +
+> > >  1 file changed, 1 insertion(+)
+> > >
+> > > diff --git a/drivers/i2c/i2c-core-base.c b/drivers/i2c/i2c-core-base.=
+c
+> > > index cefad0881942..643bc0fe0281 100644
+> > > --- a/drivers/i2c/i2c-core-base.c
+> > > +++ b/drivers/i2c/i2c-core-base.c
+> > > @@ -769,6 +769,7 @@ i2c_new_client_device(struct i2c_adapter *adap, s=
+truct i2c_board_info const *inf
+> > >       client->dev.of_node =3D of_node_get(info->of_node);
+> > >       client->dev.fwnode =3D info->fwnode;
+> > >
+> > > +     device_enable_async_suspend(&client->dev);
+> > >       i2c_dev_set_name(adap, client, info);
+> > >
+> > >       if (info->properties) {
+> > > --
+> > > 2.18.0
+> > >
