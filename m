@@ -6,24 +6,24 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1134DC43331
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 16:25:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 84922C2D0ED
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 16:26:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id E6ACB20733
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 16:25:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 651672073E
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 16:26:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728366AbgC2QZw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 29 Mar 2020 12:25:52 -0400
-Received: from ip-78-45-52-129.net.upcbroadband.cz ([78.45.52.129]:52680 "EHLO
+        id S1728401AbgC2QZ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Mar 2020 12:25:58 -0400
+Received: from ip-78-45-52-129.net.upcbroadband.cz ([78.45.52.129]:52676 "EHLO
         ixit.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728291AbgC2QZv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 29 Mar 2020 12:25:51 -0400
+        id S1728258AbgC2QZw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 29 Mar 2020 12:25:52 -0400
 Received: from localhost.localdomain (227.146.230.94.awnet.cz [94.230.146.227])
         (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
          key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
         (No client certificate requested)
-        by ixit.cz (Postfix) with ESMTPSA id EB9792497C;
-        Sun, 29 Mar 2020 18:16:54 +0200 (CEST)
+        by ixit.cz (Postfix) with ESMTPSA id 99DD72498B;
+        Sun, 29 Mar 2020 18:17:08 +0200 (CEST)
 From:   David Heidelberg <david@ixit.cz>
 To:     Sebastian Reichel <sre@kernel.org>,
         Jonghwa Lee <jonghwa3.lee@samsung.com>,
@@ -36,9 +36,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
         Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     David Heidelberg <david@ixit.cz>
-Subject: [PATCH 1/9] power: supply: smb347-charger: IRQSTAT_D is volatile
-Date:   Sun, 29 Mar 2020 18:15:44 +0200
-Message-Id: <20200329161552.215075-2-david@ixit.cz>
+Subject: [PATCH 3/9] power: supply: smb347-charger: Use resource-managed API
+Date:   Sun, 29 Mar 2020 18:15:46 +0200
+Message-Id: <20200329161552.215075-4-david@ixit.cz>
 X-Mailer: git-send-email 2.25.0
 In-Reply-To: <20200329161552.215075-1-david@ixit.cz>
 References: <20200329161552.215075-1-david@ixit.cz>
@@ -49,32 +49,94 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dmitry Osipenko <digetx@gmail.com>
+Simplify code, more convenient to use with Device Tree.
 
-Fix failure when USB cable is connected:
-smb347 2-006a: reading IRQSTAT_D failed
-
-Fixes: 1502cfe19bac ("smb347-charger: Fix battery status reporting logic for charger faults")
-
-Tested-by: David Heidelberg <david@ixit.cz>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
 Signed-off-by: David Heidelberg <david@ixit.cz>
 ---
- drivers/power/supply/smb347-charger.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/power/supply/smb347-charger.c | 45 +++++++++++++--------------
+ 1 file changed, 21 insertions(+), 24 deletions(-)
 
 diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
-index c1d124b8be0c..d102921b3ab2 100644
+index f99026d81f2a..4add9f64ba90 100644
 --- a/drivers/power/supply/smb347-charger.c
 +++ b/drivers/power/supply/smb347-charger.c
-@@ -1138,6 +1138,7 @@ static bool smb347_volatile_reg(struct device *dev, unsigned int reg)
- 	switch (reg) {
- 	case IRQSTAT_A:
- 	case IRQSTAT_C:
-+	case IRQSTAT_D:
- 	case IRQSTAT_E:
- 	case IRQSTAT_F:
- 	case STAT_A:
+@@ -836,21 +836,31 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 			   struct i2c_client *client)
+ {
+ 	const struct smb347_charger_platform_data *pdata = smb->pdata;
+-	int ret, irq = gpio_to_irq(pdata->irq_gpio);
++	unsigned long irqflags = IRQF_ONESHOT;
++	int ret;
+ 
+-	ret = gpio_request_one(pdata->irq_gpio, GPIOF_IN, client->name);
+-	if (ret < 0)
+-		goto fail;
++	/* Requesting GPIO for IRQ is only needed in non-DT way */
++	if (!client->irq) {
++		int irq = gpio_to_irq(pdata->irq_gpio);
++
++		ret = devm_gpio_request_one(smb->dev, pdata->irq_gpio,
++					    GPIOF_IN, client->name);
++		if (ret < 0)
++			return ret;
++
++		irqflags |= IRQF_TRIGGER_FALLING;
++		client->irq = irq;
++	}
+ 
+-	ret = request_threaded_irq(irq, NULL, smb347_interrupt,
+-				   IRQF_TRIGGER_FALLING | IRQF_ONESHOT,
+-				   client->name, smb);
++	ret = devm_request_threaded_irq(smb->dev, client->irq, NULL,
++					smb347_interrupt, irqflags,
++					client->name, smb);
+ 	if (ret < 0)
+-		goto fail_gpio;
++		return ret;
+ 
+ 	ret = smb347_set_writable(smb, true);
+ 	if (ret < 0)
+-		goto fail_irq;
++		return ret;
+ 
+ 	/*
+ 	 * Configure the STAT output to be suitable for interrupts: disable
+@@ -860,20 +870,10 @@ static int smb347_irq_init(struct smb347_charger *smb,
+ 				 CFG_STAT_ACTIVE_HIGH | CFG_STAT_DISABLED,
+ 				 CFG_STAT_DISABLED);
+ 	if (ret < 0)
+-		goto fail_readonly;
++		client->irq = 0;
+ 
+ 	smb347_set_writable(smb, false);
+-	client->irq = irq;
+-	return 0;
+ 
+-fail_readonly:
+-	smb347_set_writable(smb, false);
+-fail_irq:
+-	free_irq(irq, smb);
+-fail_gpio:
+-	gpio_free(pdata->irq_gpio);
+-fail:
+-	client->irq = 0;
+ 	return ret;
+ }
+ 
+@@ -1299,11 +1299,8 @@ static int smb347_remove(struct i2c_client *client)
+ {
+ 	struct smb347_charger *smb = i2c_get_clientdata(client);
+ 
+-	if (client->irq) {
++	if (client->irq)
+ 		smb347_irq_disable(smb);
+-		free_irq(client->irq, smb);
+-		gpio_free(smb->pdata->irq_gpio);
+-	}
+ 
+ 	power_supply_unregister(smb->battery);
+ 	if (smb->pdata->use_usb)
 -- 
 2.25.0
 
