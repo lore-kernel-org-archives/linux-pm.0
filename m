@@ -2,232 +2,162 @@ Return-Path: <SRS0=SyNq=5O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20B91C2D0EB
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 19:36:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2466BC2D0EB
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 22:05:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id EBC6320838
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 19:36:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDA8E2074A
+	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 22:05:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=goldelico.com header.i=@goldelico.com header.b="s2cFM7cJ"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="JdHU3Yx4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728451AbgC2Tgu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 29 Mar 2020 15:36:50 -0400
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.51]:34982 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727330AbgC2Tgu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 15:36:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1585510605;
-        s=strato-dkim-0002; d=goldelico.com;
-        h=Message-Id:Date:Subject:Cc:To:From:X-RZG-CLASS-ID:X-RZG-AUTH:From:
-        Subject:Sender;
-        bh=LGEWryyfK/Q4YmTBmmWe/YtpTjCpoE18SQ1zSiub5+0=;
-        b=s2cFM7cJN9nbvSDJSp/eLgprnBwpBxsxEjT7gCAEW8qExxHQaoy0uho/CSyfUdEOFH
-        B686KYlnjKdv9gVgE4PcFXnhZjYDvUl/ZV23FClJaNGAc92EuCVKQwcPX4MEgw76AcPo
-        JdN2ldRGsBKnP1llv+Cyqtssabi6LBaKmo29aELnRclTIkstnk2yU6MH9G/BwhEaULcL
-        CrIloBljC/twBts0MD1zLz4yhmXnfKBiCcpMpu+NPfIo9rOZ3goYDSxYdrL7qg+itLXK
-        B7r2F4/gTZ3c34duRily4VUd/GixwfxlTGgrZ4uWrTJ9/UJjxsZiaM75m3g9UN9Vcy7t
-        C3CA==
-X-RZG-AUTH: ":JGIXVUS7cutRB/49FwqZ7WcJeFKiMhflhwDubTJ9o12DNOsPj0pDz2rsNxxv"
-X-RZG-CLASS-ID: mo00
-Received: from iMac.fritz.box
-        by smtp.strato.de (RZmta 46.2.1 DYNA|AUTH)
-        with ESMTPSA id m02241w2TJaTBbV
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-        Sun, 29 Mar 2020 21:36:29 +0200 (CEST)
-From:   "H. Nikolaus Schaller" <hns@goldelico.com>
-To:     Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>
-Cc:     linux-gpio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        letux-kernel@openphoenux.org, kernel@pyra-handheld.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        "H. Nikolaus Schaller" <hns@goldelico.com>
-Subject: [RFC] dt-bindings.yaml: power: supply: add bindings for TI bq24296/7
-Date:   Sun, 29 Mar 2020 21:36:29 +0200
-Message-Id: <7d7602574b5eda80bd1d40f79854ba3670201c6e.1585510588.git.hns@goldelico.com>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF8
-Content-Transfer-Encoding: 8bit
+        id S1728823AbgC2WFl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Mar 2020 18:05:41 -0400
+Received: from mail-wm1-f68.google.com ([209.85.128.68]:51653 "EHLO
+        mail-wm1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729208AbgC2WFk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 18:05:40 -0400
+Received: by mail-wm1-f68.google.com with SMTP id c187so17807283wme.1
+        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2020 15:05:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=l9DHmEiKz6yupqFx9WrHI0MsNMx9mQaRHcz2cqVdZLE=;
+        b=JdHU3Yx4CotTcRuN+C3coH9IrxLwc1AwW8NiUAnWcmXk5TtrHAGjqQBn0silebw7J4
+         l4XGe0eMFs6Ui8GRvWBNUzK78urjhmai4UQb5Q90tDnbsBecUdLbd8X/WzhJ9rcVg3WT
+         APZELnnGVyOYgnnyTYUlLXPgMr9EgpodhFeWe7BdvrFMz9LSGkQb+hXBrOnbFQRxBkQN
+         RejdWpQJlcbotPcQFz4Ok7AZMiuNr3GDHz8A5JnAf/mYY9yeuyjX9RKQSgVWrU/+/ocf
+         n+EJ603uDEC/JleiXvZL0Nny0W16xAFn8s9G/1ZcS3jdv3eLNJ5RbYyxEbLTqN/7fCgN
+         flzA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=l9DHmEiKz6yupqFx9WrHI0MsNMx9mQaRHcz2cqVdZLE=;
+        b=tBH61LhZ5QA6J3GCtxhaxDTjRQ+Ow74lbM0ntKZDsSSe4r7rnU2v1gKbEx1bgfO1JI
+         fKc9pCOPNblmmB1oxHP++TXunAlJVzRcCUqHcwLFcXWzXTZkCGTpCs6qIrHC6bJ82jWZ
+         9ueRWSodnhXM2NRlox7SGoRfNM6dknavJgRJ8IzDUKmJM88ZW/bR5ZkwBTJAN9h7Emxs
+         kGVzTdfIBore44RCG4iaXk3909SYqk3ByHDZ6zhI05A5FGU2bLmH0jIqhB3t7WYngTRq
+         5GU7hZUAzsWkO/wUii/pUNtJC0R2MPAUBR9/GwTmeMqzZylIU/NvwU6rC0OAQ5wylCpb
+         xumQ==
+X-Gm-Message-State: ANhLgQ2IhPY+sg+KuhwZ7RiheIHVYrQe8iXziGfWTKBAqg8ama+R57rR
+        bFqt1a31dRMQcYqI5Tav0m/wNw==
+X-Google-Smtp-Source: ADFU+vs9p9+pplq0E9rosSzTu+qVht5suK/2lWGberAjg4WP9toV2lrY6CJKiOWPz50Xv1bXJ2K65A==
+X-Received: by 2002:a05:600c:21da:: with SMTP id x26mr9651227wmj.47.1585519538542;
+        Sun, 29 Mar 2020 15:05:38 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:78b1:4459:6959:42d0])
+        by smtp.gmail.com with ESMTPSA id j188sm20026740wmj.36.2020.03.29.15.05.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 29 Mar 2020 15:05:37 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     rafael@kernel.org, robh@kernel.org
+Cc:     daniel.lezcano@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-pm@vger.kernel.org (open list:POWER MANAGEMENT CORE),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH V2 1/4] powercap/drivers/idle_inject: Specify idle state max latency
+Date:   Mon, 30 Mar 2020 00:03:17 +0200
+Message-Id: <20200329220324.8785-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is an attempt to define a schema for the bq24296/7
-charger and power supply controllers with battery monitoring
-and OTG booster.
+Currently the idle injection framework uses the play_idle() function
+which puts the current CPU in an idle state. The idle state is the
+deepest one, as specified by the latency constraint when calling the
+subsequent play_idle_precise() function with the INT_MAX.
 
-We model it as a dual regulator because it can generate
-a VSYS (with controllable voltage) and optionally an
-OTG voltage either from the battery or from external power
-supply.
+The idle_injection is used by the cpuidle_cooling device which
+computes the idle / run duration to mitigate the temperature by
+injecting idle cycles. The cooling device has no control on the depth
+of the idle state.
 
-This scheme works well with e.g. the dwc3 setup of the
-OMAP5 to turn on OTG regulator on demand.
+Allow finer control of the idle injection mechanism by allowing to
+specify the latency for the idle state. Thus the cooling device has
+the ability to have a guarantee on the exit latency of the idle states
+it is injecting.
 
-The DT should provide a reference to a monitored battery
-description so that initial and operation parameters
-of the battery can be specified to control the charger
-parameters.
-
-To support different initial charging current for USB
-and AC charger mode, an optional gpio should be provided
-that the driver can use to set defaults.
-
-A driver is available and working for several years,
-but the bindings should be clarified first.
-
-The example shows what we are successfully using for
-the working system.
-
-Since the omap5 Pyra Handheld is not yet in the DTS tree,
-there would be no explicit user of this driver. So
-the plan is to submit a full patch set for the Pyra
-later.
-
-Signed-off-by: H. Nikolaus Schaller <hns@goldelico.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- .../bindings/power/supply/bq2429x.yaml        | 122 ++++++++++++++++++
- 1 file changed, 122 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq2429x.yaml
+  - V2:
+    - Remove the get_latency helper
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2429x.yaml b/Documentation/devicetree/bindings/power/supply/bq2429x.yaml
-new file mode 100644
-index 000000000000..1b31ece4026e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq2429x.yaml
-@@ -0,0 +1,122 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/bq2429x.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+---
+ drivers/powercap/idle_inject.c | 16 +++++++++++++++-
+ include/linux/idle_inject.h    |  4 ++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
+index cd1270614cc6..49f42c475620 100644
+--- a/drivers/powercap/idle_inject.c
++++ b/drivers/powercap/idle_inject.c
+@@ -61,12 +61,14 @@ struct idle_inject_thread {
+  * @timer: idle injection period timer
+  * @idle_duration_us: duration of CPU idle time to inject
+  * @run_duration_us: duration of CPU run time to allow
++ * @latency_us: max allowed latency
+  * @cpumask: mask of CPUs affected by idle injection
+  */
+ struct idle_inject_device {
+ 	struct hrtimer timer;
+ 	unsigned int idle_duration_us;
+ 	unsigned int run_duration_us;
++	unsigned int latency_us;
+ 	unsigned long int cpumask[0];
+ };
+ 
+@@ -138,7 +140,8 @@ static void idle_inject_fn(unsigned int cpu)
+ 	 */
+ 	iit->should_run = 0;
+ 
+-	play_idle(READ_ONCE(ii_dev->idle_duration_us));
++	play_idle_precise(READ_ONCE(ii_dev->idle_duration_us) * NSEC_PER_USEC,
++			  READ_ONCE(ii_dev->latency_us) * NSEC_PER_USEC);
+ }
+ 
+ /**
+@@ -169,6 +172,16 @@ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+ 	*idle_duration_us = READ_ONCE(ii_dev->idle_duration_us);
+ }
+ 
++/**
++ * idle_inject_set_latency - set the maximum latency allowed
++ * @latency_us: set the latency requirement for the idle state
++ */
++void idle_inject_set_latency(struct idle_inject_device *ii_dev,
++			     unsigned int latency_us)
++{
++	WRITE_ONCE(ii_dev->latency_us, latency_us);
++}
 +
-+title: TI bq24296/24297 and MPS MP2624 Li-Ion Charger with OTG booster
+ /**
+  * idle_inject_start - start idle injections
+  * @ii_dev: idle injection control device structure
+@@ -297,6 +310,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
+ 	cpumask_copy(to_cpumask(ii_dev->cpumask), cpumask);
+ 	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	ii_dev->timer.function = idle_inject_timer_fn;
++	ii_dev->latency_us = UINT_MAX;
+ 
+ 	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
+ 
+diff --git a/include/linux/idle_inject.h b/include/linux/idle_inject.h
+index a445cd1a36c5..91a8612b8bf9 100644
+--- a/include/linux/idle_inject.h
++++ b/include/linux/idle_inject.h
+@@ -26,4 +26,8 @@ void idle_inject_set_duration(struct idle_inject_device *ii_dev,
+ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+ 				 unsigned int *run_duration_us,
+ 				 unsigned int *idle_duration_us);
 +
-+maintainers:
-+  - H. Nikolaus Schaller <hns@goldelico.com>
++void idle_inject_set_latency(struct idle_inject_device *ii_dev,
++			     unsigned int latency_ns);
 +
-+description: |+
-+  This binding will support the bq24296 and bq24297.
-+  There are other ICs in the same family but those have
-+  not been addressed.
-+  The MP2624 is very similar to the bq24297 but not exactly
-+  identical.
-+  This chip is used by the OMAP5 based Pyra-Handheld.
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - const: mps,mp2624
-+      - const: ti,bq24296
-+      - const: ti,bq24297
-+
-+  reg:
-+    const: 0x6b
-+
-+  interrupts:
-+    minItems: 1
-+
-+  monitored-battery:
-+    - description: phandle to the battery node
-+    - allOf:
-+      - $ref: /schemas/types.yaml#/definitions/phandle
-+# QUESTION : how can we correctly describe that we support only the following phandle properties and ignore the others?
-+    - enum:
-+      - voltage-max-design-microvolt:
-+        - default: 4200000
-+      - voltage-min-design-microvolt:
-+        - default: 3200000
-+      - constant-charge-current-max-microamp:
-+        - default: as defined by boot loader
-+      - precharge-current-microamp:
-+        - default: 128000
-+      - charge-term-current-microamp:
-+        - default: 128000
-+
-+  regulators:
-+    minItems: 2
-+    maxItems: 2
-+    items:
-+# QUESTION: can we specify that these are to be regulator nodes?
-+      - description: |
-+          two regulator child nodes for
-+          [0] vsys (battery or usb input -> system output)
-+          [1] otg (battery input -> usb output).
-+
-+  dc-det-gpios:
-+    items:
-+# QUESTION: how do we specify that it should be a gpio?
-+      - description: gpio for detecting two different DC sources
-+      - default: use usb-input-current-microamp only
-+
-+  ti,usb-input-current-microamp:
-+    items:
-+      - description: initial current for USB source (if dc-det is 0)
-+      - default: value as defined by boot loader
-+
-+  ti,adp-input-current-microamp:
-+    items:
-+      - description: initial current for other source (if dc-det is 1)
-+      - default: 2048000µA
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - regulators
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+
-+    bat: battery {
-+      compatible = "simple-battery", "pyra-battery";
-+      voltage-min-design-microvolt = <3200000>;
-+      voltage-max-design-microvolt = <4200000>;
-+      energy-full-design-microwatt-hours = <22200000>;
-+      charge-full-design-microamp-hours = <6000000>;
-+      charge-term-current-microamp = <128000>;
-+      constant-charge-current-max-microamp = <1000000>;
-+    };
-+
-+    bq24297@6b {
-+      compatible = "ti,bq24297";
-+      reg = <0x6b>;
-+      monitored-battery = <&bat>;
-+      interrupt-parent = <&gpio99>;
-+      interrupts = <(1*8+3) IRQ_TYPE_EDGE_FALLING>;   /* P13 */
-+      regulators {
-+        vsys_reg: vsys_regulator {
-+          regulator-compatible = "bq2429x-vsys";
-+          regulator-name = "vsys";
-+          regulator-min-microvolt = <3500000>;
-+          regulator-max-microvolt = <4200000>;
-+          regulator-always-on;
-+          regulator-boot-on;
-+        };
-+        otg_reg: otg_regulator {
-+          regulator-compatible = "bq2429x-otg";
-+          regulator-name = "otg";
-+          regulator-min-microvolt = <4900000>;
-+          regulator-max-microvolt = <5100000>;
-+        };
-+      };
-+    };
-+
-+...
+ #endif /* __IDLE_INJECT_H__ */
 -- 
-2.25.1
+2.17.1
 
