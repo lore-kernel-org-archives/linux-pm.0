@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB737C2D0F1
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 23:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26835C2D0F0
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 23:20:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A2FD520784
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 23:20:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EFA3420733
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 23:20:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="LEF6jeC6"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EQqyEmao"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729894AbgC3XUN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Mar 2020 19:20:13 -0400
-Received: from mail-lj1-f196.google.com ([209.85.208.196]:36404 "EHLO
+        id S1729925AbgC3XUQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Mar 2020 19:20:16 -0400
+Received: from mail-lj1-f196.google.com ([209.85.208.196]:46998 "EHLO
         mail-lj1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729381AbgC3XUM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 19:20:12 -0400
-Received: by mail-lj1-f196.google.com with SMTP id g12so20059653ljj.3;
-        Mon, 30 Mar 2020 16:20:09 -0700 (PDT)
+        with ESMTP id S1729866AbgC3XUO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 19:20:14 -0400
+Received: by mail-lj1-f196.google.com with SMTP id r7so12330979ljg.13;
+        Mon, 30 Mar 2020 16:20:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=fv8dc7di5mNxhhrq8SinzaGaASexqvtbzFjGs38VwgM=;
-        b=LEF6jeC6S+Pu6feCqp/Wulwo98rHY6rdIq9qPMyvgVfQ0ZrNxRc/9WaZfXNzUN2hUV
-         mhnxPCGmJ4xsA5y5ZHwFg8QpAs8SnCq4q7D85vGWbf6l2Xg/teOwVpWWwSwcLEuAZqKJ
-         /lTz+HcBdffglVTX+Vz00fJ0IPLYZtDnklSaPIuOGmxWtnadp+eD54WsEzTEwq91HvI/
-         0sxa7y5O17RrVyhtPldPydZkL/5GDbbeVMrrOoggvH8Dd6KHrweOlIvteX6+jmWZztJ1
-         h/tUAdsfEFE3WZSDbuX3qCuOtDq5rVZnfx3sFZLcKX/bedQcIofpBKfpVaFOxVwshW2O
-         6LIg==
+        bh=eWJ17QgfjQfYiVMNjS2RpFaBaWnfXYsQ7FwOrGsFKas=;
+        b=EQqyEmao78riDA6NReH2DsSK7cavfmOdi1B49u8sq6YJVWVdAF0ti65/n3Ro/AO6q9
+         aEOeJHVyR4u1JEPVahsssJbZPFuDUmX8J0FwF3FLZxd0B69c5BF/QmhxiGssVUIHssd1
+         qVfSG0pbwWQ/bWG5f5YkNLJuxYrA4ZywlH09s7eHrudjcZUaotsKt5Asce51mSK5GH/u
+         qdUJhqv8cWPzO8i//mVej3l/WW2qiY6x45D3fB2+zT3dWtLxzClu/6S8G0EiA/PY38oW
+         CQ7msb/t7VED1S4AMxs3EBXyvc22658JPC5CYMoXo3dqluZymECNEEzAB4jVblXXgnlS
+         GXvA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=fv8dc7di5mNxhhrq8SinzaGaASexqvtbzFjGs38VwgM=;
-        b=EIpeF6tS3C53FsoguX5o0JwMwFu2jqXSktpHqb9KQkgONar6W8PeUiLUuWq89CkJ3m
-         H3WWcsH5CIaq42EbdInEbqgvRbejaTunmL61T+X+X7DwOL1w7gNJD0+ok2PR9DkGtJQS
-         2vFahypxPR5FzGqgQmhxxqYufEOv/Ac2Fpd6UXCzp+HDrHYI3+vDdpPYvPuscjnet0O/
-         Fy7vfRsTtJZF8pNUXKjr88f5Q+bYj1bpurQ3zY41X0ns/zukvHf4FC8lrKPkOvZJr/1M
-         Q5dezCeO9my7sm9SOazb6EjGmppA9H1vK5QwRdBZLV+zVkEunEzTgIhq0oiF8IOCHPcV
-         yFYw==
-X-Gm-Message-State: AGi0PuYRcF1ImHSy7f53k9eWcl1rEsXroz7FbDWn+6MgPpypAZ6Q7O0J
-        uXPZnbtOH3VOwdrauv6bYRM=
-X-Google-Smtp-Source: APiQypK2Vnf5OALxWdbmdCt0+6UzBlAss2wK8mQzDJiIb0w4RHCGHmZwWClAbKEW60GsklLXsGSH3g==
-X-Received: by 2002:a2e:8648:: with SMTP id i8mr8415121ljj.188.1585610408466;
-        Mon, 30 Mar 2020 16:20:08 -0700 (PDT)
+        bh=eWJ17QgfjQfYiVMNjS2RpFaBaWnfXYsQ7FwOrGsFKas=;
+        b=trqStLzJ4gnWibUUV0N+dC8p1EjyI7XOiuc1OgAQF4/QS7LHCC7JMTK3tRPuq07Hdb
+         6GL5rXE6uc/gNVEbMpM/3znyw4WjR/djxuwfb/tgj6q9WVuRT/RPlnRGW3mQKDbge2/H
+         a6qNEB28uR55vqGdlMecC5XSGW6S6QweBg0ZHCpOIPzlAPXqt8wDnuVKsIcLcpUJDHGE
+         BS9+x60PdwDCJWQrSyhM0/wd9QevAZMvPyaX+n1T4KQpBm2HtU94BA8qdF7rDatkeyLk
+         vK+ZqvQ/z5PiMkwatHEJho5n7C57X0cSQWUsM8UKyhcOr6yf0etGawuuycnlTkrpoVtW
+         gymA==
+X-Gm-Message-State: AGi0PubUm9aYm9va3m+HSjZ5la+qQLlLP8eW7UgN2b7WvqaQIRav/9gs
+        u1GBWMxPrDXNoKENuaPKjUA=
+X-Google-Smtp-Source: APiQypKc1S6eO3KhpVEEF2gpYXrf5kNQ9F72l1NV6q4EuPc+dFdAPBfecepxyHyWrWW2xk5fLNSN5g==
+X-Received: by 2002:a2e:8290:: with SMTP id y16mr8412523ljg.186.1585610410601;
+        Mon, 30 Mar 2020 16:20:10 -0700 (PDT)
 Received: from localhost.localdomain (ppp91-78-208-152.pppoe.mtu-net.ru. [91.78.208.152])
-        by smtp.gmail.com with ESMTPSA id h3sm8773187lfk.30.2020.03.30.16.20.07
+        by smtp.gmail.com with ESMTPSA id h3sm8773187lfk.30.2020.03.30.16.20.09
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Mar 2020 16:20:07 -0700 (PDT)
+        Mon, 30 Mar 2020 16:20:10 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
@@ -65,9 +65,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Stephen Boyd <sboyd@kernel.org>
 Cc:     linux-clk@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v1 2/5] clk: Introduce clk_round_rate_unboundly()
-Date:   Tue, 31 Mar 2020 02:16:14 +0300
-Message-Id: <20200330231617.17079-3-digetx@gmail.com>
+Subject: [PATCH v1 4/5] PM / devfreq: tegra30: Use clk_round_rate_unboundly()
+Date:   Tue, 31 Mar 2020 02:16:16 +0300
+Message-Id: <20200330231617.17079-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200330231617.17079-1-digetx@gmail.com>
 References: <20200330231617.17079-1-digetx@gmail.com>
@@ -78,128 +78,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In same cases it may be desired to round clock's rate without taking into
-account current min/max requests made by the clock's users. One example is
-building up OPP table based on a possible clock rates.
+The clk_round_rate() doesn't work for us properly if clock rate is bounded
+by a min/max rate that is requested by some other clk-user because we're
+building devfreq's OPP table based on the rounding.
+
+In particular this becomes a problem if display driver is probed earlier
+than devfreq, and thus, display adds a memory bandwidth request using
+interconnect API, which results in a minimum clock-rate being set for
+the memory clk. In a result, the lowest devfreq OPP rate is getting
+limited to the minimum rate imposed by the display driver.
+
+Let's use new clk_round_rate_unboundly() that resolves the problem by
+rounding clock rate without taking into account min/max limits imposed by
+active clk users.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/clk/clk.c   | 49 +++++++++++++++++++++++++++++++++++----------
- include/linux/clk.h | 18 +++++++++++++++++
- 2 files changed, 56 insertions(+), 11 deletions(-)
+ drivers/devfreq/tegra30-devfreq.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/clk/clk.c b/drivers/clk/clk.c
-index 39c59f063aa0..28c2e1699619 100644
---- a/drivers/clk/clk.c
-+++ b/drivers/clk/clk.c
-@@ -1412,16 +1412,7 @@ unsigned long clk_hw_round_rate(struct clk_hw *hw, unsigned long rate)
- }
- EXPORT_SYMBOL_GPL(clk_hw_round_rate);
+diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+index 28b2c7ca416e..34f6291e880c 100644
+--- a/drivers/devfreq/tegra30-devfreq.c
++++ b/drivers/devfreq/tegra30-devfreq.c
+@@ -834,7 +834,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
  
--/**
-- * clk_round_rate - round the given rate for a clk
-- * @clk: the clk for which we are rounding a rate
-- * @rate: the rate which is to be rounded
-- *
-- * Takes in a rate as input and rounds it to a rate that the clk can actually
-- * use which is then returned.  If clk doesn't support round_rate operation
-- * then the parent rate is returned.
-- */
--long clk_round_rate(struct clk *clk, unsigned long rate)
-+static long __clk_round_rate(struct clk *clk, unsigned long rate, bool bound)
- {
- 	struct clk_rate_request req;
- 	int ret;
-@@ -1434,7 +1425,13 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
- 	if (clk->exclusive_count)
- 		clk_core_rate_unprotect(clk->core);
+ 	reset_control_deassert(tegra->reset);
  
--	clk_core_get_boundaries(clk->core, &req.min_rate, &req.max_rate);
-+	if (bound) {
-+		clk_core_get_boundaries(clk->core, &req.min_rate,
-+					&req.max_rate);
-+	} else {
-+		req.min_rate = 0;
-+		req.max_rate = ULONG_MAX;
-+	}
- 	req.rate = rate;
+-	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
++	rate = clk_round_rate_unboundly(tegra->emc_clock, ULONG_MAX);
+ 	if (rate < 0) {
+ 		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
+ 		return rate;
+@@ -849,7 +849,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	}
  
- 	ret = clk_core_round_rate_nolock(clk->core, &req);
-@@ -1449,8 +1446,38 @@ long clk_round_rate(struct clk *clk, unsigned long rate)
+ 	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+-		rate = clk_round_rate(tegra->emc_clock, rate);
++		rate = clk_round_rate_unboundly(tegra->emc_clock, rate);
  
- 	return req.rate;
- }
-+
-+/**
-+ * clk_round_rate - round the given rate for a clk
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Takes in a rate as input and rounds it to a rate that the clk can actually
-+ * use which is then returned.  If clk doesn't support round_rate operation
-+ * then the parent rate is returned.
-+ */
-+long clk_round_rate(struct clk *clk, unsigned long rate)
-+{
-+	return __clk_round_rate(clk, rate, true);
-+}
- EXPORT_SYMBOL_GPL(clk_round_rate);
- 
-+/**
-+ * clk_round_rate_unboundly - unboundly round the given rate for a clk
-+ * @clk: the clk for which we are rounding a rate
-+ * @rate: the rate which is to be rounded
-+ *
-+ * Takes in a rate as input and rounds it to a rate that the clk can use
-+ * which is then returned.  The given rate isn't bounded by clk users min-max
-+ * rates, unlike in a case of clk_round_rate().  If clk doesn't support
-+ * round_rate operation then the parent rate is returned.
-+ */
-+long clk_round_rate_unboundly(struct clk *clk, unsigned long rate)
-+{
-+	return __clk_round_rate(clk, rate, false);
-+}
-+EXPORT_SYMBOL_GPL(clk_round_rate_unboundly);
-+
- /**
-  * __clk_notify - call clk notifier chain
-  * @core: clk that is changing rate
-diff --git a/include/linux/clk.h b/include/linux/clk.h
-index 7fd6a1febcf4..b534643015f5 100644
---- a/include/linux/clk.h
-+++ b/include/linux/clk.h
-@@ -622,6 +622,19 @@ void devm_clk_put(struct device *dev, struct clk *clk);
-  */
- long clk_round_rate(struct clk *clk, unsigned long rate);
- 
-+/**
-+ * clk_round_rate_unboundly - adjust a rate to the rate a clock can provide
-+ * @clk: clock source
-+ * @rate: desired clock rate in Hz
-+ *
-+ * This helper function rounds the given rate to a value that hardware
-+ * could actually accept, without taking into account current min/max
-+ * requests. Useful for cases like OPP table buildup.
-+ *
-+ * Returns rounded clock rate in Hz, or negative errno.
-+ */
-+long clk_round_rate_unboundly(struct clk *clk, unsigned long rate);
-+
- /**
-  * clk_set_rate - set the clock rate for a clock source
-  * @clk: clock source
-@@ -857,6 +870,11 @@ static inline long clk_round_rate(struct clk *clk, unsigned long rate)
- 	return 0;
- }
- 
-+static inline long clk_round_rate_unboundly(struct clk *clk, unsigned long rate)
-+{
-+	return 0;
-+}
-+
- static inline bool clk_has_parent(struct clk *clk, struct clk *parent)
- {
- 	return true;
+ 		if (rate < 0) {
+ 			dev_err(&pdev->dev,
 -- 
 2.25.1
 
