@@ -2,44 +2,33 @@ Return-Path: <SRS0=kFxE=5P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CDFCC43331
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 10:43:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 429B6C43331
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 12:45:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 0B6542072E
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 10:43:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 22201206F6
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 12:45:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729012AbgC3Knm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Mar 2020 06:43:42 -0400
-Received: from mga09.intel.com ([134.134.136.24]:26454 "EHLO mga09.intel.com"
+        id S1729862AbgC3Mph (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Mar 2020 08:45:37 -0400
+Received: from foss.arm.com ([217.140.110.172]:52734 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728912AbgC3Knm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 30 Mar 2020 06:43:42 -0400
-IronPort-SDR: 9vD//3wRp0uiwiAWTFBn2VEfbc04iqkKNRVwgobCD24G/KasMYrH4tHI5ZZjIqPs6cELvTcNtD
- lcd3MON3X/hw==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga003.fm.intel.com ([10.253.24.29])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Mar 2020 03:43:41 -0700
-IronPort-SDR: wwUk+Jwnmz7vf91weyeKOqaGAh9J/oT3rFSilVdm0crTq+p/bvI0oy+69NMMUJGR3TGHDRKVQt
- zBxK7pVfY7Sw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,324,1580803200"; 
-   d="scan'208";a="294549884"
-Received: from smile.fi.intel.com (HELO smile) ([10.237.68.40])
-  by FMSMGA003.fm.intel.com with ESMTP; 30 Mar 2020 03:43:38 -0700
-Received: from andy by smile with local (Exim 4.93)
-        (envelope-from <andriy.shevchenko@linux.intel.com>)
-        id 1jIrtM-00EAdz-DH; Mon, 30 Mar 2020 13:43:40 +0300
-Date:   Mon, 30 Mar 2020 13:43:40 +0300
-From:   Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To:     Sudeep Holla <sudeep.holla@arm.com>
+        id S1729705AbgC3Mpg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Mar 2020 08:45:36 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DD46330E;
+        Mon, 30 Mar 2020 05:45:35 -0700 (PDT)
+Received: from [10.57.60.204] (unknown [10.57.60.204])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D01383F71E;
+        Mon, 30 Mar 2020 05:45:33 -0700 (PDT)
+Subject: Re: [PATCH v2 3/3] driver core: Replace open-coded list_last_entry()
+To:     Sudeep Holla <sudeep.holla@arm.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 Cc:     Naresh Kamboju <naresh.kamboju@linaro.org>,
         "Rafael J. Wysocki" <rafael@kernel.org>,
-        Robin Murphy <robin.murphy@arm.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
@@ -48,43 +37,44 @@ Cc:     Naresh Kamboju <naresh.kamboju@linaro.org>,
         Linux-Next Mailing List <linux-next@vger.kernel.org>,
         fntoth@gmail.com, Arnd Bergmann <arnd@arndb.de>,
         Anders Roxell <anders.roxell@linaro.org>
-Subject: Re: Re: [PATCH v2 3/3] driver core: Replace open-coded
- list_last_entry()
-Message-ID: <20200330104340.GO1922688@smile.fi.intel.com>
 References: <20200324122023.9649-1-andriy.shevchenko@linux.intel.com>
  <20200324122023.9649-3-andriy.shevchenko@linux.intel.com>
  <CAJZ5v0gg=V8uDd4afJ3MULsgKYvWajKJioANk4jj7xEhBzrRrQ@mail.gmail.com>
  <CA+G9fYvFnXqSnoQSJ-DkQvAFv87iWmhH6dT1N79qrq=Aeuv4rw@mail.gmail.com>
- <028b636f-6e0f-c36a-aa4e-6a16d936fc6a@arm.com>
- <20200330095707.GA10432@bogus>
+ <028b636f-6e0f-c36a-aa4e-6a16d936fc6a@arm.com> <20200330095707.GA10432@bogus>
+From:   Robin Murphy <robin.murphy@arm.com>
+Message-ID: <0a374eaa-92b3-0201-f357-4181542c98b6@arm.com>
+Date:   Mon, 30 Mar 2020 13:45:32 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
 In-Reply-To: <20200330095707.GA10432@bogus>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Mar 30, 2020 at 11:13:21AM +0100, Sudeep Holla wrote:
+On 2020-03-30 11:13 am, Sudeep Holla wrote:
 > On Fri, Mar 27, 2020 at 07:40:25PM +0000, Robin Murphy wrote:
-> > On 2020-03-27 5:56 pm, Naresh Kamboju wrote:
-> > > The kernel warning noticed on arm64 juno-r2 device running linux
-> > > next-20200326 and next-20200327
-> >
-> > I suspect this is the correct expected behaviour manifesting. If you're
-> > using the upstream juno-r2.dts, the power domain being waited for here is
-> > provided by SCPI, however unless you're using an SCP firmware from at least
-> > 3 years ago you won't actually have SCPI since they switched it to the newer
-> > SCMI protocol, which is not yet supported upstream for Juno. See what
-> > happened earlier in the log:
-> >
-> > [    2.741206] scpi_protocol scpi: incorrect or no SCP firmware found
-> > [    2.747586] scpi_protocol: probe of scpi failed with error -110
-> >
-> > Thus this is the "waiting for a dependency which will never appear" case,
-> > for which I assume the warning is intentional,
+>> On 2020-03-27 5:56 pm, Naresh Kamboju wrote:
+>>> The kernel warning noticed on arm64 juno-r2 device running linux
+>>> next-20200326 and next-20200327
+>>
+>> I suspect this is the correct expected behaviour manifesting. If you're
+>> using the upstream juno-r2.dts, the power domain being waited for here is
+>> provided by SCPI, however unless you're using an SCP firmware from at least
+>> 3 years ago you won't actually have SCPI since they switched it to the newer
+>> SCMI protocol, which is not yet supported upstream for Juno. See what
+>> happened earlier in the log:
+>>
+>> [    2.741206] scpi_protocol scpi: incorrect or no SCP firmware found
+>> [    2.747586] scpi_protocol: probe of scpi failed with error -110
+>>
+>> Thus this is the "waiting for a dependency which will never appear" case,
+>> for which I assume the warning is intentional,
 > 
 > Is that the case ?
 > 
@@ -92,24 +82,29 @@ On Mon, Mar 30, 2020 at 11:13:21AM +0100, Sudeep Holla wrote:
 > "amba xx: ignoring dependency for device, assuming no driver"
 > 
 > Now we have the kernel warning in addition to the above.
-> 
-> > since the system is essentially broken (i.e. the hardware/firmware doesn't
-> > actually match what the DT describes).
-> >
+
+AFAICS the difference is down to whether deferred_probe_timeout has 
+expired or not - I'm not familiar enough with this code to know 
+*exactly* what the difference is supposed to represent, nor which change 
+has actually pushed the Juno case from one state to the other (other 
+than it almost certainly can't be $SUBJECT - if this series is to blame 
+at all I'd assume it would be down to patch #1/3, but there's a bunch of 
+other rework previously queued in -next that is probably also interacting)
+
+>> since the system is essentially broken (i.e. the hardware/firmware doesn't
+>> actually match what the DT describes).
+>>
 > 
 > Not sure if we can term it as "essentially broken". Definitely not 100%
 > functional but not broken if the situation like on Juno where SCP firmware
 > is fundamental for all OSPM but not essential for boot and other minimum
 > set of functionality.
-> 
-> Either way I am not against the warning, just wanted to get certain things
-> clarified myself.
 
-How this warning related to the patch in the subject? Does revert of the patch
-gives you no warning? (I will be very surprised).
+It's "broken" in the sense that the underlying system is *not* the 
+system described in the DT. Yes, all the parts that still happen to line 
+up will mostly still function OK, but those that don't will 
+fundamentally not work as the kernel has been told to expect. I'm not 
+sure what you prefer to call "not working as the kernel expects", but I 
+call it "broken" ;)
 
--- 
-With Best Regards,
-Andy Shevchenko
-
-
+Robin.
