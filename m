@@ -1,138 +1,125 @@
-Return-Path: <SRS0=SyNq=5O=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=kFxE=5P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5DCBAC2D0E5
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 22:07:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 758ABC43331
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 01:09:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 32DE8207FF
-	for <linux-pm@archiver.kernel.org>; Sun, 29 Mar 2020 22:07:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C75C20748
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 01:09:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ncVvgdou"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="uoReP5o1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729154AbgC2WHX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 29 Mar 2020 18:07:23 -0400
-Received: from mail-wr1-f66.google.com ([209.85.221.66]:34358 "EHLO
-        mail-wr1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729247AbgC2WHW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 18:07:22 -0400
-Received: by mail-wr1-f66.google.com with SMTP id 65so18970384wrl.1
-        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2020 15:07:20 -0700 (PDT)
+        id S1728324AbgC3BJr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 29 Mar 2020 21:09:47 -0400
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:33862 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728267AbgC3BJr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 29 Mar 2020 21:09:47 -0400
+Received: by mail-lj1-f193.google.com with SMTP id p10so16076837ljn.1;
+        Sun, 29 Mar 2020 18:09:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=1LHaTJUSb6YlKNJo8uEXGOXHLnntD8wG0lKLYJJal8o=;
-        b=ncVvgdoulw7o7+hBR1P2C+5Gs5JoBGlqRw0Sy1xicTm6q81nvOAS+m7a5UAWRL9hRH
-         yEbh65k8Qx8xlZhH0t43wKusHLa9vKtTn3P+o7chr1k8b9HOg212dwNDe5UIqqTkPvM5
-         NjK59RhAv/AjjS9C+ePeOxUTr8KWfjEGW0BnrhZMLZGYwJHih6Qa7NlJ/q3h/TBv2CvI
-         qzt8o6Axgo5Rp3OXRAuFzRgZOB7AaPhJpa0QD51Rx0V4DJiIolUALmRUp3al9xzVNBGD
-         TgMdtaHIkMZxLrKJPW3dDuRzt6b6bi9q5B+CInP1E93ReaqlZkh762PlTAokY1xMgBP/
-         HxFw==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=EkjouEeBk5eg2E7LoRsCY9DiuMbRBnrdHMJNPQxQEMg=;
+        b=uoReP5o1Wpc4sXErhiwwYzGLqIZG8/HPTnwU7/VbcpDBs0yAOXD5zAtYc5xDmZL1ct
+         UuKYJpRsNORBwC3dD+X3wBa1m8tFRMzhZmWJ4z3Rc0eBrZhJ12T25VLwdECwkkKTHpTP
+         t35MNKIgHpLxPZAP0v8t9xEval1hNjGLep9oSnUp+WEsTqo3QWL+3qc1rn/tvGRi9IUO
+         0ShuXp9UEK8Dn0YFEW+wn5CZLvlkkxtD6nr09356ror89nA8ngq22tQkpAR/48R88sY6
+         rDYWrkNZbCJVkZbcjZ42l3Yka9hlLd33sO+pONmsjcbbEBT+NyCKwDos3/c5Tae10v3v
+         gZSg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=1LHaTJUSb6YlKNJo8uEXGOXHLnntD8wG0lKLYJJal8o=;
-        b=tH89z5Db8QtMoBchc0qDRyedyXOMY6i4jjOcWmOBV2qGdJflCpXRDYKp3PVIFfnWWe
-         aqZMo259wqStqXNBQJzm+KoHEdoBM3vj36Lr18Nb+OJWvacajjfqfLt7ZatZQMs6a6+4
-         ZEJtGDO4h2fS9wbWIjaU07NVro8Vrz2QjEkg4Xp3iWIAhfnIbpWHXXueen8lCH9E/iC5
-         CIoA4UHCzg25B8EJGldrT3v7SnytLYhVeSlD4e+DJJ7TI0nGehtKAlcWMOme3pl5Fpuz
-         L/4XXDq084nUgUfiOwUDZFFycR7puISawxPW2AgvgVes4PBysA2GZGlTJLkY+9PQywCt
-         ChKA==
-X-Gm-Message-State: ANhLgQ1SetKqKo+Caky9jylgrems3C26/IdylCe5NSna1PRoWve152P1
-        4q4TudTDiLNPQMlQ/H8+m+Ii+g==
-X-Google-Smtp-Source: ADFU+vuZAg1AC05bxtW27+WzlliBGq0FOpLpXh2o2GNXEgxWNashf38ZSEyqqKofOBjuURsc40gIDw==
-X-Received: by 2002:a5d:4d07:: with SMTP id z7mr11842551wrt.92.1585519639340;
-        Sun, 29 Mar 2020 15:07:19 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:78b1:4459:6959:42d0])
-        by smtp.gmail.com with ESMTPSA id j188sm20026740wmj.36.2020.03.29.15.07.18
+         :references:mime-version:content-transfer-encoding;
+        bh=EkjouEeBk5eg2E7LoRsCY9DiuMbRBnrdHMJNPQxQEMg=;
+        b=i6hdEVukkGSZCiQ28xbB5e2ycqBPgDsTN448w9DiPUOslo7Ox1VRXUJRC/Wxr5BtAJ
+         MeDBNEeSSR3UwkTjPjuzzIUDOFsISfnjrytt45neob7d/mnsHe9EzyouekxVJ5S0erHz
+         bcIxld1e7VTo/HxqvmGwsCZhzqJQZdOowggeY2BIiJBf1L2EmYWCoDvw9reKIWv9VTvE
+         Hy1kNZoHSsPKcih686vqS5x0eWa6tn9v/wOtZtIW7k1eN+xWGDIW3emRiL3H85bEVmwA
+         /ObevN9tHJsyEIlsfmyR+YaXc33T1uHExYNIgmUqJtkhcqj/kMG2/zlNhZ+CVnvJPgQv
+         NSUA==
+X-Gm-Message-State: AGi0PuajMxTSMmju7pKzspM58s6wRdT/35T6htxl6zDCM/k+MtdEHdNn
+        bKI4AriSfOlPtbjMVfdBh8nPGt5O
+X-Google-Smtp-Source: APiQypIZbS8q+NVKU2VHe5+16UUjZNBYbRLaViehODNF6YSe90cPCBqkF1gsWjim+Yl2LvdHvEowig==
+X-Received: by 2002:a2e:a412:: with SMTP id p18mr5826456ljn.39.1585530584794;
+        Sun, 29 Mar 2020 18:09:44 -0700 (PDT)
+Received: from localhost.localdomain (ppp91-78-208-152.pppoe.mtu-net.ru. [91.78.208.152])
+        by smtp.gmail.com with ESMTPSA id f23sm2449005lja.60.2020.03.29.18.09.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 Mar 2020 15:07:18 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rafael@kernel.org, robh@kernel.org
-Cc:     daniel.lezcano@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-pm@vger.kernel.org (open list:CPU IDLE TIME MANAGEMENT FRAMEWORK),
-        linux-kernel@vger.kernel.org (open list),
-        linux-arm-kernel@lists.infradead.org (open list:CPUIDLE DRIVER - ARM
-        PSCI)
-Subject: [PATCH 4/4] thermal: cpuidle: Register cpuidle cooling device
-Date:   Mon, 30 Mar 2020 00:03:20 +0200
-Message-Id: <20200329220324.8785-4-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200329220324.8785-1-daniel.lezcano@linaro.org>
-References: <20200329220324.8785-1-daniel.lezcano@linaro.org>
+        Sun, 29 Mar 2020 18:09:44 -0700 (PDT)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: [PATCH v2 10/22] interconnect: Relax requirement in of_icc_get_from_provider()
+Date:   Mon, 30 Mar 2020 04:08:52 +0300
+Message-Id: <20200330010904.27643-11-digetx@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200330010904.27643-1-digetx@gmail.com>
+References: <20200330010904.27643-1-digetx@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The cpuidle driver can be used as a cooling device by injecting idle
-cycles. The DT binding for the idle state added an optional
+From: Artur Świgoń <a.swigon@samsung.com>
 
-When the property is set, register the cpuidle driver with the idle
-state node pointer as a cooling device. The thermal framework will do
-the association automatically with the thermal zone via the
-cooling-device defined in the device tree cooling-maps section.
+This patch relaxes the condition in of_icc_get_from_provider() so that it
+is no longer required to set #interconnect-cells = <1> in the DT. In case
+of the devfreq driver for exynos-bus, #interconnect-cells is always zero.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Signed-off-by: Artur Świgoń <a.swigon@samsung.com>
+[digetx@gmail.com: added cells_num checking for of_icc_xlate_onecell()]
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/cpuidle/cpuidle-arm.c  | 5 +++++
- drivers/cpuidle/cpuidle-psci.c | 5 +++++
- 2 files changed, 10 insertions(+)
+ drivers/interconnect/core.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpuidle/cpuidle-arm.c b/drivers/cpuidle/cpuidle-arm.c
-index 9e5156d39627..2406ac0ae134 100644
---- a/drivers/cpuidle/cpuidle-arm.c
-+++ b/drivers/cpuidle/cpuidle-arm.c
-@@ -8,6 +8,7 @@
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 2c6515e3ecf1..7d09656734c1 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -335,7 +335,7 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+ 	struct icc_node *node = ERR_PTR(-EPROBE_DEFER);
+ 	struct icc_provider *provider;
  
- #define pr_fmt(fmt) "CPUidle arm: " fmt
+-	if (!spec || spec->args_count != 1)
++	if (!spec)
+ 		return ERR_PTR(-EINVAL);
  
-+#include <linux/cpu_cooling.h>
- #include <linux/cpuidle.h>
- #include <linux/cpumask.h>
- #include <linux/cpu_pm.h>
-@@ -124,6 +125,10 @@ static int __init arm_idle_init_cpu(int cpu)
- 	if (ret)
- 		goto out_kfree_drv;
- 
-+	ret = cpuidle_cooling_register(drv);
-+	if (ret)
-+		pr_err("Failed to register the idle cooling device: %d\n", ret);
+ 	mutex_lock(&icc_lock);
+@@ -851,6 +851,15 @@ EXPORT_SYMBOL_GPL(icc_nodes_remove);
+  */
+ int icc_provider_add(struct icc_provider *provider)
+ {
++	struct device_node *np = provider->dev->of_node;
++	u32 cells_num;
++	int err;
 +
- 	return 0;
- 
- out_kfree_drv:
-diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-index edd7a54ef0d3..8e805bff646f 100644
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -9,6 +9,7 @@
- #define pr_fmt(fmt) "CPUidle PSCI: " fmt
- 
- #include <linux/cpuhotplug.h>
-+#include <linux/cpu_cooling.h>
- #include <linux/cpuidle.h>
- #include <linux/cpumask.h>
- #include <linux/cpu_pm.h>
-@@ -305,6 +306,10 @@ static int __init psci_idle_init_cpu(int cpu)
- 	if (ret)
- 		goto out_kfree_drv;
- 
-+	ret = cpuidle_cooling_register(drv);
-+	if (ret)
-+		pr_err("Failed to register the idle cooling device: %d\n", ret);
-+
- 	return 0;
- 
- out_kfree_drv:
++	err = of_property_read_u32(np, "#interconnect-cells", &cells_num);
++	if (WARN_ON(err))
++		return err;
++	if (WARN_ON(provider->xlate == of_icc_xlate_onecell && cells_num != 1))
++		return -EINVAL;
+ 	if (WARN_ON(!provider->set))
+ 		return -EINVAL;
+ 	if (WARN_ON(!provider->xlate))
 -- 
-2.17.1
+2.25.1
 
