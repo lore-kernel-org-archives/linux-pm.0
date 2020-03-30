@@ -2,144 +2,150 @@ Return-Path: <SRS0=kFxE=5P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B699C43331
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 06:45:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E041BC2D0EF
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 07:14:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3E1A220781
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 06:45:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sQ2f+skF"
+	by mail.kernel.org (Postfix) with ESMTP id A512C207FF
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 07:14:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1585552489;
+	bh=nzif4Fmn4s59la+DomKKyDaVc+T9e4RRXzgMeuKOCX0=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=vCc8zeHhFhDJYf4mY1Z1/z0gv8fPtK6NY3USs6okUFLPYOyaw+L3pLEySObpSWT3A
+	 EzHJT+FKPZzUZAossMJHqgE0dUCpLtLhDuASr9QrXSO5OYgr6MIN7014jm+MlL39Wv
+	 iIIue/cH7z9hIse6JYMgLgyjRYQ22HgY71QhNXYc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729013AbgC3Gpm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Mar 2020 02:45:42 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:45924 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728964AbgC3Gpj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 02:45:39 -0400
-Received: by mail-wr1-f65.google.com with SMTP id t7so20099667wrw.12
-        for <linux-pm@vger.kernel.org>; Sun, 29 Mar 2020 23:45:37 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=V56YQ8YQXjkIauhgboyrxCMrbncDw2TqLEBJO6LLNNM=;
-        b=sQ2f+skFCCbEiOoww8kH9zZYLPWziNWtDYM/MzX1shre1CF6ETuE51sUbV60Mcbp3c
-         7ofQGCgIpUXTV10fB8GyD0slTikuSNdlePQ7vG9wO47RRcTnybZAdKTqKbhPzCIZpk8v
-         Hy6ije5XX9W48RP7H3ASmx4vFqgFf/gk/I4VS8cK396oDd/bs6+1e+/m+XdzXseQvP6g
-         hkxkwAApQvHdND1yQ4DgfVVkdUao2XNw+v5HTUR2TLdHbCGM+4Cnc3wfMniX+0A13ev+
-         CmNpK5tc1KR7tqVtcmTg0w7xWqBt2ETiw2Fgn8j2zb5UJh8aLCCVM5utDA2vJth35Hv5
-         5YKw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=V56YQ8YQXjkIauhgboyrxCMrbncDw2TqLEBJO6LLNNM=;
-        b=NeewBB7p8OeRxxNB58LnHHfVjPyys4GFUoYXO+ftP3a6d4ovR2SKemElGlPP9QjDul
-         f8GYQfaYKc+N/Tb2t7xAyq8bLno/RSfqYTjgXmUymAquzzqwLdWaQOpl5smMqTwaNkSj
-         rxD8amSzMfzAJYBTH1GTP5ImnEn69hz6LPfT7KKC2A1bS4H1/X55ktaFlU8UPzue1iWT
-         BFBbuv2KaW6/Ph1L/48inflRnWD+7lv5Hy8m8Kv5Z3G2uInvUmd1g4iuTP4ZZFCPUNdP
-         4BPbQ2l6FLWTt3lQTXe0JRozEq9F8E+1SuFdWFmseRH6/pXpx3mFNHGJXyzPyXX7053C
-         xv7A==
-X-Gm-Message-State: ANhLgQ0OJ1ZpprR+eOEKttJFiDuWLV60jzX0vdZeiBG0ZgOJmQzMcZ3B
-        P1xRy1WMhZ3ClzBo8cKo4PpnwLrdXss=
-X-Google-Smtp-Source: ADFU+vsGOjMWUR3XuueAXOf+kGUjz672AeJsnP+zNGCOJq+3zYTVOE2f/ajoKzhEq5O/LNUAMeRj0A==
-X-Received: by 2002:a5d:4f92:: with SMTP id d18mr12996829wru.400.1585550737261;
-        Sun, 29 Mar 2020 23:45:37 -0700 (PDT)
-Received: from dell ([95.149.164.95])
-        by smtp.gmail.com with ESMTPSA id c23sm21059704wrb.79.2020.03.29.23.45.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 29 Mar 2020 23:45:36 -0700 (PDT)
-Date:   Mon, 30 Mar 2020 07:46:30 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     saravanan sekar <sravanhome@gmail.com>
-Cc:     robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH v4 1/5] dt-bindings: mfd: add document bindings for mp2629
-Message-ID: <20200330064630.GA30614@dell>
-References: <20200322224626.13160-1-sravanhome@gmail.com>
- <20200322224626.13160-2-sravanhome@gmail.com>
- <20200327080013.GG603801@dell>
- <d449b567-bd5c-168d-83af-5ba38771f75a@gmail.com>
+        id S1729431AbgC3HOs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Mar 2020 03:14:48 -0400
+Received: from condef-07.nifty.com ([202.248.20.72]:31630 "EHLO
+        condef-07.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729367AbgC3HOs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 03:14:48 -0400
+Received: from conssluserg-06.nifty.com ([10.126.8.85])by condef-07.nifty.com with ESMTP id 02U7B7jg022348;
+        Mon, 30 Mar 2020 16:11:07 +0900
+Received: from mail-vk1-f173.google.com (mail-vk1-f173.google.com [209.85.221.173]) (authenticated)
+        by conssluserg-06.nifty.com with ESMTP id 02U7Av80019091;
+        Mon, 30 Mar 2020 16:10:58 +0900
+DKIM-Filter: OpenDKIM Filter v2.10.3 conssluserg-06.nifty.com 02U7Av80019091
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nifty.com;
+        s=dec2015msa; t=1585552259;
+        bh=hkMe26g7xlvZHHpLSXHK4NtsfOWPZ3tdB27BX4Gdox4=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=KcBjhsrL3dR1mZBfET/9TKUG3Daz3RdGt09Vw88Y0YifetOYyh51xxQuPG+592DtH
+         pFD/CO1Uz9mbzrlhLsGxyA9LIeKZxQV5JWMNTr3zAUPp/UNFC9xsfpSFLKmSnqpbVi
+         KvGBO/fpymKKpXGF51W9+pp48ZX3tcSz8n+L0IMq+80fOal/Z3reDXdedCEK2jpq9t
+         ZaAnXDROMrj+BP2GRX1zhtxD+Xkh94NmVI1aUp5NoYk9oPnwKjnxG8FwLUREXbNfCc
+         6kGzkoTJ/wqDKmu97f3h+oWVDyt0bnUTb6G3aaLggK3fY//mDPC7DDsHNA2itSmKHS
+         IRfBEQUPNsiGg==
+X-Nifty-SrcIP: [209.85.221.173]
+Received: by mail-vk1-f173.google.com with SMTP id n128so4386036vke.5;
+        Mon, 30 Mar 2020 00:10:58 -0700 (PDT)
+X-Gm-Message-State: AGi0PuYyqi+Jqqf0vNqIG0UHCnkTbAhwoH+gdkE6en4feAPwTOi1AeBg
+        6SNSy4sbA3RjhYi0kM4uSRxQdCChezoSNPT7Oc4=
+X-Google-Smtp-Source: APiQypLNZL0F1SjmrpxCYWMM92Tc2B289mmJ4nqnInP/lERMnXKF0z9Hs/o7lbsUDIM38rMhrwxOtOM94wAMTS6itNI=
+X-Received: by 2002:a1f:3649:: with SMTP id d70mr6296693vka.12.1585552257254;
+ Mon, 30 Mar 2020 00:10:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d449b567-bd5c-168d-83af-5ba38771f75a@gmail.com>
+References: <20200325220542.19189-1-robh@kernel.org> <20200325220542.19189-4-robh@kernel.org>
+In-Reply-To: <20200325220542.19189-4-robh@kernel.org>
+From:   Masahiro Yamada <masahiroy@kernel.org>
+Date:   Mon, 30 Mar 2020 16:10:21 +0900
+X-Gmail-Original-Message-ID: <CAK7LNASHkBoOP_uGXLuO-UT1JL-rN3od_L+F4cB0SRPCzQCyKA@mail.gmail.com>
+Message-ID: <CAK7LNASHkBoOP_uGXLuO-UT1JL-rN3od_L+F4cB0SRPCzQCyKA@mail.gmail.com>
+Subject: Re: [PATCH 3/4] dt-bindings: Clean-up schema errors due to missing
+ 'addtionalProperties: false'
+To:     Rob Herring <robh@kernel.org>
+Cc:     DTML <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Brian Masney <masneyb@onstation.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        Guillaume La Roque <glaroque@baylibre.com>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Kevin Hilman <khilman@baylibre.com>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Mark Brown <broonie@kernel.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Neil Armstrong <narmstrong@baylibre.com>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Zhang Rui <rui.zhang@intel.com>,
+        dri-devel <dri-devel@lists.freedesktop.org>,
+        linux-amlogic@lists.infradead.org,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
+        linux-iio@vger.kernel.org,
+        Linux Media Mailing List <linux-media@vger.kernel.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>,
+        Networking <netdev@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 27 Mar 2020, saravanan sekar wrote:
-> On 27/03/20 9:00 am, Lee Jones wrote:
-> > On Sun, 22 Mar 2020, Saravanan Sekar wrote:
-> > 
-> > > Add device tree binding information for mp2629 mfd driver.
-> > > 
-> > > Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
-> > > ---
-> > >   .../devicetree/bindings/mfd/mps,mp2629.yaml   | 60 +++++++++++++++++++
-> > >   1 file changed, 60 insertions(+)
-> > >   create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> > > 
-> > > diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> > > new file mode 100644
-> > > index 000000000000..314309ea91ac
-> > > --- /dev/null
-> > > +++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> > > @@ -0,0 +1,60 @@
-> > > +# SPDX-License-Identifier: GPL-2.0
-> > > +%YAML 1.2
-> > > +---
-> > > +$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-> > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > Are these links supposed to work?
-> Not really, but as far my understanding needed for dt-bindings check
+On Thu, Mar 26, 2020 at 7:06 AM Rob Herring <robh@kernel.org> wrote:
+>
+> Numerous schemas are missing 'additionalProperties: false' statements which
+> ensures a binding doesn't have any extra undocumented properties or child
+> nodes. Fixing this reveals various missing properties, so let's fix all
+> those occurrences.
+>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Bartosz Golaszewski <bgolaszewski@baylibre.com>
+> Cc: Masahiro Yamada <yamada.masahiro@socionext.com>
+> Cc: Jonathan Cameron <jic23@kernel.org>
+> Cc: Hartmut Knaack <knaack.h@gmx.de>
+> Cc: Lars-Peter Clausen <lars@metafoo.de>
+> Cc: Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+> Cc: Neil Armstrong <narmstrong@baylibre.com>
+> Cc: Mauro Carvalho Chehab <mchehab@kernel.org>
+> Cc: Kevin Hilman <khilman@baylibre.com>
+> Cc: Lee Jones <lee.jones@linaro.org>
+> Cc: "David S. Miller" <davem@davemloft.net>
+> Cc: Liam Girdwood <lgirdwood@gmail.com>
+> Cc: Mark Brown <broonie@kernel.org>
+> Cc: Guillaume La Roque <glaroque@baylibre.com>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: linux-clk@vger.kernel.org
+> Cc: linux-gpio@vger.kernel.org
+> Cc: linux-arm-kernel@lists.infradead.org
+> Cc: dri-devel@lists.freedesktop.org
+> Cc: linux-iio@vger.kernel.org
+> Cc: linux-media@vger.kernel.org
+> Cc: linux-amlogic@lists.infradead.org
+> Cc: netdev@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
 
-Rob, why are these here if they just result in 404s?
 
-> > > +examples:
-> > > +  - |
-> > > +    #include <dt-bindings/interrupt-controller/irq.h>
-> > > +    #include <dt-bindings/input/linux-event-codes.h>
-> > > +    i2c {
-> > i2c@0x????????
-> 
-> Its a I2C controller node, I don't think address is needed. Mention like
-> this my previous other driver patches,
 
-This doesn't sound right.
+>  .../gpio/socionext,uniphier-gpio.yaml         |  2 ++
 
-How do you control/operate the controller?
 
-Surely you read/write from/to registers?
+You may have already queue this up, but just in case.
 
-> dt_binding_check is also passed
-> 
-> > > +        #address-cells = <1>;
-> > > +        #size-cells = <0>;
-> > > +
-> > > +        pmic@4b {
-> > > +            compatible = "mps,mp2629";
-> > > +            reg = <0x4b>;
-> > > +
-> > > +            interrupt-controller;
-> > > +            interrupt-parent = <&gpio2>;
-> > > +            #interrupt-cells = <2>;
-> > > +            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-> > > +        };
-> > > +    };
+Acked-by: Masahiro Yamada <yamada.masahiro@socionext.com>
+
 
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Best Regards
+Masahiro Yamada
