@@ -2,216 +2,374 @@ Return-Path: <SRS0=kFxE=5P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E9772C2D0EC
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 14:54:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAF09C2D0E5
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 15:21:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id BF08E2073B
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 14:54:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="L9/0Hme3"
+	by mail.kernel.org (Postfix) with ESMTP id C0A7020786
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Mar 2020 15:21:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1585581665;
+	bh=8nyMZ7m3kl9dZmyr4qfSVBJA+B8VzhNvm6CDo0xud6g=;
+	h=From:Date:Subject:To:Cc:List-ID:From;
+	b=sJoEe8eDpzkzCRNMe4CKbrWzc+m7DAOQ78ozB1whbVH8CEC6zeXlC03bOhof+Fdl6
+	 fpCur/kG9k5a2ViMVQcDySGWnL/CRapgpwZDNtI2Bte5ge+v0auyVkw/6YwBGZzW8T
+	 owiBtA6wr6AovH8Whn6b+Y4Hmv0MQwdw1+UUvQ9U=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728091AbgC3OyC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Mar 2020 10:54:02 -0400
-Received: from mail-qv1-f66.google.com ([209.85.219.66]:46344 "EHLO
-        mail-qv1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727981AbgC3OyB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 10:54:01 -0400
-Received: by mail-qv1-f66.google.com with SMTP id bu9so3026298qvb.13
-        for <linux-pm@vger.kernel.org>; Mon, 30 Mar 2020 07:54:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Ku5iL1N6RANAABzr84iAJg9CN/CMxTxUbEuZrAn7SbU=;
-        b=L9/0Hme32NofXz992b6CsrXgGCn+cAPnw0YKmlXlaEVc2EdsrME7DA1dyG6E68jsb5
-         +lEdHtcSG+Jh7vGSwM5eL03dAWRakzA5SVmGtw1s2vdArPYrqPo9j0GoPl6NzQSn0anC
-         p4aaijoNZEDfjF9IzjVZRsWMrtm3Wi7rG/HP1SQ1OUc+hOa1qJouNTG9FTkRYpAKjZAD
-         jhfcB0SpfkiH+Ycu3+SACdv1LE7IqPq71vnEZTCTWrRZ1ugePDlBu4g5uFUam58Vel0g
-         pSywvkBrhQ2WvVjiobH6uT7Uyh8skIVlfpqAsGNhIiHl+BWEc20xyZzQrscHnvgbbkWb
-         yJCg==
+        id S1726114AbgC3PVF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Mar 2020 11:21:05 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:40415 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727255AbgC3PVD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Mar 2020 11:21:03 -0400
+Received: by mail-oi1-f193.google.com with SMTP id y71so15967836oia.7;
+        Mon, 30 Mar 2020 08:21:02 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Ku5iL1N6RANAABzr84iAJg9CN/CMxTxUbEuZrAn7SbU=;
-        b=JD0Ua/0EoQ7AJ54w6SeL65EHbBxOXzW2XJ1YHJ0VR4uBB5+xK3GF7D+8H91O6aglE1
-         3eAQvhCdAuat7FeRPjXWKTsAixfLVFn39/P7IvJJyc7gwW/DexRwlZaAVskl2KQW1Lil
-         5oKCpPjLgT+WxtKyAqX0a0C/G1iTkzI8kh1U87TIk9fNY1dCTBf8QSi4EDRFYNRCdMcM
-         9jal6N3BgcKuEub4gCHNUTDG7GqYlruock4XI9g1M60ammPj0hoWvPN25FXJTW+EFdsD
-         u2QPWnwkYw/LUJTgH431b7PfOP1Lg6sxgW4WNn7VA/mFqLDbkUoJMTLLOcgn2ag4pvOB
-         7y1Q==
-X-Gm-Message-State: ANhLgQ0j5B9VdYLf4Gg7ZF36pyoB9VkbW2ZWEfqhkWn0XGKCMZL/Gm7/
-        xnmkK71GJfUl2fqXLaQp+65kdA==
-X-Google-Smtp-Source: ADFU+vvnZVsf13I2tKyzEPZbzZSTUzrSmDWcuIiitXTu0rbnYah/+4rhMe7ysN6LuRmkXvkXtRCo3Q==
-X-Received: by 2002:a0c:e08d:: with SMTP id l13mr12253135qvk.216.1585580040023;
-        Mon, 30 Mar 2020 07:54:00 -0700 (PDT)
-Received: from [192.168.1.92] (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.gmail.com with ESMTPSA id 73sm10651439qkf.82.2020.03.30.07.53.58
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 30 Mar 2020 07:53:59 -0700 (PDT)
-Subject: Re: [Patch v5 4/6] soc: qcom: Extend RPMh power controller driver to
- register warming devices.
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     rui.zhang@intel.com, ulf.hansson@linaro.org,
-        daniel.lezcano@linaro.org, agross@kernel.org, robh@kernel.org,
-        amit.kucheria@verdurent.com, mark.rutland@arm.com,
-        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <20200320014107.26087-1-thara.gopinath@linaro.org>
- <20200320014107.26087-5-thara.gopinath@linaro.org>
- <20200327225345.GH5063@builder>
-From:   Thara Gopinath <thara.gopinath@linaro.org>
-Message-ID: <f20b4940-11ad-82b1-6ece-661a1b033df8@linaro.org>
-Date:   Mon, 30 Mar 2020 10:53:58 -0400
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.4.1
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=F+k0giqKlwuDpN7d+4rugXNSAJ2S5npLJFcMQv/KKcM=;
+        b=S/FYUOy1TG5DcSVrYV2forVTRBVXmwMm5+Qa7/eTHT8vUa0jRD3NB0SP4v7MVRHzLR
+         ihuVAxElP+DMhEd6CX/SRm0tT8dckx8ko+zTep+SQQt7IPS2Jry8O5fKaWI/fuoEPYbo
+         d+FfHIOJAdL49EEZ8AkmSivBnhz7QuJnIAnLvdvOHQP8Gl7FCwFdfskeTT4tSc/PeKoJ
+         fvt9OcjI8ky5heEcF87hDQ7MJ041kDPvODAjg1g7gD36j9ID4jy6mePhrH5VNneCu7ck
+         vCBnUFgqyVSqc0HydHwD+F0WVC68Lzkt5Z6ec9gkZOGcUxxdrb7EcvT/xXHlVVFZo3mB
+         FILQ==
+X-Gm-Message-State: ANhLgQ08kq/HHtqzPBrUe1J4MTf6+E6pKtkDtGoZ4yfTB1ptoyzP4pHy
+        pfrKiji8jeEFKcbVr8e1cxu31mIRyAz9udIVb5ZT/nha
+X-Google-Smtp-Source: ADFU+vsODFASSq8MqHT0zR+W08p0wSJnzAye+RR1C3ORAPhbTQWKQyHHUiHvihsyA8V9oKLCSSSYh4OSHjjbCu0uHvA=
+X-Received: by 2002:a05:6808:8f:: with SMTP id s15mr8203211oic.110.1585581661963;
+ Mon, 30 Mar 2020 08:21:01 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200327225345.GH5063@builder>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 30 Mar 2020 17:20:48 +0200
+Message-ID: <CAJZ5v0g=DNuHWVqxgJunTDm0bwPXTfo02gEZLy+eAfZJptVNkQ@mail.gmail.com>
+Subject: [GIT PULL] Power management updates for v5.7-rc1
+To:     Linus Torvalds <torvalds@linux-foundation.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Linus,
+
+Please pull from the tag
+
+ git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
+ pm-5.7-rc1
+
+with top-most commit 2409000a0cad2242fd4e2578f761f97069625478
+
+ Merge branches 'pm-devfreq', 'powercap' and 'pm-docs'
+
+on top of commit 16fbf79b0f83bc752cee8589279f1ebfe57b3b6e
+
+ Linux 5.6-rc7
+
+to receive power management updates for 5.7-rc1.
+
+These clean up and rework the PM QoS API, address a suspend-to-idle
+wakeup regression on some ACPI-based platforms, clean up and extend
+a few cpuidle drivers, update multiple cpufreq drivers and cpufreq
+documentation, and fix a number of issues in devfreq and several
+other things all over.
+
+Specifics:
+
+ - Clean up and rework the PM QoS API to simplify the code and
+   reduce the size of it (Rafael Wysocki).
+
+ - Fix a suspend-to-idle wakeup regression on Dell XPS13 9370
+   and similar platforms where the USB plug/unplug events are
+   handled by the EC (Rafael Wysocki).
+
+ - CLean up the intel_idle and PSCI cpuidle drivers (Rafael Wysocki,
+   Ulf Hansson).
+
+ - Extend the haltpoll cpuidle driver so that it can be forced to
+   run on some systems where it refused to load (Maciej Szmigiero).
+
+ - Convert several cpufreq documents to the .rst format and move the
+   legacy driver documentation into one common file (Mauro Carvalho
+   Chehab, Rafael Wysocki).
+
+ - Update several cpufreq drivers:
+
+   * Extend and fix the imx-cpufreq-dt driver (Anson Huang).
+
+   * Improve the -EPROBE_DEFER handling and fix unwanted CPU
+     overclocking on i.MX6ULL in imx6q-cpufreq (Anson Huang,
+     Christoph Niedermaier).
+
+   * Add support for Krait based SoCs to the qcom driver (Ansuel
+     Smith).
+
+   * Add support for OPP_PLUS to ti-cpufreq (Lokesh Vutla).
+
+   * Add platform specific intermediate callbacks support to
+     cpufreq-dt and update the imx6q driver (Peng Fan).
+
+   * Simplify and consolidate some pieces of the intel_pstate driver
+     and update its documentation (Rafael Wysocki, Alex Hung).
+
+ - Fix several devfreq issues:
+
+   * Remove unneeded extern keyword from a devfreq header file
+     and use the DEVFREQ_GOV_UPDATE_INTERNAL event name instead of
+     DEVFREQ_GOV_INTERNAL (Chanwoo Choi).
+
+   * Fix the handling of dev_pm_qos_remove_request() result (Leonard
+     Crestez).
+
+   * Use constant name for userspace governor (Pierre Kuo).
+
+   * Get rid of doc warnings and fix a typo (Christophe JAILLET).
+
+ - Use built-in RCU list checking in some places in the PM core to
+   avoid false-positive RCU usage warnings (Madhuparna Bhowmik).
+
+ - Add explicit READ_ONCE()/WRITE_ONCE() annotations to low-level
+   PM QoS routines (Qian Cai).
+
+ - Fix removal of wakeup sources to avoid NULL pointer dereferences
+   in a corner case (Neeraj Upadhyay).
+
+ - Clean up the handling of hibernate compat ioctls and fix the
+   related documentation (Eric Biggers).
+
+ - Update the idle_inject power capping driver to use variable-length
+   arrays instead of zero-length arrays (Gustavo Silva).
+
+ - Fix list format in a PM QoS document (Randy Dunlap).
+
+ - Make the cpufreq stats module use scnprintf() to avoid potential
+   buffer overflows (Takashi Iwai).
+
+ - Add pm_runtime_get_if_active() to PM-runtime API (Sakari Ailus).
+
+ - Allow no domain-idle-states DT property in generic PM domains (Ulf
+   Hansson).
+
+ - Fix a broken y-axis scale in the intel_pstate_tracer utility (Doug
+   Smythies).
+
+Thanks!
 
 
-On 3/27/20 6:53 PM, Bjorn Andersson wrote:
-> On Thu 19 Mar 18:41 PDT 2020, Thara Gopinath wrote:
-> 
->> RPMh power control hosts power domains that can be used as
->> thermal warming devices. Register these power domains
->> with the generic power domain warming device thermal framework.
->>
->> Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
->> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
->> ---
->>
->> v3->v4:
->> 	- Introduce a boolean value is_warming_dev in rpmhpd structure to
->> 	  indicate if a generic power domain can be used as a warming
->> 	  device or not.With this change, device tree no longer has to
->> 	  specify which power domain inside the rpmh power domain provider
->> 	  is a warming device.
->> 	- Move registering of warming devices into a late initcall to
->> 	  ensure that warming devices are registered after thermal
->> 	  framework is initialized.
-> 
-> This information is lost when we merge patches, as such I would like
-> such design decisions to be described in the commit message itself.
-> But...
-> 
->>
->>   drivers/soc/qcom/rpmhpd.c | 37 ++++++++++++++++++++++++++++++++++++-
->>   1 file changed, 36 insertions(+), 1 deletion(-)
->>
->> diff --git a/drivers/soc/qcom/rpmhpd.c b/drivers/soc/qcom/rpmhpd.c
->> index 7142409a3b77..4e9c0bbb8826 100644
->> --- a/drivers/soc/qcom/rpmhpd.c
->> +++ b/drivers/soc/qcom/rpmhpd.c
->> @@ -11,6 +11,7 @@
->>   #include <linux/of_device.h>
->>   #include <linux/platform_device.h>
->>   #include <linux/pm_opp.h>
->> +#include <linux/pd_warming.h>
->>   #include <soc/qcom/cmd-db.h>
->>   #include <soc/qcom/rpmh.h>
->>   #include <dt-bindings/power/qcom-rpmpd.h>
->> @@ -48,6 +49,7 @@ struct rpmhpd {
->>   	bool		enabled;
->>   	const char	*res_name;
->>   	u32		addr;
->> +	bool		is_warming_dev;
->>   };
->>   
->>   struct rpmhpd_desc {
->> @@ -55,6 +57,8 @@ struct rpmhpd_desc {
->>   	size_t num_pds;
->>   };
->>   
->> +const struct rpmhpd_desc *global_desc;
->> +
->>   static DEFINE_MUTEX(rpmhpd_lock);
->>   
->>   /* SDM845 RPMH powerdomains */
->> @@ -89,6 +93,7 @@ static struct rpmhpd sdm845_mx = {
->>   	.pd = { .name = "mx", },
->>   	.peer = &sdm845_mx_ao,
->>   	.res_name = "mx.lvl",
->> +	.is_warming_dev = true,
->>   };
->>   
->>   static struct rpmhpd sdm845_mx_ao = {
->> @@ -452,7 +457,14 @@ static int rpmhpd_probe(struct platform_device *pdev)
->>   					       &rpmhpds[i]->pd);
->>   	}
->>   
->> -	return of_genpd_add_provider_onecell(pdev->dev.of_node, data);
->> +	ret = of_genpd_add_provider_onecell(pdev->dev.of_node, data);
->> +
->> +	if (ret)
->> +		return ret;
->> +
->> +	global_desc = desc;
->> +
->> +	return 0;
->>   }
->>   
->>   static struct platform_driver rpmhpd_driver = {
->> @@ -469,3 +481,26 @@ static int __init rpmhpd_init(void)
->>   	return platform_driver_register(&rpmhpd_driver);
->>   }
->>   core_initcall(rpmhpd_init);
->> +
->> +static int __init rpmhpd_init_warming_device(void)
->> +{
->> +	size_t num_pds;
->> +	struct rpmhpd **rpmhpds;
->> +	int i;
->> +
->> +	if (!global_desc)
->> +		return -EINVAL;
->> +
->> +	rpmhpds = global_desc->rpmhpds;
->> +	num_pds = global_desc->num_pds;
->> +
->> +	if (!of_find_property(rpmhpds[0]->dev->of_node, "#cooling-cells", NULL))
->> +		return 0;
->> +
->> +	for (i = 0; i < num_pds; i++)
->> +		if (rpmhpds[i]->is_warming_dev)
->> +			of_pd_warming_register(rpmhpds[i]->dev, i);
->> +
->> +	return 0;
->> +}
->> +late_initcall(rpmhpd_init_warming_device);
-> 
-> ...why can't this be done in rpmhpd_probe()?
-> 
-> In particular with the recent patches from John Stultz to allow rpmhpd
-> to be built as a module I don't think there's any guarantees that
-> rpmh_probe() will have succeeded before rpmhpd_init_warming_device()
-> executes.
+---------------
 
-It is to take care of boot order.
-So this has to happen after the thermal framework is initialized. 
-Thermal framework is initialized with core_initcall. Can I move the 
-rpmhpd init as a postcore_initcall ? Then I can get rid of this separate 
-function and keep it as part of probe.
+Alex Hung (1):
+      Documentation: intel_pstate: update links for references
 
-> 
-> Regards,
-> Bjorn
-> 
+Anson Huang (3):
+      cpufreq: imx-cpufreq-dt: Add "cpu-supply" property check
+      cpufreq: imx-cpufreq-dt: Correct i.MX8MP's market segment fuse location
+      cpufreq: imx6q-cpufreq: Improve the logic of -EPROBE_DEFER handling
 
--- 
-Warm Regards
-Thara
+Ansuel Smith (1):
+      cpufreq: qcom: Add support for krait based socs
+
+Chanwoo Choi (2):
+      PM / devfreq: Remove unneeded extern keyword
+      PM / devfreq: Change to DEVFREQ_GOV_UPDATE_INTERVAL event name
+
+Christoph Niedermaier (1):
+      cpufreq: imx6q: Fixes unwanted cpu overclocking on i.MX6ULL
+
+Christophe JAILLET (1):
+      PM / devfreq: Fix a typo in a comment
+
+Doug Smythies (1):
+      tools/power/x86/intel_pstate_tracer: fix a broken y-axis scale
+
+Eric Biggers (2):
+      PM: hibernate: fix docs for ioctls that return loff_t via pointer
+      PM / hibernate: Remove unnecessary compat ioctl overrides
+
+Gustavo A. R. Silva (1):
+      powercap: idle_inject: Replace zero-length array with
+flexible-array member
+
+Leonard Crestez (1):
+      PM / devfreq: Fix handling dev_pm_qos_remove_request result
+
+Lokesh Vutla (1):
+      cpufreq: ti-cpufreq: Add support for OPP_PLUS
+
+Maciej S. Szmigiero (1):
+      cpuidle: haltpoll: allow force loading on hosts without the REALTIME hint
+
+Madhuparna Bhowmik (2):
+      PM: sleep: core: Use built-in RCU list checking
+      PM: sleep: wakeup: Use built-in RCU list checking
+
+Mauro Carvalho Chehab (6):
+      docs: cpufreq: fix a broken reference
+      docs: cpu-freq: convert index.txt to ReST
+      docs: cpu-freq: convert core.txt to ReST
+      docs: cpu-freq: convert cpu-drivers.txt to ReST
+      docs: cpu-freq: convert cpufreq-stats.txt to ReST
+      PM / devfreq: Get rid of some doc warnings
+
+Neeraj Upadhyay (1):
+      PM: sleep: wakeup: Skip wakeup_source_sysfs_remove() if device
+is not there
+
+Peng Fan (3):
+      cpufreq: imx6q: fix error handling
+      cpufreq: imx6q: read OCOTP through nvmem for imx6q
+      cpufreq: dt: Allow platform specific intermediate callbacks
+
+Qian Cai (1):
+      PM: QoS: annotate data races in pm_qos_*_value()
+
+Rafael J. Wysocki (43):
+      intel_idle: Simplify LAPIC timer reliability checks
+      intel_idle: Clean up definitions of cpuidle callbacks
+      intel_idle: Relocate definitions of cpuidle callbacks
+      intel_idle: Add __initdata annotations to init time variables
+      intel_idle: Annotate init time data structures
+      intel_idle: Reorder declarations of static variables
+      intel_idle: Clean up kerneldoc comments for multiple functions
+      intel_idle: Define CPUIDLE_FLAG_TLB_FLUSHED as BIT(16)
+      intel_idle: Update copyright notice, known limitations and version
+      PM: QoS: Drop debugfs interface
+      PM: QoS: Drop pm_qos_update_request_timeout()
+      PM: QoS: Drop the PM_QOS_SUM QoS type
+      PM: QoS: Clean up pm_qos_update_target() and pm_qos_update_flags()
+      PM: QoS: Clean up pm_qos_read_value() and pm_qos_get/set_value()
+      PM: QoS: Drop iterations over global QoS classes
+      PM: QoS: Clean up misc device file operations
+      PM: QoS: Redefine struct pm_qos_request and drop struct pm_qos_object
+      PM: QoS: Drop PM_QOS_CPU_DMA_LATENCY notifier chain
+      PM: QoS: Rename things related to the CPU latency QoS
+      PM: QoS: Simplify definitions of CPU latency QoS trace events
+      PM: QoS: Adjust pm_qos_request() signature and reorder pm_qos.h
+      PM: QoS: Add CPU latency QoS API wrappers
+      cpuidle: Call cpu_latency_qos_limit() instead of pm_qos_request()
+      x86: platform: iosf_mbi: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drm: i915: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: hsi: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: media: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: mmc: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: net: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: spi: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: tty: Call cpu_latency_qos_*() instead of pm_qos_*()
+      drivers: usb: Call cpu_latency_qos_*() instead of pm_qos_*()
+      sound: Call cpu_latency_qos_*() instead of pm_qos_*()
+      PM: QoS: Drop PM_QOS_CPU_DMA_LATENCY and rename related functions
+      PM: QoS: Update file information comments
+      Documentation: PM: QoS: Update to reflect previous code changes
+      PM: QoS: Make CPU latency QoS depend on CONFIG_CPU_IDLE
+      Documentation: cpufreq: Move legacy driver documentation
+      cpufreq: intel_pstate: Consolidate policy verification
+      ACPI: PM: s2idle: Fix comment in acpi_s2idle_prepare_late()
+      ACPICA: Allow acpi_any_gpe_status_set() to skip one GPE
+      ACPI: PM: s2idle: Refine active GPEs check
+      cpufreq: intel_pstate: Simplify intel_pstate_cpu_init()
+
+Randy Dunlap (1):
+      Documentation: power: fix pm_qos_interface.rst format warning
+
+Sakari Ailus (1):
+      PM: runtime: Add pm_runtime_get_if_active()
+
+Takashi Iwai (1):
+      cpufreq: Use scnprintf() for avoiding potential buffer overflow
+
+Ulf Hansson (2):
+      PM / Domains: Allow no domain-idle-states DT property in genpd
+when parsing
+      cpuidle: psci: Split psci_dt_cpu_init_idle()
+
+pierre Kuo (1):
+      PM / devfreq: Use constant name of userspace governor
+
+---------------
+
+ Documentation/admin-guide/pm/cpufreq_drivers.rst   | 274 ++++++++++
+ Documentation/admin-guide/pm/cpuidle.rst           |  73 ++-
+ Documentation/admin-guide/pm/intel_pstate.rst      |   4 +-
+ Documentation/admin-guide/pm/working-state.rst     |   1 +
+ Documentation/cpu-freq/amd-powernow.txt            |  38 --
+ Documentation/cpu-freq/{core.txt => core.rst}      |  65 +--
+ .../cpu-freq/{cpu-drivers.txt => cpu-drivers.rst}  | 129 +++--
+ Documentation/cpu-freq/cpufreq-nforce2.txt         |  19 -
+ .../{cpufreq-stats.txt => cpufreq-stats.rst}       | 119 +++--
+ Documentation/cpu-freq/index.rst                   |  39 ++
+ Documentation/cpu-freq/index.txt                   |  56 ---
+ Documentation/cpu-freq/pcc-cpufreq.txt             | 207 --------
+ .../devicetree/bindings/opp/qcom-nvmem-cpufreq.txt |   3 +-
+ Documentation/index.rst                            |   1 +
+ Documentation/power/pm_qos_interface.rst           |  88 ++--
+ Documentation/power/runtime_pm.rst                 |   6 +
+ Documentation/power/userland-swsusp.rst            |   8 +-
+ Documentation/trace/events-power.rst               |  21 +-
+ arch/x86/platform/intel/iosf_mbi.c                 |  13 +-
+ drivers/acpi/acpica/achware.h                      |   2 +-
+ drivers/acpi/acpica/evxfgpe.c                      |  17 +-
+ drivers/acpi/acpica/hwgpe.c                        |  47 +-
+ drivers/acpi/ec.c                                  |   5 +
+ drivers/acpi/internal.h                            |   1 +
+ drivers/acpi/sleep.c                               |  24 +-
+ drivers/base/power/domain.c                        |   2 +-
+ drivers/base/power/main.c                          |  12 +-
+ drivers/base/power/runtime.c                       |  36 +-
+ drivers/base/power/wakeup.c                        |  17 +-
+ drivers/cpufreq/Kconfig.arm                        |   2 +-
+ drivers/cpufreq/Kconfig.x86                        |   2 +-
+ drivers/cpufreq/cpufreq-dt-platdev.c               |   5 +
+ drivers/cpufreq/cpufreq-dt.c                       |   4 +
+ drivers/cpufreq/cpufreq-dt.h                       |   4 +
+ drivers/cpufreq/cpufreq_stats.c                    |  14 +-
+ drivers/cpufreq/imx-cpufreq-dt.c                   |  13 +-
+ drivers/cpufreq/imx6q-cpufreq.c                    |  71 +--
+ drivers/cpufreq/intel_pstate.c                     |  26 +-
+ drivers/cpufreq/qcom-cpufreq-nvmem.c               | 191 ++++++-
+ drivers/cpufreq/ti-cpufreq.c                       |   7 +
+ drivers/cpuidle/cpuidle-haltpoll.c                 |  12 +-
+ drivers/cpuidle/cpuidle-psci.c                     |  46 +-
+ drivers/cpuidle/cpuidle.c                          |  40 +-
+ drivers/cpuidle/governor.c                         |   2 +-
+ drivers/devfreq/devfreq.c                          |  14 +-
+ drivers/devfreq/governor.h                         |  21 +-
+ drivers/devfreq/governor_simpleondemand.c          |   4 +-
+ drivers/devfreq/governor_userspace.c               |   2 +-
+ drivers/devfreq/tegra30-devfreq.c                  |   4 +-
+ drivers/gpu/drm/i915/display/intel_dp.c            |   4 +-
+ drivers/gpu/drm/i915/i915_drv.c                    |  12 +-
+ drivers/gpu/drm/i915/intel_sideband.c              |   5 +-
+ drivers/hsi/clients/cmt_speech.c                   |   9 +-
+ drivers/idle/intel_idle.c                          | 302 +++++------
+ drivers/media/pci/saa7134/saa7134-video.c          |   5 +-
+ drivers/media/platform/via-camera.c                |   4 +-
+ drivers/mmc/host/sdhci-esdhc-imx.c                 |  14 +-
+ drivers/net/ethernet/intel/e1000e/netdev.c         |  13 +-
+ drivers/net/wireless/ath/ath10k/core.c             |   4 +-
+ drivers/net/wireless/intel/ipw2x00/ipw2100.c       |  10 +-
+ drivers/powercap/idle_inject.c                     |   2 +-
+ drivers/spi/spi-fsl-qspi.c                         |   4 +-
+ drivers/tty/serial/8250/8250_omap.c                |  13 +-
+ drivers/tty/serial/omap-serial.c                   |  15 +-
+ drivers/usb/chipidea/ci_hdrc_imx.c                 |  12 +-
+ include/acpi/acpixf.h                              |   2 +-
+ include/linux/devfreq.h                            | 106 ++--
+ include/linux/pm_qos.h                             |  81 +--
+ include/linux/pm_runtime.h                         |  12 +-
+ include/trace/events/power.h                       |  59 +--
+ kernel/power/qos.c                                 | 559 ++++++---------------
+ kernel/power/user.c                                |  16 +-
+ sound/core/pcm_native.c                            |  14 +-
+ sound/soc/intel/atom/sst/sst.c                     |   5 +-
+ sound/soc/intel/atom/sst/sst_loader.c              |   4 +-
+ sound/soc/ti/omap-dmic.c                           |   7 +-
+ sound/soc/ti/omap-mcbsp.c                          |  16 +-
+ sound/soc/ti/omap-mcpdm.c                          |  16 +-
+ .../x86/intel_pstate_tracer/intel_pstate_tracer.py |   1 -
+ 79 files changed, 1564 insertions(+), 1573 deletions(-)
