@@ -2,154 +2,151 @@ Return-Path: <SRS0=0y+j=5Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01088C43331
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 07:54:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87D6CC2D0F3
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 08:06:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id C8FA9206F5
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 07:54:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="DnROpdfE"
+	by mail.kernel.org (Postfix) with ESMTP id 6569721924
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 08:06:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730065AbgCaHyr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Mar 2020 03:54:47 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:48010 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729958AbgCaHyr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2020 03:54:47 -0400
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 02V7sAJU073931;
-        Tue, 31 Mar 2020 02:54:10 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1585641250;
-        bh=vuJ1LtoNo/1Xe+ARbakZrfo5qAgQNCNmGD1MsvYuBTk=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=DnROpdfElOhCcj2LjanOlw7/tTto7gjztbH9mgihddHp2z+JM7xQyN7LjiUON9u76
-         /KGMlgVE1fERgpO5IMyb8/Ncr6dBg1CUOaaheaQzGcc6Mu6WpqJUwRye7sFkq4uCA8
-         XbxrxYrmaoUcHdQexmRuJaE8oiM/w4ozPL79O9js=
-Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 02V7sAHM069702;
-        Tue, 31 Mar 2020 02:54:10 -0500
-Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3; Tue, 31
- Mar 2020 02:54:10 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1847.3 via
- Frontend Transport; Tue, 31 Mar 2020 02:54:10 -0500
-Received: from a0393675ula.dhcp.ti.com (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 02V7s2gg009443;
-        Tue, 31 Mar 2020 02:54:07 -0500
-From:   Keerthy <j-keerthy@ti.com>
-To:     <rui.zhang@intel.com>, <robh+dt@kernel.org>,
-        <daniel.lezcano@linaro.org>
-CC:     <j-keerthy@ti.com>, <amit.kucheria@verdurent.com>,
-        <t-kristo@ti.com>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <mark.rutland@arm.com>
-Subject: [PATCH v5 1/4] dt-bindings: thermal: k3: Add VTM bindings documentation
-Date:   Tue, 31 Mar 2020 13:23:53 +0530
-Message-ID: <20200331075356.19171-2-j-keerthy@ti.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200331075356.19171-1-j-keerthy@ti.com>
-References: <20200331075356.19171-1-j-keerthy@ti.com>
+        id S1730049AbgCaIGy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Mar 2020 04:06:54 -0400
+Received: from relay1-d.mail.gandi.net ([217.70.183.193]:63129 "EHLO
+        relay1-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726528AbgCaIGy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2020 04:06:54 -0400
+X-Originating-IP: 86.202.105.35
+Received: from localhost (lfbn-lyo-1-9-35.w86-202.abo.wanadoo.fr [86.202.105.35])
+        (Authenticated sender: alexandre.belloni@bootlin.com)
+        by relay1-d.mail.gandi.net (Postfix) with ESMTPSA id 4C28F24000A;
+        Tue, 31 Mar 2020 08:06:48 +0000 (UTC)
+Date:   Tue, 31 Mar 2020 10:06:48 +0200
+From:   Alexandre Belloni <alexandre.belloni@bootlin.com>
+To:     Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Nicolas Boichat <drinkcat@chromium.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Kate Stewart <kstewart@linuxfoundation.org>,
+        Richard Fontana <rfontana@redhat.com>,
+        Frank Wunderlich <frank-w@public-files.de>,
+        Josef Friedl <josef.friedl@speed.at>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ran Bi <ran.bi@mediatek.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        srv_heupstream@mediatek.com
+Subject: Re: [PATCH v11 4/5] rtc: mt6397: Add support for the MediaTek MT6358
+ RTC
+Message-ID: <20200331080648.GH846876@piout.net>
+References: <1585627657-3265-1-git-send-email-hsin-hsiung.wang@mediatek.com>
+ <1585627657-3265-5-git-send-email-hsin-hsiung.wang@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1585627657-3265-5-git-send-email-hsin-hsiung.wang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add VTM bindings documentation. In the Voltage Thermal
-Management Module(VTM), K3 AM654 supplies a voltage
-reference and a temperature sensor feature that are gathered in the band
-gap voltage and temperature sensor (VBGAPTS) module. The band
-gap provides current and voltage reference for its internal
-circuits and other analog IP blocks. The analog-to-digital
-converter (ADC) produces an output value that is proportional
-to the silicon temperature.
+On 31/03/2020 12:07:36+0800, Hsin-Hsiung Wang wrote:
+> From: Ran Bi <ran.bi@mediatek.com>
+> 
+> This add support for the MediaTek MT6358 RTC. Driver using
+> compatible data to store different RTC_WRTGR address offset.
+> This replace RTC_WRTGR to RTC_WRTGR_MT6323 in mt6323-poweroff
+> driver which only needed by armv7 CPU without ATF.
+> 
+> Signed-off-by: Ran Bi <ran.bi@mediatek.com>
+> Signed-off-by: Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
+> ---
+>  drivers/power/reset/mt6323-poweroff.c |  2 +-
+>  drivers/rtc/rtc-mt6397.c              | 23 +++++++++++++++++++----
+>  include/linux/mfd/mt6397/rtc.h        |  9 ++++++++-
+>  3 files changed, 28 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/power/reset/mt6323-poweroff.c b/drivers/power/reset/mt6323-poweroff.c
+> index 1caf43d..0532803 100644
+> --- a/drivers/power/reset/mt6323-poweroff.c
+> +++ b/drivers/power/reset/mt6323-poweroff.c
+> @@ -30,7 +30,7 @@ static void mt6323_do_pwroff(void)
+>  	int ret;
+>  
+>  	regmap_write(pwrc->regmap, pwrc->base + RTC_BBPU, RTC_BBPU_KEY);
+> -	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR, 1);
+> +	regmap_write(pwrc->regmap, pwrc->base + RTC_WRTGR_MT6323, 1);
+>  
+>  	ret = regmap_read_poll_timeout(pwrc->regmap,
+>  					pwrc->base + RTC_BBPU, val,
+> diff --git a/drivers/rtc/rtc-mt6397.c b/drivers/rtc/rtc-mt6397.c
+> index cda238d..7f3dfd2 100644
+> --- a/drivers/rtc/rtc-mt6397.c
+> +++ b/drivers/rtc/rtc-mt6397.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/mfd/mt6397/core.h>
+>  #include <linux/module.h>
+>  #include <linux/mutex.h>
+> +#include <linux/of_device.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/regmap.h>
+>  #include <linux/rtc.h>
+> @@ -20,7 +21,7 @@ static int mtk_rtc_write_trigger(struct mt6397_rtc *rtc)
+>  	int ret;
+>  	u32 data;
+>  
+> -	ret = regmap_write(rtc->regmap, rtc->addr_base + RTC_WRTGR, 1);
+> +	ret = regmap_write(rtc->regmap, rtc->addr_base + rtc->data->wrtgr, 1);
+>  	if (ret < 0)
+>  		return ret;
+>  
+> @@ -269,6 +270,8 @@ static int mtk_rtc_probe(struct platform_device *pdev)
+>  	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>  	rtc->addr_base = res->start;
+>  
+> +	rtc->data = of_device_get_match_data(&pdev->dev);
+> +
+>  	rtc->irq = platform_get_irq(pdev, 0);
+>  	if (rtc->irq < 0)
+>  		return rtc->irq;
+> @@ -325,10 +328,22 @@ static int mt6397_rtc_resume(struct device *dev)
+>  static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_rtc_suspend,
+>  			mt6397_rtc_resume);
+>  
+> +static const struct mtk_rtc_data mt6358_rtc_data = {
+> +	.wrtgr = RTC_WRTGR_MT6358,
+> +};
+> +
+> +static const struct mtk_rtc_data mt6397_rtc_data = {
+> +	.wrtgr = RTC_WRTGR_MT6397,
+> +};
+> +
+>  static const struct of_device_id mt6397_rtc_of_match[] = {
+> -	{ .compatible = "mediatek,mt6323-rtc", },
+> -	{ .compatible = "mediatek,mt6397-rtc", },
+> -	{ }
+> +	{ .compatible = "mediatek,mt6323-rtc",
+> +		.data = &mt6397_rtc_data, },
+> +	{ .compatible = "mediatek,mt6358-rtc",
+> +		.data = &mt6358_rtc_data, },
+> +	{ .compatible = "mediatek,mt6397-rtc",
+> +		.data = &mt6397_rtc_data, },
 
-Signed-off-by: Keerthy <j-keerthy@ti.com>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
+This is weirdly indented.
 
-Changes in v5:
+Else,
+Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
 
-  * Added Reviewed-by: Rob Herring <robh@kernel.org>
 
- .../bindings/thermal/ti,am654-thermal.yaml    | 56 +++++++++++++++++++
- 1 file changed, 56 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-
-diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-new file mode 100644
-index 000000000000..d241b65d6072
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-@@ -0,0 +1,56 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Texas Instruments AM654 VTM (DTS) binding
-+
-+maintainers:
-+  - Keerthy <j-keerthy@ti.com>
-+
-+properties:
-+  compatible:
-+    const: ti,am654-vtm
-+
-+  reg:
-+    maxItems: 1
-+
-+  power-domains:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+
-+required:
-+  - "#thermal-sensor-cells"
-+  - compatible
-+  - reg
-+  - power-domains
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/soc/ti,sci_pm_domain.h>
-+    vtm: thermal@42050000 {
-+        compatible = "ti,am654-vtm";
-+        reg = <0x0 0x42050000 0x0 0x25c>;
-+        power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
-+        #thermal-sensor-cells = <1>;
-+    };
-+
-+    mpu0_thermal: mpu0_thermal {
-+        polling-delay-passive = <250>; /* milliseconds */
-+        polling-delay = <500>; /* milliseconds */
-+        thermal-sensors = <&vtm0 0>;
-+
-+        trips {
-+                mpu0_crit: mpu0_crit {
-+                        temperature = <125000>; /* milliCelsius */
-+                        hysteresis = <2000>; /* milliCelsius */
-+                        type = "critical";
-+                };
-+        };
-+    };
-+...
 -- 
-2.17.1
-
+Alexandre Belloni, Bootlin
+Embedded Linux and Kernel engineering
+https://bootlin.com
