@@ -2,119 +2,102 @@ Return-Path: <SRS0=0y+j=5Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74876C2D0F1
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 15:56:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DBFBDC2D0EE
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 16:57:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 40CAD20781
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 15:56:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A723F206CC
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 16:57:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=microsoft.com header.i=@microsoft.com header.b="ff3OArKV"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OJM0mi4I"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730528AbgCaP4E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Mar 2020 11:56:04 -0400
-Received: from mail-bn7nam10on2104.outbound.protection.outlook.com ([40.107.92.104]:62883
-        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1730105AbgCaP4E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 31 Mar 2020 11:56:04 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=K3FSqN9uQF/U63iCALqJeff91O4864L2c2i5gfLOw2HoD55NnILqMq5TCOl8mr155dbQz7H1pSfBgfPb3r1lwxflpkQJ8mB9AnXXLB8+nKXm96Z3QebodxLFv9jpto3BuOP2tBA8khJ+VNz+IDKnIyMbUtA5QqXxGoHJpkZ/t4yYfONPLp9llIUEN+bHuP3OpLTYP6u8oIkzDY2Y3Nyk40MaIvLGut2HNpyxKqyylQVPl2E8IC/VejfzCfE/2uQmXwA5FFkBuxWC4lc20/4QKKasig2JF3VCMdHkMA+xXQLE0a4AtSdkrkNwvCMd5ifM8nEufcM29ROtkNOGz5b0kQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qtqx90ti8mvhcYFyuE/P7k0efM5dXkZmEu35f9mZt5k=;
- b=VOuPiWpJaiYK4C4BxcNN2TyV7ZkTXnDlZ/X/w0TUMvnNeboYZw0Dqkjrreh0UShc+GvPrfFym70njrG8FU3bPPt1x8xIfqj+3eQ8ihO9DbFdaJuXDSUVLZE0eOF6FJeXR0OSM/g2VfzoBKIjBEcvuMOChTbAMQZarxSW6250kpTsHp+AfzCemVTpmCo9eN4578c0ctBa5bxUQ5aZ4yy50AOE1klMgGf8lpoFcIdSYvrnRnSmCN/fLWRDQPjdX25e938xVax+UcwtGd8QZ5A7xC5L/qA9JK3z57Meo5ZJqlpiCXxnBkVpIZTnDmUpFj382Q+MrNj47VL7Yh2oXdDt/A==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=microsoft.com; dmarc=pass action=none
- header.from=microsoft.com; dkim=pass header.d=microsoft.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=qtqx90ti8mvhcYFyuE/P7k0efM5dXkZmEu35f9mZt5k=;
- b=ff3OArKV2vxwABCYe4/xDjKpLF6Z3r93JjnUIo4oOKgObqYGla5ozgl7DPLpYzdhdQFyJdSbw3waAea9/jflaY451rZWNtXf5bhOOhpCovEhQiq+RRiFrBM/gJc6s7bCl5JN4TmlaVKmo4oC6Zqe+XOrdAtWEs515uVoRu3yb2o=
-Authentication-Results: spf=none (sender IP is )
- smtp.mailfrom=decui@microsoft.com; 
-Received: from BN8PR21MB1139.namprd21.prod.outlook.com (2603:10b6:408:72::10)
- by BN8PR21MB1362.namprd21.prod.outlook.com (2603:10b6:408:aa::27) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2900.5; Tue, 31 Mar
- 2020 15:56:00 +0000
-Received: from BN8PR21MB1139.namprd21.prod.outlook.com
- ([fe80::b5da:34dd:f205:560b]) by BN8PR21MB1139.namprd21.prod.outlook.com
- ([fe80::b5da:34dd:f205:560b%5]) with mapi id 15.20.2878.013; Tue, 31 Mar 2020
- 15:56:00 +0000
-From:   Dexuan Cui <decui@microsoft.com>
-To:     rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        decui@microsoft.com
-Subject: [PATCH] PM: hibernate: Propagate the return value of hibernation_restore()
-Date:   Tue, 31 Mar 2020 08:55:25 -0700
-Message-Id: <1585670125-45987-1-git-send-email-decui@microsoft.com>
-X-Mailer: git-send-email 1.8.3.1
-Reply-To: decui@microsoft.com
-Content-Type: text/plain
-X-ClientProxiedBy: MWHPR21CA0072.namprd21.prod.outlook.com
- (2603:10b6:300:db::34) To BN8PR21MB1139.namprd21.prod.outlook.com
- (2603:10b6:408:72::10)
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from linuxonhyperv3.guj3yctzbm1etfxqx2vob5hsef.xx.internal.cloudapp.net (13.77.154.182) by MWHPR21CA0072.namprd21.prod.outlook.com (2603:10b6:300:db::34) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.2900.2 via Frontend Transport; Tue, 31 Mar 2020 15:55:59 +0000
-X-Mailer: git-send-email 1.8.3.1
-X-Originating-IP: [13.77.154.182]
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 27619fe2-7030-47ea-37a5-08d7d58c01ba
-X-MS-TrafficTypeDiagnostic: BN8PR21MB1362:|BN8PR21MB1362:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <BN8PR21MB1362DCB3067F7B7448A5B4E4BFC80@BN8PR21MB1362.namprd21.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:1468;
-X-Forefront-PRVS: 0359162B6D
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BN8PR21MB1139.namprd21.prod.outlook.com;PTR:;CAT:NONE;SFTY:;SFS:(10019020)(4636009)(396003)(346002)(39860400002)(136003)(366004)(376002)(86362001)(8676002)(36756003)(316002)(5660300002)(8936002)(66476007)(66556008)(66946007)(52116002)(81166006)(81156014)(6512007)(6486002)(6506007)(4744005)(3450700001)(2906002)(2616005)(956004)(26005)(10290500003)(82960400001)(82950400001)(478600001)(6666004)(186003)(16526019);DIR:OUT;SFP:1102;
-Received-SPF: None (protection.outlook.com: microsoft.com does not designate
- permitted sender hosts)
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: sjPofr/Y5fgazFLkv3ShcQzuUoIc1tzdPeMSLOGySDkvGREjBR3dRrD7A3LqQFNEZbQ4iLL5fVJCZWfkzQqkt9vdhW1IMtWxb/a1VLiX9l645yls5lUx47I3DzX6vHxen58zsfWSQPtE3AzMfSHLsNAtD0a1OrP5GFZ1dCJnTTvH3eWF3Tpr01waNPpLz2uni3xDMtqKUQQW9uhVDfy2LBD3DaO2Iqk4OjQtotWeO7p/lggub11yurvD0to+pKLmg5o+DvwHVirjsHiKvaBUKrdzek/LjWyaMmg+D4231iTzKAXn6+KkyVL0edNLR0xHu+6m1CU0bygfygU8BLYwPkUsrxu6J5x33wasV6QK/2OR/WFaatJ/R25wpiMziRrBhgyOo75ucENULMQND3pSwgro1vOFVihKDFgj7yxgAw1OL+hEqFtTxC3P45micWX5
-X-MS-Exchange-AntiSpam-MessageData: oaKYCAgBPsI2NoQBELAXvgyg2K4kuNhzuLbrwB38lYU1NMrla71oMJy8iTsJP1AA9Io/EofDUT5j38edz9Pfq9q827IkwELzmhFtWhtjrXCs4PO3dnLcDnMPWGxwLZlQYkdJfwgxpqz5sR5PnEiWnA==
-X-OriginatorOrg: microsoft.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 27619fe2-7030-47ea-37a5-08d7d58c01ba
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 31 Mar 2020 15:56:00.2450
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 72f988bf-86f1-41af-91ab-2d7cd011db47
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: lprDkxnGM53Z4ymmY5D0otvKBGcxyYmIvEur7M9NxcMBcNhtP11FHOsfG0Wykfa8i++sXGrtkzdWk59y9z82VA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: BN8PR21MB1362
+        id S1731307AbgCaQ5E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Mar 2020 12:57:04 -0400
+Received: from mail-wr1-f65.google.com ([209.85.221.65]:45264 "EHLO
+        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731299AbgCaQ5D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2020 12:57:03 -0400
+Received: by mail-wr1-f65.google.com with SMTP id t7so26904564wrw.12
+        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2020 09:57:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=Cz8xjE9Meo7Y9lv5v8WZEBAwtkX0wnP43U65mZU6QGQ=;
+        b=OJM0mi4I6J/aMEdCBdjcIDizEzs+VnS3yRZWeGD3RtLISVRjA1bzbiw8Mn+0nUTWOi
+         P1ivQY+Ans0f9uRjG2yybRu1wiuZi02uCKNFt+iSjcZEHoaT6wkeKgVUmFQDqkh0qx+u
+         9/gSDwf+dbzJHUjKpm8FBlm2S3qn3hfmTMox9qYBVwEp/pHAo4Kb3iWi1DErHd0PUUXx
+         C7lCUZ56BTIJjU2lbV1GuqomutLeN7AGBbvULYbGVbpD5vhfbGCTUsbLrq5rEYaJvbmP
+         93cVCGOf0+Yz20qqCcnlVdLqWGOdsGDzmKoKH47z1Z7PjWdWEO1TIfDSYR05ckXzfiZ6
+         COUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=Cz8xjE9Meo7Y9lv5v8WZEBAwtkX0wnP43U65mZU6QGQ=;
+        b=ks10BEzlVgknkKFaDKaXdwRCIvlE4add9t/akUC0ASVcVm76FCN9NXEPOtMOelny86
+         oVXimWrei08u/bwqBRZjHMJyGWbDbe7N+ZdEWMByHMESiJTTsR3SZYHYzcRicUe7CidN
+         ju1eZ3QtREcUzS+zcVRY1F1UpfbpdlQwUdL7I+pFYjrMCU3klcJQj+PvlR7ZW2OENojs
+         69KtLpJ+Ta7gpvpwqtDtlvZUh0bRfJrrAEwQPgvS+D1Phz85cJLisWKR/VDAZmaUOp2k
+         ao8xPh6ahXoMZO7Enx/LkaWQF2EqWOLKtIZVcR821Ekgg3q2eAR3kaNsRoqWdPo5hXu3
+         +l3g==
+X-Gm-Message-State: ANhLgQ3jCe3VRJiACswBAJSIjjnb7x8UGtCh4fmzDLcp7ENVmJvYxyT+
+        ivkvv6F8Uwwy6m2ODAe09RMyKw==
+X-Google-Smtp-Source: ADFU+vvXiktfnwinTBCN1IXFntzXTv3dPIXsn1xyesH3/byDXAmun4de70WWyrEu9DquRBiG6T4Xcg==
+X-Received: by 2002:a5d:61c4:: with SMTP id q4mr22794927wrv.363.1585673821341;
+        Tue, 31 Mar 2020 09:57:01 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:497e:e6a9:b3eb:fcac])
+        by smtp.gmail.com with ESMTPSA id d7sm12925648wrr.77.2020.03.31.09.57.00
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 31 Mar 2020 09:57:00 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        linux-pm@vger.kernel.org (open list:THERMAL),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 2/2] thermal: core: Remove pointless debug traces
+Date:   Tue, 31 Mar 2020 18:54:49 +0200
+Message-Id: <20200331165449.30355-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200331165449.30355-1-daniel.lezcano@linaro.org>
+References: <20200331165449.30355-1-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If hibernation_restore() fails, the 'error' should not be zero.
+The last temperature and the current temperature are show via a
+dev_debug. The line before, those temperature are also traced.
 
-Signed-off-by: Dexuan Cui <decui@microsoft.com>
+It is pointless to duplicate the traces for the temperatures,
+remove the dev_dbg traces.
+
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- kernel/power/hibernate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/thermal_core.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 6dbeedb..86aba87 100644
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -678,7 +678,7 @@ static int load_image_and_restore(void)
- 	error = swsusp_read(&flags);
- 	swsusp_close(FMODE_READ);
- 	if (!error)
--		hibernation_restore(flags & SF_PLATFORM_MODE);
-+		error = hibernation_restore(flags & SF_PLATFORM_MODE);
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 9a321dc548c8..c06550930979 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -447,12 +447,6 @@ static void update_temperature(struct thermal_zone_device *tz)
+ 	mutex_unlock(&tz->lock);
  
- 	pr_err("Failed to load image, recovering.\n");
- 	swsusp_free();
+ 	trace_thermal_temperature(tz);
+-	if (tz->last_temperature == THERMAL_TEMP_INVALID)
+-		dev_dbg(&tz->device, "last_temperature N/A, current_temperature=%d\n",
+-			tz->temperature);
+-	else
+-		dev_dbg(&tz->device, "last_temperature=%d, current_temperature=%d\n",
+-			tz->last_temperature, tz->temperature);
+ }
+ 
+ static void thermal_zone_device_init(struct thermal_zone_device *tz)
 -- 
-1.8.3.1
+2.17.1
 
