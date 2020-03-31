@@ -2,150 +2,106 @@ Return-Path: <SRS0=0y+j=5Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FC44C2D0EE
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 16:57:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CABCFC43331
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 17:27:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1A93A2145D
-	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 16:57:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 954DD20CC7
+	for <linux-pm@archiver.kernel.org>; Tue, 31 Mar 2020 17:27:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tCL/dJ+W"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YlatPw3k"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731305AbgCaQ5E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 31 Mar 2020 12:57:04 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:41312 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731062AbgCaQ5D (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2020 12:57:03 -0400
-Received: by mail-wr1-f67.google.com with SMTP id h9so26911527wrc.8
-        for <linux-pm@vger.kernel.org>; Tue, 31 Mar 2020 09:57:00 -0700 (PDT)
+        id S1725999AbgCaR1D (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 31 Mar 2020 13:27:03 -0400
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:34306 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725947AbgCaR1C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 31 Mar 2020 13:27:02 -0400
+Received: by mail-ed1-f66.google.com with SMTP id o1so7869232edv.1;
+        Tue, 31 Mar 2020 10:27:01 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=Y/abDyeAK7rGBvYDyizWyVwlF1sauFbaXbJ9R6MBx2w=;
-        b=tCL/dJ+Wt5JYGy7iTzNg1GIRUfoWm7de+Xaha+6IB5H71tL8ayUKv+ZnqKlrlyjBrU
-         /jGZDm1b0DSUeiDJQxSgIrDGOPBJlHgTpAOE5GrNI/yMSAYQysdD/39ThvKY7BPUvFrI
-         Sk07stASDb4c8s2924NzVil3jcUBKY05PGQ/IwQ0Ne0OfjYRMxFD7A2UbZhTwaeHkKSI
-         /j3HAY5BChzX5mET9uMaIS7dHTaG7xphLcXMgoR8orOXRHhijJBxGk/8nAvhxfBmS3di
-         S8G6zDjIMbF88UugwnHg6Zs4faAcUQTK9zoCtfAO2XSVhM9CedAyS5EzP9aJ9LUs3Q8d
-         QTyg==
+        d=gmail.com; s=20161025;
+        h=subject:to:references:from:message-id:date:user-agent:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=mcrAQUUjnBmTfyv+ejaR6lSeHh26TbNTkCdqRT85gWA=;
+        b=YlatPw3kMTZwYOzqxtb8S39edjOKJUTha51WoQFYTrWT2PcTiobKlbWzEfHJlvYy+a
+         9GOelMXYppY/JnKF1cN1iDf6J+FZUMhR768t1nn6gjZo1v9sgd9h8nCMJIxt8PJV9It+
+         kTTMuWUcPGLQJpryr5ULgdzywzXas3lCBjOO6J6TttPwZsXZ5y1Lw7zjMUig/LDq0Dz8
+         egwlf/F1mW7mHmi+fTmxvv00+9CvhH//IYkfzVkROwkUCt0JAhFm0O+n9Tnv6iusuFB8
+         N0toXzSmnJDRdhuRwpN0M+1oLnsYVgOj00xNdA//GzFqvVj6cbr+vphNKuazKqqfWLSB
+         Rg1Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=Y/abDyeAK7rGBvYDyizWyVwlF1sauFbaXbJ9R6MBx2w=;
-        b=syzTKl2GMFNtXTPala5gzkGZUn7dc7zpLs7TSjfS2jvd12vMgIT36c/hy/2IHE+O8K
-         Lmyet4a9OmaeL97SCR7Ms5m0yb/sa8IBO+bAKJQAp/M/pGa/gctrPoIobHI7JlT8gwyw
-         /sozY10UAI1YH8bSt011fh5cGNhomv/23ZTAlOgyHAaRxEa52jSiW9aQrDsDm1LI/kQA
-         Mnd5/MShlUu3x2GySj7ZzTfCp4QpKlAI9kUqxikZhggs2z6IMUa/6khsH90wXDi65SDC
-         4asqR+G8aoCaUogA/Gl83HX91oXdRJqnnIs6Qm7et+bQaJTGIbDa4N7HEPJRZvWaADwJ
-         l3bg==
-X-Gm-Message-State: ANhLgQ3tAtmCsyv2FSXnv6X0rl57Cctzbh588UPfE10Xa0padCO0UWUw
-        6SKAji2LOh+FAER8qxLL1oBTrA==
-X-Google-Smtp-Source: ADFU+vux8QM/2sxcYlqspl3JXz6luUGkH5emuSBHHZxomPcWFLW+MC2/DvbE2r9M9MtiL4J/aMZ4MA==
-X-Received: by 2002:a05:6000:11c6:: with SMTP id i6mr22412859wrx.115.1585673819466;
-        Tue, 31 Mar 2020 09:56:59 -0700 (PDT)
-Received: from localhost.localdomain ([2a01:e34:ed2f:f020:497e:e6a9:b3eb:fcac])
-        by smtp.gmail.com with ESMTPSA id d7sm12925648wrr.77.2020.03.31.09.56.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 31 Mar 2020 09:56:58 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 1/2] thermal: core: Make thermal_zone_set_trips private
-Date:   Tue, 31 Mar 2020 18:54:48 +0200
-Message-Id: <20200331165449.30355-1-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        h=x-gm-message-state:subject:to:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=mcrAQUUjnBmTfyv+ejaR6lSeHh26TbNTkCdqRT85gWA=;
+        b=qFE2eRjlLESUwOiHpK2yQm1cmqht2FqzhkrQgvhttlu7KfB0aYfRkLYuE73THPUea+
+         n6LE52Du/AxK1qGgzZmk8ySUV+kmefmEGv9AakgkwWBeijokfIj+RiP3Axf/AJIzl3S8
+         xl/kuO198Wh+eWcKryKOXfe+4bxEVJInNCoAGxK4fbDaCMckwzKpmD2rgELn6Yf26cuh
+         hePYj0MZ0xlTiqW+jheUFfJHzTMRLqeMmWfU9oqKBAWlCTbav/0+hS2a5p2xh8AtV9iu
+         4r1yj6V6o3kW60ifWHDNj6kcIAwRWP+d+9peFKxxUzhG2R0haAazmxKVQNsZvCKJUdIE
+         xgKw==
+X-Gm-Message-State: ANhLgQ3qoEG3Qhoe//mDHlsq6R0/tqMq5JoV6qyez+YpgqpKDgA1D5cg
+        uI4NG0OG2l0gtvCd8CjeG4chQuu6
+X-Google-Smtp-Source: APiQypL7Rfa6dCTvHvhnrKLsJSWybE0ElcF/fHPTVnCGjVuFvFtf2WL13/3pMwTMBF64EQQv0IWoOQ==
+X-Received: by 2002:a05:651c:22e:: with SMTP id z14mr10406742ljn.64.1585675282154;
+        Tue, 31 Mar 2020 10:21:22 -0700 (PDT)
+Received: from [192.168.2.145] (ppp91-78-208-152.pppoe.mtu-net.ru. [91.78.208.152])
+        by smtp.googlemail.com with ESMTPSA id l7sm3452845lfg.79.2020.03.31.10.21.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 31 Mar 2020 10:21:21 -0700 (PDT)
+Subject: Re: [PATCH 5/9] power: supply: smb347-charger: Implement device-tree
+ support
+To:     Jonghwa Lee <jonghwa3.lee@samsung.com>,
+        David Heidelberg <david@ixit.cz>,
+        Sebastian Reichel <sre@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Myungjoo Ham <myungjoo.ham@samsung.com>,
+        Sumit Semwal <sumit.semwal@linaro.org>,
+        John Stultz <john.stultz@linaro.org>,
+        Vinay Simha BN <simhavcs@gmail.com>,
+        mika.westerberg@linux.intel.com, ramakrishna.pallala@intel.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200329161552.215075-1-david@ixit.cz>
+ <CGME20200329163055epcas1p2cb50a5892440ecff127f87cb4306571e@epcas1p2.samsung.com>
+ <20200329162128.218584-6-david@ixit.cz>
+ <2dc4e25c-4b3a-1675-1f9e-0437a3526835@samsung.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <44ab265e-4a67-bc26-d931-ca7d155171a2@gmail.com>
+Date:   Tue, 31 Mar 2020 20:20:58 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
+MIME-Version: 1.0
+In-Reply-To: <2dc4e25c-4b3a-1675-1f9e-0437a3526835@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The function thermal_zone_set_trips() is used by the thermal core code
-in order to update the next trip points, there are no other users.
+Hello Jonghwa,
 
-Move the function definition in the thermal_core.h, remove the
-EXPORT_SYMBOL_GPL and document the function.
+31.03.2020 03:25, Jonghwa Lee пишет:
+> On 20. 3. 30. 오전 1:21, David Heidelberg wrote:
+>> This patch makes smb347 charger driver to support dt binding. All legacy
+>> platform data now can be parsed from dt.
+>> Because of that smb347 is i2c client driver, IRQ number can be passed
+>> automatically through client's irq variable if it is defined in dt.
+>> No more to use requesting gpio to irq manually in dt-way.
+> Thanks for keeping original commit description and revealing where it 
+> comes from.
+> 
+> Anyway, in the above description, the last three lines doesn't match to 
+> the commit since
+> 
+> the original patch is now split. Please remove them or you can rewrite 
+> description as your own.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/thermal_core.h    |  3 +++
- drivers/thermal/thermal_helpers.c | 13 ++++++++++++-
- include/linux/thermal.h           |  3 ---
- 3 files changed, 15 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index a9bf00e91d64..37cd4e2bead2 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -69,6 +69,9 @@ void thermal_zone_device_unbind_exception(struct thermal_zone_device *,
- int thermal_zone_device_set_policy(struct thermal_zone_device *, char *);
- int thermal_build_list_of_policies(char *buf);
- 
-+/* Helpers */
-+void thermal_zone_set_trips(struct thermal_zone_device *tz);
-+
- /* sysfs I/F */
- int thermal_zone_create_device_groups(struct thermal_zone_device *, int);
- void thermal_zone_destroy_device_groups(struct thermal_zone_device *);
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 2ba756af76b7..59eaf2d0fdb3 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -113,6 +113,18 @@ int thermal_zone_get_temp(struct thermal_zone_device *tz, int *temp)
- }
- EXPORT_SYMBOL_GPL(thermal_zone_get_temp);
- 
-+/**
-+ * thermal_zone_set_trips - Computes the next trip points for the driver
-+ * @tz: a pointer to a thermal zone device structure
-+ *
-+ * The function computes the next temperature boundaries by browsing
-+ * the trip points. The result is the closer low and high trip points
-+ * to the current temperature. These values are passed to the backend
-+ * driver to let it set its own notification mechanism (usually an
-+ * interrupt).
-+ *
-+ * It does not return a value
-+ */
- void thermal_zone_set_trips(struct thermal_zone_device *tz)
- {
- 	int low = -INT_MAX;
-@@ -161,7 +173,6 @@ void thermal_zone_set_trips(struct thermal_zone_device *tz)
- exit:
- 	mutex_unlock(&tz->lock);
- }
--EXPORT_SYMBOL_GPL(thermal_zone_set_trips);
- 
- void thermal_cdev_update(struct thermal_cooling_device *cdev)
- {
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index c91b1e344d56..448841ab0dca 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -439,7 +439,6 @@ int thermal_zone_unbind_cooling_device(struct thermal_zone_device *, int,
- 				       struct thermal_cooling_device *);
- void thermal_zone_device_update(struct thermal_zone_device *,
- 				enum thermal_notify_event);
--void thermal_zone_set_trips(struct thermal_zone_device *);
- 
- struct thermal_cooling_device *thermal_cooling_device_register(const char *,
- 		void *, const struct thermal_cooling_device_ops *);
-@@ -497,8 +496,6 @@ static inline int thermal_zone_unbind_cooling_device(
- static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
- 					      enum thermal_notify_event event)
- { }
--static inline void thermal_zone_set_trips(struct thermal_zone_device *tz)
--{ }
- static inline struct thermal_cooling_device *
- thermal_cooling_device_register(char *type, void *devdata,
- 	const struct thermal_cooling_device_ops *ops)
--- 
-2.17.1
-
+That's a good suggestion, thank you very much.
