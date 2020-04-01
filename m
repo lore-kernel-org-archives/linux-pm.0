@@ -4,29 +4,30 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ACF82C2D0F3
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Apr 2020 14:33:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73C12C18E5B
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Apr 2020 14:33:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 8DF9F20719
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Apr 2020 14:33:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5438320B1F
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Apr 2020 14:33:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733072AbgDAOdW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Apr 2020 10:33:22 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:40356 "EHLO inva020.nxp.com"
+        id S1733067AbgDAOdV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Apr 2020 10:33:21 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:51494 "EHLO inva021.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732749AbgDAOdW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 1 Apr 2020 10:33:22 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B303B1A0E9C;
-        Wed,  1 Apr 2020 16:33:20 +0200 (CEST)
+        id S1733059AbgDAOdV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 1 Apr 2020 10:33:21 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 6F0BE200DF5;
+        Wed,  1 Apr 2020 16:33:18 +0200 (CEST)
 Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id A11E51A0E8F;
-        Wed,  1 Apr 2020 16:33:20 +0200 (CEST)
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 55A00200DEE;
+        Wed,  1 Apr 2020 16:33:18 +0200 (CEST)
 Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 8BFE620507;
-        Wed,  1 Apr 2020 16:33:19 +0200 (CEST)
+        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 45BBD20507;
+        Wed,  1 Apr 2020 16:33:17 +0200 (CEST)
 From:   Leonard Crestez <leonard.crestez@nxp.com>
 To:     Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -54,9 +55,9 @@ Cc:     Alexandre Bailon <abailon@baylibre.com>,
         Silvano di Ninno <silvano.dininno@nxp.com>,
         linux-pm@vger.kernel.org, kernel@pengutronix.de, linux-imx@nxp.com,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 6/8] interconnect: imx: Add platform driver for imx8mq
-Date:   Wed,  1 Apr 2020 17:33:05 +0300
-Message-Id: <31ed81d384ca9922242bbd24f68091fddc4aee36.1585751281.git.leonard.crestez@nxp.com>
+Subject: [PATCH v2 4/8] interconnect: Add imx core driver
+Date:   Wed,  1 Apr 2020 17:33:03 +0300
+Message-Id: <50e6bdb1aab7d8f73cb10d11a4ea1e55056448fc.1585751281.git.leonard.crestez@nxp.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <cover.1585751281.git.leonard.crestez@nxp.com>
 References: <cover.1585751281.git.leonard.crestez@nxp.com>
@@ -68,212 +69,448 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a platform driver for the i.MX8MQ SoC describing bus topology,
-based on internal documentation.
+This adds support for i.MX SoC family to interconnect framework.
 
+Platform drivers can describe the interconnect graph and several
+adjustment knobs where icc node bandwidth is converted to a
+DEV_PM_QOS_MIN_FREQUENCY request.
+
+The interconnect provider is probed through the main NOC device and
+other adjustable nodes on the same graph are found from a
+fsl,scalable-nodes phandle array property.
+
+Signed-off-by: Alexandre Bailon <abailon@baylibre.com>
 Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
 Tested-by: Martin Kepplinger <martin.kepplinger@puri.sm>
 ---
- drivers/interconnect/imx/Kconfig          |   4 +
- drivers/interconnect/imx/Makefile         |   2 +
- drivers/interconnect/imx/imx8mq.c         | 106 ++++++++++++++++++++++
- include/dt-bindings/interconnect/imx8mq.h |  48 ++++++++++
- 4 files changed, 160 insertions(+)
- create mode 100644 drivers/interconnect/imx/imx8mq.c
- create mode 100644 include/dt-bindings/interconnect/imx8mq.h
+ drivers/interconnect/Kconfig      |   1 +
+ drivers/interconnect/Makefile     |   1 +
+ drivers/interconnect/imx/Kconfig  |   5 +
+ drivers/interconnect/imx/Makefile |   3 +
+ drivers/interconnect/imx/imx.c    | 298 ++++++++++++++++++++++++++++++
+ drivers/interconnect/imx/imx.h    |  62 +++++++
+ 6 files changed, 370 insertions(+)
+ create mode 100644 drivers/interconnect/imx/Kconfig
+ create mode 100644 drivers/interconnect/imx/Makefile
+ create mode 100644 drivers/interconnect/imx/imx.c
+ create mode 100644 drivers/interconnect/imx/imx.h
 
+diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
+index bfa4ca3ab7a9..e61802230f90 100644
+--- a/drivers/interconnect/Kconfig
++++ b/drivers/interconnect/Kconfig
+@@ -10,7 +10,8 @@ menuconfig INTERCONNECT
+ 	  If unsure, say no.
+ 
+ if INTERCONNECT
+ 
+ source "drivers/interconnect/qcom/Kconfig"
++source "drivers/interconnect/imx/Kconfig"
+ 
+ endif
+diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+index 725029ae7a2c..6998288a7d98 100644
+--- a/drivers/interconnect/Makefile
++++ b/drivers/interconnect/Makefile
+@@ -3,5 +3,6 @@
+ CFLAGS_core.o				:= -I$(src)
+ icc-core-objs				:= core.o
+ 
+ obj-$(CONFIG_INTERCONNECT)		+= icc-core.o
+ obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
++obj-$(CONFIG_INTERCONNECT_IMX)		+= imx/
 diff --git a/drivers/interconnect/imx/Kconfig b/drivers/interconnect/imx/Kconfig
-index 2cd4fad4976a..a2e6127f25b7 100644
---- a/drivers/interconnect/imx/Kconfig
-+++ b/drivers/interconnect/imx/Kconfig
-@@ -5,5 +5,9 @@ config INTERCONNECT_IMX
- 	  Generic interconnect drivers for i.MX SOCs
- 
- config INTERCONNECT_IMX8MM
- 	tristate "i.MX8MM interconnect driver"
- 	depends on INTERCONNECT_IMX
-+
-+config INTERCONNECT_IMX8MQ
-+	tristate "i.MX8MQ interconnect driver"
-+	depends on INTERCONNECT_IMX
-diff --git a/drivers/interconnect/imx/Makefile b/drivers/interconnect/imx/Makefile
-index c234e5d3dfd1..e7d7e029d6c7 100644
---- a/drivers/interconnect/imx/Makefile
-+++ b/drivers/interconnect/imx/Makefile
-@@ -1,5 +1,7 @@
- imx-interconnect-objs			:= imx.o
- imx8mm-interconnect-objs       		:= imx8mm.o
-+imx8mq-interconnect-objs       		:= imx8mq.o
- 
- obj-$(CONFIG_INTERCONNECT_IMX)		+= imx-interconnect.o
- obj-$(CONFIG_INTERCONNECT_IMX8MM)	+= imx8mm-interconnect.o
-+obj-$(CONFIG_INTERCONNECT_IMX8MQ)	+= imx8mq-interconnect.o
-diff --git a/drivers/interconnect/imx/imx8mq.c b/drivers/interconnect/imx/imx8mq.c
 new file mode 100644
-index 000000000000..8fb953a1b9ff
+index 000000000000..f39336f8d603
 --- /dev/null
-+++ b/drivers/interconnect/imx/imx8mq.c
-@@ -0,0 +1,106 @@
++++ b/drivers/interconnect/imx/Kconfig
+@@ -0,0 +1,5 @@
++config INTERCONNECT_IMX
++	tristate "i.MX interconnect drivers"
++	depends on ARCH_MXC || COMPILE_TEST
++	help
++	  Generic interconnect drivers for i.MX SOCs
+diff --git a/drivers/interconnect/imx/Makefile b/drivers/interconnect/imx/Makefile
+new file mode 100644
+index 000000000000..86ae0bd28d8c
+--- /dev/null
++++ b/drivers/interconnect/imx/Makefile
+@@ -0,0 +1,3 @@
++imx-interconnect-objs			:= imx.o
++
++obj-$(CONFIG_INTERCONNECT_IMX)		+= imx-interconnect.o
+diff --git a/drivers/interconnect/imx/imx.c b/drivers/interconnect/imx/imx.c
+new file mode 100644
+index 000000000000..527b1de1c41a
+--- /dev/null
++++ b/drivers/interconnect/imx/imx.c
+@@ -0,0 +1,298 @@
 +// SPDX-License-Identifier: GPL-2.0
 +/*
 + * Interconnect framework driver for i.MX SoC
 + *
++ * Copyright (c) 2019, BayLibre
 + * Copyright (c) 2019, NXP
++ * Author: Alexandre Bailon <abailon@baylibre.com>
++ * Author: Leonard Crestez <leonard.crestez@nxp.com>
 + */
 +
 +#include <linux/device.h>
++#include <linux/interconnect-provider.h>
 +#include <linux/module.h>
++#include <linux/of.h>
 +#include <linux/of_platform.h>
 +#include <linux/platform_device.h>
-+
-+#include <dt-bindings/interconnect/imx8mq.h>
++#include <linux/pm_qos.h>
 +
 +#include "imx.h"
 +
-+static const struct imx_icc_node_adj_desc imx8mq_dram_adj = {
-+	.bw_mul = 1,
-+	.bw_div = 4,
-+	.phandle_name = "fsl,ddrc",
++/* private icc_node data */
++struct imx_icc_node {
++	const struct imx_icc_node_desc *desc;
++	struct device *qos_dev;
++	struct dev_pm_qos_request qos_req;
 +};
 +
-+static const struct imx_icc_node_adj_desc imx8mq_noc_adj = {
-+	.bw_mul = 1,
-+	.bw_div = 4,
-+	.main_noc = true,
-+};
-+
-+/*
-+ * Describe bus masters, slaves and connections between them
-+ *
-+ * This is a simplified subset of the bus diagram, there are several other
-+ * PL301 nics which are skipped/merged into PL301_MAIN
-+ */
-+static struct imx_icc_node_desc nodes[] = {
-+	DEFINE_BUS_INTERCONNECT("NOC", IMX8MQ_ICN_NOC, &imx8mq_noc_adj,
-+			IMX8MQ_ICS_DRAM, IMX8MQ_ICN_MAIN),
-+
-+	DEFINE_BUS_SLAVE("DRAM", IMX8MQ_ICS_DRAM, &imx8mq_dram_adj),
-+	DEFINE_BUS_SLAVE("OCRAM", IMX8MQ_ICS_OCRAM, NULL),
-+	DEFINE_BUS_MASTER("A53", IMX8MQ_ICM_A53, IMX8MQ_ICN_NOC),
-+
-+	/* VPUMIX */
-+	DEFINE_BUS_MASTER("VPU", IMX8MQ_ICM_VPU, IMX8MQ_ICN_VIDEO),
-+	DEFINE_BUS_INTERCONNECT("PL301_VIDEO", IMX8MQ_ICN_VIDEO, NULL, IMX8MQ_ICN_NOC),
-+
-+	/* GPUMIX */
-+	DEFINE_BUS_MASTER("GPU", IMX8MQ_ICM_GPU, IMX8MQ_ICN_GPU),
-+	DEFINE_BUS_INTERCONNECT("PL301_GPU", IMX8MQ_ICN_GPU, NULL, IMX8MQ_ICN_NOC),
-+
-+	/* DISPMIX (only for DCSS) */
-+	DEFINE_BUS_MASTER("DC", IMX8MQ_ICM_DCSS, IMX8MQ_ICN_DCSS),
-+	DEFINE_BUS_INTERCONNECT("PL301_DC", IMX8MQ_ICN_DCSS, NULL, IMX8MQ_ICN_NOC),
-+
-+	/* USBMIX */
-+	DEFINE_BUS_MASTER("USB1", IMX8MQ_ICM_USB1, IMX8MQ_ICN_USB),
-+	DEFINE_BUS_MASTER("USB2", IMX8MQ_ICM_USB2, IMX8MQ_ICN_USB),
-+	DEFINE_BUS_INTERCONNECT("PL301_USB", IMX8MQ_ICN_USB, NULL, IMX8MQ_ICN_NOC),
-+
-+	/* PL301_DISPLAY (IPs other than DCSS, inside SUPERMIX) */
-+	DEFINE_BUS_MASTER("CSI1", IMX8MQ_ICM_CSI1, IMX8MQ_ICN_DISPLAY),
-+	DEFINE_BUS_MASTER("CSI2", IMX8MQ_ICM_CSI2, IMX8MQ_ICN_DISPLAY),
-+	DEFINE_BUS_MASTER("LCDIF", IMX8MQ_ICM_LCDIF, IMX8MQ_ICN_DISPLAY),
-+	DEFINE_BUS_INTERCONNECT("PL301_DISPLAY", IMX8MQ_ICN_DISPLAY, NULL, IMX8MQ_ICN_MAIN),
-+
-+	/* AUDIO */
-+	DEFINE_BUS_MASTER("SDMA2", IMX8MQ_ICM_SDMA2, IMX8MQ_ICN_AUDIO),
-+	DEFINE_BUS_INTERCONNECT("PL301_AUDIO", IMX8MQ_ICN_AUDIO, NULL, IMX8MQ_ICN_DISPLAY),
-+
-+	/* ENET */
-+	DEFINE_BUS_MASTER("ENET", IMX8MQ_ICM_ENET, IMX8MQ_ICN_ENET),
-+	DEFINE_BUS_INTERCONNECT("PL301_ENET", IMX8MQ_ICN_ENET, NULL, IMX8MQ_ICN_MAIN),
-+
-+	/* OTHER */
-+	DEFINE_BUS_MASTER("SDMA1", IMX8MQ_ICM_SDMA1, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_MASTER("NAND", IMX8MQ_ICM_NAND, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_MASTER("USDHC1", IMX8MQ_ICM_USDHC1, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_MASTER("USDHC2", IMX8MQ_ICM_USDHC2, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_MASTER("PCIE1", IMX8MQ_ICM_PCIE1, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_MASTER("PCIE2", IMX8MQ_ICM_PCIE2, IMX8MQ_ICN_MAIN),
-+	DEFINE_BUS_INTERCONNECT("PL301_MAIN", IMX8MQ_ICN_MAIN, NULL,
-+			IMX8MQ_ICN_NOC, IMX8MQ_ICS_OCRAM),
-+};
-+
-+static int imx8mq_icc_probe(struct platform_device *pdev)
++static int imx_icc_aggregate(struct icc_node *node, u32 tag,
++			     u32 avg_bw, u32 peak_bw,
++			     u32 *agg_avg, u32 *agg_peak)
 +{
-+	return imx_icc_register(pdev, nodes, ARRAY_SIZE(nodes));
++	*agg_avg += avg_bw;
++	*agg_peak = max(*agg_peak, peak_bw);
++
++	return 0;
 +}
 +
-+static int imx8mq_icc_remove(struct platform_device *pdev)
++static int imx_icc_node_set(struct icc_node *node)
 +{
-+	return imx_icc_unregister(pdev);
++	struct device *dev = node->provider->dev;
++	struct imx_icc_node *node_data = node->data;
++	u64 freq;
++
++	if (!node_data->qos_dev)
++		return 0;
++
++	freq = (node->avg_bw + node->peak_bw) * node_data->desc->adj->bw_mul;
++	do_div(freq, node_data->desc->adj->bw_div);
++	dev_dbg(dev, "node %s device %s avg_bw %ukBps peak_bw %ukBps min_freq %llukHz\n",
++		node->name, dev_name(node_data->qos_dev),
++		node->avg_bw, node->peak_bw, freq);
++
++	if (freq > S32_MAX) {
++		dev_err(dev, "%s can't request more than S32_MAX freq\n",
++				node->name);
++		return -ERANGE;
++	}
++
++	dev_pm_qos_update_request(&node_data->qos_req, freq);
++
++	return 0;
 +}
 +
-+static struct platform_driver imx8mq_icc_driver = {
-+	.probe = imx8mq_icc_probe,
-+	.remove = imx8mq_icc_remove,
-+	.driver = {
-+		.name = "imx8mq-interconnect",
-+	},
-+};
++static int imx_icc_set(struct icc_node *src, struct icc_node *dst)
++{
++	return imx_icc_node_set(dst);
++}
 +
-+module_platform_driver(imx8mq_icc_driver);
-+MODULE_ALIAS("platform:imx8mq-interconnect");
-+MODULE_AUTHOR("Leonard Crestez <leonard.crestez@nxp.com>");
++/* imx_icc_node_destroy() - Destroy an imx icc_node, including private data */
++static void imx_icc_node_destroy(struct icc_node *node)
++{
++	struct imx_icc_node *node_data = node->data;
++	int ret;
++
++	if (dev_pm_qos_request_active(&node_data->qos_req)) {
++		ret = dev_pm_qos_remove_request(&node_data->qos_req);
++		if (ret)
++			dev_warn(node->provider->dev, "failed to remove qos request for %s\n",
++				 dev_name(node_data->qos_dev));
++	}
++
++	put_device(node_data->qos_dev);
++	icc_node_del(node);
++	icc_node_destroy(node->id);
++}
++
++static int imx_icc_node_init_qos(struct icc_provider *provider,
++				 struct icc_node *node)
++{
++	struct imx_icc_node *node_data = node->data;
++	const struct imx_icc_node_adj_desc *adj = node_data->desc->adj;
++	struct device *dev = provider->dev;
++	struct device_node *dn = NULL;
++	struct platform_device *pdev;
++
++	if (adj->main_noc) {
++		node_data->qos_dev = dev;
++		dev_info(dev, "icc node %s[%d] is main noc itself\n",
++			 node->name, node->id);
++	} else {
++		dn = of_parse_phandle(dev->of_node, adj->phandle_name, 0);
++		if (IS_ERR(dn)) {
++			dev_warn(dev, "Failed to parse %s: %ld\n",
++					adj->phandle_name, PTR_ERR(dn));
++			return PTR_ERR(dn);
++		}
++		/* Allow scaling to be disabled on a per-node basis */
++		if (!dn || !of_device_is_available(dn)) {
++			dev_warn(dev, "Missing property %s, skip scaling %s\n",
++					adj->phandle_name, node->name);
++			return 0;
++		}
++
++		pdev = of_find_device_by_node(dn);
++		of_node_put(dn);
++		if (!pdev) {
++			dev_warn(dev, "node %s[%d] missing device for %pOF\n",
++					node->name, node->id, dn);
++			return -EPROBE_DEFER;
++		}
++		node_data->qos_dev = &pdev->dev;
++		dev_info(dev, "node %s[%d] has device node %pOF\n",
++			 node->name, node->id, dn);
++	}
++
++	return dev_pm_qos_add_request(node_data->qos_dev,
++				      &node_data->qos_req,
++				      DEV_PM_QOS_MIN_FREQUENCY, 0);
++}
++
++static struct icc_node *imx_icc_node_add(struct icc_provider *provider,
++					 const struct imx_icc_node_desc *node_desc)
++{
++	struct device *dev = provider->dev;
++	struct imx_icc_node *node_data;
++	struct icc_node *node;
++	int ret;
++
++	node = icc_node_create(node_desc->id);
++	if (IS_ERR(node)) {
++		dev_err(dev, "failed to create node %d\n", node_desc->id);
++		return node;
++	}
++
++	if (node->data) {
++		dev_err(dev, "already created node %s id=%d\n",
++				node_desc->name, node_desc->id);
++		return ERR_PTR(-EEXIST);
++	}
++
++	node_data = devm_kzalloc(dev, sizeof(*node_data), GFP_KERNEL);
++	if (!node_data) {
++		icc_node_destroy(node->id);
++		return ERR_PTR(-ENOMEM);
++	}
++
++	node->name = node_desc->name;
++	node->data = node_data;
++	node_data->desc = node_desc;
++	icc_node_add(node, provider);
++
++	if (node_desc->adj) {
++		ret = imx_icc_node_init_qos(provider, node);
++		if (ret < 0) {
++			imx_icc_node_destroy(node);
++			return ERR_PTR(ret);
++		}
++	}
++
++	return node;
++}
++
++static void imx_icc_unregister_nodes(struct icc_provider *provider)
++{
++	struct icc_node *node, *tmp;
++
++	list_for_each_entry_safe(node, tmp, &provider->nodes, node_list)
++		imx_icc_node_destroy(node);
++}
++
++static int imx_icc_register_nodes(struct icc_provider *provider,
++				  const struct imx_icc_node_desc *descs,
++				  int count)
++{
++	struct icc_onecell_data *provider_data = provider->data;
++	int ret;
++	int i;
++
++	for (i = 0; i < count; i++) {
++		struct icc_node *node;
++		const struct imx_icc_node_desc *node_desc = &descs[i];
++		size_t j;
++
++		node = imx_icc_node_add(provider, node_desc);
++		if (IS_ERR(node)) {
++			ret = PTR_ERR(node);
++			if (ret != -EPROBE_DEFER)
++				dev_err(provider->dev, "failed to add %s: %d\n",
++					node_desc->name, ret);
++			goto err;
++		}
++		provider_data->nodes[node->id] = node;
++
++		for (j = 0; j < node_desc->num_links; j++) {
++			ret = icc_link_create(node, node_desc->links[j]);
++			if (ret) {
++				dev_err(provider->dev, "failed to link node %d to %d: %d\n",
++					node->id, node_desc->links[j], ret);
++				goto err;
++			}
++		}
++	}
++
++	return 0;
++
++err:
++	imx_icc_unregister_nodes(provider);
++
++	return ret;
++}
++
++static int get_max_node_id(struct imx_icc_node_desc *nodes, int nodes_count)
++{
++	int i, ret = 0;
++
++	for (i = 0; i < nodes_count; ++i)
++		if (nodes[i].id > ret)
++			ret = nodes[i].id;
++
++	return ret;
++}
++
++int imx_icc_register(struct platform_device *pdev,
++		     struct imx_icc_node_desc *nodes, int nodes_count)
++{
++	struct device *dev = &pdev->dev;
++	struct icc_onecell_data *data;
++	struct icc_provider *provider;
++	int max_node_id;
++	int ret;
++
++	/* icc_onecell_data is indexed by node_id, unlike nodes param */
++	max_node_id = get_max_node_id(nodes, nodes_count);
++	data = devm_kzalloc(dev, struct_size(data, nodes, max_node_id),
++			    GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++	data->num_nodes = max_node_id;
++
++	provider = devm_kzalloc(dev, sizeof(*provider), GFP_KERNEL);
++	if (!provider)
++		return -ENOMEM;
++	provider->set = imx_icc_set;
++	provider->aggregate = imx_icc_aggregate;
++	provider->xlate = of_icc_xlate_onecell;
++	provider->data = data;
++	provider->dev = dev->parent;
++	platform_set_drvdata(pdev, provider);
++
++	ret = icc_provider_add(provider);
++	if (ret) {
++		dev_err(dev, "error adding interconnect provider: %d\n", ret);
++		return ret;
++	}
++
++	ret = imx_icc_register_nodes(provider, nodes, nodes_count);
++	if (ret)
++		goto provider_del;
++
++	return 0;
++
++provider_del:
++	icc_provider_del(provider);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(imx_icc_register);
++
++int imx_icc_unregister(struct platform_device *pdev)
++{
++	struct icc_provider *provider = platform_get_drvdata(pdev);
++	int ret;
++
++	if (provider->users) {
++		dev_warn(&pdev->dev, "interconnect provider still has %d users\n",
++			provider->users);
++		return -EBUSY;
++	}
++	imx_icc_unregister_nodes(provider);
++
++	ret = icc_provider_del(provider);
++	if (ret)
++		return ret;
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(imx_icc_unregister);
++
 +MODULE_LICENSE("GPL v2");
-diff --git a/include/dt-bindings/interconnect/imx8mq.h b/include/dt-bindings/interconnect/imx8mq.h
+diff --git a/drivers/interconnect/imx/imx.h b/drivers/interconnect/imx/imx.h
 new file mode 100644
-index 000000000000..94701b19f35a
+index 000000000000..aa811e4ebb7e
 --- /dev/null
-+++ b/include/dt-bindings/interconnect/imx8mq.h
-@@ -0,0 +1,48 @@
++++ b/drivers/interconnect/imx/imx.h
+@@ -0,0 +1,62 @@
 +/* SPDX-License-Identifier: GPL-2.0 */
 +/*
 + * Interconnect framework driver for i.MX SoC
 + *
++ * Copyright (c) 2019, BayLibre
 + * Copyright (c) 2019, NXP
++ * Author: Alexandre Bailon <abailon@baylibre.com>
++ * Author: Leonard Crestez <leonard.crestez@nxp.com>
 + */
++#ifndef __DRIVERS_INTERCONNECT_IMX_H
++#define __DRIVERS_INTERCONNECT_IMX_H
 +
-+#ifndef __IMX8MQ_ICM_INTERCONNECT_IDS_H
-+#define __IMX8MQ_ICM_INTERCONNECT_IDS_H
++#include <linux/kernel.h>
 +
-+#define IMX8MQ_ICN_NOC		1
-+#define IMX8MQ_ICS_DRAM		2
-+#define IMX8MQ_ICS_OCRAM	3
-+#define IMX8MQ_ICM_A53		4
++#define IMX_ICC_MAX_LINKS	4
 +
-+#define IMX8MQ_ICM_VPU		5
-+#define IMX8MQ_ICN_VIDEO	6
++/*
++ * struct imx_icc_node_adj - Describe a dynamic adjustable node
++ */
++struct imx_icc_node_adj_desc {
++	unsigned int bw_mul, bw_div;
++	const char *phandle_name;
++	bool main_noc;
++};
 +
-+#define IMX8MQ_ICM_GPU		7
-+#define IMX8MQ_ICN_GPU		8
++/*
++ * struct imx_icc_node - Describe an interconnect node
++ * @name: name of the node
++ * @id: an unique id to identify the node
++ * @links: an array of slaves' node id
++ * @num_links: number of id defined in links
++ */
++struct imx_icc_node_desc {
++	const char *name;
++	u16 id;
++	u16 links[IMX_ICC_MAX_LINKS];
++	u16 num_links;
 +
-+#define IMX8MQ_ICM_DCSS		9
-+#define IMX8MQ_ICN_DCSS		10
++	const struct imx_icc_node_adj_desc *adj;
++};
 +
-+#define IMX8MQ_ICM_USB1		11
-+#define IMX8MQ_ICM_USB2		12
-+#define IMX8MQ_ICN_USB		13
++#define DEFINE_BUS_INTERCONNECT(_name, _id, _adj, ...)			\
++	{								\
++		.id = _id,						\
++		.name = _name,						\
++		.adj = _adj,						\
++		.num_links = ARRAY_SIZE(((int[]){ __VA_ARGS__ })),	\
++		.links = { __VA_ARGS__ },				\
++	}
 +
-+#define IMX8MQ_ICM_CSI1		14
-+#define IMX8MQ_ICM_CSI2		15
-+#define IMX8MQ_ICM_LCDIF	16
-+#define IMX8MQ_ICN_DISPLAY	17
++#define DEFINE_BUS_MASTER(_name, _id, _dest_id)				\
++	DEFINE_BUS_INTERCONNECT(_name, _id, NULL, _dest_id)
 +
-+#define IMX8MQ_ICM_SDMA2	18
-+#define IMX8MQ_ICN_AUDIO	19
++#define DEFINE_BUS_SLAVE(_name, _id, _adj)				\
++	DEFINE_BUS_INTERCONNECT(_name, _id, _adj)
 +
-+#define IMX8MQ_ICN_ENET		20
-+#define IMX8MQ_ICM_ENET		21
++int imx_icc_register(struct platform_device *pdev,
++		     struct imx_icc_node_desc *nodes,
++		     int nodes_count);
++int imx_icc_unregister(struct platform_device *pdev);
 +
-+#define IMX8MQ_ICM_SDMA1	22
-+#define IMX8MQ_ICM_NAND		23
-+#define IMX8MQ_ICM_USDHC1	24
-+#define IMX8MQ_ICM_USDHC2	25
-+#define IMX8MQ_ICM_PCIE1	26
-+#define IMX8MQ_ICM_PCIE2	27
-+#define IMX8MQ_ICN_MAIN		28
-+
-+#endif /* __IMX8MQ_ICM_INTERCONNECT_IDS_H */
++#endif /* __DRIVERS_INTERCONNECT_IMX_H */
 -- 
 2.17.1
 
