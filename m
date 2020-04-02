@@ -2,126 +2,176 @@ Return-Path: <SRS0=3neH=5S=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69CC4C2BA1E
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Apr 2020 14:28:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E3CFC43331
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Apr 2020 14:52:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3F8412145D
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Apr 2020 14:28:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 051B120757
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Apr 2020 14:52:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GxstHCjI"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="n+yPQpUy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387678AbgDBO2g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Apr 2020 10:28:36 -0400
-Received: from mail-wr1-f65.google.com ([209.85.221.65]:42189 "EHLO
-        mail-wr1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732450AbgDBO2G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2020 10:28:06 -0400
-Received: by mail-wr1-f65.google.com with SMTP id h15so4439687wrx.9
-        for <linux-pm@vger.kernel.org>; Thu, 02 Apr 2020 07:28:03 -0700 (PDT)
+        id S2388692AbgDBOwX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Apr 2020 10:52:23 -0400
+Received: from mail-pl1-f195.google.com ([209.85.214.195]:36084 "EHLO
+        mail-pl1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732598AbgDBOwX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Apr 2020 10:52:23 -0400
+Received: by mail-pl1-f195.google.com with SMTP id g2so1429042plo.3;
+        Thu, 02 Apr 2020 07:52:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=NLgc/Vk2F+SuJNrnjX/emMROOJG4WMJyyJx9N+UIrh4=;
-        b=GxstHCjIcfORLMIREXB1QHdgE3pGnEEDm4SN6Zi8TGTVrQ5CYV/5BkwWKgiYvoAU8w
-         oPkzh+OZt30LJizbeh1vI6cCf1I5mvjwyVIDr2N1BVpnOFOzpHUynqTrHNvge3trdt8s
-         z+DrEt8f9zRs1wAUruYW91YM0tPhnlvrjuboMvmacQlYLa/a3dLsW8vFykPkmsm3UwfI
-         SGb4Xjviydgq9PxNH54skVVxPL+mRS/d/V8JvkHcg80c/IvXF5RasnfNeO+aQtxbP48n
-         RKDLMAc+IYNII0UuAtkrPLH0Eh7linMx0P+ErJViaEaTzwdgeHH9yDe+1Mm3xRvwzRyg
-         uWUA==
+        d=gmail.com; s=20161025;
+        h=sender:subject:to:cc:references:from:autocrypt:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=aip0nljuhe6yA8Q/dEuQ/IMeO1a7TzAT7si7q1EwA7A=;
+        b=n+yPQpUyCWVilw7y826JuS8dPxI41iAOVt4Se4wP66UnslxUOQZjCarGJmnkU1XaIN
+         5gUkVWVH2Dy4K616A/D4GynM4qm6t8hzGfZ3I7QWgl4JC0nBaMA0xZ5fvZ7yf+TWbaFt
+         KQssAkxv1zfqTb6I4xSLJAwXU6fpUPy7gkIMB1OqFdMUqC7g2PSyuHP6MFhbRnNz+HAO
+         IM9yJTwhn7zNo10GyDaPEJzerYvaPImnGTewXLgccrAKiPzSkse0nUgTChrVbh/2k+o5
+         4VsNzYx8WJRF86Ixq8UPaSvyZ5KW3iVo+A1xmMFXZpSLdInwXUJWzey59l+6aI4Aipt6
+         yAXA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=NLgc/Vk2F+SuJNrnjX/emMROOJG4WMJyyJx9N+UIrh4=;
-        b=WZ7BUOJdsr2TjlUmGBsF1+SW3HPUL+e0bZrm6NnxY4eQ+PrCKsBqlC63x7Ql39TetV
-         4uCffNSCyNI2OeyMxRnFUgeI1sUx0J0eKR3o8I/CvOHq2UaCr4RDGkaiiN8g45XE5cNr
-         x22aNF3AdnlcwLIpWYt2qiIN0AWcQdGzENLXY/MpwDru5aZ/bk2o5DszARdYDJl/L0Nt
-         yO9g5L5KR0scF7fdxkagDR+ZNHOo+ge5X1cjvS3/lDrdMqsRNhzWJxQhV9mICpn2hgf+
-         WbzLYQVuhhWVNI3vDBJ8ZAP485cxucL+qaliVrudUYTdoVaCGxtMuI4V6IoMLJZkvwcn
-         Ue0w==
-X-Gm-Message-State: AGi0PuaV9MszayOj6otJmJlc/raNoRfHS1sErpin6vdRkYGu9RnTRJUF
-        MY6LVWn09tFOU3IUAX3SHPVkjg==
-X-Google-Smtp-Source: APiQypIcclPEKfDgcgG4EZu6WTNMliilqfI+B3Z3wV1gY2jZDEbMOaBz3Lm35cEFBrnGJ5M003Pyeg==
-X-Received: by 2002:adf:a21a:: with SMTP id p26mr3843764wra.102.1585837682934;
-        Thu, 02 Apr 2020 07:28:02 -0700 (PDT)
-Received: from mai.imgcgcw.net ([2a01:e34:ed2f:f020:4b2:e366:e86f:261a])
-        by smtp.gmail.com with ESMTPSA id a7sm7045186wmm.34.2020.04.02.07.28.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 02 Apr 2020 07:28:02 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
-Cc:     amit.kucheria@verdurent.com,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH V2 2/9] thermal: Move struct thermal_attr to the private header
-Date:   Thu,  2 Apr 2020 16:27:40 +0200
-Message-Id: <20200402142747.8307-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200402142747.8307-1-daniel.lezcano@linaro.org>
-References: <20200402142747.8307-1-daniel.lezcano@linaro.org>
+        h=x-gm-message-state:sender:subject:to:cc:references:from:autocrypt
+         :message-id:date:user-agent:mime-version:in-reply-to
+         :content-language:content-transfer-encoding;
+        bh=aip0nljuhe6yA8Q/dEuQ/IMeO1a7TzAT7si7q1EwA7A=;
+        b=NJ89vIhxVz7RZ9AFZxD61BVBlb506T390DSEZVtkPDVBjtArZbtfMtmzDkAhAsMTgf
+         B6D6e8I6KAaTJmUwbW3QHY1+HLQTIYlPNoo5+C6yBb41hoQBE3z6Qhc31DnVJvRLgrAT
+         thdXHD30ni481G4R0/VxuJ9Q/CXZrc5Rxdf3Sx0qpVYQMwZNraHcpSyOc8wpz+pdoUef
+         8LFnPuhJMy/uH+hhzP+HTaS++++AXG4pewtFg4MmES2xkNBmxxznwUrF/on1U6nstDLk
+         6xormoNZCjxgKp4h6v+6I6HeMfUw4sbb3urB7PXwHnfQzagVhnEP41xUqKfiueKzsnk7
+         Otvg==
+X-Gm-Message-State: AGi0PuYJP1fxjBFBGZ8XiUGfZ+tWEZWe6fN9zL6WjM0a8H5rgoSitX9m
+        fkBmJTHnT/sKBELUkh83ctkJak9j
+X-Google-Smtp-Source: APiQypKI4RPVQmpL1ipTFl/IU0vLvJPUhF9z5ZMXSItx2StEtRovwQJ0mK+WOsQRG10oyK/3Z4NRUA==
+X-Received: by 2002:a17:90a:324b:: with SMTP id k69mr4216506pjb.50.1585839141483;
+        Thu, 02 Apr 2020 07:52:21 -0700 (PDT)
+Received: from server.roeck-us.net ([2600:1700:e321:62f0:329c:23ff:fee3:9d7c])
+        by smtp.gmail.com with ESMTPSA id d206sm3876342pfd.160.2020.04.02.07.52.20
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 02 Apr 2020 07:52:20 -0700 (PDT)
+Subject: Re: [PATCH 3/7] power: supply: core: fix HWMON temperature labels
+To:     =?UTF-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>,
+        Sebastian Reichel "(maintainer:POWER" SUPPLY CLASS/SUBSYSTEM
+         and "DRIVERS,blamed_fixes:1/1=100%)" 
+        <sebastian.reichel@collabora.com>,
+        "Andrey Smirnov (blamed_fixes:1/1=100%)" <andrew.smirnov@gmail.com>
+Cc:     "open list:POWER SUPPLY CLASS/SUBSYSTEM and DRIVERS" 
+        <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+References: <cover.1585837575.git.mirq-linux@rere.qmqm.pl>
+ <4a8ac6700e1503a69146f3eefd7cb515d11bfc9f.1585837575.git.mirq-linux@rere.qmqm.pl>
+From:   Guenter Roeck <linux@roeck-us.net>
+Autocrypt: addr=linux@roeck-us.net; keydata=
+ xsFNBE6H1WcBEACu6jIcw5kZ5dGeJ7E7B2uweQR/4FGxH10/H1O1+ApmcQ9i87XdZQiB9cpN
+ RYHA7RCEK2dh6dDccykQk3bC90xXMPg+O3R+C/SkwcnUak1UZaeK/SwQbq/t0tkMzYDRxfJ7
+ nyFiKxUehbNF3r9qlJgPqONwX5vJy4/GvDHdddSCxV41P/ejsZ8PykxyJs98UWhF54tGRWFl
+ 7i1xvaDB9lN5WTLRKSO7wICuLiSz5WZHXMkyF4d+/O5ll7yz/o/JxK5vO/sduYDIlFTvBZDh
+ gzaEtNf5tQjsjG4io8E0Yq0ViobLkS2RTNZT8ICq/Jmvl0SpbHRvYwa2DhNsK0YjHFQBB0FX
+ IdhdUEzNefcNcYvqigJpdICoP2e4yJSyflHFO4dr0OrdnGLe1Zi/8Xo/2+M1dSSEt196rXaC
+ kwu2KgIgmkRBb3cp2vIBBIIowU8W3qC1+w+RdMUrZxKGWJ3juwcgveJlzMpMZNyM1jobSXZ0
+ VHGMNJ3MwXlrEFPXaYJgibcg6brM6wGfX/LBvc/haWw4yO24lT5eitm4UBdIy9pKkKmHHh7s
+ jfZJkB5fWKVdoCv/omy6UyH6ykLOPFugl+hVL2Prf8xrXuZe1CMS7ID9Lc8FaL1ROIN/W8Vk
+ BIsJMaWOhks//7d92Uf3EArDlDShwR2+D+AMon8NULuLBHiEUQARAQABzTJHdWVudGVyIFJv
+ ZWNrIChMaW51eCBhY2NvdW50KSA8bGludXhAcm9lY2stdXMubmV0PsLBgQQTAQIAKwIbAwYL
+ CQgHAwIGFQgCCQoLBBYCAwECHgECF4ACGQEFAlVcphcFCRmg06EACgkQyx8mb86fmYFg0RAA
+ nzXJzuPkLJaOmSIzPAqqnutACchT/meCOgMEpS5oLf6xn5ySZkl23OxuhpMZTVX+49c9pvBx
+ hpvl5bCWFu5qC1jC2eWRYU+aZZE4sxMaAGeWenQJsiG9lP8wkfCJP3ockNu0ZXXAXwIbY1O1
+ c+l11zQkZw89zNgWgKobKzrDMBFOYtAh0pAInZ9TSn7oA4Ctejouo5wUugmk8MrDtUVXmEA9
+ 7f9fgKYSwl/H7dfKKsS1bDOpyJlqhEAH94BHJdK/b1tzwJCFAXFhMlmlbYEk8kWjcxQgDWMu
+ GAthQzSuAyhqyZwFcOlMCNbAcTSQawSo3B9yM9mHJne5RrAbVz4TWLnEaX8gA5xK3uCNCeyI
+ sqYuzA4OzcMwnnTASvzsGZoYHTFP3DQwf2nzxD6yBGCfwNGIYfS0i8YN8XcBgEcDFMWpOQhT
+ Pu3HeztMnF3HXrc0t7e5rDW9zCh3k2PA6D2NV4fews9KDFhLlTfCVzf0PS1dRVVWM+4jVl6l
+ HRIAgWp+2/f8dx5vPc4Ycp4IsZN0l1h9uT7qm1KTwz+sSl1zOqKD/BpfGNZfLRRxrXthvvY8
+ BltcuZ4+PGFTcRkMytUbMDFMF9Cjd2W9dXD35PEtvj8wnEyzIos8bbgtLrGTv/SYhmPpahJA
+ l8hPhYvmAvpOmusUUyB30StsHIU2LLccUPPOwU0ETofVZwEQALlLbQeBDTDbwQYrj0gbx3bq
+ 7kpKABxN2MqeuqGr02DpS9883d/t7ontxasXoEz2GTioevvRmllJlPQERVxM8gQoNg22twF7
+ pB/zsrIjxkE9heE4wYfN1AyzT+AxgYN6f8hVQ7Nrc9XgZZe+8IkuW/Nf64KzNJXnSH4u6nJM
+ J2+Dt274YoFcXR1nG76Q259mKwzbCukKbd6piL+VsT/qBrLhZe9Ivbjq5WMdkQKnP7gYKCAi
+ pNVJC4enWfivZsYupMd9qn7Uv/oCZDYoBTdMSBUblaLMwlcjnPpOYK5rfHvC4opxl+P/Vzyz
+ 6WC2TLkPtKvYvXmdsI6rnEI4Uucg0Au/Ulg7aqqKhzGPIbVaL+U0Wk82nz6hz+WP2ggTrY1w
+ ZlPlRt8WM9w6WfLf2j+PuGklj37m+KvaOEfLsF1v464dSpy1tQVHhhp8LFTxh/6RWkRIR2uF
+ I4v3Xu/k5D0LhaZHpQ4C+xKsQxpTGuYh2tnRaRL14YMW1dlI3HfeB2gj7Yc8XdHh9vkpPyuT
+ nY/ZsFbnvBtiw7GchKKri2gDhRb2QNNDyBnQn5mRFw7CyuFclAksOdV/sdpQnYlYcRQWOUGY
+ HhQ5eqTRZjm9z+qQe/T0HQpmiPTqQcIaG/edgKVTUjITfA7AJMKLQHgp04Vylb+G6jocnQQX
+ JqvvP09whbqrABEBAAHCwWUEGAECAA8CGwwFAlVcpi8FCRmg08MACgkQyx8mb86fmYHNRQ/+
+ J0OZsBYP4leJvQF8lx9zif+v4ZY/6C9tTcUv/KNAE5leyrD4IKbnV4PnbrVhjq861it/zRQW
+ cFpWQszZyWRwNPWUUz7ejmm9lAwPbr8xWT4qMSA43VKQ7ZCeTQJ4TC8kjqtcbw41SjkjrcTG
+ wF52zFO4bOWyovVAPncvV9eGA/vtnd3xEZXQiSt91kBSqK28yjxAqK/c3G6i7IX2rg6pzgqh
+ hiH3/1qM2M/LSuqAv0Rwrt/k+pZXE+B4Ud42hwmMr0TfhNxG+X7YKvjKC+SjPjqp0CaztQ0H
+ nsDLSLElVROxCd9m8CAUuHplgmR3seYCOrT4jriMFBtKNPtj2EE4DNV4s7k0Zy+6iRQ8G8ng
+ QjsSqYJx8iAR8JRB7Gm2rQOMv8lSRdjva++GT0VLXtHULdlzg8VjDnFZ3lfz5PWEOeIMk7Rj
+ trjv82EZtrhLuLjHRCaG50OOm0hwPSk1J64R8O3HjSLdertmw7eyAYOo4RuWJguYMg5DRnBk
+ WkRwrSuCn7UG+qVWZeKEsFKFOkynOs3pVbcbq1pxbhk3TRWCGRU5JolI4ohy/7JV1TVbjiDI
+ HP/aVnm6NC8of26P40Pg8EdAhajZnHHjA7FrJXsy3cyIGqvg9os4rNkUWmrCfLLsZDHD8FnU
+ mDW4+i+XlNFUPUYMrIKi9joBhu18ssf5i5Q=
+Message-ID: <29d67963-c110-553a-fec4-b972953987b1@roeck-us.net>
+Date:   Thu, 2 Apr 2020 07:52:19 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+In-Reply-To: <4a8ac6700e1503a69146f3eefd7cb515d11bfc9f.1585837575.git.mirq-linux@rere.qmqm.pl>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The structure belongs to the thermal core internals but it is exported
-in the include/linux/thermal.h
+On 4/2/20 7:46 AM, Michał Mirosław wrote:
+> tempX_label files are swapped compared to what
+> power_supply_hwmon_temp_to_property() uses. Make them match.
+> While at it, make room for labeling other channels.
+> 
+> Fixes: e67d4dfc9ff1 ("power: supply: Add HWMON compatibility layer")
+> Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> ---
+>  drivers/power/supply/power_supply_hwmon.c | 14 +++++++++++++-
+>  1 file changed, 13 insertions(+), 1 deletion(-)
+> 
+> diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
+> index 75cf861ba492..83318a21fb52 100644
+> --- a/drivers/power/supply/power_supply_hwmon.c
+> +++ b/drivers/power/supply/power_supply_hwmon.c
+> @@ -43,6 +43,11 @@ static int power_supply_hwmon_curr_to_property(u32 attr)
+>  	}
+>  }
+>  
+> +static const char *const ps_temp_label[] = {
+> +	"temp",
+> +	"ambient temp",
+> +};
+> +
+>  static int power_supply_hwmon_temp_to_property(u32 attr, int channel)
+>  {
+>  	if (channel) {
+> @@ -144,7 +149,14 @@ static int power_supply_hwmon_read_string(struct device *dev,
+>  					  u32 attr, int channel,
+>  					  const char **str)
+>  {
+> -	*str = channel ? "temp" : "temp ambient";
+> +	switch (type) {
+> +	case hwmon_temp:
+> +		*str = ps_temp_label[channel];
+> +		break;
+> +	default:
+> +		break;
 
-For better self-encapsulation and less impact for the compilation if a
-change is made on it. Move the structure in the thermal core internal
-header file.
+That returns "no error" without setting *str, which is really asking for trouble.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/thermal_core.h | 5 +++++
- include/linux/thermal.h        | 6 +-----
- 2 files changed, 6 insertions(+), 5 deletions(-)
+Guenter
 
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 828305508556..5d08ad60d9df 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -41,6 +41,11 @@ extern struct thermal_governor *__governor_thermal_table_end[];
- 	     __governor < __governor_thermal_table_end;	\
- 	     __governor++)
- 
-+struct thermal_attr {
-+	struct device_attribute attr;
-+	char name[THERMAL_NAME_LENGTH];
-+};
-+
- /*
-  * This structure is used to describe the behavior of
-  * a certain cooling device on a certain trip point
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 71cff87dcb46..5aa80fb2fb61 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -35,6 +35,7 @@
- struct thermal_zone_device;
- struct thermal_cooling_device;
- struct thermal_instance;
-+struct thermal_attr;
- 
- enum thermal_device_mode {
- 	THERMAL_DEVICE_DISABLED = 0,
-@@ -119,11 +120,6 @@ struct thermal_cooling_device {
- 	struct list_head node;
- };
- 
--struct thermal_attr {
--	struct device_attribute attr;
--	char name[THERMAL_NAME_LENGTH];
--};
--
- /**
-  * struct thermal_zone_device - structure for a thermal zone
-  * @id:		unique id number for each thermal zone
--- 
-2.17.1
+> +	}
+> +
+>  	return 0;
+>  }
+>  
+> 
 
