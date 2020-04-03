@@ -2,82 +2,82 @@ Return-Path: <SRS0=bfEI=5T=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98DA3C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA619C43331
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 6CCD420721
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AFEDE2073B
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="ConTcMwy"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="cvcB6fRG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404018AbgDCQXb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Apr 2020 12:23:31 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:56843 "EHLO rere.qmqm.pl"
+        id S2404390AbgDCQXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Apr 2020 12:23:34 -0400
+Received: from rere.qmqm.pl ([91.227.64.183]:21872 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728293AbgDCQXb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 Apr 2020 12:23:31 -0400
+        id S2404374AbgDCQXd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Apr 2020 12:23:33 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xF4cj3z89;
-        Fri,  3 Apr 2020 18:23:29 +0200 (CEST)
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xJ0Dn5zqB;
+        Fri,  3 Apr 2020 18:23:32 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1585931009; bh=0CzaEgqfN263drxxDU5ar5X4YqApOdcM1FZ/ZfZc11c=;
-        h=Date:From:Subject:To:Cc:From;
-        b=ConTcMwycOVedQJkGyrX7J1npsFs24MHi/SGmCHT5MLCbIF1C9GoqdPwPVBeAQfIy
-         8zz+xnI41EAi9m3mzgWGU0o919zo7WjItC7G8V1jFN/2UsrURwxTr8cTTdycmv/bZO
-         0gViE6ld8TIQFipnU2Zmpe11c/5xDk5oGAbdwflbThZKbBh7lAQTpcf4gsZSgJkfWx
-         cLEH6Hujii5qEHnjpJJg0lc66hk5dtQNR8GUgdYm0qtveZV2IG3mf6OiGF8uYvYNKs
-         UzJ/2NulYQ8eO6R5ejyA+txe7E4w3MBEkajEuw+lwuW7bS//ScPwmCVwCsKT3VDBxR
-         Yls3f4ONOqUng==
+        t=1585931012; bh=fseErXmDkX64tuP/VBZQqH12qqnxX3YPVLXIds6NfEI=;
+        h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
+        b=cvcB6fRGkOZ95vWWooSHpXFLGj53m6WseMTpjM79hEvtg8CL+V9uyE/GWq3xqp+YI
+         QPHzdF5hXCCicdhEopQRtsKEJrR3LaKtjcOF4/GbRhI6SLXHWX37e0NSN06Htkjujh
+         iG87RvngSpY69OX+eTUQN4gm2VYBRFG3N13pCe5tcGiIrD4DugG2Qes9f1EgNZgrY8
+         FRvhIvQR6Xl0Xf/yF/IEKq1grz2+IFUo6uPpkdP8Rv1Hyf6rNyGcdBrrRogLFQVYDE
+         eIoaYWaBwVHIH74aIJBLL6s8moyJZ4pboAyqVMJDqzrceXvkpbO5cOMZPqaBI47SC9
+         97fQa353pZd9g==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 03 Apr 2020 18:23:29 +0200
-Message-Id: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
+Date:   Fri, 03 Apr 2020 18:23:31 +0200
+Message-Id: <f6ab03acc5118cee8cd77ed8ae11a881c3ce2a1e.1585929579.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v2 0/8] power: supply: core: extensions and fixes
+Subject: [PATCH v2 3/8] power: supply: core: fix HWMON temperature labels
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To:     Andrey Smirnov <andrew.smirnov@gmail.com>,
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
         Guenter Roeck <linux@roeck-us.net>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+        Andrey Smirnov <andrew.smirnov@gmail.com>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series covers three areas of power supply class:
+tempX_label files are swapped compared to what
+power_supply_hwmon_temp_to_property() uses. Make them match.
 
-1-2. constify property and usb_type lists as they should not be changed
-     after driver registration
-3-5. fix and clean up HWMON labels
-6-8. extend core to support input/battery/output supply point
-     measurements
-
+Cc: stable@vger.kernel.org
+Fixes: e67d4dfc9ff1 ("power: supply: Add HWMON compatibility layer")
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
-v2: splits power_supply_hwmon_read_string() fix from extensioa
-    (patches 3-4)
+v2: split parameter checking to separate patch
+---
+ drivers/power/supply/power_supply_hwmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Michał Mirosław (8):
-  power: supply: core: reduce power_supply_show_usb_type() parameters
-  power: supply: core: allow to constify property lists
-  power: supply: core: fix HWMON temperature labels
-  power: supply: core: tabularize HWMON temperature labels
-  power: supply: core: hide unused HWMON labels
-  power: supply: core: add input voltage/current measurements
-  power: supply: core: add output voltage measurements
-  power: supply: core: document measurement points
-
- Documentation/power/power_supply_class.rst |   6 +
- drivers/power/supply/power_supply_hwmon.c  | 198 +++++++++++++++++++--
- drivers/power/supply/power_supply_sysfs.c  |  15 +-
- include/linux/power_supply.h               |   9 +-
- 4 files changed, 210 insertions(+), 18 deletions(-)
-
+diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
+index 75cf861ba492..67b6ee60085e 100644
+--- a/drivers/power/supply/power_supply_hwmon.c
++++ b/drivers/power/supply/power_supply_hwmon.c
+@@ -144,7 +144,7 @@ static int power_supply_hwmon_read_string(struct device *dev,
+ 					  u32 attr, int channel,
+ 					  const char **str)
+ {
+-	*str = channel ? "temp" : "temp ambient";
++	*str = channel ? "temp ambient" : "temp";
+ 	return 0;
+ }
+ 
 -- 
 2.20.1
 
