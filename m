@@ -7,40 +7,41 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 879F2C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BADBC2BA16
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:21:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5CB3620BED
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:21:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BF28207FF
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:21:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="EOlslryS"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="nxz83yBU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728264AbgDCUUh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728241AbgDCUUh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 3 Apr 2020 16:20:37 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:35348 "EHLO rere.qmqm.pl"
+Received: from rere.qmqm.pl ([91.227.64.183]:1086 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728164AbgDCUUg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 Apr 2020 16:20:36 -0400
+        id S1727867AbgDCUUf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Apr 2020 16:20:35 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 48vBBq2x0Sz1vh;
-        Fri,  3 Apr 2020 22:20:35 +0200 (CEST)
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 48vBBl1nhTzpX;
+        Fri,  3 Apr 2020 22:20:31 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1585945235; bh=q44ic6PpS5HegVJV8bApjvL5Ua5oyJ9Mja9QqVR2KlQ=;
+        t=1585945231; bh=Uo9Dg3wLKTkFKZCWLFRcaiKTWxbVtqoScgjUwEkb2W8=;
         h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=EOlslryS4tsUMrgf2EBgKRtOIEpupr3plYDe1T8//jZPzFw9Dhb1ijd714LO/u+Mk
-         02bFa8FJqZT38WuWolb7fOh0Row9qUAt2mgMzALLSAZ+cE+NWGLITYO29s4Ub0CyYw
-         +tRO1qWAPB//biSshR/Xmit2aKLF771ZJBfkuN+ku+yfQTYdT0NB1r3eeiQ02EMH3m
-         h02YqQNvxPuNgHGjwnIYQ5fHJ1mvmKvg+uJAopTZhLNrj70/YniIuqZiV5/ObXiH7Q
-         0s7Vj7x4y77dcPvb12DPFyKz7+u9bmLnOH92rkCwFjhCnRwq5+g0pNWH+RL8lXwhMY
-         APfRkJUdwIG7w==
+        b=nxz83yBUg1uqm/R9KaMLxkSsgsiD0pHoYlrtlPa7cN6e7iUsNhapQ5kn5tAD+fLJs
+         kliv3pYb58PuQP2Mw/8oni4J8ad0OjktVOaLT9aZQcYT0YGamLmJPWerSurv3fhQJ2
+         H7pXlkfdllJfgRo6l0Bom9ecUpJxpbytsMhVpMaTfOhN+gu86y5C2kpqOOtZala9XU
+         elFyWZ8UDBeIM+Lupvlz57izjhrf7/1mcyz822YKcv+BfTIXZnKywOs60/ozMGyyVv
+         CwrtXu7Wwv3WlSOApWLPS9yyyERhoC7xE8nndeYw8G1zwNEX5smbg/TUvFbDFZoxxm
+         WMSVUKcSgptBg==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 03 Apr 2020 22:20:34 +0200
-Message-Id: <7ac1176497a246b59316efecef9912dcf9b1e48a.1585944770.git.mirq-linux@rere.qmqm.pl>
+Date:   Fri, 03 Apr 2020 22:20:31 +0200
+Message-Id: <a529e64edb81a4795fe0b6480f1e4051bed1b099.1585944770.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1585944770.git.mirq-linux@rere.qmqm.pl>
 References: <cover.1585944770.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v3 08/11] power: supply: core: hide unused HWMON labels
+Subject: [PATCH v3 02/11] power: charger-manager: don't write through
+ desc->properties
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -53,77 +54,92 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently HWMON emulation shows all labels (temp and ambient temp)
-regardless if power supply supports reading the values. Check that at
-least one property is enabled for each label.
+psy_desc->properties will become pointer to const.  Avoid writing
+through the pointer to enable constification of the tables elsewhere.
 
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
-v3: use a tabule for type checking instead of switch() sequence
+v3: initial version
 ---
- drivers/power/supply/power_supply_hwmon.c | 42 +++++++++++++++++++++--
- 1 file changed, 39 insertions(+), 3 deletions(-)
+ drivers/power/supply/charger-manager.c | 16 ++++++++++------
+ 1 file changed, 10 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
-index 5621e72a39f0..1b473deaf391 100644
---- a/drivers/power/supply/power_supply_hwmon.c
-+++ b/drivers/power/supply/power_supply_hwmon.c
-@@ -103,6 +103,39 @@ static bool power_supply_hwmon_is_a_label(enum hwmon_sensor_types type,
- 	return type == hwmon_temp && attr == hwmon_temp_label;
- }
- 
-+struct hwmon_type_attr_list {
-+	const u32 *attrs;
-+	size_t n_attrs;
-+};
-+
-+static const u32 ps_temp_attrs[] = {
-+	hwmon_temp_input,
-+	hwmon_temp_min, hwmon_temp_max,
-+	hwmon_temp_min_alarm, hwmon_temp_max_alarm,
-+};
-+
-+static const struct hwmon_type_attr_list ps_type_attrs[hwmon_max] = {
-+	[hwmon_temp] = { ps_temp_attrs, ARRAY_SIZE(ps_temp_attrs) },
-+};
-+
-+static bool power_supply_hwmon_has_input(
-+	const struct power_supply_hwmon *psyhw,
-+	enum hwmon_sensor_types type, int channel)
-+{
-+	const struct hwmon_type_attr_list *attr_list = &ps_type_attrs[type];
-+	size_t i;
-+
-+	for (i = 0; i < attr_list->n_attrs; ++i) {
-+		int prop = power_supply_hwmon_to_property(type,
-+			attr_list->attrs[i], channel);
-+
-+		if (prop >= 0 && test_bit(prop, psyhw->props))
-+			return true;
-+	}
-+
-+	return false;
-+}
-+
- static bool power_supply_hwmon_is_writable(enum hwmon_sensor_types type,
- 					   u32 attr)
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 887f5bb879e5..7ecb82107efb 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -1425,15 +1425,18 @@ static int cm_init_thermal_data(struct charger_manager *cm,
+ 		struct power_supply *fuel_gauge)
  {
-@@ -129,9 +162,12 @@ static umode_t power_supply_hwmon_is_visible(const void *data,
- 	const struct power_supply_hwmon *psyhw = data;
- 	int prop;
+ 	struct charger_desc *desc = cm->desc;
++	enum power_supply_property *props;
+ 	union power_supply_propval val;
+ 	int ret;
  
--
--	if (power_supply_hwmon_is_a_label(type, attr))
--		return 0444;
-+	if (power_supply_hwmon_is_a_label(type, attr)) {
-+		if (power_supply_hwmon_has_input(psyhw, type, channel))
-+			return 0444;
-+		else
-+			return 0;
-+	}
++	props = (void *)cm->charger_psy_desc.properties;
++
+ 	/* Verify whether fuel gauge provides battery temperature */
+ 	ret = power_supply_get_property(fuel_gauge,
+ 					POWER_SUPPLY_PROP_TEMP, &val);
  
- 	prop = power_supply_hwmon_to_property(type, attr, channel);
- 	if (prop < 0 || !test_bit(prop, psyhw->props))
+ 	if (!ret) {
+-		cm->charger_psy_desc.properties[cm->charger_psy_desc.num_properties] =
++		props[cm->charger_psy_desc.num_properties] =
+ 				POWER_SUPPLY_PROP_TEMP;
+ 		cm->charger_psy_desc.num_properties++;
+ 		cm->desc->measure_battery_temp = true;
+@@ -1446,7 +1449,7 @@ static int cm_init_thermal_data(struct charger_manager *cm,
+ 			return PTR_ERR(cm->tzd_batt);
+ 
+ 		/* Use external thermometer */
+-		cm->charger_psy_desc.properties[cm->charger_psy_desc.num_properties] =
++		props[cm->charger_psy_desc.num_properties] =
+ 				POWER_SUPPLY_PROP_TEMP_AMBIENT;
+ 		cm->charger_psy_desc.num_properties++;
+ 		cm->desc->measure_battery_temp = true;
+@@ -1622,6 +1625,7 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	union power_supply_propval val;
+ 	struct power_supply *fuel_gauge;
+ 	struct power_supply_config psy_cfg = {};
++	enum power_supply_property *props;
+ 
+ 	if (IS_ERR(desc)) {
+ 		dev_err(&pdev->dev, "No platform data (desc) found\n");
+@@ -1717,7 +1721,7 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	cm->charger_psy_desc.name = cm->psy_name_buf;
+ 
+ 	/* Allocate for psy properties because they may vary */
+-	cm->charger_psy_desc.properties =
++	cm->charger_psy_desc.properties = props =
+ 		devm_kcalloc(&pdev->dev,
+ 			     ARRAY_SIZE(default_charger_props) +
+ 				NUM_CHARGER_PSY_OPTIONAL,
+@@ -1725,7 +1729,7 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	if (!cm->charger_psy_desc.properties)
+ 		return -ENOMEM;
+ 
+-	memcpy(cm->charger_psy_desc.properties, default_charger_props,
++	memcpy(props, default_charger_props,
+ 		sizeof(enum power_supply_property) *
+ 		ARRAY_SIZE(default_charger_props));
+ 
+@@ -1738,14 +1742,14 @@ static int charger_manager_probe(struct platform_device *pdev)
+ 	}
+ 	if (!power_supply_get_property(fuel_gauge,
+ 					  POWER_SUPPLY_PROP_CHARGE_NOW, &val)) {
+-		cm->charger_psy_desc.properties[cm->charger_psy_desc.num_properties] =
++		props[cm->charger_psy_desc.num_properties] =
+ 				POWER_SUPPLY_PROP_CHARGE_NOW;
+ 		cm->charger_psy_desc.num_properties++;
+ 	}
+ 	if (!power_supply_get_property(fuel_gauge,
+ 					  POWER_SUPPLY_PROP_CURRENT_NOW,
+ 					  &val)) {
+-		cm->charger_psy_desc.properties[cm->charger_psy_desc.num_properties] =
++		props[cm->charger_psy_desc.num_properties] =
+ 				POWER_SUPPLY_PROP_CURRENT_NOW;
+ 		cm->charger_psy_desc.num_properties++;
+ 	}
 -- 
 2.20.1
 
