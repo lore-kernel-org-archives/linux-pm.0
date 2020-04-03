@@ -7,77 +7,154 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA619C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4ADFCC2BA15
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id AFEDE2073B
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 230A72137B
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="cvcB6fRG"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="pl3tw/d4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404390AbgDCQXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Apr 2020 12:23:34 -0400
+        id S2404284AbgDCQXh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Apr 2020 12:23:37 -0400
 Received: from rere.qmqm.pl ([91.227.64.183]:21872 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404374AbgDCQXd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 Apr 2020 12:23:33 -0400
+        id S2404429AbgDCQXg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Apr 2020 12:23:36 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xJ0Dn5zqB;
-        Fri,  3 Apr 2020 18:23:32 +0200 (CEST)
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xL25Mmz1vW;
+        Fri,  3 Apr 2020 18:23:34 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1585931012; bh=fseErXmDkX64tuP/VBZQqH12qqnxX3YPVLXIds6NfEI=;
+        t=1585931014; bh=rE69WxRl/YoTapFXUhUiBoovGB+6IMHH91BhdmkO+Aw=;
         h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=cvcB6fRGkOZ95vWWooSHpXFLGj53m6WseMTpjM79hEvtg8CL+V9uyE/GWq3xqp+YI
-         QPHzdF5hXCCicdhEopQRtsKEJrR3LaKtjcOF4/GbRhI6SLXHWX37e0NSN06Htkjujh
-         iG87RvngSpY69OX+eTUQN4gm2VYBRFG3N13pCe5tcGiIrD4DugG2Qes9f1EgNZgrY8
-         FRvhIvQR6Xl0Xf/yF/IEKq1grz2+IFUo6uPpkdP8Rv1Hyf6rNyGcdBrrRogLFQVYDE
-         eIoaYWaBwVHIH74aIJBLL6s8moyJZ4pboAyqVMJDqzrceXvkpbO5cOMZPqaBI47SC9
-         97fQa353pZd9g==
+        b=pl3tw/d4sLESZhTVNWHd0PlytjzEsR/WPyXVKBhxOcwCx6LRDfszE/Pu5f/JhOZZ8
+         TU+5moybh1Ep1w5PuO7wDwxW8zQtDCGYHXnN8GJ+L3kgrKKUapEQ8eEk0pVAo+OCdO
+         MtaVRzd+D/CQ+YfmGTDTl7KIpj9b2g+2agSDsx1ToaS7FcntPXZk2SUesjPbGe0G3g
+         DGerkKBfFIfJtQSTpmdG+ZUDYuAtOSOuSIGv48MmlLLV/a+WKK1wg7FYlmYGc846au
+         Hso+UTowTBdEMH2uKwiG3e/7Yk5jKRRAYNVLkY0a2sS0VJ613VEQQFOinC6lzWJWMA
+         6Dt7RXawcMWdw==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 03 Apr 2020 18:23:31 +0200
-Message-Id: <f6ab03acc5118cee8cd77ed8ae11a881c3ce2a1e.1585929579.git.mirq-linux@rere.qmqm.pl>
+Date:   Fri, 03 Apr 2020 18:23:33 +0200
+Message-Id: <232de632e2115f115b8b12736225223cf104b441.1585929580.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
 References: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v2 3/8] power: supply: core: fix HWMON temperature labels
+Subject: [PATCH v2 7/8] power: supply: core: add output voltage measurements
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
+To:     Andrey Smirnov <andrew.smirnov@gmail.com>,
         Guenter Roeck <linux@roeck-us.net>,
-        Andrey Smirnov <andrew.smirnov@gmail.com>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tempX_label files are swapped compared to what
-power_supply_hwmon_temp_to_property() uses. Make them match.
+Add support for supply output voltage to be measured and configured.
+This might be different from the voltage on the storage element (battery).
 
-Cc: stable@vger.kernel.org
-Fixes: e67d4dfc9ff1 ("power: supply: Add HWMON compatibility layer")
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
-v2: split parameter checking to separate patch
----
- drivers/power/supply/power_supply_hwmon.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/power/supply/power_supply_hwmon.c | 25 +++++++++++++++++++++++
+ drivers/power/supply/power_supply_sysfs.c |  3 +++
+ include/linux/power_supply.h              |  3 +++
+ 3 files changed, 31 insertions(+)
 
 diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
-index 75cf861ba492..67b6ee60085e 100644
+index ef6196bf9bec..d70742d3e961 100644
 --- a/drivers/power/supply/power_supply_hwmon.c
 +++ b/drivers/power/supply/power_supply_hwmon.c
-@@ -144,7 +144,7 @@ static int power_supply_hwmon_read_string(struct device *dev,
- 					  u32 attr, int channel,
- 					  const char **str)
- {
--	*str = channel ? "temp" : "temp ambient";
-+	*str = channel ? "temp ambient" : "temp";
- 	return 0;
+@@ -41,6 +41,20 @@ static int power_supply_hwmon_in1_to_property(u32 attr)
+ 	}
  }
  
++static int power_supply_hwmon_in2_to_property(u32 attr)
++{
++	switch (attr) {
++	case hwmon_in_min:
++		return POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MIN;
++	case hwmon_in_max:
++		return POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MAX;
++	case hwmon_in_input:
++		return POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_NOW;
++	default:
++		return -EINVAL;
++	}
++}
++
+ static int power_supply_hwmon_in_to_property(u32 attr, int channel)
+ {
+ 	switch (channel) {
+@@ -48,6 +62,8 @@ static int power_supply_hwmon_in_to_property(u32 attr, int channel)
+ 		return power_supply_hwmon_in0_to_property(attr);
+ 	case 1:
+ 		return power_supply_hwmon_in1_to_property(attr);
++	case 2:
++		return power_supply_hwmon_in2_to_property(attr);
+ 	default:
+ 		return -EINVAL;
+ 	}
+@@ -94,6 +110,7 @@ static int power_supply_hwmon_curr_to_property(u32 attr, int channel)
+ static const char *const ps_input_label[] = {
+ 	"battery",
+ 	"external source",
++	"load",
+ };
+ 
+ static const char *const ps_temp_label[] = {
+@@ -411,6 +428,11 @@ static const struct hwmon_channel_info *power_supply_hwmon_info[] = {
+ 
+ 			   HWMON_I_LABEL   |
+ 			   HWMON_I_MAX     |
++			   HWMON_I_INPUT,
++
++			   HWMON_I_LABEL   |
++			   HWMON_I_MIN     |
++			   HWMON_I_MAX     |
+ 			   HWMON_I_INPUT),
+ 
+ 	NULL
+@@ -481,6 +503,9 @@ int power_supply_add_hwmon_sysfs(struct power_supply *psy)
+ 		case POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT:
+ 		case POWER_SUPPLY_PROP_INPUT_VOLTAGE_NOW:
+ 		case POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT:
++		case POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MIN:
++		case POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MAX:
++		case POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_NOW:
+ 			set_bit(prop, psyhw->props);
+ 			break;
+ 		default:
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index 1d1fb69516a8..fb6f113b52bb 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -278,6 +278,9 @@ static struct device_attribute power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(input_voltage_now),
+ 	POWER_SUPPLY_ATTR(input_voltage_limit),
+ 	POWER_SUPPLY_ATTR(input_power_limit),
++	POWER_SUPPLY_ATTR(output_voltage_now),
++	POWER_SUPPLY_ATTR(output_voltage_min),
++	POWER_SUPPLY_ATTR(output_voltage_max),
+ 	POWER_SUPPLY_ATTR(energy_full_design),
+ 	POWER_SUPPLY_ATTR(energy_empty_design),
+ 	POWER_SUPPLY_ATTR(energy_full),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 5313d1284aad..f1ff8d230488 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -132,6 +132,9 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_INPUT_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
+ 	POWER_SUPPLY_PROP_INPUT_POWER_LIMIT,
++	POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_NOW,
++	POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MIN,
++	POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_MAX,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+ 	POWER_SUPPLY_PROP_ENERGY_FULL,
 -- 
 2.20.1
 
