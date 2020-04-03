@@ -4,44 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BF769C2BA15
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B82C1C43331
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 89D56207FF
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8AE65207FF
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 16:23:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="fFBoOCiZ"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="ha+I+lDn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404409AbgDCQXe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Apr 2020 12:23:34 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:16700 "EHLO rere.qmqm.pl"
+        id S2404484AbgDCQX5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Apr 2020 12:23:57 -0400
+Received: from rere.qmqm.pl ([91.227.64.183]:25765 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404284AbgDCQXd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        id S1728293AbgDCQXd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
         Fri, 3 Apr 2020 12:23:33 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xH1Vr3zGl;
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 48v4xH4RJBzpX;
         Fri,  3 Apr 2020 18:23:31 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1585931011; bh=8lunpxS98lM0f3PoyUteDz8Xwp4fV51FcDnCqkylrZA=;
+        t=1585931011; bh=K+vbcp79f0yG60D3y6nK9BE+zeYjqGJsmkCt6t37wr0=;
         h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=fFBoOCiZ3YnSg5A6zUE339EV7k7+8yHYKQWCFtzyFZ0tvOtnw0RyquTHs97P3VKXK
-         gmvevHujRta48yTH8VpBv2ePoL4FPhMmpyAJatiMkfrKSYM4EzsjeHnxZzN/ZOYDuA
-         D1pDHuQfAct9TqwXTXU1hOJ/ZiVECVgfl3k1q1sywZ4eIy5tVQ/xJuNZbJl2SOGE54
-         IRXSLlKm8L4sT2uKmkO7xlV2Nu3hZZVvgtNpxvOjBzCy6nig0Z17RXvva9cdaUXpaD
-         pXt4JtxVWF73hhUmS4MhsCjHLIxnEqkXhBgMhNHj7DzsHvoM9wJosdA8iZXhejPRHO
-         WHy7Rh7pi44hQ==
+        b=ha+I+lDn0IayMpv5TffKHTJ/ZweBKjNKFKzbvhL6uuaDiN0PLLEhPQ5PqoAe6SKkM
+         GLT3qLFt5qr2M9gSzrzoYJxue0sCC70JZohrXbyYMq3RorKPdRgiqEGihRCYEuAKXG
+         /fM3NaSPaQ7BmrIFwOY0jAUA02s/54vDjXaaDg19DklUr/K5tIdLbCCWF9p57qCR23
+         nf2o3kCtspSV0mcY1zSL7SRU4xcckg0usR8z3INYfuwVy+oKb13dkokJIdfjOOenjd
+         EeVZg8mGLz2lJJd1zt0vYwRLb4yRa9owxMsFVdpH1th8NnbwG+tmeCdSDTXABnCQwT
+         SVo6bVokhDw3Q==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 03 Apr 2020 18:23:29 +0200
-Message-Id: <cdf9c0b02acdee77721039d4e7557e0e232d837d.1585929579.git.mirq-linux@rere.qmqm.pl>
+Date:   Fri, 03 Apr 2020 18:23:31 +0200
+Message-Id: <edb51336ad361f8dad6d9745e47823da6a94a204.1585929579.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
 References: <cover.1585929579.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v2 1/8] power: supply: core: reduce
- power_supply_show_usb_type() parameters
+Subject: [PATCH v2 2/8] power: supply: core: allow to constify property lists
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -54,50 +53,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Reduce power_supply_show_usb_type() parameter count by folding
-power_supply_desc dereference into the function.  This makes following
-patch making usb_types const easier.
+Since tables pointed to by power_supply_desc->properties and
+->usb_types are not expected to change after registration, mark
+the pointers accordingly
 
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
- drivers/power/supply/power_supply_sysfs.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ include/linux/power_supply.h | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index f37ad4eae60b..51de3f47b25d 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -78,8 +78,7 @@ static const char * const power_supply_scope_text[] = {
- };
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index dcd5a71e6c67..6a34df65d4d1 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -223,9 +223,9 @@ struct power_supply_config {
+ struct power_supply_desc {
+ 	const char *name;
+ 	enum power_supply_type type;
+-	enum power_supply_usb_type *usb_types;
++	const enum power_supply_usb_type *usb_types;
+ 	size_t num_usb_types;
+-	enum power_supply_property *properties;
++	const enum power_supply_property *properties;
+ 	size_t num_properties;
  
- static ssize_t power_supply_show_usb_type(struct device *dev,
--					  enum power_supply_usb_type *usb_types,
--					  ssize_t num_usb_types,
-+					  const struct power_supply_desc *desc,
- 					  union power_supply_propval *value,
- 					  char *buf)
- {
-@@ -88,8 +87,8 @@ static ssize_t power_supply_show_usb_type(struct device *dev,
- 	bool match = false;
- 	int i;
- 
--	for (i = 0; i < num_usb_types; ++i) {
--		usb_type = usb_types[i];
-+	for (i = 0; i < desc->num_usb_types; ++i) {
-+		usb_type = desc->usb_types[i];
- 
- 		if (value->intval == usb_type) {
- 			count += sprintf(buf + count, "[%s] ",
-@@ -163,8 +162,7 @@ static ssize_t power_supply_show_property(struct device *dev,
- 			      power_supply_type_text[value.intval]);
- 		break;
- 	case POWER_SUPPLY_PROP_USB_TYPE:
--		ret = power_supply_show_usb_type(dev, psy->desc->usb_types,
--						 psy->desc->num_usb_types,
-+		ret = power_supply_show_usb_type(dev, psy->desc,
- 						 &value, buf);
- 		break;
- 	case POWER_SUPPLY_PROP_SCOPE:
+ 	/*
 -- 
 2.20.1
 
