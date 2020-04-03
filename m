@@ -7,74 +7,77 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23EB8C43331
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:20:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6E92C43331
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:20:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D8A83206E9
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:20:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A4B0B207FF
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Apr 2020 20:20:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="Rp/xDo2N"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="Sev2Is24"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727998AbgDCUUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Apr 2020 16:20:33 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:41777 "EHLO rere.qmqm.pl"
+        id S1728168AbgDCUUg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Apr 2020 16:20:36 -0400
+Received: from rere.qmqm.pl ([91.227.64.183]:27349 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727792AbgDCUUd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 3 Apr 2020 16:20:33 -0400
+        id S1727842AbgDCUUg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Apr 2020 16:20:36 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 48vBBk6XyxzGl;
-        Fri,  3 Apr 2020 22:20:30 +0200 (CEST)
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 48vBBn5f29z1th;
+        Fri,  3 Apr 2020 22:20:33 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1585945231; bh=PxKU8o7BoNDyLrnKFV+GeC6g2YaP/coZt/imF8aw61k=;
+        t=1585945233; bh=fseErXmDkX64tuP/VBZQqH12qqnxX3YPVLXIds6NfEI=;
         h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=Rp/xDo2NMn12KWOwZ97Q+rGvA9PFSNCj0UJ70qKRIcVBTdR0x4kB4/OFSyAsTXkqC
-         cdPfiiZp6rOkmPZ3iWJ8I1yMbddICzP54BTtK0AgbkZzibHM9QnR46s7B9F0f5sY5O
-         KcscNokGsWF34mqVcKjSWTP1lRJi0OCDKFNVDalnS29LbOD1qNhciiY3xFrO19wzAY
-         +w/PClpyJFYBzyoJc/dz+vaASEZRV0t0vFitKn+IqFtiO9EhqOOkX6TEl4eMV+kwcu
-         /ocuroFjabcxyV46D4iJLzelb14/quZxuhXIUBRHiRkBB5YyE7XbiEgJFxabYDXlNg
-         QylkDPUIXOt6w==
+        b=Sev2Is24W31jAIfgP5RNxcie7xoiBgYEQAISAsqZb786EeHIUZdwjd79Onl0SQlC9
+         EQmva5mmbOl7sqAx3Cyz4TFQgJ3mi7nywa2MXxDu4n3oNQRzDE0YwjJwFQFkvrtyoC
+         ZZgS+1ecAXQxq3HGlNXTtCEhIe4W4j4rq2Rg5gMJAQ2iB9GJ+G6zxG3rqQhZo04Vb6
+         s8ZygMtiiGeEyk58liLxFrTldf4xWaWCy2+H8QrfG5i/fWGWdUagPzyJ7DG64wtUxU
+         EnRiYnmdM2erixluvcbLtazWXrp1oRf1R+RoFRolLefaxGenwrRld+wQqD6S9aNq2X
+         J/5yHFO/HrKJA==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 03 Apr 2020 22:20:30 +0200
-Message-Id: <c911486f7d8727c5264f3cb4142c26b6765eadec.1585944770.git.mirq-linux@rere.qmqm.pl>
+Date:   Fri, 03 Apr 2020 22:20:33 +0200
+Message-Id: <4c33741ba56d3c7830827c140bccf13621e59232.1585944770.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1585944770.git.mirq-linux@rere.qmqm.pl>
 References: <cover.1585944770.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v3 01/11] power: charger-manager: remove duplicate assignment
+Subject: [PATCH v3 06/11] power: supply: core: fix HWMON temperature labels
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-To:     Andrey Smirnov <andrew.smirnov@gmail.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Andrey Smirnov <andrew.smirnov@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-num_properties is already copied earlier using memcpy().
-Remove the duplicate.
+tempX_label files are swapped compared to what
+power_supply_hwmon_temp_to_property() uses. Make them match.
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+Cc: stable@vger.kernel.org
+Fixes: e67d4dfc9ff1 ("power: supply: Add HWMON compatibility layer")
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
-v3: initial version
+v2: split parameter checking to separate patch
 ---
- drivers/power/supply/charger-manager.c | 1 -
- 1 file changed, 1 deletion(-)
+ drivers/power/supply/power_supply_hwmon.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index a21e1a2673f8..887f5bb879e5 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -1728,7 +1728,6 @@ static int charger_manager_probe(struct platform_device *pdev)
- 	memcpy(cm->charger_psy_desc.properties, default_charger_props,
- 		sizeof(enum power_supply_property) *
- 		ARRAY_SIZE(default_charger_props));
--	cm->charger_psy_desc.num_properties = psy_default.num_properties;
+diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
+index 75cf861ba492..67b6ee60085e 100644
+--- a/drivers/power/supply/power_supply_hwmon.c
++++ b/drivers/power/supply/power_supply_hwmon.c
+@@ -144,7 +144,7 @@ static int power_supply_hwmon_read_string(struct device *dev,
+ 					  u32 attr, int channel,
+ 					  const char **str)
+ {
+-	*str = channel ? "temp" : "temp ambient";
++	*str = channel ? "temp ambient" : "temp";
+ 	return 0;
+ }
  
- 	/* Find which optional psy-properties are available */
- 	fuel_gauge = power_supply_get_by_name(desc->psy_fuel_gauge);
 -- 
 2.20.1
 
