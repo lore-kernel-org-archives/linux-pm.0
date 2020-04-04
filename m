@@ -2,93 +2,124 @@ Return-Path: <SRS0=ntCr=5U=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD3CDC2BA15
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 19:29:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE46EC2BA15
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 21:40:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 876ED206F7
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 19:29:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C0BF4206F8
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 21:40:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="K+0GYzj1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rrBwp7SC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726402AbgDDT3o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Apr 2020 15:29:44 -0400
-Received: from hqnvemgate24.nvidia.com ([216.228.121.143]:8291 "EHLO
-        hqnvemgate24.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726222AbgDDT3o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 15:29:44 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5e88dfc30000>; Sat, 04 Apr 2020 12:28:04 -0700
-Received: from hqmail.nvidia.com ([172.20.161.6])
-  by hqpgpgate101.nvidia.com (PGP Universal service);
-  Sat, 04 Apr 2020 12:29:43 -0700
-X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Sat, 04 Apr 2020 12:29:43 -0700
-Received: from HQMAIL101.nvidia.com (172.20.187.10) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Sat, 4 Apr
- 2020 19:29:43 +0000
-Received: from hqnvemgw03.nvidia.com (10.124.88.68) by HQMAIL101.nvidia.com
- (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3 via Frontend
- Transport; Sat, 4 Apr 2020 19:29:43 +0000
-Received: from sumitg-l4t.nvidia.com (Not Verified[10.24.37.103]) by hqnvemgw03.nvidia.com with Trustwave SEG (v7,5,8,10121)
-        id <B5e88e0240000>; Sat, 04 Apr 2020 12:29:43 -0700
-From:   Sumit Gupta <sumitg@nvidia.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <catalin.marinas@arm.com>, <will@kernel.org>,
-        <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
-        <talho@nvidia.com>, <linux-pm@vger.kernel.org>,
-        <linux-tegra@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>
-CC:     <bbasu@nvidia.com>, <sumitg@nvidia.com>, <mperttunen@nvidia.com>
-Subject: [TEGRA194_CPUFREQ Patch v2 3/3] arm64: defconfig: Enable CONFIG_ARM_TEGRA194_CPUFREQ
-Date:   Sun, 5 Apr 2020 00:59:07 +0530
-Message-ID: <1586028547-14993-4-git-send-email-sumitg@nvidia.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1586028547-14993-1-git-send-email-sumitg@nvidia.com>
-References: <1586028547-14993-1-git-send-email-sumitg@nvidia.com>
-X-NVConfidentiality: public
+        id S1726393AbgDDVkv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Apr 2020 17:40:51 -0400
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:46480 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726057AbgDDVkv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 17:40:51 -0400
+Received: by mail-lj1-f193.google.com with SMTP id r7so10565496ljg.13;
+        Sat, 04 Apr 2020 14:40:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=JMPqtLiyle3hnA0yz5/rma3PZC3NUiCA2HOMNpCxoFQ=;
+        b=rrBwp7SCLJer6Iw0pYwVspuK7bro/VSRwtB8zM5qgwbyvzzKRUJbGV9N+budcgTwNr
+         OFekZzJDxmBdIeE12U2VWCwh8ZvfcjZKiVdzeZiupLBiWUdUoTYqpIKF4NpjpWU61cao
+         yrP8Do5Vpmo+F+1qYoNqpTkyv+fpVpFBcSmyYx+uRukNgR5WMwPWxEKmdhCZ0mnwwce6
+         P7Gze7I7oyv9PDPGkPDVuORJxgcZWhRGaq47fMbN9Ug2Uoitw9AASDjXlKlBVLho/6tt
+         mM3mgQTp+eRNIwUPzVYibKJl5dq5kVFwovcwwxGno0wowr338SuMm8ZkdR0J2LSX0ZBD
+         wLYw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=JMPqtLiyle3hnA0yz5/rma3PZC3NUiCA2HOMNpCxoFQ=;
+        b=Qexh1hh3RneyWfBuLcl95l6eeI0K6oa4mUuzr1N1P4j26rU4fv+VN2EIBXB2Ti1jXp
+         Y4zSLZSqdz9VoaUTZSm1YCo9xNDTmCmq3toT3BvWPJWuH8xn6QeKOJA402h/no1HHDDp
+         mJ5ft6vz/lmNE9MU9KMpcyjz+o9qQWQoAQvSiZKRcDrsJE0apuHQ4o4MJc9oD552Kp2P
+         Y0vWuZ1Muod+2scvVZLVVDgdnZHIYE9EhoiT8wuo40LVNHN1q0kvHdlF09fa4gnv4SUo
+         BsttPy3Bht5kOzJUp0CC9QrKu2fy5rtEoi6rXtw3ohM5FqoZPTd8aLf8xdaiuBFFQCKi
+         pXoQ==
+X-Gm-Message-State: AGi0PubDgto/YJEQciNW/Qs4dkL55wqWBSerwelvEEf9nU9p2MEDZD+M
+        hz8Aq4X5Z/GCuPb/XcUdVj4=
+X-Google-Smtp-Source: APiQypIfdQmzxGJNdWVHAB8GwLoAsSFoHOImV2N3Dvsfbby+B0RiPRPlfuolT2+enPk6TRO8Q0P9xQ==
+X-Received: by 2002:a2e:b4d1:: with SMTP id r17mr8227053ljm.117.1586036447002;
+        Sat, 04 Apr 2020 14:40:47 -0700 (PDT)
+Received: from [192.168.2.145] (ppp91-78-208-152.pppoe.mtu-net.ru. [91.78.208.152])
+        by smtp.googlemail.com with ESMTPSA id a6sm8730966lfl.5.2020.04.04.14.40.43
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 04 Apr 2020 14:40:46 -0700 (PDT)
+Subject: Re: [PATCH] PM / devfreq: tegra30: Delete an error message in
+ tegra_devfreq_probe()
+To:     Markus Elfring <Markus.Elfring@web.de>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        kernel-janitors@vger.kernel.org,
+        Tang Bin <tangbin@cmss.chinamobile.com>
+References: <ba67e238-43a7-6c53-363e-7a2c12f09949@web.de>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <27bdd09b-0b8d-a6ef-2ffd-53421277fcca@gmail.com>
+Date:   Sun, 5 Apr 2020 00:40:42 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-Content-Type: text/plain
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1586028484; bh=b+iJd85eLTzjFvAEBon3IVxdm6w1fZJjJXVaVJhMvwU=;
-        h=X-PGP-Universal:From:To:CC:Subject:Date:Message-ID:X-Mailer:
-         In-Reply-To:References:X-NVConfidentiality:MIME-Version:
-         Content-Type;
-        b=K+0GYzj1eqRD4IdgpCdKpPoo/6PkOv7eVH0ArflmEjfXF/ofbnyh56ARD5f3F9v4S
-         iQlbzxFkOMIj1nDJOd0C0BtpgHYwh32EBKDKZG59Ee8t5AC/uqwsaeaigLondOLy88
-         IVqfLZTwK+kOP6QPDMjxXG/gVo3pHc0wqzFzLQcFViXoS0pe7K6g3bPSKU262aCsEO
-         iJUcPSx+3mP/NfyH3O3NNRFjfKfCjkcdpDtEudAsubgZyNPzX7V6/kgIzNZ7L1TwA3
-         ZIKRtZhiVFAu5VCx0xI7eHbHiFcZykiPIMe/mz5lVCuDjbJ3jWGcktrfpUW52Cw5fG
-         uN6LMhNyZfMqA==
+In-Reply-To: <ba67e238-43a7-6c53-363e-7a2c12f09949@web.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Enable Tegra194 CPU frequency scaling support by default.
+04.04.2020 21:45, Markus Elfring пишет:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sat, 4 Apr 2020 20:34:02 +0200
+> 
+> The function “platform_get_irq” can log an error already.
+> Thus omit a redundant message for the exception handling in the
+> calling function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/devfreq/tegra30-devfreq.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+> index 28b2c7ca416e..93e6f4b25b04 100644
+> --- a/drivers/devfreq/tegra30-devfreq.c
+> +++ b/drivers/devfreq/tegra30-devfreq.c
+> @@ -807,10 +807,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	}
+> 
+>  	err = platform_get_irq(pdev, 0);
+> -	if (err < 0) {
+> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+> +	if (err < 0)
+>  		return err;
+> -	}
+> +
+>  	tegra->irq = err;
+> 
+>  	irq_set_status_flags(tegra->irq, IRQ_NOAUTOEN);
+> --
+> 2.26.0
+> 
 
-Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
----
- arch/arm64/configs/defconfig | 1 +
- 1 file changed, 1 insertion(+)
+Thanks,
 
-diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-index 8a5f8d6..7ae746e 100644
---- a/arch/arm64/configs/defconfig
-+++ b/arch/arm64/configs/defconfig
-@@ -87,6 +87,7 @@ CONFIG_ARM_SCPI_CPUFREQ=y
- CONFIG_ARM_IMX_CPUFREQ_DT=m
- CONFIG_ARM_RASPBERRYPI_CPUFREQ=m
- CONFIG_ARM_TEGRA186_CPUFREQ=y
-+CONFIG_ARM_TEGRA194_CPUFREQ=y
- CONFIG_ARM_SCPI_PROTOCOL=y
- CONFIG_RASPBERRYPI_FIRMWARE=y
- CONFIG_INTEL_STRATIX10_SERVICE=y
--- 
-2.7.4
-
+Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
