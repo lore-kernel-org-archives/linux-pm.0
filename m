@@ -2,110 +2,98 @@ Return-Path: <SRS0=ntCr=5U=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77515C2BA16
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 05:14:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DF80C2BA16
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:30:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 4526F206D4
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 05:14:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 02C30206B8
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:30:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="yrPXX12N"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725730AbgDDFOh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Apr 2020 01:14:37 -0400
-Received: from mga07.intel.com ([134.134.136.100]:20416 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725536AbgDDFOh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 4 Apr 2020 01:14:37 -0400
-IronPort-SDR: sNg7+XhwNe7+VMbYDOncI814nOTz8lk4c5mBZ77AYxvD2Lw3W6Lgb5AycpNEUMORaUprk8TT/O
- LJLK1oPTa79A==
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga001.fm.intel.com ([10.253.24.23])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Apr 2020 22:14:36 -0700
-IronPort-SDR: WsrgfXpQrVQnchJaZq+bi7mBvZ3kcbN+sfxIuXKBCrgtlsXmYOxUjrr4L5qiwFvTUMqURrunEj
- aBRVQCF/7+cg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.72,342,1580803200"; 
-   d="scan'208";a="360723667"
-Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
-  by fmsmga001.fm.intel.com with ESMTP; 03 Apr 2020 22:14:34 -0700
-Received: from kbuild by lkp-server01 with local (Exim 4.89)
-        (envelope-from <lkp@intel.com>)
-        id 1jKb8b-000A3Q-Ph; Sat, 04 Apr 2020 13:14:33 +0800
-Date:   Sat, 4 Apr 2020 13:14:03 +0800
-From:   kbuild test robot <lkp@intel.com>
-To:     =?utf-8?B?TWljaGHFgiBNaXJvc8WCYXc=?= <mirq-linux@rere.qmqm.pl>
-Cc:     kbuild-all@lists.01.org, Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 05/14] power: supply: bq25890: fix ADC mode configuration
-Message-ID: <202004041339.5x3xwKVj%lkp@intel.com>
-References: <a1275df1b8de5112d81e4f0b57f34af34a4a0942.1585838678.git.mirq-linux@rere.qmqm.pl>
+        id S1725871AbgDDHaX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Apr 2020 03:30:23 -0400
+Received: from mail-vs1-f66.google.com ([209.85.217.66]:41627 "EHLO
+        mail-vs1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725868AbgDDHaX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 03:30:23 -0400
+Received: by mail-vs1-f66.google.com with SMTP id a63so6461933vsa.8
+        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2020 00:30:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=rLKw0j4e8cM++VecaXqVoyCRWYlR8riFPH4j0L9GKm8=;
+        b=yrPXX12NU33LLRZX0I+Lkdx8HCZl7h2xps4J7Zxw1zVIdbv0I13PhJzDq+iN+/m8YI
+         7H7Np4soI9q3hXbEouKI6BYaEw01pjYHwpYL3gSBxdYt01BPYNnGf2FvmjsujzqCuLGG
+         zX9Qt/BoadI+avXcZDNtU0gDYLf6nx+uEYCuVqQP4GZMhypayG0c5kotCV/TwLTKAJp2
+         YP1AbpkMzMpUez4Yis+n/bHOiQ6WJ0quaPIwU4NRdforJBgQPHkOMrLxcMGrgNkG08gL
+         m85BXQ8VgZQvrzvvMWbT4+FOOjK0q+tGLJf1393vCCVhlNEMuXov1J9BPwwvp2Ua+Gtp
+         IbNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=rLKw0j4e8cM++VecaXqVoyCRWYlR8riFPH4j0L9GKm8=;
+        b=ccTChX3GWsI+o2wzf0V2enJf92q2JCh6i4qIZd2F/8Y5UlHMDGdN3Dq+FdYhVcEtdC
+         mr3OEJ3X4XoHtA9e0lHwyOvg8NBhHbKOOgCk5L+eZ0p+YNW796tcPNyqT+/cLPGe0gql
+         7I3GmHiSpLIIcB08odSJGuR5T6IQ2OMC6BrqLhWLg7dTaddoqvoDlOhe2bq7yb9LhrcZ
+         tTx0Qg6mreAi3G5InLOvrvgF/qsah8hMbCjpZrDTx+xeJGc1yP+XRCqkoZn81XP1bm3V
+         jHnZFb8adPMAH+tTdcZx5s/d8oriMrkr+AmlDsnWcgc+0KgJlykXIRkPnFuP9mOrJ6ne
+         gJlA==
+X-Gm-Message-State: AGi0PuYx7TJrfFdEddJ8N30HBsyb4GzZd7PL0xBz/zygFpOc1VKbQkdT
+        QlJE6VuW/RBcFvx7JsIopegXOia35/JdMK5rcq67FA==
+X-Google-Smtp-Source: APiQypJGdsYZ/Q7gvsr3gin/7kgyODfutYwezf//4l99Pcky8HuoNRacQVMTbNUEtaXsc45eyd8Gcx4m8mSfIaTuZLo=
+X-Received: by 2002:a67:b147:: with SMTP id z7mr9273804vsl.27.1585985420583;
+ Sat, 04 Apr 2020 00:30:20 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <a1275df1b8de5112d81e4f0b57f34af34a4a0942.1585838678.git.mirq-linux@rere.qmqm.pl>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+References: <20200402142747.8307-1-daniel.lezcano@linaro.org> <20200402142747.8307-9-daniel.lezcano@linaro.org>
+In-Reply-To: <20200402142747.8307-9-daniel.lezcano@linaro.org>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Sat, 4 Apr 2020 13:00:00 +0530
+Message-ID: <CAHLCerOmjUZ_H+99hDP6Pi=2Bo3Rnt5KLmeZRt0kYuV=cTtUYg@mail.gmail.com>
+Subject: Re: [PATCH V2 9/9] thermal: Remove thermal_zone_device_update() stub
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi "Michał,
+On Thu, Apr 2, 2020 at 7:58 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> All users of the function depends on THERMAL, no stub is
+> needed. Remove it.
+>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
-I love your patch! Perhaps something to improve:
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-[auto build test WARNING on power-supply/for-next]
-[also build test WARNING on linus/master v5.6 next-20200403]
-[cannot apply to linux/master]
-[if your patch is applied to the wrong git tree, please drop us a note to help
-improve the system. BTW, we also suggest to use '--base' option to specify the
-base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
-
-url:    https://github.com/0day-ci/linux/commits/Micha-Miros-aw/power-supply-bq25890-fix-and-extend/20200404-010738
-base:   https://git.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git for-next
-reproduce:
-        # apt-get install sparse
-        # sparse version: v0.6.1-188-g79f7ac98-dirty
-        make ARCH=x86_64 allmodconfig
-        make C=1 CF='-fdiagnostic-prefix -D__CHECK_ENDIAN__'
-
-If you fix the issue, kindly add following tag as appropriate
-Reported-by: kbuild test robot <lkp@intel.com>
-
-
-sparse warnings: (new ones prefixed by >>)
-
-   drivers/power/supply/bq25890_charger.c:381:14: sparse: sparse: undefined identifier 'POWER_SUPPLY_PROP_INPUT_VOLTAGE_NOW'
-   drivers/power/supply/bq25890_charger.c:382:14: sparse: sparse: undefined identifier 'POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_NOW'
->> drivers/power/supply/bq25890_charger.c:381:14: sparse: sparse: incompatible types for 'case' statement
-   drivers/power/supply/bq25890_charger.c:382:14: sparse: sparse: incompatible types for 'case' statement
-   drivers/power/supply/bq25890_charger.c:686:23: sparse: sparse: incorrect type in initializer (different modifiers) @@    expected unsigned int enum power_supply_property *properties @@    got unsignunsigned int enum power_supply_property *properties @@
-   drivers/power/supply/bq25890_charger.c:686:23: sparse:    expected unsigned int enum power_supply_property *properties
-   drivers/power/supply/bq25890_charger.c:686:23: sparse:    got unsigned int enum power_supply_property const *
-   drivers/power/supply/bq25890_charger.c:381:14: sparse: sparse: Expected constant expression in case statement
-   drivers/power/supply/bq25890_charger.c:382:14: sparse: sparse: Expected constant expression in case statement
-
-vim +/case +381 drivers/power/supply/bq25890_charger.c
-
-   377	
-   378	static bool bq25890_is_adc_property(enum power_supply_property psp)
-   379	{
-   380		switch (psp) {
- > 381		case POWER_SUPPLY_PROP_INPUT_VOLTAGE_NOW:
-   382		case POWER_SUPPLY_PROP_OUTPUT_VOLTAGE_NOW:
-   383		case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-   384		case POWER_SUPPLY_PROP_CURRENT_NOW:
-   385			return true;
-   386	
-   387		default:
-   388			return false;
-   389		}
-   390	}
-   391	
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> ---
+>  include/linux/thermal.h | 3 ---
+>  1 file changed, 3 deletions(-)
+>
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 7b3dbfe15b59..216185bb3014 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -426,9 +426,6 @@ static inline struct thermal_zone_device *thermal_zone_device_register(
+>  static inline void thermal_zone_device_unregister(
+>         struct thermal_zone_device *tz)
+>  { }
+> -static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
+> -                                             enum thermal_notify_event event)
+> -{ }
+>  static inline struct thermal_cooling_device *
+>  thermal_cooling_device_register(char *type, void *devdata,
+>         const struct thermal_cooling_device_ops *ops)
+> --
+> 2.17.1
+>
