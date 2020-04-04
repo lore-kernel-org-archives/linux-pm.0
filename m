@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 314FFC2BA18
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:30:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB3C0C2BA1A
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 078FA206B8
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:30:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A348920709
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="jcwWn7Cx"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="XgCyTbZn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726016AbgDDHax (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Apr 2020 03:30:53 -0400
-Received: from mail-ua1-f65.google.com ([209.85.222.65]:33723 "EHLO
-        mail-ua1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725837AbgDDHax (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 03:30:53 -0400
-Received: by mail-ua1-f65.google.com with SMTP id v24so3640184uak.0
-        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2020 00:30:52 -0700 (PDT)
+        id S1726225AbgDDHbB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Apr 2020 03:31:01 -0400
+Received: from mail-ua1-f66.google.com ([209.85.222.66]:44567 "EHLO
+        mail-ua1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725837AbgDDHbB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 03:31:01 -0400
+Received: by mail-ua1-f66.google.com with SMTP id r47so3604195uad.11
+        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2020 00:31:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=verdurent-com.20150623.gappssmtp.com; s=20150623;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=0LcIqyzOelKRy7NwzrnjxsMz0cnQ+jIhiQgIFia4NZA=;
-        b=jcwWn7CxkuVo6AYV6g8AWv5uMyYcuB5tY0C74eAEWC4EB8IuR/4OrfsQyUWFp88Pgn
-         ZH2QK25HNNb7Oi/uZM2c2Rznck5aUPxKL5hqpCjz7kN5YmfmIGb2btyiO2Jur+yvxyNq
-         EwohwQRvXw216bPpEUtq6ZLdnHyCs66b7hgcffHMFvm1pDGiTAgAbX+U5I85dUTevw5l
-         2ugV6grGu7UxGKJ4+qoXgy5CZQePlSbG7X3LKm7Bp8+CAu53e3VpdpuXxUk0m1SNy320
-         MM9i7YucgeiMWQtD0JpwPaP+WofdGniDtsZi4nY7a9afDpuKmQ5mbCHkNOQnKfMoHy1U
-         WGXA==
+        bh=iN6wacGfdwib+ApYHKZ/FdwkNp4iLTwqPrmNMYd7r8E=;
+        b=XgCyTbZnWC345hsCKy5O82Uyugw36Ruw2EuDhzxddNPaJuxpWG/szVyMl3nKOsOQEw
+         a6BCuJE2um28o68NDCtRThVKI9U4Z/+WRrs5jTdn0gjMLnJVWuNuO04Zq3VNqVjXz6O8
+         xzfXQSNFWneyDUxTm6J90kj5fxDYPWABFp8c46rQsUGTPUvU31Eb8JtyUPP2QnHUKFjS
+         GoEgMZB4zvnj8RChQvLVjKbqBLgm/ja1Pw7rEp8FQ/CceQt+fzgjrZDbFDZT/cOXSXMT
+         LF5uTx2yToS6x+iIPg6I0fNmVw9Oz6cLFMVbIHvgDltGByupCJFd39dk0GsGPBcxD+TS
+         Lt8g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=0LcIqyzOelKRy7NwzrnjxsMz0cnQ+jIhiQgIFia4NZA=;
-        b=a8FF5UvicuTrwjBMMsaVc32q+0iuypfeHFeN7Pu9d2mD7druoILqpL8QgQfzB6qZWL
-         gtphn7zd5gj5zN3S76gDy5WxsvRxuuiRST//+pwpi9GZlWiy6o9qRci+h7AXlBAbKVuw
-         6pg+ajgP31CYPKY9Sz3tFn4jPlJdsxB4PJYmNKETthu8C8fm+4wQF8sPVx8v9oZfzP8p
-         rTO6qcS1b6hWFagmMf5EV+jdHZRvCNCNJzG07ha1IM3e92AYzeKvYU3FoouIxNaUgGCI
-         JpmSlUPqRQyt4ji7NnhvIX67tGm5pMO31fUjox55rC81+n7WuLEz4Cs4lLB3JwKFa+vu
-         ar4w==
-X-Gm-Message-State: AGi0PuYwakmOnIauHdwg3lFtfdmC2g0kqokOeAuML/Z5lxIzf7YiC4ft
-        KJCjrRnDIrSCw3Jqu1+S+dJP8Hr0rpZ7YMXOOTE1iQ==
-X-Google-Smtp-Source: APiQypLWneYbyshOq2SV62p8HIJNS2Hf5WwI6L9HOKzNAuWCgiWC9wPz+d7ubbBhyByIcy8k8iCwmBA0Z5kic/1eHsc=
-X-Received: by 2002:ab0:654c:: with SMTP id x12mr9585976uap.48.1585985452418;
- Sat, 04 Apr 2020 00:30:52 -0700 (PDT)
+        bh=iN6wacGfdwib+ApYHKZ/FdwkNp4iLTwqPrmNMYd7r8E=;
+        b=eZG+RRwcpjmA8zXw/Nv47/OFasF3MabumboA5agXJhiu1tW6gKsNGXShbd7Jt9MOfK
+         XFTKhfhtCx/Ep1xcvplqyF6wxVhXN/BbrkE8S+xFo2g8fMTuuODPKUqB10vOO6fsRGQH
+         fN+Rvo+lkaqWYvDX/F0CBwSVCYBtAHgaGsMyq7J4z0/ElPF6008QgHkSW1wVjtySPPzt
+         gY77DTwRxkng6FCJXrehNW8oUuxOcOOjH97u+iQpqYRYSrNcmp1HgPoJMvxuIZeF1lPc
+         AhrCXZnxGguFo2ef5HLaEKW3+MQcXdpvxilFc7NTmMCBK1+AbYSIE0qjJVZcLfmNglac
+         /RIw==
+X-Gm-Message-State: AGi0PubZYV2DqT5+SBV6YJEjnoAV8wtnBfFyUIc+26rp6CexgtLy4eLi
+        VDy58lpVTowjeMTx8fSAtX0oMDHJSRPNjr0znQXsYA==
+X-Google-Smtp-Source: APiQypLxGLnrhOCRwjBuHxBjOcTXenqCe/nppA+193Zt4K2TYnyPUN4lriSlHgW1KlWine7JnWgynUq4FjLwy+MHZTM=
+X-Received: by 2002:ab0:5f90:: with SMTP id b16mr9274182uaj.77.1585985460113;
+ Sat, 04 Apr 2020 00:31:00 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200402142747.8307-1-daniel.lezcano@linaro.org> <20200402142747.8307-2-daniel.lezcano@linaro.org>
-In-Reply-To: <20200402142747.8307-2-daniel.lezcano@linaro.org>
+References: <20200402142747.8307-1-daniel.lezcano@linaro.org> <20200402142747.8307-3-daniel.lezcano@linaro.org>
+In-Reply-To: <20200402142747.8307-3-daniel.lezcano@linaro.org>
 From:   Amit Kucheria <amit.kucheria@verdurent.com>
 Date:   Sat, 4 Apr 2020 13:00:00 +0530
-Message-ID: <CAHLCerMw_-M3nAs9hhPFdqVtay0ayLKSc09Y9bSRFQ0rM9mF=Q@mail.gmail.com>
-Subject: Re: [PATCH V2 2/9] thermal: Move struct thermal_attr to the private header
+Message-ID: <CAHLCerOD2sqqQ0o87z7RDmTAzqyk9eDbTMZN92esLRtUHErSBg@mail.gmail.com>
+Subject: Re: [PATCH V2 3/9] thermal: Move internal IPA functions
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Zhang Rui <rui.zhang@intel.com>,
         "open list:THERMAL" <linux-pm@vger.kernel.org>,
@@ -69,62 +69,94 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 On Thu, Apr 2, 2020 at 7:58 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 >
-> The structure belongs to the thermal core internals but it is exported
-> in the include/linux/thermal.h
+> The exported IPA functions are used by the IPA. It is pointless to
+> declare the functions in the thermal.h file.
 >
 > For better self-encapsulation and less impact for the compilation if a
-> change is made on it. Move the structure in the thermal core internal
+> change is made on it. Move the code in the thermal core internal
 > header file.
+>
+> As the users depends on THERMAL then it is pointless to have the stub,
+> remove them.
+>
+> Take also the opportunity to fix checkpatch warnings/errors when
+> moving the code around.
 >
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
 > ---
->  drivers/thermal/thermal_core.h | 5 +++++
->  include/linux/thermal.h        | 6 +-----
->  2 files changed, 6 insertions(+), 5 deletions(-)
+>  drivers/thermal/thermal_core.h | 13 +++++++++++++
+>  include/linux/thermal.h        | 24 ------------------------
+>  2 files changed, 13 insertions(+), 24 deletions(-)
 >
 > diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-> index 828305508556..5d08ad60d9df 100644
+> index 5d08ad60d9df..f99551ce9838 100644
 > --- a/drivers/thermal/thermal_core.h
 > +++ b/drivers/thermal/thermal_core.h
-> @@ -41,6 +41,11 @@ extern struct thermal_governor *__governor_thermal_table_end[];
->              __governor < __governor_thermal_table_end; \
->              __governor++)
+> @@ -46,6 +46,19 @@ struct thermal_attr {
+>         char name[THERMAL_NAME_LENGTH];
+>  };
 >
-> +struct thermal_attr {
-> +       struct device_attribute attr;
-> +       char name[THERMAL_NAME_LENGTH];
-> +};
+> +static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+> +{
+> +       return cdev->ops->get_requested_power && cdev->ops->state2power &&
+> +               cdev->ops->power2state;
+> +}
+> +
+> +int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+> +                             struct thermal_zone_device *tz, u32 *max_power);
+> +int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+> +                             struct thermal_zone_device *tz, u32 *min_power);
+> +int power_actor_set_power(struct thermal_cooling_device *cdev,
+> +                         struct thermal_instance *ti, u32 power);
 > +
 >  /*
 >   * This structure is used to describe the behavior of
 >   * a certain cooling device on a certain trip point
 > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 71cff87dcb46..5aa80fb2fb61 100644
+> index 5aa80fb2fb61..e0279f7b43f4 100644
 > --- a/include/linux/thermal.h
 > +++ b/include/linux/thermal.h
-> @@ -35,6 +35,7 @@
->  struct thermal_zone_device;
->  struct thermal_cooling_device;
->  struct thermal_instance;
-> +struct thermal_attr;
+> @@ -399,18 +399,6 @@ void devm_thermal_zone_of_sensor_unregister(struct device *dev,
+>  #endif
 >
->  enum thermal_device_mode {
->         THERMAL_DEVICE_DISABLED = 0,
-> @@ -119,11 +120,6 @@ struct thermal_cooling_device {
->         struct list_head node;
->  };
->
-> -struct thermal_attr {
-> -       struct device_attribute attr;
-> -       char name[THERMAL_NAME_LENGTH];
-> -};
+>  #if IS_ENABLED(CONFIG_THERMAL)
+> -static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+> -{
+> -       return cdev->ops->get_requested_power && cdev->ops->state2power &&
+> -               cdev->ops->power2state;
+> -}
 > -
->  /**
->   * struct thermal_zone_device - structure for a thermal zone
->   * @id:                unique id number for each thermal zone
+> -int power_actor_get_max_power(struct thermal_cooling_device *,
+> -                             struct thermal_zone_device *tz, u32 *max_power);
+> -int power_actor_get_min_power(struct thermal_cooling_device *,
+> -                             struct thermal_zone_device *tz, u32 *min_power);
+> -int power_actor_set_power(struct thermal_cooling_device *,
+> -                         struct thermal_instance *, u32);
+>  struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
+>                 void *, struct thermal_zone_device_ops *,
+>                 struct thermal_zone_params *, int, int);
+> @@ -447,18 +435,6 @@ struct thermal_instance *get_thermal_instance(struct thermal_zone_device *,
+>  void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+>  #else
+> -static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+> -{ return false; }
+> -static inline int power_actor_get_max_power(struct thermal_cooling_device *cdev,
+> -                             struct thermal_zone_device *tz, u32 *max_power)
+> -{ return 0; }
+> -static inline int power_actor_get_min_power(struct thermal_cooling_device *cdev,
+> -                                           struct thermal_zone_device *tz,
+> -                                           u32 *min_power)
+> -{ return -ENODEV; }
+> -static inline int power_actor_set_power(struct thermal_cooling_device *cdev,
+> -                         struct thermal_instance *tz, u32 power)
+> -{ return 0; }
+>  static inline struct thermal_zone_device *thermal_zone_device_register(
+>         const char *type, int trips, int mask, void *devdata,
+>         struct thermal_zone_device_ops *ops,
 > --
 > 2.17.1
 >
