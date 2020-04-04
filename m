@@ -4,58 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0EB3BC2BA18
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BFD62C2BA16
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D9FD7208FE
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9092820719
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Apr 2020 07:31:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="W5l3m915"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="ilFI7CUr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726224AbgDDHbD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 4 Apr 2020 03:31:03 -0400
-Received: from mail-vs1-f68.google.com ([209.85.217.68]:43156 "EHLO
+        id S1726312AbgDDHbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 4 Apr 2020 03:31:23 -0400
+Received: from mail-vs1-f68.google.com ([209.85.217.68]:41693 "EHLO
         mail-vs1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726272AbgDDHbD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 03:31:03 -0400
-Received: by mail-vs1-f68.google.com with SMTP id w185so6460804vsw.10
-        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2020 00:31:01 -0700 (PDT)
+        with ESMTP id S1726307AbgDDHbX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 4 Apr 2020 03:31:23 -0400
+Received: by mail-vs1-f68.google.com with SMTP id a63so6462931vsa.8
+        for <linux-pm@vger.kernel.org>; Sat, 04 Apr 2020 00:31:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=verdurent-com.20150623.gappssmtp.com; s=20150623;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=J+hFFTj54X+dnGLSJAQeLYPL3M77XkjKUzoz85gYbcc=;
-        b=W5l3m915mdUEF+QTl2zp5yRyUKce6jM87djRxO61GJvftQpKX913IH6irpyEW3vjWS
-         aoJ74HTDM5wHmJc1Ma+iPzFwIZOukAqxaZuvmwVBrJNp48lcRfPDwVSa9X1Q21W304Qd
-         cQyEYq73wnnrVPdxQKQdypk+J9xuqsRFRq4jiGBuX3JV5VLQqscYAjO5CIhd2QpYKeg8
-         ucXeqxti4ZpwQIRdl5WsT7wAE3iyMCWBT7I3jHnfRCfBGVJzv6x5TpSdEoWKSrdjyxdG
-         f1spuqj+Bi+5vaowZYujt3kJGE1qlJV5ermVTGj+U0Ek8M+nE+D+dkCSLgQ+wctRmDko
-         RHyw==
+        bh=WYYENpUenW1mOBtwvfCGSxitkk6MXuBt0h7Pv0y2XUQ=;
+        b=ilFI7CUrtJSEbObp2HesFPiTB4AR1aiGuk3EnDSRgtX/hwzeXMsExL2JaxO3jukIrv
+         bcZq/X+c6g5rUrI0WibAck/3jqs7Lsf1ZO3RkQvy9GlgeUr5NBsDVaRSokXfeErqJH/m
+         +ypokOKM2lLOG/f/i0r0id7QKcV/EZzcTzyro6x2KQdl8zo6UolTEDgOaM+6WpvSVgzX
+         ZeSQPU4Z26g/Fubo9b6HdX/srMgQOQNwie9R8i31ifBU5Nt7PFmCPlJ9DO/mZB4wZvoy
+         kGzWQpdQVSZ+Kza8C6OzMgT6xItrCu/zTyGVdqZHbSsA/36e69UeMiLIWjBfw+zVeYKr
+         2vmw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=J+hFFTj54X+dnGLSJAQeLYPL3M77XkjKUzoz85gYbcc=;
-        b=qhWEAjvAIT19QW7D9DmxITdhp65fOne0FJ/XS8RRktJExF99at28eTIM4oDBoNsEhs
-         VqhTgdWum6UAVHUguIXziZui6fggz6myJRvCN+PfZQ4h7ok82RPg9pb8PivYOdP745mo
-         aWjvlKqMkjefVrgvfrzFYvJyI9nEqzvtmO4odPsmtf6DiyEem74+tguVpwa0I70aM9qy
-         j47rwynbO26skDZnVd1a8HTi5ElyBp2F1rSVFJKtyvlftbfGYTAXOlIFoSqaHzZrKdMn
-         JykoU05dv1MvZlmBLLnbDprnDPEbOViH+/Iqi2bL1NVG4unG+Axvz54jbMwaoZMA6RQ/
-         z8BQ==
-X-Gm-Message-State: AGi0PubgPKNz/3qFt8CtsHSxImu4wxvpjJ56B5lpvVwPyuEb7P//YZgm
-        bizE0Iz5QLgeM4X/0VQvcVQyldxBtth6Xy4UFsRrXw==
-X-Google-Smtp-Source: APiQypKwCsok3pKZtYpKavnkMIyWFzjwvX+VhO/uzmDeq/p7hWUxGf25hzJLEtTfwGsf8hHS+ICVZnSZCzssbXJVdr8=
-X-Received: by 2002:a05:6102:5c5:: with SMTP id v5mr9239819vsf.9.1585985460949;
- Sat, 04 Apr 2020 00:31:00 -0700 (PDT)
+        bh=WYYENpUenW1mOBtwvfCGSxitkk6MXuBt0h7Pv0y2XUQ=;
+        b=uWqT/6HaZtF2EhzaMDYxITjpuiUZc7usLEEU+RM2E5xwn+O5LYtrxkEXlnycxgsS6h
+         QBsxZ7IUn+clCnE2I+iNFAFKfoJk1TcMmr5Z41ArM4q7ptsAabol5rLMTciRFnXskEia
+         GChjwl7zZOxqNaspTv9hx1FliTBs/ruv8rD9u8weBvdEFXJhIht1gaUrcYL8bXr3KQRd
+         0HkmEG1Yyt5XHzPseHe3S8U9ZhSZlzJQ6vfm2YTSS7wabsKJgZb5zFeSgN9/ssA74E5M
+         dk7WcW+0nwJGc9gafVK6MWm0ypAuA8bkj+2V7tMx8uy8x6dIi0I1kVNXcdBcjP64+r0b
+         0ADA==
+X-Gm-Message-State: AGi0PuZdpE28jrcmSsEUGlJJ8Pj74vR5ckwlFIUe2UqOumVpMMhkKg0R
+        uAVM6M9aTqjIT6ta3CqcMDHaiMipF8sWN/5K+XO8Yg==
+X-Google-Smtp-Source: APiQypIwudVuiXe/LMRHhc+8ubP3TRukmM9WaTm2+ZWP9jINOT+vAJPzu1MSDfRi5eRWTsLpXV+EashporgRQZI943w=
+X-Received: by 2002:a05:6102:104b:: with SMTP id h11mr9409688vsq.182.1585985482961;
+ Sat, 04 Apr 2020 00:31:22 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200402142747.8307-1-daniel.lezcano@linaro.org> <20200402142747.8307-7-daniel.lezcano@linaro.org>
-In-Reply-To: <20200402142747.8307-7-daniel.lezcano@linaro.org>
+References: <20200402142747.8307-1-daniel.lezcano@linaro.org> <20200402142747.8307-8-daniel.lezcano@linaro.org>
+In-Reply-To: <20200402142747.8307-8-daniel.lezcano@linaro.org>
 From:   Amit Kucheria <amit.kucheria@verdurent.com>
 Date:   Sat, 4 Apr 2020 13:00:00 +0530
-Message-ID: <CAHLCerNrAgOSO3DiFAr3rvD3Ar7N4SP7dLeURGNae7oqpzzEKA@mail.gmail.com>
-Subject: Re: [PATCH V2 7/9] thermal: Change IS_ENABLED to IFDEF in the header file
+Message-ID: <CAHLCerMD5fJR1nEeXPhX-=5WfTZ681KuLswcY5xXw2jfTXskWA@mail.gmail.com>
+Subject: Re: [PATCH V2 8/9] thermal: Remove stubs for thermal_zone_[un]bind_cooling_device
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     Zhang Rui <rui.zhang@intel.com>,
         "open list:THERMAL" <linux-pm@vger.kernel.org>,
@@ -68,30 +69,38 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 On Thu, Apr 2, 2020 at 7:58 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
 >
-> The thermal framework can not be compiled as a module. The IS_ENABLED
-> macro is useless here and can be replaced by an ifdef.
+> All callers of the functions depends on THERMAL, it is pointless to
+> define stubs. Remove them.
 >
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 
 Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
 > ---
->  include/linux/thermal.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  include/linux/thermal.h | 10 ----------
+>  1 file changed, 10 deletions(-)
 >
 > diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 47e745c5dfca..12df9ff0182d 100644
+> index 12df9ff0182d..7b3dbfe15b59 100644
 > --- a/include/linux/thermal.h
 > +++ b/include/linux/thermal.h
-> @@ -383,7 +383,7 @@ void devm_thermal_zone_of_sensor_unregister(struct device *dev,
->
->  #endif
->
-> -#if IS_ENABLED(CONFIG_THERMAL)
-> +#ifdef CONFIG_THERMAL
->  struct thermal_zone_device *thermal_zone_device_register(const char *, int, int,
->                 void *, struct thermal_zone_device_ops *,
->                 struct thermal_zone_params *, int, int);
+> @@ -426,16 +426,6 @@ static inline struct thermal_zone_device *thermal_zone_device_register(
+>  static inline void thermal_zone_device_unregister(
+>         struct thermal_zone_device *tz)
+>  { }
+> -static inline int thermal_zone_bind_cooling_device(
+> -       struct thermal_zone_device *tz, int trip,
+> -       struct thermal_cooling_device *cdev,
+> -       unsigned long upper, unsigned long lower,
+> -       unsigned int weight)
+> -{ return -ENODEV; }
+> -static inline int thermal_zone_unbind_cooling_device(
+> -       struct thermal_zone_device *tz, int trip,
+> -       struct thermal_cooling_device *cdev)
+> -{ return -ENODEV; }
+>  static inline void thermal_zone_device_update(struct thermal_zone_device *tz,
+>                                               enum thermal_notify_event event)
+>  { }
 > --
 > 2.17.1
 >
