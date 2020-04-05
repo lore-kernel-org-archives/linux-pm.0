@@ -1,68 +1,66 @@
 Return-Path: <SRS0=OWl5=5V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Level: **
+X-Spam-Status: No, score=2.2 required=3.0 tests=DEAR_FRIEND,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13E5FC2BA19
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 20:50:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A1DC2BA19
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 21:17:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id D9D1320672
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 20:50:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586119823;
-	bh=2ZzpHbWz8cqTRnrGS/98b/OKW5nFDEswVhBZyu24Gxg=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
-	b=1MZYn7cRn7aQNe96FqngMcN3IUSwtsrEOH+aNtbCKb0k64cPWDYKYvGxX/EU71Tfx
-	 AYq+QDoVOpDyT5oHWEw26P910e5WwpCcwWM5n30AdLdN53vM4VqWGgXoh1PR0tZZIH
-	 iTSmjGIlBw28iWUS7IhHaw6CfiJnU7TyEXUsdMv8=
+	by mail.kernel.org (Postfix) with ESMTP id 3ABD52075E
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 21:17:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726887AbgDEUuX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Apr 2020 16:50:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:32818 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726772AbgDEUuX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 5 Apr 2020 16:50:23 -0400
-Subject: Re: [GIT PULL] power-supply changes for 5.7
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586119822;
-        bh=2ZzpHbWz8cqTRnrGS/98b/OKW5nFDEswVhBZyu24Gxg=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=pmf6vtExYaGDy1QExFIVU6fUW9jZiiPRnhp+mqb1oLCwaFjNTMtofgkgoIzihb/BQ
-         y3/wdTRm7r03RvbpUtUs9ONrAfbWekK4MdAKv0sj/eyC04H92UxV279fZRwbKdku+6
-         dcvdjZ8yucwMhgZ4L0DIuE6uKufnfsqIHBTJaSVA=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <20200405161209.4e3z23eyvp2wsrus@earth.universe>
-References: <20200405161209.4e3z23eyvp2wsrus@earth.universe>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <20200405161209.4e3z23eyvp2wsrus@earth.universe>
-X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git
- tags/for-v5.7
-X-PR-Tracked-Commit-Id: f78c55e3b4806974f7d590b2aab8683232b7bd25
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: a10c9c710f9ecea87b9f4bbb837467893b4bef01
-Message-Id: <158611982258.18205.6037152354580543046.pr-tracker-bot@kernel.org>
-Date:   Sun, 05 Apr 2020 20:50:22 +0000
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+        id S1727254AbgDEVRy convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Apr 2020 17:17:54 -0400
+Received: from mail.augl.cc ([80.121.213.134]:28943 "EHLO
+        AGL-DC01.augl2010.local" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726887AbgDEVRy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Apr 2020 17:17:54 -0400
+X-Greylist: delayed 1022 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2020 17:17:54 EDT
+Received: from coris.com ([103.207.36.17]) by AGL-DC01.augl2010.local with Microsoft SMTPSVC(10.0.14393.2608);
+         Sun, 5 Apr 2020 22:13:07 +0200
+Reply-To: kentpace@sina.com
+From:   Kent Pace <kentpace@coris.com>
+To:     linux-pm@vger.kernel.org
+Subject: Urgent! Please Read
+Date:   05 Apr 2020 13:13:05 -0700
+Message-ID: <20200405131305.5A4F27A8980F32C9@coris.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 05 Apr 2020 20:13:08.0039 (UTC) FILETIME=[9F509570:01D60B86]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Sun, 5 Apr 2020 18:12:09 +0200:
+Dear Friend,
 
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/sre/linux-power-supply.git tags/for-v5.7
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/a10c9c710f9ecea87b9f4bbb837467893b4bef01
+There is something very important I need to discuss with you.  I 
+am writing  this letter in tears and fear. In tears because I 
+will soon depart and in fear because I don't really know if you 
+will do this faithfully.
 
-Thank you!
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+I am COVID-19  patient and the doctor has already confirmed I may 
+not last for the next 7 days.
+
+I have substantial amount of money deposited in a security vault 
+around your country. It is in trunk boxes and once  I receive 
+your response and see your readiness to claim the money 
+immediately, I will forward the needed documents and the contact 
+of the security vault where the consignment is deposited,
+I am not asking you to give me anything but I want you to help 
+people that has been infected with this deadly virus with 60% of 
+the money and 40% should be for you and your family.
+
+I will disclose exact amount in the boxes as soon as I 
+receive your response.
+
+
+Regards
