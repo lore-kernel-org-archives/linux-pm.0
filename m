@@ -2,271 +2,157 @@ Return-Path: <SRS0=HvZr=5W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7BA88C2BBFD
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Apr 2020 12:03:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35E4FC2BA1E
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Apr 2020 13:30:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5A5DE2078A
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Apr 2020 12:03:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 158B522206
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Apr 2020 13:30:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727978AbgDFMDn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Apr 2020 08:03:43 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:40132 "EHLO inva020.nxp.com"
+        id S1728349AbgDFNaK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Apr 2020 09:30:10 -0400
+Received: from foss.arm.com ([217.140.110.172]:45722 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726329AbgDFMDX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 6 Apr 2020 08:03:23 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 770C51A0DE0;
-        Mon,  6 Apr 2020 14:03:20 +0200 (CEST)
-Received: from inva024.eu-rdc02.nxp.com (inva024.eu-rdc02.nxp.com [134.27.226.22])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 581461A0DC9;
-        Mon,  6 Apr 2020 14:03:20 +0200 (CEST)
-Received: from fsr-ub1864-112.ea.freescale.net (fsr-ub1864-112.ea.freescale.net [10.171.82.98])
-        by inva024.eu-rdc02.nxp.com (Postfix) with ESMTP id 88409204E6;
-        Mon,  6 Apr 2020 14:03:18 +0200 (CEST)
-From:   Leonard Crestez <leonard.crestez@nxp.com>
-To:     Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     Alexandre Bailon <abailon@baylibre.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Jacky Bai <ping.bai@nxp.com>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
-        Abel Vesa <abel.vesa@nxp.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Saravana Kannan <saravanak@google.com>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Dong Aisheng <aisheng.dong@nxp.com>,
-        Fabio Estevam <fabio.estevam@nxp.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Angus Ainslie <angus@akkea.ca>,
-        Martin Kepplinger <martink@posteo.de>,
-        Silvano di Ninno <silvano.dininno@nxp.com>,
-        linux-pm@vger.kernel.org, kernel@pengutronix.de, linux-imx@nxp.com,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 2/8] PM / devfreq: Add generic imx bus scaling driver
-Date:   Mon,  6 Apr 2020 15:03:07 +0300
-Message-Id: <af1fd3a339a37123ee36179efcb90600c1e0f746.1586174566.git.leonard.crestez@nxp.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <cover.1586174566.git.leonard.crestez@nxp.com>
-References: <cover.1586174566.git.leonard.crestez@nxp.com>
-In-Reply-To: <cover.1586174566.git.leonard.crestez@nxp.com>
-References: <cover.1586174566.git.leonard.crestez@nxp.com>
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1728200AbgDFNaK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 6 Apr 2020 09:30:10 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 313E231B;
+        Mon,  6 Apr 2020 06:30:09 -0700 (PDT)
+Received: from [10.37.12.4] (unknown [10.37.12.4])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id BC4473F7D8;
+        Mon,  6 Apr 2020 06:29:58 -0700 (PDT)
+Subject: Re: [PATCH v5 1/5] PM / EM: add devices to Energy Model
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+        linux-imx@nxp.com
+Cc:     Morten.Rasmussen@arm.com, Dietmar.Eggemann@arm.com,
+        javi.merino@arm.com, cw00.choi@samsung.com,
+        b.zolnierkie@samsung.com, rjw@rjwysocki.net, sudeep.holla@arm.com,
+        viresh.kumar@linaro.org, nm@ti.com, sboyd@kernel.org,
+        rui.zhang@intel.com, amit.kucheria@verdurent.com, mingo@redhat.com,
+        peterz@infradead.org, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, rostedt@goodmis.org,
+        qperret@google.com, bsegall@google.com, mgorman@suse.de,
+        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
+        kernel@pengutronix.de, khilman@kernel.org, agross@kernel.org,
+        bjorn.andersson@linaro.org, robh@kernel.org,
+        matthias.bgg@gmail.com, steven.price@arm.com,
+        tomeu.vizoso@collabora.com, alyssa.rosenzweig@collabora.com,
+        airlied@linux.ie, daniel@ffwll.ch, liviu.dudau@arm.com,
+        lorenzo.pieralisi@arm.com, patrick.bellasi@matbug.net,
+        orjan.eide@arm.com, rdunlap@infradead.org, mka@chromium.org
+References: <20200318114548.19916-1-lukasz.luba@arm.com>
+ <20200318114548.19916-2-lukasz.luba@arm.com>
+ <09b680a5-a118-8c6e-0ae1-03ab5f10c573@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <cb7f670a-a04f-ba6f-1486-0421f3cce2e9@arm.com>
+Date:   Mon, 6 Apr 2020 14:29:56 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <09b680a5-a118-8c6e-0ae1-03ab5f10c573@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add initial support for dynamic frequency switching on pieces of the imx
-interconnect fabric.
+Hi Daniel,
 
-All this driver does is set a clk rate based on an opp table, it does
-not map register areas.
+Thank you for the review.
 
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Tested-by: Martin Kepplinger <martin.kepplinger@puri.sm>
----
- drivers/devfreq/Kconfig   |   8 +++
- drivers/devfreq/Makefile  |   1 +
- drivers/devfreq/imx-bus.c | 138 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 147 insertions(+)
- create mode 100644 drivers/devfreq/imx-bus.c
+On 4/3/20 5:05 PM, Daniel Lezcano wrote:
+> 
+> Hi Lukasz,
+> 
+> 
+> On 18/03/2020 12:45, Lukasz Luba wrote:
+>> Add support of other devices into the Energy Model framework not only the
+>> CPUs. Change the interface to be more unified which can handle other
+>> devices as well.
+> 
+> thanks for taking care of that. Overall I like the changes in this patch
+> but it hard to review in details because the patch is too big :/
+> 
+> Could you split this patch into smaller ones?
+> 
+> eg. (at your convenience)
+> 
+>   - One patch renaming s/cap/perf/
+> 
+>   - One patch adding a new function:
+> 
+>      em_dev_register_perf_domain(struct device *dev,
+> 				unsigned int nr_states,
+> 				struct em_data_callback *cb);
+> 
+>     (+ EXPORT_SYMBOL_GPL)
+> 
+>      And em_register_perf_domain() using it.
+> 
+>   - One converting the em_register_perf_domain() user to
+> 	em_dev_register_perf_domain
+> 
+>   - One adding the different new 'em' functions
+> 
+>   - And finally one removing em_register_perf_domain().
 
-diff --git a/drivers/devfreq/Kconfig b/drivers/devfreq/Kconfig
-index 0b1df12e0f21..37dc40d1fcfb 100644
---- a/drivers/devfreq/Kconfig
-+++ b/drivers/devfreq/Kconfig
-@@ -89,10 +89,18 @@ config ARM_EXYNOS_BUS_DEVFREQ
- 	  Each memory bus group could contain many memoby bus block. It reads
- 	  PPMU counters of memory controllers by using DEVFREQ-event device
- 	  and adjusts the operating frequencies and voltages with OPP support.
- 	  This does not yet operate with optimal voltages.
- 
-+config ARM_IMX_BUS_DEVFREQ
-+	tristate "i.MX Generic Bus DEVFREQ Driver"
-+	depends on ARCH_MXC || COMPILE_TEST
-+	select DEVFREQ_GOV_USERSPACE
-+	help
-+	  This adds the generic DEVFREQ driver for i.MX interconnects. It
-+	  allows adjusting NIC/NOC frequency.
-+
- config ARM_IMX8M_DDRC_DEVFREQ
- 	tristate "i.MX8M DDRC DEVFREQ Driver"
- 	depends on (ARCH_MXC && HAVE_ARM_SMCCC) || \
- 		(COMPILE_TEST && HAVE_ARM_SMCCC)
- 	select DEVFREQ_GOV_SIMPLE_ONDEMAND
-diff --git a/drivers/devfreq/Makefile b/drivers/devfreq/Makefile
-index 3eb4d5e6635c..3ca1ad0ecb97 100644
---- a/drivers/devfreq/Makefile
-+++ b/drivers/devfreq/Makefile
-@@ -7,10 +7,11 @@ obj-$(CONFIG_DEVFREQ_GOV_POWERSAVE)	+= governor_powersave.o
- obj-$(CONFIG_DEVFREQ_GOV_USERSPACE)	+= governor_userspace.o
- obj-$(CONFIG_DEVFREQ_GOV_PASSIVE)	+= governor_passive.o
- 
- # DEVFREQ Drivers
- obj-$(CONFIG_ARM_EXYNOS_BUS_DEVFREQ)	+= exynos-bus.o
-+obj-$(CONFIG_ARM_IMX_BUS_DEVFREQ)	+= imx-bus.o
- obj-$(CONFIG_ARM_IMX8M_DDRC_DEVFREQ)	+= imx8m-ddrc.o
- obj-$(CONFIG_ARM_RK3399_DMC_DEVFREQ)	+= rk3399_dmc.o
- obj-$(CONFIG_ARM_TEGRA_DEVFREQ)		+= tegra30-devfreq.o
- obj-$(CONFIG_ARM_TEGRA20_DEVFREQ)	+= tegra20-devfreq.o
- 
-diff --git a/drivers/devfreq/imx-bus.c b/drivers/devfreq/imx-bus.c
-new file mode 100644
-index 000000000000..428f7980a2f2
---- /dev/null
-+++ b/drivers/devfreq/imx-bus.c
-@@ -0,0 +1,138 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * Copyright 2019 NXP
-+ */
-+
-+#include <linux/clk.h>
-+#include <linux/devfreq.h>
-+#include <linux/device.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/pm_opp.h>
-+#include <linux/platform_device.h>
-+#include <linux/slab.h>
-+
-+struct imx_bus {
-+	struct devfreq_dev_profile profile;
-+	struct devfreq *devfreq;
-+	struct clk *clk;
-+};
-+
-+static int imx_bus_target(struct device *dev,
-+		unsigned long *freq, u32 flags)
-+{
-+	struct dev_pm_opp *new_opp;
-+	int ret;
-+
-+	new_opp = devfreq_recommended_opp(dev, freq, flags);
-+	if (IS_ERR(new_opp)) {
-+		ret = PTR_ERR(new_opp);
-+		dev_err(dev, "failed to get recommended opp: %d\n", ret);
-+		return ret;
-+	}
-+	dev_pm_opp_put(new_opp);
-+
-+	return dev_pm_opp_set_rate(dev, *freq);
-+}
-+
-+static int imx_bus_get_cur_freq(struct device *dev, unsigned long *freq)
-+{
-+	struct imx_bus *priv = dev_get_drvdata(dev);
-+
-+	*freq = clk_get_rate(priv->clk);
-+
-+	return 0;
-+}
-+
-+static int imx_bus_get_dev_status(struct device *dev,
-+		struct devfreq_dev_status *stat)
-+{
-+	struct imx_bus *priv = dev_get_drvdata(dev);
-+
-+	stat->busy_time = 0;
-+	stat->total_time = 0;
-+	stat->current_frequency = clk_get_rate(priv->clk);
-+
-+	return 0;
-+}
-+
-+static void imx_bus_exit(struct device *dev)
-+{
-+	dev_pm_opp_of_remove_table(dev);
-+}
-+
-+static int imx_bus_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct imx_bus *priv;
-+	const char *gov = DEVFREQ_GOV_USERSPACE;
-+	int ret;
-+
-+	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-+	if (!priv)
-+		return -ENOMEM;
-+
-+	/*
-+	 * Fetch the clock to adjust but don't explicitly enable.
-+	 *
-+	 * For imx bus clock clk_set_rate is safe no matter if the clock is on
-+	 * or off and some peripheral side-buses might be off unless enabled by
-+	 * drivers for devices on those specific buses.
-+	 *
-+	 * Rate adjustment on a disabled bus clock just takes effect later.
-+	 */
-+	priv->clk = devm_clk_get(dev, NULL);
-+	if (IS_ERR(priv->clk)) {
-+		ret = PTR_ERR(priv->clk);
-+		dev_err(dev, "failed to fetch clk: %d\n", ret);
-+		return ret;
-+	}
-+	platform_set_drvdata(pdev, priv);
-+
-+	ret = dev_pm_opp_of_add_table(dev);
-+	if (ret < 0) {
-+		dev_err(dev, "failed to get OPP table\n");
-+		return ret;
-+	}
-+
-+	priv->profile.polling_ms = 1000;
-+	priv->profile.target = imx_bus_target;
-+	priv->profile.get_dev_status = imx_bus_get_dev_status;
-+	priv->profile.exit = imx_bus_exit;
-+	priv->profile.get_cur_freq = imx_bus_get_cur_freq;
-+	priv->profile.initial_freq = clk_get_rate(priv->clk);
-+
-+	priv->devfreq = devm_devfreq_add_device(dev, &priv->profile,
-+						gov, NULL);
-+	if (IS_ERR(priv->devfreq)) {
-+		ret = PTR_ERR(priv->devfreq);
-+		dev_err(dev, "failed to add devfreq device: %d\n", ret);
-+		goto err;
-+	}
-+
-+	return 0;
-+
-+err:
-+	dev_pm_opp_of_remove_table(dev);
-+	return ret;
-+}
-+
-+static const struct of_device_id imx_bus_of_match[] = {
-+	{ .compatible = "fsl,imx8m-noc", },
-+	{ .compatible = "fsl,imx8m-nic", },
-+	{ /* sentinel */ },
-+};
-+MODULE_DEVICE_TABLE(of, imx_bus_of_match);
-+
-+static struct platform_driver imx_bus_platdrv = {
-+	.probe		= imx_bus_probe,
-+	.driver = {
-+		.name	= "imx-bus-devfreq",
-+		.of_match_table = of_match_ptr(imx_bus_of_match),
-+	},
-+};
-+module_platform_driver(imx_bus_platdrv);
-+
-+MODULE_DESCRIPTION("Generic i.MX bus frequency scaling driver");
-+MODULE_AUTHOR("Leonard Crestez <leonard.crestez@nxp.com>");
-+MODULE_LICENSE("GPL v2");
--- 
-2.17.1
+I agree and will do the split. I could also break the dependencies
+for future easier merge.
+
+> 
+> 
+>> Acked-by: Quentin Perret <qperret@google.com>
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>> ---
+> 
+> [ ... ]
+> 
+>>   2. Core APIs
+>> @@ -70,14 +72,16 @@ CONFIG_ENERGY_MODEL must be enabled to use the EM framework.
+>>   Drivers are expected to register performance domains into the EM framework by
+>>   calling the following API::
+>>   
+>> -  int em_register_perf_domain(cpumask_t *span, unsigned int nr_states,
+>> -			      struct em_data_callback *cb);
+>> +  int em_register_perf_domain(struct device *dev, unsigned int nr_states,
+>> +		struct em_data_callback *cb, cpumask_t *cpus);
+> 
+> Isn't possible to get rid of this cpumask by using
+> cpufreq_cpu_get() which returns the cpufreq's policy and from their get
+> the related cpus ?
+
+We had similar thoughts with Quentin and I've checked this.
+Unfortunately, if the policy is a 'new policy' [1] it gets
+allocated and passed into cpufreq driver ->init(policy) [2].
+Then that policy is set into per_cpu pointer for each related_cpu [3]:
+
+for_each_cpu(j, policy->related_cpus)
+	per_cpu(cpufreq_cpu_data, j) = policy;
+
+
+Thus, any calls of functions (i.e. cpufreq_cpu_get()) which try to
+take this ptr before [3] won't work.
+
+We are trying to register EM from cpufreq_driver->init(policy) and the
+per_cpu policy is likely to be not populated at that phase.
+
+Regards,
+Lukasz
+
+[1] 
+https://elixir.bootlin.com/linux/latest/source/drivers/cpufreq/cpufreq.c#L1328
+[2] 
+https://elixir.bootlin.com/linux/latest/source/drivers/cpufreq/cpufreq.c#L1350
+[3] 
+https://elixir.bootlin.com/linux/latest/source/drivers/cpufreq/cpufreq.c#L1374
+
 
