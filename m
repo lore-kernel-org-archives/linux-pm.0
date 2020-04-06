@@ -1,66 +1,169 @@
 Return-Path: <SRS0=OWl5=5V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
-X-Spam-Level: **
-X-Spam-Status: No, score=2.2 required=3.0 tests=DEAR_FRIEND,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Level: 
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72A1DC2BA19
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 21:17:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D83FEC2BA17
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 23:51:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 3ABD52075E
-	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 21:17:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9EFE320678
+	for <linux-pm@archiver.kernel.org>; Sun,  5 Apr 2020 23:51:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="LUxeaH3f"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727254AbgDEVRy convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 5 Apr 2020 17:17:54 -0400
-Received: from mail.augl.cc ([80.121.213.134]:28943 "EHLO
-        AGL-DC01.augl2010.local" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726887AbgDEVRy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Apr 2020 17:17:54 -0400
-X-Greylist: delayed 1022 seconds by postgrey-1.27 at vger.kernel.org; Sun, 05 Apr 2020 17:17:54 EDT
-Received: from coris.com ([103.207.36.17]) by AGL-DC01.augl2010.local with Microsoft SMTPSVC(10.0.14393.2608);
-         Sun, 5 Apr 2020 22:13:07 +0200
-Reply-To: kentpace@sina.com
-From:   Kent Pace <kentpace@coris.com>
-To:     linux-pm@vger.kernel.org
-Subject: Urgent! Please Read
-Date:   05 Apr 2020 13:13:05 -0700
-Message-ID: <20200405131305.5A4F27A8980F32C9@coris.com>
+        id S1727742AbgDEXv1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 5 Apr 2020 19:51:27 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:46819 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727612AbgDEXv0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 5 Apr 2020 19:51:26 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20200405235124epoutp03cdc8415ee4cbc6817aa407eb0b249b79~DEXQrcU9V2039120391epoutp03_
+        for <linux-pm@vger.kernel.org>; Sun,  5 Apr 2020 23:51:24 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20200405235124epoutp03cdc8415ee4cbc6817aa407eb0b249b79~DEXQrcU9V2039120391epoutp03_
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1586130684;
+        bh=lSt8LdJPpXoJoLD3otlucHeQK0lf6r+8c36+IMGqGZQ=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=LUxeaH3f7tTFyDgfKW9t7wHpCSoM88qzVutRnG5xjFo1B+05WakEEGMHT+IxVdRtF
+         RGnxp7JeeFCn+84E+LSxtru8lI4+OMex7aEbTsat6IeURJxCSSQECpez6TpLeMsJvn
+         1r7IBfg+8KmL6ExuOURwoFmfJUmblUQWED+nB9eI=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20200405235123epcas1p47fa7ff1050cd380e55ddbd9c0794e0b4~DEXQDdyg01541915419epcas1p4r;
+        Sun,  5 Apr 2020 23:51:23 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.153]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 48wVn46KL9zMqYls; Sun,  5 Apr
+        2020 23:51:20 +0000 (GMT)
+Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        90.87.04402.8FE6A8E5; Mon,  6 Apr 2020 08:51:20 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20200405235120epcas1p45e7a155cbceaeb44f40f60c14c1c7cba~DEXMsm99c1826218262epcas1p4c;
+        Sun,  5 Apr 2020 23:51:20 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20200405235120epsmtrp1744663a0431b92a131236908e0f9896b~DEXMrzAYn2195221952epsmtrp1B;
+        Sun,  5 Apr 2020 23:51:20 +0000 (GMT)
+X-AuditID: b6c32a35-753ff70000001132-d9-5e8a6ef88e3d
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        1A.58.04024.7FE6A8E5; Mon,  6 Apr 2020 08:51:19 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20200405235119epsmtip141572a1a03ca2dd0e1a8e20cdb8c43ea~DEXMT-pOM1472414724epsmtip10;
+        Sun,  5 Apr 2020 23:51:19 +0000 (GMT)
+Subject: Re: [PATCH] PM / devfreq: tegra30: Delete an error message in
+ tegra_devfreq_probe()
+To:     Markus Elfring <Markus.Elfring@web.de>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        Dmitry Osipenko <digetx@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        kernel-janitors@vger.kernel.org,
+        Tang Bin <tangbin@cmss.chinamobile.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <924a6012-985e-b22d-6f85-e9eb3f03e88b@samsung.com>
+Date:   Mon, 6 Apr 2020 09:00:20 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 05 Apr 2020 20:13:08.0039 (UTC) FILETIME=[9F509570:01D60B86]
+In-Reply-To: <ba67e238-43a7-6c53-363e-7a2c12f09949@web.de>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrLJsWRmVeSWpSXmKPExsWy7bCmge6PvK44gyeLjSxWf3zMaNEyaxGL
+        xdZb0hZnm96wW1zeNYfN4nPvEUaLzi+z2Cz+z3rOanG7cQWbxcf/zcwWP3fNY3Hg9jg/vZfN
+        Y+esu+wevc3v2Dz6tqxi9Pi8Sc7j9rNtLAFsUdk2GamJKalFCql5yfkpmXnptkrewfHO8aZm
+        Boa6hpYW5koKeYm5qbZKLj4Bum6ZOUDnKSmUJeaUAoUCEouLlfTtbIryS0tSFTLyi0tslVIL
+        UnIKLAv0ihNzi0vz0vWS83OtDA0MjEyBChOyM04syyvYwlnx5cQExgbGE+xdjJwcEgImEmuf
+        bmXtYuTiEBLYwSjRs3QfG4TziVHi3OeNUM43Ronvn84zwrQ8nbecBSKxl1Gi+/0cqKr3jBIf
+        H70Bcjg4hAXiJGY+lgOJiwhsYZLYu38DE0g3s0CxRO/RJawgNpuAlsT+FzfYQGx+AUWJqz8e
+        g23gFbCTePm5EcxmEVCRuDb1DJgtKhAmcXJbC1SNoMTJmU9YQGxOASuJJ6v+skDMF5e49WQ+
+        1C55ieats5lBjpAQ6GeXmLCyiRniBReJza2/WSFsYYlXx7dAQ0NK4mV/G5RdLbHy5BE2iOYO
+        Rokt+y9ANRhL7F86mQnkS2YBTYn1u/QhwooSO3/PZYRYzCfx7msPK0iJhACvREebEESJssTl
+        B3eZIGxJicXtnWwTGJVmIXlnFpIXZiF5YRbCsgWMLKsYxVILinPTU4sNCwyRY3sTIzjpapnu
+        YJxyzucQowAHoxIPL8Ptzjgh1sSy4srcQ4wSHMxKIrxSvUAh3pTEyqrUovz4otKc1OJDjKbA
+        0J7ILCWanA/MCHkl8YamRsbGxhYmhmamhoZK4rxTr+fECQmkJ5akZqemFqQWwfQxcXBKNTBK
+        n3sn+jbOrfLw6gaOdOPbc66sFJe9LTXLb0PPvzLVBRfjJPqaL7itOKQs4ep7N2ix2O3y67e8
+        WYIXHrjYM4vb8gD7+RX3pj9+mLso9MLPpZPdHcwmPeQ57Xp5q06O3p3mggfSjrOeRD5le6Tv
+        sePi1fVanvt7diVxtr4s/LQh/MPt662ZH2MMlFiKMxINtZiLihMBj+AQxtADAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrGIsWRmVeSWpSXmKPExsWy7bCSnO73vK44g62TzSxWf3zMaNEyaxGL
+        xdZb0hZnm96wW1zeNYfN4nPvEUaLzi+z2Cz+z3rOanG7cQWbxcf/zcwWP3fNY3Hg9jg/vZfN
+        Y+esu+wevc3v2Dz6tqxi9Pi8Sc7j9rNtLAFsUVw2Kak5mWWpRfp2CVwZJ5blFWzhrPhyYgJj
+        A+MJ9i5GTg4JAROJp/OWs3QxcnEICexmlHh6ei0zREJSYtrFo0A2B5AtLHH4cDFEzVtGiSXz
+        P7CDxIUF4iRmPpYDKRcR2MYkcbg5D8RmFiiW2PZhDTtEfS+jxPvb+8CWsQloSex/cYMNxOYX
+        UJS4+uMxI4jNK2An8fJzI5jNIqAicW3qGTBbVCBMYueSx0wQNYISJ2c+YQGxOQWsJJ6s+ssC
+        sUxd4s+8S8wQtrjErSfzmSBseYnmrbOZJzAKz0LSPgtJyywkLbOQtCxgZFnFKJlaUJybnlts
+        WGCYl1quV5yYW1yal66XnJ+7iREce1qaOxgvL4k/xCjAwajEw8twuzNOiDWxrLgy9xCjBAez
+        kgivVC9QiDclsbIqtSg/vqg0J7X4EKM0B4uSOO/TvGORQgLpiSWp2ampBalFMFkmDk6pBkbe
+        aYsCnbPDxQ9+4PjPe108nDO1/2uOQPPul6aTQ43/W30vnL1Nc3MDa4i/Wdx/s8d3j95K39Fv
+        6nJzCuez3k/z3xzMKLrjUmVek2K5/t//xx3Om3/UWf8/8SZ+4xaWk8UPPC/fC5r169eS9XKz
+        31Uuq5O6Kr5EIsFYo8pYVv9bmt7/jlOHYyyVWIozEg21mIuKEwFq319kuQIAAA==
+X-CMS-MailID: 20200405235120epcas1p45e7a155cbceaeb44f40f60c14c1c7cba
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20200404184602epcas1p1e0188779ade7c393f9e37a4757e1b6cc
+References: <CGME20200404184602epcas1p1e0188779ade7c393f9e37a4757e1b6cc@epcas1p1.samsung.com>
+        <ba67e238-43a7-6c53-363e-7a2c12f09949@web.de>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dear Friend,
+On 4/5/20 3:45 AM, Markus Elfring wrote:
+> From: Markus Elfring <elfring@users.sourceforge.net>
+> Date: Sat, 4 Apr 2020 20:34:02 +0200
+> 
+> The function “platform_get_irq” can log an error already.
+> Thus omit a redundant message for the exception handling in the
+> calling function.
+> 
+> This issue was detected by using the Coccinelle software.
+> 
+> Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+> ---
+>  drivers/devfreq/tegra30-devfreq.c | 5 ++---
+>  1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+> index 28b2c7ca416e..93e6f4b25b04 100644
+> --- a/drivers/devfreq/tegra30-devfreq.c
+> +++ b/drivers/devfreq/tegra30-devfreq.c
+> @@ -807,10 +807,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	}
+> 
+>  	err = platform_get_irq(pdev, 0);
+> -	if (err < 0) {
+> -		dev_err(&pdev->dev, "Failed to get IRQ: %d\n", err);
+> +	if (err < 0)
+>  		return err;
+> -	}
+> +
+>  	tegra->irq = err;
+> 
+>  	irq_set_status_flags(tegra->irq, IRQ_NOAUTOEN);
+> --
+> 2.26.0
+> 
+> 
+> 
 
+Applied it. Thanks.
 
-There is something very important I need to discuss with you.  I 
-am writing  this letter in tears and fear. In tears because I 
-will soon depart and in fear because I don't really know if you 
-will do this faithfully.
-
-
-I am COVID-19  patient and the doctor has already confirmed I may 
-not last for the next 7 days.
-
-I have substantial amount of money deposited in a security vault 
-around your country. It is in trunk boxes and once  I receive 
-your response and see your readiness to claim the money 
-immediately, I will forward the needed documents and the contact 
-of the security vault where the consignment is deposited,
-I am not asking you to give me anything but I want you to help 
-people that has been infected with this deadly virus with 60% of 
-the money and 40% should be for you and your family.
-
-I will disclose exact amount in the boxes as soon as I 
-receive your response.
-
-
-Regards
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
