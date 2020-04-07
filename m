@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5AA9EC2BA80
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Apr 2020 17:49:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B3B1C2BA1A
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Apr 2020 17:49:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 22F7E2075E
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Apr 2020 17:49:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A5712076E
+	for <linux-pm@archiver.kernel.org>; Tue,  7 Apr 2020 17:49:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726683AbgDGRtm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Apr 2020 13:49:42 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:42884 "EHLO
+        id S1726705AbgDGRtr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Apr 2020 13:49:47 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:42962 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726559AbgDGRtm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Apr 2020 13:49:42 -0400
+        with ESMTP id S1726608AbgDGRtr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Apr 2020 13:49:47 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: andrzej.p)
-        with ESMTPSA id 202672972AA
+        with ESMTPSA id 53C822972A7
 From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Zhang Rui <rui.zhang@intel.com>,
@@ -48,9 +48,9 @@ Cc:     Zhang Rui <rui.zhang@intel.com>,
         platform-driver-x86@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
         Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Subject: [RFC 2/8] thermal: Properly handle mode values in .set_mode()
-Date:   Tue,  7 Apr 2020 19:49:20 +0200
-Message-Id: <20200407174926.23971-3-andrzej.p@collabora.com>
+Subject: [RFC 4/8] thermal: core: Introduce THERMAL_DEVICE_INITIAL
+Date:   Tue,  7 Apr 2020 19:49:22 +0200
+Message-Id: <20200407174926.23971-5-andrzej.p@collabora.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200407174926.23971-1-andrzej.p@collabora.com>
 References: <20200407174926.23971-1-andrzej.p@collabora.com>
@@ -59,117 +59,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allow only THERMAL_DEVICE_ENABLED and THERMAL_DEVICE_DISABLED as valid
-states to transition to.
+Add a new mode: THERMAL_DEVICE_INITIAL. It is dedicated to handle devices
+which must be initially DISABLED, but which are polled at startup
+nonetheless. THERMAL_DEVICE_INITIAL shall be reported as "enabled" in
+sysfs to keep the userspace interface intact.
 
 Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 ---
- drivers/net/ethernet/mellanox/mlxsw/core_thermal.c | 8 ++++++--
- drivers/platform/x86/acerhdf.c                     | 4 ++++
- drivers/thermal/imx_thermal.c                      | 4 +++-
- drivers/thermal/intel/intel_quark_dts_thermal.c    | 5 ++++-
- drivers/thermal/of-thermal.c                       | 4 +++-
- 5 files changed, 20 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_sysfs.c | 4 ++--
+ include/linux/thermal.h         | 3 ++-
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index ce0a6837daa3..cd435ca7adbe 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -296,8 +296,10 @@ static int mlxsw_thermal_set_mode(struct thermal_zone_device *tzdev,
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index aa99edb4dff7..6bfef21abce4 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -59,8 +59,8 @@ mode_show(struct device *dev, struct device_attribute *attr, char *buf)
+ 	if (result)
+ 		return result;
  
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		tzdev->polling_delay = thermal->polling_delay;
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		tzdev->polling_delay = 0;
-+	else
-+		return -EINVAL;
+-	return sprintf(buf, "%s\n", mode == THERMAL_DEVICE_ENABLED ? "enabled"
+-		       : "disabled");
++	return sprintf(buf, "%s\n", mode == THERMAL_DEVICE_DISABLED ? "disabled"
++		       : "enabled");
+ }
  
- 	mutex_unlock(&tzdev->lock);
+ static ssize_t
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 126913c6a53b..1bc6b7998093 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -48,8 +48,9 @@ struct thermal_cooling_device;
+ struct thermal_instance;
  
-@@ -486,8 +488,10 @@ static int mlxsw_thermal_module_mode_set(struct thermal_zone_device *tzdev,
+ enum thermal_device_mode {
+-	THERMAL_DEVICE_DISABLED = 0,
++	THERMAL_DEVICE_INITIAL = 0,
+ 	THERMAL_DEVICE_ENABLED,
++	THERMAL_DEVICE_DISABLED,
+ };
  
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		tzdev->polling_delay = thermal->polling_delay;
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		tzdev->polling_delay = 0;
-+	else
-+		return -EINVAL;
- 
- 	mutex_unlock(&tzdev->lock);
- 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 8cc86f4e3ac1..d5188c1d688b 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -431,6 +431,10 @@ static int acerhdf_get_mode(struct thermal_zone_device *thermal,
- static int acerhdf_set_mode(struct thermal_zone_device *thermal,
- 			    enum thermal_device_mode mode)
- {
-+	if (mode != THERMAL_DEVICE_DISABLED &&
-+	    mode != THERMAL_DEVICE_ENABLED)
-+		return -EINVAL;
-+
- 	if (mode == THERMAL_DEVICE_DISABLED && kernelmode)
- 		acerhdf_revert_to_bios_mode();
- 	else if (mode == THERMAL_DEVICE_ENABLED && !kernelmode)
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index bb6754a5342c..014512581918 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -368,7 +368,7 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 			data->irq_enabled = true;
- 			enable_irq(data->irq);
- 		}
--	} else {
-+	} else if (mode == THERMAL_DEVICE_DISABLED) {
- 		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
- 			     soc_data->measure_temp_mask);
- 		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-@@ -381,6 +381,8 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 			disable_irq(data->irq);
- 			data->irq_enabled = false;
- 		}
-+	} else {
-+		return -EINVAL;
- 	}
- 
- 	data->mode = mode;
-diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
-index 5d33b350da1c..5f4bcc0e4fd3 100644
---- a/drivers/thermal/intel/intel_quark_dts_thermal.c
-+++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
-@@ -328,8 +328,11 @@ static int sys_set_mode(struct thermal_zone_device *tzd,
- 	mutex_lock(&dts_update_mutex);
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		ret = soc_dts_enable(tzd);
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		ret = soc_dts_disable(tzd);
-+	else
-+		return -EINVAL;
-+
- 	mutex_unlock(&dts_update_mutex);
- 
- 	return ret;
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index ef0baa954ff0..b7621dfab17c 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -289,9 +289,11 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
- 	if (mode == THERMAL_DEVICE_ENABLED) {
- 		tz->polling_delay = data->polling_delay;
- 		tz->passive_delay = data->passive_delay;
--	} else {
-+	} else if (mode == THERMAL_DEVICE_DISABLED) {
- 		tz->polling_delay = 0;
- 		tz->passive_delay = 0;
-+	} else {
-+		return -EINVAL;
- 	}
- 
- 	mutex_unlock(&tz->lock);
+ enum thermal_trip_type {
 -- 
 2.17.1
 
