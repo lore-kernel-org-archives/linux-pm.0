@@ -2,170 +2,161 @@ Return-Path: <SRS0=qwVY=5Y=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 450CDC2D0EA
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:27:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 468CBC2D0EA
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1D7AD2074F
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:27:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1513F2075E
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Z+eW7VdI"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="GNlgSOyi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726893AbgDHH1A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Apr 2020 03:27:00 -0400
-Received: from mail-pj1-f65.google.com ([209.85.216.65]:34002 "EHLO
-        mail-pj1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726885AbgDHH07 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 03:26:59 -0400
-Received: by mail-pj1-f65.google.com with SMTP id q16so1930603pje.1
-        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2020 00:26:58 -0700 (PDT)
+        id S1726689AbgDHHaO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Apr 2020 03:30:14 -0400
+Received: from mail-vs1-f68.google.com ([209.85.217.68]:45908 "EHLO
+        mail-vs1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726894AbgDHHaN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 03:30:13 -0400
+Received: by mail-vs1-f68.google.com with SMTP id x82so4065535vsc.12
+        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2020 00:30:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=MmpEQ8SQC6Xl5tR7Jjj5y8uD8BC/8L8xLziXkQ0TWVI=;
-        b=Z+eW7VdIANVP+y7K6bQ7lohbpmARsE8zZhuKT6N6QZUHELquqVNPm9CQ7F1SLG7RYS
-         QIdpR3lDKGieyLPJ0t7fBN9hqU017Ekfn1idJP58ax8+d6CR4DdzOSkuV9dAs/B0PhgF
-         DSZFB10RTROOOWvuV4752//VE1+P9z1sNXB83AHPCBQT51jB8SkiisAOqvfedZ58/p8d
-         YwGW5wlHsBud4pZ0OLcZ6LYZESBsqCRrVY2oC/ziYwL9X1n2QCZYKLe71lpMS6FC8adA
-         +uhz6cm1LtsjPcCIGOdBcTHcmEqpXVzn7LY68DsRxuCjOCLb2zkaEKfO3HL6LxETGtG7
-         Hsug==
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=OD0elTcRIMFole7OUjT/DPArTHrKmfnpdtzqT2CbEcI=;
+        b=GNlgSOyiQVP/6vjJXE5Rs4MFQbMsECQtEYiSwZIozcKyRs9mM4wRwjT22otR46/bpO
+         ugZ0Iyn1HrM55Y5B+2Z2FQuJBHYxKWKO8FWDVeOxDerfhaPBbEyyOJk3Y10aDHk0TjAW
+         PLJA7f6mYqIA9YTyjPORzo870AqyXh6ywRbcQ/3f9Leq5QMxdDAgAIoeLt76D3gdwqJ9
+         3MNqNWCByDkHGQ7MTsliT4ScHxUkOr+sD0/eP1A8bnbGa+gsLo4/1hFICx9OnlRnjcGc
+         iqIBMnR9TSOEDIp0jJukL+HTyhqGnhOv0GFgZcf0UYNRRluNUWJ6WdujUSDa63WYSgCS
+         /hdA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=MmpEQ8SQC6Xl5tR7Jjj5y8uD8BC/8L8xLziXkQ0TWVI=;
-        b=jkJaGjPSKI4a2r6S14SmLNElkFmQnXP7SP0fU1hUtXkN++Qr2ROgZGigeBzIZBoO1h
-         3GGhJ3aEWHwwB255ObI0yEUfgMNl73g/6LY5mKGxNIZjtWm9u2iPWm9cyAkolMdxxRCi
-         RmEVUEfq+DYQiO/1uhxrmpuoImt+mS1e31iyTUeE7g88QtA8tyloctPOiw3c6W0BZGkF
-         i88u7/ND71TeuR5ua9LQK9rkWNcxZOjFdNFppK3Ak5IxXIk8O3SORrm6HqKESQca7RQc
-         xVo6fzg/ONqfUAQzKccZkWLMfIoSyu2FfheWkdAl4DLv0i4kvXZ35OpzRzP+a17dsj+F
-         6Ewg==
-X-Gm-Message-State: AGi0PuYfrfW8bZzsm+urXtW0Gd1QOjHfr7k+o42j15ISCT9p/aTWaGD2
-        aTYuC35hivU3lv0pJBIERrdXsw==
-X-Google-Smtp-Source: APiQypJY5jt1Z+kCEh8DOZw5UuW9RxeqX3HfnqdnLIu6JVDPye1OyCCRnTHl4q5Efv/HapSv97ToSg==
-X-Received: by 2002:a17:902:d303:: with SMTP id b3mr5933935plc.63.1586330818286;
-        Wed, 08 Apr 2020 00:26:58 -0700 (PDT)
-Received: from localhost.localdomain ([2601:1c2:680:1319:692:26ff:feda:3a81])
-        by smtp.gmail.com with ESMTPSA id e187sm15356066pfe.143.2020.04.08.00.26.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 08 Apr 2020 00:26:57 -0700 (PDT)
-From:   John Stultz <john.stultz@linaro.org>
-To:     lkml <linux-kernel@vger.kernel.org>
-Cc:     John Stultz <john.stultz@linaro.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        netdev <netdev@vger.kernel.org>, linux-pm@vger.kernel.org
-Subject: [RFC][PATCH v2 2/2] driver core: Ensure wait_for_device_probe() waits until the deferred_probe_timeout fires
-Date:   Wed,  8 Apr 2020 07:26:50 +0000
-Message-Id: <20200408072650.1731-2-john.stultz@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200408072650.1731-1-john.stultz@linaro.org>
-References: <20200408072650.1731-1-john.stultz@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=OD0elTcRIMFole7OUjT/DPArTHrKmfnpdtzqT2CbEcI=;
+        b=FDlQYDRhmg8ptvZVlWuwbRfHmxefD+idQp3ExO77jXv2u4ThdcXJVxfrozyEEvT+hn
+         LIcuPeFC4MRM6fjEawlpraOaob6RU9LW/Ra2U8qExWvCSbAXZJ4IobMKEY4F57ItVffw
+         ooV8i9dTXcnlz/oEGWA1rpeeLpe62GcUF2hI+5r2isunMsDVvPzA8oYwaWlT/5C+tyQT
+         ypt2+CpJbvQqhOUCW7preJw4gyXv3HtretBXuocV1edvvHt0XUdurxBDuSgHxQSOI5lU
+         IODRjPZYdlJOAu/Cdy4M1noBOMYsXrwa5hl6BHPJZAh/xi1+dl63wYa+2E1VQw/wQUdk
+         +MKA==
+X-Gm-Message-State: AGi0PuYjT//jqm4Qjm1dyrov5kBSBfpNeSaMo3pDTihvlZqTImtcLT7m
+        6UMJbZIzkjyrfc+8MRlrdgA4yjhqeu7cEDoFmv+urg==
+X-Google-Smtp-Source: APiQypJT4BDwUnwGDmpI1r6J0epGgiyiPB5hfa/7yBBHYhqblfZim4j2sA6EX0KF68n7dcnpUQxer/An5Kt5MflCHmU=
+X-Received: by 2002:a67:4242:: with SMTP id p63mr1661875vsa.159.1586331012758;
+ Wed, 08 Apr 2020 00:30:12 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200407055116.16082-1-j-keerthy@ti.com> <20200407055116.16082-2-j-keerthy@ti.com>
+In-Reply-To: <20200407055116.16082-2-j-keerthy@ti.com>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Wed, 8 Apr 2020 13:00:00 +0530
+Message-ID: <CAHLCerOYfG4eifkWdecJ49cSx05pgDwc30L3zZuu0d9dVQN-AQ@mail.gmail.com>
+Subject: Re: [PATCH v6 1/4] dt-bindings: thermal: k3: Add VTM bindings documentation
+To:     Keerthy <j-keerthy@ti.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, t-kristo@ti.com,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+        lakml <linux-arm-kernel@lists.infradead.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In commit c8c43cee29f6 ("driver core: Fix
-driver_deferred_probe_check_state() logic"), we set the default
-driver_deferred_probe_timeout value to 30 seconds to allow for
-drivers that are missing dependencies to have some time so that
-the dependency may be loaded from userland after initcalls_done
-is set.
+On Tue, Apr 7, 2020 at 11:21 AM Keerthy <j-keerthy@ti.com> wrote:
+>
+> Add VTM bindings documentation. In the Voltage Thermal
+> Management Module(VTM), K3 AM654 supplies a voltage
+> reference and a temperature sensor feature that are gathered in the band
+> gap voltage and temperature sensor (VBGAPTS) module. The band
+> gap provides current and voltage reference for its internal
+> circuits and other analog IP blocks. The analog-to-digital
+> converter (ADC) produces an output value that is proportional
+> to the silicon temperature.
+>
+> Signed-off-by: Keerthy <j-keerthy@ti.com>
+> Reviewed-by: Rob Herring <robh@kernel.org>
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-However, Yoshihiro Shimoda reported that on his device that
-expects to have unmet dependencies (due to "optional links" in
-its devicetree), was failing to mount the NFS root.
-
-In digging further, it seemed the problem was that while the
-device properly probes after waiting 30 seconds for any missing
-modules to load, the ip_auto_config() had already failed,
-resulting in NFS to fail. This was due to ip_auto_config()
-calling wait_for_device_probe() which doesn't wait for the
-driver_deferred_probe_timeout to fire.
-
-This patch tries to fix the issue by creating a waitqueue
-for the driver_deferred_probe_timeout, and calling wait_event()
-to make sure driver_deferred_probe_timeout is zero in
-wait_for_device_probe() to make sure all the probing is
-finished.
-
-The downside to this solution is that kernel functionality that
-uses wait_for_device_probe(), will block until the
-driver_deferred_probe_timeout fires, regardless of if there is
-any missing dependencies.
-
-However, the previous patch reverts the default timeout value to
-zero, so this side-effect will only affect users who specify a
-driver_deferred_probe_timeout= value as a boot argument, where
-the additional delay would be beneficial to allow modules to
-load later during boot.
-
-Thanks to Geert for chasing down that ip_auto_config was why NFS
-was failing in this case!
-
-Cc: "David S. Miller" <davem@davemloft.net>
-Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
-Cc: Jakub Kicinski <kuba@kernel.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Rob Herring <robh@kernel.org>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Cc: netdev <netdev@vger.kernel.org>
-Cc: linux-pm@vger.kernel.org
-Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Fixes: c8c43cee29f6 ("driver core: Fix driver_deferred_probe_check_state() logic")
-Signed-off-by: John Stultz <john.stultz@linaro.org>
----
-* v2: Split patch, and apply it as a follow-on to setting
-      the driver_deferred_probe_timeout defalt back to zero
----
- drivers/base/dd.c | 5 +++++
- 1 file changed, 5 insertions(+)
-
-diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-index 908ae4d7805e..5e6c00176969 100644
---- a/drivers/base/dd.c
-+++ b/drivers/base/dd.c
-@@ -226,6 +226,7 @@ DEFINE_SHOW_ATTRIBUTE(deferred_devs);
- 
- int driver_deferred_probe_timeout;
- EXPORT_SYMBOL_GPL(driver_deferred_probe_timeout);
-+static DECLARE_WAIT_QUEUE_HEAD(probe_timeout_waitqueue);
- 
- static int __init deferred_probe_timeout_setup(char *str)
- {
-@@ -275,6 +276,7 @@ static void deferred_probe_timeout_work_func(struct work_struct *work)
- 
- 	list_for_each_entry_safe(private, p, &deferred_probe_pending_list, deferred_probe)
- 		dev_info(private->device, "deferred probe pending");
-+	wake_up(&probe_timeout_waitqueue);
- }
- static DECLARE_DELAYED_WORK(deferred_probe_timeout_work, deferred_probe_timeout_work_func);
- 
-@@ -649,6 +651,9 @@ int driver_probe_done(void)
-  */
- void wait_for_device_probe(void)
- {
-+	/* wait for probe timeout */
-+	wait_event(probe_timeout_waitqueue, !driver_deferred_probe_timeout);
-+
- 	/* wait for the deferred probe workqueue to finish */
- 	flush_work(&deferred_probe_work);
- 
--- 
-2.17.1
-
+> ---
+>
+> Changes in v6:
+>
+>   * Reordered the properties to match the order of definition.
+>
+>  .../bindings/thermal/ti,am654-thermal.yaml    | 56 +++++++++++++++++++
+>  1 file changed, 56 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+>
+> diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+> new file mode 100644
+> index 000000000000..25b9209c2e5d
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+> @@ -0,0 +1,56 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Texas Instruments AM654 VTM (DTS) binding
+> +
+> +maintainers:
+> +  - Keerthy <j-keerthy@ti.com>
+> +
+> +properties:
+> +  compatible:
+> +    const: ti,am654-vtm
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  power-domains:
+> +    maxItems: 1
+> +
+> +  "#thermal-sensor-cells":
+> +    const: 1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - power-domains
+> +  - "#thermal-sensor-cells"
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    #include <dt-bindings/soc/ti,sci_pm_domain.h>
+> +    vtm: thermal@42050000 {
+> +        compatible = "ti,am654-vtm";
+> +        reg = <0x0 0x42050000 0x0 0x25c>;
+> +        power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
+> +        #thermal-sensor-cells = <1>;
+> +    };
+> +
+> +    mpu0_thermal: mpu0_thermal {
+> +        polling-delay-passive = <250>; /* milliseconds */
+> +        polling-delay = <500>; /* milliseconds */
+> +        thermal-sensors = <&vtm0 0>;
+> +
+> +        trips {
+> +                mpu0_crit: mpu0_crit {
+> +                        temperature = <125000>; /* milliCelsius */
+> +                        hysteresis = <2000>; /* milliCelsius */
+> +                        type = "critical";
+> +                };
+> +        };
+> +    };
+> +...
+> --
+> 2.17.1
+>
