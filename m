@@ -2,36 +2,36 @@ Return-Path: <SRS0=qwVY=5Y=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MIME_BASE64_TEXT,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B2416C2BB85
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 08:13:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8AB02C2D0EA
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 08:13:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 85BB82075E
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 08:13:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6181E20BED
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 08:13:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="JNbTMQlT"
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="R+9pES03"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726964AbgDHINA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Apr 2020 04:13:00 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:47442 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1726650AbgDHINA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 04:13:00 -0400
-X-UUID: 67fd73d80a6843b38d81248e85e864da-20200408
+        id S1727026AbgDHINB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Apr 2020 04:13:01 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:46511 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726525AbgDHINB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 04:13:01 -0400
+X-UUID: 53ee3fd8b8cf4e5594616ccf0ae4b40b-20200408
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=sNkHpXF8izKZUF7qsuSvErydtyfam/Pb0hpHXYo69zY=;
-        b=JNbTMQlTaG0ZH1SU19rjrDA9Lf3fI2Q56fZLPJaCkNBxRuIFctvLF6Um5R7EnL4XqjgWmM2PaUtHlbbq1bAiX12WnK1ygAoZNz9BV/kFXPbJ+fFIGGEHxvexvoXK9NkAbdWXhepVdoVbP/l+q/QbAkrIM1QYmmTvsefyIhAYVDE=;
-X-UUID: 67fd73d80a6843b38d81248e85e864da-20200408
-Received: from mtkcas10.mediatek.inc [(172.21.101.39)] by mailgw01.mediatek.com
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=ReQScgLFJ9/68fAYgC7XYU0D88RS9Ej3AolLMr7k38s=;
+        b=R+9pES03dreXenkf2EvtHb+0JMmK/wRdQ+RFzG+pRO+PU8DU96knKnXBHTPLamVrSTruGb86aiKo/V6DEtAO0SjglFw4NdODeqYkwkh4iw7SlOqGzyoBcEGo+t0qYc2qM+6pBKZ+hlNjI+clsOYSGF+rPE3paPPnqDdVjhsZQ5M=;
+X-UUID: 53ee3fd8b8cf4e5594616ccf0ae4b40b-20200408
+Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw02.mediatek.com
         (envelope-from <hsin-hsiung.wang@mediatek.com>)
         (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
-        with ESMTP id 84181600; Wed, 08 Apr 2020 16:12:53 +0800
+        with ESMTP id 2085188719; Wed, 08 Apr 2020 16:12:53 +0800
 Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
- mtkmbs05n2.mediatek.inc (172.21.101.140) with Microsoft SMTP Server (TLS) id
+ mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
  15.0.1497.2; Wed, 8 Apr 2020 16:12:49 +0800
 Received: from mtksdaap41.mediatek.inc (172.21.77.4) by MTKCAS06.mediatek.inc
  (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
@@ -57,14 +57,13 @@ CC:     Nicolas Boichat <drinkcat@chromium.org>,
         <linux-mediatek@lists.infradead.org>,
         <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
         <linux-rtc@vger.kernel.org>, <srv_heupstream@mediatek.com>
-Subject: [PATCH v12 3/6] dt-bindings: mfd: Add compatible for the MediaTek MT6358 PMIC
-Date:   Wed, 8 Apr 2020 16:12:08 +0800
-Message-ID: <1586333531-21641-4-git-send-email-hsin-hsiung.wang@mediatek.com>
+Subject: [PATCH v12 0/6] Add Support for MediaTek PMIC MT6358
+Date:   Wed, 8 Apr 2020 16:12:05 +0800
+Message-ID: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
 X-Mailer: git-send-email 2.6.4
-In-Reply-To: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
-References: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+X-TM-SNTS-SMTP: 1D8F51BD4EA362DB9AFC00BF572DE7769CFAA3A7B3B2B4FA91B9CCF20772BA492000:8
 X-MTK:  N
 Content-Transfer-Encoding: base64
 Sender: linux-pm-owner@vger.kernel.org
@@ -72,36 +71,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-VGhpcyBhZGRzIGNvbXBhdGlibGUgZm9yIHRoZSBNZWRpYVRlayBNVDYzNTggUE1JQy4NCg0KQWNr
-ZWQtZm9yLW1mZC1ieTogTGVlIEpvbmVzIDxsZWUuam9uZXNAbGluYXJvLm9yZz4NClJldmlld2Vk
-LWJ5OiBSb2IgSGVycmluZyA8cm9iaEBrZXJuZWwub3JnPg0KU2lnbmVkLW9mZi1ieTogSHNpbi1I
-c2l1bmcgV2FuZyA8aHNpbi1oc2l1bmcud2FuZ0BtZWRpYXRlay5jb20+DQotLS0NCiBEb2N1bWVu
-dGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvbWZkL210NjM5Ny50eHQgfCAxNCArKysrKysrKysr
-LS0tLQ0KIDEgZmlsZSBjaGFuZ2VkLCAxMCBpbnNlcnRpb25zKCspLCA0IGRlbGV0aW9ucygtKQ0K
-DQpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9tdDYz
-OTcudHh0IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9tdDYzOTcudHh0
-DQppbmRleCBhOWIxMDVhLi4wZGY0MzgyIDEwMDY0NA0KLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL21mZC9tdDYzOTcudHh0DQorKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvbWZkL210NjM5Ny50eHQNCkBAIC0xOCwyNCArMTgsMzAgQEAgU2VlIHRo
-ZSBmb2xsb3dpbmcgZm9yIHB3YXJwIG5vZGUgZGVmaW5pdGlvbnM6DQogVGhpcyBkb2N1bWVudCBk
-ZXNjcmliZXMgdGhlIGJpbmRpbmcgZm9yIE1GRCBkZXZpY2UgYW5kIGl0cyBzdWIgbW9kdWxlLg0K
-IA0KIFJlcXVpcmVkIHByb3BlcnRpZXM6DQotY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5NyIg
-b3IgIm1lZGlhdGVrLG10NjMyMyINCitjb21wYXRpYmxlOg0KKwkibWVkaWF0ZWssbXQ2MzIzIiBm
-b3IgUE1JQyBNVDYzMjMNCisJIm1lZGlhdGVrLG10NjM1OCIgZm9yIFBNSUMgTVQ2MzU4DQorCSJt
-ZWRpYXRlayxtdDYzOTciIGZvciBQTUlDIE1UNjM5Nw0KIA0KIE9wdGlvbmFsIHN1Ym5vZGVzOg0K
-IA0KIC0gcnRjDQogCVJlcXVpcmVkIHByb3BlcnRpZXM6IFNob3VsZCBiZSBvbmUgb2YgZm9sbG93
-cw0KIAkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2MzIzLXJ0YyINCisJCS0gY29tcGF0aWJs
-ZTogIm1lZGlhdGVrLG10NjM1OC1ydGMiDQogCQktIGNvbXBhdGlibGU6ICJtZWRpYXRlayxtdDYz
-OTctcnRjIg0KIAlGb3IgZGV0YWlscywgc2VlIC4uL3J0Yy9ydGMtbXQ2Mzk3LnR4dA0KIC0gcmVn
-dWxhdG9ycw0KIAlSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KLQkJLSBjb21wYXRpYmxlOiAibWVkaWF0
-ZWssbXQ2Mzk3LXJlZ3VsYXRvciINCi0Jc2VlIC4uL3JlZ3VsYXRvci9tdDYzOTctcmVndWxhdG9y
-LnR4dA0KIAkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2MzIzLXJlZ3VsYXRvciINCiAJc2Vl
-IC4uL3JlZ3VsYXRvci9tdDYzMjMtcmVndWxhdG9yLnR4dA0KKwkJLSBjb21wYXRpYmxlOiAibWVk
-aWF0ZWssbXQ2MzU4LXJlZ3VsYXRvciINCisJc2VlIC4uL3JlZ3VsYXRvci9tdDYzNTgtcmVndWxh
-dG9yLnR4dA0KKwkJLSBjb21wYXRpYmxlOiAibWVkaWF0ZWssbXQ2Mzk3LXJlZ3VsYXRvciINCisJ
-c2VlIC4uL3JlZ3VsYXRvci9tdDYzOTctcmVndWxhdG9yLnR4dA0KIC0gY29kZWMNCiAJUmVxdWly
-ZWQgcHJvcGVydGllczoNCi0JCS0gY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5Ny1jb2RlYyIN
-CisJCS0gY29tcGF0aWJsZTogIm1lZGlhdGVrLG10NjM5Ny1jb2RlYyIgb3IgIm1lZGlhdGVrLG10
-NjM1OC1zb3VuZCINCiAtIGNsaw0KIAlSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KIAkJLSBjb21wYXRp
-YmxlOiAibWVkaWF0ZWssbXQ2Mzk3LWNsayINCi0tIA0KMi42LjQNCg==
+VGhpcyBwYXRjaHNldCBpbmNsdWRpbmcgbW9kaWZ5aW5nIHN1c3BlbmQvcmVzdW1lIGJlaGF2aW9y
+IGFuZCB0cmltbWluZyBwcm9iZSBmdW5jdGlvbiBhZGQgc3VwcG9ydCB0byBNVDYzNTggUE1JQy4N
+Ck1UNjM1OCBpcyB0aGUgcHJpbWFyeSBQTUlDIGZvciBNVDgxODMgcGxhdGZvcm0uDQoNCmNoYW5n
+ZXMgc2luY2UgdjExOg0KLSBhZGQgYSBuZXcgcGF0Y2ggdG8gdHJpbSBwcm9iZSBmdW5jdGlvbiBt
+b3JlIGNsZWFubHkuDQotIGZpeCBzb21lIGNvdmVyaXR5IGRlZmVjdHMuDQotIHVwZGF0ZSBzb21l
+IGNvbW1lbnQgbWVzc2FnZXMuDQotIGZpeCB3cm9uZyBzaXplb2YgYXJndW1lbnQuDQoNCkhzaW4t
+SHNpdW5nIFdhbmcgKDUpOg0KICBtZmQ6IG10NjM5NzogTW9kaWZ5IHN1c3BlbmQvcmVzdW1lIGJl
+aGF2aW9yDQogIG1mZDogbXQ2Mzk3OiBUcmltIHByb2JlIGZ1bmN0aW9uIHRvIHN1cHBvcnQgZGlm
+ZmVyZW50IGNoaXBzIG1vcmUNCiAgICBjbGVhbmx5DQogIGR0LWJpbmRpbmdzOiBtZmQ6IEFkZCBj
+b21wYXRpYmxlIGZvciB0aGUgTWVkaWFUZWsgTVQ2MzU4IFBNSUMNCiAgbWZkOiBBZGQgc3VwcG9y
+dCBmb3IgdGhlIE1lZGlhVGVrIE1UNjM1OCBQTUlDDQogIGFybTY0OiBkdHM6IG10NjM1ODogYWRk
+IFBNSUMgTVQ2MzU4IHJlbGF0ZWQgbm9kZXMNCg0KUmFuIEJpICgxKToNCiAgcnRjOiBtdDYzOTc6
+IEFkZCBzdXBwb3J0IGZvciB0aGUgTWVkaWFUZWsgTVQ2MzU4IFJUQw0KDQogRG9jdW1lbnRhdGlv
+bi9kZXZpY2V0cmVlL2JpbmRpbmdzL21mZC9tdDYzOTcudHh0IHwgIDE0ICstDQogYXJjaC9hcm02
+NC9ib290L2R0cy9tZWRpYXRlay9tdDYzNTguZHRzaSAgICAgICAgIHwgMzU4ICsrKysrKysrKysr
+KysrKysrKysrKysrDQogYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMtZXZiLmR0
+cyAgICAgIHwgICAxICsNCiBkcml2ZXJzL21mZC9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgfCAgIDIgKy0NCiBkcml2ZXJzL21mZC9tdDYzNTgtaXJxLmMgICAgICAgICAgICAg
+ICAgICAgICAgICAgfCAyMzUgKysrKysrKysrKysrKysrDQogZHJpdmVycy9tZmQvbXQ2Mzk3LWNv
+cmUuYyAgICAgICAgICAgICAgICAgICAgICAgIHwgMTAxICsrKystLS0NCiBkcml2ZXJzL21mZC9t
+dDYzOTctaXJxLmMgICAgICAgICAgICAgICAgICAgICAgICAgfCAgMzUgKystDQogZHJpdmVycy9w
+b3dlci9yZXNldC9tdDYzMjMtcG93ZXJvZmYuYyAgICAgICAgICAgIHwgICAyICstDQogZHJpdmVy
+cy9ydGMvcnRjLW10NjM5Ny5jICAgICAgICAgICAgICAgICAgICAgICAgIHwgIDE4ICstDQogaW5j
+bHVkZS9saW51eC9tZmQvbXQ2MzU4L2NvcmUuaCAgICAgICAgICAgICAgICAgIHwgMTU4ICsrKysr
+KysrKysNCiBpbmNsdWRlL2xpbnV4L21mZC9tdDYzNTgvcmVnaXN0ZXJzLmggICAgICAgICAgICAg
+fCAyODIgKysrKysrKysrKysrKysrKysrDQogaW5jbHVkZS9saW51eC9tZmQvbXQ2Mzk3L2NvcmUu
+aCAgICAgICAgICAgICAgICAgIHwgICA1ICsNCiBpbmNsdWRlL2xpbnV4L21mZC9tdDYzOTcvcnRj
+LmggICAgICAgICAgICAgICAgICAgfCAgIDkgKy0NCiAxMyBmaWxlcyBjaGFuZ2VkLCAxMTU4IGlu
+c2VydGlvbnMoKyksIDYyIGRlbGV0aW9ucygtKQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL2Fy
+bTY0L2Jvb3QvZHRzL21lZGlhdGVrL210NjM1OC5kdHNpDQogY3JlYXRlIG1vZGUgMTAwNjQ0IGRy
+aXZlcnMvbWZkL210NjM1OC1pcnEuYw0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL2xpbnV4
+L21mZC9tdDYzNTgvY29yZS5oDQogY3JlYXRlIG1vZGUgMTAwNjQ0IGluY2x1ZGUvbGludXgvbWZk
+L210NjM1OC9yZWdpc3RlcnMuaA0KDQotLSANCjIuNi40DQo=
 
