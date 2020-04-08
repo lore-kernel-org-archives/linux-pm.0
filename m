@@ -6,56 +6,56 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 468CBC2D0EA
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E029C2D0EA
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 1513F2075E
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7211B2074F
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Apr 2020 07:30:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="GNlgSOyi"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="Hvo2oCqt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726689AbgDHHaO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Apr 2020 03:30:14 -0400
-Received: from mail-vs1-f68.google.com ([209.85.217.68]:45908 "EHLO
+        id S1726921AbgDHHal (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Apr 2020 03:30:41 -0400
+Received: from mail-vs1-f68.google.com ([209.85.217.68]:33667 "EHLO
         mail-vs1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726894AbgDHHaN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 03:30:13 -0400
-Received: by mail-vs1-f68.google.com with SMTP id x82so4065535vsc.12
-        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2020 00:30:13 -0700 (PDT)
+        with ESMTP id S1726192AbgDHHak (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Apr 2020 03:30:40 -0400
+Received: by mail-vs1-f68.google.com with SMTP id y138so4128388vsy.0
+        for <linux-pm@vger.kernel.org>; Wed, 08 Apr 2020 00:30:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=verdurent-com.20150623.gappssmtp.com; s=20150623;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=OD0elTcRIMFole7OUjT/DPArTHrKmfnpdtzqT2CbEcI=;
-        b=GNlgSOyiQVP/6vjJXE5Rs4MFQbMsECQtEYiSwZIozcKyRs9mM4wRwjT22otR46/bpO
-         ugZ0Iyn1HrM55Y5B+2Z2FQuJBHYxKWKO8FWDVeOxDerfhaPBbEyyOJk3Y10aDHk0TjAW
-         PLJA7f6mYqIA9YTyjPORzo870AqyXh6ywRbcQ/3f9Leq5QMxdDAgAIoeLt76D3gdwqJ9
-         3MNqNWCByDkHGQ7MTsliT4ScHxUkOr+sD0/eP1A8bnbGa+gsLo4/1hFICx9OnlRnjcGc
-         iqIBMnR9TSOEDIp0jJukL+HTyhqGnhOv0GFgZcf0UYNRRluNUWJ6WdujUSDa63WYSgCS
-         /hdA==
+        bh=o2awHw9ue68/ioPQ/hcJMwV/cE3GRHWFi4nGkCXTPbg=;
+        b=Hvo2oCqtE17cvDi5h706vd7Fxzwir+m/OZWa7BGhDLz6xJwaTOpq6XrMP+kPjV4Qzj
+         bqanKuAY0pGptv9P9cfnMNx6Mj4Ihq55xfj5KmpRQyKxPVmwk9IWlfR+Utz2g9uaLLHM
+         hQGcb3X4jAYuwQmAstYccEv7thXGDN54MFu1f5KJV+d5Nu19FbL9VM9BD2bEvzORYbob
+         hSraiQY7Flb5jqULSSJkAqTqLglHZpY3u5/FKt/v2yIhzfjrYcCDRB4gJ5nVsYE9WLld
+         6BDn5LxOMDz/uT8VGyOtmrRh4A6/ymYyeeTL3w05OtRcF5VsDKUKcgOlAybtCc0vD4BD
+         j1Jg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=OD0elTcRIMFole7OUjT/DPArTHrKmfnpdtzqT2CbEcI=;
-        b=FDlQYDRhmg8ptvZVlWuwbRfHmxefD+idQp3ExO77jXv2u4ThdcXJVxfrozyEEvT+hn
-         LIcuPeFC4MRM6fjEawlpraOaob6RU9LW/Ra2U8qExWvCSbAXZJ4IobMKEY4F57ItVffw
-         ooV8i9dTXcnlz/oEGWA1rpeeLpe62GcUF2hI+5r2isunMsDVvPzA8oYwaWlT/5C+tyQT
-         ypt2+CpJbvQqhOUCW7preJw4gyXv3HtretBXuocV1edvvHt0XUdurxBDuSgHxQSOI5lU
-         IODRjPZYdlJOAu/Cdy4M1noBOMYsXrwa5hl6BHPJZAh/xi1+dl63wYa+2E1VQw/wQUdk
-         +MKA==
-X-Gm-Message-State: AGi0PuYjT//jqm4Qjm1dyrov5kBSBfpNeSaMo3pDTihvlZqTImtcLT7m
-        6UMJbZIzkjyrfc+8MRlrdgA4yjhqeu7cEDoFmv+urg==
-X-Google-Smtp-Source: APiQypJT4BDwUnwGDmpI1r6J0epGgiyiPB5hfa/7yBBHYhqblfZim4j2sA6EX0KF68n7dcnpUQxer/An5Kt5MflCHmU=
-X-Received: by 2002:a67:4242:: with SMTP id p63mr1661875vsa.159.1586331012758;
- Wed, 08 Apr 2020 00:30:12 -0700 (PDT)
+        bh=o2awHw9ue68/ioPQ/hcJMwV/cE3GRHWFi4nGkCXTPbg=;
+        b=Rel2N3NRma1jAwE2ZLgSOwZn++S6hiQoJoUQBS+Pvt4cmMYx5h8/od1JajMxS8LWYE
+         DZPznLm38QY+KOs/lVt+YTH+mfC65sFRqaSeZCUINs3EC57AlzLHnflbzV55h10LxDm0
+         McFHkStB4cSolmLR3+KROEAcAgXaYgPUrF3f6o34xFcdxsquZSOUxtYFDAih0tlpg+2j
+         naG0GxRB5S76erlFZO9SGnBG7EwQnLm7x89RL8Dj6zOtUCjbUyY19DYi0nuARGtWQg7r
+         U7zh8GU7fsqkQ+Y8USxD1DUKg1m5ClS0ywqZMzh2nMob8otDNu3NJr0g3W5r5tVaEFMw
+         b2ng==
+X-Gm-Message-State: AGi0PuYcTZLkW5+iWEF7cdgO9f8aUmnlASeKTI9LPt8MQqrZbjeJe2Q3
+        U5GPQFWnzgFQa08u6R5Abfe6tK6LCphnvQJZp+8sMg==
+X-Google-Smtp-Source: APiQypLTmXBd+2LWVSrhlxxqM9wlcwqHYDI3H4zuMX9eSDO877vQ5tMjIv6xmU/xvJo0Yfccvn/Nmu/8tLxAtcnnsGU=
+X-Received: by 2002:a67:c594:: with SMTP id h20mr2746932vsk.95.1586331038462;
+ Wed, 08 Apr 2020 00:30:38 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200407055116.16082-1-j-keerthy@ti.com> <20200407055116.16082-2-j-keerthy@ti.com>
-In-Reply-To: <20200407055116.16082-2-j-keerthy@ti.com>
+References: <20200407055116.16082-1-j-keerthy@ti.com> <20200407055116.16082-5-j-keerthy@ti.com>
+In-Reply-To: <20200407055116.16082-5-j-keerthy@ti.com>
 From:   Amit Kucheria <amit.kucheria@verdurent.com>
 Date:   Wed, 8 Apr 2020 13:00:00 +0530
-Message-ID: <CAHLCerOYfG4eifkWdecJ49cSx05pgDwc30L3zZuu0d9dVQN-AQ@mail.gmail.com>
-Subject: Re: [PATCH v6 1/4] dt-bindings: thermal: k3: Add VTM bindings documentation
+Message-ID: <CAHLCerNZqQj=DLkTdHbL5SSs3ufej5BdW+OBVqjuioL26Fn_iQ@mail.gmail.com>
+Subject: Re: [PATCH v6 4/4] arm64: dts: ti: am654: Add thermal zones
 To:     Keerthy <j-keerthy@ti.com>
 Cc:     Zhang Rui <rui.zhang@intel.com>, Rob Herring <robh+dt@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>, t-kristo@ti.com,
@@ -72,91 +72,82 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 On Tue, Apr 7, 2020 at 11:21 AM Keerthy <j-keerthy@ti.com> wrote:
 >
-> Add VTM bindings documentation. In the Voltage Thermal
-> Management Module(VTM), K3 AM654 supplies a voltage
-> reference and a temperature sensor feature that are gathered in the band
-> gap voltage and temperature sensor (VBGAPTS) module. The band
-> gap provides current and voltage reference for its internal
-> circuits and other analog IP blocks. The analog-to-digital
-> converter (ADC) produces an output value that is proportional
-> to the silicon temperature.
+> The am654 SoC has three thermal zones namely MPU0, MPU1 and MCU
+> zones.
 >
 > Signed-off-by: Keerthy <j-keerthy@ti.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
 Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
 > ---
+>  arch/arm64/boot/dts/ti/k3-am65-wakeup.dtsi    |  4 ++
+>  .../dts/ti/k3-am654-industrial-thermal.dtsi   | 45 +++++++++++++++++++
+>  2 files changed, 49 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/ti/k3-am654-industrial-thermal.dtsi
 >
-> Changes in v6:
->
->   * Reordered the properties to match the order of definition.
->
->  .../bindings/thermal/ti,am654-thermal.yaml    | 56 +++++++++++++++++++
->  1 file changed, 56 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
->
-> diff --git a/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
+> diff --git a/arch/arm64/boot/dts/ti/k3-am65-wakeup.dtsi b/arch/arm64/boot/dts/ti/k3-am65-wakeup.dtsi
+> index 98b89cf0ccdf..54a133fa1bf2 100644
+> --- a/arch/arm64/boot/dts/ti/k3-am65-wakeup.dtsi
+> +++ b/arch/arm64/boot/dts/ti/k3-am65-wakeup.dtsi
+> @@ -96,4 +96,8 @@
+>                 power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
+>                 #thermal-sensor-cells = <1>;
+>         };
+> +
+> +       thermal_zones: thermal-zones {
+> +               #include "k3-am654-industrial-thermal.dtsi"
+> +       };
+>  };
+> diff --git a/arch/arm64/boot/dts/ti/k3-am654-industrial-thermal.dtsi b/arch/arm64/boot/dts/ti/k3-am654-industrial-thermal.dtsi
 > new file mode 100644
-> index 000000000000..25b9209c2e5d
+> index 000000000000..cdc3d40c3f60
 > --- /dev/null
-> +++ b/Documentation/devicetree/bindings/thermal/ti,am654-thermal.yaml
-> @@ -0,0 +1,56 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/thermal/ti,am654-thermal.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +++ b/arch/arm64/boot/dts/ti/k3-am654-industrial-thermal.dtsi
+> @@ -0,0 +1,45 @@
+> +// SPDX-License-Identifier: GPL-2.0
 > +
-> +title: Texas Instruments AM654 VTM (DTS) binding
+> +#include <dt-bindings/thermal/thermal.h>
 > +
-> +maintainers:
-> +  - Keerthy <j-keerthy@ti.com>
+> +mpu0_thermal: mpu0_thermal {
+> +       polling-delay-passive = <250>; /* milliseconds */
+> +       polling-delay = <500>; /* milliseconds */
+> +       thermal-sensors = <&wkup_vtm0 0>;
 > +
-> +properties:
-> +  compatible:
-> +    const: ti,am654-vtm
+> +       trips {
+> +               mpu0_crit: mpu0_crit {
+> +                       temperature = <125000>; /* milliCelsius */
+> +                       hysteresis = <2000>; /* milliCelsius */
+> +                       type = "critical";
+> +               };
+> +       };
+> +};
 > +
-> +  reg:
-> +    maxItems: 1
+> +mpu1_thermal: mpu1_thermal {
+> +       polling-delay-passive = <250>; /* milliseconds */
+> +       polling-delay = <500>; /* milliseconds */
+> +       thermal-sensors = <&wkup_vtm0 1>;
 > +
-> +  power-domains:
-> +    maxItems: 1
+> +       trips {
+> +               mpu1_crit: mpu1_crit {
+> +                       temperature = <125000>; /* milliCelsius */
+> +                       hysteresis = <2000>; /* milliCelsius */
+> +                       type = "critical";
+> +               };
+> +       };
+> +};
 > +
-> +  "#thermal-sensor-cells":
-> +    const: 1
+> +mcu_thermal: mcu_thermal {
+> +       polling-delay-passive = <250>; /* milliseconds */
+> +       polling-delay = <500>; /* milliseconds */
+> +       thermal-sensors = <&wkup_vtm0 2>;
 > +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - power-domains
-> +  - "#thermal-sensor-cells"
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    #include <dt-bindings/soc/ti,sci_pm_domain.h>
-> +    vtm: thermal@42050000 {
-> +        compatible = "ti,am654-vtm";
-> +        reg = <0x0 0x42050000 0x0 0x25c>;
-> +        power-domains = <&k3_pds 80 TI_SCI_PD_EXCLUSIVE>;
-> +        #thermal-sensor-cells = <1>;
-> +    };
-> +
-> +    mpu0_thermal: mpu0_thermal {
-> +        polling-delay-passive = <250>; /* milliseconds */
-> +        polling-delay = <500>; /* milliseconds */
-> +        thermal-sensors = <&vtm0 0>;
-> +
-> +        trips {
-> +                mpu0_crit: mpu0_crit {
-> +                        temperature = <125000>; /* milliCelsius */
-> +                        hysteresis = <2000>; /* milliCelsius */
-> +                        type = "critical";
-> +                };
-> +        };
-> +    };
-> +...
+> +       trips {
+> +               mcu_crit: mcu_crit {
+> +                       temperature = <125000>; /* milliCelsius */
+> +                       hysteresis = <2000>; /* milliCelsius */
+> +                       type = "critical";
+> +               };
+> +       };
+> +};
 > --
 > 2.17.1
 >
