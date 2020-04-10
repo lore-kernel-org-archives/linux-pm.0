@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87EFEC2BB55
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 22:13:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27348C2BB55
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 22:13:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5F3A62084D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 22:13:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE23520A8B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 22:13:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a9ngXUrN"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cwCobIiC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726740AbgDJWNA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Apr 2020 18:13:00 -0400
-Received: from mail-wr1-f68.google.com ([209.85.221.68]:35029 "EHLO
-        mail-wr1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726718AbgDJWNA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2020 18:13:00 -0400
-Received: by mail-wr1-f68.google.com with SMTP id g3so3908463wrx.2
-        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2020 15:13:00 -0700 (PDT)
+        id S1726791AbgDJWNI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Apr 2020 18:13:08 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:40927 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726765AbgDJWNG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2020 18:13:06 -0400
+Received: by mail-wr1-f67.google.com with SMTP id s8so3870953wrt.7
+        for <linux-pm@vger.kernel.org>; Fri, 10 Apr 2020 15:13:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=HV4uxU8XGvUxECd82k3CD/W1J1RbaS0e9zCergn8MI4=;
-        b=a9ngXUrNUt7AiZ+5zUwxR0uT87ropKMeNAXC1eoLoQp619v3ASrMyus+iVrotpNRt6
-         KyccFKtU+UpVDueWBivYe++GpNKuyV9Hf+aOyB7cW6PBRIIPJM6Qa5eiDQcoU/JHiigk
-         Dg/mrh7YQjVr+vJRIcGxnUFCtJcx2bZbGwxmLy5dX0hxNtPPfM0hY0krCsKL9Nnavd8P
-         FPOIt2Tsfpo0/FSLivtF+MMtKD6r9PBObZgpHZzjIS4qKooYoU7yEff2CH3tLVUJ+Ys3
-         pS6QEQXkDivQvcnO08OauNGsZ/JnYl1B/Z5RzLXVfIWcuCe3n8XFOdLSk0XIA229LGTU
-         5jng==
+        bh=llenZ0suLw6do3znZz93SYo8GX9BjIHqcVpMde2jjyQ=;
+        b=cwCobIiCE2a2mjAnkofCunPBk+7umwjxVTgVuitn1olEYefEHvZ249OUkRHdAk7pwz
+         ZcZEI4e7xACErBW0VB0jSW7/OBQQ7T9K3RnPiKvod8K6MCUdr6ioCleJoWt+3cQJpBeT
+         tvOgAE9871nhq6h/UZMh95s3zj9QIQUbJMQTOHiEF0ea3zORrNTnnAIJplXgihfgvF2u
+         cCSo9rK6uNPxp8ee70mp+z+/xfG08RNaL9Uy+C4IK5vvm8sK0onQGf01RyVb0hXVt9M5
+         Hfau4KzuDNebjzyEUoW2TBCTE9YSLzGncrleGn/Y9HreeXAuuQpQ79AD/QWnVoU6xM8C
+         DQyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=HV4uxU8XGvUxECd82k3CD/W1J1RbaS0e9zCergn8MI4=;
-        b=Z+z42KsCL8YwUCacHbITs1prOvfngLvV3I8wxterwtN+OHWVNFREuZjvB7GK0MvJZM
-         ZHW+a/m0PpaVabSJGge888Q9h3rfxRlBz3ALu2jM5AEhi/2NeLCMqwjldfex/3Vbdg62
-         GHjFeev/rv3wp8JlDaw2jNve0d4Vu0LfVqQLalGODwJ/udS4nWr1gSCvKUJrfMjJ8eS7
-         XOS2fF0Li+rU2AWprfWb5vLwHN6++5aJzd8yR6wQoxudbjsBdokfsMkRhn0SogRQ7UUW
-         l55f9Xfl9vn5QGnmZJpB0dAzy1Z1aHQwFk1T+oHQiUN2dPGT1bADZyZHvU1xwpWQMxku
-         gQ9g==
-X-Gm-Message-State: AGi0PuZjNOqzxoPYd/XamYrhUMrN+4aUxsRjHrdTJ5wt+vq/9JaQxH7a
-        +tAsejOJzTgXGiOM5jlCNWaprQ==
-X-Google-Smtp-Source: APiQypLbWxW37hLgL1D9TRx0HfjG4PrI3ABBsgwJvT4Tbi9Cc5C3TUklYD5szz5QD4O/qQcXuiODSg==
-X-Received: by 2002:a5d:4d51:: with SMTP id a17mr6704254wru.317.1586556779513;
-        Fri, 10 Apr 2020 15:12:59 -0700 (PDT)
+        bh=llenZ0suLw6do3znZz93SYo8GX9BjIHqcVpMde2jjyQ=;
+        b=Z5qiY9KrtNzU2N7Pclszoremj+MjANILTMIngokKhKC2/G3jCnsmTydPPfQDIqJMaJ
+         T+JHn0R0R3hlDVmd6pFMgNvHPhLRI/lSC9uioUU/hvYMzxRQWnbSis1fwy0O6QYvzKAN
+         fo/haCusQHD3QpW2/TQ373dwWE2l5G4OMsSK+7ieaauCKDIk3hqlvyH4EtEU+dEDfk8C
+         FjW+syUCxyxKkhdqBrBOjCjsSy2IH8W2+akVKwzvgbfGiqDsJi7zJamSwXPccT+R6CY+
+         Dygnol6PJw5z5eSV1Gtq7cKdWjA7jZzBLfMqLHJpPlOkYH2+xS8bGZebt/0x7EnOhXOQ
+         CxMA==
+X-Gm-Message-State: AGi0PuY7BPWoYJ+DJHO59KttXCR5JkiaSRrd2yGJ9vvcGeBA61PUVJN6
+        r2WeLgpelpCelZRP2xQME7TJLBVddHI=
+X-Google-Smtp-Source: APiQypL56/ywMxjjn+QWFh16svA+TLTAIFUlP6upenDKZquE4BHfXKiHuGvX23Z7ZGxtydPxiOLMtQ==
+X-Received: by 2002:adf:9cc8:: with SMTP id h8mr6405064wre.167.1586556784930;
+        Fri, 10 Apr 2020 15:13:04 -0700 (PDT)
 Received: from localhost.localdomain (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
-        by smtp.gmail.com with ESMTPSA id b14sm4687952wrw.83.2020.04.10.15.12.58
+        by smtp.gmail.com with ESMTPSA id b14sm4687952wrw.83.2020.04.10.15.13.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Apr 2020 15:12:58 -0700 (PDT)
+        Fri, 10 Apr 2020 15:13:04 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
 Cc:     amit.kucheria@verdurent.com, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org (open list:THERMAL)
-Subject: [PATCH 2/6] thermal: core: Move thermal_cdev_update next to updated=false
-Date:   Sat, 11 Apr 2020 00:12:31 +0200
-Message-Id: <20200410221236.6484-3-daniel.lezcano@linaro.org>
+Subject: [PATCH 5/6] thermal: core: Move the call to thermal_cdev_udpate() to the power allocator
+Date:   Sat, 11 Apr 2020 00:12:34 +0200
+Message-Id: <20200410221236.6484-6-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200410221236.6484-1-daniel.lezcano@linaro.org>
 References: <20200410221236.6484-1-daniel.lezcano@linaro.org>
@@ -68,82 +68,42 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The call to the thermal_cdev_update() function is done after browsing
-the thermal instances which sets the updated flag by browsing them
-again.
-
-Instead of doing this, let's move the call right after setting the
-cooling device 'updated' flag as it is done in the other governors.
+All the calls to the thermal_cdev_update() are in the governors except
+one in the power_actor_set_power(). Move the update right after the
+call to power_actor_set_power(), the function will be located in the
+IPA governor.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/gov_bang_bang.c | 10 +---------
- drivers/thermal/step_wise.c     | 10 +---------
- 2 files changed, 2 insertions(+), 18 deletions(-)
+ drivers/thermal/power_allocator.c | 2 ++
+ drivers/thermal/thermal_core.c    | 1 -
+ 2 files changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
-index 991a1c54296d..c292a69845bb 100644
---- a/drivers/thermal/gov_bang_bang.c
-+++ b/drivers/thermal/gov_bang_bang.c
-@@ -64,6 +64,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false; /* cdev needs update */
- 		mutex_unlock(&instance->cdev->lock);
+diff --git a/drivers/thermal/power_allocator.c b/drivers/thermal/power_allocator.c
+index fd7c8de02250..339442925dfe 100644
+--- a/drivers/thermal/power_allocator.c
++++ b/drivers/thermal/power_allocator.c
+@@ -433,6 +433,8 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 
+ 		total_granted_power += granted_power[i];
+ 
 +		thermal_cdev_update(instance->cdev);
++
+ 		i++;
  	}
  
- 	mutex_unlock(&tz->lock);
-@@ -98,17 +99,8 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
-  */
- static int bang_bang_control(struct thermal_zone_device *tz, int trip)
- {
--	struct thermal_instance *instance;
--
- 	thermal_zone_trip_update(tz, trip);
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 052f77b0b0ef..a6b8c0240656 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -614,7 +614,6 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
+ 		return ret;
  
--	mutex_lock(&tz->lock);
--
--	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
--		thermal_cdev_update(instance->cdev);
--
--	mutex_unlock(&tz->lock);
--
+ 	instance->target = state;
+-	thermal_cdev_update(cdev);
+ 
  	return 0;
  }
- 
-diff --git a/drivers/thermal/step_wise.c b/drivers/thermal/step_wise.c
-index 2ae7198d3067..298eedac0293 100644
---- a/drivers/thermal/step_wise.c
-+++ b/drivers/thermal/step_wise.c
-@@ -167,6 +167,7 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
- 		mutex_lock(&instance->cdev->lock);
- 		instance->cdev->updated = false; /* cdev needs update */
- 		mutex_unlock(&instance->cdev->lock);
-+		thermal_cdev_update(instance->cdev);
- 	}
- 
- 	mutex_unlock(&tz->lock);
-@@ -185,20 +186,11 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
-  */
- static int step_wise_throttle(struct thermal_zone_device *tz, int trip)
- {
--	struct thermal_instance *instance;
--
- 	thermal_zone_trip_update(tz, trip);
- 
- 	if (tz->forced_passive)
- 		thermal_zone_trip_update(tz, THERMAL_TRIPS_NONE);
- 
--	mutex_lock(&tz->lock);
--
--	list_for_each_entry(instance, &tz->thermal_instances, tz_node)
--		thermal_cdev_update(instance->cdev);
--
--	mutex_unlock(&tz->lock);
--
- 	return 0;
- }
- 
 -- 
 2.17.1
 
