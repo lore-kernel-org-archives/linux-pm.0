@@ -2,68 +2,87 @@ Return-Path: <SRS0=fnvY=52=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 85576C2BB86
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 17:30:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE8BC2D0EC
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 17:37:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5FCB72082D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 17:30:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3BBBE214D8
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 17:37:03 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586539837;
-	bh=Doo0J0I0r8vmA+xBCBK4VzSd26D81j+LMv9WROysvl0=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
-	b=Q+a0HqL1e+L3B300vrtBK+t9dIOBUtqMiwJNmIqdMlkZGwJUs2vN4DTAepRHyFaw1
-	 YLclscTz2ffyMx0/qVAxq4NmNzr/k2QaDfRblc+62HlBnLujrCVD43M3FXGOtV4BFy
-	 wNzzGPCAiFor5GWZCR5a3r5FABvoJPDO+lkM2o+4=
+	s=default; t=1586540223;
+	bh=8dCKzn+hbFkRQcW5NMF+sp5pbh4END6ZVNioovpi2QY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=koVHlaUxft4VkQMJ9a3KsnzECn5o1G34dSNcsH1Jnva1ulz8thJ90DczS6gBAwDrw
+	 DNayHWvJF9RT95Vgea6QmmEvjQ9kHbywvDv6aCcCZPAPAzj+mCmJQpuZJpCT30cGpl
+	 3pfePR3fEWwxKE+OlaoR7iZa7YQ+1xGwUG6uU8Vg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726828AbgDJRa2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Apr 2020 13:30:28 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58462 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726816AbgDJRa2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 10 Apr 2020 13:30:28 -0400
-Subject: Re: [GIT PULL] More power management updates for v5.7-rc1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586539828;
-        bh=Doo0J0I0r8vmA+xBCBK4VzSd26D81j+LMv9WROysvl0=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=WrDNZA079jsUYMDmy27QdRFWrmiRmKFG5ztH9467IMPyjcRdT3cJNHz08qF9I13sN
-         Iv/CZyguMYH6zQU+5T1qUU+4by0Cywm9XmNrehfbEufkeUT1BlzOD0xOozMapDIwx/
-         A0mvtltvb4TLJ7SAasNuQCjCet6hvOrn7EI9OARc=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0jUWsonPL3NDdVhwQcpVpsPuA9EpOdPpDqF=5XEaPBOVw@mail.gmail.com>
-References: <CAJZ5v0jUWsonPL3NDdVhwQcpVpsPuA9EpOdPpDqF=5XEaPBOVw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0jUWsonPL3NDdVhwQcpVpsPuA9EpOdPpDqF=5XEaPBOVw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
- pm-5.7-rc1-3
-X-PR-Tracked-Commit-Id: a31434bcd4cb73b13cd8136c3cbba966dd01f058
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: bbec2a2dc338a19185549c318356e25c65552d15
-Message-Id: <158653982823.6431.6953161213468667754.pr-tracker-bot@kernel.org>
-Date:   Fri, 10 Apr 2020 17:30:28 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S1726793AbgDJRhC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Apr 2020 13:37:02 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:33622 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726203AbgDJRhB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Apr 2020 13:37:01 -0400
+Received: by mail-ot1-f68.google.com with SMTP id 103so2537292otv.0;
+        Fri, 10 Apr 2020 10:37:02 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=cBvs5LwqUO7S5M6QR4lxvxc0bJWFJ0sqPahnnM7+10g=;
+        b=XHte53IBXQ0nR1dXP5G4BYhZ6yp4AjKU1+zPZVVeTciDv9WSidNLhj+SVq9Hp5w9tf
+         JqjIPL2FIWPDIOqsj6NukGPZd7kEMkpPyyyowS8LUio09M8Ut0qFqz7pvHeilrvyqGAe
+         1ZqiwFkWEAJPa8MJuMzO0P3mcavNHwi2RvaWdjoUM55r/JlRkdrGOGZcVs6rLMvZHWKP
+         bG3X6wIlt4fxLsX2eO8zHQ1rPNPgBqtnU/uSDl9U6EdVhlOnDeRXcLBk7B+xPG4kt4pn
+         PkW2Cpeo/9OwKh24rHnYUpJcfQhvjrqMpF8ZIUQqM1/my4xqNv7XWjCGrhLwdyDq9daK
+         D3Rw==
+X-Gm-Message-State: AGi0PuYqVaKzfUFiDjoIIZcHZv0Jek/vab+QD2BmJW36jmizp7rt4F5R
+        zysprLPrE10o/mov3DR+mA==
+X-Google-Smtp-Source: APiQypL+sqymxMXjAk1Aso5m19W5p4BkuIoCN8DUgQmzzZdht2Km+Hfi4ZRxdegF8sh6WjgrkukfbQ==
+X-Received: by 2002:a9d:5b4:: with SMTP id 49mr4807406otd.210.1586540221606;
+        Fri, 10 Apr 2020 10:37:01 -0700 (PDT)
+Received: from rob-hp-laptop (ip-99-203-29-27.pools.spcsdns.net. [99.203.29.27])
+        by smtp.gmail.com with ESMTPSA id g18sm1566538oib.36.2020.04.10.10.36.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 10 Apr 2020 10:37:01 -0700 (PDT)
+Received: (nullmailer pid 31953 invoked by uid 1000);
+        Fri, 10 Apr 2020 17:06:06 -0000
+Date:   Fri, 10 Apr 2020 12:06:06 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Artur =?utf-8?B?xZp3aWdvxYQ=?= <a.swigon@samsung.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v2 02/22] dt-bindings: memory: tegra20: emc: Document new
+ interconnect property
+Message-ID: <20200410170606.GA31915@bogus>
+References: <20200330010904.27643-1-digetx@gmail.com>
+ <20200330010904.27643-3-digetx@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200330010904.27643-3-digetx@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Fri, 10 Apr 2020 11:49:13 +0200:
+On Mon, 30 Mar 2020 04:08:44 +0300, Dmitry Osipenko wrote:
+> External memory controller is interconnected with memory controller and
+> with external memory. Document new interconnect property which turns
+> external memory controller into interconnect provider.
+> 
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  .../bindings/memory-controllers/nvidia,tegra20-emc.txt          | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.7-rc1-3
-
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/bbec2a2dc338a19185549c318356e25c65552d15
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+Acked-by: Rob Herring <robh@kernel.org>
