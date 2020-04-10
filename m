@@ -7,46 +7,46 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 90348C2BB1D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 03:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1734C2D0EC
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 03:55:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5BF45214DB
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 03:46:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9EDDE214DB
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 03:55:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586490398;
-	bh=AL4Duf7m5IvoTTD4d2+gCaDhn7bLAW1D0iwX6syCWJw=;
+	s=default; t=1586490925;
+	bh=VjOqGkCEHfNRK8F13RVyzKzLhBVoJarF1/KtDo/igqc=;
 	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=jrZlyqp9lnV44q4Jkx58j431rq3KKGEAuZ3dPema69NFYlsg3HowcHG2gSM8qZhAA
-	 CC+107bdItfGW5EHa7BjNdMVKEbbhwGts4Inkue1yQlOUJnzwneRZcGaF7sxgFf8eq
-	 nduX3GvTaea47TmeMvmuY9q+8S8cp1PtsU31BdaA=
+	b=Sqo7dXRM3CG12QKLjFo2F2q7jb6jVE9iW37yntkKhhOeJAqW2Zyp7VwOAbPxwmy31
+	 j5zyLIWbd/itHkdsh/wduZrjhx45cIHlHZPrxoF5bPRsRUsjClacm3/+y9MeRCmEGg
+	 R9LtuyNg274IfoPQwcv9m/PiSzTtPThmI0MHjy64=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726594AbgDJDqh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Apr 2020 23:46:37 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56494 "EHLO mail.kernel.org"
+        id S1728724AbgDJDzU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Apr 2020 23:55:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34536 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726082AbgDJDqg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Apr 2020 23:46:36 -0400
+        id S1727081AbgDJDuH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 9 Apr 2020 23:50:07 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id F2CBE20936;
-        Fri, 10 Apr 2020 03:46:35 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8D2E720936;
+        Fri, 10 Apr 2020 03:50:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586490396;
-        bh=AL4Duf7m5IvoTTD4d2+gCaDhn7bLAW1D0iwX6syCWJw=;
+        s=default; t=1586490607;
+        bh=VjOqGkCEHfNRK8F13RVyzKzLhBVoJarF1/KtDo/igqc=;
         h=From:To:Cc:Subject:Date:From;
-        b=CVPqHkZ1K/ERlREdTqvk8eiNtwkATH6e3qmGz2NAuSZw1rSJ+FcBFqPP45x55dinu
-         0j+WXTV5kB8s8cZapgpX9HJpaxPWmlKRV/eGHBG6kW7jE47o0CJBBxQZa0EokXV31C
-         ZAAyfBHD1fmZoeBp0xYwupz4ZMNKj2I8aQvyoRcQ=
+        b=Lxx74b09eQXXtVhvfsv66IkcRXyJ8dtz9EVz2jhhg43Ex1dCEpso8zgP9iqNc9ZVC
+         7X5jL8rBZgbAg9PvZkXnHyp6av69afpTPqFsNhIXKwafhIthJ5IGLt0VeGboxpFvhv
+         I8W5JqNLu9WgmHRZZxmxkklPm99ZDhXevg5vaexU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Christoph Niedermaier <cniedermaier@dh-electronics.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 5.6 01/68] cpufreq: imx6q: Fixes unwanted cpu overclocking on i.MX6ULL
-Date:   Thu,  9 Apr 2020 23:45:26 -0400
-Message-Id: <20200410034634.7731-1-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 01/32] cpufreq: imx6q: Fixes unwanted cpu overclocking on i.MX6ULL
+Date:   Thu,  9 Apr 2020 23:49:34 -0400
+Message-Id: <20200410035005.9371-1-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 X-stable: review
@@ -80,10 +80,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 3 insertions(+)
 
 diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 648a09a1778a3..1fcbbd53a48a2 100644
+index d8c3595e90236..a0cbbdfc77359 100644
 --- a/drivers/cpufreq/imx6q-cpufreq.c
 +++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -280,6 +280,9 @@ static int imx6ul_opp_check_speed_grading(struct device *dev)
+@@ -310,6 +310,9 @@ static int imx6ul_opp_check_speed_grading(struct device *dev)
  		void __iomem *base;
  
  		np = of_find_compatible_node(NULL, NULL, "fsl,imx6ul-ocotp");
