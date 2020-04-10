@@ -2,111 +2,159 @@ Return-Path: <SRS0=fnvY=52=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86D88C2BB1D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 04:01:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C049C2BA2B
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 08:02:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 5E2672082D
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 04:01:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586491291;
-	bh=Ikc0AYvLKTZZv4VYpqWl7cUBvSOW5ZMNjoOQKDLh2aA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=skwmSN/Kw0vlEOkoCZkJcMdt9gJtB6nxwkYo9nbK7D6ETV70IVjQnlMg0zhQz5LOf
-	 SLH1/Zh6yxDPaWCAUsGe2H1C9V/E2/BiLjypv9dwk5X60c+ZvKSLyfP7zsALjlXn/F
-	 bmPjgBCzNl2IJ0giUmmjhU+WlgMxc/vm4rcHL7x0=
+	by mail.kernel.org (Postfix) with ESMTP id 6776520753
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Apr 2020 08:02:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726080AbgDJEB0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Apr 2020 00:01:26 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58390 "EHLO mail.kernel.org"
+        id S1725880AbgDJICS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Apr 2020 04:02:18 -0400
+Received: from mga09.intel.com ([134.134.136.24]:57509 "EHLO mga09.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727620AbgDJDrb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 9 Apr 2020 23:47:31 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 22D6620936;
-        Fri, 10 Apr 2020 03:47:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586490451;
-        bh=Ikc0AYvLKTZZv4VYpqWl7cUBvSOW5ZMNjoOQKDLh2aA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=ymtYnl6AOTrebE6S9gSnzVF3wayEAzH3Rr3PrL4uYs3KB20TOpXOKVEM/AdqoBFLJ
-         sRyQlgHkBqFAvMOXliMpm4FN9JpGQ1uRiyI+YUrEeWjdSKeTRK2u4ETMOGlT8055qv
-         hBNvc8pSUYm+wI3SYEqRMcBeKz/lfZwmnOS4jQtQ=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Peng Fan <peng.fan@nxp.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 5.6 47/68] cpufreq: imx6q: fix error handling
-Date:   Thu,  9 Apr 2020 23:46:12 -0400
-Message-Id: <20200410034634.7731-47-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200410034634.7731-1-sashal@kernel.org>
-References: <20200410034634.7731-1-sashal@kernel.org>
-MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+        id S1725861AbgDJICS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Apr 2020 04:02:18 -0400
+IronPort-SDR: Mp22S8sJ9d316LMsSWj1l3JSOwAuDTKrZ3v/B5LWbM1s0IUI+Rm0WqYa7FIddhAvRTiDsrwv8T
+ iMBUbJ93yJLw==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga005.fm.intel.com ([10.253.24.32])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Apr 2020 01:02:18 -0700
+IronPort-SDR: sST6rrBT8HzwRlIAYAQT1J6TBA+Pe0DCMIqxzBHE1tnbZfAMUyAVt8Cv1Q5aiMdcyo3t6OEMzV
+ YRZf5p4hiSOw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.72,366,1580803200"; 
+   d="scan'208";a="452309889"
+Received: from qjbian-mobl.amr.corp.intel.com ([10.255.31.146])
+  by fmsmga005.fm.intel.com with ESMTP; 10 Apr 2020 01:02:14 -0700
+Message-ID: <2bef9553fcf7ccd7c9811ad1d572af2e5a811917.camel@intel.com>
+Subject: Re: [RFC PATCH 5/5] ACPI: processor: do update when maximum cooling
+ state changed
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org
+Cc:     tiwai@suse.de, viresh.kumar@linaro.org
+Date:   Fri, 10 Apr 2020 16:02:13 +0800
+In-Reply-To: <5cd80df7-775e-96bd-cec5-b14965de2a67@linaro.org>
+References: <20200408041917.2329-1-rui.zhang@intel.com>
+         <20200408041917.2329-5-rui.zhang@intel.com>
+         <5cd80df7-775e-96bd-cec5-b14965de2a67@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peng Fan <peng.fan@nxp.com>
+On Thu, 2020-04-09 at 15:34 +0200, Daniel Lezcano wrote:
+> Hi Rui,
+> 
+> 
+> On 08/04/2020 06:19, Zhang Rui wrote:
+> > ACPI processor cooling device supports 1 cooling state before
+> > cpufreq
+> > driver probed, and 4 cooling states after cpufreq driver probed.
+> 
+> What is this one state ?
 
-[ Upstream commit 3646f50a3838c5949a89ecbdb868497cdc05b8fd ]
+One state means its original state and we can not set it to others.
 
-When speed checking failed, direclty jumping to put_node label
-is not correct. Need jump to out_free_opp to avoid resources leak.
+ACPI processor cooling states are combined of p-state cooling states
+and a couple of optional t-state cooling states.
 
-Fixes: 2733fb0d0699 ("cpufreq: imx6q: read OCOTP through nvmem for imx6ul/imx6ull")
-Signed-off-by: Peng Fan <peng.fan@nxp.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/cpufreq/imx6q-cpufreq.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
+Say, if we have a processor device supports 7 throttling states, it
+actually supports 8 cooling states with cpufreq driver unprobed, and 11
+cooling states with cpufreq driver probed.
 
-diff --git a/drivers/cpufreq/imx6q-cpufreq.c b/drivers/cpufreq/imx6q-cpufreq.c
-index 1fcbbd53a48a2..edef3399c9794 100644
---- a/drivers/cpufreq/imx6q-cpufreq.c
-+++ b/drivers/cpufreq/imx6q-cpufreq.c
-@@ -381,23 +381,24 @@ static int imx6q_cpufreq_probe(struct platform_device *pdev)
- 		goto put_reg;
- 	}
- 
-+	/* Because we have added the OPPs here, we must free them */
-+	free_opp = true;
-+
- 	if (of_machine_is_compatible("fsl,imx6ul") ||
- 	    of_machine_is_compatible("fsl,imx6ull")) {
- 		ret = imx6ul_opp_check_speed_grading(cpu_dev);
- 		if (ret) {
- 			if (ret == -EPROBE_DEFER)
--				goto put_node;
-+				goto out_free_opp;
- 
- 			dev_err(cpu_dev, "failed to read ocotp: %d\n",
- 				ret);
--			goto put_node;
-+			goto out_free_opp;
- 		}
- 	} else {
- 		imx6q_opp_check_speed_grading(cpu_dev);
- 	}
- 
--	/* Because we have added the OPPs here, we must free them */
--	free_opp = true;
- 	num = dev_pm_opp_get_opp_count(cpu_dev);
- 	if (num < 0) {
- 		ret = num;
--- 
-2.20.1
+> 
+> > Thus update the statistics table when the cpufeq driver is
+> > probed/unprobed.
+> 
+> To be honest, the series seems to skirt a problem in the acpi
+> processor.
+> 
+> If there is a new policy, then there is a new cooling device. Why not
+> unregister the old one and register the new one ?
+> 
+Good point.
+IMO, the real problem is that do we support dynamic max_cooling_state
+or not in the thermal framework.
+Previously, I thought we don't have a hard rule of static
+max_cooling_state because we always invoke .get_max_state() callback
+when we need it. But after a second thought, actually we do have this
+limitation. For example, when binding cooling devices to thermal zones,
+the upper limit is set based on the return value of .get_max_state() at
+the binding time, and we never update the upper limit later.
+So this ACPI processor issue is not just about statistics table update
+issue, we actually lose some of its cooling states.
+
+Thus, a new max_state means that all the previous setting of the
+cooling_device, i.e. all the thermal instances of the cooling device,
+needs to get updated.
+
+And to fix this, it's better to
+a. unregister and re-register the cooling device as you suggested.
+or
+b. introduce an API that updates the cooling device entirely instead of
+statistics table only.
+
+For either of the above solutions, we'd better to cleanup the code to 
+invoke .get_max_state() during registration/max_state_reset phase,
+once, and then always use cached value later.
+And plus, if we want to follow solution a), it's better to remove
+.get_max_state() callback and use an integer instead so that every
+driver knows this limitation.
+I'd vote for solution a) if there is no soc thermal driver that may
+return dynamic max_states.
+
+Do I still miss something?
+
+thanks,
+rui
+> 
+> > This fixes an OOB issue when updating the statistics of the
+> > processor
+> > cooling device.
+> > 
+> > Fixes: 8ea229511e06 ("thermal: Add cooling device's statistics in
+> > sysfs")
+> > Reported-by: Takashi Iwai <tiwai@suse.de>
+> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> > ---
+> >  drivers/acpi/processor_thermal.c | 2 ++
+> >  1 file changed, 2 insertions(+)
+> > 
+> > diff --git a/drivers/acpi/processor_thermal.c
+> > b/drivers/acpi/processor_thermal.c
+> > index 41feb88ee92d..179d1b50ee2b 100644
+> > --- a/drivers/acpi/processor_thermal.c
+> > +++ b/drivers/acpi/processor_thermal.c
+> > @@ -142,6 +142,7 @@ void acpi_thermal_cpufreq_init(struct
+> > cpufreq_policy *policy)
+> >  		if (ret < 0)
+> >  			pr_err("Failed to add freq constraint for CPU%d
+> > (%d)\n",
+> >  			       cpu, ret);
+> > +		thermal_cdev_stats_update_max(pr->cdev);
+> >  	}
+> >  }
+> >  
+> > @@ -154,6 +155,7 @@ void acpi_thermal_cpufreq_exit(struct
+> > cpufreq_policy *policy)
+> >  
+> >  		if (pr)
+> >  			freq_qos_remove_request(&pr->thermal_req);
+> > +		thermal_cdev_stats_update_max(pr->cdev);
+> >  	}
+> >  }
+> >  #else				/* ! CONFIG_CPU_FREQ */
+> > 
+> 
+> 
 
