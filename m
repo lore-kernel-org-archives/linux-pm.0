@@ -2,37 +2,36 @@ Return-Path: <SRS0=09V9=54=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F5EAC2BBC7
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6501C352B6
 	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:32:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 67FB021835
+	by mail.kernel.org (Postfix) with ESMTP id B64A420857
 	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:32:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="xGx/6YE0"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="u/40V0UJ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726689AbgDLDcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726706AbgDLDcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 11 Apr 2020 23:32:23 -0400
-Received: from vultr.net.flygoat.com ([149.28.68.211]:55216 "EHLO
+Received: from vultr.net.flygoat.com ([149.28.68.211]:55192 "EHLO
         vultr.net.flygoat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726759AbgDLDcW (ORCPT
+        with ESMTP id S1726633AbgDLDcW (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Apr 2020 23:32:22 -0400
 Received: from localhost.localdomain (unknown [IPv6:2001:da8:20f:4430:250:56ff:fe9a:7470])
-        by vultr.net.flygoat.com (Postfix) with ESMTPSA id 67F8320D16;
-        Sun, 12 Apr 2020 03:26:06 +0000 (UTC)
+        by vultr.net.flygoat.com (Postfix) with ESMTPSA id 7692C20D01;
+        Sun, 12 Apr 2020 03:22:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=flygoat.com; s=vultr;
-        t=1586661973; bh=tGxZsojCaXRQzUdr7zPR3NOXIGurTKod1uy8NjI5p4E=;
+        t=1586661775; bh=Z4RAigTBiOP7VvrfTLiBE6exmQIE7e1mafncBvapIM8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=xGx/6YE0io5bsdUPMhxoxEtHAD2PhTqgr8oGauD28ht0om5LPEo9Gg+mYvohWevhA
-         DDt7PXbYLaEmUppcrL7V3FD5fsup9agG6l9dlf3MM/mfoiQ/qm7RY+JV/YiKSVbTX7
-         t5dyba1nNAHbzbaddtE0RtBYGhPPEVgAu64dbSmm7RNhD5GvXAsUjkZS2P3k+NFHgN
-         OXiiUhR58SGALxKtK3jd+Tn4s0v3SdRdz6uPrMisS7WmGYiFYnuWVS8wpT5xo5jUVa
-         lPrY8npH96DYo0qUsW0z9OI4ly38crST4a56ezVKQ73/EKeXcGDHFj7RR0F5YCksH+
-         t7Zh+NbVX1AWw==
+        b=u/40V0UJINdoLfz3CVg+vOTwg/UlBNYosFwSbKUPg+0bUj1Nr7BmT5c+H+R3qFWO7
+         woPslrmOU1yrBoNztw3F6/JPqb5XcziGGOUMrjCdSOmV3UR5ubuZVeqxG5mZ0Ez7tD
+         7P+ccYAJtXVbB5pisjQT/Z7KR8k6JTqfYWnNo6T7GwHdCSsw3wvBWQavMGjeMGl0Dk
+         dQYSWHqYFCWRqVmUu8SlffBHQ1IrlzuaiA+Us23y/ENJq8VQKrsSNbpd4eKu6Ts/Uq
+         HEhtagU/Sn58L2tKtG5b+8UfuP0aZBqQ5BWZwEBePewzivfyt4wZSKwtgAeELa8yML
+         Jib2DP7XRlyZQ==
 From:   Jiaxun Yang <jiaxun.yang@flygoat.com>
 To:     linux-mips@vger.kernel.org
 Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
@@ -59,7 +58,7 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Enrico Weigelt <info@metux.net>,
         Kate Stewart <kstewart@linuxfoundation.org>,
         Vladimir Kondratiev <vladimir.kondratiev@intel.com>,
-        Alexios Zavras <alexios.zavras@intel.com>,
+        Richard Fontana <rfontana@redhat.com>,
         Paul Cercueil <paul@crapouillou.net>,
         Zhou Yanjie <zhouyanjie@zoho.com>,
         =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?= 
@@ -67,21 +66,22 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Arnd Bergmann <arnd@arndb.de>,
         Serge Semin <fancer.lancer@gmail.com>,
         Matt Redfearn <matt.redfearn@mips.com>,
-        Richard Fontana <rfontana@redhat.com>,
+        Alexios Zavras <alexios.zavras@intel.com>,
         Steve Winslow <swinslow@gmail.com>,
         afzal mohammed <afzal.mohd.ma@gmail.com>,
         Peter Xu <peterx@redhat.com>,
         Kamal Dasu <kdasu.kdev@gmail.com>,
+        Mike Rapoport <rppt@linux.ibm.com>,
         Oleksij Rempel <linux@rempel-privat.de>,
         linux-kernel@vger.kernel.org,
         bcm-kernel-feedback-list@broadcom.com, oprofile-list@lists.sf.net,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 04/11] arch_topology: Reset all cpus in reset_cpu_topology
-Date:   Sun, 12 Apr 2020 11:20:34 +0800
-Message-Id: <20200412032123.3896114-5-jiaxun.yang@flygoat.com>
+Subject: [PATCH v2 00/11] MIPS: Topology & DeviceTree CPU rework v2
+Date:   Sun, 12 Apr 2020 11:20:30 +0800
+Message-Id: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.26.0.rc2
-In-Reply-To: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
-References: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
+In-Reply-To: 20200408113505.2528103-1-jiaxun.yang@flygoat.com
+References: 
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -89,32 +89,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For MIPS platform, when topology isn't probed by DeviceTree,
-possible_cpu might be empty when calling init_cpu_topology,
-that may result cpu_topology not fully reseted for all CPUs.
-So here we can reset all cpus instead of possible cpus.
+This set mainly added DeviceTree based CPU probe support and reworked
+topology handling for MIPS. In order to prepare for pure DeviceTree
+boot for Loongson64. It can also convinient Yanjie's Inegnic jz4780/X2000
+SMP/SMT support.
 
-Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
+I've done build test for bmips, nlm, ip27 and boot test for malta with
+34Kf, I6400 in QEMU, Loongson64 on a Loongson-3B1500 real machine.
 
---
-v2: Use ARRAY_SIZE instead of NR_CPUS.
----
- drivers/base/arch_topology.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Thanks.
 
-diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 13dc4fbf043f..e7912d0a875e 100644
---- a/drivers/base/arch_topology.c
-+++ b/drivers/base/arch_topology.c
-@@ -536,7 +536,7 @@ void __init reset_cpu_topology(void)
- {
- 	unsigned int cpu;
- 
--	for_each_possible_cpu(cpu) {
-+	for (cpu = 0; cpu < ARRAY_SIZE(cpu_topology); cpu++) {
- 		struct cpu_topology *cpu_topo = &cpu_topology[cpu];
- 
- 		cpu_topo->thread_id = -1;
+v2:
+  - Fixes
+
+Jiaxun Yang (11):
+  MIPS: setup: Drop prefill_possible_map
+  MIPS: prom: Add helper to parse CPU node in dt
+  arch_topology: Make it avilable for MIPS
+  arch_topology: Reset all cpus in reset_cpu_topology
+  MIPS: Switch to arch_topology
+  MIPS: Kernel: Switch to new topology interface
+  MIPS: CPS & MT: Switch to new topology interface
+  irqchip: mips-cpu: Switch to new topology interface
+  MIPS: bmips: Switch to new topology interface
+  MIPS: nlm: Switch to new topology interface
+  MIPS: Loongson64: Switch to new topology interface
+
+ arch/mips/Kconfig                             |   1 +
+ arch/mips/include/asm/cpu-info.h              |  49 --------
+ arch/mips/include/asm/mach-ip27/mmzone.h      |   2 +
+ arch/mips/include/asm/mach-ip27/topology.h    |   2 +
+ .../include/asm/mach-loongson64/topology.h    |   2 +
+ arch/mips/include/asm/mips-cm.h               |   9 +-
+ arch/mips/include/asm/mips-cps.h              |   2 +
+ arch/mips/include/asm/prom.h                  |   6 +
+ arch/mips/include/asm/smp-ops.h               |   2 -
+ arch/mips/include/asm/smp.h                   |   2 -
+ arch/mips/include/asm/sn/addrs.h              |   1 +
+ arch/mips/include/asm/topology.h              |  68 +++++++++-
+ arch/mips/kernel/cacheinfo.c                  |  19 +--
+ arch/mips/kernel/cpu-probe.c                  |  43 -------
+ arch/mips/kernel/mips-cm.c                    |   4 +-
+ arch/mips/kernel/mips-cpc.c                   |   4 +-
+ arch/mips/kernel/perf_event_mipsxx.c          |   4 +-
+ arch/mips/kernel/pm-cps.c                     |  12 +-
+ arch/mips/kernel/proc.c                       |   8 +-
+ arch/mips/kernel/prom.c                       |  97 ++++++++++++++
+ arch/mips/kernel/setup.c                      |  22 +---
+ arch/mips/kernel/smp-bmips.c                  |   3 +-
+ arch/mips/kernel/smp-cmp.c                    |   5 +-
+ arch/mips/kernel/smp-cps.c                    |  41 +++---
+ arch/mips/kernel/smp-mt.c                     |   3 +-
+ arch/mips/kernel/smp.c                        |  55 +-------
+ arch/mips/kernel/topology.c                   |  42 +++++++
+ arch/mips/loongson64/smp.c                    |  20 +--
+ arch/mips/mm/c-r4k.c                          |   4 +-
+ arch/mips/mm/context.c                        |   4 +-
+ arch/mips/netlogic/common/smp.c               |   4 +-
+ arch/mips/oprofile/op_model_mipsxx.c          |   4 +-
+ drivers/base/arch_topology.c                  | 118 +++++++++---------
+ drivers/cpuidle/cpuidle-cps.c                 |   3 +-
+ drivers/irqchip/irq-mips-cpu.c                |   2 +-
+ 35 files changed, 361 insertions(+), 306 deletions(-)
+
 -- 
 2.26.0.rc2
 
