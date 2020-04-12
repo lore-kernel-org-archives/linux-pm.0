@@ -2,36 +2,37 @@ Return-Path: <SRS0=09V9=54=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6501C352B6
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C8CC2BB55
 	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:32:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id B64A420857
+	by mail.kernel.org (Postfix) with ESMTP id 8D761206C0
 	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:32:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="u/40V0UJ"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="xdkAAkVh"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726706AbgDLDcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726759AbgDLDcX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Sat, 11 Apr 2020 23:32:23 -0400
-Received: from vultr.net.flygoat.com ([149.28.68.211]:55192 "EHLO
+Received: from vultr.net.flygoat.com ([149.28.68.211]:55206 "EHLO
         vultr.net.flygoat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726633AbgDLDcW (ORCPT
+        with ESMTP id S1726706AbgDLDcW (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Apr 2020 23:32:22 -0400
 Received: from localhost.localdomain (unknown [IPv6:2001:da8:20f:4430:250:56ff:fe9a:7470])
-        by vultr.net.flygoat.com (Postfix) with ESMTPSA id 7692C20D01;
-        Sun, 12 Apr 2020 03:22:48 +0000 (UTC)
+        by vultr.net.flygoat.com (Postfix) with ESMTPSA id 0DA9720D0B;
+        Sun, 12 Apr 2020 03:24:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=flygoat.com; s=vultr;
-        t=1586661775; bh=Z4RAigTBiOP7VvrfTLiBE6exmQIE7e1mafncBvapIM8=;
+        t=1586661874; bh=oPTnJfivkM+8UlbJ6/9gGwXtkpRxLwi4xWE4eb0+CaY=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=u/40V0UJINdoLfz3CVg+vOTwg/UlBNYosFwSbKUPg+0bUj1Nr7BmT5c+H+R3qFWO7
-         woPslrmOU1yrBoNztw3F6/JPqb5XcziGGOUMrjCdSOmV3UR5ubuZVeqxG5mZ0Ez7tD
-         7P+ccYAJtXVbB5pisjQT/Z7KR8k6JTqfYWnNo6T7GwHdCSsw3wvBWQavMGjeMGl0Dk
-         dQYSWHqYFCWRqVmUu8SlffBHQ1IrlzuaiA+Us23y/ENJq8VQKrsSNbpd4eKu6Ts/Uq
-         HEhtagU/Sn58L2tKtG5b+8UfuP0aZBqQ5BWZwEBePewzivfyt4wZSKwtgAeELa8yML
-         Jib2DP7XRlyZQ==
+        b=xdkAAkVhE9cLmt4b8+PYZ1ceY8j4cfNtQsYRsYkA3LvMmiJ3R6r25w7aD/QGgISKZ
+         I359nv7efhU2PI4KSVasEJ3dlYoYnMIipUwgLqmtXSooV2Gx/2n6J8zZbdhUh2E9eR
+         M7Yad4QLQbyjs2ZVh3QUJs6tatPMqCzxN1QRWDpTKj63tM5EkheRe4Xen1pIT/Gt+I
+         eKKZ/8eAAfqKopirzq3cc3dzFL3uwX+0IlxNtyAta/z9Y+Y3RvcUaIHQXX+cili6fg
+         PCXwe49oAs+nYA+EukxPtqkc1hdEv5BoIhFmRTU3C0mDE9eTKLvx3Q6VyAHr6PVR7o
+         ZNXGTUaVyXG2Q==
 From:   Jiaxun Yang <jiaxun.yang@flygoat.com>
 To:     linux-mips@vger.kernel.org
 Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
@@ -55,10 +56,11 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Marc Zyngier <maz@kernel.org>,
         Paul Burton <paulburton@kernel.org>,
         Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
         Kate Stewart <kstewart@linuxfoundation.org>,
+        Enrico Weigelt <info@metux.net>,
         Vladimir Kondratiev <vladimir.kondratiev@intel.com>,
         Richard Fontana <rfontana@redhat.com>,
+        Alexios Zavras <alexios.zavras@intel.com>,
         Paul Cercueil <paul@crapouillou.net>,
         Zhou Yanjie <zhouyanjie@zoho.com>,
         =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?= 
@@ -66,22 +68,21 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Arnd Bergmann <arnd@arndb.de>,
         Serge Semin <fancer.lancer@gmail.com>,
         Matt Redfearn <matt.redfearn@mips.com>,
-        Alexios Zavras <alexios.zavras@intel.com>,
         Steve Winslow <swinslow@gmail.com>,
         afzal mohammed <afzal.mohd.ma@gmail.com>,
         Peter Xu <peterx@redhat.com>,
-        Kamal Dasu <kdasu.kdev@gmail.com>,
         Mike Rapoport <rppt@linux.ibm.com>,
         Oleksij Rempel <linux@rempel-privat.de>,
+        Kamal Dasu <kdasu.kdev@gmail.com>,
         linux-kernel@vger.kernel.org,
         bcm-kernel-feedback-list@broadcom.com, oprofile-list@lists.sf.net,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 00/11] MIPS: Topology & DeviceTree CPU rework v2
-Date:   Sun, 12 Apr 2020 11:20:30 +0800
-Message-Id: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
+Subject: [PATCH v2 02/11] MIPS: prom: Add helper to parse CPU node in dt
+Date:   Sun, 12 Apr 2020 11:20:32 +0800
+Message-Id: <20200412032123.3896114-3-jiaxun.yang@flygoat.com>
 X-Mailer: git-send-email 2.26.0.rc2
-In-Reply-To: 20200408113505.2528103-1-jiaxun.yang@flygoat.com
-References: 
+In-Reply-To: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
+References: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -89,69 +90,143 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This set mainly added DeviceTree based CPU probe support and reworked
-topology handling for MIPS. In order to prepare for pure DeviceTree
-boot for Loongson64. It can also convinient Yanjie's Inegnic jz4780/X2000
-SMP/SMT support.
+Mostly identical with arm one. The only difference is that we allow
+to mark a CPU Node as status = "disabled" in dt, which means the core
+is physicaly present, but not possible for the kernel. It will occupy
+a bit in cpumask as well.
 
-I've done build test for bmips, nlm, ip27 and boot test for malta with
-34Kf, I6400 in QEMU, Loongson64 on a Loongson-3B1500 real machine.
+Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
 
-Thanks.
+--
+v2: Exclude non-SMP config.
+---
+ arch/mips/include/asm/prom.h |  6 +++
+ arch/mips/kernel/prom.c      | 97 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 103 insertions(+)
 
-v2:
-  - Fixes
-
-Jiaxun Yang (11):
-  MIPS: setup: Drop prefill_possible_map
-  MIPS: prom: Add helper to parse CPU node in dt
-  arch_topology: Make it avilable for MIPS
-  arch_topology: Reset all cpus in reset_cpu_topology
-  MIPS: Switch to arch_topology
-  MIPS: Kernel: Switch to new topology interface
-  MIPS: CPS & MT: Switch to new topology interface
-  irqchip: mips-cpu: Switch to new topology interface
-  MIPS: bmips: Switch to new topology interface
-  MIPS: nlm: Switch to new topology interface
-  MIPS: Loongson64: Switch to new topology interface
-
- arch/mips/Kconfig                             |   1 +
- arch/mips/include/asm/cpu-info.h              |  49 --------
- arch/mips/include/asm/mach-ip27/mmzone.h      |   2 +
- arch/mips/include/asm/mach-ip27/topology.h    |   2 +
- .../include/asm/mach-loongson64/topology.h    |   2 +
- arch/mips/include/asm/mips-cm.h               |   9 +-
- arch/mips/include/asm/mips-cps.h              |   2 +
- arch/mips/include/asm/prom.h                  |   6 +
- arch/mips/include/asm/smp-ops.h               |   2 -
- arch/mips/include/asm/smp.h                   |   2 -
- arch/mips/include/asm/sn/addrs.h              |   1 +
- arch/mips/include/asm/topology.h              |  68 +++++++++-
- arch/mips/kernel/cacheinfo.c                  |  19 +--
- arch/mips/kernel/cpu-probe.c                  |  43 -------
- arch/mips/kernel/mips-cm.c                    |   4 +-
- arch/mips/kernel/mips-cpc.c                   |   4 +-
- arch/mips/kernel/perf_event_mipsxx.c          |   4 +-
- arch/mips/kernel/pm-cps.c                     |  12 +-
- arch/mips/kernel/proc.c                       |   8 +-
- arch/mips/kernel/prom.c                       |  97 ++++++++++++++
- arch/mips/kernel/setup.c                      |  22 +---
- arch/mips/kernel/smp-bmips.c                  |   3 +-
- arch/mips/kernel/smp-cmp.c                    |   5 +-
- arch/mips/kernel/smp-cps.c                    |  41 +++---
- arch/mips/kernel/smp-mt.c                     |   3 +-
- arch/mips/kernel/smp.c                        |  55 +-------
- arch/mips/kernel/topology.c                   |  42 +++++++
- arch/mips/loongson64/smp.c                    |  20 +--
- arch/mips/mm/c-r4k.c                          |   4 +-
- arch/mips/mm/context.c                        |   4 +-
- arch/mips/netlogic/common/smp.c               |   4 +-
- arch/mips/oprofile/op_model_mipsxx.c          |   4 +-
- drivers/base/arch_topology.c                  | 118 +++++++++---------
- drivers/cpuidle/cpuidle-cps.c                 |   3 +-
- drivers/irqchip/irq-mips-cpu.c                |   2 +-
- 35 files changed, 361 insertions(+), 306 deletions(-)
-
+diff --git a/arch/mips/include/asm/prom.h b/arch/mips/include/asm/prom.h
+index c42e07671934..84802c70e426 100644
+--- a/arch/mips/include/asm/prom.h
++++ b/arch/mips/include/asm/prom.h
+@@ -24,6 +24,12 @@ extern int __dt_register_buses(const char *bus0, const char *bus1);
+ static inline void device_tree_init(void) { }
+ #endif /* CONFIG_OF */
+ 
++#if defined(CONFIG_OF) && defined(CONFIG_SMP)
++extern void mips_dt_init_cpu_maps(void);
++#else
++static inline void mips_dt_init_cpu_maps(void) { }
++#endif
++
+ extern char *mips_get_machine_name(void);
+ extern void mips_set_machine_name(const char *name);
+ 
+diff --git a/arch/mips/kernel/prom.c b/arch/mips/kernel/prom.c
+index 9e50dc8df2f6..deb5cc0a0eb5 100644
+--- a/arch/mips/kernel/prom.c
++++ b/arch/mips/kernel/prom.c
+@@ -89,4 +89,101 @@ int __init __dt_register_buses(const char *bus0, const char *bus1)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_SMP
++void __init mips_dt_init_cpu_maps(void)
++{
++	struct device_node *cpu, *cpus;
++	u32 i, j, cpuidx = 1;
++	u32 cpunum;
++	u32 tmp_map[NR_CPUS] = { [0 ... NR_CPUS-1] = U32_MAX };
++	bool cpu_possible[NR_CPUS] = { [0 ... NR_CPUS-1] = false };
++	bool bootcpu_valid = false;
++
++	cpus = of_find_node_by_path("/cpus");
++	if (!cpus)
++		return;
++
++	if (cpu_has_mips_r2_r6)
++		cpunum = get_ebase_cpunum();
++	else
++		cpunum = 0; /* For legacy system we assume boot from CPU 0 */
++
++	for_each_of_cpu_node(cpu) {
++		u32 hwid;
++
++		pr_debug(" * %pOF...\n", cpu);
++		/*
++		 * A device tree containing CPU nodes with missing "reg"
++		 * properties is considered invalid to build the
++		 * cpu_logical_map.
++		 */
++
++		if (of_property_read_u32(cpu, "reg", &hwid)) {
++			pr_debug(" * %pOF missing reg property\n", cpu);
++			of_node_put(cpu);
++			return;
++		}
++
++		/*
++		 * Duplicate hwid are a recipe for disaster.
++		 * Scan all initialized entries and check for
++		 * duplicates. If any is found just bail out.
++		 */
++		for (j = 0; j < cpuidx; j++)
++			if (WARN(tmp_map[j] == hwid,
++				 "Duplicate /cpu reg properties in the DT\n")) {
++				of_node_put(cpu);
++				return;
++			}
++
++		/*
++		 * Build a stashed array of hwid values. Numbering scheme
++		 * requires that if detected the boot CPU must be assigned
++		 * logical id 0. Other CPUs get sequential indexes starting
++		 * from 1. If a CPU node with a reg property matching the
++		 * boot CPU hwid is detected, this is recorded so that the
++		 * logical map built from DT is validated.
++		 */
++		if (hwid == cpunum) {
++			i = 0;
++			if (of_device_is_available(cpu))
++				bootcpu_valid = true;
++		} else {
++			i = cpuidx++;
++		}
++
++		if (WARN(cpuidx > nr_cpu_ids, "DT /cpu %u nodes greater than "
++						   "max cores %u, capping them\n",
++						   cpuidx, nr_cpu_ids)) {
++			cpuidx = nr_cpu_ids;
++			of_node_put(cpu);
++			break;
++		}
++
++		tmp_map[i] = hwid;
++
++		if (of_device_is_available(cpu))
++			cpu_possible[i] = true;
++	}
++
++	if (!bootcpu_valid) {
++		pr_warn("DT missing boot CPU, fall back to default cpu_logical_map\n");
++		return;
++	}
++
++	init_cpu_possible(cpu_none_mask);
++	init_cpu_present(cpu_none_mask);
++
++	for (i = 0; i < cpuidx; i++) {
++		set_cpu_possible(i, cpu_possible[i]);
++		cpu_logical_map(i) = tmp_map[i];
++		pr_debug("cpu logical map 0x%x\n", cpu_logical_map(i));
++	}
++}
++
++bool arch_match_cpu_phys_id(int cpu, u64 phys_id)
++{
++	return phys_id == cpu_logical_map(cpu);
++}
++#endif /* CONFIG_SMP */
+ #endif
 -- 
 2.26.0.rc2
 
