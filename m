@@ -2,40 +2,44 @@ Return-Path: <SRS0=09V9=54=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2889C2D0EC
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E7E8FC2BB85
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 05:25:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id 40D9720739
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 03:37:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=flygoat.com header.i=@flygoat.com header.b="GKhi1J6x"
+	by mail.kernel.org (Postfix) with ESMTP id CBD4D20753
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Apr 2020 05:25:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726689AbgDLDhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 11 Apr 2020 23:37:23 -0400
-Received: from vultr.net.flygoat.com ([149.28.68.211]:55244 "EHLO
-        vultr.net.flygoat.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726155AbgDLDhW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Apr 2020 23:37:22 -0400
-Received: from localhost.localdomain (unknown [IPv6:2001:da8:20f:4430:250:56ff:fe9a:7470])
-        by vultr.net.flygoat.com (Postfix) with ESMTPSA id 8A55220D18;
-        Sun, 12 Apr 2020 03:26:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=flygoat.com; s=vultr;
-        t=1586662022; bh=CwxSJACN9kfWOFrwE500WiFJJVxkNDeXPqXpee2bVhg=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GKhi1J6xCqXtUnSfbyh3dYyalSndsb49LrD4EakclPIBDqIcBMl+470NUJakB1z84
-         o9KVhJ4vvLiHhPuQpXtt3MX3mRBo62KA1tLbKt55kJ4C6JveY0+8XjM7gglXAez+6c
-         vzuo4rbXuFg8WWWJcM4AwAayP2wu81WWVPcyjkgv/cnCEZUdgDGNlDVM1M8bdnLnnP
-         BU/aorVLYwQvFoKR4yWB1msfyNAfCsV4ga0mUICzV1hhx9YmjRUZGhguZULecXp1xe
-         PqCEnV8U+iDoxPgCjLF2riICs4zsC29ADSXDbBmBFvP1g2PohEt5pQbAOxHAciVDYD
-         5rWu+wAwfMG8g==
-From:   Jiaxun Yang <jiaxun.yang@flygoat.com>
-To:     linux-mips@vger.kernel.org
-Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
+        id S1725909AbgDLFZ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Apr 2020 01:25:29 -0400
+Received: from mga09.intel.com ([134.134.136.24]:64803 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725815AbgDLFZ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Apr 2020 01:25:29 -0400
+IronPort-SDR: Ef+KG6mtU/Hw/ZB8KETrCOcwhOWHVy2PdMgNszAoPRace3EXYbSZ5UydAwJUnNYwOIknpMCtWO
+ +nuBvVHF6MSg==
+X-Amp-Result: UNKNOWN
+X-Amp-Original-Verdict: FILE UNKNOWN
+X-Amp-File-Uploaded: False
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Apr 2020 22:25:28 -0700
+IronPort-SDR: D5XvxkF9FiX/OW+aTXZvJa8N1LhjFl0sz/fm9VHSH8HcAhUm6V3mFzylHGt+dnv9UArAOFQgOs
+ sVOcddZFHG4g==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.72,373,1580803200"; 
+   d="gz'50?scan'50,208,50";a="399306066"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+  by orsmga004.jf.intel.com with ESMTP; 11 Apr 2020 22:25:19 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+        (envelope-from <lkp@intel.com>)
+        id 1jNV7O-0003ym-B0; Sun, 12 Apr 2020 13:25:18 +0800
+Date:   Sun, 12 Apr 2020 13:24:21 +0800
+From:   kbuild test robot <lkp@intel.com>
+To:     Jiaxun Yang <jiaxun.yang@flygoat.com>
+Cc:     kbuild-all@lists.01.org, linux-mips@vger.kernel.org,
+        "dietmar.eggemann@arm.com, Jiaxun Yang" <jiaxun.yang@flygoat.com>,
         Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
         Huacai Chen <chenhc@lemote.com>,
         Peter Zijlstra <peterz@infradead.org>,
@@ -61,7 +65,7 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         Vladimir Kondratiev <vladimir.kondratiev@intel.com>,
         Paul Cercueil <paul@crapouillou.net>,
         Zhou Yanjie <zhouyanjie@zoho.com>,
-        =?UTF-8?q?=E5=91=A8=E7=90=B0=E6=9D=B0=20=28Zhou=20Yanjie=29?= 
+        =?utf-8?B?5ZGo55Cw5p2wIChaaG91IFlhbmppZSk=?= 
         <zhouyanjie@wanyeetech.com>, YunQiang Su <syq@debian.org>,
         Arnd Bergmann <arnd@arndb.de>,
         Serge Semin <fancer.lancer@gmail.com>,
@@ -76,510 +80,355 @@ Cc:     dietmar.eggemann@arm.com, Jiaxun Yang <jiaxun.yang@flygoat.com>,
         linux-kernel@vger.kernel.org,
         bcm-kernel-feedback-list@broadcom.com, oprofile-list@lists.sf.net,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 05/11] MIPS: Switch to arch_topology
-Date:   Sun, 12 Apr 2020 11:20:35 +0800
-Message-Id: <20200412032123.3896114-6-jiaxun.yang@flygoat.com>
-X-Mailer: git-send-email 2.26.0.rc2
-In-Reply-To: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
-References: <20200412032123.3896114-1-jiaxun.yang@flygoat.com>
+Subject: Re: [PATCH v2 05/11] MIPS: Switch to arch_topology
+Message-ID: <202004121349.xFzTOGS4%lkp@intel.com>
+References: <20200412032123.3896114-6-jiaxun.yang@flygoat.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="+HP7ph2BbKc20aGI"
+Content-Disposition: inline
+In-Reply-To: <20200412032123.3896114-6-jiaxun.yang@flygoat.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Previously, MIPS is using self-defined "globalnumber" in struct
-mips_cpuinfo to store topology information. However, it's not friendly
-to DeviceTree based systems and lack of cpu_capacity related feature
-which can take advantage of multi-cluster system.
 
-Here, we enabled arch_topology for MIPS and adapted some functions
-to fit arch_topology structure.
-Also, we implmented smp_store_cpu_info to probe CPU's topology information
-by "globalnumber" registers in VP ASE or Ebase.CPUNum for legacy systems.
+--+HP7ph2BbKc20aGI
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Signed-off-by: Jiaxun Yang <jiaxun.yang@flygoat.com>
+Hi Jiaxun,
 
---
-v2:
-	- Squash header fix into this commit.
-	- Provide dummy functions for no-SMP config, CM code requires them.
-	  (Thanks to 0-day CI for discover this)
+I love your patch! Yet something to improve:
+
+[auto build test ERROR on driver-core/driver-core-testing]
+[also build test ERROR on pm/linux-next linus/master next-20200411]
+[cannot apply to tip/perf/core tip/irq/core v5.6]
+[if your patch is applied to the wrong git tree, please drop us a note to help
+improve the system. BTW, we also suggest to use '--base' option to specify the
+base tree in git format-patch, please see https://stackoverflow.com/a/37406982]
+
+url:    https://github.com/0day-ci/linux/commits/Jiaxun-Yang/MIPS-Topology-DeviceTree-CPU-rework-v2/20200412-113308
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core.git a10c9c710f9ecea87b9f4bbb837467893b4bef01
+config: mips-allnoconfig (attached as .config)
+compiler: mips-linux-gcc (GCC) 9.3.0
+reproduce:
+        wget https://raw.githubusercontent.com/intel/lkp-tests/master/sbin/make.cross -O ~/bin/make.cross
+        chmod +x ~/bin/make.cross
+        # save the attached .config to linux build tree
+        GCC_VERSION=9.3.0 make.cross ARCH=mips 
+
+If you fix the issue, kindly add following tag as appropriate
+Reported-by: kbuild test robot <lkp@intel.com>
+
+Note: the linux-review/Jiaxun-Yang/MIPS-Topology-DeviceTree-CPU-rework-v2/20200412-113308 HEAD 8e8e9d4f7aa74359f2199773786ffe2fbb7877d0 builds fine.
+      It only hurts bisectibility.
+
+All errors (new ones prefixed by >>):
+
+   arch/mips/include/asm/mips-cm.h:398:31: error: passing argument 1 of 'cpu_core' makes integer from pointer without a cast [-Werror=int-conversion]
+     398 |  unsigned int core = cpu_core(&cpu_data[cpu]);
+         |                               ^~~~~~~~~~~~~~
+         |                               |
+         |                               struct cpuinfo_mips *
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:68:41: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      68 | static inline unsigned int cpu_core(int cpu)
+         |                                     ~~~~^~~
+   In file included from arch/mips/include/asm/mips-cps.h:104,
+                    from arch/mips/kernel/mips-cpc.c:13:
+   arch/mips/include/asm/mips-cm.h:399:31: error: passing argument 1 of 'cpu_vpe_id' makes integer from pointer without a cast [-Werror=int-conversion]
+     399 |  unsigned int vp = cpu_vpe_id(&cpu_data[cpu]);
+         |                               ^~~~~~~~~~~~~~
+         |                               |
+         |                               struct cpuinfo_mips *
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:73:43: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      73 | static inline unsigned int cpu_vpe_id(int cpu)
+         |                                       ~~~~^~~
+   In file included from arch/mips/include/asm/mips-cps.h:104,
+                    from arch/mips/kernel/mips-cpc.c:13:
+   arch/mips/include/asm/mips-cm.h: In function 'mips_cm_lock_other_cpu':
+   arch/mips/include/asm/mips-cm.h:456:33: error: passing argument 1 of 'cpu_cluster' makes integer from pointer without a cast [-Werror=int-conversion]
+     456 |  mips_cm_lock_other(cpu_cluster(d), cpu_core(d), cpu_vpe_id(d), block);
+         |                                 ^
+         |                                 |
+         |                                 struct cpuinfo_mips *
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:63:44: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      63 | static inline unsigned int cpu_cluster(int cpu)
+         |                                        ~~~~^~~
+   In file included from arch/mips/include/asm/mips-cps.h:104,
+                    from arch/mips/kernel/mips-cpc.c:13:
+   arch/mips/include/asm/mips-cm.h:456:46: error: passing argument 1 of 'cpu_core' makes integer from pointer without a cast [-Werror=int-conversion]
+     456 |  mips_cm_lock_other(cpu_cluster(d), cpu_core(d), cpu_vpe_id(d), block);
+         |                                              ^
+         |                                              |
+         |                                              struct cpuinfo_mips *
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:68:41: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      68 | static inline unsigned int cpu_core(int cpu)
+         |                                     ~~~~^~~
+   In file included from arch/mips/include/asm/mips-cps.h:104,
+                    from arch/mips/kernel/mips-cpc.c:13:
+   arch/mips/include/asm/mips-cm.h:456:61: error: passing argument 1 of 'cpu_vpe_id' makes integer from pointer without a cast [-Werror=int-conversion]
+     456 |  mips_cm_lock_other(cpu_cluster(d), cpu_core(d), cpu_vpe_id(d), block);
+         |                                                             ^
+         |                                                             |
+         |                                                             struct cpuinfo_mips *
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:73:43: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      73 | static inline unsigned int cpu_vpe_id(int cpu)
+         |                                       ~~~~^~~
+   arch/mips/kernel/mips-cpc.c: In function 'mips_cpc_lock_other':
+>> arch/mips/kernel/mips-cpc.c:97:23: error: passing argument 1 of 'cpu_core' makes integer from pointer without a cast [-Werror=int-conversion]
+      97 |  curr_core = cpu_core(&current_cpu_data);
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:68:41: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      68 | static inline unsigned int cpu_core(int cpu)
+         |                                     ~~~~^~~
+   arch/mips/kernel/mips-cpc.c: In function 'mips_cpc_unlock_other':
+   arch/mips/kernel/mips-cpc.c:117:23: error: passing argument 1 of 'cpu_core' makes integer from pointer without a cast [-Werror=int-conversion]
+     117 |  curr_core = cpu_core(&current_cpu_data);
+   In file included from include/linux/topology.h:36,
+                    from include/linux/gfp.h:9,
+                    from include/linux/xarray.h:14,
+                    from include/linux/radix-tree.h:18,
+                    from include/linux/idr.h:15,
+                    from include/linux/kernfs.h:13,
+                    from include/linux/sysfs.h:16,
+                    from include/linux/kobject.h:20,
+                    from include/linux/of.h:17,
+                    from arch/mips/kernel/mips-cpc.c:9:
+   arch/mips/include/asm/topology.h:68:41: note: expected 'int' but argument is of type 'struct cpuinfo_mips *'
+      68 | static inline unsigned int cpu_core(int cpu)
+         |                                     ~~~~^~~
+   cc1: all warnings being treated as errors
+
+vim +/cpu_core +97 arch/mips/kernel/mips-cpc.c
+
+76ae658465c231 Paul Burton   2014-02-14   87  
+76ae658465c231 Paul Burton   2014-02-14   88  void mips_cpc_lock_other(unsigned int core)
+76ae658465c231 Paul Burton   2014-02-14   89  {
+6b89d22e742aa3 Matt Redfearn 2016-09-07   90  	unsigned int curr_core;
+d6219420480b75 Matt Redfearn 2016-09-07   91  
+d6219420480b75 Matt Redfearn 2016-09-07   92  	if (mips_cm_revision() >= CM_REV_CM3)
+d6219420480b75 Matt Redfearn 2016-09-07   93  		/* Systems with CM >= 3 lock the CPC via mips_cm_lock_other */
+d6219420480b75 Matt Redfearn 2016-09-07   94  		return;
+d6219420480b75 Matt Redfearn 2016-09-07   95  
+76ae658465c231 Paul Burton   2014-02-14   96  	preempt_disable();
+f875a832d20285 Paul Burton   2017-08-12  @97  	curr_core = cpu_core(&current_cpu_data);
+76ae658465c231 Paul Burton   2014-02-14   98  	spin_lock_irqsave(&per_cpu(cpc_core_lock, curr_core),
+76ae658465c231 Paul Burton   2014-02-14   99  			  per_cpu(cpc_core_lock_flags, curr_core));
+829ca2be9c55c7 Paul Burton   2017-08-12  100  	write_cpc_cl_other(core << __ffs(CPC_Cx_OTHER_CORENUM));
+78a54c4d8e5a79 Paul Burton   2015-09-22  101  
+78a54c4d8e5a79 Paul Burton   2015-09-22  102  	/*
+78a54c4d8e5a79 Paul Burton   2015-09-22  103  	 * Ensure the core-other region reflects the appropriate core &
+78a54c4d8e5a79 Paul Burton   2015-09-22  104  	 * VP before any accesses to it occur.
+78a54c4d8e5a79 Paul Burton   2015-09-22  105  	 */
+78a54c4d8e5a79 Paul Burton   2015-09-22  106  	mb();
+76ae658465c231 Paul Burton   2014-02-14  107  }
+76ae658465c231 Paul Burton   2014-02-14  108  
+
+:::::: The code at line 97 was first introduced by commit
+:::::: f875a832d2028523f9b53c261b67e05a359bab8b MIPS: Abstract CPU core & VP(E) ID access through accessor functions
+
+:::::: TO: Paul Burton <paul.burton@imgtec.com>
+:::::: CC: Ralf Baechle <ralf@linux-mips.org>
+
 ---
- arch/mips/Kconfig                          |  1 +
- arch/mips/include/asm/cpu-info.h           | 49 ----------------
- arch/mips/include/asm/mach-ip27/mmzone.h   |  2 +
- arch/mips/include/asm/mach-ip27/topology.h |  2 +
- arch/mips/include/asm/smp.h                |  2 -
- arch/mips/include/asm/sn/addrs.h           |  1 +
- arch/mips/include/asm/topology.h           | 68 ++++++++++++++++++++--
- arch/mips/kernel/cpu-probe.c               | 43 --------------
- arch/mips/kernel/setup.c                   |  1 +
- arch/mips/kernel/smp.c                     | 55 ++---------------
- arch/mips/kernel/topology.c                | 42 +++++++++++++
- 11 files changed, 118 insertions(+), 148 deletions(-)
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
 
-diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
-index 690718b3701a..66b57e9f2b4d 100644
---- a/arch/mips/Kconfig
-+++ b/arch/mips/Kconfig
-@@ -20,6 +20,7 @@ config MIPS
- 	select CLONE_BACKWARDS
- 	select CPU_NO_EFFICIENT_FFS if (TARGET_ISA_REV < 1)
- 	select CPU_PM if CPU_IDLE
-+	select GENERIC_ARCH_TOPOLOGY if SMP
- 	select GENERIC_ATOMIC64 if !64BIT
- 	select GENERIC_CLOCKEVENTS
- 	select GENERIC_CMOS_UPDATE
-diff --git a/arch/mips/include/asm/cpu-info.h b/arch/mips/include/asm/cpu-info.h
-index ed7ffe4e63a3..7140a3e61ce3 100644
---- a/arch/mips/include/asm/cpu-info.h
-+++ b/arch/mips/include/asm/cpu-info.h
-@@ -78,8 +78,6 @@ struct cpuinfo_mips {
- 	struct cache_desc	scache; /* Secondary cache */
- 	struct cache_desc	tcache; /* Tertiary/split secondary cache */
- 	int			srsets; /* Shadow register sets */
--	int			package;/* physical package number */
--	unsigned int		globalnumber;
- #ifdef CONFIG_64BIT
- 	int			vmbits; /* Virtual memory size in bits */
- #endif
-@@ -139,53 +137,6 @@ struct proc_cpuinfo_notifier_args {
- 	unsigned long n;
- };
- 
--static inline unsigned int cpu_cluster(struct cpuinfo_mips *cpuinfo)
--{
--	/* Optimisation for systems where multiple clusters aren't used */
--	if (!IS_ENABLED(CONFIG_CPU_MIPSR6))
--		return 0;
--
--	return (cpuinfo->globalnumber & MIPS_GLOBALNUMBER_CLUSTER) >>
--		MIPS_GLOBALNUMBER_CLUSTER_SHF;
--}
--
--static inline unsigned int cpu_core(struct cpuinfo_mips *cpuinfo)
--{
--	return (cpuinfo->globalnumber & MIPS_GLOBALNUMBER_CORE) >>
--		MIPS_GLOBALNUMBER_CORE_SHF;
--}
--
--static inline unsigned int cpu_vpe_id(struct cpuinfo_mips *cpuinfo)
--{
--	/* Optimisation for systems where VP(E)s aren't used */
--	if (!IS_ENABLED(CONFIG_MIPS_MT_SMP) && !IS_ENABLED(CONFIG_CPU_MIPSR6))
--		return 0;
--
--	return (cpuinfo->globalnumber & MIPS_GLOBALNUMBER_VP) >>
--		MIPS_GLOBALNUMBER_VP_SHF;
--}
--
--extern void cpu_set_cluster(struct cpuinfo_mips *cpuinfo, unsigned int cluster);
--extern void cpu_set_core(struct cpuinfo_mips *cpuinfo, unsigned int core);
--extern void cpu_set_vpe_id(struct cpuinfo_mips *cpuinfo, unsigned int vpe);
--
--static inline bool cpus_are_siblings(int cpua, int cpub)
--{
--	struct cpuinfo_mips *infoa = &cpu_data[cpua];
--	struct cpuinfo_mips *infob = &cpu_data[cpub];
--	unsigned int gnuma, gnumb;
--
--	if (infoa->package != infob->package)
--		return false;
--
--	gnuma = infoa->globalnumber & ~MIPS_GLOBALNUMBER_VP;
--	gnumb = infob->globalnumber & ~MIPS_GLOBALNUMBER_VP;
--	if (gnuma != gnumb)
--		return false;
--
--	return true;
--}
--
- static inline unsigned long cpu_asid_inc(void)
- {
- 	return 1 << CONFIG_MIPS_ASID_SHIFT;
-diff --git a/arch/mips/include/asm/mach-ip27/mmzone.h b/arch/mips/include/asm/mach-ip27/mmzone.h
-index 08c36e50a860..e0a53b97b4a8 100644
---- a/arch/mips/include/asm/mach-ip27/mmzone.h
-+++ b/arch/mips/include/asm/mach-ip27/mmzone.h
-@@ -2,6 +2,8 @@
- #ifndef _ASM_MACH_MMZONE_H
- #define _ASM_MACH_MMZONE_H
- 
-+#include <linux/mmzone.h>
-+
- #include <asm/sn/addrs.h>
- #include <asm/sn/arch.h>
- #include <asm/sn/agent.h>
-diff --git a/arch/mips/include/asm/mach-ip27/topology.h b/arch/mips/include/asm/mach-ip27/topology.h
-index d66cc53feab8..601e350908f7 100644
---- a/arch/mips/include/asm/mach-ip27/topology.h
-+++ b/arch/mips/include/asm/mach-ip27/topology.h
-@@ -2,6 +2,8 @@
- #ifndef _ASM_MACH_TOPOLOGY_H
- #define _ASM_MACH_TOPOLOGY_H	1
- 
-+#include <linux/numa.h>
-+
- #include <asm/sn/types.h>
- #include <asm/mmzone.h>
- 
-diff --git a/arch/mips/include/asm/smp.h b/arch/mips/include/asm/smp.h
-index 7990c1c70471..538e73f6bab0 100644
---- a/arch/mips/include/asm/smp.h
-+++ b/arch/mips/include/asm/smp.h
-@@ -21,8 +21,6 @@
- #include <asm/smp-ops.h>
- 
- extern int smp_num_siblings;
--extern cpumask_t cpu_sibling_map[];
--extern cpumask_t cpu_core_map[];
- extern cpumask_t cpu_foreign_map[];
- 
- static inline int raw_smp_processor_id(void)
-diff --git a/arch/mips/include/asm/sn/addrs.h b/arch/mips/include/asm/sn/addrs.h
-index 837d23e24976..1d3945ef2ca4 100644
---- a/arch/mips/include/asm/sn/addrs.h
-+++ b/arch/mips/include/asm/sn/addrs.h
-@@ -13,6 +13,7 @@
- #ifndef __ASSEMBLY__
- #include <linux/smp.h>
- #include <linux/types.h>
-+#include <asm/io.h>
- #endif /* !__ASSEMBLY__ */
- 
- #include <asm/addrspace.h>
-diff --git a/arch/mips/include/asm/topology.h b/arch/mips/include/asm/topology.h
-index 0673d2d0f2e6..0f27a00df56d 100644
---- a/arch/mips/include/asm/topology.h
-+++ b/arch/mips/include/asm/topology.h
-@@ -9,13 +9,71 @@
- #define __ASM_TOPOLOGY_H
- 
- #include <topology.h>
-+#include <linux/arch_topology.h>
- #include <linux/smp.h>
- 
--#ifdef CONFIG_SMP
--#define topology_physical_package_id(cpu)	(cpu_data[cpu].package)
--#define topology_core_id(cpu)			(cpu_core(&cpu_data[cpu]))
--#define topology_core_cpumask(cpu)		(&cpu_core_map[cpu])
--#define topology_sibling_cpumask(cpu)		(&cpu_sibling_map[cpu])
-+#if defined(CONFIG_SMP)
-+static inline bool cpus_are_siblings(int cpua, int cpub)
-+{
-+	return cpumask_test_cpu(cpua, topology_sibling_cpumask(cpub));
-+}
-+
-+static inline unsigned int cpu_cluster(int cpu)
-+{
-+	return cpu_topology[cpu].package_id;
-+}
-+
-+static inline unsigned int cpu_core(int cpu)
-+{
-+	return cpu_topology[cpu].core_id;
-+}
-+
-+static inline unsigned int cpu_vpe_id(int cpu)
-+{
-+	int id = cpu_topology[cpu].thread_id;
-+
-+	/* Uniprocessor system may get -1, but for hardware it's 0 */
-+	if (id == -1)
-+		return 0;
-+
-+	return id;
-+}
-+
-+static inline void cpu_set_cluster(int cpu, unsigned int cluster)
-+{
-+	cpu_topology[cpu].package_id = cluster;
-+}
-+
-+static inline void cpu_set_core(int cpu, unsigned int core)
-+{
-+	cpu_topology[cpu].core_id = core;
-+}
-+
-+static inline void cpu_set_vpe_id(int cpu, unsigned int vpe)
-+{
-+	cpu_topology[cpu].thread_id = vpe;
-+}
-+#else
-+static inline void init_cpu_topology(void) { }
-+static inline bool cpus_are_siblings(int cpua, int cpub)
-+{
-+	return false;
-+}
-+
-+static inline unsigned int cpu_cluster(int cpu)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned int cpu_core(int cpu)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned int cpu_vpe_id(int cpu)
-+{
-+	return 0;
-+}
- #endif
- 
- #endif /* __ASM_TOPOLOGY_H */
-diff --git a/arch/mips/kernel/cpu-probe.c b/arch/mips/kernel/cpu-probe.c
-index f21a2304401f..eead35e5dbfd 100644
---- a/arch/mips/kernel/cpu-probe.c
-+++ b/arch/mips/kernel/cpu-probe.c
-@@ -1042,17 +1042,6 @@ static void decode_configs(struct cpuinfo_mips *c)
- 	set_ftlb_enable(c, (mips_ftlb_disabled ? 0 : FTLB_EN) | FTLB_SET_PROB);
- 
- 	mips_probe_watch_registers(c);
--
--#ifndef CONFIG_MIPS_CPS
--	if (cpu_has_mips_r2_r6) {
--		unsigned int core;
--
--		core = get_ebase_cpunum();
--		if (cpu_has_mipsmt)
--			core >>= fls(core_nvpes()) - 1;
--		cpu_set_core(c, core);
--	}
--#endif
- }
- 
- /*
-@@ -2303,35 +2292,3 @@ void cpu_report(void)
- 	if (cpu_has_msa)
- 		pr_info("MSA revision is: %08x\n", c->msa_id);
- }
--
--void cpu_set_cluster(struct cpuinfo_mips *cpuinfo, unsigned int cluster)
--{
--	/* Ensure the core number fits in the field */
--	WARN_ON(cluster > (MIPS_GLOBALNUMBER_CLUSTER >>
--			   MIPS_GLOBALNUMBER_CLUSTER_SHF));
--
--	cpuinfo->globalnumber &= ~MIPS_GLOBALNUMBER_CLUSTER;
--	cpuinfo->globalnumber |= cluster << MIPS_GLOBALNUMBER_CLUSTER_SHF;
--}
--
--void cpu_set_core(struct cpuinfo_mips *cpuinfo, unsigned int core)
--{
--	/* Ensure the core number fits in the field */
--	WARN_ON(core > (MIPS_GLOBALNUMBER_CORE >> MIPS_GLOBALNUMBER_CORE_SHF));
--
--	cpuinfo->globalnumber &= ~MIPS_GLOBALNUMBER_CORE;
--	cpuinfo->globalnumber |= core << MIPS_GLOBALNUMBER_CORE_SHF;
--}
--
--void cpu_set_vpe_id(struct cpuinfo_mips *cpuinfo, unsigned int vpe)
--{
--	/* Ensure the VP(E) ID fits in the field */
--	WARN_ON(vpe > (MIPS_GLOBALNUMBER_VP >> MIPS_GLOBALNUMBER_VP_SHF));
--
--	/* Ensure we're not using VP(E)s without support */
--	WARN_ON(vpe && !IS_ENABLED(CONFIG_MIPS_MT_SMP) &&
--		!IS_ENABLED(CONFIG_CPU_MIPSR6));
--
--	cpuinfo->globalnumber &= ~MIPS_GLOBALNUMBER_VP;
--	cpuinfo->globalnumber |= vpe << MIPS_GLOBALNUMBER_VP_SHF;
--}
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index 8a418783a6bb..b9fefc5dc702 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -784,6 +784,7 @@ void __init setup_arch(char **cmdline_p)
- 	dmi_setup();
- 
- 	resource_init();
-+	init_cpu_topology();
- 	plat_smp_setup();
- 
- 	cpu_cache_init();
-diff --git a/arch/mips/kernel/smp.c b/arch/mips/kernel/smp.c
-index 48d84d5fcc36..4896d6ecc719 100644
---- a/arch/mips/kernel/smp.c
-+++ b/arch/mips/kernel/smp.c
-@@ -34,6 +34,7 @@
- #include <asm/mips-cps.h>
- #include <asm/mmu_context.h>
- #include <asm/time.h>
-+#include <asm/topology.h>
- #include <asm/setup.h>
- #include <asm/maar.h>
- 
-@@ -47,10 +48,6 @@ EXPORT_SYMBOL(__cpu_logical_map);
- int smp_num_siblings = 1;
- EXPORT_SYMBOL(smp_num_siblings);
- 
--/* representing the TCs (or siblings in Intel speak) of each logical CPU */
--cpumask_t cpu_sibling_map[NR_CPUS] __read_mostly;
--EXPORT_SYMBOL(cpu_sibling_map);
--
- /* representing the core map of multi-core chips of each logical CPU */
- cpumask_t cpu_core_map[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(cpu_core_map);
-@@ -65,12 +62,6 @@ static DECLARE_COMPLETION(cpu_running);
- cpumask_t cpu_foreign_map[NR_CPUS] __read_mostly;
- EXPORT_SYMBOL(cpu_foreign_map);
- 
--/* representing cpus for which sibling maps can be computed */
--static cpumask_t cpu_sibling_setup_map;
--
--/* representing cpus for which core maps can be computed */
--static cpumask_t cpu_core_setup_map;
--
- cpumask_t cpu_coherent_mask;
- 
- #ifdef CONFIG_GENERIC_IRQ_IPI
-@@ -78,37 +69,6 @@ static struct irq_desc *call_desc;
- static struct irq_desc *sched_desc;
- #endif
- 
--static inline void set_cpu_sibling_map(int cpu)
--{
--	int i;
--
--	cpumask_set_cpu(cpu, &cpu_sibling_setup_map);
--
--	if (smp_num_siblings > 1) {
--		for_each_cpu(i, &cpu_sibling_setup_map) {
--			if (cpus_are_siblings(cpu, i)) {
--				cpumask_set_cpu(i, &cpu_sibling_map[cpu]);
--				cpumask_set_cpu(cpu, &cpu_sibling_map[i]);
--			}
--		}
--	} else
--		cpumask_set_cpu(cpu, &cpu_sibling_map[cpu]);
--}
--
--static inline void set_cpu_core_map(int cpu)
--{
--	int i;
--
--	cpumask_set_cpu(cpu, &cpu_core_setup_map);
--
--	for_each_cpu(i, &cpu_core_setup_map) {
--		if (cpu_data[cpu].package == cpu_data[i].package) {
--			cpumask_set_cpu(i, &cpu_core_map[cpu]);
--			cpumask_set_cpu(cpu, &cpu_core_map[i]);
--		}
--	}
--}
--
- /*
-  * Calculate a new cpu_foreign_map mask whenever a
-  * new cpu appears or disappears.
-@@ -131,7 +91,7 @@ void calculate_cpu_foreign_map(void)
- 
- 	for_each_online_cpu(i)
- 		cpumask_andnot(&cpu_foreign_map[i],
--			       &temp_foreign_map, &cpu_sibling_map[i]);
-+			       &temp_foreign_map, topology_sibling_cpumask(i));
- }
- 
- const struct plat_smp_ops *mp_ops;
-@@ -177,7 +137,7 @@ void mips_smp_send_ipi_mask(const struct cpumask *mask, unsigned int action)
- 			if (cpus_are_siblings(cpu, smp_processor_id()))
- 				continue;
- 
--			core = cpu_core(&cpu_data[cpu]);
-+			core = cpu_core(cpu);
- 
- 			while (!cpumask_test_cpu(cpu, &cpu_coherent_mask)) {
- 				mips_cm_lock_other_cpu(cpu, CM_GCR_Cx_OTHER_BLOCK_LOCAL);
-@@ -340,6 +300,8 @@ asmlinkage void start_secondary(void)
- 	mips_clockevent_init();
- 	mp_ops->init_secondary();
- 	cpu_report();
-+	cpu = smp_processor_id();
-+	store_cpu_topology(cpu);
- 	maar_init();
- 
- 	/*
-@@ -349,7 +311,6 @@ asmlinkage void start_secondary(void)
- 
- 	calibrate_delay();
- 	preempt_disable();
--	cpu = smp_processor_id();
- 	cpu_data[cpu].udelay_val = loops_per_jiffy;
- 
- 	cpumask_set_cpu(cpu, &cpu_coherent_mask);
-@@ -363,9 +324,6 @@ asmlinkage void start_secondary(void)
- 	/* The CPU is running and counters synchronised, now mark it online */
- 	set_cpu_online(cpu, true);
- 
--	set_cpu_sibling_map(cpu);
--	set_cpu_core_map(cpu);
--
- 	calculate_cpu_foreign_map();
- 
- 	/*
-@@ -411,8 +369,7 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
- 	init_new_context(current, &init_mm);
- 	current_thread_info()->cpu = 0;
- 	mp_ops->prepare_cpus(max_cpus);
--	set_cpu_sibling_map(0);
--	set_cpu_core_map(0);
-+	store_cpu_topology(0);
- 	calculate_cpu_foreign_map();
- #ifndef CONFIG_HOTPLUG_CPU
- 	init_cpu_present(cpu_possible_mask);
-diff --git a/arch/mips/kernel/topology.c b/arch/mips/kernel/topology.c
-index cd3e1f82e1a5..112482de8187 100644
---- a/arch/mips/kernel/topology.c
-+++ b/arch/mips/kernel/topology.c
-@@ -31,3 +31,45 @@ static int __init topology_init(void)
- }
- 
- subsys_initcall(topology_init);
-+
-+#if defined(CONFIG_SMP)
-+void store_cpu_topology(unsigned int cpuid)
-+{
-+	struct cpu_topology *cpuid_topo = &cpu_topology[cpuid];
-+
-+	if (cpuid_topo->package_id != -1)
-+		goto topology_populated;
-+
-+	if (cpu_has_vp) {
-+		u32 gn = read_c0_globalnumber();
-+
-+		cpuid_topo->thread_id = (gn & MIPS_GLOBALNUMBER_VP) >>
-+					MIPS_GLOBALNUMBER_VP_SHF;
-+		cpuid_topo->core_id = (gn & MIPS_GLOBALNUMBER_CORE) >>
-+					MIPS_GLOBALNUMBER_CORE_SHF;
-+		cpuid_topo->package_id = (gn & MIPS_GLOBALNUMBER_CLUSTER) >>
-+					MIPS_GLOBALNUMBER_CLUSTER_SHF;
-+	} else {
-+		int hwid;
-+
-+		if (cpu_has_mips_r2_r6)
-+			hwid = get_ebase_cpunum();
-+		else
-+			hwid = cpuid; /* Assume hwid = cpuid */
-+
-+		if (smp_num_siblings == 1)
-+			cpuid_topo->thread_id = -1;
-+		else
-+			cpuid_topo->thread_id = hwid % smp_num_siblings;
-+
-+		cpuid_topo->core_id = hwid / smp_num_siblings;
-+		/* Platform code will handle multi-cluster case */
-+		cpuid_topo->package_id = 0;
-+	}
-+
-+topology_populated:
-+	update_siblings_masks(cpuid);
-+	pr_info("Topology: CPU %d: cluster: %d, core: %d, vpe: %d\n", cpuid,
-+		cpu_cluster(cpuid), cpu_core(cpuid), cpu_vpe_id(cpuid));
-+}
-+#endif
--- 
-2.26.0.rc2
+--+HP7ph2BbKc20aGI
+Content-Type: application/gzip
+Content-Disposition: attachment; filename=".config.gz"
+Content-Transfer-Encoding: base64
 
+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
+
+--+HP7ph2BbKc20aGI--
