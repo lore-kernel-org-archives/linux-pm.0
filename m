@@ -2,153 +2,134 @@ Return-Path: <SRS0=Imah=55=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 655B9C2BA19
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 17:37:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC933C2BA19
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 18:06:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 457542076D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 17:37:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BE9C20731
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 18:06:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fDIcoNZg"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="e1VlO/z2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732869AbgDMRhJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Apr 2020 13:37:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35516 "EHLO
+        id S2387617AbgDMSGe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Apr 2020 14:06:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44822 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1732864AbgDMRhH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 13:37:07 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E90DC0A3BDC;
-        Mon, 13 Apr 2020 10:37:07 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id d27so1778724wra.1;
-        Mon, 13 Apr 2020 10:37:07 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S2387498AbgDMSGc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 14:06:32 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CF6CC0A3BDC
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 11:06:30 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id a201so10495139wme.1
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 11:06:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=kaq0gyVDK71RemoPPD/qDBGyBcEjT8bXtwKNY1omfRQ=;
-        b=fDIcoNZgVygOPRmNWeOwfJnxxU3kALx/SKQZvXWXOpsxNz3mnVkjGmjToWC+sc4ZEC
-         NpIxAcNks+b8au4DkwXgIOyk0IM+WvQYu+3xo5xgLC5ugTCxRN3QL8XpSUvfpAng6g1p
-         GIvZu/DnQAVzG8tuQ5Xkw4xj55uGAWtPYGlM/CYWP7Kmqlfbhe0r4iJyT74UtoTYqKiS
-         2mbQi0q8a37wDWyVjGMwKtLkkpEBy+qlMM4H4786KHATyJhW6n7Q+V0jIh6VwarRWGEg
-         vsKyqQtzAFybdjbDQ+lufu7i8ZoHSMcN65UJgsg8NWvAW/e3M/m+5GV4lvxdczW5HR0I
-         HBoQ==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=Q0D26fyaAIiTwbvFDpemvGzTvhTLQ2mWpZWWLig+LSk=;
+        b=e1VlO/z2ja5OF8Xxd2q5mFlNfnIu+IowBOXF8gnD9TM+63h2ZhCsVoXCqnFc12UoaL
+         dSeTSr1hRUeIv5ZwsmpT+mUcQ44zNlZmfxC7gspX8GWbUxLjg4Asm/h3cV+7kkxDPST9
+         LxefygA+BrV84CUE9CSeXcrObGL1e4FMGepI61NbEaDHMgT2TrrYBi47Q0UoYoew+1B3
+         +Z01Htc2mRs88Pwdu1HDS2WRw7kXd+G+TG1+2451yCK2o5Ikn44lrbadfTEXkTmhHLyt
+         a7gRMbc0CSCton+IpvsFa5z3x57prFeoXlmWNyBSX68RuZdIYzAUj8RVwRsPYptHE+ji
+         gdqg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=kaq0gyVDK71RemoPPD/qDBGyBcEjT8bXtwKNY1omfRQ=;
-        b=qMedG7hLKKUR+ONTTcuxbAik+08XZqYyLDbQ+G77u6UpswAtCJ3b+GTNgFmTW602aM
-         8yWO1Wwn4IhNvGkW4MdCBVaAbL4C0m/JjVCDOIuA1XRfxDUWWKUZyhmrtVkH1bufTq9f
-         oWld8AKjJw+DgE0SsSlq6BJG2Ydo9mUf2cKJjgFlLQ89lj8QGuM/9RfBzkkyOR3MCooS
-         j9reJ+3BULlgofUoWPFd2UDnYRO9vg6ln+4PF2Qo9IZyXFfCLjBMegFkJ4huAbKpccfX
-         c9dIDOpGZ2T5lxO7eSMDan+AtDKbbt2AFkMKF/1B3plmYZnWgfYkabPnVlouaAucueD+
-         VPvg==
-X-Gm-Message-State: AGi0Puat+OuuMDpP/TnKE/HnuUiG1a0kssGKSEsrWrOekTbaUsfJH3qP
-        YZiSgI/81fuIieS1/rKNvec=
-X-Google-Smtp-Source: APiQypLUshspgNvpGiRKxHzyNuEL/PyESgSOmIqJqqQYJgFY2XZ9o8RUBgYg5ezzds4EUkh7cO0X4Q==
-X-Received: by 2002:adf:92c2:: with SMTP id 60mr15916660wrn.379.1586799426135;
-        Mon, 13 Apr 2020 10:37:06 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F6AD5.dip0.t-ipconnect.de. [91.63.106.213])
-        by smtp.gmail.com with ESMTPSA id a205sm11141465wmh.29.2020.04.13.10.37.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Apr 2020 10:37:05 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v8 1/6] dt-bindings: mfd: add document bindings for mp2629
-Date:   Mon, 13 Apr 2020 19:36:51 +0200
-Message-Id: <20200413173656.28522-2-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200413173656.28522-1-sravanhome@gmail.com>
-References: <20200413173656.28522-1-sravanhome@gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=Q0D26fyaAIiTwbvFDpemvGzTvhTLQ2mWpZWWLig+LSk=;
+        b=BGMJfPU72K4la5mFBYq7YWxFiHRYUr4u8fLRUdTBe5Vq6Gbu0Zt1XSG7u8fTy4V2l+
+         ETBcC0AIY7afA0NS2474dk0IX6nrLRiENwlZQXOhIWj6iTtnKRQQlxSxMIrGMld241ev
+         AiihlUQ0rkqBA1YHOULFaPO7GFnjcB5hQ7qmeu/o6TIwsqpltAEcz2wWficFlkk4vf8u
+         3HnYwjGs/yFjeN5vO2uGp//U2RCLloo0vEo6XbN3GcfNj7TQpTeuvdDE+PfLb6IPF6PY
+         T4RKVih5NgBX5eoa4ZC1Qia7D1uAJkdS1ZpL7g+Km4gzU5X/uV0pKihk3ypHoGYSMp12
+         Y3pA==
+X-Gm-Message-State: AGi0PuY0jgrYreBgnIyaka55RitpSXByzqP8J0RkWRl+OVLIDCKuUfhv
+        Xet4JyFXT7AQF0MrA2rb89Ep6uOcKtg=
+X-Google-Smtp-Source: APiQypLEc3yDoQR2rctcavatj6UYGY0jIVTlIyrE6FXSUaswA7e7nT1mbH9O+UbUEzqPdXIqviX4ng==
+X-Received: by 2002:a1c:4e06:: with SMTP id g6mr19388073wmh.186.1586801189078;
+        Mon, 13 Apr 2020 11:06:29 -0700 (PDT)
+Received: from [192.168.0.41] (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
+        by smtp.googlemail.com with ESMTPSA id w6sm11776606wrm.86.2020.04.13.11.06.28
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 13 Apr 2020 11:06:28 -0700 (PDT)
+Subject: Re: [RFC PATCH 5/5] ACPI: processor: do update when maximum cooling
+ state changed
+To:     Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org
+Cc:     tiwai@suse.de, viresh.kumar@linaro.org
+References: <20200408041917.2329-1-rui.zhang@intel.com>
+ <20200408041917.2329-5-rui.zhang@intel.com>
+ <5cd80df7-775e-96bd-cec5-b14965de2a67@linaro.org>
+ <2bef9553fcf7ccd7c9811ad1d572af2e5a811917.camel@intel.com>
+ <a15dee60-8d20-0f56-0037-276830c613cd@linaro.org>
+ <fee68438572796c71089571e0ff0add6cbbd3e0c.camel@intel.com>
+ <e264d4a2-b0d9-8adf-b44f-7501c4407029@linaro.org>
+ <17727142fac13f641d7cd5c3713cfadef77aa75c.camel@intel.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <1e65a2c3-fdeb-4f48-f477-a7ec67cffd4e@linaro.org>
+Date:   Mon, 13 Apr 2020 20:06:27 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+In-Reply-To: <17727142fac13f641d7cd5c3713cfadef77aa75c.camel@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree binding information for mp2629 mfd driver.
+On 13/04/2020 04:01, Zhang Rui wrote:
+> On Sun, 2020-04-12 at 12:07 +0200, Daniel Lezcano wrote:
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
----
- .../devicetree/bindings/mfd/mps,mp2629.yaml   | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+[ ... ]
 
-diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-new file mode 100644
-index 000000000000..e71c554802a8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-@@ -0,0 +1,60 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: MP2629 Battery Charger PMIC from Monolithic Power System.
-+
-+maintainers:
-+  - Saravanan Sekar <sravanhome@gmail.com>
-+
-+description: |
-+  MP2629 is a PMIC providing battery charging and power supply for smartphones,
-+  wireless camera and portable devices. Chip is contrlled over I2C.
-+
-+  The battery charge management device handles battery charger controller and
-+  ADC IIO device for battery, system voltage
-+
-+properties:
-+  compatible:
-+    const: mps,mp2629
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+    description:
-+      The first cell is the IRQ number, the second cell is the trigger type.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    #include <dt-bindings/input/linux-event-codes.h>
-+    i2c@7e205000 {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        pmic@4b {
-+            compatible = "mps,mp2629";
-+            reg = <0x4b>;
-+
-+            interrupt-controller;
-+            interrupt-parent = <&gpio2>;
-+            #interrupt-cells = <2>;
-+            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-+        };
-+    };
+> why we can not have a cdev->max_state field, and get it updated right
+> after .get_max_state().
+> and .get_max_state()  is only invoked
+> a) during cooling device registration
+> b) when cooling device update its max_state via the new API.
+> 
+>>
+>> In the function thermal_cooling_device_stats_update():
+>>
+>>   Is it possible to just compare the 'new_state' parameter with
+>> stats->max_state and if it is greater increase the stats table and
+>> update max_state to the new_state ?
+>>
+> the problem is that thermal_cooling_device_stats_update() is invoked
+> only if thermal zone are updated or the cur_state sysfs attribute is
+> changed.
+> There is no way for a cooling device driver to tell thermal framework
+> that it has changed.
+> Say, for the problem on hand, the statistics table will not be updated
+> in time when cpufreq driver probed.
+
+Except I'm missing something, the statistics are only read from
+userspace via sysfs.
+
+userspace is not notified about a stat change. Is it really a problem
+the table is not updated right at the probe time ? Does it really matter
+if the user sees the old table until an update happens on a new higher
+max state ?
+
+The table is always consistent whenever the userspace reads the content.
+
+A new entry will appear only if it is used, no?
+
+
+
+
+
+
 -- 
-2.17.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
