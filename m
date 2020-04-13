@@ -2,215 +2,155 @@ Return-Path: <SRS0=Imah=55=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B42E6C2BB1D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 19:39:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66267C2BBFD
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 20:01:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9776F2064A
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 19:39:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4776F20735
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 20:01:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Vo0jqxoj"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PJwMvVoX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387957AbgDMTjV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Apr 2020 15:39:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59242 "EHLO
+        id S2388191AbgDMUBz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Apr 2020 16:01:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2387935AbgDMTjV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 15:39:21 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4FCACC0A3BE2
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 12:39:19 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id d77so10388825wmd.3
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 12:39:19 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S2388135AbgDMUBz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 16:01:55 -0400
+Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E4A92C0A3BDC;
+        Mon, 13 Apr 2020 13:01:54 -0700 (PDT)
+Received: by mail-pg1-x544.google.com with SMTP id d17so4963584pgo.0;
+        Mon, 13 Apr 2020 13:01:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=sender:resent-from:resent-date:resent-message-id:resent-to
-         :message-id:user-agent:date:from:to:cc:subject:references
-         :mime-version:content-disposition;
-        bh=V83imqQb2qNmDiJRPRI1BMuIzIfhNM48BRTbILOL2dM=;
-        b=Vo0jqxojx9XvSPd/32dJjgoAQhWlsOGBsiRaPnKtNwJZAY/Feet/MB9n5TroXxfzMw
-         yj3Zn+cTMnWO9SqdWstbFMvYGxUcReeaMBLkv2t3grfUW+i0od0c0ILEI36Gt7H0ibKZ
-         gXPjipIQdQ53gkuAm6HkVaFywnNT+oK4my1Lg0t9XbNZIy/RRibFKOY1J3Dn/iIGfwku
-         o0X5lGRdGDJmHiSwb1slxz7ZfkeHaDPGP1dFllXLsvE5tBHwjDrUvkpEI+4RTxDA0BL1
-         ynjQq4BR3Egmc16cwR4umpaGcwGvtMLDjZicyUqYAIft+LUAyNyoHHODW0hI/SAH+cN8
-         30Hg==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=J3cCNpgRJA9avR4kz32VesjN9UmFQ5b6+1OU9lUWCYU=;
+        b=PJwMvVoXHoh4ZCGjOlCpUMNzvy6UrIjQWAHhMIjj+JVy8Pu82RfBsUSKYmE/Rf2mqN
+         qhfFm/q/wzwzjvL69WZlhzM+tYdCmkg8xvV92ag8NduUlZikQ3Qo7MkcM/aGSRaZbbm1
+         PR2isRezDgLdCJC5x3+1TtkUhf0BRkive2D9kL3EzKQAx01uFitZpemacjOiiim14BMp
+         tjGWSfV4s9rj3B5jnS7OnBZUjOIzfUMOk3OakXnSLWgFL9Z3FX27RCNxf7PHl6M0iI/V
+         +yipALkcxF2pRKWEcAZJmqTu5yyFZW6mySMJYsLgaA2xL+ZKQsP3zbkU7iAKVZfeGPR2
+         Wtzw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
-         :resent-to:message-id:user-agent:date:from:to:cc:subject:references
-         :mime-version:content-disposition;
-        bh=V83imqQb2qNmDiJRPRI1BMuIzIfhNM48BRTbILOL2dM=;
-        b=MrqaAGrf4ueXFLnEBAnlpkwaUcoEX8Y9q523ey2+uJl18Vn4WXcz5++1iEOY9SF6zl
-         q7irTyUVIN/Zz5aZ/kBWE83GjtLEBPcKlu3VMD63px9Ava8l4sxSzlhYAzQzQB0uUhY5
-         fBlBkGh4CQwEKtqJyDlc4JPLskIVZvx4wGof50XjdgiZ6pRPAvlU0FIgxLjDVxmBsiaW
-         +QPUL6CjhaTzvK01Dnwx0iaBFKYjjNPD3xOoRUxeTfg0Tp+nKNWWo2qJuBOnjMSY3B2v
-         4GmNvl7l/ptPRD8zNKeA9fjUNdzA3Kh2QvCOWX5U4yqd6QlFnSVm9h11MydpjbS2+Q2O
-         KmWg==
-X-Gm-Message-State: AGi0Pubnl3b+nJ4fmx7nFKj6KW4+rcfqAhVBoDJL95hpKXsfHmW5ctA1
-        ZOGo3uclivD7kNbCbMQSfrQ=
-X-Google-Smtp-Source: APiQypKLjalHdDSgThiXPkn5ho6I+RBdA776uc/PM5fVAgJ+OT7HW/LzjMALGP1h7+EA15oC50hLZg==
-X-Received: by 2002:a1c:3281:: with SMTP id y123mr19829887wmy.30.1586806758025;
-        Mon, 13 Apr 2020 12:39:18 -0700 (PDT)
-Received: from dumbo ([2a06:1700:1::7])
-        by smtp.gmail.com with ESMTPSA id h2sm15035823wmb.16.2020.04.13.12.39.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Apr 2020 12:39:16 -0700 (PDT)
-Received: from cavok by dumbo with local (Exim 4.92)
-        (envelope-from <cavok@dumbo>)
-        id 1jO4vK-0005xv-OU; Mon, 13 Apr 2020 21:39:14 +0200
-Message-Id: <20200413193718.883336371@gmail.com>
-User-Agent: quilt/0.65
-Date:   Mon, 13 Apr 2020 21:08:44 +0200
-From:   Domenico Andreoli <domenico.andreoli@linux.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Domenico Andreoli <domenico.andreoli@linux.com>
-Subject: [PATCH 1/2] uswsusp: use enter/leave helpers and make a global variable static
-References: <20200413190843.044112674@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=J3cCNpgRJA9avR4kz32VesjN9UmFQ5b6+1OU9lUWCYU=;
+        b=hcbU4jkh7+TZLPMa3PISJiXHvs2MKz+L+Jx6LQl4TLE1xElOwxtMUxG4Zbgj7//yh6
+         JUSgoD4ua2G0pnPqICDNfYY+HqdjILl/9+B30CmAldq/NGP5u5aStbL1bU2O8D3nAMQ8
+         6IPr0bJhenp2N84N9IMyQxrQiYuo0HCJwgXrOnMTlSpw+k9BYECN1tJGKJeYfm95JIke
+         I56ulz215XNQ529zVcg6IxCcLlhnngUqe7Ro+OmYezynDQEVypCWT9pBESXGkR94sAvl
+         l0dP1AHc5g+c030WmEkk8dL9OxdG9/1oZ0OTZfmyGWykiK85KOa3vODjsyk3MNP3JwQD
+         GA0w==
+X-Gm-Message-State: AGi0PuZ7VqmGcNnVpF2WsXEX/bGKqIxTmfhUqMTifQUsQybPJVDUgWke
+        svoj6ABPfERd/parWL56oaKdhqbL6vGK9gfGpL4=
+X-Google-Smtp-Source: APiQypLkGIBDSBR9xdnow1niyB7RFnE2uJpuzzz/4DpzWuW9cHiK0axj6hAF/dmJp5AW88qWObxtfQMY8x9vdx7+l7M=
+X-Received: by 2002:a63:5511:: with SMTP id j17mr2845081pgb.4.1586808114381;
+ Mon, 13 Apr 2020 13:01:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline; filename=add-swsusp-enter-leave
+References: <20200413173656.28522-1-sravanhome@gmail.com>
+In-Reply-To: <20200413173656.28522-1-sravanhome@gmail.com>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Mon, 13 Apr 2020 23:01:43 +0300
+Message-ID: <CAHp75VdLPorP735K1jGSm=XphZ1P3i2YLc-zHWf-S=fWsBOyVg@mail.gmail.com>
+Subject: Re: [PATCH v8 0/6] Add battery charger driver support for MP2629
+To:     Saravanan Sekar <sravanhome@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald <pmeerw@pmeerw.net>,
+        Sebastian Reichel <sre@kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Domenico Andreoli <domenico.andreoli@linux.com>
+On Mon, Apr 13, 2020 at 8:37 PM Saravanan Sekar <sravanhome@gmail.com> wrote:
 
-Regulate access to the userspace software suspend state via helper
-functions instead of a global variable.
+When somebody gives you a tag, take care and add that tag to all
+patches where it applies (if you don't drastically change the code, it
+applies to all mentioned in the corresponding reply).
 
-Signed-off-by: Domenico Andreoli <domenico.andreoli@linux.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@vger.kernel.org>
+> changes in v8:
+>  - fixed order of call in probe/remove in iio adc
+>  - add ABI documentation for mp2629 power supply
+>
+> changes in v7:
+>  - fixed probe/remove order, managed and unmanaged call mix use in adc.
+>  - Documentation dual license, i2c node with controller address
+>
+> changes in v6:
+>  - removed includes types.h in mfd, of_device.h in adc.
+>  - fixed review comments parentheses, err check, kstrtouint
+>
+> changes in v5:
+>  - removed platfrom data stored in mfd and directly accessed mfd struct in child
+>  - fixed spell check and capitalization in mfd and documentation
+>
+> changes in v4:
+>  - fixed capitalization in mfg Kconfig and documentation
+>
+> changes in v3:
+>  - regmap for children passed using platform data and remove mfd driver info
+>    access directly from children
+>
+> changes in v2:
+>  - removed EXPORT_SYMBOL of register set/get helper
+>  - regmap bit filed used, fixed other review comments
+>
+> This patch series add support for Battery charger control driver for Monolithic
+> Power System's MP2629 chipset, includes MFD driver for ADC battery & input
+> power supply measurement and battery charger control driver.
+>
+> Thanks,
+> Saravanan
+>
+> Saravanan Sekar (6):
+>   dt-bindings: mfd: add document bindings for mp2629
+>   mfd: mp2629: Add support for mps battery charger
+>   iio: adc: mp2629: Add support for mp2629 ADC driver
+>   power: supply: Add support for mps mp2629 battery charger
+>   power: supply: mp2629: Add impedance compenstation config
+>   MAINTAINERS: Add entry for mp2629 Battery Charger driver
+>
+>  .../ABI/testing/sysfs-class-power-mp2629      |   8 +
+>  .../devicetree/bindings/mfd/mps,mp2629.yaml   |  60 ++
+>  MAINTAINERS                                   |   5 +
+>  drivers/iio/adc/Kconfig                       |  10 +
+>  drivers/iio/adc/Makefile                      |   1 +
+>  drivers/iio/adc/mp2629_adc.c                  | 208 ++++++
+>  drivers/mfd/Kconfig                           |   9 +
+>  drivers/mfd/Makefile                          |   2 +
+>  drivers/mfd/mp2629.c                          |  86 +++
+>  drivers/power/supply/Kconfig                  |  10 +
+>  drivers/power/supply/Makefile                 |   1 +
+>  drivers/power/supply/mp2629_charger.c         | 687 ++++++++++++++++++
+>  include/linux/mfd/mp2629.h                    |  28 +
+>  13 files changed, 1115 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-class-power-mp2629
+>  create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>  create mode 100644 drivers/iio/adc/mp2629_adc.c
+>  create mode 100644 drivers/mfd/mp2629.c
+>  create mode 100644 drivers/power/supply/mp2629_charger.c
+>  create mode 100644 include/linux/mfd/mp2629.h
+>
+> --
+> 2.17.1
+>
 
----
- kernel/power/hibernate.c |    8 ++++----
- kernel/power/power.h     |    6 +++---
- kernel/power/user.c      |   20 +++++++++++++++-----
- 3 files changed, 22 insertions(+), 12 deletions(-)
 
-Index: b/kernel/power/user.c
-===================================================================
---- a/kernel/power/user.c
-+++ b/kernel/power/user.c
-@@ -37,7 +37,17 @@ static struct snapshot_data {
- 	bool free_bitmaps;
- } snapshot_state;
- 
--atomic_t snapshot_device_available = ATOMIC_INIT(1);
-+static atomic_t snapshot_device_available = ATOMIC_INIT(1);
-+
-+bool swsusp_try_enter(void)
-+{
-+	return atomic_add_unless(&snapshot_device_available, -1, 0);
-+}
-+
-+void swsusp_leave(void)
-+{
-+	atomic_inc(&snapshot_device_available);
-+}
- 
- static int snapshot_open(struct inode *inode, struct file *filp)
- {
-@@ -49,13 +59,13 @@ static int snapshot_open(struct inode *i
- 
- 	lock_system_sleep();
- 
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+	if (!swsusp_try_enter()) {
- 		error = -EBUSY;
- 		goto Unlock;
- 	}
- 
- 	if ((filp->f_flags & O_ACCMODE) == O_RDWR) {
--		atomic_inc(&snapshot_device_available);
-+		swsusp_leave();
- 		error = -ENOSYS;
- 		goto Unlock;
- 	}
-@@ -92,7 +102,7 @@ static int snapshot_open(struct inode *i
- 			__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
- 	}
- 	if (error)
--		atomic_inc(&snapshot_device_available);
-+		swsusp_leave();
- 
- 	data->frozen = false;
- 	data->ready = false;
-@@ -122,7 +132,7 @@ static int snapshot_release(struct inode
- 	}
- 	pm_notifier_call_chain(data->mode == O_RDONLY ?
- 			PM_POST_HIBERNATION : PM_POST_RESTORE);
--	atomic_inc(&snapshot_device_available);
-+	swsusp_leave();
- 
- 	unlock_system_sleep();
- 
-Index: b/kernel/power/power.h
-===================================================================
---- a/kernel/power/power.h
-+++ b/kernel/power/power.h
-@@ -154,13 +154,13 @@ extern int snapshot_write_next(struct sn
- extern void snapshot_write_finalize(struct snapshot_handle *handle);
- extern int snapshot_image_loaded(struct snapshot_handle *handle);
- 
--/* If unset, the snapshot device cannot be open. */
--extern atomic_t snapshot_device_available;
--
- extern sector_t alloc_swapdev_block(int swap);
- extern void free_all_swap_pages(int swap);
- extern int swsusp_swap_in_use(void);
- 
-+bool swsusp_try_enter(void);
-+void swsusp_leave(void);
-+
- /*
-  * Flags that can be passed from the hibernatig hernel to the "boot" kernel in
-  * the image header.
-Index: b/kernel/power/hibernate.c
-===================================================================
---- a/kernel/power/hibernate.c
-+++ b/kernel/power/hibernate.c
-@@ -704,7 +704,7 @@ int hibernate(void)
- 
- 	lock_system_sleep();
- 	/* The snapshot device should not be opened while we're running */
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+	if (!swsusp_try_enter()) {
- 		error = -EBUSY;
- 		goto Unlock;
- 	}
-@@ -775,7 +775,7 @@ int hibernate(void)
-  Exit:
- 	__pm_notifier_call_chain(PM_POST_HIBERNATION, nr_calls, NULL);
- 	pm_restore_console();
--	atomic_inc(&snapshot_device_available);
-+	swsusp_leave();
-  Unlock:
- 	unlock_system_sleep();
- 	pr_info("hibernation exit\n");
-@@ -880,7 +880,7 @@ static int software_resume(void)
- 		goto Unlock;
- 
- 	/* The snapshot device should not be opened while we're running */
--	if (!atomic_add_unless(&snapshot_device_available, -1, 0)) {
-+	if (!swsusp_try_enter()) {
- 		error = -EBUSY;
- 		swsusp_close(FMODE_READ);
- 		goto Unlock;
-@@ -904,7 +904,7 @@ static int software_resume(void)
- 	__pm_notifier_call_chain(PM_POST_RESTORE, nr_calls, NULL);
- 	pm_restore_console();
- 	pr_info("resume failed (%d)\n", error);
--	atomic_inc(&snapshot_device_available);
-+	swsusp_leave();
- 	/* For success case, the suspend path will release the lock */
-  Unlock:
- 	mutex_unlock(&system_transition_mutex);
-
+-- 
+With Best Regards,
+Andy Shevchenko
