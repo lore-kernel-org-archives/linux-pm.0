@@ -2,85 +2,92 @@ Return-Path: <SRS0=Imah=55=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B718DC2BBFD
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 18:39:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B898C2BA2B
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 19:39:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9BEC2206DA
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 18:39:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DE06206E9
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 19:39:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OdI47+/0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733023AbgDMSjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Apr 2020 14:39:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49794 "EHLO
+        id S2387958AbgDMTjU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Apr 2020 15:39:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59240 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1733019AbgDMSi7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 14:38:59 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F957C008749;
-        Mon, 13 Apr 2020 11:38:59 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id F06E22A12DF
-Received: by jupiter.universe (Postfix, from userid 1000)
-        id 4F0404800EA; Mon, 13 Apr 2020 20:38:55 +0200 (CEST)
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        kernel@collabora.com,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCH 1/4] power: supply: core: Constify usb_types
-Date:   Mon, 13 Apr 2020 20:38:50 +0200
-Message-Id: <20200413183853.1088823-2-sebastian.reichel@collabora.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200413183853.1088823-1-sebastian.reichel@collabora.com>
-References: <20200413183853.1088823-1-sebastian.reichel@collabora.com>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        by vger.kernel.org with ESMTP id S2387935AbgDMTjT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 15:39:19 -0400
+Received: from mail-wr1-x432.google.com (mail-wr1-x432.google.com [IPv6:2a00:1450:4864:20::432])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF70CC0A3BDC
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 12:39:18 -0700 (PDT)
+Received: by mail-wr1-x432.google.com with SMTP id h26so8221wrb.7
+        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 12:39:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:resent-from:resent-date:resent-message-id:resent-to
+         :message-id:user-agent:date:from:to:cc:subject;
+        bh=IpU3bmnAuavTGpOWOCyOk9k/d+5vSrxKFHnziQaa0uo=;
+        b=OdI47+/0Y76WPvZUiSXHJ2n2xtV/X3uAftItHgsrhDHG+scI/Ezr2kDoSG5CE3haIE
+         J4BNquPt4PTq4+mDjxXaGkHkF6GE5GNQedtyLxHCypyC4A85See3gQcNk0Uzhd6DGO36
+         kbhtrq0uVOqWMs309//Osdv7Ylq+olkx49l7RJSl5ot54sHpzhC2H/pFf05UcZKmfl6/
+         NYshr+mFfZcJTN3i3FqsREx4Q4rZhLqCfEDBzZIBCj4VQtsadv1Ibc6Am1++4Z+5sBeI
+         joPYNi4+uAqbXT2WMXP8/vgjWpXLI7kYZ6jAfhwy1mbJc56mPJgMcL3mmEa0eSS1mzY0
+         vjeg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
+         :resent-to:message-id:user-agent:date:from:to:cc:subject;
+        bh=IpU3bmnAuavTGpOWOCyOk9k/d+5vSrxKFHnziQaa0uo=;
+        b=oyDrdW5mIBZq0e1XttD6FPB6fYj+4yORBmpKZS7JM2pFr3BpEJSiya6WFVHTWkA70D
+         LmOxGmEKpdxKaHvFaF2baIlMq61EbWcFaK9lggUP0zGIXUn4Y1XqkQyHOMkpBgr1kN4p
+         wtPO25r9TaiXC5e+doqz6/6pc22QPsQZsBPqvUe897yTXNlR1Tw/nCaZgnZmsF3b893H
+         30Ggb58LmzbuvbrtoKI+hdjXOZ0P8pC9XgBMi2cjwZ6xFiC5yTKc2HqszHF9nvKBcW3m
+         uC4REvOpDR41klVvkEt3CFUlHlO1mtIaunhIyQWYYh49ncVmgiISe2mMmTh4uyZi0jv6
+         EKzw==
+X-Gm-Message-State: AGi0PuZtweV5rYinXxmKlPkGIaDoqY34tMFgutsoz2cVvDnuLj0vpAHP
+        lFO7vagDLxYkioWW1sa3Rt3lfFI2Woo=
+X-Google-Smtp-Source: APiQypK8K72+wDiWtP4PikRaBK8VW0+KqU7Bj09i3y7++5LgXkjkUIT1i1cOcIZQKSvYEm+9HCacbA==
+X-Received: by 2002:adf:91e3:: with SMTP id 90mr20218778wri.206.1586806757616;
+        Mon, 13 Apr 2020 12:39:17 -0700 (PDT)
+Received: from dumbo ([2a06:1700:1::7])
+        by smtp.gmail.com with ESMTPSA id s6sm15500214wmh.17.2020.04.13.12.39.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 13 Apr 2020 12:39:16 -0700 (PDT)
+Received: from cavok by dumbo with local (Exim 4.92)
+        (envelope-from <cavok@dumbo>)
+        id 1jO4vK-0005xs-MW; Mon, 13 Apr 2020 21:39:14 +0200
+Message-Id: <20200413190843.044112674@gmail.com>
+User-Agent: quilt/0.65
+Date:   Mon, 13 Apr 2020 21:08:43 +0200
+From:   Domenico Andreoli <domenico.andreoli@linux.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH 0/2] Preparing to phase out uswsusp
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-usb_types is a list of USB types supported by the
-hardware, which does not change at runtime. Let's
-mark it as const for improved security.
+Dear maintainers,
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/power_supply_sysfs.c | 2 +-
- include/linux/power_supply.h              | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+  it is my understanding that the usermode software suspend is not any
+more the first choice for suspend/hibernate needs (uswsusp tool did
+not receive any update in years).
 
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index f37ad4eae60b..45dafc1820ff 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -78,7 +78,7 @@ static const char * const power_supply_scope_text[] = {
- };
- 
- static ssize_t power_supply_show_usb_type(struct device *dev,
--					  enum power_supply_usb_type *usb_types,
-+					  const enum power_supply_usb_type *usb_types,
- 					  ssize_t num_usb_types,
- 					  union power_supply_propval *value,
- 					  char *buf)
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index dcd5a71e6c67..0392c9cc8f1c 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -223,7 +223,7 @@ struct power_supply_config {
- struct power_supply_desc {
- 	const char *name;
- 	enum power_supply_type type;
--	enum power_supply_usb_type *usb_types;
-+	const enum power_supply_usb_type *usb_types;
- 	size_t num_usb_types;
- 	enum power_supply_property *properties;
- 	size_t num_properties;
+This small series aims to better separate the kernel side in view of
+a future phase out.
+
+Marking the new option as deprecated and disabled by default is quite
+extreme but I've not any specific agenda for pushing it that far,
+it's just my interpretation and could be totally wrong.
+
+Kind regards,
+Domenico
+
 -- 
-2.25.1
-
+rsa4096: 3B10 0CA1 8674 ACBA B4FE  FCD2 CE5B CF17 9960 DE13
+ed25519: FFB4 0CC3 7F2E 091D F7DA  356E CC79 2832 ED38 CB05
