@@ -2,126 +2,146 @@ Return-Path: <SRS0=Imah=55=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D96B8C2BA19
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 07:00:51 +0000 (UTC)
-Received: from vger.kernel.org (unknown [209.132.180.67])
-	by mail.kernel.org (Postfix) with ESMTP id A89E72076A
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 07:00:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 96F40C2BA19
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 12:19:36 +0000 (UTC)
+Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
+	by mail.kernel.org (Postfix) with ESMTP id 6C4C02073E
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Apr 2020 12:19:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XYrT913r"
-DMARC-Filter: OpenDMARC Filter v1.3.2 mail.kernel.org A89E72076A
-Authentication-Results: mail.kernel.org; dmarc=fail (p=none dis=none) header.from=gmail.com
-Authentication-Results: mail.kernel.org; spf=none smtp.mailfrom=linux-pm-owner@vger.kernel.org
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="SagSxSkl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729101AbgDMHAv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Apr 2020 03:00:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.18]:55966 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727692AbgDMHAu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 03:00:50 -0400
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com [IPv6:2607:f8b0:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51AB9C008651;
-        Mon, 13 Apr 2020 00:00:49 -0700 (PDT)
-Received: by mail-pg1-x543.google.com with SMTP id h69so1551491pgc.8;
-        Mon, 13 Apr 2020 00:00:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Kfy/ROQ7gtXLXzXKgSpMRgFDcYEAd8k4j64w9UUThVk=;
-        b=XYrT913rsTzhy3QwXikOs/GzZx59MEF6RbPx7FH9kaLVOEE8nO928g0cvW2dXDefkm
-         /h90ME84J09Y44EKCfDwP7EVMaGtpqfnixocf/IAN83UiWsLPaqhxhV8uNO1VO8KH4g6
-         G1sZeTw1D5jSD/rtXKftLB1VFyKaOcqfJh5j0YX+/HMRE4lXHvsG5va4UHOsPgPnt30T
-         8RFCUgSCQKPcAYpn/EhtcVMK8rSXS+ow8MHX1nEb7vHTWVpTu72WgGnxmL1lvIPtzTQU
-         HtvoItp1pW8nxpaOjgp+gx6wbOzZH6/65Wzyk3WUD/0WWL9DzPs3K8aFQEgz/yc/QjfJ
-         rL7A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Kfy/ROQ7gtXLXzXKgSpMRgFDcYEAd8k4j64w9UUThVk=;
-        b=ZaMSzVdYPwDT7CfGicuqlJFdDBVVj7fGxr9ytrZ7p7Sa4px/cgOHuDEmhg/2M5pNGY
-         za4BLdyt2k9NijAyUBdS4RXqfYzI7XgcJEKSS5ZPZnUTM5cEmc1BBp24ab5GBSi8e0oD
-         K37a7fcOHsVwDwMmAMUUsrLIaYJN3PGHlrKsYDp9YPgYMODVVwK/a4tCOK9jFRgcKvFf
-         vSs1Udh8QEFbLUqFor8mAm7DZWufLaegDwhUeL/xqz83ACfeC8aZfwUWa0duMoJiB6ok
-         dpgPF3PgbCu+U/EmaVREprtKqUoOq8PokpqiuvJaoYPU0rs97TxseuXkd4gKMJmLLlR0
-         pA8g==
-X-Gm-Message-State: AGi0PuYGM6KXlGQDHmFApMK4ezeA7Hmg8k17V7NLoMKTMqe7IyfUdknH
-        SqG+EJYeiSMiYn3zAKEgqjI=
-X-Google-Smtp-Source: APiQypJkaYl+NqjsZJuSnP7/Kdsz5tEB3wmizLHj6zJSqYGAcE5ED0p58ZTn/TgOYz0CWWp4WaZLTw==
-X-Received: by 2002:a65:5b05:: with SMTP id y5mr16522768pgq.239.1586761248942;
-        Mon, 13 Apr 2020 00:00:48 -0700 (PDT)
-Received: from ubt.spreadtrum.com ([117.18.48.82])
-        by smtp.gmail.com with ESMTPSA id p4sm7815670pfg.163.2020.04.13.00.00.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Apr 2020 00:00:48 -0700 (PDT)
-From:   zhang.lyra@gmail.com
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Chunyan Zhang <zhang.lyra@gmail.com>,
-        Chunyan Zhang <chunyan.zhang@unisoc.com>
-Subject: [RFC PATCH v1 2/2] dt-bindings: arm: Add description to the new property for-s2idle-only
-Date:   Mon, 13 Apr 2020 15:00:14 +0800
-Message-Id: <20200413070014.12960-3-zhang.lyra@gmail.com>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200413070014.12960-1-zhang.lyra@gmail.com>
-References: <20200413070014.12960-1-zhang.lyra@gmail.com>
+        id S1729444AbgDMMTe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Apr 2020 08:19:34 -0400
+Received: from hqnvemgate24.nvidia.com ([216.228.121.143]:15646 "EHLO
+        hqnvemgate24.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728344AbgDMMTd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 08:19:33 -0400
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5e9458680001>; Mon, 13 Apr 2020 05:17:44 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate102.nvidia.com (PGP Universal service);
+  Mon, 13 Apr 2020 05:19:32 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate102.nvidia.com on Mon, 13 Apr 2020 05:19:32 -0700
+Received: from DRHQMAIL107.nvidia.com (10.27.9.16) by HQMAIL101.nvidia.com
+ (172.20.187.10) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 13 Apr
+ 2020 12:19:32 +0000
+Received: from [10.24.37.103] (10.124.1.5) by DRHQMAIL107.nvidia.com
+ (10.27.9.16) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 13 Apr
+ 2020 12:19:28 +0000
+Subject: Re: [TEGRA194_CPUFREQ Patch 2/3] cpufreq: Add Tegra194 cpufreq driver
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+CC:     <rjw@rjwysocki.net>, <catalin.marinas@arm.com>, <will@kernel.org>,
+        <thierry.reding@gmail.com>, <jonathanh@nvidia.com>,
+        <talho@nvidia.com>, <linux-pm@vger.kernel.org>,
+        <linux-tegra@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <bbasu@nvidia.com>,
+        <mperttunen@nvidia.com>
+References: <1575394348-17649-1-git-send-email-sumitg@nvidia.com>
+ <1575394348-17649-2-git-send-email-sumitg@nvidia.com>
+ <20200326115023.xy3n5bl7uetuw7mx@vireshk-i7>
+ <d233b26b-6b50-7d41-9f33-a5dc151e0e7d@nvidia.com>
+ <20200406025549.qfwzlk3745y3r274@vireshk-i7>
+ <3ab4136c-8cca-c2f9-d286-b82dac23e720@nvidia.com>
+ <20200408055301.jhvu5bc2luu3b5qr@vireshk-i7>
+ <08307e54-0e14-14a3-7d6a-d59e1e04a683@nvidia.com>
+ <20200409074415.twpzu2n4frqlde7b@vireshk-i7>
+ <00390070-38a1-19aa-ca59-42c4658bee7e@nvidia.com>
+ <20200413062141.a6hmwipexhv3sctq@vireshk-i7>
+From:   Sumit Gupta <sumitg@nvidia.com>
+Message-ID: <64b609f1-efb1-425f-a91a-27a492bd3ec4@nvidia.com>
+Date:   Mon, 13 Apr 2020 17:50:00 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200413062141.a6hmwipexhv3sctq@vireshk-i7>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
+ DRHQMAIL107.nvidia.com (10.27.9.16)
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1586780264; bh=sm196NiMqA8gyR8DT4vdRI+KvcOo8ha9TmgFSKUPb3I=;
+        h=X-PGP-Universal:Subject:To:CC:References:From:Message-ID:Date:
+         User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
+         X-ClientProxiedBy:Content-Type:Content-Language:
+         Content-Transfer-Encoding;
+        b=SagSxSkltbuOB5/r68bXwwj2Py22FS0okY336BB5sSpzMGJd+D4SfPeDrbLizmuLi
+         FL3tnoxu3StWADbYI1GhBsP9wJIoxZ94WO+1lfqHNV6qQjHaYITR8Dng3YGYwpsdqB
+         CBgUXEv4fhMD+z8G7TsKXaGLnByZEWvjK4ygbim5H44rSzc2FCxRfvtpLLbz/8dYbD
+         m8LYWPG47mTzvFPYr5EEYsjlfHTCod5MqtPdKHqrdXpPlVFyl+9IjxuoH0Lv/nnAht
+         +ETx8yIwVHTH/LBs+15idwsSoSdYWZI4aixVx24qtttaWYIpxtGYZzsPt2VQtUHD+t
+         gux1X9yQKzipA==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Chunyan Zhang <chunyan.zhang@unisoc.com>
 
-Add a new property for-s2idle-only. The idle-state marked with this
-property will be set with CPUIDLE_FLAG_S2IDLE during initialization
-and it would be expected to be found as deepest state for s2idle
-rather than other cases like play_idle().
 
-Signed-off-by: Chunyan Zhang <chunyan.zhang@unisoc.com>
----
- Documentation/devicetree/bindings/arm/idle-states.yaml | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
+On 13/04/20 11:51 AM, Viresh Kumar wrote:
+> External email: Use caution opening links or attachments
+> 
+> 
+> On 09-04-20, 16:51, Sumit Gupta wrote:
+>> We are using "read_counters_work" as local variable. So every invocation the
+>> function will have its own copy of counters for corresponding cpu. That's
+>> why are doing INIT_WORK_ONSTACK here.
+> 
+> Why? To support parallel calls to reading the freq ?
+> 
+Yes.
 
-diff --git a/Documentation/devicetree/bindings/arm/idle-states.yaml b/Documentation/devicetree/bindings/arm/idle-states.yaml
-index ea805c1e6b20..cec47b3a447f 100644
---- a/Documentation/devicetree/bindings/arm/idle-states.yaml
-+++ b/Documentation/devicetree/bindings/arm/idle-states.yaml
-@@ -263,7 +263,6 @@ patternProperties:
-     description: |
-       Each state node represents an idle state description and must be defined
-       as follows.
--
-       The idle state entered by executing the wfi instruction (idle_standby
-       SBSA,[3][4]) is considered standard on all ARM platforms and therefore
-       must not be listed.
-@@ -283,6 +282,15 @@ patternProperties:
-              lost on state entry, otherwise it is retained.
-         type: boolean
- 
-+      for-s2idle-only:
-+        description:
-+          This indicates that the state only can be found as deepest state
-+          for s2idle rather than other cases like play_idle(). In general,
-+          the state having this property should have longer min-residency
-+          than the cpuidle target min-residency which CPU QoS constraints
-+          defines, to avoid being used by runtime cpuidle.
-+        type: boolean
-+
-       entry-latency-us:
-         description:
-           Worst case latency in microseconds required to enter the idle state.
--- 
-2.20.1
+>>>>>>>>>> +     queue_work_on(cpu, read_counters_wq, &read_counters_work.work);
+>>>>>>>>>> +     flush_work(&read_counters_work.work);
+>>>>>>>>>
+>>>>>>>>> Why can't this be done in current context ?
+>>>>>>>>>
+>>>>>>>> We used work queue instead of smp_call_function_single() to have long delay.
+>>>>>>>
+>>>>>>> Please explain completely, you have raised more questions than you
+>>>>>>> answered :)
+>>>>>>>
+>>>>>>> Why do you want to have long delays ?
+>>>>>>>
+>>>>>> Long delay value is used to have the observation window long enough for
+>>>>>> correctly reconstructing the CPU frequency considering noise.
+>>>>>> In next patch version, changed delay value to 500us which in our tests is
+>>>>>> considered reliable.
+>>>>>
+>>>>> I understand that you need to put a udelay() while reading the freq from
+>>>>> hardware, that is fine, but why do you need a workqueue for that? Why can't you
+>>>>> just read the values directly from the same context ?
+>>>>>
+>>>> The register to read frequency is per core and not accessible to other
+>>>> cores. So, we have to execute the function remotely as the target core to
+>>>> read frequency might be different from current.
+>>>> The functions for that are smp_call_function_single or queue_work_on.
+>>>> We used queue_work_on() to avoid long delay inside ipi interrupt context
+>>>> with interrupts disabled.
+>>>
+>>> Okay, I understand this now, finally :)
+>>>
+>>> But if the interrupts are disabled during some call, won't workqueues face the
+>>> same problem ?
+>>>
+>> Yes, we are trying to minimize the case.
+> 
+> But how do you know workqueues will perform better than
+> smp_call_function_single() ? Just asking for clarity on this as normally
+> everyone tries to do smp_call_function_single().
+> 
+This was done considering long delay value as explained previously.
+Do you think that smp_call_function_single() would be better than work 
+queue here?
 
+> --
+> viresh
+> 
