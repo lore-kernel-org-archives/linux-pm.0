@@ -2,113 +2,76 @@ Return-Path: <SRS0=6fVe=56=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B0540C2BA19
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 15:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B65DC352BE
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 15:58:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7C06F20857
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 15:57:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586879870;
-	bh=l9chY58r4Tu+9R4PzxN5YUOPlEav1oY44s9ex1BCTiU=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=etPbvROew6njzpJrxXVU9IZaGpdDgxfTVWCs2udtT6qWVV9IMTLH5laCBTCj4OtaZ
-	 SGr6sAgNOnDNoa7z5cJ6bVWdHdf6LUAH3eXzEsfyJumZ7whXbXqckDRTfFlOjrY5gO
-	 9OHXfbcmY7I7nA+ziUvZfRdAmRUqc/SU4/FRuJic=
+	by mail.kernel.org (Postfix) with ESMTP id 6273C20732
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 15:58:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387543AbgDNP5t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 11:57:49 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56716 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390836AbgDNP5o (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 14 Apr 2020 11:57:44 -0400
-Received: from localhost (unknown [213.57.247.131])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 12C43206D5;
-        Tue, 14 Apr 2020 15:57:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586879864;
-        bh=l9chY58r4Tu+9R4PzxN5YUOPlEav1oY44s9ex1BCTiU=;
-        h=From:To:Cc:Subject:Date:From;
-        b=RmfeK+QXiZNsEB5mIch9WsDk4/qNwCzlX5P4rjmP4AY5P3vOOlJghPsTIBHs0eBIR
-         Me0t9pQsM0nYSapcMNqDL9gLd4x85XbI5Y1kIuy/urlAu08nfY+Oer1UtKqSHDDiKO
-         yctIxm0KdJPeKAZcHtq3MsIiyUKWSGWtJaEjdkfk=
-From:   Leon Romanovsky <leon@kernel.org>
-To:     "David S . Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>
-Cc:     Leon Romanovsky <leonro@mellanox.com>,
-        Andy Gospodarek <andy@greyhouse.net>,
-        Borislav Petkov <bp@suse.de>, Ion Badulescu <ionut@badula.org>,
-        Jay Vosburgh <j.vosburgh@gmail.com>,
-        Jessica Yu <jeyu@kernel.org>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, netdev@vger.kernel.org,
-        oss-drivers@netronome.com, Pensando Drivers <drivers@pensando.io>,
-        Salil Mehta <salil.mehta@huawei.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Shannon Nelson <snelson@pensando.io>,
-        Veaceslav Falico <vfalico@gmail.com>,
-        Yisen Zhuang <yisen.zhuang@huawei.com>
-Subject: [PATCH net-next 0/4] Remove vermagic header from global include folder
-Date:   Tue, 14 Apr 2020 18:57:28 +0300
-Message-Id: <20200414155732.1236944-1-leon@kernel.org>
-X-Mailer: git-send-email 2.25.2
+        id S2391139AbgDNP5v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 11:57:51 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:45264 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732332AbgDNP5t (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 11:57:49 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: eballetbo)
+        with ESMTPSA id D5F312A04F7
+Subject: Re: [PATCH 4/4] power: supply: core: Constify properties
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>,
+        Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@collabora.com
+References: <20200413183853.1088823-1-sebastian.reichel@collabora.com>
+ <20200413183853.1088823-5-sebastian.reichel@collabora.com>
+From:   Enric Balletbo i Serra <enric.balletbo@collabora.com>
+Message-ID: <48f5fbce-2eb3-a4dc-8f0f-bde0be0bea6f@collabora.com>
+Date:   Tue, 14 Apr 2020 17:57:42 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.5.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200413183853.1088823-5-sebastian.reichel@collabora.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leon Romanovsky <leonro@mellanox.com>
+Hi Sebastian,
 
-Hi,
+On 13/4/20 20:38, Sebastian Reichel wrote:
+> properties is a list of properties supported by the
+> driver. It is not modified by the power-supply core
+> and drivers are not supposed to change it once the
+> list has been registered. Let's mark it as const for
+> improved security.
+> 
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 
-This is followup to the failure reported by Borislav [1] and suggested
-fix later on [2].
+Reviewed-by: Enric Balletbo i Serra <enric.balletbo@collabora.com>
 
-The series removes all includes of linux/vermagic.h, updates hns and
-nfp to use same kernel versioning scheme (exactly like we did for
-other drivers in previous cycle) and removes vermagic.h from global
-include folder.
-
-[1] https://lore.kernel.org/lkml/20200411155623.GA22175@zn.tnic
-[2] https://lore.kernel.org/lkml/20200413080452.GA3772@zn.tnic
-
-------------------------------------------------------------
-1. Honestly, I have no idea if it can go to net-rc, clearly not all my
-patches are fixes, so I'm sending them to the net-next.
-2. Still didn't get response from kbuild, but it passed my own
-compilation tests.
-
-Thanks
-
-Leon Romanovsky (4):
-  drivers: Remove inclusion of vermagic header
-  net/hns: Remove custom driver version in favour of global one
-  net/nfp: Update driver to use global kernel version
-  kernel/module: Hide vermagic header file from general use
-
- drivers/net/bonding/bonding_priv.h                   | 2 +-
- drivers/net/ethernet/3com/3c509.c                    | 1 -
- drivers/net/ethernet/3com/3c515.c                    | 1 -
- drivers/net/ethernet/adaptec/starfire.c              | 1 -
- drivers/net/ethernet/hisilicon/hns3/hns3_enet.c      | 3 ---
- drivers/net/ethernet/hisilicon/hns3/hns3_enet.h      | 4 ----
- drivers/net/ethernet/hisilicon/hns3/hns3_ethtool.c   | 4 ----
- drivers/net/ethernet/netronome/nfp/nfp_main.c        | 3 ---
- drivers/net/ethernet/netronome/nfp/nfp_net_ethtool.c | 2 --
- drivers/net/ethernet/pensando/ionic/ionic_main.c     | 2 +-
- drivers/power/supply/test_power.c                    | 2 +-
- kernel/module.c                                      | 2 +-
- {include/linux => kernel}/vermagic.h                 | 0
- net/ethtool/ioctl.c                                  | 3 +--
- 14 files changed, 5 insertions(+), 25 deletions(-)
- rename {include/linux => kernel}/vermagic.h (100%)
-
---
-2.25.2
-
+> ---
+>  include/linux/power_supply.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+> index 0392c9cc8f1c..6a34df65d4d1 100644
+> --- a/include/linux/power_supply.h
+> +++ b/include/linux/power_supply.h
+> @@ -225,7 +225,7 @@ struct power_supply_desc {
+>  	enum power_supply_type type;
+>  	const enum power_supply_usb_type *usb_types;
+>  	size_t num_usb_types;
+> -	enum power_supply_property *properties;
+> +	const enum power_supply_property *properties;
+>  	size_t num_properties;
+>  
+>  	/*
+> 
