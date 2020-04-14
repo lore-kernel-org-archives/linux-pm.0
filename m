@@ -2,298 +2,144 @@ Return-Path: <SRS0=6fVe=56=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
-	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNWANTED_LANGUAGE_BODY autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4848EC2BBC7
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 02:10:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3CD9C352B6
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 03:34:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2052620732
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 02:10:11 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="OqkFAcjn"
+	by mail.kernel.org (Postfix) with ESMTP id 8BB032084D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 03:34:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2403965AbgDNCKE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Apr 2020 22:10:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35028 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2403963AbgDNCKC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Apr 2020 22:10:02 -0400
-Received: from mail-pf1-x44a.google.com (mail-pf1-x44a.google.com [IPv6:2607:f8b0:4864:20::44a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 43D2BC0A3BE2
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 19:10:02 -0700 (PDT)
-Received: by mail-pf1-x44a.google.com with SMTP id 65so10454306pfx.16
-        for <linux-pm@vger.kernel.org>; Mon, 13 Apr 2020 19:10:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=YHR3wLSj0M6BuUX/ipe64SAlKpucYOALnl0bw9GVsCk=;
-        b=OqkFAcjncMFLHI/UNUK8qcvtRfUYyM8YNCWg5A9aOvs5rMmWYjmzs6UmPpAmPV//xt
-         naAfYZIcJFHBIwfU86vDOojKFwUtH68H7quwzPEfX7/QgjcculvnUAH1IqzLMmQ4VBi6
-         YIbO51AsZFJRtu+cJJZBmPiwguAIxtLPjKoJCTXKrWfXz4EagT5epD6P35PC4LTnfWmi
-         A9Z8l8DLtloQsE1OGXBU9lPcnquzTTE/YQoon+g+R+/SBx6R0yO500wWpESGalcyM9av
-         1JvFMAVBilWOtRjPhMSjqfiVwUEvp8MHJINx2hjT9Nu4BaW0qMR/W4eIMgeXIQfZHmjX
-         LsPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=YHR3wLSj0M6BuUX/ipe64SAlKpucYOALnl0bw9GVsCk=;
-        b=Rv81bipdLIzRxNVvEUd4HaZuEC7CIK1KoYgj9A+1/LlSbH4FxfSKJxR5Al5GiFh7Cq
-         D1yjQxykMt7R3tLvA3L1HEaN0wNGk2TQurANawDu96vfkKh80NYtkwOva/xKFZ4t3OWK
-         QxIzvk7TE1J1H1N1J/3F4hRNfwK59qs9RF6JAoYjqh85ofAf05HiX2twfMkp2BOwfBfg
-         uT6ZW0R0a16obarXA1rjtCUi0MiPZJqTzIqdqLJCe0kHcPJtoifK5l0rD00CvnR0EYr6
-         YGXsnp6y/Mh6EbTmgxpepPHVlHr0xc7MrS1tOZ5SnW0Oxc9RKzdLzJvLfgIeXlMBbWYz
-         PpdQ==
-X-Gm-Message-State: AGi0PuYc3b7N2jTq80oqkgN/m6JGXsmJnd9f9zmgnlGhfh14SvAiHFEy
-        JmkMKY4yCw2VTq8iXjweIwhf7PUc4cE95oU8vEfUFg==
-X-Google-Smtp-Source: APiQypKIH4SbR/v8HfyOjpSGIpJ8JHSb5NCuk2cLc0PWMCcKvfXTimCbze7nJveA0VBep7ccJChZv9TM63tU0O9F1LvJdQ==
-X-Received: by 2002:a17:90a:3268:: with SMTP id k95mr23984813pjb.185.1586830201490;
- Mon, 13 Apr 2020 19:10:01 -0700 (PDT)
-Date:   Mon, 13 Apr 2020 19:09:52 -0700
-In-Reply-To: <20200414020953.255364-1-matthewgarrett@google.com>
-Message-Id: <20200414020953.255364-2-matthewgarrett@google.com>
-Mime-Version: 1.0
+        id S2404769AbgDNDdj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Apr 2020 23:33:39 -0400
+Received: from mga01.intel.com ([192.55.52.88]:29972 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2404756AbgDNDdi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 13 Apr 2020 23:33:38 -0400
+IronPort-SDR: tFayGoUoXMsK1VifLp1qr7vmv7rvKvnDDUBEFRd7Ps+1K79PxzcaegK8/HQ/LoO0cFm642OR0x
+ +KHttYndfhJw==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 13 Apr 2020 20:33:37 -0700
+IronPort-SDR: AWunC/5rlJzD8PZJgrZ6SOvu45mvjrZC9LBxYhC1/z4T9Kdi9PHGPKSRD26n33Tk7XkZcuC5CU
+ 7mWS1Sk2IGPA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.72,381,1580803200"; 
+   d="scan'208";a="399821413"
+Received: from orsmsx105.amr.corp.intel.com ([10.22.225.132])
+  by orsmga004.jf.intel.com with ESMTP; 13 Apr 2020 20:33:36 -0700
+Received: from orsmsx114.amr.corp.intel.com (10.22.240.10) by
+ ORSMSX105.amr.corp.intel.com (10.22.225.132) with Microsoft SMTP Server (TLS)
+ id 14.3.439.0; Mon, 13 Apr 2020 20:33:36 -0700
+Received: from orsmsx109.amr.corp.intel.com ([169.254.11.20]) by
+ ORSMSX114.amr.corp.intel.com ([169.254.8.205]) with mapi id 14.03.0439.000;
+ Mon, 13 Apr 2020 20:33:36 -0700
+From:   "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+To:     "matthewgarrett@google.com" <matthewgarrett@google.com>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC:     "Zhang, Rui" <rui.zhang@intel.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "Aram, Nisha" <nisha.aram@intel.com>,
+        "mjg59@google.com" <mjg59@google.com>
+Subject: Re: [PATCH V2 1/3] thermal/int340x_thermal: Export GDDV
+Thread-Topic: [PATCH V2 1/3] thermal/int340x_thermal: Export GDDV
+Thread-Index: AQHWEg16NMV5m6DKX0a90M6geYk4vA==
+Date:   Tue, 14 Apr 2020 03:33:36 +0000
+Message-ID: <1ba40c555115e5a2770e95b974096016fbfc3606.camel@intel.com>
 References: <20200414020953.255364-1-matthewgarrett@google.com>
-X-Mailer: git-send-email 2.26.0.110.g2183baf09c-goog
-Subject: [PATCH V2 2/3] thermal/int340x_thermal: Export OEM vendor variables
-From:   Matthew Garrett <matthewgarrett@google.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, rui.zhang@intel.com,
-        nisha.aram@intel.com, Matthew Garrett <mjg59@google.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200414020953.255364-1-matthewgarrett@google.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Evolution 3.34.2 (3.34.2-1.fc31) 
+x-originating-ip: [10.255.229.162]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <00B18B4DA2AD92409D0E73C90DB432ED@intel.com>
+Content-Transfer-Encoding: base64
+MIME-Version: 1.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Matthew Garrett <mjg59@google.com>
-
-The platform vendor may expose an array of OEM-specific values to be used
-in determining DPTF policy. These are obtained via the ODVP method, and
-then simply exposed in sysfs. In addition, they are updated when a
-notification is received or when the DPTF policy is changed by userland.
-
-Signed-off-by: Matthew Garrett <mjg59@google.com>
----
- .../intel/int340x_thermal/int3400_thermal.c   | 132 +++++++++++++++++-
- 1 file changed, 131 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 00a7732724cd0..3919098a73b47 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -13,6 +13,7 @@
- #include "acpi_thermal_rel.h"
- 
- #define INT3400_THERMAL_TABLE_CHANGED 0x83
-+#define INT3400_ODVP_CHANGED 0x88
- 
- enum int3400_thermal_uuid {
- 	INT3400_THERMAL_PASSIVE_1,
-@@ -41,8 +42,11 @@ static char *int3400_thermal_uuids[INT3400_THERMAL_MAXIMUM_UUID] = {
- 	"BE84BABF-C4D4-403D-B495-3128FD44dAC1",
- };
- 
-+struct odvp_attr;
-+
- struct int3400_thermal_priv {
- 	struct acpi_device *adev;
-+	struct platform_device *pdev;
- 	struct thermal_zone_device *thermal;
- 	int mode;
- 	int art_count;
-@@ -53,6 +57,17 @@ struct int3400_thermal_priv {
- 	int rel_misc_dev_res;
- 	int current_uuid_index;
- 	char *data_vault;
-+	int odvp_count;
-+	int *odvp;
-+	struct odvp_attr *odvp_attrs;
-+};
-+
-+static int evaluate_odvp(struct int3400_thermal_priv *priv);
-+
-+struct odvp_attr {
-+	int odvp;
-+	struct int3400_thermal_priv *priv;
-+	struct kobj_attribute attr;
- };
- 
- static ssize_t data_vault_read(struct file *file, struct kobject *kobj,
-@@ -210,9 +225,110 @@ static int int3400_thermal_run_osc(acpi_handle handle,
- 		result = -EPERM;
- 
- 	kfree(context.ret.pointer);
-+
- 	return result;
- }
- 
-+static ssize_t odvp_show(struct kobject *kobj, struct kobj_attribute *attr,
-+			 char *buf)
-+{
-+	struct odvp_attr *odvp_attr;
-+
-+	odvp_attr = container_of(attr, struct odvp_attr, attr);
-+
-+	return sprintf(buf, "%d\n", odvp_attr->priv->odvp[odvp_attr->odvp]);
-+}
-+
-+static void cleanup_odvp(struct int3400_thermal_priv *priv)
-+{
-+	int i;
-+
-+	if (priv->odvp_attrs) {
-+		for (i = 0; i < priv->odvp_count; i++) {
-+			sysfs_remove_file(&priv->pdev->dev.kobj,
-+					  &priv->odvp_attrs[i].attr.attr);
-+			kfree(priv->odvp_attrs[i].attr.attr.name);
-+		}
-+		kfree(priv->odvp_attrs);
-+	}
-+	kfree(priv->odvp);
-+	priv->odvp_count = 0;
-+}
-+
-+static int evaluate_odvp(struct int3400_thermal_priv *priv)
-+{
-+	struct acpi_buffer odvp = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *obj = NULL;
-+	acpi_status status;
-+	int i, ret;
-+
-+	status = acpi_evaluate_object(priv->adev->handle, "ODVP", NULL, &odvp);
-+	if (ACPI_FAILURE(status)) {
-+		ret = -EINVAL;
-+		goto out_err;
-+	}
-+
-+	obj = odvp.pointer;
-+	if (obj->type != ACPI_TYPE_PACKAGE) {
-+		ret = -EINVAL;
-+		goto out_err;
-+	}
-+
-+	if (priv->odvp == NULL) {
-+		priv->odvp_count = obj->package.count;
-+		priv->odvp = kmalloc_array(priv->odvp_count, sizeof(int),
-+				     GFP_KERNEL);
-+		if (!priv->odvp) {
-+			ret = -ENOMEM;
-+			goto out_err;
-+		}
-+	}
-+
-+	if (priv->odvp_attrs == NULL) {
-+		priv->odvp_attrs = kcalloc(priv->odvp_count,
-+					   sizeof(struct odvp_attr),
-+					   GFP_KERNEL);
-+		if (!priv->odvp_attrs) {
-+			ret = -ENOMEM;
-+			goto out_err;
-+		}
-+		for (i = 0; i < priv->odvp_count; i++) {
-+			struct odvp_attr *odvp = &priv->odvp_attrs[i];
-+
-+			sysfs_attr_init(&odvp->attr.attr);
-+			odvp->priv = priv;
-+			odvp->odvp = i;
-+			odvp->attr.attr.name = kasprintf(GFP_KERNEL,
-+							 "odvp%d", i);
-+
-+			if (!odvp->attr.attr.name) {
-+				ret = -ENOMEM;
-+				goto out_err;
-+			}
-+			odvp->attr.attr.mode = 0444;
-+			odvp->attr.show = odvp_show;
-+			odvp->attr.store = NULL;
-+			ret = sysfs_create_file(&priv->pdev->dev.kobj,
-+						&odvp->attr.attr);
-+			if (ret)
-+				goto out_err;
-+		}
-+	}
-+
-+	for (i = 0; i < obj->package.count; i++) {
-+		if (obj->package.elements[i].type == ACPI_TYPE_INTEGER)
-+			priv->odvp[i] = obj->package.elements[i].integer.value;
-+	}
-+
-+	kfree(obj);
-+	return 0;
-+
-+out_err:
-+	cleanup_odvp(priv);
-+	kfree(obj);
-+	return ret;
-+}
-+
- static void int3400_notify(acpi_handle handle,
- 			u32 event,
- 			void *data)
-@@ -236,6 +352,9 @@ static void int3400_notify(acpi_handle handle,
- 		kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE,
- 				thermal_prop);
- 		break;
-+	case INT3400_ODVP_CHANGED:
-+		evaluate_odvp(priv);
-+		break;
- 	default:
- 		/* Ignore unknown notification codes sent to INT3400 device */
- 		break;
-@@ -285,6 +404,9 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
- 						 priv->current_uuid_index,
- 						 enable);
- 	}
-+
-+	evaluate_odvp(priv);
-+
- 	return result;
- }
- 
-@@ -336,6 +458,7 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	if (!priv)
- 		return -ENOMEM;
- 
-+	priv->pdev = pdev;
- 	priv->adev = adev;
- 
- 	result = int3400_thermal_get_uuids(priv);
-@@ -356,6 +479,8 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 
- 	int3400_setup_gddv(priv);
- 
-+	evaluate_odvp(priv);
-+
- 	int3400_thermal_ops.get_mode = int3400_thermal_get_mode;
- 	int3400_thermal_ops.set_mode = int3400_thermal_set_mode;
- 
-@@ -390,8 +515,11 @@ static int int3400_thermal_probe(struct platform_device *pdev)
- 	return 0;
- 
- free_sysfs:
--	if (priv->data_vault)
-+	cleanup_odvp(priv);
-+	if (priv->data_vault) {
- 		sysfs_remove_group(&pdev->dev.kobj, &data_attribute_group);
-+		kfree(priv->data_vault);
-+	}
- free_uuid:
- 	sysfs_remove_group(&pdev->dev.kobj, &uuid_attribute_group);
- free_rel_misc:
-@@ -414,6 +542,8 @@ static int int3400_thermal_remove(struct platform_device *pdev)
- 			priv->adev->handle, ACPI_DEVICE_NOTIFY,
- 			int3400_notify);
- 
-+	cleanup_odvp(priv);
-+
- 	if (!priv->rel_misc_dev_res)
- 		acpi_thermal_rel_misc_device_remove(priv->adev->handle);
- 
--- 
-2.26.0.110.g2183baf09c-goog
-
+T24gTW9uLCAyMDIwLTA0LTEzIGF0IDE5OjA5IC0wNzAwLCBNYXR0aGV3IEdhcnJldHQgd3JvdGU6
+DQo+IEZyb206IE1hdHRoZXcgR2FycmV0dCA8bWpnNTlAZ29vZ2xlLmNvbT4NCj4gDQo+IEltcGxl
+bWVudGluZyBEUFRGIHByb3Blcmx5IHJlcXVpcmVzIG1ha2luZyB1c2Ugb2YgZmlybXdhcmUtcHJv
+dmlkZWQNCj4gaW5mb3JtYXRpb24gYXNzb2NpYXRlZCB3aXRoIHRoZSBJTlQzNDAwIGRldmljZS4g
+Q2FsbGluZyBHRERWIHByb3ZpZGVzDQo+IGENCj4gYnVmZmVyIG9mIGluZm9ybWF0aW9uIHdoaWNo
+IHVzZXJsYW5kIGNhbiB0aGVuIGludGVycHJldCB0byBkZXRlcm1pbmUNCj4gYXBwcm9wcmlhdGUg
+RFBURiBwb2xpY3kuDQo+IA0KDQpBbnl0aGluZyBjaGFuZ2VkIGluIHYyIHNlcmllcz8NCg0KVGhh
+bmtzLA0KU3Jpbml2YXMNCg0KPiBTaWduZWQtb2ZmLWJ5OiBNYXR0aGV3IEdhcnJldHQgPG1qZzU5
+QGdvb2dsZS5jb20+DQo+IC0tLQ0KPiAgLi4uL2ludGVsL2ludDM0MHhfdGhlcm1hbC9pbnQzNDAw
+X3RoZXJtYWwuYyAgIHwgNjANCj4gKysrKysrKysrKysrKysrKysrKw0KPiAgMSBmaWxlIGNoYW5n
+ZWQsIDYwIGluc2VydGlvbnMoKykNCj4gDQo+IGRpZmYgLS1naXQgYS9kcml2ZXJzL3RoZXJtYWwv
+aW50ZWwvaW50MzQweF90aGVybWFsL2ludDM0MDBfdGhlcm1hbC5jDQo+IGIvZHJpdmVycy90aGVy
+bWFsL2ludGVsL2ludDM0MHhfdGhlcm1hbC9pbnQzNDAwX3RoZXJtYWwuYw0KPiBpbmRleCBjZWVm
+ODljOTU2YmQ0Li4wMGE3NzMyNzI0Y2QwIDEwMDY0NA0KPiAtLS0gYS9kcml2ZXJzL3RoZXJtYWwv
+aW50ZWwvaW50MzQweF90aGVybWFsL2ludDM0MDBfdGhlcm1hbC5jDQo+ICsrKyBiL2RyaXZlcnMv
+dGhlcm1hbC9pbnRlbC9pbnQzNDB4X3RoZXJtYWwvaW50MzQwMF90aGVybWFsLmMNCj4gQEAgLTUy
+LDYgKzUyLDI1IEBAIHN0cnVjdCBpbnQzNDAwX3RoZXJtYWxfcHJpdiB7DQo+ICAJdTggdXVpZF9i
+aXRtYXA7DQo+ICAJaW50IHJlbF9taXNjX2Rldl9yZXM7DQo+ICAJaW50IGN1cnJlbnRfdXVpZF9p
+bmRleDsNCj4gKwljaGFyICpkYXRhX3ZhdWx0Ow0KPiArfTsNCj4gKw0KPiArc3RhdGljIHNzaXpl
+X3QgZGF0YV92YXVsdF9yZWFkKHN0cnVjdCBmaWxlICpmaWxlLCBzdHJ1Y3Qga29iamVjdA0KPiAq
+a29iaiwNCj4gKwkgICAgIHN0cnVjdCBiaW5fYXR0cmlidXRlICphdHRyLCBjaGFyICpidWYsIGxv
+ZmZfdCBvZmYsIHNpemVfdA0KPiBjb3VudCkNCj4gK3sNCj4gKwltZW1jcHkoYnVmLCBhdHRyLT5w
+cml2YXRlICsgb2ZmLCBjb3VudCk7DQo+ICsJcmV0dXJuIGNvdW50Ow0KPiArfQ0KPiArDQo+ICtz
+dGF0aWMgQklOX0FUVFJfUk8oZGF0YV92YXVsdCwgMCk7DQo+ICsNCj4gK3N0YXRpYyBzdHJ1Y3Qg
+YmluX2F0dHJpYnV0ZSAqZGF0YV9hdHRyaWJ1dGVzW10gPSB7DQo+ICsJJmJpbl9hdHRyX2RhdGFf
+dmF1bHQsDQo+ICsJTlVMTCwNCj4gK307DQo+ICsNCj4gK3N0YXRpYyBjb25zdCBzdHJ1Y3QgYXR0
+cmlidXRlX2dyb3VwIGRhdGFfYXR0cmlidXRlX2dyb3VwID0gew0KPiArCS5iaW5fYXR0cnMgPSBk
+YXRhX2F0dHJpYnV0ZXMsDQo+ICB9Ow0KPiAgDQo+ICBzdGF0aWMgc3NpemVfdCBhdmFpbGFibGVf
+dXVpZHNfc2hvdyhzdHJ1Y3QgZGV2aWNlICpkZXYsDQo+IEBAIC0yNzgsNiArMjk3LDMyIEBAIHN0
+YXRpYyBzdHJ1Y3QgdGhlcm1hbF96b25lX3BhcmFtcw0KPiBpbnQzNDAwX3RoZXJtYWxfcGFyYW1z
+ID0gew0KPiAgCS5ub19od21vbiA9IHRydWUsDQo+ICB9Ow0KPiAgDQo+ICtzdGF0aWMgdm9pZCBp
+bnQzNDAwX3NldHVwX2dkZHYoc3RydWN0IGludDM0MDBfdGhlcm1hbF9wcml2ICpwcml2KQ0KPiAr
+ew0KPiArCXN0cnVjdCBhY3BpX2J1ZmZlciBidWZmZXIgPSB7IEFDUElfQUxMT0NBVEVfQlVGRkVS
+LCBOVUxMIH07DQo+ICsJdW5pb24gYWNwaV9vYmplY3QgKm9iajsNCj4gKwlhY3BpX3N0YXR1cyBz
+dGF0dXM7DQo+ICsNCj4gKwlzdGF0dXMgPSBhY3BpX2V2YWx1YXRlX29iamVjdChwcml2LT5hZGV2
+LT5oYW5kbGUsICJHRERWIiwgTlVMTCwNCj4gKwkJCQkgICAgICAmYnVmZmVyKTsNCj4gKwlpZiAo
+QUNQSV9GQUlMVVJFKHN0YXR1cykgfHwgIWJ1ZmZlci5sZW5ndGgpDQo+ICsJCXJldHVybjsNCj4g
+Kw0KPiArCW9iaiA9IGJ1ZmZlci5wb2ludGVyOw0KPiArCWlmIChvYmotPnR5cGUgIT0gQUNQSV9U
+WVBFX1BBQ0tBR0UgfHwgb2JqLT5wYWNrYWdlLmNvdW50ICE9IDENCj4gKwkgICAgfHwgb2JqLT5w
+YWNrYWdlLmVsZW1lbnRzWzBdLnR5cGUgIT0gQUNQSV9UWVBFX0JVRkZFUikgew0KPiArCQlrZnJl
+ZShidWZmZXIucG9pbnRlcik7DQo+ICsJCXJldHVybjsNCj4gKwl9DQo+ICsNCj4gKwlwcml2LT5k
+YXRhX3ZhdWx0ID0ga21lbWR1cChvYmotDQo+ID5wYWNrYWdlLmVsZW1lbnRzWzBdLmJ1ZmZlci5w
+b2ludGVyLA0KPiArCQkJCSAgIG9iai0NCj4gPnBhY2thZ2UuZWxlbWVudHNbMF0uYnVmZmVyLmxl
+bmd0aCwNCj4gKwkJCQkgICBHRlBfS0VSTkVMKTsNCj4gKwliaW5fYXR0cl9kYXRhX3ZhdWx0LnBy
+aXZhdGUgPSBwcml2LT5kYXRhX3ZhdWx0Ow0KPiArCWJpbl9hdHRyX2RhdGFfdmF1bHQuc2l6ZSA9
+IG9iai0NCj4gPnBhY2thZ2UuZWxlbWVudHNbMF0uYnVmZmVyLmxlbmd0aDsNCj4gKwlrZnJlZShi
+dWZmZXIucG9pbnRlcik7DQo+ICt9DQo+ICsNCj4gIHN0YXRpYyBpbnQgaW50MzQwMF90aGVybWFs
+X3Byb2JlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICB7DQo+ICAJc3RydWN0IGFj
+cGlfZGV2aWNlICphZGV2ID0gQUNQSV9DT01QQU5JT04oJnBkZXYtPmRldik7DQo+IEBAIC0zMDks
+NiArMzU0LDggQEAgc3RhdGljIGludCBpbnQzNDAwX3RoZXJtYWxfcHJvYmUoc3RydWN0DQo+IHBs
+YXRmb3JtX2RldmljZSAqcGRldikNCj4gIA0KPiAgCXBsYXRmb3JtX3NldF9kcnZkYXRhKHBkZXYs
+IHByaXYpOw0KPiAgDQo+ICsJaW50MzQwMF9zZXR1cF9nZGR2KHByaXYpOw0KPiArDQo+ICAJaW50
+MzQwMF90aGVybWFsX29wcy5nZXRfbW9kZSA9IGludDM0MDBfdGhlcm1hbF9nZXRfbW9kZTsNCj4g
+IAlpbnQzNDAwX3RoZXJtYWxfb3BzLnNldF9tb2RlID0gaW50MzQwMF90aGVybWFsX3NldF9tb2Rl
+Ow0KPiAgDQo+IEBAIC0zMjcsNiArMzc0LDEzIEBAIHN0YXRpYyBpbnQgaW50MzQwMF90aGVybWFs
+X3Byb2JlKHN0cnVjdA0KPiBwbGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJaWYgKHJlc3VsdCkN
+Cj4gIAkJZ290byBmcmVlX3JlbF9taXNjOw0KPiAgDQo+ICsJaWYgKHByaXYtPmRhdGFfdmF1bHQp
+IHsNCj4gKwkJcmVzdWx0ID0gc3lzZnNfY3JlYXRlX2dyb3VwKCZwZGV2LT5kZXYua29iaiwNCj4g
+KwkJCQkJICAgICZkYXRhX2F0dHJpYnV0ZV9ncm91cCk7DQo+ICsJCWlmIChyZXN1bHQpDQo+ICsJ
+CQlnb3RvIGZyZWVfdXVpZDsNCj4gKwl9DQo+ICsNCj4gIAlyZXN1bHQgPSBhY3BpX2luc3RhbGxf
+bm90aWZ5X2hhbmRsZXIoDQo+ICAJCQlwcml2LT5hZGV2LT5oYW5kbGUsIEFDUElfREVWSUNFX05P
+VElGWSwNCj4gaW50MzQwMF9ub3RpZnksDQo+ICAJCQkodm9pZCAqKXByaXYpOw0KPiBAQCAtMzM2
+LDYgKzM5MCw5IEBAIHN0YXRpYyBpbnQgaW50MzQwMF90aGVybWFsX3Byb2JlKHN0cnVjdA0KPiBw
+bGF0Zm9ybV9kZXZpY2UgKnBkZXYpDQo+ICAJcmV0dXJuIDA7DQo+ICANCj4gIGZyZWVfc3lzZnM6
+DQo+ICsJaWYgKHByaXYtPmRhdGFfdmF1bHQpDQo+ICsJCXN5c2ZzX3JlbW92ZV9ncm91cCgmcGRl
+di0+ZGV2LmtvYmosDQo+ICZkYXRhX2F0dHJpYnV0ZV9ncm91cCk7DQo+ICtmcmVlX3V1aWQ6DQo+
+ICAJc3lzZnNfcmVtb3ZlX2dyb3VwKCZwZGV2LT5kZXYua29iaiwgJnV1aWRfYXR0cmlidXRlX2dy
+b3VwKTsNCj4gIGZyZWVfcmVsX21pc2M6DQo+ICAJaWYgKCFwcml2LT5yZWxfbWlzY19kZXZfcmVz
+KQ0KPiBAQCAtMzYwLDggKzQxNywxMSBAQCBzdGF0aWMgaW50IGludDM0MDBfdGhlcm1hbF9yZW1v
+dmUoc3RydWN0DQo+IHBsYXRmb3JtX2RldmljZSAqcGRldikNCj4gIAlpZiAoIXByaXYtPnJlbF9t
+aXNjX2Rldl9yZXMpDQo+ICAJCWFjcGlfdGhlcm1hbF9yZWxfbWlzY19kZXZpY2VfcmVtb3ZlKHBy
+aXYtPmFkZXYtDQo+ID5oYW5kbGUpOw0KPiAgDQo+ICsJaWYgKHByaXYtPmRhdGFfdmF1bHQpDQo+
+ICsJCXN5c2ZzX3JlbW92ZV9ncm91cCgmcGRldi0+ZGV2LmtvYmosDQo+ICZkYXRhX2F0dHJpYnV0
+ZV9ncm91cCk7DQo+ICAJc3lzZnNfcmVtb3ZlX2dyb3VwKCZwZGV2LT5kZXYua29iaiwgJnV1aWRf
+YXR0cmlidXRlX2dyb3VwKTsNCj4gIAl0aGVybWFsX3pvbmVfZGV2aWNlX3VucmVnaXN0ZXIocHJp
+di0+dGhlcm1hbCk7DQo+ICsJa2ZyZWUocHJpdi0+ZGF0YV92YXVsdCk7DQo+ICAJa2ZyZWUocHJp
+di0+dHJ0cyk7DQo+ICAJa2ZyZWUocHJpdi0+YXJ0cyk7DQo+ICAJa2ZyZWUocHJpdik7DQo=
