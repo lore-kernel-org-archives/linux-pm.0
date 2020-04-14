@@ -2,175 +2,116 @@ Return-Path: <SRS0=6fVe=56=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-5.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 806E0C3815B
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:03:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 458F5C2BB85
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:27:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 66CEF2076C
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:03:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2991B2078A
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:27:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="Ci4JI1g+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2503186AbgDNSDN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 14:03:13 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:46732 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2503184AbgDNSBZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 14:01:25 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id 7B46E2A1BDF
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-To:     linux-pm@vger.kernel.org
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>, Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Subject: [RFC v2 3/9] thermal: Properly handle mode values in .set_mode()
-Date:   Tue, 14 Apr 2020 20:00:59 +0200
-Message-Id: <20200414180105.20042-4-andrzej.p@collabora.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200414180105.20042-1-andrzej.p@collabora.com>
-References: <2bc5a902-acde-526a-11a5-2357d899916c@linaro.org>
- <20200414180105.20042-1-andrzej.p@collabora.com>
+        id S2503924AbgDNS1H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 14:27:07 -0400
+Received: from us-smtp-delivery-1.mimecast.com ([207.211.31.120]:40633 "EHLO
+        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1729698AbgDNS1F (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 14:27:05 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1586888823;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=TLv7+DlAPTIRbMlPGq/MKTxn9g95YUGNwTJol6ZbUDE=;
+        b=Ci4JI1g+UxK3ueHxK/jFkyQUAiPIE7eiAa8EWn35YT6wqTUlD12xQ3CmqT+kglfFDSpIty
+        TnpGWKIt9arXpspnOqv/FUOF3V1G7dB7p9sLo3p0ebTJWdWcmAn+Mdm2ZjvSbQOaSkz99N
+        QoLJeLN4B7rZqGZvTafMKA8IdjoidK0=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-449-lrwga1poPzOYOa4E2pXY4A-1; Tue, 14 Apr 2020 14:27:01 -0400
+X-MC-Unique: lrwga1poPzOYOa4E2pXY4A-1
+Received: from smtp.corp.redhat.com (int-mx07.intmail.prod.int.phx2.redhat.com [10.5.11.22])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id E975D13FA;
+        Tue, 14 Apr 2020 18:26:55 +0000 (UTC)
+Received: from llong.remote.csb (ovpn-118-173.rdu2.redhat.com [10.10.118.173])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 936D410013A1;
+        Tue, 14 Apr 2020 18:26:48 +0000 (UTC)
+Subject: Re: [PATCH 1/2] mm, treewide: Rename kzfree() to kfree_sensitive()
+To:     dsterba@suse.cz, Andrew Morton <akpm@linux-foundation.org>,
+        David Howells <dhowells@redhat.com>,
+        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
+        James Morris <jmorris@namei.org>,
+        "Serge E. Hallyn" <serge@hallyn.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Joe Perches <joe@perches.com>,
+        Matthew Wilcox <willy@infradead.org>,
+        David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
+        keyrings@vger.kernel.org, linux-kernel@vger.kernel.org,
+        x86@kernel.org, linux-crypto@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-arm-kernel@lists.infradead.org,
+        linux-amlogic@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+        virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
+        intel-wired-lan@lists.osuosl.org, linux-ppp@vger.kernel.org,
+        wireguard@lists.zx2c4.com, linux-wireless@vger.kernel.org,
+        devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org,
+        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
+        linux-fscrypt@vger.kernel.org, ecryptfs@vger.kernel.org,
+        kasan-dev@googlegroups.com, linux-bluetooth@vger.kernel.org,
+        linux-wpan@vger.kernel.org, linux-sctp@vger.kernel.org,
+        linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
+        cocci@systeme.lip6.fr, linux-security-module@vger.kernel.org,
+        linux-integrity@vger.kernel.org
+References: <20200413211550.8307-1-longman@redhat.com>
+ <20200413211550.8307-2-longman@redhat.com>
+ <20200414124854.GQ5920@twin.jikos.cz>
+From:   Waiman Long <longman@redhat.com>
+Organization: Red Hat
+Message-ID: <3d8c80cb-68e5-9211-9eda-bc343ed7d894@redhat.com>
+Date:   Tue, 14 Apr 2020 14:26:48 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.7.2
+MIME-Version: 1.0
+In-Reply-To: <20200414124854.GQ5920@twin.jikos.cz>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.22
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allow only THERMAL_DEVICE_ENABLED and THERMAL_DEVICE_DISABLED as valid
-states to transition to.
+On 4/14/20 8:48 AM, David Sterba wrote:
+> On Mon, Apr 13, 2020 at 05:15:49PM -0400, Waiman Long wrote:
+>>  fs/btrfs/ioctl.c                              |  2 +-
+>
+>> diff --git a/fs/btrfs/ioctl.c b/fs/btrfs/ioctl.c
+>> index 40b729dce91c..eab3f8510426 100644
+>> --- a/fs/btrfs/ioctl.c
+>> +++ b/fs/btrfs/ioctl.c
+>> @@ -2691,7 +2691,7 @@ static int btrfs_ioctl_get_subvol_info(struct file *file, void __user *argp)
+>>  	btrfs_put_root(root);
+>>  out_free:
+>>  	btrfs_free_path(path);
+>> -	kzfree(subvol_info);
+>> +	kfree_sensitive(subvol_info);
+> This is not in a sensitive context so please switch it to plain kfree.
+> With that you have my acked-by. Thanks.
+>
+Thanks for letting me know about. I think I will send it out as a
+separate patch.
 
-Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
----
- drivers/net/ethernet/mellanox/mlxsw/core_thermal.c | 8 ++++++--
- drivers/platform/x86/acerhdf.c                     | 4 ++++
- drivers/thermal/imx_thermal.c                      | 4 +++-
- drivers/thermal/intel/intel_quark_dts_thermal.c    | 5 ++++-
- drivers/thermal/of-thermal.c                       | 4 +++-
- 5 files changed, 20 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index ce0a6837daa3..cd435ca7adbe 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -296,8 +296,10 @@ static int mlxsw_thermal_set_mode(struct thermal_zone_device *tzdev,
- 
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		tzdev->polling_delay = thermal->polling_delay;
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		tzdev->polling_delay = 0;
-+	else
-+		return -EINVAL;
- 
- 	mutex_unlock(&tzdev->lock);
- 
-@@ -486,8 +488,10 @@ static int mlxsw_thermal_module_mode_set(struct thermal_zone_device *tzdev,
- 
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		tzdev->polling_delay = thermal->polling_delay;
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		tzdev->polling_delay = 0;
-+	else
-+		return -EINVAL;
- 
- 	mutex_unlock(&tzdev->lock);
- 
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 8cc86f4e3ac1..d5188c1d688b 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -431,6 +431,10 @@ static int acerhdf_get_mode(struct thermal_zone_device *thermal,
- static int acerhdf_set_mode(struct thermal_zone_device *thermal,
- 			    enum thermal_device_mode mode)
- {
-+	if (mode != THERMAL_DEVICE_DISABLED &&
-+	    mode != THERMAL_DEVICE_ENABLED)
-+		return -EINVAL;
-+
- 	if (mode == THERMAL_DEVICE_DISABLED && kernelmode)
- 		acerhdf_revert_to_bios_mode();
- 	else if (mode == THERMAL_DEVICE_ENABLED && !kernelmode)
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index e761c9b42217..36b1924f1938 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -361,7 +361,7 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 			data->irq_enabled = true;
- 			enable_irq(data->irq);
- 		}
--	} else {
-+	} else if (mode == THERMAL_DEVICE_DISABLED) {
- 		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
- 			     soc_data->measure_temp_mask);
- 		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
-@@ -374,6 +374,8 @@ static int imx_set_mode(struct thermal_zone_device *tz,
- 			disable_irq(data->irq);
- 			data->irq_enabled = false;
- 		}
-+	} else {
-+		return -EINVAL;
- 	}
- 
- 	data->mode = mode;
-diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
-index d704fc104cfd..11d7db895125 100644
---- a/drivers/thermal/intel/intel_quark_dts_thermal.c
-+++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
-@@ -325,8 +325,11 @@ static int sys_set_mode(struct thermal_zone_device *tzd,
- 	mutex_lock(&dts_update_mutex);
- 	if (mode == THERMAL_DEVICE_ENABLED)
- 		ret = soc_dts_enable(tzd);
--	else
-+	else if (mode == THERMAL_DEVICE_DISABLED)
- 		ret = soc_dts_disable(tzd);
-+	else
-+		return -EINVAL;
-+
- 	mutex_unlock(&dts_update_mutex);
- 
- 	return ret;
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 874a47d6923f..36bebf623980 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -289,9 +289,11 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
- 	if (mode == THERMAL_DEVICE_ENABLED) {
- 		tz->polling_delay = data->polling_delay;
- 		tz->passive_delay = data->passive_delay;
--	} else {
-+	} else if (mode == THERMAL_DEVICE_DISABLED) {
- 		tz->polling_delay = 0;
- 		tz->passive_delay = 0;
-+	} else {
-+		return -EINVAL;
- 	}
- 
- 	mutex_unlock(&tz->lock);
--- 
-2.17.1
+Cheers,
+Longman
 
