@@ -7,159 +7,233 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E30A2C2BB1D
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2F9DC2BB1D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C73A2076C
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C53BA2076A
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Xz/FKi3/"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CeM/zs/U"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2634149AbgDNWI6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 18:08:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56168 "EHLO
+        id S2634166AbgDNWJD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 18:09:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56196 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729934AbgDNWIy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 18:08:54 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4DD5AC061A0C
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:08:54 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id a201so15848043wme.1
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:08:54 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S2634157AbgDNWJB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 18:09:01 -0400
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEA5EC061A10
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:09:00 -0700 (PDT)
+Received: by mail-wm1-x344.google.com with SMTP id y24so16207435wma.4
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:09:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=/VXMLsnEdFtu7k13O3hijxHV9EAnp9rCBMScPJUvt8E=;
-        b=Xz/FKi3/eo2Z0NCI7DXFsCyI9TYATBR3mGQdjcgmFYX9ph6KDEJhtXW9U1VnGKp/99
-         hoqWR9eEs20GbKQXi4Ipn26cyGerMwRUG3qRO/wxioCpikbHucOK/iZv5YtufGZNwBpt
-         TyXATbJ/6YyeJj1XM1GYCK3xdBnMim6r9DxTfG+3aRSCujE67NQFsgJPJzF9L5Nnwz+l
-         N4gjmw84GGRvKMftMdT58jt19o3nmhrfjSnmGHrz3zRbXGq2qW/l3+O4wNsXRTyxGlz+
-         cl2JFr0bXA90LG1It9IIZDKpKd+dQy3ogcA58sLmxVnXGArNbBdf3h3B3dNJjT0j1qWp
-         zCMQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=2gAWHTXX9bF3sN9XblA+dduErzaItlbFPxUTg2AHv9w=;
+        b=CeM/zs/UclThxyDL0iHjwTNNx8BhkPJ20N26rghrVb6K5+LCtGWb5MyTEpcd5rEu3E
+         CjsI8KSkwYIQWPrq/HOTk+DGqsK5StvgJrn2YXO0W4wFG/IwyjNRpcFoGbVYhy5HR7KR
+         +KauMyN+PYYV+jpDuZq3+A8+/LKf23wuLKoFrPZAv5IgX443ZelPT7+u+VFIV3lkhsOb
+         s+PA2lmTX4OWgel7/vfshUk87fC4AzigbjZ2H+ZaLrm/foXHuGamGG7c+5MfhQXCnfg9
+         9u5W0WXehBW+qkoic9fY3NhJ5lnFDi0uT/7j5BbbjkK1sfcd1I0Ds4vkJAN5ci+ZTNTv
+         +Dtw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=/VXMLsnEdFtu7k13O3hijxHV9EAnp9rCBMScPJUvt8E=;
-        b=OiS7njeIrJvP/PLumuStSkLrOVfZo6nLk4+xh3PJtBCIk8koDd+hi6NA6vNPRMEHL7
-         O13M+0h1gcvILdpUa//qUuq5ZOzoOEKeHiFOP/LxvfRkQSJGTWhWFFGsrNegj14DHqPA
-         zz/AFqDwzO3TduLpt360fH+QP7J8lY/ewrqI9+JAbyhMxa98rvAC9xyCv0Uc4Dqgj0HN
-         WdE8lhwb4stZNCjP7KrRrZBUwoNFFezmKJrVUxLTC7g+stgM976BlpWP1ROKrBMQoW0i
-         TjuOYX0M1c5kpO2vFLHPi3REtb7fFFuzyzucUZiKJEauzG7ruIpTEPq1aSrBKfrhHATH
-         KXow==
-X-Gm-Message-State: AGi0PuZW+FrEb56f8Ob+R2mbLnaAFilKY01SaWdbMOqTZheTnjcNODXQ
-        8h2kBU0jQ8BbyixBToSTJVJM9w==
-X-Google-Smtp-Source: APiQypIR0YCUcj0f3UMEytiFmfxblPOyEvh9SW2C+KGbKy7Bv1gp+ctMoW+5Hl14SjZpskRV0vYXsA==
-X-Received: by 2002:a7b:c5cb:: with SMTP id n11mr2067920wmk.160.1586902132760;
-        Tue, 14 Apr 2020 15:08:52 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=2gAWHTXX9bF3sN9XblA+dduErzaItlbFPxUTg2AHv9w=;
+        b=kMXCdDtUjdWwEO0Y0Eqh4o+x0I/mxgl7O1vNIj9CUteCbztl2gu0pk0lUycb3Jx86T
+         H2QN/PEZWK6iXQxnFNdZrCukSyBHLlaHAsMgfksPC0gQuEObRFQobu3dig8axg3zbNuS
+         5V4yHtCDRKFg250H1ixhC+TdoBLt7ogznkhTzDCaKIjESeoy6y94xOCojf4SQJbxAJzL
+         wqvLsmtYF7Cw/q8cnIozgrbQLryULKrkKAb+bkbseUGtZsSoEi+aJ3jspmvzK3L7HtT4
+         2qjHj7LrrNufGUBXL9LQ/OgN2gNNJNBDM2zhV26cTy97TjjgkUPQP/YqVcjFuPjmKKbn
+         mJMA==
+X-Gm-Message-State: AGi0PuYZ13Rdd3SIMuuRS/Ncm+rKEYdunI+8fVRg4uuTIaqmDROljmM7
+        8dpdYiT6jBvTw8+I/TLWA1EHLA==
+X-Google-Smtp-Source: APiQypKE+PiQzpQOD6XHn4FFGCkS3xwrkZsF4sltqgVV63EDuVSL7DA5q/T28tGOrQyTlevnqXAkhQ==
+X-Received: by 2002:a1c:998b:: with SMTP id b133mr1885789wme.65.1586902139388;
+        Tue, 14 Apr 2020 15:08:59 -0700 (PDT)
 Received: from localhost.localdomain (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
-        by smtp.gmail.com with ESMTPSA id a7sm4099973wrs.61.2020.04.14.15.08.51
+        by smtp.gmail.com with ESMTPSA id a7sm4099973wrs.61.2020.04.14.15.08.58
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Apr 2020 15:08:52 -0700 (PDT)
+        Tue, 14 Apr 2020 15:08:58 -0700 (PDT)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
 Cc:     amit.kucheria@verdurent.com,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        linux-pm@vger.kernel.org (open list:POWER MANAGEMENT CORE),
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        linux-pm@vger.kernel.org (open list:THERMAL/CPU_COOLING),
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v3 1/4] powercap/drivers/idle_inject: Specify idle state max latency
-Date:   Wed, 15 Apr 2020 00:08:30 +0200
-Message-Id: <20200414220837.9284-1-daniel.lezcano@linaro.org>
+Subject: [PATCH v3 3/4] thermal/drivers/cpuidle_cooling: Change the registration function
+Date:   Wed, 15 Apr 2020 00:08:32 +0200
+Message-Id: <20200414220837.9284-3-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200414220837.9284-1-daniel.lezcano@linaro.org>
+References: <20200414220837.9284-1-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently the idle injection framework uses the play_idle() function
-which puts the current CPU in an idle state. The idle state is the
-deepest one, as specified by the latency constraint when calling the
-subsequent play_idle_precise() function with the INT_MAX.
+Today, there is no user for the cpuidle cooling device. The targetted
+platform is ARM and ARM64.
 
-The idle_injection is used by the cpuidle_cooling device which
-computes the idle / run duration to mitigate the temperature by
-injecting idle cycles. The cooling device has no control on the depth
-of the idle state.
+The cpuidle and the cpufreq cooling device are based on the device tree.
 
-Allow finer control of the idle injection mechanism by allowing to
-specify the latency for the idle state. Thus the cooling device has
-the ability to have a guarantee on the exit latency of the idle states
-it is injecting.
+As the cpuidle cooling device can have its own configuration depending
+on the platform and the available idle states. The DT node description
+will give the optional properties to set the cooling device up.
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Do no longer rely on the CPU node which is prone to error and will
+lead to a confusion in the DT because the cpufreq cooling device is
+also using it. Let initialize the cpuidle cooling device with the DT
+binding.
+
+This was tested on:
+ - hikey960
+ - hikey6220
+ - rock960
+ - db845c
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/powercap/idle_inject.c | 16 +++++++++++++++-
- include/linux/idle_inject.h    |  4 ++++
- 2 files changed, 19 insertions(+), 1 deletion(-)
+ drivers/thermal/cpuidle_cooling.c | 58 +++++++++++++++++++++++++------
+ include/linux/cpu_cooling.h       |  7 ----
+ 2 files changed, 47 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
-index cd1270614cc6..49f42c475620 100644
---- a/drivers/powercap/idle_inject.c
-+++ b/drivers/powercap/idle_inject.c
-@@ -61,12 +61,14 @@ struct idle_inject_thread {
-  * @timer: idle injection period timer
-  * @idle_duration_us: duration of CPU idle time to inject
-  * @run_duration_us: duration of CPU run time to allow
-+ * @latency_us: max allowed latency
-  * @cpumask: mask of CPUs affected by idle injection
-  */
- struct idle_inject_device {
- 	struct hrtimer timer;
- 	unsigned int idle_duration_us;
- 	unsigned int run_duration_us;
-+	unsigned int latency_us;
- 	unsigned long int cpumask[0];
+diff --git a/drivers/thermal/cpuidle_cooling.c b/drivers/thermal/cpuidle_cooling.c
+index 0bb843246f59..b2c81c427f05 100644
+--- a/drivers/thermal/cpuidle_cooling.c
++++ b/drivers/thermal/cpuidle_cooling.c
+@@ -10,6 +10,7 @@
+ #include <linux/err.h>
+ #include <linux/idle_inject.h>
+ #include <linux/idr.h>
++#include <linux/of_device.h>
+ #include <linux/slab.h>
+ #include <linux/thermal.h>
+ 
+@@ -154,22 +155,25 @@ static struct thermal_cooling_device_ops cpuidle_cooling_ops = {
  };
  
-@@ -138,7 +140,8 @@ static void idle_inject_fn(unsigned int cpu)
- 	 */
- 	iit->should_run = 0;
- 
--	play_idle(READ_ONCE(ii_dev->idle_duration_us));
-+	play_idle_precise(READ_ONCE(ii_dev->idle_duration_us) * NSEC_PER_USEC,
-+			  READ_ONCE(ii_dev->latency_us) * NSEC_PER_USEC);
- }
- 
  /**
-@@ -169,6 +172,16 @@ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
- 	*idle_duration_us = READ_ONCE(ii_dev->idle_duration_us);
+- * cpuidle_of_cooling_register - Idle cooling device initialization function
++ * __cpuidle_cooling_register: register the cooling device
+  * @drv: a cpuidle driver structure pointer
+- * @np: a node pointer to a device tree cooling device node
++ * @np: a device node structure pointer used for the thermal binding
+  *
+- * This function is in charge of creating a cooling device per cpuidle
+- * driver and register it to thermal framework.
++ * This function is in charge of allocating the cpuidle cooling device
++ * structure, the idle injection, initialize them and register the
++ * cooling device to the thermal framework.
+  *
+- * Return: zero on success, or negative value corresponding to the
+- * error detected in the underlying subsystems.
++ * Return: zero on success, a negative value returned by one of the
++ * underlying subsystem in case of error
+  */
+-int cpuidle_of_cooling_register(struct device_node *np,
+-				struct cpuidle_driver *drv)
++static int __cpuidle_cooling_register(struct device_node *np,
++				      struct cpuidle_driver *drv)
+ {
+ 	struct idle_inject_device *ii_dev;
+ 	struct cpuidle_cooling_device *idle_cdev;
+ 	struct thermal_cooling_device *cdev;
++	unsigned int idle_duration_us = TICK_USEC;
++	unsigned int latency_us = UINT_MAX;
+ 	char dev_name[THERMAL_NAME_LENGTH];
+ 	int id, ret;
+ 
+@@ -191,7 +195,11 @@ int cpuidle_of_cooling_register(struct device_node *np,
+ 		goto out_id;
+ 	}
+ 
+-	idle_inject_set_duration(ii_dev, TICK_USEC, TICK_USEC);
++	of_property_read_u32(np, "duration", &idle_duration_us);
++	of_property_read_u32(np, "latency", &latency_us);
++
++	idle_inject_set_duration(ii_dev, TICK_USEC, idle_duration_us);
++	idle_inject_set_latency(ii_dev, latency_us);
+ 
+ 	idle_cdev->ii_dev = ii_dev;
+ 
+@@ -204,6 +212,9 @@ int cpuidle_of_cooling_register(struct device_node *np,
+ 		goto out_unregister;
+ 	}
+ 
++	pr_info("%s: Idle injection set with idle duration=%u, latency=%u\n",
++		dev_name, idle_duration_us, latency_us);
++
+ 	return 0;
+ 
+ out_unregister:
+@@ -221,12 +232,37 @@ int cpuidle_of_cooling_register(struct device_node *np,
+  * @drv: a cpuidle driver structure pointer
+  *
+  * This function is in charge of creating a cooling device per cpuidle
+- * driver and register it to thermal framework.
++ * driver and register it to the thermal framework.
+  *
+  * Return: zero on success, or negative value corresponding to the
+  * error detected in the underlying subsystems.
+  */
+ int cpuidle_cooling_register(struct cpuidle_driver *drv)
+ {
+-	return cpuidle_of_cooling_register(NULL, drv);
++	struct device_node *cooling_node;
++	struct device_node *cpu_node;
++	int cpu, ret;
++
++	for_each_cpu(cpu, drv->cpumask) {
++
++		cpu_node = of_cpu_device_node_get(cpu);
++
++		cooling_node = of_get_child_by_name(cpu_node, "idle-thermal");
++
++		of_node_put(cpu_node);
++
++		if (!cooling_node)
++			continue;
++
++		ret = __cpuidle_cooling_register(cooling_node, drv);
++
++		of_node_put(cooling_node);
++
++		if (ret)
++			return ret;
++
++		cooling_node = NULL;
++	}
++
++	return 0;
  }
+diff --git a/include/linux/cpu_cooling.h b/include/linux/cpu_cooling.h
+index 65501d8f9778..4d7b4a303327 100644
+--- a/include/linux/cpu_cooling.h
++++ b/include/linux/cpu_cooling.h
+@@ -64,18 +64,11 @@ struct cpuidle_driver;
  
-+/**
-+ * idle_inject_set_latency - set the maximum latency allowed
-+ * @latency_us: set the latency requirement for the idle state
-+ */
-+void idle_inject_set_latency(struct idle_inject_device *ii_dev,
-+			     unsigned int latency_us)
-+{
-+	WRITE_ONCE(ii_dev->latency_us, latency_us);
-+}
-+
- /**
-  * idle_inject_start - start idle injections
-  * @ii_dev: idle injection control device structure
-@@ -297,6 +310,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
- 	cpumask_copy(to_cpumask(ii_dev->cpumask), cpumask);
- 	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	ii_dev->timer.function = idle_inject_timer_fn;
-+	ii_dev->latency_us = UINT_MAX;
+ #ifdef CONFIG_CPU_IDLE_THERMAL
+ int cpuidle_cooling_register(struct cpuidle_driver *drv);
+-int cpuidle_of_cooling_register(struct device_node *np,
+-				struct cpuidle_driver *drv);
+ #else /* CONFIG_CPU_IDLE_THERMAL */
+ static inline int cpuidle_cooling_register(struct cpuidle_driver *drv)
+ {
+ 	return 0;
+ }
+-static inline int cpuidle_of_cooling_register(struct device_node *np,
+-					      struct cpuidle_driver *drv)
+-{
+-	return 0;
+-}
+ #endif /* CONFIG_CPU_IDLE_THERMAL */
  
- 	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
- 
-diff --git a/include/linux/idle_inject.h b/include/linux/idle_inject.h
-index a445cd1a36c5..91a8612b8bf9 100644
---- a/include/linux/idle_inject.h
-+++ b/include/linux/idle_inject.h
-@@ -26,4 +26,8 @@ void idle_inject_set_duration(struct idle_inject_device *ii_dev,
- void idle_inject_get_duration(struct idle_inject_device *ii_dev,
- 				 unsigned int *run_duration_us,
- 				 unsigned int *idle_duration_us);
-+
-+void idle_inject_set_latency(struct idle_inject_device *ii_dev,
-+			     unsigned int latency_ns);
-+
- #endif /* __IDLE_INJECT_H__ */
+ #endif /* __CPU_COOLING_H__ */
 -- 
 2.17.1
 
