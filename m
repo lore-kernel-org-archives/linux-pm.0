@@ -2,276 +2,234 @@ Return-Path: <SRS0=6fVe=56=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3029DC2BB1D
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B0CCC2BB1D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:14:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 039AA2076C
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:09:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4B2B020767
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 22:14:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ky7JzqAx"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qabW9Cws"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2634175AbgDNWJW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 18:09:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56190 "EHLO
+        id S1733015AbgDNWO4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 18:14:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2634156AbgDNWJA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 18:09:00 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 473A8C061A0E
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:08:59 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id r26so16256939wmh.0
-        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:08:59 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1728338AbgDNWOz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 18:14:55 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A17ACC061A0E
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:14:54 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id k11so15817543wrp.5
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 15:14:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=qKrrTjxTq2DaanA7D/Z8LJo2RnyGixxTxyQQd7KYF+Q=;
-        b=ky7JzqAxzFlbteL2lCqTiA9yIwc4OTrN2IlfXatl0EhhaNCXRJ1pi3XvSI574/6YEn
-         RTamWp5/5yBVaX7svzhbu5Zx7cXwS1dnLCXm9K7Xeo4BQfsn1EfIoariDlXJBjMrPB1h
-         rnd37cJalZwh6YAu9Q49d/os1N0xyZHVFYkLbV/7MnOHvB6/Kue45GqjsqXt2q3tLolA
-         D36BIEm5pe0iuRlfFJtwj4KBPKaPG+c6e7IRBKWzE+1MZupDhxrdqoDfQjQY0tq2Wd8d
-         rechd02gUcKi1rwLKHSU4YXhY5uc1MuFczrqR4WjjFj3r1q0ueRqogs0/yGKBt7A2CSJ
-         JjOg==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=tFNbkDDuu+xJJGMOQnSsTSZToEf+DrCp0hBRrSm4NEc=;
+        b=qabW9Cwsrm5flCJViset/DUU4XAV92iY6uYTR6CKgMWINRrDE/p0FdK2jJYOTZGz+/
+         s7esIJSyksYapk5/fn6o0kQ6QRp0KX+QMW66qQvkBQ321UC34lorcDk1XNHw9XKLl4sn
+         Van8EM9t8zDbWrbFSGieU/bvQFG4SG7dKeGOGtTc4P1ZhF99ggZrLcsQm+hS+o5GYs7y
+         HaRMSFJD3RGWsF683rGYkcbQOUo4/wYjoAOfk4jrsHcsH8OZOojhBUoAvY1OlwRaXLoL
+         P5tjnf86p6ZwIpdaDB7apkv1IHWCqfM8M8CYXECtoj4tIYqk6jV/clruQ0aO0t1jf6qX
+         yELg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=qKrrTjxTq2DaanA7D/Z8LJo2RnyGixxTxyQQd7KYF+Q=;
-        b=mt2vZTOqyqyXIxGkN5YUndGFOHjTiW8SrkbaNUfZ1elKcF4yk6RGD0Ux9Ixr5mdyit
-         ZUDaheGvxdJRLArUsi1AefPLNuKNAtoyuv4fONhOSDWSCQIxJvStQzRqyP1ggKGqhmE/
-         ErscP1Oa9ru6X4sE5YeAzYL5CPvgUwdyliDaNaC8i3QQzJ99zuLHNrylDHl3K6igDu2d
-         IPTj/ShjTyJ15L1iEMauoWa1Gk0QY4ooe20Z5FUxj31MQh18OGjPdRnneQ+W+RLllVjh
-         wOzTz2mf5+Or0VKv264ppPdsDgZVLhFsJ6seVfUHATVI82lewfYh4Gw4+sG3B/bxC19z
-         kEtA==
-X-Gm-Message-State: AGi0PuZUUdBJ/C7HV7jgKqbIgl9zXe0pBxafVkK+yxgCh68kTtvMDW4a
-        pfqLw1SJxUxFAdTo9XaTiJmoag==
-X-Google-Smtp-Source: APiQypIso6cYieAXB2y+b/ecomS6KQqRcgPqo3sIwyiW+hi0Scm6IA26i/fLhftACEB1zP/x9ZMwzg==
-X-Received: by 2002:a1c:3885:: with SMTP id f127mr1882179wma.134.1586902137384;
-        Tue, 14 Apr 2020 15:08:57 -0700 (PDT)
-Received: from localhost.localdomain (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
-        by smtp.gmail.com with ESMTPSA id a7sm4099973wrs.61.2020.04.14.15.08.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Apr 2020 15:08:56 -0700 (PDT)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=tFNbkDDuu+xJJGMOQnSsTSZToEf+DrCp0hBRrSm4NEc=;
+        b=jTLSc8JjwL4Yo+aOemhVDcxlRML6h4nLC0F8RUpn73NPZinjKwgn9QBFVZYcW9vwW8
+         a2N/bEp942tGB1jtfvgqxBZQWguPSslakwAP+S4iPplM1VLf16NsmWdK0UGFfv6RCHFn
+         jWQkmZV+WsVxqkAkRBVkwTtW+u++xs7a6QMvAVMZAZrhSBRXQkKYYFHeG9+fyqcujBBW
+         w+FuBp3ZX7+61Fl0Rot1ZelrZok/DpI3GveTDnw5UpkC5MkU7/76KQtGW661NK6LaobW
+         QBh6gI9zd4hJFGqQUosufKj3St+JcZdnJ3wNpywObxnpmioOICkW7x1YoPQuRA0q6t/N
+         a/zw==
+X-Gm-Message-State: AGi0PuaYYaqpFn6N0LINczJQFIXwvaSj75r+riCdbot69ochc1/KUZwH
+        0RAiHaPyWH9tWOkt8bjwtUI84w==
+X-Google-Smtp-Source: APiQypJCM7RZYbnn05d5p3O23E+0h2bnGY34lOEUBW3XV9QKLjxerTTj5VEgsJydss45wo2Ye1GFqg==
+X-Received: by 2002:adf:fc4c:: with SMTP id e12mr25646050wrs.265.1586902493086;
+        Tue, 14 Apr 2020 15:14:53 -0700 (PDT)
+Received: from [192.168.0.41] (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
+        by smtp.googlemail.com with ESMTPSA id k184sm20036949wmf.9.2020.04.14.15.14.51
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 14 Apr 2020 15:14:52 -0700 (PDT)
+Subject: Re: [RFC v2 3/9] thermal: Properly handle mode values in .set_mode()
+To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        linux-pm@vger.kernel.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>, Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, kernel@collabora.com
+References: <2bc5a902-acde-526a-11a5-2357d899916c@linaro.org>
+ <20200414180105.20042-1-andrzej.p@collabora.com>
+ <20200414180105.20042-4-andrzej.p@collabora.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
-Cc:     amit.kucheria@verdurent.com, Rob Herring <robh+dt@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED
-        DEVICE TREE BINDINGS), linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v3 2/4] dt-bindings: thermal: Add the idle cooling device
-Date:   Wed, 15 Apr 2020 00:08:31 +0200
-Message-Id: <20200414220837.9284-2-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200414220837.9284-1-daniel.lezcano@linaro.org>
-References: <20200414220837.9284-1-daniel.lezcano@linaro.org>
+Message-ID: <e7ed4bcf-8605-c6ad-4412-acb33251a0b3@linaro.org>
+Date:   Wed, 15 Apr 2020 00:14:50 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
+MIME-Version: 1.0
+In-Reply-To: <20200414180105.20042-4-andrzej.p@collabora.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some devices are not able to cool down by reducing their voltage /
-frequency because it could be not available or the system does not
-allow voltage scaling. In this configuration, it is not possible to
-use this strategy and the idle injection cooling device can be used
-instead.
 
-One idle cooling device is now present for the CPU as implemented by
-the combination of the idle injection framework belonging to the power
-capping framework and the thermal cooling device. The missing part is
-the DT binding providing a way to describe how the cooling device will
-work on the system.
+Hi Andrzej,
 
-A first iteration was done by making the cooling device to point to
-the idle state. Unfortunately it does not make sense because it would
-need to duplicate the idle state description for each CPU in order to
-have a different phandle and make the thermal internal framework
-happy.
+you can drop this patch. It is not useful as the caller checks the
+correctness of the values in the patch 4/9.
 
-It was proposed to add an cooling-cells to <3>, unfortunately the
-thermal framework is expecting a value of <2> as stated by the
-documentation and it is not possible from the cooling device generic
-code to loop this third value to the back end cooling device.
+Moreover the patch is bogus because it returns before releasing the lock.
 
-Another proposal was to add a child 'thermal-idle' node as the SCMI
-does. This approach allows to have a self-contained configuration for
-the idle cooling device without colliding with the cpufreq cooling
-device which is based on the CPU node. In addition, it allows to have
-the cpufreq cooling device and the idle cooling device to co-exist
-together as shown in the example.
+On 14/04/2020 20:00, Andrzej Pietrasiewicz wrote:
+> Allow only THERMAL_DEVICE_ENABLED and THERMAL_DEVICE_DISABLED as valid
+> states to transition to.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- - V3:
-   - Removed extra line with tab inside
- - V2:
-   - Fixed comment type
-   - Added dual license
-   - Fixed description s/begins to/should/
-   - Changed name s/duration/duration-us/
-   - Changed name s/latency/exit-latency-us/
-   - Removed types for latency / duration
-   - Fixed s/idle-thermal/thermal-idle/
----
- .../bindings/thermal/thermal-idle.yaml        | 145 ++++++++++++++++++
- 1 file changed, 145 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/thermal-idle.yaml
 
-diff --git a/Documentation/devicetree/bindings/thermal/thermal-idle.yaml b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
-new file mode 100644
-index 000000000000..7a922f540934
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/thermal-idle.yaml
-@@ -0,0 +1,145 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright 2020 Linaro Ltd.
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/thermal-idle.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Thermal idle cooling device binding
-+
-+maintainers:
-+  - Daniel Lezcano <daniel.lezcano@linaro.org>
-+
-+description: |
-+  The thermal idle cooling device allows the system to passively
-+  mitigate the temperature on the device by injecting idle cycles,
-+  forcing it to cool down.
-+
-+  This binding describes the thermal idle node.
-+
-+properties:
-+   $nodename:
-+     const: thermal-idle
-+     description: |
-+        A thermal-idle node describes the idle cooling device properties to
-+        cool down efficiently the attached thermal zone.
-+
-+   '#cooling-cells':
-+      const: 2
-+      description: |
-+         Must be 2, in order to specify minimum and maximum cooling state used in
-+         the cooling-maps reference. The first cell is the minimum cooling state
-+         and the second cell is the maximum cooling state requested.
-+
-+   duration-us:
-+      description: |
-+         The idle duration in microsecond the device should cool down.
-+
-+   exit-latency-us:
-+      description: |
-+         The exit latency constraint in microsecond for the injected
-+         idle state for the device. It is the latency constraint to
-+         apply when selecting an idle state from among all the present
-+         ones.
-+
-+required:
-+  - '#cooling-cells'
-+
-+examples:
-+  - |
-+    #include <dt-bindings/thermal/thermal.h>
-+
-+    // Example: Combining idle cooling device on big CPUs with cpufreq cooling device
-+    cpus {
-+            #address-cells = <2>;
-+            #size-cells = <0>;
-+
-+            /* ... */
-+
-+                 cpu_b0: cpu@100 {
-+                         device_type = "cpu";
-+                         compatible = "arm,cortex-a72";
-+                         reg = <0x0 0x100>;
-+                         enable-method = "psci";
-+                         capacity-dmips-mhz = <1024>;
-+                         dynamic-power-coefficient = <436>;
-+                         #cooling-cells = <2>; /* min followed by max */
-+                         cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+                         thermal-idle {
-+                                 #cooling-cells = <2>;
-+                                 duration-us = <10000>;
-+                                 exit-latency-us = <500>;
-+                         };
-+                };
-+
-+                cpu_b1: cpu@101 {
-+                        device_type = "cpu";
-+                        compatible = "arm,cortex-a72";
-+                        reg = <0x0 0x101>;
-+                        enable-method = "psci";
-+                        capacity-dmips-mhz = <1024>;
-+                        dynamic-power-coefficient = <436>;
-+                        #cooling-cells = <2>; /* min followed by max */
-+                        cpu-idle-states = <&CPU_SLEEP &CLUSTER_SLEEP>;
-+                        thermal-idle {
-+                                #cooling-cells = <2>;
-+                                duration-us = <10000>;
-+                                exit-latency-us = <500>;
-+                        };
-+                 };
-+
-+          /* ... */
-+
-+    };
-+
-+    /* ... */
-+
-+    thermal_zones {
-+         cpu_thermal: cpu {
-+                polling-delay-passive = <100>;
-+                polling-delay = <1000>;
-+
-+                /* ... */
-+
-+                trips {
-+                        cpu_alert0: cpu_alert0 {
-+                                    temperature = <65000>;
-+                                    hysteresis = <2000>;
-+                                    type = "passive";
-+                        };
-+
-+                        cpu_alert1: cpu_alert1 {
-+                                    temperature = <70000>;
-+                                    hysteresis = <2000>;
-+                                    type = "passive";
-+                        };
-+
-+                        cpu_alert2: cpu_alert2 {
-+                                    temperature = <75000>;
-+                                    hysteresis = <2000>;
-+                                    type = "passive";
-+                        };
-+
-+                        cpu_crit: cpu_crit {
-+                                    temperature = <95000>;
-+                                    hysteresis = <2000>;
-+                                    type = "critical";
-+                        };
-+                };
-+
-+                cooling-maps {
-+                        map0 {
-+                             trip = <&cpu_alert1>;
-+                             cooling-device = <&{/cpus/cpu@100/thermal-idle} 0 15 >,
-+                                              <&{/cpus/cpu@101/thermal-idle} 0 15>;
-+                        };
-+
-+                        map1 {
-+                             trip = <&cpu_alert2>;
-+                             cooling-device =
-+                                        <&cpu_b0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
-+                                        <&cpu_b1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+                       };
-+                };
-+          };
-+    };
+
+
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+> ---
+>  drivers/net/ethernet/mellanox/mlxsw/core_thermal.c | 8 ++++++--
+>  drivers/platform/x86/acerhdf.c                     | 4 ++++
+>  drivers/thermal/imx_thermal.c                      | 4 +++-
+>  drivers/thermal/intel/intel_quark_dts_thermal.c    | 5 ++++-
+>  drivers/thermal/of-thermal.c                       | 4 +++-
+>  5 files changed, 20 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
+> index ce0a6837daa3..cd435ca7adbe 100644
+> --- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
+> +++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
+> @@ -296,8 +296,10 @@ static int mlxsw_thermal_set_mode(struct thermal_zone_device *tzdev,
+>  
+>  	if (mode == THERMAL_DEVICE_ENABLED)
+>  		tzdev->polling_delay = thermal->polling_delay;
+> -	else
+> +	else if (mode == THERMAL_DEVICE_DISABLED)
+>  		tzdev->polling_delay = 0;
+> +	else
+> +		return -EINVAL;
+>  
+>  	mutex_unlock(&tzdev->lock);
+>  
+> @@ -486,8 +488,10 @@ static int mlxsw_thermal_module_mode_set(struct thermal_zone_device *tzdev,
+>  
+>  	if (mode == THERMAL_DEVICE_ENABLED)
+>  		tzdev->polling_delay = thermal->polling_delay;
+> -	else
+> +	else if (mode == THERMAL_DEVICE_DISABLED)
+>  		tzdev->polling_delay = 0;
+> +	else
+> +		return -EINVAL;
+>  
+>  	mutex_unlock(&tzdev->lock);
+>  
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> index 8cc86f4e3ac1..d5188c1d688b 100644
+> --- a/drivers/platform/x86/acerhdf.c
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -431,6 +431,10 @@ static int acerhdf_get_mode(struct thermal_zone_device *thermal,
+>  static int acerhdf_set_mode(struct thermal_zone_device *thermal,
+>  			    enum thermal_device_mode mode)
+>  {
+> +	if (mode != THERMAL_DEVICE_DISABLED &&
+> +	    mode != THERMAL_DEVICE_ENABLED)
+> +		return -EINVAL;
+> +
+>  	if (mode == THERMAL_DEVICE_DISABLED && kernelmode)
+>  		acerhdf_revert_to_bios_mode();
+>  	else if (mode == THERMAL_DEVICE_ENABLED && !kernelmode)
+> diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+> index e761c9b42217..36b1924f1938 100644
+> --- a/drivers/thermal/imx_thermal.c
+> +++ b/drivers/thermal/imx_thermal.c
+> @@ -361,7 +361,7 @@ static int imx_set_mode(struct thermal_zone_device *tz,
+>  			data->irq_enabled = true;
+>  			enable_irq(data->irq);
+>  		}
+> -	} else {
+> +	} else if (mode == THERMAL_DEVICE_DISABLED) {
+>  		regmap_write(map, soc_data->sensor_ctrl + REG_CLR,
+>  			     soc_data->measure_temp_mask);
+>  		regmap_write(map, soc_data->sensor_ctrl + REG_SET,
+> @@ -374,6 +374,8 @@ static int imx_set_mode(struct thermal_zone_device *tz,
+>  			disable_irq(data->irq);
+>  			data->irq_enabled = false;
+>  		}
+> +	} else {
+> +		return -EINVAL;
+>  	}
+>  
+>  	data->mode = mode;
+> diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
+> index d704fc104cfd..11d7db895125 100644
+> --- a/drivers/thermal/intel/intel_quark_dts_thermal.c
+> +++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
+> @@ -325,8 +325,11 @@ static int sys_set_mode(struct thermal_zone_device *tzd,
+>  	mutex_lock(&dts_update_mutex);
+>  	if (mode == THERMAL_DEVICE_ENABLED)
+>  		ret = soc_dts_enable(tzd);
+> -	else
+> +	else if (mode == THERMAL_DEVICE_DISABLED)
+>  		ret = soc_dts_disable(tzd);
+> +	else
+> +		return -EINVAL;
+> +
+>  	mutex_unlock(&dts_update_mutex);
+>  
+>  	return ret;
+> diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
+> index 874a47d6923f..36bebf623980 100644
+> --- a/drivers/thermal/of-thermal.c
+> +++ b/drivers/thermal/of-thermal.c
+> @@ -289,9 +289,11 @@ static int of_thermal_set_mode(struct thermal_zone_device *tz,
+>  	if (mode == THERMAL_DEVICE_ENABLED) {
+>  		tz->polling_delay = data->polling_delay;
+>  		tz->passive_delay = data->passive_delay;
+> -	} else {
+> +	} else if (mode == THERMAL_DEVICE_DISABLED) {
+>  		tz->polling_delay = 0;
+>  		tz->passive_delay = 0;
+> +	} else {
+> +		return -EINVAL;
+>  	}
+>  
+>  	mutex_unlock(&tz->lock);
+> 
+
+
 -- 
-2.17.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
