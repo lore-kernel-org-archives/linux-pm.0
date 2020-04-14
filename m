@@ -7,24 +7,21 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B00AC352BE
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:02:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D5BC2BB85
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:02:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6DD2620767
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:02:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 33E6E2076B
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 18:02:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2503260AbgDNSCW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 14:02:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43472 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2503208AbgDNSBh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 14:01:37 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C311EC061A0C;
-        Tue, 14 Apr 2020 11:01:36 -0700 (PDT)
+        id S2503188AbgDNSB1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 14:01:27 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:46710 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2503178AbgDNSBW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 14:01:22 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: andrzej.p)
-        with ESMTPSA id 5A9202A1BDC
+        with ESMTPSA id C384B2A1BDE
 From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Zhang Rui <rui.zhang@intel.com>,
@@ -51,9 +48,9 @@ Cc:     Zhang Rui <rui.zhang@intel.com>,
         platform-driver-x86@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
         Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Subject: [RFC v2 8/9] thermal: of: Monitor thermal zone after enabling it
-Date:   Tue, 14 Apr 2020 20:01:04 +0200
-Message-Id: <20200414180105.20042-9-andrzej.p@collabora.com>
+Subject: [RFC v2 2/9] thermal: Eliminate an always-false condition
+Date:   Tue, 14 Apr 2020 20:00:58 +0200
+Message-Id: <20200414180105.20042-3-andrzej.p@collabora.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200414180105.20042-1-andrzej.p@collabora.com>
 References: <2bc5a902-acde-526a-11a5-2357d899916c@linaro.org>
@@ -63,31 +60,64 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-thermal/of calls its own ->set_mode() method, so monitor thermal zone
-afterwards. This is needed for the DISABLED->ENABLED transition.
+This driver provides a non-NULL "devdata" argument for
+thermal_zone_device_register(). Thermal core never sets it to NULL
+afterwards, so checking for its being NULL in this driver makes no sense.
 
 Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 ---
- drivers/thermal/of-thermal.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/acpi/thermal.c                                  | 6 ------
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 6 ------
+ 2 files changed, 12 deletions(-)
 
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/of-thermal.c
-index 0f1e134e90ea..aa4cbc904c5c 100644
---- a/drivers/thermal/of-thermal.c
-+++ b/drivers/thermal/of-thermal.c
-@@ -542,8 +542,11 @@ thermal_zone_of_sensor_register(struct device *dev, int sensor_id, void *data,
- 		if (id == sensor_id) {
- 			tzd = thermal_zone_of_add_sensor(child, sensor_np,
- 							 data, ops);
--			if (!IS_ERR(tzd))
-+			if (!IS_ERR(tzd)) {
- 				thermal_zone_device_enable(tzd);
-+				thermal_zone_device_update(tzd,
-+						THERMAL_EVENT_UNSPECIFIED);
-+			}
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 19067a5e5293..328b479ce7f6 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -531,9 +531,6 @@ static int thermal_get_mode(struct thermal_zone_device *thermal,
+ {
+ 	struct acpi_thermal *tz = thermal->devdata;
  
- 			of_node_put(child);
- 			goto exit;
+-	if (!tz)
+-		return -EINVAL;
+-
+ 	*mode = tz->tz_enabled ? THERMAL_DEVICE_ENABLED :
+ 		THERMAL_DEVICE_DISABLED;
+ 
+@@ -546,9 +543,6 @@ static int thermal_set_mode(struct thermal_zone_device *thermal,
+ 	struct acpi_thermal *tz = thermal->devdata;
+ 	int enable;
+ 
+-	if (!tz)
+-		return -EINVAL;
+-
+ 	/*
+ 	 * enable/disable thermal management from ACPI thermal driver
+ 	 */
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index e802922a13cf..fbb59dd09481 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -235,9 +235,6 @@ static int int3400_thermal_get_mode(struct thermal_zone_device *thermal,
+ {
+ 	struct int3400_thermal_priv *priv = thermal->devdata;
+ 
+-	if (!priv)
+-		return -EINVAL;
+-
+ 	*mode = priv->mode;
+ 
+ 	return 0;
+@@ -250,9 +247,6 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+ 	bool enable;
+ 	int result = 0;
+ 
+-	if (!priv)
+-		return -EINVAL;
+-
+ 	if (mode == THERMAL_DEVICE_ENABLED)
+ 		enable = true;
+ 	else if (mode == THERMAL_DEVICE_DISABLED)
 -- 
 2.17.1
 
