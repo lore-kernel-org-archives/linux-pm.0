@@ -2,96 +2,87 @@ Return-Path: <SRS0=6fVe=56=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C0E4C2BB85
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 19:58:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A83ADC2BB1D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 21:18:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8592B20767
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 19:58:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 811162074D
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Apr 2020 21:18:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1586899124;
+	bh=QTc0Uwc1T257Q+FefIhjMUIgBRsqhODz6ilOwxjjh5c=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=euQrXX8JVN4OXMdh1UCZOrwKiPkcy2HKjJ3poHe/cerDom++uo0/vREvHpLLF31xI
+	 iBdM6goaV9c2I8Cel96AibhWZ2GdpjfDYoKklH/xVmw3+hAHnaNcLSC45S/WCQNfa3
+	 RimKllpNrW8ieNC9PCTScpzHrvU+Crc5llOnQjb8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2505278AbgDNT5A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Apr 2020 15:57:00 -0400
-Received: from smtprelay0211.hostedemail.com ([216.40.44.211]:34122 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2505250AbgDNTz5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 15:55:57 -0400
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com [10.5.19.251])
-        by smtpgrave04.hostedemail.com (Postfix) with ESMTP id D5D591802CCB4;
-        Tue, 14 Apr 2020 19:47:05 +0000 (UTC)
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
-        by smtprelay06.hostedemail.com (Postfix) with ESMTP id 9E3611802B57F;
-        Tue, 14 Apr 2020 19:47:05 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: coal59_5a1e7cc02a463
-X-Filterd-Recvd-Size: 2796
-Received: from XPS-9350.home (unknown [47.151.136.130])
-        (Authenticated sender: joe@perches.com)
-        by omf07.hostedemail.com (Postfix) with ESMTPA;
-        Tue, 14 Apr 2020 19:46:59 +0000 (UTC)
-Message-ID: <2a58f592879cf67b4c6b8e859ce87e1f9652902a.camel@perches.com>
-Subject: Re: [PATCH v2 2/2] crypto: Remove unnecessary memzero_explicit()
-From:   Joe Perches <joe@perches.com>
-To:     Waiman Long <longman@redhat.com>,
-        Michal =?ISO-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-Cc:     Christophe Leroy <christophe.leroy@c-s.fr>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        David Howells <dhowells@redhat.com>,
-        Jarkko Sakkinen <jarkko.sakkinen@linux.intel.com>,
-        James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>,
-        Matthew Wilcox <willy@infradead.org>,
-        David Rientjes <rientjes@google.com>, linux-mm@kvack.org,
-        keyrings@vger.kernel.org, linux-kernel@vger.kernel.org,
-        x86@kernel.org, linux-crypto@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-arm-kernel@lists.infradead.org,
-        linux-amlogic@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-        virtualization@lists.linux-foundation.org, netdev@vger.kernel.org,
-        intel-wired-lan@lists.osuosl.org, linux-ppp@vger.kernel.org,
-        wireguard@lists.zx2c4.com, linux-wireless@vger.kernel.org,
-        devel@driverdev.osuosl.org, linux-scsi@vger.kernel.org,
-        target-devel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-        linux-cifs@vger.kernel.org, samba-technical@lists.samba.org,
-        linux-fscrypt@vger.kernel.org, ecryptfs@vger.kernel.org,
-        kasan-dev@googlegroups.com, linux-bluetooth@vger.kernel.org,
-        linux-wpan@vger.kernel.org, linux-sctp@vger.kernel.org,
-        linux-nfs@vger.kernel.org, tipc-discussion@lists.sourceforge.net,
-        cocci@systeme.lip6.fr, linux-security-module@vger.kernel.org,
-        linux-integrity@vger.kernel.org
-Date:   Tue, 14 Apr 2020 12:44:49 -0700
-In-Reply-To: <578fe9b6-1ccd-2698-60aa-96c3f2dd2c31@redhat.com>
-References: <20200413211550.8307-1-longman@redhat.com>
-         <20200413222846.24240-1-longman@redhat.com>
-         <eca85e0b-0af3-c43a-31e4-bd5c3f519798@c-s.fr>
-         <e194a51f-a5e5-a557-c008-b08cac558572@redhat.com>
-         <20200414191601.GZ25468@kitsune.suse.cz>
-         <578fe9b6-1ccd-2698-60aa-96c3f2dd2c31@redhat.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-User-Agent: Evolution 3.34.1-2 
+        id S2633753AbgDNVSn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Apr 2020 17:18:43 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:37876 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2633733AbgDNVSm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Apr 2020 17:18:42 -0400
+Received: by mail-oi1-f193.google.com with SMTP id r25so1885343oij.4
+        for <linux-pm@vger.kernel.org>; Tue, 14 Apr 2020 14:18:42 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=b78y/qprVyrWWHqOCyz9Uq8uGo8VRikgf5v37xoaSbc=;
+        b=kIDWf4QwaaMLvTNH+1lZrq63DJNNxlf9Ui6JTEJHckxRPFry7uSN2C2tNb/GJC0zgB
+         clnVPwEFMbLLleMFhObRUe2Qj5nDpn3DFuwC8Pm+xTD9rLUL5XMSk63gMWBJNCUbiyaX
+         0pKq9oSUy7jpVmk2KKJYgfzyp4BU1sK121uo0IfnXYWzBmjy1fxFvEJmwy1qi5vBUlEo
+         twGO00t6SLYASrGiDFD5lZqWvHkfgIAShqYZMLsGoItaxO4MWhnQgz5bsyzFFkn3mOdF
+         fypIg5guYnpDOE9zQ9uPnP23lkdrG7yQx/UqFNTJbhxRKRcVZy5+CySpH6QOl1Hxw8K4
+         L/gw==
+X-Gm-Message-State: AGi0PuYXMGdV5VkW5x70UYjpCj8F5CA5D9CJVeVO3j7o/I+a92DJ3e/j
+        T3OAt6s5P90ZO2LjbHuruLvJY+EoLQyi+GTPjykTUQ==
+X-Google-Smtp-Source: APiQypKOmK/m0kC0ENUqWIhzl6nuHqk9GeNL38KesK7vjC209H1SaLERi0gda9kUXLRJNlj6wX5vkUxQFlhtEINk/Ok=
+X-Received: by 2002:aca:2209:: with SMTP id b9mr17467492oic.103.1586899121837;
+ Tue, 14 Apr 2020 14:18:41 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+References: <20200414060737.ckxaa7bff6l24pym@vireshk-i7>
+In-Reply-To: <20200414060737.ckxaa7bff6l24pym@vireshk-i7>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 14 Apr 2020 23:18:30 +0200
+Message-ID: <CAJZ5v0jjG+QD67pk0tz18ScJsP9mDa6E7y4eqn+2SEGY5yOosg@mail.gmail.com>
+Subject: Re: [GIT PULL] OPP changes for 5.7-rc2
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Nayak, Rajendra" <rnayak@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 2020-04-14 at 15:37 -0400, Waiman Long wrote:
-> OK, I can change it to clear the key length when the allocation failed
-> which isn't likely.
+On Tue, Apr 14, 2020 at 8:07 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> Hi Rafael,
+>
+> This pull request contains a single patch that lets the OPP core to be
+> used by several IO drivers without making a lot of changes in them for
+> the case where the same driver may be used by a platform with an OPP
+> table or a clock node on another one. I am looking to get this into
+> 5.7 release itself, which will enable other users (in multiple
+> frameworks) to get merged without waiting for the dependency to get
+> resolved.
+>
+> The following changes since commit 8f3d9f354286745c751374f5f1fcafee6b3f3136:
+>
+>   Linux 5.7-rc1 (2020-04-12 12:35:55 -0700)
+>
+> are available in the Git repository at:
+>
+>   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/linux-next
+>
+> for you to fetch changes up to aca48b61f963869ccbb5cf84805a7ad68bf812cd:
+>
+>   opp: Manage empty OPP tables with clk handle (2020-04-13 16:14:55 +0530)
 
-
-Perhaps:
-
-	kfree_sensitive(op->key);
-	op->key = NULL;
-	op->keylen = 0;
-
-but I don't know that it impacts any possible state.
-
-
+Pulled, thanks!
