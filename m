@@ -4,49 +4,50 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8B1C2BA19
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:45:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9CA7C2BA19
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:48:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 746B2206A2
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:45:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B3F6320737
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:48:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586954734;
-	bh=BLk2zqFpRCw7XR3epSmCEKoMUV+x/8k9ijREmEOOEx4=;
+	s=default; t=1586954935;
+	bh=G7KxnwoLgLdPJXOkgOpWzhaL/rwPD/wpMyKVXu5Bt9U=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=AA5AzeXJWHIyD0TpzNg9JHbYqZQKEAnrDFQFZJVSVIuexYCZwBwKJerGBGcQwMMX/
-	 //mRuaT2txv/9LtF00Wf+4sEc8hrm2Nacg+77QJiy+OVEOd1yAmDuqyLi/yPnmvpiO
-	 sWGwBlInTmE9Uf9DQN5/vlzFOsh3tWXPlp43guKE=
+	b=kI+yOaYVkLygojIVHjv0SnQTBNONoszGeQBld6PTXeGSIs8aQAPEdIPvOCfJUw3Kq
+	 QOgt2GCbHnolBqrUIsC3Ar3MYvw/4gn8/nUU+Z9qfl3vvdvfKCDb1Q0Afz5EnGMZdt
+	 CSQKGx5K2IWCAmJlzvWfFpllxJZRAau5T6P9gsVI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2898227AbgDOMpb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Apr 2020 08:45:31 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35110 "EHLO mail.kernel.org"
+        id S370242AbgDOMsO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Apr 2020 08:48:14 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34792 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2408980AbgDOLnP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Apr 2020 07:43:15 -0400
+        id S2408957AbgDOLnG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Apr 2020 07:43:06 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 86DD72168B;
-        Wed, 15 Apr 2020 11:43:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 45A90214AF;
+        Wed, 15 Apr 2020 11:43:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586950995;
-        bh=BLk2zqFpRCw7XR3epSmCEKoMUV+x/8k9ijREmEOOEx4=;
+        s=default; t=1586950986;
+        bh=G7KxnwoLgLdPJXOkgOpWzhaL/rwPD/wpMyKVXu5Bt9U=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=tPV6LcRc/xsxtqTgJgqQg7THKiFcp+bkI0H5NhktlA2e1bF3bQ5M8O8WpnUZZvHEQ
-         WthBOqEaXE3jRhOHxAj7mPIUI/1fu7v2Hn2KQ0Y1ZcpES2kpNDA1XrZUS8ML48WAZi
-         qnd963pNC4hEAgF0I+XTnTStq9DaHYWgphz5ii48=
+        b=ULb1wmvB/kXcy0Wk4dJSWiA82rRcYa1DYYs36KkqYWbSZD759gltPYpaWsFD7QxTR
+         grDha1sr+2okBedBMsii4giAN8OWEXvDWCfbtmfQ9iA4S0foBVZD5demAHhdQzsMlW
+         WAcLhVOC/qyLKcuECPuWesos8XKtZIyzQamOx7Sg=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Willy Wolff <willy.mh.wolff.ml@gmail.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+Cc:     Amit Kucheria <amit.kucheria@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.5 041/106] thermal/drivers/cpufreq_cooling: Fix return of cpufreq_set_cur_state
-Date:   Wed, 15 Apr 2020 07:41:21 -0400
-Message-Id: <20200415114226.13103-41-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.5 033/106] drivers: thermal: tsens: Release device in success path
+Date:   Wed, 15 Apr 2020 07:41:13 -0400
+Message-Id: <20200415114226.13103-33-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200415114226.13103-1-sashal@kernel.org>
 References: <20200415114226.13103-1-sashal@kernel.org>
@@ -59,59 +60,60 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+From: Amit Kucheria <amit.kucheria@linaro.org>
 
-[ Upstream commit ff44f672d74178b3be19d41a169b98b3e391d4ce ]
+[ Upstream commit f22a3bf0d2225fba438c46a25d3ab8823585a5e0 ]
 
-When setting the cooling device current state from userspace via sysfs,
-the operation fails by returning an -EINVAL.
+We don't currently call put_device in case of successfully initialising
+the device. So we hold the reference and keep the device pinned forever.
 
-It appears the recent changes with the per-policy frequency QoS
-introduced a regression as reported by:
+Allow control to fall through so we can use same code for success and
+error paths to put_device.
 
- https://lkml.org/lkml/2020/3/20/599
+As a part of this fixup, change devm_ioremap_resource to act on the same
+device pointer as that used to allocate regmap memory. That ensures that
+we are free to release op->dev after examining its resources.
 
-The function freq_qos_update_request returns 0 or 1 describing update
-effectiveness, and a negative error code on failure. However,
-cpufreq_set_cur_state returns 0 on success or an error code otherwise.
-
-Consider the QoS update as successful if the function does not return
-an error.
-
-Fixes: 3000ce3c52f8b ("cpufreq: Use per-policy frequency QoS")
-Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20200321092740.7vvwfxsebcrznydh@macmini.local
+Link: https://lore.kernel.org/r/d3996667e9f976bb30e97e301585cb1023be422e.1584015867.git.amit.kucheria@linaro.org
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/thermal/cpu_cooling.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ drivers/thermal/qcom/tsens-common.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-index 52569b27b426f..d679e9a515c8e 100644
---- a/drivers/thermal/cpu_cooling.c
-+++ b/drivers/thermal/cpu_cooling.c
-@@ -430,6 +430,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 				 unsigned long state)
- {
- 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
-+	int ret;
+diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
+index c8d57ee0a5bb2..2cc276cdfcdb1 100644
+--- a/drivers/thermal/qcom/tsens-common.c
++++ b/drivers/thermal/qcom/tsens-common.c
+@@ -602,7 +602,7 @@ int __init init_common(struct tsens_priv *priv)
+ 		/* DT with separate SROT and TM address space */
+ 		priv->tm_offset = 0;
+ 		res = platform_get_resource(op, IORESOURCE_MEM, 1);
+-		srot_base = devm_ioremap_resource(&op->dev, res);
++		srot_base = devm_ioremap_resource(dev, res);
+ 		if (IS_ERR(srot_base)) {
+ 			ret = PTR_ERR(srot_base);
+ 			goto err_put_device;
+@@ -620,7 +620,7 @@ int __init init_common(struct tsens_priv *priv)
+ 	}
  
- 	/* Request state should be less than max_level */
- 	if (WARN_ON(state > cpufreq_cdev->max_level))
-@@ -441,8 +442,9 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 	res = platform_get_resource(op, IORESOURCE_MEM, 0);
+-	tm_base = devm_ioremap_resource(&op->dev, res);
++	tm_base = devm_ioremap_resource(dev, res);
+ 	if (IS_ERR(tm_base)) {
+ 		ret = PTR_ERR(tm_base);
+ 		goto err_put_device;
+@@ -687,8 +687,6 @@ int __init init_common(struct tsens_priv *priv)
+ 	tsens_enable_irq(priv);
+ 	tsens_debug_init(op);
  
- 	cpufreq_cdev->cpufreq_state = state;
- 
--	return freq_qos_update_request(&cpufreq_cdev->qos_req,
--				get_state_freq(cpufreq_cdev, state));
-+	ret = freq_qos_update_request(&cpufreq_cdev->qos_req,
-+				      get_state_freq(cpufreq_cdev, state));
-+	return ret < 0 ? ret : 0;
- }
- 
- /* Bind cpufreq callbacks to thermal cooling device ops */
+-	return 0;
+-
+ err_put_device:
+ 	put_device(&op->dev);
+ 	return ret;
 -- 
 2.20.1
 
