@@ -4,52 +4,49 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9011C2BA19
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:43:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8B1C2BA19
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:45:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 89C9C2074F
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:43:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 746B2206A2
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 12:45:34 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586954627;
-	bh=009fT8XnlNWgSGFjkqzi9WHS52wJSOjnMq5vvLMSftE=;
+	s=default; t=1586954734;
+	bh=BLk2zqFpRCw7XR3epSmCEKoMUV+x/8k9ijREmEOOEx4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=KcdFQV1mHOMBqppn+/fvFRYAB13WrfXewPinNkk2Fn/PzvloLslTJxpx5P3WCnYl7
-	 10KE14c/823oBnWNqBKAWW6IDmTRUHRM7OB+NiVQcgeyDnxs+lxgS+ZOh671DUgS3s
-	 lhPqfULLdZdX+Zkr3ijbnaX/R+f1uiUg6go5Rrn0=
+	b=AA5AzeXJWHIyD0TpzNg9JHbYqZQKEAnrDFQFZJVSVIuexYCZwBwKJerGBGcQwMMX/
+	 //mRuaT2txv/9LtF00Wf+4sEc8hrm2Nacg+77QJiy+OVEOd1yAmDuqyLi/yPnmvpiO
+	 sWGwBlInTmE9Uf9DQN5/vlzFOsh3tWXPlp43guKE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2409006AbgDOLne (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Apr 2020 07:43:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35480 "EHLO mail.kernel.org"
+        id S2898227AbgDOMpb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Apr 2020 08:45:31 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35110 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2897520AbgDOLnb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Apr 2020 07:43:31 -0400
+        id S2408980AbgDOLnP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Apr 2020 07:43:15 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 5E7D5214D8;
-        Wed, 15 Apr 2020 11:43:29 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 86DD72168B;
+        Wed, 15 Apr 2020 11:43:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586951011;
-        bh=009fT8XnlNWgSGFjkqzi9WHS52wJSOjnMq5vvLMSftE=;
+        s=default; t=1586950995;
+        bh=BLk2zqFpRCw7XR3epSmCEKoMUV+x/8k9ijREmEOOEx4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=HC8yKBERmY2yh4mSP9ed6QAnCugan1/mEN2q8aSM96pLbELGwP2RMZyVZE2u6/Q3X
-         8eldzg2/C0MnFD8ySXdSm5e6tfORzBXCzR4SFbYySo5llCBjBrur/TzmiuErhV3ZA/
-         ZqSEzmOFANVDsYwX4ojTna53rfmr0leVCJjsu/ws=
+        b=tPV6LcRc/xsxtqTgJgqQg7THKiFcp+bkI0H5NhktlA2e1bF3bQ5M8O8WpnUZZvHEQ
+         WthBOqEaXE3jRhOHxAj7mPIUI/1fu7v2Hn2KQ0Y1ZcpES2kpNDA1XrZUS8ML48WAZi
+         qnd963pNC4hEAgF0I+XTnTStq9DaHYWgphz5ii48=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Rob Herring <robh@kernel.org>, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
+Cc:     Willy Wolff <willy.mh.wolff.ml@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.5 054/106] dt-bindings: thermal: tsens: Fix nvmem-cell-names schema
-Date:   Wed, 15 Apr 2020 07:41:34 -0400
-Message-Id: <20200415114226.13103-54-sashal@kernel.org>
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.5 041/106] thermal/drivers/cpufreq_cooling: Fix return of cpufreq_set_cur_state
+Date:   Wed, 15 Apr 2020 07:41:21 -0400
+Message-Id: <20200415114226.13103-41-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200415114226.13103-1-sashal@kernel.org>
 References: <20200415114226.13103-1-sashal@kernel.org>
@@ -62,61 +59,59 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rob Herring <robh@kernel.org>
+From: Willy Wolff <willy.mh.wolff.ml@gmail.com>
 
-[ Upstream commit b9589def9f9af93d9d4c5969c9a6c166f070e36e ]
+[ Upstream commit ff44f672d74178b3be19d41a169b98b3e391d4ce ]
 
-There's a typo 'nvmem-cells-names' in the schema which means the correct
-'nvmem-cell-names' in the examples are not checked. The possible values
-are wrong too both in that the 2nd entry is not specified correctly and the
-values are just wrong based on the dts files in the kernel.
+When setting the cooling device current state from userspace via sysfs,
+the operation fails by returning an -EINVAL.
 
-Fixes: a877e768f655 ("dt-bindings: thermal: tsens: Convert over to a yaml schema")
-Cc: Andy Gross <agross@kernel.org>
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+It appears the recent changes with the per-policy frequency QoS
+introduced a regression as reported by:
+
+ https://lkml.org/lkml/2020/3/20/599
+
+The function freq_qos_update_request returns 0 or 1 describing update
+effectiveness, and a negative error code on failure. However,
+cpufreq_set_cur_state returns 0 on success or an error code otherwise.
+
+Consider the QoS update as successful if the function does not return
+an error.
+
+Fixes: 3000ce3c52f8b ("cpufreq: Use per-policy frequency QoS")
+Signed-off-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20200321092740.7vvwfxsebcrznydh@macmini.local
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- .../devicetree/bindings/thermal/qcom-tsens.yaml          | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ drivers/thermal/cpu_cooling.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index eef13b9446a87..a4df53228122a 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -53,13 +53,12 @@ properties:
-     description:
-       Reference to an nvmem node for the calibration data
+diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
+index 52569b27b426f..d679e9a515c8e 100644
+--- a/drivers/thermal/cpu_cooling.c
++++ b/drivers/thermal/cpu_cooling.c
+@@ -430,6 +430,7 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 				 unsigned long state)
+ {
+ 	struct cpufreq_cooling_device *cpufreq_cdev = cdev->devdata;
++	int ret;
  
--  nvmem-cells-names:
-+  nvmem-cell-names:
-     minItems: 1
-     maxItems: 2
-     items:
--      - enum:
--        - caldata
--        - calsel
-+      - const: calib
-+      - const: calib_sel
+ 	/* Request state should be less than max_level */
+ 	if (WARN_ON(state > cpufreq_cdev->max_level))
+@@ -441,8 +442,9 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
  
-   "#qcom,sensors":
-     allOf:
-@@ -125,7 +124,7 @@ examples:
-                  <0x4a8000 0x1000>; /* SROT */
+ 	cpufreq_cdev->cpufreq_state = state;
  
-            nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
--           nvmem-cell-names = "caldata", "calsel";
-+           nvmem-cell-names = "calib", "calib_sel";
+-	return freq_qos_update_request(&cpufreq_cdev->qos_req,
+-				get_state_freq(cpufreq_cdev, state));
++	ret = freq_qos_update_request(&cpufreq_cdev->qos_req,
++				      get_state_freq(cpufreq_cdev, state));
++	return ret < 0 ? ret : 0;
+ }
  
-            interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
-            interrupt-names = "uplow";
+ /* Bind cpufreq callbacks to thermal cooling device ops */
 -- 
 2.20.1
 
