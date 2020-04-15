@@ -4,116 +4,193 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F829C2BA19
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 13:12:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27F6FC2BB55
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 13:37:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A86220857
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 13:12:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0101D20775
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 13:37:05 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1586956365;
-	bh=G7KxnwoLgLdPJXOkgOpWzhaL/rwPD/wpMyKVXu5Bt9U=;
+	s=default; t=1586957825;
+	bh=thKX2qHlbeTGl33dhLGeNBnKTlJbPCjoPiH0VH8oXw4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pU0EvrNnWJIfg1R8pOPEie/vhTL0p3rBVY9Kh5PRR8Sqk8ox7YhcgRfHEYrRT52qJ
-	 6l46RWiib3QOQKsYqVpgxXX+a+FS15x44JMSC1eAt6KRo3v2gkCaO9ia95bXqTO9Z8
-	 a7qWF2wg6NLRwhPNgWoRfBxK1OO/UZZMceeV93Sw=
+	b=jSblgXYRrWgFytGSk7pU+ZrY1+Rw2mXsSL73sA98TjQh+g1rLxXJyCtQ1mYjSM7jY
+	 wDDVI4wwxe6qfKYMJn6FpXGlwegysj3o32mtw4HFDnIY9/anfGD1NSvQUQKnixmt8r
+	 QRO+FGBzBY481fP3v/lD6CT/p82NKdvlCZ5s9F8M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2504683AbgDONMV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Apr 2020 09:12:21 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55068 "EHLO mail.kernel.org"
+        id S2636149AbgDONhB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Apr 2020 09:37:01 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34710 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2897061AbgDOLfd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 15 Apr 2020 07:35:33 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        id S2636145AbgDONg6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Apr 2020 09:36:58 -0400
+Received: from localhost (unknown [213.57.247.131])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 7C9B9215A4;
-        Wed, 15 Apr 2020 11:35:32 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 324E720767;
+        Wed, 15 Apr 2020 13:36:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1586950533;
-        bh=G7KxnwoLgLdPJXOkgOpWzhaL/rwPD/wpMyKVXu5Bt9U=;
+        s=default; t=1586957817;
+        bh=thKX2qHlbeTGl33dhLGeNBnKTlJbPCjoPiH0VH8oXw4=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=zsJcW0yr7/+NyNrHHcFVXKmT/sAlnh64En2NCyF5dYXpCF/7LDkPfdCkDl1KNgET5
-         ao6dztHhUsGLIbmo2UOCrDYZglDOMAVVKP1XN9MrQTYbJwQpaUafVskLC7HoyVkI4Z
-         Ufv86g8VHGbOJQ7pbSrrGZjnzTUvj0Xn/zFy1EI0=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Amit Kucheria <amit.kucheria@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.6 041/129] drivers: thermal: tsens: Release device in success path
-Date:   Wed, 15 Apr 2020 07:33:16 -0400
-Message-Id: <20200415113445.11881-41-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200415113445.11881-1-sashal@kernel.org>
-References: <20200415113445.11881-1-sashal@kernel.org>
+        b=Z/chwuE3a6wxyM/1sjPWmmQzWcHLci1FFXFgD4Oq/vG+CO7yR0wMkDhw2ZINQjkFL
+         uFMedG7EFcfTusFmVWgBZ3TI3UHbZ6Qg6QJWQHpDc49++3t/+Y5xdzZNEDhR5n2u/2
+         Afa+XhgvQb/w5WIC8dICM5N/uxIXWaZJCgF3tMic=
+From:   Leon Romanovsky <leon@kernel.org>
+To:     "David S . Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>
+Cc:     Leon Romanovsky <leonro@mellanox.com>,
+        Andy Gospodarek <andy@greyhouse.net>,
+        Borislav Petkov <bp@suse.de>, Ion Badulescu <ionut@badula.org>,
+        Jay Vosburgh <j.vosburgh@gmail.com>, linux-pm@vger.kernel.org,
+        netdev@vger.kernel.org, Pensando Drivers <drivers@pensando.io>,
+        Sebastian Reichel <sre@kernel.org>,
+        Shannon Nelson <snelson@pensando.io>,
+        Veaceslav Falico <vfalico@gmail.com>
+Subject: [PATCH net-next v1 1/4] drivers: Remove inclusion of vermagic header
+Date:   Wed, 15 Apr 2020 16:36:45 +0300
+Message-Id: <20200415133648.1306956-2-leon@kernel.org>
+X-Mailer: git-send-email 2.25.2
+In-Reply-To: <20200415133648.1306956-1-leon@kernel.org>
+References: <20200415133648.1306956-1-leon@kernel.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Amit Kucheria <amit.kucheria@linaro.org>
+From: Leon Romanovsky <leonro@mellanox.com>
 
-[ Upstream commit f22a3bf0d2225fba438c46a25d3ab8823585a5e0 ]
+Get rid of linux/vermagic.h includes, so that MODULE_ARCH_VERMAGIC from
+the arch header arch/x86/include/asm/module.h won't be redefined.
 
-We don't currently call put_device in case of successfully initialising
-the device. So we hold the reference and keep the device pinned forever.
+  In file included from ./include/linux/module.h:30,
+                   from drivers/net/ethernet/3com/3c515.c:56:
+  ./arch/x86/include/asm/module.h:73: warning: "MODULE_ARCH_VERMAGIC"
+redefined
+     73 | # define MODULE_ARCH_VERMAGIC MODULE_PROC_FAMILY
+        |
+  In file included from drivers/net/ethernet/3com/3c515.c:25:
+  ./include/linux/vermagic.h:28: note: this is the location of the
+previous definition
+     28 | #define MODULE_ARCH_VERMAGIC ""
+        |
 
-Allow control to fall through so we can use same code for success and
-error paths to put_device.
-
-As a part of this fixup, change devm_ioremap_resource to act on the same
-device pointer as that used to allocate regmap memory. That ensures that
-we are free to release op->dev after examining its resources.
-
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/d3996667e9f976bb30e97e301585cb1023be422e.1584015867.git.amit.kucheria@linaro.org
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Fixes: 6bba2e89a88c ("net/3com: Delete driver and module versions from 3com drivers")
+Co-developed-by: Borislav Petkov <bp@suse.de>
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Acked-by: Shannon Nelson <snelson@pensando.io> # ionic
+Acked-by: Sebastian Reichel <sre@kernel.org> # power
+Signed-off-by: Leon Romanovsky <leonro@mellanox.com>
 ---
- drivers/thermal/qcom/tsens-common.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/net/bonding/bonding_priv.h               | 2 +-
+ drivers/net/ethernet/3com/3c509.c                | 1 -
+ drivers/net/ethernet/3com/3c515.c                | 1 -
+ drivers/net/ethernet/adaptec/starfire.c          | 1 -
+ drivers/net/ethernet/pensando/ionic/ionic_main.c | 2 +-
+ drivers/power/supply/test_power.c                | 2 +-
+ net/ethtool/ioctl.c                              | 3 +--
+ 7 files changed, 4 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-common.c b/drivers/thermal/qcom/tsens-common.c
-index c8d57ee0a5bb2..2cc276cdfcdb1 100644
---- a/drivers/thermal/qcom/tsens-common.c
-+++ b/drivers/thermal/qcom/tsens-common.c
-@@ -602,7 +602,7 @@ int __init init_common(struct tsens_priv *priv)
- 		/* DT with separate SROT and TM address space */
- 		priv->tm_offset = 0;
- 		res = platform_get_resource(op, IORESOURCE_MEM, 1);
--		srot_base = devm_ioremap_resource(&op->dev, res);
-+		srot_base = devm_ioremap_resource(dev, res);
- 		if (IS_ERR(srot_base)) {
- 			ret = PTR_ERR(srot_base);
- 			goto err_put_device;
-@@ -620,7 +620,7 @@ int __init init_common(struct tsens_priv *priv)
- 	}
- 
- 	res = platform_get_resource(op, IORESOURCE_MEM, 0);
--	tm_base = devm_ioremap_resource(&op->dev, res);
-+	tm_base = devm_ioremap_resource(dev, res);
- 	if (IS_ERR(tm_base)) {
- 		ret = PTR_ERR(tm_base);
- 		goto err_put_device;
-@@ -687,8 +687,6 @@ int __init init_common(struct tsens_priv *priv)
- 	tsens_enable_irq(priv);
- 	tsens_debug_init(op);
- 
--	return 0;
+diff --git a/drivers/net/bonding/bonding_priv.h b/drivers/net/bonding/bonding_priv.h
+index 45b77bc8c7b3..48cdf3a49a7d 100644
+--- a/drivers/net/bonding/bonding_priv.h
++++ b/drivers/net/bonding/bonding_priv.h
+@@ -14,7 +14,7 @@
+
+ #ifndef _BONDING_PRIV_H
+ #define _BONDING_PRIV_H
+-#include <linux/vermagic.h>
++#include <generated/utsrelease.h>
+
+ #define DRV_NAME	"bonding"
+ #define DRV_DESCRIPTION	"Ethernet Channel Bonding Driver"
+diff --git a/drivers/net/ethernet/3com/3c509.c b/drivers/net/ethernet/3com/3c509.c
+index b762176a1406..139d0120f511 100644
+--- a/drivers/net/ethernet/3com/3c509.c
++++ b/drivers/net/ethernet/3com/3c509.c
+@@ -85,7 +85,6 @@
+ #include <linux/device.h>
+ #include <linux/eisa.h>
+ #include <linux/bitops.h>
+-#include <linux/vermagic.h>
+
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+diff --git a/drivers/net/ethernet/3com/3c515.c b/drivers/net/ethernet/3com/3c515.c
+index 90312fcd6319..47b4215bb93b 100644
+--- a/drivers/net/ethernet/3com/3c515.c
++++ b/drivers/net/ethernet/3com/3c515.c
+@@ -22,7 +22,6 @@
+
+ */
+
+-#include <linux/vermagic.h>
+ #define DRV_NAME		"3c515"
+
+ #define CORKSCREW 1
+diff --git a/drivers/net/ethernet/adaptec/starfire.c b/drivers/net/ethernet/adaptec/starfire.c
+index 2db42211329f..a64191fc2af9 100644
+--- a/drivers/net/ethernet/adaptec/starfire.c
++++ b/drivers/net/ethernet/adaptec/starfire.c
+@@ -45,7 +45,6 @@
+ #include <asm/processor.h>		/* Processor type for cache alignment. */
+ #include <linux/uaccess.h>
+ #include <asm/io.h>
+-#include <linux/vermagic.h>
+
+ /*
+  * The current frame processor firmware fails to checksum a fragment
+diff --git a/drivers/net/ethernet/pensando/ionic/ionic_main.c b/drivers/net/ethernet/pensando/ionic/ionic_main.c
+index 588c62e9add7..3ed150512091 100644
+--- a/drivers/net/ethernet/pensando/ionic/ionic_main.c
++++ b/drivers/net/ethernet/pensando/ionic/ionic_main.c
+@@ -6,7 +6,7 @@
+ #include <linux/module.h>
+ #include <linux/netdevice.h>
+ #include <linux/utsname.h>
+-#include <linux/vermagic.h>
++#include <generated/utsrelease.h>
+
+ #include "ionic.h"
+ #include "ionic_bus.h"
+diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/test_power.c
+index 65c23ef6408d..b3c05ff05783 100644
+--- a/drivers/power/supply/test_power.c
++++ b/drivers/power/supply/test_power.c
+@@ -16,7 +16,7 @@
+ #include <linux/power_supply.h>
+ #include <linux/errno.h>
+ #include <linux/delay.h>
+-#include <linux/vermagic.h>
++#include <generated/utsrelease.h>
+
+ enum test_power_id {
+ 	TEST_AC,
+diff --git a/net/ethtool/ioctl.c b/net/ethtool/ioctl.c
+index 89d0b1827aaf..d3cb5a49a0ce 100644
+--- a/net/ethtool/ioctl.c
++++ b/net/ethtool/ioctl.c
+@@ -17,7 +17,6 @@
+ #include <linux/phy.h>
+ #include <linux/bitops.h>
+ #include <linux/uaccess.h>
+-#include <linux/vermagic.h>
+ #include <linux/vmalloc.h>
+ #include <linux/sfp.h>
+ #include <linux/slab.h>
+@@ -28,7 +27,7 @@
+ #include <net/xdp_sock.h>
+ #include <net/flow_offload.h>
+ #include <linux/ethtool_netlink.h>
 -
- err_put_device:
- 	put_device(&op->dev);
- 	return ret;
--- 
-2.20.1
++#include <generated/utsrelease.h>
+ #include "common.h"
+
+ /*
+--
+2.25.2
 
