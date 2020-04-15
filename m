@@ -2,130 +2,127 @@ Return-Path: <SRS0=3FgU=57=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1FB8C2BA19
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 08:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D00A6C2BA19
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 08:07:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C96AB206F9
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 08:06:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A879B2051A
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Apr 2020 08:07:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="PLXnQNEZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2635464AbgDOIEx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Apr 2020 04:04:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35382 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2635459AbgDOIEr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2020 04:04:47 -0400
-Received: from mail-ot1-x344.google.com (mail-ot1-x344.google.com [IPv6:2607:f8b0:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D1C65C061A0C;
-        Wed, 15 Apr 2020 00:56:16 -0700 (PDT)
-Received: by mail-ot1-x344.google.com with SMTP id l21so2490770otd.9;
-        Wed, 15 Apr 2020 00:56:16 -0700 (PDT)
+        id S2635571AbgDOIHg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Apr 2020 04:07:36 -0400
+Received: from us-smtp-2.mimecast.com ([207.211.31.81]:46291 "EHLO
+        us-smtp-delivery-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S2635562AbgDOIHM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Apr 2020 04:07:12 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1586938029;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=EDdYfSg43KpYWuuPakF4B4tcdGZPYljqQUL9gLxwyrs=;
+        b=PLXnQNEZLa2JiW120SGZiBpAxqPMn4ygJHwgOaaTjVK12xOtQQiUAFXflInFwygANgP6wS
+        G+ZiJmbZ1sbjI1JCIywBH8KMtqs4se2XOXif1xnB9vrgF2OhEyBjHw8glGRQYSICkj1ibn
+        7MWXKIWqkKZH3A+2w1ckFMvM4fjxBG8=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-203-E4tDS97iOMGQnGdlahOquQ-1; Wed, 15 Apr 2020 04:07:06 -0400
+X-MC-Unique: E4tDS97iOMGQnGdlahOquQ-1
+Received: by mail-wm1-f72.google.com with SMTP id h6so4943432wmi.7
+        for <linux-pm@vger.kernel.org>; Wed, 15 Apr 2020 01:07:05 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6qhEV4eqPDnKIu34Gai8AQEIGT47pXx8QxN7ktiAXKQ=;
-        b=Nd3F5t4wrHhf0Wkwgv880kLFsUkCJsvY+c0w6VrUGb+XYT/fAm3dt6O7vtn3G1D4fG
-         pxP2qvlPgvq2yD/VPFJRB5oF+JrSaDzE7WaPf1JcmNL+WEJCx9aFekeZzRhN8bxK0G3f
-         XjQBqw1WINqjIBUfQ5EsWb/TGJp+yzi5v+y/kwaoNGn/PaeWxQDS6ImlC7BijlBkHoUT
-         9KoE9rFTmRtuvjicppcpzpd+0d0ISgU4MhZIEMNjD6qBm1REAr0k1Gyy4gI9TGLnQraI
-         hvGb56eSXUCu5+NNOrVPYM9uMz8179uFumz8X/ww86wtXvtwdelvtq8D6obRlpC8G01t
-         kxqA==
-X-Gm-Message-State: AGi0Pubrwv9AbP6AgP2HPTKjGBE5xrsJB+BFy2uMyZtgCdHexKBGjm5w
-        2F3PQDq7dYW6XZ7Rk1UlPWIuO6Eo75K9QkCgb50=
-X-Google-Smtp-Source: APiQypLtBJDUnnZPjJTN7ovRvwZVePgbjaHZvRdaI+KHQH7TZ3/ZvzMzSdZoDHE2XeuJ/k6BT7ZEas4NquvjvmAykGA=
-X-Received: by 2002:a9d:7590:: with SMTP id s16mr21548855otk.250.1586937376197;
- Wed, 15 Apr 2020 00:56:16 -0700 (PDT)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=EDdYfSg43KpYWuuPakF4B4tcdGZPYljqQUL9gLxwyrs=;
+        b=ILEOTLN6ZoWPbEgOeSfgIujasTAEz+eEPBxKUSMfNlBdCD/3c3DoCbCozZ6RZ2tq5E
+         JtShK1Gs6EA718bMJXL0FNonrTh7wtWzifWUmpy3AvOl99c2stjplJstGWjuNw2rNnml
+         KU1XcufJYE94UVH1TpZCTVqFDHhvVWiDm32W/F0lCYM1KYQkjVaE5vwVDWFxoigkXgrk
+         1qumQpVS7IMHyEVNbPmNnHSyi77AfdjcWdLqdVGBA2GMkN8qbG1v2DsE3KswMUYXocEs
+         A9R4vI369PxAqXa/UedrI6Cg6Le3XgBXapdo7Q8q3hVtQ8GVAuXpXpnRHfB0g6zElBHr
+         w87Q==
+X-Gm-Message-State: AGi0Pua1642gPKsEAS1yJOAEvhZuJiKUgFxhoBbXc3rnxMngiZD2hjUK
+        sNGLmZWYBegOpPIu7ut+waKiNXEUzB53D8cU7NPkY/le38uIZSZeGklusxPdcb5Hja0YloBYr3h
+        s7WqOdS47UPIFBFMvpRg=
+X-Received: by 2002:a1c:2b06:: with SMTP id r6mr4163567wmr.25.1586938025051;
+        Wed, 15 Apr 2020 01:07:05 -0700 (PDT)
+X-Google-Smtp-Source: APiQypLM8/guNljwdxt33+rGLqxJ5oJ/t0p2TiWjT5KUdTEEF6BNudkLy+55c9aOC9WA4m3vasp/fw==
+X-Received: by 2002:a1c:2b06:: with SMTP id r6mr4163541wmr.25.1586938024762;
+        Wed, 15 Apr 2020 01:07:04 -0700 (PDT)
+Received: from x1.localdomain (2001-1c00-0c0c-fe00-d2ea-f29d-118b-24dc.cable.dynamic.v6.ziggo.nl. [2001:1c00:c0c:fe00:d2ea:f29d:118b:24dc])
+        by smtp.gmail.com with ESMTPSA id m14sm20326145wrs.76.2020.04.15.01.07.03
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 15 Apr 2020 01:07:04 -0700 (PDT)
+Subject: Re: [PATCH] power: supply: axp288_charger: Omit superfluous error
+ message
+To:     Tang Bin <tangbin@cmss.chinamobile.com>, sre@kernel.org,
+        wens@csie.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Shengju Zhang <zhangshengju@cmss.chinamobile.com>
+References: <20200415042727.13496-1-tangbin@cmss.chinamobile.com>
+From:   Hans de Goede <hdegoede@redhat.com>
+Message-ID: <8f9ae92b-9aab-34a2-dc15-a9c3514c7ca8@redhat.com>
+Date:   Wed, 15 Apr 2020 10:07:03 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-References: <20200413204253.84991-1-john.stultz@linaro.org> <20200413204253.84991-2-john.stultz@linaro.org>
-In-Reply-To: <20200413204253.84991-2-john.stultz@linaro.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 15 Apr 2020 09:56:05 +0200
-Message-ID: <CAMuHMdUqQ45=G29rJNa=FC42wdK_hvYA60FskqW496RbFOZMGw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] driver core: Revert default driver_deferred_probe_timeout
- value to 0
-To:     John Stultz <john.stultz@linaro.org>
-Cc:     lkml <linux-kernel@vger.kernel.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
-        Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh@kernel.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>,
-        netdev <netdev@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200415042727.13496-1-tangbin@cmss.chinamobile.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Apr 13, 2020 at 10:43 PM John Stultz <john.stultz@linaro.org> wrote:
-> In commit c8c43cee29f6 ("driver core: Fix
-> driver_deferred_probe_check_state() logic"), we both cleaned up
-> the logic and also set the default driver_deferred_probe_timeout
-> value to 30 seconds to allow for drivers that are missing
-> dependencies to have some time so that the dependency may be
-> loaded from userland after initcalls_done is set.
->
-> However, Yoshihiro Shimoda reported that on his device that
-> expects to have unmet dependencies (due to "optional links" in
-> its devicetree), was failing to mount the NFS root.
->
-> In digging further, it seemed the problem was that while the
-> device properly probes after waiting 30 seconds for any missing
-> modules to load, the ip_auto_config() had already failed,
-> resulting in NFS to fail. This was due to ip_auto_config()
-> calling wait_for_device_probe() which doesn't wait for the
-> driver_deferred_probe_timeout to fire.
->
-> Fixing that issue is possible, but could also introduce 30
-> second delays in bootups for users who don't have any
-> missing dependencies, which is not ideal.
->
-> So I think the best solution to avoid any regressions is to
-> revert back to a default timeout value of zero, and allow
-> systems that need to utilize the timeout in order for userland
-> to load any modules that supply misisng dependencies in the dts
-> to specify the timeout length via the exiting documented boot
-> argument.
->
-> Thanks to Geert for chasing down that ip_auto_config was why NFS
-> was failing in this case!
->
-> Cc: "David S. Miller" <davem@davemloft.net>
-> Cc: Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>
-> Cc: Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>
-> Cc: Jakub Kicinski <kuba@kernel.org>
-> Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Rob Herring <robh@kernel.org>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Cc: netdev <netdev@vger.kernel.org>
-> Cc: linux-pm@vger.kernel.org
-> Reported-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Tested-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-> Fixes: c8c43cee29f6 ("driver core: Fix driver_deferred_probe_check_state() logic")
-> Signed-off-by: John Stultz <john.stultz@linaro.org>
+Hi,
 
-Works fine with all four combinations (CONFIG_IPMMU_VMSA=y/n and
-CONFIG_MODULES=y/n)  on Renesas Salvator-X(S) with R-Car Gen3.
+On 4/15/20 6:27 AM, Tang Bin wrote:
+> In the axp288_charger_probe(), when get irq failed, the function
+> platform_get_irq() logs an error message, so remove redundant
+> message here.
+> 
+> Signed-off-by: Tang Bin <tangbin@cmss.chinamobile.com>
+> Signed-off-by: Shengju Zhang <zhangshengju@cmss.chinamobile.com>
 
-Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Thank you for this nice cleanup patch:
 
-Gr{oetje,eeting}s,
+Reviewed-by: Hans de Goede <hdegoede@redhat.com>
 
-                        Geert
+Regards,
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Hans
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
+
+> ---
+>   drivers/power/supply/axp288_charger.c | 5 ++---
+>   1 file changed, 2 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/power/supply/axp288_charger.c b/drivers/power/supply/axp288_charger.c
+> index 1bbba6bba..16fb4ae1c 100644
+> --- a/drivers/power/supply/axp288_charger.c
+> +++ b/drivers/power/supply/axp288_charger.c
+> @@ -825,10 +825,9 @@ static int axp288_charger_probe(struct platform_device *pdev)
+>   	/* Register charger interrupts */
+>   	for (i = 0; i < CHRG_INTR_END; i++) {
+>   		pirq = platform_get_irq(info->pdev, i);
+> -		if (pirq < 0) {
+> -			dev_err(&pdev->dev, "Failed to get IRQ: %d\n", pirq);
+> +		if (pirq < 0)
+>   			return pirq;
+> -		}
+> +
+>   		info->irq[i] = regmap_irq_get_virq(info->regmap_irqc, pirq);
+>   		if (info->irq[i] < 0) {
+>   			dev_warn(&info->pdev->dev,
+> 
+
