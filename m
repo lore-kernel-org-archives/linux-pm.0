@@ -2,131 +2,115 @@ Return-Path: <SRS0=eR+e=6A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0538C2BB85
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:17:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50DCEC2BB85
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:55:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C9ABB206F9
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:17:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 280092078B
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:55:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iTUUxmnx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2441245AbgDPIQx convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Apr 2020 04:16:53 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:35609 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2441174AbgDPIQm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2020 04:16:42 -0400
-Received: by mail-oi1-f195.google.com with SMTP id b7so13346072oic.2;
-        Thu, 16 Apr 2020 01:16:41 -0700 (PDT)
+        id S2503029AbgDPIzn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Apr 2020 04:55:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40798 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2502875AbgDPIvi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2020 04:51:38 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C215DC061A10
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:51:34 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id a81so3883135wmf.5
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:51:34 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=aQURq1REwHEPMxWj0A/UhXFxGHBPx1Zt6Uxv60umXok=;
+        b=iTUUxmnxUoqM1iP5zj7BbzhwKQK2NqYbdVMK0rIh0CiAAy9/it6DIt1DL4Ooif9/bE
+         Pul6F77qct+LdTVwj/1QFZe9JzU7U365RE9K2ngJq6+qZ15SxAPXTQR3XQRAdySjswRR
+         9JYky000loQpUPX3wnZRvPFFa45uhJxKiqbju2/rslkJy7h3NmXl0ZIYzg2ZbfnCQ5dc
+         AsNg7kMa9TiJe/4kUyOORB8GNBgxQrV21VfhsiPqvwyuyliDY3hqDbicfevTFn5hB8rm
+         ++qfzQ5FGFbm9rT/GFdYCl8cOGCJR7Yj/AL+Xc5pcZgU+6DZeOb6aSyklfhfqZMu9KiT
+         XbEQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=tPX2HnPqzUvvNO4rAsIvdunmOvZ+H+heasUYTIwn1Ps=;
-        b=CJOP10V+sR0oslqpLljgdTGQGx/7WbZCODYhyi4U7Klt+frywKgyfmMsq2DaB9pH0T
-         Q/+9MtzbeTirjB4q+htS8vVir6SbZcuNEPOZb4ZmcGO6yvNy34eWQUBkcm+iYsAh/6Ze
-         Uvc9MrGXOlpZ1l6nM3uOBkNnEGa1iKSOoULb7D5Nedc4RAZ0GSM9ESA6exfMu1paSA0x
-         D4c8htF9+b6S3+BqLRhmkfci6GXnrPrtyOt3IviUBT21pmnJAWh3DSKbe7T6Po0fsXJw
-         oWu5aZJZG3YVeOpMHBrlUhwnAz6QsndafvBpN57mChZRUtu6mtypAulFiZ6fuAgyJ4df
-         U/Vg==
-X-Gm-Message-State: AGi0PuboAnXNFu7/RyO5GomOhkxGeRt3IoJfFMfkz+xvHB6qv7dZ+wLJ
-        shgvH3KYNhDLJ+VxVf2NvfAB6cmGAHk9+yrYf5HCQQ==
-X-Google-Smtp-Source: APiQypLGClCjRSG/OnKGSCXGjMDFiMcEyS/VL6hXUZZxt7tHSzKXwZ3QhHtaPkASodp0E75GswIzQh40lhnZAMigB5c=
-X-Received: by 2002:aca:cdd1:: with SMTP id d200mr2057747oig.153.1587025001019;
- Thu, 16 Apr 2020 01:16:41 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=aQURq1REwHEPMxWj0A/UhXFxGHBPx1Zt6Uxv60umXok=;
+        b=T9mPeKCZyzo06SeOBX5T+UeOGinLzfjwn6hYy84unTbwjMG+qbwQGmwWC9h852kO/T
+         baN3SjNQmKtiHrhtaJfcDR6Zds8+sqYAMszmHCeLeJy+GAatjf4fBE0IL6DctIEpqmUg
+         kVEQoTG2ZvsPQ8cgObNM+bDJov7fK1Vb7ybrz1fkWgfAv5zTgu/rLEjFzXU3aWx5yOHk
+         bXzRSGwQZJBiz/aJ/Axv6Af5wTqkfAhvkS9j9uwggKXRtJWarZ6sANanSD+lV885bkm9
+         oTQkm6nGcEbglS6dumhg2bWpCgcgHRF08ceo+qc1wbfDjGYTotWMTsyLXx9qU733NfkP
+         z2IQ==
+X-Gm-Message-State: AGi0PuYriH4AL6D7ZoDK5GPpnkbcVKnB4PKTTNyPpsimwCCYr3/jrbvg
+        7gQjz4hkFKK1BpZ833NxdT2ZsQ==
+X-Google-Smtp-Source: APiQypKU3qRZVCXuxnBOouk3e3DEAX4zubXTv+zywdpux61f+2SAQwvIpImS075eYrYQxApgGH0znw==
+X-Received: by 2002:a7b:c147:: with SMTP id z7mr4036229wmi.52.1587027093347;
+        Thu, 16 Apr 2020 01:51:33 -0700 (PDT)
+Received: from dell ([95.149.164.124])
+        by smtp.gmail.com with ESMTPSA id q8sm2740501wmg.22.2020.04.16.01.51.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 16 Apr 2020 01:51:32 -0700 (PDT)
+Date:   Thu, 16 Apr 2020 09:52:33 +0100
+From:   Lee Jones <lee.jones@linaro.org>
+To:     Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Nicolas Boichat <drinkcat@chromium.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Sean Wang <sean.wang@mediatek.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Eddie Huang <eddie.huang@mediatek.com>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Kate Stewart <kstewart@linuxfoundation.org>,
+        Richard Fontana <rfontana@redhat.com>,
+        Frank Wunderlich <frank-w@public-files.de>,
+        Josef Friedl <josef.friedl@speed.at>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ran Bi <ran.bi@mediatek.com>, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
+        srv_heupstream@mediatek.com
+Subject: Re: [PATCH v12 2/6] mfd: mt6397: Trim probe function to support
+ different chips more cleanly
+Message-ID: <20200416085233.GY2167633@dell>
+References: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
+ <1586333531-21641-3-git-send-email-hsin-hsiung.wang@mediatek.com>
 MIME-Version: 1.0
-References: <20200415172349.2185096-1-niklas.soderlund+renesas@ragnatech.se>
-In-Reply-To: <20200415172349.2185096-1-niklas.soderlund+renesas@ragnatech.se>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 16 Apr 2020 10:16:29 +0200
-Message-ID: <CAMuHMdWpskYLe59XgVOyBnCMzQdYg+TBXQqcaVQ8y2rPRskrWg@mail.gmail.com>
-Subject: Re: [PATCH] thermal: rcar_thermal: Clean up rcar_thermal_update_temp()
-To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1586333531-21641-3-git-send-email-hsin-hsiung.wang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Niklas,
+On Wed, 08 Apr 2020, Hsin-Hsiung Wang wrote:
 
-On Wed, Apr 15, 2020 at 7:23 PM Niklas Söderlund
-<niklas.soderlund+renesas@ragnatech.se> wrote:
-> Moving the ctemp variable out of the private data structure made it
-> possible to clean up rcar_thermal_update_temp(). Initialize the local
-> ctemp to the error code to return if the reading fails and just return
-> it at the end of the function.
->
-> It's OK to change the datatype of old, new and ctemp to int as all
-> values are AND with CTEMP (0x3f) before being stored. While at it
+> Add new struct members for mfd-cells and irq initial function, so we can
+> call devm_mfd_add_devices() only once.
+> 
+> Signed-off-by: Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
+> ---
+>  drivers/mfd/mt6397-core.c | 35 ++++++++++++++---------------------
+>  1 file changed, 14 insertions(+), 21 deletions(-)
 
-ANDed
+For my own reference (apply this as-is to your sign-off block):
 
-> change the datatype of the loop variable 'i' to to unsigned int.
->
-> Suggested-by: Geert Uytterhoeven <geert+renesas@glider.be>
-> Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-One small suggestion below.
-
-> --- a/drivers/thermal/rcar_thermal.c
-> +++ b/drivers/thermal/rcar_thermal.c
-> @@ -198,8 +198,8 @@ static void _rcar_thermal_bset(struct rcar_thermal_priv *priv, u32 reg,
->  static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
->  {
->         struct device *dev = rcar_priv_to_dev(priv);
-> -       int i;
-> -       u32 ctemp, old, new;
-> +       int old, new, ctemp = -EINVAL;
-> +       unsigned int i;
->
->         mutex_lock(&priv->lock);
->
-> @@ -209,7 +209,6 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
->          */
->         rcar_thermal_bset(priv, THSCR, CPCTL, CPCTL);
->
-> -       ctemp = 0;
->         old = ~0;
->         for (i = 0; i < 128; i++) {
->                 /*
-> @@ -227,7 +226,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
->                 old = new;
->         }
->
-> -       if (!ctemp) {
-> +       if (ctemp == -EINVAL) {
-
-I think "if (ctemp < 0)" is safer, as it doesn't rely on the actual error code.
-
->                 dev_err(dev, "thermal sensor was broken\n");
->                 goto err_out_unlock;
->         }
-> @@ -248,7 +247,7 @@ static int rcar_thermal_update_temp(struct rcar_thermal_priv *priv)
->  err_out_unlock:
->         mutex_unlock(&priv->lock);
->
-> -       return ctemp ? ctemp : -EINVAL;
-> +       return ctemp;
->  }
-
-Gr{oetje,eeting}s,
-
-                        Geert
+  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Lee Jones [李琼斯]
+Linaro Services Technical Lead
+Linaro.org │ Open source software for ARM SoCs
+Follow Linaro: Facebook | Twitter | Blog
