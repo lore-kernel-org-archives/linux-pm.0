@@ -2,115 +2,116 @@ Return-Path: <SRS0=eR+e=6A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50DCEC2BB85
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:55:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43354C2D0EF
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 280092078B
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 08:55:52 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iTUUxmnx"
+	by mail.kernel.org (Postfix) with ESMTP id 2285C206B9
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2503029AbgDPIzn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Apr 2020 04:55:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40798 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2502875AbgDPIvi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2020 04:51:38 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C215DC061A10
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:51:34 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id a81so3883135wmf.5
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:51:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=aQURq1REwHEPMxWj0A/UhXFxGHBPx1Zt6Uxv60umXok=;
-        b=iTUUxmnxUoqM1iP5zj7BbzhwKQK2NqYbdVMK0rIh0CiAAy9/it6DIt1DL4Ooif9/bE
-         Pul6F77qct+LdTVwj/1QFZe9JzU7U365RE9K2ngJq6+qZ15SxAPXTQR3XQRAdySjswRR
-         9JYky000loQpUPX3wnZRvPFFa45uhJxKiqbju2/rslkJy7h3NmXl0ZIYzg2ZbfnCQ5dc
-         AsNg7kMa9TiJe/4kUyOORB8GNBgxQrV21VfhsiPqvwyuyliDY3hqDbicfevTFn5hB8rm
-         ++qfzQ5FGFbm9rT/GFdYCl8cOGCJR7Yj/AL+Xc5pcZgU+6DZeOb6aSyklfhfqZMu9KiT
-         XbEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=aQURq1REwHEPMxWj0A/UhXFxGHBPx1Zt6Uxv60umXok=;
-        b=T9mPeKCZyzo06SeOBX5T+UeOGinLzfjwn6hYy84unTbwjMG+qbwQGmwWC9h852kO/T
-         baN3SjNQmKtiHrhtaJfcDR6Zds8+sqYAMszmHCeLeJy+GAatjf4fBE0IL6DctIEpqmUg
-         kVEQoTG2ZvsPQ8cgObNM+bDJov7fK1Vb7ybrz1fkWgfAv5zTgu/rLEjFzXU3aWx5yOHk
-         bXzRSGwQZJBiz/aJ/Axv6Af5wTqkfAhvkS9j9uwggKXRtJWarZ6sANanSD+lV885bkm9
-         oTQkm6nGcEbglS6dumhg2bWpCgcgHRF08ceo+qc1wbfDjGYTotWMTsyLXx9qU733NfkP
-         z2IQ==
-X-Gm-Message-State: AGi0PuYriH4AL6D7ZoDK5GPpnkbcVKnB4PKTTNyPpsimwCCYr3/jrbvg
-        7gQjz4hkFKK1BpZ833NxdT2ZsQ==
-X-Google-Smtp-Source: APiQypKU3qRZVCXuxnBOouk3e3DEAX4zubXTv+zywdpux61f+2SAQwvIpImS075eYrYQxApgGH0znw==
-X-Received: by 2002:a7b:c147:: with SMTP id z7mr4036229wmi.52.1587027093347;
-        Thu, 16 Apr 2020 01:51:33 -0700 (PDT)
-Received: from dell ([95.149.164.124])
-        by smtp.gmail.com with ESMTPSA id q8sm2740501wmg.22.2020.04.16.01.51.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2020 01:51:32 -0700 (PDT)
-Date:   Thu, 16 Apr 2020 09:52:33 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Nicolas Boichat <drinkcat@chromium.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Eddie Huang <eddie.huang@mediatek.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Richard Fontana <rfontana@redhat.com>,
-        Frank Wunderlich <frank-w@public-files.de>,
-        Josef Friedl <josef.friedl@speed.at>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ran Bi <ran.bi@mediatek.com>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        srv_heupstream@mediatek.com
-Subject: Re: [PATCH v12 2/6] mfd: mt6397: Trim probe function to support
- different chips more cleanly
-Message-ID: <20200416085233.GY2167633@dell>
-References: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
- <1586333531-21641-3-git-send-email-hsin-hsiung.wang@mediatek.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1586333531-21641-3-git-send-email-hsin-hsiung.wang@mediatek.com>
+        id S2503066AbgDPJCh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Apr 2020 05:02:37 -0400
+Received: from inva021.nxp.com ([92.121.34.21]:47850 "EHLO inva021.nxp.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2503146AbgDPI6U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Apr 2020 04:58:20 -0400
+Received: from inva021.nxp.com (localhost [127.0.0.1])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id E8F23200C33;
+        Thu, 16 Apr 2020 10:58:14 +0200 (CEST)
+Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
+        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id 30E49200C3E;
+        Thu, 16 Apr 2020 10:58:12 +0200 (CEST)
+Received: from titan.ap.freescale.net (titan.ap.freescale.net [10.192.208.233])
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 53BD7402A8;
+        Thu, 16 Apr 2020 16:58:08 +0800 (SGT)
+From:   Yuantian Tang <andy.tang@nxp.com>
+To:     rui.zhang@intel.com, edubezval@gmail.com, daniel.lezcano@linaro.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Yuantian Tang <andy.tang@nxp.com>
+Subject: [PATCH] thermal: qoriq: Update the settings for TMUv2
+Date:   Thu, 16 Apr 2020 16:43:52 +0800
+Message-Id: <20200416084352.33604-1-andy.tang@nxp.com>
+X-Mailer: git-send-email 2.9.5
+X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 08 Apr 2020, Hsin-Hsiung Wang wrote:
+For TMU v2, TMSAR registers need to be set properly to get the
+accurate temperature values.
+Also temperature reading needs to convert to degree Celsius
+since it is in degrees Kelvin.
 
-> Add new struct members for mfd-cells and irq initial function, so we can
-> call devm_mfd_add_devices() only once.
-> 
-> Signed-off-by: Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
-> ---
->  drivers/mfd/mt6397-core.c | 35 ++++++++++++++---------------------
->  1 file changed, 14 insertions(+), 21 deletions(-)
+Signed-off-by: Yuantian Tang <andy.tang@nxp.com>
+---
+ drivers/thermal/qoriq_thermal.c | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-For my own reference (apply this as-is to your sign-off block):
-
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
-
+diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_thermal.c
+index 028a6bbf75dc..c6ab0a0681cb 100644
+--- a/drivers/thermal/qoriq_thermal.c
++++ b/drivers/thermal/qoriq_thermal.c
+@@ -23,6 +23,7 @@
+ #define TMTMIR_DEFAULT	0x0000000f
+ #define TIER_DISABLE	0x0
+ #define TEUMR0_V2		0x51009c00
++#define TMSARA_V2		0xe
+ #define TMU_VER1		0x1
+ #define TMU_VER2		0x2
+ 
+@@ -50,6 +51,9 @@
+ 					    * Site Register
+ 					    */
+ #define TRITSR_V	BIT(31)
++#define REGS_V2_TMSAR(n)	(0x304 + 16 * (n))	/* TMU monitoring
++						* site adjustment register
++						*/
+ #define REGS_TTRnCR(n)	(0xf10 + 4 * (n)) /* Temperature Range n
+ 					   * Control Register
+ 					   */
+@@ -100,7 +104,11 @@ static int tmu_get_temp(void *p, int *temp)
+ 				     10 * USEC_PER_MSEC))
+ 		return -ENODATA;
+ 
+-	*temp = (val & 0xff) * 1000;
++	/* For TMUv2, temperature reading in degrees Kelvin */
++	if (qdata->ver == TMU_VER1)
++		*temp = (val & 0xff) * 1000;
++	else
++		*temp = (val & 0x1ff) - 273;
+ 
+ 	return 0;
+ }
+@@ -192,6 +200,8 @@ static int qoriq_tmu_calibration(struct device *dev,
+ 
+ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+ {
++	int i;
++
+ 	/* Disable interrupt, using polling instead */
+ 	regmap_write(data->regmap, REGS_TIER, TIER_DISABLE);
+ 
+@@ -202,6 +212,8 @@ static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+ 	} else {
+ 		regmap_write(data->regmap, REGS_V2_TMTMIR, TMTMIR_DEFAULT);
+ 		regmap_write(data->regmap, REGS_V2_TEUMR(0), TEUMR0_V2);
++		for (i = 0; i < 7; i++)
++			regmap_write(data->regmap, REGS_V2_TMSAR(i), TMSARA_V2);
+ 	}
+ 
+ 	/* Disable monitoring */
+@@ -212,6 +224,7 @@ static const struct regmap_range qoriq_yes_ranges[] = {
+ 	regmap_reg_range(REGS_TMR, REGS_TSCFGR),
+ 	regmap_reg_range(REGS_TTRnCR(0), REGS_TTRnCR(3)),
+ 	regmap_reg_range(REGS_V2_TEUMR(0), REGS_V2_TEUMR(2)),
++	regmap_reg_range(REGS_V2_TMSAR(0), REGS_V2_TMSAR(15)),
+ 	regmap_reg_range(REGS_IPBRR(0), REGS_IPBRR(1)),
+ 	/* Read only registers below */
+ 	regmap_reg_range(REGS_TRITSR(0), REGS_TRITSR(15)),
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.17.1
+
