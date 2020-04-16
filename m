@@ -2,193 +2,416 @@ Return-Path: <SRS0=eR+e=6A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE983C352BE
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C021C2BB85
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 90BEA206B9
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73E14206B9
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 09:02:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qMyY08os"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="gywvv/BA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2503124AbgDPJCj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Apr 2020 05:02:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40272 "EHLO
+        id S2502927AbgDPJCm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Apr 2020 05:02:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42494 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2502927AbgDPIsR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2020 04:48:17 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3255EC061A41
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:48:12 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id u13so3862804wrp.3
-        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 01:48:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=gCC6rxpfNBHEEJoswTl2+v3GlY13e+wv1Apu4C5uUJ0=;
-        b=qMyY08os0xXarDJEQ8j9nJU1G/4i1ajvSN1547JGWNAU4kptYy+l0ETyItzmwelvLC
-         nCDep5Cl1t95mbiIhlCDcowJNJGFakofRU/UeiPQv049DorrDQDyvOhQ0iXlohLp8hin
-         3bAdw+39EFnaQiFiejH+534QfsSXNhMyYx4ZtJs1O8APzJpuT9KiZORIU2xx8m9me3GJ
-         nRCzeSz6fhZnRuGUV65gJOj0k8DMrASVs1ffDMfO5wQ+4MKhMzyo1Hf7xWdNJii/ENzy
-         uOrTcZOmWLeo1D6phvtKajqfSbjF0JkyzG19tN5chV4GtOZYui9witk4RNmc7L0KIuBW
-         GEOQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=gCC6rxpfNBHEEJoswTl2+v3GlY13e+wv1Apu4C5uUJ0=;
-        b=aUY1C1LMKgSB3HrjWLziiVSg7ltmRM4nsvEsTM0vbnffdeBEBi/eS14DYGz3XbVEJy
-         sfWc/vm+d+F7exGYG04KtB1TAvUhXaK/Xz91l+lLoriJJrMldKcp0rFWW7d0i3sZpcFd
-         VME6u6hfQUjMO4JBEtAKdh0FStPWkwaAA3Ux9/frEyhdpMRoeEhohEViTx4ys1jgqrD+
-         Xmba63h23ciwTbF6X8BDMhKCK3DXFK7bTCbR9NVy16Yf4+aDtMeH65HikkRIvrLpu+TB
-         vU1iusaK/426+0acXxP0EYxZhEHdJlPjFa2lj8X3/nj4DJ2YOJRd0hLWR2vfxnKFVSTH
-         qWeg==
-X-Gm-Message-State: AGi0PuYIs166MqObkGANwbWwprD57z+5sRQiJ9Xf2jCXvEV36eILlnYb
-        6UWgHJ4Uci5Y7phrla/3PfTv8Q==
-X-Google-Smtp-Source: APiQypLyhDVW4E+VOlBHWErivAdlGrtxixDqwonOAkbRNQamJnKVsV0vJKLtvSLryabLtX0HhH0tLg==
-X-Received: by 2002:a5d:4286:: with SMTP id k6mr21252278wrq.222.1587026890846;
-        Thu, 16 Apr 2020 01:48:10 -0700 (PDT)
-Received: from dell ([95.149.164.124])
-        by smtp.gmail.com with ESMTPSA id z15sm14429845wrs.47.2020.04.16.01.48.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 16 Apr 2020 01:48:10 -0700 (PDT)
-Date:   Thu, 16 Apr 2020 09:49:10 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Nicolas Boichat <drinkcat@chromium.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Sean Wang <sean.wang@mediatek.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Eddie Huang <eddie.huang@mediatek.com>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Richard Fontana <rfontana@redhat.com>,
-        Frank Wunderlich <frank-w@public-files.de>,
-        Josef Friedl <josef.friedl@speed.at>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ran Bi <ran.bi@mediatek.com>, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-rtc@vger.kernel.org,
-        srv_heupstream@mediatek.com
-Subject: Re: [PATCH v12 1/6] mfd: mt6397: Modify suspend/resume behavior
-Message-ID: <20200416084910.GX2167633@dell>
-References: <1586333531-21641-1-git-send-email-hsin-hsiung.wang@mediatek.com>
- <1586333531-21641-2-git-send-email-hsin-hsiung.wang@mediatek.com>
+        with ESMTP id S2503272AbgDPJCb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Apr 2020 05:02:31 -0400
+X-Greylist: delayed 168 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Thu, 16 Apr 2020 02:02:27 PDT
+Received: from mo6-p01-ob.smtp.rzone.de (mo6-p01-ob.smtp.rzone.de [IPv6:2a01:238:20a:202:5301::7])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC5B6C061A0C
+        for <linux-pm@vger.kernel.org>; Thu, 16 Apr 2020 02:02:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1587027746;
+        s=strato-dkim-0002; d=gerhold.net;
+        h=Message-Id:Date:Subject:Cc:To:From:X-RZG-CLASS-ID:X-RZG-AUTH:From:
+        Subject:Sender;
+        bh=OOYbizhktxNhjXpPczroIbFw/sAC6M3HzeGFTG7F/Tg=;
+        b=gywvv/BAWGlH2FnUrlINJk+mYXgNEFmnBWn8wOppHUKyPNmnK8s7SU7Mu69j/qotAG
+        A7KWmBL2AoH5vgxNnb9mInv+Ic/6UMImqCI+0XtFHsM5i2gTBK49/LSWezlFnIXybiMw
+        Xp31AkHv3sIFtOKWxBkajlAz6lq89HWimpFuDpRxoYuk6xjZPDlLGJSdB6OFRk7iflD0
+        kd04YK1Os0wkvWS0qGzVdsdAsPRzW7O0WQnUKiAg4INr4Xct5VfzMmFZzt9U+OA/DgEa
+        L1Ty3Hjgh6T/l3xzdhaFpswfVt7Y5SA4F6SKYGg/rIAP1XFiABQ421lrQxQzWzwVUU74
+        li9g==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVORvLd4SsytBXS7IYBkLahKxB4G6OI0fH"
+X-RZG-CLASS-ID: mo00
+Received: from localhost.localdomain
+        by smtp.strato.de (RZmta 46.4.0 DYNA|AUTH)
+        with ESMTPSA id k074e0w3G8xK7ex
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+        Thu, 16 Apr 2020 10:59:20 +0200 (CEST)
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     linux-pm@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        linux-arm-msm@vger.kernel.org,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        ~postmarketos/upstreaming@lists.sr.ht, Luca Weiss <luca@z3ntu.xyz>,
+        Stephan Gerhold <stephan@gerhold.net>
+Subject: [PATCH v2] cpuidle: Convert Qualcomm SPM driver to a generic CPUidle driver
+Date:   Thu, 16 Apr 2020 10:58:21 +0200
+Message-Id: <20200416085821.108778-1-stephan@gerhold.net>
+X-Mailer: git-send-email 2.26.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <1586333531-21641-2-git-send-email-hsin-hsiung.wang@mediatek.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 08 Apr 2020, Hsin-Hsiung Wang wrote:
+The Qualcomm SPM cpuidle driver seems to be the last driver still
+using the generic ARM CPUidle infrastructure.
 
-> Some pmics don't need backup interrupt settings, so we change to use
-> pm notifier for the pmics which are necessary to store settings.
-> 
-> Signed-off-by: Hsin-Hsiung Wang <hsin-hsiung.wang@mediatek.com>
-> ---
->  drivers/mfd/mt6397-core.c       | 30 ------------------------------
->  drivers/mfd/mt6397-irq.c        | 35 ++++++++++++++++++++++++++++++++++-
->  include/linux/mfd/mt6397/core.h |  2 ++
->  3 files changed, 36 insertions(+), 31 deletions(-)
-> 
-> diff --git a/drivers/mfd/mt6397-core.c b/drivers/mfd/mt6397-core.c
-> index 0437c85..d2e70d8 100644
-> --- a/drivers/mfd/mt6397-core.c
-> +++ b/drivers/mfd/mt6397-core.c
-> @@ -100,35 +100,6 @@ static const struct mfd_cell mt6397_devs[] = {
->  	}
->  };
->  
-> -#ifdef CONFIG_PM_SLEEP
-> -static int mt6397_irq_suspend(struct device *dev)
-> -{
-> -	struct mt6397_chip *chip = dev_get_drvdata(dev);
-> -
-> -	regmap_write(chip->regmap, chip->int_con[0], chip->wake_mask[0]);
-> -	regmap_write(chip->regmap, chip->int_con[1], chip->wake_mask[1]);
-> -
-> -	enable_irq_wake(chip->irq);
-> -
-> -	return 0;
-> -}
-> -
-> -static int mt6397_irq_resume(struct device *dev)
-> -{
-> -	struct mt6397_chip *chip = dev_get_drvdata(dev);
-> -
-> -	regmap_write(chip->regmap, chip->int_con[0], chip->irq_masks_cur[0]);
-> -	regmap_write(chip->regmap, chip->int_con[1], chip->irq_masks_cur[1]);
-> -
-> -	disable_irq_wake(chip->irq);
-> -
-> -	return 0;
-> -}
-> -#endif
-> -
-> -static SIMPLE_DEV_PM_OPS(mt6397_pm_ops, mt6397_irq_suspend,
-> -			mt6397_irq_resume);
-> -
->  struct chip_data {
->  	u32 cid_addr;
->  	u32 cid_shift;
-> @@ -238,7 +209,6 @@ static struct platform_driver mt6397_driver = {
->  	.driver = {
->  		.name = "mt6397",
->  		.of_match_table = of_match_ptr(mt6397_of_match),
-> -		.pm = &mt6397_pm_ops,
->  	},
->  	.id_table = mt6397_id,
->  };
-> diff --git a/drivers/mfd/mt6397-irq.c b/drivers/mfd/mt6397-irq.c
-> index b2d3ce1..2924919 100644
-> --- a/drivers/mfd/mt6397-irq.c
-> +++ b/drivers/mfd/mt6397-irq.c
-> @@ -9,6 +9,7 @@
->  #include <linux/of_irq.h>
->  #include <linux/platform_device.h>
->  #include <linux/regmap.h>
-> +#include <linux/suspend.h>
->  #include <linux/mfd/mt6323/core.h>
->  #include <linux/mfd/mt6323/registers.h>
->  #include <linux/mfd/mt6397/core.h>
-> @@ -81,7 +82,7 @@ static struct irq_chip mt6397_irq_chip = {
->  static void mt6397_irq_handle_reg(struct mt6397_chip *mt6397, int reg,
->  				  int irqbase)
->  {
-> -	unsigned int status;
-> +	unsigned int status = 0;
+Converting it actually allows us to simplify the driver,
+and we end up being able to remove more lines than adding new ones:
 
-This looks like an unrelated change, no?
+  - We can parse the CPUidle states in the device tree directly
+    with dt_idle_states (and don't need to duplicate that
+    functionality into the spm driver).
 
->  	int i, irq, ret;
->  
->  	ret = regmap_read(mt6397->regmap, reg, &status);
-> @@ -128,6 +129,36 @@ static const struct irq_domain_ops mt6397_irq_domain_ops = {
->  	.map = mt6397_irq_domain_map,
->  };
+  - Each "saw" device managed by the SPM driver now directly
+    registers its own cpuidle driver, removing the need for
+    any global (per cpu) state.
 
-Other than that.
+The device tree binding is the same, so the driver stays
+compatible with all old device trees.
 
-For my own reference:
-  Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
+Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
+---
+Related change for the PSCI cpuidle driver:
+  https://lore.kernel.org/linux-pm/cover.1565348376.git.lorenzo.pieralisi@arm.com/
+(converting the QCOM SPM driver was mentioned there)
 
+Changes in v2:
+  - Rebase on top of linux-next, fix conflicts
+    (Apparently sending shortly before the end of the merge window
+     was a bad idea... ;) )
+
+v1: https://lore.kernel.org/linux-arm-msm/20200405162052.53622-1-stephan@gerhold.net/
+---
+ MAINTAINERS                                   |   1 +
+ drivers/cpuidle/Kconfig.arm                   |  13 ++
+ drivers/cpuidle/Makefile                      |   1 +
+ .../qcom/spm.c => cpuidle/cpuidle-qcom-spm.c} | 138 +++++++-----------
+ drivers/soc/qcom/Kconfig                      |  10 --
+ drivers/soc/qcom/Makefile                     |   1 -
+ 6 files changed, 67 insertions(+), 97 deletions(-)
+ rename drivers/{soc/qcom/spm.c => cpuidle/cpuidle-qcom-spm.c} (75%)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index e64e5db31497..2fd05a6835a6 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2223,6 +2223,7 @@ F:	drivers/*/qcom*
+ F:	drivers/*/qcom/
+ F:	drivers/bluetooth/btqcomsmd.c
+ F:	drivers/clocksource/timer-qcom.c
++F:	drivers/cpuidle/cpuidle-qcom-spm.c
+ F:	drivers/extcon/extcon-qcom*
+ F:	drivers/i2c/busses/i2c-qcom-geni.c
+ F:	drivers/i2c/busses/i2c-qup.c
+diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+index 99a2d72ac02b..51a7e89085c0 100644
+--- a/drivers/cpuidle/Kconfig.arm
++++ b/drivers/cpuidle/Kconfig.arm
+@@ -94,3 +94,16 @@ config ARM_TEGRA_CPUIDLE
+ 	select ARM_CPU_SUSPEND
+ 	help
+ 	  Select this to enable cpuidle for NVIDIA Tegra20/30/114/124 SoCs.
++
++config ARM_QCOM_SPM_CPUIDLE
++	bool "CPU Idle Driver for Qualcomm Subsystem Power Manager (SPM)"
++	depends on (ARCH_QCOM || COMPILE_TEST) && !ARM64
++	select ARM_CPU_SUSPEND
++	select CPU_IDLE_MULTIPLE_DRIVERS
++	select DT_IDLE_STATES
++	select QCOM_SCM
++	help
++	  Select this to enable cpuidle for Qualcomm processors.
++	  The Subsystem Power Manager (SPM) controls low power modes for the
++	  CPU and L2 cores. It interface with various system drivers to put
++	  the cores in low power modes.
+diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+index 55a464f6a78b..f07800cbb43f 100644
+--- a/drivers/cpuidle/Makefile
++++ b/drivers/cpuidle/Makefile
+@@ -25,6 +25,7 @@ obj-$(CONFIG_ARM_PSCI_CPUIDLE)		+= cpuidle_psci.o
+ cpuidle_psci-y				:= cpuidle-psci.o
+ cpuidle_psci-$(CONFIG_PM_GENERIC_DOMAINS_OF) += cpuidle-psci-domain.o
+ obj-$(CONFIG_ARM_TEGRA_CPUIDLE)		+= cpuidle-tegra.o
++obj-$(CONFIG_ARM_QCOM_SPM_CPUIDLE)	+= cpuidle-qcom-spm.o
+ 
+ ###############################################################################
+ # MIPS drivers
+diff --git a/drivers/soc/qcom/spm.c b/drivers/cpuidle/cpuidle-qcom-spm.c
+similarity index 75%
+rename from drivers/soc/qcom/spm.c
+rename to drivers/cpuidle/cpuidle-qcom-spm.c
+index 8e10e02c6aa5..adf91a6e4d7d 100644
+--- a/drivers/soc/qcom/spm.c
++++ b/drivers/cpuidle/cpuidle-qcom-spm.c
+@@ -19,10 +19,11 @@
+ #include <linux/cpu_pm.h>
+ #include <linux/qcom_scm.h>
+ 
+-#include <asm/cpuidle.h>
+ #include <asm/proc-fns.h>
+ #include <asm/suspend.h>
+ 
++#include "dt_idle_states.h"
++
+ #define MAX_PMIC_DATA		2
+ #define MAX_SEQ_DATA		64
+ #define SPM_CTL_INDEX		0x7f
+@@ -62,6 +63,7 @@ struct spm_reg_data {
+ };
+ 
+ struct spm_driver_data {
++	struct cpuidle_driver cpuidle_driver;
+ 	void __iomem *reg_base;
+ 	const struct spm_reg_data *reg_data;
+ };
+@@ -107,11 +109,6 @@ static const struct spm_reg_data spm_reg_8064_cpu = {
+ 	.start_index[PM_SLEEP_MODE_SPC] = 2,
+ };
+ 
+-static DEFINE_PER_CPU(struct spm_driver_data *, cpu_spm_drv);
+-
+-typedef int (*idle_fn)(void);
+-static DEFINE_PER_CPU(idle_fn*, qcom_idle_ops);
+-
+ static inline void spm_register_write(struct spm_driver_data *drv,
+ 					enum spm_reg reg, u32 val)
+ {
+@@ -172,10 +169,9 @@ static int qcom_pm_collapse(unsigned long int unused)
+ 	return -1;
+ }
+ 
+-static int qcom_cpu_spc(void)
++static int qcom_cpu_spc(struct spm_driver_data *drv)
+ {
+ 	int ret;
+-	struct spm_driver_data *drv = __this_cpu_read(cpu_spm_drv);
+ 
+ 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_SPC);
+ 	ret = cpu_suspend(0, qcom_pm_collapse);
+@@ -190,94 +186,49 @@ static int qcom_cpu_spc(void)
+ 	return ret;
+ }
+ 
+-static int qcom_idle_enter(unsigned long index)
++static int spm_enter_idle_state(struct cpuidle_device *dev,
++				struct cpuidle_driver *drv, int idx)
+ {
+-	return __this_cpu_read(qcom_idle_ops)[index]();
++	struct spm_driver_data *data = container_of(drv, struct spm_driver_data,
++						    cpuidle_driver);
++
++	return CPU_PM_CPU_IDLE_ENTER_PARAM(qcom_cpu_spc, idx, data);
+ }
+ 
+-static const struct of_device_id qcom_idle_state_match[] __initconst = {
+-	{ .compatible = "qcom,idle-state-spc", .data = qcom_cpu_spc },
++static struct cpuidle_driver qcom_spm_idle_driver = {
++	.name = "qcom_spm",
++	.owner = THIS_MODULE,
++	.states[0] = {
++		.enter			= spm_enter_idle_state,
++		.exit_latency		= 1,
++		.target_residency	= 1,
++		.power_usage		= UINT_MAX,
++		.name			= "WFI",
++		.desc			= "ARM WFI",
++	}
++};
++
++static const struct of_device_id qcom_idle_state_match[] = {
++	{ .compatible = "qcom,idle-state-spc", .data = spm_enter_idle_state },
+ 	{ },
+ };
+ 
+-static int __init qcom_cpuidle_init(struct device_node *cpu_node, int cpu)
++static int spm_cpuidle_init(struct cpuidle_driver *drv, int cpu)
+ {
+-	const struct of_device_id *match_id;
+-	struct device_node *state_node;
+-	int i;
+-	int state_count = 1;
+-	idle_fn idle_fns[CPUIDLE_STATE_MAX];
+-	idle_fn *fns;
+-	cpumask_t mask;
+-	bool use_scm_power_down = false;
+-
+-	if (!qcom_scm_is_available())
+-		return -EPROBE_DEFER;
+-
+-	for (i = 0; ; i++) {
+-		state_node = of_parse_phandle(cpu_node, "cpu-idle-states", i);
+-		if (!state_node)
+-			break;
+-
+-		if (!of_device_is_available(state_node))
+-			continue;
+-
+-		if (i == CPUIDLE_STATE_MAX) {
+-			pr_warn("%s: cpuidle states reached max possible\n",
+-					__func__);
+-			break;
+-		}
+-
+-		match_id = of_match_node(qcom_idle_state_match, state_node);
+-		if (!match_id)
+-			return -ENODEV;
+-
+-		idle_fns[state_count] = match_id->data;
+-
+-		/* Check if any of the states allow power down */
+-		if (match_id->data == qcom_cpu_spc)
+-			use_scm_power_down = true;
+-
+-		state_count++;
+-	}
+-
+-	if (state_count == 1)
+-		goto check_spm;
+-
+-	fns = devm_kcalloc(get_cpu_device(cpu), state_count, sizeof(*fns),
+-			GFP_KERNEL);
+-	if (!fns)
+-		return -ENOMEM;
+-
+-	for (i = 1; i < state_count; i++)
+-		fns[i] = idle_fns[i];
++	int ret;
+ 
+-	if (use_scm_power_down) {
+-		/* We have atleast one power down mode */
+-		cpumask_clear(&mask);
+-		cpumask_set_cpu(cpu, &mask);
+-		qcom_scm_set_warm_boot_addr(cpu_resume_arm, &mask);
+-	}
++	memcpy(drv, &qcom_spm_idle_driver, sizeof(*drv));
++	drv->cpumask = (struct cpumask *)cpumask_of(cpu);
+ 
+-	per_cpu(qcom_idle_ops, cpu) = fns;
++	/* Parse idle states from device tree */
++	ret = dt_init_idle_driver(drv, qcom_idle_state_match, 1);
++	if (ret <= 0)
++		return ret ? : -ENODEV;
+ 
+-	/*
+-	 * SPM probe for the cpu should have happened by now, if the
+-	 * SPM device does not exist, return -ENXIO to indicate that the
+-	 * cpu does not support idle states.
+-	 */
+-check_spm:
+-	return per_cpu(cpu_spm_drv, cpu) ? 0 : -ENXIO;
++	/* We have atleast one power down mode */
++	return qcom_scm_set_warm_boot_addr(cpu_resume_arm, drv->cpumask);
+ }
+ 
+-static const struct cpuidle_ops qcom_cpuidle_ops __initconst = {
+-	.suspend = qcom_idle_enter,
+-	.init = qcom_cpuidle_init,
+-};
+-
+-CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v1, "qcom,kpss-acc-v1", &qcom_cpuidle_ops);
+-CPUIDLE_METHOD_OF_DECLARE(qcom_idle_v2, "qcom,kpss-acc-v2", &qcom_cpuidle_ops);
+-
+ static struct spm_driver_data *spm_get_drv(struct platform_device *pdev,
+ 		int *spm_cpu)
+ {
+@@ -323,11 +274,15 @@ static int spm_dev_probe(struct platform_device *pdev)
+ 	struct resource *res;
+ 	const struct of_device_id *match_id;
+ 	void __iomem *addr;
+-	int cpu;
++	int cpu, ret;
++
++	if (!qcom_scm_is_available())
++		return -EPROBE_DEFER;
+ 
+ 	drv = spm_get_drv(pdev, &cpu);
+ 	if (!drv)
+ 		return -EINVAL;
++	platform_set_drvdata(pdev, drv);
+ 
+ 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+ 	drv->reg_base = devm_ioremap_resource(&pdev->dev, res);
+@@ -340,6 +295,10 @@ static int spm_dev_probe(struct platform_device *pdev)
+ 
+ 	drv->reg_data = match_id->data;
+ 
++	ret = spm_cpuidle_init(&drv->cpuidle_driver, cpu);
++	if (ret)
++		return ret;
++
+ 	/* Write the SPM sequences first.. */
+ 	addr = drv->reg_base + drv->reg_data->reg_offset[SPM_REG_SEQ_ENTRY];
+ 	__iowrite32_copy(addr, drv->reg_data->seq,
+@@ -362,13 +321,20 @@ static int spm_dev_probe(struct platform_device *pdev)
+ 	/* Set up Standby as the default low power mode */
+ 	spm_set_low_power_mode(drv, PM_SLEEP_MODE_STBY);
+ 
+-	per_cpu(cpu_spm_drv, cpu) = drv;
++	return cpuidle_register(&drv->cpuidle_driver, NULL);
++}
++
++static int spm_dev_remove(struct platform_device *pdev)
++{
++	struct spm_driver_data *drv = platform_get_drvdata(pdev);
+ 
++	cpuidle_unregister(&drv->cpuidle_driver);
+ 	return 0;
+ }
+ 
+ static struct platform_driver spm_driver = {
+ 	.probe = spm_dev_probe,
++	.remove = spm_dev_remove,
+ 	.driver = {
+ 		.name = "saw",
+ 		.of_match_table = spm_match_table,
+diff --git a/drivers/soc/qcom/Kconfig b/drivers/soc/qcom/Kconfig
+index bf42a17a45de..285baa7e474e 100644
+--- a/drivers/soc/qcom/Kconfig
++++ b/drivers/soc/qcom/Kconfig
+@@ -80,16 +80,6 @@ config QCOM_PDR_HELPERS
+ 	tristate
+ 	select QCOM_QMI_HELPERS
+ 
+-config QCOM_PM
+-	bool "Qualcomm Power Management"
+-	depends on ARCH_QCOM && !ARM64
+-	select ARM_CPU_SUSPEND
+-	select QCOM_SCM
+-	help
+-	  QCOM Platform specific power driver to manage cores and L2 low power
+-	  modes. It interface with various system drivers to put the cores in
+-	  low power modes.
+-
+ config QCOM_QMI_HELPERS
+ 	tristate
+ 	depends on NET
+diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+index 5d6b83dc58e8..92cc4232d72c 100644
+--- a/drivers/soc/qcom/Makefile
++++ b/drivers/soc/qcom/Makefile
+@@ -8,7 +8,6 @@ obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
+ obj-$(CONFIG_QCOM_MDT_LOADER)	+= mdt_loader.o
+ obj-$(CONFIG_QCOM_OCMEM)	+= ocmem.o
+ obj-$(CONFIG_QCOM_PDR_HELPERS)	+= pdr_interface.o
+-obj-$(CONFIG_QCOM_PM)	+=	spm.o
+ obj-$(CONFIG_QCOM_QMI_HELPERS)	+= qmi_helpers.o
+ qmi_helpers-y	+= qmi_encdec.o qmi_interface.o
+ obj-$(CONFIG_QCOM_RMTFS_MEM)	+= rmtfs_mem.o
 -- 
-Lee Jones [李琼斯]
-Linaro Services Technical Lead
-Linaro.org │ Open source software for ARM SoCs
-Follow Linaro: Facebook | Twitter | Blog
+2.26.1
+
