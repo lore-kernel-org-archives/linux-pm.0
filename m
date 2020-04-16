@@ -4,192 +4,141 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72B8EC2D0EF
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 05:12:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AB70C2BA2B
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 05:48:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D3D42076D
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 05:12:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74A0F2076D
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Apr 2020 05:48:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405878AbgDPFMf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Apr 2020 01:12:35 -0400
-Received: from mx.socionext.com ([202.248.49.38]:55850 "EHLO mx.socionext.com"
+        id S2406990AbgDPFsO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Apr 2020 01:48:14 -0400
+Received: from mx2.suse.de ([195.135.220.15]:38452 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2406149AbgDPFMc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Apr 2020 01:12:32 -0400
-Received: from unknown (HELO iyokan-ex.css.socionext.com) ([172.31.9.54])
-  by mx.socionext.com with ESMTP; 16 Apr 2020 14:12:27 +0900
-Received: from mail.mfilter.local (m-filter-2 [10.213.24.62])
-        by iyokan-ex.css.socionext.com (Postfix) with ESMTP id A338960057;
-        Thu, 16 Apr 2020 14:12:27 +0900 (JST)
-Received: from 172.31.9.51 (172.31.9.51) by m-FILTER with ESMTP; Thu, 16 Apr 2020 14:12:27 +0900
-Received: from plum.e01.socionext.com (unknown [10.213.132.32])
-        by kinkan.css.socionext.com (Postfix) with ESMTP id EA77F1A12AD;
-        Thu, 16 Apr 2020 14:12:26 +0900 (JST)
-From:   Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH] dt-bindings: thermal: Convert UniPhier thermal monitor to json-schema
-Date:   Thu, 16 Apr 2020 14:12:15 +0900
-Message-Id: <1587013935-21760-1-git-send-email-hayashi.kunihiko@socionext.com>
-X-Mailer: git-send-email 2.7.4
+        id S2406805AbgDPFsM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 16 Apr 2020 01:48:12 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx2.suse.de (Postfix) with ESMTP id 8B068AD7C;
+        Thu, 16 Apr 2020 05:48:09 +0000 (UTC)
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Mel Gorman <mgorman@techsingularity.net>,
+        Doug Smythies <dsmythies@telus.net>,
+        Like Xu <like.xu@linux.intel.com>,
+        Neil Rickert <nwr10cst-oslnx@yahoo.com>,
+        Chris Wilson <chris@chris-wilson.co.uk>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>
+Subject: [PATCH 3/4] x86, sched: Don't enable static key when starting secondary CPUs
+Date:   Thu, 16 Apr 2020 07:47:44 +0200
+Message-Id: <20200416054745.740-4-ggherdovich@suse.cz>
+X-Mailer: git-send-email 2.16.4
+In-Reply-To: <20200416054745.740-1-ggherdovich@suse.cz>
+References: <20200416054745.740-1-ggherdovich@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the UniPhier thermal monitor binding to DT schema format.
+From: "Peter Zijlstra (Intel)" <peterz@infradead.org>
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
+The static key arch_scale_freq_key only needs to be enabled once (at
+boot). This change fixes a bug by which the key was enabled every time cpu0
+is started, even as a secondary CPU during cpu hotplug. Secondary CPUs are
+started from the idle thread: setting a static key from there means
+acquiring a lock and may result in sleeping in the idle task, causing CPU
+lockup.
+
+Another consequence of this change is that init_counter_refs() is now
+called on each CPU correctly; previously the function on_each_cpu() was
+used, but it was called at boot when the only online cpu is cpu0.
+
+[ggherdovich@suse.cz: Tested and wrote changelog]
+Reported-by: Chris Wilson <chris@chris-wilson.co.uk>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+Fixes: 1567c3e3467c ("x86, sched: Add support for frequency invariance")
 ---
- .../thermal/socionext,uniphier-thermal.yaml        | 57 +++++++++++++++++++
- .../bindings/thermal/uniphier-thermal.txt          | 65 ----------------------
- 2 files changed, 57 insertions(+), 65 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
- delete mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
+ arch/x86/kernel/smpboot.c | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml b/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
-new file mode 100644
-index 0000000..bdddc5b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
-@@ -0,0 +1,57 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/socionext,uniphier-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 5d346b70844b..dd8e15f648bc 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -147,7 +147,7 @@ static inline void smpboot_restore_warm_reset_vector(void)
+ 	*((volatile u32 *)phys_to_virt(TRAMPOLINE_PHYS_LOW)) = 0;
+ }
+ 
+-static void init_freq_invariance(void);
++static void init_freq_invariance(bool secondary);
+ 
+ /*
+  * Report back to the Boot Processor during boot time or to the caller processor
+@@ -185,7 +185,7 @@ static void smp_callin(void)
+ 	 */
+ 	set_cpu_sibling_map(raw_smp_processor_id());
+ 
+-	init_freq_invariance();
++	init_freq_invariance(true);
+ 
+ 	/*
+ 	 * Get our bogomips.
+@@ -1341,7 +1341,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
+ 	set_sched_topology(x86_topology);
+ 
+ 	set_cpu_sibling_map(0);
+-	init_freq_invariance();
++	init_freq_invariance(false);
+ 	smp_sanity_check();
+ 
+ 	switch (apic_intr_mode) {
+@@ -2005,7 +2005,7 @@ static bool intel_set_max_freq_ratio(void)
+ 	return true;
+ }
+ 
+-static void init_counter_refs(void *arg)
++static void init_counter_refs(void)
+ {
+ 	u64 aperf, mperf;
+ 
+@@ -2016,18 +2016,25 @@ static void init_counter_refs(void *arg)
+ 	this_cpu_write(arch_prev_mperf, mperf);
+ }
+ 
+-static void init_freq_invariance(void)
++static void init_freq_invariance(bool secondary)
+ {
+ 	bool ret = false;
+ 
+-	if (smp_processor_id() != 0 || !boot_cpu_has(X86_FEATURE_APERFMPERF))
++	if (!boot_cpu_has(X86_FEATURE_APERFMPERF))
+ 		return;
+ 
++	if (secondary) {
++		if (static_branch_likely(&arch_scale_freq_key)) {
++			init_counter_refs();
++		}
++		return;
++	}
 +
-+title: Socionext UniPhier thermal monitor
-+
-+description: |
-+  This describes the devicetree bindings for thermal monitor supported by
-+  PVT(Process, Voltage and Temperature) monitoring unit implemented on
-+  Socionext UniPhier SoCs.
-+
-+maintainers:
-+  - Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - socionext,uniphier-pxs2-thermal
-+      - socionext,uniphier-ld20-thermal
-+      - socionext,uniphier-pxs3-thermal
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 0
-+
-+  socionext,tmod-calibration:
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description:
-+      A pair of calibrated values referred from PVT, in case that the values
-+      aren't set on SoC, like a reference board.
-+
-+required:
-+  - compatible
-+  - interrupts
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    // The UniPhier thermal should be a subnode of a "syscon" compatible node.
-+
-+    sysctrl@61840000 {
-+        compatible = "socionext,uniphier-ld20-sysctrl",
-+                     "simple-mfd", "syscon";
-+        reg = <0x61840000 0x10000>;
-+
-+        pvtctl: thermal {
-+                compatible = "socionext,uniphier-ld20-thermal";
-+                interrupts = <0 3 1>;
-+                #thermal-sensor-cells = <0>;
-+        };
-+    };
-diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-deleted file mode 100644
-index ceb92a9..0000000
---- a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-+++ /dev/null
-@@ -1,65 +0,0 @@
--* UniPhier Thermal bindings
--
--This describes the devicetree bindings for thermal monitor supported by
--PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
--UniPhier SoCs.
--
--Required properties:
--- compatible :
--  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
--  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
--  - "socionext,uniphier-pxs3-thermal" : For UniPhier PXs3 SoC
--- interrupts : IRQ for the temperature alarm
--- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
--
--Optional properties:
--- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
--                              in case that the values aren't set on SoC,
--                              like a reference board.
--
--Example:
--
--	sysctrl@61840000 {
--		compatible = "socionext,uniphier-ld20-sysctrl",
--			     "simple-mfd", "syscon";
--		reg = <0x61840000 0x10000>;
--		...
--		pvtctl: pvtctl {
--			compatible = "socionext,uniphier-ld20-thermal";
--			interrupts = <0 3 1>;
--			#thermal-sensor-cells = <0>;
--		};
--		...
--	};
--
--	thermal-zones {
--		cpu_thermal {
--			polling-delay-passive = <250>;	/* 250ms */
--			polling-delay = <1000>;		/* 1000ms */
--			thermal-sensors = <&pvtctl>;
--
--			trips {
--				cpu_crit: cpu_crit {
--					temperature = <110000>;	/* 110C */
--					hysteresis = <2000>;
--					type = "critical";
--				};
--				cpu_alert: cpu_alert {
--					temperature = <100000>;	/* 100C */
--					hysteresis = <2000>;
--					type = "passive";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu_alert>;
--					cooling-device = <&cpu0 (-1) (-1)>;
--				};
--				map1 {
--					trip = <&cpu_alert>;
--					cooling-device = <&cpu2 (-1) (-1)>;
--				};
--			};
--		};
--	};
+ 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
+ 		ret = intel_set_max_freq_ratio();
+ 
+ 	if (ret) {
+-		on_each_cpu(init_counter_refs, NULL, 1);
++		init_counter_refs();
+ 		static_branch_enable(&arch_scale_freq_key);
+ 	} else {
+ 		pr_debug("Couldn't determine max cpu frequency, necessary for scale-invariant accounting.\n");
 -- 
-2.7.4
+2.16.4
 
