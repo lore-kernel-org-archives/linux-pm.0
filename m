@@ -2,246 +2,196 @@ Return-Path: <SRS0=fGnz=6B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,TVD_PH_BODY_ACCOUNTS_PRE
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93787C352BE
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 08:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17B29C3815B
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 09:58:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6CAF5221EB
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 08:51:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i7LpZw9u"
+	by mail.kernel.org (Postfix) with ESMTP id 0201221D94
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 09:58:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729889AbgDQIuY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Apr 2020 04:50:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38884 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729746AbgDQIuW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2020 04:50:22 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B796C061A0C;
-        Fri, 17 Apr 2020 01:50:22 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id x25so2115609wmc.0;
-        Fri, 17 Apr 2020 01:50:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=288LWqG64T9m1CcDZxmk7YbEQXVEumWwABLeVwd/vN8=;
-        b=i7LpZw9uKFGtDvHo9dkgfas8LpfrkG910MkKia0OiWZeY/FM5vrSdetLm7LL5eyHRL
-         E4MhdgZVtGWqJ7+AHoU54D+lqzVRArGdgXvMk6P8Y0mtsOK7ozIpl+qheymbHql1M2Va
-         R4g7P3JKC5uv1NdDLKL3ag53eSYhssKldrel6d+3UCUxz5X0WO3Z8sOBlvKtStBVaTqk
-         pwiCdP9dkq1ylJJLigDLIv1K6IaKHRF5vAsArQDTOqNHPL0HFGyyMinW7idjip9C2eUq
-         2l3kK34BuTxvEOUpxf26Uy7ctJFJYmw09ipwQTXPknGpkwBYoVhoAbgLnGCR00qvbEd5
-         eZ/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=288LWqG64T9m1CcDZxmk7YbEQXVEumWwABLeVwd/vN8=;
-        b=j7h3ihagmU49q7R5jJJsWeNz4xPKIjfITfVwih9alFI1ZRrCDrk4xayXg5iNSVBbXW
-         9PP/ZUg6mt6zqvogvyKkOenip+oJ2FF5PF80wCEd4fMV0zBujqbaT2Uw7KN38Ga+5bzU
-         6PQ8C38hyPaQdORqB230FpcPS+vlEBJNcgmtHQlpJh16IwR+owXHRDQrZmudW5shYkdq
-         oShwnMVbQaI6Moe3GcCocOMlYEfkmG8q5f74YU7X3ZmKdh9PaKYm75y/2VwFiRtbw1al
-         lleFbGU4SXX5vhPhHvtR7OCeLSiYXsSESfSFcyez5p0xhuWvDQvM/AXy9G9WMvOqEEqG
-         8AuQ==
-X-Gm-Message-State: AGi0Pubv5IWXXC+HQq/Aj1zoXO9+E/xcgT+uw7Nv5dUgQuH2CLC6KeMt
-        7MxoZJnngYEu3sUc5qOwGIs=
-X-Google-Smtp-Source: APiQypLC9VvEQXDMe+K0jO6e2ILuXAZse5Ce7nnJm+MMle4v63/IqyEiwF3rM3F4OqpKBDMAr1ta3w==
-X-Received: by 2002:a05:600c:2214:: with SMTP id z20mr2405549wml.189.1587113421105;
-        Fri, 17 Apr 2020 01:50:21 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F7443.dip0.t-ipconnect.de. [91.63.116.67])
-        by smtp.gmail.com with ESMTPSA id l5sm6807527wmi.22.2020.04.17.01.50.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 17 Apr 2020 01:50:20 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v10 2/6] mfd: mp2629: Add support for mps battery charger
-Date:   Fri, 17 Apr 2020 10:49:59 +0200
-Message-Id: <20200417085003.6124-3-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200417085003.6124-1-sravanhome@gmail.com>
-References: <20200417085003.6124-1-sravanhome@gmail.com>
+        id S1727840AbgDQJ6A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Apr 2020 05:58:00 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:55670 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726712AbgDQJ6A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2020 05:58:00 -0400
+Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 58873dd5037093b4; Fri, 17 Apr 2020 11:57:56 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Alan Stern <stern@rowland.harvard.edu>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Qais Yousef <qais.yousef@arm.com>,
+        USB list <linux-usb@vger.kernel.org>,
+        Linux-pm mailing list <linux-pm@vger.kernel.org>,
+        Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: lockdep warning in urb.c:363 usb_submit_urb
+Date:   Fri, 17 Apr 2020 11:57:55 +0200
+Message-ID: <2040116.cccRbkeLkK@kreacher>
+In-Reply-To: <Pine.LNX.4.44L0.2004161036410.14937-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.2004161036410.14937-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-mp2629 is a highly-integrated switching-mode battery charge management
-device for single-cell Li-ion or Li-polymer battery.
+On Thursday, April 16, 2020 5:18:15 PM CEST Alan Stern wrote:
+> Thanks for all your help straightening this out.  I think the end 
+> result will be a distinct improvement over the old code.
 
-Add MFD core enables chip access for ADC driver for battery readings,
-and a power supply battery-charger driver
+Yes, I believe so.
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
----
- drivers/mfd/Kconfig        |  9 ++++
- drivers/mfd/Makefile       |  2 +
- drivers/mfd/mp2629.c       | 86 ++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/mp2629.h | 19 +++++++++
- 4 files changed, 116 insertions(+)
- create mode 100644 drivers/mfd/mp2629.c
- create mode 100644 include/linux/mfd/mp2629.h
+> On Thu, 16 Apr 2020, Rafael J. Wysocki wrote:
+> 
+> > This means that the dev_pm_skip_resume() logic really is relatively
+> > straightforward:
+> >  - If the current transition is RESTORE, return "false".
+> >  - Otherwise, if the current transition is THAW, return the return value
+> >    of dev_pm_skip_suspend().
+> >  - Otherwise (so the current transition is RESUME which is the only remaining
+> >    case), return the logical negation of power.must_resume.
+> > 
+> > > Also, it would mean 
+> > > that a device whose subsystem doesn't know about power.may_skip_resume 
+> > > would never be allowed to stay in runtime suspend.
+> > 
+> > Not really, because I want the core to set power.may_skip_resume for the
+> > devices for which dev_pm_skip_suspend() returns "true" if the "suspend_late"
+> > subsystem-level callback is not present.  [It might be more consistent
+> > to simply set it for all devices for which dev_pm_skip_suspend() returns
+> > "true" and let the subsystems update it should they want to?  IOW, the
+> > default value of power.may_skip_resume could be the return value of
+> > dev_pm_skip_suspend()?]
+> 
+> How about this?  Let's set power.may_skip_resume to "true" for each
+> device before issuing ->prepare.
 
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 3c547ed575e6..85be799795aa 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -434,6 +434,15 @@ config MFD_MC13XXX_I2C
- 	help
- 	  Select this if your MC13xxx is connected via an I2C bus.
- 
-+config MFD_MP2629
-+	tristate "Monolithic power system MP2629 ADC and Battery charger"
-+	depends on I2C
-+	select REGMAP_I2C
-+	help
-+	  Select this option to enable support for monolithic power system
-+	  battery charger. This provides ADC, thermal, battery charger power
-+	  management functions on the systems.
-+
- config MFD_MXS_LRADC
- 	tristate "Freescale i.MX23/i.MX28 LRADC"
- 	depends on ARCH_MXS || COMPILE_TEST
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index f935d10cbf0f..d6c210f96d02 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -170,6 +170,8 @@ obj-$(CONFIG_MFD_MAX8925)	+= max8925.o
- obj-$(CONFIG_MFD_MAX8997)	+= max8997.o max8997-irq.o
- obj-$(CONFIG_MFD_MAX8998)	+= max8998.o max8998-irq.o
- 
-+obj-$(CONFIG_MFD_MP2629)	+= mp2629.o
-+
- pcf50633-objs			:= pcf50633-core.o pcf50633-irq.o
- obj-$(CONFIG_MFD_PCF50633)	+= pcf50633.o
- obj-$(CONFIG_PCF50633_ADC)	+= pcf50633-adc.o
-diff --git a/drivers/mfd/mp2629.c b/drivers/mfd/mp2629.c
-new file mode 100644
-index 000000000000..46242b1cdf24
---- /dev/null
-+++ b/drivers/mfd/mp2629.c
-@@ -0,0 +1,86 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * MP2629 parent driver for ADC and battery charger
-+ *
-+ * Copyright 2020 Monolithic Power Systems, Inc
-+ *
-+ * Author: Saravanan Sekar <sravanhome@gmail.com>
-+ */
-+
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/mfd/core.h>
-+#include <linux/mfd/mp2629.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/regmap.h>
-+#include <linux/slab.h>
-+
-+enum {
-+	MP2629_MFD_ADC,
-+	MP2629_MFD_CHARGER,
-+	MP2629_MFD_MAX
-+};
-+
-+static const struct mfd_cell mp2629mfd[] = {
-+	[MP2629_MFD_ADC] = {
-+		.name = "mp2629_adc",
-+		.of_compatible = "mps,mp2629_adc",
-+	},
-+	[MP2629_MFD_CHARGER] = {
-+		.name = "mp2629_charger",
-+		.of_compatible = "mps,mp2629_charger",
-+	}
-+};
-+
-+static const struct regmap_config mp2629_regmap_config = {
-+	.reg_bits = 8,
-+	.val_bits = 8,
-+	.max_register = 0x17,
-+};
-+
-+static int mp2629_probe(struct i2c_client *client)
-+{
-+	struct mp2629_info *ddata;
-+	int ret;
-+
-+	ddata = devm_kzalloc(&client->dev, sizeof(*ddata), GFP_KERNEL);
-+	if (!ddata)
-+		return -ENOMEM;
-+
-+	ddata->dev = &client->dev;
-+	i2c_set_clientdata(client, ddata);
-+
-+	ddata->regmap = devm_regmap_init_i2c(client, &mp2629_regmap_config);
-+	if (IS_ERR(ddata->regmap)) {
-+		dev_err(ddata->dev, "Failed to allocate regmap!\n");
-+		return PTR_ERR(ddata->regmap);
-+	}
-+
-+	ret = devm_mfd_add_devices(ddata->dev, PLATFORM_DEVID_NONE, mp2629mfd,
-+				ARRAY_SIZE(mp2629mfd), NULL,
-+				0, NULL);
-+	if (ret)
-+		dev_err(ddata->dev, "Failed to register sub-devices %d\n", ret);
-+
-+	return ret;
-+}
-+
-+static const struct of_device_id mp2629_of_match[] = {
-+	{ .compatible = "mps,mp2629"},
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, mp2629_of_match);
-+
-+static struct i2c_driver mp2629_driver = {
-+	.driver = {
-+		.name = "mp2629",
-+		.of_match_table = mp2629_of_match,
-+	},
-+	.probe_new	= mp2629_probe,
-+};
-+module_i2c_driver(mp2629_driver);
-+
-+MODULE_AUTHOR("Saravanan Sekar <sravanhome@gmail.com>");
-+MODULE_DESCRIPTION("MP2629 Battery charger parent driver");
-+MODULE_LICENSE("GPL");
-diff --git a/include/linux/mfd/mp2629.h b/include/linux/mfd/mp2629.h
-new file mode 100644
-index 000000000000..06985e41fc6f
---- /dev/null
-+++ b/include/linux/mfd/mp2629.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0+ */
-+/*
-+ * register definitions for MP2629 charger
-+ *
-+ * Copyright 2020 Monolithic Power Systems, Inc
-+ */
-+
-+#ifndef __MP2629_H__
-+#define __MP2629_H__
-+
-+#include <linux/device.h>
-+#include <linux/regmap.h>
-+
-+struct mp2629_info {
-+	struct device *dev;
-+	struct regmap *regmap;
-+};
-+
-+#endif
--- 
-2.17.1
+Yes, it can be set to 'true' by default for all devices.
+
+It doesn't need to be before ->prepare, it can be before ->suspend (as it
+is now).
+
+> The subsystem can set it to "false"
+> if it wants to during any of the suspend-side callbacks.  Following the
+> ->suspend_noirq callback, the core will do the equivalent of:
+> 
+> 	dev->power.may_skip_resume &= dev_pm_skip_suspend(dev);
+> 
+> before propagating the flag.  Any subsystem changes to support this
+> should be minimal, since only ACPI and PCI currently use
+> may_skip_resume.
+
+IMO it can be simpler even.
+
+Because power.may_skip_resume is taken into account along with
+MAY_SKIP_RESUME and the driver setting the latter must be prepared
+for skipping its resume callbacks regardless of the suspend side of
+things, they may always be skipped (and the device may be left in
+suspend accordingly) if there is a reason to avoid doing that.
+
+The core doesn't know about those reasons, so it has no reason to
+touch power.may_skip_resume after setting it at the outset and then
+whoever sees a reason why these callbacks should run (the subsystem
+or the driver) needs to clear power.may_skip_resume (and clearing it
+more than once obviously makes no difference).
+
+> > > What about the runtime PM usage counter?
+> > 
+> > Yes, it applies to that too.
+> > 
+> > Of course, if dev_pm_skip_suspend() returns "true", the usage counter cannot
+> > be greater than 1 (for the given device as well as for any dependent devices).
+> 
+> Well, in theory the subsystem could call pm_runtime_get_noresume().  I 
+> can't imagine why it would want to, though.
+
+Indeed.
+
+> So here's what we've got:
+> 
+> > > Transition   Conditions for dev_pm_skip_resume() to return "true"
+> > > ----------   ----------------------------------------------------
+> > > 
+> > > RESTORE      Never
+> > 
+> > Right.
+> 
+> >  THAW	         dev_pm_skip_suspend() returns "true".
+> 
+> >  RESUME        power.must_resume is clear (which requires
+> >                  MAY_SKIP_RESUME and power.may_skip_resume to be set and
+> >                  the runtime usage counter to be = 1, and which 
+> >                  propagates up from dependent devices)
+> > 
+> > Nothing else is really strictly required IMO.
+> 
+> This seems very clear and simple.  And I will repeat here some of the 
+> things posted earlier, to make the description more complete:
+> 
+> 	During the suspend side, for each of the
+> 	{suspend,freeze,poweroff}_{late,noirq} phases: If
+> 	dev_pm_skip_suspend() returns true then the subsystem should
+> 	not invoke the driver's callback, and if there is no subsystem
+> 	callback then the core will not invoke the driver's callback.
+> 
+> 	During the resume side, for each of the
+> 	{resume,thaw,restore}_{early,noirq} phases: If
+> 	dev_pm_skip_resume() returns true then the subsystem should
+> 	not invoke the driver's callback, and if there is no subsystem
+> 	callback then the core will not invoke the driver's callback.
+> 
+> 	dev_pm_skip_suspend() will return "true" if SMART_SUSPEND is
+> 	set and the device's runtime status is "suspended".
+> 
+> 	For dev_pm_skip_resume() and power.must_resume, see above.
+> 
+> 	At the start of the {resume,thaw,restore}_noirq phase, if
+> 	dev_pm_skip_resume() returns true then the core will set the
+> 	runtime status to "suspended".  Otherwise it will set the
+> 	runtime status to "active".  If this is not what the subsystem
+> 	or driver wants, it must update the runtime status itself.
+> 
+> For this to work properly, we will have to rely on subsystems/drivers
+> to call pm_runtime_resume() during the suspend/freeze transition if
+> SMART_SUSPEND is clear.
+
+That has been the case forever, though.
+
+> Otherwise we could have the following scenario:
+> 
+> Device A has a child B, and both are runtime suspended when hibernation
+> starts.  Suppose that the SMART_SUSPEND flag is set for A but not for
+> B, and suppose that B's subsystem/driver neglects to call
+> pm_runtime_resume() during the FREEZE transition.  Then during the THAW
+> transition, dev_pm_skip_resume() will return "true" for A and "false"  
+> for B.  This will lead to an error when the core tries to set B's
+> runtime status to "active" while A's status is "suspended".
+> 
+> One way to avoid this is to have the core make the pm_runtime_resume()  
+> call, but you have said that you don't like that approach.  Any 
+> suggestions?
+
+Because the core has not been calling pm_runtime_resume() during system-wide
+suspend for devices with SMART_SUSPEND clear, that should not be changed or
+we'll see regressions.
+
+I know for a fact that some drivers expect the core to be doing nothing
+with respect to that.
+
+> Should the core take some special action following ->freeze_noirq if
+> the runtime status is "suspended" and SMART_SUSPEND is clear?
+
+Again, anything like that would change the current behavior which may
+not be expected by at least some drivers, so I wouldn't change that.
+
+IOW, SMART_SUSPEND clear means to the core that *it* need not care about
+the suspend side at all (because somebody else will do that).
+
+
 
