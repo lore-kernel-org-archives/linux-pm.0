@@ -2,25 +2,26 @@ Return-Path: <SRS0=fGnz=6B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 006B2C38A2C
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 16:20:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D6B17C38A2C
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 16:20:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D30612072D
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 16:20:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B50812072D
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Apr 2020 16:20:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729868AbgDQQUc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Apr 2020 12:20:32 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:54726 "EHLO
+        id S1730000AbgDQQUf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Apr 2020 12:20:35 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:54810 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729581AbgDQQUc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2020 12:20:32 -0400
+        with ESMTP id S1729837AbgDQQUf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Apr 2020 12:20:35 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: andrzej.p)
-        with ESMTPSA id 1A17C2A2AE9
+        with ESMTPSA id D1DB52A2AEB
 From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Zhang Rui <rui.zhang@intel.com>,
@@ -48,51 +49,66 @@ Cc:     Zhang Rui <rui.zhang@intel.com>,
         linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
         Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
         Barlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Subject: [RFC v3 0/2] Stop monitoring disabled devices
-Date:   Fri, 17 Apr 2020 18:20:18 +0200
-Message-Id: <20200417162020.19980-1-andrzej.p@collabora.com>
+Subject: [RFC v3 2/2] thermal: core: Stop polling DISABLED thermal devices
+Date:   Fri, 17 Apr 2020 18:20:20 +0200
+Message-Id: <20200417162020.19980-3-andrzej.p@collabora.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <9ac3b37a-8746-b8ee-70e1-9c876830ac83@linaro.org>
+In-Reply-To: <20200417162020.19980-1-andrzej.p@collabora.com>
 References: <9ac3b37a-8746-b8ee-70e1-9c876830ac83@linaro.org>
+ <20200417162020.19980-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is the third iteration of this RFC. It has been substantially
-rewritten compared to v2.
+Polling DISABLED devices is not desired, as all such "disabled" devices
+are meant to be handled by userspace. This patch introduces and uses
+should_stop_polling() to decide whether the device should be polled or not.
 
-The first patch makes all the drivers store their mode in struct
-thermal_zone_device. Such a move has consequences: driver-specific
-variables for storing mode are not necessary. Consequently get_mode()
-methods become obsolete. Then sysfs "mode" attribute stops depending
-on get_mode() being provided, because it is always provided from now on.
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+---
+ drivers/thermal/thermal_core.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
 
-The first patch also introduces the initial mode to be optionally passed
-to thermal_zone_device_register().
-
-Given all the groundwork done in patch 1/2 patch 2/2 becomes very simple.
-
-This series addresses comments from Daniel and Bartlomiej - thank you guys!
-
-Andrzej Pietrasiewicz (2):
-  thermal: core: Let thermal zone device's mode be stored in its struct
-  thermal: core: Stop polling DISABLED thermal devices
-
- drivers/acpi/thermal.c                        | 46 +++++---------
- .../ethernet/mellanox/mlxsw/core_thermal.c    | 57 ++++--------------
- drivers/platform/x86/acerhdf.c                | 17 +-----
- drivers/thermal/da9062-thermal.c              | 16 ++---
- drivers/thermal/imx_thermal.c                 | 29 +++------
- .../intel/int340x_thermal/int3400_thermal.c   | 30 ++--------
- .../thermal/intel/intel_quark_dts_thermal.c   | 22 ++-----
- drivers/thermal/of-thermal.c                  | 30 +++-------
- drivers/thermal/thermal_core.c                | 60 +++++++++++++++++--
- drivers/thermal/thermal_core.h                | 16 +++++
- drivers/thermal/thermal_sysfs.c               | 29 +--------
- include/linux/thermal.h                       |  7 ++-
- 12 files changed, 139 insertions(+), 220 deletions(-)
-
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 5ff98fcc0f6a..36abdc9ce1bb 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -305,13 +305,22 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
+ 		cancel_delayed_work(&tz->poll_queue);
+ }
+ 
++static inline bool should_stop_polling(struct thermal_zone_device *tz)
++{
++	return thermal_zone_device_get_mode(tz) == THERMAL_DEVICE_DISABLED;
++}
++
+ static void monitor_thermal_zone(struct thermal_zone_device *tz)
+ {
++	bool stop;
++
++	stop = should_stop_polling(tz);
++
+ 	mutex_lock(&tz->lock);
+ 
+-	if (tz->passive)
++	if (!stop && tz->passive)
+ 		thermal_zone_device_set_polling(tz, tz->passive_delay);
+-	else if (tz->polling_delay)
++	else if (!stop && tz->polling_delay)
+ 		thermal_zone_device_set_polling(tz, tz->polling_delay);
+ 	else
+ 		thermal_zone_device_set_polling(tz, 0);
+@@ -505,6 +514,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ {
+ 	int count;
+ 
++	if (should_stop_polling(tz))
++		return;
++
+ 	if (atomic_read(&in_suspend))
+ 		return;
+ 
 -- 
 2.17.1
 
