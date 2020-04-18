@@ -2,29 +2,31 @@ Return-Path: <SRS0=d17u=6C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E03AC38A29
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 17:14:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CFF9C352BE
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 18:00:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 49CF920776
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 17:14:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7A9A420776
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 18:00:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728022AbgDRRM2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Apr 2020 13:12:28 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:50673 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725939AbgDRRL5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Apr 2020 13:11:57 -0400
-Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
- id 0494f6aa739a7814; Sat, 18 Apr 2020 19:11:53 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>,
-        Alan Stern <stern@rowland.harvard.edu>
-Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        id S1726718AbgDRSAP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Apr 2020 14:00:15 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:39865 "HELO
+        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with SMTP id S1726307AbgDRSAP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Apr 2020 14:00:15 -0400
+Received: (qmail 2621 invoked by uid 500); 18 Apr 2020 14:00:14 -0400
+Received: from localhost (sendmail-bs@127.0.0.1)
+  by localhost with SMTP; 18 Apr 2020 14:00:14 -0400
+Date:   Sat, 18 Apr 2020 14:00:14 -0400 (EDT)
+From:   Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+cc:     Linux PM <linux-pm@vger.kernel.org>,
+        Linux ACPI <linux-acpi@vger.kernel.org>,
         Linux PCI <linux-pci@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Bjorn Helgaas <helgaas@kernel.org>,
@@ -32,241 +34,28 @@ Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
         Mika Westerberg <mika.westerberg@linux.intel.com>,
         Hans De Goede <hdegoede@redhat.com>,
         Ulf Hansson <ulf.hansson@linaro.org>
-Subject: [PATCH v2 6/9] PM: sleep: core: Rename dev_pm_smart_suspend_and_suspended()
-Date:   Sat, 18 Apr 2020 18:52:48 +0200
-Message-ID: <4560390.sSGzV6Abg1@kreacher>
+Subject: Re: [PATCH v2 0/9] PM: sleep: core: Rearrange the handling of driver
+ power management flags
 In-Reply-To: <5673945.BT02kTCndr@kreacher>
-References: <1888197.j9z7NJ8yPn@kreacher> <5673945.BT02kTCndr@kreacher>
+Message-ID: <Pine.LNX.4.44L0.2004181356070.2069-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+On Sat, 18 Apr 2020, Rafael J. Wysocki wrote:
 
-Because all callers of dev_pm_smart_suspend_and_suspended use it only
-for checking whether or not to skip driver suspend callbacks for a
-device, rename it to dev_pm_skip_suspend() in analogy with
-dev_pm_skip_resume().
+> Hi,
+> 
+> This is an update including some fixes and extra patches based on the
+> continuation of the discussion [1].
 
-No functional impact.
+I haven't checked the updates in detail yet.  However, it seems that 
+dev_pm_skip_suspend() and dev_pm_skip_resume() should be EXPORTed, 
+since they are intended to be used by subsystems, which may be in 
+modules.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
-
-New patch.
-
----
- drivers/acpi/acpi_lpss.c          |  6 +++---
- drivers/acpi/device_pm.c          |  8 ++++----
- drivers/base/power/main.c         | 13 ++++++-------
- drivers/pci/hotplug/pciehp_core.c |  2 +-
- drivers/pci/pci-driver.c          |  8 ++++----
- include/linux/pm.h                |  2 +-
- 6 files changed, 19 insertions(+), 20 deletions(-)
-
-diff --git a/drivers/acpi/acpi_lpss.c b/drivers/acpi/acpi_lpss.c
-index 7632df1a5be3..5e2bfbcf526f 100644
---- a/drivers/acpi/acpi_lpss.c
-+++ b/drivers/acpi/acpi_lpss.c
-@@ -1041,7 +1041,7 @@ static int acpi_lpss_do_suspend_late(struct device *dev)
- {
- 	int ret;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	ret = pm_generic_suspend_late(dev);
-@@ -1169,7 +1169,7 @@ static int acpi_lpss_poweroff_late(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	if (pdata->dev_desc->resume_from_noirq)
-@@ -1182,7 +1182,7 @@ static int acpi_lpss_poweroff_noirq(struct device *dev)
- {
- 	struct lpss_private_data *pdata = acpi_driver_data(ACPI_COMPANION(dev));
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	if (pdata->dev_desc->resume_from_noirq) {
-diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
-index 8c2a091728a9..ae234d731d42 100644
---- a/drivers/acpi/device_pm.c
-+++ b/drivers/acpi/device_pm.c
-@@ -1084,7 +1084,7 @@ int acpi_subsys_suspend_late(struct device *dev)
- {
- 	int ret;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	ret = pm_generic_suspend_late(dev);
-@@ -1100,7 +1100,7 @@ int acpi_subsys_suspend_noirq(struct device *dev)
- {
- 	int ret;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	ret = pm_generic_suspend_noirq(dev);
-@@ -1213,7 +1213,7 @@ static int acpi_subsys_poweroff_late(struct device *dev)
- {
- 	int ret;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	ret = pm_generic_poweroff_late(dev);
-@@ -1229,7 +1229,7 @@ static int acpi_subsys_poweroff_late(struct device *dev)
-  */
- static int acpi_subsys_poweroff_noirq(struct device *dev)
- {
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	return pm_generic_poweroff_noirq(dev);
-diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
-index f98eced0f200..3170d93e29f9 100644
---- a/drivers/base/power/main.c
-+++ b/drivers/base/power/main.c
-@@ -567,8 +567,7 @@ static void dpm_watchdog_clear(struct dpm_watchdog *wd)
-  *
-  * Return:
-  * - %false if the transition under way is RESTORE.
-- * - The return value of dev_pm_smart_suspend_and_suspended() if the transition
-- *   under way is THAW.
-+ * - Return value of dev_pm_skip_suspend() if the transition under way is THAW.
-  * - The logical negation of %power.must_resume otherwise (that is, when the
-  *   transition under way is RESUME).
-  */
-@@ -578,7 +577,7 @@ bool dev_pm_skip_resume(struct device *dev)
- 		return false;
- 
- 	if (pm_transition.event == PM_EVENT_THAW)
--		return dev_pm_smart_suspend_and_suspended(dev);
-+		return dev_pm_skip_suspend(dev);
- 
- 	return !dev->power.must_resume;
- }
-@@ -624,7 +623,7 @@ static int device_resume_noirq(struct device *dev, pm_message_t state, bool asyn
- 	 */
- 	if (skip_resume)
- 		pm_runtime_set_suspended(dev);
--	else if (dev_pm_smart_suspend_and_suspended(dev))
-+	else if (dev_pm_skip_suspend(dev))
- 		pm_runtime_set_active(dev);
- 
- 	if (dev->pm_domain) {
-@@ -1223,7 +1222,7 @@ static int __device_suspend_noirq(struct device *dev, pm_message_t state, bool a
- 	if (callback)
- 		goto Run;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		goto Skip;
- 
- 	if (dev->driver && dev->driver->pm) {
-@@ -1415,7 +1414,7 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
- 	if (callback)
- 		goto Run;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		goto Skip;
- 
- 	if (dev->driver && dev->driver->pm) {
-@@ -2003,7 +2002,7 @@ void device_pm_check_callbacks(struct device *dev)
- 	spin_unlock_irq(&dev->power.lock);
- }
- 
--bool dev_pm_smart_suspend_and_suspended(struct device *dev)
-+bool dev_pm_skip_suspend(struct device *dev)
- {
- 	return dev_pm_test_driver_flags(dev, DPM_FLAG_SMART_SUSPEND) &&
- 		pm_runtime_status_suspended(dev);
-diff --git a/drivers/pci/hotplug/pciehp_core.c b/drivers/pci/hotplug/pciehp_core.c
-index 312cc45c44c7..bf779f291f15 100644
---- a/drivers/pci/hotplug/pciehp_core.c
-+++ b/drivers/pci/hotplug/pciehp_core.c
-@@ -275,7 +275,7 @@ static int pciehp_suspend(struct pcie_device *dev)
- 	 * If the port is already runtime suspended we can keep it that
- 	 * way.
- 	 */
--	if (dev_pm_smart_suspend_and_suspended(&dev->port->dev))
-+	if (dev_pm_skip_suspend(&dev->port->dev))
- 		return 0;
- 
- 	pciehp_disable_interrupt(dev);
-diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
-index decf82595340..da6510af1221 100644
---- a/drivers/pci/pci-driver.c
-+++ b/drivers/pci/pci-driver.c
-@@ -776,7 +776,7 @@ static int pci_pm_suspend(struct device *dev)
- 
- static int pci_pm_suspend_late(struct device *dev)
- {
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-@@ -789,7 +789,7 @@ static int pci_pm_suspend_noirq(struct device *dev)
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
-@@ -1126,7 +1126,7 @@ static int pci_pm_poweroff(struct device *dev)
- 
- static int pci_pm_poweroff_late(struct device *dev)
- {
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	pci_fixup_device(pci_fixup_suspend, to_pci_dev(dev));
-@@ -1139,7 +1139,7 @@ static int pci_pm_poweroff_noirq(struct device *dev)
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
--	if (dev_pm_smart_suspend_and_suspended(dev))
-+	if (dev_pm_skip_suspend(dev))
- 		return 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index d89b7099f241..8c59a7f0bcf4 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -759,7 +759,7 @@ extern int pm_generic_poweroff(struct device *dev);
- extern void pm_generic_complete(struct device *dev);
- 
- extern bool dev_pm_skip_resume(struct device *dev);
--extern bool dev_pm_smart_suspend_and_suspended(struct device *dev);
-+extern bool dev_pm_skip_suspend(struct device *dev);
- 
- #else /* !CONFIG_PM_SLEEP */
- 
--- 
-2.16.4
-
-
-
+Alan Stern
 
