@@ -2,206 +2,189 @@ Return-Path: <SRS0=d17u=6C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30ADAC38A2F
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 14:54:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F423C38A29
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 15:01:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0F6B52072B
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 14:54:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1587221699;
-	bh=+J1rnpev1mWG2DjbDUlUXV/sV3CYW4t3iOt9gosTfsA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=wQpabpu57Hys3Tsbc4o3QQjLddGY4jD6GT74XG0eSvc09AVgvHb8PO1oAhUe328IZ
-	 dB7bmWhrd3ec2e2+7QJeWk7QUA94lMAd3xMGtQDbwtAwKZ/AESOz90En1y2FDoBJcv
-	 4oSLniYAFpIG+kPMTGkJfci+fdDrecInxihW4WWg=
+	by mail.kernel.org (Postfix) with ESMTP id DD9612223C
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 15:01:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f0gkVGdX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728585AbgDROyx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Apr 2020 10:54:53 -0400
-Received: from mail.kernel.org ([198.145.29.99]:50558 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727965AbgDROl1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Apr 2020 10:41:27 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 26E2222244;
-        Sat, 18 Apr 2020 14:41:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1587220886;
-        bh=+J1rnpev1mWG2DjbDUlUXV/sV3CYW4t3iOt9gosTfsA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=HzkVAYVHyEjxHHN7InZPFuDhOKPqz3D5WC3LYA3ErKCETDSIy7qJ+/06YRTeYXHXZ
-         SPXpsHieXdGpDTF5I7r+y8bnotPQ9UKA0JLPyl7AbqjeTa0dxIeL+Cl6l7X4uV3vj6
-         7VqAfRWEvsA0LzFfRXVXazhOHOZ03fPf3Oif/168=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Karol Herbst <kherbst@redhat.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lyude Paul <lyude@redhat.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Mika Westerberg <mika.westerberg@intel.com>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org,
-        Ben Skeggs <bskeggs@redhat.com>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH AUTOSEL 5.4 30/78] drm/nouveau: workaround runpm fail by disabling PCI power management on certain intel bridges
-Date:   Sat, 18 Apr 2020 10:39:59 -0400
-Message-Id: <20200418144047.9013-30-sashal@kernel.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200418144047.9013-1-sashal@kernel.org>
-References: <20200418144047.9013-1-sashal@kernel.org>
+        id S1726710AbgDRPBW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Apr 2020 11:01:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35932 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1725914AbgDRPBW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Apr 2020 11:01:22 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2288C061A0C;
+        Sat, 18 Apr 2020 08:01:21 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id v4so941840wme.1;
+        Sat, 18 Apr 2020 08:01:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding:content-language;
+        bh=Q4NvKOF4jokQzr+OFpyWKzZTT39+gDgdtnGFKi9DkQI=;
+        b=f0gkVGdXy41TzPhlrnd9xVSLChePuts8KGhjCc/8ct72yDST2hg0iG5jdzLgg6oQXn
+         Dkg+JzpLhacK2grOpHsahRZ7CzV28WUUoanTMeTyRgmvtuv5bc5iR38qAVLZQe45C+KX
+         soSD2MQ4B1VUDmWZ1n15dWrOilf2T06CuaQSwIIUiPy9hj4OS+8yFyXpvHUPFAbSdUvR
+         TOawihRwaeoBvdKGcG0AigCYbFnTiD8F19JE+I9mKZSQjaOxZEVWglozlkHjgxilx0Bu
+         g8iiCQ/BVIH60BvQZGbks/ZKooIgRHq7MTvRtxDV9cbVT2vsi4q0ah4qNs505OyyC3Bk
+         CypQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=Q4NvKOF4jokQzr+OFpyWKzZTT39+gDgdtnGFKi9DkQI=;
+        b=QxKGz2tdcroFWeHR4A5JadwrgAPiMiNlQmQlRA56UZMq9bnaltF5c97UGqhNl5Psi/
+         0GbLuSFeI3WqkBkvVrM+VC/rpQhsqu3WL8hgFpmJzAl6aLSou9otI/KtkpVAGhWc5RsU
+         4QkMVO1XU6NoE1qAUHqnDzKKBT8jjas2E5I5g+158WbW+tCtxdF+buCJHs6ljGdlk52i
+         yod4Y+UujU+zVHFu87YbWnYMtI4DKVgoYV0+hSRG3eu8JYc4uaIlR5IV/b25sXqOMJUh
+         i4knmX13y4ZpTPvmuoTWnk9AJi0WvQ0dhlhJDEz4VRuYpuspx19P8zveb74SmxJJynLu
+         16WQ==
+X-Gm-Message-State: AGi0PuaeD084MUulrFX3gIZg4kHpVt0JcQ2gbb7QxOANouod74Z+s/Ua
+        tplr5BcLE1JIvNHT/6Li0NNevKBn
+X-Google-Smtp-Source: APiQypIN5NA6KodHBPEMoP6z2563/KeKGH3tYCZJZyg8FuCfNLIrq0LIntKIVGKusFMVERbX3kGbJg==
+X-Received: by 2002:a1c:7f86:: with SMTP id a128mr8498490wmd.95.1587222079707;
+        Sat, 18 Apr 2020 08:01:19 -0700 (PDT)
+Received: from [192.168.0.104] (p5B3F7F19.dip0.t-ipconnect.de. [91.63.127.25])
+        by smtp.gmail.com with ESMTPSA id y10sm11922561wma.5.2020.04.18.08.01.18
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 18 Apr 2020 08:01:18 -0700 (PDT)
+Subject: Re: [PATCH v10 1/6] dt-bindings: mfd: add document bindings for
+ mp2629
+To:     Jonathan Cameron <jic23@kernel.org>
+Cc:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
+        robh+dt@kernel.org, knaack.h@gmx.de, lars@metafoo.de,
+        pmeerw@pmeerw.net, sre@kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-pm@vger.kernel.org
+References: <20200417085003.6124-1-sravanhome@gmail.com>
+ <20200417085003.6124-2-sravanhome@gmail.com>
+ <20200418155308.681df38f@archlinux>
+From:   saravanan sekar <sravanhome@gmail.com>
+Message-ID: <50ffb42e-4080-415e-dd3d-e38f7b0a6071@gmail.com>
+Date:   Sat, 18 Apr 2020 17:01:17 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200418155308.681df38f@archlinux>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Karol Herbst <kherbst@redhat.com>
+Hi Jonathan,
 
-[ Upstream commit 434fdb51513bf3057ac144d152e6f2f2b509e857 ]
+On 18/04/20 4:53 pm, Jonathan Cameron wrote:
+> On Fri, 17 Apr 2020 10:49:58 +0200
+> Saravanan Sekar <sravanhome@gmail.com> wrote:
+>
+>> Add device tree binding information for mp2629 mfd driver.
+>>
+>> Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
+>> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+>> ---
+>>   .../devicetree/bindings/mfd/mps,mp2629.yaml   | 61 +++++++++++++++++++
+>>   1 file changed, 61 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>> new file mode 100644
+>> index 000000000000..b25b29259d67
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+>> @@ -0,0 +1,61 @@
+>> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
+>> +%YAML 1.2
+>> +---
+>> +$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
+>> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+>> +
+>> +title: MP2629 Battery Charger PMIC from Monolithic Power System.
+>> +
+>> +maintainers:
+>> +  - Saravanan Sekar <sravanhome@gmail.com>
+>> +
+>> +description: |
+>> +  MP2629 is a PMIC providing battery charging and power supply for smartphones,
+>> +  wireless camera and portable devices. Chip is controlled over I2C.
+>> +
+>> +  The battery charge management device handles battery charger controller and
+>> +  ADC IIO device for battery, system voltage
+>> +
+>> +properties:
+>> +  compatible:
+>> +    const: mps,mp2629
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +
+>> +  interrupts:
+>> +    maxItems: 1
+>> +
+>> +  interrupt-controller: true
+>> +
+>> +  "#interrupt-cells":
+>> +    const: 2
+>> +    description:
+>> +      The first cell is the IRQ number, the second cell is the trigger type.
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +  - interrupts
+>> +  - interrupt-controller
+>> +  - "#interrupt-cells"
+>> +
+>> +examples:
+>> +  - |
+>> +    #include <dt-bindings/interrupt-controller/irq.h>
+>> +    #include <dt-bindings/input/linux-event-codes.h>
+>> +    i2c@7e205000 {
+> I thought the general trend for i2c devices was to leave the i2c
+> part 'vague'.
+>
+>      i2c {
+>            #address-cells = <1>;
+>            #size-cells = <0>;
+>           
+>            pmic@4b.. etc
+I agree with you and initial patch was as like above, but Lee was 
+somehow unhappy and not satisfied with
 
-Fixes the infamous 'runtime PM' bug many users are facing on Laptops with
-Nvidia Pascal GPUs by skipping said PCI power state changes on the GPU.
+my explanations. Please find more info on v4.
 
-Depending on the used kernel there might be messages like those in demsg:
-
-"nouveau 0000:01:00.0: Refused to change power state, currently in D3"
-"nouveau 0000:01:00.0: can't change power state from D3cold to D0 (config
-space inaccessible)"
-followed by backtraces of kernel crashes or timeouts within nouveau.
-
-It's still unkown why this issue exists, but this is a reliable workaround
-and solves a very annoying issue for user having to choose between a
-crashing kernel or higher power consumption of their Laptops.
-
-Signed-off-by: Karol Herbst <kherbst@redhat.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Lyude Paul <lyude@redhat.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Mika Westerberg <mika.westerberg@intel.com>
-Cc: linux-pci@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: nouveau@lists.freedesktop.org
-Bugzilla: https://bugzilla.kernel.org/show_bug.cgi?id=205623
-Signed-off-by: Ben Skeggs <bskeggs@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/gpu/drm/nouveau/nouveau_drm.c | 63 +++++++++++++++++++++++++++
- drivers/gpu/drm/nouveau/nouveau_drv.h |  2 +
- 2 files changed, 65 insertions(+)
-
-diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-index 2cd83849600f3..b1beed40e746a 100644
---- a/drivers/gpu/drm/nouveau/nouveau_drm.c
-+++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
-@@ -618,6 +618,64 @@ nouveau_drm_device_fini(struct drm_device *dev)
- 	kfree(drm);
- }
- 
-+/*
-+ * On some Intel PCIe bridge controllers doing a
-+ * D0 -> D3hot -> D3cold -> D0 sequence causes Nvidia GPUs to not reappear.
-+ * Skipping the intermediate D3hot step seems to make it work again. This is
-+ * probably caused by not meeting the expectation the involved AML code has
-+ * when the GPU is put into D3hot state before invoking it.
-+ *
-+ * This leads to various manifestations of this issue:
-+ *  - AML code execution to power on the GPU hits an infinite loop (as the
-+ *    code waits on device memory to change).
-+ *  - kernel crashes, as all PCI reads return -1, which most code isn't able
-+ *    to handle well enough.
-+ *
-+ * In all cases dmesg will contain at least one line like this:
-+ * 'nouveau 0000:01:00.0: Refused to change power state, currently in D3'
-+ * followed by a lot of nouveau timeouts.
-+ *
-+ * In the \_SB.PCI0.PEG0.PG00._OFF code deeper down writes bit 0x80 to the not
-+ * documented PCI config space register 0x248 of the Intel PCIe bridge
-+ * controller (0x1901) in order to change the state of the PCIe link between
-+ * the PCIe port and the GPU. There are alternative code paths using other
-+ * registers, which seem to work fine (executed pre Windows 8):
-+ *  - 0xbc bit 0x20 (publicly available documentation claims 'reserved')
-+ *  - 0xb0 bit 0x10 (link disable)
-+ * Changing the conditions inside the firmware by poking into the relevant
-+ * addresses does resolve the issue, but it seemed to be ACPI private memory
-+ * and not any device accessible memory at all, so there is no portable way of
-+ * changing the conditions.
-+ * On a XPS 9560 that means bits [0,3] on \CPEX need to be cleared.
-+ *
-+ * The only systems where this behavior can be seen are hybrid graphics laptops
-+ * with a secondary Nvidia Maxwell, Pascal or Turing GPU. It's unclear whether
-+ * this issue only occurs in combination with listed Intel PCIe bridge
-+ * controllers and the mentioned GPUs or other devices as well.
-+ *
-+ * documentation on the PCIe bridge controller can be found in the
-+ * "7th Generation Intel® Processor Families for H Platforms Datasheet Volume 2"
-+ * Section "12 PCI Express* Controller (x16) Registers"
-+ */
-+
-+static void quirk_broken_nv_runpm(struct pci_dev *pdev)
-+{
-+	struct drm_device *dev = pci_get_drvdata(pdev);
-+	struct nouveau_drm *drm = nouveau_drm(dev);
-+	struct pci_dev *bridge = pci_upstream_bridge(pdev);
-+
-+	if (!bridge || bridge->vendor != PCI_VENDOR_ID_INTEL)
-+		return;
-+
-+	switch (bridge->device) {
-+	case 0x1901:
-+		drm->old_pm_cap = pdev->pm_cap;
-+		pdev->pm_cap = 0;
-+		NV_INFO(drm, "Disabling PCI power management to avoid bug\n");
-+		break;
-+	}
-+}
-+
- static int nouveau_drm_probe(struct pci_dev *pdev,
- 			     const struct pci_device_id *pent)
- {
-@@ -699,6 +757,7 @@ static int nouveau_drm_probe(struct pci_dev *pdev,
- 	if (ret)
- 		goto fail_drm_dev_init;
- 
-+	quirk_broken_nv_runpm(pdev);
- 	return 0;
- 
- fail_drm_dev_init:
-@@ -736,7 +795,11 @@ static void
- nouveau_drm_remove(struct pci_dev *pdev)
- {
- 	struct drm_device *dev = pci_get_drvdata(pdev);
-+	struct nouveau_drm *drm = nouveau_drm(dev);
- 
-+	/* revert our workaround */
-+	if (drm->old_pm_cap)
-+		pdev->pm_cap = drm->old_pm_cap;
- 	nouveau_drm_device_remove(dev);
- }
- 
-diff --git a/drivers/gpu/drm/nouveau/nouveau_drv.h b/drivers/gpu/drm/nouveau/nouveau_drv.h
-index 70f34cacc552c..8104e3806499d 100644
---- a/drivers/gpu/drm/nouveau/nouveau_drv.h
-+++ b/drivers/gpu/drm/nouveau/nouveau_drv.h
-@@ -138,6 +138,8 @@ struct nouveau_drm {
- 
- 	struct list_head clients;
- 
-+	u8 old_pm_cap;
-+
- 	struct {
- 		struct agp_bridge_data *bridge;
- 		u32 base;
--- 
-2.20.1
-
+> Guess it doesn't matter if example contains too much information. Rob?
+>
+> Otherwise looks good to me.
+>
+> Thanks,
+>
+> Jonathan
+>   
+>> +        #address-cells = <1>;
+>> +        #size-cells = <0>;
+>> +        reg = <0x7e205000 0x200>;
+>> +
+>> +        pmic@4b {
+>> +            compatible = "mps,mp2629";
+>> +            reg = <0x4b>;
+>> +
+>> +            interrupt-controller;
+>> +            interrupt-parent = <&gpio2>;
+>> +            #interrupt-cells = <2>;
+>> +            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
+>> +        };
+>> +    };
