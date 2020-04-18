@@ -2,174 +2,159 @@ Return-Path: <SRS0=d17u=6C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E63C3A5A0
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 16:06:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83BD1C5321D
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 17:12:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B70C2223F
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 16:06:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1587225986;
-	bh=JuSdKC3YfFU3O7yh70vuZwZDMcNI49p545l1iBO/+1M=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=AYfexB8aY5iPccgVd3NjDf5bz3pMBrGpBepR9RiJVkafqRWvHrQBV99cUslrwEgdA
-	 13n8dEts+O5Qps0N50xHUwgZ1VRsA72bpOKhujkz47Hj+2c9tpYId2ksxcFzYr/Bly
-	 FXXc2/EZ/NAU1elmBCb0ls3oBcovfWc2AudOmp3A=
+	by mail.kernel.org (Postfix) with ESMTP id 6EAAF2223D
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 17:12:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726437AbgDRQGZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Apr 2020 12:06:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38426 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726320AbgDRQGZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Apr 2020 12:06:25 -0400
-Received: from archlinux (cpc149474-cmbg20-2-0-cust94.5-4.cable.virginm.net [82.4.196.95])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 9495F21D6C;
-        Sat, 18 Apr 2020 16:06:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1587225984;
-        bh=JuSdKC3YfFU3O7yh70vuZwZDMcNI49p545l1iBO/+1M=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=IU1dZ7BUfk8rsp7Qcv+f27KNZZMavfEOVxkvjXFRtX3/LnnGI/oQZMNjr8Xl5pSAL
-         HFMveFCU1fp/8ZrA7VY/9eWr+TmYcE/aMsZrXghVu+Ck9nczWPSN2R4gLaxquwjSE9
-         vvKX/Ywcc1wSupgLOi1u7VsJaT6DUWdsPZPGNpFE=
-Date:   Sat, 18 Apr 2020 17:06:19 +0100
-From:   Jonathan Cameron <jic23@kernel.org>
-To:     saravanan sekar <sravanhome@gmail.com>
-Cc:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, knaack.h@gmx.de, lars@metafoo.de,
-        pmeerw@pmeerw.net, sre@kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v10 1/6] dt-bindings: mfd: add document bindings for
- mp2629
-Message-ID: <20200418170619.155222fa@archlinux>
-In-Reply-To: <50ffb42e-4080-415e-dd3d-e38f7b0a6071@gmail.com>
-References: <20200417085003.6124-1-sravanhome@gmail.com>
-        <20200417085003.6124-2-sravanhome@gmail.com>
-        <20200418155308.681df38f@archlinux>
-        <50ffb42e-4080-415e-dd3d-e38f7b0a6071@gmail.com>
-X-Mailer: Claws Mail 3.17.5 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
+        id S1727894AbgDRRMA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Apr 2020 13:12:00 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:41913 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726138AbgDRRL6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 18 Apr 2020 13:11:58 -0400
+Received: from 185.80.35.16 (185.80.35.16) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 30cb542102df344c; Sat, 18 Apr 2020 19:11:54 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Hans De Goede <hdegoede@redhat.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Subject: [PATCH v2 4/9] PM: sleep: core: Rework the power.may_skip_resume handling
+Date:   Sat, 18 Apr 2020 18:52:19 +0200
+Message-ID: <4410060.DOjU9hYLuO@kreacher>
+In-Reply-To: <5673945.BT02kTCndr@kreacher>
+References: <1888197.j9z7NJ8yPn@kreacher> <5673945.BT02kTCndr@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 18 Apr 2020 17:01:17 +0200
-saravanan sekar <sravanhome@gmail.com> wrote:
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-> Hi Jonathan,
-> 
-> On 18/04/20 4:53 pm, Jonathan Cameron wrote:
-> > On Fri, 17 Apr 2020 10:49:58 +0200
-> > Saravanan Sekar <sravanhome@gmail.com> wrote:
-> >  
-> >> Add device tree binding information for mp2629 mfd driver.
-> >>
-> >> Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
-> >> Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-> >> ---
-> >>   .../devicetree/bindings/mfd/mps,mp2629.yaml   | 61 +++++++++++++++++++
-> >>   1 file changed, 61 insertions(+)
-> >>   create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> >>
-> >> diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> >> new file mode 100644
-> >> index 000000000000..b25b29259d67
-> >> --- /dev/null
-> >> +++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-> >> @@ -0,0 +1,61 @@
-> >> +# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-> >> +%YAML 1.2
-> >> +---
-> >> +$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-> >> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> >> +
-> >> +title: MP2629 Battery Charger PMIC from Monolithic Power System.
-> >> +
-> >> +maintainers:
-> >> +  - Saravanan Sekar <sravanhome@gmail.com>
-> >> +
-> >> +description: |
-> >> +  MP2629 is a PMIC providing battery charging and power supply for smartphones,
-> >> +  wireless camera and portable devices. Chip is controlled over I2C.
-> >> +
-> >> +  The battery charge management device handles battery charger controller and
-> >> +  ADC IIO device for battery, system voltage
-> >> +
-> >> +properties:
-> >> +  compatible:
-> >> +    const: mps,mp2629
-> >> +
-> >> +  reg:
-> >> +    maxItems: 1
-> >> +
-> >> +  interrupts:
-> >> +    maxItems: 1
-> >> +
-> >> +  interrupt-controller: true
-> >> +
-> >> +  "#interrupt-cells":
-> >> +    const: 2
-> >> +    description:
-> >> +      The first cell is the IRQ number, the second cell is the trigger type.
-> >> +
-> >> +required:
-> >> +  - compatible
-> >> +  - reg
-> >> +  - interrupts
-> >> +  - interrupt-controller
-> >> +  - "#interrupt-cells"
-> >> +
-> >> +examples:
-> >> +  - |
-> >> +    #include <dt-bindings/interrupt-controller/irq.h>
-> >> +    #include <dt-bindings/input/linux-event-codes.h>
-> >> +    i2c@7e205000 {  
-> > I thought the general trend for i2c devices was to leave the i2c
-> > part 'vague'.
-> >
-> >      i2c {
-> >            #address-cells = <1>;
-> >            #size-cells = <0>;
-> >           
-> >            pmic@4b.. etc  
-> I agree with you and initial patch was as like above, but Lee was 
-> somehow unhappy and not satisfied with
-> 
-> my explanations. Please find more info on v4.
+Because the power.may_skip_resume device status bit is taken
+into account in combination with the DPM_FLAG_LEAVE_SUSPENDED
+driver flag, it can be set to 'true' for all devices in the
+"suspend" phase of a suspend-resume cycle, so do that.
 
-Ah. Curious.  Oh well - over to Rob for a definitive answer!
+Then, neither the PM core nor the middle-layer (sybsystem) code
+handling it needs to set it to 'true' any more and it just has
+to be cleared if there is a reason to avoid skipping the "noirq"
+and "early" resume callbacks provided by the driver, so update
+the code in question accordingly.
 
-> 
-> > Guess it doesn't matter if example contains too much information. Rob?
-> >
-> > Otherwise looks good to me.
-> >
-> > Thanks,
-> >
-> > Jonathan
-> >     
-> >> +        #address-cells = <1>;
-> >> +        #size-cells = <0>;
-> >> +        reg = <0x7e205000 0x200>;
-> >> +
-> >> +        pmic@4b {
-> >> +            compatible = "mps,mp2629";
-> >> +            reg = <0x4b>;
-> >> +
-> >> +            interrupt-controller;
-> >> +            interrupt-parent = <&gpio2>;
-> >> +            #interrupt-cells = <2>;
-> >> +            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-> >> +        };
-> >> +    };  
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+New patch.
+
+---
+ drivers/acpi/device_pm.c  |  8 +++-----
+ drivers/base/power/main.c | 10 ++--------
+ drivers/pci/pci-driver.c  |  8 +++-----
+ 3 files changed, 8 insertions(+), 18 deletions(-)
+
+diff --git a/drivers/acpi/device_pm.c b/drivers/acpi/device_pm.c
+index 399684085f85..1b02d7dc7d34 100644
+--- a/drivers/acpi/device_pm.c
++++ b/drivers/acpi/device_pm.c
+@@ -1100,10 +1100,8 @@ int acpi_subsys_suspend_noirq(struct device *dev)
+ {
+ 	int ret;
+ 
+-	if (dev_pm_smart_suspend_and_suspended(dev)) {
+-		dev->power.may_skip_resume = true;
++	if (dev_pm_smart_suspend_and_suspended(dev))
+ 		return 0;
+-	}
+ 
+ 	ret = pm_generic_suspend_noirq(dev);
+ 	if (ret)
+@@ -1116,8 +1114,8 @@ int acpi_subsys_suspend_noirq(struct device *dev)
+ 	 * acpi_subsys_complete() to take care of fixing up the device's state
+ 	 * anyway, if need be.
+ 	 */
+-	dev->power.may_skip_resume = device_may_wakeup(dev) ||
+-					!device_can_wakeup(dev);
++	if (device_can_wakeup(dev) && !device_may_wakeup(dev))
++		dev->power.may_skip_resume = false;
+ 
+ 	return 0;
+ }
+diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+index 25b0302188d8..5adf0be6aa47 100644
+--- a/drivers/base/power/main.c
++++ b/drivers/base/power/main.c
+@@ -1415,14 +1415,8 @@ static int __device_suspend_late(struct device *dev, pm_message_t state, bool as
+ 	if (callback)
+ 		goto Run;
+ 
+-	if (dev_pm_smart_suspend_and_suspended(dev)) {
+-		/*
+-		 * In principle, the resume of the device may be skippend if it
+-		 * remains in runtime suspend at this point.
+-		 */
+-		dev->power.may_skip_resume = true;
++	if (dev_pm_smart_suspend_and_suspended(dev))
+ 		goto Skip;
+-	}
+ 
+ 	if (dev->driver && dev->driver->pm) {
+ 		info = "late driver ";
+@@ -1647,7 +1641,7 @@ static int __device_suspend(struct device *dev, pm_message_t state, bool async)
+ 		dev->power.direct_complete = false;
+ 	}
+ 
+-	dev->power.may_skip_resume = false;
++	dev->power.may_skip_resume = true;
+ 	dev->power.must_resume = false;
+ 
+ 	dpm_watchdog_set(&wd, dev);
+diff --git a/drivers/pci/pci-driver.c b/drivers/pci/pci-driver.c
+index 685fbf044911..ce220b1987df 100644
+--- a/drivers/pci/pci-driver.c
++++ b/drivers/pci/pci-driver.c
+@@ -789,10 +789,8 @@ static int pci_pm_suspend_noirq(struct device *dev)
+ 	struct pci_dev *pci_dev = to_pci_dev(dev);
+ 	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+ 
+-	if (dev_pm_smart_suspend_and_suspended(dev)) {
+-		dev->power.may_skip_resume = true;
++	if (dev_pm_smart_suspend_and_suspended(dev))
+ 		return 0;
+-	}
+ 
+ 	if (pci_has_legacy_pm_support(pci_dev))
+ 		return pci_legacy_suspend_late(dev, PMSG_SUSPEND);
+@@ -880,8 +878,8 @@ static int pci_pm_suspend_noirq(struct device *dev)
+ 	 * pci_pm_complete() to take care of fixing up the device's state
+ 	 * anyway, if need be.
+ 	 */
+-	dev->power.may_skip_resume = device_may_wakeup(dev) ||
+-					!device_can_wakeup(dev);
++	if (device_can_wakeup(dev) && !device_may_wakeup(dev))
++		dev->power.may_skip_resume = false;
+ 
+ 	return 0;
+ }
+-- 
+2.16.4
+
+
+
 
