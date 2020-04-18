@@ -2,67 +2,117 @@ Return-Path: <SRS0=d17u=6C=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FFD8C2BA19
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 08:31:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F8D1C38A2B
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 08:31:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8492021D82
-	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 08:31:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCEC221D82
+	for <linux-pm@archiver.kernel.org>; Sat, 18 Apr 2020 08:31:20 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725856AbgDRIbN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 18 Apr 2020 04:31:13 -0400
-Received: from mga03.intel.com ([134.134.136.65]:9878 "EHLO mga03.intel.com"
+        id S1725914AbgDRIbU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 18 Apr 2020 04:31:20 -0400
+Received: from mga07.intel.com ([134.134.136.100]:56259 "EHLO mga07.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725801AbgDRIbM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 18 Apr 2020 04:31:12 -0400
-IronPort-SDR: Rdk0uKTxrCtnJuz2Jtd9nncjie8rJ5PXrBJzY6wxySY8a1EHWuYJlkLUQ44TRTeA8LQrt0x86w
- OHrQ1aQkLFTg==
+        id S1725801AbgDRIbT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 18 Apr 2020 04:31:19 -0400
+IronPort-SDR: yJC/VfEzD9ICJRtEzX+ctSrlS+Juj9Rrcw7GIq3PlbSvASv7qa4x1GCoVmWcTndPM7BPM/I8SD
+ EsQYz3vgp1CQ==
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
-Received: from fmsmga006.fm.intel.com ([10.253.24.20])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Apr 2020 01:31:11 -0700
-IronPort-SDR: hL1EjEYgZTvU2tAV9UO+xA2cb625vugVGc729HMVv1FGFqKwbRjC1RtWx/aeNTO0YrKYNU2TEC
- I4b4xEdTOkRg==
+Received: from orsmga003.jf.intel.com ([10.7.209.27])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Apr 2020 01:31:19 -0700
+IronPort-SDR: oovcHpNKuJbbLzYVMoeMEr8BKh404zVPWDf+26Ov+YR8ILWkkzYWHA21O3TTD0JQHBxicxVZdJ
+ go2r7T/jq3yQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.72,398,1580803200"; 
-   d="scan'208";a="455864199"
+   d="scan'208";a="254442242"
 Received: from chenyu-office.sh.intel.com ([10.239.158.173])
-  by fmsmga006.fm.intel.com with ESMTP; 18 Apr 2020 01:31:04 -0700
+  by orsmga003.jf.intel.com with ESMTP; 18 Apr 2020 01:31:17 -0700
 From:   Chen Yu <yu.c.chen@intel.com>
 To:     linux-pm@vger.kernel.org
 Cc:     Len Brown <lenb@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Doug Smythies <dsmythies@telus.net>,
         linux-kernel@vger.kernel.org, Chen Yu <yu.c.chen@intel.com>
-Subject: [PATCH 0/3][v3] tools/power turbostat: Enable accumulated energy consumption for long time sampling
-Date:   Sat, 18 Apr 2020 16:31:34 +0800
-Message-Id: <cover.1587196252.git.yu.c.chen@intel.com>
+Subject: [PATCH 1/3][v3] tools/power turbostat: Make the energy variable to be 64 bit
+Date:   Sat, 18 Apr 2020 16:31:47 +0800
+Message-Id: <b1b1008dc499d53f1fef3c0ff9999c1717c0cdb0.1587196252.git.yu.c.chen@intel.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <cover.1587196252.git.yu.c.chen@intel.com>
+References: <cover.1587196252.git.yu.c.chen@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The RAPL Joule Counter is 32 bit, turbostat would
-only print a *star* instead of printing the actual energy
-consumed due to the overflow of RAPL register.
+Change the energy variable from 32bit to 64bit, so that it can record long
+time duration. After this conversion, adjust the DELTA_WRAP32() accordingly.
 
-Introduce the accumulated RAPL mechanism to avoid the possible
-overflow.
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 30 ++++++++++++---------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
 
-Chen Yu (3):
-  tools/power turbostat: Make the energy variable to be 64 bit
-  tools/power turbostat: Introduce functions to accumulate RAPL
-    consumption
-  tools/power turbostat: Enable accumulate RAPL display
-
- tools/power/x86/turbostat/Makefile    |   2 +-
- tools/power/x86/turbostat/turbostat.c | 292 ++++++++++++++++++++++----
- 2 files changed, 248 insertions(+), 46 deletions(-)
-
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 33b370865d16..95f3047e94ae 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -211,12 +211,12 @@ struct pkg_data {
+ 	long long gfx_rc6_ms;
+ 	unsigned int gfx_mhz;
+ 	unsigned int package_id;
+-	unsigned int energy_pkg;	/* MSR_PKG_ENERGY_STATUS */
+-	unsigned int energy_dram;	/* MSR_DRAM_ENERGY_STATUS */
+-	unsigned int energy_cores;	/* MSR_PP0_ENERGY_STATUS */
+-	unsigned int energy_gfx;	/* MSR_PP1_ENERGY_STATUS */
+-	unsigned int rapl_pkg_perf_status;	/* MSR_PKG_PERF_STATUS */
+-	unsigned int rapl_dram_perf_status;	/* MSR_DRAM_PERF_STATUS */
++	unsigned long long energy_pkg;	/* MSR_PKG_ENERGY_STATUS */
++	unsigned long long energy_dram;	/* MSR_DRAM_ENERGY_STATUS */
++	unsigned long long energy_cores;	/* MSR_PP0_ENERGY_STATUS */
++	unsigned long long energy_gfx;	/* MSR_PP1_ENERGY_STATUS */
++	unsigned long long rapl_pkg_perf_status;	/* MSR_PKG_PERF_STATUS */
++	unsigned long long rapl_dram_perf_status;	/* MSR_DRAM_PERF_STATUS */
+ 	unsigned int pkg_temp_c;
+ 	unsigned long long counter[MAX_ADDED_COUNTERS];
+ } *package_even, *package_odd;
+@@ -858,13 +858,13 @@ int dump_counters(struct thread_data *t, struct core_data *c,
+ 		outp += sprintf(outp, "pc10: %016llX\n", p->pc10);
+ 		outp += sprintf(outp, "cpu_lpi: %016llX\n", p->cpu_lpi);
+ 		outp += sprintf(outp, "sys_lpi: %016llX\n", p->sys_lpi);
+-		outp += sprintf(outp, "Joules PKG: %0X\n", p->energy_pkg);
+-		outp += sprintf(outp, "Joules COR: %0X\n", p->energy_cores);
+-		outp += sprintf(outp, "Joules GFX: %0X\n", p->energy_gfx);
+-		outp += sprintf(outp, "Joules RAM: %0X\n", p->energy_dram);
+-		outp += sprintf(outp, "Throttle PKG: %0X\n",
++		outp += sprintf(outp, "Joules PKG: %0llX\n", p->energy_pkg);
++		outp += sprintf(outp, "Joules COR: %0llX\n", p->energy_cores);
++		outp += sprintf(outp, "Joules GFX: %0llX\n", p->energy_gfx);
++		outp += sprintf(outp, "Joules RAM: %0llX\n", p->energy_dram);
++		outp += sprintf(outp, "Throttle PKG: %0llX\n",
+ 			p->rapl_pkg_perf_status);
+-		outp += sprintf(outp, "Throttle RAM: %0X\n",
++		outp += sprintf(outp, "Throttle RAM: %0llX\n",
+ 			p->rapl_dram_perf_status);
+ 		outp += sprintf(outp, "PTM: %dC\n", p->pkg_temp_c);
+ 
+@@ -1210,11 +1210,7 @@ void format_all_counters(struct thread_data *t, struct core_data *c, struct pkg_
+ }
+ 
+ #define DELTA_WRAP32(new, old)			\
+-	if (new > old) {			\
+-		old = new - old;		\
+-	} else {				\
+-		old = 0x100000000 + new - old;	\
+-	}
++	old = ((((unsigned long long)new << 32) - ((unsigned long long)old << 32)) >> 32);
+ 
+ int
+ delta_package(struct pkg_data *new, struct pkg_data *old)
 -- 
 2.17.1
 
