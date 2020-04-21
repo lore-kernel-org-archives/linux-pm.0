@@ -2,66 +2,118 @@ Return-Path: <SRS0=7vFa=6F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A315EC54FC9
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 20:28:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0B94C2BA19
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 23:59:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E6F1206D9
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 20:28:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9FE39206E9
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 23:59:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726100AbgDUU2L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Apr 2020 16:28:11 -0400
-Received: from shards.monkeyblade.net ([23.128.96.9]:54508 "EHLO
-        shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726050AbgDUU2L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2020 16:28:11 -0400
-Received: from localhost (unknown [IPv6:2601:601:9f00:477::3d5])
-        (using TLSv1 with cipher AES256-SHA (256/256 bits))
-        (Client did not present a certificate)
-        (Authenticated sender: davem-davemloft)
-        by shards.monkeyblade.net (Postfix) with ESMTPSA id C12AF128D4B46;
-        Tue, 21 Apr 2020 13:28:09 -0700 (PDT)
-Date:   Tue, 21 Apr 2020 13:28:08 -0700 (PDT)
-Message-Id: <20200421.132808.1673635156407152563.davem@davemloft.net>
-To:     leon@kernel.org
-Cc:     kuba@kernel.org, leonro@mellanox.com, andy@greyhouse.net,
-        bp@suse.de, ionut@badula.org, j.vosburgh@gmail.com,
-        jeyu@kernel.org, linux-kbuild@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        masahiroy@kernel.org, michal.lkml@markovi.net,
-        netdev@vger.kernel.org, oss-drivers@netronome.com,
-        salil.mehta@huawei.com, sre@kernel.org, snelson@pensando.io,
-        vfalico@gmail.com, yisen.zhuang@huawei.com
-Subject: Re: [PATCH net-next v2 0/4] Remove vermagic header from global
- include folder
-From:   David Miller <davem@davemloft.net>
-In-Reply-To: <20200419141850.126507-1-leon@kernel.org>
-References: <20200419141850.126507-1-leon@kernel.org>
-X-Mailer: Mew version 6.8 on Emacs 26.1
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.5.12 (shards.monkeyblade.net [149.20.54.216]); Tue, 21 Apr 2020 13:28:10 -0700 (PDT)
+        id S1726012AbgDUX7a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Apr 2020 19:59:30 -0400
+Received: from smtp1.de.adit-jv.com ([93.241.18.167]:54075 "EHLO
+        smtp1.de.adit-jv.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725850AbgDUX7a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2020 19:59:30 -0400
+Received: from localhost (smtp1.de.adit-jv.com [127.0.0.1])
+        by smtp1.de.adit-jv.com (Postfix) with ESMTP id 71D5B3C0579;
+        Wed, 22 Apr 2020 01:59:26 +0200 (CEST)
+Received: from smtp1.de.adit-jv.com ([127.0.0.1])
+        by localhost (smtp1.de.adit-jv.com [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id Ii3F635pHRba; Wed, 22 Apr 2020 01:59:20 +0200 (CEST)
+Received: from HI2EXCH01.adit-jv.com (hi2exch01.adit-jv.com [10.72.92.24])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by smtp1.de.adit-jv.com (Postfix) with ESMTPS id 912D03C004C;
+        Wed, 22 Apr 2020 01:59:20 +0200 (CEST)
+Received: from lxhi-065.adit-jv.com (10.72.94.4) by HI2EXCH01.adit-jv.com
+ (10.72.92.24) with Microsoft SMTP Server (TLS) id 14.3.487.0; Wed, 22 Apr
+ 2020 01:59:20 +0200
+Date:   Wed, 22 Apr 2020 01:59:14 +0200
+From:   Eugeniu Rosca <erosca@de.adit-jv.com>
+To:     John Stultz <john.stultz@linaro.org>
+CC:     lkml <linux-kernel@vger.kernel.org>, Rob Herring <robh@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Todd Kjos <tkjos@google.com>,
+        Saravana Kannan <saravanak@google.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Thierry Reding <treding@nvidia.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        <linux-pm@vger.kernel.org>, <linux-renesas-soc@vger.kernel.org>,
+        Eugeniu Rosca <erosca@de.adit-jv.com>,
+        Eugeniu Rosca <roscaeugeniu@gmail.com>
+Subject: Re: [PATCH v5 0/6] driver core: Improve and cleanup
+ driver_deferred_probe_check_state()
+Message-ID: <20200421235836.GA8319@lxhi-065.adit-jv.com>
+References: <20200225050828.56458-1-john.stultz@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20200225050828.56458-1-john.stultz@linaro.org>
+X-Originating-IP: [10.72.94.4]
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leon Romanovsky <leon@kernel.org>
-Date: Sun, 19 Apr 2020 17:18:46 +0300
+Hi John,
+Cc: linux-renesas-soc
 
-> This is followup to the failure reported by Borislav [1] and suggested
-> fix later on [2].
+On Tue, Feb 25, 2020 at 05:08:22AM +0000, John Stultz wrote:
+> This series goal is to improve and cleanup the
+> driver_deferred_probe_check_state() code in the driver core.
 > 
-> The series removes all includes of linux/vermagic.h, updates hns and
-> nfp to use same kernel versioning scheme (exactly like we did for
-> other drivers in previous cycle) and removes vermagic.h from global
-> include folder.
+> This series is useful for being able to support modules
+> dependencies which may be loaded by userland, far after
+> late_initcall is done. For instance, this series allows us to
+> successfully use various clk drivers as modules on the db845c
+> board. And without it, those drivers have to be statically built
+> in to work.
 > 
-> [1] https://lore.kernel.org/lkml/20200411155623.GA22175@zn.tnic
-> [2] https://lore.kernel.org/lkml/20200413080452.GA3772@zn.tnic
+> Since I first sent out this patch, Saravana suggested an
+> alternative approach which also works for our needs, and is a
+> bit simpler:
+>  https://lore.kernel.org/lkml/20200220055250.196456-1-saravanak@google.com/T/#u
+> 
+> However, while that patch provides the functionality we need,
+> I still suspect the driver_deferred_probe_check_state() code
+> could benefit from the cleanup in this patch, as the existing
+> logic is somewhat muddy.
+> 
+> New in v5:
+> * Reworked the driver_deferred_probe_check_state() logic as
+>   suggested by Saravana to tie the initcall_done checking with
+>   modules being enabled.
+> * Cleanup some comment wording as suggested by Rafael
+> * Try to slightly simplify the regulator logic as suggested by
+>   Bjorn
+> 
+> Thanks so much to Bjorn, Saravana and Rafael for their reviews
+> and suggestions! Additional review and feedback is always greatly
+> appreciated!
 
-Series applied to net-next, thanks.
+Building a recent [0] kernel using vanilla arm64 defconfig
+and booting it on H3ULCB, I get buried into backtraces [1].
+
+After reverting this series, up to and including its first commit,
+booting goes back to normal [2].
+
+Any chance to get a fix or at least some hints where to dig into?
+
+[0] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=18bf34080c4c3b
+    ("Merge branch 'akpm' (patches from Andrew)")
+[1] https://gist.github.com/erosca/ac779c348dd272c448e162c406c48f4a
+[2] https://gist.github.com/erosca/5eea2bc5e82be651d405ba038d0ad036
+
+-- 
+Best regards,
+Eugeniu Rosca
