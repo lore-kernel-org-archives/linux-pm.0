@@ -2,149 +2,141 @@ Return-Path: <SRS0=7vFa=6F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 694EFC54FC9
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 14:07:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AF8E4C54FCC
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 14:18:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5347B2071C
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 14:07:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 847BB206D9
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Apr 2020 14:18:59 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kgLmPLwx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728803AbgDUOHh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Apr 2020 10:07:37 -0400
-Received: from inva021.nxp.com ([92.121.34.21]:48446 "EHLO inva021.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728621AbgDUOHh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 21 Apr 2020 10:07:37 -0400
-Received: from inva021.nxp.com (localhost [127.0.0.1])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id F29C120019A;
-        Tue, 21 Apr 2020 16:07:32 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva021.eu-rdc02.nxp.com (Postfix) with ESMTP id ACAB6200CE3;
-        Tue, 21 Apr 2020 16:07:27 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 12514402E8;
-        Tue, 21 Apr 2020 22:07:21 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, robh+dt@kernel.org,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
-        festevam@gmail.com, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V3] dt-bindings: thermal: Convert i.MX8MM to json-schema
-Date:   Tue, 21 Apr 2020 21:59:04 +0800
-Message-Id: <1587477544-20052-1-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+        id S1728802AbgDUOS7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Apr 2020 10:18:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46966 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1728479AbgDUOS6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Apr 2020 10:18:58 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 29E25C061A10;
+        Tue, 21 Apr 2020 07:18:58 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id j1so11237894wrt.1;
+        Tue, 21 Apr 2020 07:18:58 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=XZzndPnYtYbbEF/KUZVNIJz+EcXy0p75DzfqczwlSe8=;
+        b=kgLmPLwxUl5/Ma+EDAS7OwNd58zyhTcO0jxcdmbufGrysR7FvlZ9M7c2Vqs4uYk//I
+         NtCsPb+nsu2eUmQfKxg/RNmFIlU8jpRgqkqImtzJnDsA4j1bIJaxTVEnJDJcfRdrNS+b
+         QcY172YKngn+A8fR6B4Rw1TUti4r0pKIcRjzANa3rOsg/9O1hNm3hzTsu0mxBGaFAlnu
+         HreuzgMaUwKocNly5bo3jhPzAU7Ax2qiBcJh3EoAi3de3PVLgISOxVGSoFvxo9v5giVM
+         +9LIeVtljWhNV3LEbQ0Tb06ND/qEGg6kIH3Y0Bp8SeWeHcMs74C30d9mjAZDmxmzAjQd
+         KpHg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=XZzndPnYtYbbEF/KUZVNIJz+EcXy0p75DzfqczwlSe8=;
+        b=QOx63j9YHlLxsD2NkUIJ3d9hkW3g9NH68HBxbNOK4cysTeHNNCtU6qW45QDDoxNLDg
+         9B1HBpmyTn591LmdFy/86Y68veFtdtqWenYZ2VIeozMOtVvU9b8kfrQYxxQzzxqcWU4C
+         eAp8PCUGF60RCc5yPr5Z8b1/e+CE/G251DFRxtHBoWqeBR/+1C4dzDLptyCTdEcekb7X
+         41JYQQnHrdtZZRXKKWsMWGh5uQIKbJARg9598p7TcZP0NoL1JXb9WPVdYI+t5r3UZuA9
+         6xOwZ7BrPK3XKyemkspBO06+48y0I6UnNizTYzqqKRAo8GQtxa+lU1MuIuwzhxOQx400
+         /3zQ==
+X-Gm-Message-State: AGi0PuZi3qWkwtW1sp/mtdrG4UYfYJjQhBAdASr/h/8jHublWnXvxjrC
+        W5ie3BaGlr42zMOCjk6jESUcoSUUneiYzbV2juI=
+X-Google-Smtp-Source: APiQypJ4ai2ZaRvEMbuZeelgSbTJL39HJnQ583AlT1gQuWTbnZsztUo86fQBN9mjsQkbukzDpzbexYNN1zF/4xAZ5dY=
+X-Received: by 2002:a5d:45cf:: with SMTP id b15mr23682887wrs.78.1587478736843;
+ Tue, 21 Apr 2020 07:18:56 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200304121943.28989-1-daniel.baluta@oss.nxp.com>
+ <20200304121943.28989-2-daniel.baluta@oss.nxp.com> <CAPDyKFp6KLuuuVFcEWGxn5NkuDSkhM-MjRiiYj_zC4mFxhOBag@mail.gmail.com>
+In-Reply-To: <CAPDyKFp6KLuuuVFcEWGxn5NkuDSkhM-MjRiiYj_zC4mFxhOBag@mail.gmail.com>
+From:   Daniel Baluta <daniel.baluta@gmail.com>
+Date:   Tue, 21 Apr 2020 17:18:45 +0300
+Message-ID: <CAEnQRZDX8PZ7V+c8zfoxK-+oGp2pt8N3oTAC6=Ps1W33LGY7WA@mail.gmail.com>
+Subject: Re: [RFC PATCH v2 1/2] PM / domains: Introduce multi PM domains helpers
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Daniel Baluta <daniel.baluta@oss.nxp.com>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        Len Brown <len.brown@intel.com>,
+        Linux-ALSA <alsa-devel@alsa-project.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Kevin Hilman <khilman@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Ranjani Sridharan <ranjani.sridharan@linux.intel.com>,
+        Daniel Baluta <daniel.baluta@nxp.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Paul Olaru <paul.olaru@nxp.com>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        Sascha Hauer <kernel@pengutronix.de>,
+        Pierre-Louis Bossart <pierre-louis.bossart@linux.intel.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        "S.j. Wang" <shengjiu.wang@nxp.com>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Anson Huang <anson.huang@nxp.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the i.MX8MM thermal binding to DT schema format using json-schema
+On Tue, Apr 21, 2020 at 5:01 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>
+> On Wed, 4 Mar 2020 at 13:20, Daniel Baluta <daniel.baluta@oss.nxp.com> wrote:
+> >
+> > From: Daniel Baluta <daniel.baluta@nxp.com>
+> >
+> > This patch introduces helpers support for multi PM domains.
+> >
+> > API consists of:
+> >
+> > 1) dev_multi_pm_attach - powers up all PM domains associated with a given
+> > device. Because we can attach one PM domain per device, we create
+> > virtual devices (children of initial device) and associate PM domains
+> > one per virtual device.
+> >
+> > 2) dev_multi_pm_detach - detaches all virtual devices from PM domains
+> > attached with.
+> >
+> > Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
+>
+> First, apologize for the delay.
+>
+> In general I don't mind adding helpers that can be used to decrease
+> open coding. However, in this case, I wonder how useful the helpers
+> would really be.
+>
+> More precisely, according to the information I have, a device may not
+> always need all of its PM domains to be turned on together, but
+> perhaps only a subset of them. Depending on the current use case that
+> is running.
+>
+> Of course, some cases follow your expectations, but as stated, some
+> others do not.
+>
+> Do you have an idea how many users that would be able to switch to
+> these new APIs as of today?
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-Changes since V2:
-	- drop unnecessary description for reg/clocks;
-	- improve compatible;
-	- use thermal-sensor as node name.
----
- .../devicetree/bindings/thermal/imx8mm-thermal.txt | 15 ------
- .../bindings/thermal/imx8mm-thermal.yaml           | 58 ++++++++++++++++++++++
- 2 files changed, 58 insertions(+), 15 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
+IMX Sound Open Firmware driver will immediately be available
+to use this new API.
 
-diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-deleted file mode 100644
-index 3629d3c..0000000
---- a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.txt
-+++ /dev/null
-@@ -1,15 +0,0 @@
--* Thermal Monitoring Unit (TMU) on Freescale i.MX8MM SoC
--
--Required properties:
--- compatible : Must be "fsl,imx8mm-tmu" or "fsl,imx8mp-tmu".
--- reg : Address range of TMU registers.
--- clocks : TMU's clock source.
--- #thermal-sensor-cells : Should be 0 or 1. See ./thermal.txt for a description.
--
--Example:
--tmu: tmu@30260000 {
--	compatible = "fsl,imx8mm-tmu";
--	reg = <0x30260000 0x10000>;
--	clocks = <&clk IMX8MM_CLK_TMU_ROOT>;
--	#thermal-sensor-cells = <0>;
--};
-diff --git a/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
-new file mode 100644
-index 0000000..3885287
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/imx8mm-thermal.yaml
-@@ -0,0 +1,58 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/imx8mm-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NXP i.MX8M Mini Thermal Binding
-+
-+maintainers:
-+  - Anson Huang <Anson.Huang@nxp.com>
-+
-+description: |
-+  i.MX8MM has TMU IP to allow temperature measurement, there are
-+  currently two distinct major versions of the IP that is supported
-+  by a single driver. The IP versions are named v1 and v2, v1 is
-+  for i.MX8MM which has ONLY 1 sensor, v2 is for i.MX8MP which has
-+  2 sensors.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - fsl,imx8mm-tmu
-+      - fsl,imx8mp-tmu
-+
-+  reg:
-+    maxItems: 1
-+
-+  clocks:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    description: |
-+      Number of cells required to uniquely identify the thermal
-+      sensors, 0 for ONLY one sensor and 1 for multiple sensors.
-+    enum:
-+      - 0
-+      - 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - clocks
-+  - '#thermal-sensor-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/clock/imx8mm-clock.h>
-+
-+    thermal-sensor@30260000 {
-+         compatible = "fsl,imx8mm-tmu";
-+         reg = <0x30260000 0x10000>;
-+         clocks = <&clk IMX8MM_CLK_TMU_ROOT>;
-+         #thermal-sensor-cells = <0>;
-+    };
-+
-+...
--- 
-2.7.4
+https://elixir.bootlin.com/linux/latest/source/sound/soc/sof/imx/imx8.c#L221
 
+Aside, from that there are the ACM clock modules for i.MX8QXP / i.MX8QM. Also,
+looking at our internal tree there are XUVI, VPU, DPU drivers that need multi
+power domain support.
+
+Anson, Aisheng do you have a number of users on your side for
+multi power domain?
+
+thanks,
+daniel.
