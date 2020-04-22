@@ -2,93 +2,101 @@ Return-Path: <SRS0=Cnqh=6G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0308DC55189
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 09:54:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E144C55186
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:16:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C37132073A
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 09:54:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HI7GbyfA"
+	by mail.kernel.org (Postfix) with ESMTP id 2B68F20784
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:16:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725924AbgDVJyh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Apr 2020 05:54:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59232 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725912AbgDVJyg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2020 05:54:36 -0400
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AC231C03C1A8
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2020 02:54:36 -0700 (PDT)
-Received: by mail-pf1-x443.google.com with SMTP id v63so793254pfb.10
-        for <linux-pm@vger.kernel.org>; Wed, 22 Apr 2020 02:54:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=ZnRYQIuz/oWsnKCxALP77zFF3I4egwyDXu/gk4mzZEc=;
-        b=HI7GbyfATDGT+Y2utDx7D03/q81Sritm7ktBrSib23wE+ApbuXzUvLF8833mGxeugq
-         h3QP2qcpIuieHxEJPBBxecLIHRpnsOy3MejkfJltAnBDx5dUFRDgpvSBl5UUgxXs4VjM
-         YC2Z3kfwmRPOD8QHsCe2NWPqNU5knQ+NYRHRFHLfEF85R8NWQN2G3aOOkLLi2WuLZK5E
-         /mGDvQiVlynWrf1F08EgdTQkqBy7SfGPJdDMlWDDiSnVoqUjJV88NnQyXBYtQ74NM5a3
-         r7JCNyP3l1AlmkXboxF9jVgImNnFY9RDuwJgyyCDNtyaVxn+yMQVgO0ba9ritdK6v4cA
-         7jjA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ZnRYQIuz/oWsnKCxALP77zFF3I4egwyDXu/gk4mzZEc=;
-        b=iLxWZovt3+WYShmYAFu+ohew6BtODu4NQB2OByaqZ4uFIEIhT/p5y+Ll5a3+yEuedu
-         ilYZ9ADjOzV4q9LgTlqwAtGlZOj0Wps576k3oMWsZ493EvbzicU8/vQcYmFQlRcmHbcF
-         DUOzOjDsYD1Jwqj8XGN/9ydCZQH5kzsT4c5Sa0+99wFrtXEPeDBT+eMIkc+397F/r0+f
-         IJJMlBh9qwikNm8d1Oa0RiRF0exUtxJ9y7vJpD3ajAUuS/YfaNt+n37ukZQKrwmnPL5x
-         v+QknjjtpSuguiktxz3EFDDFGRI7gkve0zLkeKn5IY1y7dUYziktAMv7av5FpQpmFWou
-         CESw==
-X-Gm-Message-State: AGi0PuYmPiO2osrEL+Xe0UTpiO4w1HF1pFwZfZu8gsYK4zV9wZuD1MFh
-        pohB6C+/kdidQrR+bnDcBST+uQ==
-X-Google-Smtp-Source: APiQypIEdmpUviHCLUU+4j7++aK32z0B4iLLu5GheWkFazIEsUmr7WHQGXOEXB/k9cVthBE/DsN7hw==
-X-Received: by 2002:a63:fc45:: with SMTP id r5mr24014205pgk.440.1587549276185;
-        Wed, 22 Apr 2020 02:54:36 -0700 (PDT)
-Received: from localhost ([122.171.118.46])
-        by smtp.gmail.com with ESMTPSA id 138sm3191382pfz.31.2020.04.22.02.54.35
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 22 Apr 2020 02:54:35 -0700 (PDT)
-Date:   Wed, 22 Apr 2020 15:24:33 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     gao yunxiao <gao.yunxiao6@gmail.com>
-Cc:     daniel.lezcano@linaro.org, amit.kachhap@gmail.com,
-        javi.merino@kernel.org, linux-pm@vger.kernel.org,
-        kernel-team@android.com, orsonzhai@gmail.com, zhang.lyra@gmail.com,
-        Jeson Gao <jeson.gao@unisoc.com>
-Subject: Re: [PATCH 1/2] thermal/drivers/cpufreq_cooling: Add platform
- callback functions
-Message-ID: <20200422095433.br2zgpzm7f66ydhi@vireshk-i7>
-References: <1587365320-25222-1-git-send-email-gao.yunxiao6@gmail.com>
- <20200422080439.kkpl7xmaawkxu5re@vireshk-i7>
- <CANO_MSLwA6PWEqGEbj50y98TR=trqddENQ6Qcne5edvf1oi9jg@mail.gmail.com>
+        id S1729781AbgDVKQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Apr 2020 06:16:48 -0400
+Received: from foss.arm.com ([217.140.110.172]:46012 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729777AbgDVKQq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Apr 2020 06:16:46 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3F10431B;
+        Wed, 22 Apr 2020 03:16:46 -0700 (PDT)
+Received: from e110455-lin.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1EE0F3F68F;
+        Wed, 22 Apr 2020 03:16:46 -0700 (PDT)
+Received: by e110455-lin.cambridge.arm.com (Postfix, from userid 1000)
+        id CDEDF682F3E; Wed, 22 Apr 2020 11:16:44 +0100 (BST)
+Date:   Wed, 22 Apr 2020 11:16:44 +0100
+From:   Liviu Dudau <liviu.dudau@arm.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>, Will Deacon <will@kernel.org>,
+        Kevin Brodsky <Kevin.Brodsky@arm.com>,
+        linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 02/17] arm64: vexpress: Don't select
+ CONFIG_POWER_RESET_VEXPRESS
+Message-ID: <20200422101644.GQ364558@e110455-lin.cambridge.arm.com>
+References: <20200419170810.5738-1-robh@kernel.org>
+ <20200419170810.5738-3-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CANO_MSLwA6PWEqGEbj50y98TR=trqddENQ6Qcne5edvf1oi9jg@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200419170810.5738-3-robh@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 22-04-20, 17:53, gao yunxiao wrote:
-> viresh
+On Sun, Apr 19, 2020 at 12:07:55PM -0500, Rob Herring wrote:
+> The VExpress power-off/reset driver is not needed on 64-bit platforms as
+> PSCI power-off and reset can be used instead. Stop selecting it so it
+> can be disabled and not always built-in.
 > 
-> Thank you very much for your advice.
-> 
-> In here, only check whether the frequency point given by cpu_cooling
-> module is the minimum frequency point.
+> Cc: Catalin Marinas <catalin.marinas@arm.com>
+> Cc: Will Deacon <will@kernel.org>
+> Cc: Liviu Dudau <liviu.dudau@arm.com>
 
-I am not sure I understood what you are doing here. Please elaborate a
-bit.
+Acked-by: Liviu Dudau <liviu.dudau@arm.com>
+
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  arch/arm64/Kconfig.platforms | 1 -
+>  1 file changed, 1 deletion(-)
+> 
+> diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
+> index 55d70cfe0f9e..9c084f995e0f 100644
+> --- a/arch/arm64/Kconfig.platforms
+> +++ b/arch/arm64/Kconfig.platforms
+> @@ -278,7 +278,6 @@ config ARCH_VEXPRESS
+>  	select GPIOLIB
+>  	select PM
+>  	select PM_GENERIC_DOMAINS
+> -	select POWER_RESET_VEXPRESS
+>  	select VEXPRESS_CONFIG
+>  	help
+>  	  This enables support for the ARMv8 software model (Versatile
+> -- 
+> 2.20.1
+> 
 
 -- 
-viresh
+====================
+| I would like to |
+| fix the world,  |
+| but they're not |
+| giving me the   |
+ \ source code!  /
+  ---------------
+    ¯\_(ツ)_/¯
