@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FB20C55186
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:19:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75D2DC55186
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:32:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4CC3D20780
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:19:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 502AD2084D
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:32:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1587550765;
-	bh=+J1rnpev1mWG2DjbDUlUXV/sV3CYW4t3iOt9gosTfsA=;
+	s=default; t=1587551537;
+	bh=uzrTWlHs53ZPHHMtK8nctjkf4SsWJpLaX73oQPd1U6o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=WlBA+NFNRuBV7tPIfx8I7sgYxXM6+JSobdpyUBB5IVtg2yhJn+eq/RX7c/4mDH4q/
-	 6OGD8th8ZM0OKD0LVxQKci9uNFN/tRLQ6rmCO5yVgK2EFyo70eRkIeiyqJ4E/C6nyv
-	 dwzm96hBXWfua/8/xKaXEJEIFSH0KvUPd31VXkBM=
+	b=kQ+dwSQd//4tBr3bWjkVc3xnDoKJp9WanRksGdDCoe8/qbJ42t8MIqV9K3NvNy8lx
+	 lrlI7HippsBFkwxBv3xzrdEaDKnshZq7lwdN2zNAqOXyhoYOIh21fynxegKzyxM2R2
+	 Hy4aueiZhI358PBHZ7UgD4Fo9N+9cnYvqd8eseKc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729589AbgDVKTN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Apr 2020 06:19:13 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55942 "EHLO mail.kernel.org"
+        id S1730569AbgDVKcM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Apr 2020 06:32:12 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33930 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729743AbgDVKTM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Apr 2020 06:19:12 -0400
+        id S1730562AbgDVKZY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Apr 2020 06:25:24 -0400
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 98CB12070B;
-        Wed, 22 Apr 2020 10:19:10 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id E97482071E;
+        Wed, 22 Apr 2020 10:25:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1587550751;
-        bh=+J1rnpev1mWG2DjbDUlUXV/sV3CYW4t3iOt9gosTfsA=;
+        s=default; t=1587551123;
+        bh=uzrTWlHs53ZPHHMtK8nctjkf4SsWJpLaX73oQPd1U6o=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=LmYJTWyV8KQG90fkevdc8GdAXrrkBOPNj9szUH9r8x4/Yf2JJZMDT1BELNWPaC5V6
-         CsGthyZ3eJzJcm93RL3xsIols94xnJwAuhL2YH8rMLU4MleMfKQ6+2tbN29V63v+BQ
-         qLPhKnEx05iEFlYXe8ih0ZkBi3a802pWaB8sFbsk=
+        b=FKO36OlYPqqPun1A4G0pY3KrD9niXvdFtqnoh7OXVD8EGRZdTOLWXUX3oEIpWBt/i
+         aUm9Dq6t/52WkWcNZ6bTtQVJXYgDYCFcdxnSO7nqLnqw7bODGGG8BbfCiyKT7NWE5F
+         DvUwvrDEeeorIdnASWGM/VPqmX5LugdOHssyFPBc=
 From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
@@ -50,12 +50,12 @@ Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         dri-devel@lists.freedesktop.org, nouveau@lists.freedesktop.org,
         Ben Skeggs <bskeggs@redhat.com>,
         Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.4 076/118] drm/nouveau: workaround runpm fail by disabling PCI power management on certain intel bridges
-Date:   Wed, 22 Apr 2020 11:57:17 +0200
-Message-Id: <20200422095044.161891152@linuxfoundation.org>
+Subject: [PATCH 5.6 108/166] drm/nouveau: workaround runpm fail by disabling PCI power management on certain intel bridges
+Date:   Wed, 22 Apr 2020 11:57:15 +0200
+Message-Id: <20200422095100.404318585@linuxfoundation.org>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200422095031.522502705@linuxfoundation.org>
-References: <20200422095031.522502705@linuxfoundation.org>
+In-Reply-To: <20200422095047.669225321@linuxfoundation.org>
+References: <20200422095047.669225321@linuxfoundation.org>
 User-Agent: quilt/0.66
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -101,7 +101,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  2 files changed, 65 insertions(+)
 
 diff --git a/drivers/gpu/drm/nouveau/nouveau_drm.c b/drivers/gpu/drm/nouveau/nouveau_drm.c
-index 2cd83849600f3..b1beed40e746a 100644
+index b65ae817eabf5..2d4c899e1f8b9 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_drm.c
 +++ b/drivers/gpu/drm/nouveau/nouveau_drm.c
 @@ -618,6 +618,64 @@ nouveau_drm_device_fini(struct drm_device *dev)
@@ -177,7 +177,7 @@ index 2cd83849600f3..b1beed40e746a 100644
  	return 0;
  
  fail_drm_dev_init:
-@@ -736,7 +795,11 @@ static void
+@@ -734,7 +793,11 @@ static void
  nouveau_drm_remove(struct pci_dev *pdev)
  {
  	struct drm_device *dev = pci_get_drvdata(pdev);
@@ -187,13 +187,13 @@ index 2cd83849600f3..b1beed40e746a 100644
 +	if (drm->old_pm_cap)
 +		pdev->pm_cap = drm->old_pm_cap;
  	nouveau_drm_device_remove(dev);
+ 	pci_disable_device(pdev);
  }
- 
 diff --git a/drivers/gpu/drm/nouveau/nouveau_drv.h b/drivers/gpu/drm/nouveau/nouveau_drv.h
-index 70f34cacc552c..8104e3806499d 100644
+index c2c332fbde979..2a6519737800c 100644
 --- a/drivers/gpu/drm/nouveau/nouveau_drv.h
 +++ b/drivers/gpu/drm/nouveau/nouveau_drv.h
-@@ -138,6 +138,8 @@ struct nouveau_drm {
+@@ -140,6 +140,8 @@ struct nouveau_drm {
  
  	struct list_head clients;
  
