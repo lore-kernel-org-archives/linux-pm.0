@@ -2,80 +2,105 @@ Return-Path: <SRS0=Cnqh=6G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68DB3C5518C
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 17:15:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1568C54FCB
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 17:17:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 533D020776
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 17:15:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 81A1B20776
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 17:17:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726006AbgDVRPK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Apr 2020 13:15:10 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:48106 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726303AbgDVRPJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Apr 2020 13:15:09 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id 8148A2A12D7
-Subject: Re: [PATCH 1/2] thermal: core: Let thermal zone device's mode be
- stored in its struct
-To:     kbuild test robot <lkp@intel.com>, linux-pm@vger.kernel.org
-Cc:     kbuild-all@lists.01.org, Zhang Rui <rui.zhang@intel.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>, Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>
-References: <20200420181741.13167-2-andrzej.p@collabora.com>
- <202004230011.fOOpjG9V%lkp@intel.com>
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Message-ID: <7a914ced-992c-0c00-ebaf-b635d130729f@collabora.com>
-Date:   Wed, 22 Apr 2020 19:15:04 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
-MIME-Version: 1.0
-In-Reply-To: <202004230011.fOOpjG9V%lkp@intel.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        id S1726006AbgDVRRh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Apr 2020 13:17:37 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33930 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726057AbgDVRRg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Apr 2020 13:17:36 -0400
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.220.254])
+        by mx2.suse.de (Postfix) with ESMTP id A6D83AC19;
+        Wed, 22 Apr 2020 17:17:33 +0000 (UTC)
+Message-ID: <1587575853.9537.117.camel@suse.cz>
+Subject: Re: [PATCH] x86, sched: Prevent divisions by zero in frequency
+ invariant accounting
+From:   Giovanni Gherdovich <ggherdovich@suse.cz>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Ingo Molnar <mingo@redhat.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>
+Date:   Wed, 22 Apr 2020 19:17:33 +0200
+In-Reply-To: <20200422145334.GM20730@hirez.programming.kicks-ass.net>
+References: <20200422144055.18171-1-ggherdovich@suse.cz>
+         <20200422145334.GM20730@hirez.programming.kicks-ass.net>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.26.6 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-W dniu 22.04.2020 o 19:03, kbuild test robot pisze:
-> Hi Andrzej,
+On Wed, 2020-04-22 at 16:53 +0200, Peter Zijlstra wrote:
+> On Wed, Apr 22, 2020 at 04:40:55PM +0200, Giovanni Gherdovich wrote:
+> > The product mcnt * arch_max_freq_ratio could be zero if it overflows u64.
+> > 
+> > For context, a large value for arch_max_freq_ratio would be 5000,
+> > corresponding to a turbo_freq/base_freq ratio of 5 (normally it's more like
+> > 1500-2000). A large increment frequency for the MPERF counter would be 5GHz
+> > (the base clock of all CPUs on the market today is less than that). With
+> > these figures, a CPU would need to go without a scheduler tick for around 8
+> > days for the u64 overflow to happen. It is unlikely, but the check is
+> > warranted.
+> > 
+> > Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+> > Fixes: 1567c3e3467c ("x86, sched: Add support for frequency invariance")
+> > ---
+> >  arch/x86/kernel/smpboot.c | 4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> > index 8c89e4d9ad28..fb71395cbcad 100644
+> > --- a/arch/x86/kernel/smpboot.c
+> > +++ b/arch/x86/kernel/smpboot.c
+> > @@ -2055,14 +2055,14 @@ void arch_scale_freq_tick(void)
+> >  
+> >  	acnt = aperf - this_cpu_read(arch_prev_aperf);
+> >  	mcnt = mperf - this_cpu_read(arch_prev_mperf);
+> > -	if (!mcnt)
+> > -		return;
+> >  
+> >  	this_cpu_write(arch_prev_aperf, aperf);
+> >  	this_cpu_write(arch_prev_mperf, mperf);
+> >  
+> >  	acnt <<= 2*SCHED_CAPACITY_SHIFT;
+> >  	mcnt *= arch_max_freq_ratio;
+> > +	if (!mcnt)
+> > +		return;
 > 
-> I love your patch! Yet something to improve:
-> 
-> [auto build test ERROR on 79799562bf087b30d9dd0fddf5bed2d3b038be08]
-> 
-> url:    https://github.com/0day-ci/linux/commits/Andrzej-Pietrasiewicz/Stop-monitoring-disabled-devices/20200422-133553
-> base:    79799562bf087b30d9dd0fddf5bed2d3b038be08
-> config: i386-allyesconfig (attached as .config)
-> compiler: gcc-7 (Ubuntu 7.5.0-6ubuntu2) 7.5.0
-> reproduce:
->          # save the attached .config to linux build tree
->          make ARCH=i386
-> 
-> If you fix the issue, kindly add following tag as appropriate
-> Reported-by: kbuild test robot <lkp@intel.com>
-> 
-> All errors (new ones prefixed by >>):
-> 
->>> drivers/thermal/intel/int340x_thermal/int3400_thermal.c:257:18: error: 'THERMAL_ZONE_DISABLED' undeclared here (not in a function); did you mean 'THERMAL_DEVICE_DISABLED'?
->       .initial_mode = THERMAL_ZONE_DISABLED,
->                       ^~~~~~~~~~~~~~~~~~~~~
->                       THERMAL_DEVICE_DISABLED
+> Should we not pr_warn() and disable the whole thing when this happens?
 
-Addressed in PATCH RESEND 1/2, in reply to PATCH 1/2.
+Ok, I will resend this patch disabling freq invariant accounting when this
+overflow happens.
 
-Andrzej
+To elaborate further, your comment touches on an area where x86 freq
+invariance is very weak at the moment: what happens if the tick doesn't run on
+a cpu for a long time (answer: the estimation of freq_scale is garbage).
+And by "a long time" I mean a few seconds; the patch I'm about to resend only
+covers a minuscule fraction of those cases. That is, not only the tick has
+been missing for days (?!), but we only noticed because the product
+mcnt * arch_max_freq_ratio gave exactly 2^64 (aka 0). It could have been
+waiting for 1 more millis and we wouldn't have seen the issue.
 
+Anyways I agree on the principle: even if we can't address all problems now,
+let's at least cover those where the solution is easy.
+
+
+Giovanni
