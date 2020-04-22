@@ -2,125 +2,119 @@ Return-Path: <SRS0=Cnqh=6G=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8438FC5518E
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:33:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CE9CC55189
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:39:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 65B2520781
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:33:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1587551591;
-	bh=009fT8XnlNWgSGFjkqzi9WHS52wJSOjnMq5vvLMSftE=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=yNN36aO0Z5zJowRa5T6yfjz9qTWIorXN6rp6pAroE8vVXvRLF/5nKZD8gZMTTrIUg
-	 6cfQFV1RpMrMDYFH5vlmKua6g6wPRBK/PaAx3sENxNQ5qgMCHfUZbUmW22OjMHkE9f
-	 uuVqnejQSy4QP6v7Z5Ukr6aZ/vDYp7e2ODwgh1qs=
+	by mail.kernel.org (Postfix) with ESMTP id 38D8420656
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Apr 2020 10:39:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730479AbgDVKY7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Apr 2020 06:24:59 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33420 "EHLO mail.kernel.org"
+        id S1730575AbgDVKjI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Apr 2020 06:39:08 -0400
+Received: from foss.arm.com ([217.140.110.172]:46140 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730476AbgDVKY5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Apr 2020 06:24:57 -0400
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id E904F20776;
-        Wed, 22 Apr 2020 10:24:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1587551096;
-        bh=009fT8XnlNWgSGFjkqzi9WHS52wJSOjnMq5vvLMSftE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=BW/XRh63tRkDUUveaNk+ktq/cNenSZwyy5DsrHiqtYUnlCtJi65AckmFpfj8RZgWP
-         1rHRtOURAIz7HSjI0k7QVNXRZH81etA2pThcNCPcd5Lu8S/VvPfx8r3sOVBFgd0OKt
-         3hjn49duyA287M3WBAofMvrr1HGLeWXy0EyBSMEI=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org, Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, Rob Herring <robh@kernel.org>,
-        Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.6 098/166] dt-bindings: thermal: tsens: Fix nvmem-cell-names schema
-Date:   Wed, 22 Apr 2020 11:57:05 +0200
-Message-Id: <20200422095059.485243431@linuxfoundation.org>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200422095047.669225321@linuxfoundation.org>
-References: <20200422095047.669225321@linuxfoundation.org>
-User-Agent: quilt/0.66
+        id S1729474AbgDVKVh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 22 Apr 2020 06:21:37 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0F0D131B;
+        Wed, 22 Apr 2020 03:21:37 -0700 (PDT)
+Received: from e110455-lin.cambridge.arm.com (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E2D1B3F68F;
+        Wed, 22 Apr 2020 03:21:36 -0700 (PDT)
+Received: by e110455-lin.cambridge.arm.com (Postfix, from userid 1000)
+        id 9CCBE682F3D; Wed, 22 Apr 2020 11:21:35 +0100 (BST)
+Date:   Wed, 22 Apr 2020 11:21:35 +0100
+From:   Liviu Dudau <liviu.dudau@arm.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>, Will Deacon <will@kernel.org>,
+        Kevin Brodsky <Kevin.Brodsky@arm.com>,
+        linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 07/17] clk: vexpress-osc: Use the devres clock API
+ variants
+Message-ID: <20200422102135.GS364558@e110455-lin.cambridge.arm.com>
+References: <20200419170810.5738-1-robh@kernel.org>
+ <20200419170810.5738-8-robh@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200419170810.5738-8-robh@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rob Herring <robh@kernel.org>
+On Sun, Apr 19, 2020 at 12:08:00PM -0500, Rob Herring wrote:
+> In preparation to enable the vexpress-osc clock driver as a module,
+> convert the driver to use the managed devres clock API variants. With
+> this, a driver .remove() hook is not needed.
+> 
+> Cc: Liviu Dudau <liviu.dudau@arm.com>
 
-[ Upstream commit b9589def9f9af93d9d4c5969c9a6c166f070e36e ]
+Acked-by: Liviu Dudau <liviu.dudau@arm.com>
 
-There's a typo 'nvmem-cells-names' in the schema which means the correct
-'nvmem-cell-names' in the examples are not checked. The possible values
-are wrong too both in that the 2nd entry is not specified correctly and the
-values are just wrong based on the dts files in the kernel.
+> Cc: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: linux-clk@vger.kernel.org
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/clk/versatile/clk-vexpress-osc.c | 10 +++++-----
+>  1 file changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/clk/versatile/clk-vexpress-osc.c b/drivers/clk/versatile/clk-vexpress-osc.c
+> index 7ade146a3ea9..5bb1d5a714d0 100644
+> --- a/drivers/clk/versatile/clk-vexpress-osc.c
+> +++ b/drivers/clk/versatile/clk-vexpress-osc.c
+> @@ -65,8 +65,8 @@ static int vexpress_osc_probe(struct platform_device *pdev)
+>  {
+>  	struct clk_init_data init;
+>  	struct vexpress_osc *osc;
+> -	struct clk *clk;
+>  	u32 range[2];
+> +	int ret;
+>  
+>  	osc = devm_kzalloc(&pdev->dev, sizeof(*osc), GFP_KERNEL);
+>  	if (!osc)
+> @@ -92,11 +92,11 @@ static int vexpress_osc_probe(struct platform_device *pdev)
+>  
+>  	osc->hw.init = &init;
+>  
+> -	clk = clk_register(NULL, &osc->hw);
+> -	if (IS_ERR(clk))
+> -		return PTR_ERR(clk);
+> +	ret = devm_clk_hw_register(&pdev->dev, &osc->hw);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	of_clk_add_provider(pdev->dev.of_node, of_clk_src_simple_get, clk);
+> +	devm_of_clk_add_hw_provider(&pdev->dev, of_clk_hw_simple_get, &osc->hw);
+>  	clk_hw_set_rate_range(&osc->hw, osc->rate_min, osc->rate_max);
+>  
+>  	dev_dbg(&pdev->dev, "Registered clock '%s'\n", init.name);
+> -- 
+> 2.20.1
+> 
 
-Fixes: a877e768f655 ("dt-bindings: thermal: tsens: Convert over to a yaml schema")
-Cc: Andy Gross <agross@kernel.org>
-Cc: Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc: Amit Kucheria <amit.kucheria@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: linux-arm-msm@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- .../devicetree/bindings/thermal/qcom-tsens.yaml          | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-index eef13b9446a87..a4df53228122a 100644
---- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-+++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-@@ -53,13 +53,12 @@ properties:
-     description:
-       Reference to an nvmem node for the calibration data
- 
--  nvmem-cells-names:
-+  nvmem-cell-names:
-     minItems: 1
-     maxItems: 2
-     items:
--      - enum:
--        - caldata
--        - calsel
-+      - const: calib
-+      - const: calib_sel
- 
-   "#qcom,sensors":
-     allOf:
-@@ -125,7 +124,7 @@ examples:
-                  <0x4a8000 0x1000>; /* SROT */
- 
-            nvmem-cells = <&tsens_caldata>, <&tsens_calsel>;
--           nvmem-cell-names = "caldata", "calsel";
-+           nvmem-cell-names = "calib", "calib_sel";
- 
-            interrupts = <GIC_SPI 184 IRQ_TYPE_LEVEL_HIGH>;
-            interrupt-names = "uplow";
 -- 
-2.20.1
-
-
-
+====================
+| I would like to |
+| fix the world,  |
+| but they're not |
+| giving me the   |
+ \ source code!  /
+  ---------------
+    ¯\_(ツ)_/¯
