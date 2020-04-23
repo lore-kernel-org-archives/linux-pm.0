@@ -2,104 +2,89 @@ Return-Path: <SRS0=Idvo=6H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D902C55191
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 15:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2F6FC54FCB
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 15:39:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2F65F2074F
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 15:29:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="f3HaI4v7"
+	by mail.kernel.org (Postfix) with ESMTP id A54DA20715
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 15:39:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1587656340;
+	bh=Wyu9njrWlhbl7xf7oU5Wt4MW02zQKWUfKmPdIYJCS0w=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=ow2tQQgg2QW5ys8uZpYCs6byGfR+BRBgbo16xbCFKv4JcqXT1i2HdYOJqBP4NA2gM
+	 s79V4AA2bM2YJ45n6yM+quSAxnLyYzRrzZRH8GhE0jTqwBGsXqfzWfizpQs9AXezxs
+	 OzqffPGta0DorFJQMVOa/5d/aR+qlblGSoBZJnx8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729204AbgDWP3F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Apr 2020 11:29:05 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53088 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729014AbgDWP3E (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 23 Apr 2020 11:29:04 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14E59C09B040
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2020 08:29:03 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id x25so6871346wmc.0
-        for <linux-pm@vger.kernel.org>; Thu, 23 Apr 2020 08:29:02 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=K0XwhvnZ5fHku+zX8bB/tqMgI8KM65JG7UKJ1LIe+hw=;
-        b=f3HaI4v7q0s0ma9brDtDfqbZ273js/4jOfpcLSe86Rdc4863/LFECt156kdpFRFuFU
-         /qAg5B9O+PLzlWP3310ATVRODsMIrhzfM6FRjI2ZfFrQh4TULq2AHJGPyPOzharxZjGs
-         7nU7Xz0r39aTzO4K1n1DPslhQOZhvyuKKyIbf0lq4Ckrwalxc66TSGtchPiX+in6/vCG
-         TN+C9llUiHzgI7809zQxurlbhQHWjyyCzDT1ymd5TPr0DGAHiwg0sY3T6f3iwZEMaYMz
-         GyZiPpsxXPYpGo5h9qA9IliuLqsreuoUyXoDk50xYzX1M3L64josfqN4NbTZNRwbZFey
-         lCWQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=K0XwhvnZ5fHku+zX8bB/tqMgI8KM65JG7UKJ1LIe+hw=;
-        b=ugIQPFiZBIAh7le7SgcY53e3hbdjL6lM5zb9jgFHxx2/XJiHMEJdCN9q2o4Upeo9ut
-         lRz+eWo3Pm1i+tF82nja2NA7fQXcL6O86j0n5kOGgCDS6/bihajiB55CTFRWYjRGptcL
-         UpsH22aZCUEil8HORc2/yGS2Q+h1Z9tJ3OECf18+MzyAkcbYvNGYMtXuWKwQsxcLnD7B
-         WhQ9a+vQa50IN7zCTXiNn+0a1UiXxmzUyihD54yUGy+EgHW4OYm7EgfrtP186tvynLxq
-         HbTC2YFGdr3znyUpGvL3aJphMAnWFC9I8qKPc7bixUVwVmA8yLpagY8gfC8VR2VVWD0W
-         r7Qw==
-X-Gm-Message-State: AGi0PuaAFQwf8/BNNtxw7zvq0WJvNVtTWL2roN+7qbZAcRwBRJvLbXA1
-        4kIVYRgm6ZFxr9Nd9gYnWZxVUA==
-X-Google-Smtp-Source: APiQypJgzi6SD42pIpK5DubH9kPf+0CuGHiKBJHzVOd+VDHdvOQf8wEqsCDznBChQjiLenoFM3eaig==
-X-Received: by 2002:a1c:a794:: with SMTP id q142mr4732427wme.4.1587655741551;
-        Thu, 23 Apr 2020 08:29:01 -0700 (PDT)
-Received: from linaro.org ([37.167.216.250])
-        by smtp.gmail.com with ESMTPSA id j13sm4361278wrq.24.2020.04.23.08.28.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 23 Apr 2020 08:29:00 -0700 (PDT)
-Date:   Thu, 23 Apr 2020 17:28:54 +0200
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-imx@nxp.com, Dietmar.Eggemann@arm.com, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, rjw@rjwysocki.net, sudeep.holla@arm.com,
-        viresh.kumar@linaro.org, nm@ti.com, sboyd@kernel.org,
-        rui.zhang@intel.com, amit.kucheria@verdurent.com, mingo@redhat.com,
-        peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, rostedt@goodmis.org,
-        qperret@google.com, bsegall@google.com, mgorman@suse.de,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
-        kernel@pengutronix.de, khilman@kernel.org, agross@kernel.org,
-        bjorn.andersson@linaro.org, robh@kernel.org,
-        matthias.bgg@gmail.com, steven.price@arm.com,
-        tomeu.vizoso@collabora.com, alyssa.rosenzweig@collabora.com,
-        airlied@linux.ie, daniel@ffwll.ch, liviu.dudau@arm.com,
-        lorenzo.pieralisi@arm.com, patrick.bellasi@matbug.net,
-        orjan.eide@arm.com, rdunlap@infradead.org, mka@chromium.org
-Subject: Re: [PATCH v6 06/10] PM / EM: change name of em_pd_energy to
- em_cpu_energy
-Message-ID: <20200423152854.GD65632@linaro.org>
-References: <20200410084210.24932-1-lukasz.luba@arm.com>
- <20200410084210.24932-7-lukasz.luba@arm.com>
+        id S1729347AbgDWPi7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Apr 2020 11:38:59 -0400
+Received: from mail.kernel.org ([198.145.29.99]:50352 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729077AbgDWPi6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Apr 2020 11:38:58 -0400
+Received: from mail-qk1-f171.google.com (mail-qk1-f171.google.com [209.85.222.171])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 142CA21582;
+        Thu, 23 Apr 2020 15:38:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1587656338;
+        bh=Wyu9njrWlhbl7xf7oU5Wt4MW02zQKWUfKmPdIYJCS0w=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=xRMSLfCbE0Vw3xMU4fnO//Q4cZSfE5hkCFSOe6ZvHH6D9J/nOp0Ug94nN5MBnfqcs
+         gblM2xujaaLkfOQpowbZvxT6qkM+Sp3vWTewAnDGPs22E3VIcloVFrBuPpU0S1d8eT
+         uNrIBWpIEAHt8kYTypKjK0wjr7y/WLH+LsZgg87o=
+Received: by mail-qk1-f171.google.com with SMTP id 23so1962644qkf.0;
+        Thu, 23 Apr 2020 08:38:58 -0700 (PDT)
+X-Gm-Message-State: AGi0PuY7fmMd+2nFIjIgI7vSbx4z8kKWPT4K5/RVEBD/h56P6XUXzH01
+        zE4tRVWKcEEET+bLIA/X+9CRFLHbEIIK1+LGpA==
+X-Google-Smtp-Source: APiQypK3p49qKpfBlVKXdtl+eplKi5bsSct+10rTJ7VfvZd7h2kFVzE91169u5oa40cUZAZqg4c5h3ql6gSKT2CIpyk=
+X-Received: by 2002:a37:cc1:: with SMTP id 184mr4344618qkm.254.1587656337201;
+ Thu, 23 Apr 2020 08:38:57 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200410084210.24932-7-lukasz.luba@arm.com>
+References: <20200419170810.5738-1-robh@kernel.org> <20200419170810.5738-7-robh@kernel.org>
+ <20200422205202.GF25585@bogus>
+In-Reply-To: <20200422205202.GF25585@bogus>
+From:   Rob Herring <robh@kernel.org>
+Date:   Thu, 23 Apr 2020 10:38:45 -0500
+X-Gmail-Original-Message-ID: <CAL_JsqKO0KkYEq59t5+BECkK6uOHEkbW2ra6SeNDT9afiMhmSg@mail.gmail.com>
+Message-ID: <CAL_JsqKO0KkYEq59t5+BECkK6uOHEkbW2ra6SeNDT9afiMhmSg@mail.gmail.com>
+Subject: Re: [PATCH 06/17] clk: versatile: Only enable SP810 on 32-bit by default
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Linus Walleij <linus.walleij@linaro.org>,
+        Liviu Dudau <liviu.dudau@arm.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>, Will Deacon <will@kernel.org>,
+        Kevin Brodsky <Kevin.Brodsky@arm.com>,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        linux-clk <linux-clk@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Apr 10, 2020 at 09:42:06AM +0100, Lukasz Luba wrote:
-> Energy Model framework supports now other devices than CPUs. Refactor some
-> of the functions in order to prevent wrong usage. The old function
-> em_pd_energy has to generic name. It must not be used without proper
-> cpumask pointer, which is possible only for CPU devices. Thus, rename it
-> and add proper description to warn of potential wrong usage for other
-> devices.
-> 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+On Wed, Apr 22, 2020 at 3:52 PM Sudeep Holla <sudeep.holla@arm.com> wrote:
+>
+> On Sun, Apr 19, 2020 at 12:07:59PM -0500, Rob Herring wrote:
+> > While 64-bit Arm reference platforms have SP810 for clocks for SP804
+> > timers, they are not needed since the arch timers are used instead.
+> >
+>
+> Shouldn't we disable selection of SP804 for arm64 at the same time ?
 
-Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+SP804 is already not selected for VEXPRESS. Only RPi and HiSilicon
+enable it on arm64. Though it makes me wonder why they require it as
+they should have arch timer too.
+
+Rob
