@@ -7,32 +7,32 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C9BD3C54FCB
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 13:19:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 22A5CC55186
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 13:22:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A660620857
-	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 13:19:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0A17D20781
+	for <linux-pm@archiver.kernel.org>; Thu, 23 Apr 2020 13:22:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726429AbgDWNTB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 23 Apr 2020 09:19:01 -0400
-Received: from szxga04-in.huawei.com ([45.249.212.190]:2880 "EHLO huawei.com"
+        id S1727780AbgDWNWg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 23 Apr 2020 09:22:36 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:2845 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726361AbgDWNTB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 23 Apr 2020 09:19:01 -0400
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.59])
-        by Forcepoint Email with ESMTP id 16661D4447B4AF8529E4;
-        Thu, 23 Apr 2020 21:18:50 +0800 (CST)
-Received: from huawei.com (10.67.174.156) by DGGEMS408-HUB.china.huawei.com
- (10.3.19.208) with Microsoft SMTP Server id 14.3.487.0; Thu, 23 Apr 2020
- 21:18:41 +0800
+        id S1727104AbgDWNWg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 23 Apr 2020 09:22:36 -0400
+Received: from DGGEMS406-HUB.china.huawei.com (unknown [172.30.72.59])
+        by Forcepoint Email with ESMTP id 633546DCDA01EE0B70F5;
+        Thu, 23 Apr 2020 21:22:26 +0800 (CST)
+Received: from huawei.com (10.67.174.156) by DGGEMS406-HUB.china.huawei.com
+ (10.3.19.206) with Microsoft SMTP Server id 14.3.487.0; Thu, 23 Apr 2020
+ 21:22:17 +0800
 From:   ChenTao <chentao107@huawei.com>
 To:     <agross@kernel.org>, <bjorn.andersson@linaro.org>,
         <georgi.djakov@linaro.org>
-CC:     <linux-arm-msm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <chentao107@huawei.com>
+CC:     <linux-arm-msm@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <chentao107@huawei.com>
 Subject: [PATCH-next v2] interconnect: qcom: Move the static keyword to the front of declaration
-Date:   Thu, 23 Apr 2020 21:18:07 +0800
-Message-ID: <20200423131807.44311-1-chentao107@huawei.com>
+Date:   Thu, 23 Apr 2020 21:21:42 +0800
+Message-ID: <20200423132142.45174-1-chentao107@huawei.com>
 X-Mailer: git-send-email 2.17.1
 MIME-Version: 1.0
 Content-Type: text/plain
