@@ -2,217 +2,118 @@ Return-Path: <SRS0=OCYh=6I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13A24C5519F
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Apr 2020 15:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE0FC54FD0
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Apr 2020 16:19:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E73DE2075A
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Apr 2020 15:54:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 68B2720700
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Apr 2020 16:19:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zdAYSeJU"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GkrTdfOw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728110AbgDXPyo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Apr 2020 11:54:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55670 "EHLO
+        id S1727804AbgDXQTu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Apr 2020 12:19:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60002 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728278AbgDXPyM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2020 11:54:12 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98B12C09B046
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2020 08:54:10 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id k1so11494633wrx.4
-        for <linux-pm@vger.kernel.org>; Fri, 24 Apr 2020 08:54:10 -0700 (PDT)
+        with ESMTP id S1726753AbgDXQTt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 24 Apr 2020 12:19:49 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D815C09B046;
+        Fri, 24 Apr 2020 09:19:47 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id i10so11566139wrv.10;
+        Fri, 24 Apr 2020 09:19:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=rAju4fK7CHysmmIehKnpso2uJ6HDzME/JcC5AUO00iw=;
-        b=zdAYSeJUnlrn0u/CWL9bvvfbAzIdMiuDYYWEjaIXpg0UVkwGnTZkhLfX6mFLI0dtQ+
-         VZaOb8QgCMqjaiwqSDjdzFo+p2wDecCG0QhbJJmF4dLdmXcWODABwDUOgsBr1cw+e4n5
-         EPFaLHEZE4Df1w4lfx+RpyGIfJwqrQIGZl+Cis1xmYwCPqAEz2+Q3i5pSE7HTjmxjpkG
-         3bMnlK4ef0NtEUdV4HM/gQqhPmHMYwWeF7lXsiXYJZg8an+/r30H3vUrThk/shse2zvs
-         OoWSFjivoCfmByw59njCQUamGSAGJvijh8iiWHG6YUsXvgaovXxTHNlSOd/xrG7Z8Llv
-         ptzA==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=tEMJE346iaELlYbOBZukFVqzIM6ZParrKkQhvnx79AY=;
+        b=GkrTdfOwF3BWTNp6AqfVToOU5ymMLH6eY4OccPYKijf3pd3f2EyaURY4TnOOIV+hmF
+         +BZuICsIU3Dl9U05Gw6sroJj1+3FDyvbtY2N50yUEEcVOcCFvePeCyuO+priGN9W93Mj
+         YV5riKJjRC8lLKqaGCiSgicH6XfnWFONZ3A8Nf16Oq/T8hbCXjXwCBfH0zLtOQWlnXVv
+         7ygZRO2EGqLe85Br9TDuwxeCwX0+7jtzqwgueueUxE5KSXzIAwFyFdEAdF8SjsDqNKY4
+         EPQvVIW0WOjvwzHAOhUm9TtcJN47Qr9E7n98BAz7j9age3+ZlzeJ/1utsiUqeosdiWAP
+         G4og==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=rAju4fK7CHysmmIehKnpso2uJ6HDzME/JcC5AUO00iw=;
-        b=i8GWMxhL4+10Fni8MUxvy7BfjxY9wULsXEFnkFN5CMOO28QqgxK7IcNAUJbJxKhLBj
-         Mu/CutvPNlkAlTteHMh4/T9L6PGUMCabl+1mGRaHv1BWnlh0S3Brj5ILgn5wuwkANrf1
-         m0a1yH2a3rSHxLq7sl/TDpfpv1sCHqjMW5VGsi6nJzqdj2ecaSs2ffqWaJnQDgehSHOy
-         BoDXEEVE/2EgjmSExaTr78Gkz/W4elAT/3fqlfQ1wSFhQZt4fmyvZwjj+n/LUiGxey+t
-         LFbOm3kyK5Oan8Nfa7cJBNXqQEV/7AIC8KIzJ27XJp6x2aWp0rtFWqc1qnCaoI2RTabh
-         PqeQ==
-X-Gm-Message-State: AGi0PuY3T+OuLHUHO9bUaapYct773rb+LohJfLpAuyNnJF2pGdkMEhUM
-        ucCf8QOgX3iNr90WgM1fE0GgBw==
-X-Google-Smtp-Source: APiQypIQnHKRQRqEI3qjkLCNM//g6shPVX1vYzUfB6kNBgGf1SqfrNKEWPuvh++//uc0YjFK7y3A6w==
-X-Received: by 2002:adf:db41:: with SMTP id f1mr11264741wrj.13.1587743649305;
-        Fri, 24 Apr 2020 08:54:09 -0700 (PDT)
-Received: from localhost.localdomain ([87.120.218.65])
-        by smtp.googlemail.com with ESMTPSA id z76sm3923583wmc.9.2020.04.24.08.54.07
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=tEMJE346iaELlYbOBZukFVqzIM6ZParrKkQhvnx79AY=;
+        b=OCoBhRPtMz8lvcDlYHcrvNJr5sqUbO6ucF1ScTdjTbYzte432hq72zzM0E3cbGSfyn
+         lom2Vj7ExWUN05+Q2J3Mon1QRRX9kQfSfvJXszs19U4oV+eA+xd00pXVEq6Yyuogv6/N
+         CAyOgr55VuPh+1hJW+1LHNB4tvtljxBQnWt5NFmwZpUN5Hj1gnYxho16ucRumuXj7b2U
+         688fzShmB1jmkc0J8n03z3LpcQ5kxDvObn1WjrJkT8L88GPMnanNokrHl3CeN/ZNl9rH
+         12SEZ3I4i1GdzPvun8iRJJkRoKsvGfuHVhhsn57fftbzyvcVGzxmSVLge3+MSpqNYZnK
+         ZCpA==
+X-Gm-Message-State: AGi0PuYTCk0N9nnBLDp1jzwXTr5T0GaMbJH+KX7/CmB68pvSdg5drZ+m
+        r/NCc3eoQoLILoK4SgIaLDc=
+X-Google-Smtp-Source: APiQypIifbomWIJRPgHYqW7cg7ovdoirf1LfvSI9QXRktOFer9j5YhrN8TXWYXw8oKcmkfXwhHilSQ==
+X-Received: by 2002:adf:d0ca:: with SMTP id z10mr12914289wrh.172.1587745186232;
+        Fri, 24 Apr 2020 09:19:46 -0700 (PDT)
+Received: from debian.office.codethink.co.uk. ([78.40.148.180])
+        by smtp.gmail.com with ESMTPSA id 1sm3745165wmi.0.2020.04.24.09.19.45
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 24 Apr 2020 08:54:08 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        robh+dt@kernel.org, rjw@rjwysocki.net, saravanak@google.com,
-        sibis@codeaurora.org
-Cc:     rnayak@codeaurora.org, bjorn.andersson@linaro.org,
-        vincent.guittot@linaro.org, jcrouse@codeaurora.org,
-        evgreen@chromium.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        georgi.djakov@linaro.org
-Subject: [PATCH v7 2/7] OPP: Add helpers for reading the binding properties
-Date:   Fri, 24 Apr 2020 18:53:59 +0300
-Message-Id: <20200424155404.10746-3-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200424155404.10746-1-georgi.djakov@linaro.org>
-References: <20200424155404.10746-1-georgi.djakov@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        Fri, 24 Apr 2020 09:19:45 -0700 (PDT)
+From:   Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+To:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-omap@vger.kernel.org,
+        Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+Subject: [PATCH v2] thermal: ti-soc-thermal: avoid dereferencing ERR_PTR
+Date:   Fri, 24 Apr 2020 17:19:44 +0100
+Message-Id: <20200424161944.6044-1-sudipm.mukherjee@gmail.com>
+X-Mailer: git-send-email 2.11.0
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Saravana Kannan <saravanak@google.com>
+On error the function ti_bandgap_get_sensor_data() returns the error
+code in ERR_PTR() but we only checked if the return value is NULL or
+not. And, so we can dereference an error code inside ERR_PTR.
+While at it, convert a check to IS_ERR_OR_NULL.
 
-The opp-hz DT property is not mandatory and we may use another property
-as a key in the OPP table. Add helper functions to simplify the reading
-and comparing the keys.
-
-Signed-off-by: Saravana Kannan <saravanak@google.com>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
 ---
-v7:
-* Extracted just the helpers from patch v6, as Viresh advised to split it.
+ drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-v6: https://lore.kernel.org/r/20191207002424.201796-3-saravanak@google.com
-
- drivers/opp/core.c | 15 +++++++++++++--
- drivers/opp/of.c   | 42 ++++++++++++++++++++++++++----------------
- drivers/opp/opp.h  |  1 +
- 3 files changed, 40 insertions(+), 18 deletions(-)
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index ba43e6a3dc0a..c9c1bbe6ae27 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1272,11 +1272,21 @@ static bool _opp_supported_by_regulators(struct dev_pm_opp *opp,
- 	return true;
- }
+diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+index d3e959d01606..85776db4bf34 100644
+--- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
++++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+@@ -169,7 +169,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
  
-+int _opp_compare_key(struct dev_pm_opp *opp1, struct dev_pm_opp *opp2)
-+{
-+	if (opp1->rate != opp2->rate)
-+		return opp1->rate < opp2->rate ? -1 : 1;
-+	if (opp1->level != opp2->level)
-+		return opp1->level < opp2->level ? -1 : 1;
-+	return 0;
-+}
-+
- static int _opp_is_duplicate(struct device *dev, struct dev_pm_opp *new_opp,
- 			     struct opp_table *opp_table,
- 			     struct list_head **head)
- {
- 	struct dev_pm_opp *opp;
-+	int opp_cmp;
+ 	data = ti_bandgap_get_sensor_data(bgp, id);
  
- 	/*
- 	 * Insert new OPP in order of increasing frequency and discard if
-@@ -1287,12 +1297,13 @@ static int _opp_is_duplicate(struct device *dev, struct dev_pm_opp *new_opp,
- 	 * loop.
- 	 */
- 	list_for_each_entry(opp, &opp_table->opp_list, node) {
--		if (new_opp->rate > opp->rate) {
-+		opp_cmp = _opp_compare_key(new_opp, opp);
-+		if (opp_cmp > 0) {
- 			*head = &opp->node;
- 			continue;
- 		}
+-	if (!data || IS_ERR(data))
++	if (!IS_ERR_OR_NULL(data))
+ 		data = ti_thermal_build_data(bgp, id);
  
--		if (new_opp->rate < opp->rate)
-+		if (opp_cmp < 0)
- 			return 0;
+ 	if (!data)
+@@ -196,7 +196,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
  
- 		/* Duplicate OPPs */
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 9cd8f0adacae..e33169c7e045 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -521,6 +521,28 @@ void dev_pm_opp_of_remove_table(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ 	data = ti_bandgap_get_sensor_data(bgp, id);
  
-+static int _read_opp_key(struct dev_pm_opp *new_opp, struct device_node *np,
-+			 bool *rate_not_available)
-+{
-+	u64 rate;
-+	int ret;
-+
-+	ret = of_property_read_u64(np, "opp-hz", &rate);
-+	if (!ret) {
-+		/*
-+		 * Rate is defined as an unsigned long in clk API, and so
-+		 * casting explicitly to its type. Must be fixed once rate is 64
-+		 * bit guaranteed in clk API.
-+		 */
-+		new_opp->rate = (unsigned long)rate;
-+	}
-+	*rate_not_available = !!ret;
-+
-+	of_property_read_u32(np, "opp-level", &new_opp->level);
-+
-+	return ret;
-+}
-+
- /**
-  * _opp_add_static_v2() - Allocate static OPPs (As per 'v2' DT bindings)
-  * @opp_table:	OPP table
-@@ -558,26 +580,14 @@ static struct dev_pm_opp *_opp_add_static_v2(struct opp_table *opp_table,
- 	if (!new_opp)
- 		return ERR_PTR(-ENOMEM);
- 
--	ret = of_property_read_u64(np, "opp-hz", &rate);
-+	ret = _read_opp_key(new_opp, np, &rate_not_available);
- 	if (ret < 0) {
--		/* "opp-hz" is optional for devices like power domains. */
--		if (!opp_table->is_genpd) {
--			dev_err(dev, "%s: opp-hz not found\n", __func__);
--			goto free_opp;
--		}
-+		if (!opp_table->is_genpd)
-+			dev_err(dev, "%s: opp key field not found\n", __func__);
- 
--		rate_not_available = true;
--	} else {
--		/*
--		 * Rate is defined as an unsigned long in clk API, and so
--		 * casting explicitly to its type. Must be fixed once rate is 64
--		 * bit guaranteed in clk API.
--		 */
--		new_opp->rate = (unsigned long)rate;
-+		goto free_opp;
+-	if (data && data->ti_thermal) {
++	if (!IS_ERR_OR_NULL(data) && data->ti_thermal) {
+ 		if (data->our_zone)
+ 			thermal_zone_device_unregister(data->ti_thermal);
  	}
+@@ -262,7 +262,7 @@ int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
  
--	of_property_read_u32(np, "opp-level", &new_opp->level);
--
- 	/* Check if the OPP supports hardware's hierarchy of versions or not */
- 	if (!_opp_is_supported(dev, opp_table, np)) {
- 		dev_dbg(dev, "OPP not supported by hardware: %llu\n", rate);
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index d14e27102730..bcadb1e328a4 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -211,6 +211,7 @@ struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_
- void _dev_pm_opp_find_and_remove_table(struct device *dev);
- struct dev_pm_opp *_opp_allocate(struct opp_table *opp_table);
- void _opp_free(struct dev_pm_opp *opp);
-+int _opp_compare_key(struct dev_pm_opp *opp1, struct dev_pm_opp *opp2);
- int _opp_add(struct device *dev, struct dev_pm_opp *new_opp, struct opp_table *opp_table, bool rate_not_available);
- int _opp_add_v1(struct opp_table *opp_table, struct device *dev, unsigned long freq, long u_volt, bool dynamic);
- void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask, int last_cpu);
+ 	data = ti_bandgap_get_sensor_data(bgp, id);
+ 
+-	if (data) {
++	if (!IS_ERR_OR_NULL(data)) {
+ 		cpufreq_cooling_unregister(data->cool_dev);
+ 		if (data->policy)
+ 			cpufreq_cpu_put(data->policy);
+-- 
+2.11.0
+
