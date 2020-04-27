@@ -2,92 +2,67 @@ Return-Path: <SRS0=UuxZ=6L=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E042C54FD0
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Apr 2020 10:23:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49CEDC55199
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Apr 2020 10:29:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1A6B8206CD
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Apr 2020 10:23:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30BEB20663
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Apr 2020 10:29:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726821AbgD0KX1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Apr 2020 06:23:27 -0400
-Received: from szxga06-in.huawei.com ([45.249.212.32]:37460 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726485AbgD0KX0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 27 Apr 2020 06:23:26 -0400
-Received: from DGGEMS408-HUB.china.huawei.com (unknown [172.30.72.59])
-        by Forcepoint Email with ESMTP id D3CCC7C7865E4E374FC9;
-        Mon, 27 Apr 2020 18:23:23 +0800 (CST)
-Received: from linux-ibm.site (10.175.102.37) by
- DGGEMS408-HUB.china.huawei.com (10.3.19.208) with Microsoft SMTP Server id
- 14.3.487.0; Mon, 27 Apr 2020 18:23:16 +0800
-From:   Hanjun Guo <guohanjun@huawei.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-CC:     <linux-pm@vger.kernel.org>, Hanjun Guo <guohanjun@huawei.com>
-Subject: [RFC PATCH] cpuidle: Make cpuidle governor switchable to be the default behaviour
-Date:   Mon, 27 Apr 2020 18:17:17 +0800
-Message-ID: <1587982637-33618-1-git-send-email-guohanjun@huawei.com>
-X-Mailer: git-send-email 1.7.12.4
+        id S1727079AbgD0K3Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Apr 2020 06:29:16 -0400
+Received: from foss.arm.com ([217.140.110.172]:33302 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727036AbgD0K3Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 27 Apr 2020 06:29:16 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 94D601FB;
+        Mon, 27 Apr 2020 03:29:15 -0700 (PDT)
+Received: from e107158-lin (e107158-lin.cambridge.arm.com [10.1.195.21])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 2BD5F3F68F;
+        Mon, 27 Apr 2020 03:29:14 -0700 (PDT)
+Date:   Mon, 27 Apr 2020 11:29:11 +0100
+From:   Qais Yousef <qais.yousef@arm.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Thomas Gleixner <tglx@linutronix.de>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+        Todd E Brandt <todd.e.brandt@linux.intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Revert "cpu/hotplug: Ignore pm_wakeup_pending() for
+ disable_nonboot_cpus()"
+Message-ID: <20200427102910.b6iysyumiz5pj4sv@e107158-lin>
+References: <20200409112742.3581-1-qais.yousef@arm.com>
+ <26038947.HFycnDbHsR@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.102.37]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <26038947.HFycnDbHsR@kreacher>
+User-Agent: NeoMutt/20171215
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For now cpuidle governor can be switched via sysfs only when the
-boot option "cpuidle_sysfs_switch" is passed, but it's important
-to switch the governor to adapt to different workloads, especially
-after TEO and haltpoll governor were introduced.
+On 04/26/20 17:24, Rafael J. Wysocki wrote:
+> I would do this the other way around:
+> 
+> 1. Make x86 call freeze_secondary_cpus() directly, rename
+>    enable_nonboot_cpus() and drop disable_nonboot_cpus().
 
-Introduce a CONFIG option to make cpuidle governor switchable to be
-the default behaviour, which will not break the boot option behaviour.
+All of this in a single patch?
 
-Signed-off-by: Hanjun Guo <guohanjun@huawei.com>
----
- drivers/cpuidle/Kconfig | 9 +++++++++
- drivers/cpuidle/sysfs.c | 2 +-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+> 2. Get rid of __freeze_secondary_cpus().
 
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index c0aeedd..c40cb40 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -47,6 +47,15 @@ config CPU_IDLE_GOV_HALTPOLL
- config DT_IDLE_STATES
- 	bool
- 
-+config CPU_IDLE_SWITCH_GOV_IN_DEFAULT
-+	bool "Switch the CPU idle governor via sysfs at runtime in default behaviour"
-+	help
-+	  Make the CPU idle governor switchable at runtime, and make it as the
-+	  default behaviour even the boot option "cpuidle_sysfs_switch" is not
-+	  passed in cmdline.
-+
-+	  Say N if you unsure about this.
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index d3ef1d7..43701da 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -146,7 +146,7 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
-  */
- int cpuidle_add_interface(struct device *dev)
- {
--	if (sysfs_switch)
-+	if (IS_ENABLED(CONFIG_CPU_IDLE_SWITCH_GOV_IN_DEFAULT) || sysfs_switch)
- 		cpuidle_attr_group.attrs = cpuidle_switch_attrs;
- 
- 	return sysfs_create_group(&dev->kobj, &cpuidle_attr_group);
--- 
-1.7.12.4
+I guess you're implying to drop the revert too and manually unroll it instead.
 
+Could do.
+
+Thanks
+
+--
+Qais Yousef
