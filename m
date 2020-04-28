@@ -2,83 +2,103 @@ Return-Path: <SRS0=CzTI=6M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-1.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	TVD_SUBJ_WIPE_DEBT,USER_AGENT_GIT autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB20AC83001
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 14:02:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 890CCC83001
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 14:44:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A103B206E2
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 14:02:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5CD9820730
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 14:44:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gKRvwPTf"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JpEdhd4c"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727843AbgD1OCq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Apr 2020 10:02:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58138 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727782AbgD1OCp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2020 10:02:45 -0400
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A95EC03C1AB
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2020 07:02:45 -0700 (PDT)
-Received: by mail-lf1-x141.google.com with SMTP id t11so16954885lfe.4
-        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2020 07:02:45 -0700 (PDT)
+        id S1727124AbgD1OoD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Apr 2020 10:44:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36354 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1727803AbgD1OoD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2020 10:44:03 -0400
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8D46AC03C1AB;
+        Tue, 28 Apr 2020 07:44:03 -0700 (PDT)
+Received: by mail-pl1-x644.google.com with SMTP id c21so7633701plz.4;
+        Tue, 28 Apr 2020 07:44:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=jE1ry3/WH39fvkitlEImOc9VA+8Es26FANSqOuJc04E=;
-        b=gKRvwPTf1AvgqGtJF+/FWCwKJY0q95FhYY5JScuWdpMP00paUsHcpU/fjv1hAk55r6
-         Jl5fmzws4VNaXL2yAhSpQQszWnHHFbzhEUPa/Y4v48vDg0kbPDMSKabG27po61hR/aXq
-         vu6pds4YpVzMlDJxQVebXZkDTCaZpbWf/FSkrRATp2ING17+GqmKftnjbOCGa8/oTchm
-         XSw1ceWIBF9nM8my4ojkw96invyr0LWcGXIJV4S9THUjC2bTs7yFx8uZzA9KpVVnIDld
-         3Lf1AD4KpBIDY25xy9EX9h/ggg/yxqsKIN/lmmMJIxt08GiaJ7d4xi1WQowSIOMibw9A
-         ZgSA==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=TmxpJsxXAhcqB+ToVZExhvip4vVPdz5UbfhJp3pb3Rg=;
+        b=JpEdhd4cifBh5c7FfGbQpg7esariuAxGZdmCnyS/MuOKKFBlwHW46H+u1qAsGkWl2h
+         4zsWi/VrJlXbHu2CYHRUPR8FdH6YM7fffG20ZpEkzng0T+DtKmC1H9/5dQLJRCNMRcQa
+         4ED3iCvKAwqCjZNfyGqwfdqN5vXclVNZoOeViUVVt/8pmrJscHsJFlDwK8J43xsZwEt1
+         u/qhIc6lEJyZp8T3pBgvhLjqZpJjnDttudRto6wWbva5vb2YHplTH8wq8Re/V+hYO8Vj
+         USNMAP8K5ZuSDjJD4nEPMj+G2fUUFVQ2z9yRkyupnmoBFtpYnoAJbhf8Va1tuig3gSIX
+         fVaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=jE1ry3/WH39fvkitlEImOc9VA+8Es26FANSqOuJc04E=;
-        b=oHLgpJCJDCjR4xxeQ//RhtMhJjqJtIcuSQgl4Y32JEWqjVMeIMnItWq4AjixBbpNIZ
-         Ieks9tr6TRlpTIwB3eiUTDNLgGjjQ044r0NjDAB+5ch+hmX/ozGoQ4aqi8Wi63BUDCpx
-         TW/7QRxydTvfCVzTrGqpnRbPY4/MAeb4XSnPJk1hRT2M+Ge/Yde0JwXuk2r/mO3ZN3AY
-         eYrAagZidYAEf0g/kSkKnb0D2im/N4NooIoZ/IGU3kiugTvA/NKAsLE92r12I1KND2Gf
-         /OmSMAEkQUlzKgRG2fabwEB7rgqQgsTM1N8epgbZ8DjieghBwjvEnfga8bNxzYw2KoBh
-         QF8w==
-X-Gm-Message-State: AGi0PuY2n/L7p98wF9QYbIBHeVZRsEfc2ODTCQMp4gln0pnPnPcay8MI
-        ayO46cuQ3Wdqv/3zmVwEyy++qow+1+O+rMw0wOqKBw==
-X-Google-Smtp-Source: APiQypJbBQG+lZGnEgJPVGO7k2y8d3LYISivUTbhjYNTeX3f5ZWBtN9OGNiQwGYtCNT0qnO4WCiwZG8ZYp8xJeFGyA4=
-X-Received: by 2002:a19:700b:: with SMTP id h11mr19393584lfc.89.1588082563613;
- Tue, 28 Apr 2020 07:02:43 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=TmxpJsxXAhcqB+ToVZExhvip4vVPdz5UbfhJp3pb3Rg=;
+        b=M8bCgYQ6zwlPtZEQFasWqyGRFuhTmavTnseT6BdZjxZDq2DihpQllaW7OxN2IFrAR5
+         ECUTUK/ExXE3XRKKn3bYFCPJv96d79Dml0ZMxKanSMVb/rKsT8moNqQj5VMqELwIVH9r
+         Pi0oju/Exs8ZaJQCR83IUKRqHREvNAfjqbZe1aDKOLwd7neVDpaGJ3RpgdYnXttbyNLK
+         +HkE1mcr5jOcoBiI5dW2sj9blawqe33/zJPiyCWZUvAn5a9GV/5Sb+uxgrpBiUpp4ksY
+         qa8QUuWAfSbcRk5fb02ALxmYfIxWZnwJaccOMFJvrPLkjPJ1wTcciIguZGyDtXTBYbaH
+         YTzg==
+X-Gm-Message-State: AGi0PuYj+btVWUxn5vIbVzJHVvsFSp4DDByIOXjhwgw5x+UFYlfb7JvK
+        dr2f0PMUs1GATmxROB1ZhN8=
+X-Google-Smtp-Source: APiQypLErRiVfS2BcM1F3SXg4qY/JpZaLDKctoUkSw9scfkA5By0Gg4GrF2ZF7DuR5iYOoa+PNuylg==
+X-Received: by 2002:a17:902:5ac2:: with SMTP id g2mr13356131plm.167.1588085041193;
+        Tue, 28 Apr 2020 07:44:01 -0700 (PDT)
+Received: from varodek.localdomain ([2401:4900:40f3:10a2:97c1:b981:9f1:d7d0])
+        by smtp.gmail.com with ESMTPSA id d203sm15053203pfd.79.2020.04.28.07.43.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 28 Apr 2020 07:44:00 -0700 (PDT)
+From:   Vaibhav Gupta <vaibhavgupta40@gmail.com>
+To:     Shannon Nelson <snelson@pensando.io>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Martin Habets <mhabets@solarflare.com>,
+        Vaibhav Gupta <vaibhav.varodek@gmail.com>,
+        netdev@vger.kernel.org, Bjorn Helgaas <helgaas@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>, bjorn@helgaas.com,
+        linux-kernel-mentees@lists.linuxfoundation.org, rjw@rjwysocki.net
+Cc:     Vaibhav Gupta <vaibhavgupta40@gmail.com>,
+        linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-pm@vger.kernel.org, skhan@linuxfoundation.org
+Subject: [Linux-kernel-mentees] [PATCH v2 0/2] realtek ethernet : remove legacy power management callbacks.
+Date:   Tue, 28 Apr 2020 20:13:12 +0530
+Message-Id: <20200428144314.24533-1-vaibhavgupta40@gmail.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-References: <20200426094250.23995-1-yanaijie@huawei.com>
-In-Reply-To: <20200426094250.23995-1-yanaijie@huawei.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Tue, 28 Apr 2020 16:02:31 +0200
-Message-ID: <CACRpkdYwu3LnN9KGfbjhnJu75hmKBKgnSWnDCWmdnGWGGGYPTw@mail.gmail.com>
-Subject: Re: [PATCH] power: supply: ab8500_fg: remove comparison to bool
-To:     Jason Yan <yanaijie@huawei.com>
-Cc:     Sebastian Reichel <sre@kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, Apr 26, 2020 at 11:43 AM Jason Yan <yanaijie@huawei.com> wrote:
+The purpose of this patch series is to remove legacy power management callbacks
+from realtek ethernet drivers.
 
-> Fix the following coccicheck warning:
->
-> drivers/power/supply/ab8500_fg.c:2402:5-24: WARNING: Comparison to bool
->
-> Signed-off-by: Jason Yan <yanaijie@huawei.com>
+The callbacks performing suspend() and resume() operations are still calling
+pci_save_state(), pci_set_power_state(), etc. and handling the powermanagement
+themselves, which is not recommended.
 
-Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
+The conversion requires the removal of the those function calls and change the
+callback definition accordingly.
 
-Yours,
-Linus Walleij
+Vaibhav Gupta (2):
+  realtek/8139too: Remove Legacy Power Management
+  realtek/8139cp: Remove Legacy Power Management
+
+ drivers/net/ethernet/realtek/8139cp.c  | 25 +++++++------------------
+ drivers/net/ethernet/realtek/8139too.c | 26 +++++++-------------------
+ 2 files changed, 14 insertions(+), 37 deletions(-)
+
+-- 
+2.26.2
+
