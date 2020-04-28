@@ -2,90 +2,100 @@ Return-Path: <SRS0=CzTI=6M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ECEBC83008
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 12:09:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4D85C83008
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 12:20:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E0BF206D6
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 12:09:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C42102072A
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Apr 2020 12:20:33 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Y0p4SIz9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726739AbgD1MJl convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Apr 2020 08:09:41 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:44185 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726620AbgD1MJl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2020 08:09:41 -0400
-Received: by mail-ot1-f67.google.com with SMTP id j4so32183399otr.11;
-        Tue, 28 Apr 2020 05:09:41 -0700 (PDT)
+        id S1726361AbgD1MUd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Apr 2020 08:20:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42138 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726645AbgD1MUd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Apr 2020 08:20:33 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCB33C03C1AB
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2020 05:20:32 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id u16so2600732wmc.5
+        for <linux-pm@vger.kernel.org>; Tue, 28 Apr 2020 05:20:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=uYEFetyk7yEs/OGLXEbC40B/ODDkCIuOofswNQx6m3Q=;
+        b=Y0p4SIz9LbLJwJdtP/PUq7sX3+J1vVPvRDG3um0FP+GytxpeFoL6MQyREG+Z3o6Qy+
+         u5SDN6+bgTGJM0zS8YVrl4qxdwrWFdOeSNQ85W9d8jqZIKJO9dUnk+pb+9U7YxD9HfcV
+         fasHgozehvw7NAUf63BejZrbSYTarTw50/V7z1obfvd52A+jKnePsC2oCHjaL/VeYm6U
+         c796VIBRTtjDXHBjPFxtoE3+14snc7NA2qDGm/S8FaJvLz1RSZWqQhR8zrHx5kOAK6iq
+         S2kpEXPby/7VS1WuKSpe9e0eDI9wpDvmPXpnMCSD17aV1TdhrNLuFkMOAszVWOJGNnzn
+         bYSA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=ogZaRQ86QzPygdavyNb/kUDC1GjqiLxjA1gaKlnqA9E=;
-        b=BJCHGwCRkkKpLIhVMtkPNLyW9qGaaRF3pQRQ9cZ8mewVf3WosjSgbrSPGRVD1yOG0D
-         y2ooif0kq7CR/c1wkPsCbglRyj/HSZ8Ui+7+V+GVknyThr3XV6C/YFqQhpbEmvhCN5/8
-         s8F+4XpetSw5VB+JEM4LxL49m7guxv+OEBwkq9TtfUKYi8wC5pkCCi+JS9nPLlTXDpwT
-         OkXreY67wJeXHhIO3d7okmd2xCdE0jb9iuj2KmKyYpuevluUtx8Cj7D1IrP1ostk1wot
-         ya0wm6gHW3L2ZKg/ntZLU5UtkHGuZyJ9/AWhlwPmn5jOloI5Drvsv+oJlHIgOVfNMA9j
-         JGFw==
-X-Gm-Message-State: AGi0PuYQ3bU8iEkYbwA7+C/Ran/XR11bN9gzUTHdX3WQFOdiFEVhHbjJ
-        2cSpoFKs1IZVvD8wwKYggWTPJgKhQhwyoigrCko=
-X-Google-Smtp-Source: APiQypIyL9avwD2oX8pSrvq4Apyl4sPaadyREjdcHjrWr9Gkkf4rUmYlAEygpEUgKfUggbYYkSA2qiyDgDW5rTK7KBE=
-X-Received: by 2002:a9d:564:: with SMTP id 91mr22286712otw.250.1588075780739;
- Tue, 28 Apr 2020 05:09:40 -0700 (PDT)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=uYEFetyk7yEs/OGLXEbC40B/ODDkCIuOofswNQx6m3Q=;
+        b=TJEC8k07NqiF95JMOf88kQFlyIa+J/1Mhy8ODn+n3E6MqXoXnEEdvOq2jCp4m+E6R3
+         TdpR08hOz3yS1p+Q3zbDtEWoMMMX54EHht0kSCQ+1brPyaoz+TOulmG88iyyw5jEl6rx
+         ynr69/sjk9W+x6NC+Rq1ZKYTpzqc4yj9BBxjlLvYiDY781NcCWzF7vQo89Bdb64LXVSr
+         rxxkbhr3o4r/5mNOOBbz38sE6L3SdCrx+AMk2CeLv31ZsJfLXzD2brXEUrTnH6pFv8R7
+         gxnZYFUx9ukclCEcPnivay36uxB7LfVcacc7CuIle1VBfcI5y+K7W4+VYx/BKCDEzoUK
+         /vGA==
+X-Gm-Message-State: AGi0PubYgDBvneqvsoyLnKNXIjlpVHWPZVJeWsoNwGK9wItPPJWe+YKa
+        U5+e+ztODPEKEFTCXgqw4lSVE5mC1eA=
+X-Google-Smtp-Source: APiQypITMKQ9lco4YT7FUuHdJwGGqttr7okyyvyCCDhpaCuHf5y4Pb8Dm55YxiwryGh6kqkGkODbWg==
+X-Received: by 2002:a1c:98c3:: with SMTP id a186mr4330037wme.178.1588076431369;
+        Tue, 28 Apr 2020 05:20:31 -0700 (PDT)
+Received: from [192.168.0.41] (lns-bzn-59-82-252-135-148.adsl.proxad.net. [82.252.135.148])
+        by smtp.googlemail.com with ESMTPSA id s14sm2965062wmh.18.2020.04.28.05.20.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 28 Apr 2020 05:20:29 -0700 (PDT)
+Subject: Re: [PATCH v2] MAINTAINERS: Add entry for Renesas R-Car thermal
+ drivers
+To:     =?UTF-8?Q?Niklas_S=c3=b6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>, linux-pm@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org
+Cc:     Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
+References: <20200305012721.425330-1-niklas.soderlund@ragnatech.se>
+ <20200428120325.GB1372619@oden.dyn.berto.se>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <84f05c3d-319c-10a9-df5f-15a19d663de9@linaro.org>
+Date:   Tue, 28 Apr 2020 14:20:29 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-References: <20200305012721.425330-1-niklas.soderlund@ragnatech.se> <20200428120325.GB1372619@oden.dyn.berto.se>
 In-Reply-To: <20200428120325.GB1372619@oden.dyn.berto.se>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 28 Apr 2020 14:09:29 +0200
-Message-ID: <CAMuHMdXdj8L1cue=-NUefjfHXCx4gxwsRW=w4000Sk9Lt0yzAQ@mail.gmail.com>
-Subject: Re: [PATCH v2] MAINTAINERS: Add entry for Renesas R-Car thermal drivers
-To:     =?UTF-8?Q?Niklas_S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Niklas,
 
-On Tue, Apr 28, 2020 at 2:03 PM Niklas Söderlund
-<niklas.soderlund+renesas@ragnatech.se> wrote:
-> Soft ping on this patch. I'm unsure who to pester about this patch being
+Hi,
+
+On 28/04/2020 14:03, Niklas Söderlund wrote:
+> Hi,
+> 
+> Soft ping on this patch. I'm unsure who to pester about this patch being 
 > picked up, should it go thru the thermal or Renesas tree?
 
-IMHO, through the thermal tree.
-If the thermal people feel otherwise, please ack, and I'll queue it in
-renesas-devel.
+Applied for the thermal tree.
 
-> On 2020-03-05 02:27:21 +0100, Niklas Söderlund wrote:
-> > From: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> >
-> > Add an entry to make myself a maintainer of the Renesas R-Car thermal
-> > drivers.
-> >
-> > Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
-> > Acked-by: Yoshihiro Shimoda <yoshihiro.shimoda.uh@renesas.com>
-
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-
-Gr{oetje,eeting}s,
-
-                        Geert
 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
