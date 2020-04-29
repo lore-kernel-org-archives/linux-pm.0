@@ -7,47 +7,47 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBC08C8300C
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 20:58:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B1C37C83007
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 20:58:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AAF1A20BED
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 20:58:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 870C72076B
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 20:58:52 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588193930;
-	bh=uUrdVo9043HmvbcKzvLhdSoNCjBCAIsRpxzGcUTOBSY=;
+	s=default; t=1588193932;
+	bh=rCXAFx7ZOdFUdpPRkzWkQSPkbgiYlrQ60D182QEQf7g=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=qZNhqpt2uktQF8LajLdlRZ1pPQsOO4O7ebnU5q8lCj0it6sg5RKLplqtYfsTXTEkm
-	 0tH0ua2pDE7nLWcXqdPQrvYIf8mv0Me6qAs31SL1nNdyOjdS+0i7yGal68gKHo568n
-	 SFTIG3odr/FXlE0LIlyjPacJECZKahuUy03dotEY=
+	b=tXCv8wKTO/X8KG3L6sPNSF56fSEJpOELzlQeh5V0Ak6RkyG4e7sto+cZg8LZOCBkF
+	 jDmtWtj36hxc+G5FmLe9p3he0o6/S3pNZ4hXC/n6fhftCC6KfwoB3hSiF8oppQM4ET
+	 cptdvol9wmTz+dFeRVIYw8uJxs0gXsqpfdpeKsb8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727771AbgD2U6u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Apr 2020 16:58:50 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:38937 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726955AbgD2U6t (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2020 16:58:49 -0400
-Received: by mail-oi1-f194.google.com with SMTP id m10so3130965oie.6;
-        Wed, 29 Apr 2020 13:58:47 -0700 (PDT)
+        id S1727108AbgD2U6w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Apr 2020 16:58:52 -0400
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:34694 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726955AbgD2U6v (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2020 16:58:51 -0400
+Received: by mail-ot1-f66.google.com with SMTP id 72so3005173otu.1;
+        Wed, 29 Apr 2020 13:58:49 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=myrenzSPyW59XpfF+gIY1TxdoxeVOHKfaEK33JnlZTA=;
-        b=jfLWwBOAOJfrGQDrLkC24LXLhz6oOO3jCqVuGnW/ixZ6enwc9DSBkIIVb6U5idzP3f
-         DSUkdDzRsAtU7In+4th6OHG/Fxi/PngZbb7sOqEiPfrckCKC7gKR9HZ1rWuxSwDHe/IY
-         j7QT9EHkPGe0F++o+0v0aLwqOWR0K8qgzeKL7Vu2qn21MaHIrr4Wcp3T6D9l1oCueUil
-         U9XBuunMZ4aFRpY8GFXlVwbMSEtKoPgry8BfAvxt0RdD11MkwLW9e4zj9wYgdo4n7khB
-         K7vpGPL0JeQ4lOND9Hxx7bIy7JbKaSDitFrOCDBTCWGy9+DNkjiun2OuF8R+4J7KmcPs
-         fELA==
-X-Gm-Message-State: AGi0PuZWpJ1awCB4nsZqfG5iiWGcow0K6zZX4nZuiewi+8Uo8wvMqjSy
-        W6xkEM8OR6hw9BHrFuCbmw==
-X-Google-Smtp-Source: APiQypId0MDw7AeVQVQkoHCYMF2A7Fv08/wl1ScqTYpGJciki03GgiqVioMmxhSmH8L/Spi9eOa0sg==
-X-Received: by 2002:a54:4e86:: with SMTP id c6mr127195oiy.178.1588193926891;
-        Wed, 29 Apr 2020 13:58:46 -0700 (PDT)
+        bh=pWYvadUHhNmHMbwqybGHGQMT9Gw6sFtWQjTu42eM8C0=;
+        b=V38S/ukS8nn50Fh2GExci2Ft5xN/E2Etp/jzIUdEB3ek3Bvgdj3FxcjpO5LCGLeILC
+         n6reMY4JWy0TMM6yzTW89ELFzP5c5nQZoE71sntSbTfNQpLQd5LdWr5ltoiYMSVbXjaH
+         EjnapdE1TtSNSiJxZtzBqAGtp9tsouNg+WOH25Rf7cv7vmUuSHC1eLcdqGDc/aXKHQzl
+         b/ElU/U/617bnd48PsXMQtyoYVzOvoHgIH+JjT/FnE8yKKCBl11+WFZGxeVpUyyPLJGf
+         jaVSGPUv14cGvG3LEBVFz1VAd17OwKA3EozJ53ONm5Pcu1wvhtghyrzy1Eo77pi5DEmz
+         6Kjw==
+X-Gm-Message-State: AGi0PuaCKix6w/fqDZCQjN2u3SUWJxVkuufuOMA6RasvK7ba0AKE2RLz
+        l9dbzhCIh7H0rcABgxpHnipkU6U=
+X-Google-Smtp-Source: APiQypIEjHDyKVTXOVc+6IBJv/YMhCsxT0ApwM+suaKheeb6cM9wNc0N3d5PdgsvPksLVNF11I2D6A==
+X-Received: by 2002:a9d:1ee7:: with SMTP id n94mr27119542otn.26.1588193929527;
+        Wed, 29 Apr 2020 13:58:49 -0700 (PDT)
 Received: from xps15.herring.priv (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.googlemail.com with ESMTPSA id z13sm653162oth.10.2020.04.29.13.58.45
+        by smtp.googlemail.com with ESMTPSA id z13sm653162oth.10.2020.04.29.13.58.48
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 29 Apr 2020 13:58:46 -0700 (PDT)
+        Wed, 29 Apr 2020 13:58:48 -0700 (PDT)
 From:   Rob Herring <robh@kernel.org>
 To:     Linus Walleij <linus.walleij@linaro.org>,
         Liviu Dudau <liviu.dudau@arm.com>,
@@ -62,9 +62,9 @@ Cc:     Kevin Brodsky <Kevin.Brodsky@arm.com>,
         Stephen Boyd <sboyd@kernel.org>, Will Deacon <will@kernel.org>,
         linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 13/16] bus: vexpress-config: simplify config bus probing
-Date:   Wed, 29 Apr 2020 15:58:22 -0500
-Message-Id: <20200429205825.10604-14-robh@kernel.org>
+Subject: [PATCH v2 15/16] bus: vexpress-config: Support building as module
+Date:   Wed, 29 Apr 2020 15:58:24 -0500
+Message-Id: <20200429205825.10604-16-robh@kernel.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200429205825.10604-1-robh@kernel.org>
 References: <20200429205825.10604-1-robh@kernel.org>
@@ -75,184 +75,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The vexpress-config initialization is dependent on the vexpress-syscfg
-driver probing. As vexpress-config was not a driver, deferred probe
-could not be used and instead initcall ordering was relied upon. This is
-fragile and doesn't work for modules.
-
-Let's move the config bus init into the vexpress-syscfg probe. This
-eliminates the initcall ordering requirement and the need to create a
-struct device and the "vexpress-config" class.
+Enable building vexpress-config driver as a module.
 
 Cc: Sudeep Holla <sudeep.holla@arm.com>
 Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
 Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Acked-by: Liviu Dudau <liviu.dudau@arm.com>
 Signed-off-by: Rob Herring <robh@kernel.org>
 ---
- drivers/bus/vexpress-config.c | 118 ++++++----------------------------
- 1 file changed, 21 insertions(+), 97 deletions(-)
+ drivers/bus/Kconfig           |  2 +-
+ drivers/bus/vexpress-config.c | 10 ++++------
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
+diff --git a/drivers/bus/Kconfig b/drivers/bus/Kconfig
+index 6d4e4497b59b..c16268c53831 100644
+--- a/drivers/bus/Kconfig
++++ b/drivers/bus/Kconfig
+@@ -183,7 +183,7 @@ config UNIPHIER_SYSTEM_BUS
+ 	  needed to use on-board devices connected to UniPhier SoCs.
+ 
+ config VEXPRESS_CONFIG
+-	bool "Versatile Express configuration bus"
++	tristate "Versatile Express configuration bus"
+ 	default y if ARCH_VEXPRESS
+ 	depends on ARM || ARM64
+ 	depends on OF
 diff --git a/drivers/bus/vexpress-config.c b/drivers/bus/vexpress-config.c
-index 43f5beac9811..43deb4df140b 100644
+index caa35a4cb34d..a58ac0c8e282 100644
 --- a/drivers/bus/vexpress-config.c
 +++ b/drivers/bus/vexpress-config.c
-@@ -56,7 +56,6 @@ struct vexpress_config_bridge {
+@@ -7,6 +7,7 @@
+ #include <linux/err.h>
+ #include <linux/init.h>
+ #include <linux/io.h>
++#include <linux/module.h>
+ #include <linux/of.h>
+ #include <linux/platform_device.h>
+ #include <linux/of_device.h>
+@@ -407,15 +408,12 @@ static const struct platform_device_id vexpress_syscfg_id_table[] = {
+ 	{ "vexpress-syscfg", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(platform, vexpress_syscfg_id_table);
  
- 
- static DEFINE_MUTEX(vexpress_config_mutex);
--static struct class *vexpress_config_class;
- static u32 vexpress_config_site_master = VEXPRESS_SITE_MASTER;
- 
- 
-@@ -121,9 +120,6 @@ struct regmap *devm_regmap_init_vexpress_config(struct device *dev)
- 	struct regmap *regmap;
- 	struct regmap **res;
- 
--	if (WARN_ON(dev->parent->class != vexpress_config_class))
--		return ERR_PTR(-ENODEV);
+ static struct platform_driver vexpress_syscfg_driver = {
+ 	.driver.name = "vexpress-syscfg",
+ 	.id_table = vexpress_syscfg_id_table,
+ 	.probe = vexpress_syscfg_probe,
+ };
 -
- 	bridge = dev_get_drvdata(dev->parent);
- 	if (WARN_ON(!bridge))
- 		return ERR_PTR(-EINVAL);
-@@ -146,94 +142,6 @@ struct regmap *devm_regmap_init_vexpress_config(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(devm_regmap_init_vexpress_config);
- 
--static struct device *vexpress_config_bridge_register(struct device *parent,
--		struct vexpress_config_bridge_ops *ops, void *context)
+-static int __init vexpress_syscfg_init(void)
 -{
--	struct device *dev;
--	struct vexpress_config_bridge *bridge;
--
--	if (!vexpress_config_class) {
--		vexpress_config_class = class_create(THIS_MODULE,
--				"vexpress-config");
--		if (IS_ERR(vexpress_config_class))
--			return (void *)vexpress_config_class;
--	}
--
--	dev = device_create(vexpress_config_class, parent, 0,
--			NULL, "%s.bridge", dev_name(parent));
--
--	if (IS_ERR(dev))
--		return dev;
--
--	bridge = devm_kmalloc(dev, sizeof(*bridge), GFP_KERNEL);
--	if (!bridge) {
--		put_device(dev);
--		device_unregister(dev);
--		return ERR_PTR(-ENOMEM);
--	}
--	bridge->ops = ops;
--	bridge->context = context;
--
--	dev_set_drvdata(dev, bridge);
--
--	dev_dbg(parent, "Registered bridge '%s', parent node %p\n",
--			dev_name(dev), parent->of_node);
--
--	return dev;
+-	return platform_driver_register(&vexpress_syscfg_driver);
 -}
--
--
--static int vexpress_config_node_match(struct device *dev, const void *data)
--{
--	const struct device_node *node = data;
--
--	dev_dbg(dev, "Parent node %p, looking for %p\n",
--			dev->parent->of_node, node);
--
--	return dev->parent->of_node == node;
--}
--
--static int vexpress_config_populate(struct device_node *node)
--{
--	struct device_node *bridge;
--	struct device *parent;
--	int ret;
--
--	bridge = of_parse_phandle(node, "arm,vexpress,config-bridge", 0);
--	if (!bridge)
--		return -EINVAL;
--
--	parent = class_find_device(vexpress_config_class, NULL, bridge,
--			vexpress_config_node_match);
--	of_node_put(bridge);
--	if (WARN_ON(!parent))
--		return -ENODEV;
--
--	ret = of_platform_populate(node, NULL, NULL, parent);
--
--	put_device(parent);
--
--	return ret;
--}
--
--static int __init vexpress_config_init(void)
--{
--	int err = 0;
--	struct device_node *node;
--
--	/* Need the config devices early, before the "normal" devices... */
--	for_each_compatible_node(node, NULL, "arm,vexpress,config-bus") {
--		err = vexpress_config_populate(node);
--		if (err) {
--			of_node_put(node);
--			break;
--		}
--	}
--
--	return err;
--}
--postcore_initcall(vexpress_config_init);
--
- static int vexpress_syscfg_exec(struct vexpress_syscfg_func *func,
- 		int index, bool write, u32 *data)
- {
-@@ -430,7 +338,8 @@ static int vexpress_syscfg_probe(struct platform_device *pdev)
- {
- 	struct vexpress_syscfg *syscfg;
- 	struct resource *res;
--	struct device *bridge;
-+	struct vexpress_config_bridge *bridge;
-+	struct device_node *node;
- 
- 	syscfg = devm_kzalloc(&pdev->dev, sizeof(*syscfg), GFP_KERNEL);
- 	if (!syscfg)
-@@ -443,11 +352,26 @@ static int vexpress_syscfg_probe(struct platform_device *pdev)
- 	if (IS_ERR(syscfg->base))
- 		return PTR_ERR(syscfg->base);
- 
--	/* Must use dev.parent (MFD), as that's where DT phandle points at... */
--	bridge = vexpress_config_bridge_register(pdev->dev.parent,
--			&vexpress_syscfg_bridge_ops, syscfg);
-+	bridge = devm_kmalloc(&pdev->dev, sizeof(*bridge), GFP_KERNEL);
-+	if (!bridge)
-+		return -ENOMEM;
-+
-+	bridge->ops = &vexpress_syscfg_bridge_ops;
-+	bridge->context = syscfg;
-+
-+	dev_set_drvdata(&pdev->dev, bridge);
- 
--	return PTR_ERR_OR_ZERO(bridge);
-+	for_each_compatible_node(node, NULL, "arm,vexpress,config-bus") {
-+		struct device_node *bridge_np;
-+
-+		bridge_np = of_parse_phandle(node, "arm,vexpress,config-bridge", 0);
-+		if (bridge_np != pdev->dev.parent->of_node)
-+			continue;
-+
-+		of_platform_populate(node, NULL, NULL, &pdev->dev);
-+	}
-+
-+	return 0;
- }
- 
- static const struct platform_device_id vexpress_syscfg_id_table[] = {
+-core_initcall(vexpress_syscfg_init);
++module_platform_driver(vexpress_syscfg_driver);
++MODULE_LICENSE("GPL v2");
 -- 
 2.20.1
 
