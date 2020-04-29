@@ -7,209 +7,162 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11AA0C83004
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 10:19:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4370C83003
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 10:36:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD9702073E
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 10:19:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B9CD2206F0
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Apr 2020 10:36:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="heZazT2s"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HvZKeFCi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726808AbgD2KTL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Apr 2020 06:19:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50260 "EHLO
+        id S1726355AbgD2Kg7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Apr 2020 06:36:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53044 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726560AbgD2KTJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2020 06:19:09 -0400
+        with ESMTP id S1726345AbgD2Kg6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Apr 2020 06:36:58 -0400
 Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BD701C035494
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 03:19:08 -0700 (PDT)
-Received: by mail-wr1-x442.google.com with SMTP id k13so1821631wrw.7
-        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 03:19:08 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B331C03C1AD
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 03:36:58 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id t14so1855308wrw.12
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 03:36:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=2wu/gy1tHoWVzLeL4pUGCtzvsoDpfDGzq7gpcYUF8tA=;
-        b=heZazT2s9kPfyv6NTu8eImJ1nH2p3ed4yDakzZzC7FnVlRzH1gCJG1NnnURFgRzK3q
-         RuBBWjVYeTG/cPgj+txQ0EtlgfghyyTWT89izOlRYzwaH4UaM5s3xyqy7k2kKZYZ4ykt
-         w76IXMNamSswR1+80emM3I6YbwLXYZaMA9/WMNfUJqRv2v84SBaDkxIbUTG1vMP5MHMr
-         MylxeQWHOZhVjPk38iw4Nrz2DE8psD7D6rd1rJ7lgolnAkcJQs4UDEhmMYTpnh56g5iZ
-         rnOVwROUSxFUCd28VPqX1PaC0fl99MudLhdWeKFstobGWRY5WOvuHfSjctM/kg34xtgf
-         rkYQ==
+        h=from:to:cc:subject:date:message-id;
+        bh=RpkQwwv6S0Hyop47yUIyj7qzO0Gz5frqaukBd604NtU=;
+        b=HvZKeFCiIZIbg9p8zSxsOH+vfjJYTpNd7ikWWMoiC9fUQnU3lJZrK/HjgHkrXfAGl8
+         kKjxcmVZBsVlU9se+EDFZaNgIL7tInM2qcvknFXbRx7PPNAUCapOFMGy3+CCu06kFtIN
+         bALyb19P6Vhsoz8PmCDVrRfIGNpHwM9Vcz5MJ/MHdsbbC+LmcnjePrPc2Ci4eXgj78oe
+         OhDu1GZqAGs5VcSSGdbqLKXa6OhDMEJtaPSqpr2VZhyxZQxoU+YFOv9smMLSWLelb/QT
+         qO357mN+Z85gSAOFj8Lm1ULKeIRKatqPYmrikW1XJuLP2oaUvg0wPaCUcmjtt3Bek+xU
+         GIqg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=2wu/gy1tHoWVzLeL4pUGCtzvsoDpfDGzq7gpcYUF8tA=;
-        b=PBoPOZkouWeRCe/sV2PwFRPbEinKrzjZujMkWq4ihxCPyRh62LZakWTCxFU54HEjG/
-         J5ijb4+ykRDvJn+t/GWMbZfW4VSaLCXB/y+L4CeXnShq9Z11f4g2LeGL1lzc/gjoWqYX
-         vuM33j0N7yxUgGEq3u/xmBMixARXoQV0n9QbK/lXE8TkNg/Z/NZHMGWIoO+fowfAjBvQ
-         3whdYTQWce5VgReBxggLCShi18TvYy4C8Xje5kMoaphEd1saZeF/I8WzkSVS5JUOcuhd
-         LKFqAurC9zxjmnbs9R1zFm5ur1dU/LhubCQc6qziuhc41Y+cN0HtCd00DUcsa3taj/B/
-         Xxmg==
-X-Gm-Message-State: AGi0PubiJobN5IKfhGzN82Z1Sgd6U4GPLDt3Ks6/qjQdI9DP+cxsVsRT
-        J0pB8x7DvlAHp9TPUAGagfHPbQ==
-X-Google-Smtp-Source: APiQypKX51nZ88wriy0wpsyb6PmJdRjnyn5ipdyt18ZbnclL4eiPGgTcPj6kgXejx8si5pSpE/0g2Q==
-X-Received: by 2002:adf:ead2:: with SMTP id o18mr22591202wrn.333.1588155547393;
-        Wed, 29 Apr 2020 03:19:07 -0700 (PDT)
-Received: from localhost.localdomain ([87.120.218.65])
-        by smtp.googlemail.com with ESMTPSA id c20sm7504873wmd.36.2020.04.29.03.19.06
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 29 Apr 2020 03:19:06 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     gregkh@linuxfoundation.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        georgi.djakov@linaro.org, ChenTao <chentao107@huawei.com>,
-        Hulk Robot <hulkci@huawei.com>
-Subject: [PATCH 1/1] interconnect: qcom: Move the static keyword to the front of declaration
-Date:   Wed, 29 Apr 2020 13:19:04 +0300
-Message-Id: <20200429101904.5771-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200429101904.5771-1-georgi.djakov@linaro.org>
-References: <20200429101904.5771-1-georgi.djakov@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=RpkQwwv6S0Hyop47yUIyj7qzO0Gz5frqaukBd604NtU=;
+        b=WWG4lhqLJ4MMfYyF1vWR9TXQusOBf8bXjF6/Yj6nOg+LbsCKVMja0J2eqC80aoNljw
+         tq/UusXVMlnLQOhkBtwrDbbn8KFi5FK8lO7t2KoLaeiSo79aZIRX/TKKMWO8cdLRLLf/
+         VXdrwVQGiK00u1jRhqZPWKuiOdZKbyUSNBPqx1oq79qpzu1ec8b/6UHab5RiFFTaWseH
+         OnNTI2+1TNvbwJp7E7jINtjed/o/4d7SvLnqR6CFWj9olWGB9GQTtUrlsMozlX7qTxbI
+         KuZeGhXCki0qxzHK2q+AWMlMtAms6XNuGIB05z4ZB7QJUi7p83A1uIMOgWRAACv5GLiZ
+         EwHQ==
+X-Gm-Message-State: AGi0PuYnTfivHYDlY1xaLoaMQz+lEok8oSAFFj+G3MkeYW0/NyzKGzR/
+        /9JkhIbT4SxlTwDsyeHrYeSDV5e4tx8=
+X-Google-Smtp-Source: APiQypIQcyBJmQi7ofyqwA5mlDq2HNSja9bfSA5sY2q8vZceL0ijeX6bNqvvblyjWbpnSczn8Rg39w==
+X-Received: by 2002:a5d:4f0d:: with SMTP id c13mr37135690wru.49.1588156617262;
+        Wed, 29 Apr 2020 03:36:57 -0700 (PDT)
+Received: from localhost.localdomain ([2a01:e34:ed2f:f020:d494:5741:b700:698f])
+        by smtp.gmail.com with ESMTPSA id f23sm6899576wml.4.2020.04.29.03.36.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 29 Apr 2020 03:36:56 -0700 (PDT)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
+Cc:     lukasz.luba@arm.com,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-pm@vger.kernel.org (open list:POWER MANAGEMENT CORE),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH v4 1/4] powercap/drivers/idle_inject: Specify idle state max latency
+Date:   Wed, 29 Apr 2020 12:36:39 +0200
+Message-Id: <20200429103644.5492-1-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: ChenTao <chentao107@huawei.com>
+Currently the idle injection framework uses the play_idle() function
+which puts the current CPU in an idle state. The idle state is the
+deepest one, as specified by the latency constraint when calling the
+subsequent play_idle_precise() function with the INT_MAX.
 
-Fix the following warning:
+The idle_injection is used by the cpuidle_cooling device which
+computes the idle / run duration to mitigate the temperature by
+injecting idle cycles. The cooling device has no control on the depth
+of the idle state.
 
-Move the static keyword to the front of declaration of sdm845_icc_osm_l3
-sdm845_aggre1_noc sc7180_icc_osm_l3 sdm845_aggre2_noc sdm845_config_noc
-sdm845_dc_noc sdm845_gladiator_noc sdm845_mem_noc sdm845_mmss_noc and
-sdm845_system_noc, resolve the following compiler warning that can be
-when building with warnings enabled (W=1):
+Allow finer control of the idle injection mechanism by allowing to
+specify the latency for the idle state. Thus the cooling device has
+the ability to have a guarantee on the exit latency of the idle states
+it is injecting.
 
-drivers/interconnect/qcom/osm-l3.c:81:1: warning:
- const static struct qcom_icc_desc sdm845_icc_osm_l3 = {
-drivers/interconnect/qcom/osm-l3.c:94:1: warning:
- const static struct qcom_icc_desc sc7180_icc_osm_l3 = {
-drivers/interconnect/qcom/sdm845.c:195:1: warning:
- const static struct qcom_icc_desc sdm845_aggre1_noc = {
-drivers/interconnect/qcom/sdm845.c:223:1: warning:
- const static struct qcom_icc_desc sdm845_aggre2_noc = {
-drivers/interconnect/qcom/sdm845.c:284:1: warning:
- const static struct qcom_icc_desc sdm845_config_noc = {
-drivers/interconnect/qcom/sdm845.c:300:1: warning:
- const static struct qcom_icc_desc sdm845_dc_noc = {
-drivers/interconnect/qcom/sdm845.c:318:1: warning:
- const static struct qcom_icc_desc sdm845_gladiator_noc = {
-drivers/interconnect/qcom/sdm845.c:353:1: warning:
- const static struct qcom_icc_desc sdm845_mem_noc = {
-drivers/interconnect/qcom/sdm845.c:387:1: warning:
- const static struct qcom_icc_desc sdm845_mmss_noc = {
-drivers/interconnect/qcom/sdm845.c:433:1: warning:
- const static struct qcom_icc_desc sdm845_system_noc = {
-
-Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: ChenTao <chentao107@huawei.com>
-Link: https://lore.kernel.org/r/20200423132142.45174-1-chentao107@huawei.com
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/interconnect/qcom/osm-l3.c |  4 ++--
- drivers/interconnect/qcom/sdm845.c | 16 ++++++++--------
- 2 files changed, 10 insertions(+), 10 deletions(-)
+  - V4:
+    - Respin against v5.7-rc1
+---
+ drivers/powercap/idle_inject.c | 16 +++++++++++++++-
+ include/linux/idle_inject.h    |  4 ++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
-index a03c6d6833df..96fb9ff5ff2e 100644
---- a/drivers/interconnect/qcom/osm-l3.c
-+++ b/drivers/interconnect/qcom/osm-l3.c
-@@ -78,7 +78,7 @@ static struct qcom_icc_node *sdm845_osm_l3_nodes[] = {
- 	[SLAVE_OSM_L3] = &sdm845_osm_l3,
+diff --git a/drivers/powercap/idle_inject.c b/drivers/powercap/idle_inject.c
+index e9bbd3c42eef..c90f0990968b 100644
+--- a/drivers/powercap/idle_inject.c
++++ b/drivers/powercap/idle_inject.c
+@@ -61,12 +61,14 @@ struct idle_inject_thread {
+  * @timer: idle injection period timer
+  * @idle_duration_us: duration of CPU idle time to inject
+  * @run_duration_us: duration of CPU run time to allow
++ * @latency_us: max allowed latency
+  * @cpumask: mask of CPUs affected by idle injection
+  */
+ struct idle_inject_device {
+ 	struct hrtimer timer;
+ 	unsigned int idle_duration_us;
+ 	unsigned int run_duration_us;
++	unsigned int latency_us;
+ 	unsigned long cpumask[];
  };
  
--const static struct qcom_icc_desc sdm845_icc_osm_l3 = {
-+static const struct qcom_icc_desc sdm845_icc_osm_l3 = {
- 	.nodes = sdm845_osm_l3_nodes,
- 	.num_nodes = ARRAY_SIZE(sdm845_osm_l3_nodes),
- };
-@@ -91,7 +91,7 @@ static struct qcom_icc_node *sc7180_osm_l3_nodes[] = {
- 	[SLAVE_OSM_L3] = &sc7180_osm_l3,
- };
+@@ -138,7 +140,8 @@ static void idle_inject_fn(unsigned int cpu)
+ 	 */
+ 	iit->should_run = 0;
  
--const static struct qcom_icc_desc sc7180_icc_osm_l3 = {
-+static const struct qcom_icc_desc sc7180_icc_osm_l3 = {
- 	.nodes = sc7180_osm_l3_nodes,
- 	.num_nodes = ARRAY_SIZE(sc7180_osm_l3_nodes),
- };
-diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
-index b013b80caa45..f6c7b969520d 100644
---- a/drivers/interconnect/qcom/sdm845.c
-+++ b/drivers/interconnect/qcom/sdm845.c
-@@ -192,7 +192,7 @@ static struct qcom_icc_node *aggre1_noc_nodes[] = {
- 	[SLAVE_ANOC_PCIE_A1NOC_SNOC] = &qns_pcie_a1noc_snoc,
- };
+-	play_idle(READ_ONCE(ii_dev->idle_duration_us));
++	play_idle_precise(READ_ONCE(ii_dev->idle_duration_us) * NSEC_PER_USEC,
++			  READ_ONCE(ii_dev->latency_us) * NSEC_PER_USEC);
+ }
  
--const static struct qcom_icc_desc sdm845_aggre1_noc = {
-+static const struct qcom_icc_desc sdm845_aggre1_noc = {
- 	.nodes = aggre1_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(aggre1_noc_nodes),
- 	.bcms = aggre1_noc_bcms,
-@@ -220,7 +220,7 @@ static struct qcom_icc_node *aggre2_noc_nodes[] = {
- 	[SLAVE_SERVICE_A2NOC] = &srvc_aggre2_noc,
- };
+ /**
+@@ -169,6 +172,16 @@ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+ 	*idle_duration_us = READ_ONCE(ii_dev->idle_duration_us);
+ }
  
--const static struct qcom_icc_desc sdm845_aggre2_noc = {
-+static const struct qcom_icc_desc sdm845_aggre2_noc = {
- 	.nodes = aggre2_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(aggre2_noc_nodes),
- 	.bcms = aggre2_noc_bcms,
-@@ -281,7 +281,7 @@ static struct qcom_icc_node *config_noc_nodes[] = {
- 	[SLAVE_SERVICE_CNOC] = &srvc_cnoc,
- };
++/**
++ * idle_inject_set_latency - set the maximum latency allowed
++ * @latency_us: set the latency requirement for the idle state
++ */
++void idle_inject_set_latency(struct idle_inject_device *ii_dev,
++			     unsigned int latency_us)
++{
++	WRITE_ONCE(ii_dev->latency_us, latency_us);
++}
++
+ /**
+  * idle_inject_start - start idle injections
+  * @ii_dev: idle injection control device structure
+@@ -297,6 +310,7 @@ struct idle_inject_device *idle_inject_register(struct cpumask *cpumask)
+ 	cpumask_copy(to_cpumask(ii_dev->cpumask), cpumask);
+ 	hrtimer_init(&ii_dev->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
+ 	ii_dev->timer.function = idle_inject_timer_fn;
++	ii_dev->latency_us = UINT_MAX;
  
--const static struct qcom_icc_desc sdm845_config_noc = {
-+static const struct qcom_icc_desc sdm845_config_noc = {
- 	.nodes = config_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(config_noc_nodes),
- 	.bcms = config_noc_bcms,
-@@ -297,7 +297,7 @@ static struct qcom_icc_node *dc_noc_nodes[] = {
- 	[SLAVE_MEM_NOC_CFG] = &qhs_memnoc,
- };
+ 	for_each_cpu(cpu, to_cpumask(ii_dev->cpumask)) {
  
--const static struct qcom_icc_desc sdm845_dc_noc = {
-+static const struct qcom_icc_desc sdm845_dc_noc = {
- 	.nodes = dc_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(dc_noc_nodes),
- 	.bcms = dc_noc_bcms,
-@@ -315,7 +315,7 @@ static struct qcom_icc_node *gladiator_noc_nodes[] = {
- 	[SLAVE_SERVICE_GNOC] = &srvc_gnoc,
- };
- 
--const static struct qcom_icc_desc sdm845_gladiator_noc = {
-+static const struct qcom_icc_desc sdm845_gladiator_noc = {
- 	.nodes = gladiator_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(gladiator_noc_nodes),
- 	.bcms = gladiator_noc_bcms,
-@@ -350,7 +350,7 @@ static struct qcom_icc_node *mem_noc_nodes[] = {
- 	[SLAVE_EBI1] = &ebi,
- };
- 
--const static struct qcom_icc_desc sdm845_mem_noc = {
-+static const struct qcom_icc_desc sdm845_mem_noc = {
- 	.nodes = mem_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(mem_noc_nodes),
- 	.bcms = mem_noc_bcms,
-@@ -384,7 +384,7 @@ static struct qcom_icc_node *mmss_noc_nodes[] = {
- 	[SLAVE_CAMNOC_UNCOMP] = &qns_camnoc_uncomp,
- };
- 
--const static struct qcom_icc_desc sdm845_mmss_noc = {
-+static const struct qcom_icc_desc sdm845_mmss_noc = {
- 	.nodes = mmss_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(mmss_noc_nodes),
- 	.bcms = mmss_noc_bcms,
-@@ -430,7 +430,7 @@ static struct qcom_icc_node *system_noc_nodes[] = {
- 	[SLAVE_TCU] = &xs_sys_tcu_cfg,
- };
- 
--const static struct qcom_icc_desc sdm845_system_noc = {
-+static const struct qcom_icc_desc sdm845_system_noc = {
- 	.nodes = system_noc_nodes,
- 	.num_nodes = ARRAY_SIZE(system_noc_nodes),
- 	.bcms = system_noc_bcms,
+diff --git a/include/linux/idle_inject.h b/include/linux/idle_inject.h
+index a445cd1a36c5..91a8612b8bf9 100644
+--- a/include/linux/idle_inject.h
++++ b/include/linux/idle_inject.h
+@@ -26,4 +26,8 @@ void idle_inject_set_duration(struct idle_inject_device *ii_dev,
+ void idle_inject_get_duration(struct idle_inject_device *ii_dev,
+ 				 unsigned int *run_duration_us,
+ 				 unsigned int *idle_duration_us);
++
++void idle_inject_set_latency(struct idle_inject_device *ii_dev,
++			     unsigned int latency_ns);
++
+ #endif /* __IDLE_INJECT_H__ */
+-- 
+2.17.1
+
