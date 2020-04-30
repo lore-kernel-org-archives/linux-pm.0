@@ -2,156 +2,164 @@ Return-Path: <SRS0=MSX4=6O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8157DC47255
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 15:58:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C323C4724C
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:18:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5BA3B206D6
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 15:58:49 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QyNrwT+W"
+	by mail.kernel.org (Postfix) with ESMTP id E6F7B20873
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:18:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1588263520;
+	bh=lW4zzFS0G9Wi4Z0P+nqG08m6PRjTTMBcjkMLSKAEx/k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=WxEV4VUdQSJJPOCmRyjrTVJoloqQG9oW6/IjGZgMj8PpF+Si/Mr1RwOuD+nSGyK9c
+	 p5Afy7jMxmFmJjkKbNvNy5shWBo49wa7xQuGbQ0x3xmDIpqOTlDm4q1FUMbem+/5/l
+	 R7H9kulj2VFpydC9RNDJIZPh2tlRb3jV65lmTAnc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727060AbgD3P6X (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Apr 2020 11:58:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46496 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726420AbgD3P6W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2020 11:58:22 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1ACD0C035495;
-        Thu, 30 Apr 2020 08:58:21 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id h4so2468207wmb.4;
-        Thu, 30 Apr 2020 08:58:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=aPPULoNFOiHN1wQeO/5XgTLf2n39COR44XZpOJQLw28=;
-        b=QyNrwT+WNXchl+9yKQicG4Q3p56veqUYcTRzcIlqNU1z7zPsdYa/L7H1C6RbEn2ZjI
-         7GI6LfwhnzkW9tc9htFUibUuZTSDXPMwXXAuSUBqb1Zq1E/QbFJ+7TWFtxl3vZqwJwOv
-         ZHqzp+RbuvRGNofkpczTN+HogOVx7ydvXbc1WeVEJCx7oz+TjnY+H3pFqOqjYrTNcW7Y
-         cworM0Q4P0+fN6GjDfTA3J6rr+hm0FR878ILWgXdPWXEtDA2H2ZJ/DGtVuuvONLjM6PK
-         DOTqkGY+OvZ6T/x4qDIxX5CkS9w9P0o7Bc68pvxSKe3vfgdqiQFxuXYATydTBATDDlVT
-         ++fA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=aPPULoNFOiHN1wQeO/5XgTLf2n39COR44XZpOJQLw28=;
-        b=FaDt1uV/IgJwuZ516BbO/Ok1Hi8gkbyGYGAQVatNShRf2ib8KWiziFsuK4La9a8peS
-         b6TgqV4TY/0cXOdH6ShYIFcBNSdX01sOERKNB6+0cgjoXlyL+g7WpqhCgXFYutsiNxFR
-         zo0+AyGzipyNZqOFG2TBRLcoadsBOxdgmj59OIvC5893UFQrdNbyyMAScJ08dO4pKab4
-         H3vIi4hDopsMyCZ7QdyJ2qPOtxxhqKPtjD1GEt+lcR+44nrbH8PuxScmF1Y98aXzmYYJ
-         VuC8NGXyovQevwfnPSxx+bBW+Zgeo31Wxzm6EHRda1MIGGXirt0/rEG4s5vyi9TbVcr3
-         4XnA==
-X-Gm-Message-State: AGi0Pubzop41TtfPMTeM0+s1U4oawZHPNSXqLFWHo+GKwDiHTIROiPyV
-        2rlwpDzWn8b7+2IRm/oT/8g=
-X-Google-Smtp-Source: APiQypJ06DFupF/Xb94Fv10hDtfNyoH65DEbcEDGvCnSx5MMfP8FGTMn+W/k6TY0AwEgN1w+0d89JA==
-X-Received: by 2002:a1c:99d3:: with SMTP id b202mr3848184wme.126.1588262299841;
-        Thu, 30 Apr 2020 08:58:19 -0700 (PDT)
-Received: from localhost.localdomain (p5B3F6E9D.dip0.t-ipconnect.de. [91.63.110.157])
-        by smtp.gmail.com with ESMTPSA id w8sm265410wrs.25.2020.04.30.08.58.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 30 Apr 2020 08:58:19 -0700 (PDT)
-From:   Saravanan Sekar <sravanhome@gmail.com>
-To:     lee.jones@linaro.org, andy.shevchenko@gmail.com,
-        robh+dt@kernel.org, jic23@kernel.org, knaack.h@gmx.de,
-        lars@metafoo.de, pmeerw@pmeerw.net, sre@kernel.org
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-iio@vger.kernel.org, linux-pm@vger.kernel.org,
-        Saravanan Sekar <sravanhome@gmail.com>
-Subject: [PATCH v11 1/6] dt-bindings: mfd: add document bindings for mp2629
-Date:   Thu, 30 Apr 2020 17:58:05 +0200
-Message-Id: <20200430155810.21383-2-sravanhome@gmail.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200430155810.21383-1-sravanhome@gmail.com>
-References: <20200430155810.21383-1-sravanhome@gmail.com>
+        id S1728148AbgD3QSj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Apr 2020 12:18:39 -0400
+Received: from mail.kernel.org ([198.145.29.99]:58578 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726420AbgD3QSi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Apr 2020 12:18:38 -0400
+Received: from mail.kernel.org (ip5f5ad5c5.dynamic.kabel-deutschland.de [95.90.213.197])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id A560320873;
+        Thu, 30 Apr 2020 16:18:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1588263517;
+        bh=lW4zzFS0G9Wi4Z0P+nqG08m6PRjTTMBcjkMLSKAEx/k=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=t615eT3Q9pNpfUIrouBfac8mgll8VUS4jr3Ag7enyIc+LVo6TA9j3lMsuJE9cQQfz
+         sf9wlQhSNxFOavyUaeU7+062U1oEI3YBwpstTJ/7fZTx03yIZqvRcaMolvo/ohpyig
+         cmqXaXddzzJQ9zOGjwxL1N0Mwus6QNxjBg+E8ROc=
+Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
+        (envelope-from <mchehab@kernel.org>)
+        id 1jUBtT-00Axge-S6; Thu, 30 Apr 2020 18:18:35 +0200
+From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
+Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Javi Merino <javi.merino@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH v4 01/19] docs: thermal: convert cpu-idle-cooling.rst to ReST
+Date:   Thu, 30 Apr 2020 18:18:15 +0200
+Message-Id: <617873f33407a764671be95d4ee15afa6027c924.1588263270.git.mchehab+huawei@kernel.org>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <cover.1588263270.git.mchehab+huawei@kernel.org>
+References: <cover.1588263270.git.mchehab+huawei@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add device tree binding information for mp2629 mfd driver.
+Despite being named with .rst extension, this file doesn't
+match the ReST standard. It actually causes a crash at
+Sphinx:
 
-Signed-off-by: Saravanan Sekar <sravanhome@gmail.com>
-Reviewed-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+	Sphinx parallel build error:
+	docutils.utils.SystemMessage: /devel/v4l/docs/Documentation/driver-api/thermal/cpu-idle-cooling.rst:69: (SEVERE/4) Unexpected section title.
+
+Add needed markups for it to be properly parsed.
+
+While here, add it to the thermal index.rst.
+
+Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
 ---
- .../devicetree/bindings/mfd/mps,mp2629.yaml   | 62 +++++++++++++++++++
- 1 file changed, 62 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
+ .../driver-api/thermal/cpu-idle-cooling.rst    | 18 ++++++++++++------
+ Documentation/driver-api/thermal/index.rst     |  1 +
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-new file mode 100644
-index 000000000000..f91acc42d652
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/mps,mp2629.yaml
-@@ -0,0 +1,62 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/mps,mp2629.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/Documentation/driver-api/thermal/cpu-idle-cooling.rst b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+index a1c3edecae00..b5a4544af004 100644
+--- a/Documentation/driver-api/thermal/cpu-idle-cooling.rst
++++ b/Documentation/driver-api/thermal/cpu-idle-cooling.rst
+@@ -1,3 +1,9 @@
++.. SPDX-License-Identifier: GPL-2.0
 +
-+title: MP2629 Battery Charger PMIC from Monolithic Power System.
++================
++CPU Idle Cooling
++================
 +
-+maintainers:
-+  - Saravanan Sekar <sravanhome@gmail.com>
-+
-+description: |
-+  MP2629 is a PMIC providing battery charging and power supply for smartphones,
-+  wireless camera and portable devices. Chip is controlled over I2C.
-+
-+  The battery charge management device handles battery charger controller and
-+  ADC IIO device for battery, system voltage
-+
-+properties:
-+  compatible:
-+    const: mps,mp2629
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  interrupt-controller: true
-+
-+  "#interrupt-cells":
-+    const: 2
-+    description:
-+      The first cell is the IRQ number, the second cell is the trigger type.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - interrupt-controller
-+  - "#interrupt-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    #include <dt-bindings/input/linux-event-codes.h>
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        pmic@4b {
-+            compatible = "mps,mp2629";
-+            reg = <0x4b>;
-+
-+            interrupt-controller;
-+            interrupt-parent = <&gpio2>;
-+            #interrupt-cells = <2>;
-+            interrupts = <3 IRQ_TYPE_LEVEL_HIGH>;
-+        };
-+    };
+ 
+ Situation:
+ ----------
+@@ -45,7 +51,7 @@ idle state target residency, we lead to dropping the static and the
+ dynamic leakage for this period (modulo the energy needed to enter
+ this state). So the sustainable power with idle cycles has a linear
+ relation with the OPP’s sustainable power and can be computed with a
+-coefficient similar to:
++coefficient similar to::
+ 
+ 	    Power(IdleCycle) = Coef x Power(OPP)
+ 
+@@ -136,7 +142,7 @@ Power considerations
+ --------------------
+ 
+ When we reach the thermal trip point, we have to sustain a specified
+-power for a specific temperature but at this time we consume:
++power for a specific temperature but at this time we consume::
+ 
+  Power = Capacitance x Voltage^2 x Frequency x Utilisation
+ 
+@@ -145,7 +151,7 @@ wrong in the system setup). The ‘Capacitance’ and ‘Utilisation’ are a
+ fixed value, ‘Voltage’ and the ‘Frequency’ are fixed artificially
+ because we don’t want to change the OPP. We can group the
+ ‘Capacitance’ and the ‘Utilisation’ into a single term which is the
+-‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have:
++‘Dynamic Power Coefficient (Cdyn)’ Simplifying the above, we have::
+ 
+  Pdyn = Cdyn x Voltage^2 x Frequency
+ 
+@@ -154,7 +160,7 @@ in order to target the sustainable power defined in the device
+ tree. So with the idle injection mechanism, we want an average power
+ (Ptarget) resulting in an amount of time running at full power on a
+ specific OPP and idle another amount of time. That could be put in a
+-equation:
++equation::
+ 
+  P(opp)target = ((Trunning x (P(opp)running) + (Tidle x P(opp)idle)) /
+ 			(Trunning + Tidle)
+@@ -165,7 +171,7 @@ equation:
+ 
+ At this point if we know the running period for the CPU, that gives us
+ the idle injection we need. Alternatively if we have the idle
+-injection duration, we can compute the running duration with:
++injection duration, we can compute the running duration with::
+ 
+  Trunning = Tidle / ((P(opp)running / P(opp)target) - 1)
+ 
+@@ -188,7 +194,7 @@ However, in this demonstration we ignore three aspects:
+    target residency, otherwise we end up consuming more energy and
+    potentially invert the mitigation effect
+ 
+-So the final equation is:
++So the final equation is::
+ 
+  Trunning = (Tidle - Twakeup ) x
+ 		(((P(opp)dyn + P(opp)static ) - P(opp)target) / P(opp)target )
+diff --git a/Documentation/driver-api/thermal/index.rst b/Documentation/driver-api/thermal/index.rst
+index 5ba61d19c6ae..4cb0b9b6bfb8 100644
+--- a/Documentation/driver-api/thermal/index.rst
++++ b/Documentation/driver-api/thermal/index.rst
+@@ -8,6 +8,7 @@ Thermal
+    :maxdepth: 1
+ 
+    cpu-cooling-api
++   cpu-idle-cooling
+    sysfs-api
+    power_allocator
+ 
 -- 
-2.17.1
+2.25.4
 
