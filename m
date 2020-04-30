@@ -2,200 +2,168 @@ Return-Path: <SRS0=MSX4=6O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91470C83006
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 03:05:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85862C83002
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 05:09:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 74FBF2073E
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 03:05:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5BD8420784
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 05:09:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UIPWkQRC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726337AbgD3DFp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Apr 2020 23:05:45 -0400
-Received: from mx.socionext.com ([202.248.49.38]:42028 "EHLO mx.socionext.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726180AbgD3DFp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Apr 2020 23:05:45 -0400
-Received: from unknown (HELO iyokan-ex.css.socionext.com) ([172.31.9.54])
-  by mx.socionext.com with ESMTP; 30 Apr 2020 12:05:43 +0900
-Received: from mail.mfilter.local (m-filter-1 [10.213.24.61])
-        by iyokan-ex.css.socionext.com (Postfix) with ESMTP id 24CE360057;
-        Thu, 30 Apr 2020 12:05:44 +0900 (JST)
-Received: from 172.31.9.51 (172.31.9.51) by m-FILTER with ESMTP; Thu, 30 Apr 2020 12:05:44 +0900
-Received: from plum.e01.socionext.com (unknown [10.213.132.32])
-        by kinkan.css.socionext.com (Postfix) with ESMTP id E16371A12AD;
-        Thu, 30 Apr 2020 12:05:43 +0900 (JST)
-From:   Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-Subject: [PATCH v2] dt-bindings: thermal: Convert UniPhier thermal monitor to json-schema
-Date:   Thu, 30 Apr 2020 12:05:34 +0900
-Message-Id: <1588215934-13252-1-git-send-email-hayashi.kunihiko@socionext.com>
-X-Mailer: git-send-email 2.7.4
+        id S1726505AbgD3FJY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Apr 2020 01:09:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57892 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726378AbgD3FJX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2020 01:09:23 -0400
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1C35C08E859
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 22:09:21 -0700 (PDT)
+Received: by mail-pj1-x1043.google.com with SMTP id t9so240936pjw.0
+        for <linux-pm@vger.kernel.org>; Wed, 29 Apr 2020 22:09:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=BcQ5rdhX5fAQSX2rbYN56O2PhBMBX/klcGq2rtNptpM=;
+        b=UIPWkQRCuoKPusij5bXjIgUWQTmsoLYcmtJotv/WTwQI8XCnxYM/ilm3V1d3vhaud4
+         oCaqKAnwOWt5jxRvv0ApLhJU/GBO/g0rlUmPsIbEgyH43hmyRzM8W2Il6LQSpGe3ypnj
+         EOj8avcPW4dHenocr4HMTna0mxX8s7g5Oix67ExkIYNYkeitD5cOrJyEPfZ+y5EwxtJf
+         S9n7zQsqB0ZmZi2MzkQtgIZt/ak+6Vil0L6KPPg8uk2fG+qxaymCvPs6GsTq+PnOJIXW
+         XW99dc7mSyRYJpsJB0bdR02UuxxukrNuIyIriUSQBawkWbd4eQCLUGzlQNPouKs6ZAIN
+         WoUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=BcQ5rdhX5fAQSX2rbYN56O2PhBMBX/klcGq2rtNptpM=;
+        b=qldZgCw+Xmsx4XkryQDRWxT6pWkIsAsUko/Oe/K2GrH/kzG6AddgeHtYtgduLC7om6
+         V5QqYeoSRd8vMb3W8nP8I/M4e3vIbN3Wq290RkTwMbm5bmKr37wVxiJVy+Q+htOrrBDw
+         4dE0keyjn9g05HdmmC/RVIRxnYHOsCgaTpniIBNZ+2S4VMDT3txP6Cu/ha4xZeqTifCu
+         D/5KaurvCFpUxKLBISHUo5++uaIDzo3WGdH6NVAzEpqM3qF604FzWnCHD6gjAU9F8QGw
+         +oFPpwZqpcl+C9ApXAe1yY5DPkL8LXKAEloIw0UsB7cHudjKG8MVgPJOHly/vbniqHdT
+         eAOg==
+X-Gm-Message-State: AGi0Puba8pKg7kHNaq9zwBAdzTUM7ckj3/kYCbPW8RoYKemHOgkpYpDh
+        UX97uyIS/tHAaNSj8MMUuWfZZRJXN/Q=
+X-Google-Smtp-Source: APiQypIWG8LTlURGRjcnCZlUiotPB1jlfz7jUIeRNAIqGaqtSuVr93jORUA5tW+QP7j+WvGiFJXmgQ==
+X-Received: by 2002:a17:90a:ee84:: with SMTP id i4mr956177pjz.71.1588223361336;
+        Wed, 29 Apr 2020 22:09:21 -0700 (PDT)
+Received: from localhost ([122.171.118.46])
+        by smtp.gmail.com with ESMTPSA id h193sm2422349pfe.30.2020.04.29.22.09.20
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 29 Apr 2020 22:09:20 -0700 (PDT)
+Date:   Thu, 30 Apr 2020 10:39:18 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        robh+dt@kernel.org, rjw@rjwysocki.net, saravanak@google.com,
+        sibis@codeaurora.org, rnayak@codeaurora.org,
+        bjorn.andersson@linaro.org, vincent.guittot@linaro.org,
+        jcrouse@codeaurora.org, evgreen@chromium.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v7 1/7] dt-bindings: opp: Introduce opp-peak-kBps and
+ opp-avg-kBps bindings
+Message-ID: <20200430050918.b2g2yc7xhvbzeqqq@vireshk-i7>
+References: <20200424155404.10746-1-georgi.djakov@linaro.org>
+ <20200424155404.10746-2-georgi.djakov@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200424155404.10746-2-georgi.djakov@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the UniPhier thermal monitor binding to DT schema format.
+On 24-04-20, 18:53, Georgi Djakov wrote:
+> From: Saravana Kannan <saravanak@google.com>
+> 
+> Interconnects often quantify their performance points in terms of
+> bandwidth. So, add opp-peak-kBps (required) and opp-avg-kBps (optional) to
+> allow specifying Bandwidth OPP tables in DT.
+> 
+> opp-peak-kBps is a required property that replaces opp-hz for Bandwidth OPP
+> tables.
+> 
+> opp-avg-kBps is an optional property that can be used in Bandwidth OPP
+> tables.
+> 
+> Signed-off-by: Saravana Kannan <saravanak@google.com>
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+> v7:
+> * I have dropped Rob's Reviewed-by, because of the minor change below:
+> * In order to store the bandwidth values for multiple paths, the
+> opp-peak-kBps and opp-avg-kBps are now defined as arrays of integers,
+> instead of just integers.
+> * Improved wording (Viresh)
+> 
+> v6: https://lore.kernel.org/r/20191207002424.201796-2-saravanak@google.com
+> 
+>  Documentation/devicetree/bindings/opp/opp.txt | 20 ++++++++++++++++---
+>  .../devicetree/bindings/property-units.txt    |  4 ++++
+>  2 files changed, 21 insertions(+), 3 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+> index 68592271461f..a8a6a3bfcfcb 100644
+> --- a/Documentation/devicetree/bindings/opp/opp.txt
+> +++ b/Documentation/devicetree/bindings/opp/opp.txt
+> @@ -83,9 +83,17 @@ properties.
+>  
+>  Required properties:
+>  - opp-hz: Frequency in Hz, expressed as a 64-bit big-endian integer. This is a
+> -  required property for all device nodes but devices like power domains. The
+> -  power domain nodes must have another (implementation dependent) property which
+> -  uniquely identifies the OPP nodes.
+> +  required property for all device nodes except for devices like power domains
+> +  or bandwidth opp tables. The devices which don't have this property must have
 
-Signed-off-by: Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
----
+bandwidth opp table ?
 
-Changes since v1:
-- Add maxItems to "socionext,tmod-calibration" property
-- Fix indents in examples
+> +  another (implementation dependent) property which uniquely identifies the OPP
+> +  nodes.
+> +
+> +
+> +- opp-peak-kBps: Peak bandwidth in kilobytes per second, expressed as an array
+> +  of 32-bit big-endian integers. Each element of the array represents the
+> +  peak bandwidth value of each interconnect path. The number of elements should
+> +  match the number of interconnect paths. This is a required property for
+> +  bandwidth OPP tables.
+>  
+>  Optional properties:
+>  - opp-microvolt: voltage in micro Volts.
+> @@ -132,6 +140,12 @@ Optional properties:
+>  - opp-level: A value representing the performance level of the device,
+>    expressed as a 32-bit integer.
+>  
+> +- opp-avg-kBps: Average bandwidth in kilobytes per second, expressed as an array
+> +  of 32-bit big-endian integers. Each element of the array represents the
+> +  average bandwidth value of each interconnect path. The number of elements
+> +  should match the number of interconnect paths. This property is only
+> +  meaningful in OPP tables where opp-peak-kBps is present.
+> +
+>  - clock-latency-ns: Specifies the maximum possible transition latency (in
+>    nanoseconds) for switching to this OPP from any other OPP.
+>  
+> diff --git a/Documentation/devicetree/bindings/property-units.txt b/Documentation/devicetree/bindings/property-units.txt
+> index e9b8360b3288..c80a110c1e26 100644
+> --- a/Documentation/devicetree/bindings/property-units.txt
+> +++ b/Documentation/devicetree/bindings/property-units.txt
+> @@ -41,3 +41,7 @@ Temperature
+>  Pressure
+>  ----------------------------------------
+>  -kpascal	: kilopascal
+> +
+> +Throughput
+> +----------------------------------------
+> +-kBps		: kilobytes per second
 
-.../thermal/socionext,uniphier-thermal.yaml        | 59 ++++++++++++++++++++
- .../bindings/thermal/uniphier-thermal.txt          | 65 ----------------------
- 2 files changed, 59 insertions(+), 65 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
- delete mode 100644 Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-
-diff --git a/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml b/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
-new file mode 100644
-index 0000000..bb9594b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/socionext,uniphier-thermal.yaml
-@@ -0,0 +1,59 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/socionext,uniphier-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Socionext UniPhier thermal monitor
-+
-+description: |
-+  This describes the devicetree bindings for thermal monitor supported by
-+  PVT(Process, Voltage and Temperature) monitoring unit implemented on
-+  Socionext UniPhier SoCs.
-+
-+maintainers:
-+  - Kunihiko Hayashi <hayashi.kunihiko@socionext.com>
-+
-+properties:
-+  compatible:
-+    enum:
-+      - socionext,uniphier-pxs2-thermal
-+      - socionext,uniphier-ld20-thermal
-+      - socionext,uniphier-pxs3-thermal
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 0
-+
-+  socionext,tmod-calibration:
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32-array
-+      - maxItems: 2
-+    description:
-+      A pair of calibrated values referred from PVT, in case that the values
-+      aren't set on SoC, like a reference board.
-+
-+required:
-+  - compatible
-+  - interrupts
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    // The UniPhier thermal should be a subnode of a "syscon" compatible node.
-+
-+    sysctrl@61840000 {
-+        compatible = "socionext,uniphier-ld20-sysctrl",
-+                     "simple-mfd", "syscon";
-+        reg = <0x61840000 0x10000>;
-+
-+        pvtctl: thermal {
-+            compatible = "socionext,uniphier-ld20-thermal";
-+            interrupts = <0 3 1>;
-+            #thermal-sensor-cells = <0>;
-+        };
-+    };
-diff --git a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt b/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-deleted file mode 100644
-index ceb92a9..0000000
---- a/Documentation/devicetree/bindings/thermal/uniphier-thermal.txt
-+++ /dev/null
-@@ -1,65 +0,0 @@
--* UniPhier Thermal bindings
--
--This describes the devicetree bindings for thermal monitor supported by
--PVT(Process, Voltage and Temperature) monitoring unit implemented on Socionext
--UniPhier SoCs.
--
--Required properties:
--- compatible :
--  - "socionext,uniphier-pxs2-thermal" : For UniPhier PXs2 SoC
--  - "socionext,uniphier-ld20-thermal" : For UniPhier LD20 SoC
--  - "socionext,uniphier-pxs3-thermal" : For UniPhier PXs3 SoC
--- interrupts : IRQ for the temperature alarm
--- #thermal-sensor-cells : Should be 0. See ./thermal.txt for details.
--
--Optional properties:
--- socionext,tmod-calibration: A pair of calibrated values referred from PVT,
--                              in case that the values aren't set on SoC,
--                              like a reference board.
--
--Example:
--
--	sysctrl@61840000 {
--		compatible = "socionext,uniphier-ld20-sysctrl",
--			     "simple-mfd", "syscon";
--		reg = <0x61840000 0x10000>;
--		...
--		pvtctl: pvtctl {
--			compatible = "socionext,uniphier-ld20-thermal";
--			interrupts = <0 3 1>;
--			#thermal-sensor-cells = <0>;
--		};
--		...
--	};
--
--	thermal-zones {
--		cpu_thermal {
--			polling-delay-passive = <250>;	/* 250ms */
--			polling-delay = <1000>;		/* 1000ms */
--			thermal-sensors = <&pvtctl>;
--
--			trips {
--				cpu_crit: cpu_crit {
--					temperature = <110000>;	/* 110C */
--					hysteresis = <2000>;
--					type = "critical";
--				};
--				cpu_alert: cpu_alert {
--					temperature = <100000>;	/* 100C */
--					hysteresis = <2000>;
--					type = "passive";
--				};
--			};
--
--			cooling-maps {
--				map0 {
--					trip = <&cpu_alert>;
--					cooling-device = <&cpu0 (-1) (-1)>;
--				};
--				map1 {
--					trip = <&cpu_alert>;
--					cooling-device = <&cpu2 (-1) (-1)>;
--				};
--			};
--		};
--	};
 -- 
-2.7.4
-
+viresh
