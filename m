@@ -2,38 +2,40 @@ Return-Path: <SRS0=MSX4=6O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 986E9C8300A
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 08:46:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C4BBC8300C
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 08:46:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 767BB20838
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 08:46:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 69EE820838
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 08:46:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726626AbgD3IqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Apr 2020 04:46:23 -0400
-Received: from szxga04-in.huawei.com ([45.249.212.190]:3394 "EHLO huawei.com"
+        id S1726474AbgD3IqY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Apr 2020 04:46:24 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:3349 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726420AbgD3IqW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 Apr 2020 04:46:22 -0400
+        id S1726845AbgD3IqX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Apr 2020 04:46:23 -0400
 Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id 65D34585BB77616707A;
+        by Forcepoint Email with ESMTP id 898E14AE9353540B38F3;
         Thu, 30 Apr 2020 16:46:20 +0800 (CST)
 Received: from linux-ibm.site (10.175.102.37) by
  DGGEMS402-HUB.china.huawei.com (10.3.19.202) with Microsoft SMTP Server id
- 14.3.487.0; Thu, 30 Apr 2020 16:46:09 +0800
+ 14.3.487.0; Thu, 30 Apr 2020 16:46:11 +0800
 From:   Hanjun Guo <guohanjun@huawei.com>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Doug Smythies <dsmythies@telus.net>
 CC:     <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
         Hanjun Guo <guohanjun@huawei.com>
-Subject: [RFC v2 PATCH 0/6] cpuidle: Make cpuidle governor switchable to be the default behaviour
-Date:   Thu, 30 Apr 2020 16:39:41 +0800
-Message-ID: <1588235987-12300-1-git-send-email-guohanjun@huawei.com>
+Subject: [RFC v2 PATCH 4/6] cpuidle: sysfs: Remove sysfs_switch and switch attributes
+Date:   Thu, 30 Apr 2020 16:39:45 +0800
+Message-ID: <1588235987-12300-5-git-send-email-guohanjun@huawei.com>
 X-Mailer: git-send-email 1.7.12.4
+In-Reply-To: <1588235987-12300-1-git-send-email-guohanjun@huawei.com>
+References: <1588235987-12300-1-git-send-email-guohanjun@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.175.102.37]
@@ -43,40 +45,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For now cpuidle governor can be switched via sysfs only when the
-boot option "cpuidle_sysfs_switch" is passed, but it's important
-to switch the governor to adapt to different workloads, especially
-after TEO and haltpoll governor were introduced.
+Since the cpuidle governor can be switched via sysfs in default,
+remove sysfs_switch and cpuidle_switch_attrs.
 
-Make cpuidle governor switchable to be the default behaviour by removing
-the sysfs_switch and switch attributes, also update the document as well.
+Signed-off-by: Hanjun Guo <guohanjun@huawei.com>
+---
+ drivers/cpuidle/sysfs.c | 22 ++--------------------
+ 1 file changed, 2 insertions(+), 20 deletions(-)
 
-v1->v2:
- - Add two bugfix patch which can be triggered if the governor name is 15
-   characters, it is not a 'real' bug for now as we don't have such usecases
-   so we can merge them together via this patchset.
- - Remove the sysfs_switch, not introduce a CONFIG option to make cpuidle
-   governor switchable in default, suggested by Daniel.
- - Update the document after cpuidle_sysfs_switch is removed, suggested by
-   Doug Smythies.
-
-Hanjun Guo (6):
-  cpuidle: sysfs: Fix the overlap for showing available governors
-  cpuidle: sysfs: Accept governor name with 15 characters
-  cpuidle: Make cpuidle governor switchable to be the default behaviour
-  cpuidle: sysfs: Remove sysfs_switch and switch attributes
-  Documentation: cpuidle: update the document
-  Documentation: ABI: make current_governer_ro as a candidate for
-    removal
-
- Documentation/ABI/obsolete/sysfs-cpuidle           |  9 ++++
- Documentation/ABI/testing/sysfs-devices-system-cpu | 24 ++++------
- Documentation/admin-guide/pm/cpuidle.rst           | 20 ++++----
- Documentation/driver-api/pm/cpuidle.rst            |  5 +-
- drivers/cpuidle/sysfs.c                            | 56 ++++++----------------
- 5 files changed, 44 insertions(+), 70 deletions(-)
- create mode 100644 Documentation/ABI/obsolete/sysfs-cpuidle
-
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index 2425c6a..c3bbfc7 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -18,14 +18,6 @@
+ 
+ #include "cpuidle.h"
+ 
+-static unsigned int sysfs_switch;
+-static int __init cpuidle_sysfs_setup(char *unused)
+-{
+-	sysfs_switch = 1;
+-	return 1;
+-}
+-__setup("cpuidle_sysfs_switch", cpuidle_sysfs_setup);
+-
+ static ssize_t show_available_governors(struct device *dev,
+ 					struct device_attribute *attr,
+ 					char *buf)
+@@ -112,7 +104,7 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+ 				   store_current_governor);
+ static DEVICE_ATTR(current_governor_ro, 0444, show_current_governor, NULL);
+ 
+-static struct attribute *cpuidle_default_attrs[] = {
++static struct attribute *cpuidle_attrs[] = {
+ 	&dev_attr_available_governors.attr,
+ 	&dev_attr_current_driver.attr,
+ 	&dev_attr_current_governor.attr,
+@@ -120,15 +112,8 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+ 	NULL
+ };
+ 
+-static struct attribute *cpuidle_switch_attrs[] = {
+-	&dev_attr_available_governors.attr,
+-	&dev_attr_current_driver.attr,
+-	&dev_attr_current_governor.attr,
+-	NULL
+-};
+-
+ static struct attribute_group cpuidle_attr_group = {
+-	.attrs = cpuidle_default_attrs,
++	.attrs = cpuidle_attrs,
+ 	.name = "cpuidle",
+ };
+ 
+@@ -138,9 +123,6 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+  */
+ int cpuidle_add_interface(struct device *dev)
+ {
+-	if (sysfs_switch)
+-		cpuidle_attr_group.attrs = cpuidle_switch_attrs;
+-
+ 	return sysfs_create_group(&dev->kobj, &cpuidle_attr_group);
+ }
+ 
 -- 
 1.7.12.4
 
