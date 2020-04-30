@@ -2,185 +2,131 @@ Return-Path: <SRS0=MSX4=6O=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3D7AC4724C
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5B4DC4724C
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:32:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C469F208C3
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:19:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588263579;
-	bh=ugCY3y9aPneko9xp0OW8Y5PqnnRdwIA6ZnhjiQw0pbg=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=fxHalgUwE2dxP/h6ugx4hA8H2kMAb3yQeWjgYXoW7u2VgvycnEq8XDp8GYJ7Cn2D3
-	 1NgCGXMZnMGN5QQ020abms55BiA5zX0WdCNKQpAo1wKQERh4RsgwXztWkjfB01EKwV
-	 SxWGJAvKxkSBJ5iDXJOGWq+Ncxss5tM2mOp5FZfA=
+	by mail.kernel.org (Postfix) with ESMTP id B2DE821775
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Apr 2020 16:32:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="JUYJmd1M"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728173AbgD3QSk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Apr 2020 12:18:40 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58600 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726431AbgD3QSi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 30 Apr 2020 12:18:38 -0400
-Received: from mail.kernel.org (ip5f5ad5c5.dynamic.kabel-deutschland.de [95.90.213.197])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A7673208D5;
-        Thu, 30 Apr 2020 16:18:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1588263517;
-        bh=ugCY3y9aPneko9xp0OW8Y5PqnnRdwIA6ZnhjiQw0pbg=;
-        h=From:To:Cc:Subject:Date:From;
-        b=jkbiKuotKQWoJifXoYaYKWd4u1OUCkFJTCeaJ2hFfc8Mmzm6hL99xXi+5i8oLaR6e
-         GJ1b6u5OLXCuKZdQPYYbqcEoGl4qcjUVxJHvEaPOc1nGKIjtw42GlkxhXUFJCRfzBO
-         IWB28xT442895dIcuie8By96F883CyyppOigyJ4o=
-Received: from mchehab by mail.kernel.org with local (Exim 4.92.3)
-        (envelope-from <mchehab@kernel.org>)
-        id 1jUBtT-00Axgb-Pl; Thu, 30 Apr 2020 18:18:35 +0200
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        linux-kernel@vger.kernel.org, Jonathan Corbet <corbet@lwn.net>,
-        linux-pm@vger.kernel.org, keyrings@vger.kernel.org,
-        linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org,
-        kvm@vger.kernel.org
-Subject: [PATCH v4 00/19] Manually convert  thermal, crypto and misc devices to ReST
-Date:   Thu, 30 Apr 2020 18:18:14 +0200
-Message-Id: <cover.1588263270.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.25.4
+        id S1726631AbgD3Qcz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Apr 2020 12:32:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51980 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726469AbgD3Qcy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Apr 2020 12:32:54 -0400
+Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com [IPv6:2607:f8b0:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 16656C035494
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2020 09:32:54 -0700 (PDT)
+Received: by mail-oi1-x242.google.com with SMTP id o7so122263oif.2
+        for <linux-pm@vger.kernel.org>; Thu, 30 Apr 2020 09:32:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=7ZsclabnnR3wKrS78Exn79EM/lt2n7ZZyGteRGUsI8A=;
+        b=JUYJmd1MBGqCas674WTA1IWfQlE/kGTREfBIK5mpDA0GKQCWA5TWrInT5xqa+cty1P
+         1uf7jMp4ptZNe61WpozNUpn19cau+2xAsPJezxaJ/YkNvLq0Y4Ke8RMtVAAA6GGjYHiE
+         gScspZIdHjRYqpJ2Uno+FQWJL/XiblVg/Mi22ewLmBd/WxxJ9smUOoHF9lr4DrqqMmAI
+         C9OI28yxF+GzrKoTO+j1owgWEJOGkNwuwuNh8Zj6Tpvn/9KtPJiufeBqwE3ogh5pXqwf
+         6/YLrVQoTxsZzAQIfZM8oI6/JkLwFFLp8PmBtms1w/jVWbOij59zxxdfJnRIZKaW6HD3
+         p3DA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=7ZsclabnnR3wKrS78Exn79EM/lt2n7ZZyGteRGUsI8A=;
+        b=p6M3BSOZToESmC7tIOBAaWfHLEyyFLIBR6IlbPM5wK8z1S8bcQxexnAKz2QUneME/g
+         grj2mR1wGb10cwWL/dDMhk0y6DvAVTQqKYNmkyIN35BAltP9batw8cPju5FXc2H1zyw0
+         sfqrURw1Ub8O9q03925xEMgoyF9PWRShXOfjUJkW7F89yn3eLKuLJRMPc5+RaUYrtCMe
+         txIWt+mGf3s6ukd4pVqW34P6n//ncdz+sOdxHm31+diIdOpJMaS572EWmxKYNt8Ky5Dc
+         0RtS3lputLeeQ3Fb0qX//WLHAf6P9twcggN8857x2pMED1Bggl7iOVUNj8H7XxiRJ+YI
+         s/oA==
+X-Gm-Message-State: AGi0PuYSR/1uFx/M46SSFRySNSVKTMVTYEd+qlrT3W3P2WOEPuYvlrvY
+        3iDzMbxg/bSEM5gbd3jdNS54011p2wLC7ALb96sSWA==
+X-Google-Smtp-Source: APiQypJprzA/+arNVWPUX0khphDyRoZS8i1qOaFeSW8at+OIuNhknrJDu20eedqo9Mv1KETW0rnGhGJV0oxQ/gnyTBI=
+X-Received: by 2002:aca:1c08:: with SMTP id c8mr36776oic.172.1588264373140;
+ Thu, 30 Apr 2020 09:32:53 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200424155404.10746-1-georgi.djakov@linaro.org>
+ <20200424155404.10746-7-georgi.djakov@linaro.org> <CAGETcx9iAJRW9Y9orHNF-fC53nNob_vZKYUNEpwf_AeAdWCOjw@mail.gmail.com>
+ <20200430060901.j7jjw6soo5h5xoul@vireshk-i7> <CAGETcx_zH_KJ7_A7Ofc2M5GfHKX_J__URJB127MSMcTeaqyzjw@mail.gmail.com>
+ <20200430075356.rjtctfuenirvhxgn@vireshk-i7>
+In-Reply-To: <20200430075356.rjtctfuenirvhxgn@vireshk-i7>
+From:   Saravana Kannan <saravanak@google.com>
+Date:   Thu, 30 Apr 2020 09:32:17 -0700
+Message-ID: <CAGETcx-W5XjNtgjDz2Ma_miN=cUBb5LFfhzYtKRpf6iAi4bXNw@mail.gmail.com>
+Subject: Re: [PATCH v7 6/7] OPP: Update the bandwidth on OPP frequency changes
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Jordan Crouse <jcrouse@codeaurora.org>,
+        Evan Green <evgreen@chromium.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Manually convert some files from thermal, crypto and misc-devices
-to ReST format.
+On Thu, Apr 30, 2020 at 12:54 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 30-04-20, 00:35, Saravana Kannan wrote:
+> > On Wed, Apr 29, 2020 at 11:09 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > >
+> > > On 24-04-20, 14:18, Saravana Kannan wrote:
+> > > > My only comment is -- can we drop this patch please? I'd like to use
+> > > > devfreq governors for voting on bandwidth and this will effectively
+> > > > override whatever bandwidth decisions are made by the devfreq
+> > > > governor.
+> > >
+> > > And why would that be better ? FWIW, that will have the same problem
+> > > which cpufreq governors had since ages, i.e. they were not proactive
+> > > and were always too late.
+> > >
+> > > The bw should get updated right with frequency, why shouldn't it ?
+> >
+> > I didn't say the bw would be voted based on just CPUfreq. It can also
+> > be based on CPU busy time and other stats. Having said that, this is
+> > not just about CPUfreq. Having the bw be force changed every time a
+> > device has it's OPP is changed is very inflexible. Please don't do it.
+>
+> So, the vote based on the requirements of cpufreq driver should come
+> directly from the cpufreq side itself, but no one stops the others
+> layers to aggregate the requests and then act on them. This is how it
+> is done for other frameworks like clk, regulator, genpd, etc.
 
-This series is against linux-next 20200430 tag (as I rebased it, in order
-to check if some patch were already merged via some other tree),
-but it should very likely merge fine against docs-next.
+You are missing the point. This is not about aggregation. This is
+about OPP voting for bandwidth on a path when the vote can/should be
+0.
 
-The full series (including those ones) are at:
+I'll give another example. Say one of the interconnect paths needs to
+be voted only when a particular use case is running. Say, the GPU
+needs to vote for bandwidth to L3 only when it's running in cache
+coherent mode. But it always needs to vote for bandwidth to DDR. With
+the way it's written now, OPP is going to force vote a non-zero
+bandwidth to L3 even when it can be zero. Wasting power for no good
+reason.
 
-	https://git.linuxtv.org/mchehab/experimental.git/log/?h=misc-docs
+Just let the drivers/device get the bandwidth values from OPP without
+forcing them to vote for the bandwidth when they don't need to. Just
+because they decide to use OPP to set their clock doesn't mean they
+should lose to ability to control their bandwidth in a more
+intelligent fashion.
 
-The documents touched on this patch, converted to HTML via the 
-building system are at (together with patches from other series):
-
-	https://www.infradead.org/~mchehab/kernel_docs/
-
-
-v4:
-
-- added some acks.
-
-v3:
-
-- removed the cpu-freq patches from this series, as Rafael should
-  be applying it on his tree.
-
-v2: 
-
-- a small change at patch 2 to avoid uneeded whitespace changes;
-- added 13 new patches at the end
-
-
-Mauro Carvalho Chehab (19):
-  docs: thermal: convert cpu-idle-cooling.rst to ReST
-  docs: crypto: convert asymmetric-keys.txt to ReST
-  docs: crypto: convert api-intro.txt to ReST format
-  docs: crypto: convert async-tx-api.txt to ReST format
-  docs: crypto: descore-readme.txt: convert to ReST format
-  docs: misc-devices/spear-pcie-gadget.txt: convert to ReST
-  docs: misc-devices/pci-endpoint-test.txt: convert to ReST
-  docs: misc-devices/pci-endpoint-test.txt: convert to ReST
-  docs: misc-devices/c2port.txt: convert to ReST format
-  docs: misc-devices/bh1770glc.txt: convert to ReST
-  docs: misc-devices/apds990x.txt: convert to ReST format
-  docs: pci: endpoint/function/binding/pci-test.txt convert to ReST
-  docs: arm64: convert perf.txt to ReST format
-  docs: powerpc: convert vcpudispatch_stats.txt to ReST
-  docs: sh: convert new-machine.txt to ReST
-  docs: sh: convert register-banks.txt to ReST
-  docs: trace: ring-buffer-design.txt: convert to ReST format
-  docs: kvm: get read of devices/README
-  docs: misc-devices: add uacce to the index.rst
-
- .../endpoint/function/binding/pci-test.rst    |  26 +
- .../endpoint/function/binding/pci-test.txt    |  19 -
- Documentation/PCI/endpoint/index.rst          |   2 +
- Documentation/arm64/index.rst                 |   1 +
- Documentation/arm64/{perf.txt => perf.rst}    |   7 +-
- .../crypto/{api-intro.txt => api-intro.rst}   | 186 ++--
- ...symmetric-keys.txt => asymmetric-keys.rst} |  91 +-
- .../{async-tx-api.txt => async-tx-api.rst}    | 253 +++---
- ...{descore-readme.txt => descore-readme.rst} | 152 +++-
- Documentation/crypto/index.rst                |   5 +
- Documentation/driver-api/dmaengine/client.rst |   2 +-
- .../driver-api/dmaengine/provider.rst         |   2 +-
- .../driver-api/thermal/cpu-idle-cooling.rst   |  18 +-
- Documentation/driver-api/thermal/index.rst    |   1 +
- .../{ad525x_dpot.txt => ad525x_dpot.rst}      |  24 +-
- .../{apds990x.txt => apds990x.rst}            |  31 +-
- .../{bh1770glc.txt => bh1770glc.rst}          |  45 +-
- .../misc-devices/{c2port.txt => c2port.rst}   |  58 +-
- Documentation/misc-devices/index.rst          |   7 +
- .../misc-devices/pci-endpoint-test.rst        |  56 ++
- .../misc-devices/pci-endpoint-test.txt        |  41 -
- .../misc-devices/spear-pcie-gadget.rst        | 170 ++++
- .../misc-devices/spear-pcie-gadget.txt        | 130 ---
- Documentation/powerpc/index.rst               |   1 +
- ...patch_stats.txt => vcpudispatch_stats.rst} |  17 +-
- Documentation/security/keys/core.rst          |   2 +-
- Documentation/sh/index.rst                    |   6 +
- .../sh/{new-machine.txt => new-machine.rst}   | 195 +++--
- ...{register-banks.txt => register-banks.rst} |  13 +-
- Documentation/trace/index.rst                 |   1 +
- ...ffer-design.txt => ring-buffer-design.rst} | 802 ++++++++++--------
- Documentation/virt/kvm/devices/README         |   1 -
- Documentation/virt/kvm/devices/index.rst      |   3 +
- MAINTAINERS                                   |   4 +-
- arch/sh/Kconfig.cpu                           |   2 +-
- crypto/asymmetric_keys/asymmetric_type.c      |   2 +-
- crypto/asymmetric_keys/public_key.c           |   2 +-
- crypto/asymmetric_keys/signature.c            |   2 +-
- drivers/misc/Kconfig                          |   2 +-
- drivers/misc/ad525x_dpot.c                    |   2 +-
- include/crypto/public_key.h                   |   2 +-
- include/keys/asymmetric-parser.h              |   2 +-
- include/keys/asymmetric-subtype.h             |   2 +-
- include/keys/asymmetric-type.h                |   2 +-
- 44 files changed, 1358 insertions(+), 1034 deletions(-)
- create mode 100644 Documentation/PCI/endpoint/function/binding/pci-test.rst
- delete mode 100644 Documentation/PCI/endpoint/function/binding/pci-test.txt
- rename Documentation/arm64/{perf.txt => perf.rst} (95%)
- rename Documentation/crypto/{api-intro.txt => api-intro.rst} (70%)
- rename Documentation/crypto/{asymmetric-keys.txt => asymmetric-keys.rst} (91%)
- rename Documentation/crypto/{async-tx-api.txt => async-tx-api.rst} (55%)
- rename Documentation/crypto/{descore-readme.txt => descore-readme.rst} (81%)
- rename Documentation/misc-devices/{ad525x_dpot.txt => ad525x_dpot.rst} (85%)
- rename Documentation/misc-devices/{apds990x.txt => apds990x.rst} (86%)
- rename Documentation/misc-devices/{bh1770glc.txt => bh1770glc.rst} (83%)
- rename Documentation/misc-devices/{c2port.txt => c2port.rst} (59%)
- create mode 100644 Documentation/misc-devices/pci-endpoint-test.rst
- delete mode 100644 Documentation/misc-devices/pci-endpoint-test.txt
- create mode 100644 Documentation/misc-devices/spear-pcie-gadget.rst
- delete mode 100644 Documentation/misc-devices/spear-pcie-gadget.txt
- rename Documentation/powerpc/{vcpudispatch_stats.txt => vcpudispatch_stats.rst} (94%)
- rename Documentation/sh/{new-machine.txt => new-machine.rst} (73%)
- rename Documentation/sh/{register-banks.txt => register-banks.rst} (88%)
- rename Documentation/trace/{ring-buffer-design.txt => ring-buffer-design.rst} (55%)
- delete mode 100644 Documentation/virt/kvm/devices/README
-
--- 
-2.25.4
-
-
+-Saravana
