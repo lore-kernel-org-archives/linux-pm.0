@@ -2,29 +2,30 @@ Return-Path: <SRS0=hlrK=6P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD192C47257
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 16:26:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C0DDC47258
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 16:32:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E5BA2495A
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 16:26:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7CA74216FD
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 16:32:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729046AbgEAQ0v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 May 2020 12:26:51 -0400
-Received: from foss.arm.com ([217.140.110.172]:43468 "EHLO foss.arm.com"
+        id S1729577AbgEAQcw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 May 2020 12:32:52 -0400
+Received: from foss.arm.com ([217.140.110.172]:43532 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728947AbgEAQ0u (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 May 2020 12:26:50 -0400
+        id S1728443AbgEAQcv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 1 May 2020 12:32:51 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 086DD30E;
-        Fri,  1 May 2020 09:26:50 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8FFE930E;
+        Fri,  1 May 2020 09:32:46 -0700 (PDT)
 Received: from bogus (unknown [10.37.12.80])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 02DB43F68F;
-        Fri,  1 May 2020 09:26:45 -0700 (PDT)
-Date:   Fri, 1 May 2020 17:26:30 +0100
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D52B43F68F;
+        Fri,  1 May 2020 09:32:42 -0700 (PDT)
+Date:   Fri, 1 May 2020 17:32:39 +0100
 From:   Sudeep Holla <sudeep.holla@arm.com>
 To:     Rob Herring <robh@kernel.org>
 Cc:     Linus Walleij <linus.walleij@linaro.org>,
@@ -35,46 +36,70 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         Catalin Marinas <catalin.marinas@arm.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
         Lee Jones <lee.jones@linaro.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
         Sebastian Reichel <sre@kernel.org>,
         Stephen Boyd <sboyd@kernel.org>, Will Deacon <will@kernel.org>,
         linux-arm-kernel@lists.infradead.org, linux-clk@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2 04/16] clk: versatile: Rework kconfig structure
-Message-ID: <20200501162605.GA14018@bogus>
+Subject: Re: [PATCH v2 05/16] clk: versatile: Only enable SP810 on 32-bit by
+ default
+Message-ID: <20200501163239.GB14018@bogus>
 References: <20200429205825.10604-1-robh@kernel.org>
- <20200429205825.10604-5-robh@kernel.org>
+ <20200429205825.10604-6-robh@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200429205825.10604-5-robh@kernel.org>
+In-Reply-To: <20200429205825.10604-6-robh@kernel.org>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Apr 29, 2020 at 03:58:13PM -0500, Rob Herring wrote:
-> CONFIG_COMMON_CLK_VERSATILE doesn't really do anything other than hiding
-> Arm Ltd reference platform clock drivers. It is both selected by the
-> platforms that need it and has a 'depends on' for those platforms. Let's
-> drop the selects and convert CONFIG_COMMON_CLK_VERSATILE into a
-> menuconfig entry. With this make CONFIG_ICST visible.
-> 
-> Move the 'select REGMAP_MMIO' to the drivers that require it (SP810 did
-> not).
-> 
-> This also has the side effect of enabling CONFIG_ICST for COMPILE_TEST
-> as it was not visible before.
+On Wed, Apr 29, 2020 at 03:58:14PM -0500, Rob Herring wrote:
+> While 64-bit Arm reference platforms have SP810 for clocks for SP804
+> timers, they are not needed since the arch timers are used instead.
 > 
 > Cc: Catalin Marinas <catalin.marinas@arm.com>
 > Cc: Will Deacon <will@kernel.org>
-> Cc: Liviu Dudau <liviu.dudau@arm.com>
 > Cc: Sudeep Holla <sudeep.holla@arm.com>
 
-FWIW,
+With a note below for sake of information,
 
 Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+
+> Cc: Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>
+> Cc: Linus Walleij <linus.walleij@linaro.org>
+> Cc: Stephen Boyd <sboyd@kernel.org>
+> Cc: linux-clk@vger.kernel.org
+> Acked-by: Arnd Bergmann <arnd@arndb.de>
+> Acked-by: Liviu Dudau <liviu.dudau@arm.com>
+> Signed-off-by: Rob Herring <robh@kernel.org>
+> ---
+>  drivers/clk/versatile/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/clk/versatile/Kconfig b/drivers/clk/versatile/Kconfig
+> index df0d50bb846c..a47dd6c86d2e 100644
+> --- a/drivers/clk/versatile/Kconfig
+> +++ b/drivers/clk/versatile/Kconfig
+> @@ -17,7 +17,7 @@ config ICST
+>  
+>  config CLK_SP810
+>  	bool "Clock driver for ARM SP810 System Controller"
+> -	default y if ARCH_VEXPRESS
+> +	default y if (ARCH_VEXPRESS && ARM)
+
+Just note that SP804 is selected by ARCH_HISILICON and ARCH_BRCM or
+something for Raspberry Pi. So, this will result in the warnings on
+Juno like:
+
+sp804: timer clock not found: -517
+sp804: arm,sp804 clock not found: -2
+sp804: timer clock not found: -517
+sp804: arm,sp804 clock not found: -2
+
+This can be ignored as we rely on arch-timers and they are just there
+in DT for completion. We can disable them in DT if that's fine ?
 
 -- 
 Regards,
