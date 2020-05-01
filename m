@@ -2,109 +2,93 @@ Return-Path: <SRS0=hlrK=6P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EDB5C47258
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 15:11:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2853C4724C
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 15:24:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E92FD24955
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 15:11:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 81A6820708
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 15:24:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="Y0dO+r5A"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BEaU3Rp4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728856AbgEAPLV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 May 2020 11:11:21 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:25543 "EHLO rere.qmqm.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729131AbgEAPLU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 1 May 2020 11:11:20 -0400
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 49DG126KGyzLn;
-        Fri,  1 May 2020 17:11:18 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1588345878; bh=6AxS1CfoogQpoe8cy7spMNPhnnOirl0mqEZf/CePzBE=;
-        h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=Y0dO+r5AE68NUPxWe0fVcGJWsJU/jdfj9+ju3qBMdolFI0pnDUqhuaBhsANu9sMX3
-         LfrYyDmhKq1ijB39KazbGQHSs583kXY25aBuXhHG60Slp5Sz3ONdpCN28OdZAErEXj
-         CyiOh2wvugKs5NUBR9uCKD0qDtTAVu+5O14bixsAWftH+2kmneAKHprVMgSr5WV/AM
-         TIcRaapCl/0clL9lKK9dP9JptY0FuNpFXZYLTaLNvZHQNutzGGJuki/UjaL7tGNUz8
-         ZWtokM0evlMwv/UaM2G7zP6EEwR0hFuQnU+vm9c/AkZmmAIMOf+fpk1wgjLBo4GHXn
-         5K/qD6zB7bCVg==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Fri, 01 May 2020 17:11:18 +0200
-Message-Id: <79bec8125df260bdae294345bd7773dc3dd9c434.1588345420.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1588345420.git.mirq-linux@rere.qmqm.pl>
-References: <cover.1588345420.git.mirq-linux@rere.qmqm.pl>
-From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v4 1/4] power: supply: core: tabularize HWMON temperature
- labels
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        clang-built-linux@googlegroups.com
+        id S1728735AbgEAPYr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 May 2020 11:24:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40552 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728443AbgEAPYq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2020 11:24:46 -0400
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4A2C6C061A0C
+        for <linux-pm@vger.kernel.org>; Fri,  1 May 2020 08:24:46 -0700 (PDT)
+Received: by mail-wm1-x344.google.com with SMTP id u16so47017wmc.5
+        for <linux-pm@vger.kernel.org>; Fri, 01 May 2020 08:24:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:resent-from:resent-date:resent-message-id:resent-to
+         :message-id:user-agent:date:from:to:cc:subject;
+        bh=Zwbt4lmFAPn3PFdvyE+31G241RlC55gcnYxc2tQwA7g=;
+        b=BEaU3Rp47tIf7mSF3VunOCEJ5IcI5dACF3g79kBFBMVVluXwc6mwozv6SJSwZNU8oR
+         XEdNEwMmsKQV8kY9E0NpS4lu1hdDjYlOysTGZOkWK+UkuJLz33OLniuk8DZ7uZU2yi3C
+         HGdO7zAxL0pNHK0gbavW6+IkdrfeCSQH/jCz6hYCy1+oAAOBuf830qwD71DZlKA2vP8P
+         VBonWNGd4l8zJdjUMMx0IHJOFYIJd/TgfWipHyNDxJ1DpljHlppVK9W4FmOYPBySGv5u
+         5XbBxzUrtDjPWDIij7COschW9iD/yYjelmslOk9bc2Y/9n/WYiwRxN+cIH+09HMunbfy
+         6EDw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
+         :resent-to:message-id:user-agent:date:from:to:cc:subject;
+        bh=Zwbt4lmFAPn3PFdvyE+31G241RlC55gcnYxc2tQwA7g=;
+        b=eM6GHwGDiMGjZLWveHetVWbUyIDdV3YV+sePTb7u/bpsDcnftK9EXOBt8rAGfZGyXu
+         OMiSNrpAdTxXzVqpbncjvMLrelbYvtgQNXvOzrEaHbHDp8KVHtT4YGE4zuzmhyadVt64
+         j0YAb22D3wu7OxRdLzWdH7knbHaYOGtpBLqjHtSPyi4AgExJmUUhQOZuXWfldpi2LAQT
+         8dFu+vwNPDOS3D6fRYRUtnC+drafGNmqEh3U99NoJRJJoRNLpUTIaMVYRuWi3wFPSrPe
+         LOnln3pJdtdq2Tes8l3VuTCrEqwe1qfIqb2UGjZR6Jp1ClWDEOBow4hO6dJni8y9DPCf
+         HXRQ==
+X-Gm-Message-State: AGi0PuYlGt87fGv4tLSpUKIW1e2SVtEYdMJuu7V3hRSRbJT+rGYZ8a0S
+        QMTM++nSFpDez0BYw7Co0dQ=
+X-Google-Smtp-Source: APiQypL+udRjogTIT+AYSAf0Dfc2V+BjyII3LEL0Fb8l8Hxd9nMQcoq/EJO1NGqVXI4oeMTGsLGeFg==
+X-Received: by 2002:a1c:7212:: with SMTP id n18mr72623wmc.53.1588346683484;
+        Fri, 01 May 2020 08:24:43 -0700 (PDT)
+Received: from dumbo ([2a0b:f4c2::1])
+        by smtp.gmail.com with ESMTPSA id n131sm49117wmf.35.2020.05.01.08.24.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 01 May 2020 08:24:42 -0700 (PDT)
+Received: from cavok by dumbo with local (Exim 4.92)
+        (envelope-from <cavok@dumbo>)
+        id 1jUXWq-0006YI-Vb; Fri, 01 May 2020 17:24:40 +0200
+Message-Id: <20200501151452.621900831@gmail.com>
+User-Agent: quilt/0.65
+Date:   Fri, 01 May 2020 17:14:52 +0200
+From:   Domenico Andreoli <domenico.andreoli@linux.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH v2 0/2] hibernate: add config option for snapshot device 
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Rework power_supply_hwmon_read_string() to check it's parameters.
-This allows to extend it later with labels for other types of
-measurements.
+Dear maintainers,
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
-v2: split from fix temperature labels
-v3: remove power_supply_hwmon_read_string() parameter checks
-    as it is internal API (suggested by Guenter Roeck)
-v4: remove unreachable() as it triggers compiler bugs
----
- drivers/power/supply/power_supply_hwmon.c | 20 +++++++++++++++++++-
- 1 file changed, 19 insertions(+), 1 deletion(-)
+These are the improvements over v1 [0]:
+  
+ - move the mutual exclusion to hibernate.c (it was in user.c)
+ - switched to refcount_t API (it was atomic_t)
+ - the option is enabled by default (it was disabled by default)
+ - remove the premature "DEPRECATED" marking
+ - drop the redefinition of mutual exclusion helpers (in v2 they are
+   owned by hibernte.c) in case the option is deselected
+ - add the help message to the config option
 
-diff --git a/drivers/power/supply/power_supply_hwmon.c b/drivers/power/supply/power_supply_hwmon.c
-index af72e5693f65..f5d538485aaa 100644
---- a/drivers/power/supply/power_supply_hwmon.c
-+++ b/drivers/power/supply/power_supply_hwmon.c
-@@ -13,6 +13,11 @@ struct power_supply_hwmon {
- 	unsigned long *props;
- };
- 
-+static const char *const ps_temp_label[] = {
-+	"temp",
-+	"ambient temp",
-+};
-+
- static int power_supply_hwmon_in_to_property(u32 attr)
- {
- 	switch (attr) {
-@@ -180,7 +185,20 @@ static int power_supply_hwmon_read_string(struct device *dev,
- 					  u32 attr, int channel,
- 					  const char **str)
- {
--	*str = channel ? "temp ambient" : "temp";
-+	switch (type) {
-+	case hwmon_temp:
-+		*str = ps_temp_label[channel];
-+		break;
-+	default:
-+		/* unreachable, but see:
-+		 * gcc bug #51513 [1] and clang bug #978 [2]
-+		 *
-+		 * [1] https://gcc.gnu.org/bugzilla/show_bug.cgi?id=51513
-+		 * [2] https://github.com/ClangBuiltLinux/linux/issues/978
-+		 */
-+		break;
-+	}
-+
- 	return 0;
- }
- 
+Kind regards,
+Domenico
+
+[0] https://lore.kernel.org/linux-pm/20200413190843.044112674@gmail.com/
+
 -- 
-2.20.1
-
+rsa4096: 3B10 0CA1 8674 ACBA B4FE  FCD2 CE5B CF17 9960 DE13
+ed25519: FFB4 0CC3 7F2E 091D F7DA  356E CC79 2832 ED38 CB05
