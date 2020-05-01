@@ -5,55 +5,58 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CA15C47253
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 17:37:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9176C4724C
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 18:00:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2DA3524953
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 17:37:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9C62F2184D
+	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 18:00:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="tSnPkGiY"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="jCsveAiu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729980AbgEARhz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 May 2020 13:37:55 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:47060 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729040AbgEARhz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2020 13:37:55 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 041Hbsiw029531;
-        Fri, 1 May 2020 12:37:54 -0500
+        id S1730153AbgEASAB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 May 2020 14:00:01 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:43186 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730060AbgEASAB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2020 14:00:01 -0400
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 041HxxL6101208;
+        Fri, 1 May 2020 12:59:59 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1588354674;
-        bh=kl6qxjXpK8WjVJ4rxTSpNCEet+Pn0TlP5V/ouUJcsA0=;
-        h=From:To:CC:Subject:Date;
-        b=tSnPkGiYiB4BbC7Jl6xNHDULDeETvYTe2x6bX3D5mABtgKNdko8nLjffJspd/1F6s
-         ambWdSFwAohmPmtGrGQAcGN3xzYiMVM/vWT984qu2ipFIhzI0HpsnSBaMvHdSL8aV7
-         zdvPejHxeF8DqcvH9UFOoVsEqRV7g6gEhjcsqXds=
-Received: from DLEE108.ent.ti.com (dlee108.ent.ti.com [157.170.170.38])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 041HbsU7046998
+        s=ti-com-17Q1; t=1588355999;
+        bh=ENgHtxzHhUhwwp/K0N0DQtW6E3n6PsibY7hXGHIvBm0=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=jCsveAiuQQ4G+2ILM6B0aLRu/A3KIbPtYwZYJOlmRhSMjthvjZLBheGe5131zBP+C
+         zEWMJGUWDcQSpGo2j0K8yS4gaviqzM7K4cioEyCueSO+uvLF3ciXna7fFDUiQaHXmX
+         7SMFJ81sizi/E14EZbHyt05+OGKkvI0NcfveEudc=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 041HxxsH107711
         (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Fri, 1 May 2020 12:37:54 -0500
-Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Fri, 1 May
- 2020 12:37:53 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE114.ent.ti.com
+        Fri, 1 May 2020 12:59:59 -0500
+Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE114.ent.ti.com
  (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Fri, 1 May
+ 2020 12:59:59 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE104.ent.ti.com
+ (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Fri, 1 May 2020 12:37:54 -0500
+ Frontend Transport; Fri, 1 May 2020 12:59:58 -0500
 Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 041Hbr8J087346;
-        Fri, 1 May 2020 12:37:53 -0500
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 041Hxwqj127272;
+        Fri, 1 May 2020 12:59:58 -0500
 From:   Dan Murphy <dmurphy@ti.com>
 To:     <sre@kernel.org>
 CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH v2] dt-bindings: power: Convert power_supply text to yaml
-Date:   Fri, 1 May 2020 12:29:13 -0500
-Message-ID: <20200501172913.23537-1-dmurphy@ti.com>
+        <devicetree@vger.kernel.org>, Dan Murphy <dmurphy@ti.com>,
+        Guru Das Srinagesh <gurus@codeaurora.org>
+Subject: [PATCH v5 1/3] power_supply: Add additional health properties to the header
+Date:   Fri, 1 May 2020 12:51:16 -0500
+Message-ID: <20200501175118.26226-2-dmurphy@ti.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200501175118.26226-1-dmurphy@ti.com>
+References: <20200501175118.26226-1-dmurphy@ti.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Content-Type: text/plain
@@ -63,95 +66,56 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the power_supply.txt to power-supply.yaml.
-This conversion entailed fixing up the binding to being yaml and dt
-checker compliant.
+Add HEALTH_WARM, HEALTH_COOL and HEALTH_HOT to the health enum.
 
-Added a note in the power_supply.txt to reference the power-supply.yaml
-
+Tested-by: Guru Das Srinagesh <gurus@codeaurora.org>
 Signed-off-by: Dan Murphy <dmurphy@ti.com>
 ---
- .../bindings/power/supply/power-supply.yaml   | 40 +++++++++++++++++++
- .../bindings/power/supply/power_supply.txt    | 25 +-----------
- 2 files changed, 42 insertions(+), 23 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/power-supply.yaml
+ Documentation/ABI/testing/sysfs-class-power | 2 +-
+ drivers/power/supply/power_supply_sysfs.c   | 2 +-
+ include/linux/power_supply.h                | 3 +++
+ 3 files changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/power-supply.yaml b/Documentation/devicetree/bindings/power/supply/power-supply.yaml
-new file mode 100644
-index 000000000000..3bb02bb3a2d8
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/power-supply.yaml
-@@ -0,0 +1,40 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/power-supply.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Power Supply Core Support
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+properties:
-+  power-supplies:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description:
-+      This property is added to a supply in order to list the devices which
-+      supply it power, referenced by their phandles.
-+
-+examples:
-+  - |
-+    power {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      usb_charger:charger@e {
-+        compatible = "some,usb-charger";
-+        reg = <0xe>;
-+      };
-+
-+      ac_charger:charger@c {
-+        compatible = "some,ac-charger";
-+        reg = <0xc>;
-+      };
-+
-+      battery:battery@b {
-+        compatible = "some,battery";
-+        reg = <0xb>;
-+        power-supplies = <&usb_charger>, <&ac_charger>;
-+      };
-+    };
-diff --git a/Documentation/devicetree/bindings/power/supply/power_supply.txt b/Documentation/devicetree/bindings/power/supply/power_supply.txt
-index 8391bfa0edac..d9693e054509 100644
---- a/Documentation/devicetree/bindings/power/supply/power_supply.txt
-+++ b/Documentation/devicetree/bindings/power/supply/power_supply.txt
-@@ -1,23 +1,2 @@
--Power Supply Core Support
--
--Optional Properties:
-- - power-supplies : This property is added to a supply in order to list the
--   devices which supply it power, referenced by their phandles.
--
--Example:
--
--	usb-charger: power@e {
--		compatible = "some,usb-charger";
--		...
--	};
--
--	ac-charger: power@c {
--		compatible = "some,ac-charger";
--		...
--	};
--
--	battery@b {
--		compatible = "some,battery";
--		...
--		power-supplies = <&usb-charger>, <&ac-charger>;
--	};
-+This binding has been converted to yaml please see power-supply.yaml in this
-+directory.
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index bf3b48f022dc..9f3fd01a9373 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -190,7 +190,7 @@ Description:
+ 		Valid values: "Unknown", "Good", "Overheat", "Dead",
+ 			      "Over voltage", "Unspecified failure", "Cold",
+ 			      "Watchdog timer expire", "Safety timer expire",
+-			      "Over current"
++			      "Over current", "Warm", "Cool", "Hot"
+ 
+ What:		/sys/class/power_supply/<supply_name>/precharge_current
+ Date:		June 2017
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index f37ad4eae60b..d0d549611794 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -61,7 +61,7 @@ static const char * const power_supply_charge_type_text[] = {
+ static const char * const power_supply_health_text[] = {
+ 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
+ 	"Unspecified failure", "Cold", "Watchdog timer expire",
+-	"Safety timer expire", "Over current"
++	"Safety timer expire", "Over current", "Warm", "Cool", "Hot"
+ };
+ 
+ static const char * const power_supply_technology_text[] = {
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index dcd5a71e6c67..8670e90c1d51 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -61,6 +61,9 @@ enum {
+ 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
+ 	POWER_SUPPLY_HEALTH_OVERCURRENT,
++	POWER_SUPPLY_HEALTH_WARM,
++	POWER_SUPPLY_HEALTH_COOL,
++	POWER_SUPPLY_HEALTH_HOT,
+ };
+ 
+ enum {
 -- 
 2.25.1
 
