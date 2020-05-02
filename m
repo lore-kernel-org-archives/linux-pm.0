@@ -1,118 +1,70 @@
-Return-Path: <SRS0=hlrK=6P=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=1M5M=6Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD21CC47254
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 21:35:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77B01C47256
+	for <linux-pm@archiver.kernel.org>; Sat,  2 May 2020 00:03:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FDCA21835
-	for <linux-pm@archiver.kernel.org>; Fri,  1 May 2020 21:35:43 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588368943;
-	bh=eiBa5lb9f1X6eXJkHTMOoxS6e/4+tIwVweqAWNnkT7g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Nt6jb0cgBFo2LXpLtICFnlBw8xJXoSk+nwE2jH0H1E++M0IzP5LB23RDsZqvvKU3i
-	 Np6Spo/jQXLb1guKHBxCj2foOvr+0K2EguPaX7FBWQ5bK4qax+QPOWT84Zt9GA2HX8
-	 qkgK+8xnnKaOpAXkLITWIQ1HL4oR81NlraJImns0=
+	by mail.kernel.org (Postfix) with ESMTP id 601F4206EB
+	for <linux-pm@archiver.kernel.org>; Sat,  2 May 2020 00:03:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726333AbgEAVfn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 1 May 2020 17:35:43 -0400
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:40302 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726045AbgEAVfm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 1 May 2020 17:35:42 -0400
-Received: by mail-ot1-f65.google.com with SMTP id i27so3664416ota.7;
-        Fri, 01 May 2020 14:35:42 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=L7Pjlj+bds8pkUkLj6i4yY9snS8jpLg7qkPY4JTHgEQ=;
-        b=GEECfWiyicKbw05rfUnN7ZaIMVhlK72Lt8GLny5jfw2EPLNmr+8yyKDxCJwekdGyyb
-         kAR9S4sHWsLmvyy1sTjNtx0OhVWZeev/4EkF1iN71n60Ovcai42kcgSQ7d075ZoP2hzS
-         iGRNIRIv0UUPtc/+21S4VOsoJb80UoDBpFDC7QLtVdQeYTjF+tFq/gSSVzm7ThBMC1kF
-         The8M1qljArYzBmNuV/OtR0w1eDs6QtwF/iZviwgjvC1wk0eDAVQtuCdX2kW8LEEBY/P
-         77s6ZFeHMI/DGy/LJ2iW7iFiffXA7JJzuyD7609FJQSMAHnPUVhHIFWTXPNzURrbu2SG
-         PEzA==
-X-Gm-Message-State: AGi0PuYse/GE+tbQxD0WKgoD0ItLes8WYbriQIep6y/y+emq1+StwZYX
-        TF+51y4vtFR43xydm3rY2m0vKOQ=
-X-Google-Smtp-Source: APiQypIcS4ZldtIHDn1qsuo/ZwhYHO44SNWEmJ0QrB++gTcgGWj4b0A/SY9x+Mc7/f+BhQfvihMVFA==
-X-Received: by 2002:a9d:107:: with SMTP id 7mr5574092otu.48.1588368941638;
-        Fri, 01 May 2020 14:35:41 -0700 (PDT)
-Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id a7sm1110562otr.15.2020.05.01.14.35.40
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 01 May 2020 14:35:41 -0700 (PDT)
-Received: (nullmailer pid 16259 invoked by uid 1000);
-        Fri, 01 May 2020 21:35:40 -0000
-Date:   Fri, 1 May 2020 16:35:40 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dan Murphy <dmurphy@ti.com>
-Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: Re: [PATCH v5 2/3] Add the bindings for the bq25150 and bq25155
- 500mA charging ICs from Texas Instruments.
-Message-ID: <20200501213540.GA15569@bogus>
-References: <20200501175118.26226-1-dmurphy@ti.com>
- <20200501175118.26226-3-dmurphy@ti.com>
+        id S1726468AbgEBADx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 1 May 2020 20:03:53 -0400
+Received: from mga12.intel.com ([192.55.52.136]:23947 "EHLO mga12.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726437AbgEBADw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 1 May 2020 20:03:52 -0400
+IronPort-SDR: w+JaYkrsklYnu+WTvaWXxY7mlzm+zTOXdcXaRHh/T97gr23vSWHpxvSit5k9E1QM4dyR6ejibb
+ j75lw+s7CxMw==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by fmsmga106.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 May 2020 17:03:52 -0700
+IronPort-SDR: 3rgefx24t0xzK5AFJhBE8FFAt7fW+8zYHVDdpAlxca0bsfHckSLU21AtWDiKaoGZU5sszVnJ0a
+ /yaGiFdgUSjg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,342,1583222400"; 
+   d="scan'208";a="405889455"
+Received: from ranerica-svr.sc.intel.com ([172.25.110.23])
+  by orsmga004.jf.intel.com with ESMTP; 01 May 2020 17:03:51 -0700
+Date:   Fri, 1 May 2020 17:04:23 -0700
+From:   Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+To:     Giovanni Gherdovich <ggherdovich@suse.cz>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 2/2] x86, sched: Bail out of frequency invariance if
+ turbo frequency is unknown
+Message-ID: <20200502000423.GA3118@ranerica-svr.sc.intel.com>
+References: <20200428132450.24901-1-ggherdovich@suse.cz>
+ <20200428132450.24901-3-ggherdovich@suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200501175118.26226-3-dmurphy@ti.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200428132450.24901-3-ggherdovich@suse.cz>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 1 May 2020 12:51:17 -0500, Dan Murphy wrote:
-> From: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+On Tue, Apr 28, 2020 at 03:24:50PM +0200, Giovanni Gherdovich wrote:
+> There may be CPUs that support turbo boost but don't declare any turbo
+> ratio, i.e. their MSR_TURBO_RATIO_LIMIT is all zeroes. In that condition
+> scale-invariant calculations can't be performed.
 > 
-> Description:
-> The BQ2515X family of devices are highly integrated battery management
-> ICs that integrate the most common functions for wearbale devices
-> namely a charger, an output voltage rail, ADC for battery and system
-> monitoring, and a push-button controller.
-> 
-> Datasheets:
-> http://www.ti.com/lit/ds/symlink/bq25150.pdf
-> http://www.ti.com/lit/ds/symlink/bq25155.pdf
-> 
-> CC: Rob Herring <robh@kernel.org>
-> Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-> ---
->  .../bindings/power/supply/bq2515x.yaml        | 99 +++++++++++++++++++
->  1 file changed, 99 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-> 
+> Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
+> Suggested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
 
-My bot found errors running 'make dt_binding_check' on your patch:
+Thanks for implementing this, Giovanni!
 
-Documentation/devicetree/bindings/power/supply/bq2515x.yaml:  while scanning a block scalar
-  in "<unicode string>", line 81, column 5
-found a tab character where an indentation space is expected
-  in "<unicode string>", line 96, column 1
-Documentation/devicetree/bindings/Makefile:11: recipe for target 'Documentation/devicetree/bindings/power/supply/bq2515x.example.dts' failed
-make[1]: *** [Documentation/devicetree/bindings/power/supply/bq2515x.example.dts] Error 1
-make[1]: *** Waiting for unfinished jobs....
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/bq2515x.yaml: ignoring, error parsing file
-warning: no schema found in file: Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/bq2515x.yaml: ignoring, error parsing file
-warning: no schema found in file: Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-Makefile:1300: recipe for target 'dt_binding_check' failed
-make: *** [dt_binding_check] Error 2
-
-See https://patchwork.ozlabs.org/patch/1281414
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure dt-schema is up to date:
-
-pip3 install git+https://github.com/devicetree-org/dt-schema.git@master --upgrade
-
-Please check and re-submit.
+Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
