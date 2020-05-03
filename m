@@ -2,68 +2,65 @@ Return-Path: <SRS0=xEwV=6R=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78552C47257
-	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 18:35:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A53FC47256
+	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 19:11:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 56899206F0
-	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 18:35:16 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588530916;
-	bh=iAA/BK2K8L9aAuphhVJVosilOtXQj7bchRw8XI1G8g0=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
-	b=2o9PB8xLCWzS70vEUdvK5icv/D8DmdRe19C85OXhHQEHKDb5hH0Fn0UDFU0eKiTSu
-	 gA9iikoPzqhmr+XSVyWey8WLkcjDbYMarRxfiqROnaet2rMQ6TIZokLQ8+Q2wG0gbL
-	 3TGvd8olKsLXvrnoxMQauJ2YB+dpX4BYd8x287wM=
+	by mail.kernel.org (Postfix) with ESMTP id 5E32E20721
+	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 19:11:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728917AbgECSfH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 May 2020 14:35:07 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52760 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728857AbgECSfH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 3 May 2020 14:35:07 -0400
-Subject: Re: [GIT PULL] Power management fixes for v5.7-rc4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1588530907;
-        bh=iAA/BK2K8L9aAuphhVJVosilOtXQj7bchRw8XI1G8g0=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=BMTlnlZwazFGSntz9vHAFe21lU+wBdGizwpjQPRMKedXvOhR02J59k3s+L98lLhyp
-         BCj0Jx6i3tmGsniUgbI85eyaLh22CS/OOBsYAwblElNm7qXeYZuAj8HpEtA8ukAbfE
-         4HpjF2jEx3LY2SQIv1r3V9HZGvptxCPM+nI3XTSw=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0huWpQa3NgmmJ_OWGB_ngQvA4V3YCX1i3-QutqSxZOzdw@mail.gmail.com>
-References: <CAJZ5v0huWpQa3NgmmJ_OWGB_ngQvA4V3YCX1i3-QutqSxZOzdw@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0huWpQa3NgmmJ_OWGB_ngQvA4V3YCX1i3-QutqSxZOzdw@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.7-rc4
-X-PR-Tracked-Commit-Id: a53839963ee22470a716de665bca39d2dae63c27
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 743f05732f49bacd196306de87864aa074492026
-Message-Id: <158853090723.15713.12905345329050167255.pr-tracker-bot@kernel.org>
-Date:   Sun, 03 May 2020 18:35:07 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S1728933AbgECTLL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 May 2020 15:11:11 -0400
+Received: from smtp13.smtpout.orange.fr ([80.12.242.135]:33907 "EHLO
+        smtp.smtpout.orange.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1728885AbgECTLL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 3 May 2020 15:11:11 -0400
+Received: from localhost.localdomain ([93.22.151.175])
+        by mwinf5d76 with ME
+        id aKB62200S3nJVaM03KB7HH; Sun, 03 May 2020 21:11:09 +0200
+X-ME-Helo: localhost.localdomain
+X-ME-Auth: Y2hyaXN0b3BoZS5qYWlsbGV0QHdhbmFkb28uZnI=
+X-ME-Date: Sun, 03 May 2020 21:11:09 +0200
+X-ME-IP: 93.22.151.175
+From:   Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com, edubezval@gmail.com, info@metux.net,
+        tglx@linutronix.de, gregkh@linuxfoundation.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel-janitors@vger.kernel.org,
+        Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+Subject: [PATCH] thermal: stm32: fix spelling mistake "acces" -> "access"
+Date:   Sun,  3 May 2020 21:11:04 +0200
+Message-Id: <20200503191104.153711-1-christophe.jaillet@wanadoo.fr>
+X-Mailer: git-send-email 2.25.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Sat, 2 May 2020 21:56:46 +0200:
+Fix a typo in Kconfig.
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.7-rc4
+Signed-off-by: Christophe JAILLET <christophe.jaillet@wanadoo.fr>
+---
+ drivers/thermal/st/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/743f05732f49bacd196306de87864aa074492026
-
-Thank you!
-
+diff --git a/drivers/thermal/st/Kconfig b/drivers/thermal/st/Kconfig
+index 3c3b695cc3e9..58ece381956b 100644
+--- a/drivers/thermal/st/Kconfig
++++ b/drivers/thermal/st/Kconfig
+@@ -23,5 +23,5 @@ config STM32_THERMAL
+ 	help
+ 	  Support for thermal framework on STMicroelectronics STM32 series of
+ 	  SoCs. This thermal driver allows to access to general thermal framework
+-	  functionalities and to acces to SoC sensor functionalities. This
++	  functionalities and to access to SoC sensor functionalities. This
+ 	  configuration is fully dependent of MACH_STM32MP157.
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+2.25.1
+
