@@ -4,43 +4,43 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BCA01C47258
-	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 15:21:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B645C28CBC
+	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 15:21:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E1B521655
-	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 15:21:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2DC1D20836
+	for <linux-pm@archiver.kernel.org>; Sun,  3 May 2020 15:21:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="JjeuhiGZ"
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="AEeTte93"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728782AbgECPVS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 3 May 2020 11:21:18 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:3830 "EHLO rere.qmqm.pl"
+        id S1728842AbgECPVl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 3 May 2020 11:21:41 -0400
+Received: from rere.qmqm.pl ([91.227.64.183]:27795 "EHLO rere.qmqm.pl"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728743AbgECPVR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 3 May 2020 11:21:17 -0400
+        id S1728706AbgECPVP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 3 May 2020 11:21:15 -0400
 Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 49FV7Z24nPzyJ;
-        Sun,  3 May 2020 17:21:14 +0200 (CEST)
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 49FV7X6YLPzrB;
+        Sun,  3 May 2020 17:21:12 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1588519274; bh=D5lHcvsWUfCazaZCIpXQUO49elvu1ZjF+jgG6AivSgU=;
+        t=1588519273; bh=CtdnXaW3M9J6/3+oqZVerhtAMCemduwcslAGnqFReTw=;
         h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=JjeuhiGZ7NFgr9As58a6U4F4hzSsBzWRrMaF9Vu61kXE2h0olxRKmekFeSoAgbnSz
-         0kcFOR4dFjy2TNs0shK9HoNrtDgb9prjPNncw0Yh1CaWC1R/n0y9hYweJkcl1z/oUr
-         hnOHVyczSA8R9kivedUeqgX9uVMw0QjxZVi1rjiqPS6PwZMSS68k3mC0p+Ya6Wy1uK
-         Y8A2R0lBcSTVM/XvOXY7gGp7GkW68XHMGAdX9sZSSGZz/O00GK8Y97V5G8PLWp3ndJ
-         EboElt6gsQqeu+kPIByKDHjP0wmiAf7NlCwYsGPz7YSjAulv4+zMOlpt4UtNpAwEtJ
-         4zvskGCUeeQ9Q==
+        b=AEeTte93WKS/0qvl8ztsPhc0rzYLe3cAQXqzsiWa3GE8ChbGHXHAheLr8MGpCupwe
+         wFbfobROysFQ7hb9vmTF/btBWTQZrMD4feNxBJwf8Noecbcvkl59DVbUZXaidcmt5d
+         L4ENHvR+wSi4TrEP9j54sCI26BCBbAjYAAskbjl5caLckSg2uEPvhFus1QTcXPhL5y
+         v5u2V3MkiSAYTu9QssmP+fnq07SqCQzEH0U/LjYo8yb5j8BJb6euuBoUeIOubXGJ4c
+         KMHS1F7k6WWWE/IzXONciD3JM55NIg9VUnHoW4duXmioXREXF7jczyFE8OvPSQcs3y
+         F/3Q84C9k0FGQ==
 X-Virus-Status: Clean
 X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Sun, 03 May 2020 17:21:14 +0200
-Message-Id: <75c3b4fe55ba0059c7f7ed6f224c116ee98623ff.1588517058.git.mirq-linux@rere.qmqm.pl>
+Date:   Sun, 03 May 2020 17:21:12 +0200
+Message-Id: <9b3bd77de9cfef8af8f8ab76270b46599f9e5ab1.1588517058.git.mirq-linux@rere.qmqm.pl>
 In-Reply-To: <cover.1588517058.git.mirq-linux@rere.qmqm.pl>
 References: <cover.1588517058.git.mirq-linux@rere.qmqm.pl>
 From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v2 10/11] power: bq25890: support IBAT compensation
+Subject: [PATCH v2 07/11] power: bq25890: implement CHARGE_TYPE property
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -53,72 +53,44 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add configuration for compensation of IBAT measuring resistor in series
-with the battery.
+Report charging type based on recently read state.
 
 Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
- drivers/power/supply/bq25890_charger.c | 15 +++++++++++++--
- 1 file changed, 13 insertions(+), 2 deletions(-)
+ drivers/power/supply/bq25890_charger.c | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
 diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 87c5832e23d3..9d1ba3bd0bea 100644
+index e4368d01396a..ad0901fdceb6 100644
 --- a/drivers/power/supply/bq25890_charger.c
 +++ b/drivers/power/supply/bq25890_charger.c
-@@ -83,6 +83,8 @@ struct bq25890_init_data {
- 	u8 boostf;	/* boost frequency		*/
- 	u8 ilim_en;	/* enable ILIM pin		*/
- 	u8 treg;	/* thermal regulation threshold */
-+	u8 rbatcomp;	/* IBAT sense resistor value    */
-+	u8 vclamp;	/* IBAT compensation voltage limit */
- };
+@@ -429,6 +429,18 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
  
- struct bq25890_state {
-@@ -258,6 +260,8 @@ enum bq25890_table_ids {
- 	TBL_VREG,
- 	TBL_BOOSTV,
- 	TBL_SYSVMIN,
-+	TBL_VBATCOMP,
-+	TBL_RBATCOMP,
+ 		break;
  
- 	/* lookup tables */
- 	TBL_TREG,
-@@ -299,6 +303,8 @@ static const union {
- 	[TBL_VREG] =	{ .rt = {3840000, 4608000, 16000} },	 /* uV */
- 	[TBL_BOOSTV] =	{ .rt = {4550000, 5510000, 64000} },	 /* uV */
- 	[TBL_SYSVMIN] = { .rt = {3000000, 3700000, 100000} },	 /* uV */
-+	[TBL_VBATCOMP] ={ .rt = {0,        224000, 32000} },	 /* uV */
-+	[TBL_RBATCOMP] ={ .rt = {0,        140000, 20000} },	 /* uOhm */
- 
- 	/* lookup tables */
- 	[TBL_TREG] =	{ .lt = {bq25890_treg_tbl, BQ25890_TREG_TBL_SIZE} },
-@@ -650,7 +656,9 @@ static int bq25890_hw_init(struct bq25890_device *bq)
- 		{F_BOOSTI,	 bq->init_data.boosti},
- 		{F_BOOSTF,	 bq->init_data.boostf},
- 		{F_EN_ILIM,	 bq->init_data.ilim_en},
--		{F_TREG,	 bq->init_data.treg}
-+		{F_TREG,	 bq->init_data.treg},
-+		{F_BATCMP,	 bq->init_data.rbatcomp},
-+		{F_VCLAMP,	 bq->init_data.vclamp},
- 	};
- 
- 	ret = bq25890_chip_reset(bq);
-@@ -861,11 +869,14 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
- 		{"ti,boost-max-current", false, TBL_BOOSTI, &init->boosti},
- 
- 		/* optional properties */
--		{"ti,thermal-regulation-threshold", true, TBL_TREG, &init->treg}
-+		{"ti,thermal-regulation-threshold", true, TBL_TREG, &init->treg},
-+		{"ti,ibatcomp-resistance", true, TBL_RBATCOMP, &init->rbatcomp},
-+		{"ti,ibatcomp-clamp-voltage", true, TBL_VBATCOMP, &init->vclamp},
- 	};
- 
- 	/* initialize data for optional properties */
- 	init->treg = 3; /* 120 degrees Celsius */
-+	init->rbatcomp = init->vclamp = 0; /* IBAT compensation disabled */
- 
- 	for (i = 0; i < ARRAY_SIZE(props); i++) {
- 		ret = device_property_read_u32(bq->dev, props[i].name,
++	case POWER_SUPPLY_PROP_CHARGE_TYPE:
++		if (!state.online || state.chrg_status == STATUS_NOT_CHARGING ||
++		    state.chrg_status == STATUS_TERMINATION_DONE)
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_NONE;
++		else if (state.chrg_status == STATUS_PRE_CHARGING)
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_STANDARD;
++		else if (state.chrg_status == STATUS_FAST_CHARGING)
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_FAST;
++		else /* unreachable */
++			val->intval = POWER_SUPPLY_CHARGE_TYPE_UNKNOWN;
++		break;
++
+ 	case POWER_SUPPLY_PROP_MANUFACTURER:
+ 		val->strval = BQ25890_MANUFACTURER;
+ 		break;
+@@ -670,6 +682,7 @@ static const enum power_supply_property bq25890_power_supply_props[] = {
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
+ 	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_CHARGE_TYPE,
+ 	POWER_SUPPLY_PROP_ONLINE,
+ 	POWER_SUPPLY_PROP_HEALTH,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
 -- 
 2.20.1
 
