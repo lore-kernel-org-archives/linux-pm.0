@@ -2,119 +2,84 @@ Return-Path: <SRS0=wqoS=6S=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9F8FC3A5A9
-	for <linux-pm@archiver.kernel.org>; Mon,  4 May 2020 19:48:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E70F2C3A5A9
+	for <linux-pm@archiver.kernel.org>; Mon,  4 May 2020 19:51:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BCEBF20721
-	for <linux-pm@archiver.kernel.org>; Mon,  4 May 2020 19:48:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="pR6G9WK+"
+	by mail.kernel.org (Postfix) with ESMTP id BFBA02073B
+	for <linux-pm@archiver.kernel.org>; Mon,  4 May 2020 19:51:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1588621908;
+	bh=9K36pHDaFa4f5Txo2MFwEjDlHewIT6hq5ufrcEESr9M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=UCqkQFRJBTVDFBrPz7OvLGUzJrsdZTvFahY3JBi8gbyPFQ4YbiYnZZcl2xQVDXee7
+	 l801fntNdLJ1OFah/N5JiX7ea3dBtHM1Q2Geu9w61AJ+pDNtTbWJvxf3hMXth8b8YP
+	 906uy7a9RXTseW8Y4kpLVH9wwNAkSGa+m34EdDzY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727842AbgEDTrr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 4 May 2020 15:47:47 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:25825 "EHLO rere.qmqm.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726453AbgEDTrr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 4 May 2020 15:47:47 -0400
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 49GD0d0Qz7zGl;
-        Mon,  4 May 2020 21:47:45 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1588621665; bh=oH1XIZw4GH2xVUffAb5wzH0/1tJUqjxVsHll5z4vw70=;
-        h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
-        b=pR6G9WK+ablDEAZOMn54aXtJR51oob8GUFXeTcj94gZm3cXJizlzLRKAlXaTXWlTn
-         GvQdoXVCODu8A7FAyfGS4L89nTFEoXceREFqjobrMd6psTppSUoCEnXy0Qx+4a4vEC
-         mubVZa7NBS/RkR8AzAsGkP/n3epluiNgvg+8mcomV6FQoVpTFSIsbY0FtY2xag2lA9
-         4n5v3/9OHu2fcZJcA/4HZq+JzKHAOMScDHPMVJnJUV3Pt82c4lUtWIBphxOubQI0oO
-         NqpPB/Ewcdn/BH6soJouOx9VxAjUD541+7JlTroP4VUiqAa2QTD/wDhyBbQcuhIZeL
-         BZ72hAqE4nkGg==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.102.2 at mail
-Date:   Mon, 04 May 2020 21:47:30 +0200
-Message-Id: <95202939328fff79f4bc002be54876cfb38e4f7d.1588621247.git.mirq-linux@rere.qmqm.pl>
-In-Reply-To: <cover.1588621247.git.mirq-linux@rere.qmqm.pl>
-References: <cover.1588621247.git.mirq-linux@rere.qmqm.pl>
-From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v3 1/8] power: bq25890: use proper CURRENT_NOW property for
- I_BAT
+        id S1727804AbgEDTvp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 4 May 2020 15:51:45 -0400
+Received: from mail-oo1-f66.google.com ([209.85.161.66]:46063 "EHLO
+        mail-oo1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726111AbgEDTvp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 4 May 2020 15:51:45 -0400
+Received: by mail-oo1-f66.google.com with SMTP id 190so2675677ooa.12;
+        Mon, 04 May 2020 12:51:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=kTLGnv8cHLkJNeKGrYbsMBKwEzpFrwnlRZi0qh+VmkQ=;
+        b=KecKXEucfCFOaEv3wPlZkdbVyPKFl/jPFIaI8choBtkFx9okFKLq4IOQpQ9KufO8Bk
+         BK7xwD9rAEwtBzPizwKKWdtBv27ej1JNHh1J8JWKU+BdnkId8U8urIsKjkfZf4/iBm4R
+         CB775FkFHiwoXI6sin+8cVXtKVKe1TnK10JxkIk5jkFJZp/9iGST+4RY2DAIOBhb1X8O
+         u6RXkn4czw5p2AVWbMMuEDZxExcvL/HtJIV8EcosMX9KzhoznStAXZmKvfIU2BJyvVoY
+         fn7k2ntP1+UdoKfWlGAR50isZ7Jho8J5LRAMeU6zYTTar4j2N1tlcl2jvIkOBlXLWspx
+         XcFw==
+X-Gm-Message-State: AGi0PuatpWmuqUkotJhEle7B6euBtSnT6u6+HSDWygR4MY3wp+CVG/rW
+        DslEpogfNDzb87hync99ug==
+X-Google-Smtp-Source: APiQypKWcNfegIl3LfRI5pjK/dZmUaCOvDV57LPNEZELGNO0eTGx2sUvOoW4yNeccsnAUCEfaJMqQw==
+X-Received: by 2002:a4a:4442:: with SMTP id o63mr7868ooa.0.1588621904225;
+        Mon, 04 May 2020 12:51:44 -0700 (PDT)
+Received: from rob-hp-laptop (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id 186sm3548725ooi.30.2020.05.04.12.51.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 04 May 2020 12:51:43 -0700 (PDT)
+Received: (nullmailer pid 15522 invoked by uid 1000);
+        Mon, 04 May 2020 19:51:42 -0000
+Date:   Mon, 4 May 2020 14:51:42 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Konrad Dybcio <konradybcio@gmail.com>
+Cc:     skrzynka@konradybcio.pl, Konrad Dybcio <konradybcio@gmail.com>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] dt-bindings: tsens: qcom: Document MSM8939 compatible
+Message-ID: <20200504195142.GA15440@bogus>
+References: <20200501203311.143934-1-konradybcio@gmail.com>
+ <20200501203311.143934-3-konradybcio@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To:     Angus Ainslie <angus@akkea.ca>, Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Yauhen Kharuzhy <jekhor@gmail.com>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200501203311.143934-3-konradybcio@gmail.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Charge Current is more apropriately reflected by CURRENT_NOW property
-(measured current) than CONSTANT_CURRENT_VOLTAGE (configured CC-phase
-current limit). Fix the reference and make the sign reflect direction
-of the current.
+On Fri,  1 May 2020 22:33:11 +0200, Konrad Dybcio wrote:
+> Signed-off-by: Konrad Dybcio <konradybcio@gmail.com>
+> ---
+>  Documentation/devicetree/bindings/thermal/qcom-tsens.yaml | 1 +
+>  1 file changed, 1 insertion(+)
+> 
 
-Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
----
- drivers/power/supply/bq25890_charger.c | 20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
-index 9339e216651f..70ecc38fe772 100644
---- a/drivers/power/supply/bq25890_charger.c
-+++ b/drivers/power/supply/bq25890_charger.c
-@@ -427,15 +427,6 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 			val->intval = POWER_SUPPLY_HEALTH_UNSPEC_FAILURE;
- 		break;
- 
--	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
--		ret = bq25890_field_read(bq, F_ICHGR); /* read measured value */
--		if (ret < 0)
--			return ret;
--
--		/* converted_val = ADC_val * 50mA (table 10.3.19) */
--		val->intval = ret * 50000;
--		break;
--
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
- 		val->intval = bq25890_find_val(bq->init_data.ichg, TBL_ICHG);
- 		break;
-@@ -471,6 +462,15 @@ static int bq25890_power_supply_get_property(struct power_supply *psy,
- 		val->intval = 2304000 + ret * 20000;
- 		break;
- 
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		ret = bq25890_field_read(bq, F_ICHGR); /* read measured value */
-+		if (ret < 0)
-+			return ret;
-+
-+		/* converted_val = ADC_val * 50mA (table 10.3.19) */
-+		val->intval = ret * -50000;
-+		break;
-+
- 	default:
- 		return -EINVAL;
- 	}
-@@ -645,12 +645,12 @@ static const enum power_supply_property bq25890_power_supply_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_HEALTH,
--	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
- 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
- };
- 
- static char *bq25890_charger_supplied_to[] = {
--- 
-2.20.1
-
+Acked-by: Rob Herring <robh@kernel.org>
