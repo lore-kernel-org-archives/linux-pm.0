@@ -2,116 +2,116 @@ Return-Path: <SRS0=qkR7=6U=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B61C47256
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F3A2C28CBC
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:56:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 842C7208DB
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5083B206D5
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:56:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730312AbgEFRo0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 May 2020 13:44:26 -0400
-Received: from mail.baikalelectronics.com ([87.245.175.226]:32852 "EHLO
-        mail.baikalelectronics.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730167AbgEFRo0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:44:26 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mail.baikalelectronics.ru (Postfix) with ESMTP id 234AA8000B84;
-        Wed,  6 May 2020 17:44:21 +0000 (UTC)
-X-Virus-Scanned: amavisd-new at baikalelectronics.ru
-Received: from mail.baikalelectronics.ru ([127.0.0.1])
-        by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Z08SmWcnA9yN; Wed,  6 May 2020 20:44:20 +0300 (MSK)
-From:   <Sergey.Semin@baikalelectronics.ru>
-To:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-CC:     Serge Semin <Sergey.Semin@baikalelectronics.ru>,
+        id S1728796AbgEFR4A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 May 2020 13:56:00 -0400
+Received: from asavdk4.altibox.net ([109.247.116.15]:39512 "EHLO
+        asavdk4.altibox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728682AbgEFR4A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:56:00 -0400
+Received: from ravnborg.org (unknown [158.248.194.18])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by asavdk4.altibox.net (Postfix) with ESMTPS id A7879803E8;
+        Wed,  6 May 2020 19:55:54 +0200 (CEST)
+Date:   Wed, 6 May 2020 19:55:53 +0200
+From:   Sam Ravnborg <sam@ravnborg.org>
+To:     Sergey.Semin@baikalelectronics.ru
+Cc:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Rob Herring <robh+dt@kernel.org>,
         Serge Semin <fancer.lancer@gmail.com>,
         Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
         Paul Burton <paulburton@kernel.org>,
         Ralf Baechle <ralf@linux-mips.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
-        Rob Herring <robh+dt@kernel.org>, <linux-mips@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 15/20] mips: cdmm: Add mti,mips-cdmm dtb node support
-Date:   Wed, 6 May 2020 20:42:33 +0300
-Message-ID: <20200506174238.15385-16-Sergey.Semin@baikalelectronics.ru>
-In-Reply-To: <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+        Arnd Bergmann <arnd@arndb.de>, linux-mips@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Heiko Stuebner <heiko.stuebner@theobroma-systems.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        Mark Brown <broonie@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 03/20] dt-bindings: Add vendor prefix for Baikal
+ Electronics, JSC
+Message-ID: <20200506175553.GA7775@ravnborg.org>
 References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
  <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+ <20200506174238.15385-4-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-ClientProxiedBy: MAIL.baikal.int (192.168.51.25) To mail (192.168.51.25)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200506174238.15385-4-Sergey.Semin@baikalelectronics.ru>
+User-Agent: Mutt/1.10.1 (2018-07-13)
+X-CMAE-Score: 0
+X-CMAE-Analysis: v=2.3 cv=MOBOZvRl c=1 sm=1 tr=0
+        a=UWs3HLbX/2nnQ3s7vZ42gw==:117 a=UWs3HLbX/2nnQ3s7vZ42gw==:17
+        a=kj9zAlcOel0A:10 a=TLxTtJ4aAAAA:8 a=kMJVNwr6AAAA:8 a=VwQbUJbxAAAA:8
+        a=WPyIoOwQAAAA:8 a=dgCgqi4eL6prslsqsKIA:9 a=CjuIK1q_8ugA:10
+        a=_W40VfXogbFAZmU3Lp3v:22 a=JuFFHv0FCeTakqPUSLWB:22
+        a=AjGcO6oz07-iQ99wixmX:22 a=S-HzPIwwDS8t1QcwSuWs:22
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Hi Sergey.
 
-Since having and mapping the CDMM block is platform specific, then
-instead of just returning a zero-address, lets make the default CDMM
-base address search method (mips_cdmm_phys_base()) to do something
-useful. For instance to find the address in a dedicated dtb-node in
-order to support of-based platforms by default.
+On Wed, May 06, 2020 at 08:42:21PM +0300, Sergey.Semin@baikalelectronics.ru wrote:
+> From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> 
+> Add "BAIKAL ELECTRONICS, JSC" to the list of devicetree vendor prefixes
+> as "baikal".
+> 
+> Website: http://www.baikalelectronics.com
+> 
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Paul Burton <paulburton@kernel.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: linux-mips@vger.kernel.org
+> Cc: linux-pm@vger.kernel.org
+> 
+> ---
+> 
+> Changelog v2:
+> - Fix author and SoB emails mismatch.
 
-Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
-Cc: Paul Burton <paulburton@kernel.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: linux-mips@vger.kernel.org
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
----
- drivers/bus/mips_cdmm.c | 15 +++++++++++++++
- 1 file changed, 15 insertions(+)
+> - Add 'baikal' vendor prefix instead of ambiguous 'be'.
+Agree, much better.
 
-diff --git a/drivers/bus/mips_cdmm.c b/drivers/bus/mips_cdmm.c
-index 1b14256376d2..7faa8c049f07 100644
---- a/drivers/bus/mips_cdmm.c
-+++ b/drivers/bus/mips_cdmm.c
-@@ -16,6 +16,8 @@
- #include <linux/platform_device.h>
- #include <linux/slab.h>
- #include <linux/smp.h>
-+#include <linux/of_address.h>
-+#include <linux/of.h>
- #include <asm/cdmm.h>
- #include <asm/hazards.h>
- #include <asm/mipsregs.h>
-@@ -337,9 +339,22 @@ static phys_addr_t mips_cdmm_cur_base(void)
-  * Picking a suitable physical address at which to map the CDMM region is
-  * platform specific, so this weak function can be overridden by platform
-  * code to pick a suitable value if none is configured by the bootloader.
-+ * By default this method tries to find a CDMM-specific node in the system
-+ * dtb. Note that this won't work for early serial console.
-  */
- phys_addr_t __weak mips_cdmm_phys_base(void)
- {
-+	struct device_node *np;
-+	struct resource res;
-+	int err;
-+
-+	np = of_find_compatible_node(NULL, NULL, "mti,mips-cdmm");
-+	if (np) {
-+		err = of_address_to_resource(np, 0, &res);
-+		if (!err)
-+			return res.start;
-+	}
-+
- 	return 0;
- }
- 
--- 
-2.25.1
+> ---
+>  Documentation/devicetree/bindings/vendor-prefixes.yaml | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/vendor-prefixes.yaml b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> index d3891386d671..674c0d07c0ad 100644
+> --- a/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> +++ b/Documentation/devicetree/bindings/vendor-prefixes.yaml
+> @@ -139,6 +139,8 @@ patternProperties:
+>      description: Azoteq (Pty) Ltd
+>    "^azw,.*":
+>      description: Shenzhen AZW Technology Co., Ltd.
+> +  "^baikal,.*":
+> +    description: BAIKAL ELECTRONICS, JSC
+Baikal do not use ALL UPPSECASE on their website for their name.
+So please use same case use as they do themself.
 
+
+	Sam
+
+>    "^bananapi,.*":
+>      description: BIPAI KEJI LIMITED
+>    "^beacon,.*":
+> -- 
+> 2.25.1
