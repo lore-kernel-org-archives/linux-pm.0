@@ -4,43 +4,48 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DC9EC4725C
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD424C47257
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:44:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 38F4F208DB
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:44:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 975DC20B1F
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:44:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730326AbgEFRo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 May 2020 13:44:27 -0400
-Received: from mail.baikalelectronics.com ([87.245.175.226]:32814 "EHLO
+        id S1728619AbgEFRof (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 May 2020 13:44:35 -0400
+Received: from mail.baikalelectronics.com ([87.245.175.226]:32938 "EHLO
         mail.baikalelectronics.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730263AbgEFRoW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:44:22 -0400
+        with ESMTP id S1730377AbgEFRod (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:44:33 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mail.baikalelectronics.ru (Postfix) with ESMTP id 948DE8000B81;
-        Wed,  6 May 2020 17:44:19 +0000 (UTC)
+        by mail.baikalelectronics.ru (Postfix) with ESMTP id D1D928000CF8;
+        Wed,  6 May 2020 17:44:30 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
         by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id yB4vVyCw6pxE; Wed,  6 May 2020 20:44:19 +0300 (MSK)
+        with ESMTP id dpFA3fEHy6Gk; Wed,  6 May 2020 20:44:29 +0300 (MSK)
 From:   <Sergey.Semin@baikalelectronics.ru>
-To:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Matthias Kaehlcke <mka@chromium.org>
 CC:     Serge Semin <Sergey.Semin@baikalelectronics.ru>,
         Serge Semin <fancer.lancer@gmail.com>,
         Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
         Paul Burton <paulburton@kernel.org>,
         Ralf Baechle <ralf@linux-mips.org>,
         Arnd Bergmann <arnd@arndb.de>,
-        Rob Herring <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, Allison Randal <allison@lohutok.net>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        <linux-mips@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 14/20] mips: Use offset-sized IO-mem accessors in CPS debug printout
-Date:   Wed, 6 May 2020 20:42:32 +0300
-Message-ID: <20200506174238.15385-15-Sergey.Semin@baikalelectronics.ru>
+        Rob Herring <robh+dt@kernel.org>, <linux-mips@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <stable@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>, Yue Hu <huyue2@yulong.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 20/20] cpufreq: Return zero on success in boost sw setting
+Date:   Wed, 6 May 2020 20:42:38 +0300
+Message-ID: <20200506174238.15385-21-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
 References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
  <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
@@ -55,67 +60,50 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
-Similar to commit 8e5c62e38a88 ("mips: early_printk_8250: Use offset-sized
-IO-mem accessors") the IO-memory might require to use a proper load/store
-instructions (like Bailal-T1 IO-memory). To fix the cps-vec UART debug
-printout lets use the memory access instructions in accordance with the
-UART registers offset config specified at boot time.
+Recent commit e61a41256edf ("cpufreq: dev_pm_qos_update_request() can
+return 1 on success") fixed a problem when active policies traverse
+was falsely stopped due to invalidly treating the non-zero return value
+from freq_qos_update_request() method as an error. Yes, that function
+can return positive values if the requested update actually took place.
+The current problem is that the returned value is then passed to the
+return cell of the cpufreq_boost_set_sw() (set_boost callback) method.
+This value is then also analyzed for being non-zero, which is also
+treated as having an error. As a result during the boost activation
+we'll get an error returned while having the QOS frequency update
+successfully performed. Fix this by returning a negative value from the
+cpufreq_boost_set_sw() if actual error was encountered and zero
+otherwise treating any positive values as the successful operations
+completion.
 
+Fixes: 18c49926c4bf ("cpufreq: Add QoS requests for userspace constraints")
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Cc: Paul Burton <paulburton@kernel.org>
 Cc: Ralf Baechle <ralf@linux-mips.org>
 Cc: Arnd Bergmann <arnd@arndb.de>
 Cc: Rob Herring <robh+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org
+Cc: linux-mips@vger.kernel.org
 Cc: devicetree@vger.kernel.org
-
+Cc: stable@vger.kernel.org
 ---
-There might be another problem in cps-vec-ns16550.S connected with the
-difference in CPU/devices endinanness on some platforms. But there is
-no such for Baikal-T1 SoC.
----
- arch/mips/kernel/cps-vec-ns16550.S | 18 ++++++++++++++++--
- 1 file changed, 16 insertions(+), 2 deletions(-)
+ drivers/cpufreq/cpufreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/mips/kernel/cps-vec-ns16550.S b/arch/mips/kernel/cps-vec-ns16550.S
-index d5a67b4ce9f6..2adb1c56c7c5 100644
---- a/arch/mips/kernel/cps-vec-ns16550.S
-+++ b/arch/mips/kernel/cps-vec-ns16550.S
-@@ -14,16 +14,30 @@
- #define UART_TX_OFS	(UART_TX << CONFIG_MIPS_CPS_NS16550_SHIFT)
- #define UART_LSR_OFS	(UART_LSR << CONFIG_MIPS_CPS_NS16550_SHIFT)
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 045f9fe157ce..5870cdca88cf 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2554,7 +2554,7 @@ static int cpufreq_boost_set_sw(int state)
+ 			break;
+ 	}
  
-+#if CONFIG_MIPS_CPS_NS16550_SHIFT == 0
-+# define UART_L		lb
-+# define UART_S		sb
-+#elif CONFIG_MIPS_CPS_NS16550_SHIFT == 1
-+# define UART_L		lh
-+# define UART_S		sh
-+#elif CONFIG_MIPS_CPS_NS16550_SHIFT == 2
-+# define UART_L		lw
-+# define UART_S		sw
-+#else
-+# define UART_L		lw
-+# define UART_S		sb
-+#endif
-+
- /**
-  * _mips_cps_putc() - write a character to the UART
-  * @a0: ASCII character to write
-  * @t9: UART base address
-  */
- LEAF(_mips_cps_putc)
--1:	lw		t0, UART_LSR_OFS(t9)
-+1:	UART_L		t0, UART_LSR_OFS(t9)
- 	andi		t0, t0, UART_LSR_TEMT
- 	beqz		t0, 1b
--	sb		a0, UART_TX_OFS(t9)
-+	UART_S		a0, UART_TX_OFS(t9)
- 	jr		ra
- 	END(_mips_cps_putc)
+-	return ret;
++	return ret < 0 ? ret : 0;
+ }
  
+ int cpufreq_boost_trigger_state(int state)
 -- 
 2.25.1
 
