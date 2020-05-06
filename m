@@ -6,25 +6,25 @@ X-Spam-Status: No, score=-6.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C728C4725C
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95B61C47256
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6B80D208DB
-	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 842C7208DB
+	for <linux-pm@archiver.kernel.org>; Wed,  6 May 2020 17:45:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730341AbgEFRo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 6 May 2020 13:44:27 -0400
-Received: from mail.baikalelectronics.com ([87.245.175.226]:32790 "EHLO
+        id S1730312AbgEFRo0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 6 May 2020 13:44:26 -0400
+Received: from mail.baikalelectronics.com ([87.245.175.226]:32852 "EHLO
         mail.baikalelectronics.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729460AbgEFRoV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:44:21 -0400
+        with ESMTP id S1730167AbgEFRo0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 6 May 2020 13:44:26 -0400
 Received: from localhost (unknown [127.0.0.1])
-        by mail.baikalelectronics.ru (Postfix) with ESMTP id 42D008000B82;
-        Wed,  6 May 2020 17:44:18 +0000 (UTC)
+        by mail.baikalelectronics.ru (Postfix) with ESMTP id 234AA8000B84;
+        Wed,  6 May 2020 17:44:21 +0000 (UTC)
 X-Virus-Scanned: amavisd-new at baikalelectronics.ru
 Received: from mail.baikalelectronics.ru ([127.0.0.1])
         by localhost (mail.baikalelectronics.ru [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id 3dSIDd2UUX5J; Wed,  6 May 2020 20:44:17 +0300 (MSK)
+        with ESMTP id Z08SmWcnA9yN; Wed,  6 May 2020 20:44:20 +0300 (MSK)
 From:   <Sergey.Semin@baikalelectronics.ru>
 To:     Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 CC:     Serge Semin <Sergey.Semin@baikalelectronics.ru>,
@@ -32,17 +32,14 @@ CC:     Serge Semin <Sergey.Semin@baikalelectronics.ru>,
         Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
         Paul Burton <paulburton@kernel.org>,
         Ralf Baechle <ralf@linux-mips.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Rob Herring <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        Kate Stewart <kstewart@linuxfoundation.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Steve Winslow <swinslow@gmail.com>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        <linux-mips@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2 13/20] mips: early_printk_8250: Use offset-sized IO-mem accessors
-Date:   Wed, 6 May 2020 20:42:31 +0300
-Message-ID: <20200506174238.15385-14-Sergey.Semin@baikalelectronics.ru>
+        Arnd Bergmann <arnd@arndb.de>, Olof Johansson <olof@lixom.net>,
+        Rob Herring <robh+dt@kernel.org>, <linux-mips@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2 15/20] mips: cdmm: Add mti,mips-cdmm dtb node support
+Date:   Wed, 6 May 2020 20:42:33 +0300
+Message-ID: <20200506174238.15385-16-Sergey.Semin@baikalelectronics.ru>
 In-Reply-To: <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
 References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
  <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
@@ -57,79 +54,64 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
-Some platforms may prohibit to access the IO-memory with instructions
-of certain memory widths. For instance Bailal-T1 has devices placed
-behind memory OCP port (which also the reason of DMA accesses being
-incoherent) and can't be accessed through CCA uncacheable memory with
-other than 4-bytes aligned (LW/SW) instructions. Ignoring this rule
-will cause the APB EHB error with 0xFFs returned on read operations.
-In order to fix the issue for this platform and for others, which may
-have similar problems, lets recode serial_in()/serial_out() to call
-a certain memory accessors in accordance with the UART registers shift
-setting.
+Since having and mapping the CDMM block is platform specific, then
+instead of just returning a zero-address, lets make the default CDMM
+base address search method (mips_cdmm_phys_base()) to do something
+useful. For instance to find the address in a dedicated dtb-node in
+order to support of-based platforms by default.
 
 Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
 Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
 Cc: Paul Burton <paulburton@kernel.org>
 Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>
 Cc: Rob Herring <robh+dt@kernel.org>
+Cc: linux-mips@vger.kernel.org
 Cc: linux-pm@vger.kernel.org
 Cc: devicetree@vger.kernel.org
 ---
- arch/mips/kernel/early_printk_8250.c | 34 ++++++++++++++++++++++++++--
- 1 file changed, 32 insertions(+), 2 deletions(-)
+ drivers/bus/mips_cdmm.c | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/arch/mips/kernel/early_printk_8250.c b/arch/mips/kernel/early_printk_8250.c
-index 567c6ec0cfae..e2c2405cff62 100644
---- a/arch/mips/kernel/early_printk_8250.c
-+++ b/arch/mips/kernel/early_printk_8250.c
-@@ -23,12 +23,42 @@ void setup_8250_early_printk_port(unsigned long base, unsigned int reg_shift,
- 
- static inline u8 serial_in(int offset)
+diff --git a/drivers/bus/mips_cdmm.c b/drivers/bus/mips_cdmm.c
+index 1b14256376d2..7faa8c049f07 100644
+--- a/drivers/bus/mips_cdmm.c
++++ b/drivers/bus/mips_cdmm.c
+@@ -16,6 +16,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/slab.h>
+ #include <linux/smp.h>
++#include <linux/of_address.h>
++#include <linux/of.h>
+ #include <asm/cdmm.h>
+ #include <asm/hazards.h>
+ #include <asm/mipsregs.h>
+@@ -337,9 +339,22 @@ static phys_addr_t mips_cdmm_cur_base(void)
+  * Picking a suitable physical address at which to map the CDMM region is
+  * platform specific, so this weak function can be overridden by platform
+  * code to pick a suitable value if none is configured by the bootloader.
++ * By default this method tries to find a CDMM-specific node in the system
++ * dtb. Note that this won't work for early serial console.
+  */
+ phys_addr_t __weak mips_cdmm_phys_base(void)
  {
--	return readb(serial8250_base + (offset << serial8250_reg_shift));
-+	u8 ret = 0xFF;
++	struct device_node *np;
++	struct resource res;
++	int err;
 +
-+	offset <<= serial8250_reg_shift;
-+	switch (serial8250_reg_shift) {
-+	case 0:
-+		ret = readb(serial8250_base + offset);
-+		break;
-+	case 1:
-+		ret = readw(serial8250_base + offset);
-+		break;
-+	case 2:
-+		ret = readl(serial8250_base + offset);
-+		break;
-+	default:
-+		break;
++	np = of_find_compatible_node(NULL, NULL, "mti,mips-cdmm");
++	if (np) {
++		err = of_address_to_resource(np, 0, &res);
++		if (!err)
++			return res.start;
 +	}
 +
-+	return ret;
+ 	return 0;
  }
  
- static inline void serial_out(int offset, char value)
- {
--	writeb(value, serial8250_base + (offset << serial8250_reg_shift));
-+	offset <<= serial8250_reg_shift;
-+	switch (serial8250_reg_shift) {
-+	case 0:
-+		writeb(value, serial8250_base + offset);
-+		break;
-+	case 1:
-+		writew(value, serial8250_base + offset);
-+		break;
-+	case 2:
-+		writel(value, serial8250_base + offset);
-+		break;
-+	default:
-+		break;
-+	}
- }
- 
- void prom_putchar(char c)
 -- 
 2.25.1
 
