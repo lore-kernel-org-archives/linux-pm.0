@@ -2,92 +2,102 @@ Return-Path: <SRS0=udDz=6V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.9 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,URI_HEX,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A65E2C38A24
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 08:09:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B3040C38A2A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 11:23:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 758A620753
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 08:09:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A3B120725
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 11:23:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GDik42E9"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="pgCCX3wy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726308AbgEGIJh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 May 2020 04:09:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46074 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725848AbgEGIJd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 04:09:33 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF94FC061A10;
-        Thu,  7 May 2020 01:09:31 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id r26so5691877wmh.0;
-        Thu, 07 May 2020 01:09:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:resent-from:resent-date:resent-message-id:resent-to
-         :message-id:user-agent:date:from:to:cc:subject;
-        bh=jR1MZCjF38fWU+LxN71+jSE3FlhaVfIor4D/ei15y1Y=;
-        b=GDik42E9/CMfBOEH7A5APUlBaFgXK9fgGaZnLqOfjsYhO7Ofiiay5IskUw81oO0ccg
-         3RnsVZVLWrPtrDwqBkvyvHdYqg++mbkKyusMRtXGhozx74Q56d/gvh1stUXQswST/OO5
-         koJ+W5h7xueUX2EblrkwgJRUMGcfg0dX0Bfpw9cxEgEMdXEKVLvzSmDHBtB+7OhoPD22
-         r/LF5VS5XSMEFIg5r5IMt8jVh6aJSXLTZC4C1TeSNw4q3oAuV6YGOARdMtNiYe3TfhR2
-         FIb8KAnrnNH86bh5u3HEVvE/PZk5mgI/9KZQRGMvWrUUIWKmGcdtqijc63st5ZZd7/1o
-         phug==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
-         :resent-to:message-id:user-agent:date:from:to:cc:subject;
-        bh=jR1MZCjF38fWU+LxN71+jSE3FlhaVfIor4D/ei15y1Y=;
-        b=CfI+kWRpXEqaYK2o/QgjEw6Wc5mIoUxxjPxsNk/U2z35PFmBanXdXlKaTjc6sqhVdi
-         mU/Y3k3Ac2TkvQPYJjGCde52oTEvSQMBQN3X+uJ8V9ZOaTJnGwV+8IJjsLr+EYTOnmqg
-         qzdWiP7VbLQQAYnucq2adT4K9QrImgLDVG6XgVq0+13Gys0R3pf7K4wPDKWwyUqgTGsQ
-         VhKGPlolg0WrPuf1DzxRj3Bxqli5fKjEj20omoXUjvwARswi9TU+gJFgsvlCZbGEpoAs
-         YZvcOkxHHUc6ncvIDr21DzUxuEPZFJoMttFgUN6PqaLATAxm942Pp6lD1wRcHRVvO9Ji
-         JHxQ==
-X-Gm-Message-State: AGi0PuZ6HgOAwHsJ3EemlSjy5Y76tD1ZLJrukEwAKaLkDyw1HvUyueoQ
-        Roe4Dg25vB4xG1jd6AeraNU=
-X-Google-Smtp-Source: APiQypIr+/fOnkEuUmvqzkfzh++ZPowJLOM0HDYBoLfy0LUOKnVVyVOAdzg75FsOKeAeZdxRhs/TvA==
-X-Received: by 2002:a05:600c:258:: with SMTP id 24mr4715275wmj.63.1588838970544;
-        Thu, 07 May 2020 01:09:30 -0700 (PDT)
-Received: from dumbo ([2a01:230:2::ec6])
-        by smtp.gmail.com with ESMTPSA id l15sm6576877wmi.48.2020.05.07.01.09.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 May 2020 01:09:29 -0700 (PDT)
-Received: from cavok by dumbo with local (Exim 4.92)
-        (envelope-from <cavok@dumbo>)
-        id 1jWbaw-0004TJ-FJ; Thu, 07 May 2020 10:09:26 +0200
-Message-Id: <20200507080456.069724962@linux.com>
-User-Agent: quilt/0.65
-Date:   Thu, 07 May 2020 10:04:56 +0200
-From:   Domenico Andreoli <domenico.andreoli@linux.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Darrick J. Wong" <darrick.wong@oracle.com>
-Cc:     Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-        viro@zeniv.linux.org.uk, tytso@mit.edu, len.brown@intel.com,
-        linux-pm@vger.kernel.org, linux-mm@kvack.org,
-        linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 0/1] hibernate: restrict writes to the snapshot device
+        id S1725948AbgEGLXB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 May 2020 07:23:01 -0400
+Received: from www.zeus03.de ([194.117.254.33]:50556 "EHLO mail.zeus03.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725910AbgEGLXA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 7 May 2020 07:23:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=k1; bh=SdKy8iDU7Alnp6uHDvNeGnGfcawE
+        GR6FnzZWKpyn6dg=; b=pgCCX3wysaFvf7kpSZVrWMeEMM5CTAwPw70VtzkleU4X
+        1A2W9LqUsFopN82LHv3dFDu4HAx3Nyf2c4sUPNI88eXD9lKzIBFtiA/cTyoRvhZU
+        Ydc6MKcKlmTzf+/+3/eSys/mpa/fVZcBYbaIf8l+rMiIuEhwcH6JvfQnN1JWZUU=
+Received: (qmail 1058357 invoked from network); 7 May 2020 13:16:18 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 7 May 2020 13:16:18 +0200
+X-UD-Smtp-Session: l3s3148p1@OVl+Ag2lANIgAwDPXwlDAElIrGE6fTK4
+Date:   Thu, 7 May 2020 13:16:10 +0200
+From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
+To:     Geert Uytterhoeven <geert@linux-m68k.org>
+Cc:     Niklas =?utf-8?Q?S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Masahiro Yamada <yamada.masahiro@socionext.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-mmc@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH 1/2] mmc: tmio: undo PM autosuspend when removing the host
+Message-ID: <20200507111610.GA1598@ninjato>
+References: <20190109223452.11184-1-niklas.soderlund+renesas@ragnatech.se>
+ <20190109223452.11184-2-niklas.soderlund+renesas@ragnatech.se>
+ <alpine.DEB.2.21.2004291630090.4052@ramsan.of.borg>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.21.2004291630090.4052@ramsan.of.borg>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dear maintainers,
 
-  here I'm proposing an improvement to [0] which aimed to quickly solve
-a regression. The aim is to complete [1] with regards of uswsusp needs,
-at the time not considered.
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Kind regards,
-Domenico
 
-[0] https://lore.kernel.org/linux-pm/20200304170646.GA31552@dumbo/
-[1] https://lore.kernel.org/linux-fsdevel/156588514105.111054.13645634739408399209.stgit@magnolia/
+> When unbinding the sdhi driver on e.g. Koelsch or Salvator-XS:
+>=20
+>     echo ee100000.sd > /sys/bus/platform/drivers/sh_mobile_sdhi/unbind
+>     echo ee100000.sd > /sys/bus/platform/drivers/renesas_sdhi_internal_dm=
+ac/unbind
 
--- 
-rsa4096: 3B10 0CA1 8674 ACBA B4FE  FCD2 CE5B CF17 9960 DE13
-ed25519: FFB4 0CC3 7F2E 091D F7DA  356E CC79 2832 ED38 CB05
+Confirmed. Happens on my Lager and M3-N Salvator-XS, too.
+
+> Removing the call to pm_runtime_dont_use_autosuspend() fixes that
+> symptom.  But that is definitely not the right fix, as doing so causes
+> genpd_stop_dev() to no longer being called on unbind.
+
+Yes. So, we agree that this commit seems correct but it just makes
+another problem visisble?
+
+I'll have a look. Thanks for the initial pointers!
+
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl6z7fcACgkQFA3kzBSg
+KbYVaRAAm8fXa9GaBX2NPB0I6G45ymZZT/kgApfipevacUCny2wjrNoYTpWYE+2C
+WQaSruyIA7iwmrfpAVB3lCkYDQQQrGpDpUv9fxBjSIylSHc9PjrauqFvuweinRR2
+Y72UY0/S2OtPK8j1gYjmuRI/5LyTjw7gg0XUUJPDR7+2bEYUTQFhUNk/5YOZBMy9
+LZhsSjJZBoHZ+0sch2qMLnRRnctPn35d5yUwGu0IwwhqzLWRIWDr/bFIb87roF6g
+8/A6gjSdQfDcJcn2zGxdBFnpP2KT03EQg9v/4umlVj5jS2hNM3sV/hrnHBE92qcf
+LDgnfGKNjRsg1DhVkTtjaQzNl1bRcMnHqTtBSrgpsPaS+2UtZq9FI18fiztc4ed7
+KI3ip8okWGd8JiL0R0tbTfqAhDsU+PrFiiTS8jXmhW3qGNt+WY9cWyj+Vk1lNlAI
+OvukkYklhOhBefKlRXEeYLWb8oi1vV351w9s4+4S8sR1tmbB25wOtd0MUW/s+dU+
+VCKvqotlCuFNSdA48AY3Dr/qBG3tTVKGYllVY7HbWBxKA7fwerqXXqlyxxfwKa2P
+L+JK3T/v9wEhaXbwecwHd4PsnM37rfjfBxact+P2cZVNRxeuKJlMUB7MsjwAtRCK
+QoeV/HWLnDumezA7yX7wm0BvrYdOmx7leN3/29Xp5kvaWHwGjq4=
+=axug
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
