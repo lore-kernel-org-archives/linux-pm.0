@@ -7,59 +7,59 @@ X-Spam-Status: No, score=-17.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,
 	USER_IN_DEF_DKIM_WL autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6513C38A24
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 18:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE105C38A2A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 18:11:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9A63720870
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 18:11:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD71620870
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 18:11:20 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="PGi9JzC7"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="buLQEpFY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726913AbgEGSKY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 May 2020 14:10:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55548 "EHLO
+        id S1727799AbgEGSKV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 May 2020 14:10:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1728073AbgEGSKX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 14:10:23 -0400
-Received: from mail-qt1-x849.google.com (mail-qt1-x849.google.com [IPv6:2607:f8b0:4864:20::849])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8AFA9C05BD09
-        for <linux-pm@vger.kernel.org>; Thu,  7 May 2020 11:10:22 -0700 (PDT)
-Received: by mail-qt1-x849.google.com with SMTP id d35so7690953qtc.20
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2020 11:10:22 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1726320AbgEGSKT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 14:10:19 -0400
+Received: from mail-qk1-x749.google.com (mail-qk1-x749.google.com [IPv6:2607:f8b0:4864:20::749])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 053A5C05BD43
+        for <linux-pm@vger.kernel.org>; Thu,  7 May 2020 11:10:18 -0700 (PDT)
+Received: by mail-qk1-x749.google.com with SMTP id 11so6680903qkh.7
+        for <linux-pm@vger.kernel.org>; Thu, 07 May 2020 11:10:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=google.com; s=20161025;
         h=date:in-reply-to:message-id:mime-version:references:subject:from:to
          :cc;
-        bh=Vd0pNAUBaJ0yRt8OlUay21+ov1Ee3dhw97h0rn0JWzA=;
-        b=PGi9JzC7BfRAuyN68vDloXznBqkKjDAhneADm5FudbrS4uv7r6kbQzRzv/pHSIZoMw
-         NtiDu0RkmlxflfT2SJq0LixZXAcQCJ0qj22zqjD+SQpKVh58JFZ9ZS92Dsck3iDc+Dl7
-         s3E9uXSeRVa05+lLjb1M8OURbGdLy1lVqSgW0bQx5fm5Flhj7D4Xp8PdU5ruoSl271IE
-         HLJqxU8UxYNeZ6vD+KZFXRx8oG3+OfDFxpzQc2MsMsff3wqOD4nuA4AWC0Y3DpRwKpsZ
-         bJuEpiY+mf33+b06GwFin3o0YSJ9WV7xFkaUIqA1JzXutPno6QGi6l2lYmUIKC/Rr4X7
-         j/0g==
+        bh=KCzP4bl+LsDIRE9Q4UUvX6EBmJ7sU8y+C6Dq7vCJhH8=;
+        b=buLQEpFYJXDRA5yOOUN1Qv439Td9XdcBA8tv5KPRARKKfvPpsCXa/OGiesg1VlmuUi
+         blDGxmJsXai8UyPSMxrDHjhxkit77Jj/4ySr1XgMT2k9ikcR9bYF4eRJXN97Oym5x3Mm
+         g0d0AdY8/H2rxNvlriy3bU09kZxmXVHdY1EUyAt2D0ICjogDvlWZ8SaS4SxgowHGXnrJ
+         zjVYurnBZTOolQWBNn0L3DoWL1ggGFySbJtZJ+WKh6PIs99yIJsX7LyUDI+D5NCruQhp
+         XFuqjRQC5gpzIwYswzujFnzxHjlbr+c3SJpXiKKAwAJJz9fqFKP43I56hHQ3byQqbplU
+         ujag==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:in-reply-to:message-id:mime-version
          :references:subject:from:to:cc;
-        bh=Vd0pNAUBaJ0yRt8OlUay21+ov1Ee3dhw97h0rn0JWzA=;
-        b=BuIP8/KRCYS34F7xfRMZiAT9gasJ9FjEuv5ghY3ww8Z3Ae80f3t3D3n62FzpIx00hR
-         rv5iAwMpCsJkF3O8hCjTVOLpsyN8vkeIWwhAsQjngtreq30J1PO/UWffPbkatfwZs5AB
-         dLfgeKp8tp0rF+Al+bJIyU8rIs5C3op2Olc0293GCBC3FQC4XR7joFoo/bGPvH2/KfAO
-         LmBGlfvw38ThG4EO3XjePbqcptuGQ5cSiX7QbYbMDGl1GV/yy9QDj/pAfD4oxgk2XtXE
-         CkLEfXbx6k8Ra7k4TE1sOScmuBzZPCHiipEx1T+HZl06Z/W8Opa5+8l1JwgglOq3TDku
-         RvEQ==
-X-Gm-Message-State: AGi0Pua+qTm8sZ/zTKDcPu5AInSBbEuzRDlodGj6YKqRul3+dVbxPjEJ
-        oQ/Q/9m+2zBfThFZ+P4NHchBd+g0ZUT+
-X-Google-Smtp-Source: APiQypJ4asbJxd94fD3uQEhG1rWXpEeC3AokhHXEV9JcZ9jvjhTmwjtKJgFl4//ydqHlMQWqlkiT0Sn2NmAE
-X-Received: by 2002:a05:6214:158b:: with SMTP id m11mr14638091qvw.168.1588875021708;
- Thu, 07 May 2020 11:10:21 -0700 (PDT)
-Date:   Thu,  7 May 2020 19:10:01 +0100
+        bh=KCzP4bl+LsDIRE9Q4UUvX6EBmJ7sU8y+C6Dq7vCJhH8=;
+        b=EAnIP0gMfPCWLv1R5qr6AsHDISfraTZq1E3nTJ3J+pF2Yt1oGyOcfRxF0Z0t52YZie
+         HDUXlF6hiGHn6cwg376Uc0AqGRbnmK2+pLrCSoLcP6gNQJvqUC2svIW7T0JJo/gkgJK9
+         6Vo+IU53Qox7FlrhFNf2Rb1Y1yBps3Ee2taie4MOWVUXpFQ26catJIHl3pVsCDaZ1zGR
+         5JvAVUAxtGKCCdOKOdKwt+rHB/RqwY0rdoB/rvH0VN1MxCednxWsHlv12d3mwJlGChVi
+         yNYflIPFv9YG56xAtu5wopPWFFAIMsY3cLoUyvrUnpFUsGoOGmhLH1Ur3wHEBNIgW/v4
+         Ck0Q==
+X-Gm-Message-State: AGi0PubJgUt2V7A8+YGW7IYF2v4EH1M/7zeW5dLSTWTv3JJM/g2yiawd
+        fBPNb0X43/9+JgYnlVVq5ofRX+NXu4Yy
+X-Google-Smtp-Source: APiQypKQhmCNyPtVGvHVeJln2UQbjcMKFZZasRoGbfH9naq6fFRrNf4dZOwRdFtzNL/pINDfbcBonxYb3hAe
+X-Received: by 2002:ad4:50c3:: with SMTP id e3mr13732268qvq.116.1588875017166;
+ Thu, 07 May 2020 11:10:17 -0700 (PDT)
+Date:   Thu,  7 May 2020 19:09:59 +0100
 In-Reply-To: <20200507181012.29791-1-qperret@google.com>
-Message-Id: <20200507181012.29791-4-qperret@google.com>
+Message-Id: <20200507181012.29791-2-qperret@google.com>
 Mime-Version: 1.0
 References: <20200507181012.29791-1-qperret@google.com>
 X-Mailer: git-send-email 2.26.2.526.g744177e7f7-goog
-Subject: [PATCH 03/14] sched: cpufreq: Introduce 'want_eas' governor flag
+Subject: [PATCH 01/14] sched: Provide sched_set_deadline()
 From:   Quentin Perret <qperret@google.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
@@ -76,106 +76,57 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The EAS topology code requires the usage of schedutil on all CPUs of an
-rd to actually enable EAS balancing. However, the check implementing
-this references the schedutil_gov struct directly, which makes having
-schedutil as a module impractical.
-
-To prepare the ground for this modularization, introduce a new
-'want_eas' flag in the cpufreq_governor struct, set it for schedutil
-only, and make sure to check it from the EAS topology code.
+As all the sched_setscheduler*() exports have been removed, introduce
+sched_set_deadline() on the model of sched_set_fifo() to enable modules
+to create SCHED_DEADLINE tasks.
 
 Signed-off-by: Quentin Perret <qperret@google.com>
 ---
- include/linux/cpufreq.h          |  4 ++++
- kernel/sched/cpufreq_schedutil.c |  5 ++++-
- kernel/sched/topology.c          | 12 ++++++------
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ include/linux/sched.h |  2 ++
+ kernel/sched/core.c   | 17 +++++++++++++++++
+ 2 files changed, 19 insertions(+)
 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index f7240251a949..267cc3b624da 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -560,6 +560,10 @@ struct cpufreq_governor {
- 	bool			dynamic_switching;
- 	struct list_head	governor_list;
- 	struct module		*owner;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index c0da93a26f62..63c8ae7a0dd8 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1630,6 +1630,8 @@ extern int sched_setscheduler_nocheck(struct task_struct *, int, const struct sc
+ extern void sched_set_fifo(struct task_struct *p);
+ extern void sched_set_fifo_low(struct task_struct *p);
+ extern void sched_set_normal(struct task_struct *p, int nice);
++extern int sched_set_deadline(struct task_struct *p, u64 runtime, u64 deadline,
++			      u64 period, u64 flags);
+ extern int sched_setattr(struct task_struct *, const struct sched_attr *);
+ extern int sched_setattr_nocheck(struct task_struct *, const struct sched_attr *);
+ extern struct task_struct *idle_task(int cpu);
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 7324f3b0f8d2..dbaf3f63df22 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -5136,6 +5136,23 @@ void sched_set_normal(struct task_struct *p, int nice)
+ }
+ EXPORT_SYMBOL_GPL(sched_set_normal);
+ 
++int sched_set_deadline(struct task_struct *p, u64 runtime, u64 deadline,
++		       u64 period, u64 flags)
++{
++	struct sched_attr attr = {
++		.size		= sizeof(struct sched_attr),
++		.sched_policy	= SCHED_DEADLINE,
++		.sched_flags	= flags,
++		.sched_nice	= 0,
++		.sched_priority	= 0,
++		.sched_runtime	= runtime,
++		.sched_deadline = deadline,
++		.sched_period	= period,
++	};
++	return sched_setattr_nocheck(p, &attr);
++}
++EXPORT_SYMBOL_GPL(sched_set_deadline);
 +
-+#ifdef CONFIG_ENERGY_MODEL
-+	bool			want_eas;
-+#endif /* CONFIG_ENERGY_MODEL */
- };
- 
- /* Pass a target to the cpufreq driver */
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index ebd5d30f0861..c5e5045f7c81 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -888,6 +888,9 @@ struct cpufreq_governor schedutil_gov = {
- 	.start			= sugov_start,
- 	.stop			= sugov_stop,
- 	.limits			= sugov_limits,
-+#ifdef CONFIG_ENERGY_MODEL
-+	.want_eas		= true,
-+#endif /* CONFIG_ENERGY_MODEL */
- };
- 
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_SCHEDUTIL
-@@ -924,7 +927,7 @@ static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
- void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
- 				  struct cpufreq_governor *old_gov)
+ static int
+ do_sched_setscheduler(pid_t pid, int policy, struct sched_param __user *param)
  {
--	if (old_gov == &schedutil_gov || policy->governor == &schedutil_gov) {
-+	if ((old_gov && old_gov->want_eas) || policy->governor->want_eas) {
- 		/*
- 		 * When called from the cpufreq_register_driver() path, the
- 		 * cpu_hotplug_lock is already held, so use a work item to
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index 8344757bba6e..b905f2e8d9b2 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -319,7 +319,8 @@ static void sched_energy_set(bool has_eas)
-  *    2. the SD_ASYM_CPUCAPACITY flag is set in the sched_domain hierarchy.
-  *    3. no SMT is detected.
-  *    4. the EM complexity is low enough to keep scheduling overheads low;
-- *    5. schedutil is driving the frequency of all CPUs of the rd;
-+ *    5. an EAS-compatible CPUfreq governor (schedutil) is driving the frequency
-+ *       of all CPUs of the rd;
-  *
-  * The complexity of the Energy Model is defined as:
-  *
-@@ -339,7 +340,6 @@ static void sched_energy_set(bool has_eas)
-  */
- #define EM_MAX_COMPLEXITY 2048
- 
--extern struct cpufreq_governor schedutil_gov;
- static bool build_perf_domains(const struct cpumask *cpu_map)
- {
- 	int i, nr_pd = 0, nr_cs = 0, nr_cpus = cpumask_weight(cpu_map);
-@@ -347,7 +347,7 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
- 	int cpu = cpumask_first(cpu_map);
- 	struct root_domain *rd = cpu_rq(cpu)->rd;
- 	struct cpufreq_policy *policy;
--	struct cpufreq_governor *gov;
-+	bool want_eas;
- 
- 	if (!sysctl_sched_energy_aware)
- 		goto free;
-@@ -377,11 +377,11 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
- 		policy = cpufreq_cpu_get(i);
- 		if (!policy)
- 			goto free;
--		gov = policy->governor;
-+		want_eas = policy->governor && policy->governor->want_eas;
- 		cpufreq_cpu_put(policy);
--		if (gov != &schedutil_gov) {
-+		if (!want_eas) {
- 			if (rd->pd)
--				pr_warn("rd %*pbl: Disabling EAS, schedutil is mandatory\n",
-+				pr_warn("rd %*pbl: Disabling EAS because of incompatible CPUFreq governor\n",
- 						cpumask_pr_args(cpu_map));
- 			goto free;
- 		}
 -- 
 2.26.2.526.g744177e7f7-goog
 
