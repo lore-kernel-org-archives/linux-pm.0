@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42627C38A24
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 14:32:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86762C38A2A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 14:33:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 188722495A
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 14:32:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EE112073A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 14:33:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588861945;
-	bh=HmyanbqIU+mg0HbgtYSUBECyKESgiVSnXXzJzAHboeo=;
+	s=default; t=1588862003;
+	bh=KFbd1vMPx1N9D3//2dkbNX6qzqR1HhfZr1JgaPOh90s=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=WeN/S9oEjiJTVhQxAS9BPdhH04asmMu1r8ybS/4k0Kjx9rQVnLVkKE3EnPlcH94x9
-	 Q73fsciYgPJPW3jdrXWGgi9WHFYXp0ZZ3uBKBkbSNS3ICIy5yVsDD9SCwXkCI6brPk
-	 fO1PNADPzOrFnvOwFxY2W9drZKb4Q+Rl9SgI1TPg=
+	b=LKtaW1Fy0bL1Hc174A9TiGyVcA1rUO1bA8EEO2VMFXCl6acbTdazP9E+7/HLXMhlA
+	 2kyYkFJv4+RDEnD4Dt7PUQnXnIEUiUpTM+17DHZNJJZmMLAvuk24as/5mxwM8wwDNw
+	 gtMCpCJaOQjHfz5aTKAkXscIODA/kymyAlSo18r4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728713AbgEGO34 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 May 2020 10:29:56 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58216 "EHLO mail.kernel.org"
+        id S1727902AbgEGOdW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 May 2020 10:33:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57400 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726712AbgEGO3z (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 7 May 2020 10:29:55 -0400
+        id S1728591AbgEGO3e (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 7 May 2020 10:29:34 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A627821473;
-        Thu,  7 May 2020 14:29:54 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A5BBE2083B;
+        Thu,  7 May 2020 14:29:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1588861795;
-        bh=HmyanbqIU+mg0HbgtYSUBECyKESgiVSnXXzJzAHboeo=;
+        s=default; t=1588861774;
+        bh=KFbd1vMPx1N9D3//2dkbNX6qzqR1HhfZr1JgaPOh90s=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=xSMt8FTTw2LZxO1STI/nrjJMuJotadBaHVRUM+4FveZACbkKiNUivwefCx3MGjgh2
-         l9fQ6VRHqldjPG9Anw1Un2ozo392Yd3Oio7zgx6Uwkpl822FKU+sFnab8cAL6h5rQe
-         Kc8M38JjeFULWypTSvqD5IzX3V56wIMh8jtNdi5g=
+        b=smsOevBPoj8WDiBMED7akYMYW8QF88yXYmIPzv4yu55ZcXGITmF4obecpLmKzvOBd
+         bAmCy+BZNRR4a5ydLersgz1Sbas32E3J5Uh9zQ/J3x5ZYR8MyDYWI32lnNLATS3CYY
+         u0j7AOYiTtOAkuYtYJ02SgPGJmyyoHxN6o8kjC9Y=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Chris Wilson <chris@chris-wilson.co.uk>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 10/16] cpufreq: intel_pstate: Only mention the BIOS disabling turbo mode once
-Date:   Thu,  7 May 2020 10:29:37 -0400
-Message-Id: <20200507142943.26848-10-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.19 14/20] cpufreq: intel_pstate: Only mention the BIOS disabling turbo mode once
+Date:   Thu,  7 May 2020 10:29:10 -0400
+Message-Id: <20200507142917.26612-14-sashal@kernel.org>
 X-Mailer: git-send-email 2.20.1
-In-Reply-To: <20200507142943.26848-1-sashal@kernel.org>
-References: <20200507142943.26848-1-sashal@kernel.org>
+In-Reply-To: <20200507142917.26612-1-sashal@kernel.org>
+References: <20200507142917.26612-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -74,10 +74,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 7a5662425b291..1aa0b05c8cbdf 100644
+index 29f25d5d65e00..e7b3d4ed8eff4 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -935,7 +935,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct kobj_attribute *b,
+@@ -957,7 +957,7 @@ static ssize_t store_no_turbo(struct kobject *a, struct kobj_attribute *b,
  
  	update_turbo_state();
  	if (global.turbo_disabled) {
