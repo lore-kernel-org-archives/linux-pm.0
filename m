@@ -2,140 +2,99 @@ Return-Path: <SRS0=udDz=6V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B91C6C47247
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:24:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 713B9C38A24
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:24:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9751C20753
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:24:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3D77120753
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:24:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="vJRo3LGR"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Tl8ypGE/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725923AbgEGHYp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 May 2020 03:24:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39088 "EHLO
+        id S1725985AbgEGHYr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 May 2020 03:24:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39090 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725802AbgEGHYo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 03:24:44 -0400
-Received: from mail-wm1-x334.google.com (mail-wm1-x334.google.com [IPv6:2a00:1450:4864:20::334])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2AC4EC061A10
+        by vger.kernel.org with ESMTP id S1725802AbgEGHYq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 03:24:46 -0400
+Received: from mail-wr1-x42e.google.com (mail-wr1-x42e.google.com [IPv6:2a00:1450:4864:20::42e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A729C061A41
         for <linux-pm@vger.kernel.org>; Thu,  7 May 2020 00:24:44 -0700 (PDT)
-Received: by mail-wm1-x334.google.com with SMTP id r26so5522194wmh.0
+Received: by mail-wr1-x42e.google.com with SMTP id w7so4198872wre.13
         for <linux-pm@vger.kernel.org>; Thu, 07 May 2020 00:24:44 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=sender:resent-from:resent-date:resent-message-id:resent-to
-         :message-id:user-agent:date:from:to:cc:subject:references
-         :mime-version:content-disposition;
-        bh=hstys9wIAfhbwE6wNgZrl/SKnLndXvXa9vEadgodDJI=;
-        b=vJRo3LGRbvechV6OSZpluoGx6KWUm+NOAX9HT55rEdbb1AwPe/MwGYd38Yb/0RkqfI
-         UCWDz8NOnlr173gpeF7PNPb9HuEIPIa4sQV9IJA97thYlISVedwJQTK//F/RncWct2Ik
-         BEw54nHElrJjq/soCa2COOpCrhdywesTzmmjhxtNvtz4AI/mYzjwYpszpetKoJH0TLIG
-         xrO8LateSpaKr6pK5hLVleK7i7olgHnlM24/XtUy7Y0paaj56J5970dh9k74314dcakQ
-         K2d/8atpYtqaNGdvIBkkMEqjBMvJObboaQipLnUEavTMK/IWOBVKHTBZbSv8pkJGPzm3
-         YzHQ==
+         :message-id:user-agent:date:from:to:cc:subject;
+        bh=Kp16k5s9kVk1OOFRC0SZ7lfHon+lehcxyZ+HsGWG+8Q=;
+        b=Tl8ypGE/chYgwhUzjJXUeUAuKDOvm40sYhfH7Fwa2S0+OjLTMxlzWNZpebU9fvdxgd
+         L6pJTilUVmzCQH4bOF8L2BofnZ7t7g88EP+oOYJ7lcHf9XO9OyhKUbFFaBxULYca/l1j
+         bDSCdXO6SDvgp7KD19SE6zVbsWgGDQgLTUFH690ZgUtqfgvXHT4FokQqvYjE5FgKne9Y
+         LjzvHtLc7jga7tpekFmFYTwpvVt5ALSIQgZoR93tqcQC5yLSkdyXD6Pl9FPnRdDjlscq
+         v0waWozlSZpR4a1aCzlUbHG3+ez64bqrgC/5ptPmNsH+neubY6EyqJCK+QUQO+FYzPnw
+         q3xw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
-         :resent-to:message-id:user-agent:date:from:to:cc:subject:references
-         :mime-version:content-disposition;
-        bh=hstys9wIAfhbwE6wNgZrl/SKnLndXvXa9vEadgodDJI=;
-        b=K7pMxd16i+iIyz9ENoSlVM2AfyHmhF5trC1OOFKZxd7IjAEb6rxqMIlDCZZmEFT0Id
-         T+nuBi489Tr2dnL2f6/ZSQOz90GWMbJeoFUAAu9APvDqmwwv3htKGZviLxX4yjdKfkwy
-         vFkHpW65lDcJ/1uk0JYNQCOV5cUEh6QjNM+kdfBURgnzLHgRbNjw1yfSutHK/huty1Nd
-         f2P89EffyJJTPK9lv+E1FO32KVc8XuDeSn2qNd48mSFbZbbXRWnWJ142TpP6ls1J8Wf5
-         PvzE0TEH34ajn3Emvz91rtB84CYW3Ak+Lk+To0ubRdEYlLjJXY64JulHYzinRv+4nKun
-         UFnw==
-X-Gm-Message-State: AGi0PuboqRuYV2wwlWBBNg8cBLo5eco5cbVaOOR7FB8BEYt0VpjYR2LK
-        flcwb1NYEdrSgtE+54lxP8FBMtCxjbY=
-X-Google-Smtp-Source: APiQypJZAugMgptoQv00zFvd4Ynz+Qdt2ms86GhBFUzAZiXl9w4YAFQ2cZBW5lVo04J8NVmuSdoTpw==
-X-Received: by 2002:a05:600c:414a:: with SMTP id h10mr2134219wmm.183.1588836282773;
-        Thu, 07 May 2020 00:24:42 -0700 (PDT)
+         :resent-to:message-id:user-agent:date:from:to:cc:subject;
+        bh=Kp16k5s9kVk1OOFRC0SZ7lfHon+lehcxyZ+HsGWG+8Q=;
+        b=AfYr7/TUX5LPplw4PZ7ywCO6B/gLDhCmvtzTbX/dBDb7OlhsXirEBR61QJi0Ty6hGt
+         NAZiwnUStIgcPAcAiSd+hSeB/97F3TweQxT8V4OoJJTFFdn9NcVU9dRcKHzD04H+LVDR
+         Juz7nFV/cVnzUejAZDdTEbEJo4+O+8JxuMXyfLssFslOGq+VWzxtSsVTi77v/2eWG5n8
+         VsA8+Evh6kN7XxtdtpIlhXf/ur2BThnLRFty/HEEodX9CQRxkbh5KhYOPXS4Y8v99XcS
+         HwzIlc6W1/69kBXJpgl0MowDDoXLiwTcr1JvZWhkfO4zZJl+WGkF2X2t2oMie3YYihW0
+         tLbQ==
+X-Gm-Message-State: AGi0PuYNp4cWM/TLXY33FqfgmvrbEZ5j2fjXm0xCM65BcWS+58CsewhQ
+        zw8TnfmH9dt621TvzxTRur0sF4UeDus=
+X-Google-Smtp-Source: APiQypI5hDD+OuM4d4Nn0NM5J4+x5DaRRdnBSAUZYLLPuKed2yJuz7NdX0SiubTl7eSXYv2TNMGvAg==
+X-Received: by 2002:adf:b786:: with SMTP id s6mr4378829wre.287.1588836283144;
+        Thu, 07 May 2020 00:24:43 -0700 (PDT)
 Received: from dumbo ([2a0b:f4c2::1])
-        by smtp.gmail.com with ESMTPSA id p8sm2622039wma.45.2020.05.07.00.24.41
+        by smtp.gmail.com with ESMTPSA id m188sm6329932wme.47.2020.05.07.00.24.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
         Thu, 07 May 2020 00:24:41 -0700 (PDT)
 Received: from cavok by dumbo with local (Exim 4.92)
         (envelope-from <cavok@dumbo>)
-        id 1jWatc-0003zy-5Q; Thu, 07 May 2020 09:24:40 +0200
-Message-Id: <20200507072357.652675775@linux.com>
+        id 1jWatc-0003zs-1y; Thu, 07 May 2020 09:24:40 +0200
+Message-Id: <20200507071951.635743820@linux.com>
 User-Agent: quilt/0.65
-Date:   Thu, 07 May 2020 09:19:53 +0200
+Date:   Thu, 07 May 2020 09:19:51 +0200
 From:   Domenico Andreoli <domenico.andreoli@linux.com>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Pavel Machek <pavel@ucw.cz>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Domenico Andreoli <domenico.andreoli@linux.com>
-Subject: [PATCH 2/2] hibernate: split snapshot dev option
-References: <20200507071951.635743820@linux.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline; filename=hibernate-split-snapshot-dev-option
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Subject: [PATCH 0/2] hibernate: add config option for snapshot device
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Domenico Andreoli <domenico.andreoli@linux.com>
+Dear maintainers,
 
-Make it possible to reduce the attack surface in case the snapshot
-device is not to be used from userspace.
+These are the improvements over v2 [0]:
 
-v2:
+ - switch back to atomic_t API, refcount saturates when incrementing
+   from zero
+
+These are the improvements over v1 [1]:
+  
+ - move the mutual exclusion to hibernate.c (it was in user.c)
+ - switched to refcount_t API (it was atomic_t)
  - the option is enabled by default (it was disabled by default)
  - remove the premature "DEPRECATED" marking
  - drop the redefinition of mutual exclusion helpers (in v2 they are
    owned by hibernte.c) in case the option is deselected
  - add the help message to the config option
 
-Signed-off-by: Domenico Andreoli <domenico.andreoli@linux.com>
-Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc: Pavel Machek <pavel@ucw.cz>
-Cc: Linux PM <linux-pm@vger.kernel.org>
+Kind regards,
+Domenico
 
----
- kernel/power/Kconfig  |   12 ++++++++++++
- kernel/power/Makefile |    3 ++-
- 2 files changed, 14 insertions(+), 1 deletion(-)
+[0] https://lore.kernel.org/linux-pm/20200501151452.621900831@gmail.com/
+[1] https://lore.kernel.org/linux-pm/20200413190843.044112674@gmail.com/
 
-Index: b/kernel/power/Kconfig
-===================================================================
---- a/kernel/power/Kconfig
-+++ b/kernel/power/Kconfig
-@@ -80,6 +80,18 @@ config HIBERNATION
- 
- 	  For more information take a look at <file:Documentation/power/swsusp.rst>.
- 
-+config HIBERNATION_SNAPSHOT_DEV
-+	bool "Userspace snapshot device"
-+	depends on HIBERNATION
-+	default y
-+	---help---
-+	  Device used by the uswsusp tools.
-+
-+	  Say N if no snapshotting from userspace is needed, this also
-+	  reduces the attack surface of the kernel.
-+
-+	  If in doubt, say Y.
-+
- config PM_STD_PARTITION
- 	string "Default resume partition"
- 	depends on HIBERNATION
-Index: b/kernel/power/Makefile
-===================================================================
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -10,7 +10,8 @@ obj-$(CONFIG_VT_CONSOLE_SLEEP)	+= consol
- obj-$(CONFIG_FREEZER)		+= process.o
- obj-$(CONFIG_SUSPEND)		+= suspend.o
- obj-$(CONFIG_PM_TEST_SUSPEND)	+= suspend_test.o
--obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o user.o
-+obj-$(CONFIG_HIBERNATION)	+= hibernate.o snapshot.o swap.o
-+obj-$(CONFIG_HIBERNATION_SNAPSHOT_DEV) += user.o
- obj-$(CONFIG_PM_AUTOSLEEP)	+= autosleep.o
- obj-$(CONFIG_PM_WAKELOCKS)	+= wakelock.o
- 
-
+-- 
+rsa4096: 3B10 0CA1 8674 ACBA B4FE  FCD2 CE5B CF17 9960 DE13
+ed25519: FFB4 0CC3 7F2E 091D F7DA  356E CC79 2832 ED38 CB05
