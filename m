@@ -2,157 +2,226 @@ Return-Path: <SRS0=udDz=6V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9280BC47247
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:29:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D1F5C38A2A
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 08:09:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F9B92078C
-	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 07:29:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 06A4920870
+	for <linux-pm@archiver.kernel.org>; Thu,  7 May 2020 08:09:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="c4upyeaU"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="f1l63tFz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725858AbgEGH3v (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 7 May 2020 03:29:51 -0400
-Received: from us-smtp-delivery-1.mimecast.com ([205.139.110.120]:46304 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725914AbgEGH3u (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 03:29:50 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1588836588;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=WqHWm03cdWE9AeodDX2gtE5xAzgCwXmdJaTKNX0BlUA=;
-        b=c4upyeaUcMmO7EhhNliKUHHNr8nC2j8dZMpzU/PVrcL1dmvF7jISAp4P8Nzi44GmDdjRiw
-        2xh3o7YKc8U4oM+zaWL53c8BXoy5X7lXOyYeNwMHT5z+hKged4AjeLd9iJ2Au/xu0gUJZ/
-        S4EUhTUqZcyR4nuRxNG3NnFZkDCdNFg=
-Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
- [209.85.128.72]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-26-m7-siRv1NA-aGQRAkYG-Hw-1; Thu, 07 May 2020 03:29:36 -0400
-X-MC-Unique: m7-siRv1NA-aGQRAkYG-Hw-1
-Received: by mail-wm1-f72.google.com with SMTP id 14so2029816wmo.9
-        for <linux-pm@vger.kernel.org>; Thu, 07 May 2020 00:29:35 -0700 (PDT)
+        id S1725858AbgEGIJd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 7 May 2020 04:09:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46076 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1725809AbgEGIJd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 7 May 2020 04:09:33 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB309C061A41;
+        Thu,  7 May 2020 01:09:32 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id z8so5205203wrw.3;
+        Thu, 07 May 2020 01:09:32 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=sender:resent-from:resent-date:resent-message-id:resent-to
+         :message-id:user-agent:date:from:to:cc:subject:references
+         :mime-version:content-disposition;
+        bh=xV3Ps0RsdCVhfxWoq/YPpZZAsZRZc/1bRKCvZXY1C2s=;
+        b=f1l63tFzPYekUF5/P/qZk8XOI5QYNw6EkCD1pgFct2Oun2QZOeS/oz4CVT0hZ8lhUr
+         h839qr7rMRncHscWHM3CRjhaHSE6XTFCN6P2llKiNJOL2Q0nUk5EqCezUPz0LkC8rzPp
+         H2C9TgIK5bJEHoiUwwDXbrLOK9gRo+DuPEpz7FbLkuBXqWXrtRJAB4wygJGpUJnJvU/Q
+         3c3nxNgg+kkeS27OBGL0ttQe8VpO87fyDXw1Z5OyOGMASm3q1FZb1GBqwhqVbdTpri+5
+         AHwyCtBQWwG+u1PudeigXxYuC17mZNPTwCyzsZmRD/QKqL46Cp9u6tO2Ktz8tvgYSQkY
+         //Gw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=WqHWm03cdWE9AeodDX2gtE5xAzgCwXmdJaTKNX0BlUA=;
-        b=iE2tvJnUh8K4wPfeNkGRCVUmdl0tOZOZWBAP6tQicvb6Oz4raM2Jg1CNYZZ2Is4XUw
-         RpOmgXKc7R8fEdwiP3KpAY8PVNuY2Mh6MqXYSqhCjclnzHQ2MzPrqvIlZuq3P2zZMokt
-         rVP5UG/MMArdVU5KyOU9N+hVwoYbnmaU/r7x/wN9S6m2+ocSQdbeR1aZNWsXIgD/UC2g
-         BjpEz/Km/LLlWFXjSmdxornCBHfJBU8nf2uyqjvNOdL4FLmKYW6U5ZunKwM+aniDeQiu
-         5B4pNij6KFzaQlSnGXg+qBRNoP47PKdOxnwV5sRHNigKNIMtPnjV9lq5ox1R4f2xpzCr
-         Nxvg==
-X-Gm-Message-State: AGi0PubAhxlK3Ao3huiMYY5mEUiQB5G+22huoGASWsN3UZypWwDRATZn
-        Qye8TMJsMHMr5v5le8h0qnVp8ik0zBvMy02b9ogty9j9CG3kDv9utDhpI7hK/+LCPdcH9icBRtx
-        LQ8ussLO0gJoJNg1PK/A=
-X-Received: by 2002:a5d:49cb:: with SMTP id t11mr13722767wrs.91.1588836574140;
-        Thu, 07 May 2020 00:29:34 -0700 (PDT)
-X-Google-Smtp-Source: APiQypKW/afKgcN6Ys3SlaqvJeC2tMA76ui4ITX8WaKt12BBr/x/h/A/RJ6Rv71x5W9jITqlLYoytg==
-X-Received: by 2002:a5d:49cb:: with SMTP id t11mr13722718wrs.91.1588836573396;
-        Thu, 07 May 2020 00:29:33 -0700 (PDT)
-Received: from localhost.localdomain ([151.29.188.60])
-        by smtp.gmail.com with ESMTPSA id z11sm6487512wro.48.2020.05.07.00.29.31
+        h=x-gm-message-state:sender:resent-from:resent-date:resent-message-id
+         :resent-to:message-id:user-agent:date:from:to:cc:subject:references
+         :mime-version:content-disposition;
+        bh=xV3Ps0RsdCVhfxWoq/YPpZZAsZRZc/1bRKCvZXY1C2s=;
+        b=Gf9bibh0scp6ElL5uLRwvGbGRnOsuwuohw37pmDuZzmbAob6bfTjJ6m1Q/TuwfLfj+
+         nee7dCEbySLwydRR/W9tDD/wmm6lcL3hJR3dmE0683V0ciRtKAd1qswxKr3xFmp+VdDB
+         DxG9jDnOItsjDhO5ompNJXrAilMvN3ZuqJFrM9J8DFNaxlabgebMz3NLBQFClNqaGBYK
+         1HUvKrpmQ3x5G/JkfPaD5AaF4hyD0ELyiwOfR9TKqN4muRhMXVM9XlVru8Vpd3RSymrR
+         G4tHw3LJxsZrc1+XgABUU4Lm4btu6K9xVDLL4YgirpMKUrH88+0xF8R4WNxNa8pNAuPj
+         Qj4w==
+X-Gm-Message-State: AGi0Pub9muJZ45veQLQzFMaxxTnM0sEAttlIeKlUrDIt6Jio22l1RWLl
+        4EKxU0i/0oqleLfE8JKhsU8=
+X-Google-Smtp-Source: APiQypISzecItIXL6bUSv7pE5bwW/O6vts2MY1mF5Ku1rioJ7tRNh4kjLBp9y9/ZHIkyuDTwfZAdoA==
+X-Received: by 2002:adf:face:: with SMTP id a14mr13599009wrs.397.1588838971476;
+        Thu, 07 May 2020 01:09:31 -0700 (PDT)
+Received: from dumbo ([2a01:230:2::ec6])
+        by smtp.gmail.com with ESMTPSA id p7sm7046956wrf.31.2020.05.07.01.09.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 07 May 2020 00:29:32 -0700 (PDT)
-Date:   Thu, 7 May 2020 09:29:30 +0200
-From:   Juri Lelli <juri.lelli@redhat.com>
-To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-pci@vger.kernel.org, linux-rt-users@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Morten Rasmussen <morten.rasmussen@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Claudio Scordino <c.scordino@evidence.eu.com>,
-        Luca Abeni <luca.abeni@santannapisa.it>,
-        Tommaso Cucinotta <tommaso.cucinotta@santannapisa.it>
-Subject: Re: [ANNOUNCE][CFP] Power Management and Scheduling in the Linux
- Kernel IV edition (OSPM-summit 2020)
-Message-ID: <20200507072930.GM17381@localhost.localdomain>
-References: <20191219103500.GC13724@localhost.localdomain>
+        Thu, 07 May 2020 01:09:30 -0700 (PDT)
+Received: from cavok by dumbo with local (Exim 4.92)
+        (envelope-from <cavok@dumbo>)
+        id 1jWbaw-0004TM-GV; Thu, 07 May 2020 10:09:26 +0200
+Message-Id: <20200507080650.439636033@linux.com>
+User-Agent: quilt/0.65
+Date:   Thu, 07 May 2020 10:04:57 +0200
+From:   Domenico Andreoli <domenico.andreoli@linux.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Darrick J. Wong" <darrick.wong@oracle.com>
+Cc:     Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
+        viro@zeniv.linux.org.uk, tytso@mit.edu, len.brown@intel.com,
+        linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        Domenico Andreoli <domenico.andreoli@linux.com>
+Subject: [PATCH 1/1] hibernate: restrict writes to the snapshot device
+References: <20200507080456.069724962@linux.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20191219103500.GC13724@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline; filename=hibernate-restrict-writes-to-snapshot-dev
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+From: Domenico Andreoli <domenico.andreoli@linux.com>
 
-On 19/12/19 11:35, Juri Lelli wrote:
-> Power Management and Scheduling in the Linux Kernel (OSPM-summit) IV edition
-> 
-> May 11-13, 2019
-> Scuola Superiore Sant'Anna
-> Pisa, Italy
-> 
+Hibernation via snapshot device requires write permission to the swap
+block device, the one that more often (but not necessarily) is used to
+store the hibernation image.
 
-Quick reminder that OSPM-summit IV edition is happening next week!
+With this patch, such permissions are granted iff:
 
-Not in Pisa (for obvious reasons :-/), but online, kindly hosted on LWN
-BigBlueButton server. Thanks a lot to Jon and LWN for this opportunity.
+1) snapshot device config option is enabled
+2) swap partition is used as snapshot device
 
-> .:: FOCUS
-> 
-> The IV edition of the Power Management and Scheduling in the Linux
-> Kernel (OSPM) summit aims at fostering discussions on power management
-> and (real-time) scheduling techniques. Summit will be held in Pisa
-> (Italy) on May 11-13, 2020.
-> 
-> Although scheduler techniques for reducing energy consumption while
-> meeting performance and latency requirements are the prime interest of
-> the summit, we welcome anybody interested in having discussions on the
-> broader scope of real-time systems, real-time and non-real-time
-> scheduling, tooling, debugging and tracing.
-> 
-> Feel free to have a look at what happened previous years:
-> 
->  I   edition - https://lwn.net/Articles/721573/
->  II  edition - https://lwn.net/Articles/754923/
->  III edition - https://lwn.net/Articles/793281/
+In other circumstance the swap device is not writable from userspace.
 
-[...]
+In order to achieve this, every write attempt to a swap device is
+checked against the device configured as part of the uswsusp API [0]
+using a pointer to the inode struct in memory. If the swap device being
+written was not configured for snapshotting, the write request is denied.
 
-> .:: ATTENDING
-> 
-> Attending the OSPM-summit is free of charge, but registration to the
-> event is mandatory. The event can allow a maximum of 50 people (so, be
-> sure to register early!). Registrations open on February 24th, 2020.
-> 
-> To register fill in the registration form available at
-> https://forms.gle/7LfFY8oNyRxV1wuQ7
+NOTE: this implementation works only for swap block devices, where the
+inode configured by swapon (which sets S_SWAPFILE) is the same used
+by SNAPSHOT_SET_SWAP_AREA.
 
-Since we don't have real rooms constraints, registration is still open.
-Everybody is more then welcome to join us. Please use the form above to
-register. Details about how to join will be provided after registration
-completes. You can also reach out to me directly.
+In case of swapfile, SNAPSHOT_SET_SWAP_AREA indeed receives the inode
+of the block device containing the filesystem where the swap files is
+located (+ offset in it) which is never passed to swapon and then has
+not the S_SWAPFILE set.
 
-Schedule (still subject to small changes) is available at
-https://bit.ly/2WAtsjy (CEST tz).
+As result, the swapfile itself (as a file) has never an option to be
+written from userspace. Instead it remains writable if accessed directly
+from the containing block device, which is always writeable from root.
 
-> .:: ORGANIZERS (in alphabetical order)
-> 
-> Luca Abeni (SSSA)
-> Tommaso Cucinotta (SSSA)
-> Dietmar Eggemann (Arm)
-> Sudeep Holla (Arm)
-> Juri Lelli (Red Hat)
-> Lorenzo Pieralisi (Arm)
-> Morten Rasmussen (Arm)
-> Claudio Scordino (Evidence SRL)
+[0] Documentation/power/userland-swsusp.rst
 
-Thanks also a lot to Scuola Superiore Sant'Anna of Pisa, Arm and
-Evidence for helping put this together for the 4th consecutive year.
+Signed-off-by: Domenico Andreoli <domenico.andreoli@linux.com>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Pavel Machek <pavel@ucw.cz>
+Cc: Darrick J. Wong <darrick.wong@oracle.com>
+Cc: Christoph Hellwig <hch@lst.de>
+Cc: viro@zeniv.linux.org.uk
+Cc: tytso@mit.edu
+Cc: len.brown@intel.com
+Cc: linux-pm@vger.kernel.org
+Cc: linux-mm@kvack.org
+Cc: linux-xfs@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
 
-Looking forward to meet you all soon.. virtually. :-)
+---
+ fs/block_dev.c          |    3 +--
+ include/linux/suspend.h |    6 ++++++
+ kernel/power/user.c     |   14 +++++++++++++-
+ 3 files changed, 20 insertions(+), 3 deletions(-)
 
-Best,
-
-Juri
+Index: b/include/linux/suspend.h
+===================================================================
+--- a/include/linux/suspend.h
++++ b/include/linux/suspend.h
+@@ -466,6 +466,12 @@ static inline bool system_entering_hiber
+ static inline bool hibernation_available(void) { return false; }
+ #endif /* CONFIG_HIBERNATION */
+ 
++#ifdef CONFIG_HIBERNATION_SNAPSHOT_DEV
++int is_hibernate_snapshot_dev(const struct inode *);
++#else
++static inline int is_hibernate_snapshot_dev(const struct inode *i) { return 0; }
++#endif
++
+ /* Hibernation and suspend events */
+ #define PM_HIBERNATION_PREPARE	0x0001 /* Going to hibernate */
+ #define PM_POST_HIBERNATION	0x0002 /* Hibernation finished */
+Index: b/kernel/power/user.c
+===================================================================
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -35,8 +35,14 @@ static struct snapshot_data {
+ 	bool ready;
+ 	bool platform_support;
+ 	bool free_bitmaps;
++	struct inode *bd_inode;
+ } snapshot_state;
+ 
++int is_hibernate_snapshot_dev(const struct inode *bd_inode)
++{
++	return hibernation_available() && snapshot_state.bd_inode == bd_inode;
++}
++
+ static int snapshot_open(struct inode *inode, struct file *filp)
+ {
+ 	struct snapshot_data *data;
+@@ -95,6 +101,7 @@ static int snapshot_open(struct inode *i
+ 	data->frozen = false;
+ 	data->ready = false;
+ 	data->platform_support = false;
++	data->bd_inode = NULL;
+ 
+  Unlock:
+ 	unlock_system_sleep();
+@@ -110,6 +117,7 @@ static int snapshot_release(struct inode
+ 
+ 	swsusp_free();
+ 	data = filp->private_data;
++	data->bd_inode = NULL;
+ 	free_all_swap_pages(data->swap);
+ 	if (data->frozen) {
+ 		pm_restore_gfp_mask();
+@@ -202,6 +210,7 @@ struct compat_resume_swap_area {
+ static int snapshot_set_swap_area(struct snapshot_data *data,
+ 		void __user *argp)
+ {
++	struct block_device *bdev;
+ 	sector_t offset;
+ 	dev_t swdev;
+ 
+@@ -232,9 +241,12 @@ static int snapshot_set_swap_area(struct
+ 		data->swap = -1;
+ 		return -EINVAL;
+ 	}
+-	data->swap = swap_type_of(swdev, offset, NULL);
++	data->swap = swap_type_of(swdev, offset, &bdev);
+ 	if (data->swap < 0)
+ 		return -ENODEV;
++
++	data->bd_inode = bdev->bd_inode;
++	bdput(bdev);
+ 	return 0;
+ }
+ 
+Index: b/fs/block_dev.c
+===================================================================
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -2023,8 +2023,7 @@ ssize_t blkdev_write_iter(struct kiocb *
+ 	if (bdev_read_only(I_BDEV(bd_inode)))
+ 		return -EPERM;
+ 
+-	/* uswsusp needs write permission to the swap */
+-	if (IS_SWAPFILE(bd_inode) && !hibernation_available())
++	if (IS_SWAPFILE(bd_inode) && !is_hibernate_snapshot_dev(bd_inode))
+ 		return -ETXTBSY;
+ 
+ 	if (!iov_iter_count(from))
 
