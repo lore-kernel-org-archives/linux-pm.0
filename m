@@ -2,81 +2,78 @@ Return-Path: <SRS0=WV1n=6W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B5DFC38A2A
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 08:12:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47D75C38A2A
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:17:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72A48207DD
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 08:12:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="u/BuPo7W"
+	by mail.kernel.org (Postfix) with ESMTP id 2A550208CA
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:17:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726612AbgEHIMa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 04:12:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45674 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726048AbgEHIMa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2020 04:12:30 -0400
-Received: from merlin.infradead.org (unknown [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5071CC05BD43;
-        Fri,  8 May 2020 01:12:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=3ahC++fEwMzmLLM2QpP2jvwJMwZREpXt88C4KYJBX2U=; b=u/BuPo7WsiFvewU2RMhJpL7PNC
-        3/dZzUXyh/eiYNNFsAgV0nNEpU6QXz3cLsV+fb4rcK3VQ7FTjKBNe3/ArFyBBYY4QEStYjxEaPv2q
-        zkToNxMIkliWpH5z1CmXlsPYGFUEohVtY9/xQLwafuXbFqV+okSh7+KJyWfwpZlJ1eu1or5oK4hw5
-        4z2RoIQXsiuyOdeUzbAiCAG/QbdlzbGmshvf2DP4bEtzaeMo5ZrZxpAt7TvIRaakE4KCHS6Yva8oj
-        ikC+7/+sr/MFvTh5oLOxsFrtzO08ieBJeoM0nWN7HcqrIWfVA2D8iaeUZZdK7LFAhCxVPVqltkP5u
-        EAKiGU8w==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1jWy6V-0003Fp-Jk; Fri, 08 May 2020 08:11:31 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id B060A301A80;
-        Fri,  8 May 2020 10:11:28 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 9C4892038FB83; Fri,  8 May 2020 10:11:28 +0200 (CEST)
-Date:   Fri, 8 May 2020 10:11:28 +0200
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     Quentin Perret <qperret@google.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
-        hpa@zytor.com, sudeep.holla@arm.com, gregkh@linuxfoundation.org,
-        rafael@kernel.org, viresh.kumar@linaro.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        mcgrof@kernel.org, keescook@chromium.org, yzaikin@google.com,
-        fweisbec@gmail.com, tkjos@google.com, kernel-team@android.com
-Subject: Re: [PATCH 00/14] Modularize schedutil
-Message-ID: <20200508081128.GM5298@hirez.programming.kicks-ass.net>
-References: <20200507181012.29791-1-qperret@google.com>
+        id S1725815AbgEHJR3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 05:17:29 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:4298 "EHLO huawei.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725710AbgEHJR3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 May 2020 05:17:29 -0400
+Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.60])
+        by Forcepoint Email with ESMTP id B24ECF3F380C0B35799A;
+        Fri,  8 May 2020 17:17:26 +0800 (CST)
+Received: from linux-ibm.site (10.175.102.37) by
+ DGGEMS411-HUB.china.huawei.com (10.3.19.211) with Microsoft SMTP Server id
+ 14.3.487.0; Fri, 8 May 2020 17:17:18 +0800
+From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
+To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
+        <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>
+CC:     <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
+        <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <wangxiongfeng2@huawei.com>
+Subject: [RFC PATCH 1/3] cpufreq: fix the return value in 'cpufreq_boost_set_sw()'
+Date:   Fri, 8 May 2020 17:11:02 +0800
+Message-ID: <1588929064-30270-2-git-send-email-wangxiongfeng2@huawei.com>
+X-Mailer: git-send-email 1.7.12.4
+In-Reply-To: <1588929064-30270-1-git-send-email-wangxiongfeng2@huawei.com>
+References: <1588929064-30270-1-git-send-email-wangxiongfeng2@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200507181012.29791-1-qperret@google.com>
+Content-Type: text/plain
+X-Originating-IP: [10.175.102.37]
+X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, May 07, 2020 at 07:09:58PM +0100, Quentin Perret wrote:
-> One challenge to implement GKI is to avoid bloating the kernel by
-> compiling too many things in, especially given that different devices
-> need different things. As such, anything that can be turned into a
-> module helps GKI, by offering an alternative to having that component
-> built-in. This is true for pretty much anything that can be made
-> modular, including drivers as well as other kernel components, such as
-> CPUFreq governors.
+When I try to add SW BOOST support for CPPC, I got the following error:
+cpufreq: cpufreq_boost_trigger_state: Cannot enable BOOST
+cpufreq: store_boost: Cannot enable BOOST!
 
-The idea is to move to 1 governor, schedutil. Also, I abhor all the
-exports this thing does. Modules have no business touching most of that.
+It is because return value 1 of 'freq_qos_update_request()' means the
+effective constraint value has changed, not a error code on failures.
+But for 'cpufreq_driver.set_boost()', a nonzero return value means
+failure. So change 'ret' to zero when 'freq_qos_update_request()'
+returns a positive value.
 
-Look at every EXPORT you do and wonder ask yourself how you can abuse
-it. Modules are not a good thing, they're horrible pieces of crap.
+Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+---
+ drivers/cpufreq/cpufreq.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 4adac3a..475fb1b 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2522,6 +2522,8 @@ static int cpufreq_boost_set_sw(int state)
+ 		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
+ 		if (ret < 0)
+ 			break;
++		else
++			ret = 0;
+ 	}
+ 
+ 	return ret;
+-- 
+1.7.12.4
+
