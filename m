@@ -2,115 +2,101 @@ Return-Path: <SRS0=WV1n=6W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F775C38A2A
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:17:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0932DC47247
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:33:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FD70208CA
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:17:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D5C7D21BE5
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 09:33:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726627AbgEHJR3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 05:17:29 -0400
-Received: from szxga05-in.huawei.com ([45.249.212.191]:4297 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725379AbgEHJR3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 May 2020 05:17:29 -0400
-Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id BE68A22B3D822B2B4BE1;
-        Fri,  8 May 2020 17:17:26 +0800 (CST)
-Received: from linux-ibm.site (10.175.102.37) by
- DGGEMS411-HUB.china.huawei.com (10.3.19.211) with Microsoft SMTP Server id
- 14.3.487.0; Fri, 8 May 2020 17:17:19 +0800
-From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>
-CC:     <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
-        <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <wangxiongfeng2@huawei.com>
-Subject: [RFC PATCH 2/3] cpufreq: Add SW BOOST support for drivers without frequency table
-Date:   Fri, 8 May 2020 17:11:03 +0800
-Message-ID: <1588929064-30270-3-git-send-email-wangxiongfeng2@huawei.com>
-X-Mailer: git-send-email 1.7.12.4
-In-Reply-To: <1588929064-30270-1-git-send-email-wangxiongfeng2@huawei.com>
-References: <1588929064-30270-1-git-send-email-wangxiongfeng2@huawei.com>
+        id S1726756AbgEHJdO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 05:33:14 -0400
+Received: from elvis.franken.de ([193.175.24.41]:44677 "EHLO elvis.franken.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725775AbgEHJdN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 May 2020 05:33:13 -0400
+Received: from uucp (helo=alpha)
+        by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
+        id 1jWzNV-0001bD-00; Fri, 08 May 2020 11:33:09 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+        id A9DC3C040C; Fri,  8 May 2020 11:22:36 +0200 (CEST)
+Date:   Fri, 8 May 2020 11:22:36 +0200
+From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To:     Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Cc:     Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Paul Burton <paulburton@kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, Zhou Yanjie <zhouyanjie@zoho.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Jiaxun Yang <jiaxun.yang@flygoat.com>,
+        linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 11/20] mips: MAAR: Use more precise address mask
+Message-ID: <20200508092236.GA9085@alpha.franken.de>
+References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
+ <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+ <20200506174238.15385-12-Sergey.Semin@baikalelectronics.ru>
+ <20200507110951.GD11616@alpha.franken.de>
+ <20200507191337.la6z476myszqethj@mobilestation>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.102.37]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200507191337.la6z476myszqethj@mobilestation>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Software-managed BOOST get the boost frequency by check the flag
-CPUFREQ_BOOST_FREQ at driver's frequency table. But some cpufreq driver
-don't have frequency table and use other methods to get the frequency
-range, such CPPC cpufreq driver.
+On Thu, May 07, 2020 at 10:13:37PM +0300, Serge Semin wrote:
+> On Thu, May 07, 2020 at 01:09:51PM +0200, Thomas Bogendoerfer wrote:
+> > On Wed, May 06, 2020 at 08:42:29PM +0300, Sergey.Semin@baikalelectronics.ru wrote:
+> > > From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> > > 
+> > > Indeed according to the P5600/P6000 manual the MAAR pair register
+> > > address field either takes [12:31] bits for 32-bits non-XPA systems
+> > > and [12:35] otherwise. In any case the current address mask is just
+> > > wrong for 64-bit and 32-bits XPA chips. So lets extend it to 39-bits
+> > > value. This shall cover the 64-bits architecture and systems with XPA
+> > > enabled, and won't cause any problem for non-XPA 32-bit systems, since
+> > > the value will be just truncated when written to the 32-bits register.
+> > 
+> > according to MIPS32 Priveleged Resoure Architecture Rev. 6.02
+> > ADDR spans from bit 12 to bit 55. So your patch fits only for P5600.
+> 
+> > Does the wider mask cause any problems ?
+> 
+> No, it won't. Bits written to the [40:62] range will be just ignored,
+> while reading from there should return zeros. Setting GENMASK_ULL(55, 12)
+> would also work. Though this solution is a bit workarounding because
+> MIPS_MAAR_ADDR wouldn't reflect the real mask of the ADDR field. Something
+> like the next macro would work better:
+> 
+> +#define MIPS_MAAR_ADDR							\
+> +({									\
+> +	u64 __mask;							\
+> +									\
+> +	if (cpu_has_lpa && read_c0_pagegrain() & PG_ELPA) {		\
+> +		__mask = GENMASK_ULL(55, 12);				\
+> +	else								\
+> +		__mask = GENMASK_ULL(31, 12);				\
+> +									\
+> +	__mask;								\
+> +})
 
-To add SW BOOST support for drivers without frequency table, we add
-members in 'cpufreq_policy.cpufreq_cpuinfo' to record the max frequency
-of boost mode and non-boost mode. The cpufreq driver initialize these two
-members when probing.
+that looks horrible.
 
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
----
- drivers/cpufreq/cpufreq.c | 23 +++++++++++++++--------
- include/linux/cpufreq.h   |  2 ++
- 2 files changed, 17 insertions(+), 8 deletions(-)
+> What do you think? What is better: the macro above or setting
+> GENMASK_ULL(55, 12)?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 475fb1b..a299426 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2508,15 +2508,22 @@ static int cpufreq_boost_set_sw(int state)
- 	int ret = -EINVAL;
- 
- 	for_each_active_policy(policy) {
--		if (!policy->freq_table)
--			continue;
--
--		ret = cpufreq_frequency_table_cpuinfo(policy,
-+		if (policy->freq_table) {
-+			ret = cpufreq_frequency_table_cpuinfo(policy,
- 						      policy->freq_table);
--		if (ret) {
--			pr_err("%s: Policy frequency update failed\n",
--			       __func__);
--			break;
-+			if (ret) {
-+				pr_err("%s: Policy frequency update failed\n",
-+				       __func__);
-+				break;
-+			}
-+		} else if (policy->cpuinfo.boost_max_freq) {
-+			if (state)
-+				policy->max = policy->cpuinfo.boost_max_freq;
-+			else
-+				policy->max = policy->cpuinfo.nonboost_max_freq;
-+			policy->cpuinfo.max_freq = policy->max;
-+		} else {
-+			continue;
- 		}
- 
- 		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 018dce8..c3449e6 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -43,6 +43,8 @@ enum cpufreq_table_sorting {
- struct cpufreq_cpuinfo {
- 	unsigned int		max_freq;
- 	unsigned int		min_freq;
-+	unsigned int		boost_max_freq;
-+	unsigned int		nonboost_max_freq;
- 
- 	/* in 10^(-9) s = nanoseconds */
- 	unsigned int		transition_latency;
+just that one ;-)
+
+Thomas.
+
 -- 
-1.7.12.4
-
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
