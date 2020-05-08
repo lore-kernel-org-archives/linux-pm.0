@@ -2,96 +2,89 @@ Return-Path: <SRS0=WV1n=6W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4EDDC47247
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:00:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93B55C38A2A
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:08:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA78F2054F
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:00:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588942827;
-	bh=3ugVuzvwFtqN4lGuBubM/XH50ivcbeAlmpyOW5SFS1o=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=kkSS2AOw7D32nuQrEVOeqZYRDVjkzUUD4OdmXzNFI0Nh6lGtWeDI4dA3bPfmTSZvM
-	 sOQ1Yf6bNtZCw0pjj322Y3Og816rSgXNVVCDjjNF0iiQuNGW13i3XF4+Sb/UxTz531
-	 4gSVMt6aqD5Tjo1BPWw0KCb/WyKz33nARsHGVE3Q=
+	by mail.kernel.org (Postfix) with ESMTP id 73D29206B9
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:08:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729951AbgEHNA0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 09:00:26 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44272 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727779AbgEHNAZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 May 2020 09:00:25 -0400
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 55B722054F;
-        Fri,  8 May 2020 13:00:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1588942824;
-        bh=3ugVuzvwFtqN4lGuBubM/XH50ivcbeAlmpyOW5SFS1o=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=cwOfJxS6p5AMxuoLBvf85YymZxEcLp5cUNT/O1vYkKjewm56/dLYzT/cb4ElHvd56
-         l9GjoGzaZYb0ABVYuIErbj03xGk1HHZc+N1XZzkyUFCER6L0L7MyTKt8qXWz4l8ZTD
-         fL0sN5LXjV8QzwmfGvi3raL84qYXCePEhQgJ+OMs=
-Date:   Fri, 8 May 2020 14:00:22 +0100
-From:   Mark Brown <broonie@kernel.org>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc:     mazziesaccount@gmail.com, lgirdwood@gmail.com, sre@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+        id S1730414AbgEHNIj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 09:08:39 -0400
+Received: from mailgate1.rohmeurope.com ([87.129.152.131]:45122 "EHLO
+        mailgate1.rohmeurope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729400AbgEHNIi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2020 09:08:38 -0400
+X-AuditID: c0a8fbf4-473ff70000004419-83-5eb559d3a558
+Received: from smtp.reu.rohmeu.com (will-cas001.reu.rohmeu.com [192.168.251.177])
+        by mailgate1.rohmeurope.com (Symantec Messaging Gateway) with SMTP id 6F.E4.17433.3D955BE5; Fri,  8 May 2020 15:08:35 +0200 (CEST)
+Received: from WILL-MAIL001.REu.RohmEu.com ([fe80::2915:304f:d22c:c6ba]) by
+ WILL-CAS001.REu.RohmEu.com ([fe80::d57e:33d0:7a5d:f0a6%16]) with mapi id
+ 14.03.0487.000; Fri, 8 May 2020 15:08:29 +0200
+From:   "Vaittinen, Matti" <Matti.Vaittinen@fi.rohmeurope.com>
+To:     "broonie@kernel.org" <broonie@kernel.org>
+CC:     "mazziesaccount@gmail.com" <mazziesaccount@gmail.com>,
+        "lgirdwood@gmail.com" <lgirdwood@gmail.com>,
+        "sre@kernel.org" <sre@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH v11 02/11] lib/test_linear_ranges: add a test for the
  'linear_ranges'
-Message-ID: <20200508130022.GI4820@sirena.org.uk>
+Thread-Topic: [PATCH v11 02/11] lib/test_linear_ranges: add a test for the
+ 'linear_ranges'
+Thread-Index: AQHWJDWzYnC7ORyc4E2ZSac9GcVX7qieB1EAgAACQQA=
+Date:   Fri, 8 May 2020 13:08:28 +0000
+Message-ID: <c24d5f4c9d07ea9b54692a968020147d8cfe8bcb.camel@fi.rohmeurope.com>
 References: <cover.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
- <7e91212b3990ce503508bc1c83e13dc793b73668.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
+         <7e91212b3990ce503508bc1c83e13dc793b73668.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
+         <20200508130022.GI4820@sirena.org.uk>
+In-Reply-To: <20200508130022.GI4820@sirena.org.uk>
+Accept-Language: en-US, de-DE
+Content-Language: de-DE
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-originating-ip: [62.78.225.252]
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <F435822C72521A4CBEB0B115C32A2757@de.rohmeurope.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="9s922KAXlWjPfK/Q"
-Content-Disposition: inline
-In-Reply-To: <7e91212b3990ce503508bc1c83e13dc793b73668.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
-X-Cookie: Give him an evasive answer.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+X-Brightmail-Tracker: H4sIAAAAAAAAA01SbUgTYRz3uTtvt+nJOWd7mmVtFKb5kmWxSkToi0JIIFFZaaeem6U3ud1E
+        +2B+qXQhzMoPDs2wBFGYubR8CVqiVhpKGVKRpLQEJTNdaORbd54v+/T8n+f3Cs+fQJUeXw2R
+        y/IMx9J5OlyBuRqXWqNGLrSnHxqvO6avmnDj+oWPZYh+pKsG13sqeoG+puENph/s5hPxpE77
+        mCzJ2VSOJ3mcoWfQNL/4TJovTM01sDEJV/yMt8uPFjxQFHVVx5SCZbkVyAlIxcFnsw2IFSgI
+        JTUK4JOVtY3LawDHxl7iVkAQOBUPrZ9lokBFRcGqf49wkYNSNxFYXzaMiEAQdRH2fxpAJNIl
+        2Lw8tCE4ASsm533FGaP2wfYfrUCcSSoFzt19KpPC3gHo6HuFioCcOgwdU8vrJEDthuWlv9ZN
+        UUoNnZOLvlJtCj5+MYxKczCc+r668a6FzxcdmFgapcJhS1eMJE2EMy6XTJq18P6dCZnUIRC+
+        rXZjNrDD7pVg31bbvdR2L7XdS/0Q+DYBmE/n5hlonomN5hhLNGcy5gtHlinfCaRP/NMB1nqS
+        ewBCgB6wk0B0weTec+3pyoBMU3axkTYbMzhLHmPuAZBAdSqysqgtXUlm08XXGc60CYUQmE5N
+        hk1UXlZSYtY1hilguE10F0HoIOlzXjAN5BgDU5STm8dvwwghF80VGpWZYbMZjrbwxgxxPTLM
+        wn6IkL+Q2yZ2Is0FdL7wKkkHwEHCNlVbjxK9tQ31qBJjTSyjUZOnAwQqJVKNFnYraBqoCaAL
+        IkfFHv7CJm/5TAsRiBDhmXeKETy9DWlKQUXR6kxYVZ2/4YiVybjn4KP45mA256zL052W1Tb4
+        O3TNFKWdHW8Kd8Qdt40Xumv+frkR1BhyUnPL3V5oc2FLjp8HDF9dq3PZPvundTlDgf5ZESv6
+        vm+dka0JWjquOlJFdX+wJNO1ltQ9/SUlq+5T8o7arsaWzhTFwvurQ3aNDjMb6dgIlDPT/wFx
+        c6QThgMAAA==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
---9s922KAXlWjPfK/Q
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Thu, May 07, 2020 at 09:06:08AM +0300, Matti Vaittinen wrote:
->     Add a KUnit test for the linear_ranges helper.
-
-This fails to build an x86 allmodconfig:
-
-ERROR: modpost: "linear_range_values_in_range_array" [lib/test_linear_ranges.ko] undefined!
-ERROR: modpost: "linear_range_get_selector_high" [lib/test_linear_ranges.ko] undefined!
-ERROR: modpost: "linear_range_get_selector_low_array" [lib/test_linear_ranges.ko] undefined!
-ERROR: modpost: "linear_range_get_value_array" [lib/test_linear_ranges.ko] undefined!
-make[2]: *** [/mnt/kernel/scripts/Makefile.modpost:94: __modpost] Error 1
-make[1]: *** [/mnt/kernel/Makefile:1319: modules] Error 2
-make: *** [Makefile:180: sub-make] Error 2
-
-The test code needs to select the library.
-
---9s922KAXlWjPfK/Q
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl61V+UACgkQJNaLcl1U
-h9D+Iwf9GfagiDxyLur1Rf4F30//I9/4ueaSGe3kM7uIASZwPlxmL+uk8zfwgstc
-BdBocDIS/rEaXq+n7rtNKLTy8zXmydK7PEXJFz9wC4TQqiDGxeEAykOmw3alyCh/
-unQtZ3tlOyQJsOTFvAiyuS2GXN1oP8/Kw7mtsSyhFGiYcmlHijjAyvtgWx/RYHay
-Kg+UyFUCBpEBvOoG+bOWBiJhnY1yf1pMNmgCEqzD5dwDLJwYraA/r40/AUWTq8xj
-hn6/fCceYAOAQSa6njAMthZLXTC45ztVUFLKDf8CCh4h6sTjP5oaoDHuJ06EUYa0
-CjPFz0VFuJGFQI8wTBIruaZxhR9nvQ==
-=SeuK
------END PGP SIGNATURE-----
-
---9s922KAXlWjPfK/Q--
+VGhhbmtzIGEgdG9uIGZvciBoZWFkJ3MgdXAgTWFyayENCg0KT24gRnJpLCAyMDIwLTA1LTA4IGF0
+IDE0OjAwICswMTAwLCBNYXJrIEJyb3duIHdyb3RlOg0KPiBPbiBUaHUsIE1heSAwNywgMjAyMCBh
+dCAwOTowNjowOEFNICswMzAwLCBNYXR0aSBWYWl0dGluZW4gd3JvdGU6DQo+ID4gICAgIEFkZCBh
+IEtVbml0IHRlc3QgZm9yIHRoZSBsaW5lYXJfcmFuZ2VzIGhlbHBlci4NCj4gDQo+IFRoaXMgZmFp
+bHMgdG8gYnVpbGQgYW4geDg2IGFsbG1vZGNvbmZpZzoNCj4gDQo+IEVSUk9SOiBtb2Rwb3N0OiAi
+bGluZWFyX3JhbmdlX3ZhbHVlc19pbl9yYW5nZV9hcnJheSINCj4gW2xpYi90ZXN0X2xpbmVhcl9y
+YW5nZXMua29dIHVuZGVmaW5lZCENCj4gRVJST1I6IG1vZHBvc3Q6ICJsaW5lYXJfcmFuZ2VfZ2V0
+X3NlbGVjdG9yX2hpZ2giDQo+IFtsaWIvdGVzdF9saW5lYXJfcmFuZ2VzLmtvXSB1bmRlZmluZWQh
+DQo+IEVSUk9SOiBtb2Rwb3N0OiAibGluZWFyX3JhbmdlX2dldF9zZWxlY3Rvcl9sb3dfYXJyYXki
+DQo+IFtsaWIvdGVzdF9saW5lYXJfcmFuZ2VzLmtvXSB1bmRlZmluZWQhDQo+IEVSUk9SOiBtb2Rw
+b3N0OiAibGluZWFyX3JhbmdlX2dldF92YWx1ZV9hcnJheSINCj4gW2xpYi90ZXN0X2xpbmVhcl9y
+YW5nZXMua29dIHVuZGVmaW5lZCENCj4gbWFrZVsyXTogKioqIFsvbW50L2tlcm5lbC9zY3JpcHRz
+L01ha2VmaWxlLm1vZHBvc3Q6OTQ6IF9fbW9kcG9zdF0NCj4gRXJyb3IgMQ0KPiBtYWtlWzFdOiAq
+KiogWy9tbnQva2VybmVsL01ha2VmaWxlOjEzMTk6IG1vZHVsZXNdIEVycm9yIDINCj4gbWFrZTog
+KioqIFtNYWtlZmlsZToxODA6IHN1Yi1tYWtlXSBFcnJvciAyDQo+IA0KPiBUaGUgdGVzdCBjb2Rl
+IG5lZWRzIHRvIHNlbGVjdCB0aGUgbGlicmFyeS4NCg0KSSdsbCBhZGQgdGhlIHNlbGVjdCBMSU5F
+QVJfUkFOR0VTIHRvIEtDb25maWcgYW5kIHJlc2VuZC4NCg0KLS1NYXR0aQ0K
