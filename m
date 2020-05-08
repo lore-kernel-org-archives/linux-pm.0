@@ -2,91 +2,97 @@ Return-Path: <SRS0=WV1n=6W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A820C38A2A
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0F690C47247
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:18:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4109B24966
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:17:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1588943849;
-	bh=3afVTxvPGGedmPH0V3XdskRZC6TaovubqNcaoRvIw84=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=rVP6D+rCBd+9tSAIVHkV6LMlg6Adw0/ViH4+3Jk+qDuGoAEiN/3Uwhaw8eVAbKnqj
-	 +NNgiCdg7m9w7SwMb6n5G0Ibpe4Te8MeXs+UYjoL9AI56LQn1u+3Ilk8eoCmV5Ntf0
-	 2sr9+ffR/JyligQH/6fdBXW3qv0xKOVd0bXxdbjA=
+	by mail.kernel.org (Postfix) with ESMTP id D9FC9206B8
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:18:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="nANjiioT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729435AbgEHNRX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 09:17:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39810 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729162AbgEHNRW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 May 2020 09:17:22 -0400
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 0E92A206B8;
-        Fri,  8 May 2020 13:17:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1588943842;
-        bh=3afVTxvPGGedmPH0V3XdskRZC6TaovubqNcaoRvIw84=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=wljXzPmztGYalAoA9rpHKhIthnbvDxCDuUWxhLA7Ux6IyXHMuyVvipCwDeUZASH4v
-         1EK455Sr8j9CcqPSrL15a0cT9Rl1QmpaJSoZaLPajRbx8xwhrmS8SK2e0ceK4sTUz4
-         UN42bI9PAZGXE3IEkKsserK4lyePSkv2+6GHkAhQ=
-Date:   Fri, 8 May 2020 14:17:19 +0100
-From:   Mark Brown <broonie@kernel.org>
-To:     Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
-Cc:     mazziesaccount@gmail.com, lgirdwood@gmail.com, sre@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v11 00/11] Support ROHM BD99954 charger IC
-Message-ID: <20200508131719.GJ4820@sirena.org.uk>
-References: <cover.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
+        id S1728554AbgEHNSR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 09:18:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36756 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1728628AbgEHNSM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2020 09:18:12 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DB0F7C05BD09
+        for <linux-pm@vger.kernel.org>; Fri,  8 May 2020 06:18:10 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id v12so1785838wrp.12
+        for <linux-pm@vger.kernel.org>; Fri, 08 May 2020 06:18:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=9nChlhKbO9BjNaYzNwfsyUYTQj0xKTlbsDHkjKVD9kg=;
+        b=nANjiioTUJaVJfjULoRIi8nV/rgHwSpBvsRO6EQVlFhkUVXkfEaQdlX2OM2u0OdRMu
+         uukdCy4/iM7UgCG09MdWXmIArxiuZ2VMHUo2iAZzLYAtWWkPYYfMQwDfwCNpzVM62TxG
+         mUOBHTf0AF4bWdYtQe+AEnyPj8Q78QjySWZnaA+WokDwSH97xWz6Bk3vkioelikKVepJ
+         9B9G3DmSUyAhDyN34cSXkOfMvqlT3VuvVxV+BxCxzXfJV3Ayi17oBZ5y1hoR5SgN6YPm
+         HWHKBji3uc81BImbm/IIiPjvdk9PEJxc5/eN+NZTa2lx/ooT7XplQU8h1lpoQW2UpVOg
+         x9aA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=9nChlhKbO9BjNaYzNwfsyUYTQj0xKTlbsDHkjKVD9kg=;
+        b=GrtPkVhdfUoIQ6fnCuvmWPQw5V7Othje0DqrIdvNLVCwOK/jpG3czLLv0Q6utQ7NI5
+         nGufVsm+DLSEet+efoN1Sj/qAFuyCV/LyssjTh5DbITssGrbabBiVSRSS3FeLtdh3B50
+         VMI7tdZaceCXjRIZ/r6b9IZp99jtxQo2krqk71+TJoYxJnf2VNF1e2V74ZNIZ17lboK0
+         JrIeTOwN+rSX7aq8T2qp4pZTYGvZudJ6KaeiZ49KpG7k/0VqgvhMjvPLKPtTzg3hHoSe
+         yAK6Og8EEQKvY+84U6Lysfp7FdLC7AxiU2v3O6la1v2dZIwoA39D1sCCZbIbPw5nDQwP
+         7f8g==
+X-Gm-Message-State: AGi0PubMgwNpK9ydorv3ooS/CrXzo+FMiDlUAV3z7whYXrAET2JpoD4t
+        V8VkEzXQgsh6CHZTcAA68DI7YXvRqso=
+X-Google-Smtp-Source: APiQypL+1KhIUnHBdu8MermDCbWXNpBe6I70VK/mm3MUDxStvjwGwDUlBSSTUQKpESNMefoQrrDwTQ==
+X-Received: by 2002:adf:fac5:: with SMTP id a5mr3115224wrs.210.1588943888335;
+        Fri, 08 May 2020 06:18:08 -0700 (PDT)
+Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
+        by smtp.gmail.com with ESMTPSA id u12sm13658718wmu.25.2020.05.08.06.18.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 08 May 2020 06:18:07 -0700 (PDT)
+Date:   Fri, 8 May 2020 14:18:04 +0100
+From:   Quentin Perret <qperret@google.com>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
+        hpa@zytor.com, sudeep.holla@arm.com, gregkh@linuxfoundation.org,
+        rafael@kernel.org, peterz@infradead.org, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
+        mcgrof@kernel.org, keescook@chromium.org, yzaikin@google.com,
+        fweisbec@gmail.com, tkjos@google.com, kernel-team@android.com
+Subject: Re: [PATCH 00/14] Modularize schedutil
+Message-ID: <20200508131804.GC10541@google.com>
+References: <20200507181012.29791-1-qperret@google.com>
+ <20200508053359.ul5dbws6vkpdrbef@vireshk-i7>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="XigHxYirkHk2Kxsx"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1588829892.git.matti.vaittinen@fi.rohmeurope.com>
-X-Cookie: Give him an evasive answer.
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200508053359.ul5dbws6vkpdrbef@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Viresh,
 
---XigHxYirkHk2Kxsx
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On Friday 08 May 2020 at 11:03:59 (+0530), Viresh Kumar wrote:
+> IMHO, you have over-broken the patches, like first two could be merged
+> together and all exports could have been done in a single patch, etc.
+> i.e. all related or similar changes together...
 
-On Thu, May 07, 2020 at 09:03:06AM +0300, Matti Vaittinen wrote:
-> Sorry folks for excessive amount of emails. I am resending this once
-> more (I already resent v10 and v11 has no changes but was just rebased)
-> because I am afraid the previous version did not reach Mark. If this is
-> true - I am the one to blame. I see I sent original v10 to all other
+Right, I don't mind squashing the first patches. For the exports, I'm
+guessing they'll need a case by case discussion, so it's probably
+reasonable to keep them separate, at least for now.
 
-You probably should've mentioned in this mail something about applying
-on a shared branch - I had seen the mail about that and was planning to
-handle these this week but if I'd missed Sebastian's mail from earlier
-in the week I'd probably just look at this and realise I'd reviewed
-everything relevant in it.
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
---XigHxYirkHk2Kxsx
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl61W98ACgkQJNaLcl1U
-h9AkfQf/e/9GJz9qTkXY5cZVnaFer3RazGsHnLxJrdUop24aL0otGQdqY/HW1box
-mUooQnGc65yBNG12MO4fNjeylRqJEzLpmnawWYXmxCChD1OJDPC+kaHFOdddPGaO
-WGIviYxXXH5nOqF1nOgX65ZhnGwMv+LXMG8wUd6Gj4s0lbxWfgDV7A3LkQ+fTssK
-iVIAc0X0cmA/YYSpgyBERUM1GlBcve0ep1HGk1VUlvcgKyHOerCWfSatpt2Wy8Rx
-Ilory7thQ+weCvjC3y++s1kSSI46bKw+em0pr9nyfQVKjB2qTx6mhe/uKOT/YX3k
-VmPQuOnH4KQyGi1ea88uKzN+fK1VZQ==
-=7/MS
------END PGP SIGNATURE-----
-
---XigHxYirkHk2Kxsx--
+Thanks!
+Quentin
