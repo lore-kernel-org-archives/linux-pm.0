@@ -2,120 +2,82 @@ Return-Path: <SRS0=WV1n=6W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72FBCC38A2A
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:10:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28F56C47254
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:13:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4D3AB24999
-	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:10:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="avte0Gre"
+	by mail.kernel.org (Postfix) with ESMTP id 14B6F208E4
+	for <linux-pm@archiver.kernel.org>; Fri,  8 May 2020 13:13:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729292AbgEHNKG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 09:10:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34654 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1730454AbgEHNFN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2020 09:05:13 -0400
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40019C05BD09
-        for <linux-pm@vger.kernel.org>; Fri,  8 May 2020 06:05:13 -0700 (PDT)
-Received: by mail-wr1-x442.google.com with SMTP id i15so1745467wrx.10
-        for <linux-pm@vger.kernel.org>; Fri, 08 May 2020 06:05:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=Mgb+elpG5rRocO3HltFPkQjaBpOGyLvzRk4WBy8PAxU=;
-        b=avte0GreY98ChYX60EQHioHbWYFoHxkPBqNThycjj0bAXSB8OZZbe271eytzU9dx79
-         C8FaQBxFUZ3GDTVvIT89VXFjpubyrMz3G19/1aOKdIXTn4vnb1ZfFmqw5fFPbuWq5W+7
-         fcqkvekv1UgguYkRl/vJLoL7GHe8GeRdGahmEA1D5q7haPK3hPw/NTJTjop/8FgUb9Cu
-         ZtUs2h0s5e6tX8bBwvwftZG29B6macEhAZBHu+SOo+SdXLM7r+Cf5OlIPqdOC42o/5EK
-         r0nS1aOIpVSZdaGQKY9XMlRh19ORG1QdNiZPlngH8pXwdxZZtxNaGuyB1CbCDumVomaw
-         UyTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Mgb+elpG5rRocO3HltFPkQjaBpOGyLvzRk4WBy8PAxU=;
-        b=k4S1NtKEE0Pxxjqk+WCbXnMeNdBQRxXoCxeZTG63XpnyaYjjUr+gXmfWfimjG00xfU
-         OJHvcYgKWC/eMvK/nkeu94MztUcTgkAgNf9lpEVEvjjahNQYDlotJbOrbKlPa3Pn0Lzx
-         QPVYEQYWi8ZusVKxVhFGodULE3/pe7b52QMGVx9HBo2qkcL87j1GawK5MMgJBWjg7J0K
-         yGHVGvHz51JCkHspoKisdi6Byjw/Lvc++waCRdE+WP6qQK5pb1nyAvm0/eMyUL45oGRp
-         s+OW+1/ntaXPET7YSBnwjhb4OinAjkOaFaYIuXwMOrl2nw/zP4dMucrlhNOh5mWh19ZG
-         XTXQ==
-X-Gm-Message-State: AGi0PuY1/m8Qapv7DrnJZShgB6mchXMcGMLvU6tjy6i+6xPPmk382lfd
-        fTAKpgd+md6gU7H7p9u0mQS2xw==
-X-Google-Smtp-Source: APiQypLn2oiSKc2Okos29+vdEZOfH45zqdXlnILGJEI5IUubFXr251HgTQaCtZRYtPilMrWZhB6Vyw==
-X-Received: by 2002:adf:d841:: with SMTP id k1mr2812214wrl.129.1588943111589;
-        Fri, 08 May 2020 06:05:11 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
-        by smtp.gmail.com with ESMTPSA id 5sm11892425wmg.34.2020.05.08.06.05.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 08 May 2020 06:05:10 -0700 (PDT)
-Date:   Fri, 8 May 2020 14:05:07 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Peter Zijlstra <peterz@infradead.org>
-Cc:     Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
-        bp@alien8.de, x86@kernel.org, hpa@zytor.com, sudeep.holla@arm.com,
-        rafael@kernel.org, viresh.kumar@linaro.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        mcgrof@kernel.org, keescook@chromium.org, yzaikin@google.com,
-        fweisbec@gmail.com, tkjos@google.com, kernel-team@android.com
-Subject: Re: [PATCH 00/14] Modularize schedutil
-Message-ID: <20200508130507.GA10541@google.com>
-References: <20200507181012.29791-1-qperret@google.com>
- <20200508081128.GM5298@hirez.programming.kicks-ass.net>
- <20200508103721.GA3860390@kroah.com>
- <20200508111612.GA252673@google.com>
- <20200508113141.GB5298@hirez.programming.kicks-ass.net>
+        id S1728599AbgEHNNw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 09:13:52 -0400
+Received: from mail-m17613.qiye.163.com ([59.111.176.13]:24511 "EHLO
+        mail-m17613.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729089AbgEHNNv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 8 May 2020 09:13:51 -0400
+Received: from ubuntu.localdomain (unknown [157.0.31.122])
+        by mail-m17613.qiye.163.com (Hmail) with ESMTPA id EC4A1482C00;
+        Fri,  8 May 2020 21:13:44 +0800 (CST)
+From:   Bernard Zhao <bernard@vivo.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>, Kukjin Kim <kgene@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc:     opensource.kernel@vivo.com, Bernard Zhao <bernard@vivo.com>
+Subject: [PATCH] memory/samsung: reduce unnecessary mutex lock area
+Date:   Fri,  8 May 2020 06:13:38 -0700
+Message-Id: <20200508131338.32956-1-bernard@vivo.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200508113141.GB5298@hirez.programming.kicks-ass.net>
+Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZSFVMSU5CQkJDSElKTkhISVlXWShZQU
+        hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6OhQ6Dgw*TTgrMz4*Txc0TDE5
+        TFEaCj1VSlVKTkNDQk9ITUlOSkxCVTMWGhIXVRkeCRUaCR87DRINFFUYFBZFWVdZEgtZQVlKTkxV
+        S1VISlVKSUlZV1kIAVlBSUpNTjcG
+X-HM-Tid: 0a71f46b9b9093bakuwsec4a1482c00
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday 08 May 2020 at 13:31:41 (+0200), Peter Zijlstra wrote:
-> On Fri, May 08, 2020 at 12:16:12PM +0100, Quentin Perret wrote:
-> > However, the point I tried to make here is orthogonal to that. As of
-> > today using another governor than schedutil is fully supported upstream,
-> > and in fact it isn't even enabled by default for most archs. If vendors
-> > feel like using something else makes their product better, then I don't
-> > see why I need to argue with them about that. And frankly I don't see
-> > that support being removed from upstream any time soon.
-> 
-> Right, it'll take a while to get there. But that doesn't mean we
-> shouldn't encourage schedutil usage wherever and whenever possible. That
-> includes not making it easier to not use it.
-> 
-> In that respect making it modular goes against our ultimate goal (world
-> domination, <mad giggles here>).
+Maybe dmc->df->lock is unnecessary to protect function
+exynos5_dmc_perf_events_check(dmc). If we have to protect,
+dmc->lock is more better and more effective.
+Also, it seems not needed to protect "if (ret) & dev_warn"
+branch.
 
-Right, I definitely understand the sentiment. OTOH, things like that
-give vendors weapons against GKI ('you-force-us-to-build-in-things-we-dont't-want'
-etc etc). That _is_ true to some extent, but it's important we make sure
-to keep this to an absolute minimum, otherwise GKI just won't happen
-(and I really think that'd be a shame, GKI _is_ a good thing for
-upstream).
+Signed-off-by: Bernard Zhao <bernard@vivo.com>
+---
+ drivers/memory/samsung/exynos5422-dmc.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-And sure, schedutil isn't that big, and we can make an exception. But
-I'm sure you know what happens when you starting making exceptions ;)
+diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
+index 22a43d662833..88e8ac8b5327 100644
+--- a/drivers/memory/samsung/exynos5422-dmc.c
++++ b/drivers/memory/samsung/exynos5422-dmc.c
+@@ -1345,16 +1345,14 @@ static irqreturn_t dmc_irq_thread(int irq, void *priv)
+ 	int res;
+ 	struct exynos5_dmc *dmc = priv;
+ 
+-	mutex_lock(&dmc->df->lock);
+-
+ 	exynos5_dmc_perf_events_check(dmc);
+ 
++	mutex_lock(&dmc->df->lock);
+ 	res = update_devfreq(dmc->df);
++	mutex_unlock(&dmc->df->lock);
+ 	if (res)
+ 		dev_warn(dmc->dev, "devfreq failed with %d\n", res);
+ 
+-	mutex_unlock(&dmc->df->lock);
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+-- 
+2.26.2
 
-So, all in all, I don't think the series actively makes schedutil worse
-by adding out-of-line calls in the hot path or anything like that, and
-having it as a module helps with GKI which I'm arguing is a good thing
-in the grand scheme of things. That of course is only true if we can
-agree on a reasonable set of exported symbols, so I'll give others some
-time to complain and see if I can post a v2 addressing these issues!
-
-Cheers,
-Quentin
