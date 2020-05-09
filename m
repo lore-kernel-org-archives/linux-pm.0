@@ -2,79 +2,84 @@ Return-Path: <SRS0=PrUZ=6X=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=DATE_IN_FUTURE_06_12,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACB0C47247
-	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 02:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6D19C38A2A
+	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 02:58:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 64AC9217BA
-	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 02:43:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA71321841
+	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 02:58:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728651AbgEICnS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 8 May 2020 22:43:18 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:38056 "EHLO huawei.com"
+        id S1728471AbgEIC63 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 8 May 2020 22:58:29 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:4309 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728575AbgEICnR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 8 May 2020 22:43:17 -0400
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id EF549E9B17E7738F01BD;
-        Sat,  9 May 2020 10:43:14 +0800 (CST)
-Received: from euler.huawei.com (10.175.101.6) by
- DGGEMS407-HUB.china.huawei.com (10.3.19.207) with Microsoft SMTP Server id
- 14.3.487.0; Sat, 9 May 2020 10:43:06 +0800
-From:   Hongbo Yao <yaohongbo@huawei.com>
-To:     <sre@kernel.org>
-CC:     <yaohongbo@huawei.com>, <chenzhou10@huawei.com>,
-        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH -next] power: reset: ltc2952: remove set but used variable
-Date:   Sat, 9 May 2020 18:36:11 +0800
-Message-ID: <20200509103611.29551-1-yaohongbo@huawei.com>
-X-Mailer: git-send-email 2.17.1
+        id S1728353AbgEIC62 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 8 May 2020 22:58:28 -0400
+Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.59])
+        by Forcepoint Email with ESMTP id 1DF718F04DBA6D651016;
+        Sat,  9 May 2020 10:58:26 +0800 (CST)
+Received: from localhost.localdomain.localdomain (10.175.113.25) by
+ DGGEMS413-HUB.china.huawei.com (10.3.19.213) with Microsoft SMTP Server id
+ 14.3.487.0; Sat, 9 May 2020 10:58:17 +0800
+From:   Wei Yongjun <weiyongjun1@huawei.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Alexandre Bailon <abailon@baylibre.com>,
+        Leonard Crestez <leonard.crestez@nxp.com>
+CC:     Wei Yongjun <weiyongjun1@huawei.com>, <linux-pm@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <kernel-janitors@vger.kernel.org>, Hulk Robot <hulkci@huawei.com>
+Subject: [PATCH -next] interconnect: imx: Fix return value check in imx_icc_node_init_qos()
+Date:   Sat, 9 May 2020 03:02:14 +0000
+Message-ID: <20200509030214.14435-1-weiyongjun1@huawei.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.175.101.6]
+Content-Type:   text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Originating-IP: [10.175.113.25]
 X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fixes gcc '-Wunused-but-set-variable' warning:
-drivers/power/reset/ltc2952-poweroff.c:97:16: warning: variable
-‘overruns’ set but not used [-Wunused-but-set-variable]
-  unsigned long overruns;
+In case of error, the function of_parse_phandle() returns NULL pointer
+not ERR_PTR(). The IS_ERR() test in the return value check should be
+replaced with NULL test.
 
+Fixes: f0d8048525d7 ("interconnect: Add imx core driver")
 Reported-by: Hulk Robot <hulkci@huawei.com>
-Signed-off-by: Hongbo Yao <yaohongbo@huawei.com>
+Signed-off-by: Wei Yongjun <weiyongjun1@huawei.com>
 ---
- drivers/power/reset/ltc2952-poweroff.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/interconnect/imx/imx.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
-index e4a0cc45b3d1..318927938b05 100644
---- a/drivers/power/reset/ltc2952-poweroff.c
-+++ b/drivers/power/reset/ltc2952-poweroff.c
-@@ -94,7 +94,6 @@ static enum hrtimer_restart ltc2952_poweroff_timer_wde(struct hrtimer *timer)
- {
- 	ktime_t now;
- 	int state;
--	unsigned long overruns;
- 	struct ltc2952_poweroff *data = to_ltc2952(timer, timer_wde);
- 
- 	if (data->kernel_panic)
-@@ -104,7 +103,7 @@ static enum hrtimer_restart ltc2952_poweroff_timer_wde(struct hrtimer *timer)
- 	gpiod_set_value(data->gpio_watchdog, !state);
- 
- 	now = hrtimer_cb_get_time(timer);
--	overruns = hrtimer_forward(timer, now, data->wde_interval);
-+	hrtimer_forward(timer, now, data->wde_interval);
- 
- 	return HRTIMER_RESTART;
- }
--- 
-2.20.1
+diff --git a/drivers/interconnect/imx/imx.c b/drivers/interconnect/imx/imx.c
+index 6884212511f0..ac420f86008e 100644
+--- a/drivers/interconnect/imx/imx.c
++++ b/drivers/interconnect/imx/imx.c
+@@ -90,10 +90,10 @@ static int imx_icc_node_init_qos(struct icc_provider *provider,
+ 			node->name, node->id);
+ 	} else {
+ 		dn = of_parse_phandle(dev->of_node, adj->phandle_name, 0);
+-		if (IS_ERR(dn)) {
+-			dev_warn(dev, "Failed to parse %s: %ld\n",
+-				 adj->phandle_name, PTR_ERR(dn));
+-			return PTR_ERR(dn);
++		if (!dn) {
++			dev_warn(dev, "Failed to parse %s\n",
++				 adj->phandle_name);
++			return -ENODEV;
+ 		}
+ 		/* Allow scaling to be disabled on a per-node basis */
+ 		if (!dn || !of_device_is_available(dn)) {
+
+
 
