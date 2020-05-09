@@ -2,169 +2,127 @@ Return-Path: <SRS0=PrUZ=6X=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00F51C47254
-	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 08:44:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 638E7C28CBC
+	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 15:16:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D5D032495C
-	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 08:44:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3896920820
+	for <linux-pm@archiver.kernel.org>; Sat,  9 May 2020 15:16:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726063AbgEIIoq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 9 May 2020 04:44:46 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:47368 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725989AbgEIIop (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2020 04:44:45 -0400
-Received: from 89-77-60-66.dynamic.chello.pl (89.77.60.66) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
- id 30bfb3c741368213; Sat, 9 May 2020 10:44:42 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Chris Chiu <chiu@endlessm.com>,
-        Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH v2] ACPI: EC: s2idle: Avoid premature returns from acpi_s2idle_wake()
-Date:   Sat, 09 May 2020 10:44:41 +0200
-Message-ID: <13031978.1nyG40egBz@kreacher>
+        id S1727105AbgEIPQB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 9 May 2020 11:16:01 -0400
+Received: from mail-lj1-f193.google.com ([209.85.208.193]:35687 "EHLO
+        mail-lj1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726782AbgEIPQB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 9 May 2020 11:16:01 -0400
+Received: by mail-lj1-f193.google.com with SMTP id g4so4796487ljl.2;
+        Sat, 09 May 2020 08:15:59 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
+         :content-disposition:user-agent;
+        bh=Cg3G60rZUQuGotkg/nEmi6CTgypKYah/ph6hteIHFa4=;
+        b=OUhPOgXUDLPmmO1bv8CE65YdjKvaG9tpQZPyBccL2JoBZWw9vAW0sWmQ9WOvEMCvSR
+         nsWIJYZx9MC9g5Ex66Yvy75Yz9NFOy+3HC7nU3C66h+CWKf4AU08ANDwmoe12vpZcamX
+         M+SxHzPQ8Hzdoc9YOm5ADHUN3Q3X0Vd9up0znfvH4JrVKOKsMW668/kxgS03TqLAspJN
+         mtF4eQRSK+Jdro2lTS3nAGayvLhYY1p95JOnyVbieol1UNbubnc3/xmtV8LohYvLQQ9M
+         moXaXZlFVgKicX/C9Un4No0YFhc8HU7X8VOAITTS3d7i4qvBVoivxfuTaG67km9n9vUv
+         gUkw==
+X-Gm-Message-State: AOAM532gTIJFHB3AKmL/oO1Nl6lUoeivFDpTXUS2sEdJAsD3ENWPKsHQ
+        ldudVE94aDu0HD/fB/Jqfvc=
+X-Google-Smtp-Source: ABdhPJyCT14T3CFJZl7PaEVzmV6oqL2DfPcgHTr4L/6p8QBJGQqkRljsg/X4Wp1T0yRaMbLKe1EwKQ==
+X-Received: by 2002:a2e:85d1:: with SMTP id h17mr5130796ljj.70.1589037358456;
+        Sat, 09 May 2020 08:15:58 -0700 (PDT)
+Received: from localhost.localdomain (62-78-225-252.bb.dnainternet.fi. [62.78.225.252])
+        by smtp.gmail.com with ESMTPSA id o3sm4289980lfl.78.2020.05.09.08.15.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 09 May 2020 08:15:57 -0700 (PDT)
+Date:   Sat, 9 May 2020 18:15:19 +0300
+From:   Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
+To:     matti.vaittinen@fi.rohmeurope.com, mazziesaccount@gmail.com
+Cc:     Mark Brown <broonie@kernel.org>, sre@kernel.org,
+        linux-pm@vger.kernel.org, brendanhiggins@google.com,
+        linux-kernel@vger.kernel.org, lgirdwood@gmail.com
+Subject: [PATCH] lib: linear_ranges: Add missing MODULE_LICENSE()
+Message-ID: <20200509151519.GA7100@localhost.localdomain>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.12.1 (2019-06-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+When linear_ranges is compiled as module we get warning
+about missing MODULE_LICENSE(). Fix it by adding
+MODULE_LICENSE("GPL") as is suggested by SPDX and EXPORTs.
 
-If the EC GPE status is not set after checking all of the other GPEs,
-acpi_s2idle_wake() returns 'false', to indicate that the SCI event
-that has just triggered is not a system wakeup one, but it does that
-without canceling the pending wakeup and re-arming the SCI for system
-wakeup which is a mistake, because it may cause s2idle_loop() to busy
-spin until the next valid wakeup event.  [If that happens, the first
-spurious wakeup is still pending after acpi_s2idle_wake() has
-returned, so s2idle_enter() does nothing, acpi_s2idle_wake()
-is called again and it sees that the SCI has triggered, but no GPEs
-are active, so 'false' is returned again, and so on.]
-
-Fix that by moving all of the GPE checking logic from
-acpi_s2idle_wake() to acpi_ec_dispatch_gpe() and making the
-latter return 'true' only if a non-EC GPE has triggered and
-'false' otherwise, which will cause acpi_s2idle_wake() to
-cancel the pending SCI wakeup and re-arm the SCI for system
-wakeup regardless of the EC GPE status.
-
-This also addresses a lockup observed on an Elitegroup EF20EA laptop
-after attempting to wake it up from suspend-to-idle by a key press.
-
-Fixes: d5406284ff80 ("ACPI: PM: s2idle: Refine active GPEs check")
-Link: https://bugzilla.kernel.org/show_bug.cgi?id=207603
-Reported-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-Fixes: fdde0ff8590b ("ACPI: PM: s2idle: Prevent spurious SCIs from waking up the system")
-Link: https://lore.kernel.org/linux-acpi/CAB4CAwdqo7=MvyG_PE+PGVfeA17AHF5i5JucgaKqqMX6mjArbQ@mail.gmail.com/
-Reported-by: Chris Chiu <chiu@endlessm.com>
-Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 ---
 
--> v2:
-   * Improve the changelog and add more tags.
+I saw Mark applied the linear-ranges patch. So I sent this fix as
+incremental patch - but I still use the same Linus tree as a base of
+this fix - the linear-ranges file should be unchanged in regulator tree.
+If this does not apply I can clone regulator tree and create this fix on
+it.
 
----
- drivers/acpi/ec.c       |   24 ++++++++++++++++--------
- drivers/acpi/internal.h |    1 -
- drivers/acpi/sleep.c    |   14 ++------------
- 3 files changed, 18 insertions(+), 21 deletions(-)
+I don't know if this is the correct way to fix this as the linear-ranges
+should be merged to power-supply tree.
 
-Index: linux-pm/drivers/acpi/sleep.c
-===================================================================
---- linux-pm.orig/drivers/acpi/sleep.c
-+++ linux-pm/drivers/acpi/sleep.c
-@@ -1013,21 +1013,11 @@ static bool acpi_s2idle_wake(void)
- 		if (acpi_check_wakeup_handlers())
- 			return true;
+I guess we can either:
+- Use this patch to fix regulator tree and create fixed tag for
+  power-supply(?)
+- Add this fix in the original series and resend whole series(?)
+- re-create the series and drop the already applied patches. Add this
+  fix as a fixup patch in new series and apply it to power-supply tree
+  after the linear-ranges from regulator is merged to power-supply.
+
+ Please adviece me if this patch is not the way to go.
+
+Oh, and I am really sorry for the trouble. I saw I had regulators=y
+in all of my compilations due to some pincontrol dependencies. So
+linear-ranges was not built as module in any of my test compilations :(
+
+Thanks for testing Mark!
+
+ lib/linear_ranges.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/lib/linear_ranges.c b/lib/linear_ranges.c
+index d1336c75ccd7..9495ef3572b7 100644
+--- a/lib/linear_ranges.c
++++ b/lib/linear_ranges.c
+@@ -12,6 +12,7 @@
+ #include <linux/export.h>
+ #include <linux/kernel.h>
+ #include <linux/linear_range.h>
++#include <linux/module.h>
  
--		/*
--		 * If the status bit is set for any enabled GPE other than the
--		 * EC one, the wakeup is regarded as a genuine one.
--		 */
--		if (acpi_ec_other_gpes_active())
-+		/* Check non-EC GPE wakeups and dispatch the EC GPE. */
-+		if (acpi_ec_dispatch_gpe())
- 			return true;
- 
- 		/*
--		 * If the EC GPE status bit has not been set, the wakeup is
--		 * regarded as a spurious one.
--		 */
--		if (!acpi_ec_dispatch_gpe())
--			return false;
--
--		/*
- 		 * Cancel the wakeup and process all pending events in case
- 		 * there are any wakeup ones in there.
- 		 *
-Index: linux-pm/drivers/acpi/ec.c
-===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -1994,23 +1994,31 @@ void acpi_ec_set_gpe_wake_mask(u8 action
- 		acpi_set_gpe_wake_mask(NULL, first_ec->gpe, action);
+ /**
+  * linear_range_values_in_range - return the amount of values in a range
+@@ -239,3 +240,6 @@ int linear_range_get_selector_high(const struct linear_range *r,
+ 	return 0;
  }
- 
--bool acpi_ec_other_gpes_active(void)
--{
--	return acpi_any_gpe_status_set(first_ec ? first_ec->gpe : U32_MAX);
--}
--
- bool acpi_ec_dispatch_gpe(void)
- {
- 	u32 ret;
- 
- 	if (!first_ec)
-+		return acpi_any_gpe_status_set(U32_MAX);
+ EXPORT_SYMBOL_GPL(linear_range_get_selector_high);
 +
-+	/*
-+	 * Report wakeup if the status bit is set for any enabled GPE other
-+	 * than the EC one.
-+	 */
-+	if (acpi_any_gpe_status_set(first_ec->gpe))
-+		return true;
-+
-+	if (ec_no_wakeup)
- 		return false;
- 
-+	/*
-+	 * Dispatch the EC GPE in-band, but do not report wakeup in any case
-+	 * to allow the caller to process events properly after that.
-+	 */
- 	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
--	if (ret == ACPI_INTERRUPT_HANDLED) {
-+	if (ret == ACPI_INTERRUPT_HANDLED)
- 		pm_pr_dbg("EC GPE dispatched\n");
--		return true;
--	}
-+
- 	return false;
- }
- #endif /* CONFIG_PM_SLEEP */
-Index: linux-pm/drivers/acpi/internal.h
-===================================================================
---- linux-pm.orig/drivers/acpi/internal.h
-+++ linux-pm/drivers/acpi/internal.h
-@@ -202,7 +202,6 @@ void acpi_ec_remove_query_handler(struct
- 
- #ifdef CONFIG_PM_SLEEP
- void acpi_ec_flush_work(void);
--bool acpi_ec_other_gpes_active(void);
- bool acpi_ec_dispatch_gpe(void);
- #endif
- 
++MODULE_DESCRIPTION("linear-ranges helper");
++MODULE_LICENSE("GPL");
+-- 
+2.21.0
 
 
+-- 
+Matti Vaittinen, Linux device drivers
+ROHM Semiconductors, Finland SWDC
+Kiviharjunlenkki 1E
+90220 OULU
+FINLAND
 
+~~~ "I don't think so," said Rene Descartes. Just then he vanished ~~~
+Simon says - in Latin please.
+~~~ "non cogito me" dixit Rene Descarte, deinde evanescavit ~~~
+Thanks to Simon Glass for the translation =] 
