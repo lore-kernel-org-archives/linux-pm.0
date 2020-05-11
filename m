@@ -2,112 +2,126 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3343C47255
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:38:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BCE1C47255
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:57:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7F896206D6
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:38:57 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="esoCKmKZ"
+	by mail.kernel.org (Postfix) with ESMTP id 215E9206F9
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:57:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726173AbgEKOi5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 10:38:57 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:47320 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725993AbgEKOi4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 10:38:56 -0400
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BEcqdn020841;
-        Mon, 11 May 2020 09:38:52 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1589207933;
-        bh=LLcnPcpO+fMJxDnHgxDEXH+kv7LMIDVvPCuMDORaRes=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=esoCKmKZltbLxkyFb5JQYrktm+YvCneNknumS0BkBsu8GUTMRGCrgwULYZV9tcTtQ
-         abJyC9Cec+K68148V7ihvT+zv1m2YaPQx70XA0jeNBl2cVTPiUNIbOTGWP0ViLjpAn
-         q6bNN/rrFM05S1hxrUAg94ntkP9bwitLjHdCeLBc=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04BEcqOi079483
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 11 May 2020 09:38:52 -0500
-Received: from DLEE101.ent.ti.com (157.170.170.31) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 11
- May 2020 09:38:52 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DLEE101.ent.ti.com
- (157.170.170.31) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 11 May 2020 09:38:52 -0500
-Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BEcpBq066742;
-        Mon, 11 May 2020 09:38:52 -0500
-Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
-CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
+        id S1729373AbgEKO5E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 10:57:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43790 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1726068AbgEKO5E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 10:57:04 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33409C061A0C;
+        Mon, 11 May 2020 07:57:04 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 19A532A1856
+Received: by earth.universe (Postfix, from userid 1000)
+        id 01FF53C08C6; Mon, 11 May 2020 16:57:00 +0200 (CEST)
+Date:   Mon, 11 May 2020 16:57:00 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Dan Murphy <dmurphy@ti.com>
+Cc:     linux-pm@vger.kernel.org, robh@kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>,
         "Andrew F . Davis" <afd@ti.com>
+Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
+Message-ID: <20200511145700.lnytcr747snnolya@earth.universe>
 References: <20200507183013.27261-1-dmurphy@ti.com>
  <20200510161721.257vprq6rqp64wu5@earth.universe>
  <fb9b240e-9bfe-1295-6fc4-700d886ea7c9@ti.com>
  <20200511143241.nmkti7meahvj2swt@earth.universe>
-From:   Dan Murphy <dmurphy@ti.com>
-Message-ID: <8674289c-038d-d811-4786-322d66072527@ti.com>
-Date:   Mon, 11 May 2020 09:29:59 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+ <8674289c-038d-d811-4786-322d66072527@ti.com>
 MIME-Version: 1.0
-In-Reply-To: <20200511143241.nmkti7meahvj2swt@earth.universe>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="lpudqiluygphtdpr"
+Content-Disposition: inline
+In-Reply-To: <8674289c-038d-d811-4786-322d66072527@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Sebastian
 
-On 5/11/20 9:32 AM, Sebastian Reichel wrote:
-> Hi,
->
-> On Mon, May 11, 2020 at 07:25:06AM -0500, Dan Murphy wrote:
->> On 5/10/20 11:17 AM, Sebastian Reichel wrote:
->>> This needs is missing the power-supplies property. The N900 DT
->>> contains a bq27200 referencing the charger, so it should fail the DT
->>> check without the property being listed here.
->> Hmm.  I ran the dt checker specifically on the binding and it did not fail.
->> Unless I need to build some other DTs as well.
->> Either I will have the power-supplies property
-> I just tried it myself. The problem is the way you are specifying
-> the compatible strings. This is the parsing result:
->
-> enum: ['ti,bq27200 - BQ27200', 'ti,bq27210 - BQ27210', 'ti,bq27500 - deprecated,
->        use revision specific property below', ...
->
-> You can see this in Documentation/devicetree/bindings/processed-schema.yaml, which
-> is generated by running the check. The compatible comments need a # as separation
-> character like this to generate proper bindings:
->
-> properties:
->    compatible:
->      enum:
->        - ti,bq27200 # BQ27200
->        - ti,bq27210 # BQ27210
->        - ti,bq27500 # deprecated, use revision specific property below
+--lpudqiluygphtdpr
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Well honestly not sure why we need the comment either.   These are 
-pretty self explanatory maybe we should just remove the additional comments
+Hi,
 
-Any consideration on just removing the deprecated values?
+On Mon, May 11, 2020 at 09:29:59AM -0500, Dan Murphy wrote:
+> On 5/11/20 9:32 AM, Sebastian Reichel wrote:
+> > On Mon, May 11, 2020 at 07:25:06AM -0500, Dan Murphy wrote:
+> > > On 5/10/20 11:17 AM, Sebastian Reichel wrote:
+> > > > This needs is missing the power-supplies property. The N900 DT
+> > > > contains a bq27200 referencing the charger, so it should fail the DT
+> > > > check without the property being listed here.
+> > > Hmm.=A0 I ran the dt checker specifically on the binding and it did n=
+ot fail.
+> > > Unless I need to build some other DTs as well.
+> > > Either I will have the power-supplies property
+> > I just tried it myself. The problem is the way you are specifying
+> > the compatible strings. This is the parsing result:
+> >=20
+> > enum: ['ti,bq27200 - BQ27200', 'ti,bq27210 - BQ27210', 'ti,bq27500 - de=
+precated,
+> >        use revision specific property below', ...
+> >=20
+> > You can see this in Documentation/devicetree/bindings/processed-schema.=
+yaml, which
+> > is generated by running the check. The compatible comments need a # as =
+separation
+> > character like this to generate proper bindings:
+> >=20
+> > properties:
+> >    compatible:
+> >      enum:
+> >        - ti,bq27200 # BQ27200
+> >        - ti,bq27210 # BQ27210
+> >        - ti,bq27500 # deprecated, use revision specific property below
+>=20
+> Well honestly not sure why we need the comment either.=A0These are pretty
+> self explanatory maybe we should just remove the additional comments
 
-Dan
+Fine with me.
 
->
-> -- Sebastian
+> Any consideration on just removing the deprecated values?
+
+Let's keep them with their comment for now. Removing them should
+start with marking them as depracated in the binding and generating
+a runtime warning in the driver, so that people become aware of the
+problem. At least for ti,bq27500 we have mainline users At least for
+ti,bq27500 we have mainline users.
+
+-- Sebastian
+
+--lpudqiluygphtdpr
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl65Z7cACgkQ2O7X88g7
++ppqdA//cnVvZhzbdTYQtJef4RbEImz6Dpb4yaZQRsYl/Kvnht05IlpKVHdUeuMm
+i7TpqGuLK3s4PRLXERKcwT1wcr3glgES2anoxu6lobL1fojvABRjoBr+uleByPH6
+QKh87h4Ink/IcPvoJ1Ce0wOZ+9gBrXVjUjylKaLKtq536sz2HTqavd3JAMN1FDeO
+YRalhlyvoWBz8e0EigqdiIvxlihn+VKvDJSO2pzRcEHFdrJPvlt5whEUtZnNMo4Y
++GzfXEY1ycU8kgJ3LXZNBdvGUivfABZpj3T/tuWPp81xB6s+Cfrh0/Qh9WcJ7bx8
+jeNcesEqoURB2SDIqx6arAYt8+jHm4Pz/azqTP6zOpNGpEWunVdU/VkoCicirw6P
+zXmxVkpwLuQfb3TOD/DHwg66AcIBa8ZRMWrTxZXKb5XMrITbFq2Yn8Z0KFaa0ffC
+AgA7SsqRxBgfsVQF/867+10O54bzlRhDkBZJN0G/m6+hTIg1C5xu7f3Full4u8XC
+oXzRU06DTLdAXHW40DBNaGF8/yMUAkYZ3RKc2aP+c/HRm3PEOlYb/wYBwdTVb7FF
+Yzspxp5CpZUXsIpekoae+RXw72uqhDNMdoni6v90JfZ2Ior90OGuyiB55cSCW1at
+xHl5rOK5HtyXPefmsn+MbrC+JAloYaCHuQ3OF/5tRUOaDOtIuOs=
+=oLwa
+-----END PGP SIGNATURE-----
+
+--lpudqiluygphtdpr--
