@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1B0AC54E8D
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C20D0C54E4A
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C138F20801
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A1531207FF
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qq74y2cm"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YXhiLmSx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730060AbgEKM0c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 08:26:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48470 "EHLO
+        id S1729811AbgEKMZv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 08:25:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1730056AbgEKM0b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:26:31 -0400
-Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 315FFC061A0E
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:26:31 -0700 (PDT)
-Received: by mail-pl1-x62c.google.com with SMTP id x10so3874647plr.4
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:26:31 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1729728AbgEKMZs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:25:48 -0400
+Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53CD6C061A0C
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:48 -0700 (PDT)
+Received: by mail-pl1-x644.google.com with SMTP id k19so3867610pll.9
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:48 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=XND7Ft1QHmviKkz6VujX9JUe2hE4nNkjYKIH9ZGOL2c=;
-        b=qq74y2cmWrgyNBuVo+ZVQ82V6vuYaeXy47j9lpqUOsM5LvjXdIpScs5Cyl8Woe2rKJ
-         wbeZGdChqEHWYorM2c8iT+ZzGdPgYODIHY0yc8UfNgRbe0kedUDdsTlRpZUuCgD+Xp06
-         zCmV1VYQx6p5E3PmCTciMt2nmg4AMB00wgMERiE9GJHgkg5iWu1ODLrXpFTISIHCssK0
-         Pq7e++v0MLeOZBPcwVdvcZ+dp5s+yTCRB8Q25/8dNmXYCEhlsDAa0qoWua15uG9Nhon3
-         /0cdL5w8rP3i10tpxI7R4WSEKga8awqQ34bJYAIrheJXcM277MC79Wcnzw06DSWv0+5a
-         Kc9A==
+        bh=haxNS0r+O/CZv15x/o++MDoCTq7xU6xDTOnaN5esXAw=;
+        b=YXhiLmSx4goD8MUm/DW+rJ3zGpXWB6FJ31sgJ5LlIO1JYcdZkfCt5mSFZIuxiNtm5l
+         UfHYxoICohviLDbSbjQmTo+sOI/dpnqt3cbXlcfW13WQsYTxb8gc/Ei0zObJ5Yh4p0Ba
+         iF3fXBsX6jrgIDBJnZM4Wh/x3tNrHCcUf0MS3jsv6VVJmLC5qOzpwb4tGxZsrxkBbywa
+         YxaL3gXVxEIlRpdW4oMDNSobiYem5inBDHkZxsUTxoA8QqbtdNHXhv5usHlkZeRqNhkO
+         g/rXcAd6Vj+FDAc0jItxg+usDGmwxOWHSD++8EhIzWWfJUFNLJdxrvORZXMDBb5R+6zU
+         8UYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=XND7Ft1QHmviKkz6VujX9JUe2hE4nNkjYKIH9ZGOL2c=;
-        b=tFUFdFcPxViibGZ24MyTBBuy/VBSnMU+Xm5hL+ML662nMmJHG1PHHOGcbYvMYYQbbv
-         b6xAZ0OWQtwSLXY6t7heFN72K3YD2VsxLzeB47JHPPi+FcWHjdN4X2t/3ikS68zNj6Ke
-         sZY0BKPYhs3zxZqEY5lITvqsLb2ln6L2E14YZMPx/o6HwUmUgY4R7F8nSV6N8EHwibST
-         XZ9i8cJudGSzDivJOjwIGJuILp4Xz/U5kkN+HWwW6kQbjpmROlskxbkjOS4HAkmK74FP
-         RQFD7MUyRjDWgMkjhzhdfDqBU/5UhH+9lWAwYvBMRDHA7YLFhKSYYcD62T1PvOoKmLyQ
-         WQYA==
-X-Gm-Message-State: AGi0PuaaORpH4BCx4QTCVQJvsUwXAGE6jma+6X20seOrh13+h/Ei5GfB
-        KDBM+r/wle3nwKcnmTR8Dr7A0g==
-X-Google-Smtp-Source: APiQypI5fvYsRF8XnQe9EPoaeEun1n645HV0jOql6fL0RQEqTubw4z2wfOtKrErX3Fbm2RhA6mQO2w==
-X-Received: by 2002:a17:90a:fa3:: with SMTP id 32mr22841991pjz.224.1589199990623;
-        Mon, 11 May 2020 05:26:30 -0700 (PDT)
+        bh=haxNS0r+O/CZv15x/o++MDoCTq7xU6xDTOnaN5esXAw=;
+        b=LhwGYbkln07y77r54+x8k+876aU0M1bX3U9ylzgKk9r6Cvh12f2cQCIx8uoKh07iRy
+         VDWoqESpKWTe2IiTqiAMxJvrS1vHEU4Q7TwdV9QU+npZD7nUm3tUZESRxKSEp7r7pmgc
+         /G3adMB/npVd92mZQwJIic747ltT01BdNCMU0dzM7uM+tafHqClC7crfmbGsfXa4UbZZ
+         0JuiLUP5yI/uh01zqH1Bbu70Gt/y1hZ1B4us1vrtDvHMj5cEVCZKYbFkO5erGb2Wh1nI
+         0E8j4Po4eWghQJguu3zpkjejzfWdmP5da0U0a9Da9GTHMGKZTsWryZKhiUgVuWUY4fV8
+         dAbA==
+X-Gm-Message-State: AGi0Pua11C4W/wiyHyqXEHtjKdU2go27TIocQslfDHP9jLYWIbm3F8nw
+        ta2KehYRJoSfeWdrEuYo41OETw==
+X-Google-Smtp-Source: APiQypKuTjY9Gg8mysJb/lkYYkrUVhRtatcvHzJl+3wFXdbvG1f4JVxn/zvTUHIoQRLk+TPOTNmBjg==
+X-Received: by 2002:a17:90a:e013:: with SMTP id u19mr20147358pjy.16.1589199947854;
+        Mon, 11 May 2020 05:25:47 -0700 (PDT)
 Received: from localhost ([45.127.45.102])
-        by smtp.gmail.com with ESMTPSA id y2sm9235710pfq.16.2020.05.11.05.26.29
+        by smtp.gmail.com with ESMTPSA id x193sm9569958pfd.54.2020.05.11.05.25.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2020 05:26:29 -0700 (PDT)
+        Mon, 11 May 2020 05:25:47 -0700 (PDT)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         daniel.lezcano@linaro.org,
@@ -66,9 +66,9 @@ To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
 Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH 14/14] thermal/of: Rename of-thermal.c
-Date:   Mon, 11 May 2020 17:55:02 +0530
-Message-Id: <f5e233d5c5dcc7c7cb56b3448da255cb2c9ef0d1.1589199124.git.amit.kucheria@linaro.org>
+Subject: [PATCH 04/14] thermal/drivers/thermal_helpers: Include export.h
+Date:   Mon, 11 May 2020 17:54:52 +0530
+Message-Id: <fd3443f00dbba6ca90f35726c7451ae52145d2d4.1589199124.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <cover.1589199124.git.amit.kucheria@linaro.org>
 References: <cover.1589199124.git.amit.kucheria@linaro.org>
@@ -79,36 +79,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Core thermal framework code files should start with thermal_*.
-of-thermal.c does not follow this pattern and can easily be confused
-with platform driver.
-
-Fix this by renaming it to thermal_of.c
+It is preferable to include export.h when you are using EXPORT_SYMBOL
+family of macros.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/Makefile                       | 2 +-
- drivers/thermal/{of-thermal.c => thermal_of.c} | 0
- 2 files changed, 1 insertion(+), 1 deletion(-)
- rename drivers/thermal/{of-thermal.c => thermal_of.c} (100%)
+ drivers/thermal/thermal_helpers.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
-index 09ff0e259d46..d7969dd553cb 100644
---- a/drivers/thermal/Makefile
-+++ b/drivers/thermal/Makefile
-@@ -9,7 +9,7 @@ thermal_sys-y			+= thermal_core.o thermal_sysfs.o \
+diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
+index 8ea0a05404f7..e47da80daf3a 100644
+--- a/drivers/thermal/thermal_helpers.c
++++ b/drivers/thermal/thermal_helpers.c
+@@ -14,6 +14,7 @@
  
- # interface to/from other layers providing sensors
- thermal_sys-$(CONFIG_THERMAL_HWMON)		+= thermal_hwmon.o
--thermal_sys-$(CONFIG_THERMAL_OF)		+= of-thermal.o
-+thermal_sys-$(CONFIG_THERMAL_OF)		+= thermal_of.o
- 
- # governors
- thermal_sys-$(CONFIG_THERMAL_GOV_FAIR_SHARE)	+= gov_fair_share.o
-diff --git a/drivers/thermal/of-thermal.c b/drivers/thermal/thermal_of.c
-similarity index 100%
-rename from drivers/thermal/of-thermal.c
-rename to drivers/thermal/thermal_of.c
+ #include <linux/device.h>
+ #include <linux/err.h>
++#include <linux/export.h>
+ #include <linux/slab.h>
+ #include <linux/string.h>
+ #include <linux/sysfs.h>
 -- 
 2.20.1
 
