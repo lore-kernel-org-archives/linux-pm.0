@@ -2,137 +2,122 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F38F6C54E8D
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:31:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8758C47255
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:32:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D855D20675
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:31:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C43C420675
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:32:51 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="pJ1ZqtF/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729119AbgEKPbA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 11:31:00 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:52660 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727093AbgEKPbA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 11:31:00 -0400
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id 3BCD62A0923
-Received: by earth.universe (Postfix, from userid 1000)
-        id 0AA733C08C6; Mon, 11 May 2020 17:30:56 +0200 (CEST)
-Date:   Mon, 11 May 2020 17:30:55 +0200
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Dan Murphy <dmurphy@ti.com>
-Cc:     linux-pm@vger.kernel.org, robh@kernel.org,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>,
-        "Andrew F . Davis" <afd@ti.com>
+        id S1729120AbgEKPcp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 11:32:45 -0400
+Received: from lelv0142.ext.ti.com ([198.47.23.249]:55100 "EHLO
+        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728084AbgEKPcp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 11:32:45 -0400
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BFWh5a037261;
+        Mon, 11 May 2020 10:32:43 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1589211163;
+        bh=b0MUfp5nG5bVQq6N28sCwmBCyU7Qu62G3MroX7jZW1A=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=pJ1ZqtF/eXM3gSMNqPo+YfoVDW0f8EkRezgtFk9tmCZGwkYeTXa+1wEK2fXzhGOyt
+         PyicbZNQ+Qljn/qcLd68U6MsWLLDThwO9TAx3kC+AcePo1UEeNxu4r9uaWPDwVcIMd
+         MmpjUpynOo2a80CiFTvNrCEzEyWVmTIqbO9FQl5w=
+Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04BFWh3M104455
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 11 May 2020 10:32:43 -0500
+Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE115.ent.ti.com
+ (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 11
+ May 2020 10:32:43 -0500
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE107.ent.ti.com
+ (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Mon, 11 May 2020 10:32:43 -0500
+Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BFWg4V035089;
+        Mon, 11 May 2020 10:32:43 -0500
 Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
-Message-ID: <20200511153055.7u7afdcpcfbsmswq@earth.universe>
+To:     "Andrew F. Davis" <afd@ti.com>, <sre@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>
 References: <20200507183013.27261-1-dmurphy@ti.com>
- <20200510161721.257vprq6rqp64wu5@earth.universe>
- <fb9b240e-9bfe-1295-6fc4-700d886ea7c9@ti.com>
- <20200511143241.nmkti7meahvj2swt@earth.universe>
- <8674289c-038d-d811-4786-322d66072527@ti.com>
- <20200511145700.lnytcr747snnolya@earth.universe>
- <57e2495d-ec06-53ff-c2b5-10062da2848f@ti.com>
+ <a5eae705-672b-acef-8850-0811a6ea13fb@ti.com>
+From:   Dan Murphy <dmurphy@ti.com>
+Message-ID: <38fffe57-bcc2-b87f-6589-09bb97b5c67a@ti.com>
+Date:   Mon, 11 May 2020 10:23:50 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="p6a5pm5xcfp2qz24"
-Content-Disposition: inline
-In-Reply-To: <57e2495d-ec06-53ff-c2b5-10062da2848f@ti.com>
+In-Reply-To: <a5eae705-672b-acef-8850-0811a6ea13fb@ti.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Andrew
 
---p6a5pm5xcfp2qz24
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On 5/11/20 10:22 AM, Andrew F. Davis wrote:
+> On 5/7/20 2:30 PM, Dan Murphy wrote:
+>> Convert the bq27xxx.txt to yaml format
+>>
+>> CC: Pali Rohár <pali@kernel.org>
+>> CC: Andrew F. Davis <afd@ti.com>
+>> Signed-off-by: Dan Murphy <dmurphy@ti.com>
+>> ---
+>>   .../bindings/power/supply/bq27xxx.txt         | 56 ------------
+>>   .../bindings/power/supply/bq27xxx.yaml        | 86 +++++++++++++++++++
+>>   2 files changed, 86 insertions(+), 56 deletions(-)
+>>   delete mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>>   create mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> deleted file mode 100644
+>> index 4fa8e08df2b6..000000000000
+>> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> +++ /dev/null
+>> @@ -1,56 +0,0 @@
+>> -TI BQ27XXX fuel gauge family
+>> -
+>> -Required properties:
+>> -- compatible: contains one of the following:
+>> - * "ti,bq27200" - BQ27200
+>> - * "ti,bq27210" - BQ27210
+>> - * "ti,bq27500" - deprecated, use revision specific property below
+>> - * "ti,bq27510" - deprecated, use revision specific property below
+>> - * "ti,bq27520" - deprecated, use revision specific property below
+>> - * "ti,bq27500-1" - BQ27500/1
+>
+> This doesn't look right, these are two parts, we should be specific in
+> DT, so:
+>
+> ti,bq27500
+> ti,bq27501
+>
+> should be separate like that.
 
-Hi,
+I agree if they are 2 different parts but the code has
 
-On Mon, May 11, 2020 at 09:55:11AM -0500, Dan Murphy wrote:
-> On 5/11/20 9:57 AM, Sebastian Reichel wrote:
-> > On Mon, May 11, 2020 at 09:29:59AM -0500, Dan Murphy wrote:
-> > > On 5/11/20 9:32 AM, Sebastian Reichel wrote:
-> > > > On Mon, May 11, 2020 at 07:25:06AM -0500, Dan Murphy wrote:
-> > > > > On 5/10/20 11:17 AM, Sebastian Reichel wrote:
-> > > > > > This needs is missing the power-supplies property. The N900 DT
-> > > > > > contains a bq27200 referencing the charger, so it should fail t=
-he DT
-> > > > > > check without the property being listed here.
-> > > > > Hmm.=A0 I ran the dt checker specifically on the binding and it d=
-id not fail.
-> > > > > Unless I need to build some other DTs as well.
-> > > > > Either I will have the power-supplies property
-> > > > I just tried it myself. The problem is the way you are specifying
-> > > > the compatible strings. This is the parsing result:
-> > > >=20
-> > > > enum: ['ti,bq27200 - BQ27200', 'ti,bq27210 - BQ27210', 'ti,bq27500 =
-- deprecated,
-> > > >         use revision specific property below', ...
-> > > >=20
-> > > > You can see this in Documentation/devicetree/bindings/processed-sch=
-ema.yaml, which
-> > > > is generated by running the check. The compatible comments need a #=
- as separation
-> > > > character like this to generate proper bindings:
-> > > >=20
-> > > > properties:
-> > > >     compatible:
-> > > >       enum:
-> > > >         - ti,bq27200 # BQ27200
-> > > >         - ti,bq27210 # BQ27210
-> > > >         - ti,bq27500 # deprecated, use revision specific property b=
-elow
-> > > Well honestly not sure why we need the comment either.=A0These are pr=
-etty
-> > > self explanatory maybe we should just remove the additional comments
-> > Fine with me.
-> Ack
-> >=20
-> > > Any consideration on just removing the deprecated values?
-> > Let's keep them with their comment for now. Removing them should
-> > start with marking them as depracated in the binding and generating
-> > a runtime warning in the driver, so that people become aware of the
-> > problem. At least for ti,bq27500 we have mainline users At least for
-> > ti,bq27500 we have mainline users.
->=20
-> There are only 2 dts files that have this reference unless we are not sure
-> which device is actually in use.
+     { .compatible = "ti,bq27500-1" },
 
-DT is considered ABI and one is supposed to be able to boot a new
-kernel with an old DT. It's not enough to just update the in-tree
-dts files. I suppose we can consider removing support for the old
-compatible values after having the warning being printed for some
-time and the mainline users being converted to the new binding.
+But it has no consumers.
 
--- Sebastian
+So the ti,bq27500-1 compatible should be deprecated and ti,bq27501  
+should be added and the ti,bq27500 should be reinstated.
 
---p6a5pm5xcfp2qz24
-Content-Type: application/pgp-signature; name="signature.asc"
+Dan
 
------BEGIN PGP SIGNATURE-----
-
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl65b6oACgkQ2O7X88g7
-+prdsA/+LRNbHjpJM/eGMeZL07Zi7D0x1usYEjVEkUDLpt4jUoyk+rwGe7Lf5c/f
-UZJHzGn6FvTKpNi8IJNYZ/mBywIPIyt/0PYqAuHpE2vNaEB+g7IA4KzDkWlLOxxX
-Oep5YeyezarXQwLrv/2m6DFvOYteMxn1/FPwGgMED3T6diw1691ajAmLTSyshshp
-tKkXtK0gMcPHNKzdSh85z7eNXRGpQh0V9Zi+iOc6Hz1/VlC+cPysOgF2zjaUTfAR
-g0E+jR7FAfBsexmQt/IedMS1vjusQhqQN/ogQrjGEkRnoAb1HgJojvLWmLfRgn/k
-bF7uwfh+fqShrkBtyl7uPJQMsAMuTKkWNZwjaNtZfsyylpLP7ugDiBVqUg+ni17d
-mkcYKuQ9hdJQ99Rkn/FH+atEUKqnCUzX5PKgMMfyszeklyAZ8fEi1D3/0w7A8U39
-a96TBija1qzCQh3yR4vLNkeNoVajlf0k1xdigL2YKvDMjQ3AyTRdDzD1/6/Zn9VS
-mVyczXSpb27X5oNGOPrstf/UQvtzTJ6nUIdVnOeGzu0m0LWQ7ViAneKdePT9aNKY
-RohcxgnRxnIeTcKdzy119iE3kHogyf0hgeH0HUBfv/wuWGQHHFpTFv97bG23C3p+
-gv34Kd8ytuTW8ga9M4nFCyVqFWI5riic49ZbtGqxuwwXKaPOMqs=
-=0M+W
------END PGP SIGNATURE-----
-
---p6a5pm5xcfp2qz24--
