@@ -2,102 +2,312 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59DE0C47255
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 13:49:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC5B2C54E4A
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:11:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3843D20746
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 13:49:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="k5UvlXD0"
+	by mail.kernel.org (Postfix) with ESMTP id CF099206DB
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 14:11:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726438AbgEKNtD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 09:49:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33118 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1730158AbgEKNtC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 09:49:02 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1700C061A0E
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 06:49:00 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id z72so9736849wmc.2
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 06:49:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=BjHVuVtBWSdENXXYiinZ4uI8mae/pV5Z0nfAWffhAkY=;
-        b=k5UvlXD0wz5vs3V4Z1hLq6biCClQbT+SzjjXqeAWFhwqVN+GA6qeV+oLnHhDuhXDcw
-         MVX0TgpYBV2DjO6YTj2/kloLSz+106Qm/fu9Fbt1wd7Q9aE3k+RpBPuqoe4B/zYzxdUq
-         BWm+yMkxszNTBcpnFcQs0Byn+efwRCTcgItZvKIAw201wqDgUXYW7R4/7Cfdosha29v5
-         hG7krpuspf6IGF5pvCDjIZnLghI9pcVt8KAQQzkY5BjrBvfl67q0XBW22UMkTBRK4S4F
-         DLCrrH5eHw06BLRl64MM4YyqwuAW3hNxzvNkr+tVHeL/B126T/5EI79diNMMOpSg7Ksv
-         7m/Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=BjHVuVtBWSdENXXYiinZ4uI8mae/pV5Z0nfAWffhAkY=;
-        b=B2JPxumQIuslq/aFTELfFFnfsxn/e92PdF2J9ah4XtLRpxXkNd2aNOrK82aCHDV4Rm
-         AUR78sACcW/JoM0QBxUzz6gyMbECLCCkmndgr6kY8IAvuseXcS0RoPhq5LOvFIxVBoog
-         4DnD9VvpotgFQODLkbTssk+dJkoXSX/UJSC9AorjDbv2QHFoGpzwG/5AevoMQD+2xIb9
-         NSj0OB9+VQw7qsAtAUkmJm8zerjv+ANAGc875sOw0D2r5LslVVjn7AF6VPNyKIYFPjzq
-         s2UHXs+NvfZc47vwOPmNed5uzSXUXDXJpAFSCAfG5vFMTjNHNphfUpwTTCjDeFq1rCj5
-         qGrA==
-X-Gm-Message-State: AGi0PuZXoltfnQhEBadab15+uVBPn5gSK0u6R5/HJitZ9ksDYPX65kqH
-        AQx0PDA26GJQM/QDq8XPGZQiNoBcOk2Cpw==
-X-Google-Smtp-Source: APiQypLt90h3E4QOKCct7odHvidKqDIEKMSux9lbzqVHNQsX/QafgI6SnH5ciyxpl3mgK+o2GNzOyg==
-X-Received: by 2002:a1c:df83:: with SMTP id w125mr22393555wmg.140.1589204939170;
-        Mon, 11 May 2020 06:48:59 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
-        by smtp.gmail.com with ESMTPSA id a24sm26771229wmb.24.2020.05.11.06.48.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2020 06:48:58 -0700 (PDT)
-Date:   Mon, 11 May 2020 14:48:54 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        dri-devel@lists.freedesktop.org, linux-omap@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-arm-msm@vger.kernel.org,
-        linux-imx@nxp.com, Dietmar.Eggemann@arm.com, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, rjw@rjwysocki.net, sudeep.holla@arm.com,
-        viresh.kumar@linaro.org, nm@ti.com, sboyd@kernel.org,
-        rui.zhang@intel.com, amit.kucheria@verdurent.com,
-        daniel.lezcano@linaro.org, mingo@redhat.com, peterz@infradead.org,
-        juri.lelli@redhat.com, vincent.guittot@linaro.org,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        shawnguo@kernel.org, s.hauer@pengutronix.de, festevam@gmail.com,
-        kernel@pengutronix.de, khilman@kernel.org, agross@kernel.org,
-        bjorn.andersson@linaro.org, robh@kernel.org,
-        matthias.bgg@gmail.com, steven.price@arm.com,
-        tomeu.vizoso@collabora.com, alyssa.rosenzweig@collabora.com,
-        airlied@linux.ie, daniel@ffwll.ch, liviu.dudau@arm.com,
-        lorenzo.pieralisi@arm.com, patrick.bellasi@matbug.net,
-        orjan.eide@arm.com, rdunlap@infradead.org, mka@chromium.org
-Subject: Re: [PATCH v7 07/15] Documentation: power: update Energy Model
- description
-Message-ID: <20200511134854.GD29112@google.com>
-References: <20200511111912.3001-1-lukasz.luba@arm.com>
- <20200511111912.3001-8-lukasz.luba@arm.com>
+        id S1730259AbgEKOLN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 10:11:13 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:15972 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1730255AbgEKOLN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 10:11:13 -0400
+Received: from pps.filterd (m0098413.ppops.net [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 04BE1ETU046959;
+        Mon, 11 May 2020 10:11:08 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 30wrw45brk-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 11 May 2020 10:11:07 -0400
+Received: from m0098413.ppops.net (m0098413.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 04BE1MCX047727;
+        Mon, 11 May 2020 10:11:06 -0400
+Received: from ppma03ams.nl.ibm.com (62.31.33a9.ip4.static.sl-reverse.com [169.51.49.98])
+        by mx0b-001b2d01.pphosted.com with ESMTP id 30wrw45bqh-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 11 May 2020 10:11:06 -0400
+Received: from pps.filterd (ppma03ams.nl.ibm.com [127.0.0.1])
+        by ppma03ams.nl.ibm.com (8.16.0.27/8.16.0.27) with SMTP id 04BEB4M3003196;
+        Mon, 11 May 2020 14:11:04 GMT
+Received: from b06cxnps4075.portsmouth.uk.ibm.com (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+        by ppma03ams.nl.ibm.com with ESMTP id 30wm55mh57-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 11 May 2020 14:11:04 +0000
+Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
+        by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 04BEB12E61014242
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 11 May 2020 14:11:01 GMT
+Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id AC57952076;
+        Mon, 11 May 2020 14:11:00 +0000 (GMT)
+Received: from pratiks-thinkpad.ibmuc.com (unknown [9.199.59.41])
+        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id AC01E52069;
+        Mon, 11 May 2020 14:10:58 +0000 (GMT)
+From:   Pratik Rajesh Sampat <psampat@linux.ibm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael.j.wysocki@intel.com, peterz@infradead.org,
+        dsmythies@telus.net, daniel.lezcano@linaro.org,
+        ego@linux.vnet.ibm.com, svaidy@linux.ibm.com,
+        psampat@linux.ibm.com, pratik.sampat@in.ibm.com,
+        pratik.r.sampat@gmail.com
+Subject: [RFC 1/1] Weighted approach to gather and use history in TEO governor
+Date:   Mon, 11 May 2020 19:40:55 +0530
+Message-Id: <20200511141055.43029-2-psampat@linux.ibm.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200511141055.43029-1-psampat@linux.ibm.com>
+References: <20200511141055.43029-1-psampat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200511111912.3001-8-lukasz.luba@arm.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216,18.0.676
+ definitions=2020-05-11_06:2020-05-11,2020-05-11 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
+ spamscore=0 impostorscore=0 malwarescore=0 lowpriorityscore=0
+ priorityscore=1501 mlxscore=0 clxscore=1015 adultscore=0 mlxlogscore=999
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2003020000 definitions=main-2005110112
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday 11 May 2020 at 12:19:04 (+0100), Lukasz Luba wrote:
-> The Energy Model framework supports also other devices than CPUs. Update
-> related information and add description for the new usage.
-> 
-> Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Complementing the current self correcting window algorithm, an alternate
+approach is devised to leverage history based on probability of
+occurrence of states
 
-Acked-by: Quentin Perret <qperret@google.com>
+Each CPU maintains a matrix wherein each idle state maintains a
+probability distribution for itself and the other corresponding states.
+
+The probability distribution is nothing but a n*n matrix, where
+n = drv->state_count.
+Each entry in the array signifies a weight for that row.
+The weights can vary from the range [0-10000].
+
+For example:
+state_mat[2][1] = 3000 means that when state 2 is entered idle with, the
+probability that the interval will last long enough to satisfy state 1's
+residency is 30%.
+The trailing zeros correspond to having more resolution while increasing
+or reducing the weights for correction.
+
+Initially the weights are distributed in a way such that the index of
+that state in question has a higher probability of choosing itself, as
+we have no reason to believe otherwise yet. Initial bias to itself is
+60% and the rest 40% is equally distributed to the rest of the states.
+
+Selection of an idle state:
+When the TEO governor chooses an idle state, the probability
+distribution for that state is looked at. A weighted random number
+generator is used using the weights as bias to choose the next idle
+state. The algorithm leans to choose that or a shallower state than that
+for its next prediction
+
+Correction of the probability distribution:
+On wakeup, the weights are updated. The state which it should have woken
+up with (could be the hit / miss / early hit state) is increased in
+weight by the "LEARNING_RATE" % and the rest of the states for that
+index are reduced by the same factor.
+The LEARNING RATE is experimentally chosen to be 10 %
+
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+---
+ drivers/cpuidle/governors/teo.c | 96 +++++++++++++++++++++++++++++++--
+ 1 file changed, 91 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpuidle/governors/teo.c b/drivers/cpuidle/governors/teo.c
+index de7e706efd46..84058d797b43 100644
+--- a/drivers/cpuidle/governors/teo.c
++++ b/drivers/cpuidle/governors/teo.c
+@@ -50,6 +50,7 @@
+ #include <linux/kernel.h>
+ #include <linux/sched/clock.h>
+ #include <linux/tick.h>
++#include <linux/random.h>
+ 
+ /*
+  * The PULSE value is added to metrics when they grow and the DECAY_SHIFT value
+@@ -64,6 +65,12 @@
+  */
+ #define INTERVALS	8
+ 
++/*
++ * Percentage of the amount of weight to be shifted in the idle state weight
++ * distribution for correction
++ */
++#define LEARNING_RATE	10
++
+ /**
+  * struct teo_idle_state - Idle state data used by the TEO cpuidle governor.
+  * @early_hits: "Early" CPU wakeups "matching" this state.
+@@ -98,6 +105,8 @@ struct teo_idle_state {
+  * @states: Idle states data corresponding to this CPU.
+  * @interval_idx: Index of the most recent saved idle interval.
+  * @intervals: Saved idle duration values.
++ * @state_mat: Each idle state maintains a weights corresponding to that
++ * state, storing the probability distribution of occurrence for that state
+  */
+ struct teo_cpu {
+ 	u64 time_span_ns;
+@@ -105,6 +114,7 @@ struct teo_cpu {
+ 	struct teo_idle_state states[CPUIDLE_STATE_MAX];
+ 	int interval_idx;
+ 	u64 intervals[INTERVALS];
++	int state_mat[CPUIDLE_STATE_MAX][CPUIDLE_STATE_MAX];
+ };
+ 
+ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
+@@ -117,7 +127,8 @@ static DEFINE_PER_CPU(struct teo_cpu, teo_cpus);
+ static void teo_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ {
+ 	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
+-	int i, idx_hit = -1, idx_timer = -1;
++	int i, idx_hit = -1, idx_timer = -1, idx = -1;
++	int last_idx = dev->last_state_idx;
+ 	u64 measured_ns;
+ 
+ 	if (cpu_data->time_span_ns >= cpu_data->sleep_length_ns) {
+@@ -183,16 +194,50 @@ static void teo_update(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 
+ 		if (idx_timer > idx_hit) {
+ 			misses += PULSE;
+-			if (idx_hit >= 0)
++			idx = idx_timer;
++			if (idx_hit >= 0) {
+ 				cpu_data->states[idx_hit].early_hits += PULSE;
++				idx = idx_hit;
++			}
+ 		} else {
+ 			hits += PULSE;
++			idx = last_idx;
+ 		}
+ 
+ 		cpu_data->states[idx_timer].misses = misses;
+ 		cpu_data->states[idx_timer].hits = hits;
+ 	}
+ 
++	/*
++	 * Rearrange the weight distribution of the state, increase the weight
++	 * by the LEARNING RATE % for the idle state that was supposed to be
++	 * chosen and reduce by the same amount for rest of the states
++	 *
++	 * If the weights are greater than (100 - LEARNING_RATE) % or lesser
++	 * than LEARNING_RATE %, do not increase or decrease the confidence
++	 * respectively
++	 */
++	for (i = 0; i < drv->state_count; i++) {
++		unsigned int delta;
++
++		if (idx == -1)
++			break;
++		if (i ==  idx) {
++			delta = (LEARNING_RATE * cpu_data->state_mat[last_idx][i]) / 100;
++			if (cpu_data->state_mat[last_idx][i] + delta >=
++			    (100 - LEARNING_RATE) * 100)
++				continue;
++			cpu_data->state_mat[last_idx][i] += delta;
++			continue;
++		}
++		delta = (LEARNING_RATE * cpu_data->state_mat[last_idx][i]) /
++			((drv->state_count - 1) * 100);
++		if (cpu_data->state_mat[last_idx][i] - delta <=
++		    LEARNING_RATE * 100)
++			continue;
++		cpu_data->state_mat[last_idx][i] -= delta;
++	}
++
+ 	/*
+ 	 * Save idle duration values corresponding to non-timer wakeups for
+ 	 * pattern detection.
+@@ -244,7 +289,7 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 	s64 latency_req = cpuidle_governor_latency_req(dev->cpu);
+ 	u64 duration_ns;
+ 	unsigned int hits, misses, early_hits;
+-	int max_early_idx, prev_max_early_idx, constraint_idx, idx, i;
++	int max_early_idx, prev_max_early_idx, constraint_idx, idx, i, og_idx;
+ 	ktime_t delta_tick;
+ 
+ 	if (dev->last_state_idx >= 0) {
+@@ -374,10 +419,14 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 	if (constraint_idx < idx)
+ 		idx = constraint_idx;
+ 
++	og_idx = idx;
++
+ 	if (idx < 0) {
+ 		idx = 0; /* No states enabled. Must use 0. */
+ 	} else if (idx > 0) {
+-		unsigned int count = 0;
++		unsigned int weights_list[CPUIDLE_STATE_MAX];
++		unsigned int i, j = 0, rnd_wt, rnd_num = 0;
++		unsigned int count = 0, sum_weights = 0;
+ 		u64 sum = 0;
+ 
+ 		/*
+@@ -412,6 +461,28 @@ static int teo_select(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+ 								       idx, avg_ns);
+ 			}
+ 		}
++		/*
++		 * In case, the recent history yields a shallower state, then
++		 * the probability distribution is looked at.
++		 * The weighted random number generator uses the weights as a
++		 * bias to choose the next idle state
++		 */
++		if (og_idx != idx) {
++			for (i = 0; i <= idx; i++) {
++				if (dev->states_usage[i].disable)
++					continue;
++				sum_weights += cpu_data->state_mat[idx][i];
++				weights_list[j++] = sum_weights;
++			}
++			get_random_bytes(&rnd_num, sizeof(rnd_num));
++			rnd_num = rnd_num % 100;
++			rnd_wt = (rnd_num * sum_weights) / 100;
++			for (i = 0; i < j; i++) {
++				if (rnd_wt < weights_list[i])
++					break;
++			}
++			idx = i;
++		}
+ 	}
+ 
+ 	/*
+@@ -468,13 +539,28 @@ static int teo_enable_device(struct cpuidle_driver *drv,
+ 			     struct cpuidle_device *dev)
+ {
+ 	struct teo_cpu *cpu_data = per_cpu_ptr(&teo_cpus, dev->cpu);
+-	int i;
++	int i, j;
+ 
+ 	memset(cpu_data, 0, sizeof(*cpu_data));
+ 
+ 	for (i = 0; i < INTERVALS; i++)
+ 		cpu_data->intervals[i] = U64_MAX;
+ 
++	/*
++	 * Populate initial weights for each state
++	 * The stop state is initially more biased for itself.
++	 *
++	 * Currently the initial distribution of probabilities are 70%-30%.
++	 * The trailing 0s are for increased resolution.
++	 */
++	for (i = 0; i < drv->state_count; i++) {
++		for (j = 0; j < drv->state_count; j++) {
++			if (i == j)
++				cpu_data->state_mat[i][j] = 6000;
++			else
++				cpu_data->state_mat[i][j] = 4000 / (drv->state_count - 1);
++		}
++	}
+ 	return 0;
+ }
+ 
+-- 
+2.17.1
+
