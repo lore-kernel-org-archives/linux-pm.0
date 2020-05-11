@@ -2,103 +2,285 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C20D0C54E4A
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8997BC54E4A
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:34:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A1531207FF
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:26:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5EE88206D6
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:34:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YXhiLmSx"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="nLuqfACW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729811AbgEKMZv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 08:25:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48294 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729728AbgEKMZs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:25:48 -0400
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53CD6C061A0C
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:48 -0700 (PDT)
-Received: by mail-pl1-x644.google.com with SMTP id k19so3867610pll.9
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=haxNS0r+O/CZv15x/o++MDoCTq7xU6xDTOnaN5esXAw=;
-        b=YXhiLmSx4goD8MUm/DW+rJ3zGpXWB6FJ31sgJ5LlIO1JYcdZkfCt5mSFZIuxiNtm5l
-         UfHYxoICohviLDbSbjQmTo+sOI/dpnqt3cbXlcfW13WQsYTxb8gc/Ei0zObJ5Yh4p0Ba
-         iF3fXBsX6jrgIDBJnZM4Wh/x3tNrHCcUf0MS3jsv6VVJmLC5qOzpwb4tGxZsrxkBbywa
-         YxaL3gXVxEIlRpdW4oMDNSobiYem5inBDHkZxsUTxoA8QqbtdNHXhv5usHlkZeRqNhkO
-         g/rXcAd6Vj+FDAc0jItxg+usDGmwxOWHSD++8EhIzWWfJUFNLJdxrvORZXMDBb5R+6zU
-         8UYA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=haxNS0r+O/CZv15x/o++MDoCTq7xU6xDTOnaN5esXAw=;
-        b=LhwGYbkln07y77r54+x8k+876aU0M1bX3U9ylzgKk9r6Cvh12f2cQCIx8uoKh07iRy
-         VDWoqESpKWTe2IiTqiAMxJvrS1vHEU4Q7TwdV9QU+npZD7nUm3tUZESRxKSEp7r7pmgc
-         /G3adMB/npVd92mZQwJIic747ltT01BdNCMU0dzM7uM+tafHqClC7crfmbGsfXa4UbZZ
-         0JuiLUP5yI/uh01zqH1Bbu70Gt/y1hZ1B4us1vrtDvHMj5cEVCZKYbFkO5erGb2Wh1nI
-         0E8j4Po4eWghQJguu3zpkjejzfWdmP5da0U0a9Da9GTHMGKZTsWryZKhiUgVuWUY4fV8
-         dAbA==
-X-Gm-Message-State: AGi0Pua11C4W/wiyHyqXEHtjKdU2go27TIocQslfDHP9jLYWIbm3F8nw
-        ta2KehYRJoSfeWdrEuYo41OETw==
-X-Google-Smtp-Source: APiQypKuTjY9Gg8mysJb/lkYYkrUVhRtatcvHzJl+3wFXdbvG1f4JVxn/zvTUHIoQRLk+TPOTNmBjg==
-X-Received: by 2002:a17:90a:e013:: with SMTP id u19mr20147358pjy.16.1589199947854;
-        Mon, 11 May 2020 05:25:47 -0700 (PDT)
-Received: from localhost ([45.127.45.102])
-        by smtp.gmail.com with ESMTPSA id x193sm9569958pfd.54.2020.05.11.05.25.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2020 05:25:47 -0700 (PDT)
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        daniel.lezcano@linaro.org,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Javi Merino <javi.merino@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>
-Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH 04/14] thermal/drivers/thermal_helpers: Include export.h
-Date:   Mon, 11 May 2020 17:54:52 +0530
-Message-Id: <fd3443f00dbba6ca90f35726c7451ae52145d2d4.1589199124.git.amit.kucheria@linaro.org>
-X-Mailer: git-send-email 2.20.1
-In-Reply-To: <cover.1589199124.git.amit.kucheria@linaro.org>
-References: <cover.1589199124.git.amit.kucheria@linaro.org>
+        id S1728402AbgEKMeE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 08:34:04 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:41810 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728367AbgEKMeE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:34:04 -0400
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BCXwwK056420;
+        Mon, 11 May 2020 07:33:58 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1589200438;
+        bh=F3ki1mQxyvwiG49j9FhGin3FqAgAN01/D6XjYGfeuc8=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=nLuqfACWXcGZGQZ/7schkjTSz7zv4XJ4oVpzvasC+NcgNj34Kd56yiXlkIshRRMbd
+         Mqtckc6YxtXyGEviDKtZ/I4dpgNL+Yjr6bCRGZ5Qg7PzaoteWLxfg9noz3igbzybCl
+         IYMw53EPdNo5fTbXgYre3JpMcxVhsvO/guDD0a0I=
+Received: from DFLE112.ent.ti.com (dfle112.ent.ti.com [10.64.6.33])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BCXwM6111293;
+        Mon, 11 May 2020 07:33:58 -0500
+Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 11
+ May 2020 07:33:58 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE107.ent.ti.com
+ (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Mon, 11 May 2020 07:33:58 -0500
+Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BCXwZT030336;
+        Mon, 11 May 2020 07:33:58 -0500
+Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
+        "Andrew F . Davis" <afd@ti.com>
+References: <20200507183013.27261-1-dmurphy@ti.com>
+ <20200510161721.257vprq6rqp64wu5@earth.universe>
+From:   Dan Murphy <dmurphy@ti.com>
+Message-ID: <fb9b240e-9bfe-1295-6fc4-700d886ea7c9@ti.com>
+Date:   Mon, 11 May 2020 07:25:06 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
+In-Reply-To: <20200510161721.257vprq6rqp64wu5@earth.universe>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It is preferable to include export.h when you are using EXPORT_SYMBOL
-family of macros.
+Sebastian
 
-Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/thermal/thermal_helpers.c | 1 +
- 1 file changed, 1 insertion(+)
+On 5/10/20 11:17 AM, Sebastian Reichel wrote:
+> Hi Dan,
+>
+> On Thu, May 07, 2020 at 01:30:13PM -0500, Dan Murphy wrote:
+>> Convert the bq27xxx.txt to yaml format
+>>
+>> CC: Pali Rohár <pali@kernel.org>
+>> CC: Andrew F. Davis <afd@ti.com>
+>> Signed-off-by: Dan Murphy <dmurphy@ti.com>
+>> ---
+> This needs is missing the power-supplies property. The N900 DT
+> contains a bq27200 referencing the charger, so it should fail the DT
+> check without the property being listed here.
 
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 8ea0a05404f7..e47da80daf3a 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/device.h>
- #include <linux/err.h>
-+#include <linux/export.h>
- #include <linux/slab.h>
- #include <linux/string.h>
- #include <linux/sysfs.h>
--- 
-2.20.1
+Hmm.  I ran the dt checker specifically on the binding and it did not 
+fail.  Unless I need to build some other DTs as well.
 
+Either I will have the power-supplies property
+
+>
+>>   .../bindings/power/supply/bq27xxx.txt         | 56 ------------
+>>   .../bindings/power/supply/bq27xxx.yaml        | 86 +++++++++++++++++++
+>>   2 files changed, 86 insertions(+), 56 deletions(-)
+>>   delete mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>>   create mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> deleted file mode 100644
+>> index 4fa8e08df2b6..000000000000
+>> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>> +++ /dev/null
+>> @@ -1,56 +0,0 @@
+>> -TI BQ27XXX fuel gauge family
+>> -
+>> -Required properties:
+>> -- compatible: contains one of the following:
+>> - * "ti,bq27200" - BQ27200
+>> - * "ti,bq27210" - BQ27210
+>> - * "ti,bq27500" - deprecated, use revision specific property below
+>> - * "ti,bq27510" - deprecated, use revision specific property below
+>> - * "ti,bq27520" - deprecated, use revision specific property below
+>> - * "ti,bq27500-1" - BQ27500/1
+>> - * "ti,bq27510g1" - BQ27510-g1
+>> - * "ti,bq27510g2" - BQ27510-g2
+>> - * "ti,bq27510g3" - BQ27510-g3
+>> - * "ti,bq27520g1" - BQ27520-g1
+>> - * "ti,bq27520g2" - BQ27520-g2
+>> - * "ti,bq27520g3" - BQ27520-g3
+>> - * "ti,bq27520g4" - BQ27520-g4
+>> - * "ti,bq27521" - BQ27521
+>> - * "ti,bq27530" - BQ27530
+>> - * "ti,bq27531" - BQ27531
+>> - * "ti,bq27541" - BQ27541
+>> - * "ti,bq27542" - BQ27542
+>> - * "ti,bq27546" - BQ27546
+>> - * "ti,bq27742" - BQ27742
+>> - * "ti,bq27545" - BQ27545
+>> - * "ti,bq27411" - BQ27411
+>> - * "ti,bq27421" - BQ27421
+>> - * "ti,bq27425" - BQ27425
+>> - * "ti,bq27426" - BQ27426
+>> - * "ti,bq27441" - BQ27441
+>> - * "ti,bq27621" - BQ27621
+>> -- reg: integer, I2C address of the fuel gauge.
+>> -
+>> -Optional properties:
+>> -- monitored-battery: phandle of battery characteristics node
+>> -    The fuel gauge uses the following battery properties:
+>> -    + energy-full-design-microwatt-hours
+>> -    + charge-full-design-microamp-hours
+>> -    + voltage-min-design-microvolt
+>> -  Both or neither of the *-full-design-*-hours properties must be set.
+>> -  See Documentation/devicetree/bindings/power/supply/battery.txt
+>> -
+>> -Example:
+>> -
+>> -	bat: battery {
+>> -		compatible = "simple-battery";
+>> -		voltage-min-design-microvolt = <3200000>;
+>> -		energy-full-design-microwatt-hours = <5290000>;
+>> -		charge-full-design-microamp-hours = <1430000>;
+>> -	};
+>> -
+>> -	bq27510g3: fuel-gauge@55 {
+>> -		compatible = "ti,bq27510g3";
+>> -		reg = <0x55>;
+>> -		monitored-battery = <&bat>;
+>> -	};
+>> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+>> new file mode 100644
+>> index 000000000000..54f497c291f2
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+>> @@ -0,0 +1,86 @@
+>> +# SPDX-License-Identifier: GPL-2.0
+>> +# Copyright (C) 2020 Texas Instruments Incorporated
+>> +%YAML 1.2
+>> +---
+>> +$id: "http://devicetree.org/schemas/power/supply/bq27xxx.yaml#"
+>> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+>> +
+>> +title: TI BQ27XXX fuel gauge family
+>> +
+>> +maintainers:
+>> +  - Pali Rohár <pali@kernel.org>
+>> +  - Andrew F. Davis <afd@ti.com>
+>> +  - Sebastian Reichel <sre@kernel.org>
+>> +
+>> +description: |
+>> +  Support various Texas Instruments fuel gauge devices that share similar
+>> +  register maps and power supply properties
+> allOf:
+>    - $ref: power-supply.yaml#
+Ack
+>
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - ti,bq27200 - BQ27200
+>> +      - ti,bq27210 - BQ27210
+>> +      - ti,bq27500 - deprecated, use revision specific property below
+>> +      - ti,bq27510 - deprecated, use revision specific property below
+>> +      - ti,bq27520 - deprecated, use revision specific property below
+> There is a deprecated property ("deprecated: true"), but IDK how to
+> apply it to specific compatible values. Maybe Rob can help out here.
+> Otherwise it's not a blocker, since the conversion is still an
+> improvement without having explicit deprecation marks :)
+>
+I would prefer to do this in separate patches.
+
+The code still contains these deprecated values.
+
+So technically we should remove them in this conversion from the 
+binding, code and the 2 bindings that they are associated with.
+
+These have been marked deprecated since 2017.
+
+I know we are not supposed to remove items from the bindings so at the 
+very least we should remove them from the code and update the devicetree 
+files and as you said mark these as deprecated and removed in this 
+conversion.
+
+>> +      - ti,bq27500-1 - BQ27500/1
+>> +      - ti,bq27510g1 - BQ27510-g1
+>> +      - ti,bq27510g2 - BQ27510-g2
+>> +      - ti,bq27510g3 - BQ27510-g3
+>> +      - ti,bq27520g1 - BQ27520-g1
+>> +      - ti,bq27520g2 - BQ27520-g2
+>> +      - ti,bq27520g3 - BQ27520-g3
+>> +      - ti,bq27520g4 - BQ27520-g4
+>> +      - ti,bq27521 - BQ27521
+>> +      - ti,bq27530 - BQ27530
+>> +      - ti,bq27531 - BQ27531
+>> +      - ti,bq27541 - BQ27541
+>> +      - ti,bq27542 - BQ27542
+>> +      - ti,bq27546 - BQ27546
+>> +      - ti,bq27742 - BQ27742
+>> +      - ti,bq27545 - BQ27545
+>> +      - ti,bq27411 - BQ27411
+>> +      - ti,bq27421 - BQ27421
+>> +      - ti,bq27425 - BQ27425
+>> +      - ti,bq27426 - BQ27426
+>> +      - ti,bq27441 - BQ27441
+>> +      - ti,bq27621 - BQ27621
+>> +
+>> +  reg:
+>> +    maxItems: 1
+>> +    description: integer, I2C address of the fuel gauge.
+>> +
+>> +  monitored-battery:
+>> +    description: |
+>> +       phandle of battery characteristics node.
+>> +       The fuel gauge uses the following battery properties:
+>> +       - energy-full-design-microwatt-hours
+>> +       - charge-full-design-microamp-hours
+>> +       - voltage-min-design-microvolt
+>> +       Both or neither of the *-full-design-*-hours properties must be set.
+>> +       See Documentation/devicetree/bindings/power/supply/battery.txt
+> power-supplies: true
+Ack
+>
+>> +
+>> +required:
+>> +  - compatible
+>> +  - reg
+>> +additionalProperties: false
+>> +
+>> +examples:
+>> +  - |
+>> +    i2c0 {
+>> +      #address-cells = <1>;
+>> +      #size-cells = <0>;
+>> +      bat: battery {
+>> +        compatible = "simple-battery";
+>> +        voltage-min-design-microvolt = <3200000>;
+>> +        energy-full-design-microwatt-hours = <5290000>;
+>> +        charge-full-design-microamp-hours = <1430000>;
+>> +      };
+>> +
+>> +      bq27510g3: fuel-gauge@55 {
+>> +        compatible = "ti,bq27510g3";
+>> +        reg = <0x55>;
+>> +        monitored-battery = <&bat>;
+>> +      };
+>> +    };
+> Otherwise looks good to me.
+
+Ack
+
+Dan
+
+>
+> -- Sebastian
