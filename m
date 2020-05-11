@@ -2,124 +2,250 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6925C54E8D
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:04:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41390C54E8E
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:22:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C6BD520736
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:04:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C1772078E
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:22:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="aBdUYVv5"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ZDKvPlp4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729556AbgEKPEJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 11:04:09 -0400
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:38156 "EHLO
+        id S1729439AbgEKPWe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 11:22:34 -0400
+Received: from lelv0143.ext.ti.com ([198.47.23.248]:40762 "EHLO
         lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729439AbgEKPEJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 11:04:09 -0400
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BF46RQ021721;
-        Mon, 11 May 2020 10:04:06 -0500
+        with ESMTP id S1726410AbgEKPWe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 11:22:34 -0400
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BFMWVS026970;
+        Mon, 11 May 2020 10:22:32 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1589209446;
-        bh=PaHM7ncRDAEeXG4G61hU0xZ07/k9Q++S5viFtly/yvY=;
+        s=ti-com-17Q1; t=1589210552;
+        bh=c2A2Z7mFBWQfoc2u8gxJWPjiTh6Whjhz3OnLPssiSVQ=;
         h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=aBdUYVv5/S69k7u1l/tYskoGTZuUF/9VtRtxiZXl8RrwNk6CVOgPDv4SvHgwL6KxC
-         VVqCbJz1jRdwEpB20Beb63Zmi2kvVM1Z/9N17sJF7SgJGoih78A+zrVCUFih8Oagpw
-         4lFLpCf6mwNvQse64wxJYv1zTZSgQLp85IF7Ui9o=
-Received: from DFLE108.ent.ti.com (dfle108.ent.ti.com [10.64.6.29])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BF46fI069574;
-        Mon, 11 May 2020 10:04:06 -0500
-Received: from DFLE113.ent.ti.com (10.64.6.34) by DFLE108.ent.ti.com
- (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+        b=ZDKvPlp4XTPW9HuB8aPMF6WJFtL+301BufiKjZ6bATKspoQpsVwGiq5yzSiWsg5Ql
+         qX+cCv4IPrVlab5iwRPha3xXPjm3LDNuloYnetgaArUNTxXJD5Y+0S5izFN02/gfMW
+         UrdmC/O8mc9i0gmoPxdGYZ/WlIYt5WhNGbxaMPAw=
+Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04BFMWtf022906
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 11 May 2020 10:22:32 -0500
+Received: from DFLE114.ent.ti.com (10.64.6.35) by DFLE114.ent.ti.com
+ (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 11
- May 2020 10:04:05 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
+ May 2020 10:22:32 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE114.ent.ti.com
+ (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 11 May 2020 10:04:05 -0500
-Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BF44HX084827;
-        Mon, 11 May 2020 10:04:04 -0500
+ Frontend Transport; Mon, 11 May 2020 10:22:32 -0500
+Received: from [10.250.38.163] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BFMUX5039149;
+        Mon, 11 May 2020 10:22:30 -0500
 Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
-To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Dan Murphy <dmurphy@ti.com>, <sre@kernel.org>
 CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
         <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
-        "Andrew F . Davis" <afd@ti.com>
+        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>
 References: <20200507183013.27261-1-dmurphy@ti.com>
- <20200510161721.257vprq6rqp64wu5@earth.universe>
- <fb9b240e-9bfe-1295-6fc4-700d886ea7c9@ti.com>
- <20200511143241.nmkti7meahvj2swt@earth.universe>
- <8674289c-038d-d811-4786-322d66072527@ti.com>
- <20200511145700.lnytcr747snnolya@earth.universe>
-From:   Dan Murphy <dmurphy@ti.com>
-Message-ID: <57e2495d-ec06-53ff-c2b5-10062da2848f@ti.com>
-Date:   Mon, 11 May 2020 09:55:11 -0500
+From:   "Andrew F. Davis" <afd@ti.com>
+Message-ID: <a5eae705-672b-acef-8850-0811a6ea13fb@ti.com>
+Date:   Mon, 11 May 2020 11:22:30 -0400
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.7.0
 MIME-Version: 1.0
-In-Reply-To: <20200511145700.lnytcr747snnolya@earth.universe>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200507183013.27261-1-dmurphy@ti.com>
+Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Sebastian
-
-On 5/11/20 9:57 AM, Sebastian Reichel wrote:
-> Hi,
->
-> On Mon, May 11, 2020 at 09:29:59AM -0500, Dan Murphy wrote:
->> On 5/11/20 9:32 AM, Sebastian Reichel wrote:
->>> On Mon, May 11, 2020 at 07:25:06AM -0500, Dan Murphy wrote:
->>>> On 5/10/20 11:17 AM, Sebastian Reichel wrote:
->>>>> This needs is missing the power-supplies property. The N900 DT
->>>>> contains a bq27200 referencing the charger, so it should fail the DT
->>>>> check without the property being listed here.
->>>> Hmm.† I ran the dt checker specifically on the binding and it did not fail.
->>>> Unless I need to build some other DTs as well.
->>>> Either I will have the power-supplies property
->>> I just tried it myself. The problem is the way you are specifying
->>> the compatible strings. This is the parsing result:
->>>
->>> enum: ['ti,bq27200 - BQ27200', 'ti,bq27210 - BQ27210', 'ti,bq27500 - deprecated,
->>>         use revision specific property below', ...
->>>
->>> You can see this in Documentation/devicetree/bindings/processed-schema.yaml, which
->>> is generated by running the check. The compatible comments need a # as separation
->>> character like this to generate proper bindings:
->>>
->>> properties:
->>>     compatible:
->>>       enum:
->>>         - ti,bq27200 # BQ27200
->>>         - ti,bq27210 # BQ27210
->>>         - ti,bq27500 # deprecated, use revision specific property below
->> Well honestly not sure why we need the comment either.†These are pretty
->> self explanatory maybe we should just remove the additional comments
-> Fine with me.
-Ack
->
->> Any consideration on just removing the deprecated values?
-> Let's keep them with their comment for now. Removing them should
-> start with marking them as depracated in the binding and generating
-> a runtime warning in the driver, so that people become aware of the
-> problem. At least for ti,bq27500 we have mainline users At least for
-> ti,bq27500 we have mainline users.
-
-There are only 2 dts files that have this reference unless we are not 
-sure which device is actually in use.
-
-Dan
+On 5/7/20 2:30 PM, Dan Murphy wrote:
+> Convert the bq27xxx.txt to yaml format
+> 
+> CC: Pali Roh√°r <pali@kernel.org>
+> CC: Andrew F. Davis <afd@ti.com>
+> Signed-off-by: Dan Murphy <dmurphy@ti.com>
+> ---
+>  .../bindings/power/supply/bq27xxx.txt         | 56 ------------
+>  .../bindings/power/supply/bq27xxx.yaml        | 86 +++++++++++++++++++
+>  2 files changed, 86 insertions(+), 56 deletions(-)
+>  delete mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+> deleted file mode 100644
+> index 4fa8e08df2b6..000000000000
+> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
+> +++ /dev/null
+> @@ -1,56 +0,0 @@
+> -TI BQ27XXX fuel gauge family
+> -
+> -Required properties:
+> -- compatible: contains one of the following:
+> - * "ti,bq27200" - BQ27200
+> - * "ti,bq27210" - BQ27210
+> - * "ti,bq27500" - deprecated, use revision specific property below
+> - * "ti,bq27510" - deprecated, use revision specific property below
+> - * "ti,bq27520" - deprecated, use revision specific property below
+> - * "ti,bq27500-1" - BQ27500/1
 
 
-> -- Sebastian
+This doesn't look right, these are two parts, we should be specific in
+DT, so:
+
+ti,bq27500
+ti,bq27501
+
+should be separate like that.
+
+Andrew
+
+
+> - * "ti,bq27510g1" - BQ27510-g1
+> - * "ti,bq27510g2" - BQ27510-g2
+> - * "ti,bq27510g3" - BQ27510-g3
+> - * "ti,bq27520g1" - BQ27520-g1
+> - * "ti,bq27520g2" - BQ27520-g2
+> - * "ti,bq27520g3" - BQ27520-g3
+> - * "ti,bq27520g4" - BQ27520-g4
+> - * "ti,bq27521" - BQ27521
+> - * "ti,bq27530" - BQ27530
+> - * "ti,bq27531" - BQ27531
+> - * "ti,bq27541" - BQ27541
+> - * "ti,bq27542" - BQ27542
+> - * "ti,bq27546" - BQ27546
+> - * "ti,bq27742" - BQ27742
+> - * "ti,bq27545" - BQ27545
+> - * "ti,bq27411" - BQ27411
+> - * "ti,bq27421" - BQ27421
+> - * "ti,bq27425" - BQ27425
+> - * "ti,bq27426" - BQ27426
+> - * "ti,bq27441" - BQ27441
+> - * "ti,bq27621" - BQ27621
+> -- reg: integer, I2C address of the fuel gauge.
+> -
+> -Optional properties:
+> -- monitored-battery: phandle of battery characteristics node
+> -    The fuel gauge uses the following battery properties:
+> -    + energy-full-design-microwatt-hours
+> -    + charge-full-design-microamp-hours
+> -    + voltage-min-design-microvolt
+> -  Both or neither of the *-full-design-*-hours properties must be set.
+> -  See Documentation/devicetree/bindings/power/supply/battery.txt
+> -
+> -Example:
+> -
+> -	bat: battery {
+> -		compatible = "simple-battery";
+> -		voltage-min-design-microvolt = <3200000>;
+> -		energy-full-design-microwatt-hours = <5290000>;
+> -		charge-full-design-microamp-hours = <1430000>;
+> -	};
+> -
+> -	bq27510g3: fuel-gauge@55 {
+> -		compatible = "ti,bq27510g3";
+> -		reg = <0x55>;
+> -		monitored-battery = <&bat>;
+> -	};
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+> new file mode 100644
+> index 000000000000..54f497c291f2
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+> @@ -0,0 +1,86 @@
+> +# SPDX-License-Identifier: GPL-2.0
+> +# Copyright (C) 2020 Texas Instruments Incorporated
+> +%YAML 1.2
+> +---
+> +$id: "http://devicetree.org/schemas/power/supply/bq27xxx.yaml#"
+> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> +
+> +title: TI BQ27XXX fuel gauge family
+> +
+> +maintainers:
+> +  - Pali Roh√°r <pali@kernel.org>
+> +  - Andrew F. Davis <afd@ti.com>
+> +  - Sebastian Reichel <sre@kernel.org>
+> +
+> +description: |
+> +  Support various Texas Instruments fuel gauge devices that share similar
+> +  register maps and power supply properties
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ti,bq27200 - BQ27200
+> +      - ti,bq27210 - BQ27210
+> +      - ti,bq27500 - deprecated, use revision specific property below
+> +      - ti,bq27510 - deprecated, use revision specific property below
+> +      - ti,bq27520 - deprecated, use revision specific property below
+> +      - ti,bq27500-1 - BQ27500/1
+> +      - ti,bq27510g1 - BQ27510-g1
+> +      - ti,bq27510g2 - BQ27510-g2
+> +      - ti,bq27510g3 - BQ27510-g3
+> +      - ti,bq27520g1 - BQ27520-g1
+> +      - ti,bq27520g2 - BQ27520-g2
+> +      - ti,bq27520g3 - BQ27520-g3
+> +      - ti,bq27520g4 - BQ27520-g4
+> +      - ti,bq27521 - BQ27521
+> +      - ti,bq27530 - BQ27530
+> +      - ti,bq27531 - BQ27531
+> +      - ti,bq27541 - BQ27541
+> +      - ti,bq27542 - BQ27542
+> +      - ti,bq27546 - BQ27546
+> +      - ti,bq27742 - BQ27742
+> +      - ti,bq27545 - BQ27545
+> +      - ti,bq27411 - BQ27411
+> +      - ti,bq27421 - BQ27421
+> +      - ti,bq27425 - BQ27425
+> +      - ti,bq27426 - BQ27426
+> +      - ti,bq27441 - BQ27441
+> +      - ti,bq27621 - BQ27621
+> +
+> +  reg:
+> +    maxItems: 1
+> +    description: integer, I2C address of the fuel gauge.
+> +
+> +  monitored-battery:
+> +    description: |
+> +       phandle of battery characteristics node.
+> +       The fuel gauge uses the following battery properties:
+> +       - energy-full-design-microwatt-hours
+> +       - charge-full-design-microamp-hours
+> +       - voltage-min-design-microvolt
+> +       Both or neither of the *-full-design-*-hours properties must be set.
+> +       See Documentation/devicetree/bindings/power/supply/battery.txt
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    i2c0 {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +      bat: battery {
+> +        compatible = "simple-battery";
+> +        voltage-min-design-microvolt = <3200000>;
+> +        energy-full-design-microwatt-hours = <5290000>;
+> +        charge-full-design-microamp-hours = <1430000>;
+> +      };
+> +
+> +      bq27510g3: fuel-gauge@55 {
+> +        compatible = "ti,bq27510g3";
+> +        reg = <0x55>;
+> +        monitored-battery = <&bat>;
+> +      };
+> +    };
+> 
