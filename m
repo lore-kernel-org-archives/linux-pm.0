@@ -2,122 +2,103 @@ Return-Path: <SRS0=+SOU=6Z=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E8758C47255
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99C40C47255
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 17:37:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C43C420675
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 15:32:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7524420720
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 17:37:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="pJ1ZqtF/"
+	dkim=pass (2048-bit key) header.d=colorremedies-com.20150623.gappssmtp.com header.i=@colorremedies-com.20150623.gappssmtp.com header.b="B2YQfZ19"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729120AbgEKPcp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 11:32:45 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:55100 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728084AbgEKPcp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 11:32:45 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04BFWh5a037261;
-        Mon, 11 May 2020 10:32:43 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1589211163;
-        bh=b0MUfp5nG5bVQq6N28sCwmBCyU7Qu62G3MroX7jZW1A=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=pJ1ZqtF/eXM3gSMNqPo+YfoVDW0f8EkRezgtFk9tmCZGwkYeTXa+1wEK2fXzhGOyt
-         PyicbZNQ+Qljn/qcLd68U6MsWLLDThwO9TAx3kC+AcePo1UEeNxu4r9uaWPDwVcIMd
-         MmpjUpynOo2a80CiFTvNrCEzEyWVmTIqbO9FQl5w=
-Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04BFWh3M104455
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 11 May 2020 10:32:43 -0500
-Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 11
- May 2020 10:32:43 -0500
-Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE107.ent.ti.com
- (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 11 May 2020 10:32:43 -0500
-Received: from [10.250.65.13] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04BFWg4V035089;
-        Mon, 11 May 2020 10:32:43 -0500
-Subject: Re: [PATCH v2] dt-bindings: power: Convert bq27xxx dt to yaml
-To:     "Andrew F. Davis" <afd@ti.com>, <sre@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>
-References: <20200507183013.27261-1-dmurphy@ti.com>
- <a5eae705-672b-acef-8850-0811a6ea13fb@ti.com>
-From:   Dan Murphy <dmurphy@ti.com>
-Message-ID: <38fffe57-bcc2-b87f-6589-09bb97b5c67a@ti.com>
-Date:   Mon, 11 May 2020 10:23:50 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.7.0
+        id S1730696AbgEKRhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 13:37:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40590 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730624AbgEKRhW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 13:37:22 -0400
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81A22C061A0C
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 10:37:22 -0700 (PDT)
+Received: by mail-wm1-x341.google.com with SMTP id z72so10697437wmc.2
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 10:37:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=colorremedies-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=ayLvqeYWqATA5bQj5fLg2I6fTjHGqPLDoJtYi9Y4aHA=;
+        b=B2YQfZ19SBrL5s1ahzAUpJSVLXy9s0SsBFwF1UcljeCMcGn0wLwifkm4A/3ecmjxML
+         gWETSy6fbvlo6FjWebqHF+P//ryGUkSow86brx1106ZlQLFag/Em52Dwd0OyMAddcv1y
+         itq9Nww5HyA34cSU0Jywv137IapwB7iESAAvMbWlTStydWrCUAEfqIazzcxPr7mJbjen
+         pv4llM3jGDFQ6AFI18pciXCqiPfM1iSWp160RFSxziDb7HsSAJGBANgm1gSBZsIbyI4G
+         vy7ENmB5xmiei8MgtvGCJM8/MEzfDwMIsY3Ntsknw8AeMOYsaQf/xOLNMWeZPV9XtCmq
+         dNTg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ayLvqeYWqATA5bQj5fLg2I6fTjHGqPLDoJtYi9Y4aHA=;
+        b=HxI0YR5pLJjS+KbMC8KuLUZ/AYGxY8wvJ8wFS1Vz9TThc0ZNYlfnDmcf/rdghag2wA
+         /buzkWtWRa8vqjZQlCuOIniulYkOcewHhSU1EWBcxd3qCotzldYjrTUtqvSl5bjJkwQq
+         3Fsu5F6Ks7//wNE4oBgbvuUO+/cmlR13umX9c3gPhwmYoG/uWU6j0ztN0MWjgfmAbrgw
+         zw5t/gXpis7JL0NiX24+RV7KrWlErPxd6bPev2JXLrjBbhKlAWBRH6ZRKSiXrFUsWR3Y
+         4mIJz1oHSNYRK+E0iU1ALv5g+azcOUdhvgWF27YSN+AQ8QTnk3QZrJ4HQXbzONnvskyv
+         JBdg==
+X-Gm-Message-State: AGi0Pua55kr748H1MtJyPdoH/G8hRkXerLOi/l0S/tsMMWxRlgplqFHf
+        vpQoSTMtThyBOthnJbXam/ijxfPfKjGyY0sLWiLUyNjcNLrsVw==
+X-Google-Smtp-Source: APiQypIF6nqq/7vCoLfa1X1WanpXbwBnw1Za2yLXPvvMhDu120RyEQEp17GHICnVxafC6+h9VF05sZ2qDIvyRoJ5QN0=
+X-Received: by 2002:a05:600c:2645:: with SMTP id 5mr32007969wmy.168.1589218641278;
+ Mon, 11 May 2020 10:37:21 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <a5eae705-672b-acef-8850-0811a6ea13fb@ti.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <CAJCQCtQ=1=UFaCvPO99W0t9SWuK5zG4ENKYzq2PgJ36iu-EiiQ@mail.gmail.com>
+ <CAJZ5v0hqODC52Bogeo-2suROH63NmON=5a5K6OZEp1YYMYK_QA@mail.gmail.com>
+In-Reply-To: <CAJZ5v0hqODC52Bogeo-2suROH63NmON=5a5K6OZEp1YYMYK_QA@mail.gmail.com>
+From:   Chris Murphy <chris@colorremedies.com>
+Date:   Mon, 11 May 2020 11:37:04 -0600
+Message-ID: <CAJCQCtTxQw=P43wHM2ENX600Jm+BXU+f+=Wv09ijjiqWZoWsiQ@mail.gmail.com>
+Subject: Re: 5.7 sleep/wake regression
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Andrew
-
-On 5/11/20 10:22 AM, Andrew F. Davis wrote:
-> On 5/7/20 2:30 PM, Dan Murphy wrote:
->> Convert the bq27xxx.txt to yaml format
->>
->> CC: Pali Rohár <pali@kernel.org>
->> CC: Andrew F. Davis <afd@ti.com>
->> Signed-off-by: Dan Murphy <dmurphy@ti.com>
->> ---
->>   .../bindings/power/supply/bq27xxx.txt         | 56 ------------
->>   .../bindings/power/supply/bq27xxx.yaml        | 86 +++++++++++++++++++
->>   2 files changed, 86 insertions(+), 56 deletions(-)
->>   delete mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->>   create mode 100644 Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
->>
->> diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt b/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->> deleted file mode 100644
->> index 4fa8e08df2b6..000000000000
->> --- a/Documentation/devicetree/bindings/power/supply/bq27xxx.txt
->> +++ /dev/null
->> @@ -1,56 +0,0 @@
->> -TI BQ27XXX fuel gauge family
->> -
->> -Required properties:
->> -- compatible: contains one of the following:
->> - * "ti,bq27200" - BQ27200
->> - * "ti,bq27210" - BQ27210
->> - * "ti,bq27500" - deprecated, use revision specific property below
->> - * "ti,bq27510" - deprecated, use revision specific property below
->> - * "ti,bq27520" - deprecated, use revision specific property below
->> - * "ti,bq27500-1" - BQ27500/1
+On Mon, May 11, 2020 at 5:15 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
 >
-> This doesn't look right, these are two parts, we should be specific in
-> DT, so:
+> On Mon, May 11, 2020 at 6:22 AM Chris Murphy <chris@colorremedies.com> wrote:
+> >
+> > Got an older Macbook Pro that does suspend to RAM and wake OK with
+> > 5.6, but starting with git 47acac8cae28, it will not wake up. Instead
+> > it has a black screen, gets hot, fans go to high, and it turns into a
+> > hair dryer. So it's a regression.
 >
-> ti,bq27500
-> ti,bq27501
+> There is a known issue addressed by this patch:
 >
-> should be separate like that.
+> https://patchwork.kernel.org/patch/11538065/
+>
+> so can you please try it?
 
-I agree if they are 2 different parts but the code has
+Patch applied, but the problem remains.
 
-     { .compatible = "ti,bq27500-1" },
+CPU is i7-2820QM and dmesg for the working sleep+wake case:
+https://paste.centos.org/view/ea5b913d
 
-But it has no consumers.
+In the failed wake case, I note the following: the fade-in/out sleep
+indicator light on the laptop is pulsing, suggests it did actually
+enter sleep OK. When waking by spacebar press, this sleep indicator
+light stops pulsing, the backlight does not come on, the laptop does
+not respond to either ssh or ping. Following  a power reset and
+reboot, the journal's last line is
 
-So the ti,bq27500-1 compatible should be deprecated and ti,bq27501  
-should be added and the ti,bq27500 should be reinstated.
+[   61.678347] fmac.local kernel: PM: suspend entry (deep)
 
-Dan
+Let me know if I should resume bisect.
 
+
+-- 
+Chris Murphy
