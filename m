@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0479C54E8D
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:25:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 271E5C54E4A
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:25:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ADDFB207FF
-	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:25:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 07B25208CA
+	for <linux-pm@archiver.kernel.org>; Mon, 11 May 2020 12:25:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fJUWfTi+"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eb7YFu+Z"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729746AbgEKMZq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 11 May 2020 08:25:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48278 "EHLO
+        id S1729855AbgEKMZx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 11 May 2020 08:25:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48312 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729563AbgEKMZp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:25:45 -0400
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 456F8C061A0C
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:44 -0700 (PDT)
-Received: by mail-pj1-x1043.google.com with SMTP id t9so7808623pjw.0
-        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:44 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1729837AbgEKMZw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 11 May 2020 08:25:52 -0400
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 517DBC061A0E
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:52 -0700 (PDT)
+Received: by mail-pl1-x643.google.com with SMTP id t7so3880318plr.0
+        for <linux-pm@vger.kernel.org>; Mon, 11 May 2020 05:25:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=oLCRFYTzZLs87148l1yniv86hl5UQjMO56irWxi7zno=;
-        b=fJUWfTi+qjf0FA2vuOSnTB0kWzbREj9eSNDAzVs5d927tPPCjePaekBQZBD85KG3F5
-         VED09Zw9mO6pK3PzOrC53yjo0W0be0i+lTottKW2/2Fg9uYNKryVuZNqeIaoNFTXCRG0
-         mT/ztpancw2WtnOgZ3uWRikTIwKOlWXkuSh91mPYIS8GqEsj3wgVImPOKrMXT6F1MB4r
-         hJmh63wUvsY8p1sRYQULAt3IAY5Toywe/F34PL9BilNxjlw2v2K70baqsl9bx+Sr140+
-         7LLC16fOi5LV9JDjFENTNTiv9WCLaYx9KB8KliZ7oK46glMCLvA0+w88QSlaz+ZlD56u
-         d/Hg==
+        bh=CNjMX4Q50x2uZtB4NYh8/Da4gpgdASbh7q3Dr2tPrVQ=;
+        b=eb7YFu+ZwTh0kdRzfvf0DoWF3+HZqXzNxoucioWmLAplPiYL6HvXU+u/lkC+JA3ZzQ
+         D3OPLNTYWBoIhtiCIqGJ48OvRcIPxbXUJ9AtCXE6qVnmPQz3oUxq5E4AwTb/nbJduW79
+         JS7NAtR0hVYCuRMUNXkY4DqS2S8oe55KeLrQUn+bkBD/p6seUuz8aOhaJS8pzgAZ/j5W
+         vC0kJzc4N5K7a6Txud/eo0ckNLqHljjsf8Yb8ziUnpJ9QFiM7eX6g0OmTcyjCHAsPRs5
+         N98I9FJHBy2wWXm4Cq6rLT4w/mbEdZBcwJymAmalRQbwvdVWEU5vSa+RF9fzrOvmK/vx
+         0bSA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=oLCRFYTzZLs87148l1yniv86hl5UQjMO56irWxi7zno=;
-        b=IJ/kZY068YG7Yr9kZS+6nISVJQiAcU9u2c8Js0DFqNU4Vyqv/CHtLLuC9pnzT9HxX9
-         XmG8CesmZU8uXDF/0ePb0DGEF2jKbc75PP75E48AkhnQ/FTw3kMX1mAMftn3iEiJro5B
-         G9UsWKBuMI6Ny0Fc09WYu58CpsK12mfP7zKqtrysDpdpSVL4CM99oJcwv86+ZOGzPQS+
-         OjURh7BrTZHowhH4HG1W08hOxPP3UwDe+HMHv90ToF1GIXNfHjbNyUbC061h+YfhagNP
-         uG5aCZ7aDGfgN/vv/vccgE04w0vKAyqm5tBKtZK/FGQ94h5YphW2rDgbFJaDVA2Rsdrq
-         amKA==
-X-Gm-Message-State: AGi0PuYpZGfG7/LPBqat3HRm6tqrEpUJOPSNH2yOT3vqnLtlXySwPafO
-        4KPUQfyhWnSKtUlmWJgt96HNWg==
-X-Google-Smtp-Source: APiQypL4e2jZtE6SohQMnQNdslV/ugdx7IF6yNh08RpdGCBWZWJA/HkPdZcOy2ptOK+0q4I15bUFVQ==
-X-Received: by 2002:a17:902:9049:: with SMTP id w9mr15139757plz.27.1589199943796;
-        Mon, 11 May 2020 05:25:43 -0700 (PDT)
+        bh=CNjMX4Q50x2uZtB4NYh8/Da4gpgdASbh7q3Dr2tPrVQ=;
+        b=mw4eAiTwxTWSkWnIvWlqTQVFId/41gss8+iSz3XJNfsrekRjxgWfG3RflEX95vEnGV
+         1eekdFVjtZKBhwjFQWcQnVAGkFlei6u9rFCr3tKycjwMC1UkC7BkPWzPoDmySyt3R9uS
+         uvECrQvtnr13ByjrX++Ytf9ir31JTMKkRQ4BUTUGAmRRdkrvqZ9SwLJwmSY88ksdV+Hn
+         HMfEXESo57EvYIxTVvwf1na7IbM7SdKkRyS0bqzZ5/i4BtxZBgJc0ToLZl8v3Hqj09Ph
+         CCNalDEPoITVDgpSl+htAw81naYOpbR9U/AupofBkpgjLljIqiiMkQv0gFo/EyjD4MbO
+         uGJg==
+X-Gm-Message-State: AGi0PuZGePXJthUTIX0SOrYPMtp3RmVJzF3AIhvVfiDCJljL4wJV1z4A
+        2BL/FOMXqnArKu+F5Zps0M1Eww==
+X-Google-Smtp-Source: APiQypJr6Iz0W0TXA7y6Xi3bZjA5ak5FQ3uvSh+4LgtY2bsmfCxDLRWUEUsLZlmkB2/rkPFogPpleg==
+X-Received: by 2002:a17:90a:f418:: with SMTP id ch24mr21983158pjb.68.1589199951878;
+        Mon, 11 May 2020 05:25:51 -0700 (PDT)
 Received: from localhost ([45.127.45.102])
-        by smtp.gmail.com with ESMTPSA id a196sm9240989pfd.184.2020.05.11.05.25.42
+        by smtp.gmail.com with ESMTPSA id o99sm10158324pjo.8.2020.05.11.05.25.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 11 May 2020 05:25:43 -0700 (PDT)
+        Mon, 11 May 2020 05:25:51 -0700 (PDT)
 From:   Amit Kucheria <amit.kucheria@linaro.org>
 To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         daniel.lezcano@linaro.org,
@@ -66,9 +66,9 @@ To:     linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>
 Cc:     linux-pm@vger.kernel.org
-Subject: [PATCH 03/14] thermal/drivers/thermal_helpers: Sort headers alphabetically
-Date:   Mon, 11 May 2020 17:54:51 +0530
-Message-Id: <133db154796f354e6c51e6310095f679e1f45441.1589199124.git.amit.kucheria@linaro.org>
+Subject: [PATCH 05/14] thermal/drivers/thermal_hwmon: Sort headers alphabetically
+Date:   Mon, 11 May 2020 17:54:53 +0530
+Message-Id: <29b64f1fe81e674c753c8f8309c310acd782ebea.1589199124.git.amit.kucheria@linaro.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <cover.1589199124.git.amit.kucheria@linaro.org>
 References: <cover.1589199124.git.amit.kucheria@linaro.org>
@@ -83,26 +83,27 @@ Sort headers to make it easier to read and find duplicate headers.
 
 Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/thermal/thermal_helpers.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/thermal_hwmon.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_helpers.c b/drivers/thermal/thermal_helpers.c
-index 2ba756af76b7..8ea0a05404f7 100644
---- a/drivers/thermal/thermal_helpers.c
-+++ b/drivers/thermal/thermal_helpers.c
-@@ -12,11 +12,11 @@
- 
- #define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
- 
--#include <linux/sysfs.h>
- #include <linux/device.h>
- #include <linux/err.h>
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index c8d2620f2e42..e43ae551592d 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -10,10 +10,11 @@
+  *  Copyright (C) 2013 Texas Instruments
+  *  Copyright (C) 2013 Eduardo Valentin <eduardo.valentin@ti.com>
+  */
++#include <linux/err.h>
+ #include <linux/hwmon.h>
+-#include <linux/thermal.h>
  #include <linux/slab.h>
- #include <linux/string.h>
-+#include <linux/sysfs.h>
+-#include <linux/err.h>
++#include <linux/thermal.h>
++
+ #include "thermal_hwmon.h"
  
- #include <trace/events/thermal.h>
- 
+ /* hwmon sys I/F */
 -- 
 2.20.1
 
