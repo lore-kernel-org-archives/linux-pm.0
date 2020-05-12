@@ -2,82 +2,90 @@ Return-Path: <SRS0=zDym=62=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B832C54E4A
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 11:56:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78188C54E8E
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 34BED20753
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 11:56:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 57CF5206F5
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727859AbgELL4y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 07:56:54 -0400
-Received: from foss.arm.com ([217.140.110.172]:53370 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726891AbgELL4x (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 12 May 2020 07:56:53 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0AEAD30E;
-        Tue, 12 May 2020 04:56:53 -0700 (PDT)
-Received: from [10.37.12.83] (unknown [10.37.12.83])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ECEF53F71E;
-        Tue, 12 May 2020 04:56:50 -0700 (PDT)
-Subject: Re: [PATCH v2] memory/samsung: reduce unnecessary mutex lock area
-To:     Markus Elfring <Markus.Elfring@web.de>,
-        Bernard Zhao <bernard@vivo.com>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org
-Cc:     linux-kernel@vger.kernel.org, opensource.kernel@vivo.com,
+        id S1729461AbgELMcD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 08:32:03 -0400
+Received: from mail-m17613.qiye.163.com ([59.111.176.13]:18649 "EHLO
+        mail-m17613.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729505AbgELMcC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:32:02 -0400
+Received: from ubuntu.localdomain (unknown [157.0.31.122])
+        by mail-m17613.qiye.163.com (Hmail) with ESMTPA id 4357E482CFB;
+        Tue, 12 May 2020 20:31:57 +0800 (CST)
+From:   Bernard Zhao <bernard@vivo.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>, Kukjin Kim <kgene@kernel.org>,
         Krzysztof Kozlowski <krzk@kernel.org>,
-        Kukjin Kim <kgene@kernel.org>
-References: <edf839ce-cc61-73dc-e017-b49648b94d1c@web.de>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <c910fa00-c27b-9854-9ab2-6f37c28b87f6@arm.com>
-Date:   Tue, 12 May 2020 12:56:49 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc:     opensource.kernel@vivo.com, Bernard Zhao <bernard@vivo.com>
+Subject: [PATCH v3] memory/samsung: reduce protected code area in IRQ
+Date:   Tue, 12 May 2020 05:31:49 -0700
+Message-Id: <20200512123149.40162-1-bernard@vivo.com>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
-In-Reply-To: <edf839ce-cc61-73dc-e017-b49648b94d1c@web.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZT1VCT0xCQkJCTk9JSUhNSFlXWShZQU
+        hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
+X-HM-Sender-Digest: e1kMHhlZQR0aFwgeV1kSHx4VD1lBWUc6Oj46GAw6Pzg8CTIMIRQ6MD8L
+        KBcKCzdVSlVKTkNCSUNNTEpCTkpNVTMWGhIXVRkeCRUaCR87DRINFFUYFBZFWVdZEgtZQVlKTkxV
+        S1VISlVKSUlZV1kIAVlBSUlCSjcG
+X-HM-Tid: 0a7208dec7fa93bakuws4357e482cfb
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+This change will speed-up a bit this IRQ processing and there
+is no need to protect return value or printing.
 
+Signed-off-by: Bernard Zhao <bernard@vivo.com>
+---
+Changes since v1:
+*change release lock before the if statement.
+*revert dmc->df->lock mutex lock to protect function
+exynos5_dmc_perf_events_check
 
-On 5/12/20 12:40 PM, Markus Elfring wrote:
->> Maybe dmc->df->lock seems not needed to protect "if (ret)
->> & dev_warn" branch. Maybe this change speed up the code a bit.
-> 
-> I suggest to improve also this commit message.
-> 
-> * Please reduce uncertainty.
-> 
-> * An imperative wording is probably preferred, isn't it?
->    https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/process/submitting-patches.rst?id=152036d1379ffd6985262743dcf6b0f9c75f83a4#n151
-> 
-> * Will it be more appropriate to refer to the transformation “Reduce the lock scope”?
-> 
-> * Would you like to add the tag “Fixes” to the change description?
-> 
-> Regards,
-> Markus
-> 
+Changes since v2:
+*Improve subject and commit message
 
-Thank you Markus for providing to Bernard helpful suggestions.
+Link for V1:
+*https://lore.kernel.org/patchwork/patch/1238888/
+---
+ drivers/memory/samsung/exynos5422-dmc.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-@Bernard please read the link above and send v3
+diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
+index 22a43d662833..25196d6268e2 100644
+--- a/drivers/memory/samsung/exynos5422-dmc.c
++++ b/drivers/memory/samsung/exynos5422-dmc.c
+@@ -1346,15 +1346,13 @@ static irqreturn_t dmc_irq_thread(int irq, void *priv)
+ 	struct exynos5_dmc *dmc = priv;
+ 
+ 	mutex_lock(&dmc->df->lock);
+-
+ 	exynos5_dmc_perf_events_check(dmc);
+-
+ 	res = update_devfreq(dmc->df);
++	mutex_unlock(&dmc->df->lock);
++
+ 	if (res)
+ 		dev_warn(dmc->dev, "devfreq failed with %d\n", res);
+ 
+-	mutex_unlock(&dmc->df->lock);
+-
+ 	return IRQ_HANDLED;
+ }
+ 
+-- 
+2.26.2
 
-Something like: 'memory/samsung: reduce protected code area in IRQ
-handler' for the subject header would be better.
-Then in the message explain (without 'maybe') that it will speed-up a
-bit this IRQ processing and there is no need to protect return value or
-printing.
-
-Regards,
-Lukasz
