@@ -2,88 +2,114 @@ Return-Path: <SRS0=zDym=62=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29BB4C54E4A
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 08:47:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC370C54E4B
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 09:05:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0A02D2078E
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 08:47:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8944920575
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 09:05:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1589274345;
+	bh=HS+53ZodqD34omUaUnfZGaaf3rHBhijbLO2ygOHvWBs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=HdBf05/m+emNMdNO4EBqf7xnbxKvSqwv3wwZqFMD/JGnfJkQZWTdavjdiOANsr9ao
+	 /LWfQVLusfzfyj2o/Z7mCr+dMUQ5OTMIpThi2NdhU08spzgAPsQQI17pGr7lsGs3yq
+	 n0P++na+5dM/s1DLI1gKFUKx2nG+FPSK6dTBu8pI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728891AbgELIrY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 04:47:24 -0400
-Received: from foss.arm.com ([217.140.110.172]:49504 "EHLO foss.arm.com"
+        id S1729207AbgELJFm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 05:05:42 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33742 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725776AbgELIrY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 12 May 2020 04:47:24 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B14F21FB;
-        Tue, 12 May 2020 01:47:23 -0700 (PDT)
-Received: from [10.37.12.83] (unknown [10.37.12.83])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A066F3F305;
-        Tue, 12 May 2020 01:47:21 -0700 (PDT)
-Subject: Re: [PATCH] memory/samsung: reduce unnecessary mutex lock area
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Bernard Zhao <bernard@vivo.com>
-Cc:     Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        opensource.kernel@vivo.com
-References: <20200508131338.32956-1-bernard@vivo.com>
- <20200512065023.GA10741@kozik-lap>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <e762ce12-eff0-d3a5-f083-2b592921de59@arm.com>
-Date:   Tue, 12 May 2020 09:47:19 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S1728085AbgELJFl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 May 2020 05:05:41 -0400
+Received: from mail-lf1-f54.google.com (mail-lf1-f54.google.com [209.85.167.54])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 34093206A3;
+        Tue, 12 May 2020 09:05:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1589274341;
+        bh=HS+53ZodqD34omUaUnfZGaaf3rHBhijbLO2ygOHvWBs=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=z5s6zPoUUzxvR8qdd57Vjpx+i5DWghLNc9KIZ5neo+iBD64HzEyZi8RxetyQ6FgAf
+         p/3OXO0bk3sgpbGnbI5D8i6vos1yEge44MH1NFdXwmPDlDgqUHr3Ee8bPHRUxKlnUI
+         xMjhjGCrlwmh7TZSetaFhmkh+6r9aiDJRhJaMysw=
+Received: by mail-lf1-f54.google.com with SMTP id b26so9913862lfa.5;
+        Tue, 12 May 2020 02:05:41 -0700 (PDT)
+X-Gm-Message-State: AOAM531fk+a+XsbFpJ7mVFpvoIyWINsggM1WQ7lyAXYxKM/IjOioNCJZ
+        76INQKsifcuCF7wyrpRDnGC9916Fnk5pi8R2yds=
+X-Google-Smtp-Source: ABdhPJyrJVrAT8momuEFoaiqxBUOKAS3w1MEWaOBVANtVD6B7+0T1Wih7oQd+8Fm3Od1tfwC7O0GXietblUkp8+w3O8=
+X-Received: by 2002:a19:f00b:: with SMTP id p11mr13835301lfc.210.1589274339295;
+ Tue, 12 May 2020 02:05:39 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200512065023.GA10741@kozik-lap>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20200508131338.32956-1-bernard@vivo.com> <20200512065023.GA10741@kozik-lap>
+ <e762ce12-eff0-d3a5-f083-2b592921de59@arm.com>
+In-Reply-To: <e762ce12-eff0-d3a5-f083-2b592921de59@arm.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Tue, 12 May 2020 11:05:28 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPekrkyDf2TMCnX7Nvbdaj-JQwuyqrsurFM4moALqVx8Sw@mail.gmail.com>
+Message-ID: <CAJKOXPekrkyDf2TMCnX7Nvbdaj-JQwuyqrsurFM4moALqVx8Sw@mail.gmail.com>
+Subject: Re: [PATCH] memory/samsung: reduce unnecessary mutex lock area
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Bernard Zhao <bernard@vivo.com>, Kukjin Kim <kgene@kernel.org>,
+        linux-pm@vger.kernel.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        opensource.kernel@vivo.com
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+On Tue, 12 May 2020 at 10:47, Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+> Hi Krzysztof,
+>
+> I am sorry, I was a bit busy recently.
+>
+> On 5/12/20 7:50 AM, Krzysztof Kozlowski wrote:
+> > On Fri, May 08, 2020 at 06:13:38AM -0700, Bernard Zhao wrote:
+> >> Maybe dmc->df->lock is unnecessary to protect function
+> >> exynos5_dmc_perf_events_check(dmc). If we have to protect,
+> >> dmc->lock is more better and more effective.
+> >> Also, it seems not needed to protect "if (ret) & dev_warn"
+> >> branch.
+> >>
+> >> Signed-off-by: Bernard Zhao <bernard@vivo.com>
+> >> ---
+> >>   drivers/memory/samsung/exynos5422-dmc.c | 6 ++----
+> >>   1 file changed, 2 insertions(+), 4 deletions(-)
+> >
+> > I checked the concurrent accesses and it looks correct.
+> >
+> > Lukasz, any review from your side?
+>
+> The lock from devfreq lock protects from a scenario when
+> concurrent access from devfreq framework uses internal dmc fields 'load'
+> and 'total' (which are set to 'busy_time', 'total_time').
+> The .get_dev_status can be called at any time (even due to thermal
+> devfreq cooling action) and reads above fields.
+> That's why the calculation of the new values inside dmc is protected.
 
-I am sorry, I was a bit busy recently.
+I looked at this path (get_dev_status) and currently in devfreq it
+will be only called from update_devfreq() -> get_target_freq()... at
+least when looking at devfreq core and governors. On the other hand
+you are right that this is public function and this call scenario
+might change. It could be called directly from other paths sooner or
+later.
 
-On 5/12/20 7:50 AM, Krzysztof Kozlowski wrote:
-> On Fri, May 08, 2020 at 06:13:38AM -0700, Bernard Zhao wrote:
->> Maybe dmc->df->lock is unnecessary to protect function
->> exynos5_dmc_perf_events_check(dmc). If we have to protect,
->> dmc->lock is more better and more effective.
->> Also, it seems not needed to protect "if (ret) & dev_warn"
->> branch.
->>
->> Signed-off-by: Bernard Zhao <bernard@vivo.com>
->> ---
->>   drivers/memory/samsung/exynos5422-dmc.c | 6 ++----
->>   1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> I checked the concurrent accesses and it looks correct.
-> 
-> Lukasz, any review from your side?
+> This patch should not be taken IMO. Maybe we can release lock before the
+> if statement, just to speed-up.
 
-The lock from devfreq lock protects from a scenario when
-concurrent access from devfreq framework uses internal dmc fields 'load' 
-and 'total' (which are set to 'busy_time', 'total_time').
-The .get_dev_status can be called at any time (even due to thermal
-devfreq cooling action) and reads above fields.
-That's why the calculation of the new values inside dmc is protected.
+Yep.
 
-This patch should not be taken IMO. Maybe we can release lock before the
-if statement, just to speed-up.
+Bernard, you can send just this part of the patch.
 
-Regards,
-Lukasz
-
-
-> 
-> Best regards,
-> Krzysztof
-> 
+Best regards,
+Krzysztof
