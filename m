@@ -2,71 +2,69 @@ Return-Path: <SRS0=zDym=62=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-1.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A175CC54E4A
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 13:58:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 058CDC54E8D
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 14:09:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72E7C206F5
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 13:58:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="f6Nrlgw8"
+	by mail.kernel.org (Postfix) with ESMTP id D8E6520746
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 14:09:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1589292551;
+	bh=XlLg66om9qePZXeASi6fwsBTwuJ8dfQeSI2ucy4Tfaw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=PmD6cz6Ba+h9qKCh0ARACxS8nzYEEvRpNKjjYaFD+Swh5pNur4Ael+mc6QOtswH/Q
+	 9vEgyTfSogsZhBduyivoHGevCdhht8GlwC6TEMPeEzdnCTKW++SR42MPEqpZ9aoD+u
+	 eTlny/MJ2+AWgVecmqBybhqjSkskRNUkDxYFp8Es=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730146AbgELN6U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 09:58:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33312 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727859AbgELN6T (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 09:58:19 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50101C061A0C
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 06:58:19 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id m12so16960245wmc.0
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 06:58:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=6We9F0Gl5i6dFB55TqViIVwO6PgjLYpYEaNQovKdPNk=;
-        b=f6Nrlgw8UCeFoD5o8cR+YQiCKCYmqZIj47J/ddXCRLiBT2dJ14ERtJogi5vv4YRaVP
-         DdOdfSdEPRWfH3VZDTL6qtcEuOpAl6zcS2aHXoLeO9T9OxdreTUPFeoXk95PQzM59cjT
-         oiIsAr2xUt21mubwr8eYWwQlTKjYamkIbd4z0Qod13dJalTL9DFmYH5A3VoF2Zfj03Tp
-         URKm8lP2zvsnOTcQWSAHzOf97wLEQV8JglXIfA3rqgtRJHp+/W4YYkadapu+NpANBdcO
-         KT1UygHLxz9bFaAiq5sTd7qNhwWv+IY5MWT3WpCaex/qYlCHndsfgw81dFpxaVbSuqvc
-         Gmew==
+        id S1730149AbgELOJL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 10:09:11 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:43257 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727859AbgELOJK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 10:09:10 -0400
+Received: by mail-ot1-f67.google.com with SMTP id a68so2069586otb.10;
+        Tue, 12 May 2020 07:09:08 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=6We9F0Gl5i6dFB55TqViIVwO6PgjLYpYEaNQovKdPNk=;
-        b=G+k93n1wzeysnb54HVIw+bqSqZX/xAgOWNNaPka/xaXPody9U89srEHidTwx7HvKc4
-         O0zZC+xtQgM/z67V/BGJrNrVy7fmWyf5dD6j8fo/PWCBzSpz0DhDcbd0qL+CdXw2vBvk
-         5qaVoQUW8/qwwKEtVnRcP8madyklY2OgCBfErnq1pDlwUCr7H0hX69+l+dwtoKEUq3PT
-         HC33ZNnChRoroWQkcPomo0anxbyr8J3R+PAAxei6Lna2V2+YMZ4fKGXJ3O9axB8Z/P0c
-         IRqGnQMF50QlgHptD7ar4A8Z79nva9mtehrZn+YZiNpuaGWZXm1NSFRqHgQrGygto7m/
-         8HRQ==
-X-Gm-Message-State: AGi0Pua4cyJHKFAdijJ+uLpsw7GvWqUq0c7XVrmf1yz7Qwqd1ls2Qfzt
-        vkPKn7ux7F9jDmqnuJWuRYScRQ==
-X-Google-Smtp-Source: APiQypJjRlOI0WgMaW9PI/tz98LbvmgkkDNcbr+q8RKiGAeM85CNu41OObsMGh78C+ggI9aYP6unNA==
-X-Received: by 2002:a1c:e302:: with SMTP id a2mr36318773wmh.96.1589291897718;
-        Tue, 12 May 2020 06:58:17 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
-        by smtp.gmail.com with ESMTPSA id s2sm351084wme.33.2020.05.12.06.58.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 12 May 2020 06:58:16 -0700 (PDT)
-Date:   Tue, 12 May 2020 14:58:13 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Peter Zijlstra <peterz@infradead.org>,
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=XlLg66om9qePZXeASi6fwsBTwuJ8dfQeSI2ucy4Tfaw=;
+        b=i9SaClcqX8A0nYi/p1xB3lptVwUFTpWevNUsQwd2d2M4MvDWFweIyh/QEZIUpUmiQQ
+         O6RQcNqFwDc9nG2JLtjIEcQSTwZGHtekKXOz37LH9VXKBZoJV0gxnyxIExW6ABCJkJHb
+         jYmh+DelMCS0UdilEcr2DSlY4HaQX+n4q5fZTA3C5gDjAVg/ZzFscZjJc4RSm34Oj0G+
+         mWz0mYyTVLg5r2KgqF8Ze4LCWqJXJRYq15ghnDD4r1FATqDasDTvCeTWfdTqfS3yDPN4
+         UotzLWAVoJMkXdDsFSlEEnUX/0+8vc/mKM7PzxF3aqIqJp9rsko9wcvqFdPmBJEAYV5I
+         VT9g==
+X-Gm-Message-State: AGi0Pubvq3rpq9Tlky6liYyQksOqOmNRE7F4Gh1BgHQ8/70nQtmno4Hv
+        Yv7MLvVRXUPvEu1QlHEQkwMY9nWjjoXuKzXuGWo=
+X-Google-Smtp-Source: APiQypLSjiwX7PHp/boQvrrT9A2LLBsxN4GgnX7T8BCX5CQ4Qti5EIdMckwEZSBnSBOrvY/RjAqINo6HDSkgtHeujTs=
+X-Received: by 2002:a9d:6356:: with SMTP id y22mr3701328otk.167.1589292548150;
+ Tue, 12 May 2020 07:09:08 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200508081128.GM5298@hirez.programming.kicks-ass.net>
+ <20200508103721.GA3860390@kroah.com> <20200508111612.GA252673@google.com>
+ <20200508113141.GB5298@hirez.programming.kicks-ass.net> <20200508130507.GA10541@google.com>
+ <CAJZ5v0iaa_VCtN608QKTYZ-A6QG_7bwxihxSgoEGv1LcSK-ksA@mail.gmail.com>
+ <20200511090049.GA229633@google.com> <CAJZ5v0jKMgFsR0dXDt4si5hT9QF2evaoMS-13y-Qde8UpcaARg@mail.gmail.com>
+ <20200512092102.GA16151@google.com> <CAJZ5v0hm3Tv2yZKLzM9a+kJuB1V5_eFOEKT-uM318dzeKV3_Qw@mail.gmail.com>
+ <20200512135813.GA101124@google.com>
+In-Reply-To: <20200512135813.GA101124@google.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 12 May 2020 16:08:56 +0200
+Message-ID: <CAJZ5v0hN708uvurZ-3oo90qUJFw3=Eg0OmtTaOKXQgNPXhCkFg@mail.gmail.com>
+Subject: Re: [PATCH 00/14] Modularize schedutil
+To:     Quentin Perret <qperret@google.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
         Greg KH <gregkh@linuxfoundation.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
         Thomas Gleixner <tglx@linutronix.de>,
         Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-        the arch/x86 maintainers <x86@kernel.org>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
         "H. Peter Anvin" <hpa@zytor.com>,
         Sudeep Holla <sudeep.holla@arm.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -82,46 +80,40 @@ Cc:     Peter Zijlstra <peterz@infradead.org>,
         Frederic Weisbecker <fweisbec@gmail.com>,
         Todd Kjos <tkjos@google.com>,
         "Cc: Android Kernel" <kernel-team@android.com>
-Subject: Re: [PATCH 00/14] Modularize schedutil
-Message-ID: <20200512135813.GA101124@google.com>
-References: <20200508081128.GM5298@hirez.programming.kicks-ass.net>
- <20200508103721.GA3860390@kroah.com>
- <20200508111612.GA252673@google.com>
- <20200508113141.GB5298@hirez.programming.kicks-ass.net>
- <20200508130507.GA10541@google.com>
- <CAJZ5v0iaa_VCtN608QKTYZ-A6QG_7bwxihxSgoEGv1LcSK-ksA@mail.gmail.com>
- <20200511090049.GA229633@google.com>
- <CAJZ5v0jKMgFsR0dXDt4si5hT9QF2evaoMS-13y-Qde8UpcaARg@mail.gmail.com>
- <20200512092102.GA16151@google.com>
- <CAJZ5v0hm3Tv2yZKLzM9a+kJuB1V5_eFOEKT-uM318dzeKV3_Qw@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0hm3Tv2yZKLzM9a+kJuB1V5_eFOEKT-uM318dzeKV3_Qw@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday 12 May 2020 at 12:25:17 (+0200), Rafael J. Wysocki wrote:
-> Still, IMO it would be fair to say that if uclamps are used, schedutil
-> is very likely to be preferred.
-> 
-> Kconfig can be made select schedutil when enabling uclamps or similar
-> to express that preference.
+On Tue, May 12, 2020 at 3:58 PM Quentin Perret <qperret@google.com> wrote:
+>
+> On Tuesday 12 May 2020 at 12:25:17 (+0200), Rafael J. Wysocki wrote:
+> > Still, IMO it would be fair to say that if uclamps are used, schedutil
+> > is very likely to be preferred.
+> >
+> > Kconfig can be made select schedutil when enabling uclamps or similar
+> > to express that preference.
+>
+> Right, fair enough. Making schedutil default to y when uclamp is
+> compiled in should do the trick (and avoid using 'select'). Would that
+> work for you?
 
-Right, fair enough. Making schedutil default to y when uclamp is
-compiled in should do the trick (and avoid using 'select'). Would that
-work for you?
+I think so.
 
-> What you are proposing is basically to add complexity and the reason
-> for doing that seems to be convenience (and that's not the users'
-> convenience for that matter) which is not really super-convincing.
+> > What you are proposing is basically to add complexity and the reason
+> > for doing that seems to be convenience (and that's not the users'
+> > convenience for that matter) which is not really super-convincing.
+>
+> Forcing our users to build in their products something they don't want
+> to use tends to be a very real problem for what we're trying to achieve,
+> so it's certainly not just convenience from our perspective. I can
+> understand that yours might be different, though.
 
-Forcing our users to build in their products something they don't want
-to use tends to be a very real problem for what we're trying to achieve,
-so it's certainly not just convenience from our perspective. I can
-understand that yours might be different, though.
+I would like to understand the nature of the problem here.
 
-Thanks,
-Quentin
+If some piece of kernel code is modular, it still needs to be build.
+The difference is when and how it gets loaded, so can you possibly
+elaborate here?
+
+Cheers!
