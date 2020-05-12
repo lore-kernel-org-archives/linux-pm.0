@@ -5,58 +5,58 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25CC6C54E8B
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC809C54E8F
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0586820736
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB092206D3
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sO7XfySX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="scW+/E3V"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728085AbgELMyb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 08:54:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51578 "EHLO
+        id S1730070AbgELMyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 08:54:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51546 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729998AbgELMyM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:54:12 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A96FC05BD0C
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:11 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id y24so23175337wma.4
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:11 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1729962AbgELMyH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:54:07 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C09FC061A0C
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:06 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id e1so1293881wrt.5
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ajq1/CzNblXv+RM50/78rYUghtc/wnGS+X5x8yODyro=;
-        b=sO7XfySXe80lnwqkM0HWalZ/ES2oFzxHC7xem4vOYv+YNGQ6ZdL81IDKCWGRDYfo0K
-         AIuWbCIrg5La5wCRDU2tJVS4DgFc4wCRbB6qfTOAeTyqMYZlg2VZaW+copxuN+tcappx
-         IuMRgLabKURL8TLvRpsSTyWAzjpVwbUMLwc0VPYo7NzOqGT1qcj5lQ6VT/ZlAltjSLbe
-         FSBTGWNX19PpIanyCGJPjsAd/QKzg+8cSl7cg13/lrwi54mXTWI8SfsQ8zpneQZZBtdi
-         5FpDn2wm5oPgJImqxZQYO6p3LvBY/IvBBd3lsGCb7YLa0bMxREUTf1p5wqFbjpk6DEsd
-         rjMQ==
+        bh=3LiHGYQJdrfKidREPKcP85nvhchSzlTD7vf2JY+btAU=;
+        b=scW+/E3VOhb7ANMkVGJAkt7I46OvXaM5bUd9N0yFWjWVfeIAu2lIjkgtUMGJUGqT2v
+         o87Z65cKvS6wBr1IJmeiic/ITKuZXfTMO3Lrvxc+/WHFSUoyB3/mx0JGmHF+vOoXEUs2
+         rHpa0IRoHt2Epz3mA1yq70MMy1zH25WqxYc0aOfgnhc7UqNR8SVfQ2uPac0T6QUdzCGs
+         PlYJ3NC9syl5LHu9dZstEPrZLF7cd70ILMfQDuoG1KDEUlQSpD7WVvDF3Yh7rF8t0Oc4
+         lnXedUVI+mIg2DOvSe5eL9UBRK16w9fSAzbzQ+nAG3nbu7hrkh8Fu5IvXKUNoKZCwCAN
+         4E/A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ajq1/CzNblXv+RM50/78rYUghtc/wnGS+X5x8yODyro=;
-        b=T9lgoFCZNrbnrkuJoMGeRLGOuPOM/BdbbK6FiGoPaQGD/Cm0PLuTBB5eHZzhbd2Z6d
-         8AUQULZi3XBxNT4iIL4AKSeOK4Z6u+F3x9L+Clww+xNCI7ggfy405rFTnq+mxPYEWL7M
-         h542rU1PA81L+GoEJG6okOakOVoxMaPORX8YQspJXT+lDaE4DAy+pba4QAygPxx8JySM
-         VmajTnueuW7/nzRYkupV7aNQd8pLp2/TRHL8VZoZn+fMgiMtUijT5oPn6FABtZYkL8jS
-         TPddiTmiAGQIeUE78icKBd4dysBfl8D15heULLFRYQjzmNEgF4s0hooFTurvDxhpP26/
-         wQqQ==
-X-Gm-Message-State: AGi0PuaJPGVSxaZ/pwCyCNbfpn+7F5QqpcKY/kEVMVvIE2pPt/R8icAp
-        inMYsT6COeTHqsbsTxJTCavZ5Q==
-X-Google-Smtp-Source: APiQypI9T2ok8lrlawVLg9C+vh31VJV/7SAheVI1C66BCWNhBoiMINsaNb/Pq91MS1pb1eZXRFnVwg==
-X-Received: by 2002:a05:600c:21d6:: with SMTP id x22mr39074416wmj.95.1589288049805;
-        Tue, 12 May 2020 05:54:09 -0700 (PDT)
+        bh=3LiHGYQJdrfKidREPKcP85nvhchSzlTD7vf2JY+btAU=;
+        b=G13O0lODbNnJTlHscExnFD+fX2SYGAw0tHaa9pEziyE0FndhvSla9VU1ckSwPIETwu
+         ih3rU+7SLqWrs1Azo0pWVH3TNOHaQk16H0FWefdUOeIahUcI+CcTNNOfRPibBcRS2eqB
+         7u5wTib5KIlAuW3J2v1+pr9JzckHLOaFnloN84knbgvtgftpM5Hd0rFTYoo+U8Zo3qFi
+         ijzLLcrk+asEsG/1+uGYG7UH9O+7jgRHh9uYpwyMAF92RgrmvIN1MZmt+Th0kLSMnZ8h
+         gnYZ863ibtqsXT13JP/tITdbQAx+w/HEL8NNkF+Q/82HqT+zfYr30HjG8JcCVuekaaPG
+         azow==
+X-Gm-Message-State: AGi0PubLJHTHap9h0P8VnTlz6KWpJmJM2V2x7xZ/6eS9bsrqxZssgv1p
+        2MS8HZNZYyBLVwBAi3cD5pkXcA==
+X-Google-Smtp-Source: APiQypLWnsIijAZkCoIPv0Yw0p6DgOwRj7KRO6OOZp0lKCb8xAu9CIukABYCZLAyYnm8VEBr1P0w2w==
+X-Received: by 2002:adf:b30f:: with SMTP id j15mr26775441wrd.394.1589288045298;
+        Tue, 12 May 2020 05:54:05 -0700 (PDT)
 Received: from localhost.localdomain (212-39-89-66.ip.btc-net.bg. [212.39.89.66])
-        by smtp.googlemail.com with ESMTPSA id n13sm2433938wrs.2.2020.05.12.05.54.07
+        by smtp.googlemail.com with ESMTPSA id n13sm2433938wrs.2.2020.05.12.05.54.03
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 12 May 2020 05:54:09 -0700 (PDT)
+        Tue, 12 May 2020 05:54:04 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, rjw@rjwysocki.net,
         saravanak@google.com, sibis@codeaurora.org, mka@chromium.org
@@ -65,9 +65,9 @@ Cc:     robh+dt@kernel.org, rnayak@codeaurora.org,
         jcrouse@codeaurora.org, evgreen@chromium.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, georgi.djakov@linaro.org
-Subject: [PATCH v8 08/10] cpufreq: dt: Validate all interconnect paths
-Date:   Tue, 12 May 2020 15:53:25 +0300
-Message-Id: <20200512125327.1868-9-georgi.djakov@linaro.org>
+Subject: [PATCH v8 06/10] OPP: Update the bandwidth on OPP frequency changes
+Date:   Tue, 12 May 2020 15:53:23 +0300
+Message-Id: <20200512125327.1868-7-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200512125327.1868-1-georgi.djakov@linaro.org>
 References: <20200512125327.1868-1-georgi.djakov@linaro.org>
@@ -78,95 +78,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently when we check for the available resources, we assume that there
-is only one interconnect path, but in fact it could be more than one. Do
-some validation to determine the number of paths and verify if each one
-of them is available.
+If the OPP bandwidth values are populated, we want to switch also the
+interconnect bandwidth in addition to frequency and voltage.
 
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
 v8:
-* New patch.
+* Picked reviewed-by tags.
 
- drivers/cpufreq/cpufreq-dt.c | 49 ++++++++++++++++++++++++++++++++----
- 1 file changed, 44 insertions(+), 5 deletions(-)
+ drivers/opp/core.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 4ecef3257532..3dd28c2c1633 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -91,12 +91,54 @@ static const char *find_supply_name(struct device *dev)
- 	return name;
- }
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index a3dd0bc9b9f6..b4cc4b12d57b 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -808,7 +808,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	unsigned long freq, old_freq, temp_freq;
+ 	struct dev_pm_opp *old_opp, *opp;
+ 	struct clk *clk;
+-	int ret;
++	int ret, i;
  
-+static int find_icc_paths(struct device *dev)
-+{
-+	struct device_node *np;
-+	struct icc_path **paths;
-+	int i, count, num_paths;
-+	int ret = 0;
-+
-+	np = of_node_get(dev->of_node);
-+	if (!np)
-+		return 0;
-+
-+	count = of_count_phandle_with_args(np, "interconnects",
-+					   "#interconnect-cells");
-+	of_node_put(np);
-+	if (count < 0)
-+		return 0;
-+
-+	/* two phandles when #interconnect-cells = <1> */
-+	if (count % 2) {
-+		dev_err(dev, "%s: Invalid interconnects values\n", __func__);
-+		return -EINVAL;
-+	}
-+
-+	num_paths = count / 2;
-+	paths = kcalloc(num_paths, sizeof(*paths), GFP_KERNEL);
-+	if (!paths)
-+		return -ENOMEM;
-+
-+	for (i = 0; i < num_paths; i++) {
-+		paths[i] = of_icc_get_by_index(dev, i);
-+		ret = PTR_ERR_OR_ZERO(paths[i]);
-+		if (ret)
-+			break;
-+	}
-+
-+	while (i--)
-+		icc_put(paths[i]);
-+
-+	kfree(paths);
-+
-+	return ret;
-+}
-+
- static int resources_available(void)
- {
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
--	struct icc_path *cpu_path;
- 	int ret = 0;
- 	const char *name;
- 
-@@ -123,8 +165,7 @@ static int resources_available(void)
- 
- 	clk_put(cpu_clk);
- 
--	cpu_path = of_icc_get(cpu_dev, NULL);
--	ret = PTR_ERR_OR_ZERO(cpu_path);
-+	ret = find_icc_paths(cpu_dev);
- 	if (ret) {
- 		if (ret == -EPROBE_DEFER)
- 			dev_dbg(cpu_dev, "defer icc path: %d\n", ret);
-@@ -134,8 +175,6 @@ static int resources_available(void)
- 		return ret;
+ 	opp_table = _find_opp_table(dev);
+ 	if (IS_ERR(opp_table)) {
+@@ -909,6 +909,17 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 			dev_err(dev, "Failed to set required opps: %d\n", ret);
  	}
  
--	icc_put(cpu_path);
--
- 	name = find_supply_name(cpu_dev);
- 	/* Platform doesn't require regulator */
- 	if (!name)
++	if (!ret && opp_table->paths) {
++		for (i = 0; i < opp_table->path_count; i++) {
++			ret = icc_set_bw(opp_table->paths[i],
++					 opp->bandwidth[i].avg,
++					 opp->bandwidth[i].peak);
++			if (ret)
++				dev_err(dev, "Failed to set bandwidth[%d]: %d\n",
++					i, ret);
++		}
++	}
++
+ put_opp:
+ 	dev_pm_opp_put(opp);
+ put_old_opp:
