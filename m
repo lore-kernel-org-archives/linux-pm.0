@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 18EEAC54E8B
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 09597C54E8F
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EA6A120736
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D60C520736
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:54:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="hRQiCfER"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="R9bsk+7B"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729645AbgELMyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 08:54:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51562 "EHLO
+        id S1729921AbgELMyC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 08:54:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51514 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1729982AbgELMyJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:54:09 -0400
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E2642C061A0F
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:08 -0700 (PDT)
-Received: by mail-wr1-x444.google.com with SMTP id e16so15231849wra.7
-        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:54:08 -0700 (PDT)
+        by vger.kernel.org with ESMTP id S1729901AbgELMx7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:53:59 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 84FBCC061A0F
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:53:59 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id g14so9313422wme.1
+        for <linux-pm@vger.kernel.org>; Tue, 12 May 2020 05:53:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=UrDz0VtEFIllRgR/SygMJHwSLsI5h5gjPBKpNjucqnU=;
-        b=hRQiCfERNwcKeaXH+vBgWstpdhfVeFUqZ1HMM5gInNFUPCUmTIxlN+nW06ZqEyr1MT
-         WJt82jfFMhSh3/RaGC13yJslFwkNU9IP5rTAXxevITstBNNe0Q0GqLiQ8X/4kMoTb5St
-         9DB5LdqtelZUdP4aOiA8r4r6CKfpEsAkHPc+1ZB0OvODMQGzdCislqEz/wGa5WTmLoY2
-         d/LAisGXl4ceWObzMaSX+TnByQmuW6rujCdNxrDyZktJU5cYwJDxyLT3uqKLbzHAA/zv
-         4Q+Skz9YusrYZTS4w02hgcM5lS0pRpHRcUHCIILUcGrWW36OTz9Rc638ZOyVZKUaow2B
-         luIw==
+        bh=+rGKvfoFiAjDdQtTJ+6Vf7qeLWqTDG31CN5bbQtUQo8=;
+        b=R9bsk+7Bfx6aoIZswCKHfN5y9yBMNHag58e4lfCBuVfHphfHNW9fb8fAa+v4hEOqHR
+         jWKg8MG1csnW15D6ckwBgpCyyZtwk3rRq+T0DP6hrMm6FZmqP58jylNfhns/Pa4qDnfk
+         OfFJHqXMukabQLkOuzbxfNYlfTQVCuWoOy0wTOhXRER6dIwsS6RETC6W1+Ua+jUnwZOU
+         r/pOp2X0EgJaGApqO5iWRwEExGO5LXycsC8+b5gjb4bE4pGSfA5hPJAq+0M0YnxJ4WlH
+         fero2AQKwoUddyP2V4V45egrl2kvvj19KEER8L0B5nmqccdJuPqgzW46McVZgvAVuhuQ
+         ByJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UrDz0VtEFIllRgR/SygMJHwSLsI5h5gjPBKpNjucqnU=;
-        b=J6lgp1hw77RLYT/jcdXXWoaCuU4GVLUWe8ORN5O6mE0iNoITYbC2vQ9TidUiLWtgJv
-         h7BQlnwRx8vcDHg0LSMrgJK1bgAgoA00TWy9PIl49rYVia29wV5TxMUqF4WOTli0OCIt
-         4gbVW89xRQDMgpQDJ2UMQYThCN+hZ9PYbRe/zxa3bUi1PIXmmVU7rggexl1COvAKSHny
-         JjMELNjyJxu6T8xh3+AeyHljZceNYEyme0flmBj49uPsQmDP9ezflaxhNo9MAdloZBEH
-         7knt9OoQNBIHeINxhrPmMrKYAYyBcVjP1v2KnBr4yYw7eym46aQGxIEBP6b9x5rL/3KD
-         iFPA==
-X-Gm-Message-State: AGi0PuYT5EnQoh34i3hihrfwBZprQPk+6C2Ne+FxwkWlHT+RWFL2y+bm
-        pLjjN7DmDZ5A9dogh2E2LAeTmA==
-X-Google-Smtp-Source: APiQypKf6IbOeOx+5EfHUUqCWzbaipquaePVOHE175HL0LBNU9ynasyUz/CcO62uWiKdOHOo00HWLA==
-X-Received: by 2002:a5d:614b:: with SMTP id y11mr26414026wrt.77.1589288047573;
-        Tue, 12 May 2020 05:54:07 -0700 (PDT)
+        bh=+rGKvfoFiAjDdQtTJ+6Vf7qeLWqTDG31CN5bbQtUQo8=;
+        b=GMft9NR7udemshT4QdleWqxJ2nV+1UQ6gtii99u8WaNEpHGGQT9cxhTdaoUZ0sMs4+
+         A6Y7df3eVsNhkHizDy7kzbI+B6Os66uLTdkuvABMEiE4C+B1vDunLXtP7lAJTVg+ODxU
+         5nUWEYR+q6bpkKKkkXPg4JlQfZjVtN0e6Lp/BoFhHQ7MmCmavjgrKWUR+6VBo0Jws4p2
+         PAPJcecRkZ1k5geXo9XHE0E2+J1Un/SrKLogZmGdwJLFhMskoKJj40obdk6Th6En/0jJ
+         4lrGVjzHc26rJLPaVXdewiN1O/4tUDUtUauY7lihvjBWoM3Zmqakm21ui7e3aob12Ae5
+         e4ew==
+X-Gm-Message-State: AGi0PuZuPKWSYcuUL6sAAKzs8XWg5cluMym6ob7cnIyxxX4q7LOQGvhy
+        Vt2xYbdX4IThTcT3sITQiCxRhA==
+X-Google-Smtp-Source: APiQypLVCbH0uBXG8DFqpYqzRwWsWiqSkdNCTz/vDUVtGWJZXox+WKeuIqWoT6/6hqCEQhI68x/oSQ==
+X-Received: by 2002:a1c:c242:: with SMTP id s63mr27560918wmf.180.1589288038141;
+        Tue, 12 May 2020 05:53:58 -0700 (PDT)
 Received: from localhost.localdomain (212-39-89-66.ip.btc-net.bg. [212.39.89.66])
-        by smtp.googlemail.com with ESMTPSA id n13sm2433938wrs.2.2020.05.12.05.54.05
+        by smtp.googlemail.com with ESMTPSA id n13sm2433938wrs.2.2020.05.12.05.53.56
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 12 May 2020 05:54:06 -0700 (PDT)
+        Tue, 12 May 2020 05:53:57 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, rjw@rjwysocki.net,
         saravanak@google.com, sibis@codeaurora.org, mka@chromium.org
@@ -65,9 +65,9 @@ Cc:     robh+dt@kernel.org, rnayak@codeaurora.org,
         jcrouse@codeaurora.org, evgreen@chromium.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, georgi.djakov@linaro.org
-Subject: [PATCH v8 07/10] cpufreq: dt: Add support for interconnect bandwidth scaling
-Date:   Tue, 12 May 2020 15:53:24 +0300
-Message-Id: <20200512125327.1868-8-georgi.djakov@linaro.org>
+Subject: [PATCH v8 03/10] interconnect: Add of_icc_get_by_index() helper function
+Date:   Tue, 12 May 2020 15:53:20 +0300
+Message-Id: <20200512125327.1868-4-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200512125327.1868-1-georgi.djakov@linaro.org>
 References: <20200512125327.1868-1-georgi.djakov@linaro.org>
@@ -78,71 +78,157 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In addition to clocks and regulators, some devices can scale the bandwidth
-of their on-chip interconnect - for example between CPU and DDR memory. Add
-support for that, so that platforms which support it can make use of it.
+This is the same as the traditional of_icc_get() function, but the
+difference is that it takes index as an argument, instead of name.
 
 Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
 v8:
-* Picked reviewed-by tag.
-* Added a separate patch to check the number of paths in DT and validate
-  each one of them.
+* Dropped unneeded initializations.
+* Picked reviewed-by tags.
 
- drivers/cpufreq/Kconfig      |  1 +
- drivers/cpufreq/cpufreq-dt.c | 15 +++++++++++++++
- 2 files changed, 16 insertions(+)
+ drivers/interconnect/core.c  | 72 +++++++++++++++++++++++++++---------
+ include/linux/interconnect.h |  6 +++
+ 2 files changed, 60 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-index c3e6bd59e920..db2ad54ee67f 100644
---- a/drivers/cpufreq/Kconfig
-+++ b/drivers/cpufreq/Kconfig
-@@ -217,6 +217,7 @@ config CPUFREQ_DT
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 2c6515e3ecf1..aba5d38ea9d1 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -351,9 +351,9 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+ }
  
- config CPUFREQ_DT_PLATDEV
- 	bool
-+	depends on INTERCONNECT || !INTERCONNECT
- 	help
- 	  This adds a generic DT based cpufreq platdev driver for frequency
- 	  management.  This creates a 'cpufreq-dt' platform device, on the
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 26fe8dfb9ce6..4ecef3257532 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -13,6 +13,7 @@
- #include <linux/cpufreq.h>
- #include <linux/cpumask.h>
- #include <linux/err.h>
-+#include <linux/interconnect.h>
- #include <linux/module.h>
- #include <linux/of.h>
- #include <linux/pm_opp.h>
-@@ -95,6 +96,7 @@ static int resources_available(void)
- 	struct device *cpu_dev;
- 	struct regulator *cpu_reg;
- 	struct clk *cpu_clk;
-+	struct icc_path *cpu_path;
- 	int ret = 0;
- 	const char *name;
+ /**
+- * of_icc_get() - get a path handle from a DT node based on name
++ * of_icc_get_by_index() - get a path handle from a DT node based on index
+  * @dev: device pointer for the consumer device
+- * @name: interconnect path name
++ * @idx: interconnect path index
+  *
+  * This function will search for a path between two endpoints and return an
+  * icc_path handle on success. Use icc_put() to release constraints when they
+@@ -365,13 +365,12 @@ static struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+  * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
+  * when the API is disabled or the "interconnects" DT property is missing.
+  */
+-struct icc_path *of_icc_get(struct device *dev, const char *name)
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ {
+-	struct icc_path *path = ERR_PTR(-EPROBE_DEFER);
++	struct icc_path *path;
+ 	struct icc_node *src_node, *dst_node;
+-	struct device_node *np = NULL;
++	struct device_node *np;
+ 	struct of_phandle_args src_args, dst_args;
+-	int idx = 0;
+ 	int ret;
  
-@@ -121,6 +123,19 @@ static int resources_available(void)
+ 	if (!dev || !dev->of_node)
+@@ -391,12 +390,6 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
+ 	 * lets support only global ids and extend this in the future if needed
+ 	 * without breaking DT compatibility.
+ 	 */
+-	if (name) {
+-		idx = of_property_match_string(np, "interconnect-names", name);
+-		if (idx < 0)
+-			return ERR_PTR(idx);
+-	}
+-
+ 	ret = of_parse_phandle_with_args(np, "interconnects",
+ 					 "#interconnect-cells", idx * 2,
+ 					 &src_args);
+@@ -439,12 +432,8 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
+ 		return path;
+ 	}
  
- 	clk_put(cpu_clk);
+-	if (name)
+-		path->name = kstrdup_const(name, GFP_KERNEL);
+-	else
+-		path->name = kasprintf(GFP_KERNEL, "%s-%s",
+-				       src_node->name, dst_node->name);
+-
++	path->name = kasprintf(GFP_KERNEL, "%s-%s",
++			       src_node->name, dst_node->name);
+ 	if (!path->name) {
+ 		kfree(path);
+ 		return ERR_PTR(-ENOMEM);
+@@ -452,6 +441,53 @@ struct icc_path *of_icc_get(struct device *dev, const char *name)
  
-+	cpu_path = of_icc_get(cpu_dev, NULL);
-+	ret = PTR_ERR_OR_ZERO(cpu_path);
-+	if (ret) {
-+		if (ret == -EPROBE_DEFER)
-+			dev_dbg(cpu_dev, "defer icc path: %d\n", ret);
-+		else
-+			dev_err(cpu_dev, "failed to get icc path: %d\n", ret);
+ 	return path;
+ }
++EXPORT_SYMBOL_GPL(of_icc_get_by_index);
 +
-+		return ret;
++/**
++ * of_icc_get() - get a path handle from a DT node based on name
++ * @dev: device pointer for the consumer device
++ * @name: interconnect path name
++ *
++ * This function will search for a path between two endpoints and return an
++ * icc_path handle on success. Use icc_put() to release constraints when they
++ * are not needed anymore.
++ * If the interconnect API is disabled, NULL is returned and the consumer
++ * drivers will still build. Drivers are free to handle this specifically,
++ * but they don't have to.
++ *
++ * Return: icc_path pointer on success or ERR_PTR() on error. NULL is returned
++ * when the API is disabled or the "interconnects" DT property is missing.
++ */
++struct icc_path *of_icc_get(struct device *dev, const char *name)
++{
++	struct device_node *np;
++	int idx = 0;
++
++	if (!dev || !dev->of_node)
++		return ERR_PTR(-ENODEV);
++
++	np = dev->of_node;
++
++	/*
++	 * When the consumer DT node do not have "interconnects" property
++	 * return a NULL path to skip setting constraints.
++	 */
++	if (!of_find_property(np, "interconnects", NULL))
++		return NULL;
++
++	/*
++	 * We use a combination of phandle and specifier for endpoint. For now
++	 * lets support only global ids and extend this in the future if needed
++	 * without breaking DT compatibility.
++	 */
++	if (name) {
++		idx = of_property_match_string(np, "interconnect-names", name);
++		if (idx < 0)
++			return ERR_PTR(idx);
 +	}
 +
-+	icc_put(cpu_path);
++	return of_icc_get_by_index(dev, idx);
++}
+ EXPORT_SYMBOL_GPL(of_icc_get);
+ 
+ /**
+diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+index d70a914cba11..34e97231a6ab 100644
+--- a/include/linux/interconnect.h
++++ b/include/linux/interconnect.h
+@@ -28,6 +28,7 @@ struct device;
+ struct icc_path *icc_get(struct device *dev, const int src_id,
+ 			 const int dst_id);
+ struct icc_path *of_icc_get(struct device *dev, const char *name);
++struct icc_path *of_icc_get_by_index(struct device *dev, int idx);
+ void icc_put(struct icc_path *path);
+ int icc_set_bw(struct icc_path *path, u32 avg_bw, u32 peak_bw);
+ void icc_set_tag(struct icc_path *path, u32 tag);
+@@ -46,6 +47,11 @@ static inline struct icc_path *of_icc_get(struct device *dev,
+ 	return NULL;
+ }
+ 
++static inline struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
++{
++	return NULL;
++}
 +
- 	name = find_supply_name(cpu_dev);
- 	/* Platform doesn't require regulator */
- 	if (!name)
+ static inline void icc_put(struct icc_path *path)
+ {
+ }
