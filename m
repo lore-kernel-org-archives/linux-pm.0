@@ -2,82 +2,132 @@ Return-Path: <SRS0=zDym=62=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14ACEC54E8E
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9DAFC54E4A
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F0EE820675
-	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ACD8920736
+	for <linux-pm@archiver.kernel.org>; Tue, 12 May 2020 12:32:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=web.de header.i=@web.de header.b="oiuSB6tt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729682AbgELMcN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 12 May 2020 08:32:13 -0400
-Received: from m177129.mail.qiye.163.com ([123.58.177.129]:17514 "EHLO
-        m177129.mail.qiye.163.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729634AbgELMcN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 12 May 2020 08:32:13 -0400
-Received: from vivo.com (wm-2.qy.internal [127.0.0.1])
-        by m177129.mail.qiye.163.com (Hmail) with ESMTP id 3B81D5C342A;
-        Tue, 12 May 2020 20:31:36 +0800 (CST)
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: base64
-Message-ID: <AA*AkABhCGTIpJhY0Or0Saq5.3.1589286695947.Hmail.bernard@vivo.com>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Markus Elfring <Markus.Elfring@web.de>,
+        id S1727859AbgELMcn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 12 May 2020 08:32:43 -0400
+Received: from mout.web.de ([212.227.17.12]:60069 "EHLO mout.web.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729408AbgELMcm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 12 May 2020 08:32:42 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=web.de;
+        s=dbaedf251592; t=1589286744;
+        bh=oQ654Y8vgazkW9Fx1rTOOfvrDoyHa0+Mtvm57jCjOUo=;
+        h=X-UI-Sender-Class:Subject:To:Cc:References:From:Date:In-Reply-To;
+        b=oiuSB6tt/knk88jxyT/tcwoaScFSJzQsLYieamrlQyBf9sjEQOB3K7hzfXecWm/uM
+         9epiFm5lc9gF9kgFsnQkRAB2UJBizxSrcrMu6rZglKiSBn2SKXNGzolEyrbcVuTqvt
+         kFnOqX8JNIigT53+NwMssbV7IGzg8fNRDG8clyNs=
+X-UI-Sender-Class: c548c8c5-30a9-4db5-a2e7-cb6cb037b8f9
+Received: from [192.168.1.2] ([2.244.36.232]) by smtp.web.de (mrweb103
+ [213.165.67.124]) with ESMTPSA (Nemesis) id 0MfqEy-1jmpX941pM-00NDyt; Tue, 12
+ May 2020 14:32:24 +0200
+Subject: Re: [v2] memory/samsung: reduce unnecessary mutex lock area
+To:     Lukasz Luba <lukasz.luba@arm.com>, Bernard Zhao <bernard@vivo.com>,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        opensource.kernel@vivo.com, Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-samsung-soc@vger.kernel.org
+Cc:     linux-kernel@vger.kernel.org, opensource.kernel@vivo.com,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         Kukjin Kim <kgene@kernel.org>
-Subject: =?UTF-8?B?UmU6UmU6IFtQQVRDSCB2Ml0gbWVtb3J5L3NhbXN1bmc6IHJlZHVjZSB1bm5lY2Vzc2FyeSBtdXRleCBsb2NrIGFyZWE=?=
-X-Priority: 3
-X-Mailer: HMail Webmail Server V2.0 Copyright (c) 2016-163.com
-X-Originating-IP: 157.0.31.122
-In-Reply-To: <c910fa00-c27b-9854-9ab2-6f37c28b87f6@arm.com>
+References: <edf839ce-cc61-73dc-e017-b49648b94d1c@web.de>
+ <c910fa00-c27b-9854-9ab2-6f37c28b87f6@arm.com>
+From:   Markus Elfring <Markus.Elfring@web.de>
+Autocrypt: addr=Markus.Elfring@web.de; prefer-encrypt=mutual; keydata=
+ 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 FEE=
+Message-ID: <5a12fa12-f4e0-c941-b22b-33436723b44e@web.de>
+Date:   Tue, 12 May 2020 14:32:21 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Received: from bernard@vivo.com( [157.0.31.122) ] by ajax-webmail ( [127.0.0.1] ) ; Tue, 12 May 2020 20:31:35 +0800 (GMT+08:00)
-From:   Bernard <bernard@vivo.com>
-Date:   Tue, 12 May 2020 20:31:35 +0800 (GMT+08:00)
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgYFAkeWUFZT1VLSU5LS0tLQk5ITUxPSFlXWShZQU
-        hPN1dZLVlBSVdZCQ4XHghZQVk1NCk2OjckKS43PlkG
-X-HM-Sender-Digest: e1kJHlYWEh9ZQUhMTElPQk9ITUxMN1dZDB4ZWUEPCQ4eV1kSHx4VD1lB
-        WUc6OlE6EDo5Ezg8LzILMRMiSzQJSygaCk5VSFVKTkNCSUNNTUJCSUJDVTMWGhIXVRkeCRUaCR87
-        DRINFFUYFBZFWVdZEgtZQVlKTkxVS1VISlVKSUlZV1kIAVlBT09CTDcG
-X-HM-Tid: 0a7208de753a6447kurs3b81d5c342a
+In-Reply-To: <c910fa00-c27b-9854-9ab2-6f37c28b87f6@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-GB
+X-Provags-ID: V03:K1:7vj6CzdFvzTXkxGUCDdIycEJRwV/9+NWbNRMILlfg6XGAsQgjNL
+ gVK/xIN74DtSp254wG8c3r6du0J8UfHSDtLaUBy787gcBk14SBtlnJ8DN5TotpRfmUPY5pT
+ NsKKbyS+3X5v9BkdCSwnY7yuoRaMsc2sm2sfCxRMTPZmWUcjgIaFwLzrTZWCE1CNfJqSPn4
+ 1plEOwdeBS+AMeFNpL3pw==
+X-UI-Out-Filterresults: notjunk:1;V03:K0:yl+gJRe44FA=:Deits6p83AxdOUjY/B59HL
+ GfUDSm9bQpZYkKGTxplVIo6tR/pqApA3sIZ55/xWB8a0l3dt733bcUmxQ7vagZB+wzWWAorbl
+ bkAo82XnkCdwieFUia0LRyeccWtm1ZomTgYeKuqh74BpqG47jSicMkUh4ntPqFZ6jiOM2KW0z
+ c70CbWDsvK9DG6H+PO46npNGeAO16zCHlMx8lebBxk6HiLrxiQcBmadHnvqFQwDbd6oNR4tbE
+ J/7mWfrwAjSCwQoExbIo8ScBrumbATigLtQpegE9oX/h7beHglEi8RFpQOM89UYod6bn5nwyT
+ 2lNIWvir9H+Z+5vyBD1dw4EAgE6YFlDFn16Z3vCP5rTXWkuOW81VuiPVjAicdFv/wxT22PLz4
+ tI9FB8Y7Zt+CWDGYUdSDe+bIWryE7nV01VjJlUijzgTdAZz9j1ypk+2KTYdMfnLWGA4XK+HUA
+ cbg4i6RaarZhXx2KaTT06f1wFh9rPTeLxyEnNK34/xmwMiRdWQif3N/JD2igytnIAHQZC+YOw
+ a7oZ8hJNjXPyByC2TA8jzNPpx+RcUpWxriNI94TupQFh2y4uzVuakIXZatRJ/52pR/JJ2+OHw
+ JuvOMCnHYip1/Ze9EILujZmpyldVBlnC7Z0/IZ6KHZLXbrKtmZS7CHOjH1VQtpnlDrQYQ9a3G
+ V5xsvE3wmHEf/cAwJDhx1CDDBUXUc99pjbZVDMV52Y30Se/dmqaWDCRrMcRkfvPivSnNDR7vn
+ vBrAizDARhADgAopyE8TWykElgEmaNPggQ5YZzC8Tl+gzbZUK5FkvbDTJjxxJ/QXB2wuKv01E
+ HZvXAhTK/coNF1CTp+PmZUP2ReYvQv45sKFK8S+gPsGQR+p/ZKBDrC6N5/rTtXrTATqnQJSvl
+ YXas4qJL0OcaoGrolc68y1e8Lj3BK1tGCIknHBNbnPllH1u1FnxUjc5UTGUbOPvKTf7YrT9ya
+ LxiiBVXgf+ml7cpsOwMsKspMplvbQE5nTuar58q8eI4AiBdmbZ9QOKpuqGSKCRWT4YZ6bAtE3
+ AdFoNYLz83l8+2NcpThXT4VGEmHt1N3Eaxtotr0AO4JfyrGzvHoP3c7+bfcNDDkyJ/GoMrDPH
+ 3/R8jvzLRy7SgDBFSpGN/JNaNnOCzPmr35heoBkX6zHUUM78acCPBYAw/ofGlyhoaue2FDA7y
+ /U/pdDMHR6NYYzV8dvLRCxRYvoDi8bbl56aWBQ3XmdydpL0dbXXBef8Ge+YR1q43aMZg8LTmB
+ gsfMDlfgQ4PNgOfDk
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CgpGcm9tOiBMdWthc3ogTHViYSA8bHVrYXN6Lmx1YmFAYXJtLmNvbT4KRGF0ZTogMjAyMC0wNS0x
-MiAxOTo1Njo0OQpUbzogIE1hcmt1cyBFbGZyaW5nIDxNYXJrdXMuRWxmcmluZ0B3ZWIuZGU+LEJl
-cm5hcmQgWmhhbyA8YmVybmFyZEB2aXZvLmNvbT4sbGludXgtYXJtLWtlcm5lbEBsaXN0cy5pbmZy
-YWRlYWQub3JnLGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZyxsaW51eC1zYW1zdW5nLXNvY0B2Z2Vy
-Lmtlcm5lbC5vcmcKQ2M6ICBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnLG9wZW5zb3VyY2Uu
-a2VybmVsQHZpdm8uY29tLEtyenlzenRvZiBLb3psb3dza2kgPGtyemtAa2VybmVsLm9yZz4sS3Vr
-amluIEtpbSA8a2dlbmVAa2VybmVsLm9yZz4KU3ViamVjdDogUmU6IFtQQVRDSCB2Ml0gbWVtb3J5
-L3NhbXN1bmc6IHJlZHVjZSB1bm5lY2Vzc2FyeSBtdXRleCBsb2NrIGFyZWE+Cj4KPk9uIDUvMTIv
-MjAgMTI6NDAgUE0sIE1hcmt1cyBFbGZyaW5nIHdyb3RlOgo+Pj4gTWF5YmUgZG1jLT5kZi0+bG9j
-ayBzZWVtcyBub3QgbmVlZGVkIHRvIHByb3RlY3QgImlmIChyZXQpCj4+PiAmIGRldl93YXJuIiBi
-cmFuY2guIE1heWJlIHRoaXMgY2hhbmdlIHNwZWVkIHVwIHRoZSBjb2RlIGEgYml0Lgo+PiAKPj4g
-SSBzdWdnZXN0IHRvIGltcHJvdmUgYWxzbyB0aGlzIGNvbW1pdCBtZXNzYWdlLgo+PiAKPj4gKiBQ
-bGVhc2UgcmVkdWNlIHVuY2VydGFpbnR5Lgo+PiAKPj4gKiBBbiBpbXBlcmF0aXZlIHdvcmRpbmcg
-aXMgcHJvYmFibHkgcHJlZmVycmVkLCBpc24ndCBpdD8KPj4gICAgaHR0cHM6Ly9naXQua2VybmVs
-Lm9yZy9wdWIvc2NtL2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L3RyZWUvRG9j
-dW1lbnRhdGlvbi9wcm9jZXNzL3N1Ym1pdHRpbmctcGF0Y2hlcy5yc3Q/aWQ9MTUyMDM2ZDEzNzlm
-ZmQ2OTg1MjYyNzQzZGNmNmIwZjljNzVmODNhNCNuMTUxCj4+IAo+PiAqIFdpbGwgaXQgYmUgbW9y
-ZSBhcHByb3ByaWF0ZSB0byByZWZlciB0byB0aGUgdHJhbnNmb3JtYXRpb24g4oCcUmVkdWNlIHRo
-ZSBsb2NrIHNjb3Bl4oCdPwo+PiAKPj4gKiBXb3VsZCB5b3UgbGlrZSB0byBhZGQgdGhlIHRhZyDi
-gJxGaXhlc+KAnSB0byB0aGUgY2hhbmdlIGRlc2NyaXB0aW9uPwo+PiAKPj4gUmVnYXJkcywKPj4g
-TWFya3VzCj4+IAo+Cj5UaGFuayB5b3UgTWFya3VzIGZvciBwcm92aWRpbmcgdG8gQmVybmFyZCBo
-ZWxwZnVsIHN1Z2dlc3Rpb25zLgo+Cj5AQmVybmFyZCBwbGVhc2UgcmVhZCB0aGUgbGluayBhYm92
-ZSBhbmQgc2VuZCB2Mwo+Cj5Tb21ldGhpbmcgbGlrZTogJ21lbW9yeS9zYW1zdW5nOiByZWR1Y2Ug
-cHJvdGVjdGVkIGNvZGUgYXJlYSBpbiBJUlEKPmhhbmRsZXInIGZvciB0aGUgc3ViamVjdCBoZWFk
-ZXIgd291bGQgYmUgYmV0dGVyLgo+VGhlbiBpbiB0aGUgbWVzc2FnZSBleHBsYWluICh3aXRob3V0
-ICdtYXliZScpIHRoYXQgaXQgd2lsbCBzcGVlZC11cCBhCj5iaXQgdGhpcyBJUlEgcHJvY2Vzc2lu
-ZyBhbmQgdGhlcmUgaXMgbm8gbmVlZCB0byBwcm90ZWN0IHJldHVybiB2YWx1ZSBvcgo+cHJpbnRp
-bmcuCj4KPlJlZ2FyZHMsCgo+THVrYXN6CgpTdXJlLCB0aGFuayB5b3UgYm90aCBNYXJrdXMgJiBM
-dWthc3ogZm9yIHlvdXIgaGVscGZ1bCBzdWdnZXN0aW9ucywgSSB3aWxsIHJlYWQgdGhlIGNvbnRl
-bnQKb2YgdGhlIGxpbmsgaW4gZGV0YWlsIGFuZCB1c2UgdGhhdCBwcmVmZXJyZWQgZm9ybWF0IGlu
-IG15IGZ1dHVyZSBzdWJzZXF1ZW50IHN1Ym1pc3Npb25zLgoKUmVnYXJkcywKQmVybmFyZA0KDQo=
+> Something like: 'memory/samsung: reduce protected code area in IRQ
+> handler' for the subject header would be better.
+> Then in the message explain (without 'maybe') that it will speed-up a
+> bit this IRQ processing and there is no need to protect return value
+> or printing.
+
+Do you tend to prefer smaller lock scopes for nicer run time characteristics?
+
+Regards,
+Markus
