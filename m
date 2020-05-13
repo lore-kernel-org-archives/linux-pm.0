@@ -2,31 +2,31 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	UNPARSEABLE_RELAY,UPPERCASE_50_75,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 82052C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B6FC433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 40CDD2054F
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 059652054F
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390542AbgEMS5a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S2390512AbgEMS5a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 13 May 2020 14:57:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49942 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49950 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2390389AbgEMS4f (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:35 -0400
+        by vger.kernel.org with ESMTP id S2390395AbgEMS4g (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:36 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7721EC061A0C;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D747AC05BD0A;
         Wed, 13 May 2020 11:56:35 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 4A0F92A251E
+        with ESMTPSA id 8CCAA2A29D1
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 74B84480104; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 844EA480109; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -35,9 +35,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 06/19] power: supply: sbs-battery: add POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN support
-Date:   Wed, 13 May 2020 20:56:02 +0200
-Message-Id: <20200513185615.508236-7-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 11/19] power: supply: sbs-battery: add POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT/VOLTAGE_MAX support
+Date:   Wed, 13 May 2020 20:56:07 +0200
+Message-Id: <20200513185615.508236-12-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -48,51 +48,65 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for reporting the MaxError register from
-battery fuel gauges following the smart battery standard.
+Expose maximum charge current/voltage information requested
+by the battery.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/sbs-battery.c | 5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/power/supply/sbs-battery.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index a15783802ef8..4356fdf25d4a 100644
+index b697a42d9ccf..e6f61baa9bed 100644
 --- a/drivers/power/supply/sbs-battery.c
 +++ b/drivers/power/supply/sbs-battery.c
-@@ -26,6 +26,7 @@ enum {
- 	REG_TEMPERATURE,
- 	REG_VOLTAGE,
- 	REG_CURRENT,
-+	REG_MAX_ERR,
- 	REG_CAPACITY,
- 	REG_TIME_TO_EMPTY,
- 	REG_TIME_TO_FULL,
-@@ -85,6 +86,8 @@ static const struct chip_data {
- 		SBS_DATA(POWER_SUPPLY_PROP_VOLTAGE_NOW, 0x09, 0, 20000),
- 	[REG_CURRENT] =
- 		SBS_DATA(POWER_SUPPLY_PROP_CURRENT_NOW, 0x0A, -32768, 32767),
-+	[REG_MAX_ERR] =
-+		SBS_DATA(POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN, 0x0c, 0, 100),
- 	[REG_CAPACITY] =
- 		SBS_DATA(POWER_SUPPLY_PROP_CAPACITY, 0x0D, 0, 100),
- 	[REG_REMAINING_CAPACITY] =
-@@ -132,6 +135,7 @@ static enum power_supply_property sbs_properties[] = {
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
- 	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN,
- 	POWER_SUPPLY_PROP_TEMP,
- 	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
- 	POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
-@@ -676,6 +680,7 @@ static int sbs_get_property(struct power_supply *psy,
+@@ -46,6 +46,8 @@ enum {
+ 	REG_CHEMISTRY,
+ 	REG_MANUFACTURER,
+ 	REG_MODEL_NAME,
++	REG_CHARGE_CURRENT,
++	REG_CHARGE_VOLTAGE,
+ };
+ 
+ #define REG_ADDR_SPEC_INFO		0x1A
+@@ -114,6 +116,10 @@ static const struct chip_data {
+ 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG, 0x12, 0, 65535),
+ 	[REG_TIME_TO_FULL] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_FULL_AVG, 0x13, 0, 65535),
++	[REG_CHARGE_CURRENT] =
++		SBS_DATA(POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, 0x14, 0, 65535),
++	[REG_CHARGE_VOLTAGE] =
++		SBS_DATA(POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX, 0x15, 0, 65535),
+ 	[REG_STATUS] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_STATUS, 0x16, 0, 65535),
+ 	[REG_CAPACITY_LEVEL] =
+@@ -163,6 +169,8 @@ static enum power_supply_property sbs_properties[] = {
+ 	POWER_SUPPLY_PROP_CHARGE_NOW,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL,
+ 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
++	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+ 	/* Properties of type `const char *' */
+ 	POWER_SUPPLY_PROP_MANUFACTURER,
+ 	POWER_SUPPLY_PROP_MODEL_NAME
+@@ -531,6 +539,8 @@ static void  sbs_unit_adjustment(struct i2c_client *client,
+ 	case POWER_SUPPLY_PROP_CURRENT_NOW:
+ 	case POWER_SUPPLY_PROP_CURRENT_AVG:
+ 	case POWER_SUPPLY_PROP_CHARGE_NOW:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL:
+ 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+ 		val->intval *= BASE_UNIT_CONVERSION;
+@@ -749,6 +759,8 @@ static int sbs_get_property(struct power_supply *psy,
+ 	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
  	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
  	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
++	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
  	case POWER_SUPPLY_PROP_CAPACITY:
-+	case POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN:
+ 	case POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN:
  		ret = sbs_get_property_index(client, psp);
- 		if (ret < 0)
- 			break;
 -- 
 2.26.2
 
