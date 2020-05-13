@@ -4,29 +4,29 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ADA5C433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15C7CC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE3392065C
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8ACF2078C
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390400AbgEMS4g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:56:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49946 "EHLO
+        id S2390533AbgEMS5a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 14:57:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49948 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2390393AbgEMS4g (ORCPT
+        by vger.kernel.org with ESMTP id S2390394AbgEMS4g (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:36 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CED23C061A0F;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CEE64C05BD09;
         Wed, 13 May 2020 11:56:35 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 68B3D2A28F8
+        with ESMTPSA id 4D5722A2521
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 80A39480108; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 777C3480105; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -35,9 +35,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 10/19] power: supply: sbs-battery: Improve POWER_SUPPLY_PROP_TECHNOLOGY support
-Date:   Wed, 13 May 2020 20:56:06 +0200
-Message-Id: <20200513185615.508236-11-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 07/19] power: supply: sbs-battery: simplify read_read_string_data
+Date:   Wed, 13 May 2020 20:56:03 +0200
+Message-Id: <20200513185615.508236-8-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -48,96 +48,120 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This reads the battery chemistry from the battery chip instead
-of incorrectly hardcoding the type to be Li-Ion.
+The SBS battery implements SMBus block reads. Currently the
+driver "emulates" this by doing an I2C byte read for the
+length followed by an I2C block read. The I2C subsystem
+actually provides a proper API for doing SMBus block reads,
+which can and should be used instead. The current implementation
+does not properly handle packet error checking (PEC).
+
+This change requires, that I2C bus drivers support I2C_M_RECV_LEN
+or directly provide the SMBus API to access device manufacturer
+and model name.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/sbs-battery.c | 43 ++++++++++++++++++++++++++++--
- 1 file changed, 41 insertions(+), 2 deletions(-)
+ drivers/power/supply/sbs-battery.c | 65 ++++++------------------------
+ 1 file changed, 12 insertions(+), 53 deletions(-)
 
 diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 611a11385496..b697a42d9ccf 100644
+index 4356fdf25d4a..a9a1d28dabbe 100644
 --- a/drivers/power/supply/sbs-battery.c
 +++ b/drivers/power/supply/sbs-battery.c
-@@ -43,6 +43,7 @@ enum {
- 	REG_DESIGN_CAPACITY_CHARGE,
- 	REG_DESIGN_VOLTAGE_MIN,
- 	REG_DESIGN_VOLTAGE_MAX,
-+	REG_CHEMISTRY,
- 	REG_MANUFACTURER,
- 	REG_MODEL_NAME,
- };
-@@ -133,7 +134,9 @@ static const struct chip_data {
- 	[REG_MANUFACTURER] =
- 		SBS_DATA(POWER_SUPPLY_PROP_MANUFACTURER, 0x20, 0, 65535),
- 	[REG_MODEL_NAME] =
--		SBS_DATA(POWER_SUPPLY_PROP_MODEL_NAME, 0x21, 0, 65535)
-+		SBS_DATA(POWER_SUPPLY_PROP_MODEL_NAME, 0x21, 0, 65535),
-+	[REG_CHEMISTRY] =
-+		SBS_DATA(POWER_SUPPLY_PROP_TECHNOLOGY, 0x22, 0, 65535)
- };
+@@ -202,66 +202,32 @@ static int sbs_read_string_data(struct i2c_client *client, u8 address,
+ 				char *values)
+ {
+ 	struct sbs_info *chip = i2c_get_clientdata(client);
+-	s32 ret = 0, block_length = 0;
+-	int retries_length, retries_block;
+-	u8 block_buffer[I2C_SMBUS_BLOCK_MAX + 1];
+-
+-	retries_length = chip->i2c_retry_count;
+-	retries_block = chip->i2c_retry_count;
++	int retries = chip->i2c_retry_count;
++	s32 ret = 0;
  
- static enum power_supply_property sbs_properties[] = {
-@@ -185,6 +188,7 @@ struct sbs_info {
+-	/* Adapter needs to support these two functions */
+ 	if (!i2c_check_functionality(client->adapter,
+-				     I2C_FUNC_SMBUS_BYTE_DATA |
+-				     I2C_FUNC_SMBUS_I2C_BLOCK)){
++				     I2C_FUNC_SMBUS_READ_BLOCK_DATA)) {
+ 		return -ENODEV;
+ 	}
  
- static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
- static char manufacturer[I2C_SMBUS_BLOCK_MAX + 1];
-+static char chemistry[I2C_SMBUS_BLOCK_MAX + 1];
- static bool force_load;
+-	/* Get the length of block data */
+-	while (retries_length > 0) {
+-		ret = i2c_smbus_read_byte_data(client, address);
+-		if (ret >= 0)
+-			break;
+-		retries_length--;
+-	}
+-
+-	if (ret < 0) {
+-		dev_dbg(&client->dev,
+-			"%s: i2c read at address 0x%x failed\n",
+-			__func__, address);
+-		return ret;
+-	}
+-
+-	/* block_length does not include NULL terminator */
+-	block_length = ret;
+-	if (block_length > I2C_SMBUS_BLOCK_MAX) {
+-		dev_err(&client->dev,
+-			"%s: Returned block_length is longer than 0x%x\n",
+-			__func__, I2C_SMBUS_BLOCK_MAX);
+-		return -EINVAL;
+-	}
+-
+ 	/* Get the block data */
+-	while (retries_block > 0) {
+-		ret = i2c_smbus_read_i2c_block_data(
+-				client, address,
+-				block_length + 1, block_buffer);
++	while (retries > 0) {
++		ret = i2c_smbus_read_block_data(client, address, values);
+ 		if (ret >= 0)
+ 			break;
+-		retries_block--;
++		retries--;
+ 	}
  
- static int sbs_update_presence(struct sbs_info *chip, bool is_present)
-@@ -636,6 +640,38 @@ static int sbs_get_property_index(struct i2c_client *client,
- 	return -EINVAL;
+ 	if (ret < 0) {
+-		dev_dbg(&client->dev,
+-			"%s: i2c read at address 0x%x failed\n",
+-			__func__, address);
++		dev_dbg(&client->dev, "%s: failed to read block 0x%x: %d\n",
++			__func__, address, ret);
+ 		return ret;
+ 	}
+ 
+-	/* block_buffer[0] == block_length */
+-	memcpy(values, block_buffer + 1, block_length);
+-	values[block_length] = '\0';
++	/* add string termination */
++	values[ret] = '\0';
+ 
+-	return ret;
++	return 0;
  }
  
-+static int sbs_get_chemistry(struct i2c_client *client,
-+		union power_supply_propval *val)
-+{
-+	enum power_supply_property psp = POWER_SUPPLY_PROP_TECHNOLOGY;
-+	int ret;
-+
-+	ret = sbs_get_property_index(client, psp);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = sbs_get_battery_string_property(client, ret, psp,
-+					      chemistry);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!strncasecmp(chemistry, "LION", 4))
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+	else if (!strncasecmp(chemistry, "LiP", 3))
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LIPO;
-+	else if (!strncasecmp(chemistry, "NiCd", 4))
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_NiCd;
-+	else if (!strncasecmp(chemistry, "NiMH", 4))
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_NiMH;
-+	else
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
-+
-+	if (val->intval == POWER_SUPPLY_TECHNOLOGY_UNKNOWN)
-+		dev_warn(&client->dev, "Unknown chemistry: %s\n", chemistry);
-+
-+	return 0;
-+}
-+
- static int sbs_get_property(struct power_supply *psy,
- 	enum power_supply_property psp,
- 	union power_supply_propval *val)
-@@ -673,7 +709,10 @@ static int sbs_get_property(struct power_supply *psy,
- 		break;
+ static int sbs_write_word_data(struct i2c_client *client, u8 address,
+@@ -465,14 +431,7 @@ static int sbs_get_battery_property(struct i2c_client *client,
+ static int sbs_get_battery_string_property(struct i2c_client *client,
+ 	int reg_offset, enum power_supply_property psp, char *val)
+ {
+-	s32 ret;
+-
+-	ret = sbs_read_string_data(client, sbs_data[reg_offset].addr, val);
+-
+-	if (ret < 0)
+-		return ret;
+-
+-	return 0;
++	return sbs_read_string_data(client, sbs_data[reg_offset].addr, val);
+ }
  
- 	case POWER_SUPPLY_PROP_TECHNOLOGY:
--		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+		ret = sbs_get_chemistry(client, val);
-+		if (ret < 0)
-+			break;
-+
- 		goto done; /* don't trigger power_supply_changed()! */
- 
- 	case POWER_SUPPLY_PROP_ENERGY_NOW:
+ static void  sbs_unit_adjustment(struct i2c_client *client,
 -- 
 2.26.2
 
