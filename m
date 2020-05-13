@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E4BFC2D0FC
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E360BC2D0FA
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AE3E206B7
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BFA78206D6
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="QW/yR+a5"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="D/1ildm5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726161AbgEMNJE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 09:09:04 -0400
+        id S2387418AbgEMNJM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 09:09:12 -0400
 Received: from esa3.microchip.iphmx.com ([68.232.153.233]:31166 "EHLO
         esa3.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728815AbgEMNJD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 09:09:03 -0400
+        with ESMTP id S1733281AbgEMNJH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 09:09:07 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
   d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1589375342; x=1620911342;
+  t=1589375347; x=1620911347;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=EVZAXO1o0L53j6vhD0cm7z0bP8p6Ac07Mbyf5NtalMA=;
-  b=QW/yR+a5iuXx4irYnN5PszvtcZQCLeIYyVSABjDOdYVPVvksdYcl/nzz
-   BAsi1W0Yx+aE7hdtzu52mKEj7ZIWY5eDTPwwkly/quWPoDYLFKxU5faby
-   l5kEcXY28ZahdQDfLcninNTiCI7LuNI2tyw22PcnYZedKENHZoDC8vwHv
-   F+ZFY8naT97lLbGNogLyiAwhVna6VPPtdY9rUVpU6G8kekc9rf/4jF4Sd
-   TfO/P6Wwm3RD1Fyr8lpeMSm4l8P/5CoKmeb6EvC3q+tt9pDk6k1SfAsYC
-   Eq1feHM7qiYRHRpSrmRWwYXy03IWL/iKn3wrCRzi/YtNhylE+RO0h2YGy
-   Q==;
-IronPort-SDR: Iaa2ZR9ylS9Tayj7EHHnyzAzRlCNlrf3R0bjVebGT6XxXfVlplPSISWXgmaRT4sdb0M2TJ7vUv
- ID/3pk3BOERFDrvkoykbBd092szXPaqF5KFfTewm2dNz/XQsUB/nw2Y2vuAwdTG7X/49K5ccg7
- xfcsJeFp0/7BOglHqe+jJ1d+3AGSjeWxTz9h4tlANigLLFQafCknXMz6VK1qT7aYPCLLWwsaqc
- UYWfU5kine1EOq5MJpj83RDpP8ttjyIpRBK2D5zIqXSO4hHw1riKiRra9jbDw9qINq4LYBHPUg
- Qc4=
+  bh=V1OANcDGi3Zb91vsck9iJpexMcTamnhCI2LiIcyTydQ=;
+  b=D/1ildm50PF/rPVvySWQMOjkLsGTd+NKJ+yKdS4RzULRxaZz6eNooIV7
+   PElwPyWb7e9t/X5KAiJjfJjcBg3OK+u/DogrtlY2z2NVqSsncF7ER95fF
+   oFHgItZw/LB9uKqyi4ydpCHUTqnxiuQT6BsCcfzcl5qJR8eHa6xRq2Pl5
+   ZtNF32JQJE0DOwPqJnakdEbZL84X0VY74XB25bog0D9vTwcgDAqx7dOuE
+   Z8xXQWLlQcn/sfnrVm2QQCuu79SQLEe/tq412WtxEtIspWvEd3IhfxPsn
+   s+9pZGLmyu/ZngcD5vg6O5nf73VnHMgNRtxWfWdMLOMjyl4GKahtOMo37
+   A==;
+IronPort-SDR: +6yZhiMfqJQ38vJrskCsDMyrAr18DNmhZ3317VdPR7QUzEaMe4qimJp20CkWP8Bj9mzJCC42Q3
+ CVr3uFHSqn/rfsSuhh/f7GADhQ7TNdN64qyaGiUp5diAs3V6ZmkLA3VGgxPMNRL57HPCxcPgHy
+ AGXKL6ZD33hHcCI0zLk9MgkT9sM/sD7LJMTTa3sUNxa3PmGyn1X712gZao6FOAbRIwLTJhacxO
+ d1fS7k0335S56Tan42EQEHuwZViwJJET6rY7jMwwSYWh/cMfPj1mLNUqIrmWPE9Xcktq/MWl9V
+ jvs=
 X-IronPort-AV: E=Sophos;i="5.73,387,1583218800"; 
-   d="scan'208";a="76497710"
+   d="scan'208";a="76497730"
 Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 13 May 2020 06:08:59 -0700
+  by esa3.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 13 May 2020 06:09:05 -0700
 Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
  chn-vm-ex02.mchp-main.com (10.10.85.144) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1713.5; Wed, 13 May 2020 06:09:02 -0700
+ 15.1.1713.5; Wed, 13 May 2020 06:09:06 -0700
 Received: from soft-dev15.microsemi.net (10.10.115.15) by
  chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server id
- 15.1.1713.5 via Frontend Transport; Wed, 13 May 2020 06:08:57 -0700
+ 15.1.1713.5 via Frontend Transport; Wed, 13 May 2020 06:09:01 -0700
 From:   Lars Povlsen <lars.povlsen@microchip.com>
 List-Id: <soc.lore.kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>, SoC Team <soc@kernel.org>
@@ -59,9 +59,9 @@ CC:     Lars Povlsen <lars.povlsen@microchip.com>,
         <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH 2/5] power: reset: ocelot: Add support for Sparx5
-Date:   Wed, 13 May 2020 15:08:39 +0200
-Message-ID: <20200513130842.24847-3-lars.povlsen@microchip.com>
+Subject: [PATCH 4/5] power: reset: ocelot: Add support for reset switch on load time
+Date:   Wed, 13 May 2020 15:08:41 +0200
+Message-ID: <20200513130842.24847-5-lars.povlsen@microchip.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513130842.24847-1-lars.povlsen@microchip.com>
 References: <20200513130842.24847-1-lars.povlsen@microchip.com>
@@ -73,137 +73,92 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds reset support for Sparx5 in the ocelot-reset driver.
+This patch add support for resetting the networking switch core at
+reset driver load time. It is useful in order to bring the switch core
+in a known state after a reboot or after a bootloader may have been
+using the switch for network access.
 
 Signed-off-by: Lars Povlsen <lars.povlsen@microchip.com>
 ---
- drivers/power/reset/Kconfig        |  3 +-
- drivers/power/reset/ocelot-reset.c | 55 +++++++++++++++++++++++-------
- 2 files changed, 44 insertions(+), 14 deletions(-)
+ drivers/power/reset/ocelot-reset.c | 40 ++++++++++++++++++++++++++++--
+ 1 file changed, 38 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index 8903803020805..9ecafbf9e64a6 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -118,10 +118,9 @@ config POWER_RESET_QCOM_PON
- 
- config POWER_RESET_OCELOT_RESET
- 	bool "Microsemi Ocelot reset driver"
--	depends on MSCC_OCELOT || COMPILE_TEST
- 	select MFD_SYSCON
- 	help
--	  This driver supports restart for Microsemi Ocelot SoC.
-+	  This driver supports restart for Microsemi Ocelot SoC and similar.
- 
- config POWER_RESET_PIIX4_POWEROFF
- 	tristate "Intel PIIX4 power-off driver"
 diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
-index 419952c61fd01..f74e1dbb4ba36 100644
+index f74e1dbb4ba36..a203c42e99d42 100644
 --- a/drivers/power/reset/ocelot-reset.c
 +++ b/drivers/power/reset/ocelot-reset.c
-@@ -15,15 +15,20 @@
- #include <linux/reboot.h>
- #include <linux/regmap.h>
- 
-+struct reset_props {
-+	const char *syscon;
-+	u32 protect_reg;
-+	u32 vcore_protect;
-+	u32 if_si_owner_bit;
-+};
-+
- struct ocelot_reset_context {
- 	void __iomem *base;
- 	struct regmap *cpu_ctrl;
-+	const struct reset_props *props;
+@@ -29,6 +29,7 @@ struct ocelot_reset_context {
  	struct notifier_block restart_handler;
  };
  
--#define ICPU_CFG_CPU_SYSTEM_CTRL_RESET 0x20
--#define CORE_RST_PROTECT BIT(2)
--
++#define SOFT_SWC_RST  BIT(1)
  #define SOFT_CHIP_RST BIT(0)
  
  #define ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL	0x24
-@@ -31,7 +36,6 @@ struct ocelot_reset_context {
- #define IF_SI_OWNER_SISL			0
+@@ -37,6 +38,32 @@ struct ocelot_reset_context {
  #define IF_SI_OWNER_SIBM			1
  #define IF_SI_OWNER_SIMC			2
--#define IF_SI_OWNER_OFFSET			4
  
++static int ocelot_switch_core_reset(const struct ocelot_reset_context *ctx)
++{
++
++	const char *driver = "ocelot-reset";
++	int timeout;
++
++	pr_notice("%s: Resetting Switch Core\n", driver);
++
++	/* Make sure the core is PROTECTED from reset */
++	regmap_update_bits(ctx->cpu_ctrl, ctx->props->protect_reg,
++			   ctx->props->vcore_protect,
++			   ctx->props->vcore_protect);
++
++	writel(SOFT_SWC_RST, ctx->base);
++	for (timeout = 0; timeout < 100; timeout++) {
++		if ((readl(ctx->base) & SOFT_SWC_RST) == 0) {
++			pr_debug("%s: Switch Core Reset complete.\n", driver);
++			return 0;
++		}
++		udelay(1);
++	}
++
++	pr_warn("%s: Switch Core Reset timeout!\n", driver);
++	return -ENXIO;
++}
++
  static int ocelot_restart_handle(struct notifier_block *this,
  				 unsigned long mode, void *cmd)
-@@ -39,15 +43,18 @@ static int ocelot_restart_handle(struct notifier_block *this,
- 	struct ocelot_reset_context *ctx = container_of(this, struct
- 							ocelot_reset_context,
- 							restart_handler);
-+	u32 if_si_owner_bit = ctx->props->if_si_owner_bit;
+ {
+@@ -66,7 +93,6 @@ static int ocelot_reset_probe(struct platform_device *pdev)
+ {
+ 	struct ocelot_reset_context *ctx;
+ 	struct resource *res;
+-
+ 	struct device *dev = &pdev->dev;
+ 	int err;
  
- 	/* Make sure the core is not protected from reset */
--	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_RESET,
--			   CORE_RST_PROTECT, 0);
-+	regmap_update_bits(ctx->cpu_ctrl, ctx->props->protect_reg,
-+			   ctx->props->vcore_protect, 0);
- 
- 	/* Make the SI back to boot mode */
- 	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL,
--			   IF_SI_OWNER_MASK << IF_SI_OWNER_OFFSET,
--			   IF_SI_OWNER_SIBM << IF_SI_OWNER_OFFSET);
-+			   IF_SI_OWNER_MASK << if_si_owner_bit,
-+			   IF_SI_OWNER_SIBM << if_si_owner_bit);
-+
-+	pr_emerg("Resetting SoC\n");
- 
- 	writel(SOFT_CHIP_RST, ctx->base);
- 
-@@ -72,9 +79,13 @@ static int ocelot_reset_probe(struct platform_device *pdev)
- 	if (IS_ERR(ctx->base))
- 		return PTR_ERR(ctx->base);
- 
--	ctx->cpu_ctrl = syscon_regmap_lookup_by_compatible("mscc,ocelot-cpu-syscon");
--	if (IS_ERR(ctx->cpu_ctrl))
-+	ctx->props = device_get_match_data(dev);
-+
-+	ctx->cpu_ctrl = syscon_regmap_lookup_by_compatible(ctx->props->syscon);
-+	if (IS_ERR(ctx->cpu_ctrl)) {
-+		dev_err(dev, "No syscon map: %s\n", ctx->props->syscon);
+@@ -87,6 +113,11 @@ static int ocelot_reset_probe(struct platform_device *pdev)
  		return PTR_ERR(ctx->cpu_ctrl);
-+	}
+ 	}
  
++	/* Optionally, call switch reset function */
++	if (of_property_read_bool(pdev->dev.of_node,
++				  "microchip,reset-switch-core"))
++		ocelot_switch_core_reset(ctx);
++
  	ctx->restart_handler.notifier_call = ocelot_restart_handle;
  	ctx->restart_handler.priority = 192;
-@@ -85,9 +96,29 @@ static int ocelot_reset_probe(struct platform_device *pdev)
- 	return err;
- }
- 
-+static const struct reset_props reset_props_ocelot = {
-+	.syscon		 = "mscc,ocelot-cpu-syscon",
-+	.protect_reg     = 0x20,
-+	.vcore_protect   = BIT(2),
-+	.if_si_owner_bit = 4,
-+};
-+
-+static const struct reset_props reset_props_sparx5 = {
-+	.syscon		 = "microchip,sparx5-cpu-syscon",
-+	.protect_reg     = 0x84,
-+	.vcore_protect   = BIT(10),
-+	.if_si_owner_bit = 6,
-+};
-+
- static const struct of_device_id ocelot_reset_of_match[] = {
--	{ .compatible = "mscc,ocelot-chip-reset" },
--	{}
-+	{
-+		.compatible = "mscc,ocelot-chip-reset",
-+		.data = &reset_props_ocelot
-+	}, {
-+		.compatible = "microchip,sparx5-chip-reset",
-+		.data = &reset_props_sparx5
-+	},
-+	{ /*sentinel*/ }
+ 	err = register_restart_handler(&ctx->restart_handler);
+@@ -128,4 +159,9 @@ static struct platform_driver ocelot_reset_driver = {
+ 		.of_match_table = ocelot_reset_of_match,
+ 	},
  };
- 
- static struct platform_driver ocelot_reset_driver = {
+-builtin_platform_driver(ocelot_reset_driver);
++
++static int __init reset_init(void)
++{
++	return platform_driver_register(&ocelot_reset_driver);
++}
++postcore_initcall(reset_init);
 -- 
 2.26.2
 
