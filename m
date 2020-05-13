@@ -2,105 +2,183 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE200CA90AF
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 11:37:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F8D8CA90AF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 11:56:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A5BF820769
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 11:37:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="TNGcSvFM"
+	by mail.kernel.org (Postfix) with ESMTP id 4B35020740
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 11:56:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726492AbgEMLhH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 07:37:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37732 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727794AbgEMLhG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 07:37:06 -0400
-Received: from mail-io1-xd2f.google.com (mail-io1-xd2f.google.com [IPv6:2607:f8b0:4864:20::d2f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2828C061A0C
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2020 04:37:06 -0700 (PDT)
-Received: by mail-io1-xd2f.google.com with SMTP id d7so17675679ioq.5
-        for <linux-pm@vger.kernel.org>; Wed, 13 May 2020 04:37:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=6iDaIDdenow5UPx14ZGatXd9Q1X2PmhZBTQCbvJhywk=;
-        b=TNGcSvFMAsWcarZULbqOk8YOFRjBd+Du/wvBvAAuahSseTYgUajYJaJzLsdehvZGRk
-         bl7vZp1IiaSvRVWLwJp4u6ob+z68yMd9Q6CjTTfDlMgYaRLv9AEexfRsK4HfIjErna0g
-         Pg5YVkRnT/52+Jq8W2DVdrdYrdgVxPqhfID4+1Op//SaemWmLr9jp6gbFzm/aKTODzoo
-         bIG78kmeIijm0daD/90jqMaFy9rkvVfotW4GISeSarw39ogLxQKKkRWCZuR1uFTFhCec
-         5qxCBhTMOGy7xIp7cOnBuugwUpEWaeb609hF0p00eWwnkWNGY2rLva6HUxJbOvKjXPkE
-         9YSA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=6iDaIDdenow5UPx14ZGatXd9Q1X2PmhZBTQCbvJhywk=;
-        b=JTwm0WgTUwQJIS+eemCYQGJvQkSSbg3mZHBDJR2CPo2+EwFqgKNK7Htto7AoY3ubsB
-         VVmL5VZBR3IB9IkGa5leaC6JuM2ddCdRftMxsHHRONPCY1r+LgvJ7sFZXaOFUUi/dfwX
-         wVPhygy7G4sMXJFr2C3f9K9KLZjRGcsSoKVTdewhvw9eIi/qa2hAQuFVrnL/qPiKAqrm
-         zC6vRIgb8T/JUsUK+Xz4Tb1jo/rUyJEtaOSPyGyBx5bekFieiRg7VFJRMtJEPInfhoCO
-         oSGBhYW31vvQIc2AJyiDyVrmLQmfxR5e5wZz7v44sRl+ZWcWDFZGqzZ/ytJ7vC3KDD9T
-         YqGQ==
-X-Gm-Message-State: AGi0PuZOS1GKdCkQJPP7Lhh5PgS1YrtoJgEHtyEuijKKj82XIw2hpo4M
-        5l44M/iYE5qXagq0Lga6vQWeW1HBl3r2KP0x/ZA=
-X-Google-Smtp-Source: APiQypJQKVXzyvsxLYzTP7o6BVgnu5eM5id48zcaKhRNeRQASrVqfUC0IFP91u+SxbBOVrO6fI6EhpO4wxvATTkDrpg=
-X-Received: by 2002:a6b:6519:: with SMTP id z25mr13979056iob.124.1589369825734;
- Wed, 13 May 2020 04:37:05 -0700 (PDT)
+        id S1731447AbgEML4S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 07:56:18 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:48100 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728286AbgEML4R (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 07:56:17 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id D313D2A28AB
+Received: by jupiter.universe (Postfix, from userid 1000)
+        id 718004800EB; Wed, 13 May 2020 13:56:13 +0200 (CEST)
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, kernel@collabora.com,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+Subject: [PATCHv1 2/2] dt-bindings: power: supply: gpio-charger: convert to yaml
+Date:   Wed, 13 May 2020 13:56:01 +0200
+Message-Id: <20200513115601.360642-2-sebastian.reichel@collabora.com>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200513115601.360642-1-sebastian.reichel@collabora.com>
+References: <20200513115601.360642-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
-References: <CAJiuCce9ZxeXnQzEW_3dbBDNZmmtWmKeft0hX+F9+SYu80NU=Q@mail.gmail.com>
- <20200511052530.iazkduojnba3abil@vireshk-i7> <CAJiuCcfRmDbBxEms=HAFQhaiBTznEd1of3TOcnAAc2yuTq0XtA@mail.gmail.com>
- <20200513054601.nvwsjhk6i4bjmgt7@vireshk-i7> <CAJiuCccd+ycnmirL7chtMom0uqbQ8cX9VQf_ZAvhzTto9VSDbA@mail.gmail.com>
- <20200513091922.qnpjx4kw2m3jv2ry@vireshk-i7> <20200513101805.GA4803@sirena.org.uk>
- <20200513104015.oyiaimjpspablq5p@vireshk-i7> <20200513110039.GD4803@sirena.org.uk>
- <20200513110350.uojo5jaufx7rj5v6@vireshk-i7>
-In-Reply-To: <20200513110350.uojo5jaufx7rj5v6@vireshk-i7>
-From:   =?UTF-8?B?Q2zDqW1lbnQgUMOpcm9u?= <peron.clem@gmail.com>
-Date:   Wed, 13 May 2020 13:36:54 +0200
-Message-ID: <CAJiuCcdh5101FNMA+LKsvVV++M-iUyWSgqDr5FVQdXcpt6WqyA@mail.gmail.com>
-Subject: Re: Question about OPP regulator for Panfrost Devfreq
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Mark Brown <broonie@kernel.org>,
-        Marek Szyprowski <m.szyprowski@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "open list:ALLWINNER CPUFREQ DRIVER" <linux-pm@vger.kernel.org>,
-        Steven Price <steven.price@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Viresh,
+Convert the gpio-charger bindings from text format to
+new YAML based representation.
 
-On Wed, 13 May 2020 at 13:03, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 13-05-20, 12:00, Mark Brown wrote:
-> > The OPP code can and should be calling regulator_enable().  If the OPP
-> > code needs some particular voltage configuration it can and should be
-> > calling regulator_set_voltage() to tell the core what it needs.  What
-> > I'm saying is that if when the OPP code enables the regulator it needs
-> > a particular voltage configuration it should tell the core about that
-> > prior to enabling.
->
-> I see. Thanks for that.
->
-> Clement: I will prepare a patch for you to test then.
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ .../bindings/power/supply/gpio-charger.txt    | 38 ----------
+ .../bindings/power/supply/gpio-charger.yaml   | 75 +++++++++++++++++++
+ 2 files changed, 75 insertions(+), 38 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
 
-Thanks for taking care of that, I'm sure it will works fine for me,
-but maybe it should be double tested by Marek Szyprowski on the exynos
-bus.
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+deleted file mode 100644
+index dbfd29029f69..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
++++ /dev/null
+@@ -1,38 +0,0 @@
+-gpio-charger
+-
+-Required properties :
+- - compatible : "gpio-charger"
+- - charger-type : power supply type, one of
+-     unknown
+-     battery
+-     ups
+-     mains
+-     usb-sdp (USB standard downstream port)
+-     usb-dcp (USB dedicated charging port)
+-     usb-cdp (USB charging downstream port)
+-     usb-aca (USB accessory charger adapter)
+-
+-Optional properties:
+- - gpios : GPIO indicating the charger presence.
+-   See GPIO binding in bindings/gpio/gpio.txt .
+- - charge-status-gpios: GPIO indicating whether a battery is charging.
+- - charge-current-limit-gpios: Output GPIOs specifiers for limiting the charge current
+- - charge-current-limit-mapping: List of touples with current in uA and a GPIO bitmap (in this order).
+-                                The GPIOs are encoded in the same order as specified in charge-current-limit-gpios.
+-				The touples must be provided in descending order of the current limit.
+-
+-Example:
+-
+-	usb_charger: charger {
+-		compatible = "gpio-charger";
+-		charger-type = "usb-sdp";
+-		gpios = <&gpd 28 GPIO_ACTIVE_LOW>;
+-		charge-status-gpios = <&gpc 27 GPIO_ACTIVE_LOW>;
+-
+-		charge-current-limit-gpios = <&gpioA 11 GPIO_ACTIVE_HIGH>, <&gpioA 12 GPIO_ACTIVE_HIGH>;
+-		charge-current-limit-mapping = <2500000 0x00>, <700000 0x01>, <0 0x02>;
+-	};
+-
+-	battery {
+-		power-supplies = <&usb_charger>;
+-	};
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+new file mode 100644
+index 000000000000..14fb3e54f861
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+@@ -0,0 +1,75 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/gpio-charger.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: simple battery chargers only communicating through GPIOs
++
++maintainers:
++  - Sebastian Reichel <sre@kernel.org>
++
++description: |
++  This binding is for all chargers, which are working more
++  or less autonomously, only providing some status GPIOs
++  and possibly some GPIOs for limited control over the
++  charging process.
++
++properties:
++  compatible:
++    const: gpio-charger
++
++  charger-type:
++    oneOf:
++      - const: unknown
++      - const: battery
++      - const: ups
++      - const: mains
++      - const: usb-sdp                   # USB standard downstream port
++      - const: usb-dcp                   # USB dedicated charging port
++      - const: usb-cdp                   # USB charging downstream port
++      - const: usb-aca                   # USB accessory charger adapter
++
++  gpios:
++    maxItems: 1
++    description: GPIO indicating the charger presence
++
++  charge-status-gpios:
++    maxItems: 1
++    description: GPIO indicating the charging status
++
++  charge-current-limit-gpios:
++    minItems: 1
++    maxItems: 32
++    description: GPIOs used for current limiting
++
++  charge-current-limit-mapping:
++    description: List of touples with current in uA and a GPIO bitmap (in
++      this order). The GPIOs are encoded in the same order as specified in
++      charge-current-limit-gpios. The touples must be provided in descending
++      order of the current limit.
++    $ref: "/meta-schemas/cell.yaml#array"
++
++required:
++  - compatible
++additionalProperties: false
++
++dependencies:
++  charge-current-limit-gpios: [ charge-current-limit-mapping ]
++  charge-current-limit-mapping: [ charge-current-limit-gpios ]
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    charger {
++      compatible = "gpio-charger";
++      charger-type = "usb-sdp";
++
++      gpios = <&gpd 28 GPIO_ACTIVE_LOW>;
++      charge-status-gpios = <&gpc 27 GPIO_ACTIVE_LOW>;
++
++      charge-current-limit-gpios = <&gpioA 11 GPIO_ACTIVE_HIGH>,
++                                   <&gpioA 12 GPIO_ACTIVE_HIGH>;
++      charge-current-limit-mapping = <2500000 0x00>, <700000 0x01>, <0 0x02>;
++    };
+-- 
+2.26.2
 
-Thanks
-Clement
-
->
-> --
-> viresh
