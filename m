@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C94D7C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04DA2C433E1
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7BA2C20708
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA2CA2065C
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390426AbgEMS4j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S2390423AbgEMS4j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Wed, 13 May 2020 14:56:39 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:51982 "EHLO
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:51900 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390411AbgEMS4i (ORCPT
+        with ESMTP id S2390405AbgEMS4i (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:38 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id A6BB12A2A71
+        with ESMTPSA id A0F5C2A2A5C
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 9BA0048012E; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 9319A480128; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -32,9 +32,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 19/19] dt-bindings: power: sbs-battery: Convert to yaml
-Date:   Wed, 13 May 2020 20:56:15 +0200
-Message-Id: <20200513185615.508236-20-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 16/19] power: supply: sbs-battery: switch from of_property_* to device_property_*
+Date:   Wed, 13 May 2020 20:56:12 +0200
+Message-Id: <20200513185615.508236-17-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -45,141 +45,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert sbs-battery bindings to YAML.
+Switch from DT specific of_property_* API to generic and more
+modern device_property_* API.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../power/supply/sbs,sbs-battery.yaml         | 83 +++++++++++++++++++
- .../bindings/power/supply/sbs_sbs-battery.txt | 30 -------
- 2 files changed, 83 insertions(+), 30 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
- delete mode 100644 Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+ drivers/power/supply/sbs-battery.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
-new file mode 100644
-index 000000000000..205bc826bd20
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
-@@ -0,0 +1,83 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/sbs,sbs-battery.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: SBS compliant battery
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  Battery compatible with the smart battery system specifications
-+
-+properties:
-+
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - ti,bq20z65
-+              - ti,bq20z75
-+          - enum:
-+              - sbs,sbs-battery
-+      - items:
-+          - const: sbs,sbs-battery
-+
-+  reg:
-+    maxItems: 1
-+
-+  sbs,i2c-retry-count:
-+    description:
-+      The number of times to retry I2C transactions on I2C IO failure.
-+    default: 0
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  sbs,poll-retry-count:
-+    description:
-+      The number of times to try looking for new status after an external
-+      change notification.
-+    default: 0
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  sbs,battery-detect-gpios:
-+    description:
-+      GPIO which signals battery detection. If this is not supplied, the bus
-+      needs to be polled to detect the battery.
-+    maxItems: 1
-+
-+  sbs,disable-charger-broadcasts:
-+    description:
-+      SBS batteries by default send broadcast messages to SBS compliant chargers to
-+      configure max. charge current/voltage. If your hardware does not have an SBS
-+      compliant charger it should be disabled via this property to avoid blocking
-+      the bus. Also some SBS battery fuel gauges are known to have a buggy multi-
-+      master implementation.
-+    type: boolean
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        battery@b {
-+            compatible = "ti,bq20z75", "sbs,sbs-battery";
-+            reg = <0xb>;
-+            sbs,i2c-retry-count = <2>;
-+            sbs,poll-retry-count = <10>;
-+            sbs,battery-detect-gpios = <&gpio 122 GPIO_ACTIVE_HIGH>;
-+            sbs,disable-charger-broadcasts;
-+       };
-+    };
-diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-deleted file mode 100644
-index a5093ccef5c5..000000000000
---- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
-+++ /dev/null
-@@ -1,30 +0,0 @@
--SBS sbs-battery
--~~~~~~~~~~
--
--Required properties :
-- - compatible: "<vendor>,<part-number>", "sbs,sbs-battery" as fallback. The
--     part number compatible string might be used in order to take care of
--     vendor specific registers.
--     Known <vendor>,<part-number>:
--       ti,bq20z65
--       ti,bq20z75
--
--Optional properties :
-- - sbs,i2c-retry-count : The number of times to retry i2c transactions on i2c
--   IO failure.
-- - sbs,poll-retry-count : The number of times to try looking for new status
--   after an external change notification.
-- - sbs,battery-detect-gpios : The gpio which signals battery detection and
--   a flag specifying its polarity.
-- - sbs,disable-charger-broadcasts: for systems without sbs compliant chargers
--
--Example:
--
--	battery@b {
--		compatible = "ti,bq20z75", "sbs,sbs-battery";
--		reg = <0xb>;
--		sbs,i2c-retry-count = <2>;
--		sbs,poll-retry-count = <10>;
--		sbs,battery-detect-gpios = <&gpio-controller 122 1>;
--		sbs,disable-charger-broadcasts;
--	}
+diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
+index 7c6905a486da..73dfe526c867 100644
+--- a/drivers/power/supply/sbs-battery.c
++++ b/drivers/power/supply/sbs-battery.c
+@@ -14,7 +14,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/of.h>
++#include <linux/property.h>
+ #include <linux/of_device.h>
+ #include <linux/power/sbs-battery.h>
+ #include <linux/power_supply.h>
+@@ -1016,7 +1016,7 @@ static int sbs_probe(struct i2c_client *client,
+ 	if (!chip)
+ 		return -ENOMEM;
+ 
+-	chip->flags = (u32)(uintptr_t)of_device_get_match_data(&client->dev);
++	chip->flags = (u32)(uintptr_t)device_get_match_data(&client->dev);
+ 	chip->client = client;
+ 	chip->enable_detection = false;
+ 	psy_cfg.of_node = client->dev.of_node;
+@@ -1027,13 +1027,13 @@ static int sbs_probe(struct i2c_client *client,
+ 	/* use pdata if available, fall back to DT properties,
+ 	 * or hardcoded defaults if not
+ 	 */
+-	rc = of_property_read_u32(client->dev.of_node, "sbs,i2c-retry-count",
+-				  &chip->i2c_retry_count);
++	rc = device_property_read_u32(&client->dev, "sbs,i2c-retry-count",
++				      &chip->i2c_retry_count);
+ 	if (rc)
+ 		chip->i2c_retry_count = 0;
+ 
+-	rc = of_property_read_u32(client->dev.of_node, "sbs,poll-retry-count",
+-				  &chip->poll_retry_count);
++	rc = device_property_read_u32(&client->dev, "sbs,poll-retry-count",
++				      &chip->poll_retry_count);
+ 	if (rc)
+ 		chip->poll_retry_count = 0;
+ 
+@@ -1043,7 +1043,7 @@ static int sbs_probe(struct i2c_client *client,
+ 	}
+ 	chip->i2c_retry_count = chip->i2c_retry_count + 1;
+ 
+-	chip->charger_broadcasts = !of_property_read_bool(client->dev.of_node,
++	chip->charger_broadcasts = !device_property_read_bool(&client->dev,
+ 					"sbs,disable-charger-broadcasts");
+ 
+ 	chip->gpio_detect = devm_gpiod_get_optional(&client->dev,
 -- 
 2.26.2
 
