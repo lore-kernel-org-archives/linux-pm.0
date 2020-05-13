@@ -2,112 +2,277 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77FADC433E2
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:58:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32475C433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 19:00:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 30D562054F
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:58:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D6AE820690
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 19:00:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="cJp3MtuO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390363AbgEMS4d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:56:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49932 "EHLO
+        id S2390311AbgEMTAX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 15:00:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50564 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2390361AbgEMS4d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:33 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38190C061A0C;
-        Wed, 13 May 2020 11:56:33 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: sre)
-        with ESMTPSA id D71732A251E
-Received: by jupiter.universe (Postfix, from userid 1000)
-        id 6A140480100; Wed, 13 May 2020 20:56:29 +0200 (CEST)
-From:   Sebastian Reichel <sebastian.reichel@collabora.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J . Wysocki" <rafael@kernel.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel@collabora.com,
-        Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 02/19] power: supply: core: add capacity error margin property
-Date:   Wed, 13 May 2020 20:55:58 +0200
-Message-Id: <20200513185615.508236-3-sebastian.reichel@collabora.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
-References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
+        by vger.kernel.org with ESMTP id S1732218AbgEMTAX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 15:00:23 -0400
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EE066C061A0C
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2020 12:00:22 -0700 (PDT)
+Received: by mail-pf1-x444.google.com with SMTP id n18so160932pfa.2
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2020 12:00:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=8deakj/iH3PvU/eQL5iYzeICK++X/6wYDfc5CZJz61g=;
+        b=cJp3MtuOAJLz7OgmZazx7h3qOWbq+9PvPnzLr7w+I9E8+A0P3wbBu6T4bGkq9XOPbO
+         K0nV7NkGcJWfLwFXGN14MesYW0sZzynHsI8cE5EnEgNCprDkrt20jcW2Lmb4dCwAmYXS
+         qts/2j8Ft/ktqU+2akUFGgkuHYz2sFztp871WRs+T9DJdDaElu33szBgDKiDZBLtQ81t
+         Qc5OkwNoXh969VL4ziD0EUrZeu4t0Mlc+8H9PJYASDZMggjEP4/ySCHLnXBFMxdGHcd5
+         o+6KBlhypfyO1WmLJVv+VgDPB8iiZmi4yrKsr9h7y00mV1cEBBFrmkXYGeKM3Qsjkia1
+         fe7Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=8deakj/iH3PvU/eQL5iYzeICK++X/6wYDfc5CZJz61g=;
+        b=eBaNv0ygIwy0z43V3cC1lrIf3hG3sGCJhVIIwn+r8vp8EoeAv4J3jUjXn7rW41u7dO
+         4mXBIgv3na5iPUyI85WW6q2qICiXAIfa533jAfvj2wCedyQPM3cK4mTmJGy8gJ1oifNN
+         rW6CVMG+/W08sAy/uYJ2p2r6nJQhiGaQxWBk/mvdtDOqoyR+UnKQDyQ5JB32Xb7zYfoj
+         YkYFsZDxH+4ea+mfaqwdMHhAKW3Sgl7tlo+rameFwDuggP7nN6gr1K5/JY9aXJGngUv5
+         dPNDEezRcvyZXgJfoDQGMmgR6bDlfRZSk8nVii2jJbAu8W5uVRKgKHsX2AkUupyROhAp
+         aADg==
+X-Gm-Message-State: AOAM533AAidN9+MzMwbm0jKUvE5cNnkvCj/FxkVOoR33kHxuus0Q93RX
+        NSzLPCjkk30mHEEQkopFY4LPyA==
+X-Google-Smtp-Source: ABdhPJwdOoCkn/ltVfNCd+DLmwLwINbRhfxni1y+sac1QsEXJx+Cj7VDgDHW4q8KRNdxixz7nUSLeQ==
+X-Received: by 2002:a63:2cd5:: with SMTP id s204mr692147pgs.140.1589396422463;
+        Wed, 13 May 2020 12:00:22 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id a2sm253137pfg.106.2020.05.13.12.00.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 13 May 2020 12:00:21 -0700 (PDT)
+Message-ID: <5ebc43c5.1c69fb81.c79dd.1265@mx.google.com>
+Date:   Wed, 13 May 2020 12:00:21 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.7-rc5-53-gfbe093dd16f4
+X-Kernelci-Report-Type: test
+Subject: pm/testing sleep: 7 runs, 0 regressions (v5.7-rc5-53-gfbe093dd16f4)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add a property for reporting the error margin expected
-by fuel gauge chips.
+pm/testing sleep: 7 runs, 0 regressions (v5.7-rc5-53-gfbe093dd16f4)
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- Documentation/ABI/testing/sysfs-class-power | 15 +++++++++++++++
- drivers/power/supply/power_supply_sysfs.c   |  1 +
- include/linux/power_supply.h                |  1 +
- 3 files changed, 17 insertions(+)
+Test results summary
+--------------------
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index bf3b48f022dc..2f896555ae23 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -74,6 +74,21 @@ Description:
- 		Access: Read, Write
- 		Valid values: 0 - 100 (percent)
- 
-+What:		/sys/class/power_supply/<supply_name>/capacity_error_margin
-+Date:		April 2019
-+Contact:	linux-pm@vger.kernel.org
-+Description:
-+		Battery capacity measurement becomes unreliable without
-+		recalibration. This values provides the maximum error
-+		margin expected to exist by the fuel gauge in percent.
-+		Values close to 0% will be returned after (re-)calibration
-+		has happened. Over time the error margin will increase.
-+		100% means, that the capacity related values are basically
-+		completely useless.
-+
-+		Access: Read
-+		Valid values: 0 - 100 (percent)
-+
- What:		/sys/class/power_supply/<supply_name>/capacity_level
- Date:		June 2009
- Contact:	linux-pm@vger.kernel.org
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index d21b4e0edf38..e664774a2d1e 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -178,6 +178,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(CAPACITY),
- 	POWER_SUPPLY_ATTR(CAPACITY_ALERT_MIN),
- 	POWER_SUPPLY_ATTR(CAPACITY_ALERT_MAX),
-+	POWER_SUPPLY_ATTR(CAPACITY_ERROR_MARGIN),
- 	POWER_SUPPLY_ENUM_ATTR(CAPACITY_LEVEL),
- 	POWER_SUPPLY_ATTR(TEMP),
- 	POWER_SUPPLY_ATTR(TEMP_MAX),
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 1f60731ec7fe..453a85f25635 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -139,6 +139,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_CAPACITY, /* in percents! */
- 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN, /* in percents! */
- 	POWER_SUPPLY_PROP_CAPACITY_ALERT_MAX, /* in percents! */
-+	POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN, /* in percents! */
- 	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
- 	POWER_SUPPLY_PROP_TEMP,
- 	POWER_SUPPLY_PROP_TEMP_MAX,
--- 
-2.26.2
+run | platform             | arch  | lab           | compiler | defconfig  =
+        | results
+----+----------------------+-------+---------------+----------+------------=
+--------+--------
+1   | bcm2836-rpi-2-b      | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 0/1    =
 
+2   | exynos5422-odroidxu3 | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 21/21  =
+
+3   | imx6q-sabrelite      | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 1/21   =
+
+4   | rk3288-rock2-square  | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 1/21   =
+
+5   | rk3288-veyron-jaq    | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 21/21  =
+
+6   | rk3399-gru-kevin     | arm64 | lab-collabora | gcc-8    | defconfig  =
+        | 11/11  =
+
+7   | tegra124-nyan-big    | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 2/2    =
+
+
+
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.7-rc5-53-gfbe093dd16f4
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      fbe093dd16f4eb35746ca73c063d6290a494a93a =
+
+
+
+Test Failures
+-------------
+  =
+
+
+run | platform             | arch  | lab           | compiler | defconfig  =
+        | results
+----+----------------------+-------+---------------+----------+------------=
+--------+--------
+1   | bcm2836-rpi-2-b      | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 0/1    =
+
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-bcm2836-rpi-2-b.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-bcm2836-rpi-2-b.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0424.0/armhf/rootfs.cpio.gz  =
+
+
+  1 tests: 0 PASS, 1 FAIL, 0 SKIP
+    * login:
+        never passed   =
+
+         =
+
+
+run | platform             | arch  | lab           | compiler | defconfig  =
+        | results
+----+----------------------+-------+---------------+----------+------------=
+--------+--------
+3   | imx6q-sabrelite      | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 1/21   =
+
+
+  Results:     1 PASS, 20 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-imx6q-sabrelite.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-imx6q-sabrelite.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0424.0/armhf/rootfs.cpio.gz  =
+
+
+  21 tests: 1 PASS, 20 FAIL, 0 SKIP
+    * rtcwake-mem-1:
+        never passed
+    * rtcwake-mem-2:
+        never passed
+    * rtcwake-mem-3:
+        never passed
+    * rtcwake-mem-4:
+        never passed
+    * rtcwake-mem-5:
+        never passed
+    * rtcwake-mem-6:
+        never passed
+    * rtcwake-mem-7:
+        never passed
+    * rtcwake-mem-8:
+        never passed
+    * rtcwake-mem-9:
+        never passed
+    * rtcwake-mem-10:
+        never passed
+    * rtcwake-freeze-1:
+        never passed
+    * rtcwake-freeze-2:
+        never passed
+    * rtcwake-freeze-3:
+        never passed
+    * rtcwake-freeze-4:
+        never passed
+    * rtcwake-freeze-5:
+        never passed
+    * rtcwake-freeze-6:
+        never passed
+    * rtcwake-freeze-7:
+        never passed
+    * rtcwake-freeze-8:
+        never passed
+    * rtcwake-freeze-9:
+        never passed
+    * rtcwake-freeze-10:
+        never passed   =
+
+      =
+
+
+run | platform             | arch  | lab           | compiler | defconfig  =
+        | results
+----+----------------------+-------+---------------+----------+------------=
+--------+--------
+4   | rk3288-rock2-square  | arm   | lab-collabora | gcc-8    | multi_v7_de=
+fconfig | 1/21   =
+
+
+  Results:     1 PASS, 20 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-square=
+.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.7-rc5-53-gfbe093=
+dd16f4/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-rock2-square=
+.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0424.0/armhf/rootfs.cpio.gz  =
+
+
+  21 tests: 1 PASS, 20 FAIL, 0 SKIP
+    * rtcwake-mem-1:
+        never passed
+    * rtcwake-mem-2:
+        never passed
+    * rtcwake-mem-3:
+        never passed
+    * rtcwake-mem-4:
+        never passed
+    * rtcwake-mem-5:
+        never passed
+    * rtcwake-mem-6:
+        never passed
+    * rtcwake-mem-7:
+        never passed
+    * rtcwake-mem-8:
+        never passed
+    * rtcwake-mem-9:
+        never passed
+    * rtcwake-mem-10:
+        never passed
+    * rtcwake-freeze-1:
+        never passed
+    * rtcwake-freeze-2:
+        never passed
+    * rtcwake-freeze-3:
+        never passed
+    * rtcwake-freeze-4:
+        never passed
+    * rtcwake-freeze-5:
+        never passed
+    * rtcwake-freeze-6:
+        never passed
+    * rtcwake-freeze-7:
+        never passed
+    * rtcwake-freeze-8:
+        never passed
+    * rtcwake-freeze-9:
+        never passed
+    * rtcwake-freeze-10:
+        never passed   =
+
+              =20
