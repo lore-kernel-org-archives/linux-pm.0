@@ -7,23 +7,26 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53070C433E2
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2ADA5C433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0884A2065C
+	by mail.kernel.org (Postfix) with ESMTP id DE3392065C
 	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390491AbgEMS5K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:57:10 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:51936 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390390AbgEMS4g (ORCPT
+        id S2390400AbgEMS4g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 14:56:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49946 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
+        by vger.kernel.org with ESMTP id S2390393AbgEMS4g (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:36 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CED23C061A0F;
+        Wed, 13 May 2020 11:56:35 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id BB82F2A29D3
+        with ESMTPSA id 68B3D2A28F8
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 8981648010B; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 80A39480108; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -32,9 +35,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 13/19] power: supply: sbs-battery: add POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED support
-Date:   Wed, 13 May 2020 20:56:09 +0200
-Message-Id: <20200513185615.508236-14-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 10/19] power: supply: sbs-battery: Improve POWER_SUPPLY_PROP_TECHNOLOGY support
+Date:   Wed, 13 May 2020 20:56:06 +0200
+Message-Id: <20200513185615.508236-11-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -45,80 +48,96 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for reporting the SBS battery's condition flag
-to userspace using the new "Calibration required" health status.
+This reads the battery chemistry from the battery chip instead
+of incorrectly hardcoding the type to be Li-Ion.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/sbs-battery.c | 27 ++++++++++++++++++++++++---
- 1 file changed, 24 insertions(+), 3 deletions(-)
+ drivers/power/supply/sbs-battery.c | 43 ++++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 4fa553d61db2..2a2b926ad75c 100644
+index 611a11385496..b697a42d9ccf 100644
 --- a/drivers/power/supply/sbs-battery.c
 +++ b/drivers/power/supply/sbs-battery.c
-@@ -23,6 +23,7 @@
+@@ -43,6 +43,7 @@ enum {
+ 	REG_DESIGN_CAPACITY_CHARGE,
+ 	REG_DESIGN_VOLTAGE_MIN,
+ 	REG_DESIGN_VOLTAGE_MAX,
++	REG_CHEMISTRY,
+ 	REG_MANUFACTURER,
+ 	REG_MODEL_NAME,
+ };
+@@ -133,7 +134,9 @@ static const struct chip_data {
+ 	[REG_MANUFACTURER] =
+ 		SBS_DATA(POWER_SUPPLY_PROP_MANUFACTURER, 0x20, 0, 65535),
+ 	[REG_MODEL_NAME] =
+-		SBS_DATA(POWER_SUPPLY_PROP_MODEL_NAME, 0x21, 0, 65535)
++		SBS_DATA(POWER_SUPPLY_PROP_MODEL_NAME, 0x21, 0, 65535),
++	[REG_CHEMISTRY] =
++		SBS_DATA(POWER_SUPPLY_PROP_TECHNOLOGY, 0x22, 0, 65535)
+ };
  
- enum {
- 	REG_MANUFACTURER_DATA,
-+	REG_BATTERY_MODE,
- 	REG_TEMPERATURE,
- 	REG_VOLTAGE,
- 	REG_CURRENT_NOW,
-@@ -94,6 +95,8 @@ static const struct chip_data {
- } sbs_data[] = {
- 	[REG_MANUFACTURER_DATA] =
- 		SBS_DATA(POWER_SUPPLY_PROP_PRESENT, 0x00, 0, 65535),
-+	[REG_BATTERY_MODE] =
-+		SBS_DATA(-1, 0x03, 0, 65535),
- 	[REG_TEMPERATURE] =
- 		SBS_DATA(POWER_SUPPLY_PROP_TEMP, 0x08, 0, 65535),
- 	[REG_VOLTAGE] =
-@@ -366,6 +369,17 @@ static int sbs_status_correct(struct i2c_client *client, int *intval)
- 	return 0;
+ static enum power_supply_property sbs_properties[] = {
+@@ -185,6 +188,7 @@ struct sbs_info {
+ 
+ static char model_name[I2C_SMBUS_BLOCK_MAX + 1];
+ static char manufacturer[I2C_SMBUS_BLOCK_MAX + 1];
++static char chemistry[I2C_SMBUS_BLOCK_MAX + 1];
+ static bool force_load;
+ 
+ static int sbs_update_presence(struct sbs_info *chip, bool is_present)
+@@ -636,6 +640,38 @@ static int sbs_get_property_index(struct i2c_client *client,
+ 	return -EINVAL;
  }
  
-+static bool sbs_bat_needs_calibration(struct i2c_client *client)
++static int sbs_get_chemistry(struct i2c_client *client,
++		union power_supply_propval *val)
 +{
++	enum power_supply_property psp = POWER_SUPPLY_PROP_TECHNOLOGY;
 +	int ret;
 +
-+	ret = sbs_read_word_data(client, sbs_data[REG_BATTERY_MODE].addr);
++	ret = sbs_get_property_index(client, psp);
 +	if (ret < 0)
-+		return false;
++		return ret;
 +
-+	return !!(ret & BIT(7));
++	ret = sbs_get_battery_string_property(client, ret, psp,
++					      chemistry);
++	if (ret < 0)
++		return ret;
++
++	if (!strncasecmp(chemistry, "LION", 4))
++		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
++	else if (!strncasecmp(chemistry, "LiP", 3))
++		val->intval = POWER_SUPPLY_TECHNOLOGY_LIPO;
++	else if (!strncasecmp(chemistry, "NiCd", 4))
++		val->intval = POWER_SUPPLY_TECHNOLOGY_NiCd;
++	else if (!strncasecmp(chemistry, "NiMH", 4))
++		val->intval = POWER_SUPPLY_TECHNOLOGY_NiMH;
++	else
++		val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
++
++	if (val->intval == POWER_SUPPLY_TECHNOLOGY_UNKNOWN)
++		dev_warn(&client->dev, "Unknown chemistry: %s\n", chemistry);
++
++	return 0;
 +}
 +
- static int sbs_get_battery_presence_and_health(
- 	struct i2c_client *client, enum power_supply_property psp,
+ static int sbs_get_property(struct power_supply *psy,
+ 	enum power_supply_property psp,
  	union power_supply_propval *val)
-@@ -385,9 +399,14 @@ static int sbs_get_battery_presence_and_health(
+@@ -673,7 +709,10 @@ static int sbs_get_property(struct power_supply *psy,
+ 		break;
  
- 	if (psp == POWER_SUPPLY_PROP_PRESENT)
- 		val->intval = 1; /* battery present */
--	else /* POWER_SUPPLY_PROP_HEALTH */
--		/* SBS spec doesn't have a general health command. */
--		val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
-+	else { /* POWER_SUPPLY_PROP_HEALTH */
-+		if (sbs_bat_needs_calibration(client)) {
-+			val->intval = POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED;
-+		} else {
-+			/* SBS spec doesn't have a general health command. */
-+			val->intval = POWER_SUPPLY_HEALTH_UNKNOWN;
-+		}
-+	}
+ 	case POWER_SUPPLY_PROP_TECHNOLOGY:
+-		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
++		ret = sbs_get_chemistry(client, val);
++		if (ret < 0)
++			break;
++
+ 		goto done; /* don't trigger power_supply_changed()! */
  
- 	return 0;
- }
-@@ -441,6 +460,8 @@ static int sbs_get_ti_battery_presence_and_health(
- 			val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;
- 		else if (ret == 0x0C)
- 			val->intval = POWER_SUPPLY_HEALTH_DEAD;
-+		else if (sbs_bat_needs_calibration(client))
-+			val->intval = POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED;
- 		else
- 			val->intval = POWER_SUPPLY_HEALTH_GOOD;
- 	}
+ 	case POWER_SUPPLY_PROP_ENERGY_NOW:
 -- 
 2.26.2
 
