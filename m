@@ -2,105 +2,120 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 332E4C2D0FC
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EEFDCA90AF
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 14:04:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0A3A623129
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 13:09:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=microchip.com header.i=@microchip.com header.b="YBJs7QnH"
+	by mail.kernel.org (Postfix) with ESMTP id C2CDB2064E
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 14:04:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1589378695;
+	bh=M/PtkYH2lpBPM9L5EZ81ca9rh0tIUE4mhwkqiAjBrXU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=Th3KCkJJrOp6iKBwurCYRXDiCXfJoI2Z3TkWQXGKjBNXxVQYjs4DKBPXScMm3MbpR
+	 PsZHO6tdzbSita8NMsJAwvnRZE65ThbXGlDQBvS6g2wFe2zW7FMyD1NKiXhwNOur0q
+	 cJaEMItXqFmXy6HiMuWp05T7UYSu8GBC3uQhHeA8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733281AbgEMNJS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 09:09:18 -0400
-Received: from esa1.microchip.iphmx.com ([68.232.147.91]:43049 "EHLO
-        esa1.microchip.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728481AbgEMNJC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 09:09:02 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=microchip.com; i=@microchip.com; q=dns/txt; s=mchp;
-  t=1589375342; x=1620911342;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=/Is4lRNYSiquyResjIg3T8wiw24hPoKYdLEtowPC0kg=;
-  b=YBJs7QnHpD9oy5ZX40mRkbfuKEMUNPoXK0Ydmd41p5Y1WKTeQ9aFdBeK
-   zV/1pHGD1zU83kKYD8qb88WsdAquu6U4XTp/gWZq23dSIjEOhTdvyf5vz
-   utN+3n4B25E54Q4gMV3a5te5NROYLgGJTafLuU1QY43JCMboKWpl9Imtw
-   AC89CrRU89DS0Y/AGILhig0HL7TibOoP41LekqyhiYLpM9L2fX0bU8IC0
-   dORy7nHwd6HdUvmbjfCCZoskkVNEVPpO/UumvSYnUTl4R+6FD8KEO3n2F
-   PrXBF91ZYopajKpeuA6Up80yxEcsSpaP08oe/R6rhhENJzgstHFsd8HL4
-   Q==;
-IronPort-SDR: 75D4jjDICZ0KPTl1UtCcW9v1pG/9kSDua3FNKu6/RyNLCaHt7q4MshxmBU5tJ7TqvPJ1on5PRh
- Sq0jw3yQGcIVxnBvJ8g2H+Rt/3uJS7mQoxzyyw7jhyp9P9NQlEJ61J7MIIWKp4L4HxCMGRu3Hf
- 7KNqfsYMtx4r5zzmT5DOBOzdJBhVDd7YnDOjelBjnSDXn5wmHjrPb7lLBZHWvz28vfMpT+RQMu
- skQC4EGfKcsNwjcee9UmFkpeefAxCA3OsTm6OTEmmwrZueoTRbUzwqAmIbqSgJWytEaij8oTJt
- l28=
-X-IronPort-AV: E=Sophos;i="5.73,387,1583218800"; 
-   d="scan'208";a="79438679"
-Received: from smtpout.microchip.com (HELO email.microchip.com) ([198.175.253.82])
-  by esa1.microchip.iphmx.com with ESMTP/TLS/AES256-SHA256; 13 May 2020 06:09:01 -0700
-Received: from chn-vm-ex03.mchp-main.com (10.10.85.151) by
- chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1713.5; Wed, 13 May 2020 06:09:01 -0700
-Received: from soft-dev15.microsemi.net (10.10.115.15) by
- chn-vm-ex03.mchp-main.com (10.10.85.151) with Microsoft SMTP Server id
- 15.1.1713.5 via Frontend Transport; Wed, 13 May 2020 06:08:59 -0700
-From:   Lars Povlsen <lars.povlsen@microchip.com>
-List-Id: <soc.lore.kernel.org>
-To:     Sebastian Reichel <sre@kernel.org>, SoC Team <soc@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>
-CC:     Lars Povlsen <lars.povlsen@microchip.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Microchip Linux Driver Support <UNGLinuxDriver@microchip.com>,
-        <linux-pm@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>
-Subject: [PATCH 3/5] dt-bindings: reset: ocelot: Add documentation for 'microchip,reset-switch-core' property
-Date:   Wed, 13 May 2020 15:08:40 +0200
-Message-ID: <20200513130842.24847-4-lars.povlsen@microchip.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200513130842.24847-1-lars.povlsen@microchip.com>
-References: <20200513130842.24847-1-lars.povlsen@microchip.com>
+        id S2388753AbgEMOEz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 10:04:55 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:33460 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388325AbgEMOEz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 10:04:55 -0400
+Received: by mail-oi1-f193.google.com with SMTP id o24so21513475oic.0
+        for <linux-pm@vger.kernel.org>; Wed, 13 May 2020 07:04:54 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/8vCveonwldpz9VYdrLFfwU0qaQkrrwXQ2h0T0AYccA=;
+        b=RccIWpbOX8tt8mhlsiCn3/rM5+jvmTsl/Ozh/3Y3CY+UTNRPjP8kjJlTTnFMpDR6TQ
+         l4vZ9jiJS30wUQ/AyrnwHnrg2fs8SZaLItMW+sLz90FtFiEbQeYLn/VmCJSCc4xUqN7c
+         Tu81JyEJO8xWrfYRMBqj1xbXv01g8tnIUiz7QZP1FT3NXJFia9Fo9ST8EBtpy+3H9n+Z
+         1Sk5pWd1Hm5+6i6NnhdRYIaQyNxnF1ED777R9Fbf0ZZ+o2sqY4JidrHWKkazM6pVi3d0
+         w7kb6JpfKQNcHUgitx9lReL1AyfBIIQopk7g4ccsiiWsnYEpdb92jOPGndiF46ERFF7r
+         5BrA==
+X-Gm-Message-State: AGi0PuYNyfNg/sp7oUHvGeC96AnusnHwppqX4RigM07aVuGVMgfDkH8x
+        HkEr9IhxY5VGsZZvvb0dOkCVN7YwYcMgGA8wqdo=
+X-Google-Smtp-Source: APiQypLMhqqR1D5BjGOxk+tM9Lvd+VAQq9nrIY2mq7d99ZFATzxIsRBVg4KDp6dY+YtL1fFpyqX4zsd4oCv/nsSK2dY=
+X-Received: by 2002:aca:4fd5:: with SMTP id d204mr6437919oib.103.1589378694116;
+ Wed, 13 May 2020 07:04:54 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
+References: <CAJCQCtQ=1=UFaCvPO99W0t9SWuK5zG4ENKYzq2PgJ36iu-EiiQ@mail.gmail.com>
+ <CAJZ5v0hqODC52Bogeo-2suROH63NmON=5a5K6OZEp1YYMYK_QA@mail.gmail.com>
+ <CAJCQCtTxQw=P43wHM2ENX600Jm+BXU+f+=Wv09ijjiqWZoWsiQ@mail.gmail.com>
+ <7163502.2kdGmH96AJ@kreacher> <CAJCQCtRAMgH4Qwfo7xqO2PQYedLSKBD9wmbj-T9aBvVYa2MGPQ@mail.gmail.com>
+In-Reply-To: <CAJCQCtRAMgH4Qwfo7xqO2PQYedLSKBD9wmbj-T9aBvVYa2MGPQ@mail.gmail.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 13 May 2020 16:04:41 +0200
+Message-ID: <CAJZ5v0hMs_A1-=wLmjgdO8jhW-MA-JSxV8xuDPCxti+yxTW2JQ@mail.gmail.com>
+Subject: Re: 5.7 sleep/wake regression
+To:     Chris Murphy <chris@colorremedies.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Jens Axboe <axboe@kernel.dk>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This documents the 'microchip,reset-switch-core' property in the
-ocelot-reset driver.
+On Wed, May 13, 2020 at 8:11 AM Chris Murphy <chris@colorremedies.com> wrote:
+>
+> On Tue, May 12, 2020 at 6:57 AM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> >
+> > On Monday, May 11, 2020 7:37:04 PM CEST Chris Murphy wrote:
+> > > On Mon, May 11, 2020 at 5:15 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
+> > > >
+> > > > On Mon, May 11, 2020 at 6:22 AM Chris Murphy <chris@colorremedies.com> wrote:
+> > > > >
+> > > > > Got an older Macbook Pro that does suspend to RAM and wake OK with
+> > > > > 5.6, but starting with git 47acac8cae28, it will not wake up. Instead
+> > > > > it has a black screen, gets hot, fans go to high, and it turns into a
+> > > > > hair dryer. So it's a regression.
+> > > >
+> > > > There is a known issue addressed by this patch:
+> > > >
+> > > > https://patchwork.kernel.org/patch/11538065/
+> > > >
+> > > > so can you please try it?
+> > >
+> > > Patch applied, but the problem remains.
+> > >
+> > > CPU is i7-2820QM and dmesg for the working sleep+wake case:
+> > > https://paste.centos.org/view/ea5b913d
+> > >
+> > > In the failed wake case, I note the following: the fade-in/out sleep
+> > > indicator light on the laptop is pulsing, suggests it did actually
+> > > enter sleep OK. When waking by spacebar press, this sleep indicator
+> > > light stops pulsing, the backlight does not come on, the laptop does
+> > > not respond to either ssh or ping. Following  a power reset and
+> > > reboot, the journal's last line is
+> > >
+> > > [   61.678347] fmac.local kernel: PM: suspend entry (deep)
+> > >
+> > > Let me know if I should resume bisect.
+> >
+> > Please first try to revert commit
+> >
+> > 6d232b29cfce ("ACPICA: Dispatcher: always generate buffer
+> > objects for ASL create_field() operator")
+>
+> Still fails. Bisect says
+>
+> $ git bisect good
+> b41e98524e424d104aa7851d54fd65820759875a is the first bad commit
+> commit b41e98524e424d104aa7851d54fd65820759875a
+> Author: Jens Axboe <axboe@kernel.dk>
+> Date:   Mon Feb 17 09:52:41 2020 -0700
+>
+>     io_uring: add per-task callback handler
+>
+> I'm not that great at git bisect so I'm not sure how to narrow it
+> down; offhand that doesn't seem a likely culprit.
 
-Signed-off-by: Lars Povlsen <lars.povlsen@microchip.com>
----
- .../devicetree/bindings/power/reset/ocelot-reset.txt        | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-index 4d530d8154848..20fff03753ad2 100644
---- a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-+++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-@@ -9,9 +9,15 @@ microchip Sparx5 armv8 SoC's.
- Required Properties:
-  - compatible: "mscc,ocelot-chip-reset" or "microchip,sparx5-chip-reset"
-
-+Optional properties:
-+- microchip,reset-switch-core : Perform a switch core reset at the
-+  time of driver load. This is may be used to initialize the switch
-+  core to a known state (before other drivers are loaded).
-+
- Example:
- 	reset@1070008 {
- 		compatible = "mscc,ocelot-chip-reset";
- 		reg = <0x1070008 0x4>;
-+		microchip,reset-switch-core;
- 	};
-
---
-2.26.2
+I would try to revert it and see what happens. :-)
