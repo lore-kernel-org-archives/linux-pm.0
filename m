@@ -7,23 +7,23 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE153C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3487C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:58:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 70028206F5
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C6CE2054F
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:58:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389946AbgEMS5y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:57:54 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:51886 "EHLO
+        id S2390583AbgEMS56 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 14:57:58 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:51866 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390068AbgEMS4e (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:34 -0400
+        with ESMTP id S1732218AbgEMS4d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:33 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id E38EE2A25D4
+        with ESMTPSA id D22F82A0188
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 6F40C480102; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 6697A4800FF; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -32,9 +32,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 04/19] power: supply: core: add POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED
-Date:   Wed, 13 May 2020 20:56:00 +0200
-Message-Id: <20200513185615.508236-5-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 01/19] kobject: increase allowed number of uevent variables
+Date:   Wed, 13 May 2020 20:55:57 +0200
+Message-Id: <20200513185615.508236-2-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -45,54 +45,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some battery fuel gauges know when the battery needs to
-be recalibrated before providing usable values. This
-should be reported via the health property.
+SBS battery driver exposes 32 power supply properties now,
+which will result in uevent failure on (un)plugging the
+battery. Other drivers (e.g. bq27xxx) are also coming close
+to this limit, so increase it.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- Documentation/ABI/testing/sysfs-class-power | 2 +-
- drivers/power/supply/power_supply_sysfs.c   | 1 +
- include/linux/power_supply.h                | 1 +
- 3 files changed, 3 insertions(+), 1 deletion(-)
+ include/linux/kobject.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index e6d7348766b2..216d61a22f1e 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -205,7 +205,7 @@ Description:
- 		Valid values: "Unknown", "Good", "Overheat", "Dead",
- 			      "Over voltage", "Unspecified failure", "Cold",
- 			      "Watchdog timer expire", "Safety timer expire",
--			      "Over current"
-+			      "Over current", "Calibration required"
+diff --git a/include/linux/kobject.h b/include/linux/kobject.h
+index e2ca0a292e21..75e822569e39 100644
+--- a/include/linux/kobject.h
++++ b/include/linux/kobject.h
+@@ -29,7 +29,7 @@
+ #include <linux/uidgid.h>
  
- What:		/sys/class/power_supply/<supply_name>/precharge_current
- Date:		June 2017
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index 78d5382e69f1..bc79560229b5 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -100,6 +100,7 @@ static const char * const POWER_SUPPLY_HEALTH_TEXT[] = {
- 	[POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE] = "Watchdog timer expire",
- 	[POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE]   = "Safety timer expire",
- 	[POWER_SUPPLY_HEALTH_OVERCURRENT]	    = "Over current",
-+	[POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED]  = "Calibration required",
- };
+ #define UEVENT_HELPER_PATH_LEN		256
+-#define UEVENT_NUM_ENVP			32	/* number of env pointers */
++#define UEVENT_NUM_ENVP			64	/* number of env pointers */
+ #define UEVENT_BUFFER_SIZE		2048	/* buffer for the variables */
  
- static const char * const POWER_SUPPLY_TECHNOLOGY_TEXT[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 63ffe2a0a87b..ac1345a48ad0 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -61,6 +61,7 @@ enum {
- 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_OVERCURRENT,
-+	POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED,
- };
- 
- enum {
+ #ifdef CONFIG_UEVENT_HELPER
 -- 
 2.26.2
 
