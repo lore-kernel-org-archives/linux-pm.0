@@ -2,31 +2,31 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,UPPERCASE_50_75,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47B6FC433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 451EAC433E1
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 059652054F
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03A992054F
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:57:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390512AbgEMS5a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:57:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49950 "EHLO
+        id S2390374AbgEMS4e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 14:56:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2390395AbgEMS4g (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:36 -0400
+        by vger.kernel.org with ESMTP id S2390370AbgEMS4d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:33 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D747AC05BD0A;
-        Wed, 13 May 2020 11:56:35 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B186FC061A0C;
+        Wed, 13 May 2020 11:56:33 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 8CCAA2A29D1
+        with ESMTPSA id E65ED2A27A9
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 844EA480109; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 6C7E8480101; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -35,9 +35,9 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 11/19] power: supply: sbs-battery: add POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT/VOLTAGE_MAX support
-Date:   Wed, 13 May 2020 20:56:07 +0200
-Message-Id: <20200513185615.508236-12-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 03/19] power: supply: core: add manufacture date properties
+Date:   Wed, 13 May 2020 20:55:59 +0200
+Message-Id: <20200513185615.508236-4-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
@@ -48,65 +48,81 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Expose maximum charge current/voltage information requested
-by the battery.
+Some smart batteries store their manufacture date, which is
+useful to identify the battery and/or to know about the cell
+quality.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/sbs-battery.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+ Documentation/ABI/testing/sysfs-class-power | 28 +++++++++++++++++++++
+ drivers/power/supply/power_supply_sysfs.c   |  3 +++
+ include/linux/power_supply.h                |  3 +++
+ 3 files changed, 34 insertions(+)
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index b697a42d9ccf..e6f61baa9bed 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -46,6 +46,8 @@ enum {
- 	REG_CHEMISTRY,
- 	REG_MANUFACTURER,
- 	REG_MODEL_NAME,
-+	REG_CHARGE_CURRENT,
-+	REG_CHARGE_VOLTAGE,
- };
- 
- #define REG_ADDR_SPEC_INFO		0x1A
-@@ -114,6 +116,10 @@ static const struct chip_data {
- 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG, 0x12, 0, 65535),
- 	[REG_TIME_TO_FULL] =
- 		SBS_DATA(POWER_SUPPLY_PROP_TIME_TO_FULL_AVG, 0x13, 0, 65535),
-+	[REG_CHARGE_CURRENT] =
-+		SBS_DATA(POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX, 0x14, 0, 65535),
-+	[REG_CHARGE_VOLTAGE] =
-+		SBS_DATA(POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX, 0x15, 0, 65535),
- 	[REG_STATUS] =
- 		SBS_DATA(POWER_SUPPLY_PROP_STATUS, 0x16, 0, 65535),
- 	[REG_CAPACITY_LEVEL] =
-@@ -163,6 +169,8 @@ static enum power_supply_property sbs_properties[] = {
- 	POWER_SUPPLY_PROP_CHARGE_NOW,
- 	POWER_SUPPLY_PROP_CHARGE_FULL,
- 	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
-+	POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
+index 2f896555ae23..e6d7348766b2 100644
+--- a/Documentation/ABI/testing/sysfs-class-power
++++ b/Documentation/ABI/testing/sysfs-class-power
+@@ -680,3 +680,31 @@ Description:
+ 		Valid values:
+ 		- 1: enabled
+ 		- 0: disabled
++
++What:		/sys/class/power_supply/<supply_name>/manufacture_year
++Date:		January 2020
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports the year (following Gregorian calendar) when the device has been
++		manufactured.
++
++		Access: Read
++		Valid values: Reported as integer
++
++What:		/sys/class/power_supply/<supply_name>/manufacture_month
++Date:		January 2020
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports the month when the device has been manufactured.
++
++		Access: Read
++		Valid values: 1-12
++
++What:		/sys/class/power_supply/<supply_name>/manufacture_day
++Date:		January 2020
++Contact:	linux-pm@vger.kernel.org
++Description:
++		Reports the day of month when the device has been manufactured.
++
++		Access: Read
++		Valid values: 1-31
+diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
+index e664774a2d1e..78d5382e69f1 100644
+--- a/drivers/power/supply/power_supply_sysfs.c
++++ b/drivers/power/supply/power_supply_sysfs.c
+@@ -198,6 +198,9 @@ static struct power_supply_attr power_supply_attrs[] = {
+ 	POWER_SUPPLY_ATTR(PRECHARGE_CURRENT),
+ 	POWER_SUPPLY_ATTR(CHARGE_TERM_CURRENT),
+ 	POWER_SUPPLY_ATTR(CALIBRATE),
++	POWER_SUPPLY_ATTR(MANUFACTURE_YEAR),
++	POWER_SUPPLY_ATTR(MANUFACTURE_MONTH),
++	POWER_SUPPLY_ATTR(MANUFACTURE_DAY),
  	/* Properties of type `const char *' */
+ 	POWER_SUPPLY_ATTR(MODEL_NAME),
+ 	POWER_SUPPLY_ATTR(MANUFACTURER),
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 453a85f25635..63ffe2a0a87b 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -159,6 +159,9 @@ enum power_supply_property {
+ 	POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
+ 	POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+ 	POWER_SUPPLY_PROP_CALIBRATE,
++	POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
++	POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
++	POWER_SUPPLY_PROP_MANUFACTURE_DAY,
+ 	/* Properties of type `const char *' */
+ 	POWER_SUPPLY_PROP_MODEL_NAME,
  	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_MODEL_NAME
-@@ -531,6 +539,8 @@ static void  sbs_unit_adjustment(struct i2c_client *client,
- 	case POWER_SUPPLY_PROP_CURRENT_NOW:
- 	case POWER_SUPPLY_PROP_CURRENT_AVG:
- 	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
- 	case POWER_SUPPLY_PROP_CHARGE_FULL:
- 	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
- 		val->intval *= BASE_UNIT_CONVERSION;
-@@ -749,6 +759,8 @@ static int sbs_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_TIME_TO_FULL_AVG:
- 	case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
- 	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
-+	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
- 	case POWER_SUPPLY_PROP_CAPACITY:
- 	case POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN:
- 		ret = sbs_get_property_index(client, psp);
 -- 
 2.26.2
 
