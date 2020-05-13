@@ -2,30 +2,28 @@ Return-Path: <SRS0=+phD=63=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5ACCC433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C94D7C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8B4EC2065C
-	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7BA2C20708
+	for <linux-pm@archiver.kernel.org>; Wed, 13 May 2020 18:56:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390369AbgEMS4d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 13 May 2020 14:56:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49934 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-FAIL-OK-FAIL)
-        by vger.kernel.org with ESMTP id S2390362AbgEMS4d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:33 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62B77C061A0E;
-        Wed, 13 May 2020 11:56:33 -0700 (PDT)
+        id S2390426AbgEMS4j (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 13 May 2020 14:56:39 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:51982 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390411AbgEMS4i (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 13 May 2020 14:56:38 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id DAE132A2521
+        with ESMTPSA id A6BB12A2A71
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 63EF24800F8; Wed, 13 May 2020 20:56:29 +0200 (CEST)
+        id 9BA0048012E; Wed, 13 May 2020 20:56:29 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -34,10 +32,12 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv1 00/19] Improve SBS battery support
-Date:   Wed, 13 May 2020 20:55:56 +0200
-Message-Id: <20200513185615.508236-1-sebastian.reichel@collabora.com>
+Subject: [PATCHv1 19/19] dt-bindings: power: sbs-battery: Convert to yaml
+Date:   Wed, 13 May 2020 20:56:15 +0200
+Message-Id: <20200513185615.508236-20-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200513185615.508236-1-sebastian.reichel@collabora.com>
+References: <20200513185615.508236-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -45,94 +45,141 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset improves support for SBS compliant batteries. Due to
-the changes, the battery now exposes 32 power supply properties and
-(un)plugging it generates a backtrace containing the following message
-without the first patch in this series:
+Convert sbs-battery bindings to YAML.
 
----------------------------
-WARNING: CPU: 0 PID: 20 at lib/kobject_uevent.c:659 add_uevent_var+0xd4/0x104
-add_uevent_var: too many keys
----------------------------
-
-For references this is what an SBS battery status looks like after
-the patch series has been applied:
-
-cat /sys/class/power_supply/sbs-0-000b/uevent 
-POWER_SUPPLY_NAME=sbs-0-000b
-POWER_SUPPLY_TYPE=Battery
-POWER_SUPPLY_STATUS=Discharging
-POWER_SUPPLY_CAPACITY_LEVEL=Normal
-POWER_SUPPLY_HEALTH=Good
-POWER_SUPPLY_PRESENT=1
-POWER_SUPPLY_TECHNOLOGY=Li-ion
-POWER_SUPPLY_CYCLE_COUNT=12
-POWER_SUPPLY_VOLTAGE_NOW=11441000
-POWER_SUPPLY_CURRENT_NOW=-26000
-POWER_SUPPLY_CURRENT_AVG=-24000
-POWER_SUPPLY_CAPACITY=76
-POWER_SUPPLY_CAPACITY_ERROR_MARGIN=1
-POWER_SUPPLY_TEMP=198
-POWER_SUPPLY_TIME_TO_EMPTY_AVG=438600
-POWER_SUPPLY_TIME_TO_FULL_AVG=3932100
-POWER_SUPPLY_SERIAL_NUMBER=0000
-POWER_SUPPLY_VOLTAGE_MIN_DESIGN=10800000
-POWER_SUPPLY_VOLTAGE_MAX_DESIGN=10800000
-POWER_SUPPLY_ENERGY_NOW=31090000
-POWER_SUPPLY_ENERGY_FULL=42450000
-POWER_SUPPLY_ENERGY_FULL_DESIGN=41040000
-POWER_SUPPLY_CHARGE_NOW=2924000
-POWER_SUPPLY_CHARGE_FULL=3898000
-POWER_SUPPLY_CHARGE_FULL_DESIGN=3800000
-POWER_SUPPLY_CONSTANT_CHARGE_CURRENT_MAX=3000000
-POWER_SUPPLY_CONSTANT_CHARGE_VOLTAGE_MAX=12300000
-POWER_SUPPLY_MANUFACTURE_YEAR=2017
-POWER_SUPPLY_MANUFACTURE_MONTH=7
-POWER_SUPPLY_MANUFACTURE_DAY=3
-POWER_SUPPLY_MANUFACTURER=UR18650A
-POWER_SUPPLY_MODEL_NAME=GEHC
-
--- Sebastian
-
-Jean-Francois Dagenais (1):
-  power: supply: sbs-battery: add ability to disable charger broadcasts
-
-Sebastian Reichel (18):
-  kobject: increase allowed number of uevent variables
-  power: supply: core: add capacity error margin property
-  power: supply: core: add manufacture date properties
-  power: supply: core: add POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED
-  power: supply: sbs-battery: Add TI BQ20Z65 support
-  power: supply: sbs-battery: add
-    POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN support
-  power: supply: sbs-battery: simplify read_read_string_data
-  power: supply: sbs-battery: add PEC support
-  power: supply: sbs-battery: add POWER_SUPPLY_PROP_CURRENT_AVG support
-  power: supply: sbs-battery: Improve POWER_SUPPLY_PROP_TECHNOLOGY
-    support
-  power: supply: sbs-battery: add
-    POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT/VOLTAGE_MAX support
-  power: supply: sbs-battery: add MANUFACTURE_DATE support
-  power: supply: sbs-battery: add
-    POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED support
-  power: supply: sbs-battery: fix idle battery status
-  power: supply: sbs-battery: switch from of_property_* to
-    device_property_*
-  power: supply: sbs-battery: switch to i2c's probe_new
-  power: supply: sbs-battery: constify power-supply property array
-  dt-bindings: power: sbs-battery: Convert to yaml
-
- Documentation/ABI/testing/sysfs-class-power   |  45 ++-
- .../power/supply/sbs,sbs-battery.yaml         |  83 +++++
- .../bindings/power/supply/sbs_sbs-battery.txt |  27 --
- drivers/power/supply/power_supply_sysfs.c     |   5 +
- drivers/power/supply/sbs-battery.c            | 348 +++++++++++++-----
- include/linux/kobject.h                       |   2 +-
- include/linux/power_supply.h                  |   5 +
- 7 files changed, 404 insertions(+), 111 deletions(-)
+Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+---
+ .../power/supply/sbs,sbs-battery.yaml         | 83 +++++++++++++++++++
+ .../bindings/power/supply/sbs_sbs-battery.txt | 30 -------
+ 2 files changed, 83 insertions(+), 30 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
  delete mode 100644 Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
 
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
+new file mode 100644
+index 000000000000..205bc826bd20
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/sbs,sbs-battery.yaml
+@@ -0,0 +1,83 @@
++# SPDX-License-Identifier: GPL-2.0
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/sbs,sbs-battery.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: SBS compliant battery
++
++maintainers:
++  - Sebastian Reichel <sre@kernel.org>
++
++description: |
++  Battery compatible with the smart battery system specifications
++
++properties:
++
++  compatible:
++    oneOf:
++      - items:
++          - enum:
++              - ti,bq20z65
++              - ti,bq20z75
++          - enum:
++              - sbs,sbs-battery
++      - items:
++          - const: sbs,sbs-battery
++
++  reg:
++    maxItems: 1
++
++  sbs,i2c-retry-count:
++    description:
++      The number of times to retry I2C transactions on I2C IO failure.
++    default: 0
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/uint32
++
++  sbs,poll-retry-count:
++    description:
++      The number of times to try looking for new status after an external
++      change notification.
++    default: 0
++    allOf:
++      - $ref: /schemas/types.yaml#/definitions/uint32
++
++  sbs,battery-detect-gpios:
++    description:
++      GPIO which signals battery detection. If this is not supplied, the bus
++      needs to be polled to detect the battery.
++    maxItems: 1
++
++  sbs,disable-charger-broadcasts:
++    description:
++      SBS batteries by default send broadcast messages to SBS compliant chargers to
++      configure max. charge current/voltage. If your hardware does not have an SBS
++      compliant charger it should be disabled via this property to avoid blocking
++      the bus. Also some SBS battery fuel gauges are known to have a buggy multi-
++      master implementation.
++    type: boolean
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/gpio/gpio.h>
++
++    i2c {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        battery@b {
++            compatible = "ti,bq20z75", "sbs,sbs-battery";
++            reg = <0xb>;
++            sbs,i2c-retry-count = <2>;
++            sbs,poll-retry-count = <10>;
++            sbs,battery-detect-gpios = <&gpio 122 GPIO_ACTIVE_HIGH>;
++            sbs,disable-charger-broadcasts;
++       };
++    };
+diff --git a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt b/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
+deleted file mode 100644
+index a5093ccef5c5..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/sbs_sbs-battery.txt
++++ /dev/null
+@@ -1,30 +0,0 @@
+-SBS sbs-battery
+-~~~~~~~~~~
+-
+-Required properties :
+- - compatible: "<vendor>,<part-number>", "sbs,sbs-battery" as fallback. The
+-     part number compatible string might be used in order to take care of
+-     vendor specific registers.
+-     Known <vendor>,<part-number>:
+-       ti,bq20z65
+-       ti,bq20z75
+-
+-Optional properties :
+- - sbs,i2c-retry-count : The number of times to retry i2c transactions on i2c
+-   IO failure.
+- - sbs,poll-retry-count : The number of times to try looking for new status
+-   after an external change notification.
+- - sbs,battery-detect-gpios : The gpio which signals battery detection and
+-   a flag specifying its polarity.
+- - sbs,disable-charger-broadcasts: for systems without sbs compliant chargers
+-
+-Example:
+-
+-	battery@b {
+-		compatible = "ti,bq20z75", "sbs,sbs-battery";
+-		reg = <0xb>;
+-		sbs,i2c-retry-count = <2>;
+-		sbs,poll-retry-count = <10>;
+-		sbs,battery-detect-gpios = <&gpio-controller 122 1>;
+-		sbs,disable-charger-broadcasts;
+-	}
 -- 
 2.26.2
 
