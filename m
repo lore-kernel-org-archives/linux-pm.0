@@ -2,199 +2,71 @@ Return-Path: <SRS0=YTwn=65=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 831DDC433E3
-	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 19:41:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 93A59C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 21:14:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E5AB20728
-	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 19:41:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="notruPyO"
+	by mail.kernel.org (Postfix) with ESMTP id 75A69206D4
+	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 21:14:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726786AbgEOTle (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 May 2020 15:41:34 -0400
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:48528 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726732AbgEOTle (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 15 May 2020 15:41:34 -0400
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04FJfWsi014881;
-        Fri, 15 May 2020 14:41:32 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1589571692;
-        bh=aNAqnPafOIHJEDzD0ZOb6pUjTvOyPosvVU/R0S1SQmE=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=notruPyOyadzPsHs4BHXQlHXEqp+Y816LerNEQObcuKKPCFXNuDFBSLBz/Cn0sPUN
-         83IMMs/sTVDTGn0GqAdGEFGpBP29zat6ZR430dDKvMQ2V7ECTC7A19Tfpsh2BDO92P
-         BsgFGHvnnWUa52pTNE74QkkYA5SOrprX58Bh2/nE=
-Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04FJfWoS021073;
-        Fri, 15 May 2020 14:41:32 -0500
-Received: from DFLE100.ent.ti.com (10.64.6.21) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Fri, 15
- May 2020 14:41:32 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE100.ent.ti.com
- (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Fri, 15 May 2020 14:41:32 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04FJfVcl035446;
-        Fri, 15 May 2020 14:41:32 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>
-CC:     <sspatil@android.com>, <linux-pm@vger.kernel.org>,
-        <robh@kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: [PATCH 2/3] Add the bindings for the bq25150 and bq25155 500mA charging ICs from Texas Instruments.
-Date:   Fri, 15 May 2020 14:31:47 -0500
-Message-ID: <20200515193148.8502-3-dmurphy@ti.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200515193148.8502-1-dmurphy@ti.com>
-References: <20200515193148.8502-1-dmurphy@ti.com>
+        id S1726624AbgEOVOJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 May 2020 17:14:09 -0400
+Received: from elvis.franken.de ([193.175.24.41]:54590 "EHLO elvis.franken.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726183AbgEOVOJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 May 2020 17:14:09 -0400
+Received: from uucp (helo=alpha)
+        by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
+        id 1jZheg-000560-00; Fri, 15 May 2020 23:14:06 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+        id 1B051C04A5; Fri, 15 May 2020 23:06:47 +0200 (CEST)
+Date:   Fri, 15 May 2020 23:06:47 +0200
+From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To:     Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Cc:     Serge Semin <fancer.lancer@gmail.com>,
+        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Paul Burton <paulburton@kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Vincenzo Frascino <vincenzo.frascino@arm.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 18/20] mips: csrc-r4k: Decrease r4k-clocksource rating
+ if CPU_FREQ enabled
+Message-ID: <20200515210647.GA22922@alpha.franken.de>
+References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
+ <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+ <20200506174238.15385-19-Sergey.Semin@baikalelectronics.ru>
+ <20200508154150.GB22247@alpha.franken.de>
+ <20200511133121.cz5axbwynhmqkx7x@mobilestation>
+ <20200515074827.6p5zx4sb3bmavjih@mobilestation>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200515074827.6p5zx4sb3bmavjih@mobilestation>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+On Fri, May 15, 2020 at 10:48:27AM +0300, Serge Semin wrote:
+> Thomas,
+> Could you take a look at my comment below so I could proceed with the
+> patchset v3 development?
 
-The BQ2515X family of devices are highly integrated battery management
-ICs that integrate the most common functions for wearbale devices
-namely a charger, an output voltage rail, ADC for battery and system
-monitoring, and a push-button controller.
+I can't help, but using r4k clocksource with changing frequency is
+probaly only usefull as a random generator. So IMHO the only two
+options are disabling it or implement what arch/x86/kernel/tsc.c does.
 
-Datasheets:
-http://www.ti.com/lit/ds/symlink/bq25150.pdf
-http://www.ti.com/lit/ds/symlink/bq25155.pdf
+Thomas.
 
-Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
----
- .../bindings/power/supply/bq2515x.yaml        | 106 ++++++++++++++++++
- 1 file changed, 106 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-
-diff --git a/Documentation/devicetree/bindings/power/supply/bq2515x.yaml b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-new file mode 100644
-index 000000000000..83487957fc8c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
-@@ -0,0 +1,106 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+# Copyright (C) 2020 Texas Instruments Incorporated
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/bq2515x.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: TI bq2515x 500-mA Linear charger family
-+
-+maintainers:
-+  - Dan Murphy <dmurphy@ti.com>
-+  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-+
-+description: |
-+  The BQ2515x family is a highly integrated battery charge management IC that
-+  integrates the most common functions for wearable devices, namely a charger,
-+  an output voltage rail, ADC for battery and system monitoring, and
-+  push-button controller.
-+
-+  Specifications about the charger can be found at:
-+    http://www.ti.com/lit/ds/symlink/bq25150.pdf
-+    http://www.ti.com/lit/ds/symlink/bq25155.pdf
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ti,bq25150
-+      - ti,bq25155
-+
-+  reg:
-+    maxItems: 1
-+    description: I2C address of the charger.
-+
-+  ac-detect-gpios:
-+    description: |
-+       GPIO used for connecting the bq2515x device PG (AC Detect)
-+       pin.  This pin should be used if possible as this is the
-+       recommended way to obtain the charger's input PG state.
-+       If this pin is not specified a software-based approach for PG
-+       detection is used.
-+
-+  reset-gpios:
-+    description: |
-+       GPIO used for hardware reset.
-+
-+  low-power-gpios:
-+    description: |
-+       GPIO used for low power mode of IC.
-+
-+  charge-enable-gpios:
-+    description: |
-+       GPIO used to turn on and off charging.
-+
-+  constant-charge-current-max-microamp:
-+    description: |
-+       Maximum charging current in micro Amps.
-+    minimum: 50000
-+    maximum: 600000
-+
-+  precharge-current-max-microamp:
-+    description: |
-+       Maximum precharging current in micro Amps.
-+    minimum: 1250
-+    maximum: 77500
-+
-+  input-current-limit-microamp:
-+    description: |
-+       Maximum input current in micro Amps.
-+    minimum: 50000
-+    maximum: 500000
-+
-+  constant-charge-voltage-max-microvolt:
-+    description: |
-+       Maximum charging voltage in micro volts.
-+    minimum: 3600000
-+    maximum: 4600000
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+    bat: battery {
-+      compatible = "simple-battery";
-+      constant-charge-current-max-microamp = <50000>;
-+      precharge-current-microamp = <2500>;
-+      constant-charge-voltage-max-microvolt = <4000000>;
-+    };
-+    #include <dt-bindings/gpio/gpio.h>
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      bq25150: charger@6b {
-+        compatible = "ti,bq25150";
-+        reg = <0x6b>;
-+        monitored-battery = <&bat>;
-+        input-current-limit-microamp = <100000>;
-+
-+        ac-detect-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
-+        reset-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
-+        low-power-gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
-+        charge-enable-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
-+      };
-+    };
 -- 
-2.26.2
-
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
