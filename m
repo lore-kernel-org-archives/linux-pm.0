@@ -1,72 +1,164 @@
-Return-Path: <SRS0=YTwn=65=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=bXBE=66=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	LONGWORDS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93A59C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 21:14:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0DC7C433E1
+	for <linux-pm@archiver.kernel.org>; Sat, 16 May 2020 00:45:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 75A69206D4
-	for <linux-pm@archiver.kernel.org>; Fri, 15 May 2020 21:14:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98175207DF
+	for <linux-pm@archiver.kernel.org>; Sat, 16 May 2020 00:45:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726624AbgEOVOJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 15 May 2020 17:14:09 -0400
-Received: from elvis.franken.de ([193.175.24.41]:54590 "EHLO elvis.franken.de"
+        id S1726550AbgEPApj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 15 May 2020 20:45:39 -0400
+Received: from mga03.intel.com ([134.134.136.65]:44267 "EHLO mga03.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726183AbgEOVOJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 15 May 2020 17:14:09 -0400
-Received: from uucp (helo=alpha)
-        by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
-        id 1jZheg-000560-00; Fri, 15 May 2020 23:14:06 +0200
-Received: by alpha.franken.de (Postfix, from userid 1000)
-        id 1B051C04A5; Fri, 15 May 2020 23:06:47 +0200 (CEST)
-Date:   Fri, 15 May 2020 23:06:47 +0200
-From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-To:     Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Cc:     Serge Semin <fancer.lancer@gmail.com>,
-        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
-        Paul Burton <paulburton@kernel.org>,
-        Ralf Baechle <ralf@linux-mips.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org,
-        Vincenzo Frascino <vincenzo.frascino@arm.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 18/20] mips: csrc-r4k: Decrease r4k-clocksource rating
- if CPU_FREQ enabled
-Message-ID: <20200515210647.GA22922@alpha.franken.de>
-References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
- <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
- <20200506174238.15385-19-Sergey.Semin@baikalelectronics.ru>
- <20200508154150.GB22247@alpha.franken.de>
- <20200511133121.cz5axbwynhmqkx7x@mobilestation>
- <20200515074827.6p5zx4sb3bmavjih@mobilestation>
+        id S1726198AbgEPApi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 15 May 2020 20:45:38 -0400
+IronPort-SDR: TUDa25sKYK+94Ob4w9Cm4MHDoUmY5wi0iBgLlcX+lcD/XOdwKm4KpXVYvPIMxaM4ARLUq0+0yr
+ dsfg50yNKoug==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga008.jf.intel.com ([10.7.209.65])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 May 2020 17:45:38 -0700
+IronPort-SDR: WHDxuv8yXzoceDm90cr7hMsrhg5t8/q+Tg+F5oQuQTM9MpT75Q/l5xIR8YMV+c94sG6RxqlcKT
+ kZsq5N2RLhgw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,397,1583222400"; 
+   d="scan'208";a="299205095"
+Received: from lkp-server01.sh.intel.com (HELO lkp-server01) ([10.239.97.150])
+  by orsmga008.jf.intel.com with ESMTP; 15 May 2020 17:45:36 -0700
+Received: from kbuild by lkp-server01 with local (Exim 4.89)
+        (envelope-from <lkp@intel.com>)
+        id 1jZkxL-0009QF-Oh; Sat, 16 May 2020 08:45:35 +0800
+Date:   Sat, 16 May 2020 08:45:30 +0800
+From:   kbuild test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ 3185635a9dc3e75b55820693314c0f0953672c84
+Message-ID: <5ebf37aa.Lct74Cqf1aOWcXAs%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200515074827.6p5zx4sb3bmavjih@mobilestation>
-User-Agent: Mutt/1.5.23 (2014-03-12)
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, May 15, 2020 at 10:48:27AM +0300, Serge Semin wrote:
-> Thomas,
-> Could you take a look at my comment below so I could proceed with the
-> patchset v3 development?
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
+branch HEAD: 3185635a9dc3e75b55820693314c0f0953672c84  Merge branch 'pm-cpuidle' into bleeding-edge
 
-I can't help, but using r4k clocksource with changing frequency is
-probaly only usefull as a random generator. So IMHO the only two
-options are disabling it or implement what arch/x86/kernel/tsc.c does.
+elapsed time: 484m
 
-Thomas.
+configs tested: 96
+configs skipped: 1
 
--- 
-Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
-good idea.                                                [ RFC1925, 2.3 ]
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+arm64                            allyesconfig
+arm64                               defconfig
+arm64                            allmodconfig
+arm64                             allnoconfig
+arm                                 defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm                               allnoconfig
+i386                             allyesconfig
+i386                                defconfig
+i386                              debian-10.3
+i386                              allnoconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                              allnoconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                              allnoconfig
+m68k                           sun3_defconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nds32                               defconfig
+nds32                             allnoconfig
+csky                             allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+h8300                            allmodconfig
+xtensa                              defconfig
+arc                                 defconfig
+arc                              allyesconfig
+sh                               allmodconfig
+sh                                allnoconfig
+microblaze                        allnoconfig
+nios2                               defconfig
+nios2                            allyesconfig
+openrisc                            defconfig
+c6x                              allyesconfig
+c6x                               allnoconfig
+openrisc                         allyesconfig
+mips                             allyesconfig
+mips                              allnoconfig
+mips                             allmodconfig
+parisc                            allnoconfig
+parisc                              defconfig
+parisc                           allyesconfig
+parisc                           allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          rhel-kconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a006-20200515
+i386                 randconfig-a005-20200515
+i386                 randconfig-a003-20200515
+i386                 randconfig-a001-20200515
+i386                 randconfig-a004-20200515
+i386                 randconfig-a002-20200515
+i386                 randconfig-a012-20200515
+i386                 randconfig-a016-20200515
+i386                 randconfig-a014-20200515
+i386                 randconfig-a013-20200515
+x86_64               randconfig-a005-20200515
+x86_64               randconfig-a003-20200515
+x86_64               randconfig-a006-20200515
+x86_64               randconfig-a004-20200515
+x86_64               randconfig-a001-20200515
+x86_64               randconfig-a002-20200515
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+s390                             allyesconfig
+s390                              allnoconfig
+s390                             allmodconfig
+s390                                defconfig
+x86_64                              defconfig
+sparc                            allyesconfig
+sparc                               defconfig
+sparc64                             defconfig
+sparc64                           allnoconfig
+sparc64                          allyesconfig
+sparc64                          allmodconfig
+um                               allmodconfig
+um                                allnoconfig
+um                               allyesconfig
+um                                  defconfig
+x86_64                                   rhel
+x86_64                               rhel-7.6
+x86_64                    rhel-7.6-kselftests
+x86_64                         rhel-7.2-clear
+x86_64                                    lkp
+x86_64                              fedora-25
+x86_64                                  kexec
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
