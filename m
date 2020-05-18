@@ -2,77 +2,127 @@ Return-Path: <SRS0=BqmF=7A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E99E2C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 382B5C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:41:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C301D2070A
-	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 153DF207D4
+	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:41:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TmBG6giW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726729AbgERHQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 May 2020 03:16:48 -0400
-Received: from szxga05-in.huawei.com ([45.249.212.191]:4808 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726676AbgERHQr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 18 May 2020 03:16:47 -0400
-Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id EC212A17FD7449AE7F76;
-        Mon, 18 May 2020 15:16:43 +0800 (CST)
-Received: from linux-ibm.site (10.175.102.37) by
- DGGEMS413-HUB.china.huawei.com (10.3.19.213) with Microsoft SMTP Server id
- 14.3.487.0; Mon, 18 May 2020 15:16:34 +0800
-From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>
-CC:     <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
-        <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <wangxiongfeng2@huawei.com>
-Subject: [RFC PATCH v2 1/3] cpufreq: handle the return value of '.set_boost()' properly
-Date:   Mon, 18 May 2020 15:10:06 +0800
-Message-ID: <1589785808-12138-2-git-send-email-wangxiongfeng2@huawei.com>
-X-Mailer: git-send-email 1.7.12.4
-In-Reply-To: <1589785808-12138-1-git-send-email-wangxiongfeng2@huawei.com>
-References: <1589785808-12138-1-git-send-email-wangxiongfeng2@huawei.com>
+        id S1726573AbgERHlr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 May 2020 03:41:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50362 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726489AbgERHlr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 18 May 2020 03:41:47 -0400
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D58F8C061A0C
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2020 00:41:45 -0700 (PDT)
+Received: by mail-pf1-x443.google.com with SMTP id q8so2762506pfu.5
+        for <linux-pm@vger.kernel.org>; Mon, 18 May 2020 00:41:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=vl/yNZjcMD1c/8w4IMtaECL/pvXnUWzfoZmc+ar026A=;
+        b=TmBG6giWbwVIC9tUDSKwKQOc4eTIGJj/0THBrYvUXtbMCfasbOJRefuXD05s/PdWbG
+         vcdMKoExWaqNYfmgWV50I9uKpVjT42WbvR4GsvbfEZTXY5nklrevHHtWcgls9BoAbaj3
+         S2YXt5PljMFoycc63XMFNy1sYf4C4nNR1YYvllTLMQU8L5JMqUhApGllKocQU5ia74Ct
+         fx5k+HIRPX5cvfeAQ0x2tnZhQF1Hyly1PCjR/CydVJMBKsKKWpMiIw9KaWzbNpXVzcAs
+         0bVI27oGcFakKTl26QXyJKfFsBy0yK8FwdKsrf0g3e4Dji9QGEQ/KGIKK7D+hFlBnubC
+         8aZg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=vl/yNZjcMD1c/8w4IMtaECL/pvXnUWzfoZmc+ar026A=;
+        b=h+XeuXyLRwveqCUAwp0bmVUWOSWpZw0vDxWlZOkj40tEzv45v3sOHOZ3kg5UHtcId9
+         aNUMGTfcDC9nZUR24Kb/OzFI8jVp+fq+QA4idBM0+l0xNIT3cMJiIM18V8e9TzfUdrIv
+         6y+W0uBkyofZlinI6L/GjvYpkxYwLX9KnSfeHXmAVClJyVVqvaz8SfJPu6h2cMNka+hI
+         pGg1yDOoacrXDs6zuncpDWB2Wgvnseqa1UB2fWUVN3jQ0MCwPu3xSk64g7hpZtUAucLT
+         wiA4Eadn5TBzq4Oh8W8KpKOucXlhF2DtKK+Mx9mke+/Xn6nyhuIlZKRplXWRDt2xlzyw
+         fhrQ==
+X-Gm-Message-State: AOAM531jWv1x/hcO1bkHNQFmnVsa9TjOd5pnu3TI7yc6NDh9cP80ULQM
+        Joc7mknhx3Zn0NQ+/kHvvg0GwA==
+X-Google-Smtp-Source: ABdhPJxzGzk9dwqPrwn0vS7w9SSlMvWCIUihqqEg7nXaXOZHfOXoO1dVlbeIPRntGnTxGam1CoQggA==
+X-Received: by 2002:a63:de0c:: with SMTP id f12mr13551773pgg.172.1589787705397;
+        Mon, 18 May 2020 00:41:45 -0700 (PDT)
+Received: from localhost ([122.167.130.103])
+        by smtp.gmail.com with ESMTPSA id p62sm7994891pfb.93.2020.05.18.00.41.44
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 18 May 2020 00:41:44 -0700 (PDT)
+Date:   Mon, 18 May 2020 13:11:42 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Serge Semin <Sergey.Semin@baikalelectronics.ru>
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Serge Semin <fancer.lancer@gmail.com>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Paul Burton <paulburton@kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>, linux-mips@vger.kernel.org,
+        devicetree@vger.kernel.org, stable@vger.kernel.org,
+        Frederic Weisbecker <frederic@kernel.org>,
+        Ingo Molnar <mingo@kernel.org>, Yue Hu <huyue2@yulong.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 20/20] cpufreq: Return zero on success in boost sw
+ setting
+Message-ID: <20200518074142.c6kbofpdlxro2pjz@vireshk-i7>
+References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
+ <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+ <20200506174238.15385-21-Sergey.Semin@baikalelectronics.ru>
+ <c5109483-4c14-1a0c-efa9-51edf01c12de@intel.com>
+ <20200516125203.et5gkv6ullkerjyd@mobilestation>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.102.37]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200516125203.et5gkv6ullkerjyd@mobilestation>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-'freq_qos_update_request()' called by 'cpufreq_boost_set_sw()' reutrns 1
-when the effective constraint value of frequency QoS has changed. It's
-not an error code. So handle the return value 1 of '.set_boost()' in
-'cpufreq_boost_trigger_state()' properly.
+On 16-05-20, 15:52, Serge Semin wrote:
+> On Fri, May 15, 2020 at 05:58:47PM +0200, Rafael J. Wysocki wrote:
+> > > @@ -2554,7 +2554,7 @@ static int cpufreq_boost_set_sw(int state)
+> > >   			break;
+> > >   	}
+> > > -	return ret;
+> > > +	return ret < 0 ? ret : 0;
+> > >   }
+> > >   int cpufreq_boost_trigger_state(int state)
+> > 
+> > IMO it is better to update the caller of this function to handle the
+> > positive value possibly returned by it correctly.
+> 
+> Could you elaborate why? Viresh seems to be ok with this solution.
 
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
----
- drivers/cpufreq/cpufreq.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+And it is absolutely fine for Rafael to not agree with it :)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4adac3a..bb6746e 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2540,7 +2540,10 @@ int cpufreq_boost_trigger_state(int state)
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
- 	ret = cpufreq_driver->set_boost(state);
--	if (ret) {
-+	if (ret == 1) {
-+		pr_debug("The effective constraint value of frequency QoS has changed.\n");
-+		return 0;
-+	} else if (ret) {
- 		write_lock_irqsave(&cpufreq_driver_lock, flags);
- 		cpufreq_driver->boost_enabled = !state;
- 		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> As I see it the caller doesn't expect the positive value returned by the
+> original freq_qos_update_request(). It just doesn't need to know whether the
+> effective policy has been updated or not, it only needs to make sure the
+> operations has been successful. Moreover the positive value is related only
+> to the !last! active policy, which doesn't give the caller a full picture
+> of the policy change anyway. So taking all of these into account I'd leave the
+> fix as is.
+
+Rafael: This function is called via a function pointer, which can call
+this or a platform dependent routine (like in acpi-cpufreq.c), and it
+would be reasonable IMO for the return of that callback to only look
+for 0 or negative values, as is generally done in the kernel. And so
+this solution looked okay to me as the positive return is coming from
+the implementation detail here.
+
 -- 
-1.7.12.4
-
+viresh
