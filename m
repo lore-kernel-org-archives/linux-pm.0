@@ -2,28 +2,29 @@ Return-Path: <SRS0=BqmF=7A=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A9FBC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 61685C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D97A22070A
-	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E7BE2070A
+	for <linux-pm@archiver.kernel.org>; Mon, 18 May 2020 07:16:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726828AbgERHQq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 18 May 2020 03:16:46 -0400
-Received: from szxga05-in.huawei.com ([45.249.212.191]:4810 "EHLO huawei.com"
+        id S1726953AbgERHQs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 18 May 2020 03:16:48 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:4809 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726729AbgERHQq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 18 May 2020 03:16:46 -0400
+        id S1726800AbgERHQr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 18 May 2020 03:16:47 -0400
 Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id DF2C3410768E010C9926;
+        by Forcepoint Email with ESMTP id E4EDE43FD8761C7DB1C1;
         Mon, 18 May 2020 15:16:43 +0800 (CST)
 Received: from linux-ibm.site (10.175.102.37) by
  DGGEMS413-HUB.china.huawei.com (10.3.19.213) with Microsoft SMTP Server id
- 14.3.487.0; Mon, 18 May 2020 15:16:33 +0800
+ 14.3.487.0; Mon, 18 May 2020 15:16:35 +0800
 From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
 To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>
@@ -31,10 +32,12 @@ CC:     <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
         <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
         <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <wangxiongfeng2@huawei.com>
-Subject: [RFC PATCH v2 0/3] add SW BOOST support for CPPC
-Date:   Mon, 18 May 2020 15:10:05 +0800
-Message-ID: <1589785808-12138-1-git-send-email-wangxiongfeng2@huawei.com>
+Subject: [RFC PATCH v2 2/3] cpufreq: export 'cpufreq_policy_list' and make macro 'for_each_*_policy' public
+Date:   Mon, 18 May 2020 15:10:07 +0800
+Message-ID: <1589785808-12138-3-git-send-email-wangxiongfeng2@huawei.com>
 X-Mailer: git-send-email 1.7.12.4
+In-Reply-To: <1589785808-12138-1-git-send-email-wangxiongfeng2@huawei.com>
+References: <1589785808-12138-1-git-send-email-wangxiongfeng2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.175.102.37]
@@ -44,37 +47,67 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ACPI spec 6.2 section 8.4.7.1 provide the following two CPC registers.
+Export variable 'cpufreq_policy_list' and make macro 'for_each_*_policy"
+public. This is preparation for adding SW BOOST support for CPPC.
 
-"Highest performance is the absolute maximum performance an individual
-processor may reach, assuming ideal conditions. This performance level
-may not be sustainable for long durations, and may only be achievable if
-other platform components are in a specific state; for example, it may
-require other processors be in an idle state.
+Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+---
+ drivers/cpufreq/cpufreq.c | 16 ++--------------
+ include/linux/cpufreq.h   | 14 ++++++++++++++
+ 2 files changed, 16 insertions(+), 14 deletions(-)
 
-Nominal Performance is the maximum sustained performance level of the
-processor, assuming ideal operating conditions. In absence of an
-external constraint (power, thermal, etc.) this is the performance level
-the platform is expected to be able to maintain continuously. All
-processors are expected to be able to sustain their nominal performance
-state simultaneously."
-
-We can use Highest Performance as the max performance in boost mode and
-Nomial Performance as the max performance in non-boost mode. If the
-Highest Performance is greater than the Nominal Performance, we assume
-SW BOOST is supported.
-
-Xiongfeng Wang (3):
-  cpufreq: handle the return value of '.set_boost()' properly
-  cpufreq: export 'cpufreq_policy_list' and make macro
-    'for_each_*_policy' public
-  CPPC: add support for SW BOOST
-
- drivers/cpufreq/cppc_cpufreq.c | 42 ++++++++++++++++++++++++++++++++++++++++--
- drivers/cpufreq/cpufreq.c      | 21 ++++++---------------
- include/linux/cpufreq.h        | 14 ++++++++++++++
- 3 files changed, 60 insertions(+), 17 deletions(-)
-
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index bb6746e..953e163 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -30,20 +30,8 @@
+ #include <linux/tick.h>
+ #include <trace/events/power.h>
+ 
+-static LIST_HEAD(cpufreq_policy_list);
+-
+-/* Macros to iterate over CPU policies */
+-#define for_each_suitable_policy(__policy, __active)			 \
+-	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
+-		if ((__active) == !policy_is_inactive(__policy))
+-
+-#define for_each_active_policy(__policy)		\
+-	for_each_suitable_policy(__policy, true)
+-#define for_each_inactive_policy(__policy)		\
+-	for_each_suitable_policy(__policy, false)
+-
+-#define for_each_policy(__policy)			\
+-	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
++LIST_HEAD(cpufreq_policy_list);
++EXPORT_SYMBOL_GPL(cpufreq_policy_list);
+ 
+ /* Iterate over governors */
+ static LIST_HEAD(cpufreq_governor_list);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index 018dce8..27a2a7f 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -222,6 +222,20 @@ static inline bool policy_is_shared(struct cpufreq_policy *policy)
+ struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
+ void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
+ void cpufreq_disable_fast_switch(struct cpufreq_policy *policy);
++
++extern struct list_head cpufreq_policy_list;
++
++/* Macros to iterate over CPU policies */
++#define for_each_suitable_policy(__policy, __active)			 \
++	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list) \
++		if ((__active) == !policy_is_inactive(__policy))
++#define for_each_active_policy(__policy)		\
++	for_each_suitable_policy(__policy, true)
++#define for_each_inactive_policy(__policy)		\
++	for_each_suitable_policy(__policy, false)
++#define for_each_policy(__policy)			\
++	list_for_each_entry(__policy, &cpufreq_policy_list, policy_list)
++
+ #else
+ static inline unsigned int cpufreq_get(unsigned int cpu)
+ {
 -- 
 1.7.12.4
 
