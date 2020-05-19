@@ -2,124 +2,116 @@ Return-Path: <SRS0=iBKh=7B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 16AFFC433E4
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 14:19:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFD19C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 14:42:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E032F2083E
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 14:19:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BD7902072C
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 14:42:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="yCGIcCef"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="yGop49S2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729314AbgESOTb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 10:19:31 -0400
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:52948 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729134AbgESOTZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 10:19:25 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04JEJLsc121159;
-        Tue, 19 May 2020 09:19:21 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1589897961;
-        bh=hvXKcUkV7XpnUy1BQBCRXKA20QIPtE7iW2gyUhNIc9Y=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=yCGIcCefiD5LydgmsakP/1HaxE1bJnvrusW3FF5KRaQfa6nN25OZJzE5mLgOGfj2X
-         NQ9X0HrEmdfingv/QwM39axogXWcCgL8CSv4usBKAzIEj06LN07NcIBSSK0B24OTP2
-         7K0yl6av1JY2v0Px9QyFGpR23h90KJ7+PWHFXKjI=
-Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04JEJKgr035947
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 19 May 2020 09:19:21 -0500
-Received: from DLEE108.ent.ti.com (157.170.170.38) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 19
- May 2020 09:19:20 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Tue, 19 May 2020 09:19:20 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04JEJJrH060525;
-        Tue, 19 May 2020 09:19:20 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>
-CC:     <sspatil@android.com>, <linux-pm@vger.kernel.org>,
-        <robh@kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, Dan Murphy <dmurphy@ti.com>,
-        Guru Das Srinagesh <gurus@codeaurora.org>
-Subject: [PATCH v7 1/3] power_supply: Add additional health properties to the header
-Date:   Tue, 19 May 2020 09:19:14 -0500
-Message-ID: <20200519141916.28282-2-dmurphy@ti.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200519141916.28282-1-dmurphy@ti.com>
-References: <20200519141916.28282-1-dmurphy@ti.com>
+        id S1728725AbgESOmZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 10:42:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58698 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726504AbgESOmX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 10:42:23 -0400
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE628C08C5C0
+        for <linux-pm@vger.kernel.org>; Tue, 19 May 2020 07:42:21 -0700 (PDT)
+Received: by mail-pj1-x1042.google.com with SMTP id z15so1281336pjb.0
+        for <linux-pm@vger.kernel.org>; Tue, 19 May 2020 07:42:21 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=1YPND3Jc9Njwr0x15O/YhVqSycIa2wq3TrSHXv1Lu2Q=;
+        b=yGop49S27X8a5xkkcdv/+OFTXD0EhttyBFdn3NfqrxEvOOydnnPZWDqufjTAZkNS92
+         SDGrq3hzybn3Wn9z/KdjDIPD5CfOmIBKENgUp1frm2mt8CYgGfj4AdN841qVe+AGjidX
+         Jcbe/baN9Pkx9q/ZexOtCY0EMMveGkHXY9toCJYa3TMS7WZTWFpDlUEPkfoLjUdiQSDs
+         0ZVBrQzLi517ajcr7l+q6FtbU+HRlzjUlZgMmCg25HFFS0jHIeit4+ssfgOj8v9XedKF
+         FQIqb6+fo1pVD1BeshSWyLUDq836YWHbHDPUxh/MwQymkXoStMYKEjo8+F+pdzl4/vRJ
+         5kyQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=1YPND3Jc9Njwr0x15O/YhVqSycIa2wq3TrSHXv1Lu2Q=;
+        b=ePLG97HnXeT6Qu35LOC+7IvK8QPNqejq+JmFEdi2GG3U0l9o65L2V1R1B667luNxsn
+         CqyadmWANPj9yg27Q/jbj7hnJFqd36iIIisELAEfMnlzl8XM/5TSPLLlL6Qf35wqfwwY
+         ap2JuibiJFBOUR2LWqXTJNISTs6pGPqRZgoehff4aTuUxto1bIcUAqFlJa42EmUfHFk2
+         mKsh2zklDAYYcBTY7d03k8dAcWDz2HZEEvLdMu/c04HlJNKE7I6IREGGQ9JCXtxL0kvI
+         m/9WQAIZOxnpOut68M20lwFE4SryqdhLinK2Yr9ZKkhY4YAQNwgG+6mp4z6cO3AwjbE2
+         ZEww==
+X-Gm-Message-State: AOAM53396nQ8ZDLqU78qQCMZt1Z9t5pXun8S+CjUO+sy/0zY8NtT83yB
+        wCVI0iCB5fpaEKqG3S8NAuo3JA==
+X-Google-Smtp-Source: ABdhPJzvxUGTtub1lKMzDo0tjmylgazy/XPihFJ4KSE0TVpsrnSo1nrZa5Q+4K8NYfpg0zPdgZfrzA==
+X-Received: by 2002:a17:90a:3563:: with SMTP id q90mr2028458pjb.0.1589899341202;
+        Tue, 19 May 2020 07:42:21 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id t20sm11241961pfe.24.2020.05.19.07.42.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 19 May 2020 07:42:20 -0700 (PDT)
+Message-ID: <5ec3f04c.1c69fb81.89096.3b6a@mx.google.com>
+Date:   Tue, 19 May 2020 07:42:20 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.7-rc6-64-gbb7ba30bf960
+X-Kernelci-Report-Type: boot
+X-Kernelci-Branch: testing
+Subject: pm/testing boot: 1 boot: 0 failed,
+ 1 passed (v5.7-rc6-64-gbb7ba30bf960)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add HEALTH_WARM, HEALTH_COOL and HEALTH_HOT to the health enum.
+******************************************
+* WARNING: Boot tests are now deprecated *
+******************************************
 
-HEALTH_WARM, HEALTH_COOL, and HEALTH_HOT properties are taken from the JEITA spec.
+As kernelci.org is expanding its functional testing capabilities, the conce=
+pt
+of boot testing is now deprecated.  Boot results are scheduled to be droppe=
+d on
+*5th June 2020*.  The full schedule for boot tests deprecation is available=
+ on
+this GitHub issue: https://github.com/kernelci/kernelci-backend/issues/238
 
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
+The new equivalent is the *baseline* test suite which also runs sanity chec=
+ks
+using dmesg and bootrr: https://github.com/kernelci/bootrr
 
-Tested-by: Guru Das Srinagesh <gurus@codeaurora.org>
+See the *baseline results for this kernel revision* on this page:
+https://kernelci.org/test/job/pm/branch/testing/kernel/v5.7-rc6-64-gbb7ba30=
+bf960/plan/baseline/
+
+---------------------------------------------------------------------------=
+----
+
+pm/testing boot: 1 boot: 0 failed, 1 passed (v5.7-rc6-64-gbb7ba30bf960)
+
+Full Boot Summary: https://kernelci.org/boot/all/job/pm/branch/testing/kern=
+el/v5.7-rc6-64-gbb7ba30bf960/
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+7-rc6-64-gbb7ba30bf960/
+
+Tree: pm
+Branch: testing
+Git Describe: v5.7-rc6-64-gbb7ba30bf960
+Git Commit: bb7ba30bf96014ae2ff2284d0b6ca70068b706f0
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Tested: 1 unique board, 1 SoC family, 1 build out of 6
+
 ---
- Documentation/ABI/testing/sysfs-class-power | 2 +-
- drivers/power/supply/power_supply_sysfs.c   | 2 +-
- include/linux/power_supply.h                | 3 +++
- 3 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index bf3b48f022dc..9f3fd01a9373 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -190,7 +190,7 @@ Description:
- 		Valid values: "Unknown", "Good", "Overheat", "Dead",
- 			      "Over voltage", "Unspecified failure", "Cold",
- 			      "Watchdog timer expire", "Safety timer expire",
--			      "Over current"
-+			      "Over current", "Warm", "Cool", "Hot"
- 
- What:		/sys/class/power_supply/<supply_name>/precharge_current
- Date:		June 2017
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index f37ad4eae60b..d0d549611794 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -61,7 +61,7 @@ static const char * const power_supply_charge_type_text[] = {
- static const char * const power_supply_health_text[] = {
- 	"Unknown", "Good", "Overheat", "Dead", "Over voltage",
- 	"Unspecified failure", "Cold", "Watchdog timer expire",
--	"Safety timer expire", "Over current"
-+	"Safety timer expire", "Over current", "Warm", "Cool", "Hot"
- };
- 
- static const char * const power_supply_technology_text[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index dcd5a71e6c67..8670e90c1d51 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -61,6 +61,9 @@ enum {
- 	POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_OVERCURRENT,
-+	POWER_SUPPLY_HEALTH_WARM,
-+	POWER_SUPPLY_HEALTH_COOL,
-+	POWER_SUPPLY_HEALTH_HOT,
- };
- 
- enum {
--- 
-2.26.2
-
+For more info write to <info@kernelci.org>
