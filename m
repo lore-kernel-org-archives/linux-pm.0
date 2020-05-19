@@ -2,183 +2,190 @@ Return-Path: <SRS0=iBKh=7B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 17787C433E2
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 11:48:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11CD9C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 11:57:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF261207E8
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 11:48:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ECF952072C
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 11:57:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728705AbgESLsE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 07:48:04 -0400
-Received: from szxga04-in.huawei.com ([45.249.212.190]:4868 "EHLO huawei.com"
+        id S1728286AbgESL52 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 07:57:28 -0400
+Received: from szxga05-in.huawei.com ([45.249.212.191]:4815 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728730AbgESLr5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 May 2020 07:47:57 -0400
-Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id BDB311AD85804D11C374;
-        Tue, 19 May 2020 19:47:54 +0800 (CST)
-Received: from linux-ibm.site (10.175.102.37) by
- DGGEMS401-HUB.china.huawei.com (10.3.19.201) with Microsoft SMTP Server id
- 14.3.487.0; Tue, 19 May 2020 19:47:46 +0800
-From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
+        id S1726949AbgESL52 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 May 2020 07:57:28 -0400
+Received: from DGGEMS412-HUB.china.huawei.com (unknown [172.30.72.59])
+        by Forcepoint Email with ESMTP id B53B34391CBB79186702;
+        Tue, 19 May 2020 19:57:25 +0800 (CST)
+Received: from [127.0.0.1] (10.166.215.101) by DGGEMS412-HUB.china.huawei.com
+ (10.3.19.212) with Microsoft SMTP Server id 14.3.487.0; Tue, 19 May 2020
+ 19:57:17 +0800
+Subject: Re: [RFC PATCH v3 1/2] cpufreq: change '.set_boost' to act on only
+ one policy
 To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
         <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>
 CC:     <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
         <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <wangxiongfeng2@huawei.com>
-Subject: [RFC PATCH v3 1/2] cpufreq: change '.set_boost' to act on only one policy
-Date:   Tue, 19 May 2020 19:41:28 +0800
-Message-ID: <1589888489-13828-2-git-send-email-wangxiongfeng2@huawei.com>
-X-Mailer: git-send-email 1.7.12.4
-In-Reply-To: <1589888489-13828-1-git-send-email-wangxiongfeng2@huawei.com>
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
 References: <1589888489-13828-1-git-send-email-wangxiongfeng2@huawei.com>
+ <1589888489-13828-2-git-send-email-wangxiongfeng2@huawei.com>
+From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
+Message-ID: <060a79bb-00d0-982a-4e4b-1cf4511ccce2@huawei.com>
+Date:   Tue, 19 May 2020 19:57:16 +0800
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.4.1
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.102.37]
+In-Reply-To: <1589888489-13828-2-git-send-email-wangxiongfeng2@huawei.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.166.215.101]
 X-CFilter-Loop: Reflected
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Macro 'for_each_active_policy()' is defined internally. To avoid some
-cpufreq driver needing this macro to iterate over all the policies in
-'.set_boost' callback, we redefine '.set_boost' to act on only one
-policy and pass the policy as an argument.
-'cpufreq_boost_trigger_state()' iterate over all the policies to set
-boost for the system. This is preparation for adding SW BOOST support
-for CPPC.
 
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
----
- drivers/cpufreq/acpi-cpufreq.c |  4 ++--
- drivers/cpufreq/cpufreq.c      | 53 +++++++++++++++++++++---------------------
- include/linux/cpufreq.h        |  2 +-
- 3 files changed, 30 insertions(+), 29 deletions(-)
 
-diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index 289e8ce..b0a9eb5 100644
+On 2020/5/19 19:41, Xiongfeng Wang wrote:
+> Macro 'for_each_active_policy()' is defined internally. To avoid some
+> cpufreq driver needing this macro to iterate over all the policies in
+> '.set_boost' callback, we redefine '.set_boost' to act on only one
+> policy and pass the policy as an argument.
+> 'cpufreq_boost_trigger_state()' iterate over all the policies to set
+> boost for the system. This is preparation for adding SW BOOST support
+> for CPPC.
+> 
+> Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
+> ---
+>  drivers/cpufreq/acpi-cpufreq.c |  4 ++--
+>  drivers/cpufreq/cpufreq.c      | 53 +++++++++++++++++++++---------------------
+>  include/linux/cpufreq.h        |  2 +-
+>  3 files changed, 30 insertions(+), 29 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> index 289e8ce..b0a9eb5 100644
+> --- a/drivers/cpufreq/acpi-cpufreq.c
+> +++ b/drivers/cpufreq/acpi-cpufreq.c
+> @@ -126,7 +126,7 @@ static void boost_set_msr_each(void *p_en)
+>  	boost_set_msr(enable);
+>  }
+>  
+> -static int set_boost(int val)
+> +static int set_boost(struct cpufreq_policy *policy, int val)
+>  {
+>  	get_online_cpus();
+>  	on_each_cpu(boost_set_msr_each, (void *)(long)val, 1);
+> @@ -162,7 +162,7 @@ static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
+>  	if (ret || val > 1)
+>  		return -EINVAL;
+>  
+> -	set_boost(val);
+> +	set_boost(policy, val);
+>  
+>  	return count;
+>  }
+
+My original thought is as below. Since '/sys/devices/system/cpu/cpufreq/boost'
+can be used to set boost for the system. The file 'cpb' below each policy can be
+used to set boost for the policy. But this will change the existing logic.
+
 --- a/drivers/cpufreq/acpi-cpufreq.c
 +++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -126,7 +126,7 @@ static void boost_set_msr_each(void *p_en)
- 	boost_set_msr(enable);
+@@ -126,12 +126,14 @@ static void boost_set_msr_each(void *p_en)
+        boost_set_msr(enable);
  }
- 
+
 -static int set_boost(int val)
 +static int set_boost(struct cpufreq_policy *policy, int val)
  {
- 	get_online_cpus();
- 	on_each_cpu(boost_set_msr_each, (void *)(long)val, 1);
-@@ -162,7 +162,7 @@ static ssize_t store_cpb(struct cpufreq_policy *policy, const char *buf,
- 	if (ret || val > 1)
- 		return -EINVAL;
- 
--	set_boost(val);
-+	set_boost(policy, val);
- 
- 	return count;
+        get_online_cpus();
+-   on_each_cpu(boost_set_msr_each, (void *)(long)val, 1);
++ on_each_cpu_mask(policy->cpus, boost_set_msr_each,
++                  (void *)(long)val, 1);
+        put_online_cpus();
+-   pr_debug("Core Boosting %sabled.\n", val ? "en" : "dis");
++ pr_debug("CPU %*pbl: Core Boosting %sabled.\n",
++          cpumask_pr_args(policy->cpus), val ? "en" : "dis");
+
+        return 0;
  }
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index d03f250..d0d86b1 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2532,34 +2532,29 @@ void cpufreq_update_limits(unsigned int cpu)
- /*********************************************************************
-  *               BOOST						     *
-  *********************************************************************/
--static int cpufreq_boost_set_sw(int state)
-+static int cpufreq_boost_set_sw(struct cpufreq_policy *policy, int state)
- {
--	struct cpufreq_policy *policy;
--
--	for_each_active_policy(policy) {
--		int ret;
--
--		if (!policy->freq_table)
--			return -ENXIO;
-+	int ret;
- 
--		ret = cpufreq_frequency_table_cpuinfo(policy,
--						      policy->freq_table);
--		if (ret) {
--			pr_err("%s: Policy frequency update failed\n",
--			       __func__);
--			return ret;
--		}
-+	if (!policy->freq_table)
-+		return -ENXIO;
- 
--		ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--		if (ret < 0)
--			return ret;
-+	ret = cpufreq_frequency_table_cpuinfo(policy, policy->freq_table);
-+	if (ret) {
-+		pr_err("%s: Policy frequency update failed\n", __func__);
-+		return ret;
- 	}
- 
-+	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-+	if (ret < 0)
-+		return ret;
-+
- 	return 0;
+@@ -162,7 +164,7 @@ static ssize_t store_cpb(struct cpufreq_policy *policy,
+const char *buf,
+        if (ret || val > 1)
+                return -EINVAL;
+
+-   set_boost(val);
++ set_boost(policy, val);
+
+        return count;
  }
- 
- int cpufreq_boost_trigger_state(int state)
- {
-+	struct cpufreq_policy *policy;
- 	unsigned long flags;
- 	int ret = 0;
- 
-@@ -2570,16 +2565,22 @@ int cpufreq_boost_trigger_state(int state)
- 	cpufreq_driver->boost_enabled = state;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
--	ret = cpufreq_driver->set_boost(state);
--	if (ret) {
--		write_lock_irqsave(&cpufreq_driver_lock, flags);
--		cpufreq_driver->boost_enabled = !state;
--		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
--
--		pr_err("%s: Cannot %s BOOST\n",
--		       __func__, state ? "enable" : "disable");
-+	for_each_active_policy(policy) {
-+		ret = cpufreq_driver->set_boost(policy, state);
-+		if (ret)
-+			goto err_reset_state;
- 	}
- 
-+	return 0;
-+
-+err_reset_state:
-+	write_lock_irqsave(&cpufreq_driver_lock, flags);
-+	cpufreq_driver->boost_enabled = !state;
-+	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+
-+	pr_err("%s: Cannot %s BOOST\n",
-+	       __func__, state ? "enable" : "disable");
-+
- 	return ret;
- }
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 67d5950..3494f67 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -367,7 +367,7 @@ struct cpufreq_driver {
- 
- 	/* platform specific boost support code */
- 	bool		boost_enabled;
--	int		(*set_boost)(int state);
-+	int		(*set_boost)(struct cpufreq_policy *policy, int state);
- };
- 
- /* flags */
--- 
-1.7.12.4
+
+> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+> index d03f250..d0d86b1 100644
+> --- a/drivers/cpufreq/cpufreq.c
+> +++ b/drivers/cpufreq/cpufreq.c
+>
+>  int cpufreq_boost_trigger_state(int state)
+>  {
+> +	struct cpufreq_policy *policy;
+>  	unsigned long flags;
+>  	int ret = 0;
+>  
+> @@ -2570,16 +2565,22 @@ int cpufreq_boost_trigger_state(int state)
+>  	cpufreq_driver->boost_enabled = state;
+>  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+>  
+> -	ret = cpufreq_driver->set_boost(state);
+> -	if (ret) {
+> -		write_lock_irqsave(&cpufreq_driver_lock, flags);
+> -		cpufreq_driver->boost_enabled = !state;
+> -		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> -
+> -		pr_err("%s: Cannot %s BOOST\n",
+> -		       __func__, state ? "enable" : "disable");
+> +	for_each_active_policy(policy) {
+> +		ret = cpufreq_driver->set_boost(policy, state);
+> +		if (ret)
+> +			goto err_reset_state;
+>  	}
+>  
+> +	return 0;
+> +
+> +err_reset_state:
+> +	write_lock_irqsave(&cpufreq_driver_lock, flags);
+> +	cpufreq_driver->boost_enabled = !state;
+> +	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
+> +
+> +	pr_err("%s: Cannot %s BOOST\n",
+> +	       __func__, state ? "enable" : "disable");
+> +
+>  	return ret;
+>  }
+
+Is it better to set 'boost_enabled' after set boost successfully rather than
+setting it in the begining and resetting it if setting boost failed.
+
+Thanks,
+Xiongfeng
+
+>  
+> diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+> index 67d5950..3494f67 100644
+> --- a/include/linux/cpufreq.h
+> +++ b/include/linux/cpufreq.h
+> @@ -367,7 +367,7 @@ struct cpufreq_driver {
+>  
+>  	/* platform specific boost support code */
+>  	bool		boost_enabled;
+> -	int		(*set_boost)(int state);
+> +	int		(*set_boost)(struct cpufreq_policy *policy, int state);
+>  };
+>  
+>  /* flags */
+> 
 
