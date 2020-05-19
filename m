@@ -6,33 +6,33 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 836C6C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 06:32:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3FBCDC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 06:32:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62AD02070A
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 06:32:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D206207D8
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 06:32:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727041AbgESGca (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 02:32:30 -0400
-Received: from szxga06-in.huawei.com ([45.249.212.32]:53280 "EHLO huawei.com"
+        id S1727074AbgESGcd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 02:32:33 -0400
+Received: from szxga06-in.huawei.com ([45.249.212.32]:53296 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726943AbgESGc3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 19 May 2020 02:32:29 -0400
+        id S1726859AbgESGcd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 May 2020 02:32:33 -0400
 Received: from DGGEMS401-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id BF5E9405DB6136DE7835;
+        by Forcepoint Email with ESMTP id C405C9B8A8B51C3C864B;
         Tue, 19 May 2020 14:32:23 +0800 (CST)
 Received: from linux-ibm.site (10.175.102.37) by
  DGGEMS401-HUB.china.huawei.com (10.3.19.201) with Microsoft SMTP Server id
- 14.3.487.0; Tue, 19 May 2020 14:32:16 +0800
+ 14.3.487.0; Tue, 19 May 2020 14:32:17 +0800
 From:   Hanjun Guo <guohanjun@huawei.com>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Doug Smythies <dsmythies@telus.net>
 CC:     <linux-pm@vger.kernel.org>, Jonathan Corbet <corbet@lwn.net>,
         Hanjun Guo <guohanjun@huawei.com>
-Subject: [PATCH 2/6] cpuidle: sysfs: Accept governor name with 15 characters
-Date:   Tue, 19 May 2020 14:25:21 +0800
-Message-ID: <1589869525-29893-3-git-send-email-guohanjun@huawei.com>
+Subject: [PATCH 4/6] cpuidle: sysfs: Remove sysfs_switch and switch attributes
+Date:   Tue, 19 May 2020 14:25:23 +0800
+Message-ID: <1589869525-29893-5-git-send-email-guohanjun@huawei.com>
 X-Mailer: git-send-email 1.7.12.4
 In-Reply-To: <1589869525-29893-1-git-send-email-guohanjun@huawei.com>
 References: <1589869525-29893-1-git-send-email-guohanjun@huawei.com>
@@ -45,66 +45,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-CPUIDLE_NAME_LEN is 16, so it's possible to accept governor name
-with 15 characters, but now store_current_governor() rejects
-governor name with 15 characters as it returns -EINVAL if count
-equals CPUIDLE_NAME_LEN.
-
-Refactor the code to accept such case and simplify the code.
+Since the cpuidle governor can be switched via sysfs in default,
+remove sysfs_switch and cpuidle_switch_attrs.
 
 Signed-off-by: Hanjun Guo <guohanjun@huawei.com>
 Reviewed-by: Doug Smythies <dsmythies@telus.net>
 Tested-by: Doug Smythies <dsmythies@telus.net>
+Acked-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/cpuidle/sysfs.c | 23 +++++++----------------
- 1 file changed, 7 insertions(+), 16 deletions(-)
+ drivers/cpuidle/sysfs.c | 22 ++--------------------
+ 1 file changed, 2 insertions(+), 20 deletions(-)
 
 diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index 477b05a..a57ad10 100644
+index b51c470d..14c0eb5 100644
 --- a/drivers/cpuidle/sysfs.c
 +++ b/drivers/cpuidle/sysfs.c
-@@ -85,34 +85,25 @@ static ssize_t store_current_governor(struct device *dev,
- 				      struct device_attribute *attr,
- 				      const char *buf, size_t count)
+@@ -18,14 +18,6 @@
+ 
+ #include "cpuidle.h"
+ 
+-static unsigned int sysfs_switch;
+-static int __init cpuidle_sysfs_setup(char *unused)
+-{
+-	sysfs_switch = 1;
+-	return 1;
+-}
+-__setup("cpuidle_sysfs_switch", cpuidle_sysfs_setup);
+-
+ static ssize_t show_available_governors(struct device *dev,
+ 					struct device_attribute *attr,
+ 					char *buf)
+@@ -112,7 +104,7 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+ 				   store_current_governor);
+ static DEVICE_ATTR(current_governor_ro, 0444, show_current_governor, NULL);
+ 
+-static struct attribute *cpuidle_default_attrs[] = {
++static struct attribute *cpuidle_attrs[] = {
+ 	&dev_attr_available_governors.attr,
+ 	&dev_attr_current_driver.attr,
+ 	&dev_attr_current_governor.attr,
+@@ -120,15 +112,8 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+ 	NULL
+ };
+ 
+-static struct attribute *cpuidle_switch_attrs[] = {
+-	&dev_attr_available_governors.attr,
+-	&dev_attr_current_driver.attr,
+-	&dev_attr_current_governor.attr,
+-	NULL
+-};
+-
+ static struct attribute_group cpuidle_attr_group = {
+-	.attrs = cpuidle_default_attrs,
++	.attrs = cpuidle_attrs,
+ 	.name = "cpuidle",
+ };
+ 
+@@ -138,9 +123,6 @@ static DEVICE_ATTR(current_governor, 0644, show_current_governor,
+  */
+ int cpuidle_add_interface(struct device *dev)
  {
--	char gov_name[CPUIDLE_NAME_LEN];
--	int ret = -EINVAL;
--	size_t len = count;
-+	char gov_name[CPUIDLE_NAME_LEN + 1];
-+	int ret;
- 	struct cpuidle_governor *gov;
- 
--	if (!len || len >= sizeof(gov_name))
-+	ret = sscanf(buf, "%" __stringify(CPUIDLE_NAME_LEN) "s", gov_name);
-+	if (ret != 1)
- 		return -EINVAL;
- 
--	memcpy(gov_name, buf, len);
--	gov_name[len] = '\0';
--	if (gov_name[len - 1] == '\n')
--		gov_name[--len] = '\0';
+-	if (sysfs_switch)
+-		cpuidle_attr_group.attrs = cpuidle_switch_attrs;
 -
- 	mutex_lock(&cpuidle_lock);
--
-+	ret = -EINVAL;
- 	list_for_each_entry(gov, &cpuidle_governors, governor_list) {
--		if (strlen(gov->name) == len && !strcmp(gov->name, gov_name)) {
-+		if (!strncmp(gov->name, gov_name, CPUIDLE_NAME_LEN)) {
- 			ret = cpuidle_switch_governor(gov);
- 			break;
- 		}
- 	}
--
- 	mutex_unlock(&cpuidle_lock);
- 
--	if (ret)
--		return ret;
--	else
--		return count;
-+	return ret ? ret : count;
+ 	return sysfs_create_group(&dev->kobj, &cpuidle_attr_group);
  }
  
- static DEVICE_ATTR(current_driver, 0444, show_current_driver, NULL);
 -- 
 1.7.12.4
 
