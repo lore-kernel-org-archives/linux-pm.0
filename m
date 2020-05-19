@@ -2,78 +2,96 @@ Return-Path: <SRS0=iBKh=7B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14EABC433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 15:59:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CFBAC433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 16:00:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E016520823
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 15:59:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1589903970;
-	bh=EChIuRDHBE2fP/nhZePuBoCI4yW9gOzMTOOZxaha+Mc=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=MOPm9aSE6zu6IdFOwUalflZNxAxyOj0EJKQ0FB82GdSoal74GKvYJ4korjQ0gKYUp
-	 aqjPVkINqIOfeUyVItC0tvWUjvT+9GWyhqJZwUl7jBI8OmwXylp7IzP+I7qsjfWJuG
-	 CM7kZ8ZtLQ8Gkte5eXYbu0FXFxcdlNnmK6xMlftU=
+	by mail.kernel.org (Postfix) with ESMTP id E20DA207D8
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 16:00:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729210AbgESP71 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 11:59:27 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:38560 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729089AbgESP70 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 11:59:26 -0400
-Received: by mail-ot1-f68.google.com with SMTP id o13so261770otl.5;
-        Tue, 19 May 2020 08:59:26 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=EChIuRDHBE2fP/nhZePuBoCI4yW9gOzMTOOZxaha+Mc=;
-        b=SwM+hS/x8u0hUuAlW6DcoLHI26AvrHXuvEh7EVnW4gmL0AMVtcizK/+LgItB78y+a/
-         gu9DWmhRYqWzA5YxdJgHW6hQo2fakviDxtwIDtteA62Z5kA2mOMnv+zlCCC+TPoZbqRE
-         Up2WjD3VCW4Fxq/vFUwZmkCJMF+nAHWqD/XI0w8r4AJeU9fEXZJVwbT2uCGyWGqyZAEI
-         RgMhN/MXUZseduToSS0dWXqMmKiCS4GCBbfxMiE3/sHzAHL0cIIyV8DXrCMjU2WNOpS9
-         twTgNOi6TjbRDytnheagoM83+o/25RzkoJH7o27I+THwkOK2SNhbnJUU+swCQ/PN5tlj
-         9YiQ==
-X-Gm-Message-State: AOAM532s8yaqL1WBligdJe2nUn1Q/5MPGp3h6Xq3aX6/7zU0gOVaC/Fk
-        Th67XLf8tpjlqHieruTrwjE3J4ZT+N2Uv11qI2U=
-X-Google-Smtp-Source: ABdhPJwAtkbCgsui0+h1xBcvCEqFP0J6q3SWQt/hKKidr/kXNdClt4Q1ZYDyL2hyzmh5V8EvoEwCGPA6GQfLuvx6Sr0=
-X-Received: by 2002:a05:6830:10ce:: with SMTP id z14mr15933980oto.118.1589903966068;
- Tue, 19 May 2020 08:59:26 -0700 (PDT)
+        id S1729297AbgESQAL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 12:00:11 -0400
+Received: from elvis.franken.de ([193.175.24.41]:59275 "EHLO elvis.franken.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729211AbgESQAK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 19 May 2020 12:00:10 -0400
+Received: from uucp (helo=alpha)
+        by elvis.franken.de with local-bsmtp (Exim 3.36 #1)
+        id 1jb4ew-0001Fc-00; Tue, 19 May 2020 18:00:02 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+        id 0EC79C012F; Tue, 19 May 2020 17:42:13 +0200 (CEST)
+Date:   Tue, 19 May 2020 17:42:13 +0200
+From:   Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To:     Sergey.Semin@baikalelectronics.ru
+Cc:     Serge Semin <fancer.lancer@gmail.com>,
+        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
+        Paul Burton <paulburton@kernel.org>,
+        Ralf Baechle <ralf@linux-mips.org>,
+        Arnd Bergmann <arnd@arndb.de>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Allison Randal <allison@lohutok.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Zhou Yanjie <zhouyanjie@zoho.com>,
+        Paul Cercueil <paul@crapouillou.net>,
+        Jiaxun Yang <jiaxun.yang@flygoat.com>,
+        Mike Rapoport <rppt@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-mips@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 12/20] mips: MAAR: Add XPA mode support
+Message-ID: <20200519154213.GA15797@alpha.franken.de>
+References: <20200306124807.3596F80307C2@mail.baikalelectronics.ru>
+ <20200506174238.15385-1-Sergey.Semin@baikalelectronics.ru>
+ <20200506174238.15385-13-Sergey.Semin@baikalelectronics.ru>
 MIME-Version: 1.0
-References: <20200507080456.069724962@linux.com> <20200507080650.439636033@linux.com>
-In-Reply-To: <20200507080650.439636033@linux.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Tue, 19 May 2020 17:59:15 +0200
-Message-ID: <CAJZ5v0jnfeAQ4JDz+BTZp8P98h6emTizGWLYNL_QtbQ=3Nw03Q@mail.gmail.com>
-Subject: Re: [PATCH 1/1] hibernate: restrict writes to the snapshot device
-To:     Domenico Andreoli <domenico.andreoli@linux.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Darrick J. Wong" <darrick.wong@oracle.com>,
-        Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-        Al Viro <viro@zeniv.linux.org.uk>, "Ted Ts'o" <tytso@mit.edu>,
-        Len Brown <len.brown@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200506174238.15385-13-Sergey.Semin@baikalelectronics.ru>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It would be better to paste the patch instead of attaching it.
+On Wed, May 06, 2020 at 08:42:30PM +0300, Sergey.Semin@baikalelectronics.ru wrote:
+> From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> 
+> When XPA mode is enabled the normally 32-bits MAAR pair registers
+> are extended to be of 64-bits width as in pure 64-bits MIPS
+> architecture. In this case the MAAR registers can enable the
+> speculative loads/stores for addresses of up to 39-bits width.
+> But in this case the process of the MAAR initialization changes a bit.
+> The upper 32-bits of the registers are supposed to be accessed by mean
+> of the dedicated instructions mfhc0/mthc0 and there is a CP0.MAAR.VH
+> bit which should be set together with CP0.MAAR.VL as indication
+> of the boundary validity. All of these peculiarities were taken into
+> account in this commit so the speculative loads/stores would work
+> when XPA mode is enabled.
+> 
+> Co-developed-by: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+> Signed-off-by: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
+> Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
+> Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+> Cc: Paul Burton <paulburton@kernel.org>
+> Cc: Ralf Baechle <ralf@linux-mips.org>
+> Cc: Arnd Bergmann <arnd@arndb.de>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Cc: linux-pm@vger.kernel.org
+> Cc: devicetree@vger.kernel.org
+> ---
+>  arch/mips/include/asm/maar.h     | 17 +++++++++++++++--
+>  arch/mips/include/asm/mipsregs.h | 10 ++++++++++
+>  arch/mips/mm/init.c              |  8 +++++++-
+>  3 files changed, 32 insertions(+), 3 deletions(-)
 
-Anyway, note that the snapshot special device is not the target block
-device for saving the image, so it would be good to avoid that
-confusion in the naming.
+applied to mips-next.
 
-I.e. I would rename is_hibernate_snapshot_dev() to something like
-is_hibernate_image_dev() or is_hibernate_resume_dev() (for consistency
-with the resume= kernel command line parameter name).
+Thomas.
 
-Thanks!
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
