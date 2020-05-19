@@ -2,126 +2,109 @@ Return-Path: <SRS0=iBKh=7B=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.1 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58DBAC433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 18:17:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06C6FC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 18:58:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FF9520829
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 18:17:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="M0B7KgpZ"
+	by mail.kernel.org (Postfix) with ESMTP id E1BD7207E8
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 18:58:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1589914720;
+	bh=KHmfH0Dqv1jN/iwb/KLxuZ/N8mBlBL9Mmuv3MdY45Uk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=NWpOY1CaMWZG72mz/Qxdws8ttDim2ifWYM6W6GjPBCI0ZcTn8T3R8IolQn8HzPAvN
+	 PYpWLxNwTFSLsGRi9dCogVYxHYCaHz/vkZycbeai8sJFtJ6VdMzFcy/G+9HQyp3j/f
+	 MYYdLQqanJZC/8AlRXAGl0fW6xF1ZdwYtHBlzGM8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727917AbgESSRS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 14:17:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35908 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726059AbgESSRR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 14:17:17 -0400
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8FF4BC08C5C0;
-        Tue, 19 May 2020 11:17:17 -0700 (PDT)
-Received: by mail-wr1-x444.google.com with SMTP id l18so460024wrn.6;
-        Tue, 19 May 2020 11:17:17 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=sender:date:from:to:cc:subject:message-id:mail-followup-to
-         :references:mime-version:content-disposition:in-reply-to:user-agent;
-        bh=9i8fE9UcQoMjC7gZk0f5UIj2Ufp+6XHlfmp4ao/4O3I=;
-        b=M0B7KgpZsBQt4E5X8OxXyD2yTNZWolR2/f+H8u41fyIpqXTQ/IBkg+PIk5pQaf9vVM
-         B7FvAhfWR1Ys+m0PgvW4bYZdhRkSN72vW+NPWuFXNjOut7tyAU1zAhCgo0t/tzzyScxo
-         7v428tVbz9c1onq0wHUsVOODP7mwAeG57d5EcWSgVjstv5AnNaRYDSg+IpUshqa4jCi0
-         ZY2uUsdYSopy9gG2dy9+JsJkNabpMVOrmLEYO8GpjMhHzvTmmQ5E1cffTvmnVK3bJfol
-         dRf+5Rb+dfJpS7ZkbpmYXVwTnfBgs42KLrH5bAIpl7PIt9yglAJbH2e4ykXBWz8d9oL3
-         neqA==
+        id S1726352AbgESS6k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 14:58:40 -0400
+Received: from mail-il1-f193.google.com ([209.85.166.193]:37266 "EHLO
+        mail-il1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726407AbgESS6k (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 14:58:40 -0400
+Received: by mail-il1-f193.google.com with SMTP id n11so495766ilj.4;
+        Tue, 19 May 2020 11:58:38 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:date:from:to:cc:subject:message-id
-         :mail-followup-to:references:mime-version:content-disposition
-         :in-reply-to:user-agent;
-        bh=9i8fE9UcQoMjC7gZk0f5UIj2Ufp+6XHlfmp4ao/4O3I=;
-        b=mFW6msmY4FYrToxgnLx8a5szJiSSh2psvYSGOO4BXmOi/k1Zwl6+TeSuLPTuD518Ac
-         oXJrC8+woD3ilShbWN84gpxt6NgHiSeybgCpqe283sm7vQEGxIURAoJfMCtgTfynBhfK
-         7yTnZknBpBQ0kjIssBmAPu7JSM6xfcpb7jShdB+Zi6XOUj6VpId67gXGZhI8145WQeMM
-         WRAhEj8RlURPIOW7lsC6btbGq33bfs+os/CS4IOd6qrfGl3CUi3B+/Dbc8ll5XJnSpjR
-         XgzDEit32QEeeGfk6E1cl6LJQ7tS77KhIqrUJA48QzJCKSLC0esg3MFy8OuO8fPJ6o33
-         Jzyg==
-X-Gm-Message-State: AOAM530W7GTnNqbAEIJm/vMGRn3QWhybP5ifeYRAq80Xx6PFkHbBMHh6
-        KxSGui0euEg7A0Rsa/IWnS4=
-X-Google-Smtp-Source: ABdhPJyxXQek9kmfiklyRswq34puGT0/qkq70Y1A0X+1ql8Y7CIbt8KUIclIUmKsIVrJHd1bSQywiA==
-X-Received: by 2002:adf:b301:: with SMTP id j1mr148805wrd.221.1589912236198;
-        Tue, 19 May 2020 11:17:16 -0700 (PDT)
-Received: from dumbo ([185.220.101.209])
-        by smtp.gmail.com with ESMTPSA id d4sm250548wre.22.2020.05.19.11.17.15
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=pz2Hy0uekLRSK4zEbTvfMRi5VWjthw7cjakL1s2c9Wk=;
+        b=BvhmFbdwOYJbirkEeMTRuzrhF3GtVg/S1ewIgZA17hGwft63LLbPV7d4RuvtK1ZXUn
+         eTQbXs3+T/LxOKTf6mr8C30QuWC9DMOUmNT/uqLCgIbvlUC82LdD+zSBh8vzoxBFEuFL
+         Gg8wexxmIscKYUAXL4/8koDNQqmZLn31ZtvIFVmTMaJLLjN6Ru86tA4OSZy5ttC9vlSI
+         mSWvKqEkyxnV/S/kNajX7Qqkb8opEoVe4IyVLb0F+7NkQy8FM48a2770Q8rL0leGX6tc
+         QTqT2k2jFrzIM8ppKFDoQO9mawIRzmf2PWqQCZ57m38H+c5qwldRQRs91U3O8NOSx8t5
+         pLoQ==
+X-Gm-Message-State: AOAM532qr17B4Jhp/andht7IblOG3S4qmyHydWHEhts//+yc61+i2WvB
+        qlYraSVX0kcZfgb8BH5MFQ==
+X-Google-Smtp-Source: ABdhPJzshUXBVmvGEW5Z47e15MtAHv6KiX6o24ZE2GlhumzoLz2ASW/KbjAxaMT3gIiBCoHHAC20TA==
+X-Received: by 2002:a92:8318:: with SMTP id f24mr468586ild.288.1589914717838;
+        Tue, 19 May 2020 11:58:37 -0700 (PDT)
+Received: from xps15 ([64.188.179.252])
+        by smtp.gmail.com with ESMTPSA id z11sm191385iow.12.2020.05.19.11.58.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 19 May 2020 11:17:15 -0700 (PDT)
-Received: from cavok by dumbo with local (Exim 4.92)
-        (envelope-from <cavok@dumbo>)
-        id 1jb6ni-0004ND-0s; Tue, 19 May 2020 20:17:14 +0200
-Date:   Tue, 19 May 2020 20:17:13 +0200
-From:   Domenico Andreoli <domenico.andreoli@linux.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Darrick J. Wong" <darrick.wong@oracle.com>,
-        Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-        Al Viro <viro@zeniv.linux.org.uk>, Ted Ts'o <tytso@mit.edu>,
-        Len Brown <len.brown@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] hibernate: restrict writes to the snapshot device
-Message-ID: <20200519181713.GB1963@dumbo>
-Mail-Followup-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Darrick J. Wong" <darrick.wong@oracle.com>,
-        Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@lst.de>,
-        Al Viro <viro@zeniv.linux.org.uk>, Ted Ts'o <tytso@mit.edu>,
-        Len Brown <len.brown@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Memory Management List <linux-mm@kvack.org>,
-        linux-xfs@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20200507080456.069724962@linux.com>
- <20200507080650.439636033@linux.com>
- <CAJZ5v0jnfeAQ4JDz+BTZp8P98h6emTizGWLYNL_QtbQ=3Nw03Q@mail.gmail.com>
+        Tue, 19 May 2020 11:58:37 -0700 (PDT)
+Received: (nullmailer pid 475406 invoked by uid 1000);
+        Tue, 19 May 2020 18:58:36 -0000
+Date:   Tue, 19 May 2020 12:58:36 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     vireshk@kernel.org, nm@ti.com, sboyd@kernel.org, rjw@rjwysocki.net,
+        saravanak@google.com, sibis@codeaurora.org, mka@chromium.org,
+        rnayak@codeaurora.org, bjorn.andersson@linaro.org,
+        vincent.guittot@linaro.org, jcrouse@codeaurora.org,
+        evgreen@chromium.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v8 09/10] dt-bindings: interconnect: Add
+ interconnect-tags bindings
+Message-ID: <20200519185836.GA469006@bogus>
+References: <20200512125327.1868-1-georgi.djakov@linaro.org>
+ <20200512125327.1868-10-georgi.djakov@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jnfeAQ4JDz+BTZp8P98h6emTizGWLYNL_QtbQ=3Nw03Q@mail.gmail.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20200512125327.1868-10-georgi.djakov@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, May 19, 2020 at 05:59:15PM +0200, Rafael J. Wysocki wrote:
-> It would be better to paste the patch instead of attaching it.
-
-Done with v2.
-
-> Anyway, note that the snapshot special device is not the target block
-> device for saving the image, so it would be good to avoid that
-> confusion in the naming.
-
-I realize that it was a bit hazy in my head as well. It should be fixed
-in v2.
-
+On Tue, May 12, 2020 at 03:53:26PM +0300, Georgi Djakov wrote:
+> From: Sibi Sankar <sibis@codeaurora.org>
 > 
-> I.e. I would rename is_hibernate_snapshot_dev() to something like
-> is_hibernate_image_dev() or is_hibernate_resume_dev() (for consistency
-> with the resume= kernel command line parameter name).
+> Add interconnect-tags bindings to enable passing of optional
+> tag information to the interconnect framework.
+> 
+> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+> v8:
+> * New patch, picked from here:
+>   https://lore.kernel.org/r/20200504202243.5476-10-sibis@codeaurora.org
+> 
+>  .../devicetree/bindings/interconnect/interconnect.txt        | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/interconnect/interconnect.txt b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> index 6f5d23a605b7..c1a226a934e5 100644
+> --- a/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> +++ b/Documentation/devicetree/bindings/interconnect/interconnect.txt
+> @@ -55,6 +55,11 @@ interconnect-names : List of interconnect path name strings sorted in the same
+>  			 * dma-mem: Path from the device to the main memory of
+>  			            the system
+>  
+> +interconnect-tags : List of interconnect path tags sorted in the same order as the
+> +		    interconnects property. Consumers can append a specific tag to
+> +		    the path and pass this information to the interconnect framework
+> +		    to do aggregation based on the attached tag.
 
-Done as well.
+Why isn't this information in the 'interconnect' arg cells?
 
-> Thanks!
+We have 'interconnect-names' because strings don't mix with cells. An 
+expanding list of 'interconnect-.*' is not a good pattern IMO.
 
-Thank you!
-
-Dom
-
--- 
-rsa4096: 3B10 0CA1 8674 ACBA B4FE  FCD2 CE5B CF17 9960 DE13
-ed25519: FFB4 0CC3 7F2E 091D F7DA  356E CC79 2832 ED38 CB05
+Rob
