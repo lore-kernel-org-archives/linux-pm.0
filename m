@@ -7,51 +7,51 @@ X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E0BBC433E3
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 23:29:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E0BCC433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 23:30:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D61E20823
-	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 23:29:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAA5D20823
+	for <linux-pm@archiver.kernel.org>; Tue, 19 May 2020 23:30:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="ujARxPOZ"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="YygAM4rx"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728298AbgESX3t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 19 May 2020 19:29:49 -0400
-Received: from smtp-fw-6001.amazon.com ([52.95.48.154]:16133 "EHLO
-        smtp-fw-6001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725998AbgESX3s (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 19:29:48 -0400
+        id S1728508AbgESXaD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 19 May 2020 19:30:03 -0400
+Received: from smtp-fw-9101.amazon.com ([207.171.184.25]:40836 "EHLO
+        smtp-fw-9101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728432AbgESXaC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 19 May 2020 19:30:02 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
   d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1589930988; x=1621466988;
+  t=1589931002; x=1621467002;
   h=date:from:to:subject:message-id:references:mime-version:
    in-reply-to;
-  bh=Dbh0kC6AUhdBwnm/rg5xRtYEoyS/bWB7gw8bESiUXu8=;
-  b=ujARxPOZrE2ff4RNd5HwI/Tui0eVklwzmkSIeS+vo7z1bLgqkk56Ahib
-   yWb27O88x/8y4B2JfKMBqVDxFuO69pVerN/KMDelOBCHeLkR3vkxCltzU
-   Uz6qByLCepoC46jVTcyTuKS+baWy29gWwevisJicw7l0RgkK/r0wuzqYk
-   U=;
-IronPort-SDR: QyxaVj7m3HsYActdDDQN//Bklv0kPtNEJKpgFFZzEhwvzUrO/yoZHFxDlLIQE70DrdHpZ7H+j2
- ZsDe6R6BRV9g==
+  bh=fitAmmYR+siRHznU7MJYKk9c4Tw82/jy6e5chPwlJLw=;
+  b=YygAM4rxhevUTIpwXDea+e1znhZ7YOkK+Xbwgvyk2RpqEX1HneGo34qH
+   FUR9cIh77T27+TwpzuT/FfNlYH1JbfxCVlwArylM/KP1tL7hgMuWok+zE
+   H0QLewXYVd0zlqr1NelNitMrBpv7JsNH4728d9RmELnUU2LHe0srjoA2i
+   M=;
+IronPort-SDR: Wl3dSMwhpOL5k2tH39DJuBMefCB10ew0UQM8WlE40AAwlaQq7gFVjSYFqv7rMMiJuNURig22t8
+ 62l/Qk1vmD/Q==
 X-IronPort-AV: E=Sophos;i="5.73,411,1583193600"; 
-   d="scan'208";a="32497101"
-Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-2c-1968f9fa.us-west-2.amazon.com) ([10.43.8.6])
-  by smtp-border-fw-out-6001.iad6.amazon.com with ESMTP; 19 May 2020 23:29:33 +0000
-Received: from EX13MTAUEE002.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan3.pdx.amazon.com [10.170.41.166])
-        by email-inbound-relay-2c-1968f9fa.us-west-2.amazon.com (Postfix) with ESMTPS id 3F3DDA217A;
-        Tue, 19 May 2020 23:29:31 +0000 (UTC)
-Received: from EX13D08UEE002.ant.amazon.com (10.43.62.92) by
- EX13MTAUEE002.ant.amazon.com (10.43.62.24) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Tue, 19 May 2020 23:29:11 +0000
-Received: from EX13MTAUEA002.ant.amazon.com (10.43.61.77) by
- EX13D08UEE002.ant.amazon.com (10.43.62.92) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Tue, 19 May 2020 23:29:11 +0000
+   d="scan'208";a="36216330"
+Received: from sea32-co-svc-lb4-vlan2.sea.corp.amazon.com (HELO email-inbound-relay-2b-859fe132.us-west-2.amazon.com) ([10.47.23.34])
+  by smtp-border-fw-out-9101.sea19.amazon.com with ESMTP; 19 May 2020 23:30:01 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan2.pdx.amazon.com [10.170.41.162])
+        by email-inbound-relay-2b-859fe132.us-west-2.amazon.com (Postfix) with ESMTPS id C56E42225D4;
+        Tue, 19 May 2020 23:29:59 +0000 (UTC)
+Received: from EX13D07UWB004.ant.amazon.com (10.43.161.196) by
+ EX13MTAUWB001.ant.amazon.com (10.43.161.207) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Tue, 19 May 2020 23:29:52 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (10.43.161.207) by
+ EX13D07UWB004.ant.amazon.com (10.43.161.196) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Tue, 19 May 2020 23:29:52 +0000
 Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
- (172.22.96.68) by mail-relay.amazon.com (10.43.61.169) with Microsoft SMTP
- Server id 15.0.1497.2 via Frontend Transport; Tue, 19 May 2020 23:29:11 +0000
+ (172.22.96.68) by mail-relay.amazon.com (10.43.161.249) with Microsoft SMTP
+ Server id 15.0.1497.2 via Frontend Transport; Tue, 19 May 2020 23:29:52 +0000
 Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
-        id CEAED40712; Tue, 19 May 2020 23:29:10 +0000 (UTC)
-Date:   Tue, 19 May 2020 23:29:10 +0000
+        id 847C740712; Tue, 19 May 2020 23:29:52 +0000 (UTC)
+Date:   Tue, 19 May 2020 23:29:52 +0000
 From:   Anchal Agarwal <anchalag@amazon.com>
 To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
         <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
@@ -65,9 +65,9 @@ To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
         <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
         <linux-kernel@vger.kernel.org>, <dwmw@amazon.co.uk>,
         <benh@kernel.crashing.org>
-Subject: [PATCH 10/12] xen: Introduce wrapper for save/restore sched clock
- offset
-Message-ID: <9bb393ade4a6a30a2d4ba3ba191603a2b2fb8512.1589926004.git.anchalag@amazon.com>
+Subject: [PATCH 12/12] PM / hibernate: update the resume offset on
+ SNAPSHOT_SET_SWAP_AREA
+Message-ID: <40de33ca69c0d3bcf8c827862768ae5d399698d6.1589926004.git.anchalag@amazon.com>
 References: <cover.1589926004.git.anchalag@amazon.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
@@ -79,65 +79,43 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Introduce wrappers for save/restore xen_sched_clock_offset to be
-used by PM hibernation code to avoid system instability during resume.
+From: Aleksei Besogonov <cyberax@amazon.com>
 
+The SNAPSHOT_SET_SWAP_AREA is supposed to be used to set the hibernation
+offset on a running kernel to enable hibernating to a swap file.
+However, it doesn't actually update the swsusp_resume_block variable. As
+a result, the hibernation fails at the last step (after all the data is
+written out) in the validation of the swap signature in
+mark_swapfiles().
+
+Before this patch, the command line processing was the only place where
+swsusp_resume_block was set.
+[Changelog: Resolved patch conflict as code fragmented to
+snapshot_set_swap_area]
+Signed-off-by: Aleksei Besogonov <cyberax@amazon.com>
+Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
 Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
 ---
- arch/x86/xen/time.c    | 15 +++++++++++++--
- arch/x86/xen/xen-ops.h |  2 ++
- 2 files changed, 15 insertions(+), 2 deletions(-)
+ kernel/power/user.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/xen/time.c b/arch/x86/xen/time.c
-index 33d754564b09..1fc2beb7a6c1 100644
---- a/arch/x86/xen/time.c
-+++ b/arch/x86/xen/time.c
-@@ -386,12 +386,23 @@ static const struct pv_time_ops xen_time_ops __initconst = {
- static struct pvclock_vsyscall_time_info *xen_clock __read_mostly;
- static u64 xen_clock_value_saved;
- 
-+/*This is needed to maintain a monotonic clock value during PM hibernation */
-+void xen_save_sched_clock_offset(void)
-+{
-+	xen_clock_value_saved = xen_clocksource_read() - xen_sched_clock_offset;
-+}
-+
-+void xen_restore_sched_clock_offset(void)
-+{
-+	xen_sched_clock_offset = xen_clocksource_read() - xen_clock_value_saved;
-+}
-+
- void xen_save_time_memory_area(void)
- {
- 	struct vcpu_register_time_memory_area t;
- 	int ret;
- 
--	xen_clock_value_saved = xen_clocksource_read() - xen_sched_clock_offset;
-+	xen_save_sched_clock_offset();
- 
- 	if (!xen_clock)
- 		return;
-@@ -434,7 +445,7 @@ void xen_restore_time_memory_area(void)
- out:
- 	/* Need pvclock_resume() before using xen_clocksource_read(). */
- 	pvclock_resume();
--	xen_sched_clock_offset = xen_clocksource_read() - xen_clock_value_saved;
-+	xen_restore_sched_clock_offset();
+diff --git a/kernel/power/user.c b/kernel/power/user.c
+index 7959449765d9..1afa1f0a223e 100644
+--- a/kernel/power/user.c
++++ b/kernel/power/user.c
+@@ -235,8 +235,12 @@ static int snapshot_set_swap_area(struct snapshot_data *data,
+ 		return -EINVAL;
+ 	}
+ 	data->swap = swap_type_of(swdev, offset, NULL);
+-	if (data->swap < 0)
++	if (data->swap < 0) {
+ 		return -ENODEV;
++	} else {
++	    swsusp_resume_device = swdev;
++	    swsusp_resume_block = offset;
++	}
+ 	return 0;
  }
- 
- static void xen_setup_vsyscall_time_info(void)
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index d84c357994bd..9f49124df033 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -72,6 +72,8 @@ void xen_save_time_memory_area(void);
- void xen_restore_time_memory_area(void);
- void xen_init_time_ops(void);
- void xen_hvm_init_time_ops(void);
-+void xen_save_sched_clock_offset(void);
-+void xen_restore_sched_clock_offset(void);
- 
- irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
  
 -- 
 2.24.1.AMZN
