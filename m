@@ -2,129 +2,148 @@ Return-Path: <SRS0=ID/Q=7E=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CED51C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 22 May 2020 06:07:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D733C433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 22 May 2020 06:48:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A5E192073B
-	for <linux-pm@archiver.kernel.org>; Fri, 22 May 2020 06:07:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E29F820757
+	for <linux-pm@archiver.kernel.org>; Fri, 22 May 2020 06:48:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Znf8Twb4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726578AbgEVGHQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 22 May 2020 02:07:16 -0400
-Received: from mail.zju.edu.cn ([61.164.42.155]:28152 "EHLO zju.edu.cn"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726449AbgEVGHQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 22 May 2020 02:07:16 -0400
-Received: by ajax-webmail-mail-app4 (Coremail) ; Fri, 22 May 2020 14:06:51
- +0800 (GMT+08:00)
-X-Originating-IP: [222.205.77.158]
-Date:   Fri, 22 May 2020 14:06:51 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From:   dinghao.liu@zju.edu.cn
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Bjorn Helgaas" <helgaas@kernel.org>, "Kangjie Lu" <kjlu@umn.edu>,
-        "Lorenzo Pieralisi" <lorenzo.pieralisi@arm.com>,
-        "Rob Herring" <robh@kernel.org>,
-        "Bjorn Helgaas" <bhelgaas@google.com>,
-        "Thierry Reding" <thierry.reding@gmail.com>,
-        "Jonathan Hunter" <jonathanh@nvidia.com>,
-        "Vidya Sagar" <vidyas@nvidia.com>,
-        "Andrew Murray" <amurray@thegoodpenguin.co.uk>,
-        "Linux PCI" <linux-pci@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        "Linux PM" <linux-pm@vger.kernel.org>
-Subject: Re: Re: [PATCH] [v2] PCI: tegra194: Fix runtime PM imbalance on
- error
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version XT5.0.10 build 20190906(84e8bf8f)
- Copyright (c) 2002-2020 www.mailtech.cn zju.edu.cn
-In-Reply-To: <CAJZ5v0g1-WrBskdBHQ0vpWEk2E-dSaZcQsZngn84rcjcemoAAA@mail.gmail.com>
-References: <20200521031355.7022-1-dinghao.liu@zju.edu.cn>
- <20200521151620.GA1135365@bjorn-Precision-5520>
- <CAJZ5v0g1-WrBskdBHQ0vpWEk2E-dSaZcQsZngn84rcjcemoAAA@mail.gmail.com>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
-MIME-Version: 1.0
-Message-ID: <3b325121.be647.1723afdd028.Coremail.dinghao.liu@zju.edu.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID: cS_KCgBHf3j7a8deSJr8AQ--.39177W
-X-CM-SenderInfo: qrrzjiaqtzq6lmxovvfxof0/1tbiAggIBlZdtOQP3QAAsN
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJTRUUUbtCS07vEb7Iv0x
-        C_Cr1lV2xY67kC6x804xWlV2xY67CY07I20VC2zVCF04k26cxKx2IYs7xG6rWj6s0DMIAI
-        bVAFxVCF77xC64kEw24lV2xY67C26IkvcIIF6IxKo4kEV4ylV2xY628lY4IE4IxF12IF4w
-        CS07vE84x0c7CEj48ve4kI8wCS07vE84ACjcxK6xIIjxv20xvE14v26w1j6s0DMIAIbVA2
-        z4x0Y4vE2Ix0cI8IcVCY1x0267AKxVWxJr0_GcWlV2xY628EF7xvwVC2z280aVAFwI0_Gc
-        CE3s1lV2xY628EF7xvwVC2z280aVCY1x0267AKxVW0oVCq3wCS07vEe2I262IYc4CY6c8I
-        j28IcVAaY2xG8wCS07vE5I8CrVACY4xI64kE6c02F40Ex7xfMIAIbVAv7VC0I7IYx2IY67
-        AKxVWUAVWUtwCS07vEYx0Ex4A2jsIE14v26r4j6F4UMIAIbVAm72CE4IkC6x0Yz7v_Jr0_
-        Gr1lV2xY64IIrI8v6xkF7I0E8cxan2IY04v7MIAIbVCjxxvEw4WlV2xY6xkIecxEwVAFwV
-        W8AwCS07vEc2IjII80xcxEwVAKI48JMIAIbVCF04k20xvE74AGY7Cv6cx26r4fKr1UJr1l
-        V2xY6xCjnVCjjxCrMIAIbVCFx2IqxVCFs4IE7xkEbVWUJVW8JwCS07vEx2IqxVAqx4xG67
-        AKxVWUJVWUGwCS07vEx2IqxVCjr7xvwVAFwI0_JrI_JrWlV2xY6I8E67AF67kF1VAFwI0_
-        Jw0_GFylV2xY6IIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lV2xY6IIF0xvE2Ix0cI8IcVCY1x
-        0267AKxVW8JVWxJwCS07vEIxAIcVCF04k26cxKx2IYs7xG6rWUJVWrZr1UMIAIbVCI42IY
-        6I8E87Iv67AKxVW8JVWxJwCS07vEIxAIcVC2z280aVCY1x0267AKxVW8Jr0_Cr1UYxBIda
-        VFxhVjvjDU=
+        id S1728253AbgEVGsK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 22 May 2020 02:48:10 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:32932 "EHLO
+        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728249AbgEVGsJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 22 May 2020 02:48:09 -0400
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20200522064808euoutp020114fa51ac27984b1333f08180a048fe~RRuPnmDrh0992509925euoutp02m
+        for <linux-pm@vger.kernel.org>; Fri, 22 May 2020 06:48:08 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20200522064808euoutp020114fa51ac27984b1333f08180a048fe~RRuPnmDrh0992509925euoutp02m
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1590130088;
+        bh=smAZi9fZbvDKEfoiWe78k+Q3pnTMoASjWoqnfT0Mfgo=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Znf8Twb4/P44+pBkOrTx+5xcSMOAqWr019rhl2BTHd3yUVmTnuTNx239INlhJE8WU
+         6dSjjDD/AZnU+Cj1o8CpmzxIdA3NpM9zOrFQXxE+yiUuaKXj0TezXEqSAdViZj9HwF
+         w3STbNAfc5XmaCgC49zStjOBYrgpIJ8YC2uYTj9M=
+Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
+        eucas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20200522064807eucas1p1d04a18a6955457648aafea0e3a8933cf~RRuPUSd6n2618826188eucas1p1N;
+        Fri, 22 May 2020 06:48:07 +0000 (GMT)
+Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
+        eusmges3new.samsung.com (EUCPMTA) with SMTP id B6.63.60698.7A577CE5; Fri, 22
+        May 2020 07:48:07 +0100 (BST)
+Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20200522064807eucas1p2665d6b3928b2ad515abe54513cbd7fd8~RRuOuKOlv0153601536eucas1p2p;
+        Fri, 22 May 2020 06:48:07 +0000 (GMT)
+Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
+        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20200522064807eusmtrp14542641d7991d48ca334eb8d178195ac~RRuOtlA0M1644516445eusmtrp1A;
+        Fri, 22 May 2020 06:48:07 +0000 (GMT)
+X-AuditID: cbfec7f5-a0fff7000001ed1a-10-5ec775a7fffa
+Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 63.60.07950.7A577CE5; Fri, 22
+        May 2020 07:48:07 +0100 (BST)
+Received: from AMDC2765.digital.local (unknown [106.120.51.73]) by
+        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20200522064806eusmtip2a535114fc83d4aa358c90f0b34e9d5eb~RRuOPY9KK2870328703eusmtip2I;
+        Fri, 22 May 2020 06:48:06 +0000 (GMT)
+From:   Marek Szyprowski <m.szyprowski@samsung.com>
+To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Marek Szyprowski <m.szyprowski@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Mark Brown <broonie@kernel.org>
+Subject: [PATCH v2 2/3] extcon: max14577: Add proper dt-compatible strings
+Date:   Fri, 22 May 2020 08:48:00 +0200
+Message-Id: <20200522064801.16822-2-m.szyprowski@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200522064801.16822-1-m.szyprowski@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrLIsWRmVeSWpSXmKPExsWy7djP87rLS4/HGTw9rGOxccZ6VoupD5+w
+        WVz/8pzV4vz5DewWl3fNYbP43HuE0WLtkbvsFrcbV7BZnN5d4sDpsWlVJ5tH35ZVjB6fN8kF
+        MEdx2aSk5mSWpRbp2yVwZXxb2M5UsIarYkr7RNYGxnscXYycHBICJhJ/d79k7GLk4hASWMEo
+        8X3OGRYI5wujxMeWfiYI5zOjxPTObkaYlgV3pkIlljNKrPt/lRWupffDbyaQKjYBQ4mut11s
+        ILaIgJXE6f8dzCBFzAIrmCQ+/v4EViQs4CVx5NAbsLEsAqoSr3+8BbN5BWwlnnZ1MUGsk5dY
+        veEAM4jNKWAnMeHIG7BBEgLv2SQ6b3awQRS5SFx/+4QdwhaWeHV8C5QtI3F6cg8LREMzo8TD
+        c2vZIZweRonLTTOgPrKWuHPuF9AkDqD7NCXW79KHCDtKbP2ziwkkLCHAJ3HjrSBImBnInLRt
+        OjNEmFeio00IolpNYtbxdXBrD164xAxhe0g8ntUFDa6JjBKT1pxmmsAoPwth2QJGxlWM4qml
+        xbnpqcXGeanlesWJucWleel6yfm5mxiBieL0v+NfdzDu+5N0iFGAg1GJh9ci7VicEGtiWXFl
+        7iFGCQ5mJRHehfxH44R4UxIrq1KL8uOLSnNSiw8xSnOwKInzGi96GSskkJ5YkpqdmlqQWgST
+        ZeLglGpgnDyxcRublHrJD8W4KLnP/QflI1kl1j1huDSxYIpaxe4ztWKC/KLqT/7W7p3J0c10
+        esGNuE1f35+18WOTfplqOtV+2pYGib5b9utdRTrv/9p+5iK33W4Wi/hrLLd32vGmmL66vdBh
+        0zK1mozt37XiVwT4zAh6bD/t5Pm/ckX7T+3/X/Xpo6PhYyWW4oxEQy3mouJEAB+HQXUQAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrLLMWRmVeSWpSXmKPExsVy+t/xe7rLS4/HGZy+zmaxccZ6VoupD5+w
+        WVz/8pzV4vz5DewWl3fNYbP43HuE0WLtkbvsFrcbV7BZnN5d4sDpsWlVJ5tH35ZVjB6fN8kF
+        MEfp2RTll5akKmTkF5fYKkUbWhjpGVpa6BmZWOoZGpvHWhmZKunb2aSk5mSWpRbp2yXoZXxb
+        2M5UsIarYkr7RNYGxnscXYycHBICJhIL7kxl6mLk4hASWMoosbKtlwkiISNxcloDK4QtLPHn
+        WhcbRNEnRon2CeeYQRJsAoYSXW9BEpwcIgI2EncXX2MBKWIWWMMk0fDwI9gkYQEviSOH3jCC
+        2CwCqhKvf7wFs3kFbCWednVBbZOXWL3hANhQTgE7iQlH3oDZQkA19+evYpnAyLeAkWEVo0hq
+        aXFuem6xkV5xYm5xaV66XnJ+7iZGYNBuO/Zzyw7GrnfBhxgFOBiVeHgfJB+LE2JNLCuuzD3E
+        KMHBrCTCu5D/aJwQb0piZVVqUX58UWlOavEhRlOgoyYyS4km5wMjKq8k3tDU0NzC0tDc2NzY
+        zEJJnLdD4GCMkEB6YklqdmpqQWoRTB8TB6dUA+PxnT+mBaxeq+S78/1yE84FPMwKX5Z865m4
+        SvS01ORdBvPOXpyy7dp88c11Uf3TY4vn2vWH+E3SdJAp8PhruN1V+ukehtSJ2WUTxTf8K35s
+        +eVukRpbydlscYts5nu7a2757ufw0bvl0xR5zFCoKn4Hx41FS/ltX/cmT589UT3pPruAr+83
+        uSNKLMUZiYZazEXFiQCE38nScAIAAA==
+X-CMS-MailID: 20200522064807eucas1p2665d6b3928b2ad515abe54513cbd7fd8
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20200522064807eucas1p2665d6b3928b2ad515abe54513cbd7fd8
+X-EPHeader: CA
+CMS-TYPE: 201P
+X-CMS-RootMailID: 20200522064807eucas1p2665d6b3928b2ad515abe54513cbd7fd8
+References: <20200522064801.16822-1-m.szyprowski@samsung.com>
+        <CGME20200522064807eucas1p2665d6b3928b2ad515abe54513cbd7fd8@eucas1p2.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cj4gT24gVGh1LCBNYXkgMjEsIDIwMjAgYXQgNToxNiBQTSBCam9ybiBIZWxnYWFzIDxoZWxnYWFz
-QGtlcm5lbC5vcmc+IHdyb3RlOgo+ID4KPiA+IFsrY2MgUmFmYWVsLCBsaW51eC1wbV0KPiA+Cj4g
-PiBPbiBUaHUsIE1heSAyMSwgMjAyMCBhdCAxMToxMzo0OUFNICswODAwLCBEaW5naGFvIExpdSB3
-cm90ZToKPiA+ID4gcG1fcnVudGltZV9nZXRfc3luYygpIGluY3JlbWVudHMgdGhlIHJ1bnRpbWUg
-UE0gdXNhZ2UgY291bnRlciBldmVuCj4gPiA+IHdoZW4gaXQgcmV0dXJucyBhbiBlcnJvciBjb2Rl
-LiBUaHVzIGEgcGFpcmluZyBkZWNyZW1lbnQgaXMgbmVlZGVkIG9uCj4gPiA+IHRoZSBlcnJvciBo
-YW5kbGluZyBwYXRoIHRvIGtlZXAgdGhlIGNvdW50ZXIgYmFsYW5jZWQuCj4gPgo+ID4gSSBkaWRu
-J3QgcmVhbGl6ZSB0aGVyZSB3ZXJlIHNvIG1hbnkgZHJpdmVycyB3aXRoIHRoZSBleGFjdCBzYW1l
-IGlzc3VlLgo+ID4gQ2FuIHdlIGp1c3Qgc3F1YXNoIHRoZXNlIGFsbCBpbnRvIGEgc2luZ2xlIHBh
-dGNoIHNvIHdlIGNhbiBzZWUgdGhlbQo+ID4gYWxsIHRvZ2V0aGVyPwo+ID4KPiA+IEhtbS4gIFRo
-ZXJlIGFyZSBvdmVyIDEzMDAgY2FsbGVycyBvZiBwbV9ydW50aW1lX2dldF9zeW5jKCksIGFuZCBp
-dAo+ID4gbG9va3MgbGlrZSBtYW55IG9mIHRoZW0gaGF2ZSBzaW1pbGFyIGlzc3VlcywgaS5lLiwg
-dGhleSBoYXZlIGEgcGF0dGVybgo+ID4gbGlrZSB0aGlzCj4gPgo+ID4gICByZXQgPSBwbV9ydW50
-aW1lX2dldF9zeW5jKGRldik7Cj4gPiAgIGlmIChyZXQgPCAwKQo+ID4gICAgIHJldHVybjsKPiA+
-Cj4gPiAgIHBtX3J1bnRpbWVfcHV0KGRldik7Cj4gPgo+ID4gd2hlcmUgdGhlcmUgaXMgbm90IGEg
-cG1fcnVudGltZV9wdXQoKSB0byBtYXRjaCBldmVyeQo+ID4gcG1fcnVudGltZV9nZXRfc3luYygp
-LiAgUmFuZG9tIHNhbXBsZToKPiA+Cj4gPiAgIG5kczMyX3BtdV9yZXNlcnZlX2hhcmR3YXJlCj4g
-PiAgIHNhdGFfcmNhcl9wcm9iZQo+ID4gICBleHlub3NfdHJuZ19wcm9iZQo+ID4gICBrc19zYV9y
-bmdfcHJvYmUKPiA+ICAgb21hcF9hZXNfcHJvYmUKPiA+ICAgc3VuOGlfc3NfcHJvYmUKPiA+ICAg
-b21hcF9hZXNfcHJvYmUKPiA+ICAgenlucV9ncGlvX3Byb2JlCj4gPiAgIGFtZGdwdV9od21vbl9z
-aG93X3Bvd2VyX2F2Zwo+ID4gICBtdGtfY3J0Y19kZHBfaHdfaW5pdAo+ID4gICAuLi4KPiA+Cj4g
-PiBTdXJlbHkgSSdtIG1pc3Npbmcgc29tZXRoaW5nIGFuZCB0aGVzZSBhcmVuJ3QgYWxsIGJyb2tl
-biwgcmlnaHQ/Cj4gCj4gSWYgdGhleSBkbyB3aGF0IHlvdSd2ZSBzYWlkLCB0aGV5IGFyZSBhbGwg
-YnJva2VuIEknbSBhZnJhaWQuCj4gCj4gVGhleSBzaG91bGQgYWxsIGJlIGRvaW5nIHNvbWV0aGlu
-ZyBsaWtlCj4gCj4gICAgIHJldCA9IHBtX3J1bnRpbWVfZ2V0X3N5bmMoZGV2KTsKPiAgICAgaWYg
-KHJldCA8IDApCj4gICAgICAgICBnb3RvIG91dDsKPiAKPiAgICAgLi4uCj4gCj4gb3V0Ogo+ICAg
-ICBwbV9ydW50aW1lX3B1dChkZXYpOwo+IAo+ID4gTWF5YmUgd2UgY291bGQgcHV0IHRvZ2V0aGVy
-IGEgY29jY2luZWxsZSBzY3JpcHQgdG8gc2NhbiB0aGUgdHJlZSBmb3IKPiA+IHRoaXMgaXNzdWU/
-Cj4gPgo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBEaW5naGFvIExpdSA8ZGluZ2hhby5saXVAemp1LmVk
-dS5jbj4KPiA+ID4gLS0tCj4gPiA+ICBkcml2ZXJzL3BjaS9jb250cm9sbGVyL2R3Yy9wY2llLXRl
-Z3JhMTk0LmMgfCA1ICsrLS0tCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCsp
-LCAzIGRlbGV0aW9ucygtKQo+ID4gPgo+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9wY2kvY29u
-dHJvbGxlci9kd2MvcGNpZS10ZWdyYTE5NC5jIGIvZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2Mv
-cGNpZS10ZWdyYTE5NC5jCj4gPiA+IGluZGV4IGFlMzBhMmZkMzcxNi4uMmMwZDJjZTE2YjQ3IDEw
-MDY0NAo+ID4gPiAtLS0gYS9kcml2ZXJzL3BjaS9jb250cm9sbGVyL2R3Yy9wY2llLXRlZ3JhMTk0
-LmMKPiA+ID4gKysrIGIvZHJpdmVycy9wY2kvY29udHJvbGxlci9kd2MvcGNpZS10ZWdyYTE5NC5j
-Cj4gPiA+IEBAIC0xNjIzLDcgKzE2MjMsNyBAQCBzdGF0aWMgaW50IHRlZ3JhX3BjaWVfY29uZmln
-X3JwKHN0cnVjdCB0ZWdyYV9wY2llX2R3ICpwY2llKQo+ID4gPiAgICAgICByZXQgPSBwaW5jdHJs
-X3BtX3NlbGVjdF9kZWZhdWx0X3N0YXRlKGRldik7Cj4gPiA+ICAgICAgIGlmIChyZXQgPCAwKSB7
-Cj4gPiA+ICAgICAgICAgICAgICAgZGV2X2VycihkZXYsICJGYWlsZWQgdG8gY29uZmlndXJlIHNp
-ZGViYW5kIHBpbnM6ICVkXG4iLCByZXQpOwo+ID4gPiAtICAgICAgICAgICAgIGdvdG8gZmFpbF9w
-aW5jdHJsOwo+ID4gPiArICAgICAgICAgICAgIGdvdG8gZmFpbF9wbV9nZXRfc3luYzsKPiA+ID4g
-ICAgICAgfQo+ID4gPgo+ID4gPiAgICAgICB0ZWdyYV9wY2llX2luaXRfY29udHJvbGxlcihwY2ll
-KTsKPiA+ID4gQEAgLTE2NTAsOSArMTY1MCw4IEBAIHN0YXRpYyBpbnQgdGVncmFfcGNpZV9jb25m
-aWdfcnAoc3RydWN0IHRlZ3JhX3BjaWVfZHcgKnBjaWUpCj4gPiA+Cj4gPiA+ICBmYWlsX2hvc3Rf
-aW5pdDoKPiA+ID4gICAgICAgdGVncmFfcGNpZV9kZWluaXRfY29udHJvbGxlcihwY2llKTsKPiA+
-ID4gLWZhaWxfcGluY3RybDoKPiA+ID4gLSAgICAgcG1fcnVudGltZV9wdXRfc3luYyhkZXYpOwo+
-ID4gPiAgZmFpbF9wbV9nZXRfc3luYzoKPiA+ID4gKyAgICAgcG1fcnVudGltZV9wdXRfc3luYyhk
-ZXYpOwo+IAo+IFdoeSBub3QgcG1fcnVudGltZV9wdXQoKT8QCgpHb29kIHF1ZXN0aW9uLiBGb3Ig
-ZnVuY3Rpb25zIHdpdGggUE0gZGVjcmVtZW50IEFQSSBzb21ld2hlcmUsIEkgCndpbGwgYWRvcHQg
-aXQuIElmIHRoaXMgQVBJIGlzIG5vdCBzdWl0YWJsZSBoZXJlLCBwbGVhc2UgdGVsbCBtZS4KCj4g
-Cj4gPiA+ICAgICAgIHBtX3J1bnRpbWVfZGlzYWJsZShkZXYpOwo+ID4gPiAgICAgICByZXR1cm4g
-cmV0Owo+ID4gPiAgfQo+ID4gPiAtLQo+ID4gPiAyLjE3LjEKPiA+ID4K
+Add device tree compatible strings and create proper modalias structures
+to let this driver load automatically if compiled as module, because
+max14577 MFD driver creates MFD cells with such compatible strings.
+
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+---
+v2:
+- added .of_match_table pointer
+---
+ drivers/extcon/extcon-max14577.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/drivers/extcon/extcon-max14577.c b/drivers/extcon/extcon-max14577.c
+index 32f663436e6e..03af678ddeba 100644
+--- a/drivers/extcon/extcon-max14577.c
++++ b/drivers/extcon/extcon-max14577.c
+@@ -782,9 +782,19 @@ static const struct platform_device_id max14577_muic_id[] = {
+ };
+ MODULE_DEVICE_TABLE(platform, max14577_muic_id);
+ 
++static const struct of_device_id of_max14577_muic_dt_match[] = {
++	{ .compatible = "maxim,max77836-muic",
++	  .data = (void *)MAXIM_DEVICE_TYPE_MAX77836, },
++	{ .compatible = "maxim,max14577-muic",
++	  .data = (void *)MAXIM_DEVICE_TYPE_MAX14577, },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, of_max14577_muic_dt_match);
++
+ static struct platform_driver max14577_muic_driver = {
+ 	.driver		= {
+ 		.name	= "max14577-muic",
++		.of_match_table = of_max14577_muic_dt_match,
+ 	},
+ 	.probe		= max14577_muic_probe,
+ 	.remove		= max14577_muic_remove,
+-- 
+2.17.1
+
