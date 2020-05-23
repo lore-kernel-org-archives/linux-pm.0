@@ -2,85 +2,98 @@ Return-Path: <SRS0=Dwwp=7F=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C870AC433E0
-	for <linux-pm@archiver.kernel.org>; Sat, 23 May 2020 12:33:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F35DC433DF
+	for <linux-pm@archiver.kernel.org>; Sat, 23 May 2020 21:24:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FE04207F9
-	for <linux-pm@archiver.kernel.org>; Sat, 23 May 2020 12:33:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1381B20849
+	for <linux-pm@archiver.kernel.org>; Sat, 23 May 2020 21:24:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="m5pSwqzq"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RvXOPwQz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728969AbgEWMdp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 23 May 2020 08:33:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32994 "EHLO
+        id S2388042AbgEWVY6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 23 May 2020 17:24:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729150AbgEWMdo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 May 2020 08:33:44 -0400
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F0F3C061A0E
-        for <linux-pm@vger.kernel.org>; Sat, 23 May 2020 05:33:44 -0700 (PDT)
-Received: by mail-wr1-x442.google.com with SMTP id x14so7519333wrp.2
-        for <linux-pm@vger.kernel.org>; Sat, 23 May 2020 05:33:43 -0700 (PDT)
+        with ESMTP id S2387586AbgEWVY5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 23 May 2020 17:24:57 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CB94C061A0E
+        for <linux-pm@vger.kernel.org>; Sat, 23 May 2020 14:24:57 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id h17so13681603wrc.8
+        for <linux-pm@vger.kernel.org>; Sat, 23 May 2020 14:24:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=+ha2P0gI7/dhCR+x1uWrZGR8vEfMxTFQAnCpem5drIw=;
-        b=m5pSwqzqb6HpOMNW5gFCyuwJNBY7jMuVL1za74VwCneV9k6X7R6QpHOUgqEQWRtNn4
-         SvgCa954xVeXMD3Km6dpuNgUjmocnT70TzaK9JeGyXbRNIY1Sr3DsXl957oOAGywgQsi
-         2XswZKMKCgiGNlyFjiExEZuBIglEdLs1Ps7G1cuh+GODhvIvW2hSCVJJbuKwtIEswduK
-         Ca8K/X0yHehp9OEEpgRyIWdiOPMG3ADKIc0H9OYpSdEbduubihaEYZDKvrDe4Uq1g4Bu
-         rygpkOerSD5lSVX2Re+Mx0lILNsyegxBIBaxW5W2xzgeXUfsn9fYw9sX273OQBRAf++1
-         Wvvg==
+        bh=NJ2Ob42mu1WcRBs7giOQLAtPZNJHbaZp1BDqey6K7MI=;
+        b=RvXOPwQzi7tDJl6BuuNT+y72w1UWlBT6YIY4n4BW+N7mx1s25eT3SOYL0a9pqn8cC2
+         /nBPem4vYFxmNYxWOqBWQBkn3sVJxdNgMXqEsPliPARPwF9s1cdC6EouAUyE7h3v+/a8
+         y7iuF1oFpiLB+H18PuRb2HBsjEZ7Al9v6hTytkZV30xIf2RzrCZP/3duuJBeLAIbe50W
+         JGL21qYqGJkk+wBcQh0h57UPVoK44bFcGk23ReI5MpTWxGaNgIq/69hQjTbr1mt1RCDh
+         3zd7UC8LF7I/OMuKyUjUIQAVnrx3hLIapw5/dhAbfjTiqjhZqLkatPCYeJqpWjOkqGRD
+         eEMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=+ha2P0gI7/dhCR+x1uWrZGR8vEfMxTFQAnCpem5drIw=;
-        b=pu8OQ7lZKCYDVglAUhRL+XLRYStNv4e6f3VxEfbgR+69qZF4HYn0Fog4dbbI+ekkAP
-         qQPODSx2j8mZqZ0pVh8KRxcLldTaLYQSUJCTqjsAnS8yolJ2O07+9oE3M9XITh8Pc2eS
-         YbKhx+wGAaTrELlFIs1ca/E8rtNeKaZbXcNK2Y6qI5uhp6d96rCw4cJpnabopyMD8tn7
-         DwhH1b0OWeWUu/o841o1cuZLMhb/RiEW5P8pPB2MF1yUdNlLjo4HmH7V3eStbbSnRMlE
-         Rv7OdRfaqBlne3D6HqrwSQxt9zLcj7hAhLfg4xu1+2MMCFxpvF+ZaNO976YSHTEh+uSD
-         bIBA==
-X-Gm-Message-State: AOAM532DarpB6DgIl/eg7/cb3yeSR4TVuL4Fo6hrhlXAq4dNRH0OxKJ+
-        NnUhLDrHeqtYa/g05woZvyeoKA==
-X-Google-Smtp-Source: ABdhPJyL1mgbO/QqqFeAEHWsW/FnRQwYf9IXv1JuxdTJ0DWSLveRKUz+j5yAZUkxEzwjdUnPqh5o8Q==
-X-Received: by 2002:adf:fec3:: with SMTP id q3mr1267150wrs.123.1590237222514;
-        Sat, 23 May 2020 05:33:42 -0700 (PDT)
+        bh=NJ2Ob42mu1WcRBs7giOQLAtPZNJHbaZp1BDqey6K7MI=;
+        b=oJEuaGphWDQEfQqha5prJ5CDQ7KlnUG7+PwNpNdsAHkE6dPin6abY/dRejM+L0Xl5v
+         CDCvGZkhHPuSeL1vHA5Ph4/iVnrri4spvTcppVQYHQJKMJvbMm9wzNlO+jXUl4PC4SrY
+         mtN2nbK8j6dP0o3PtE+rR06YU0s0kE/xe3LKZDv7x132FeVhu1i9xBscCbZ62/7vy/RH
+         ZMq1izFrLeaaDrN5acjFCgq+lc3DR2/p0fRez6jTe5sJra0A4QofkQRuuwHdjdCJUZ8p
+         hSxf7nwnv9LxQzf9+fLJmLB3kD2nFGGxzk1jqzqWJ5GkhJtcGc8u1tTkJ179VzTaPJ0O
+         4Ljw==
+X-Gm-Message-State: AOAM530CUj0bRAiC+jLktEUZYch+B+wEywXjhTJJa6i7ViaJe7ZRweLp
+        rTukvWKF6HNU+MRIfYaGynBFNw==
+X-Google-Smtp-Source: ABdhPJwe47bVscxaAhr9Nhu8+OAH/5API+xE2Yx2xK6omje0soqamC1EaKrcSCHT/ZrAugOuc2Jm7w==
+X-Received: by 2002:a5d:6601:: with SMTP id n1mr793011wru.23.1590269095882;
+        Sat, 23 May 2020 14:24:55 -0700 (PDT)
 Received: from ?IPv6:2a01:e34:ed2f:f020:c871:e070:f68d:a4f7? ([2a01:e34:ed2f:f020:c871:e070:f68d:a4f7])
-        by smtp.googlemail.com with ESMTPSA id h1sm12875416wme.42.2020.05.23.05.33.41
+        by smtp.googlemail.com with ESMTPSA id c25sm12849479wmb.44.2020.05.23.14.24.53
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 23 May 2020 05:33:41 -0700 (PDT)
-Subject: Re: [PATCH] thermal: imx8mm: Add get_trend ops
-To:     Anson Huang <anson.huang@nxp.com>,
-        "rui.zhang@intel.com" <rui.zhang@intel.com>,
-        "amit.kucheria@verdurent.com" <amit.kucheria@verdurent.com>,
-        "shawnguo@kernel.org" <shawnguo@kernel.org>,
-        "s.hauer@pengutronix.de" <s.hauer@pengutronix.de>,
-        "kernel@pengutronix.de" <kernel@pengutronix.de>,
-        "festevam@gmail.com" <festevam@gmail.com>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc:     dl-linux-imx <linux-imx@nxp.com>
-References: <1589338689-15700-1-git-send-email-Anson.Huang@nxp.com>
- <fccf4197-d0ca-f313-8f70-000ef4731033@linaro.org>
- <DB3PR0402MB3916B6D11328A036BD479D39F5B50@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+        Sat, 23 May 2020 14:24:55 -0700 (PDT)
+Subject: Re: [RFC v3 1/2] thermal: core: Let thermal zone device's mode be
+ stored in its struct
+To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        linux-pm@vger.kernel.org
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>, Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, kernel@collabora.com,
+        Barlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+References: <9ac3b37a-8746-b8ee-70e1-9c876830ac83@linaro.org>
+ <20200417162020.19980-1-andrzej.p@collabora.com>
+ <20200417162020.19980-2-andrzej.p@collabora.com>
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <6a4d31e4-8a24-2e9f-aa49-bec8258ead4c@linaro.org>
-Date:   Sat, 23 May 2020 14:33:40 +0200
+Message-ID: <f39c5ca6-5efa-889c-21f5-632dfd24715e@linaro.org>
+Date:   Sat, 23 May 2020 23:24:51 +0200
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.7.0
 MIME-Version: 1.0
-In-Reply-To: <DB3PR0402MB3916B6D11328A036BD479D39F5B50@DB3PR0402MB3916.eurprd04.prod.outlook.com>
+In-Reply-To: <20200417162020.19980-2-andrzej.p@collabora.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 8bit
@@ -89,76 +102,114 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 23/05/2020 02:35, Anson Huang wrote:
-> Hi, Daniel
-> 
-> 
->> Subject: Re: [PATCH] thermal: imx8mm: Add get_trend ops
->>
->> On 13/05/2020 04:58, Anson Huang wrote:
->>> Add get_trend ops for i.MX8MM thermal to apply fast cooling mechanism,
->>> when temperature exceeds passive trip point, the highest cooling
->>> action will be applied, and when temperature drops to lower than the
->>> margin below passive trip point, the lowest cooling action will be
->>> applied.
->>
->> You are not describing what is the goal of this change.
-> 
-> The goal of this change is to make sure whenever temperature exceeds passive trip point,
-> the highest cooling action will be applied immediately, e.g., if there are many cpufreq OPP,
-> the default cooling will be step by step, it will take some more rounds to make cpufreq drop
-> to lowest OPP, while on i.MX, we expect the cpufreq drop to lowest OPP immediately.
+Hi Andrzej,
 
-Whatever the slope of the temperature increase?
-
->> IIUC, the resulting change will be an on/off action. The thermal zone is
->> mitigated with the highest cooling effect, so the lowest OPP, then the
->> temperature trend is stable until it goes below the trip - margin where the
->> mitigation is stopped.
+On 17/04/2020 18:20, Andrzej Pietrasiewicz wrote:
+> Thermal zone devices' mode is stored in individual drivers. This patch
+> changes it so that mode is stored in struct thermal_zone_device instead.
 > 
-> Yes, your understanding is correctly, once the temperature exceeds passive trip point,
-> the highest cooling action will be applied immediately and then it will be stable there
-> until temperature drop to trip - margin, then the cooling action will be cancelled, the
-> margin is to avoid the back and forth near the passive trip point.
+> As a result all driver-specific variables storing the mode are not needed
+> and are removed. Consequently, the get_mode() implementations have nothing
+> to operate on and need to be removed, too.
 > 
->>
->> Except, I'm missing something, setting a trip point with a 10000 hysteresis and
->> a cooling map min/max set to the highest opp will result on the same.
+> Some thermal framework specific functions are introduced:
 > 
-> Yes setting cooling map min/max cooling state to highest OPP will make the highest
-> cooling action applied immediately, and to have the function of cooling action being
-> cancelled when temperature drops to trip - margin, I have to define another trip point,
-> say passive trip point is 85000, and cooling map min/max set to highest OPP in passive
-> trip point then add another trip point named "active" with 75000, and without any
-> cooling map in it, right?
+> thermal_zone_device_get_mode()
+> thermal_zone_device_set_mode()
+> thermal_zone_device_enable()
+> thermal_zone_device_disable()
+> 
+> thermal_zone_device_get_mode() and its "set" counterpart take tzd's lock
+> and the "set" calls driver's set_mode() if provided, so the latter must
+> not take this lock again. At the end of the "set"
+> thermal_zone_device_update() is called so drivers don't need to repeat this
+> invocation in their specific set_mode() implementations.
+> 
+> The scope of the above 4 functions is purposedly limited to the thermal
+> framework and drivers are not supposed to call them. This encapsulation
+> does not fully work at the moment for some drivers, though:
+> 
+> - platform/x86/acerhdf.c
+> - drivers/thermal/imx_thermal.c
+> - drivers/thermal/intel/intel_quark_dts_thermal.c
+> - drivers/thermal/of-thermal.c
+> 
+> and they manipulate struct thermal_zone_device's members directly.
+> 
+> struct thermal_zone_params gains a new member called initial_mode, which
+> is used to set tzd's mode at registration time.
+> 
+> The sysfs "mode" attribute is always exposed from now on, because all
+> thermal zone devices now have their get_mode() implemented at the generic
+> level and it is always available. Exposing "mode" doesn't hurt the drivers
+> which don't provide their own set_mode(), because writing to "mode" will
+> result in -EPERM, as expected.
 
-May be I misunderstood but only the change as below is needed. No need
-to add a trip point, especially an 'active' trip which is a for an
-active cooling device like a fan.
+The result is great, that is a nice cleanup of the thermal framework.
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-index cc7152ecedd9..bea263bd06b4 100644
---- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-@@ -231,10 +231,10 @@ cooling-maps {
- 				map0 {
- 					trip = <&cpu_alert0>;
- 					cooling-device =
--						<&A53_0 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--						<&A53_1 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--						<&A53_2 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>,
--						<&A53_3 THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
-+						<&A53_0 2 2>,
-+						<&A53_1 2 2>,
-+						<&A53_2 2 2>,
-+						<&A53_3 2 2>
- 				};
- 			};
- 		};
+After review it appears there are still problems IMO, especially with
+the suspend / resume path. The patch is big, it is a bit complex to
+comment. I suggest to re-org the changes as following:
+
+ - patch 1 : Add the four functions:
+
+ * thermal_zone_device_set_mode()
+ * thermal_zone_device_enable()
+ * thermal_zone_device_disable()
+ * thermal_zone_device_is_enabled()
+
+*but* do not export thermal_zone_device_set_mode(), it must stay private
+to the thermal framework ATM.
+
+ - patch 2 : Add the mode THERMAL_DEVICE_SUSPENDED
+
+In the thermal_pm_notify() in the:
+
+ - PM_SUSPEND_PREPARE case, set the mode to THERMAL_DEVICE_SUSPENDED if
+the mode is THERMAL_DEVICE_ENABLED
+
+ - PM_POST_SUSPEND case, set the mode to THERMAL_DEVICE_ENABLED, if the
+mode is THERMAL_DEVICE_SUSPENDED
+
+ - patch 3 : Change the monitor function
+
+Change monitor_thermal_zone() function to set the polling to zero if the
+mode is THERMAL_DEVICE_DISABLED
+
+ - patch 4 : Do the changes to remove get_mode() ops
+
+Make sure there is no access to tz->mode from the drivers anymore but
+use of the functions of patch 1. IMO, this is the tricky part because a
+part of the drivers are not calling the update after setting the mode
+while the function thermal_zone_device_enable()/disable() call update
+via the thermal_zone_device_set_mode(), so we must be sure to not break
+anything.
+
+ - patch 5 : Do the changes to remove set_mode() ops users
+
+As the patch 3 sets the polling to zero, the routine in the driver
+setting the polling to zero is no longer needed (eg. in the mellanox
+driver). I expect int300 to be the last user of this ops, hopefully we
+can find a way to get rid of the specific call done inside and then
+remove the ops.
+
+The initial_mode approach looks hackish, I suggest to make the default
+the thermal zone disabled after creating and then explicitly enable it.
+Note that is what do a lot of drivers already.
+
+Hopefully, these changes are git-bisect safe.
+
+Does it make sense ?
 
 
-> If yes, then I think I can try to make the changes in DT instead of thermal driver. 
+
+
+
+
+
+
+
+
 
 
 -- 
