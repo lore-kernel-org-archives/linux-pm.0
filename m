@@ -2,144 +2,137 @@ Return-Path: <SRS0=vmax=7H=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CBBA9C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A7B80C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:32:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BBCB020776
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8141220671
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:32:15 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="odVXyK1l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389265AbgEYS0O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 May 2020 14:26:14 -0400
-Received: from mail-ej1-f66.google.com ([209.85.218.66]:37236 "EHLO
-        mail-ej1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387644AbgEYS0N (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2020 14:26:13 -0400
-Received: by mail-ej1-f66.google.com with SMTP id l21so21340052eji.4;
-        Mon, 25 May 2020 11:26:11 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=1qikXNcYuPEp2SbYrhq3PIeLmdf37Vp6toU2hryNiAU=;
-        b=UmCbsIdwmg0jEmX4PliEuAzxbhnr++enG6DM+5PuammxCnBstbdR/KQuR+PQ0y42pB
-         fELpWJdXAh9RRdvCdWiH9zJBGAFpDDjj9hVcqgZRFsmp+QEJ3TaWFO9YfkzBGYJJHvAw
-         o4Q+ZpiNqa5bc5+55Ii/p9IZQV6zI7wmnkKzetFoTXnND07uZfTbO0xCl/Lq513bMTAH
-         5Wh8pwjGqrxPUiH1SErSegLkfEqMhFcnq8ekW5Ri//s16Av17xL3ey9iqTng4x6xVtNd
-         6L3rIuXUbnfs+yEY4cuwJJkqbYguGR9w4bl6PHVt3r2SZMgjF5r8gFw3XllbqpAHOW39
-         eTGQ==
-X-Gm-Message-State: AOAM530wgjA9f4C4bbwoAhVYMprvnaEiCXOn5aEnfXakvXVCvKmo8Wih
-        B7R6u9qx8iVPnxwLifqJiBg=
-X-Google-Smtp-Source: ABdhPJxkEBfJS/XXtSSCnmQUkO84UroYhCAKuA4jbTqreWDo9ErA8dsQuCsf23LSLacMkksSHFqFeg==
-X-Received: by 2002:a17:906:4bc1:: with SMTP id x1mr19051208ejv.13.1590431170704;
-        Mon, 25 May 2020 11:26:10 -0700 (PDT)
-Received: from workstation.lan ([95.155.85.46])
-        by smtp.gmail.com with ESMTPSA id n15sm15555707ejs.10.2020.05.25.11.26.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 May 2020 11:26:09 -0700 (PDT)
-From:   =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
-To:     Dan Carpenter <dan.carpenter@oracle.com>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>, Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Pavel Machek <pavel@ucw.cz>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Johan Hovold <johan@kernel.org>, Alex Elder <elder@kernel.org>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        "James E.J. Bottomley" <jejb@linux.ibm.com>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        Felipe Balbi <balbi@kernel.org>,
-        Julian Wiedmann <jwi@linux.ibm.com>,
-        Karsten Graul <kgraul@linux.ibm.com>,
-        Ursula Braun <ubraun@linux.ibm.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        John Stultz <john.stultz@linaro.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        greybus-dev@lists.linaro.org, netdev@vger.kernel.org,
-        linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
-        linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH 0/8] Add helper for accessing Power Management callbacs
-Date:   Mon, 25 May 2020 18:26:00 +0000
-Message-Id: <20200525182608.1823735-1-kw@linux.com>
-X-Mailer: git-send-email 2.26.2
+        id S2388753AbgEYScP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 May 2020 14:32:15 -0400
+Received: from cmta17.telus.net ([209.171.16.90]:47709 "EHLO cmta17.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2389507AbgEYScO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 25 May 2020 14:32:14 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id dHtPjpLAEmjwfdHtRjRAEl; Mon, 25 May 2020 12:32:12 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1590431532; bh=DwnlgWYFEihSUuio0v01s3xTbjhMAeUb4PFpGrp4bzA=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=odVXyK1lhlR7GKXmOmPIXqLafNJylQPzNHQOUpZOlhJ1dPRAu8BU11Os9UcF+GA+4
+         XcKiz78SZ984L9O6G4GvLrzRELImoq4CrpOhRoHhk9VJU2kj+QMIt91HOqzJOdd5iW
+         JwhVnh+3RHNQICM3S80qFkKujXP6rPbXmdGNkleHMsgMYGbhKx0LoVTqSvHKHuYV4O
+         PyWxNcCmIhyL2hvFi9OlsMtjX8nBjy8SNcjvRijDHTChBzgX5UdqhEU9TDkcFyq+vw
+         XjPb2mab2WOABR/5WUZ+kiAF7V+dRtDsyk+gQ+YDOL82Kz8OTughRtwAGyAHv55In/
+         Wb19bVINUfi3A==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=ea5DgIMH c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=IkcTkHD0fZMA:10 a=D19gQVrFAAAA:8
+ a=8GfnRiUhAAAA:20 a=FGbulvE0AAAA:8 a=6A1WGPImOnARz27ZNyMA:9 a=QEXdDO2ut3YA:10
+ a=W4TVW4IDbPiebHqcZpNg:22 a=svzTaB3SJmTkU8mK-ULk:22
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Pratik Sampat'" <psampat@linux.ibm.com>
+Cc:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        <rafael.j.wysocki@intel.com>, <peterz@infradead.org>,
+        <daniel.lezcano@linaro.org>, <ego@linux.vnet.ibm.com>,
+        <svaidy@linux.ibm.com>, <pratik.sampat@in.ibm.com>,
+        <pratik.r.sampat@gmail.com>
+References: <20200511141055.43029-1-psampat@linux.ibm.com> <000101d62c76$a16ac360$e4404a20$@net> <fca35bce-b1ae-7137-4bf8-aa385c371be4@linux.ibm.com>
+In-Reply-To: <fca35bce-b1ae-7137-4bf8-aa385c371be4@linux.ibm.com>
+Subject: RE: [RFC 0/1] Alternate history mechanism for the TEO governor
+Date:   Mon, 25 May 2020 11:32:06 -0700
+Message-ID: <000901d632c2$cda7f8b0$68f7ea10$@net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Content-Language: en-ca
+Thread-Index: AdYvYELpjVNlGEUnTX63IAsG8BP+SQDX7CYQ
+X-CMAE-Envelope: MS4wfIddEKNJ3KXDE3ES5FExA9vWHLzTR8M0Zb3Hc/T0BPqdq78mItLU8YlIRa2nFqyA9lrY/T5CgEdyYTsmyIcxtVAwE3WQJ+csbijtLSWUgV6z2L9oa91+
+ CcAg8Z9mzMIx0nRbtZh/7yK9vlXZuBlNyn0+GF8cjJLV1S51o6Sy5jCYGTzueNy9d5qV81dMKzYOJp3OvI28t6uw/1yMGwScH/ZDLXjGEK+Xcj7/K4Xa1NNA
+ rb+NNvr5bShsdSR3PEl0dRWaUyMSr+RwN/u9E4ao9oSqScHmdYZ+PoS5J2imsyS6QG5DTSaudmRIJiY4NLKrNagj1GbfEqLOpYxQIN6ZGcF7vp1OUu+c5Whp
+ XdoTTBCFVwEY3pX3OFgOAQIGG2iWlf+tZ3G6iB7OzbhCR9Bm7eKf4hGyrqjF2xh6bc+W7wt+J53MEhrBZYHIajtsdjXTw3ktmtqhWtuyTYf7SvwBV7QYlpyn
+ kQscPhzvYfFNDqk5vQDF7U2EoDtH7h0gI+c2lg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series aims to add a new driver_to_pm() helper allowing for
-accessing the Power Management callbacs for a particular device.
+On 2020.05.21 04:09 Pratik Sampat wrote:
+> On 17/05/20 11:41 pm, Doug Smythies wrote:
+> > On 2020.05.11 Pratik Rajesh Sampat wrote:
+> >> First RFC posting:https://lkml.org/lkml/2020/2/22/27
+> > Summary:
+> >
+> > On that thread I wrote:
+> >
+> >    > I have done a couple of other tests with this patch set,
+> >    > but nothing to report yet, as the differences have been
+> >    > minor so far.
+> >
+> > I tried your tests, or as close as I could find, and still
+> > do not notice much difference.
+> 
+> That is quite unfortunate. At least it doesn't seem to regress.
 
-Access to the callbacs (struct dev_pm_ops) is normally done through
-using the pm pointer that is embedded within the device_driver struct.
+Yes, while I have not been able to demonstrate improvement,
+I have not found any regression.
 
-This new helper allows for the code required to reference the pm pointer
-and access Power Management callbas to be simplified.  Changing the
-following:
+> 
+> Nevertheless, as Rafael suggested aging is crucial, this patch doesn't age
+> weights. I do have a version with aging but I had a lot of run to run variance
+> so I had refrained from posting that.
+> I'm tweaking around the logic for aging as well as distribution of weights,
+> hopefully that may help.
 
-  struct device_driver *drv = dev->driver;
-  if (dev->driver && dev->driver->pm && dev->driver->pm->prepare) {
-      int ret = dev->driver->pm->prepare(dev);
+O.K. I am putting this testing aside for now.
+I like the set of tests, as they really show the differences between menu
+and teo governors well.
 
-To:
+> >>
+> >> Sleeping Ebizzy
+> >> ---------------
+> >> Program to generate workloads resembling web server workloads.
+> >> The benchmark is customized to allow for a sleep interval -i
+> > I found a Phoronix ebizzy, but without the customization,
+> > which I suspect is important to demonstrate your potential
+> > improvement.
+> >
+> > Could you send me yours to try?
+> 
+> Sure thing, sleeping ebizzy is hosted here:
+> https://github.com/pratiksampat/sleeping-ebizzy
+> 
+> >
+> > ebizzy (records per second, more is better)
+> >
+> > teo		wtteo				menu
+> > 132344	132228	99.91%	130926	98.93%
 
-  const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
-  if (pm && pm->prepare) {
-      int ret = pm->prepare(dev);
+O.K. yours is way different than what I was using.
+Anyway, results still are not very different
+between teo and wtteo. Some tests are showing a little difference
+between above/below statistics [1]
 
-Or, changing the following:
+[1] http://www.smythies.com/~doug/linux/idle/wtteo/ebizzy-interval/2_below.png
 
-     const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+By the way, and likely not relevant, your sleeping-ebizzy test
+seems extremely sensitive to the interval and number of threads.
+It is not clear to me what settings I should use to try to re-create
+your results. [2] is an interesting graph of records per second verses
+intervals verses threads.
+ 
+[2] http://www.smythies.com/~doug/linux/idle/wtteo/doug08/sleeping-ebizzy-records-intervals-threads.png
 
-To:
-     const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
 
-This series builds on top of the previous commit 6da2f2ccfd2d ("PCI/PM:
-Make power management op coding style consistent") that had an aim to
-make accessing the Power Managemnet callbacs more consistent.
-
-No functional change intended.
-
-Links:
-  https://lore.kernel.org/driverdev-devel/20191014230016.240912-6-helgaas@kernel.org/
-  https://lore.kernel.org/driverdev-devel/8592302.r4xC6RIy69@kreacher/
-  https://lore.kernel.org/driverdev-devel/20191016135002.GA24678@kadam/
-
-Krzysztof Wilczyński (8):
-  driver core: Add helper for accessing Power Management callbacs
-  ACPI: PM: Use the new device_to_pm() helper to access struct
-    dev_pm_ops
-  greybus: Use the new device_to_pm() helper to access struct dev_pm_ops
-  scsi: pm: Use the new device_to_pm() helper to access struct
-    dev_pm_ops
-  usb: phy: fsl: Use the new device_to_pm() helper to access struct
-    dev_pm_ops
-  PCI/PM: Use the new device_to_pm() helper to access struct dev_pm_ops
-  PM: Use the new device_to_pm() helper to access struct dev_pm_ops
-  net/iucv: Use the new device_to_pm() helper to access struct
-    dev_pm_ops
-
- drivers/acpi/device_pm.c         |  5 ++-
- drivers/base/power/domain.c      | 12 ++++--
- drivers/base/power/generic_ops.c | 65 ++++++++++++++------------------
- drivers/base/power/main.c        | 48 +++++++++++++++--------
- drivers/base/power/runtime.c     |  7 ++--
- drivers/greybus/bundle.c         |  4 +-
- drivers/pci/pci-driver.c         | 32 ++++++++--------
- drivers/scsi/scsi_pm.c           |  8 ++--
- drivers/usb/phy/phy-fsl-usb.c    | 11 ++++--
- include/linux/device/driver.h    | 15 ++++++++
- net/iucv/iucv.c                  | 30 +++++++++------
- 11 files changed, 138 insertions(+), 99 deletions(-)
-
--- 
-2.26.2
 
