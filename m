@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44776C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C36BCC433E3
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3386A20776
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B19F620787
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389555AbgEYS00 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 May 2020 14:26:26 -0400
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:36104 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389294AbgEYS0W (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2020 14:26:22 -0400
-Received: by mail-ed1-f67.google.com with SMTP id b91so15737219edf.3;
-        Mon, 25 May 2020 11:26:19 -0700 (PDT)
+        id S2389468AbgEYS0V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 May 2020 14:26:21 -0400
+Received: from mail-ed1-f68.google.com ([209.85.208.68]:35257 "EHLO
+        mail-ed1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389100AbgEYS0S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2020 14:26:18 -0400
+Received: by mail-ed1-f68.google.com with SMTP id be9so15716301edb.2;
+        Mon, 25 May 2020 11:26:16 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0zGvHrt9YYoiSjZrnFb35ZKjC/21ugPMkpe0HjhFbIE=;
-        b=Sgyj9hjtZEyafbSMpSpYXef8HDKL+AA2+eocPQkxlmHJrAnuAcC8h5KDypURCdOBWH
-         6UveCF8AECP8ooKg83e8ksIYVNWqOX9HOSkPWTZqgA5WAUzaM+GkbcQ7CNsexU0AY6/l
-         rERvxO+n7FugolWQqpNtzMA1yx+br3Nn/EmCUkJnGBLttiNV8Ei+e+mUiHSzQLk4R4l0
-         elNtXzuS44aBbTs8jyHoZZzr7Ekh9oRQNQhMJbuf3F5cw+651Hspertztb3UeXiBfjcE
-         otdAsOJbNd3aBwM1x/BiuKnzkgExiqZx9jJl9FMdM/Q8TMglwj9cbV4/jXm1KD74SPvr
-         R9UQ==
-X-Gm-Message-State: AOAM531fSHVFjrktTfvrlO/b5SxVEz3m6KiK8TH5S1YOU9eHGUfqHR0W
-        Gil1zS6O2xwAUqltQk8mZDcTlzxJkslCAX4o
-X-Google-Smtp-Source: ABdhPJxu8xj7ETus6I8qz75XV9UcGoEOmg3ZGJLGe0YSg2hAMRNpcfMS5lnkyWZC+sphielpDh7PsA==
-X-Received: by 2002:a05:6402:948:: with SMTP id h8mr15890575edz.127.1590431178687;
-        Mon, 25 May 2020 11:26:18 -0700 (PDT)
+        bh=1bL0BwD4jERke74zdsN6GWlbqAKQcOkJQVbWbDofjCc=;
+        b=CoHAjtuTgZ7RKbrHFOXlqXo6a0T0ih3ZweRc7jHDv1fccdmzPVdTB48Z665vf2mDPq
+         4vfKDab8lm7GuHVAMX2FsfrDxdM2rYU8eMu47gymPgZWJlJ2V7gB3PtCzNNyfZYcaiii
+         +FJK74we0EI5UzE8VI8zey1ncORARQI0UCIG7d6yH5YAXcoD2VUa8yFu/vUdC122elxw
+         jDFaymZx2lTr4udcolAOP5Wu1zam8TGXzviOR/6hg5lP0gFuwAU4ubhIORuGjekaIYn0
+         PxrkEfOKvL1K8zzm8SNFWbmpIZuwNYqdPLcv3ieEbWjA9RQKCdbw38MNw1md4kbYmOZ4
+         UlfQ==
+X-Gm-Message-State: AOAM530LRNPud5BE4WiJF7vu8+7TLEoiB0vfW09lNzC/H9PukFwkEjeO
+        02Q6ldMywmkcBnvZOU2axLg=
+X-Google-Smtp-Source: ABdhPJwrYFIAvzGWl142jMalbOrQRtAasOCaag/9Ikx3BCjjSja4mpWvlAvCZRDWouYD7Z+QytFuXg==
+X-Received: by 2002:aa7:cb8d:: with SMTP id r13mr16272548edt.12.1590431175453;
+        Mon, 25 May 2020 11:26:15 -0700 (PDT)
 Received: from workstation.lan ([95.155.85.46])
-        by smtp.gmail.com with ESMTPSA id n15sm15555707ejs.10.2020.05.25.11.26.17
+        by smtp.gmail.com with ESMTPSA id n15sm15555707ejs.10.2020.05.25.11.26.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 May 2020 11:26:18 -0700 (PDT)
+        Mon, 25 May 2020 11:26:14 -0700 (PDT)
 From:   =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
 To:     Dan Carpenter <dan.carpenter@oracle.com>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -63,9 +63,9 @@ Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
         linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH 5/8] usb: phy: fsl: Use the new device_to_pm() helper to access struct dev_pm_ops
-Date:   Mon, 25 May 2020 18:26:05 +0000
-Message-Id: <20200525182608.1823735-6-kw@linux.com>
+Subject: [PATCH 3/8] greybus: Use the new device_to_pm() helper to access struct dev_pm_ops
+Date:   Mon, 25 May 2020 18:26:03 +0000
+Message-Id: <20200525182608.1823735-4-kw@linux.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200525182608.1823735-1-kw@linux.com>
 References: <20200525182608.1823735-1-kw@linux.com>
@@ -84,45 +84,31 @@ No functional change intended.
 
 Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
 ---
- drivers/usb/phy/phy-fsl-usb.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+ drivers/greybus/bundle.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/usb/phy/phy-fsl-usb.c b/drivers/usb/phy/phy-fsl-usb.c
-index b451f4695f3f..3b9ad5db8380 100644
---- a/drivers/usb/phy/phy-fsl-usb.c
-+++ b/drivers/usb/phy/phy-fsl-usb.c
-@@ -460,6 +460,7 @@ int fsl_otg_start_host(struct otg_fsm *fsm, int on)
- 	struct device *dev;
- 	struct fsl_otg *otg_dev =
- 		container_of(otg->usb_phy, struct fsl_otg, phy);
-+	const struct dev_pm_ops *pm;
- 	u32 retval = 0;
+diff --git a/drivers/greybus/bundle.c b/drivers/greybus/bundle.c
+index 84660729538b..d38d3a630812 100644
+--- a/drivers/greybus/bundle.c
++++ b/drivers/greybus/bundle.c
+@@ -108,7 +108,7 @@ static void gb_bundle_enable_all_connections(struct gb_bundle *bundle)
+ static int gb_bundle_suspend(struct device *dev)
+ {
+ 	struct gb_bundle *bundle = to_gb_bundle(dev);
+-	const struct dev_pm_ops *pm = dev->driver->pm;
++	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
+ 	int ret;
  
- 	if (!otg->host)
-@@ -479,8 +480,9 @@ int fsl_otg_start_host(struct otg_fsm *fsm, int on)
- 		else {
- 			otg_reset_controller();
- 			VDBG("host on......\n");
--			if (dev->driver->pm && dev->driver->pm->resume) {
--				retval = dev->driver->pm->resume(dev);
-+			pm = driver_to_pm(dev->driver);
-+			if (pm && pm->resume) {
-+				retval = pm->resume(dev);
- 				if (fsm->id) {
- 					/* default-b */
- 					fsl_otg_drv_vbus(fsm, 1);
-@@ -504,8 +506,9 @@ int fsl_otg_start_host(struct otg_fsm *fsm, int on)
- 		else {
- 			VDBG("host off......\n");
- 			if (dev && dev->driver) {
--				if (dev->driver->pm && dev->driver->pm->suspend)
--					retval = dev->driver->pm->suspend(dev);
-+				pm = driver_to_pm(dev->driver);
-+				if (pm && pm->suspend)
-+					retval = pm->suspend(dev);
- 				if (fsm->id)
- 					/* default-b */
- 					fsl_otg_drv_vbus(fsm, 0);
+ 	if (pm && pm->runtime_suspend) {
+@@ -135,7 +135,7 @@ static int gb_bundle_suspend(struct device *dev)
+ static int gb_bundle_resume(struct device *dev)
+ {
+ 	struct gb_bundle *bundle = to_gb_bundle(dev);
+-	const struct dev_pm_ops *pm = dev->driver->pm;
++	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
+ 	int ret;
+ 
+ 	ret = gb_control_bundle_resume(bundle->intf->control, bundle->id);
 -- 
 2.26.2
 
