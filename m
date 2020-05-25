@@ -6,40 +6,40 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C6180C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C4FC433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B160820776
-	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 32FE120776
+	for <linux-pm@archiver.kernel.org>; Mon, 25 May 2020 18:26:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389431AbgEYS0V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 25 May 2020 14:26:21 -0400
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:46901 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389339AbgEYS0U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2020 14:26:20 -0400
-Received: by mail-ed1-f67.google.com with SMTP id f13so15097900edr.13;
-        Mon, 25 May 2020 11:26:17 -0700 (PDT)
+        id S2389308AbgEYS0R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 25 May 2020 14:26:17 -0400
+Received: from mail-ej1-f67.google.com ([209.85.218.67]:36124 "EHLO
+        mail-ej1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387644AbgEYS0Q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 25 May 2020 14:26:16 -0400
+Received: by mail-ej1-f67.google.com with SMTP id z5so21375647ejb.3;
+        Mon, 25 May 2020 11:26:13 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Vks0hIgL1NwjWUU2xJ9iHtmVGdxZKzV+xbSUPqXCfwA=;
-        b=LEo9fgX+z93XCPxtZSv4U/aKOUbDnDTtBoqZfzlugxY222bvkXsGvTqSoRX1/97aI+
-         dTMjuLSZv1dtVyedOqLsI8JydUy0tq14TPWw01aN4PfNRcc2tJOOZtJLJtAVjTmSrNTY
-         tAkbQvRgUAwB6yYjkqNhn/aEUleNcyyW2TTRqvBmqPm7Q7iErv4Io9VFKeffDBRMhacA
-         66iLNA/HExgrkbhbd4v6z+vUkgysEuNzZcpmgjCmbaMq5XgIwWvL5BUjm6t8qOZQ12hs
-         bQgGKDPe0uQRAlDYksyHLFSIfnTcr3VopYpXHOv6ctKqm32S/fgs7kY3WuNmSThQsfG4
-         hdcQ==
-X-Gm-Message-State: AOAM532GazrAOglUcU6mnKLV+GUU7POZv8HIPvPlf2sa8yKKomJUSs0i
-        xGWM9g4OdxFaZAiQMqib78E=
-X-Google-Smtp-Source: ABdhPJxpk17hj32HQlVxuKMrJl9fav78GF8tiYkjJ3OmXfQxm5boXKtzfcrmijAtVvsY76ZoDX8sKQ==
-X-Received: by 2002:aa7:c3cb:: with SMTP id l11mr15735650edr.364.1590431177072;
-        Mon, 25 May 2020 11:26:17 -0700 (PDT)
+        bh=tkUGbMkkypRL042+ieWSoDccuHFghwak5Hi3wVxhDmE=;
+        b=C6FvFlWGYjOrdkQk8jI5gKJ0FH/UIZfAILSeyIMoTRLVytb2uadwYyVnBKtqhCSTxo
+         aj7PGbUmhTcR+JDysusQTqgasRYDpRRQVxdYvRfjAv9VZB2QeepMKCxd5gfoeTRCiG/e
+         Jmgh6y48CMevLk1MxULlpxQvOwdtAh0T6TWBfaG9cwVabEG8HXYWfG+8hlVFUiRJhf7c
+         mtlCsuSP04spjmnUmGR4zpEhwRDaInkTdyS7yw8aXxmvRwo3qaUa74CaZKTiV/4cXz5v
+         TEJMF4mWPLspYAssS60gMRqErYpLcUVYYto+4tR5wIWJ4CrG4vDDmSFwZy+Kdd+wz9mq
+         Thig==
+X-Gm-Message-State: AOAM5325TrlWaByK3eWEBqeVkTpPT770+FJzp0atfEnrNtZYykD0dU5j
+        Ga9qYIw6jsILnnvzjKMDVjGtN1EA6vzgYy46
+X-Google-Smtp-Source: ABdhPJyLZsaw5mEGXRcLaNb9q3bD5AU4cxUKQ8Vo98mbYphbp21kYQ3Rc8jcjNp3ljuzgmIEt8D4Ug==
+X-Received: by 2002:a17:906:f1c3:: with SMTP id gx3mr19110160ejb.278.1590431172312;
+        Mon, 25 May 2020 11:26:12 -0700 (PDT)
 Received: from workstation.lan ([95.155.85.46])
-        by smtp.gmail.com with ESMTPSA id n15sm15555707ejs.10.2020.05.25.11.26.15
+        by smtp.gmail.com with ESMTPSA id n15sm15555707ejs.10.2020.05.25.11.26.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 May 2020 11:26:16 -0700 (PDT)
+        Mon, 25 May 2020 11:26:11 -0700 (PDT)
 From:   =?UTF-8?q?Krzysztof=20Wilczy=C5=84ski?= <kw@linux.com>
 To:     Dan Carpenter <dan.carpenter@oracle.com>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -63,9 +63,9 @@ Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
         linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [PATCH 4/8] scsi: pm: Use the new device_to_pm() helper to access struct dev_pm_ops
-Date:   Mon, 25 May 2020 18:26:04 +0000
-Message-Id: <20200525182608.1823735-5-kw@linux.com>
+Subject: [PATCH 1/8] driver core: Add helper for accessing Power Management callbacs
+Date:   Mon, 25 May 2020 18:26:01 +0000
+Message-Id: <20200525182608.1823735-2-kw@linux.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200525182608.1823735-1-kw@linux.com>
 References: <20200525182608.1823735-1-kw@linux.com>
@@ -77,56 +77,63 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the new device_to_pm() helper to access Power Management callbacs
-(struct dev_pm_ops) for a particular device (struct device_driver).
+Add driver_to_pm() helper allowing for accessing the Power Management
+callbacs for a particular device.  Access to the callbacs (struct
+dev_pm_ops) is normally done through using the pm pointer that is
+embedded within the device_driver struct.
 
-No functional change intended.
+Helper allows for the code required to reference the pm pointer and
+access Power Management callbas to be simplified.  Changing the
+following:
+
+  struct device_driver *drv = dev->driver;
+  if (dev->driver && dev->driver->pm && dev->driver->pm->prepare) {
+      int ret = dev->driver->pm->prepare(dev);
+
+To:
+
+  const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
+  if (pm && pm->prepare) {
+      int ret = pm->prepare(dev);
+
+Or, changing the following:
+
+     const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+
+To:
+     const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
 
 Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
 ---
- drivers/scsi/scsi_pm.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ include/linux/device/driver.h | 15 +++++++++++++++
+ 1 file changed, 15 insertions(+)
 
-diff --git a/drivers/scsi/scsi_pm.c b/drivers/scsi/scsi_pm.c
-index 5f0ad8b32e3a..8f40b60d3383 100644
---- a/drivers/scsi/scsi_pm.c
-+++ b/drivers/scsi/scsi_pm.c
-@@ -53,7 +53,7 @@ static int do_scsi_restore(struct device *dev, const struct dev_pm_ops *pm)
- static int scsi_dev_type_suspend(struct device *dev,
- 		int (*cb)(struct device *, const struct dev_pm_ops *))
- {
--	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
- 	int err;
+diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+index ee7ba5b5417e..ccd0b315fd93 100644
+--- a/include/linux/device/driver.h
++++ b/include/linux/device/driver.h
+@@ -236,6 +236,21 @@ driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
+ }
+ #endif
  
- 	/* flush pending in-flight resume operations, suspend is synchronous */
-@@ -72,7 +72,7 @@ static int scsi_dev_type_suspend(struct device *dev,
- static int scsi_dev_type_resume(struct device *dev,
- 		int (*cb)(struct device *, const struct dev_pm_ops *))
- {
--	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
- 	int err = 0;
- 
- 	err = cb(dev, pm);
-@@ -232,7 +232,7 @@ static int scsi_bus_restore(struct device *dev)
- 
- static int sdev_runtime_suspend(struct device *dev)
- {
--	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
- 	struct scsi_device *sdev = to_scsi_device(dev);
- 	int err = 0;
- 
-@@ -262,7 +262,7 @@ static int scsi_runtime_suspend(struct device *dev)
- static int sdev_runtime_resume(struct device *dev)
- {
- 	struct scsi_device *sdev = to_scsi_device(dev);
--	const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
-+	const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
- 	int err = 0;
- 
- 	blk_pre_runtime_resume(sdev->request_queue);
++/**
++ * driver_to_pm - Return Power Management callbacs (struct dev_pm_ops) for
++ *                a particular device.
++ * @drv: Pointer to a device (struct device_driver) for which you want to access
++ *       the Power Management callbacks.
++ *
++ * Returns a pointer to the struct dev_pm_ops embedded within the device (struct
++ * device_driver), or returns NULL if Power Management is not present and the
++ * pointer is not valid.
++ */
++static inline const struct dev_pm_ops *driver_to_pm(struct device_driver *drv)
++{
++	return drv && drv->pm ? drv->pm : NULL;
++}
++
+ extern int driver_deferred_probe_timeout;
+ void driver_deferred_probe_add(struct device *dev);
+ int driver_deferred_probe_check_state(struct device *dev);
 -- 
 2.26.2
 
