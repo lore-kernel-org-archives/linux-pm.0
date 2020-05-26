@@ -2,112 +2,113 @@ Return-Path: <SRS0=FNjc=7I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21AF5C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 15:17:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB57AC433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 15:19:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0169620776
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 15:17:31 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="ZJ2hInnn"
+	by mail.kernel.org (Postfix) with ESMTP id AB31C20776
+	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 15:19:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1590506363;
+	bh=pgSnFmjqIUWFOY7OIPGTlhciS8aSQP9kq1ANrXciBOI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=UxXym53qepcPGW0QQEixinhLhCznP3+JJt9C5ZfPkfwQFGSHwybrTDpzOYn8ViVpB
+	 +5xc4VnpvE9Tl7Xrgev7G2CLnrD2LkUO2di2s9/bAfYYiC96PWIhUaHPhdVzOtAuBz
+	 ZTeutWnbOR+bBQNlwVyIRR9oUccZgNlDOc91JHVs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727921AbgEZPRa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 May 2020 11:17:30 -0400
-Received: from mx08-00178001.pphosted.com ([91.207.212.93]:25764 "EHLO
-        mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1728637AbgEZPRS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2020 11:17:18 -0400
-Received: from pps.filterd (m0046660.ppops.net [127.0.0.1])
-        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 04QFBxuh017911;
-        Tue, 26 May 2020 17:16:28 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : cc : subject
- : date : message-id : in-reply-to : references : mime-version :
- content-type; s=STMicroelectronics;
- bh=5Rg4znNj42bzqjnolZJ9lV8rYKa4nFxeh6irBMvctcs=;
- b=ZJ2hInnnSvYQ638CgiFTDp+jSj5/oidFxGSA9sSM2XMhqc62QR9HNVaLncNLEIXTlN5p
- ER9JTb3KxLPPCnv5R6HHhsfzXAGop93eNUX31yoR0c2iZM0IAnNWdbuG+Ctsxra/WIJn
- PT0L9XDXZYuKr4OgrITF+Pv2aLdTkzkexmC9L6OGQbIAuaZXL4x8M5gOdj0yN7Uku2/J
- poaJN/R1cRZtm2XPk/C6fkZmtuoTfbN3MPkGMk8uYvcX1X5AvnwPGeEZEfZlOs9UKl/Z
- mgTu5n1NvqKFkTQpFm6riYPd9ag77GGTFGfTR5wQltucbYf6AMumYRWBUOUzviSprDg8 Wg== 
-Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
-        by mx07-00178001.pphosted.com with ESMTP id 316rya8ff0-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 26 May 2020 17:16:28 +0200
-Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id C6EF510002A;
-        Tue, 26 May 2020 17:16:27 +0200 (CEST)
-Received: from Webmail-eu.st.com (sfhdag3node3.st.com [10.75.127.9])
-        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id B5EF32C1DA0;
-        Tue, 26 May 2020 17:16:27 +0200 (CEST)
-Received: from localhost (10.75.127.51) by SFHDAG3NODE3.st.com (10.75.127.9)
- with Microsoft SMTP Server (TLS) id 15.0.1347.2; Tue, 26 May 2020 17:16:27
- +0200
-From:   Benjamin Gaignard <benjamin.gaignard@st.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>,
-        <hugues.fruchet@st.com>, <mchehab@kernel.org>,
-        <mcoquelin.stm32@gmail.com>, <alexandre.torgue@st.com>,
-        <pavel@ucw.cz>, <len.brown@intel.com>,
-        <valentin.schneider@arm.com>, <vincent.guittot@linaro.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-media@vger.kernel.org>,
-        <linux-stm32@st-md-mailman.stormreply.com>,
-        <linux-arm-kernel@lists.infradead.org>,
-        Benjamin Gaignard <benjamin.gaignard@st.com>
-Subject: [RFC 2/3] cpufreq: governor: Use minimum load QoS
-Date:   Tue, 26 May 2020 17:16:18 +0200
-Message-ID: <20200526151619.8779-3-benjamin.gaignard@st.com>
-X-Mailer: git-send-email 2.15.0
-In-Reply-To: <20200526151619.8779-1-benjamin.gaignard@st.com>
-References: <20200526151619.8779-1-benjamin.gaignard@st.com>
+        id S1728803AbgEZPTU convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 May 2020 11:19:20 -0400
+Received: from mail-oo1-f67.google.com ([209.85.161.67]:40593 "EHLO
+        mail-oo1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726939AbgEZPTU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2020 11:19:20 -0400
+Received: by mail-oo1-f67.google.com with SMTP id f39so976300ooi.7;
+        Tue, 26 May 2020 08:19:19 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=VZBcz6P8XvlHsbrU2eTtG7/ScIEzLwH8fekfbRdSKRQ=;
+        b=axB0+ztMZNPQHmh2T5J1rNX9XSSqUJ1ghF8kZRp21n86wbYCSnhFvdknxHvMgxWxZL
+         rJYrae7L8x9X9tavzKHdELQgCk12rkUHqFsMLw0DOyOPALJ64FjunAwiRSUvz1m3yVhr
+         YEgm3brc/NQ/u+Z1lT5X4ylfv29HXZrhuqdCJ1AntbRSp1wcywD6q2CsIn5JhLuIWysr
+         t+cDgFv5/X0ScpqJLzcNZ5SDMwfmAU1MKJwdysYqI01xgTnA25QVvB21spZSxQ/bSpyO
+         i79CoXuo5QvVoCierl6itgrB8iHESrqx4Z6WWFHlVXuIllaA8n62yLSWiTTNaaTXTJpz
+         LKzQ==
+X-Gm-Message-State: AOAM530hYjiOOErfVOwMBEOEK3O85DOWy81EVO7IHYM6CudnZRKUWkfX
+        Cr6QBA3mlyVEcrw/eY8Zjl1zL0ULWIYdXBscdXM=
+X-Google-Smtp-Source: ABdhPJz6T1ptdbNy/G/lwrqbnMsBUWMLewVuG8K8TUsIgnEptYY3NNFI0VGqY6Fo8CDoDMoNJVTCuZ+6jxk8hfWP6YI=
+X-Received: by 2002:a4a:be07:: with SMTP id l7mr17198759oop.38.1590506358744;
+ Tue, 26 May 2020 08:19:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.75.127.51]
-X-ClientProxiedBy: SFHDAG5NODE2.st.com (10.75.127.14) To SFHDAG3NODE3.st.com
- (10.75.127.9)
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.216,18.0.687
- definitions=2020-05-26_02:2020-05-26,2020-05-26 signatures=0
+References: <20200525182608.1823735-1-kw@linux.com> <20200525182608.1823735-9-kw@linux.com>
+ <20200526063521.GC2578492@kroah.com> <20200526150744.GC75990@rocinante>
+In-Reply-To: <20200526150744.GC75990@rocinante>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 26 May 2020 17:19:07 +0200
+Message-ID: <CAJZ5v0grVQhmk=q9_=CbBa8y_8XbTOeqv-Hb6Hivi6ffKsVHmQ@mail.gmail.com>
+Subject: Re: [PATCH 8/8] net/iucv: Use the new device_to_pm() helper to access
+ struct dev_pm_ops
+To:     =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>
+Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Dan Carpenter <dan.carpenter@oracle.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>, Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Johan Hovold <johan@kernel.org>,
+        Alex Elder <elder@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Felipe Balbi <balbi@kernel.org>,
+        Julian Wiedmann <jwi@linux.ibm.com>,
+        Karsten Graul <kgraul@linux.ibm.com>,
+        Ursula Braun <ubraun@linux.ibm.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        John Stultz <john.stultz@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        greybus-dev@lists.linaro.org, netdev <netdev@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-s390@vger.kernel.org,
+        "open list:TARGET SUBSYSTEM" <linux-scsi@vger.kernel.org>,
+        "open list:ULTRA-WIDEBAND (UWB) SUBSYSTEM:" 
+        <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Make sure that the returned load is above the system-wide minimum
-load QoS.
-Devices could set this specific QoS to inform governors about their
-need in terms of CPU load when computing it from idle time isn't accurate.
+On Tue, May 26, 2020 at 5:07 PM Krzysztof Wilczyński <kw@linux.com> wrote:
+>
+> Hello Greg,
+>
+> [...]
+> > It's "interesting" how using your new helper doesn't actually make the
+> > code smaller.  Perhaps it isn't a good helper function?
+>
+> The idea for the helper was inspired by the comment Dan made to Bjorn
+> about Bjorn's change, as per:
+>
+>   https://lore.kernel.org/driverdev-devel/20191016135002.GA24678@kadam/
+>
+> It looked like a good idea to try to reduce the following:
+>
+>   dev->driver && dev->driver->pm && dev->driver->pm->prepare
+>
+> Into something more succinct.  Albeit, given the feedback from yourself
+> and Rafael, I gather that this helper is not really a good addition.
 
-Signed-off-by: Benjamin Gaignard <benjamin.gaignard@st.com>
----
- drivers/cpufreq/cpufreq_governor.c | 5 +++++
- 1 file changed, 5 insertions(+)
+IMO it could be used for reducing code duplication like you did in the
+PCI code, but not necessarily in the other places where the code in
+question is not exactly duplicated.
 
-diff --git a/drivers/cpufreq/cpufreq_governor.c b/drivers/cpufreq/cpufreq_governor.c
-index f99ae45efaea..1494e5e4c788 100644
---- a/drivers/cpufreq/cpufreq_governor.c
-+++ b/drivers/cpufreq/cpufreq_governor.c
-@@ -118,6 +118,7 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 	unsigned int ignore_nice = dbs_data->ignore_nice_load;
- 	unsigned int max_load = 0, idle_periods = UINT_MAX;
- 	unsigned int sampling_rate, io_busy, j;
-+	unsigned int qos_min_load;
- 
- 	/*
- 	 * Sometimes governors may use an additional multiplier to increase
-@@ -225,6 +226,10 @@ unsigned int dbs_update(struct cpufreq_policy *policy)
- 
- 	policy_dbs->idle_periods = idle_periods;
- 
-+	qos_min_load = cpufreq_minload_qos_limit();
-+	if (qos_min_load > max_load)
-+		max_load = qos_min_load;
-+
- 	return max_load;
- }
- EXPORT_SYMBOL_GPL(dbs_update);
--- 
-2.15.0
-
+Thanks!
