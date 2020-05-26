@@ -2,142 +2,145 @@ Return-Path: <SRS0=FNjc=7I=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 604F2C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 06:31:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 11DE3C433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 06:33:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 316A320776
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 06:31:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="Y/1pqs56"
+	by mail.kernel.org (Postfix) with ESMTP id DAFCA207D8
+	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 06:33:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1590474820;
+	bh=ekoHJmuDYgfF1SuG9z404kGqxsTf0Kd2lPtuC2TdX78=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=I5oueIep2pWjxZ995w/H3QjZhebiL/KbHzVVkXMC0CkDdGTAR62EcsGkQchOLT4p4
+	 J4btRbT51kaldGylfdQ9p5U/txGoFFArFtRH+fClqjtsbr1uBTXChKcZ9s6GJg3R0P
+	 i74cwct5rg/fBYI49Nz+SfPOjvnDGh8x+EVztx8U=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729109AbgEZGbX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 May 2020 02:31:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57220 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728120AbgEZGbX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2020 02:31:23 -0400
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13BF4C061A0E
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2020 23:31:22 -0700 (PDT)
-Received: by mail-pf1-x444.google.com with SMTP id y18so9664203pfl.9
-        for <linux-pm@vger.kernel.org>; Mon, 25 May 2020 23:31:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=gKUKyvOgQlnfDf+bW5bLD0I0FnciI0xVVaCOIbtUIgg=;
-        b=Y/1pqs56VgJVyASHAjvle1VJFDfinST0HNeckm7SKW59c5L6SbGV3R6mOOg3o3AM4E
-         3SLbmogUYpx5KHcpx9T3hj9r6qljysDbKYWbXBMydrJ4dX5r8BDTX5gwjQGjaD4MkM8K
-         vAr32bCE5C6RSmRCoXHSGWCK4fscU7GEqOC/Q0ug7FB09C59YI6hY4ehnDhyMa/VERVe
-         klothWnLwpxxecY1WmHb8ig+G2GRqYeWpJhtHhnooPHhFNnI/wF3Da5R+JVauTX+tn6k
-         szRsNCfLK5P4T7F4tXOgai+aud8Tr8L3md6FqQ4RLBiVzfJj5Ponksl9hSuzdsIkBgJV
-         1xgA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=gKUKyvOgQlnfDf+bW5bLD0I0FnciI0xVVaCOIbtUIgg=;
-        b=rp6Z3GmUWulpYJZGL3IvLIQmrqm/EbtcQcwfLJ2dL65aA8hIMLmHvnOWOaYizhczvu
-         epqxfQRaaPEtsC1Ji9w0/Un5ynm4zwjZ4iVSdDHX1npHWu8ZpVyeNzisCPzBTIdMDHKf
-         FLOJJnZAKCUPBzHCSWDrOP57LdhwhTcaAV1fhZpKmA0ef3zFIcvbdVJy1yaYS1OnPHRn
-         4wed261Rysuxlz8GNCLpA7ADBJ8qgsWR9aBmfP5ZntGPJl3qJtZa8aQLKnRZAESnFJdo
-         Ud/JGiFkeAf6FuapLfXfJQCTeij/tEyGHAynJrLGMjumbiIo27i4KwYPitZunv+75mBK
-         2Eyw==
-X-Gm-Message-State: AOAM5332b0XoUIFYdCQcTrYweDDqaLRXRHsgChXfKV8K3ox+Uk9U4Ns4
-        Jt2774a9g033q93tJ+SsCkFvqPP+u9U=
-X-Google-Smtp-Source: ABdhPJwMdjBIKy4mj45LUAafVqnXssU1tz0DQWBfBVe4KKDMjuAyhNlm5mjy/ecmF2OEGOn5/sYq1w==
-X-Received: by 2002:aa7:8a48:: with SMTP id n8mr20726431pfa.257.1590474681412;
-        Mon, 25 May 2020 23:31:21 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id z8sm11725712pgc.80.2020.05.25.23.31.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 May 2020 23:31:20 -0700 (PDT)
-Message-ID: <5eccb7b8.1c69fb81.4e843.d2bb@mx.google.com>
-Date:   Mon, 25 May 2020 23:31:20 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        id S1729389AbgEZGdj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 May 2020 02:33:39 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35540 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726842AbgEZGdi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 26 May 2020 02:33:38 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 493922073B;
+        Tue, 26 May 2020 06:33:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1590474816;
+        bh=ekoHJmuDYgfF1SuG9z404kGqxsTf0Kd2lPtuC2TdX78=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=upgmfSg6+hyi2RnYD15UKVCUWWpzVmk35guz+ryNT4da9EZJ7evbDVNO0PKMLrqsQ
+         +fGZzarS6/XMZfmdW21nbzBX5BfMvv+D0W3fk0eD7I2f2aKeRnpBAyI0v+M2ILIryk
+         7qnBc+AjLpsROB+BxZwolVoeKKpBh4GZdOQAKZLI=
+Date:   Tue, 26 May 2020 08:33:34 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>
+Cc:     Dan Carpenter <dan.carpenter@oracle.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>, Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Pavel Machek <pavel@ucw.cz>, Johan Hovold <johan@kernel.org>,
+        Alex Elder <elder@kernel.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        "James E.J. Bottomley" <jejb@linux.ibm.com>,
+        "Martin K. Petersen" <martin.petersen@oracle.com>,
+        Felipe Balbi <balbi@kernel.org>,
+        Julian Wiedmann <jwi@linux.ibm.com>,
+        Karsten Graul <kgraul@linux.ibm.com>,
+        Ursula Braun <ubraun@linux.ibm.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        John Stultz <john.stultz@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>,
+        greybus-dev@lists.linaro.org, netdev@vger.kernel.org,
+        linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-scsi@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: Re: [PATCH 1/8] driver core: Add helper for accessing Power
+ Management callbacs
+Message-ID: <20200526063334.GB2578492@kroah.com>
+References: <20200525182608.1823735-1-kw@linux.com>
+ <20200525182608.1823735-2-kw@linux.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.7-rc7-74-g6b0724667355
-X-Kernelci-Report-Type: boot
-X-Kernelci-Branch: testing
-Subject: pm/testing boot: 56 boots: 1 failed,
- 54 passed with 1 conflict (v5.7-rc7-74-g6b0724667355)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200525182608.1823735-2-kw@linux.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-******************************************
-* WARNING: Boot tests are now deprecated *
-******************************************
+On Mon, May 25, 2020 at 06:26:01PM +0000, Krzysztof Wilczyński wrote:
+> Add driver_to_pm() helper allowing for accessing the Power Management
+> callbacs for a particular device.  Access to the callbacs (struct
+> dev_pm_ops) is normally done through using the pm pointer that is
+> embedded within the device_driver struct.
+> 
+> Helper allows for the code required to reference the pm pointer and
+> access Power Management callbas to be simplified.  Changing the
+> following:
+> 
+>   struct device_driver *drv = dev->driver;
+>   if (dev->driver && dev->driver->pm && dev->driver->pm->prepare) {
+>       int ret = dev->driver->pm->prepare(dev);
+> 
+> To:
+> 
+>   const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
+>   if (pm && pm->prepare) {
+>       int ret = pm->prepare(dev);
+> 
+> Or, changing the following:
+> 
+>      const struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> 
+> To:
+>      const struct dev_pm_ops *pm = driver_to_pm(dev->driver);
+> 
+> Signed-off-by: Krzysztof Wilczyński <kw@linux.com>
+> ---
+>  include/linux/device/driver.h | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+> 
+> diff --git a/include/linux/device/driver.h b/include/linux/device/driver.h
+> index ee7ba5b5417e..ccd0b315fd93 100644
+> --- a/include/linux/device/driver.h
+> +++ b/include/linux/device/driver.h
+> @@ -236,6 +236,21 @@ driver_find_device_by_acpi_dev(struct device_driver *drv, const void *adev)
+>  }
+>  #endif
+>  
+> +/**
+> + * driver_to_pm - Return Power Management callbacs (struct dev_pm_ops) for
+> + *                a particular device.
+> + * @drv: Pointer to a device (struct device_driver) for which you want to access
+> + *       the Power Management callbacks.
+> + *
+> + * Returns a pointer to the struct dev_pm_ops embedded within the device (struct
+> + * device_driver), or returns NULL if Power Management is not present and the
+> + * pointer is not valid.
+> + */
+> +static inline const struct dev_pm_ops *driver_to_pm(struct device_driver *drv)
+> +{
+> +	return drv && drv->pm ? drv->pm : NULL;
 
-As kernelci.org is expanding its functional testing capabilities, the conce=
-pt
-of boot testing is now deprecated.  Boot results are scheduled to be droppe=
-d on
-*5th June 2020*.  The full schedule for boot tests deprecation is available=
- on
-this GitHub issue: https://github.com/kernelci/kernelci-backend/issues/238
+I hate ? : lines with a passion, as they break normal pattern mattching
+in my brain.  Please just spell this all out:
+	if (drv && drv->pm)
+		return drv->pm;
+	return NULL;
 
-The new equivalent is the *baseline* test suite which also runs sanity chec=
-ks
-using dmesg and bootrr: https://github.com/kernelci/bootrr
+Much easier to read, and the compiler will do the exact same thing.
 
-See the *baseline results for this kernel revision* on this page:
-https://kernelci.org/test/job/pm/branch/testing/kernel/v5.7-rc7-74-g6b07246=
-67355/plan/baseline/
+Only place ? : are ok to use in my opinion, are as function arguments.
 
----------------------------------------------------------------------------=
-----
+thanks,
 
-pm/testing boot: 56 boots: 1 failed, 54 passed with 1 conflict (v5.7-rc7-74=
--g6b0724667355)
-
-Full Boot Summary: https://kernelci.org/boot/all/job/pm/branch/testing/kern=
-el/v5.7-rc7-74-g6b0724667355/
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-7-rc7-74-g6b0724667355/
-
-Tree: pm
-Branch: testing
-Git Describe: v5.7-rc7-74-g6b0724667355
-Git Commit: 6b0724667355b76a0813de36e987f6b881131a69
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Tested: 48 unique boards, 15 SoC families, 3 builds out of 6
-
-Boot Regressions Detected:
-
-x86_64:
-
-    x86_64_defconfig:
-        gcc-8:
-          qemu_x86_64:
-              lab-baylibre: new failure (last pass: v5.7-rc6-64-gbb7ba30bf9=
-60)
-
-Boot Failure Detected:
-
-arm:
-    multi_v7_defconfig:
-        gcc-8:
-            bcm2836-rpi-2-b: 1 failed lab
-
-Conflicting Boot Failure Detected: (These likely are not failures as other =
-labs are reporting PASS. Needs review.)
-
-x86_64:
-    x86_64_defconfig:
-        qemu_x86_64:
-            lab-baylibre: FAIL (gcc-8)
-            lab-collabora: PASS (gcc-8)
-
----
-For more info write to <info@kernelci.org>
+greg k-h
