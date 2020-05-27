@@ -1,102 +1,145 @@
-Return-Path: <SRS0=FNjc=7I=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=wogO=7J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8C88C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 21:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4CA11C433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 01:16:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 88819208B8
-	for <linux-pm@archiver.kernel.org>; Tue, 26 May 2020 21:03:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 28583206F1
+	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 01:16:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="o6pf/C+e"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="D7QwxQvI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391579AbgEZVCt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 26 May 2020 17:02:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51646 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389124AbgEZVCr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2020 17:02:47 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E345C061A0F;
-        Tue, 26 May 2020 14:02:47 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id x22so13172974lfd.4;
-        Tue, 26 May 2020 14:02:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=8GEbzgI+bztUbMO5Sm0NmMZg/3FD1KT72eplUCOCNgI=;
-        b=o6pf/C+eDKKeKyR5Hu7iEdzMJa+zJM/GmLlz7R/4UWkjQ6puv+fWQmAhoV8NxD+E80
-         VfmtvosT+TiWUYYhrkm+NyC2OgvaqHXVpftBFVnkaexqg6XKzp0ryrEHfY/Cu97bUIyl
-         +EcHnb2vTO+zjoEf6lx5iTfO/xFoCRAj3m1EcNRnD2DT0EQyTKTU0abnjpZWS/3Yzsmc
-         KTEAiWQ161F0KBE/04PPQ6Z8HdHdVwEWRqcjPkUCV9hjsh5rilzyvwwkLpSsecL3y1G2
-         wbvakXDL008LgfU86HieSHRCulVqLuLMd8fYolAnkhezxtZLkKW4hyooGX+UPTCznXBT
-         sQfQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=8GEbzgI+bztUbMO5Sm0NmMZg/3FD1KT72eplUCOCNgI=;
-        b=NYOXjpbW+rvWfcewrEaOpkrsQjt7Q/6/jS+Ujvrdp47l0mSuVHbksAMV2jjOvd425w
-         jzHLW5PR9KRF8DIb+ZjMK5FEYmf5ZmWCfyrOsxo+1GPfqSlpq5TCFOABs4hUd69uVfb6
-         Xap/XvajxcI+g7euM7N4ZJSkLSbskerWYlvprc0ZJUwNzK5uT26wNr7W2IANvGelODVY
-         xTjdLCzDKRQn/A15pV8d6wSu4xmfgPC+ecVCwbF0U/tOPRqM/7PJHVJk3VfwcL/Wa9iO
-         EeIIOfN2Md2iFM9Sy+57iB2Y9dovrH6I+Sfh2MAH8fe8zVJPU1Nr45KwtlzaSUWwTMfl
-         A/Fw==
-X-Gm-Message-State: AOAM530fIxItY2vTHRXx0Az2dQxANzqHTA6Enhis/htkP+uSEh0l5oCq
-        LVPgvfAqoB3/bkooLQmtr94=
-X-Google-Smtp-Source: ABdhPJzyKtT85+/yHaFXfp7D5et++o5RZQ+pqHHb1QFxcI7thOIhmBLCC1FpkN96W1fiha4eqoLFMg==
-X-Received: by 2002:ac2:5cac:: with SMTP id e12mr1401821lfq.92.1590526965952;
-        Tue, 26 May 2020 14:02:45 -0700 (PDT)
-Received: from localhost.localdomain (h-158-174-22-22.NA.cust.bahnhof.se. [158.174.22.22])
-        by smtp.gmail.com with ESMTPSA id z133sm240443lfa.41.2020.05.26.14.02.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 May 2020 14:02:44 -0700 (PDT)
-From:   Rikard Falkeborn <rikard.falkeborn@gmail.com>
-To:     Jonathan Cameron <jic23@kernel.org>
-Cc:     Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Rikard Falkeborn <rikard.falkeborn@gmail.com>,
-        linux-pm@vger.kernel.org,
-        Michael Hennerich <Michael.Hennerich@analog.com>
-Subject: [PATCH 0/6] drivers/iio: Constify structs
-Date:   Tue, 26 May 2020 23:02:17 +0200
-Message-Id: <20200526210223.1672-1-rikard.falkeborn@gmail.com>
-X-Mailer: git-send-email 2.26.2
+        id S1728138AbgE0BQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 26 May 2020 21:16:32 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:57754 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727937AbgE0BQc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 26 May 2020 21:16:32 -0400
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04R1GUbm093022;
+        Tue, 26 May 2020 20:16:30 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1590542190;
+        bh=YaLjPcSfIGjeXsxNRxJYxq5PIRurQHe+sHMb1HbpNqE=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=D7QwxQvI4mWsmsEqjEAoTQozZj4ML/fZ6w9wuvRxqoH3WYQ7+PRgi2m9R9ypPzeuN
+         smCNq/6pRllEq8X+20mADyFmNpoVN8IyGWjHECdzSV8NI+PMy/JxOV3C6VuqpyGXlH
+         +/p2I0rp8lOHKe4Dhxs6w6kvhL6XTeUiCsB/I3Vw=
+Received: from DFLE115.ent.ti.com (dfle115.ent.ti.com [10.64.6.36])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04R1GU96045204;
+        Tue, 26 May 2020 20:16:30 -0500
+Received: from DFLE107.ent.ti.com (10.64.6.28) by DFLE115.ent.ti.com
+ (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 26
+ May 2020 20:16:30 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE107.ent.ti.com
+ (10.64.6.28) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Tue, 26 May 2020 20:16:30 -0500
+Received: from [10.250.38.163] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04R1GTSS001014;
+        Tue, 26 May 2020 20:16:29 -0500
+Subject: Re: [RFC] power: supply: bq27xxx_battery: Fix polling interval after
+ re-bind
+To:     Krzysztof Kozlowski <krzk@kernel.org>,
+        =?UTF-8?Q?Pali_Roh=c3=a1r?= <pali@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Anton Vorontsov <cbouatmailru@gmail.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC:     <stable@vger.kernel.org>
+References: <20200525113220.369-1-krzk@kernel.org>
+From:   "Andrew F. Davis" <afd@ti.com>
+Message-ID: <65ccf383-85a3-3ccd-f38c-e92ddae8fe1e@ti.com>
+Date:   Tue, 26 May 2020 21:16:28 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.7.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200525113220.369-1-krzk@kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Constify a number of static structs to allow the compiler to put them in
-read-only memory. The patches are independent.
+On 5/25/20 7:32 AM, Krzysztof Kozlowski wrote:
+> This reverts commit 8cfaaa811894a3ae2d7360a15a6cfccff3ebc7db.
+> 
+> If device was unbound and bound, the polling interval would be set to 0.
+> This is both unexpected and messes up with other bq27xxx devices (if
+> more than one battery device is used).
+> 
+> This reset of polling interval was added in commit 8cfaaa811894
+> ("bq27x00_battery: Fix OOPS caused by unregistring bq27x00 driver")
+> stating that power_supply_unregister() calls get_property().  However in
+> Linux kernel v3.1 and newer, such call trace does not exist.
+> Unregistering power supply does not call get_property() on unregistered
+> power supply.
+> 
+> Fixes: 8cfaaa811894 ("bq27x00_battery: Fix OOPS caused by unregistring bq27x00 driver")
+> Cc: <stable@vger.kernel.org>
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> 
+> ---
+> 
+> I really could not identify the issue being fixed in offending commit
+> 8cfaaa811894 ("bq27x00_battery: Fix OOPS caused by unregistring bq27x00
+> driver"), therefore maybe I missed here something important.
+> 
+> Please share your thoughts on this.
 
-Rikard Falkeborn (6):
-  iio: adc: max11100: Constify struct iio_chan_spec
-  iio: dac: ad5380: Constify struct iio_chan_spec_ext_info
-  iio: dac: ad5592r-base: Constify struct iio_chan_spec_ext_info
-  iio: dac: ad5686: Constify static struct iio_chan_spec
-  iio: light: stk3310: Constify regmap_config
-  iio: magnetometer: mmc35240: Constify struct reg_default
 
- drivers/iio/adc/max11100.c          | 2 +-
- drivers/iio/dac/ad5380.c            | 2 +-
- drivers/iio/dac/ad5592r-base.c      | 2 +-
- drivers/iio/dac/ad5686.c            | 8 ++++----
- drivers/iio/dac/ad5686.h            | 2 +-
- drivers/iio/light/stk3310.c         | 2 +-
- drivers/iio/magnetometer/mmc35240.c | 2 +-
- 7 files changed, 10 insertions(+), 10 deletions(-)
+I'm having a hard time finding the OOPS also. Maybe there is a window
+where the poll function is running or about to run where
+cancel_delayed_work_sync() is called and cancels the work, only to have
+an interrupt or late get_property call in to the poll function and
+re-schedule it.
 
--- 
-2.26.2
+What we really need is to do is look at how we are handling the polling
+function. It gets called from the workqueue, from a threaded interrupt
+context, and from a power supply framework callback, possibly all at the
+same time. Sometimes its protected by a lock, sometimes not. Updating
+the device's cached data should always be locked.
 
+What's more is the poll function is self-arming, so if we call
+cancel_delayed_work_sync() (remove it from the work queue then then wait
+for it to finish if running), are we sure it wont have just re-arm itself?
+
+We should make the only way we call the poll function be through the
+work queue, (plus make sure all accesses to the cache are locked).
+
+Andrew
+
+
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 8 --------
+>  1 file changed, 8 deletions(-)
+> 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 942c92127b6d..4c94ee72de95 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -1905,14 +1905,6 @@ EXPORT_SYMBOL_GPL(bq27xxx_battery_setup);
+>  
+>  void bq27xxx_battery_teardown(struct bq27xxx_device_info *di)
+>  {
+> -	/*
+> -	 * power_supply_unregister call bq27xxx_battery_get_property which
+> -	 * call bq27xxx_battery_poll.
+> -	 * Make sure that bq27xxx_battery_poll will not call
+> -	 * schedule_delayed_work again after unregister (which cause OOPS).
+> -	 */
+> -	poll_interval = 0;
+> -
+>  	cancel_delayed_work_sync(&di->work);
+>  
+>  	power_supply_unregister(di->bat);
+> 
