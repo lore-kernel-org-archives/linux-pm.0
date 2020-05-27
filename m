@@ -2,118 +2,76 @@ Return-Path: <SRS0=wogO=7J=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 19EA9C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 13:49:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 179E9C433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 14:25:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E928F208DB
-	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 13:49:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E8F2C2084C
+	for <linux-pm@archiver.kernel.org>; Wed, 27 May 2020 14:25:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZQ039xQ6"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZCfDeGHg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388800AbgE0Nty (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 27 May 2020 09:49:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38188 "EHLO
+        id S2389167AbgE0OZv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 27 May 2020 10:25:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43882 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388607AbgE0Ntu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2020 09:49:50 -0400
-Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFB21C08C5C2
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2020 06:49:49 -0700 (PDT)
-Received: by mail-ej1-x644.google.com with SMTP id a2so28165383ejb.10
-        for <linux-pm@vger.kernel.org>; Wed, 27 May 2020 06:49:49 -0700 (PDT)
+        with ESMTP id S2389147AbgE0OZv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 27 May 2020 10:25:51 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7DE1C08C5C1
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2020 07:25:50 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id x6so10578197wrm.13
+        for <linux-pm@vger.kernel.org>; Wed, 27 May 2020 07:25:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=subject:to:cc:references:from:openpgp:autocrypt:message-id:date
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=++foOLm8XCp/vzZg1vNHQX18MozqLm2xHnvVgSzZ15k=;
-        b=ZQ039xQ6Ytn70l5fJFrT9eGp4ft8CCo2lngDIHXIc1pvVceMXDKpE8p7RkRDFWzjlq
-         xEdHqHqScBluUCFxRuBw/LIscKvogY4mPssJ4CdzX7ABdVu+iRxDKGPujNbPilVdbfjy
-         9BSBIyFrLVZ3kNfrXTRdpTqph2pqBUPfEX1suptbNWbHNZDvkgAGiw9y5YBNuyulO70H
-         yQokCKUt/gam3wK7H2Cr3RZ6m9jKgj8BKvHzmeBgLOm0Jz1godHXh2xq6sdyH7ELqHsn
-         m7OQlmRM3k5lQvh/fnk2fwYCFs1jZ/uYVOpWTHP8BblXR3v1Ht2n2Sy535b3mX0eMKVY
-         S4FQ==
+        h=subject:to:cc:references:from:message-id:date:mime-version
+         :in-reply-to:content-language:content-transfer-encoding;
+        bh=fDQQL5F7NUmi63rPrswmsLUk/cVgqyfGJGxuaKIuerc=;
+        b=ZCfDeGHgkwr9TFZB7Uml9rT03xtCxGugZtuvCoEluYZeBMY+Zqnsl0kcvlkhXRNGqz
+         X/wqEce2QJwMvlOEWvyZCRr5ThtZLuPdaeJpQ4tRravGdAhTpNCG3RidS6TR6FEK7jQe
+         xgbabj5Rbgy+aHWCIAeoT1EIhIud36GwUbMiLV8IenWT3D+J6P+7Nbh58l4sHwX8yxGm
+         V5B4IbAZe2+mr28zJCRks0RPTruIX6rnWi8Hja7ozZyFnX1h37SiL5JvkzLoK0JQqoJA
+         bfw8rb95Fk+XKZAV2iKSSfW5p/3nGTKi51epUNCGCmJHz4vMFfXRpzm8OUlTvTnI1CnB
+         uClg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:openpgp:autocrypt
-         :message-id:date:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=++foOLm8XCp/vzZg1vNHQX18MozqLm2xHnvVgSzZ15k=;
-        b=ryKZ5LQxg9I4n+b+bvhG4Mt4DAfWKv/8/waFbHnTWyezwhlxbtkhu/AD0ue4K4rva3
-         BAxQ42OgQ6OsDKLMiLLiVIoYP7AZ1gbvo3/5yQBmUnZ0lAaAlvdTgqf3uTKVSivTt+TA
-         0VhCJ9v7h86IHcf5T3uJ8yiEUx3MnFo3aZwCnhk7jtROC4GqRVsQBnJ/OekAcYPx8hKw
-         owY1u0P0UFInEt+KOPktAs62EyTPFhAdlbCAZ58f0ox0oP+mLUQSTn77kbgq3RdbUbRF
-         KF5ceJdSSVm1K4164M3k/ZjTzODcTbn4AR33uW8FnJ8D82k3Gz/lYHlc+ZYiDqxEqcjx
-         okvQ==
-X-Gm-Message-State: AOAM532IKbxsz7amGhNHH/3KGG02EEru46DgYjwcCpP8MTMBatxQbS/R
-        trmnGG3HVZP43i3fNuUDqzu8NQ==
-X-Google-Smtp-Source: ABdhPJwbNxhh5un0+914l8MgigNqf2Xve3x7buMO4RSJFwdLmnL1CjIbVHZfCJQ1D0Z8lULmY+x1hg==
-X-Received: by 2002:a17:906:2b14:: with SMTP id a20mr6598593ejg.387.1590587388384;
-        Wed, 27 May 2020 06:49:48 -0700 (PDT)
-Received: from [10.44.66.8] ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id nj6sm2889467ejb.99.2020.05.27.06.49.45
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 27 May 2020 06:49:47 -0700 (PDT)
-Subject: Re: [PATCH v5 0/3] interconnect: Support Samsung Exynos use-case
-To:     Sylwester Nawrocki <s.nawrocki@samsung.com>
-Cc:     a.swigon@samsung.com, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, m.szyprowski@samsung.com,
-        krzk@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org
-References: <CGME20200521122848eucas1p27ce74486ea2044cb0b942b2619426e21@eucas1p2.samsung.com>
- <20200521122841.8867-1-s.nawrocki@samsung.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=fDQQL5F7NUmi63rPrswmsLUk/cVgqyfGJGxuaKIuerc=;
+        b=DfPQCI/pVWtZCqUW0tBRcqA0/6+QCUmyjAraKNXnYZArEzsbmElQQVYfAbjxIMxWUX
+         feQaD5mzuc7f/w1IrjG32oRGEwdeoYVnWjz4od9zny4Wwxl3rWlXD70EM9jHTyp3TVSZ
+         Ncex+C4iyEQiC+uTZV5unp4IHlApbTWvA5eMXAuJO7YH2+t6gWkWtyXwrsunjVxnC25M
+         HWPLTde7WxLYfFzn8w8VDe5u5HK3/rdHtGuLRrM8wj40dHqb31hdWsTHiLUBrpexLe+K
+         dNv6MFcvqy4wJD/rtZHmnk4aHpfO5nKT0Zffi/qmHXEJHvHmTqTABbr/UTEga0U9yC6o
+         0mMw==
+X-Gm-Message-State: AOAM532ydv4R+KdqcktWQmo1xJvyZuT9EoH2q0J7eS6wKklIsu35gPjR
+        CT88MIXD+gLVqMiWIEWURroNvg==
+X-Google-Smtp-Source: ABdhPJxI0zSWLwdelkSKlMdMpkW7YNtk+9tKet+U4aBt7UDbNi/61LMkcogDnArtro33FkI4TMvLIw==
+X-Received: by 2002:a5d:4488:: with SMTP id j8mr17764483wrq.242.1590589549429;
+        Wed, 27 May 2020 07:25:49 -0700 (PDT)
+Received: from macbook.local ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id i21sm3110144wml.5.2020.05.27.07.25.48
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 27 May 2020 07:25:48 -0700 (PDT)
+Subject: Re: [PATCH] drm/msm/dpu: avoid open-coded 64-bit division
+To:     Arnd Bergmann <arnd@arndb.de>, Rob Clark <robdclark@chromium.org>,
+        Kalyan Thota <kalyan_t@codeaurora.org>
+Cc:     Matthias Kaehlcke <mka@chromium.org>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Evan Green <evgreen@chromium.org>,
+        Akash Asthana <akashast@codeaurora.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200527133543.599948-1-arnd@arndb.de>
 From:   Georgi Djakov <georgi.djakov@linaro.org>
-Openpgp: preference=signencrypt
-Autocrypt: addr=georgi.djakov@linaro.org; prefer-encrypt=mutual; keydata=
- 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
- KEmKjLDvB0pePJkdTw==
-Message-ID: <edf16797-4c1d-5b92-fbe2-28557c2fcdf0@linaro.org>
-Date:   Wed, 27 May 2020 16:49:44 +0300
+Message-ID: <9f910f55-1057-8c44-ceda-e0593fb13ffe@linaro.org>
+Date:   Wed, 27 May 2020 17:25:46 +0300
 MIME-Version: 1.0
-In-Reply-To: <20200521122841.8867-1-s.nawrocki@samsung.com>
+In-Reply-To: <20200527133543.599948-1-arnd@arndb.de>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -122,29 +80,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Sylwester,
+On 27.05.20 16:35, Arnd Bergmann wrote:
+> 64-bit integer division is normally not allowed in the kernel
+> because of the large overhead on 32-bit machines:
+> 
+> drivers/gpu/drm/msm/disp/dpu1/dpu_core_perf.o: in function `_dpu_core_perf_crtc_update_bus':
+> dpu_core_perf.c:(.text+0x810): undefined reference to `__aeabi_uldivmod'
+> 
+> The function already contains a call to do_div(), so I assume this
+> is never called in a performance critical context, and we can
+> use div_u64 for the second one as well.
+> 
+> Fixes: 04d9044f6c57 ("drm/msm/dpu: add support for clk and bw scaling for display")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 
-Thank you for re-sending these!
+Reviewed-by: Georgi Djakov <georgi.djakov@linaro.org>
 
-On 5/21/20 15:28, Sylwester Nawrocki wrote:
-> Hi All,
-> 
-> This is a continuation of Artur's efforts to add interconnect and PM QoS
-> support for Exynos SoCs. Previous version of the patch set can be found 
-> at [1]. The only change comparing to v4 is an addition of missing 'static
-> inline' qualifier to the of_icc_get_from_provider() function stub, i.e.
-> addresing Georgi's review comments.
-> 
-> The patches have been tested on Odroid U3 (Exynos4412 SoC). 
-> 
-> Below is detailed description of the patch set as in v3.
-> 
->                               ---------
-> Previously posted as a part of a larger RFC [2].
+Thanks for the patch Arnd. I just noticed this in linux-next.
 
-The patches look good to me and i am planning to apply them for v5.9,
-but what happened to the devfreq patches, which will make use of this?
-Are they posted separately?
+Rob, could you please take it into msm-next, as the patch which
+triggers the issue is also there?
 
 Thanks,
 Georgi
+
+> ---
+>  include/linux/interconnect.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/include/linux/interconnect.h b/include/linux/interconnect.h
+> index 3a63d98613fc..8279fe9b2082 100644
+> --- a/include/linux/interconnect.h
+> +++ b/include/linux/interconnect.h
+> @@ -11,7 +11,7 @@
+>  #include <linux/types.h>
+>  
+>  /* macros for converting to icc units */
+> -#define Bps_to_icc(x)	((x) / 1000)
+> +#define Bps_to_icc(x)	div_u64((x), 1000)
+>  #define kBps_to_icc(x)	(x)
+>  #define MBps_to_icc(x)	((x) * 1000)
+>  #define GBps_to_icc(x)	((x) * 1000 * 1000)
+> 
+
