@@ -2,131 +2,86 @@ Return-Path: <SRS0=p2W0=7K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EEA48C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:21:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3027C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:25:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D1238207D3
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:21:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BB4D9206A1
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:25:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=umn.edu header.i=@umn.edu header.b="Mohgw2y4"
+	dkim=pass (1024-bit key) header.d=broadcom.com header.i=@broadcom.com header.b="B5VSgSdI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405733AbgE1SVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 May 2020 14:21:03 -0400
-Received: from mta-p5.oit.umn.edu ([134.84.196.205]:50932 "EHLO
-        mta-p5.oit.umn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2405782AbgE1SU4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 14:20:56 -0400
-Received: from localhost (unknown [127.0.0.1])
-        by mta-p5.oit.umn.edu (Postfix) with ESMTP id 49XwxL6P96z9vYQt
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 18:20:54 +0000 (UTC)
-X-Virus-Scanned: amavisd-new at umn.edu
-Received: from mta-p5.oit.umn.edu ([127.0.0.1])
-        by localhost (mta-p5.oit.umn.edu [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id fkBzpsZqLY-V for <linux-pm@vger.kernel.org>;
-        Thu, 28 May 2020 13:20:54 -0500 (CDT)
-Received: from mail-io1-f71.google.com (mail-io1-f71.google.com [209.85.166.71])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mta-p5.oit.umn.edu (Postfix) with ESMTPS id 49XwxL4jj6z9vYRB
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 13:20:54 -0500 (CDT)
-DMARC-Filter: OpenDMARC Filter v1.3.2 mta-p5.oit.umn.edu 49XwxL4jj6z9vYRB
-DKIM-Filter: OpenDKIM Filter v2.11.0 mta-p5.oit.umn.edu 49XwxL4jj6z9vYRB
-Received: by mail-io1-f71.google.com with SMTP id g3so8525459ioc.20
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 11:20:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=umn.edu; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=z0PvIbGDn0Z17RYgI3zBJ0aJdEFVtvocF0jkm247rpg=;
-        b=Mohgw2y48p+edoFuDPTzW7a8j/cRZLBMiAO8TEnkzQI7jCQjkiJhnSRUVG952Twn+j
-         tG3NSymdVCNKe+CJj3GS4lnZ4rR62sT9lpiilIWUBgiFtJFqf5HbK2pqZvUxj9RgGK3E
-         z/ye9hnqt6X95fgEb6lc5ITDvm2QAK2olG8hOL9cBCrv1TTKYTaLIpFzDMbFH7Pw53Rh
-         z3EYRsgj/4n1Ch8sZDHdfbak7/O44D9BkLrprOpnU+vCvI0CXVh3d3KQb/RITdWbzljR
-         tqnqGgvOuxJvxqweGWlOE/xwIf2cImibd6+wd28+Azq/qpNOzJJ37+QnYDsJttqyFNlr
-         69XA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=z0PvIbGDn0Z17RYgI3zBJ0aJdEFVtvocF0jkm247rpg=;
-        b=T8fJk4omFOjniY/g62jnhjBJBueVzEjTjLTQ9iGKdD7IhxNBeQEJQITkyx8G2oU2MJ
-         p/yFcq5RrQLBz40wp0JdgbgPIcBqFXKs/YQqFl2U3hKX0AWHmaDsP30+ooO6GtMZbTZf
-         HfNBULtBgLckecSM4m9vlRprTlya7BF3IJblU2/6iwwX9YqigfT/AQLwXi2URlc8E9kk
-         bBhswCkhbpOzLeafQ90gx8osN/7Jv8T+bo6n4bDE3S21qb94oXCNy0KSJnBAYA/AXpsK
-         HA3HFdJf6mIQdf/udMz7yV9F4B82YZT5tC0VGqQMETVW3CxPJtkd+ROeNxfOd4cvg/By
-         ZZGA==
-X-Gm-Message-State: AOAM5336dyebMNnGW3fX0hXD/FKbBb2tvxr6hpxnAxSXGMDJFVTCha5Q
-        awclsQfwQX35p0SPUos+9aQJF+FEUT1bVh4bB+Lv0g0HlHOXsnyEnucPExl30kVjIP1zTNQdtO3
-        Ybh7lEcaCrtAddduow2yrbXA=
-X-Received: by 2002:a02:93a1:: with SMTP id z30mr3660275jah.25.1590690053169;
-        Thu, 28 May 2020 11:20:53 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJw/jnO9EhpMdxptmG1zZKzrF5o5zH+5CTWhvnVk4DfYgYLm5zOPh3QA1ohplbxSUObSl5kaOg==
-X-Received: by 2002:a02:93a1:: with SMTP id z30mr3660245jah.25.1590690052738;
-        Thu, 28 May 2020 11:20:52 -0700 (PDT)
-Received: from qiushi.dtc.umn.edu (cs-kh5248-02-umh.cs.umn.edu. [128.101.106.4])
-        by smtp.gmail.com with ESMTPSA id f66sm3628149ilf.63.2020.05.28.11.20.51
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 May 2020 11:20:52 -0700 (PDT)
-From:   wu000273@umn.edu
-To:     kjlu@umn.edu
-Cc:     wu000273@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] cpuidle: Fix several reference count leaks.
-Date:   Thu, 28 May 2020 13:20:46 -0500
-Message-Id: <20200528182046.845-1-wu000273@umn.edu>
+        id S2405755AbgE1SZk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 May 2020 14:25:40 -0400
+Received: from rnd-relay.smtp.broadcom.com ([192.19.229.170]:56330 "EHLO
+        rnd-relay.smtp.broadcom.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S2405788AbgE1SZj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 14:25:39 -0400
+Received: from mail-irv-17.broadcom.com (mail-irv-17.lvn.broadcom.net [10.75.242.48])
+        by rnd-relay.smtp.broadcom.com (Postfix) with ESMTP id D7FFB30DD34;
+        Thu, 28 May 2020 11:19:25 -0700 (PDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 rnd-relay.smtp.broadcom.com D7FFB30DD34
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=broadcom.com;
+        s=dkimrelay; t=1590689965;
+        bh=GQcrRpTxCYDTqBkDDmPavBT5QqGizo4E8hzdCo8uCqY=;
+        h=From:To:Cc:Subject:Date:From;
+        b=B5VSgSdIrnCNhxOhx6YodBzpTnSID5q/PxH7oLjWaJgyIdeopDHcD+d5DAOFmwwlz
+         IvuBLGdYcJShBlK5FOzL+XxP2ShGQatyW+X/tO6OXo/6akRn9DsW4L15HvVOqsD+eW
+         wf5lLOU4Dik0BFS29AIaGLeMau9dRDvYpCnYH81w=
+Received: from lbrmn-mmayer.ric.broadcom.net (lbrmn-mmayer.ric.broadcom.net [10.136.28.150])
+        by mail-irv-17.broadcom.com (Postfix) with ESMTP id 21A61140069;
+        Thu, 28 May 2020 11:19:25 -0700 (PDT)
+From:   Markus Mayer <markus.mayer@broadcom.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Florian Fainelli <f.fainelli@gmail.com>
+Cc:     Markus Mayer <markus.mayer@broadcom.com>,
+        Linux Power Management List <linux-pm@vger.kernel.org>,
+        Broadcom Kernel List <bcm-kernel-feedback-list@broadcom.com>,
+        ARM Kernel List <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] brcmstb-avs-cpufreq updates
+Date:   Thu, 28 May 2020 11:19:18 -0700
+Message-Id: <20200528181921.19846-1-mmayer@broadcom.com>
 X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Qiushi Wu <wu000273@umn.edu>
+Hi all,
 
-kobject_init_and_add() takes reference even when it fails.
-If this function returns an error, kobject_put() must be called to
-properly clean up the memory associated with the object. Previous
-commit "b8eb718348b8" fixed a similar problem.
+Here is a collection of little, independent improvements to the
+brcmstb-avs-cpufreq driver.
 
-Signed-off-by: Qiushi Wu <wu000273@umn.edu>
----
- drivers/cpuidle/sysfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+- more flexible interface for __issue_avs_command()
+  This change makes the function more versatile as it can handle input
+  and output parameters at the same time.
+- Support polling AVS firmware
+  This change allows the driver to use polling if interrupt driven mode
+  doesn't work for some reason.
+- send S2_ENTER / S2_EXIT commands to AVS
+  Let the AVS firmware know when we are about to enter, or have just
+  exited, S2 mode.
 
-diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
-index cdeedbf02646..55107565b319 100644
---- a/drivers/cpuidle/sysfs.c
-+++ b/drivers/cpuidle/sysfs.c
-@@ -515,7 +515,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
- 		ret = kobject_init_and_add(&kobj->kobj, &ktype_state_cpuidle,
- 					   &kdev->kobj, "state%d", i);
- 		if (ret) {
--			kfree(kobj);
-+			kobject_put(&kobj->kobj);
- 			goto error_state;
- 		}
- 		cpuidle_add_s2idle_attr_group(kobj);
-@@ -646,7 +646,7 @@ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
- 	ret = kobject_init_and_add(&kdrv->kobj, &ktype_driver_cpuidle,
- 				   &kdev->kobj, "driver");
- 	if (ret) {
--		kfree(kdrv);
-+		kobject_put(&kdrv->kobj);
- 		return ret;
- 	}
- 
-@@ -740,7 +740,7 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
- 	error = kobject_init_and_add(&kdev->kobj, &ktype_cpuidle, &cpu_dev->kobj,
- 				   "cpuidle");
- 	if (error) {
--		kfree(kdev);
-+		kobject_put(&kdev->kobj);
- 		return error;
- 	}
- 
+Regards,
+-Markus
+
+Florian Fainelli (1):
+  cpufreq: brcmstb-avs-cpufreq: Support polling AVS firmware
+
+Markus Mayer (2):
+  cpufreq: brcmstb-avs-cpufreq: more flexible interface for
+    __issue_avs_command()
+  cpufreq: brcmstb-avs-cpufreq: send S2_ENTER / S2_EXIT commands to AVS
+
+ drivers/cpufreq/brcmstb-avs-cpufreq.c | 89 ++++++++++++++++++---------
+ 1 file changed, 59 insertions(+), 30 deletions(-)
+
 -- 
 2.17.1
 
