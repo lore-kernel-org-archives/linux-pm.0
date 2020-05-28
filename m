@@ -2,123 +2,131 @@ Return-Path: <SRS0=p2W0=7K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.7 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A86BC433DF
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:14:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EEA48C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:21:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1F079207D3
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:14:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D1238207D3
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 18:21:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="fQfvq3LC"
+	dkim=pass (2048-bit key) header.d=umn.edu header.i=@umn.edu header.b="Mohgw2y4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405732AbgE1SOX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 May 2020 14:14:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48882 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2405736AbgE1SOW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 14:14:22 -0400
-Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 750B4C08C5C6
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 11:14:22 -0700 (PDT)
-Received: by mail-pf1-x443.google.com with SMTP id n15so13997519pfd.0
-        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 11:14:22 -0700 (PDT)
+        id S2405733AbgE1SVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 May 2020 14:21:03 -0400
+Received: from mta-p5.oit.umn.edu ([134.84.196.205]:50932 "EHLO
+        mta-p5.oit.umn.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2405782AbgE1SU4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 14:20:56 -0400
+Received: from localhost (unknown [127.0.0.1])
+        by mta-p5.oit.umn.edu (Postfix) with ESMTP id 49XwxL6P96z9vYQt
+        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 18:20:54 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at umn.edu
+Received: from mta-p5.oit.umn.edu ([127.0.0.1])
+        by localhost (mta-p5.oit.umn.edu [127.0.0.1]) (amavisd-new, port 10024)
+        with ESMTP id fkBzpsZqLY-V for <linux-pm@vger.kernel.org>;
+        Thu, 28 May 2020 13:20:54 -0500 (CDT)
+Received: from mail-io1-f71.google.com (mail-io1-f71.google.com [209.85.166.71])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mta-p5.oit.umn.edu (Postfix) with ESMTPS id 49XwxL4jj6z9vYRB
+        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 13:20:54 -0500 (CDT)
+DMARC-Filter: OpenDMARC Filter v1.3.2 mta-p5.oit.umn.edu 49XwxL4jj6z9vYRB
+DKIM-Filter: OpenDKIM Filter v2.11.0 mta-p5.oit.umn.edu 49XwxL4jj6z9vYRB
+Received: by mail-io1-f71.google.com with SMTP id g3so8525459ioc.20
+        for <linux-pm@vger.kernel.org>; Thu, 28 May 2020 11:20:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=xOf7K2RhgDVuK3GvY4sLkahIaJtruJgT5I9q1rpee1Y=;
-        b=fQfvq3LCbNCgQHYroGuzXpcw6J1WvCfaqYdTvV6+49IAl7ZAD/7ylgc4mNZfZLClMp
-         zU2jc8gqpjndWuytD3neKaVkz2fFnKT8z/Gj5Zi0Xefi2EAi/jqj6Y4SX39cwU70qswb
-         MvR8wVNx3Z0vLsXXZ9aOMbbmXA9x26eSjkSb0RKd1g7MxPQvvdYNOMNguUzgG2TWFUv4
-         naKAR20eflPNyuUFRKhocVJNq1KA0vhLCKUhtXe0ZVfzCfXdDAJX87hX+xuv6VZ5uFaP
-         fifj8hnt97i6O0H0WyXgA4eDdYrbCoLqsHg/fs9Uul+NYOiY7y5KtLIi6X2O3PPVEdvw
-         jNdg==
+        d=umn.edu; s=google;
+        h=from:to:cc:subject:date:message-id;
+        bh=z0PvIbGDn0Z17RYgI3zBJ0aJdEFVtvocF0jkm247rpg=;
+        b=Mohgw2y48p+edoFuDPTzW7a8j/cRZLBMiAO8TEnkzQI7jCQjkiJhnSRUVG952Twn+j
+         tG3NSymdVCNKe+CJj3GS4lnZ4rR62sT9lpiilIWUBgiFtJFqf5HbK2pqZvUxj9RgGK3E
+         z/ye9hnqt6X95fgEb6lc5ITDvm2QAK2olG8hOL9cBCrv1TTKYTaLIpFzDMbFH7Pw53Rh
+         z3EYRsgj/4n1Ch8sZDHdfbak7/O44D9BkLrprOpnU+vCvI0CXVh3d3KQb/RITdWbzljR
+         tqnqGgvOuxJvxqweGWlOE/xwIf2cImibd6+wd28+Azq/qpNOzJJ37+QnYDsJttqyFNlr
+         69XA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=xOf7K2RhgDVuK3GvY4sLkahIaJtruJgT5I9q1rpee1Y=;
-        b=V3skcR6yxh3A6eMhJoqCf0Tng7ZZzXlGZ8GygxwJXUymkmNgN3O3u5HEM8RPL9AybL
-         97iXwoe9oxz2HHV70XPIfA/8lWK1sI/qNs2Y5HrHnlg8K/fNgfI0onhYNaQrAXxdwj58
-         FL8cjcadRAQ20jCRdYnZf9d9EULxjmONDVw9xyPTjN/wuPFpwxfTKbkBjv7ZZdw5qGmd
-         drHoSOzDNp1nCX06ZW+ywwK6VZ51aPJrBqVQfjFl5OXzVDSvW8RQMiAU/i/a2WG8gjtA
-         iPeSd3PneGNZrMqUQcCbguklznYGQBkII1H/6IRp1+cqhnjCRkOxaEe1wd5OYa4dWvtf
-         RdGA==
-X-Gm-Message-State: AOAM533EAHqUB2gdvcbxb88FNQUIWiYsgfvQex14pZ87HzKBWgBbJ4Xt
-        tsqTgg9S+cIXUmIkmzpk1vlja1k5nxk=
-X-Google-Smtp-Source: ABdhPJy0cRxepO2D7CDsUAehnVXb/bEG3u/rUDUwn9ysOIvyJ5qhZ9v+alxY5Po6yKqICj3AshguXQ==
-X-Received: by 2002:a63:1415:: with SMTP id u21mr4088795pgl.366.1590689661888;
-        Thu, 28 May 2020 11:14:21 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id o16sm5038881pgg.57.2020.05.28.11.14.20
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=z0PvIbGDn0Z17RYgI3zBJ0aJdEFVtvocF0jkm247rpg=;
+        b=T8fJk4omFOjniY/g62jnhjBJBueVzEjTjLTQ9iGKdD7IhxNBeQEJQITkyx8G2oU2MJ
+         p/yFcq5RrQLBz40wp0JdgbgPIcBqFXKs/YQqFl2U3hKX0AWHmaDsP30+ooO6GtMZbTZf
+         HfNBULtBgLckecSM4m9vlRprTlya7BF3IJblU2/6iwwX9YqigfT/AQLwXi2URlc8E9kk
+         bBhswCkhbpOzLeafQ90gx8osN/7Jv8T+bo6n4bDE3S21qb94oXCNy0KSJnBAYA/AXpsK
+         HA3HFdJf6mIQdf/udMz7yV9F4B82YZT5tC0VGqQMETVW3CxPJtkd+ROeNxfOd4cvg/By
+         ZZGA==
+X-Gm-Message-State: AOAM5336dyebMNnGW3fX0hXD/FKbBb2tvxr6hpxnAxSXGMDJFVTCha5Q
+        awclsQfwQX35p0SPUos+9aQJF+FEUT1bVh4bB+Lv0g0HlHOXsnyEnucPExl30kVjIP1zTNQdtO3
+        Ybh7lEcaCrtAddduow2yrbXA=
+X-Received: by 2002:a02:93a1:: with SMTP id z30mr3660275jah.25.1590690053169;
+        Thu, 28 May 2020 11:20:53 -0700 (PDT)
+X-Google-Smtp-Source: ABdhPJw/jnO9EhpMdxptmG1zZKzrF5o5zH+5CTWhvnVk4DfYgYLm5zOPh3QA1ohplbxSUObSl5kaOg==
+X-Received: by 2002:a02:93a1:: with SMTP id z30mr3660245jah.25.1590690052738;
+        Thu, 28 May 2020 11:20:52 -0700 (PDT)
+Received: from qiushi.dtc.umn.edu (cs-kh5248-02-umh.cs.umn.edu. [128.101.106.4])
+        by smtp.gmail.com with ESMTPSA id f66sm3628149ilf.63.2020.05.28.11.20.51
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 28 May 2020 11:14:20 -0700 (PDT)
-Message-ID: <5ecfff7c.1c69fb81.f9e95.feab@mx.google.com>
-Date:   Thu, 28 May 2020 11:14:20 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Report-Type: boot
-X-Kernelci-Kernel: v5.7-rc7-92-g065693d08662
-Subject: pm/testing boot: 53 boots: 1 failed,
- 52 passed (v5.7-rc7-92-g065693d08662)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org
-From:   "kernelci.org bot" <bot@kernelci.org>
+        Thu, 28 May 2020 11:20:52 -0700 (PDT)
+From:   wu000273@umn.edu
+To:     kjlu@umn.edu
+Cc:     wu000273@umn.edu, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] cpuidle: Fix several reference count leaks.
+Date:   Thu, 28 May 2020 13:20:46 -0500
+Message-Id: <20200528182046.845-1-wu000273@umn.edu>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-******************************************
-* WARNING: Boot tests are now deprecated *
-******************************************
+From: Qiushi Wu <wu000273@umn.edu>
 
-As kernelci.org is expanding its functional testing capabilities, the conce=
-pt
-of boot testing is now deprecated.  Boot results are scheduled to be droppe=
-d on
-*5th June 2020*.  The full schedule for boot tests deprecation is available=
- on
-this GitHub issue: https://github.com/kernelci/kernelci-backend/issues/238
+kobject_init_and_add() takes reference even when it fails.
+If this function returns an error, kobject_put() must be called to
+properly clean up the memory associated with the object. Previous
+commit "b8eb718348b8" fixed a similar problem.
 
-The new equivalent is the *baseline* test suite which also runs sanity chec=
-ks
-using dmesg and bootrr: https://github.com/kernelci/bootrr
-
-See the *baseline results for this kernel revision* on this page:
-https://kernelci.org/test/job/pm/branch/testing/kernel/v5.7-rc7-92-g065693d=
-08662/plan/baseline/
-
----------------------------------------------------------------------------=
-----
-
-pm/testing boot: 53 boots: 1 failed, 52 passed (v5.7-rc7-92-g065693d08662)
-
-Full Boot Summary: https://kernelci.org/boot/all/job/pm/branch/testing/kern=
-el/v5.7-rc7-92-g065693d08662/
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-7-rc7-92-g065693d08662/
-
-Tree: pm
-Branch: testing
-Git Describe: v5.7-rc7-92-g065693d08662
-Git Commit: 065693d08662db2ceebb2aa051ffae22d364cd25
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Tested: 46 unique boards, 15 SoC families, 3 builds out of 5
-
-Boot Failure Detected:
-
-arm:
-    multi_v7_defconfig:
-        gcc-8:
-            bcm2836-rpi-2-b: 1 failed lab
-
+Signed-off-by: Qiushi Wu <wu000273@umn.edu>
 ---
-For more info write to <info@kernelci.org>
+ drivers/cpuidle/sysfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpuidle/sysfs.c b/drivers/cpuidle/sysfs.c
+index cdeedbf02646..55107565b319 100644
+--- a/drivers/cpuidle/sysfs.c
++++ b/drivers/cpuidle/sysfs.c
+@@ -515,7 +515,7 @@ static int cpuidle_add_state_sysfs(struct cpuidle_device *device)
+ 		ret = kobject_init_and_add(&kobj->kobj, &ktype_state_cpuidle,
+ 					   &kdev->kobj, "state%d", i);
+ 		if (ret) {
+-			kfree(kobj);
++			kobject_put(&kobj->kobj);
+ 			goto error_state;
+ 		}
+ 		cpuidle_add_s2idle_attr_group(kobj);
+@@ -646,7 +646,7 @@ static int cpuidle_add_driver_sysfs(struct cpuidle_device *dev)
+ 	ret = kobject_init_and_add(&kdrv->kobj, &ktype_driver_cpuidle,
+ 				   &kdev->kobj, "driver");
+ 	if (ret) {
+-		kfree(kdrv);
++		kobject_put(&kdrv->kobj);
+ 		return ret;
+ 	}
+ 
+@@ -740,7 +740,7 @@ int cpuidle_add_sysfs(struct cpuidle_device *dev)
+ 	error = kobject_init_and_add(&kdev->kobj, &ktype_cpuidle, &cpu_dev->kobj,
+ 				   "cpuidle");
+ 	if (error) {
+-		kfree(kdev);
++		kobject_put(&kdev->kobj);
+ 		return error;
+ 	}
+ 
+-- 
+2.17.1
+
