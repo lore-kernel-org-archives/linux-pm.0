@@ -2,266 +2,188 @@ Return-Path: <SRS0=p2W0=7K=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DC47C433E1
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 12:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8DE10C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 12:31:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4A51E212CC
-	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 12:22:03 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="FzHDXRl0"
+	by mail.kernel.org (Postfix) with ESMTP id 67B05212CC
+	for <linux-pm@archiver.kernel.org>; Thu, 28 May 2020 12:31:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1590669083;
+	bh=DhwnVIgovCUuYgtaX9XIPcX9wco8SiYlP+p9K4EhSQ4=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=lew1d9zcLi9zwA1+uUHiL2fv/oiWRTHDE7q2bwHNof1hZ6GmnrtQbHwKDGLwbD477
+	 sls/z2+itbOn9l3dj9QtMEvKGkntyqGE7+cuuFaDjBkRCa6BdEhhf5N+QGds45VffV
+	 kteJmpoJjr6+bQ3B1rcV0ztmBy8pOXEtLVs9cYjo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389435AbgE1MWB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 28 May 2020 08:22:01 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:46050 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388938AbgE1MVu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 08:21:50 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 04SCLmDi045377;
-        Thu, 28 May 2020 07:21:48 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1590668508;
-        bh=Jlv0g4hQTj/sKCmOI61sTWpArHCZ3qjlGMu3SRnCyf8=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=FzHDXRl0kkKxG386r5xCdgqauLC0Pt8BCkGufRS4JhCIUi6YFOOu0E5P9NtFt5wCB
-         JT2fpVvX1eN4UlmcSDYDma4+p3gvLGT+AWo0koMoGwH/9OIie31vXgO0JnAcQ5gvIE
-         PMM1f+j+AcRo5CN4uuebsQKU5HhYl1DwtKP40Ox0=
-Received: from DLEE113.ent.ti.com (dlee113.ent.ti.com [157.170.170.24])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 04SCLmOS052501
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Thu, 28 May 2020 07:21:48 -0500
-Received: from DLEE109.ent.ti.com (157.170.170.41) by DLEE113.ent.ti.com
- (157.170.170.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Thu, 28
- May 2020 07:21:48 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Thu, 28 May 2020 07:21:48 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 04SCLm7q000317;
-        Thu, 28 May 2020 07:21:48 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>, <afd@ti.com>, <pali@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <robh@kernel.org>,
-        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
-        Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH v2 2/4] power: supply: bq27xxx_battery: Add the BQ27561 Battery monitor
-Date:   Thu, 28 May 2020 07:21:45 -0500
-Message-ID: <20200528122147.6171-2-dmurphy@ti.com>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200528122147.6171-1-dmurphy@ti.com>
-References: <20200528122147.6171-1-dmurphy@ti.com>
+        id S2389694AbgE1MbR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 28 May 2020 08:31:17 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:36561 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389439AbgE1MbQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 28 May 2020 08:31:16 -0400
+Received: by mail-ot1-f68.google.com with SMTP id h7so2213994otr.3;
+        Thu, 28 May 2020 05:31:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=h5oVREdc8mZHk5DmSeaXI8D6G4iopJ7pfcXrcSkFGrY=;
+        b=EVr4to3k3EHCkQeqabFyxc3GiuDkT4EVYWNm9QNpjSZuGyk4FX1uTSvtTA9L6oJf9x
+         NoBVUZfZ+DjCsbgNbshlcQFpY6XxcSBLc9BEOZEZaxGZ5H6dxu7Dt2c3nytM0rz8rOEK
+         A9ZiDVHIqTgni9z0D7znvdngGRUFduHkHZ0uyuAFKopWvHmpWcjLW3H+/Bs9Xpofe16i
+         g1aEIzlUQLP47MPa/WL2q6UmFfiB4GcoqcF3eezL19N3F7XWZ1kgtZviZ/4dSxfcDsUG
+         FroSa9vO/ifcOvEIXm3tt+GLNDW1Pc5RTYrs6s7Bcd280rJjrVaKNCRgxuCnyBy5Sc9o
+         jx5w==
+X-Gm-Message-State: AOAM5305o7do1ouzS4lDN2+nccBoOHDfO76SYYMywZmTEcsMfZcWeN0M
+        TT6P3EihsstKnICR8kLi//IzhTtI7DFOl0PjIhU=
+X-Google-Smtp-Source: ABdhPJyKoD2BsxDaFk6T06cjSPSPMBpWTdoeNgvL+Ub3VuSwISlOzyyyfmG5itLnmBGjAmW+MYKmN+Y05Xch3/WxUok=
+X-Received: by 2002:a05:6830:20d1:: with SMTP id z17mr375006otq.167.1590669073023;
+ Thu, 28 May 2020 05:31:13 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20200520095148.10995-1-dinghao.liu@zju.edu.cn>
+ <2b5d64f5-825f-c081-5d03-02655c2d9491@gmail.com> <20200520150230.GC30374@kadam>
+ <2a46539d.b977f.1723553aa81.Coremail.dinghao.liu@zju.edu.cn>
+ <20200521091505.GF30374@kadam> <CAJZ5v0irLayBUPRWNT1tcZivz9inS1YbUgGj5WXvucLKKwRQAw@mail.gmail.com>
+ <20200521173901.GA22310@kadam> <20200522131031.GL2163848@ulmo>
+ <20200522132318.GM30374@kadam> <20200522144312.GA2374603@ulmo> <20200528120818.GO22511@kadam>
+In-Reply-To: <20200528120818.GO22511@kadam>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 28 May 2020 14:31:01 +0200
+Message-ID: <CAJZ5v0hJY3_z-wBrgbpetqOF44JB9x6uQrosgStD+Sr+KZdvWg@mail.gmail.com>
+Subject: Re: Re: [PATCH] media: staging: tegra-vde: fix runtime pm imbalance
+ on error
+To:     Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        devel@driverdev.osuosl.org, Len Brown <len.brown@intel.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-tegra <linux-tegra@vger.kernel.org>,
+        Dinghao Liu <dinghao.liu@zju.edu.cn>,
+        Kangjie Lu <kjlu@umn.edu>, Dmitry Osipenko <digetx@gmail.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        linux-media@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the Texas Instruments BQ27561 battery monitor.  The register address
-map is laid out the same as compared to other devices within the file.
-The battery status register has differing bits to determine if the
-battery is full, discharging or dead.
+On Thu, May 28, 2020 at 2:08 PM Dan Carpenter <dan.carpenter@oracle.com> wrote:
+>
+> On Fri, May 22, 2020 at 04:43:12PM +0200, Thierry Reding wrote:
+> > On Fri, May 22, 2020 at 04:23:18PM +0300, Dan Carpenter wrote:
+> > > On Fri, May 22, 2020 at 03:10:31PM +0200, Thierry Reding wrote:
+> > > > On Thu, May 21, 2020 at 08:39:02PM +0300, Dan Carpenter wrote:
+> > > > > On Thu, May 21, 2020 at 05:22:05PM +0200, Rafael J. Wysocki wrote:
+> > > > > > On Thu, May 21, 2020 at 11:15 AM Dan Carpenter <dan.carpenter@oracle.com> wrote:
+> > > > > > >
+> > > > > > > On Thu, May 21, 2020 at 11:42:55AM +0800, dinghao.liu@zju.edu.cn wrote:
+> > > > > > > > Hi, Dan,
+> > > > > > > >
+> > > > > > > > I agree the best solution is to fix __pm_runtime_resume(). But there are also
+> > > > > > > > many cases that assume pm_runtime_get_sync() will change PM usage
+> > > > > > > > counter on error. According to my static analysis results, the number of these
+> > > > > > > > "right" cases are larger. Adjusting __pm_runtime_resume() directly will introduce
+> > > > > > > > more new bugs. Therefore I think we should resolve the "bug" cases individually.
+> > > > > > > >
+> > > > > > >
+> > > > > > > That's why I was saying that we may need to introduce a new replacement
+> > > > > > > function for pm_runtime_get_sync() that works as expected.
+> > > > > > >
+> > > > > > > There is no reason why we have to live with the old behavior.
+> > > > > >
+> > > > > > What exactly do you mean by "the old behavior"?
+> > > > >
+> > > > > I'm suggesting we leave pm_runtime_get_sync() alone but we add a new
+> > > > > function which called pm_runtime_get_sync_resume() which does something
+> > > > > like this:
+> > > > >
+> > > > > static inline int pm_runtime_get_sync_resume(struct device *dev)
+> > > > > {
+> > > > >         int ret;
+> > > > >
+> > > > >         ret = __pm_runtime_resume(dev, RPM_GET_PUT);
+> > > > >         if (ret < 0) {
+> > > > >                 pm_runtime_put(dev);
+> > > > >                 return ret;
+> > > > >         }
+> > > > >         return 0;
+> > > > > }
+> > > > >
+> > > > > I'm not sure if pm_runtime_put() is the correct thing to do?  The other
+> > > > > thing is that this always returns zero on success.  I don't know that
+> > > > > drivers ever care to differentiate between one and zero returns.
+> > > > >
+> > > > > Then if any of the caller expect that behavior we update them to use the
+> > > > > new function.
+> > > >
+> > > > Does that really have many benefits, though? I understand that this
+> > > > would perhaps be easier to use because it is more in line with how other
+> > > > functions operate. On the other hand, in some cases you may want to call
+> > > > a different version of pm_runtime_put() on failure, as discussed in
+> > > > other threads.
+> > >
+> > > I wasn't CC'd on the other threads so I don't know.  :/
+> >
+> > It was actually earlier in this thread, see here for example:
+> >
+> >       http://patchwork.ozlabs.org/project/linux-tegra/patch/20200520095148.10995-1-dinghao.liu@zju.edu.cn/#2438776
+>
+> I'm not seeing what you're talking about.
+>
+> The only thing I see in this thread is that we don't want to call
+> pm_runtime_mark_last_busy(dev) which updates the last_busy time that is
+> used for autosuspend.
 
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
----
- drivers/power/supply/bq27xxx_battery.c     | 68 +++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c |  2 +
- include/linux/power/bq27xxx_battery.h      |  1 +
- 3 files changed, 70 insertions(+), 1 deletion(-)
+That shouldn't be a problem, though, because if pm_runtime_get_sync()
+returns an error, PM-runtime is not going to work for this device
+until it is explicitly disabled for it and fixed up.
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 942c92127b6d..466bbc549799 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -43,6 +43,7 @@
-  * http://www.ti.com/product/bq27411-g1
-  * http://www.ti.com/product/bq27441-g1
-  * http://www.ti.com/product/bq27621-g1
-+ * https://www.ti.com/lit/gpn/bq27z561
-  */
- 
- #include <linux/device.h>
-@@ -79,6 +80,11 @@
- #define BQ27000_FLAG_FC		BIT(5)
- #define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
- 
-+/* BQ27561 has different layout for Flags register */
-+#define BQ27561_FLAG_FDC	BIT(4) /* Battery fully discharged */
-+#define BQ27561_FLAG_FC		BIT(5) /* Battery fully charged */
-+#define BQ27561_FLAG_DIS_CH	BIT(6) /* Battery is discharging */
-+
- /* control register params */
- #define BQ27XXX_SEALED			0x20
- #define BQ27XXX_SET_CFGUPDATE		0x13
-@@ -431,12 +437,32 @@ static u8
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = 0x18,
- 		BQ27XXX_DM_REG_ROWS,
--	};
-+	},
- #define bq27411_regs bq27421_regs
- #define bq27425_regs bq27421_regs
- #define bq27426_regs bq27421_regs
- #define bq27441_regs bq27421_regs
- #define bq27621_regs bq27421_regs
-+	bq27561_regs[BQ27XXX_REG_MAX] = {
-+		[BQ27XXX_REG_CTRL] = 0x00,
-+		[BQ27XXX_REG_TEMP] = 0x06,
-+		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_VOLT] = 0x08,
-+		[BQ27XXX_REG_AI] = 0x14,
-+		[BQ27XXX_REG_FLAGS] = 0x0a,
-+		[BQ27XXX_REG_TTE] = 0x16,
-+		[BQ27XXX_REG_TTF] = 0x18,
-+		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_FCC] = 0x12,
-+		[BQ27XXX_REG_CYCT] = 0x2a,
-+		[BQ27XXX_REG_AE] = 0x22,
-+		[BQ27XXX_REG_SOC] = 0x2c,
-+		[BQ27XXX_REG_DCAP] = 0x3c,
-+		[BQ27XXX_REG_AP] = 0x22,
-+		BQ27XXX_DM_REG_ROWS,
-+	};
- 
- static enum power_supply_property bq27000_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
-@@ -672,6 +698,25 @@ static enum power_supply_property bq27421_props[] = {
- #define bq27441_props bq27421_props
- #define bq27621_props bq27421_props
- 
-+static enum power_supply_property bq27561_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
-+	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CYCLE_COUNT,
-+	POWER_SUPPLY_PROP_POWER_AVG,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
- struct bq27xxx_dm_reg {
- 	u8 subclass_id;
- 	u8 offset;
-@@ -767,11 +812,14 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
- #define bq27621_dm_regs 0
- #endif
- 
-+#define bq27561_dm_regs 0
-+
- #define BQ27XXX_O_ZERO	0x00000001
- #define BQ27XXX_O_OTDC	0x00000002 /* has OTC/OTD overtemperature flags */
- #define BQ27XXX_O_UTOT  0x00000004 /* has OT overtemperature flag */
- #define BQ27XXX_O_CFGUP	0x00000008
- #define BQ27XXX_O_RAM	0x00000010
-+#define BQ27561_O_BITS	0x00000020
- 
- #define BQ27XXX_DATA(ref, key, opt) {		\
- 	.opts = (opt),				\
-@@ -816,6 +864,7 @@ static struct {
- 	[BQ27426]   = BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27441]   = BQ27XXX_DATA(bq27441,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27621]   = BQ27XXX_DATA(bq27621,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
-+	[BQ27561]   = BQ27XXX_DATA(bq27561,   0         , BQ27561_O_BITS),
- };
- 
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -1551,6 +1600,8 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
- {
- 	if (di->opts & BQ27XXX_O_ZERO)
- 		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
-+	else if (di->opts & BQ27561_O_BITS)
-+		return flags & BQ27561_FLAG_FDC;
- 	else
- 		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
- }
-@@ -1595,6 +1646,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 				cache.time_to_empty_avg = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTECP);
- 			if (di->regs[BQ27XXX_REG_TTF] != INVALID_REG_ADDR)
- 				cache.time_to_full = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTF);
-+
- 			cache.charge_full = bq27xxx_battery_read_fcc(di);
- 			cache.capacity = bq27xxx_battery_read_soc(di);
- 			if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
-@@ -1682,6 +1734,13 @@ static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
- 			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		else
- 			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	} else if (di->opts & BQ27561_O_BITS) {
-+		if (di->cache.flags & BQ27561_FLAG_FC)
-+			status = POWER_SUPPLY_STATUS_FULL;
-+		else if (di->cache.flags & BQ27561_FLAG_DIS_CH)
-+			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else
-+			status = POWER_SUPPLY_STATUS_CHARGING;
- 	} else {
- 		if (di->cache.flags & BQ27XXX_FLAG_FC)
- 			status = POWER_SUPPLY_STATUS_FULL;
-@@ -1710,6 +1769,13 @@ static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
- 		else
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+	} else if (di->opts & BQ27561_O_BITS) {
-+		if (di->cache.flags & BQ27561_FLAG_FC)
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else if (di->cache.flags & BQ27561_FLAG_DIS_CH)
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+		else
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
- 	} else {
- 		if (di->cache.flags & BQ27XXX_FLAG_FC)
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 2677c38a8a42..d0d55e0959d5 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -253,6 +253,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27426", BQ27426 },
- 	{ "bq27441", BQ27441 },
- 	{ "bq27621", BQ27621 },
-+	{ "bq27561", BQ27561 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-@@ -286,6 +287,7 @@ static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
- 	{ .compatible = "ti,bq27426" },
- 	{ .compatible = "ti,bq27441" },
- 	{ .compatible = "ti,bq27621" },
-+	{ .compatible = "ti,bq27561" },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, bq27xxx_battery_i2c_of_match_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 507c5e214c42..4a319950ea22 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -30,6 +30,7 @@ enum bq27xxx_chip {
- 	BQ27426,
- 	BQ27441,
- 	BQ27621,
-+	BQ27561,
- };
- 
- struct bq27xxx_device_info;
--- 
-2.26.2
+> The other thing that was discussed was pm_runtime_put_noidle() vs
+> pm_runtime_put_autosuspend().  "The pm_runtime_put_noidle() should have
+> the same effect as yours variant".  So apparently they are equivalent
+> in this situation.  How should we choose one vs the other?
 
+The point is that pm_runtime_put_noidle() is *sufficient* to drop the
+reference and nothing more is needed in the error path.
+
+So you can always do something like this:
+
+ret = pm_runtime_get_sync(dev);
+if (ret < 0) {
+        pm_runtime_put_noidle(dev);
+        return ret;
+}
+
+However, it would not be a bug to do something like this:
+
+        ret = pm_runtime_get_sync(dev);
+        if (ret < 0)
+                goto rpm_put;
+
+        ...
+
+rpm_put:
+        pm_runtime_put_autosuspend(dev);
+
+> I'm not trying to be obtuse.  I understand that probably if I worked in
+> PM then I wouldn't need documentation...  :/
+
+So Documentation/power/runtime_pm.rst says this:
+
+  `int pm_runtime_get_sync(struct device *dev);`
+    - increment the device's usage counter, run pm_runtime_resume(dev) and
+      return its result
+
+In particular, it doesn't say "decrement the device's usage counter on
+errors returned by pm_runtime_resume(dev)", so I'm not sure where that
+expectation comes from.
