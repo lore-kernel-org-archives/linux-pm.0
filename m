@@ -2,28 +2,28 @@ Return-Path: <SRS0=f5dP=7M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC501C433DF
-	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 013CEC433DF
+	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 981BA20707
-	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CD65120707
+	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728694AbgE3CO6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 May 2020 22:14:58 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:55964 "EHLO huawei.com"
+        id S1728638AbgE3CO5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 29 May 2020 22:14:57 -0400
+Received: from szxga07-in.huawei.com ([45.249.212.35]:56000 "EHLO huawei.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728349AbgE3CO6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 29 May 2020 22:14:58 -0400
+        id S1728297AbgE3CO5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 29 May 2020 22:14:57 -0400
 Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id 09083A0ECA6C91CD19DD;
+        by Forcepoint Email with ESMTP id 16F3D5F4F6497EDE0176;
         Sat, 30 May 2020 10:14:55 +0800 (CST)
 Received: from linux-ibm.site (10.175.102.37) by
  DGGEMS409-HUB.china.huawei.com (10.3.19.209) with Microsoft SMTP Server id
- 14.3.487.0; Sat, 30 May 2020 10:14:46 +0800
+ 14.3.487.0; Sat, 30 May 2020 10:14:44 +0800
 From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
 To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>
 CC:     <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>,
@@ -31,12 +31,10 @@ CC:     <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>,
         <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
         <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
         <wangxiongfeng2@huawei.com>
-Subject: [PATCH v5 2/2] CPPC: add support for SW BOOST
-Date:   Sat, 30 May 2020 10:08:31 +0800
-Message-ID: <1590804511-9672-3-git-send-email-wangxiongfeng2@huawei.com>
+Subject: [PATCH v5 0/2] add SW BOOST support for CPPC
+Date:   Sat, 30 May 2020 10:08:29 +0800
+Message-ID: <1590804511-9672-1-git-send-email-wangxiongfeng2@huawei.com>
 X-Mailer: git-send-email 1.7.12.4
-In-Reply-To: <1590804511-9672-1-git-send-email-wangxiongfeng2@huawei.com>
-References: <1590804511-9672-1-git-send-email-wangxiongfeng2@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 X-Originating-IP: [10.175.102.37]
@@ -46,9 +44,7 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To add SW BOOST support for CPPC, we need to get the max frequency of
-boost mode and non-boost mode. ACPI spec 6.2 section 8.4.7.1 describe
-the following two CPC registers.
+ACPI spec 6.2 section 8.4.7.1 provide the following two CPC registers.
 
 "Highest performance is the absolute maximum performance an individual
 processor may reach, assuming ideal conditions. This performance level
@@ -63,112 +59,30 @@ the platform is expected to be able to maintain continuously. All
 processors are expected to be able to sustain their nominal performance
 state simultaneously."
 
-To add SW BOOST support for CPPC, we can use Highest Performance as the
-max performance in boost mode and Nominal Performance as the max
-performance in non-boost mode. If the Highest Performance is greater
-than the Nominal Performance, we assume SW BOOST is supported.
+We can use Highest Performance as the max performance in boost mode and
+Nomial Performance as the max performance in non-boost mode. If the
+Highest Performance is greater than the Nominal Performance, we assume
+SW BOOST is supported.
 
-The current CPPC driver does not support SW BOOST and use 'Highest
-Performance' as the max performance the CPU can achieve. 'Nominal
-Performance' is used to convert 'performance' to 'frequency'. That
-means, if firmware enable boost and provide a value for Highest
-Performance which is greater than Nominal Performance, boost feature is
-enabled by default.
+Changelog:
 
-Because SW BOOST is disabled by default, so, after this patch, boost
-feature is disabled by default even if boost is enabled by firmware.
+v4 -> v5:
+	add 'cpu_hotplug_lock' before calling '.set_boost'
+v3 -> v4:
+	run 'boost_set_msr_each' for each CPU in the policy rather than
+	each CPU in the system for 'acpi-cpufreq'
+	add 'Suggested-by'
 
-Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 39 +++++++++++++++++++++++++++++++++++++--
- 1 file changed, 37 insertions(+), 2 deletions(-)
+Xiongfeng Wang (2):
+  cpufreq: change '.set_boost' to act on only one policy
+  CPPC: add support for SW BOOST
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index bda0b24..257d726 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -37,6 +37,7 @@
-  * requested etc.
-  */
- static struct cppc_cpudata **all_cpu_data;
-+static bool boost_supported;
- 
- struct cppc_workaround_oem_info {
- 	char oem_id[ACPI_OEM_ID_SIZE + 1];
-@@ -310,7 +311,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
- 	 */
- 	policy->min = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.lowest_nonlinear_perf);
--	policy->max = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.highest_perf);
-+	policy->max = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.nominal_perf);
- 
- 	/*
- 	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
-@@ -318,7 +319,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	 * nonlinear perf
- 	 */
- 	policy->cpuinfo.min_freq = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.lowest_perf);
--	policy->cpuinfo.max_freq = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.highest_perf);
-+	policy->cpuinfo.max_freq = cppc_cpufreq_perf_to_khz(cpu, cpu->perf_caps.nominal_perf);
- 
- 	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu_num);
- 	policy->shared_type = cpu->shared_type;
-@@ -343,6 +344,13 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu->cur_policy = policy;
- 
-+	/*
-+	 * If 'highest_perf' is greater than 'nominal_perf', we assume CPU Boost
-+	 * is supported.
-+	 */
-+	if (cpu->perf_caps.highest_perf > cpu->perf_caps.nominal_perf)
-+		boost_supported = true;
-+
- 	/* Set policy->cur to max now. The governors will adjust later. */
- 	policy->cur = cppc_cpufreq_perf_to_khz(cpu,
- 					cpu->perf_caps.highest_perf);
-@@ -410,6 +418,32 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
- 	return cppc_get_rate_from_fbctrs(cpu, fb_ctrs_t0, fb_ctrs_t1);
- }
- 
-+static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
-+{
-+	struct cppc_cpudata *cpudata;
-+	int ret;
-+
-+	if (!boost_supported) {
-+		pr_err("BOOST not supported by CPU or firmware\n");
-+		return -EINVAL;
-+	}
-+
-+	cpudata = all_cpu_data[policy->cpu];
-+	if (state)
-+		policy->max = cppc_cpufreq_perf_to_khz(cpudata,
-+					cpudata->perf_caps.highest_perf);
-+	else
-+		policy->max = cppc_cpufreq_perf_to_khz(cpudata,
-+					cpudata->perf_caps.nominal_perf);
-+	policy->cpuinfo.max_freq = policy->max;
-+
-+	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
-+	if (ret < 0)
-+		return ret;
-+
-+	return 0;
-+}
-+
- static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.verify = cppc_verify_policy,
-@@ -417,6 +451,7 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpunum)
- 	.get = cppc_cpufreq_get_rate,
- 	.init = cppc_cpufreq_cpu_init,
- 	.stop_cpu = cppc_cpufreq_stop_cpu,
-+	.set_boost = cppc_cpufreq_set_boost,
- 	.name = "cppc_cpufreq",
- };
- 
+ drivers/cpufreq/acpi-cpufreq.c | 14 ++++++-----
+ drivers/cpufreq/cppc_cpufreq.c | 39 +++++++++++++++++++++++++++--
+ drivers/cpufreq/cpufreq.c      | 57 +++++++++++++++++++++++-------------------
+ include/linux/cpufreq.h        |  2 +-
+ 4 files changed, 77 insertions(+), 35 deletions(-)
+
 -- 
 1.7.12.4
 
