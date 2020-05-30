@@ -2,87 +2,121 @@ Return-Path: <SRS0=f5dP=7M=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-8.3 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 013CEC433DF
-	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E1117C433DF
+	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 09:21:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD65120707
-	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 02:15:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8B2B206C3
+	for <linux-pm@archiver.kernel.org>; Sat, 30 May 2020 09:21:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="INS/lYCR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728638AbgE3CO5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 29 May 2020 22:14:57 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:56000 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1728297AbgE3CO5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 29 May 2020 22:14:57 -0400
-Received: from DGGEMS409-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id 16F3D5F4F6497EDE0176;
-        Sat, 30 May 2020 10:14:55 +0800 (CST)
-Received: from linux-ibm.site (10.175.102.37) by
- DGGEMS409-HUB.china.huawei.com (10.3.19.209) with Microsoft SMTP Server id
- 14.3.487.0; Sat, 30 May 2020 10:14:44 +0800
-From:   Xiongfeng Wang <wangxiongfeng2@huawei.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>
-CC:     <Souvik.Chakravarty@arm.com>, <Thanu.Rangarajan@arm.com>,
-        <Sudeep.Holla@arm.com>, <guohanjun@huawei.com>,
-        <john.garry@huawei.com>, <jonathan.cameron@huawei.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <wangxiongfeng2@huawei.com>
-Subject: [PATCH v5 0/2] add SW BOOST support for CPPC
-Date:   Sat, 30 May 2020 10:08:29 +0800
-Message-ID: <1590804511-9672-1-git-send-email-wangxiongfeng2@huawei.com>
-X-Mailer: git-send-email 1.7.12.4
+        id S1728642AbgE3JU7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 30 May 2020 05:20:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47250 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728304AbgE3JU7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 30 May 2020 05:20:59 -0400
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 46581C08C5C9
+        for <linux-pm@vger.kernel.org>; Sat, 30 May 2020 02:20:59 -0700 (PDT)
+Received: by mail-pf1-x444.google.com with SMTP id 131so1037632pfv.13
+        for <linux-pm@vger.kernel.org>; Sat, 30 May 2020 02:20:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=tFqkLWC2pY58NUrIUJD/QvnAc/AFJ0vbxV6JYXJ+5Jc=;
+        b=INS/lYCR2yuP/7lJfdbXSqTPYRANMke3tOVlOeqe8yKCjKTYx9PyI12EiLNKh17Drd
+         X3awrenwazzQhc3XH2hlRSQfkBtYIjOxyBtSjN+UNkBaVwbUsMnrq9H/jGcEr8Idw256
+         gRADSjFRve8uDJW5GVraPgPuMSfOMdnBIP/4BTX/XwK8VEHXxG6IKBDnEh1lTa4697+o
+         YYjZiV1EK+90ud5kW5lycFnNWCXCQkfbYMokF0Q+ttfNy2MEXGVPv4x24sQbzA4kbpUT
+         no5MMLsgI31unUK2mBnu3ukuM+xgN6CntN0JY3vKugSnrJJIZTsUgq3J5AdT+NyLyegn
+         L2fg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=tFqkLWC2pY58NUrIUJD/QvnAc/AFJ0vbxV6JYXJ+5Jc=;
+        b=m5yWyseUmCtmqeqrFRib/o+1s1t/+Y7r3+y577hg7SPmr4P1dlszvKFtTJ2FxIsTTj
+         W3dWlH0B0T9LvupvyKwf+TDKKFoL43MPTzZvajolQdzGiRCSYhAaVU6uXsbBGTOvti7z
+         c/jx3ueiGscRgbDSW4X4kvwelRH+vbcByEehT0UPtpYgvSGE3midO3+QCGdCQw7ttHCk
+         OQYNIBjCHAvhoN7qI2rphJzoe+DyhDd2lECmUig3Y89gk4WsEg4bDO3D+f9fPq1f6dcG
+         WZ04I3Suns9HeEcPVvAhew5isLhLePcoiMNxGDzMKGCRExRhwWVONet+w0jeFWyrepnN
+         Yb1w==
+X-Gm-Message-State: AOAM531Y6dGBYejLCNNzVL+WdptA/ueLcOxspGCN5yuCL+sj3t+YhWnA
+        wLGSFr1AxzVpPsko5b+57Qj5Fw==
+X-Google-Smtp-Source: ABdhPJyb2NA/vQHCkzHJpBs8Uk/oiz03G2N8vnGHJxnceaSY49hm6wSxb9RTHv26cT8L/AI0gFGljw==
+X-Received: by 2002:a63:c848:: with SMTP id l8mr11545514pgi.180.1590830458641;
+        Sat, 30 May 2020 02:20:58 -0700 (PDT)
+Received: from localhost ([122.172.62.209])
+        by smtp.gmail.com with ESMTPSA id c12sm1769766pjm.46.2020.05.30.02.20.56
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sat, 30 May 2020 02:20:57 -0700 (PDT)
+Date:   Sat, 30 May 2020 14:50:52 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Arnd Bergmann <arnd@arndb.de>
+Cc:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Sibi Sankar <sibis@codeaurora.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] opp: avoid uninitialized-variable use
+Message-ID: <20200530092052.ksuncmgx3cahokzo@vireshk-i7>
+References: <20200529201731.545859-1-arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.175.102.37]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200529201731.545859-1-arnd@arndb.de>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ACPI spec 6.2 section 8.4.7.1 provide the following two CPC registers.
+On 29-05-20, 22:17, Arnd Bergmann wrote:
+> An uninitialized pointer is passed into another function but
+> ignored there:
+> 
+> drivers/opp/core.c:875:32: error: variable 'opp' is uninitialized when used here [-Werror,-Wuninitialized]
+>                 ret = _set_opp_bw(opp_table, opp, dev, true);
+>                                              ^~~
+> drivers/opp/core.c:849:34: note: initialize the variable 'opp' to silence this warning
+>         struct dev_pm_opp *old_opp, *opp;
+>                                         ^
+> 
+> gcc no longer warns about this, but it seems it really should,
+> so change the code to just pass a NULL pointer here.
+> 
+> See-also: 78a5255ffb6a ("Stop the ad-hoc games with -Wno-maybe-initialized")
+> Fixes: c57afacc9270 ("opp: Remove bandwidth votes when target_freq is zero")
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/opp/core.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> index df12c3804533..7302f2631f8d 100644
+> --- a/drivers/opp/core.c
+> +++ b/drivers/opp/core.c
+> @@ -872,7 +872,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+>  			goto put_opp_table;
+>  		}
+>  
+> -		ret = _set_opp_bw(opp_table, opp, dev, true);
+> +		ret = _set_opp_bw(opp_table, NULL, dev, true);
+>  		if (ret)
+>  			return ret;
+>  
 
-"Highest performance is the absolute maximum performance an individual
-processor may reach, assuming ideal conditions. This performance level
-may not be sustainable for long durations, and may only be achievable if
-other platform components are in a specific state; for example, it may
-require other processors be in an idle state.
-
-Nominal Performance is the maximum sustained performance level of the
-processor, assuming ideal operating conditions. In absence of an
-external constraint (power, thermal, etc.) this is the performance level
-the platform is expected to be able to maintain continuously. All
-processors are expected to be able to sustain their nominal performance
-state simultaneously."
-
-We can use Highest Performance as the max performance in boost mode and
-Nomial Performance as the max performance in non-boost mode. If the
-Highest Performance is greater than the Nominal Performance, we assume
-SW BOOST is supported.
-
-Changelog:
-
-v4 -> v5:
-	add 'cpu_hotplug_lock' before calling '.set_boost'
-v3 -> v4:
-	run 'boost_set_msr_each' for each CPU in the policy rather than
-	each CPU in the system for 'acpi-cpufreq'
-	add 'Suggested-by'
-
-Xiongfeng Wang (2):
-  cpufreq: change '.set_boost' to act on only one policy
-  CPPC: add support for SW BOOST
-
- drivers/cpufreq/acpi-cpufreq.c | 14 ++++++-----
- drivers/cpufreq/cppc_cpufreq.c | 39 +++++++++++++++++++++++++++--
- drivers/cpufreq/cpufreq.c      | 57 +++++++++++++++++++++++-------------------
- include/linux/cpufreq.h        |  2 +-
- 4 files changed, 77 insertions(+), 35 deletions(-)
+Not sure why people are still seeing this, I pushed a fix for this 2
+days back.
 
 -- 
-1.7.12.4
-
+viresh
