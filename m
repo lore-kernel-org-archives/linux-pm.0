@@ -2,77 +2,157 @@ Return-Path: <SRS0=1vxP=7N=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BE03AC433DF
-	for <linux-pm@archiver.kernel.org>; Sun, 31 May 2020 18:26:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E0AAC433DF
+	for <linux-pm@archiver.kernel.org>; Sun, 31 May 2020 18:59:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9F46C20801
-	for <linux-pm@archiver.kernel.org>; Sun, 31 May 2020 18:26:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 775CC2074B
+	for <linux-pm@archiver.kernel.org>; Sun, 31 May 2020 18:59:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728350AbgEaS0T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 31 May 2020 14:26:19 -0400
-Received: from mx2.suse.de ([195.135.220.15]:52404 "EHLO mx2.suse.de"
+        id S1728200AbgEaS7d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 31 May 2020 14:59:33 -0400
+Received: from mga02.intel.com ([134.134.136.20]:50486 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728282AbgEaS0Q (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 31 May 2020 14:26:16 -0400
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.220.254])
-        by mx2.suse.de (Postfix) with ESMTP id 615D2AD60;
-        Sun, 31 May 2020 18:26:15 +0000 (UTC)
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Borislav Petkov <bp@suse.de>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc:     x86@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-        Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: [PATCH v2 2/3] x86, sched: Bail out of frequency invariance if turbo frequency is unknown
-Date:   Sun, 31 May 2020 20:24:52 +0200
-Message-Id: <20200531182453.15254-3-ggherdovich@suse.cz>
-X-Mailer: git-send-email 2.16.4
-In-Reply-To: <20200531182453.15254-1-ggherdovich@suse.cz>
-References: <20200531182453.15254-1-ggherdovich@suse.cz>
+        id S1727084AbgEaS7d (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 31 May 2020 14:59:33 -0400
+IronPort-SDR: 9uOOC67XA79tDo/o0pxYM34LgIhTj09y/gbFkdtPIEwImiShULA0BTHH762qbloh6+4068gIF3
+ 3hz1lQ1GlXhw==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 May 2020 11:59:32 -0700
+IronPort-SDR: 56iY8jhYpdvBBecgymTD6YTS5a9w3t+NCJr7GpBavGewE9vX2aQxwyFe/x65dkdZGzFOeFS7Qh
+ bk6LDZEU0Cuw==
+X-IronPort-AV: E=Sophos;i="5.73,457,1583222400"; 
+   d="scan'208";a="292954603"
+Received: from nibndana-mobl2.ger.corp.intel.com (HELO spandruv-mobl.amr.corp.intel.com) ([10.251.11.254])
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 May 2020 11:59:31 -0700
+Message-ID: <4793937b5e2b8b03a1aa0943bb5f62d17496cfee.camel@linux.intel.com>
+Subject: Re: [RFC/RFT][PATCH] cpufreq: intel_pstate: Accept passive mode
+ with HWP enabled
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Doug Smythies <dsmythies@telus.net>,
+        "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc:     'LKML' <linux-kernel@vger.kernel.org>,
+        'Len Brown' <len.brown@intel.com>,
+        'Peter Zijlstra' <peterz@infradead.org>,
+        'Giovanni Gherdovich' <ggherdovich@suse.cz>,
+        'Francisco Jerez' <francisco.jerez.plata@intel.com>,
+        'Linux PM' <linux-pm@vger.kernel.org>
+Date:   Sun, 31 May 2020 11:59:30 -0700
+In-Reply-To: <000201d63776$2d56f330$8804d990$@net>
+References: <2931539.RsFqoHxarq@kreacher>
+         <000001d6376a$03bbaae0$0b3300a0$@net>
+         <b624a148cdb91340dd8d8831c7b033017cab737e.camel@linux.intel.com>
+         <000201d63776$2d56f330$8804d990$@net>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There may be CPUs that support turbo boost but don't declare any turbo
-ratio, i.e. their MSR_TURBO_RATIO_LIMIT is all zeroes. In that condition
-scale-invariant calculations can't be performed.
+On Sun, 2020-05-31 at 11:06 -0700, Doug Smythies wrote:
+> Hi Srinivas,
+> 
+> Thanks you for your quick reply.
+> 
+> On 2020.05.31 09:54 Srinivas Pandruvada wrote
+> > On Sun, 2020-05-31 at 09:39 -0700, Doug Smythies wrote:
+> > > Event begins at 17.456 seconds elapsed time.
+> > > Previous event was about 107 milliseconds ago.
+> > > 
+> > > Old min ; new min ; freq GHz; load % ; duration mS
+> > > 27      ; 28      ; 4.60    ; 68.17  ; 10.226
+> > > 28      ; 26      ; 4.53    ; 57.47  ; 10.005
+> > 
+> > Seems you hit power/thermal limit
+> 
+> No.
+> 
+> I am nowhere near any power limit at all.
+> I have meticulously configured and tested the thermal management of
+> this computer.
+> I never ever hit a thermal limit and have TDP set such that the
+> processor
+> temperature never exceeds about 75 degrees centigrade.
+> 
+> There should never be throttling involved in these experiments.
+> I can achieve throttling when compiling the kernel and with
+> torture test mode on the mprime test (other CPU stressors,
+> including my own, are not as good at generating heat as
+> mprime).
+> 
+> This system can run indefinitely at 99.9 watts processor package
+> power.
+> Example (turbostat, steady state, CPU freq throttled to 4.04 GHz):
+> 
+> doug@s18:~$ sudo ~/turbostat --Summary --quiet --show
+> Busy%,Bzy_MHz,PkgTmp,PkgWatt,GFXWatt,IRQ --interval 12
+> Busy%   Bzy_MHz IRQ     PkgTmp  PkgWatt GFXWatt
+> 100.21  4045    72231   66      99.93   0.00
+> 100.21  4043    72239   65      99.92   0.00
+> 
+> > Is this some Lenovo system?
+> 
+> No. The web page version of my original e-mail has
+> a link to the test computer hardware profile.
+> 
+> The motherboard is ASUS PRIME Z390-P.
+> 
 
-Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
-Suggested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Fixes: 1567c3e3467c ("x86, sched: Add support for frequency invariance")
----
- arch/x86/kernel/smpboot.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+OK, this seems a desktop system.
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index d660966d7de7..fe154c8226ba 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -2001,9 +2001,11 @@ static bool intel_set_max_freq_ratio(void)
- 	/*
- 	 * Some hypervisors advertise X86_FEATURE_APERFMPERF
- 	 * but then fill all MSR's with zeroes.
-+	 * Some CPUs have turbo boost but don't declare any turbo ratio
-+	 * in MSR_TURBO_RATIO_LIMIT.
- 	 */
--	if (!base_freq) {
--		pr_debug("Couldn't determine cpu base frequency, necessary for scale-invariant accounting.\n");
-+	if (!base_freq || !turbo_freq) {
-+		pr_debug("Couldn't determine cpu base or turbo frequency, necessary for scale-invariant accounting.\n");
- 		return false;
- 	}
- 
--- 
-2.16.4
+> > If you disable HWP you don't see that?
+> 
+> Correct.
+> 
+> > What is the value of
+> > cat /sys/bus/pci/devices/0000\:00\:04.0/tcc_offset_degree_celsius
+> 
+> ? "No such file or directory"
+> 
+
+> > cat /sys/class/powercap/intel-rapl-mmio/intel-rapl-
+> > mmio:0/constraint_0_power_limit_uw
+> 
+You may not have
+CONFIG_INT340X_THERMAL=y
+
+What is
+#rdmsr 0x1a2
+
+Try changing energy_perf_bias and see if it helps here.
+
+Thanks,
+Srinivas
+
+
+> ? "No such file or directory"
+>  
+> > You may want to run
+> > Try running dptfxtract once.
+> 
+> No, I am not going to.
+> 
+> I am not running thermald. Eventually I will, as a backup
+> in case of cooling failure, so as not to hit the processor limit
+> shutdown. I just haven't done it yet.
+> 
+> > Then try to get again
+> > 
+> > cat /sys/bus/pci/devices/0000\:00\:04.0/tcc_offset_degree_celsius
+> > cat /sys/class/powercap/intel-rapl-mmio/intel-rapl-
+> > mmio:0/constraint_0_power_limit_uw
+> > 
+> > 
+> > Thanks,
+> > Srinivas
+> 
+> 
 
