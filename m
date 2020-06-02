@@ -2,69 +2,111 @@ Return-Path: <SRS0=PYjH=7P=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27D73C433DF
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Jun 2020 20:35:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A8FF1C433DF
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Jun 2020 23:57:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 01844207DA
-	for <linux-pm@archiver.kernel.org>; Tue,  2 Jun 2020 20:35:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1591130137;
-	bh=2rVwh4/siikVrpgwYQuuD+buqge9Sw5sBfNz6/5D/G4=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
-	b=Kjn9IPyl+a+qYIKVsHkLEz1S4u1HhVPbAzl05rr5cwI6AZ5FqVXjfo1wzpHaKLeiS
-	 7upk9v4yRP24iZTDe5Dq3JT1sTomh2pizhY20Lgi7UDSj0kBb7RxbdAOBV0c5ta5l1
-	 /Af8ci2vPtz8SeX4QmLD8s/3UASA7ru4SvDq+n44=
+	by mail.kernel.org (Postfix) with ESMTP id 83EB9206E9
+	for <linux-pm@archiver.kernel.org>; Tue,  2 Jun 2020 23:57:47 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OX+NgxMF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728645AbgFBUfa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 2 Jun 2020 16:35:30 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46384 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728459AbgFBUfG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 2 Jun 2020 16:35:06 -0400
-Subject: Re: [GIT PULL] Power management updates for v5.8-rc1
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1591130106;
-        bh=2rVwh4/siikVrpgwYQuuD+buqge9Sw5sBfNz6/5D/G4=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=DaTHAH+Ih2x/zpFGh+ICXsG43LB4CLkxU33kHtD/QNLxT1+vEP6H0f1vDbrWmymFl
-         +o/95tHMuX+6Z+3XQYlMXf1y6f6H29Kb6083QTTHM+nneHBiYOjFCTz5bQWEAaqIod
-         VYKiuvCkpQTkLaYEgjCmRReZf858bTknNPNc6P0A=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0gV2T9BUBGT8TOt+kdO6+T_WwmcO1PPonWu76REGkoorQ@mail.gmail.com>
-References: <CAJZ5v0gV2T9BUBGT8TOt+kdO6+T_WwmcO1PPonWu76REGkoorQ@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0gV2T9BUBGT8TOt+kdO6+T_WwmcO1PPonWu76REGkoorQ@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.8-rc1
-X-PR-Tracked-Commit-Id: a34024d98eeaa78e2cd22017180df778800b83fc
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 355ba37d756c38962fe9bb616f5f48eb12a7e11e
-Message-Id: <159113010624.19446.15600149439571163343.pr-tracker-bot@kernel.org>
-Date:   Tue, 02 Jun 2020 20:35:06 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Stephen Rothwell <sfr@canb.auug.org.au>
+        id S1727811AbgFBX5q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 2 Jun 2020 19:57:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34318 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726809AbgFBX5q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 2 Jun 2020 19:57:46 -0400
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35EACC08C5C0;
+        Tue,  2 Jun 2020 16:57:46 -0700 (PDT)
+Received: by mail-pf1-x441.google.com with SMTP id x207so298448pfc.5;
+        Tue, 02 Jun 2020 16:57:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=LhRRdC8w+lAb0OncPPcS/QlJQRfxazO8sGm5lyED8hA=;
+        b=OX+NgxMFH6HKye9aRqJ+3IK3xmOQDZuLYWfZ0rlo0pL/zSX9CECd/jP2r1qBGQCL+C
+         bX8jR7OP4+F4OutWf/eHB7w3OBIsOmeVcpVkMAUF4xKx0DHDx8jr1xE4yTxJyqs6Sa8e
+         ttvKQbzw66Uq1f92vRaymJRtK8Z+trVPiPbRCsvrUyvIgb56bMaIoqVmOE2OBtJb7iqa
+         qpzjgBtJ+KFXNaCdQgMoq2292STnrtRbwTqt1kBRx8cq1N8XtACr8t+fbSUJcb0hutKl
+         x5YZ47S7HMxhEoJmUiakT4wmHnZUvMuFxqvSGXFNL97Watb/ZvwKAUYHQogj5wf12+yi
+         EtBg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=LhRRdC8w+lAb0OncPPcS/QlJQRfxazO8sGm5lyED8hA=;
+        b=cCMgIC7hrW+2eb986gzYfJ4SgTN9lW2At+yzxfdzghaK4UiLi/gJo1iUrt2TdbEL2K
+         N0mvt254dcvErARJccLJ2hslxw/cEaJleHs4TTWZozKYDfKrKl+IOoHMDr9T0Y0IezPu
+         8BF0wQCjLTwuDkYBUaVM+K4Amf5YnbtcnJU1ODnPfouSJx5+xG+msGr5UGTlrcHMfBH7
+         lrdLz6ROWcEJcHO2sOH9IVB63tkGKI5bErE4VToR3ElaG6WQ0+2C7cAqHsMeWHu1/15X
+         inFt/Sb736DmSPOddH4TIbhQ9ns1BhNTaAlsF75OKg8HKC8tM1pSFyLXDZg3Cba5WqVA
+         xGgw==
+X-Gm-Message-State: AOAM5332+vCjxIRM0Kol7YWMpb5pOjLS5vJj0fUhJ3ww1vNCboXLKyCg
+        UzCqMP31zD23XYMtmy1z6bvdY3lK
+X-Google-Smtp-Source: ABdhPJxqg4L7MZn6XvklSG2hY4H1xfxiw+5gCrmvl4JKcQd8v5YDGrrkWiHabJbEgaOcqtAvMtx0AQ==
+X-Received: by 2002:a63:4c0b:: with SMTP id z11mr26828518pga.348.1591142265263;
+        Tue, 02 Jun 2020 16:57:45 -0700 (PDT)
+Received: from fainelli-desktop.igp.broadcom.net ([192.19.223.252])
+        by smtp.gmail.com with ESMTPSA id q28sm210308pfg.180.2020.06.02.16.57.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Jun 2020 16:57:44 -0700 (PDT)
+From:   Florian Fainelli <f.fainelli@gmail.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     stable@vger.kernel.org, zhuguangqing <zhuguangqing@xiaomi.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org (open list:POWER MANAGEMENT CORE)
+Subject: [PATCH stable 5.4] PM: wakeup: Show statistics for deleted wakeup sources again
+Date:   Tue,  2 Jun 2020 16:57:39 -0700
+Message-Id: <20200602235740.17574-1-f.fainelli@gmail.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Mon, 1 Jun 2020 17:48:27 +0200:
+From: zhuguangqing <zhuguangqing@xiaomi.com>
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.8-rc1
+commit e976eb4b91e906f20ec25b20c152d53c472fc3fd upstream
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/355ba37d756c38962fe9bb616f5f48eb12a7e11e
+After commit 00ee22c28915 (PM / wakeup: Use seq_open() to show wakeup
+stats), print_wakeup_source_stats(m, &deleted_ws) is not called from
+wakeup_sources_stats_seq_show() any more.
 
-Thank you!
+Because deleted_ws is one of the wakeup sources, it should be shown
+too, so add it to the end of all other wakeup sources.
 
+Signed-off-by: zhuguangqing <zhuguangqing@xiaomi.com>
+[ rjw: Subject & changelog ]
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Florian Fainelli <f.fainelli@gmail.com>
+---
+ drivers/base/power/wakeup.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/drivers/base/power/wakeup.c b/drivers/base/power/wakeup.c
+index 0bd9b291bb29..92f0960e9014 100644
+--- a/drivers/base/power/wakeup.c
++++ b/drivers/base/power/wakeup.c
+@@ -1073,6 +1073,9 @@ static void *wakeup_sources_stats_seq_next(struct seq_file *m,
+ 		break;
+ 	}
+ 
++	if (!next_ws)
++		print_wakeup_source_stats(m, &deleted_ws);
++
+ 	return next_ws;
+ }
+ 
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.wiki.kernel.org/userdoc/prtracker
+2.17.1
+
