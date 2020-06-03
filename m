@@ -2,78 +2,78 @@ Return-Path: <SRS0=265P=7Q=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.3 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.6 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD78FC433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jun 2020 10:40:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4F92C433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jun 2020 12:31:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B36FB20679
-	for <linux-pm@archiver.kernel.org>; Wed,  3 Jun 2020 10:40:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76FDB20678
+	for <linux-pm@archiver.kernel.org>; Wed,  3 Jun 2020 12:31:34 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="B5HfY2k7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725836AbgFCKkY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Jun 2020 06:40:24 -0400
-Received: from foss.arm.com ([217.140.110.172]:59786 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725828AbgFCKkX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jun 2020 06:40:23 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0A86331B;
-        Wed,  3 Jun 2020 03:40:23 -0700 (PDT)
-Received: from bogus (unknown [10.37.12.118])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 152D53F305;
-        Wed,  3 Jun 2020 03:40:20 -0700 (PDT)
-Date:   Wed, 3 Jun 2020 11:40:17 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Xiongfeng Wang <wangxiongfeng2@huawei.com>, rjw@rjwysocki.net,
-        guohanjun@huawei.com, ionela.voinescu@arm.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Question]: about 'cpuinfo_cur_freq' shown in sysfs when the CPU
- is in idle state
-Message-ID: <20200603104017.GD7259@bogus>
-References: <f1773fdc-f6ef-ec28-0c0a-4a09e66ab63b@huawei.com>
- <20200603075200.hbyofgcyiwocl565@vireshk-i7>
- <20200603100727.GB7259@bogus>
- <20200603101010.alijrfmte2c6xv5c@vireshk-i7>
- <20200603101753.GC7259@bogus>
- <20200603102159.hzctwiqiukwhrpo7@vireshk-i7>
+        id S1725948AbgFCMb2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Jun 2020 08:31:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38038 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726050AbgFCMb2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2020 08:31:28 -0400
+Received: from merlin.infradead.org (unknown [IPv6:2001:8b0:10b:1231::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 62077C08C5C0;
+        Wed,  3 Jun 2020 05:31:27 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=1R/2YdAZSvt3VyvYBxysqrGCsIyLuWCrDG39UYVf7Wo=; b=B5HfY2k7oWgDgwYI4Ho2MRl72v
+        qRcxT5aVUTiZPip/orNqNpF2m5BQLkMvGTG/FQRd5dR00vVEVUv+s+GOWOrVY855oa3PQTYNmiDAt
+        Rwbv3/Kw7Ne/csOfPykzVrbSrLpQ7KLWd6ShCnyfDYwKjXkGPV2DzfKs9UW+jC6NyEzb0R1o3Qfps
+        /QSf2uDzRTGeaBa5itJc6lBDDJ/LjgaFzGLfHnj4V2Kfw0mRDNDVYH7ptFqDv/ZMUOlg+UQCyiC8h
+        26OdfkOmk6iopJPpDhdl/qI+e029JYR0Vxomnpz64CpaX5WFJB+RAcatXi2HfLZ9cxj7AL94feeO0
+        Yz5hLKtg==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1jgSXx-0006oY-9w; Wed, 03 Jun 2020 12:31:05 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 277C4301ABC;
+        Wed,  3 Jun 2020 14:31:03 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 11B2B20BDBF72; Wed,  3 Jun 2020 14:31:03 +0200 (CEST)
+Date:   Wed, 3 Jun 2020 14:31:03 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     Giovanni Gherdovich <ggherdovich@suse.cz>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@suse.de>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Subject: Re: [PATCH v2 0/3] More frequency invariance fixes for x86
+Message-ID: <20200603123103.GI2604@hirez.programming.kicks-ass.net>
+References: <20200531182453.15254-1-ggherdovich@suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200603102159.hzctwiqiukwhrpo7@vireshk-i7>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20200531182453.15254-1-ggherdovich@suse.cz>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 03, 2020 at 03:51:59PM +0530, Viresh Kumar wrote:
-> On 03-06-20, 11:17, Sudeep Holla wrote:
-> > On Wed, Jun 03, 2020 at 03:40:10PM +0530, Viresh Kumar wrote:
-> > > On 03-06-20, 11:07, Sudeep Holla wrote:
-> > > > But I have another question. If we can detect that CPPC on some platforms
-> > > > rely on CPU registers(I assume FFH registers here and not system/io/...
-> > > > type of GAS registers), can we set dvfs_on_any_cpu(can't recall exact
-> > > > flag name) to false if not already done to prevent such issues. Or I am
-> > > > talking non-sense as it may be applicable only for _set operation and
-> > >
-> > >           Yes, non-sense :)
-> > >
-> >
-> > Thanks for confirming 👍.
->
-> Hehe.
->
-> So, do you agree that we better do the read from the CPUs themselves ?
->
+On Sun, May 31, 2020 at 08:24:50PM +0200, Giovanni Gherdovich wrote:
+> changes wrt v1:
+> 
+> - add Peter Zijlstra's code to check for multiplication overflow, see
+>   https://lore.kernel.org/lkml/20200501133042.GE3762@hirez.programming.kicks-ass.net/
+> - put all frequence invariant code behind CONFIG_X86_64, as the overflow
+>   checks need 64 bits operations, see the build error at
+>   https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org/thread/7GDIBOMNVDG5W2XZD4EICE2TUZR3THBN/
+> - add additional patch to check for when base_freq > turbo_freq,
+>   suggested by Peter Zijlstra at
+>   https://lore.kernel.org/lkml/20200501130427.GD3762@hirez.programming.kicks-ass.net/
 
-Yes if that is fine. I thought waking up the core was not a good solution
-in terms of power, but I have no objection for that as well as return 0
-as IMO it aligns with the AMU counters when CPU is idle.
-
---
-Regards,
-Sudeep
+Thanks!
