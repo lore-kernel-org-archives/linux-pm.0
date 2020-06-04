@@ -2,61 +2,61 @@ Return-Path: <SRS0=A5Q+=7R=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50485C433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 514DDC433E0
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AAF020738
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C35120772
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TTHUNmNT"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iSv3LGf0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728003AbgFDBxX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Jun 2020 21:53:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49174 "EHLO
+        id S1728050AbgFDBxc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Jun 2020 21:53:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49192 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728000AbgFDBxW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2020 21:53:22 -0400
-Received: from mail-qk1-x743.google.com (mail-qk1-x743.google.com [IPv6:2607:f8b0:4864:20::743])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33FBFC08C5C1
-        for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2020 18:53:22 -0700 (PDT)
-Received: by mail-qk1-x743.google.com with SMTP id f18so4524087qkh.1
-        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2020 18:53:22 -0700 (PDT)
+        with ESMTP id S1728033AbgFDBx2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2020 21:53:28 -0400
+Received: from mail-qv1-xf41.google.com (mail-qv1-xf41.google.com [IPv6:2607:f8b0:4864:20::f41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 085C9C08C5C3
+        for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2020 18:53:28 -0700 (PDT)
+Received: by mail-qv1-xf41.google.com with SMTP id j7so2206849qvp.2
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2020 18:53:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=OXFBxnWXYnn/70SvWtr9K2MHoufkLsFwRRiIi6zZBfk=;
-        b=TTHUNmNTBK6ssrGE4vNIHuoGl36/IKA184BiSEt8dXIB0bXbrx0XulkgtaLviqMvuW
-         tiIHAKyJPYZreacCzAGf8kljq9QG3N1PG/bNUFHp6FKanpARhYnd1lj2lOa6FWJptBym
-         L3dMIgXoBnK89BgeVPpe8GHacwrkCx5LaXP0Aq0Xj0HBxajAOPuALcf5U/FjaB+Z1voT
-         vf9KlCpD5m6T105XsMMrDnc2eE2+NRpCmzy6IkeydAUxAPeb6uqYMzZgBWZcU5IkBZgX
-         EYrGk3+RyAqITb8mgfYGzzvQrK11Ct5wGRbMIFnMdg3+5dZJ1/4HOLZ606IzJqO/iePB
-         GkYg==
+        bh=i858jJWQbhuwRMj8E1/bxOovHVRlGVAzlzhMfpqJNyU=;
+        b=iSv3LGf08jzGFo42mX0KR7PGLzCPQauNhYrrp3BXnzbEc2CW7abMVDkozTgcYHf/yf
+         s06fyMTLbG0oexq0OXdsjoYiPqq3jub1muv86cBhQuRun9lTu9qyObmSQhH+ZbqwEspx
+         j+/cCPcW9aXerBwgotYV3sFiQLISg0OInwfqnT898hy7S+mmH5v2P4oIe7/lJJrdIma8
+         qFVD9dKIT603LPHP8ksXAJ9aP8QhIhZSkHv7lEUp1bmgFT3A+SRbUw3uvSz9z8pa6i+6
+         oZybQtGht8sq8EH5pgK8aWzj1S21q4RDdPUoKXCQGvEKkHuWOwKWiNyr2lbuh+H8JmMM
+         T8TQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=OXFBxnWXYnn/70SvWtr9K2MHoufkLsFwRRiIi6zZBfk=;
-        b=J84jEtQBt6fAC1zfASxNA/ETrYnOG/lRzZUhtFPjpPV06obFR9YURW2ua0roPfkSt9
-         eeLBMnzxorKlBP/ZJGcL08olfLcvsyErkeWsuZzfQUPuTSDoIXq8Q9ghQZ3P0K/rcgIA
-         Gm/hjz+x6uoCUyy3weTCeGPin6XIf28oiiFxlxJG92aXQp2F2+WudMIIyZx2VYEypbTz
-         ROhtu4GfqAxKaAui2pF3X64+07a6kvttlDYn+KpWFFNgiSevwDrD0H+duOs1doNZodIw
-         45qvANFIq15TQllx1TfidcOjyrYhy7qD8oxk+X1/yG/P3qWd+pjNyu+w5sfTOa3vjdn7
-         35Sw==
-X-Gm-Message-State: AOAM5323K9y54M2rhWTQ55kdQIgWpc3ck/PfNt0stZAmL+e8ecIdyWrL
-        eSsvDxMRLy+3NmtARL5+f+s0Ow==
-X-Google-Smtp-Source: ABdhPJxtYPvU4sjsI6bm1cB56yIjkZm4HSRbup9Y6NQzxcUlyQ8iJvQmJ9f/YKDFoggQ1o/Vl5DgyA==
-X-Received: by 2002:a05:620a:15a5:: with SMTP id f5mr2710795qkk.9.1591235601365;
-        Wed, 03 Jun 2020 18:53:21 -0700 (PDT)
+        bh=i858jJWQbhuwRMj8E1/bxOovHVRlGVAzlzhMfpqJNyU=;
+        b=XkGC8Q3dc2xXM232z3ELHd4PCFYbUYAP4guBne7BkQTZEjes6ybJjqx9e6D/E6rl8D
+         ZPj3GPU8dxna+y5KG7EJ6dlbmV6tv2GzQaEoYPrVsYfxygFUVj8OjUT5VuP7idpWuz3u
+         5+xTwAFfch+TnHfewm2txJK5ZTI/CZi8fnDBQ2LKxF2Ye0F0Y/1jE2GVUgmUf9fUT+vm
+         1KhN371IWB6sr78+wxQdsTUkhgmcMw9mhSvghlpQrUvF9ijBFy/CLbYIw0uLzFKODFIn
+         w96h9e0lezp+D08fYRb+5j8eFCtCno8hIKvqB60qz8vrHx3w2P17ZpCjmpD5aLvfg7wK
+         HgcQ==
+X-Gm-Message-State: AOAM532ruLzuDxezpUAJaY+wM8iVkwMRidB8NVXis30A/hp9L79NFGpd
+        T0GGhsGrWEQWcMBSXY6TjV/4Q8N7QZBZ7A==
+X-Google-Smtp-Source: ABdhPJy/qVnYPDu7TwQ009JRMbLWRxZ8N0T6NTl5vAfmesQQgKmZ693NBu1XxWhNl9aBfX2gOnZ6KA==
+X-Received: by 2002:a05:6214:28:: with SMTP id b8mr2571818qvr.60.1591235607224;
+        Wed, 03 Jun 2020 18:53:27 -0700 (PDT)
 Received: from pop-os.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
-        by smtp.googlemail.com with ESMTPSA id t74sm2986439qka.21.2020.06.03.18.53.18
+        by smtp.googlemail.com with ESMTPSA id t74sm2986439qka.21.2020.06.03.18.53.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 03 Jun 2020 18:53:19 -0700 (PDT)
+        Wed, 03 Jun 2020 18:53:26 -0700 (PDT)
 From:   Thara Gopinath <thara.gopinath@linaro.org>
 To:     rui.zhang@intel.com, ulf.hansson@linaro.org,
         daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
@@ -65,9 +65,9 @@ Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
         rjw@rjwysocki.net, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v6 1/6] PM/Domains: Add support for retrieving genpd performance states information
-Date:   Wed,  3 Jun 2020 21:53:12 -0400
-Message-Id: <20200604015317.31389-2-thara.gopinath@linaro.org>
+Subject: [PATCH v6 5/6] dt-bindings: power: Extend RPMh power controller binding to describe thermal warming device
+Date:   Wed,  3 Jun 2020 21:53:16 -0400
+Message-Id: <20200604015317.31389-6-thara.gopinath@linaro.org>
 X-Mailer: git-send-email 2.20.1
 In-Reply-To: <20200604015317.31389-1-thara.gopinath@linaro.org>
 References: <20200604015317.31389-1-thara.gopinath@linaro.org>
@@ -78,118 +78,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add two new APIs in the genpd framework, dev_pm_genpd_get_performance_state
-to return the current performance state of a power domain and
-dev_pm_genpd_performance_state_count to return the total number of
-performance states supported by a power domain. Since the genpd framework
-does not maintain a count of number of performance states supported by a
-power domain, introduce a new callback(.get_performance_state_count) that
-can be used to retrieve this information from power domain drivers.
-
-These APIs are added to aid the implementation of a power domain as a
-warming device. Linux kernel cooling device framework(into which warming
-device can be plugged in) requires during initialization to be provided
-with the maximum number of states that can be supported. When a power
-domain acts as a warming device, the max state is the max number of
-perfomrance states supported by the power domain. The cooling device
-framework implements API to retrieve the current state of the cooling
-device. This in turn translates to the current performance state of the
-power domain.
+RPMh power controller hosts mx domain that can be used as thermal warming
+device. Add #cooling-cells property to the power domain provider node to
+indicate this.
 
 Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
-Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+Acked-by: Rob Herring <robh@kernel.org>
 ---
- drivers/base/power/domain.c | 37 +++++++++++++++++++++++++++++++++++++
- include/linux/pm_domain.h   | 13 +++++++++++++
- 2 files changed, 50 insertions(+)
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 0a01df608849..88f8773cabe7 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -408,6 +408,43 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
- }
- EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
+v3->v4:
+	- Removed subnode to indicate that mx power domain is a warming
+	  device. Instead #cooling-cells is used as a power domain
+	  provider property to indicate if the provider hosts a power
+	  domain that can be used as a warming device.
+
+v4->v5:
+	Moved the property from .txt format to .yaml format.
+
+ Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+index 8058955fb3b9..a4fbbd88ce18 100644
+--- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
++++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+@@ -28,6 +28,9 @@ properties:
+   '#power-domain-cells':
+     const: 1
  
-+int dev_pm_genpd_get_performance_state(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	unsigned int state;
++  '#cooling-cells':
++    const: 2
 +
-+	genpd = dev_to_genpd_safe(dev);
-+	if (IS_ERR(genpd))
-+		return -ENODEV;
-+
-+	genpd_lock(genpd);
-+	state = genpd->performance_state;
-+	genpd_unlock(genpd);
-+
-+	return state;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_get_performance_state);
-+
-+int dev_pm_genpd_performance_state_count(struct device *dev)
-+{
-+	struct generic_pm_domain *genpd;
-+	int count;
-+
-+	genpd = dev_to_genpd_safe(dev);
-+	if (IS_ERR(genpd))
-+		return -ENODEV;
-+
-+	if (unlikely(!genpd->get_performance_state_count))
-+		return -EINVAL;
-+
-+	genpd_lock(genpd);
-+	count = genpd->get_performance_state_count(genpd);
-+	genpd_unlock(genpd);
-+
-+	return count;
-+}
-+EXPORT_SYMBOL_GPL(dev_pm_genpd_performance_state_count);
-+
- static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
- {
- 	unsigned int state_idx = genpd->state_idx;
-diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
-index 9ec78ee53652..7d415350380f 100644
---- a/include/linux/pm_domain.h
-+++ b/include/linux/pm_domain.h
-@@ -117,6 +117,7 @@ struct generic_pm_domain {
- 						 struct dev_pm_opp *opp);
- 	int (*set_performance_state)(struct generic_pm_domain *genpd,
- 				     unsigned int state);
-+	int (*get_performance_state_count)(struct generic_pm_domain *genpd);
- 	struct gpd_dev_ops dev_ops;
- 	s64 max_off_time_ns;	/* Maximum allowed "suspended" time. */
- 	bool max_off_time_changed;
-@@ -204,6 +205,8 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 		  struct dev_power_governor *gov, bool is_off);
- int pm_genpd_remove(struct generic_pm_domain *genpd);
- int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
-+int dev_pm_genpd_get_performance_state(struct device *dev);
-+int dev_pm_genpd_performance_state_count(struct device *dev);
+   operating-points-v2: true
  
- extern struct dev_power_governor simple_qos_governor;
- extern struct dev_power_governor pm_domain_always_on_gov;
-@@ -251,6 +254,16 @@ static inline int dev_pm_genpd_set_performance_state(struct device *dev,
- 	return -ENOTSUPP;
- }
- 
-+static inline int dev_pm_genpd_get_performance_state(struct device *dev)
-+{
-+	return -ENOTSUPP;
-+}
-+
-+static inline int dev_pm_genpd_performance_state_count(struct device *dev)
-+{
-+	return -ENOTSUPP;
-+}
-+
- #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
- #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
- #endif
+   opp-table:
 -- 
 2.20.1
 
