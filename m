@@ -2,257 +2,177 @@ Return-Path: <SRS0=A5Q+=7R=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6989CC433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:40:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 785E9C433E1
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 46C9E207DF
-	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:40:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 56AD720738
+	for <linux-pm@archiver.kernel.org>; Thu,  4 Jun 2020 01:53:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SwblQzt1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726462AbgFDBks (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 3 Jun 2020 21:40:48 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:46812 "EHLO inva020.nxp.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726050AbgFDBks (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 3 Jun 2020 21:40:48 -0400
-Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 0C8161A10CD;
-        Thu,  4 Jun 2020 03:40:45 +0200 (CEST)
-Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 651591A016E;
-        Thu,  4 Jun 2020 03:40:41 +0200 (CEST)
-Received: from localhost.localdomain (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id CB451402A5;
-        Thu,  4 Jun 2020 09:40:36 +0800 (SGT)
-From:   Anson Huang <Anson.Huang@nxp.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, robh+dt@kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        id S1727795AbgFDBxV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 3 Jun 2020 21:53:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49156 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726114AbgFDBxU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 3 Jun 2020 21:53:20 -0400
+Received: from mail-qt1-x841.google.com (mail-qt1-x841.google.com [IPv6:2607:f8b0:4864:20::841])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C07FFC08C5C0
+        for <linux-pm@vger.kernel.org>; Wed,  3 Jun 2020 18:53:19 -0700 (PDT)
+Received: by mail-qt1-x841.google.com with SMTP id k22so3955391qtm.6
+        for <linux-pm@vger.kernel.org>; Wed, 03 Jun 2020 18:53:19 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=M/aBGpswVv6maZErzhj2cA/GWvid14/WP8iAXA5RYds=;
+        b=SwblQzt1kdFZTiYHtpL/Nk56Df7+NKanGfHYdrba6r5nkmLI2W+4j5HEJoqExqwKQA
+         +/+svgVr/wuzXCmJxU453OMsaz5fIgO9/jvlV8ZKpzaPiHy/VPR0l3iazpjoO14TWH1A
+         6o3LT0+BWDZT992O3QbToU8Yi1jG/koloy93t98E3/Babcre2hUoY4fww4BEMapbYBbc
+         RmHxca4z8bvbm6jV8UQIplrDSxG18wG65ATDlxg0K31fHy2THw+ZlZdphSS4CQVIklzk
+         m4IUARo673EJE+w6BuiQLuDqABDL5f8E4KpDgpZwvtbd8KS4A87qHPav/CQnG6dp2TSX
+         SIeA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=M/aBGpswVv6maZErzhj2cA/GWvid14/WP8iAXA5RYds=;
+        b=VxHbG9YhbS/mb4G2uxjKyscznV8mvEWriojVmVhogkNBuI2AvFZfv3SCN0D1hhQZL4
+         182gpJo1dQcDLU8suKNzPe+sGtPmuUyCSmWuyAug/TtorjIWTcxWQ+l+2qwfEOu9d2oN
+         wIrPO2X6at9SIXXePeYqabVEzh4f2K+zAzMHvNOqStMSfXOHbJy0I1QTAd8GY9DQHaUZ
+         FkqqxXGQ5KJHIV9vOgiNEMxS+hUWzfUJ1mdBqKhDURABjKEtlIeWdxumPA6dzUL32W9W
+         kNGS4sIgijAi9yC0N00G9rfj+6J+kWphCqo+JaLDaXG0jKVjVhAdsbXc8xaESIq8H2jz
+         YppA==
+X-Gm-Message-State: AOAM530Hbr0WxItdKKvhBGjVtmwPqXB3DPAWEQCwcku6YTpgg6ZLCD8F
+        hvbTGlvtDH5taq4yU2Z5Er79qg==
+X-Google-Smtp-Source: ABdhPJxU4I7156wWSx5mqMyLRAIQwcHPNU2/djok6WgOiwwRGEOWvkEwUL42FKnhamdNogtdPGEMfQ==
+X-Received: by 2002:ac8:108b:: with SMTP id a11mr2337950qtj.173.1591235598781;
+        Wed, 03 Jun 2020 18:53:18 -0700 (PDT)
+Received: from pop-os.fios-router.home (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
+        by smtp.googlemail.com with ESMTPSA id t74sm2986439qka.21.2020.06.03.18.53.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 03 Jun 2020 18:53:18 -0700 (PDT)
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+To:     rui.zhang@intel.com, ulf.hansson@linaro.org,
+        daniel.lezcano@linaro.org, bjorn.andersson@linaro.org,
+        agross@kernel.org, robh@kernel.org
+Cc:     amit.kucheria@verdurent.com, mark.rutland@arm.com,
+        rjw@rjwysocki.net, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Cc:     Linux-imx@nxp.com
-Subject: [PATCH V5] dt-bindings: thermal: Convert qoriq to json-schema
-Date:   Thu,  4 Jun 2020 09:30:16 +0800
-Message-Id: <1591234216-14927-1-git-send-email-Anson.Huang@nxp.com>
-X-Mailer: git-send-email 2.7.4
-X-Virus-Scanned: ClamAV using ClamSMTP
+Subject: [PATCH v6 0/6] Introduce Power domain based warming device driver
+Date:   Wed,  3 Jun 2020 21:53:11 -0400
+Message-Id: <20200604015317.31389-1-thara.gopinath@linaro.org>
+X-Mailer: git-send-email 2.20.1
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the qoriq thermal binding to DT schema format using json-schema
+Certain resources modeled as a generic power domain in linux kernel can be
+used to warm up the SoC (mx power domain on sdm845) if the temperature
+falls below certain threshold. These power domains can be considered as
+thermal warming devices.  (opposite of thermal cooling devices).
 
-Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
----
-Changes since V4:
-	- add "additionalProperties: false"
----
- .../devicetree/bindings/thermal/qoriq-thermal.txt  |  71 -------------
- .../devicetree/bindings/thermal/qoriq-thermal.yaml | 114 +++++++++++++++++++++
- 2 files changed, 114 insertions(+), 71 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
- create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
+In kernel, these warming devices can be modeled as a thermal cooling
+device. Since linux kernel today has no instance of a resource modeled as
+a power domain acting as a thermal warming device, a generic power domain
+based thermal warming device driver that can be used pan-Socs is the
+approach taken in this patch series. Since thermal warming devices can be
+thought of as the mirror opposite of thermal cooling devices, this patch
+series re-uses thermal cooling device framework. To use these power
+domains as warming devices require further tweaks in the thermal framework
+which are out of scope of this patch series. These tweaks have been posted
+as a separate series[1].
 
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-deleted file mode 100644
-index 28f2cba..0000000
---- a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-+++ /dev/null
-@@ -1,71 +0,0 @@
--* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
--
--Required properties:
--- compatible : Must include "fsl,qoriq-tmu" or "fsl,imx8mq-tmu". The
--	version of the device is determined by the TMU IP Block Revision
--	Register (IPBRR0) at offset 0x0BF8.
--	Table of correspondences between IPBRR0 values and example  chips:
--		Value           Device
--		----------      -----
--		0x01900102      T1040
--- reg : Address range of TMU registers.
--- interrupts : Contains the interrupt for TMU.
--- fsl,tmu-range : The values to be programmed into TTRnCR, as specified by
--	the SoC reference manual. The first cell is TTR0CR, the second is
--	TTR1CR, etc.
--- fsl,tmu-calibration : A list of cell pairs containing temperature
--	calibration data, as specified by the SoC reference manual.
--	The first cell of each pair is the value to be written to TTCFGR,
--	and the second is the value to be written to TSCFGR.
--- #thermal-sensor-cells : Must be 1. The sensor specifier is the monitoring
--	site ID, and represents the "n" in TRITSRn and TRATSRn.
--
--Optional property:
--- little-endian : If present, the TMU registers are little endian. If absent,
--	the default is big endian.
--- clocks : the clock for clocking the TMU silicon.
--
--Example:
--
--tmu@f0000 {
--	compatible = "fsl,qoriq-tmu";
--	reg = <0xf0000 0x1000>;
--	interrupts = <18 2 0 0>;
--	fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
--	fsl,tmu-calibration = <0x00000000 0x00000025
--			       0x00000001 0x00000028
--			       0x00000002 0x0000002d
--			       0x00000003 0x00000031
--			       0x00000004 0x00000036
--			       0x00000005 0x0000003a
--			       0x00000006 0x00000040
--			       0x00000007 0x00000044
--			       0x00000008 0x0000004a
--			       0x00000009 0x0000004f
--			       0x0000000a 0x00000054
--
--			       0x00010000 0x0000000d
--			       0x00010001 0x00000013
--			       0x00010002 0x00000019
--			       0x00010003 0x0000001f
--			       0x00010004 0x00000025
--			       0x00010005 0x0000002d
--			       0x00010006 0x00000033
--			       0x00010007 0x00000043
--			       0x00010008 0x0000004b
--			       0x00010009 0x00000053
--
--			       0x00020000 0x00000010
--			       0x00020001 0x00000017
--			       0x00020002 0x0000001f
--			       0x00020003 0x00000029
--			       0x00020004 0x00000031
--			       0x00020005 0x0000003c
--			       0x00020006 0x00000042
--			       0x00020007 0x0000004d
--			       0x00020008 0x00000056
--
--			       0x00030000 0x00000012
--			       0x00030001 0x0000001d>;
--	#thermal-sensor-cells = <1>;
--};
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml b/Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
-new file mode 100644
-index 0000000..f09e872
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.yaml
-@@ -0,0 +1,114 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qoriq-thermal.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
-+
-+maintainers:
-+  - Anson Huang <Anson.Huang@nxp.com>
-+
-+properties:
-+  compatible:
-+    description: |
-+      The version of the device is determined by the TMU IP Block Revision
-+      Register (IPBRR0) at offset 0x0BF8.
-+      Table of correspondences between IPBRR0 values and example chips:
-+            Value           Device
-+            ----------      -----
-+            0x01900102      T1040
-+    enum:
-+      - fsl,qoriq-tmu
-+      - fsl,imx8mq-tmu
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  fsl,tmu-range:
-+    $ref: '/schemas/types.yaml#/definitions/uint32-array'
-+    description: |
-+      The values to be programmed into TTRnCR, as specified by the SoC
-+      reference manual. The first cell is TTR0CR, the second is TTR1CR, etc.
-+    maxItems: 4
-+
-+  fsl,tmu-calibration:
-+    $ref: '/schemas/types.yaml#/definitions/uint32-matrix'
-+    description: |
-+      A list of cell pairs containing temperature calibration data, as
-+      specified by the SoC reference manual. The first cell of each pair
-+      is the value to be written to TTCFGR, and the second is the value
-+      to be written to TSCFGR.
-+    items:
-+      items:
-+        - description: value for TTCFGR
-+        - description: value for TSCFGR
-+    minItems: 1
-+    maxItems: 64
-+
-+  little-endian:
-+    description: |
-+      boolean, if present, the TMU registers are little endian. If absent,
-+      the default is big endian.
-+    type: boolean
-+
-+  clocks:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - fsl,tmu-range
-+  - fsl,tmu-calibration
-+  - '#thermal-sensor-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    tmu@f0000 {
-+        compatible = "fsl,qoriq-tmu";
-+        reg = <0xf0000 0x1000>;
-+        interrupts = <18 2 0 0>;
-+        fsl,tmu-range = <0x000a0000 0x00090026 0x0008004a 0x0001006a>;
-+        fsl,tmu-calibration = <0x00000000 0x00000025>,
-+                              <0x00000001 0x00000028>,
-+                              <0x00000002 0x0000002d>,
-+                              <0x00000003 0x00000031>,
-+                              <0x00000004 0x00000036>,
-+                              <0x00000005 0x0000003a>,
-+                              <0x00000006 0x00000040>,
-+                              <0x00000007 0x00000044>,
-+                              <0x00000008 0x0000004a>,
-+                              <0x00000009 0x0000004f>,
-+                              <0x0000000a 0x00000054>,
-+                              <0x00010000 0x0000000d>,
-+                              <0x00010001 0x00000013>,
-+                              <0x00010002 0x00000019>,
-+                              <0x00010003 0x0000001f>,
-+                              <0x00010004 0x00000025>,
-+                              <0x00010005 0x0000002d>,
-+                              <0x00010006 0x00000033>,
-+                              <0x00010007 0x00000043>,
-+                              <0x00010008 0x0000004b>,
-+                              <0x00010009 0x00000053>,
-+                              <0x00020000 0x00000010>,
-+                              <0x00020001 0x00000017>,
-+                              <0x00020002 0x0000001f>,
-+                              <0x00020003 0x00000029>,
-+                              <0x00020004 0x00000031>,
-+                              <0x00020005 0x0000003c>,
-+                              <0x00020006 0x00000042>,
-+                              <0x00020007 0x0000004d>,
-+                              <0x00020008 0x00000056>,
-+                              <0x00030000 0x00000012>,
-+                              <0x00030001 0x0000001d>;
-+        #thermal-sensor-cells = <1>;
-+    };
+The first patch in this series extends the genpd framework to export out
+the performance states of a power domain so that when a power domain is
+modeled as a cooling device, the number of possible states and current
+state of the cooling device can be retrieved from the genpd framework.
+
+The second patch implements the newly added genpd callback for Qualcomm
+RPMH power domain driver which hosts the mx power domain.
+
+The third patch introduces a new cooling device register API that allows
+a parent to be specified for the cooling device.
+
+The fourth patch introduces the generic power domain warming device
+driver.
+
+The fifth patch extends Qualcomm RPMh power controller driver to register
+mx power domain as a thermal warming device in the kernel.
+
+The sixth patch describes the dt binding extensions for mx power domain to
+be a thermal warming device.
+
+The seventh patch introduces the DT entreis for sdm845 to register mx
+power domain as a thermal warming device.
+
+v1->v2:
+	- Rename the patch series from "qcom: Model RPMH power domains as
+	  thermal cooling devices" to "Introduce Power domain based
+	  thermal warming devices" as it is more appropriate.
+	- Introduce a new patch(patch 3) describing the dt-bindings for
+	  generic power domain warming device.
+	- Patch specific changes mentioned in respective patches.
+
+v2->v3:
+	- Changed power domain warming device from a virtual device node
+	  entry in DT to being a subnode of power domain controller
+	  binding following Rob's review comments.
+	- Implemented Ulf's review comments.
+	- The changes above introduced two new patches (patch 3 and 4)
+v3->v4:
+	- Dropped late_init hook in cooling device ops. Instead introduced
+	  a new cooling device register API that allows to define a parent
+	  for the cooling device.
+	- Patch specific changes mentioned in respective patches. 
+
+v4->v5:
+	- Dropped the patch that introduced the cooling device register
+	  API with parent as per review comments from Ulf. 
+	- Patch specific changes mentioned in respective patches.
+
+v5->v6:
+	- Rebased to latest kernel
+	- Few other fixes identified in the review process mentioned in
+	  respective patches
+
+1. https://lkml.org/lkml/2019/9/18/1180
+
+Thara Gopinath (6):
+  PM/Domains: Add support for retrieving genpd performance states
+    information
+  soc: qcom: rpmhpd: Introduce function to retrieve power domain
+    performance state count
+  thermal: Add generic power domain warming device driver.
+  soc: qcom: Extend RPMh power controller driver to register warming
+    devices.
+  dt-bindings: power: Extend RPMh power controller binding to describe
+    thermal warming device
+  arm64: dts: qcom: Indicate rpmhpd hosts a power domain that can be
+    used as a warming device.
+
+ .../devicetree/bindings/power/qcom,rpmpd.yaml |   3 +
+ arch/arm64/boot/dts/qcom/sdm845.dtsi          |   1 +
+ drivers/base/power/domain.c                   |  37 ++++
+ drivers/soc/qcom/rpmhpd.c                     |  25 ++-
+ drivers/thermal/Kconfig                       |  10 ++
+ drivers/thermal/Makefile                      |   4 +
+ drivers/thermal/pd_warming.c                  | 169 ++++++++++++++++++
+ include/linux/pd_warming.h                    |  29 +++
+ include/linux/pm_domain.h                     |  13 ++
+ 9 files changed, 290 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/thermal/pd_warming.c
+ create mode 100644 include/linux/pd_warming.h
+
 -- 
-2.7.4
+2.20.1
 
