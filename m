@@ -2,28 +2,27 @@ Return-Path: <SRS0=ei9F=7S=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C4CC433DF
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3266FC433E2
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4F6BE20823
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1937F207D8
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728342AbgFEWob (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Jun 2020 18:44:31 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:41774 "EHLO
+        id S1728381AbgFEWoJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Jun 2020 18:44:09 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:41676 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728256AbgFEWoL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:11 -0400
+        with ESMTP id S1728256AbgFEWoJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:09 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 85C4A2A51C6
+        with ESMTPSA id 49BB02A51AC
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 33916480105; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
+        id 249E1480101; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -36,12 +35,10 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         kernel@collabora.com, linux-arm-kernel@lists.infradead.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv2 5/6] ARM: sa1100: Use GPIO descriptor for gpio-charger
-Date:   Sat,  6 Jun 2020 00:44:02 +0200
-Message-Id: <20200605224403.181015-6-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 0/6] misc. gpio-charger patches
+Date:   Sat,  6 Jun 2020 00:43:57 +0200
+Message-Id: <20200605224403.181015-1-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200605224403.181015-1-sebastian.reichel@collabora.com>
-References: <20200605224403.181015-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -49,61 +46,48 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Provide AC detect GPIO via gpiod table instead of
-legacy platform data so that legacy GPIO support
-can be removed from the driver.
+Hi,
 
-Due to lack of hardware this has only been compile
-tested.
+This is v2 of a patchset for gpio-charger. The patches are
+mostly unrelated to each other, but have some dependencies.
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- arch/arm/mach-sa1100/collie.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+Merge plan is:
 
-diff --git a/arch/arm/mach-sa1100/collie.c b/arch/arm/mach-sa1100/collie.c
-index 3cc2b71e16f0..3e871a3db3b0 100644
---- a/arch/arm/mach-sa1100/collie.c
-+++ b/arch/arm/mach-sa1100/collie.c
-@@ -30,6 +30,7 @@
- #include <linux/gpio_keys.h>
- #include <linux/input.h>
- #include <linux/gpio.h>
-+#include <linux/gpio/machine.h>
- #include <linux/power/gpio-charger.h>
- 
- #include <video/sa1100fb.h>
-@@ -131,6 +132,14 @@ static struct irda_platform_data collie_ir_data = {
- /*
-  * Collie AC IN
-  */
-+static struct gpiod_lookup_table collie_charger_gpiod_table = {
-+	.dev_id = "gpio-charger",
-+	.table = {
-+		GPIO_LOOKUP("gpio", COLLIE_GPIO_AC_IN, NULL, GPIO_ACTIVE_HIGH),
-+		{},
-+	},
-+};
-+
- static char *collie_ac_supplied_to[] = {
- 	"main-battery",
- 	"backup-battery",
-@@ -140,7 +149,6 @@ static char *collie_ac_supplied_to[] = {
- static struct gpio_charger_platform_data collie_power_data = {
- 	.name			= "charger",
- 	.type			= POWER_SUPPLY_TYPE_MAINS,
--	.gpio			= COLLIE_GPIO_AC_IN,
- 	.supplied_to		= collie_ac_supplied_to,
- 	.num_supplicants	= ARRAY_SIZE(collie_ac_supplied_to),
- };
-@@ -386,6 +394,7 @@ static void __init collie_init(void)
- 
- 	platform_scoop_config = &collie_pcmcia_config;
- 
-+	gpiod_add_lookup_table(&collie_charger_gpiod_table);
- 	ret = platform_add_devices(devices, ARRAY_SIZE(devices));
- 	if (ret) {
- 		printk(KERN_WARNING "collie: Unable to register LoCoMo device\n");
+Assuming there are no huge blockers, the plan is to merge
+patches 1-3 through power-supply subsystem for 5.9. The
+ARM patches can go via ARM subsystem for 5.9 and the final
+patch can simply be postponed for 5.10.
+
+Changelog since PATCHv1:
+ * Fixed the YAML binding as suggested by Rob
+ * Implemented the suggestions from Emil
+ * Split making "gpios" optional into separate patch, which
+   simplifies reviewing and follows "one change per patch"
+   style
+ * Add two new patches converting platform data users to
+   use GPIO descriptor tables
+ * Add final patch removing gpio from platform data
+
+-- Sebastian
+
+Sebastian Reichel (6):
+  dt-bindings: power: supply: gpio-charger: convert to yaml
+  power: supply: gpio-charger: Make gpios optional
+  power: supply: gpio-charger: add charge-current-limit feature
+  ARM: pxa: Use GPIO descriptor for gpio-charger
+  ARM: sa1100: Use GPIO descriptor for gpio-charger
+  power: supply: gpio-charger: drop legacy GPIO support
+
+ .../bindings/power/supply/gpio-charger.txt    |  31 ---
+ .../bindings/power/supply/gpio-charger.yaml   |  94 ++++++++
+ arch/arm/mach-pxa/tosa.c                      |  24 +--
+ arch/arm/mach-sa1100/collie.c                 |  11 +-
+ drivers/power/supply/gpio-charger.c           | 200 ++++++++++++++----
+ include/linux/power/gpio-charger.h            |   5 -
+ 6 files changed, 275 insertions(+), 90 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+
 -- 
 2.26.2
 
