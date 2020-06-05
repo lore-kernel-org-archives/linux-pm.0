@@ -7,26 +7,26 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88DA3C433E0
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 90B8EC433E1
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F37B206DB
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7800D2074B
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728476AbgFEWoN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728453AbgFEWoN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Fri, 5 Jun 2020 18:44:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43758 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43760 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728416AbgFEWoL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:11 -0400
+        with ESMTP id S1728418AbgFEWoM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:12 -0400
 Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5991C08C5C2;
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB984C08C5C3;
         Fri,  5 Jun 2020 15:44:10 -0700 (PDT)
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 85C2F2A51C5
+        with ESMTPSA id 3AC372A0C32
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 36CC2480106; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
+        id 2A144480102; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -39,9 +39,9 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         kernel@collabora.com, linux-arm-kernel@lists.infradead.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv2 6/6] power: supply: gpio-charger: drop legacy GPIO support
-Date:   Sat,  6 Jun 2020 00:44:03 +0200
-Message-Id: <20200605224403.181015-7-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 2/6] power: supply: gpio-charger: Make gpios optional
+Date:   Sat,  6 Jun 2020 00:43:59 +0200
+Message-Id: <20200605224403.181015-3-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200605224403.181015-1-sebastian.reichel@collabora.com>
 References: <20200605224403.181015-1-sebastian.reichel@collabora.com>
@@ -52,94 +52,128 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-All board files have been converted to use boardfile GPIO
-descriptor tables, so GPIO support can be removed from
-platform data.
+While strongly recommended, not all devices have a gpio to
+detect if the charger is connected. This moves the 'gpios'
+from required to optional section.
+
+This also modifies error handling for the GPIO a bit: We
+no longer fallback to pdata, if a GPIO is specified using
+GPIO descriptor tables. This is a bit cleaner and does
+not have any real impact: There are only two mainline pdata
+users (arm/mach-sa1100/collie.c, arm/mach-pxa/tosa.c) and
+none of them specify the GPIO via gpiod descriptor tables.
+Once both have been converted the driver's support for
+specifying GPIOs numbers in pdata will be dropped.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- drivers/power/supply/gpio-charger.c | 30 +----------------------------
- include/linux/power/gpio-charger.h  |  5 -----
- 2 files changed, 1 insertion(+), 34 deletions(-)
+ .../bindings/power/supply/gpio-charger.yaml   |  7 +++-
+ drivers/power/supply/gpio-charger.c           | 38 ++++++++++++-------
+ 2 files changed, 31 insertions(+), 14 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+index 78b167c62ab1..30eabbb14ef3 100644
+--- a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
++++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+@@ -41,7 +41,12 @@ properties:
+ 
+ required:
+   - compatible
+-  - gpios
++
++anyOf:
++  - required:
++    - gpios
++  - required:
++    - charge-status-gpios
+ 
+ additionalProperties: false
+ 
 diff --git a/drivers/power/supply/gpio-charger.c b/drivers/power/supply/gpio-charger.c
-index 74fc664c01e3..8c9f69f3d13e 100644
+index 1b959c7f8b0e..875735d50716 100644
 --- a/drivers/power/supply/gpio-charger.c
 +++ b/drivers/power/supply/gpio-charger.c
-@@ -258,7 +258,6 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 	struct power_supply_desc *charger_desc;
- 	struct gpio_desc *charge_status;
+@@ -112,9 +112,14 @@ static int gpio_charger_get_irq(struct device *dev, void *dev_id,
+ 	return irq;
+ }
+ 
++/*
++ * The entries will be overwritten by driver's probe routine depending
++ * on the available features. This list ensures, that the array is big
++ * enough for all optional features.
++ */
+ static enum power_supply_property gpio_charger_properties[] = {
+ 	POWER_SUPPLY_PROP_ONLINE,
+-	POWER_SUPPLY_PROP_STATUS /* Must always be last in the array. */
++	POWER_SUPPLY_PROP_STATUS,
+ };
+ 
+ static int gpio_charger_probe(struct platform_device *pdev)
+@@ -128,6 +133,7 @@ static int gpio_charger_probe(struct platform_device *pdev)
  	int charge_status_irq;
--	unsigned long flags;
+ 	unsigned long flags;
  	int ret;
- 	int num_props = 0;
++	int num_props = 0;
  
-@@ -272,41 +271,14 @@ static int gpio_charger_probe(struct platform_device *pdev)
- 		return -ENOMEM;
- 	gpio_charger->dev = dev;
+ 	if (!pdata && !dev->of_node) {
+ 		dev_err(dev, "No platform data\n");
+@@ -142,13 +148,13 @@ static int gpio_charger_probe(struct platform_device *pdev)
+ 	 * This will fetch a GPIO descriptor from device tree, ACPI or
+ 	 * boardfile descriptor tables. It's good to try this first.
+ 	 */
+-	gpio_charger->gpiod = devm_gpiod_get(dev, NULL, GPIOD_IN);
++	gpio_charger->gpiod = devm_gpiod_get_optional(dev, NULL, GPIOD_IN);
  
--	/*
--	 * This will fetch a GPIO descriptor from device tree, ACPI or
--	 * boardfile descriptor tables. It's good to try this first.
--	 */
- 	gpio_charger->gpiod = devm_gpiod_get_optional(dev, NULL, GPIOD_IN);
--
--	/*
--	 * Fallback to legacy platform data method, if no GPIO is specified
--	 * using boardfile descriptor tables.
--	 */
--	if (!gpio_charger->gpiod && pdata) {
--		/* Non-DT: use legacy GPIO numbers */
--		if (!gpio_is_valid(pdata->gpio)) {
--			dev_err(dev, "Invalid gpio pin in pdata\n");
--			return -EINVAL;
--		}
--		flags = GPIOF_IN;
--		if (pdata->gpio_active_low)
--			flags |= GPIOF_ACTIVE_LOW;
--		ret = devm_gpio_request_one(dev, pdata->gpio, flags,
--					    dev_name(dev));
--		if (ret) {
--			dev_err(dev, "Failed to request gpio pin: %d\n", ret);
--			return ret;
--		}
--		/* Then convert this to gpiod for now */
--		gpio_charger->gpiod = gpio_to_desc(pdata->gpio);
--	} else if (IS_ERR(gpio_charger->gpiod)) {
-+	if (IS_ERR(gpio_charger->gpiod)) {
- 		/* Just try again if this happens */
- 		if (PTR_ERR(gpio_charger->gpiod) == -EPROBE_DEFER)
- 			return -EPROBE_DEFER;
- 		dev_err(dev, "error getting GPIO descriptor\n");
+ 	/*
+-	 * If this fails and we're not using device tree, try the
+-	 * legacy platform data method.
++	 * Fallback to legacy platform data method, if no GPIO is specified
++	 * using boardfile descriptor tables.
+ 	 */
+-	if (IS_ERR(gpio_charger->gpiod) && !dev->of_node) {
++	if (!gpio_charger->gpiod && pdata) {
+ 		/* Non-DT: use legacy GPIO numbers */
+ 		if (!gpio_is_valid(pdata->gpio)) {
+ 			dev_err(dev, "Invalid gpio pin in pdata\n");
+@@ -173,17 +179,23 @@ static int gpio_charger_probe(struct platform_device *pdev)
  		return PTR_ERR(gpio_charger->gpiod);
  	}
--
- 	if (gpio_charger->gpiod) {
- 		gpio_charger_properties[num_props] = POWER_SUPPLY_PROP_ONLINE;
- 		num_props++;
-diff --git a/include/linux/power/gpio-charger.h b/include/linux/power/gpio-charger.h
-index 5a5a8de98181..3081391e93c9 100644
---- a/include/linux/power/gpio-charger.h
-+++ b/include/linux/power/gpio-charger.h
-@@ -13,8 +13,6 @@
-  * struct gpio_charger_platform_data - platform_data for gpio_charger devices
-  * @name:		Name for the chargers power_supply device
-  * @type:		Type of the charger
-- * @gpio:		GPIO which is used to indicate the chargers status
-- * @gpio_active_low:	Should be set to 1 if the GPIO is active low otherwise 0
-  * @supplied_to:	Array of battery names to which this chargers supplies power
-  * @num_supplicants:	Number of entries in the supplied_to array
-  */
-@@ -22,9 +20,6 @@ struct gpio_charger_platform_data {
- 	const char *name;
- 	enum power_supply_type type;
  
--	int gpio;
--	int gpio_active_low;
--
- 	char **supplied_to;
- 	size_t num_supplicants;
- };
++	if (gpio_charger->gpiod) {
++		gpio_charger_properties[num_props] = POWER_SUPPLY_PROP_ONLINE;
++		num_props++;
++	}
++
+ 	charge_status = devm_gpiod_get_optional(dev, "charge-status", GPIOD_IN);
+-	gpio_charger->charge_status = charge_status;
+-	if (IS_ERR(gpio_charger->charge_status))
+-		return PTR_ERR(gpio_charger->charge_status);
++	if (IS_ERR(charge_status))
++		return PTR_ERR(charge_status);
++	if (charge_status) {
++		gpio_charger->charge_status = charge_status;
++		gpio_charger_properties[num_props] = POWER_SUPPLY_PROP_STATUS;
++		num_props++;
++	}
+ 
+ 	charger_desc = &gpio_charger->charger_desc;
+ 	charger_desc->properties = gpio_charger_properties;
+-	charger_desc->num_properties = ARRAY_SIZE(gpio_charger_properties);
+-	/* Remove POWER_SUPPLY_PROP_STATUS from the supported properties. */
+-	if (!gpio_charger->charge_status)
+-		charger_desc->num_properties -= 1;
++	charger_desc->num_properties = num_props;
+ 	charger_desc->get_property = gpio_charger_get_property;
+ 
+ 	psy_cfg.of_node = dev->of_node;
+@@ -269,6 +281,6 @@ static struct platform_driver gpio_charger_driver = {
+ module_platform_driver(gpio_charger_driver);
+ 
+ MODULE_AUTHOR("Lars-Peter Clausen <lars@metafoo.de>");
+-MODULE_DESCRIPTION("Driver for chargers which report their online status through a GPIO");
++MODULE_DESCRIPTION("Driver for chargers only communicating via GPIO(s)");
+ MODULE_LICENSE("GPL");
+ MODULE_ALIAS("platform:gpio-charger");
 -- 
 2.26.2
 
