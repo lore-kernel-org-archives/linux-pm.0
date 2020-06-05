@@ -7,21 +7,21 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AF5DC433E3
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 17:34:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 99C2EC433E5
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 17:34:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B7072077D
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 17:34:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 801AA207ED
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 17:34:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728254AbgFEReX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Jun 2020 13:34:23 -0400
+        id S1727885AbgFERdw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Jun 2020 13:33:52 -0400
 Received: from bhuna.collabora.co.uk ([46.235.227.227]:39126 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728056AbgFERd5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 13:33:57 -0400
+        with ESMTP id S1726939AbgFERdv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 13:33:51 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: andrzej.p)
-        with ESMTPSA id AFFDA2A5089
+        with ESMTPSA id 15A3D2A5070
 From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
         Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
         kernel@collabora.com
-Subject: [PATCH v3 5/7] iio: adc: exynos: Use input_device_enabled()
-Date:   Fri,  5 Jun 2020 19:33:33 +0200
-Message-Id: <20200605173335.13753-6-andrzej.p@collabora.com>
+Subject: [PATCH v3 1/7] Input: add input_device_enabled()
+Date:   Fri,  5 Jun 2020 19:33:29 +0200
+Message-Id: <20200605173335.13753-2-andrzej.p@collabora.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200605173335.13753-1-andrzej.p@collabora.com>
 References: <20200604072853.GP89269@dtor-ws>
@@ -71,45 +71,48 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A new helper is available, so use it. Inspecting 'users' member of
-input_dev requires taking device's mutex.
+A helper function for drivers to decide if the device is used or not.
+A lockdep check is introduced as inspecting ->users should be done under
+input device's mutex.
 
 Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
 ---
- drivers/iio/adc/exynos_adc.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/input/input.c | 8 ++++++++
+ include/linux/input.h | 2 ++
+ 2 files changed, 10 insertions(+)
 
-diff --git a/drivers/iio/adc/exynos_adc.c b/drivers/iio/adc/exynos_adc.c
-index 22131a677445..294715bafe25 100644
---- a/drivers/iio/adc/exynos_adc.c
-+++ b/drivers/iio/adc/exynos_adc.c
-@@ -630,10 +630,13 @@ static irqreturn_t exynos_ts_isr(int irq, void *dev_id)
- 	struct exynos_adc *info = dev_id;
- 	struct iio_dev *dev = dev_get_drvdata(info->dev);
- 	u32 x, y;
--	bool pressed;
-+	bool pressed, cont;
- 	int ret;
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index 3cfd2c18eebd..41377bfa142d 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -2127,6 +2127,14 @@ void input_enable_softrepeat(struct input_dev *dev, int delay, int period)
+ }
+ EXPORT_SYMBOL(input_enable_softrepeat);
  
--	while (info->input->users) {
-+	mutex_lock(&info->input->mutex);
-+	cont = input_device_enabled(info->input);
-+	mutex_unlock(&info->input->mutex);
-+	while (cont) {
- 		ret = exynos_read_s3c64xx_ts(dev, &x, &y);
- 		if (ret == -ETIMEDOUT)
- 			break;
-@@ -651,6 +654,10 @@ static irqreturn_t exynos_ts_isr(int irq, void *dev_id)
- 		input_sync(info->input);
- 
- 		usleep_range(1000, 1100);
++bool input_device_enabled(struct input_dev *dev)
++{
++	lockdep_assert_held(&dev->mutex);
 +
-+		mutex_lock(&info->input->mutex);
-+		cont = input_device_enabled(info->input);
-+		mutex_unlock(&info->input->mutex);
- 	}
++	return dev->users > 0;
++}
++EXPORT_SYMBOL_GPL(input_device_enabled);
++
+ /**
+  * input_register_device - register device with input core
+  * @dev: device to be registered
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 56f2fd32e609..eda4587dba67 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -502,6 +502,8 @@ bool input_match_device_id(const struct input_dev *dev,
  
- 	writel(0, ADC_V1_CLRINTPNDNUP(info->regs));
+ void input_enable_softrepeat(struct input_dev *dev, int delay, int period);
+ 
++bool input_device_enabled(struct input_dev *dev);
++
+ extern struct class input_class;
+ 
+ /**
 -- 
 2.17.1
 
