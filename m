@@ -2,28 +2,27 @@ Return-Path: <SRS0=ei9F=7S=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EEF4C433E0
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 23:06:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3CDF3C433DF
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 23:06:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 803832081A
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 23:06:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E5BB206F0
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 23:06:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728392AbgFEXGg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Jun 2020 19:06:36 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:41986 "EHLO
+        id S1728474AbgFEXGi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Jun 2020 19:06:38 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:41992 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728296AbgFEXGg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 19:06:36 -0400
+        with ESMTP id S1728381AbgFEXGh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 19:06:37 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 5F8CF2A5230
+        with ESMTPSA id 642A92A5233
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id A7670480101; Sat,  6 Jun 2020 01:06:32 +0200 (CEST)
+        id A54F7480100; Sat,  6 Jun 2020 01:06:32 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Marek Szyprowski <m.szyprowski@samsung.com>,
@@ -31,12 +30,10 @@ To:     Sebastian Reichel <sre@kernel.org>,
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         kernel@collabora.com,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv2 1/2] power: supply: sbs-battery: use i2c_smbus_read_block_data()
-Date:   Sat,  6 Jun 2020 01:06:24 +0200
-Message-Id: <20200605230625.192427-2-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 0/2] SBS battery PEC support
+Date:   Sat,  6 Jun 2020 01:06:23 +0200
+Message-Id: <20200605230625.192427-1-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20200605230625.192427-1-sebastian.reichel@collabora.com>
-References: <20200605230625.192427-1-sebastian.reichel@collabora.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -44,79 +41,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The SBS battery implements SMBus block reads. Currently the
-driver "emulates" this by doing an I2C byte read for the
-length followed by an I2C block read. The I2C subsystem
-actually provides a proper API for doing SMBus block reads,
-which can and should be used instead. The current implementation
-does not properly handle packet error checking (PEC).
+Hi,
 
-Not all upstream systems using sbs-battery have I2C bus drivers
-supporting I2C_M_RECV_LEN, so old implementation is kept as
-fallback to keep things working. But this prints a warning,
-which hopefully results in people implementing support for it.
+Second try to enable PEC for SBS battery. Mainline currently
+has 3 different platforms using sbs-battery with an I2C driver
+not implementing I2C_M_RECV_LEN:
 
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
----
- drivers/power/supply/sbs-battery.c | 31 ++++++++++++++++++++++++++++--
- 1 file changed, 29 insertions(+), 2 deletions(-)
+ * i2c-exynos5
+ * i2c-rk3x
+ * i2c-tegra
 
-diff --git a/drivers/power/supply/sbs-battery.c b/drivers/power/supply/sbs-battery.c
-index 83b9924033bd..74221b9279a9 100644
---- a/drivers/power/supply/sbs-battery.c
-+++ b/drivers/power/supply/sbs-battery.c
-@@ -263,8 +263,7 @@ static int sbs_read_word_data(struct i2c_client *client, u8 address)
- 	return ret;
- }
- 
--static int sbs_read_string_data(struct i2c_client *client, u8 address,
--				char *values)
-+static int sbs_read_string_data_fallback(struct i2c_client *client, u8 address, char *values)
- {
- 	struct sbs_info *chip = i2c_get_clientdata(client);
- 	s32 ret = 0, block_length = 0;
-@@ -274,6 +273,8 @@ static int sbs_read_string_data(struct i2c_client *client, u8 address,
- 	retries_length = chip->i2c_retry_count;
- 	retries_block = chip->i2c_retry_count;
- 
-+	dev_warn_once(&client->dev, "I2C adapter does not support I2C_FUNC_SMBUS_READ_BLOCK_DATA.\n");
-+
- 	/* Adapter needs to support these two functions */
- 	if (!i2c_check_functionality(client->adapter,
- 				     I2C_FUNC_SMBUS_BYTE_DATA |
-@@ -329,6 +330,32 @@ static int sbs_read_string_data(struct i2c_client *client, u8 address,
- 	return ret;
- }
- 
-+static int sbs_read_string_data(struct i2c_client *client, u8 address, char *values)
-+{
-+	struct sbs_info *chip = i2c_get_clientdata(client);
-+	int retries = chip->i2c_retry_count;
-+	int ret = 0;
-+
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_SMBUS_READ_BLOCK_DATA))
-+		return sbs_read_string_data_fallback(client, address, values);
-+
-+	while (retries > 0) {
-+		ret = i2c_smbus_read_block_data(client, address, values);
-+		if (ret >= 0)
-+			break;
-+		retries--;
-+	}
-+
-+	if (ret < 0) {
-+		dev_dbg(&client->dev, "failed to read block 0x%x: %d\n", address, ret);
-+		return ret;
-+	}
-+
-+	/* add string termination */
-+	values[ret] = '\0';
-+	return ret;
-+}
-+
- static int sbs_write_word_data(struct i2c_client *client, u8 address,
- 	u16 value)
- {
+On those platforms PEC will be temporarly disabled for SBS
+functions requesting strings. I considered moving the emulation
+to I2C core, but it's specific to the SBS battery. The hack
+only works because the strings are constant.
+
+Changes since PATCHv1:
+ * dropped all applied changes
+ * rebased on top of power-supply's for-next branch
+ * keep existing string reading method as fallback
+
+-- Sebastian
+
+Sebastian Reichel (2):
+  power: supply: sbs-battery: use i2c_smbus_read_block_data()
+  power: supply: sbs-battery: add PEC support"
+
+ drivers/power/supply/sbs-battery.c | 89 +++++++++++++++++++++++++++++-
+ 1 file changed, 87 insertions(+), 2 deletions(-)
+
 -- 
 2.26.2
 
