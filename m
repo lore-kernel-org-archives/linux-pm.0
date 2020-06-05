@@ -2,28 +2,28 @@ Return-Path: <SRS0=ei9F=7S=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+X-Spam-Status: No, score=-6.9 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	UNPARSEABLE_RELAY,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3D87C433E1
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 66C4CC433DF
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DDC67207D8
-	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F6BE20823
+	for <linux-pm@archiver.kernel.org>; Fri,  5 Jun 2020 22:44:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728411AbgFEWoK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 5 Jun 2020 18:44:10 -0400
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:41692 "EHLO
+        id S1728342AbgFEWob (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 5 Jun 2020 18:44:31 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:41774 "EHLO
         bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728297AbgFEWoK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:10 -0400
+        with ESMTP id S1728256AbgFEWoL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 5 Jun 2020 18:44:11 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: sre)
-        with ESMTPSA id 415552A51AA
+        with ESMTPSA id 85C4A2A51C6
 Received: by jupiter.universe (Postfix, from userid 1000)
-        id 263574800FF; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
+        id 33916480105; Sat,  6 Jun 2020 00:44:04 +0200 (CEST)
 From:   Sebastian Reichel <sebastian.reichel@collabora.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -36,9 +36,9 @@ Cc:     Linus Walleij <linus.walleij@linaro.org>,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         kernel@collabora.com, linux-arm-kernel@lists.infradead.org,
         Sebastian Reichel <sebastian.reichel@collabora.com>
-Subject: [PATCHv2 1/6] dt-bindings: power: supply: gpio-charger: convert to yaml
-Date:   Sat,  6 Jun 2020 00:43:58 +0200
-Message-Id: <20200605224403.181015-2-sebastian.reichel@collabora.com>
+Subject: [PATCHv2 5/6] ARM: sa1100: Use GPIO descriptor for gpio-charger
+Date:   Sat,  6 Jun 2020 00:44:02 +0200
+Message-Id: <20200605224403.181015-6-sebastian.reichel@collabora.com>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200605224403.181015-1-sebastian.reichel@collabora.com>
 References: <20200605224403.181015-1-sebastian.reichel@collabora.com>
@@ -49,118 +49,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the gpio-charger bindings from text format to
-new YAML based representation.
+Provide AC detect GPIO via gpiod table instead of
+legacy platform data so that legacy GPIO support
+can be removed from the driver.
+
+Due to lack of hardware this has only been compile
+tested.
 
 Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
 ---
- .../bindings/power/supply/gpio-charger.txt    | 31 ----------
- .../bindings/power/supply/gpio-charger.yaml   | 58 +++++++++++++++++++
- 2 files changed, 58 insertions(+), 31 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
+ arch/arm/mach-sa1100/collie.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt b/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
-deleted file mode 100644
-index 0fb33b2c62a6..000000000000
---- a/Documentation/devicetree/bindings/power/supply/gpio-charger.txt
-+++ /dev/null
-@@ -1,31 +0,0 @@
--gpio-charger
--
--Required properties :
-- - compatible : "gpio-charger"
-- - gpios : GPIO indicating the charger presence.
--   See GPIO binding in bindings/gpio/gpio.txt .
-- - charger-type : power supply type, one of
--     unknown
--     battery
--     ups
--     mains
--     usb-sdp (USB standard downstream port)
--     usb-dcp (USB dedicated charging port)
--     usb-cdp (USB charging downstream port)
--     usb-aca (USB accessory charger adapter)
--
--Optional properties:
-- - charge-status-gpios: GPIO indicating whether a battery is charging.
--
--Example:
--
--	usb_charger: charger {
--		compatible = "gpio-charger";
--		charger-type = "usb-sdp";
--		gpios = <&gpd 28 GPIO_ACTIVE_LOW>;
--		charge-status-gpios = <&gpc 27 GPIO_ACTIVE_LOW>;
--	};
--
--	battery {
--		power-supplies = <&usb_charger>;
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
-new file mode 100644
-index 000000000000..78b167c62ab1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/gpio-charger.yaml
-@@ -0,0 +1,58 @@
-+# SPDX-License-Identifier: GPL-2.0
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/gpio-charger.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/mach-sa1100/collie.c b/arch/arm/mach-sa1100/collie.c
+index 3cc2b71e16f0..3e871a3db3b0 100644
+--- a/arch/arm/mach-sa1100/collie.c
++++ b/arch/arm/mach-sa1100/collie.c
+@@ -30,6 +30,7 @@
+ #include <linux/gpio_keys.h>
+ #include <linux/input.h>
+ #include <linux/gpio.h>
++#include <linux/gpio/machine.h>
+ #include <linux/power/gpio-charger.h>
+ 
+ #include <video/sa1100fb.h>
+@@ -131,6 +132,14 @@ static struct irda_platform_data collie_ir_data = {
+ /*
+  * Collie AC IN
+  */
++static struct gpiod_lookup_table collie_charger_gpiod_table = {
++	.dev_id = "gpio-charger",
++	.table = {
++		GPIO_LOOKUP("gpio", COLLIE_GPIO_AC_IN, NULL, GPIO_ACTIVE_HIGH),
++		{},
++	},
++};
 +
-+title: simple battery chargers only communicating through GPIOs
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+description:
-+  This binding is for all chargers, which are working more or less
-+  autonomously, only providing some status GPIOs and possibly some
-+  GPIOs for limited control over the charging process.
-+
-+properties:
-+  compatible:
-+    const: gpio-charger
-+
-+  charger-type:
-+    enum:
-+      - unknown
-+      - battery
-+      - ups
-+      - mains
-+      - usb-sdp                   # USB standard downstream port
-+      - usb-dcp                   # USB dedicated charging port
-+      - usb-cdp                   # USB charging downstream port
-+      - usb-aca                   # USB accessory charger adapter
-+    description:
-+      Type of the charger, e.g. "mains" for a wall charger.
-+
-+  gpios:
-+    maxItems: 1
-+    description: GPIO indicating the charger presence
-+
-+  charge-status-gpios:
-+    maxItems: 1
-+    description: GPIO indicating the charging status
-+
-+required:
-+  - compatible
-+  - gpios
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/gpio/gpio.h>
-+
-+    charger {
-+      compatible = "gpio-charger";
-+      charger-type = "usb-sdp";
-+
-+      gpios = <&gpd 28 GPIO_ACTIVE_LOW>;
-+      charge-status-gpios = <&gpc 27 GPIO_ACTIVE_LOW>;
-+    };
+ static char *collie_ac_supplied_to[] = {
+ 	"main-battery",
+ 	"backup-battery",
+@@ -140,7 +149,6 @@ static char *collie_ac_supplied_to[] = {
+ static struct gpio_charger_platform_data collie_power_data = {
+ 	.name			= "charger",
+ 	.type			= POWER_SUPPLY_TYPE_MAINS,
+-	.gpio			= COLLIE_GPIO_AC_IN,
+ 	.supplied_to		= collie_ac_supplied_to,
+ 	.num_supplicants	= ARRAY_SIZE(collie_ac_supplied_to),
+ };
+@@ -386,6 +394,7 @@ static void __init collie_init(void)
+ 
+ 	platform_scoop_config = &collie_pcmcia_config;
+ 
++	gpiod_add_lookup_table(&collie_charger_gpiod_table);
+ 	ret = platform_add_devices(devices, ARRAY_SIZE(devices));
+ 	if (ret) {
+ 		printk(KERN_WARNING "collie: Unable to register LoCoMo device\n");
 -- 
 2.26.2
 
