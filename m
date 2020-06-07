@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 121BAC433E1
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21E23C433E3
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D66B42067B
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3DF02074B
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GTlefWEC"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="avLBWCtb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728878AbgFGTAd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jun 2020 15:00:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57086 "EHLO
+        id S1728043AbgFGS5P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jun 2020 14:57:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57068 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728157AbgFGS5R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:17 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 726D5C061A0E;
-        Sun,  7 Jun 2020 11:57:17 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id 9so8118273ljv.5;
-        Sun, 07 Jun 2020 11:57:17 -0700 (PDT)
+        with ESMTP id S1727900AbgFGS5O (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:14 -0400
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 98357C061A0E;
+        Sun,  7 Jun 2020 11:57:13 -0700 (PDT)
+Received: by mail-lf1-x143.google.com with SMTP id 202so8872883lfe.5;
+        Sun, 07 Jun 2020 11:57:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=8/aMBkNYS1l8Movaag8RDV924EOkO8H/4xoiXZl2WiM=;
-        b=GTlefWECu/G29LjpCAIpxjCOUFiA8eAXuiWyHiMbICAos73tv92mfFafb0TW5OvmQO
-         CZ3wah4xZcJOe5t6GIlzYpN4m1UOskyr7Iybv0Rin7JLkxGc9BZqxgX8IW7GeAlscrP0
-         ziI0vTRXlxzHIDk7xOsD/Hg5FAvJYUXw/DwA50k2x8DimEndkp6GZYIJ/Yc84EOZo32G
-         iuKgKqr8J/atODjv1abhjYZfHe+5JEazr7arX8SI+fJ8Jy5e2Rd7pjmAAt09ANEegYJq
-         x5buSn9t6r3k3o+KLsg4Dt4pcCRpua2Nei8qqCRO8kxkbBSVp8b/upmXTzeJ4IUlvJHl
-         8hOw==
+        bh=r6f9+MOvkwq1aAaynwsAkKO2umWR0wN+jrBMe13wif8=;
+        b=avLBWCtbY7sYc/s0FRAEggeNPgbxd/DFGcy3s4YpKVAe5RTpFfno8q7Mv6vDPUAG3s
+         y3dyRmwrnt1eZq5fwgRqZQCjIeb2IKFf27Gu3p9LcCh0J3V5gWRcFHkKCZ5OBDbHuNW/
+         4iBuxo5FXpyMdzIwtKSlfJZS/irXjDwP6JFVLohag/kYksIDWNzQHNezPCWXuOM690U/
+         6aD36l5YEXawS7P07AmPCJObp+NdeErq22fwDXzqDKbVIgpoZsyoOl+//UKNkVrRvc+T
+         XzQXEQ/niZNMrAxFZlPXvossiSRP1psuwjYxiJ1cZS3cMNPneUdgda+c6wq5Kp9Z8w/I
+         o1Qg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=8/aMBkNYS1l8Movaag8RDV924EOkO8H/4xoiXZl2WiM=;
-        b=unBZPGw5/6B6LlxsOeEWnVUxIB26CrycP0XeWJcIU2tXA+L+Mugu4ZQoAkUPfZsKXT
-         3UvKhtJBgun1tJxmNUyPKGxmyUnMF4iCiTIu0UGakcEl0lpTp5XbDfZPl54r/Y6WbSyc
-         vZvJZg7s3JHX+tOkqZkc7DRyra6zUehVRUl9W8qZT8dusyQ3x3ctXvX5FfEh3Z1SQMGF
-         QKoTRGT+0x+D0KtVhIh2fUteskaTbhI64mdZjZnBscZbrpdETgRBHWwn2jYFawuXJO97
-         1l4ekK17iRMIObt655kQvyYXIyXhoJKIXjOpvNqbArsJ0f3lYjVB62J+ri0EZbfRgunz
-         Vk1g==
-X-Gm-Message-State: AOAM5302LMXf8bilbSARqbr6kCpQfuIslqwN94aOaNOE2E5xHqd8MZJY
-        KX2fHMsmZawnkju3Si93T20=
-X-Google-Smtp-Source: ABdhPJyl2mCiNiylo8SFzh15mikFwk4nidSsQRH+DDDM7Vcu+uuHrcsG0hfKfbwp27Pa/rx/yHAxyA==
-X-Received: by 2002:a2e:97d8:: with SMTP id m24mr4441620ljj.166.1591556235980;
-        Sun, 07 Jun 2020 11:57:15 -0700 (PDT)
+        bh=r6f9+MOvkwq1aAaynwsAkKO2umWR0wN+jrBMe13wif8=;
+        b=tiHtdn2UqDrhXzqVjJRwe3gRh8aJbc7xhMYoLsE2rUOwynzpWR30YmhAXaXNwSPAZ1
+         gEkpfkZlDfeQILJ2WGksAL5gNnECYDSHXTlxfvfYJ/nKfPbar5Hc5EaXkpzaP8rJ65X9
+         HMxENjHUMJPiQxEdMWIlxoJKnv7/j0wM12jxLzUlrvQzqnEJQd07PC/0cq/hY6K+hEoF
+         /1tmY6S6Q4zpsIqaDYVlL0Bd6W0GrVaxL6+s4EIzyJUeKB2Sq32gYN17anjWXl/+Rz14
+         g71dKUxEC0s8RUPxInKw6aJOzV1QmOFh/Diji2Fw44nIn2MxSzX3R/6DzkyG7QCHc7w1
+         DRXA==
+X-Gm-Message-State: AOAM532iI0dsTU7jt5XaftP4RKw9LVWCPKaP2geXXoz4EBsJEPZa/18m
+        8gaPzGM7UbwdEpOuZSuhLtU=
+X-Google-Smtp-Source: ABdhPJw9LL+2lche60RmuW3NF4t6Nh8Z+y9KWXqwSX/csqIEiWmCpFH4OnM8kDya0bbTu1t2f9BQnQ==
+X-Received: by 2002:a19:cb05:: with SMTP id b5mr10812765lfg.108.1591556231872;
+        Sun, 07 Jun 2020 11:57:11 -0700 (PDT)
 Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.14
+        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.10
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2020 11:57:15 -0700 (PDT)
+        Sun, 07 Jun 2020 11:57:11 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,9 +74,9 @@ Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v3 05/39] memory: tegra30-emc: Make driver modular
-Date:   Sun,  7 Jun 2020 21:54:56 +0300
-Message-Id: <20200607185530.18113-6-digetx@gmail.com>
+Subject: [PATCH v3 02/39] clk: tegra: Remove Memory Controller lock
+Date:   Sun,  7 Jun 2020 21:54:53 +0300
+Message-Id: <20200607185530.18113-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.26.0
 In-Reply-To: <20200607185530.18113-1-digetx@gmail.com>
 References: <20200607185530.18113-1-digetx@gmail.com>
@@ -87,96 +87,136 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds modularization support to the Tegra30 EMC driver. Driver
-now can be compiled as a loadable kernel module.
+The shared Memory Controller lock isn't needed since the time when
+Memory Clock was made read-only. The lock could be removed safely now.
+Hence let's remove it, this will help a tad to make further patches
+cleaner.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/Kconfig       |  2 +-
- drivers/memory/tegra/mc.c          |  3 +++
- drivers/memory/tegra/tegra30-emc.c | 16 +++++++++++-----
- 3 files changed, 15 insertions(+), 6 deletions(-)
+ drivers/clk/tegra/clk-divider.c  | 4 ++--
+ drivers/clk/tegra/clk-tegra114.c | 6 ++----
+ drivers/clk/tegra/clk-tegra124.c | 7 ++-----
+ drivers/clk/tegra/clk-tegra20.c  | 3 +--
+ drivers/clk/tegra/clk-tegra30.c  | 3 +--
+ drivers/clk/tegra/clk.h          | 2 +-
+ 6 files changed, 9 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
-index 7e0e1ef87763..bd453de9d446 100644
---- a/drivers/memory/tegra/Kconfig
-+++ b/drivers/memory/tegra/Kconfig
-@@ -18,7 +18,7 @@ config TEGRA20_EMC
- 	  external memory.
+diff --git a/drivers/clk/tegra/clk-divider.c b/drivers/clk/tegra/clk-divider.c
+index 38daf483ddf1..56adb01638cc 100644
+--- a/drivers/clk/tegra/clk-divider.c
++++ b/drivers/clk/tegra/clk-divider.c
+@@ -177,10 +177,10 @@ static const struct clk_div_table mc_div_table[] = {
+ };
  
- config TEGRA30_EMC
--	bool "NVIDIA Tegra30 External Memory Controller driver"
-+	tristate "NVIDIA Tegra30 External Memory Controller driver"
- 	default y
- 	depends on TEGRA_MC && ARCH_TEGRA_3x_SOC
- 	help
-diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
-index ec8403557ed4..772aa021b5f6 100644
---- a/drivers/memory/tegra/mc.c
-+++ b/drivers/memory/tegra/mc.c
-@@ -6,6 +6,7 @@
- #include <linux/clk.h>
- #include <linux/delay.h>
- #include <linux/dma-mapping.h>
-+#include <linux/export.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
-@@ -298,6 +299,7 @@ int tegra_mc_write_emem_configuration(struct tegra_mc *mc, unsigned long rate)
- 
- 	return 0;
- }
-+EXPORT_SYMBOL_GPL(tegra_mc_write_emem_configuration);
- 
- unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
+ struct clk *tegra_clk_register_mc(const char *name, const char *parent_name,
+-				  void __iomem *reg, spinlock_t *lock)
++				  void __iomem *reg)
  {
-@@ -309,6 +311,7 @@ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
- 
- 	return dram_count;
+ 	return clk_register_divider_table(NULL, name, parent_name,
+ 					  CLK_IS_CRITICAL,
+ 					  reg, 16, 1, CLK_DIVIDER_READ_ONLY,
+-					  mc_div_table, lock);
++					  mc_div_table, NULL);
  }
-+EXPORT_SYMBOL_GPL(tegra_mc_get_emem_device_count);
+diff --git a/drivers/clk/tegra/clk-tegra114.c b/drivers/clk/tegra/clk-tegra114.c
+index bc9e47a4cb60..ca8d9737d301 100644
+--- a/drivers/clk/tegra/clk-tegra114.c
++++ b/drivers/clk/tegra/clk-tegra114.c
+@@ -134,7 +134,6 @@ static DEFINE_SPINLOCK(pll_d_lock);
+ static DEFINE_SPINLOCK(pll_d2_lock);
+ static DEFINE_SPINLOCK(pll_u_lock);
+ static DEFINE_SPINLOCK(pll_re_lock);
+-static DEFINE_SPINLOCK(emc_lock);
  
- static int load_one_timing(struct tegra_mc *mc,
- 			   struct tegra_mc_timing *timing,
-diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
-index 055af0e08a2e..205d8053fa75 100644
---- a/drivers/memory/tegra/tegra30-emc.c
-+++ b/drivers/memory/tegra/tegra30-emc.c
-@@ -1343,6 +1343,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	platform_set_drvdata(pdev, emc);
- 	tegra_emc_debugfs_init(emc);
+ static struct div_nmp pllxc_nmp = {
+ 	.divm_shift = 0,
+@@ -1050,10 +1049,9 @@ static __init void tegra114_periph_clk_init(void __iomem *clk_base,
+ 			       ARRAY_SIZE(mux_pllmcp_clkm),
+ 			       CLK_SET_RATE_NO_REPARENT,
+ 			       clk_base + CLK_SOURCE_EMC,
+-			       29, 3, 0, &emc_lock);
++			       29, 3, 0, NULL);
  
-+	/*
-+	 * Don't allow the kernel module to be unloaded. Unloading adds some
-+	 * extra complexity which doesn't really worth the effort in a case of
-+	 * this driver.
-+	 */
-+	try_module_get(THIS_MODULE);
-+
- 	return 0;
+-	clk = tegra_clk_register_mc("mc", "emc_mux", clk_base + CLK_SOURCE_EMC,
+-				    &emc_lock);
++	clk = tegra_clk_register_mc("mc", "emc_mux", clk_base + CLK_SOURCE_EMC);
+ 	clks[TEGRA114_CLK_MC] = clk;
  
- unset_cb:
-@@ -1393,6 +1400,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
- 	{ .compatible = "nvidia,tegra30-emc", },
- 	{},
- };
-+MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
+ 	clk = tegra_clk_register_periph_gate("mipi-cal", "clk_m", 0, clk_base,
+diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
+index e931319dcc9d..0c956e14b9ca 100644
+--- a/drivers/clk/tegra/clk-tegra124.c
++++ b/drivers/clk/tegra/clk-tegra124.c
+@@ -126,7 +126,6 @@ static DEFINE_SPINLOCK(pll_d_lock);
+ static DEFINE_SPINLOCK(pll_e_lock);
+ static DEFINE_SPINLOCK(pll_re_lock);
+ static DEFINE_SPINLOCK(pll_u_lock);
+-static DEFINE_SPINLOCK(emc_lock);
+ static DEFINE_SPINLOCK(sor0_lock);
  
- static struct platform_driver tegra_emc_driver = {
- 	.probe = tegra_emc_probe,
-@@ -1403,9 +1411,7 @@ static struct platform_driver tegra_emc_driver = {
- 		.suppress_bind_attrs = true,
- 	},
- };
-+module_platform_driver(tegra_emc_driver);
+ /* possible OSC frequencies in Hz */
+@@ -1050,8 +1049,7 @@ static __init void tegra124_periph_clk_init(void __iomem *clk_base,
+ 					     periph_clk_enb_refcnt);
+ 	clks[TEGRA124_CLK_DSIB] = clk;
  
--static int __init tegra_emc_init(void)
--{
--	return platform_driver_register(&tegra_emc_driver);
--}
--subsys_initcall(tegra_emc_init);
-+MODULE_DESCRIPTION("NVIDIA Tegra30 EMC driver");
-+MODULE_LICENSE("GPL v2");
+-	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC,
+-				    &emc_lock);
++	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC);
+ 	clks[TEGRA124_CLK_MC] = clk;
+ 
+ 	/* cml0 */
+@@ -1518,8 +1516,7 @@ static void __init tegra124_132_clock_init_post(struct device_node *np)
+ 				  tegra124_reset_deassert);
+ 	tegra_add_of_provider(np, of_clk_src_onecell_get);
+ 
+-	clks[TEGRA124_CLK_EMC] = tegra_clk_register_emc(clk_base, np,
+-							&emc_lock);
++	clks[TEGRA124_CLK_EMC] = tegra_clk_register_emc(clk_base, np, NULL);
+ 
+ 	tegra_register_devclks(devclks, ARRAY_SIZE(devclks));
+ 
+diff --git a/drivers/clk/tegra/clk-tegra20.c b/drivers/clk/tegra/clk-tegra20.c
+index 3efc651b42e3..2f8b6de4198f 100644
+--- a/drivers/clk/tegra/clk-tegra20.c
++++ b/drivers/clk/tegra/clk-tegra20.c
+@@ -802,8 +802,7 @@ static void __init tegra20_periph_clk_init(void)
+ 
+ 	clks[TEGRA20_CLK_EMC] = clk;
+ 
+-	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC,
+-				    NULL);
++	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC);
+ 	clks[TEGRA20_CLK_MC] = clk;
+ 
+ 	/* dsi */
+diff --git a/drivers/clk/tegra/clk-tegra30.c b/drivers/clk/tegra/clk-tegra30.c
+index 37244a7e68c2..88e8c485f8ae 100644
+--- a/drivers/clk/tegra/clk-tegra30.c
++++ b/drivers/clk/tegra/clk-tegra30.c
+@@ -1042,8 +1042,7 @@ static void __init tegra30_periph_clk_init(void)
+ 
+ 	clks[TEGRA30_CLK_EMC] = clk;
+ 
+-	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC,
+-				    NULL);
++	clk = tegra_clk_register_mc("mc", "emc", clk_base + CLK_SOURCE_EMC);
+ 	clks[TEGRA30_CLK_MC] = clk;
+ 
+ 	/* cml0 */
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index 6b565f6b5f66..5ed8b95d331c 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -136,7 +136,7 @@ struct clk *tegra_clk_register_divider(const char *name,
+ 		unsigned long flags, u8 clk_divider_flags, u8 shift, u8 width,
+ 		u8 frac_width, spinlock_t *lock);
+ struct clk *tegra_clk_register_mc(const char *name, const char *parent_name,
+-				  void __iomem *reg, spinlock_t *lock);
++				  void __iomem *reg);
+ 
+ /*
+  * Tegra PLL:
 -- 
 2.26.0
 
