@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B090C433E0
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 18:59:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE473C433DF
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 18:59:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E80952074B
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 18:59:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8606020760
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 18:59:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dRtC+Stq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="OpeCLlYV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728652AbgFGS5d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jun 2020 14:57:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57112 "EHLO
+        id S1728369AbgFGS7t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jun 2020 14:59:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57128 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728364AbgFGS5Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:24 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DF1AC08C5C3;
-        Sun,  7 Jun 2020 11:57:24 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id j18so4707901lji.2;
-        Sun, 07 Jun 2020 11:57:24 -0700 (PDT)
+        with ESMTP id S1728540AbgFGS5c (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:32 -0400
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6B5A7C061A0E;
+        Sun,  7 Jun 2020 11:57:32 -0700 (PDT)
+Received: by mail-lj1-x243.google.com with SMTP id z9so17737181ljh.13;
+        Sun, 07 Jun 2020 11:57:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=AOO2W4vvP/igevCu4IH6JEPHANPVq7vKrjpVvFg7+eU=;
-        b=dRtC+StqRuLCpCgHfPYwlofqS68lJG79Brz1SZw7VYMfL8IsVxpCaJFAkWxV8XNqf2
-         MPaI2Jbrx83MX40jZU+0KfrNwEpEEohcZWmAPmxNXnnhvsOfjaqJsr7xvyovlbe2akvi
-         Y9gDGYBhxZ8Q66atM3UeToZn3Dl1BStCgHZaFihaHAxdXvVGHW3vAs/1xQNB1UJom3Rq
-         jef6QYkisaogv0RqywxdSr2uM4zIIUZ+5wyvYdRxDHdHWZVOPdbYM5urPZ+V60RoIoJ/
-         W/cKBeEvHGXIaHei1TZzk6FsvNUT+K4KdSscJLl9GBN4XnnnU9ZcsjtiGJTIyHWI2C1u
-         hAkw==
+        bh=061hlrRfunwkyZki3oWiaKmN7ev2U21u3B6yt3cimTc=;
+        b=OpeCLlYVr3IRPV2bWVGeZGoM/AcV5A0pdWEKydgN/1uX4UBx4HRNJyI65ktEmJN67Y
+         U+upq4RGVxvRV1fPu3I4yvBa0omogL/IXYDm/kVNOeIJ9UnIrnMT/9RSfu2Qg+aP2BuS
+         rL9JvCGvgrtRGYYnSQv28MPXPPFz4CIxrOl31hBUgVagyt3F59onvYlhKTeREiCBvLnG
+         htgLq7n9SV+LgHR3+chUjMZVFCd+NzBJj9LYzKD21Cn60rNJzB9gItbsV+OMoFzIyr+B
+         pomvyTmtSZfEqRu/1Kc2UW7k+MRV5pKHVum2Ch8QAjw68aGtVG1TMUxNb7byOwAuLf6W
+         eiDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=AOO2W4vvP/igevCu4IH6JEPHANPVq7vKrjpVvFg7+eU=;
-        b=uXvPJewzM4L4IYdbAm+zFXF9dGKqaswT0+vCRihnzOq1XfnAexvOY7OoLdJNtP6QEC
-         eYXfscLpmBFch7mxYCVZ7xb4S2ZUOtBOAiBtdoEPPlCwvXMPIB3ytxsyEUNYnezJ3qjo
-         fIQPO7AIdb/msc1bT+STIqYI73VvWT95oC4MoB+7m+jkTnMfnpLd8HKPrpQsyDPSPFx2
-         vDsrlpUcB4qU+LzWMhFbaBXDLPlIrgsbJH4KVSP5AnihPdtCnERsGw89CcLCtXThuA++
-         zN4+rAhCWoywTMzptSNisqvKj3Cy8lMtWq+iZFeG+9Bw7P3dERkuCASRVK7WMIrSWrcI
-         nxSA==
-X-Gm-Message-State: AOAM532BBuhfKBUsiKI0QSOyR04sXSNmdaSs1nBfUnev9RL4yItFYJuK
-        CBg9E/jBq/qjcx8Fh7iyKEI=
-X-Google-Smtp-Source: ABdhPJzxLPXZteuNlyWl8auR9iNrq1tcOwGy23AKnpGEA2ohuyWWWo2bNz4jA8TTZz83t8FlbmeSvg==
-X-Received: by 2002:a05:651c:545:: with SMTP id q5mr9789863ljp.57.1591556242946;
-        Sun, 07 Jun 2020 11:57:22 -0700 (PDT)
+        bh=061hlrRfunwkyZki3oWiaKmN7ev2U21u3B6yt3cimTc=;
+        b=FW9ZJ6Tu/GWrq3woU5KvLGxSckt3kaFvJ7U6tBF9GLiWuQQGETzxgBa1yYsuiIFOOD
+         I2+17IinjtNiOi1IESkMsXNyZZCQ+l5OgcVpVSkRM16UZ0AeKQ4YVN6MlHiGTGGk7a14
+         CFAXE+7FAtmTHB5LT9n5ERVbFcgvAy1bhZLZt9rf0O8t4ZJIlx4cm24S+bVaLsuB013L
+         HMS+6N9P6LQ8h73NwjowjUIkHvJ9XUY0N6cuwVWQ/VFOvyju7s2zJFTLPjJSMktT6hz4
+         VljmQoyVdyEXVwIZeKEhDmRl3zZpMd3m/Vq0Njpq3NrcyRktVY+74NB+42wVriPPlw8F
+         WMLA==
+X-Gm-Message-State: AOAM533dMyVyPdrmUENRZDf9wyo7Yb31kmt7YwfeSibt9QtInATsZbee
+        ioQB9dmwjQ5KjuJn0P1zNCM=
+X-Google-Smtp-Source: ABdhPJz7379nhczt27dgiUBvJO9L0ly/gGz6aROzdQPsGh2iExP9kIqzL5tstRWYuiTHNaiqba385Q==
+X-Received: by 2002:a2e:9987:: with SMTP id w7mr8917913lji.215.1591556250974;
+        Sun, 07 Jun 2020 11:57:30 -0700 (PDT)
 Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.21
+        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2020 11:57:22 -0700 (PDT)
+        Sun, 07 Jun 2020 11:57:30 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,9 +74,9 @@ Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v3 10/39] PM / devfreq: tegra20: Silence deferred probe error
-Date:   Sun,  7 Jun 2020 21:55:01 +0300
-Message-Id: <20200607185530.18113-11-digetx@gmail.com>
+Subject: [PATCH v3 16/39] PM / devfreq: tegra20: Adjust clocks conversion ratio and polling interval
+Date:   Sun,  7 Jun 2020 21:55:07 +0300
+Message-Id: <20200607185530.18113-17-digetx@gmail.com>
 X-Mailer: git-send-email 2.26.0
 In-Reply-To: <20200607185530.18113-1-digetx@gmail.com>
 References: <20200607185530.18113-1-digetx@gmail.com>
@@ -87,36 +87,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Tegra EMC driver was turned into a regular kernel driver, it also could
-be compiled as a loadable kernel module now. Hence EMC clock isn't
-guaranteed to be available and clk_get("emc") may return -EPROBE_DEFER and
-there is no good reason to spam KMSG with a error about missing EMC clock
-in this case, so let's silence the deferred probe error.
+The current conversion ratio results in a higher frequency than needed,
+that is not very actual now since the Display Controller driver got
+support for memory bandwidth management and hence memory frequency can
+go lower now without bad consequences. Since memory freq now goes to a
+lower rates, the responsiveness of interactive applications become worse
+due to a quite high polling interval value that is currently set to 500ms.
+Changing polling interval to 30ms results in a good responsiveness of the
+system.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra20-devfreq.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/devfreq/tegra20-devfreq.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/devfreq/tegra20-devfreq.c b/drivers/devfreq/tegra20-devfreq.c
-index ff82bac9ee4e..6469dc69c5e0 100644
+index 249d0dc44f6c..7cdea4ba38f7 100644
 --- a/drivers/devfreq/tegra20-devfreq.c
 +++ b/drivers/devfreq/tegra20-devfreq.c
-@@ -141,9 +141,11 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+@@ -79,16 +79,12 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
  
- 	/* EMC is a system-critical clock that is always enabled */
- 	tegra->emc_clock = devm_clk_get(&pdev->dev, "emc");
--	if (IS_ERR(tegra->emc_clock)) {
--		err = PTR_ERR(tegra->emc_clock);
--		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
-+	err = PTR_ERR_OR_ZERO(tegra->emc_clock);
-+	if (err) {
-+		if (err != -EPROBE_DEFER)
-+			dev_err(&pdev->dev, "failed to get emc clock: %d\n",
-+				err);
- 		return err;
- 	}
+ 	/*
+ 	 * EMC_COUNT returns number of memory events, that number is lower
+-	 * than the number of clocks. Conversion ratio of 1/8 results in a
+-	 * bit higher bandwidth than actually needed, it is good enough for
+-	 * the time being because drivers don't support requesting minimum
+-	 * needed memory bandwidth yet.
+-	 *
+-	 * TODO: adjust the ratio value once relevant drivers will support
+-	 * memory bandwidth management.
++	 * than the number of total EMC clocks over the sampling period.
++	 * The clocks number is converted to maximum possible number of
++	 * memory events using the ratio of 1/4.
+ 	 */
+ 	stat->busy_time = readl_relaxed(tegra->regs + MC_STAT_EMC_COUNT);
+-	stat->total_time = readl_relaxed(tegra->regs + MC_STAT_EMC_CLOCKS) / 8;
++	stat->total_time = readl_relaxed(tegra->regs + MC_STAT_EMC_CLOCKS) / 4;
+ 	stat->current_frequency = clk_get_rate(tegra->emc_clock);
  
+ 	writel_relaxed(EMC_GATHER_CLEAR, tegra->regs + MC_STAT_CONTROL);
+@@ -98,7 +94,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+ }
+ 
+ static struct devfreq_dev_profile tegra_devfreq_profile = {
+-	.polling_ms	= 500,
++	.polling_ms	= 30,
+ 	.target		= tegra_devfreq_target,
+ 	.get_dev_status	= tegra_devfreq_get_dev_status,
+ };
 -- 
 2.26.0
 
