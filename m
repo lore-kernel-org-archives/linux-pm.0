@@ -2,149 +2,98 @@ Return-Path: <SRS0=imOP=7U=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9929C433DF
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:46:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9D1EC433E0
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 16:34:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 869D720663
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:46:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="h5k/BpkW"
+	by mail.kernel.org (Postfix) with ESMTP id 996012067B
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 16:34:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726714AbgFGOpz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jun 2020 10:45:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46068 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726684AbgFGOpV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 10:45:21 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E86EC08C5C4;
-        Sun,  7 Jun 2020 07:45:21 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id x18so838764lji.1;
-        Sun, 07 Jun 2020 07:45:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=FBWrwuGDYKLF1vOWbwPhfzrgLBpIGQxKlTKbvNiY2ss=;
-        b=h5k/BpkWLZlZJyeH4iWB7dTj3NqUreNyP4nokCg0nqCnreEhjJQ37Mb8Uyr62J10p0
-         ZU/5EGzD1sXYrsRf2HNkMVl0jB/FsKYbGJ6nbHKOnnKde7WCrBFaSnISynVP/2+NbqWO
-         wNBmkRJiX1pcXaHm9KH0CqNZjCslESM2m61q16NXhNQk/SFK0zlPz9FvvOiXtj484lWR
-         AkEw0kLHgKN5p12imeG+ZpziGh47a/8VjAh+E2vsq7Y1D759p2pBODb+Sxt1wF3Kgsfl
-         H6dKsrTJqF61qLsasH/KT5zhL8/LkCQi2sQ4NAe4jD4vqpSjsBP7jLMsxKhUtFUda78Y
-         RGmg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=FBWrwuGDYKLF1vOWbwPhfzrgLBpIGQxKlTKbvNiY2ss=;
-        b=g8Jk/68Iig6WoALRiAXQv3wNmbGKXCw2I8dnaO+pFgCzhceLtx1zPtaayeVwAHPBEd
-         YGji49DOilAUg2ppCdsu63x/jrG0A6zEjgB2jLpoi+6FkH9rd4QQIJKG5drOnyf3FRr1
-         OXFGvld6x4lds7emAGbgjTLEaEoxIGscaTp+hYnpaUv8k4tLi8dpCdEYz4AWVSjN26Ct
-         ScH2n56rnLYhX2ejh2p7SWnIroZ1y/uLRquZ0Y/uhXP3J7ZpqT1aAEyj8hzakey82mmg
-         BI9Lyg2zPnWe7cu85+dwCzaR+gu6kuhuxIPhgInjC4hmak4qX9ae21wQSpRefSsgdeSE
-         8PNQ==
-X-Gm-Message-State: AOAM532Sz31eSESMcMWR+POuNzdnAUMR52oCBq6GycbhGzhzzhbOFHGA
-        oz3JfVYn29MsDbuK4j/TU18=
-X-Google-Smtp-Source: ABdhPJwduQ6Mg5XXVMUnf5kjLG+sCaJFsEsnZP6qobIVMm1rtA3asW69nA6EPCERg0uVYiLDxboYsg==
-X-Received: by 2002:a2e:8747:: with SMTP id q7mr8329350ljj.459.1591541119855;
-        Sun, 07 Jun 2020 07:45:19 -0700 (PDT)
-Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id g24sm4059724lfh.90.2020.06.07.07.45.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2020 07:45:19 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        David Heidelberg <david@ixit.cz>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Jonghwa Lee <jonghwa3.lee@samsung.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Vinay Simha BN <simhavcs@gmail.com>
-Subject: [PATCH v2 3/9] power: supply: Support battery temperature device-tree properties
-Date:   Sun,  7 Jun 2020 17:41:07 +0300
-Message-Id: <20200607144113.10202-4-digetx@gmail.com>
-X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200607144113.10202-1-digetx@gmail.com>
-References: <20200607144113.10202-1-digetx@gmail.com>
+        id S1726683AbgFGQea (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jun 2020 12:34:30 -0400
+Received: from mga07.intel.com ([134.134.136.100]:58842 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726646AbgFGQe3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 7 Jun 2020 12:34:29 -0400
+IronPort-SDR: UFC7Ab1xN9mMIw+3cO9GT6fLGmIBJT4aLikBO+OucFtE6gIEWtvtT0tJ2/TxGqNdSbKIIK411G
+ 961vTGiXO+YQ==
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga007.fm.intel.com ([10.253.24.52])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Jun 2020 09:34:28 -0700
+IronPort-SDR: Fyk1InqYMPYgh1T0kcnxxfilbZ5XgWp5wHXXAKKqigkdTzUJ4X4gN7NUquJyqONUiDLVB/kR+a
+ Tw6xi5oUdIhQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.73,484,1583222400"; 
+   d="scan'208";a="258486290"
+Received: from sjchrist-coffee.jf.intel.com (HELO linux.intel.com) ([10.54.74.152])
+  by fmsmga007.fm.intel.com with ESMTP; 07 Jun 2020 09:34:28 -0700
+Date:   Sun, 7 Jun 2020 09:34:28 -0700
+From:   Sean Christopherson <sean.j.christopherson@intel.com>
+To:     kernel test robot <lkp@intel.com>
+Cc:     Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        x86@kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, kbuild-all@lists.01.org,
+        "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, Brad Campbell <lists2009@fnarfbargle.com>
+Subject: Re: [PATCH] x86/cpu: Reinitialize IA32_FEAT_CTL MSR on BSP during
+ wakeup
+Message-ID: <20200607163428.GB24576@linux.intel.com>
+References: <20200605200728.10145-1-sean.j.christopherson@intel.com>
+ <202006060421.fTpTXYbe%lkp@intel.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <202006060421.fTpTXYbe%lkp@intel.com>
+User-Agent: Mutt/1.5.24 (2015-08-30)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The generic battery temperature properties are already supported by the
-power-supply core. Let's support parsing of the common battery temperature
-properties from a device-tree.
+On Sat, Jun 06, 2020 at 05:08:38AM +0800, kernel test robot wrote:
+ arch/x86/kernel/cpu/centaur.c: In function 'init_centaur':
+> >> arch/x86/kernel/cpu/centaur.c:219:2: error: implicit declaration of function 'init_ia32_feat_ctl' [-Werror=implicit-function-declaration]
+> 219 |  init_ia32_feat_ctl(c);
+> |  ^~~~~~~~~~~~~~~~~~
+> cc1: some warnings being treated as errors
+> --
+> arch/x86/kernel/cpu/zhaoxin.c: In function 'init_zhaoxin':
+> >> arch/x86/kernel/cpu/zhaoxin.c:110:2: error: implicit declaration of function 'init_ia32_feat_ctl' [-Werror=implicit-function-declaration]
+> 110 |  init_ia32_feat_ctl(c);
+> |  ^~~~~~~~~~~~~~~~~~
+> cc1: some warnings being treated as errors
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/power/supply/power_supply_core.c | 18 ++++++++++++++++++
- include/linux/power_supply.h             |  6 ++++++
- 2 files changed, 24 insertions(+)
+Blech, zhaoxin.c an centaur.c don't include asm/cpu.h, and I (obviously)
+don't have them enabled in my configs.  I'll wait a day or two more before
+sending v2.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index 02b37fe6061c..8b54a5a107d7 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -579,6 +579,12 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 	info->charge_term_current_ua         = -EINVAL;
- 	info->constant_charge_current_max_ua = -EINVAL;
- 	info->constant_charge_voltage_max_uv = -EINVAL;
-+	info->temp_ambient_alert_min         = INT_MIN;
-+	info->temp_ambient_alert_max         = INT_MAX;
-+	info->temp_alert_min                 = INT_MIN;
-+	info->temp_alert_max                 = INT_MAX;
-+	info->temp_min                       = INT_MIN;
-+	info->temp_max                       = INT_MAX;
- 	info->factory_internal_resistance_uohm  = -EINVAL;
- 	info->resist_table = NULL;
- 
-@@ -638,6 +644,18 @@ int power_supply_get_battery_info(struct power_supply *psy,
- 			     &info->constant_charge_voltage_max_uv);
- 	of_property_read_u32(battery_np, "factory-internal-resistance-micro-ohms",
- 			     &info->factory_internal_resistance_uohm);
-+	of_property_read_u32(battery_np, "temperature-ambient-min-alert-celsius",
-+			     &info->temp_ambient_alert_min);
-+	of_property_read_u32(battery_np, "temperature-ambient-max-alert-celsius",
-+			     &info->temp_ambient_alert_max);
-+	of_property_read_u32(battery_np, "temperature-min-alert-celsius",
-+			     &info->temp_alert_min);
-+	of_property_read_u32(battery_np, "temperature-max-alert-celsius",
-+			     &info->temp_alert_max);
-+	of_property_read_u32(battery_np, "temperature-min-celsius",
-+			     &info->temp_min);
-+	of_property_read_u32(battery_np, "temperature-max-celsius",
-+			     &info->temp_max);
- 
- 	len = of_property_count_u32_elems(battery_np, "ocv-capacity-celsius");
- 	if (len < 0 && len != -EINVAL) {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index ac1345a48ad0..31fcadd81d63 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -361,6 +361,12 @@ struct power_supply_battery_info {
- 	int constant_charge_voltage_max_uv; /* microVolts */
- 	int factory_internal_resistance_uohm;   /* microOhms */
- 	int ocv_temp[POWER_SUPPLY_OCV_TEMP_MAX];/* celsius */
-+	int temp_ambient_alert_min;             /* celsius */
-+	int temp_ambient_alert_max;             /* celsius */
-+	int temp_alert_min;                     /* celsius */
-+	int temp_alert_max;                     /* celsius */
-+	int temp_min;                           /* celsius */
-+	int temp_max;                           /* celsius */
- 	struct power_supply_battery_ocv_table *ocv_table[POWER_SUPPLY_OCV_TEMP_MAX];
- 	int ocv_table_size[POWER_SUPPLY_OCV_TEMP_MAX];
- 	struct power_supply_resistance_temp_table *resist_table;
--- 
-2.26.0
+diff --git a/arch/x86/kernel/cpu/centaur.c b/arch/x86/kernel/cpu/centaur.c
+index 426792565d86..c5cf336e5077 100644
+--- a/arch/x86/kernel/cpu/centaur.c
++++ b/arch/x86/kernel/cpu/centaur.c
+@@ -3,6 +3,7 @@
+ #include <linux/sched.h>
+ #include <linux/sched/clock.h>
+
++#include <asm/cpu.h>
+ #include <asm/cpufeature.h>
+ #include <asm/e820/api.h>
+ #include <asm/mtrr.h>
+diff --git a/arch/x86/kernel/cpu/zhaoxin.c b/arch/x86/kernel/cpu/zhaoxin.c
+index df1358ba622b..05fa4ef63490 100644
+--- a/arch/x86/kernel/cpu/zhaoxin.c
++++ b/arch/x86/kernel/cpu/zhaoxin.c
+@@ -2,6 +2,7 @@
+ #include <linux/sched.h>
+ #include <linux/sched/clock.h>
+
++#include <asm/cpu.h>
+ #include <asm/cpufeature.h>
+
+ #include "cpu.h"
 
