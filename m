@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB12EC433E1
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A5A3C433DF
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:45:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 852092075A
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:45:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D614720663
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 14:45:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CQlv8Atv"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jf9MDeYL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726679AbgFGOpV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jun 2020 10:45:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46058 "EHLO
+        id S1726725AbgFGOp0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jun 2020 10:45:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46076 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726528AbgFGOpU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 10:45:20 -0400
-Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 082A6C08C5C3;
-        Sun,  7 Jun 2020 07:45:19 -0700 (PDT)
-Received: by mail-lj1-x241.google.com with SMTP id n24so17282773lji.10;
-        Sun, 07 Jun 2020 07:45:18 -0700 (PDT)
+        with ESMTP id S1726707AbgFGOpZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 10:45:25 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ACC96C08C5C4;
+        Sun,  7 Jun 2020 07:45:23 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id z206so8645557lfc.6;
+        Sun, 07 Jun 2020 07:45:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ke1Nk6rN9w+vzVhHvqubAjAEPlQYN8nHibugQnM0Ib4=;
-        b=CQlv8AtvDQXs/6SB51nCxr6V5fN3KyVllmhXO698ZSNy/DSddiiGG1WthUe4EzSLYe
-         rkmN8yU0XM2KaF9lzzbhjvfAf5iID0MOkVpascNgMYwZAK1ucotb7KLhMLqxNoOhkqQX
-         U8A+5AvD1czJm9H9JhadSPxsY5qIz0B0pZao9zHmwxcukLO+gg3qVMJZ1hbIfLunUBPx
-         MU4RGAn6IKqjv4c7j4YPLBVw5N7LRotzuTt4mie1gTQWjWGaVfvMEGwQ7RSFZZV1x724
-         gnPwx3XK2C1p+PgOXZDpLhvKTvNQMZNKAeEf7pfH7QnahcKfXWSVVJ6sX3FM+mMrXxBR
-         IjUA==
+        bh=WYBp5mdBBM45oktTGbo9qOZLxSTcqGm9flsVN5koDd4=;
+        b=jf9MDeYLmc2QRwrxS7fy0a4/qSC35Y6CJMhsXJRSayPYSth8ulEhOydEHe3ey/xf+f
+         fro+2MhHfbABzI3EOA7SDmF0vO+2Xm/kFAJb9a0HlGE/ST/S2RjMFhkkDBQzVoI5ITbF
+         ww7LLADLBx3ocynWzag2NRGLO0kh9WgdGYSU8CPS/ywlWQEY9Y07T0Bx6rBegqY7qvAX
+         0BNbo0vZ4gUNlJ6ctP/P89fYlky/Hwt5C0mlh2xzLcoPJ4ImBt58Z6rFntFmpjfbiEVT
+         8h7jCR8yvqJXd95wjIrHWMdlZmmYoHYzyW8y82+6MkFEHzkDKXBABPzJL0xKrD7C5GUW
+         Y3uw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ke1Nk6rN9w+vzVhHvqubAjAEPlQYN8nHibugQnM0Ib4=;
-        b=GIQEz4tK2SwAdw8siXpUQ/fqqo42dWu7hGVJcaf1tvFE9UP+5AZz9qRSxZeMANLgKj
-         xneidEmsRxM/8hV5a0AFiMg7h+1gWMLbH87j2uaGSd8Lynu4uBK7Mc03nW+HaFcxtY/s
-         fk5BNox2FNzarJZoT+3Nn44XeIX2/J2ezVTEQ99IGQKKa4GNcC/Enb3YGAknxgsTtSah
-         CCIFqzXxfBcyG2Q5nedJ7qIQm6qf/crtos9PsuPL6fHZUWB0gElTTVjLvv78BtRhaaTP
-         iOUsUnhPuV3qmktB8UE22lUpB48dXVVjYZwC1mzGdtvXuKILZIbxKPKhQQfekScAy+FY
-         9DFg==
-X-Gm-Message-State: AOAM533BNC2GAQ6SLHFqRcaeZ39Fhe85x5692f6fQmNRu8pYGtGsY8vZ
-        z+EVvB+szk+N9AUZT7nbRJE=
-X-Google-Smtp-Source: ABdhPJyQY9d/3iBO0r2PJwjKyp3gglJQ/42UJDdh5rA8aZeT1NvcyHbWknOIaaBwIRj4X7ESjaa6cw==
-X-Received: by 2002:a2e:2e0b:: with SMTP id u11mr9167840lju.281.1591541117449;
-        Sun, 07 Jun 2020 07:45:17 -0700 (PDT)
+        bh=WYBp5mdBBM45oktTGbo9qOZLxSTcqGm9flsVN5koDd4=;
+        b=Tywd42JswMPbh3MSEOEnqJItKjxltL9oc1NhFXUwJTimkBCt8eBf9WJRiZq9+k+3eT
+         4eZkfI9eqrDsvUTexx9a6ERpe8BBdefB3t1j/drMrbgTnzji/nmDw24BCmfzW6kNdp+9
+         9YF3v6fPPEa8agpoCCpG2m9FE3hZxva843AfXEdBZ+edCXf/obDdqdrhiU025t87rQ2O
+         i3CMDNVk/a59up4h5Jp84wJmejlXKXfv8RqzJizmMmGnm7+yFpz1o74m6U/WM2yTPolN
+         JqpHK4mZMUxrR78/2s9q496wkB2uCvAQAZx7UsLFPDR09ESBnEvJfZ/eHl3aqEJD83DQ
+         8y4w==
+X-Gm-Message-State: AOAM533GpvdsRxj+77en4ROj9cg4173HM5Vu/30DE1fVYsoGKwnx+2uO
+        EvodivFY/Jwc/tozAbxmbGf0grAZ
+X-Google-Smtp-Source: ABdhPJy9PFzzHIEC3INDNYtNswkra1T4M+Q1kuQUzvzI3E2svyPdo3GGthpK/IQM+bV6S7a+a2CaIA==
+X-Received: by 2002:a19:150:: with SMTP id 77mr10297190lfb.71.1591541122076;
+        Sun, 07 Jun 2020 07:45:22 -0700 (PDT)
 Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id g24sm4059724lfh.90.2020.06.07.07.45.16
+        by smtp.gmail.com with ESMTPSA id g24sm4059724lfh.90.2020.06.07.07.45.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2020 07:45:16 -0700 (PDT)
+        Sun, 07 Jun 2020 07:45:21 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -69,14 +69,13 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         Jonghwa Lee <jonghwa3.lee@samsung.com>,
         John Stultz <john.stultz@linaro.org>,
         Vinay Simha BN <simhavcs@gmail.com>
-Subject: [PATCH v2 1/9] dt-bindings: power: supply: Add device-tree binding for Summit SMB3xx
-Date:   Sun,  7 Jun 2020 17:41:05 +0300
-Message-Id: <20200607144113.10202-2-digetx@gmail.com>
+Subject: [PATCH v2 5/9] power: supply: smb347-charger: Implement device-tree support
+Date:   Sun,  7 Jun 2020 17:41:09 +0300
+Message-Id: <20200607144113.10202-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.26.0
 In-Reply-To: <20200607144113.10202-1-digetx@gmail.com>
 References: <20200607144113.10202-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -85,215 +84,233 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: David Heidelberg <david@ixit.cz>
 
-Summit SMB3xx series is a Programmable Switching Li+ Battery Charger.
-This patch adds device-tree binding for Summit SMB345, SMB347 and SMB358
-chargers.
+This patch adds device-tree support to the SMB347 charger driver. All
+legacy platform data now can be parsed from DT. Because of that and since
+SMB347 is an I2C client driver, the IRQ number can be passed automatically
+through client's IRQ variable if it's defined in DT. There is no need to
+map GPIO to IRQ manually in the case of DT.
 
-Signed-off-by: David Heidelberg <david@ixit.cz>
+This patch is based on the original work made by:
+Jonghwa Lee <jonghwa3.lee@samsung.com>
+Link: https://patchwork.kernel.org/patch/4284731/
+
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: David Heidelberg <david@ixit.cz>
 ---
- .../power/supply/summit,smb347-charger.yaml   | 165 ++++++++++++++++++
- .../dt-bindings/power/summit,smb347-charger.h |  19 ++
- 2 files changed, 184 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
- create mode 100644 include/dt-bindings/power/summit,smb347-charger.h
+ drivers/power/supply/smb347-charger.c | 151 +++++++++++++++++++++++---
+ 1 file changed, 137 insertions(+), 14 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-new file mode 100644
-index 000000000000..eea0a6398c95
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/summit,smb347-charger.yaml
-@@ -0,0 +1,165 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/summit,smb347-charger.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+diff --git a/drivers/power/supply/smb347-charger.c b/drivers/power/supply/smb347-charger.c
+index 60894105fcbd..da2c337107bf 100644
+--- a/drivers/power/supply/smb347-charger.c
++++ b/drivers/power/supply/smb347-charger.c
+@@ -1180,6 +1180,119 @@ static bool smb347_readable_reg(struct device *dev, unsigned int reg)
+ 	return smb347_volatile_reg(dev, reg);
+ }
+ 
++static void smb347_dt_parse_pdata(struct device_node *np,
++				  struct smb347_charger_platform_data *pdata)
++{
++	pdata->soft_temp_limit_compensation =
++					SMB347_SOFT_TEMP_COMPENSATE_DEFAULT;
++	/*
++	 * These properties come from the battery info, still we need to
++	 * pre-initialize the values. See smb347_get_battery_info() below.
++	 */
++	pdata->soft_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
++	pdata->hard_cold_temp_limit = SMB347_TEMP_USE_DEFAULT;
++	pdata->soft_hot_temp_limit  = SMB347_TEMP_USE_DEFAULT;
++	pdata->hard_hot_temp_limit  = SMB347_TEMP_USE_DEFAULT;
 +
-+title: Battery charger driver for SMB345, SMB347 and SMB358
++	/* Charging constraints */
++	of_property_read_u32(np, "summit,fast-voltage-threshold-microvolt",
++			     &pdata->pre_to_fast_voltage);
++	of_property_read_u32(np, "summit,mains-current-limit-microamp",
++			     &pdata->mains_current_limit);
++	of_property_read_u32(np, "summit,usb-current-limit-microamp",
++			     &pdata->usb_hc_current_limit);
 +
-+maintainers:
-+  - David Heidelberg <david@ixit.cz>
-+  - Dmitry Osipenko <digetx@gmail.com>
++	/* For thermometer monitoring */
++	of_property_read_u32(np, "summit,chip-temperature-threshold-celsius",
++			     &pdata->chip_temp_threshold);
++	of_property_read_u32(np, "summit,soft-compensation-method",
++			     &pdata->soft_temp_limit_compensation);
++	of_property_read_u32(np, "summit,charge-current-compensation-microamp",
++			     &pdata->charge_current_compensation);
 +
-+properties:
-+  compatible:
-+    enum:
-+      - summit,smb345
-+      - summit,smb347
-+      - summit,smb358
++	/* Supported charging mode */
++	pdata->use_mains =
++		of_property_read_bool(np, "summit,enable-mains-charging");
++	pdata->use_usb =
++		of_property_read_bool(np, "summit,enable-usb-charging");
++	pdata->use_usb_otg =
++		of_property_read_bool(np, "summit,enable-otg-charging");
 +
-+  reg:
-+    maxItems: 1
++	/* Select charging control */
++	of_property_read_u32(np, "summit,enable-charge-control",
++			     &pdata->enable_control);
 +
-+  interrupts:
-+    maxItems: 1
++	/* Interrupt support is optional */
++	if (!of_find_property(np, "interrupts", NULL))
++		pdata->irq_gpio = -1;
++}
 +
-+  monitored-battery:
-+    description: phandle to the battery node
-+    $ref: /schemas/types.yaml#/definitions/phandle
++static int smb347_get_battery_info(struct smb347_charger *smb)
++{
++	struct smb347_charger_platform_data *pdata = (void *)smb->pdata;
++	struct power_supply_battery_info info = {};
++	struct power_supply *supply;
++	int err;
 +
-+  summit,enable-usb-charging:
-+    type: boolean
-+    description: Enable charging through USB.
++	if (smb->mains)
++		supply = smb->mains;
++	else
++		supply = smb->usb;
 +
-+  summit,enable-otg-charging:
-+    type: boolean
-+    description: Provide power for USB OTG
++	err = power_supply_get_battery_info(supply, &info);
++	if (err == -ENXIO || err == -ENODEV)
++		return 0;
++	if (err)
++		return err;
 +
-+  summit,enable-mains-charging:
-+    type: boolean
-+    description: Enable charging through mains
++	if (info.constant_charge_current_max_ua != -EINVAL)
++		pdata->max_charge_current = info.constant_charge_current_max_ua;
 +
-+  summit,enable-charge-control:
-+    description: Enable charging control
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+      - enum:
-+          - 0 # SMB3XX_CHG_ENABLE_SW SW (I2C interface)
-+          - 1 # SMB3XX_CHG_ENABLE_PIN_ACTIVE_LOW Pin control (Active Low)
-+          - 2 # SMB3XX_CHG_ENABLE_PIN_ACTIVE_HIGH Pin control (Active High)
++	if (info.constant_charge_voltage_max_uv != -EINVAL)
++		pdata->max_charge_voltage = info.constant_charge_voltage_max_uv;
 +
-+  summit,fast-voltage-threshold-microvolt:
-+    description: Voltage threshold to transit to fast charge mode (in uV)
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+    minimum: 2400000
-+    maximum: 3000000
++	if (info.precharge_current_ua != -EINVAL)
++		pdata->pre_charge_current = info.precharge_current_ua;
 +
-+  summit,mains-current-limit-microamp:
-+    description: Maximum input current from AC/DC input (in uA)
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
++	if (info.charge_term_current_ua != -EINVAL)
++		pdata->termination_current = info.charge_term_current_ua;
 +
-+  summit,usb-current-limit-microamp:
-+    description: Maximum input current from USB input (in uA)
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
++	if (info.temp_alert_min != INT_MIN)
++		pdata->soft_cold_temp_limit = info.temp_alert_min;
 +
-+  summit,charge-current-compensation-microamp:
-+    description: Charge current compensation (in uA)
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
++	if (info.temp_alert_max != INT_MAX)
++		pdata->soft_hot_temp_limit = info.temp_alert_max;
 +
-+  summit,chip-temperature-threshold-celsius:
-+    description: Chip temperature for thermal regulation in °C.
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [100, 110, 120, 130]
++	if (info.temp_min != INT_MIN)
++		pdata->hard_cold_temp_limit = info.temp_min;
 +
-+  summit,soft-compensation-method:
-+    description: Soft temperature limit compensation method
-+    allOf:
-+      - $ref: /schemas/types.yaml#/definitions/uint32
-+      - enum:
-+          - 0 # SMB3XX_SOFT_TEMP_COMPENSATE_NONE Compensation none
-+          - 1 # SMB3XX_SOFT_TEMP_COMPENSATE_CURRENT Current compensation
-+          - 2 # SMB3XX_SOFT_TEMP_COMPENSATE_VOLTAGE Voltage compensation
++	if (info.temp_max != INT_MAX)
++		pdata->hard_hot_temp_limit = info.temp_max;
 +
-+allOf:
-+  - if:
-+      properties:
-+        compatible:
-+          enum:
-+            - summit,smb345
-+            - summit,smb358
++	/* Suspend when battery temperature is outside hard limits */
++	if (pdata->hard_cold_temp_limit != SMB347_TEMP_USE_DEFAULT ||
++	    pdata->hard_hot_temp_limit != SMB347_TEMP_USE_DEFAULT)
++		pdata->suspend_on_hard_temp_limit = true;
 +
-+    then:
-+      properties:
-+        summit,mains-current-limit-microamp:
-+          enum: [ 300000,  500000,  700000, 1000000,
-+                 1500000, 1800000, 2000000]
++	return 0;
++}
 +
-+        summit,usb-current-limit-microamp:
-+          enum: [ 300000,  500000,  700000, 1000000,
-+                 1500000, 1800000, 2000000]
++static struct smb347_charger_platform_data
++			*smb347_get_platdata(struct device *dev)
++{
++	struct smb347_charger_platform_data *pdata;
 +
-+        summit,charge-current-compensation-microamp:
-+          enum: [200000, 450000, 600000, 900000]
++	if (dev->of_node) {
++		pdata = devm_kzalloc(dev, sizeof(*pdata), GFP_KERNEL);
++		if (pdata)
++			smb347_dt_parse_pdata(dev->of_node, pdata);
++	} else {
++		pdata = dev_get_platdata(dev);
++	}
 +
-+    else:
-+      properties:
-+        summit,mains-current-limit-microamp:
-+          enum: [ 300000,  500000,  700000,  900000, 1200000,
-+                 1500000, 1800000, 2000000, 2200000, 2500000]
++	return pdata;
++}
 +
-+        summit,usb-current-limit-microamp:
-+          enum: [ 300000,  500000,  700000,  900000, 1200000,
-+                 1500000, 1800000, 2000000, 2200000, 2500000]
+ static const struct regmap_config smb347_regmap = {
+ 	.reg_bits	= 8,
+ 	.val_bits	= 8,
+@@ -1216,40 +1329,35 @@ static int smb347_probe(struct i2c_client *client,
+ 			const struct i2c_device_id *id)
+ {
+ 	static char *battery[] = { "smb347-battery" };
+-	const struct smb347_charger_platform_data *pdata;
+ 	struct power_supply_config mains_usb_cfg = {}, battery_cfg = {};
+ 	struct device *dev = &client->dev;
+ 	struct smb347_charger *smb;
+ 	int ret;
+ 
+-	pdata = dev->platform_data;
+-	if (!pdata)
+-		return -EINVAL;
+-
+-	if (!pdata->use_mains && !pdata->use_usb)
+-		return -EINVAL;
+-
+ 	smb = devm_kzalloc(dev, sizeof(*smb), GFP_KERNEL);
+ 	if (!smb)
+ 		return -ENOMEM;
+ 
++	smb->pdata = smb347_get_platdata(dev);
++	if (!smb->pdata)
++		return -ENODEV;
 +
-+        summit,charge-current-compensation-microamp:
-+          enum: [250000, 700000, 900000, 1200000]
++	if (!smb->pdata->use_mains && !smb->pdata->use_usb)
++		return -EINVAL;
 +
-+required:
-+  - compatible
-+  - reg
+ 	i2c_set_clientdata(client, smb);
+ 
+ 	mutex_init(&smb->lock);
+ 	smb->dev = &client->dev;
+-	smb->pdata = pdata;
+ 
+ 	smb->regmap = devm_regmap_init_i2c(client, &smb347_regmap);
+ 	if (IS_ERR(smb->regmap))
+ 		return PTR_ERR(smb->regmap);
+ 
+-	ret = smb347_hw_init(smb);
+-	if (ret < 0)
+-		return ret;
+-
+ 	mains_usb_cfg.supplied_to = battery;
+ 	mains_usb_cfg.num_supplicants = ARRAY_SIZE(battery);
+ 	mains_usb_cfg.drv_data = smb;
++	mains_usb_cfg.of_node = dev->of_node;
+ 	if (smb->pdata->use_mains) {
+ 		smb->mains = devm_power_supply_register(dev, &smb347_mains_desc,
+ 							&mains_usb_cfg);
+@@ -1270,11 +1378,19 @@ static int smb347_probe(struct i2c_client *client,
+ 	if (IS_ERR(smb->battery))
+ 		return PTR_ERR(smb->battery);
+ 
++	ret = smb347_get_battery_info(smb);
++	if (ret)
++		return ret;
 +
-+anyOf:
-+  - required:
-+      - summit,enable-usb-charging
-+  - required:
-+      - summit,enable-otg-charging
-+  - required:
-+      - summit,enable-mains-charging
++	ret = smb347_hw_init(smb);
++	if (ret < 0)
++		return ret;
 +
-+additionalProperties: false
+ 	/*
+ 	 * Interrupt pin is optional. If it is connected, we setup the
+ 	 * interrupt support here.
+ 	 */
+-	if (pdata->irq_gpio >= 0) {
++	if (smb->pdata->irq_gpio >= 0) {
+ 		ret = smb347_irq_init(smb, client);
+ 		if (ret < 0) {
+ 			dev_warn(dev, "failed to initialize IRQ: %d\n", ret);
+@@ -1302,9 +1418,16 @@ static const struct i2c_device_id smb347_id[] = {
+ };
+ MODULE_DEVICE_TABLE(i2c, smb347_id);
+ 
++static const struct of_device_id smb3xx_of_match[] = {
++	{ .compatible = "summit,smb347" },
++	{ },
++};
++MODULE_DEVICE_TABLE(of, smb3xx_of_match);
 +
-+examples:
-+  - |
-+    #include <dt-bindings/power/summit,smb347-charger.h>
-+
-+    i2c {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+
-+        charger@7f {
-+            compatible = "summit,smb347";
-+            reg = <0x7f>;
-+            status = "okay";
-+
-+            summit,enable-charge-control = <SMB3XX_CHG_ENABLE_PIN_ACTIVE_HIGH>;
-+            summit,chip-temperature-threshold-celsius = <110>;
-+            summit,mains-current-limit-microamp = <2000000>;
-+            summit,usb-current-limit-microamp = <500000>;
-+            summit,enable-usb-charging;
-+            summit,enable-mains-charging;
-+
-+            monitored-battery = <&battery>;
-+        };
-+    };
-+
-+    battery: battery-cell {
-+        compatible = "simple-battery";
-+        constant-charge-current-max-microamp = <1800000>;
-+        temperature-min-alert-celsius = <5>;
-+        temperature-max-alert-celsius = <40>;
-+    };
-diff --git a/include/dt-bindings/power/summit,smb347-charger.h b/include/dt-bindings/power/summit,smb347-charger.h
-new file mode 100644
-index 000000000000..d918bf321a71
---- /dev/null
-+++ b/include/dt-bindings/power/summit,smb347-charger.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: (GPL-2.0-or-later or MIT) */
-+/*
-+ * Author: David Heidelberg <david@ixit.cz>
-+ */
-+
-+#ifndef _DT_BINDINGS_SMB347_CHARGER_H
-+#define _DT_BINDINGS_SMB347_CHARGER_H
-+
-+/* Charging compensation method */
-+#define SMB3XX_SOFT_TEMP_COMPENSATE_NONE	0
-+#define SMB3XX_SOFT_TEMP_COMPENSATE_CURRENT	1
-+#define SMB3XX_SOFT_TEMP_COMPENSATE_VOLTAGE	2
-+
-+/* Charging enable control */
-+#define SMB3XX_CHG_ENABLE_SW			0
-+#define SMB3XX_CHG_ENABLE_PIN_ACTIVE_LOW	1
-+#define SMB3XX_CHG_ENABLE_PIN_ACTIVE_HIGH	2
-+
-+#endif
+ static struct i2c_driver smb347_driver = {
+ 	.driver = {
+ 		.name = "smb347",
++		.of_match_table = smb3xx_of_match,
+ 	},
+ 	.probe        = smb347_probe,
+ 	.remove       = smb347_remove,
 -- 
 2.26.0
 
