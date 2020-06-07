@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78E06C433DF
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32301C433E1
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4AC0D2067B
-	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B4732074B
+	for <linux-pm@archiver.kernel.org>; Sun,  7 Jun 2020 19:00:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mtQay4Q9"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Ctrheq2+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730089AbgFGTAJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 7 Jun 2020 15:00:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57096 "EHLO
+        id S1728969AbgFGTAF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 7 Jun 2020 15:00:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57104 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728223AbgFGS5U (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:20 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 323D9C08C5C3;
-        Sun,  7 Jun 2020 11:57:20 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id n23so17763549ljh.7;
-        Sun, 07 Jun 2020 11:57:20 -0700 (PDT)
+        with ESMTP id S1728331AbgFGS5Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 7 Jun 2020 14:57:24 -0400
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 037CCC061A0E;
+        Sun,  7 Jun 2020 11:57:23 -0700 (PDT)
+Received: by mail-lf1-x141.google.com with SMTP id d7so8855383lfi.12;
+        Sun, 07 Jun 2020 11:57:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Ae1m7Ph3kgiom2IEFZ6dxXExK3ejRG1JB/t6vIr/Q3s=;
-        b=mtQay4Q9ofUUP33sJvj4zMle5xvDPx3udaiiLallcoLxMfc/4jY4MBs/rgxUtbE/8s
-         5iK7PUd7EjTGOFB5ZGFJ4/mfhwcDHYWcA/RwOJeq3E0moenuvYytYcKBpC1Q+Hrz9XPS
-         3kEGZOXm/O6FolluFSVQySt6znSfaVMqEutG0Psw44Pt5bDyW7hdL+2XXo9i4uDrNaPX
-         aKqJC+nWPql++kAoEjpiK11R3FE8I9V6ZuJPROLdtJlqn6mfhr4M+BaMlXYVMF/L1SnS
-         j7RfZhrb6DcQ8N5EgqOfpJGC+dGenobV/OozuHeaLYjos/jdS+PbPjmgNNjy5XykU7Ys
-         gTGQ==
+        bh=Z07PPt/u97dYBnTZgvhRJ5rLo7+ZbziTOZ6KMaLiXtU=;
+        b=Ctrheq2+Lk6agPf9hiEOvCmdXzM5uqqaftrWAGWVrhVKMKGMDwZHxP40MhdNi98r79
+         jRnM/h+E9d6TV0BLQJypxKwufygJ1ZMzDYUntJlF3gpaBlbmAXXz0ZRG6gskT3AiKqls
+         FQgLziaiSgFbIij7fr5PgZWH0ZN0VOFLqrvggSQhuHCh9GqlnZgfgJ4WJYhBplI+e92p
+         tWIxsqbF3q63thO9NQ3ZAlJm9DD4SYtSu7ULH0FvzWFshROa5+GDnjIFQuQBy8Dyhuvj
+         vcdcgPs8fBGgE03XAlczSbYn3oFxeszqKeJUp/Fczhm6nYh/0v2Kmy8TOKQyEVASmXLx
+         FrCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Ae1m7Ph3kgiom2IEFZ6dxXExK3ejRG1JB/t6vIr/Q3s=;
-        b=dUAzTPJHOB2YaZ4t+zci6SkW3J0n1mJXyY4T0l5X3jKm79FMvHW2BsISGoTJu4fuHJ
-         BMsNQX1JQ3bzcFqZY5D1JDQZTeQHKwUjZ3mUIn/CwR6fTNtp0gYs1p9AbyYjAlSH9NvO
-         SnJ4cs5l1+wMATAolSZnvUMPSqFYKIeVAxmcqnhReFqEBiMO7CUR8M1c6NKJtVK91NdM
-         kzaxuDrSQVgZ/r/ubGQfOJeUPwVTb23UQ+YGFODbp1sMMDikRrzAZgLHefjjkyrfUks6
-         tqtWLQnr4yHCAFpF2Zrr5V3prdCTdbojXyhhFAeoxRdCED5fINZ34vczbZ1eY2WZTPB7
-         REcg==
-X-Gm-Message-State: AOAM532SG5jLBz+aIT8kB39OseFTk4ZsCxdrMQ21ER0xJ4xeL4PLhi+e
-        zUsn08qs+7+bT2oH67P6aU4=
-X-Google-Smtp-Source: ABdhPJyXyPjJWmFFPoPBGaAtY7gStNO11rmSiuQdVjRgxt/rUh8kwxXQgH1XhGkcP3rI6EjRdmWxaA==
-X-Received: by 2002:a2e:575d:: with SMTP id r29mr5569086ljd.120.1591556238755;
-        Sun, 07 Jun 2020 11:57:18 -0700 (PDT)
+        bh=Z07PPt/u97dYBnTZgvhRJ5rLo7+ZbziTOZ6KMaLiXtU=;
+        b=Kegn8m2ZEYUQKIZC3g7luvjRylKLFUvVuLsnpvrfZEAsSO4OyvAd7FCmJtUzl+6fsO
+         4HtCidzRDDBnqzxzoJEAvhzMizfCCvjEe33DzoUJH1z55XDQ72ZwXZRKomuQeTtOC2Jp
+         WWXRuSVAzbu1sIUmKzbeGW7pZ1KKTi4UeidxZvbm5PJZgkTz1zAbVSEX+Nx+V07Bv31v
+         mylZSHjcVO25cPpN1vy3RhqLwdsqoXZJbgDzW2oL0+RP7KmlRGAMaEFuw4sfrEruznNC
+         m5U7WrZ6KUIzzcNeFsZQaL10D8++FnaqMf7EMBF22uYE/ikwXLPA36j3XbQg4/xLpxan
+         06mw==
+X-Gm-Message-State: AOAM530suGD/Ct8txcbIQ2OCS+p3OISvGu9xCJThetP/GNms7h1GEse/
+        mklAaAORt+xVElwpfVw0I2K/UIx1
+X-Google-Smtp-Source: ABdhPJxaKvBwRyTdyvk01wbXZBDYI3yeNk6swFO3Ell52B0Lg1W78KUXB4yGariWUIU0YR3GP/Pujg==
+X-Received: by 2002:a19:8b06:: with SMTP id n6mr10632727lfd.66.1591556241530;
+        Sun, 07 Jun 2020 11:57:21 -0700 (PDT)
 Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.17
+        by smtp.gmail.com with ESMTPSA id e21sm3650953ljb.135.2020.06.07.11.57.20
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 07 Jun 2020 11:57:18 -0700 (PDT)
+        Sun, 07 Jun 2020 11:57:21 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,9 +74,9 @@ Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v3 07/39] memory: tegra124-emc: Use devm_platform_ioremap_resource
-Date:   Sun,  7 Jun 2020 21:54:58 +0300
-Message-Id: <20200607185530.18113-8-digetx@gmail.com>
+Subject: [PATCH v3 09/39] memory: tegra20-emc: Initialize MC timings
+Date:   Sun,  7 Jun 2020 21:55:00 +0300
+Message-Id: <20200607185530.18113-10-digetx@gmail.com>
 X-Mailer: git-send-email 2.26.0
 In-Reply-To: <20200607185530.18113-1-digetx@gmail.com>
 References: <20200607185530.18113-1-digetx@gmail.com>
@@ -87,35 +87,97 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Utilize that relatively new helper which makes code a bit cleaner.
+We're going to add interconnect support to the EMC driver. Once this
+support will be added, the Tegra20 devfreq driver will no longer be
+able to use clk_round_rate(emc) for building up OPP table. It's quite
+handy that struct tegra_mc contains memory timings which could be used
+by the devfreq drivers instead of the clk rate-rounding. The tegra_mc
+timings are populated by the MC driver only for Tegra30+ SoCs, hence
+the Tegra20 EMC could populate timings by itself.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra124-emc.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/memory/tegra/tegra20-emc.c | 47 ++++++++++++++++++++++++++++++
+ 1 file changed, 47 insertions(+)
 
-diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
-index 95afb0fa4a06..46089ef023a8 100644
---- a/drivers/memory/tegra/tegra124-emc.c
-+++ b/drivers/memory/tegra/tegra124-emc.c
-@@ -1193,7 +1193,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	struct platform_device *mc;
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 035d9251e28a..a95522020a25 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -15,12 +15,15 @@
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_device.h>
+ #include <linux/platform_device.h>
+ #include <linux/sort.h>
+ #include <linux/types.h>
+ 
+ #include <soc/tegra/fuse.h>
+ 
++#include "mc.h"
++
+ #define EMC_INTSTATUS				0x000
+ #define EMC_INTMASK				0x004
+ #define EMC_DBG					0x008
+@@ -650,6 +653,38 @@ static void tegra_emc_debugfs_init(struct tegra_emc *emc)
+ 			    emc, &tegra_emc_debug_max_rate_fops);
+ }
+ 
++static int tegra_emc_init_mc_timings(struct tegra_emc *emc)
++{
++	struct tegra_mc_timing *timing;
++	struct platform_device *pdev;
++	struct device_node *np;
++	struct tegra_mc *mc;
++	unsigned int i;
++
++	np = of_find_compatible_node(NULL, NULL, "nvidia,tegra20-mc-gart");
++	if (!np)
++		return -ENOENT;
++
++	pdev = of_find_device_by_node(np);
++	of_node_put(np);
++	if (!pdev)
++		return -ENOENT;
++
++	mc = platform_get_drvdata(pdev);
++	if (!mc)
++		return -EPROBE_DEFER;
++
++	mc->timings = devm_kcalloc(mc->dev, emc->num_timings, sizeof(*timing),
++				   GFP_KERNEL);
++	if (!mc->timings)
++		return -ENOMEM;
++
++	for (i = 0; i < emc->num_timings; i++)
++		mc->timings[mc->num_timings++].rate = emc->timings[i].rate;
++
++	return 0;
++}
++
+ static int tegra_emc_probe(struct platform_device *pdev)
+ {
  	struct device_node *np;
- 	struct tegra_emc *emc;
--	struct resource *res;
- 	u32 ram_code;
- 	int err;
+@@ -705,6 +740,18 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 		return err;
+ 	}
  
-@@ -1203,8 +1202,7 @@ static int tegra_emc_probe(struct platform_device *pdev)
++	/*
++	 * Only Tegra30+ SoCs are having Memory Controller timings initialized
++	 * by the MC driver. For Tegra20 we need to populate the MC timings
++	 * from here. The MC timings will be used by the Tegra20 devfreq driver.
++	 */
++	err = tegra_emc_init_mc_timings(emc);
++	if (err) {
++		dev_err(&pdev->dev, "failed to initialize mc timings: %d\n",
++			err);
++		return err;
++	}
++
+ 	tegra20_clk_set_emc_round_callback(emc_round_rate, emc);
  
- 	emc->dev = &pdev->dev;
- 
--	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
--	emc->regs = devm_ioremap_resource(&pdev->dev, res);
-+	emc->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(emc->regs))
- 		return PTR_ERR(emc->regs);
- 
+ 	emc->clk = devm_clk_get(&pdev->dev, "emc");
 -- 
 2.26.0
 
