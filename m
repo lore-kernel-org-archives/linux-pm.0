@@ -2,106 +2,107 @@ Return-Path: <SRS0=Dyy+=7V=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64B1FC433DF
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jun 2020 11:23:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 911A8C433E2
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jun 2020 11:23:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3EAFC206C3
-	for <linux-pm@archiver.kernel.org>; Mon,  8 Jun 2020 11:23:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="T2VIpFyR"
+	by mail.kernel.org (Postfix) with ESMTP id 6EA9C206C3
+	for <linux-pm@archiver.kernel.org>; Mon,  8 Jun 2020 11:23:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729656AbgFHLW6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 8 Jun 2020 07:22:58 -0400
-Received: from userp2120.oracle.com ([156.151.31.85]:46400 "EHLO
-        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729640AbgFHLWu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2020 07:22:50 -0400
-Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
-        by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 058BMRGD111939;
-        Mon, 8 Jun 2020 11:22:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2020-01-29;
- bh=g/SBqla2Qz8YmgXWV5dNE6NiesBkgSREBkriy+DQb8o=;
- b=T2VIpFyRZdRUANYlq3EtlHGqp8itK8+N7iO7owb3UkNmIQnmlkjUZjHNsC4JQ8Z5yCZD
- SGoJ1XLBMMT7lUSQyg5PNdF/yyMUhwIp6fzvzsVKWFnt8iihZ5XHGtYeGM69Vw9eW5t+
- Mgj0WcDHHJ0+k6k4aSg4gVNSpSwB9JphTvMU9Mn1Th4IfAK1DxC2w4DULZBiAH3Y/oBu
- izQAKPWW+xk6JzJtIepE5jnm6IkKsG+49UHcvd6EVyEz15hMyoewGo1ODtK4fne/Vq0e
- 5o1aQ/XlxyDzNbdLzzIPhTR1TzAlHUxQxxNYAsLNv5VPbAM0cJ/FAJcezXRZJFYwyznQ pw== 
-Received: from aserp3030.oracle.com (aserp3030.oracle.com [141.146.126.71])
-        by userp2120.oracle.com with ESMTP id 31g3smp5y8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 08 Jun 2020 11:22:39 +0000
-Received: from pps.filterd (aserp3030.oracle.com [127.0.0.1])
-        by aserp3030.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 058BHmnK020506;
-        Mon, 8 Jun 2020 11:22:38 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
-        by aserp3030.oracle.com with ESMTP id 31gmqm38yx-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Mon, 08 Jun 2020 11:22:38 +0000
-Received: from abhmp0009.oracle.com (abhmp0009.oracle.com [141.146.116.15])
-        by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 058BMaa1010818;
-        Mon, 8 Jun 2020 11:22:37 GMT
-Received: from kadam (/41.57.98.10)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Mon, 08 Jun 2020 04:22:36 -0700
-Date:   Mon, 8 Jun 2020 14:22:28 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Joe Perches <joe@perches.com>
-Cc:     Christophe JAILLET <christophe.jaillet@wanadoo.fr>,
-        rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com,
-        Dan Carpenter <error27@gmail.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] kernel: power: swap: mark a function as __init to save
- some memory
-Message-ID: <20200608112228.GW30374@kadam>
-References: <20200531210059.647066-1-christophe.jaillet@wanadoo.fr>
- <effe3cde7b1f188427c42c476f5a96251d837416.camel@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <effe3cde7b1f188427c42c476f5a96251d837416.camel@perches.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9645 signatures=668680
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 bulkscore=0 mlxscore=0
- mlxlogscore=936 adultscore=0 spamscore=0 suspectscore=0 malwarescore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006080086
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9645 signatures=668680
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 impostorscore=0 cotscore=-2147483648 suspectscore=0
- spamscore=0 bulkscore=0 malwarescore=0 phishscore=0 mlxscore=0
- mlxlogscore=963 clxscore=1015 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.12.0-2004280000 definitions=main-2006080086
+        id S1729632AbgFHLWj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 8 Jun 2020 07:22:39 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:34600 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729613AbgFHLWf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 8 Jun 2020 07:22:35 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id 9DA192A35D8
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-tegra@vger.kernel.org, patches@opensource.cirrus.com,
+        ibm-acpi-devel@lists.sourceforge.net,
+        platform-driver-x86@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        Kukjin Kim <kgene@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Vladimir Zapolskiy <vz@mleia.com>,
+        Sylvain Lemieux <slemieux.tyco@gmail.com>,
+        Laxman Dewangan <ldewangan@nvidia.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Barry Song <baohua@kernel.org>,
+        Michael Hennerich <michael.hennerich@analog.com>,
+        Nick Dyer <nick@shmanahar.org>,
+        Hans de Goede <hdegoede@redhat.com>,
+        Ferruh Yigit <fery@cypress.com>,
+        Sangwon Jee <jeesw@melfas.com>,
+        Peter Hutterer <peter.hutterer@redhat.com>,
+        Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v4 5/7] iio: adc: exynos: Use input_device_enabled()
+Date:   Mon,  8 Jun 2020 13:22:09 +0200
+Message-Id: <20200608112211.12125-6-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200608112211.12125-1-andrzej.p@collabora.com>
+References: <2336e15d-ff4b-bbb6-c701-dbf3aa110fcd@redhat.com>
+ <20200608112211.12125-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sun, May 31, 2020 at 03:11:27PM -0700, Joe Perches wrote:
-> (adding Dan Carpenter)
-> 
-> On Sun, 2020-05-31 at 23:00 +0200, Christophe JAILLET wrote:
-> > 'swsusp_header_init()' is only called via 'core_initcall'.
-> > It can be marked as __init to save a few bytes of memory.
-> 
-> Hey Dan
-> 
-> smatch has a full function calling tree right?
-> 
-> Can smatch find unmarked functions called only by __init
-> functions so those unmarked functions can be appropriately
-> marked with __init like the below?
-> 
+A new helper is available, so use it. Inspecting 'users' member of
+input_dev requires taking device's mutex.
 
-It turns out it's complicated to do this in Smatch because Sparse
-ignores the section attribute.  :/
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+---
+ drivers/iio/adc/exynos_adc.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-regards,
-dan carpenter
+diff --git a/drivers/iio/adc/exynos_adc.c b/drivers/iio/adc/exynos_adc.c
+index 22131a677445..9a1ddda8c5db 100644
+--- a/drivers/iio/adc/exynos_adc.c
++++ b/drivers/iio/adc/exynos_adc.c
+@@ -633,7 +633,9 @@ static irqreturn_t exynos_ts_isr(int irq, void *dev_id)
+ 	bool pressed;
+ 	int ret;
+ 
+-	while (info->input->users) {
++	mutex_lock(&info->input->mutex);
++	while (input_device_enabled(info->input)) {
++		mutex_unlock(&info->input->mutex);
+ 		ret = exynos_read_s3c64xx_ts(dev, &x, &y);
+ 		if (ret == -ETIMEDOUT)
+ 			break;
+@@ -651,6 +653,8 @@ static irqreturn_t exynos_ts_isr(int irq, void *dev_id)
+ 		input_sync(info->input);
+ 
+ 		usleep_range(1000, 1100);
++
++		mutex_lock(&info->input->mutex);
+ 	}
+ 
+ 	writel(0, ADC_V1_CLRINTPNDNUP(info->regs));
+-- 
+2.17.1
 
