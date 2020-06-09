@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EA1D0C433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92312C433DF
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C75092074B
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 71FF1207C3
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="la6aiy/t"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="EiGhSOh1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729330AbgFINQ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Jun 2020 09:16:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55312 "EHLO
+        id S1729898AbgFINQa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Jun 2020 09:16:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55294 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728206AbgFINPF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2020 09:15:05 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 507E0C08C5C2;
-        Tue,  9 Jun 2020 06:15:03 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id h188so12442448lfd.7;
-        Tue, 09 Jun 2020 06:15:03 -0700 (PDT)
+        with ESMTP id S1729332AbgFINPA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2020 09:15:00 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67931C08C5C5;
+        Tue,  9 Jun 2020 06:14:58 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id c17so24952690lji.11;
+        Tue, 09 Jun 2020 06:14:58 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ZjaYnAqjyjheQetecbUGv3UZQxy0uIJMeCJISYF4wkc=;
-        b=la6aiy/tmkvG9zzTPQIvQi4FNpnzVNSe+Y8auZSSVIhD/rrGpKXFOCTwXFVlqTjiKD
-         yAw0kCzR7UHvrpzVwCRENQECL1cumqGSCV1tL8riWJ1ogCDWKDkMiEIw7ojm0nUUXbK+
-         B2+MlOp676KEiPrtRgps3HtaBpTjYHO9EAAHwe9ybTivC8hz74PrNHpMC7OU/ycoG0ry
-         i00R3l/2NiDPRIe3w6Jjf6LBxwkf7UJ+PdwKXv7FRSg/FXJv4dl4FRoyttLvXhv/ZiEa
-         FtrubEn1DI3olHkJMkqtRMMfx8lonhFpAw3cI5I728UBqh0WzA7wf4GUI1ZzUu6i1KRE
-         dy+A==
+        bh=AG+TQmILbbrHUh9/3fg4pGtkuDKOX+TOZbe0Aj0MBf0=;
+        b=EiGhSOh1ZZPDLaZRrYIeHCwKkcNsouIcTJjk0UxCLEePd/J+r5pwQyDnLWuIeTo8cq
+         gV/ci5m3Vqo4aYx143Z/Mzz9uozgdSH6gSl1TK3z0y/3VP1U3hPVMHRWHoYj6C5KYwda
+         HroGQYKYI0+uAe1cm29/AeJ07m8HZKzojXdxbRujvQUuOgVxLWrHXRtSHD9IQVEaBMuE
+         CJJOTef/97J7HEvFO6iicAJq/7/e8AY3fuCvYSQ2AsdLNPDDOCCHQMNqYh/yRrxCSjnF
+         2TpuG2F+JIqqL6kTkzDfCZ448ytMSV92/cOS2dmdXZer+G85yg9YyWrjGVr4Fabt2XoN
+         UiLw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ZjaYnAqjyjheQetecbUGv3UZQxy0uIJMeCJISYF4wkc=;
-        b=Sy14zLcCnRuoh19HoPuUXBM+iHjmyyEmafR0P1w6BUr3ezwvfkNw6cJ7cuhkHrmXQS
-         VuXEhV0Fr0LJcqb9+mRPwweKpAh2oZZC+RFTwbMFb3Pf1b2ggRgmru/KHfUOAe5BAoNt
-         4y+DS+1Ssf5/NYy3yd/NkNgJhI2UYlYPRKAGfUKNJAbcRW134fnA6wgC7GyNiv/Aydqj
-         OXet+yw9YSKbnTVCDnoyJounXLASH0r1iBpbeFV4YgPw864r3MDPch7tgeabFvw3Ian6
-         fQPOBfnW1LgtLflkFBkUnuoVATlocfbtDpT6cWQpFlXx99lSuNjN8cNezgfea2uzQ4Wu
-         Tm+w==
-X-Gm-Message-State: AOAM531kkZMHJW54PbF2kZ5OQRBDF3OXjMyvk5gF82Gtw6qhdf+XGrIy
-        w6HExqSBMj56PaDedk1ZUNk=
-X-Google-Smtp-Source: ABdhPJx/RMhptAxbYbxkouVi2PFiyvVGpkv7BrphTZAhBPJKZzi+UwPIIYIow2R7qRfBqwnyB6QJpQ==
-X-Received: by 2002:ac2:5b9e:: with SMTP id o30mr15497175lfn.153.1591708501827;
-        Tue, 09 Jun 2020 06:15:01 -0700 (PDT)
+        bh=AG+TQmILbbrHUh9/3fg4pGtkuDKOX+TOZbe0Aj0MBf0=;
+        b=RE0eBTe4JpaVmIWYU8YJedzwLfGGT7mKRHikO7G2j4zoDU32bLBcpFhBlOQGenucuD
+         hDwBFkZBJQxQWBavx3Ezld3BLEsAe4zauSvbBoJoY/noI+lZUR3k9dkccDQVgqAfu/oN
+         09T57/11wPN8g+dfE3Lpjb0XpqBGdYAMS7GzSFV1sNxQjTVunhm1LgFRa9oDMNkgxqR0
+         crJN+aKmbp25UjTqkhoCESixMnZZM9eSsj4xAjNHHF/8qMGNcIk9LUNBorOCBYW0JxbM
+         0/jhCcFBVnPG6IDUY0MjYc79haoYqnuOjFi0iKZd47F0IuZ2CJJtLQlbqvWd82IvBCRG
+         Ps5g==
+X-Gm-Message-State: AOAM530as8/6XzaNPnmqqo6cFoUOcfNXRYnRGbDhBZtou8iZlP6eABGp
+        rutQAfuHj6B2O0dRe3Y+yXI=
+X-Google-Smtp-Source: ABdhPJyiYfbTzP2nZhf3fgnnkhVUB7Ysq7mpxP+V8W5Yvzw4oCoUQgYrSVYyt565zMhI60iILUnTfQ==
+X-Received: by 2002:a2e:89da:: with SMTP id c26mr13060673ljk.447.1591708496791;
+        Tue, 09 Jun 2020 06:14:56 -0700 (PDT)
 Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id l22sm4323522lji.120.2020.06.09.06.15.00
+        by smtp.gmail.com with ESMTPSA id l22sm4323522lji.120.2020.06.09.06.14.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2020 06:15:01 -0700 (PDT)
+        Tue, 09 Jun 2020 06:14:56 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,9 +74,9 @@ Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v4 30/37] memory: tegra20-emc: Continue probing if timings are missing in device-tree
-Date:   Tue,  9 Jun 2020 16:13:57 +0300
-Message-Id: <20200609131404.17523-31-digetx@gmail.com>
+Subject: [PATCH v4 26/37] ARM: tegra: Add interconnect properties to Tegra30 device-tree
+Date:   Tue,  9 Jun 2020 16:13:53 +0300
+Message-Id: <20200609131404.17523-27-digetx@gmail.com>
 X-Mailer: git-send-email 2.26.0
 In-Reply-To: <20200609131404.17523-1-digetx@gmail.com>
 References: <20200609131404.17523-1-digetx@gmail.com>
@@ -87,88 +87,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-EMC driver will become mandatory after turning it into interconnect
-provider because interconnect users, like display controller driver, will
-fail to probe using newer device-trees that have interconnect properties.
-Thus make EMC driver to probe even if timings are missing in device-tree.
+Add interconnect properties to the memory controller, external memory
+controller and the display controller nodes in order to describe hardware
+interconnection.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra20-emc.c | 34 ++++++++++++++----------------
- 1 file changed, 16 insertions(+), 18 deletions(-)
+ arch/arm/boot/dts/tegra30.dtsi | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
-index 507065c2f452..6cd3d50145dc 100644
---- a/drivers/memory/tegra/tegra20-emc.c
-+++ b/drivers/memory/tegra/tegra20-emc.c
-@@ -386,6 +386,11 @@ tegra_emc_find_node_by_ram_code(struct device *dev)
- 	u32 value, ram_code;
- 	int err;
+diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
+index d2d05f1da274..2b183025629f 100644
+--- a/arch/arm/boot/dts/tegra30.dtsi
++++ b/arch/arm/boot/dts/tegra30.dtsi
+@@ -208,6 +208,15 @@ dc@54200000 {
  
-+	if (of_get_child_count(dev->of_node) == 0) {
-+		dev_info(dev, "device-tree doesn't have memory timings\n");
-+		return NULL;
-+	}
+ 			nvidia,head = <0>;
+ 
++			interconnects = <&mc TEGRA30_MC_DISPLAY0A &emc>,
++					<&mc TEGRA30_MC_DISPLAY0B &emc>,
++					<&mc TEGRA30_MC_DISPLAY0C &emc>,
++					<&mc TEGRA30_MC_DISPLAY1B &emc>;
++			interconnect-names = "display0a",
++					     "display0b",
++					     "display0c",
++					     "display1b";
 +
- 	if (!of_property_read_bool(dev->of_node, "nvidia,use-ram-code"))
- 		return of_node_get(dev->of_node);
+ 			rgb {
+ 				status = "disabled";
+ 			};
+@@ -227,6 +236,15 @@ dc@54240000 {
  
-@@ -454,6 +459,9 @@ static long emc_round_rate(unsigned long rate,
- 	struct tegra_emc *emc = arg;
- 	unsigned int i;
+ 			nvidia,head = <1>;
  
-+	if (!emc->num_timings)
-+		return clk_get_rate(emc->clk);
++			interconnects = <&mc TEGRA30_MC_DISPLAY0AB &emc>,
++					<&mc TEGRA30_MC_DISPLAY0BB &emc>,
++					<&mc TEGRA30_MC_DISPLAY0CB &emc>,
++					<&mc TEGRA30_MC_DISPLAY1BB &emc>;
++			interconnect-names = "display0a",
++					     "display0b",
++					     "display0c",
++					     "display1b";
 +
- 	min_rate = min(min_rate, emc->timings[emc->num_timings - 1].rate);
+ 			rgb {
+ 				status = "disabled";
+ 			};
+@@ -733,15 +751,18 @@ mc: memory-controller@7000f000 {
  
- 	for (i = 0; i < emc->num_timings; i++) {
-@@ -691,13 +699,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	struct tegra_emc *emc;
- 	int irq, err;
+ 		#iommu-cells = <1>;
+ 		#reset-cells = <1>;
++		#interconnect-cells = <1>;
+ 	};
  
--	/* driver has nothing to do in a case of memory timing absence */
--	if (of_get_child_count(pdev->dev.of_node) == 0) {
--		dev_info(&pdev->dev,
--			 "EMC device tree node doesn't have memory timings\n");
--		return 0;
--	}
--
- 	irq = platform_get_irq(pdev, 0);
- 	if (irq < 0) {
- 		dev_err(&pdev->dev, "interrupt not specified\n");
-@@ -705,23 +706,20 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 		return irq;
- 	}
+-	memory-controller@7000f400 {
++	emc: memory-controller@7000f400 {
+ 		compatible = "nvidia,tegra30-emc";
+ 		reg = <0x7000f400 0x400>;
+ 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA30_CLK_EMC>;
  
--	np = tegra_emc_find_node_by_ram_code(&pdev->dev);
--	if (!np)
--		return -EINVAL;
--
- 	emc = devm_kzalloc(&pdev->dev, sizeof(*emc), GFP_KERNEL);
--	if (!emc) {
--		of_node_put(np);
-+	if (!emc)
- 		return -ENOMEM;
--	}
+ 		nvidia,memory-controller = <&mc>;
++
++		#interconnect-cells = <0>;
+ 	};
  
- 	emc->clk_nb.notifier_call = tegra_emc_clk_change_notify;
- 	emc->dev = &pdev->dev;
- 
--	err = tegra_emc_load_timings_from_dt(emc, np);
--	of_node_put(np);
--	if (err)
--		return err;
-+	np = tegra_emc_find_node_by_ram_code(&pdev->dev);
-+	if (np) {
-+		err = tegra_emc_load_timings_from_dt(emc, np);
-+		of_node_put(np);
-+		if (err)
-+			return err;
-+	}
- 
- 	emc->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(emc->regs))
+ 	fuse@7000f800 {
 -- 
 2.26.0
 
