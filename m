@@ -2,241 +2,144 @@ Return-Path: <SRS0=539E=7W=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8222AC433E1
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:15:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 98431C433DF
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D14D2074B
-	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:15:53 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gpz1dVmG"
+	by mail.kernel.org (Postfix) with ESMTP id 6E135207ED
+	for <linux-pm@archiver.kernel.org>; Tue,  9 Jun 2020 13:16:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1591708565;
+	bh=fn5/yXr+s+Db1jJwZ/m79lFUBemiDJfuNnzHg1lYHVg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Q4zD90pOzTV3FW00gkoI7SrV1rnVHLdRaKK9MTz8SpMjwL4SW4DFl/uFuTLiSOuf1
+	 E/f6+I22k/A9yWov5fQjN52MBtoVUI+sI+zCrb3j4d6zN2UEibu195ODh9cC5SRaQJ
+	 Cr5vVYihqfrhnV+tC33FkzRnzcHhr8RxWM5J5P9E=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729676AbgFINPu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 9 Jun 2020 09:15:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55310 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728400AbgFINPF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 9 Jun 2020 09:15:05 -0400
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E359C08C5C7;
-        Tue,  9 Jun 2020 06:15:04 -0700 (PDT)
-Received: by mail-lf1-x142.google.com with SMTP id 82so12449694lfh.2;
-        Tue, 09 Jun 2020 06:15:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=I7K6pP+VtdggFZCsP3lFDVTttDH/0LC9bYXS86TOH5s=;
-        b=gpz1dVmGBS0JAbbGjI2zfwNKRCHvLrspiNt4fq2GRSzA391Qr0vfeCTsyIRAer/4Ve
-         RoqJunmdCHCAQAA9wAQiT/GqKQexWEMILhCBxSpo5KImBza98KvVbpTbROSO/RgquH97
-         4H12d9Zdmeh0ybgb4V57JH+9eVjoyGCpU3dxNeBR24H+MZUCGsQasFyrEu6SG1p6EC/r
-         Lf2EQJ3XGzL3c9RdCSw43hN6Nwb7Y6qqSyZ3jABVwF6GRXKyLSR+Z/YmuesJBAha9NDf
-         Nx0E7I4lN8MkNzdkcJEe1vQXLCgxnobtv59F+yJxfWXtP9aMWVxESrCrYHffyPROP/J9
-         JvlQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=I7K6pP+VtdggFZCsP3lFDVTttDH/0LC9bYXS86TOH5s=;
-        b=sm2UnNANBb77lMmYshiVRMOuV2b+FXKJS2O9xRtbhtSYOh4KkKwgFZ74yf5FWryGt7
-         JiIRnVWz2sjl4ZLZg3CYmgzpdhFgV3mBvg1tv0MZ3UynPdn8JRTtUHG6VBPka/qKCuaZ
-         bP44pu39tMk0Ch732xVcQYfRx+6YDNYUTJ9yci5N9jr77kr2l21ZVCNYeVVh1mWhDyiS
-         L91K2ylMxOvpapCmpnlOgWo7+nX22fe3BKW22zlo8OuPAyy1iYbZUenDt5BfZvzL4qGh
-         Z+zbDA5OlkU7VOoqgK7s0PttoJIeWdOu6+0PqRl1XYLxKtqRmk6eMog77RudHYz6iPNK
-         3PWQ==
-X-Gm-Message-State: AOAM533dpaULwMXZkN+N/w7Fln7b0mrzjl1AlOsxNeHUVZLI4B1ZJ6yw
-        98lUgUUPwjJ9OWl7PTa5Yxs=
-X-Google-Smtp-Source: ABdhPJwPGbudINukH8h1BPvKKcnsUFOEztbYVGuIQyCRXoLqJ2LoTQ2Y/j1f0h4O68zrJBXYiJqVZg==
-X-Received: by 2002:a19:ae0f:: with SMTP id f15mr15731902lfc.142.1591708502997;
-        Tue, 09 Jun 2020 06:15:02 -0700 (PDT)
-Received: from localhost.localdomain (79-139-237-54.dynamic.spd-mgts.ru. [79.139.237.54])
-        by smtp.gmail.com with ESMTPSA id l22sm4323522lji.120.2020.06.09.06.15.01
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Jun 2020 06:15:02 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>
-Cc:     =?UTF-8?q?Artur=20=C5=9Awigo=C5=84?= <a.swigon@samsung.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v4 31/37] memory: tegra20-emc: Register as interconnect provider
-Date:   Tue,  9 Jun 2020 16:13:58 +0300
-Message-Id: <20200609131404.17523-32-digetx@gmail.com>
-X-Mailer: git-send-email 2.26.0
-In-Reply-To: <20200609131404.17523-1-digetx@gmail.com>
-References: <20200609131404.17523-1-digetx@gmail.com>
+        id S1729800AbgFINQE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 9 Jun 2020 09:16:04 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33190 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729787AbgFINQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 9 Jun 2020 09:16:03 -0400
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id E788520737;
+        Tue,  9 Jun 2020 13:16:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1591708562;
+        bh=fn5/yXr+s+Db1jJwZ/m79lFUBemiDJfuNnzHg1lYHVg=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=pxwzHiXulXcoI9AP55wyvnUrJtLD4+i3+COYPzt2f/GwI7kdH0zz4YBaYDQ6VaPf8
+         FJ2dTwvOVj+Sb89FgB21g0H+FeIyrOMUo40gTC11xrTCvFt10WyodxdM6fcHbcgM8M
+         gtZWH7SRS1IEnIK1PvET7VXz08RRftT/3FY8pFMU=
+Date:   Tue, 9 Jun 2020 14:16:00 +0100
+From:   Mark Brown <broonie@kernel.org>
+To:     Marco Felsch <m.felsch@pengutronix.de>
+Cc:     Andrzej Hajda <a.hajda@samsung.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Grant Likely <grant.likely@arm.com>,
+        Saravana Kannan <saravanak@google.com>,
+        artem.bityutskiy@linux.intel.com, balbi@kernel.org,
+        fntoth@gmail.com, gregkh@linuxfoundation.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        peter.ujfalusi@ti.com, rafael@kernel.org, kernel-team@android.com,
+        nd <nd@arm.com>, kernel@pengutronix.de
+Subject: Re: [PATCH v3] driver core: Break infinite loop when deferred probe
+ can't be satisfied
+Message-ID: <20200609131600.GE4583@sirena.org.uk>
+References: <20200325032901.29551-1-saravanak@google.com>
+ <20200325125120.GX1922688@smile.fi.intel.com>
+ <295d25de-f01e-26de-02d6-1ac0c149d828@arm.com>
+ <20200326163110.GD1922688@smile.fi.intel.com>
+ <CGME20200608091722eucas1p2fa8a4ac15c70e5a6e03c4babdf9f96b7@eucas1p2.samsung.com>
+ <20200608091712.GA28093@pengutronix.de>
+ <437de51b-37e9-d8d1-19c7-137a9265bf45@samsung.com>
+ <20200609064511.7nek2rhk6ebfjaia@pengutronix.de>
+ <b413d39f-71c4-d291-276d-1087baf07080@samsung.com>
+ <20200609121029.nfhgilpu5meoygoa@pengutronix.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="6e7ZaeXHKrTJCxdu"
+Content-Disposition: inline
+In-Reply-To: <20200609121029.nfhgilpu5meoygoa@pengutronix.de>
+X-Cookie: Be careful!  Is it classified?
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now memory controller is a memory interconnection provider. This allows us
-to use interconnect API in order to change memory configuration.
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/memory/tegra/tegra20-emc.c | 110 +++++++++++++++++++++++++++++
- 1 file changed, 110 insertions(+)
+--6e7ZaeXHKrTJCxdu
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
-index 6cd3d50145dc..ef0f5a69f24b 100644
---- a/drivers/memory/tegra/tegra20-emc.c
-+++ b/drivers/memory/tegra/tegra20-emc.c
-@@ -9,6 +9,7 @@
- #include <linux/clk/tegra.h>
- #include <linux/debugfs.h>
- #include <linux/err.h>
-+#include <linux/interconnect-provider.h>
- #include <linux/interrupt.h>
- #include <linux/io.h>
- #include <linux/iopoll.h>
-@@ -148,6 +149,7 @@ struct emc_timing {
- struct tegra_emc {
- 	struct device *dev;
- 	struct notifier_block clk_nb;
-+	struct icc_provider provider;
- 	struct clk *clk;
- 	void __iomem *regs;
- 
-@@ -661,6 +663,113 @@ static void tegra_emc_debugfs_init(struct tegra_emc *emc)
- 			    emc, &tegra_emc_debug_max_rate_fops);
- }
- 
-+static inline struct tegra_emc *
-+to_tegra_emc_provider(struct icc_provider *provider)
-+{
-+	return container_of(provider, struct tegra_emc, provider);
-+}
-+
-+static struct icc_node *
-+emc_of_icc_xlate(struct of_phandle_args *spec, void *data)
-+{
-+	struct icc_provider *provider = data;
-+	struct icc_node *node;
-+
-+	/* External Memory is the only possible ICC route */
-+	list_for_each_entry(node, &provider->nodes, node_list) {
-+		if (node->id == TEGRA_ICC_EMEM)
-+			return node;
-+	}
-+
-+	return ERR_PTR(-EINVAL);
-+}
-+
-+static int emc_icc_set(struct icc_node *src, struct icc_node *dst)
-+{
-+	struct tegra_emc *emc = to_tegra_emc_provider(dst->provider);
-+	unsigned long long rate = icc_units_to_bps(dst->avg_bw);
-+	unsigned int dram_data_bus_width_bytes = 4;
-+	unsigned int ddr = 2;
-+	int err;
-+
-+	do_div(rate, ddr * dram_data_bus_width_bytes);
-+	rate = min_t(u64, rate, U32_MAX);
-+
-+	err = clk_set_min_rate(emc->clk, rate);
-+	if (err)
-+		return err;
-+
-+	err = clk_set_rate(emc->clk, rate);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
-+static int emc_icc_aggregate(struct icc_node *node,
-+			     u32 tag, u32 avg_bw, u32 peak_bw,
-+			     u32 *agg_avg, u32 *agg_peak)
-+{
-+	*agg_avg = min((u64)avg_bw + (*agg_avg), (u64)U32_MAX);
-+	*agg_peak = max(*agg_peak, peak_bw);
-+
-+	return 0;
-+}
-+
-+static int tegra_emc_interconnect_init(struct tegra_emc *emc)
-+{
-+	struct icc_node *node;
-+	int err;
-+
-+	/* older device-trees don't have interconnect properties */
-+	if (!of_find_property(emc->dev->of_node, "#interconnect-cells", NULL))
-+		return 0;
-+
-+	emc->provider.dev = emc->dev;
-+	emc->provider.set = emc_icc_set;
-+	emc->provider.data = &emc->provider;
-+	emc->provider.xlate = emc_of_icc_xlate;
-+	emc->provider.aggregate = emc_icc_aggregate;
-+
-+	err = icc_provider_add(&emc->provider);
-+	if (err)
-+		goto err_msg;
-+
-+	/* create External Memory Controller node */
-+	node = icc_node_create(TEGRA_ICC_EMC);
-+	err = PTR_ERR_OR_ZERO(node);
-+	if (err)
-+		goto del_provider;
-+
-+	node->name = "External Memory Controller";
-+	icc_node_add(node, &emc->provider);
-+
-+	/* link External Memory Controller to External Memory (DRAM) */
-+	err = icc_link_create(node, TEGRA_ICC_EMEM);
-+	if (err)
-+		goto remove_nodes;
-+
-+	/* create External Memory node */
-+	node = icc_node_create(TEGRA_ICC_EMEM);
-+	err = PTR_ERR_OR_ZERO(node);
-+	if (err)
-+		goto remove_nodes;
-+
-+	node->name = "External Memory (DRAM)";
-+	icc_node_add(node, &emc->provider);
-+
-+	return 0;
-+
-+remove_nodes:
-+	icc_nodes_remove(&emc->provider);
-+del_provider:
-+	icc_provider_del(&emc->provider);
-+err_msg:
-+	dev_err(emc->dev, "failed to initialize ICC: %d\n", err);
-+
-+	return err;
-+}
-+
- static int tegra_emc_init_mc_timings(struct tegra_emc *emc)
- {
- 	struct tegra_mc_timing *timing;
-@@ -766,6 +875,7 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 
- 	platform_set_drvdata(pdev, emc);
- 	tegra_emc_debugfs_init(emc);
-+	tegra_emc_interconnect_init(emc);
- 
- 	/*
- 	 * Don't allow the kernel module to be unloaded. Unloading adds some
--- 
-2.26.0
+On Tue, Jun 09, 2020 at 02:10:29PM +0200, Marco Felsch wrote:
+> On 20-06-09 11:27, Andrzej Hajda wrote:
+> > On 09.06.2020 08:45, Marco Felsch wrote:
+> > > On 20-06-08 13:11, Andrzej Hajda wrote:
+> > >> On 08.06.2020 11:17, Marco Felsch wrote:
+> > >>> On 20-03-26 18:31, Andy Shevchenko wrote:
+> > >>>> On Thu, Mar 26, 2020 at 03:01:22PM +0000, Grant Likely wrote:
+> > >>>>> On 25/03/2020 12:51, Andy Shevchenko wrote:
+> > >>>>>> On Tue, Mar 24, 2020 at 08:29:01PM -0700, Saravana Kannan wrote:
+> > >>>>>>> On Tue, Mar 24, 2020 at 5:38 AM Andy Shevchenko <andriy.shevche=
+nko@linux.intel.com> wrote:
 
+Please delete unneeded context from mails when replying.  Doing this
+makes it much easier to find your reply in the message, helping ensure
+it won't be missed by people scrolling through the irrelevant quoted
+material.
+
+> > I think rule of=20
+> > thumb should be "do not expose yourself, until you are ready", which in=
+=20
+> > this case means "do not call component_add, until resources are=20
+> > acquired" - ie resource acquisition should be performed in probe.
+
+> Hm.. there are is no documentation which forbid this use-case. I thought
+> that the component framework bind() equals the driver probe() function..
+
+It does, the issue is perhaps more clearly expressed as saying that a
+driver should acquire whatever resources it needs before starting to
+make resources available to others, this includes but isn't limited to
+registering new device nodes.  This ensures that the users don't then
+start trying to use resources and have them torn down underneath them.
+
+> > I use=20
+> > this approach mainly to avoid multiple deferred re-probes, but it shoul=
+d=20
+> > solve also this issue, so even if there will be solution to "deferred=
+=20
+> > probe issues" in core it would be good to fix imx drivers.
+
+> Pls, see my above comments. It is not only the imx driver. Also we
+> shouldn't expect that driver-developers will follow a rule which is
+> not written somewhere.
+
+If you've got an idea where this should be documented patches welcome!
+I can't think of anywhere sensibly discoverable to put something off the
+top of my head.
+
+--6e7ZaeXHKrTJCxdu
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAl7fi48ACgkQJNaLcl1U
+h9BAnwf+IQAg6nhT7tQENlmhPWx3FZ4yhQkrwDmGU9T40E0yCtHmLUNcLGsh9kyn
+DBlX8hGB51Btbnu0B/0A1HZ5WbI3jRLlZKcweyc2lYeBB+EYCE6QcX8Q/PZPcZc3
+HkGMw18pACXYKlOxyFg6HF8Jkx+FyU4ArPyIYTCq9ONdKx/QjJHXrYPoAV/M8WX2
+/hlGcoLfh2Zo8R/P/9oCbAqsZ0O4O3JZKKxOoUtLynwCymjgDd88rDsBX/FmmUwN
+k7z3zuvZTHwwv9jwDsqHczyv2IwilmWHT2tYFHOz5wmdiJsngQb5+juzyDdf+B8Z
+z3yiOvVVzkenkzPDl2y7/qCDurQOxw==
+=ln+W
+-----END PGP SIGNATURE-----
+
+--6e7ZaeXHKrTJCxdu--
