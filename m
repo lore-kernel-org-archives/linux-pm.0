@@ -2,68 +2,100 @@ Return-Path: <SRS0=4Bgw=74=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DAF83C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jun 2020 22:40:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67797C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jun 2020 23:41:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C49D5207D4
-	for <linux-pm@archiver.kernel.org>; Mon, 15 Jun 2020 22:40:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B49C20714
+	for <linux-pm@archiver.kernel.org>; Mon, 15 Jun 2020 23:41:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1592264480;
+	bh=4B3zxx0t4t/cAMnTcb1CgWAE+WyO6z4UCRqXbi4xzFg=;
+	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-ID:From;
+	b=O28jN6brvMhSsJ8rF+KSCYz6Fw8cRfH4pFTlpoXERPjVaH95BQBW/eY8KMyWOSHQk
+	 sfwCQpyXzmyvdx0qmtHfINGOP7LLyDB1iYHSJYV1RUjOKF0y9N8SI76TRWNMOa4iKJ
+	 Moga7t7sRq9E+PrihZ7br5WlbgtOCZ1JpxrVSI68=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725960AbgFOWkH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 15 Jun 2020 18:40:07 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:56560 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725843AbgFOWkG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 15 Jun 2020 18:40:06 -0400
-Received: from 2.general.alexhung.us.vpn ([10.172.65.255] helo=canonical.com)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <alex.hung@canonical.com>)
-        id 1jkxlo-0005Af-J9; Mon, 15 Jun 2020 22:40:01 +0000
-From:   Alex Hung <alex.hung@canonical.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org,
-        amit.kucheria@verdurent.com, rafael.j.wysocki@intel.com,
-        gayatri.kammela@intel.com, srinivas.pandruvada@intel.com,
-        gupt21@gmail.com, linux-pm@vger.kernel.org, alex.hung@canonical.com
-Cc:     stable@vger.kernel.org
-Subject: [PATCH] thermal: int3403_thermal: Downgrade error message
-Date:   Mon, 15 Jun 2020 16:39:57 -0600
-Message-Id: <20200615223957.183153-1-alex.hung@canonical.com>
-X-Mailer: git-send-email 2.25.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1727052AbgFOXlS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 15 Jun 2020 19:41:18 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54060 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725960AbgFOXlR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 15 Jun 2020 19:41:17 -0400
+Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9B32D20714;
+        Mon, 15 Jun 2020 23:41:16 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1592264477;
+        bh=4B3zxx0t4t/cAMnTcb1CgWAE+WyO6z4UCRqXbi4xzFg=;
+        h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
+        b=AxBMUE88327gyD7AWPGhve+Wh8ybmWBfw1Vr5OWesrVIVG7NxKRQswpbnAXtofFbO
+         sLu3+N4jgXfA/ewD0/dj0zcDJeqxyFwsdjQymufuXtNvL6JVXHeVeKRAOTHmv+8yXX
+         grzN41FYi/g6IrCDmey/eZzzF6h2ijQ5jvrYbNpA=
+Date:   Tue, 16 Jun 2020 00:41:15 +0100
+From:   Mark Brown <broonie@kernel.org>
+To:     Kieran Bingham <kieran.bingham+renesas@ideasonboard.com>,
+        Kieran Bingham <kieran.bingham@ideasonboard.com>
+Cc:     linux-gpio@vger.kernel.org, ath10k@lists.infradead.org,
+        linux-mm@kvack.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        dri-devel@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-wireless@vger.kernel.org,
+        linux-usb@vger.kernel.org, netdev@vger.kernel.org,
+        linux-scsi@vger.kernel.org,
+        virtualization@lists.linux-foundation.org,
+        linux-rdma@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org
+In-Reply-To: <20200609124610.3445662-1-kieran.bingham+renesas@ideasonboard.com>
+References: <20200609124610.3445662-1-kieran.bingham+renesas@ideasonboard.com>
+Subject: Re: [PATCH 00/17] spelling.txt: /decriptors/descriptors/
+Message-Id: <159226447507.27673.16785893373246037922.b4-ty@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Downgrade "Unsupported event" message from dev_err to dev_dbg to avoid
-flooding with this message one some platforms.
+On Tue, 9 Jun 2020 13:45:53 +0100, Kieran Bingham wrote:
+> I wouldn't normally go through spelling fixes, but I caught sight of
+> this typo twice, and then foolishly grepped the tree for it, and saw how
+> pervasive it was.
+> 
+> so here I am ... fixing a typo globally... but with an addition in
+> scripts/spelling.txt so it shouldn't re-appear ;-)
+> 
+> [...]
 
-Cc: stable@vger.kernel.org # v5.4+
-Suggested-by: Zhang Rui <rui.zhang@intel.com>
-Signed-off-by: Alex Hung <alex.hung@canonical.com>
----
- drivers/thermal/intel/int340x_thermal/int3403_thermal.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Applied to
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-index f86cbb1..ec1d58c 100644
---- a/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3403_thermal.c
-@@ -74,7 +74,7 @@ static void int3403_notify(acpi_handle handle,
- 						   THERMAL_TRIP_CHANGED);
- 		break;
- 	default:
--		dev_err(&priv->pdev->dev, "Unsupported event [0x%x]\n", event);
-+		dev_dbg(&priv->pdev->dev, "Unsupported event [0x%x]\n", event);
- 		break;
- 	}
- }
--- 
-2.7.4
+   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/regulator.git for-next
 
+Thanks!
+
+[1/2] regulator: Fix trivial spelling
+      commit: d3f3723387f97118c337689fc73e4199fb4331ce
+[2/2] regulator: gpio: Fix trivial spelling
+      commit: 1f0b740004f09d2f1b716fd6c2fdca81004ded05
+
+All being well this means that it will be integrated into the linux-next
+tree (usually sometime in the next 24 hours) and sent to Linus during
+the next merge window (or sooner if it is a bug fix), however if
+problems are discovered then the patch may be dropped or reverted.
+
+You may get further e-mails resulting from automated or manual testing
+and review of the tree, please engage with people reporting problems and
+send followup patches addressing any issues that are reported if needed.
+
+If any updates are required or you are submitting further changes they
+should be sent as incremental updates against current git, existing
+patches will not be replaced.
+
+Please add any relevant lists and maintainers to the CCs when replying
+to this mail.
+
+Thanks,
+Mark
