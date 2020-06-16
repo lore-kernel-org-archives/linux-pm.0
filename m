@@ -2,106 +2,126 @@ Return-Path: <SRS0=EVuu=75=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2432C433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jun 2020 09:22:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE33DC433E3
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jun 2020 09:22:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D09B22078E
-	for <linux-pm@archiver.kernel.org>; Tue, 16 Jun 2020 09:22:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AC58820786
+	for <linux-pm@archiver.kernel.org>; Tue, 16 Jun 2020 09:22:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="llObE3WJ"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gbiR7iJE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728098AbgFPJWJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 16 Jun 2020 05:22:09 -0400
-Received: from userp2130.oracle.com ([156.151.31.86]:56990 "EHLO
-        userp2130.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725843AbgFPJWG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2020 05:22:06 -0400
-Received: from pps.filterd (userp2130.oracle.com [127.0.0.1])
-        by userp2130.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 05G9LlZk184942;
-        Tue, 16 Jun 2020 09:21:59 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : mime-version : content-type; s=corp-2020-01-29;
- bh=JY/T5f/hGcowMJ8VD+RE1SJlbLsBJv3+IyXnug6dOUc=;
- b=llObE3WJ2nelnhLBBguVo3vAXmGeWpNUmBaYxduyzQYQBJWNPAkaTHC/hHoIUAjO1K3J
- cOUesEEx6ssPsM441xOJHHZras2jPC/RQNyMD77nrEISP/ed7e6UrY5WX0q/SkBck8Mm
- hHEv6l3lKrzzBxBwMt+xg3pvfXOEoAzXX1IQoBjJmrgZUgqIiF6pu9ZMQO6ONElpIS7m
- R5Pl60R25Rcwx5J81bU1aNzC4DwQ+n76u35RvXsMdwKHERtEjakprPM63c+zFNCl3YpW
- 1hmMRh2syv3M6wyRqXXJO7JcAb38KjrYaQoEAh2Pa3mWWytevlR2gUplcd6uVuq4xyXn Ag== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by userp2130.oracle.com with ESMTP id 31p6s25nnj-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 16 Jun 2020 09:21:59 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 05G9J2uL194221;
-        Tue, 16 Jun 2020 09:19:58 GMT
-Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
-        by aserp3020.oracle.com with ESMTP id 31p6dg1r3h-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 16 Jun 2020 09:19:58 +0000
-Received: from abhmp0003.oracle.com (abhmp0003.oracle.com [141.146.116.9])
-        by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 05G9JvaT004028;
-        Tue, 16 Jun 2020 09:19:57 GMT
-Received: from mwanda (/41.57.98.10)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Tue, 16 Jun 2020 02:19:57 -0700
-Date:   Tue, 16 Jun 2020 12:19:49 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Eduardo Valentin <edubezval@gmail.com>,
-        Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Cc:     Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-pm@vger.kernel.org, linux-omap@vger.kernel.org,
-        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] thermal: ti-soc-thermal: Fix reversed condition in
- ti_thermal_expose_sensor()
-Message-ID: <20200616091949.GA11940@mwanda>
+        id S1728179AbgFPJWU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 16 Jun 2020 05:22:20 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43072 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727870AbgFPJWQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 16 Jun 2020 05:22:16 -0400
+Received: from mail-ua1-x942.google.com (mail-ua1-x942.google.com [IPv6:2607:f8b0:4864:20::942])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49F5FC05BD43
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2020 02:22:15 -0700 (PDT)
+Received: by mail-ua1-x942.google.com with SMTP id g44so6654103uae.12
+        for <linux-pm@vger.kernel.org>; Tue, 16 Jun 2020 02:22:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=5DT2283QGSeLmNfRYosxvl4RnLSyjJEL1/ZqFVdUOJQ=;
+        b=gbiR7iJELkxNmdiFG9i0jMjxFEi2lb7SY5/bBgrWh11d1mz9Ty/etYm5giSxwegNQs
+         MRha2ZX2nS+57DDDxKnsIeqIUAysnFBvEJ9g2NrznEp48uFKw6y317kN/4oI2nbvfoYP
+         MtpvaX3EAU4PXUqz5tyr3CCTvZwrAorztgU7Ynwe/RHsDvnAMl27sI4cq70yGcCN6VLD
+         W1huILgMFI7IjGXsotocJGfn09BwBxuS8F7ihs1sLR4Jo7297v0roOgWxgcXMUY9tD6U
+         qgq0K68V23qnMt+3xvffDoPhJ3oXeEXabuKD5+bEV8SusiKKV0nZK4zXGiCgy5ggNkoE
+         Ozew==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=5DT2283QGSeLmNfRYosxvl4RnLSyjJEL1/ZqFVdUOJQ=;
+        b=WHcZXaQq8bZ+/cHVVWQ10lnA0MPLhWw/BQR9NiDDy9hWxpRTC2V5DzPf5B7kp9iKra
+         8e/L6ohDwU4sWma5w5q5Rwqq5DubmPDrbcVK7sWluICtaYB2tU/ghT6fnetAd83AXgaR
+         JhjeZ/oBjTRa98B2dibDYK+gGBBuza4WkWsPCL2VAhtzVU61wLrROiwaNksOGODPJqzR
+         q+KLOm0aQ48o2N91cvGk1p+geBTW/PA3N5MWJ5dGQjmeuY8J6uCuH3E2wqJ1jYkpGNPL
+         AWQJx4/SimxMBkgnv33RC3ncwSopcrQUIq7iPLRzD1u4jqbF84XlDicj5rfv49y2LxpM
+         VvvA==
+X-Gm-Message-State: AOAM530Bf0jnxbWjNrr28flkGr2HcIwLp9dyIujUcjT4LHyMlXYRVEOX
+        cJfpLoS9rMgNpnZh1Nqj2xwqQrNzX0+YisJG9Ut0Mg==
+X-Google-Smtp-Source: ABdhPJy0PnwHfzauVDw+Ug2b7tLfbgXqklE/dFIs6uKXZxsoJFcNcg5IvQkTzE3BVQgmfzvG6L2U8lbITGbUSMKo/AA=
+X-Received: by 2002:ab0:186d:: with SMTP id j45mr1143930uag.104.1592299334487;
+ Tue, 16 Jun 2020 02:22:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Mailer: git-send-email haha only kidding
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9653 signatures=668680
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 adultscore=0 bulkscore=0
- phishscore=0 malwarescore=0 spamscore=0 mlxlogscore=999 mlxscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
- definitions=main-2006160068
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9653 signatures=668680
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 lowpriorityscore=0 impostorscore=0
- clxscore=1011 mlxscore=0 mlxlogscore=999 priorityscore=1501 phishscore=0
- malwarescore=0 suspectscore=0 spamscore=0 cotscore=-2147483648 bulkscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2004280000 definitions=main-2006160069
+References: <20200604015317.31389-1-thara.gopinath@linaro.org> <20200604015317.31389-6-thara.gopinath@linaro.org>
+In-Reply-To: <20200604015317.31389-6-thara.gopinath@linaro.org>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 16 Jun 2020 11:21:38 +0200
+Message-ID: <CAPDyKFrBYx1dDK2UNvaZR1swB-9WiOy4V62hFU2-Ud_xm6gOoA@mail.gmail.com>
+Subject: Re: [PATCH v6 5/6] dt-bindings: power: Extend RPMh power controller
+ binding to describe thermal warming device
+To:     Thara Gopinath <thara.gopinath@linaro.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Andy Gross <agross@kernel.org>, Rob Herring <robh@kernel.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Mark Rutland <mark.rutland@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        DTML <devicetree@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This condition is reversed and will cause breakage.
+On Thu, 4 Jun 2020 at 03:53, Thara Gopinath <thara.gopinath@linaro.org> wrote:
+>
+> RPMh power controller hosts mx domain that can be used as thermal warming
+> device. Add #cooling-cells property to the power domain provider node to
+> indicate this.
+>
+> Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+> Acked-by: Rob Herring <robh@kernel.org>
 
-Fixes: 7440f518dad9 ("thermal/drivers/ti-soc-thermal: Avoid dereferencing ERR_PTR")
-Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Reviewed-by: Ulf Hansson <ulf.hansson@linaro.org>
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index 85776db4bf34..2ce4b19f312a 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -169,7 +169,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
- 
--	if (!IS_ERR_OR_NULL(data))
-+	if (IS_ERR_OR_NULL(data))
- 		data = ti_thermal_build_data(bgp, id);
- 
- 	if (!data)
--- 
-2.27.0
+Kind regards
+Uffe
 
+
+> ---
+>
+> v3->v4:
+>         - Removed subnode to indicate that mx power domain is a warming
+>           device. Instead #cooling-cells is used as a power domain
+>           provider property to indicate if the provider hosts a power
+>           domain that can be used as a warming device.
+>
+> v4->v5:
+>         Moved the property from .txt format to .yaml format.
+>
+>  Documentation/devicetree/bindings/power/qcom,rpmpd.yaml | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> index 8058955fb3b9..a4fbbd88ce18 100644
+> --- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> +++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
+> @@ -28,6 +28,9 @@ properties:
+>    '#power-domain-cells':
+>      const: 1
+>
+> +  '#cooling-cells':
+> +    const: 2
+> +
+>    operating-points-v2: true
+>
+>    opp-table:
+> --
+> 2.20.1
+>
