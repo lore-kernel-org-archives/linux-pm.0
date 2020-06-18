@@ -2,130 +2,140 @@ Return-Path: <SRS0=9s+m=77=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C999EC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 17:05:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBB96C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 18:02:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A8F432080D
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 17:05:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA6AE2083B
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 18:02:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="PjKtZNzr"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="oLWTeA1B"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732041AbgFRRFk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Jun 2020 13:05:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51176 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732037AbgFRRFj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2020 13:05:39 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 313BFC0613EF
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2020 10:05:39 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id k2so2809911pjs.2
-        for <linux-pm@vger.kernel.org>; Thu, 18 Jun 2020 10:05:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=AO2SIF4iY7sgxTuLuzUmwf7DkdmGysB0WQTalXPbMgs=;
-        b=PjKtZNzrbelzn7kEW6flnrKRJfMx65kRbQIqwTIoA+/W1n8FQeiJfwdpuOV6x2R3mS
-         XEO8LLqDs4LE7JAxtoXjAqdIN3Oc7zn+R5KYN4dgsUMhdoWSMTlwrchvmY8Z4t6chINu
-         zxbq6KbAwGuUFAyndsYbnFFB7B6PaUN8tqoLw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=AO2SIF4iY7sgxTuLuzUmwf7DkdmGysB0WQTalXPbMgs=;
-        b=DBnspb49XDDuGVub4p9lxWwxVn/z1bJZlZM6aysnHNCD+BW1RTrb52/duv4TmCXafv
-         cBdI5lfVboJQWZEqZo8BcQWc3/uE/QHjufXSUOMJ8Ty1Eqi1FPq6Bgy0EdiBU3VyZ7My
-         1QrLqU4E8EJ3sbwnIJGpjNK7p8m2yiQWhSwtgS+d3Jonn+EhW6sw1seKeEfgbgVS9gbg
-         ga1g7ypBwv+REX5GNlD48NVEKtQgHurAFVbAzpN0NHe+myHak37gmhgB0ZOUO5vH9lmZ
-         Qi1BXePXiIt2akt+zwjDKRQcWgypDFnO8s2VaQjJQVZd9NRIqCJ0HRNeJEqT8UJsp0ea
-         3s7A==
-X-Gm-Message-State: AOAM532nUlwYVHvIvNhnk3vca2vagbYMMTsDsMxZNjX9XQZ5mr6F/bZY
-        pxU4/wLnWyIqz1ZU+rAmJs9FiQ==
-X-Google-Smtp-Source: ABdhPJxaMrMstwhBsh7FtkQsh979iTm724MDzimjrNFiSDhToMWkLyBwqBleJt9mhy08j3fm2nlAKw==
-X-Received: by 2002:a17:902:9687:: with SMTP id n7mr4557868plp.180.1592499938642;
-        Thu, 18 Jun 2020 10:05:38 -0700 (PDT)
-Received: from localhost ([2620:15c:202:1:4fff:7a6b:a335:8fde])
-        by smtp.gmail.com with ESMTPSA id i63sm3094782pje.34.2020.06.18.10.05.37
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 18 Jun 2020 10:05:37 -0700 (PDT)
-Date:   Thu, 18 Jun 2020 10:05:36 -0700
-From:   Matthias Kaehlcke <mka@chromium.org>
-To:     Sibi Sankar <sibis@codeaurora.org>
-Cc:     viresh.kumar@linaro.org, sboyd@kernel.org,
-        georgi.djakov@linaro.org, saravanak@google.com, nm@ti.com,
-        bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, dianders@chromium.org,
-        vincent.guittot@linaro.org, amit.kucheria@linaro.org,
-        lukasz.luba@arm.com, sudeep.holla@arm.com, smasetty@codeaurora.org,
-        linux-arm-msm-owner@vger.kernel.org
-Subject: Re: [PATCH v6 4/5] cpufreq: qcom: Update the bandwidth levels on
- frequency change
-Message-ID: <20200618170536.GF4525@google.com>
-References: <20200605213332.609-1-sibis@codeaurora.org>
- <20200605213332.609-5-sibis@codeaurora.org>
- <20200615172553.GU4525@google.com>
- <e21f85d64d72ec637c10dae93e8323bb@codeaurora.org>
- <20200616221157.GA4525@google.com>
- <8a6ea89f41a3341e9d00ed9aa66355d6@codeaurora.org>
+        id S1727779AbgFRSCg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Jun 2020 14:02:36 -0400
+Received: from m43-7.mailgun.net ([69.72.43.7]:43280 "EHLO m43-7.mailgun.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727022AbgFRSCg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Jun 2020 14:02:36 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1592503355; h=In-Reply-To: Content-Type: MIME-Version:
+ References: Message-ID: Subject: Cc: To: From: Date: Sender;
+ bh=lCdbSGdi/eKz+yk7v3H4F1EFosxd309eL9sHFCGRvJc=; b=oLWTeA1BtlwlObJRGqsyOsh4CPy+6AwUiseIp/Pk5w41PwI7tprf6y4yL3gvbsl/EdfR8LnU
+ zzfCCd4S4Xisgtr1iNBIQcMOlx5JdoXPspjcHNAvaYWLQJbmpa314A77bBTvXSTOO94yHGXK
+ M8DI1mQYCiUSEjP5EqlLT4w2fCM=
+X-Mailgun-Sending-Ip: 69.72.43.7
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n09.prod.us-west-2.postgun.com with SMTP id
+ 5eebac275866879c76b6e43e (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 18 Jun 2020 18:02:15
+ GMT
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 22C13C43391; Thu, 18 Jun 2020 18:02:15 +0000 (UTC)
+Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: ilina)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 2ECA4C433C8;
+        Thu, 18 Jun 2020 18:02:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 2ECA4C433C8
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=ilina@codeaurora.org
+Date:   Thu, 18 Jun 2020 12:02:13 -0600
+From:   Lina Iyer <ilina@codeaurora.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        Saravana Kannan <saravanak@google.com>,
+        linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Benjamin Gaignard <benjamin.gaignard@st.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 3/5] cpuidle: psci: Split into two separate build objects
+Message-ID: <20200618180213.GL12942@codeaurora.org>
+References: <20200615152054.6819-1-ulf.hansson@linaro.org>
+ <20200615152054.6819-4-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-In-Reply-To: <8a6ea89f41a3341e9d00ed9aa66355d6@codeaurora.org>
+In-Reply-To: <20200615152054.6819-4-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 17, 2020 at 10:13:21PM +0530, Sibi Sankar wrote:
-> On 2020-06-17 03:41, Matthias Kaehlcke wrote:
-> > Hi Sibi,
-> > 
-> > after doing the review I noticed that Viresh replied on the cover letter
-> > that he picked the series up for v5.9, so I'm not sure if it makes sense
-> > to send a v7.
-> > 
-> > On Wed, Jun 17, 2020 at 02:35:00AM +0530, Sibi Sankar wrote:
-> > 
-> > > > > @@ -112,7 +178,7 @@ static int qcom_cpufreq_hw_read_lut(struct
-> > > > > device *cpu_dev,
-> > > > >
-> > > > >  		if (freq != prev_freq && core_count != LUT_TURBO_IND) {
-> > > > >  			table[i].frequency = freq;
-> > > > > -			dev_pm_opp_add(cpu_dev, freq * 1000, volt);
-> > > > > +			qcom_cpufreq_update_opp(cpu_dev, freq, volt);
-> > > >
-> > > > This is the cross-validation mentioned above, right? Shouldn't it
-> > > > include
-> > > > a check of the return value?
-> > > 
-> > > Yes, this is the cross-validation step,
-> > > we adjust the voltage if opp-tables are
-> > > present/added successfully and enable
-> > > them, else we would just do a add opp.
-> > > We don't want to exit early on a single
-> > > opp failure. We will error out a bit
-> > > later if the opp-count ends up to be
-> > > zero.
-> > 
-> > At least an error/warning message would seem convenient when
-> > adjusting/adding
-> > an OPP fails, otherwise you would only notice by looking at the sysfs
-> > attributes (if you'd even spot a single/few OPPs to be missing).
-> 
-> I did consider the case where adjust
-> voltage fails and we do report the
-> freq for which it fails for as well.
-> If adding a OPP fails we will still
-> it being listed in the sysfs cpufreq
-> scaling_available_frequencies since
-> it lists the freq_table in khz there
-> instead.
+On Mon, Jun 15 2020 at 09:21 -0600, Ulf Hansson wrote:
+>The combined build object for the PSCI cpuidle driver and the PSCI PM
+>domain, is a bit messy. Therefore let's split it up by adding a new Kconfig
+>ARM_PSCI_CPUIDLE_DOMAIN and convert into two separate objects.
+>
+>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Lina Iyer <ilina@codeaurora.org>
 
-Ah, right, I missed that v6 added the error log to
-qcom_cpufreq_update_opp(), please ignore my comment :)
+>---
+> drivers/cpuidle/Kconfig.arm    | 10 ++++++++++
+> drivers/cpuidle/Makefile       |  5 ++---
+> drivers/cpuidle/cpuidle-psci.h |  2 +-
+> 3 files changed, 13 insertions(+), 4 deletions(-)
+>
+>diff --git a/drivers/cpuidle/Kconfig.arm b/drivers/cpuidle/Kconfig.arm
+>index 51a7e89085c0..0844fadc4be8 100644
+>--- a/drivers/cpuidle/Kconfig.arm
+>+++ b/drivers/cpuidle/Kconfig.arm
+>@@ -23,6 +23,16 @@ config ARM_PSCI_CPUIDLE
+> 	  It provides an idle driver that is capable of detecting and
+> 	  managing idle states through the PSCI firmware interface.
+>
+>+config ARM_PSCI_CPUIDLE_DOMAIN
+>+	bool "PSCI CPU idle Domain"
+>+	depends on ARM_PSCI_CPUIDLE
+>+	depends on PM_GENERIC_DOMAINS_OF
+>+	default y
+>+	help
+>+	  Select this to enable the PSCI based CPUidle driver to use PM domains,
+>+	  which is needed to support the hierarchical DT based layout of the
+>+	  idle states.
+>+
+> config ARM_BIG_LITTLE_CPUIDLE
+> 	bool "Support for ARM big.LITTLE processors"
+> 	depends on ARCH_VEXPRESS_TC2_PM || ARCH_EXYNOS || COMPILE_TEST
+>diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
+>index f07800cbb43f..26bbc5e74123 100644
+>--- a/drivers/cpuidle/Makefile
+>+++ b/drivers/cpuidle/Makefile
+>@@ -21,9 +21,8 @@ obj-$(CONFIG_ARM_U8500_CPUIDLE)         += cpuidle-ux500.o
+> obj-$(CONFIG_ARM_AT91_CPUIDLE)          += cpuidle-at91.o
+> obj-$(CONFIG_ARM_EXYNOS_CPUIDLE)        += cpuidle-exynos.o
+> obj-$(CONFIG_ARM_CPUIDLE)		+= cpuidle-arm.o
+>-obj-$(CONFIG_ARM_PSCI_CPUIDLE)		+= cpuidle_psci.o
+>-cpuidle_psci-y				:= cpuidle-psci.o
+>-cpuidle_psci-$(CONFIG_PM_GENERIC_DOMAINS_OF) += cpuidle-psci-domain.o
+>+obj-$(CONFIG_ARM_PSCI_CPUIDLE)		+= cpuidle-psci.o
+>+obj-$(CONFIG_ARM_PSCI_CPUIDLE_DOMAIN)	+= cpuidle-psci-domain.o
+> obj-$(CONFIG_ARM_TEGRA_CPUIDLE)		+= cpuidle-tegra.o
+> obj-$(CONFIG_ARM_QCOM_SPM_CPUIDLE)	+= cpuidle-qcom-spm.o
+>
+>diff --git a/drivers/cpuidle/cpuidle-psci.h b/drivers/cpuidle/cpuidle-psci.h
+>index 0690d66df829..d8e925e84c27 100644
+>--- a/drivers/cpuidle/cpuidle-psci.h
+>+++ b/drivers/cpuidle/cpuidle-psci.h
+>@@ -9,7 +9,7 @@ struct device_node;
+> void psci_set_domain_state(u32 state);
+> int psci_dt_parse_state_node(struct device_node *np, u32 *state);
+>
+>-#ifdef CONFIG_PM_GENERIC_DOMAINS_OF
+>+#ifdef CONFIG_ARM_PSCI_CPUIDLE_DOMAIN
+> struct device *psci_dt_attach_cpu(int cpu);
+> void psci_dt_detach_cpu(struct device *dev);
+> #else
+>-- 
+>2.20.1
+>
