@@ -2,113 +2,99 @@ Return-Path: <SRS0=9s+m=77=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DFE8C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 02:43:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 401BCC433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 06:14:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1E8792193E
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 02:43:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1592448234;
-	bh=EvwO6JCvwjH0ii7c8P2k9TCjFrLWsFBoTY+wiB+vL34=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=eTeB9mmbgUtxwE6TeIOryzq/2z1rLIBoXFMoRqnj/MzoONgPMDVrzj/OD/s3zaF0p
-	 k8ujt1EuuRRIlVG7uB0arKytf6uD3A6E9gO5riJULca4Hf0BHhHOSAV2QZ7T7IguMM
-	 Ti2DDLWJLakrNszKAhlvQs/JOAq7YF5NgXJQGfPg=
+	by mail.kernel.org (Postfix) with ESMTP id 19C51217A0
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 06:14:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="j5W1UFSm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729056AbgFRCni (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 17 Jun 2020 22:43:38 -0400
-Received: from mail.kernel.org ([198.145.29.99]:39466 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728113AbgFRBLb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 17 Jun 2020 21:11:31 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4F89320CC7;
-        Thu, 18 Jun 2020 01:11:30 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1592442691;
-        bh=EvwO6JCvwjH0ii7c8P2k9TCjFrLWsFBoTY+wiB+vL34=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=DmldXKW4DMAMOBkNiM0yLRctZ5uVCSwjTjeF1dz76nsmTlLav5rYuSy9IOb0z41Mg
-         TZ/H+ithTZPvUqiSL6CbFVXC0rkZYoSQDXMtxYezhC2/tzFYB+3DujYICLED2RcCJ6
-         9h52OqmrVzG7/sC4sZFrn12s116s1KDIF7L4HFuY=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Sudip Mukherjee <sudipm.mukherjee@gmail.com>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-omap@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.7 156/388] thermal/drivers/ti-soc-thermal: Avoid dereferencing ERR_PTR
-Date:   Wed, 17 Jun 2020 21:04:13 -0400
-Message-Id: <20200618010805.600873-156-sashal@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200618010805.600873-1-sashal@kernel.org>
-References: <20200618010805.600873-1-sashal@kernel.org>
+        id S1726940AbgFRGOZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Jun 2020 02:14:25 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35256 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725912AbgFRGOY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2020 02:14:24 -0400
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82B58C061755
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2020 23:14:24 -0700 (PDT)
+Received: by mail-pl1-x643.google.com with SMTP id d10so112168pls.5
+        for <linux-pm@vger.kernel.org>; Wed, 17 Jun 2020 23:14:24 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=9qR0fuoqIBy0xUAm2ITtA1DoU0HgxEgx3YBhTm/3Gek=;
+        b=j5W1UFSmkVhTt7/aLu+Byy4gWGen8wWhvgWZRToHhZS3+p4zloJZgwWyU6X7QkGagZ
+         KkPK+JeL+QUF7Z5xWGU9ZLRq8HzH7LmNtPKB/tGZyjA/n5xQeWRs+DGYiYgEJcoSoN9T
+         aTXyVSaMrW2VWoC2pqXkVaTeErWrzJ6UUTFnO57U2oVwMmtqExRPcSfR65E4AOnHxW8X
+         6MvFC2YBrWgfl7z3rPrFfTa4ZZGWd/whgnn78dlKw8Fm55IGCtlv15C/U6Z/iL7sek4p
+         agPvgixAMciwE7dz0w8i+SNYxsQR+GbIUim3y3IBDgA5TMZCm9ynoyrq3+/F/AqxK+06
+         +vhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=9qR0fuoqIBy0xUAm2ITtA1DoU0HgxEgx3YBhTm/3Gek=;
+        b=ROq3ZqWLRKmb7cBhTSgXzJFv8NdixaXkfWuiDDjs1UqoRN+yLhAbaSxLWECGYrH45o
+         l1zDdgMq50x9+QmrO0+weVSB70l/qMMG8t26GP5nHZRFElCNwTwFr/lKeR+fR9KQhU11
+         O0XkxMiW00CtHsLBrztsqHW+fKrR0ZNhAu4qZuPot9ogB3sfTn7mtvL/i98K2Dlz7nzS
+         JAV+vxRXEc7VASa3KgXoV6n1aF03MP2k229Ud8qil1Il8Zo4DPNCReCdgJy5xw0lhW9G
+         IgDyZBNTfC/m+BTfgBf9z1DosvTKUF8CyAfVYxslkgAWaJqMnXbxA7FYKVR7F+SC9bQ7
+         9+TA==
+X-Gm-Message-State: AOAM533zVrzx/rYBtLaW1zqFIRlR46Pyk4UgsH0nDUstHEAzniZxQZZV
+        ci2qf2w+UO++vwQ4EhiH8eSO24bpvxo=
+X-Google-Smtp-Source: ABdhPJx1/jxhXBS8AN8LHrbnqRktjYWNTZxxEd020DnwsWjMOLk/3LSKicpt+yNaq9ciJ4xxgJmn5w==
+X-Received: by 2002:a17:902:b403:: with SMTP id x3mr2394513plr.240.1592460863990;
+        Wed, 17 Jun 2020 23:14:23 -0700 (PDT)
+Received: from localhost ([122.172.119.132])
+        by smtp.gmail.com with ESMTPSA id r132sm1689881pfc.96.2020.06.17.23.14.22
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 17 Jun 2020 23:14:23 -0700 (PDT)
+Date:   Thu, 18 Jun 2020 11:44:20 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Nicola Mazzucato <nicola.mazzucato@arm.com>,
+        linux-kernel@vger.kernel.org, rjw@rjwysocki.net,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        lukasz.luba@arm.com
+Subject: Re: [PATCH 2/2] cpufreq: arm_scmi: Set fast_switch_possible
+ conditionally
+Message-ID: <20200618061420.5q7xsldakax2zro5@vireshk-i7>
+References: <20200617094332.8391-1-nicola.mazzucato@arm.com>
+ <20200617094332.8391-2-nicola.mazzucato@arm.com>
+ <20200617124753.GA15211@bogus>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200617124753.GA15211@bogus>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
+On 17-06-20, 13:47, Sudeep Holla wrote:
+> This is first step towards avoiding polling based cpufreq set if firmware
+> has fast access registers that bypass normal mailbox based messaging.
+> 
+> If you happy with this and provide ack, I will take this along with scmi
+> changes via ARM SoC. Hope that is fine by you.
 
-[ Upstream commit 7440f518dad9d861d76c64956641eeddd3586f75 ]
+Sudeep,
 
-On error the function ti_bandgap_get_sensor_data() returns the error
-code in ERR_PTR() but we only checked if the return value is NULL or
-not. And, so we can dereference an error code inside ERR_PTR.
-While at it, convert a check to IS_ERR_OR_NULL.
+I am not sure how it concerns me frankly :)
 
-Signed-off-by: Sudip Mukherjee <sudipm.mukherjee@gmail.com>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20200424161944.6044-1-sudipm.mukherjee@gmail.com
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+AFAICT, this is enabling fast switch based on some mechanism (internal
+to scmi) and so either the cpufreq driver will have fast-switch
+enabled or not, and both are fine by the cpufreq core.
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-index d3e959d01606..85776db4bf34 100644
---- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
-@@ -169,7 +169,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
- 
--	if (!data || IS_ERR(data))
-+	if (!IS_ERR_OR_NULL(data))
- 		data = ti_thermal_build_data(bgp, id);
- 
- 	if (!data)
-@@ -196,7 +196,7 @@ int ti_thermal_remove_sensor(struct ti_bandgap *bgp, int id)
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
- 
--	if (data && data->ti_thermal) {
-+	if (!IS_ERR_OR_NULL(data) && data->ti_thermal) {
- 		if (data->our_zone)
- 			thermal_zone_device_unregister(data->ti_thermal);
- 	}
-@@ -262,7 +262,7 @@ int ti_thermal_unregister_cpu_cooling(struct ti_bandgap *bgp, int id)
- 
- 	data = ti_bandgap_get_sensor_data(bgp, id);
- 
--	if (data) {
-+	if (!IS_ERR_OR_NULL(data)) {
- 		cpufreq_cooling_unregister(data->cool_dev);
- 		if (data->policy)
- 			cpufreq_cpu_put(data->policy);
+And so I am confused on why my Ack is important here :)
+
 -- 
-2.25.1
-
+viresh
