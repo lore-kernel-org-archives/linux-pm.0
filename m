@@ -2,132 +2,145 @@ Return-Path: <SRS0=9s+m=77=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E55C9C433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 18:02:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFA3BC433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 23:20:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8D57208C7
-	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 18:02:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="XyLcCeGQ"
+	by mail.kernel.org (Postfix) with ESMTP id 847B2208C3
+	for <linux-pm@archiver.kernel.org>; Thu, 18 Jun 2020 23:20:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1592522418;
+	bh=NS0PQoZ4D7dKborXS9BkdpVpGPMGRYqY0rGf2tcmk/Q=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:List-ID:From;
+	b=hyh/5wlJXyyuQosZXFz/iC8uBFJ70L/9A5G7Dvm8e9sPCMXt0AiqnAb2152jez+4F
+	 4d7KbMOaArry4nOxh6/lUhSd7ITtB6RNxo2sb0XfmMjrk1PePt+DR6FVBv4m1q6FVj
+	 aZNiNudYXTYYTazxgYqQvr7GE8b8XdU1ALN7BpD8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727787AbgFRSCr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 18 Jun 2020 14:02:47 -0400
-Received: from mail29.static.mailgun.info ([104.130.122.29]:11974 "EHLO
-        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727022AbgFRSCq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 18 Jun 2020 14:02:46 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1592503365; h=In-Reply-To: Content-Type: MIME-Version:
- References: Message-ID: Subject: Cc: To: From: Date: Sender;
- bh=0wfkwopuLx8hs9G0OXE+EBnMO69t9YFTTa2ykBZeSkI=; b=XyLcCeGQMUXlRNN3qfbplME0adih9h178NeQOVH3qrqQI/F2qB3oX/vDh511Tm/8Gsju8y/w
- x6l/0nFbyOBCTlY5JAeZ7a1WiwhF6adZpG8XUn69UhAnbLwGh8cpqPU1mC45ZHTtJ0PyI/kt
- gUvo2MkCc5ZPiGshkOeCXzUytDs=
-X-Mailgun-Sending-Ip: 104.130.122.29
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n08.prod.us-east-1.postgun.com with SMTP id
- 5eebac11356bcc26abdbffe2 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 18 Jun 2020 18:01:53
- GMT
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 5DB23C4339C; Thu, 18 Jun 2020 18:01:52 +0000 (UTC)
-Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        id S1728932AbgFRXUO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 18 Jun 2020 19:20:14 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41796 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726835AbgFRXUO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 18 Jun 2020 19:20:14 -0400
+Received: from localhost (mobile-166-170-222-206.mycingular.net [166.170.222.206])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        (Authenticated sender: ilina)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 59BFEC433C9;
-        Thu, 18 Jun 2020 18:01:51 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 59BFEC433C9
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=ilina@codeaurora.org
-Date:   Thu, 18 Jun 2020 12:01:50 -0600
-From:   Lina Iyer <ilina@codeaurora.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Saravana Kannan <saravanak@google.com>,
-        linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Benjamin Gaignard <benjamin.gaignard@st.com>,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH 1/5] cpuidle: psci: Fail cpuidle registration if set OSI
- mode failed
-Message-ID: <20200618180150.GK12942@codeaurora.org>
-References: <20200615152054.6819-1-ulf.hansson@linaro.org>
- <20200615152054.6819-2-ulf.hansson@linaro.org>
+        by mail.kernel.org (Postfix) with ESMTPSA id B58C7206E2;
+        Thu, 18 Jun 2020 23:20:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1592522413;
+        bh=NS0PQoZ4D7dKborXS9BkdpVpGPMGRYqY0rGf2tcmk/Q=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=LmrzciU9LATqeSx7hJ1B2LhdeaSx9Pb5+dlU+KoEUueAeM4uyv2Khhm7K09cmW/Cc
+         V/ehu2uzvVPRvYKR0/cq+4K39GOFMRS83CkDcgPeWogHA0gfZWL/BDVwRfTLhjztpV
+         UCzlqpAx15dHNevwWUNhARkXBpSR+sAAOVdC9DgM=
+Date:   Thu, 18 Jun 2020 18:20:11 -0500
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     svarbanov@mm-sol.com, bjorn.andersson@linaro.org, vkoul@kernel.org,
+        sanm@codeaurora.org, mgautam@codeaurora.org, agross@kernel.org,
+        bhelgaas@google.com, robh@kernel.org, lorenzo.pieralisi@arm.com,
+        linux-arm-msm@vger.kernel.org, linux-pci@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] PCI: qcom: Disable power management for uPD720201 USB3
+ controller
+Message-ID: <20200618232011.GA2128408@bjorn-Precision-5520>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200615152054.6819-2-ulf.hansson@linaro.org>
+In-Reply-To: <20200616211711.GA1981914@bjorn-Precision-5520>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 15 2020 at 09:21 -0600, Ulf Hansson wrote:
->Currently we allow the cpuidle driver registration to succeed, even if we
->failed to enable the OSI mode when the hierarchical DT layout is used. This
->means running in a degraded mode, by using the available idle states per
->CPU, while also preventing the domain idle states.
->
->Moving forward, this behaviour looks quite questionable to maintain, as
->complexity seems to grow around it, especially when trying to add support
->for deferred probe, for example.
->
->Therefore, let's make the cpuidle driver registration to fail in this
->situation, thus relying on the default architectural cpuidle backend for
->WFI to be used.
->
->Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+On Tue, Jun 16, 2020 at 04:17:11PM -0500, Bjorn Helgaas wrote:
+> On Mon, Jun 15, 2020 at 09:24:13PM +0300, Georgi Djakov wrote:
+> > The uPD720201 USB3 host controller (connected to PCIe) on the Dragonboard
+> > 845c is often failing during suspend and resume. The following messages
+> > are seen over the console:
+> > 
+> >   PM: suspend entry (s2idle)
+> >   Filesystems sync: 0.000 seconds
+> >   Freezing user space processes ... (elapsed 0.001 seconds) done.
+> >   OOM killer disabled.
+> >   Freezing remaining freezable tasks ... (elapsed 0.001 seconds) done.
+> >   printk: Suspending console(s) (use no_console_suspend to debug)
+> >   dwc3-qcom a8f8800.usb: HS-PHY not in L2
+> >   dwc3-qcom a6f8800.usb: HS-PHY not in L2
+> >   xhci_hcd 0000:01:00.0: can't change power state from D3hot to D0 (config
+> >   space inaccessible)
+> >   xhci_hcd 0000:01:00.0: can't change power state from D3hot to D0 (config
+> >   space inaccessible)
+> >   xhci_hcd 0000:01:00.0: Controller not ready at resume -19
+> >   xhci_hcd 0000:01:00.0: PCI post-resume error -19!
+> >   xhci_hcd 0000:01:00.0: HC died; cleaning up
+> > 
+> > Then the USB devices are not functional anymore. Let's disable the PM of
+> > the controller for now, as this will at least keep USB devices working
+> > even after suspend and resume.
 
-May be PATCH 3/5 should come before this change, but for this patch itself,
-please consider -
+Georgi, can you collect the complete dmesg log and "sudo lspci
+-vvxxxx" output somewhere?  A new report at bugzilla.kernel.org would
+be a good spot.
 
-Reviewed-by: Lina Iyer <ilina@codeaurora.org>
+Maybe we're missing a delay here.  The "config space inaccessible"
+message means we read 0xffff from PCI_PM_CTRL, which probably means
+the device is still in D3cold.  If it were in any other power state,
+PCI_PM_CTRL should be readable, and 0xffff is not a valid value.
 
->---
-> drivers/cpuidle/cpuidle-psci-domain.c | 5 -----
-> 1 file changed, 5 deletions(-)
->
->diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
->index 423f03bbeb74..f07786aad673 100644
->--- a/drivers/cpuidle/cpuidle-psci-domain.c
->+++ b/drivers/cpuidle/cpuidle-psci-domain.c
->@@ -26,7 +26,6 @@ struct psci_pd_provider {
-> };
->
-> static LIST_HEAD(psci_pd_providers);
->-static bool osi_mode_enabled __initdata;
->
-> static int psci_pd_power_off(struct generic_pm_domain *pd)
-> {
->@@ -272,7 +271,6 @@ static int __init psci_idle_init_domains(void)
-> 		goto remove_pd;
-> 	}
->
->-	osi_mode_enabled = true;
-> 	of_node_put(np);
-> 	pr_info("Initialized CPU PM domain topology\n");
-> 	return pd_count;
->@@ -293,9 +291,6 @@ struct device __init *psci_dt_attach_cpu(int cpu)
-> {
-> 	struct device *dev;
->
->-	if (!osi_mode_enabled)
->-		return NULL;
->-
-> 	dev = dev_pm_domain_attach_by_name(get_cpu_device(cpu), "psci");
-> 	if (IS_ERR_OR_NULL(dev))
-> 		return dev;
->-- 
->2.20.1
->
+Could you also insert a dump_stack() right after we print that "config
+space inaccessible" message?  I don't know enough about power
+management to understand why we see that message twice.
+
+> This seems like we're just covering up a deeper problem here.  I think
+> it would be better to fix the underlying problem.
+> 
+> The quirk you're adding is specific to the Renesas 0x0014 device.  Is
+> there some reason to think the problem is specific to that device, or
+> might other devices have the same problem?
+> 
+> Maybe we're missing something in pcie-qcom.c?  Is there any
+> suspend/resume support required in that driver?  It doesn't look like
+> it has anything except that it calls pm_runtime_enable().
+> 
+> > Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> > ---
+> >  drivers/pci/controller/dwc/pcie-qcom.c | 8 ++++++++
+> >  1 file changed, 8 insertions(+)
+> > 
+> > diff --git a/drivers/pci/controller/dwc/pcie-qcom.c b/drivers/pci/controller/dwc/pcie-qcom.c
+> > index 138e1a2d21cc..c1f502682a19 100644
+> > --- a/drivers/pci/controller/dwc/pcie-qcom.c
+> > +++ b/drivers/pci/controller/dwc/pcie-qcom.c
+> > @@ -1439,6 +1439,13 @@ static void qcom_fixup_class(struct pci_dev *dev)
+> >  {
+> >  	dev->class = PCI_CLASS_BRIDGE_PCI << 8;
+> >  }
+> > +
+> > +static void qcom_fixup_nopm(struct pci_dev *dev)
+> > +{
+> > +	dev->pm_cap = 0;
+> > +	dev_info(&dev->dev, "Disabling PCI power management\n");
+> > +}
+> > +
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x0101, qcom_fixup_class);
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x0104, qcom_fixup_class);
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x0106, qcom_fixup_class);
+> > @@ -1446,6 +1453,7 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x0107, qcom_fixup_class);
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x0302, qcom_fixup_class);
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x1000, qcom_fixup_class);
+> >  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_QCOM, 0x1001, qcom_fixup_class);
+> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_RENESAS, 0x0014, qcom_fixup_nopm);
+> 
+> The convention is that DECLARE_PCI_FIXUP_*() comes immediately after
+> the quirk function itself, so the whole patch would be a single diff
+> hunk.  See drivers/pci/quirks.c for many examples.
+> 
+> >  static struct platform_driver qcom_pcie_driver = {
+> >  	.probe = qcom_pcie_probe,
