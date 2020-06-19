@@ -2,116 +2,114 @@ Return-Path: <SRS0=28Z2=AA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 485E2C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:35:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A9EFC433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:42:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FA0F2067D
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:35:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1592584532;
-	bh=XPPEpC2yTAW6izKCvYgVtt0TlCBTsFss0avmq3pxYOY=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=03gKfTncxC7KyOlWdWQYC9/AqtZldjePG8hnJm4jqzEG1/F0y4Qoxs8ICf2oYmDhq
-	 fUFSomG6bS+ZztGXJBBjPmniAj1iVs7TMQyAcGjpFWZ9cdTPndN4vqxPvYtHv0IPNd
-	 MI6NuZCQ5DoOh7XzCnd4MhPR0eiIhk6G136/BJWY=
+	by mail.kernel.org (Postfix) with ESMTP id 833FC20809
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:42:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388741AbgFSOtq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Jun 2020 10:49:46 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42434 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389226AbgFSOtp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Jun 2020 10:49:45 -0400
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 693A2217BA;
-        Fri, 19 Jun 2020 14:49:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1592578184;
-        bh=XPPEpC2yTAW6izKCvYgVtt0TlCBTsFss0avmq3pxYOY=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=mKk49kTsp2+mdz6SaGbWiv93cKsU4wtGXVpv9tcDnxrspi8XRl/+5Wh2HIZFnOKnA
-         u/xmQ4tOs0zTPbW4rB7CmC59S2J6fitw7d6/VJPXoEmuECCAg5N/gmy/J30i+Phzwj
-         go+HjftZUszSiUCSg7A8eRUkUeHmIkaSpSSSYQ0w=
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        stable@vger.kernel.org,
-        Serge Semin <Sergey.Semin@baikalelectronics.ru>,
-        Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Paul Burton <paulburton@kernel.org>,
-        Ralf Baechle <ralf@linux-mips.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 4.14 115/190] mips: cm: Fix an invalid error code of INTVN_*_ERR
-Date:   Fri, 19 Jun 2020 16:32:40 +0200
-Message-Id: <20200619141639.379681920@linuxfoundation.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200619141633.446429600@linuxfoundation.org>
-References: <20200619141633.446429600@linuxfoundation.org>
-User-Agent: quilt/0.66
+        id S2395525AbgFSQmq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Jun 2020 12:42:46 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:60866 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387672AbgFSQmp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 19 Jun 2020 12:42:45 -0400
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id C0CE72A163A
+Received: by earth.universe (Postfix, from userid 1000)
+        id 86D403C08CD; Fri, 19 Jun 2020 18:42:41 +0200 (CEST)
+Date:   Fri, 19 Jun 2020 18:42:41 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     Emil Velikov <emil.velikov@collabora.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        kernel@collabora.com
+Subject: Re: [PATCHv2 0/2] SBS battery PEC support
+Message-ID: <20200619164241.yuwiflgopyqocux6@earth.universe>
+References: <CGME20200605230641eucas1p199386d808ad8ce83006092da23e48bb5@eucas1p1.samsung.com>
+ <20200605230625.192427-1-sebastian.reichel@collabora.com>
+ <be2a9fd5-9646-5e13-209a-6072a00d1b08@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="mq7fdbym2zztfgad"
+Content-Disposition: inline
+In-Reply-To: <be2a9fd5-9646-5e13-209a-6072a00d1b08@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Serge Semin <Sergey.Semin@baikalelectronics.ru>
 
-[ Upstream commit 8a0efb8b101665a843205eab3d67ab09cb2d9a8d ]
+--mq7fdbym2zztfgad
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Commit 3885c2b463f6 ("MIPS: CM: Add support for reporting CM cache
-errors") adds cm2_causes[] array with map of error type ID and
-pointers to the short description string. There is a mistake in
-the table, since according to MIPS32 manual CM2_ERROR_TYPE = {17,18}
-correspond to INTVN_WR_ERR and INTVN_RD_ERR, while the table
-claims they have {0x17,0x18} codes. This is obviously hex-dec
-copy-paste bug. Moreover codes {0x18 - 0x1a} indicate L2 ECC errors.
+Hi,
 
-Fixes: 3885c2b463f6 ("MIPS: CM: Add support for reporting CM cache errors")
-Signed-off-by: Serge Semin <Sergey.Semin@baikalelectronics.ru>
-Cc: Alexey Malahov <Alexey.Malahov@baikalelectronics.ru>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Paul Burton <paulburton@kernel.org>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: Arnd Bergmann <arnd@arndb.de>
-Cc: Rob Herring <robh+dt@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: devicetree@vger.kernel.org
-Signed-off-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- arch/mips/kernel/mips-cm.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+On Mon, Jun 08, 2020 at 08:23:05AM +0200, Marek Szyprowski wrote:
+> Hi Sebastian,
+>=20
+> On 06.06.2020 01:06, Sebastian Reichel wrote:
+> > Second try to enable PEC for SBS battery. Mainline currently
+> > has 3 different platforms using sbs-battery with an I2C driver
+> > not implementing I2C_M_RECV_LEN:
+> >
+> >   * i2c-exynos5
+> >   * i2c-rk3x
+> >   * i2c-tegra
+> >
+> > On those platforms PEC will be temporarly disabled for SBS
+> > functions requesting strings. I considered moving the emulation
+> > to I2C core, but it's specific to the SBS battery. The hack
+> > only works because the strings are constant.
+>=20
+> Thanks for the update. Works fine on Samsung Exynos-based Chromebooks:=20
+> Snow, Peach-Pit and Peach-Pi.
+>=20
+> Tested-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-diff --git a/arch/mips/kernel/mips-cm.c b/arch/mips/kernel/mips-cm.c
-index 7f3f136572de..50d3d74001cb 100644
---- a/arch/mips/kernel/mips-cm.c
-+++ b/arch/mips/kernel/mips-cm.c
-@@ -123,9 +123,9 @@ static char *cm2_causes[32] = {
- 	"COH_RD_ERR", "MMIO_WR_ERR", "MMIO_RD_ERR", "0x07",
- 	"0x08", "0x09", "0x0a", "0x0b",
- 	"0x0c", "0x0d", "0x0e", "0x0f",
--	"0x10", "0x11", "0x12", "0x13",
--	"0x14", "0x15", "0x16", "INTVN_WR_ERR",
--	"INTVN_RD_ERR", "0x19", "0x1a", "0x1b",
-+	"0x10", "INTVN_WR_ERR", "INTVN_RD_ERR", "0x13",
-+	"0x14", "0x15", "0x16", "0x17",
-+	"0x18", "0x19", "0x1a", "0x1b",
- 	"0x1c", "0x1d", "0x1e", "0x1f"
- };
- 
--- 
-2.25.1
+Thanks, queued.
 
+-- Sebastian
 
+> > Changes since PATCHv1:
+> >   * dropped all applied changes
+> >   * rebased on top of power-supply's for-next branch
+> >   * keep existing string reading method as fallback
+> >
+> > -- Sebastian
+> >
+> > Sebastian Reichel (2):
+> >    power: supply: sbs-battery: use i2c_smbus_read_block_data()
+> >    power: supply: sbs-battery: add PEC support"
+> >
+> >   drivers/power/supply/sbs-battery.c | 89 +++++++++++++++++++++++++++++-
+> >   1 file changed, 87 insertions(+), 2 deletions(-)
 
+--mq7fdbym2zztfgad
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl7s6vQACgkQ2O7X88g7
++pps2BAAjWxgPSAyRL5qwOniGJbTCLlaIKJBJMivyNAxhw8TNK6tl8qDXa9KFDlW
+TJ+U62PfqoPid1zXwnqao3HXm6ppaE3G0aiy1SqtTsHDcLFvlQiwRB7XgHAXYyol
+5iYLbCrSv097WgeoqOMPAWiV0yXVDG7euZvxfONVpP6MfxoUy4Ddih70oxwYqt8m
+J1IKIVWTm6MgPMYjvqknEMgN317232Er+X27xSlzDwDgZFiiQVv8YzZCok3X97Wf
+ZfmgLZIgIVDc0CK+jMqnonw8bfuJO3K9vPA3FWnvIEEjoqIvt+9okTD5N1Uh4cVC
+PG1orCBUHqbytdkWa+eFI6YOZXvDGutu9L7yC1LYJ/nZlGzMZHLPZVh5bNwR7/Oz
+78sqpIdrFgOM5SExbMSmg1qUq2vdgDs+k5m5ED1NyQAQLx5ci0Mqhbx4CHTCB/C9
+AMdveLwaEFiA9Q16jpJ/SD9Hz5XxGOMtB8fE0FVS9cSPGr3cFSDyx/siavGAg2+b
+P6vph31EjXAGd9sgQVYkopCcgayAB82onY7+LljZN9+6vwP7mdeFiYF0UaXgrQXy
+S0uHPXToc0Dd2q5UWM1rUbuNJmwEByWwLE8Ae5hdufg3UU/y61WEHYTPL4q7TL85
+boemBk+UZuGk3dJVull1n80ADdPdzl0nC4aDzlROvj5YVO2Rp4k=
+=AGyu
+-----END PGP SIGNATURE-----
+
+--mq7fdbym2zztfgad--
