@@ -4,118 +4,118 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 35ECFC433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 14:57:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52D3DC433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 15:00:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 07012218AC
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 14:57:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2341E21548
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 15:00:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1592578643;
-	bh=CT9r71MK/Ydp6dwbrEa6O5/PjRwxLbVniRQATszwRQw=;
+	s=default; t=1592578839;
+	bh=eh8/68kbF3bfkG8umypTlt9ETupXMn/3RL63q3FNss8=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=PaELwhVubUaMlsiz+IZqHEZpbW5z1tgbHcy7jjvJFSSF2fMD6kz35L/Ov862SZmjP
-	 EbnnXzh3j+2SFQC99Fpn2rtcHuQoywmVVJYhT5p7uhuaAS8ZKhdA37iCR+MnyLrjDG
-	 8RbH4PkhTHPKSupNekYMXooDNhhbgbkpzhJedTsU=
+	b=jljPKTddEd0Xm1Gyk0IwB6e85PtVX23qHLY4256nDssCSw6YHCdcwBhtuEgI2Xn3n
+	 Q5LmNE5WFBbiEklefYtoydeNQHdRaUizQAFsJLrXiyQtV6+iHsciBgOuTl3vekIFNf
+	 t3kboWJdMFaey6xKnAr/4cVQGR2Su7kzNVfqX4sI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390230AbgFSO5V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Jun 2020 10:57:21 -0400
-Received: from mail.kernel.org ([198.145.29.99]:52672 "EHLO mail.kernel.org"
+        id S2390642AbgFSPAb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Jun 2020 11:00:31 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56918 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390224AbgFSO5U (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Jun 2020 10:57:20 -0400
+        id S2390636AbgFSPA3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Jun 2020 11:00:29 -0400
 Received: from earth.universe (dyndsl-037-138-190-043.ewe-ip-backbone.de [37.138.190.43])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 0836C2158C;
-        Fri, 19 Jun 2020 14:57:20 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8D3F620776;
+        Fri, 19 Jun 2020 15:00:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1592578640;
-        bh=CT9r71MK/Ydp6dwbrEa6O5/PjRwxLbVniRQATszwRQw=;
+        s=default; t=1592578828;
+        bh=eh8/68kbF3bfkG8umypTlt9ETupXMn/3RL63q3FNss8=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=PiOsvkir4Os/TLSff6ns8HfTYTo0f/91c/A/OMpAc86PfpoZeZCUwDxBP0bLnO8rS
-         DBzOKGLvrTsWDiaWSnNTOSY7PDGCuNbIwJCr9lEG4Ljvha6FEZrWZP6I6aeZ3LxNsW
-         0nlV8/2Jm+cCcDHQPUI7/wOUnenYIe/kVduz3Ipo=
+        b=dRXJi17MqGUpyw2FwC0Ahwetkem/jHgi1LXdzhy2rnwFplN9inUbBfgRhar8+/v0m
+         zKDbAHU7QrKjEei5ZqgRNultCzOgxgUAoSZAMWKtivDL+3bm5TrOJVqcXtLlg75/gi
+         KFfRjwp4AhaykGagt7mqzL6VcKAmrprGWZUTn4RI=
 Received: by earth.universe (Postfix, from userid 1000)
-        id 69E193C08CD; Fri, 19 Jun 2020 16:57:18 +0200 (CEST)
-Date:   Fri, 19 Jun 2020 16:57:18 +0200
+        id F1B623C08CD; Fri, 19 Jun 2020 17:00:26 +0200 (CEST)
+Date:   Fri, 19 Jun 2020 17:00:26 +0200
 From:   Sebastian Reichel <sre@kernel.org>
-To:     Wang Qing <wangqing@vivo.com>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] drivers\power\supply: use kobj_to_dev
-Message-ID: <20200619145718.72ginjzx2inkzelv@earth.universe>
-References: <1591944954-14411-1-git-send-email-wangqing@vivo.com>
+To:     Keyur Patel <iamkeyur96@gmail.com>
+Cc:     Chen-Yu Tsai <wens@csie.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] power: supply: axp20x_usb_power: fix spelling mistake
+Message-ID: <20200619150026.gam2z5tslubk2xp7@earth.universe>
+References: <20200609224524.108092-1-iamkeyur96@gmail.com>
+ <20200609225035.108435-1-iamkeyur96@gmail.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="pmji5uxywuwhyrf6"
+        protocol="application/pgp-signature"; boundary="sskekeyxm6zhep2a"
 Content-Disposition: inline
-In-Reply-To: <1591944954-14411-1-git-send-email-wangqing@vivo.com>
+In-Reply-To: <20200609225035.108435-1-iamkeyur96@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---pmji5uxywuwhyrf6
+--sskekeyxm6zhep2a
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Fri, Jun 12, 2020 at 02:55:54PM +0800, Wang Qing wrote:
-> Use kobj_to_dev() API instead of container_of().
+On Tue, Jun 09, 2020 at 06:50:35PM -0400, Keyur Patel wrote:
+> Fix typo: "triger" --> "trigger"
 >=20
-> Signed-off-by: Wang Qing <wangqing@vivo.com>
+> Signed-off-by: Keyur Patel <iamkeyur96@gmail.com>
 > ---
 
 Thanks, queued.
 
--- Sebastian
+-- Sebastian Reichel
 
->  drivers/power/supply/power_supply_sysfs.c | 2 +-
+>  drivers/power/supply/axp20x_usb_power.c | 2 +-
 >  1 file changed, 1 insertion(+), 1 deletion(-)
->  mode change 100644 =3D> 100755 drivers/power/supply/power_supply_sysfs.c
 >=20
-> diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/su=
-pply/power_supply_sysfs.c
-> index bc79560..af0cad2
-> --- a/drivers/power/supply/power_supply_sysfs.c
-> +++ b/drivers/power/supply/power_supply_sysfs.c
-> @@ -343,7 +343,7 @@ static umode_t power_supply_attr_is_visible(struct ko=
-bject *kobj,
->  					   struct attribute *attr,
->  					   int attrno)
->  {
-> -	struct device *dev =3D container_of(kobj, struct device, kobj);
-> +	struct device *dev =3D kobj_to_dev(kobj);
->  	struct power_supply *psy =3D dev_get_drvdata(dev);
->  	umode_t mode =3D S_IRUSR | S_IRGRP | S_IROTH;
->  	int i;
+> diff --git a/drivers/power/supply/axp20x_usb_power.c b/drivers/power/supp=
+ly/axp20x_usb_power.c
+> index 4fde24b5f35a..d01dc0332edc 100644
+> --- a/drivers/power/supply/axp20x_usb_power.c
+> +++ b/drivers/power/supply/axp20x_usb_power.c
+> @@ -78,7 +78,7 @@ static bool axp20x_usb_vbus_needs_polling(struct axp20x=
+_usb_power *power)
+>  	/*
+>  	 * Polling is only necessary while VBUS is offline. While online, a
+>  	 * present->absent transition implies an online->offline transition
+> -	 * and will triger the VBUS_REMOVAL IRQ.
+> +	 * and will trigger the VBUS_REMOVAL IRQ.
+>  	 */
+>  	if (power->axp20x_id >=3D AXP221_ID && !power->online)
+>  		return true;
 > --=20
-> 2.7.4
+> 2.26.2
 >=20
 
---pmji5uxywuwhyrf6
+--sskekeyxm6zhep2a
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl7s0k4ACgkQ2O7X88g7
-+pouAxAAol0mBNNBXhOkXgK+gNZN2w/ZvBouoVzRqOXniMeAjKhDYUVNCxjN2RRf
-+5qYt0cYGrSVR/FMmY40IGzGPKnO/0cAasVP5CVy8Rkf+Ji0Sy2P40LfFlJe/ZZO
-n/o1dD/m76uremaWPnFJ7St9v1HspoPBQxHC7QEvjvb5zNdvg/OuT9v1XmcwHn+F
-4ab4U9NnAAzDRZz+IzU+xBO6jRm3eVrjPv6f+YUGi4idKNqKZ03g/2u8MRGy5LUg
-fRaO3v/UCW+IQBbPOKbgta2ak9ZqeHTOlYCFivbgvQu/aYEuco4fA6o0cQynLZVV
-06mPloIA5xtPuvJlDBogWzkWjJ3lsXk7femaRnZ1Ra6+I13eMSPCS44diDiEjIUF
-obU9vJmcQmwtTHvHOdaiYjKUXq1pQyLJtEmKoLDvilR+XTw+L4EfnyjGdnMveQsM
-CsgxEFG5mBNh6Xra91D8tzT6lqJW4cL1Ae66DqNTmPUYRY4ex2A6OyLi/c5ivvED
-akGfVU3o2MHE9ZSKlE+b3TapTre1FoFw2M+ZpOIauv9WniVcVsKPmoLASYgL9Y9e
-NT05Zy1OVDZlUKI+6reMvsxzFu4UF9cTzB8vmGOrYfs2y51v70zKdNrBduP9obBt
-fWoCydVn9P3aK4LsUIVMd/DKHT06h5RXdkOQKZNMzavAn08Mkfg=
-=YjtU
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl7s0woACgkQ2O7X88g7
++pqAcw/+PjEYLRpQCa5y8T4Qp3wi2GQiVgmCWKbxFRJMjPVLo+XspUbHh5Jz1/ak
+88omrqUZf+0qlyZmcHSjyJ6HGexo90uP1frxr5zvXm6Gb4gwfFtf8HYzF0WLuaVj
+ttX4edkhEiw5lhDWUwkKj9YxCAA1Z/e7hFUdmIuKRFVos2eYNCJ48vG+lnJoFvZ8
+E7OT81amDtEzaPxLMyZUplDbxp5JvmH8FrOCwNg1R7Psx0/Oi2vqb2CZ3fB6Ad2H
+sxV+KSj5+u5j04r+TU5uQVLfBvINNk2FyZ/rr3jy/3VbMsQc0BS0W2ZusZqveHuN
+EBAWaiV2MUv6VJfW2W6m5aWvOP9xpRF3OxePCVb/EJsvs5rgQaLorEPsDfMK8FlG
+f5zxXxBDEJxaDOkkjXkUS/PEdT+Vfx2tXc52GuO+un85daWWtIzSFbmpHhkzRQeL
+XIPKb9PUhqjptelKvaCZ8D84LDHfvaP6i5Rs5p4Srw65s4RAR1sdyd1vCpA8Uziq
+AWB++zhmK+ylTz03bUrs4LCdNxHf5vL5RU6g9P0P+tsVnciczkalx0lcpqLkdNiT
+9REG+G/+d3i8gm+irC201CbrGCz4kME7/LgQF62U/hrdKNSB8ttnW1UjQJ9+0xpf
+JzuGthPgzTxvsvMcuZtpPFlJJR6jmZm9HuicaLtPUmHh7jqkqCI=
+=+QeJ
 -----END PGP SIGNATURE-----
 
---pmji5uxywuwhyrf6--
+--sskekeyxm6zhep2a--
