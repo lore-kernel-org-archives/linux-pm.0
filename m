@@ -6,76 +6,73 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE44C433E2
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:50:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C16C4C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:50:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 762B5206B7
-	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:50:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E4A9207E8
+	for <linux-pm@archiver.kernel.org>; Fri, 19 Jun 2020 16:50:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1592585401;
-	bh=GhmndpCx0NtSvR5PEsSvK9su8y7F9B9W/85J59fhrTc=;
+	s=default; t=1592585445;
+	bh=BfKddbrXxUWPan5CD6khEfR4aoXC3Z+AH6odX3gV2yQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=M6LmE6siyGFc9mz014fTHMzro8c9Pfgsvm0w9Mx4ArEhxxjj/J201X+z2uJwyn6b3
-	 DttDaz7kE3ZwXsDGRy0iMDSEsU8fRfAY92CMNcMpCKuUcl68ZKyQZnRZG+Gsow9Ran
-	 O3ij4DQNHBl+JEhRX7QK7uMWz8Sa14t7shsbVEsY=
+	b=WoWAzLy3l6Jw16eGr7x701Ict+zmmjiKj5Hpqwve0REkkBxMygiJJ2Rm29SOKunnh
+	 cIK2P3/nx9imWHvKlcGPSQidF5O2Ml+jeKgEVsavjQWndkUadJnNW9wMKNm6G0os+Z
+	 u7gMo1dfT9AaMnVcf9mF3gVaCKND9IaIgwV3dMmk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388016AbgFSQtz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 19 Jun 2020 12:49:55 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56470 "EHLO mail.kernel.org"
+        id S2405833AbgFSQuf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 19 Jun 2020 12:50:35 -0400
+Received: from mail.kernel.org ([198.145.29.99]:55778 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2387986AbgFSOjJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 19 Jun 2020 10:39:09 -0400
+        id S2387450AbgFSOih (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 19 Jun 2020 10:38:37 -0400
 Received: from earth.universe (dyndsl-037-138-190-043.ewe-ip-backbone.de [37.138.190.43])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 673B320DD4;
-        Fri, 19 Jun 2020 14:39:08 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 82E74208B8;
+        Fri, 19 Jun 2020 14:38:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1592577548;
-        bh=GhmndpCx0NtSvR5PEsSvK9su8y7F9B9W/85J59fhrTc=;
+        s=default; t=1592577517;
+        bh=BfKddbrXxUWPan5CD6khEfR4aoXC3Z+AH6odX3gV2yQ=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=b6Q4n+E5Dk+L+BUYxW++OziNU6+ncxzIZSDlPwNkoW0CxkAggKh8nfcXgFXLzxuDx
-         EJ/7nNdgDgcw81Mjo+PHn4VfVxOsxOopZmTnRo56r2nc44BOoraHqojrIopiFOUiUt
-         vAjcvxaaljitJIN4Mfu9h37y+E93LduiyX1ThH3Q=
+        b=dENCaHB2ir0r1qUT2gfmdStMdCGpVBzh0+V6hmTvu6hIDzPhfGxyVY7gh10CfWCob
+         TT04HPLPl8gY6XAtWE2K6WgxofvEsOHwpH4FErCb4lJJwtn+x6ZtmadPUPWiqW/ULL
+         he6J7FOqbt52zRTb2Nm2pEqXgxs/hGQPqEn17UUo=
 Received: by earth.universe (Postfix, from userid 1000)
-        id C348B3C08CD; Fri, 19 Jun 2020 16:39:06 +0200 (CEST)
-Date:   Fri, 19 Jun 2020 16:39:06 +0200
+        id DE1073C08CD; Fri, 19 Jun 2020 16:38:35 +0200 (CEST)
+Date:   Fri, 19 Jun 2020 16:38:35 +0200
 From:   Sebastian Reichel <sre@kernel.org>
 To:     Krzysztof Kozlowski <krzk@kernel.org>
 Cc:     Rob Herring <robh+dt@kernel.org>,
         Laurentiu Palcu <laurentiu.palcu@intel.com>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH 2/2] dt-bindings: power: supply: bq25890: Document
- required interrupt
-Message-ID: <20200619143906.33twapu6mgyay4yr@earth.universe>
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: power: supply: bq25890: Indent example
+ with tabs
+Message-ID: <20200619143835.unnla3s6zywxcnfj@earth.universe>
 References: <20200617102305.14241-1-krzk@kernel.org>
- <20200617102305.14241-2-krzk@kernel.org>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="gyqjsa47ulgkpkl2"
+        protocol="application/pgp-signature"; boundary="gwlix4ac63ohaldv"
 Content-Disposition: inline
-In-Reply-To: <20200617102305.14241-2-krzk@kernel.org>
+In-Reply-To: <20200617102305.14241-1-krzk@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---gyqjsa47ulgkpkl2
+--gwlix4ac63ohaldv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 Hi,
 
-On Wed, Jun 17, 2020 at 12:23:05PM +0200, Krzysztof Kozlowski wrote:
-> The driver requires interrupts (fails probe if it is not provided) so
-> document this requirement in bindings.
+On Wed, Jun 17, 2020 at 12:23:04PM +0200, Krzysztof Kozlowski wrote:
+> Fix example indentation to tabs to follow generic Linux coding style.
+> This avoids copying the space indentation to DTS when re-using the
+> example.
 >=20
-> Fixes: 4aeae9cb0dad ("power_supply: Add support for TI BQ25890 charger ch=
-ip")
-> Cc: <stable@vger.kernel.org>
 > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 > ---
 
@@ -83,56 +80,65 @@ Thanks, queued.
 
 -- Sebastian
 
->  Documentation/devicetree/bindings/power/supply/bq25890.txt | 4 ++++
->  1 file changed, 4 insertions(+)
+>  .../bindings/power/supply/bq25890.txt         | 22 +++++++++----------
+>  1 file changed, 11 insertions(+), 11 deletions(-)
 >=20
 > diff --git a/Documentation/devicetree/bindings/power/supply/bq25890.txt b=
 /Documentation/devicetree/bindings/power/supply/bq25890.txt
-> index 51ecc756521f..3b4c69a7fa70 100644
+> index dc9c8f76e06c..51ecc756521f 100644
 > --- a/Documentation/devicetree/bindings/power/supply/bq25890.txt
 > +++ b/Documentation/devicetree/bindings/power/supply/bq25890.txt
-> @@ -10,6 +10,7 @@ Required properties:
->      * "ti,bq25895"
->      * "ti,bq25896"
->  - reg: integer, i2c address of the device.
-> +- interrupts: interrupt line;
->  - ti,battery-regulation-voltage: integer, maximum charging voltage (in u=
-V);
->  - ti,charge-current: integer, maximum charging current (in uA);
->  - ti,termination-current: integer, charge will be terminated when curren=
-t in
-> @@ -39,6 +40,9 @@ bq25890 {
->  	compatible =3D "ti,bq25890";
->  	reg =3D <0x6a>;
+> @@ -36,17 +36,17 @@ Optional properties:
+>  Example:
 > =20
-> +	interrupt-parent =3D <&gpio1>;
-> +	interrupts =3D <16 IRQ_TYPE_EDGE_FALLING>;
-> +
->  	ti,battery-regulation-voltage =3D <4200000>;
->  	ti,charge-current =3D <1000000>;
->  	ti,termination-current =3D <50000>;
+>  bq25890 {
+> -        compatible =3D "ti,bq25890";
+> -        reg =3D <0x6a>;
+> +	compatible =3D "ti,bq25890";
+> +	reg =3D <0x6a>;
+> =20
+> -        ti,battery-regulation-voltage =3D <4200000>;
+> -        ti,charge-current =3D <1000000>;
+> -        ti,termination-current =3D <50000>;
+> -        ti,precharge-current =3D <128000>;
+> -        ti,minimum-sys-voltage =3D <3600000>;
+> -        ti,boost-voltage =3D <5000000>;
+> -        ti,boost-max-current =3D <1000000>;
+> +	ti,battery-regulation-voltage =3D <4200000>;
+> +	ti,charge-current =3D <1000000>;
+> +	ti,termination-current =3D <50000>;
+> +	ti,precharge-current =3D <128000>;
+> +	ti,minimum-sys-voltage =3D <3600000>;
+> +	ti,boost-voltage =3D <5000000>;
+> +	ti,boost-max-current =3D <1000000>;
+> =20
+> -        ti,use-ilim-pin;
+> -        ti,thermal-regulation-threshold =3D <120>;
+> +	ti,use-ilim-pin;
+> +	ti,thermal-regulation-threshold =3D <120>;
+>  };
 > --=20
 > 2.17.1
 >=20
 
---gyqjsa47ulgkpkl2
+--gwlix4ac63ohaldv
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl7szgoACgkQ2O7X88g7
-+pobjw/8Cpw1OzyHiGjyxlvzVKNvp4LndLYSD4J8cdqGPeSNEAHae4sCqmae3G89
-ZCd2Zohd2LwXXire9sQtIXJb96o+1ocWQIzR3wMIypCO8dy83IZqqy+SfZW4ivGW
-K2KmQChB/8os3O74Jw9DSPc4UfK0ISy+7HR4Ot8kyfhg1Dvm9z4NVnId2dHohXoL
-EOn4KYAvjSrevUfXSRwIadCxLxLW7dA1IV1+AS13p0XHdjq4OGQ5dsxNoqYd/X1Q
-MyF3f01Dfic0PDQE3StBTYKW8sYaXI73IftAxZ3gPTcPjS7AzFj+3wpXVEKjfxqR
-e7G40IJYwKtXiyIBg0aQhXOvC3/32LQV4c7suPNmNez4tSn6BkrnFvBOPiVeNZRq
-PLrFNdtatoX3otvbuJEoULD7jLIgSg3Oi8Fkbxu3zmpeCO8yNDPGTmZdhHyxfk7s
-xxUTNlOr7f5rbxYGVe2q0Vz7o5H6s5ukgjSsiqCSMZrNkJd2DYfnvPsSL6Ymd+jP
-SCdfiauLIwrXOzoX/lJXHj/fGzmJGUnU7ogW7OWqclWIGoTxAjIuen+lEWXNIjOH
-L/sAxLp/Sp1gS4rTRFJSite5x8A6h4QGxmsCN1mxuiKgeu9Lyrw4JmKEo40hYa8S
-Ayr385VFbX//luhm435eFe27tMPikUC1GdQwu/tFJk+mkoq5XVs=
-=XIWY
+iQIzBAEBCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl7szd0ACgkQ2O7X88g7
++prY8A/+NKGwIlBdgJoLJVwpEpRL4Fm1ZhekGETuQf7w5rSZsxwpmabU4ZJBVrOy
+AoqQwFOsnSkw0TbXBC4s4NEHXp8fb3T6H6XWC7eoLrKCd1NpxBNj9/ieqZepENow
+xOxguyiSiTTpMlYmsdh5fatB6npUzH0U+74nkvtjhYPdceqksKWN2M/6kXChpAXv
+SSOvEOgi+uK+w19pZSj4K8vPs0Sb/AelXBWMvnuo8pIx47P/O6B8m1ArNffi6NuL
+1T1HOVj7s5vNu9EYFDmy6RlHN+5YcD27fFBVXPlMP4OLmudobty53Ln3laGw/8E4
++ZkWlqwUvTGGLsdM6qr1MlRTW7SQxBSu6HfTgn2QjcApMeJqFy8ZExeZ+QP8rnGe
+MhuX+MRjJ4u74Ir0cIzGeYLvyPlpGUqeXxFEhPXNwS2V/5OXltdnU4AUOsb0RvYZ
+xQ0tiG+BpDI3meY+oFyMOXepZjQteLEs8LTtJPSK0G0KhxVGjAlj6keQS7FR5wMR
+zY9oa4oSlQu5ZEsq4Kce/A+RAEqy0IqhvlNLnemy57Gpsjw+qjOSgav0zyozxnDB
+iknGGpw8Ih2gNg7dC8rMaXFf4l20l6MSRw2CLJ1VAi7/yyAHiWAuNTEvax8XafJp
+1lIRaEUONMk8uFzvgigI3ifz/RwHM12x1usDvehKrUdkplrsC0c=
+=IEDH
 -----END PGP SIGNATURE-----
 
---gyqjsa47ulgkpkl2--
+--gwlix4ac63ohaldv--
