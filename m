@@ -2,87 +2,177 @@ Return-Path: <SRS0=EC3c=AD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D981FC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 15:58:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B9C2C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 16:19:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BA20220760
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 15:58:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="Y0YustwI"
+	by mail.kernel.org (Postfix) with ESMTP id 56B5320768
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 16:19:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1592842788;
+	bh=7CNmm4AwjmhFuwMT+ZusQGNpZT+eRVQyax7OgVJmhTw=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=tUg+gvV2dsdt97i17AD/YcXq+IRd/2PfwfyKiWE2Y96WcuS8HrE5WX+3TOmNfVkgj
+	 LADM9BGHb6N2oh/8eynZortWq8f+bkgYyJFJbe6XI0yqcFygEJab2wEjSsxt46bLcW
+	 R/9uf5D+0/IOnQE0uVAgLEzjFdPLLOVhIIIVbMzc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729390AbgFVP6K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jun 2020 11:58:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42478 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729321AbgFVP6J (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2020 11:58:09 -0400
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6DADC061795
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2020 08:58:09 -0700 (PDT)
-Received: by mail-pg1-x542.google.com with SMTP id b5so8324812pgm.8
-        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2020 08:58:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=hqx7rC9HmtHirbGKyHJfb50cjiD/ySJOns5T8xAdcmA=;
-        b=Y0YustwI6sqGt3ubIoVtT7pkFHCMGqdSaeU8DfgABVXFCm7esF8Kz3VoXytTPp9Vh1
-         yWKiYxye1K+LL++kEuA1k6FFFHOZgvNWUY4ymAAS033Lerg6Nfr3JB2HxdJH5OSbuWEW
-         75sXQ0axi7IA3a3hTQKit3yVgVgdot+PQAJcY=
+        id S1729394AbgFVQTr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jun 2020 12:19:47 -0400
+Received: from mail-oo1-f65.google.com ([209.85.161.65]:41069 "EHLO
+        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729275AbgFVQTr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2020 12:19:47 -0400
+Received: by mail-oo1-f65.google.com with SMTP id y45so3470008ooi.8;
+        Mon, 22 Jun 2020 09:19:46 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=hqx7rC9HmtHirbGKyHJfb50cjiD/ySJOns5T8xAdcmA=;
-        b=YgA0P+rgAVCXezFpHTs40ZpwcUTfOYRudzlHCelIC4iw3U+z4s/NSdzQVCafdf4CfF
-         R5uDFPnRQkuH6SmneYhNTS5FAq+ERS3SfSLv8HI6cc2xtP0hG4nJCer8R4fgO+hLzXJj
-         HkilViYcRFUGo82bjYy87S/+iwD+z3h48qnEuZ2faiNFIGcjTZD1OYxyfknA4GWPUIgw
-         0+hG/lggimu2sMfkfPMPqSpcXcy5ZCStCWNo6NR3gYNEBayGQJdf+GXzzj6dybyDxUVX
-         kGlLWN9uoUdZQd8iKAsXdMiVbuFakaZ3av3KCNlYwHWRNCjocadEqbpUD4QhZ2yBdDJE
-         JSBg==
-X-Gm-Message-State: AOAM531Bk9p17lk86uMGLBsF0966laEvDzMe3Hslr6FNDnMCkcqo6cqU
-        5JaG5I+opqwZWyya3i1LXF8m7zrAAt4=
-X-Google-Smtp-Source: ABdhPJzYKjvdTbFBrvziiaoyvuftohXyJS7FfaTDWSSJUGHWw1taamvOj/VHPJsiV9By6792NzQeAg==
-X-Received: by 2002:a63:be01:: with SMTP id l1mr13730067pgf.32.1592841489272;
-        Mon, 22 Jun 2020 08:58:09 -0700 (PDT)
-Received: from localhost ([2620:15c:202:1:4fff:7a6b:a335:8fde])
-        by smtp.gmail.com with ESMTPSA id d9sm11584719pgg.74.2020.06.22.08.58.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 22 Jun 2020 08:58:08 -0700 (PDT)
-Date:   Mon, 22 Jun 2020 08:58:06 -0700
-From:   Matthias Kaehlcke <mka@chromium.org>
-To:     Sibi Sankar <sibis@codeaurora.org>
-Cc:     viresh.kumar@linaro.org, sboyd@kernel.org,
-        georgi.djakov@linaro.org, saravanak@google.com, nm@ti.com,
-        bjorn.andersson@linaro.org, agross@kernel.org, rjw@rjwysocki.net,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, dianders@chromium.org,
-        vincent.guittot@linaro.org, amit.kucheria@linaro.org,
-        lukasz.luba@arm.com, sudeep.holla@arm.com, smasetty@codeaurora.org
-Subject: Re: [PATCH v6 4/5] cpufreq: qcom: Update the bandwidth levels on
- frequency change
-Message-ID: <20200622155806.GH4525@google.com>
-References: <20200622081649.27280-1-sibis@codeaurora.org>
- <20200622081649.27280-5-sibis@codeaurora.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=2Uo7tLE8Ng0ljtCXTtGcEJjxCELargRdsGzsyXemCgs=;
+        b=M7FCNXrYOqADFhXb+HDsMyqQDdUL7Rvl0WJZD5MP3UCiqTlV3YxTBO5tJ+O0QdH9Sq
+         KBAnm3p5HwWtyfzVaDnPd1tt5m1/phfq+pwVQEhCNa93TyIiRNUsL/xA3QBZ0p5YezTN
+         c0GbD0yHz6Yk4fGzcuxH36tk4zIVreAfB96qKwe+w5fJy/OhOA5EYGzT52XW8u3AG3hf
+         xrJfigNYyqrbljdbfNYv66abAHbuJxe8f14GdhusfOdGSTMVOojUMW3v+bMH4tHrNR7k
+         NzdwqG7fBHzjIO4SvpVik6QqPhUTSWswTAWphPd+N3EFAc0VH1ZFAK1TfHaOxLmdmlFD
+         dMyQ==
+X-Gm-Message-State: AOAM530xajK5zX5/hvrcycpl36yuntaPbs5DViwwLVsqps6nO3/tx3qx
+        OMbaKsFjYoNwMsQBLFhwXFY8Un16wQXV0bpD917DlpDQ
+X-Google-Smtp-Source: ABdhPJyJzMY+Ig5hfxqT84WrgEl4O2KCn/CA1QUseO7PZisUGMIMg9J9c1cy446Z1L7TJd1n36X5db7QuPeGS55+Gmc=
+X-Received: by 2002:a4a:5744:: with SMTP id u65mr14858682ooa.1.1592842786408;
+ Mon, 22 Jun 2020 09:19:46 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200622081649.27280-5-sibis@codeaurora.org>
+References: <20200616040442.21515-1-yu.c.chen@intel.com>
+In-Reply-To: <20200616040442.21515-1-yu.c.chen@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 22 Jun 2020 18:19:35 +0200
+Message-ID: <CAJZ5v0gBVBAjdCOXsM-Fa-iAkuv2JMi2mVkG5w7ADcg9dWencA@mail.gmail.com>
+Subject: Re: [PATCH][v2] PM / s2idle: Clear _TIF_POLLING_NRFLAG before suspend
+ to idle
+To:     Chen Yu <yu.c.chen@intel.com>,
+        Peter Zijlstra <peterz@infradead.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <lenb@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Rui Zhang <rui.zhang@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 22, 2020 at 01:46:48PM +0530, Sibi Sankar wrote:
-> Add support to parse optional OPP table attached to the cpu node when
-> the OPP bandwidth values are populated. This allows for scaling of
-> DDR/L3 bandwidth levels with frequency change.
-> 
-> Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+On Tue, Jun 16, 2020 at 6:03 AM Chen Yu <yu.c.chen@intel.com> wrote:
+>
+> Suspend to idle was found to not work on Goldmont CPU recently.
+> And the issue was triggered due to:
+>
+> 1. On Goldmont the CPU in idle can only be woken up via IPIs,
+>    not POLLING mode:
+>    Commit 08e237fa56a1 ("x86/cpu: Add workaround for MONITOR
+>    instruction erratum on Goldmont based CPUs")
+> 2. When the CPU is entering suspend to idle process, the
+>    _TIF_POLLING_NRFLAG is kept on, due to cpuidle_enter_s2idle()
+>    doesn't properly match call_cpuidle().
+> 3. Commit b2a02fc43a1f ("smp: Optimize send_call_function_single_ipi()")
+>    makes use of _TIF_POLLING_NRFLAG to avoid sending IPIs to
+>    idle CPUs.
+> 4. As a result, some IPIs related functions might not work
+>    well during suspend to idle on Goldmont. For example, one
+>    suspected victim:
+>    tick_unfreeze() -> timekeeping_resume() -> hrtimers_resume()
+>    -> clock_was_set() -> on_each_cpu() might wait forever,
+>    because the IPIs will not be sent to the CPUs which are
+>    sleeping with _TIF_POLLING_NRFLAG set, and Goldmont CPU
+>    could not be woken up by only setting _TIF_NEED_RESCHED
+>    on the monitor address.
+>
+> I don't find a way in Ubuntu to update the firmware of Goldmont
+> and check if the issue was gone, a fix patch would do no harm.
+> Clear the _TIF_POLLING_NRFLAG flag before entering suspend to idle,
+> and let the driver's enter_s2idle() to decide whether to set
+> _TIF_POLLING_NRFLAG or not. So that to avoid the scenario described
+> above and keep the context consistent with before. Also adjust
+> the naming to be consistent with call_cpuidle().
+>
+> Fixes: b2a02fc43a1f ("smp: Optimize send_call_function_single_ipi()")
+> Suggested-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Reported-by: kbuild test robot <lkp@intel.com>
+> Cc: "Rafael J. Wysocki" <rafael@kernel.org>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Peter Zijlstra (Intel) <peterz@infradead.org>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Peter, any more comments here?
+
+> ---
+> v2: According to Peter's review, v1 is racy, if someone already
+>     set TIF_NEED_RESCHED this patch just clear POLLING and go to sleep.
+>     Check TIF_NEED_RESCHED before entering suspend to idle and
+>     adjust the naming to be consistent with call_cpuidle().
+> --
+>  drivers/cpuidle/cpuidle.c | 16 +++++++++++++---
+>  1 file changed, 13 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index c149d9e20dfd..b003767abebd 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/mutex.h>
+>  #include <linux/sched.h>
+>  #include <linux/sched/clock.h>
+> +#include <linux/sched/idle.h>
+>  #include <linux/notifier.h>
+>  #include <linux/pm_qos.h>
+>  #include <linux/cpu.h>
+> @@ -133,8 +134,8 @@ int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+>  }
+>
+>  #ifdef CONFIG_SUSPEND
+> -static void enter_s2idle_proper(struct cpuidle_driver *drv,
+> -                               struct cpuidle_device *dev, int index)
+> +static void s2idle_enter(struct cpuidle_driver *drv,
+> +                        struct cpuidle_device *dev, int index)
+>  {
+>         ktime_t time_start, time_end;
+>
+> @@ -168,6 +169,15 @@ static void enter_s2idle_proper(struct cpuidle_driver *drv,
+>         dev->states_usage[index].s2idle_usage++;
+>  }
+>
+> +static int call_s2idle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
+> +                      int index)
+> +{
+> +       if (!current_clr_polling_and_test())
+> +               s2idle_enter(drv, dev, index);
+> +
+> +       return index;
+
+Is the value returned here used at all?
+
+> +}
+> +
+>  /**
+>   * cpuidle_enter_s2idle - Enter an idle state suitable for suspend-to-idle.
+>   * @drv: cpuidle driver for the given CPU.
+> @@ -187,7 +197,7 @@ int cpuidle_enter_s2idle(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>          */
+>         index = find_deepest_state(drv, dev, U64_MAX, 0, true);
+>         if (index > 0)
+> -               enter_s2idle_proper(drv, dev, index);
+> +               call_s2idle(drv, dev, index);
+
+I'm wondering why this can't be
+
+    if (index > 0 && !current_clr_polling_and_test())
+            enter_s2idle_proper(drv, dev, index);
+
+>         return index;
+>  }
+> --
