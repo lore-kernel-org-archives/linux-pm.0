@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-10.0 required=3.0
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9EBC7C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 03:00:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2C14C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 03:00:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7ECD82084D
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 03:00:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 931692145D
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 03:00:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731205AbgFVDAW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 21 Jun 2020 23:00:22 -0400
-Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:54089 "EHLO
+        id S1731222AbgFVDAZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 21 Jun 2020 23:00:25 -0400
+Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:39771 "EHLO
         smtp2207-205.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1731182AbgFVDAT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jun 2020 23:00:19 -0400
-X-Alimail-AntiSpam: AC=CONTINUE;BC=0.1491544|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.0179064-0.000141561-0.981952;FP=0|0|0|0|0|-1|-1|-1;HT=e02c03298;MF=frank@allwinnertech.com;NM=1;PH=DS;RN=27;RT=27;SR=0;TI=SMTPD_---.HqMydez_1592794774;
+        by vger.kernel.org with ESMTP id S1731201AbgFVDAX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 21 Jun 2020 23:00:23 -0400
+X-Alimail-AntiSpam: AC=CONTINUE;BC=0.4159951|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.05864-0.00417621-0.937184;FP=0|0|0|0|0|-1|-1|-1;HT=e02c03278;MF=frank@allwinnertech.com;NM=1;PH=DS;RN=27;RT=27;SR=0;TI=SMTPD_---.HqMydez_1592794774;
 Received: from allwinnertech.com(mailfrom:frank@allwinnertech.com fp:SMTPD_---.HqMydez_1592794774)
           by smtp.aliyun-inc.com(10.147.40.44);
-          Mon, 22 Jun 2020 11:00:13 +0800
+          Mon, 22 Jun 2020 11:00:18 +0800
 From:   Frank Lee <frank@allwinnertech.com>
 To:     robh+dt@kernel.org, mripard@kernel.org, wens@csie.org,
         mturquette@baylibre.com, sboyd@kernel.org,
@@ -36,9 +36,9 @@ Cc:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
         huangshuosheng@allwinnertech.com, liyong@allwinnertech.com,
         Frank Lee <frank@allwinnertech.com>
-Subject: [PATCH v2 08/11] thermal: sun8i: Add A100's THS controller support
-Date:   Mon, 22 Jun 2020 10:59:04 +0800
-Message-Id: <20200622025907.32574-9-frank@allwinnertech.com>
+Subject: [PATCH v2 10/11] dt-bindings: arm: sunxi: Add Allwinner A100 Perf1 Board bindings
+Date:   Mon, 22 Jun 2020 10:59:06 +0800
+Message-Id: <20200622025907.32574-11-frank@allwinnertech.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20200622025907.32574-1-frank@allwinnertech.com>
 References: <20200622025907.32574-1-frank@allwinnertech.com>
@@ -49,47 +49,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch add thermal sensor controller support for A100,
-which is similar to the previous ones.
+Document board compatible names for Allwinner A100 Perf1 Board.
 
 Signed-off-by: Frank Lee <frank@allwinnertech.com>
-Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- drivers/thermal/sun8i_thermal.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ Documentation/devicetree/bindings/arm/sunxi.yaml | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
-index 74d73be..7a69442 100644
---- a/drivers/thermal/sun8i_thermal.c
-+++ b/drivers/thermal/sun8i_thermal.c
-@@ -590,6 +590,19 @@ static int sun8i_ths_remove(struct platform_device *pdev)
- 	.calc_temp = sun8i_ths_calc_temp,
- };
+diff --git a/Documentation/devicetree/bindings/arm/sunxi.yaml b/Documentation/devicetree/bindings/arm/sunxi.yaml
+index abf2d97..8cdc677 100644
+--- a/Documentation/devicetree/bindings/arm/sunxi.yaml
++++ b/Documentation/devicetree/bindings/arm/sunxi.yaml
+@@ -16,6 +16,11 @@ properties:
+   compatible:
+     oneOf:
  
-+static const struct ths_thermal_chip sun50i_a100_ths = {
-+	.sensor_num = 3,
-+	.has_bus_clk_reset = true,
-+	.ft_deviation = 8000,
-+	.offset = 187744,
-+	.scale = 672,
-+	.temp_data_base = SUN50I_H6_THS_TEMP_DATA,
-+	.calibrate = sun50i_h6_ths_calibrate,
-+	.init = sun50i_h6_thermal_init,
-+	.irq_ack = sun50i_h6_irq_ack,
-+	.calc_temp = sun8i_ths_calc_temp,
-+};
++      - description: Allwinner A100 Perf1 Board
++        items:
++          - const: allwinner,a100-perf1
++          - const: allwinner,sun50i-a100
 +
- static const struct ths_thermal_chip sun50i_h5_ths = {
- 	.sensor_num = 2,
- 	.has_mod_clk = true,
-@@ -619,6 +632,7 @@ static int sun8i_ths_remove(struct platform_device *pdev)
- 	{ .compatible = "allwinner,sun8i-h3-ths", .data = &sun8i_h3_ths },
- 	{ .compatible = "allwinner,sun8i-r40-ths", .data = &sun8i_r40_ths },
- 	{ .compatible = "allwinner,sun50i-a64-ths", .data = &sun50i_a64_ths },
-+	{ .compatible = "allwinner,sun50i-a100-ths", .data = &sun50i_a100_ths },
- 	{ .compatible = "allwinner,sun50i-h5-ths", .data = &sun50i_h5_ths },
- 	{ .compatible = "allwinner,sun50i-h6-ths", .data = &sun50i_h6_ths },
- 	{ /* sentinel */ },
+       - description: Allwinner A23 Evaluation Board
+         items:
+           - const: allwinner,sun8i-a23-evb
 -- 
 1.9.1
 
