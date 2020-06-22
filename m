@@ -2,323 +2,340 @@ Return-Path: <SRS0=EC3c=AD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 401C6C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 19:19:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1867FC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 20:02:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E4B82075A
-	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 19:19:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E30BD20786
+	for <linux-pm@archiver.kernel.org>; Mon, 22 Jun 2020 20:02:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="WJLvUN/s"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uFaTK3d5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728332AbgFVTTH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 22 Jun 2020 15:19:07 -0400
-Received: from lelv0143.ext.ti.com ([198.47.23.248]:56524 "EHLO
-        lelv0143.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728171AbgFVTTG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2020 15:19:06 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by lelv0143.ext.ti.com (8.15.2/8.15.2) with ESMTP id 05MJJ4wh107873;
-        Mon, 22 Jun 2020 14:19:04 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1592853544;
-        bh=6/lOZDqcYh8CamfAI0PTIZxMzSSKRezX6idHrXmFQMU=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=WJLvUN/sHi5ah0xSDGXCh0GGLUvqWE+3qihUaD3sFpYBUiJPRkhZjYj/7yozYAD2w
-         WmVjx00mpFTdEJm4MCadXE584oFta2LbTL2EcF8OTDlfuXqQruptNtixFICGlGP9pW
-         d76e2FRrVGYVr9Q6TZzA82md1K4iIR6Sz4sZlHKg=
-Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 05MJJ4eY042398
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 22 Jun 2020 14:19:04 -0500
-Received: from DLEE102.ent.ti.com (157.170.170.32) by DLEE109.ent.ti.com
- (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 22
- Jun 2020 14:19:04 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 22 Jun 2020 14:19:04 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 05MJJ4ZP061925;
-        Mon, 22 Jun 2020 14:19:04 -0500
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <pali@kernel.org>, <robh@kernel.org>
-CC:     <afd@ti.com>, <r-rivera-matos@ti.com>, <dmurphy@ti.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <sspatil@android.com>
-Subject: [PATCH v13 2/4] dt-bindings: power: Convert battery.txt to battery.yaml
-Date:   Mon, 22 Jun 2020 14:18:35 -0500
-Message-ID: <20200622191837.9326-3-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200622191837.9326-1-r-rivera-matos@ti.com>
-References: <20200622191837.9326-1-r-rivera-matos@ti.com>
+        id S1728475AbgFVUCP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 22 Jun 2020 16:02:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52492 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728363AbgFVUCO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 22 Jun 2020 16:02:14 -0400
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BF0AC0617B9
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2020 12:47:00 -0700 (PDT)
+Received: by mail-wm1-x341.google.com with SMTP id g75so689967wme.5
+        for <linux-pm@vger.kernel.org>; Mon, 22 Jun 2020 12:47:00 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=ODOSMs7hlDlueY6tO0Y70BJvb4BVdVy4itgUewuyPXQ=;
+        b=uFaTK3d56s7T4bkZ+sGL815DQdbAIf5cC8yFeAHB7iaBtf7T1St4qfhuFmFMJ7f6/r
+         t3xdDkBr2I+T39H09CDtHgv6oo/c7ibkh9AIfNq+39DuGI2KibjJMbijs4S4rv6k95+4
+         6HUte0FXf/ZEXY12mInPLRA8OUYmrEzkOssBKxRitUovbFgfMVJH8hUDZts6iIO67xB+
+         hRzNmZTbsoYDo6NjbpLWAxZnBVHBs6QniFGG65hb6aBZHA3jbq6CcBN3mIE/o93azWMy
+         O/MOwa8kjvX6+gA7jakig8mo/V8Q2EqgdgjEmdhoRH0dQD+FvrNICMjEFKXgNifncJAk
+         1dCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=ODOSMs7hlDlueY6tO0Y70BJvb4BVdVy4itgUewuyPXQ=;
+        b=lAfJa/Cd+D+hHzFUf5VUYF++VC4mvDyqNUbcN4FzCxXaBdxqE8arqDfWAF+E6xauvk
+         skLFamNX3gAK8e594R9cvwIWna7UwpFjAoAVty20h0Jlv117Rim5qTMtfwptkeQhvhpp
+         iyYz4Ws8FYPeI7v26teIW+osEAcSP3n69gQjdNEVOcIMfBt8L77I2Em511MWdFVQB89o
+         PY3zMjjLXyZrOyWsfd7p2tINqv//Nx3y/J2aeYJfIDV93Sc2ohEAqKjR0s3rHviYLdDt
+         3OP95F87dVYPp0eAXh3CuZYvsd1r9DSynr2zfBvGN+tBiT4TrBlGfk79EN/jhp1CGJWH
+         hSZA==
+X-Gm-Message-State: AOAM532ZfkmW6VMpHYMkYz6HCcV7OMIF3mdjtd2sMRPT2RtTg0cFm2MY
+        DRFK2tmajPJTKRHsLQycgTg+FqcX84k=
+X-Google-Smtp-Source: ABdhPJxEDVn/3oGDYMLsY0vvPxVE+iAjav6gvVGW8hxllefuYnkkGCqLpJrLn9luSaiJbbCUK8wrkw==
+X-Received: by 2002:a1c:4444:: with SMTP id r65mr1767496wma.129.1592855218748;
+        Mon, 22 Jun 2020 12:46:58 -0700 (PDT)
+Received: from [192.168.0.41] (lns-bzn-59-82-252-131-168.adsl.proxad.net. [82.252.131.168])
+        by smtp.googlemail.com with ESMTPSA id i17sm12945242wrc.34.2020.06.22.12.46.57
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 22 Jun 2020 12:46:58 -0700 (PDT)
+Subject: Re: [PATCH v4 1/2] thermal: add support for the MCU controlled FAN on
+ Khadas boards
+To:     Neil Armstrong <narmstrong@baylibre.com>, lee.jones@linaro.org
+Cc:     khilman@baylibre.com, linux-amlogic@lists.infradead.org,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, rui.zhang@intel.com,
+        amit.kucheria@verdurent.com,
+        Amit Kucheria <amit.kucheria@linaro.org>
+References: <20200618133818.15857-1-narmstrong@baylibre.com>
+ <20200618133818.15857-2-narmstrong@baylibre.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <53aa62a3-1d8e-bc91-1a2b-88c766276beb@linaro.org>
+Date:   Mon, 22 Jun 2020 21:46:56 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
+In-Reply-To: <20200618133818.15857-2-narmstrong@baylibre.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Murphy <dmurphy@ti.com>
+On 18/06/2020 15:38, Neil Armstrong wrote:
+> The new Khadas VIM2 and VIM3 boards controls the cooling fan via the
+> on-board microcontroller.
+> 
+> This implements the FAN control as thermal devices and as cell of the Khadas
+> MCU MFD driver.
+> 
+> Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
+> Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+> ---
+> Hi Lee,
+> 
+> Could you apply this patch via the MFD tree since it depends on
+> the linux/mfd/khadas-mcu.h header ?
+> 
+> This patch is unchanged from the v3 serie.
+> 
+> Thanks,
+> Neil
+> 
+>  drivers/thermal/Kconfig          |  11 ++
+>  drivers/thermal/Makefile         |   1 +
+>  drivers/thermal/khadas_mcu_fan.c | 174 +++++++++++++++++++++++++++++++
+>  3 files changed, 186 insertions(+)
+>  create mode 100644 drivers/thermal/khadas_mcu_fan.c
+> 
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index 3eb2348e5242..0125561488c9 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -500,4 +500,15 @@ config SPRD_THERMAL
+>  	help
+>  	  Support for the Spreadtrum thermal sensor driver in the Linux thermal
+>  	  framework.
+> +
+> +config KHADAS_MCU_FAN_THERMAL
+> +	tristate "Khadas MCU controller FAN cooling support"
+> +	depends on OF || COMPILE_TEST
+> +	depends on MFD_KHADAS_MCU
+> +	select MFD_CORE
+> +	select REGMAP
+> +	help
+> +	  If you say yes here you get support for the FAN controlled
+> +	  by the Microcontroller found on the Khadas VIM boards.
+> +
+>  endif
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index 0c8b84a09b9a..4b6aabaa7e31 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -61,3 +61,4 @@ obj-$(CONFIG_ZX2967_THERMAL)	+= zx2967_thermal.o
+>  obj-$(CONFIG_UNIPHIER_THERMAL)	+= uniphier_thermal.o
+>  obj-$(CONFIG_AMLOGIC_THERMAL)     += amlogic_thermal.o
+>  obj-$(CONFIG_SPRD_THERMAL)	+= sprd_thermal.o
+> +obj-$(CONFIG_KHADAS_MCU_FAN_THERMAL)	+= khadas_mcu_fan.o
+> diff --git a/drivers/thermal/khadas_mcu_fan.c b/drivers/thermal/khadas_mcu_fan.c
+> new file mode 100644
+> index 000000000000..6995b443cad4
+> --- /dev/null
+> +++ b/drivers/thermal/khadas_mcu_fan.c
+> @@ -0,0 +1,174 @@
+> +// SPDX-License-Identifier: GPL-2.0-or-later
+> +/*
+> + * Khadas MCU Controlled FAN driver
+> + *
+> + * Copyright (C) 2020 BayLibre SAS
+> + * Author(s): Neil Armstrong <narmstrong@baylibre.com>
+> + */
+> +
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/mfd/khadas-mcu.h>
+> +#include <linux/regmap.h>
+> +#include <linux/sysfs.h>
+> +#include <linux/thermal.h>
+> +
+> +#define MAX_LEVEL 3
+> +
+> +struct khadas_mcu_fan_ctx {
+> +	struct khadas_mcu *mcu;
+> +	unsigned int level;
+> +	struct thermal_cooling_device *cdev;
+> +};
+> +
+> +static int khadas_mcu_fan_set_level(struct khadas_mcu_fan_ctx *ctx,
+> +				    unsigned int level)
+> +{
+> +	int ret;
+> +
+> +	ret = regmap_write(ctx->mcu->regmap, KHADAS_MCU_CMD_FAN_STATUS_CTRL_REG,
+> +			   level);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ctx->level = level;
+> +
+> +	return 0;
+> +}
+> +
+> +static int khadas_mcu_fan_get_max_state(struct thermal_cooling_device *cdev,
+> +					unsigned long *state)
+> +{
+> +	struct khadas_mcu_fan_ctx *ctx = cdev->devdata;
+> +
+> +	if (!ctx)
+> +		return -EINVAL;
 
-Convert the battery.txt file to yaml and fix up the examples.
+It is pointless to check 'ctx' is NULL, that was done at probe time.
 
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
----
- .../bindings/power/supply/battery.txt         |  83 +----------
- .../bindings/power/supply/battery.yaml        | 139 ++++++++++++++++++
- 2 files changed, 141 insertions(+), 81 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.yaml
+> +	*state = MAX_LEVEL;
+> +
+> +	return 0;
+> +}
+> +
+> +static int khadas_mcu_fan_get_cur_state(struct thermal_cooling_device *cdev,
+> +					unsigned long *state)
+> +{
+> +	struct khadas_mcu_fan_ctx *ctx = cdev->devdata;
+> +
+> +	if (!ctx)
+> +		return -EINVAL;
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-index 5e29595edd74..4c5216fcb760 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -1,87 +1,8 @@
--Battery Characteristics
--
--The devicetree battery node provides static battery characteristics.
--In smart batteries, these are typically stored in non-volatile memory
--on a fuel gauge chip. The battery node should be used where there is
--no appropriate non-volatile memory, or it is unprogrammed/incorrect.
--
--Upstream dts files should not include battery nodes, unless the battery
--represented cannot easily be replaced in the system by one of a
--different type. This prevents unpredictable, potentially harmful,
--behavior should a replacement that changes the battery type occur
--without a corresponding update to the dtb.
-+The contents of this file has been moved to battery.yaml
- 
- Please note that not all charger drivers respect all of the properties.
- 
--Required Properties:
-- - compatible: Must be "simple-battery"
--
--Optional Properties:
-  - over-voltage-threshold-microvolt: battery over-voltage limit
-  - re-charge-voltage-microvolt: limit to automatically start charging again
-- - voltage-min-design-microvolt: drained battery voltage
-- - voltage-max-design-microvolt: fully charged battery voltage
-- - energy-full-design-microwatt-hours: battery design energy
-- - charge-full-design-microamp-hours: battery design capacity
-  - trickle-charge-current-microamp: current for trickle-charge phase
-- - precharge-current-microamp: current for pre-charge phase
-- - precharge-upper-limit-microvolt: limit when to change to constant charging
-- - charge-term-current-microamp: current for charge termination phase
-- - constant-charge-current-max-microamp: maximum constant input current
-- - constant-charge-voltage-max-microvolt: maximum constant input voltage
-- - factory-internal-resistance-micro-ohms: battery factory internal resistance
-- - ocv-capacity-table-0: An array providing the open circuit voltage (OCV)
--   of the battery and corresponding battery capacity percent, which is used
--   to look up battery capacity according to current OCV value. And the open
--   circuit voltage unit is microvolt.
-- - ocv-capacity-table-1: Same as ocv-capacity-table-0
-- ......
-- - ocv-capacity-table-n: Same as ocv-capacity-table-0
-- - ocv-capacity-celsius: An array containing the temperature in degree Celsius,
--   for each of the battery capacity lookup table. The first temperature value
--   specifies the OCV table 0, and the second temperature value specifies the
--   OCV table 1, and so on.
-- - resistance-temp-table: An array providing the temperature in degree Celsius
--   and corresponding battery internal resistance percent, which is used to look
--   up the resistance percent according to current temperature to get a accurate
--   batterty internal resistance in different temperatures.
--
--Battery properties are named, where possible, for the corresponding
--elements in enum power_supply_property, defined in
--https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
--
--Batteries must be referenced by chargers and/or fuel-gauges
--using a phandle. The phandle's property should be named
--"monitored-battery".
--
--Example:
--
--	bat: battery {
--		compatible = "simple-battery";
--		voltage-min-design-microvolt = <3200000>;
--		voltage-max-design-microvolt = <4200000>;
--		energy-full-design-microwatt-hours = <5290000>;
--		charge-full-design-microamp-hours = <1430000>;
--		precharge-current-microamp = <256000>;
--		charge-term-current-microamp = <128000>;
--		constant-charge-current-max-microamp = <900000>;
--		constant-charge-voltage-max-microvolt = <4200000>;
--		factory-internal-resistance-micro-ohms = <250000>;
--		ocv-capacity-celsius = <(-10) 0 10>;
--		ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
--		ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
--		ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
--		resistance-temp-table = <20 100>, <10 90>, <0 80>, <(-10) 60>;
--	};
--
--	charger: charger@11 {
--		....
--		monitored-battery = <&bat>;
--		...
--	};
--
--	fuel_gauge: fuel-gauge@22 {
--		....
--		monitored-battery = <&bat>;
--		...
--	};
-+ - precharge-upper-limit-microvolt: limit when to change to constant charging
-\ No newline at end of file
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
-new file mode 100644
-index 000000000000..a3dca0b0347e
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
-@@ -0,0 +1,139 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/battery.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Battery Characteristics
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  The devicetree battery node provides static battery characteristics.
-+  In smart batteries, these are typically stored in non-volatile memory
-+  on a fuel gauge chip. The battery node should be used where there is
-+  no appropriate non-volatile memory, or it is unprogrammed/incorrect.
-+
-+  Upstream dts files should not include battery nodes, unless the battery
-+  represented cannot easily be replaced in the system by one of a
-+  different type. This prevents unpredictable, potentially harmful,
-+  behavior should a replacement that changes the battery type occur
-+  without a corresponding update to the dtb.
-+
-+  Battery properties are named, where possible, for the corresponding elements
-+  in enum power_supply_property, defined in include/linux/power_supply.h
-+
-+  Batteries must be referenced by chargers and/or fuel-gauges using a phandle.
-+  The phandle's property should be named "monitored-battery".
-+
-+properties:
-+  compatible:
-+    const: simple-battery
-+
-+  voltage-min-design-microvolt:
-+    description: drained battery voltage
-+
-+  voltage-max-design-microvolt:
-+    description: fully charged battery voltage
-+
-+  energy-full-design-microwatt-hours:
-+    description: battery design energy
-+
-+  charge-full-design-microamp-hours:
-+    description: battery design capacity
-+
-+  precharge-current-microamp:
-+    description: current for pre-charge phase
-+
-+  charge-term-current-microamp:
-+    description: current for charge termination phase
-+
-+  constant-charge-current-max-microamp:
-+    description: maximum constant input current
-+
-+  constant-charge-voltage-max-microvolt:
-+    description: maximum constant input voltage
-+
-+  factory-internal-resistance-micro-ohms:
-+    description: battery factory internal resistance
-+
-+  monitored-battery:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to the battery node being monitored
-+
-+required:
-+  - compatible
-+
-+patternProperties:
-+  '^ocv-capacity-table-[0-100]$':
-+    description: |
-+      An array providing the open circuit voltage (OCV)
-+      of the battery and corresponding battery capacity percent, which is used
-+      to look up battery capacity according to current OCV value. And the open
-+      circuit voltage unit is microvolt.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: open circuit voltage (OCV) in microvolts
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+  '^resistance-temp-table-[0-100]$':
-+    description: |
-+      An array providing the temperature in degree Celsius
-+      and corresponding battery internal resistance percent, which is used to
-+      look up the resistance percent according to current temperature to get an
-+      accurate batterty internal resistance in different temperatures.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: internal resistance percent
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+  '^ocv-capacity-celsius-[0-100]$':
-+    description: |
-+      An array containing the temperature in degree Celsius,
-+      for each of the battery capacity lookup table.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: temperature in degree Celsius
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    power {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      battery:battery {
-+        compatible = "simple-battery";
-+        voltage-min-design-microvolt = <3200000>;
-+        voltage-max-design-microvolt = <4200000>;
-+        energy-full-design-microwatt-hours = <5290000>;
-+        charge-full-design-microamp-hours = <1430000>;
-+        precharge-current-microamp = <256000>;
-+        charge-term-current-microamp = <128000>;
-+        constant-charge-current-max-microamp = <900000>;
-+        constant-charge-voltage-max-microvolt = <4200000>;
-+        factory-internal-resistance-micro-ohms = <250000>;
-+        ocv-capacity-celsius-0 = <(-10) 10>;
-+        ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>;
-+        resistance-temp-table-0 = <20 100>, <10 90>, <0 80>, <(-10) 60>;
-+      };
-+
-+      charger@11 {
-+        reg = <0x11>;
-+        monitored-battery = <&battery>;
-+      };
-+
-+      fuel-gauge@22 {
-+        reg = <0x22>;
-+        monitored-battery = <&battery>;
-+      };
-+    };
-\ No newline at end of file
+Ditto
+
+> +	*state = ctx->level;
+> +
+> +	return 0;
+> +}
+> +
+> +static int
+> +khadas_mcu_fan_set_cur_state(struct thermal_cooling_device *cdev,
+> +			     unsigned long state)
+> +{
+> +	struct khadas_mcu_fan_ctx *ctx = cdev->devdata;
+> +
+> +	if (!ctx || (state > MAX_LEVEL))
+> +		return -EINVAL;
+
+Ditto
+
+> +	if (state == ctx->level)
+> +		return 0;
+> +
+> +	return khadas_mcu_fan_set_level(ctx, state);
+> +}
+> +
+> +static const struct thermal_cooling_device_ops khadas_mcu_fan_cooling_ops = {
+> +	.get_max_state = khadas_mcu_fan_get_max_state,
+> +	.get_cur_state = khadas_mcu_fan_get_cur_state,
+> +	.set_cur_state = khadas_mcu_fan_set_cur_state,
+> +};
+> +
+> +static int khadas_mcu_fan_probe(struct platform_device *pdev)
+> +{
+> +	struct khadas_mcu *mcu = dev_get_drvdata(pdev->dev.parent);
+> +	struct thermal_cooling_device *cdev;
+> +	struct device *dev = &pdev->dev;
+> +	struct khadas_mcu_fan_ctx *ctx;
+> +	int ret;
+> +
+> +	ctx = devm_kzalloc(dev, sizeof(*ctx), GFP_KERNEL);
+> +	if (!ctx)
+> +		return -ENOMEM;
+> +	ctx->mcu = mcu;
+> +	platform_set_drvdata(pdev, ctx);
+> +
+> +	cdev = devm_thermal_of_cooling_device_register(dev->parent,
+> +			dev->parent->of_node, "khadas-mcu-fan", ctx,
+> +			&khadas_mcu_fan_cooling_ops);
+> +	if (IS_ERR(cdev)) {
+> +		ret = PTR_ERR(cdev);
+> +		dev_err(dev,
+> +				"Failed to register khadas-mcu-fan as cooling device: %d\n",
+> +				ret);
+> +		return ret;
+> +	}
+> +	ctx->cdev = cdev;
+> +	thermal_cdev_update(cdev);
+> +
+> +	return 0;
+> +}
+> +
+> +static int khadas_mcu_fan_disable(struct device *dev)
+> +{
+> +	struct khadas_mcu_fan_ctx *ctx = dev_get_drvdata(dev);
+> +	unsigned int level_save = ctx->level;
+> +	int ret;
+> +
+> +	ret = khadas_mcu_fan_set_level(ctx, 0);
+> +	if (ret)
+> +		return ret;
+> +
+> +	ctx->level = level_save;
+
+Nitpicking : move the save section to suspend.
+
+> +	return 0;
+> +}
+> +
+> +static void khadas_mcu_fan_shutdown(struct platform_device *pdev)
+> +{
+> +	khadas_mcu_fan_disable(&pdev->dev);
+> +}
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int khadas_mcu_fan_suspend(struct device *dev)
+> +{
+> +	return khadas_mcu_fan_disable(dev);
+> +}
+> +
+> +static int khadas_mcu_fan_resume(struct device *dev)
+> +{
+> +	struct khadas_mcu_fan_ctx *ctx = dev_get_drvdata(dev);
+> +
+> +	return khadas_mcu_fan_set_level(ctx, ctx->level);
+
+Out of curiosity, did you check the fan is not continuously spinning
+after a resume when the suspend happened during a mitigation phase?
+
+> +}
+> +#endif
+> +
+> +static SIMPLE_DEV_PM_OPS(khadas_mcu_fan_pm, khadas_mcu_fan_suspend,
+> +			 khadas_mcu_fan_resume);
+> +
+> +static const struct platform_device_id khadas_mcu_fan_id_table[] = {
+> +	{ .name = "khadas-mcu-fan-ctrl", },
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(platform, khadas_mcu_fan_id_table);
+> +
+> +static struct platform_driver khadas_mcu_fan_driver = {
+> +	.probe		= khadas_mcu_fan_probe,
+> +	.shutdown	= khadas_mcu_fan_shutdown,
+> +	.driver	= {
+> +		.name		= "khadas-mcu-fan-ctrl",
+> +		.pm		= &khadas_mcu_fan_pm,
+> +	},
+> +	.id_table	= khadas_mcu_fan_id_table,
+> +};
+> +
+> +module_platform_driver(khadas_mcu_fan_driver);
+> +
+> +MODULE_AUTHOR("Neil Armstrong <narmstrong@baylibre.com>");
+> +MODULE_DESCRIPTION("Khadas MCU FAN driver");
+> +MODULE_LICENSE("GPL");
+> 
+
+
 -- 
-2.27.0
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
