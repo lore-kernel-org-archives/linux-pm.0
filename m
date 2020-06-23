@@ -2,94 +2,92 @@ Return-Path: <SRS0=QwoY=AE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E24C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 11:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DB7CEC433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 11:35:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DE2F2072E
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 11:34:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BBBE420768
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 11:35:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="OGwMD7h7"
+	dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="ai6ermZk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732473AbgFWLeL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jun 2020 07:34:11 -0400
+        id S1732315AbgFWLdx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jun 2020 07:33:53 -0400
 Received: from mail-eopbgr00054.outbound.protection.outlook.com ([40.107.0.54]:22289
         "EHLO EUR02-AM5-obe.outbound.protection.outlook.com"
         rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1732383AbgFWLeE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 23 Jun 2020 07:34:04 -0400
+        id S1732376AbgFWLdf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Jun 2020 07:33:35 -0400
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=n6Jk7qPuLZ9xB956ojvlla1BihJ2jOHGAWfe/MAKzPs0Vj2pE8kZVZz9w7YxcKeykrgeFa9KOAzeWVV0/BEwc9YF6M0D0kCziAMRKYrqtr6l1B9Y3ooCPEaa4+iae1E7I41kIXX/yprmvWpnrP3s3HWb0kYYJnL0NnUneRPk3nQiEVhomlMtKKmxpae32itbyZYyGtOvlIdnSXf3iNuTtEcZLDMcyJvoxRjdzCTZwGMu2e5QwoRqkvrzVB0uJPJ+h2jmsBKZHvN/PIcvIcCnK1vWX+g5sC6333VzxjmHbouO7hptxtSKWJMjNggSR7+NFqSK0I8kaD4T1LhqTcbcIA==
+ b=d7qylII9MuXotPfuIdmT4H6WyDCqknfDBNhCdDh4lGTDMVMe013U8pOKF2Cn4ZvHRhobvTgOQSbKoXiNXGSAmGP8eXOFyhLdnDlqBFKI+OPlGsS++y/7u4oIAta/cOn9IzEReQ1qUBOYoKELaXbt9Pzz9Ug9FkTjc99skH02WaTyiVrG8kWa1h9MaN9clQRxQ8OYvyGws3Y8gKq4YYO1z8gBwksPx0vTu+Fo1LE42WY1hJQrAJNvj2T2Z3bya0i/iDA+5OXIwx4L8L4qFXR/nDm6ntyoVlyaOQlaP8y1lPWIoAxqdobU3RXQpIgDg/M4sNJT7vdYRg99JY6kXy/5Pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector9901;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/d50D3BY7IdVsv7PjKW8OSKb4KcfS2vi56zitjmwUuk=;
- b=JiBc59mTF9p2RT32tqAs6e3mKbxMneZx+h5Qfg8aod4dtt3bqBAYNMI0SikwYuIbsGUAR0MAnNgQF2lU0PYulR45obLk8G7R8Tx8/kHoxsPrF24U18SniasBkcUbM7Iyg0sxAeRBZNRHqTh85D96u2wUxhduLQFgBC8MI7Qo0FI5Hogpwo5n+pXL6hKrTVKy7lm0KbO8eiwg/4K9Na3iRiMCztb9x+vEOl15R/DThAipS7vC2MIfSi6x+INoy6bBRVepHmvkDos6gEp28n+gY6NV+51CRAPxyQOeQ+U5MWzhv3XYZytkjqWsX/N/Qf51GAURTjk2pvNeGi2xRdThOg==
+ bh=X2h+zOs5R0eliKb/t+GzJ425evISynD5H2FbKyoioAw=;
+ b=nmKMHrsQl49+Xcdh/+WX3AHMM9W4G4zjnbPg1GdBpPcj1LgmArE8XFLhnN+XPld/ehQeqB4sK8L8cFcvg8evxb9zSG8Vam4haDHEpuc4VjWArakvY3k82w7ypZxU6tbbCJMlYa90s+YU8Fz0LH/qo37F7G2TcR4audNLLpcD9svUXc0ek+W+hXFYRmNaY/EuaCyE8wRkgGyxkokc2aTVy62yGv2WuEPdmcnTALMU/a51qsJ3TKC83MQWOHjS+b35KMXEqo4snDPvHGxP4teZKmqMs9jd3rTKxEBU9CUmYQ5NN2ifIU1RhG9TqFTQ07R3asHhILKj1iQunxa3k0ExTw==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
  dkim=pass header.d=oss.nxp.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
  s=selector2-NXP1-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=/d50D3BY7IdVsv7PjKW8OSKb4KcfS2vi56zitjmwUuk=;
- b=OGwMD7h7kUN2fChVoG8ydquk4hWtmWYFTP0eg+qLnVADY4Mnjly1/r6I5N72OKRVqQiNqcQvUkaxwfRhcKP/M1eEJrzal0Y9QT1qu/pjRZy0i/XKi0sSJxURf+CCZdNGgtEYOyItFIGMvoQT5+SeTpg4Ke6v796gOLef4Y4f2Fw=
+ bh=X2h+zOs5R0eliKb/t+GzJ425evISynD5H2FbKyoioAw=;
+ b=ai6ermZkFR7LfD7vTruyqRpHXYpO9rhfzF4DAXoRRW1fk572DGhjmiAFF+ocC9+GxTenL80wB+kK/3EZHzEL/2JWgI1grRXZiPwXs9nlAWu2m7DkvS38ObF2Y1hmkBcDBxTE1dsizzpuOgGcMB2eH1uVbsxfMtk31EGUZgtbQQ4=
 Authentication-Results: kernel.org; dkim=none (message not signed)
  header.d=none;kernel.org; dmarc=none action=none header.from=oss.nxp.com;
 Received: from VI1PR0401MB2287.eurprd04.prod.outlook.com
  (2603:10a6:800:2e::19) by VI1PR0401MB2558.eurprd04.prod.outlook.com
  (2603:10a6:800:5c::17) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3109.21; Tue, 23 Jun
- 2020 11:33:33 +0000
+ 2020 11:33:28 +0000
 Received: from VI1PR0401MB2287.eurprd04.prod.outlook.com
  ([fe80::9d5c:685e:4b51:fa60]) by VI1PR0401MB2287.eurprd04.prod.outlook.com
  ([fe80::9d5c:685e:4b51:fa60%3]) with mapi id 15.20.3109.027; Tue, 23 Jun 2020
- 11:33:33 +0000
+ 11:33:28 +0000
 From:   Daniel Baluta <daniel.baluta@oss.nxp.com>
 To:     khilman@kernel.org, ulf.hansson@linaro.org,
         linux-pm@vger.kernel.org, rjw@rjwysocki.net
 Cc:     linux-kernel@vger.kernel.org, linux-imx@nxp.com,
         kernel@pengutronix.de, alsa-devel@alsa-project.org
-Subject: [RESEND PATCH v2 2/2] ASoC: SOF: Use multi PM domains helpers
-Date:   Tue, 23 Jun 2020 14:33:01 +0300
-Message-Id: <20200623113301.631-3-daniel.baluta@oss.nxp.com>
+Subject: [RESEND PATCH v2 0/2] Introduce multi PM domains helpers
+Date:   Tue, 23 Jun 2020 14:32:59 +0300
+Message-Id: <20200623113301.631-1-daniel.baluta@oss.nxp.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200623113301.631-1-daniel.baluta@oss.nxp.com>
-References: <20200623113301.631-1-daniel.baluta@oss.nxp.com>
 Content-Type: text/plain
 X-ClientProxiedBy: AM0PR06CA0131.eurprd06.prod.outlook.com
  (2603:10a6:208:ab::36) To VI1PR0401MB2287.eurprd04.prod.outlook.com
  (2603:10a6:800:2e::19)
 MIME-Version: 1.0
 X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from fsr-ub1864-103.ro-buh02.nxp.com (83.217.231.2) by AM0PR06CA0131.eurprd06.prod.outlook.com (2603:10a6:208:ab::36) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3109.22 via Frontend Transport; Tue, 23 Jun 2020 11:33:32 +0000
+Received: from fsr-ub1864-103.ro-buh02.nxp.com (83.217.231.2) by AM0PR06CA0131.eurprd06.prod.outlook.com (2603:10a6:208:ab::36) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3109.22 via Frontend Transport; Tue, 23 Jun 2020 11:33:27 +0000
 X-Mailer: git-send-email 2.17.1
 X-Originating-IP: [83.217.231.2]
 X-MS-PublicTrafficType: Email
 X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 314bd7e8-5a82-4b36-c18d-08d8176942d4
+X-MS-Office365-Filtering-Correlation-Id: a9035f05-f04c-46d7-804d-08d817693fcd
 X-MS-TrafficTypeDiagnostic: VI1PR0401MB2558:
 X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
 X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <VI1PR0401MB25588E552B0DD7444A465344B8940@VI1PR0401MB2558.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:525;
+X-Microsoft-Antispam-PRVS: <VI1PR0401MB2558B8FD27901D6207683AD5B8940@VI1PR0401MB2558.eurprd04.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:7691;
 X-Forefront-PRVS: 04433051BF
 X-MS-Exchange-SenderADCheck: 1
 X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: mZIh5UwZreaHzitr5hW/R0bmrE/qaJM1BXC6Ru8HKLCzlun5xUjy+4TDhmxMmZaXJuO/lJDxtv4Dik7ixtpmUj1+yY6sCwgGZuKt87w4Y/OqpIJ3YxMHXqerKwqNxqqOFMow0T8ZR70rrg8IdCdJHmTBU+SmF3IBqVYvfeaCnuTrPcXMECLgmd7wCMd86UfWNTPBuVUkMhTzqVIJghy/mxm7+rh9uVgsWLn1lkzli0xIeK72oTz9VPMokqiXo7RQlxa8Q4HkRVKRqaN4xJOtjHWAGW7dUYdCymC2ly0NPT3MUV9eLr4kjAB/d3A0FuDxGmub1+rEL6/1UvhnaHmPKg==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR0401MB2287.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFTY:;SFS:(4636009)(366004)(66946007)(6506007)(4326008)(5660300002)(498600001)(44832011)(66476007)(8936002)(66556008)(956004)(86362001)(2616005)(6666004)(8676002)(6486002)(26005)(83380400001)(52116002)(186003)(2906002)(1076003)(16526019)(6512007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: 4OtpC/pbnpEdRZ6cGkXwX585NoqwqYtg+qtt8N7E141jfKjwXH3ryMgkR8tv/jkhR1PKPHzxR5TDmi9DxYUhU4oOllaKAkDM/5VBja0FZSnfWqh2tOere4ai538YOMffs2gJYvIMU8Vx4Hv6dr0ZBLT/TqJPUvGga3T595s3CAksXPn0JAUqKFu59TqFxdBkeASCmx1bAXb3ykt7FMXfzQOGgRaEAqBGzISWdG/kQVwbqgiudwJHpOhRE+EF7qIjQgKGik39Qoec/GesQ5TtvqS05zJ1VJXx0Xm8dCs4mMt2xVsR1cSDX1OrD7lVSC9vPV6E+OkrpHgM3TMoqt6NtRzCsNBgnG7zcddZ5cvhPEWm7vL03/EDRAN+KuDn9B8lvqWA3ZM8yLElF6AVTXRhHtATYfRXkgYKLBpttDgGxd93H/Tsoill5BiC9ggSRTe9KdlIGXNHCEN96rT48YOw2Kwy7qhA8FSLsHD0qHFRFxc=
+X-Microsoft-Antispam-Message-Info: tio7f3P4SM8NAquUNfg4XIi+ddw0SSWa/h+qCbjUxsbcxOkzSnyBtqe2+8FfFl6L2sHUStPrBWcnQqRPThrdF1Rw4xedP+J43nO63JBAcYmSTyMs/Ekop0Zrpznk24sptf3YlR/b44/MryUMQu6qdwCy6KK7ZkQh1ria68Q7F1wlNpnvz9nOmFQyNM32W14iHnt9fNeA3dDjB8zRcEl+fYOQPigjna9QcLZeIRNNoQlXVRVdk0hw2hayaIUdUjgsKiur40/+XxaAipp00BGinqZvG6Mk3Wl1EYbs87HPTeERd/oBSfqDqTcBo1gxw9M1
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR0401MB2287.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFTY:;SFS:(4636009)(366004)(66946007)(6506007)(4744005)(4326008)(5660300002)(498600001)(44832011)(66476007)(8936002)(66556008)(956004)(86362001)(2616005)(6666004)(8676002)(6486002)(26005)(83380400001)(52116002)(186003)(2906002)(1076003)(16526019)(6512007);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: 1nHRGlNWpKvPbfa7d+nNZl8tZa6qXiqCXAN6YAlIV4mBiQSlFK7+MhSNpR+6gaxPogVrs+AmpigXMCY+xjxYt4k9D1zK4MxldPtTcX5iyK7z/l4UEh/QcRZu4cPrbKsXo+3/dcYhigYC6HGDwscaRsa187WnLUy100fRkwl5IOUgV6lNUCla1QD5EBZDmSmlWDlAzw0jYi8uLMufE+8JMz04zm4tvfvZ2n2Ey1VKk8T7Kl4NMZ7sDceGPMWIAWEWmviwNQUymHDXO5teoxj9Yk8sni3fRh0yNWKw1yxuM9meWy+Su2vjvTPASPajMJGckPd5h1Gv4nTYrHmLZMMdsx5BHbSjgn3806GTrB1JT19sRzSPgtRglhjhIqH6BAcmX1fl0JyeQ1kMU78NHMb9BbX3GZZMP76LjknvlLJcFb59iMfljVz2gLyh9pMU0D/2SHu4TNaKi2MskLClaDpZP5zTWOU8DAZlu1/Lymz2Vgk=
 X-OriginatorOrg: oss.nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 314bd7e8-5a82-4b36-c18d-08d8176942d4
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2020 11:33:33.5278
+X-MS-Exchange-CrossTenant-Network-Message-Id: a9035f05-f04c-46d7-804d-08d817693fcd
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 23 Jun 2020 11:33:28.5860
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: fTbvkj0anU+lWtRDn8IwbtFDAKVCeSCPcV0R2stzsF+GymINUH699HIeHLhflzF9Xtfgx4fruuqenoYSr6VMoA==
+X-MS-Exchange-CrossTenant-UserPrincipalName: pkBqLzG+n04ZiP6Ks6uMZ+feB1rUFVkJhgjyl2LoAikOB0MyF+NFdIRSE5r7n6gJnEfAFf/ScquZ0PDki0rEBg==
 X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2558
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -98,127 +96,29 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Daniel Baluta <daniel.baluta@nxp.com>
 
-Use dev_multi_pm_attach / dev_multi_pm_detach instead of the hardcoded
-version.
+i.MX8QXP/i.MX8QM has IPs that need multiple power domains to be up
+in order to work. In order to help drivers, we introduce multi PM
+domains helpers that are able to activate/deactivate multi PM domains.
 
-Signed-off-by: Daniel Baluta <daniel.baluta@nxp.com>
----
- sound/soc/sof/imx/imx8.c | 60 ++++++----------------------------------
- 1 file changed, 9 insertions(+), 51 deletions(-)
+First patch introduces the helpers and second patch demonstrates how
+a driver can use them instead of hardcoding the PM domains handling.
 
-diff --git a/sound/soc/sof/imx/imx8.c b/sound/soc/sof/imx/imx8.c
-index b692752b2178..2e7635b697cf 100644
---- a/sound/soc/sof/imx/imx8.c
-+++ b/sound/soc/sof/imx/imx8.c
-@@ -51,10 +51,7 @@ struct imx8_priv {
- 	struct imx_sc_ipc *sc_ipc;
- 
- 	/* Power domain handling */
--	int num_domains;
--	struct device **pd_dev;
--	struct device_link **link;
--
-+	struct dev_multi_pm_domain_data *mpd;
- };
- 
- static void imx8_get_reply(struct snd_sof_dev *sdev)
-@@ -207,7 +204,6 @@ static int imx8_probe(struct snd_sof_dev *sdev)
- 	struct resource res;
- 	u32 base, size;
- 	int ret = 0;
--	int i;
- 
- 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
- 	if (!priv)
-@@ -218,45 +214,15 @@ static int imx8_probe(struct snd_sof_dev *sdev)
- 	priv->sdev = sdev;
- 
- 	/* power up device associated power domains */
--	priv->num_domains = of_count_phandle_with_args(np, "power-domains",
--						       "#power-domain-cells");
--	if (priv->num_domains < 0) {
--		dev_err(sdev->dev, "no power-domains property in %pOF\n", np);
--		return priv->num_domains;
--	}
--
--	priv->pd_dev = devm_kmalloc_array(&pdev->dev, priv->num_domains,
--					  sizeof(*priv->pd_dev), GFP_KERNEL);
--	if (!priv->pd_dev)
--		return -ENOMEM;
--
--	priv->link = devm_kmalloc_array(&pdev->dev, priv->num_domains,
--					sizeof(*priv->link), GFP_KERNEL);
--	if (!priv->link)
--		return -ENOMEM;
--
--	for (i = 0; i < priv->num_domains; i++) {
--		priv->pd_dev[i] = dev_pm_domain_attach_by_id(&pdev->dev, i);
--		if (IS_ERR(priv->pd_dev[i])) {
--			ret = PTR_ERR(priv->pd_dev[i]);
--			goto exit_unroll_pm;
--		}
--		priv->link[i] = device_link_add(&pdev->dev, priv->pd_dev[i],
--						DL_FLAG_STATELESS |
--						DL_FLAG_PM_RUNTIME |
--						DL_FLAG_RPM_ACTIVE);
--		if (!priv->link[i]) {
--			ret = -ENOMEM;
--			dev_pm_domain_detach(priv->pd_dev[i], false);
--			goto exit_unroll_pm;
--		}
--	}
-+	priv->mpd = dev_multi_pm_attach(&pdev->dev);
-+	if (IS_ERR(priv->mpd))
-+		return PTR_ERR(priv->mpd);
- 
- 	ret = imx_scu_get_handle(&priv->sc_ipc);
- 	if (ret) {
- 		dev_err(sdev->dev, "Cannot obtain SCU handle (err = %d)\n",
- 			ret);
--		goto exit_unroll_pm;
-+		goto exit_detach_pm;
- 	}
- 
- 	priv->ipc_dev = platform_device_register_data(sdev->dev, "imx-dsp",
-@@ -264,7 +230,7 @@ static int imx8_probe(struct snd_sof_dev *sdev)
- 						      pdev, sizeof(*pdev));
- 	if (IS_ERR(priv->ipc_dev)) {
- 		ret = PTR_ERR(priv->ipc_dev);
--		goto exit_unroll_pm;
-+		goto exit_detach_pm;
- 	}
- 
- 	priv->dsp_ipc = dev_get_drvdata(&priv->ipc_dev->dev);
-@@ -328,26 +294,18 @@ static int imx8_probe(struct snd_sof_dev *sdev)
- 
- exit_pdev_unregister:
- 	platform_device_unregister(priv->ipc_dev);
--exit_unroll_pm:
--	while (--i >= 0) {
--		device_link_del(priv->link[i]);
--		dev_pm_domain_detach(priv->pd_dev[i], false);
--	}
--
-+exit_detach_pm:
-+	dev_multi_pm_detach(priv->mpd);
- 	return ret;
- }
- 
- static int imx8_remove(struct snd_sof_dev *sdev)
- {
- 	struct imx8_priv *priv = (struct imx8_priv *)sdev->private;
--	int i;
- 
- 	platform_device_unregister(priv->ipc_dev);
- 
--	for (i = 0; i < priv->num_domains; i++) {
--		device_link_del(priv->link[i]);
--		dev_pm_domain_detach(priv->pd_dev[i], false);
--	}
-+	dev_multi_pm_detach(priv->mpd);
- 
- 	return 0;
- }
+Changes since v1: (addressed Ranjani's comments)
+	- enhanced description for dev_multi_pm_attach return value
+	- renamed exit_unroll_pm label to exit_detach_pm
+
+Ideally would be to have patch 1/2 merged via power tree and then I
+will submit again patch 2/2 on sound tree.
+
+Daniel Baluta (2):
+  PM / domains: Introduce multi PM domains helpers
+  ASoC: SOF: Use multi PM domains helpers
+
+ drivers/base/power/common.c | 93 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   | 19 ++++++++
+ sound/soc/sof/imx/imx8.c    | 60 ++++--------------------
+ 3 files changed, 121 insertions(+), 51 deletions(-)
+
 -- 
 2.17.1
 
