@@ -4,46 +4,46 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5A7FC433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14105C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8F63B20780
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5B0B20780
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="INaFENB7"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="h8U0RfF1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732278AbgFWEJA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jun 2020 00:09:00 -0400
-Received: from mail29.static.mailgun.info ([104.130.122.29]:38961 "EHLO
+        id S1732354AbgFWEJP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jun 2020 00:09:15 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:39604 "EHLO
         mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1732245AbgFWEI7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2020 00:08:59 -0400
+        by vger.kernel.org with ESMTP id S1732169AbgFWEI6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2020 00:08:58 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1592885339; h=Content-Transfer-Encoding: MIME-Version:
+ s=smtp; t=1592885338; h=Content-Transfer-Encoding: MIME-Version:
  References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=Sd4NzcJtimoRSr2CyJHyFEljlaFfuHbcu+YA4Khlm68=; b=INaFENB7fdSB+nFudfm6j4/+rKPItqxr4uYLXv3AMOsuXdvsXtDhanCxh0TWam7LSMynpAOZ
- HPBPb0oKNlON+tGmrOy6C7/QJAuQGhA4cnEm/EJODmnb/0D1vTe56IA1Sq1gqfdX6kS1lLq5
- 8SLLQB0o2B4sda7F8ogPpad1t+k=
+ Sender; bh=LS4JnOpUAKsNo8Zt5QnpjhczJmn2rGcrdAVF8H4PvvE=; b=h8U0RfF1mtDbhLMwwqcHhHRbFfCoj0OnwYI0/UmCHv3uZiprE/wZgagcKiDDo19RAjHKuBYT
+ WOcAW+F8RwGdNgfQB9fxfoEoqEe/mEms/cm/0uMsGcFB4n/3IMxWDPM6YkjhqLLTxV4AXdos
+ 2Nua3iU8oE6WLaNQl1b9WwbJKgA=
 X-Mailgun-Sending-Ip: 104.130.122.29
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n11.prod.us-east-1.postgun.com with SMTP id
- 5ef18040c4bb4f886dce0304 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 23 Jun 2020 04:08:32
+ smtp-out-n19.prod.us-east-1.postgun.com with SMTP id
+ 5ef1803f567385e8e794f620 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 23 Jun 2020 04:08:31
  GMT
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 37A0DC433C8; Tue, 23 Jun 2020 04:08:31 +0000 (UTC)
+        id DC6A0C433A1; Tue, 23 Jun 2020 04:08:30 +0000 (UTC)
 Received: from mdtipton-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8C465C43395;
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 1977BC433CB;
         Tue, 23 Jun 2020 04:08:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8C465C43395
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 1977BC433CB
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=mdtipton@codeaurora.org
 From:   Mike Tipton <mdtipton@codeaurora.org>
@@ -51,9 +51,9 @@ To:     georgi.djakov@linaro.org
 Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linux-kernel@vger.kernel.org, Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH 3/4] interconnect: qcom: Add support for per-BCM scaling factors
-Date:   Mon, 22 Jun 2020 21:08:13 -0700
-Message-Id: <20200623040814.23791-4-mdtipton@codeaurora.org>
+Subject: [PATCH 2/4] interconnect: qcom: Only wait for completion in AMC/WAKE by default
+Date:   Mon, 22 Jun 2020 21:08:12 -0700
+Message-Id: <20200623040814.23791-3-mdtipton@codeaurora.org>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20200623040814.23791-1-mdtipton@codeaurora.org>
 References: <20200623040814.23791-1-mdtipton@codeaurora.org>
@@ -64,70 +64,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently, bcm-voter always assumes requests are made in KBps and that
-BCM HW always wants them in Bps, so it always scales the requests by
-1000. However, certain use cases and BCMs may use different units.
-Thus, add support for BCM-specific scaling factors.
+Change the default TCS wait behavior to only wait for completion in AMC
+and WAKE. Waiting isn't necessary in the SLEEP TCS, since votes are only
+being removed in this case. Resources can be safely disabled
+asynchronously in parallel with the rest of the power collapse sequence.
+This reduces the sleep entry latency.
 
 Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
 ---
- drivers/interconnect/qcom/bcm-voter.c | 4 ++--
- drivers/interconnect/qcom/icc-rpmh.c  | 3 +++
- drivers/interconnect/qcom/icc-rpmh.h  | 2 ++
- 3 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/interconnect/qcom/bcm-voter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
-index bb83ce7554b7..a68c858ca6b7 100644
+index e9f66f5c8a91..bb83ce7554b7 100644
 --- a/drivers/interconnect/qcom/bcm-voter.c
 +++ b/drivers/interconnect/qcom/bcm-voter.c
-@@ -72,11 +72,11 @@ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
- 			agg_peak[bucket] = max(agg_peak[bucket], temp);
- 		}
+@@ -345,7 +345,7 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+ 	voter->np = np;
  
--		temp = agg_avg[bucket] * 1000ULL;
-+		temp = agg_avg[bucket] * bcm->vote_scale;
- 		do_div(temp, bcm->aux_data.unit);
- 		bcm->vote_x[bucket] = temp;
+ 	if (of_property_read_u32(np, "qcom,tcs-wait", &voter->tcs_wait))
+-		voter->tcs_wait = QCOM_ICC_TAG_ALWAYS;
++		voter->tcs_wait = QCOM_ICC_TAG_ACTIVE_ONLY;
  
--		temp = agg_peak[bucket] * 1000ULL;
-+		temp = agg_peak[bucket] * bcm->vote_scale;
- 		do_div(temp, bcm->aux_data.unit);
- 		bcm->vote_y[bucket] = temp;
- 	}
-diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-index 3ac5182c9ab2..008846c17bec 100644
---- a/drivers/interconnect/qcom/icc-rpmh.c
-+++ b/drivers/interconnect/qcom/icc-rpmh.c
-@@ -136,6 +136,9 @@ int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev)
- 	INIT_LIST_HEAD(&bcm->list);
- 	INIT_LIST_HEAD(&bcm->ws_list);
- 
-+	if (!bcm->vote_scale)
-+		bcm->vote_scale = 1000;
-+
- 	/* Link Qnodes to their respective BCMs */
- 	for (i = 0; i < bcm->num_nodes; i++) {
- 		qn = bcm->nodes[i];
-diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
-index 903d25e61984..200e98be5926 100644
---- a/drivers/interconnect/qcom/icc-rpmh.h
-+++ b/drivers/interconnect/qcom/icc-rpmh.h
-@@ -94,6 +94,7 @@ struct qcom_icc_node {
-  * @addr: address offsets used when voting to RPMH
-  * @vote_x: aggregated threshold values, represents sum_bw when @type is bw bcm
-  * @vote_y: aggregated threshold values, represents peak_bw when @type is bw bcm
-+ * @vote_scale: scaling factor for vote_x and vote_y
-  * @dirty: flag used to indicate whether the bcm needs to be committed
-  * @keepalive: flag used to indicate whether a keepalive is required
-  * @aux_data: auxiliary data used when calculating threshold values and
-@@ -109,6 +110,7 @@ struct qcom_icc_bcm {
- 	u32 addr;
- 	u64 vote_x[QCOM_ICC_NUM_BUCKETS];
- 	u64 vote_y[QCOM_ICC_NUM_BUCKETS];
-+	u64 vote_scale;
- 	bool dirty;
- 	bool keepalive;
- 	struct bcm_db aux_data;
+ 	mutex_init(&voter->lock);
+ 	INIT_LIST_HEAD(&voter->commit_list);
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
