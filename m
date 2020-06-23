@@ -2,61 +2,47 @@ Return-Path: <SRS0=QwoY=AE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14105C433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E4C1EC433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 05:12:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E5B0B20780
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 04:09:19 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="h8U0RfF1"
+	by mail.kernel.org (Postfix) with ESMTP id C8A672076C
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 05:12:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732354AbgFWEJP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jun 2020 00:09:15 -0400
-Received: from mail29.static.mailgun.info ([104.130.122.29]:39604 "EHLO
-        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1732169AbgFWEI6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2020 00:08:58 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1592885338; h=Content-Transfer-Encoding: MIME-Version:
- References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=LS4JnOpUAKsNo8Zt5QnpjhczJmn2rGcrdAVF8H4PvvE=; b=h8U0RfF1mtDbhLMwwqcHhHRbFfCoj0OnwYI0/UmCHv3uZiprE/wZgagcKiDDo19RAjHKuBYT
- WOcAW+F8RwGdNgfQB9fxfoEoqEe/mEms/cm/0uMsGcFB4n/3IMxWDPM6YkjhqLLTxV4AXdos
- 2Nua3iU8oE6WLaNQl1b9WwbJKgA=
-X-Mailgun-Sending-Ip: 104.130.122.29
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n19.prod.us-east-1.postgun.com with SMTP id
- 5ef1803f567385e8e794f620 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 23 Jun 2020 04:08:31
- GMT
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id DC6A0C433A1; Tue, 23 Jun 2020 04:08:30 +0000 (UTC)
-Received: from mdtipton-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 1977BC433CB;
-        Tue, 23 Jun 2020 04:08:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 1977BC433CB
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=mdtipton@codeaurora.org
-From:   Mike Tipton <mdtipton@codeaurora.org>
-To:     georgi.djakov@linaro.org
-Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH 2/4] interconnect: qcom: Only wait for completion in AMC/WAKE by default
-Date:   Mon, 22 Jun 2020 21:08:12 -0700
-Message-Id: <20200623040814.23791-3-mdtipton@codeaurora.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20200623040814.23791-1-mdtipton@codeaurora.org>
-References: <20200623040814.23791-1-mdtipton@codeaurora.org>
+        id S1728615AbgFWFMj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jun 2020 01:12:39 -0400
+Received: from mga02.intel.com ([134.134.136.20]:8579 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726359AbgFWFMj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Jun 2020 01:12:39 -0400
+IronPort-SDR: dR0cHZlvxZ7Q8pQktbIMSMAKulHP9DRZFexwWNPExun2XGqEmz0395uuzbJGllJb0ZaRF0rr2+
+ 9KBJG0Yluxnw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9660"; a="132378787"
+X-IronPort-AV: E=Sophos;i="5.75,270,1589266800"; 
+   d="scan'208";a="132378787"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga002.fm.intel.com ([10.253.24.26])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Jun 2020 22:12:37 -0700
+IronPort-SDR: 4US/X2t6JntLkTjyz/6nb1NF6h/OLfkpRiDyZK4gFqjAVc44jszCKKXxO+SxCxH24mpPrsigAy
+ vwA1ASmbdofQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,270,1589266800"; 
+   d="scan'208";a="311165675"
+Received: from spandruv-mobl.amr.corp.intel.com ([10.255.228.38])
+  by fmsmga002.fm.intel.com with ESMTP; 22 Jun 2020 22:12:36 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 1/2] cpufreq: intel_pstate: Allow enable/disable energy efficiency
+Date:   Mon, 22 Jun 2020 22:12:32 -0700
+Message-Id: <20200623051233.1419218-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.25.4
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -64,31 +50,135 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Change the default TCS wait behavior to only wait for completion in AMC
-and WAKE. Waiting isn't necessary in the SLEEP TCS, since votes are only
-being removed in this case. Resources can be safely disabled
-asynchronously in parallel with the rest of the power collapse sequence.
-This reduces the sleep entry latency.
+By default intel_pstate driver disables energy efficiency by setting
+MSR_IA32_POWER_CTL bit 19 for Kaby Lake desktop CPU model in HWP mode.
+This CPU model is also shared by Coffee Lake desktop CPUs. This allows
+these systems to reach maximum possible frequency. But this adds power
+penalty, which some customers don't want. They want some way to enable/
+disable dynamically.
 
-Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
+So, add an additional attribute "energy_efficiency_enable" under
+/sys/devices/system/cpu/intel_pstate/ for these CPU models. This allows
+to read and write bit 19 ("Disable Energy Efficiency Optimization") in
+the MSR IA32_POWER_CTL.
+
+This attribute is present in both HWP and non-HWP mode as this has an
+effect in both modes. Refer to Intel Software Developer's manual for
+details. The scope of this bit is package wide.
+
+Suggested-by: Len Brown <lenb@kernel.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- drivers/interconnect/qcom/bcm-voter.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/admin-guide/pm/intel_pstate.rst |  7 +++
+ drivers/cpufreq/intel_pstate.c                | 49 ++++++++++++++++++-
+ 2 files changed, 54 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
-index e9f66f5c8a91..bb83ce7554b7 100644
---- a/drivers/interconnect/qcom/bcm-voter.c
-+++ b/drivers/interconnect/qcom/bcm-voter.c
-@@ -345,7 +345,7 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
- 	voter->np = np;
+diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
+index 39d80bc29ccd..939bfdc53f4f 100644
+--- a/Documentation/admin-guide/pm/intel_pstate.rst
++++ b/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -431,6 +431,13 @@ argument is passed to the kernel in the command line.
+ 	supported in the current configuration, writes to this attribute will
+ 	fail with an appropriate error.
  
- 	if (of_property_read_u32(np, "qcom,tcs-wait", &voter->tcs_wait))
--		voter->tcs_wait = QCOM_ICC_TAG_ALWAYS;
-+		voter->tcs_wait = QCOM_ICC_TAG_ACTIVE_ONLY;
++``energy_efficiency_enable``
++	This attribute is only present on platforms, which has CPUs matching
++	Kaby Lake desktop CPU model. By default "energy_efficiency" is disabled
++	on these CPU models in HWP mode by this driver. Enabling energy
++	efficiency may limit maximum operating frequency in both HWP and non
++	HWP mode.
++
+ Interpretation of Policy Attributes
+ -----------------------------------
  
- 	mutex_init(&voter->lock);
- 	INIT_LIST_HEAD(&voter->commit_list);
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 8e23a698ce04..1cf6d06f2314 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -1218,6 +1218,44 @@ static ssize_t store_hwp_dynamic_boost(struct kobject *a,
+ 	return count;
+ }
+ 
++#define MSR_IA32_POWER_CTL_BIT_EE	19
++
++static ssize_t show_energy_efficiency_enable(struct kobject *kobj,
++					     struct kobj_attribute *attr,
++					     char *buf)
++{
++	u64 power_ctl;
++	int enable;
++
++	rdmsrl(MSR_IA32_POWER_CTL, power_ctl);
++	enable = (power_ctl & BIT(MSR_IA32_POWER_CTL_BIT_EE)) >> MSR_IA32_POWER_CTL_BIT_EE;
++	return sprintf(buf, "%d\n", !enable);
++}
++
++static ssize_t store_energy_efficiency_enable(struct kobject *a,
++					      struct kobj_attribute *b,
++					      const char *buf, size_t count)
++{
++	u64 power_ctl;
++	u32 input;
++	int ret;
++
++	ret = kstrtouint(buf, 10, &input);
++	if (ret)
++		return ret;
++
++	mutex_lock(&intel_pstate_driver_lock);
++	rdmsrl(MSR_IA32_POWER_CTL, power_ctl);
++	if (input)
++		power_ctl &= ~BIT(MSR_IA32_POWER_CTL_BIT_EE);
++	else
++		power_ctl |= BIT(MSR_IA32_POWER_CTL_BIT_EE);
++	wrmsrl(MSR_IA32_POWER_CTL, power_ctl);
++	mutex_unlock(&intel_pstate_driver_lock);
++
++	return count;
++}
++
+ show_one(max_perf_pct, max_perf_pct);
+ show_one(min_perf_pct, min_perf_pct);
+ 
+@@ -1228,6 +1266,7 @@ define_one_global_rw(min_perf_pct);
+ define_one_global_ro(turbo_pct);
+ define_one_global_ro(num_pstates);
+ define_one_global_rw(hwp_dynamic_boost);
++define_one_global_rw(energy_efficiency_enable);
+ 
+ static struct attribute *intel_pstate_attributes[] = {
+ 	&status.attr,
+@@ -1241,6 +1280,8 @@ static const struct attribute_group intel_pstate_attr_group = {
+ 	.attrs = intel_pstate_attributes,
+ };
+ 
++static const struct x86_cpu_id intel_pstate_cpu_ee_disable_ids[];
++
+ static void __init intel_pstate_sysfs_expose_params(void)
+ {
+ 	struct kobject *intel_pstate_kobject;
+@@ -1273,6 +1314,12 @@ static void __init intel_pstate_sysfs_expose_params(void)
+ 				       &hwp_dynamic_boost.attr);
+ 		WARN_ON(rc);
+ 	}
++
++	if (x86_match_cpu(intel_pstate_cpu_ee_disable_ids)) {
++		rc = sysfs_create_file(intel_pstate_kobject,
++				       &energy_efficiency_enable.attr);
++		WARN_ON(rc);
++	}
+ }
+ /************************** sysfs end ************************/
+ 
+@@ -1288,8 +1335,6 @@ static void intel_pstate_hwp_enable(struct cpudata *cpudata)
+ 		cpudata->epp_default = intel_pstate_get_epp(cpudata, 0);
+ }
+ 
+-#define MSR_IA32_POWER_CTL_BIT_EE	19
+-
+ /* Disable energy efficiency optimization */
+ static void intel_pstate_disable_ee(int cpu)
+ {
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+2.25.4
 
