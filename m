@@ -2,111 +2,230 @@ Return-Path: <SRS0=QwoY=AE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0569C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 16:47:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3D520C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 17:22:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B78862070E
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 16:47:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 15390206EB
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 17:22:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XaG5IS7m"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="mDDpcqTh"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733048AbgFWQrh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jun 2020 12:47:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47710 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733052AbgFWQrg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2020 12:47:36 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 47383C061755;
-        Tue, 23 Jun 2020 09:47:36 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id g21so4001237wmg.0;
-        Tue, 23 Jun 2020 09:47:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:subject:message-id:mime-version:content-disposition;
-        bh=2a8A3SZ7tBOcfEqWak8yyvM0vR1xvbK/AAfn7XUHse8=;
-        b=XaG5IS7m1eA+gI4FIsCp1abY5EaS5J4F++5cxdUwUG2r6Oj46qpLOXkCiesfyQ+75z
-         5e1kVESZ1WPd+WbF1ptJigMflNi8z0SqXlT85/Jy2hBzcQKK56SkP6qFr77pZHnkTVHU
-         og9a64+MImwd6LMEHElbEuslUPh57AbB7GqvCWjqbdwrAXyD/tMgKzx2DTeu64K4cUjJ
-         Ab295T4L4df3dCYNjJNyGD2Bnz58dIMwlJemGRZLq668ic4/wmCEsew/Di9V5GbP0z7T
-         bR7srReGDI5xCZ0am81PqoKq18wXCcaE/d9u27k0n0AMwjBJhcxh88BWphAs7Yz5thUe
-         IbsA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:subject:message-id:mime-version
-         :content-disposition;
-        bh=2a8A3SZ7tBOcfEqWak8yyvM0vR1xvbK/AAfn7XUHse8=;
-        b=LvvCRSC9gllARgeK+p+oKgKnVhyD8YD1d3dGDidQp8/eSyh24GW9lMqHJ0ICcz9Tlr
-         TI/7VI6/GW9e8vJxukmjEiAMTpygDmofls2vD67ew5+1ZDBgjLyU+HlWaS3unrAcJ4rn
-         WvBFFFihgZ3VDbug0l9BBLhA/rE7WI8Pjb81RjP1D4TTJffZanOX6i8x71NuCpMfnk18
-         XS14vRqH4eDuqFGhgyIjRiaNf//+szsFCtnZ6xDchiEsDzUP5zFFiI8Epr+FlUSwZqDH
-         /mVA4UREh5GTACjdLDL/OLHlllLIflq8bZ2B7rvu6fNW7re9VBmYfRw4qlG3rPafwiNk
-         1dSA==
-X-Gm-Message-State: AOAM5300vQpqnPa9XAOgN5nGXCW57x+cm37upcPCbxvc/TXJL13Ex/tV
-        Z5TtMJENEV90PH+CX/3Z5YE=
-X-Google-Smtp-Source: ABdhPJxSuhZVggr1/EQ+Jrz7f0zu6OuFXAZICwjiL3Xfp9K7vXfwNBCxLQtiBy6U5aX7CEwNsEZHRQ==
-X-Received: by 2002:a1c:2485:: with SMTP id k127mr22257875wmk.138.1592930855034;
-        Tue, 23 Jun 2020 09:47:35 -0700 (PDT)
-Received: from macmini.local (181.4.199.77.rev.sfr.net. [77.199.4.181])
-        by smtp.gmail.com with ESMTPSA id d28sm25319430wrc.50.2020.06.23.09.47.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2020 09:47:34 -0700 (PDT)
-Date:   Tue, 23 Jun 2020 18:47:33 +0200
-From:   Willy Wolff <willy.mh.wolff.ml@gmail.com>
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: brocken devfreq simple_ondemand for Odroid XU3/4?
-Message-ID: <20200623164733.qbhua7b6cg2umafj@macmini.local>
+        id S1732526AbgFWRWR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jun 2020 13:22:17 -0400
+Received: from m43-7.mailgun.net ([69.72.43.7]:22836 "EHLO m43-7.mailgun.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728916AbgFWRWR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Jun 2020 13:22:17 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1592932935; h=In-Reply-To: Content-Type: MIME-Version:
+ References: Message-ID: Subject: Cc: To: From: Date: Sender;
+ bh=x8Cxh62MOawA5bvEovUYlLnlKgrUeX79yYs3hO4HFMU=; b=mDDpcqTh39AAmRmxhluQWeFzdLPufBDgIaNb120zzUegMOqhccodHTXmQZQT1ObEjT7G+Hbo
+ b7/+VLLkRRIQaTejKiBbJTlVhNT1k47vzpWP8yV8ysl56jegAUw1isbSzpnDx3zB36M3uu6G
+ ix08JD7TbguFHR1QqiFB0GrteQo=
+X-Mailgun-Sending-Ip: 69.72.43.7
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n14.prod.us-west-2.postgun.com with SMTP id
+ 5ef23a36fe1db4db89f98550 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 23 Jun 2020 17:21:58
+ GMT
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id A2E0BC433A0; Tue, 23 Jun 2020 17:21:58 +0000 (UTC)
+Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: ilina)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 6329EC433C6;
+        Tue, 23 Jun 2020 17:21:57 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 6329EC433C6
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=ilina@codeaurora.org
+Date:   Tue, 23 Jun 2020 11:21:56 -0600
+From:   Lina Iyer <ilina@codeaurora.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        Saravana Kannan <saravanak@google.com>,
+        linux-pm@vger.kernel.org, "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Benjamin Gaignard <benjamin.gaignard@st.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH 4/5] cpuidle: psci: Convert PM domain to platform driver
+Message-ID: <20200623172156.GA16960@codeaurora.org>
+References: <20200615152054.6819-1-ulf.hansson@linaro.org>
+ <20200615152054.6819-5-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
+In-Reply-To: <20200615152054.6819-5-ulf.hansson@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi everybody,
+On Mon, Jun 15 2020 at 09:21 -0600, Ulf Hansson wrote:
+>To enable support for deferred probing and to allow implementation of the
+>->sync_state() callback from subsequent changes, let's convert into a
+>platform driver.
+>
+>Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Reviewed-by: Lina Iyer <ilina@codeaurora.org>
 
-Is DVFS for memory bus really working on Odroid XU3/4 board?
-Using a simple microbenchmark that is doing only memory accesses, memory DVFS
-seems to not working properly:
-
-The microbenchmark is doing pointer chasing by following index in an array.
-Indices in the array are set to follow a random pattern (cutting prefetcher),
-and forcing RAM access.
-
-git clone https://github.com/wwilly/benchmark.git \
-  && cd benchmark \
-  && source env.sh \
-  && ./bench_build.sh \
-  && bash source/scripts/test_dvfs_mem.sh
-
-Python 3, cmake and sudo rights are required.
-
-Results:
-DVFS CPU with performance governor
-mem_gov = simple_ondemand at 165000000 Hz in idle, should be bumped when the
-benchmark is running.
-- on the LITTLE cluster it takes 4.74308 s to run (683.004 c per memory access),
-- on the big cluster it takes 4.76556 s to run (980.343 c per moemory access).
-
-While forcing DVFS memory bus to use performance governor,
-mem_gov = performance at 825000000 Hz in idle,
-- on the LITTLE cluster it takes 1.1451 s to run (164.894 c per memory access),
-- on the big cluster it takes 1.18448 s to run (243.664 c per memory access).
-
-The kernel used is the last 5.7.5 stable with default exynos_defconfig.
-
-Cheers,
-Willy
+>---
+> drivers/cpuidle/cpuidle-psci-domain.c | 45 +++++++++++++++++----------
+> 1 file changed, 28 insertions(+), 17 deletions(-)
+>
+>diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+>index e48e578aaa7d..bf527d2bb4b6 100644
+>--- a/drivers/cpuidle/cpuidle-psci-domain.c
+>+++ b/drivers/cpuidle/cpuidle-psci-domain.c
+>@@ -12,6 +12,7 @@
+> #include <linux/cpu.h>
+> #include <linux/device.h>
+> #include <linux/kernel.h>
+>+#include <linux/platform_device.h>
+> #include <linux/pm_domain.h>
+> #include <linux/pm_runtime.h>
+> #include <linux/psci.h>
+>@@ -42,8 +43,8 @@ static int psci_pd_power_off(struct generic_pm_domain *pd)
+> 	return 0;
+> }
+>
+>-static int __init psci_pd_parse_state_nodes(struct genpd_power_state *states,
+>-					int state_count)
+>+static int psci_pd_parse_state_nodes(struct genpd_power_state *states,
+>+				     int state_count)
+> {
+> 	int i, ret;
+> 	u32 psci_state, *psci_state_buf;
+>@@ -72,7 +73,7 @@ static int __init psci_pd_parse_state_nodes(struct genpd_power_state *states,
+> 	return ret;
+> }
+>
+>-static int __init psci_pd_parse_states(struct device_node *np,
+>+static int psci_pd_parse_states(struct device_node *np,
+> 			struct genpd_power_state **states, int *state_count)
+> {
+> 	int ret;
+>@@ -100,7 +101,7 @@ static void psci_pd_free_states(struct genpd_power_state *states,
+> 	kfree(states);
+> }
+>
+>-static int __init psci_pd_init(struct device_node *np)
+>+static int psci_pd_init(struct device_node *np)
+> {
+> 	struct generic_pm_domain *pd;
+> 	struct psci_pd_provider *pd_provider;
+>@@ -167,7 +168,7 @@ static int __init psci_pd_init(struct device_node *np)
+> 	return ret;
+> }
+>
+>-static void __init psci_pd_remove(void)
+>+static void psci_pd_remove(void)
+> {
+> 	struct psci_pd_provider *pd_provider, *it;
+> 	struct generic_pm_domain *genpd;
+>@@ -185,7 +186,7 @@ static void __init psci_pd_remove(void)
+> 	}
+> }
+>
+>-static int __init psci_pd_init_topology(struct device_node *np, bool add)
+>+static int psci_pd_init_topology(struct device_node *np, bool add)
+> {
+> 	struct device_node *node;
+> 	struct of_phandle_args child, parent;
+>@@ -211,24 +212,24 @@ static int __init psci_pd_init_topology(struct device_node *np, bool add)
+> 	return 0;
+> }
+>
+>-static int __init psci_pd_add_topology(struct device_node *np)
+>+static int psci_pd_add_topology(struct device_node *np)
+> {
+> 	return psci_pd_init_topology(np, true);
+> }
+>
+>-static void __init psci_pd_remove_topology(struct device_node *np)
+>+static void psci_pd_remove_topology(struct device_node *np)
+> {
+> 	psci_pd_init_topology(np, false);
+> }
+>
+>-static const struct of_device_id psci_of_match[] __initconst = {
+>+static const struct of_device_id psci_of_match[] = {
+> 	{ .compatible = "arm,psci-1.0" },
+> 	{}
+> };
+>
+>-static int __init psci_idle_init_domains(void)
+>+static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+> {
+>-	struct device_node *np = of_find_matching_node(NULL, psci_of_match);
+>+	struct device_node *np = pdev->dev.of_node;
+> 	struct device_node *node;
+> 	int ret = 0, pd_count = 0;
+>
+>@@ -237,7 +238,7 @@ static int __init psci_idle_init_domains(void)
+>
+> 	/* Currently limit the hierarchical topology to be used in OSI mode. */
+> 	if (!psci_has_osi_support())
+>-		goto out;
+>+		return 0;
+>
+> 	/*
+> 	 * Parse child nodes for the "#power-domain-cells" property and
+>@@ -256,7 +257,7 @@ static int __init psci_idle_init_domains(void)
+>
+> 	/* Bail out if not using the hierarchical CPU topology. */
+> 	if (!pd_count)
+>-		goto out;
+>+		return 0;
+>
+> 	/* Link genpd masters/subdomains to model the CPU topology. */
+> 	ret = psci_pd_add_topology(np);
+>@@ -271,9 +272,8 @@ static int __init psci_idle_init_domains(void)
+> 		goto remove_pd;
+> 	}
+>
+>-	of_node_put(np);
+> 	pr_info("Initialized CPU PM domain topology\n");
+>-	return pd_count;
+>+	return 0;
+>
+> put_node:
+> 	of_node_put(node);
+>@@ -281,10 +281,21 @@ static int __init psci_idle_init_domains(void)
+> 	if (pd_count)
+> 		psci_pd_remove();
+> 	pr_err("failed to create CPU PM domains ret=%d\n", ret);
+>-out:
+>-	of_node_put(np);
+> 	return ret;
+> }
+>+
+>+static struct platform_driver psci_cpuidle_domain_driver = {
+>+	.probe  = psci_cpuidle_domain_probe,
+>+	.driver = {
+>+		.name = "psci-cpuidle-domain",
+>+		.of_match_table = psci_of_match,
+>+	},
+>+};
+>+
+>+static int __init psci_idle_init_domains(void)
+>+{
+>+	return platform_driver_register(&psci_cpuidle_domain_driver);
+>+}
+> subsys_initcall(psci_idle_init_domains);
+>
+> struct device *psci_dt_attach_cpu(int cpu)
+>-- 
+>2.20.1
+>
