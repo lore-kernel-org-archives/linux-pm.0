@@ -2,80 +2,46 @@ Return-Path: <SRS0=QwoY=AE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FC54C433E3
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 18:09:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 180A3C433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 18:27:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5C8902078B
-	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 18:09:23 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rmYzdO7O"
+	by mail.kernel.org (Postfix) with ESMTP id E3A85207FF
+	for <linux-pm@archiver.kernel.org>; Tue, 23 Jun 2020 18:27:18 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733178AbgFWSIp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 23 Jun 2020 14:08:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60170 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732549AbgFWSIm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 23 Jun 2020 14:08:42 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5B3B8C061573;
-        Tue, 23 Jun 2020 11:08:41 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id o11so13793934wrv.9;
-        Tue, 23 Jun 2020 11:08:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=bmuqJ4buTrZEnhQ3OwlLnys6fUl+viCTck1AnKYO5ok=;
-        b=rmYzdO7OYq8VSY73XgUoty5FL5YDKiP4p4z37fZM/eE4+AwDh6+vsvkFJbY0AH8NtO
-         A8oWX/hZNEMJznlNSATUsszAsF+1YdgGxyi7fxoNYabRcxxDrwQO47R86Att5QVajQaF
-         QdzAFU3hN9qAw1MhAWe2M5d+TGd6kuidj2Xn2Vuinx+KCLBrKBV/Zqq1RQ5fm0hzlSJP
-         LQEniNhn+LLj0oAB1BJj+XWF/P2qOp1KY3CENTrRHiIw4GSDeSXNs4ampdzUF8vykApc
-         A+7VsZgU4gkCOe5nHOqGJYoX3FFvegQfbMq3ANT6UX+SdtZlyZ6qUEdoOHJzBvfycMYN
-         TLzg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=bmuqJ4buTrZEnhQ3OwlLnys6fUl+viCTck1AnKYO5ok=;
-        b=PQIqSDqWnpqe4HjZaCPvgIDewxEivwGNjHfTS0UxeleUo0QF7sHhyqggqwWFrkPXsg
-         nW96RhFLk3gs10GS2+Z/2nozYOVlpzmUlQSTerRSGqycKx98AwX8dNQMjzp5s2ZuOhPt
-         4D7wnfvLmlRGdLJlnEz5jXcXrvSkburR4J2ZyZuNitla42y5TeIqOds6dKotBd9/84x3
-         +bEM3LGCyy6Jm5I9kv3XpSEie4s+tn5nggr/uOuhw/SXpKBFdtZE2FMl1tmrZeId2ThE
-         fT4jr4YHWyf3CUGzz3fMtt+p+IPhr4s9ow6pygi3sJClDE189OpiJ1vMIYelyaJt4YOy
-         KjrA==
-X-Gm-Message-State: AOAM530FFTnzISnYv0CiamjX3LKK+CSu0HYB4HDh+MX2QJFODZ8TB7Hr
-        oyfG+LLEqHPzOchpINEaOKc=
-X-Google-Smtp-Source: ABdhPJw8B34q2i4XM4XyV5NH8sz3t/6oK3BIxKzCOZmgBRjJsLkNvqxANMutYqjJR1LHwjuNQEcCUg==
-X-Received: by 2002:a5d:4d0d:: with SMTP id z13mr28035139wrt.220.1592935720081;
-        Tue, 23 Jun 2020 11:08:40 -0700 (PDT)
-Received: from localhost.localdomain (abag196.neoplus.adsl.tpnet.pl. [83.6.170.196])
-        by smtp.googlemail.com with ESMTPSA id c16sm4719529wml.45.2020.06.23.11.08.38
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 23 Jun 2020 11:08:39 -0700 (PDT)
-From:   Konrad Dybcio <konradybcio@gmail.com>
-To:     skrzynka@konradybcio.pl
-Cc:     Konrad Dybcio <konradybcio@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH 1/8] soc: qcom: rpmpd: Add SDM660 power-domains
-Date:   Tue, 23 Jun 2020 20:08:25 +0200
-Message-Id: <20200623180832.254163-2-konradybcio@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200623180832.254163-1-konradybcio@gmail.com>
-References: <20200623180832.254163-1-konradybcio@gmail.com>
+        id S1733197AbgFWS1J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 23 Jun 2020 14:27:09 -0400
+Received: from mga02.intel.com ([134.134.136.20]:12868 "EHLO mga02.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1733125AbgFWS1I (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 23 Jun 2020 14:27:08 -0400
+IronPort-SDR: To8L2ztHVALr33XCQ7Yiv9ujHC7N3DWdKIvOI3/GKRrt8Rd42RltRJlECVZkFL/gHwYLd4+DY6
+ HcRt0hWFh9+w==
+X-IronPort-AV: E=McAfee;i="6000,8403,9661"; a="132578328"
+X-IronPort-AV: E=Sophos;i="5.75,272,1589266800"; 
+   d="scan'208";a="132578328"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2020 11:27:07 -0700
+IronPort-SDR: q3WaV4JvWvoBXHLkISnUzV9G1BEcxUR8oRve9TB9fScZ3aGYWHLiTViPJnEZ6jGCeOo8pKlSA7
+ dJ3ob6Df86kg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,272,1589266800"; 
+   d="scan'208";a="452329750"
+Received: from spandruv-mobl.amr.corp.intel.com ([10.255.228.214])
+  by orsmga005.jf.intel.com with ESMTP; 23 Jun 2020 11:27:07 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: cpufreq: intel_pstate: Support raw epp and energy_efficiency
+Date:   Tue, 23 Jun 2020 11:27:03 -0700
+Message-Id: <20200623182705.1425539-1-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.25.4
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -83,100 +49,17 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the shared cx/mx and sensor sub-system's cx and mx
-power-domains found on SDM660.
+v2
+Remove raw value support for EPB
 
-Signed-off-by: Konrad Dybcio <konradybcio@gmail.com>
----
- .../devicetree/bindings/power/qcom,rpmpd.yaml |  1 +
- drivers/soc/qcom/rpmpd.c                      | 33 +++++++++++++++++++
- include/dt-bindings/power/qcom-rpmpd.h        | 12 +++++++
- 3 files changed, 46 insertions(+)
+Srinivas Pandruvada (2):
+  cpufreq: intel_pstate: Allow enable/disable energy efficiency
+  cpufreq: intel_pstate: Allow raw energy performance preference value
 
-diff --git a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-index 8058955fb3b9..45ec2439ff51 100644
---- a/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-+++ b/Documentation/devicetree/bindings/power/qcom,rpmpd.yaml
-@@ -20,6 +20,7 @@ properties:
-       - qcom,msm8996-rpmpd
-       - qcom,msm8998-rpmpd
-       - qcom,qcs404-rpmpd
-+      - qcom,sdm660-rpmpd
-       - qcom,sc7180-rpmhpd
-       - qcom,sdm845-rpmhpd
-       - qcom,sm8150-rpmhpd
-diff --git a/drivers/soc/qcom/rpmpd.c b/drivers/soc/qcom/rpmpd.c
-index f2168e4259b2..d54a84dd83a8 100644
---- a/drivers/soc/qcom/rpmpd.c
-+++ b/drivers/soc/qcom/rpmpd.c
-@@ -220,11 +220,44 @@ static const struct rpmpd_desc qcs404_desc = {
- 	.max_state = RPM_SMD_LEVEL_BINNING,
- };
- 
-+/* sdm660 RPM Power domains */
-+DEFINE_RPMPD_PAIR(sdm660, vddcx, vddcx_ao, RWCX, LEVEL, 0);
-+DEFINE_RPMPD_VFL(sdm660, vddcx_vfl, RWCX, 0);
-+
-+DEFINE_RPMPD_PAIR(sdm660, vddmx, vddmx_ao, RWMX, LEVEL, 0);
-+DEFINE_RPMPD_VFL(sdm660, vddmx_vfl, RWMX, 0);
-+
-+DEFINE_RPMPD_LEVEL(sdm660, vdd_ssccx, RWSC, 0);
-+DEFINE_RPMPD_VFL(sdm660, vdd_ssccx_vfl, RWSC, 0);
-+
-+DEFINE_RPMPD_LEVEL(sdm660, vdd_sscmx, RWSM, 0);
-+DEFINE_RPMPD_VFL(sdm660, vdd_sscmx_vfl, RWSM, 0);
-+
-+static struct rpmpd *sdm660_rpmpds[] = {
-+	[SDM660_VDDCX] =		&sdm660_vddcx,
-+	[SDM660_VDDCX_AO] =		&sdm660_vddcx_ao,
-+	[SDM660_VDDCX_VFL] =		&sdm660_vddcx_vfl,
-+	[SDM660_VDDMX] =		&sdm660_vddmx,
-+	[SDM660_VDDMX_AO] =		&sdm660_vddmx_ao,
-+	[SDM660_VDDMX_VFL] =		&sdm660_vddmx_vfl,
-+	[SDM660_SSCCX] =		&sdm660_vdd_ssccx,
-+	[SDM660_SSCCX_VFL] =		&sdm660_vdd_ssccx_vfl,
-+	[SDM660_SSCMX] =		&sdm660_vdd_sscmx,
-+	[SDM660_SSCMX_VFL] =		&sdm660_vdd_sscmx_vfl,
-+};
-+
-+static const struct rpmpd_desc sdm660_desc = {
-+	.rpmpds = sdm660_rpmpds,
-+	.num_pds = ARRAY_SIZE(sdm660_rpmpds),
-+	.max_state = RPM_SMD_LEVEL_TURBO,
-+};
-+
- static const struct of_device_id rpmpd_match_table[] = {
- 	{ .compatible = "qcom,msm8976-rpmpd", .data = &msm8976_desc },
- 	{ .compatible = "qcom,msm8996-rpmpd", .data = &msm8996_desc },
- 	{ .compatible = "qcom,msm8998-rpmpd", .data = &msm8998_desc },
- 	{ .compatible = "qcom,qcs404-rpmpd", .data = &qcs404_desc },
-+	{ .compatible = "qcom,sdm660-rpmpd", .data = &sdm660_desc },
- 	{ }
- };
- MODULE_DEVICE_TABLE(of, rpmpd_match_table);
-diff --git a/include/dt-bindings/power/qcom-rpmpd.h b/include/dt-bindings/power/qcom-rpmpd.h
-index dc146e44228b..c5a2ddef6b4b 100644
---- a/include/dt-bindings/power/qcom-rpmpd.h
-+++ b/include/dt-bindings/power/qcom-rpmpd.h
-@@ -101,6 +101,18 @@
- #define QCS404_LPIMX		5
- #define QCS404_LPIMX_VFL	6
- 
-+/* SDM660 Power Domains */
-+#define SDM660_VDDCX		0
-+#define SDM660_VDDCX_AO		1
-+#define SDM660_VDDCX_VFL	2
-+#define SDM660_VDDMX		3
-+#define SDM660_VDDMX_AO		4
-+#define SDM660_VDDMX_VFL	5
-+#define SDM660_SSCCX		6
-+#define SDM660_SSCCX_VFL	7
-+#define SDM660_SSCMX		8
-+#define SDM660_SSCMX_VFL	9
-+
- /* RPM SMD Power Domain performance levels */
- #define RPM_SMD_LEVEL_RETENTION       16
- #define RPM_SMD_LEVEL_RETENTION_PLUS  32
+ Documentation/admin-guide/pm/intel_pstate.rst | 13 ++-
+ drivers/cpufreq/intel_pstate.c                | 99 ++++++++++++++++---
+ 2 files changed, 99 insertions(+), 13 deletions(-)
+
 -- 
-2.27.0
+2.25.4
 
