@@ -2,148 +2,181 @@ Return-Path: <SRS0=IDKy=AF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 112E3C433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77728C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E434920B1F
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:06:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="imdBl9PI"
+	by mail.kernel.org (Postfix) with ESMTP id 525D22082F
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390119AbgFXKGq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Jun 2020 06:06:46 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:39803 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390133AbgFXKGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2020 06:06:45 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20200624100644euoutp01d960a0aca504ee561f97a97b764bf434~bcuEcQfPg0952509525euoutp01r
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 10:06:44 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20200624100644euoutp01d960a0aca504ee561f97a97b764bf434~bcuEcQfPg0952509525euoutp01r
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1592993204;
-        bh=ElIIgJiCGK3igywiFZvai5FDMBo5AkeSvYXQLNTvpI4=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=imdBl9PIQqH92B5TVh6YvBMoVNnnEvOxUCR24J65QIvyQd30HOvPVtlzPUSy9vm28
-         k0lr0EdFKMEWLKI/tN1du+4IfLNDQhw2zL19UwaS3zDvsrGuKrPXZSwpQi5ZHP8/75
-         P15uZb84FrV2IzI4CBc+MQzBnxhLqQXqeoX3qwHk=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20200624100643eucas1p212a0e63f9f2be65f9c9dcaea403103a2~bcuD70-3P2465624656eucas1p20;
-        Wed, 24 Jun 2020 10:06:43 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id E4.FB.06456.3B523FE5; Wed, 24
-        Jun 2020 11:06:43 +0100 (BST)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20200624100643eucas1p2afb2e6567bb6dda6ea237ad2bf3a7051~bcuDdxAh01629516295eucas1p26;
-        Wed, 24 Jun 2020 10:06:43 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20200624100643eusmtrp101841f7e1e88bcbceb564666c728459f~bcuDc-TWZ1004110041eusmtrp1H;
-        Wed, 24 Jun 2020 10:06:43 +0000 (GMT)
-X-AuditID: cbfec7f2-7efff70000001938-f9-5ef325b31d03
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id CC.76.06314.3B523FE5; Wed, 24
-        Jun 2020 11:06:43 +0100 (BST)
-Received: from [106.120.51.71] (unknown [106.120.51.71]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20200624100642eusmtip20d288534e9ef67ebaa19c8c663537068~bcuDAmEmP3156331563eusmtip2C;
-        Wed, 24 Jun 2020 10:06:42 +0000 (GMT)
-Subject: Re: [PATCH 4/4] ARM: multi_v7_defconfig: Enable big.LITTLE cpuidle
- driver
-To:     Marek Szyprowski <m.szyprowski@samsung.com>
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>
-From:   Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Message-ID: <5262c50b-d9b8-8f32-874e-5ebc0672ed8c@samsung.com>
-Date:   Wed, 24 Jun 2020 12:06:42 +0200
+        id S2390510AbgFXKdD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Jun 2020 06:33:03 -0400
+Received: from foss.arm.com ([217.140.110.172]:59560 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2388197AbgFXKdD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Jun 2020 06:33:03 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9A5261FB;
+        Wed, 24 Jun 2020 03:33:02 -0700 (PDT)
+Received: from [10.37.12.79] (unknown [10.37.12.79])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 239C93F6CF;
+        Wed, 24 Jun 2020 03:32:59 -0700 (PDT)
+Subject: Re: brocken devfreq simple_ondemand for Odroid XU3/4?
+To:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Willy Wolff <willy.mh.wolff.ml@gmail.com>
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20200623164733.qbhua7b6cg2umafj@macmini.local>
+ <CAJKOXPeLuq81NC2xZh3y32EB-_APbDAchZD4OW_eCgQKKO+p8w@mail.gmail.com>
+ <20200623191129.GA4171@kozik-lap>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <85f5a8c0-7d48-f2cd-3385-c56d662f2c88@arm.com>
+Date:   Wed, 24 Jun 2020 11:32:57 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
-        Thunderbird/60.8.0
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20200616081230.31198-5-m.szyprowski@samsung.com>
+In-Reply-To: <20200623191129.GA4171@kozik-lap>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrEKsWRmVeSWpSXmKPExsWy7djP87qbVT/HGWx+qWsx77OsxfnzG9gt
-        Nj2+xmrxufcIo8WM8/uYLN78fsFusbCphd1i7ZG77A4cHmvmrWH02LSqk83jzrU9bB6bl9R7
-        9G1ZxejxeZNcAFsUl01Kak5mWWqRvl0CV8aTu19YCw6wV0zcNZWpgXEbWxcjJ4eEgInE6sVb
-        gGwuDiGBFYwS7zd/Z4ZwvjBK/DvezgLhfGaU6N6+jAmm5fui70wQieWMEt+fnWYFSQgJvGWU
-        2LuWA8QWFgiR+HajixHEFhHQl+huuwJmMwtMYJLY+TAVxGYTsJKY2L4KLM4rYCdxue0QM4jN
-        IqAqceHGc3YQW1QgQuLTg8OsEDWCEidnPmEBsTmB6t/fameDmCkucevJfCYIW15i+9s5zBCH
-        7mOXuHlKGMJ2kfh34S47hC0s8er4FihbRuL05B6wLyUE1jFK/O14wQzhbGeUWD75HzSUrCXu
-        nPsFZHMAbdCUWL9LHyLsKPH2bTcTSFhCgE/ixltBiBv4JCZtm84MEeaV6GgTgqhWk9iwbAMb
-        zNqunSuZJzAqzULy2Swk38xC8s0shL0LGFlWMYqnlhbnpqcWG+allusVJ+YWl+al6yXn525i
-        BKak0/+Of9rB+PVS0iFGAQ5GJR7eDQ8+xgmxJpYVV+YeYpTgYFYS4XU6ezpOiDclsbIqtSg/
-        vqg0J7X4EKM0B4uSOK/xopexQgLpiSWp2ampBalFMFkmDk6pBkb9OS8b93hcFlZ23Ht+K9tu
-        6dVfJJYlFB2turb96VK3JadKlasP2G1/wZcutqDdrndb8iaReXN8fSd1eS7VMZrRdMh1XcS6
-        XEbWVL2ssOrM9c9fLpx2bYayhnFNXXbz2jLRal156UVG206w39dkOfP7xObZ2yVmPbNdPIuN
-        o2/1Vf99qVYJl7SUWIozEg21mIuKEwGH9PalRQMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrCIsWRmVeSWpSXmKPExsVy+t/xe7qbVT/HGdyZxGcx77OsxfnzG9gt
-        Nj2+xmrxufcIo8WM8/uYLN78fsFusbCphd1i7ZG77A4cHmvmrWH02LSqk83jzrU9bB6bl9R7
-        9G1ZxejxeZNcAFuUnk1RfmlJqkJGfnGJrVK0oYWRnqGlhZ6RiaWeobF5rJWRqZK+nU1Kak5m
-        WWqRvl2CXsaTu19YCw6wV0zcNZWpgXEbWxcjJ4eEgInE90XfmboYuTiEBJYySuw60waU4ABK
-        yEgcX18GUSMs8edaF1i9kMBrRomNF81AbGGBEIlvN7oYQWwRAX2J7rYrjCBzmAUmMUn8OHMH
-        quEoo8TB/1YgNpuAlcTE9lVgDbwCdhKX2w4xg9gsAqoSF248ZwexRQUiJA7vmAVVIyhxcuYT
-        FhCbE6j+/a12sJnMAuoSf+ZdYoawxSVuPZnPBGHLS2x/O4d5AqPQLCTts5C0zELSMgtJywJG
-        llWMIqmlxbnpucWGesWJucWleel6yfm5mxiBMbjt2M/NOxgvbQw+xCjAwajEw7vhwcc4IdbE
-        suLK3EOMEhzMSiK8TmdPxwnxpiRWVqUW5ccXleakFh9iNAV6biKzlGhyPjA95JXEG5oamltY
-        GpobmxubWSiJ83YIHIwREkhPLEnNTk0tSC2C6WPi4JRqYEwMdVA7Kv+U4ZjxFbMFUh+bam9z
-        TOm7tEakM96qxEp4ZYDZv+Db+9ccO7hN7nar9Z5LQr0Ggo8N9ezv6rBtl2jWyzolsiHCL+Di
-        6keuYkvNeW2cJWbmrFY9sHRZbSCXXMXBlJOslXt37mblf3P6j3tY3OqPteUi9YcL00/wT8ry
-        dHgecFc1VYmlOCPRUIu5qDgRANo6Y/jXAgAA
-X-CMS-MailID: 20200624100643eucas1p2afb2e6567bb6dda6ea237ad2bf3a7051
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20200616081250eucas1p2a98f8810962ddc692fa5588a74f911b3
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20200616081250eucas1p2a98f8810962ddc692fa5588a74f911b3
-References: <20200616081230.31198-1-m.szyprowski@samsung.com>
-        <CGME20200616081250eucas1p2a98f8810962ddc692fa5588a74f911b3@eucas1p2.samsung.com>
-        <20200616081230.31198-5-m.szyprowski@samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Krzysztof and Willy
 
-On 6/16/20 10:12 AM, Marek Szyprowski wrote:
-> Enable big.LITTLE cpuidle driver, which can be used on Exynos-based
-> Peach Pit/Pi Chromebooks.
+On 6/23/20 8:11 PM, Krzysztof Kozlowski wrote:
+> On Tue, Jun 23, 2020 at 09:02:38PM +0200, Krzysztof Kozlowski wrote:
+>> On Tue, 23 Jun 2020 at 18:47, Willy Wolff <willy.mh.wolff.ml@gmail.com> wrote:
+>>>
+>>> Hi everybody,
+>>>
+>>> Is DVFS for memory bus really working on Odroid XU3/4 board?
+>>> Using a simple microbenchmark that is doing only memory accesses, memory DVFS
+>>> seems to not working properly:
+>>>
+>>> The microbenchmark is doing pointer chasing by following index in an array.
+>>> Indices in the array are set to follow a random pattern (cutting prefetcher),
+>>> and forcing RAM access.
+>>>
+>>> git clone https://github.com/wwilly/benchmark.git \
+>>>    && cd benchmark \
+>>>    && source env.sh \
+>>>    && ./bench_build.sh \
+>>>    && bash source/scripts/test_dvfs_mem.sh
+>>>
+>>> Python 3, cmake and sudo rights are required.
+>>>
+>>> Results:
+>>> DVFS CPU with performance governor
+>>> mem_gov = simple_ondemand at 165000000 Hz in idle, should be bumped when the
+>>> benchmark is running.
+>>> - on the LITTLE cluster it takes 4.74308 s to run (683.004 c per memory access),
+>>> - on the big cluster it takes 4.76556 s to run (980.343 c per moemory access).
+>>>
+>>> While forcing DVFS memory bus to use performance governor,
+>>> mem_gov = performance at 825000000 Hz in idle,
+>>> - on the LITTLE cluster it takes 1.1451 s to run (164.894 c per memory access),
+>>> - on the big cluster it takes 1.18448 s to run (243.664 c per memory access).
+>>>
+>>> The kernel used is the last 5.7.5 stable with default exynos_defconfig.
+>>
+>> Thanks for the report. Few thoughts:
+>> 1. What trans_stat are saying? Except DMC driver you can also check
+>> all other devfreq devices (e.g. wcore) - maybe the devfreq events
+>> (nocp) are not properly assigned?
+>> 2. Try running the measurement for ~1 minutes or longer. The counters
+>> might have some delay (which would require probably fixing but the
+>> point is to narrow the problem).
+>> 3. What do you understand by "mem_gov"? Which device is it?
 > 
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> +Cc Lukasz who was working on this.
 
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Thanks Krzysztof for adding me here.
 
-Best regards,
---
-Bartlomiej Zolnierkiewicz
-Samsung R&D Institute Poland
-Samsung Electronics
-
-> ---
->  arch/arm/configs/multi_v7_defconfig | 1 +
->  1 file changed, 1 insertion(+)
 > 
-> diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
-> index 95543914d3c7..6a922a8ef712 100644
-> --- a/arch/arm/configs/multi_v7_defconfig
-> +++ b/arch/arm/configs/multi_v7_defconfig
-> @@ -111,6 +111,7 @@ CONFIG_ARM_RASPBERRYPI_CPUFREQ=y
->  CONFIG_QORIQ_CPUFREQ=y
->  CONFIG_CPU_IDLE=y
->  CONFIG_ARM_CPUIDLE=y
-> +CONFIG_ARM_BIG_LITTLE_CPUIDLE=y
->  CONFIG_ARM_ZYNQ_CPUIDLE=y
->  CONFIG_ARM_EXYNOS_CPUIDLE=y
->  CONFIG_ARM_TEGRA_CPUIDLE=y
+> I just run memtester and more-or-less ondemand works (at least ramps
+> up):
+> 
+> Before:
+> /sys/class/devfreq/10c20000.memory-controller$ cat trans_stat
+>       From  :   To
+>             : 165000000 206000000 275000000 413000000 543000000 633000000 728000000 825000000   time(ms)
+> * 165000000:         0         0         0         0         0         0         0         0   1795950
+>    206000000:         1         0         0         0         0         0         0         0      4770
+>    275000000:         0         1         0         0         0         0         0         0     15540
+>    413000000:         0         0         1         0         0         0         0         0     20780
+>    543000000:         0         0         0         1         0         0         0         1     10760
+>    633000000:         0         0         0         0         2         0         0         0     10310
+>    728000000:         0         0         0         0         0         0         0         0         0
+>    825000000:         0         0         0         0         0         2         0         0     25920
+> Total transition : 9
+> 
+> 
+> $ sudo memtester 1G
+> 
+> During memtester:
+> /sys/class/devfreq/10c20000.memory-controller$ cat trans_stat
+>       From  :   To
+>             : 165000000 206000000 275000000 413000000 543000000 633000000 728000000 825000000   time(ms)
+>    165000000:         0         0         0         0         0         0         0         1   1801490
+>    206000000:         1         0         0         0         0         0         0         0      4770
+>    275000000:         0         1         0         0         0         0         0         0     15540
+>    413000000:         0         0         1         0         0         0         0         0     20780
+>    543000000:         0         0         0         1         0         0         0         2     11090
+>    633000000:         0         0         0         0         3         0         0         0     17210
+>    728000000:         0         0         0         0         0         0         0         0         0
+> * 825000000:         0         0         0         0         0         3         0         0    169020
+> Total transition : 13
+> 
+> However after killing memtester it stays at 633 MHz for very long time
+> and does not slow down. This is indeed weird...
+
+I had issues with devfreq governor which wasn't called by devfreq
+workqueue. The old DELAYED vs DEFERRED work discussions and my patches
+for it [1]. If the CPU which scheduled the next work went idle, the
+devfreq workqueue will not be kicked and devfreq governor won't check
+DMC status and will not decide to decrease the frequency based on low
+busy_time.
+The same applies for going up with the frequency. They both are
+done by the governor but the workqueue must be scheduled periodically.
+
+I couldn't do much with this back then. I have given the example that
+this is causing issues with the DMC [2]. There is also a description
+of your situation staying at 633MHz for long time:
+' When it is missing opportunity
+to change the frequency, it can either harm the performance or power
+consumption, depending of the frequency the device stuck on.'
+
+The patches were not accepted because it will cause CPU wake-up from
+idle, which increases the energy consumption. I know that there were
+some other attempts, but I don't know the status.
+
+I had also this devfreq workqueue issue when I have been working on
+thermal cooling for devfreq. The device status was not updated, because
+the devfreq workqueue didn't check the device [3].
+
+Let me investigate if that is the case.
+
+Regards,
+Lukasz
+
+[1] https://lkml.org/lkml/2019/2/11/1146
+[2] https://lkml.org/lkml/2019/2/12/383
+[3] 
+https://lwn.net/ml/linux-kernel/20200511111912.3001-11-lukasz.luba@arm.com/
+
+> 
+> Best regards,
+> Krzysztof
 > 
