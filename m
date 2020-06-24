@@ -2,181 +2,131 @@ Return-Path: <SRS0=IDKy=AF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77728C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0FFBC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 525D22082F
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A58DA20EDD
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 10:33:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=NXP1.onmicrosoft.com header.i=@NXP1.onmicrosoft.com header.b="Lrmi4cFW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390510AbgFXKdD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Jun 2020 06:33:03 -0400
-Received: from foss.arm.com ([217.140.110.172]:59560 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388197AbgFXKdD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 24 Jun 2020 06:33:03 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9A5261FB;
-        Wed, 24 Jun 2020 03:33:02 -0700 (PDT)
-Received: from [10.37.12.79] (unknown [10.37.12.79])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 239C93F6CF;
-        Wed, 24 Jun 2020 03:32:59 -0700 (PDT)
-Subject: Re: brocken devfreq simple_ondemand for Odroid XU3/4?
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Willy Wolff <willy.mh.wolff.ml@gmail.com>
-Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
-        "linux-samsung-soc@vger.kernel.org" 
-        <linux-samsung-soc@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <20200623164733.qbhua7b6cg2umafj@macmini.local>
- <CAJKOXPeLuq81NC2xZh3y32EB-_APbDAchZD4OW_eCgQKKO+p8w@mail.gmail.com>
- <20200623191129.GA4171@kozik-lap>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <85f5a8c0-7d48-f2cd-3385-c56d662f2c88@arm.com>
-Date:   Wed, 24 Jun 2020 11:32:57 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S2390424AbgFXKdW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Jun 2020 06:33:22 -0400
+Received: from mail-eopbgr50074.outbound.protection.outlook.com ([40.107.5.74]:27279
+        "EHLO EUR03-VE1-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S2388421AbgFXKdV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 24 Jun 2020 06:33:21 -0400
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=AItJK/QIImiQIEmEebSjvqvFNZrVLq6ygidos+QPZS2E7tVZl/kKIZaR4WX6m57/HvUzRwpbRK0PyH1wAJvhhH2+zrehH2JTtxVsegy8zBukGNQc6XaVNgBfFKHCsCCV2wp6G0MRgfvHioBH6DYZN1TBoIAXOH2PEK4hJHje4ji9HYZuy+nPo+NQwNy2rlwvWVrsC+/BxWOeFg+lLpNwcznzKG9IfDO6j6YVnyE+ewCtX/pUq0p25CHg9vHOzHoZbq6V1jB4RK/L+TL37ZPcwbn+71QRvuglJPSFIcNDwdIgp1eDKw++ZJVB+9J0j2oFJ7Z7blglYw4UgQiqv3bdnw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=KsZNQeeSGRqslaYBepsd0cplnO0TsApo56aASIlqJ8c=;
+ b=iszz8kxL0b0v7okgujbjmfHkAYjwGiFeR2Fv9pGwl/AOgSx+HHYzD3SW5IXYVP3ownNY0F67vUhvae4UlYvgG0sGM2NCBGNnJeRec80YzSyEjtKVWSZGFeR6jFSfA+Safnt5Rb11i7DWyRMRZA5OMwaH1mTCXmFXLbZGOzah4bt0+iboo+t1yYJEd5oQlRA5JSGPoGtk2hEhqbrkU81Wjh+aSbQz+XwVe+fcX3QQW7o0BHpBwlU4cD9Xa6ty3Be6unt9Wjxek8DfxLkvUSIC+nqdDxS+Y1eTA9BdPXPHiNdMKiV19JTEopAqC0a7zEmsGlKGkGLvnBugrsRAtPgCFA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oss.nxp.com; dmarc=pass action=none header.from=oss.nxp.com;
+ dkim=pass header.d=oss.nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=NXP1.onmicrosoft.com;
+ s=selector2-NXP1-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=KsZNQeeSGRqslaYBepsd0cplnO0TsApo56aASIlqJ8c=;
+ b=Lrmi4cFW7/GQQ8DM06DEIxFTLHV0wcZSMKiNgOLOEdV5Pij3/TAtF0cve6xSX/ljcVOuThF3VwiMrEuDu1JQlqMwsATkRUIgqGxYBxXUQeMiscEouF3XlrxzfI78hs8fOeki58Sula2PwiAk8fwa+ZJzORGN0zCmrRTeCzIkelA=
+Authentication-Results: kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=none action=none header.from=oss.nxp.com;
+Received: from VI1PR0401MB2287.eurprd04.prod.outlook.com
+ (2603:10a6:800:2e::19) by VI1PR0401MB2445.eurprd04.prod.outlook.com
+ (2603:10a6:800:55::12) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3131.20; Wed, 24 Jun
+ 2020 10:33:16 +0000
+Received: from VI1PR0401MB2287.eurprd04.prod.outlook.com
+ ([fe80::9d5c:685e:4b51:fa60]) by VI1PR0401MB2287.eurprd04.prod.outlook.com
+ ([fe80::9d5c:685e:4b51:fa60%3]) with mapi id 15.20.3109.027; Wed, 24 Jun 2020
+ 10:33:16 +0000
+From:   Daniel Baluta <daniel.baluta@oss.nxp.com>
+To:     khilman@kernel.org, ulf.hansson@linaro.org,
+        linux-pm@vger.kernel.org, rjw@rjwysocki.net
+Cc:     linux-kernel@vger.kernel.org, kernel@pengutronix.de,
+        alsa-devel@alsa-project.org, linux-imx@nxp.com
+Subject: [PATCH v3 0/2] Introduce multi PM domains helpers
+Date:   Wed, 24 Jun 2020 13:32:45 +0300
+Message-Id: <20200624103247.7115-1-daniel.baluta@oss.nxp.com>
+X-Mailer: git-send-email 2.17.1
+Content-Type: text/plain; charset=a
+Content-Transfer-Encoding: 8bit
+X-ClientProxiedBy: AM0PR01CA0100.eurprd01.prod.exchangelabs.com
+ (2603:10a6:208:10e::41) To VI1PR0401MB2287.eurprd04.prod.outlook.com
+ (2603:10a6:800:2e::19)
 MIME-Version: 1.0
-In-Reply-To: <20200623191129.GA4171@kozik-lap>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from fsr-ub1864-103.ro-buh02.nxp.com (83.217.231.2) by AM0PR01CA0100.eurprd01.prod.exchangelabs.com (2603:10a6:208:10e::41) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3109.22 via Frontend Transport; Wed, 24 Jun 2020 10:33:15 +0000
+X-Mailer: git-send-email 2.17.1
+X-Originating-IP: [83.217.231.2]
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-Office365-Filtering-Correlation-Id: 10905119-2311-42eb-4723-08d8182a011b
+X-MS-TrafficTypeDiagnostic: VI1PR0401MB2445:
+X-MS-Exchange-SharedMailbox-RoutingAgent-Processed: True
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <VI1PR0401MB2445B423B9D7ABF7AD19B66AB8950@VI1PR0401MB2445.eurprd04.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:7691;
+X-Forefront-PRVS: 0444EB1997
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: 6ZIHkiDLxCQA/Qxqe8UBeX38gE5FhHG55SQr0PUlPQYlhyeTH88f3oUXn/ZVkP6Bx/s8Ks1P8g7I3PXI0qjOAK/IWvG/w4xLZkE2jyzfQ3lunpCId9XuysXhcXfLTSaNgoK1vuGEMi6dBABCKXn7RputBru6jBDazgGQ5N4KRHMlOUfC6AEC6c2CD3AX4eDifgXFPwDDFayhri5ZQQPho8Jq1Xsj/xRh6ErOMiq81spgmM0ND8r2+JapXxsK1/evvenhxcUM9Pm+Osqu4VOkaHu5dDv3tquK0/p6CKP/aObde7KvBby+2f2RevhhVmyI
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:VI1PR0401MB2287.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFTY:;SFS:(4636009)(136003)(346002)(376002)(366004)(39860400002)(396003)(86362001)(8676002)(186003)(16526019)(1076003)(8936002)(6512007)(66946007)(2616005)(83380400001)(66556008)(5660300002)(66476007)(316002)(956004)(26005)(6486002)(44832011)(4326008)(6506007)(2906002)(52116002)(478600001)(6666004);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: 5Okqs5mep7iRnApeBT98GH0CtWsmpu63SC4stu1AYlZd1L1PSh2UWekYFQe3quF5aPyBlZ+sUj6dt10j7hcZvk15av2Q7rNIaaVOeSIby9Oiaid0KKjm7siTWTzzM3kgpf/omzO4MYWOlgLaQdYMT8Y2Nuk+agDHSHczss4ZSlNeXBgCyZ1Pw4QUzpmJpLQs7FBnBjXhrD9sIb1j15paUoL26QLd1Ny2RuxsTaPEEZ5GnCZjSvgToE2JYshWsd76lK8wkxFzY07dVTAHu2wtKDBsjJKQwr/kXwMfzsoWMsx5gcOpcCyccJxZB6BlGegVLwc3ORtc4KBqdY9ziwpOd2ZDXaeqYYd4BIw09kP0d9KLXXmuo7kFYEs+GgLMc1ChQXBVbsd1cIDKSrG5rDekJlkR8mW0X8tf9Sr+ymCh9PXhmvUPGV/Pb0dRjYBWOq08SI/YIF8WIgfW78fxWuTHexeBqcE7lOMRThzdVkVhUjg=
+X-OriginatorOrg: oss.nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 10905119-2311-42eb-4723-08d8182a011b
+X-MS-Exchange-CrossTenant-AuthSource: VI1PR0401MB2287.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Jun 2020 10:33:16.2171
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: RqBbVskbPPdkdD0X/2SwltmF4yrp/fVzWdReUCS22LSnPpTwqcqNT2ltYAw40dxeaqppFcK9ggR3Ss4WeADihg==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR0401MB2445
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof and Willy
+From: Daniel Baluta <daniel.baluta@nxp.com>
 
-On 6/23/20 8:11 PM, Krzysztof Kozlowski wrote:
-> On Tue, Jun 23, 2020 at 09:02:38PM +0200, Krzysztof Kozlowski wrote:
->> On Tue, 23 Jun 2020 at 18:47, Willy Wolff <willy.mh.wolff.ml@gmail.com> wrote:
->>>
->>> Hi everybody,
->>>
->>> Is DVFS for memory bus really working on Odroid XU3/4 board?
->>> Using a simple microbenchmark that is doing only memory accesses, memory DVFS
->>> seems to not working properly:
->>>
->>> The microbenchmark is doing pointer chasing by following index in an array.
->>> Indices in the array are set to follow a random pattern (cutting prefetcher),
->>> and forcing RAM access.
->>>
->>> git clone https://github.com/wwilly/benchmark.git \
->>>    && cd benchmark \
->>>    && source env.sh \
->>>    && ./bench_build.sh \
->>>    && bash source/scripts/test_dvfs_mem.sh
->>>
->>> Python 3, cmake and sudo rights are required.
->>>
->>> Results:
->>> DVFS CPU with performance governor
->>> mem_gov = simple_ondemand at 165000000 Hz in idle, should be bumped when the
->>> benchmark is running.
->>> - on the LITTLE cluster it takes 4.74308 s to run (683.004 c per memory access),
->>> - on the big cluster it takes 4.76556 s to run (980.343 c per moemory access).
->>>
->>> While forcing DVFS memory bus to use performance governor,
->>> mem_gov = performance at 825000000 Hz in idle,
->>> - on the LITTLE cluster it takes 1.1451 s to run (164.894 c per memory access),
->>> - on the big cluster it takes 1.18448 s to run (243.664 c per memory access).
->>>
->>> The kernel used is the last 5.7.5 stable with default exynos_defconfig.
->>
->> Thanks for the report. Few thoughts:
->> 1. What trans_stat are saying? Except DMC driver you can also check
->> all other devfreq devices (e.g. wcore) - maybe the devfreq events
->> (nocp) are not properly assigned?
->> 2. Try running the measurement for ~1 minutes or longer. The counters
->> might have some delay (which would require probably fixing but the
->> point is to narrow the problem).
->> 3. What do you understand by "mem_gov"? Which device is it?
-> 
-> +Cc Lukasz who was working on this.
+i.MX8QXP/i.MX8QM has IPs that need multiple power domains to be up
+in order to work. In order to help drivers, we introduce multi PM
+domains helpers that are able to activate/deactivate multi PM domains.
 
-Thanks Krzysztof for adding me here.
+First patch introduces the helpers and second patch demonstrates how
+a driver can use them instead of hardcoding the PM domains handling.
 
-> 
-> I just run memtester and more-or-less ondemand works (at least ramps
-> up):
-> 
-> Before:
-> /sys/class/devfreq/10c20000.memory-controller$ cat trans_stat
->       From  :   To
->             : 165000000 206000000 275000000 413000000 543000000 633000000 728000000 825000000   time(ms)
-> * 165000000:         0         0         0         0         0         0         0         0   1795950
->    206000000:         1         0         0         0         0         0         0         0      4770
->    275000000:         0         1         0         0         0         0         0         0     15540
->    413000000:         0         0         1         0         0         0         0         0     20780
->    543000000:         0         0         0         1         0         0         0         1     10760
->    633000000:         0         0         0         0         2         0         0         0     10310
->    728000000:         0         0         0         0         0         0         0         0         0
->    825000000:         0         0         0         0         0         2         0         0     25920
-> Total transition : 9
-> 
-> 
-> $ sudo memtester 1G
-> 
-> During memtester:
-> /sys/class/devfreq/10c20000.memory-controller$ cat trans_stat
->       From  :   To
->             : 165000000 206000000 275000000 413000000 543000000 633000000 728000000 825000000   time(ms)
->    165000000:         0         0         0         0         0         0         0         1   1801490
->    206000000:         1         0         0         0         0         0         0         0      4770
->    275000000:         0         1         0         0         0         0         0         0     15540
->    413000000:         0         0         1         0         0         0         0         0     20780
->    543000000:         0         0         0         1         0         0         0         2     11090
->    633000000:         0         0         0         0         3         0         0         0     17210
->    728000000:         0         0         0         0         0         0         0         0         0
-> * 825000000:         0         0         0         0         0         3         0         0    169020
-> Total transition : 13
-> 
-> However after killing memtester it stays at 633 MHz for very long time
-> and does not slow down. This is indeed weird...
+Changes since v2:
+»       - fix kernel test robot reported issues (missing static inline
+	for newly introduced functions in headers and arguments
+	swapped for devm_kzalloc).
 
-I had issues with devfreq governor which wasn't called by devfreq
-workqueue. The old DELAYED vs DEFERRED work discussions and my patches
-for it [1]. If the CPU which scheduled the next work went idle, the
-devfreq workqueue will not be kicked and devfreq governor won't check
-DMC status and will not decide to decrease the frequency based on low
-busy_time.
-The same applies for going up with the frequency. They both are
-done by the governor but the workqueue must be scheduled periodically.
+Changes since v1: (addressed Ranjani's comments)
+»       - enhanced description for dev_multi_pm_attach return value
+»       - renamed exit_unroll_pm label to exit_detach_pm
 
-I couldn't do much with this back then. I have given the example that
-this is causing issues with the DMC [2]. There is also a description
-of your situation staying at 633MHz for long time:
-' When it is missing opportunity
-to change the frequency, it can either harm the performance or power
-consumption, depending of the frequency the device stuck on.'
+Ideally would be to have patch 1/2 merged via power tree and then I
+will submit again patch 2/2 on sound tree.
 
-The patches were not accepted because it will cause CPU wake-up from
-idle, which increases the energy consumption. I know that there were
-some other attempts, but I don't know the status.
+Daniel Baluta (2):
+  PM / domains: Introduce multi PM domains helpers
+  ASoC: SOF: Use multi PM domains helpers
 
-I had also this devfreq workqueue issue when I have been working on
-thermal cooling for devfreq. The device status was not updated, because
-the devfreq workqueue didn't check the device [3].
+ drivers/base/power/common.c | 93 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   | 19 ++++++++
+ sound/soc/sof/imx/imx8.c    | 60 ++++--------------------
+ 3 files changed, 121 insertions(+), 51 deletions(-)
 
-Let me investigate if that is the case.
+-- 
+2.17.1
 
-Regards,
-Lukasz
-
-[1] https://lkml.org/lkml/2019/2/11/1146
-[2] https://lkml.org/lkml/2019/2/12/383
-[3] 
-https://lwn.net/ml/linux-kernel/20200511111912.3001-11-lukasz.luba@arm.com/
-
-> 
-> Best regards,
-> Krzysztof
-> 
