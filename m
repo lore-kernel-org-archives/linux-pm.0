@@ -2,167 +2,140 @@ Return-Path: <SRS0=IDKy=AF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DD3C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:06:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D500C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:15:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 59EE02078A
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:06:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6624520738
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:15:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="C3WGlzie"
+	dkim=pass (2048-bit key) header.d=baylibre-com.20150623.gappssmtp.com header.i=@baylibre-com.20150623.gappssmtp.com header.b="HbBo8+WP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404733AbgFXQGA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Jun 2020 12:06:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37422 "EHLO
+        id S2405018AbgFXQPr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Jun 2020 12:15:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404525AbgFXQGA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2020 12:06:00 -0400
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 250F0C061573
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:06:00 -0700 (PDT)
-Received: by mail-pj1-x1030.google.com with SMTP id q90so837381pjh.3
-        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:06:00 -0700 (PDT)
+        with ESMTP id S2405003AbgFXQPh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2020 12:15:37 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14DA4C061796
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:15:37 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id j94so2890099wrj.0
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:15:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=NtTZMG2Jz8Dje9LJz5yqpTDScgUXLlQrrVHIyVPoj/c=;
-        b=C3WGlzieXEErDTKc4VA3TPJqYwV2ZeCaDmRF29/fJgfxPyZfstk3CKo+G1TLXTm6g4
-         /4xPiY5x6FqANROvr+SONgDbeQ1fxe5bnh5BR/QkTPx3J8lZGY0cC54wM0xV8a242w9o
-         x+NZQdpFZ17vqLAH5S6LqBUlNIX59FVld0xyTaaifLibQuvSJkUc6jbDN5WyAtnZKXZM
-         vCoPLWs0JXQQ2nWgrq/PuSagtzN9cJ2FaSvLrao7tMtBBkcU0yFEyZ42yPkPHr36KD9h
-         vGKBKuHNQjY0ZTEZSe4R03kX3Mm+R+qdRBv37qJP2OvsfYG9EMu0j+sKbILyEaZ9POUs
-         o9IQ==
+        d=baylibre-com.20150623.gappssmtp.com; s=20150623;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=kinXBvz5+I1FgSK2RxVnBM/4h4YycBTf3sfQytiCbSA=;
+        b=HbBo8+WPRj3gAUYINsoDzCjuSTiw+4IVXg1BUTCPeS9//rIx0Msd7C2/3IOEqhT2au
+         ifH40qsXdeHZFBuxYayakoHeI5GVZtrXYa4z/w6+0z4jER+c72ovBtthOxjKcI41NM67
+         YXA/sWFk3I3nvVOvAOmNu0p9vJXZsy+n6tDOMAWADhcErgHqJsG6kn/gtiN8Efait3Vu
+         g7U8caQMJnfPSx32TxlICATow4MuWMRnhUBnVT4P0Qt7NW+LmYXoK2t0ILvx+H877gGQ
+         k9atIi2siVCtlFJt9Qsxt86a9HGAidyo95/yFVpj4YC7TNm3Lvqbki1DKAzL5+qtILlf
+         3PgQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=NtTZMG2Jz8Dje9LJz5yqpTDScgUXLlQrrVHIyVPoj/c=;
-        b=P9KEEqwRQ48y7EtvA6J55VqDkkIU1T4JWTV/SrJBgRrw/4fsOwmYZB5tKfi5uOvI96
-         rExu6Y/zmC9083PJkJ7wXfV5UmV+2exJg+Sv+6OrGR5CWfdrIao47sC6Ddo0ENbck+l5
-         SRVy6nAIDOkuBoQ8oNY4UmcAHSg54HIK5X4uxOKFKFTWk9kzGKK3nDq5VNLcio5zoQtM
-         G+5c45xDb7YK3Vl/o2dl8+mnT/E9SbdN+k7dRGqC0X0FMQJiGDXrsP9m9zg0ylUbfgir
-         6MgYO/knNWS9hSmubKRnW4SbApBax0GzARsTlm7u3oRnf4z0KbNAp1jHTFFNXI4w+j4L
-         JImw==
-X-Gm-Message-State: AOAM531padGdmgIZVdoiX70bLKgpX57Tm9TEXIW91x2Kyj6Vbc+YSftu
-        Q878mwvUzlJiXoFe0gk8W5Q0Di3Qemk=
-X-Google-Smtp-Source: ABdhPJxOtJrQ1kUqt872XTuQjeypGWi50398cYRCzSLo9hfdsAPyeTn4wusH1SSrEDGdhjguvjNDNQ==
-X-Received: by 2002:a17:90a:39ce:: with SMTP id k14mr28871586pjf.39.1593014759591;
-        Wed, 24 Jun 2020 09:05:59 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id y10sm21502941pfq.34.2020.06.24.09.05.58
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=kinXBvz5+I1FgSK2RxVnBM/4h4YycBTf3sfQytiCbSA=;
+        b=XM6rA1CVqu/kctNMhChlx7OxoA5IOcE8DxUw7AzHtXRgJ7+UlCih3/C3dCgBPUi0x6
+         e9sYmeEZMKJxZtUACBtYy/ItzbkmgqAy7/51fciq7NgdIk/c8jFNFptZuKbm+eMXE5ka
+         jt0uGEjqls+7MHPsU+dhGWApsBc5elkTp9jog0LDsRuM/l8isWNbGw5JA0aG7sewDmdf
+         UwoPn/5szTS737TPxIjzl4j/j9A8xAqKnu20Nuq8STvByIh8oLx8rKClMgwF637UgSnW
+         CdTQpebv13IIP4xPLDSTROLae4oLUXa09TXT2Sui3LKaOBtNYWG6QvnjzSDB0RDL+QtU
+         39kQ==
+X-Gm-Message-State: AOAM532VntY0WkfDhlg2ZMhLTzjRy+hCYfD9HU2E5R0RH2AyotN8dxDy
+        j4Y/dAaGai2NVR4wm9ucy6S5Hw==
+X-Google-Smtp-Source: ABdhPJzU5QZYipbkQZi8xo157t2PrVSjzPMHytPFcg1TfZKTGu677lOERbPf8aPK6zEzeiz5pYn3xQ==
+X-Received: by 2002:a5d:4603:: with SMTP id t3mr5463690wrq.38.1593015335565;
+        Wed, 24 Jun 2020 09:15:35 -0700 (PDT)
+Received: from bender.baylibre.local ([2a01:e35:2ec0:82b0:89ac:d9e8:f44c:b137])
+        by smtp.gmail.com with ESMTPSA id t15sm8716207wmj.14.2020.06.24.09.15.33
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 24 Jun 2020 09:05:58 -0700 (PDT)
-Message-ID: <5ef379e6.1c69fb81.189d.1fd9@mx.google.com>
-Date:   Wed, 24 Jun 2020 09:05:58 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Wed, 24 Jun 2020 09:15:34 -0700 (PDT)
+From:   Neil Armstrong <narmstrong@baylibre.com>
+To:     khilman@baylibre.com
+Cc:     Neil Armstrong <narmstrong@baylibre.com>, lee.jones@linaro.org,
+        linux-amlogic@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        rui.zhang@intel.com, daniel.lezcano@linaro.org,
+        amit.kucheria@verdurent.com,
+        Amit Kucheria <amit.kucheria@linaro.org>
+Subject: [PATCH v5 2/2] arm64: dts: meson-khadas-vim3: add Khadas MCU nodes
+Date:   Wed, 24 Jun 2020 18:15:28 +0200
+Message-Id: <20200624161528.12664-3-narmstrong@baylibre.com>
+X-Mailer: git-send-email 2.22.0
+In-Reply-To: <20200624161528.12664-1-narmstrong@baylibre.com>
+References: <20200624161528.12664-1-narmstrong@baylibre.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: test
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.8-rc2-12-g3f291d339bdc
-Subject: pm/testing baseline: 44 runs,
- 2 regressions (v5.8-rc2-12-g3f291d339bdc)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 44 runs, 2 regressions (v5.8-rc2-12-g3f291d339bdc)
+Add the Khadas MCU node with active FAN thermal nodes for all the
+Khadas VIM3 variants.
 
-Regressions Summary
--------------------
+Signed-off-by: Neil Armstrong <narmstrong@baylibre.com>
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+Hi Kevin,
 
-platform                     | arch  | lab          | compiler | defconfig =
-| results
------------------------------+-------+--------------+----------+-----------=
-+--------
-bcm2837-rpi-3-b              | arm64 | lab-baylibre | gcc-8    | defconfig =
-| 4/5    =
+The bindings has been reviewed and merged by Lee,
+could you apply this one via the amlogic tree ?
 
-meson-gxl-s805x-libretech-ac | arm64 | lab-baylibre | gcc-8    | defconfig =
-| 4/5    =
+Thanks,
+Neil
 
+ .../boot/dts/amlogic/meson-khadas-vim3.dtsi   | 23 +++++++++++++++++++
+ 1 file changed, 23 insertions(+)
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.8-rc2=
--12-g3f291d339bdc/plan/baseline/
+diff --git a/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi b/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
+index 1ef1e3672b96..27408c10a811 100644
+--- a/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
++++ b/arch/arm64/boot/dts/amlogic/meson-khadas-vim3.dtsi
+@@ -183,6 +183,23 @@
+ 	hdmi-phandle = <&hdmi_tx>;
+ };
+ 
++&cpu_thermal {
++	trips {
++		cpu_active: cpu-active {
++			temperature = <80000>; /* millicelsius */
++			hysteresis = <2000>; /* millicelsius */
++			type = "active";
++		};
++	};
++
++	cooling-maps {
++		map {
++			trip = <&cpu_active>;
++			cooling-device = <&khadas_mcu THERMAL_NO_LIMIT THERMAL_NO_LIMIT>;
++		};
++	};
++};
++
+ &ext_mdio {
+ 	external_phy: ethernet-phy@0 {
+ 		/* Realtek RTL8211F (0x001cc916) */
+@@ -222,6 +239,12 @@
+ 	pinctrl-0 = <&i2c_ao_sck_pins>, <&i2c_ao_sda_pins>;
+ 	pinctrl-names = "default";
+ 
++	khadas_mcu: system-controller@18 {
++		compatible = "khadas,mcu";
++		reg = <0x18>;
++		#cooling-cells = <2>;
++	};
++
+ 	gpio_expander: gpio-controller@20 {
+ 		compatible = "ti,tca6408";
+ 		reg = <0x20>;
+-- 
+2.22.0
 
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.8-rc2-12-g3f291d339bdc
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      3f291d339bdc310cb978e60031aa8d718dd6089a =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform                     | arch  | lab          | compiler | defconfig =
-| results
------------------------------+-------+--------------+----------+-----------=
-+--------
-bcm2837-rpi-3-b              | arm64 | lab-baylibre | gcc-8    | defconfig =
-| 4/5    =
-
-
-  Details:     https://kernelci.org/test/plan/id/5ef36ffb86d301d6bc97bf0d
-
-  Results:     4 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
-339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
-339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2019=
-.02-11-g17e793fa4728/arm64/baseline/rootfs.cpio.gz =
-
-
-  * baseline.dmesg.crit: https://kernelci.org/test/case/id/5ef36ffb86d301d6=
-bc97bf10
-      new failure (last pass: v5.8-rc2-8-g43bad67922e1)
-      3 lines =
-
-
-
-platform                     | arch  | lab          | compiler | defconfig =
-| results
------------------------------+-------+--------------+----------+-----------=
-+--------
-meson-gxl-s805x-libretech-ac | arm64 | lab-baylibre | gcc-8    | defconfig =
-| 4/5    =
-
-
-  Details:     https://kernelci.org/test/plan/id/5ef3701886d301d6bc97bf29
-
-  Results:     4 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
-339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-gxl-s805x-libretec=
-h-ac.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
-339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-gxl-s805x-libretec=
-h-ac.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2019=
-.02-11-g17e793fa4728/arm64/baseline/rootfs.cpio.gz =
-
-
-  * baseline.dmesg.emerg: https://kernelci.org/test/case/id/5ef3701886d301d=
-6bc97bf2e
-      failing since 0 day (last pass: v5.8-rc2, first fail: v5.8-rc2-8-g43b=
-ad67922e1)
-      2 lines =20
