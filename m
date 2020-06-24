@@ -2,117 +2,167 @@ Return-Path: <SRS0=IDKy=AF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED366C433E2
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 15:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86DD3C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:06:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CAC4020738
-	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 15:57:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 59EE02078A
+	for <linux-pm@archiver.kernel.org>; Wed, 24 Jun 2020 16:06:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="K43RLRxV"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="C3WGlzie"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404770AbgFXP5e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 24 Jun 2020 11:57:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35982 "EHLO
+        id S2404733AbgFXQGA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 24 Jun 2020 12:06:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37422 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404672AbgFXP44 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2020 11:56:56 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7CB36C061795;
-        Wed, 24 Jun 2020 08:56:56 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id u26so4808244wmn.1;
-        Wed, 24 Jun 2020 08:56:56 -0700 (PDT)
+        with ESMTP id S2404525AbgFXQGA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 24 Jun 2020 12:06:00 -0400
+Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 250F0C061573
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:06:00 -0700 (PDT)
+Received: by mail-pj1-x1030.google.com with SMTP id q90so837381pjh.3
+        for <linux-pm@vger.kernel.org>; Wed, 24 Jun 2020 09:06:00 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=qUKa07WIX4FJ9UC2RNCE+udUH0IZVYqwllIgAs/5xTU=;
-        b=K43RLRxVJUYUEKifmRwwtb9VtFl2vRTd0bBYdDk2fRq0txh81+9QrhqhA4MxNOlFvK
-         IDi4b59GeJK4FsTrZDYjqBiH+ByGb0EBp37DWAhXAnbA3wrytiNtZR3bsfAekM2LvAWB
-         tdghQVGPDYXDSOtX6GBrUSz3I0wazLvnJZ1RsIlLn6ea8LUt+OtQTrFjlnMoZhoazmjp
-         kSzpCRnExbta7cbHu72zd8CcrbGS/kxe29snIB2PvTE6uoYpt4AjbsbJ8HS+j2zHgQ4d
-         ZeUnTANXgMbpjJ5tNHzrlPYaUeAWF7URyAT/bf2VXfAvfiXfyjEi+EDXUP6ig64aKnDG
-         5WoA==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=NtTZMG2Jz8Dje9LJz5yqpTDScgUXLlQrrVHIyVPoj/c=;
+        b=C3WGlzieXEErDTKc4VA3TPJqYwV2ZeCaDmRF29/fJgfxPyZfstk3CKo+G1TLXTm6g4
+         /4xPiY5x6FqANROvr+SONgDbeQ1fxe5bnh5BR/QkTPx3J8lZGY0cC54wM0xV8a242w9o
+         x+NZQdpFZ17vqLAH5S6LqBUlNIX59FVld0xyTaaifLibQuvSJkUc6jbDN5WyAtnZKXZM
+         vCoPLWs0JXQQ2nWgrq/PuSagtzN9cJ2FaSvLrao7tMtBBkcU0yFEyZ42yPkPHr36KD9h
+         vGKBKuHNQjY0ZTEZSe4R03kX3Mm+R+qdRBv37qJP2OvsfYG9EMu0j+sKbILyEaZ9POUs
+         o9IQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=qUKa07WIX4FJ9UC2RNCE+udUH0IZVYqwllIgAs/5xTU=;
-        b=elIGyUzWjeDQwj9SRJGn8ryiH4yom86d8KKIHXKK6BCM7faM3xthfQssddI/KYE7mx
-         Ln/qgfdL7o9LgVKvxLiHd9FxWjAu3ZBk+1siODX51bngsRQayj7PlaMzqSD71KrbZSEb
-         duZGu/4N+utOdvkXchV3TlDEhiNmsYKuue3iXY71Kr9KbMokh3GVmnaUAreoVCGKjNXS
-         rwmAGB4Dj39zf9wipDAed76ZBAEZEh7XhLJS831T/itXC1osnP3crUnCDvHoFmtBuwlk
-         s2qT+WgmHdrkYiPb9ZE8h8MyS3og/56IyW4dk4uhoazQ9OcQ/1q1Hv/5oVJeXD98nLRu
-         QBOw==
-X-Gm-Message-State: AOAM532pyx+wAMdfKvoSoJS5821bcrFBDB6O/XW7seylHbi+ZKCUChEg
-        DQonF1nXyT4OnzP8dNHPXO8=
-X-Google-Smtp-Source: ABdhPJzcxM2i1Qf9RVr14XaBQbQldzvyj7eR6MN6J7NfyO8CWTG4/WFBLRccMAeEC8hRiUOAtbXarA==
-X-Received: by 2002:a1c:4408:: with SMTP id r8mr10837709wma.100.1593014215292;
-        Wed, 24 Jun 2020 08:56:55 -0700 (PDT)
-Received: from localhost ([213.191.183.145])
-        by smtp.gmail.com with ESMTPSA id q188sm5074344wma.46.2020.06.24.08.56.54
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 24 Jun 2020 08:56:54 -0700 (PDT)
-From:   Iskren Chernev <iskren.chernev@gmail.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        Jonathan Bakker <xc-racer2@live.ca>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Iskren Chernev <iskren.chernev@gmail.com>
-Subject: [PATCH v3 4/6] dt-bindings: power: supply: max17040: Add maxim,rcomp
-Date:   Wed, 24 Jun 2020 18:56:31 +0300
-Message-Id: <20200624155633.3557401-5-iskren.chernev@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200624155633.3557401-1-iskren.chernev@gmail.com>
-References: <20200624155633.3557401-1-iskren.chernev@gmail.com>
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=NtTZMG2Jz8Dje9LJz5yqpTDScgUXLlQrrVHIyVPoj/c=;
+        b=P9KEEqwRQ48y7EtvA6J55VqDkkIU1T4JWTV/SrJBgRrw/4fsOwmYZB5tKfi5uOvI96
+         rExu6Y/zmC9083PJkJ7wXfV5UmV+2exJg+Sv+6OrGR5CWfdrIao47sC6Ddo0ENbck+l5
+         SRVy6nAIDOkuBoQ8oNY4UmcAHSg54HIK5X4uxOKFKFTWk9kzGKK3nDq5VNLcio5zoQtM
+         G+5c45xDb7YK3Vl/o2dl8+mnT/E9SbdN+k7dRGqC0X0FMQJiGDXrsP9m9zg0ylUbfgir
+         6MgYO/knNWS9hSmubKRnW4SbApBax0GzARsTlm7u3oRnf4z0KbNAp1jHTFFNXI4w+j4L
+         JImw==
+X-Gm-Message-State: AOAM531padGdmgIZVdoiX70bLKgpX57Tm9TEXIW91x2Kyj6Vbc+YSftu
+        Q878mwvUzlJiXoFe0gk8W5Q0Di3Qemk=
+X-Google-Smtp-Source: ABdhPJxOtJrQ1kUqt872XTuQjeypGWi50398cYRCzSLo9hfdsAPyeTn4wusH1SSrEDGdhjguvjNDNQ==
+X-Received: by 2002:a17:90a:39ce:: with SMTP id k14mr28871586pjf.39.1593014759591;
+        Wed, 24 Jun 2020 09:05:59 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id y10sm21502941pfq.34.2020.06.24.09.05.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 24 Jun 2020 09:05:58 -0700 (PDT)
+Message-ID: <5ef379e6.1c69fb81.189d.1fd9@mx.google.com>
+Date:   Wed, 24 Jun 2020 09:05:58 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.8-rc2-12-g3f291d339bdc
+Subject: pm/testing baseline: 44 runs,
+ 2 regressions (v5.8-rc2-12-g3f291d339bdc)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To compensate for the battery chemistry and operating conditions the
-chips support a compensation value. Specify one or two byte compensation
-via the maxim,rcomp byte array.
+pm/testing baseline: 44 runs, 2 regressions (v5.8-rc2-12-g3f291d339bdc)
 
-Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
----
- .../devicetree/bindings/power/supply/max17040_battery.txt   | 6 ++++++
- 1 file changed, 6 insertions(+)
+Regressions Summary
+-------------------
 
-diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-index 554bce82a08e6..2cf046d12d922 100644
---- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-@@ -17,6 +17,11 @@ Optional properties :
- 				Specify this boolean property to divide the
- 				reported value in 2 and thus normalize it.
- 				SOC == State of Charge == Capacity.
-+- maxim,rcomp :			A value to compensate readings for various
-+				battery chemistries and operating temperatures.
-+				max17040,41 have 2 byte rcomp, default to
-+				0x97 0x00. All other devices have one byte
-+				rcomp, default to 0x97.
- - interrupts : 			Interrupt line see Documentation/devicetree/
- 				bindings/interrupt-controller/interrupts.txt
- - wakeup-source :		This device has wakeup capabilities. Use this
-@@ -41,6 +46,7 @@ Example:
- 	battery-fuel-gauge@36 {
- 		compatible = "maxim,max17048";
- 		reg = <0x36>;
-+		maxim,rcomp = /bits/ 8 <0x56>;
- 		maxim,alert-low-soc-level = <10>;
- 		maxim,double-soc;
- 	};
--- 
-2.27.0
+platform                     | arch  | lab          | compiler | defconfig =
+| results
+-----------------------------+-------+--------------+----------+-----------=
++--------
+bcm2837-rpi-3-b              | arm64 | lab-baylibre | gcc-8    | defconfig =
+| 4/5    =
 
+meson-gxl-s805x-libretech-ac | arm64 | lab-baylibre | gcc-8    | defconfig =
+| 4/5    =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.8-rc2=
+-12-g3f291d339bdc/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.8-rc2-12-g3f291d339bdc
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      3f291d339bdc310cb978e60031aa8d718dd6089a =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform                     | arch  | lab          | compiler | defconfig =
+| results
+-----------------------------+-------+--------------+----------+-----------=
++--------
+bcm2837-rpi-3-b              | arm64 | lab-baylibre | gcc-8    | defconfig =
+| 4/5    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5ef36ffb86d301d6bc97bf0d
+
+  Results:     4 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
+339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
+339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2019=
+.02-11-g17e793fa4728/arm64/baseline/rootfs.cpio.gz =
+
+
+  * baseline.dmesg.crit: https://kernelci.org/test/case/id/5ef36ffb86d301d6=
+bc97bf10
+      new failure (last pass: v5.8-rc2-8-g43bad67922e1)
+      3 lines =
+
+
+
+platform                     | arch  | lab          | compiler | defconfig =
+| results
+-----------------------------+-------+--------------+----------+-----------=
++--------
+meson-gxl-s805x-libretech-ac | arm64 | lab-baylibre | gcc-8    | defconfig =
+| 4/5    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5ef3701886d301d6bc97bf29
+
+  Results:     4 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
+339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-gxl-s805x-libretec=
+h-ac.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.8-rc2-12-g3f291d=
+339bdc/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-gxl-s805x-libretec=
+h-ac.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2019=
+.02-11-g17e793fa4728/arm64/baseline/rootfs.cpio.gz =
+
+
+  * baseline.dmesg.emerg: https://kernelci.org/test/case/id/5ef3701886d301d=
+6bc97bf2e
+      failing since 0 day (last pass: v5.8-rc2, first fail: v5.8-rc2-8-g43b=
+ad67922e1)
+      2 lines =20
