@@ -2,178 +2,235 @@ Return-Path: <SRS0=MKj8=AH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AFAA4C433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 17:50:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E886C433E0
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 18:34:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8D8D12080C
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 17:50:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="iegxD2Xb"
+	by mail.kernel.org (Postfix) with ESMTP id 0C325207D8
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 18:34:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726337AbgFZRud (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Jun 2020 13:50:33 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:49191 "EHLO
-        mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725833AbgFZRud (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2020 13:50:33 -0400
-Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20200626175031euoutp01bafce4a53d0cdd793aaa29c11df79960~cKVkwLJCn1504415044euoutp01Q
-        for <linux-pm@vger.kernel.org>; Fri, 26 Jun 2020 17:50:31 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20200626175031euoutp01bafce4a53d0cdd793aaa29c11df79960~cKVkwLJCn1504415044euoutp01Q
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1593193831;
-        bh=xSiB+0bcJ6gqaHQQW/JlglYx4ltOHCmHixD8o+J+bJ4=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=iegxD2XbOSUIk9KYF3h0+50BUjoFJJnNv1u0uTPkv9+qvTYRlNS0H6al+dIJtw6hV
-         Y3XsskLnRo7WswEy1A9As4n9j7kp5gpXZzTtTRpGGj5Z7qlvAUTA1PPGTp3HNShHeD
-         LNU+DqBOUBvOJKvmCjNmm5qFM4GBHHSTW/2REsR8=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20200626175030eucas1p20d63917468dd11dad46e3915ba694847~cKVkBDO9X0495504955eucas1p2e;
-        Fri, 26 Jun 2020 17:50:30 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id 63.03.06456.66536FE5; Fri, 26
-        Jun 2020 18:50:30 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200626175029eucas1p131a223f6371e01f88c9bc245e10d2699~cKVjmFJlh2464324643eucas1p1-;
-        Fri, 26 Jun 2020 17:50:29 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20200626175029eusmtrp201557a4ce0eeccc9b477761d8452c616~cKVjlbZe_1801118011eusmtrp2q;
-        Fri, 26 Jun 2020 17:50:29 +0000 (GMT)
-X-AuditID: cbfec7f2-809ff70000001938-11-5ef635662503
-Received: from eusmtip1.samsung.com ( [203.254.199.221]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 82.CA.06017.56536FE5; Fri, 26
-        Jun 2020 18:50:29 +0100 (BST)
-Received: from [106.210.123.115] (unknown [106.210.123.115]) by
-        eusmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20200626175028eusmtip1faefa4680763a54bc73309bdb88ce92e~cKVicMkDa2150821508eusmtip1e;
-        Fri, 26 Jun 2020 17:50:28 +0000 (GMT)
-Subject: Re: brocken devfreq simple_ondemand for Odroid XU3/4?
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Willy Wolff <willy.mh.wolff.ml@gmail.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
-        "linux-samsung-soc@vger.kernel.org" 
-        <linux-samsung-soc@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-From:   Sylwester Nawrocki <s.nawrocki@samsung.com>
-Message-ID: <708feba7-6b11-4943-1073-a1b5e54b6283@samsung.com>
-Date:   Fri, 26 Jun 2020 19:50:28 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
-        Thunderbird/68.9.0
+        id S1725890AbgFZSeS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Jun 2020 14:34:18 -0400
+Received: from mga11.intel.com ([192.55.52.93]:1959 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725788AbgFZSeS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 26 Jun 2020 14:34:18 -0400
+IronPort-SDR: Uo9jasPwiiMnYvsj+8fHseU6nfmHfUh78psoSF8rObOBHsYwADshFqyUmcAVjpu2oCID+5NZcc
+ c1WR9JYxRCbQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9664"; a="143666466"
+X-IronPort-AV: E=Sophos;i="5.75,284,1589266800"; 
+   d="scan'208";a="143666466"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Jun 2020 11:34:14 -0700
+IronPort-SDR: tGuuSBxUMtOmuCFSDBcR0fjSwCotULXQG0+w+oehyPjpjnk+N87jjOa6krzI9C5x2DQ8UwNWqu
+ O0CoJpHZFNuQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,284,1589266800"; 
+   d="scan'208";a="453447596"
+Received: from spandruv-mobl.amr.corp.intel.com ([10.254.109.205])
+  by orsmga005.jf.intel.com with ESMTP; 26 Jun 2020 11:34:13 -0700
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org,
+        dsmythies@telus.net, bp@alien8.de, tglx@linutronix.de,
+        mingo@redhat.com, hpa@zytor.com, peterz@infradead.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        x86@kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH v4 2/2] cpufreq: intel_pstate: Allow raw energy performance preference value
+Date:   Fri, 26 Jun 2020 11:34:01 -0700
+Message-Id: <20200626183401.1495090-3-srinivas.pandruvada@linux.intel.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200626183401.1495090-1-srinivas.pandruvada@linux.intel.com>
+References: <20200626183401.1495090-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
-In-Reply-To: <4a72fcab-e8da-8323-1fbe-98a6a4b3e0f1@arm.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrCKsWRmVeSWpSXmKPExsWy7djP87pppt/iDE5uF7K4/uU5q0X/49fM
-        FufPb2C3ONv0ht1i0+NrrBaXd81hs/jce4TRYsb5fUwWC5ta2C1uN65gs/h24hGjA7fHmnlr
-        GD12zrrL7rFpVSebx+Yl9R59W1YxenzeJBfAFsVlk5Kak1mWWqRvl8CV0XfxN1vBdomK3T95
-        GxhfCHcxcnJICJhI3HjwhL2LkYtDSGAFo8TrJX9YIZwvjBKnb21ig3A+M0osWtbFCtMy/9k3
-        ZojEckaJF60ToVo+Mkoc2nGKHaRKWMBOYv61XWAdIgKqEtcu3GUBKWIWOMgssffLGWaQBJuA
-        oUTv0T5GEJsXqOHOnglgzSxADQfeHQdrFhWIlehbuoANokZQ4uTMJywgNqeAtcTLq2fA4swC
-        4hK3nsxngrDlJba/nQN2noTALXaJO5eusEHc7SIx78cGqB+EJV4d38IOYctI/N8J0gzS0Mwo
-        0bP7NjuEM4FR4v7xBYwQVdYSd879AprEAbRCU2L9Ln2IsKPE22NvmEHCEgJ8EjfeCkIcwScx
-        adt0qDCvREebEES1isTvVdOZIGwpie4n/1kmMCrNQvLaLCTvzELyziyEvQsYWVYxiqeWFuem
-        pxYb5qWW6xUn5haX5qXrJefnbmIEpq3T/45/2sH49VLSIUYBDkYlHt4XD77GCbEmlhVX5h5i
-        lOBgVhLhdTp7Ok6INyWxsiq1KD++qDQntfgQozQHi5I4r/Gil7FCAumJJanZqakFqUUwWSYO
-        TqkGxt27q7RuLWCvnZfCNONM4IRJk/xmHZ09VZFTUHTqgicPSviWLpBXPfc0+JMHW9yul53u
-        y5c1V4k4Rbp7PCkxtqlct6/U1jIrVmZ+kslCvrmrBWzN1rQcebe184K75OnpuvUWBgXxpXvs
-        e0SMq7tvS0sIdB277Deb6YHgPi9be68Z5vHnXSWSlViKMxINtZiLihMBVqHxulcDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrKIsWRmVeSWpSXmKPExsVy+t/xu7qppt/iDO6cMLe4/uU5q0X/49fM
-        FufPb2C3ONv0ht1i0+NrrBaXd81hs/jce4TRYsb5fUwWC5ta2C1uN65gs/h24hGjA7fHmnlr
-        GD12zrrL7rFpVSebx+Yl9R59W1YxenzeJBfAFqVnU5RfWpKqkJFfXGKrFG1oYaRnaGmhZ2Ri
-        qWdobB5rZWSqpG9nk5Kak1mWWqRvl6CX0XfxN1vBdomK3T95GxhfCHcxcnJICJhIzH/2jbmL
-        kYtDSGApo0T7811sXYwcQAkpifktShA1whJ/rnWxQdS8Z5SYdPcfE0hCWMBOYv61XawgtoiA
-        qsS1C3dZQIqYBQ4zSxw7dZgVomMis8SD1ntsIFVsAoYSvUf7GEFsXqDuO3smsIPYLEDdB94d
-        B5skKhAr8e3eFjaIGkGJkzOfsIDYnALWEi+vngGLMwuoS/yZd4kZwhaXuPVkPhOELS+x/e0c
-        5gmMQrOQtM9C0jILScssJC0LGFlWMYqklhbnpucWG+kVJ+YWl+al6yXn525iBEbptmM/t+xg
-        7HoXfIhRgINRiYf3xYOvcUKsiWXFlbmHGCU4mJVEeJ3Ono4T4k1JrKxKLcqPLyrNSS0+xGgK
-        9NxEZinR5HxgAskriTc0NTS3sDQ0NzY3NrNQEuftEDgYIySQnliSmp2aWpBaBNPHxMEp1cC4
-        j/2K/XZdlhI//SMmPx/suHboVq7gzJJTkoqLfTxf3jzNaH4ryjkpgDn2pfA8Rs41O7dKJGxS
-        8Haw13etVdfvPSzkqK28Te5w8f5PumqTnmoGJBW3hJlcXv87WXmL6b8kt7U3PzkKNPV1VZf6
-        VWfMUnJcP2njr98aYv1/VK0uZevdzvKqvqDEUpyRaKjFXFScCAASuzkY6AIAAA==
-X-CMS-MailID: 20200626175029eucas1p131a223f6371e01f88c9bc245e10d2699
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20200624103308eucas1p188a5fe3cee1916d9430c9971c2dab3a3
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20200624103308eucas1p188a5fe3cee1916d9430c9971c2dab3a3
-References: <20200623164733.qbhua7b6cg2umafj@macmini.local>
-        <CAJKOXPeLuq81NC2xZh3y32EB-_APbDAchZD4OW_eCgQKKO+p8w@mail.gmail.com>
-        <20200623191129.GA4171@kozik-lap>
-        <CGME20200624103308eucas1p188a5fe3cee1916d9430c9971c2dab3a3@eucas1p1.samsung.com>
-        <85f5a8c0-7d48-f2cd-3385-c56d662f2c88@arm.com>
-        <ef5184ed-00ff-4226-5ece-b0fc8eb16fb6@samsung.com>
-        <4a72fcab-e8da-8323-1fbe-98a6a4b3e0f1@arm.com>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Lukasz,
+Currently using attribute "energy_performance_preference", user space can
+write one of the four per-defined preference string. These preference
+strings gets mapped to a hard-coded Energy-Performance Preference (EPP) or
+Energy-Performance Bias (EPB) knob.
 
-On 25.06.2020 12:02, Lukasz Luba wrote:
-> Regarding the 'performance counters overflow interrupts' there is one
-> thing worth to keep in mind: variable utilization and frequency.
-> For example, in order to make a conclusion in algorithm deciding that
-> the device should increase or decrease the frequency, we fix the period
-> of observation, i.e. to 500ms. That can cause the long delay if the
-> utilization of the device suddenly drops. For example we set an
-> overflow threshold to value i.e. 1000 and we know that at 1000MHz
-> and full utilization (100%) the counter will reach that threshold
-> after 500ms (which we want, because we don't want too many interrupts
-> per sec). What if suddenly utilization drops to 2% (i.e. from 5GB/s
-> to 250MB/s (what if it drops to 25MB/s?!)), the counter will reach the
-> threshold after 50*500ms = 25s. It is impossible just for the counters
-> to predict next utilization and adjust the threshold.
+These four values are supposed to cover broad spectrum of use cases, but
+are not uniformly distributed in the range. There are number of cases,
+where this is not enough. For example:
 
-Agreed, that's in case when we use just the performance counter (PMCNT)
-overflow interrupts. In my experiments I used the (total) cycle counter
-(CCNT) overflow interrupts. As that counter is clocked with fixed rate
-between devfreq updates it can be used as a timer by pre-loading it with 
-initial value depending on current bus frequency. But we could as well 
-use some reliable system timer mechanism to generate periodic events. 
-I was hoping to use the cycle counter to generate low frequency monitor 
-events and the actual performance counters overflow interrupts to detect 
-any sudden changes of utilization. However, it seems it cannot be done 
-with as simple performance counters HW architecture as on Exynos4412.
-It looks like on Exynos5422 we have all what is needed, there is more 
-flexibility in selecting the counter source signal, e.g. each counter
-can be a clock cycle counter or can count various bus events related to 
-actual utilization. Moreover, we could configure the counter gating period 
-and alarm interrupts are available for when the counter value drops below 
-configured MIN threshold or exceeds configured MAX value.
+Suppose user wants more performance when connected to AC. Instead of using
+default "balance performance", the "performance" setting can be used. This
+changes EPP value from 0x80 to 0x00. But setting EPP to 0, results in
+electrical and thermal issues on some platforms. This results in
+aggressive throttling, which causes a drop in performance. But some value
+between 0x80 and 0x00 results in better performance. But that value can't
+be fixed as the power curve is not linear. In some cases just changing EPP
+from 0x80 to 0x75 is enough to get significant performance gain.
 
-So it should be possible to configure the HW to generate the utilization 
-monitoring events without excessive continuous CPU intervention.
-But I'm rather not going to work on the Exynos5422 SoC support at the moment.
+Similarly on battery the default "balance_performance" mode can be
+aggressive in power consumption. But picking up the next choice
+"balance power" results in too much loss of performance, which results in
+bad user experience in use cases like "Google Hangout". It was observed
+that some value between these two EPP is optimal.
 
-> To address that, we still need to have another mechanism (like watchdog)
-> which will be triggered just to check if the threshold needs adjustment.
-> This mechanism can be a local timer in the driver or a framework
-> timer running kind of 'for loop' on all this type of devices (like
-> the scheduled workqueue). In both cases in the system there will be
-> interrupts, timers (even at workqueues) and scheduling.
-> The approach to force developers to implement their local watchdog
-> timers (or workqueues) in drivers is IMHO wrong and that's why we have
-> frameworks.
+This change allows fine grain EPP tuning for platform like Chromebook or
+for users who wants to fine tune power and performance.
+Here based on the product and use cases, different EPP values can be set.
+This change is similar to the change done for:
+/sys/devices/system/cpu/cpu*/power/energy_perf_bias
+where user has choice to write a predefined string or raw value.
 
-Yes, it should be also possible in the framework to use the counter alarm
-events where the hardware is advanced enough, in order to avoid excessive 
-SW polling.
+The change itself is trivial. When user preference doesn't match
+predefined string preferences and value is an unsigned integer and in
+range, use that value for EPP. When the EPP feature is not present
+writing raw value is not supported.
 
---
-Regards,
-Sylwester
+Suggested-by: Len Brown <lenb@kernel.org>
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ Documentation/admin-guide/pm/intel_pstate.rst |  6 ++-
+ drivers/cpufreq/intel_pstate.c                | 50 +++++++++++++++----
+ 2 files changed, 45 insertions(+), 11 deletions(-)
+
+diff --git a/Documentation/admin-guide/pm/intel_pstate.rst b/Documentation/admin-guide/pm/intel_pstate.rst
+index 25e1097fc332..40d481cca368 100644
+--- a/Documentation/admin-guide/pm/intel_pstate.rst
++++ b/Documentation/admin-guide/pm/intel_pstate.rst
+@@ -565,7 +565,11 @@ somewhere between the two extremes:
+ Strings written to the ``energy_performance_preference`` attribute are
+ internally translated to integer values written to the processor's
+ Energy-Performance Preference (EPP) knob (if supported) or its
+-Energy-Performance Bias (EPB) knob.
++Energy-Performance Bias (EPB) knob. It is also possible to write a positive
++integer value between 0 to 255, if the EPP feature is present. If the EPP
++feature is not present, writing integer value to this attribute is not
++supported. In this case, user can use
++ "/sys/devices/system/cpu/cpu*/power/energy_perf_bias" interface.
+ 
+ [Note that tasks may by migrated from one CPU to another by the scheduler's
+ load-balancing algorithm and if different energy vs performance hints are
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 7dfd9da385d1..27737b53dfc6 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -602,11 +602,12 @@ static const unsigned int epp_values[] = {
+ 	HWP_EPP_POWERSAVE
+ };
+ 
+-static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
++static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data, int *raw_epp)
+ {
+ 	s16 epp;
+ 	int index = -EINVAL;
+ 
++	*raw_epp = 0;
+ 	epp = intel_pstate_get_epp(cpu_data, 0);
+ 	if (epp < 0)
+ 		return epp;
+@@ -614,12 +615,14 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
+ 	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+ 		if (epp == HWP_EPP_PERFORMANCE)
+ 			return 1;
+-		if (epp <= HWP_EPP_BALANCE_PERFORMANCE)
++		if (epp == HWP_EPP_BALANCE_PERFORMANCE)
+ 			return 2;
+-		if (epp <= HWP_EPP_BALANCE_POWERSAVE)
++		if (epp == HWP_EPP_BALANCE_POWERSAVE)
+ 			return 3;
+-		else
++		if (epp == HWP_EPP_POWERSAVE)
+ 			return 4;
++		*raw_epp = epp;
++		return 0;
+ 	} else if (boot_cpu_has(X86_FEATURE_EPB)) {
+ 		/*
+ 		 * Range:
+@@ -638,7 +641,8 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data)
+ }
+ 
+ static int intel_pstate_set_energy_pref_index(struct cpudata *cpu_data,
+-					      int pref_index)
++					      int pref_index, bool use_raw,
++					      u32 raw_epp)
+ {
+ 	int epp = -EINVAL;
+ 	int ret;
+@@ -657,6 +661,16 @@ static int intel_pstate_set_energy_pref_index(struct cpudata *cpu_data,
+ 
+ 		value &= ~GENMASK_ULL(31, 24);
+ 
++		if (use_raw) {
++			if (raw_epp > 255) {
++				ret = -EINVAL;
++				goto return_pref;
++			}
++			value |= (u64)raw_epp << 24;
++			ret = wrmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, value);
++			goto return_pref;
++		}
++
+ 		if (epp == -EINVAL)
+ 			epp = epp_values[pref_index - 1];
+ 
+@@ -694,6 +708,8 @@ static ssize_t store_energy_performance_preference(
+ {
+ 	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+ 	char str_preference[21];
++	bool raw = false;
++	u32 epp;
+ 	int ret;
+ 
+ 	ret = sscanf(buf, "%20s", str_preference);
+@@ -701,10 +717,21 @@ static ssize_t store_energy_performance_preference(
+ 		return -EINVAL;
+ 
+ 	ret = match_string(energy_perf_strings, -1, str_preference);
+-	if (ret < 0)
++	if (ret < 0) {
++		if (!boot_cpu_has(X86_FEATURE_HWP_EPP))
++			return ret;
++
++		ret = kstrtouint(buf, 10, &epp);
++		if (ret)
++			return ret;
++
++		raw = true;
++	}
++
++	ret = intel_pstate_set_energy_pref_index(cpu_data, ret, raw, epp);
++	if (ret)
+ 		return ret;
+ 
+-	intel_pstate_set_energy_pref_index(cpu_data, ret);
+ 	return count;
+ }
+ 
+@@ -712,13 +739,16 @@ static ssize_t show_energy_performance_preference(
+ 				struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+-	int preference;
++	int preference, raw_epp;
+ 
+-	preference = intel_pstate_get_energy_pref_index(cpu_data);
++	preference = intel_pstate_get_energy_pref_index(cpu_data, &raw_epp);
+ 	if (preference < 0)
+ 		return preference;
+ 
+-	return  sprintf(buf, "%s\n", energy_perf_strings[preference]);
++	if (raw_epp)
++		return  sprintf(buf, "%d\n", raw_epp);
++	else
++		return  sprintf(buf, "%s\n", energy_perf_strings[preference]);
+ }
+ 
+ cpufreq_freq_attr_rw(energy_performance_preference);
+-- 
+2.25.4
+
