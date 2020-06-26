@@ -2,38 +2,34 @@ Return-Path: <SRS0=MKj8=AH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F365DC433E2
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 16:09:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81DCEC433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 17:38:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DA97220773
-	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 16:09:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 63CE7207D8
+	for <linux-pm@archiver.kernel.org>; Fri, 26 Jun 2020 17:38:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726590AbgFZQJB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 26 Jun 2020 12:09:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58754 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725807AbgFZQJA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2020 12:09:00 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AE976C03E979;
-        Fri, 26 Jun 2020 09:09:00 -0700 (PDT)
+        id S1727016AbgFZRiM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 26 Jun 2020 13:38:12 -0400
+Received: from bhuna.collabora.co.uk ([46.235.227.227]:52396 "EHLO
+        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726616AbgFZRiK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 26 Jun 2020 13:38:10 -0400
 Received: from [127.0.0.1] (localhost [127.0.0.1])
         (Authenticated sender: andrzej.p)
-        with ESMTPSA id CD5392A2DA9
-Subject: Re: [PATCH v4 07/11] thermal: Use mode helpers in drivers
-To:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Cc:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        with ESMTPSA id DB1A92A5E39
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
         netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
         platform-driver-x86@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Len Brown <lenb@kernel.org>,
         Vishal Kulkarni <vishal@chelsio.com>,
         "David S . Miller" <davem@davemloft.net>,
@@ -57,7 +53,7 @@ Cc:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
         Pengutronix Kernel Team <kernel@pengutronix.de>,
         Fabio Estevam <festevam@gmail.com>,
         NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
         Heiko Stuebner <heiko@sntech.de>,
         Orson Zhai <orsonzhai@gmail.com>,
         Baolin Wang <baolin.wang7@gmail.com>,
@@ -66,136 +62,203 @@ Cc:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
         Allison Randal <allison@lohutok.net>,
         Enrico Weigelt <info@metux.net>,
         Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>, kernel@collabora.com
-References: <Message-ID: <4493c0e4-51aa-3907-810c-74949ff27ca4@samsung.com>
- <20200528192051.28034-1-andrzej.p@collabora.com>
- <CGME20200528192211eucas1p1dc9b49e1288321503954ed16d9e3001b@eucas1p1.samsung.com>
- <20200528192051.28034-8-andrzej.p@collabora.com>
- <313ca24a-0cc4-a976-19bb-0f30aa845226@samsung.com>
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Message-ID: <fd77c8e7-25a2-49ca-676a-b8669d848adb@collabora.com>
-Date:   Fri, 26 Jun 2020 18:08:54 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.0
-MIME-Version: 1.0
-In-Reply-To: <313ca24a-0cc4-a976-19bb-0f30aa845226@samsung.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v5 02/11] thermal: Store thermal mode in a dedicated enum
+Date:   Fri, 26 Jun 2020 19:37:46 +0200
+Message-Id: <20200626173755.26379-3-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200626173755.26379-1-andrzej.p@collabora.com>
+References: <9cbffad6-69e4-0b33-4640-fde7c4f6a6e7@linaro.org>
+ <20200626173755.26379-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Bartlomiej,
+Prepare for storing mode in struct thermal_zone_device.
 
-W dniu 24.06.2020 o 11:51, Bartlomiej Zolnierkiewicz pisze:
-> 
-> On 5/28/20 9:20 PM, Andrzej Pietrasiewicz wrote:
->> Use thermal_zone_device_{en|dis}able() and thermal_zone_device_is_enabled().
->>
->> Consequently, all set_mode() implementations in drivers:
->>
->> - can stop modifying tzd's "mode" member,
->> - shall stop taking tzd's lock, as it is taken in the helpers
->> - shall stop calling thermal_zone_device_update() as it is called in the
->> helpers
->> - can assume they are called when the mode truly changes, so checks to
->> verify that can be dropped
->>
->> Not providing set_mode() by a driver no longer prevents the core from
->> being able to set tzd's mode, so the relevant check in mode_store() is
->> removed.
->>
->> Other comments:
->>
->> - acpi/thermal.c: tz->thermal_zone->mode will be updated only after we
->> return from set_mode(), so use function parameter in thermal_set_mode()
->> instead, no need to call acpi_thermal_check() in set_mode()
->> - thermal/imx_thermal.c: regmap writes and mode assignment are done in
->> thermal_zone_device_{en|dis}able() and set_mode() callback
->> - thermal/intel/intel_quark_dts_thermal.c: soc_dts_{en|dis}able() are a
->> part of set_mode() callback, so they don't need to modify tzd->mode, and
->> don't need to fall back to the opposite mode if unsuccessful, as the return
->> value will be propagated to thermal_zone_device_{en|dis}able() and
->> ultimately tzd's member will not be changed in thermal_zone_device_set_mode().
->> - thermal/of-thermal.c: no need to set zone->mode to DISABLED in
->> of_parse_thermal_zones() as a tzd is kzalloc'ed so mode is DISABLED anyway
->>
->> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
->> ---
->>   drivers/acpi/thermal.c                        | 21 ++++++-----
->>   .../ethernet/mellanox/mlxsw/core_thermal.c    | 37 +++++++++----------
->>   drivers/platform/x86/acerhdf.c                | 17 +++++----
->>   drivers/thermal/da9062-thermal.c              |  6 ++-
->>   drivers/thermal/hisi_thermal.c                |  6 ++-
->>   drivers/thermal/imx_thermal.c                 | 33 +++++++----------
->>   .../intel/int340x_thermal/int3400_thermal.c   |  5 +--
->>   .../thermal/intel/intel_quark_dts_thermal.c   | 18 ++-------
->>   drivers/thermal/rockchip_thermal.c            |  6 ++-
->>   drivers/thermal/sprd_thermal.c                |  6 ++-
->>   drivers/thermal/thermal_core.c                |  2 +-
->>   drivers/thermal/thermal_of.c                  | 10 +----
->>   drivers/thermal/thermal_sysfs.c               | 11 ++----
->>   13 files changed, 80 insertions(+), 98 deletions(-)
-> 
-> [...]
-> 
->> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
->> index 32c5fe16b7f7..3efe749dc5a0 100644
->> --- a/drivers/platform/x86/acerhdf.c
->> +++ b/drivers/platform/x86/acerhdf.c
->> @@ -397,19 +397,16 @@ static inline void acerhdf_revert_to_bios_mode(void)
->>   {
->>   	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
->>   	kernelmode = 0;
->> -	if (thz_dev) {
->> -		thz_dev->mode = THERMAL_DEVICE_DISABLED;
->> +	if (thz_dev)
->>   		thz_dev->polling_delay = 0;
->> -	}
->> +
->>   	pr_notice("kernel mode fan control OFF\n");
->>   }
->>   static inline void acerhdf_enable_kernelmode(void)
->>   {
->>   	kernelmode = 1;
->> -	thz_dev->mode = THERMAL_DEVICE_ENABLED;
->>   
->>   	thz_dev->polling_delay = interval*1000;
->> -	thermal_zone_device_update(thz_dev, THERMAL_EVENT_UNSPECIFIED);
->>   	pr_notice("kernel mode fan control ON\n");
->>   }
->>   
->> @@ -723,6 +720,8 @@ static void acerhdf_unregister_platform(void)
->>   
->>   static int __init acerhdf_register_thermal(void)
->>   {
->> +	int ret;
->> +
->>   	cl_dev = thermal_cooling_device_register("acerhdf-fan", NULL,
->>   						 &acerhdf_cooling_ops);
->>   
->> @@ -736,8 +735,12 @@ static int __init acerhdf_register_thermal(void)
->>   	if (IS_ERR(thz_dev))
->>   		return -EINVAL;
->>   
->> -	thz_dev->mode = kernelmode ?
->> -		THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED;
->> +	if (kernelmode)
->> +		ret = thermal_zone_device_enable(thz_dev);
->> +	else
->> +		ret = thermal_zone_device_disable(thz_dev);
->> +	if (ret)
-> 
-> Cleanup on error seems to be missing here.
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+[for acerhdf]
+Acked-by: Peter Kaestle <peter@piie.net>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/acpi/thermal.c                        | 27 +++++++++----------
+ drivers/platform/x86/acerhdf.c                |  8 ++++--
+ .../intel/int340x_thermal/int3400_thermal.c   | 18 +++++--------
+ 3 files changed, 25 insertions(+), 28 deletions(-)
 
-It does seem so, but it is not the case.
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 6de8066ca1e7..fb46070c66d8 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -172,7 +172,7 @@ struct acpi_thermal {
+ 	struct acpi_thermal_trips trips;
+ 	struct acpi_handle_list devices;
+ 	struct thermal_zone_device *thermal_zone;
+-	int tz_enabled;
++	enum thermal_device_mode mode;
+ 	int kelvin_offset;	/* in millidegrees */
+ 	struct work_struct thermal_check_work;
+ };
+@@ -500,7 +500,7 @@ static void acpi_thermal_check(void *data)
+ {
+ 	struct acpi_thermal *tz = data;
+ 
+-	if (!tz->tz_enabled)
++	if (tz->mode != THERMAL_DEVICE_ENABLED)
+ 		return;
+ 
+ 	thermal_zone_device_update(tz->thermal_zone,
+@@ -534,8 +534,7 @@ static int thermal_get_mode(struct thermal_zone_device *thermal,
+ 	if (!tz)
+ 		return -EINVAL;
+ 
+-	*mode = tz->tz_enabled ? THERMAL_DEVICE_ENABLED :
+-		THERMAL_DEVICE_DISABLED;
++	*mode = tz->mode;
+ 
+ 	return 0;
+ }
+@@ -544,27 +543,25 @@ static int thermal_set_mode(struct thermal_zone_device *thermal,
+ 				enum thermal_device_mode mode)
+ {
+ 	struct acpi_thermal *tz = thermal->devdata;
+-	int enable;
+ 
+ 	if (!tz)
+ 		return -EINVAL;
+ 
++	if (mode != THERMAL_DEVICE_DISABLED &&
++	    mode != THERMAL_DEVICE_ENABLED)
++		return -EINVAL;
+ 	/*
+ 	 * enable/disable thermal management from ACPI thermal driver
+ 	 */
+-	if (mode == THERMAL_DEVICE_ENABLED)
+-		enable = 1;
+-	else if (mode == THERMAL_DEVICE_DISABLED) {
+-		enable = 0;
++	if (mode == THERMAL_DEVICE_DISABLED)
+ 		pr_warn("thermal zone will be disabled\n");
+-	} else
+-		return -EINVAL;
+ 
+-	if (enable != tz->tz_enabled) {
+-		tz->tz_enabled = enable;
++	if (mode != tz->mode) {
++		tz->mode = mode;
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 			"%s kernel ACPI thermal control\n",
+-			tz->tz_enabled ? "Enable" : "Disable"));
++			tz->mode == THERMAL_DEVICE_ENABLED ?
++			"Enable" : "Disable"));
+ 		acpi_thermal_check(tz);
+ 	}
+ 	return 0;
+@@ -915,7 +912,7 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 		goto remove_dev_link;
+ 	}
+ 
+-	tz->tz_enabled = 1;
++	tz->mode = THERMAL_DEVICE_ENABLED;
+ 
+ 	dev_info(&tz->device->dev, "registered as thermal_zone%d\n",
+ 		 tz->thermal_zone->id);
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 4df7609b4aa9..9d1030b1a4f4 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -68,6 +68,7 @@ static int kernelmode = 1;
+ #else
+ static int kernelmode;
+ #endif
++static enum thermal_device_mode thermal_mode;
+ 
+ static unsigned int interval = 10;
+ static unsigned int fanon = 60000;
+@@ -397,6 +398,7 @@ static inline void acerhdf_revert_to_bios_mode(void)
+ {
+ 	acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+ 	kernelmode = 0;
++	thermal_mode = THERMAL_DEVICE_DISABLED;
+ 	if (thz_dev)
+ 		thz_dev->polling_delay = 0;
+ 	pr_notice("kernel mode fan control OFF\n");
+@@ -404,6 +406,7 @@ static inline void acerhdf_revert_to_bios_mode(void)
+ static inline void acerhdf_enable_kernelmode(void)
+ {
+ 	kernelmode = 1;
++	thermal_mode = THERMAL_DEVICE_ENABLED;
+ 
+ 	thz_dev->polling_delay = interval*1000;
+ 	thermal_zone_device_update(thz_dev, THERMAL_EVENT_UNSPECIFIED);
+@@ -416,8 +419,7 @@ static int acerhdf_get_mode(struct thermal_zone_device *thermal,
+ 	if (verbose)
+ 		pr_notice("kernel mode fan control %d\n", kernelmode);
+ 
+-	*mode = (kernelmode) ? THERMAL_DEVICE_ENABLED
+-			     : THERMAL_DEVICE_DISABLED;
++	*mode = thermal_mode;
+ 
+ 	return 0;
+ }
+@@ -739,6 +741,8 @@ static int __init acerhdf_register_thermal(void)
+ 	if (IS_ERR(cl_dev))
+ 		return -EINVAL;
+ 
++	thermal_mode = kernelmode ?
++		THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED;
+ 	thz_dev = thermal_zone_device_register("acerhdf", 2, 0, NULL,
+ 					      &acerhdf_dev_ops,
+ 					      &acerhdf_zone_params, 0,
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 0b3a62655843..e84faaadff87 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -48,7 +48,7 @@ struct int3400_thermal_priv {
+ 	struct acpi_device *adev;
+ 	struct platform_device *pdev;
+ 	struct thermal_zone_device *thermal;
+-	int mode;
++	enum thermal_device_mode mode;
+ 	int art_count;
+ 	struct art *arts;
+ 	int trt_count;
+@@ -395,24 +395,20 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+ 				enum thermal_device_mode mode)
+ {
+ 	struct int3400_thermal_priv *priv = thermal->devdata;
+-	bool enable;
+ 	int result = 0;
+ 
+ 	if (!priv)
+ 		return -EINVAL;
+ 
+-	if (mode == THERMAL_DEVICE_ENABLED)
+-		enable = true;
+-	else if (mode == THERMAL_DEVICE_DISABLED)
+-		enable = false;
+-	else
++	if (mode != THERMAL_DEVICE_ENABLED &&
++	    mode != THERMAL_DEVICE_DISABLED)
+ 		return -EINVAL;
+ 
+-	if (enable != priv->mode) {
+-		priv->mode = enable;
++	if (mode != priv->mode) {
++		priv->mode = mode;
+ 		result = int3400_thermal_run_osc(priv->adev->handle,
+-						 priv->current_uuid_index,
+-						 enable);
++						priv->current_uuid_index,
++						mode == THERMAL_DEVICE_ENABLED);
+ 	}
+ 
+ 	evaluate_odvp(priv);
+-- 
+2.17.1
 
-acerhdf_register_thermal() is called from acerhdf_init().
-The latter checks the return value of the former and on error
-jumps to the err_unreg label, where thermal zone(s) is/are unregistered.
-
-Regards,
-
-Andrzej
