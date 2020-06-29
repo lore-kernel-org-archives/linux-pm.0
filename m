@@ -2,117 +2,153 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 66447C433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:38:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E100C433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:39:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 418C520672
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:38:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3EBE420672
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:39:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="BT0/zl5X"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="ttB2j8Ew"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731757AbgF2UiV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:38:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43382 "EHLO
+        id S1731747AbgF2Uiy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:38:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43348 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731730AbgF2TOU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:20 -0400
-Received: from mail-vk1-xa41.google.com (mail-vk1-xa41.google.com [IPv6:2607:f8b0:4864:20::a41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B61FDC02A560
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 06:14:26 -0700 (PDT)
-Received: by mail-vk1-xa41.google.com with SMTP id y7so3702760vkf.9
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 06:14:26 -0700 (PDT)
+        with ESMTP id S1731743AbgF2TOR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:17 -0400
+Received: from mail-vs1-xe42.google.com (mail-vs1-xe42.google.com [IPv6:2607:f8b0:4864:20::e42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2CCBC02A198
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:20:02 -0700 (PDT)
+Received: by mail-vs1-xe42.google.com with SMTP id v1so8666707vsb.10
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:20:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
         h=mime-version:references:in-reply-to:from:date:message-id:subject:to
          :cc;
-        bh=wUm1DqpGN5XmVYcQ9vlrW6bAWNxPJKNUBexoC8nS/Ds=;
-        b=BT0/zl5XRxbuPrO7SatKs69j+FXHyw9zFUp0W6pCAVRFbuVWsW/4rz69J5XNFI7+XT
-         rT8v/ZqOiYGqHBnb+pYZoAokisxWDuNC2q47a0XSkycGVxnMjNveTa7pj8XQ9gb/6CFt
-         NTe7mK7rogiD669XOv416uCvsxR/XoJw7xJMyxmLhjwaLJKceTx+XS8Riw5PoJY4j/Y9
-         BKTk0peACR14oHYIDFCn+Yk1mNwJgp4TuUGHzHSWj3bCyeliHFLJagaf1yzY6U9oROQC
-         7dFa8Ozo9FTPibEn9J4pxoTfmbvJLelFDOrmIqC0ijrtPtMq+MHprK13S8XtQrd6KKvX
-         Sgnw==
+        bh=FLsjiHozNvDgrzZmIQ2WouKu5DGkcV6Zi4pLil1Ar3w=;
+        b=ttB2j8EwlPtN89bjJxgTu6zN6r9fAS6dOKjdEH5q5VgMNoawKPbasYLeO6Wib3Imiu
+         Txm/pUueF19FSodecKaZf3ZCJfrG2w/E1RbAWvWvaWLmozbRr0o+MyQ7Vxyu66mUVwFe
+         /MZk9rP3wex38QGJdlpG8PBJhrr5KQXRJnt7Ook8usx2iRD6oBwGhzP3MrMOF9jCbkfq
+         eSr9Kpja5TQMUcLHo5FvLvaFIOmhzprhE5iUWmMHkVkAKT40wuc3HhlD8Mu+pYd20+vk
+         8fp8IK3heEU6zqUmyhzEWQIjcRkJvNFJ8lZm1mu5e2bjNw9dQXVcD8D+oPj0s/f4WY+P
+         5OuQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=wUm1DqpGN5XmVYcQ9vlrW6bAWNxPJKNUBexoC8nS/Ds=;
-        b=UFhJyK8onKn9Vqlmb0StV93biFTxySBb4F73HEyhNj21f5ft3ljoIE2JDL8tOXLJq9
-         irqgm6+CIT6OvkKJ21q4X11wO+kY0TpbMkHUMv6C6uF3fVnSQ36pA05gZWSS99+iAfYt
-         PT4qVDUIMfKcYJ+eFZzqKtRYjljuM/FBwS6ClDO6KrDn3etvj7bmhHjtIp91h7ok629d
-         ZKpv34ofXxcoub2ftCL7S60y2UBpBojfWm1AyRcYPygrym+SzcZv6PmbCrZPUCQNETo0
-         t7xEfMbI+NB4N4MQzXDOug8rzo9fwvVEv70UsOpWBK4v6rjfyMYlYOL5iO23U2JivUMN
-         Er8Q==
-X-Gm-Message-State: AOAM530vB5nv/q1cLFOZnXPQ5CQb3xDBckzrA/qLu6KIHOPy84XDI4sZ
-        seUprFzVdR8i3V4xzNCy1d9J9QT+xb6R1UjRVBgPiw==
-X-Google-Smtp-Source: ABdhPJwqjv8P1N2hkVCTPq8KPMs3rDIm5sBcQeK3WBhBYHmZo8sJWnzLMHUoFYfgRwa/6N4osQmIDHV/F2ze2jLTbgM=
-X-Received: by 2002:a1f:d783:: with SMTP id o125mr10139104vkg.46.1593436464488;
- Mon, 29 Jun 2020 06:14:24 -0700 (PDT)
+        bh=FLsjiHozNvDgrzZmIQ2WouKu5DGkcV6Zi4pLil1Ar3w=;
+        b=jtN2h4QWBoRS7HWI/zrLnGzFpyMLdEDEDb0/qV9grotJQkcbvaNNTlpbBA7L4W9KnI
+         UxF9HxOQ8UFZtXkDKTN2sw25j6LA9mSRZKqAUh57pOEGK6rHq19uhMkqTf1+rDhNd1nb
+         tBmM6X92zsnzaYb0NR2k3Xg4GCpVTz+lT2Ip9iaoqHBEAyflouHu3eZl4CKrmprdqkiE
+         ZUd233LCcfIAbqxIUHHT5QrlUQkUQ+GL+r15w5meFSQbw4JYtT7p2PogZ/NbUnr7Ecae
+         w8P/KfZtjRSRysL/VlXV9/CQTkiAHv4ovLmAOJH2lexxCCsY46KuVYRdUj3dkzy69bEr
+         4yaQ==
+X-Gm-Message-State: AOAM532YCDe50IgyY+CXthydd/1/zUSttrq9W6ErNxKgL+OPeQsJvxZ+
+        yAyRpsAbw2coTSw6LONakWif0JKuAj9EwRy3vG2cuQ==
+X-Google-Smtp-Source: ABdhPJw1dMYfsxBM8+BKZp4XBDpFgIheslKYpyoIyIHIog2rFo9mF/XWUJd4HbD/zb2zQFhnhGkGFwPawu8DZjqwdrU=
+X-Received: by 2002:a67:7f04:: with SMTP id a4mr5058336vsd.9.1593415201875;
+ Mon, 29 Jun 2020 00:20:01 -0700 (PDT)
 MIME-Version: 1.0
-References: <1590371941-25430-1-git-send-email-yangtiezhu@loongson.cn> <CADBw62pW3StqqAm-35zSsWkTo6040zDyEG1K2+tFzE9HxuaUFw@mail.gmail.com>
-In-Reply-To: <CADBw62pW3StqqAm-35zSsWkTo6040zDyEG1K2+tFzE9HxuaUFw@mail.gmail.com>
-From:   Amit Kucheria <amit.kucheria@linaro.org>
-Date:   Mon, 29 Jun 2020 18:44:13 +0530
-Message-ID: <CAHLCerNwEefUG+bbWw6pd-jpBau8p2qs0Sd9f1yzx2iisCv01w@mail.gmail.com>
-Subject: Re: [PATCH] thermal: sprd: Fix return value of sprd_thm_probe()
-To:     Baolin Wang <baolin.wang7@gmail.com>
-Cc:     Tiezhu Yang <yangtiezhu@loongson.cn>,
-        Zhang Rui <rui.zhang@intel.com>,
+References: <9cbffad6-69e4-0b33-4640-fde7c4f6a6e7@linaro.org>
+ <20200626173755.26379-1-andrzej.p@collabora.com> <20200626173755.26379-4-andrzej.p@collabora.com>
+In-Reply-To: <20200626173755.26379-4-andrzej.p@collabora.com>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Mon, 29 Jun 2020 12:49:51 +0530
+Message-ID: <CAHLCerNXcst72EDWf-xRTdUJ78jMDhhxpf31MO2WPgtJxzv6bA@mail.gmail.com>
+Subject: Re: [PATCH v5 03/11] thermal: Add current mode to thermal zone device
+To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        lakml <linux-arm-kernel@lists.infradead.org>,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Xuefeng Li <lixuefeng@loongson.cn>
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        kernel@collabora.com
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, May 29, 2020 at 7:55 PM Baolin Wang <baolin.wang7@gmail.com> wrote:
+On Fri, Jun 26, 2020 at 11:08 PM Andrzej Pietrasiewicz
+<andrzej.p@collabora.com> wrote:
 >
-> Hi,
+> Prepare for changing the place where the mode is stored: now it is in
+> drivers, which might or might not implement get_mode()/set_mode() methods.
+> A lot of cleanup can be done thanks to storing it in struct tzd. The
+> get_mode() methods will become redundant.
 >
-> On Mon, May 25, 2020 at 10:00 AM Tiezhu Yang <yangtiezhu@loongson.cn> wrote:
-> >
-> > When call function devm_platform_ioremap_resource(), we should use IS_ERR()
-> > to check the return value and return PTR_ERR() if failed.
-> >
-> > Fixes: 554fdbaf19b1 ("thermal: sprd: Add Spreadtrum thermal driver support")
-> > Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
->
-> Good catch. Thanks.
-> Reviewed-by: Baolin Wang <baolin.wang7@gmail.com>
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
 Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-> > ---
-> >  drivers/thermal/sprd_thermal.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/thermal/sprd_thermal.c b/drivers/thermal/sprd_thermal.c
-> > index a340374..4cde70d 100644
-> > --- a/drivers/thermal/sprd_thermal.c
-> > +++ b/drivers/thermal/sprd_thermal.c
-> > @@ -348,8 +348,8 @@ static int sprd_thm_probe(struct platform_device *pdev)
-> >
-> >         thm->var_data = pdata;
-> >         thm->base = devm_platform_ioremap_resource(pdev, 0);
-> > -       if (!thm->base)
-> > -               return -ENOMEM;
-> > +       if (IS_ERR(thm->base))
-> > +               return PTR_ERR(thm->base);
-> >
-> >         thm->nr_sensors = of_get_child_count(np);
-> >         if (thm->nr_sensors == 0 || thm->nr_sensors > SPRD_THM_MAX_SENSOR) {
-> > --
-> > 2.1.0
-> >
+
+> ---
+>  include/linux/thermal.h | 2 ++
+>  1 file changed, 2 insertions(+)
 >
->
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index 216185bb3014..5f91d7f04512 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -128,6 +128,7 @@ struct thermal_cooling_device {
+>   * @trip_temp_attrs:   attributes for trip points for sysfs: trip temperature
+>   * @trip_type_attrs:   attributes for trip points for sysfs: trip type
+>   * @trip_hyst_attrs:   attributes for trip points for sysfs: trip hysteresis
+> + * @mode:              current mode of this thermal zone
+>   * @devdata:   private pointer for device private data
+>   * @trips:     number of trip points the thermal zone supports
+>   * @trips_disabled;    bitmap for disabled trips
+> @@ -170,6 +171,7 @@ struct thermal_zone_device {
+>         struct thermal_attr *trip_temp_attrs;
+>         struct thermal_attr *trip_type_attrs;
+>         struct thermal_attr *trip_hyst_attrs;
+> +       enum thermal_device_mode mode;
+>         void *devdata;
+>         int trips;
+>         unsigned long trips_disabled;   /* bitmap for disabled trips */
 > --
-> Baolin Wang
+> 2.17.1
+>
