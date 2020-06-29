@@ -2,205 +2,118 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD981C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:03:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 453F6C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:04:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9DF46206F1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:03:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Qgec2BJk"
+	by mail.kernel.org (Postfix) with ESMTP id 30CA12073E
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:04:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390092AbgF2VDj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 17:03:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43382 "EHLO
+        id S1733064AbgF2VEE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 17:04:04 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731130AbgF2TMq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:12:46 -0400
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com [IPv6:2607:f8b0:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8397FC0147C7
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:11 -0700 (PDT)
-Received: by mail-pg1-x543.google.com with SMTP id w2so7161309pgg.10
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:11 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=9cN6j0Ra4hTEQxVvKv02zIobt4Y/RvzU1LBCy2puJqU=;
-        b=Qgec2BJkq7UooQ/OTJc/ye/hxVhyPLlqi9ITafcrZQh0NONrh9LallTFIsrjUAwteY
-         Dxqj09oQUh23HK2po7xV3g5ppKJ6LdmlFXjvcXU9tLMADtodwCAVk7W6mbIm0Vjvkvhl
-         VQFtUPTrEsrutiSPI2UK72jylfkeUtvToUOY0RAj/WMfkUE2yV2kcFCV9fMhckkh5F68
-         6cTRfyN+70n5zoPOCGBYnoKLNAwQbhXHcuWMjA8OOdvRBcFoUYOBeZHdiqMKIN/LHfK+
-         BXW8Rus3omR3mCmviN38JBCDpsatBJAKEKvUcJ1UYyy0L3xF7r6YEATZ+158GbnEuCLa
-         UXPw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=9cN6j0Ra4hTEQxVvKv02zIobt4Y/RvzU1LBCy2puJqU=;
-        b=Dd/vANR5iaCqRU2Nd6GCOM8tX4zlwKC6Z/HEbmV/+5uDcjxk+9JukGhePrKdiMeydk
-         urq0iex1fWcU8LkEEE0zuhJJ5QxefanJOxCJ1qxQLTaOUKiCDy3ZMh0rMOZr/KeIz8a+
-         XoouqmB4jQn0U8PzeyZOf8vlt8vTFl413VF9MKsrpCNf7eCYe0iAxJGbaOJsoQAxT/ik
-         EEzsr/FRNDwx2SlnqQcvP7GGAiWvnu5yS0CdR+Av03UMUw2LxfEmZ5U0X2LH5A3XVU0W
-         +r3EDIRgKHgLe+dglQNLv7XiLe+sKPBMfshkMa5HwmQQsd/smS0aUxf4h4vTAW1nuEx/
-         BVFA==
-X-Gm-Message-State: AOAM5309XQi9wpuqJEkk8pGhRyVPoek0gtPfi4U5SClR+eK9DIX0Vx07
-        ragRAioFXSdM0MqxZibSvWB+Ag==
-X-Google-Smtp-Source: ABdhPJy88bXkx/N/KFZoZOZgrWhDp//E4ZzApQLzxh5Z0Ohkn7kvLmtrWT1NrP9Wp7nV2sIq4HRrcw==
-X-Received: by 2002:a62:1692:: with SMTP id 140mr13937131pfw.168.1593419111080;
-        Mon, 29 Jun 2020 01:25:11 -0700 (PDT)
-Received: from localhost ([122.172.127.76])
-        by smtp.gmail.com with ESMTPSA id h7sm8404191pfq.15.2020.06.29.01.25.10
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Jun 2020 01:25:10 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        kernel-team@android.com, tkjos@google.com, adharmap@codeaurora.org,
-        Quentin Perret <qperret@google.com>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH V4 1/3] cpufreq: Fix locking issues with governors
-Date:   Mon, 29 Jun 2020 13:54:58 +0530
-Message-Id: <fdc55a7550a6a6a95dab1c80ff94d461b8ba0664.1593418662.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1593418662.git.viresh.kumar@linaro.org>
-References: <cover.1593418662.git.viresh.kumar@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S1731121AbgF2TMp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:12:45 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 814D9C0085D8;
+        Mon, 29 Jun 2020 04:16:29 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id 5CAD22A21CE
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v6 03/11] thermal: Add current mode to thermal zone device
+Date:   Mon, 29 Jun 2020 13:16:07 +0200
+Message-Id: <20200629111615.18131-4-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
+References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+ <20200629111615.18131-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The locking around governors handling isn't adequate currently. The list
-of governors should never be traversed without locking in place. Also we
-must make sure the governor isn't removed while it is still referenced
-by code.
+Prepare for changing the place where the mode is stored: now it is in
+drivers, which might or might not implement get_mode()/set_mode() methods.
+A lot of cleanup can be done thanks to storing it in struct tzd. The
+get_mode() methods will become redundant.
 
-Reported-by: Quentin Perret <qperret@google.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 58 +++++++++++++++++++++++----------------
- 1 file changed, 35 insertions(+), 23 deletions(-)
+ include/linux/thermal.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0128de3603df..e9e8200a0211 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -621,6 +621,24 @@ static struct cpufreq_governor *find_governor(const char *str_governor)
- 	return NULL;
- }
- 
-+static struct cpufreq_governor *get_governor(const char *str_governor)
-+{
-+	struct cpufreq_governor *t;
-+
-+	mutex_lock(&cpufreq_governor_mutex);
-+	t = find_governor(str_governor);
-+	if (!t)
-+		goto unlock;
-+
-+	if (!try_module_get(t->owner))
-+		t = NULL;
-+
-+unlock:
-+	mutex_unlock(&cpufreq_governor_mutex);
-+
-+	return t;
-+}
-+
- static unsigned int cpufreq_parse_policy(char *str_governor)
- {
- 	if (!strncasecmp(str_governor, "performance", CPUFREQ_NAME_LEN))
-@@ -640,28 +658,14 @@ static struct cpufreq_governor *cpufreq_parse_governor(char *str_governor)
- {
- 	struct cpufreq_governor *t;
- 
--	mutex_lock(&cpufreq_governor_mutex);
--
--	t = find_governor(str_governor);
--	if (!t) {
--		int ret;
--
--		mutex_unlock(&cpufreq_governor_mutex);
--
--		ret = request_module("cpufreq_%s", str_governor);
--		if (ret)
--			return NULL;
--
--		mutex_lock(&cpufreq_governor_mutex);
-+	t = get_governor(str_governor);
-+	if (t)
-+		return t;
- 
--		t = find_governor(str_governor);
--	}
--	if (t && !try_module_get(t->owner))
--		t = NULL;
--
--	mutex_unlock(&cpufreq_governor_mutex);
-+	if (request_module("cpufreq_%s", str_governor))
-+		return NULL;
- 
--	return t;
-+	return get_governor(str_governor);
- }
- 
- /**
-@@ -815,12 +819,14 @@ static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
- 		goto out;
- 	}
- 
-+	mutex_lock(&cpufreq_governor_mutex);
- 	for_each_governor(t) {
- 		if (i >= (ssize_t) ((PAGE_SIZE / sizeof(char))
- 		    - (CPUFREQ_NAME_LEN + 2)))
--			goto out;
-+			break;
- 		i += scnprintf(&buf[i], CPUFREQ_NAME_PLEN, "%s ", t->name);
- 	}
-+	mutex_unlock(&cpufreq_governor_mutex);
- out:
- 	i += sprintf(&buf[i], "\n");
- 	return i;
-@@ -1058,15 +1064,17 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
- 	struct cpufreq_governor *def_gov = cpufreq_default_governor();
- 	struct cpufreq_governor *gov = NULL;
- 	unsigned int pol = CPUFREQ_POLICY_UNKNOWN;
-+	int ret;
- 
- 	if (has_target()) {
- 		/* Update policy governor to the one used before hotplug. */
--		gov = find_governor(policy->last_governor);
-+		gov = get_governor(policy->last_governor);
- 		if (gov) {
- 			pr_debug("Restoring governor %s for cpu %d\n",
- 				 policy->governor->name, policy->cpu);
- 		} else if (def_gov) {
- 			gov = def_gov;
-+			__module_get(gov->owner);
- 		} else {
- 			return -ENODATA;
- 		}
-@@ -1089,7 +1097,11 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
- 			return -ENODATA;
- 	}
- 
--	return cpufreq_set_policy(policy, gov, pol);
-+	ret = cpufreq_set_policy(policy, gov, pol);
-+	if (gov)
-+		module_put(gov->owner);
-+
-+	return ret;
- }
- 
- static int cpufreq_add_policy_cpu(struct cpufreq_policy *policy, unsigned int cpu)
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 216185bb3014..5f91d7f04512 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -128,6 +128,7 @@ struct thermal_cooling_device {
+  * @trip_temp_attrs:	attributes for trip points for sysfs: trip temperature
+  * @trip_type_attrs:	attributes for trip points for sysfs: trip type
+  * @trip_hyst_attrs:	attributes for trip points for sysfs: trip hysteresis
++ * @mode:		current mode of this thermal zone
+  * @devdata:	private pointer for device private data
+  * @trips:	number of trip points the thermal zone supports
+  * @trips_disabled;	bitmap for disabled trips
+@@ -170,6 +171,7 @@ struct thermal_zone_device {
+ 	struct thermal_attr *trip_temp_attrs;
+ 	struct thermal_attr *trip_type_attrs;
+ 	struct thermal_attr *trip_hyst_attrs;
++	enum thermal_device_mode mode;
+ 	void *devdata;
+ 	int trips;
+ 	unsigned long trips_disabled;	/* bitmap for disabled trips */
 -- 
-2.25.0.rc1.19.g042ed3e048af
+2.17.1
 
