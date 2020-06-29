@@ -6,24 +6,24 @@ X-Spam-Status: No, score=0.1 required=3.0 tests=DATE_IN_PAST_06_12,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D5506C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:31:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FB47C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:31:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B48CC207FF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:31:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E27DE20781
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:31:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728809AbgF2Vbc convert rfc822-to-8bit (ORCPT
+        id S1728764AbgF2Vbr convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 17:31:32 -0400
-Received: from mail.kernel.org ([198.145.29.99]:60606 "EHLO mail.kernel.org"
+        Mon, 29 Jun 2020 17:31:47 -0400
+Received: from mail.kernel.org ([198.145.29.99]:60598 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728801AbgF2SlR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jun 2020 14:41:17 -0400
+        id S1728756AbgF2SlM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jun 2020 14:41:12 -0400
 From:   bugzilla-daemon@bugzilla.kernel.org
 To:     linux-pm@vger.kernel.org
 Subject: [Bug 206517] scaling_cur_freq very different from cpuinfo_cur_freq
  on Acer Predator Helios 500 PH517-61-R0GX
-Date:   Mon, 29 Jun 2020 12:16:23 +0000
+Date:   Mon, 29 Jun 2020 12:17:18 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -36,10 +36,10 @@ X-Bugzilla-Who: rui.zhang@intel.com
 X-Bugzilla-Status: NEEDINFO
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
-X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
+X-Bugzilla-Assigned-To: rui.zhang@intel.com
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_status cc
-Message-ID: <bug-206517-137361-AC6PQevWCC@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: assigned_to
+Message-ID: <bug-206517-137361-djaQM3I5oX@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-206517-137361@https.bugzilla.kernel.org/>
 References: <bug-206517-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -58,14 +58,7 @@ Zhang Rui (rui.zhang@intel.com) changed:
 
            What    |Removed                     |Added
 ----------------------------------------------------------------------------
-             Status|NEW                         |NEEDINFO
-                 CC|                            |rui.zhang@intel.com
-
---- Comment #2 from Zhang Rui (rui.zhang@intel.com) ---
-why I can not see this file /sys/devices/system/cpu/*/cpufreq/cpuinfo_cur_freq?
-
-please run "turbostat -o ts.out sleep 10" while compiling, and see what
-frequency is reported there.
+           Assignee|linux-pm@vger.kernel.org    |rui.zhang@intel.com
 
 -- 
 You are receiving this mail because:
