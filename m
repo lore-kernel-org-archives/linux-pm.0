@@ -2,451 +2,298 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88E8EC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:14:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81268C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6747A206A1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:14:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 609B4212CC
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:38 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="VEtU5b+E";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="L6DQtBRb"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390419AbgF2VNu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 17:13:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40888 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730121AbgF2S5n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:57:43 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 808AFC00F80C;
-        Mon, 29 Jun 2020 05:29:54 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id ACDCA2A2D72
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH v7 05/11] thermal: remove get_mode() operation of drivers
-Date:   Mon, 29 Jun 2020 14:29:19 +0200
-Message-Id: <20200629122925.21729-6-andrzej.p@collabora.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200629122925.21729-1-andrzej.p@collabora.com>
-References: <20200629122925.21729-1-andrzej.p@collabora.com>
+        id S1729439AbgF2Svr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 14:51:47 -0400
+Received: from new4-smtp.messagingengine.com ([66.111.4.230]:35733 "EHLO
+        new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726831AbgF2Sva (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:51:30 -0400
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+        by mailnew.nyi.internal (Postfix) with ESMTP id 14CE6580597;
+        Mon, 29 Jun 2020 11:21:17 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute4.internal (MEProxy); Mon, 29 Jun 2020 11:21:17 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=fm3; bh=krUOveEdR6vT0SBK3qtfa5n706o
+        ryNuDtBLGwOel0Fo=; b=VEtU5b+EqJvRVoGcecDwOgK9INc1igaqGpNTrbyWjp7
+        t4GknrXv7tKctUi5JWrH2p6O6uYYIDpxpq2pM/8mTaxmakYjDGs2EQutbHreQYwd
+        fJv+kZaW3ewSRuY8FVsI1HEbFNUwl4erX42gfLwEeTg1ns00ICau45mAoNseOhbC
+        8kD0h8BGjs8fPp3YjhpxkYlwLEC/2n2D77Szii/1UwuSkmfTTqEGQnnsoyY3GpIl
+        EHBhoY9KmtyUnCsveKv0MW5JG2xy2qCB6TaqQxf0mcFwx0IB64WHhkgiQN6O0lpn
+        DT8q0Ta5pesXagJSN5DYMMpMFpbUCjfwZIr1JA4Z/0w==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:content-type:date:from:in-reply-to
+        :message-id:mime-version:references:subject:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=krUOve
+        EdR6vT0SBK3qtfa5n706oryNuDtBLGwOel0Fo=; b=L6DQtBRbaLn4l3ffIzF0Bw
+        bJfxa6fVOnQh9qO0p0mJrmSfuq9FDhIP89CuSO4gemX0ANlp8rukEIP6+d25PuP6
+        a3QSGPxF/k+Xcx7uqFlMQ2P4OF4kTh9ELsXnA5re3hD2MOlpZgMYXre6ehH5kS4a
+        cCxOeIagn8x5pSEn1VwUNGpbyjjxxHPsAy6Hdca09MtGrRJpAf6loosOhXjVBlR3
+        Ny+o5D6hqOsFi534Rc4VwRjOE/iQBXI0yjAY/wmsvZwTjr3/tXfURRfYZhIh+Mk8
+        hd14z5Ml3RtHtEw0mRB/nAAy5xb04b4c9LOIvEKkmyqZj/VrfLGJuhd6ky+jhXhA
+        ==
+X-ME-Sender: <xms:6Qb6Xs5A65jiVMk-TBJ7E6MWYyS4QOEbvSnIUioCEO_-3JMTBBRYfA>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudelledgudehucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
+    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
+    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
+    gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgeptdenuc
+    frrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggthh
+X-ME-Proxy: <xmx:6Qb6Xt7HQSIAah0eJg07s37QLKiq_njkDArZ0GZNou-AaxfXfxeVWA>
+    <xmx:6Qb6Xrflm2twAlFg4vyHYS5sN91S-uNRTR0cQNey4cTSqfSaVfk9JA>
+    <xmx:6Qb6XhKlWp2txSt5ptrbZvHChxtJtnYggh9FY3iKjY9qUnbEHvLN1w>
+    <xmx:7Qb6Xg7aRoYgPeksuOqXA0bw-zrOHrTGsRA0vVtbBGtdnNedV-Vj5g>
+Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
+        by mail.messagingengine.com (Postfix) with ESMTPA id 83B73328005E;
+        Mon, 29 Jun 2020 11:21:13 -0400 (EDT)
+Date:   Mon, 29 Jun 2020 17:21:12 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Frank Lee <frank@allwinnertech.com>
+Cc:     robh+dt@kernel.org, wens@csie.org, mturquette@baylibre.com,
+        sboyd@kernel.org, srinivas.kandagatla@linaro.org,
+        linus.walleij@linaro.org, anarsoul@gmail.com,
+        tiny.windzz@gmail.com, rui.zhang@intel.com,
+        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
+        p.zabel@pengutronix.de, clabbe@baylibre.com, icenowy@aosc.io,
+        megous@megous.com, karlp@tweak.net.au, bage@linutronix.de,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
+        huangshuosheng@allwinnertech.com, liyong@allwinnertech.com
+Subject: Re: [PATCH v2 09/11] arm64: allwinner: A100: add the basical
+ Allwinner A100 DTSI file
+Message-ID: <20200629152112.fo3kgcztlutj66hc@gilmour.lan>
+References: <20200622025907.32574-1-frank@allwinnertech.com>
+ <20200622025907.32574-10-frank@allwinnertech.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="lbejoaecuizw4km4"
+Content-Disposition: inline
+In-Reply-To: <20200622025907.32574-10-frank@allwinnertech.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-get_mode() is now redundant, as the state is stored in struct
-thermal_zone_device.
 
-Consequently the "mode" attribute in sysfs can always be visible, because
-it is always possible to get the mode from struct tzd.
+--lbejoaecuizw4km4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-[for acerhdf]
-Acked-by: Peter Kaestle <peter@piie.net>
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/acpi/thermal.c                        |  9 ------
- .../ethernet/mellanox/mlxsw/core_thermal.c    | 19 ------------
- drivers/platform/x86/acerhdf.c                | 12 --------
- drivers/thermal/da9062-thermal.c              |  8 -----
- drivers/thermal/imx_thermal.c                 |  9 ------
- .../intel/int340x_thermal/int3400_thermal.c   |  9 ------
- .../thermal/intel/intel_quark_dts_thermal.c   |  8 -----
- drivers/thermal/thermal_core.c                |  7 +----
- drivers/thermal/thermal_of.c                  |  9 ------
- drivers/thermal/thermal_sysfs.c               | 30 ++-----------------
- include/linux/thermal.h                       |  2 --
- 11 files changed, 3 insertions(+), 119 deletions(-)
+Hi,
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 4ba273f49d87..592be97c4456 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -525,14 +525,6 @@ static int thermal_get_temp(struct thermal_zone_device *thermal, int *temp)
- 	return 0;
- }
- 
--static int thermal_get_mode(struct thermal_zone_device *thermal,
--				enum thermal_device_mode *mode)
--{
--	*mode = thermal->mode;
--
--	return 0;
--}
--
- static int thermal_set_mode(struct thermal_zone_device *thermal,
- 				enum thermal_device_mode mode)
- {
-@@ -847,7 +839,6 @@ static struct thermal_zone_device_ops acpi_thermal_zone_ops = {
- 	.bind = acpi_thermal_bind_cooling_device,
- 	.unbind	= acpi_thermal_unbind_cooling_device,
- 	.get_temp = thermal_get_temp,
--	.get_mode = thermal_get_mode,
- 	.set_mode = thermal_set_mode,
- 	.get_trip_type = thermal_get_trip_type,
- 	.get_trip_temp = thermal_get_trip_temp,
-diff --git a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-index 51667ed99c21..ad61b2db30b8 100644
---- a/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-+++ b/drivers/net/ethernet/mellanox/mlxsw/core_thermal.c
-@@ -275,14 +275,6 @@ static int mlxsw_thermal_unbind(struct thermal_zone_device *tzdev,
- 	return 0;
- }
- 
--static int mlxsw_thermal_get_mode(struct thermal_zone_device *tzdev,
--				  enum thermal_device_mode *mode)
--{
--	*mode = tzdev->mode;
--
--	return 0;
--}
--
- static int mlxsw_thermal_set_mode(struct thermal_zone_device *tzdev,
- 				  enum thermal_device_mode mode)
- {
-@@ -402,7 +394,6 @@ static int mlxsw_thermal_trend_get(struct thermal_zone_device *tzdev,
- static struct thermal_zone_device_ops mlxsw_thermal_ops = {
- 	.bind = mlxsw_thermal_bind,
- 	.unbind = mlxsw_thermal_unbind,
--	.get_mode = mlxsw_thermal_get_mode,
- 	.set_mode = mlxsw_thermal_set_mode,
- 	.get_temp = mlxsw_thermal_get_temp,
- 	.get_trip_type	= mlxsw_thermal_get_trip_type,
-@@ -461,14 +452,6 @@ static int mlxsw_thermal_module_unbind(struct thermal_zone_device *tzdev,
- 	return err;
- }
- 
--static int mlxsw_thermal_module_mode_get(struct thermal_zone_device *tzdev,
--					 enum thermal_device_mode *mode)
--{
--	*mode = tzdev->mode;
--
--	return 0;
--}
--
- static int mlxsw_thermal_module_mode_set(struct thermal_zone_device *tzdev,
- 					 enum thermal_device_mode mode)
- {
-@@ -606,7 +589,6 @@ static int mlxsw_thermal_module_trend_get(struct thermal_zone_device *tzdev,
- static struct thermal_zone_device_ops mlxsw_thermal_module_ops = {
- 	.bind		= mlxsw_thermal_module_bind,
- 	.unbind		= mlxsw_thermal_module_unbind,
--	.get_mode	= mlxsw_thermal_module_mode_get,
- 	.set_mode	= mlxsw_thermal_module_mode_set,
- 	.get_temp	= mlxsw_thermal_module_temp_get,
- 	.get_trip_type	= mlxsw_thermal_module_trip_type_get,
-@@ -645,7 +627,6 @@ static int mlxsw_thermal_gearbox_temp_get(struct thermal_zone_device *tzdev,
- static struct thermal_zone_device_ops mlxsw_thermal_gearbox_ops = {
- 	.bind		= mlxsw_thermal_module_bind,
- 	.unbind		= mlxsw_thermal_module_unbind,
--	.get_mode	= mlxsw_thermal_module_mode_get,
- 	.set_mode	= mlxsw_thermal_module_mode_set,
- 	.get_temp	= mlxsw_thermal_gearbox_temp_get,
- 	.get_trip_type	= mlxsw_thermal_module_trip_type_get,
-diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
-index 6f21015e5fd9..58c4e1caaa09 100644
---- a/drivers/platform/x86/acerhdf.c
-+++ b/drivers/platform/x86/acerhdf.c
-@@ -413,17 +413,6 @@ static inline void acerhdf_enable_kernelmode(void)
- 	pr_notice("kernel mode fan control ON\n");
- }
- 
--static int acerhdf_get_mode(struct thermal_zone_device *thermal,
--			    enum thermal_device_mode *mode)
--{
--	if (verbose)
--		pr_notice("kernel mode fan control %d\n", kernelmode);
--
--	*mode = thermal->mode;
--
--	return 0;
--}
--
- /*
-  * set operation mode;
-  * enabled: the thermal layer of the kernel takes care about
-@@ -490,7 +479,6 @@ static struct thermal_zone_device_ops acerhdf_dev_ops = {
- 	.bind = acerhdf_bind,
- 	.unbind = acerhdf_unbind,
- 	.get_temp = acerhdf_get_ec_temp,
--	.get_mode = acerhdf_get_mode,
- 	.set_mode = acerhdf_set_mode,
- 	.get_trip_type = acerhdf_get_trip_type,
- 	.get_trip_hyst = acerhdf_get_trip_hyst,
-diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
-index a14c7981c7c7..a7ac8afb063e 100644
---- a/drivers/thermal/da9062-thermal.c
-+++ b/drivers/thermal/da9062-thermal.c
-@@ -120,13 +120,6 @@ static irqreturn_t da9062_thermal_irq_handler(int irq, void *data)
- 	return IRQ_HANDLED;
- }
- 
--static int da9062_thermal_get_mode(struct thermal_zone_device *z,
--				   enum thermal_device_mode *mode)
--{
--	*mode = z->mode;
--	return 0;
--}
--
- static int da9062_thermal_get_trip_type(struct thermal_zone_device *z,
- 					int trip,
- 					enum thermal_trip_type *type)
-@@ -179,7 +172,6 @@ static int da9062_thermal_get_temp(struct thermal_zone_device *z,
- 
- static struct thermal_zone_device_ops da9062_thermal_ops = {
- 	.get_temp	= da9062_thermal_get_temp,
--	.get_mode	= da9062_thermal_get_mode,
- 	.get_trip_type	= da9062_thermal_get_trip_type,
- 	.get_trip_temp	= da9062_thermal_get_trip_temp,
- };
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 9a1114d721b6..2c7ee5da608a 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -330,14 +330,6 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
- 	return 0;
- }
- 
--static int imx_get_mode(struct thermal_zone_device *tz,
--			enum thermal_device_mode *mode)
--{
--	*mode = tz->mode;
--
--	return 0;
--}
--
- static int imx_set_mode(struct thermal_zone_device *tz,
- 			enum thermal_device_mode mode)
- {
-@@ -464,7 +456,6 @@ static struct thermal_zone_device_ops imx_tz_ops = {
- 	.bind = imx_bind,
- 	.unbind = imx_unbind,
- 	.get_temp = imx_get_temp,
--	.get_mode = imx_get_mode,
- 	.set_mode = imx_set_mode,
- 	.get_trip_type = imx_get_trip_type,
- 	.get_trip_temp = imx_get_trip_temp,
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index f65b2fc09198..9a622aaf29dd 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -377,14 +377,6 @@ static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
--static int int3400_thermal_get_mode(struct thermal_zone_device *thermal,
--				enum thermal_device_mode *mode)
--{
--	*mode = thermal->mode;
--
--	return 0;
--}
--
- static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
- 				enum thermal_device_mode mode)
- {
-@@ -412,7 +404,6 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
- 
- static struct thermal_zone_device_ops int3400_thermal_ops = {
- 	.get_temp = int3400_thermal_get_temp,
--	.get_mode = int3400_thermal_get_mode,
- 	.set_mode = int3400_thermal_set_mode,
- };
- 
-diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
-index d77cb3df5ade..c4879b4bfbf1 100644
---- a/drivers/thermal/intel/intel_quark_dts_thermal.c
-+++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
-@@ -308,13 +308,6 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd,
- 	return 0;
- }
- 
--static int sys_get_mode(struct thermal_zone_device *tzd,
--				enum thermal_device_mode *mode)
--{
--	*mode = tzd->mode;
--	return 0;
--}
--
- static int sys_set_mode(struct thermal_zone_device *tzd,
- 				enum thermal_device_mode mode)
- {
-@@ -336,7 +329,6 @@ static struct thermal_zone_device_ops tzone_ops = {
- 	.get_trip_type = sys_get_trip_type,
- 	.set_trip_temp = sys_set_trip_temp,
- 	.get_crit_temp = sys_get_crit_temp,
--	.get_mode = sys_get_mode,
- 	.set_mode = sys_set_mode,
- };
- 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index b71196eaf90e..14d3b1b94c4f 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -1456,7 +1456,6 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 			     unsigned long mode, void *_unused)
- {
- 	struct thermal_zone_device *tz;
--	enum thermal_device_mode tz_mode;
- 
- 	switch (mode) {
- 	case PM_HIBERNATION_PREPARE:
-@@ -1469,11 +1468,7 @@ static int thermal_pm_notify(struct notifier_block *nb,
- 	case PM_POST_SUSPEND:
- 		atomic_set(&in_suspend, 0);
- 		list_for_each_entry(tz, &thermal_tz_list, node) {
--			tz_mode = THERMAL_DEVICE_ENABLED;
--			if (tz->ops->get_mode)
--				tz->ops->get_mode(tz, &tz_mode);
--
--			if (tz_mode == THERMAL_DEVICE_DISABLED)
-+			if (tz->mode == THERMAL_DEVICE_DISABLED)
- 				continue;
- 
- 			thermal_zone_device_init(tz);
-diff --git a/drivers/thermal/thermal_of.c b/drivers/thermal/thermal_of.c
-index c495b1e48ef2..ba65d48a48cb 100644
---- a/drivers/thermal/thermal_of.c
-+++ b/drivers/thermal/thermal_of.c
-@@ -267,14 +267,6 @@ static int of_thermal_unbind(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
--static int of_thermal_get_mode(struct thermal_zone_device *tz,
--			       enum thermal_device_mode *mode)
--{
--	*mode = tz->mode;
--
--	return 0;
--}
--
- static int of_thermal_set_mode(struct thermal_zone_device *tz,
- 			       enum thermal_device_mode mode)
- {
-@@ -389,7 +381,6 @@ static int of_thermal_get_crit_temp(struct thermal_zone_device *tz,
- }
- 
- static struct thermal_zone_device_ops of_thermal_ops = {
--	.get_mode = of_thermal_get_mode,
- 	.set_mode = of_thermal_set_mode,
- 
- 	.get_trip_type = of_thermal_get_trip_type,
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index aa99edb4dff7..096370977068 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -49,18 +49,9 @@ static ssize_t
- mode_show(struct device *dev, struct device_attribute *attr, char *buf)
- {
- 	struct thermal_zone_device *tz = to_thermal_zone(dev);
--	enum thermal_device_mode mode;
--	int result;
--
--	if (!tz->ops->get_mode)
--		return -EPERM;
- 
--	result = tz->ops->get_mode(tz, &mode);
--	if (result)
--		return result;
--
--	return sprintf(buf, "%s\n", mode == THERMAL_DEVICE_ENABLED ? "enabled"
--		       : "disabled");
-+	return sprintf(buf, "%s\n", tz->mode == THERMAL_DEVICE_ENABLED ?
-+		       "enabled" : "disabled");
- }
- 
- static ssize_t
-@@ -428,30 +419,13 @@ static struct attribute_group thermal_zone_attribute_group = {
- 	.attrs = thermal_zone_dev_attrs,
- };
- 
--/* We expose mode only if .get_mode is present */
- static struct attribute *thermal_zone_mode_attrs[] = {
- 	&dev_attr_mode.attr,
- 	NULL,
- };
- 
--static umode_t thermal_zone_mode_is_visible(struct kobject *kobj,
--					    struct attribute *attr,
--					    int attrno)
--{
--	struct device *dev = container_of(kobj, struct device, kobj);
--	struct thermal_zone_device *tz;
--
--	tz = container_of(dev, struct thermal_zone_device, device);
--
--	if (tz->ops->get_mode)
--		return attr->mode;
--
--	return 0;
--}
--
- static struct attribute_group thermal_zone_mode_attribute_group = {
- 	.attrs = thermal_zone_mode_attrs,
--	.is_visible = thermal_zone_mode_is_visible,
- };
- 
- /* We expose passive only if passive trips are present */
-diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-index 5f91d7f04512..a808f6fa2777 100644
---- a/include/linux/thermal.h
-+++ b/include/linux/thermal.h
-@@ -76,8 +76,6 @@ struct thermal_zone_device_ops {
- 		       struct thermal_cooling_device *);
- 	int (*get_temp) (struct thermal_zone_device *, int *);
- 	int (*set_trips) (struct thermal_zone_device *, int, int);
--	int (*get_mode) (struct thermal_zone_device *,
--			 enum thermal_device_mode *);
- 	int (*set_mode) (struct thermal_zone_device *,
- 		enum thermal_device_mode);
- 	int (*get_trip_type) (struct thermal_zone_device *, int,
--- 
-2.17.1
+On Mon, Jun 22, 2020 at 10:59:05AM +0800, Frank Lee wrote:
+> Allwinner A100 is a new SoC with Cortex-A53 cores, this commit adds
+> the basical DTSI file of it, including the clock, i2c, pins, sid, ths,
+> and UART support.
+>=20
+> Signed-off-by: Frank Lee <frank@allwinnertech.com>
+> ---
+>  arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi | 337 +++++++++++++++++++=
+++++++
+>  1 file changed, 337 insertions(+)
+>  create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
+>=20
+> diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi b/arch/arm64/=
+boot/dts/allwinner/sun50i-a100.dtsi
+> new file mode 100644
+> index 0000000..5133897
+> --- /dev/null
+> +++ b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
+> @@ -0,0 +1,337 @@
+> +// SPDX-License-Identifier: (GPL-2.0+ or MIT)
+> +/*
+> + * Copyright (c) 2020 Frank Lee <frank@allwinnertech.com>
+> + */
+> +
+> +#include <dt-bindings/interrupt-controller/arm-gic.h>
+> +#include <dt-bindings/clock/sun50i-a100-ccu.h>
+> +#include <dt-bindings/clock/sun50i-a100-r-ccu.h>
+> +#include <dt-bindings/reset/sun50i-a100-ccu.h>
+> +#include <dt-bindings/reset/sun50i-a100-r-ccu.h>
+> +
+> +/ {
+> +	interrupt-parent =3D <&gic>;
+> +	#address-cells =3D <2>;
+> +	#size-cells =3D <2>;
+> +
+> +	cpus {
+> +		#address-cells =3D <1>;
+> +		#size-cells =3D <0>;
+> +
+> +		cpu0: cpu@0 {
+> +			compatible =3D "arm,armv8";
+> +			device_type =3D "cpu";
+> +			reg =3D <0x0>;
+> +			enable-method =3D "psci";
+> +		};
+> +
+> +		cpu@1 {
+> +			compatible =3D "arm,armv8";
+> +			device_type =3D "cpu";
+> +			reg =3D <0x1>;
+> +			enable-method =3D "psci";
+> +		};
+> +
+> +		cpu@2 {
+> +			compatible =3D "arm,armv8";
+> +			device_type =3D "cpu";
+> +			reg =3D <0x2>;
+> +			enable-method =3D "psci";
+> +		};
+> +
+> +		cpu@3 {
+> +			compatible =3D "arm,armv8";
+> +			device_type =3D "cpu";
+> +			reg =3D <0x3>;
+> +			enable-method =3D "psci";
+> +		};
+> +	};
+> +
+> +	psci {
+> +		compatible =3D "arm,psci-1.0";
+> +		method =3D "smc";
+> +	};
+> +
+> +	iosc: internal-osc-clk {
+> +		compatible =3D "fixed-clock";
+> +		clock-frequency =3D <16000000>;
+> +		clock-accuracy =3D <300000000>;
+> +		clock-output-names =3D "iosc";
+> +		#clock-cells =3D <0>;
+> +	};
+> +
+> +	dcxo24M: dcxo24M_clk {
 
+You shouldn't have underscores in the node names.
+
+> +		compatible =3D "fixed-clock";
+> +		clock-frequency =3D <24000000>;
+> +		clock-output-names =3D "dcxo24M";
+> +		#clock-cells =3D <0>;
+> +	};
+> +
+> +	osc32k: osc32k_clk {
+
+Same thing here
+
+Also, ordering by node name here would be nice
+
+> +		compatible =3D "fixed-clock";
+> +		clock-frequency =3D <32768>;
+> +		clock-output-names =3D "osc32k";
+> +		#clock-cells =3D <0>;
+> +	};
+> +
+> +	timer {
+> +		compatible =3D "arm,armv8-timer";
+> +		interrupts =3D <GIC_PPI 13
+> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
+> +			     <GIC_PPI 14
+> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
+> +			     <GIC_PPI 11
+> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
+> +			     <GIC_PPI 10
+> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
+> +	};
+
+Does it suffer from the same time instability than the one in the A64?
+If so, you probably want to enable the workaround too.
+
+> +	soc: soc {
+
+Do you really need a label for that node?
+
+> +		compatible =3D "simple-bus";
+> +		#address-cells =3D <2>;
+> +		#size-cells =3D <2>;
+
+Why do you need cells with 2 items here? You don't seem to be using
+them.
+
+> +		r_i2c0: i2c@7081400 {
+> +			compatible =3D "allwinner,sun6i-a31-i2c";
+> +			reg =3D <0x0 0x07081400 0x0 0x400>;
+> +			interrupts =3D <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>;
+> +			clocks =3D <&ccu CLK_BUS_I2C0>;
+> +			resets =3D <&ccu RST_BUS_I2C0>;
+> +			pinctrl-names =3D "default";
+> +			pinctrl-0 =3D <&r_i2c0_pins>;
+> +			status =3D "disabled";
+> +			#address-cells =3D <1>;
+> +			#size-cells =3D <0>;
+> +		};
+> +
+> +		r_i2c1: i2c@7081800 {
+> +			compatible =3D "allwinner,sun6i-a31-i2c";
+> +			reg =3D <0x0 0x07081800 0x0 0x400>;
+> +			interrupts =3D <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
+> +			clocks =3D <&ccu CLK_BUS_I2C1>;
+> +			resets =3D <&ccu RST_BUS_I2C1>;
+> +			pinctrl-names =3D "default";
+> +			pinctrl-0 =3D <&r_i2c1_pins>;
+> +			status =3D "disabled";
+> +			#address-cells =3D <1>;
+> +			#size-cells =3D <0>;
+> +		};
+> +	};
+
+The clocks and resets phandles and IDs don't look right
+
+> +	thermal-zones {
+> +		cpu_thermal_zone {
+> +			polling-delay-passive =3D <0>;
+> +			polling-delay =3D <0>;
+> +			thermal-sensors =3D <&ths 0>;
+> +		};
+
+Please add a new line here
+
+> +		gpu_thermal_zone{
+
+You should have a space here    ^=20
+
+> +			polling-delay-passive =3D <0>;
+> +			polling-delay =3D <0>;
+> +			thermal-sensors =3D <&ths 1>;
+> +		};
+
+newline
+
+> +		ddr_thermal_zone{
+
+space                           ^=20
+
+Thanks!
+Maxime
+
+--lbejoaecuizw4km4
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXvoG6AAKCRDj7w1vZxhR
+xRRCAQCSyQ9nHql6TEykxi9l3Cj8dRiNVK0CnZJ3fTQSc1l2AAD/fJV1R7VkbxZi
+OFU2QxjJ1CZU81YE8OkmeFr/wMlCsw8=
+=kgim
+-----END PGP SIGNATURE-----
+
+--lbejoaecuizw4km4--
