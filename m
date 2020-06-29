@@ -2,96 +2,225 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98CACC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 967BFC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6BCB020672
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6BAD720663
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="OQ0O/ji3"
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="ufgK5aOt"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731593AbgF2Uo4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:44:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43394 "EHLO
+        id S1732705AbgF2Uph (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:45:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43372 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731587AbgF2TN7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:59 -0400
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 732C0C014A93
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:04:04 -0700 (PDT)
-Received: by mail-wr1-x442.google.com with SMTP id r12so15476883wrj.13
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:04:04 -0700 (PDT)
+        with ESMTP id S1731572AbgF2TN5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:57 -0400
+Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com [IPv6:2607:f8b0:4864:20::e43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ADFFC08ED8C
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:05:02 -0700 (PDT)
+Received: by mail-vs1-xe43.google.com with SMTP id o2so8680697vsr.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:05:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=wJu5T05EGIesmOT82QcK4tvM42NAPTrHSyac4x7F7pM=;
-        b=OQ0O/ji3YWaPUA5LVTl2z+7oIv8oHPXXajbTo7gN+ypY32l7m2S8IHDthtPNy8PmUI
-         3/RB2boMvLnFXERxlvImDeRSrAmCnr84vqbj+hoK2UVr5jSFPlXCeqfbMYmnw1DtZoCz
-         wfz1yX5KxVKQ6+reINQnT84GX4kzt3f1463mWC00vcmx89o7eIJH2WBtTTb6QhFyW9zQ
-         hvK7Bmre+NIIGJTAvrlFsQZAcOAzcIg6D0DdL6rfZhqpV/wAzAA6fh29DpdZ9ZNAxsLf
-         s3cb2tlXJHAcIrAd+N8AfFxDQm6sFD8UFJa97ojLl9pmTExTdys+BJ+NBS1K6M7wPhlo
-         e2TQ==
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=O4CL5jT1tY8QD8FjAFdyHeuWe+dWBhI6iRrYPmWg+K0=;
+        b=ufgK5aOt+VEkKCf7cfv7S4ZtNXtnnmklYABTUv1VaPxOyVYlRF0W+WWMz74ZV08AGE
+         1s1vKmMq4KVk+MBoFIT07TOKURsUNbRQdevHqaQ1aWm8cwm+U1Imt2LTLVn76ZfauBCL
+         Jn8YnNOHw3ZvLP+IWIJlri1ht33n4/CzEON0vrJSMjbdw8TJtfW8X1tddfpQMfXgkCZi
+         BtT26G9ckLhBaXLHozdLJ9i2lXgOWfKOEveukc+nllrmwg/ZQ4vjc16Owk1GMoom+Uhd
+         EtZSUhps1bb5xV0fHsgJxXJI4qzTSeRxyn0KdrZYD00xOxK3NemGIoaULhoM5HjdHhpi
+         jOmA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=wJu5T05EGIesmOT82QcK4tvM42NAPTrHSyac4x7F7pM=;
-        b=QSTFj9S1t29D8Z+5dxZ26TrPbzUANDBfV3VKpb97mrVRplIsL6DUFxjNJh+UPWrlvC
-         RusMut7LlYeRHvVLMUONSHXPGYLSQR3yYuunJILuC8yCry8+RdM3/DtXDkP8AHGRmWio
-         qgHHL3e5LcgZ8U9LMFcXjtzGKnYACT1HMAa6OOoCI9SZfAg49/sn1Dg1XUSOViBmDeHF
-         eUdLZCHp+o/gD73UoqoSvK8Ainr+gSCuxWQoRcmpoSDvyIYDH3XWWzL4S5CxWiCKENn/
-         AsFCZXR8kv/nnL3VW9U/kfpkarADqSKiR03eYamHWB7Ru9qGOL409/fkyYhvx+jM1ODV
-         Lc4A==
-X-Gm-Message-State: AOAM533wtULgEutNPMrVhighQdrpEXBo2a8oku5YwaqlL9lxoMskoiVl
-        aQFPw05MsiRgOdexufxKnDyf0w==
-X-Google-Smtp-Source: ABdhPJxjhHOLK/OLS+QpmEsbDw2KsR8ghE7pxziLY6KM8n7B0r5tY5LBX2zBH+b5fLJzKBlhjiImZg==
-X-Received: by 2002:a5d:6a01:: with SMTP id m1mr16758755wru.115.1593417842938;
-        Mon, 29 Jun 2020 01:04:02 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
-        by smtp.gmail.com with ESMTPSA id a2sm31496362wrn.68.2020.06.29.01.04.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2020 01:04:02 -0700 (PDT)
-Date:   Mon, 29 Jun 2020 09:03:58 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Jonathan Corbet <corbet@lwn.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        kernel-team@android.com, tkjos@google.com, adharmap@codeaurora.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3 3/3] cpufreq: Specify default governor on command line
-Message-ID: <20200629080358.GA1217385@google.com>
-References: <cover.1593143118.git.viresh.kumar@linaro.org>
- <7eb38608b2b32c0c72dfb160c51206ec42e74e35.1593143118.git.viresh.kumar@linaro.org>
- <20200626155750.GA540785@google.com>
- <20200629020843.erntkwfprgi5ugqu@vireshk-i7>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=O4CL5jT1tY8QD8FjAFdyHeuWe+dWBhI6iRrYPmWg+K0=;
+        b=aPMZTpvK3wWsubQ6XBbZhkc1ee8vJWq04XM5Izq6Wl+kqTvKu8Ayv0pCwvsUAKD8PB
+         smDshcJTcBaV0/CpCrxMd22IfH+VlPZrXN5OADWTI1V8rVZT79NNg/7m1jLWxgtnoNdQ
+         NA6/9ltG/AtpzzXvx+IW1sXJosls4iZCwKK9vhtQCAFMRWeD/tx/dlm7lqwvZJSv9HuP
+         vBOoyDUk46+k2lMPsSN6zEgzbC6Nm/DyEB3pNm0T/NoTleKKXnoU/Rk3jb2nxqMlttT0
+         CKFvxFgOEHOtsco6b2wE1Chop/+RkJZpmZrkvoak5hY31PqES9XfPsQWFX4sOeTLp/b9
+         Vrkg==
+X-Gm-Message-State: AOAM532yMRNWBMT4Tp0rIYwn83HJ9a1mAx4MrTb+VDW2btjJcZD+GQFy
+        gShnVti7ijlGOvfqgZYgmdZ23g4lXFbZS56Ep0IFyw==
+X-Google-Smtp-Source: ABdhPJwExycQo0Z3q8vxfUV0tozODXEDNYpnqbSU0LS4IbWtPA6zbYd6g3HijjZDuNICJGxZ+gh7EBDX0w/h/Xyyvro=
+X-Received: by 2002:a05:6102:203:: with SMTP id z3mr2837721vsp.182.1593414301322;
+ Mon, 29 Jun 2020 00:05:01 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200629020843.erntkwfprgi5ugqu@vireshk-i7>
+References: <9cbffad6-69e4-0b33-4640-fde7c4f6a6e7@linaro.org>
+ <20200626173755.26379-1-andrzej.p@collabora.com> <20200626173755.26379-7-andrzej.p@collabora.com>
+In-Reply-To: <20200626173755.26379-7-andrzej.p@collabora.com>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Mon, 29 Jun 2020 12:34:50 +0530
+Message-ID: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+Subject: Re: [PATCH v5 06/11] thermal: Add mode helpers
+To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        lakml <linux-arm-kernel@lists.infradead.org>,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        kernel@collabora.com
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday 29 Jun 2020 at 07:38:43 (+0530), Viresh Kumar wrote:
-> On 26-06-20, 16:57, Quentin Perret wrote:
-> > Do we need both cpufreq_param_governor and default_governor?
-> > Could we move everything to only one of them? Something a little bit
-> > like that maybe?
-> 
-> No because we want to fallback to the default governor when the
-> governor shown by the cpufreq_param_governor is valid but missing.
+On Fri, Jun 26, 2020 at 11:08 PM Andrzej Pietrasiewicz
+<andrzej.p@collabora.com> wrote:
+>
+> Prepare for making the drivers not access tzd's private members.
+>
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> [EXPORT_SYMBOL -> EXPORT_SYMBOL_GPL]
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+> ---
+>  drivers/thermal/thermal_core.c | 53 ++++++++++++++++++++++++++++++++++
+>  include/linux/thermal.h        | 13 +++++++++
+>  2 files changed, 66 insertions(+)
+>
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 14d3b1b94c4f..3181295075b9 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -459,6 +459,59 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+>         thermal_zone_device_init(tz);
+>  }
+>
+> +int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
+> +                                enum thermal_device_mode mode)
 
-But that would still work with my suggestion no? You still fallback to
-calling cpufreq_default_governor() in cpufreq_init_policy() if
-get_governor(default_governor) doesn't succeed, so we should be covered.
+Should this be static?
 
-Thanks,
-Quentin
+> +{
+> +       int ret = 0;
+> +
+> +       mutex_lock(&tz->lock);
+> +
+> +       /* do nothing if mode isn't changing */
+> +       if (mode == tz->mode) {
+> +               mutex_unlock(&tz->lock);
+> +
+> +               return ret;
+> +       }
+> +
+> +       if (tz->ops->set_mode)
+> +               ret = tz->ops->set_mode(tz, mode);
+> +
+> +       if (!ret)
+> +               tz->mode = mode;
+> +
+> +       mutex_unlock(&tz->lock);
+> +
+> +       thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+> +
+> +       return ret;
+> +}
+> +
+> +int thermal_zone_device_enable(struct thermal_zone_device *tz)
+> +{
+> +       return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_ENABLED);
+> +}
+> +EXPORT_SYMBOL_GPL(thermal_zone_device_enable);
+> +
+> +int thermal_zone_device_disable(struct thermal_zone_device *tz)
+> +{
+> +       return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_DISABLED);
+> +}
+> +EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
+> +
+> +int thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
+> +{
+> +       enum thermal_device_mode mode;
+> +
+> +       mutex_lock(&tz->lock);
+> +
+> +       mode = tz->mode;
+> +
+> +       mutex_unlock(&tz->lock);
+> +
+> +       return mode == THERMAL_DEVICE_ENABLED;
+> +}
+> +EXPORT_SYMBOL_GPL(thermal_zone_device_is_enabled);
+> +
+>  void thermal_zone_device_update(struct thermal_zone_device *tz,
+>                                 enum thermal_notify_event event)
+>  {
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index a808f6fa2777..df013c39ba9b 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -416,6 +416,9 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz);
+>
+>  void thermal_cdev_update(struct thermal_cooling_device *);
+>  void thermal_notify_framework(struct thermal_zone_device *, int);
+> +int thermal_zone_device_enable(struct thermal_zone_device *tz);
+> +int thermal_zone_device_disable(struct thermal_zone_device *tz);
+> +int thermal_zone_device_is_enabled(struct thermal_zone_device *tz);
+>  #else
+>  static inline struct thermal_zone_device *thermal_zone_device_register(
+>         const char *type, int trips, int mask, void *devdata,
+> @@ -463,6 +466,16 @@ static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
+>  static inline void thermal_notify_framework(struct thermal_zone_device *tz,
+>         int trip)
+>  { }
+> +
+> +static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
+> +{ return -ENODEV; }
+> +
+> +static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
+> +{ return -ENODEV; }
+> +
+> +static inline int
+> +thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
+> +{ return -ENODEV; }
+>  #endif /* CONFIG_THERMAL */
+>
+>  #endif /* __THERMAL_H__ */
+> --
+> 2.17.1
+>
