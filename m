@@ -2,119 +2,103 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B626FC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:41:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 632F3C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:42:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 90C272063A
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:41:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 288B120768
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:42:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1593466886;
-	bh=yOH9Px7xVSmNfzSVpvbBpqmuiCQSgKoq+a38kHqIvgs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=EVEcLyHk6FLtfwZNrhUk7t2HT4+Cd/lWe7uYj2gWBVp88D7Od1wUT397UVTHmv1pv
-	 i9m4xCj7o79cKNoQQ2akSOAfVe8t3dDbWHsruS0iWPWh3oclk7vDAPwxrpmQRuG8lt
-	 Ey6UMzwd0QTzusOFTWa+g9YeatGjCTDqz2cBX3Yo=
+	s=default; t=1593466961;
+	bh=Z+F/qR/QS1LYwSaqxET4TPmnUaYOUwWvnPRwP3RDrtM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=xV0lvgXosXqLBhQEwrKzq0Vq0hOmbm34Genev2oK10DIS16bWRQj9zd3tbMWkBHy4
+	 p679wbqXiiOTLDSHJmtPT+xz3v6Xldluq5qhn1KlgtQvh17wYWcsvoyOwLm1H5ZJAk
+	 Ikmg+fPO3aKE8HktLOS7mUeQJL1v9RoYRLiPnmK4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728197AbgF2SkU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 14:40:20 -0400
-Received: from mail.kernel.org ([198.145.29.99]:60572 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728167AbgF2SkP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jun 2020 14:40:15 -0400
-Received: from disco-boy.misterjones.org (disco-boy.misterjones.org [51.254.78.96])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 99E9323D6B;
-        Mon, 29 Jun 2020 13:22:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1593436951;
-        bh=yOH9Px7xVSmNfzSVpvbBpqmuiCQSgKoq+a38kHqIvgs=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=znzomeGJ/GfbNcF+5ZnhUcAlMqeiqwSoc52iW5wJAeb7DKq+GOyZpg2qyev2E7u44
-         RdgDFJCSrbrHQ+WZCx+taVcl48kB+PlVjTZyDIYT8mKgWzGaNv0Uv90TABDpKqVo4c
-         6LUnn+d/BIvGXS65lWnk+uNTvsH/zH34K9oxR5GI=
-Received: from disco-boy.misterjones.org ([51.254.78.96] helo=www.loen.fr)
-        by disco-boy.misterjones.org with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.92)
-        (envelope-from <maz@kernel.org>)
-        id 1jptjx-007KON-RM; Mon, 29 Jun 2020 14:22:29 +0100
+        id S2403943AbgF2Vm3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 17:42:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37586 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727906AbgF2Sh4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:37:56 -0400
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 76484C033C34;
+        Mon, 29 Jun 2020 11:28:55 -0700 (PDT)
+Received: by mail-ed1-x543.google.com with SMTP id b15so13734657edy.7;
+        Mon, 29 Jun 2020 11:28:55 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=v4RywOSBW8Kuw1+zf6DDYYL42xVE9deqCEslZIfGs/U=;
+        b=C6ibjhrwQKECnH+TWlZ+vHl6UQ0YlQVFQgDkTF5WAigqjwQuOHweYLobU7pgwv3ByH
+         Um/eGwTACbKXMsqK5u17DTWcn1e0WWtycNFg++9NrPlgArnLyFkAssMylAF0yqzpD6RI
+         yxa9hNZBnXHjYebm+i8Zi9uPkeHFNJak2SD3SLGg5LZE4Rfp1Fo5o3Qux1XiDnUthe76
+         wvmrd0tgylNpU6wSbCsOqy1sKIWnNfCLm+jknb+b4GLyQaiLwEcrmDeuF0Q0mxMgOVKL
+         Z5AK+5Gr1SpkGqeM+UXhHwqSk9HOLZvfDuO3RdHVY9Y54BbFotVi7nqDoWeZm6uiS5HB
+         /1wg==
+X-Gm-Message-State: AOAM5308usOISsLKdAaLGv3AyXNvPZ/SD5BRyNNQ4uDauEPzXLZwiAu6
+        hDOfdd5/CBUcmS+URv4BGFs=
+X-Google-Smtp-Source: ABdhPJyzSgCljqhMYA8qL9G+ulHz7u8sTpeqpwRRupJqxrfMHwsH2mmBxQkKBgGt9N38HlNRmuf3sQ==
+X-Received: by 2002:a05:6402:1c07:: with SMTP id ck7mr7331907edb.297.1593455333941;
+        Mon, 29 Jun 2020 11:28:53 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.195])
+        by smtp.googlemail.com with ESMTPSA id d13sm257118ejj.95.2020.06.29.11.28.52
+        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+        Mon, 29 Jun 2020 11:28:53 -0700 (PDT)
+Date:   Mon, 29 Jun 2020 20:28:51 +0200
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Marek Szyprowski <m.szyprowski@samsung.com>
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Subject: Re: [PATCH v2 1/4] ARM: exynos: MCPM: Restore big.LITTLE cpuidle
+ support
+Message-ID: <20200629182851.GA3848@kozik-lap>
+References: <20200629091343.GA16015@kozik-lap>
+ <CGME20200629100230eucas1p1bf07ca4c84ba6be1fbdd80c45d077518@eucas1p1.samsung.com>
+ <20200629100218.6267-1-m.szyprowski@samsung.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII;
- format=flowed
-Content-Transfer-Encoding: 7bit
-Date:   Mon, 29 Jun 2020 14:22:29 +0100
-From:   Marc Zyngier <maz@kernel.org>
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        =?UTF-8?Q?Heik?= =?UTF-8?Q?o_St=C3=BCbner?= <heiko@sntech.de>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        kernel-team@android.com, stable@vger.kernel.org
-Subject: Re: [PATCH v2] PM / devfreq: rk3399_dmc: Fix kernel oops when
- rockchip,pmu is absent
-In-Reply-To: <154fe5b6-6a05-c2b7-3014-2f7b9c2049f9@samsung.com>
-References: <CGME20200622152844epcas1p2309f34247eb9653acdfd3818b7e6a569@epcas1p2.samsung.com>
- <20200622152824.1054946-1-maz@kernel.org>
- <784808d7-8943-44ab-f15a-34821e6d4d5f@samsung.com>
- <87tuyue142.wl-maz@kernel.org>
- <c1a5b730-0554-bb90-9d8d-b50390482e96@samsung.com>
- <3de68490-d788-e416-dd5f-d4d6e7eca61a@collabora.com>
- <154fe5b6-6a05-c2b7-3014-2f7b9c2049f9@samsung.com>
-User-Agent: Roundcube Webmail/1.4.5
-Message-ID: <636bcc73fa658747626e36d71bfcc4f9@kernel.org>
-X-Sender: maz@kernel.org
-X-SA-Exim-Connect-IP: 51.254.78.96
-X-SA-Exim-Rcpt-To: cw00.choi@samsung.com, enric.balletbo@collabora.com, heiko@sntech.de, myungjoo.ham@samsung.com, kyungmin.park@samsung.com, linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org, kernel-team@android.com, stable@vger.kernel.org
-X-SA-Exim-Mail-From: maz@kernel.org
-X-SA-Exim-Scanned: No (on disco-boy.misterjones.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20200629100218.6267-1-m.szyprowski@samsung.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2020-06-29 12:29, Chanwoo Choi wrote:
-> Hi Enric and Mark,
+On Mon, Jun 29, 2020 at 12:02:18PM +0200, Marek Szyprowski wrote:
+> Call exynos_cpu_power_up(cpunr) unconditionally. This is needed by the
+> big.LITTLE cpuidle driver and has no side-effects on other code paths.
 > 
-> On 6/29/20 8:05 PM, Enric Balletbo i Serra wrote:
->> Hi Chanwoo and Marc,
->> 
->> On 29/6/20 13:09, Chanwoo Choi wrote:
->>> Hi Enric,
->>> 
->>> Could you check this issue? Your patch[1] causes this issue.
->>> As Marc mentioned, although rk3399-dmc.c handled 'rockchip,pmu'
->>> as the mandatory property, your patch[1] didn't add the 
->>> 'rockchip,pmu'
->>> property to the documentation.
->>> 
->> 
->> I think the problem is that the DT binding patch, for some reason, was 
->> missed
->> and didn't land. The patch seems to have all the required reviews and 
->> acks.
->> 
->>   https://patchwork.kernel.org/patch/10901593/
->> 
->> Sorry because I didn't notice this issue when 9173c5ceb035 landed. And 
->> thanks
->> for fixing the issue.
+> The additional soft-reset call during little core power up has been added
+> to properly boot all cores on the Exynos5422-based boards with secure
+> firmware (like Odroid XU3/XU4 family). This however broke big.LITTLE
+> CPUidle driver, which worked only on boards without secure firmware (like
+> Peach-Pit/Pi Chromebooks). Apply the workaround only when board is
+> running under secure firmware.
 > 
-> If the 'rockchip,pmu' propery is mandatory, instead of Mark's patch,
-> we better to require the merge of patch[1] to DT maintainer.
+> Fixes: 833b5794e330 ("ARM: EXYNOS: reset Little cores when cpu is up")
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> ---
+> v2:
+> - adjusted patch subject to better describe the change
+> - added a comment about exynos_cpu_power_up(cpunr) call
+> ---
+>  arch/arm/mach-exynos/mcpm-exynos.c | 10 +++++++---
+>  1 file changed, 7 insertions(+), 3 deletions(-)
 
-It is way too late. Firmware exists (mainline u-boot, for one) that
-do not expose the new property, and you can't demand that people
-upgrade. This is an ABI bug, and we now have to live with it.
+Thanks, applied (but somehow your patch did not make it to the
+linux-samsung-soc list).
 
-So, yes to fixing the DT, and no to *only* fixing the DT.
+Best regards,
+Krzysztof
 
-Thanks,
-
-         M.
--- 
-Jazz is not dead. It just smells funny...
