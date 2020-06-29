@@ -2,134 +2,114 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A8E01C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:53:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC9B3C433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:54:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9589B20759
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:53:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F49020663
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:54:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="K4cV+eDG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387863AbgF2Uxs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:53:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43382 "EHLO
+        id S1731414AbgF2UyF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:54:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43380 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731326AbgF2TNU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:20 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CA52AC0085AF;
-        Mon, 29 Jun 2020 04:16:41 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id E6EC627D8DE
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH v6 09/11] thermal: core: Stop polling DISABLED thermal devices
-Date:   Mon, 29 Jun 2020 13:16:13 +0200
-Message-Id: <20200629111615.18131-10-andrzej.p@collabora.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
-References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
- <20200629111615.18131-1-andrzej.p@collabora.com>
+        with ESMTP id S1731321AbgF2TNT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:19 -0400
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6BC0C0086F5
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 02:49:36 -0700 (PDT)
+Received: by mail-pf1-x441.google.com with SMTP id b16so7656520pfi.13
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 02:49:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=908Q6F9vnpUpqdsRok1kJOp1UfdjYn7RTaPOk8rPa7s=;
+        b=K4cV+eDGQe/ywLx7Hea34M9L4+o6jA1UwaGhOl2F1k1pKXHebEzIi00A3eXinUhHsj
+         sfdCVjCMH1wW2m3aakI/L39gS9Vf9LN18trMVIuSY8Af7MqRA3OaF/S7qCIGv6AjoU7H
+         JfIR6Uc7UOix3m7M29aFxSeunhIHWTzR1YsUO6HSPOgLjVl1iWX0VZcCgz9fyWVLdRYQ
+         6MqF+7tU2ysTPv7iuuB2N7J64PQN1dQ2oDuGZAH5NPJw+MoUuBVmqlbyXDqzN5UvSuH9
+         U6RGmJ0brDiyKDMgOAlhKKfsaN9XDGvrVCzqtujyoXGj3BZvfCpg+LZkyShKmRWeqs42
+         7M6g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=908Q6F9vnpUpqdsRok1kJOp1UfdjYn7RTaPOk8rPa7s=;
+        b=cKa9SkAk8QZBAePERTrfM/7pm/WSgY/bBDeoFm70yCr3cf29kVYQwa2sUQ87sbHPvT
+         soBMAEzW2LL6AMoyhUDr0BenzCMeFuhX+Yr0EP4idcoZmQ/Qv1BkQg6B7rk0M4C7BSv5
+         ssueurgW9QiEJ74nTcJECXQlMAjnHplTIUnMWylrQO7sML0kwOi8ZsPVryv1RSHju9LU
+         YalO/aW0/Jfa+9hh5F8cqujO5Pk6FF/WKmNHFLrKhduPWC+KW3YS6Zqsv66S2i/P1y6R
+         3WwLCRUnECyS/cyWVK0FmbLNALCArZECwY9rzvpyD2hABiK92jtrCtgUWaOYS/24dWdY
+         ThGA==
+X-Gm-Message-State: AOAM530mw0lUPezNP22mzkptW1PwLMBpSgYIHz8EfUh2RQRsM1Sl3LPp
+        YXmcXKwgtYEcao94vMbwWam5KA==
+X-Google-Smtp-Source: ABdhPJyyHuSsstC2FkFfOBkBMG9TIg0jujD+uM29enO1mJksrpDaXWQfQdbhQ+75RZqx3mwwNae1IQ==
+X-Received: by 2002:a62:27c6:: with SMTP id n189mr14078705pfn.277.1593424176363;
+        Mon, 29 Jun 2020 02:49:36 -0700 (PDT)
+Received: from localhost ([122.172.127.76])
+        by smtp.gmail.com with ESMTPSA id g12sm5108745pfb.190.2020.06.29.02.49.35
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 29 Jun 2020 02:49:35 -0700 (PDT)
+Date:   Mon, 29 Jun 2020 15:19:34 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Quentin Perret <qperret@google.com>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Jonathan Corbet <corbet@lwn.net>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        kernel-team@android.com, tkjos@google.com, adharmap@codeaurora.org,
+        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V4 3/3] cpufreq: Specify default governor on command line
+Message-ID: <20200629094934.vbcprgimvywhfwk6@vireshk-i7>
+References: <cover.1593418662.git.viresh.kumar@linaro.org>
+ <96b6e6ca02b664194ff3e57e1ec768fbc597bf38.1593418662.git.viresh.kumar@linaro.org>
+ <20200629094452.GB1228312@google.com>
+ <20200629094627.jh7pwhftcdqj6nhm@vireshk-i7>
+ <20200629094825.GA1231692@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200629094825.GA1231692@google.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Polling DISABLED devices is not desired, as all such "disabled" devices
-are meant to be handled by userspace. This patch introduces and uses
-should_stop_polling() to decide whether the device should be polled or not.
+On 29-06-20, 10:48, Quentin Perret wrote:
+> On Monday 29 Jun 2020 at 15:16:27 (+0530), Viresh Kumar wrote:
+> > On 29-06-20, 10:44, Quentin Perret wrote:
+> > > On Monday 29 Jun 2020 at 13:55:00 (+0530), Viresh Kumar wrote:
+> > > >  static int __init cpufreq_core_init(void)
+> > > >  {
+> > > > +	struct cpufreq_governor *gov = cpufreq_default_governor();
+> > > > +
+> > > >  	if (cpufreq_disabled())
+> > > >  		return -ENODEV;
+> > > >  
+> > > >  	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
+> > > >  	BUG_ON(!cpufreq_global_kobject);
+> > > >  
+> > > > +	if (!strlen(default_governor))
+> > > 
+> > > Should we test '!strlen(default_governor) && gov' here actually?
+> > > We check the return value of cpufreq_default_governor() in
+> > > cpufreq_init_policy(), so I'm guessing we should do the same here to be
+> > > on the safe side.
+> > 
+> > With the current setup (the Kconfig option being a choice which
+> > selects one governor at least), it is not possible for gov to be NULL
+> > here. And so I didn't worry about it :)
+> 
+> Right, so should we remove the check in cpufreq_init_policy() then?
+> I don't mind either way as long as we are consitent :)
 
-Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
----
- drivers/thermal/thermal_core.c | 16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+We can get rid of that as well.
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 52d136780577..e613f5c07bad 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -301,13 +301,22 @@ static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 		cancel_delayed_work(&tz->poll_queue);
- }
- 
-+static inline bool should_stop_polling(struct thermal_zone_device *tz)
-+{
-+	return !thermal_zone_device_is_enabled(tz);
-+}
-+
- static void monitor_thermal_zone(struct thermal_zone_device *tz)
- {
-+	bool stop;
-+
-+	stop = should_stop_polling(tz);
-+
- 	mutex_lock(&tz->lock);
- 
--	if (tz->passive)
-+	if (!stop && tz->passive)
- 		thermal_zone_device_set_polling(tz, tz->passive_delay);
--	else if (tz->polling_delay)
-+	else if (!stop && tz->polling_delay)
- 		thermal_zone_device_set_polling(tz, tz->polling_delay);
- 	else
- 		thermal_zone_device_set_polling(tz, 0);
-@@ -517,6 +526,9 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
- {
- 	int count;
- 
-+	if (should_stop_polling(tz))
-+		return;
-+
- 	if (atomic_read(&in_suspend))
- 		return;
- 
 -- 
-2.17.1
-
+viresh
