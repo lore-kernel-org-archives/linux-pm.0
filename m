@@ -2,140 +2,73 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0
-	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 887DBC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DC52C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:00:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 659E2206F1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0812D20720
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:00:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1593464418;
+	bh=OPQI9bTtFwn3NAYXqCtC8OZYAmmTN/PSS9eYiGGqp/4=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=YzMYPNVGrEoY7VG9TLWIBt41OMXRG+rhQQhI3rfdilgcyT6OdHuz3eNq1YOe4wEsF
+	 aSQFV1WBWVOAZLGZoNjRuMuZtOE8Ob7QCChhrhHyisyImBf2ryytZoeHiEdYgWBW5C
+	 apbRE82Tq7z4Y8LilcU6lw7dHDqeo/cOixmiiXUw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731397AbgF2U6m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:58:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43354 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731247AbgF2TNC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:02 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22BB3C0085C5;
-        Mon, 29 Jun 2020 04:16:26 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id CFAED2A0518
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH v6 01/11] acpi: thermal: Fix error handling in the register function
-Date:   Mon, 29 Jun 2020 13:16:05 +0200
-Message-Id: <20200629111615.18131-2-andrzej.p@collabora.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
-References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
- <20200629111615.18131-1-andrzej.p@collabora.com>
+        id S2390086AbgF2VAO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 17:00:14 -0400
+Received: from mail.kernel.org ([198.145.29.99]:52810 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731225AbgF2VAN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jun 2020 17:00:13 -0400
+Subject: Re: [GIT PULL] thermal fixes for v5.8-rc4
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1593464413;
+        bh=OPQI9bTtFwn3NAYXqCtC8OZYAmmTN/PSS9eYiGGqp/4=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=FEvcKNpbTd3C8/18x8GaKDs05fxi3AFOvywjbEZi0hGPiQeaJ+KORnOMLr/gF7CQC
+         LtTbg6/R85URmqHvqKODZZUkxW5jP9Jz7WqfBhqKJbNBFacqW2Bd4kc2JmP7IfsfFc
+         RgOJtfkS8P/aXx2dClYCg9NRIiCKtMqctW8tB3zA=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <55cb7814-8305-23bd-873c-5a82104b1248@linaro.org>
+References: <55cb7814-8305-23bd-873c-5a82104b1248@linaro.org>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <55cb7814-8305-23bd-873c-5a82104b1248@linaro.org>
+X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git
+ tags/thermal-v5.8-rc4
+X-PR-Tracked-Commit-Id: 5f8f06425a0dcdad7bedbb77e67f5c65ab4dacfc
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: be88fef34f784a8d612366e7ebb149785de7f928
+Message-Id: <159346441299.11856.7816524140098619658.pr-tracker-bot@kernel.org>
+Date:   Mon, 29 Jun 2020 21:00:12 +0000
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM mailing list <linux-pm@vger.kernel.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Anson Huang <anson.huang@nxp.com>, dien.pham.ry@renesas.com,
+        Finley Xiao <finley.xiao@rock-chips.com>,
+        "michael.kao" <Michael.Kao@mediatek.com>, yangtiezhu@loongson.cn,
+        Zhang Rui <rui.zhang@intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The acpi_thermal_register_thermal_zone() is missing any error handling.
-This needs to be fixed.
+The pull request you sent on Mon, 29 Jun 2020 12:31:32 +0200:
 
-Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
-Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
----
- drivers/acpi/thermal.c | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git tags/thermal-v5.8-rc4
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 19067a5e5293..6de8066ca1e7 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -901,23 +901,35 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
- 	result = sysfs_create_link(&tz->device->dev.kobj,
- 				   &tz->thermal_zone->device.kobj, "thermal_zone");
- 	if (result)
--		return result;
-+		goto unregister_tzd;
- 
- 	result = sysfs_create_link(&tz->thermal_zone->device.kobj,
- 				   &tz->device->dev.kobj, "device");
- 	if (result)
--		return result;
-+		goto remove_tz_link;
- 
- 	status =  acpi_bus_attach_private_data(tz->device->handle,
- 					       tz->thermal_zone);
--	if (ACPI_FAILURE(status))
--		return -ENODEV;
-+	if (ACPI_FAILURE(status)) {
-+		result = -ENODEV;
-+		goto remove_dev_link;
-+	}
- 
- 	tz->tz_enabled = 1;
- 
- 	dev_info(&tz->device->dev, "registered as thermal_zone%d\n",
- 		 tz->thermal_zone->id);
-+
- 	return 0;
-+
-+remove_dev_link:
-+	sysfs_remove_link(&tz->thermal_zone->device.kobj, "device");
-+remove_tz_link:
-+	sysfs_remove_link(&tz->device->dev.kobj, "thermal_zone");
-+unregister_tzd:
-+	thermal_zone_device_unregister(tz->thermal_zone);
-+
-+	return result;
- }
- 
- static void acpi_thermal_unregister_thermal_zone(struct acpi_thermal *tz)
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/be88fef34f784a8d612366e7ebb149785de7f928
+
+Thank you!
+
 -- 
-2.17.1
-
+Deet-doot-dot, I am a bot.
+https://korg.wiki.kernel.org/userdoc/prtracker
