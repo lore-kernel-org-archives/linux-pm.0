@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81268C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2422C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 609B4212CC
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D29FC21531
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:22:47 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="VEtU5b+E";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="L6DQtBRb"
+	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="l8oEpc8o";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="jvAnAfyG"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729439AbgF2Svr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 14:51:47 -0400
-Received: from new4-smtp.messagingengine.com ([66.111.4.230]:35733 "EHLO
+        id S2387824AbgF2VWp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 17:22:45 -0400
+Received: from new4-smtp.messagingengine.com ([66.111.4.230]:58681 "EHLO
         new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726831AbgF2Sva (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:51:30 -0400
+        by vger.kernel.org with ESMTP id S1729596AbgF2Sv1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:51:27 -0400
 Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 14CE6580597;
-        Mon, 29 Jun 2020 11:21:17 -0400 (EDT)
+        by mailnew.nyi.internal (Postfix) with ESMTP id 805C058035E;
+        Mon, 29 Jun 2020 11:07:50 -0400 (EDT)
 Received: from mailfrontend1 ([10.202.2.162])
-  by compute4.internal (MEProxy); Mon, 29 Jun 2020 11:21:17 -0400
+  by compute4.internal (MEProxy); Mon, 29 Jun 2020 11:07:50 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
         date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm3; bh=krUOveEdR6vT0SBK3qtfa5n706o
-        ryNuDtBLGwOel0Fo=; b=VEtU5b+EqJvRVoGcecDwOgK9INc1igaqGpNTrbyWjp7
-        t4GknrXv7tKctUi5JWrH2p6O6uYYIDpxpq2pM/8mTaxmakYjDGs2EQutbHreQYwd
-        fJv+kZaW3ewSRuY8FVsI1HEbFNUwl4erX42gfLwEeTg1ns00ICau45mAoNseOhbC
-        8kD0h8BGjs8fPp3YjhpxkYlwLEC/2n2D77Szii/1UwuSkmfTTqEGQnnsoyY3GpIl
-        EHBhoY9KmtyUnCsveKv0MW5JG2xy2qCB6TaqQxf0mcFwx0IB64WHhkgiQN6O0lpn
-        DT8q0Ta5pesXagJSN5DYMMpMFpbUCjfwZIr1JA4Z/0w==
+        :content-type:in-reply-to; s=fm3; bh=WE1PSDJ6UR5jIFS55riBxt9LPeJ
+        Xh4U7NigTPnNX65A=; b=l8oEpc8ou0b31MaSG3xJyMa7ni1mk3WLjAf0+QKHhjs
+        AVpZBfZIOMlIwpRfzUZ14GCy22hl/ny7wF6EPd/RmE10onf4Ip8tNfeqRwOPe/KF
+        gPA9Mojv1xbR1GKjCgVa8zHPvuXzX/L9FcWYOtdSddgGtn8h1eG9jBxj75YJbHTK
+        AANJop2cVs8dOOdN/3CdbzUDXLfYiXtQNsQYaSDjYw02qjx1HRJeF5WHzMmAyjXS
+        3KhOuwB1qhHBpETNlNr2Wcj3pOWH0N/xGG6lycaJauSm7B8zbUUSEZMMBd+GhU53
+        6JgTxPN4HoKR9TklVbYstBJUuXqO1J9mbgHbuVlFbiA==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
         messagingengine.com; h=cc:content-type:date:from:in-reply-to
         :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=krUOve
-        EdR6vT0SBK3qtfa5n706oryNuDtBLGwOel0Fo=; b=L6DQtBRbaLn4l3ffIzF0Bw
-        bJfxa6fVOnQh9qO0p0mJrmSfuq9FDhIP89CuSO4gemX0ANlp8rukEIP6+d25PuP6
-        a3QSGPxF/k+Xcx7uqFlMQ2P4OF4kTh9ELsXnA5re3hD2MOlpZgMYXre6ehH5kS4a
-        cCxOeIagn8x5pSEn1VwUNGpbyjjxxHPsAy6Hdca09MtGrRJpAf6loosOhXjVBlR3
-        Ny+o5D6hqOsFi534Rc4VwRjOE/iQBXI0yjAY/wmsvZwTjr3/tXfURRfYZhIh+Mk8
-        hd14z5Ml3RtHtEw0mRB/nAAy5xb04b4c9LOIvEKkmyqZj/VrfLGJuhd6ky+jhXhA
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=WE1PSD
+        J6UR5jIFS55riBxt9LPeJXh4U7NigTPnNX65A=; b=jvAnAfyGaqUn/08ZHsSqLO
+        uW19B9zLVT4SoApSBBkRM437Kkyd5+RLGxYcTd9L/oNbS6MJbqab7VsM98DbsCWO
+        4d+n8RBYK/BF0fHr9iBnrIaiiVmQvnFV3zkFgHUJ5uXQbG6usHTFF8bzNilFUc7u
+        VHSM1KJiVUTLlVmNRTKoIFa+4KuOnlVlYMVDSkofqAXPutOIj/pnE21k7/gu3pBQ
+        daqivTY5w3AmuBudK+2x1qoXFuOwCBazHChG9faFssJKqFPAI7ckWQyHm9tFFwxU
+        pbbe+PLQsGexmH8opjSu/KNzsplx1vR5KknkeXSlJ597pWOeC+sjwaFee54Bzuew
         ==
-X-ME-Sender: <xms:6Qb6Xs5A65jiVMk-TBJ7E6MWYyS4QOEbvSnIUioCEO_-3JMTBBRYfA>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudelledgudehucetufdoteggodetrfdotf
+X-ME-Sender: <xms:wwP6XqWvknOfJkcPQBXZIqW8UorMwaNBI5C1ODdyBwTlMY09xUHPxw>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudelledguddvucetufdoteggodetrfdotf
     fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
     uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
     cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
@@ -56,14 +56,14 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudelledgudehucetufdoteggod
     htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
     gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgeptdenuc
     frrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:6Qb6Xt7HQSIAah0eJg07s37QLKiq_njkDArZ0GZNou-AaxfXfxeVWA>
-    <xmx:6Qb6Xrflm2twAlFg4vyHYS5sN91S-uNRTR0cQNey4cTSqfSaVfk9JA>
-    <xmx:6Qb6XhKlWp2txSt5ptrbZvHChxtJtnYggh9FY3iKjY9qUnbEHvLN1w>
-    <xmx:7Qb6Xg7aRoYgPeksuOqXA0bw-zrOHrTGsRA0vVtbBGtdnNedV-Vj5g>
+X-ME-Proxy: <xmx:wwP6XmkjVUmeiEdlJgUfigxWgJQVaqJmvthVxhwDQFDiMykoEnTrdA>
+    <xmx:wwP6XubBPGGFyYHtXHWC-1pZWDOV_FPhqmC25ASqd2-PXgI2_RfGwg>
+    <xmx:wwP6XhWf_nU3-9dDRfPGYtrX-iylRBw_6x4z_SVVOUOMQWduDd8qGA>
+    <xmx:xgP6XmWAWQwhFI3MhZjhHXi92Prz-GT5C9njmChD_WUolvvNS1KtFw>
 Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 83B73328005E;
-        Mon, 29 Jun 2020 11:21:13 -0400 (EDT)
-Date:   Mon, 29 Jun 2020 17:21:12 +0200
+        by mail.messagingengine.com (Postfix) with ESMTPA id 0E01A3280060;
+        Mon, 29 Jun 2020 11:07:47 -0400 (EDT)
+Date:   Mon, 29 Jun 2020 17:07:45 +0200
 From:   Maxime Ripard <maxime@cerno.tech>
 To:     Frank Lee <frank@allwinnertech.com>
 Cc:     robh+dt@kernel.org, wens@csie.org, mturquette@baylibre.com,
@@ -77,223 +77,65 @@ Cc:     robh+dt@kernel.org, wens@csie.org, mturquette@baylibre.com,
         linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
         linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
         huangshuosheng@allwinnertech.com, liyong@allwinnertech.com
-Subject: Re: [PATCH v2 09/11] arm64: allwinner: A100: add the basical
- Allwinner A100 DTSI file
-Message-ID: <20200629152112.fo3kgcztlutj66hc@gilmour.lan>
+Subject: Re: [PATCH v2 06/11] nvmem: sunxi-sid: add support for A100's SID
+ controller
+Message-ID: <20200629150745.ettjdggv55gfxs5s@gilmour.lan>
 References: <20200622025907.32574-1-frank@allwinnertech.com>
- <20200622025907.32574-10-frank@allwinnertech.com>
+ <20200622025907.32574-7-frank@allwinnertech.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="lbejoaecuizw4km4"
+        protocol="application/pgp-signature"; boundary="qt3qjbwfvcqzuc6s"
 Content-Disposition: inline
-In-Reply-To: <20200622025907.32574-10-frank@allwinnertech.com>
+In-Reply-To: <20200622025907.32574-7-frank@allwinnertech.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---lbejoaecuizw4km4
+--qt3qjbwfvcqzuc6s
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Mon, Jun 22, 2020 at 10:59:05AM +0800, Frank Lee wrote:
-> Allwinner A100 is a new SoC with Cortex-A53 cores, this commit adds
-> the basical DTSI file of it, including the clock, i2c, pins, sid, ths,
-> and UART support.
+On Mon, Jun 22, 2020 at 10:59:02AM +0800, Frank Lee wrote:
+> Add support for A100's SID controller.
 >=20
 > Signed-off-by: Frank Lee <frank@allwinnertech.com>
 > ---
->  arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi | 337 +++++++++++++++++++=
-++++++
->  1 file changed, 337 insertions(+)
->  create mode 100644 arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
+>  drivers/nvmem/sunxi_sid.c | 6 ++++++
+>  1 file changed, 6 insertions(+)
 >=20
-> diff --git a/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi b/arch/arm64/=
-boot/dts/allwinner/sun50i-a100.dtsi
-> new file mode 100644
-> index 0000000..5133897
-> --- /dev/null
-> +++ b/arch/arm64/boot/dts/allwinner/sun50i-a100.dtsi
-> @@ -0,0 +1,337 @@
-> +// SPDX-License-Identifier: (GPL-2.0+ or MIT)
-> +/*
-> + * Copyright (c) 2020 Frank Lee <frank@allwinnertech.com>
-> + */
+> diff --git a/drivers/nvmem/sunxi_sid.c b/drivers/nvmem/sunxi_sid.c
+> index e26ef1b..8ac074b 100644
+> --- a/drivers/nvmem/sunxi_sid.c
+> +++ b/drivers/nvmem/sunxi_sid.c
+> @@ -189,6 +189,11 @@ static int sunxi_sid_probe(struct platform_device *p=
+dev)
+>  	.need_register_readout =3D true,
+>  };
+> =20
+> +static const struct sunxi_sid_cfg sun50i_a100_cfg =3D {
+> +	.value_offset =3D 0x200,
+> +	.size =3D 0x100,
+> +};
 > +
-> +#include <dt-bindings/interrupt-controller/arm-gic.h>
-> +#include <dt-bindings/clock/sun50i-a100-ccu.h>
-> +#include <dt-bindings/clock/sun50i-a100-r-ccu.h>
-> +#include <dt-bindings/reset/sun50i-a100-ccu.h>
-> +#include <dt-bindings/reset/sun50i-a100-r-ccu.h>
-> +
-> +/ {
-> +	interrupt-parent =3D <&gic>;
-> +	#address-cells =3D <2>;
-> +	#size-cells =3D <2>;
-> +
-> +	cpus {
-> +		#address-cells =3D <1>;
-> +		#size-cells =3D <0>;
-> +
-> +		cpu0: cpu@0 {
-> +			compatible =3D "arm,armv8";
-> +			device_type =3D "cpu";
-> +			reg =3D <0x0>;
-> +			enable-method =3D "psci";
-> +		};
-> +
-> +		cpu@1 {
-> +			compatible =3D "arm,armv8";
-> +			device_type =3D "cpu";
-> +			reg =3D <0x1>;
-> +			enable-method =3D "psci";
-> +		};
-> +
-> +		cpu@2 {
-> +			compatible =3D "arm,armv8";
-> +			device_type =3D "cpu";
-> +			reg =3D <0x2>;
-> +			enable-method =3D "psci";
-> +		};
-> +
-> +		cpu@3 {
-> +			compatible =3D "arm,armv8";
-> +			device_type =3D "cpu";
-> +			reg =3D <0x3>;
-> +			enable-method =3D "psci";
-> +		};
-> +	};
-> +
-> +	psci {
-> +		compatible =3D "arm,psci-1.0";
-> +		method =3D "smc";
-> +	};
-> +
-> +	iosc: internal-osc-clk {
-> +		compatible =3D "fixed-clock";
-> +		clock-frequency =3D <16000000>;
-> +		clock-accuracy =3D <300000000>;
-> +		clock-output-names =3D "iosc";
-> +		#clock-cells =3D <0>;
-> +	};
-> +
-> +	dcxo24M: dcxo24M_clk {
 
-You shouldn't have underscores in the node names.
+It looks like it's the same tha nthe H3 / A64 then?
 
-> +		compatible =3D "fixed-clock";
-> +		clock-frequency =3D <24000000>;
-> +		clock-output-names =3D "dcxo24M";
-> +		#clock-cells =3D <0>;
-> +	};
-> +
-> +	osc32k: osc32k_clk {
+If so, you can just reuse their compatible as fallback
 
-Same thing here
-
-Also, ordering by node name here would be nice
-
-> +		compatible =3D "fixed-clock";
-> +		clock-frequency =3D <32768>;
-> +		clock-output-names =3D "osc32k";
-> +		#clock-cells =3D <0>;
-> +	};
-> +
-> +	timer {
-> +		compatible =3D "arm,armv8-timer";
-> +		interrupts =3D <GIC_PPI 13
-> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +			     <GIC_PPI 14
-> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +			     <GIC_PPI 11
-> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>,
-> +			     <GIC_PPI 10
-> +			(GIC_CPU_MASK_SIMPLE(4) | IRQ_TYPE_LEVEL_HIGH)>;
-> +	};
-
-Does it suffer from the same time instability than the one in the A64?
-If so, you probably want to enable the workaround too.
-
-> +	soc: soc {
-
-Do you really need a label for that node?
-
-> +		compatible =3D "simple-bus";
-> +		#address-cells =3D <2>;
-> +		#size-cells =3D <2>;
-
-Why do you need cells with 2 items here? You don't seem to be using
-them.
-
-> +		r_i2c0: i2c@7081400 {
-> +			compatible =3D "allwinner,sun6i-a31-i2c";
-> +			reg =3D <0x0 0x07081400 0x0 0x400>;
-> +			interrupts =3D <GIC_SPI 113 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks =3D <&ccu CLK_BUS_I2C0>;
-> +			resets =3D <&ccu RST_BUS_I2C0>;
-> +			pinctrl-names =3D "default";
-> +			pinctrl-0 =3D <&r_i2c0_pins>;
-> +			status =3D "disabled";
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <0>;
-> +		};
-> +
-> +		r_i2c1: i2c@7081800 {
-> +			compatible =3D "allwinner,sun6i-a31-i2c";
-> +			reg =3D <0x0 0x07081800 0x0 0x400>;
-> +			interrupts =3D <GIC_SPI 114 IRQ_TYPE_LEVEL_HIGH>;
-> +			clocks =3D <&ccu CLK_BUS_I2C1>;
-> +			resets =3D <&ccu RST_BUS_I2C1>;
-> +			pinctrl-names =3D "default";
-> +			pinctrl-0 =3D <&r_i2c1_pins>;
-> +			status =3D "disabled";
-> +			#address-cells =3D <1>;
-> +			#size-cells =3D <0>;
-> +		};
-> +	};
-
-The clocks and resets phandles and IDs don't look right
-
-> +	thermal-zones {
-> +		cpu_thermal_zone {
-> +			polling-delay-passive =3D <0>;
-> +			polling-delay =3D <0>;
-> +			thermal-sensors =3D <&ths 0>;
-> +		};
-
-Please add a new line here
-
-> +		gpu_thermal_zone{
-
-You should have a space here    ^=20
-
-> +			polling-delay-passive =3D <0>;
-> +			polling-delay =3D <0>;
-> +			thermal-sensors =3D <&ths 1>;
-> +		};
-
-newline
-
-> +		ddr_thermal_zone{
-
-space                           ^=20
-
-Thanks!
 Maxime
 
---lbejoaecuizw4km4
+--qt3qjbwfvcqzuc6s
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXvoG6AAKCRDj7w1vZxhR
-xRRCAQCSyQ9nHql6TEykxi9l3Cj8dRiNVK0CnZJ3fTQSc1l2AAD/fJV1R7VkbxZi
-OFU2QxjJ1CZU81YE8OkmeFr/wMlCsw8=
-=kgim
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXvoDwQAKCRDj7w1vZxhR
+xR1+AQDUmJ2eKxkSAKY8N3oAYv2RkDrEZNTRivNZeW/rTDtt1gD/fIJbT8KdkTtN
+Oq4B49fJoiJYQc72b1d+sdbscb9XAw4=
+=7lp0
 -----END PGP SIGNATURE-----
 
---lbejoaecuizw4km4--
+--qt3qjbwfvcqzuc6s--
