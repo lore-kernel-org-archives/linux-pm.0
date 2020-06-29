@@ -2,385 +2,193 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A0113C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:40:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38F3DC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:42:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7801020720
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:40:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CH5VwQtB"
+	by mail.kernel.org (Postfix) with ESMTP id 1D12720672
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:42:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389395AbgF2Ukj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:40:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43348 "EHLO
+        id S2387938AbgF2UmO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:42:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43390 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731701AbgF2TOK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:10 -0400
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 12F80C0147CB
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:15 -0700 (PDT)
-Received: by mail-pg1-x544.google.com with SMTP id e18so7963291pgn.7
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=bDEuNi6VcWGVZVG3Ao7I2ar+mftbkIzW0ZQYBhMw7zM=;
-        b=CH5VwQtBwbK7psYBEhtv+ShpD0ybafiNCeyEP4XUtP5hi+Sqgi6uV4Jt6LVnSi7p9T
-         NkHzvSd52VNpimgFoZZqHNLrx3CSEsuY5gsVUKGCli/5+XruiPVSQjO89BV7UEOglnxj
-         eEcGuBBGYiCYGiiSaWdtMDrOP7mu+zLkQhj6HObnhwMa79GWwkwY1s3x3KFVcdDdcVoy
-         NDpFYgZtPN1xcAoLtWIhp8wMaWszjZ6zxz0/yoQYIQoieY/GJ7CK8uIXbKCZjSmh3E/M
-         yJM7aw8DDBt6SPHBK4AkaancxZzkQLOJucjfYxaUu3Gt0+YO8NS9J3JTuxmddkf1nBPQ
-         un1A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=bDEuNi6VcWGVZVG3Ao7I2ar+mftbkIzW0ZQYBhMw7zM=;
-        b=FcNrqjoW7wfK8uk1Fmu9De7myDtRvaIGoyMA1A9y4VLeAUTlDzZRxAaRkyQoh5IE16
-         1uIXu5HWniEsabEsMs9Z/v6tkO486K21HqS7YnD1H2HGSbYvo8xtvJjoOCsPN06pTt/B
-         96vQjXBPXpCe/JKOsSVocpdV2U7jy9wJstUYOzzQS6mZpMtnfaL+aoY1PN/yftwvMXvs
-         ckZktxb7svGGj/0S8xINqWvYutxjOrQ1SFs6cLxo9ifPkWxeLYd2UANT2L0OixIJuJoU
-         eIHUqjH2aRxLG6J0t3XB+QTloep1WPvH78hPajWE4/TtzEQSuUHkO5bXuLsVyapU78An
-         sBYw==
-X-Gm-Message-State: AOAM531wsuBGnF0LJcAqCXQouGcyEdqILl9czkNzPflMqNSFryiE8Zl5
-        JZEXORrCpMMuRVDp0p0I85jUmQ==
-X-Google-Smtp-Source: ABdhPJxKS+tnpfq+snMQNel0FINgShzWxWL+ahyS1rhejANCnpTtrynuTl48vDRixQnXKcJDiwAmyg==
-X-Received: by 2002:a62:7847:: with SMTP id t68mr5093605pfc.112.1593419114535;
-        Mon, 29 Jun 2020 01:25:14 -0700 (PDT)
-Received: from localhost ([122.172.127.76])
-        by smtp.gmail.com with ESMTPSA id 21sm13043683pfu.124.2020.06.29.01.25.13
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Jun 2020 01:25:13 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>
-Cc:     linux-pm@vger.kernel.org, kernel-team@android.com,
-        tkjos@google.com, adharmap@codeaurora.org,
-        Quentin Perret <qperret@google.com>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 2/3] cpufreq: Register governors at core_initcall
-Date:   Mon, 29 Jun 2020 13:54:59 +0530
-Message-Id: <643132f6e7c8b0e94d03a4d4c121c738504b8aa3.1593418662.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1593418662.git.viresh.kumar@linaro.org>
-References: <cover.1593418662.git.viresh.kumar@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S1731605AbgF2TOE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:04 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB528C0085FA;
+        Mon, 29 Jun 2020 04:16:35 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id 889ED2A1EAD
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com, kernel test robot <lkp@intel.com>
+Subject: [PATCH v6 06/11] thermal: Add mode helpers
+Date:   Mon, 29 Jun 2020 13:16:10 +0200
+Message-Id: <20200629111615.18131-7-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
+References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+ <20200629111615.18131-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Quentin Perret <qperret@google.com>
+Prepare for making the drivers not access tzd's private members.
 
-Currently, most CPUFreq governors are registered at core_initcall time
-when used as default, and module_init otherwise. In preparation for
-letting users specify the default governor on the kernel command line,
-change all of them to use core_initcall unconditionally, as is already
-the case for schedutil and performance. This will enable us to assume
-builtin governors have been registered before the builtin CPUFreq
-drivers probe.
-
-And since all governors now have similar init/exit patterns, introduce
-two new macros cpufreq_governor_{init,exit}() to factorize the code.
-
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Signed-off-by: Quentin Perret <qperret@google.com>
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+[EXPORT_SYMBOL -> EXPORT_SYMBOL_GPL]
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+[staticize thermal_zone_device_set_mode()]
+Signed-off-by: kernel test robot <lkp@intel.com>
 ---
- .../platforms/cell/cpufreq_spudemand.c        | 26 ++-----------------
- drivers/cpufreq/cpufreq_conservative.c        | 22 ++++------------
- drivers/cpufreq/cpufreq_ondemand.c            | 24 +++++------------
- drivers/cpufreq/cpufreq_performance.c         | 14 ++--------
- drivers/cpufreq/cpufreq_powersave.c           | 18 +++----------
- drivers/cpufreq/cpufreq_userspace.c           | 18 +++----------
- include/linux/cpufreq.h                       | 14 ++++++++++
- kernel/sched/cpufreq_schedutil.c              |  6 +----
- 8 files changed, 36 insertions(+), 106 deletions(-)
+ drivers/thermal/thermal_core.c | 53 ++++++++++++++++++++++++++++++++++
+ include/linux/thermal.h        | 13 +++++++++
+ 2 files changed, 66 insertions(+)
 
-diff --git a/arch/powerpc/platforms/cell/cpufreq_spudemand.c b/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-index 55b31eadb3c8..ca7849e113d7 100644
---- a/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-+++ b/arch/powerpc/platforms/cell/cpufreq_spudemand.c
-@@ -126,30 +126,8 @@ static struct cpufreq_governor spu_governor = {
- 	.stop = spu_gov_stop,
- 	.owner = THIS_MODULE,
- };
--
--/*
-- * module init and destoy
-- */
--
--static int __init spu_gov_init(void)
--{
--	int ret;
--
--	ret = cpufreq_register_governor(&spu_governor);
--	if (ret)
--		printk(KERN_ERR "registration of governor failed\n");
--	return ret;
--}
--
--static void __exit spu_gov_exit(void)
--{
--	cpufreq_unregister_governor(&spu_governor);
--}
--
--
--module_init(spu_gov_init);
--module_exit(spu_gov_exit);
-+cpufreq_governor_init(spu_governor);
-+cpufreq_governor_exit(spu_governor);
- 
- MODULE_LICENSE("GPL");
- MODULE_AUTHOR("Christian Krafft <krafft@de.ibm.com>");
--
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 737ff3b9c2c0..aa39ff31ec9f 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -322,17 +322,7 @@ static struct dbs_governor cs_governor = {
- 	.start = cs_start,
- };
- 
--#define CPU_FREQ_GOV_CONSERVATIVE	(&cs_governor.gov)
--
--static int __init cpufreq_gov_dbs_init(void)
--{
--	return cpufreq_register_governor(CPU_FREQ_GOV_CONSERVATIVE);
--}
--
--static void __exit cpufreq_gov_dbs_exit(void)
--{
--	cpufreq_unregister_governor(CPU_FREQ_GOV_CONSERVATIVE);
--}
-+#define CPU_FREQ_GOV_CONSERVATIVE	(cs_governor.gov)
- 
- MODULE_AUTHOR("Alexander Clouter <alex@digriz.org.uk>");
- MODULE_DESCRIPTION("'cpufreq_conservative' - A dynamic cpufreq governor for "
-@@ -343,11 +333,9 @@ MODULE_LICENSE("GPL");
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_CONSERVATIVE
- struct cpufreq_governor *cpufreq_default_governor(void)
- {
--	return CPU_FREQ_GOV_CONSERVATIVE;
-+	return &CPU_FREQ_GOV_CONSERVATIVE;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 14d3b1b94c4f..f02c57c986f0 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -459,6 +459,59 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
+ 	thermal_zone_device_init(tz);
  }
--
--core_initcall(cpufreq_gov_dbs_init);
--#else
--module_init(cpufreq_gov_dbs_init);
- #endif
--module_exit(cpufreq_gov_dbs_exit);
+ 
++static int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
++					enum thermal_device_mode mode)
++{
++	int ret = 0;
 +
-+cpufreq_governor_init(CPU_FREQ_GOV_CONSERVATIVE);
-+cpufreq_governor_exit(CPU_FREQ_GOV_CONSERVATIVE);
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 82a4d37ddecb..ac361a8b1d3b 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -408,7 +408,7 @@ static struct dbs_governor od_dbs_gov = {
- 	.start = od_start,
- };
- 
--#define CPU_FREQ_GOV_ONDEMAND	(&od_dbs_gov.gov)
-+#define CPU_FREQ_GOV_ONDEMAND	(od_dbs_gov.gov)
- 
- static void od_set_powersave_bias(unsigned int powersave_bias)
++	mutex_lock(&tz->lock);
++
++	/* do nothing if mode isn't changing */
++	if (mode == tz->mode) {
++		mutex_unlock(&tz->lock);
++
++		return ret;
++	}
++
++	if (tz->ops->set_mode)
++		ret = tz->ops->set_mode(tz, mode);
++
++	if (!ret)
++		tz->mode = mode;
++
++	mutex_unlock(&tz->lock);
++
++	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
++
++	return ret;
++}
++
++int thermal_zone_device_enable(struct thermal_zone_device *tz)
++{
++	return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_ENABLED);
++}
++EXPORT_SYMBOL_GPL(thermal_zone_device_enable);
++
++int thermal_zone_device_disable(struct thermal_zone_device *tz)
++{
++	return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_DISABLED);
++}
++EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
++
++int thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
++{
++	enum thermal_device_mode mode;
++
++	mutex_lock(&tz->lock);
++
++	mode = tz->mode;
++
++	mutex_unlock(&tz->lock);
++
++	return mode == THERMAL_DEVICE_ENABLED;
++}
++EXPORT_SYMBOL_GPL(thermal_zone_device_is_enabled);
++
+ void thermal_zone_device_update(struct thermal_zone_device *tz,
+ 				enum thermal_notify_event event)
  {
-@@ -429,7 +429,7 @@ static void od_set_powersave_bias(unsigned int powersave_bias)
- 			continue;
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index a808f6fa2777..df013c39ba9b 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -416,6 +416,9 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz);
  
- 		policy = cpufreq_cpu_get_raw(cpu);
--		if (!policy || policy->governor != CPU_FREQ_GOV_ONDEMAND)
-+		if (!policy || policy->governor != &CPU_FREQ_GOV_ONDEMAND)
- 			continue;
- 
- 		policy_dbs = policy->governor_data;
-@@ -461,16 +461,6 @@ void od_unregister_powersave_bias_handler(void)
- }
- EXPORT_SYMBOL_GPL(od_unregister_powersave_bias_handler);
- 
--static int __init cpufreq_gov_dbs_init(void)
--{
--	return cpufreq_register_governor(CPU_FREQ_GOV_ONDEMAND);
--}
--
--static void __exit cpufreq_gov_dbs_exit(void)
--{
--	cpufreq_unregister_governor(CPU_FREQ_GOV_ONDEMAND);
--}
--
- MODULE_AUTHOR("Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>");
- MODULE_AUTHOR("Alexey Starikovskiy <alexey.y.starikovskiy@intel.com>");
- MODULE_DESCRIPTION("'cpufreq_ondemand' - A dynamic cpufreq governor for "
-@@ -480,11 +470,9 @@ MODULE_LICENSE("GPL");
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND
- struct cpufreq_governor *cpufreq_default_governor(void)
- {
--	return CPU_FREQ_GOV_ONDEMAND;
-+	return &CPU_FREQ_GOV_ONDEMAND;
- }
--
--core_initcall(cpufreq_gov_dbs_init);
--#else
--module_init(cpufreq_gov_dbs_init);
- #endif
--module_exit(cpufreq_gov_dbs_exit);
+ void thermal_cdev_update(struct thermal_cooling_device *);
+ void thermal_notify_framework(struct thermal_zone_device *, int);
++int thermal_zone_device_enable(struct thermal_zone_device *tz);
++int thermal_zone_device_disable(struct thermal_zone_device *tz);
++int thermal_zone_device_is_enabled(struct thermal_zone_device *tz);
+ #else
+ static inline struct thermal_zone_device *thermal_zone_device_register(
+ 	const char *type, int trips, int mask, void *devdata,
+@@ -463,6 +466,16 @@ static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
+ static inline void thermal_notify_framework(struct thermal_zone_device *tz,
+ 	int trip)
+ { }
 +
-+cpufreq_governor_init(CPU_FREQ_GOV_ONDEMAND);
-+cpufreq_governor_exit(CPU_FREQ_GOV_ONDEMAND);
-diff --git a/drivers/cpufreq/cpufreq_performance.c b/drivers/cpufreq/cpufreq_performance.c
-index def9afe0f5b8..71c1d9aba772 100644
---- a/drivers/cpufreq/cpufreq_performance.c
-+++ b/drivers/cpufreq/cpufreq_performance.c
-@@ -23,16 +23,6 @@ static struct cpufreq_governor cpufreq_gov_performance = {
- 	.limits		= cpufreq_gov_performance_limits,
- };
- 
--static int __init cpufreq_gov_performance_init(void)
--{
--	return cpufreq_register_governor(&cpufreq_gov_performance);
--}
--
--static void __exit cpufreq_gov_performance_exit(void)
--{
--	cpufreq_unregister_governor(&cpufreq_gov_performance);
--}
--
- #ifdef CONFIG_CPU_FREQ_DEFAULT_GOV_PERFORMANCE
- struct cpufreq_governor *cpufreq_default_governor(void)
- {
-@@ -50,5 +40,5 @@ MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION("CPUfreq policy governor 'performance'");
- MODULE_LICENSE("GPL");
- 
--core_initcall(cpufreq_gov_performance_init);
--module_exit(cpufreq_gov_performance_exit);
-+cpufreq_governor_init(cpufreq_gov_performance);
-+cpufreq_governor_exit(cpufreq_gov_performance);
-diff --git a/drivers/cpufreq/cpufreq_powersave.c b/drivers/cpufreq/cpufreq_powersave.c
-index 1ae66019eb83..7749522355b5 100644
---- a/drivers/cpufreq/cpufreq_powersave.c
-+++ b/drivers/cpufreq/cpufreq_powersave.c
-@@ -23,16 +23,6 @@ static struct cpufreq_governor cpufreq_gov_powersave = {
- 	.owner		= THIS_MODULE,
- };
- 
--static int __init cpufreq_gov_powersave_init(void)
--{
--	return cpufreq_register_governor(&cpufreq_gov_powersave);
--}
--
--static void __exit cpufreq_gov_powersave_exit(void)
--{
--	cpufreq_unregister_governor(&cpufreq_gov_powersave);
--}
--
- MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
- MODULE_DESCRIPTION("CPUfreq policy governor 'powersave'");
- MODULE_LICENSE("GPL");
-@@ -42,9 +32,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- {
- 	return &cpufreq_gov_powersave;
- }
--
--core_initcall(cpufreq_gov_powersave_init);
--#else
--module_init(cpufreq_gov_powersave_init);
- #endif
--module_exit(cpufreq_gov_powersave_exit);
++static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
++{ return -ENODEV; }
 +
-+cpufreq_governor_init(cpufreq_gov_powersave);
-+cpufreq_governor_exit(cpufreq_gov_powersave);
-diff --git a/drivers/cpufreq/cpufreq_userspace.c b/drivers/cpufreq/cpufreq_userspace.c
-index b43e7cd502c5..50a4d7846580 100644
---- a/drivers/cpufreq/cpufreq_userspace.c
-+++ b/drivers/cpufreq/cpufreq_userspace.c
-@@ -126,16 +126,6 @@ static struct cpufreq_governor cpufreq_gov_userspace = {
- 	.owner		= THIS_MODULE,
- };
- 
--static int __init cpufreq_gov_userspace_init(void)
--{
--	return cpufreq_register_governor(&cpufreq_gov_userspace);
--}
--
--static void __exit cpufreq_gov_userspace_exit(void)
--{
--	cpufreq_unregister_governor(&cpufreq_gov_userspace);
--}
--
- MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>, "
- 		"Russell King <rmk@arm.linux.org.uk>");
- MODULE_DESCRIPTION("CPUfreq policy governor 'userspace'");
-@@ -146,9 +136,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- {
- 	return &cpufreq_gov_userspace;
- }
--
--core_initcall(cpufreq_gov_userspace_init);
--#else
--module_init(cpufreq_gov_userspace_init);
- #endif
--module_exit(cpufreq_gov_userspace_exit);
++static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
++{ return -ENODEV; }
 +
-+cpufreq_governor_init(cpufreq_gov_userspace);
-+cpufreq_governor_exit(cpufreq_gov_userspace);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index 3494f6763597..e62b022cb07e 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -577,6 +577,20 @@ unsigned int cpufreq_policy_transition_delay_us(struct cpufreq_policy *policy);
- int cpufreq_register_governor(struct cpufreq_governor *governor);
- void cpufreq_unregister_governor(struct cpufreq_governor *governor);
++static inline int
++thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
++{ return -ENODEV; }
+ #endif /* CONFIG_THERMAL */
  
-+#define cpufreq_governor_init(__governor)			\
-+static int __init __governor##_init(void)			\
-+{								\
-+	return cpufreq_register_governor(&__governor);	\
-+}								\
-+core_initcall(__governor##_init)
-+
-+#define cpufreq_governor_exit(__governor)			\
-+static void __exit __governor##_exit(void)			\
-+{								\
-+	return cpufreq_unregister_governor(&__governor);	\
-+}								\
-+module_exit(__governor##_exit)
-+
- struct cpufreq_governor *cpufreq_default_governor(void);
- struct cpufreq_governor *cpufreq_fallback_governor(void);
- 
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 7fbaee24c824..402a09af9f43 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -909,11 +909,7 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- }
- #endif
- 
--static int __init sugov_register(void)
--{
--	return cpufreq_register_governor(&schedutil_gov);
--}
--core_initcall(sugov_register);
-+cpufreq_governor_init(schedutil_gov);
- 
- #ifdef CONFIG_ENERGY_MODEL
- extern bool sched_energy_update;
+ #endif /* __THERMAL_H__ */
 -- 
-2.25.0.rc1.19.g042ed3e048af
+2.17.1
 
