@@ -2,78 +2,103 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AD48CC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1386CC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:27:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8C30A2065F
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:26:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E31792065F
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:27:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iF0bpywf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730244AbgF2T0x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 15:26:53 -0400
-Received: from foss.arm.com ([217.140.110.172]:40108 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1732409AbgF2TYz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jun 2020 15:24:55 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 24A5B13D5;
-        Mon, 29 Jun 2020 04:05:38 -0700 (PDT)
-Received: from [10.37.12.67] (unknown [10.37.12.67])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A02103F73C;
-        Mon, 29 Jun 2020 04:05:34 -0700 (PDT)
-Subject: Re: [PATCH v2 1/4] ARM: exynos: MCPM: Restore big.LITTLE cpuidle
- support
-To:     Marek Szyprowski <m.szyprowski@samsung.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org
-Cc:     Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-References: <20200629091343.GA16015@kozik-lap>
- <CGME20200629100230eucas1p1bf07ca4c84ba6be1fbdd80c45d077518@eucas1p1.samsung.com>
- <20200629100218.6267-1-m.szyprowski@samsung.com>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <1be67c26-57c2-c32d-4e32-e8389094bb59@arm.com>
-Date:   Mon, 29 Jun 2020 12:05:32 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S1729535AbgF2T1J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 15:27:09 -0400
+Received: from us-smtp-1.mimecast.com ([205.139.110.61]:27190 "EHLO
+        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732299AbgF2T1G (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:27:06 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1593458825;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:
+         content-transfer-encoding:content-transfer-encoding;
+        bh=ULeTr0SB55lWnRLDf1wo07nelEQfKeugCaPGmgEHj60=;
+        b=iF0bpywfWzf8RTRacdQLshD4hN/fw13VX8Vqbn8g0UaeFjaBLOSSbYi1MQQ237M7xfGIBs
+        S9J07UlNrOdJiWrAT7aics8y/7MDD+gelEWWAagwn8Yv8Nk3GFqAg2gFy4rmnYhAho9wBi
+        7Wxi+xbwi7QJwRctru4M6in1T4n3OZY=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-18-5TlJu8U2Nl6yNclv8OYdGQ-1; Mon, 29 Jun 2020 15:27:00 -0400
+X-MC-Unique: 5TlJu8U2Nl6yNclv8OYdGQ-1
+Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 6FFDBA0C01;
+        Mon, 29 Jun 2020 19:26:59 +0000 (UTC)
+Received: from prarit.bos.redhat.com (prarit-guest.7a2m.lab.eng.bos.redhat.com [10.16.222.26])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id EC68C19C71;
+        Mon, 29 Jun 2020 19:26:58 +0000 (UTC)
+From:   Prarit Bhargava <prarit@redhat.com>
+To:     linux-kernel@vger.kernel.org
+Cc:     Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>,
+        linux-pm@vger.kernel.org,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH] turbostat: Use sched_getcpu() instead of hardcoded cpu 0
+Date:   Mon, 29 Jun 2020 15:26:57 -0400
+Message-Id: <20200629192657.34045-1-prarit@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20200629100218.6267-1-m.szyprowski@samsung.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Disabling cpu 0 results in an error
 
+turbostat: /sys/devices/system/cpu/cpu0/topology/thread_siblings: open failed: No such file or directory
 
-On 6/29/20 11:02 AM, Marek Szyprowski wrote:
-> Call exynos_cpu_power_up(cpunr) unconditionally. This is needed by the
-> big.LITTLE cpuidle driver and has no side-effects on other code paths.
-> 
-> The additional soft-reset call during little core power up has been added
-> to properly boot all cores on the Exynos5422-based boards with secure
-> firmware (like Odroid XU3/XU4 family). This however broke big.LITTLE
-> CPUidle driver, which worked only on boards without secure firmware (like
-> Peach-Pit/Pi Chromebooks). Apply the workaround only when board is
-> running under secure firmware.
-> 
-> Fixes: 833b5794e330 ("ARM: EXYNOS: reset Little cores when cpu is up")
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
-> ---
-> v2:
-> - adjusted patch subject to better describe the change
-> - added a comment about exynos_cpu_power_up(cpunr) call
-> ---
+Use sched_getcpu() instead of a hardcoded cpu 0 to get the max cpu number.
 
+Signed-off-by: Prarit Bhargava <prarit@redhat.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ tools/power/x86/turbostat/turbostat.c | 13 ++++++++++---
+ 1 file changed, 10 insertions(+), 3 deletions(-)
 
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 33b370865d16..2d3a3012f2f8 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -2769,12 +2769,19 @@ void re_initialize(void)
+ void set_max_cpu_num(void)
+ {
+ 	FILE *filep;
++	int base_cpu;
+ 	unsigned long dummy;
++	char pathname[64];
+ 
++	base_cpu = sched_getcpu();
++	if (base_cpu < 0)
++		err(1, "cannot find calling cpu ID");
++	sprintf(pathname,
++		"/sys/devices/system/cpu/cpu%d/topology/thread_siblings",
++		base_cpu);
++
++	filep = fopen_or_die(pathname, "r");
+ 	topo.max_cpu_num = 0;
+-	filep = fopen_or_die(
+-			"/sys/devices/system/cpu/cpu0/topology/thread_siblings",
+-			"r");
+ 	while (fscanf(filep, "%lx,", &dummy) == 1)
+ 		topo.max_cpu_num += BITMASK_SIZE;
+ 	fclose(filep);
+-- 
+2.21.3
 
-Regards,
-Lukasz
