@@ -2,191 +2,307 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93B8EC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 54905C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:35:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E621206E2
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:33:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2A9A5206E2
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:35:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="fT+8AMMF"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="fwysWZyO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733250AbgF2Tc6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 15:32:58 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:46845 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733239AbgF2Tcz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:32:55 -0400
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20200629085429euoutp027a33e7663936a2d00d88ed35f17a4239~c99aPp5Ye1661516615euoutp02S
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 08:54:29 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20200629085429euoutp027a33e7663936a2d00d88ed35f17a4239~c99aPp5Ye1661516615euoutp02S
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1593420869;
-        bh=YlAFohUClF6fXd9Dd0WUGQ39SkUErpo90z0R/My8u0w=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=fT+8AMMFythHZpx3OevJ8MdbaSfAPtxjjVekgXURjd7WwZlF1GDYUHBEjFrSuSfK4
-         PLzNnCVgENjcGmdtWlE4fFI5ziSTQm/JoZpsKznJyxd8ybkXLdjaipiH6WFssWer8j
-         rD9YNw8EPO1GC5sJckS8SXwrZL62HJZfd+6pPT9A=
-Received: from eusmges3new.samsung.com (unknown [203.254.199.245]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20200629085428eucas1p2111bbe24e970e591af3dadf6bcb6a6e6~c99Z9vbJD1440114401eucas1p2R;
-        Mon, 29 Jun 2020 08:54:28 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges3new.samsung.com (EUCPMTA) with SMTP id E9.AE.06318.44CA9FE5; Mon, 29
-        Jun 2020 09:54:28 +0100 (BST)
-Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200629085428eucas1p11249d948db0ab18926cab2c859422185~c99Zl_V6R3114531145eucas1p1T;
-        Mon, 29 Jun 2020 08:54:28 +0000 (GMT)
-Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20200629085428eusmtrp20b44aad88d63ca89afa48378554e93d2~c99ZlTwRv2274322743eusmtrp2i;
-        Mon, 29 Jun 2020 08:54:28 +0000 (GMT)
-X-AuditID: cbfec7f5-38bff700000018ae-7e-5ef9ac44d5d3
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id C3.04.06017.44CA9FE5; Mon, 29
-        Jun 2020 09:54:28 +0100 (BST)
-Received: from [106.210.88.143] (unknown [106.210.88.143]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20200629085427eusmtip2a88a5e0777a651a80ac1492da2899afd~c99ZDb4Vi0269702697eusmtip20;
-        Mon, 29 Jun 2020 08:54:27 +0000 (GMT)
-Subject: Re: [PATCH 1/4] ARM: exynos: Apply little core workaround only
- under secure firmware
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-From:   Marek Szyprowski <m.szyprowski@samsung.com>
-Message-ID: <96d7f0f2-63c0-8c8d-5a79-ba27295b389a@samsung.com>
-Date:   Mon, 29 Jun 2020 10:54:27 +0200
-User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
-        Thunderbird/68.9.0
+        id S1733126AbgF2TbT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 15:31:19 -0400
+Received: from smtp-fw-33001.amazon.com ([207.171.190.10]:24916 "EHLO
+        smtp-fw-33001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733121AbgF2TbT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:31:19 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1593459079; x=1624995079;
+  h=date:from:to:cc:message-id:references:mime-version:
+   content-transfer-encoding:in-reply-to:subject;
+  bh=kLlA5RN03Xc0rLgTC7sQtfZJgq55+f+4l+tD0cUCuiI=;
+  b=fwysWZyOGX9AZo0dlJ1nlNRQ9HtaDMG5EsBYV/sZi9Z22ovmVsjIiVcu
+   NRQ0ZJwVSA/dPCJLSm9pM8SoJ1bRgzPAwq/TCEEvffyujWRr0xAQfNyLM
+   lI/RsmIgu+PwPxf4tmqhVyUpSuQOT4fo/E1d1w34mQwLBStsGNMezjUnt
+   w=;
+IronPort-SDR: TFk9Ap13BSopn0WzM+ofsaWep3goJJ1oYevrRH/gIxCL0UUWZBH5DxVgfAHkikcgrsKcEgr33D
+ uj0sRPYPNVsQ==
+X-IronPort-AV: E=Sophos;i="5.75,295,1589241600"; 
+   d="scan'208";a="54787643"
+Subject: Re: [PATCH 06/12] xen-blkfront: add callbacks for PM suspend and hibernation]
+Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-2a-6e2fc477.us-west-2.amazon.com) ([10.47.23.38])
+  by smtp-border-fw-out-33001.sea14.amazon.com with ESMTP; 29 Jun 2020 19:20:55 +0000
+Received: from EX13MTAUEE002.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan2.pdx.amazon.com [10.170.41.162])
+        by email-inbound-relay-2a-6e2fc477.us-west-2.amazon.com (Postfix) with ESMTPS id 942DDA2269;
+        Mon, 29 Jun 2020 19:20:53 +0000 (UTC)
+Received: from EX13D08UEE004.ant.amazon.com (10.43.62.182) by
+ EX13MTAUEE002.ant.amazon.com (10.43.62.24) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Mon, 29 Jun 2020 19:20:35 +0000
+Received: from EX13MTAUEE002.ant.amazon.com (10.43.62.24) by
+ EX13D08UEE004.ant.amazon.com (10.43.62.182) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Mon, 29 Jun 2020 19:20:35 +0000
+Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
+ (172.22.96.68) by mail-relay.amazon.com (10.43.62.224) with Microsoft SMTP
+ Server id 15.0.1497.2 via Frontend Transport; Mon, 29 Jun 2020 19:20:35 +0000
+Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
+        id 5419940348; Mon, 29 Jun 2020 19:20:35 +0000 (UTC)
+Date:   Mon, 29 Jun 2020 19:20:35 +0000
+From:   Anchal Agarwal <anchalag@amazon.com>
+To:     Roger Pau =?iso-8859-1?Q?Monn=E9?= <roger.pau@citrix.com>
+CC:     Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "bp@alien8.de" <bp@alien8.de>, "hpa@zytor.com" <hpa@zytor.com>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "jgross@suse.com" <jgross@suse.com>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>,
+        "Kamata, Munehisa" <kamatam@amazon.com>,
+        "sstabellini@kernel.org" <sstabellini@kernel.org>,
+        "konrad.wilk@oracle.com" <konrad.wilk@oracle.com>,
+        "axboe@kernel.dk" <axboe@kernel.dk>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "len.brown@intel.com" <len.brown@intel.com>,
+        "pavel@ucw.cz" <pavel@ucw.cz>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "Valentin, Eduardo" <eduval@amazon.com>,
+        "Singh, Balbir" <sblbir@amazon.com>,
+        "xen-devel@lists.xenproject.org" <xen-devel@lists.xenproject.org>,
+        "vkuznets@redhat.com" <vkuznets@redhat.com>,
+        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "Woodhouse, David" <dwmw@amazon.co.uk>,
+        "benh@kernel.crashing.org" <benh@kernel.crashing.org>
+Message-ID: <20200629192035.GA13195@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+References: <7FD7505E-79AA-43F6-8D5F-7A2567F333AB@amazon.com>
+ <20200604070548.GH1195@Air-de-Roger>
+ <20200616214925.GA21684@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <20200617083528.GW735@Air-de-Roger>
+ <20200619234312.GA24846@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <20200622083846.GF735@Air-de-Roger>
+ <20200623004314.GA28586@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <20200623081903.GP735@Air-de-Roger>
+ <20200625183659.GA26586@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <20200626091239.GA735@Air-de-Roger>
 MIME-Version: 1.0
-In-Reply-To: <20200622171904.GA4174@kozik-lap>
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrMKsWRmVeSWpSXmKPExsWy7djP87oua37GGTTc1LLYOGM9q8W8z7IW
-        589vYLfY9Pgaq8Xn3iOMFjPO72OyePP7BbvFwqYWdgcOjzXz1jB6bFrVyeZx59oeNo/NS+o9
-        +rasYvT4vEkugC2KyyYlNSezLLVI3y6BK+PMti2MBackK96e2sHcwPhSpIuRg0NCwETiztXI
-        LkYuDiGBFYwSj2dsY4FwvjBK/F96hx3C+cwoMe/XMiCHE6zj8swdTBCJ5YwS06+dYYNw3jNK
-        3D1ziBmkSlggXmL1lA5mkB0iAj4SbS1ZIDXMAn8YJX5NbWACqWETMJToetvFBmLzCthJnHyy
-        nhXEZhFQlbg9/wEjiC0qECvRt3QBVI2gxMmZT1hAbE4BPYmZX26A1TALyEtsfzuHGcIWl7j1
-        ZD7YdRIC+9gldsz9xQZxtotE15xmZghbWOLV8S1Q78hI/N8J09DMKPHw3Fp2CKeHUeJy0wxG
-        iCpriTvnQCZxAK3QlFi/Sx8i7Cixe9E5JkhI8knceCsIcQSfxKRt05khwrwSHW1CENVqErOO
-        r4Nbe/DCJeYJjEqzkLw2C8k7s5C8Mwth7wJGllWM4qmlxbnpqcXGeanlesWJucWleel6yfm5
-        mxiBSen0v+NfdzDu+5N0iFGAg1GJh9fh4o84IdbEsuLK3EOMEhzMSiK8TmdPxwnxpiRWVqUW
-        5ccXleakFh9ilOZgURLnNV70MlZIID2xJDU7NbUgtQgmy8TBKdXAmCty/mJTQNuFdaH7cic2
-        ZDuw1HVE3pu7bssO1976r44mvyqSN0XtXzFBr1x924Y/l/YoF/10S5Fz70ssyL8T0Bijl3tZ
-        fA4XX/dXgTzTJF0ZZTY7OZva3bMsLLP7WBXYPBc89LrNYc66WfGq5/Id9u3Xv9V6l218/MD9
-        8KXZ/SXy867VTNivxFKckWioxVxUnAgAib+VuEYDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrCIsWRmVeSWpSXmKPExsVy+t/xe7oua37GGby9KmCxccZ6Vot5n2Ut
-        zp/fwG6x6fE1VovPvUcYLWac38dk8eb3C3aLhU0t7A4cHmvmrWH02LSqk83jzrU9bB6bl9R7
-        9G1ZxejxeZNcAFuUnk1RfmlJqkJGfnGJrVK0oYWRnqGlhZ6RiaWeobF5rJWRqZK+nU1Kak5m
-        WWqRvl2CXsaZbVsYC05JVrw9tYO5gfGlSBcjJ4eEgInE5Zk7mLoYuTiEBJYySsz+vJkZIiEj
-        cXJaAyuELSzx51oXG4gtJPCWUWJKW3kXIweHsEC8xOGVoiCmiICPRFtLFsgYZoF/jBLnF+5m
-        g5g5i0ni8fLzYDPZBAwlut5CzOEVsJM4+WQ92HwWAVWJ2/MfMILYogKxEt/ubYGqEZQ4OfMJ
-        C4jNKaAnMfPLDbAaZgEziXmbHzJD2PIS29/OgbLFJW49mc80gVFoFpL2WUhaZiFpmYWkZQEj
-        yypGkdTS4tz03GIjveLE3OLSvHS95PzcTYzAGNx27OeWHYxd74IPMQpwMCrx8Dpc/BEnxJpY
-        VlyZe4hRgoNZSYTX6ezpOCHelMTKqtSi/Pii0pzU4kOMpkDPTWSWEk3OB6aHvJJ4Q1NDcwtL
-        Q3Njc2MzCyVx3g6BgzFCAumJJanZqakFqUUwfUwcnFINjFcY2ozDDhozO2Z0zD257iFXXEDW
-        4mD+YxuS/v9K+qIbVbDNrrVOhGOhwTaRxkvGDEGLGCX+BjFyRYVILs093bC6j/eOwOb1qsU/
-        bwtzV19e7qrs+c/qzsSH11xjj/1U3mLZJ+e5lbX/zOXTB/ZJ3/28+ZIn48N2pp8+N4pVOxbq
-        VWqaXj+3RImlOCPRUIu5qDgRAKzpzFXXAgAA
-X-CMS-MailID: 20200629085428eucas1p11249d948db0ab18926cab2c859422185
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20200616081249eucas1p151a8892ca0abfa3108955e1fc5054fc3
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20200616081249eucas1p151a8892ca0abfa3108955e1fc5054fc3
-References: <20200616081230.31198-1-m.szyprowski@samsung.com>
-        <CGME20200616081249eucas1p151a8892ca0abfa3108955e1fc5054fc3@eucas1p1.samsung.com>
-        <20200616081230.31198-2-m.szyprowski@samsung.com>
-        <1f59ab26-94e8-6ee8-48f9-568cf1a0edfa@arm.com>
-        <20200622171904.GA4174@kozik-lap>
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200626091239.GA735@Air-de-Roger>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
-
-On 22.06.2020 19:19, Krzysztof Kozlowski wrote:
-> On Wed, Jun 17, 2020 at 05:26:58PM +0100, Lukasz Luba wrote:
->> I've give it a try with hotplug torture tests and has only one a minor
->> comment.
->>
->> On 6/16/20 9:12 AM, Marek Szyprowski wrote:
->>> The additional soft-reset call during little core power up was needed
->>> to properly boot all cores on the Exynos5422-based boards with secure
->>> firmware (like Odroid XU3/XU4 family). This however broke big.LITTLE
->>> CPUidle driver, which worked only on boards without secure firmware
->>> (like Peach-Pit/Pi Chromebooks).
->>>
->>> Apply the workaround only when board is running under secure firmware.
->>>
->>> Fixes: 833b 5794 e330 ("ARM: EXYNOS: reset Little cores when cpu is up")
-> Fix the Fixes tag (in case of resend, otherwise I'll do it).
+On Fri, Jun 26, 2020 at 11:12:39AM +0200, Roger Pau Monné wrote:
+> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> 
+> 
+> 
+> On Thu, Jun 25, 2020 at 06:36:59PM +0000, Anchal Agarwal wrote:
+> > On Tue, Jun 23, 2020 at 10:19:03AM +0200, Roger Pau Monné wrote:
+> > > CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > >
+> > >
+> > >
+> > > On Tue, Jun 23, 2020 at 12:43:14AM +0000, Anchal Agarwal wrote:
+> > > > On Mon, Jun 22, 2020 at 10:38:46AM +0200, Roger Pau Monné wrote:
+> > > > > CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > > > >
+> > > > >
+> > > > >
+> > > > > On Fri, Jun 19, 2020 at 11:43:12PM +0000, Anchal Agarwal wrote:
+> > > > > > On Wed, Jun 17, 2020 at 10:35:28AM +0200, Roger Pau Monné wrote:
+> > > > > > > CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > > > > > >
+> > > > > > >
+> > > > > > >
+> > > > > > > On Tue, Jun 16, 2020 at 09:49:25PM +0000, Anchal Agarwal wrote:
+> > > > > > > > On Thu, Jun 04, 2020 at 09:05:48AM +0200, Roger Pau Monné wrote:
+> > > > > > > > > CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > > > > > > > > On Wed, Jun 03, 2020 at 11:33:52PM +0000, Agarwal, Anchal wrote:
+> > > > > > > > > >  CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > > > > > > > > >     > +             xenbus_dev_error(dev, err, "Freezing timed out;"
+> > > > > > > > > >     > +                              "the device may become inconsistent state");
+> > > > > > > > > >
+> > > > > > > > > >     Leaving the device in this state is quite bad, as it's in a closed
+> > > > > > > > > >     state and with the queues frozen. You should make an attempt to
+> > > > > > > > > >     restore things to a working state.
+> > > > > > > > > >
+> > > > > > > > > > You mean if backend closed after timeout? Is there a way to know that? I understand it's not good to
+> > > > > > > > > > leave it in this state however, I am still trying to find if there is a good way to know if backend is still connected after timeout.
+> > > > > > > > > > Hence the message " the device may become inconsistent state".  I didn't see a timeout not even once on my end so that's why
+> > > > > > > > > > I may be looking for an alternate perspective here. may be need to thaw everything back intentionally is one thing I could think of.
+> > > > > > > > >
+> > > > > > > > > You can manually force this state, and then check that it will behave
+> > > > > > > > > correctly. I would expect that on a failure to disconnect from the
+> > > > > > > > > backend you should switch the frontend to the 'Init' state in order to
+> > > > > > > > > try to reconnect to the backend when possible.
+> > > > > > > > >
+> > > > > > > > From what I understand forcing manually is, failing the freeze without
+> > > > > > > > disconnect and try to revive the connection by unfreezing the
+> > > > > > > > queues->reconnecting to backend [which never got diconnected]. May be even
+> > > > > > > > tearing down things manually because I am not sure what state will frontend
+> > > > > > > > see if backend fails to to disconnect at any point in time. I assumed connected.
+> > > > > > > > Then again if its "CONNECTED" I may not need to tear down everything and start
+> > > > > > > > from Initialising state because that may not work.
+> > > > > > > >
+> > > > > > > > So I am not so sure about backend's state so much, lets say if  xen_blkif_disconnect fail,
+> > > > > > > > I don't see it getting handled in the backend then what will be backend's state?
+> > > > > > > > Will it still switch xenbus state to 'Closed'? If not what will frontend see,
+> > > > > > > > if it tries to read backend's state through xenbus_read_driver_state ?
+> > > > > > > >
+> > > > > > > > So the flow be like:
+> > > > > > > > Front end marks XenbusStateClosing
+> > > > > > > > Backend marks its state as XenbusStateClosing
+> > > > > > > >     Frontend marks XenbusStateClosed
+> > > > > > > >     Backend disconnects calls xen_blkif_disconnect
+> > > > > > > >        Backend fails to disconnect, the above function returns EBUSY
+> > > > > > > >        What will be state of backend here?
+> > > > > > >
+> > > > > > > Backend should stay in state 'Closing' then, until it can finish
+> > > > > > > tearing down.
+> > > > > > >
+> > > > > > It disconnects the ring after switching to connected state too.
+> > > > > > > >        Frontend did not tear down the rings if backend does not switches the
+> > > > > > > >        state to 'Closed' in case of failure.
+> > > > > > > >
+> > > > > > > > If backend stays in CONNECTED state, then even if we mark it Initialised in frontend, backend
+> > > > > > >
+> > > > > > > Backend will stay in state 'Closing' I think.
+> > > > > > >
+> > > > > > > > won't be calling connect(). {From reading code in frontend_changed}
+> > > > > > > > IMU, Initialising will fail since backend dev->state != XenbusStateClosed plus
+> > > > > > > > we did not tear down anything so calling talk_to_blkback may not be needed
+> > > > > > > >
+> > > > > > > > Does that sound correct?
+> > > > > > >
+> > > > > > > I think switching to the initial state in order to try to attempt a
+> > > > > > > reconnection would be our best bet here.
+> > > > > > >
+> > > > > > It does not seems to work correctly, I get hung tasks all over and all the
+> > > > > > requests to filesystem gets stuck. Backend does shows the state as connected
+> > > > > > after xenbus_dev_suspend fails but I think there may be something missing.
+> > > > > > I don't seem to get IO interrupts thereafter i.e hitting the function blkif_interrupts.
+> > > > > > I think just marking it initialised may not be the only thing.
+> > > > > > Here is a short description of what I am trying to do:
+> > > > > > So, on timeout:
+> > > > > >     Switch XenBusState to "Initialized"
+> > > > > >     unquiesce/unfreeze the queues and return
+> > > > > >     mark info->connected = BLKIF_STATE_CONNECTED
+> > > > >
+> > > > > If xenbus state is Initialized isn't it wrong to set info->connected
+> > > > > == CONNECTED?
+> > > > >
+> > > > Yes, you are right earlier I was marking it explicitly but that was not right,
+> > > > the connect path for blkfront will do that.
+> > > > > You should tear down all the internal state (like a proper close)?
+> > > > >
+> > > > Isn't that similar to disconnecting in the first place that failed during
+> > > > freeze? Do you mean re-try to close but this time re-connect after close
+> > > > basically do everything you would at "restore"?
+> > >
+> > > Last time I checked blkfront supported reconnections (ie: disconnect
+> > > from a backend and connect again). I was assuming we could apply the
+> > > same here on timeout, and just follow the same path where the frontend
+> > > waits indefinitely for the backend to close and then attempts to
+> > > reconnect.
+> > >
+> > > > Also, I experimented with that and it works intermittently. I want to take a
+> > > > step back on this issue and ask few questions here:
+> > > > 1. Is fixing this recovery a blocker for me sending in a V2 version?
+> > >
+> > > At the end of day it's your feature. I would certainly prefer for it
+> > > to work as good as possible, this being a recovery in case of failure
+> > > just make sure it does something sane (ie: crash/close the frontend)
+> > > and add a TODO note.
+> > >
+> > > > 2. In our 2-3 years of supporting this feature at large scale we haven't seen this issue
+> > > > where backend fails to disconnect. What we are trying to do here is create a
+> > > > hypothetical situation where we leave backend in Closing state and try and see how it
+> > > > recovers. The reason why I think it "may not" occur and the timeout of 5HZ is
+> > > > sufficient is because we haven't come across even a single use-case where it
+> > > > caused hibernation to fail.
+> > > > The reason why I think "it may" occur is if we are running a really memory
+> > > > intensive workload and ring is busy and is unable to complete all the requests
+> > > > in the given timeout. This is very unlikely though.
+> > >
+> > > As said above I would generally prefer for code to handle possible
+> > > failures the best way, and hence I think here it would be nice to
+> > > fallback to the normal disconnect path and just wait for the backend
+> > > to close.
+> > >
+> > Do you mind throwing some light in here, what that path may be, if its
+> > straight forward to fix I would like to debug it a bit more. May be I am
+> > missing some of the context here.
+> 
+> So the frontend should do:
+> 
+> - Switch to Closed state (and cleanup everything required).
+> - Wait for backend to switch to Closed state (must be done
+>   asynchronously, handled in blkback_changed).
+> - Switch frontend to XenbusStateInitialising, that will in turn force
+>   the backend to switch to XenbusStateInitWait.
+> - After that it should just follow the normal connection procedure.
+> 
+> I think the part that's missing is the frontend doing the state change
+> to XenbusStateInitialising when the backend switches to the Closed
+> state.
+> 
+> > I was of the view we may just want to mark frontend closed which should do
+> > the job of freeing resources and then following the same flow as
+> > blkfront_restore. That does not seems to work correctly 100% of the time.
+> 
+> I think the missing part is that you must wait for the backend to
+> switch to the Closed state, or else the switch to
+> XenbusStateInitialising won't be picked up correctly by the backend
+> (because it's still doing it's cleanup).
+> 
+> Using blkfront_restore might be an option, but you need to assert the
+> backend is in the initial state before using that path.
 >
->>> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
->>> ---
->>>    arch/arm/mach-exynos/mcpm-exynos.c | 10 +++++++---
->>>    1 file changed, 7 insertions(+), 3 deletions(-)
->>>
->>> diff --git a/arch/arm/mach-exynos/mcpm-exynos.c b/arch/arm/mach-exynos/mcpm-exynos.c
->>> index 9a681b421ae1..cd861c57d5ad 100644
->>> --- a/arch/arm/mach-exynos/mcpm-exynos.c
->>> +++ b/arch/arm/mach-exynos/mcpm-exynos.c
->>> @@ -26,6 +26,7 @@
->>>    #define EXYNOS5420_USE_L2_COMMON_UP_STATE	BIT(30)
->>>    static void __iomem *ns_sram_base_addr __ro_after_init;
->>> +static bool secure_firmware __ro_after_init;
->>>    /*
->>>     * The common v7_exit_coherency_flush API could not be used because of the
->>> @@ -58,15 +59,16 @@ static void __iomem *ns_sram_base_addr __ro_after_init;
->>>    static int exynos_cpu_powerup(unsigned int cpu, unsigned int cluster)
->>>    {
->>>    	unsigned int cpunr = cpu + (cluster * EXYNOS5420_CPUS_PER_CLUSTER);
->>> +	bool state;
->>>    	pr_debug("%s: cpu %u cluster %u\n", __func__, cpu, cluster);
->>>    	if (cpu >= EXYNOS5420_CPUS_PER_CLUSTER ||
->>>    		cluster >= EXYNOS5420_NR_CLUSTERS)
->>>    		return -EINVAL;
->>> -	if (!exynos_cpu_power_state(cpunr)) {
->>> -		exynos_cpu_power_up(cpunr);
->>> -
->>> +	state = exynos_cpu_power_state(cpunr);
->>> +	exynos_cpu_power_up(cpunr);
->> I can see that you have moved this call up, probably to avoid more
->> 'if-else' stuff. I just wanted to notify you that this function
->> 'exynos_cpu_powerup' is called twice when cpu is going up:
->> 1. by the already running cpu i.e. CPU0 and the 'state' is 0 for i.e.
->> CPU2
->> 2. by the newly starting cpu i.e. CPU2 by running
->> 'secondary_start_kernel' and the state is 3.
->>
->> In this scenario the 'exynos_cpu_power_up' will be called twice.
->> I have checked in hotplug that this is not causing any issues, but
->> thought maybe it's worth share it with you. Maybe you can double check
->> in TRM that this is not causing anything.
-> This brings the old code, before 833b5794e33. I wonder why? I understood
-> that only soft-reset should be skipped.
+Yes, I agree and I make sure that XenbusStateInitialising only triggers
+on frontend once backend is disconnected. msleep in a loop not that graceful but
+works.
+Frontend only switches to XenbusStateInitialising once it sees backend
+as Closed. The issue here is and may require more debugging is:
+1. Hibernate instance->Closing failed, artificially created situation by not
+marking frontend Closed in the first place during freezing.
+2. System comes back up fine restored to 'backend connected'.
+3. Re-run (1) again without reboot
+4. (4) fails to recover basically freezing does not fail at all which is weird
+   because it should timeout as it passes through same path. It hits a BUG in
+   talk_to_blkback() and instance crashes.
 
-Because otherwise the Peach boards hangs during the cpuidle. I didn't 
-analyze the code that much to judge if it is really necessary in all 
-cases, I only restored what worked initially. I can add a comment about 
-that to the commit log if needed.
-
-Best regards
--- 
-Marek Szyprowski, PhD
-Samsung R&D Institute Poland
-
+Anyways just wanted to paint out a picture that there may be something more
+happening here which needs a persistent debugging. 
+> > > You likely have this very well tuned to your own environment and
+> > > workloads, since this will now be upstream others might have more
+> > > contended systems where it could start to fail.
+> > >
+> > I agree, however, this is also from the testing I did with 100 of runs
+> > outside of EC2 running few tests of my own.
+> > > > 3) Also, I do not think this may be straight forward to fix and expect
+> > > > hibernation to work flawlessly in subsequent invocations. I am open to
+> > > > all suggestions.
+> > >
+> > > Right, adding a TODO would seem appropriate then.
+> > >
+> > Just to double check, I will send in a V2 with this marked as TO-DO?
+> 
+> I think that's fine. Please clearly describe what's missing, so
+> others know what they might have to implement.
+> 
+Ack.
+> Thanks, Roger.
+> 
+Thanks,
+Anchal
