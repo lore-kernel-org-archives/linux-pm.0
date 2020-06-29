@@ -2,127 +2,135 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70932C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:23:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D4954C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:25:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4F2D9214F1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:23:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="L59tg5R5";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="nAkF6yhg"
+	by mail.kernel.org (Postfix) with ESMTP id BD950214F1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:25:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388593AbgF2VWq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 17:22:46 -0400
-Received: from new4-smtp.messagingengine.com ([66.111.4.230]:56115 "EHLO
-        new4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729599AbgF2Sv1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:51:27 -0400
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-        by mailnew.nyi.internal (Postfix) with ESMTP id 4180D5805B9;
-        Mon, 29 Jun 2020 11:10:26 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute4.internal (MEProxy); Mon, 29 Jun 2020 11:10:26 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm3; bh=Hxhkhq+OJaiV71iJYRzqwDQRWMP
-        lO3tU/YNo9PNyFWw=; b=L59tg5R5bevKZc84RIvc0helt7vmNIAEH38i2QB1XMT
-        b+bvaQ9CmUPwo3kdql/EBZ4VCtVV1QnqMvxyUjCYjpaz78RcMv8miXu7ORnmnUtv
-        L8zfbg7fUydU40GNBkWUxnjPn8+kH4yHQAR8cVTkT1vJludnJdbQ+joYW6Z/HQE7
-        GRXur2g4BN77wqZ7NtPGeTrDfR0UsZu2iklA51UfqC7ExQyQQO3W7pklcmbM41AI
-        C6O1ics0CTGT6isbqj8aRbp4FP89ys+HTBTLbflQ/8vsMfFqC8l8aa6HY8I0yG04
-        Bpxg0GWa1dhlrJpDwgz50rPVMaK46pxn+uV0AY55u2g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=Hxhkhq
-        +OJaiV71iJYRzqwDQRWMPlO3tU/YNo9PNyFWw=; b=nAkF6yhg3rQUDL/mCU5jnu
-        8UPqsE7wUfX7V3uGL3rr4mPX6whwDnfrRqwbh24M11e5HdpLUVb8T2dH094VSvp2
-        PiiDhZUtiwg1OJD1h5nLNgo9w7AIJzT3e3f2apisRR3qMMFf1SB//vcluirG0ihq
-        NwdD5/waaeKkQ3jSzNgXI9y4rCl7YjbyW4uE5oY6cFJ8iZ/w7FtHvPuR7hYU2NyV
-        PNz3+f9Basv2n0Hz59i3hc1U5SUH1zmRSiqOlu30OMILDXwQa9XLniGmywJ6vIUD
-        4HL6TOGVX3TVMVnZylKUIobz1RiIMNe8AyzAgOoT+4pRuFban4XMPP/PeHh/Viyg
-        ==
-X-ME-Sender: <xms:XwT6XtGAgBPd66aW1ODh3bC86gKgq77_QlvHMJXeULQbYFpfTpJQBg>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduhedrudelledgudefucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
-    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
-    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
-    gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgeptdenuc
-    frrghrrghmpehmrghilhhfrhhomhepmhgrgihimhgvsegtvghrnhhordhtvggthh
-X-ME-Proxy: <xmx:XwT6XiW7FAivTiFvb3h20qdKxf2QJtljVBlnkl1xOne5QCs7GPWNNQ>
-    <xmx:XwT6XvJEc6Tom1XR59v0Yx4tYDbAjWTn_qMDNvGm9abYFecs3V3diw>
-    <xmx:XwT6XjEzAUUf3suWBkgCWhg5zVSj3jT6oCAiLOU8dS6hMBt8lAGlHg>
-    <xmx:YgT6XpFXQ5Vpr9ZxMb2KKD5heeJbV2_CcxnA0X1o3-1TUcPoUWmNFw>
-Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 5B04F3067CA9;
-        Mon, 29 Jun 2020 11:10:23 -0400 (EDT)
-Date:   Mon, 29 Jun 2020 17:10:22 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Frank Lee <frank@allwinnertech.com>
-Cc:     robh+dt@kernel.org, wens@csie.org, mturquette@baylibre.com,
-        sboyd@kernel.org, srinivas.kandagatla@linaro.org,
-        linus.walleij@linaro.org, anarsoul@gmail.com,
-        tiny.windzz@gmail.com, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
-        p.zabel@pengutronix.de, clabbe@baylibre.com, icenowy@aosc.io,
-        megous@megous.com, karlp@tweak.net.au, bage@linutronix.de,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-pm@vger.kernel.org,
-        huangshuosheng@allwinnertech.com, liyong@allwinnertech.com
-Subject: Re: [PATCH v2 08/11] thermal: sun8i: Add A100's THS controller
- support
-Message-ID: <20200629151022.e23hqixsx3b5vsxd@gilmour.lan>
-References: <20200622025907.32574-1-frank@allwinnertech.com>
- <20200622025907.32574-9-frank@allwinnertech.com>
+        id S1729363AbgF2SuH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 14:50:07 -0400
+Received: from foss.arm.com ([217.140.110.172]:36234 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729000AbgF2SuA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jun 2020 14:50:00 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 125D91435;
+        Mon, 29 Jun 2020 04:41:59 -0700 (PDT)
+Received: from [10.37.12.67] (unknown [10.37.12.67])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5DA9D3F73C;
+        Mon, 29 Jun 2020 04:41:56 -0700 (PDT)
+Subject: Re: brocken devfreq simple_ondemand for Odroid XU3/4?
+To:     Sylwester Nawrocki <s.nawrocki@samsung.com>
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Willy Wolff <willy.mh.wolff.ml@gmail.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20200623164733.qbhua7b6cg2umafj@macmini.local>
+ <CAJKOXPeLuq81NC2xZh3y32EB-_APbDAchZD4OW_eCgQKKO+p8w@mail.gmail.com>
+ <20200623191129.GA4171@kozik-lap>
+ <CGME20200624103308eucas1p188a5fe3cee1916d9430c9971c2dab3a3@eucas1p1.samsung.com>
+ <85f5a8c0-7d48-f2cd-3385-c56d662f2c88@arm.com>
+ <ef5184ed-00ff-4226-5ece-b0fc8eb16fb6@samsung.com>
+ <4a72fcab-e8da-8323-1fbe-98a6a4b3e0f1@arm.com>
+ <708feba7-6b11-4943-1073-a1b5e54b6283@samsung.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <cf460cc5-dbb1-efeb-3021-622ee5b0be45@arm.com>
+Date:   Mon, 29 Jun 2020 12:41:54 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="ylwydmatvahcimwd"
-Content-Disposition: inline
-In-Reply-To: <20200622025907.32574-9-frank@allwinnertech.com>
+In-Reply-To: <708feba7-6b11-4943-1073-a1b5e54b6283@samsung.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---ylwydmatvahcimwd
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jun 22, 2020 at 10:59:04AM +0800, Frank Lee wrote:
-> This patch add thermal sensor controller support for A100,
-> which is similar to the previous ones.
->=20
-> Signed-off-by: Frank Lee <frank@allwinnertech.com>
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+On 6/26/20 6:50 PM, Sylwester Nawrocki wrote:
+> Hi Lukasz,
+> 
+> On 25.06.2020 12:02, Lukasz Luba wrote:
+>> Regarding the 'performance counters overflow interrupts' there is one
+>> thing worth to keep in mind: variable utilization and frequency.
+>> For example, in order to make a conclusion in algorithm deciding that
+>> the device should increase or decrease the frequency, we fix the period
+>> of observation, i.e. to 500ms. That can cause the long delay if the
+>> utilization of the device suddenly drops. For example we set an
+>> overflow threshold to value i.e. 1000 and we know that at 1000MHz
+>> and full utilization (100%) the counter will reach that threshold
+>> after 500ms (which we want, because we don't want too many interrupts
+>> per sec). What if suddenly utilization drops to 2% (i.e. from 5GB/s
+>> to 250MB/s (what if it drops to 25MB/s?!)), the counter will reach the
+>> threshold after 50*500ms = 25s. It is impossible just for the counters
+>> to predict next utilization and adjust the threshold.
+> 
+> Agreed, that's in case when we use just the performance counter (PMCNT)
+> overflow interrupts. In my experiments I used the (total) cycle counter
+> (CCNT) overflow interrupts. As that counter is clocked with fixed rate
+> between devfreq updates it can be used as a timer by pre-loading it with
+> initial value depending on current bus frequency. But we could as well
+> use some reliable system timer mechanism to generate periodic events.
+> I was hoping to use the cycle counter to generate low frequency monitor
+> events and the actual performance counters overflow interrupts to detect
+> any sudden changes of utilization. However, it seems it cannot be done
+> with as simple performance counters HW architecture as on Exynos4412.
+> It looks like on Exynos5422 we have all what is needed, there is more
+> flexibility in selecting the counter source signal, e.g. each counter
+> can be a clock cycle counter or can count various bus events related to
+> actual utilization. Moreover, we could configure the counter gating period
+> and alarm interrupts are available for when the counter value drops below
+> configured MIN threshold or exceeds configured MAX value.
 
-This SoB is weird. If Yangtao Li is the author, then they should be
-credited, and if they're not then their SoB shouldn't be here
-(especially in the latest position which is usually the person that
-committed / sent the patch).
+I see. I don't have TRM for Exynos5422 so couldn't see that. I also
+have to keep in mind other platforms which might not have this feature.
 
-Either way, something is off here.
+> 
+> So it should be possible to configure the HW to generate the utilization
+> monitoring events without excessive continuous CPU intervention.
 
-Maxime
+I agree, that would be desirable especially for low load in the system.
 
---ylwydmatvahcimwd
-Content-Type: application/pgp-signature; name="signature.asc"
+> But I'm rather not going to work on the Exynos5422 SoC support at the moment.
 
------BEGIN PGP SIGNATURE-----
+I see.
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCXvoEXgAKCRDj7w1vZxhR
-xTEIAP4vwQRHMN634gqK3ztUkKWqQlYv9RetPxwmfazpSwD72AD+MYVlV4xv3h5Z
-Imn9dR7VTpA1168kL+XF4l5MfCZMEg0=
-=IJGI
------END PGP SIGNATURE-----
+> 
+>> To address that, we still need to have another mechanism (like watchdog)
+>> which will be triggered just to check if the threshold needs adjustment.
+>> This mechanism can be a local timer in the driver or a framework
+>> timer running kind of 'for loop' on all this type of devices (like
+>> the scheduled workqueue). In both cases in the system there will be
+>> interrupts, timers (even at workqueues) and scheduling.
+>> The approach to force developers to implement their local watchdog
+>> timers (or workqueues) in drivers is IMHO wrong and that's why we have
+>> frameworks.
+> 
+> Yes, it should be also possible in the framework to use the counter alarm
+> events where the hardware is advanced enough, in order to avoid excessive
+> SW polling.
 
---ylwydmatvahcimwd--
+Looks promising, but that would need more plumbing I assume.
+
+Regards,
+Lukasz
+
+> 
+> --
+> Regards,
+> Sylwester
+> 
