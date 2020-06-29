@@ -4,117 +4,236 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94648C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:57:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49A3EC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:58:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7FEE820663
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:57:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A235204EC
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:58:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726073AbgF2S5d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 14:57:33 -0400
-Received: from mga05.intel.com ([192.55.52.43]:57272 "EHLO mga05.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728942AbgF2S52 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 29 Jun 2020 14:57:28 -0400
-IronPort-SDR: YicFCowbxuoQM4Gw4wwtqvmk5B9wNcA7wZ7hVFiNtpGavry5L/SEb7f68WuXkhszTB7jLyh4fa
- co4UDkPQjvfA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9666"; a="230725847"
-X-IronPort-AV: E=Sophos;i="5.75,294,1589266800"; 
-   d="scan'208";a="230725847"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by fmsmga105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Jun 2020 22:34:57 -0700
-IronPort-SDR: nKb8wG9RWla5JJT3JADlZfStBphHCrokT3cd2SE9MXtJwU7d+r9MrbeDaputaYyzY1SWR1ZVp9
- tRt4gIOfc39A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,294,1589266800"; 
-   d="scan'208";a="480662173"
-Received: from jielin1-mobl.ccr.corp.intel.com (HELO rzhang1-mobile.ccr.corp.intel.com) ([10.249.173.170])
-  by fmsmga005.fm.intel.com with ESMTP; 28 Jun 2020 22:34:54 -0700
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     rjw@rjwysocki.net
-Cc:     linux-pm@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH] powercap/intel_rapl: add support for Sapphire Rapids
-Date:   Mon, 29 Jun 2020 13:34:50 +0800
-Message-Id: <20200629053450.12392-1-rui.zhang@intel.com>
+        id S1730179AbgF2S5r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 14:57:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40924 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730153AbgF2S5o (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:57:44 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E5BAC00F812;
+        Mon, 29 Jun 2020 05:30:07 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id C716F2A2D98
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v7 11/11] thermal: Rename set_mode() to change_mode()
+Date:   Mon, 29 Jun 2020 14:29:25 +0200
+Message-Id: <20200629122925.21729-12-andrzej.p@collabora.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200629122925.21729-1-andrzej.p@collabora.com>
+References: <20200629122925.21729-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RAPL on SPR behaves similar to HSW server, except that SPR uses a fixed
-energy unit (1 Joule) for the PSYS RAPL domain.
+set_mode() is only called when tzd's mode is about to change. Actual
+setting is performed in thermal_core, in thermal_zone_device_set_mode().
+The meaning of set_mode() callback is actually to notify the driver about
+the mode being changed and giving the driver a chance to oppose such
+change.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+To better reflect the purpose of the method rename it to change_mode()
+
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+[for acerhdf]
+Acked-by: Peter Kaestle <peter@piie.net>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 ---
- drivers/powercap/intel_rapl_common.c | 23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+ drivers/platform/x86/acerhdf.c                          | 6 +++---
+ drivers/thermal/imx_thermal.c                           | 8 ++++----
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 6 +++---
+ drivers/thermal/intel/intel_quark_dts_thermal.c         | 6 +++---
+ drivers/thermal/thermal_core.c                          | 4 ++--
+ include/linux/thermal.h                                 | 2 +-
+ 6 files changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 61a63a16b5e7..b739ce4f390d 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -93,6 +93,7 @@ struct rapl_defaults {
- 	u64 (*compute_time_window)(struct rapl_package *rp, u64 val,
- 				    bool to_raw);
- 	unsigned int dram_domain_energy_unit;
-+	unsigned int psys_domain_energy_unit;
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 76323855c80c..f816a8a13039 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -413,8 +413,8 @@ static inline void acerhdf_enable_kernelmode(void)
+  *          the temperature and the fan.
+  * disabled: the BIOS takes control of the fan.
+  */
+-static int acerhdf_set_mode(struct thermal_zone_device *thermal,
+-			    enum thermal_device_mode mode)
++static int acerhdf_change_mode(struct thermal_zone_device *thermal,
++			       enum thermal_device_mode mode)
+ {
+ 	if (mode == THERMAL_DEVICE_DISABLED && kernelmode)
+ 		acerhdf_revert_to_bios_mode();
+@@ -473,7 +473,7 @@ static struct thermal_zone_device_ops acerhdf_dev_ops = {
+ 	.bind = acerhdf_bind,
+ 	.unbind = acerhdf_unbind,
+ 	.get_temp = acerhdf_get_ec_temp,
+-	.set_mode = acerhdf_set_mode,
++	.change_mode = acerhdf_change_mode,
+ 	.get_trip_type = acerhdf_get_trip_type,
+ 	.get_trip_hyst = acerhdf_get_trip_hyst,
+ 	.get_trip_temp = acerhdf_get_trip_temp,
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index a02398118d88..9700ae39feb7 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -330,8 +330,8 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	return 0;
+ }
+ 
+-static int imx_set_mode(struct thermal_zone_device *tz,
+-			enum thermal_device_mode mode)
++static int imx_change_mode(struct thermal_zone_device *tz,
++			   enum thermal_device_mode mode)
+ {
+ 	struct imx_thermal_data *data = tz->devdata;
+ 	struct regmap *map = data->tempmon;
+@@ -447,7 +447,7 @@ static struct thermal_zone_device_ops imx_tz_ops = {
+ 	.bind = imx_bind,
+ 	.unbind = imx_unbind,
+ 	.get_temp = imx_get_temp,
+-	.set_mode = imx_set_mode,
++	.change_mode = imx_change_mode,
+ 	.get_trip_type = imx_get_trip_type,
+ 	.get_trip_temp = imx_get_trip_temp,
+ 	.get_crit_temp = imx_get_crit_temp,
+@@ -860,7 +860,7 @@ static int __maybe_unused imx_thermal_suspend(struct device *dev)
+ 	 * Need to disable thermal sensor, otherwise, when thermal core
+ 	 * try to get temperature before thermal sensor resume, a wrong
+ 	 * temperature will be read as the thermal sensor is powered
+-	 * down. This is done in set_mode() operation called from
++	 * down. This is done in change_mode() operation called from
+ 	 * thermal_zone_device_disable()
+ 	 */
+ 	ret = thermal_zone_device_disable(data->tz);
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index ce49d3b100d5..d3732f624913 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -377,8 +377,8 @@ static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
+ 
+-static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+-				enum thermal_device_mode mode)
++static int int3400_thermal_change_mode(struct thermal_zone_device *thermal,
++				       enum thermal_device_mode mode)
+ {
+ 	struct int3400_thermal_priv *priv = thermal->devdata;
+ 	int result = 0;
+@@ -399,7 +399,7 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+ 
+ static struct thermal_zone_device_ops int3400_thermal_ops = {
+ 	.get_temp = int3400_thermal_get_temp,
+-	.set_mode = int3400_thermal_set_mode,
++	.change_mode = int3400_thermal_change_mode,
  };
- static struct rapl_defaults *rapl_defaults;
  
-@@ -533,12 +534,23 @@ static void rapl_init_domains(struct rapl_package *rp)
- 		for (j = 0; j < RAPL_DOMAIN_REG_MAX; j++)
- 			rd->regs[j] = rp->priv->regs[i][j];
+ static struct thermal_zone_params int3400_thermal_params = {
+diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
+index e29c3e330b17..3eafc6b0e6c3 100644
+--- a/drivers/thermal/intel/intel_quark_dts_thermal.c
++++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
+@@ -298,8 +298,8 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd,
+ 	return 0;
+ }
  
--		if (i == RAPL_DOMAIN_DRAM) {
-+		switch (i) {
-+		case RAPL_DOMAIN_DRAM:
- 			rd->domain_energy_unit =
- 			    rapl_defaults->dram_domain_energy_unit;
- 			if (rd->domain_energy_unit)
- 				pr_info("DRAM domain energy unit %dpj\n",
- 					rd->domain_energy_unit);
-+			break;
-+		case RAPL_DOMAIN_PLATFORM:
-+			rd->domain_energy_unit =
-+			    rapl_defaults->psys_domain_energy_unit;
-+			if (rd->domain_energy_unit)
-+				pr_info("Platform domain energy unit %dpj\n",
-+					rd->domain_energy_unit);
-+			break;
-+		default:
-+			break;
- 		}
- 		rd++;
+-static int sys_set_mode(struct thermal_zone_device *tzd,
+-				enum thermal_device_mode mode)
++static int sys_change_mode(struct thermal_zone_device *tzd,
++			   enum thermal_device_mode mode)
+ {
+ 	int ret;
+ 
+@@ -319,7 +319,7 @@ static struct thermal_zone_device_ops tzone_ops = {
+ 	.get_trip_type = sys_get_trip_type,
+ 	.set_trip_temp = sys_set_trip_temp,
+ 	.get_crit_temp = sys_get_crit_temp,
+-	.set_mode = sys_set_mode,
++	.change_mode = sys_change_mode,
+ };
+ 
+ static void free_soc_dts(struct soc_sensor_entry *aux_entry)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index e613f5c07bad..a61e91513584 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -482,8 +482,8 @@ static int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
+ 		return ret;
  	}
-@@ -919,6 +931,14 @@ static const struct rapl_defaults rapl_defaults_hsw_server = {
- 	.dram_domain_energy_unit = 15300,
- };
  
-+static const struct rapl_defaults rapl_defaults_spr_server = {
-+	.check_unit = rapl_check_unit_core,
-+	.set_floor_freq = set_floor_freq_default,
-+	.compute_time_window = rapl_compute_time_window_core,
-+	.dram_domain_energy_unit = 15300,
-+	.psys_domain_energy_unit = 1000000000,
-+};
-+
- static const struct rapl_defaults rapl_defaults_byt = {
- 	.floor_freq_reg_addr = IOSF_CPU_POWER_BUDGET_CTL_BYT,
- 	.check_unit = rapl_check_unit_atom,
-@@ -978,6 +998,7 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
- 	X86_MATCH_INTEL_FAM6_MODEL(COMETLAKE_L,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(COMETLAKE,		&rapl_defaults_core),
- 	X86_MATCH_INTEL_FAM6_MODEL(TIGERLAKE_L,		&rapl_defaults_core),
-+	X86_MATCH_INTEL_FAM6_MODEL(SAPPHIRERAPIDS_X,	&rapl_defaults_spr_server),
+-	if (tz->ops->set_mode)
+-		ret = tz->ops->set_mode(tz, mode);
++	if (tz->ops->change_mode)
++		ret = tz->ops->change_mode(tz, mode);
  
- 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_SILVERMONT,	&rapl_defaults_byt),
- 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_AIRMONT,	&rapl_defaults_cht),
+ 	if (!ret)
+ 		tz->mode = mode;
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index df013c39ba9b..b9efaa780d88 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -76,7 +76,7 @@ struct thermal_zone_device_ops {
+ 		       struct thermal_cooling_device *);
+ 	int (*get_temp) (struct thermal_zone_device *, int *);
+ 	int (*set_trips) (struct thermal_zone_device *, int, int);
+-	int (*set_mode) (struct thermal_zone_device *,
++	int (*change_mode) (struct thermal_zone_device *,
+ 		enum thermal_device_mode);
+ 	int (*get_trip_type) (struct thermal_zone_device *, int,
+ 		enum thermal_trip_type *);
 -- 
 2.17.1
 
