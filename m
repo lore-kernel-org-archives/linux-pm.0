@@ -2,103 +2,185 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1386CC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:27:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6A6DDC433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:28:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E31792065F
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:27:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4B9B12065F
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:28:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="iF0bpywf"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="VYMLb/s9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729535AbgF2T1J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 15:27:09 -0400
-Received: from us-smtp-1.mimecast.com ([205.139.110.61]:27190 "EHLO
-        us-smtp-1.mimecast.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732299AbgF2T1G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:27:06 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1593458825;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:
-         content-transfer-encoding:content-transfer-encoding;
-        bh=ULeTr0SB55lWnRLDf1wo07nelEQfKeugCaPGmgEHj60=;
-        b=iF0bpywfWzf8RTRacdQLshD4hN/fw13VX8Vqbn8g0UaeFjaBLOSSbYi1MQQ237M7xfGIBs
-        S9J07UlNrOdJiWrAT7aics8y/7MDD+gelEWWAagwn8Yv8Nk3GFqAg2gFy4rmnYhAho9wBi
-        7Wxi+xbwi7QJwRctru4M6in1T4n3OZY=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-18-5TlJu8U2Nl6yNclv8OYdGQ-1; Mon, 29 Jun 2020 15:27:00 -0400
-X-MC-Unique: 5TlJu8U2Nl6yNclv8OYdGQ-1
-Received: from smtp.corp.redhat.com (int-mx08.intmail.prod.int.phx2.redhat.com [10.5.11.23])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 6FFDBA0C01;
-        Mon, 29 Jun 2020 19:26:59 +0000 (UTC)
-Received: from prarit.bos.redhat.com (prarit-guest.7a2m.lab.eng.bos.redhat.com [10.16.222.26])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id EC68C19C71;
-        Mon, 29 Jun 2020 19:26:58 +0000 (UTC)
-From:   Prarit Bhargava <prarit@redhat.com>
-To:     linux-kernel@vger.kernel.org
-Cc:     Prarit Bhargava <prarit@redhat.com>, Len Brown <lenb@kernel.org>,
-        linux-pm@vger.kernel.org,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH] turbostat: Use sched_getcpu() instead of hardcoded cpu 0
-Date:   Mon, 29 Jun 2020 15:26:57 -0400
-Message-Id: <20200629192657.34045-1-prarit@redhat.com>
+        id S1729373AbgF2T2g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 15:28:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45982 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732749AbgF2T1n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:27:43 -0400
+Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 38962C0307AA
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 08:52:10 -0700 (PDT)
+Received: by mail-pg1-x535.google.com with SMTP id l63so8464951pge.12
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 08:52:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=O7sIHXeq9javydgPa4kkSbbJduAe1ZtNE3KpkpyN1M0=;
+        b=VYMLb/s9Us5ceNtmBLYQSBLKuoXcWKMN/lu2yfULUISWVJJTp86tOTMfJ3DoNjJfLT
+         s6AoWxOJIqBs9AxUj0O9RdD8eVM3oyAEkoVRT0xdY8d+ItmXwCv5Lq6pkrsPOYq/nvgJ
+         JF9LSEIIG5HTA37tnlSFKA90gXabDAm6mePAEfWWctxeF6+yUhDlwRK1XNSMTv5Z3KAD
+         bBrAcLrv9z5m3E2dRh3JN+haNQrPckQy9ke8DuRR/9PoafYfGvEDQoij4UbGIW5CVfFt
+         uZRYG1aD/hl0VT+lYj3PZ/Qy0ErcTJJYTfzvAt4NrRev4I7Rg3yw8ROXptZ86O50Vb7g
+         JTGw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=O7sIHXeq9javydgPa4kkSbbJduAe1ZtNE3KpkpyN1M0=;
+        b=GcHqRO7Ehor9qy2Oouiyv8Hi4AAZk2apJMUQpVAsa6+KgwDpjKDE6CdkLrRvEEQXh1
+         y2EkU/bio4cbQ/nIeLPw4MlIjZgJIo8XqGCQWoLdzTaNycWTA4XXO7t2kl42nUc8vIuI
+         cCQ52ey8P7/+PLyIUKSoMvr+mixia8oO+u6WAO8x8WBJ/aX0RRz65c5b7svv9DZjVScS
+         bfuBO0EKqNO0c9u7Z3X8Ve6zpp+DavYgo7k6qwH9kKsyWNJVfPM2eks1sICfCALS0eTd
+         9hWcdCZLbEjTU4dKW5ShSarpObly+6sz0j2nL3H+PR+eNmzA2H6Nlk8y5SaZ5DlaOHro
+         Y40g==
+X-Gm-Message-State: AOAM530dCy0Hi3lN4dxiGn5cCDA3jtTpHluvt4O/kMpY8d2xEPrBGxs4
+        VuK4nCmz5mr7mgM8nKSdi/ED7ZYvLmI=
+X-Google-Smtp-Source: ABdhPJzCqVt5iaGjpTADjIp6sM/qiPJ3AYeVdocTRdq87dWRkQVWmSHDhhiylIc1384vQ+MtkTiG/Q==
+X-Received: by 2002:a65:4c0b:: with SMTP id u11mr9054792pgq.383.1593445928778;
+        Mon, 29 Jun 2020 08:52:08 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id a3sm191462pgd.73.2020.06.29.08.52.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Jun 2020 08:52:07 -0700 (PDT)
+Message-ID: <5efa0e27.1c69fb81.3ce31.0870@mx.google.com>
+Date:   Mon, 29 Jun 2020 08:52:07 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Scanned-By: MIMEDefang 2.84 on 10.5.11.23
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Kernel: v5.8-rc3-20-g4ebdb176f4ab
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+Subject: pm/testing build: 6 builds: 0 failed, 6 passed,
+ 8 warnings (v5.8-rc3-20-g4ebdb176f4ab)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Disabling cpu 0 results in an error
+pm/testing build: 6 builds: 0 failed, 6 passed, 8 warnings (v5.8-rc3-20-g4e=
+bdb176f4ab)
 
-turbostat: /sys/devices/system/cpu/cpu0/topology/thread_siblings: open failed: No such file or directory
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+8-rc3-20-g4ebdb176f4ab/
 
-Use sched_getcpu() instead of a hardcoded cpu 0 to get the max cpu number.
+Tree: pm
+Branch: testing
+Git Describe: v5.8-rc3-20-g4ebdb176f4ab
+Git Commit: 4ebdb176f4ab253a2f7eb2b924dd3dba9fa3bc1d
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 6 unique architectures
 
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Warnings Detected:
+
+arc:
+
+arm64:
+    defconfig (gcc-8): 8 warnings
+
+i386:
+
+mips:
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    3    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Wa=
+rning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but=
+ its #size-cells (1) differs from / (2)
+    3    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Wa=
+rning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but=
+ its #address-cells (1) differs from / (2)
+    1    arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning (dma_range=
+s_format): /soc:dma-ranges: empty "dma-ranges" property but its #size-cells=
+ (1) differs from / (2)
+    1    arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning (dma_range=
+s_format): /soc:dma-ranges: empty "dma-ranges" property but its #address-ce=
+lls (1) differs from / (2)
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 8 warnings, 0 section mi=
+smatches
+
+Warnings:
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#address-cells (1) differs from / (2)
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#size-cells (1) differs from / (2)
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#address-cells (1) differs from / (2)
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#size-cells (1) differs from / (2)
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#address-cells (1) differs from / (2)
+    arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:7.3-14: Warning=
+ (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" property but its =
+#size-cells (1) differs from / (2)
+    arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning (dma_ranges_for=
+mat): /soc:dma-ranges: empty "dma-ranges" property but its #address-cells (=
+1) differs from / (2)
+    arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning (dma_ranges_for=
+mat): /soc:dma-ranges: empty "dma-ranges" property but its #size-cells (1) =
+differs from / (2)
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
 ---
- tools/power/x86/turbostat/turbostat.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
-index 33b370865d16..2d3a3012f2f8 100644
---- a/tools/power/x86/turbostat/turbostat.c
-+++ b/tools/power/x86/turbostat/turbostat.c
-@@ -2769,12 +2769,19 @@ void re_initialize(void)
- void set_max_cpu_num(void)
- {
- 	FILE *filep;
-+	int base_cpu;
- 	unsigned long dummy;
-+	char pathname[64];
- 
-+	base_cpu = sched_getcpu();
-+	if (base_cpu < 0)
-+		err(1, "cannot find calling cpu ID");
-+	sprintf(pathname,
-+		"/sys/devices/system/cpu/cpu%d/topology/thread_siblings",
-+		base_cpu);
-+
-+	filep = fopen_or_die(pathname, "r");
- 	topo.max_cpu_num = 0;
--	filep = fopen_or_die(
--			"/sys/devices/system/cpu/cpu0/topology/thread_siblings",
--			"r");
- 	while (fscanf(filep, "%lx,", &dummy) == 1)
- 		topo.max_cpu_num += BITMASK_SIZE;
- 	fclose(filep);
--- 
-2.21.3
-
+For more info write to <info@kernelci.org>
