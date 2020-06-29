@@ -2,151 +2,140 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5008FC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 887DBC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2A693206F1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:07 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="LdqciQKk"
+	by mail.kernel.org (Postfix) with ESMTP id 659E2206F1
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:58:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731388AbgF2U55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:57:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43392 "EHLO
+        id S1731397AbgF2U6m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:58:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43354 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730029AbgF2TNF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:05 -0400
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03C5FC0147C5
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:08 -0700 (PDT)
-Received: by mail-pl1-x644.google.com with SMTP id k1so6822367pls.2
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:08 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9NfPVc9X1tGAaTQ7LTtkR4j1ayN5pMJRPHgx7xTYQLA=;
-        b=LdqciQKkXx0vF40NVmUbSHqVzrdkPFKV3dLzzHZQ0CmTxL0oifFIHpiE1eOCfrV+cj
-         3cVFOU1CWsgeA4WPaCLwixL8fpHf2gD4VmBWCeugFP0phu7dzgx0EP4jXAFdYovq5cJG
-         mqrifK45bUERCQFkFNqN5CCv0cbp9O0w33VxEH9fSjt8seAUkgCj5NWfSlx7GXbXerH+
-         3zTNgotZ4LFOJ+OuIfxb02TkTqZNjsAvm094siM8wm3CPW3Xw1zLi37XGdZb0Rf/F3fj
-         b5purGoOvV/g6TdTCZgkSYAkw1VmcplH6qmVLCU/WwZMug1lxsBcwO8BPtFaLkGUy4cC
-         Y6ig==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=9NfPVc9X1tGAaTQ7LTtkR4j1ayN5pMJRPHgx7xTYQLA=;
-        b=IbEpHJlUapQ5FLPmg87utjaGKQV4BxcmPUq1sS0ARpQDNwqtjTd84IJxyTxH5e5FvL
-         iGX5Md6VtinY5sPLco33mnPn7A9z/2uADimYusH6sOF+8ne2sYPfh1Skp3mQf+uGod74
-         PnJX+z9YxEtVvC0FuUZTL4PXSHnB/8JoNjhF2Cy6tEsaXYUcKW3QZ17EDJy2srCg62yK
-         zhMrCPVcIj645cH9suwSdTyiDQPP1Oor79s3dc/GvQrDIm6pn60b8M8G4RxtJ3S2cSjP
-         Eft18HaYAS0c/BmmdYcIMQ8TSxZOj7Rae6I85ynIYWZtNCi6X4AaE6NTus6//tDGIxZ5
-         YJZg==
-X-Gm-Message-State: AOAM532GIjlhJA/s/92gT/BThrdUyJNIWESUfLdMAdD02ju4PlQeQHwz
-        xWjs2/IK/4iXuQdQlmzzDiwiJA==
-X-Google-Smtp-Source: ABdhPJyR6iTPdisyGhDmgEwBMsi6ZvJ9kAEpwNBdUll/2hJsHd7ZMJ+XKDb/SY3trQjtVNUA1QgVcA==
-X-Received: by 2002:a17:902:694b:: with SMTP id k11mr13062647plt.245.1593419108221;
-        Mon, 29 Jun 2020 01:25:08 -0700 (PDT)
-Received: from localhost ([122.172.127.76])
-        by smtp.gmail.com with ESMTPSA id u2sm8807092pfl.21.2020.06.29.01.25.07
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 29 Jun 2020 01:25:07 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>, Arnd Bergmann <arnd@arndb.de>,
-        Ben Segall <bsegall@google.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Mel Gorman <mgorman@suse.de>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org, kernel-team@android.com,
-        tkjos@google.com, adharmap@codeaurora.org,
-        linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Quentin Perret <qperret@google.com>
-Subject: [PATCH V4 0/3] cpufreq: Allow default governor on cmdline and fix locking issues
-Date:   Mon, 29 Jun 2020 13:54:57 +0530
-Message-Id: <cover.1593418662.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S1731247AbgF2TNC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:02 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 22BB3C0085C5;
+        Mon, 29 Jun 2020 04:16:26 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id CFAED2A0518
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v6 01/11] acpi: thermal: Fix error handling in the register function
+Date:   Mon, 29 Jun 2020 13:16:05 +0200
+Message-Id: <20200629111615.18131-2-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
+References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+ <20200629111615.18131-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+The acpi_thermal_register_thermal_zone() is missing any error handling.
+This needs to be fixed.
 
-I have picked Quentin's series over my patch, modified both and tested.
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+---
+ drivers/acpi/thermal.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
 
-V3->V4:
-- Do __module_get() for cpufreq_default_governor() case as well and get
-  rid of an extra variable.
-- Use a single character array, default_governor, instead of two of them.
-
-V2->V3:
-- default_governor is a string now and we don't set it on governor
-  registration or unregistration anymore.
-- Fixed locking issues in cpufreq_init_policy().
-
---
-Viresh
-
-Original cover letter fro Quentin:
-
-This series enables users of prebuilt kernels (e.g. distro kernels) to
-specify their CPUfreq governor of choice using the kernel command line,
-instead of having to wait for the system to fully boot to userspace to
-switch using the sysfs interface. This is helpful for 2 reasons:
-  1. users get to choose the governor that runs during the actual boot;
-  2. it simplifies the userspace boot procedure a bit (one less thing to
-     worry about).
-
-To enable this, the first patch moves all governor init calls to
-core_initcall, to make sure they are registered by the time the drivers
-probe. This should be relatively low impact as registering a governor
-is a simple procedure (it gets added to a llist), and all governors
-already load at core_initcall anyway when they're set as the default
-in Kconfig. This also allows to clean-up the governors' init/exit code,
-and reduces boilerplate.
-
-The second patch introduces the new command line parameter, inspired by
-its cpuidle counterpart. More details can be found in the respective
-patch headers.
-
-Changes in v2:
- - added Viresh's ack to patch 01
- - moved the assignment of 'default_governor' in patch 02 to the governor
-   registration path instead of the driver registration (Viresh)
-
-Quentin Perret (2):
-  cpufreq: Register governors at core_initcall
-  cpufreq: Specify default governor on command line
-
-Viresh Kumar (1):
-  cpufreq: Fix locking issues with governors
-
- .../admin-guide/kernel-parameters.txt         |  5 ++
- Documentation/admin-guide/pm/cpufreq.rst      |  6 +-
- .../platforms/cell/cpufreq_spudemand.c        | 26 +-----
- drivers/cpufreq/cpufreq.c                     | 87 ++++++++++++-------
- drivers/cpufreq/cpufreq_conservative.c        | 22 ++---
- drivers/cpufreq/cpufreq_ondemand.c            | 24 ++---
- drivers/cpufreq/cpufreq_performance.c         | 14 +--
- drivers/cpufreq/cpufreq_powersave.c           | 18 +---
- drivers/cpufreq/cpufreq_userspace.c           | 18 +---
- include/linux/cpufreq.h                       | 14 +++
- kernel/sched/cpufreq_schedutil.c              |  6 +-
- 11 files changed, 100 insertions(+), 140 deletions(-)
-
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 19067a5e5293..6de8066ca1e7 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -901,23 +901,35 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+ 	result = sysfs_create_link(&tz->device->dev.kobj,
+ 				   &tz->thermal_zone->device.kobj, "thermal_zone");
+ 	if (result)
+-		return result;
++		goto unregister_tzd;
+ 
+ 	result = sysfs_create_link(&tz->thermal_zone->device.kobj,
+ 				   &tz->device->dev.kobj, "device");
+ 	if (result)
+-		return result;
++		goto remove_tz_link;
+ 
+ 	status =  acpi_bus_attach_private_data(tz->device->handle,
+ 					       tz->thermal_zone);
+-	if (ACPI_FAILURE(status))
+-		return -ENODEV;
++	if (ACPI_FAILURE(status)) {
++		result = -ENODEV;
++		goto remove_dev_link;
++	}
+ 
+ 	tz->tz_enabled = 1;
+ 
+ 	dev_info(&tz->device->dev, "registered as thermal_zone%d\n",
+ 		 tz->thermal_zone->id);
++
+ 	return 0;
++
++remove_dev_link:
++	sysfs_remove_link(&tz->thermal_zone->device.kobj, "device");
++remove_tz_link:
++	sysfs_remove_link(&tz->device->dev.kobj, "thermal_zone");
++unregister_tzd:
++	thermal_zone_device_unregister(tz->thermal_zone);
++
++	return result;
+ }
+ 
+ static void acpi_thermal_unregister_thermal_zone(struct acpi_thermal *tz)
 -- 
-2.25.0.rc1.19.g042ed3e048af
+2.17.1
 
