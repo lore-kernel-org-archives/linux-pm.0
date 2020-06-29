@@ -2,123 +2,164 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1237AC433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:15:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8921EC433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:17:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EB507206F1
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:15:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gvy6L2gN"
+	by mail.kernel.org (Postfix) with ESMTP id 6EBD4206A5
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 19:17:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731854AbgF2TPx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 15:15:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43356 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731742AbgF2TOW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:22 -0400
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F298CC08EACA
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:16:42 -0700 (PDT)
-Received: by mail-pg1-x542.google.com with SMTP id e18so7821279pgn.7
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:16:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=4irVPvy6SLfIHJxFGOTl27eLkGNjnPf7i0OL+P/LA5k=;
-        b=gvy6L2gNxq9EwuQLge3KvNqHHwK00gDANooUZvO4v6O5WkSzyTrdIQh/0aKfX2EltN
-         BC+F/sMOwIeTzytYh6C+biD3Z0k6ukqbdDxfzaddghnTjVpA5NWIn66UJGhUQht65PyZ
-         UeQC58uEadA2EDA5nxAwZTOmY1XiiRXMAqh4qZqk5F0ktgOQ4Giv/rDvhNJX+IvYgcRF
-         uyUIijuxIyKFEY98uEPgkKkWVz1lx7Yn194BvXvE9VqaqfoT3h524c71kZLvLyv0Y3xD
-         Y9evO5z8oHOrC+f8Jlfh91dni7AyjZR5XVxyL1Ss6Xooxx2IhT7B1txyR0AIA+/7u5mi
-         FGzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=4irVPvy6SLfIHJxFGOTl27eLkGNjnPf7i0OL+P/LA5k=;
-        b=s3R3JiDc+KyWd/aLhxl/kCyzF2pDPYescUqdlTtNxztA7qn0YrkWLvJyLE9RNJCKuo
-         tZqTVc3z6o64cyPHYHw9lYGZF5sSAFMMDBhuN6tOdsHD1NEgyuWBi2x0OCbppa20KaO7
-         Wm65WnagzXAnNVhqvMg6whufcrhSWBxRm64kkACceJ2B9kwTJidDu8e04+UM2TzJR35a
-         WzaHhlAekAphWEmqg3T7Pamh/U2k15OSNeiU6IYOz+oi1SuluZ4fdsbA7vGdzhb7STMR
-         T7tvX54M1zaJR2mqg2f3SKM4d0gloD26SCx8/p6hcIppm7zLlYCM/j2plxy0csp8ZBLu
-         RAGg==
-X-Gm-Message-State: AOAM530dpEobGQ5bRkYmGamkAbmVv84jtYm8D9V1Gc4QbKWI8tLP7+CR
-        GqBegadoTDz9XcY/NpN9phfzOQ==
-X-Google-Smtp-Source: ABdhPJyWU8GRq0w0MyNAiW2bszj3RcxuYIa7V3PZhOEGRHvN2Ts53LH/NqZxHeCX7T8Kw8KhW0DfLg==
-X-Received: by 2002:a63:182:: with SMTP id 124mr8482105pgb.288.1593411402221;
-        Sun, 28 Jun 2020 23:16:42 -0700 (PDT)
-Received: from localhost ([122.172.127.76])
-        by smtp.gmail.com with ESMTPSA id m20sm34111505pfk.52.2020.06.28.23.16.40
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 28 Jun 2020 23:16:41 -0700 (PDT)
-Date:   Mon, 29 Jun 2020 11:46:39 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Sumit Gupta <sumitg@nvidia.com>
-Cc:     rjw@rjwysocki.net, catalin.marinas@arm.com, will@kernel.org,
-        thierry.reding@gmail.com, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, jonathanh@nvidia.com, talho@nvidia.com,
+        id S1731041AbgF2TRe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 15:17:34 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:46260 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728039AbgF2TRc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:17:32 -0400
+Received: from 89-64-84-69.dynamic.chello.pl (89.64.84.69) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 60876454d392fc4c; Mon, 29 Jun 2020 17:17:29 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Neal Liu <neal.liu@mediatek.com>
+Cc:     Len Brown <lenb@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Sami Tolvanen <samitolvanen@google.com>,
+        linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        bbasu@nvidia.com, mperttunen@nvidia.com
-Subject: Re: [TEGRA194_CPUFREQ PATCH v4 3/4] cpufreq: Add Tegra194 cpufreq
- driver
-Message-ID: <20200629061639.7cwxfi64drkof6yu@vireshk-i7>
-References: <1593186236-12760-1-git-send-email-sumitg@nvidia.com>
- <1593186236-12760-4-git-send-email-sumitg@nvidia.com>
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, wsd_upstream@mediatek.com
+Subject: Re: [PATCH] cpuidle: change enter_s2idle() prototype
+Date:   Mon, 29 Jun 2020 17:17:28 +0200
+Message-ID: <9963896.lEaLCsxmBZ@kreacher>
+In-Reply-To: <1593421540-7397-2-git-send-email-neal.liu@mediatek.com>
+References: <1593421540-7397-1-git-send-email-neal.liu@mediatek.com> <1593421540-7397-2-git-send-email-neal.liu@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1593186236-12760-4-git-send-email-sumitg@nvidia.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 26-06-20, 21:13, Sumit Gupta wrote:
-> +static int tegra194_cpufreq_probe(struct platform_device *pdev)
-> +{
-> +	struct tegra194_cpufreq_data *data;
-> +	struct tegra_bpmp *bpmp;
-> +	int err, i;
-> +
-> +	data = devm_kzalloc(&pdev->dev, sizeof(*data), GFP_KERNEL);
-> +	if (!data)
-> +		return -ENOMEM;
-> +
-> +	data->num_clusters = MAX_CLUSTERS;
-> +	data->tables = devm_kcalloc(&pdev->dev, data->num_clusters,
-> +				    sizeof(*data->tables), GFP_KERNEL);
-> +	if (!data->tables)
-> +		return -ENOMEM;
-> +
-> +	platform_set_drvdata(pdev, data);
-> +
-> +	bpmp = tegra_bpmp_get(&pdev->dev);
-> +	if (IS_ERR(bpmp))
-> +		return PTR_ERR(bpmp);
-> +
-> +	read_counters_wq = alloc_workqueue("read_counters_wq", __WQ_LEGACY, 1);
-> +	if (!read_counters_wq) {
-> +		dev_err(&pdev->dev, "fail to create_workqueue\n");
-> +		err = -EINVAL;
-> +		goto put_bpmp;
+On Monday, June 29, 2020 11:05:40 AM CEST Neal Liu wrote:
+> Control Flow Integrity(CFI) is a security mechanism that disallows
+> changes to the original control flow graph of a compiled binary,
+> making it significantly harder to perform such attacks.
+> 
+> init_state_node() assigns same function pointer to idle_state->enter
+> and idle_state->enter_s2idle. This definitely causes CFI failure
+> when calling either enter() or enter_s2idle().
+> 
+> Align enter_s2idle() with enter() function prototype to fix CFI
+> failure.
 
-This will call destroy_workqueue() eventually and it will crash your
-kernel.
+That needs to be documented somewhere close to the definition of the
+callbacks in question.
 
-Apart from this, this stuff looks okay. Don't resend the patch just
-yet (and if required, send only this patch using --in-reply-to flag
-for git send email). Lets wait for an Ack from Rob for the first two
-patches.
+Otherwise it is completely unclear why this is a good idea.
 
-> +	}
+> Signed-off-by: Neal Liu <neal.liu@mediatek.com>
+> ---
+>  drivers/acpi/processor_idle.c   |    6 ++++--
+>  drivers/cpuidle/cpuidle-tegra.c |    8 +++++---
+>  drivers/idle/intel_idle.c       |    6 ++++--
+>  include/linux/cpuidle.h         |    6 +++---
+>  4 files changed, 16 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+> index 75534c5..6ffb6c9 100644
+> --- a/drivers/acpi/processor_idle.c
+> +++ b/drivers/acpi/processor_idle.c
+> @@ -655,8 +655,8 @@ static int acpi_idle_enter(struct cpuidle_device *dev,
+>  	return index;
+>  }
+>  
+> -static void acpi_idle_enter_s2idle(struct cpuidle_device *dev,
+> -				   struct cpuidle_driver *drv, int index)
+> +static int acpi_idle_enter_s2idle(struct cpuidle_device *dev,
+> +				  struct cpuidle_driver *drv, int index)
+>  {
+>  	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
+>  
+> @@ -674,6 +674,8 @@ static void acpi_idle_enter_s2idle(struct cpuidle_device *dev,
+>  		}
+>  	}
+>  	acpi_idle_do_entry(cx);
 > +
+> +	return 0;
+>  }
+>  
+>  static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
+> diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
+> index 1500458..a12fb14 100644
+> --- a/drivers/cpuidle/cpuidle-tegra.c
+> +++ b/drivers/cpuidle/cpuidle-tegra.c
+> @@ -253,11 +253,13 @@ static int tegra_cpuidle_enter(struct cpuidle_device *dev,
+>  	return err ? -1 : index;
+>  }
+>  
+> -static void tegra114_enter_s2idle(struct cpuidle_device *dev,
+> -				  struct cpuidle_driver *drv,
+> -				  int index)
+> +static int tegra114_enter_s2idle(struct cpuidle_device *dev,
+> +				 struct cpuidle_driver *drv,
+> +				 int index)
+>  {
+>  	tegra_cpuidle_enter(dev, drv, index);
+> +
+> +	return 0;
+>  }
+>  
+>  /*
+> diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+> index f449584..b178da3 100644
+> --- a/drivers/idle/intel_idle.c
+> +++ b/drivers/idle/intel_idle.c
+> @@ -175,13 +175,15 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
+>   * Invoked as a suspend-to-idle callback routine with frozen user space, frozen
+>   * scheduler tick and suspended scheduler clock on the target CPU.
+>   */
+> -static __cpuidle void intel_idle_s2idle(struct cpuidle_device *dev,
+> -					struct cpuidle_driver *drv, int index)
+> +static __cpuidle int intel_idle_s2idle(struct cpuidle_device *dev,
+> +				       struct cpuidle_driver *drv, int index)
+>  {
+>  	unsigned long eax = flg2MWAIT(drv->states[index].flags);
+>  	unsigned long ecx = 1; /* break on interrupt flag */
+>  
+>  	mwait_idle_with_hints(eax, ecx);
+> +
+> +	return 0;
+>  }
+>  
+>  /*
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index ec2ef63..bee10c0 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -66,9 +66,9 @@ struct cpuidle_state {
+>  	 * suspended, so it must not re-enable interrupts at any point (even
+>  	 * temporarily) or attempt to change states of clock event devices.
+>  	 */
+> -	void (*enter_s2idle) (struct cpuidle_device *dev,
+> -			      struct cpuidle_driver *drv,
+> -			      int index);
+> +	int (*enter_s2idle)(struct cpuidle_device *dev,
+> +			    struct cpuidle_driver *drv,
+> +			    int index);
+>  };
+>  
+>  /* Idle State Flags */
+> -- 
+> 1.7.9.5
+> 
 
--- 
-viresh
+
+
+
