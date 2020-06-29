@@ -2,139 +2,228 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61364C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AFB8C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4DF5B20663
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAF0220663
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:44:41 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jD0KhJNT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731656AbgF2UoW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:44:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43370 "EHLO
+        id S1730497AbgF2Uok (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:44:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43382 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731606AbgF2TOA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:14:00 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7B7CEC00862F;
-        Mon, 29 Jun 2020 04:16:24 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id D0FF72753E0
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        kernel@collabora.com
-Subject: [PATCH v6 00/11] Stop monitoring disabled devices
-Date:   Mon, 29 Jun 2020 13:16:04 +0200
-Message-Id: <20200629111615.18131-1-andrzej.p@collabora.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
-References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+        with ESMTP id S1731600AbgF2TN7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:59 -0400
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7E134C0147FE
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:18 -0700 (PDT)
+Received: by mail-pj1-x1043.google.com with SMTP id f6so3688884pjq.5
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:25:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=i9Nqhif6ApfXooGjeibxstbXojwGjO9SaXuxe+uQjDQ=;
+        b=jD0KhJNTqUUeR6j8mvpYmsiEJ6YBf4Q+GOdLtNpRkaBosp2KwiuK9yUwZ8EHRsFuai
+         KYlaB4Q7zIBzB2CxHTakt+snj6JFm0zvArqsimL3CTVwFzg9kFc/0uJX+4EJSMKl78Bc
+         YCiIqNCe1diXqPg7c6Mx/WhrlkN/DkzOY8IABTkcpPU92AXSVbkPxz+vgwWZCUWrwHAy
+         HHm4m+xOl4bLGpYOv4MdVIYM7y+wGaHXjZXNn0ntnKRUnenNT2W/SkCtEoTHirw+Bicz
+         6AptWVdJlrnSBh25JHVXnbv+eT7UEvVvS4o5HLKaQ0MHyTc5UnqrtFjtTGM2izAw55it
+         Xx3w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=i9Nqhif6ApfXooGjeibxstbXojwGjO9SaXuxe+uQjDQ=;
+        b=QckinMMvincwOSEzXSyrdZ+2N8QyfxowDyiHMIkQ7+yM2t4oo2f8zEgWtlBgeGdBOh
+         sfaJ1BPQYkp7EQ8V2TZq4xKGKdwqCX4BjaYakPMdR+3zIWqqCuD8SptJ2CR1SlDz6gVL
+         T2A6W6xcL0d16qhnqeVS0eQ8GBE3ClluJ13OaH1ZevIhYRrkgPQ81L2Lp0syT0US74+e
+         Z03iB0F9pznNtEnO/DG3ksa3BtBw43IcqvdIyW+qv9brcp2ezsxzE3EJuiQD6SGQTTUb
+         SDr80k5BtVL6rJF9FvFzc3UT7d/8u7X0GHtP7AJJ4FPzH01qXpNXxR9LEzQLNgNeRTmS
+         cBdg==
+X-Gm-Message-State: AOAM530oGl6paM14bz+14qjafxDp2Pen5obzsVr+2PR3MExOygzRmDz8
+        QBtqL3qFVM7Gro2/yzMf3Buq+A==
+X-Google-Smtp-Source: ABdhPJySmY+y/vwIX7ZPHKRcm025SbC8nwl+OHt6zHB9pB5+zOoWeprGva6CTquPpjzuELrjdUDBrw==
+X-Received: by 2002:a17:90b:1492:: with SMTP id js18mr8390978pjb.42.1593419118010;
+        Mon, 29 Jun 2020 01:25:18 -0700 (PDT)
+Received: from localhost ([122.172.127.76])
+        by smtp.gmail.com with ESMTPSA id 8sm19048210pja.0.2020.06.29.01.25.17
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 29 Jun 2020 01:25:17 -0700 (PDT)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        kernel-team@android.com, tkjos@google.com, adharmap@codeaurora.org,
+        Quentin Perret <qperret@google.com>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH V4 3/3] cpufreq: Specify default governor on command line
+Date:   Mon, 29 Jun 2020 13:55:00 +0530
+Message-Id: <96b6e6ca02b664194ff3e57e1ec768fbc597bf38.1593418662.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <cover.1593418662.git.viresh.kumar@linaro.org>
+References: <cover.1593418662.git.viresh.kumar@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A respin of v5 with these changes:
+From: Quentin Perret <qperret@google.com>
 
-v5..v6:
-- staticized thermal_zone_device_set_mode() (kbuild test robot)
+Currently, the only way to specify the default CPUfreq governor is via
+Kconfig options, which suits users who can build the kernel themselves
+perfectly.
 
-v4..v5:
+However, for those who use a distro-like kernel (such as Android, with
+the Generic Kernel Image project), the only way to use a different
+default is to boot to userspace, and to then switch using the sysfs
+interface. Being able to specify the default governor on the command
+line, like is the case for cpuidle, would enable those users to specify
+their governor of choice earlier on, and to simplify slighlty the
+userspace boot procedure.
 
-- EXPORT_SYMBOL -> EXPORT_SYMBOL_GPL (Daniel)
-- dropped unnecessary thermal_zone_device_enable() in int3400_thermal.c
-and in thermal_of.c (Bartlomiej)
+To support this use-case, add a kernel command line parameter enabling
+to specify a default governor for CPUfreq, which takes precedence over
+the builtin default.
 
-Andrzej Pietrasiewicz (11):
-  acpi: thermal: Fix error handling in the register function
-  thermal: Store thermal mode in a dedicated enum
-  thermal: Add current mode to thermal zone device
-  thermal: Store device mode in struct thermal_zone_device
-  thermal: remove get_mode() operation of drivers
-  thermal: Add mode helpers
-  thermal: Use mode helpers in drivers
-  thermal: Explicitly enable non-changing thermal zone devices
-  thermal: core: Stop polling DISABLED thermal devices
-  thermal: Simplify or eliminate unnecessary set_mode() methods
-  thermal: Rename set_mode() to change_mode()
+This implementation has one notable limitation: the default governor
+must be registered before the driver. This is solved for builtin
+governors and drivers using appropriate *_initcall() functions. And in
+the modular case, this must be reflected as a constraint on the module
+loading order.
 
- drivers/acpi/thermal.c                        | 75 +++++----------
- .../ethernet/chelsio/cxgb4/cxgb4_thermal.c    |  8 ++
- .../ethernet/mellanox/mlxsw/core_thermal.c    | 91 ++++---------------
- drivers/net/wireless/intel/iwlwifi/mvm/tt.c   |  9 +-
- drivers/platform/x86/acerhdf.c                | 33 +++----
- drivers/platform/x86/intel_mid_thermal.c      |  6 ++
- drivers/power/supply/power_supply_core.c      |  9 +-
- drivers/thermal/armada_thermal.c              |  6 ++
- drivers/thermal/da9062-thermal.c              | 16 +---
- drivers/thermal/dove_thermal.c                |  6 ++
- drivers/thermal/hisi_thermal.c                |  6 +-
- drivers/thermal/imx_thermal.c                 | 57 ++++--------
- .../intel/int340x_thermal/int3400_thermal.c   | 38 ++------
- .../int340x_thermal/int340x_thermal_zone.c    |  5 +
- drivers/thermal/intel/intel_pch_thermal.c     |  5 +
- .../thermal/intel/intel_quark_dts_thermal.c   | 34 ++-----
- drivers/thermal/intel/intel_soc_dts_iosf.c    |  3 +
- drivers/thermal/intel/x86_pkg_temp_thermal.c  |  6 ++
- drivers/thermal/kirkwood_thermal.c            |  7 ++
- drivers/thermal/rcar_thermal.c                |  9 +-
- drivers/thermal/rockchip_thermal.c            |  6 +-
- drivers/thermal/spear_thermal.c               |  7 ++
- drivers/thermal/sprd_thermal.c                |  6 +-
- drivers/thermal/st/st_thermal.c               |  5 +
- drivers/thermal/thermal_core.c                | 76 ++++++++++++++--
- drivers/thermal/thermal_of.c                  | 41 +--------
- drivers/thermal/thermal_sysfs.c               | 37 +-------
- include/linux/thermal.h                       | 19 +++-
- 28 files changed, 275 insertions(+), 351 deletions(-)
+Signed-off-by: Quentin Perret <qperret@google.com>
+[ Viresh: Converted 'default_governor' to a string and parsing it only
+	  at initcall level, and several updates to
+	  cpufreq_init_policy(). ]
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ .../admin-guide/kernel-parameters.txt         |  5 +++
+ Documentation/admin-guide/pm/cpufreq.rst      |  6 ++--
+ drivers/cpufreq/cpufreq.c                     | 31 +++++++++++++------
+ 3 files changed, 30 insertions(+), 12 deletions(-)
 
-
-base-commit: 9ebcfadb0610322ac537dd7aa5d9cbc2b2894c68
+diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
+index fb95fad81c79..8deb5a89328a 100644
+--- a/Documentation/admin-guide/kernel-parameters.txt
++++ b/Documentation/admin-guide/kernel-parameters.txt
+@@ -703,6 +703,11 @@
+ 	cpufreq.off=1	[CPU_FREQ]
+ 			disable the cpufreq sub-system
+ 
++	cpufreq.default_governor=
++			[CPU_FREQ] Name of the default cpufreq governor or
++			policy to use. This governor must be registered in the
++			kernel before the cpufreq driver probes.
++
+ 	cpu_init_udelay=N
+ 			[X86] Delay for N microsec between assert and de-assert
+ 			of APIC INIT to start processors.  This delay occurs
+diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
+index 0c74a7784964..368e612145d2 100644
+--- a/Documentation/admin-guide/pm/cpufreq.rst
++++ b/Documentation/admin-guide/pm/cpufreq.rst
+@@ -147,9 +147,9 @@ CPUs in it.
+ 
+ The next major initialization step for a new policy object is to attach a
+ scaling governor to it (to begin with, that is the default scaling governor
+-determined by the kernel configuration, but it may be changed later
+-via ``sysfs``).  First, a pointer to the new policy object is passed to the
+-governor's ``->init()`` callback which is expected to initialize all of the
++determined by the kernel command line or configuration, but it may be changed
++later via ``sysfs``).  First, a pointer to the new policy object is passed to
++the governor's ``->init()`` callback which is expected to initialize all of the
+ data structures necessary to handle the given policy and, possibly, to add
+ a governor ``sysfs`` interface to it.  Next, the governor is started by
+ invoking its ``->start()`` callback.
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index e9e8200a0211..ad94b1d47ddb 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -50,6 +50,8 @@ static LIST_HEAD(cpufreq_governor_list);
+ #define for_each_governor(__governor)				\
+ 	list_for_each_entry(__governor, &cpufreq_governor_list, governor_list)
+ 
++static char default_governor[CPUFREQ_NAME_LEN];
++
+ /**
+  * The "cpufreq driver" - the arch- or hardware-dependent low
+  * level driver of CPUFreq support, and its spinlock. This lock
+@@ -1061,7 +1063,6 @@ __weak struct cpufreq_governor *cpufreq_default_governor(void)
+ 
+ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+ {
+-	struct cpufreq_governor *def_gov = cpufreq_default_governor();
+ 	struct cpufreq_governor *gov = NULL;
+ 	unsigned int pol = CPUFREQ_POLICY_UNKNOWN;
+ 	int ret;
+@@ -1071,21 +1072,27 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
+ 		gov = get_governor(policy->last_governor);
+ 		if (gov) {
+ 			pr_debug("Restoring governor %s for cpu %d\n",
+-				 policy->governor->name, policy->cpu);
+-		} else if (def_gov) {
+-			gov = def_gov;
+-			__module_get(gov->owner);
++				 gov->name, policy->cpu);
+ 		} else {
+-			return -ENODATA;
++			gov = get_governor(default_governor);
++		}
++
++		if (!gov) {
++			gov = cpufreq_default_governor();
++			if (!gov)
++				return -ENODATA;
++			__module_get(gov->owner);
+ 		}
++
+ 	} else {
++
+ 		/* Use the default policy if there is no last_policy. */
+ 		if (policy->last_policy) {
+ 			pol = policy->last_policy;
+-		} else if (def_gov) {
+-			pol = cpufreq_parse_policy(def_gov->name);
++		} else {
++			pol = cpufreq_parse_policy(default_governor);
+ 			/*
+-			 * In case the default governor is neiter "performance"
++			 * In case the default governor is neither "performance"
+ 			 * nor "powersave", fall back to the initial policy
+ 			 * value set by the driver.
+ 			 */
+@@ -2795,13 +2802,19 @@ EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
+ 
+ static int __init cpufreq_core_init(void)
+ {
++	struct cpufreq_governor *gov = cpufreq_default_governor();
++
+ 	if (cpufreq_disabled())
+ 		return -ENODEV;
+ 
+ 	cpufreq_global_kobject = kobject_create_and_add("cpufreq", &cpu_subsys.dev_root->kobj);
+ 	BUG_ON(!cpufreq_global_kobject);
+ 
++	if (!strlen(default_governor))
++		strncpy(default_governor, gov->name, CPUFREQ_NAME_LEN);
++
+ 	return 0;
+ }
+ module_param(off, int, 0444);
++module_param_string(default_governor, default_governor, CPUFREQ_NAME_LEN, 0444);
+ core_initcall(cpufreq_core_init);
 -- 
-2.17.1
+2.25.0.rc1.19.g042ed3e048af
 
