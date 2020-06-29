@@ -2,225 +2,108 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 967BFC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E1FCC433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6BAD720663
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D959620663
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="ufgK5aOt"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="blY5505y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732705AbgF2Uph (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:45:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43372 "EHLO
+        id S1730060AbgF2Upy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:45:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43394 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731572AbgF2TN5 (ORCPT
+        with ESMTP id S1731567AbgF2TN5 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:57 -0400
-Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com [IPv6:2607:f8b0:4864:20::e43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7ADFFC08ED8C
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:05:02 -0700 (PDT)
-Received: by mail-vs1-xe43.google.com with SMTP id o2so8680697vsr.0
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:05:02 -0700 (PDT)
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70532C08EACB
+        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:17:45 -0700 (PDT)
+Received: by mail-pj1-x1041.google.com with SMTP id k71so4103910pje.0
+        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:17:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=O4CL5jT1tY8QD8FjAFdyHeuWe+dWBhI6iRrYPmWg+K0=;
-        b=ufgK5aOt+VEkKCf7cfv7S4ZtNXtnnmklYABTUv1VaPxOyVYlRF0W+WWMz74ZV08AGE
-         1s1vKmMq4KVk+MBoFIT07TOKURsUNbRQdevHqaQ1aWm8cwm+U1Imt2LTLVn76ZfauBCL
-         Jn8YnNOHw3ZvLP+IWIJlri1ht33n4/CzEON0vrJSMjbdw8TJtfW8X1tddfpQMfXgkCZi
-         BtT26G9ckLhBaXLHozdLJ9i2lXgOWfKOEveukc+nllrmwg/ZQ4vjc16Owk1GMoom+Uhd
-         EtZSUhps1bb5xV0fHsgJxXJI4qzTSeRxyn0KdrZYD00xOxK3NemGIoaULhoM5HjdHhpi
-         jOmA==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=/iWF9Aktns6tjUCoIAHOc+DKzNhTAu9vb8oX3epUC60=;
+        b=blY5505ygN1qt1Y8DSpy0SiYhbAhUtlzOYCJQL61xLBe5ORTR3pWGY2BSrDFUf/frY
+         D2KvctYi0X9Ru4JBVk6rpW0KJGoE6oLqz2VhAUynepoFHbJ2tVw3/pYv2ujjSLBKo+cZ
+         xJsCdaCDR1eK+PCnlmrpDahrh6/Q/7Ls9G6cjc2mnEoLxWf8SRWVkadedQsCIsOXQcog
+         QbspxLbknbwM3pgGBz+VC2c9ai4fqnMqPyOi2JVK+m+Y8+R7SofQf6PYyPWFqo4q/6Lg
+         9DW1LM6RJ/DvVtF9/5oFhneRt9RQoGxAXSwjuwZVCv7KOp0aPb2jd6ycudIjnuVJqhNz
+         l6AA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=O4CL5jT1tY8QD8FjAFdyHeuWe+dWBhI6iRrYPmWg+K0=;
-        b=aPMZTpvK3wWsubQ6XBbZhkc1ee8vJWq04XM5Izq6Wl+kqTvKu8Ayv0pCwvsUAKD8PB
-         smDshcJTcBaV0/CpCrxMd22IfH+VlPZrXN5OADWTI1V8rVZT79NNg/7m1jLWxgtnoNdQ
-         NA6/9ltG/AtpzzXvx+IW1sXJosls4iZCwKK9vhtQCAFMRWeD/tx/dlm7lqwvZJSv9HuP
-         vBOoyDUk46+k2lMPsSN6zEgzbC6Nm/DyEB3pNm0T/NoTleKKXnoU/Rk3jb2nxqMlttT0
-         CKFvxFgOEHOtsco6b2wE1Chop/+RkJZpmZrkvoak5hY31PqES9XfPsQWFX4sOeTLp/b9
-         Vrkg==
-X-Gm-Message-State: AOAM532yMRNWBMT4Tp0rIYwn83HJ9a1mAx4MrTb+VDW2btjJcZD+GQFy
-        gShnVti7ijlGOvfqgZYgmdZ23g4lXFbZS56Ep0IFyw==
-X-Google-Smtp-Source: ABdhPJwExycQo0Z3q8vxfUV0tozODXEDNYpnqbSU0LS4IbWtPA6zbYd6g3HijjZDuNICJGxZ+gh7EBDX0w/h/Xyyvro=
-X-Received: by 2002:a05:6102:203:: with SMTP id z3mr2837721vsp.182.1593414301322;
- Mon, 29 Jun 2020 00:05:01 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=/iWF9Aktns6tjUCoIAHOc+DKzNhTAu9vb8oX3epUC60=;
+        b=T0HFFlgY6Oueo57agY0AkgrgHUaz7K4AMhfW0FP4Is7qecKcKjIlf39Wh3KDWv55Os
+         kUnEsjpeieDDPdf/ONVC3zZAJnREt5OUnat03zloqBLJwFKNsYHtfR/llkppdchfkLtQ
+         8pzkdFfXfKUXA2KZx17YqJ++XhJCLRYWnoG+ztOtqDP7Ve+8jRYFqj/Ob5S7yVNiFmE9
+         vjvO2gqC8f01pfTg7X9pV/k6XElKFROY+WuU2eUspKP7HucHf05sGbi0R1YLDEyYV2Ig
+         htQAKaCdwbs7r2BTewhKIdVUJDM+OQWKe/xfSzyYgBly/LAZ4TUANd9wFspMv3kLRWpq
+         oLzw==
+X-Gm-Message-State: AOAM530A6jrY84ipDhQE40xg0ISRrgY1YBENUOVQdjOxkycOi+ejG1wJ
+        zfW/bP335J2yrG5XRoA25KX1IA==
+X-Google-Smtp-Source: ABdhPJwTKfFVHzwQAGzguT3A58qTDtSwnwdELyYHjDiWd5nJqHRq6K6pp1+oar1iZXy/qT8C+R3bhQ==
+X-Received: by 2002:a17:902:201:: with SMTP id 1mr12567598plc.195.1593411464987;
+        Sun, 28 Jun 2020 23:17:44 -0700 (PDT)
+Received: from localhost ([122.172.127.76])
+        by smtp.gmail.com with ESMTPSA id t184sm3828984pfd.49.2020.06.28.23.17.44
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 28 Jun 2020 23:17:44 -0700 (PDT)
+Date:   Mon, 29 Jun 2020 11:47:42 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Sumit Gupta <sumitg@nvidia.com>
+Cc:     rjw@rjwysocki.net, catalin.marinas@arm.com, will@kernel.org,
+        thierry.reding@gmail.com, robh+dt@kernel.org,
+        devicetree@vger.kernel.org, jonathanh@nvidia.com, talho@nvidia.com,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        bbasu@nvidia.com, mperttunen@nvidia.com
+Subject: Re: [TEGRA194_CPUFREQ PATCH v4 4/4] arm64: defconfig: Enable
+ CONFIG_ARM_TEGRA194_CPUFREQ
+Message-ID: <20200629061742.26pd4rzswlb5wegx@vireshk-i7>
+References: <1593186236-12760-1-git-send-email-sumitg@nvidia.com>
+ <1593186236-12760-5-git-send-email-sumitg@nvidia.com>
 MIME-Version: 1.0
-References: <9cbffad6-69e4-0b33-4640-fde7c4f6a6e7@linaro.org>
- <20200626173755.26379-1-andrzej.p@collabora.com> <20200626173755.26379-7-andrzej.p@collabora.com>
-In-Reply-To: <20200626173755.26379-7-andrzej.p@collabora.com>
-From:   Amit Kucheria <amit.kucheria@verdurent.com>
-Date:   Mon, 29 Jun 2020 12:34:50 +0530
-Message-ID: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
-Subject: Re: [PATCH v5 06/11] thermal: Add mode helpers
-To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Cc:     Linux PM list <linux-pm@vger.kernel.org>,
-        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
-        linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        lakml <linux-arm-kernel@lists.infradead.org>,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        kernel@collabora.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1593186236-12760-5-git-send-email-sumitg@nvidia.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jun 26, 2020 at 11:08 PM Andrzej Pietrasiewicz
-<andrzej.p@collabora.com> wrote:
->
-> Prepare for making the drivers not access tzd's private members.
->
-> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-> [EXPORT_SYMBOL -> EXPORT_SYMBOL_GPL]
-> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+On 26-06-20, 21:13, Sumit Gupta wrote:
+> Enable Tegra194 CPU frequency scaling support by default.
+> 
+> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
 > ---
->  drivers/thermal/thermal_core.c | 53 ++++++++++++++++++++++++++++++++++
->  include/linux/thermal.h        | 13 +++++++++
->  2 files changed, 66 insertions(+)
->
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 14d3b1b94c4f..3181295075b9 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -459,6 +459,59 @@ static void thermal_zone_device_reset(struct thermal_zone_device *tz)
->         thermal_zone_device_init(tz);
->  }
->
-> +int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
-> +                                enum thermal_device_mode mode)
+>  arch/arm64/configs/defconfig | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+> index f9d378d..385bd35 100644
+> --- a/arch/arm64/configs/defconfig
+> +++ b/arch/arm64/configs/defconfig
+> @@ -91,6 +91,7 @@ CONFIG_ARM_QCOM_CPUFREQ_NVMEM=y
+>  CONFIG_ARM_QCOM_CPUFREQ_HW=y
+>  CONFIG_ARM_RASPBERRYPI_CPUFREQ=m
+>  CONFIG_ARM_TEGRA186_CPUFREQ=y
+> +CONFIG_ARM_TEGRA194_CPUFREQ=y
+>  CONFIG_QORIQ_CPUFREQ=y
+>  CONFIG_ARM_SCPI_PROTOCOL=y
+>  CONFIG_RASPBERRYPI_FIRMWARE=y
 
-Should this be static?
+Instead of this, maybe you can rather add a default y thing in the
+Kconfig itself as this is a single platform driver.
 
-> +{
-> +       int ret = 0;
-> +
-> +       mutex_lock(&tz->lock);
-> +
-> +       /* do nothing if mode isn't changing */
-> +       if (mode == tz->mode) {
-> +               mutex_unlock(&tz->lock);
-> +
-> +               return ret;
-> +       }
-> +
-> +       if (tz->ops->set_mode)
-> +               ret = tz->ops->set_mode(tz, mode);
-> +
-> +       if (!ret)
-> +               tz->mode = mode;
-> +
-> +       mutex_unlock(&tz->lock);
-> +
-> +       thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
-> +
-> +       return ret;
-> +}
-> +
-> +int thermal_zone_device_enable(struct thermal_zone_device *tz)
-> +{
-> +       return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_ENABLED);
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_zone_device_enable);
-> +
-> +int thermal_zone_device_disable(struct thermal_zone_device *tz)
-> +{
-> +       return thermal_zone_device_set_mode(tz, THERMAL_DEVICE_DISABLED);
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_zone_device_disable);
-> +
-> +int thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
-> +{
-> +       enum thermal_device_mode mode;
-> +
-> +       mutex_lock(&tz->lock);
-> +
-> +       mode = tz->mode;
-> +
-> +       mutex_unlock(&tz->lock);
-> +
-> +       return mode == THERMAL_DEVICE_ENABLED;
-> +}
-> +EXPORT_SYMBOL_GPL(thermal_zone_device_is_enabled);
-> +
->  void thermal_zone_device_update(struct thermal_zone_device *tz,
->                                 enum thermal_notify_event event)
->  {
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index a808f6fa2777..df013c39ba9b 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -416,6 +416,9 @@ int thermal_zone_get_offset(struct thermal_zone_device *tz);
->
->  void thermal_cdev_update(struct thermal_cooling_device *);
->  void thermal_notify_framework(struct thermal_zone_device *, int);
-> +int thermal_zone_device_enable(struct thermal_zone_device *tz);
-> +int thermal_zone_device_disable(struct thermal_zone_device *tz);
-> +int thermal_zone_device_is_enabled(struct thermal_zone_device *tz);
->  #else
->  static inline struct thermal_zone_device *thermal_zone_device_register(
->         const char *type, int trips, int mask, void *devdata,
-> @@ -463,6 +466,16 @@ static inline void thermal_cdev_update(struct thermal_cooling_device *cdev)
->  static inline void thermal_notify_framework(struct thermal_zone_device *tz,
->         int trip)
->  { }
-> +
-> +static inline int thermal_zone_device_enable(struct thermal_zone_device *tz)
-> +{ return -ENODEV; }
-> +
-> +static inline int thermal_zone_device_disable(struct thermal_zone_device *tz)
-> +{ return -ENODEV; }
-> +
-> +static inline int
-> +thermal_zone_device_is_enabled(struct thermal_zone_device *tz)
-> +{ return -ENODEV; }
->  #endif /* CONFIG_THERMAL */
->
->  #endif /* __THERMAL_H__ */
-> --
-> 2.17.1
->
+-- 
+viresh
