@@ -2,122 +2,92 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=DKIMWL_WL_MED,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87CFBC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:02:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A038C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:02:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E55D20720
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:02:10 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="uGXdcKt0"
+	by mail.kernel.org (Postfix) with ESMTP id 26F4B2073E
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 21:02:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390053AbgF2VCJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 17:02:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43356 "EHLO
+        id S1731159AbgF2VCk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 17:02:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43382 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731148AbgF2TMv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:12:51 -0400
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 924DFC014AA5
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:05:16 -0700 (PDT)
-Received: by mail-wm1-x344.google.com with SMTP id j18so14448079wmi.3
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 01:05:16 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=5+hczelMMEDbYcHP5+CW5lQUh+iqmRD+aRAJuSk8CxM=;
-        b=uGXdcKt0pHO/pN/1e1d6qjxm6dypuBJxXYRvEDVJpohbWz0nM3+E0h2zX19UjPTDJT
-         /TUbDJkiNOZdbwZfrECDpJW5FBCvhNuLpD8BwD1Yd+fp+lBP4iODaZJxq6IaS4XkeiIM
-         xV6HwIgYOETVk8DEQy7tRQuOSAjBKL9Y4EmcnT1soTsMJDWuonlBeqo23WJSnrlCbREa
-         7PUtod/r12dmFpz1eTNc5ZYslMpGhvZiXtOepOO2ld9AbC+qtNFtB9Kozz8wjHYtLzuu
-         KPgEFHYSO9twXbF5nASFfCOLAXf6qhdYQjt5FbVZBB5uFhg0BeZngnyKJ9/q3fHxRsW9
-         O+7g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=5+hczelMMEDbYcHP5+CW5lQUh+iqmRD+aRAJuSk8CxM=;
-        b=FTDG6pKT1QDg9C32KxpVLr40hihR5sr/7Vz+ziemfYOLjuWp7IvGYHW4tsEH9EcWVL
-         82V7sswqu8ehiFQTvdiypLDX1McoGJq3JLKF6/Dh37sOjnwud7VECnG5gyMgLFYQPxnZ
-         EpMoHdxISgDKckJtorcyRQ6recB4apWwn0qSB5nkQ58GXNI7usZHT7XawUmuXdGVeOTq
-         mkDl3tmt0Y6h6LZFr9wPSrot+OOQKZwxnBWp3btzu15sqPFg7YqH4JisGWeNA98OWh2S
-         diE/5Hxjj6tJABEKn/SNOHbKLC4nf48Nc0SWzjSXp3nJkEMPtoNk4UVvQ/J0cr6qTTDn
-         HW1g==
-X-Gm-Message-State: AOAM532biveqvyUT3GIbRFNsFjE98ZFFPAnmG+mh4qTlUwQ9CwSwyvUY
-        51EbLyWq4dcK6NGqY87AKnNOtQ==
-X-Google-Smtp-Source: ABdhPJxzGmtYixvHk5OQIS11ERm+5ABmfFXTzChdfi8AO/NDYvXEPyeBiFluSdHDuoghA2KTZOI0yQ==
-X-Received: by 2002:a1c:a7c4:: with SMTP id q187mr15114921wme.0.1593417915196;
-        Mon, 29 Jun 2020 01:05:15 -0700 (PDT)
-Received: from google.com ([2a00:79e0:d:110:d6cc:2030:37c1:9964])
-        by smtp.gmail.com with ESMTPSA id y16sm47498532wro.71.2020.06.29.01.05.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Jun 2020 01:05:14 -0700 (PDT)
-Date:   Mon, 29 Jun 2020 09:05:11 +0100
-From:   Quentin Perret <qperret@google.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        kernel-team@android.com, tkjos@google.com, adharmap@codeaurora.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH V3 1/3] cpufreq: Fix locking issues with governors
-Message-ID: <20200629080511.GB1217385@google.com>
-References: <cover.1593143118.git.viresh.kumar@linaro.org>
- <f366ed3dd3dd111e42173b366fe4dd5a0e4647fd.1593143118.git.viresh.kumar@linaro.org>
- <20200626082433.GA284605@google.com>
- <20200629021309.eleyysuh5f5g52qw@vireshk-i7>
+        with ESMTP id S1731158AbgF2TMt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:12:49 -0400
+X-Greylist: delayed 347 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Mon, 29 Jun 2020 05:15:27 PDT
+Received: from jabberwock.ucw.cz (jabberwock.ucw.cz [IPv6:2a00:da80:fff0:2::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9C788C00E3F6;
+        Mon, 29 Jun 2020 05:15:27 -0700 (PDT)
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+        id 2FC371C0C89; Mon, 29 Jun 2020 14:09:39 +0200 (CEST)
+Date:   Mon, 29 Jun 2020 14:09:38 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     Borislav Petkov <bp@alien8.de>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org,
+        dsmythies@telus.net, tglx@linutronix.de, mingo@redhat.com,
+        hpa@zytor.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, x86@kernel.org, jic23@cam.ac.uk,
+        keescook@chromium.org, akpm@linux-foundation.org
+Subject: Re: [PATCH] lib: Extend kstrtobool() to accept "true"/"false"
+Message-ID: <20200629120938.GC1319@bug>
+References: <20200625224931.1468150-1-srinivas.pandruvada@linux.intel.com>
+ <20200626084903.GA27151@zn.tnic>
+ <20200626102255.GZ4817@hirez.programming.kicks-ass.net>
+ <20200626104442.GF117543@hirez.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200629021309.eleyysuh5f5g52qw@vireshk-i7>
+In-Reply-To: <20200626104442.GF117543@hirez.programming.kicks-ass.net>
+User-Agent: Mutt/1.5.23 (2014-03-12)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday 29 Jun 2020 at 07:43:09 (+0530), Viresh Kumar wrote:
-> I described why I chose to keep it that way in the other email, but I
-> am all for dropping the variable. And so what about this ?
+Hi!
+
+> > > This is too lax - it will be enabled for any !0 value. Please accept
+> > > only 0 and 1.
+> > 
+> > kstrtobool() ftw
 > 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index e798a1193bdf..d9e9ae7051bb 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -1064,18 +1064,17 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
->         struct cpufreq_governor *def_gov = cpufreq_default_governor();
->         struct cpufreq_governor *gov = NULL;
->         unsigned int pol = CPUFREQ_POLICY_UNKNOWN;
-> -       bool put_governor = false;
->         int ret;
->  
->         if (has_target()) {
->                 /* Update policy governor to the one used before hotplug. */
->                 gov = get_governor(policy->last_governor);
->                 if (gov) {
-> -                       put_governor = true;
->                         pr_debug("Restoring governor %s for cpu %d\n",
->                                  policy->governor->name, policy->cpu);
->                 } else if (def_gov) {
->                         gov = def_gov;
-> +                       module_get(gov->owner);
->                 } else {
->                         return -ENODATA;
->                 }
-> @@ -1099,7 +1098,7 @@ static int cpufreq_init_policy(struct cpufreq_policy *policy)
->         }
->  
->         ret = cpufreq_set_policy(policy, gov, pol);
-> -       if (put_governor)
-> +       if (gov)
->                 module_put(gov->owner);
->  
->         return ret;
+> And looking at that, I find it really strange it does not in fact accept
+> "true" / "false", so how about this?
+> 
+> ---
+> Subject: lib: Extend kstrtobool() to accept "true"/"false"
+> 
+> Extend the strings recognised by kstrtobool() to cover:
+> 
+>   - 1/0
+>   - y/n
+>   - yes/no	(new)
+>   - t/f		(new)
+>   - true/false  (new)
+>   - on/off
 
-Right, I guess this is a good trade-off, so that works for me.
+Is it good idea to add more values there? It is easy to do, but... we don't want
+people to use this by hand, and ideally everyone would just use 1/0...
 
-Thanks,
-Quentin
+I also see potential for confusion... as in echo off > enable_off_mode (ok, this is
+with existing code, but...)
+
+Plus, if programs learn to do "echo true > ..." they will stop working on older kernels.
+
+Plus, this really should be documented somewhere, as it is kernel ABI.
+
+IMO this does not need changing.
+
+NAK.
+
+Best regards,
+									Pavel
+
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
