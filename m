@@ -2,108 +2,239 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E1FCC433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0B40C433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:46:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D959620663
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:45:55 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="blY5505y"
+	by mail.kernel.org (Postfix) with ESMTP id B1A97206C0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:46:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730060AbgF2Upy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:45:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43394 "EHLO
+        id S2389605AbgF2UqH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:46:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43372 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731567AbgF2TN5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:57 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70532C08EACB
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:17:45 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id k71so4103910pje.0
-        for <linux-pm@vger.kernel.org>; Sun, 28 Jun 2020 23:17:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=/iWF9Aktns6tjUCoIAHOc+DKzNhTAu9vb8oX3epUC60=;
-        b=blY5505ygN1qt1Y8DSpy0SiYhbAhUtlzOYCJQL61xLBe5ORTR3pWGY2BSrDFUf/frY
-         D2KvctYi0X9Ru4JBVk6rpW0KJGoE6oLqz2VhAUynepoFHbJ2tVw3/pYv2ujjSLBKo+cZ
-         xJsCdaCDR1eK+PCnlmrpDahrh6/Q/7Ls9G6cjc2mnEoLxWf8SRWVkadedQsCIsOXQcog
-         QbspxLbknbwM3pgGBz+VC2c9ai4fqnMqPyOi2JVK+m+Y8+R7SofQf6PYyPWFqo4q/6Lg
-         9DW1LM6RJ/DvVtF9/5oFhneRt9RQoGxAXSwjuwZVCv7KOp0aPb2jd6ycudIjnuVJqhNz
-         l6AA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=/iWF9Aktns6tjUCoIAHOc+DKzNhTAu9vb8oX3epUC60=;
-        b=T0HFFlgY6Oueo57agY0AkgrgHUaz7K4AMhfW0FP4Is7qecKcKjIlf39Wh3KDWv55Os
-         kUnEsjpeieDDPdf/ONVC3zZAJnREt5OUnat03zloqBLJwFKNsYHtfR/llkppdchfkLtQ
-         8pzkdFfXfKUXA2KZx17YqJ++XhJCLRYWnoG+ztOtqDP7Ve+8jRYFqj/Ob5S7yVNiFmE9
-         vjvO2gqC8f01pfTg7X9pV/k6XElKFROY+WuU2eUspKP7HucHf05sGbi0R1YLDEyYV2Ig
-         htQAKaCdwbs7r2BTewhKIdVUJDM+OQWKe/xfSzyYgBly/LAZ4TUANd9wFspMv3kLRWpq
-         oLzw==
-X-Gm-Message-State: AOAM530A6jrY84ipDhQE40xg0ISRrgY1YBENUOVQdjOxkycOi+ejG1wJ
-        zfW/bP335J2yrG5XRoA25KX1IA==
-X-Google-Smtp-Source: ABdhPJwTKfFVHzwQAGzguT3A58qTDtSwnwdELyYHjDiWd5nJqHRq6K6pp1+oar1iZXy/qT8C+R3bhQ==
-X-Received: by 2002:a17:902:201:: with SMTP id 1mr12567598plc.195.1593411464987;
-        Sun, 28 Jun 2020 23:17:44 -0700 (PDT)
-Received: from localhost ([122.172.127.76])
-        by smtp.gmail.com with ESMTPSA id t184sm3828984pfd.49.2020.06.28.23.17.44
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 28 Jun 2020 23:17:44 -0700 (PDT)
-Date:   Mon, 29 Jun 2020 11:47:42 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Sumit Gupta <sumitg@nvidia.com>
-Cc:     rjw@rjwysocki.net, catalin.marinas@arm.com, will@kernel.org,
-        thierry.reding@gmail.com, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, jonathanh@nvidia.com, talho@nvidia.com,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        bbasu@nvidia.com, mperttunen@nvidia.com
-Subject: Re: [TEGRA194_CPUFREQ PATCH v4 4/4] arm64: defconfig: Enable
- CONFIG_ARM_TEGRA194_CPUFREQ
-Message-ID: <20200629061742.26pd4rzswlb5wegx@vireshk-i7>
-References: <1593186236-12760-1-git-send-email-sumitg@nvidia.com>
- <1593186236-12760-5-git-send-email-sumitg@nvidia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1593186236-12760-5-git-send-email-sumitg@nvidia.com>
-User-Agent: NeoMutt/20180716-391-311a52
+        with ESMTP id S1731548AbgF2TNx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:53 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6D81FC0085B1;
+        Mon, 29 Jun 2020 04:16:46 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: andrzej.p)
+        with ESMTPSA id B841D2A0F61
+From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+To:     linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        kernel@collabora.com
+Subject: [PATCH v6 11/11] thermal: Rename set_mode() to change_mode()
+Date:   Mon, 29 Jun 2020 13:16:15 +0200
+Message-Id: <20200629111615.18131-12-andrzej.p@collabora.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200629111615.18131-1-andrzej.p@collabora.com>
+References: <CAHLCerO2XOOX9akEwaTu_cjSqRycFpNmoVxkSe36L8B4ALWidA@mail.gmail.com>
+ <20200629111615.18131-1-andrzej.p@collabora.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 26-06-20, 21:13, Sumit Gupta wrote:
-> Enable Tegra194 CPU frequency scaling support by default.
-> 
-> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> ---
->  arch/arm64/configs/defconfig | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
-> index f9d378d..385bd35 100644
-> --- a/arch/arm64/configs/defconfig
-> +++ b/arch/arm64/configs/defconfig
-> @@ -91,6 +91,7 @@ CONFIG_ARM_QCOM_CPUFREQ_NVMEM=y
->  CONFIG_ARM_QCOM_CPUFREQ_HW=y
->  CONFIG_ARM_RASPBERRYPI_CPUFREQ=m
->  CONFIG_ARM_TEGRA186_CPUFREQ=y
-> +CONFIG_ARM_TEGRA194_CPUFREQ=y
->  CONFIG_QORIQ_CPUFREQ=y
->  CONFIG_ARM_SCPI_PROTOCOL=y
->  CONFIG_RASPBERRYPI_FIRMWARE=y
+set_mode() is only called when tzd's mode is about to change. Actual
+setting is performed in thermal_core, in thermal_zone_device_set_mode().
+The meaning of set_mode() callback is actually to notify the driver about
+the mode being changed and giving the driver a chance to oppose such
+change.
 
-Instead of this, maybe you can rather add a default y thing in the
-Kconfig itself as this is a single platform driver.
+To better reflect the purpose of the method rename it to change_mode()
 
+Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+[for acerhdf]
+Acked-by: Peter Kaestle <peter@piie.net>
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+---
+ drivers/platform/x86/acerhdf.c                          | 6 +++---
+ drivers/thermal/imx_thermal.c                           | 8 ++++----
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c | 6 +++---
+ drivers/thermal/intel/intel_quark_dts_thermal.c         | 6 +++---
+ drivers/thermal/thermal_core.c                          | 4 ++--
+ include/linux/thermal.h                                 | 2 +-
+ 6 files changed, 16 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+index 76323855c80c..f816a8a13039 100644
+--- a/drivers/platform/x86/acerhdf.c
++++ b/drivers/platform/x86/acerhdf.c
+@@ -413,8 +413,8 @@ static inline void acerhdf_enable_kernelmode(void)
+  *          the temperature and the fan.
+  * disabled: the BIOS takes control of the fan.
+  */
+-static int acerhdf_set_mode(struct thermal_zone_device *thermal,
+-			    enum thermal_device_mode mode)
++static int acerhdf_change_mode(struct thermal_zone_device *thermal,
++			       enum thermal_device_mode mode)
+ {
+ 	if (mode == THERMAL_DEVICE_DISABLED && kernelmode)
+ 		acerhdf_revert_to_bios_mode();
+@@ -473,7 +473,7 @@ static struct thermal_zone_device_ops acerhdf_dev_ops = {
+ 	.bind = acerhdf_bind,
+ 	.unbind = acerhdf_unbind,
+ 	.get_temp = acerhdf_get_ec_temp,
+-	.set_mode = acerhdf_set_mode,
++	.change_mode = acerhdf_change_mode,
+ 	.get_trip_type = acerhdf_get_trip_type,
+ 	.get_trip_hyst = acerhdf_get_trip_hyst,
+ 	.get_trip_temp = acerhdf_get_trip_temp,
+diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
+index a02398118d88..9700ae39feb7 100644
+--- a/drivers/thermal/imx_thermal.c
++++ b/drivers/thermal/imx_thermal.c
+@@ -330,8 +330,8 @@ static int imx_get_temp(struct thermal_zone_device *tz, int *temp)
+ 	return 0;
+ }
+ 
+-static int imx_set_mode(struct thermal_zone_device *tz,
+-			enum thermal_device_mode mode)
++static int imx_change_mode(struct thermal_zone_device *tz,
++			   enum thermal_device_mode mode)
+ {
+ 	struct imx_thermal_data *data = tz->devdata;
+ 	struct regmap *map = data->tempmon;
+@@ -447,7 +447,7 @@ static struct thermal_zone_device_ops imx_tz_ops = {
+ 	.bind = imx_bind,
+ 	.unbind = imx_unbind,
+ 	.get_temp = imx_get_temp,
+-	.set_mode = imx_set_mode,
++	.change_mode = imx_change_mode,
+ 	.get_trip_type = imx_get_trip_type,
+ 	.get_trip_temp = imx_get_trip_temp,
+ 	.get_crit_temp = imx_get_crit_temp,
+@@ -860,7 +860,7 @@ static int __maybe_unused imx_thermal_suspend(struct device *dev)
+ 	 * Need to disable thermal sensor, otherwise, when thermal core
+ 	 * try to get temperature before thermal sensor resume, a wrong
+ 	 * temperature will be read as the thermal sensor is powered
+-	 * down. This is done in set_mode() operation called from
++	 * down. This is done in change_mode() operation called from
+ 	 * thermal_zone_device_disable()
+ 	 */
+ 	ret = thermal_zone_device_disable(data->tz);
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index ce49d3b100d5..d3732f624913 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -377,8 +377,8 @@ static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
+ 
+-static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+-				enum thermal_device_mode mode)
++static int int3400_thermal_change_mode(struct thermal_zone_device *thermal,
++				       enum thermal_device_mode mode)
+ {
+ 	struct int3400_thermal_priv *priv = thermal->devdata;
+ 	int result = 0;
+@@ -399,7 +399,7 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+ 
+ static struct thermal_zone_device_ops int3400_thermal_ops = {
+ 	.get_temp = int3400_thermal_get_temp,
+-	.set_mode = int3400_thermal_set_mode,
++	.change_mode = int3400_thermal_change_mode,
+ };
+ 
+ static struct thermal_zone_params int3400_thermal_params = {
+diff --git a/drivers/thermal/intel/intel_quark_dts_thermal.c b/drivers/thermal/intel/intel_quark_dts_thermal.c
+index e29c3e330b17..3eafc6b0e6c3 100644
+--- a/drivers/thermal/intel/intel_quark_dts_thermal.c
++++ b/drivers/thermal/intel/intel_quark_dts_thermal.c
+@@ -298,8 +298,8 @@ static int sys_get_curr_temp(struct thermal_zone_device *tzd,
+ 	return 0;
+ }
+ 
+-static int sys_set_mode(struct thermal_zone_device *tzd,
+-				enum thermal_device_mode mode)
++static int sys_change_mode(struct thermal_zone_device *tzd,
++			   enum thermal_device_mode mode)
+ {
+ 	int ret;
+ 
+@@ -319,7 +319,7 @@ static struct thermal_zone_device_ops tzone_ops = {
+ 	.get_trip_type = sys_get_trip_type,
+ 	.set_trip_temp = sys_set_trip_temp,
+ 	.get_crit_temp = sys_get_crit_temp,
+-	.set_mode = sys_set_mode,
++	.change_mode = sys_change_mode,
+ };
+ 
+ static void free_soc_dts(struct soc_sensor_entry *aux_entry)
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index e613f5c07bad..a61e91513584 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -482,8 +482,8 @@ static int thermal_zone_device_set_mode(struct thermal_zone_device *tz,
+ 		return ret;
+ 	}
+ 
+-	if (tz->ops->set_mode)
+-		ret = tz->ops->set_mode(tz, mode);
++	if (tz->ops->change_mode)
++		ret = tz->ops->change_mode(tz, mode);
+ 
+ 	if (!ret)
+ 		tz->mode = mode;
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index df013c39ba9b..b9efaa780d88 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -76,7 +76,7 @@ struct thermal_zone_device_ops {
+ 		       struct thermal_cooling_device *);
+ 	int (*get_temp) (struct thermal_zone_device *, int *);
+ 	int (*set_trips) (struct thermal_zone_device *, int, int);
+-	int (*set_mode) (struct thermal_zone_device *,
++	int (*change_mode) (struct thermal_zone_device *,
+ 		enum thermal_device_mode);
+ 	int (*get_trip_type) (struct thermal_zone_device *, int,
+ 		enum thermal_trip_type *);
 -- 
-viresh
+2.17.1
+
