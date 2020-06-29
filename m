@@ -2,159 +2,129 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CE08BC433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:38:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F30A5C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:40:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AC63E2225F
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:38:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="OQH0L9cB"
+	by mail.kernel.org (Postfix) with ESMTP id E3F902236F
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 18:40:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727955AbgF2SiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 14:38:00 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37554 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727921AbgF2Sh5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 14:37:57 -0400
-Received: from mail-vk1-xa44.google.com (mail-vk1-xa44.google.com [IPv6:2607:f8b0:4864:20::a44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8F32C02A546
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 05:51:33 -0700 (PDT)
-Received: by mail-vk1-xa44.google.com with SMTP id t23so3689564vkt.5
-        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 05:51:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=xHEvnwaXIaI22DXPizYpJcrsTL4/AwhMEQ6IhYTQKlQ=;
-        b=OQH0L9cBVHLRgTVZhw1jd+9UWSypZQN30gG3yvEpHJvc2VXIoNz+hyJGcfUcBU+7e4
-         oCc7XEKBqBQPleKnUVnLbIp6WsDfC+WCcVQhpW8dNcfHdlE37M0unZrcRr+0gg3/aEvf
-         PMdPFYwgtQ+R9ZtNcXAgyQyPNtpr4cbByuURBHAnjcHM+1N71I+sWI1yfCbGzQcEdiAN
-         yY4uALwvM8jRmBCwqjPgXEIl4AGsHRadzBeA2q8DcqrH+lwiFBEB3A6DNV046uaF3RHg
-         gXgPPRlYEZ8ZU+Sn3QHjIt7k5b5qK/HGOI6FP26Yjc3r+mq7qoc4ZOwpVuG+VUgxyPPT
-         2jyw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=xHEvnwaXIaI22DXPizYpJcrsTL4/AwhMEQ6IhYTQKlQ=;
-        b=iki4NdksYCg6erm0SAg7I4akykSN6r/jREis2RYmc+8AArdZonQC/PkbN8xkvzGcHi
-         1dUNJdx9pYMi46e+Ipp4rX3DfMkM/pWEn/gTcpQK2AFLemzvaEQFVqQmlsEtt+PaU9p4
-         a7fSy6UHRNc12hCQlt0+/mJEeGqqY0ASHX88PzmjmBDHFBNuN0HKEJIy0Oj+FjTxIxWq
-         cD2ibid8vQtWbJ7DREFuPuKayE8Noe4ndzXoidvq/G/sicVW97lVaHq3V1iZqwVTKkiS
-         DPhREo1RhfaZSeTXj+29/mScP65HeNzoWXAvyNqy3MJ4/JYqp9+5lNticUrEZu3EkwIC
-         ayPg==
-X-Gm-Message-State: AOAM531gEKjM3WuUTh4sIKc9R3mfGHDXs7kSBE9ZNYztVzU+Igmq1wzG
-        yx85xPTo5bOccCqwi2gPSimmRq5o45xhie9PmO9keg==
-X-Google-Smtp-Source: ABdhPJxV2IA2m9d5l16yBy3n1SZ0g7UHEZV6/cJ+b6V/XLPjujs0azTgjgMwltUJn2YBO0p0U04OWasRwsCDgvXmOEE=
-X-Received: by 2002:ac5:c189:: with SMTP id z9mr9880244vkb.79.1593435092807;
- Mon, 29 Jun 2020 05:51:32 -0700 (PDT)
+        id S1728150AbgF2Sj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 14:39:57 -0400
+Received: from foss.arm.com ([217.140.110.172]:35140 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726607AbgF2Sj4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 29 Jun 2020 14:39:56 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0C49F142F;
+        Mon, 29 Jun 2020 04:34:26 -0700 (PDT)
+Received: from [10.37.12.67] (unknown [10.37.12.67])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 40DA23F73C;
+        Mon, 29 Jun 2020 04:34:22 -0700 (PDT)
+Subject: Re: brocken devfreq simple_ondemand for Odroid XU3/4?
+To:     Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>
+Cc:     Kamil Konieczny <k.konieczny@samsung.com>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Willy Wolff <willy.mh.wolff.ml@gmail.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>,
+        linux-arm-kernel@lists.infradead.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <20200623164733.qbhua7b6cg2umafj@macmini.local>
+ <CAJKOXPeLuq81NC2xZh3y32EB-_APbDAchZD4OW_eCgQKKO+p8w@mail.gmail.com>
+ <20200623191129.GA4171@kozik-lap>
+ <CGME20200624103308eucas1p188a5fe3cee1916d9430c9971c2dab3a3@eucas1p1.samsung.com>
+ <85f5a8c0-7d48-f2cd-3385-c56d662f2c88@arm.com>
+ <ef5184ed-00ff-4226-5ece-b0fc8eb16fb6@samsung.com>
+ <4a72fcab-e8da-8323-1fbe-98a6a4b3e0f1@arm.com>
+ <4c3b01af-2337-1eba-4675-6488105144c8@samsung.com>
+ <6f8b1119-62b1-942d-cfde-6f1e9a28c40c@arm.com>
+ <ee2e4acb-3986-3227-da1f-177d2756d194@samsung.com>
+ <ad4e1a73-6de3-68ee-e3b3-b30bc315bd31@samsung.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <ea7d70e2-3306-07a0-c741-3dc3558efbaf@arm.com>
+Date:   Mon, 29 Jun 2020 12:34:21 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <20200619151541.15069-1-geert+renesas@glider.be>
-In-Reply-To: <20200619151541.15069-1-geert+renesas@glider.be>
-From:   Amit Kucheria <amit.kucheria@verdurent.com>
-Date:   Mon, 29 Jun 2020 18:21:21 +0530
-Message-ID: <CAHLCerMfp42VHDxhCfnFmxphic0OVD55ZzmzwnrEvfF6WUARgg@mail.gmail.com>
-Subject: Re: [PATCH] dt-bindings: thermal: rcar-thermal: Improve schema validation
-To:     Geert Uytterhoeven <geert+renesas@glider.be>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, linux-renesas-soc@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <ad4e1a73-6de3-68ee-e3b3-b30bc315bd31@samsung.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jun 19, 2020 at 8:45 PM Geert Uytterhoeven
-<geert+renesas@glider.be> wrote:
->
->   - Document missing "#thermal-sensor-cells",
->   - Factor out common required properties,
->   - "interrupts", "clocks", and "power-domains" are required on R-Mobile
->     APE6, too,
->   - Invert logic to simplify descriptions,
->   - Add "additionalProperties: false".
->
-> Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-> ---
->  .../bindings/thermal/rcar-thermal.yaml        | 53 ++++++++++++-------
->  1 file changed, 34 insertions(+), 19 deletions(-)
->
-> diff --git a/Documentation/devicetree/bindings/thermal/rcar-thermal.yaml b/Documentation/devicetree/bindings/thermal/rcar-thermal.yaml
-> index 0994693d240f9ff4..88787b98992fe7c9 100644
-> --- a/Documentation/devicetree/bindings/thermal/rcar-thermal.yaml
-> +++ b/Documentation/devicetree/bindings/thermal/rcar-thermal.yaml
-> @@ -59,25 +59,40 @@ properties:
->    resets:
->      maxItems: 1
->
-> -if:
-> -  properties:
-> -    compatible:
-> -      contains:
-> -        enum:
-> -          - renesas,thermal-r8a73a4 # R-Mobile APE6
-> -          - renesas,thermal-r8a7779 # R-Car H1
-> -then:
-> -  required:
-> -    - compatible
-> -    - reg
-> -else:
-> -  required:
-> -    - compatible
-> -    - reg
-> -    - interrupts
-> -    - clocks
-> -    - power-domains
-> -    - resets
-> +  '#thermal-sensor-cells':
-> +    const: 0
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +
-> +allOf:
-> +  - if:
-> +      not:
-> +        properties:
-> +          compatible:
-> +            contains:
-> +              enum:
-> +                - renesas,thermal-r8a73a4 # R-Mobile APE6
-> +                - renesas,thermal-r8a7779 # R-Car H1
-> +    then:
-> +      required:
-> +        - resets
-> +        - '#thermal-sensor-cells'
-> +
-> +  - if:
-> +      not:
-> +        properties:
-> +          compatible:
-> +            contains:
-> +              const: renesas,thermal-r8a7779 # R-Car H1
-> +    then:
-> +      required:
-> +        - interrupts
-> +        - clocks
-> +        - power-domains
-> +
-> +additionalProperties: false
->
->  examples:
->    # Example (non interrupt support)
+On 6/26/20 12:22 PM, Bartlomiej Zolnierkiewicz wrote:
+> 
+> On 6/25/20 2:12 PM, Kamil Konieczny wrote:
+>> On 25.06.2020 14:02, Lukasz Luba wrote:
+>>>
+>>>
+>>> On 6/25/20 12:30 PM, Kamil Konieczny wrote:
+
+[snip]
+
+>>>
+>>> Kamil do you have plans to refresh and push your next version of the
+>>> workqueue solution?
+>>
+>> I do not, as Bartek takes over my work,
+>> +CC Bartek
+> 
+> Hi Lukasz,
+
+Hi Bartek,
+
+> 
+> As you remember in January Chanwoo has proposed another idea (to allow
+> selecting workqueue type by devfreq device driver):
+> 
+> "I'm developing the RFC patch and then I'll send it as soon as possible."
+> (https://lore.kernel.org/linux-pm/6107fa2b-81ad-060d-89a2-d8941ac4d17e@samsung.com/)
+> 
+> "After posting my suggestion, we can discuss it"
+> (https://lore.kernel.org/linux-pm/f5c5cd64-b72c-2802-f6ea-ab3d28483260@samsung.com/)
+> 
+> so we have been waiting on the patch to be posted..
+> 
+> Similarly we have been waiting on (any) feedback for exynos-bus/nocp
+> fixes for Exynos5422 support (which have been posted by Kamil also in
+> January):
+> 
+> https://lore.kernel.org/linux-pm/8f82d8d5-927b-afb4-272f-45c16b5a23b9@samsung.com/
+> 
+> Considering the above and how hard it has been to push the changes
+> through review/merge process last year we are near giving up when it
+> comes to upstream devfreq contributions. Sylwester is still working on
+> exynos-bus & interconnect integration (continuation of Artur Swigon's
+> work from last year) & related issues (IRQ support for PPMU)  but
+> I'm seriously considering putting it all on-hold..
+
+Thank you for detailed explanation and update. I see. Anyway, if you or
+Sylwester need some help with this devfreq workqueue, I offer my time
+as a reviewer&tester.
+
+The more generic solution you propose, the better for all platforms.
+
+Regards,
+Lukasz
+
+> 
+> Best regards,
 > --
-> 2.17.1
->
+> Bartlomiej Zolnierkiewicz
+> Samsung R&D Institute Poland
+> Samsung Electronics
+> 
