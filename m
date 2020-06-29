@@ -2,202 +2,302 @@ Return-Path: <SRS0=4COa=AK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A16DC433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D247C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:50:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1036420663
-	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:49:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A4892065D
+	for <linux-pm@archiver.kernel.org>; Mon, 29 Jun 2020 20:50:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=verdurent-com.20150623.gappssmtp.com header.i=@verdurent-com.20150623.gappssmtp.com header.b="13O1W6B1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727049AbgF2Utd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 29 Jun 2020 16:49:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43358 "EHLO
+        id S1727838AbgF2Uug (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 29 Jun 2020 16:50:36 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43384 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731487AbgF2TNk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:40 -0400
-Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CA57C0076FC;
-        Mon, 29 Jun 2020 04:26:43 -0700 (PDT)
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: eballetbo)
-        with ESMTPSA id 6C20C2A2236
-Subject: Re: [PATCH v2] PM / devfreq: rk3399_dmc: Fix kernel oops when
- rockchip,pmu is absent
-To:     Chanwoo Choi <cw00.choi@samsung.com>, Marc Zyngier <maz@kernel.org>
-Cc:     =?UTF-8?Q?Heiko_St=c3=bcbner?= <heiko@sntech.de>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        kernel-team@android.com,
-        "stable@vger.kernel.org" <stable@vger.kernel.org>
-References: <CGME20200622152844epcas1p2309f34247eb9653acdfd3818b7e6a569@epcas1p2.samsung.com>
- <20200622152824.1054946-1-maz@kernel.org>
- <784808d7-8943-44ab-f15a-34821e6d4d5f@samsung.com>
- <87tuyue142.wl-maz@kernel.org>
- <c1a5b730-0554-bb90-9d8d-b50390482e96@samsung.com>
- <3de68490-d788-e416-dd5f-d4d6e7eca61a@collabora.com>
- <154fe5b6-6a05-c2b7-3014-2f7b9c2049f9@samsung.com>
-From:   Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Message-ID: <267623b3-9fc5-886e-3554-b86fa1e57ccb@collabora.com>
-Date:   Mon, 29 Jun 2020 13:26:38 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.9.0
+        with ESMTP id S1731453AbgF2TNf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 29 Jun 2020 15:13:35 -0400
+Received: from mail-ua1-x944.google.com (mail-ua1-x944.google.com [IPv6:2607:f8b0:4864:20::944])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 328BBC094246
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:19:57 -0700 (PDT)
+Received: by mail-ua1-x944.google.com with SMTP id c7so3521775uap.0
+        for <linux-pm@vger.kernel.org>; Mon, 29 Jun 2020 00:19:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=verdurent-com.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=XpYnh8gMYavfYLlo546wBFKAR4SvsyOyU3BwpCQr48Y=;
+        b=13O1W6B1WoYn8RPzdruP1UsaIJjpCs+IyOvzq9Hz0Cb2k6EwAvj3Zp/jB0S6Kft7Nl
+         o4TQYqPUgOaEo/uWqotQ66eV2QrtibbA4DUDHE4leNZi23M9bAJKxke54zBwxNB72yYi
+         1O6c/zqJ69Y0NMv25Jca9Nu60iNQgRing2YBd00Vu1VRiFE+o5C8fEjhIvHwTKKwq+kA
+         fpWvKQy++uWsEtjukRFnzGgeMUDntbJSBHd+6Hkxej1CLrJHk44FNNfa207qLIA+LrNj
+         FTqRgy04tivPRI1OV065nQpiXGXPJtXkPiSp1G1mTd7pzIbU9k8IrQ90x16surkpuXdC
+         r/iA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=XpYnh8gMYavfYLlo546wBFKAR4SvsyOyU3BwpCQr48Y=;
+        b=dOXE/FWrYONkE49mdd7HAnLHRedrmeRkY5LhM1o1p/q15N6lW2yl/IDM3g+sNNM8Q0
+         gP7GMOJG/wGlFH6Or39ldYKw4dn2gqR9mhFIXDoK1bo64ZaWQAvmMy0ufpEfLiOG8HRM
+         3nymZGuuXJhCFt8hYQUA3UnbA4MJ/GF8PgRM52V1PtG2aNV3xoLU8aLS2+bSfe5QaeeX
+         Suube9Nv4SpMk+Iygh09uwyT1sShPtEQrs32doLayH90RF2YdffJ5zl05G0JBpSoWZdj
+         Ic5VBnKZNZwoIBu5GQhHOnPbtyA0R6t1Nw2VpQhsLzDOGaRK1/TSfsbeq4Fwf3UVr8Ij
+         XD7A==
+X-Gm-Message-State: AOAM532LdtyBTVJsOqAPG8hpf4WyrPWVkLLO1E2cn8VRbh5AQpE49yy+
+        5Zt3uQho4ZBk3FOC17HuFCu3aNMUOYGeJx/pcycmzg==
+X-Google-Smtp-Source: ABdhPJxuIMc3AKl58RR5BB2o4v6o+LuGqoOO72B8HIckh2GgWrvSrRyjWB3ObkuGZltyeo/65xaFDUvMh18+fu68Jl8=
+X-Received: by 2002:a9f:3113:: with SMTP id m19mr553540uab.77.1593415196293;
+ Mon, 29 Jun 2020 00:19:56 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <154fe5b6-6a05-c2b7-3014-2f7b9c2049f9@samsung.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <9cbffad6-69e4-0b33-4640-fde7c4f6a6e7@linaro.org>
+ <20200626173755.26379-1-andrzej.p@collabora.com> <20200626173755.26379-3-andrzej.p@collabora.com>
+In-Reply-To: <20200626173755.26379-3-andrzej.p@collabora.com>
+From:   Amit Kucheria <amit.kucheria@verdurent.com>
+Date:   Mon, 29 Jun 2020 12:49:45 +0530
+Message-ID: <CAHLCerMF3AusmmUUiE21mAV293fBU5vCxJ0K-dPcVNZBSHtMBg@mail.gmail.com>
+Subject: Re: [PATCH v5 02/11] thermal: Store thermal mode in a dedicated enum
+To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        linux-acpi@vger.kernel.org, netdev@vger.kernel.org,
+        linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        lakml <linux-arm-kernel@lists.infradead.org>,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?Q?Niklas_S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        kernel@collabora.com
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Chanwoo,
+On Fri, Jun 26, 2020 at 11:08 PM Andrzej Pietrasiewicz
+<andrzej.p@collabora.com> wrote:
+>
+> Prepare for storing mode in struct thermal_zone_device.
+>
+> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
+> Reviewed-by: Guenter Roeck <linux@roeck-us.net>
+> [for acerhdf]
+> Acked-by: Peter Kaestle <peter@piie.net>
+> Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-On 29/6/20 13:29, Chanwoo Choi wrote:
-> Hi Enric and Mark,
-> 
-> On 6/29/20 8:05 PM, Enric Balletbo i Serra wrote:
->> Hi Chanwoo and Marc,
->>
->> On 29/6/20 13:09, Chanwoo Choi wrote:
->>> Hi Enric,
->>>
->>> Could you check this issue? Your patch[1] causes this issue.
->>> As Marc mentioned, although rk3399-dmc.c handled 'rockchip,pmu'
->>> as the mandatory property, your patch[1] didn't add the 'rockchip,pmu'
->>> property to the documentation. 
->>>
->>
->> I think the problem is that the DT binding patch, for some reason, was missed
->> and didn't land. The patch seems to have all the required reviews and acks.
->>
->>   https://patchwork.kernel.org/patch/10901593/
->>
->> Sorry because I didn't notice this issue when 9173c5ceb035 landed. And thanks
->> for fixing the issue.
-> 
-> If the 'rockchip,pmu' propery is mandatory, instead of Mark's patch,
-> we better to require the merge of patch[1] to DT maintainer.
-> 
-> [1] https://patchwork.kernel.org/patch/10901593/
-> 
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-Give me some time to double check, because I think that at this point, is needed
-on some devices with old firmware but not now. It's been a while since I worked
-on this, but I suspect that being optional is the right way.
 
-Maybe Heiko, who IIRC worked on TF-A has a more clear thought on this?
-
-Thanks,
- Enric
-
->>
->> Best regards,
->>  Enric
->>
->>> [1] 9173c5ceb035 ("PM / devfreq: rk3399_dmc: Pass ODT
->>> and auto power down parameters to TF-A.")
->>>
->>>
->>> On 6/29/20 5:18 PM, Marc Zyngier wrote:
->>>> Hi Chanwoo,
->>>>
->>>> On Mon, 29 Jun 2020 03:43:37 +0100,
->>>> Chanwoo Choi <cw00.choi@samsung.com> wrote:
->>>>>
->>>>> Hi Marc,
->>>>>
->>>>> On 6/23/20 12:28 AM, Marc Zyngier wrote:
->>>>
->>>> [...]
->>>>
->>>>> It looks good to me. But, I think that it is not necessary
->>>>> fully kernel panic log about NULL pointer. It is enoughspsp
->>>>> just mentioning the NULL pointer issue without full kernel panic log.
->>>>
->>>> I personally find the backtrace useful as it allows people with the
->>>> same issue to trawl the kernel log and find whether it has already be
->>>> fixed upstream. But it's only me, and I'm not attached to it.
->>>>
->>>>> So, how about editing the patch description as following or others simply?
->>>>> and we need to add 'stable@vger.kernel.org' to Cc list for applying it
->>>>> to stable branch.
->>>>
->>>> Looks good to me.
->>>>
->>>>>
->>>>>
->>>>>   PM / devfreq: rk3399_dmc: Fix kernel oops when rockchip,pmu is absent
->>>>>
->>>>>     Booting a recent kernel on a rk3399-based system (nanopc-t4),
->>>>>     equipped with a recent u-boot and ATF results in the kernel panic
->>>>>     about NULL pointer issue.
->>>>
->>>> nit: "results in a kernel panic on dereferencing a NULL pointer".
->>>>
->>>>>
->>>>>     This turns out to be due to the rk3399-dmc driver looking for
->>>>>     an *undocumented* property (rockchip,pmu), and happily using
->>>>>     a NULL pointer when the property isn't there.
->>>>>
->>>>>     Instead, make most of what was brought in with 9173c5ceb035
->>>>>     ("PM / devfreq: rk3399_dmc: Pass ODT and auto power down parameters
->>>>>     to TF-A.") conditioned on finding this property in the device-tree,
->>>>>     preventing the driver from exploding.
->>>>>
->>>>>     Fixes: 9173c5ceb035 ("PM / devfreq: rk3399_dmc: Pass ODT and auto power down parameters to TF-A.")
->>>>>     Signed-off-by: Marc Zyngier <maz@kernel.org>
->>>>>     Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->>>>
->>>>
->>>> Note that the biggest issue is still there: the driver is using an
->>>> undocumented property, and this patch is just papering over it.
->>>> Since I expect this property to be useful for something, it would be
->>>> good for whoever knows what it does to document it.
->>>
->>> Hi Marc,
->>>
->>> You are right. We have to do two step:
->>> 1. Add missing explanation of 'rockchip,pmu' property to dt-binding document
->>> 2. If possible, add 'rockchip,pmu' property node to rk3399_dmc dt node.
->>>
->>> When I tried to find usage example of 'rockchip,pmu' property,
->>> I found them as following: The 'rockchip,pmu' property[2] indicates
->>> 'PMU (Power Management Unit)'. 
->>>
->>> $ grep -rn "rockchip,pmu" arch/arm64/boot/dts/
->>> arch/arm64/boot/dts/rockchip/px30.dtsi:1211:		rockchip,pmu = <&pmugrf>;
->>> arch/arm64/boot/dts/rockchip/rk3399.dtsi:1909:		rockchip,pmu = <&pmugrf>;
->>> arch/arm64/boot/dts/rockchip/rk3368.dtsi:807:		rockchip,pmu = <&pmugrf>;
->>>
->>> [2] the description of 'rockchip,pmu' property
->>> - https://protect2.fireeye.com/url?k=e55f0ba3-b8384f85-e55e80ec-0cc47a31384a-d9c5f6b28aba9be6&q=1&u=https%3A%2F%2Felixir.bootlin.com%2Flinux%2Fv5.7.2%2Fsource%2FDocumentation%2Fdevicetree%2Fbindings%2Fpinctrl%2Frockchip%2Cpinctrl.txt%23L40
->>>
->>>
->>> If don't receive the any reply, I'll add as following:
->>>
->>> cwchoi00@chan-linux-pc:~/kernel/git.kernel/linux.chanwoo$ d
->>> diff --git a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>> index 0ec68141f85a..161e60ea874b 100644
->>> --- a/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>> +++ b/Documentation/devicetree/bindings/devfreq/rk3399_dmc.txt
->>> @@ -18,6 +18,8 @@ Optional properties:
->>>                          format depends on the interrupt controller.
->>>                          It should be a DCF interrupt. When DDR DVFS finishes
->>>                          a DCF interrupt is triggered.
->>> +- rockchip,pmu:                 Phandle to the syscon managing the "pmu general
->>> +                        register files".
->>>  
->>>  Following properties relate to DDR timing:
->>>  
->>>
->>>
->>
->>
-> 
-> 
+> ---
+>  drivers/acpi/thermal.c                        | 27 +++++++++----------
+>  drivers/platform/x86/acerhdf.c                |  8 ++++--
+>  .../intel/int340x_thermal/int3400_thermal.c   | 18 +++++--------
+>  3 files changed, 25 insertions(+), 28 deletions(-)
+>
+> diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+> index 6de8066ca1e7..fb46070c66d8 100644
+> --- a/drivers/acpi/thermal.c
+> +++ b/drivers/acpi/thermal.c
+> @@ -172,7 +172,7 @@ struct acpi_thermal {
+>         struct acpi_thermal_trips trips;
+>         struct acpi_handle_list devices;
+>         struct thermal_zone_device *thermal_zone;
+> -       int tz_enabled;
+> +       enum thermal_device_mode mode;
+>         int kelvin_offset;      /* in millidegrees */
+>         struct work_struct thermal_check_work;
+>  };
+> @@ -500,7 +500,7 @@ static void acpi_thermal_check(void *data)
+>  {
+>         struct acpi_thermal *tz = data;
+>
+> -       if (!tz->tz_enabled)
+> +       if (tz->mode != THERMAL_DEVICE_ENABLED)
+>                 return;
+>
+>         thermal_zone_device_update(tz->thermal_zone,
+> @@ -534,8 +534,7 @@ static int thermal_get_mode(struct thermal_zone_device *thermal,
+>         if (!tz)
+>                 return -EINVAL;
+>
+> -       *mode = tz->tz_enabled ? THERMAL_DEVICE_ENABLED :
+> -               THERMAL_DEVICE_DISABLED;
+> +       *mode = tz->mode;
+>
+>         return 0;
+>  }
+> @@ -544,27 +543,25 @@ static int thermal_set_mode(struct thermal_zone_device *thermal,
+>                                 enum thermal_device_mode mode)
+>  {
+>         struct acpi_thermal *tz = thermal->devdata;
+> -       int enable;
+>
+>         if (!tz)
+>                 return -EINVAL;
+>
+> +       if (mode != THERMAL_DEVICE_DISABLED &&
+> +           mode != THERMAL_DEVICE_ENABLED)
+> +               return -EINVAL;
+>         /*
+>          * enable/disable thermal management from ACPI thermal driver
+>          */
+> -       if (mode == THERMAL_DEVICE_ENABLED)
+> -               enable = 1;
+> -       else if (mode == THERMAL_DEVICE_DISABLED) {
+> -               enable = 0;
+> +       if (mode == THERMAL_DEVICE_DISABLED)
+>                 pr_warn("thermal zone will be disabled\n");
+> -       } else
+> -               return -EINVAL;
+>
+> -       if (enable != tz->tz_enabled) {
+> -               tz->tz_enabled = enable;
+> +       if (mode != tz->mode) {
+> +               tz->mode = mode;
+>                 ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+>                         "%s kernel ACPI thermal control\n",
+> -                       tz->tz_enabled ? "Enable" : "Disable"));
+> +                       tz->mode == THERMAL_DEVICE_ENABLED ?
+> +                       "Enable" : "Disable"));
+>                 acpi_thermal_check(tz);
+>         }
+>         return 0;
+> @@ -915,7 +912,7 @@ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
+>                 goto remove_dev_link;
+>         }
+>
+> -       tz->tz_enabled = 1;
+> +       tz->mode = THERMAL_DEVICE_ENABLED;
+>
+>         dev_info(&tz->device->dev, "registered as thermal_zone%d\n",
+>                  tz->thermal_zone->id);
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> index 4df7609b4aa9..9d1030b1a4f4 100644
+> --- a/drivers/platform/x86/acerhdf.c
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -68,6 +68,7 @@ static int kernelmode = 1;
+>  #else
+>  static int kernelmode;
+>  #endif
+> +static enum thermal_device_mode thermal_mode;
+>
+>  static unsigned int interval = 10;
+>  static unsigned int fanon = 60000;
+> @@ -397,6 +398,7 @@ static inline void acerhdf_revert_to_bios_mode(void)
+>  {
+>         acerhdf_change_fanstate(ACERHDF_FAN_AUTO);
+>         kernelmode = 0;
+> +       thermal_mode = THERMAL_DEVICE_DISABLED;
+>         if (thz_dev)
+>                 thz_dev->polling_delay = 0;
+>         pr_notice("kernel mode fan control OFF\n");
+> @@ -404,6 +406,7 @@ static inline void acerhdf_revert_to_bios_mode(void)
+>  static inline void acerhdf_enable_kernelmode(void)
+>  {
+>         kernelmode = 1;
+> +       thermal_mode = THERMAL_DEVICE_ENABLED;
+>
+>         thz_dev->polling_delay = interval*1000;
+>         thermal_zone_device_update(thz_dev, THERMAL_EVENT_UNSPECIFIED);
+> @@ -416,8 +419,7 @@ static int acerhdf_get_mode(struct thermal_zone_device *thermal,
+>         if (verbose)
+>                 pr_notice("kernel mode fan control %d\n", kernelmode);
+>
+> -       *mode = (kernelmode) ? THERMAL_DEVICE_ENABLED
+> -                            : THERMAL_DEVICE_DISABLED;
+> +       *mode = thermal_mode;
+>
+>         return 0;
+>  }
+> @@ -739,6 +741,8 @@ static int __init acerhdf_register_thermal(void)
+>         if (IS_ERR(cl_dev))
+>                 return -EINVAL;
+>
+> +       thermal_mode = kernelmode ?
+> +               THERMAL_DEVICE_ENABLED : THERMAL_DEVICE_DISABLED;
+>         thz_dev = thermal_zone_device_register("acerhdf", 2, 0, NULL,
+>                                               &acerhdf_dev_ops,
+>                                               &acerhdf_zone_params, 0,
+> diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> index 0b3a62655843..e84faaadff87 100644
+> --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+> @@ -48,7 +48,7 @@ struct int3400_thermal_priv {
+>         struct acpi_device *adev;
+>         struct platform_device *pdev;
+>         struct thermal_zone_device *thermal;
+> -       int mode;
+> +       enum thermal_device_mode mode;
+>         int art_count;
+>         struct art *arts;
+>         int trt_count;
+> @@ -395,24 +395,20 @@ static int int3400_thermal_set_mode(struct thermal_zone_device *thermal,
+>                                 enum thermal_device_mode mode)
+>  {
+>         struct int3400_thermal_priv *priv = thermal->devdata;
+> -       bool enable;
+>         int result = 0;
+>
+>         if (!priv)
+>                 return -EINVAL;
+>
+> -       if (mode == THERMAL_DEVICE_ENABLED)
+> -               enable = true;
+> -       else if (mode == THERMAL_DEVICE_DISABLED)
+> -               enable = false;
+> -       else
+> +       if (mode != THERMAL_DEVICE_ENABLED &&
+> +           mode != THERMAL_DEVICE_DISABLED)
+>                 return -EINVAL;
+>
+> -       if (enable != priv->mode) {
+> -               priv->mode = enable;
+> +       if (mode != priv->mode) {
+> +               priv->mode = mode;
+>                 result = int3400_thermal_run_osc(priv->adev->handle,
+> -                                                priv->current_uuid_index,
+> -                                                enable);
+> +                                               priv->current_uuid_index,
+> +                                               mode == THERMAL_DEVICE_ENABLED);
+>         }
+>
+>         evaluate_odvp(priv);
+> --
+> 2.17.1
+>
