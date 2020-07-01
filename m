@@ -2,226 +2,135 @@ Return-Path: <SRS0=2dfJ=AM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B4411C433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 10:46:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CFF7C433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 12:10:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8F3D020722
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 10:46:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5DB8520772
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 12:10:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XD6YuGM9"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iSLl6gC1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730052AbgGAKqX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jul 2020 06:46:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44154 "EHLO
+        id S1730273AbgGAMKm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jul 2020 08:10:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57308 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729892AbgGAKqW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2020 06:46:22 -0400
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F4D4C061755
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2020 03:46:22 -0700 (PDT)
-Received: by mail-pl1-x643.google.com with SMTP id d10so9760454pls.5
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2020 03:46:22 -0700 (PDT)
+        with ESMTP id S1730237AbgGAMKm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2020 08:10:42 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDFA8C03E979
+        for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2020 05:10:41 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id e4so26628745ljn.4
+        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2020 05:10:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=FP3q9Hc118M+PIpoZ3gBkp91qt3AttuGKhN6mO4qL+M=;
-        b=XD6YuGM9iKVfQi3Z/Eo2YIh+67TKz1FOxI2pMbOF2fdzKj4x/ZrHc9lj3PEa44zkE9
-         QI1LjHA9Gl9WjM0zzyeXn3ZqB5HXWdcaPvr7/zgbHq5KhfCvICfkN4MHr8FAkIPlLvzN
-         KkUTwTbPWFRUKcJDisqBoSnbKPWPXwrfGiBYGZKP8E0Ln2fdfJBpIpyPYbMb/iJqfT3N
-         sYjp9VizzuwtgSIAyGNq/9Tg6cUu439NE4bnoMfswrxOvG9M5B28Nnh5+nMRXCicapP1
-         +wAaRVvT0+tsZZ9iKrFyRSSyvbxcwBYHJyrkVxq8CAA8e8OjTYnNRbudWl8MOkuvIOlH
-         7gMg==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=W0W7BV8cUI7CuBuiHY2QDrSNw3SUVEmFQilJePOeK9o=;
+        b=iSLl6gC1LJlLK+whB5oyTs+OtzYClkNiWCwVhfxSa4nWWZE9cgvKbMs0t/oSHF7iif
+         zPmUIlXcMvtxLFJp7z6fFiMvN4YJ6rUqMYVlZIaaWTQoxWOm+QMIcyZygSGx8XPiwDiR
+         gY7xx5sSSox29urVygQAwHuiedYy8Nm/IOZPe3gvE6DoqVNuSSSCWKaIaDX0E1UeGtlv
+         cXHA7O36mWAvOHACXNpQMLAryoNFB+NCZ8eFL0SuWjoGzAh8PH+d+TdXqa7F2DjxpOFN
+         DhYOuea6pLyM5G9hE2ygiZH2kw6bz1SRw7/DtQZriZ+mAUU5ileGd3gp8xq6cQ+mfVVu
+         krIA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=FP3q9Hc118M+PIpoZ3gBkp91qt3AttuGKhN6mO4qL+M=;
-        b=gHGtlV9M6AklvcLzog+/c0tDqqKAbo+Cq/TZedf0taapFoY+ZxuPtC6y4qyIYcoTub
-         42xGYGbHang/OErpivbHRybOsPWVZoHUSgsymv0qqLjnOuocBNbzXwc/9zMi7o2HYHqs
-         0e+HympYACauqjRdD6uA/oolTDZ4vBpeB6fswCTUuiHTn6WJNFhl2b6lEze8+YO1nvKD
-         DVgIabxuxBbJgJV14nMHyUM8296JFUM4fRuOhT6IlgzJzqVyVRIAAoAruLzihOYUCEgL
-         S/mRaLoHyLCgS/tsyUhr8cfW5poNwSj211XNHoQN6czVfWZdZnAHzOPvCVEQhJtK89/3
-         p0iQ==
-X-Gm-Message-State: AOAM533g7kEY5wJHfUJe6aZjGVGC7EL2feGk10nEhZdQyGjWMqHUeGwG
-        dBizgqbAi96X8qiOFRbeZpvyYg==
-X-Google-Smtp-Source: ABdhPJwLv9We7Z/3I+LHoShx7LVt8N7F9Lsqh+Ev8MHD230A5RWIRxuOzFuIs+m6GJAlvS45fezEeg==
-X-Received: by 2002:a17:90b:4d06:: with SMTP id mw6mr29109520pjb.190.1593600381864;
-        Wed, 01 Jul 2020 03:46:21 -0700 (PDT)
-Received: from localhost ([122.172.81.75])
-        by smtp.gmail.com with ESMTPSA id r13sm5547968pfr.181.2020.07.01.03.46.20
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 01 Jul 2020 03:46:21 -0700 (PDT)
-Date:   Wed, 1 Jul 2020 16:16:19 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     rjw@rjwysocki.net, catalin.marinas@arm.com, sudeep.holla@arm.com,
-        will@kernel.org, linux@armlinux.org.uk, valentin.schneider@arm.com,
-        mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/8] cpufreq: move invariance setter calls in cpufreq core
-Message-ID: <20200701095219.gxrkowtukosnfmwp@vireshk-i7>
-References: <20200701090751.7543-1-ionela.voinescu@arm.com>
- <20200701090751.7543-3-ionela.voinescu@arm.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=W0W7BV8cUI7CuBuiHY2QDrSNw3SUVEmFQilJePOeK9o=;
+        b=d0j4K1J+FRIcaj8glDZtTNcMbCayQhNU9Dosk3AjlemZU8TRXeX9YKMslKYwICPyIv
+         iPTbNjNWL/Ci6muT7l1hRoOIFEnM59h7WoINzmPgn3AWAOlvpkY5mZ48O6si2Tm1dNhf
+         PJvHzWEGOTiWHk0dsatDLPDHttuvseHg9Oq23TMFyy9P5m7l8esxMS/9dASNLYQ8UFhh
+         10nZWAIl/Ka3mcs4f0lmXqUEPQ0fzDsMHPRhDogBALT7W6qLNb+/Zcx5+ZTZcoi2+Qzw
+         LNDE/mRMLuwy0V4mjVhzOCPE3SBxVo5VEGP+hCNfdxY0jEt1Kws0deh9oNJIO13NTYGE
+         5qXQ==
+X-Gm-Message-State: AOAM532fqsM4QcY3xz5QIOXOynOp9Ro2Vi5Z+N0JswJ60l5vgokhJlvB
+        nj5kGiAf2JqKCuw/MKhdCJ4AUNA0KCRkc+9JI4TORg==
+X-Google-Smtp-Source: ABdhPJwlyEUVszhEWkGK9ickVjMXKxSq5+Z9Y8911VTJDuTZvkJDrAcgHU7MCWtxM5ciiTIBdB+HA0Lphjo+oygwqUU=
+X-Received: by 2002:a2e:8855:: with SMTP id z21mr8588845ljj.325.1593605440227;
+ Wed, 01 Jul 2020 05:10:40 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200701090751.7543-3-ionela.voinescu@arm.com>
-User-Agent: NeoMutt/20180716-391-311a52
+References: <20200625144509.17918-1-daniel.lezcano@linaro.org>
+ <20200625144509.17918-3-daniel.lezcano@linaro.org> <CAP245DUMjTQr2vKirZ+FxEYWC=VQ_k+OegxQgXcKDU8ThWuCsQ@mail.gmail.com>
+ <0fe6837f-9b44-4578-23f2-3e4932d01122@linaro.org> <CAP245DUG-OsSD-_CucMMQ26HpzjJhn0emfq_go923NsDq6RqOg@mail.gmail.com>
+ <c664d247-7f9b-603f-c318-48e534aedfc9@linaro.org>
+In-Reply-To: <c664d247-7f9b-603f-c318-48e534aedfc9@linaro.org>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Wed, 1 Jul 2020 17:40:28 +0530
+Message-ID: <CAP245DV8jT5vj7v6vybw3Eec7wGMXRwFm=Xum5i_n4sMCHHAfg@mail.gmail.com>
+Subject: Re: [PATCH v2 3/5] thermal: core: Remove old uapi generic netlink
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Ram Chandrasekar <rkumbako@codeaurora.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 01-07-20, 10:07, Ionela Voinescu wrote:
-> From: Valentin Schneider <valentin.schneider@arm.com>
-> 
-> To properly scale its per-entity load-tracking signals, the task scheduler
-> needs to be given a frequency scale factor, i.e. some image of the current
-> frequency the CPU is running at. Currently, this scale can be computed
-> either by using counters (APERF/MPERF on x86, AMU on arm64), or by
-> piggy-backing on the frequency selection done by cpufreq.
-> 
-> For the latter, drivers have to explicitly set the scale factor
-> themselves, despite it being purely boiler-plate code: the required
-> information depends entirely on the kind of frequency switch callback
-> implemented by the driver, i.e. either of: target_index(), target(),
-> fast_switch() and setpolicy().
-> 
-> The fitness of those callbacks with regard to driving the Frequency
-> Invariance Engine (FIE) is studied below:
-> 
-> target_index()
-> ==============
-> Documentation states that the chosen frequency "must be determined by
-> freq_table[index].frequency". It isn't clear if it *has* to be that
-> frequency, or if it can use that frequency value to do some computation
-> that ultimately leads to a different frequency selection. All drivers
-> go for the former, while the vexpress-spc-cpufreq has an atypical
-> implementation.
-> 
-> Thefore, the hook works on the asusmption the core can use
-> freq_table[index].frequency.
-> 
-> target()
-> =======
-> This has been flagged as deprecated since:
-> 
->   commit 9c0ebcf78fde ("cpufreq: Implement light weight ->target_index() routine")
-> 
-> It also doesn't have that many users:
-> 
->   cpufreq-nforce2.c:371:2:	.target = nforce2_target,
->   cppc_cpufreq.c:416:2:		.target = cppc_cpufreq_set_target,
->   pcc-cpufreq.c:573:2:		.target = pcc_cpufreq_target,
-> 
-> Should we care about drivers using this hook, we may be able to exploit
-> cpufreq_freq_transition_{being, end}(). Otherwise, if FIE support is
-> desired in their current state, arch_set_freq_scale() could still be
-> called directly by the driver, while CPUFREQ_CUSTOM_SET_FREQ_SCALE
-> could be used to mark support for it.
-> 
-> fast_switch()
-> =============
-> This callback *has* to return the frequency that was selected.
-> 
-> setpolicy()
-> ===========
-> This callback does not have any designated way of informing what was the
-> end choice. But there are only two drivers using setpolicy(), and none
-> of them have current FIE support:
-> 
->   drivers/cpufreq/longrun.c:281:	.setpolicy	= longrun_set_policy,
->   drivers/cpufreq/intel_pstate.c:2215:	.setpolicy	= intel_pstate_set_policy,
-> 
-> The intel_pstate is known to use counter-driven frequency invariance.
+On Wed, Jul 1, 2020 at 3:15 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+>
+> On 01/07/2020 11:33, Amit Kucheria wrote:
+> > On Wed, Jul 1, 2020 at 2:56 PM Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+> >>
+> >> On 30/06/2020 13:47, Amit Kucheria wrote:
+> >>> On Thu, Jun 25, 2020 at 8:15 PM Daniel Lezcano
+> >>> <daniel.lezcano@linaro.org> wrote:
+> >>>>
 
-Same for acpi-cpufreq driver as well ?
+> >>>>  /* Adding event notification support elements */
+> >>>>  #define THERMAL_GENL_FAMILY_NAME                "thermal_event"
+> >>>> -#define THERMAL_GENL_VERSION                    0x01
+> >>>> +#define THERMAL_GENL_VERSION                    0x02
+> >>>
+> >>> This hunk should be removed since you set version back to 1 in the
+> >>> next patch and we don't actually intend to bump the version yet.
+> >>
+> >> Well, I've been very strict here for git-bisecting.
+> >>
+> >> I move to V2 because of the removal, but when adding the new genetlink
+> >> code, the family name changed, so we returned back to the V1 as it is a
+> >> new genetlink thermal brand.
+> >
+> > I don't understand the move to v2 for an empty skeleton UAPI. For the
+> > purposes of bisection, couldn't you just remove all the v1 UAPI (w/o
+> > bumping to v2) and then add a new UAPI in the next patch?
+> >
+> >> The name is change because it is no longer event based but also sampling
+> >> and commands.
+> >
+> > In this case, just to avoid any confusion, the new UAPI could be v2
+> > making the transition clear in case of bisection.
+> >
+> > I'm afraid the v1->v2->v1 is a bit more confusing.
+>
+> Let me elaborate a bit:
+>
+> Why there is this patch ?
+> - By removing this code first, the next patch will just contain
+> additions, I thought it would be clearer
+>
+> Why increase the version here ?
+> - Code must continue to compile and as the 'thermal_event' family is now
+> different from V1, the version is changed
+>
+> Why the version goes to V1 in the next patch ?
+> - The family name is changed as it is not doing event only, so it is a
+> new netlink thermal protocol and we begin at V1
+>
+> So the main reason of this patch is to be very strict in the iteration
+> changes. May be it is too much, in this case I can merge this patch with
+> 4/5, the old netlink protocol removal will be lost in the addition of
+> the new protocol. I'm fine with that if you think it is simpler.
 
-And I think we should do the freq-invariance thing for all the above categories
-nevertheless.
+Considering that there are no users of v1 currently, it feels a bit
+over engineered, IMHO.
 
-> If FIE support is desired in their current state, arch_set_freq_scale()
-> could still be called directly by the driver, while
-> CPUFREQ_CUSTOM_SET_FREQ_SCALE could be used to mark support for it.
-> 
-> Conclusion
-> ==========
-> 
-> Given that the significant majority of current FIE enabled drivers use
-> callbacks that lend themselves to triggering the setting of the FIE scale
-> factor in a generic way, move the invariance setter calls to cpufreq core,
-> while filtering drivers that flag custom support using
-> CPUFREQ_CUSTOM_SET_FREQ_SCALE.
-> 
-> Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
-> Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-> Cc: Viresh Kumar <viresh.kumar@linaro.org>
-> ---
->  drivers/cpufreq/cpufreq.c | 20 +++++++++++++++++---
->  1 file changed, 17 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> index 0128de3603df..83b58483a39b 100644
-> --- a/drivers/cpufreq/cpufreq.c
-> +++ b/drivers/cpufreq/cpufreq.c
-> @@ -2046,9 +2046,16 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
->  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
->  					unsigned int target_freq)
->  {
-> +	unsigned int freq;
-> +
->  	target_freq = clamp_val(target_freq, policy->min, policy->max);
-> +	freq = cpufreq_driver->fast_switch(policy, target_freq);
-> +
-
-> +	if (freq && !(cpufreq_driver->flags & CPUFREQ_CUSTOM_SET_FREQ_SCALE))
-> +		arch_set_freq_scale(policy->related_cpus, freq,
-> +				    policy->cpuinfo.max_freq);
-
-This needs to be a separate function.
-
->  
-> -	return cpufreq_driver->fast_switch(policy, target_freq);
-> +	return freq;
->  }
->  EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
->  
-> @@ -2140,7 +2147,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->  			    unsigned int relation)
->  {
->  	unsigned int old_target_freq = target_freq;
-> -	int index;
-> +	int index, retval;
->  
->  	if (cpufreq_disabled())
->  		return -ENODEV;
-> @@ -2171,7 +2178,14 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
->  
->  	index = cpufreq_frequency_table_target(policy, target_freq, relation);
->  
-> -	return __target_index(policy, index);
-> +	retval = __target_index(policy, index);
-> +
-> +	if (!retval && !(cpufreq_driver->flags & CPUFREQ_CUSTOM_SET_FREQ_SCALE))
-> +		arch_set_freq_scale(policy->related_cpus,
-> +				    policy->freq_table[index].frequency,
-
-policy->cur gets updated for both target and target_index type drivers. You can
-use that safely. It gets updated after the postchange notification.
-
-> +				    policy->cpuinfo.max_freq);
-> +
-> +	return retval;
->  }
->  EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
-
--- 
-viresh
+Also, the new UAPI doesn't need to begin at v1. Just having it start
+at v2 will avoid this confusion, no?
