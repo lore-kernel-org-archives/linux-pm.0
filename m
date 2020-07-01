@@ -2,101 +2,96 @@ Return-Path: <SRS0=2dfJ=AM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-1.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 302A0C433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 16:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 195F6C433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 16:22:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 106C820809
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 16:17:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1593620237;
-	bh=5yCWPuDKKPBG+3wyVyrG68dBy5zQQVEAkJjSRZMx/r0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=fPjalI32IWLLhnEH2PdbiuE4ySvKzmyov1R35vE6U1HGupSBeyaaMsoGcsHMaNc/g
-	 tvQ3YkrVCtjY9hhPLTYqAzRBFcpHL24ktZA5QBieDQaih9a21eb6/7PUzFNZtpw3XP
-	 hS4914VDwjPspC2PFhvmd9n55UbkphCqgFA5ap8U=
+	by mail.kernel.org (Postfix) with ESMTP id EF64B2080D
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 16:22:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="rUfumGk2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731751AbgGAQRQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jul 2020 12:17:16 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45126 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726760AbgGAQRQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 1 Jul 2020 12:17:16 -0400
-Received: from earth.universe (dyndsl-091-096-062-146.ewe-ip-backbone.de [91.96.62.146])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 4CF4E20760;
-        Wed,  1 Jul 2020 16:17:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1593620235;
-        bh=5yCWPuDKKPBG+3wyVyrG68dBy5zQQVEAkJjSRZMx/r0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ko726iabypBH1VsVQwgsmGJP1Ucbw89m/xZTCOmYVcvQwMKF/tREOKGpu/6j0wiVb
-         eUx7KeszqMCWFz0w2EowceW+z9AMfFGjj+gGenLgPgNawDtrrKODlI5xt+tMJh3Hpn
-         VcHRO03+RxqZzomhATa9Rux5VMBXFAhIAoQ80q4o=
-Received: by earth.universe (Postfix, from userid 1000)
-        id A99323C08CE; Wed,  1 Jul 2020 18:17:13 +0200 (CEST)
-Date:   Wed, 1 Jul 2020 18:17:13 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Cc:     pali@kernel.org, robh@kernel.org, afd@ti.com, dmurphy@ti.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, sspatil@android.com
-Subject: Re: [EXTERNAL] Re: [PATCH v14 4/4] power: supply: bq25150 introduce
- the bq25150
-Message-ID: <20200701161713.f67htedosevy4oyp@earth.universe>
+        id S1730091AbgGAQWs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jul 2020 12:22:48 -0400
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:58704 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729019AbgGAQWs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2020 12:22:48 -0400
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 061GMjUM026001;
+        Wed, 1 Jul 2020 11:22:45 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1593620565;
+        bh=7gTUJwCevpEPSamm9O3eV5tThyMcvRU8VEBQ02ydttY=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=rUfumGk22q4LJJruNeHZHX95aTgm+n1kGzB8C26aLRjrgy5mZOfv7aozyBA4P9Vfs
+         V+DxIWbwdkwQ8NbSG1RzrBxFEq3cwOY6wuRJPlAzSQAgS31IOWLj/Zg3bphYn6ZqSR
+         9m5gMGJUqXJmhAg7hkJyx8xbdketr6774Itubnf4=
+Received: from DFLE108.ent.ti.com (dfle108.ent.ti.com [10.64.6.29])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 061GMiKo068018
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 1 Jul 2020 11:22:45 -0500
+Received: from DFLE102.ent.ti.com (10.64.6.23) by DFLE108.ent.ti.com
+ (10.64.6.29) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 1 Jul
+ 2020 11:22:44 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE102.ent.ti.com
+ (10.64.6.23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Wed, 1 Jul 2020 11:22:44 -0500
+Received: from [10.250.52.63] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 061GMhWO068161;
+        Wed, 1 Jul 2020 11:22:43 -0500
+Subject: Re: [PATCH v14 2/4] dt-bindings: power: Convert battery.txt to
+ battery.yaml
+To:     Joe Perches <joe@perches.com>,
+        Ricardo Rivera-Matos <r-rivera-matos@ti.com>, <sre@kernel.org>,
+        <pali@kernel.org>, <robh@kernel.org>
+CC:     <afd@ti.com>, <linux-pm@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <devicetree@vger.kernel.org>,
+        <sspatil@android.com>
 References: <20200630215426.26450-1-r-rivera-matos@ti.com>
- <20200630215426.26450-5-r-rivera-matos@ti.com>
- <20200630233341.d5ztfv5rcbhjxi4r@earth.universe>
- <b22f4eed-6baf-604e-0953-d427407c904e@ti.com>
+ <20200630215426.26450-3-r-rivera-matos@ti.com>
+ <e0bc6b4fa54612a09f1f05a779b8d506d9e0ac2f.camel@perches.com>
+From:   Dan Murphy <dmurphy@ti.com>
+Message-ID: <98a64a36-2c27-0e49-ce97-66a135c0c185@ti.com>
+Date:   Wed, 1 Jul 2020 11:22:43 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b22f4eed-6baf-604e-0953-d427407c904e@ti.com>
+In-Reply-To: <e0bc6b4fa54612a09f1f05a779b8d506d9e0ac2f.camel@perches.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Joe
 
-On Tue, Jun 30, 2020 at 11:17:30PM -0500, Ricardo Rivera-Matos wrote:
-> [...]
-> > > +static int bq2515x_battery_set_property(struct power_supply *psy,
-> > > +		enum power_supply_property prop,
-> > > +		const union power_supply_propval *val)
-> > > +{
-> > > +	struct bq2515x_device *bq2515x = power_supply_get_drvdata(psy);
-> > > +	int ret;
-> > > +
-> > > +	switch (prop) {
-> > > +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
-> > > +		ret = bq2515x_set_batt_reg(bq2515x, val->intval);
-> > > +		break;
-> > > +	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
-> > > +		ret = bq2515x_set_const_charge_current(bq2515x, val->intval);
-> > > +		break;
-> > > +	case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
-> > > +		ret = bq2515x_set_precharge_current(bq2515x, val->intval);
-> > > +		break;
-> > > +	default:
-> > > +		return -EINVAL;
-> > > +	}
-> > > +
-> > > +	return ret;
-> > > +}
-> > Expose those through the charger device. The battery device
-> > can expose maximum data (e.g. POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX),
-> > but should not control the charging itself.
-> ACK. Just to confirm this would eliminate the need for the
-> bq2515x_battery_set_property altogether as these three properties should be
-> set in the charger device. There will only be a bq2515x_battery_get_property
-> to report the CONSTANT_CHARGE_VOLTAGE_MAX and CONSTANT_CHARGE_CURRENT_MAX
-> values captured from the devicetree.
+On 6/30/20 5:32 PM, Joe Perches wrote:
+> On Tue, 2020-06-30 at 16:54 -0500, Ricardo Rivera-Matos wrote:
+>> bindings/power/supply/battery.txt
+> Do any of these also need updating?
+>
+> Documentation/devicetree/bindings/power/supply/bq24190.txt:  See also Documentation/devicetree/bindings/power/supply/battery.txt
+> Documentation/devicetree/bindings/power/supply/bq27xxx.yaml:       See Documentation/devicetree/bindings/power/supply/battery.txt
+> Documentation/devicetree/bindings/power/supply/rohm,bd99954.yaml:#   See also Documentation/devicetree/bindings/power/supply/battery.txt
+> Documentation/devicetree/bindings/power/supply/sc2731_charger.txt:  See Documentation/devicetree/bindings/power/supply/battery.txt
+> Documentation/devicetree/bindings/power/supply/sc27xx-fg.txt:  See Documentation/devicetree/bindings/power/supply/battery.txt
+> Documentation/power/power_supply_class.rst:Documentation/devicetree/bindings/power/supply/battery.txt. This is
+>
+Not really.  The verbiage in the battery.txt redirects to the battery.yaml
 
-Right.
+Maybe after the conversion is accepted then these can be updated when 
+touched.
 
--- Sebastian
+
+Dan
+
