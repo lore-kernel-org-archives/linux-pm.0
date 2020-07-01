@@ -2,378 +2,152 @@ Return-Path: <SRS0=2dfJ=AM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AEEAC433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 13:45:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 566BDC433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 13:56:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F1FBA206B6
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 13:45:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3330D20663
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 13:56:48 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=marek-ca.20150623.gappssmtp.com header.i=@marek-ca.20150623.gappssmtp.com header.b="SJvJ3v6B"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="GlZ/8wIp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731155AbgGANpf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jul 2020 09:45:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44338 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731153AbgGANpH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2020 09:45:07 -0400
-Received: from mail-qk1-x744.google.com (mail-qk1-x744.google.com [IPv6:2607:f8b0:4864:20::744])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AC31C08C5C1
-        for <linux-pm@vger.kernel.org>; Wed,  1 Jul 2020 06:45:07 -0700 (PDT)
-Received: by mail-qk1-x744.google.com with SMTP id c30so18307980qka.10
-        for <linux-pm@vger.kernel.org>; Wed, 01 Jul 2020 06:45:07 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=marek-ca.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=OPvy4kkttICljs5o0Hp44TfDAGbA0ECK1QuThDVHWU4=;
-        b=SJvJ3v6BsAUd49TEjAquGxwzpcw5vtR9c7z/FOqWRrFI09A5lIFMbbn7Uq0hJ9Gt/v
-         Ye3QeyRZLhoW9I0NTIQD06+ldxnRNXb3mKd5V+kMPJfvOEFFsd33pRv/w+ZuEVsyawO2
-         IPYcGOeZ4KmGTGJ7epHiE4Wla9ToZnRX4z9luJqV/khrakxl7K6p23x/FGOC1629f0v9
-         2euM+cBrmRwlHVfo27QBXPk/IxRPMXHJg84evh+3QwsOT9G5w5hV2RfyndkQaVarY6ka
-         hLrYzKXwe8DmBUtxiOb++SqSuYotSUK9gUZkNFOi/eHiaMXsSdG30j9naS8Yq2Ky86vV
-         PRtw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=OPvy4kkttICljs5o0Hp44TfDAGbA0ECK1QuThDVHWU4=;
-        b=GL+nL1msQaU4cx4+I+eSt2yPp8mp7mbbo4rYsoDyAndFQeX+WV31fbMjo8myhOPEG4
-         i6twcIQF6WWHR0FYVolPKR9jmLhj/qiun7UQZoqYRanafmwnvHAxRkEHY05w0r8ArlLm
-         oZ79GpBiV1z7Ub/1/fwMQgQj+8L3ZGj2clNznAvDm2YHF7zy2Tx3Hgg0c4M3FvY+GeDV
-         i8afXXSLajuRmGxdjBK0IymMzNKSU+26WZ6Tio1CHfTnoRKcX1dlK0ZLapXv/5ZVT4ka
-         9a6ZYQ0bfSzpEHeq7SoaQum31kEvR8Q1Vq9gvDVxhyqbSKfLaQVGSKSEzVtzAxle9x+A
-         0OTA==
-X-Gm-Message-State: AOAM533BPzeuAaOclV9VEnfhzqcpVJTlHu+mNfz35DL0/KgpVZuQIfgt
-        v17U1AUlf6tYMjraztiqi4aCBg==
-X-Google-Smtp-Source: ABdhPJwhUqVM3NmKifFLoTu2Aj/IZk38fc1pOVWd1WQRylFh61TpO+fd3SUd1ijb9KUyf6W5HrKpSg==
-X-Received: by 2002:a37:a20d:: with SMTP id l13mr26254365qke.296.1593611106102;
-        Wed, 01 Jul 2020 06:45:06 -0700 (PDT)
-Received: from localhost.localdomain ([147.253.86.153])
-        by smtp.gmail.com with ESMTPSA id d136sm1444345qke.47.2020.07.01.06.45.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 01 Jul 2020 06:45:05 -0700 (PDT)
-From:   Jonathan Marek <jonathan@marek.ca>
-To:     linux-arm-msm@vger.kernel.org
-Cc:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-pm@vger.kernel.org (open list:INTERCONNECT API),
-        devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED
-        DEVICE TREE BINDINGS), linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 2/6] dt-bindings: interconnect: Add Qualcomm SM8250 DT bindings
-Date:   Wed,  1 Jul 2020 09:42:51 -0400
-Message-Id: <20200701134259.8055-3-jonathan@marek.ca>
-X-Mailer: git-send-email 2.26.1
-In-Reply-To: <20200701134259.8055-1-jonathan@marek.ca>
-References: <20200701134259.8055-1-jonathan@marek.ca>
+        id S1731151AbgGAN4r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jul 2020 09:56:47 -0400
+Received: from hqnvemgate25.nvidia.com ([216.228.121.64]:3026 "EHLO
+        hqnvemgate25.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731069AbgGAN4d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 1 Jul 2020 09:56:33 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate25.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5efc95de0000>; Wed, 01 Jul 2020 06:55:42 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate101.nvidia.com (PGP Universal service);
+  Wed, 01 Jul 2020 06:56:32 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate101.nvidia.com on Wed, 01 Jul 2020 06:56:32 -0700
+Received: from [10.26.73.166] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 1 Jul
+ 2020 13:56:29 +0000
+Subject: Re: [PATCH v1] cpuidle: tegra: Correctly handle result of
+ arm_cpuidle_simple_enter()
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>
+References: <20200629222625.674-1-digetx@gmail.com>
+ <d9efb0f5-d6ab-f3db-540e-c6ae1b42e45e@nvidia.com>
+ <4bae133b-1b51-281c-1759-ca0d259b18ca@gmail.com>
+From:   Jon Hunter <jonathanh@nvidia.com>
+Message-ID: <a55f74fd-1105-1576-8f73-d6d3062541ef@nvidia.com>
+Date:   Wed, 1 Jul 2020 14:56:27 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <4bae133b-1b51-281c-1759-ca0d259b18ca@gmail.com>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: quoted-printable
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1593611742; bh=EMWMJUejyuuhJ9vm4W0toQ1U+9WqTXqXluLjiCBms6M=;
+        h=X-PGP-Universal:Subject:To:CC:References:From:Message-ID:Date:
+         User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
+         X-ClientProxiedBy:Content-Type:Content-Language:
+         Content-Transfer-Encoding;
+        b=GlZ/8wIpNAblSfcm0TGvny5LI+9hdzzTt5QPr0ey9uLdpDJmfX3eNJv4y1v+IRNzr
+         I7Yz/nAf1gcnVUyL7KkJEGmuyWkjuLdObFblJI7ErLeRPFvWKMb7/m5IM0e/1orRe0
+         FTA28VqH2TL9rM+guvb5MRuz3Jh+Zfzu35TF+QeowlgNs3XGy6eV8zPrDcNOmXkzDe
+         +5Fxcyf+vdr3UK7zFxLMybeHz+t/CZpIgRfFROAzrlT5vyD2IHiPRijoNEpkILhe7a
+         RicVQjQ3iV7cyDPGOJBeL8jH+T0I8oAOnEI6QOs9uTLmeGjBg1xaYz+1bwhdlB8SO9
+         AMKiD05UOCO6g==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm SM8250 platform has several bus fabrics that could be
-controlled and tuned dynamically according to the bandwidth demand.
 
-Signed-off-by: Jonathan Marek <jonathan@marek.ca>
----
- .../bindings/interconnect/qcom,sm8250.yaml    |  86 ++++++++
- .../dt-bindings/interconnect/qcom,sm8250.h    | 186 ++++++++++++++++++
- 2 files changed, 272 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sm8250.yaml
- create mode 100644 include/dt-bindings/interconnect/qcom,sm8250.h
+On 30/06/2020 19:54, Dmitry Osipenko wrote:
+> 30.06.2020 12:02, Jon Hunter =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+>>
+>> On 29/06/2020 23:26, Dmitry Osipenko wrote:
+>>> The arm_cpuidle_simple_enter() returns the entered idle-index and not a
+>>> error code. It happened that TEGRA_C1=3Dindex=3Derr=3D0, and hence this=
+ typo
+>>> was difficult to notice in the code since everything happened to work
+>>> properly. This patch fixes the minor typo, it doesn't fix any problem.
+>>
+>> I guess that is dependent on if CPUIDLE is enabled ...
+>>
+>> #ifdef CONFIG_CPU_IDLE
+>> extern int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+>>                 struct cpuidle_driver *drv, int index);
+>> #else
+>> static inline int arm_cpuidle_simple_enter(struct cpuidle_device *dev,
+>>                  struct cpuidle_driver *drv, int index) { return -ENODEV=
+; }
+>> #endif
+>>
+>> Looks like it could return an error.
+>=20
+> Hello Jon!
+>=20
+> The cpuidle's enter() callback returns an index of the entered state on
+> success, on negative value on failure.
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sm8250.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sm8250.yaml
-new file mode 100644
-index 000000000000..bc4e2358ad78
---- /dev/null
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,sm8250.yaml
-@@ -0,0 +1,86 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/interconnect/qcom,sm8250.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title:  Qualcomm SM8250 Network-On-Chip Interconnect
-+
-+maintainers:
-+  -
-+
-+description: |
-+   SM8250 interconnect providers support system bandwidth requirements through
-+   RPMh hardware accelerators known as Bus Clock Manager (BCM). The provider is
-+   able to communicate with the BCM through the Resource State Coordinator (RSC)
-+   associated with each execution environment. Provider nodes must point to at
-+   least one RPMh device child node pertaining to their RSC and each provider
-+   can map to multiple RPMh resources.
-+
-+properties:
-+  reg:
-+    maxItems: 1
-+
-+  compatible:
-+    enum:
-+      - qcom,sm8250-aggre1-noc
-+      - qcom,sm8250-aggre2-noc
-+      - qcom,sm8250-compute-noc
-+      - qcom,sm8250-config-noc
-+      - qcom,sm8250-dc-noc
-+      - qcom,sm8250-gem-noc
-+      - qcom,sm8250-ipa-virt
-+      - qcom,sm8250-mc-virt
-+      - qcom,sm8250-mmss-noc
-+      - qcom,sm8250-npu-noc
-+      - qcom,sm8250-system-noc
-+      - qcom,sm8250-gem-noc-display
-+      - qcom,sm8250-mc-virt-display
-+      - qcom,sm8250-mmss-noc-display
-+
-+  '#interconnect-cells':
-+    const: 1
-+
-+  qcom,bcm-voters:
-+    $ref: /schemas/types.yaml#/definitions/phandle-array
-+    description: |
-+      List of phandles to qcom,bcm-voter nodes that are required by
-+      this interconnect to send RPMh commands.
-+
-+  qcom,bcm-voter-names:
-+    $ref: /schemas/types.yaml#/definitions/string-array
-+    description: |
-+      Names for each of the qcom,bcm-voters specified.
-+
-+required:
-+  - compatible
-+  - reg
-+  - '#interconnect-cells'
-+  - qcom,bcm-voters
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+      #include <dt-bindings/interconnect/qcom,sm8250.h>
-+
-+      config_noc: interconnect@1500000 {
-+            compatible = "qcom,sm8250-config-noc";
-+            reg = <0x01500000 0x1000>;
-+            #interconnect-cells = <1>;
-+            qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      system_noc: interconnect@1632000 {
-+            compatible = "qcom,sm8250-system-noc";
-+            reg = <0x01632000 0x1000>;
-+            #interconnect-cells = <1>;
-+            qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-+
-+      mmss_noc: interconnect@174a000 {
-+            compatible = "qcom,sm8250-mmss-noc";
-+            reg = <0x0174a000 0x1000>;
-+            #interconnect-cells = <1>;
-+            qcom,bcm-voters = <&apps_bcm_voter>;
-+      };
-diff --git a/include/dt-bindings/interconnect/qcom,sm8250.h b/include/dt-bindings/interconnect/qcom,sm8250.h
-new file mode 100644
-index 000000000000..265571ff957a
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,sm8250.h
-@@ -0,0 +1,186 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Qualcomm SM8250 interconnect IDs
-+ *
-+ * Copyright (c) 2020, The Linux Foundation. All rights reserved.
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_SM8250_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_SM8250_H
-+
-+#define MASTER_A1NOC_CFG		0
-+#define MASTER_QSPI_0			1
-+#define MASTER_QUP_1			2
-+#define MASTER_QUP_2			3
-+#define MASTER_TSIF			4
-+#define MASTER_PCIE_2			5
-+#define MASTER_SDCC_4			6
-+#define MASTER_UFS_MEM			7
-+#define MASTER_USB3			8
-+#define MASTER_USB3_1			9
-+#define A1NOC_SNOC_SLV			10
-+#define SLAVE_ANOC_PCIE_GEM_NOC_1	11
-+#define SLAVE_SERVICE_A1NOC		12
-+
-+#define MASTER_A2NOC_CFG		0
-+#define MASTER_QDSS_BAM			1
-+#define MASTER_QUP_0			2
-+#define MASTER_CNOC_A2NOC		3
-+#define MASTER_CRYPTO_CORE_0		4
-+#define MASTER_IPA			5
-+#define MASTER_PCIE			6
-+#define MASTER_PCIE_1			7
-+#define MASTER_QDSS_ETR			8
-+#define MASTER_SDCC_2			9
-+#define MASTER_UFS_CARD			10
-+#define A2NOC_SNOC_SLV			11
-+#define SLAVE_ANOC_PCIE_GEM_NOC		12
-+#define SLAVE_SERVICE_A2NOC		13
-+
-+#define MASTER_NPU			0
-+#define SLAVE_CDSP_MEM_NOC		1
-+
-+#define SNOC_CNOC_MAS			0
-+#define MASTER_QDSS_DAP			1
-+#define SLAVE_A1NOC_CFG			2
-+#define SLAVE_A2NOC_CFG			3
-+#define SLAVE_AHB2PHY_SOUTH		4
-+#define SLAVE_AHB2PHY_NORTH		5
-+#define SLAVE_AOSS			6
-+#define SLAVE_CAMERA_CFG		7
-+#define SLAVE_CLK_CTL			8
-+#define SLAVE_CDSP_CFG			9
-+#define SLAVE_RBCPR_CX_CFG		10
-+#define SLAVE_RBCPR_MMCX_CFG		11
-+#define SLAVE_RBCPR_MX_CFG		12
-+#define SLAVE_CRYPTO_0_CFG		13
-+#define SLAVE_CX_RDPM			14
-+#define SLAVE_DCC_CFG			15
-+#define SLAVE_CNOC_DDRSS		16
-+#define SLAVE_DISPLAY_CFG		17
-+#define SLAVE_GRAPHICS_3D_CFG		18
-+#define SLAVE_IMEM_CFG			19
-+#define SLAVE_IPA_CFG			20
-+#define SLAVE_IPC_ROUTER_CFG		21
-+#define SLAVE_LPASS			22
-+#define SLAVE_CNOC_MNOC_CFG		23
-+#define SLAVE_NPU_CFG			24
-+#define SLAVE_PCIE_0_CFG		25
-+#define SLAVE_PCIE_1_CFG		26
-+#define SLAVE_PCIE_2_CFG		27
-+#define SLAVE_PDM			28
-+#define SLAVE_PIMEM_CFG			29
-+#define SLAVE_PRNG			30
-+#define SLAVE_QDSS_CFG			31
-+#define SLAVE_QSPI_0			32
-+#define SLAVE_QUP_0			33
-+#define SLAVE_QUP_1			34
-+#define SLAVE_QUP_2			35
-+#define SLAVE_SDCC_2			36
-+#define SLAVE_SDCC_4			37
-+#define SLAVE_SNOC_CFG			38
-+#define SLAVE_TCSR			39
-+#define SLAVE_TLMM_NORTH		40
-+#define SLAVE_TLMM_SOUTH		41
-+#define SLAVE_TLMM_WEST			42
-+#define SLAVE_TSIF			43
-+#define SLAVE_UFS_CARD_CFG		44
-+#define SLAVE_UFS_MEM_CFG		45
-+#define SLAVE_USB3			46
-+#define SLAVE_USB3_1			47
-+#define SLAVE_VENUS_CFG			48
-+#define SLAVE_VSENSE_CTRL_CFG		49
-+#define SLAVE_CNOC_A2NOC		50
-+#define SLAVE_SERVICE_CNOC		51
-+
-+#define MASTER_CNOC_DC_NOC		0
-+#define SLAVE_LLCC_CFG			1
-+#define SLAVE_GEM_NOC_CFG		2
-+
-+#define MASTER_GPU_TCU			0
-+#define MASTER_SYS_TCU			1
-+#define MASTER_AMPSS_M0			2
-+#define MASTER_GEM_NOC_CFG		3
-+#define MASTER_COMPUTE_NOC		4
-+#define MASTER_GRAPHICS_3D		5
-+#define MASTER_MNOC_HF_MEM_NOC		6
-+#define MASTER_MNOC_SF_MEM_NOC		7
-+#define MASTER_ANOC_PCIE_GEM_NOC	8
-+#define MASTER_SNOC_GC_MEM_NOC		9
-+#define MASTER_SNOC_SF_MEM_NOC		10
-+#define SLAVE_GEM_NOC_SNOC		11
-+#define SLAVE_LLCC			12
-+#define SLAVE_MEM_NOC_PCIE_SNOC		13
-+#define SLAVE_SERVICE_GEM_NOC_1		14
-+#define SLAVE_SERVICE_GEM_NOC_2		15
-+#define SLAVE_SERVICE_GEM_NOC		16
-+
-+#define MASTER_IPA_CORE			0
-+#define SLAVE_IPA_CORE			1
-+
-+#define MASTER_LLCC			0
-+#define MASTER_ALC			1
-+#define SLAVE_EBI_CH0			2
-+
-+#define MASTER_CNOC_MNOC_CFG		0
-+#define MASTER_CAMNOC_HF		1
-+#define MASTER_CAMNOC_ICP		2
-+#define MASTER_CAMNOC_SF		3
-+#define MASTER_VIDEO_P0			4
-+#define MASTER_VIDEO_P1			5
-+#define MASTER_VIDEO_PROC		6
-+#define MASTER_MDP_PORT0		7
-+#define MASTER_MDP_PORT1		8
-+#define MASTER_ROTATOR			9
-+#define SLAVE_MNOC_HF_MEM_NOC		10
-+#define SLAVE_MNOC_SF_MEM_NOC		11
-+#define SLAVE_SERVICE_MNOC		12
-+
-+#define MASTER_NPU_SYS			0
-+#define MASTER_NPU_CDP			1
-+#define MASTER_NPU_NOC_CFG		2
-+#define SLAVE_NPU_CAL_DP0		3
-+#define SLAVE_NPU_CAL_DP1		4
-+#define SLAVE_NPU_CP			5
-+#define SLAVE_NPU_INT_DMA_BWMON_CFG	6
-+#define SLAVE_NPU_DPM			7
-+#define SLAVE_ISENSE_CFG		8
-+#define SLAVE_NPU_LLM_CFG		9
-+#define SLAVE_NPU_TCM			10
-+#define SLAVE_NPU_COMPUTE_NOC		11
-+#define SLAVE_SERVICE_NPU_NOC		12
-+
-+#define MASTER_SNOC_CFG			0
-+#define A1NOC_SNOC_MAS			1
-+#define A2NOC_SNOC_MAS			2
-+#define MASTER_GEM_NOC_SNOC		3
-+#define MASTER_GEM_NOC_PCIE_SNOC	4
-+#define MASTER_PIMEM			5
-+#define MASTER_GIC			6
-+#define SLAVE_APPSS			7
-+#define SNOC_CNOC_SLV			8
-+#define SLAVE_SNOC_GEM_NOC_GC		9
-+#define SLAVE_SNOC_GEM_NOC_SF		10
-+#define SLAVE_OCIMEM			11
-+#define SLAVE_PIMEM			12
-+#define SLAVE_SERVICE_SNOC		13
-+#define SLAVE_PCIE_0			14
-+#define SLAVE_PCIE_1			15
-+#define SLAVE_PCIE_2			16
-+#define SLAVE_QDSS_STM			17
-+#define SLAVE_TCU			18
-+
-+#define MASTER_MNOC_HF_MEM_NOC_DISPLAY	0
-+#define MASTER_MNOC_SF_MEM_NOC_DISPLAY	1
-+#define SLAVE_LLCC_DISPLAY		2
-+
-+#define MASTER_LLCC_DISPLAY		0
-+#define SLAVE_EBI_CH0_DISPLAY		1
-+
-+#define MASTER_MDP_PORT0_DISPLAY	0
-+#define MASTER_MDP_PORT1_DISPLAY	1
-+#define MASTER_ROTATOR_DISPLAY		2
-+#define SLAVE_MNOC_HF_MEM_NOC_DISPLAY	3
-+#define SLAVE_MNOC_SF_MEM_NOC_DISPLAY	4
-+
-+#endif
--- 
-2.26.1
+Yes, however, when I read the first sentence of the changelog it seemed
+to suggested it would never return and error code. Perhaps you meant in
+the context of the Tegra CPUIdle driver because CPU_IDLE is always enabled?
 
+> The negative number *could be* a proper error code, but in the same time
+> it also doesn't matter what's the exact negative value is for the
+> cpuidle's core code. Please see more below!
+>=20
+>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>>> ---
+>>>  drivers/cpuidle/cpuidle-tegra.c | 4 ++--
+>>>  1 file changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-=
+tegra.c
+>>> index 150045849d78..9e9a9cccd755 100644
+>>> --- a/drivers/cpuidle/cpuidle-tegra.c
+>>> +++ b/drivers/cpuidle/cpuidle-tegra.c
+>>> @@ -236,14 +236,14 @@ static int tegra_cpuidle_enter(struct cpuidle_dev=
+ice *dev,
+>>>  			       int index)
+>>>  {
+>>>  	unsigned int cpu =3D cpu_logical_map(dev->cpu);
+>>> -	int err;
+>>> +	int err =3D 0;
+>>> =20
+>>>  	index =3D tegra_cpuidle_adjust_state_index(index, cpu);
+>>>  	if (dev->states_usage[index].disable)
+>>>  		return -1;
+>>> =20
+>>>  	if (index =3D=3D TEGRA_C1)
+>>> -		err =3D arm_cpuidle_simple_enter(dev, drv, index);
+>>> +		index =3D arm_cpuidle_simple_enter(dev, drv, index);
+>>>  	else
+>>>  		err =3D tegra_cpuidle_state_enter(dev, index, cpu);
+>>> =20
+>>>
+>>
+>> However, I do think that there is something not right in the error handl=
+ing
+>> here. Would also be nice to get rid of these -1.
+>=20
+> IIRC, the -1 was borrowed from some other cpuidle driver, for example
+> cpuidle-psci[1] and coupled.c[2] are returning -1 on a failure.
+
+Indeed. Maybe we just let sleeping dogs lie in this case.
+
+Jon
+
+--=20
+nvpublic
