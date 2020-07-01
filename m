@@ -4,37 +4,38 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.0 required=3.0
 	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9FEE8C433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ED07C433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7FB2A2074D
-	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8443F2074D
+	for <linux-pm@archiver.kernel.org>; Wed,  1 Jul 2020 09:09:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728969AbgGAJJc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 1 Jul 2020 05:09:32 -0400
-Received: from foss.arm.com ([217.140.110.172]:47772 "EHLO foss.arm.com"
+        id S1729441AbgGAJJk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 1 Jul 2020 05:09:40 -0400
+Received: from foss.arm.com ([217.140.110.172]:47820 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726255AbgGAJJb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 1 Jul 2020 05:09:31 -0400
+        id S1726255AbgGAJJj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 1 Jul 2020 05:09:39 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EDD0B106F;
-        Wed,  1 Jul 2020 02:09:30 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0E55E11FB;
+        Wed,  1 Jul 2020 02:09:38 -0700 (PDT)
 Received: from e108754-lin.cambridge.arm.com (unknown [10.1.198.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3489D3F68F;
-        Wed,  1 Jul 2020 02:09:29 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 2DC843F68F;
+        Wed,  1 Jul 2020 02:09:36 -0700 (PDT)
 From:   Ionela Voinescu <ionela.voinescu@arm.com>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
         catalin.marinas@arm.com, sudeep.holla@arm.com, will@kernel.org,
         linux@armlinux.org.uk, valentin.schneider@arm.com
 Cc:     mingo@redhat.com, peterz@infradead.org, dietmar.eggemann@arm.com,
         ionela.voinescu@arm.com, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/8] cpufreq: move invariance setter calls in cpufreq core
-Date:   Wed,  1 Jul 2020 10:07:45 +0100
-Message-Id: <20200701090751.7543-3-ionela.voinescu@arm.com>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        Liviu Dudau <liviu.dudau@arm.com>
+Subject: [PATCH 4/8] cpufreq,vexpress-spc: fix Frequency Invariance (FI) for bL switching
+Date:   Wed,  1 Jul 2020 10:07:47 +0100
+Message-Id: <20200701090751.7543-5-ionela.voinescu@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200701090751.7543-1-ionela.voinescu@arm.com>
 References: <20200701090751.7543-1-ionela.voinescu@arm.com>
@@ -43,136 +44,123 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Valentin Schneider <valentin.schneider@arm.com>
+In the majority of cases, the index argument to cpufreq's target_index()
+is meant to identify the frequency that is requested from the hardware,
+according to the frequency table: policy->freq_table[index].frequency.
 
-To properly scale its per-entity load-tracking signals, the task scheduler
-needs to be given a frequency scale factor, i.e. some image of the current
-frequency the CPU is running at. Currently, this scale can be computed
-either by using counters (APERF/MPERF on x86, AMU on arm64), or by
-piggy-backing on the frequency selection done by cpufreq.
+After successfully requesting it from the hardware, this value, together
+with the maximum hardware frequency (policy->cpuinfo.max_freq) are used
+as arguments to arch_set_freq_scale(), in order to set the task scheduler
+frequency scale factor. This is a normalized indication of a CPU's
+current performance.
 
-For the latter, drivers have to explicitly set the scale factor
-themselves, despite it being purely boiler-plate code: the required
-information depends entirely on the kind of frequency switch callback
-implemented by the driver, i.e. either of: target_index(), target(),
-fast_switch() and setpolicy().
+But for the vexpress-spc-cpufreq driver, when big.LITTLE switching [1]
+is enabled, there are three issues with using the above information for
+setting the FI scale factor:
 
-The fitness of those callbacks with regard to driving the Frequency
-Invariance Engine (FIE) is studied below:
+ - cur_freq: policy->freq_table[index].frequency is not the frequency
+   requested from the hardware. ve_spc_cpufreq_set_rate() will convert
+   from this virtual frequency to an actual frequency, which is then
+   requested from the hardware. For the A7 cluster, the virtual frequency
+   is half the actual frequency. The use of the virtual policy->freq_table
+   frequency results in an incorrect FI scale factor.
 
-target_index()
-==============
-Documentation states that the chosen frequency "must be determined by
-freq_table[index].frequency". It isn't clear if it *has* to be that
-frequency, or if it can use that frequency value to do some computation
-that ultimately leads to a different frequency selection. All drivers
-go for the former, while the vexpress-spc-cpufreq has an atypical
-implementation.
+ - max_freq: policy->cpuinfo.max_freq does not correctly identify the
+   maximum frequency of the physical cluster. This value identifies the
+   maximum frequency achievable by the big-LITTLE pair, that is the
+   maximum frequency of the big CPU. But when the LITTLE CPU in the group
+   is used, the hardware maximum frquency passed to arch_set_freq_scale()
+   is incorrect.
 
-Thefore, the hook works on the asusmption the core can use
-freq_table[index].frequency.
+ - missing a scale factor update: when switching clusters, the driver
+   recalculates the frequency of the old clock domain based on the
+   requests of the remaining CPUs in the domain and asks for a clock
+   change. But this does not result in an update in the scale factor.
 
-target()
-=======
-This has been flagged as deprecated since:
+Therefore, introduce a local function bLs_set_sched_freq_scale() that
+helps call arch_set_freq_scale() with correct information for the
+is_bL_switching_enabled() case, while maintaining the old, more
+efficient, call site of arch_set_freq_scale() for when cluster
+switching is disabled.
 
-  commit 9c0ebcf78fde ("cpufreq: Implement light weight ->target_index() routine")
+Also, because of these requirements in computing the scale factor, this
+driver is the only one that maintains custom support for FI, which is
+marked by the presence of the CPUFREQ_CUSTOM_SET_FREQ_SCALE flag.
 
-It also doesn't have that many users:
+[1] https://lwn.net/Articles/481055/
 
-  cpufreq-nforce2.c:371:2:	.target = nforce2_target,
-  cppc_cpufreq.c:416:2:		.target = cppc_cpufreq_set_target,
-  pcc-cpufreq.c:573:2:		.target = pcc_cpufreq_target,
-
-Should we care about drivers using this hook, we may be able to exploit
-cpufreq_freq_transition_{being, end}(). Otherwise, if FIE support is
-desired in their current state, arch_set_freq_scale() could still be
-called directly by the driver, while CPUFREQ_CUSTOM_SET_FREQ_SCALE
-could be used to mark support for it.
-
-fast_switch()
-=============
-This callback *has* to return the frequency that was selected.
-
-setpolicy()
-===========
-This callback does not have any designated way of informing what was the
-end choice. But there are only two drivers using setpolicy(), and none
-of them have current FIE support:
-
-  drivers/cpufreq/longrun.c:281:	.setpolicy	= longrun_set_policy,
-  drivers/cpufreq/intel_pstate.c:2215:	.setpolicy	= intel_pstate_set_policy,
-
-The intel_pstate is known to use counter-driven frequency invariance.
-
-If FIE support is desired in their current state, arch_set_freq_scale()
-could still be called directly by the driver, while
-CPUFREQ_CUSTOM_SET_FREQ_SCALE could be used to mark support for it.
-
-Conclusion
-==========
-
-Given that the significant majority of current FIE enabled drivers use
-callbacks that lend themselves to triggering the setting of the FIE scale
-factor in a generic way, move the invariance setter calls to cpufreq core,
-while filtering drivers that flag custom support using
-CPUFREQ_CUSTOM_SET_FREQ_SCALE.
-
-Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
 Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
 Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+Cc: Liviu Dudau <liviu.dudau@arm.com>
 ---
- drivers/cpufreq/cpufreq.c | 20 +++++++++++++++++---
- 1 file changed, 17 insertions(+), 3 deletions(-)
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 0128de3603df..83b58483a39b 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2046,9 +2046,16 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
- unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
- 					unsigned int target_freq)
- {
-+	unsigned int freq;
-+
- 	target_freq = clamp_val(target_freq, policy->min, policy->max);
-+	freq = cpufreq_driver->fast_switch(policy, target_freq);
-+
-+	if (freq && !(cpufreq_driver->flags & CPUFREQ_CUSTOM_SET_FREQ_SCALE))
-+		arch_set_freq_scale(policy->related_cpus, freq,
-+				    policy->cpuinfo.max_freq);
+diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
+index e0a1a3367ec5..f2caf67d4050 100644
+--- a/drivers/cpufreq/vexpress-spc-cpufreq.c
++++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
+@@ -55,6 +55,8 @@ static atomic_t cluster_usage[MAX_CLUSTERS + 1];
+ static unsigned int clk_big_min;	/* (Big) clock frequencies */
+ static unsigned int clk_little_max;	/* Maximum clock frequency (Little) */
  
--	return cpufreq_driver->fast_switch(policy, target_freq);
-+	return freq;
++static inline u32 get_table_max(struct cpufreq_frequency_table *table);
++
+ static DEFINE_PER_CPU(unsigned int, physical_cluster);
+ static DEFINE_PER_CPU(unsigned int, cpu_last_req_freq);
+ 
+@@ -87,6 +89,18 @@ static unsigned int find_cluster_maxfreq(int cluster)
+ 	return max_freq;
  }
- EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
  
-@@ -2140,7 +2147,7 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
- 			    unsigned int relation)
++static void bLs_set_sched_freq_scale(int cluster, unsigned long cur_freq)
++{
++	unsigned long max_freq = get_table_max(freq_table[cluster]);
++	int j;
++
++	for_each_online_cpu(j) {
++		if (cluster == per_cpu(physical_cluster, j))
++			arch_set_freq_scale(get_cpu_mask(j), cur_freq,
++					    max_freq);
++	}
++}
++
+ static unsigned int clk_get_cpu_rate(unsigned int cpu)
  {
- 	unsigned int old_target_freq = target_freq;
--	int index;
-+	int index, retval;
+ 	u32 cur_cluster = per_cpu(physical_cluster, cpu);
+@@ -154,6 +168,9 @@ ve_spc_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
  
- 	if (cpufreq_disabled())
- 		return -ENODEV;
-@@ -2171,7 +2178,14 @@ int __cpufreq_driver_target(struct cpufreq_policy *policy,
+ 	mutex_unlock(&cluster_lock[new_cluster]);
  
- 	index = cpufreq_frequency_table_target(policy, target_freq, relation);
- 
--	return __target_index(policy, index);
-+	retval = __target_index(policy, index);
++	if (bLs)
++		bLs_set_sched_freq_scale(new_cluster, new_rate);
 +
-+	if (!retval && !(cpufreq_driver->flags & CPUFREQ_CUSTOM_SET_FREQ_SCALE))
-+		arch_set_freq_scale(policy->related_cpus,
-+				    policy->freq_table[index].frequency,
-+				    policy->cpuinfo.max_freq);
+ 	/* Recalc freq for old cluster when switching clusters */
+ 	if (old_cluster != new_cluster) {
+ 		/* Switch cluster */
+@@ -170,7 +187,11 @@ ve_spc_cpufreq_set_rate(u32 cpu, u32 old_cluster, u32 new_cluster, u32 rate)
+ 			pr_err("%s: clk_set_rate failed: %d, old cluster: %d\n",
+ 			       __func__, ret, old_cluster);
+ 		}
 +
-+	return retval;
- }
- EXPORT_SYMBOL_GPL(__cpufreq_driver_target);
+ 		mutex_unlock(&cluster_lock[old_cluster]);
++
++		if (new_rate)
++			bLs_set_sched_freq_scale(old_cluster, new_rate);
+ 	}
  
+ 	return 0;
+@@ -200,7 +221,7 @@ static int ve_spc_cpufreq_set_target(struct cpufreq_policy *policy,
+ 	ret = ve_spc_cpufreq_set_rate(cpu, actual_cluster, new_cluster,
+ 				      freqs_new);
+ 
+-	if (!ret) {
++	if (!is_bL_switching_enabled() && !ret) {
+ 		arch_set_freq_scale(policy->related_cpus, freqs_new,
+ 				    policy->cpuinfo.max_freq);
+ 	}
 -- 
 2.17.1
 
