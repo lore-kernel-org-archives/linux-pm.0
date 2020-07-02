@@ -2,176 +2,224 @@ Return-Path: <SRS0=cNC0=AN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 376B4C433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Jul 2020 17:52:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDD2DC433E0
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Jul 2020 18:21:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1454E20737
-	for <linux-pm@archiver.kernel.org>; Thu,  2 Jul 2020 17:52:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8F432084C
+	for <linux-pm@archiver.kernel.org>; Thu,  2 Jul 2020 18:21:54 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="eCKvFL3y"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="cfr5zgdq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727882AbgGBRwZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 2 Jul 2020 13:52:25 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50804 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726980AbgGBRwY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2020 13:52:24 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5149CC08C5DE
-        for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2020 10:52:24 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id 22so28079023wmg.1
-        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2020 10:52:24 -0700 (PDT)
+        id S1728096AbgGBSVy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 2 Jul 2020 14:21:54 -0400
+Received: from smtp-fw-33001.amazon.com ([207.171.190.10]:16023 "EHLO
+        smtp-fw-33001.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726980AbgGBSVx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 2 Jul 2020 14:21:53 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=oglYmDMJJsMPIXYV1ITcnNL4FWv5Lg95ZCqCfgcjHUs=;
-        b=eCKvFL3ymp9ODmh1kib4C/AcPrCHfUe4eQkI84tWMNstC588Mcs/UzyYV+30IgEPIB
-         lfn4BGs06fAPfloAK0p40cJ3BQEuYzsfHY7d9o5Wr4ZrXyQrqXhtnG6F3jFX42w8e/2m
-         weKvXoukAneezHhMB60mGihkb8pcI/kk8sZmWoEft2bkOnM2yQyw4RX50kJPE3J+9MnN
-         fQinPrGJq2HYROL7Dl9fLIK+uTW325NDPRzeAtAAM2vhot8J8DATGO6hnDZGucHe9Jjs
-         qXs+mG8rCVEuhGXBHfDtewoYJIa2KlLkJMQg70p6vJf/FdlJAKW6C6ggeDUiANRQMAFK
-         P1Jw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=oglYmDMJJsMPIXYV1ITcnNL4FWv5Lg95ZCqCfgcjHUs=;
-        b=cDjjyd1kod7bGddqobAOj8kmB2WByBIO5G32yhu8G+KsigAqGiU+HeSHMxFgR5gIB4
-         Nek/EeFUIccnCFBm/J+4h9So//+EzMFV4k0i7ihyLwi0NqT5sd+eNrkUUZKT7s86yFOg
-         fHMdbLCp4oQo2Z3plGpollEJ/vkhs9oGG5yz4EKKp5gYUKMZyZQu0GWLzB2Kk/e+bqig
-         f/N3ipQxZAR5UYYmLkYRRwub2QSSm9M5prHWD81khFIpeLXfKgOgPdNaVE2GaQcsG+jR
-         1sCL4uiqBQOIC4taoerVjAiwCLdHVA5uTl8nJ/VDOV3b1psXkhIjBGNTwHzOO5Tzd67L
-         KMNA==
-X-Gm-Message-State: AOAM533FLJW0k6Lhwsbw4tAwfZCQtD/kUrm/X5VVW4tFqgXHW3vU0dSV
-        o9Cyp2jTM1N2zzUfwB0j/goNvA==
-X-Google-Smtp-Source: ABdhPJwGnT2w1T0cKggQNb65VkNrkBamKBA/sNFXDWMPWvMyn5BHS1CuhDAFIDm0ZukJhYYRAkgr9A==
-X-Received: by 2002:a7b:c041:: with SMTP id u1mr34629911wmc.56.1593712342780;
-        Thu, 02 Jul 2020 10:52:22 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:c88a:7b2b:a4a1:46d0? ([2a01:e34:ed2f:f020:c88a:7b2b:a4a1:46d0])
-        by smtp.googlemail.com with ESMTPSA id h2sm11232487wrw.62.2020.07.02.10.52.19
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 02 Jul 2020 10:52:22 -0700 (PDT)
-Subject: Re: [PATCH v7 00/11] Stop monitoring disabled devices
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
-        platform-driver-x86@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-renesas-soc@vger.kernel.org,
-        linux-rockchip@lists.infradead.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Vishal Kulkarni <vishal@chelsio.com>,
-        "David S . Miller" <davem@davemloft.net>,
-        Jiri Pirko <jiri@mellanox.com>,
-        Ido Schimmel <idosch@mellanox.com>,
-        Johannes Berg <johannes.berg@intel.com>,
-        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
-        Luca Coelho <luciano.coelho@intel.com>,
-        Intel Linux Wireless <linuxwifi@intel.com>,
-        Kalle Valo <kvalo@codeaurora.org>,
-        Peter Kaestle <peter@piie.net>,
-        Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Support Opensource <support.opensource@diasemi.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
-        Heiko Stuebner <heiko@sntech.de>,
-        Orson Zhai <orsonzhai@gmail.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Allison Randal <allison@lohutok.net>,
-        Enrico Weigelt <info@metux.net>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        kernel@collabora.com
-References: <20200629122925.21729-1-andrzej.p@collabora.com>
- <aab40d90-3f72-657c-5e14-e53a34c4b420@linaro.org>
- <3d03d1a2-ac06-b69b-93cb-e0203be62c10@collabora.com>
- <47111821-d691-e71d-d740-e4325e290fa4@linaro.org>
- <be9b7ee3-cad0-e462-126d-08de9b226285@collabora.com>
- <4353a939-3f5e-8369-5bc0-ad8162b5ffc7@linaro.org>
- <a531d80f-afd1-2dec-6c77-ed984e97595c@collabora.com>
- <db1ff4e1-cbf8-89b3-5d64-b91a1fd88a41@linaro.org>
- <73942aea-ae79-753c-fe90-d4a99423d548@collabora.com>
- <374dddd9-b600-3a30-d6c3-8cfcefc944d9@linaro.org>
- <5a28deb7-f307-8b03-faad-ab05cb8095d1@collabora.com>
- <8aeb4f51-1813-63c1-165b-06640af5968f@linaro.org>
- <685ef627-e377-bbf1-da11-7f7556ca2dd7@collabora.com>
- <d41bf28f-ee91-6946-2334-f11ec81f96fe@linaro.org>
-Message-ID: <b773a49d-c26e-9e20-2a5e-647eb771d617@linaro.org>
-Date:   Thu, 2 Jul 2020 19:52:19 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.8.0
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1593714113; x=1625250113;
+  h=date:from:to:subject:message-id:references:mime-version:
+   in-reply-to;
+  bh=uoroRGLFE2Atyc2JGE05NLscaVRKKsCZnOJvewnD1q4=;
+  b=cfr5zgdq7Ft7MAHGkskXajztclg+fGj0slKdLNLluKkmOzUYYOX4IKrl
+   bw1lfhRIMBG25w5OTvBTvS251rg6SB4FWCEtW+LMqYDN0X/LRX8VQBbIN
+   9427OFi+ocY2nfg0RE0Au/6mkvxWbLXX5/mU41YNN32zRF6jgU642GuiK
+   A=;
+IronPort-SDR: 2zEetQQdV5iJipJrTQmkyojCF1liNQ2rvC5FD4pMA/MiHYFXS2EHBC9fKUXHHRnbe8spyb4jXz
+ T4wH3OzVpZxQ==
+X-IronPort-AV: E=Sophos;i="5.75,305,1589241600"; 
+   d="scan'208";a="55693041"
+Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-2a-119b4f96.us-west-2.amazon.com) ([10.47.23.38])
+  by smtp-border-fw-out-33001.sea14.amazon.com with ESMTP; 02 Jul 2020 18:21:50 +0000
+Received: from EX13MTAUWA001.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan2.pdx.amazon.com [10.170.41.162])
+        by email-inbound-relay-2a-119b4f96.us-west-2.amazon.com (Postfix) with ESMTPS id BA4BA1A102E;
+        Thu,  2 Jul 2020 18:21:48 +0000 (UTC)
+Received: from EX13D10UWA003.ant.amazon.com (10.43.160.248) by
+ EX13MTAUWA001.ant.amazon.com (10.43.160.58) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Thu, 2 Jul 2020 18:21:43 +0000
+Received: from EX13MTAUWA001.ant.amazon.com (10.43.160.58) by
+ EX13D10UWA003.ant.amazon.com (10.43.160.248) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Thu, 2 Jul 2020 18:21:36 +0000
+Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
+ (172.22.96.68) by mail-relay.amazon.com (10.43.160.118) with Microsoft SMTP
+ Server id 15.0.1497.2 via Frontend Transport; Thu, 2 Jul 2020 18:21:36 +0000
+Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
+        id 8A9B940844; Thu,  2 Jul 2020 18:21:36 +0000 (UTC)
+Date:   Thu, 2 Jul 2020 18:21:36 +0000
+From:   Anchal Agarwal <anchalag@amazon.com>
+To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
+        <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
+        <jgross@suse.com>, <linux-pm@vger.kernel.org>,
+        <linux-mm@kvack.org>, <kamatam@amazon.com>,
+        <sstabellini@kernel.org>, <konrad.wilk@oracle.com>,
+        <roger.pau@citrix.com>, <axboe@kernel.dk>, <davem@davemloft.net>,
+        <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
+        <peterz@infradead.org>, <eduval@amazon.com>, <sblbir@amazon.com>,
+        <anchalag@amazon.com>, <xen-devel@lists.xenproject.org>,
+        <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <dwmw@amazon.co.uk>,
+        <benh@kernel.crashing.org>
+Subject: [PATCH v2 01/11] xen/manage: keep track of the on-going suspend mode
+Message-ID: <20200702182136.GA3511@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+References: <cover.1593665947.git.anchalag@amazon.com>
 MIME-Version: 1.0
-In-Reply-To: <d41bf28f-ee91-6946-2334-f11ec81f96fe@linaro.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <cover.1593665947.git.anchalag@amazon.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 02/07/2020 19:49, Daniel Lezcano wrote:
+From: Munehisa Kamata <kamatam@amazon.com>
 
-[ ... ]
+Guest hibernation is different from xen suspend/resume/live migration.
+Xen save/restore does not use pm_ops as is needed by guest hibernation.
+Hibernation in guest follows ACPI path and is guest inititated , the
+hibernation image is saved within guest as compared to later modes
+which are xen toolstack assisted and image creation/storage is in
+control of hypervisor/host machine.
+To differentiate between Xen suspend and PM hibernation, keep track
+of the on-going suspend mode by mainly using a new PM notifier.
+Introduce simple functions which help to know the on-going suspend mode
+so that other Xen-related code can behave differently according to the
+current suspend mode.
+Since Xen suspend doesn't have corresponding PM event, its main logic
+is modfied to acquire pm_mutex and set the current mode.
 
->> Thanks!
->>
->> That confirms your suspicions.
->>
->> So the reason is that ->get_temp() is called while the mutex is held and
->> thermal_zone_device_is_enabled() wants to take the same mutex.
-> 
-> Yes, that's correct.
-> 
->> Is adding a comment to thermal_zone_device_is_enabled() to never call
->> it while the mutex is held and adding another version of it which does
->> not take the mutex ok?
-> 
-> The thermal_zone_device_is_enabled() is only used in two places, acpi
-> and this imx driver, and given:
-> 
-> 1. as soon as the mutex is released, there is no guarantee the thermal
-> zone won't be changed right after, the lock is pointless, thus the
-> information also.
-> 
-> 2. from a design point of view, I don't see why a driver should know if
-> a thermal zone is disabled or not
-> 
-> It would make sense to end with this function and do not give the
-> different drivers an opportunity to access this information.
-> 
-> Why not add change_mode for the acpi in order to enable or disable the
-> events and for imx_thermal use irq_enabled flag instead of the thermal
-> zone mode? Moreover it is very unclear why this function is needed in
-> imx_get_temp(), and I suspect we should be able to get rid of it.
+Though, acquirng pm_mutex is still right thing to do, we may
+see deadlock if PM hibernation is interrupted by Xen suspend.
+PM hibernation depends on xenwatch thread to process xenbus state
+transactions, but the thread will sleep to wait pm_mutex which is
+already held by PM hibernation context in the scenario. Xen shutdown
+code may need some changes to avoid the issue.
 
-If you agree with that you can send a patch on top of your series so I
-can test it fixes the imx platform.
+[Anchal Agarwal: Changelog]:
+ RFC v1->v2: Code refactoring
+ v1->v2:     Remove unused functions for PM SUSPEND/PM hibernation
 
+Signed-off-by: Anchal Agarwal <anchalag@amazon.com>
+Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
+---
+ drivers/xen/manage.c  | 60 +++++++++++++++++++++++++++++++++++++++++++
+ include/xen/xen-ops.h |  1 +
+ 2 files changed, 61 insertions(+)
 
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index cd046684e0d1..69833fd6cfd1 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -14,6 +14,7 @@
+ #include <linux/freezer.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/export.h>
++#include <linux/suspend.h>
+ 
+ #include <xen/xen.h>
+ #include <xen/xenbus.h>
+@@ -40,6 +41,20 @@ enum shutdown_state {
+ /* Ignore multiple shutdown requests. */
+ static enum shutdown_state shutting_down = SHUTDOWN_INVALID;
+ 
++enum suspend_modes {
++	NO_SUSPEND = 0,
++	XEN_SUSPEND,
++	PM_HIBERNATION,
++};
++
++/* Protected by pm_mutex */
++static enum suspend_modes suspend_mode = NO_SUSPEND;
++
++bool xen_is_xen_suspend(void)
++{
++	return suspend_mode == XEN_SUSPEND;
++}
++
+ struct suspend_info {
+ 	int cancelled;
+ };
+@@ -99,6 +114,10 @@ static void do_suspend(void)
+ 	int err;
+ 	struct suspend_info si;
+ 
++	lock_system_sleep();
++
++	suspend_mode = XEN_SUSPEND;
++
+ 	shutting_down = SHUTDOWN_SUSPEND;
+ 
+ 	err = freeze_processes();
+@@ -162,6 +181,10 @@ static void do_suspend(void)
+ 	thaw_processes();
+ out:
+ 	shutting_down = SHUTDOWN_INVALID;
++
++	suspend_mode = NO_SUSPEND;
++
++	unlock_system_sleep();
+ }
+ #endif	/* CONFIG_HIBERNATE_CALLBACKS */
+ 
+@@ -387,3 +410,40 @@ int xen_setup_shutdown_event(void)
+ EXPORT_SYMBOL_GPL(xen_setup_shutdown_event);
+ 
+ subsys_initcall(xen_setup_shutdown_event);
++
++static int xen_pm_notifier(struct notifier_block *notifier,
++			unsigned long pm_event, void *unused)
++{
++	switch (pm_event) {
++	case PM_SUSPEND_PREPARE:
++	case PM_HIBERNATION_PREPARE:
++	case PM_RESTORE_PREPARE:
++		suspend_mode = PM_HIBERNATION;
++		break;
++	case PM_POST_SUSPEND:
++	case PM_POST_RESTORE:
++	case PM_POST_HIBERNATION:
++		/* Set back to the default */
++		suspend_mode = NO_SUSPEND;
++		break;
++	default:
++		pr_warn("Receive unknown PM event 0x%lx\n", pm_event);
++		return -EINVAL;
++	}
++
++	return 0;
++};
++
++static struct notifier_block xen_pm_notifier_block = {
++	.notifier_call = xen_pm_notifier
++};
++
++static int xen_setup_pm_notifier(void)
++{
++	if (!xen_hvm_domain())
++		return -ENODEV;
++
++	return register_pm_notifier(&xen_pm_notifier_block);
++}
++
++subsys_initcall(xen_setup_pm_notifier);
+diff --git a/include/xen/xen-ops.h b/include/xen/xen-ops.h
+index 39a5580f8feb..2521d6a306cd 100644
+--- a/include/xen/xen-ops.h
++++ b/include/xen/xen-ops.h
+@@ -40,6 +40,7 @@ u64 xen_steal_clock(int cpu);
+ 
+ int xen_setup_shutdown_event(void);
+ 
++bool xen_is_xen_suspend(void);
+ extern unsigned long *xen_contiguous_bitmap;
+ 
+ #if defined(CONFIG_XEN_PV) || defined(CONFIG_ARM) || defined(CONFIG_ARM64)
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.20.1
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
