@@ -2,334 +2,187 @@ Return-Path: <SRS0=AobL=AO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-2.6 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
+	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A2A7C433DF
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 06:15:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A2EDC433E2
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 06:38:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 70D63204EA
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 06:15:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 166C9208C7
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 06:38:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="YtxkmN2X"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="TW3k/K6s"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726053AbgGCGPQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jul 2020 02:15:16 -0400
-Received: from mailout2.samsung.com ([203.254.224.25]:38604 "EHLO
-        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726116AbgGCGPP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 02:15:15 -0400
-Received: from epcas1p3.samsung.com (unknown [182.195.41.47])
-        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20200703061512epoutp026498bcdfd400e9f9cf720c19056c382c~eKXe6j2ap1768817688epoutp02Z
-        for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2020 06:15:12 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20200703061512epoutp026498bcdfd400e9f9cf720c19056c382c~eKXe6j2ap1768817688epoutp02Z
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1593756912;
-        bh=6zA3saJZWDxbZePR05fc3Kke1vvfPtAVvqN5x5TNzN8=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=YtxkmN2XIQso3giXlpJlo89PD4ujtnM54BLFbFwrR92/FCuhOJwJdOcXyfwRccHGQ
-         OtnHv9kaJVacIdMYuoNJy5ImFASgc0AJJNc7eDlP6rTJMhoMCEqtS6Rd//0zKx4Z5/
-         Ksd1WCuth9TU7EU4UdQv8tTu9Gx5Lz3qthYUxkMs=
-Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20200703061511epcas1p4da0e0bc9366aa9839d715f6a8497e804~eKXemFNHI1204612046epcas1p4G;
-        Fri,  3 Jul 2020 06:15:11 +0000 (GMT)
-Received: from epsmges1p1.samsung.com (unknown [182.195.40.158]) by
-        epsnrtp1.localdomain (Postfix) with ESMTP id 49yl7K4Y9GzMqYmC; Fri,  3 Jul
-        2020 06:15:09 +0000 (GMT)
-Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
-        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
-        E3.BB.18978.DECCEFE5; Fri,  3 Jul 2020 15:15:09 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200703061509epcas1p10446471df6497b4b2d7066280daa7f87~eKXb3FuJg3028930289epcas1p1u;
-        Fri,  3 Jul 2020 06:15:09 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20200703061509epsmtrp12dc0f6d46fabbd39763b26e51209f762~eKXb2PCF32420424204epsmtrp1K;
-        Fri,  3 Jul 2020 06:15:09 +0000 (GMT)
-X-AuditID: b6c32a35-5edff70000004a22-4e-5efecced60fd
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        C1.2E.08382.CECCEFE5; Fri,  3 Jul 2020 15:15:08 +0900 (KST)
-Received: from localhost.localdomain (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20200703061508epsmtip1385e0ab38395cb7c30da1819bd506c03~eKXbntD1S1517515175epsmtip1L;
-        Fri,  3 Jul 2020 06:15:08 +0000 (GMT)
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-To:     lukasz.luba@arm.com, k.konieczny@samsung.com, krzk@kernel.org,
-        kgene@kernel.org
-Cc:     s.nawrocki@samsung.com, willy.mh.wolff.ml@gmail.com,
-        b.zolnierkie@samsung.com, cw00.choi@samsung.com,
-        chanwoo@kernel.org, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: [RFC PATCH 1/2] PM / devfreq: Add support delayed timer for polling
- mode
-Date:   Fri,  3 Jul 2020 15:26:21 +0900
-Message-Id: <20200703062622.11773-2-cw00.choi@samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200703062622.11773-1-cw00.choi@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupik+LIzCtJLcpLzFFi42LZdlhTV/ftmX9xBt9PKlpsnLGe1WLijSss
-        Fte/PGe1WPBpBqtF/+PXzBbnz29gtzjb9IbdYtPja6wWl3fNYbP43HuE0WLG+X1MFgubWtgt
-        bjeuYLM4/Kad1eLbiUeMDvwea+atYfTYOesuu8emVZ1sHpuX1Hv0bVnF6PF5k1wAW1S2TUZq
-        YkpqkUJqXnJ+SmZeuq2Sd3C8c7ypmYGhrqGlhbmSQl5ibqqtkotPgK5bZg7QyUoKZYk5pUCh
-        gMTiYiV9O5ui/NKSVIWM/OISW6XUgpScAssCveLE3OLSvHS95PxcK0MDAyNToMKE7Ix3j+4w
-        Fdwzqzg0bRVzA+N3nS5GTg4JAROJB9PXsXUxcnEICexglFg1/S8rhPOJUeLsp4csEM43RokT
-        u36zwLQsmNIN1bKXUaJ99gdmCOcLUNWHPYwgVWwCWhL7X9xgA7FFBEIlZt+bClbELLCLSeLL
-        tJnMIAlhgWCJzwcaWUFsFgFViZ3rt4A18ApYSbw/+4YRYp28xOoNB8DqOQWsJe703GODiPdy
-        SNxZnA9hu0g8+rwS6jxhiVfHt7BD2FISL/vboOxqiZUnj4CdLSHQwSixZf8FVoiEscT+pZOZ
-        uhg5gK7TlFi/Sx8irCix8/dcsBuYBfgk3n3tYQUpkRDglehoE4IoUZa4/OAuE4QtKbG4vRPq
-        NA+Jv9fuQMOxj1Fi58TXrBMY5WYhbFjAyLiKUSy1oDg3PbXYsMAQOc42MYITpZbpDsaJbz/o
-        HWJk4mA8xCjBwawkwpug+i9OiDclsbIqtSg/vqg0J7X4EKMpMPAmMkuJJucDU3VeSbyhqZGx
-        sbGFiaGZqaGhkjivuMyFOCGB9MSS1OzU1ILUIpg+Jg5OqQYmw0nlRg8i1EXPvVfXXi50//jr
-        GR56PT490UG/XZvVH1uI8cXP6epx3bDi5WpB/rNMITelvk1bMllGKVRtYxivVHVmJce5WJc3
-        Frtb1S7lBGnGr1paeir1Twr/7pRPYn97NY3Plvu2HXy2cEr8Kw/WkhWlX88sze4+XLx8l1Ti
-        0bT/NmHLjWTOVFp871frnbHCRUAm/aJ2kCDTzCc5fMbL3bR9Pibk13+rFj/+p/Pd0671tfzd
-        E23kN8/JjZW++fUXn2nahzuspY+Yyt1k573WmqW3xNXAK3p3YuoDuUe3wjoWM7yaPV1k1Z+F
-        Dtonlzm9/VP9RVBqEZ/Zws8Kms9WPCk+E3VJTuZJZuEiuyAlluKMREMt5qLiRAAdRoi6HQQA
-        AA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrMLMWRmVeSWpSXmKPExsWy7bCSnO6bM//iDKb+t7bYOGM9q8XEG1dY
-        LK5/ec5qseDTDFaL/sevmS3On9/AbnG26Q27xabH11gtLu+aw2bxufcIo8WM8/uYLBY2tbBb
-        3G5cwWZx+E07q8W3E48YHfg91sxbw+ixc9Zddo9NqzrZPDYvqffo27KK0ePzJrkAtigum5TU
-        nMyy1CJ9uwSujHeP7jAV3DOrODRtFXMD43edLkZODgkBE4kFU7rZuhi5OIQEdjNKnNh6nh0i
-        ISkx7eJR5i5GDiBbWOLw4WKImk+MEr86N7KB1LAJaEnsf3EDzBYRiJQ433AUbBCzwDEmieVv
-        21lAEsICgRLb579kBLFZBFQldq7fAtbAK2Al8f7sG0aIZfISqzccYAaxOQWsJe703AOrEQKq
-        edN5nXECI98CRoZVjJKpBcW56bnFhgWGeanlesWJucWleel6yfm5mxjB4ayluYNx+6oPeocY
-        mTgYDzFKcDArifAmqP6LE+JNSaysSi3Kjy8qzUktPsQozcGiJM57o3BhnJBAemJJanZqakFq
-        EUyWiYNTqoFJpJetPXS68e1cWZ7PtxUs1S7yym7/evPSQq3IEyt/PlLN3egdcizrVr2EPt9t
-        jQ8238V2eLEXezh3e2zgr9/QkqB35GdaYcmBsFD5dwa+x04VmE6Ryl656mzs5d5Sz/82zBue
-        BNx/3CRTlFEYtZdbYXG+yhNNB48opvtBrJLLXmcx26z11K99ZtHQ+85SvHme0XK+Q9dfRL1l
-        2tvVyeiQYFpQenHVw69H7+/N2qVwz+7o9NQ/u1++uJR6wiRvItMjhf4Hz3cHaCtHhZZNa6py
-        f/3/I+eMQ7+0tjS3npr5Tfd5v0ah2k0H5dnZp9YLz9vUUFK/6XXIzF+Zkvk5m+vPvX88xdDp
-        g0nLWYOPx2qVWIozEg21mIuKEwECbdZg1gIAAA==
-X-CMS-MailID: 20200703061509epcas1p10446471df6497b4b2d7066280daa7f87
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20200703061509epcas1p10446471df6497b4b2d7066280daa7f87
-References: <20200703062622.11773-1-cw00.choi@samsung.com>
-        <CGME20200703061509epcas1p10446471df6497b4b2d7066280daa7f87@epcas1p1.samsung.com>
+        id S1725891AbgGCGiz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jul 2020 02:38:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55542 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725960AbgGCGiy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 02:38:54 -0400
+Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E951CC08C5E0
+        for <linux-pm@vger.kernel.org>; Thu,  2 Jul 2020 23:38:53 -0700 (PDT)
+Received: by mail-wm1-x342.google.com with SMTP id w3so20184929wmi.4
+        for <linux-pm@vger.kernel.org>; Thu, 02 Jul 2020 23:38:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=eorUmfUDMZcNbxM4Fi+PFLp5IkxH/y0wJ21yqWKUjto=;
+        b=TW3k/K6sgcyOzEJs1rw4KfmOe6mN35kwzPQC2F/IgbreSFQA8LXxI7YB4jg768YPf/
+         qlg1GD44Sj2mlQxBQfGEjhGX+c1yfO9Z2Mc+s3nSyOkzpJAHcbxMv5x83AFf4RMl33Gm
+         yETeAQpLmJArPgsTWZB5qQKZ8Av/jgJcSZrGjUH26ysjAUnp1x07PQ8p12XuVcqaQK5X
+         GMh0+9HUQqJoYLlyJFUBhedpmjHLeeAZnlpCjwpSz8Hl1wDM4IBIpPuTU1aSgw+6hhf5
+         PQOMSuzQnnW914bYoIpCxkKUDZ3G876lD7uO8p49b0PgquhyTREZXOsoMzsDs/Eo5jcO
+         p6mQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=eorUmfUDMZcNbxM4Fi+PFLp5IkxH/y0wJ21yqWKUjto=;
+        b=Ud+AmEk7c+KsVO4ees9cdUWmwgMfEtz21nRvgaxyRWfAThwqZF6ZZUlmq40IJrazrM
+         449IAixb+9vh38XCvM9INK/s+aD34rsrHUdh3rAw2yQkD/4D5Euk/3ceMvZAmO1+8anC
+         bV5UXzTdVOu/71R2Eh93vII1oerZhKwLxaSJkx0GfPmiBcE6V4HH78CCRcgLNXSCQqnj
+         IHXm5kB1sm5air2dPUnlj+XCus5hHSlUqHcBM09Oms7Y0MimPkHA0hTUWTCpBHZpAqnY
+         dDUHeLTYQS2nB5UKnJQasIreJwuIEE8gwbQyTCr+/ubbg8PC6v1T9nwkXO1doOUvCmqv
+         g/8Q==
+X-Gm-Message-State: AOAM5335vLDpgTKVLd2SIIVxHNXCk7M1T6yEoIRJ/F5aLrNQgI8qrW6i
+        E0sNkJXS1O8wGkf137hDK8vAgg==
+X-Google-Smtp-Source: ABdhPJwx/dU/vear+SglZ3FxU9XUXFqcn8iwzYeLZYSHOLOaUd4iFi5d4+vvIppL6IdFuFPEJc4a0g==
+X-Received: by 2002:a1c:7311:: with SMTP id d17mr24326224wmb.60.1593758332203;
+        Thu, 02 Jul 2020 23:38:52 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:7019:4e9b:2970:f860? ([2a01:e34:ed2f:f020:7019:4e9b:2970:f860])
+        by smtp.googlemail.com with ESMTPSA id 65sm13709437wre.6.2020.07.02.23.38.49
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 02 Jul 2020 23:38:51 -0700 (PDT)
+Subject: Re: [PATCH v7 00/11] Stop monitoring disabled devices
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-renesas-soc@vger.kernel.org,
+        linux-rockchip@lists.infradead.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Vishal Kulkarni <vishal@chelsio.com>,
+        "David S . Miller" <davem@davemloft.net>,
+        Jiri Pirko <jiri@mellanox.com>,
+        Ido Schimmel <idosch@mellanox.com>,
+        Johannes Berg <johannes.berg@intel.com>,
+        Emmanuel Grumbach <emmanuel.grumbach@intel.com>,
+        Luca Coelho <luciano.coelho@intel.com>,
+        Intel Linux Wireless <linuxwifi@intel.com>,
+        Kalle Valo <kvalo@codeaurora.org>,
+        Peter Kaestle <peter@piie.net>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        =?UTF-8?Q?Niklas_S=c3=b6derlund?= <niklas.soderlund@ragnatech.se>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Orson Zhai <orsonzhai@gmail.com>,
+        Baolin Wang <baolin.wang7@gmail.com>,
+        Chunyan Zhang <zhang.lyra@gmail.com>,
+        Allison Randal <allison@lohutok.net>,
+        Enrico Weigelt <info@metux.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        kernel@collabora.com
+References: <20200629122925.21729-1-andrzej.p@collabora.com>
+ <aab40d90-3f72-657c-5e14-e53a34c4b420@linaro.org>
+ <3d03d1a2-ac06-b69b-93cb-e0203be62c10@collabora.com>
+ <47111821-d691-e71d-d740-e4325e290fa4@linaro.org>
+ <be9b7ee3-cad0-e462-126d-08de9b226285@collabora.com>
+ <4353a939-3f5e-8369-5bc0-ad8162b5ffc7@linaro.org>
+ <a531d80f-afd1-2dec-6c77-ed984e97595c@collabora.com>
+ <db1ff4e1-cbf8-89b3-5d64-b91a1fd88a41@linaro.org>
+ <73942aea-ae79-753c-fe90-d4a99423d548@collabora.com>
+ <374dddd9-b600-3a30-d6c3-8cfcefc944d9@linaro.org>
+ <5a28deb7-f307-8b03-faad-ab05cb8095d1@collabora.com>
+ <8aeb4f51-1813-63c1-165b-06640af5968f@linaro.org>
+ <685ef627-e377-bbf1-da11-7f7556ca2dd7@collabora.com>
+ <d41bf28f-ee91-6946-2334-f11ec81f96fe@linaro.org>
+ <44c622dd7de8c7bf143c4435c0edd1b98d09a3d6.camel@intel.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <58265668-fc6d-729a-c126-0c73c2ea853b@linaro.org>
+Date:   Fri, 3 Jul 2020 08:38:48 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
+MIME-Version: 1.0
+In-Reply-To: <44c622dd7de8c7bf143c4435c0edd1b98d09a3d6.camel@intel.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Until now, the devfreq driver using polling mode like simple_ondemand
-governor have used only deferrable timer for reduing the redundant
-power consumption. It reduces the CPU wake-up from idle due to polling mode
-which check the status of Non-CPU device.
+On 03/07/2020 03:49, Zhang Rui wrote:
+> On Thu, 2020-07-02 at 19:49 +0200, Daniel Lezcano wrote:
 
-But, it has a problem for Non-CPU device like DMC device with DMA operation.
-Some Non-CPU device need to do monitor continously regardless of CPU state
-in order to decide the proper next status of Non-CPU device.
+[ ... ]
 
-So, add support the dealyed timer for polling mode to support
-the periodical monitoring. The devfreq driver and user can select
-the kind of timer on either deferrable and delayed timer.
+>>> So the reason is that ->get_temp() is called while the mutex is
+>>> held and
+>>> thermal_zone_device_is_enabled() wants to take the same mutex.
+>>
+>> Yes, that's correct.
+>>
+>>> Is adding a comment to thermal_zone_device_is_enabled() to never
+>>> call
+>>> it while the mutex is held and adding another version of it which
+>>> does
+>>> not take the mutex ok?
+>>
+>> The thermal_zone_device_is_enabled() is only used in two places, acpi
+>> and this imx driver, and given:
+>>
+>> 1. as soon as the mutex is released, there is no guarantee the
+>> thermal
+>> zone won't be changed right after, the lock is pointless, thus the
+>> information also.
+>>
+>> 2. from a design point of view, I don't see why a driver should know
+>> if
+>> a thermal zone is disabled or not
+>>
+>> It would make sense to end with this function and do not give the
+>> different drivers an opportunity to access this information.
+> 
+> I agree.
+>>
+>> Why not add change_mode for the acpi in order to enable or disable
+>> the
+>> events
+> 
+> thermal_zone_device_is_enabled() is invoked in acpi thermal driver
+> because we only want to do thermal_zone_device_update() when the acpi
+> thermal zone is enabled.
+> 
+> As thermal_zone_device_update() can handle a disabled thermal zone now,
+> we can just remove the check.
 
-For example, change the timer type of DMC device
-based on Exynos5422-based Odroid-XU3 as following:
+Ah yes, good point!
 
-- If want to use deferrable timer as following:
-echo deferrable > /sys/class/devfreq/10c20000.memory-controller/timer
 
-- If want to use delayed timer as following:
-echo delayed > /sys/class/devfreq/10c20000.memory-controller/timer
 
-Suggested-by: Lukasz Luba <lukasz.luba@arm.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- Documentation/ABI/testing/sysfs-class-devfreq | 12 +++
- drivers/devfreq/devfreq.c                     | 83 ++++++++++++++++++-
- include/linux/devfreq.h                       |  9 ++
- 3 files changed, 103 insertions(+), 1 deletion(-)
-
-diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
-index 9758eb85ade3..b10aa3aa230d 100644
---- a/Documentation/ABI/testing/sysfs-class-devfreq
-+++ b/Documentation/ABI/testing/sysfs-class-devfreq
-@@ -65,6 +65,18 @@ Description:
- 		as following:
- 			echo 0 > /sys/class/devfreq/.../trans_stat
- 
-+What:		/sys/class/devfreq/.../timer
-+Date:		July 2020
-+Contact:	Chanwoo Choi <cw00.choi@samsung.com>
-+Description:
-+		This ABI shows and stores the kind of work timer by users.
-+		This work timer is used by devfreq workqueue in order to
-+		monitor the device status such as utilization. The user
-+		can change the work timer on runtime according to their demand
-+		as following:
-+			echo deferrable > /sys/class/devfreq/.../timer
-+			echo delayed > /sys/class/devfreq/.../timer
-+
- What:		/sys/class/devfreq/.../userspace/set_freq
- Date:		September 2011
- Contact:	MyungJoo Ham <myungjoo.ham@samsung.com>
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 52b9c3e141f3..2a4aa8742520 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -49,6 +49,11 @@ static LIST_HEAD(devfreq_governor_list);
- static LIST_HEAD(devfreq_list);
- static DEFINE_MUTEX(devfreq_list_lock);
- 
-+static const char timer_name[][DEVFREQ_NAME_LEN] = {
-+	[DEVFREQ_TIMER_DEFERRABLE] = { "deferrable" },
-+	[DEVFREQ_TIMER_DELAYED] = { "delayed" },
-+};
-+
- /**
-  * find_device_devfreq() - find devfreq struct using device pointer
-  * @dev:	device pointer used to lookup device devfreq.
-@@ -454,7 +459,17 @@ void devfreq_monitor_start(struct devfreq *devfreq)
- 	if (devfreq->governor->interrupt_driven)
- 		return;
- 
--	INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
-+	switch (devfreq->profile->timer) {
-+	case DEVFREQ_TIMER_DEFERRABLE:
-+		INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
-+		break;
-+	case DEVFREQ_TIMER_DELAYED:
-+		INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
-+		break;
-+	default:
-+		return;
-+	}
-+
- 	if (devfreq->profile->polling_ms)
- 		queue_delayed_work(devfreq_wq, &devfreq->work,
- 			msecs_to_jiffies(devfreq->profile->polling_ms));
-@@ -771,6 +786,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->data = data;
- 	devfreq->nb.notifier_call = devfreq_notifier_call;
- 
-+	if (devfreq->profile->timer < 0
-+		|| devfreq->profile->timer >= DEVFREQ_TIMER_NUM) {
-+		goto err_out;
-+	}
-+
- 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
- 		mutex_unlock(&devfreq->lock);
- 		err = set_freq_table(devfreq);
-@@ -1625,6 +1645,66 @@ static ssize_t trans_stat_store(struct device *dev,
- }
- static DEVICE_ATTR_RW(trans_stat);
- 
-+static ssize_t timer_show(struct device *dev,
-+			     struct device_attribute *attr, char *buf)
-+{
-+	struct devfreq *df = to_devfreq(dev);
-+
-+	if (!df->governor)
-+		return -EINVAL;
-+
-+	return sprintf(buf, "%s\n", timer_name[df->profile->timer]);
-+}
-+
-+static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
-+			      const char *buf, size_t count)
-+{
-+	struct devfreq *df = to_devfreq(dev);
-+	char str_timer[DEVFREQ_NAME_LEN + 1];
-+	int timer = -1;
-+	int ret = 0, i;
-+
-+	ret = sscanf(buf, "%16s", str_timer);
-+	if (ret != 1)
-+		return -EINVAL;
-+
-+	for (i = 0; i < DEVFREQ_TIMER_NUM; i++) {
-+		if (!strncmp(timer_name[i], str_timer, DEVFREQ_NAME_LEN)) {
-+			timer = i;
-+			break;
-+		}
-+	}
-+
-+	if (timer < 0) {
-+		ret = -EINVAL;
-+		goto out;
-+	}
-+
-+	if (df->profile->timer == timer) {
-+		ret = 0;
-+		goto out;
-+	}
-+
-+	mutex_lock(&df->lock);
-+	df->profile->timer = timer;
-+	mutex_unlock(&df->lock);
-+
-+	ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
-+	if (ret) {
-+		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
-+			 __func__, df->governor->name, ret);
-+		goto out;
-+	}
-+
-+	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
-+	if (ret)
-+		dev_warn(dev, "%s: Governor %s not started(%d)\n",
-+			 __func__, df->governor->name, ret);
-+out:
-+	return ret ? ret : count;
-+}
-+static DEVICE_ATTR_RW(timer);
-+
- static struct attribute *devfreq_attrs[] = {
- 	&dev_attr_name.attr,
- 	&dev_attr_governor.attr,
-@@ -1636,6 +1716,7 @@ static struct attribute *devfreq_attrs[] = {
- 	&dev_attr_min_freq.attr,
- 	&dev_attr_max_freq.attr,
- 	&dev_attr_trans_stat.attr,
-+	&dev_attr_timer.attr,
- 	NULL,
- };
- ATTRIBUTE_GROUPS(devfreq);
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 57e871a559a9..12782fbb4c25 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -31,6 +31,13 @@
- #define	DEVFREQ_PRECHANGE		(0)
- #define DEVFREQ_POSTCHANGE		(1)
- 
-+/* DEVFREQ work timers */
-+enum devfreq_timer {
-+	DEVFREQ_TIMER_DEFERRABLE = 0,
-+	DEVFREQ_TIMER_DELAYED,
-+	DEVFREQ_TIMER_NUM,
-+};
-+
- struct devfreq;
- struct devfreq_governor;
- 
-@@ -70,6 +77,7 @@ struct devfreq_dev_status {
-  * @initial_freq:	The operating frequency when devfreq_add_device() is
-  *			called.
-  * @polling_ms:		The polling interval in ms. 0 disables polling.
-+ * @timer:		Timer type is either deferrable or delayed timer.
-  * @target:		The device should set its operating frequency at
-  *			freq or lowest-upper-than-freq value. If freq is
-  *			higher than any operable frequency, set maximum.
-@@ -96,6 +104,7 @@ struct devfreq_dev_status {
- struct devfreq_dev_profile {
- 	unsigned long initial_freq;
- 	unsigned int polling_ms;
-+	enum devfreq_timer timer;
- 
- 	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
- 	int (*get_dev_status)(struct device *dev,
 -- 
-2.17.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
