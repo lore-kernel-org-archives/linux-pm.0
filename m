@@ -2,130 +2,139 @@ Return-Path: <SRS0=AobL=AO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
-	DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0
+	tests=HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1297FC433E1
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 08:53:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 19956C433DF
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 09:04:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E3F07207DA
-	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 08:53:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UvOQ2AGY"
+	by mail.kernel.org (Postfix) with ESMTP id F0C05207DA
+	for <linux-pm@archiver.kernel.org>; Fri,  3 Jul 2020 09:04:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725786AbgGCIxa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jul 2020 04:53:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47972 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726227AbgGCIx2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 04:53:28 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C808CC08C5C1
-        for <linux-pm@vger.kernel.org>; Fri,  3 Jul 2020 01:53:27 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id f139so33280984wmf.5
-        for <linux-pm@vger.kernel.org>; Fri, 03 Jul 2020 01:53:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=p8WFiVjLmVPpS5PevlndhZ530MlitNcSeEqWsFmmzog=;
-        b=UvOQ2AGYQsTWQAF7d27PvZa/2GDvllXMrGI4ZrUBhv48EF7sRFGe57nPEC0RcvqgZ+
-         uF3df68BntrYSEYXhoqsJjLi2AHwDhLY9hS5PTbm6waUGX/F8aahXKUjM/icL5BlEfq0
-         GUnmKwQLsaMcyjj5UkU82dNHmDO4b97xlbWI8IHyWrIt1L2jYkGOTfoLjGkY4d+eDtQA
-         OxJAA0EvgHdgrGHW7nkJJ3na0xbSEmCr9uwxSdqJ6VBq0Tt+M51XuMUHEwhua00s3ksw
-         R2Xhra1KyslJyyrbHCmOrMd6lSIXjlXQMU6odWJShU7FNlc6e/xyfSLMyd24xilGATOV
-         EmUQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=p8WFiVjLmVPpS5PevlndhZ530MlitNcSeEqWsFmmzog=;
-        b=gpvZUN4pgBOaHIMOei+6eWAULLtr4nOqQ8xDHEgceP9PT9COOOVyh/SM6tqJllJz/j
-         4zqMax4SXdZXF7ILhIlBoy3xUPpqmS8KQGg9K6qwZIFXvG0mPs1TCFdRLCEZ66iU3pXw
-         2zYv1sZAoRTkkUKNhZ95weaVEPmiXQS/OQt7PXSj0HdyMc4cT5lPBxP2+YOITeoShwdF
-         nsL+LrtsYhoj8/HKmlPqZ5lRfCfoRE9X5MtOgxnb2KFK1N9iJByr8WME2wldGQwbhXuK
-         QqniLouwmkbF35HDCxaqyC2nb11kY99+2mBrJO1AK/0/uk2g9L+IPcY10FJgHZGtmyRe
-         NSIw==
-X-Gm-Message-State: AOAM533BTBs838cDkTmle9zBzkJtr7csFJKeZOCEBr9FPkKTxyvKixLD
-        XrfwT7bGjkE89csW0TdIAydC0A==
-X-Google-Smtp-Source: ABdhPJxDGubryAB7wF5l0K/dtdc3JOf5bU9o5o91ELZUpumOPNR7nU5u09FpGTHnFpKSlda9HJ0YMA==
-X-Received: by 2002:a1c:7204:: with SMTP id n4mr28098059wmc.9.1593766406490;
-        Fri, 03 Jul 2020 01:53:26 -0700 (PDT)
-Received: from localhost.localdomain (lns-bzn-59-82-252-131-168.adsl.proxad.net. [82.252.131.168])
-        by smtp.gmail.com with ESMTPSA id z6sm12543611wmf.33.2020.07.03.01.53.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 03 Jul 2020 01:53:25 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org
-Cc:     srinivas.pandruvada@linux.intel.com, rkumbako@codeaurora.org,
-        amit.kucheria@linaro.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v3 2/4] thermal: core: Get thermal zone by id
-Date:   Fri,  3 Jul 2020 10:53:07 +0200
-Message-Id: <20200703085309.32166-2-daniel.lezcano@linaro.org>
+        id S1725949AbgGCJEu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jul 2020 05:04:50 -0400
+Received: from mga07.intel.com ([134.134.136.100]:38702 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725764AbgGCJEt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 3 Jul 2020 05:04:49 -0400
+IronPort-SDR: gOx/e53kru2QXxcGrCkwR5SHVbOdWD8h0ljxwyZ4z9zZw8uJy78Q7gODaakgUf3MKbpussjkDp
+ 1AZkBpFjGLfg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9670"; a="212138636"
+X-IronPort-AV: E=Sophos;i="5.75,307,1589266800"; 
+   d="scan'208";a="212138636"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 03 Jul 2020 02:04:49 -0700
+IronPort-SDR: 7kxNk0o4XkdReLoS7Rl97nsKf0zg7Ab68OgR5Wx67aNMO4qoIBQDUUukFpNPR5EfNPNwg23b7O
+ HMVaUxlgUUVA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,307,1589266800"; 
+   d="scan'208";a="267299967"
+Received: from chenyu-office.sh.intel.com ([10.239.158.173])
+  by fmsmga008.fm.intel.com with ESMTP; 03 Jul 2020 02:04:44 -0700
+From:   Chen Yu <yu.c.chen@intel.com>
+To:     Len Brown <lenb@kernel.org>,
+        Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Artem Bityutskiy <artem.bityutskiy@linux.intel.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Chen Yu <yu.c.chen@intel.com>, Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH] intel_idle: Customize IceLake server support
+Date:   Fri,  3 Jul 2020 17:02:42 +0800
+Message-Id: <20200703090242.5564-1-yu.c.chen@intel.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200703085309.32166-1-daniel.lezcano@linaro.org>
-References: <20200703085309.32166-1-daniel.lezcano@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The next patch will introduce the generic netlink protocol to handle
-events, sampling and command from the thermal framework. In order to
-deal with the thermal zone, it uses its unique identifier to
-characterize it in the message. Passing an integer is more efficient
-than passing an entire string.
+On ICX platform, the CPU frequency will slowly ramp up
+when woken up from C-states deeper than/equals to C1E,
+and since C1E auto-promotion is enabled by default,
+this might cause unexpected result.
 
-This change provides a function returning back a thermal zone pointer
-corresponding to the identifier passed as parameter.
+Thus this patch disables C1E auto-promotion and expose
+C1E as a separate idle state, so that the C1E and C6 can
+be disabled via sysfs when necessary.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
+Besides C1 and C1E, the exit latency of C6 was measured
+by a dedicated tool. However the exit latency(41us) exposed
+by _CST is much smaller than the one measured(128us). This
+is probably due to the _CST uses the exit latency when woken
+up from PC0+C6, rather than PC6+C6 when C6 was measured.
+
+Tested-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Acked-by: Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Chen Yu <yu.c.chen@intel.com>
 ---
- drivers/thermal/thermal_core.c | 14 ++++++++++++++
- drivers/thermal/thermal_core.h |  2 ++
- 2 files changed, 16 insertions(+)
+ drivers/idle/intel_idle.c | 36 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 36 insertions(+)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 9caaa0b6d662..5fae1621fb01 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -668,6 +668,20 @@ int for_each_thermal_zone(int (*cb)(struct thermal_zone_device *, void *),
- 	return ret;
- }
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index f4495841bf68..1eab606d858b 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -752,6 +752,35 @@ static struct cpuidle_state skx_cstates[] __initdata = {
+ 		.enter = NULL }
+ };
  
-+struct thermal_zone_device *thermal_zone_get_by_id(int id)
-+{
-+	struct thermal_zone_device *tz = NULL;
++static struct cpuidle_state icx_cstates[] __initdata = {
++	{
++		.name = "C1",
++		.desc = "MWAIT 0x00",
++		.flags = MWAIT2flg(0x00),
++		.exit_latency = 1,
++		.target_residency = 1,
++		.enter = &intel_idle,
++		.enter_s2idle = intel_idle_s2idle, },
++	{
++		.name = "C1E",
++		.desc = "MWAIT 0x01",
++		.flags = MWAIT2flg(0x01) | CPUIDLE_FLAG_ALWAYS_ENABLE,
++		.exit_latency = 4,
++		.target_residency = 4,
++		.enter = &intel_idle,
++		.enter_s2idle = intel_idle_s2idle, },
++	{
++		.name = "C6",
++		.desc = "MWAIT 0x20",
++		.flags = MWAIT2flg(0x20) | CPUIDLE_FLAG_TLB_FLUSHED,
++		.exit_latency = 128,
++		.target_residency = 384,
++		.enter = &intel_idle,
++		.enter_s2idle = intel_idle_s2idle, },
++	{
++		.enter = NULL }
++};
 +
-+	mutex_lock(&thermal_list_lock);
-+	list_for_each_entry(tz, &thermal_tz_list, node) {
-+		if (tz->id == id)
-+			break;
-+	}
-+	mutex_unlock(&thermal_list_lock);
-+
-+	return tz;
-+}
-+
- void thermal_zone_device_unbind_exception(struct thermal_zone_device *tz,
- 					  const char *cdev_type, size_t size)
- {
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 71d88dac0791..4f8389efaa62 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -50,6 +50,8 @@ int for_each_thermal_cooling_device(int (*cb)(struct thermal_cooling_device *,
- int for_each_thermal_governor(int (*cb)(struct thermal_governor *, void *),
- 			      void *thermal_governor);
+ static struct cpuidle_state atom_cstates[] __initdata = {
+ 	{
+ 		.name = "C1E",
+@@ -1056,6 +1085,12 @@ static const struct idle_cpu idle_cpu_skx __initconst = {
+ 	.use_acpi = true,
+ };
  
-+struct thermal_zone_device *thermal_zone_get_by_id(int id);
++static const struct idle_cpu idle_cpu_icx __initconst = {
++	.state_table = icx_cstates,
++	.disable_promotion_to_c1e = true,
++	.use_acpi = true,
++};
 +
- struct thermal_attr {
- 	struct device_attribute attr;
- 	char name[THERMAL_NAME_LENGTH];
+ static const struct idle_cpu idle_cpu_avn __initconst = {
+ 	.state_table = avn_cstates,
+ 	.disable_promotion_to_c1e = true,
+@@ -1110,6 +1145,7 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE_L,		&idle_cpu_skl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE,		&idle_cpu_skl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE_X,		&idle_cpu_skx),
++	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_X,		&idle_cpu_icx),
+ 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNL,	&idle_cpu_knl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNM,	&idle_cpu_knl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(ATOM_GOLDMONT,	&idle_cpu_bxt),
 -- 
 2.17.1
 
