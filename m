@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC6FBC433DF
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:21:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E3A4DC433E1
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:21:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 846872088E
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:21:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B825C21473
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:21:38 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="RDI/Bdk8"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="crtyVFUU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727913AbgGDDVT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jul 2020 23:21:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48782 "EHLO
+        id S1727983AbgGDDVd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jul 2020 23:21:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48824 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727067AbgGDDVR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 23:21:17 -0400
+        with ESMTP id S1727970AbgGDDVc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 23:21:32 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92AB8C061794;
-        Fri,  3 Jul 2020 20:21:17 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4956AC061794;
+        Fri,  3 Jul 2020 20:21:32 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
         References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
         Content-Type:Content-ID:Content-Description;
-        bh=IYOmOJoYZTBzZj9tcefKQPSQ7bdbtk5gsplfzDl4zv8=; b=RDI/Bdk8o1Faay9KdZmlzUO+AA
-        m9o/n0YxzrBme19YPdPlCs6aSDNnHgXacy3SY0Tdmr/4smmEjBkkP5fSiwBPjm6W0rmT9dI6DUqB+
-        WPHy1NRhErLBOSZm3A3Bf+bwJ9OBXlfP3tT2RRuxrlR99dEPK7dPaWT9lxLrl3ZwSnGGAYcw2jHgB
-        W/3HGLyYFeyYxOR1/ANiuRukON94z6AHvMn1jLVlTIl8DaCF/sPqUhvS3zbj5LrIh8RFBBpgRJ1Z3
-        d7bJ4CWw+xjil4LqVozb2pkxgw+V7EI4L00GtUN7dBTuSRaE0MQRcpfhjuK0LA6Q1dhrNNiAsIssx
-        Y0YtEhcw==;
+        bh=0aHjQ55hFxq6STzE8jcPc++LJg3Ht8D7yJwufSR30/I=; b=crtyVFUUrVpKua+McHYUoIje7r
+        u9Z4eU/Yh+Lf+I6E8teepx4m84OpgMhb3cSfbkkeCJNmNQJAwLLP9WL67m0hdI/rW/63LUPbt1qkf
+        RRyVxT2iL8djwXVmOJf92BhmdplTayXrRVe2MOjTL/CrqZ2whCkgD9ZEJ84QB3O7bBqZIhNAeESH1
+        QQ4BZubJwj5hj8SDMoO/ulG0wC4LSNxXfW58XwQfnCwPPXqG1AcXSb8ceMPuq063UWFE1QQ6V0QGu
+        ZaHlK10StFUDZ8gPV1qSto9E643B/WRyGF/mNlWQBa5ymyFfB1IbMKYyG7gxHuFjfvcFovndXHrOR
+        d8hk8i6A==;
 Received: from [2601:1c0:6280:3f0::19c2] (helo=smtpauth.infradead.org)
         by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1jrYjq-0000Ri-9h; Sat, 04 Jul 2020 03:21:15 +0000
+        id 1jrYk5-0000Ri-Io; Sat, 04 Jul 2020 03:21:30 +0000
 From:   Randy Dunlap <rdunlap@infradead.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Randy Dunlap <rdunlap@infradead.org>,
@@ -53,9 +53,9 @@ Cc:     Randy Dunlap <rdunlap@infradead.org>,
         platform-driver-x86@vger.kernel.org,
         "Darrick J . Wong" <darrick.wong@oracle.com>,
         linux-xfs@vger.kernel.org
-Subject: [PATCH 10/13] Documentation/admin-guide: intel-speed-select: drop doubled words
-Date:   Fri,  3 Jul 2020 20:20:17 -0700
-Message-Id: <20200704032020.21923-11-rdunlap@infradead.org>
+Subject: [PATCH 13/13] Documentation/admin-guide: xfs: drop doubled word
+Date:   Fri,  3 Jul 2020 20:20:20 -0700
+Message-Id: <20200704032020.21923-14-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200704032020.21923-1-rdunlap@infradead.org>
 References: <20200704032020.21923-1-rdunlap@infradead.org>
@@ -66,34 +66,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Drop the doubled words "that" and "and".
+Drop the doubled word "for".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
-Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc: platform-driver-x86@vger.kernel.org
+Cc: Darrick J. Wong <darrick.wong@oracle.com>
+Cc: linux-xfs@vger.kernel.org
 ---
- Documentation/admin-guide/pm/intel-speed-select.rst |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/admin-guide/xfs.rst |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200701.orig/Documentation/admin-guide/pm/intel-speed-select.rst
-+++ linux-next-20200701/Documentation/admin-guide/pm/intel-speed-select.rst
-@@ -114,7 +114,7 @@ base performance profile (which is perfo
- Lock/Unlock status
- ~~~~~~~~~~~~~~~~~~
+--- linux-next-20200701.orig/Documentation/admin-guide/xfs.rst
++++ linux-next-20200701/Documentation/admin-guide/xfs.rst
+@@ -133,7 +133,7 @@ When mounting an XFS filesystem, the fol
+ 	logbsize must be an integer multiple of the log
+ 	stripe unit configured at **mkfs(8)** time.
  
--Even if there are multiple performance profiles, it is possible that that they
-+Even if there are multiple performance profiles, it is possible that they
- are locked. If they are locked, users cannot issue a command to change the
- performance state. It is possible that there is a BIOS setup to unlock or check
- with your system vendor.
-@@ -883,7 +883,7 @@ To enable Intel(R) SST-TF, execute::
-         enable:success
+-	The default value for for version 1 logs is 32768, while the
++	The default value for version 1 logs is 32768, while the
+ 	default value for version 2 logs is MAX(32768, log_sunit).
  
- In this case, the option "-a" is optional. If set, it enables Intel(R) SST-TF
--feature and also sets the CPUs to high and and low priority using Intel Speed
-+feature and also sets the CPUs to high and low priority using Intel Speed
- Select Technology Core Power (Intel(R) SST-CP) features. The CPU numbers passed
- with "-c" arguments are marked as high priority, including its siblings.
- 
+   logdev=device and rtdev=device
