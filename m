@@ -6,36 +6,36 @@ X-Spam-Status: No, score=-6.8 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D1FEC433E0
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:20:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0B91C433DF
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:20:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6CDB62088E
-	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:20:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B2332208C7
+	for <linux-pm@archiver.kernel.org>; Sat,  4 Jul 2020 03:20:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="FE+o7+Sh"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="VrTfAv1R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727112AbgGDDUq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 3 Jul 2020 23:20:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48682 "EHLO
+        id S1727800AbgGDDUz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 3 Jul 2020 23:20:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48710 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726501AbgGDDUo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 23:20:44 -0400
+        with ESMTP id S1727789AbgGDDUx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 3 Jul 2020 23:20:53 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7041CC061794;
-        Fri,  3 Jul 2020 20:20:43 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0B632C061794;
+        Fri,  3 Jul 2020 20:20:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
         References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
         Content-Type:Content-ID:Content-Description;
-        bh=OX5gHkwRjdsphqPt6oiGYwwyZUjS829HMpxoXk36jV8=; b=FE+o7+ShQZ2AiuFUBYQn85Da1f
-        G2Yu2rsWT7l/PufkfBHi6+HVkOGIMo+xzFVFJRTjQAKFgoWNOEQl33q/JRSVGo25f5prdmn1+7ejY
-        3d+xxkfejFHE+p2bYujzHfi8DIyAdx1vPt6MHoMN4EetW5KLS1SjqfybqxmbiEeOMYCJY99DvRSDs
-        KvbXu8EGt1zxIdSPQh2vhvCB/yo7r1JmqrhZLesdsGDPLkENZnfOWFo1P08y/XCFq5BiPoNYQfqOy
-        mXKg510Em8dbR8L2J1ZPqF17fz1qB5Tx7uewRboZ+Bf/6WZOacDFRmhy2YVQ74/WwoJmk1vKDvVtr
-        mRTgU5PA==;
+        bh=Xc5Y/7gMRvZrKEJDCwrF418TtFkFpBUwIh8SQqJf/ZU=; b=VrTfAv1RGQ4hkjvCiNUDlr43un
+        jMOXcMt42Nbx8oDU/ZCH3amqP9Ci4p6Jj0bs5YM+KpSNQ4IvQkmwfsmststlLaxkb/Bu8FDK9T1gf
+        U8W3n96qwP7as2mouie5Il16I0kLXpdDwMJN9RWnaVSNFbtxn/nLTVq2JT7omAyncYHfEYPGIPWxp
+        KsBbm72o1Rg+YHOANxA2hEIOkaxm1TcaR4HMozh5pGtMWNsYS+bQxx179Va8AUDruSOe1f9QDwVp0
+        p4mFxuXbBxcu69O91lkt+sC40Rn54VfvH4i4E1SEtOKR9fz53N8PoD7JO7oTtDS1SEOHDoFEe/Ixu
+        TIR9XeJA==;
 Received: from [2601:1c0:6280:3f0::19c2] (helo=smtpauth.infradead.org)
         by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1jrYjI-0000Ri-CC; Sat, 04 Jul 2020 03:20:41 +0000
+        id 1jrYjS-0000Ri-7y; Sat, 04 Jul 2020 03:20:51 +0000
 From:   Randy Dunlap <rdunlap@infradead.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Randy Dunlap <rdunlap@infradead.org>,
@@ -52,9 +52,9 @@ Cc:     Randy Dunlap <rdunlap@infradead.org>,
         platform-driver-x86@vger.kernel.org,
         "Darrick J . Wong" <darrick.wong@oracle.com>,
         linux-xfs@vger.kernel.org
-Subject: [PATCH 03/13] Documentation/admin-guide: dm-integrity: drop doubled words
-Date:   Fri,  3 Jul 2020 20:20:10 -0700
-Message-Id: <20200704032020.21923-4-rdunlap@infradead.org>
+Subject: [PATCH 05/13] Documentation/admin-guide: mm/ksm: drop doubled word
+Date:   Fri,  3 Jul 2020 20:20:12 -0700
+Message-Id: <20200704032020.21923-6-rdunlap@infradead.org>
 X-Mailer: git-send-email 2.26.2
 In-Reply-To: <20200704032020.21923-1-rdunlap@infradead.org>
 References: <20200704032020.21923-1-rdunlap@infradead.org>
@@ -65,33 +65,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Drop the doubled words "on" and "the".
+Drop the doubled word "the".
 
 Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
 Cc: Jonathan Corbet <corbet@lwn.net>
 Cc: linux-doc@vger.kernel.org
-Cc: dm-devel@redhat.com
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org
 ---
- Documentation/admin-guide/device-mapper/dm-integrity.rst |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/admin-guide/mm/ksm.rst |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- linux-next-20200701.orig/Documentation/admin-guide/device-mapper/dm-integrity.rst
-+++ linux-next-20200701/Documentation/admin-guide/device-mapper/dm-integrity.rst
-@@ -45,7 +45,7 @@ To use the target for the first time:
-    will format the device
- 3. unload the dm-integrity target
- 4. read the "provided_data_sectors" value from the superblock
--5. load the dm-integrity target with the the target size
-+5. load the dm-integrity target with the target size
-    "provided_data_sectors"
- 6. if you want to use dm-integrity with dm-crypt, load the dm-crypt target
-    with the size "provided_data_sectors"
-@@ -99,7 +99,7 @@ interleave_sectors:number
- 	the superblock is used.
- 
- meta_device:device
--	Don't interleave the data and metadata on on device. Use a
-+	Don't interleave the data and metadata on the device. Use a
- 	separate device for metadata.
- 
- buffer_sectors:number
+--- linux-next-20200701.orig/Documentation/admin-guide/mm/ksm.rst
++++ linux-next-20200701/Documentation/admin-guide/mm/ksm.rst
+@@ -52,7 +52,7 @@ with EAGAIN, but more probably arousing
+ If KSM is not configured into the running kernel, madvise MADV_MERGEABLE
+ and MADV_UNMERGEABLE simply fail with EINVAL.  If the running kernel was
+ built with CONFIG_KSM=y, those calls will normally succeed: even if the
+-the KSM daemon is not currently running, MADV_MERGEABLE still registers
++KSM daemon is not currently running, MADV_MERGEABLE still registers
+ the range for whenever the KSM daemon is started; even if the range
+ cannot contain any pages which KSM could actually merge; even if
+ MADV_UNMERGEABLE is applied to a range which was never MADV_MERGEABLE.
