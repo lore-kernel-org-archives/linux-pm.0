@@ -2,70 +2,94 @@ Return-Path: <SRS0=Mn34=AR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.0 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87F5CC433DF
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 14:07:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 557CBC433E0
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 16:44:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 60A5920715
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 14:07:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 219DD206CD
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 16:44:55 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="a1+V8UoO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729262AbgGFOHv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Jul 2020 10:07:51 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:57802 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729193AbgGFOHu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2020 10:07:50 -0400
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <colin.king@canonical.com>)
-        id 1jsRmd-0003Nm-FA; Mon, 06 Jul 2020 14:07:47 +0000
-From:   Colin King <colin.king@canonical.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-pm@vger.kernel.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][next] thermal: core: remove redundant initialization of variable ret
-Date:   Mon,  6 Jul 2020 15:07:47 +0100
-Message-Id: <20200706140747.489075-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.27.0
+        id S1729585AbgGFQoy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Jul 2020 12:44:54 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48762 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729551AbgGFQoy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2020 12:44:54 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1F372C061755;
+        Mon,  6 Jul 2020 09:44:53 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:Content-Type:
+        MIME-Version:Date:Message-ID:Subject:From:Cc:To:Sender:Reply-To:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=nNfTuHPUfs6PO3Ww3M+wQvUkhv+TTYKzJicouLRKRMw=; b=a1+V8UoOtgEsLkN9UOIZ4Bnv/p
+        lcMSuwC7t0ZzoTOvnhy9U7pPwxjLtzHa717t+nema+w3WTRdOPugdMbTfOBXZ9/fjWT4uZ2vEgmq4
+        xc1Ym0sB9SP55Xm21azWnVN85JBtWGuxrWE6o2H+NLcXlG4Lk7ZTIZZwwRqGO+9P/nqZAGteC6rb+
+        hCJ1s+jYU4mqxTzSnjLWhNi2aA9oIhxmbK8AkzX+J/bISH2bA1SFSpr0g2XsOe2AXVw9gMuvcZh2y
+        K7QmLLekR8tgjXXhwoujOIJ9Z6t9rQW86NvD4Sep8WClf24vQvNEgpaujBFaAhb5Phs42U5gdbUU6
+        Po4ivOGQ==;
+Received: from [2601:1c0:6280:3f0:897c:6038:c71d:ecac]
+        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1jsUEb-0002lO-Uu; Mon, 06 Jul 2020 16:44:50 +0000
+To:     Linux PM list <linux-pm@vger.kernel.org>,
+        linux-scsi <linux-scsi@vger.kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     James Smart <james.smart@broadcom.com>,
+        Dick Kennedy <dick.kennedy@broadcom.com>
+From:   Randy Dunlap <rdunlap@infradead.org>
+Subject: [PATCH -next] cpufreq: add stub for get_cpu_idle_time() to fix
+ scsi/lpfc driver build
+Message-ID: <3a20bf20-247d-1242-dcd0-aef1bbc6e308@infradead.org>
+Date:   Mon, 6 Jul 2020 09:44:46 -0700
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+From: Randy Dunlap <rdunlap@infradead.org>
 
-The variable ret is being initialized with a value that is never read
-and it is being updated later with a new value.  The initialization is
-redundant and can be removed.
+To fix a build error in drivers/scsi/lpfc/lpfc_sli.c when
+CONFIG_CPU_FREQ is not set/enabled, add a stub function for
+get_cpu_idle_time() in <linux/cpufreq.h>.
 
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
+../drivers/scsi/lpfc/lpfc_sli.c: In function ‘lpfc_init_idle_stat_hb’:
+../drivers/scsi/lpfc/lpfc_sli.c:7330:26: error: implicit declaration of function ‘get_cpu_idle_time’; did you mean ‘set_cpu_active’? [-Werror=implicit-function-declaration]
+   idle_stat->prev_idle = get_cpu_idle_time(i, &wall, 1);
+
+Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
+Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Cc: linux-pm@vger.kernel.org
+Cc: James Smart <james.smart@broadcom.com>
+Cc: Dick Kennedy <dick.kennedy@broadcom.com>
+Cc: linux-scsi@vger.kernel.org
 ---
- drivers/thermal/thermal_netlink.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ include/linux/cpufreq.h |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/thermal/thermal_netlink.c b/drivers/thermal/thermal_netlink.c
-index d3c48bbcd269..cb56950f59d2 100644
---- a/drivers/thermal/thermal_netlink.c
-+++ b/drivers/thermal/thermal_netlink.c
-@@ -548,7 +548,7 @@ static int thermal_genl_cmd_dumpit(struct sk_buff *skb,
- 	struct param p = { .msg = skb };
- 	const struct genl_dumpit_info *info = genl_dumpit_info(cb);
- 	int cmd = info->ops->cmd;
--	int ret = -EMSGSIZE;
-+	int ret;
- 	void *hdr;
+--- linux-next-20200706.orig/include/linux/cpufreq.h
++++ linux-next-20200706/include/linux/cpufreq.h
+@@ -237,6 +237,10 @@ static inline unsigned int cpufreq_get_h
+ {
+ 	return 0;
+ }
++static inline u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
++{
++	return 0;
++}
+ static inline void disable_cpufreq(void) { }
+ #endif
  
- 	hdr = genlmsg_put(skb, 0, 0, &thermal_gnl_family, 0, cmd);
--- 
-2.27.0
 
