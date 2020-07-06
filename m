@@ -2,79 +2,141 @@ Return-Path: <SRS0=Mn34=AR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA703C433E0
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 20:19:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA7C6C433DF
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 21:07:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8F66620702
-	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 20:19:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C18A320774
+	for <linux-pm@archiver.kernel.org>; Mon,  6 Jul 2020 21:07:32 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="XmsAhP4D"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726933AbgGFUT6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 6 Jul 2020 16:19:58 -0400
-Received: from mga09.intel.com ([134.134.136.24]:35159 "EHLO mga09.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726540AbgGFUT5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 6 Jul 2020 16:19:57 -0400
-IronPort-SDR: nbhH2bSgIDfFYKOctCl/mh7cUL/rIIO54qMOjta0YUpdtmbM1OoCAMr0gQySQWZJYxyK4cS1Gm
- 0/dD8N+jlYHQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9674"; a="149011865"
-X-IronPort-AV: E=Sophos;i="5.75,321,1589266800"; 
-   d="scan'208";a="149011865"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga005.fm.intel.com ([10.253.24.32])
-  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Jul 2020 13:19:57 -0700
-IronPort-SDR: 3BSlNuO2KXikjBngo+wNaqVNmV3zQUTDkjml4aOc/RpldiXpP1T8cEi6HYwkxOytSN/E8JRvFA
- R0GfNdOpaQkw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,321,1589266800"; 
-   d="scan'208";a="483254110"
-Received: from iweiny-desk2.sc.intel.com ([10.3.52.147])
-  by fmsmga005.fm.intel.com with ESMTP; 06 Jul 2020 13:19:56 -0700
-Date:   Mon, 6 Jul 2020 13:19:56 -0700
-From:   Ira Weiny <ira.weiny@intel.com>
-To:     Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-Cc:     Giovanni Gherdovich <ggherdovich@suse.cz>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Borislav Petkov <bp@suse.de>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] x86, sched: Bail out of frequency invariance if
- turbo frequency is unknown
-Message-ID: <20200706201956.GA1390666@iweiny-DESK2.sc.intel.com>
-References: <20200531182453.15254-1-ggherdovich@suse.cz>
- <20200531182453.15254-3-ggherdovich@suse.cz>
- <20200601233418.GA15416@ranerica-svr.sc.intel.com>
+        id S1725860AbgGFVHc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 6 Jul 2020 17:07:32 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:32914 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726805AbgGFVHb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 6 Jul 2020 17:07:31 -0400
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5152AC08C5DF
+        for <linux-pm@vger.kernel.org>; Mon,  6 Jul 2020 14:07:31 -0700 (PDT)
+Received: by mail-pg1-x541.google.com with SMTP id e8so18964471pgc.5
+        for <linux-pm@vger.kernel.org>; Mon, 06 Jul 2020 14:07:31 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=4duSpApL0OEcflw6oiG/5wMmEL4Cmw3V+9yHdG3N38U=;
+        b=XmsAhP4DdWtK3W4olE1WbLyYpUKk11eaUe0dO82ItIsxpJc6PQBXfSrrS6MZtwHs8m
+         f0CY9K+RlEEq+1dfZGK+JICWadd3cjgom7vPkIL5LYEdsgG4By9E0RAo/m1PIPDhCJyy
+         Ykw5aSq0eA4CKCg5oSsRLxOMF9uQuVVOxb48M=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=4duSpApL0OEcflw6oiG/5wMmEL4Cmw3V+9yHdG3N38U=;
+        b=tDg/MckezUC5ZbKhXc7loY4S0NNvPeiKcT13T+q08sNi+c6/kvurYEDn39CrP2soGN
+         pv6f7m1ihgQt7jEDBqFXWXhJDFWEYUpxXhEGrpYIqaKkNyleQeJ/uq/sWJqasjqyyGWe
+         LyuULclv/wjaKDVsmXomyYw1+S6GYJvNq08JRpQobL/zVnKFHf4T1tXMT2xCA1Xs/XS1
+         nYWoKAduiCnhbUa52xGDoHR27mPL5OOBVWS0YQkHVwt4nZEh0PJylktPHdSByn/nghwc
+         Agx9OyxsAWbr0w+mOx7kL36Tm7ENOKViOW9dDj6mJbFGINlxGJ0CmOb52OCMiHDZ1R26
+         REdw==
+X-Gm-Message-State: AOAM531q6W+9RHnwenOWXwwGh1CT/r2WLHefbxFcEgkhin6fUF1qBDP2
+        QaxdXZtRXPAIO1Dzv5VG16Wjss7V2gg=
+X-Google-Smtp-Source: ABdhPJwgdoH9pz5Y5wcjCE9hjkYwspxTSbpI/kAOsnuiwZnTwDYlG7ymZuFB6AffdVodou00H5Pizw==
+X-Received: by 2002:a05:6a00:1511:: with SMTP id q17mr46701197pfu.16.1594069650636;
+        Mon, 06 Jul 2020 14:07:30 -0700 (PDT)
+Received: from apsdesk.mtv.corp.google.com ([2620:15c:202:1:7220:84ff:fe09:2b94])
+        by smtp.gmail.com with ESMTPSA id j8sm21088609pfd.145.2020.07.06.14.07.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 06 Jul 2020 14:07:30 -0700 (PDT)
+From:   Abhishek Pandit-Subedi <abhishekpandit@chromium.org>
+To:     linux-pm@vger.kernel.org
+Cc:     linux-bluetooth@vger.kernel.org,
+        chromeos-bluetooth-upstreaming@chromium.org,
+        rafael.j.wysocki@intel.com, swboyd@chromium.org,
+        Abhishek Pandit-Subedi <abhishekpandit@chromium.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-kernel@vger.kernel.org, Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH v2 1/1] power: Emit changed uevent on wakeup_sysfs_add/remove
+Date:   Mon,  6 Jul 2020 14:07:17 -0700
+Message-Id: <20200706140715.v2.1.I51f5a0be89595b73c4dc17e6cf4cc6f26dc7f2fc@changeid>
+X-Mailer: git-send-email 2.27.0.212.ge8ba1cc988-goog
+In-Reply-To: <20200706210717.1210639-1-abhishekpandit@chromium.org>
+References: <20200706210717.1210639-1-abhishekpandit@chromium.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200601233418.GA15416@ranerica-svr.sc.intel.com>
-User-Agent: Mutt/1.11.1 (2018-12-01)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jun 01, 2020 at 04:34:18PM -0700, Ricardo Neri wrote:
-> On Sun, May 31, 2020 at 08:24:52PM +0200, Giovanni Gherdovich wrote:
-> > There may be CPUs that support turbo boost but don't declare any turbo
-> > ratio, i.e. their MSR_TURBO_RATIO_LIMIT is all zeroes. In that condition
-> > scale-invariant calculations can't be performed.
-> > 
-> > Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
-> > Suggested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
-> 
-> FWIW,
-> 
-> Tested-by: Ricardo Neri <ricardo.neri-calderon@linux.intel.com>
+Udev rules that depend on the power/wakeup attribute don't get triggered
+correctly if device_set_wakeup_capable is called after the device is
+created. This can happen for several reasons (driver sets wakeup after
+device is created, wakeup is changed on parent device, etc) and it seems
+reasonable to emit a changed event when adding or removing attributes on
+the device.
 
-Is this going to make it as a fix to 5.8?
+Signed-off-by: Abhishek Pandit-Subedi <abhishekpandit@chromium.org>
+---
 
-Tested-by: Ira Weiny <ira.weiny@intel.com>
+Changes in v2:
+- Add newline at end of bt_dev_err
+
+ drivers/base/power/sysfs.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/base/power/sysfs.c b/drivers/base/power/sysfs.c
+index 24d25cf8ab1487..d57e8e7f175ebf 100644
+--- a/drivers/base/power/sysfs.c
++++ b/drivers/base/power/sysfs.c
+@@ -1,6 +1,7 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /* sysfs entries for device PM */
+ #include <linux/device.h>
++#include <linux/kobject.h>
+ #include <linux/string.h>
+ #include <linux/export.h>
+ #include <linux/pm_qos.h>
+@@ -739,12 +740,30 @@ int dpm_sysfs_change_owner(struct device *dev, kuid_t kuid, kgid_t kgid)
+ 
+ int wakeup_sysfs_add(struct device *dev)
+ {
+-	return sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
++	int ret = sysfs_merge_group(&dev->kobj, &pm_wakeup_attr_group);
++
++	if (!ret) {
++		int tmp = kobject_uevent(&dev->kobj, KOBJ_CHANGE);
++
++		if (tmp)
++			dev_err(dev,
++				"Error in uevent for wakeup_sysfs_add: %d\n",
++				tmp);
++	}
++
++	return ret;
+ }
+ 
+ void wakeup_sysfs_remove(struct device *dev)
+ {
++	int tmp;
++
+ 	sysfs_unmerge_group(&dev->kobj, &pm_wakeup_attr_group);
++
++	tmp = kobject_uevent(&dev->kobj, KOBJ_CHANGE);
++	if (tmp)
++		dev_err(dev, "Error in uevent for wakeup_sysfs_remove: %d\n",
++			tmp);
+ }
+ 
+ int pm_qos_sysfs_add_resume_latency(struct device *dev)
+-- 
+2.27.0.212.ge8ba1cc988-goog
 
