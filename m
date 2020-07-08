@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B7DEC433E2
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 15:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05FADC433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 15:34:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 42F0F207D0
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 15:34:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E5F222082E
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 15:34:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730031AbgGHPeq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jul 2020 11:34:46 -0400
-Received: from foss.arm.com ([217.140.110.172]:47166 "EHLO foss.arm.com"
+        id S1730215AbgGHPeu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jul 2020 11:34:50 -0400
+Received: from foss.arm.com ([217.140.110.172]:47186 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730028AbgGHPep (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 8 Jul 2020 11:34:45 -0400
+        id S1730028AbgGHPeu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 8 Jul 2020 11:34:50 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 21AB61045;
-        Wed,  8 Jul 2020 08:34:45 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CDC281FB;
+        Wed,  8 Jul 2020 08:34:49 -0700 (PDT)
 Received: from e123648.arm.com (unknown [10.37.12.67])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id AFCD23F237;
-        Wed,  8 Jul 2020 08:34:40 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9C1083F237;
+        Wed,  8 Jul 2020 08:34:45 -0700 (PDT)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
@@ -34,9 +34,9 @@ Cc:     lukasz.luba@arm.com, willy.mh.wolff.ml@gmail.com,
         b.zolnierkie@samsung.com, krzk@kernel.org, chanwoo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         s.nawrocki@samsung.com, kgene@kernel.org
-Subject: [PATCH 1/2] memory: samsung: exynos5422-dmc: Adjust polling interval and uptreshold
-Date:   Wed,  8 Jul 2020 16:34:19 +0100
-Message-Id: <20200708153420.29484-2-lukasz.luba@arm.com>
+Subject: [PATCH 2/2] ARM: dts: exynos: Remove interrupts from DMC controller in Exynos5422
+Date:   Wed,  8 Jul 2020 16:34:20 +0100
+Message-Id: <20200708153420.29484-3-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200708153420.29484-1-lukasz.luba@arm.com>
 References: <20200708153420.29484-1-lukasz.luba@arm.com>
@@ -45,33 +45,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In order to react faster and make better decisions under some workloads,
-benchmarking the memory subsystem behavior, adjust the polling interval
-and upthreshold value used by the simple_ondemand governor.
+The interrupts in Dynamic Memory Controller in Exynos5422 and Odroid
+XU3-family boards are no longer needed. They have been used in order
+to workaround some issues in scheduled work in devfreq. Now when the
+devfreq framework design is improved, remove the interrupt driven
+approach and rely on devfreq monitoring mechanism with fixed intervals.
 
 Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/memory/samsung/exynos5422-dmc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/boot/dts/exynos5420.dtsi | 3 ---
+ 1 file changed, 3 deletions(-)
 
-diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
-index 93e9c2429c0d..e03ee35f0ab5 100644
---- a/drivers/memory/samsung/exynos5422-dmc.c
-+++ b/drivers/memory/samsung/exynos5422-dmc.c
-@@ -1466,10 +1466,10 @@ static int exynos5_dmc_probe(struct platform_device *pdev)
- 		 * Setup default thresholds for the devfreq governor.
- 		 * The values are chosen based on experiments.
- 		 */
--		dmc->gov_data.upthreshold = 30;
-+		dmc->gov_data.upthreshold = 10;
- 		dmc->gov_data.downdifferential = 5;
- 
--		exynos5_dmc_df_profile.polling_ms = 500;
-+		exynos5_dmc_df_profile.polling_ms = 100;
- 	}
- 
- 
+diff --git a/arch/arm/boot/dts/exynos5420.dtsi b/arch/arm/boot/dts/exynos5420.dtsi
+index c76460b70532..967868cc8211 100644
+--- a/arch/arm/boot/dts/exynos5420.dtsi
++++ b/arch/arm/boot/dts/exynos5420.dtsi
+@@ -240,9 +240,6 @@
+ 		dmc: memory-controller@10c20000 {
+ 			compatible = "samsung,exynos5422-dmc";
+ 			reg = <0x10c20000 0x10000>, <0x10c30000 0x10000>;
+-			interrupt-parent = <&combiner>;
+-			interrupts = <16 0>, <16 1>;
+-			interrupt-names = "drex_0", "drex_1";
+ 			clocks = <&clock CLK_FOUT_SPLL>,
+ 				 <&clock CLK_MOUT_SCLK_SPLL>,
+ 				 <&clock CLK_FF_DOUT_SPLL2>,
 -- 
 2.17.1
 
