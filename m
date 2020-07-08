@@ -2,92 +2,103 @@ Return-Path: <SRS0=8MB0=AT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-2.4 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7497C433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 12:33:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E480C433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 12:34:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 85B2320774
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 12:33:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1594211600;
-	bh=sMyKz+hZNLZFQOQTIXP/42xxCS+2xANLITbp1rbBVm4=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=zgxr1ljeLjyoPn9TlY2QKkF2/Cbqyr6zWpcOXGVAtx+nbvwooJWQnNG1G1YrL4J2z
-	 rGax+2ipn0uE0DBdk77IOnc8vh9z1dwiypsyDdymdeVfEp4v2PwX1KCXNZRhCT6EOT
-	 Jpjv7YeaaJ30AHZ0ktYRSje5dyx51sks0xMjM/sQ=
+	by mail.kernel.org (Postfix) with ESMTP id 79E862082E
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 12:34:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="NBOjwAFf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729081AbgGHMdK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jul 2020 08:33:10 -0400
-Received: from mail-ed1-f66.google.com ([209.85.208.66]:43476 "EHLO
-        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728987AbgGHMdJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2020 08:33:09 -0400
-Received: by mail-ed1-f66.google.com with SMTP id d15so41670947edm.10;
-        Wed, 08 Jul 2020 05:33:07 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=DhieJsQuOEwSP81dBdl01exBUOB4h6MMR09/FyCdqmQ=;
-        b=YVCvV4MN3N2tL0HKzC96nnjQaH6/IDXO4hRNbeRAlpejGVkma+D0XmufKGWzhdN+HD
-         ffohPw837EGoEaeQzX+7M7JndF7rZ8y2OmQbyU1WKsRKygyNBsW9neYZll4ikRPKwzgM
-         I3H6iyp/FxgGRVJ4faQ9gbOPx/bgPiY9PY/2cRtfgoq4N6BBptwYtzn8ZneFG6pQV1Ka
-         hWVrswjypRbt5zo2ax9xDPnoLi3dVeyjYIC3jiE1D+fokLRLNu4XBRn4ck4rCF3EZjR2
-         AOufotVMPTe++p+otloGTpk+26odJ25TKCCg/qil71hjbDZn4ZtyWn69gtxxEDMzA4DJ
-         MMiA==
-X-Gm-Message-State: AOAM5328c+DXaJIux0SeF2fc91HngnGAeexGJRwsa7JiCYrTqjyWQZU/
-        awBKC7nf3sZZ1Wqen5aIDTw=
-X-Google-Smtp-Source: ABdhPJwu6Uv1QKLJxfMUiLAIi03G94R2XS09hZ5lEYX5Hc7T85mzMl53BpuQKvDyP6DYQMjvb7M+nQ==
-X-Received: by 2002:a05:6402:31bb:: with SMTP id dj27mr2097888edb.387.1594211586998;
-        Wed, 08 Jul 2020 05:33:06 -0700 (PDT)
-Received: from kozik-lap ([194.230.155.195])
-        by smtp.googlemail.com with ESMTPSA id a1sm1893441ejk.125.2020.07.08.05.33.05
-        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
-        Wed, 08 Jul 2020 05:33:06 -0700 (PDT)
-Date:   Wed, 8 Jul 2020 14:33:03 +0200
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     lukasz.luba@arm.com, k.konieczny@samsung.com, kgene@kernel.org,
-        s.nawrocki@samsung.com, willy.mh.wolff.ml@gmail.com,
-        b.zolnierkie@samsung.com, chanwoo@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [RFC PATCH 2/2] memory: samsung: exynos5422-dmc: Use delayed
- timer as default
-Message-ID: <20200708123303.GB29033@kozik-lap>
-References: <20200703062622.11773-1-cw00.choi@samsung.com>
- <CGME20200703061509epcas1p3e338b614c44f5d8b566dae92f11cc8cb@epcas1p3.samsung.com>
- <20200703062622.11773-3-cw00.choi@samsung.com>
+        id S1728640AbgGHMez (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jul 2020 08:34:55 -0400
+Received: from hqnvemgate24.nvidia.com ([216.228.121.143]:10909 "EHLO
+        hqnvemgate24.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728965AbgGHMeu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2020 08:34:50 -0400
+Received: from hqpgpgate102.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5f05bcff0000>; Wed, 08 Jul 2020 05:33:03 -0700
+Received: from hqmail.nvidia.com ([172.20.161.6])
+  by hqpgpgate102.nvidia.com (PGP Universal service);
+  Wed, 08 Jul 2020 05:34:49 -0700
+X-PGP-Universal: processed;
+        by hqpgpgate102.nvidia.com on Wed, 08 Jul 2020 05:34:49 -0700
+Received: from [10.26.73.185] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 8 Jul
+ 2020 12:34:48 +0000
+From:   Jon Hunter <jonathanh@nvidia.com>
+Subject: Re: [PATCH v2] cpuidle: tegra: Correctly handle result of
+ arm_cpuidle_simple_enter()
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>
+References: <20200702001354.27056-1-digetx@gmail.com>
+Message-ID: <4ffff3d8-2d41-3fb2-ed16-c9662d18d261@nvidia.com>
+Date:   Wed, 8 Jul 2020 13:34:45 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200703062622.11773-3-cw00.choi@samsung.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20200702001354.27056-1-digetx@gmail.com>
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1594211583; bh=+WiKehweVjFm/N1WTgoSGN3YwF0LWqAX6QQ458Y2Z4o=;
+        h=X-PGP-Universal:From:Subject:To:CC:References:Message-ID:Date:
+         User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
+         X-ClientProxiedBy:Content-Type:Content-Language:
+         Content-Transfer-Encoding;
+        b=NBOjwAFfGvCc0zWdBhGhm4frMUR2zarSDCnAcyTi9urKVTpk44xeBVG2iYLIAlRjG
+         m+d/qO6NEhsCW4YKqFAcpOBtmbPrR8AoVuox/bZkzMjQINDPYzNP94qBZEZvl6amxJ
+         wLWREHv4545+RiGMcZlHiiQTzlW16A2hOwGQS5zAlpu8biC3TZMGeaSM2+N/aXe/Vu
+         YwyKEUZOLwtJJct91E/p7HmJnbtPsDre5xECjpvNustGgKspSWs3auELLN+ML0SXr6
+         MaTK/AwupS4eOqGxWcUvcMomWYy23HBQKcyDfHG5SWn7zUmtT5lZ0QqZOvGBofpZZW
+         VNB/IjWof2IFg==
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 03, 2020 at 03:26:22PM +0900, Chanwoo Choi wrote:
-> Use delayed timer as default instead of deferrable timer
-> in order to monitor the DMC status regardless of CPU idle.
+
+On 02/07/2020 01:13, Dmitry Osipenko wrote:
+> The enter() callback of CPUIDLE drivers returns index of the entered idle
+> state on success or a negative value on failure. The negative value could
+> any negative value, i.e. it doesn't necessarily needs to be a error code.
+> That's because CPUIDLE core only cares about the fact of failure and not
+> about the reason of the enter() failure.
 > 
-> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-> ---
->  drivers/memory/samsung/exynos5422-dmc.c | 1 +
->  1 file changed, 1 insertion(+)
+> Like every other enter() callback, the arm_cpuidle_simple_enter() returns
+> the entered idle-index on success. Unlike some of other drivers, it never
+> fails. It happened that TEGRA_C1=index=err=0 in the code of cpuidle-tegra
+> driver, and thus, there is no problem for the cpuidle-tegra driver created
+> by the typo in the code which assumes that the arm_cpuidle_simple_enter()
+> returns a error code.
+> 
+> The arm_cpuidle_simple_enter() also may return a -ENODEV error if CPU_IDLE
+> is disabled in a kernel's config, but all CPUIDLE drivers are disabled if
+> CPU_IDLE is disabled, including the cpuidle-tegra driver. So we can't ever
+> see the error code from arm_cpuidle_simple_enter() today.
+> 
+> Of course the code may get some changes in the future and then the typo
+> may transform into a real bug, so let's correct the typo in the code by
+> making tegra_cpuidle_enter() to directly return the index returned by the
+> arm_cpuidle_simple_enter().
 
-If you want to take this through devfreq tree, I'm fine:
-Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+Are you suggesting that arm_cpuidle_simple_enter() could be updated to
+actually return an error? Sorry it is not clear to me what you are implying.
 
-Otherwise I could grab it through samsung-soc after devfreq change ends
-in mainline.
+Cheers
+Jon
 
-Best regards,
-Krzysztof
+-- 
+nvpublic
