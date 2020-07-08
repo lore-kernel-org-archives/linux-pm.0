@@ -1,338 +1,106 @@
-Return-Path: <SRS0=Aa/F=AS=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=8MB0=AT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-0.9 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADB51C433E4
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jul 2020 21:29:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75ABDC433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 02:33:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 864CE2075B
-	for <linux-pm@archiver.kernel.org>; Tue,  7 Jul 2020 21:29:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4D1C72078B
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 02:33:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="PyZ1pvjq"
+	dkim=pass (2048-bit key) header.d=dell.com header.i=@dell.com header.b="D3FVXjRV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728184AbgGGV3o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 7 Jul 2020 17:29:44 -0400
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:33848 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728372AbgGGV3n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2020 17:29:43 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 067LTf4c047840;
-        Tue, 7 Jul 2020 16:29:41 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1594157381;
-        bh=nuby4n3RkQ1wc+JkVEMY7ylrfRVsg4Mu4gowhIY+KXQ=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=PyZ1pvjq+WU4d8WmlRd3nOmYrLvwERwtUFIY86OOY+6pfmhqXKyCboyoIZmyyFeUf
-         n91cfRZDeR6QoubW1P8y6gyiqTmEFbFProX3WTqyTh668eYS2hxW2KB6KA5GZgSC+D
-         fw1oyqINM8Jql/9FZLY71DCtE7nidTyKEo/2DNS8=
-Received: from DLEE112.ent.ti.com (dlee112.ent.ti.com [157.170.170.23])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 067LTfKE055794
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 7 Jul 2020 16:29:41 -0500
-Received: from DLEE104.ent.ti.com (157.170.170.34) by DLEE112.ent.ti.com
- (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 7 Jul
- 2020 16:29:41 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE104.ent.ti.com
- (157.170.170.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Tue, 7 Jul 2020 16:29:40 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 067LTeU8112257;
-        Tue, 7 Jul 2020 16:29:40 -0500
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <pali@kernel.org>, <robh@kernel.org>
-CC:     <afd@ti.com>, <r-rivera-matos@ti.com>, <dmurphy@ti.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <sspatil@android.com>
-Subject: [PATCH v16 2/4] dt-bindings: power: Convert battery.txt to battery.yaml
-Date:   Tue, 7 Jul 2020 16:29:12 -0500
-Message-ID: <20200707212914.31540-3-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200707212914.31540-1-r-rivera-matos@ti.com>
-References: <20200707212914.31540-1-r-rivera-matos@ti.com>
+        id S1728606AbgGHCdc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 7 Jul 2020 22:33:32 -0400
+Received: from mx0a-00154904.pphosted.com ([148.163.133.20]:9550 "EHLO
+        mx0a-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728530AbgGHCdc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 7 Jul 2020 22:33:32 -0400
+Received: from pps.filterd (m0170389.ppops.net [127.0.0.1])
+        by mx0a-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0682W6N8011832;
+        Tue, 7 Jul 2020 22:33:31 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
+ subject : date : message-id : references : in-reply-to : content-type :
+ content-transfer-encoding : mime-version; s=smtpout1;
+ bh=453WNEVLFenePlfQdxY9hmxsb8VTxEZMoti+bi0oWcA=;
+ b=D3FVXjRVRIlT5kpdJcHZ62eTEIdMg7M6KZbZ9J5nh20YsALPvdhKbUJ44DZVLIcDiGDX
+ AVkg//kdiqysVIW4lZd8DT3wUH6/ihKlT+IdtnRYcx3QcoIYXGu+XSTEuhZTsHHL0Z72
+ pfUbQOP/dikj4OEM5DMNutlK42PyYkzosxvlM4HQkEAl+LB2uT6gzqeinXIhD7WDas9d
+ WiocjcXUq8CGCAtWHHUKVPsqU/RvtAMTiWg9kDhB7XcTrtf6m9FJh14eVXdt3LVQYjuU
+ zvXQ5ZXQObCPS/IK6gdV8pPVmdhz1PpfV/M212Yuri6gGeJM26Qit7yamBNUwgI2Ahvw aQ== 
+Received: from mx0a-00154901.pphosted.com (mx0a-00154901.pphosted.com [67.231.149.39])
+        by mx0a-00154904.pphosted.com with ESMTP id 322nskk4x9-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 07 Jul 2020 22:33:31 -0400
+Received: from pps.filterd (m0142699.ppops.net [127.0.0.1])
+        by mx0a-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0682UfrB071097;
+        Tue, 7 Jul 2020 22:33:31 -0400
+Received: from ausxipps310.us.dell.com (AUSXIPPS310.us.dell.com [143.166.148.211])
+        by mx0a-00154901.pphosted.com with ESMTP id 3255dr811n-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 07 Jul 2020 22:33:31 -0400
+X-LoopCount0: from 10.166.132.55
+X-PREM-Routing: D-Outbound
+X-IronPort-AV: E=Sophos;i="5.60,349,1549951200"; 
+   d="scan'208";a="518766826"
+From:   <Crag.Wang@dell.com>
+To:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <sre@kernel.org>
+CC:     <mathewk@chromium.org>, <Mario.Limonciello@dell.com>,
+        <crag0715@gmail.com>
+Subject: RE: [PATCH 1/1] power_supply: wilco_ec: Add permanent long life
+ charging mode
+Thread-Topic: [PATCH 1/1] power_supply: wilco_ec: Add permanent long life
+ charging mode
+Thread-Index: AQHWSTdLlppOCCC6Bki6k0A/v494M6jlsVIAgACTARD//8PXAIABEw/wgBXu6sA=
+Date:   Wed, 8 Jul 2020 02:33:26 +0000
+Message-ID: <2bb356e814f74fcc9ea6e86a50cc7c1e@KULX13MDC113.APAC.DELL.COM>
+References: <20200623082016.23188-1-crag_wang@dell.com>
+ <6a804505400e4109906fadcf945edf76@AUSX13MPC105.AMER.DELL.COM>
+ <ecda5d3852af4a1a8c08e0dc07983f35@KULX13MDC113.APAC.DELL.COM>
+ <05bbf37785bd44ce8cc8777f107b16ff@AUSX13MPC105.AMER.DELL.COM>
+ <23e76b5eda0849fdb4e1ef8b81807558@KULX13MDC113.APAC.DELL.COM>
+In-Reply-To: <23e76b5eda0849fdb4e1ef8b81807558@KULX13MDC113.APAC.DELL.COM>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_Enabled=True;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_SiteId=945c199a-83a2-4e80-9f8c-5a91be5752dd;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_Owner=Mario_Limonciello@Dell.com;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_SetDate=2020-06-23T13:48:06.9996956Z;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_Name=External Public;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_Application=Microsoft Azure
+ Information Protection;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_ActionId=f22c6ecd-fc33-4d94-beba-f01c0a6f3fa5;
+ MSIP_Label_17cb76b2-10b8-4fe1-93d4-2202842406cd_Extended_MSFT_Method=Manual
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.93.131.111]
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-07-07_15:2020-07-07,2020-07-07 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 lowpriorityscore=0
+ bulkscore=0 adultscore=0 impostorscore=0 suspectscore=0 malwarescore=0
+ priorityscore=1501 cotscore=-2147483648 spamscore=0 clxscore=1015
+ phishscore=0 mlxlogscore=627 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2004280000 definitions=main-2007080015
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 suspectscore=0 mlxscore=0
+ spamscore=0 mlxlogscore=688 malwarescore=0 adultscore=0 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2004280000
+ definitions=main-2007080015
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Murphy <dmurphy@ti.com>
+Hi kernel maintainers,=20
+I'd like to request a code review for this patch accepted, thanks.
 
-Convert the battery.txt file to yaml and fix up the examples.
-
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
----
- .../bindings/power/supply/battery.txt         |  86 +---------
- .../bindings/power/supply/battery.yaml        | 157 ++++++++++++++++++
- 2 files changed, 158 insertions(+), 85 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/power/supply/battery.yaml
-
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.txt b/Documentation/devicetree/bindings/power/supply/battery.txt
-index 5e29595edd74..a9f80cc49068 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.txt
-+++ b/Documentation/devicetree/bindings/power/supply/battery.txt
-@@ -1,87 +1,3 @@
--Battery Characteristics
--
--The devicetree battery node provides static battery characteristics.
--In smart batteries, these are typically stored in non-volatile memory
--on a fuel gauge chip. The battery node should be used where there is
--no appropriate non-volatile memory, or it is unprogrammed/incorrect.
--
--Upstream dts files should not include battery nodes, unless the battery
--represented cannot easily be replaced in the system by one of a
--different type. This prevents unpredictable, potentially harmful,
--behavior should a replacement that changes the battery type occur
--without a corresponding update to the dtb.
-+The contents of this file has been moved to battery.yaml
- 
- Please note that not all charger drivers respect all of the properties.
--
--Required Properties:
-- - compatible: Must be "simple-battery"
--
--Optional Properties:
-- - over-voltage-threshold-microvolt: battery over-voltage limit
-- - re-charge-voltage-microvolt: limit to automatically start charging again
-- - voltage-min-design-microvolt: drained battery voltage
-- - voltage-max-design-microvolt: fully charged battery voltage
-- - energy-full-design-microwatt-hours: battery design energy
-- - charge-full-design-microamp-hours: battery design capacity
-- - trickle-charge-current-microamp: current for trickle-charge phase
-- - precharge-current-microamp: current for pre-charge phase
-- - precharge-upper-limit-microvolt: limit when to change to constant charging
-- - charge-term-current-microamp: current for charge termination phase
-- - constant-charge-current-max-microamp: maximum constant input current
-- - constant-charge-voltage-max-microvolt: maximum constant input voltage
-- - factory-internal-resistance-micro-ohms: battery factory internal resistance
-- - ocv-capacity-table-0: An array providing the open circuit voltage (OCV)
--   of the battery and corresponding battery capacity percent, which is used
--   to look up battery capacity according to current OCV value. And the open
--   circuit voltage unit is microvolt.
-- - ocv-capacity-table-1: Same as ocv-capacity-table-0
-- ......
-- - ocv-capacity-table-n: Same as ocv-capacity-table-0
-- - ocv-capacity-celsius: An array containing the temperature in degree Celsius,
--   for each of the battery capacity lookup table. The first temperature value
--   specifies the OCV table 0, and the second temperature value specifies the
--   OCV table 1, and so on.
-- - resistance-temp-table: An array providing the temperature in degree Celsius
--   and corresponding battery internal resistance percent, which is used to look
--   up the resistance percent according to current temperature to get a accurate
--   batterty internal resistance in different temperatures.
--
--Battery properties are named, where possible, for the corresponding
--elements in enum power_supply_property, defined in
--https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/include/linux/power_supply.h
--
--Batteries must be referenced by chargers and/or fuel-gauges
--using a phandle. The phandle's property should be named
--"monitored-battery".
--
--Example:
--
--	bat: battery {
--		compatible = "simple-battery";
--		voltage-min-design-microvolt = <3200000>;
--		voltage-max-design-microvolt = <4200000>;
--		energy-full-design-microwatt-hours = <5290000>;
--		charge-full-design-microamp-hours = <1430000>;
--		precharge-current-microamp = <256000>;
--		charge-term-current-microamp = <128000>;
--		constant-charge-current-max-microamp = <900000>;
--		constant-charge-voltage-max-microvolt = <4200000>;
--		factory-internal-resistance-micro-ohms = <250000>;
--		ocv-capacity-celsius = <(-10) 0 10>;
--		ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>, ...;
--		ocv-capacity-table-1 = <4200000 100>, <4185000 95>, <4113000 90>, ...;
--		ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>, ...;
--		resistance-temp-table = <20 100>, <10 90>, <0 80>, <(-10) 60>;
--	};
--
--	charger: charger@11 {
--		....
--		monitored-battery = <&bat>;
--		...
--	};
--
--	fuel_gauge: fuel-gauge@22 {
--		....
--		monitored-battery = <&bat>;
--		...
--	};
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
-new file mode 100644
-index 000000000000..0b3fc8cc6163
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
-@@ -0,0 +1,157 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/power/supply/battery.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Battery Characteristics
-+
-+maintainers:
-+  - Sebastian Reichel <sre@kernel.org>
-+
-+description: |
-+  The devicetree battery node provides static battery characteristics.
-+  In smart batteries, these are typically stored in non-volatile memory
-+  on a fuel gauge chip. The battery node should be used where there is
-+  no appropriate non-volatile memory, or it is unprogrammed/incorrect.
-+
-+  Upstream dts files should not include battery nodes, unless the battery
-+  represented cannot easily be replaced in the system by one of a
-+  different type. This prevents unpredictable, potentially harmful,
-+  behavior should a replacement that changes the battery type occur
-+  without a corresponding update to the dtb.
-+
-+  Battery properties are named, where possible, for the corresponding elements
-+  in enum power_supply_property, defined in include/linux/power_supply.h
-+
-+  Batteries must be referenced by chargers and/or fuel-gauges using a phandle.
-+  The phandle's property should be named "monitored-battery".
-+
-+properties:
-+  compatible:
-+    const: simple-battery
-+
-+  over-voltage-threshold-microvolt:
-+    description: battery over-voltage limit
-+
-+  re-charge-voltage-microvolt:
-+    description: limit to automatically start charging again
-+
-+  voltage-min-design-microvolt:
-+    description: drained battery voltage
-+
-+  voltage-max-design-microvolt:
-+    description: fully charged battery voltage
-+
-+  energy-full-design-microwatt-hours:
-+    description: battery design energy
-+
-+  charge-full-design-microamp-hours:
-+    description: battery design capacity
-+
-+  trickle-charge-current-microamp:
-+    description: current for trickle-charge phase
-+
-+  precharge-current-microamp:
-+    description: current for pre-charge phase
-+
-+  precharge-upper-limit-microvolt:
-+    description: limit when to change to constant charging
-+
-+  charge-term-current-microamp:
-+    description: current for charge termination phase
-+
-+  constant-charge-current-max-microamp:
-+    description: maximum constant input current
-+
-+  constant-charge-voltage-max-microvolt:
-+    description: maximum constant input voltage
-+
-+  factory-internal-resistance-micro-ohms:
-+    description: battery factory internal resistance
-+
-+  monitored-battery:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to the battery node being monitored
-+
-+required:
-+  - compatible
-+
-+patternProperties:
-+  '^ocv-capacity-table-[0-100]$':
-+    $ref: /schemas/types.yaml#/definitions/uint32-matrix
-+    description: |
-+      An array providing the open circuit voltage (OCV)
-+      of the battery and corresponding battery capacity percent, which is used
-+      to look up battery capacity according to current OCV value. And the open
-+      circuit voltage unit is microvolt.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: open circuit voltage (OCV) in microvolts
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+  '^resistance-temp-table-[0-100]$':
-+    $ref: /schemas/types.yaml#/definitions/uint32-matrix
-+    description: |
-+      An array providing the temperature in degree Celsius
-+      and corresponding battery internal resistance percent, which is used to
-+      look up the resistance percent according to current temperature to get an
-+      accurate batterty internal resistance in different temperatures.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: internal resistance percent
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+  '^ocv-capacity-celsius-[0-100]$':
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description: |
-+      An array containing the temperature in degree Celsius,
-+      for each of the battery capacity lookup table.
-+    maxItems: 100
-+    items:
-+      items:
-+        - description: temperature in degree Celsius
-+        - description: battery capacity percent
-+          maximum: 100
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    power {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      battery:battery {
-+        compatible = "simple-battery";
-+        over-voltage-threshold-microvolt = <4500000>;
-+        re-charge-voltage-microvolt = <250000>;
-+        voltage-min-design-microvolt = <3200000>;
-+        voltage-max-design-microvolt = <4200000>;
-+        energy-full-design-microwatt-hours = <5290000>;
-+        charge-full-design-microamp-hours = <1430000>;
-+        precharge-current-microamp = <256000>;
-+        precharge-upper-limit-microvolt = <2500000>;
-+        charge-term-current-microamp = <128000>;
-+        constant-charge-current-max-microamp = <900000>;
-+        constant-charge-voltage-max-microvolt = <4200000>;
-+        factory-internal-resistance-micro-ohms = <250000>;
-+        ocv-capacity-celsius-0 = <(-10) 10>;
-+        ocv-capacity-table-0 = <4185000 100>, <4113000 95>, <4066000 90>;
-+        resistance-temp-table-0 = <20 100>, <10 90>, <0 80>, <(-10) 60>;
-+      };
-+
-+      charger@11 {
-+        reg = <0x11>;
-+        monitored-battery = <&battery>;
-+      };
-+
-+      fuel-gauge@22 {
-+        reg = <0x22>;
-+        monitored-battery = <&battery>;
-+      };
-+    };
--- 
-2.27.0
+Crag
 
