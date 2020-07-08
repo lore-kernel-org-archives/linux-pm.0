@@ -7,22 +7,22 @@ X-Spam-Status: No, score=-9.7 required=3.0 tests=HEADER_FROM_DIFFERENT_DOMAINS,
 	UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AFACC433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 07:20:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CD40C433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 07:20:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 43184206E2
-	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 07:20:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A58220760
+	for <linux-pm@archiver.kernel.org>; Wed,  8 Jul 2020 07:20:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730281AbgGHHUB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 8 Jul 2020 03:20:01 -0400
-Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:41468 "EHLO
+        id S1730319AbgGHHUL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 8 Jul 2020 03:20:11 -0400
+Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:47088 "EHLO
         smtp2207-205.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1730246AbgGHHUA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2020 03:20:00 -0400
-X-Alimail-AntiSpam: AC=SUSPECT;BC=0.5995029|-1;BR=01201311R181b1;CH=blue;DM=|SUSPECT|false|;DS=CONTINUE|ham_system_inform|0.199862-0.00729462-0.792843;FP=0|0|0|0|0|-1|-1|-1;HT=e02c03306;MF=frank@allwinnertech.com;NM=1;PH=DS;RN=33;RT=33;SR=0;TI=SMTPD_---.I-8lwqE_1594192774;
+        by vger.kernel.org with ESMTP id S1730244AbgGHHUK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 8 Jul 2020 03:20:10 -0400
+X-Alimail-AntiSpam: AC=CONTINUE;BC=0.5077057|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_regular_dialog|0.00542553-0.000588226-0.993986;FP=0|0|0|0|0|-1|-1|-1;HT=e02c03307;MF=frank@allwinnertech.com;NM=1;PH=DS;RN=33;RT=33;SR=0;TI=SMTPD_---.I-8lwqE_1594192774;
 Received: from allwinnertech.com(mailfrom:frank@allwinnertech.com fp:SMTPD_---.I-8lwqE_1594192774)
           by smtp.aliyun-inc.com(10.147.40.26);
-          Wed, 08 Jul 2020 15:19:53 +0800
+          Wed, 08 Jul 2020 15:20:02 +0800
 From:   Frank Lee <frank@allwinnertech.com>
 To:     robh+dt@kernel.org, mripard@kernel.org, wens@csie.org,
         mturquette@baylibre.com, sboyd@kernel.org,
@@ -39,9 +39,9 @@ Cc:     devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-i2c@vger.kernel.org, linux-gpio@vger.kernel.org,
         linux-pm@vger.kernel.org, huangshuosheng@allwinnertech.com,
         liyong@allwinnertech.com, Frank Lee <frank@allwinnertech.com>
-Subject: [PATCH v3 04/16] dt-bindings: pinctrl: sunxi: make gpio banks supplies required
-Date:   Wed,  8 Jul 2020 15:19:30 +0800
-Message-Id: <20200708071942.22595-5-frank@allwinnertech.com>
+Subject: [PATCH v3 07/16] dt-bindings: thermal: sun8i: Add binding for A100's THS controller
+Date:   Wed,  8 Jul 2020 15:19:33 +0800
+Message-Id: <20200708071942.22595-8-frank@allwinnertech.com>
 X-Mailer: git-send-email 2.24.0
 In-Reply-To: <20200708071942.22595-1-frank@allwinnertech.com>
 References: <20200708071942.22595-1-frank@allwinnertech.com>
@@ -52,26 +52,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Since we don't really have to care about the existing DT for boards,
-it would be great to make the gpio banks supplies required.
+Add a binding for A100's ths controller.
 
 Signed-off-by: Frank Lee <frank@allwinnertech.com>
+Reviewed-by: Yangtao Li <tiny.windzz@gmail.com>
 ---
- .../devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml         | 1 +
- 1 file changed, 1 insertion(+)
+ .../devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml       | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml b/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
-index 226aba0..c30a7b7 100644
---- a/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
-+++ b/Documentation/devicetree/bindings/pinctrl/allwinner,sun4i-a10-pinctrl.yaml
-@@ -134,6 +134,7 @@ patternProperties:
- required:
-   - "#gpio-cells"
-   - "#interrupt-cells"
-+  - "^vcc-p[a-hlm]-supply$"
-   - compatible
-   - reg
-   - interrupts
+diff --git a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
+index 8736926..9d40fc7 100644
+--- a/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
++++ b/Documentation/devicetree/bindings/thermal/allwinner,sun8i-a83t-ths.yaml
+@@ -17,6 +17,7 @@ properties:
+       - allwinner,sun8i-h3-ths
+       - allwinner,sun8i-r40-ths
+       - allwinner,sun50i-a64-ths
++      - allwinner,sun50i-a100-ths
+       - allwinner,sun50i-h5-ths
+       - allwinner,sun50i-h6-ths
+ 
+@@ -61,7 +62,9 @@ allOf:
+       properties:
+         compatible:
+           contains:
+-            const: allwinner,sun50i-h6-ths
++            enum:
++              - allwinner,sun50i-a100-ths
++              - allwinner,sun50i-h6-ths
+ 
+     then:
+       properties:
+@@ -103,6 +106,7 @@ allOf:
+               - const: allwinner,sun8i-h3-ths
+               - const: allwinner,sun8i-r40-ths
+               - const: allwinner,sun50i-a64-ths
++              - const: allwinner,sun50i-a100-ths
+               - const: allwinner,sun50i-h5-ths
+               - const: allwinner,sun50i-h6-ths
+ 
 -- 
 1.9.1
 
