@@ -2,161 +2,335 @@ Return-Path: <SRS0=XwW7=AU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIMWL_WL_HIGH,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0E019C433DF
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 05:33:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A152CC433E1
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 05:33:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E36602074A
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 05:33:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7D834206A1
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 05:33:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="nSK+YTrE"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="UuNw6Z9G"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726425AbgGIFdO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jul 2020 01:33:14 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:28587 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726376AbgGIFdN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 01:33:13 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20200709053311epoutp0313db5de0b8bb7590f9b914d7aaf1fb6b~f-qgc04rX3246432464epoutp03G
-        for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2020 05:33:11 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20200709053311epoutp0313db5de0b8bb7590f9b914d7aaf1fb6b~f-qgc04rX3246432464epoutp03G
+        id S1726247AbgGIFds (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jul 2020 01:33:48 -0400
+Received: from mailout4.samsung.com ([203.254.224.34]:21827 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726478AbgGIFdq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 01:33:46 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20200709053343epoutp049b53fcffa629e862131350d2a9658c7a~f-q_z4wSW1176711767epoutp04x
+        for <linux-pm@vger.kernel.org>; Thu,  9 Jul 2020 05:33:43 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20200709053343epoutp049b53fcffa629e862131350d2a9658c7a~f-q_z4wSW1176711767epoutp04x
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1594272791;
-        bh=X1YTmOssBERAODSAsBETo/lT7xvXnUKuUFH7w23s9GM=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=nSK+YTrEhYpQq9jHzurwJ0Eawyshff6nugLhlApRFlKb3YEf8Y/KAI1f2C/qtXVCu
-         PVePRLVC4sm5PcutyGP6veXsXavitaY5W2BcsBUffLxAUUL/9uUijTEmNCHk+VEjJP
-         o3eqcz+2dpSkVpzAVes+pehk/s/4ZTYINO5FpUS0=
+        s=mail20170921; t=1594272823;
+        bh=jVppEfmh9bYYsHLPFi/M8mOz2+V2BZCTAqg58JtkmqE=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=UuNw6Z9GfA7RyVzoSo5K1htSDGLmmpRAmviLMfQVfncmbSTITUUROUizEw2cayGmo
+         sTxQe963wH/xeRs418Jw/+kpDwoRFCNs6L6M7I7M+elfiC7muXCBPeJ/dpMmW7tm5o
+         nKFjulGcFy5sRrfW0dAfE/vErzFxoJrI4N6U2qDA=
 Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20200709053310epcas1p4d71fd0b031de9cc974cf46ffa5e297ff~f-qfuNrfY1088810888epcas1p4r;
-        Thu,  9 Jul 2020 05:33:10 +0000 (GMT)
-Received: from epsmges1p3.samsung.com (unknown [182.195.40.152]) by
-        epsnrtp1.localdomain (Postfix) with ESMTP id 4B2Pw339C0zMqYm0; Thu,  9 Jul
-        2020 05:33:07 +0000 (GMT)
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20200709053343epcas1p244cff0f7f767c50ca160c774c8707e94~f-q_U5-n-0912409124epcas1p2-;
+        Thu,  9 Jul 2020 05:33:43 +0000 (GMT)
+Received: from epsmges1p5.samsung.com (unknown [182.195.40.156]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4B2Pwh2K7VzMqYm6; Thu,  9 Jul
+        2020 05:33:40 +0000 (GMT)
 Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
-        7C.44.29173.31CA60F5; Thu,  9 Jul 2020 14:33:07 +0900 (KST)
+        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
+        6B.89.28578.43CA60F5; Thu,  9 Jul 2020 14:33:40 +0900 (KST)
 Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
         epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20200709053306epcas1p1eda05ae48fbfc875ab6bc4fc029a96c9~f-qcconfX2317323173epcas1p1a;
-        Thu,  9 Jul 2020 05:33:06 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        20200709053339epcas1p10278823f18b4650351f4e6f680d3d4a0~f-q7T7zlE2532625326epcas1p1p;
+        Thu,  9 Jul 2020 05:33:39 +0000 (GMT)
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
         epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20200709053306epsmtrp25f0ec2fb134aaeba1b3f4d323b5a24e5~f-qcb21jr0317203172epsmtrp2b;
-        Thu,  9 Jul 2020 05:33:06 +0000 (GMT)
-X-AuditID: b6c32a37-9b7ff700000071f5-7b-5f06ac1369d8
-Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        1A.F1.08382.21CA60F5; Thu,  9 Jul 2020 14:33:06 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20200709053306epsmtip2a5f8b7503a77e7f2f433c02bbae18ad3~f-qcNBlZm2921929219epsmtip2k;
-        Thu,  9 Jul 2020 05:33:06 +0000 (GMT)
-Subject: Re: [RFC PATCH 2/2] memory: samsung: exynos5422-dmc: Use delayed
- timer as default
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     lukasz.luba@arm.com, k.konieczny@samsung.com, kgene@kernel.org,
-        s.nawrocki@samsung.com, willy.mh.wolff.ml@gmail.com,
-        b.zolnierkie@samsung.com, chanwoo@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org
+        20200709053339epsmtrp2278859c062e52c0ca61415a0acfb1948~f-q7S_ht70402704027epsmtrp2R;
+        Thu,  9 Jul 2020 05:33:39 +0000 (GMT)
+X-AuditID: b6c32a39-e6f5da8000006fa2-bd-5f06ac342e3b
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        75.F6.08303.33CA60F5; Thu,  9 Jul 2020 14:33:39 +0900 (KST)
+Received: from localhost.localdomain (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20200709053339epsmtip1f622ba8ae3db66941e034d765a2420a1~f-q7DFtbv1067810678epsmtip1h;
+        Thu,  9 Jul 2020 05:33:39 +0000 (GMT)
 From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <01df3ca7-a958-57a7-6120-3d7d3f2b394e@samsung.com>
-Date:   Thu, 9 Jul 2020 14:44:31 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
-MIME-Version: 1.0
-In-Reply-To: <20200708123303.GB29033@kozik-lap>
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrHJsWRmVeSWpSXmKPExsWy7bCmnq7wGrZ4g6OvhC02zljPajHxxhUW
-        iwWfZrBa9D9+zWxx/vwGdouzTW/YLTY9vsZqcXnXHDaLz71HGC1mnN/HZLGwqYXd4nbjCjaL
-        w2/aWS2+nXjE6MDnsWbeGkaPnbPusntsWtXJ5rF5Sb1H35ZVjB6fN8kFsEVl22SkJqakFimk
-        5iXnp2TmpdsqeQfHO8ebmhkY6hpaWpgrKeQl5qbaKrn4BOi6ZeYAXaukUJaYUwoUCkgsLlbS
-        t7Mpyi8tSVXIyC8usVVKLUjJKbAs0CtOzC0uzUvXS87PtTI0MDAyBSpMyM7oumFT0MdWcWvy
-        buYGxlcsXYycHBICJhLbHmwFsrk4hAR2MErc/PSHEcL5xChx6/wasCohgW+MEvNeOcF0nN8+
-        kw2iaC+jxP6zj5khnPeMEhOWH2UFqRIWiJG4P2cnE4gtIqApcf3vd7A4s8BTJonOp6YgNpuA
-        lsT+FzfYQGx+AUWJqz8eM4LYvAJ2Env+vmEGsVkEVCQ2Nq4Hu0JUIEzi5LYWqBpBiZMzn4DF
-        OQX0Je59Wc4EMV9c4taT+VC2vMT2t3PAjpMQuMIh8e/SZ0aIF1wkXvS9Y4OwhSVeHd/CDmFL
-        SXx+txcqXi2x8uQRNojmDkaJLfsvsEIkjCX2L50MtIEDaIOmxPpd+hBhRYmdv+cyQizmk3j3
-        tYcVpERCgFeio00IokRZ4vKDu0wQtqTE4vZOtgmMSrOQvDMLyQuzkLwwC2HZAkaWVYxiqQXF
-        uempxYYFxsiRvYkRnJC1zHcwTnv7Qe8QIxMH4yFGCQ5mJRFeA0XWeCHelMTKqtSi/Pii0pzU
-        4kOMpsAAnsgsJZqcD8wJeSXxhqZGxsbGFiaGZqaGhkrivJ8WsMULCaQnlqRmp6YWpBbB9DFx
-        cEo1MJ1nOxOkybP7piPX6brMi4Yb1lwSXLUg5NiBwr8JFt0qwhWbEj5mOR0RyIxaEhqxJOiV
-        oe+MmC93Qpo3h6y8Icm0OT0j45XPa+03pqWXw6euUgji8ViyzyLtqGgpd2Xq2/B1v4OMnqk9
-        m/H40p7G1i5Vy+zOVbHy8tdUwpL3VU3kK98SvX2V28QgtUncKay/bko9mDcl+MRXidyVS64r
-        X58wi425di73bN/YZi6r9fJGMpmcQpcYgm6Vn7NJTjjBtcFwncurBaYCgUHvFihsY/5bsEje
-        M9h+i2bb/Lt/lO+1c8653JTBUNqjxB+h/OHqx9kqAneFLzx48vZUr5ba1FMpQol/NuUnzOe7
-        cZpvsxJLcUaioRZzUXEiAL/4eCpRBAAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrFIsWRmVeSWpSXmKPExsWy7bCSvK7QGrZ4g0OftS02zljPajHxxhUW
-        iwWfZrBa9D9+zWxx/vwGdouzTW/YLTY9vsZqcXnXHDaLz71HGC1mnN/HZLGwqYXd4nbjCjaL
-        w2/aWS2+nXjE6MDnsWbeGkaPnbPusntsWtXJ5rF5Sb1H35ZVjB6fN8kFsEVx2aSk5mSWpRbp
-        2yVwZXTdsCnoY6u4NXk3cwPjK5YuRk4OCQETifPbZ7J1MXJxCAnsZpRYfe87VEJSYtrFo8xd
-        jBxAtrDE4cPFEDVvGSU6HmxjB6kRFoiRuD9nJxOILSKgKXH973dWkCJmgadMEofPP2eH6HjC
-        KLHh+mNGkCo2AS2J/S9usIHY/AKKEld/QMR5Bewk9vx9wwxiswioSGxsXA92hahAmMTOJY+Z
-        IGoEJU7OfAIW5xTQl7j3ZTlYnFlAXeLPvEvMELa4xK0n86Hi8hLb385hnsAoPAtJ+ywkLbOQ
-        tMxC0rKAkWUVo2RqQXFuem6xYYFhXmq5XnFibnFpXrpecn7uJkZwdGpp7mDcvuqD3iFGJg7G
-        Q4wSHMxKIrwGiqzxQrwpiZVVqUX58UWlOanFhxilOViUxHlvFC6MExJITyxJzU5NLUgtgsky
-        cXBKNTA1xG0oKp8f3Fa3ZwKf+W6x7o0e/24VeDQ3xj6Pf/ggsr79ZPYd3ckJdwttPgXNbDz0
-        +/OeG7emMAr9YyyK2lPc1vfinEbVTZXnScJ3dq1dM2XN01XBHU3Nu/LuPTgasHxD9p5fM2d0
-        LglUmR6b6vfpl47ehn+TX25o5ErtVeXpP1ob+GsVC4vpFX/GiyU/rjZ2fKr7YusrF+j8PKfd
-        KMz49GbOJ1ef7bDaqH75E0+Tt/8+39sRHQGF66P+fdp00OCD2tVduwXPM0Ssm7lUx+Gi9mn5
-        n6FnT2zwCY/Oy0g9Jh1dtORmuTa/fPPBGU/3Fi1446aUXyK099TDO3tntpj80rwzqfrHw2e+
-        s7Nv+LY0K7EUZyQaajEXFScCAN26sRI9AwAA
-X-CMS-MailID: 20200709053306epcas1p1eda05ae48fbfc875ab6bc4fc029a96c9
+To:     lukasz.luba@arm.com, k.konieczny@samsung.com, krzk@kernel.org,
+        kgene@kernel.org
+Cc:     s.nawrocki@samsung.com, willy.mh.wolff.ml@gmail.com,
+        b.zolnierkie@samsung.com, cw00.choi@samsung.com,
+        chanwoo@kernel.org, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 1/2] PM / devfreq: Add support delayed timer for polling
+ mode
+Date:   Thu,  9 Jul 2020 14:45:03 +0900
+Message-Id: <20200709054504.656-2-cw00.choi@samsung.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200709054504.656-1-cw00.choi@samsung.com>
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFupkk+LIzCtJLcpLzFFi42LZdlhTT9dkDVu8QcMcfouNM9azWky8cYXF
+        4vqX56wWCz7NYLXof/ya2eL8+Q3sFmeb3rBbbHp8jdXi8q45bBafe48wWsw4v4/JYmFTC7vF
+        7cYVbBaH37SzWnw78YjRgd9jzbw1jB47Z91l99i0qpPNY/OSeo++LasYPT5vkgtgi8q2yUhN
+        TEktUkjNS85PycxLt1XyDo53jjc1MzDUNbS0MFdSyEvMTbVVcvEJ0HXLzAE6WUmhLDGnFCgU
+        kFhcrKRvZ1OUX1qSqpCRX1xiq5RakJJTYFmgV5yYW1yal66XnJ9rZWhgYGQKVJiQnfHkTQ9z
+        wQbzis/NP9gaGHfrdjFyckgImEh8XTmTuYuRi0NIYAejRNvxh+wgCSGBT4wSHbMVIBKfGSUe
+        XzzIBNOx5WgbI0TRLkaJB+9NIIq+MEr8ufkRrJtNQEti/4sbbCC2iECoxOx7U8FWMAvsYpL4
+        Mg1kHyeHsECQxI6Df8CmsgioSuyevBlsKq+AhUTjtSlsENvkJVZvOABWzylgKbHlxjRWkEES
+        AhM5JKatvMoIUeQi0dv9BOo8YYlXx7ewQ9hSEp/f7YUaVC2x8uQRNojmDkaJLfsvsEIkjCX2
+        L50M1MwBdJ6mxPpd+hBhRYmdv+eCzWcW4JN497WHFaREQoBXoqNNCKJEWeLyg7tQayUlFrd3
+        Qq3ykLi59ycLJFR6GCVeLm9jnsAoNwthwwJGxlWMYqkFxbnpqcWGBabIUbaJEZwmtSx3ME5/
+        +0HvECMTB+MhRgkOZiURXgNF1ngh3pTEyqrUovz4otKc1OJDjKbA0JvILCWanA9M1Hkl8Yam
+        RsbGxhYmhmamhoZK4ryfFrDFCwmkJ5akZqemFqQWwfQxcXBKNTDNNKg+t2rynq4bTx7tfDRF
+        KIJ7EwvvxdWtyy4pfBf6UaxzZ46Crk7ypppNVo8f7EhKdROPOXD1bfOmjd1xygf/qki4nBf6
+        mracZ9+TVp5Se6HShUZqKSb3ev2WAwOL60Gywd3oE6WM1WsDRcwS+P339on3tFYZx+v+5pjk
+        5Ls46DmDssCOX2qGG475WPDLeqk/dSlYL/iIoWZ27OUpuq8X9rjPzpm3Yy7LCXWX1/87bmlI
+        Tcyrn/JXfU10U0fvhtW/dPctV3hpcl3rTIrzRaU3H9ibHLKrzkokSE3kX7WP34db2e3OwczT
+        7hpHX4SftY0OT07+dqGu8q+B7SKWSeJNpdeihZdF6T40kDz5WomlOCPRUIu5qDgRAKmIjZAc
+        BAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrELMWRmVeSWpSXmKPExsWy7bCSnK7xGrZ4g61bjSw2zljPajHxxhUW
+        i+tfnrNaLPg0g9Wi//FrZovz5zewW5xtesNusenxNVaLy7vmsFl87j3CaDHj/D4mi4VNLewW
+        txtXsFkcftPOavHtxCNGB36PNfPWMHrsnHWX3WPTqk42j81L6j36tqxi9Pi8SS6ALYrLJiU1
+        J7MstUjfLoEr48mbHuaCDeYVn5t/sDUw7tbtYuTkkBAwkdhytI2xi5GLQ0hgB6PEw1eT2SES
+        khLTLh5l7mLkALKFJQ4fLgYJCwl8YpTo6vABsdkEtCT2v7jBBmKLCERKnG84ygYyh1ngGJPE
+        8rftLCAJYYEAiS97f4AVsQioSuyevJkRxOYVsJBovDaFDWKXvMTqDQeYQWxOAUuJLTemsUIs
+        s5BYP20x6wRGvgWMDKsYJVMLinPTc4sNC4zyUsv1ihNzi0vz0vWS83M3MYKDWUtrB+OeVR/0
+        DjEycTAeYpTgYFYS4TVQZI0X4k1JrKxKLcqPLyrNSS0+xCjNwaIkzvt11sI4IYH0xJLU7NTU
+        gtQimCwTB6dUA9Ok/0YHF67anKcUpPlfuST8L1vEi2kmR6cfiVkas5xTRcH2PVunb+R0d5cQ
+        95j4V68r7k2resNTfyH60vt1zAZ1XxifpXy+xzXzQ/lqOcYDkyx7MxI++5+L3zDN4Yr+JtuL
+        vg8lUx71/9SY7nPz38uf+WfUpV9V1wZve/u4mpGLyypJp6cwp+X72oNuU8O+GUyJDVTn9jx1
+        65xMfkT2wYdpW5vcVqwvkvOJPcs9ebdvnaby1KesX+Oq/m9p9b/X5Ky0dNpSg69yU66XNP3r
+        aizr+KV5cscvvl1rrZR3yJ5eJJKdztr4bWH3Qk1t8SfOJw3usQm9irs6W0N7y5OVzq78nGrr
+        WLxMHA/cnbtt6iclluKMREMt5qLiRABPWQZr1QIAAA==
+X-CMS-MailID: 20200709053339epcas1p10278823f18b4650351f4e6f680d3d4a0
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
 X-Sendblock-Type: SVC_REQ_APPROVE
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20200703061509epcas1p3e338b614c44f5d8b566dae92f11cc8cb
-References: <20200703062622.11773-1-cw00.choi@samsung.com>
-        <CGME20200703061509epcas1p3e338b614c44f5d8b566dae92f11cc8cb@epcas1p3.samsung.com>
-        <20200703062622.11773-3-cw00.choi@samsung.com>
-        <20200708123303.GB29033@kozik-lap>
+X-CMS-RootMailID: 20200709053339epcas1p10278823f18b4650351f4e6f680d3d4a0
+References: <20200709054504.656-1-cw00.choi@samsung.com>
+        <CGME20200709053339epcas1p10278823f18b4650351f4e6f680d3d4a0@epcas1p1.samsung.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Krzysztof,
+Until now, the devfreq driver using polling mode like simple_ondemand
+governor have used only deferrable timer for reducing the redundant
+power consumption. It reduces the CPU wake-up from idle due to polling mode
+which check the status of Non-CPU device.
 
-On 7/8/20 9:33 PM, Krzysztof Kozlowski wrote:
-> On Fri, Jul 03, 2020 at 03:26:22PM +0900, Chanwoo Choi wrote:
->> Use delayed timer as default instead of deferrable timer
->> in order to monitor the DMC status regardless of CPU idle.
->>
->> Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
->> ---
->>  drivers/memory/samsung/exynos5422-dmc.c | 1 +
->>  1 file changed, 1 insertion(+)
-> 
-> If you want to take this through devfreq tree, I'm fine:
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
+But, it has a problem for Non-CPU device like DMC device with DMA operation.
+Some Non-CPU device need to do monitor continuously regardless of CPU state
+in order to decide the proper next status of Non-CPU device.
 
-OK. I'll take it to devfreq-next for v5.9-rc1. Thanks.
+So, add support the delayed timer for polling mode to support
+the repetitive monitoring. The devfreq driver and user can select
+the kind of timer on either deferrable and delayed timer.
 
-> 
-> Otherwise I could grab it through samsung-soc after devfreq change ends
-> in mainline.
-> 
-> Best regards,
-> Krzysztof
-> 
-> 
+For example, change the timer type of DMC device
+based on Exynos5422-based Odroid-XU3 as following:
 
+- If want to use deferrable timer as following:
+echo deferrable > /sys/class/devfreq/10c20000.memory-controller/timer
 
+- If want to use delayed timer as following:
+echo delayed > /sys/class/devfreq/10c20000.memory-controller/timer
+
+Reviewed-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+---
+ Documentation/ABI/testing/sysfs-class-devfreq | 12 +++
+ drivers/devfreq/devfreq.c                     | 86 ++++++++++++++++++-
+ include/linux/devfreq.h                       |  9 ++
+ 3 files changed, 106 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-devfreq b/Documentation/ABI/testing/sysfs-class-devfreq
+index 9758eb85ade3..deefffb3bbe4 100644
+--- a/Documentation/ABI/testing/sysfs-class-devfreq
++++ b/Documentation/ABI/testing/sysfs-class-devfreq
+@@ -108,3 +108,15 @@ Description:
+ 		frequency requested by governors and min_freq.
+ 		The max_freq overrides min_freq because max_freq may be
+ 		used to throttle devices to avoid overheating.
++
++What:		/sys/class/devfreq/.../timer
++Date:		July 2020
++Contact:	Chanwoo Choi <cw00.choi@samsung.com>
++Description:
++		This ABI shows and stores the kind of work timer by users.
++		This work timer is used by devfreq workqueue in order to
++		monitor the device status such as utilization. The user
++		can change the work timer on runtime according to their demand
++		as following:
++			echo deferrable > /sys/class/devfreq/.../timer
++			echo delayed > /sys/class/devfreq/.../timer
+diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
+index 52b9c3e141f3..10f1543df84b 100644
+--- a/drivers/devfreq/devfreq.c
++++ b/drivers/devfreq/devfreq.c
+@@ -49,6 +49,11 @@ static LIST_HEAD(devfreq_governor_list);
+ static LIST_HEAD(devfreq_list);
+ static DEFINE_MUTEX(devfreq_list_lock);
+ 
++static const char timer_name[][DEVFREQ_NAME_LEN] = {
++	[DEVFREQ_TIMER_DEFERRABLE] = { "deferrable" },
++	[DEVFREQ_TIMER_DELAYED] = { "delayed" },
++};
++
+ /**
+  * find_device_devfreq() - find devfreq struct using device pointer
+  * @dev:	device pointer used to lookup device devfreq.
+@@ -454,7 +459,17 @@ void devfreq_monitor_start(struct devfreq *devfreq)
+ 	if (devfreq->governor->interrupt_driven)
+ 		return;
+ 
+-	INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
++	switch (devfreq->profile->timer) {
++	case DEVFREQ_TIMER_DEFERRABLE:
++		INIT_DEFERRABLE_WORK(&devfreq->work, devfreq_monitor);
++		break;
++	case DEVFREQ_TIMER_DELAYED:
++		INIT_DELAYED_WORK(&devfreq->work, devfreq_monitor);
++		break;
++	default:
++		return;
++	}
++
+ 	if (devfreq->profile->polling_ms)
+ 		queue_delayed_work(devfreq_wq, &devfreq->work,
+ 			msecs_to_jiffies(devfreq->profile->polling_ms));
+@@ -771,6 +786,11 @@ struct devfreq *devfreq_add_device(struct device *dev,
+ 	devfreq->data = data;
+ 	devfreq->nb.notifier_call = devfreq_notifier_call;
+ 
++	if (devfreq->profile->timer < 0
++		|| devfreq->profile->timer >= DEVFREQ_TIMER_NUM) {
++		goto err_out;
++	}
++
+ 	if (!devfreq->profile->max_state && !devfreq->profile->freq_table) {
+ 		mutex_unlock(&devfreq->lock);
+ 		err = set_freq_table(devfreq);
+@@ -1625,6 +1645,69 @@ static ssize_t trans_stat_store(struct device *dev,
+ }
+ static DEVICE_ATTR_RW(trans_stat);
+ 
++static ssize_t timer_show(struct device *dev,
++			     struct device_attribute *attr, char *buf)
++{
++	struct devfreq *df = to_devfreq(dev);
++
++	if (!df->governor)
++		return -EINVAL;
++
++	return sprintf(buf, "%s\n", timer_name[df->profile->timer]);
++}
++
++static ssize_t timer_store(struct device *dev, struct device_attribute *attr,
++			      const char *buf, size_t count)
++{
++	struct devfreq *df = to_devfreq(dev);
++	char str_timer[DEVFREQ_NAME_LEN + 1];
++	int timer = -1;
++	int ret = 0, i;
++
++	if (!df->governor)
++		return -EINVAL;
++
++	ret = sscanf(buf, "%16s", str_timer);
++	if (ret != 1)
++		return -EINVAL;
++
++	for (i = 0; i < DEVFREQ_TIMER_NUM; i++) {
++		if (!strncmp(timer_name[i], str_timer, DEVFREQ_NAME_LEN)) {
++			timer = i;
++			break;
++		}
++	}
++
++	if (timer < 0) {
++		ret = -EINVAL;
++		goto out;
++	}
++
++	if (df->profile->timer == timer) {
++		ret = 0;
++		goto out;
++	}
++
++	mutex_lock(&df->lock);
++	df->profile->timer = timer;
++	mutex_unlock(&df->lock);
++
++	ret = df->governor->event_handler(df, DEVFREQ_GOV_STOP, NULL);
++	if (ret) {
++		dev_warn(dev, "%s: Governor %s not stopped(%d)\n",
++			 __func__, df->governor->name, ret);
++		goto out;
++	}
++
++	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
++	if (ret)
++		dev_warn(dev, "%s: Governor %s not started(%d)\n",
++			 __func__, df->governor->name, ret);
++out:
++	return ret ? ret : count;
++}
++static DEVICE_ATTR_RW(timer);
++
+ static struct attribute *devfreq_attrs[] = {
+ 	&dev_attr_name.attr,
+ 	&dev_attr_governor.attr,
+@@ -1636,6 +1719,7 @@ static struct attribute *devfreq_attrs[] = {
+ 	&dev_attr_min_freq.attr,
+ 	&dev_attr_max_freq.attr,
+ 	&dev_attr_trans_stat.attr,
++	&dev_attr_timer.attr,
+ 	NULL,
+ };
+ ATTRIBUTE_GROUPS(devfreq);
+diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
+index 57e871a559a9..12782fbb4c25 100644
+--- a/include/linux/devfreq.h
++++ b/include/linux/devfreq.h
+@@ -31,6 +31,13 @@
+ #define	DEVFREQ_PRECHANGE		(0)
+ #define DEVFREQ_POSTCHANGE		(1)
+ 
++/* DEVFREQ work timers */
++enum devfreq_timer {
++	DEVFREQ_TIMER_DEFERRABLE = 0,
++	DEVFREQ_TIMER_DELAYED,
++	DEVFREQ_TIMER_NUM,
++};
++
+ struct devfreq;
+ struct devfreq_governor;
+ 
+@@ -70,6 +77,7 @@ struct devfreq_dev_status {
+  * @initial_freq:	The operating frequency when devfreq_add_device() is
+  *			called.
+  * @polling_ms:		The polling interval in ms. 0 disables polling.
++ * @timer:		Timer type is either deferrable or delayed timer.
+  * @target:		The device should set its operating frequency at
+  *			freq or lowest-upper-than-freq value. If freq is
+  *			higher than any operable frequency, set maximum.
+@@ -96,6 +104,7 @@ struct devfreq_dev_status {
+ struct devfreq_dev_profile {
+ 	unsigned long initial_freq;
+ 	unsigned int polling_ms;
++	enum devfreq_timer timer;
+ 
+ 	int (*target)(struct device *dev, unsigned long *freq, u32 flags);
+ 	int (*get_dev_status)(struct device *dev,
 -- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+2.17.1
+
