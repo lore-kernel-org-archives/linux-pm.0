@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-9.8 required=3.0 tests=DKIM_SIGNED,DKIM_VALID,
 	DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B179CC433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 21:51:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74111C433E5
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 21:52:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8BA6320708
-	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 21:51:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48B232076A
+	for <linux-pm@archiver.kernel.org>; Thu,  9 Jul 2020 21:52:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZxPgT4AU"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MGsAKPOe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727028AbgGIVv6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jul 2020 17:51:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59664 "EHLO
+        id S1726996AbgGIVv4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jul 2020 17:51:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59650 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726989AbgGIVv4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 17:51:56 -0400
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66D7EC08C5DC;
-        Thu,  9 Jul 2020 14:51:56 -0700 (PDT)
-Received: by mail-ed1-x541.google.com with SMTP id d15so2997801edm.10;
-        Thu, 09 Jul 2020 14:51:56 -0700 (PDT)
+        with ESMTP id S1726935AbgGIVvw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 17:51:52 -0400
+Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com [IPv6:2a00:1450:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5606AC08C5CE;
+        Thu,  9 Jul 2020 14:51:52 -0700 (PDT)
+Received: by mail-ed1-x544.google.com with SMTP id d15so2997691edm.10;
+        Thu, 09 Jul 2020 14:51:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ItfQ8L/Er3Hk4c2uSxofOAEu4o/bM64EAYLfz2K5ECQ=;
-        b=ZxPgT4AUp2+vo6mZ57j8c7IbaQnpm3m6ie3CigiT9z5eT/38nTYREAtriLTnkq8Lwf
-         4GpfBUCR+F4TwwtJDKmTMikAA1mYDkCtZnvenE0cd5r25is63mIL2oMDAwCJfIi7kttm
-         J/1DTMkeonJSRMV9ua+TFSTSS1Y8Qjsr5GUALrcsfDmNmX1QW7LyP6AxMSx3wp04RxdP
-         nTHeNyEh7Yd7TMelPlk+WfgjOwiAjrEYG2zHWnWX+mIMjXc7maFTPWUgQnKpQMV70x+o
-         IYPo6KlxpBxCqrrTZAcNZconvzQTlE3xHJpZbTfvic42kgu5iYu35H+grluIU4UdG/M8
-         DvgA==
+        bh=rujU6IuUKyP/qpmu9fxGZQc5R/2dPvNSFc6+rG5kang=;
+        b=MGsAKPOeaHvuWHlopnqYbmaTbZXu4TLmIhZSmA7GYtK1msm7XTfF1ClebJ8IlVtnMN
+         P2qF49j4pmXtZgD5m0YN4JeYgmUydgSjCS8qDjj2MVyG7tYqSd3EKbI8gYpeH2X/ecKM
+         R/L9jvs3wNnNLT121hEHWsMQUslhdiqGe9XH2LdeqIqrbvTzSWj+xE8eo6hz19AuuL7B
+         YFiR0DBign7rXiMtEbQWdUFwxNzKerVE9KhoC8bqzTHjFpbTafiIcFAFlIbKy+IF6n87
+         J/pBCLafZC+uxKC0tWbw9+MzQtCbHrVVlXrQq35JcOcWsbrv7fZPvitZXFbACA5uP3P0
+         S71w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ItfQ8L/Er3Hk4c2uSxofOAEu4o/bM64EAYLfz2K5ECQ=;
-        b=oDoHhkjQIHTQzV/vPY3ZGXH0mFSut5L6Jumyy9ANpZmhdiKPYw93K5ZqsZoYXCXdTx
-         fwGYNtRyFX/+2InFzypRkV0VyB3EFZ8X8geuVSC5pPvmKrfw7h79bUmvkxgcrKGyVCHT
-         5hSIgTJ0Sx7o+1QAObc22j31L7l/+dYdDfV4bTNLXez3tys+Tgz9sZfSziWrxokYhSVu
-         io5FJGii7O+jADOGTVYMH2CQFatFBHg7ZNjTPNRKOWs51Xtpp8VWHVyn+7MnNwk8rqtk
-         S+sTIPnlIjao0/WaXkO/mUp97Cqx5DWIZkaLH34fImEmaoAKF84n/yTM+hQKE5HeSghx
-         kIsQ==
-X-Gm-Message-State: AOAM531wbWz/FEjk/K2ZyfLJTRndWVT8aUcxFYJOj0fCTjUS+tsEV3fg
-        qZuIsBbV/CvaYVdtuiPvlME=
-X-Google-Smtp-Source: ABdhPJz3P5Adz2dZxyYUEZXHp3Fcl0wTBk1V3i80J7DWD2gRIAxKKfpvDMvc+IKU01B3QLekYTH+sA==
-X-Received: by 2002:aa7:d285:: with SMTP id w5mr46413518edq.174.1594331515142;
-        Thu, 09 Jul 2020 14:51:55 -0700 (PDT)
+        bh=rujU6IuUKyP/qpmu9fxGZQc5R/2dPvNSFc6+rG5kang=;
+        b=fNjanbjoRKjxjjSBvTn+eGd+wY/rZzHQgeNhAiGKVzYPBSbNX0PL9WpgIBva0fVmmS
+         GW20wSqQw7qcwQWrGUFYEcYsj6WPbSXOLY2au01T5N4EZajRvbVv3K/QTuaaGrOe1kh3
+         d1v6kgWBBQzjfGlz4QuZLlUlUZhrm6ENMBbg8Bb2Mgg0zydy+tmd1eLK/g9ebVHOpO2t
+         uKVXq1rUvtqeaUW97ZUU77o0NBQSSITS+gsheWADhxYj1FHgH2MfNhn9m/MqKW0DaXwJ
+         04ERKnIgrhIDRuWHAaf4pVeszxeor1Fnvx4e3mKE7cBeiHurvI+bDJqx8p7jF6FbtrR3
+         8nFg==
+X-Gm-Message-State: AOAM5332ix0H6TJEanePcQpO0yIgp0Z4VtKaaH/CCJCPFOjWqGwbgHiJ
+        aZa3zWDCr0VeekowBiTbAP7Ytj97VDk=
+X-Google-Smtp-Source: ABdhPJyb/wbopOhZ3AEUXaNOhNif4H0kDQiTFUkPGzGC2B/ydsUrgprxHHsxyxOCAuOEdLVhZ2709w==
+X-Received: by 2002:a05:6402:22f0:: with SMTP id dn16mr75165270edb.83.1594331510980;
+        Thu, 09 Jul 2020 14:51:50 -0700 (PDT)
 Received: from Ansuel-XPS.localdomain (host-87-16-250-164.retail.telecomitalia.it. [87.16.250.164])
-        by smtp.googlemail.com with ESMTPSA id e16sm2498260ejt.14.2020.07.09.14.51.53
+        by smtp.googlemail.com with ESMTPSA id e16sm2498260ejt.14.2020.07.09.14.51.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 09 Jul 2020 14:51:54 -0700 (PDT)
+        Thu, 09 Jul 2020 14:51:50 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amit.kucheria@linaro.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -65,12 +65,12 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 6/6] drivers: thermal: tsens: add set_trip support for 8960
-Date:   Thu,  9 Jul 2020 23:51:36 +0200
-Message-Id: <20200709215136.28044-7-ansuelsmth@gmail.com>
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 4/6] drivers: thermal: tsens: add interrupt support for 9860 driver
+Date:   Thu,  9 Jul 2020 23:51:34 +0200
+Message-Id: <20200709215136.28044-5-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200709215136.28044-1-ansuelsmth@gmail.com>
 References: <20200709215136.28044-1-ansuelsmth@gmail.com>
@@ -81,124 +81,276 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add custom set_trip function for 8960 needed to set trip point to the
-tsens driver for 8960 driver.
+Add interrupt support for 9860 tsens driver used to set thermal trip
+point for the system.
 
 Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
 ---
- drivers/thermal/qcom/tsens-8960.c | 78 +++++++++++++++++++++++++++++++
- 1 file changed, 78 insertions(+)
+ drivers/thermal/qcom/tsens-8960.c | 196 +++++++++++++++++++++++++++---
+ drivers/thermal/qcom/tsens.h      |   1 +
+ 2 files changed, 183 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index 2dc670206896..321791b8aabf 100644
+index 890baf1b5542..2dc670206896 100644
 --- a/drivers/thermal/qcom/tsens-8960.c
 +++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -93,6 +93,15 @@
- 						TSENS_8064_SENSOR9_EN | \
- 						TSENS_8064_SENSOR10_EN)
+@@ -8,6 +8,7 @@
+ #include <linux/bitops.h>
+ #include <linux/regmap.h>
+ #include <linux/mfd/syscon.h>
++#include <linux/interrupt.h>
+ #include <linux/thermal.h>
+ #include "tsens.h"
  
-+/* Trips: from very hot to very cold */
-+enum tsens_trip_type {
-+	TSENS_TRIP_STAGE3 = 0,
-+	TSENS_TRIP_STAGE2,
-+	TSENS_TRIP_STAGE1,
-+	TSENS_TRIP_STAGE0,
-+	TSENS_TRIP_NUM,
-+};
+@@ -27,7 +28,6 @@
+ /* CNTL_ADDR bitmasks */
+ #define EN			BIT(0)
+ #define SW_RST			BIT(1)
+-#define SENSOR0_EN		BIT(3)
+ #define SLP_CLK_ENA		BIT(26)
+ #define SLP_CLK_ENA_8660	BIT(24)
+ #define MEASURE_PERIOD		1
+@@ -41,14 +41,26 @@
+ 
+ #define THRESHOLD_ADDR		0x3624
+ /* THRESHOLD_ADDR bitmasks */
++#define THRESHOLD_MAX_CODE		0x20000
++#define THRESHOLD_MIN_CODE		0
+ #define THRESHOLD_MAX_LIMIT_SHIFT	24
+ #define THRESHOLD_MIN_LIMIT_SHIFT	16
+ #define THRESHOLD_UPPER_LIMIT_SHIFT	8
+ #define THRESHOLD_LOWER_LIMIT_SHIFT	0
++#define THRESHOLD_MAX_LIMIT_MASK	(THRESHOLD_MAX_CODE << \
++						THRESHOLD_MAX_LIMIT_SHIFT)
++#define THRESHOLD_MIN_LIMIT_MASK	(THRESHOLD_MAX_CODE << \
++						THRESHOLD_MIN_LIMIT_SHIFT)
++#define THRESHOLD_UPPER_LIMIT_MASK	(THRESHOLD_MAX_CODE << \
++						THRESHOLD_UPPER_LIMIT_SHIFT)
++#define THRESHOLD_LOWER_LIMIT_MASK	(THRESHOLD_MAX_CODE << \
++						THRESHOLD_LOWER_LIMIT_SHIFT)
+ 
+ /* Initial temperature threshold values */
+-#define LOWER_LIMIT_TH		0x50
+-#define UPPER_LIMIT_TH		0xdf
++#define LOWER_LIMIT_TH_8960	0x50
++#define UPPER_LIMIT_TH_8960	0xdf
++#define LOWER_LIMIT_TH_8064	0x9d /* 95C */
++#define UPPER_LIMIT_TH_8064	0xa6 /* 105C */
+ #define MIN_LIMIT_TH		0x0
+ #define MAX_LIMIT_TH		0xff
+ 
+@@ -57,6 +69,169 @@
+ #define TRDY_MASK		BIT(7)
+ #define TIMEOUT_US		100
+ 
++#define TSENS_EN		BIT(0)
++#define TSENS_SW_RST		BIT(1)
++#define TSENS_ADC_CLK_SEL	BIT(2)
++#define SENSOR0_EN		BIT(3)
++#define SENSOR1_EN		BIT(4)
++#define SENSOR2_EN		BIT(5)
++#define SENSOR3_EN		BIT(6)
++#define SENSOR4_EN		BIT(7)
++#define SENSORS_EN		(SENSOR0_EN | SENSOR1_EN | \
++				SENSOR2_EN | SENSOR3_EN | SENSOR4_EN)
++#define TSENS_8064_SENSOR5_EN				BIT(8)
++#define TSENS_8064_SENSOR6_EN				BIT(9)
++#define TSENS_8064_SENSOR7_EN				BIT(10)
++#define TSENS_8064_SENSOR8_EN				BIT(11)
++#define TSENS_8064_SENSOR9_EN				BIT(12)
++#define TSENS_8064_SENSOR10_EN				BIT(13)
++#define TSENS_8064_SENSORS_EN				(SENSORS_EN | \
++						TSENS_8064_SENSOR5_EN | \
++						TSENS_8064_SENSOR6_EN | \
++						TSENS_8064_SENSOR7_EN | \
++						TSENS_8064_SENSOR8_EN | \
++						TSENS_8064_SENSOR9_EN | \
++						TSENS_8064_SENSOR10_EN)
 +
- u32 tsens_8960_slope[] = {
- 			1176, 1176, 1154, 1176,
- 			1111, 1132, 1132, 1199,
-@@ -110,6 +119,16 @@ static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
- 	return adc_code * slope + offset;
- }
- 
-+static int mdegC_to_code(int degC, const struct tsens_sensor *s)
++u32 tsens_8960_slope[] = {
++			1176, 1176, 1154, 1176,
++			1111, 1132, 1132, 1199,
++			1132, 1199, 1132
++			};
++
++/* Temperature on y axis and ADC-code on x-axis */
++static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
 +{
 +	int slope, offset;
 +
 +	slope = thermal_zone_get_slope(s->tzd);
 +	offset = CAL_MDEGC - slope * s->offset;
 +
-+	return degC / slope - offset;
++	return adc_code * slope + offset;
 +}
 +
- static void notify_uspace_tsens_fn(struct work_struct *work)
- {
- 	struct tsens_sensor *s = container_of(work, struct tsens_sensor,
-@@ -442,6 +461,64 @@ static int get_temp_8960(const struct tsens_sensor *s, int *temp)
- 	return -ETIMEDOUT;
- }
- 
-+static int set_trip_temp_ipq8064(void *data, int trip, int temp)
++static void notify_uspace_tsens_fn(struct work_struct *work)
 +{
-+	unsigned int reg_th, reg_cntl;
-+	int ret, code, code_chk, hi_code, lo_code;
-+	const struct tsens_sensor *s = data;
-+	struct tsens_priv *priv = s->priv;
++	struct tsens_sensor *s = container_of(work, struct tsens_sensor,
++								notify_work);
 +
-+	code = mdegC_to_code(temp, s);
-+	code_chk = code;
++	sysfs_notify(&s->tzd->device.kobj, NULL, "type");
++}
 +
-+	if (code < THRESHOLD_MIN_CODE || code > THRESHOLD_MAX_CODE)
-+		return -EINVAL;
++static void tsens_scheduler_fn(struct work_struct *work)
++{
++	struct tsens_priv *priv =
++		container_of(work, struct tsens_priv, tsens_work);
++	unsigned int threshold, threshold_low, code, reg, sensor, mask;
++	bool upper_th_x, lower_th_x;
++	int ret;
 +
-+	ret = regmap_read(priv->tm_map, STATUS_CNTL_ADDR_8064, &reg_cntl);
++	ret = regmap_read(priv->tm_map, STATUS_CNTL_ADDR_8064, &reg);
 +	if (ret)
-+		return ret;
-+
-+	ret = regmap_read(priv->tm_map, THRESHOLD_ADDR, &reg_th);
++		return;
++	reg = reg | LOWER_STATUS_CLR | UPPER_STATUS_CLR;
++	ret = regmap_write(priv->tm_map, STATUS_CNTL_ADDR_8064, reg);
 +	if (ret)
-+		return ret;
++		return;
 +
-+	hi_code = (reg_th & THRESHOLD_UPPER_LIMIT_MASK)
-+			>> THRESHOLD_UPPER_LIMIT_SHIFT;
-+	lo_code = (reg_th & THRESHOLD_LOWER_LIMIT_MASK)
-+			>> THRESHOLD_LOWER_LIMIT_SHIFT;
++	mask = ~(LOWER_STATUS_CLR | UPPER_STATUS_CLR);
++	ret = regmap_read(priv->tm_map, THRESHOLD_ADDR, &threshold);
++	if (ret)
++		return;
++	threshold_low = (threshold & THRESHOLD_LOWER_LIMIT_MASK) >>
++			THRESHOLD_LOWER_LIMIT_SHIFT;
++	threshold = (threshold & THRESHOLD_UPPER_LIMIT_MASK) >>
++		    THRESHOLD_UPPER_LIMIT_SHIFT;
 +
-+	switch (trip) {
-+	case TSENS_TRIP_STAGE3:
-+		code <<= THRESHOLD_MAX_LIMIT_SHIFT;
-+		reg_th &= ~THRESHOLD_MAX_LIMIT_MASK;
-+		break;
-+	case TSENS_TRIP_STAGE2:
-+		if (code_chk <= lo_code)
-+			return -EINVAL;
-+		code <<= THRESHOLD_UPPER_LIMIT_SHIFT;
-+		reg_th &= ~THRESHOLD_UPPER_LIMIT_MASK;
-+		break;
-+	case TSENS_TRIP_STAGE1:
-+		if (code_chk >= hi_code)
-+			return -EINVAL;
-+		code <<= THRESHOLD_LOWER_LIMIT_SHIFT;
-+		reg_th &= ~THRESHOLD_LOWER_LIMIT_MASK;
-+		break;
-+	case TSENS_TRIP_STAGE0:
-+		code <<= THRESHOLD_MIN_LIMIT_SHIFT;
-+		reg_th &= ~THRESHOLD_MIN_LIMIT_MASK;
-+		break;
-+	default:
-+		return -EINVAL;
++	ret = regmap_read(priv->tm_map, STATUS_CNTL_ADDR_8064, &reg);
++	if (ret)
++		return;
++
++	ret = regmap_read(priv->tm_map, CNTL_ADDR, &sensor);
++	if (ret)
++		return;
++	sensor &= (uint32_t)TSENS_8064_SENSORS_EN;
++	sensor >>= SENSOR0_SHIFT;
++
++	/* Constraint: There is only 1 interrupt control register for all
++	 * 11 temperature sensor. So monitoring more than 1 sensor based
++	 * on interrupts will yield inconsistent result. To overcome this
++	 * issue we will monitor only sensor 0 which is the master sensor.
++	 */
++
++	/* Skip if the sensor is disabled */
++	if (sensor & 1) {
++		ret = regmap_read(priv->tm_map, priv->sensor[0].status, &code);
++		if (ret)
++			return;
++		upper_th_x = code >= threshold;
++		lower_th_x = code <= threshold_low;
++		if (upper_th_x)
++			mask |= UPPER_STATUS_CLR;
++		if (lower_th_x)
++			mask |= LOWER_STATUS_CLR;
++		if (upper_th_x || lower_th_x) {
++			/* Notify user space */
++			schedule_work(&priv->sensor[0].notify_work);
++			pr_debug("Trigger (%d degrees) for sensor %d\n",
++				 code_to_mdegC(code, &priv->sensor[0]), 0);
++		}
++	}
++	regmap_write(priv->tm_map, STATUS_CNTL_ADDR_8064, reg & mask);
++}
++
++static irqreturn_t tsens_isr(int irq, void *data)
++{
++	struct tsens_priv *priv = data;
++
++	schedule_work(&priv->tsens_work);
++	return IRQ_HANDLED;
++}
++
++static void hw_init(struct tsens_priv *priv)
++{
++	int ret;
++	unsigned int reg_cntl = 0, reg_cfg = 0, reg_thr = 0;
++	unsigned int reg_status_cntl = 0;
++
++	regmap_read(priv->tm_map, CNTL_ADDR, &reg_cntl);
++	regmap_write(priv->tm_map, CNTL_ADDR, reg_cntl | TSENS_SW_RST);
++
++	reg_cntl |= SLP_CLK_ENA | (MEASURE_PERIOD << 18) |
++		    (((1 << priv->num_sensors) - 1) << SENSOR0_SHIFT);
++	regmap_write(priv->tm_map, CNTL_ADDR, reg_cntl);
++	regmap_read(priv->tm_map, STATUS_CNTL_ADDR_8064, &reg_status_cntl);
++	reg_status_cntl |= LOWER_STATUS_CLR | UPPER_STATUS_CLR |
++			   MIN_STATUS_MASK | MAX_STATUS_MASK;
++	regmap_write(priv->tm_map, STATUS_CNTL_ADDR_8064, reg_status_cntl);
++	reg_cntl |= TSENS_EN;
++	regmap_write(priv->tm_map, CNTL_ADDR, reg_cntl);
++
++	regmap_read(priv->tm_map, CONFIG_ADDR, &reg_cfg);
++	if (priv->num_sensors > 1)
++		reg_cfg = (reg_cfg & ~CONFIG_MASK) | CONFIG;
++	else
++		reg_cfg = (reg_cfg & ~CONFIG_MASK) |
++			  (CONFIG << CONFIG_SHIFT_8660);
++	regmap_write(priv->tm_map, CONFIG_ADDR, reg_cfg);
++
++	reg_thr |= (LOWER_LIMIT_TH_8064 << THRESHOLD_LOWER_LIMIT_SHIFT) |
++		   (UPPER_LIMIT_TH_8064 << THRESHOLD_UPPER_LIMIT_SHIFT) |
++		   (MIN_LIMIT_TH << THRESHOLD_MIN_LIMIT_SHIFT) |
++		   (MAX_LIMIT_TH << THRESHOLD_MAX_LIMIT_SHIFT);
++
++	regmap_write(priv->tm_map, THRESHOLD_ADDR, reg_thr);
++
++	ret = devm_request_irq(priv->dev, priv->tsens_irq, tsens_isr,
++			       IRQF_TRIGGER_RISING, "tsens_interrupt", priv);
++	if (ret < 0) {
++		dev_err(priv->dev, "request_irq FAIL: %d", ret);
++		return;
 +	}
 +
-+	ret = regmap_write(priv->tm_map, THRESHOLD_ADDR, reg_th | code);
-+	if (ret)
-+		return ret;
-+
-+	return 0;
++	INIT_WORK(&priv->tsens_work, tsens_scheduler_fn);
 +}
 +
- static const struct tsens_ops ops_8960 = {
- 	.init		= init_8960,
- 	.calibrate	= calibrate_8960,
-@@ -450,6 +527,7 @@ static const struct tsens_ops ops_8960 = {
- 	.disable	= disable_8960,
- 	.suspend	= suspend_8960,
- 	.resume		= resume_8960,
-+	.set_trip_temp	= set_trip_temp_ipq8064,
- };
+ static int suspend_8960(struct tsens_priv *priv)
+ {
+ 	int ret;
+@@ -186,6 +361,8 @@ static int init_8960(struct tsens_priv *priv)
+ 		if (i >= 5)
+ 			priv->sensor[i].status = S0_STATUS_ADDR + 40;
+ 		priv->sensor[i].status += i * 4;
++		priv->sensor[i].slope = tsens_8960_slope[i];
++		INIT_WORK(&priv->sensor[i].notify_work, notify_uspace_tsens_fn);
+ 	}
  
- struct tsens_plat_data data_8960 = {
+ 	reg_cntl = SW_RST;
+@@ -236,18 +413,9 @@ static int calibrate_8960(struct tsens_priv *priv)
+ 
+ 	kfree(data);
+ 
+-	return 0;
+-}
+-
+-/* Temperature on y axis and ADC-code on x-axis */
+-static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
+-{
+-	int slope, offset;
++	hw_init(priv);
+ 
+-	slope = thermal_zone_get_slope(s->tzd);
+-	offset = CAL_MDEGC - slope * s->offset;
+-
+-	return adc_code * slope + offset;
++	return 0;
+ }
+ 
+ static int get_temp_8960(const struct tsens_sensor *s, int *temp)
+diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+index 59d01162c66a..2f145001e4d5 100644
+--- a/drivers/thermal/qcom/tsens.h
++++ b/drivers/thermal/qcom/tsens.h
+@@ -48,6 +48,7 @@ enum tsens_irq_type {
+ struct tsens_sensor {
+ 	struct tsens_priv		*priv;
+ 	struct thermal_zone_device	*tzd;
++	struct work_struct		notify_work;
+ 	int				offset;
+ 	unsigned int			hw_id;
+ 	int				slope;
 -- 
 2.27.0
 
