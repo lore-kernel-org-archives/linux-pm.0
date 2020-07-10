@@ -2,180 +2,138 @@ Return-Path: <SRS0=akx2=AV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4064EC433E6
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 12:01:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DBA5C433E4
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 12:16:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1D4442078B
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 12:01:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="NqX9lshT"
+	by mail.kernel.org (Postfix) with ESMTP id 7E8D020720
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 12:16:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726921AbgGJMBx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jul 2020 08:01:53 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49244 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726757AbgGJMBx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2020 08:01:53 -0400
-Received: from mail-vs1-xe42.google.com (mail-vs1-xe42.google.com [IPv6:2607:f8b0:4864:20::e42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AA314C08C5CE
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2020 05:01:52 -0700 (PDT)
-Received: by mail-vs1-xe42.google.com with SMTP id u133so2835903vsc.0
-        for <linux-pm@vger.kernel.org>; Fri, 10 Jul 2020 05:01:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=nzhnlPIIRMmU11ag8z5k4KmhsfXRqC/ByH3i5kzGD5E=;
-        b=NqX9lshTTKQ1DalDogOzrv0ilbJ4bQSNpAP7abUA/4W+awaSoL1T6jEcEb0P1qUnBp
-         Tz4MCKFEHjIaHw+N27I5pGZfyJ5yZwEHP0N5sywfh77Uz0Jaza2UP5xWdGxPsLgsVcTy
-         rvwuOwf5oCJNuw/Y7SMqjet7NJ2BMl71PW/ZL3TVvrrM4iGtl32SB/ZfSRDafrtQCjXe
-         1X9W9kXQEf6AV0R1imhUk16ca2XYQ7fslYEPhlbrqdUUfJ6pER6l/rzgEUnD0SU8cqu8
-         qPNd4Yagk7xMUqrhWsVoIj8sJllA9O2JMcY+Scwm2aQ9Brn1Osc1Yud/CZlHCLZRdww1
-         bThQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=nzhnlPIIRMmU11ag8z5k4KmhsfXRqC/ByH3i5kzGD5E=;
-        b=SGwPfCNaBYiPNr1d5FSJW5VC9VD1Ch4BJK6w8ckXlZL/lnwqRv4IDhHB8rDplpFInF
-         pTKBwtTMenlS3Gan6uEgdHuWowpBJ2jgWit9T5ch4ID8V8iIMfID/dUqpI9Pg+tFET9/
-         6vhmcnanDyXZK8mt0qdgesAN2xWOoudipseRolJA2INLc0ReJGYtJAtgaOf0DycovET+
-         s/NjpyRCvMFXxpyeepPO7iEgpDUVWnXu6OVTJdzlWOVpJg650laOgHxW+aCbd57PaLKj
-         oCrC/lINT2kiajzZM4/5dstHp6MdunpMbLxNWWsRHiG9AsZFBaqMI9LdIFgnQkgV7aI2
-         p7Uw==
-X-Gm-Message-State: AOAM533MQJDXtvK/tACEKpM3cXW2shkaGvdun35INO7TLEvJEdclo17W
-        +zSpcSLT8CRz7plTkUzAuDbU7G7L4wAubjhp2ghmAg==
-X-Google-Smtp-Source: ABdhPJyhFZCOi3nGD/GK5a6shrhjvGt+sCSqi9x330iUa5KCiCJfFFhlQ3eBPgov1KJkO9OBqUHBk+qhyh4XYAfbfak=
-X-Received: by 2002:a05:6102:22f3:: with SMTP id b19mr5123214vsh.191.1594382511695;
- Fri, 10 Jul 2020 05:01:51 -0700 (PDT)
+        id S1726774AbgGJMQt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Jul 2020 08:16:49 -0400
+Received: from foss.arm.com ([217.140.110.172]:42928 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726664AbgGJMQs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 10 Jul 2020 08:16:48 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BEA19C0A;
+        Fri, 10 Jul 2020 05:16:47 -0700 (PDT)
+Received: from [10.37.12.58] (unknown [10.37.12.58])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3FF483F8C6;
+        Fri, 10 Jul 2020 05:16:44 -0700 (PDT)
+Subject: Re: [PATCH v2 5/5] cpuidle: psci: Prevent domain idlestates until
+ consumers are ready
+To:     Ulf Hansson <ulf.hansson@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        linux-pm@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Benjamin Gaignard <benjamin.gaignard@st.com>,
+        Saravana Kannan <saravanak@google.com>,
+        linux-arm-kernel@lists.infradead.org
+References: <20200707125804.13030-1-ulf.hansson@linaro.org>
+ <20200707125804.13030-6-ulf.hansson@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <11a26809-1fb0-c09e-9f74-eddeec9180ff@arm.com>
+Date:   Fri, 10 Jul 2020 13:16:42 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-References: <20200610193156.20363-1-gustav.wiklander@axis.com>
- <CAPDyKFr_-ayyxAuzj92TwQmbcAVDrR6GSEQfD4HhWuUnseB0GA@mail.gmail.com> <20200710103734.GC1203263@kroah.com>
-In-Reply-To: <20200710103734.GC1203263@kroah.com>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Fri, 10 Jul 2020 14:01:15 +0200
-Message-ID: <CAPDyKFqUZwOMRv5537k2N8xiwjKgk3Fi8MB364+wVUaT-rHuEw@mail.gmail.com>
-Subject: Re: [PATCHv2] PM / Domains: Add module ref count for each consumer
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Gustav Wiklander <gustav.wiklander@axis.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
-        kernel@axis.com, Gustav Wiklander <gustavwi@axis.com>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200707125804.13030-6-ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 10 Jul 2020 at 12:37, Greg Kroah-Hartman
-<gregkh@linuxfoundation.org> wrote:
->
-> On Fri, Jul 10, 2020 at 12:18:57PM +0200, Ulf Hansson wrote:
-> > On Wed, 10 Jun 2020 at 21:32, Gustav Wiklander
-> > <gustav.wiklander@axis.com> wrote:
-> > >
-> > > From: Gustav Wiklander <gustavwi@axis.com>
-> > >
-> > > Currently a pm_domain can be unloaded without regard for consumers.
-> > > This patch adds a module dependecy for every registered consumer.
-> > > Now a power domain driver can only be unloaded if no consumers are
-> > > registered.
-> >
-> > According to the comments from Rafael, yes, this needs some further
-> > clarifications.
-> >
-> > Moreover, we also need to deal with module reference counters when
-> > adding/removing subdomains. Also pointed out by Rafael.
-> >
-> > >
-> > > Signed-off-by: Gustav Wiklander <gustavwi@axis.com>
-> > > ---
-> > > Automated setting genpd->owner when calling pm_genpd_init.
-> > > Similar to how usb_register_driver does it.
-> > >
-> > >  drivers/base/power/domain.c | 22 +++++++++++++++++-----
-> > >  include/linux/pm_domain.h   | 10 ++++++++--
-> > >  2 files changed, 25 insertions(+), 7 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-> > > index 0a01df608849..70c8b59bfed9 100644
-> > > --- a/drivers/base/power/domain.c
-> > > +++ b/drivers/base/power/domain.c
-> > > @@ -1499,11 +1499,18 @@ static int genpd_add_device(struct generic_pm_domain *genpd, struct device *dev,
-> > >         if (IS_ERR(gpd_data))
-> > >                 return PTR_ERR(gpd_data);
-> > >
-> > > +       if (!try_module_get(genpd->owner)) {
-> > > +               ret = -ENODEV;
-> > > +               goto out;
-> > > +       }
-> > > +
-> > >         gpd_data->cpu = genpd_get_cpu(genpd, base_dev);
-> > >
-> > >         ret = genpd->attach_dev ? genpd->attach_dev(genpd, dev) : 0;
-> > > -       if (ret)
-> > > +       if (ret) {
-> > > +               module_put(genpd->owner);
-> > >                 goto out;
-> > > +       }
-> > >
-> > >         genpd_lock(genpd);
-> > >
-> > > @@ -1579,6 +1586,8 @@ static int genpd_remove_device(struct generic_pm_domain *genpd,
-> > >
-> > >         genpd_free_dev_data(dev, gpd_data);
-> > >
-> > > +       module_put(genpd->owner);
-> > > +
-> > >         return 0;
-> > >
-> > >   out:
-> > > @@ -1755,15 +1764,17 @@ static void genpd_lock_init(struct generic_pm_domain *genpd)
-> > >  }
-> > >
-> > >  /**
-> > > - * pm_genpd_init - Initialize a generic I/O PM domain object.
-> > > + * __pm_genpd_init - Initialize a generic I/O PM domain object.
-> > >   * @genpd: PM domain object to initialize.
-> > >   * @gov: PM domain governor to associate with the domain (may be NULL).
-> > >   * @is_off: Initial value of the domain's power_is_off field.
-> > > + * @owner: module owner of this power domain object.
-> > >   *
-> > >   * Returns 0 on successful initialization, else a negative error code.
-> > >   */
-> > > -int pm_genpd_init(struct generic_pm_domain *genpd,
-> > > -                 struct dev_power_governor *gov, bool is_off)
-> > > +int __pm_genpd_init(struct generic_pm_domain *genpd,
-> > > +                 struct dev_power_governor *gov, bool is_off,
-> > > +                 struct module *owner)
-> >
-> > Please drop this new interface altogether. Instead we can just let the
-> > caller of pm_genpd_init() to assign genpd->owner, rather than passing
-> > it as a parameter.
->
-> No, I asked for this type of interface because it does not require any
-> developer to "remember" to set this value or not, and it does not
-> require you to go and fix the whole kernel.  This is the correct way to
-> do this, see the many other driver subsystems that do this today for
-> that reason.
 
-Well, in many cases I would agree with you, but not for genpd.
 
-We have and are still, continuously finding new configurations that
-are needed for a genpd. And we don't want a new in-parameter to be
-added each time that happens.
+On 7/7/20 1:58 PM, Ulf Hansson wrote:
+> Depending on the SoC/platform, additional devices may be part of the PSCI
+> PM domain topology. This is the case with 'qcom,rpmh-rsc' device, for
+> example, even if this is not yet visible in the corresponding DTS-files.
 
-What I have been thinking of, is to introduce a "genpd init data
-struct" that we can pass as an in-parameter at registration point
-instead. Although, I think that means a bit more work and it would not
-be fair to force Gustav to implement this.
+I was interested by your description and checked related DT
+to this device. It's probably the best what we can do in such situation
+and such requirements.
 
-Kind regards
-Uffe
+> 
+> Without going into too much details, a device like the 'qcom,rpmh-rsc' may
+> have HW constraints that needs to be obeyed to, before a domain idlestate
+> can be picked.
+> 
+> Therefore, let's implement the ->sync_state() callback to receive a
+> notification when all consumers of the PSCI PM domain providers have been
+> attached/probed to it. In this way, we can make sure all constraints from
+> all relevant devices, are taken into account before allowing a domain
+> idlestate to be picked.
+> 
+> Acked-by: Saravana Kannan <saravanak@google.com>
+> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+
+
+
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+
+> ---
+>   drivers/cpuidle/cpuidle-psci-domain.c | 14 ++++++++++++++
+>   1 file changed, 14 insertions(+)
+> 
+> diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+> index bf527d2bb4b6..b6e9649ab0da 100644
+> --- a/drivers/cpuidle/cpuidle-psci-domain.c
+> +++ b/drivers/cpuidle/cpuidle-psci-domain.c
+> @@ -27,6 +27,7 @@ struct psci_pd_provider {
+>   };
+>   
+>   static LIST_HEAD(psci_pd_providers);
+> +static bool psci_pd_allow_domain_state;
+>   
+>   static int psci_pd_power_off(struct generic_pm_domain *pd)
+>   {
+> @@ -36,6 +37,9 @@ static int psci_pd_power_off(struct generic_pm_domain *pd)
+>   	if (!state->data)
+>   		return 0;
+>   
+> +	if (!psci_pd_allow_domain_state)
+> +		return -EBUSY;
+> +
+>   	/* OSI mode is enabled, set the corresponding domain state. */
+>   	pd_state = state->data;
+>   	psci_set_domain_state(*pd_state);
+> @@ -222,6 +226,15 @@ static void psci_pd_remove_topology(struct device_node *np)
+>   	psci_pd_init_topology(np, false);
+>   }
+>   
+> +static void psci_cpuidle_domain_sync_state(struct device *dev)
+> +{
+> +	/*
+> +	 * All devices have now been attached/probed to the PM domain topology,
+> +	 * hence it's fine to allow domain states to be picked.
+> +	 */
+> +	psci_pd_allow_domain_state = true;
+> +}
+> +
+>   static const struct of_device_id psci_of_match[] = {
+>   	{ .compatible = "arm,psci-1.0" },
+>   	{}
+> @@ -289,6 +302,7 @@ static struct platform_driver psci_cpuidle_domain_driver = {
+>   	.driver = {
+>   		.name = "psci-cpuidle-domain",
+>   		.of_match_table = psci_of_match,
+> +		.sync_state = psci_cpuidle_domain_sync_state,
+>   	},
+>   };
+>   
+> 
