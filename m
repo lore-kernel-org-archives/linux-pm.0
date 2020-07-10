@@ -2,106 +2,190 @@ Return-Path: <SRS0=akx2=AV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36408C43457
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 19:46:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5D6C433E2
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 20:07:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BAA3207FF
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 19:46:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 35C752076A
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 20:07:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UN7Gn4uP"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KQpUS3RW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728454AbgGJTqj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jul 2020 15:46:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36372 "EHLO
+        id S1728067AbgGJUH2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 10 Jul 2020 16:07:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39660 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728276AbgGJTqK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2020 15:46:10 -0400
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com [IPv6:2a00:1450:4864:20::542])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7EA14C08C5DD;
-        Fri, 10 Jul 2020 12:46:10 -0700 (PDT)
-Received: by mail-ed1-x542.google.com with SMTP id by13so5512438edb.11;
-        Fri, 10 Jul 2020 12:46:10 -0700 (PDT)
+        with ESMTP id S1726867AbgGJUH2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2020 16:07:28 -0400
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF18FC08C5DC;
+        Fri, 10 Jul 2020 13:07:27 -0700 (PDT)
+Received: by mail-ed1-x543.google.com with SMTP id b15so5551060edy.7;
+        Fri, 10 Jul 2020 13:07:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Z7hfnd49qzQu+v3pW4+QTWy4zDs6kHByKCCdtVpj2B8=;
-        b=UN7Gn4uPQtMnfHppgaJpBhNkiEB9r7978G3WIOnisLXwrh2OI9cn0BCtUqf1MPwZVY
-         W2ZJhJmz2/t842wvrC1Jhh1tusoJ5T8+hffg2jWdu+jG4pSdsmJ6vN5kJQTE8OsGz8hq
-         2jPSCCNk5NziX1RpxRuwApyp5Hjfhl6pjGAxGswNZO7WmH6pQnYgP2iD28RlrSVNMmvv
-         fjErgvT8SBbvPO2YdmtXeYgIvVQsEVzur9GXwGZeZdijnTZI+eFOZW5rQBepuqlw80pj
-         XT+1icbJI2CMn155prTr+XDtVeRsyDWmi78OBlqjGCBdLZ9yk5rE8QqAAOmd9C4B2qUx
-         2sMw==
+        h=from:to:cc:references:in-reply-to:subject:date:message-id
+         :mime-version:content-transfer-encoding:thread-index
+         :content-language;
+        bh=+CqFjCkiMTTrEMmgLJvQC/nHsLPJva/2WbdazGmDbtU=;
+        b=KQpUS3RWR6SFYKtDRZ273kbQ9uITMIz9ZdfmBHBz9A0icwaPWk7rAb/sBMBRQFgRBa
+         KcX/Rviiz5ftE4zqNG64RB+X8IxFhaTJzdp41VlN3SPm+mT6PbadOSA9pdZ0igaG5g48
+         cAldkuDtYAbivpN7t4CSOOgCM/WjRkSUQR3kuxSu6gx0AApsrwaiETEOmG9sjDJmzZPi
+         9LwdXaSg11Uh4hcimoIIkTqUCDucnO5ZOeSvzdZNdHvW8+edqZr8vsT68Br1OyAiLjNP
+         99TXNTRJ5KlyUUekDdX7milIlXg6GeQmvx12oEUwDDpbX8EMAJt4lTPsEc4peOEjA4+N
+         L1sA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Z7hfnd49qzQu+v3pW4+QTWy4zDs6kHByKCCdtVpj2B8=;
-        b=guyEsEUiJhmYPhXjqS6YezBLnaYZ0OPE0eP8HuuI5z3yLcXgoR8NAUFl7dFd3tFLm+
-         qPc61xscULmTErOt8Yaaj5/10PrJ0skxPNqBVI6cYYPPZJ+POuGKhsHnzaiOjOXwBki2
-         Nn2V1KMUDgUb1//6zdVRsdOhtm6KAifLjp3duaGpZD2FtlwMU/OKW4G54JMCM+tHv4QJ
-         PhWoSeF2LlNineVeETFfo8eqVmZrC8ZEImvKiVI67+ZlBRmkIpOBu7V7oJUTJF+BjvGj
-         TdfNo3IoVAUOOQ8dIpKhIH29x3TiAjuH2zb9tzqKB08By2hk6++q8J6+6qBVVQCUGC0B
-         cSFw==
-X-Gm-Message-State: AOAM533QTsOb3Xj1KCyv6ukkj1PrCe0es3oH7tFWYtYzly/f8mdIhyaa
-        bATBehaXjEBqqJTu6ifNHrs=
-X-Google-Smtp-Source: ABdhPJykPK6hXQIbX7d3fld79E3i/oUJKENzcBCVYhZYKx1YdcxH769O2NWFAYLrpNr/TrdEOTIbWA==
-X-Received: by 2002:a05:6402:134e:: with SMTP id y14mr79734387edw.4.1594410369165;
-        Fri, 10 Jul 2020 12:46:09 -0700 (PDT)
-Received: from Ansuel-XPS.localdomain (host-87-16-250-164.retail.telecomitalia.it. [87.16.250.164])
-        by smtp.googlemail.com with ESMTPSA id kt4sm4155768ejb.48.2020.07.10.12.46.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 10 Jul 2020 12:46:08 -0700 (PDT)
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Amit Kucheria <amit.kucheria@linaro.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/6] drivers: thermal: tsens: add ipq8064 support
-Date:   Fri, 10 Jul 2020 21:45:53 +0200
-Message-Id: <20200710194558.26487-3-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200710194558.26487-1-ansuelsmth@gmail.com>
-References: <20200710194558.26487-1-ansuelsmth@gmail.com>
+        h=x-gm-message-state:from:to:cc:references:in-reply-to:subject:date
+         :message-id:mime-version:content-transfer-encoding:thread-index
+         :content-language;
+        bh=+CqFjCkiMTTrEMmgLJvQC/nHsLPJva/2WbdazGmDbtU=;
+        b=qnbRfxvBdNrNzKpfggnx299ZU+6lUpXpIDsRRPzQF1YZzj65eDpaRbBXCCbXyDhCa8
+         UKuaQO600w+tOcSLv7ZF+3l3LaGZzv6f+QkgwmBHKMWd3NcGG/Jnhts5+hNvxvqO7KWo
+         nBLPCesIDBMHVqXepsY2MeBvsy3hRoQEKxeQwrC2z8ZwQX6adIP1FTo1TPO6RnadfNlo
+         ElzfDDJkugmRx0m8QYxZv2bzGVCnjm9aTsgmYQr06APm0lM1nM49D5SxtUEnzw0ZHKSF
+         sXEfNGiokQwONY7H0+JWqRpoJGM0Lr+AQ7F+mXcfizjiWk6Ny1YwP9tL2dpANBWTtPqF
+         LxyQ==
+X-Gm-Message-State: AOAM530WvtKV+LsBxk1GoZJUQ4G201YHQ1A1QHiz2mvV3e3g9sw2/J6j
+        P6HW8o8l954/gGLbkQxpKKc=
+X-Google-Smtp-Source: ABdhPJyF2/CZ5X3guxfM+/Uff+qM6LTB72hZnQuiA9xDD+N5C423hmEZj2QKJBP3epqGirgLzA2cqg==
+X-Received: by 2002:a50:d55b:: with SMTP id f27mr41864893edj.312.1594411646388;
+        Fri, 10 Jul 2020 13:07:26 -0700 (PDT)
+Received: from AnsuelXPS (host-87-16-250-164.retail.telecomitalia.it. [87.16.250.164])
+        by smtp.gmail.com with ESMTPSA id i2sm5303716edk.30.2020.07.10.13.07.24
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 10 Jul 2020 13:07:25 -0700 (PDT)
+From:   <ansuelsmth@gmail.com>
+To:     "'Rob Herring'" <robh@kernel.org>
+Cc:     "'Amit Kucheria'" <amit.kucheria@linaro.org>,
+        "'Andy Gross'" <agross@kernel.org>,
+        "'Bjorn Andersson'" <bjorn.andersson@linaro.org>,
+        "'Zhang Rui'" <rui.zhang@intel.com>,
+        "'Daniel Lezcano'" <daniel.lezcano@linaro.org>,
+        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20200709215136.28044-1-ansuelsmth@gmail.com> <20200709215136.28044-4-ansuelsmth@gmail.com> <20200710162657.GB2743639@bogus>
+In-Reply-To: <20200710162657.GB2743639@bogus>
+Subject: R: [PATCH 3/6] dt-bindings: thermal: tsens: document ipq8064 bindings
+Date:   Fri, 10 Jul 2020 22:07:21 +0200
+Message-ID: <0ef601d656f5$b9f8e0c0$2deaa240$@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: Microsoft Outlook 16.0
+Thread-Index: AQKhcWl5bhTF+RXP3lhSldlnX/gq7QKeRUoHAWvA1uGnSreZEA==
+Content-Language: it
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Ipq8064 SoCs based use the same 8960 driver.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
----
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 39c4462e38f6..2985a064a0d1 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -907,6 +907,9 @@ static const struct of_device_id tsens_table[] = {
- 		.compatible = "qcom,msm8996-tsens",
- 		.data = &data_8996,
- 	}, {
-+		.compatible = "qcom,ipq8064-tsens",
-+		.data = &data_8060,
-+	} {
- 		.compatible = "qcom,tsens-v1",
- 		.data = &data_tsens_v1,
- 	}, {
--- 
-2.27.0
+> -----Messaggio originale-----
+> Da: Rob Herring <robh@kernel.org>
+> Inviato: venerd=EC 10 luglio 2020 18:27
+> A: Ansuel Smith <ansuelsmth@gmail.com>
+> Cc: Amit Kucheria <amit.kucheria@linaro.org>; Andy Gross
+> <agross@kernel.org>; Bjorn Andersson <bjorn.andersson@linaro.org>;
+> Zhang Rui <rui.zhang@intel.com>; Daniel Lezcano
+> <daniel.lezcano@linaro.org>; linux-pm@vger.kernel.org; linux-arm-
+> msm@vger.kernel.org; devicetree@vger.kernel.org; linux-
+> kernel@vger.kernel.org
+> Oggetto: Re: [PATCH 3/6] dt-bindings: thermal: tsens: document ipq8064
+> bindings
+>=20
+> On Thu, Jul 09, 2020 at 11:51:33PM +0200, Ansuel Smith wrote:
+> > Document the use of regmap phandle for ipq8064 SoCs
+> >
+> > Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+> > ---
+> >  .../bindings/thermal/qcom-tsens.yaml          | 51 =
+++++++++++++++++---
+> >  1 file changed, 44 insertions(+), 7 deletions(-)
+> >
+> > diff --git =
+a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > index d7be931b42d2..5ceb5d720e16 100644
+> > --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+> > @@ -24,6 +24,7 @@ properties:
+> >            - enum:
+> >                - qcom,msm8916-tsens
+> >                - qcom,msm8974-tsens
+> > +              - qcom,ipq8064-tsens
+> >            - const: qcom,tsens-v0_1
+> >
+> >        - description: v1 of TSENS
+> > @@ -47,6 +48,11 @@ properties:
+> >        - description: TM registers
+> >        - description: SROT registers
+> >
+> > +  regmap:
+> > +    description:
+> > +      Phandle to the gcc. On ipq8064 SoCs gcc and tsense share the =
+same
+> regs.
+> > +    $ref: /schemas/types.yaml#/definitions/phandle
+>=20
+> Can't you make this a child of the gcc and drop this property?
+>=20
+
+Make the thermal a child of the gcc would be a little confusing. Anyway
+making this
+a child of gcc cause the not probing of the thermal driver as it's =
+ignored
+any child of
+gcc. I pushed v2 with the fixed problem.
+
+> > +
+> >    interrupts:
+> >      minItems: 1
+> >      items:
+> > @@ -111,17 +117,48 @@ allOf:
+> >          interrupt-names:
+> >            minItems: 2
+> >
+> > -required:
+> > -  - compatible
+> > -  - reg
+> > -  - "#qcom,sensors"
+> > -  - interrupts
+> > -  - interrupt-names
+> > -  - "#thermal-sensor-cells"
+> > +  - if:
+> > +      properties:
+> > +        compatible:
+> > +          contains:
+> > +            enum:
+> > +              - qcom,ipq8064-tsens
+> > +    then:
+> > +      required:
+> > +        - compatible
+> > +        - regmap
+> > +        - "#qcom,sensors"
+> > +        - interrupts
+> > +        - interrupt-names
+> > +        - "#thermal-sensor-cells"
+> > +
+> > +    else:
+> > +      required:
+> > +        - compatible
+> > +        - reg
+> > +        - "#qcom,sensors"
+> > +        - interrupts
+> > +        - interrupt-names
+> > +        - "#thermal-sensor-cells"
+>=20
+> Keep all the common required properties and just put reg/regmap in the
+> if/then if this ends up staying.
+>=20
+> Rob
 
