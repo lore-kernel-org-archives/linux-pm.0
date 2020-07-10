@@ -2,47 +2,48 @@ Return-Path: <SRS0=akx2=AV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.5 required=3.0 tests=DKIM_INVALID,DKIM_SIGNED,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 21C4EC433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 01:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31904C433E2
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 01:58:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E70C92073A
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 01:58:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F18020748
+	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 01:58:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="gw45VV3n"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="GL2LzLdr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727939AbgGJB6I (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 9 Jul 2020 21:58:08 -0400
+        id S1727870AbgGJB56 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 9 Jul 2020 21:57:58 -0400
 Received: from mail29.static.mailgun.info ([104.130.122.29]:44219 "EHLO
         mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727910AbgGJB6H (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 21:58:07 -0400
+        by vger.kernel.org with ESMTP id S1727865AbgGJB55 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 9 Jul 2020 21:57:57 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1594346287; h=Content-Transfer-Encoding: MIME-Version:
- Message-Id: Date: Subject: Cc: To: From: Sender;
- bh=skG1sNc6a9bKW7iRy/ErFo7Z5EjunK0kUA/gn4pjeGg=; b=gw45VV3n050dgtru5ObkYysqpbm8+gkVcWAtccAMjejADDP4X9UEjk+CQ5h3Dzo8//J5Gk76
- VweuRNpBNnlmAGxA74sLJsC6yM18Oaqauo9pDPzq3XiyD+NYPclm1xyO6Ej5Y3CmC5UelXPH
- bZ5HIuEfWVTQ21axuudZS448cNo=
+ s=smtp; t=1594346277; h=Content-Transfer-Encoding: MIME-Version:
+ References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=gcqQzQVXCs7enCe/CsT0vSZrIaJ9bCn32XECqcM0XFI=; b=GL2LzLdru0cEnslPLV//8xM9ShgQWIiL+kfNL2oVfVZvphtFhgd78rzMqFUigUHkdk0LRNI8
+ MRePDXFExPFVortS/gNwlBhEm/ru5cHzQELBdfe3Ls8UWqUMvfNDNez5sP5pWqDZ3rRY0ww5
+ PYWEZgapfH/mTBwGBTxmi12X0TI=
 X-Mailgun-Sending-Ip: 104.130.122.29
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n16.prod.us-east-1.postgun.com with SMTP id
- 5f07caf278e7807b5eecf9fe (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 10 Jul 2020 01:57:06
+ smtp-out-n06.prod.us-east-1.postgun.com with SMTP id
+ 5f07caf4945d3440eef8d0ac (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 10 Jul 2020 01:57:08
  GMT
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 70C59C433C8; Fri, 10 Jul 2020 01:57:05 +0000 (UTC)
+        id 7E1FFC433C8; Fri, 10 Jul 2020 01:57:07 +0000 (UTC)
 Received: from mdtipton-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id A72B2C433C6;
-        Fri, 10 Jul 2020 01:57:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org A72B2C433C6
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id C0592C433CA;
+        Fri, 10 Jul 2020 01:57:06 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org C0592C433CA
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=mdtipton@codeaurora.org
 From:   Mike Tipton <mdtipton@codeaurora.org>
@@ -51,10 +52,12 @@ Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH v2 0/6] interconnect: qcom: Misc bcm-voter changes and fixes
-Date:   Thu,  9 Jul 2020 18:56:46 -0700
-Message-Id: <20200710015652.19206-1-mdtipton@codeaurora.org>
+Subject: [PATCH v2 4/6] interconnect: qcom: Only wait for completion in AMC/WAKE by default
+Date:   Thu,  9 Jul 2020 18:56:50 -0700
+Message-Id: <20200710015652.19206-5-mdtipton@codeaurora.org>
 X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20200710015652.19206-1-mdtipton@codeaurora.org>
+References: <20200710015652.19206-1-mdtipton@codeaurora.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -62,30 +65,30 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These changes are mostly unrelated, but there are some dependencies
-between them.
+Change the default TCS wait behavior to only wait for completion in AMC
+and WAKE. Waiting isn't necessary in the SLEEP TCS, since votes are only
+being removed in this case. Resources can be safely disabled
+asynchronously in parallel with the rest of the power collapse sequence.
+This reduces the sleep entry latency.
 
-v2:
-- New patch for generic qcom,icc.h bindings
-- New patch for documenting qcom,tcs-wait property
-- Update bcm_div() 'base' parameter from u64 to u32
+Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
+---
+ drivers/interconnect/qcom/bcm-voter.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Mike Tipton (6):
-  dt-bindings: interconnect: Add generic qcom bindings
-  dt-bindings: interconnect: Add property to set BCM TCS wait behavior
-  interconnect: qcom: Support bcm-voter-specific TCS wait behavior
-  interconnect: qcom: Only wait for completion in AMC/WAKE by default
-  interconnect: qcom: Add support for per-BCM scaling factors
-  interconnect: qcom: Fix small BW votes being truncated to zero
-
- .../bindings/interconnect/qcom,bcm-voter.yaml | 13 ++++
- drivers/interconnect/qcom/bcm-voter.c         | 63 ++++++++++++-------
- drivers/interconnect/qcom/icc-rpmh.c          |  3 +
- drivers/interconnect/qcom/icc-rpmh.h          | 20 ++----
- include/dt-bindings/interconnect/qcom,icc.h   | 26 ++++++++
- 5 files changed, 88 insertions(+), 37 deletions(-)
- create mode 100644 include/dt-bindings/interconnect/qcom,icc.h
-
+diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
+index 4bba3b42b648..d95725b9208c 100644
+--- a/drivers/interconnect/qcom/bcm-voter.c
++++ b/drivers/interconnect/qcom/bcm-voter.c
+@@ -341,7 +341,7 @@ static int qcom_icc_bcm_voter_probe(struct platform_device *pdev)
+ 	voter->np = np;
+ 
+ 	if (of_property_read_u32(np, "qcom,tcs-wait", &voter->tcs_wait))
+-		voter->tcs_wait = QCOM_ICC_TAG_ALWAYS;
++		voter->tcs_wait = QCOM_ICC_TAG_ACTIVE_ONLY;
+ 
+ 	mutex_init(&voter->lock);
+ 	INIT_LIST_HEAD(&voter->commit_list);
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
