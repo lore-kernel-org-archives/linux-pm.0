@@ -1,191 +1,111 @@
-Return-Path: <SRS0=akx2=AV=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=5Lj5=AW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,
+	CHARSET_FARAWAY_HEADER,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C5D6C433E2
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 20:07:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BC81C433E0
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 09:42:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 35C752076A
-	for <linux-pm@archiver.kernel.org>; Fri, 10 Jul 2020 20:07:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KQpUS3RW"
+	by mail.kernel.org (Postfix) with ESMTP id E46E820725
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 09:42:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728067AbgGJUH2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 10 Jul 2020 16:07:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39660 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726867AbgGJUH2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 10 Jul 2020 16:07:28 -0400
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF18FC08C5DC;
-        Fri, 10 Jul 2020 13:07:27 -0700 (PDT)
-Received: by mail-ed1-x543.google.com with SMTP id b15so5551060edy.7;
-        Fri, 10 Jul 2020 13:07:27 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:references:in-reply-to:subject:date:message-id
-         :mime-version:content-transfer-encoding:thread-index
-         :content-language;
-        bh=+CqFjCkiMTTrEMmgLJvQC/nHsLPJva/2WbdazGmDbtU=;
-        b=KQpUS3RWR6SFYKtDRZ273kbQ9uITMIz9ZdfmBHBz9A0icwaPWk7rAb/sBMBRQFgRBa
-         KcX/Rviiz5ftE4zqNG64RB+X8IxFhaTJzdp41VlN3SPm+mT6PbadOSA9pdZ0igaG5g48
-         cAldkuDtYAbivpN7t4CSOOgCM/WjRkSUQR3kuxSu6gx0AApsrwaiETEOmG9sjDJmzZPi
-         9LwdXaSg11Uh4hcimoIIkTqUCDucnO5ZOeSvzdZNdHvW8+edqZr8vsT68Br1OyAiLjNP
-         99TXNTRJ5KlyUUekDdX7milIlXg6GeQmvx12oEUwDDpbX8EMAJt4lTPsEc4peOEjA4+N
-         L1sA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:references:in-reply-to:subject:date
-         :message-id:mime-version:content-transfer-encoding:thread-index
-         :content-language;
-        bh=+CqFjCkiMTTrEMmgLJvQC/nHsLPJva/2WbdazGmDbtU=;
-        b=qnbRfxvBdNrNzKpfggnx299ZU+6lUpXpIDsRRPzQF1YZzj65eDpaRbBXCCbXyDhCa8
-         UKuaQO600w+tOcSLv7ZF+3l3LaGZzv6f+QkgwmBHKMWd3NcGG/Jnhts5+hNvxvqO7KWo
-         nBLPCesIDBMHVqXepsY2MeBvsy3hRoQEKxeQwrC2z8ZwQX6adIP1FTo1TPO6RnadfNlo
-         ElzfDDJkugmRx0m8QYxZv2bzGVCnjm9aTsgmYQr06APm0lM1nM49D5SxtUEnzw0ZHKSF
-         sXEfNGiokQwONY7H0+JWqRpoJGM0Lr+AQ7F+mXcfizjiWk6Ny1YwP9tL2dpANBWTtPqF
-         LxyQ==
-X-Gm-Message-State: AOAM530WvtKV+LsBxk1GoZJUQ4G201YHQ1A1QHiz2mvV3e3g9sw2/J6j
-        P6HW8o8l954/gGLbkQxpKKc=
-X-Google-Smtp-Source: ABdhPJyF2/CZ5X3guxfM+/Uff+qM6LTB72hZnQuiA9xDD+N5C423hmEZj2QKJBP3epqGirgLzA2cqg==
-X-Received: by 2002:a50:d55b:: with SMTP id f27mr41864893edj.312.1594411646388;
-        Fri, 10 Jul 2020 13:07:26 -0700 (PDT)
-Received: from AnsuelXPS (host-87-16-250-164.retail.telecomitalia.it. [87.16.250.164])
-        by smtp.gmail.com with ESMTPSA id i2sm5303716edk.30.2020.07.10.13.07.24
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 10 Jul 2020 13:07:25 -0700 (PDT)
-From:   <ansuelsmth@gmail.com>
-To:     "'Rob Herring'" <robh@kernel.org>
-Cc:     "'Amit Kucheria'" <amit.kucheria@linaro.org>,
-        "'Andy Gross'" <agross@kernel.org>,
-        "'Bjorn Andersson'" <bjorn.andersson@linaro.org>,
-        "'Zhang Rui'" <rui.zhang@intel.com>,
-        "'Daniel Lezcano'" <daniel.lezcano@linaro.org>,
-        <linux-pm@vger.kernel.org>, <linux-arm-msm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20200709215136.28044-1-ansuelsmth@gmail.com> <20200709215136.28044-4-ansuelsmth@gmail.com> <20200710162657.GB2743639@bogus>
-In-Reply-To: <20200710162657.GB2743639@bogus>
-Subject: R: [PATCH 3/6] dt-bindings: thermal: tsens: document ipq8064 bindings
-Date:   Fri, 10 Jul 2020 22:07:21 +0200
-Message-ID: <0ef601d656f5$b9f8e0c0$2deaa240$@gmail.com>
+        id S1727888AbgGKJmW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 11 Jul 2020 05:42:22 -0400
+Received: from outboundhk.mxmail.xiaomi.com ([207.226.244.123]:11898 "EHLO
+        xiaomi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1726262AbgGKJmW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 11 Jul 2020 05:42:22 -0400
+Received: from CNBOX05.mioffice.cn (10.237.8.125) by HKBOX1.mioffice.cn
+ (10.56.8.141) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 10 Jul
+ 2020 19:03:21 +0800
+Received: from CNBOX07.mioffice.cn (10.237.8.127) by cnbox05.mioffice.cn
+ (10.237.8.125) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 10 Jul
+ 2020 19:03:21 +0800
+Received: from CNBOX07.mioffice.cn ([10.237.8.127]) by CNBOX07.mioffice.cn
+ ([10.237.8.127]) with mapi id 15.00.1497.006; Fri, 10 Jul 2020 19:03:21 +0800
+From:   =?gb2312?B?RmVpMSBKaWFuZyC9r7fJ?= <jiangfei1@xiaomi.com>
+To:     Greg KH <gregkh@linuxfoundation.org>,
+        Qiwu Huang <yanziily@gmail.com>
+CC:     "sre@kernel.org" <sre@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        =?gb2312?B?u8bG5M7k?= <huangqiwu@xiaomi.com>
+Subject: =?gb2312?B?tPC4tDogW0V4dGVybmFsIE1haWxdUmU6IFtQQVRDSCAzLzVdIHBvd2VyOiBz?=
+ =?gb2312?B?dXBwbHk6IGNvcmU6IGFkZCB3aXJlbGVzcyBzaWduYWwgc3RyZW5ndGggcHJv?=
+ =?gb2312?Q?perty?=
+Thread-Topic: [External Mail]Re: [PATCH 3/5] power: supply: core: add wireless
+ signal strength property
+Thread-Index: AQHWVqEGcOKSTFylU0y9/k4lIRbmAKkApV9A
+Date:   Fri, 10 Jul 2020 11:03:21 +0000
+Message-ID: <42c16fa4740244a3975bfa84b04d6574@CNBOX07.mioffice.cn>
+References: <20200710084841.1933254-1-yanziily@gmail.com>
+ <20200710084841.1933254-3-yanziily@gmail.com>
+ <20200710100106.GC1197607@kroah.com>
+In-Reply-To: <20200710100106.GC1197607@kroah.com>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+x-ms-exchange-transport-fromentityheader: Hosted
+x-originating-ip: [10.237.8.11]
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: Microsoft Outlook 16.0
-Thread-Index: AQKhcWl5bhTF+RXP3lhSldlnX/gq7QKeRUoHAWvA1uGnSreZEA==
-Content-Language: it
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-> -----Messaggio originale-----
-> Da: Rob Herring <robh@kernel.org>
-> Inviato: venerd=EC 10 luglio 2020 18:27
-> A: Ansuel Smith <ansuelsmth@gmail.com>
-> Cc: Amit Kucheria <amit.kucheria@linaro.org>; Andy Gross
-> <agross@kernel.org>; Bjorn Andersson <bjorn.andersson@linaro.org>;
-> Zhang Rui <rui.zhang@intel.com>; Daniel Lezcano
-> <daniel.lezcano@linaro.org>; linux-pm@vger.kernel.org; linux-arm-
-> msm@vger.kernel.org; devicetree@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Oggetto: Re: [PATCH 3/6] dt-bindings: thermal: tsens: document ipq8064
-> bindings
->=20
-> On Thu, Jul 09, 2020 at 11:51:33PM +0200, Ansuel Smith wrote:
-> > Document the use of regmap phandle for ipq8064 SoCs
-> >
-> > Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
-> > ---
-> >  .../bindings/thermal/qcom-tsens.yaml          | 51 =
-++++++++++++++++---
-> >  1 file changed, 44 insertions(+), 7 deletions(-)
-> >
-> > diff --git =
-a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> > index d7be931b42d2..5ceb5d720e16 100644
-> > --- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> > +++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
-> > @@ -24,6 +24,7 @@ properties:
-> >            - enum:
-> >                - qcom,msm8916-tsens
-> >                - qcom,msm8974-tsens
-> > +              - qcom,ipq8064-tsens
-> >            - const: qcom,tsens-v0_1
-> >
-> >        - description: v1 of TSENS
-> > @@ -47,6 +48,11 @@ properties:
-> >        - description: TM registers
-> >        - description: SROT registers
-> >
-> > +  regmap:
-> > +    description:
-> > +      Phandle to the gcc. On ipq8064 SoCs gcc and tsense share the =
-same
-> regs.
-> > +    $ref: /schemas/types.yaml#/definitions/phandle
->=20
-> Can't you make this a child of the gcc and drop this property?
->=20
-
-Make the thermal a child of the gcc would be a little confusing. Anyway
-making this
-a child of gcc cause the not probing of the thermal driver as it's =
-ignored
-any child of
-gcc. I pushed v2 with the fixed problem.
-
-> > +
-> >    interrupts:
-> >      minItems: 1
-> >      items:
-> > @@ -111,17 +117,48 @@ allOf:
-> >          interrupt-names:
-> >            minItems: 2
-> >
-> > -required:
-> > -  - compatible
-> > -  - reg
-> > -  - "#qcom,sensors"
-> > -  - interrupts
-> > -  - interrupt-names
-> > -  - "#thermal-sensor-cells"
-> > +  - if:
-> > +      properties:
-> > +        compatible:
-> > +          contains:
-> > +            enum:
-> > +              - qcom,ipq8064-tsens
-> > +    then:
-> > +      required:
-> > +        - compatible
-> > +        - regmap
-> > +        - "#qcom,sensors"
-> > +        - interrupts
-> > +        - interrupt-names
-> > +        - "#thermal-sensor-cells"
-> > +
-> > +    else:
-> > +      required:
-> > +        - compatible
-> > +        - reg
-> > +        - "#qcom,sensors"
-> > +        - interrupts
-> > +        - interrupt-names
-> > +        - "#thermal-sensor-cells"
->=20
-> Keep all the common required properties and just put reg/regmap in the
-> if/then if this ends up staying.
->=20
-> Rob
-
+SGkgR3JlZywNCg0KL3N5cy9jbGFzcy9wb3dlcl9zdXBwbHkvPHN1cHBseV9uYW1lPi9zaWduYWxf
+c3RyZW5ndGgNCldoYXQgdW5pdHMgYXJlIHRoaXMgaW4/ICBUaGUgInZhbHVlIiBtZWFucyB3aGF0
+Pw0KDQotLT4gVW5pdCBpcyBLSFosIHRoZSByZXR1cm4gdmFsdWUgaXMgYWxzbyBpbnRlZ2VyLCB0
+aGUgInZhbHVlIiBtZWFucyB0aGUgd29ya2luZyBmcmVxdWVuY3kgb2YgcmVjZWl2ZXIgY2hpcCBv
+ZiB3aXJlbGVzcyBjaGFyZ2luZy4NCg0KQiZSDQpGZWkgSmlhbmcNCg0KLS0tLS3Tyrz+1K28/i0t
+LS0tDQq3orz+yMs6IEdyZWcgS0ggPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPg0Kt6LLzcqx
+vOQ6IDIwMjDE6jfUwjEwyNUgMTg6MDENCsrVvP7IyzogUWl3dSBIdWFuZyA8eWFuemlpbHlAZ21h
+aWwuY29tPg0Ks63LzTogc3JlQGtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsg
+bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgRmVpMSBKaWFuZyC9r7fJIDxqaWFuZ2ZlaTFA
+eGlhb21pLmNvbT47ILvGxuTO5CA8aHVhbmdxaXd1QHhpYW9taS5jb20+DQrW98ziOiBbRXh0ZXJu
+YWwgTWFpbF1SZTogW1BBVENIIDMvNV0gcG93ZXI6IHN1cHBseTogY29yZTogYWRkIHdpcmVsZXNz
+IHNpZ25hbCBzdHJlbmd0aCBwcm9wZXJ0eQ0KDQpPbiBGcmksIEp1bCAxMCwgMjAyMCBhdCAwNDo0
+ODozOVBNICswODAwLCBRaXd1IEh1YW5nIHdyb3RlOg0KPiBGcm9tOiBRaXd1IEh1YW5nIDxodWFu
+Z3Fpd3VAeGlhb21pLmNvbT4NCj4NCj4gcmVwb3J0cyB3aXJlbGVzcyBzaWduYWwgc3RyZW5ndGgu
+DQo+IFRoZSB2YWx1ZSBzaG93IGRlZ3JlZSBvZiBjb3VwbGluZyBiZXR3ZWVuIHR4IGFuZCByeC4N
+Cj4NCj4gU2lnbmVkLW9mZi1ieTogUWl3dSBIdWFuZyA8aHVhbmdxaXd1QHhpYW9taS5jb20+DQo+
+IC0tLQ0KPiAgRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1jbGFzcy1wb3dlciB8IDkg
+KysrKysrKystDQo+ICBkcml2ZXJzL3Bvd2VyL3N1cHBseS9wb3dlcl9zdXBwbHlfc3lzZnMuYyAg
+IHwgMSArDQo+ICBpbmNsdWRlL2xpbnV4L3Bvd2VyX3N1cHBseS5oICAgICAgICAgICAgICAgIHwg
+MSArDQo+ICAzIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkN
+Cj4NCj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3Mt
+cG93ZXIgYi9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWNsYXNzLXBvd2VyDQo+IGlu
+ZGV4IDIwOTljZjE5NGE4OS4uMWY0MmFhMGMwNzFlIDEwMDY0NA0KPiAtLS0gYS9Eb2N1bWVudGF0
+aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWNsYXNzLXBvd2VyDQo+ICsrKyBiL0RvY3VtZW50YXRpb24v
+QUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3MtcG93ZXINCj4gQEAgLTczMCw0ICs3MzAsMTEgQEAgRGVz
+Y3JpcHRpb246DQo+DQo+ICBBY2Nlc3M6IFJlYWQtT25seQ0KPiAgVmFsaWQgdmFsdWVzOiAiQURB
+UFRFUl9OT05FIiwgIkFEQVBURVJfU0RQIiwgIkFEQVBURVJfRENQIiwgIkFEQVBURVJfQ0RQIiwN
+Cj4gLSJBREFQVEVSX1FDMiIsICJBREFQVEVSX1FDMyIsICJBREFQVEVSX1BEIiBvciBvdGhlciBw
+cml2YXRlIGFkYXB0ZXIuDQo+IFwgTm8gbmV3bGluZSBhdCBlbmQgb2YgZmlsZQ0KPiArIkFEQVBU
+RVJfUUMyIiwgIkFEQVBURVJfUUMzIiwgIkFEQVBURVJfUEQiIG9yIG90aGVyIHByaXZhdGUgYWRh
+cHRlci4NCj4gKw0KPiArV2hhdDovc3lzL2NsYXNzL3Bvd2VyX3N1cHBseS88c3VwcGx5X25hbWU+
+L3NpZ25hbF9zdHJlbmd0aA0KPiArRGF0ZTpKdWwgMjAyMA0KPiArQ29udGFjdDpGZWkgSmlhbmcg
+PGppYW5nZmVpMUB4aWFvbWkuY29tPg0KPiArRGVzY3JpcHRpb246DQo+ICtSZXBvcnRzIHdpcmVs
+ZXNzIHNpZ25hbCBzdHJlbmd0aC4NCj4gK1RoZSB2YWx1ZSBzaG93IGRlZ3JlZSBvZiBjb3VwbGlu
+Zy4NCg0KV2hhdCB1bml0cyBhcmUgdGhpcyBpbj8gIFRoZSAidmFsdWUiIG1lYW5zIHdoYXQ/DQoN
+CnRoYW5rcywNCg0KZ3JlZyBrLWgNCiMvKioqKioqsb7Tyrz+vLDG5Li9vP66rNPQ0KHD17mry761
+xLGjw9zQxc+io6y99s/e09q3osvNuPjJz8PmtdjWt9bQwdCz9rXEuPbIy7vyyLrX6aGjvfvWucjO
+us7G5Mv7yMvS1MjOus7Qzsq9yrnTw6OosPzAqLWrsrvP3tPayKuyv7vysr+31rXY0LnCtqGiuLTW
+xqGiu/LJoreio6mxvtPKvP7W0LXE0MXPoqGjyOe5+8T6tO3K1cHLsb7Tyrz+o6zH68T6waK8tLXn
+u7C78tPKvP7NqNaqt6K8/sjLsqLJvrP9sb7Tyrz+o6EgVGhpcyBlLW1haWwgYW5kIGl0cyBhdHRh
+Y2htZW50cyBjb250YWluIGNvbmZpZGVudGlhbCBpbmZvcm1hdGlvbiBmcm9tIFhJQU9NSSwgd2hp
+Y2ggaXMgaW50ZW5kZWQgb25seSBmb3IgdGhlIHBlcnNvbiBvciBlbnRpdHkgd2hvc2UgYWRkcmVz
+cyBpcyBsaXN0ZWQgYWJvdmUuIEFueSB1c2Ugb2YgdGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBo
+ZXJlaW4gaW4gYW55IHdheSAoaW5jbHVkaW5nLCBidXQgbm90IGxpbWl0ZWQgdG8sIHRvdGFsIG9y
+IHBhcnRpYWwgZGlzY2xvc3VyZSwgcmVwcm9kdWN0aW9uLCBvciBkaXNzZW1pbmF0aW9uKSBieSBw
+ZXJzb25zIG90aGVyIHRoYW4gdGhlIGludGVuZGVkIHJlY2lwaWVudChzKSBpcyBwcm9oaWJpdGVk
+LiBJZiB5b3UgcmVjZWl2ZSB0aGlzIGUtbWFpbCBpbiBlcnJvciwgcGxlYXNlIG5vdGlmeSB0aGUg
+c2VuZGVyIGJ5IHBob25lIG9yIGVtYWlsIGltbWVkaWF0ZWx5IGFuZCBkZWxldGUgaXQhKioqKioq
+LyMNCg==
