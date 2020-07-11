@@ -2,110 +2,94 @@ Return-Path: <SRS0=5Lj5=AW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.5 required=3.0 tests=BAYES_00,
-	CHARSET_FARAWAY_HEADER,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BC81C433E0
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 09:42:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D356BC433DF
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 17:49:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E46E820725
-	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 09:42:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8DFFC206F4
+	for <linux-pm@archiver.kernel.org>; Sat, 11 Jul 2020 17:49:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=lechevalier.se header.i=@lechevalier.se header.b="M4u3Miyc"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727888AbgGKJmW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 11 Jul 2020 05:42:22 -0400
-Received: from outboundhk.mxmail.xiaomi.com ([207.226.244.123]:11898 "EHLO
-        xiaomi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726262AbgGKJmW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 11 Jul 2020 05:42:22 -0400
-Received: from CNBOX05.mioffice.cn (10.237.8.125) by HKBOX1.mioffice.cn
- (10.56.8.141) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 10 Jul
- 2020 19:03:21 +0800
-Received: from CNBOX07.mioffice.cn (10.237.8.127) by cnbox05.mioffice.cn
- (10.237.8.125) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Fri, 10 Jul
- 2020 19:03:21 +0800
-Received: from CNBOX07.mioffice.cn ([10.237.8.127]) by CNBOX07.mioffice.cn
- ([10.237.8.127]) with mapi id 15.00.1497.006; Fri, 10 Jul 2020 19:03:21 +0800
-From:   =?gb2312?B?RmVpMSBKaWFuZyC9r7fJ?= <jiangfei1@xiaomi.com>
-To:     Greg KH <gregkh@linuxfoundation.org>,
-        Qiwu Huang <yanziily@gmail.com>
-CC:     "sre@kernel.org" <sre@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        =?gb2312?B?u8bG5M7k?= <huangqiwu@xiaomi.com>
-Subject: =?gb2312?B?tPC4tDogW0V4dGVybmFsIE1haWxdUmU6IFtQQVRDSCAzLzVdIHBvd2VyOiBz?=
- =?gb2312?B?dXBwbHk6IGNvcmU6IGFkZCB3aXJlbGVzcyBzaWduYWwgc3RyZW5ndGggcHJv?=
- =?gb2312?Q?perty?=
-Thread-Topic: [External Mail]Re: [PATCH 3/5] power: supply: core: add wireless
- signal strength property
-Thread-Index: AQHWVqEGcOKSTFylU0y9/k4lIRbmAKkApV9A
-Date:   Fri, 10 Jul 2020 11:03:21 +0000
-Message-ID: <42c16fa4740244a3975bfa84b04d6574@CNBOX07.mioffice.cn>
-References: <20200710084841.1933254-1-yanziily@gmail.com>
- <20200710084841.1933254-3-yanziily@gmail.com>
- <20200710100106.GC1197607@kroah.com>
-In-Reply-To: <20200710100106.GC1197607@kroah.com>
-Accept-Language: zh-CN, en-US
-Content-Language: zh-CN
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-x-ms-exchange-transport-fromentityheader: Hosted
-x-originating-ip: [10.237.8.11]
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: base64
+        id S1728510AbgGKRtq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 11 Jul 2020 13:49:46 -0400
+Received: from mailrelay2-3.pub.mailoutpod1-cph3.one.com ([46.30.212.11]:38832
+        "EHLO mailrelay2-3.pub.mailoutpod1-cph3.one.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728507AbgGKRtp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 11 Jul 2020 13:49:45 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=lechevalier.se; s=20191106;
+        h=content-transfer-encoding:content-type:mime-version:subject:message-id:to:
+         from:date:from;
+        bh=XPY/Ygi3XaerueYBkHDnVuko1AdEHPalOWhfV5txzKM=;
+        b=M4u3MiycYmJuDpZEBNmSiEy3SdbjDX92qL7C6Q+sWi3kJC0pIV5Mnn6O9ss0p61C7SI4WaTPAlQBP
+         xvLoPx/+VInh6qf4qD7m10Ym5q+2b39BUjBYqWU4pzd3Z510AkLaJilDooeJSwWtT7a2nGDimRj7Z3
+         1h4GPp+SnsmBpM95USibfDm6vfpPQq9tr7MoRcq0YLBh6EPBN7O84T0viCRkUc/BXoEWQWiCfNepg6
+         S+aCn89oGHEsZUxXAMVubukSqnzaJrdQd33JWKZUhxAbADuK8gisCM24bLHa7iu+Mdr4WS6KJIdmFD
+         kLleSEaO6DYcGrRy7zG36nbmFYTTl5w==
+X-HalOne-Cookie: a880fdb267b37ff9f51ca5279a5cf7ed0bab0692
+X-HalOne-ID: e665811c-c39e-11ea-8888-d0431ea8a290
+Received: from [192.168.0.126] (h-131-138.a357.priv.bahnhof.se [81.170.131.138])
+        by mailrelay2.pub.mailoutpod1-cph3.one.com (Halon) with ESMTPSA
+        id e665811c-c39e-11ea-8888-d0431ea8a290;
+        Sat, 11 Jul 2020 17:49:43 +0000 (UTC)
+Date:   Sat, 11 Jul 2020 19:49:44 +0200 (GMT+02:00)
+From:   A L <mail@lechevalier.se>
+To:     linux-pm@vger.kernel.org
+Message-ID: <6dfd665.397441d8.1733eff4aa2@lechevalier.se>
+Subject: Schedutil scaling governor is missing time_in_state
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+X-Mailer: R2Mail2
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGkgR3JlZywNCg0KL3N5cy9jbGFzcy9wb3dlcl9zdXBwbHkvPHN1cHBseV9uYW1lPi9zaWduYWxf
-c3RyZW5ndGgNCldoYXQgdW5pdHMgYXJlIHRoaXMgaW4/ICBUaGUgInZhbHVlIiBtZWFucyB3aGF0
-Pw0KDQotLT4gVW5pdCBpcyBLSFosIHRoZSByZXR1cm4gdmFsdWUgaXMgYWxzbyBpbnRlZ2VyLCB0
-aGUgInZhbHVlIiBtZWFucyB0aGUgd29ya2luZyBmcmVxdWVuY3kgb2YgcmVjZWl2ZXIgY2hpcCBv
-ZiB3aXJlbGVzcyBjaGFyZ2luZy4NCg0KQiZSDQpGZWkgSmlhbmcNCg0KLS0tLS3Tyrz+1K28/i0t
-LS0tDQq3orz+yMs6IEdyZWcgS0ggPGdyZWdraEBsaW51eGZvdW5kYXRpb24ub3JnPg0Kt6LLzcqx
-vOQ6IDIwMjDE6jfUwjEwyNUgMTg6MDENCsrVvP7IyzogUWl3dSBIdWFuZyA8eWFuemlpbHlAZ21h
-aWwuY29tPg0Ks63LzTogc3JlQGtlcm5lbC5vcmc7IGxpbnV4LXBtQHZnZXIua2VybmVsLm9yZzsg
-bGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZzsgRmVpMSBKaWFuZyC9r7fJIDxqaWFuZ2ZlaTFA
-eGlhb21pLmNvbT47ILvGxuTO5CA8aHVhbmdxaXd1QHhpYW9taS5jb20+DQrW98ziOiBbRXh0ZXJu
-YWwgTWFpbF1SZTogW1BBVENIIDMvNV0gcG93ZXI6IHN1cHBseTogY29yZTogYWRkIHdpcmVsZXNz
-IHNpZ25hbCBzdHJlbmd0aCBwcm9wZXJ0eQ0KDQpPbiBGcmksIEp1bCAxMCwgMjAyMCBhdCAwNDo0
-ODozOVBNICswODAwLCBRaXd1IEh1YW5nIHdyb3RlOg0KPiBGcm9tOiBRaXd1IEh1YW5nIDxodWFu
-Z3Fpd3VAeGlhb21pLmNvbT4NCj4NCj4gcmVwb3J0cyB3aXJlbGVzcyBzaWduYWwgc3RyZW5ndGgu
-DQo+IFRoZSB2YWx1ZSBzaG93IGRlZ3JlZSBvZiBjb3VwbGluZyBiZXR3ZWVuIHR4IGFuZCByeC4N
-Cj4NCj4gU2lnbmVkLW9mZi1ieTogUWl3dSBIdWFuZyA8aHVhbmdxaXd1QHhpYW9taS5jb20+DQo+
-IC0tLQ0KPiAgRG9jdW1lbnRhdGlvbi9BQkkvdGVzdGluZy9zeXNmcy1jbGFzcy1wb3dlciB8IDkg
-KysrKysrKystDQo+ICBkcml2ZXJzL3Bvd2VyL3N1cHBseS9wb3dlcl9zdXBwbHlfc3lzZnMuYyAg
-IHwgMSArDQo+ICBpbmNsdWRlL2xpbnV4L3Bvd2VyX3N1cHBseS5oICAgICAgICAgICAgICAgIHwg
-MSArDQo+ICAzIGZpbGVzIGNoYW5nZWQsIDEwIGluc2VydGlvbnMoKyksIDEgZGVsZXRpb24oLSkN
-Cj4NCj4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24vQUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3Mt
-cG93ZXIgYi9Eb2N1bWVudGF0aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWNsYXNzLXBvd2VyDQo+IGlu
-ZGV4IDIwOTljZjE5NGE4OS4uMWY0MmFhMGMwNzFlIDEwMDY0NA0KPiAtLS0gYS9Eb2N1bWVudGF0
-aW9uL0FCSS90ZXN0aW5nL3N5c2ZzLWNsYXNzLXBvd2VyDQo+ICsrKyBiL0RvY3VtZW50YXRpb24v
-QUJJL3Rlc3Rpbmcvc3lzZnMtY2xhc3MtcG93ZXINCj4gQEAgLTczMCw0ICs3MzAsMTEgQEAgRGVz
-Y3JpcHRpb246DQo+DQo+ICBBY2Nlc3M6IFJlYWQtT25seQ0KPiAgVmFsaWQgdmFsdWVzOiAiQURB
-UFRFUl9OT05FIiwgIkFEQVBURVJfU0RQIiwgIkFEQVBURVJfRENQIiwgIkFEQVBURVJfQ0RQIiwN
-Cj4gLSJBREFQVEVSX1FDMiIsICJBREFQVEVSX1FDMyIsICJBREFQVEVSX1BEIiBvciBvdGhlciBw
-cml2YXRlIGFkYXB0ZXIuDQo+IFwgTm8gbmV3bGluZSBhdCBlbmQgb2YgZmlsZQ0KPiArIkFEQVBU
-RVJfUUMyIiwgIkFEQVBURVJfUUMzIiwgIkFEQVBURVJfUEQiIG9yIG90aGVyIHByaXZhdGUgYWRh
-cHRlci4NCj4gKw0KPiArV2hhdDovc3lzL2NsYXNzL3Bvd2VyX3N1cHBseS88c3VwcGx5X25hbWU+
-L3NpZ25hbF9zdHJlbmd0aA0KPiArRGF0ZTpKdWwgMjAyMA0KPiArQ29udGFjdDpGZWkgSmlhbmcg
-PGppYW5nZmVpMUB4aWFvbWkuY29tPg0KPiArRGVzY3JpcHRpb246DQo+ICtSZXBvcnRzIHdpcmVs
-ZXNzIHNpZ25hbCBzdHJlbmd0aC4NCj4gK1RoZSB2YWx1ZSBzaG93IGRlZ3JlZSBvZiBjb3VwbGlu
-Zy4NCg0KV2hhdCB1bml0cyBhcmUgdGhpcyBpbj8gIFRoZSAidmFsdWUiIG1lYW5zIHdoYXQ/DQoN
-CnRoYW5rcywNCg0KZ3JlZyBrLWgNCiMvKioqKioqsb7Tyrz+vLDG5Li9vP66rNPQ0KHD17mry761
-xLGjw9zQxc+io6y99s/e09q3osvNuPjJz8PmtdjWt9bQwdCz9rXEuPbIy7vyyLrX6aGjvfvWucjO
-us7G5Mv7yMvS1MjOus7Qzsq9yrnTw6OosPzAqLWrsrvP3tPayKuyv7vysr+31rXY0LnCtqGiuLTW
-xqGiu/LJoreio6mxvtPKvP7W0LXE0MXPoqGjyOe5+8T6tO3K1cHLsb7Tyrz+o6zH68T6waK8tLXn
-u7C78tPKvP7NqNaqt6K8/sjLsqLJvrP9sb7Tyrz+o6EgVGhpcyBlLW1haWwgYW5kIGl0cyBhdHRh
-Y2htZW50cyBjb250YWluIGNvbmZpZGVudGlhbCBpbmZvcm1hdGlvbiBmcm9tIFhJQU9NSSwgd2hp
-Y2ggaXMgaW50ZW5kZWQgb25seSBmb3IgdGhlIHBlcnNvbiBvciBlbnRpdHkgd2hvc2UgYWRkcmVz
-cyBpcyBsaXN0ZWQgYWJvdmUuIEFueSB1c2Ugb2YgdGhlIGluZm9ybWF0aW9uIGNvbnRhaW5lZCBo
-ZXJlaW4gaW4gYW55IHdheSAoaW5jbHVkaW5nLCBidXQgbm90IGxpbWl0ZWQgdG8sIHRvdGFsIG9y
-IHBhcnRpYWwgZGlzY2xvc3VyZSwgcmVwcm9kdWN0aW9uLCBvciBkaXNzZW1pbmF0aW9uKSBieSBw
-ZXJzb25zIG90aGVyIHRoYW4gdGhlIGludGVuZGVkIHJlY2lwaWVudChzKSBpcyBwcm9oaWJpdGVk
-LiBJZiB5b3UgcmVjZWl2ZSB0aGlzIGUtbWFpbCBpbiBlcnJvciwgcGxlYXNlIG5vdGlmeSB0aGUg
-c2VuZGVyIGJ5IHBob25lIG9yIGVtYWlsIGltbWVkaWF0ZWx5IGFuZCBkZWxldGUgaXQhKioqKioq
-LyMNCg==
+Hello,
+
+I am testing the 'schedutil' scaling govenor.
+
+So far it seems to give good results in terms of reduced thermals and energ=
+y consumption.
+
+One difference compared to 'ondemand' that I noticed is that /sys/devices/s=
+ystem/cpu/cpu*/cpufreq/stats/time_in_state is never updated. It is always e=
+mpty. This creates a problem for my munin graphs that log the average CPU f=
+requency for each core.
+
+Example with 'ondemand'
+cpu0/cpufreq/stats/time_in_state:3500000 3869872
+cpu0/cpufreq/stats/time_in_state:2300000 581995
+cpu0/cpufreq/stats/time_in_state:1600000 6895937
+cpu0/cpufreq/stats/total_trans:1746213
+cpu0/cpufreq/stats/trans_table:=C2=A0=C2=A0 From=C2=A0 :=C2=A0=C2=A0=C2=A0 =
+To
+cpu0/cpufreq/stats/trans_table:=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=
+=C2=A0 :=C2=A0=C2=A0 3500000=C2=A0=C2=A0 2300000=C2=A0=C2=A0 1600000
+cpu0/cpufreq/stats/trans_table:=C2=A0 3500000:=C2=A0=C2=A0=C2=A0=C2=A0=C2=
+=A0=C2=A0=C2=A0=C2=A0 0=C2=A0=C2=A0=C2=A0=C2=A0 49335=C2=A0=C2=A0=C2=A0=C2=
+=A0 62476
+cpu0/cpufreq/stats/trans_table:=C2=A0 2300000:=C2=A0=C2=A0=C2=A0=C2=A0 5821=
+9=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 0=C2=A0=C2=A0=C2=A0 75685=
+4
+cpu0/cpufreq/stats/trans_table:=C2=A0 1600000:=C2=A0=C2=A0=C2=A0=C2=A0 5359=
+1=C2=A0=C2=A0=C2=A0 765738=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0=C2=A0 =
+0
+
+Example with 'schedutil'
+cpu3/cpufreq/stats/time_in_state:<empty>
+cpu3/cpufreq/stats/total_trans:1751092
+cpu3/cpufreq/stats/trans_table:<empty>
+
+Is this a known problem or perhaps a design choice?
+
+This is on kernel 5.7.8 on and AMD Athlon 3000G CPU using 'acpi_cpufreq' sc=
+aling_driver.
+
+Anders
+
