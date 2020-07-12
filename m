@@ -2,28 +2,29 @@ Return-Path: <SRS0=/ay1=AX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 40FFDC433E2
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Jul 2020 16:59:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F132BC433EB
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Jul 2020 16:59:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1E03120702
-	for <linux-pm@archiver.kernel.org>; Sun, 12 Jul 2020 16:59:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D16E420702
+	for <linux-pm@archiver.kernel.org>; Sun, 12 Jul 2020 16:59:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728882AbgGLQ7c (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 12 Jul 2020 12:59:32 -0400
-Received: from foss.arm.com ([217.140.110.172]:47884 "EHLO foss.arm.com"
+        id S1729227AbgGLQ7g (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 12 Jul 2020 12:59:36 -0400
+Received: from foss.arm.com ([217.140.110.172]:47916 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728859AbgGLQ7c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 12 Jul 2020 12:59:32 -0400
+        id S1729216AbgGLQ7g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 12 Jul 2020 12:59:36 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 9299D30E;
-        Sun, 12 Jul 2020 09:59:31 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BFA1BC0A;
+        Sun, 12 Jul 2020 09:59:35 -0700 (PDT)
 Received: from e113632-lin.cambridge.arm.com (e113632-lin.cambridge.arm.com [10.1.194.46])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B043E3F7D8;
-        Sun, 12 Jul 2020 09:59:29 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DFA963F7D8;
+        Sun, 12 Jul 2020 09:59:33 -0700 (PDT)
 From:   Valentin Schneider <valentin.schneider@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org
@@ -38,10 +39,12 @@ Cc:     Russell King <linux@armlinux.org.uk>,
         Juri Lelli <juri.lelli@redhat.com>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Dietmar Eggemann <dietmar.eggemann@arm.com>
-Subject: [PATCH v2 0/3] sched, arch_topology: Thermal pressure configuration cleanup
-Date:   Sun, 12 Jul 2020 17:59:14 +0100
-Message-Id: <20200712165917.9168-1-valentin.schneider@arm.com>
+Subject: [PATCH v2 2/3] sched: Cleanup SCHED_THERMAL_PRESSURE kconfig entry
+Date:   Sun, 12 Jul 2020 17:59:16 +0100
+Message-Id: <20200712165917.9168-3-valentin.schneider@arm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200712165917.9168-1-valentin.schneider@arm.com>
+References: <20200712165917.9168-1-valentin.schneider@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -49,48 +52,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi folks,
+As Russell pointed out [1], this option is severely lacking in the
+documentation department, and figuring out if one has the required
+dependencies to benefit from turning it on is not straightforward.
 
-This stems from this thread [1] on the list. TL;DR: the thermal pressure config
-has no helpful documentation, and figuring out if the right dependencies are in
-place is not easy for a regular user. 
-
-The current landscape also paints an odd picture: arch_set_thermal_pressure() is
-hardcoded in sched/core.c, and is *not* architecture-definable, while
-arch_get_thermal_pressure() is. Patch 1 is tackling this, the rest is Kconfig
-stuff.
-
-Cheers,
-Valentin
+Make it non user-visible, and add a bit of help to it. While at it, make it
+depend on CPU_FREQ_THERMAL.
 
 [1]: https://lkml.kernel.org/r/20200603173150.GB1551@shell.armlinux.org.uk
 
-Revisions
-=========
+Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
+---
+ init/Kconfig | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-v1 -> v2
---------
-
-o Remove cpufreq_cooling.c weak function; use #define stub in sched/topology.h
-  (Vincent)
-o Hinge arm SCHED_THERMAL_PRESSURE selection on ARM_CPU_TOPOLOGY
-
-Valentin Schneider (3):
-  arch_topology, sched/core: Cleanup thermal pressure definition
-  sched: Cleanup SCHED_THERMAL_PRESSURE kconfig entry
-  arm, arm64: Select CONFIG_SCHED_THERMAL_PRESSURE
-
- arch/arm/Kconfig                  |  1 +
- arch/arm/include/asm/topology.h   |  3 ++-
- arch/arm64/Kconfig                |  1 +
- arch/arm64/include/asm/topology.h |  3 ++-
- drivers/base/arch_topology.c      | 11 +++++++++++
- include/linux/arch_topology.h     |  4 ++--
- include/linux/sched/topology.h    |  7 +++++++
- init/Kconfig                      | 15 ++++++++++++++-
- kernel/sched/core.c               | 11 -----------
- 9 files changed, 40 insertions(+), 16 deletions(-)
-
---
+diff --git a/init/Kconfig b/init/Kconfig
+index 0498af567f70..0a97d85568b2 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -492,8 +492,21 @@ config HAVE_SCHED_AVG_IRQ
+ 	depends on SMP
+ 
+ config SCHED_THERMAL_PRESSURE
+-	bool "Enable periodic averaging of thermal pressure"
++	bool
+ 	depends on SMP
++	depends on CPU_FREQ_THERMAL
++	help
++	  Select this option to enable thermal pressure accounting in the
++	  scheduler. Thermal pressure is the value conveyed to the scheduler
++	  that reflects the reduction in CPU compute capacity resulted from
++	  thermal throttling. Thermal throttling occurs when the performance of
++	  a CPU is capped due to high operating temperatures.
++
++	  If selected, the scheduler will be able to balance tasks accordingly,
++	  i.e. put less load on throttled CPUs than on non/less throttled ones.
++
++	  This requires the architecture to implement
++	  arch_set_thermal_pressure() and arch_get_thermal_pressure().
+ 
+ config BSD_PROCESS_ACCT
+ 	bool "BSD Process Accounting"
+-- 
 2.27.0
 
