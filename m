@@ -2,139 +2,243 @@ Return-Path: <SRS0=gH2j=AY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80951C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 14:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F4131C433EB
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 14:32:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5C1EF205CB
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 14:26:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CC400205CB
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 14:32:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="DdxNVY0T"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="pa6pNCMC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729681AbgGMO0r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jul 2020 10:26:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57410 "EHLO
+        id S1730039AbgGMOcv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jul 2020 10:32:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58318 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729659AbgGMO0r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2020 10:26:47 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C488C061755;
-        Mon, 13 Jul 2020 07:26:47 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id d17so18099370ljl.3;
-        Mon, 13 Jul 2020 07:26:47 -0700 (PDT)
+        with ESMTP id S1729918AbgGMOcq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2020 10:32:46 -0400
+Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com [IPv6:2607:f8b0:4864:20::842])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 060FEC061755
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2020 07:32:46 -0700 (PDT)
+Received: by mail-qt1-x842.google.com with SMTP id j10so10026457qtq.11
+        for <linux-pm@vger.kernel.org>; Mon, 13 Jul 2020 07:32:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
+        d=linaro.org; s=google;
         h=subject:to:cc:references:from:message-id:date:user-agent
          :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Fn4s2vAs0+Q1HokEV2gE1g/EmhM//ct3bpOXDHCUDTs=;
-        b=DdxNVY0T1G1+mn2kAbIXTn1g/3BjiseG4dKs2sb1aVpjlNZ6aOV94yrCr5Zl6ADfAb
-         tzSv0PB5RPR8K6qyOeDOxNH58BP1qu3Fh1xicP1f5HILnBT6JYyDkosBXDQkK4nB/tV7
-         f94sLXwdnVmkWEbCKoBvnH90Y/KcfzMgbmSnzgAecwwoIiGbqsBPZzqJeNbpGz0K5ui5
-         TwJsE99k9rPoyCwMtna8BuBysCMaRTRY2vKNa4Kjmtxk793BegqnJ/+pcvn0bxO3YYkP
-         h/UMtswnZ+Vj0g8l2DXE5+YRwQ+RTkCgDX/5ulv2A8zEfjqaDx1TKbd6vozMO7+K0Kxk
-         9UpQ==
+        bh=JV7XujCjT0WQ4wkjALKmlW731iVG+iPdV0Rii6HipsE=;
+        b=pa6pNCMCjQQsJcn6JRnuQVsJuBE0YMkf8XHeoTrN40w24whIS3UehEHKsvoDinmJTt
+         DBQ3YUhvghGYV60Xpb5xSXl2lDujV2jF6VxwOr/aDF76DRVCvd/1dCr8LbhoyVzYBV3L
+         NAFlykQunvALJ8h2nY2Kd+5ozXlNYyFr2YhUax8lCIosdi8C5gdumEjELCyqJFXo6xTQ
+         ciCmX5gM3wA8fGEja7vJdp+0XTSMxXi4wzsZPZmxax9hbegn+OdYOhrpF7BF9qG8WKCE
+         Wj/eNmqlpb8hks0b+FK0gz8HdgFmhkEOnW4f1OjEqVAwuBj04gj3DQTwT/EswUOGex76
+         jTHw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:subject:to:cc:references:from:message-id:date
          :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=Fn4s2vAs0+Q1HokEV2gE1g/EmhM//ct3bpOXDHCUDTs=;
-        b=QJ0DZc0df43xYYVDTHI4FMn2LmHGXgfbd4p3EODdEB8+6zSoSzz6r+gHROJHQcRvyC
-         DDJEMqQIz0tpAwtHsajP5Fpn6RP3qj+bnPwzYM5A+CDbHb5IFGv8DQULyzESdcp6Ptb1
-         HVadW6xF/2JB0VWUy4hkeKvfkaRdMU+mDDDq96Iz2k9sAJub4K5SvKOT+LH2tTYUUdM0
-         MIpJjrOl3ZDXxUT+TyydpyMwBuVk/L+8JnRL+BZSXJGL1RJd4i2mZ4Rez5xvWZTeJVd+
-         CxIeZxD6NO9Zx0pn9jryjHMhVpX5zWtC628T7WADiEt1ExP8X2BOYzjZdvjbWYbXLhah
-         3XFQ==
-X-Gm-Message-State: AOAM530AkLHKLtAZdooN63gixbw1qv90QAcx406JtF0Qy3h8vHU00ZXP
-        rjZb/f4QY31Ttuh6n6J0iXlJdboL
-X-Google-Smtp-Source: ABdhPJwr2PFXOt+b3R3iMyzM9LnuWUMT6Dk2EssiYoQRzB145JYWNtDHIg5SQZWiKAug25GXMtuL4Q==
-X-Received: by 2002:a2e:910c:: with SMTP id m12mr25215ljg.274.1594650405357;
-        Mon, 13 Jul 2020 07:26:45 -0700 (PDT)
-Received: from [192.168.2.145] (ppp91-79-162-105.pppoe.mtu-net.ru. [91.79.162.105])
-        by smtp.googlemail.com with ESMTPSA id c6sm4678357lff.77.2020.07.13.07.26.43
+        bh=JV7XujCjT0WQ4wkjALKmlW731iVG+iPdV0Rii6HipsE=;
+        b=rBCk+raXvSlHdIdfxxmLiTMnPOOI5cJffzd6uvLYIQ1J6gOyoEiHOwazh8tero1t6c
+         wR115mcjUO52kURZwMdIq2/gPzLStWSw6mDzezuU+aqBEdZMQ95vjDHvo7zIkSLlbUiv
+         0IiZ6Ejv1O/wahxEvX4PS1p69zqYDkLlVHT6cV7L5PW1z9it/CRR5TWcs9WBteznBIju
+         I7rc+xwnQuCGYibNLGS/2G9WSw6gFnovcrj9nXsHNAUC53sgYhjp5XgwmIDiIk/C8gVo
+         vZXLzLj79SvsD9/W+1FSGekMCuyQgbqV1IlMjfuCah/ELdgawZixpeKxrwQGP7FHq79R
+         p8SA==
+X-Gm-Message-State: AOAM532s8Ln+F1MWSqBHUxi+SoxsXFh2BHdrOqIeO7wzOL+21zMcI15A
+        2QKL7LnFOWew9R/sodxMsXEHiA==
+X-Google-Smtp-Source: ABdhPJwCpXBnQ3gVjbL3KO0uYLMvWJ4HBXi/rSe0OTG4oUjXgHWdxblMk7Zj6jjIKa89WBuHHrMrMQ==
+X-Received: by 2002:ac8:c4e:: with SMTP id l14mr70226000qti.106.1594650765164;
+        Mon, 13 Jul 2020 07:32:45 -0700 (PDT)
+Received: from [192.168.1.92] (pool-71-255-246-27.washdc.fios.verizon.net. [71.255.246.27])
+        by smtp.gmail.com with ESMTPSA id w18sm18516302qtn.3.2020.07.13.07.32.43
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 13 Jul 2020 07:26:44 -0700 (PDT)
-Subject: Re: [PATCH v2 2/2] PM / devfreq: Add governor flags to clarify the
- features
-To:     Chanwoo Choi <cw00.choi@samsung.com>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     leonard.crestez@nxp.com, lukasz.luba@arm.com,
-        enric.balletbo@collabora.com, hl@rock-chips.com,
-        thierry.reding@gmail.com, jonathanh@nvidia.com, abel.vesa@nxp.com,
-        chanwoo@kernel.org, myungjoo.ham@samsung.com,
-        kyungmin.park@samsung.com,
-        "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>
-References: <20200713083113.5595-1-cw00.choi@samsung.com>
- <CGME20200713081944epcas1p22871b6d8a9455226e6cccd08ac0baa73@epcas1p2.samsung.com>
- <20200713083113.5595-3-cw00.choi@samsung.com>
- <746837bc-6734-3e52-453f-2b59bbca0230@gmail.com>
- <69ae2524-22d0-2444-da13-fae199392029@samsung.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <3c327421-0533-c657-1887-9036e525960d@gmail.com>
-Date:   Mon, 13 Jul 2020 17:26:43 +0300
+        Mon, 13 Jul 2020 07:32:43 -0700 (PDT)
+Subject: Re: [PATCH v2 1/3] arch_topology, sched/core: Cleanup thermal
+ pressure definition
+To:     Valentin Schneider <valentin.schneider@arm.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     Russell King <linux@armlinux.org.uk>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>
+References: <20200712165917.9168-1-valentin.schneider@arm.com>
+ <20200712165917.9168-2-valentin.schneider@arm.com>
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+Message-ID: <88488b17-fd01-76e6-ae53-027c1016340b@linaro.org>
+Date:   Mon, 13 Jul 2020 10:32:42 -0400
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-In-Reply-To: <69ae2524-22d0-2444-da13-fae199392029@samsung.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20200712165917.9168-2-valentin.schneider@arm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-13.07.2020 15:26, Chanwoo Choi пишет:
-...
->> BTW, I'm curious what do you think about hiding the unsupported debugfs
+
+
+On 7/12/20 12:59 PM, Valentin Schneider wrote:
+> The following commit:
 > 
-> Do you mean that sysfs?
-
-Yes, sysfs :)
-
->> attributes per-device instead of returning the -EACCES?
+>    14533a16c46d ("thermal/cpu-cooling, sched/core: Move the arch_set_thermal_pressure() API to generic scheduler code")
 > 
-> I considered the hiding of sysfs node too instead of -EACCES.
+> moved the definition of arch_set_thermal_pressure() to sched/core.c, but
+> kept its declaration in linux/arch_topology.h. When building e.g. an x86
+> kernel with CONFIG_SCHED_THERMAL_PRESSURE=y, cpufreq_cooling.c ends up
+> getting the declaration of arch_set_thermal_pressure() from
+> include/linux/arch_topology.h, which is somewhat awkward.
+> 
+> On top of this, sched/core.c unconditionally defines
+> o The thermal_pressure percpu variable
+> o arch_set_thermal_pressure()
+> 
+> while arch_scale_thermal_pressure() does nothing unless redefined by the
+> architecture.
+> 
+> arch_*() functions are meant to be defined by architectures, so revert the
+> aforementioned commit and re-implement it in a way that keeps
+> arch_set_thermal_pressure() architecture-definable, and doesn't define the
+> thermal pressure percpu variable for kernels that don't need
+> it (CONFIG_SCHED_THERMAL_PRESSURE=n).
+> 
+> Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
+> ---
 
-If there is no real userspace (used by a non-developer crowd) that
-relies on the attributes presence, then it could be fine to change the
-behaviour, IMO.
+Reviewed-by: Thara Gopinath <thara.gopinath@linaro.org>
 
-I know that PowerTOP utility uses the 'trans_stat' attribute, but not
-sure about the other attributes.
+>   arch/arm/include/asm/topology.h   |  3 ++-
+>   arch/arm64/include/asm/topology.h |  3 ++-
+>   drivers/base/arch_topology.c      | 11 +++++++++++
+>   include/linux/arch_topology.h     |  4 ++--
+>   include/linux/sched/topology.h    |  7 +++++++
+>   kernel/sched/core.c               | 11 -----------
+>   6 files changed, 24 insertions(+), 15 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/topology.h b/arch/arm/include/asm/topology.h
+> index 435aba289fc5..e0593cf095d0 100644
+> --- a/arch/arm/include/asm/topology.h
+> +++ b/arch/arm/include/asm/topology.h
+> @@ -16,8 +16,9 @@
+>   /* Enable topology flag updates */
+>   #define arch_update_cpu_topology topology_update_cpu_topology
+>   
+> -/* Replace task scheduler's default thermal pressure retrieve API */
+> +/* Replace task scheduler's default thermal pressure API */
+>   #define arch_scale_thermal_pressure topology_get_thermal_pressure
+> +#define arch_set_thermal_pressure   topology_set_thermal_pressure
+>   
+>   #else
+>   
+> diff --git a/arch/arm64/include/asm/topology.h b/arch/arm64/include/asm/topology.h
+> index 0cc835ddfcd1..e042f6527981 100644
+> --- a/arch/arm64/include/asm/topology.h
+> +++ b/arch/arm64/include/asm/topology.h
+> @@ -34,8 +34,9 @@ void topology_scale_freq_tick(void);
+>   /* Enable topology flag updates */
+>   #define arch_update_cpu_topology topology_update_cpu_topology
+>   
+> -/* Replace task scheduler's default thermal pressure retrieve API */
+> +/* Replace task scheduler's default thermal pressure API */
+>   #define arch_scale_thermal_pressure topology_get_thermal_pressure
+> +#define arch_set_thermal_pressure   topology_set_thermal_pressure
+>   
+>   #include <asm-generic/topology.h>
+>   
+> diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
+> index 4d0a0038b476..d14cab7dfa3c 100644
+> --- a/drivers/base/arch_topology.c
+> +++ b/drivers/base/arch_topology.c
+> @@ -54,6 +54,17 @@ void topology_set_cpu_scale(unsigned int cpu, unsigned long capacity)
+>   	per_cpu(cpu_scale, cpu) = capacity;
+>   }
+>   
+> +DEFINE_PER_CPU(unsigned long, thermal_pressure);
+> +
+> +void arch_set_thermal_pressure(const struct cpumask *cpus,
+> +			       unsigned long th_pressure)
+> +{
+> +	int cpu;
+> +
+> +	for_each_cpu(cpu, cpus)
+> +		WRITE_ONCE(per_cpu(thermal_pressure, cpu), th_pressure);
+> +}
+> +
+>   static ssize_t cpu_capacity_show(struct device *dev,
+>   				 struct device_attribute *attr,
+>   				 char *buf)
+> diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
+> index 0566cb3314ef..69b1dabe39dc 100644
+> --- a/include/linux/arch_topology.h
+> +++ b/include/linux/arch_topology.h
+> @@ -39,8 +39,8 @@ static inline unsigned long topology_get_thermal_pressure(int cpu)
+>   	return per_cpu(thermal_pressure, cpu);
+>   }
+>   
+> -void arch_set_thermal_pressure(struct cpumask *cpus,
+> -			       unsigned long th_pressure);
+> +void topology_set_thermal_pressure(const struct cpumask *cpus,
+> +				   unsigned long th_pressure);
+>   
+>   struct cpu_topology {
+>   	int thread_id;
+> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> index fb11091129b3..764222d637b7 100644
+> --- a/include/linux/sched/topology.h
+> +++ b/include/linux/sched/topology.h
+> @@ -232,6 +232,13 @@ unsigned long arch_scale_thermal_pressure(int cpu)
+>   }
+>   #endif
+>   
+> +#ifndef arch_set_thermal_pressure
+> +static __always_inline
+> +void arch_set_thermal_pressure(const struct cpumask *cpus,
+> +			       unsigned long th_pressure)
+> +{ }
+> +#endif
+> +
+>   static inline int task_node(const struct task_struct *p)
+>   {
+>   	return cpu_to_node(task_cpu(p));
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index ff0519551188..90b44f3840e4 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -3731,17 +3731,6 @@ unsigned long long task_sched_runtime(struct task_struct *p)
+>   	return ns;
+>   }
+>   
+> -DEFINE_PER_CPU(unsigned long, thermal_pressure);
+> -
+> -void arch_set_thermal_pressure(struct cpumask *cpus,
+> -			       unsigned long th_pressure)
+> -{
+> -	int cpu;
+> -
+> -	for_each_cpu(cpu, cpus)
+> -		WRITE_ONCE(per_cpu(thermal_pressure, cpu), th_pressure);
+> -}
+> -
+>   /*
+>    * This function gets called by the timer code, with HZ frequency.
+>    * We call it with interrupts disabled.
+> 
 
-> But,
-> For a long time, devfreq showed the sysfs interface of all devfreq devices
-> regardless of the kind of devfreq governor. It means that devfreq keeps
-> the ABI interface. If devfreq hides the unsupported sysfs node
-> according to the type of governor, it will break the ABI.
-
-I didn't notice that it's an ABI already [1]. Should be better not to
-change the ABI if there is userspace already relying on the old
-behaviour, otherwise it may be okay to make changes until it will be too
-late, also given that this is still a "testing" ABI.
-
-[1] https://www.kernel.org/doc/Documentation/ABI/testing/sysfs-class-devfreq
-
-Although, the doc doesn't say anything about -EACCES/-EINVAL, so isn't
-it an ABI change already? Doesn't doc need to be updated in order to
-reflect the ABI change?
-
-For example, doc says that userspace shouldn't care about attribute
-values which are irrelevant for a selected governor, like in the case of
-the 'polling_interval' attribute. The doc doesn't say that userspace may
-get a error.
-
-> Although I knew that maybe performance/powersave/userspace didn't use
-> the 'polling_interval' node, I just returned -EACCESS.
-
-The 'polling_interval', 'min/max_freq' and the new 'timer' attributes
-are all the governor attributes.
-
-Would be nice to have a per-device `governor/` directory containing all
-the governor-specific attributes (without the unrelated attributes), but
-perhaps it's a bit too late to change it now?
+-- 
+Warm Regards
+Thara
