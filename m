@@ -2,129 +2,84 @@ Return-Path: <SRS0=gH2j=AY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA8ADC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 19:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 56D0BC433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 19:04:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C5E42067D
-	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 19:03:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2F6152067D
+	for <linux-pm@archiver.kernel.org>; Mon, 13 Jul 2020 19:04:49 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1594666993;
-	bh=+VLRc7Y9AXVnLAUpIImIA24MM8YQKoOuv2uu8mDmwGY=;
+	s=default; t=1594667089;
+	bh=HWcaj27TrJhwmx8Cyf6Qp4gP6mh6ExrxJhRaKyzCF50=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=jGkfEI1fvOHBg9orBb5iV5Q4ivHG9RkC2RPJDFb7xP4ggio6d3KUmdYuARKcRusl+
-	 +js0asbCLMn/vLSmXI1ePINUpcKkZ/S7uEIHkpPWhgy3SDrn5py1i15OpDBtco+HIx
-	 kXeibLOxAnvGLhxhaLWb0zC/1bdw7Bk5Mo9plGSg=
+	b=INgvLh9Mw2iFOCn6K/BkHEBCf1ylR+z+4a5ZYULWjbg+sb9ZOnPwVz4IVwhgzMXqQ
+	 8VygNbuAZybMAOvLXoT2FMK8Zk9TyU5LmMXdZsu2T6Tt2ivQfCC+Ic/l1D1pEnONCu
+	 Hk7DS2v/bp4+iCdewS/cTgRRuERk9NY4Coe/FNAg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726339AbgGMTDN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 13 Jul 2020 15:03:13 -0400
-Received: from mail-il1-f196.google.com ([209.85.166.196]:37736 "EHLO
-        mail-il1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726338AbgGMTDM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2020 15:03:12 -0400
-Received: by mail-il1-f196.google.com with SMTP id r12so12151790ilh.4;
-        Mon, 13 Jul 2020 12:03:12 -0700 (PDT)
+        id S1726338AbgGMTEs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 13 Jul 2020 15:04:48 -0400
+Received: from mail-io1-f67.google.com ([209.85.166.67]:33299 "EHLO
+        mail-io1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726321AbgGMTEs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 13 Jul 2020 15:04:48 -0400
+Received: by mail-io1-f67.google.com with SMTP id d18so14711768ion.0;
+        Mon, 13 Jul 2020 12:04:47 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=l5rWVgnnCloHt41CFPCxRV5qmnmySbxOsQcq4blbDZU=;
-        b=ZMUT17gJPmBGA6zePd0uFpkmKqt59ITqHZGlUtkyL4JtM1vo28ypmBUssz7LhSrHDr
-         ohGPxkcUcDziTjb5llGP7U/UP0uBNHjmXJSMeloKbkVCj8OdNDa9x7jxhUugJqi+xMh3
-         qE+kJdGuJjyfYQk10LdLf0yYXhrx2Vl5R38CzshG611ol0Q2CNffl9ftDeuIRj1txGpl
-         Od1niqW1icvujCGxGFkGk2R2Az9dBzHAsfIgOrmcWwThPnpV0nUJqzGeoVU2jIJHhru3
-         wWa2oCVZqlrKqWA3OsOInzDHN0tr/yOU2Qj+51Q1OrP2x96GVmHF5vq6r59SAftj6cya
-         4XDw==
-X-Gm-Message-State: AOAM530zoQHoTgCEp0NyYrBMdHYz0QLTMkRaSidrFuAr/SvD54Uv5zQJ
-        7brQJpTG5VXorvW0cOUES6LuBJ1ueg==
-X-Google-Smtp-Source: ABdhPJyFU3OO/ANkI1WfClMonQPuMZQFkzhvvt9yHjYL0J26xn464hZPF3poCvPXO+hMPxbus5uE0g==
-X-Received: by 2002:a92:6a02:: with SMTP id f2mr1110656ilc.68.1594666991695;
-        Mon, 13 Jul 2020 12:03:11 -0700 (PDT)
+        bh=9Y5DNiwAmGhm3HKzfpsHejLrXSZAto6ZRm11P2NdgXA=;
+        b=sTcnz3v+zPwlxWhmeMydjHN73LWV0xRpNdlaj0PmBt6ulMy9V3QdnGnz46UnRtZNOL
+         PFq4GVP1ikJy+3MgkgHe9dGZsNO/wUNsVuB6HDmQhVwPgbu/y88c0q7f//uxxqIi26wX
+         vbQfLXNKcoyDFcbzCNTSdwGwDPriq8oFLOMsERrYCF9RVvakD1WOuwTeyw1+/QL4cgT3
+         9w2yHO9YQSeU8VE8PGMA7A21dKQqELq6OvuPezmlMyaq00TtJBIXX6wrGT2hK3fNOVMm
+         AX7yVnlIFdR1wNGSE67j0DI5UcFAWl+b8ELovdUQVzjPGpZSD9XHXzl52itw/Jnn+QmP
+         anlg==
+X-Gm-Message-State: AOAM530T1CtUUg2ai31mxetSh6Z97y3urGQismLkV/GcDot3I0B8NfXk
+        zYdyCivpfl7qDZ5rqAw3zg==
+X-Google-Smtp-Source: ABdhPJzCZ2ShnGuQdGALu+LVtZuGO9ZYNT0pBJbHbB9eI23ej5zGDsQEo3GuSkzG87PksqB5cCwIQA==
+X-Received: by 2002:a6b:ce01:: with SMTP id p1mr1199862iob.19.1594667087573;
+        Mon, 13 Jul 2020 12:04:47 -0700 (PDT)
 Received: from xps15 ([64.188.179.252])
-        by smtp.gmail.com with ESMTPSA id x12sm1175218iov.43.2020.07.13.12.03.10
+        by smtp.gmail.com with ESMTPSA id y8sm8720000ilq.21.2020.07.13.12.04.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 13 Jul 2020 12:03:10 -0700 (PDT)
-Received: (nullmailer pid 547640 invoked by uid 1000);
-        Mon, 13 Jul 2020 19:03:10 -0000
-Date:   Mon, 13 Jul 2020 13:03:10 -0600
+        Mon, 13 Jul 2020 12:04:47 -0700 (PDT)
+Received: (nullmailer pid 549846 invoked by uid 1000);
+        Mon, 13 Jul 2020 19:04:46 -0000
+Date:   Mon, 13 Jul 2020 13:04:46 -0600
 From:   Rob Herring <robh@kernel.org>
 To:     Iskren Chernev <iskren.chernev@gmail.com>
-Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-kernel@vger.kernel.org,
         ~postmarketos/upstreaming@lists.sr.ht,
-        Jonathan Bakker <xc-racer2@live.ca>,
-        Vladimir Barinov <vladimir.barinov@cogentembedded.com>
-Subject: Re: [PATCH v3 2/6] dt-bindings: power: supply: Extend max17040
- compatibility
-Message-ID: <20200713190310.GA546410@bogus>
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        devicetree@vger.kernel.org, Jonathan Bakker <xc-racer2@live.ca>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 4/6] dt-bindings: power: supply: max17040: Add
+ maxim,rcomp
+Message-ID: <20200713190446.GA549816@bogus>
 References: <20200624155633.3557401-1-iskren.chernev@gmail.com>
- <20200624155633.3557401-3-iskren.chernev@gmail.com>
+ <20200624155633.3557401-5-iskren.chernev@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200624155633.3557401-3-iskren.chernev@gmail.com>
+In-Reply-To: <20200624155633.3557401-5-iskren.chernev@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jun 24, 2020 at 06:56:29PM +0300, Iskren Chernev wrote:
-> Maxim max17040 is a fuel gauge from a larger family utilising the Model
-> Gauge technology. Document all different compatible strings that the
-> max17040 driver recognizes.
-> 
-> Some devices in the wild report double the capacity. The
-> maxim,double-soc (from State-Of-Charge) property fixes that.
+On Wed, 24 Jun 2020 18:56:31 +0300, Iskren Chernev wrote:
+> To compensate for the battery chemistry and operating conditions the
+> chips support a compensation value. Specify one or two byte compensation
+> via the maxim,rcomp byte array.
 > 
 > Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
 > ---
->  .../bindings/power/supply/max17040_battery.txt    | 15 ++++++++++++++-
->  1 file changed, 14 insertions(+), 1 deletion(-)
+>  .../devicetree/bindings/power/supply/max17040_battery.txt   | 6 ++++++
+>  1 file changed, 6 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-> index 4e0186b8380fa..554bce82a08e6 100644
-> --- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-> +++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
-> @@ -2,7 +2,9 @@ max17040_battery
->  ~~~~~~~~~~~~~~~~
->  
->  Required properties :
-> - - compatible : "maxim,max17040" or "maxim,max77836-battery"
-> + - compatible : "maxim,max17040", "maxim,max17041", "maxim,max17043",
-> + 		"maxim,max17044", "maxim,max17048", "maxim,max17049",
-> +		"maxim,max17058", "maxim,max17059" or "maxim,max77836-battery"
->   - reg: i2c slave address
->  
->  Optional properties :
-> @@ -11,6 +13,10 @@ Optional properties :
->  				generated. Can be configured from 1 up to 32
->  				(%). If skipped the power up default value of
->  				4 (%) will be used.
-> +- maxim,double-soc : 		Certain devices return double the capacity.
-> +				Specify this boolean property to divide the
-> +				reported value in 2 and thus normalize it.
-> +				SOC == State of Charge == Capacity.
 
-This can't be implied by the compatible string?
-
->  - interrupts : 			Interrupt line see Documentation/devicetree/
->  				bindings/interrupt-controller/interrupts.txt
->  - wakeup-source :		This device has wakeup capabilities. Use this
-> @@ -31,3 +37,10 @@ Example:
->  		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
->  		wakeup-source;
->  	};
-> +
-> +	battery-fuel-gauge@36 {
-> +		compatible = "maxim,max17048";
-> +		reg = <0x36>;
-> +		maxim,alert-low-soc-level = <10>;
-> +		maxim,double-soc;
-> +	};
-> -- 
-> 2.27.0
-> 
+Reviewed-by: Rob Herring <robh@kernel.org>
