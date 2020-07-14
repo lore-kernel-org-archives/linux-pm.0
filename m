@@ -2,90 +2,64 @@ Return-Path: <SRS0=bP2c=AZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C37CAC433E3
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 07:14:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 37135C433E5
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 07:37:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A20AF2076D
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 07:14:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12DEC20890
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 07:37:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1594712245;
+	bh=WGqbEi++112wwV5KzytHV6vA+xPXhlyWXePXIMpJXJk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=QSQdg/T2rmqUtlkBoKv+JQvcpn2viYVqG3ewFt2GZIIWr7O15+cN6tSakSXjT1rjY
+	 eaHZic9W1iWJ33r4u4JDni/RX+rDAfKYXC8HNrzNh4dlu02dtpt/KNtg86TmuU1mSA
+	 HG3a4vYaKXJY2McktWp9WjazRo/9VtG6yyzz65lw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725925AbgGNHOw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jul 2020 03:14:52 -0400
-Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:42321 "EHLO
-        smtp2207-205.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725905AbgGNHOw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 03:14:52 -0400
-X-Alimail-AntiSpam: AC=CONTINUE;BC=0.2583959|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.0178585-0.00014203-0.981999;FP=0|0|0|0|0|-1|-1|-1;HT=e02c03300;MF=frank@allwinnertech.com;NM=1;PH=DS;RN=13;RT=13;SR=0;TI=SMTPD_---.I1TsC6N_1594710884;
-Received: from allwinnertech.com(mailfrom:frank@allwinnertech.com fp:SMTPD_---.I1TsC6N_1594710884)
-          by smtp.aliyun-inc.com(10.147.40.2);
-          Tue, 14 Jul 2020 15:14:48 +0800
-From:   Frank Lee <frank@allwinnertech.com>
-To:     anarsoul@gmail.com, tiny.windzz@gmail.com, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
-        mripard@kernel.org, wens@csie.org, linux-pm@vger.kernel.org
-Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        huangshuosheng@allwinnertech.com, liyong@allwinnertech.com,
-        Yangtao Li <frank@allwinnertech.com>
-Subject: [PATCH v4 09/16] thermal: sun8i: Add A100's THS controller support
-Date:   Tue, 14 Jul 2020 15:14:37 +0800
-Message-Id: <676d4ba60b03ea9902be0cd5e0ebc77223ac0de4.1594708864.git.frank@allwinnertech.com>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <cover.1594708863.git.frank@allwinnertech.com>
-References: <cover.1594708863.git.frank@allwinnertech.com>
+        id S1725836AbgGNHhY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jul 2020 03:37:24 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38118 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725601AbgGNHhY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 14 Jul 2020 03:37:24 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7D9162084C;
+        Tue, 14 Jul 2020 07:37:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1594712244;
+        bh=WGqbEi++112wwV5KzytHV6vA+xPXhlyWXePXIMpJXJk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=h8rQ4fa/S6rD7U7hRiMrT6g76oSmOGWpLNJVof+Xk0JOz0f/ACN/laUdP9b+3uHox
+         XkyniaSUD61Miv1zteDEZyUNkogC4kvHPosv7dYLKiLx1KvgsX3vG8Q/dWNOa28uvk
+         CT64IGIdliw7pYO/X77Bjl35tJXyjy6So23uMdNM=
+Date:   Tue, 14 Jul 2020 09:37:22 +0200
+From:   Greg KH <gregkh@linuxfoundation.org>
+To:     ivan <yanziily@gmail.com>
+Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, jiangfei1@xiaomi.com,
+        Qiwu Huang <huangqiwu@xiaomi.com>
+Subject: Re: [PATCH v2 2/5] power: supply: core: add wireless charger adapter
+ type property
+Message-ID: <20200714073722.GB689066@kroah.com>
+References: <cover.1594612572.git.huangqiwu@xiaomi.com>
+ <b20548fc825241c69878bfb05464b0e4f378f4ce.1594612572.git.huangqiwu@xiaomi.com>
+ <20200713084200.GD215949@kroah.com>
+ <CAPtXDt3kX0=MNXUjDfKr0EgmTxejctdoSoDWUY561gfT6CAr1Q@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAPtXDt3kX0=MNXUjDfKr0EgmTxejctdoSoDWUY561gfT6CAr1Q@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Yangtao Li <frank@allwinnertech.com>
+On Tue, Jul 14, 2020 at 03:34:04PM +0800, ivan wrote:
+> same as before, we should add it
 
-This patch add thermal sensor controller support for A100,
-which is similar to the previous ones.
-
-Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-Reviewed-by: Yangtao Li <tiny.windzz@gmail.com>
----
- drivers/thermal/sun8i_thermal.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
-
-diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
-index f423d44b9290..f8b13071a6f4 100644
---- a/drivers/thermal/sun8i_thermal.c
-+++ b/drivers/thermal/sun8i_thermal.c
-@@ -590,6 +590,19 @@ static const struct ths_thermal_chip sun50i_a64_ths = {
- 	.calc_temp = sun8i_ths_calc_temp,
- };
- 
-+static const struct ths_thermal_chip sun50i_a100_ths = {
-+	.sensor_num = 3,
-+	.has_bus_clk_reset = true,
-+	.ft_deviation = 8000,
-+	.offset = 187744,
-+	.scale = 672,
-+	.temp_data_base = SUN50I_H6_THS_TEMP_DATA,
-+	.calibrate = sun50i_h6_ths_calibrate,
-+	.init = sun50i_h6_thermal_init,
-+	.irq_ack = sun50i_h6_irq_ack,
-+	.calc_temp = sun8i_ths_calc_temp,
-+};
-+
- static const struct ths_thermal_chip sun50i_h5_ths = {
- 	.sensor_num = 2,
- 	.has_mod_clk = true,
-@@ -619,6 +632,7 @@ static const struct of_device_id of_ths_match[] = {
- 	{ .compatible = "allwinner,sun8i-h3-ths", .data = &sun8i_h3_ths },
- 	{ .compatible = "allwinner,sun8i-r40-ths", .data = &sun8i_r40_ths },
- 	{ .compatible = "allwinner,sun50i-a64-ths", .data = &sun50i_a64_ths },
-+	{ .compatible = "allwinner,sun50i-a100-ths", .data = &sun50i_a100_ths },
- 	{ .compatible = "allwinner,sun50i-h5-ths", .data = &sun50i_h5_ths },
- 	{ .compatible = "allwinner,sun50i-h6-ths", .data = &sun50i_h6_ths },
- 	{ /* sentinel */ },
--- 
-2.24.0
-
+Please do.
