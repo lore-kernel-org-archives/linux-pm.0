@@ -7,58 +7,58 @@ X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E815C433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:28:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 034E2C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:34:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 55B89206D9
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:28:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CFB5420674
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:34:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GBtqBw0E"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZdxXWZM/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728030AbgGNV2b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jul 2020 17:28:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35410 "EHLO
+        id S1726856AbgGNVeG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jul 2020 17:34:06 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36270 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727822AbgGNV2b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 17:28:31 -0400
+        with ESMTP id S1726440AbgGNVeG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 17:34:06 -0400
 Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A5BEC061755
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:28:30 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id o2so964842wmh.2
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:28:29 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5D65C061755
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:34:05 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id l2so1010833wmf.0
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:34:05 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=6fRLYpXTjUG7Lueiak9yUWNoWwRQrJnBa6oSKFtWg8E=;
-        b=GBtqBw0Em7d28Clr2HE7epER9Kd1HFANvHKbk7pStrPbKPJv6RQchJwkr9FVFWlUX+
-         win/zFORjiQ5ujugNAdmZMP0H15vXjLjrBGrW/w6KcapflDra/KoIMiKaI3Jjx02G2vB
-         /LiCugvUwh2//YQphHlWhh89cR3jaY6BZ7uln3kaFG27Htcg8BVUS4x82mYTG9kVA8Cn
-         Kzd2L5c8NDoK5rrxTeKYlz9xG0tuD2xvjdqZrBXOpsQQzxCYa1qz2AoTjZzKpRvCd2n1
-         B376DmakjeuKX9RPB414AV3RnDBp5hVV0Cy9+QeAw+deO+ZpylBpW3EdeStV6TiSztZJ
-         QlDA==
+        bh=UtdKaUC50+DBu44j3zskZy46PDkWi7WEkFGNTwqCIoY=;
+        b=ZdxXWZM/b8EqxIpABEM6pucd3tsDPMAQfWU1nIe16VgCJokdapVLUjRlV5UPCmXIy8
+         g/cPrQ8DefYSLzelcVRd7gziOGDddN35aIqanSzhKRDTeYvP8zwPVdUBeSLv83jn8cLE
+         CKlYIgFapNDT1Mujzuc1pYuICnf0PL9xwfIliuIxuZ9JpSzNBYWRBzqCkT/if1n7M9oY
+         rR4t+NCLHGYA5fzbPQ1SUTM47Lvtj1nJvxceDGuv9luNbkkjGxydDcdvq6vyAOoWPIGt
+         PKTwOkzm84pBrYLhfjP+ctuefK8I0nGvM2a2rfC3GAMvunHwuhO6DxKas83H/jumrufW
+         /x2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=6fRLYpXTjUG7Lueiak9yUWNoWwRQrJnBa6oSKFtWg8E=;
-        b=LSIfMurDju3NZV6h+MXfjX8VAcPYuYCU/Jx7zsk0PUL614fcnrlqayGLA2aawHaCWu
-         86O7t8orXSQrxgj8CZrQF8LwEQzC8MQr4TCM7cgjQRSoLRw+ZVVHfbRNDZ5v7lqB7blx
-         1xoMsItW4Iu5ow0w7SPaQDPCeT9lvFzm+4gpARKd3PY+kaKysv11FjOy0dt2uHfwStpl
-         fgBaYBb+omisGE0tBWQfZbEhITDR6oIgt+ftcF2v2LvCUPLsLmvyYS22zMwAbS2vbR4v
-         ieGKvmB8F0PsCEyE/vGxPhTPamBrPW5AVsVMdrz/X2tZhElqagWqVW7MBSATLda6jQuG
-         qtxw==
-X-Gm-Message-State: AOAM5313M5FwWETtEo7IRo7iQ5Rrm09J3aJRPmHoSYLbfZSbZ/+Zn4sv
-        vvOK1GE8LlDklz2sJPDVDoYvn0GZ6ax/qg==
-X-Google-Smtp-Source: ABdhPJzUpRcDwEsXYmLPaS6DkjCLEof0ShwsP8rsPx4113jnMsq2sgj3x5w2ZeBVI/fQ+uxbtv+gHA==
-X-Received: by 2002:a1c:4d11:: with SMTP id o17mr5506692wmh.134.1594760588532;
-        Tue, 14 Jul 2020 14:03:08 -0700 (PDT)
+        bh=UtdKaUC50+DBu44j3zskZy46PDkWi7WEkFGNTwqCIoY=;
+        b=d9Wl2fgnKk9iRJ0LQ5EM2OsqKIwbBV2U1rSYHJvsIpWud5DDCGMemkGG2wsZP8NWTY
+         mOq33QYctq+KVltua8kybev3xvsheTIOF4bCFJoGHSPLRHhKJi0egVwCBVFunozDezDS
+         3rjhUXXp0gWBMc3906IAQfVvEbgkyWasq2HXZOftbT61ajjTGauoYYShN8HiblgOu7fG
+         ntKHvqpxiUbZaTdFHndro1QdiKtndCuBkUqNiq3CqIL2QQqDB27k6RmI2iFAm7rVDrjJ
+         Ch83xc0jcUyYyNHlQ35r/H8qa/HTXHwF2FDPRwNyKukvealBV1t6V+lQsRVZiEfFjUBr
+         iH5Q==
+X-Gm-Message-State: AOAM531YNQpIQBPhG3IeAi9r5P0qICnAKVGcNVteuPAEezr6tfWENhIL
+        m/8iahBT80J381NVU3tESKYv5YK62v6aRg==
+X-Google-Smtp-Source: ABdhPJwN+wbuGDAsIxRpEcUZpQpduMqrY8XULh5RX+WB9UypF8LaMOjLVXqMgqHTPSLtn1qEMODkZw==
+X-Received: by 2002:a7b:cbcb:: with SMTP id n11mr5303227wmi.99.1594760623207;
+        Tue, 14 Jul 2020 14:03:43 -0700 (PDT)
 Received: from dell ([2.31.163.61])
-        by smtp.gmail.com with ESMTPSA id a84sm6040573wmh.47.2020.07.14.14.03.07
+        by smtp.gmail.com with ESMTPSA id w14sm30807910wrt.55.2020.07.14.14.03.41
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2020 14:03:08 -0700 (PDT)
-Date:   Tue, 14 Jul 2020 22:03:06 +0100
+        Tue, 14 Jul 2020 14:03:42 -0700 (PDT)
+Date:   Tue, 14 Jul 2020 22:03:40 +0100
 From:   Lee Jones <lee.jones@linaro.org>
 To:     "Rafael J. Wysocki" <rafael@kernel.org>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
@@ -66,20 +66,20 @@ Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux ARM <linux-arm-kernel@lists.infradead.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
-        Dirk Brandewie <dirk.j.brandewie@intel.com>
-Subject: Re: [PATCH 12/13] cpufreq: intel_pstate: Supply struct attribute
- description for get_aperf_mperf_shift()
-Message-ID: <20200714210306.GI1398296@dell>
+        Andy Grover <andrew.grover@intel.com>,
+        Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
+        Dominik Brodowski <linux@brodo.de>,
+        Denis Sadykov <denis.m.sadykov@intel.com>
+Subject: Re: [PATCH 09/13] cpufreq: acpi-cpufreq: Remove unused ID structs
+Message-ID: <20200714210340.GJ1398296@dell>
 References: <20200714145049.2496163-1-lee.jones@linaro.org>
- <20200714145049.2496163-13-lee.jones@linaro.org>
- <CAJZ5v0jkDWD6Ea2_oEDtFfPDWh5ByphUqEa=3jE2ZbnW0DVEcQ@mail.gmail.com>
+ <20200714145049.2496163-10-lee.jones@linaro.org>
+ <CAJZ5v0iB0K6H28DSDQj9T7k_kV10THxV6-HwN9qfmkLsYNHfiA@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0jkDWD6Ea2_oEDtFfPDWh5ByphUqEa=3jE2ZbnW0DVEcQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0iB0K6H28DSDQj9T7k_kV10THxV6-HwN9qfmkLsYNHfiA@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
@@ -89,39 +89,55 @@ On Tue, 14 Jul 2020, Rafael J. Wysocki wrote:
 
 > On Tue, Jul 14, 2020 at 4:51 PM Lee Jones <lee.jones@linaro.org> wrote:
 > >
+> > Can't see them being used anywhere and the compiler doesn't complain
+> > that they're missing, so ...
+> 
+> Aren't they needed for automatic module loading in certain configurations?
+
+Any idea how that works, or where the code is for that?
+
 > > Fixes the following W=1 kernel build warning(s):
 > >
-> >  drivers/cpufreq/intel_pstate.c:293: warning: Function parameter or member 'get_aperf_mperf_shift' not described in 'pstate_funcs'
+> >  drivers/cpufreq/acpi-cpufreq.c:1004:36: warning: ‘processor_device_ids’ defined but not used [-Wunused-const-variable=]
+> >  997 | static const struct x86_cpu_id acpi_cpufreq_ids[] = {
+> >  | ^~~~~~~~~~~~~~~~
+> >  drivers/cpufreq/acpi-cpufreq.c:997:32: warning: ‘acpi_cpufreq_ids’ defined but not used [-Wunused-const-variable=]
+> >  619 | static const struct acpi_device_id processor_device_ids[] = {
+> >  | ^~~~~~~~~~~~~~~~~~~~
 > >
-> > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > Cc: Len Brown <lenb@kernel.org>
-> > Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
+> > Cc: Andy Grover <andrew.grover@intel.com>
+> > Cc: Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
+> > Cc: Dominik Brodowski <linux@brodo.de>
+> > Cc: Denis Sadykov <denis.m.sadykov@intel.com>
 > > Signed-off-by: Lee Jones <lee.jones@linaro.org>
 > > ---
-> >  drivers/cpufreq/intel_pstate.c | 2 ++
-> >  1 file changed, 2 insertions(+)
+> >  drivers/cpufreq/acpi-cpufreq.c | 14 --------------
+> >  1 file changed, 14 deletions(-)
 > >
-> > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > index 44c7b4677675d..f92fc69c87269 100644
-> > --- a/drivers/cpufreq/intel_pstate.c
-> > +++ b/drivers/cpufreq/intel_pstate.c
-> > @@ -275,6 +275,8 @@ static struct cpudata **all_cpu_data;
-> >   * @get_min:           Callback to get minimum P state
-> >   * @get_turbo:         Callback to get turbo P state
-> >   * @get_scaling:       Callback to get frequency scaling factor
-> > + * @get_aperf_mperf_shift: Callback to get the number of clock cycles after
-> > + *                     aperf, merf is incremented
-> 
-> This added description is inaccurate.  It should be something like
-> "Callback to get the APERF vs MPERF frequency difference".
-
-Does that mean the description of @aperf_mperf_shift above is also
-incorrect?
-
-> >   * @get_val:           Callback to convert P state to actual MSR write value
-> >   * @get_vid:           Callback to get VID data for Atom platforms
-> >   *
-> > --
+> > diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
+> > index d38a693b48e03..fc68f13352695 100644
+> > --- a/drivers/cpufreq/acpi-cpufreq.c
+> > +++ b/drivers/cpufreq/acpi-cpufreq.c
+> > @@ -995,18 +995,4 @@ MODULE_PARM_DESC(acpi_pstate_strict,
+> >  late_initcall(acpi_cpufreq_init);
+> >  module_exit(acpi_cpufreq_exit);
+> >
+> > -static const struct x86_cpu_id acpi_cpufreq_ids[] = {
+> > -       X86_MATCH_FEATURE(X86_FEATURE_ACPI, NULL),
+> > -       X86_MATCH_FEATURE(X86_FEATURE_HW_PSTATE, NULL),
+> > -       {}
+> > -};
+> > -MODULE_DEVICE_TABLE(x86cpu, acpi_cpufreq_ids);
+> > -
+> > -static const struct acpi_device_id processor_device_ids[] = {
+> > -       {ACPI_PROCESSOR_OBJECT_HID, },
+> > -       {ACPI_PROCESSOR_DEVICE_HID, },
+> > -       {},
+> > -};
+> > -MODULE_DEVICE_TABLE(acpi, processor_device_ids);
+> > -
+> >  MODULE_ALIAS("acpi");
+> >
 
 -- 
 Lee Jones [李琼斯]
