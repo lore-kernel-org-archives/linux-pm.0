@@ -2,153 +2,125 @@ Return-Path: <SRS0=bP2c=AZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98A10C433E4
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:01:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D2E8C433E3
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:08:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D6FC2064C
-	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:01:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bQ9D3OLg"
+	by mail.kernel.org (Postfix) with ESMTP id 45C2120658
+	for <linux-pm@archiver.kernel.org>; Tue, 14 Jul 2020 21:08:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1594760903;
+	bh=5+7Oa6bGEY4INb0mM3mae8Q/Fewg5Jr8C8cF2pLqilA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=iB/WxgqLnecQhNAg2sFhCHckmwhKYHeuj1spwYe6Aw9p29nZAb63KMi6LvjI7sHKE
+	 i0bjIWoigr+jxz8szkxsE9P1VJlh4oX1i57B2XcDye5vJ0MagUE9Q7zpg6N/hzLe22
+	 K2HYRCndbJL5Vf5xHfsKC36KcKkbz8y7+WqLOb6U=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728018AbgGNVBj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jul 2020 17:01:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59502 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727943AbgGNVBj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 17:01:39 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CE5C6C061794
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:01:38 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id f2so184337wrp.7
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 14:01:38 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=gVD9qdPMyUmjbT/wQ1whJd58NB9dc+MTfoFQHtY+660=;
-        b=bQ9D3OLg1v4uiE7MNPeSsCZ9RjCLsAXGwENkmXzkCqye+xMBX1iTLaiqTh+6Kh8GXe
-         m2n12+8KlPUJLT7DCFMhcHtE8JlYLW50hkC4IBjo67KedA4qpEHW/PWyMxcNTNTS5sEf
-         F82bVfSUPDu0MY27IrQxz7IPFxQyw9tdK3Ly+qhjEFOH7+PtdswO7JGZThpVEGuJu/+v
-         R8eSIi8vHfHyiDtWbCmC1yVwTwKsE4ZfhbBi/LAml1bmYFSvRgSQ470zxz1iAtsHlN7a
-         DkV8jQvJKsGeADwO1t4/+0HWkfNxU84YSp0/vkHna8N4y1131VWlnivaL/yMr6aZ4T/S
-         mnIQ==
+        id S1728033AbgGNVIT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jul 2020 17:08:19 -0400
+Received: from mail-il1-f193.google.com ([209.85.166.193]:39237 "EHLO
+        mail-il1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726750AbgGNVIT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 17:08:19 -0400
+Received: by mail-il1-f193.google.com with SMTP id k6so57500ili.6;
+        Tue, 14 Jul 2020 14:08:18 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=gVD9qdPMyUmjbT/wQ1whJd58NB9dc+MTfoFQHtY+660=;
-        b=ETNNmooAxgOFgxh2z6/y1exfBCi0jXVNB9O/R8ruTdcPS67SvpXMwaraBdZt57AbPJ
-         qSOcISrTb4sLZFVlFBRP+oiJQbGNJAbTjLkL1aZcctJosYn25ySek5kq4dWd1BAm7XsO
-         zJnFoxWLtc43TxlZfjj7JBp7QWvu01iWfydAMWjhsUOTOKJN+4dAEECe7QTvGDvB3V8m
-         g31SvbqAk/wNhubQL/3gprs2pnjgJnurjNk5uvzj94Q6ez5KUVAIGN4OROda5n5PjndF
-         UsPUJ1GLUDmS+ee4+e+A7WQ0ED8IP+ONY/yilU/0sLqFZWqPifSKGrYo9OnZepPH2QqE
-         Lu1Q==
-X-Gm-Message-State: AOAM531YdSREWD91VpdPPYpXjWijeDR8ks9lgv2NeCpvsN2bw/Xp7k0j
-        mjBe5sZLpUGFNvA7GXpvu+uY2A==
-X-Google-Smtp-Source: ABdhPJx/Uqe4FxAG4ZMmGcrr32Cx8sRFTkUO3Zy3oUr3YF1k+Daypk5262+gqjeWsMOgCWIUSQWJ9A==
-X-Received: by 2002:adf:e6ce:: with SMTP id y14mr7815941wrm.401.1594760497577;
-        Tue, 14 Jul 2020 14:01:37 -0700 (PDT)
-Received: from dell ([2.31.163.61])
-        by smtp.gmail.com with ESMTPSA id e17sm29502178wrr.88.2020.07.14.14.01.36
+        bh=47xVzqClcakdpwxsWPSzbhTXJk9iY+clY3tNe/dil2Q=;
+        b=LL4uvTkqgTWkNsTvc97n7Q+onw5+8y23ts5Q/NKy2mSW9RUd/z8uMRIHEJ5pTGE7J6
+         QVYm9rhGZLRbo3+uSzCQPzEfqzF7W1+qMjOoJij1fatqv2ysrrAz97Y2NEpspElaF80U
+         dfcvDeeRbG9BCojenUaO8WcBd4/HIaR9jXzo9o7envLQR4xRb/vR31IQXiFXW7v6Ox9M
+         1BepSVNXBZuxwyqGECfsH++Zcu5KHa92WCeAw8orStL4UDjA30q5dTXsUrddBz+q7Xie
+         g3bIMFNVSkndc1FF28vl/A32ZAIwsBYUtExOJLNMrI52yTVJt7vUKi1kWAaX3qRiVz/i
+         cI+A==
+X-Gm-Message-State: AOAM530447q/v6ZkOIyKdIxIpwWzALD0PCY1d0oSbB06PG0cNJI+Zp7K
+        BCVaxSewU1FLrwcCvwGVHg==
+X-Google-Smtp-Source: ABdhPJxk4CD0RmuAu+456Gzol2Zv7+diPbeNAwAx+o8KXZ40zRoA6BoDZbLLN1AGaDjYYmva06UBPg==
+X-Received: by 2002:a92:cbd1:: with SMTP id s17mr6598323ilq.43.1594760897955;
+        Tue, 14 Jul 2020 14:08:17 -0700 (PDT)
+Received: from xps15 ([64.188.179.252])
+        by smtp.gmail.com with ESMTPSA id n7sm84082iob.44.2020.07.14.14.08.16
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 14 Jul 2020 14:01:36 -0700 (PDT)
-Date:   Tue, 14 Jul 2020 22:01:35 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Andreas Herrmann <herrmann.der.user@googlemail.com>,
-        Dominik Brodowski <linux@brodo.de>,
-        Pavel Machek <pavel@ucw.cz>,
-        Paul Devriendt <paul.devriendt@amd.com>,
-        Mark Langsdorf <mark.langsdorf@amd.com>
-Subject: Re: [PATCH 10/13] cpufreq: powernow-k8: Make use of known set but
- not used variables
-Message-ID: <20200714210135.GG1398296@dell>
-References: <20200714145049.2496163-1-lee.jones@linaro.org>
- <20200714145049.2496163-11-lee.jones@linaro.org>
- <CAJZ5v0jXjtZ0=ZnOZm2LNR32TwWSrq4C4bwhNh5tOOChfpWZxw@mail.gmail.com>
+        Tue, 14 Jul 2020 14:08:17 -0700 (PDT)
+Received: (nullmailer pid 2919365 invoked by uid 1000);
+        Tue, 14 Jul 2020 21:08:16 -0000
+Date:   Tue, 14 Jul 2020 15:08:16 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Iskren Chernev <iskren.chernev@gmail.com>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Jonathan Bakker <xc-racer2@live.ca>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Subject: Re: [PATCH v3 2/6] dt-bindings: power: supply: Extend max17040
+ compatibility
+Message-ID: <20200714210816.GA2918005@bogus>
+References: <20200624155633.3557401-1-iskren.chernev@gmail.com>
+ <20200624155633.3557401-3-iskren.chernev@gmail.com>
+ <20200713190310.GA546410@bogus>
+ <c4dc5045-48ee-a27b-98a8-22fdb37d6ba9@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0jXjtZ0=ZnOZm2LNR32TwWSrq4C4bwhNh5tOOChfpWZxw@mail.gmail.com>
+In-Reply-To: <c4dc5045-48ee-a27b-98a8-22fdb37d6ba9@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 14 Jul 2020, Rafael J. Wysocki wrote:
-
-> On Tue, Jul 14, 2020 at 4:51 PM Lee Jones <lee.jones@linaro.org> wrote:
-> >
-> > If we fail to use a variable, even a 'dummy' one, then the compiler
-> > complains that it is set but not used.  We know this is fine, so we
-> > set it to its own value here.
-> >
-> > Fixes the following W=1 kernel build warning(s):
-> >
-> >  drivers/cpufreq/powernow-k8.c: In function ‚Äòpending_bit_stuck‚Äô:
-> >  drivers/cpufreq/powernow-k8.c:89:10: warning: variable ‚Äòhi‚Äô set but not used [-Wunused-but-set-variable]
-> >  89 | u32 lo, hi;
-> >  | ^~
-> >  drivers/cpufreq/powernow-k8.c: In function ‚Äòcore_voltage_pre_transition‚Äô:
-> >  drivers/cpufreq/powernow-k8.c:285:14: warning: variable ‚Äòlo‚Äô set but not used [-Wunused-but-set-variable]
-> >  285 | u32 maxvid, lo, rvomult = 1;
-> >  | ^~
-> >
-> > Cc: Andreas Herrmann <herrmann.der.user@googlemail.com>
-> > Cc: Dominik Brodowski <linux@brodo.de>
-> > Cc: Pavel Machek <pavel@ucw.cz>
-> > Cc: Paul Devriendt <paul.devriendt@amd.com>
-> > Cc: Mark Langsdorf <mark.langsdorf@amd.com>
-> > Signed-off-by: Lee Jones <lee.jones@linaro.org>
-> > ---
-> >  drivers/cpufreq/powernow-k8.c | 2 ++
-> >  1 file changed, 2 insertions(+)
-> >
-> > diff --git a/drivers/cpufreq/powernow-k8.c b/drivers/cpufreq/powernow-k8.c
-> > index 3984959eed1d5..b76df81044c4f 100644
-> > --- a/drivers/cpufreq/powernow-k8.c
-> > +++ b/drivers/cpufreq/powernow-k8.c
-> > @@ -89,6 +89,7 @@ static int pending_bit_stuck(void)
-> >         u32 lo, hi;
-> >
-> >         rdmsr(MSR_FIDVID_STATUS, lo, hi);
-> > +       hi &= hi; /* Silence set but not used warning */
+On Tue, Jul 14, 2020 at 11:49:44AM +0300, Iskren Chernev wrote:
 > 
-> Hmm.
+> On 7/13/20 10:03 PM, Rob Herring wrote:
+> > On Wed, Jun 24, 2020 at 06:56:29PM +0300, Iskren Chernev wrote:
+> >> Maxim max17040 is a fuel gauge from a larger family utilising the Model
+> >> Gauge technology. Document all different compatible strings that the
+> >> max17040 driver recognizes.
+> >>
+> >> Some devices in the wild report double the capacity. The
+> >> maxim,double-soc (from State-Of-Charge) property fixes that.
+> >>
+> >> Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
+> >> ---
+> >>† .../bindings/power/supply/max17040_battery.txt††† | 15 ++++++++++++++-
+> >>† 1 file changed, 14 insertions(+), 1 deletion(-)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> >> index 4e0186b8380fa..554bce82a08e6 100644
+> >> --- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> >> +++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> >> @@ -2,7 +2,9 @@ max17040_battery
+> >>† ~~~~~~~~~~~~~~~~
+> >>
+> >>† Required properties :
+> >> - - compatible : "maxim,max17040" or "maxim,max77836-battery"
+> >> + - compatible : "maxim,max17040", "maxim,max17041", "maxim,max17043",
+> >> + †† ††† †"maxim,max17044", "maxim,max17048", "maxim,max17049",
+> >> +†† ††† †"maxim,max17058", "maxim,max17059" or "maxim,max77836-battery"
+> >>†† - reg: i2c slave address
+> >>
+> >>† Optional properties :
+> >> @@ -11,6 +13,10 @@ Optional properties :
+> >> ††† ††† ††† ††† †generated. Can be configured from 1 up to 32
+> >> ††† ††† ††† ††† †(%). If skipped the power up default value of
+> >> ††† ††† ††† ††† †4 (%) will be used.
+> >> +- maxim,double-soc : †† ††† †Certain devices return double the capacity.
+> >> +†† ††† ††† ††† †Specify this boolean property to divide the
+> >> +†† ††† ††† ††† †reported value in 2 and thus normalize it.
+> >> +†† ††† ††† ††† †SOC == State of Charge == Capacity.
+> >
+> > This can't be implied by the compatible string?
+> >
 > 
-> What about using __always_unused for this?
+> >From what I can tell - no. Here are multiple examples of downstream code:
 
-I didn't know you could use that for standard variables.
+Okay,
 
-Will fix.
-
-> >         return lo & MSR_S_LO_CHANGE_PENDING ? 1 : 0;
-> >  }
-> >
-> > @@ -292,6 +293,7 @@ static int core_voltage_pre_transition(struct powernow_k8_data *data,
-> >                 rvomult = 2;
-> >         rvosteps *= rvomult;
-> >         rdmsr(MSR_FIDVID_STATUS, lo, maxvid);
-> > +       lo &= lo; /* Silence set but not used warning */
-> >         maxvid = 0x1f & (maxvid >> 16);
-> >         pr_debug("ph1 maxvid=0x%x\n", maxvid);
-> >         if (reqvid < maxvid) /* lower numbers are higher voltages */
-> >
-
--- 
-Lee Jones [ÊùéÁêºÊñØ]
-Senior Technical Lead - Developer Services
-Linaro.org ‚îÇ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Reviewed-by: Rob Herring <robh@kernel.org>
