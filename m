@@ -4,107 +4,87 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C20F2C433E1
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:24:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 590DDC433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:36:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9553020674
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:24:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2BC232075B
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:36:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="swLmgPhg"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Mq1a22iM"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728162AbgGODYr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jul 2020 23:24:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33546 "EHLO
+        id S1728518AbgGODgb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jul 2020 23:36:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35338 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725977AbgGODYq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 23:24:46 -0400
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 74A38C061755
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:24:46 -0700 (PDT)
-Received: by mail-pl1-x641.google.com with SMTP id k4so1379255pld.12
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:24:46 -0700 (PDT)
+        with ESMTP id S1726648AbgGODga (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 23:36:30 -0400
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B82C061794
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:36:30 -0700 (PDT)
+Received: by mail-pf1-x443.google.com with SMTP id s26so1295875pfm.4
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:36:30 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=dVCx6htI5TVOttkAFatlrmjAYqmh13a2xgOrYQfZR+o=;
-        b=swLmgPhgBkDkXHB/JCDnmiyyNjJolmWYhYsntkr0xHe4LMexlvYTmAWGgYhQ52XXMx
-         77/GNPg4XlDSFiQPuBKfklkXHtRs315SnYFjmBb5SkdIUA5ddzIxTexeK9XaGMO6vL6X
-         RvnFWLUDT1WK+2e/7XiZXjenGX+bfaVa/qvbcgRj8wXEQgTwzcAr6W4SoFO9P6a6qYt6
-         jyVhgBDQqKYlWDyTUupWhICo3wbaUV+c4L0oXsnSMHixRrGNwmToGMRnsSQ8Hp8PHMP1
-         cmfzVcyGxhKFcdrHjKo3uZF3z6YUJlmaKkaFv2GCFRcOEsVOVbROg1rtTM4vj7WfpM/r
-         oalw==
+        bh=Wo4NFzdUiw6uJIzUDiz1BlvrT/9thiObvUTasK+LFJQ=;
+        b=Mq1a22iMCVQmgzxOV0p0g+z9f6rKXO6mZiH6yQC84D5gxUZna9mVPfEGlQlm4ODD4s
+         jvEcnb70QVoapMd8KwRbccqaKJCCIvOC3TlbYRSlR35kKKN9MSD12iMV7tzjfnh0jhxY
+         1e/ZT5ntIMkVbQZrEt9sgT6hauP/RZtbcjpqij4a2lVbIB4rs7f6XIrepinp36VDp/8/
+         ayHDNS59IXPBQ+4KCBhdaDOpiZSkee50rFHZ3cN5xPaMwjY0heHMsIWgPehAtKfe8cTe
+         pWU+sCF3m+71zjIm6CYlZT9jftXoi1Y/3N2Cni8Ee4NjlK2z8pqO0iWO6rR4mRTdyC9a
+         PA4Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=dVCx6htI5TVOttkAFatlrmjAYqmh13a2xgOrYQfZR+o=;
-        b=Y6kF/KsM9H4Dp7DQ7Dsea6IP6ai5METppE/NxuNDZL/Btx+PLPT5ugJjyn2nsMf2uw
-         IDyKIh1RfrLU9EhgIuSDuCYDdzgXnOPcY4Iq9/jZ2C+a1CfpyNCwqmRRnIxJG6llzM04
-         QEtYGYxAepQcp+FW3SlT2PMNTc5Tdd7slYNwBbZLSWnr6fZg1HJe6Cs/UPocQbKRKT1k
-         UfJNDqpAslxBB7VXIrqlgtEAGL0gcm8cTa4emMaRwdHaIHicc4ObYBG/1quLnnpr0Ary
-         /O70qc+71SdQSNZQ3tLYMUmHTcli6yHm35TsT77bO7r+C53umSoxewhJIgWPWSWd/IDC
-         uLgQ==
-X-Gm-Message-State: AOAM533fRspgWGhfTZtjXzK8XOi4AVJoCVAeQGdyz+TQXlgEN1U1sSvB
-        L25s/NvI3oeKqkKMwQwNN8NbYg==
-X-Google-Smtp-Source: ABdhPJzI/jGv+9mdtKCgglTH9INVPVH2hbHvJSR+Iok++HVt4l15rbmwjqQqKczIoGyPr81tGVFXZg==
-X-Received: by 2002:a17:90b:e8d:: with SMTP id fv13mr8170265pjb.128.1594783485893;
-        Tue, 14 Jul 2020 20:24:45 -0700 (PDT)
+        bh=Wo4NFzdUiw6uJIzUDiz1BlvrT/9thiObvUTasK+LFJQ=;
+        b=kRZMDiQx5l8/IjlZ1DWLWwdh5ioscRSPh9qNh8DmQrEdYPlPyiy83YNE9PMJWOi1gl
+         h91LEAMoMj7zO3QIGoYSGZKnxNue9HWjfuBcPELmXwbFuDuMbVK0IkdD6LFsQ1qL4PV8
+         XRGW28yxiqbpFfSAkPdMM5u06hJjMQjUb/7g+qGJNNmhwSA2WrSSA3HFRtMKdtnQ/3jC
+         BX2P7IkURvxwi+SjQ/D0MuREr04GRz3QCVL4MYejNzzAEMMSR+CCPU2ee8LqpYSHqUqA
+         ICiC/ZBs2g1Zuj1UzCzqFxUGIL/QqZH4LmzL3oWNejcXFGOOPFwl5xb556wkgIb4omiC
+         j6uA==
+X-Gm-Message-State: AOAM5312g3z4UzBlzj6mxN2ONIffI1NBobAeh+X7Byfaa3dSpO+vQYmI
+        p7YKOXgqEW5/z6WEL96F9U9mGg==
+X-Google-Smtp-Source: ABdhPJx0CEZPVwHRb6DRG98OrDg97SD6ru4U8kBXKcnC8XCCUtODi6z6J8bdIefYHU1pjE+nyl0sUQ==
+X-Received: by 2002:a63:e60b:: with SMTP id g11mr6368821pgh.188.1594784190122;
+        Tue, 14 Jul 2020 20:36:30 -0700 (PDT)
 Received: from localhost ([122.172.34.142])
-        by smtp.gmail.com with ESMTPSA id d5sm398825pju.15.2020.07.14.20.24.44
+        by smtp.gmail.com with ESMTPSA id nh14sm424492pjb.4.2020.07.14.20.36.28
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 14 Jul 2020 20:24:45 -0700 (PDT)
-Date:   Wed, 15 Jul 2020 08:54:42 +0530
+        Tue, 14 Jul 2020 20:36:29 -0700 (PDT)
+Date:   Wed, 15 Jul 2020 09:06:27 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Lee Jones <lee.jones@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Andy Grover <andrew.grover@intel.com>,
-        Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>,
-        Dominik Brodowski <linux@brodo.de>,
-        Denis Sadykov <denis.m.sadykov@intel.com>
-Subject: Re: [PATCH 09/13] cpufreq: acpi-cpufreq: Remove unused ID structs
-Message-ID: <20200715032442.gh2cliiddhv35fdj@vireshk-i7>
+Cc:     rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 00/13] Rid W=1 warnings in CPUFreq
+Message-ID: <20200715033627.k6ardlhm3z3w65xw@vireshk-i7>
 References: <20200714145049.2496163-1-lee.jones@linaro.org>
- <20200714145049.2496163-10-lee.jones@linaro.org>
- <CAJZ5v0iB0K6H28DSDQj9T7k_kV10THxV6-HwN9qfmkLsYNHfiA@mail.gmail.com>
- <20200714210340.GJ1398296@dell>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200714210340.GJ1398296@dell>
+In-Reply-To: <20200714145049.2496163-1-lee.jones@linaro.org>
 User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 14-07-20, 22:03, Lee Jones wrote:
-> On Tue, 14 Jul 2020, Rafael J. Wysocki wrote:
+On 14-07-20, 15:50, Lee Jones wrote:
+> This set is part of a larger effort attempting to clean-up W=1
+> kernel builds, which are currently overwhelmingly riddled with
+> niggly little warnings.
 > 
-> > On Tue, Jul 14, 2020 at 4:51 PM Lee Jones <lee.jones@linaro.org> wrote:
-> > >
-> > > Can't see them being used anywhere and the compiler doesn't complain
-> > > that they're missing, so ...
-> > 
-> > Aren't they needed for automatic module loading in certain configurations?
-> 
-> Any idea how that works, or where the code is for that?
+> After these patches are applied, the build system no longer
+> complains about any W=0 nor W=1 level warnings in drivers/cpufreq.
 
-The MODULE_DEVICE_TABLE() thingy creates a map of vendor-id,
-product-id that the kernel keeps after boot (and so there is no static
-reference of it for the compiler), later when a device is hotplugged
-into the kernel it refers to the map to find the related driver for it
-and loads it if it isn't already loaded.
-
-This has some of it, search for MODULE_DEVICE_TABLE() in it.
-Documentation/driver-api/usb/hotplug.rst
+And you need to rebase this stuff of pm/linux-next, as there are some
+changes in cpufreq.c there.
 
 -- 
 viresh
