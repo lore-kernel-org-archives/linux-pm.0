@@ -2,113 +2,121 @@ Return-Path: <SRS0=OhA8=A2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5086FC433E4
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13D2BC433EC
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:33:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2E32F206D5
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="RIYma6QY"
+	by mail.kernel.org (Postfix) with ESMTP id DEC06206F4
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:33:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1594802007;
+	bh=iOVN0Aj56V7pWppvWBvshuC3/3Wx6PjHbGrnZyydSO0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=XTlCgvc0owiGxwdMUO2n3ypKsLwL3lJSUKEQ1rVhqsGTweDFEVgrBgZQpegDNCmgR
+	 7JR+0G3fFvoiwvfE/TJbpWsFw0pT4yT0ENJP5icPHq06H+qB5dcR6rHJZw2zfB6QRX
+	 3e27IZubcO/WJIL2WCYRxsEYL5XcZmqcxF/PHgqM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729878AbgGOI0p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 04:26:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51822 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729876AbgGOI0o (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 04:26:44 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45E3BC08C5C1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:44 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id j18so4487161wmi.3
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=CMXxo9aOlmaJXA2Fa0TTzO8LQVMEninajvd8D9uCCWE=;
-        b=RIYma6QYVJVX6sqCjeZBICMdCBquDgYeFce4Jjorpqiq7zVo3szfhUm4pDcZJS/EP2
-         MgHKxk8sbYqPhINXT+ihq7Z+FPUL88ygpZTR9S9keXtmRiQkBEAZU9wOg7IepglGZ5V3
-         7Uatq6z9XXTfwuVtrVswMQnZS2m6VM6sc+tdRkNX+ZWjljHPeHVXCfTCLd47ZSHaf3wP
-         ITNYuyx5yxK4Z8HU14+yXtYr7qEePdUPEPa7trGn7u2t6HuscGs4dP6QwfwbGpQIOblg
-         V8VevTZOBiVo6MxkEFM/i/sakGOYb4E9xmukn6RPywOIHyTwKTuAomGD/vQRObzaHIuF
-         HWtg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=CMXxo9aOlmaJXA2Fa0TTzO8LQVMEninajvd8D9uCCWE=;
-        b=kpTZTklQq9MpM38ju1PrM1G6S4hLvbSJdxBvn4/f09yCRXUYAWk3OiBSCC7eoowIu7
-         7TLDU7DRQJ8wxQIWFydqGbu9DaUOq/+HLzpZLpnXtG2k95LFHE465YTd3ZCnpXzE8ZrC
-         awPDe+pGoDcIcabUTZYyM20LW/rBT+83zGKSpMeB/ZfqjltMZadr2qOE0D0hQ+BGxPok
-         0GWZYmDUxqXqXCFNyoNCSxxVHXLCpTIpmise3n03ohj4IJUMsKhACO3KmG70np47Hj+g
-         jCOlBsP3aUJZpKWM0RK+suI6H/FFlJa9FCTSfQbZzxg8Zlsdylen+isXlLVQ2oHLRIV7
-         BSLQ==
-X-Gm-Message-State: AOAM533/7OLg7i7Jf/HTtyMkDDsZCqP9ZSwnIlhhPEt+qqukpI1M5BHP
-        F7cb3QvOzNYKvSlWCsD/xGDeWA==
-X-Google-Smtp-Source: ABdhPJyCnyWAqwU40ixVBQHiLrpni7isN58Y6lCuAZSqR0npV55Xqhe8wF3lYeKfhxhebjg5JL4nHA==
-X-Received: by 2002:a1c:28a:: with SMTP id 132mr7405874wmc.109.1594801603021;
-        Wed, 15 Jul 2020 01:26:43 -0700 (PDT)
-Received: from localhost.localdomain ([2.31.163.61])
-        by smtp.gmail.com with ESMTPSA id h13sm2400361wml.42.2020.07.15.01.26.41
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2020 01:26:42 -0700 (PDT)
-From:   Lee Jones <lee.jones@linaro.org>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
-        Patrice Chotard <patrice.chotard@st.com>,
-        Pal Singh <ajitpal.singh@st.com>
-Subject: [PATCH v2 04/13] cpufreq: sti-cpufreq: Fix some formatting and misspelling issues
-Date:   Wed, 15 Jul 2020 09:26:25 +0100
-Message-Id: <20200715082634.3024816-5-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200715082634.3024816-1-lee.jones@linaro.org>
-References: <20200715082634.3024816-1-lee.jones@linaro.org>
+        id S1728903AbgGOId1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 04:33:27 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40308 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726034AbgGOId1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Jul 2020 04:33:27 -0400
+Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0AB1C20672;
+        Wed, 15 Jul 2020 08:33:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1594802006;
+        bh=iOVN0Aj56V7pWppvWBvshuC3/3Wx6PjHbGrnZyydSO0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=PTE7YLDehLY6msegiqFCDsJCkrKstPFQEli4wDa+DYQ0plMqvlHJ00vUMOzOrJCY/
+         05CVC2ZuBA3YF5UVB395FVbgyOFuFxd2c+C3Gb9/pHpjTpCyPYcjbchaOybNvNF9Nr
+         0hAr7IDZ08YHAOgkmGdtM567MY6dwVdj2gl/4Ae4=
+Date:   Wed, 15 Jul 2020 10:33:22 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Chen Yu <yu.c.chen@intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Len Brown <len.brown@intel.com>,
+        Michal Miroslaw <mirq-linux@rere.qmqm.pl>,
+        Zhang Rui <rui.zhang@intel.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2][RESEND v3] PM-runtime: change the tracepoints to
+ cover all usage_count
+Message-ID: <20200715083322.GB2716443@kroah.com>
+References: <cover.1594790493.git.yu.c.chen@intel.com>
+ <395187057e486df9a4328bc6d7d4ee912967fdb3.1594790493.git.yu.c.chen@intel.com>
+ <20200715070614.GA2297388@kroah.com>
+ <20200715081838.GA22379@chenyu-office.sh.intel.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200715081838.GA22379@chenyu-office.sh.intel.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Kerneldoc format for attribute descriptions should be '@.*: '.
+On Wed, Jul 15, 2020 at 04:18:38PM +0800, Chen Yu wrote:
+> Hi Greg,
+> thanks very much for taking a look,
+> On Wed, Jul 15, 2020 at 09:06:14AM +0200, Greg Kroah-Hartman wrote:
+> > On Wed, Jul 15, 2020 at 02:28:03PM +0800, Chen Yu wrote:
+> > > Commit d229290689ae ("PM-runtime: add tracepoints for usage_count changes")
+> > > has added some tracepoints to monitor the change of runtime usage, and
+> > > there is something to improve:
+> > > 1. There are some places that adjust the usage count not
+> > >    been traced yet. For example, pm_runtime_get_noresume() and
+> > >    pm_runtime_put_noidle()
+> > > 2. The change of the usage count will not be tracked if decreased
+> > >    from 1 to 0.
+> > > 
+> > > This patch intends to adjust the logic to be consistent with the
+> > > change of usage_counter, that is to say, only after the counter has
+> > > been possibly modified, we record it. Besides, all usage changes will
+> > > be shown using rpm_usage even if included by other trace points.
+> > > And these changes has helped track down the e1000e runtime issue.
+> > > 
+> > > Reviewed-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
+> > > Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> > > ---
+> > >  drivers/base/power/runtime.c | 38 +++++++++++++++++++++++-------------
+> > >  1 file changed, 24 insertions(+), 14 deletions(-)
+> > > 
+> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
+> > > index 85a248e196ca..5789d2624513 100644
+> > > --- a/drivers/base/power/runtime.c
+> > > +++ b/drivers/base/power/runtime.c
+> > > @@ -1004,10 +1004,11 @@ int __pm_runtime_idle(struct device *dev, int rpmflags)
+> > >  	int retval;
+> > >  
+> > >  	if (rpmflags & RPM_GET_PUT) {
+> > > -		if (!atomic_dec_and_test(&dev->power.usage_count)) {
+> > > -			trace_rpm_usage_rcuidle(dev, rpmflags);
+> > > +		bool non_zero = !atomic_dec_and_test(&dev->power.usage_count);
+> > > +
+> > > +		trace_rpm_usage_rcuidle(dev, rpmflags);
+> > 
+> > Why not just call trace everywhere before you do the atomic operations?
+> > Why does the trace need to be called after the operation everywhere?
+> > 
+> If I understand correctly, besides Michal's comments, if we put the trace
+> before the atomic operation, we might be unable to judge whether the counter
+> is going to increase or decrease from rpmflags: it is RPM_GET_PUT which combine
+> the get() and put() together, then it is a little inconvenient for tracking IMO.
 
-Fixes the following W=1 kernel build warning(s):
+A trace can never know the exact value of an atomic value as it could
+change right before or after the trace function is called, right?
 
- drivers/cpufreq/sti-cpufreq.c:49: warning: cannot understand function prototype: 'struct sti_cpufreq_ddata '
+So why are you caring about that?  Care about the functionality that is
+happening, not a reference count that you do not control at all.
 
-Cc: Patrice Chotard <patrice.chotard@st.com>
-Cc: Pal Singh <ajitpal.singh@st.com>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/cpufreq/sti-cpufreq.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+thanks,
 
-diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-index 8f16bbb164b84..a5ad96d29adca 100644
---- a/drivers/cpufreq/sti-cpufreq.c
-+++ b/drivers/cpufreq/sti-cpufreq.c
-@@ -40,11 +40,11 @@ enum {
- };
- 
- /**
-- * ST CPUFreq Driver Data
-+ * struct sti_cpufreq_ddata - ST CPUFreq Driver Data
-  *
-- * @cpu_node		CPU's OF node
-- * @syscfg_eng		Engineering Syscon register map
-- * @regmap		Syscon register map
-+ * @cpu:		CPU's OF node
-+ * @syscfg_eng:		Engineering Syscon register map
-+ * @syscfg:		Syscon register map
-  */
- static struct sti_cpufreq_ddata {
- 	struct device *cpu;
--- 
-2.25.1
-
+greg k-h
