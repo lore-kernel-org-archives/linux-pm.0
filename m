@@ -7,25 +7,25 @@ X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E22BC433E6
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 11:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAC9EC43446
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 11:10:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0FB9820720
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 11:10:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9CFA520658
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 11:10:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731624AbgGOLKU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 07:10:20 -0400
-Received: from relmlor2.renesas.com ([210.160.252.172]:14909 "EHLO
-        relmlie6.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1731618AbgGOLKR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 07:10:17 -0400
+        id S1731707AbgGOLKs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 07:10:48 -0400
+Received: from relmlor1.renesas.com ([210.160.252.171]:7929 "EHLO
+        relmlie5.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL)
+        by vger.kernel.org with ESMTP id S1731699AbgGOLKq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 07:10:46 -0400
 X-IronPort-AV: E=Sophos;i="5.75,355,1589209200"; 
-   d="scan'208";a="51981942"
+   d="scan'208";a="52194215"
 Received: from unknown (HELO relmlir5.idc.renesas.com) ([10.200.68.151])
-  by relmlie6.idc.renesas.com with ESMTP; 15 Jul 2020 20:10:15 +0900
+  by relmlie5.idc.renesas.com with ESMTP; 15 Jul 2020 20:10:44 +0900
 Received: from localhost.localdomain (unknown [10.226.36.204])
-        by relmlir5.idc.renesas.com (Postfix) with ESMTP id D61D34006DF5;
-        Wed, 15 Jul 2020 20:10:09 +0900 (JST)
+        by relmlir5.idc.renesas.com (Postfix) with ESMTP id 11D5740065C3;
+        Wed, 15 Jul 2020 20:10:38 +0900 (JST)
 From:   Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 To:     Geert Uytterhoeven <geert+renesas@glider.be>,
         Wolfram Sang <wsa+renesas@sang-engineering.com>,
@@ -51,9 +51,9 @@ Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         linux-watchdog@vger.kernel.org,
         Prabhakar <prabhakar.csengg@gmail.com>,
         Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Subject: [PATCH 10/20] arm64: dts: renesas: r8a774e1: Add SDHI nodes
-Date:   Wed, 15 Jul 2020 12:09:00 +0100
-Message-Id: <1594811350-14066-11-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+Subject: [PATCH 15/20] arm64: dts: renesas: r8a774e1: Add MSIOF nodes
+Date:   Wed, 15 Jul 2020 12:09:05 +0100
+Message-Id: <1594811350-14066-16-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
 References: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
@@ -62,72 +62,87 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add SDHI[0-2] device nodes to R8A774E1 SoC.
+Add the DT nodes needed by MSIOF[0123] interfaces to the SoC dtsi.
 
 Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 Reviewed-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renesas.com>
 ---
- arch/arm64/boot/dts/renesas/r8a774e1.dtsi | 32 ++++++++++++++++++++---
- 1 file changed, 29 insertions(+), 3 deletions(-)
+ arch/arm64/boot/dts/renesas/r8a774e1.dtsi | 62 +++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
 diff --git a/arch/arm64/boot/dts/renesas/r8a774e1.dtsi b/arch/arm64/boot/dts/renesas/r8a774e1.dtsi
-index 6ed97187106a..7650152b695b 100644
+index e221c03bdd87..03e5982b8456 100644
 --- a/arch/arm64/boot/dts/renesas/r8a774e1.dtsi
 +++ b/arch/arm64/boot/dts/renesas/r8a774e1.dtsi
-@@ -1219,17 +1219,42 @@
+@@ -1256,6 +1256,68 @@
+ 			status = "disabled";
  		};
  
- 		sdhi0: sd@ee100000 {
-+			compatible = "renesas,sdhi-r8a774e1",
-+				     "renesas,rcar-gen3-sdhi";
- 			reg = <0 0xee100000 0 0x2000>;
-+			interrupts = <GIC_SPI 165 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg CPG_MOD 314>;
-+			max-frequency = <200000000>;
++		msiof0: spi@e6e90000 {
++			compatible = "renesas,msiof-r8a774e1",
++				     "renesas,rcar-gen3-msiof";
++			reg = <0 0xe6e90000 0 0x0064>;
++			interrupts = <GIC_SPI 156 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 211>;
++			dmas = <&dmac1 0x41>, <&dmac1 0x40>,
++			       <&dmac2 0x41>, <&dmac2 0x40>;
++			dma-names = "tx", "rx", "tx", "rx";
 +			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
-+			resets = <&cpg 314>;
-+			iommus = <&ipmmu_ds1 32>;
- 			status = "disabled";
-+		};
- 
--			/* placeholder */
-+		sdhi1: sd@ee120000 {
-+			compatible = "renesas,sdhi-r8a774e1",
-+				     "renesas,rcar-gen3-sdhi";
-+			reg = <0 0xee120000 0 0x2000>;
-+			interrupts = <GIC_SPI 166 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg CPG_MOD 313>;
-+			max-frequency = <200000000>;
-+			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
-+			resets = <&cpg 313>;
-+			iommus = <&ipmmu_ds1 33>;
++			resets = <&cpg 211>;
++			#address-cells = <1>;
++			#size-cells = <0>;
 +			status = "disabled";
- 		};
- 
- 		sdhi2: sd@ee140000 {
-+			compatible = "renesas,sdhi-r8a774e1",
-+				     "renesas,rcar-gen3-sdhi";
- 			reg = <0 0xee140000 0 0x2000>;
-+			interrupts = <GIC_SPI 167 IRQ_TYPE_LEVEL_HIGH>;
-+			clocks = <&cpg CPG_MOD 312>;
-+			max-frequency = <200000000>;
++		};
++
++		msiof1: spi@e6ea0000 {
++			compatible = "renesas,msiof-r8a774e1",
++				     "renesas,rcar-gen3-msiof";
++			reg = <0 0xe6ea0000 0 0x0064>;
++			interrupts = <GIC_SPI 157 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 210>;
++			dmas = <&dmac1 0x43>, <&dmac1 0x42>,
++			       <&dmac2 0x43>, <&dmac2 0x42>;
++			dma-names = "tx", "rx", "tx", "rx";
 +			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
-+			resets = <&cpg 312>;
-+			iommus = <&ipmmu_ds1 34>;
- 			status = "disabled";
--
--			/* placeholder */
- 		};
- 
- 		sdhi3: sd@ee160000 {
-@@ -1241,6 +1266,7 @@
- 			max-frequency = <200000000>;
- 			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
- 			resets = <&cpg 311>;
-+			iommus = <&ipmmu_ds1 35>;
- 			status = "disabled";
- 		};
- 
++			resets = <&cpg 210>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		msiof2: spi@e6c00000 {
++			compatible = "renesas,msiof-r8a774e1",
++				     "renesas,rcar-gen3-msiof";
++			reg = <0 0xe6c00000 0 0x0064>;
++			interrupts = <GIC_SPI 158 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 209>;
++			dmas = <&dmac0 0x45>, <&dmac0 0x44>;
++			dma-names = "tx", "rx";
++			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
++			resets = <&cpg 209>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
++		msiof3: spi@e6c10000 {
++			compatible = "renesas,msiof-r8a774e1",
++				     "renesas,rcar-gen3-msiof";
++			reg = <0 0xe6c10000 0 0x0064>;
++			interrupts = <GIC_SPI 159 IRQ_TYPE_LEVEL_HIGH>;
++			clocks = <&cpg CPG_MOD 208>;
++			dmas = <&dmac0 0x47>, <&dmac0 0x46>;
++			dma-names = "tx", "rx";
++			power-domains = <&sysc R8A774E1_PD_ALWAYS_ON>;
++			resets = <&cpg 208>;
++			#address-cells = <1>;
++			#size-cells = <0>;
++			status = "disabled";
++		};
++
+ 		rcar_sound: sound@ec500000 {
+ 			reg = <0 0xec500000 0 0x1000>, /* SCU */
+ 			      <0 0xec5a0000 0 0x100>,  /* ADG */
 -- 
 2.17.1
 
