@@ -2,279 +2,151 @@ Return-Path: <SRS0=OhA8=A2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_2 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEAF5C433F8
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9B8EC433E7
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BAAEF206D5
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:25 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="oy8I177G"
+	by mail.kernel.org (Postfix) with ESMTP id 9D907206E9
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:27:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729871AbgGOI0o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 04:26:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51808 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729862AbgGOI0m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 04:26:42 -0400
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DBDDC061755
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:42 -0700 (PDT)
-Received: by mail-wr1-x441.google.com with SMTP id f18so1527586wrs.0
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:42 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=ihjHslCIw8qoMVK4GXrRB+3Lj/xZDniOVXUYfLOZNm8=;
-        b=oy8I177G6dJEDpBrdxhbNXr6eWAuiaucCN6BvpWmTV5GJxmYxNYnN1lFkHFXt8M7oJ
-         R6ooMcsuYbuh02++yZ3V1ni9aBPhi6hpoSKyNhGDRWo43fdxVCsgOoZffKPobP3zkTiv
-         k1X64hU5n+M4+g/wkseLyImHKdQSD8Z7ZBfTlmvaEPUafxpQW4DWnIjgpTLrNIN91DCC
-         ZwfFLnc41wUqXeat4AEy47ZQi+r5c1s1Au00TOolQbNhWPB64J/oC4wYg+3FLbODPSIt
-         p+D3lrRh9pLo17RdsiHs72QqQDn9fD3W3v0kzW7WPerA5H4IZ4650ZhJvO/Sm5tklwvq
-         Aw1w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=ihjHslCIw8qoMVK4GXrRB+3Lj/xZDniOVXUYfLOZNm8=;
-        b=nBY6BqbGmFeqSrSTFRyR9faOpRSEnfSq94zNhq9cm9ig3b3dNV+Uch1PGbpSIk26Tl
-         7DTehkCLzavJKZtNyJdcgjTBJCrFwwNnx+JJtS1xqmkGqIce2GVUnla4oXg63cqvdQpO
-         2SLRdwasjN9dys/d43vAmmEwIe5pOyccpHzmtgTuDoDSpQro9AoXCRCT9HAndubDgIC7
-         T0mgVu4AyxYwsFsT5TwfbRQBnQPQauTWX7ydnjw8dJh6E5yluJImxzp6GK7i6imwDuxu
-         +Ir6Tckvytcam8HjSrbW6OTaYO/KZxSvJESG43q8NbtTcwVGL2CPLm+Xgtrjfm4NDRQd
-         Bozw==
-X-Gm-Message-State: AOAM530GiQbIdHCp1EExDN6e4XSBJUkLNypP0+pksU5oqh0lfZM3E2wX
-        070B7RaAE0ozl6On7tcYyn/ntg==
-X-Google-Smtp-Source: ABdhPJwrIr6A0DAwJDikfm63DJ+83JVkApYPpXTo2osG/PQ/mYSYmt5yVyxC0lkykW5emZGajYIhZA==
-X-Received: by 2002:a5d:69c5:: with SMTP id s5mr10062532wrw.197.1594801600826;
-        Wed, 15 Jul 2020 01:26:40 -0700 (PDT)
-Received: from localhost.localdomain ([2.31.163.61])
-        by smtp.gmail.com with ESMTPSA id h13sm2400361wml.42.2020.07.15.01.26.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2020 01:26:40 -0700 (PDT)
-From:   Lee Jones <lee.jones@linaro.org>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org
-Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
-        Dominik Brodowski <linux@brodo.de>,
-        Ashok Raj <ashok.raj@intel.com>,
-        Jacob Shin <jacob.shin@amd.com>
-Subject: [PATCH v2 02/13] cpufreq: cpufreq: Demote lots of function headers unworthy of kerneldoc status
-Date:   Wed, 15 Jul 2020 09:26:23 +0100
-Message-Id: <20200715082634.3024816-3-lee.jones@linaro.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200715082634.3024816-1-lee.jones@linaro.org>
-References: <20200715082634.3024816-1-lee.jones@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1726984AbgGOI1o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 04:27:44 -0400
+Received: from mga07.intel.com ([134.134.136.100]:41250 "EHLO mga07.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726396AbgGOI1n (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 15 Jul 2020 04:27:43 -0400
+IronPort-SDR: ESfhtG135gxq2CEs2vGLLJRd7PVjIWaMsyWKJ5c8ucru3O93/oEhG4XD1DkTaZpWB7dBZoSYZh
+ 3MhsQr8M5VHg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9682"; a="213876760"
+X-IronPort-AV: E=Sophos;i="5.75,354,1589266800"; 
+   d="scan'208";a="213876760"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga002.jf.intel.com ([10.7.209.21])
+  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Jul 2020 01:27:37 -0700
+IronPort-SDR: R2YkGjF0/a7Jh7EPsjLE55eWyoNz3iAYV26+kZVW+YaC8o8eWQDXB2vr9kw9bdtnyGyVvMFErL
+ iPHarFRLMHLg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.75,354,1589266800"; 
+   d="scan'208";a="299812940"
+Received: from yren3-mobl.ccr.corp.intel.com ([10.249.174.224])
+  by orsmga002.jf.intel.com with ESMTP; 15 Jul 2020 01:27:35 -0700
+Message-ID: <e078f9ebd3e8e440d5c04d2abac31201f5d3443d.camel@intel.com>
+Subject: Re: [RFC PATCH 0/4] thermal: Introduce support for monitoring
+ falling temperature
+From:   Zhang Rui <rui.zhang@intel.com>
+To:     Thara Gopinath <thara.gopinath@linaro.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, robh+dt@kernel.org
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Date:   Wed, 15 Jul 2020 16:27:34 +0800
+In-Reply-To: <5861acec-c49a-47cc-d7c6-ccef11dc1d58@linaro.org>
+References: <20200710135154.181454-1-thara.gopinath@linaro.org>
+         <7437ee89-e76d-0c82-9860-5c6076ad8a30@linaro.org>
+         <b25d54d35cec777f0dcc5b2bcacce27321d9bd45.camel@intel.com>
+         <5861acec-c49a-47cc-d7c6-ccef11dc1d58@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
+X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Also provide missing function parameter description for 'cpu' and 'policy'.
+Hi, Thara,
 
-Fixes the following W=1 kernel build warning(s):
+On Tue, 2020-07-14 at 17:39 -0400, Thara Gopinath wrote:
+> 
+> > 
+> > For example, to support this, we can
+> > either
+> > introduce both "cold" trip points and "warming devices", and
+> > introduce
+> > new logic in thermal framework and governors to handle them,
+> > Or
+> > introduce "cold" trip point and "warming" device, but only
+> > semantically, and treat them just like normal trip points and
+> > cooling
+> > devices. And strictly define cooling state 0 as the state that
+> > generates most heat, and define max cooling state as the state that
+> > generates least heat. Then, say, we have a trip point at -10C, the
+> > "warming" device is set to cooling state 0 when the temperature is
+> > lower than -10C, and in most cases, this thermal zone is always in
+> > a
+> > "overheating" state (temperature higher than -10C), and the
+> > "warming"
+> > device for this thermal zone is "throttled" to generate as least
+> > heat
+> > as possible. And this is pretty much what the current code has
+> > always
+> > been doing, right?
+> 
+> 
+> IMHO, thermal framework should move to a direction where the term 
+> "mitigation" is used rather than cooling or warming. In this case 
+> "cooling dev" and "warming dev" should will become 
+> "temp-mitigating-dev". So going by this, I think what you mention as 
+> option 1 is more suitable where new logic is introduced into the 
+> framework and governors to handle the trip points marked as "cold".
+> 
+> Also in the current set of requirements, we have a few power domain 
+> rails and other resources that are used exclusively in the thermal 
+> framework for warming alone as in they are not used ever for cooling 
+> down a zone. But then one of the requirements we have discussed is
+> for cpufreq and gpu scaling to be behave as warming devices where
+> the minimum operating point/ voltage of the relevant cpu/gpu is
+> restricted.
+> So in this case, Daniel had this suggestion of introducing negative 
+> states for presently what is defined as cooling devices. So cooling
+> dev 
+> / temp-mitigation-dev states can range from say -3 to 5 with 0 as
+> the 
+> good state where no mitigation is happening. This is an interesting
+> idea 
+> though I have not proto-typed it yet.
 
- drivers/cpufreq/cpufreq.c:60: warning: cannot understand function prototype: 'struct cpufreq_driver *cpufreq_driver; '
- drivers/cpufreq/cpufreq.c:90: warning: Function parameter or member 'cpufreq_policy_notifier_list' not described in 'BLOCKING_NOTIFIER_HEAD'
- drivers/cpufreq/cpufreq.c:312: warning: Function parameter or member 'val' not described in 'adjust_jiffies'
- drivers/cpufreq/cpufreq.c:312: warning: Function parameter or member 'ci' not described in 'adjust_jiffies'
- drivers/cpufreq/cpufreq.c:538: warning: Function parameter or member 'policy' not described in 'cpufreq_driver_resolve_freq'
- drivers/cpufreq/cpufreq.c:686: warning: Function parameter or member 'file_name' not described in 'show_one'
- drivers/cpufreq/cpufreq.c:686: warning: Function parameter or member 'object' not described in 'show_one'
- drivers/cpufreq/cpufreq.c:731: warning: Function parameter or member 'file_name' not described in 'store_one'
- drivers/cpufreq/cpufreq.c:731: warning: Function parameter or member 'object' not described in 'store_one'
- drivers/cpufreq/cpufreq.c:741: warning: Function parameter or member 'policy' not described in 'show_cpuinfo_cur_freq'
- drivers/cpufreq/cpufreq.c:741: warning: Function parameter or member 'buf' not described in 'show_cpuinfo_cur_freq'
- drivers/cpufreq/cpufreq.c:754: warning: Function parameter or member 'policy' not described in 'show_scaling_governor'
- drivers/cpufreq/cpufreq.c:754: warning: Function parameter or member 'buf' not described in 'show_scaling_governor'
- drivers/cpufreq/cpufreq.c:770: warning: Function parameter or member 'policy' not described in 'store_scaling_governor'
- drivers/cpufreq/cpufreq.c:770: warning: Function parameter or member 'buf' not described in 'store_scaling_governor'
- drivers/cpufreq/cpufreq.c:770: warning: Function parameter or member 'count' not described in 'store_scaling_governor'
- drivers/cpufreq/cpufreq.c:806: warning: Function parameter or member 'policy' not described in 'show_scaling_driver'
- drivers/cpufreq/cpufreq.c:806: warning: Function parameter or member 'buf' not described in 'show_scaling_driver'
- drivers/cpufreq/cpufreq.c:815: warning: Function parameter or member 'policy' not described in 'show_scaling_available_governors'
- drivers/cpufreq/cpufreq.c:815: warning: Function parameter or member 'buf' not described in 'show_scaling_available_governors'
- drivers/cpufreq/cpufreq.c:859: warning: Function parameter or member 'policy' not described in 'show_related_cpus'
- drivers/cpufreq/cpufreq.c:859: warning: Function parameter or member 'buf' not described in 'show_related_cpus'
- drivers/cpufreq/cpufreq.c:867: warning: Function parameter or member 'policy' not described in 'show_affected_cpus'
- drivers/cpufreq/cpufreq.c:867: warning: Function parameter or member 'buf' not described in 'show_affected_cpus'
- drivers/cpufreq/cpufreq.c:901: warning: Function parameter or member 'policy' not described in 'show_bios_limit'
- drivers/cpufreq/cpufreq.c:901: warning: Function parameter or member 'buf' not described in 'show_bios_limit'
- drivers/cpufreq/cpufreq.c:1625: warning: Function parameter or member 'dev' not described in 'cpufreq_remove_dev'
- drivers/cpufreq/cpufreq.c:1625: warning: Function parameter or member 'sif' not described in 'cpufreq_remove_dev'
- drivers/cpufreq/cpufreq.c:2380: warning: Function parameter or member 'cpu' not described in 'cpufreq_get_policy'
- drivers/cpufreq/cpufreq.c:2771: warning: Function parameter or member 'driver' not described in 'cpufreq_unregister_driver'
+Agreed. If some devices support both "cooling" and "warning", we should
+have only one "temp-mitigating-dev" instead.
+> 
+> > 
+> > I can not say which one is better for now as I don't have the
+> > background of this requirement. It's nice that Thara sent this RFC
+> > series for discussion, but from upstream point of view, I'd prefer
+> > to
+> > see a full stack solution, before taking any code.
+> 
+> We had done a session at ELC on this requirement. Here is the link
+> to 
+> the presentation. Hopefully it gives you some back ground on this.
 
-Cc: Dominik Brodowski <linux@brodo.de>
-Cc: Ashok Raj <ashok.raj@intel.com>
-Cc: Jacob Shin <jacob.shin@amd.com>
-Signed-off-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/cpufreq/cpufreq.c | 32 +++++++++++++++++---------------
- 1 file changed, 17 insertions(+), 15 deletions(-)
+yes, it helps. :)
+> 
+> 
+https://elinux.org/images/f/f7/ELC-2020-Thara-Ram-Linux-Kernel-Thermal-Warming.pdf
+> 
+> I have sent across some patches for introducing a generic power
+> domain 
+> warming device which is under review by Daniel.
+> 
+> So how do you want to proceed on this? Can you elaborate a bit more
+> on 
+> what you mean by a full stack solution.
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 036f4cc42ede2..17c1c3becd925 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -52,7 +52,7 @@ static LIST_HEAD(cpufreq_governor_list);
- 
- static char default_governor[CPUFREQ_NAME_LEN];
- 
--/**
-+/*
-  * The "cpufreq driver" - the arch- or hardware-dependent low
-  * level driver of CPUFreq support, and its spinlock. This lock
-  * also protects the cpufreq_cpu_data array.
-@@ -80,7 +80,7 @@ static int cpufreq_set_policy(struct cpufreq_policy *policy,
- 			      struct cpufreq_governor *new_gov,
- 			      unsigned int new_pol);
- 
--/**
-+/*
-  * Two notifier lists: the "policy" list is involved in the
-  * validation process for a new CPU frequency policy; the
-  * "transition" list for kernel code that needs to handle
-@@ -300,7 +300,7 @@ struct cpufreq_policy *cpufreq_cpu_acquire(unsigned int cpu)
-  *            EXTERNALLY AFFECTING FREQUENCY CHANGES                 *
-  *********************************************************************/
- 
--/**
-+/*
-  * adjust_jiffies - adjust the system "loops_per_jiffy"
-  *
-  * This function alters the system "loops_per_jiffy" for the clock
-@@ -526,6 +526,7 @@ EXPORT_SYMBOL_GPL(cpufreq_disable_fast_switch);
- /**
-  * cpufreq_driver_resolve_freq - Map a target frequency to a driver-supported
-  * one.
-+ * @policy: associated policy to interrogate
-  * @target_freq: target frequency to resolve.
-  *
-  * The target to driver frequency mapping is cached in the policy.
-@@ -670,7 +671,7 @@ static struct cpufreq_governor *cpufreq_parse_governor(char *str_governor)
- 	return get_governor(str_governor);
- }
- 
--/**
-+/*
-  * cpufreq_per_cpu_attr_read() / show_##file_name() -
-  * print out cpufreq information
-  *
-@@ -712,7 +713,7 @@ static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
- 	return ret;
- }
- 
--/**
-+/*
-  * cpufreq_per_cpu_attr_write() / store_##file_name() - sysfs write access
-  */
- #define store_one(file_name, object)			\
-@@ -733,7 +734,7 @@ static ssize_t store_##file_name					\
- store_one(scaling_min_freq, min);
- store_one(scaling_max_freq, max);
- 
--/**
-+/*
-  * show_cpuinfo_cur_freq - current CPU frequency as detected by hardware
-  */
- static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy *policy,
-@@ -747,7 +748,7 @@ static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy *policy,
- 	return sprintf(buf, "<unknown>\n");
- }
- 
--/**
-+/*
-  * show_scaling_governor - show the current policy for the specified CPU
-  */
- static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
-@@ -762,7 +763,7 @@ static ssize_t show_scaling_governor(struct cpufreq_policy *policy, char *buf)
- 	return -EINVAL;
- }
- 
--/**
-+/*
-  * store_scaling_governor - store policy for the specified CPU
-  */
- static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
-@@ -799,7 +800,7 @@ static ssize_t store_scaling_governor(struct cpufreq_policy *policy,
- 	return ret ? ret : count;
- }
- 
--/**
-+/*
-  * show_scaling_driver - show the cpufreq driver currently loaded
-  */
- static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *buf)
-@@ -807,7 +808,7 @@ static ssize_t show_scaling_driver(struct cpufreq_policy *policy, char *buf)
- 	return scnprintf(buf, CPUFREQ_NAME_PLEN, "%s\n", cpufreq_driver->name);
- }
- 
--/**
-+/*
-  * show_scaling_available_governors - show the available CPUfreq governors
-  */
- static ssize_t show_scaling_available_governors(struct cpufreq_policy *policy,
-@@ -851,7 +852,7 @@ ssize_t cpufreq_show_cpus(const struct cpumask *mask, char *buf)
- }
- EXPORT_SYMBOL_GPL(cpufreq_show_cpus);
- 
--/**
-+/*
-  * show_related_cpus - show the CPUs affected by each transition even if
-  * hw coordination is in use
-  */
-@@ -860,7 +861,7 @@ static ssize_t show_related_cpus(struct cpufreq_policy *policy, char *buf)
- 	return cpufreq_show_cpus(policy->related_cpus, buf);
- }
- 
--/**
-+/*
-  * show_affected_cpus - show the CPUs affected by each transition
-  */
- static ssize_t show_affected_cpus(struct cpufreq_policy *policy, char *buf)
-@@ -894,7 +895,7 @@ static ssize_t show_scaling_setspeed(struct cpufreq_policy *policy, char *buf)
- 	return policy->governor->show_setspeed(policy, buf);
- }
- 
--/**
-+/*
-  * show_bios_limit - show the current cpufreq HW/BIOS limitation
-  */
- static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
-@@ -1616,7 +1617,7 @@ static int cpufreq_offline(unsigned int cpu)
- 	return 0;
- }
- 
--/**
-+/*
-  * cpufreq_remove_dev - remove a CPU device
-  *
-  * Removes the cpufreq interface for a CPU device.
-@@ -2373,6 +2374,7 @@ EXPORT_SYMBOL_GPL(cpufreq_unregister_governor);
-  * cpufreq_get_policy - get the current cpufreq_policy
-  * @policy: struct cpufreq_policy into which the current cpufreq_policy
-  *	is written
-+ * @cpu: CPU to find the policy for
-  *
-  * Reads the current cpufreq policy.
-  */
-@@ -2759,7 +2761,7 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- }
- EXPORT_SYMBOL_GPL(cpufreq_register_driver);
- 
--/**
-+/*
-  * cpufreq_unregister_driver - unregister the current CPUFreq driver
-  *
-  * Unregister the current CPUFreq driver. Only call this if you have
--- 
-2.25.1
+I mean, the patches, and the idea look good to me, just with some minor
+comments. But applying this patch series, alone, does not bring us
+anything because we don't have a thermal zone driver that supports cold
+trip point, right?
+I'd like to see this patch series together with the support in
+thermal_core/governors and real users like updated/new thermal
+zone/cdev drivers that supports the cold trip point and warming
+actions.
+Or else I've the concern that this piece of code may be changed back
+and forth when prototyping the rest of the support.
+
+thanks,
+rui
 
