@@ -7,114 +7,103 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E252C433E5
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:26:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C97FC433EB
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:26:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5E69020657
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:26:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E51620657
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 08:26:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="V2Eh8BkZ"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zXIpCOcY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729890AbgGOI0r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 04:26:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51830 "EHLO
+        id S1726648AbgGOI0z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 04:26:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51878 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729880AbgGOI0q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 04:26:46 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 888AFC08C5C1
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:45 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id q15so4502529wmj.2
-        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:45 -0700 (PDT)
+        with ESMTP id S1729928AbgGOI0z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 04:26:55 -0400
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CC9AC08C5C1
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:54 -0700 (PDT)
+Received: by mail-wm1-x344.google.com with SMTP id f139so4680215wmf.5
+        for <linux-pm@vger.kernel.org>; Wed, 15 Jul 2020 01:26:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=MCk19GsQjhT9V6ZH5VfzAX6PQXTZggJu/iEJMuF5hMQ=;
-        b=V2Eh8BkZ8dcCa53IaQSf1cFlilO/zt8ksPMcm3ZyMf7Kh+zTEEuh90evBOvEi61Q2K
-         54BEgKiKD5KhfqA0S1X2/Xd7JybfTairskcEafqLYETq1pXo/nwW50FaHThpGQJCKMDn
-         N3w4k2sMMWuls8XD56YVqhTbHLtGtFTQdrBDWb/tFACe+fXHnJj4BsEkhGl8V6oDKxYs
-         xzRwW8j16fa41Zbo1mO6xdgn8cV+YCawvLHsJt/E0QV8Vg3yLLpnjDCgblt7FADeb/9C
-         es0UE0y/wxLnmsVmvRJLRckXYkWxyYcO5DGgT7rfz45lcFYKT+dOAz1YXilbEV5zMmX7
-         /WFg==
+        bh=xDE1zUX/1JKQBQmQqlPliyHfkazrkQ232Ej5nXmiXwM=;
+        b=zXIpCOcYgYHp1oI/hNnk7zY9h2vzxnyGom+gI1qtkY9gm2GpNzrjfPEFEUBPJH5UV6
+         B6KQaI1nRCVuI+yN6eORsPiXeZ1pz3BSHbCy72HLtafEThX0+RoPRLneZigsJABeab59
+         zdzPVLTA85+sxS8iafLaTVvgxWdhYc/5554JhGgByGNiv1rSVi/h1HH0DjGavC9IpM/N
+         xhOMe26zXLdwfZOhKkZEvOA9PdP5EnV5oe8Ib/cVIjRGbWpg9829J9rA3vpuOfklOYV8
+         spprCi/ti3c2ZogtRgF35Z0LCQrJWosGr7Xz/eHYISvhYS+lP1v8pf+RlvdSSzpCWpaI
+         jjiw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=MCk19GsQjhT9V6ZH5VfzAX6PQXTZggJu/iEJMuF5hMQ=;
-        b=frf13vyo4yYt+37YvVOXUtXdeZXFcDHxkNUYbjQTuepAvzOuG6FJTtnN4Z/rkRLWtJ
-         i01CwGINVO3Ini5QfAQNJU7XFyXHCoDycktWP8oLMwM3PRBaWPQBLA6h+zY5xaNWc3rd
-         u/ByuGyJpgAVIYvzQS5muc1MaEuExyw3PrOHlVze8xmqvQPReRwsvzVfNMs2l/BtKzLh
-         9wnjRU2izYLzWxAKpDlZbMnF6cKr3wRyz+iGUYL+EfC4Jf9e1sVUWd/lfCO6EbUcuJIK
-         F4gXMctBICGMAkXFVDLUSaQf97QSkCXfA1SGLRsS3qkt93mocABf0bStNbT7ICTJgR+1
-         h8zg==
-X-Gm-Message-State: AOAM530NHVFhUmO7Ptn/0RcOajYsO/oUgJHdyO0uY9Y5LJ3xOgIKD5AU
-        6mcjhCw3J2FStcQOPkSNklcQysja2eQ=
-X-Google-Smtp-Source: ABdhPJwMbYK/KKybcySvzNfcd30nLvna3tfOpKszLpsbnWbTflEcZDNIxJlMqKGZU3TgUfFpWQURiw==
-X-Received: by 2002:a1c:6354:: with SMTP id x81mr7228802wmb.98.1594801604289;
-        Wed, 15 Jul 2020 01:26:44 -0700 (PDT)
+        bh=xDE1zUX/1JKQBQmQqlPliyHfkazrkQ232Ej5nXmiXwM=;
+        b=mCIpHHtCgL5iWX0DKPoTjrC+fdeK5LOrVz62YsrdwOUt0v5/A/wBdmMRRXQx0lApFB
+         7No9KsuegJ43ietRpqnXhT1/FXGoutXuKG6wZG5qIEjASIoAXrNFIymuADlyKIresJg8
+         WhdY5B2ALtJmYt+u4YQVNx40/NdS9+aIYk11JIRcl7GVi5N+CjyvuJeW6j/R6+B6dGcS
+         zDC2BaZo/ORaxtDxnYvwcnrI+dhqt44EPAT1SDABo9KtWw0EhkkCiJUwH1/JKHI2roPv
+         eCkWtL3OP1cCpCF1GAk1dXyp4y7y+OSq2ytXnB0Q1nIZq86oESOaXcwFbtclHwahef9R
+         7tZQ==
+X-Gm-Message-State: AOAM533qmW48JrLZ8TaxwiC+00uHFKRYEvFFt5YBIPhp2IbEpsHZ26sv
+        wTH/xnd6gruBUL8QE08oeLZYuA==
+X-Google-Smtp-Source: ABdhPJwYJSMFUV5PpASoPDrjaYIuPcrg9uZDlscqgtu4rQfld8dFTZRklyYJDtiqeHbOc4WUtFqVFg==
+X-Received: by 2002:a1c:18b:: with SMTP id 133mr7513947wmb.178.1594801613334;
+        Wed, 15 Jul 2020 01:26:53 -0700 (PDT)
 Received: from localhost.localdomain ([2.31.163.61])
-        by smtp.gmail.com with ESMTPSA id h13sm2400361wml.42.2020.07.15.01.26.43
+        by smtp.gmail.com with ESMTPSA id h13sm2400361wml.42.2020.07.15.01.26.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2020 01:26:43 -0700 (PDT)
+        Wed, 15 Jul 2020 01:26:52 -0700 (PDT)
 From:   Lee Jones <lee.jones@linaro.org>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org
 Cc:     linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         linux-pm@vger.kernel.org, Lee Jones <lee.jones@linaro.org>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev@lists.ozlabs.org, Olof Johansson <olof@lixom.net>
-Subject: [PATCH v2 05/13] cpufreq: pasemi: Include header file for {check,restore}_astate prototypes
-Date:   Wed, 15 Jul 2020 09:26:26 +0100
-Message-Id: <20200715082634.3024816-6-lee.jones@linaro.org>
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Len Brown <lenb@kernel.org>,
+        Dirk Brandewie <dirk.j.brandewie@intel.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: [PATCH v2 12/13] cpufreq: intel_pstate: Supply struct attribute description for get_aperf_mperf_shift()
+Date:   Wed, 15 Jul 2020 09:26:33 +0100
+Message-Id: <20200715082634.3024816-13-lee.jones@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200715082634.3024816-1-lee.jones@linaro.org>
 References: <20200715082634.3024816-1-lee.jones@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-If function callers and providers do not share the same prototypes the
-compiler complains of missing prototypes.  Fix this by including the
-correct platforms header file.
-
 Fixes the following W=1 kernel build warning(s):
 
- drivers/cpufreq/pasemi-cpufreq.c:109:5: warning: no previous prototype for ‘check_astate’ [-Wmissing-prototypes]
- 109 | int check_astate(void)
- | ^~~~~~~~~~~~
- drivers/cpufreq/pasemi-cpufreq.c:114:6: warning: no previous prototype for ‘restore_astate’ [-Wmissing-prototypes]
- 114 | void restore_astate(int cpu)
- | ^~~~~~~~~~~~~~
+ drivers/cpufreq/intel_pstate.c:293: warning: Function parameter or member 'get_aperf_mperf_shift' not described in 'pstate_funcs'
 
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Suggested-by: Olof Johansson <olof@lixom.net>
+Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
+Suggested-by: "Rafael J. Wysocki" <rafael@kernel.org>
 Signed-off-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/cpufreq/pasemi-cpufreq.c | 2 ++
+ drivers/cpufreq/intel_pstate.c | 2 ++
  1 file changed, 2 insertions(+)
 
-diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cpufreq.c
-index c66f566a854cb..815645170c4de 100644
---- a/drivers/cpufreq/pasemi-cpufreq.c
-+++ b/drivers/cpufreq/pasemi-cpufreq.c
-@@ -22,6 +22,8 @@
- #include <asm/time.h>
- #include <asm/smp.h>
- 
-+#include <platforms/pasemi/pasemi.h>
-+
- #define SDCASR_REG		0x0100
- #define SDCASR_REG_STRIDE	0x1000
- #define SDCPWR_CFGA0_REG	0x0100
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 44c7b4677675d..3960f971fdfb3 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -275,6 +275,8 @@ static struct cpudata **all_cpu_data;
+  * @get_min:		Callback to get minimum P state
+  * @get_turbo:		Callback to get turbo P state
+  * @get_scaling:	Callback to get frequency scaling factor
++ * @get_aperf_mperf_shift: Callback to get the APERF vs MPERF frequency
++ *			   difference
+  * @get_val:		Callback to convert P state to actual MSR write value
+  * @get_vid:		Callback to get VID data for Atom platforms
+  *
 -- 
 2.25.1
 
