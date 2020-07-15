@@ -2,159 +2,181 @@ Return-Path: <SRS0=OhA8=A2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DFB94C433E4
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:09:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E485FC433E4
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:27:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BD1462070E
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:09:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B7D412072D
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 03:27:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mCQYqHda"
+	dkim=pass (2048-bit key) header.d=lixom-net.20150623.gappssmtp.com header.i=@lixom-net.20150623.gappssmtp.com header.b="ZEbB4gSy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728131AbgGODJu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 14 Jul 2020 23:09:50 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59492 "EHLO
+        id S1727030AbgGOD1F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 14 Jul 2020 23:27:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33898 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726782AbgGODJt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 23:09:49 -0400
-Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 78B47C061755
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:09:49 -0700 (PDT)
-Received: by mail-pj1-x1043.google.com with SMTP id gc9so1754255pjb.2
-        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:09:49 -0700 (PDT)
+        with ESMTP id S1727065AbgGOD1E (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 14 Jul 2020 23:27:04 -0400
+Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com [IPv6:2607:f8b0:4864:20::d42])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6D20C061794
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:27:02 -0700 (PDT)
+Received: by mail-io1-xd42.google.com with SMTP id l17so732008iok.7
+        for <linux-pm@vger.kernel.org>; Tue, 14 Jul 2020 20:27:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=R8Gi68qr1aDvO0QyibD3Pq2zcXF2jU6VWUvfFWeUSio=;
-        b=mCQYqHdaeQKSdh/0G0+UcnKbrk3gam4BRinxdpoSmGWJoo7YCrXU1HXoo+l5rldKPl
-         35He1pWMZF9+F9lDMZ/nN7jyxZJKlRGDfK/7qZh0qgnwbam4p/hkHtbfSI7oUXsU2MYb
-         Cl+PWrpd57mmjpgbe9ZokVqqcc23el1nAOtpj4e4lZMjeIEieffTfWhCh5sYaAZxbY0f
-         cj8Y2A3l/aKfqUHGS48stXID25o58xi/YqXfV+8OlDK+hbdWvRENKfBx96v9J21XA8MR
-         XbeQrkCgsBNXAIX4Fy0Wa8z3FfdSfjqYRN7X6lpEEm36Z9uwGzkz8f8D2M1DjKiUWxtg
-         tJWw==
+        d=lixom-net.20150623.gappssmtp.com; s=20150623;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=/6qvp5WHZj/oa9tsQs7daglYAIrSHRjqnbn4LJYVqYM=;
+        b=ZEbB4gSyyVHw+IqRwjZPPSBGmJ1kW6qrI3GlqPzdjDUvIsbGFKVZ+/nKoDRVsb50DA
+         xwru94gf4SU4rS8VnQlP4S8oo+/KGKnprsAgKDgnODbTRc1yV0SBjDlAL6hamUrpX7dg
+         nEx9aWnWfqbkS4I82KGBsr1NbL5lrFwJwGnhQ+E1yC0BlfiSgYTF1a7DenrZ8qr2mPuh
+         R4BQKmo4xnSbLNVEXs4GdOGxxkS6o2Xs7mjqBXcPRR2LMkuZUcCB9lzKL+kNAFm+L/1l
+         cFRBkY5q26k0Lf4O5yj8NY0qaU/9G/8KOfklwi2xPEUDGOsg7HalAHkigm9R86E4PF1F
+         GAkw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=R8Gi68qr1aDvO0QyibD3Pq2zcXF2jU6VWUvfFWeUSio=;
-        b=t1Wr6mNPsV0rBlomudyG61Ugsz7R8yWv5XNTd92Ud80QeLMgB901EHijApY3Ht5EbS
-         gT0mzdaL1mBWVL76GpJ3jpAQGDpMk9GP3VzSBbexwTaLtfs6d+aAnk+vz7/akaAECvsU
-         5VmTHPh6lUe3w60EbbrwXD85wa9JVckdE6Z+jNBxR0MQZYGhKaEXbb5xCA2e4A+CC2W3
-         O0ZE8qXcgUNU7mjh/kAzzYFVQTJJ6C0z3j3ygR5uK/xkyQpXUecpxjWIjYFeKqKUrjc5
-         4Jb4F/17qKRw9+KmW8wflSa8pysEVI1Js5ymG7+DGQTusC/vhaCyNW+v0//u0wXJpiej
-         2/Dw==
-X-Gm-Message-State: AOAM533Dau2BkIG7i4oh51yc2SVmKwoNeu5wv/0V680ss5wK+S6pAUs1
-        zKrEC5tpdtDMlFwiqQmfOstilg==
-X-Google-Smtp-Source: ABdhPJxLkRpCAh56OHvV9+ruY7Vzg+a1Z9+GxC17tANOkAOMf1eHdhsH69mrQ3UVDo33lzSRWmiORw==
-X-Received: by 2002:a17:902:82cb:: with SMTP id u11mr6359503plz.207.1594782588903;
-        Tue, 14 Jul 2020 20:09:48 -0700 (PDT)
-Received: from localhost ([122.172.34.142])
-        by smtp.gmail.com with ESMTPSA id ml8sm369552pjb.47.2020.07.14.20.09.47
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 14 Jul 2020 20:09:48 -0700 (PDT)
-Date:   Wed, 15 Jul 2020 08:39:46 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=/6qvp5WHZj/oa9tsQs7daglYAIrSHRjqnbn4LJYVqYM=;
+        b=A7X2fBEDMedUPtnmZrhTzKKDOKOr0SOIvBo/On2yWI/E3TKJVECCtVI4K7W9MYdhPP
+         POUPCHnLe62L5jMUEPP3n4WTOf6SgTO7cFXlfzpqoiy6FsQ9yzXGp3itZMR5QJddOZKe
+         ybuaNkIQwuWL9LTUdjHCZFvePqB1upUVzpXMPthnyc3iv+ZKbDrSJV+9sYxMOCl8wcpa
+         s8/rPxnVLUqQrEmMgsRlV3szws7ezu9yN6h33gM1nHSxkNI3Z2vmxytAmIYU4DBweOtr
+         j0eg6pQvLVh1FCphZ6/m2EoZyo4rtkMiYQ/4U7QfOIb8bxlJqDOgieS0Gd0kTTAsyQWA
+         8Ytw==
+X-Gm-Message-State: AOAM53056nmp1NHOYa6S2jqzDcHCy7mAuzuPMkjxpnmi49wrk7XtlPug
+        y6/aTezl6F4+eSZvN70A0Y3WMrU7fPxb3sUoq4NAAQ==
+X-Google-Smtp-Source: ABdhPJzxESu7ZTsM8aFjcJhDG3lJKuIu8Kw/lLhq4wzNp1GQnFoGez4u1gAOdT+YRS9L0Tnnx500tXibztageq3WwBw=
+X-Received: by 2002:a6b:c80a:: with SMTP id y10mr8120079iof.67.1594783621833;
+ Tue, 14 Jul 2020 20:27:01 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200714145049.2496163-1-lee.jones@linaro.org> <20200714145049.2496163-6-lee.jones@linaro.org>
+In-Reply-To: <20200714145049.2496163-6-lee.jones@linaro.org>
+From:   Olof Johansson <olof@lixom.net>
+Date:   Tue, 14 Jul 2020 20:26:50 -0700
+Message-ID: <CAOesGMjCZMyWLe+tpNFstC88odeSCKS8bM6Oj9cpaj6j7U94rQ@mail.gmail.com>
+Subject: Re: [PATCH 05/13] cpufreq/arch: powerpc: pasemi: Move prototypes to
+ shared header
 To:     Lee Jones <lee.jones@linaro.org>
-Cc:     rjw@rjwysocki.net, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        viresh kumar <viresh.kumar@linaro.org>,
+        Linux ARM Mailing List <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-pm@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
         Benjamin Herrenschmidt <benh@kernel.crashing.org>,
         Paul Mackerras <paulus@samba.org>,
-        linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 07/13] cpufreq: powernv-cpufreq: Fix a bunch of kerneldoc
- related issues
-Message-ID: <20200715030946.xxetozdxe5slvoid@vireshk-i7>
-References: <20200714145049.2496163-1-lee.jones@linaro.org>
- <20200714145049.2496163-8-lee.jones@linaro.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200714145049.2496163-8-lee.jones@linaro.org>
-User-Agent: NeoMutt/20180716-391-311a52
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 14-07-20, 15:50, Lee Jones wrote:
-> Repair problems with formatting and missing attributes/parameters, and
-> demote header comments which do not meet the required standards
-> applicable to kerneldoc.
-> 
-> Fixes the following W=1 kernel build warning(s):
-> 
->  drivers/cpufreq/powernv-cpufreq.c:84: warning: Function parameter or member 'last_lpstate_idx' not described in 'global_pstate_info'
->  drivers/cpufreq/powernv-cpufreq.c:84: warning: Function parameter or member 'last_gpstate_idx' not described in 'global_pstate_info'
->  drivers/cpufreq/powernv-cpufreq.c:84: warning: Function parameter or member 'policy' not described in 'global_pstate_info'
->  drivers/cpufreq/powernv-cpufreq.c:182: warning: Function parameter or member 'i' not described in 'idx_to_pstate'
->  drivers/cpufreq/powernv-cpufreq.c:201: warning: Function parameter or member 'pstate' not described in 'pstate_to_idx'
->  drivers/cpufreq/powernv-cpufreq.c:670: warning: Function parameter or member 't' not described in 'gpstate_timer_handler'
->  drivers/cpufreq/powernv-cpufreq.c:670: warning: Excess function parameter 'data' description in 'gpstate_timer_handler'
-> 
+On Tue, Jul 14, 2020 at 7:50 AM Lee Jones <lee.jones@linaro.org> wrote:
+>
+> If function callers and providers do not share the same prototypes the
+> compiler complains of missing prototypes.  Fix this by moving the
+> already existing prototypes out to a mutually convenient location.
+>
+> Fixes the following W=3D1 kernel build warning(s):
+>
+>  drivers/cpufreq/pasemi-cpufreq.c:109:5: warning: no previous prototype f=
+or =E2=80=98check_astate=E2=80=99 [-Wmissing-prototypes]
+>  109 | int check_astate(void)
+>  | ^~~~~~~~~~~~
+>  drivers/cpufreq/pasemi-cpufreq.c:114:6: warning: no previous prototype f=
+or =E2=80=98restore_astate=E2=80=99 [-Wmissing-prototypes]
+>  114 | void restore_astate(int cpu)
+>  | ^~~~~~~~~~~~~~
+>
+> Cc: Olof Johansson <olof@lixom.net>
 > Cc: Michael Ellerman <mpe@ellerman.id.au>
 > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Cc: Paul Mackerras <paulus@samba.org>
 > Cc: linuxppc-dev@lists.ozlabs.org
 > Signed-off-by: Lee Jones <lee.jones@linaro.org>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 068cc53abe320..2e5a8b8a4abaa 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -64,13 +64,14 @@
->   *				highest_lpstate_idx
->   * @last_sampled_time:		Time from boot in ms when global pstates were
->   *				last set
-> - * @last_lpstate_idx,		Last set value of local pstate and global
-> - * last_gpstate_idx		pstate in terms of cpufreq table index
-> + * @last_lpstate_idx:		Last set value of local pstate and global
-> + * @last_gpstate_idx:		pstate in terms of cpufreq table index
->   * @timer:			Is used for ramping down if cpu goes idle for
->   *				a long time with global pstate held high
->   * @gpstate_lock:		A spinlock to maintain synchronization between
->   *				routines called by the timer handler and
->   *				governer's target_index calls
-> + * @policy:			Associated CPUFreq policy
+>  arch/powerpc/platforms/pasemi/pasemi.h    | 15 ------------
+>  arch/powerpc/platforms/pasemi/powersave.S |  2 ++
+>  drivers/cpufreq/pasemi-cpufreq.c          |  1 +
+>  include/linux/platform_data/pasemi.h      | 28 +++++++++++++++++++++++
+>  4 files changed, 31 insertions(+), 15 deletions(-)
+>  create mode 100644 include/linux/platform_data/pasemi.h
+>
+> diff --git a/arch/powerpc/platforms/pasemi/pasemi.h b/arch/powerpc/platfo=
+rms/pasemi/pasemi.h
+> index 70b56048ed1be..528d81ef748ad 100644
+> --- a/arch/powerpc/platforms/pasemi/pasemi.h
+> +++ b/arch/powerpc/platforms/pasemi/pasemi.h
+> @@ -15,21 +15,6 @@ extern void __init pasemi_map_registers(void);
+>  extern void idle_spin(void);
+>  extern void idle_doze(void);
+>
+> -/* Restore astate to last set */
+> -#ifdef CONFIG_PPC_PASEMI_CPUFREQ
+> -extern int check_astate(void);
+> -extern void restore_astate(int cpu);
+> -#else
+> -static inline int check_astate(void)
+> -{
+> -       /* Always return >0 so we never power save */
+> -       return 1;
+> -}
+> -static inline void restore_astate(int cpu)
+> -{
+> -}
+> -#endif
+> -
+>  extern struct pci_controller_ops pasemi_pci_controller_ops;
+>
+>  #endif /* _PASEMI_PASEMI_H */
+> diff --git a/arch/powerpc/platforms/pasemi/powersave.S b/arch/powerpc/pla=
+tforms/pasemi/powersave.S
+> index d0215d5329ca7..7747b48963286 100644
+> --- a/arch/powerpc/platforms/pasemi/powersave.S
+> +++ b/arch/powerpc/platforms/pasemi/powersave.S
+> @@ -5,6 +5,8 @@
+>   * Maintained by: Olof Johansson <olof@lixom.net>
 >   */
->  struct global_pstate_info {
->  	int highest_lpstate_idx;
-> @@ -170,7 +171,7 @@ static inline u8 extract_pstate(u64 pmsr_val, unsigned int shift)
->  
->  /* Use following functions for conversions between pstate_id and index */
->  
-> -/**
+>
+> +#include <linux/platform_data/pasemi.h>
+> +
+>  #include <asm/processor.h>
+>  #include <asm/page.h>
+>  #include <asm/ppc_asm.h>
+> diff --git a/drivers/cpufreq/pasemi-cpufreq.c b/drivers/cpufreq/pasemi-cp=
+ufreq.c
+> index c66f566a854cb..c6bb3ecc90ef3 100644
+> --- a/drivers/cpufreq/pasemi-cpufreq.c
+> +++ b/drivers/cpufreq/pasemi-cpufreq.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/timer.h>
+>  #include <linux/module.h>
+>  #include <linux/of_address.h>
+> +#include <linux/platform_data/pasemi.h>
+>
+>  #include <asm/hw_irq.h>
+>  #include <asm/io.h>
+> diff --git a/include/linux/platform_data/pasemi.h b/include/linux/platfor=
+m_data/pasemi.h
+> new file mode 100644
+> index 0000000000000..3fed0687fcc9a
+> --- /dev/null
+> +++ b/include/linux/platform_data/pasemi.h
+> @@ -0,0 +1,28 @@
+> +/* SPDX-License-Identifier: GPL-2.0-only */
 > +/*
->   * idx_to_pstate : Returns the pstate id corresponding to the
->   *		   frequency in the cpufreq frequency table
->   *		   powernv_freqs indexed by @i.
-> @@ -188,7 +189,7 @@ static inline u8 idx_to_pstate(unsigned int i)
->  	return powernv_freqs[i].driver_data;
->  }
->  
-> -/**
-> +/*
->   * pstate_to_idx : Returns the index in the cpufreq frequencytable
->   *		   powernv_freqs for the frequency whose corresponding
->   *		   pstate id is @pstate.
-> @@ -660,7 +661,7 @@ static inline void  queue_gpstate_timer(struct global_pstate_info *gpstates)
->  /**
->   * gpstate_timer_handler
->   *
-> - * @data: pointer to cpufreq_policy on which timer was queued
-> + * @t: Timer context used to fetch global pstate info struct
->   *
->   * This handler brings down the global pstate closer to the local pstate
->   * according quadratic equation. Queues a new timer if it is still not equal
+> + * Copyright (C) 2020 Linaro Ltd.
+> + *
+> + * Author: Lee Jones <lee.jones@linaro.org>
+> + */
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Absolutely not. It's neither your copyright, nor your authorship.
 
--- 
-viresh
+
+-Olof
