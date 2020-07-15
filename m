@@ -2,108 +2,134 @@ Return-Path: <SRS0=OhA8=A2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7957DC433E7
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 12:39:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 36097C433E2
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 12:47:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 563C82071B
-	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 12:39:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 13D6720578
+	for <linux-pm@archiver.kernel.org>; Wed, 15 Jul 2020 12:47:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1594816745;
-	bh=Z6Lx02fZ6qfF+yXhz7Gf6Kj/KVhYR9qVe5kO17QukC8=;
+	s=default; t=1594817249;
+	bh=6Sx27IA7enGX06xdFuvHpylG4RnOCDfdJZa4amp1Z6k=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=YbHuQGwPoq/PB0O4BEUsx91XhTOrzpiPRKqct2EpwaqEpM1Sk8/AbzQA5FMVjMNVg
-	 0IrjXtTVlxyjnrCI90005ndTCM9ajld7svibv8XovoWOX0wQ12rTClxCgSaeiydq+K
-	 wYAsTvg8KCnxpjVqk/0prFfc3tPGeGvkQXFv0kUo=
+	b=N5e2Zx8MxITAdUOEoaJWRzon2Lum4C3iHhLRNjcZYP03E4ThmNjshZ7Lsc9pXKdFp
+	 kedWyG3j4bhCp22bI9n9dLzEo620XvPMamPU6OnMZpdVE/L5bK1XHHMqbonGZ6rxJ4
+	 5kj2cLqC9B7SI/Z5Q7//HwTqSWsOY5fR/OYAx15E=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730985AbgGOMjD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 08:39:03 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:39128 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728975AbgGOMjD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 08:39:03 -0400
-Received: by mail-ot1-f68.google.com with SMTP id 18so1318094otv.6;
-        Wed, 15 Jul 2020 05:39:03 -0700 (PDT)
+        id S1730795AbgGOMr2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 08:47:28 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:41348 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728861AbgGOMr2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 08:47:28 -0400
+Received: by mail-oi1-f196.google.com with SMTP id y22so2073059oie.8;
+        Wed, 15 Jul 2020 05:47:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=qEMirJ4iEA7/amJKPxcxC1aWj+9/XnHViK3CvAKtiJ0=;
-        b=QAhf7V7FSx5b8wlN/lMBk4IoBkG/jyYs0j35csRjCQkVMUX7kjtbMZAyEHyoagyc3j
-         WA+7Ors3l0duNyKg9LLUCk9TxD4WnUaux+V41CxeaX3XJjBm7B5XGuJVd/9RWRXHHU6o
-         aD3dO0qOeN0Q+z3BAuSdUXx/tAJoppjQ2bZ+d70h0mLdl3TWsBaGs0f0oL0JmdCpKbKT
-         6JpctTKzHlJQxSr0XaWQlxrN7NH5WDfs0TYmL8eNcrbouAzm1Gr5CHZwgq+IiujkLHpA
-         Qdcn9rSLOjTQ8zH6ucYJFkMjOehhRIOo7X1udwpHO60zXvnCgEDx2dpeBBDHz0sT2ZAF
-         AGWQ==
-X-Gm-Message-State: AOAM532HDHSHsKNb5J1lIw7hYWIb8ksq1gu46cHk2lGLt/vCvL9W3EKK
-        pQNOSeIsRlvoAQsZIVdC+xoEkIBfUxJs+QlJTMM=
-X-Google-Smtp-Source: ABdhPJxvkSkL+mL03a/+kUFCkWVChdwL/udtsAeVBYfe6BwLRVZ83g1tMqK2UpQXTukqQs8HVYr+WcUxT5xBvtdSoFo=
-X-Received: by 2002:a9d:590a:: with SMTP id t10mr8727872oth.262.1594816742784;
- Wed, 15 Jul 2020 05:39:02 -0700 (PDT)
+        bh=4wdDNfmxaJDMgzx6KGb0R32bfQn7xefP7F9Z+jm7O8M=;
+        b=ErJPE7Y3tXa/QwfTZ8E+hqgzHhBnqeik0/u9v8c2k/hJSZsMGii49ClvmN/ypA/kBC
+         LZf1jkIHDdBCftCqO6/DPZ7c0RbRUznkZ1EHz/yx+qeGKpK3E+UWrgy0Qen3ihsF4vpB
+         of2Gx9AJ2R1fiNZX0x6zp4m3T3I7QPJ+2TcQ4dFS6Coc2CroJnOedC/ueCHmhAdDpnEF
+         KzrRdDg3a/JCSe38u1z8L0DvcZNt7ctxu5ibhuucAxtl8SlANBBGV9cR5YEhCTo0DOi/
+         lfYysjgs7Pc6VMhDgMaGq4sH2rBkI3o58VhwzqHYzrD1xsugWObKTuZlI5bUWC9eUMib
+         U+AA==
+X-Gm-Message-State: AOAM532VzyGKuCZdE6uD8Bkh1N682rX85s9rUDdBSwEsNoc+YJ/uetJH
+        r5NOhq0Xo1AguSMcoP/SCTCn4LZyEu97jx6O7P4=
+X-Google-Smtp-Source: ABdhPJxewLcMbqQtHFzIXxogNRmQ7yp2yEiyvW8cX3rQxeBkDtYIVHg606iB1KWw9RAdZfYsCuseer30sxq1Sm9KkVg=
+X-Received: by 2002:aca:f58a:: with SMTP id t132mr7362035oih.68.1594817247377;
+ Wed, 15 Jul 2020 05:47:27 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200714145049.2496163-1-lee.jones@linaro.org>
- <20200714145049.2496163-13-lee.jones@linaro.org> <CAJZ5v0jkDWD6Ea2_oEDtFfPDWh5ByphUqEa=3jE2ZbnW0DVEcQ@mail.gmail.com>
- <20200714210306.GI1398296@dell>
-In-Reply-To: <20200714210306.GI1398296@dell>
+References: <cover.1594707424.git.viresh.kumar@linaro.org> <b051b42f0c4f36d7177978e090c6a85df17922c6.1594707424.git.viresh.kumar@linaro.org>
+ <CAJZ5v0i=yNH9pGkty2QdeQLcqJcuY=pLx_XcY4VXs8bSqXL=dg@mail.gmail.com> <20200715073225.vnf6dibfca3oc2h4@vireshk-i7>
+In-Reply-To: <20200715073225.vnf6dibfca3oc2h4@vireshk-i7>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 15 Jul 2020 14:38:51 +0200
-Message-ID: <CAJZ5v0jCyfi3Gd83UrC5NJ3QrCceUprT1QMtc4KgROBP2deGuQ@mail.gmail.com>
-Subject: Re: [PATCH 12/13] cpufreq: intel_pstate: Supply struct attribute
- description for get_aperf_mperf_shift()
-To:     Lee Jones <lee.jones@linaro.org>
+Date:   Wed, 15 Jul 2020 14:47:16 +0200
+Message-ID: <CAJZ5v0j1iaOuASa9K0x3QsWW2mhqoMQyhiVU5eXbNgEN=aU_rw@mail.gmail.com>
+Subject: Re: [PATCH 2/2] thermal: cpufreq_cooling: Reuse effective_cpu_util()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>
+        Quentin Perret <qperret@google.com>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 14, 2020 at 11:28 PM Lee Jones <lee.jones@linaro.org> wrote:
+On Wed, Jul 15, 2020 at 9:32 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On Tue, 14 Jul 2020, Rafael J. Wysocki wrote:
->
-> > On Tue, Jul 14, 2020 at 4:51 PM Lee Jones <lee.jones@linaro.org> wrote:
+> On 14-07-20, 15:05, Rafael J. Wysocki wrote:
+> > On Tue, Jul 14, 2020 at 8:37 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> > >  static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
+> > >                     int cpu_idx)
+> > >  {
+> > > -       u32 load;
+> > > -       u64 now, now_idle, delta_time, delta_idle;
+> > > -       struct time_in_idle *idle_time = &cpufreq_cdev->idle_time[cpu_idx];
+> > > -
+> > > -       now_idle = get_cpu_idle_time(cpu, &now, 0);
+> > > -       delta_idle = now_idle - idle_time->time;
+> > > -       delta_time = now - idle_time->timestamp;
+> > > +       unsigned long util = cpu_util_cfs(cpu_rq(cpu));
+> > > +       unsigned long max = arch_scale_cpu_capacity(cpu);
 > > >
-> > > Fixes the following W=1 kernel build warning(s):
-> > >
-> > >  drivers/cpufreq/intel_pstate.c:293: warning: Function parameter or member 'get_aperf_mperf_shift' not described in 'pstate_funcs'
-> > >
-> > > Cc: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-> > > Cc: Len Brown <lenb@kernel.org>
-> > > Cc: Dirk Brandewie <dirk.j.brandewie@intel.com>
-> > > Signed-off-by: Lee Jones <lee.jones@linaro.org>
-> > > ---
-> > >  drivers/cpufreq/intel_pstate.c | 2 ++
-> > >  1 file changed, 2 insertions(+)
-> > >
-> > > diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> > > index 44c7b4677675d..f92fc69c87269 100644
-> > > --- a/drivers/cpufreq/intel_pstate.c
-> > > +++ b/drivers/cpufreq/intel_pstate.c
-> > > @@ -275,6 +275,8 @@ static struct cpudata **all_cpu_data;
-> > >   * @get_min:           Callback to get minimum P state
-> > >   * @get_turbo:         Callback to get turbo P state
-> > >   * @get_scaling:       Callback to get frequency scaling factor
-> > > + * @get_aperf_mperf_shift: Callback to get the number of clock cycles after
-> > > + *                     aperf, merf is incremented
+> > > -       if (delta_time <= delta_idle)
+> > > -               load = 0;
+> > > -       else
+> > > -               load = div64_u64(100 * (delta_time - delta_idle), delta_time);
+> > > -
+> > > -       idle_time->time = now_idle;
+> > > -       idle_time->timestamp = now;
+> > > -
+> > > -       return load;
+> > > +       util = effective_cpu_util(cpu, util, max, ENERGY_UTIL, NULL);
 > >
-> > This added description is inaccurate.  It should be something like
-> > "Callback to get the APERF vs MPERF frequency difference".
+> > Hmm.
+> >
+> > It doesn't look like cpufreq_cdev and cpu_idx are needed any more in
+> > this function, so maybe drop them from the arg list?
 >
-> Does that mean the description of @aperf_mperf_shift above is also
-> incorrect?
+> Right.
+>
+> > And then there
+> > won't be anything specific to CPU cooling in this function, so maybe
+> > move it to sched and export it from there properly?
+>
+> There isn't a lot happening in this routine right now TBH and am not
+> sure if it is really worth it to have a separate routine for this
+> (unless we can get rid of something for all the callers, like avoiding
+> a call to arch_scale_cpu_capacity() and then naming it
+> effective_cpu_load().
 
-It is slightly unclear, let me improve it.
+Maybe yes.  Or sched_cpu_load() to stand for "the effective CPU load
+as seen by the scheduler".
 
-Thanks!
+But I'm not sure if percent is the best unit to return from it.  Maybe
+make it return something like (util << SCHED_CAPACITY_SHFT) /
+arch_scale_cpu_capacity(cpu).
+
+> > Also it looks like max could be passed to it along with the CPU number
+> > instead of being always taken as arch_scale_cpu_capacity(cpu).
+>
+> I am not sure what you are suggesting here. What will be the value of
+> max if not arch_scale_cpu_capacity() ?
+
+I was thinking about a value supplied by the caller, eg.
+sched_cpu_load(cpu, max), but if all callers would pass
+arch_scale_cpu_capacity(cpu) as max anyway, then it's better to simply
+call it from there.
