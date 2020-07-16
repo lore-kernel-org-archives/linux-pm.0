@@ -2,80 +2,38 @@ Return-Path: <SRS0=Jmv8=A3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E1F15C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 02:28:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFE34C433E0
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 02:55:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BFABC20787
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 02:28:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BJCEiCgj"
+	by mail.kernel.org (Postfix) with ESMTP id 93D842076C
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 02:55:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728119AbgGPC2y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 15 Jul 2020 22:28:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49208 "EHLO
+        id S1727036AbgGPCzD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 15 Jul 2020 22:55:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53266 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726479AbgGPC2b (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 22:28:31 -0400
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3F6E9C061755;
-        Wed, 15 Jul 2020 19:28:30 -0700 (PDT)
-Received: by mail-wm1-x344.google.com with SMTP id 22so8096058wmg.1;
-        Wed, 15 Jul 2020 19:28:30 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=jsnFEaPOATe0rU74z4wmdx5Snp9SyB/gn+FbmEyk+5U=;
-        b=BJCEiCgjoizQk0MuwZnjC++IpUrRbuW2pdRAaA62MIRcfaclEvyOXR/tD9ejUx8GMS
-         mF90akZODSnNpjz6Uv4bahWA3cNTRYJUF2aXKAsCNiWNRsllo/6WH5fXcXS2s0t4XrHX
-         lzcNf/9rpffayJ8OKYukNpZHVJO/m1A8HBwouPwdkhMZlHWunkMej7lXrK1gJc8o+H5d
-         URbglFqcIogn5Oj3ZKJdVO5cTaZMaQk5jGAP1KB+VVWMaCatsUOq+tyaQ99Bg78Jju41
-         wMxTLmnysHeG8DpPr9a0EHs1ezob1S+rOScTOxEALW9jw4oZfjilpq28K6UoEwCafva6
-         JGHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=jsnFEaPOATe0rU74z4wmdx5Snp9SyB/gn+FbmEyk+5U=;
-        b=NPAHDXY218eCwiUwzLshGJ4bp0tvHWjhcEvTCnFHTfuIRYNH8zHgi791DgJK3Hdjcz
-         QNsKPu5czYgTXyNGsyJoEild7alFUzrQujAMmcxdbVDhuB0VKmwvSeH0Dbb+9U6PzcSc
-         sqL3Uvm4041NRd3PyNOXSyLOXQonazQkWCXceYqD92+OgAWcsBehtkFSIdOvHLp9tHoB
-         S4G2auskHd+HodUciACZcGrGnMQkdhe2taZhKPqW5JD91uShjHL9pgvxmLGtsb0XYxN1
-         mVzAs+Uj53U/Sega/4Xe2B/Lh0GeImZGmFUYYHyC+/S8o7oU3hKCjtt8bA2fNZRFfETd
-         Q/vw==
-X-Gm-Message-State: AOAM530tTvTNceZdCm3jwrvgEeakYMLel1J2T20JU8JA0ySjpp0GZ71F
-        GSBvWuDms3TQxwLYVcK1EHw=
-X-Google-Smtp-Source: ABdhPJzCJ+vAQ/QeXIWzlb11w/o7pwBiMD7vR0FI/Iqs4NB5SM67+6BkbQd4gbRfAjNy7ipBfFR+ig==
-X-Received: by 2002:a05:600c:2050:: with SMTP id p16mr2179009wmg.44.1594866508949;
-        Wed, 15 Jul 2020 19:28:28 -0700 (PDT)
-Received: from Ansuel-XPS.localdomain (host-87-7-31-173.retail.telecomitalia.it. [87.7.31.173])
-        by smtp.googlemail.com with ESMTPSA id u1sm7477611wrb.78.2020.07.15.19.28.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 15 Jul 2020 19:28:28 -0700 (PDT)
-From:   Ansuel Smith <ansuelsmth@gmail.com>
-To:     Rob Herring <robh+dt@kernel.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>, linux-arm-msm@vger.kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org
-Subject: [PATCH v4 3/7] drivers: thermal: tsens: add ipq8064 support
-Date:   Thu, 16 Jul 2020 04:28:12 +0200
-Message-Id: <20200716022817.30439-4-ansuelsmth@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200716022817.30439-1-ansuelsmth@gmail.com>
-References: <20200716022817.30439-1-ansuelsmth@gmail.com>
+        with ESMTP id S1727034AbgGPCzC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 15 Jul 2020 22:55:02 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6524C061755;
+        Wed, 15 Jul 2020 19:55:02 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: wlozano)
+        with ESMTPSA id ED2ED2A3753
+From:   Walter Lozano <walter.lozano@collabora.com>
+To:     linux-pm@vger.kernel.org
+Cc:     kernel@collabora.com, Walter Lozano <walter.lozano@collabora.com>,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] opp: Increase parsed_static_opps on _of_add_opp_table_v1
+Date:   Wed, 15 Jul 2020 23:54:52 -0300
+Message-Id: <20200716025452.25761-1-walter.lozano@collabora.com>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -83,27 +41,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Ipq8064 SoCs based use the same 8960 driver.
+Currently, when using _of_add_opp_table_v2 parsed_static_opps is
+increased and this value is used on _opp_remove_all_static to
+check if there are static opps entries that need to be freed.
+Unfortunately this does not happens when using _of_add_opp_table_v1,
+which leads to warnings.
 
-Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+This patch increases parsed_static_opps on _of_add_opp_table_v1 in a
+similar way as in _of_add_opp_table_v2.
+
+Signed-off-by: Walter Lozano <walter.lozano@collabora.com>
 ---
- drivers/thermal/qcom/tsens.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
-index 39c4462e38f6..23f63dfbf13d 100644
---- a/drivers/thermal/qcom/tsens.c
-+++ b/drivers/thermal/qcom/tsens.c
-@@ -906,6 +906,9 @@ static const struct of_device_id tsens_table[] = {
- 	}, {
- 		.compatible = "qcom,msm8996-tsens",
- 		.data = &data_8996,
-+	}, {
-+		.compatible = "qcom,ipq8064-tsens",
-+		.data = &data_8960,
- 	}, {
- 		.compatible = "qcom,tsens-v1",
- 		.data = &data_tsens_v1,
+ drivers/opp/of.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index 9a5873591a40..b2bc82bf8b42 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -917,6 +917,8 @@ static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
+ 		nr -= 2;
+ 	}
+ 
++	opp_table->parsed_static_opps++;
++
+ 	return ret;
+ }
+ 
 -- 
-2.27.0
+2.20.1
 
