@@ -2,48 +2,110 @@ Return-Path: <SRS0=Jmv8=A3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F3ADC433FC
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:56:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31326C433F8
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:57:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 04D842076D
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:56:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1B23F20739
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:57:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728760AbgGPM4U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jul 2020 08:56:20 -0400
-Received: from bilbo.ozlabs.org ([203.11.71.1]:48701 "EHLO ozlabs.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728655AbgGPM4C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 16 Jul 2020 08:56:02 -0400
-Received: by ozlabs.org (Postfix, from userid 1034)
-        id 4B6vPq12B4z9sVB; Thu, 16 Jul 2020 22:55:58 +1000 (AEST)
-From:   Michael Ellerman <patch-notifications@ellerman.id.au>
-To:     Abhishek Goel <huntbag@linux.vnet.ibm.com>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc:     rjw@rjwysocki.net, mpe@ellerman.id.au, ego@linux.vnet.ibm.com,
-        daniel.lezcano@linaro.org
-In-Reply-To: <20200706053258.121475-1-huntbag@linux.vnet.ibm.com>
-References: <20200706053258.121475-1-huntbag@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle/powernv : Remove dead code block
-Message-Id: <159490400609.3805857.11882065929256574276.b4-ty@ellerman.id.au>
-Date:   Thu, 16 Jul 2020 22:55:58 +1000 (AEST)
+        id S1728903AbgGPM5q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jul 2020 08:57:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33372 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728893AbgGPM5p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2020 08:57:45 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A2540C061755;
+        Thu, 16 Jul 2020 05:57:45 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: wlozano)
+        with ESMTPSA id B67CB2A570D
+Subject: Re: [PATCH] opp: Increase parsed_static_opps on _of_add_opp_table_v1
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     linux-pm@vger.kernel.org, kernel@collabora.com,
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>, linux-kernel@vger.kernel.org
+References: <20200716025452.25761-1-walter.lozano@collabora.com>
+ <20200716032259.l5ybqetpg74ybogh@vireshk-i7>
+From:   Walter Lozano <walter.lozano@collabora.com>
+Message-ID: <34634b9e-2f6f-d8d8-ccf3-39841301cd65@collabora.com>
+Date:   Thu, 16 Jul 2020 09:57:37 -0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <20200716032259.l5ybqetpg74ybogh@vireshk-i7>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 6 Jul 2020 00:32:58 -0500, Abhishek Goel wrote:
-> Commit 1961acad2f88559c2cdd2ef67c58c3627f1f6e54 removes usage of
-> function "validate_dt_prop_sizes". This patch removes this unused
-> function.
+Hi Viresh,
 
-Applied to powerpc/next.
+On 16/7/20 00:22, Viresh Kumar wrote:
+> On 15-07-20, 23:54, Walter Lozano wrote:
+>> Currently, when using _of_add_opp_table_v2 parsed_static_opps is
+>> increased and this value is used on _opp_remove_all_static to
+>> check if there are static opps entries that need to be freed.
+>> Unfortunately this does not happens when using _of_add_opp_table_v1,
+>> which leads to warnings.
+>>
+>> This patch increases parsed_static_opps on _of_add_opp_table_v1 in a
+>> similar way as in _of_add_opp_table_v2.
+>>
+>> Signed-off-by: Walter Lozano <walter.lozano@collabora.com>
+>> ---
+>>
+>>   drivers/opp/of.c | 2 ++
+>>   1 file changed, 2 insertions(+)
+>>
+>> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+>> index 9a5873591a40..b2bc82bf8b42 100644
+>> --- a/drivers/opp/of.c
+>> +++ b/drivers/opp/of.c
+>> @@ -917,6 +917,8 @@ static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
+>>   		nr -= 2;
+>>   	}
+>>   
+>> +	opp_table->parsed_static_opps++;
+>> +
+>>   	return ret;
+>>   }
+> Merged with this and added relevant Fixes and stable tags.
 
-[1/1] cpuidle/powernv : Remove dead code block
-      https://git.kernel.org/powerpc/c/c339f9be304c21da1c42899a824f84a2cc9ced30
 
-cheers
+Thanks for apply the proper fix.
+
+
+>
+> diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+> index b2bc82bf8b42..314f306140a1 100644
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -902,6 +902,10 @@ static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
+>                  return -EINVAL;
+>          }
+>   
+> +       mutex_lock(&opp_table->lock);
+> +       opp_table->parsed_static_opps = 1;
+> +       mutex_unlock(&opp_table->lock);
+> +
+>          val = prop->value;
+>          while (nr) {
+>                  unsigned long freq = be32_to_cpup(val++) * 1000;
+> @@ -917,8 +921,6 @@ static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
+>                  nr -= 2;
+>          }
+>   
+> -       opp_table->parsed_static_opps++;
+> -
+>          return ret;
+>   }
+>   
