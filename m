@@ -6,44 +6,44 @@ X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
 	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB362C433EB
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 15:39:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69C10C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 15:39:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ADFDB2076D
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 15:39:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4EBA42076D
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 15:39:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729300AbgGPPjI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jul 2020 11:39:08 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:39240 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728967AbgGPPjH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2020 11:39:07 -0400
-Received: by mail-oi1-f195.google.com with SMTP id w17so5422731oie.6;
-        Thu, 16 Jul 2020 08:39:06 -0700 (PDT)
+        id S1729459AbgGPPj3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jul 2020 11:39:29 -0400
+Received: from mail-oo1-f65.google.com ([209.85.161.65]:40216 "EHLO
+        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729368AbgGPPj1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2020 11:39:27 -0400
+Received: by mail-oo1-f65.google.com with SMTP id p26so1262339oos.7;
+        Thu, 16 Jul 2020 08:39:26 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=Yu8AcriWX3+yo8BiZDGLRtunrtLKttc1XLs4wvDEUps=;
-        b=YIrvU9p1o0ANLrdbVqR7qfAi9LJhRI/aw+RWrQdO9tLlSrFIQ2XElpRJwmd6WDL3Da
-         xiSreaDXn4GL5nG08pELq9QLwWSJ8uQWQn9M2iUZ8+NRvDrKY6d22W3Iu+P9pfsFGuxb
-         FowQ+SLnbl0Mv7f+IZGO+YgbNr5B/261pZLHqKUngKvcF/g+XB81UJS63T4yTHpMeuN0
-         grHKEwkMfo7XhaK7hz010apIgBhG5nXIpnNqIwKlG4t+PPT7aDi1Stj0Y7QU/lvIl2cp
-         aMf6zF5EFKJML7LFVC55nTuppT/W28Ot5AePA/8i2p7EEC9+En+TAPTB0yTeKbSsr36P
-         i0sw==
-X-Gm-Message-State: AOAM533xSUtJDkcIFi3M/VCM6CMSNBESE2g4iFWAXju+GlE4yn20DvKH
-        aS4aSOSDHsY6KnCr3KHSVA9gIh0EplTTXLmXFrQ=
-X-Google-Smtp-Source: ABdhPJz7Nwn+4sTFc6lpaCuTWPVIIEYyDkHi7RbGunkkr/cHBSPm62tq9ZP31mM88tUGaMPM+XdhO5cSQk5iRCsLngU=
-X-Received: by 2002:a05:6808:64a:: with SMTP id z10mr4320772oih.54.1594913945890;
- Thu, 16 Jul 2020 08:39:05 -0700 (PDT)
+        bh=4pjrfx9t/+IYZDQ9pVA0sHuiwjeFmOxDZhyCh8pthXQ=;
+        b=OX5OJTSSVe0LHfJcauygy7wC1E2VDUwrbtN1lR+SMQf8SP/UKikv57m8tG/WpIdblK
+         HOxoZWkNnGCJAzIRzrtw7yWnVQISDfd2mCdqiQwHP/U7xxnZ0OLNaAG3SvAbTv6gj47x
+         j6s4kaABTGrZ6vu9ZJZ8wHTDJHp7LMLn9ANmma054RyJZE0ayDzhiXNKIcjeGW/8UoWd
+         n2iP2MfWdHjqLuEZ+tIKOru0JXzJ2hPX6Br4m6X10J794NT3vCwB54wK6cri2xy3NGuY
+         MvfrrSUbn9F6Pnw7VnHTALzNYHOqttdb3Ru8RquSKNZb4AJk27+MQeOdSkVwhMQOPe5m
+         aX3g==
+X-Gm-Message-State: AOAM532XNNLAlpza/L9aIi6ZRrIqdIv03U++rivc8uc+Iel8bPI+Jboh
+        RJGcD7NlCBuUVOlV/SRJtGPEp2a/pZccRgvkdgM=
+X-Google-Smtp-Source: ABdhPJz9yIUHOi4Yj7uBIPuCgrIAlPuTnlxz7ythXKj6Ll90hmgrOzNi3DtW8p8hP8QDMl+aj8TmNfiN/dhuCtEUb2g=
+X-Received: by 2002:a4a:8381:: with SMTP id h1mr4809506oog.11.1594913966555;
+ Thu, 16 Jul 2020 08:39:26 -0700 (PDT)
 MIME-Version: 1.0
 References: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <1594811350-14066-9-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
-In-Reply-To: <1594811350-14066-9-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+ <1594811350-14066-21-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+In-Reply-To: <1594811350-14066-21-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
 From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Thu, 16 Jul 2020 17:38:54 +0200
-Message-ID: <CAMuHMdVpkkVu61gvgNJGfeGpz+c3dWswg6R1rXqeKv+bx-2SSg@mail.gmail.com>
-Subject: Re: [PATCH 08/20] arm64: dts: renesas: r8a774e1: Add TMU device nodes
+Date:   Thu, 16 Jul 2020 17:39:15 +0200
+Message-ID: <CAMuHMdUCyARFwhEkEhyepoe_r7uk_nVpyshkXR=U4XD8_gMJww@mail.gmail.com>
+Subject: Re: [PATCH 20/20] arm64: dts: renesas: r8a774e1: Add CAN[FD] support
 To:     Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
 Cc:     Wolfram Sang <wsa+renesas@sang-engineering.com>,
         Rob Herring <robh+dt@kernel.org>,
@@ -77,15 +77,12 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jul 15, 2020 at 1:10 PM Lad Prabhakar
+On Wed, Jul 15, 2020 at 1:11 PM Lad Prabhakar
 <prabhakar.mahadev-lad.rj@bp.renesas.com> wrote:
-> From: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renesas.com>
+> Add CAN[01] and CANFD support to RZ/G2H (R8A774E1) SoC specific dtsi.
 >
-> This patch adds TMU[01234] device tree nodes to the r8a774e1
-> SoC specific DT.
->
-> Signed-off-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renesas.com>
 > Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+> Reviewed-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renesas.com>
 
 Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
 i.e. will queue in renesas-devel for v5.9.
