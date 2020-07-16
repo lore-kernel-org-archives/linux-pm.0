@@ -2,101 +2,56 @@ Return-Path: <SRS0=Jmv8=A3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04706C433F7
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:49:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB037C433E6
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:56:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C98EB20760
-	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:49:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vuSLav+C"
+	by mail.kernel.org (Postfix) with ESMTP id D5CCF2076D
+	for <linux-pm@archiver.kernel.org>; Thu, 16 Jul 2020 12:56:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728640AbgGPMtt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 16 Jul 2020 08:49:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60352 "EHLO
+        id S1728777AbgGPM4b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 16 Jul 2020 08:56:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33164 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728622AbgGPMts (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2020 08:49:48 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 306E9C08C5CE
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2020 05:49:48 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id h19so6935544ljg.13
-        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2020 05:49:48 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=SMUqbM/2tAa8/paafO1/gccjmbEp76TZl0DYAO5Htac=;
-        b=vuSLav+Cii51LYAbUmO1o2Rs7yss7EnlSKUR20VVaxbbxAYlCtWHJRMDU2Py8c8JTY
-         WKhP3yKme72urB8ucBIKLAPShsPH9qJuaUcriEuBK9Wjv8FMrcnFMZbgbhNpHDLpfeb1
-         2ZUxDC9TUvSLcWYF1QnnLlRGGq+l5vEZ5VQHiE2Ik+JiWFkWFqZ86Wsve2eOzvhGL+9K
-         ihffOk/HZOePmw9cpO/AebqqXNtNfd7wNPftBpKcRDP4/lSsTY8DAa+BNuR8dIOnpM5y
-         thFQEosZBhaeERRBEgpmtYGFLXBddwyP7XPHXPSRBypnXeSA/gggCvyS+NkEQJv0Cvb7
-         IUAQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=SMUqbM/2tAa8/paafO1/gccjmbEp76TZl0DYAO5Htac=;
-        b=o2bB88ZIF3zugs+63/guVlJslVzewVMtKnVcG74WdhLiDG1l0e53oglSS0ORyaUCls
-         2UU509EzyiUgim14lA2VYgEd2pPFJR4E5C9Gq0mKd0U2SbOZrlOYIo/ehGj5B/7NspM0
-         /rb00xBosdsdJafYryd5w/laeFLQnrsmq9VSeQ+WOgAsBYNcaRf7yFUI55PPry9Zj4rl
-         x4DpKojqwlJODX74YuwCbswuJ5pE2nQcnQOte19VuMVYbNlJqATXy2E9xUzBfjznqVnh
-         Z//AN+K5v7QC3U7uBUL+jtT57JVGPNfq+zQ91zyi0BatZjkwSqablFFkUUHtF6x4dtE7
-         4L/g==
-X-Gm-Message-State: AOAM5317FIpTGaCAw9Zb3V572GqWSra39/3QqnEPb/Be9nBjTcpoG4RY
-        Ehmqa/K0TCthnYma7u83/DyiCGX3Pik1KnoEeCitiw==
-X-Google-Smtp-Source: ABdhPJzZjvVBo25Dqxum0154FLbEBUp91nFV11Hp0xSDYrsQ5aSM1HddHJViEwuAP/BPFZwNurh2InaBi7wl7mxu/zE=
-X-Received: by 2002:a2e:7a1a:: with SMTP id v26mr1887718ljc.104.1594903786614;
- Thu, 16 Jul 2020 05:49:46 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1593243079.git.syednwaris@gmail.com>
-In-Reply-To: <cover.1593243079.git.syednwaris@gmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Thu, 16 Jul 2020 14:49:35 +0200
-Message-ID: <CACRpkdYyCNEUSOtCJMTm7t1z15oK7nH3KcTe5LreJAzZ0KtQuw@mail.gmail.com>
-Subject: Re: [PATCH v9 0/4] Introduce the for_each_set_clump macro
-To:     Syed Nayyar Waris <syednwaris@gmail.com>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Robert Richter <rrichter@marvell.com>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Zhang Rui <rui.zhang@intel.com>,
+        with ESMTP id S1728799AbgGPM40 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 16 Jul 2020 08:56:26 -0400
+Received: from ozlabs.org (bilbo.ozlabs.org [IPv6:2401:3900:2:1::2])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B01A3C08C5C0
+        for <linux-pm@vger.kernel.org>; Thu, 16 Jul 2020 05:56:26 -0700 (PDT)
+Received: by ozlabs.org (Postfix, from userid 1034)
+        id 4B6vQB68Q7z9sVQ; Thu, 16 Jul 2020 22:56:18 +1000 (AEST)
+From:   Michael Ellerman <patch-notifications@ellerman.id.au>
+To:     Hulk Robot <hulkci@huawei.com>,
+        Wei Yongjun <weiyongjun1@huawei.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-arch@vger.kernel.org,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Michael Ellerman <mpe@ellerman.id.au>
+Cc:     linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20200714142424.66648-1-weiyongjun1@huawei.com>
+References: <20200714142424.66648-1-weiyongjun1@huawei.com>
+Subject: Re: [PATCH -next] cpuidle/pseries: Make symbol 'pseries_idle_driver' static
+Message-Id: <159490401706.3805857.7133480973769495238.b4-ty@ellerman.id.au>
+Date:   Thu, 16 Jul 2020 22:56:18 +1000 (AEST)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Syed,
+On Tue, 14 Jul 2020 22:24:24 +0800, Wei Yongjun wrote:
+> The sparse tool complains as follows:
+> 
+> drivers/cpuidle/cpuidle-pseries.c:25:23: warning:
+>  symbol 'pseries_idle_driver' was not declared. Should it be static?
+> 
+> 'pseries_idle_driver' is not used outside of this file, so marks
+> it static.
 
-sorry for taking so long. I was on vacation and a bit snowed
-under by work.
+Applied to powerpc/next.
 
-On Sat, Jun 27, 2020 at 10:10 AM Syed Nayyar Waris <syednwaris@gmail.com> wrote:
+[1/1] cpuidle/pseries: Make symbol 'pseries_idle_driver' static
+      https://git.kernel.org/powerpc/c/92fe8483b1660feaa602d8be6ca7efe95ae4789b
 
-> Since this patchset primarily affects GPIO drivers, would you like
-> to pick it up through your GPIO tree?
-
-I have applied the patches to an immutable branch and pushed
-to kernelorg for testing (autobuilders will play with it I hope).
-
-If all works fine I will merge this into my devel branch for v5.9.
-
-It would be desirable if Andrew gave his explicit ACK on it too.
-
-Yours,
-Linus Walleij
+cheers
