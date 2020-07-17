@@ -2,305 +2,299 @@ Return-Path: <SRS0=7zNn=A4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1DEBC433EA
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jul 2020 09:18:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DC44EC433E2
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jul 2020 09:46:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BDBC12070E
-	for <linux-pm@archiver.kernel.org>; Fri, 17 Jul 2020 09:18:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AF4B82070E
+	for <linux-pm@archiver.kernel.org>; Fri, 17 Jul 2020 09:46:27 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YBxxuNKX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726200AbgGQJSk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 17 Jul 2020 05:18:40 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:21914 "EHLO
-        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725864AbgGQJSj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2020 05:18:39 -0400
-Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 06H95GWU187078;
-        Fri, 17 Jul 2020 05:18:16 -0400
-Received: from pps.reinject (localhost [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 32awbs1asc-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 17 Jul 2020 05:18:16 -0400
-Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
-        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06H95Iae187249;
-        Fri, 17 Jul 2020 05:18:15 -0400
-Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 32awbs1aq4-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 17 Jul 2020 05:18:15 -0400
-Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
-        by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06H9Bgim003269;
-        Fri, 17 Jul 2020 09:18:09 GMT
-Received: from b06cxnps4076.portsmouth.uk.ibm.com (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
-        by ppma06ams.nl.ibm.com with ESMTP id 3274pgxapd-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 17 Jul 2020 09:18:09 +0000
-Received: from d06av21.portsmouth.uk.ibm.com (d06av21.portsmouth.uk.ibm.com [9.149.105.232])
-        by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 06H9I6St56033450
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 17 Jul 2020 09:18:07 GMT
-Received: from d06av21.portsmouth.uk.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id CC42C52054;
-        Fri, 17 Jul 2020 09:18:06 +0000 (GMT)
-Received: from pratiks-thinkpad.ibmuc.com (unknown [9.85.80.176])
-        by d06av21.portsmouth.uk.ibm.com (Postfix) with ESMTP id 85F8E52057;
-        Fri, 17 Jul 2020 09:18:04 +0000 (GMT)
-From:   Pratik Rajesh Sampat <psampat@linux.ibm.com>
-To:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
-        benh@kernel.crashing.org, paulus@samba.org, srivatsa@csail.mit.edu,
-        shuah@kernel.org, npiggin@gmail.com, ego@linux.vnet.ibm.com,
-        svaidy@linux.ibm.com, linux-pm@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-kselftest@vger.kernel.org
-Subject: [PATCH v2 1/2] cpuidle: Trace IPI based and timer based wakeup latency from idle states
-Date:   Fri, 17 Jul 2020 14:48:00 +0530
-Message-Id: <20200717091801.29289-2-psampat@linux.ibm.com>
-X-Mailer: git-send-email 2.25.4
-In-Reply-To: <20200717091801.29289-1-psampat@linux.ibm.com>
-References: <20200717091801.29289-1-psampat@linux.ibm.com>
+        id S1725932AbgGQJq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 17 Jul 2020 05:46:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56780 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725912AbgGQJq0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 17 Jul 2020 05:46:26 -0400
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 557FDC061755
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2020 02:46:26 -0700 (PDT)
+Received: by mail-lj1-x244.google.com with SMTP id d17so11927480ljl.3
+        for <linux-pm@vger.kernel.org>; Fri, 17 Jul 2020 02:46:26 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=7jqqiBnn0EOR7Uz6m1vSHmx7Jr6H9WscOd+TJEXNhvY=;
+        b=YBxxuNKX9oEaG5Bgad9mGmnuiidocTB75FBw77Hzs4cty2jsmwzWdJGfad4164O2FP
+         NXGBGN/KAcPaI9Sp9o4zgR4+69Et7zQrfCxGnxnD6kc2+Un6IGIVzCNvG8TnzUbE2gQU
+         g4NE59gvC7E6b//9N4Yy9y3gAXU1vpDET/4qojLbUXjivfnf/gvIf/kHCKJ61tJ2ucmr
+         TiOf1bhI1M4P3A0s7mzvH6tsXhm2yQh2U5NDPKWU8T3n+aUr37BlsD20UoltmT2d8vkj
+         RGfqhe4uUPa8DARhSJPFMEbZ4J7JN1VTslCm8t2sYSBD+ihL6l8G7NyonFkdH+kcUVNz
+         eW8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=7jqqiBnn0EOR7Uz6m1vSHmx7Jr6H9WscOd+TJEXNhvY=;
+        b=nWcd/CK3vZ5th2zWvZcMXkczbtDUjEa5gQ4Wqp6aHQjikvdDSEeMzc8qzeDoGqN9Ei
+         0YNfFjx0mAdKYHEM76AUzx1TScYcfP3DFgh7M2o93yLmUXBqeF77m2S4tsB99Vdun/gu
+         Fu3d4hVwtYD3lAflsQEbmAb22lZO9fZxtoB86KsxBJDWsmnflJdCNgl//hsfICdSqMAO
+         g8OLsaTkQBTwR9nBeE5/HOuYecRLVoon6NsWkbt7gnpfkio0zibFUhSeuo6uD98nWlk5
+         2zg+tgMTiHwivZBfQPt5Je4VIzA17xH5BaYJvNV/4n2SroLXetKbcgtoO36gBrT0Af4Z
+         X8rw==
+X-Gm-Message-State: AOAM531CC2vXN6QlXHHpSX0s14ILj54S6RiVIaLSyyj9zrK+eCvuQUF3
+        fYKQ4FAmYFdtm0lkNn9QhTnkKmZJxfGoeZopfd8bcg==
+X-Google-Smtp-Source: ABdhPJznGLiAyjz45x44DOpY2IA2pnD7XITqMyYoEtmK35LE84M7UK3IgrdS+Mo4kip6/ULVtTCVuHd0kNoTLO4eEtY=
+X-Received: by 2002:a2e:80c9:: with SMTP id r9mr4269550ljg.69.1594979184517;
+ Fri, 17 Jul 2020 02:46:24 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
- definitions=2020-07-17_04:2020-07-17,2020-07-17 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 phishscore=0
- impostorscore=0 lowpriorityscore=0 adultscore=0 spamscore=0 mlxscore=0
- malwarescore=0 clxscore=1015 mlxlogscore=999 priorityscore=1501
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2007170070
+References: <cover.1594707424.git.viresh.kumar@linaro.org> <b051b42f0c4f36d7177978e090c6a85df17922c6.1594707424.git.viresh.kumar@linaro.org>
+ <20200716115605.GR10769@hirez.programming.kicks-ass.net> <681fb3e8-d645-2558-38de-b39b372499de@arm.com>
+In-Reply-To: <681fb3e8-d645-2558-38de-b39b372499de@arm.com>
+From:   Vincent Guittot <vincent.guittot@linaro.org>
+Date:   Fri, 17 Jul 2020 11:46:12 +0200
+Message-ID: <CAKfTPtA+BPegK2h6PQMFs+p4dpxO+sk1FDQuOfJvSpGCJ-rBrA@mail.gmail.com>
+Subject: Re: [PATCH 2/2] thermal: cpufreq_cooling: Reuse effective_cpu_util()
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Quentin Perret <qperret@google.com>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fire directed smp_call_function_single IPIs from a specified source
-CPU to the specified target CPU to reduce the noise we have to wade
-through in the trace log.
-The module is based on the idea written by Srivatsa Bhat and maintained
-by Vaidyanathan Srinivasan internally.
+On Thu, 16 Jul 2020 at 16:24, Lukasz Luba <lukasz.luba@arm.com> wrote:
+>
+> Hi Peter,
+>
+> Thank you for summarizing this. I've put my comments below.
+>
+> On 7/16/20 12:56 PM, Peter Zijlstra wrote:
+> > On Tue, Jul 14, 2020 at 12:06:53PM +0530, Viresh Kumar wrote:
+> >>   /**
+> >> + * get_load() - get current load for a cpu
+> >>    * @cpufreq_cdev:  &struct cpufreq_cooling_device for this cpu
+> >>    * @cpu:   cpu number
+> >> + * @cpu_idx:        index of the cpu
+> >>    *
+> >> + * Return: The current load of cpu @cpu in percentage.
+> >>    */
+> >>   static u32 get_load(struct cpufreq_cooling_device *cpufreq_cdev, int cpu,
+> >>                  int cpu_idx)
+> >>   {
+> >> +    unsigned long util = cpu_util_cfs(cpu_rq(cpu));
+> >> +    unsigned long max = arch_scale_cpu_capacity(cpu);
+> >>
+> >> +    util = effective_cpu_util(cpu, util, max, ENERGY_UTIL, NULL);
+> >> +    return (util * 100) / max;
+> >>   }
+> >
+> > So there's a number of things... let me recap a bunch of things that
+> > got mentioned on IRC earlier this week and then continue from there..
+> >
+> > So IPA* (or any other thermal governor) needs energy estimates for the
+> > various managed devices, cpufreq_cooling, being the driver for the CPU
+> > device, needs to provide that and in return receives feedback on how
+> > much energy it is allowed to consume, cpufreq_cooling then dynamically
+> > enables/disables OPP states.
+>
+> Currently, only IPA uses the power estimation, other governors don't
+> use these API functions in cpufreq_cooling.
+>
+> >
+> > There are actually two methods the thermal governor will use:
+> > get_real_power() and get_requested_power().
+> >
+> > The first isn't used anywhere in mainline, but could be implemented on
+> > hardware that has energy counters (like say x86 RAPL).
+>
+> The first is only present as callback for registered devfreq cooling,
+> which is registered by devfreq driver. If that driver provides the
+> get_real_power(), it will be called from get_requested_power().
+> Thus, it's likely that IPA would get real power value from HW.
+>
+> I was planning to add it also to cpufreq_cooling callbacks years
+> ago...
+>
+> >
+> > The second attempts to guesstimate power, and is the subject of this
+> > patch.
+> >
+> > Currently cpufreq_cooling appears to estimate the CPU energy usage by
+> > calculating the percentage of idle time using the per-cpu cpustat stuff,
+> > which is pretty horrific.
+>
+> Even worse, it then *samples* the *current* CPU frequency at that
+> particular point in time and assumes that when the CPU wasn't idle
+> during that period - it had *this* frequency...
 
-Queue HR timer and measure jitter. Wakeup latency measurement for idle
-states using hrtimer.  Echo a value in ns to timer_test_function and
-watch trace. A HRtimer will be queued and when it fires the expected
-wakeup vs actual wakeup is computes and delay printed in ns.
+So there is 2 problems in the power calculation of cpufreq cooling device :
+- How to get an accurate utilization level of the cpu which is what
+this patch is trying to fix because using idle time is just wrong
+whereas scheduler utilization is frequency invariant
+- How to get power estimate from this utilization level. And as you
+pointed out, using the current freq which is not accurate.
 
-Implemented as a module which utilizes debugfs so that it can be
-integrated with selftests.
+>
+> >
+> > This patch then attempts to improve upon that by using the scheduler's
+> > cpu_util(ENERGY_UTIL) estimate, which is also used to select OPP state
+> > and improves upon avg idle. This should be a big improvement as higher
+>
+> IMHO this patch set doesn't address the real problem: 'sampling
+> freq problem' described above. There was no issue with getting idle
+> period. The avg freq was the problem, in that period when the
 
-To include the module, check option and include as module
-kernel hacking -> Cpuidle latency selftests
+Not sure that you can say that avg freq is a bigger problem than
+getting the load because there is a real issue with tracking idle
+period for estimating load because running slower reduces the idle
+time and increases artificially the load. That's why we implemented
+frequency invariance in PELT.
 
-[srivatsa.bhat@linux.vnet.ibm.com: Initial implementation in
- cpidle/sysfs]
+At the opposite when the thermal mitigation happens, the frequency
+will be most probably capped by cpu cooling device and will most
+probably stay at the capped value
 
-[svaidy@linux.vnet.ibm.com: wakeup latency measurements using hrtimer
- and fix some of the time calculation]
+> CPUs were running. The model implemented in alg was also a problem.
+>
+> The whole period (e.g. CPU freqs which were used or idle state)
+>
+> ^(CPU freq)
+> |
+> |                            sampling the current freq
+> |                _______        |
+> |               |      |        |
+> |________       |      |        |
+> |       |       |      |        |
+> |       | idle  |      |________v________...
+> |_ _____|_______|__________________________> (time)
+>    start of period               end
+>    |<------- (typically 100ms)-->|
+>
+>
+>
+> > frequency consumes more energy, but should we not also consider that:
+> >
+> >       E = C V^2 f
+> >
+> > The EAS energy model has tables for the OPPs that contain this, but in
+> > this case we seem to be assuming a linear enery/frequency curve, which
+> > is just not the case.
+>
+> I am not sure if I got your point. To understand your point better
+> I think some drawing would be required. I will skip this patch
+> and old mainline code and focus on your proposed solution
+> (because this patch set does not address 'sampling freq problem').
+>
+> >
+> > I suppose we could do something like **:
+> >
+> >       100 * util^3 / max^3
+> >
+> > which assumes V~f.
+>
+> In EM we keep power values in the array and these values grow
+> exponentially. Each OPP has it corresponding
+>
+> P_x = C (V_x)^2 f_x    , where x is the OPP id thus corresponding V,f
+>
+> so we have discrete power values, growing like:
+>
+> ^(power)
+> |
+> |
+> |                          *
+> |
+> |
+> |                       *
+> |                       |
+> |                   *   |
+> |                       | <----- power estimation function
+> |            *          |        should not use linear 'util/max_util'
+> |   *                   |        relation here *
+> |_______________________|_____________> (freq)
+>     opp0     opp1  opp2 opp3 opp4
+>
+> What is the problem
+> First:
+> We need to pick the right Power from the array. I would suggest
+> to pick the max allowed frequency for that whole period, because
+> we don't know if the CPUs were using it (it's likely).
+> Second:
+> Then we have the utilization, which can be considered as:
+> 'idle period & running period with various freq inside', lets
+> call it avg performance in that whole period.
+> Third:
+> Try to estimate the power used in that whole period having
+> the avg performance and max performance.
 
-[ego@linux.vnet.ibm.com: Fix some whitespace and tab errors and
- increase the resolution of IPI wakeup]
+We already have a function that is doing such kind of computation
+based of the utilization of the CPU : em_pd_energy(). And we could
+reuse some of this function if not exactly this one
 
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
----
- drivers/cpuidle/Makefile               |   1 +
- drivers/cpuidle/test-cpuidle_latency.c | 150 +++++++++++++++++++++++++
- lib/Kconfig.debug                      |  10 ++
- 3 files changed, 161 insertions(+)
- create mode 100644 drivers/cpuidle/test-cpuidle_latency.c
-
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index f07800cbb43f..2ae05968078c 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -8,6 +8,7 @@ obj-$(CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED) += coupled.o
- obj-$(CONFIG_DT_IDLE_STATES)		  += dt_idle_states.o
- obj-$(CONFIG_ARCH_HAS_CPU_RELAX)	  += poll_state.o
- obj-$(CONFIG_HALTPOLL_CPUIDLE)		  += cpuidle-haltpoll.o
-+obj-$(CONFIG_IDLE_LATENCY_SELFTEST)	  += test-cpuidle_latency.o
- 
- ##################################################################################
- # ARM SoC drivers
-diff --git a/drivers/cpuidle/test-cpuidle_latency.c b/drivers/cpuidle/test-cpuidle_latency.c
-new file mode 100644
-index 000000000000..61574665e972
---- /dev/null
-+++ b/drivers/cpuidle/test-cpuidle_latency.c
-@@ -0,0 +1,150 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Module-based API test facility for cpuidle latency using IPIs and timers
-+ */
-+
-+#include <linux/debugfs.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+/* IPI based wakeup latencies */
-+struct latency {
-+	unsigned int src_cpu;
-+	unsigned int dest_cpu;
-+	ktime_t time_start;
-+	ktime_t time_end;
-+	u64 latency_ns;
-+} ipi_wakeup;
-+
-+static void measure_latency(void *info)
-+{
-+	struct latency *v;
-+	ktime_t time_diff;
-+
-+	v = (struct latency *)info;
-+	v->time_end = ktime_get();
-+	time_diff = ktime_sub(v->time_end, v->time_start);
-+	v->latency_ns = ktime_to_ns(time_diff);
-+}
-+
-+void run_smp_call_function_test(unsigned int cpu)
-+{
-+	ipi_wakeup.src_cpu = smp_processor_id();
-+	ipi_wakeup.dest_cpu = cpu;
-+	ipi_wakeup.time_start = ktime_get();
-+	smp_call_function_single(cpu, measure_latency, &ipi_wakeup, 1);
-+}
-+
-+/* Timer based wakeup latencies */
-+struct timer_data {
-+	unsigned int src_cpu;
-+	u64 timeout;
-+	ktime_t time_start;
-+	ktime_t time_end;
-+	struct hrtimer timer;
-+	u64 timeout_diff_ns;
-+} timer_wakeup;
-+
-+static enum hrtimer_restart timer_called(struct hrtimer *hrtimer)
-+{
-+	struct timer_data *w;
-+	ktime_t time_diff;
-+
-+	w = container_of(hrtimer, struct timer_data, timer);
-+	w->time_end = ktime_get();
-+
-+	time_diff = ktime_sub(w->time_end, w->time_start);
-+	time_diff = ktime_sub(time_diff, ns_to_ktime(w->timeout));
-+	w->timeout_diff_ns = ktime_to_ns(time_diff);
-+	return HRTIMER_NORESTART;
-+}
-+
-+static void run_timer_test(unsigned int ns)
-+{
-+	hrtimer_init(&timer_wakeup.timer, CLOCK_MONOTONIC,
-+		     HRTIMER_MODE_REL);
-+	timer_wakeup.timer.function = timer_called;
-+	timer_wakeup.time_start = ktime_get();
-+	timer_wakeup.src_cpu = smp_processor_id();
-+	timer_wakeup.timeout = ns;
-+
-+	hrtimer_start(&timer_wakeup.timer, ns_to_ktime(ns),
-+		      HRTIMER_MODE_REL_PINNED);
-+}
-+
-+static struct dentry *dir;
-+
-+static int cpu_read_op(void *data, u64 *value)
-+{
-+	*value = ipi_wakeup.dest_cpu;
-+	return 0;
-+}
-+
-+static int cpu_write_op(void *data, u64 value)
-+{
-+	run_smp_call_function_test(value);
-+	return 0;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(ipi_ops, cpu_read_op, cpu_write_op, "%llu\n");
-+
-+static int timeout_read_op(void *data, u64 *value)
-+{
-+	*value = timer_wakeup.timeout;
-+	return 0;
-+}
-+
-+static int timeout_write_op(void *data, u64 value)
-+{
-+	run_timer_test(value);
-+	return 0;
-+}
-+DEFINE_SIMPLE_ATTRIBUTE(timeout_ops, timeout_read_op, timeout_write_op, "%llu\n");
-+
-+static int __init latency_init(void)
-+{
-+	struct dentry *temp;
-+
-+	dir = debugfs_create_dir("latency_test", 0);
-+	if (!dir) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/latency_test\n");
-+		return -1;
-+	}
-+	temp = debugfs_create_file("ipi_cpu_dest",
-+				   0666,
-+				   dir,
-+				   NULL,
-+				   &ipi_ops);
-+	if (!temp) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/ipi_cpu_dest\n");
-+		return -1;
-+	}
-+	debugfs_create_u64("ipi_latency_ns", 0444, dir, &ipi_wakeup.latency_ns);
-+	debugfs_create_u32("ipi_cpu_src", 0444, dir, &ipi_wakeup.src_cpu);
-+
-+	temp = debugfs_create_file("timeout_expected_ns",
-+				   0666,
-+				   dir,
-+				   NULL,
-+				   &timeout_ops);
-+	if (!temp) {
-+		pr_alert("latency_test: failed to create /sys/kernel/debug/timeout_expected_ns\n");
-+		return -1;
-+	}
-+	debugfs_create_u64("timeout_diff_ns", 0444, dir, &timer_wakeup.timeout_diff_ns);
-+	debugfs_create_u32("timeout_cpu_src", 0444, dir, &timer_wakeup.src_cpu);
-+	pr_info("Latency Test module loaded\n");
-+	return 0;
-+}
-+
-+static void __exit latency_cleanup(void)
-+{
-+	pr_info("Cleaning up Latency Test module.\n");
-+	debugfs_remove_recursive(dir);
-+}
-+
-+module_init(latency_init);
-+module_exit(latency_cleanup);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("IBM Corporation");
-+MODULE_DESCRIPTION("Measuring idle latency for IPIs and Timers");
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index d74ac0fd6b2d..e2283790245a 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1375,6 +1375,16 @@ config DEBUG_KOBJECT
- 	  If you say Y here, some extra kobject debugging messages will be sent
- 	  to the syslog.
- 
-+config IDLE_LATENCY_SELFTEST
-+	tristate "Cpuidle latency selftests"
-+	depends on CPU_IDLE
-+	help
-+	  This option provides a kernel module that runs tests using the IPI and
-+	  timers to measure latency.
-+
-+	  Say M if you want these self tests to build as a module.
-+	  Say N if you are unsure.
-+
- config DEBUG_KOBJECT_RELEASE
- 	bool "kobject release debugging"
- 	depends on DEBUG_OBJECTS_TIMERS
--- 
-2.25.4
-
+>
+> What you are suggesting is to travel that [*] line in
+> non-linear fashion, but in (util^3)/(max_util^3). Which means
+> it goes down faster when the utilization drops.
+> I think it is too aggressive, e.g.
+> 500^3 / 1024^3 = 0.116  <--- very little, ~12%
+> 200^3 / 300^3  = 0.296
+>
+> Peter could you confirm if I understood you correct?
+> This is quite important bit for me.
+>
+> >
+> > Another point is that cpu_util() vs turbo is a bit iffy, and to that,
+> > things like x86-APERF/MPERF and ARM-AMU got mentioned. Those might also
+> > have the benefit of giving you values that match your own sampling
+> > interval (100ms), where the sched stuff is PELT (64,32.. based).
+> >
+> > So what I've been thinking is that cpufreq drivers ought to be able to
+> > supply this method, and only when they lack, can the cpufreq-governor
+> > (schedutil) install a fallback. And then cpufreq-cooling can use
+> > whatever is provided (through the cpufreq interfaces).
+> >
+> > That way, we:
+> >
+> >   1) don't have to export anything
+> >   2) get arch drivers to provide something 'better'
+> >
+> >
+> > Does that sounds like something sensible?
+> >
+>
+> Yes, make sense. Please also keep in mind that this
+> utilization somehow must be mapped into power in a proper way.
+> I am currently working on addressing all of these problems
+> (including this correlation).
+>
+> Thank you for your time spending on it and your suggestions.
+>
+> Regards,
+> Lukasz
+>
+> >
+> >
+> >
+> > [*] I always want a beer when I see that name :-)
+> >
+> > [**] I despise code that uses percentages, computers suck at
+> > /100 and there is no reason not to use any other random fraction, so why
+> > pick a bad one.
+> >
