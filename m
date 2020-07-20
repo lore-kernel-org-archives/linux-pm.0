@@ -2,155 +2,93 @@ Return-Path: <SRS0=NsZF=A7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 37ADFC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 12:18:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34CF3C433E4
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 14:46:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BE3C22B4E
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 12:18:34 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kroah.com header.i=@kroah.com header.b="npmmPscE";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="fHRc77/V"
+	by mail.kernel.org (Postfix) with ESMTP id 03EBE22482
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 14:46:55 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1595256415;
+	bh=Dq33ZNoKzcSwTdcCs52NY7i2CJ2U0tn6vrtq9IYrFrk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=mlv1ZwL1iwzgvYQoCPfZZK3fbfB4PzaHAOvAfLH/ZEuLQgZjPMvsRIIgn0sF7Tc3w
+	 evqrmAV7ZXev34ZfTLc3xqNSs3VVBWudJcw4N8RPC1ngKtIV1bg7Yh+qs0NAK6PJ14
+	 XQ2hUZvNQLqQVLaImFTFnyX7r9yp/w8BR6SiN0mg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728642AbgGTMSd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jul 2020 08:18:33 -0400
-Received: from new1-smtp.messagingengine.com ([66.111.4.221]:58923 "EHLO
-        new1-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728532AbgGTMSd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 08:18:33 -0400
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
-        by mailnew.nyi.internal (Postfix) with ESMTP id DA422580458;
-        Mon, 20 Jul 2020 08:18:31 -0400 (EDT)
-Received: from mailfrontend1 ([10.202.2.162])
-  by compute1.internal (MEProxy); Mon, 20 Jul 2020 08:18:31 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kroah.com; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm1; bh=Zou6qAflmxW7TQM12J8BVt0wUlM
-        oX2IiWZ/QdAdyc6w=; b=npmmPscEfVl5ZO2ikn3bQb/N4pTyVSJ2vHu2kyeuf0n
-        w14Sch7ufOxs6SGCWUjJFR1WVBKYIM1wws8FpeOW2Ve3xzl415Mkwr8ytvV2O4ys
-        A6kHcOIPSNXCgMojs2HSxveUte3rJb/gs/NQYV6E5D2N9BEg9oV9lDN6LLISMFs3
-        ElVAyxnvA5S+vzpx8iuRjWX4cuye0QPQT0H3BZZuOu41TNhdRP6PUsLtfhiSgZvG
-        NSQgitjikhvkv6TmV+dQmHwpgsv/PBeiHOiMbQDp2B61gM+BT47nXp5w5AKDMfQs
-        QeFNIO+yVdh6DHNlXkGcFgs9B/m7op7lWiEGaW5KWuQ==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=Zou6qA
-        flmxW7TQM12J8BVt0wUlMoX2IiWZ/QdAdyc6w=; b=fHRc77/VHodwY8LztJRtyc
-        irPG7DCEVBhT7wiGzL6S09HFpEIFQvjJmSHxUQ8inp0zNwnwQhSt2ZdttkkoEY6J
-        U4kUmSxra9dtv0BIHJK6ZSe0aCFn2E/sRc0MKbyXBDExbyjDNJt5hD8jN5/kmsWu
-        R36xXYuzJhhHKzqgNNCSDuB8SMZbxJgJFPxZDoxPkVGjRJXBNVfcKWOuqpIcgrwa
-        PP0arTKIilV3Sv7MvqZSK7ZuBWG1fAkqKDFiJcvaFMH4XL28TsGHgOuGn43RnISN
-        oKt4hlIBV8X0B8ofhUAEtEphjoY490FVOrPLKt9960rJHGYgiHV/Uh5WI63Z+ogw
-        ==
-X-ME-Sender: <xms:losVX5hCPh19khmNPb3zPXfCZwsFO5q8MFdqvWJKdHiyWMoYux0cvw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedrgeeggddvhecutefuodetggdotefrodftvf
-    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
-    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
-    fjughrpeffhffvuffkfhggtggujgesthdtredttddtvdenucfhrhhomhepifhrvghgucfm
-    jfcuoehgrhgvgheskhhrohgrhhdrtghomheqnecuggftrfgrthhtvghrnhepueelledthe
-    ekleethfeludduvdfhffeuvdffudevgeehkeegieffveehgeeftefgnecuffhomhgrihhn
-    pehkvghrnhgvlhdrohhrghenucfkphepkeefrdekiedrkeelrddutdejnecuvehluhhsth
-    gvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomhepghhrvghgsehkrhhorghh
-    rdgtohhm
-X-ME-Proxy: <xmx:losVX-AGbd_1MQjVjVNRarCnMDU54x_PSKRwKWOgKlDxP85euYyAbA>
-    <xmx:losVX5GFeaPu47-7ChqNyztbRcmzFbrdXW17EtHC0bwonbNhs2oynw>
-    <xmx:losVX-SQTe01C_qjCrsbu9kl-fOMb3pO9DT6XU_jWhfL0bstrejA9Q>
-    <xmx:l4sVX1n0SJLXV_AQ1CnI41d3QOaJp8O3DfPx-ZuEtabwzPduj48R6w>
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 424FF3280059;
-        Mon, 20 Jul 2020 08:18:30 -0400 (EDT)
-Date:   Mon, 20 Jul 2020 14:18:40 +0200
-From:   Greg KH <greg@kroah.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     stable@vger.kernel.org,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Javi Merino <javi.merino@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Finley Xiao <finley.xiao@rock-chips.com>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [For-STABLE] thermal/drivers/cpufreq_cooling: Fix wrong
- frequency converted from power
-Message-ID: <20200720121840.GB2984743@kroah.com>
-References: <bc3978d0b7472c140e4d87f61138168a2a7b995c.1594194577.git.viresh.kumar@linaro.org>
+        id S1728822AbgGTOqy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jul 2020 10:46:54 -0400
+Received: from mail-wm1-f67.google.com ([209.85.128.67]:52868 "EHLO
+        mail-wm1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726381AbgGTOqy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 10:46:54 -0400
+Received: by mail-wm1-f67.google.com with SMTP id q15so22548154wmj.2;
+        Mon, 20 Jul 2020 07:46:52 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=ubVyQHHqX9tsUnzOm6TherEnABXQb1+jkvMZGf23FqQ=;
+        b=fbKLGkdJBN8xsSgQJ0rAPYLt1BfB3KcZLc/NmTePmAc2isBnZp8l8/YAZWJb+RzhnY
+         zsgLn3pey9+7pX5AzbOI/l03D72AEybJ1ERbQn7lHbPmfJUnP0nOvfLT719SAybMU6G+
+         jx7tGKyjOPQVH0zsznNRbmXSvzNk1fcAzC9S3h58tfTUqNQXZ33aOxaAVqLu5+k4gWCO
+         c0yq5Der4VJPPj8Z2GXl+ONcMsWFYB2dnmm+ef3NSKLcFrIvTMyfOqzvd+fl/ksT93AL
+         xK1ZkRF0C+xRMoK7oLonYdN8XxIJY4KOtuOlWVZs4WNbabmYjd2oaCOnm+CcHWlZswcg
+         kr8g==
+X-Gm-Message-State: AOAM5338LUhHNMjfokNkSCv6BHKxFCJd2lmJrR0oYdZYdsIVDiC0LgxS
+        L3OgtmXMXs0KvOMIbzKVJaQ=
+X-Google-Smtp-Source: ABdhPJxAXaavtFIv3qPHXSFItxh2VKDy2GsLwn30QnRX2MpjxZJmt4Nr+m2qFL5Y9Z28WTEfIvtYIQ==
+X-Received: by 2002:a1c:7d85:: with SMTP id y127mr22660355wmc.181.1595256412049;
+        Mon, 20 Jul 2020 07:46:52 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.200])
+        by smtp.googlemail.com with ESMTPSA id f17sm35900335wme.14.2020.07.20.07.46.50
+        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
+        Mon, 20 Jul 2020 07:46:51 -0700 (PDT)
+Date:   Mon, 20 Jul 2020 16:46:48 +0200
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, willy.mh.wolff.ml@gmail.com,
+        k.konieczny@samsung.com, cw00.choi@samsung.com,
+        b.zolnierkie@samsung.com, chanwoo@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        s.nawrocki@samsung.com, kgene@kernel.org
+Subject: Re: [PATCH v2 2/2] memory: samsung: exynos5422-dmc: Add module param
+ to control IRQ mode
+Message-ID: <20200720144648.GC22791@kozik-lap>
+References: <20200710191122.11029-1-lukasz.luba@arm.com>
+ <20200710191122.11029-3-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <bc3978d0b7472c140e4d87f61138168a2a7b995c.1594194577.git.viresh.kumar@linaro.org>
+In-Reply-To: <20200710191122.11029-3-lukasz.luba@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Jul 08, 2020 at 01:23:43PM +0530, Viresh Kumar wrote:
-> From: Finley Xiao <finley.xiao@rock-chips.com>
+On Fri, Jul 10, 2020 at 08:11:22PM +0100, Lukasz Luba wrote:
+> The driver can operate in two modes relaying on devfreq monitoring
+> mechanism which periodically checks the device status or it can use
+> interrupts when they are provided by loaded Device Tree. The newly
+> introduced module parameter can be used to choose between devfreq
+> monitoring and internal interrupts without modifying the Device Tree.
+> It also sets devfreq monitoring as default when the parameter is not set
+> (also the case for default when the driver is not built as a module).
 > 
-> commit 371a3bc79c11b707d7a1b7a2c938dc3cc042fffb upstream.
-> 
-> The function cpu_power_to_freq is used to find a frequency and set the
-> cooling device to consume at most the power to be converted. For example,
-> if the power to be converted is 80mW, and the em table is as follow.
-> struct em_cap_state table[] = {
-> 	/* KHz     mW */
-> 	{ 1008000, 36, 0 },
-> 	{ 1200000, 49, 0 },
-> 	{ 1296000, 59, 0 },
-> 	{ 1416000, 72, 0 },
-> 	{ 1512000, 86, 0 },
-> };
-> The target frequency should be 1416000KHz, not 1512000KHz.
-> 
-> Fixes: 349d39dc5739 ("thermal: cpu_cooling: merge frequency and power tables")
-> Cc: <stable@vger.kernel.org> # v4.13+
-> Signed-off-by: Finley Xiao <finley.xiao@rock-chips.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
-> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-> Link: https://lore.kernel.org/r/20200619090825.32747-1-finley.xiao@rock-chips.com
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+> Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 > ---
-> Hi Greg,
-> 
-> I am resending this as I got your emails of this failing on 4.14, 4.19
-> and 5.4. This should be applied to all three of them.
-> 
-> @Finley: I hope I have done it correctly, please do check it as this
-> required me to rewrite the code to adapt to previous kernels.
-> 
->  drivers/thermal/cpu_cooling.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/thermal/cpu_cooling.c b/drivers/thermal/cpu_cooling.c
-> index 908a8014cf76..1f4387a5ceae 100644
-> --- a/drivers/thermal/cpu_cooling.c
-> +++ b/drivers/thermal/cpu_cooling.c
-> @@ -280,11 +280,11 @@ static u32 cpu_power_to_freq(struct cpufreq_cooling_device *cpufreq_cdev,
->  	int i;
->  	struct freq_table *freq_table = cpufreq_cdev->freq_table;
->  
-> -	for (i = 1; i <= cpufreq_cdev->max_level; i++)
-> -		if (power > freq_table[i].power)
-> +	for (i = 0; i < cpufreq_cdev->max_level; i++)
-> +		if (power >= freq_table[i].power)
->  			break;
->  
-> -	return freq_table[i - 1].frequency;
-> +	return freq_table[i].frequency;
->  }
->  
->  /**
-> -- 
-> 2.25.0.rc1.19.g042ed3e048af
-> 
+>  drivers/memory/samsung/exynos5422-dmc.c | 9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
 
-Now queued up, thanks.
+Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-greg k-h
+Best regards,
+Krzysztof
