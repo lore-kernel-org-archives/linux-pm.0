@@ -2,127 +2,109 @@ Return-Path: <SRS0=NsZF=A7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 79B5AC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 09:37:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C236C433E8
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 09:42:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5293422BEF
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 09:37:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7AEB02176B
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 09:42:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=citrix.com header.i=@citrix.com header.b="fYMwKP8c"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vUBM16Je"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727940AbgGTJhO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jul 2020 05:37:14 -0400
-Received: from esa4.hc3370-68.iphmx.com ([216.71.155.144]:60760 "EHLO
-        esa4.hc3370-68.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727062AbgGTJhO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 05:37:14 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
-  d=citrix.com; s=securemail; t=1595237833;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=nwPJa3NUFyEUiPP7p8oQoME8KchN1Curaq49nRiJSr0=;
-  b=fYMwKP8cenGPoU7mH9agCOVNlbUNuqtl+b/h67ELLn2z49ebvGng8oJ2
-   3uqQwOJ0cjk33uoNIULdGigKi6PU3/ilTjaQ9JflnIuX7KWFwKDk4GxCi
-   yGoIqY01MIY8rv4EVbQrwxaRWx3U5golWH8mIAx1jCiZ6uZMPx1PmzNdE
-   4=;
-Authentication-Results: esa4.hc3370-68.iphmx.com; dkim=none (message not signed) header.i=none
-IronPort-SDR: 4hmgLSfnkocyYHfNLmECegraULYWfvgO+2ir3ZYwO5eOasBTEYVWmVfPwW4mzeVVL17AAtcZVd
- bUVOns9d+KznUSTWedAW/WhA4LDQ6fI22ZVr7E0i6W1qt7UqqwxosEHno3/M1gQyUdpcDOjoqF
- Nj70/QuhTm+JOMOwc9sysRtdWdhiTtL0p7pcoHDnQAPgaCsxfhMhr0r+0WqS9xxrS3GSrFbPO0
- NyjgT8OXTOod2Cdp5jysswqlD0JX8QMphFc9cBJwZ90Kl5ucVrm3e0q6KBg1OKyPj5+tG+RRay
- t54=
-X-SBRS: 2.7
-X-MesageID: 23586900
-X-Ironport-Server: esa4.hc3370-68.iphmx.com
-X-Remote-IP: 162.221.158.21
-X-Policy: $RELAYED
-X-IronPort-AV: E=Sophos;i="5.75,374,1589256000"; 
-   d="scan'208";a="23586900"
-Date:   Mon, 20 Jul 2020 11:37:05 +0200
-From:   Roger Pau =?utf-8?B?TW9ubsOp?= <roger.pau@citrix.com>
-To:     Boris Ostrovsky <boris.ostrovsky@oracle.com>
-CC:     Anchal Agarwal <anchalag@amazon.com>, <tglx@linutronix.de>,
-        <mingo@redhat.com>, <bp@alien8.de>, <hpa@zytor.com>,
-        <x86@kernel.org>, <jgross@suse.com>, <linux-pm@vger.kernel.org>,
-        <linux-mm@kvack.org>, <kamatam@amazon.com>,
-        <sstabellini@kernel.org>, <konrad.wilk@oracle.com>,
-        <axboe@kernel.dk>, <davem@davemloft.net>, <rjw@rjwysocki.net>,
-        <len.brown@intel.com>, <pavel@ucw.cz>, <peterz@infradead.org>,
-        <eduval@amazon.com>, <sblbir@amazon.com>,
-        <xen-devel@lists.xenproject.org>, <vkuznets@redhat.com>,
-        <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <dwmw@amazon.co.uk>, <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 01/11] xen/manage: keep track of the on-going suspend
- mode
-Message-ID: <20200720093705.GG7191@Air-de-Roger>
-References: <cover.1593665947.git.anchalag@amazon.com>
- <20200702182136.GA3511@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <50298859-0d0e-6eb0-029b-30df2a4ecd63@oracle.com>
- <20200715204943.GB17938@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <0ca3c501-e69a-d2c9-a24c-f83afd4bdb8c@oracle.com>
- <20200717191009.GA3387@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <5464f384-d4b4-73f0-d39e-60ba9800d804@oracle.com>
+        id S1728288AbgGTJl6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jul 2020 05:41:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40016 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728200AbgGTJl5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 05:41:57 -0400
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 353B0C0619D5
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2020 02:41:57 -0700 (PDT)
+Received: by mail-lj1-x242.google.com with SMTP id e8so19540059ljb.0
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2020 02:41:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=twhRHN8GmGnSaOWdhFH407w2bJQWN/XspQavxD2E7NU=;
+        b=vUBM16JedblSszCmKcUOtNNCpBXv3CIhGha5f39iVCq+GLQjc1+5sjVAf3MGajt6eb
+         js3i3eEdyXIM2MQPvSQWiAbe6gPeB4YjU2Sab0OH0PF9+7BZ1Hfg3dMIm6fiTGmnLQGE
+         WN52jmOtjrzVTwhA5TpOoRi5fzEqLaC3gBn8SKr5iixPXGEf8j0ueAKU4MbazsVA6aRf
+         FyvYHaaSBU57IPmfcX0ILw4NWbPu9l8TUYzGeGQoqnmJtc7HHBIKatEXj/thpaDFX2WV
+         Aokyu21j7CqO9w7d6xuJ7PUwJIG1UxxaIPnap6CCEB8zRyeuqnRZ3bACsucfj0UgkFkX
+         fSxQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=twhRHN8GmGnSaOWdhFH407w2bJQWN/XspQavxD2E7NU=;
+        b=IqVGWthPmMqheJ+p+ck/y9BqILnBvZqNa7BAkBJP6P7RLdSnknMWYwZzGg+uVLkNzl
+         Z8nKaj8JQOKddCZZ9kyOX+IuffkDvdaDdMOuXOtwGCppWDmKSaj1vrvS24wBtq1sGLb5
+         sS7bNT37NElIVjxQ9O61e/0B9wtbpX8bsgcERoOwyox4N5JVfadBM5K7V4COTLNUr2ef
+         EokSsRFelUZbROryvebBfPSZdyITVzZyjsZDJgQSeGi+pVXUQ/p1YV+/Id9Zr9BqANuu
+         3xlaFsr1gaoLRXRO+0OMAIOF8vZbSGg/SfaWFPoJVFOIu7JSs5sgnCFXZGe/5NRsKSma
+         NsLA==
+X-Gm-Message-State: AOAM532cMBnQkRtGLDIWIdCBfsz1RX3LryMDwFjUEmMKlQJ9fam00xUJ
+        Sw6U8DCXp66DUi46/oGccNfI3FnvSFm9xzkIYJg3FA==
+X-Google-Smtp-Source: ABdhPJzp2xsR54WZ1Ot/7m0WsiusF7Y4zChVz+CNR+5Bym/Dcaq3ISLURbaFVL1WyVZW8pynmK9Y5DvEDxM1d6oFID4=
+X-Received: by 2002:a2e:9b8c:: with SMTP id z12mr10226971lji.35.1595238115661;
+ Mon, 20 Jul 2020 02:41:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Disposition: inline
-In-Reply-To: <5464f384-d4b4-73f0-d39e-60ba9800d804@oracle.com>
-X-ClientProxiedBy: AMSPEX02CAS01.citrite.net (10.69.22.112) To
- AMSPEX02CL02.citrite.net (10.69.22.126)
+References: <20200716022817.30439-1-ansuelsmth@gmail.com> <20200716022817.30439-2-ansuelsmth@gmail.com>
+In-Reply-To: <20200716022817.30439-2-ansuelsmth@gmail.com>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Mon, 20 Jul 2020 15:11:44 +0530
+Message-ID: <CAP245DUqvTYENmaxG3rjUn1XrzrmvdFmKG_vaef2BxKL6jY+Rg@mail.gmail.com>
+Subject: Re: [PATCH v4 1/7] ipq806x: gcc: add support for child probe
+To:     Ansuel Smith <ansuelsmth@gmail.com>
+Cc:     Rob Herring <robh+dt@kernel.org>, Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        DTML <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Jul 18, 2020 at 09:47:04PM -0400, Boris Ostrovsky wrote:
-> (Roger, question for you at the very end)
-> 
-> On 7/17/20 3:10 PM, Anchal Agarwal wrote:
-> > On Wed, Jul 15, 2020 at 05:18:08PM -0400, Boris Ostrovsky wrote:
-> >> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
-> >>
-> >>
-> >>
-> >> On 7/15/20 4:49 PM, Anchal Agarwal wrote:
-> >>> On Mon, Jul 13, 2020 at 11:52:01AM -0400, Boris Ostrovsky wrote:
-> >>>> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
-> >>>>
-> >>>>
-> >>>>
-> >>>> On 7/2/20 2:21 PM, Anchal Agarwal wrote:
-> >>>> And PVH dom0.
-> >>> That's another good use case to make it work with however, I still
-> >>> think that should be tested/worked upon separately as the feature itself
-> >>> (PVH Dom0) is very new.
-> >>
-> >> Same question here --- will this break PVH dom0?
-> >>
-> > I haven't tested it as a part of this series. Is that a blocker here?
-> 
-> 
-> I suspect dom0 will not do well now as far as hibernation goes, in which
-> case you are not breaking anything.
-> 
-> 
-> Roger?
+On Thu, Jul 16, 2020 at 7:58 AM Ansuel Smith <ansuelsmth@gmail.com> wrote:
+>
+> Add support for child probing needed for tsens driver that share the
+> seme regs of gcc for this platform.
 
-I sadly don't have any box ATM that supports hibernation where I
-could test it. We have hibernation support for PV dom0, so while I
-haven't done anything specific to support or test hibernation on PVH
-dom0 I would at least aim to not make this any worse, and hence the
-check should at least also fail for a PVH dom0?
+Typo: same
 
-if (!xen_hvm_domain() || xen_initial_domain())
-    return -ENODEV;
 
-Ie: none of this should be applied to a PVH dom0, as it doesn't have
-PV devices and hence should follow the bare metal device suspend.
-
-Also I would contact the QubesOS guys, they rely heavily on the
-suspend feature for dom0, and that's something not currently tested by
-osstest so any breakages there go unnoticed.
-
-Thanks, Roger.
+>
+> Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+> ---
+>  drivers/clk/qcom/gcc-ipq806x.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/clk/qcom/gcc-ipq806x.c b/drivers/clk/qcom/gcc-ipq806x.c
+> index a8456e09c44d..d6b7adb4be38 100644
+> --- a/drivers/clk/qcom/gcc-ipq806x.c
+> +++ b/drivers/clk/qcom/gcc-ipq806x.c
+> @@ -3089,7 +3089,7 @@ static int gcc_ipq806x_probe(struct platform_device *pdev)
+>         regmap_write(regmap, 0x3cf8, 8);
+>         regmap_write(regmap, 0x3d18, 8);
+>
+> -       return 0;
+> +       return of_platform_populate(pdev->dev.of_node, NULL, NULL, &pdev->dev);
+>  }
+>
+>  static struct platform_driver gcc_ipq806x_driver = {
+> --
+> 2.27.0
+>
