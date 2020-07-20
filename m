@@ -8,54 +8,52 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6876FC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 20:44:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FD54C433E7
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 20:44:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 48B7B20773
+	by mail.kernel.org (Postfix) with ESMTP id F1F9D20773
 	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 20:44:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="EI2K5RVx"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="YZz9HWDe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728997AbgGTUoY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jul 2020 16:44:24 -0400
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:41088 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728892AbgGTUoX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 16:44:23 -0400
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 06KKiJgV094849;
-        Mon, 20 Jul 2020 15:44:19 -0500
+        id S1728911AbgGTUoW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jul 2020 16:44:22 -0400
+Received: from lelv0142.ext.ti.com ([198.47.23.249]:38624 "EHLO
+        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726381AbgGTUoW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 16:44:22 -0400
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 06KKiK99097039;
+        Mon, 20 Jul 2020 15:44:20 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1595277859;
-        bh=HbH/vZFBhcoNmQVTTDScKJZ6t2zedwS3QC05EmL/fVg=;
+        s=ti-com-17Q1; t=1595277860;
+        bh=RLwIAehcXxgMONZs8WT0zyvf7kMDbvxzalt0l62/GGE=;
         h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=EI2K5RVxWJiwQ2FZ1/0M2RlDIOOIsDPyw2xzKd9eRQifxQjGgMZdDdAw+g6lXesRu
-         PDvBf0huuGNRDIlkXgc/E6aFOVcHvdZ0PLFLnoLiHRM0Xtpu6e3ZNAIevaELyRTNv7
-         y43okhAyZ7mhsLhshWwW1qUgrrCYKFDIEgNeriic=
-Received: from DLEE108.ent.ti.com (dlee108.ent.ti.com [157.170.170.38])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 06KKiJIY086903
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 20 Jul 2020 15:44:19 -0500
-Received: from DLEE103.ent.ti.com (157.170.170.33) by DLEE108.ent.ti.com
- (157.170.170.38) with Microsoft SMTP Server (version=TLS1_2,
+        b=YZz9HWDea9SBWVbh+GgGsbFVk2WWWkuASl9NwC2jLjP9XZhv05+sKV8U9DSOD3ABy
+         5xn+9/DEbBoQtrYJGk7IxZJHUlTWZ6I3/eH35X7v7OqIAbASmhNB7TVwQZny2+AMjd
+         TZX79MBrMp/v0QiyWhpV43MSeE/wEp3ydYysabPE=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 06KKiJrN035560;
+        Mon, 20 Jul 2020 15:44:20 -0500
+Received: from DLEE100.ent.ti.com (157.170.170.30) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 20
- Jul 2020 15:44:18 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DLEE103.ent.ti.com
- (157.170.170.33) with Microsoft SMTP Server (version=TLS1_2,
+ Jul 2020 15:44:19 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE100.ent.ti.com
+ (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 20 Jul 2020 15:44:18 -0500
+ Frontend Transport; Mon, 20 Jul 2020 15:44:19 -0500
 Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 06KKiIJF052279;
-        Mon, 20 Jul 2020 15:44:18 -0500
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 06KKiIeV038705;
+        Mon, 20 Jul 2020 15:44:19 -0500
 From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
 To:     <sre@kernel.org>, <pali@kernel.org>, <robh@kernel.org>
 CC:     <afd@ti.com>, <r-rivera-matos@ti.com>, <dmurphy@ti.com>,
         <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <sspatil@android.com>,
-        Guru Das Srinagesh <gurus@codeaurora.org>
-Subject: [PATCH v17 1/4] power_supply: Add additional health properties to the header
-Date:   Mon, 20 Jul 2020 15:43:57 -0500
-Message-ID: <20200720204400.7351-2-r-rivera-matos@ti.com>
+        <devicetree@vger.kernel.org>, <sspatil@android.com>
+Subject: [PATCH v17 3/4] dt-bindings: power: Add the bindings for the bq2515x family of chargers.
+Date:   Mon, 20 Jul 2020 15:43:59 -0500
+Message-ID: <20200720204400.7351-4-r-rivera-matos@ti.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200720204400.7351-1-r-rivera-matos@ti.com>
 References: <20200720204400.7351-1-r-rivera-matos@ti.com>
@@ -68,64 +66,121 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dan Murphy <dmurphy@ti.com>
+The BQ2515X family of devices are highly integrated battery management
+ICs that integrate the most common functions for wearable devices
+namely a charger, an output voltage rail, ADC for battery and system
+monitoring, and a push-button controller.
 
-Add HEALTH_WARM, HEALTH_COOL and HEALTH_HOT to the health enum.
+Datasheets:
+http://www.ti.com/lit/ds/symlink/bq25150.pdf
+http://www.ti.com/lit/ds/symlink/bq25155.pdf
 
-HEALTH_WARM, HEALTH_COOL, and HEALTH_HOT properties are taken
-from JEITA specification JISC8712:2015
-
-Acked-by: Andrew F. Davis <afd@ti.com>
-Tested-by: Guru Das Srinagesh <gurus@codeaurora.org>
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
 ---
- Documentation/ABI/testing/sysfs-class-power | 3 ++-
- drivers/power/supply/power_supply_sysfs.c   | 3 +++
- include/linux/power_supply.h                | 3 +++
- 3 files changed, 8 insertions(+), 1 deletion(-)
+ .../bindings/power/supply/bq2515x.yaml        | 93 +++++++++++++++++++
+ 1 file changed, 93 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq2515x.yaml
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 216d61a22f1e..40213c73bc9c 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -205,7 +205,8 @@ Description:
- 		Valid values: "Unknown", "Good", "Overheat", "Dead",
- 			      "Over voltage", "Unspecified failure", "Cold",
- 			      "Watchdog timer expire", "Safety timer expire",
--			      "Over current", "Calibration required"
-+			      "Over current", "Calibration required", "Warm",
-+			      "Cool", "Hot"
- 
- What:		/sys/class/power_supply/<supply_name>/precharge_current
- Date:		June 2017
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bc79560229b5..4d6e1d5015d6 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -101,6 +101,9 @@ static const char * const POWER_SUPPLY_HEALTH_TEXT[] = {
- 	[POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE]   = "Safety timer expire",
- 	[POWER_SUPPLY_HEALTH_OVERCURRENT]	    = "Over current",
- 	[POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED]  = "Calibration required",
-+	[POWER_SUPPLY_HEALTH_WARM]		    = "Warm",
-+	[POWER_SUPPLY_HEALTH_COOL]		    = "Cool",
-+	[POWER_SUPPLY_HEALTH_HOT]		    = "Hot",
- };
- 
- static const char * const POWER_SUPPLY_TECHNOLOGY_TEXT[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index ac1345a48ad0..b5ee35d3c304 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -62,6 +62,9 @@ enum {
- 	POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
- 	POWER_SUPPLY_HEALTH_OVERCURRENT,
- 	POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED,
-+	POWER_SUPPLY_HEALTH_WARM,
-+	POWER_SUPPLY_HEALTH_COOL,
-+	POWER_SUPPLY_HEALTH_HOT,
- };
- 
- enum {
+diff --git a/Documentation/devicetree/bindings/power/supply/bq2515x.yaml b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
+new file mode 100644
+index 000000000000..75a56773be4a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq2515x.yaml
+@@ -0,0 +1,93 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright (C) 2020 Texas Instruments Incorporated
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/bq2515x.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: TI bq2515x 500-mA Linear charger family
++
++maintainers:
++  - Dan Murphy <dmurphy@ti.com>
++  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
++
++description: |
++  The BQ2515x family is a highly integrated battery charge management IC that
++  integrates the most common functions for wearable devices, namely a charger,
++  an output voltage rail, ADC for battery and system monitoring, and
++  push-button controller.
++
++  Specifications about the charger can be found at:
++    http://www.ti.com/lit/ds/symlink/bq25150.pdf
++    http://www.ti.com/lit/ds/symlink/bq25155.pdf
++
++properties:
++  compatible:
++    enum:
++      - ti,bq25150
++      - ti,bq25155
++
++  reg:
++    maxItems: 1
++    description: I2C address of the charger.
++
++  ac-detect-gpios:
++    description: |
++       GPIO used for connecting the bq2515x device PG (AC Detect)
++       pin.
++    maxItems: 1
++
++  reset-gpios:
++    description: GPIO used for hardware reset.
++    maxItems: 1
++
++  powerdown-gpios:
++    description: GPIO used for low power mode of IC.
++    maxItems: 1
++
++  charge-enable-gpios:
++    description: GPIO used to turn on and off charging.
++    maxItems: 1
++
++  input-current-limit-microamp:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Maximum input current in micro Amps.
++    minimum: 50000
++    maximum: 500000
++
++  monitored-battery:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to the battery node being monitored
++
++required:
++  - compatible
++  - reg
++  - monitored-battery
++
++additionalProperties: false
++
++examples:
++  - |
++    bat: battery {
++      compatible = "simple-battery";
++      constant-charge-current-max-microamp = <50000>;
++      precharge-current-microamp = <2500>;
++      constant-charge-voltage-max-microvolt = <4000000>;
++    };
++    #include <dt-bindings/gpio/gpio.h>
++    i2c0 {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      bq25150: charger@6b {
++        compatible = "ti,bq25150";
++        reg = <0x6b>;
++        monitored-battery = <&bat>;
++        input-current-limit-microamp = <100000>;
++
++        ac-detect-gpios = <&gpio1 28 GPIO_ACTIVE_HIGH>;
++        reset-gpios = <&gpio0 14 GPIO_ACTIVE_HIGH>;
++        powerdown-gpios = <&gpio0 15 GPIO_ACTIVE_HIGH>;
++        charge-enable-gpios = <&gpio0 13 GPIO_ACTIVE_LOW>;
++      };
++    };
 -- 
 2.27.0
 
