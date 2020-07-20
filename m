@@ -2,136 +2,338 @@ Return-Path: <SRS0=NsZF=A7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00311C433E8
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 05:49:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 967BCC433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 05:53:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D3B39208E4
-	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 05:49:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RUh908du"
+	by mail.kernel.org (Postfix) with ESMTP id 7ED88208E4
+	for <linux-pm@archiver.kernel.org>; Mon, 20 Jul 2020 05:53:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726836AbgGTFti (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jul 2020 01:49:38 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60110 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726736AbgGTFtf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 01:49:35 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 151D5C0619D2;
-        Sun, 19 Jul 2020 22:49:35 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id ch3so9628850pjb.5;
-        Sun, 19 Jul 2020 22:49:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=rt6OILtoXvarYoblULhOIeiZp6zLUqn8NzrZ6DwL+ac=;
-        b=RUh908du2UYyA6IAU3v8E23q04X07RbU6Iqf+AENKn17x7WSb6pMDGM+KXsWBnPVDJ
-         Ig6+AyqAKKhSwOdViBOzzeGhuxX4Q1MdzQsDcd7jrW5D0YS9/YUqWo7YGzkG9zhInVWN
-         m7Q5kroEBQHDw23B8F2h640vEP3HQWs6gcUUPnVFy32/u7TXEe3lrLn3Rsvfrir28Dgw
-         cwaA7fkP6yndWgBGzOYL5yGQC1QT38DPnblesWeabs7qBMnu0SsghDgTaHZ2eTefLLOf
-         hTpjorNWOTqaCDQe1n0R5IcNlITeyBrKsZEAPrjLr+/hsz/AWHT3UTlL5012NJFslBtK
-         Yl/A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=rt6OILtoXvarYoblULhOIeiZp6zLUqn8NzrZ6DwL+ac=;
-        b=IutbSYQfg3d2L8MtwgFc6dH9G2lkfKrRJRFMNYzoq4tk+Dc103o9v0hwpEiyWT6RQ2
-         ceOrdZm1hpbSvMIJGAvyIu7XUFFU1s7CeKBrFAq9svXvxlyW9zUr625yKKuipydq8/HF
-         qPtpsc6hoGNLtvQvqqcDKqib6CdV/w5eyqh48gn9H8/D8w6tqO6yomVpTPYpq3vsdmMF
-         IvDWlPFP64/35kwtaXtxIe1Zdypnkj/QSChZ0EuFwFmlR8DWtNtSx2+6ljuZrG3L1oC7
-         IhfMei055Ozx7hiq2ejGOV332XbzERzkeqGUM88eK4SQAuvGsm507omQYevO5EN4pn0t
-         dKsw==
-X-Gm-Message-State: AOAM533vFkhn85fW7Y85zS/Im/G273oigsD9SuAtk7X6fsgduP9MKrvU
-        yYI+v+QOTdxAifqdkPISvuQ=
-X-Google-Smtp-Source: ABdhPJxsUWnVdZg6qm6GkcO+VPwBbwDSozWg2eYY+0aC+Mpp6qBWPWbs4nLwZzWuL0OyPQ+8+eW00Q==
-X-Received: by 2002:a17:90a:f007:: with SMTP id bt7mr21843561pjb.214.1595224174619;
-        Sun, 19 Jul 2020 22:49:34 -0700 (PDT)
-Received: from xiaomi.mioffice.cn ([209.9.72.214])
-        by smtp.gmail.com with ESMTPSA id i7sm13627833pgh.58.2020.07.19.22.49.32
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 19 Jul 2020 22:49:34 -0700 (PDT)
-From:   Qiwu Huang <yanziily@gmail.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        gregkh@linuxfoundation.org, jiangfei1@xiaomi.com,
-        Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: [PATCH v4 4/4] power: supply: core: property to control reverse charge
-Date:   Mon, 20 Jul 2020 13:47:17 +0800
-Message-Id: <a4569ee18bddc8630317a047b91c55ba22b8d051.1595214246.git.huangqiwu@xiaomi.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <cover.1595214246.git.huangqiwu@xiaomi.com>
-References: <cover.1595214246.git.huangqiwu@xiaomi.com>
+        id S1726530AbgGTFxP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jul 2020 01:53:15 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:63054 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725805AbgGTFxO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 01:53:14 -0400
+Received: from pps.filterd (m0187473.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 06K5WXq2125187;
+        Mon, 20 Jul 2020 01:52:51 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 32bvqu82e4-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 20 Jul 2020 01:52:50 -0400
+Received: from m0187473.ppops.net (m0187473.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06K5WkPI128547;
+        Mon, 20 Jul 2020 01:52:50 -0400
+Received: from ppma02dal.us.ibm.com (a.bd.3ea9.ip4.static.sl-reverse.com [169.62.189.10])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 32bvqu82dp-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 20 Jul 2020 01:52:50 -0400
+Received: from pps.filterd (ppma02dal.us.ibm.com [127.0.0.1])
+        by ppma02dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06K5kHJv023042;
+        Mon, 20 Jul 2020 05:52:48 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+        by ppma02dal.us.ibm.com with ESMTP id 32brq8tar6-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Mon, 20 Jul 2020 05:52:48 +0000
+Received: from b03ledav004.gho.boulder.ibm.com (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+        by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 06K5qlHI65602012
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 20 Jul 2020 05:52:47 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 80DB07805C;
+        Mon, 20 Jul 2020 05:52:47 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id AE1DE7805E;
+        Mon, 20 Jul 2020 05:52:46 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.102.23.82])
+        by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+        Mon, 20 Jul 2020 05:52:46 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+        id A98DC2E3225; Mon, 20 Jul 2020 11:22:42 +0530 (IST)
+Date:   Mon, 20 Jul 2020 11:22:42 +0530
+From:   Gautham R Shenoy <ego@linux.vnet.ibm.com>
+To:     Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Cc:     rjw@rjwysocki.net, daniel.lezcano@linaro.org, mpe@ellerman.id.au,
+        benh@kernel.crashing.org, paulus@samba.org, srivatsa@csail.mit.edu,
+        shuah@kernel.org, npiggin@gmail.com, ego@linux.vnet.ibm.com,
+        svaidy@linux.ibm.com, linux-pm@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] selftest/cpuidle: Add support for cpuidle latency
+ measurement
+Message-ID: <20200720055242.GB31497@in.ibm.com>
+Reply-To: ego@linux.vnet.ibm.com
+References: <20200717091801.29289-1-psampat@linux.ibm.com>
+ <20200717091801.29289-3-psampat@linux.ibm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200717091801.29289-3-psampat@linux.ibm.com>
+User-Agent: Mutt/1.5.23 (2014-03-12)
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-07-20_01:2020-07-17,2020-07-20 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=999 spamscore=0
+ bulkscore=0 impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
+ suspectscore=0 adultscore=0 clxscore=1015 phishscore=0 priorityscore=1501
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007200040
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Qiwu Huang <huangqiwu@xiaomi.com>
+Hi Pratik,
 
-Interface to control wireless reverse charge.
-Supply reverse charge function when enabled.
 
-Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
----
- Documentation/ABI/testing/sysfs-class-power | 12 ++++++++++++
- drivers/power/supply/power_supply_sysfs.c   |  1 +
- include/linux/power_supply.h                |  1 +
- 3 files changed, 14 insertions(+)
+On Fri, Jul 17, 2020 at 02:48:01PM +0530, Pratik Rajesh Sampat wrote:
+> This patch adds support to trace IPI based and timer based wakeup
+> latency from idle states
+> 
+> Latches onto the test-cpuidle_latency kernel module using the debugfs
+> interface to send IPIs or schedule a timer based event, which in-turn
+> populates the debugfs with the latency measurements.
+> 
+> Currently for the IPI and timer tests; first disable all idle states
+> and then test for latency measurements incrementally enabling each state
+> 
+> Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 75ec7de2fe78..54647d6995d3 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -767,3 +767,15 @@ Description:
- 
- 		Access: Read-Only
- 		Valid values: 0 - 100
-+
-+What:		/sys/class/power_supply/<supply_name>/reverse_chg_mode
-+Date:		Jul 2020
-+Contact:	Fei Jiang <jiangfei1@xiaomi.com>
-+Description:
-+		Some phones support wireless reverse charge function which charge other phones.
-+		The property supply interface to control wireless reverse charge.
-+		If enabled, start TX mode and detect RX. Disabled when timeout or manual setting.
-+
-+		Valid values:
-+		- 1: enabled
-+		- 0: disabled
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index e420a453095e..81916b6b6ccf 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -209,6 +209,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(QUICK_CHARGE_TYPE),
- 	POWER_SUPPLY_ATTR(TX_ADAPTER),
- 	POWER_SUPPLY_ATTR(SIGNAL_STRENGTH),
-+	POWER_SUPPLY_ATTR(REVERSE_CHG_MODE),
- };
- 
- static struct attribute *
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 346c6c9c0737..a87ae1fff8d1 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -170,6 +170,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_TX_ADAPTER,
- 	POWER_SUPPLY_PROP_SIGNAL_STRENGTH,
-+	POWER_SUPPLY_PROP_REVERSE_CHG_MODE,
- };
- 
- enum power_supply_type {
--- 
-2.27.0
+A few comments below.
 
+> ---
+>  tools/testing/selftests/Makefile           |   1 +
+>  tools/testing/selftests/cpuidle/Makefile   |   6 +
+>  tools/testing/selftests/cpuidle/cpuidle.sh | 257 +++++++++++++++++++++
+>  tools/testing/selftests/cpuidle/settings   |   1 +
+>  4 files changed, 265 insertions(+)
+>  create mode 100644 tools/testing/selftests/cpuidle/Makefile
+>  create mode 100755 tools/testing/selftests/cpuidle/cpuidle.sh
+>  create mode 100644 tools/testing/selftests/cpuidle/settings
+> 
+
+[..skip..]
+
+> +
+> +ins_mod()
+> +{
+> +	if [ ! -f "$MODULE" ]; then
+> +		printf "$MODULE module does not exist. Exitting\n"
+
+If the module has been compiled into the kernel (due to a
+localyesconfig, for instance), then it is unlikely that we will find
+it in /lib/modules. Perhaps you want to check if the debugfs
+directories created by the module exist, and if so, print a message
+saying that the modules is already loaded or some such?
+
+> +		exit $ksft_skip
+> +	fi
+> +	printf "Inserting $MODULE module\n\n"
+> +	insmod $MODULE
+> +	if [ $? != 0 ]; then
+> +		printf "Insmod $MODULE failed\n"
+> +		exit $ksft_skip
+> +	fi
+> +}
+> +
+> +compute_average()
+> +{
+> +	arr=("$@")
+> +	sum=0
+> +	size=${#arr[@]}
+> +	for i in "${arr[@]}"
+> +	do
+> +		sum=$((sum + i))
+> +	done
+> +	avg=$((sum/size))
+
+It would be good to assert that "size" isn't 0 here.
+
+> +}
+> +
+> +# Disable all stop states
+> +disable_idle()
+> +{
+> +	for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +	do
+> +		for ((state=0; state<NUM_STATES; state++))
+> +		do
+> +			echo 1 > /sys/devices/system/cpu/cpu$cpu/cpuidle/state$state/disable
+
+So, on offlined CPUs, we won't see
+/sys/devices/system/cpu/cpu$cpu/cpuidle/state$state directory. You
+should probably perform this operation only on online CPUs.
+
+
+> +		done
+> +	done
+> +}
+> +
+> +# Perform operation on each CPU for the given state
+> +# $1 - Operation: enable (0) / disable (1)
+> +# $2 - State to enable
+> +op_state()
+> +{
+> +	for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +	do
+> +		echo $1 > /sys/devices/system/cpu/cpu$cpu/cpuidle/state$2/disable
+
+
+Ditto
+
+> +	done
+> +}
+
+This is a helper function. For better readability of the main code you
+can define the following wrappers and use them.
+
+
+cpuidle_enable_state()
+{
+	state=$1
+	op_state 1 $state
+}
+
+cpuidle_disable_state()
+{
+	state=$1
+	op_state 0 $state
+
+}
+
+
+> +
+
+[..snip..]
+
+> +run_ipi_tests()
+> +{
+> +        extract_latency
+> +        disable_idle
+> +        declare -a avg_arr
+> +        echo -e "--IPI Latency Test---" >> $LOG
+> +
+> +		echo -e "--Baseline IPI Latency measurement: CPU Busy--" >> $LOG
+> +		printf "%s %10s %12s\n" "SRC_CPU" "DEST_CPU" "IPI_Latency(ns)" >> $LOG
+> +		for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +		do
+> +			ipi_test_once "baseline" $cpu
+> +			printf "%-3s %10s %12s\n" $src_cpu $cpu $ipi_latency >> $LOG
+> +			avg_arr+=($ipi_latency)
+> +		done
+> +		compute_average "${avg_arr[@]}"
+> +		echo -e "Baseline Average IPI latency(ns): $avg" >> $LOG
+> +
+> +        for ((state=0; state<NUM_STATES; state++))
+> +        do
+> +			unset avg_arr
+> +			echo -e "---Enabling state: $state---" >> $LOG
+> +			op_state 0 $state
+> +			printf "%s %10s %12s\n" "SRC_CPU" "DEST_CPU" "IPI_Latency(ns)" >> $LOG
+> +			for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +			do
+
+If a CPU is offline, then we should skip it here.
+
+> +				# Running IPI test and logging results
+> +				sleep 1
+> +				ipi_test_once "test" $cpu
+> +				printf "%-3s %10s %12s\n" $src_cpu $cpu $ipi_latency >> $LOG
+> +				avg_arr+=($ipi_latency)
+> +			done
+> +			compute_average "${avg_arr[@]}"
+> +			echo -e "Expected IPI latency(ns): ${latency_arr[$state]}" >> $LOG
+> +			echo -e "Observed Average IPI latency(ns): $avg" >> $LOG
+> +			op_state 1 $state
+> +        done
+> +}
+> +
+> +# Extract the residency in microseconds and convert to nanoseconds.
+> +# Add 100 ns so that the timer stays for a little longer than the residency
+> +extract_residency()
+> +{
+> +	for ((state=0; state<NUM_STATES; state++))
+> +	do
+> +		residency=$(($(cat /sys/devices/system/cpu/cpu0/cpuidle/state$state/residency) * 1000 + 200))
+> +		residency_arr+=($residency)
+> +	done
+> +}
+> +
+> +# Run the Timeout test
+> +# $1 run for baseline - busy cpu or regular environment
+> +# $2 destination cpu
+> +# $3 timeout
+> +timeout_test_once()
+> +{
+> +	dest_cpu=$2
+> +	if [ "$1" = "baseline" ]; then
+> +		# Keep the CPU busy
+> +		taskset -c $dest_cpu cat /dev/random > /dev/null &
+> +		task_pid=$!
+> +		# Wait for the workload to achieve 100% CPU usage
+> +		sleep 1
+> +	fi
+> +	taskset -c $dest_cpu echo $3 > /sys/kernel/debug/latency_test/timeout_expected_ns
+> +	# Wait for the result to populate
+> +	sleep 0.1
+> +	timeout_diff=$(cat /sys/kernel/debug/latency_test/timeout_diff_ns)
+> +	src_cpu=$(cat /sys/kernel/debug/latency_test/timeout_cpu_src)
+> +	if [ "$1" = "baseline" ]; then
+> +		kill $task_pid
+> +		wait $task_pid 2>/dev/null
+> +	fi
+> +}
+> +
+> +run_timeout_tests()
+> +{
+> +	extract_residency
+> +	disable_idle
+> +	declare -a avg_arr
+> +	echo -e "\n--Timeout Latency Test--" >> $LOG
+> +
+> +	echo -e "--Baseline Timeout Latency measurement: CPU Busy--" >> $LOG
+> +	printf "%s %10s %10s\n" "Wakeup_src" "Baseline_delay(ns)">> $LOG
+> +	for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +	do
+
+Again only perform this on online CPUs.
+
+> +		timeout_test_once "baseline" $cpu ${residency_arr[0]}
+> +		printf "%-3s %13s\n" $src_cpu $timeout_diff >> $LOG
+> +		avg_arr+=($timeout_diff)
+> +	done
+> +	compute_average "${avg_arr[@]}"
+> +	echo -e "Baseline Average timeout diff(ns): $avg" >> $LOG
+> +
+> +	for ((state=0; state<NUM_STATES; state++))
+> +	do
+
+> +		echo -e "---Enabling state: $state---" >> $LOG
+> +		op_state 0 $state
+> +		printf "%s %10s %10s\n" "Wakeup_src" "Baseline_delay(ns)" "Delay(ns)" >> $LOG
+> +		unset avg_arr
+> +		for ((cpu=0; cpu<NUM_CPUS; cpu++))
+> +		do
+
+Ditto.
+
+> +			timeout_test_once "test" $cpu ${residency_arr[$state]}
+> +			printf "%-3s %13s %18s\n" $src_cpu $baseline_timeout_diff $timeout_diff >> $LOG
+> +			avg_arr+=($timeout_diff)
+> +		done
+> +		compute_average "${avg_arr[@]}"
+> +		echo -e "Expected timeout(ns): ${residency_arr[$state]}" >> $LOG
+> +		echo -e "Observed Average timeout diff(ns): $avg" >> $LOG
+> +		op_state 1 $state
+> +	done
+> +}
+> +
+
+--
+Thanks and Regards
+gautham.
