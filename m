@@ -3,72 +3,69 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04585C433E7
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 12:02:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2440DC433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 12:07:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D450722C9C
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 12:02:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F33772065D
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 12:07:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X5e+iQ0V"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Ib1bZOSQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729669AbgGUMB6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jul 2020 08:01:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59616 "EHLO
+        id S1726715AbgGUMHm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jul 2020 08:07:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60490 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729833AbgGUMB5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 08:01:57 -0400
-Received: from mail-pl1-x633.google.com (mail-pl1-x633.google.com [IPv6:2607:f8b0:4864:20::633])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35BB6C061794;
-        Tue, 21 Jul 2020 05:01:57 -0700 (PDT)
-Received: by mail-pl1-x633.google.com with SMTP id d7so1395014plq.13;
-        Tue, 21 Jul 2020 05:01:57 -0700 (PDT)
+        with ESMTP id S1726919AbgGUMHm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 08:07:42 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5451CC0619D8
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 05:07:42 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id a15so6006784wrh.10
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 05:07:42 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=sZlxIlYMO7HwxnRaFGsIzOSb76wV/Tp+2rRqojyDdA8=;
-        b=X5e+iQ0Vdh5ViWxc75pLhsPCdvwjqL+lcF3QagdZv13/sciOVcd4vLRFxNwNzd2+vk
-         y/WHQ7RWtaJDrR2/wLl6jDK/wYojQRCGocZ1FNFhmRXBf+zw0n0QuiyC8v9vtTgffM0H
-         O1ZbuEiV3VSKYszHNmCH6IrQ/E20wAZ7eTvBKcoczoXImXC2rRxzFaY3s8cfMANaRF7q
-         vw5bxXfAgcDflxwNrVzj4gm9npP+XhGzcRjXycZdIrbZ7oU+YJaLVgIt47Qzx4eZJxtt
-         w05YMLhvdgTZ6nvof6z0F5jYSQFyE8F0FxRSU34rTvbjbo5F9UaSAkutZHhsFVo1MyIS
-         EG9g==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=npznphlDVv95ehRrHa25K6/37D7lyoH9vNDTfyrHV8o=;
+        b=Ib1bZOSQY4liaBprcJTobQOsSM1ujiVEYXJWHQqVGnvE4yv0tHq72tpitVyrD3KM6D
+         ZrTcl+yJEVDMxpdpHRtRa5pIC4GvuWfR+2+4Kkfc7Pkq+2cd/islUOLAEKsAXWuHuEXi
+         qaf82L42Fbi1gMCgtsOZY7d1sw2NXVJRNaCK9TKvrHp4pwZcR0tGxl+AOqh8/7VKP2Z6
+         o0fR69XozX1GzaPPQFayryxG/6uFGvKUPT4eXMAZZkdAp6Ur2EIztAXnsrAUYK9BNS43
+         AiXaeHFqem370oI8xXpUlzQ+4KrVLNuwvbw+Cjw1QybNmoEp8QJ0LfyTqaihMQOcopU8
+         tmCw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=sZlxIlYMO7HwxnRaFGsIzOSb76wV/Tp+2rRqojyDdA8=;
-        b=qCfu5yk6Amur8f63TvMl28YrlOc63TArHoEIlqyTcDxXiwGWstYZ7NBXYE+TGvcPtx
-         r96cOeSz2reKuvs0VrztHmHaHvzvnm4+7Hl78Te8QTnpybrKUU1XKUXljjraw/jU+3Ov
-         h2K6tJjkyM+tpoXoVmgHP1TQOLQ5jiE+szC7NKhtdUSDQzqbfBPgJVSY23optAktPVhr
-         e3s4AYc+ZGWCyTD7tgepsQso2nJyCapHomE3XdM/IePocM9IEMSKo5kCgAmeOCC2hY/O
-         EmobyW0i6D6vJ9wxxKLwvp84IIr0qouFICG44pLxrtY1NAsZSVeBKDsJV4d2FU+PBhEt
-         7Z0g==
-X-Gm-Message-State: AOAM531S0e4cWE/Isk+F4GpVGcbsp1x5borXWCKsXLBRWwVVYkm4R2fH
-        1/yQEAMQDWjwfB3chCnMji4=
-X-Google-Smtp-Source: ABdhPJwaar0i+PVY9DkuZaxUw1KoV+Kvqb0C09vGA9mb3eDO5+IY6EKKzaxs0r1tHEc4ivoPzuncoQ==
-X-Received: by 2002:a17:90a:6705:: with SMTP id n5mr4878967pjj.67.1595332916717;
-        Tue, 21 Jul 2020 05:01:56 -0700 (PDT)
-Received: from xiaomi.mioffice.cn ([209.9.72.214])
-        by smtp.gmail.com with ESMTPSA id t73sm20542041pfc.78.2020.07.21.05.01.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 21 Jul 2020 05:01:56 -0700 (PDT)
-From:   Qiwu Huang <yanziily@gmail.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        gregkh@linuxfoundation.org, jiangfei1@xiaomi.com,
-        Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: [PATCH v7 3/4] power: supply: core: add wireless signal strength property
-Date:   Tue, 21 Jul 2020 19:59:41 +0800
-Message-Id: <df7d3aa6ae74a7606c37804bd914be7601f79bf2.1595332392.git.huangqiwu@xiaomi.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <cover.1595332392.git.huangqiwu@xiaomi.com>
-References: <cover.1595332392.git.huangqiwu@xiaomi.com>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=npznphlDVv95ehRrHa25K6/37D7lyoH9vNDTfyrHV8o=;
+        b=PM9UaJy7VQNAiPWotyMxSXrYxxyUtBY7QRtvye+gH77k0W0nVO+tpaPVLadzq2jS8T
+         nDl8IXq7n6RCHQpAAQE4w5bGyU8mMzqIaEYEe56i+uXb9CYtG9hRXiUxHouEyC1a7NlF
+         Ipy/TCAVMkUkXuNSd5WBF64YZQ6WRQSZUkpEhbR+OgowjGDW0aW/dTfH3AOQh6pHj1Zv
+         puqojH0DWYa6ToAiKL6uoD5p6f3RKJ03Lml/P1vGz+Ag8aVieucwQ1XC9gLi2Pn7whp7
+         PxmQBVsEZFReOnmVDyNP9anqABY41pX2hAQISAdRaqxTd0RZ5NMNkaXkPoqoj7ePp0Sd
+         jslg==
+X-Gm-Message-State: AOAM530XOm/dCk5ojjn9VnaQFozPpg5KWIJnuznCaHXsQQy31QpE3w24
+        1x8SRYMkstDOsVGKsEKjfzvtSPg4Ljk=
+X-Google-Smtp-Source: ABdhPJzxnd9kirmNWbPJEKL4Bfib1FwwANnT6N/xXtpyF1/9EyPJdf8YHG+4xM/09YW843CWbZiwSA==
+X-Received: by 2002:adf:f488:: with SMTP id l8mr11938771wro.123.1595333260721;
+        Tue, 21 Jul 2020 05:07:40 -0700 (PDT)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id b10sm3057151wmj.30.2020.07.21.05.07.39
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 21 Jul 2020 05:07:40 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org
+Cc:     adhudase@codeaurora.org, okukatla@codeaurora.org, mka@chromium.org,
+        linux-kernel@vger.kernel.org,
+        Georgi Djakov <georgi.djakov@linaro.org>
+Subject: [PATCH] interconnect: Do not skip aggregation for disabled paths
+Date:   Tue, 21 Jul 2020 15:07:40 +0300
+Message-Id: <20200721120740.3436-1-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.26.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -76,72 +73,46 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Qiwu Huang <huangqiwu@xiaomi.com>
+When an interconnect path is being disabled, currently we don't aggregate
+the requests for it afterwards. But the re-aggregation step shouldn't be
+skipped, as it may leave the nodes with outdated bandwidth data. This
+outdated data may actually keep the path still enabled and prevent the
+device from going into lower power states.
 
-reports wireless signal strength.
-The value show degree of coupling between tx and rx.
-
-Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
+Reported-by: Atul Dhudase <adhudase@codeaurora.org>
+Fixes: 7d374b209083 ("interconnect: Add helpers for enabling/disabling a path")
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- Documentation/ABI/testing/sysfs-class-power | 22 +++++++++++++++++++++
- drivers/power/supply/power_supply_sysfs.c   |  1 +
- include/linux/power_supply.h                |  1 +
- 3 files changed, 24 insertions(+)
+ drivers/interconnect/core.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 03ab449fae8a..4459b720feb2 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -757,3 +757,25 @@ Description:
- 			13: ADAPTER_VOICE_BOX,
- 			14: ADAPTER_PRIVATE_PD_50W.
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index 37d5ec970cc1..5174dcb31ab7 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -243,6 +243,7 @@ static int aggregate_requests(struct icc_node *node)
+ {
+ 	struct icc_provider *p = node->provider;
+ 	struct icc_req *r;
++	u32 avg_bw, peak_bw;
  
-+What:		/sys/class/power_supply/<supply_name>/signal_strength
-+Date:		Jul 2020
-+Contact:	Fei Jiang <jiangfei1@xiaomi.com>
-+Description:
-+		In PING phase, RX transmits a signal strength packet as the
-+		first communication packet to instruct the base to keep power
-+		signal on.The value reports wireless signal strength and show
-+		degree of coupling.
-+
-+		The Qi Wireless Power Transfer System is published by the
-+		Wireless Power Consortium.The ping phase is the necessary stage
-+		for matching transmitter and receiver. In this phase,the Power
-+		Transmitter executes a Digital Ping, and listens for a response.
-+		If the Power Transmitter discovers a Power Receiver, the Power
-+		Transmitter may extend the Digital Ping,i.e. maintain the Power
-+		Signal at the level of the Digital Ping. This causes the system
-+		to proceed to the identification & configuration phase. If the
-+		Power Transmitter does not extend the Digital Ping, the system
-+		shall revert to the selection phase.
-+
-+		Access: Read-Only
-+		Valid values: 0 - 100
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index f2458e21d02b..e420a453095e 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -208,6 +208,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(SERIAL_NUMBER),
- 	POWER_SUPPLY_ATTR(QUICK_CHARGE_TYPE),
- 	POWER_SUPPLY_ATTR(TX_ADAPTER),
-+	POWER_SUPPLY_ATTR(SIGNAL_STRENGTH),
- };
+ 	node->avg_bw = 0;
+ 	node->peak_bw = 0;
+@@ -251,9 +252,14 @@ static int aggregate_requests(struct icc_node *node)
+ 		p->pre_aggregate(node);
  
- static struct attribute *
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 0bbdec1630a4..346c6c9c0737 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -169,6 +169,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
- 	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
- 	POWER_SUPPLY_PROP_TX_ADAPTER,
-+	POWER_SUPPLY_PROP_SIGNAL_STRENGTH,
- };
+ 	hlist_for_each_entry(r, &node->req_list, req_node) {
+-		if (!r->enabled)
+-			continue;
+-		p->aggregate(node, r->tag, r->avg_bw, r->peak_bw,
++		if (r->enabled) {
++			avg_bw = r->avg_bw;
++			peak_bw = r->peak_bw;
++		} else {
++			avg_bw = 0;
++			peak_bw = 0;
++		}
++		p->aggregate(node, r->tag, avg_bw, peak_bw,
+ 			     &node->avg_bw, &node->peak_bw);
+ 	}
  
- enum power_supply_type {
--- 
-2.27.0
-
