@@ -2,119 +2,136 @@ Return-Path: <SRS0=i/1K=BA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CEBA0C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:21:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D699FC433E4
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:29:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A88E520792
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:21:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AFC8B22CE3
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:29:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vjv+YZ0x"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nQZzuMkv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726529AbgGUIVT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jul 2020 04:21:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53714 "EHLO
+        id S1728638AbgGUI3T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jul 2020 04:29:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54970 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726214AbgGUIVS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 04:21:18 -0400
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2A6CC061794
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 01:21:18 -0700 (PDT)
-Received: by mail-pj1-x1042.google.com with SMTP id gc9so1214239pjb.2
-        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 01:21:18 -0700 (PDT)
+        with ESMTP id S1727018AbgGUI3S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 04:29:18 -0400
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EB8D1C0619D9
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 01:29:17 -0700 (PDT)
+Received: by mail-wr1-x443.google.com with SMTP id q5so20289182wru.6
+        for <linux-pm@vger.kernel.org>; Tue, 21 Jul 2020 01:29:17 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=74cnB8WV/DeG8ebhvgbl1gl2LfYmiA9yZ3/crf8NgJ8=;
-        b=vjv+YZ0xo7bDx59HHkmJVxpxxb804vgOrNic7EXsXohB37XDmdDvAkDLDjWUHl1ryq
-         TUR7ZVchoL9gVzggDAnFMJjJr685tDFrRySrReEc8Q2L7dC866AzXuJBLs/d98o5eZDu
-         t+wVyYg3dIBUMtrSO12IznO74pZhxizVfwqPq48P1DIINB9DpCBfzSoxgoBGuoI8ZsPv
-         n68AH2q4cFb+JmNO4pofnMvNzvWmUnUPwY+KmSWxADLcZBalATNrG4XBsY3voIfTQ97p
-         GsQN9wA8nbtnVIVSwkfdVsPGiUbdbTQHZxuSDwLMQj1+CK862YkrgsnQB55LZZgw6Ipd
-         4pCg==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=BCc9lQHutdqUheCKRkROi161ZNJWwY3EPFExUcfdRiQ=;
+        b=nQZzuMkvsmF8UEWlQ2eMje2ox6IxIQnvVbZvACyM99WUCNYR4mar5iAsEGOMOc1+kZ
+         W47xjV3CaLmGqGyhv+1g8jpHCUH2OllbVfcJnsO2LuTUPFgblr8cB3VkvBPBU0eMoS8C
+         bDpo4AnqD9Ze142VKWzYhpOd238YloVY6mGh99Pj3KHwXg4yPC5MPHjeWWDd2+cLLFE7
+         VWXzcnWEMofCTSbJPcZGPf78ZW/wwbQR3UBjy0EiNgclwxf6YDw2IB5JTQ5l6nd72jFF
+         NzSBCKQA6U6T6hQYX5gxJm4mO0jp49pX79cI2b8LyY7hj/iq16n93wrUPjZMA62YVHHw
+         0F4w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=74cnB8WV/DeG8ebhvgbl1gl2LfYmiA9yZ3/crf8NgJ8=;
-        b=Jtrq34M+yT1AAZRPrJIMevY+vI3I4Iaua/iVSIqzzE052s37zY1JtFO3bPzQ3ydPEz
-         UvhpJGpxVBf2S3+2400OGmEwn6jXlzA394FVJiUfM6SJ8WIzJBsPrEpLign+IPLWb1T/
-         wrb2VBkXpVXoV3U215cxTQ1NH75GfRrhcBZBlrmpdjdXbl8utM14taKBwE2G9IGv/Nbw
-         4Abjtfwl4hF6CaYVttrUPe2VHnhCaeZZjekG1nw/3GUV/BaWAHC7NOIOH6ZhX0OnyIWh
-         /JEy8sge6wsegtP5oRQtYHop3ERlRHDXF/IqW+u/Zuvr7dL0T+82WxKjoIewEW4dNzxT
-         7dkw==
-X-Gm-Message-State: AOAM533Vwcurd337WdpmKjzRMQIzr0DZzSJh2cwUU3P000vbgczTeBax
-        +HOM0zuY7u0KVi2NtmWTAYr5qg==
-X-Google-Smtp-Source: ABdhPJw2z2+N0MEss1NXQOPpFBPqV/i3Scy9lXQPLEKMgs7UGAIGKsx3pG54CUXrYnzgC56bil3DTg==
-X-Received: by 2002:a17:90a:fa02:: with SMTP id cm2mr3812131pjb.52.1595319678241;
-        Tue, 21 Jul 2020 01:21:18 -0700 (PDT)
-Received: from localhost ([223.179.133.67])
-        by smtp.gmail.com with ESMTPSA id n18sm20123125pfd.99.2020.07.21.01.21.17
-        (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
-        Tue, 21 Jul 2020 01:21:17 -0700 (PDT)
-Date:   Tue, 21 Jul 2020 13:51:11 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Stephen Boyd <sboyd@kernel.org>
-Cc:     "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=BCc9lQHutdqUheCKRkROi161ZNJWwY3EPFExUcfdRiQ=;
+        b=p+GQc7vBDsp0P5cFaPqlyxCI0sufVi0JkRBDVqLhDtKQVvgfUc5OtE6SqXcFAQ4aFJ
+         gaQK7CekVXz7tBjcBh57A+HIWs78hPUdojBWafmFYoVpr9ahqksfaeDL6c3/KtyXA0NO
+         GSzL2IETsKQufgUSJJqXC7CRvj1O+Py08rcBFSREV+fYcTCqvaQBTkRIy+wQI/FyMMxY
+         1pkQx5dTnIor/EDVACEUejPmutTuD0W2CoXRzhpm8JFRN7sRf/7jKEDaDmHwQ/WOvI93
+         /zjoHX+1RHhFiqyRfGpyO4qDkzqInBdoLkIR9nXhaaygeGAE5nI/GfkyplXMiyzyoVLu
+         iHsQ==
+X-Gm-Message-State: AOAM530sC4/8/ZIu4WKszmIvF0ELP9+17vT8e+MX7R8gYXpwYT7dkX4h
+        z6pglGMVY7XzmqzpzugVcbox0Q==
+X-Google-Smtp-Source: ABdhPJx7ILZH2KvjvBFVVZB5grxQumhwOHm/i3j36nylWvTrt1yjKSBvidlCH5i8FTEEGeIg8iA/PA==
+X-Received: by 2002:adf:fb06:: with SMTP id c6mr810292wrr.261.1595320156360;
+        Tue, 21 Jul 2020 01:29:16 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:3590:b402:869a:11fc? ([2a01:e34:ed2f:f020:3590:b402:869a:11fc])
+        by smtp.googlemail.com with ESMTPSA id d10sm36006628wrx.66.2020.07.21.01.29.13
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 21 Jul 2020 01:29:15 -0700 (PDT)
+Subject: Re: [PATCH v2] dt-bindings: thermal: Get rid of thermal.txt and
+ replace references
+To:     Amit Kucheria <amit.kucheria@linaro.org>,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        lukasz.luba@arm.com, Sudeep Holla <sudeep.holla@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Jean Delvare <jdelvare@suse.com>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Yangtao Li <tiny.windzz@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Maxime Ripard <mripard@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>, Talel Shenhar <talel@amazon.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Ray Jui <rjui@broadcom.com>,
+        Scott Branden <sbranden@broadcom.com>,
+        bcm-kernel-feedback-list@broadcom.com,
+        Nicolas Saenz Julienne <nsaenzjulienne@suse.de>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Heiko Stuebner <heiko@sntech.de>,
+        Marc Gonzalez <marc.w.gonzalez@free.fr>,
+        Mans Rullgard <mans@mansr.com>,
         Matthias Brugger <matthias.bgg@gmail.com>,
-        Nishanth Menon <nm@ti.com>, Viresh Kumar <vireshk@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-pm@vger.kernel.org,
-        srv_heupstream@mediatek.com
-Subject: Re: opp: Modify opp API, dev_pm_opp_get_freq(), find freq in opp,
- even it is disabled
-Message-ID: <20200721082111.les32oe7hrfikeew@vireshk-mac-ubuntu>
-References: <1595235326-6333-1-git-send-email-andrew-sh.cheng@mediatek.com>
- <159531934722.3847286.14813407062714740461@swboyd.mtv.corp.google.com>
+        Stefan Wahren <wahrenst@gmx.net>
+Cc:     Rob Herring <robh@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-rpi-kernel@lists.infradead.org,
+        linux-rockchip@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+References: <e9aacd33071a00568b67e110fa3bcc4d86d3e1e4.1595245166.git.amit.kucheria@linaro.org>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <8c7f5c41-746b-f26d-7b3e-4152c17c4812@linaro.org>
+Date:   Tue, 21 Jul 2020 10:29:13 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <159531934722.3847286.14813407062714740461@swboyd.mtv.corp.google.com>
-User-Agent: NeoMutt/20170609 (1.8.3)
+In-Reply-To: <e9aacd33071a00568b67e110fa3bcc4d86d3e1e4.1595245166.git.amit.kucheria@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21-07-20, 01:15, Stephen Boyd wrote:
-> Quoting Andrew-sh.Cheng (2020-07-20 01:55:26)
-> > From: "Andrew-sh.Cheng" <andrew-sh.cheng@mediatek.com>
-> > 
-> > Modify dev_pm_opp_get_freq() to return freqeuncy
-> > even this opp item is not available.
-> > So that we can get the information of disable opp items.
-> > 
-> > Signed-off-by: Andrew-sh.Cheng <andrew-sh.cheng@mediatek.com>
-> > ---
-> >  drivers/opp/core.c | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> > index eed42d6b2e6b..5213e0462382 100644
-> > --- a/drivers/opp/core.c
-> > +++ b/drivers/opp/core.c
-> > @@ -118,7 +118,7 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_get_voltage);
-> >   */
-> >  unsigned long dev_pm_opp_get_freq(struct dev_pm_opp *opp)
-> >  {
-> > -       if (IS_ERR_OR_NULL(opp) || !opp->available) {
-> > +       if (IS_ERR_OR_NULL(opp)) {
+On 20/07/2020 13:53, Amit Kucheria wrote:
+> Now that we have yaml bindings for the thermal subsystem, get rid of the
+> old bindings (thermal.txt).
 > 
-> I wonder why we even have this check. Seems like the caller deserves an
-> oops in this case instead of a small pr_err().
+> Replace all references to thermal.txt in the Documentation with a link
+> to the appropriate YAML bindings using the following search and replace
+> pattern:
+>  - If the reference is specific to the thermal-sensor-cells property,
+>  replace with a pointer to thermal-sensor.yaml
+>  - If the reference is to the cooling-cells property, replace with a
+>  pointer to thermal-cooling-devices.yaml
+>  - If the reference is generic thermal bindings, replace with a
+>  reference to thermal*.yaml.
+> 
+> Signed-off-by: Amit Kucheria <amit.kucheria@linaro.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-I think the reason is same as to why multiple subsystems do similar checks.
-While many of them don't do anything if they get a NULL pointer and simply
-return, which is fine to support cases where NULL is passed.
+Applied, thanks
 
-But I do agree that maybe we may want to make sure opp-table or opp pointers
-passed are all valid all the time and so just remove these checks and let them
-crash.
 
 -- 
-viresh
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
