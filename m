@@ -2,100 +2,152 @@ Return-Path: <SRS0=i/1K=BA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9474CC4345B
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 02:53:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64B12C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 03:12:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 730132077D
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 02:53:19 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595299999;
-	bh=jQurSwoYb0dDca7KKNv+Xge6LlJui9Kz+MzLOaJ/mPY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=MlDOMnyM7HmbJl93cStemIzgjSwso5Tq6Y6AyOwzCxc+c2iRYS3B0/JZSw7DyYiz6
-	 I3LYuE/EZiCuv/WmOIFNcBLMZMvXL4Aa7Lhhj7ucMpQpD7ZfDmjdTN8iezeDHfmifO
-	 HRR6BNy6jgGY66aTi3DbVe1+4G8PAY8QV4fRgNYc=
+	by mail.kernel.org (Postfix) with ESMTP id 3A940206E3
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 03:12:48 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IL3gzcHT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728642AbgGUCxG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 20 Jul 2020 22:53:06 -0400
-Received: from mail-io1-f65.google.com ([209.85.166.65]:38506 "EHLO
-        mail-io1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728579AbgGUCxF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 22:53:05 -0400
-Received: by mail-io1-f65.google.com with SMTP id l1so19806472ioh.5;
-        Mon, 20 Jul 2020 19:53:04 -0700 (PDT)
+        id S1726135AbgGUDMr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 20 Jul 2020 23:12:47 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60922 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726068AbgGUDMr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 20 Jul 2020 23:12:47 -0400
+Received: from mail-wr1-x42f.google.com (mail-wr1-x42f.google.com [IPv6:2a00:1450:4864:20::42f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1B82C061794;
+        Mon, 20 Jul 2020 20:12:46 -0700 (PDT)
+Received: by mail-wr1-x42f.google.com with SMTP id a15so4737164wrh.10;
+        Mon, 20 Jul 2020 20:12:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=QmWkp+pLXRh/gXZUp7qiRhPmHHKd7eq2d0NWiyvOMkM=;
+        b=IL3gzcHT7td0H6RZ8vgJLxeW6j2TSaQkhrvkWv+Dvx5x0FwsrsXISZnCo2B4Vq817E
+         7P/qxL0w3YfNDJb8JSVe58a6qjZvxLMLx6G+MNtrjmwdKdiincxlg3Wl2UHIuxcH1Suj
+         LFb9fYu43S5GhRmzXAOnBeBpI86XYJCk3L5xXSFumVpyIqkAe1y5skECjTyPSfPMmcU1
+         U6qW2UlGMd+OHCHheq571mFMSGS9sUvTCYa6aMv5K9VAtiaAPzBZWQJmJumPLopTyUKr
+         Mv51vz43IZs2RdnafHeARbgZvugyLNiGuEk7zEjBs+T4u/r77DJbKUyqjvFyTKOkm2Mk
+         nLjg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=xASqgPBn0vQnBjRaakU4/De4PK+WKVGo5AzdY13vuio=;
-        b=ntC4ltZX+BfpHUGVvS8VEpn019uB8Wb2nTUklpcpkmFDgk0xUSm4HNYjUkiPSoNvef
-         dJT1tSN+2F5YjukNs5Inf3pDElG5oDxF5zpvO5Gl1CJQ88nUwuylfO/4Cd8yx9v7RPuU
-         32fpSBNKFOy/jvP3b1guhWhfzkbX/pJ5v4cIvCBkTjW/9xD7n9JWl7cbily43uQAbPoV
-         1TZkL76kxoeuLAW6umMjEdyrHg1MVxAEcB2/eVUn8bPUfdh1KP4DKVbwChEtEniVS/M7
-         R+mGJgewes2vquW0l2qbCj9LGvwa/zesfAI413r9wDXqg25dUcwxpw78Ya3nw0l6Auyu
-         bj0w==
-X-Gm-Message-State: AOAM533z5Y5Xe0Gt/1L7ew7ecLUSctIbZ0QcJhxrK427SkwzrT40kCdA
-        tnk+2CIoZyTwUL9xBixRog==
-X-Google-Smtp-Source: ABdhPJz41h8OM5s4geRzLZHoERqx9LciqCO3xEc+DShybK0JD+WqMSGJQl6OIfjmXHrai9bDWqOecw==
-X-Received: by 2002:a05:6638:1308:: with SMTP id r8mr20353417jad.106.1595299984114;
-        Mon, 20 Jul 2020 19:53:04 -0700 (PDT)
-Received: from xps15 ([64.188.179.252])
-        by smtp.gmail.com with ESMTPSA id i84sm10099147ill.30.2020.07.20.19.53.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Jul 2020 19:53:03 -0700 (PDT)
-Received: (nullmailer pid 3448269 invoked by uid 1000);
-        Tue, 21 Jul 2020 02:53:01 -0000
-Date:   Mon, 20 Jul 2020 20:53:01 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Cc:     Thomas Gleixner <tglx@linutronix.de>,
-        linux-watchdog@vger.kernel.org, netdev@vger.kernel.org,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        Niklas <niklas.soderlund@ragnatech.se>,
-        "David S. Miller" <davem@davemloft.net>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-renesas-soc@vger.kernel.org,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Wolfram Sang <wsa+renesas@sang-engineering.com>,
-        Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-        linux-can@vger.kernel.org, Marc Kleine-Budde <mkl@pengutronix.de>,
-        linux-i2c@vger.kernel.org, Wolfgang Grandegger <wg@grandegger.com>,
-        Mark Brown <broonie@kernel.org>,
-        Magnus Damm <magnus.damm@gmail.com>, linux-pm@vger.kernel.org,
-        linux-spi@vger.kernel.org, Zhang Rui <rui.zhang@intel.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Prabhakar <prabhakar.csengg@gmail.com>
-Subject: Re: [PATCH 19/20] dt-bindings: can: rcar_canfd: Document r8a774e1
- support
-Message-ID: <20200721025301.GA3448222@bogus>
-References: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <1594811350-14066-20-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=QmWkp+pLXRh/gXZUp7qiRhPmHHKd7eq2d0NWiyvOMkM=;
+        b=ltHKabegIjsDqPM6I0ezvxZIzcUZpanjqEzL5CQgtuWbbOskTBign62WqWXesZBi41
+         N5ZTnk2ksdPkIBem2wSqchvfIOZOeEpQsMQ/XKKVjJCi6NvtaONXUQFfNKXtxm5Jx2CR
+         JBzjAeJu89PIxrFC2aCIbTGef9NL9sOmFS2JAIJMNhw3haFHNCNSuYy4ZF5k90njz1gk
+         ECz9tDrfNjKQ0Aje/2uWO0c/M1QdYzUQHadIjxHbZmkSLNZfJs45GPOjIdPplYMjfYwu
+         MRKRhna41CiH5Ur3jT04RM5cFn0j2qeQkfGnnZe5zn0hxa3CdpBkxvdtbV9oMVMc7DtC
+         DC6Q==
+X-Gm-Message-State: AOAM532iqK9i/mfHhKR77Ls+GWFYDxQPF/rsoGPqkJ/D9DS7YTf6SMHW
+        YuG/XVIbBXVgglKMDMkDpbPh8X08tfhsUVRoltngWzEqtoZQpNZY
+X-Google-Smtp-Source: ABdhPJzT6sH02cjhcT6NreTADImut0tj7cBEsIStKDXcS4HLicMhEmtB5ONK2n7aerQQcVyOYCV1HjeGi/WsfObwVIY=
+X-Received: by 2002:adf:d0d0:: with SMTP id z16mr25917757wrh.95.1595301163893;
+ Mon, 20 Jul 2020 20:12:43 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1594811350-14066-20-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+References: <cover.1595214246.git.huangqiwu@xiaomi.com> <20200720082100.GA720171@kroah.com>
+In-Reply-To: <20200720082100.GA720171@kroah.com>
+From:   ivan <yanziily@gmail.com>
+Date:   Tue, 21 Jul 2020 11:12:32 +0800
+Message-ID: <CAPtXDt39QMWE5jYeszBD8z9P_BHgwZ86wArpCEafC_Xx+hjKLQ@mail.gmail.com>
+Subject: Re: [PATCH v4 0/4] add some power supply properties about
+ wireless/wired charging
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, jiangfei1@xiaomi.com,
+        Qiwu Huang <huangqiwu@xiaomi.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 15 Jul 2020 12:09:09 +0100, Lad Prabhakar wrote:
-> Document the support for rcar_canfd on R8A774E1 SoC devices.
-> 
-> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> Reviewed-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renesas.com>
-> ---
->  Documentation/devicetree/bindings/net/can/rcar_canfd.txt | 1 +
->  1 file changed, 1 insertion(+)
-> 
+Greg KH <gregkh@linuxfoundation.org> =E4=BA=8E2020=E5=B9=B47=E6=9C=8820=E6=
+=97=A5=E5=91=A8=E4=B8=80 =E4=B8=8B=E5=8D=884:20=E5=86=99=E9=81=93=EF=BC=9A
+>
+> On Mon, Jul 20, 2020 at 01:47:13PM +0800, Qiwu Huang wrote:
+> > From: Qiwu Huang <huangqiwu@xiaomi.com>
+> >
+> > quick_charge_type reports quick charge type based on charging power.
+> > tx_adapter shows wireless charging adapter type.
+> > signal_strength shows degree of coupling between tx and rx when wireles=
+s charging.
+> > reverse_chg_mode supply interface to enable/disable wireless reverse ch=
+arging.
+> >
+> > Qiwu Huang (4):
+> >   power: supply: core: add quick charge type property
+> >   power: supply: core: add wireless charger adapter type property
+> >   power: supply: core: add wireless signal strength property
+> >   power: supply: core: property to control reverse charge
+>
+> What changed from the previous versions of this series?  Normally you
+> either include that in the 0/X email, or in the individual patches.  I
+> don't see that in either place in this series :(
+>
+> See the many examples of how this is done by looking at other patches on
+> the mailing lists and in the submitting patches documentation.
 
-Acked-by: Rob Herring <robh@kernel.org>
+Sorry =EF=BC=8CI will add it in new version
+
+This patchset aims to provide power supply properties about
+wireless/wired charging.
+ =E2=80=9Cquick_charge_type=E2=80=9D reports different types of quick charg=
+e based on
+the charging power;
+ =E2=80=9Ctx_adapter=E2=80=9D shows the type of wireless charging adapter;.
+ =E2=80=9Csignal_strength=E2=80=9D shows the coupling level between TX and =
+RX;.
+ =E2=80=9Creverse_chg_mode=E2=80=9D provides the interface of enabling/disa=
+bling
+wireless reverse charging.
+
+ Changes in v5
+  - Add details in 0/X email
+
+ Changes in v4
+  - Exclude the patch of =E2=80=9Cpower: supply: supply battery soc with de=
+cimal form=E2=80=9D
+  - Fix some typo
+
+ Changes in v3
+  - Add enumederated for quick charge type
+  - Add enumederated for tx adapter type
+  - Update the return type and description in ABI
+
+ Changes in v2
+  - modify to capital letters for =E2=80=9Cpower_supply_attrs=E2=80=9D
+  - Update the return type and description in ABI
+
+ Qiwu Huang (4):
+   power: supply: core: add quick charge type property
+   power: supply: core: add wireless charger adapter type property
+   power: supply: core: add wireless signal strength property
+   power: supply: core: property to control reverse charge
+
+  Documentation/ABI/testing/sysfs-class-power | 71 +++++++++++++++++++++
+  drivers/power/supply/power_supply_sysfs.c   |  4 ++
+  include/linux/power_supply.h                | 31 +++++++++
+  3 files changed, 106 insertions(+)
+
+
+> thanks,
+>
+> greg k-h
+
+
+
+--=20
+Thanks
+
+Qiwu
