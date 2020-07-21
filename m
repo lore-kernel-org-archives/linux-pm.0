@@ -2,161 +2,111 @@ Return-Path: <SRS0=i/1K=BA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 118F3C433E4
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 06:01:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5E7F5C433EC
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 06:02:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E0D66208E4
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 06:01:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B32722CA0
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 06:02:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qenq27cn"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="n4Wkp7kF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728246AbgGUGBv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jul 2020 02:01:51 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60568 "EHLO
+        id S1728466AbgGUGCH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jul 2020 02:02:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725294AbgGUGBu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 02:01:50 -0400
-Received: from mail-pf1-x433.google.com (mail-pf1-x433.google.com [IPv6:2607:f8b0:4864:20::433])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D04DDC061794;
-        Mon, 20 Jul 2020 23:01:50 -0700 (PDT)
-Received: by mail-pf1-x433.google.com with SMTP id 207so10226405pfu.3;
-        Mon, 20 Jul 2020 23:01:50 -0700 (PDT)
+        with ESMTP id S1728369AbgGUGCG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 21 Jul 2020 02:02:06 -0400
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3FB0BC061794
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2020 23:02:06 -0700 (PDT)
+Received: by mail-lf1-x142.google.com with SMTP id i80so10992891lfi.13
+        for <linux-pm@vger.kernel.org>; Mon, 20 Jul 2020 23:02:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=oEglXBwLQOY/wf76maJo9jVEEGUkpTJTd012yFX+eg0=;
-        b=qenq27cns4DoZzOJtgBg1xMlSVQV+H0pYRW1AXZoP7hZQcFTAEKaJKVmVLXZWzear9
-         3CHrz1YlPnfT9YdSu3mo/JYAdNyl1qApivpe599Uvw2uLMS1C6PDsEkT/ydipedF4YAR
-         5TJUe7/ACP/YRrYsAI2lD2u8R1rbOoZScgORbLUH9FdUw4+gSnnvsaylVK13s/UPlPRv
-         rTYd2RuwfRt5MJn40SlKe9MlGb5zMzjMtelO6dNANTG4sc+IsYRV4lEUiDJlk9JjdSda
-         C6i1KMma++TL/XE8eKOeNRy8Bd6tQUplToWSvgznvBz1/zvbZqYwre9rSlgjD3zwHuVE
-         gf0A==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=my59yREAno2VQTQHnPXurOEKaB8ry8pumgPVSYznLUI=;
+        b=n4Wkp7kFOj4iLJpP6r5SwB/qPrN12j5OeQuZbk0acAZfjK2hSrnY5oVJscJUPJZjD3
+         3Tvi5Ib/nIudBxUDjzrTXkkSIr59b33qw6AqttrRaU1314ITKvd/1FtQuM/5vKaW0A+a
+         PydSNvajtDmUqYoIqdhaT7f4RF6xalnRHweH8EiAQO0pKeOZ07SNaZwFOtlBa9fP73VM
+         I4SbOpTQZF2mL623gjrHR8g1xHJHhidB/LdHYH0AexCQbQwR/+So1zmjx6IzHTdt6o48
+         YzKD7k26mYLcUxYGMVuyYavPyJpwUSkvTdvD/fxuRGJ0N+AhylZL7eBHTZv7ZGwXd8Pw
+         sgnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=oEglXBwLQOY/wf76maJo9jVEEGUkpTJTd012yFX+eg0=;
-        b=jAIZpbUab3Glyp0oMyPkbZQ6FpzksiE5qkKW8JduT/K9j/16AG76Svnlm8k3a/rwMq
-         SOLorEwqZ6/GH2d4bPMuDHQeVSGVqHopFmBj2AdkVuhEnwiujKvKTf4JLqVfQioqvizg
-         rYXVggQ9NhIAh76DnOo5Ornqv0NI7tflHMgLfOdmoBUmaKvVB3qm0AhvOJJ5UGxTNWAt
-         lCspIzvYMgNKB4elZzvXlh8oYC1G3d5WynPKMs/9TZnSfHSCc//Jsxhhz28nJ1TstElf
-         UlmVqJnhYxZ78Y9+YPzkXkg1Xj8fhT79ayvhyj7ufK4rINv3dP6ufpAJtm+EimGbTF3k
-         6T5Q==
-X-Gm-Message-State: AOAM533sX3cBWHKr8zITEp/23BSGS5KSpWvLjkMLbEw5O+pSfOH4uM/R
-        TeiyudldWe2RKOV84s8Une4=
-X-Google-Smtp-Source: ABdhPJz1Te3koa/zhLqKxkIjQseOsCSkfPst/EqmKu1fyTddgY8aL1UrKk9TWaYrKPqHPaxF1xaJvA==
-X-Received: by 2002:a62:c584:: with SMTP id j126mr22633598pfg.213.1595311308528;
-        Mon, 20 Jul 2020 23:01:48 -0700 (PDT)
-Received: from xiaomi.mioffice.cn ([209.9.72.214])
-        by smtp.gmail.com with ESMTPSA id 129sm18368833pfv.161.2020.07.20.23.01.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 20 Jul 2020 23:01:48 -0700 (PDT)
-From:   Qiwu Huang <yanziily@gmail.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        gregkh@linuxfoundation.org, jiangfei1@xiaomi.com,
-        Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: [PATCH v5 1/4] power: supply: core: add quick charge type property
-Date:   Tue, 21 Jul 2020 13:59:34 +0800
-Message-Id: <c9d3199ec18625f9cc4448c3b2049ea2ae80358b.1595301250.git.huangqiwu@xiaomi.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <cover.1595301250.git.huangqiwu@xiaomi.com>
-References: <cover.1595301250.git.huangqiwu@xiaomi.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=my59yREAno2VQTQHnPXurOEKaB8ry8pumgPVSYznLUI=;
+        b=hjsBCW8UMIf3Aw6JRw6Mix/menOAPXgocDU2nE8Dgz8e4uNXF53h5GLEMdutQ8KKQF
+         saiuxPYx0gESCMJvVVZn9j+YRNd6ALgs9qyzNDuqKIp4AeCVYTjUuZ9zevDvF4cHHanV
+         OdvJkmERtQjvuFVfBazJNZyJkQvoCAZwrPy0dWfL7zOYDi60X+DWmNAcU2jx+VlISmSp
+         3IfqhZAsamLPNFe99L/3XFYNdhZqAIKARZ5Y3ylX5rhQICxPRU/GkYXim8vwxm7mHf1f
+         XEjmZ/pQRfnHw5BZZIfJMUvo/vlRkJ9JsCBI503JyDzcXEXQ3VeVov8MnFPDCN2G3Xcz
+         90lQ==
+X-Gm-Message-State: AOAM531QQAoqzSb6ycS2RCLIYmUf8FR39awWoHrfFd7Anpy+BI2BK3DQ
+        goktPepa0OwRkBaiduv2u5kbgLVHfx8eCfuzlHfoPQ==
+X-Google-Smtp-Source: ABdhPJwvgCTehztyDX3Ii5ZlkS2X5xVAaX40gTTrRR53FMNAybYJMQOf2Mixr3o03K0dYP0cmjuKZJsCxtWu/EWeh40=
+X-Received: by 2002:ac2:5325:: with SMTP id f5mr12579460lfh.6.1595311324713;
+ Mon, 20 Jul 2020 23:02:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200716022817.30439-1-ansuelsmth@gmail.com> <20200716022817.30439-2-ansuelsmth@gmail.com>
+ <CAP245DUqvTYENmaxG3rjUn1XrzrmvdFmKG_vaef2BxKL6jY+Rg@mail.gmail.com>
+ <159528817752.3847286.2725374997908705208@swboyd.mtv.corp.google.com> <CAP245DXqiEZLoVa-jfLx0tYRwrtK0sp+ZX6P_yTf4C9vetg3RA@mail.gmail.com>
+In-Reply-To: <CAP245DXqiEZLoVa-jfLx0tYRwrtK0sp+ZX6P_yTf4C9vetg3RA@mail.gmail.com>
+From:   Amit Kucheria <amit.kucheria@linaro.org>
+Date:   Tue, 21 Jul 2020 11:31:53 +0530
+Message-ID: <CAP245DUZTT4dFAzpN3Uv1-y2DKHriXZ9jH3t7V1qxf7sNH8yYw@mail.gmail.com>
+Subject: Re: [PATCH v4 1/7] ipq806x: gcc: add support for child probe
+To:     Stephen Boyd <sboyd@kernel.org>
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        DTML <devicetree@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Qiwu Huang <huangqiwu@xiaomi.com>
+On Tue, Jul 21, 2020 at 11:27 AM Amit Kucheria <amit.kucheria@linaro.org> wrote:
+>
+>
+>
+> On Tue, 21 Jul, 2020, 05:06 Stephen Boyd, <sboyd@kernel.org> wrote:
+>>
+>> Quoting Amit Kucheria (2020-07-20 02:41:44)
+>> > On Thu, Jul 16, 2020 at 7:58 AM Ansuel Smith <ansuelsmth@gmail.com> wrote:
+>> > >
+>> > > Add support for child probing needed for tsens driver that share the
+>> > > seme regs of gcc for this platform.
+>> >
+>> > Typo: same
+>> >
+>>
+>> Otherwise reviewed-by? Because I can throw this into the clk tree with
+>> the typo fixed.
+>
+>
+> Yes, the rest of the series need work imo, but this patch looks ok to populate the child nodes in OF.
+>
+> Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
 
-Reports the kind of quick charge type based on
-different adapter power.
+Replied earlier from a phone, which resulted in HTML email. Resending.
 
-Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
----
- Documentation/ABI/testing/sysfs-class-power | 21 +++++++++++++++++++++
- drivers/power/supply/power_supply_sysfs.c   |  1 +
- include/linux/power_supply.h                | 10 ++++++++++
- 3 files changed, 32 insertions(+)
+The rest of the series need work imo, but this patch looks ok to
+populate the child nodes in OF.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 216d61a22f1e..dd3773dcf16a 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -708,3 +708,24 @@ Description:
- 
- 		Access: Read
- 		Valid values: 1-31
-+
-+What:		/sys/class/power_supply/<supply_name>/quick_charge_type
-+Date:		Jul 2020
-+Contact:	Fei Jiang <jiangfei1@xiaomi.com>
-+		Description:
-+		Reports the kind of quick charge type based on different adapter power.
-+		Different quick charge type represent different charging power.
-+		QUICK_CHARGE_NORMAL : Charging Power <= 10W
-+		QUICK_CHARGE_FAST : 10W < Charging Power <= 20W
-+		QUICK_CHARGE_FLASH : 20W < Charging Power <= 30W
-+		QUICK_CHARGE_TURBE : 30W < Charging Power <= 50W
-+		QUICK_CHARGE_SUPER : Charging Power > 50W
-+
-+		Access: Read-Only
-+		Valid values:
-+			0: QUICK_CHARGE_NORMAL,
-+			1: QUICK_CHARGE_FAST,
-+			2: QUICK_CHARGE_FLASH,
-+			3: QUICK_CHARGE_TURBE,
-+			4: QUICK_CHARGE_SUPER.
-+
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bc79560229b5..9554d7907373 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -206,6 +206,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(MODEL_NAME),
- 	POWER_SUPPLY_ATTR(MANUFACTURER),
- 	POWER_SUPPLY_ATTR(SERIAL_NUMBER),
-+	POWER_SUPPLY_ATTR(QUICK_CHARGE_TYPE),
- };
- 
- static struct attribute *
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index ac1345a48ad0..f35c661a2544 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -167,6 +167,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
- };
- 
- enum power_supply_type {
-@@ -197,6 +198,15 @@ enum power_supply_usb_type {
- 	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
- };
- 
-+enum power_supply_quick_charge_type {
-+	QUICK_CHARGE_NORMAL = 0,		/* Charging Power <= 10W */
-+	QUICK_CHARGE_FAST,			/* 10W < Charging Power <= 20W */
-+	QUICK_CHARGE_FLASH,			/* 20W < Charging Power <= 30W */
-+	QUICK_CHARGE_TURBE,			/* 30W < Charging Power <= 50W */
-+	QUICK_CHARGE_SUPER,			/* Charging Power > 50W */
-+	QUICK_CHARGE_MAX,
-+};
-+
- enum power_supply_notifier_events {
- 	PSY_EVENT_PROP_CHANGED,
- };
--- 
-2.27.0
-
+Reviewed-by: Amit Kucheria <amit.kucheria@linaro.org>
