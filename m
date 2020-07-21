@@ -7,86 +7,97 @@ X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EEE9C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CEF3AC433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:21:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0FA9B21702
-	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:19:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A233720714
+	for <linux-pm@archiver.kernel.org>; Tue, 21 Jul 2020 08:21:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595319593;
-	bh=G1ZJ6z2nGN2ypA8j/rBMCiv4O5LEWR6lDslIJVYhYWY=;
+	s=default; t=1595319685;
+	bh=47k5aup1aXT1zMH3tH7/4fi4e3IvHVWxQa3HfzqrMDM=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=JqbH4/1MJCnSpSt/PgHGAs3G/I4DS4+GYor/vE2ASYWuIQO3ks5qEVzPIHgSwVNMM
-	 m3v6mkJFE8BFdoAT8ZXXMn7c5OR5bq8nDlJQKMTpzLU4LPpXjY1mz//CzQVJGGp9TB
-	 CmIk5TqOW7o8p4pVolQELabKyytvdJng6r2YvPVQ=
+	b=Bc9ST/zJujf0f4abnubQ358YFbdhvSVarYzonDHJtMa5z0QoWB43Z92Yrkse847bl
+	 5JRob1Mu1IaGw1odTgTGb+bI9jpBxTi/dpjiQJwWzQ0ZmPjqeh69tkUlGIuULMb7TO
+	 /zZMlP9uynK5+dBryDOy31ompszohaFYttp4ACWA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728766AbgGUITw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 21 Jul 2020 04:19:52 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44664 "EHLO mail.kernel.org"
+        id S1728348AbgGUIVW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 21 Jul 2020 04:21:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:45308 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728352AbgGUITw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 21 Jul 2020 04:19:52 -0400
+        id S1726521AbgGUIVU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 21 Jul 2020 04:21:20 -0400
 Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 603242068F;
-        Tue, 21 Jul 2020 08:19:51 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9205720720;
+        Tue, 21 Jul 2020 08:21:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1595319591;
-        bh=G1ZJ6z2nGN2ypA8j/rBMCiv4O5LEWR6lDslIJVYhYWY=;
+        s=default; t=1595319680;
+        bh=47k5aup1aXT1zMH3tH7/4fi4e3IvHVWxQa3HfzqrMDM=;
         h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=D+hWS8vl0/WJjxnt0isHR923FpV6OUrI0ho4z6Nb3XRVPPqcUKDjSjFooek4rHmK5
-         R7Td12WPySgXr5gQaBRZgEa22cTriuWcVngV/eEP7E+7wOHKLgsxylF0/bMk0seB0G
-         djr8tESJw3LiehUeyGJpEaBlJwxcSTy4X7AXuBJU=
-Date:   Tue, 21 Jul 2020 10:20:00 +0200
+        b=1uelKJLZv+vYgaCIPNvkbzC9Ll2XoFHXW+f8T1U7kZ+d9eYMT368ZQliT7osFSOOn
+         /v0COt4qkjjEv/+jcKYsVSabqPWva9tAEJb/2/WDP0K0I0ijDGSjWvKl9UvBq54lzu
+         mqOchN/MFgsvHMe8scpLVuHek/a6FR6SFL0f5gdY=
+Date:   Tue, 21 Jul 2020 10:21:28 +0200
 From:   Greg KH <gregkh@linuxfoundation.org>
 To:     Qiwu Huang <yanziily@gmail.com>
 Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, jiangfei1@xiaomi.com,
         Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: Re: [PATCH v5 3/4] power: supply: core: add wireless signal strength
- property
-Message-ID: <20200721082000.GD1655283@kroah.com>
+Subject: Re: [PATCH v5 4/4] power: supply: core: property to control reverse
+ charge
+Message-ID: <20200721082128.GE1655283@kroah.com>
 References: <cover.1595301250.git.huangqiwu@xiaomi.com>
- <b383d79629d0afca00838fcbaad4458e383d7262.1595301250.git.huangqiwu@xiaomi.com>
+ <f58e4cc6f5235d463d96c950f2af2b9a47920e9d.1595301250.git.huangqiwu@xiaomi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <b383d79629d0afca00838fcbaad4458e383d7262.1595301250.git.huangqiwu@xiaomi.com>
+In-Reply-To: <f58e4cc6f5235d463d96c950f2af2b9a47920e9d.1595301250.git.huangqiwu@xiaomi.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 21, 2020 at 01:59:36PM +0800, Qiwu Huang wrote:
+On Tue, Jul 21, 2020 at 01:59:37PM +0800, Qiwu Huang wrote:
 > From: Qiwu Huang <huangqiwu@xiaomi.com>
 > 
-> reports wireless signal strength.
-> The value show degree of coupling between tx and rx.
+> Interface to control wireless reverse charge.
+> Supply reverse charge function when enabled.
 > 
 > Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
 > ---
->  Documentation/ABI/testing/sysfs-class-power | 10 ++++++++++
+>  Documentation/ABI/testing/sysfs-class-power | 12 ++++++++++++
 >  drivers/power/supply/power_supply_sysfs.c   |  1 +
 >  include/linux/power_supply.h                |  1 +
->  3 files changed, 12 insertions(+)
+>  3 files changed, 14 insertions(+)
 > 
 > diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-> index 03ab449fae8a..75ec7de2fe78 100644
+> index 75ec7de2fe78..54647d6995d3 100644
 > --- a/Documentation/ABI/testing/sysfs-class-power
 > +++ b/Documentation/ABI/testing/sysfs-class-power
-> @@ -757,3 +757,13 @@ Description:
->  			13: ADAPTER_VOICE_BOX,
->  			14: ADAPTER_PRIVATE_PD_50W.
+> @@ -767,3 +767,15 @@ Description:
 >  
-> +What:		/sys/class/power_supply/<supply_name>/signal_strength
+>  		Access: Read-Only
+>  		Valid values: 0 - 100
+> +
+> +What:		/sys/class/power_supply/<supply_name>/reverse_chg_mode
 > +Date:		Jul 2020
 > +Contact:	Fei Jiang <jiangfei1@xiaomi.com>
 > +Description:
-> +		In PING phase, RX transmits a signal strength packet as the first
+> +		Some phones support wireless reverse charge function which charge other phones.
 
-What does "PING phase" mean?
+Replace "phones" with "devices"?
 
-Other than that, seems sane to me, thanks for the changes.
+And shouldn't these lines be wrapped properly at 72 colums or so?
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+> +		The property supply interface to control wireless reverse charge.
+
+I can't understand this sentance.
+
+> +		If enabled, start TX mode and detect RX. Disabled when timeout or manual setting.
+
+Can this be set, or is it just something to be read?
+
+thanks,
+
+greg k-h
