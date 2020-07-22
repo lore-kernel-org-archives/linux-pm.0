@@ -2,163 +2,218 @@ Return-Path: <SRS0=pyD0=BB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02F57C433EA
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jul 2020 09:38:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 71C04C433E6
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Jul 2020 11:01:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE18320787
-	for <linux-pm@archiver.kernel.org>; Wed, 22 Jul 2020 09:38:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4F46B20771
+	for <linux-pm@archiver.kernel.org>; Wed, 22 Jul 2020 11:01:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="N60bJeq9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731629AbgGVJip (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 22 Jul 2020 05:38:45 -0400
-Received: from foss.arm.com ([217.140.110.172]:53058 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726147AbgGVJip (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 22 Jul 2020 05:38:45 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C041E101E;
-        Wed, 22 Jul 2020 02:38:44 -0700 (PDT)
-Received: from e108754-lin.cambridge.arm.com (unknown [10.1.198.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 1CBE23F66F;
-        Wed, 22 Jul 2020 02:38:43 -0700 (PDT)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        dietmar.eggemann@arm.com, catalin.marinas@arm.com,
-        sudeep.holla@arm.com, will@kernel.org, linux@armlinux.org.uk
-Cc:     mingo@redhat.com, peterz@infradead.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        ionela.voinescu@arm.com
-Subject: [PATCH v2 4/7] cpufreq: report whether cpufreq supports Frequency Invariance (FI)
-Date:   Wed, 22 Jul 2020 10:37:29 +0100
-Message-Id: <20200722093732.14297-5-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200722093732.14297-1-ionela.voinescu@arm.com>
-References: <20200722093732.14297-1-ionela.voinescu@arm.com>
+        id S1730061AbgGVLBo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 22 Jul 2020 07:01:44 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47704 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729037AbgGVLBn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 22 Jul 2020 07:01:43 -0400
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BEAFDC0619DF
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2020 04:01:42 -0700 (PDT)
+Received: by mail-wr1-x443.google.com with SMTP id s10so1445903wrw.12
+        for <linux-pm@vger.kernel.org>; Wed, 22 Jul 2020 04:01:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Mb4TDwngKstdYsXu7RUzjZ9eyxkXyxQaDZSnxs4t1+Y=;
+        b=N60bJeq90gF41M58w7DHRMQvF6qMoRnkCpkk5WCEHbDJW0aHQ6I4402GfkkTroitnv
+         DxGEB6UcyEovmUTMewJhlshvkGdmcaqwzbcqdfA9nxgw8Spu298DxnjSikpWRXypTvC8
+         dQSOOG0oVp3kRk+4vQZBFRagUdUm0V8zL5nCuMACDngI5NldIASAtY9m3s+pDNjYVNEZ
+         Ga8vzcgGqEaScwPGpp2H60wF2eh+4Q9q9UsO3QEH84g81YpAwV7+Ti9bty7qsYWIdfSA
+         uYRKddOBJ/AArr/opFW0AMFu8JnJf8jQZLjQoYGrQLEdLYE7a2pVrXYOpPbKi3sQdRLd
+         RSNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Mb4TDwngKstdYsXu7RUzjZ9eyxkXyxQaDZSnxs4t1+Y=;
+        b=rmgaS3Pt8Wx1rtQNpkVmXxjAeyHlOxE68ijPPdWaiuIDR2bMY8ewz4O3da/zDJY3vu
+         cfwJnXO97kn+hMdCpHsN6D++ujRDVYXdWCIgaFL6xUHtDurEesl8LurBWp0EgUNvinzM
+         kql8188abYbQ8X+K6RkshtsY5yp9CZf69xJgqHe08VHMl29RY62I0D1uRCqHNy7EamXb
+         b7CAZwaaDoibj3VVmL+QaybKhuk/layhtelLnMIMpO3daDFjp98w61UM0eNr5S0TBsGY
+         pB9EzoRBC6yN8u8ShtGK+nQAlSMxEAsVGaFeYfKdaxm4hHLHFEtOzyFFGylWsOZNzzcX
+         H5Jg==
+X-Gm-Message-State: AOAM531NdetsTyO3TfYXeGlr0x6mcFQWNfng1eYa0avZN5Zanbo1XzR2
+        j6Lq4tlptpm7KAv7PMGYGv5/+JXEBso=
+X-Google-Smtp-Source: ABdhPJyVFEACUDVgyJ7BwW37Wm8jOezlYQOmluktE5flWxq8GlmeRLwB1J95+gBWQAjMSub6hpTORA==
+X-Received: by 2002:adf:cd8b:: with SMTP id q11mr22330993wrj.98.1595415701114;
+        Wed, 22 Jul 2020 04:01:41 -0700 (PDT)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id y6sm41256164wrr.74.2020.07.22.04.01.39
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Wed, 22 Jul 2020 04:01:40 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org
+Cc:     saravanak@google.com, mdtipton@codeaurora.org,
+        okukatla@codeaurora.org, bjorn.andersson@linaro.org,
+        vincent.guittot@linaro.org, georgi.djakov@linaro.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/2] interconnect: Add sync state support
+Date:   Wed, 22 Jul 2020 14:01:38 +0300
+Message-Id: <20200722110139.24778-2-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.26.2
+In-Reply-To: <20200722110139.24778-1-georgi.djakov@linaro.org>
+References: <20200722110139.24778-1-georgi.djakov@linaro.org>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Now that the update of the FI scale factor is done in cpufreq core for
-selected functions - target(), target_index() and fast_switch(),
-we can provide feedback to the task scheduler and architecture code
-on whether cpufreq supports FI.
+The bootloaders often do some initial configuration of the interconnects
+in the system and we want to keep this configuration until all consumers
+have probed and expressed their bandwidth needs. This is because we don't
+want to change the configuration by starting to disable unused paths until
+every user had a chance to request the amount of bandwidth it needs.
 
-For this purpose, provide error and debug messages, together with an
-external function to expose whether the cpufreq drivers support FI, by
-using a static key.
+To accomplish this we will implement an interconnect specific sync_state
+callback which will synchronize (aggregate and set) the current bandwidth
+settings when all consumers have been probed.
 
-The logic behind the enablement of cpufreq-based invariance is as
-follows:
- - cpufreq-based invariance is disabled by default
- - cpufreq-based invariance is enabled if any of the callbacks
-   above is implemented while the unsupported setpolicy() is not
- - if enabled, cpufreq-based invariance will be disabled during the
-   call of the default arch_set_freq_scale() function which does
-   not set a scale factor.
-
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/cpufreq/cpufreq.c | 28 ++++++++++++++++++++++++++++
- include/linux/cpufreq.h   |  5 +++++
- 2 files changed, 33 insertions(+)
+ drivers/interconnect/core.c           | 61 +++++++++++++++++++++++++++
+ include/linux/interconnect-provider.h |  5 +++
+ 2 files changed, 66 insertions(+)
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 3497c1cd6818..1d0b046fe8e9 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -61,6 +61,9 @@ static struct cpufreq_driver *cpufreq_driver;
- static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
- static DEFINE_RWLOCK(cpufreq_driver_lock);
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index e5f998744501..0c4e38d9f1fa 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -26,6 +26,8 @@
  
-+/* Mark support for the scheduler's frequency invariance engine */
-+static DEFINE_STATIC_KEY_FALSE(cpufreq_set_freq_scale);
+ static DEFINE_IDR(icc_idr);
+ static LIST_HEAD(icc_providers);
++static int providers_count;
++static bool synced_state;
+ static DEFINE_MUTEX(icc_lock);
+ static struct dentry *icc_debugfs_dir;
+ 
+@@ -255,6 +257,12 @@ static int aggregate_requests(struct icc_node *node)
+ 			continue;
+ 		p->aggregate(node, r->tag, r->avg_bw, r->peak_bw,
+ 			     &node->avg_bw, &node->peak_bw);
 +
- /* Flag to suspend/resume CPUFreq governors */
- static bool cpufreq_suspended;
++		/* during boot use the initial bandwidth as a floor value */
++		if (!synced_state) {
++			node->avg_bw = max(node->avg_bw, node->init_avg);
++			node->peak_bw = max(node->peak_bw, node->init_peak);
++		}
+ 	}
  
-@@ -69,6 +72,25 @@ static inline bool has_target(void)
- 	return cpufreq_driver->target_index || cpufreq_driver->target;
- }
- 
-+static inline
-+void enable_cpufreq_freq_invariance(struct cpufreq_driver *driver)
-+{
-+	if ((driver->target || driver->target_index || driver->fast_switch) &&
-+	    !driver->setpolicy) {
-+
-+		static_branch_enable_cpuslocked(&cpufreq_set_freq_scale);
-+		pr_debug("%s: Driver %s can provide frequency invariance.",
-+			 __func__, driver->name);
-+	} else
-+		pr_err("%s: Driver %s cannot provide frequency invariance.",
-+		__func__, driver->name);
-+}
-+
-+bool cpufreq_sets_freq_scale(void)
-+{
-+	return static_branch_likely(&cpufreq_set_freq_scale);
-+}
-+
- /* internal prototypes */
- static unsigned int __cpufreq_get(struct cpufreq_policy *policy);
- static int cpufreq_init_governor(struct cpufreq_policy *policy);
-@@ -159,6 +181,9 @@ EXPORT_SYMBOL_GPL(get_cpu_idle_time);
- __weak void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
- 		unsigned long max_freq)
- {
-+	if (cpufreq_sets_freq_scale())
-+		static_branch_disable_cpuslocked(&cpufreq_set_freq_scale);
-+
- }
- EXPORT_SYMBOL_GPL(arch_set_freq_scale);
- 
-@@ -2722,6 +2747,8 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
- 	cpufreq_driver = driver_data;
- 	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
- 
-+	enable_cpufreq_freq_invariance(cpufreq_driver);
-+
- 	if (driver_data->setpolicy)
- 		driver_data->flags |= CPUFREQ_CONST_LOOPS;
- 
-@@ -2791,6 +2818,7 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
- 	cpus_read_lock();
- 	subsys_interface_unregister(&cpufreq_interface);
- 	remove_boost_sysfs_file();
-+	static_branch_disable_cpuslocked(&cpufreq_set_freq_scale);
- 	cpuhp_remove_state_nocalls_cpuslocked(hp_online);
- 
- 	write_lock_irqsave(&cpufreq_driver_lock, flags);
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e62b022cb07e..f81215ad76f1 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -217,6 +217,7 @@ void refresh_frequency_limits(struct cpufreq_policy *policy);
- void cpufreq_update_policy(unsigned int cpu);
- void cpufreq_update_limits(unsigned int cpu);
- bool have_governor_per_policy(void);
-+bool cpufreq_sets_freq_scale(void);
- struct kobject *get_governor_parent_kobj(struct cpufreq_policy *policy);
- void cpufreq_enable_fast_switch(struct cpufreq_policy *policy);
- void cpufreq_disable_fast_switch(struct cpufreq_policy *policy);
-@@ -237,6 +238,10 @@ static inline unsigned int cpufreq_get_hw_max_freq(unsigned int cpu)
- {
  	return 0;
- }
-+static inline bool cpufreq_sets_freq_scale(void)
-+{
-+	return false;
-+}
- static inline void disable_cpufreq(void) { }
- #endif
+@@ -919,6 +927,13 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
+ 	node->provider = provider;
+ 	list_add_tail(&node->node_list, &provider->nodes);
  
--- 
-2.17.1
-
++	/* get the initial bandwidth values and sync them with hardware */
++	if ((node->init_avg || node->init_peak) && provider->set) {
++		node->avg_bw = node->init_avg;
++		node->peak_bw = node->init_peak;
++		provider->set(node, node);
++	}
++
+ 	mutex_unlock(&icc_lock);
+ }
+ EXPORT_SYMBOL_GPL(icc_node_add);
+@@ -1014,8 +1029,54 @@ int icc_provider_del(struct icc_provider *provider)
+ }
+ EXPORT_SYMBOL_GPL(icc_provider_del);
+ 
++static int of_count_icc_providers(struct device_node *np)
++{
++	struct device_node *child;
++	int count = 0;
++
++	for_each_available_child_of_node(np, child) {
++		if (of_property_read_bool(child, "#interconnect-cells"))
++			count++;
++		count += of_count_icc_providers(child);
++	}
++	of_node_put(np);
++
++	return count;
++}
++
++void icc_sync_state(struct device *dev)
++{
++	struct icc_provider *p;
++	struct icc_node *n;
++	static int count;
++
++	count++;
++
++	if (count < providers_count)
++		return;
++
++	mutex_lock(&icc_lock);
++	synced_state = true;
++	list_for_each_entry(p, &icc_providers, provider_list) {
++		dev_dbg(p->dev, "interconnect provider is in synced state\n");
++		list_for_each_entry(n, &p->nodes, node_list) {
++			if (n->init_avg || n->init_peak) {
++				aggregate_requests(n);
++				p->set(n, n);
++			}
++		}
++	}
++	mutex_unlock(&icc_lock);
++}
++EXPORT_SYMBOL_GPL(icc_sync_state);
++
+ static int __init icc_init(void)
+ {
++	struct device_node *root = of_find_node_by_path("/");
++
++	providers_count = of_count_icc_providers(root);
++	of_node_put(root);
++
+ 	icc_debugfs_dir = debugfs_create_dir("interconnect", NULL);
+ 	debugfs_create_file("interconnect_summary", 0444,
+ 			    icc_debugfs_dir, NULL, &icc_summary_fops);
+diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+index 0c494534b4d3..aa85b96296c4 100644
+--- a/include/linux/interconnect-provider.h
++++ b/include/linux/interconnect-provider.h
+@@ -71,6 +71,8 @@ struct icc_provider {
+  * @req_list: a list of QoS constraint requests associated with this node
+  * @avg_bw: aggregated value of average bandwidth requests from all consumers
+  * @peak_bw: aggregated value of peak bandwidth requests from all consumers
++ * @init_avg: average bandwidth value that is read from the hardware during init
++ * @init_peak: peak bandwidth value that is read from the hardware during init
+  * @data: pointer to private data
+  */
+ struct icc_node {
+@@ -87,6 +89,8 @@ struct icc_node {
+ 	struct hlist_head	req_list;
+ 	u32			avg_bw;
+ 	u32			peak_bw;
++	u32			init_avg;
++	u32			init_peak;
+ 	void			*data;
+ };
+ 
+@@ -103,6 +107,7 @@ void icc_node_del(struct icc_node *node);
+ int icc_nodes_remove(struct icc_provider *provider);
+ int icc_provider_add(struct icc_provider *provider);
+ int icc_provider_del(struct icc_provider *provider);
++void icc_sync_state(struct device *dev);
+ 
+ #else
+ 
