@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 46685C43446
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Jul 2020 18:24:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0BB9C433E4
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Jul 2020 18:24:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 244A520759
-	for <linux-pm@archiver.kernel.org>; Fri, 24 Jul 2020 18:24:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B93A020759
+	for <linux-pm@archiver.kernel.org>; Fri, 24 Jul 2020 18:24:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595615074;
-	bh=PuO42SWKqXGKsVy8DEJzaXe0S+VggBkOX28YgE6UznU=;
+	s=default; t=1595615079;
+	bh=5ktWSQf2OJMglO4ygaUgTJ1Ba7h5629G/Zz5/4zxDMA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=tXYTn0oDIXX3PLSYWu+KFuKGy9BnqVxBTXf5QAqZLyzEMYOoDyKnS+uAtKpSvfk6g
-	 DQmRVD1IbJN3p8rQkZctrLjQoh8pMhIj6yWKnQHkavOUdSpaOibI4w5ySBEsuk5n8s
-	 Nbw9+sFw7xX3SkrFa5aWQpX9eFtyDoahmtdQFrWU=
+	b=VBbzC7pD/0Mo5CYiIlTQN9Syi7H7QRdx5BM8WckrgHbMnN3p1geOaVdVYkg17Er10
+	 SfZ0ttREBwfE8UJxgNDCh4pOT4F3iDiDJmxJIjY+baF+F50PFYgyZT6gtCkmmamVe/
+	 lX7bCw9pVvCE9Co48KmqvFahQinEkc8wYHcMEDMU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726973AbgGXSYb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 24 Jul 2020 14:24:31 -0400
-Received: from mail.kernel.org ([198.145.29.99]:32972 "EHLO mail.kernel.org"
+        id S1727033AbgGXSYj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 24 Jul 2020 14:24:39 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33254 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725822AbgGXSY3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 24 Jul 2020 14:24:29 -0400
+        id S1726988AbgGXSYi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 24 Jul 2020 14:24:38 -0400
 Received: from kozik-lap.mshome.net (unknown [194.230.155.213])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id F33B42070B;
-        Fri, 24 Jul 2020 18:24:24 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0DAD02070E;
+        Fri, 24 Jul 2020 18:24:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1595615069;
-        bh=PuO42SWKqXGKsVy8DEJzaXe0S+VggBkOX28YgE6UznU=;
+        s=default; t=1595615078;
+        bh=5ktWSQf2OJMglO4ygaUgTJ1Ba7h5629G/Zz5/4zxDMA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Jw5r2T983VW2fPKtKoBaS8/S3bzyT22UZtHK2TUYkx4Lo7NyafZ6j/hIBZ9MQXPU4
-         ID348NpyVVLUhddFt1nZWIbMJm2UqUnO7TLeE592zNa4Qd2C/lsl7IZPEyqr1YfUiS
-         Jqn9VeiUfnZSfepXVsMath4uayXEJoH1rvgxpaO0=
+        b=XBjUNT7l1oq+0hJwD2MqadgYTwGwuydK038bDcpD1LuwEDSGb69j5LKquC6bCgvh7
+         fJBOgA/0C79hQ5cTAQv5R4fjb0UPp49shcH+ohBlLJs28GOooOaa9YcrOE6+Ii5KXx
+         dSmUT5VhZj1QY09IxYk18cctDju8cxdg14kwLHWI=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Florian Fainelli <f.fainelli@gmail.com>,
         Ray Jui <rjui@broadcom.com>,
@@ -57,9 +57,9 @@ To:     Florian Fainelli <f.fainelli@gmail.com>,
         linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         linux-pm@vger.kernel.org
 Cc:     Olof Johansson <olof@lixom.net>, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 04/16] memory: omap-gpmc: Correct kerneldoc
-Date:   Fri, 24 Jul 2020 20:23:16 +0200
-Message-Id: <20200724182328.3348-5-krzk@kernel.org>
+Subject: [PATCH 06/16] memory: omap-gpmc: Use 'unsigned int' for consistency
+Date:   Fri, 24 Jul 2020 20:23:18 +0200
+Message-Id: <20200724182328.3348-7-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200724182328.3348-1-krzk@kernel.org>
 References: <20200724182328.3348-1-krzk@kernel.org>
@@ -68,49 +68,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use proper kerneldoc to fix GCC warnings like:
-
-    drivers/memory/omap-gpmc.c:299: warning: Function parameter or member 'cs' not described in 'gpmc_get_clk_period'
-    drivers/memory/omap-gpmc.c:432: warning: Excess function parameter 'ma' description in 'get_gpmc_timing_reg'
+Driver uses 'unsigned int' in other places instead of 'unsigned'.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/memory/omap-gpmc.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/memory/omap-gpmc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/memory/omap-gpmc.c b/drivers/memory/omap-gpmc.c
-index 2675ea4e37fe..c91a021ac421 100644
+index 62577255ba0f..e4d2f359bcfa 100644
 --- a/drivers/memory/omap-gpmc.c
 +++ b/drivers/memory/omap-gpmc.c
-@@ -289,8 +289,8 @@ static unsigned long gpmc_get_fclk_period(void)
+@@ -243,7 +243,7 @@ static DEFINE_SPINLOCK(gpmc_mem_lock);
+ /* Define chip-selects as reserved by default until probe completes */
+ static unsigned int gpmc_cs_num = GPMC_CS_NUM;
+ static unsigned int gpmc_nr_waitpins;
+-static unsigned gpmc_capability;
++static unsigned int gpmc_capability;
+ static void __iomem *gpmc_base;
  
- /**
-  * gpmc_get_clk_period - get period of selected clock domain in ps
-- * @cs Chip Select Region.
-- * @cd Clock Domain.
-+ * @cs: Chip Select Region.
-+ * @cd: Clock Domain.
-  *
-  * GPMC_CS_CONFIG1 GPMCFCLKDIVIDER for cs has to be setup
-  * prior to calling this function with GPMC_CD_CLK.
-@@ -409,7 +409,7 @@ static void gpmc_cs_bool_timings(int cs, const struct gpmc_bool_timings *p)
-  * @reg:     GPMC_CS_CONFIGn register offset.
-  * @st_bit:  Start Bit
-  * @end_bit: End Bit. Must be >= @st_bit.
-- * @ma:x     Maximum parameter value (before optional @shift).
-+ * @max:     Maximum parameter value (before optional @shift).
-  *           If 0, maximum is as high as @st_bit and @end_bit allow.
-  * @name:    DTS node name, w/o "gpmc,"
-  * @cd:      Clock Domain of timing parameter.
-@@ -1134,7 +1134,7 @@ static struct gpmc_nand_ops nand_ops = {
+ static struct clk *gpmc_l3_clk;
+@@ -1289,7 +1289,7 @@ int gpmc_omap_onenand_set_timings(struct device *dev, int cs, int freq,
+ }
+ EXPORT_SYMBOL_GPL(gpmc_omap_onenand_set_timings);
  
- /**
-  * gpmc_omap_get_nand_ops - Get the GPMC NAND interface
-- * @regs: the GPMC NAND register map exclusive for NAND use.
-+ * @reg: the GPMC NAND register map exclusive for NAND use.
-  * @cs: GPMC chip select number on which the NAND sits. The
-  *      register map returned will be specific to this chip select.
-  *
+-int gpmc_get_client_irq(unsigned irq_config)
++int gpmc_get_client_irq(unsigned int irq_config)
+ {
+ 	if (!gpmc_irq_domain) {
+ 		pr_warn("%s called before GPMC IRQ domain available\n",
 -- 
 2.17.1
 
