@@ -2,62 +2,62 @@ Return-Path: <SRS0=1VxL=BE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80332C433E4
-	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 18:14:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8FDDDC433F4
+	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 18:14:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 60B9320767
-	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 18:14:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 700652070B
+	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 18:14:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gOXyDauP"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dSNeB0RN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727933AbgGYSO0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 25 Jul 2020 14:14:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50940 "EHLO
+        id S1728063AbgGYSOj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 25 Jul 2020 14:14:39 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50992 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726926AbgGYSOZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2020 14:14:25 -0400
-Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com [IPv6:2a00:1450:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A8B3BC08C5C0;
-        Sat, 25 Jul 2020 11:14:24 -0700 (PDT)
-Received: by mail-ej1-x643.google.com with SMTP id gg18so9732029ejb.6;
-        Sat, 25 Jul 2020 11:14:24 -0700 (PDT)
+        with ESMTP id S1728057AbgGYSOi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 25 Jul 2020 14:14:38 -0400
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B7B97C08C5C0;
+        Sat, 25 Jul 2020 11:14:37 -0700 (PDT)
+Received: by mail-ed1-x543.google.com with SMTP id a8so9264125edy.1;
+        Sat, 25 Jul 2020 11:14:37 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WiwnYihBtixDJzDpzWlD4k6I3xmTQHOsKsy9q7yUDY4=;
-        b=gOXyDauPjCBBEN92duKWIXnR1RNC3Ip8+jtR47XfISeB26t1GWY0X6lg5SHy8TPEjW
-         Xl8GpmHilFoA7woS6N5TDdNSYO2ANDRX0vJDugf8NujUr933hJ0d/UaYy4nlZnA6D80L
-         ej2tacQOtXCdp01xUG8waVAdmiGmwEVYKdNLz2TP/5jLMoOjtvVsVaEjeOURfKDFD6J/
-         ZsxAlKgb1X+9dbKDD9qaBBJnbiFdahMmQTsmpF3LpPGvxWcSmaTCcUc+SIkn1xy9vvvF
-         d2EwkybxeoZYtYCMK5yHrSxNyXw54WxdbiU+Gdo0N4z3GAoigmTGklWoo2uGs7fqC2ui
-         g+tQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=dIBquEHwAX4sD8ioWCYBykLFT3YhKbCVKKRvF9l5a+0=;
+        b=dSNeB0RNr2d0huNjg44CIsNaarRJ6XfXL7/OBPpazPg+a8wMz+A1yyim/L2/3rFzhC
+         GeqbddjxjtYNCCGYDYVqyMC3gHpATEvdVWTxatad934Y8Wa/rv0q3W0t79/4KEaiwcDK
+         ynMJtR44W0Hc9/akYmoGCNChS07q+ExhqrF74N43Y96LwWqdtjsWHbVuiUqmha23kYxM
+         mQaALSrpZBcRyybO/Sw35tZcRYI+meQbW9DkoHwKGNqOoxa/Ey+LlJH2Mfenw4+S0GmC
+         BqFTS0q3zO91rP9+9niFnae2UtolcS75TB5XLVlokzJc7d+v/TheywLgbsy34QY6h3iR
+         BsoQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=WiwnYihBtixDJzDpzWlD4k6I3xmTQHOsKsy9q7yUDY4=;
-        b=TjQSstOIbEAMvvnL1bUr/PAZnqU5l8AYh9RO+O4cxtCb47FfNsXmBxkMmLpLjpbphN
-         e+tPvS+r2kadmcjzOilZI/fFWhHwPzDmz3DKRGR+AwUnPJOQ/8jD8WEizShy9mwDlTyo
-         LjNldnwLbLv93ITZCwH2VQ7O5pPW3WHs1qHdC5uLF7cf+G+nL6anOUcFqgUb+c6cLzos
-         CJpqw/Zv7MkJYySkv1KsvnD1SFTp0ULlvQ78wKKldqKsQrCX2K4xL/Ig2fYOaTbyijWd
-         DgoFwrH5TRrc+JaeYFLpRFFarI1N7NAQOq4jJ6PQpdqNq6bWCy0S/1S9RL/NCM6VSxVy
-         sgOg==
-X-Gm-Message-State: AOAM533rkZLJoDAedSzqAeILPcrykwPaQsgajdvm6raup62ADUdfZK5P
-        XOnY0yAOdT9cEaTyIsSVSQQPoGA6334=
-X-Google-Smtp-Source: ABdhPJypVwaMtyAB2CYK/4ceL7rXI6q8zQ7u3cYnaITT90LoOeNxa0zgLHOowZ0j8RNSjSmKJ7f6Gw==
-X-Received: by 2002:a17:906:2b54:: with SMTP id b20mr14291952ejg.366.1595700862147;
-        Sat, 25 Jul 2020 11:14:22 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=dIBquEHwAX4sD8ioWCYBykLFT3YhKbCVKKRvF9l5a+0=;
+        b=YLigrHlQgsm/8h6NcjdgOG6ysAu+kRmcPyzQ/zGBgr9QVSavOCeodSt2E4F0QSyI9E
+         9/aR/W/gWyplAi7CSg/Q+14dXQfBlzVhQKkriiC1/OxNnTn21yZfDgoR/zc03sHT3Xpk
+         f16Y0s7SZ4XAo0VSD8XyLgASHS7I8rINGE/4PsqmmDcDqfBTl31wQ/kFfM1DxkiXyOQA
+         6ceng4M8Ibrz4+1gYChOOyYsgYjI7atQZu6Aua+PWYb26wRjeLO9gDhulMuHvQfXMUBy
+         wj6fSX5+GRhgBgWs+sECBYx7EE/+7uWvSm/WAQa6kkuDM+BQcfserHrIDPdF0I3BYQNQ
+         YFkw==
+X-Gm-Message-State: AOAM530jAxcXRpplGJwVr9b/kTDNl6u1JWvkQWfFnM01qiPSZLC7iAxA
+        kll0wykcqwkB8HPYUtmRxF4=
+X-Google-Smtp-Source: ABdhPJwdpSYmMX7UtI2iKfDEzNFHrYmdxQPbg5q1/SOLHrvfwunAcXxsEdnWJTu4q/jEc0YprHimzw==
+X-Received: by 2002:a50:931e:: with SMTP id m30mr14806586eda.341.1595700876387;
+        Sat, 25 Jul 2020 11:14:36 -0700 (PDT)
 Received: from Ansuel-XPS.localdomain (host-79-22-5-125.retail.telecomitalia.it. [79.22.5.125])
-        by smtp.googlemail.com with ESMTPSA id qn10sm220922ejb.39.2020.07.25.11.14.20
+        by smtp.googlemail.com with ESMTPSA id qn10sm220922ejb.39.2020.07.25.11.14.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 25 Jul 2020 11:14:21 -0700 (PDT)
+        Sat, 25 Jul 2020 11:14:35 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amit.kucheria@linaro.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -65,13 +65,15 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v5 0/7] Add support for ipq8064 tsens
-Date:   Sat, 25 Jul 2020 20:13:56 +0200
-Message-Id: <20200725181404.18951-1-ansuelsmth@gmail.com>
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: [RFC PATCH v5 6/7] drivers: thermal: tsens: Add support for ipq8064-tsens
+Date:   Sat, 25 Jul 2020 20:14:02 +0200
+Message-Id: <20200725181404.18951-7-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200725181404.18951-1-ansuelsmth@gmail.com>
+References: <20200725181404.18951-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -79,43 +81,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset convert msm8960 to reg_filed, use int_common instead 
-of a custom function and fix wrong tsens get_temp function for msm8960.
-Ipq8064 SoCs tsens driver is based on 8960 tsens driver. Ipq8064 needs
-to be registered as a gcc child as the tsens regs on this platform are
-shared with the controller.
-This is based on work and code here
-https://git.linaro.org/people/amit.kucheria/kernel.git/log/?h=wrk3/tsens-8960-breakage
+Add support for tsens present in ipq806x SoCs based on generic msm8960
+tsens driver.
 
-v5:
-* Conver driver to use reg_fiedl
-* Use init_common 
-* Drop custom set_trip and set_interrupt
-* Use common set_trip and set_interrupt
-* Fix bad get_temp function
-* Add missing hardcoded slope
-v4:
-* Fix compilation error and warning reported by the bot
-v3:
-* Change driver to register as child instead of use phandle
-v2:
-* Fix dt-bindings problems
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ drivers/thermal/qcom/tsens.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-Ansuel Smith (7):
-  drivers: thermal: tsens: Add VER_0 tsens version
-  drivers: thermal: tsens: Convert msm8960 to reg_field
-  drivers: thermal: tsens: Use init_common for msm8960
-  drivers: thermal: tsens: Fix wrong get_temp for msm8960
-  drivers: thermal: tsens: Change calib_backup name for msm8960
-  drivers: thermal: tsens: Add support for ipq8064-tsens
-  dt-bindings: thermal: tsens: Document ipq8064 bindings
-
- .../bindings/thermal/qcom-tsens.yaml          |  50 ++++-
- drivers/thermal/qcom/tsens-8960.c             | 172 +++++++++++-------
- drivers/thermal/qcom/tsens.c                  | 156 +++++++++++++---
- drivers/thermal/qcom/tsens.h                  |   7 +-
- 4 files changed, 284 insertions(+), 101 deletions(-)
-
+diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+index 78840c1bc5d2..5eb036767e8d 100644
+--- a/drivers/thermal/qcom/tsens.c
++++ b/drivers/thermal/qcom/tsens.c
+@@ -991,6 +991,9 @@ static SIMPLE_DEV_PM_OPS(tsens_pm_ops, tsens_suspend, tsens_resume);
+ 
+ static const struct of_device_id tsens_table[] = {
+ 	{
++		.compatible = "qcom,ipq8064-tsens",
++		.data = &data_8960,
++	}, {
+ 		.compatible = "qcom,msm8916-tsens",
+ 		.data = &data_8916,
+ 	}, {
 -- 
 2.27.0
 
