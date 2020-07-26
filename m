@@ -2,110 +2,165 @@ Return-Path: <SRS0=M8LB=BF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71097C433F2
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:35:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 10102C433E4
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:58:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5039720714
-	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:35:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="xOPdX7zI"
+	by mail.kernel.org (Postfix) with ESMTP id EDC5620714
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:58:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726879AbgGZMf1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 26 Jul 2020 08:35:27 -0400
-Received: from www.zeus03.de ([194.117.254.33]:39954 "EHLO mail.zeus03.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726858AbgGZMfX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 26 Jul 2020 08:35:23 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=k1; bh=onAeRnhffhF8ckRwRk4DsGKcuZ5Z
-        A3FW02cG3cQyVvk=; b=xOPdX7zIGdV+hLDlDtvJQrla1xgvXVqgjudDwZNJcY/y
-        UxH6Uxc3rBrfVuJ6qwDWL6hBSBtWw2GhDWVjKC9p7CtD5q6fULK7WI9rNWEzztj8
-        c6QmeBMw5XkrgpSXrqPG+G4nlMniocnv8rbnHt5MagEQJ3i3L88k/ge12XmPocY=
-Received: (qmail 40298 invoked from network); 26 Jul 2020 14:35:19 +0200
-Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 26 Jul 2020 14:35:19 +0200
-X-UD-Smtp-Session: l3s3148p1@D31ocFer/I8gAwDPXy27AOM4pzPBFrIA
-Date:   Sun, 26 Jul 2020 14:35:19 +0200
-From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
-To:     Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        Rob Herring <robh+dt@kernel.org>,
-        Wolfgang Grandegger <wg@grandegger.com>,
-        Marc Kleine-Budde <mkl@pengutronix.de>,
-        "David S. Miller" <davem@davemloft.net>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Niklas <niklas.soderlund@ragnatech.se>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Magnus Damm <magnus.damm@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
-        linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-can@vger.kernel.org,
-        netdev@vger.kernel.org, linux-spi@vger.kernel.org,
-        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-watchdog@vger.kernel.org,
-        Prabhakar <prabhakar.csengg@gmail.com>
-Subject: Re: [PATCH 11/20] dt-bindings: i2c: renesas,i2c: Document r8a774e1
- support
-Message-ID: <20200726123519.GC2484@ninjato>
-References: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
- <1594811350-14066-12-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+        id S1726668AbgGZM6L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Jul 2020 08:58:11 -0400
+Received: from relay10.mail.gandi.net ([217.70.178.230]:43051 "EHLO
+        relay10.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726719AbgGZM6L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 26 Jul 2020 08:58:11 -0400
+Received: from pc.localdomain (unknown [195.189.32.242])
+        (Authenticated sender: contact@artur-rojek.eu)
+        by relay10.mail.gandi.net (Postfix) with ESMTPSA id 35ADE240007;
+        Sun, 26 Jul 2020 12:58:07 +0000 (UTC)
+From:   Artur Rojek <contact@artur-rojek.eu>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     Paul Cercueil <paul@crapouillou.net>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Artur Rojek <contact@artur-rojek.eu>
+Subject: [PATCH] dt-bindings: power: Convert ingenic,battery.txt to YAML
+Date:   Sun, 26 Jul 2020 14:56:05 +0200
+Message-Id: <20200726125605.7009-1-contact@artur-rojek.eu>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="ZwgA9U+XZDXt4+m+"
-Content-Disposition: inline
-In-Reply-To: <1594811350-14066-12-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Convert the textual documentation of Device Tree bindings for the
+Ingenic JZ47xx SoCs battery to YAML.
 
---ZwgA9U+XZDXt4+m+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+---
+ .../bindings/power/supply/ingenic,battery.txt | 31 ---------
+ .../power/supply/ingenic,battery.yaml         | 67 +++++++++++++++++++
+ 2 files changed, 67 insertions(+), 31 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
+ create mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
 
-On Wed, Jul 15, 2020 at 12:09:01PM +0100, Lad Prabhakar wrote:
-> Document i2c controller for RZ/G2H (R8A774E1) SoC, which is compatible
-> with R-Car Gen3 SoC family.
->=20
-> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
-> Reviewed-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renes=
-as.com>
+diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt b/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
+deleted file mode 100644
+index 66430bf73815..000000000000
+--- a/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
++++ /dev/null
+@@ -1,31 +0,0 @@
+-* Ingenic JZ47xx battery bindings
+-
+-Required properties:
+-
+-- compatible: Must be "ingenic,jz4740-battery".
+-- io-channels: phandle and IIO specifier pair to the IIO device.
+-  Format described in iio-bindings.txt.
+-- monitored-battery: phandle to a "simple-battery" compatible node.
+-
+-The "monitored-battery" property must be a phandle to a node using the format
+-described in battery.txt, with the following properties being required:
+-
+-- voltage-min-design-microvolt: Drained battery voltage.
+-- voltage-max-design-microvolt: Fully charged battery voltage.
+-
+-Example:
+-
+-#include <dt-bindings/iio/adc/ingenic,adc.h>
+-
+-simple_battery: battery {
+-	compatible = "simple-battery";
+-	voltage-min-design-microvolt = <3600000>;
+-	voltage-max-design-microvolt = <4200000>;
+-};
+-
+-ingenic_battery {
+-	compatible = "ingenic,jz4740-battery";
+-	io-channels = <&adc INGENIC_ADC_BATTERY>;
+-	io-channel-names = "battery";
+-	monitored-battery = <&simple_battery>;
+-};
+diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
+new file mode 100644
+index 000000000000..8d36216f6c0e
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
+@@ -0,0 +1,67 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++# Copyright 2019-2020 Artur Rojek
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/ingenic,battery.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: Ingenic JZ47xx battery bindings
++
++maintainers:
++  - Artur Rojek <contact@artur-rojek.eu>
++
++properties:
++  compatible:
++    oneOf:
++      - enum:
++        - ingenic,jz4740-battery
++      - items:
++        - enum:
++          - ingenic,jz4725b-battery
++          - ingenic,jz4770-battery
++        - const: ingenic,jz4740-battery
++
++  io-channels:
++    items:
++      - description: >
++          phandle and IIO specifier pair to the IIO device.
++          See Documentation/devicetree/bindings/iio/iio-bindings.txt for more
++          details.
++
++  io-channel-names:
++    const: "battery"
++
++  monitored-battery:
++    items:
++      - description: >
++          phandle to a "simple-battery" compatible node.
++
++          This property must be a phandle to a node using the format described
++          in battery.txt, with the following properties being required:
++          - voltage-min-design-microvolt: drained battery voltage,
++          - voltage-max-design-microvolt: fully charged battery voltage.
++
++required:
++  - compatible
++  - io-channels
++  - io-channel-names
++  - monitored-battery
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/iio/adc/ingenic,adc.h>
++
++    simple_battery: battery {
++            compatible = "simple-battery";
++            voltage-min-design-microvolt = <3600000>;
++            voltage-max-design-microvolt = <4200000>;
++    };
++
++    ingenic-battery {
++            compatible = "ingenic,jz4740-battery";
++            io-channels = <&adc INGENIC_ADC_BATTERY>;
++            io-channel-names = "battery";
++            monitored-battery = <&simple_battery>;
++    };
+-- 
+2.27.0
 
-Applied to for-next, thanks!
-
-
---ZwgA9U+XZDXt4+m+
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl8deIcACgkQFA3kzBSg
-KbZbZA//W705bUta/I2fFJX9THCgPXeyts2P3gy1nQcBJvGROOzL6jZJne4W6nHR
-fJdAUnOfyZMTkCvfgnGGrnCa2QRrIgIYmnx1ZpF+dONaPYJPkZOOXoven13LjohY
-0lswiHVVEsKsESNlA8agcPm9Gniuvb8jpzUfpaTOZd2VQr6vV7YSoq53HXOKka+s
-mXwwe5J31Mc/DnJ7Yu0bZYo9jyFdKg4xSXrTwAz5FK+OqdYEyY9Qnu3ne0JZ4k99
-xPaCx5h0DQcoR4rOqIi21dedGiJ7iRuao1sDBgq5X1BxHIzJ5q+1HW1xiwMTdj/d
-6xA2PN1HxqaZ3Ff6p0tamC5AgmjgMQrFJj2cFI+fF/1VWp62V3O8oNZ/5b3f7bP4
-4f5ZwCfNYTcGB9tJnDxqTsAHAXAhnxlNc56kCWEZhTzKDzE7gW+H6+90OZEtzeA5
-Akq7504HPVrlgmL52JBbNcunDvs1eTc9ROjPVYJPGu5BKrcB+m2a0HCwhi2nJRBT
-XE//0zGPvPpiq+wYvUiyxmrBWTE/qKJekKoyLUmEIYlaDy9IdDEes5m9yJFlmsAy
-tvXt/lsCak31bfhyHa6HQQ3O8tjC5h+DTpJ4G1zp4u3d1yqBJcobgbySqibzKalP
-BdwAoJP8ng3+Q1MBRngxSYyKZvv7J3uderjW7yq8BN8+KwjU+uE=
-=FNmn
------END PGP SIGNATURE-----
-
---ZwgA9U+XZDXt4+m+--
