@@ -1,161 +1,111 @@
-Return-Path: <SRS0=1VxL=BE=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=M8LB=BF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97001C433E0
-	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 19:00:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 70145C433E5
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:35:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6C1D02070B
-	for <linux-pm@archiver.kernel.org>; Sat, 25 Jul 2020 19:00:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595703654;
-	bh=qaKHljSsnt0ZEbHoF15oLEHb2ZUy3J1/y4ve/d/KW34=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=LfuqaHBkrihxyWaicTHHvK2LOC1hJfd/VBzmTmakwS4jbAxyrlaNZPQS0SA7yeLkR
-	 VL/6ElMqf7NGyqtlfL4mmpNjl8ve4a7fLKF6nma3XJ5exDybV+gZ1OTf9o+/FMxGbt
-	 C0BlNPvRx/MMNf20T/Xj6hz/uwPAXx/s19yp0Zqc=
+	by mail.kernel.org (Postfix) with ESMTP id 4D22F20719
+	for <linux-pm@archiver.kernel.org>; Sun, 26 Jul 2020 12:35:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=sang-engineering.com header.i=@sang-engineering.com header.b="3MJ7whwP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726565AbgGYTAx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 25 Jul 2020 15:00:53 -0400
-Received: from mail.kernel.org ([198.145.29.99]:60914 "EHLO mail.kernel.org"
+        id S1726858AbgGZMf3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 26 Jul 2020 08:35:29 -0400
+Received: from www.zeus03.de ([194.117.254.33]:40036 "EHLO mail.zeus03.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726035AbgGYTAx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 25 Jul 2020 15:00:53 -0400
-Received: from earth.universe (unknown [185.213.155.232])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 5A7F7206D8;
-        Sat, 25 Jul 2020 19:00:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1595703652;
-        bh=qaKHljSsnt0ZEbHoF15oLEHb2ZUy3J1/y4ve/d/KW34=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=mWv8+tHTSAEMhmq8UN7A1oO0LUUflxANDn/cQaI4MOwieOGF+GlPB7CZSA8Cm3Goc
-         C3rQS1qhmCieo/B+FB6wL+4o2gM9v+7zTC186Vu3v2QzvJD3etvn1TCB9ymb7y3NGx
-         nIWMO1oZIHBn5C4Sn8kN6K3/Gx9EAj/BEZIg+2+Y=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 1B8933C0B87; Sat, 25 Jul 2020 21:00:50 +0200 (CEST)
-Date:   Sat, 25 Jul 2020 21:00:50 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Kristian Klausen <kristian@klausen.dk>
-Cc:     Ognjen Galic <smclt30p@gmail.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Robert Moore <robert.moore@intel.com>,
-        Lv Zheng <lv.zheng@intel.com>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        devel@acpica.org, Darren Hart <dvhart@infradead.org>,
-        Andy Shevchenko <andy@infradead.org>,
-        Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-        Platform Driver <platform-driver-x86@vger.kernel.org>,
-        ibm-acpi-devel@lists.sourceforge.net,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Christoph =?utf-8?Q?B=C3=B6hmwalder?= <christoph@boehmwalder.at>,
-        Kevin Locke <kevin@kevinlocke.name>
-Subject: Re: [PATCH v13 1/4] battery: Add the battery hooking API
-Message-ID: <20200725190050.3ssslnkrauq6zdrd@earth.universe>
-References: <20180207145813.icmv6rwemyejhxbk@thinkpad>
- <2270b8c7-beec-5ab6-f8b7-5ec41751c699@klausen.dk>
+        id S1727113AbgGZMf2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 26 Jul 2020 08:35:28 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple; d=sang-engineering.com; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=k1; bh=hAn/LE/O5d3kxI+zRKnrNTOzPNdu
+        g55BS3PlBbqbkJU=; b=3MJ7whwPdGP07MOckxZuQXNLp9AS5PydqOUWUjnhNGs0
+        /ygHQgdVM2x4IK/MtT1F3yEwT1ut9AYnVGGr9FqADjhd+oPIpAvZr+BNTWUX27L4
+        F6X/cRcF8BiDuVy6q1EvbMDmKS5Tk/FLrY9aLvfbfUvL9xR/BgY+7WIXIm+KyS0=
+Received: (qmail 40443 invoked from network); 26 Jul 2020 14:35:24 +0200
+Received: by mail.zeus03.de with ESMTPSA (TLS_AES_256_GCM_SHA384 encrypted, authenticated); 26 Jul 2020 14:35:24 +0200
+X-UD-Smtp-Session: l3s3148p1@wgOmcFer/o8gAwDPXy27AOM4pzPBFrIA
+Date:   Sun, 26 Jul 2020 14:35:23 +0200
+From:   Wolfram Sang <wsa+renesas@sang-engineering.com>
+To:     Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+Cc:     Geert Uytterhoeven <geert+renesas@glider.be>,
+        Rob Herring <robh+dt@kernel.org>,
+        Wolfgang Grandegger <wg@grandegger.com>,
+        Marc Kleine-Budde <mkl@pengutronix.de>,
+        "David S. Miller" <davem@davemloft.net>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Mark Brown <broonie@kernel.org>,
+        Niklas <niklas.soderlund@ragnatech.se>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Magnus Damm <magnus.damm@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Laurent Pinchart <laurent.pinchart+renesas@ideasonboard.com>,
+        linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-can@vger.kernel.org,
+        netdev@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-renesas-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-watchdog@vger.kernel.org,
+        Prabhakar <prabhakar.csengg@gmail.com>
+Subject: Re: [PATCH 12/20] dt-bindings: i2c: renesas,iic: Document r8a774e1
+ support
+Message-ID: <20200726123523.GD2484@ninjato>
+References: <1594811350-14066-1-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+ <1594811350-14066-13-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="hfre6zazdmed5p3p"
+        protocol="application/pgp-signature"; boundary="YToU2i3Vx8H2dn7O"
 Content-Disposition: inline
-In-Reply-To: <2270b8c7-beec-5ab6-f8b7-5ec41751c699@klausen.dk>
+In-Reply-To: <1594811350-14066-13-git-send-email-prabhakar.mahadev-lad.rj@bp.renesas.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---hfre6zazdmed5p3p
-Content-Type: text/plain; charset=utf-8
+--YToU2i3Vx8H2dn7O
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
-
-On Wed, Jun 24, 2020 at 01:42:26AM +0200, Kristian Klausen wrote:
-> On 07.02.2018 15.58, Ognjen Galic wrote:
-> > This is a patch that implements a generic hooking API for the
-> > generic ACPI battery driver.
-> >=20
-> > With this new generic API, drivers can expose platform specific
-> > behaviour via sysfs attributes in /sys/class/power_supply/BATn/
-> > in a generic way.
-> >=20
-> > A perfect example of the need for this API are Lenovo ThinkPads.
-> >=20
-> > Lenovo ThinkPads have a ACPI extension that allows the setting of
-> > start and stop charge thresholds in the EC and battery firmware
-> > via ACPI. The thinkpad_acpi module can use this API to expose
-> > sysfs attributes that it controls inside the ACPI battery driver
-> > sysfs tree, under /sys/class/power_supply/BATN/.
-> >=20
-> > The file drivers/acpi/battery.h has been moved to
-> > include/acpi/battery.h and the includes inside ac.c, sbs.c, and
-> > battery.c have been adjusted to reflect that.
-> >=20
-> > When drivers hooks into the API, the API calls add_battery() for
-> > each battery in the system that passes it a acpi_battery
-> > struct. Then, the drivers can use device_create_file() to create
-> > new sysfs attributes with that struct and identify the batteries
-> > for per-battery attributes.
+On Wed, Jul 15, 2020 at 12:09:02PM +0100, Lad Prabhakar wrote:
+> Document IIC controller for RZ/G2H (R8A774E1) SoC, which is compatible
+> with R-Car Gen3 SoC family.
 >=20
-> Hi
->=20
-> I did that, when I implemented charge threshold support for ASUS
-> laptops[1][2].
->=20
-> It works very well but I can't control the threshold with udev (also
-> reported by another user here[3]). So I did a bit of digging and the doc[=
-4]
-> states: "If attributes are added after the device is registered, then
-> userspace won=E2=80=99t get notified and userspace will not know about th=
-e new
-> attributes.", which seems to be the way the current code works:
-> power_supply_register_no_ws is called[5] and if it success all the hooks =
-are
-> run.
->
-> Looking at the code I'm not sure there is a easy way to fix it, do you ha=
-ve
-> any good ideas?
+> Signed-off-by: Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>
+> Reviewed-by: Marian-Cristian Rotariu <marian-cristian.rotariu.rb@bp.renes=
+as.com>
 
-That problem is described by Greg in his blog post from 2013:
+Applied to for-next, thanks!
 
-http://kroah.com/log/blog/2013/06/26/how-to-create-a-sysfs-file-correctly/
 
-The power-supply subsystem offers registering extra attributes
-at registration time by filling in the .attr_grp field in the
-struct power_supply_config supplied as last parameter to
-power_supply_register_*() since 4.21.
-
--- Sebastian
-
---hfre6zazdmed5p3p
+--YToU2i3Vx8H2dn7O
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl8cgV4ACgkQ2O7X88g7
-+pqvtQ//ZrWf/Jt4UggT7gakaPf45snDjeeIbYOG4t+yuEAOkSI+6VHGMERKap2o
-mkpuzVdEYnpIP4PtSjCxM9adJvSktn/z22QvkypyyYDDmsuGGu8d3fUD1o1TYDGE
-Dm5Kce8aqHIFBVL1TG+9Yg6O8L5gkKE6NC8dwlwFRTgnh7jAR910F8sva6Poc0PC
-Uvp3DqeuqRWgdPqKko5l5BTtfsghu+nTl+cMqYxrN7yTLeimaTUZZdLtYrwNJ3Z1
-o4jDSYCGlxdb269FGsPj3Ukoh4KvGJ4Iz+FZw60QToteki3lMuQfmrZBrsd1dWFo
-SEdrG0m+zetHNRJWEiuxSFRKHsHQXOiyrmso63HxfdwhB8s+mlBsC0pn+kunKhTh
-xx0v9n9xygPfs3QWVd8mQJkE2yLVeExacsoZPLabL9NLYUTEMRUrB43pcq0D85Jv
-+d7MDMKJ+Q+xOVGk6GukdMCgmR+cY7jImZqIIRKUrE1utKQ0fux2bZzbsJ7jXyvC
-H27QMpJ1uA+knpRKx5PpWM5ohfVRUogaItv5C7uBzrpksMToB+wU2LumrOSKg67D
-vvv3XkWm6KFKl+wOOGWcj/1pzTOatqQk0VQC1BKVeoWzqFPq/x2XNCMHIpYK7ZpP
-ABX2jdj0v3Jd7bwiKRNLc9P0W6E7YQcM1V3+N2KI36O4FoLWL9M=
-=9vtN
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl8deIsACgkQFA3kzBSg
+KbZtUQ/+JiFdXGopN/62fLmk1CxZX8mBIzoyojCZ2h3EScRmzR7ZPXc+JBB2nDdj
+LW1Rnv2JMK+Grggia9/QsY4fPQHIyclI36TdZjYSqN6pf1CNCj1edHRwG3UmH5NX
+wDE/uaHhcDuluDGRxx4yeRugfTrIu2uPVaLEmLnWxeQLNPQetBGOYkhqrQ1Nq124
+DlNu+O274kobkRLex7AgtEDKQifMt5+xxWddrfpuitktDS2GuOQameQlVxLP0KJ9
+WLZMlv1Axh9jF9J/Zj+i1q3c1HAk/I5coZ5GLE0v5tjm38/lzo2ysi8lJbW7qyJK
+g9z/XvhRfD3FVm9+0Pejmf9/gmhzV7xHJQgELNOXrUvLs5v4ZeqPJxjGIF3ioSZb
+cURJ14zLCLzDya8omSqxlw9A+efai0pmWCqf0TA7U43USV1fXt2w6FbevI+rpqZG
+xuo/XSRsXgKSXZpGHUzf/YmYVNTNXZ9220lFmBgBoM3716H+SXlSlXjW42n40J3q
+KxhmVu+kCjATOz67YUjGeHM03FDh2u2/qkPFgO5fQOSBqinaub81RYUbZEBlGggu
++mr8XVxUe/GsIFHuevSwmRpSTyoSc1SCyt4W3OkyCEh1xsJWKnrbqeJhdjruqXZY
+HtmnMFsLCgIunvtHSMu7nQCJDI4Q7s9f+oxVxO1Wtx+RNrir5Yc=
+=YVyw
 -----END PGP SIGNATURE-----
 
---hfre6zazdmed5p3p--
+--YToU2i3Vx8H2dn7O--
