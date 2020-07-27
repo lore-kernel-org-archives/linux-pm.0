@@ -2,88 +2,86 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B4F7C433ED
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 19:35:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9724BC433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 19:59:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6C64620786
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 19:35:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6824220786
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 19:59:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1595879944;
+	bh=hCIc1fQiRnmWLSiSGdCuD0jCBuiVYlhLh5YzNLQE2u8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=YTuqve5pYPRc4TIelR7QU7efCSD0yuzb9UuygyhmUraGQfea/vUpPj2pl0yhcKQsi
+	 yom9L74Jn/iaNa8akzj07jhIq8igTT+FXYPJYOHcPfUPI2YtlSjk54ScsNzp2ElhS4
+	 SNOEa23eVUS304hb1Fv/5C2q6nkaLZ3rv4fKJLNQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727951AbgG0TfY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 15:35:24 -0400
-Received: from alexa-out-sd-02.qualcomm.com ([199.106.114.39]:1127 "EHLO
-        alexa-out-sd-02.qualcomm.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726196AbgG0TfX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 15:35:23 -0400
-Received: from unknown (HELO ironmsg-SD-alpha.qualcomm.com) ([10.53.140.30])
-  by alexa-out-sd-02.qualcomm.com with ESMTP; 27 Jul 2020 12:35:23 -0700
-Received: from gurus-linux.qualcomm.com ([10.46.162.81])
-  by ironmsg-SD-alpha.qualcomm.com with ESMTP; 27 Jul 2020 12:35:23 -0700
-Received: by gurus-linux.qualcomm.com (Postfix, from userid 383780)
-        id 1EF081581; Mon, 27 Jul 2020 12:35:23 -0700 (PDT)
-From:   Guru Das Srinagesh <gurus@codeaurora.org>
-To:     Amit Kucheria <amit.kucheria@linaro.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-Cc:     Subbaraman Narayanamurthy <subbaram@codeaurora.org>,
-        David Collins <collinsd@codeaurora.org>,
+        id S1728348AbgG0T7B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 15:59:01 -0400
+Received: from mail-io1-f66.google.com ([209.85.166.66]:45473 "EHLO
+        mail-io1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728092AbgG0T7A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 15:59:00 -0400
+Received: by mail-io1-f66.google.com with SMTP id e64so18277550iof.12;
+        Mon, 27 Jul 2020 12:59:00 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=wDpeNiqqoyeATLrnrgf/k8/QCkhhtDi8rG/MLzLuc0k=;
+        b=DbmK052MzAjToZdvnG5RRb7lV+Wuzv+9oczMEOkSv1zvGxO+KgmsuAs4Jssn4fzeqn
+         MHg9cEjmd1HLRQR1ALrWmIpfCT/wcDUCnzmaBDKP9ZFGlTPgqsAnl19c1GBQo7GVFXlA
+         mHYvS78zINdfJJu0/AzpqmMsE3CIxnyfnUsPSfl2rnhPdEDSbA/hdO/ysI/475+GOoXi
+         oOXYqEEpqlYGmdwhAyDnSHkfIft3mQYTemuWzLV9TKGnq1NjzA+W6PF5JHX+RfcHHeBI
+         UWFmUbb5R1qjYA2ZbNphJscuGhb8TU0hhKtd7FLlT0TEdKeR7UclTuUtmF6BegkgUM7r
+         Jl7A==
+X-Gm-Message-State: AOAM5323DKbpDdz3Yn4QcAD+7zE5Te6hXA1k5GIlmgP++/K4sP1kbxtj
+        RnJ5sSXKKg6VdZr5zoujSA==
+X-Google-Smtp-Source: ABdhPJzW1pwaSNHbDZJzfOwWrG5ejhNl/nfoqakxm3RP0kGW2cWYySQVZ/+lFw/AjRp7TIf0aRuasQ==
+X-Received: by 2002:a05:6638:1414:: with SMTP id k20mr28371172jad.76.1595879939825;
+        Mon, 27 Jul 2020 12:58:59 -0700 (PDT)
+Received: from xps15 ([64.188.179.252])
+        by smtp.gmail.com with ESMTPSA id v5sm5428475ilg.88.2020.07.27.12.58.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 27 Jul 2020 12:58:58 -0700 (PDT)
+Received: (nullmailer pid 782176 invoked by uid 1000);
+        Mon, 27 Jul 2020 19:58:56 -0000
+Date:   Mon, 27 Jul 2020 13:58:56 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Ansuel Smith <ansuelsmth@gmail.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
         linux-kernel@vger.kernel.org,
-        Veera Vegivada <vvegivad@codeaurora.org>,
-        Guru Das Srinagesh <gurus@codeaurora.org>
-Subject: [PATCH v1 2/2] thermal: qcom-spmi-temp-alarm: Don't suppress negative temp
-Date:   Mon, 27 Jul 2020 12:35:19 -0700
-Message-Id: <6bb66f529eaab58b3a75eea3386233cbca27f818.1595878198.git.gurus@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <f22bb151d836f924b09cf80ffd6e58eb286be5d6.1595878198.git.gurus@codeaurora.org>
-References: <f22bb151d836f924b09cf80ffd6e58eb286be5d6.1595878198.git.gurus@codeaurora.org>
-In-Reply-To: <f22bb151d836f924b09cf80ffd6e58eb286be5d6.1595878198.git.gurus@codeaurora.org>
-References: <f22bb151d836f924b09cf80ffd6e58eb286be5d6.1595878198.git.gurus@codeaurora.org>
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>, linux-arm-msm@vger.kernel.org
+Subject: Re: [RFC PATCH v5 7/7] dt-bindings: thermal: tsens: Document ipq8064
+ bindings
+Message-ID: <20200727195856.GA782129@bogus>
+References: <20200725181404.18951-1-ansuelsmth@gmail.com>
+ <20200725181404.18951-8-ansuelsmth@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200725181404.18951-8-ansuelsmth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Veera Vegivada <vvegivad@codeaurora.org>
+On Sat, 25 Jul 2020 20:14:03 +0200, Ansuel Smith wrote:
+> Document the use of bindings used for msm8960 tsens based devices.
+> msm8960 use the same gcc regs and is set as a child of the qcom gcc.
+> 
+> Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+> ---
+>  .../bindings/thermal/qcom-tsens.yaml          | 50 ++++++++++++++++---
+>  1 file changed, 43 insertions(+), 7 deletions(-)
+> 
 
-Currently driver is suppressing the negative temperature
-readings from the vadc. Consumers of the thermal zones need
-to read the negative temperature too. Don't suppress the
-readings.
-
-Signed-off-by: Veera Vegivada <vvegivad@codeaurora.org>
-Signed-off-by: Guru Das Srinagesh <gurus@codeaurora.org>
----
-Apologies for resending - My earlier two submissions were directed to the wrong
-reviewer audience and list.
-
- drivers/thermal/qcom/qcom-spmi-temp-alarm.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-index 05a9601..6d8f090 100644
---- a/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-+++ b/drivers/thermal/qcom/qcom-spmi-temp-alarm.c
-@@ -1,6 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
- /*
-- * Copyright (c) 2011-2015, 2017, The Linux Foundation. All rights reserved.
-+ * Copyright (c) 2011-2015, 2017, 2020, The Linux Foundation. All rights reserved.
-  */
- 
- #include <linux/bitops.h>
-@@ -212,7 +212,7 @@ static int qpnp_tm_get_temp(void *data, int *temp)
- 		chip->temp = mili_celsius;
- 	}
- 
--	*temp = chip->temp < 0 ? 0 : chip->temp;
-+	*temp = chip->temp;
- 
- 	return 0;
- }
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+Reviewed-by: Rob Herring <robh@kernel.org>
