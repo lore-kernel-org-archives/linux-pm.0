@@ -2,156 +2,152 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BF44C433E8
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C20CC433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 15:17:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 337A22083B
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:47:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="ZcJcgrZ9"
+	by mail.kernel.org (Postfix) with ESMTP id 81CCD20672
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 15:17:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729201AbgG0Orm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 10:47:42 -0400
-Received: from mail29.static.mailgun.info ([104.130.122.29]:11505 "EHLO
-        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728815AbgG0Orm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 10:47:42 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1595861261; h=Content-Transfer-Encoding: Content-Type:
- In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
- Subject: Sender; bh=TPb15OCnOsAowfP2BhokEuD7cKnbaHb+UsLNuqo/luU=; b=ZcJcgrZ9nvJzTpphNmUlmxQV6XblCwURm67FEBIlHRqXIXJHZgYQ00H3tsKv19XAT/ikepxj
- IIj4BFtNX45qvE/RYE8A8W49PZVIhcJGrVuhRsaQfTcwWrRKGlkca5D8t9mpQcZrdQPX8sxN
- xSbDQR50xoz/HG2tubt0f88L2f4=
-X-Mailgun-Sending-Ip: 104.130.122.29
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
- 5f1ee90d634c4259e3b01e2d (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 27 Jul 2020 14:47:41
- GMT
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 20EDDC43391; Mon, 27 Jul 2020 14:47:41 +0000 (UTC)
-Received: from [10.79.43.230] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: sibis)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 14B37C433C6;
-        Mon, 27 Jul 2020 14:47:37 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 14B37C433C6
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
-Subject: Re: [PATCH 2/6] interconnect: qcom: Implement xlate_extended() to
- parse tags
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        bjorn.andersson@linaro.org, robh+dt@kernel.org, mka@chromium.org,
-        dianders@chromium.org, linux-kernel@vger.kernel.org
-References: <20200723130942.28491-1-georgi.djakov@linaro.org>
- <20200723130942.28491-3-georgi.djakov@linaro.org>
-From:   Sibi Sankar <sibis@codeaurora.org>
-Message-ID: <9bb9aa9c-b9da-ffb3-01e8-0e1ebece18a9@codeaurora.org>
-Date:   Mon, 27 Jul 2020 20:17:35 +0530
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.6.1
+        id S1728834AbgG0PRp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 11:17:45 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61416 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728824AbgG0PRo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 11:17:44 -0400
+Received: from 89-64-87-33.dynamic.chello.pl (89.64.87.33) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 2e44a79a69b3ba76; Mon, 27 Jul 2020 17:17:42 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux Documentation <linux-doc@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Doug Smythies <dsmythies@telus.net>,
+        Francisco Jerez <francisco.jerez.plata@intel.com>
+Subject: [PATCH v3 1/2] cpufreq: intel_pstate: Rearrange the storing of new EPP values
+Date:   Mon, 27 Jul 2020 17:15:43 +0200
+Message-ID: <1874278.Dp5iLYrgV3@kreacher>
+In-Reply-To: <1709487.Bxjb1zNRZM@kreacher>
+References: <4981405.3kqTVLv5tO@kreacher> <1709487.Bxjb1zNRZM@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <20200723130942.28491-3-georgi.djakov@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hey Georgi,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Thanks for the patch!
+Move the locking away from intel_pstate_set_energy_pref_index()
+into its only caller and drop the (now redundant) return_pref label
+from it.
 
-On 7/23/20 6:39 PM, Georgi Djakov wrote:
-> Implement a function to parse the arguments of the "interconnects" DT
-> property and populate the interconnect path tags if this information
-> is available.
-> 
-> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
-> ---
->   drivers/interconnect/qcom/icc-rpmh.c | 27 +++++++++++++++++++++++++++
->   drivers/interconnect/qcom/icc-rpmh.h |  1 +
->   2 files changed, 28 insertions(+)
-> 
-> diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
-> index 3ac5182c9ab2..44144fabec32 100644
-> --- a/drivers/interconnect/qcom/icc-rpmh.c
-> +++ b/drivers/interconnect/qcom/icc-rpmh.c
-> @@ -6,6 +6,8 @@
->   #include <linux/interconnect.h>
->   #include <linux/interconnect-provider.h>
->   #include <linux/module.h>
-> +#include <linux/of.h>
-> +#include <linux/slab.h>
->   
->   #include "bcm-voter.h"
->   #include "icc-rpmh.h"
-> @@ -92,6 +94,31 @@ int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
->   }
->   EXPORT_SYMBOL_GPL(qcom_icc_set);
->   
-> +struct icc_node_data *qcom_icc_xlate_extended(struct of_phandle_args *spec, void *data)
-> +{
-> +	struct icc_node_data *ndata;
-> +	struct icc_node *node;
-> +
-> +	if (!spec)
-> +		return ERR_PTR(-EINVAL);
-> +
+Also move the "raw" EPP value check into the caller of that function,
+so as to do it before acquiring the mutex, and reduce code duplication
+related to the "raw" EPP values processing somewhat.
 
-you could probably skip ^^ check
+No intentional functional impact.
 
-Tested-by: Sibi Sankar <sibis@codeaurora.org>
-Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-> +	node = of_icc_xlate_onecell(spec, data);
-> +	if (IS_ERR(node))
-> +		return ERR_CAST(node);
-> +
-> +	ndata = kzalloc(sizeof(*ndata), GFP_KERNEL);
-> +	if (!ndata)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	ndata->node = node;
-> +
-> +	if (spec->args_count == 2)
-> +		ndata->tag = spec->args[1];
-> +
-> +	return ndata;
-> +}
-> +EXPORT_SYMBOL_GPL(qcom_icc_xlate_extended);
-> +
->   /**
->    * qcom_icc_bcm_init - populates bcm aux data and connect qnodes
->    * @bcm: bcm to be initialized
-> diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
-> index 903d25e61984..1dac39bc255d 100644
-> --- a/drivers/interconnect/qcom/icc-rpmh.h
-> +++ b/drivers/interconnect/qcom/icc-rpmh.h
-> @@ -143,6 +143,7 @@ struct qcom_icc_desc {
->   int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
->   		       u32 peak_bw, u32 *agg_avg, u32 *agg_peak);
->   int qcom_icc_set(struct icc_node *src, struct icc_node *dst);
-> +struct icc_node_data *qcom_icc_xlate_extended(struct of_phandle_args *spec, void *data);
->   int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev);
->   void qcom_icc_pre_aggregate(struct icc_node *node);
->   
-> 
-> 
-> 
+v2 -> v3:
 
--- 
-Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
-a Linux Foundation Collaborative Project
+   * Fix error handling in intel_pstate_set_energy_pref_index() and
+     rebase.
+
+---
+ drivers/cpufreq/intel_pstate.c |   35 +++++++++++++++--------------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -649,28 +649,18 @@ static int intel_pstate_set_energy_pref_
+ 	if (!pref_index)
+ 		epp = cpu_data->epp_default;
+ 
+-	mutex_lock(&intel_pstate_limits_lock);
+-
+ 	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+ 		u64 value;
+ 
+ 		ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, &value);
+ 		if (ret)
+-			goto return_pref;
++			return ret;
+ 
+ 		value &= ~GENMASK_ULL(31, 24);
+ 
+-		if (use_raw) {
+-			if (raw_epp > 255) {
+-				ret = -EINVAL;
+-				goto return_pref;
+-			}
+-			value |= (u64)raw_epp << 24;
+-			ret = wrmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, value);
+-			goto return_pref;
+-		}
+-
+-		if (epp == -EINVAL)
++		if (use_raw)
++			epp = raw_epp;
++		else if (epp == -EINVAL)
+ 			epp = epp_values[pref_index - 1];
+ 
+ 		value |= (u64)epp << 24;
+@@ -680,8 +670,6 @@ static int intel_pstate_set_energy_pref_
+ 			epp = (pref_index - 1) << 2;
+ 		ret = intel_pstate_set_epb(cpu_data->cpu, epp);
+ 	}
+-return_pref:
+-	mutex_unlock(&intel_pstate_limits_lock);
+ 
+ 	return ret;
+ }
+@@ -708,8 +696,8 @@ static ssize_t store_energy_performance_
+ 	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+ 	char str_preference[21];
+ 	bool raw = false;
++	ssize_t ret;
+ 	u32 epp = 0;
+-	int ret;
+ 
+ 	ret = sscanf(buf, "%20s", str_preference);
+ 	if (ret != 1)
+@@ -724,14 +712,21 @@ static ssize_t store_energy_performance_
+ 		if (ret)
+ 			return ret;
+ 
++		if (epp > 255)
++			return -EINVAL;
++
+ 		raw = true;
+ 	}
+ 
++	mutex_lock(&intel_pstate_limits_lock);
++
+ 	ret = intel_pstate_set_energy_pref_index(cpu_data, ret, raw, epp);
+-	if (ret)
+-		return ret;
++	if (!ret)
++		ret = count;
+ 
+-	return count;
++	mutex_unlock(&intel_pstate_limits_lock);
++
++	return ret;
+ }
+ 
+ static ssize_t show_energy_performance_preference(
+
+
+
