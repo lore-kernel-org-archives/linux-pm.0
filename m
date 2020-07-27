@@ -2,92 +2,156 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BEA3AC43446
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:35:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BF44C433E8
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:47:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9EE0220FC3
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:35:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595860559;
-	bh=dxq/jqClAkdTWak3nsWGqBiRyGoUb2C2my9pWKFTqjM=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=rmKe9wHTatBLPjP/BIcjHLDOBZRGr56P6yKY7SJ8nvKkrKkGYyq2pjH171wC7QH4g
-	 tLdBTAcD5L9JglfEbk8OrwhDsRy9mcDs6tktzRMk/myJeQ3ZvOEeTxmMbDD+TvDakT
-	 YXzxGrcOOgt+shH6Q4Sex/us8f6ZG0jaBueiUdCk=
+	by mail.kernel.org (Postfix) with ESMTP id 337A22083B
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 14:47:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="ZcJcgrZ9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731274AbgG0Of6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 10:35:58 -0400
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:42157 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730524AbgG0OOX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 10:14:23 -0400
-Received: by mail-ot1-f65.google.com with SMTP id v21so5132573otj.9;
-        Mon, 27 Jul 2020 07:14:23 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=RwV/fYC6R5PVghDc7Xcfm5xADtIIp1K2tl3Z3YbTId0=;
-        b=EyX8oZgXnnyZ14gS8R68le0lWjEV7pUltjytZqZJTHMzrGP3kfFlD6aSKu2sUVX5qy
-         +r7/BwgrNFPi8NzabwoV+P7U4eWB8aHHtrzjF7e9TC6cyk1FLp/Naeun9VqE0X2TdTfN
-         d1b03WqVKQgdcEiteOXfr9uDxGghi/X+8R5HplMezJuFIIsPGMf7IegyoCe+5lqoa0Ye
-         NEnVBVKreCylidXQB4n8U6fZtjySGYO3BvZ2mb+t/q6LKmyCqxLQ4c0HB3jwh88TiMma
-         GHB+34AFs9M9PhYLaPzdKf4q7H3hbz/fQWrkS6Co5WGWdtvH6o3k6uOV8gbec6e5zdhx
-         6aKA==
-X-Gm-Message-State: AOAM531ZdEKEz0AZS7F/F0NBgGuZqAR95rrPeUTy7+KVN0QLJbWPYXhk
-        QKgmJDYO9iGTYXZYbnjBivWc4092QE7sCq/zFG4=
-X-Google-Smtp-Source: ABdhPJy3IQ4gWoo3GVjFr2jd6qToC3wtimm7RFwI0aGYMQzT7H7gS+icm3pzzCk7LtxkYZm+IgVNdSPw5XxX9M393tU=
-X-Received: by 2002:a9d:590a:: with SMTP id t10mr20554597oth.262.1595859262962;
- Mon, 27 Jul 2020 07:14:22 -0700 (PDT)
+        id S1729201AbgG0Orm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 10:47:42 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:11505 "EHLO
+        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728815AbgG0Orm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 10:47:42 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1595861261; h=Content-Transfer-Encoding: Content-Type:
+ In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
+ Subject: Sender; bh=TPb15OCnOsAowfP2BhokEuD7cKnbaHb+UsLNuqo/luU=; b=ZcJcgrZ9nvJzTpphNmUlmxQV6XblCwURm67FEBIlHRqXIXJHZgYQ00H3tsKv19XAT/ikepxj
+ IIj4BFtNX45qvE/RYE8A8W49PZVIhcJGrVuhRsaQfTcwWrRKGlkca5D8t9mpQcZrdQPX8sxN
+ xSbDQR50xoz/HG2tubt0f88L2f4=
+X-Mailgun-Sending-Ip: 104.130.122.29
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
+ 5f1ee90d634c4259e3b01e2d (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 27 Jul 2020 14:47:41
+ GMT
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 20EDDC43391; Mon, 27 Jul 2020 14:47:41 +0000 (UTC)
+Received: from [10.79.43.230] (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: sibis)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 14B37C433C6;
+        Mon, 27 Jul 2020 14:47:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 14B37C433C6
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
+Subject: Re: [PATCH 2/6] interconnect: qcom: Implement xlate_extended() to
+ parse tags
+To:     Georgi Djakov <georgi.djakov@linaro.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        bjorn.andersson@linaro.org, robh+dt@kernel.org, mka@chromium.org,
+        dianders@chromium.org, linux-kernel@vger.kernel.org
+References: <20200723130942.28491-1-georgi.djakov@linaro.org>
+ <20200723130942.28491-3-georgi.djakov@linaro.org>
+From:   Sibi Sankar <sibis@codeaurora.org>
+Message-ID: <9bb9aa9c-b9da-ffb3-01e8-0e1ebece18a9@codeaurora.org>
+Date:   Mon, 27 Jul 2020 20:17:35 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.6.1
 MIME-Version: 1.0
-References: <1594120299-31389-1-git-send-email-ego@linux.vnet.ibm.com> <20200707113235.GM14120@in.ibm.com>
-In-Reply-To: <20200707113235.GM14120@in.ibm.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 27 Jul 2020 16:14:12 +0200
-Message-ID: <CAJZ5v0jA20TJyxRwtBu31zF5otkqbTW9R03Na3LgJsWB3nDmoQ@mail.gmail.com>
-Subject: Re: [PATCH 0/5] cpuidle-pseries: Parse extended CEDE information for idle.
-To:     "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Cc:     Nicholas Piggin <npiggin@gmail.com>,
-        Anton Blanchard <anton@ozlabs.org>,
-        Nathan Lynch <nathanl@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Michael Neuling <mikey@neuling.org>,
-        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-        linuxppc-dev@ozlabs.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20200723130942.28491-3-georgi.djakov@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Jul 7, 2020 at 1:32 PM Gautham R Shenoy <ego@linux.vnet.ibm.com> wrote:
->
-> Hi,
->
-> On Tue, Jul 07, 2020 at 04:41:34PM +0530, Gautham R. Shenoy wrote:
-> > From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-> >
-> > Hi,
-> >
-> >
-> >
-> >
-> > Gautham R. Shenoy (5):
-> >   cpuidle-pseries: Set the latency-hint before entering CEDE
-> >   cpuidle-pseries: Add function to parse extended CEDE records
-> >   cpuidle-pseries : Fixup exit latency for CEDE(0)
-> >   cpuidle-pseries : Include extended CEDE states in cpuidle framework
-> >   cpuidle-pseries: Block Extended CEDE(1) which adds no additional
-> >     value.
->
-> Forgot to mention that these patches are on top of Nathan's series to
-> remove extended CEDE offline and bogus topology update code :
-> https://lore.kernel.org/linuxppc-dev/20200612051238.1007764-1-nathanl@linux.ibm.com/
+Hey Georgi,
 
-OK, so this is targeted at the powerpc maintainers, isn't it?
+Thanks for the patch!
+
+On 7/23/20 6:39 PM, Georgi Djakov wrote:
+> Implement a function to parse the arguments of the "interconnects" DT
+> property and populate the interconnect path tags if this information
+> is available.
+> 
+> Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+> ---
+>   drivers/interconnect/qcom/icc-rpmh.c | 27 +++++++++++++++++++++++++++
+>   drivers/interconnect/qcom/icc-rpmh.h |  1 +
+>   2 files changed, 28 insertions(+)
+> 
+> diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+> index 3ac5182c9ab2..44144fabec32 100644
+> --- a/drivers/interconnect/qcom/icc-rpmh.c
+> +++ b/drivers/interconnect/qcom/icc-rpmh.c
+> @@ -6,6 +6,8 @@
+>   #include <linux/interconnect.h>
+>   #include <linux/interconnect-provider.h>
+>   #include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/slab.h>
+>   
+>   #include "bcm-voter.h"
+>   #include "icc-rpmh.h"
+> @@ -92,6 +94,31 @@ int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+>   }
+>   EXPORT_SYMBOL_GPL(qcom_icc_set);
+>   
+> +struct icc_node_data *qcom_icc_xlate_extended(struct of_phandle_args *spec, void *data)
+> +{
+> +	struct icc_node_data *ndata;
+> +	struct icc_node *node;
+> +
+> +	if (!spec)
+> +		return ERR_PTR(-EINVAL);
+> +
+
+you could probably skip ^^ check
+
+Tested-by: Sibi Sankar <sibis@codeaurora.org>
+Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
+
+> +	node = of_icc_xlate_onecell(spec, data);
+> +	if (IS_ERR(node))
+> +		return ERR_CAST(node);
+> +
+> +	ndata = kzalloc(sizeof(*ndata), GFP_KERNEL);
+> +	if (!ndata)
+> +		return ERR_PTR(-ENOMEM);
+> +
+> +	ndata->node = node;
+> +
+> +	if (spec->args_count == 2)
+> +		ndata->tag = spec->args[1];
+> +
+> +	return ndata;
+> +}
+> +EXPORT_SYMBOL_GPL(qcom_icc_xlate_extended);
+> +
+>   /**
+>    * qcom_icc_bcm_init - populates bcm aux data and connect qnodes
+>    * @bcm: bcm to be initialized
+> diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
+> index 903d25e61984..1dac39bc255d 100644
+> --- a/drivers/interconnect/qcom/icc-rpmh.h
+> +++ b/drivers/interconnect/qcom/icc-rpmh.h
+> @@ -143,6 +143,7 @@ struct qcom_icc_desc {
+>   int qcom_icc_aggregate(struct icc_node *node, u32 tag, u32 avg_bw,
+>   		       u32 peak_bw, u32 *agg_avg, u32 *agg_peak);
+>   int qcom_icc_set(struct icc_node *src, struct icc_node *dst);
+> +struct icc_node_data *qcom_icc_xlate_extended(struct of_phandle_args *spec, void *data);
+>   int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev);
+>   void qcom_icc_pre_aggregate(struct icc_node *node);
+>   
+> 
+> 
+> 
+
+-- 
+Qualcomm Innovation Center, Inc.
+Qualcomm Innovation Center, Inc, is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
