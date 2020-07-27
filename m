@@ -2,327 +2,170 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F233C433ED
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 21:06:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AACDDC433E4
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 22:09:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6DB972070B
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 21:06:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7F8582072E
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 22:09:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="PHWvHwOU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726846AbgG0VGU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 17:06:20 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:42960 "EHLO
-        out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726731AbgG0VGT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 17:06:19 -0400
-Received: from in01.mta.xmission.com ([166.70.13.51])
-        by out01.mta.xmission.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.90_1)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1k0AK9-0002Qp-P3; Mon, 27 Jul 2020 15:06:17 -0600
-Received: from ip68-227-160-95.om.om.cox.net ([68.227.160.95] helo=x220.xmission.com)
-        by in01.mta.xmission.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.87)
-        (envelope-from <ebiederm@xmission.com>)
-        id 1k0AK8-0003Gh-Ej; Mon, 27 Jul 2020 15:06:17 -0600
-From:   ebiederm@xmission.com (Eric W. Biederman)
-To:     <linux-kernel@vger.kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Kees Cook <keescook@chromium.org>, Pavel Machek <pavel@ucw.cz>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        <linux-fsdevel@vger.kernel.org>, Oleg Nesterov <oleg@redhat.com>,
-        linux-pm@vger.kernel.org
-Date:   Mon, 27 Jul 2020 16:03:11 -0500
-Message-ID: <87h7tsllgw.fsf@x220.int.ebiederm.org>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.1 (gnu/linux)
+        id S1726884AbgG0WJk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 18:09:40 -0400
+Received: from userp2120.oracle.com ([156.151.31.85]:43984 "EHLO
+        userp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726140AbgG0WJj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 18:09:39 -0400
+Received: from pps.filterd (userp2120.oracle.com [127.0.0.1])
+        by userp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 06RM7nDB101336;
+        Mon, 27 Jul 2020 22:08:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to : cc :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=oo4gy89JKS9v8t35Nn6iznW8h1M/3xDxBEt5v+lIvxo=;
+ b=PHWvHwOUu44Kh7cWpT4r1cQmFcCVxnyU/IxbHndgtBYNQAGWpKTVGBCeFHx+ZKijYp1X
+ ekdd+ur5jb5mf2iEQBBzEYbcgpUhPJMXp/I2Vd9p5gn7SPycHk9YHEou+DTrS0SK0WZw
+ lQ8EW71zDHbcOJ9irK8S2NCua+Pdiev/k//apBqMiES1mgKzNUffewR81rUEnNrQ4j77
+ VI24QKUhF0S3ZRx4I56XFNt2AXjm35lSAcVcc6hUtZ5nUxHOn8UWJXbienGHBu5Z4kNi
+ wc6Vya6F+uWwL2bzjNsZXk+JpP/niEn6eeBFaItkQOD7crhwYhBCF4ZqsNVyiP/ROBAL Qw== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by userp2120.oracle.com with ESMTP id 32hu1jc4s7-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 27 Jul 2020 22:08:53 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 06RM8RHr100084;
+        Mon, 27 Jul 2020 22:08:52 GMT
+Received: from userv0121.oracle.com (userv0121.oracle.com [156.151.31.72])
+        by aserp3020.oracle.com with ESMTP id 32hu5rw25n-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Mon, 27 Jul 2020 22:08:52 +0000
+Received: from abhmp0001.oracle.com (abhmp0001.oracle.com [141.146.116.7])
+        by userv0121.oracle.com (8.14.4/8.13.8) with ESMTP id 06RM8afa004764;
+        Mon, 27 Jul 2020 22:08:36 GMT
+Received: from [10.39.225.118] (/10.39.225.118)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Mon, 27 Jul 2020 15:08:35 -0700
+Subject: Re: [PATCH v2 01/11] xen/manage: keep track of the on-going suspend
+ mode
+To:     Stefano Stabellini <sstabellini@kernel.org>,
+        Anchal Agarwal <anchalag@amazon.com>
+Cc:     tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, hpa@zytor.com,
+        x86@kernel.org, jgross@suse.com, linux-pm@vger.kernel.org,
+        linux-mm@kvack.org, kamatam@amazon.com, konrad.wilk@oracle.com,
+        roger.pau@citrix.com, axboe@kernel.dk, davem@davemloft.net,
+        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
+        peterz@infradead.org, eduval@amazon.com, sblbir@amazon.com,
+        xen-devel@lists.xenproject.org, vkuznets@redhat.com,
+        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dwmw@amazon.co.uk, benh@kernel.crashing.org
+References: <50298859-0d0e-6eb0-029b-30df2a4ecd63@oracle.com>
+ <20200715204943.GB17938@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <0ca3c501-e69a-d2c9-a24c-f83afd4bdb8c@oracle.com>
+ <20200717191009.GA3387@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <5464f384-d4b4-73f0-d39e-60ba9800d804@oracle.com>
+ <20200721000348.GA19610@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <408d3ce9-2510-2950-d28d-fdfe8ee41a54@oracle.com>
+ <alpine.DEB.2.21.2007211640500.17562@sstabellini-ThinkPad-T480s>
+ <20200722180229.GA32316@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <alpine.DEB.2.21.2007221645430.17562@sstabellini-ThinkPad-T480s>
+ <20200723225745.GB32316@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <alpine.DEB.2.21.2007241431280.17562@sstabellini-ThinkPad-T480s>
+From:   Boris Ostrovsky <boris.ostrovsky@oracle.com>
+Autocrypt: addr=boris.ostrovsky@oracle.com; keydata=
+ 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
+ Jg6OxFYd01z+a+oL
+Message-ID: <66a9b838-70ed-0807-9260-f2c31343a081@oracle.com>
+Date:   Mon, 27 Jul 2020 18:08:29 -0400
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-XM-SPF: eid=1k0AK8-0003Gh-Ej;;;mid=<87h7tsllgw.fsf@x220.int.ebiederm.org>;;;hst=in01.mta.xmission.com;;;ip=68.227.160.95;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-XM-AID: U2FsdGVkX18XJZVsYriqcoy56MYXkT789GfN3SckVAk=
-X-SA-Exim-Connect-IP: 68.227.160.95
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-Subject: [RFC][PATCH] exec: Freeze the other threads during a multi-threaded exec
-X-SA-Exim-Version: 4.2.1 (built Thu, 05 May 2016 13:38:54 -0600)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+In-Reply-To: <alpine.DEB.2.21.2007241431280.17562@sstabellini-ThinkPad-T480s>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+Content-Language: en-US
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9695 signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 adultscore=0 bulkscore=0
+ malwarescore=0 mlxscore=0 spamscore=0 mlxlogscore=999 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007270148
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9695 signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 clxscore=1011 mlxlogscore=999
+ malwarescore=0 impostorscore=0 priorityscore=1501 spamscore=0 phishscore=0
+ suspectscore=0 bulkscore=0 mlxscore=0 lowpriorityscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2007270148
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On 7/24/20 7:01 PM, Stefano Stabellini wrote:
+> Yes, it does, thank you. I'd rather not introduce unknown regressions s=
+o
+> I would recommend to add an arch-specific check on registering
+> freeze/thaw/restore handlers. Maybe something like the following:
+>
+> #ifdef CONFIG_X86
+>     .freeze =3D blkfront_freeze,
+>     .thaw =3D blkfront_restore,
+>     .restore =3D blkfront_restore
+> #endif
+>
+>
+> maybe Boris has a better suggestion on how to do it
 
-Many of the challenges of implementing a simple version of exec come
-from the fact the code handles execing multi-thread processes.
 
-To the best of my knowledge processes with more than one thread
-calling exec are not common, and as all of the threads will be killed
-by exec there does not appear to be any useful work a thread can
-reliably do during exec.
+An alternative might be to still install pm notifier in
+drivers/xen/manage.c (I think as result of latest discussions we decided
+we won't need it) and return -ENOTSUPP for ARM for
+PM_HIBERNATION_PREPARE and friends. Would that work?
 
-Therefore make it simpler to get exec correct by freezing the other
-threads at the beginning of exec.  This removes an entire class of
-races, and makes it tractable to fix some of the long standing
-issues with exec.
 
-One issue that this change makes it easier to solve is the issue of
-deailing with the file table.  Today exec unshares the file table at
-the beginning to ensure there are no weird races with file
-descriptors.  Unfortunately this unsharing can unshare the file table
-when only threads of the current process share it.  Which results in
-unnecessary unsharing and posix locks being inappropriately dropped by
-a multi-threaded exec.  With all of the threads frozen the thread
-count is stable and it is easy to tell if the if the file table really
-needs to be unshared by exec.
-
-Further this changes allows seccomp to stop taking cred_guard_mutex,
-as the seccomp code takes cred_guard_mutex to protect against another
-thread that is in the middle of calling exec and this change
-guarantees that if one threads is calling exec all of the other threads
-have stopped running.  So this problematic kind of concurrency between
-threads can no longer happen.
-
-As this change reuses the generic freezer code interactions with
-signal group stop, ptrace stop, the cgroup freezer, fatal signals, and
-SIGCONT are already well defined and inherited from the freezer code.
-In short other threads will not wake up to participate in signal group
-stop, ptrace stop, the cgroup freezer, to handle fatal signals.  As
-SIGCONT is handled by the caller that is still processed as usual.
-Fatal signals while not processed by other threads are still processed
-by the thread calling exec so they take effect as usual.
-
-The code in de_thread was modified to unfreeze the threads at the same
-time as it is killing them ensuring that code continues to work as it
-does today, and without introducing any races where a thread might
-perform any problematic work in the middle of de_thread.
-
-The code in fork is optimized to set TIF_SIGPENDING if the new task
-needs to freeze.  This makes it more likely that a new task will
-freeze immediately instead of proceeding to userspace to execute some
-code, where the next freezing loop will need to tell it to freeze.
-
-A new function exec_freezing is added and called from the refrigerator
-so that the freezer code will actually ensure threads called from
-exec are frozen as well.
-
-A new function exec_freeze_threads based upon
-kernel/power/process.c:try_to_freeze_tasks is added.  To play well
-with other uses of the kernel freezer it uses a killable sleep wrapped
-with freezer_do_not_count/freezer_count.  So that it will not lock out
-the global freezer when it is simply waiting for it's threads to
-freeze.  This new function also ensures that only one thread of a
-thread group can enter exec at a time.
-
-While this does now allow every process to touch system_freezing_cnt
-which is an int.  This should be fine as the maximum number of tasks
-is PID_MAX_LIMIT which has an upper bound of 4 * 1024 * 1024.
-
-Signed-off-by: "Eric W. Biederman" <ebiederm@xmission.com>
----
- fs/exec.c                    | 99 +++++++++++++++++++++++++++++++++++-
- include/linux/sched/signal.h | 10 ++++
- kernel/fork.c                |  3 ++
- kernel/freezer.c             |  2 +-
- 4 files changed, 112 insertions(+), 2 deletions(-)
-
-diff --git a/fs/exec.c b/fs/exec.c
-index 3698252719a3..cce6b700c3bb 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -62,6 +62,7 @@
- #include <linux/oom.h>
- #include <linux/compat.h>
- #include <linux/vmalloc.h>
-+#include <linux/freezer.h>
- 
- #include <linux/uaccess.h>
- #include <asm/mmu_context.h>
-@@ -1145,6 +1146,94 @@ static int exec_mmap(struct mm_struct *mm)
- 	return 0;
- }
- 
-+static void unfreeze_threads(struct signal_struct *signal)
-+{
-+	if (signal->group_execing_task) {
-+		signal->group_execing_task = NULL;
-+		atomic_dec(&system_freezing_cnt);
-+	}
-+}
-+
-+/*
-+ * Freeze all other threads in the group for exec
-+ */
-+static int exec_freeze_threads(void)
-+{
-+	struct task_struct *p = current, *t;
-+	struct signal_struct *signal = p->signal;
-+	spinlock_t *lock = &p->sighand->siglock;
-+	unsigned long sleep = msecs_to_jiffies(1);
-+	unsigned int todo;
-+	int ret;
-+
-+	if (thread_group_empty(p))
-+		return 0;
-+
-+	spin_lock_irq(lock);
-+	if (signal_pending(p) || signal_group_exit(signal) ||
-+	    signal->group_execing_task) {
-+		spin_unlock(lock);
-+		return -ERESTARTNOINTR;
-+	}
-+
-+	signal->group_execing_task = p;
-+	atomic_inc(&system_freezing_cnt);
-+	for (;;) {
-+		todo = 0;
-+		__for_each_thread(signal, t) {
-+			if ((t == p) || !freeze_task(p))
-+				continue;
-+
-+			if (!freezer_should_skip(p))
-+				todo++;
-+		}
-+
-+		if (!todo || __fatal_signal_pending(p) ||
-+		    (sleep > msecs_to_jiffies(8)))
-+			break;
-+
-+		/*
-+		 * We need to retry, but first give the freezing tasks some
-+		 * time to enter the refrigerator.  Start with an initial
-+		 * 1 ms sleep followed by exponential backoff until 8 ms.
-+		 */
-+		spin_unlock_irq(lock);
-+
-+		freezer_do_not_count();
-+		schedule_timeout_killable(sleep);
-+		freezer_count();
-+		sleep *= 2;
-+
-+		spin_lock_irq(lock);
-+	}
-+	ret = 0;
-+	if (todo)
-+		ret = -EBUSY;
-+	if (__fatal_signal_pending(p))
-+		ret = -ERESTARTNOINTR;
-+	if (ret)
-+		unfreeze_threads(signal);
-+	spin_unlock_irq(lock);
-+	return ret;
-+}
-+
-+static void exec_thaw_threads(void)
-+{
-+	struct task_struct *p = current, *t;
-+	struct signal_struct *signal = p->signal;
-+	spinlock_t *lock = &p->sighand->siglock;
-+
-+	spin_lock_irq(lock);
-+	if (signal->group_execing_task) {
-+		unfreeze_threads(signal);
-+		__for_each_thread(signal, t) {
-+			if (t != p)
-+				__thaw_task(t);
-+		}
-+	}
-+	spin_unlock_irq(lock);
-+}
-+
- static int de_thread(struct task_struct *tsk)
- {
- 	struct signal_struct *sig = tsk->signal;
-@@ -1167,6 +1256,7 @@ static int de_thread(struct task_struct *tsk)
- 		return -EAGAIN;
- 	}
- 
-+	unfreeze_threads(sig);
- 	sig->group_exit_task = tsk;
- 	sig->notify_count = zap_other_threads(tsk);
- 	if (!thread_group_leader(tsk))
-@@ -1885,10 +1975,15 @@ static int bprm_execve(struct linux_binprm *bprm,
- 	struct files_struct *displaced;
- 	int retval;
- 
--	retval = unshare_files(&displaced);
-+	/* If the process is multi-threaded stop the other threads */
-+	retval = exec_freeze_threads();
- 	if (retval)
- 		return retval;
- 
-+	retval = unshare_files(&displaced);
-+	if (retval)
-+		goto out_ret;
-+
- 	retval = prepare_bprm_creds(bprm);
- 	if (retval)
- 		goto out_files;
-@@ -1949,6 +2044,8 @@ static int bprm_execve(struct linux_binprm *bprm,
- out_files:
- 	if (displaced)
- 		reset_files_struct(displaced);
-+out_ret:
-+	exec_thaw_threads();
- 
- 	return retval;
- }
-diff --git a/include/linux/sched/signal.h b/include/linux/sched/signal.h
-index 1bad18a1d8ba..bbf53fcd913b 100644
---- a/include/linux/sched/signal.h
-+++ b/include/linux/sched/signal.h
-@@ -106,6 +106,9 @@ struct signal_struct {
- 	int			notify_count;
- 	struct task_struct	*group_exit_task;
- 
-+	/* Task that is performing exec */
-+	struct task_struct	*group_execing_task;
-+
- 	/* thread group stop support, overloads group_exit_code too */
- 	int			group_stop_count;
- 	unsigned int		flags; /* see SIGNAL_* flags below */
-@@ -269,6 +272,13 @@ static inline int signal_group_exit(const struct signal_struct *sig)
- 		(sig->group_exit_task != NULL);
- }
- 
-+static inline bool exec_freezing(struct task_struct *p)
-+{
-+	struct task_struct *execing = READ_ONCE(p->signal->group_execing_task);
-+
-+	return execing && (execing != p);
-+}
-+
- extern void flush_signals(struct task_struct *);
- extern void ignore_signals(struct task_struct *);
- extern void flush_signal_handlers(struct task_struct *, int force_default);
-diff --git a/kernel/fork.c b/kernel/fork.c
-index bf215af7a904..d3a0f914231c 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -2299,6 +2299,9 @@ static __latent_entropy struct task_struct *copy_process(
- 	syscall_tracepoint_update(p);
- 	write_unlock_irq(&tasklist_lock);
- 
-+	/* Ensure a process that should freeze exits on the slow path */
-+	if (freezing(p))
-+		set_tsk_thread_flag(p, TIF_SIGPENDING);
- 	proc_fork_connector(p);
- 	cgroup_post_fork(p, args);
- 	perf_event_fork(p);
-diff --git a/kernel/freezer.c b/kernel/freezer.c
-index dc520f01f99d..97c6f69b832e 100644
---- a/kernel/freezer.c
-+++ b/kernel/freezer.c
-@@ -42,7 +42,7 @@ bool freezing_slow_path(struct task_struct *p)
- 	if (test_tsk_thread_flag(p, TIF_MEMDIE))
- 		return false;
- 
--	if (pm_nosig_freezing || cgroup_freezing(p))
-+	if (pm_nosig_freezing || cgroup_freezing(p) || exec_freezing(p))
- 		return true;
- 
- 	if (pm_freezing && !(p->flags & PF_KTHREAD))
--- 
-2.25.0
+-boris
 
 
