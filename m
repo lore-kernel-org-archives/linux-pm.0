@@ -2,146 +2,108 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 499C3C433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 12:13:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE736C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 12:20:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 27C2420663
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 12:13:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B8D6B2075D
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 12:20:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1595852021;
-	bh=ewkwyJ5XYmclS18PV1WpycBLPBOKvMAJJdbbWC3GAT8=;
+	s=default; t=1595852412;
+	bh=7pJMijVBnv56ag3JXHloaDv3iPnaHiPzA5w0hsV8KWw=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=cTje3HthqtySoPp7JXj8TuDrf1OageSd+bilIU6q9os1p6XT1FyXENaZW+QC5KfNu
-	 DzCECSkDjZ3zyz4umvwEfz5gZTPa0bbPOsbuN35XzHMlY1w0J65nTIlenXXfqKHCrq
-	 DMWuN4TvfgE3k9RiHBMc6lRhbmzHN5Zp/5xKKVeg=
+	b=WGFHItMThW2LUsa5uJmJBFtpdOZTbyoUp/4Hy6vkXefSfW5ySqc2r90KBzbJldh2f
+	 mydS4kTsezb2NSP99IS4jlFFuiFshUFPSZxXqy21l7X4FoG8iZ5Rwr60WqsFPLyXMy
+	 PGR1emDCw11O7ShKrkqGktCzJQByQbClVib9qJhQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727975AbgG0MNk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 08:13:40 -0400
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:33767 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726555AbgG0MNk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 08:13:40 -0400
-Received: by mail-ot1-f67.google.com with SMTP id h13so12158814otr.0;
-        Mon, 27 Jul 2020 05:13:39 -0700 (PDT)
+        id S1727844AbgG0MUL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 08:20:11 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:36707 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727775AbgG0MUK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 27 Jul 2020 08:20:10 -0400
+Received: by mail-oi1-f195.google.com with SMTP id s144so4207085oie.3;
+        Mon, 27 Jul 2020 05:20:09 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=hya4kAak3vFpvKCmV5SC8CvzY7BVaQgU/URNmp9BcZ4=;
-        b=agyhTbqbD+9UsE2Pu5yqvuJFxgtsgAol0B7zz+fP+pskeI6PBsvWrWkqt+SL786snp
-         nCs3pREkeg7xSVDrMbGtQMVeJYjgiYUTVv9CxPrZjJTw3SXDY04kIbLMKRC4YVTM3VrN
-         n8oF3KvKxehB2sc564NCCg+jy4kG0rzM8/LSmLkpc3ubfz5JvgGLcyo1/QGDYDBNQtCY
-         +eabp9XAnz+gHEceH7s4GwFfRjHGBNNKSnHCZOIjWRphMXrvDnlfxOSuwqHM3ZeRRt2n
-         YSkXXLvFttU98TBUXiOkdgwdUK3W2KKlUmroacmILkVrgm8fq/1a6kBtwpmoLYeIx+jf
-         8CLA==
-X-Gm-Message-State: AOAM531d+k9e0E3ro12JjnGqh/5zALldDWOZ7lFkHO50PtDtohtOZnvW
-        szvt5eJOrbTQAg/OH22LG1kYiMHb0s4KVD3s3HQ=
-X-Google-Smtp-Source: ABdhPJzWgH9YnsibmP7ohIsPdvbdnPiVh5mOEocRs7asL1OJ+94TWqFP8dqKQVa7Ps7h8bt7rVUk3udHV1/hD+86g5o=
-X-Received: by 2002:a9d:306:: with SMTP id 6mr10255308otv.167.1595852019197;
- Mon, 27 Jul 2020 05:13:39 -0700 (PDT)
+        bh=VYdNJKGJtndbhOIlB1kpCwUiNVjH+51o2Mmpgcq8fg8=;
+        b=oVmhMJgcuva+Z2pRZEeBuVUBn+M8cuVfC05UMl5+WYQfIbybGD1w+uYg5rl2Rq0AJ+
+         OPPP/FW8xohoppIOHqj8UuNeveuBJhjYz2tYuDIOhqsN/cr4ThZUkVWLlCQrZwtwHY6L
+         a1NHwB3OULdLcdlsllFYRqUZCUAdHSkRI2pXIuiDdQ+O6UvnM+thVr3xDFdPPxYMIh43
+         BbU2qQ7BhofwjZb0/wNgWV7rDVyB31x/504MzjSrAda5srhC34tkMoRKYf/Vwn7MeOFs
+         E/1Tvt0x2V2ZqV7nXKO0vtiFlaESWJqt1AcjH7q3CxVFxOBVfNY+uYGHo+RY2BxQhDXp
+         Y5YQ==
+X-Gm-Message-State: AOAM531qz/ui9ZnDMcZ0mZuFZLa62mGsc9d6JSJcEFeCceIVZZejia6f
+        sQLg5bZBnMbDzY4Q7a8nC8i8LCcYHrhlPOWvWTs=
+X-Google-Smtp-Source: ABdhPJzESE2uHUqdDkzrQl8akjB+yPlCH6ucxF6MZ8U6NcVwVphYWXUbyfgNtAl73OF/Rb45GhRPevNJ/DK2nyFBJDo=
+X-Received: by 2002:a05:6808:34e:: with SMTP id j14mr18551226oie.110.1595852409614;
+ Mon, 27 Jul 2020 05:20:09 -0700 (PDT)
 MIME-Version: 1.0
-References: <1595842178-20351-1-git-send-email-yangtiezhu@loongson.cn>
-In-Reply-To: <1595842178-20351-1-git-send-email-yangtiezhu@loongson.cn>
+References: <1594921495-519-1-git-send-email-sumeet.r.pawnikar@intel.com>
+ <CAJZ5v0jQp2sHyzFKZu4ZL2HyN+kVax960+n2epTxBZbbZuZo8Q@mail.gmail.com> <20200727121316.GS3703480@smile.fi.intel.com>
+In-Reply-To: <20200727121316.GS3703480@smile.fi.intel.com>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 27 Jul 2020 14:13:10 +0200
-Message-ID: <CAJZ5v0iJM_Q0D2Um7upMzkww0kL0FjH3udZPXaORY-dv5MDpLQ@mail.gmail.com>
-Subject: Re: [PATCH] ACPI: Use valid link of ACPI specification
-To:     Tiezhu Yang <yangtiezhu@loongson.cn>
-Cc:     Jean Delvare <jdelvare@suse.com>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Jonathan Corbet <corbet@lwn.net>,
+Date:   Mon, 27 Jul 2020 14:19:41 +0200
+Message-ID: <CAJZ5v0iZvGzZU15-bkxaFi3Q=4Sd4h+B0Z9pHPMGzCgMvMDX2g@mail.gmail.com>
+Subject: Re: [PATCH v3] powercap: Add Power Limit4 support
+To:     "Shevchenko, Andriy" <andriy.shevchenko@intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>, Ning Sun <ning.sun@intel.com>,
-        Thomas Renninger <trenn@suse.com>,
-        Shuah Khan <shuah@kernel.org>, linux-hwmon@vger.kernel.org,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        tboot-devel@lists.sourceforge.net,
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Xuefeng Li <lixuefeng@loongson.cn>
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jul 27, 2020 at 11:30 AM Tiezhu Yang <yangtiezhu@loongson.cn> wrote:
+On Mon, Jul 27, 2020 at 2:13 PM Shevchenko, Andriy
+<andriy.shevchenko@intel.com> wrote:
 >
-> Currently, acpi.info is an invalid link to access ACPI specification,
-> the new valid link is https://uefi.org/specifications.
+> On Mon, Jul 27, 2020 at 01:46:12PM +0200, Rafael J. Wysocki wrote:
+> > On Thu, Jul 16, 2020 at 7:38 PM Sumeet Pawnikar
+> > <sumeet.r.pawnikar@intel.com> wrote:
+> > >
+> > > Modern Intel Mobile platforms support power limit4 (PL4), which is
+> > > the SoC package level maximum power limit (in Watts). It can be used
+> > > to preemptively limits potential SoC power to prevent power spikes
+> > > from tripping the power adapter and battery over-current protection.
+> > > This patch enables this feature by exposing package level peak power
+> > > capping control to userspace via RAPL sysfs interface. With this,
+> > > application like DTPF can modify PL4 power limit, the similar way
+> > > of other package power limit (PL1).
+> > > As this feature is not tested on previous generations, here it is
+> > > enabled only for the platform that has been verified to work,
+> > > for safety concerns.
+> >
+> > Queued up as 5.9 material ->
+> >
+> > > Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+> > > Co-developed-by: Zhang Rui <rui.zhang@intel.com>
+> > > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> >
+> > -> with this tag removed, because the only case in which you can
+> > include an S-o-b from someone else is when you also add a From:
+> > pointing to that person.  IOW, you add a From: with a matching S-o-b
+> > from someone else and you can add your own S-o-b to that.
+> >
+> > In this particular case, the C-d-b tag is sufficient to make a record
+> > of somebody else's contribution to a patch carrying a From: header
+> > that points to you (ie. your patch).
 >
-> Signed-off-by: Tiezhu Yang <yangtiezhu@loongson.cn>
-> ---
->  Documentation/hwmon/acpi_power_meter.rst      | 2 +-
->  drivers/acpi/Kconfig                          | 3 +--
->  include/linux/tboot.h                         | 2 +-
->  tools/power/cpupower/man/cpupower-idle-info.1 | 2 +-
->  4 files changed, 4 insertions(+), 5 deletions(-)
->
-> diff --git a/Documentation/hwmon/acpi_power_meter.rst b/Documentation/hwmon/acpi_power_meter.rst
-> index 4a0941a..8628c11 100644
-> --- a/Documentation/hwmon/acpi_power_meter.rst
-> +++ b/Documentation/hwmon/acpi_power_meter.rst
-> @@ -9,7 +9,7 @@ Supported systems:
->
->      Prefix: 'power_meter'
->
-> -    Datasheet: http://acpi.info/, section 10.4.
-> +    Datasheet: https://uefi.org/specifications, section 10.4.
->
->  Author: Darrick J. Wong
->
-> diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-> index ce2730d..7428cd2 100644
-> --- a/drivers/acpi/Kconfig
-> +++ b/drivers/acpi/Kconfig
-> @@ -40,8 +40,7 @@ menuconfig ACPI
->           the UEFI Forum and any UEFI member can join the ASWG and contribute
->           to the ACPI specification.
->           The specification is available at:
-> -         <http://www.acpi.info>
-> -         <http://www.uefi.org/acpi/specs>
-> +         <https://uefi.org/specifications>
->
->  if ACPI
->
-> diff --git a/include/linux/tboot.h b/include/linux/tboot.h
-> index c7e4247..5146d25 100644
-> --- a/include/linux/tboot.h
-> +++ b/include/linux/tboot.h
-> @@ -44,7 +44,7 @@ struct tboot_acpi_generic_address {
->
->  /*
->   * combines Sx info from FADT and FACS tables per ACPI 2.0+ spec
-> - * (http://www.acpi.info/)
-> + * (https://uefi.org/specifications)
->   */
->  struct tboot_acpi_sleep_info {
->         struct tboot_acpi_generic_address pm1a_cnt_blk;
-> diff --git a/tools/power/cpupower/man/cpupower-idle-info.1 b/tools/power/cpupower/man/cpupower-idle-info.1
-> index 80a1311..20b6345 100644
-> --- a/tools/power/cpupower/man/cpupower-idle-info.1
-> +++ b/tools/power/cpupower/man/cpupower-idle-info.1
-> @@ -75,7 +75,7 @@ By default only values of core zero are displayed. How to display settings of
->  other cores is described in the cpupower(1) manpage in the \-\-cpu option
->  section.
->  .SH REFERENCES
-> -http://www.acpi.info/spec.htm
-> +https://uefi.org/specifications
->  .SH "FILES"
->  .nf
->  \fI/sys/devices/system/cpu/cpu*/cpuidle/state*\fP
-> --
+> Rafael, it looks like it contradicts documentation. I mean your amendment.
+> SoB is specifically required to be coupled with Co-developed-by. That said,
+> both or none are acceptable. (I don't consider the chain of SoB when it goes
+> thru maintainers)
 
-Applied as 5.9 material with a minor edit in the subject.
-
-However, in the future please always CC ACPI-related patches to the
-linux-acpi mailing list.
+OK, I stand corrected and so I've added the Rui's S-o-b back to the commit.
 
 Thanks!
