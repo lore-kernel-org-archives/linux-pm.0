@@ -2,49 +2,48 @@ Return-Path: <SRS0=nOYf=BG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53B5EC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 08:21:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 73229C433E8
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 08:21:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D4912075A
-	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 08:21:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5BCFF20719
+	for <linux-pm@archiver.kernel.org>; Mon, 27 Jul 2020 08:21:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726706AbgG0IVF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 27 Jul 2020 04:21:05 -0400
-Received: from foss.arm.com ([217.140.110.172]:39346 "EHLO foss.arm.com"
+        id S1726285AbgG0IVs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 27 Jul 2020 04:21:48 -0400
+Received: from foss.arm.com ([217.140.110.172]:39372 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726270AbgG0IVF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 27 Jul 2020 04:21:05 -0400
+        id S1726139AbgG0IVs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 27 Jul 2020 04:21:48 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 840D8D6E;
-        Mon, 27 Jul 2020 01:21:04 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 26B2CD6E;
+        Mon, 27 Jul 2020 01:21:48 -0700 (PDT)
 Received: from [10.37.12.33] (unknown [10.37.12.33])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5E74D3F71F;
-        Mon, 27 Jul 2020 01:21:01 -0700 (PDT)
-Subject: Re: [PATCH v2 1/2] memory: samsung: exynos5422-dmc: Adjust polling
- interval and uptreshold
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, willy.mh.wolff.ml@gmail.com,
-        k.konieczny@samsung.com, cw00.choi@samsung.com,
-        b.zolnierkie@samsung.com, chanwoo@kernel.org,
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 113F43F71F;
+        Mon, 27 Jul 2020 01:21:44 -0700 (PDT)
+Subject: Re: [PATCH v2 0/2] Exynos5422 DMC: adjust to new devfreq monitoring
+ mechanism
+To:     Chanwoo Choi <cw00.choi@samsung.com>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org
+Cc:     willy.mh.wolff.ml@gmail.com, k.konieczny@samsung.com,
+        b.zolnierkie@samsung.com, krzk@kernel.org, chanwoo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
         s.nawrocki@samsung.com, kgene@kernel.org
-References: <20200710191122.11029-1-lukasz.luba@arm.com>
- <20200710191122.11029-2-lukasz.luba@arm.com>
- <20200720144623.GB22791@kozik-lap>
+References: <CGME20200710191144epcas1p30f82bf6371f7f09a4e1ea1262234f392@epcas1p3.samsung.com>
+ <20200710191122.11029-1-lukasz.luba@arm.com>
+ <b6e3e7af-203d-a24e-2757-c32236f494d4@samsung.com>
 From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <decc2758-8c57-8b32-26fb-d4a5b2ca5224@arm.com>
-Date:   Mon, 27 Jul 2020 09:20:58 +0100
+Message-ID: <82080e84-a400-88e3-274c-58e57c80c4c0@arm.com>
+Date:   Mon, 27 Jul 2020 09:21:43 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20200720144623.GB22791@kozik-lap>
+In-Reply-To: <b6e3e7af-203d-a24e-2757-c32236f494d4@samsung.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -55,28 +54,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 
-On 7/20/20 3:46 PM, Krzysztof Kozlowski wrote:
-> On Fri, Jul 10, 2020 at 08:11:21PM +0100, Lukasz Luba wrote:
->> In order to react faster and make better decisions under some workloads,
->> benchmarking the memory subsystem behavior, adjust the polling interval
->> and upthreshold value used by the simple_ondemand governor.
+On 7/24/20 2:40 AM, Chanwoo Choi wrote:
+> Hi Lukasz,
+> 
+> On 7/11/20 4:11 AM, Lukasz Luba wrote:
+>> Hi all,
 >>
->> Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
->> Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
->> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
->> ---
->>   drivers/memory/samsung/exynos5422-dmc.c | 4 ++--
->>   1 file changed, 2 insertions(+), 2 deletions(-)
+>> This is a v2 patch set adjusting Exynos5422 DMC to the new devfreq monitoring
+>> mechanism. This time the IRQ mode is explicitly controlled using module
+>> parameter (in default the driver uses polling mode = devfreq monitoring).
+>>
+>> The detailed cover letter describing the topic can be found here [1].
+>>
+>> The patches should apply on top of Chanwoo's devfreq-next branch, where
+>> the new devfreq mechanism is queued [2]. If there is no objections
+>> I think they can go via this tree, since they logically use it.
+>>
+>> Changes:
+>> v2:
+>> - added Reviewed-by from Chanwoo for patch 1/2
+>> - added module_param which controls the mode in which the driver operates
+>> - switched in default to devfreq monitoring mechanism instead of interrupts
+>>
+>> Regards,
+>> Lukasz Luba
+>>
+>> [1] https://lore.kernel.org/linux-pm/20200708153420.29484-1-lukasz.luba@arm.com/
+>> [2] https://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git/log/?h=devfreq-next
+>>
+>> Lukasz Luba (2):
+>>    memory: samsung: exynos5422-dmc: Adjust polling interval and
+>>      uptreshold
+>>    memory: samsung: exynos5422-dmc: Add module param to control IRQ mode
+>>
+>>   drivers/memory/samsung/exynos5422-dmc.c | 13 +++++++++----
+>>   1 file changed, 9 insertions(+), 4 deletions(-)
+>>
 > 
-> Reviewed-by: Krzysztof Kozlowski <krzk@kernel.org>
-> 
-> Feel free to take it via devfreq tree.
-> 
-> Best regards,
-> Krzysztof
+> Applied them to devfreq-next branch. Thanks.
 > 
 
-Thank you Krzysztof for the review.
+Thank you Chanwoo
 
 Regards,
 Lukasz
