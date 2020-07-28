@@ -6,35 +6,36 @@ X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
 	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 78EDDC4345C
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:14:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E30FCC433EC
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:41:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62F87204EA
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:14:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CDA3520825
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:41:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730910AbgG1POi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Jul 2020 11:14:38 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:53496 "EHLO
+        id S1731026AbgG1Plq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Jul 2020 11:41:46 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:59548 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730889AbgG1POb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2020 11:14:31 -0400
+        with ESMTP id S1731019AbgG1Plp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2020 11:41:45 -0400
 Received: from 89-64-88-69.dynamic.chello.pl (89.64.88.69) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
- id 680a78bb8b8347f8; Tue, 28 Jul 2020 17:14:29 +0200
+ id a18b10c115136856; Tue, 28 Jul 2020 17:41:43 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Linux Documentation <linux-doc@vger.kernel.org>,
+To:     Francisco Jerez <currojerez@riseup.net>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Documentation <linux-doc@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Giovanni Gherdovich <ggherdovich@suse.cz>,
-        Doug Smythies <dsmythies@telus.net>,
-        Francisco Jerez <francisco.jerez.plata@intel.com>
-Subject: [PATCH v4 0/2] cpufreq: intel_pstate: Implement passive mode with HWP enabled
-Date:   Tue, 28 Jul 2020 17:09:35 +0200
-Message-ID: <13207937.r2GEYrEf4f@kreacher>
-In-Reply-To: <1709487.Bxjb1zNRZM@kreacher>
-References: <4981405.3kqTVLv5tO@kreacher> <1709487.Bxjb1zNRZM@kreacher>
+        Doug Smythies <dsmythies@telus.net>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Implement passive mode with HWP enabled
+Date:   Tue, 28 Jul 2020 17:41:42 +0200
+Message-ID: <1884886.tmXHBG24oC@kreacher>
+In-Reply-To: <87mu3thiz5.fsf@riseup.net>
+References: <3955470.QvD6XneCf3@kreacher> <CAJZ5v0g2U+1wD5rUQwJ4_x9sQyvGyGiBiLFs7MA-xdhRBX9zBQ@mail.gmail.com> <87mu3thiz5.fsf@riseup.net>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -43,35 +44,65 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
-
-On Monday, July 27, 2020 5:13:40 PM CEST Rafael J. Wysocki wrote:
+On Tuesday, July 21, 2020 1:20:14 AM CEST Francisco Jerez wrote:
 > 
-> On Thursday, July 16, 2020 7:37:04 PM CEST Rafael J. Wysocki wrote:
+
+[cut]
+
+> > If there is a bug, then what exactly is it, from the users' perspective?
 > >
-> > This really is a v2 of this patch:
-> > 
-> > https://patchwork.kernel.org/patch/11663271/
-> > 
-> > with an extra preceding cleanup patch to avoid making unrelated changes in the
-> > [2/2].
 > 
-> Almost the same as before, but the first patch has been reworked to handle
-> errors in store_energy_performance_preference() correctly and rebased on top
-> of the current linux-pm.git branch.
+> It can be reproduced easily as follows:
 > 
-> No functional changes otherwise.
+> | echo 1 > /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost
+> | for p in /sys/devices/system/cpu/cpufreq/policy*/energy_performance_preference; do echo performance > $p; done
+> 
+> Let's make sure that the EPP updates landed on the turbostat output:
+> 
+> |[..]
+> | Core    CPU     Avg_MHz Busy%   Bzy_MHz            HWP_REQ
+> | -       -       1       0.05    2396    0x0000000000000000
+> | 0       0       1       0.05    2153    0x0000000000002704
+> | 0       4       1       0.04    2062    0x0000000000002704
+> | 1       1       1       0.02    2938    0x0000000000002704
+> | 1       5       2       0.09    2609    0x0000000000002704
+> | 2       2       1       0.04    1857    0x0000000000002704
+> | 2       6       1       0.05    2561    0x0000000000002704
+> | 3       3       0       0.01    1883    0x0000000000002704
+> | 3       7       2       0.07    2703    0x0000000000002704
+> |[..]
+> 
+> Now let's do some non-trivial IO activity in order to trigger HWP
+> dynamic boost, and watch while random CPUs start losing their EPP
+> setting requested via sysfs:
+> 
+> |[..]
+> | Core    CPU     Avg_MHz Busy%   Bzy_MHz            HWP_REQ
+> | -       -       16      0.81    2023    0x0000000000000000
+> | 0       0       7       0.66    1069    0x0000000080002704
+>                                                     ^^
+> | 0       4       24      2.19    1116    0x0000000080002704
+>                                                     ^^
+> | 1       1       18      0.68    2618    0x0000000000002704
+> | 1       5       1       0.03    2005    0x0000000000002704
+> | 2       2       2       0.07    2512    0x0000000000002704
+> | 2       6       33      1.35    2402    0x0000000000002704
+> | 3       3       1       0.04    2470    0x0000000000002704
+> | 3       7       45      1.42    3185    0x0000000080002704
+>                                                     ^^
 
-One more update of the second patch.
+Actually, that's because intel_pstate_hwp_boost_up() and
+intel_pstate_hwp_boost_down() use the hwp_req_cached value
+for updating the HWP Request MSR and that is only written to
+by intel_pstate_hwp_set() which is only invoked on policy changes,
+so the MSR writes from intel_pstate_set_energy_pref_index()
+basically get discarded.
 
-Namely, I realized that the hwp_dynamic_boost sysfs switch was present in the
-passive mode after the v3 (and the previous versions) of that patch which isn't
-correct, so this modifies it to avoid exposing hwp_dynamic_boost in the passive
-mode.
+So this is a matter of synchronizing intel_pstate_set_policy() with
+intel_pstate_set_energy_pref_index() and they both acquire
+intel_pstate_limits_lock already, so this shouldn't be too difficult to fix.
 
-The first patch is the same as in the v2.
-
-Thanks!
+Let me cut a patch for that.
 
 
 
