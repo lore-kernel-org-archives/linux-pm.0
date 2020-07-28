@@ -2,267 +2,154 @@ Return-Path: <SRS0=HuBt=BH=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9E8CBC433FB
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 14:11:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F15CEC43459
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:14:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 68050206F5
-	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 14:11:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="mSEHRMaD"
+	by mail.kernel.org (Postfix) with ESMTP id DA651204EA
+	for <linux-pm@archiver.kernel.org>; Tue, 28 Jul 2020 15:14:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730352AbgG1OL1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 28 Jul 2020 10:11:27 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:59484 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730346AbgG1OL1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2020 10:11:27 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 06SEBP7Y112976;
-        Tue, 28 Jul 2020 09:11:25 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1595945485;
-        bh=Hr7/99UnPm661CN9u4AlBP5QUHDBa7hLq84o1PLgBk8=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=mSEHRMaDLa01wdyAJZDQpeyZZLGaP9EIjHQ1xegUAq0BHFDWLMzCGYOm6nY/eGAfo
-         opf9pedZgeU08227meHpXAp76/HWKdybhMCgMfauCb6ynF0hV6SiAl4V+F5lD6FxEw
-         0JwodG3YqCyjiY29Ou5ivHCDTBv12EIGQkgm0FkA=
-Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 06SEBPBP067310
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 28 Jul 2020 09:11:25 -0500
-Received: from DLEE102.ent.ti.com (157.170.170.32) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 28
- Jul 2020 09:11:25 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE102.ent.ti.com
- (157.170.170.32) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Tue, 28 Jul 2020 09:11:25 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 06SEBPnY035329;
-        Tue, 28 Jul 2020 09:11:25 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>, <afd@ti.com>, <pali@kernel.org>
-CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <robh@kernel.org>,
-        Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH v4 2/4] power: supply: bq27xxx_battery: Add the BQ27561 Battery monitor
-Date:   Tue, 28 Jul 2020 09:11:11 -0500
-Message-ID: <20200728141113.31518-2-dmurphy@ti.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200728141113.31518-1-dmurphy@ti.com>
-References: <20200728141113.31518-1-dmurphy@ti.com>
+        id S1730891AbgG1POb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 28 Jul 2020 11:14:31 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:44850 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730887AbgG1POa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 28 Jul 2020 11:14:30 -0400
+Received: from 89-64-88-69.dynamic.chello.pl (89.64.88.69) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 197c8e6c67be01ba; Tue, 28 Jul 2020 17:14:27 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Linux Documentation <linux-doc@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Giovanni Gherdovich <ggherdovich@suse.cz>,
+        Doug Smythies <dsmythies@telus.net>,
+        Francisco Jerez <francisco.jerez.plata@intel.com>
+Subject: [PATCH v4 1/2] cpufreq: intel_pstate: Rearrange the storing of new EPP values
+Date:   Tue, 28 Jul 2020 17:11:03 +0200
+Message-ID: <1665283.zxI7kaGBi8@kreacher>
+In-Reply-To: <13207937.r2GEYrEf4f@kreacher>
+References: <4981405.3kqTVLv5tO@kreacher> <1709487.Bxjb1zNRZM@kreacher> <13207937.r2GEYrEf4f@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the Texas Instruments BQ27561 battery monitor.  The register address
-map is laid out the same as compared to other devices within the file.
-The battery status register has differing bits to determine if the
-battery is full, discharging or dead.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
+Move the locking away from intel_pstate_set_energy_pref_index()
+into its only caller and drop the (now redundant) return_pref label
+from it.
+
+Also move the "raw" EPP value check into the caller of that function,
+so as to do it before acquiring the mutex, and reduce code duplication
+related to the "raw" EPP values processing somewhat.
+
+No intentional functional impact.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- drivers/power/supply/bq27xxx_battery.c     | 68 +++++++++++++++++++++-
- drivers/power/supply/bq27xxx_battery_i2c.c |  2 +
- include/linux/power/bq27xxx_battery.h      |  1 +
- 3 files changed, 70 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 942c92127b6d..654d38bcd7e0 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -43,6 +43,7 @@
-  * http://www.ti.com/product/bq27411-g1
-  * http://www.ti.com/product/bq27441-g1
-  * http://www.ti.com/product/bq27621-g1
-+ * https://www.ti.com/lit/gpn/bq27z561
-  */
+v2 -> v3:
+
+   * Fix error handling in intel_pstate_set_energy_pref_index() and
+     rebase.
+
+v3 -> v4: No changes
+
+---
+ drivers/cpufreq/intel_pstate.c |   35 +++++++++++++++--------------------
+ 1 file changed, 15 insertions(+), 20 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -649,28 +649,18 @@ static int intel_pstate_set_energy_pref_
+ 	if (!pref_index)
+ 		epp = cpu_data->epp_default;
  
- #include <linux/device.h>
-@@ -79,6 +80,11 @@
- #define BQ27000_FLAG_FC		BIT(5)
- #define BQ27000_FLAG_CHGS	BIT(7) /* Charge state flag */
+-	mutex_lock(&intel_pstate_limits_lock);
+-
+ 	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
+ 		u64 value;
  
-+/* BQ27561 has different layout for Flags register */
-+#define BQ27561_FLAG_FDC	BIT(4) /* Battery fully discharged */
-+#define BQ27561_FLAG_FC		BIT(5) /* Battery fully charged */
-+#define BQ27561_FLAG_DIS_CH	BIT(6) /* Battery is discharging */
-+
- /* control register params */
- #define BQ27XXX_SEALED			0x20
- #define BQ27XXX_SET_CFGUPDATE		0x13
-@@ -431,12 +437,32 @@ static u8
- 		[BQ27XXX_REG_DCAP] = 0x3c,
- 		[BQ27XXX_REG_AP] = 0x18,
- 		BQ27XXX_DM_REG_ROWS,
--	};
-+	},
- #define bq27411_regs bq27421_regs
- #define bq27425_regs bq27421_regs
- #define bq27426_regs bq27421_regs
- #define bq27441_regs bq27421_regs
- #define bq27621_regs bq27421_regs
-+	bq27561_regs[BQ27XXX_REG_MAX] = {
-+		[BQ27XXX_REG_CTRL] = 0x00,
-+		[BQ27XXX_REG_TEMP] = 0x06,
-+		[BQ27XXX_REG_INT_TEMP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_VOLT] = 0x08,
-+		[BQ27XXX_REG_AI] = 0x14,
-+		[BQ27XXX_REG_FLAGS] = 0x0a,
-+		[BQ27XXX_REG_TTE] = 0x16,
-+		[BQ27XXX_REG_TTF] = 0x18,
-+		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
-+		[BQ27XXX_REG_FCC] = 0x12,
-+		[BQ27XXX_REG_CYCT] = 0x2a,
-+		[BQ27XXX_REG_AE] = 0x22,
-+		[BQ27XXX_REG_SOC] = 0x2c,
-+		[BQ27XXX_REG_DCAP] = 0x3c,
-+		[BQ27XXX_REG_AP] = 0x22,
-+		BQ27XXX_DM_REG_ROWS,
-+	};
+ 		ret = rdmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, &value);
+ 		if (ret)
+-			goto return_pref;
++			return ret;
  
- static enum power_supply_property bq27000_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
-@@ -672,6 +698,25 @@ static enum power_supply_property bq27421_props[] = {
- #define bq27441_props bq27421_props
- #define bq27621_props bq27421_props
+ 		value &= ~GENMASK_ULL(31, 24);
  
-+static enum power_supply_property bq27561_props[] = {
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
-+	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CYCLE_COUNT,
-+	POWER_SUPPLY_PROP_POWER_AVG,
-+	POWER_SUPPLY_PROP_HEALTH,
-+	POWER_SUPPLY_PROP_MANUFACTURER,
-+};
-+
- struct bq27xxx_dm_reg {
- 	u8 subclass_id;
- 	u8 offset;
-@@ -767,11 +812,14 @@ static struct bq27xxx_dm_reg bq27621_dm_regs[] = {
- #define bq27621_dm_regs 0
- #endif
+-		if (use_raw) {
+-			if (raw_epp > 255) {
+-				ret = -EINVAL;
+-				goto return_pref;
+-			}
+-			value |= (u64)raw_epp << 24;
+-			ret = wrmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, value);
+-			goto return_pref;
+-		}
+-
+-		if (epp == -EINVAL)
++		if (use_raw)
++			epp = raw_epp;
++		else if (epp == -EINVAL)
+ 			epp = epp_values[pref_index - 1];
  
-+#define bq27561_dm_regs 0
-+
- #define BQ27XXX_O_ZERO	0x00000001
- #define BQ27XXX_O_OTDC	0x00000002 /* has OTC/OTD overtemperature flags */
- #define BQ27XXX_O_UTOT  0x00000004 /* has OT overtemperature flag */
- #define BQ27XXX_O_CFGUP	0x00000008
- #define BQ27XXX_O_RAM	0x00000010
-+#define BQ27561_O_BITS	0x00000020
+ 		value |= (u64)epp << 24;
+@@ -680,8 +670,6 @@ static int intel_pstate_set_energy_pref_
+ 			epp = (pref_index - 1) << 2;
+ 		ret = intel_pstate_set_epb(cpu_data->cpu, epp);
+ 	}
+-return_pref:
+-	mutex_unlock(&intel_pstate_limits_lock);
  
- #define BQ27XXX_DATA(ref, key, opt) {		\
- 	.opts = (opt),				\
-@@ -816,6 +864,7 @@ static struct {
- 	[BQ27426]   = BQ27XXX_DATA(bq27426,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27441]   = BQ27XXX_DATA(bq27441,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
- 	[BQ27621]   = BQ27XXX_DATA(bq27621,   0x80008000, BQ27XXX_O_UTOT | BQ27XXX_O_CFGUP | BQ27XXX_O_RAM),
-+	[BQ27561]   = BQ27XXX_DATA(bq27561,   0         , BQ27561_O_BITS),
- };
- 
- static DEFINE_MUTEX(bq27xxx_list_lock);
-@@ -1551,6 +1600,8 @@ static bool bq27xxx_battery_dead(struct bq27xxx_device_info *di, u16 flags)
- {
- 	if (di->opts & BQ27XXX_O_ZERO)
- 		return flags & (BQ27000_FLAG_EDV1 | BQ27000_FLAG_EDVF);
-+	else if (di->opts & BQ27561_O_BITS)
-+		return flags & BQ27561_FLAG_FDC;
- 	else
- 		return flags & (BQ27XXX_FLAG_SOC1 | BQ27XXX_FLAG_SOCF);
+ 	return ret;
  }
-@@ -1595,6 +1646,7 @@ void bq27xxx_battery_update(struct bq27xxx_device_info *di)
- 				cache.time_to_empty_avg = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTECP);
- 			if (di->regs[BQ27XXX_REG_TTF] != INVALID_REG_ADDR)
- 				cache.time_to_full = bq27xxx_battery_read_time(di, BQ27XXX_REG_TTF);
-+
- 			cache.charge_full = bq27xxx_battery_read_fcc(di);
- 			cache.capacity = bq27xxx_battery_read_soc(di);
- 			if (di->regs[BQ27XXX_REG_AE] != INVALID_REG_ADDR)
-@@ -1682,6 +1734,13 @@ static int bq27xxx_battery_status(struct bq27xxx_device_info *di,
- 			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
- 		else
- 			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+	} else if (di->opts & BQ27561_O_BITS) {
-+		if (di->cache.flags & BQ27561_FLAG_FC)
-+			status = POWER_SUPPLY_STATUS_FULL;
-+		else if (di->cache.flags & BQ27561_FLAG_DIS_CH)
-+			status = POWER_SUPPLY_STATUS_DISCHARGING;
-+		else
-+			status = POWER_SUPPLY_STATUS_CHARGING;
- 	} else {
- 		if (di->cache.flags & BQ27XXX_FLAG_FC)
- 			status = POWER_SUPPLY_STATUS_FULL;
-@@ -1710,6 +1769,13 @@ static int bq27xxx_battery_capacity_level(struct bq27xxx_device_info *di,
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
- 		else
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
-+	} else if (di->opts & BQ27561_O_BITS) {
-+		if (di->cache.flags & BQ27561_FLAG_FC)
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-+		else if (di->cache.flags & BQ27561_FLAG_FDC)
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
-+		else
-+			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
- 	} else {
- 		if (di->cache.flags & BQ27XXX_FLAG_FC)
- 			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-diff --git a/drivers/power/supply/bq27xxx_battery_i2c.c b/drivers/power/supply/bq27xxx_battery_i2c.c
-index 2677c38a8a42..d0d55e0959d5 100644
---- a/drivers/power/supply/bq27xxx_battery_i2c.c
-+++ b/drivers/power/supply/bq27xxx_battery_i2c.c
-@@ -253,6 +253,7 @@ static const struct i2c_device_id bq27xxx_i2c_id_table[] = {
- 	{ "bq27426", BQ27426 },
- 	{ "bq27441", BQ27441 },
- 	{ "bq27621", BQ27621 },
-+	{ "bq27561", BQ27561 },
- 	{},
- };
- MODULE_DEVICE_TABLE(i2c, bq27xxx_i2c_id_table);
-@@ -286,6 +287,7 @@ static const struct of_device_id bq27xxx_battery_i2c_of_match_table[] = {
- 	{ .compatible = "ti,bq27426" },
- 	{ .compatible = "ti,bq27441" },
- 	{ .compatible = "ti,bq27621" },
-+	{ .compatible = "ti,bq27561" },
- 	{},
- };
- MODULE_DEVICE_TABLE(of, bq27xxx_battery_i2c_of_match_table);
-diff --git a/include/linux/power/bq27xxx_battery.h b/include/linux/power/bq27xxx_battery.h
-index 507c5e214c42..4a319950ea22 100644
---- a/include/linux/power/bq27xxx_battery.h
-+++ b/include/linux/power/bq27xxx_battery.h
-@@ -30,6 +30,7 @@ enum bq27xxx_chip {
- 	BQ27426,
- 	BQ27441,
- 	BQ27621,
-+	BQ27561,
- };
+@@ -708,8 +696,8 @@ static ssize_t store_energy_performance_
+ 	struct cpudata *cpu_data = all_cpu_data[policy->cpu];
+ 	char str_preference[21];
+ 	bool raw = false;
++	ssize_t ret;
+ 	u32 epp = 0;
+-	int ret;
  
- struct bq27xxx_device_info;
--- 
-2.27.0
+ 	ret = sscanf(buf, "%20s", str_preference);
+ 	if (ret != 1)
+@@ -724,14 +712,21 @@ static ssize_t store_energy_performance_
+ 		if (ret)
+ 			return ret;
+ 
++		if (epp > 255)
++			return -EINVAL;
++
+ 		raw = true;
+ 	}
+ 
++	mutex_lock(&intel_pstate_limits_lock);
++
+ 	ret = intel_pstate_set_energy_pref_index(cpu_data, ret, raw, epp);
+-	if (ret)
+-		return ret;
++	if (!ret)
++		ret = count;
+ 
+-	return count;
++	mutex_unlock(&intel_pstate_limits_lock);
++
++	return ret;
+ }
+ 
+ static ssize_t show_energy_performance_preference(
+
+
 
