@@ -2,144 +2,92 @@ Return-Path: <SRS0=Xm5K=BI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4C2C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:56:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D75D1C433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 12:06:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 402CA20663
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:56:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B11A22173E
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 12:06:22 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="WPNx+y5R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726353AbgG2K4L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 06:56:11 -0400
-Received: from outbound.soverin.net ([116.202.65.218]:56213 "EHLO
-        outbound.soverin.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726299AbgG2K4L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 06:56:11 -0400
-X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2020 06:56:10 EDT
-Received: from smtp.soverin.net (unknown [10.10.3.24])
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
-        (No client certificate requested)
-        by outbound.soverin.net (Postfix) with ESMTPS id C67E86017B;
-        Wed, 29 Jul 2020 10:49:44 +0000 (UTC)
-Received: from smtp.soverin.net (smtp.soverin.net [159.69.232.138]) by soverin.net
-From:   Jack Mitchell <ml@embed.me.uk>
-To:     linux-pm@vger.kernel.org
-Cc:     Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
-        linux-kernel@vger.kernel.org,
-        Quentin Schulz <quentin.schulz@free-electrons.com>,
-        Jack Mitchell <ml@embed.me.uk>
-Subject: [PATCH] drivers: power: axp20x-battery: support setting charge_full_design
-Date:   Wed, 29 Jul 2020 11:49:13 +0100
-Message-Id: <20200729104913.627242-1-ml@embed.me.uk>
+        id S1726353AbgG2MGS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 08:06:18 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:58366 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726341AbgG2MGS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 08:06:18 -0400
+Received: from fllv0034.itg.ti.com ([10.64.40.246])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 06TC6GtO070023;
+        Wed, 29 Jul 2020 07:06:16 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1596024376;
+        bh=Wd+6o7v/z+lrPDM15r+ykQGSZTFXBwT0Ene0dRfk5WE=;
+        h=From:To:CC:Subject:Date;
+        b=WPNx+y5Rd4uuPyd6eZByzi/p5ohdePdGL2RCNMCh4LwZKqFPJ/i431iatHkzgogOZ
+         npcEXqbb1BLXlvyIV448Q5v8isZTejzepdAimeEFg/ZmhdhR/pvh8ryaNw3qIqa6FZ
+         u747IcD63rBitSRWadYkX4ymG945AuBtHqr/fJzs=
+Received: from DFLE111.ent.ti.com (dfle111.ent.ti.com [10.64.6.32])
+        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 06TC6Gwd117304
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 29 Jul 2020 07:06:16 -0500
+Received: from DFLE115.ent.ti.com (10.64.6.36) by DFLE111.ent.ti.com
+ (10.64.6.32) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 29
+ Jul 2020 07:06:16 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE115.ent.ti.com
+ (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Wed, 29 Jul 2020 07:06:16 -0500
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 06TC6GCA097457;
+        Wed, 29 Jul 2020 07:06:16 -0500
+From:   Dan Murphy <dmurphy@ti.com>
+To:     <sre@kernel.org>, <afd@ti.com>, <pali@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <robh@kernel.org>,
+        Dan Murphy <dmurphy@ti.com>
+Subject: [PATCH v5 1/4] dt-bindings: power: Add BQ27z561 compatible
+Date:   Wed, 29 Jul 2020 07:06:06 -0500
+Message-ID: <20200729120609.22427-1-dmurphy@ti.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-X-Virus-Scanned: clamav-milter 0.102.4 at c03mi01
-X-Virus-Status: Clean
 Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Signed-off-by: Jack Mitchell <ml@embed.me.uk>
----
- drivers/power/supply/axp20x_battery.c | 39 +++++++++++++++++++++++++++
- 1 file changed, 39 insertions(+)
+Add the Texas Instruments bq27z561 battery monitor to the bq27xxx
+binding.
 
-diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
-index fe96f77bffa7..8ce4ebe7ccd5 100644
---- a/drivers/power/supply/axp20x_battery.c
-+++ b/drivers/power/supply/axp20x_battery.c
-@@ -60,6 +60,7 @@
+Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Dan Murphy <dmurphy@ti.com>
+---
+
+v5 - Rebased on power-next and changed bq27561->bq27z561
+
+ Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+index 03d1020a2e47..0aa33590ac24 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+@@ -49,6 +49,7 @@ properties:
+       - ti,bq27426
+       - ti,bq27441
+       - ti,bq27621
++      - ti,bq27z561
  
- #define AXP20X_V_OFF_MASK		GENMASK(2, 0)
- 
-+#define AXP20X_BAT_MAX_CAP_VALID	BIT(7)
- 
- struct axp20x_batt_ps;
- 
-@@ -86,6 +87,7 @@ struct axp20x_batt_ps {
- 	struct axp20x_thermal_sensor sensor;
- 	/* Maximum constant charge current */
- 	unsigned int max_ccc;
-+	unsigned int charge_full_design;
- 	const struct axp_data	*data;
- };
- 
-@@ -260,6 +262,10 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
- 		val->intval = POWER_SUPPLY_HEALTH_GOOD;
- 		break;
- 
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		val->intval = axp20x_batt->charge_full_design;
-+		break;
-+
- 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
- 		ret = axp20x_get_constant_charge_current(axp20x_batt,
- 							 &val->intval);
-@@ -401,6 +407,30 @@ static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
- 				  AXP20X_CHRG_CTRL1_TGT_VOLT, val);
- }
- 
-+static int axp20x_set_charge_full_design(struct axp20x_batt_ps *axp_batt,
-+					      int charge_full_uah)
-+{
-+	/* (Unit: 1.456mAh) */
-+	int max_capacity_units = charge_full_uah / 1456;
-+	int ret;
-+
-+	u8 max_capacity_msb = (max_capacity_units & 0x7F00) >> 8;
-+	u8 max_capacity_lsb = (max_capacity_units & 0xFF);
-+
-+	axp_batt->charge_full_design = max_capacity_units * 1456;
-+
-+	max_capacity_msb |= AXP20X_BAT_MAX_CAP_VALID;
-+
-+	ret = regmap_write(axp_batt->regmap, AXP288_FG_DES_CAP0_REG,
-+			   max_capacity_lsb);
-+
-+	if (ret)
-+		return ret;
-+
-+	return regmap_write(axp_batt->regmap, AXP288_FG_DES_CAP1_REG,
-+			    max_capacity_msb);
-+}
-+
- static int axp20x_set_constant_charge_current(struct axp20x_batt_ps *axp_batt,
- 					      int charge_current)
- {
-@@ -492,6 +522,7 @@ static enum power_supply_property axp20x_battery_props[] = {
- 	POWER_SUPPLY_PROP_STATUS,
- 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
- 	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
- 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
- 	POWER_SUPPLY_PROP_HEALTH,
-@@ -675,6 +706,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
- 	if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
- 		int vmin = info.voltage_min_design_uv;
- 		int ccc = info.constant_charge_current_max_ua;
-+		int cfd = info.charge_full_design_uah;
- 
- 		if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
- 							      vmin))
-@@ -692,6 +724,13 @@ static int axp20x_power_probe(struct platform_device *pdev)
- 			axp20x_batt->max_ccc = ccc;
- 			axp20x_set_constant_charge_current(axp20x_batt, ccc);
- 		}
-+
-+		if (cfd > 0 && axp20x_set_charge_full_design(axp20x_batt,
-+							       cfd)) {
-+			dev_err(&pdev->dev,
-+				"couldn't set charge_full_design\n");
-+			axp20x_batt->charge_full_design = 0;
-+		}
- 	}
- 
- 	error = axp20x_thermal_register_sensor(pdev, axp20x_batt);
+   reg:
+     maxItems: 1
 -- 
 2.28.0
 
