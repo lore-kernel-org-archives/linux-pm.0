@@ -2,126 +2,105 @@ Return-Path: <SRS0=Xm5K=BI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.6 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57B89C433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 09:14:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3556BC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:52:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3D5B7206D4
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 09:14:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1042220663
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:52:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="s6Br/iSu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727007AbgG2JOS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 05:14:18 -0400
-Received: from foss.arm.com ([217.140.110.172]:48378 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726336AbgG2JOS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Jul 2020 05:14:18 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 98600101E;
-        Wed, 29 Jul 2020 02:14:17 -0700 (PDT)
-Received: from localhost (unknown [10.1.198.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3A2E43F718;
-        Wed, 29 Jul 2020 02:14:17 -0700 (PDT)
-Date:   Wed, 29 Jul 2020 10:14:15 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Russell King - ARM Linux <linux@armlinux.org.uk>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 2/7] cpufreq: set invariance scale factor on
- transition end
-Message-ID: <20200729091405.GB12941@arm.com>
-References: <20200722093732.14297-1-ionela.voinescu@arm.com>
- <20200722093732.14297-3-ionela.voinescu@arm.com>
- <CAJZ5v0iiF75+POMF5oX8_NOBiLLqMQSYTTf-X0QoLAPV7fF0-g@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0iiF75+POMF5oX8_NOBiLLqMQSYTTf-X0QoLAPV7fF0-g@mail.gmail.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+        id S1726644AbgG2KwR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 06:52:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54454 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726757AbgG2KwQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 06:52:16 -0400
+Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3F62C061794
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2020 03:52:16 -0700 (PDT)
+Received: by mail-yb1-xb4a.google.com with SMTP id w11so3399333ybi.23
+        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2020 03:52:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=date:message-id:mime-version:subject:from:to:cc;
+        bh=vSliGyBZQKvlS0+61F1LBEoXAn3W7oNlUuyzH64gKZ4=;
+        b=s6Br/iSuLIwOpryZlHRvpGvDbfddkW4PyoYgVr62dENEn+ac9CFU44qiia+IbgSEVW
+         Nnl2wQRXJsTqxLwAfcFWiLOu/yWLP+ryfzxB/x6ztWI2jsOZ2w70YbEfNh/6A6d4PhZ/
+         iMa2jkRQI8v9AfXr4C4y+07e1kKSuqHiyyRipNRzRNbeFAHK125rhYPIgBjRIyHWksfL
+         /3T7oqq34vijYmj83jeDTWOhwBWPvdFdrUsUvLosJNgnfy84Sh0fLDpjnMAZowz70BGS
+         fNni7Bnbk4PhkrdtAGdDO3uEUcN5KkA1icjYpeJh4rtHh86E6BobzTJydAOJUiwR86wo
+         WMIg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:message-id:mime-version:subject:from:to:cc;
+        bh=vSliGyBZQKvlS0+61F1LBEoXAn3W7oNlUuyzH64gKZ4=;
+        b=fWrTU1o9pj9V7uIRSGtVYFsXIK7T2jgOMEF2g2NGl+Rcu42nku6wlb399AiGbI+Pia
+         G0y05K0MFpuaWFUBM1hmdxgf7bMGgsKqR5WYfXSdeHD8J2HcQfP1OnEbfPENbqCeLd3w
+         NaOdf45cowRj2GW6xy/a1Kr+f6oI2sbzxqnSAoJELdX9ZeKJi38tr31R7gsiYUn40jKL
+         afm6hSdorXsfQBrAbys8kIyXwmkyIgjIMfKOXAxM5LWbLwTDeKtA5wBypuDYI4ybnKjW
+         fv6fmzgX+YKvGNPSlbAWxbVZr/wneojMkIvuA3I59bUP0Hvr8VNBUfwcBkW3K8fFpvU0
+         uz2g==
+X-Gm-Message-State: AOAM531AYbmhWa5u2XASDQsXp34E3k6uO6EixZM9w6/qpDLD6cNVFhh5
+        m+kEgWfyqEVyVA0dBs1shChppjsz/EySS68a
+X-Google-Smtp-Source: ABdhPJzk4f0duQ0J4jmHCNnomr0GLgR7krVV4GTA4+LU/ZyuMeFIRYgUpNVsZX0U8Ck588k2y4lL6X82dJhicAgI
+X-Received: by 2002:a25:4945:: with SMTP id w66mr50685406yba.285.1596019935958;
+ Wed, 29 Jul 2020 03:52:15 -0700 (PDT)
+Date:   Wed, 29 Jul 2020 20:52:03 +1000
+Message-Id: <20200729105206.2991064-1-victording@google.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.28.0.rc0.142.g3c755180ce-goog
+Subject: [PATCH 0/3] powercap: Enable RAPL for AMD Fam17h
+From:   Victor Ding <victording@google.com>
+To:     LKML <linux-kernel@vger.kernel.org>
+Cc:     Victor Ding <victording@google.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+        Jan Beulich <jbeulich@suse.com>,
+        Josh Poimboeuf <jpoimboe@redhat.com>,
+        Kim Phillips <kim.phillips@amd.com>,
+        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Sean Christopherson <sean.j.christopherson@intel.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Tony Luck <tony.luck@intel.com>,
+        Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
+        linux-pm@vger.kernel.org, x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Monday 27 Jul 2020 at 15:52:41 (+0200), Rafael J. Wysocki wrote:
-> On Wed, Jul 22, 2020 at 11:38 AM Ionela Voinescu
-> <ionela.voinescu@arm.com> wrote:
-> >
-> > While the move of the invariance setter calls (arch_set_freq_scale())
-> > from cpufreq drivers to cpufreq core maintained the previous
-> > functionality for existing drivers that use target_index() and
-> > fast_switch() for frequency switching, it also gives the possibility
-> > of adding support for users of the target() callback, which is exploited
-> > here.
-> >
-> > To be noted that the target() callback has been flagged as deprecated
-> > since:
-> >
-> > commit 9c0ebcf78fde ("cpufreq: Implement light weight ->target_index() routine")
-> >
-> > It also doesn't have that many users:
-> >
-> >   cpufreq-nforce2.c:371:2:      .target = nforce2_target,
-> >   cppc_cpufreq.c:416:2:         .target = cppc_cpufreq_set_target,
-> >   gx-suspmod.c:439:2:           .target = cpufreq_gx_target,
-> >   pcc-cpufreq.c:573:2:          .target = pcc_cpufreq_target,
-> >
-> > Similarly to the path taken for target_index() calls in the cpufreq core
-> > during a frequency change, all of the drivers above will mark the end of a
-> > frequency change by a call to cpufreq_freq_transition_end().
-> >
-> > Therefore, cpufreq_freq_transition_end() can be used as the location for
-> > the arch_set_freq_scale() call to potentially inform the scheduler of the
-> > frequency change.
-> >
-> > This change maintains the previous functionality for the drivers that
-> > implement the target_index() callback, while also adding support for the
-> > few drivers that implement the deprecated target() callback.
-> >
-> > Two notes are worthwhile here:
-> >  - In __target_index(), cpufreq_freq_transition_end() is called only for
-> >    drivers that have synchronous notifications enabled. There is only one
-> >    driver that disables them,
-> >
-> >    drivers/cpufreq/powernow-k8.c:1142: .flags = CPUFREQ_ASYNC_NOTIFICATION,
-> >
-> >    which is deprecated.
-> >
-> >  - Despite marking a successful frequency change, many cpufreq drivers
-> >    will populate the new policy->cur with the new requested frequency,
-> >    although this might not be the one granted by the hardware.
-> >
-> >    Therefore, the call to arch_set_freq_scale() is a "best effort" one,
-> >    and it is up to the architecture if the new frequency is used in the
-> >    new frequency scale factor setting or eventually used by the scheduler.
-> >    The architecture is in a better position to decide if it has better
-> >    methods to obtain more accurate information regarding the current
-> >    frequency (for example the use of counters).
-> >
-[..]
+This patch series adds support for AMD Fam17h RAPL counters. As per
+AMD PPR, Fam17h support RAPL counters to monitor power usage. The RAPL
+counter operates as with Intel RAPL. Therefore, it is beneficial to
+re-use existing framework for Intel, especially to allow existing tools
+to seamlessly run on AMD.
 
-> I would fold this patch into the previous one.
-> 
-> I don't see much reason for it to be separate and it looks like
-> folding it in would cause the previous patch to be simpler.
+From the user's point view, this series enables the following two sysfs
+entry on AMD Fam17h:
+  /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj
+  /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0/energy_uj
 
-I kept it separate in this version as a proposal to move the call to
-cpufreq_freq_transition_end() and properly justify it in the commit
-message.
 
-I'll squash it into the previous one, as recommended.
+Victor Ding (3):
+  x86/msr-index: sort AMD RAPL MSRs by address
+  powercap/intel_rapl_msr: Convert rapl_msr_priv into pointer
+  powercap: Add AMD Fam17h RAPL support
 
-Thanks,
-Ionela.
+ arch/x86/include/asm/msr-index.h     |  3 +-
+ drivers/powercap/intel_rapl_common.c |  2 +
+ drivers/powercap/intel_rapl_msr.c    | 58 +++++++++++++++++++++-------
+ 3 files changed, 47 insertions(+), 16 deletions(-)
+
+-- 
+2.28.0.rc0.142.g3c755180ce-goog
+
