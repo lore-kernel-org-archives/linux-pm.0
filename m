@@ -2,148 +2,282 @@ Return-Path: <SRS0=Xm5K=BI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D36B8C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 05:47:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A314DC433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 06:47:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AEFB520786
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 05:47:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=riseup.net header.i=@riseup.net header.b="juhJkytj"
+	by mail.kernel.org (Postfix) with ESMTP id 817F820809
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 06:47:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726314AbgG2Fry (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 01:47:54 -0400
-Received: from mx1.riseup.net ([198.252.153.129]:44514 "EHLO mx1.riseup.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726208AbgG2Frx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Jul 2020 01:47:53 -0400
-Received: from bell.riseup.net (bell-pn.riseup.net [10.0.1.178])
-        (using TLSv1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
-        (Client CN "*.riseup.net", Issuer "Sectigo RSA Domain Validation Secure Server CA" (not verified))
-        by mx1.riseup.net (Postfix) with ESMTPS id 4BGjHs2H3LzFdxZ;
-        Tue, 28 Jul 2020 22:47:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=riseup.net; s=squak;
-        t=1596001673; bh=4XFW4u/+G5HXbt7eUIc8d7Sanex92jlfdr8B53S0Imc=;
-        h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-        b=juhJkytj+hjPn4ZQHO/oBfnJKs6529z0CVNAeEx8byKPZ2/zSGC5+B3Wlufz3gS8o
-         RDarOIVA8pKMZjdhsAX6qSZw3nxR0k4tBPzU/EcZaDZM2TmkbvRvZLCHYmkRLULdM9
-         IAGOqOZTBUimiw3bhXnbYzdTNIduYeC+Y9CVIfrU=
-X-Riseup-User-ID: F6AB9DE493BA4FFF5239B6317CCD8B7E032182CC6BCC4533F2BFF0E278FFCC3D
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-         by bell.riseup.net (Postfix) with ESMTPSA id 4BGjHs03zPzJmmn;
-        Tue, 28 Jul 2020 22:47:52 -0700 (PDT)
-From:   Francisco Jerez <currojerez@riseup.net>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Cc:     LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpufreq: intel_pstate: Fix EPP setting via sysfs in active mode
-In-Reply-To: <11585512.O9o76ZdvQC@kreacher>
-References: <11585512.O9o76ZdvQC@kreacher>
-Date:   Tue, 28 Jul 2020 22:47:52 -0700
-Message-ID: <87r1sug9dj.fsf@riseup.net>
+        id S1727058AbgG2Grv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 02:47:51 -0400
+Received: from mx0a-001b2d01.pphosted.com ([148.163.156.1]:64048 "EHLO
+        mx0a-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726367AbgG2Grv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 02:47:51 -0400
+Received: from pps.filterd (m0098399.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 06T6WBgB109475;
+        Wed, 29 Jul 2020 02:47:48 -0400
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1meruj-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 29 Jul 2020 02:47:48 -0400
+Received: from m0098399.ppops.net (m0098399.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 06T6f9a3135796;
+        Wed, 29 Jul 2020 02:47:47 -0400
+Received: from ppma04dal.us.ibm.com (7a.29.35a9.ip4.static.sl-reverse.com [169.53.41.122])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 32jp1meru6-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 29 Jul 2020 02:47:47 -0400
+Received: from pps.filterd (ppma04dal.us.ibm.com [127.0.0.1])
+        by ppma04dal.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 06T6UML0029829;
+        Wed, 29 Jul 2020 06:47:46 GMT
+Received: from b03cxnp08028.gho.boulder.ibm.com (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+        by ppma04dal.us.ibm.com with ESMTP id 32gcq1fjea-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Wed, 29 Jul 2020 06:47:46 +0000
+Received: from b03ledav004.gho.boulder.ibm.com (b03ledav004.gho.boulder.ibm.com [9.17.130.235])
+        by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 06T6ljTL1245830
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Wed, 29 Jul 2020 06:47:45 GMT
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 743307805E;
+        Wed, 29 Jul 2020 06:47:45 +0000 (GMT)
+Received: from b03ledav004.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id BC01878060;
+        Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.85.85.173])
+        by b03ledav004.gho.boulder.ibm.com (Postfix) with ESMTP;
+        Wed, 29 Jul 2020 06:47:44 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+        id A8AAC2E2FF4; Wed, 29 Jul 2020 12:17:39 +0530 (IST)
+From:   "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To:     Nicholas Piggin <npiggin@gmail.com>,
+        Anton Blanchard <anton@ozlabs.org>,
+        Nathan Lynch <nathanl@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Michael Neuling <mikey@neuling.org>,
+        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc:     linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/3] cpuidle-pseries: Add function to parse extended CEDE records
+Date:   Wed, 29 Jul 2020 12:17:33 +0530
+Message-Id: <1596005254-25753-3-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+In-Reply-To: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
+References: <1596005254-25753-1-git-send-email-ego@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="==-=-=";
-        micalg=pgp-sha256; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-07-29_02:2020-07-28,2020-07-29 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 clxscore=1015
+ priorityscore=1501 phishscore=0 mlxlogscore=999 bulkscore=0
+ impostorscore=0 suspectscore=0 lowpriorityscore=0 mlxscore=0 spamscore=0
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2007290041
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
---==-=-=
-Content-Type: multipart/mixed; boundary="=-=-="
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
---=-=-=
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Currently we use CEDE with latency-hint 0 as the only other idle state
+on a dedicated LPAR apart from the polling "snooze" state.
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+The platform might support additional extended CEDE idle states, which
+can be discovered through the "ibm,get-system-parameter" rtas-call
+made with CEDE_LATENCY_TOKEN.
 
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
->
-> Because intel_pstate_set_energy_pref_index() reads and writes the
-> MSR_HWP_REQUEST register without using the cached value of it used by
-> intel_pstate_hwp_boost_up() and intel_pstate_hwp_boost_down(), those
-> functions may overwrite the value written by it and so the EPP value
-> set via sysfs may be lost.
->
-> To avoid that, make intel_pstate_set_energy_pref_index() take the
-> cached value of MSR_HWP_REQUEST just like the other two routines
-> mentioned above and update it with the new EPP value coming from
-> user space in addition to updating the MSR.
->
-> Note that the MSR itself still needs to be updated too in case
-> hwp_boost is unset or the boosting mechanism is not active at the
-> EPP change time.
->
-> Fixes: e0efd5be63e8 ("cpufreq: intel_pstate: Add HWP boost utility and sc=
-hed util hooks")
-> Reported-by: Francisco Jerez <currojerez@riseup.net>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+This patch adds a function to obtain information about the extended
+CEDE idle states from the platform and parse the contents to populate
+an array of extended CEDE states. These idle states thus discovered
+will be added to the cpuidle framework in the next patch.
 
-Reviewed-by: Francisco Jerez <currojerez@riseup.net>
+dmesg on a POWER9 LPAR, demonstrating the output of parsing the
+extended CEDE latency parameters.
 
-> ---
->
-> This patch is on top of https://patchwork.kernel.org/patch/11689347/
->
-> ---
->  drivers/cpufreq/intel_pstate.c |   17 ++++++++++++-----
->  1 file changed, 12 insertions(+), 5 deletions(-)
->
-> Index: linux-pm/drivers/cpufreq/intel_pstate.c
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-> +++ linux-pm/drivers/cpufreq/intel_pstate.c
-> @@ -653,11 +653,12 @@ static int intel_pstate_set_energy_pref_
->  		epp =3D cpu_data->epp_default;
->=20=20
->  	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
-> -		u64 value;
-> -
-> -		ret =3D rdmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, &value);
-> -		if (ret)
-> -			return ret;
-> +		/*
-> +		 * Use the cached HWP Request MSR value, because the register
-> +		 * itself may be updated by intel_pstate_hwp_boost_up() or
-> +		 * intel_pstate_hwp_boost_down() at any time.
-> +		 */
-> +		u64 value =3D READ_ONCE(cpu_data->hwp_req_cached);
->=20=20
->  		value &=3D ~GENMASK_ULL(31, 24);
->=20=20
-> @@ -667,6 +668,12 @@ static int intel_pstate_set_energy_pref_
->  			epp =3D epp_values[pref_index - 1];
->=20=20
->  		value |=3D (u64)epp << 24;
-> +		/*
-> +		 * The only other updater of hwp_req_cached in the active mode,
-> +		 * intel_pstate_hwp_set(), is called under the same lock as this
-> +		 * function, so it cannot run in parallel with the update below.
-> +		 */
-> +		WRITE_ONCE(cpu_data->hwp_req_cached, value);
->  		ret =3D wrmsrl_on_cpu(cpu_data->cpu, MSR_HWP_REQUEST, value);
->  	} else {
->  		if (epp =3D=3D -EINVAL)
+[    5.913180] xcede : xcede_record_size = 10
+[    5.913183] xcede : Record 0 : hint = 1, latency =0x400 tb-ticks, Wake-on-irq = 1
+[    5.913188] xcede : Record 1 : hint = 2, latency =0x3e8000 tb-ticks, Wake-on-irq = 0
+[    5.913193] cpuidle : Skipping the 2 Extended CEDE idle states
 
---=-=-=--
+Reviewed-by: Vaidyanathan Srinivasan <svaidy@linux.ibm.com>
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 129 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 127 insertions(+), 2 deletions(-)
 
---==-=-=
-Content-Type: application/pgp-signature; name="signature.asc"
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index 88e71c3..b1dc24d 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -21,6 +21,7 @@
+ #include <asm/runlatch.h>
+ #include <asm/idle.h>
+ #include <asm/plpar_wrappers.h>
++#include <asm/rtas.h>
+ 
+ static struct cpuidle_driver pseries_idle_driver = {
+ 	.name             = "pseries_idle",
+@@ -86,9 +87,120 @@ static void check_and_cede_processor(void)
+ 	}
+ }
+ 
+-#define NR_CEDE_STATES		1  /* CEDE with latency-hint 0 */
++struct xcede_latency_records {
++	u8  latency_hint;
++	u64 wakeup_latency_tb_ticks;
++	u8  responsive_to_irqs;
++};
++
++/*
++ * XCEDE : Extended CEDE states discovered through the
++ *         "ibm,get-systems-parameter" rtas-call with the token
++ *         CEDE_LATENCY_TOKEN
++ */
++#define MAX_XCEDE_STATES		4
++#define	XCEDE_LATENCY_RECORD_SIZE	10
++#define XCEDE_LATENCY_PARAM_MAX_LENGTH	(2 + 2 + \
++					(MAX_XCEDE_STATES * XCEDE_LATENCY_RECORD_SIZE))
++
++#define CEDE_LATENCY_TOKEN		45
++
++#define NR_CEDE_STATES		(MAX_XCEDE_STATES + 1) /* CEDE with latency-hint 0 */
+ #define NR_DEDICATED_STATES	(NR_CEDE_STATES + 1) /* Includes snooze */
+ 
++struct xcede_latency_records xcede_records[MAX_XCEDE_STATES];
++unsigned int nr_xcede_records;
++char xcede_parameters[XCEDE_LATENCY_PARAM_MAX_LENGTH];
++
++static int parse_cede_parameters(void)
++{
++	int ret = -1, i;
++	u16 payload_length;
++	u8 xcede_record_size;
++	u32 total_xcede_records_size;
++	char *payload;
++
++	memset(xcede_parameters, 0, XCEDE_LATENCY_PARAM_MAX_LENGTH);
++
++	ret = rtas_call(rtas_token("ibm,get-system-parameter"), 3, 1,
++			NULL, CEDE_LATENCY_TOKEN, __pa(xcede_parameters),
++			XCEDE_LATENCY_PARAM_MAX_LENGTH);
++
++	if (ret) {
++		pr_err("xcede: Error parsing CEDE_LATENCY_TOKEN\n");
++		return ret;
++	}
++
++	payload_length = be16_to_cpu(*(__be16 *)(&xcede_parameters[0]));
++	payload = &xcede_parameters[2];
++
++	/*
++	 * If the platform supports the cede latency settings
++	 * information system parameter it must provide the following
++	 * information in the NULL terminated parameter string:
++	 *
++	 * a. The first byte is the length “N” of each cede
++	 *    latency setting record minus one (zero indicates a length
++	 *    of 1 byte).
++	 *
++	 * b. For each supported cede latency setting a cede latency
++	 *    setting record consisting of the first “N” bytes as per
++	 *    the following table.
++	 *
++	 *	-----------------------------
++	 *	| Field           | Field  |
++	 *	| Name            | Length |
++	 *	-----------------------------
++	 *	| Cede Latency    | 1 Byte |
++	 *	| Specifier Value |        |
++	 *	-----------------------------
++	 *	| Maximum wakeup  |        |
++	 *	| latency in      | 8 Bytes|
++	 *	| tb-ticks        |        |
++	 *	-----------------------------
++	 *	| Responsive to   |        |
++	 *	| external        | 1 Byte |
++	 *	| interrupts      |        |
++	 *	-----------------------------
++	 *
++	 * This version has cede latency record size = 10.
++	 */
++	xcede_record_size = (u8)payload[0] + 1;
++
++	if (xcede_record_size != XCEDE_LATENCY_RECORD_SIZE) {
++		pr_err("xcede : Expected record-size %d. Observed size %d.\n",
++		       XCEDE_LATENCY_RECORD_SIZE, xcede_record_size);
++		return -EINVAL;
++	}
++
++	pr_info("xcede : xcede_record_size = %d\n", xcede_record_size);
++
++	/*
++	 * Since the payload_length includes the last NULL byte and
++	 * the xcede_record_size, the remaining bytes correspond to
++	 * array of all cede_latency settings.
++	 */
++	total_xcede_records_size = payload_length - 2;
++	nr_xcede_records = total_xcede_records_size / xcede_record_size;
++
++	payload++;
++	for (i = 0; i < nr_xcede_records; i++) {
++		struct xcede_latency_records *record = &xcede_records[i];
++
++		record->latency_hint = (u8)payload[0];
++		record->wakeup_latency_tb_ticks  =
++			be64_to_cpu(*(__be64 *)(&payload[1]));
++		record->responsive_to_irqs = (u8)payload[9];
++		payload += xcede_record_size;
++		pr_info("xcede : Record %d : hint = %u, latency =0x%llx tb-ticks, Wake-on-irq = %u\n",
++			i, record->latency_hint,
++			record->wakeup_latency_tb_ticks,
++			record->responsive_to_irqs);
++	}
++
++	return 0;
++}
++
+ u8 cede_latency_hint[NR_DEDICATED_STATES];
+ static int dedicated_cede_loop(struct cpuidle_device *dev,
+ 				struct cpuidle_driver *drv,
+@@ -219,6 +331,19 @@ static int pseries_cpuidle_driver_init(void)
+ 	return 0;
+ }
+ 
++static int add_pseries_idle_states(void)
++{
++	int nr_states = 2; /* By default we have snooze, CEDE */
++
++	if (parse_cede_parameters())
++		return nr_states;
++
++	pr_info("cpuidle : Skipping the %d Extended CEDE idle states\n",
++		nr_xcede_records);
++
++	return nr_states;
++}
++
+ /*
+  * pseries_idle_probe()
+  * Choose state table for shared versus dedicated partition
+@@ -241,7 +366,7 @@ static int pseries_idle_probe(void)
+ 			max_idle_state = ARRAY_SIZE(shared_states);
+ 		} else {
+ 			cpuidle_state_table = dedicated_states;
+-			max_idle_state = ARRAY_SIZE(dedicated_states);
++			max_idle_state = add_pseries_idle_states();
+ 		}
+ 	} else
+ 		return -ENODEV;
+-- 
+1.9.4
 
------BEGIN PGP SIGNATURE-----
-
-iHUEAREIAB0WIQST8OekYz69PM20/4aDmTidfVK/WwUCXyENiAAKCRCDmTidfVK/
-W2UeAP9fOoZ4v0COIC0iKbSqKUb36eboq2WI18E8Z+qS5CwVnwD5Aayo3jkIrJTv
-A09h7Eetf/QEkKWAk18YKfODZGjoH0E=
-=MqNe
------END PGP SIGNATURE-----
---==-=-=--
