@@ -4,35 +4,35 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E690C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AE9AC433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:36 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FD8822BEB
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 015D62083B
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726480AbgG2PMa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 11:12:30 -0400
-Received: from foss.arm.com ([217.140.110.172]:53404 "EHLO foss.arm.com"
+        id S1726950AbgG2PMc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 11:12:32 -0400
+Received: from foss.arm.com ([217.140.110.172]:53422 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726950AbgG2PM0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Jul 2020 11:12:26 -0400
+        id S1726958AbgG2PMb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Jul 2020 11:12:31 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C20DC30E;
-        Wed, 29 Jul 2020 08:12:25 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A7E931063;
+        Wed, 29 Jul 2020 08:12:30 -0700 (PDT)
 Received: from e123648.arm.com (unknown [10.37.12.35])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 99BD63F66E;
-        Wed, 29 Jul 2020 08:12:23 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9F1BD3F66E;
+        Wed, 29 Jul 2020 08:12:28 -0700 (PDT)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org
 Cc:     sudeep.holla@arm.com, cristian.marussi@arm.com,
         viresh.kumar@linaro.org, lukasz.luba@arm.com, rjw@rjwysocki.net
-Subject: [PATCH 2/4] scmi: perf: Extend protocol to support performance statistics
-Date:   Wed, 29 Jul 2020 16:12:06 +0100
-Message-Id: <20200729151208.27737-3-lukasz.luba@arm.com>
+Subject: [PATCH 4/4] cpufreq: scmi: Read statistics from FW shared memory
+Date:   Wed, 29 Jul 2020 16:12:08 +0100
+Message-Id: <20200729151208.27737-5-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200729151208.27737-1-lukasz.luba@arm.com>
 References: <20200729151208.27737-1-lukasz.luba@arm.com>
@@ -41,338 +41,135 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The firmware is able to maintain performance statistics and share with OS
-via shared memory. The memory region can be interpreted by the SCMI perf
-protocol after receiving and mapping the proper addresses from FW.
-This patch aims to provide needed infrastructure and setup necessary
-mechanisms in the protocol layer.
-
-It also extends API functions for the upper layer (cpufreq, devfreq)
-with a new callback, which allows to retrieve the statistics for a
-particular performance domain. The new structure scmi_perf_domain_stats
-added in the header works as a glue for these two layers.
-
-The data processing code for the shared memory is aligned with SCMI v2
-specification (DEN0056B) and handles the required endianness. It can
-be changed in future not disturbing the upper layer.
+Add support for reading CPUFreq statistics from the firmware. The setup
+code initializes needed structures per domain basis. The driver callback
+scmi_cpufreq_stats_get is called by the CPUFreq framework and invokes
+SCMI performance protocol in order to retrieve latest statistics.
 
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/firmware/arm_scmi/perf.c | 210 +++++++++++++++++++++++++++++++
- include/linux/scmi_protocol.h    |  11 ++
- 2 files changed, 221 insertions(+)
+ drivers/cpufreq/scmi-cpufreq.c | 80 ++++++++++++++++++++++++++++++++++
+ 1 file changed, 80 insertions(+)
 
-diff --git a/drivers/firmware/arm_scmi/perf.c b/drivers/firmware/arm_scmi/perf.c
-index 3e1e87012c95..761067bb6237 100644
---- a/drivers/firmware/arm_scmi/perf.c
-+++ b/drivers/firmware/arm_scmi/perf.c
-@@ -19,6 +19,9 @@
- #include "common.h"
- #include "notify.h"
- 
-+#define PERF_DOMAIN_STATS_OFFSETS_BASE		0x10
-+#define PERF_DOMAIN_COUNT_BASE			0x8
-+
- enum scmi_performance_protocol_cmd {
- 	PERF_DOMAIN_ATTRIBUTES = 0x3,
- 	PERF_DESCRIBE_LEVELS = 0x4,
-@@ -32,11 +35,27 @@ enum scmi_performance_protocol_cmd {
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index fe95350eb844..67ae63171dd0 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -22,6 +22,7 @@
+ struct scmi_data {
+ 	int domain_id;
+ 	struct device *cpu_dev;
++	struct scmi_perf_domain_stats *stats;
  };
  
- struct scmi_opp {
-+	u32 id;
- 	u32 perf;
- 	u32 power;
- 	u32 trans_latency_us;
- };
+ static unsigned int scmi_cpufreq_get_rate(unsigned int cpu);
+@@ -48,6 +49,34 @@ static struct cpufreq_driver scmi_cpufreq_driver = {
  
-+struct scmi_perf_level_raw_stats {
-+	__le32 perf_level_id;
-+	__le32 reserved;
-+	__le64 usage_count;
-+	__le64 total_residency_us;
-+};
-+
-+struct scmi_perf_domain_raw_stats {
-+	__le16 perf_level_count;
-+	__le16 curr_perf_level_id;
-+	__le32 extended_stats_offset;
-+	__le64 ts_last_change_us;
-+	struct scmi_perf_level_raw_stats perf_level[];
-+};
-+
- struct scmi_msg_resp_perf_attributes {
- 	__le16 num_domains;
- 	__le16 flags;
-@@ -161,13 +180,26 @@ struct perf_dom_info {
- 	struct scmi_fc_info *fc_info;
- };
+ static const struct scmi_handle *handle;
  
-+struct scmi_perf_domain_stats_desc {
-+	void __iomem *addr;
-+	int *opp_map;
-+	int size;
-+};
-+
-+struct scmi_perf_stats_desc {
-+	uint16_t domain_count;
-+	struct scmi_perf_domain_stats_desc *domain_stats;
-+};
-+
- struct scmi_perf_info {
- 	u32 version;
- 	int num_domains;
- 	bool power_scale_mw;
- 	u64 stats_addr;
- 	u32 stats_size;
-+	void __iomem *stats_virt_addr;
- 	struct perf_dom_info *dom_info;
-+	struct scmi_perf_stats_desc *stats_desc;
- };
- 
- static enum scmi_performance_protocol_cmd evt_2_cmd[] = {
-@@ -175,6 +207,55 @@ static enum scmi_performance_protocol_cmd evt_2_cmd[] = {
- 	PERF_NOTIFY_LEVEL,
- };
- 
-+static int scmi_perf_stats_init(const struct scmi_handle *handle,
-+				struct scmi_perf_info *pi)
++static int scmi_cpufreq_stats_get(struct cpufreq_policy *policy)
 +{
-+	struct scmi_perf_domain_stats_desc *domain_stats;
-+	int i, domain_count;
-+	__le32 offset;
-+
-+	domain_count = le16_to_cpu(ioread16(pi->stats_virt_addr +
-+					    PERF_DOMAIN_COUNT_BASE));
-+
-+	pi->stats_desc = devm_kzalloc(handle->dev,
-+				      sizeof(struct scmi_perf_stats_desc),
-+				      GFP_KERNEL);
-+	if (!pi->stats_desc)
-+		return -ENOMEM;
-+
-+	pi->stats_desc->domain_stats = devm_kzalloc(handle->dev, domain_count *
-+				sizeof(struct scmi_perf_domain_stats_desc),
-+				GFP_KERNEL);
-+	if (!pi->stats_desc->domain_stats)
-+		return -ENOMEM;
-+
-+	pi->stats_desc->domain_count = domain_count;
-+
-+	for (i = 0; i < domain_count; i++) {
-+		int stats_size;
-+		__le16 opp_count;
-+
-+		offset = ioread32(pi->stats_virt_addr +
-+				PERF_DOMAIN_STATS_OFFSETS_BASE + i * 4);
-+		if (!offset)
-+			continue;
-+
-+		domain_stats = &pi->stats_desc->domain_stats[i];
-+
-+		domain_stats->addr = pi->stats_virt_addr + le32_to_cpu(offset);
-+
-+		/* The first field is the performance level count. */
-+		opp_count = le16_to_cpu(ioread16(domain_stats->addr));
-+		stats_size = sizeof(struct scmi_perf_domain_raw_stats);
-+		stats_size += sizeof(struct scmi_perf_level_raw_stats) *
-+				opp_count;
-+
-+		domain_stats->size = stats_size;
-+	}
-+
-+	return 0;
-+}
-+
- static int scmi_perf_attributes_get(const struct scmi_handle *handle,
- 				    struct scmi_perf_info *pi)
- {
-@@ -198,6 +279,14 @@ static int scmi_perf_attributes_get(const struct scmi_handle *handle,
- 		pi->stats_addr = le32_to_cpu(attr->stats_addr_low) |
- 				(u64)le32_to_cpu(attr->stats_addr_high) << 32;
- 		pi->stats_size = le32_to_cpu(attr->stats_size);
-+		if (pi->stats_addr && pi->stats_size) {
-+			pi->stats_virt_addr = devm_ioremap(handle->dev,
-+					pi->stats_addr, pi->stats_size);
-+			if (pi->stats_virt_addr)
-+				ret = scmi_perf_stats_init(handle, pi);
-+			else
-+				ret = -ENOMEM;
-+		}
- 	}
- 
- 	scmi_xfer_put(handle, t);
-@@ -298,6 +387,7 @@ scmi_perf_describe_levels_get(const struct scmi_handle *handle, u32 domain,
- 			opp->power = le32_to_cpu(level_info->opp[cnt].power);
- 			opp->trans_latency_us = le16_to_cpu
- 				(level_info->opp[cnt].transition_latency_us);
-+			opp->id = tot_opp_cnt + cnt;
- 
- 			dev_dbg(handle->dev, "Level %d Power %d Latency %dus\n",
- 				opp->perf, opp->power, opp->trans_latency_us);
-@@ -748,6 +838,125 @@ static bool scmi_fast_switch_possible(const struct scmi_handle *handle,
- 	return dom->fc_info && dom->fc_info->level_set_addr;
- }
- 
-+static int scmi_dvfs_setup_opps_mapping(const struct scmi_handle *handle,
-+					u32 domain_id)
-+{
-+	struct scmi_perf_domain_stats_desc *domain_stats;
-+	struct scmi_perf_info *pi = handle->perf_priv;
-+	struct perf_dom_info *dom;
-+	struct scmi_opp *opp;
-+	int idx, *mapping;
-+
-+	dom = pi->dom_info + domain_id;
-+	if (!dom)
-+		return -EIO;
-+
-+	mapping = devm_kzalloc(handle->dev, sizeof(int) * dom->opp_count,
-+			       GFP_KERNEL);
-+	if (!mapping)
-+		return -ENOMEM;
-+
-+	/* Construct LUT with FW OPP ids as an index */
-+	for (opp = dom->opp, idx = 0; idx < dom->opp_count; idx++, opp++)
-+		mapping[opp->id] = idx;
-+
-+	domain_stats = &pi->stats_desc->domain_stats[domain_id];
-+	domain_stats->opp_map = mapping;
-+
-+	return 0;
-+}
-+
-+static int
-+scmi_dvfs_stats_get(const struct scmi_handle *handle, u32 domain_id,
-+		    struct scmi_perf_domain_stats *stats)
-+{
-+	struct scmi_perf_domain_stats_desc *domain_stats;
-+	struct scmi_perf_domain_raw_stats *raw_stats[2];
-+	struct scmi_perf_info *pi = handle->perf_priv;
-+	struct scmi_perf_level_raw_stats *perf;
-+	int i, index, ret = -EINVAL;
-+	struct perf_dom_info *dom;
-+	u64 transition_count = 0;
-+	struct scmi_opp *opp;
-+
-+	if (!stats)
-+		return -EINVAL;
-+
-+	if (!pi->stats_virt_addr || !pi->stats_desc ||
-+		!pi->stats_desc->domain_stats)
-+		return -ENOENT;
-+
-+	if (pi->stats_desc->domain_count <= domain_id ||
-+		!pi->stats_desc->domain_stats[domain_id].addr)
-+		return -ENOENT;
-+
-+	dom = pi->dom_info + domain_id;
-+	if (!dom)
-+		return -EIO;
-+
-+	domain_stats = &pi->stats_desc->domain_stats[domain_id];
-+
-+	if (!domain_stats->opp_map) {
-+		ret = scmi_dvfs_setup_opps_mapping(handle, domain_id);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	raw_stats[0] = vmalloc(domain_stats->size);
-+	if (!raw_stats[0])
-+		return -ENOMEM;
-+
-+	raw_stats[1] = vmalloc(domain_stats->size);
-+	if (!raw_stats[1]) {
-+		vfree(raw_stats[0]);
-+		return -ENOMEM;
-+	}
++	struct scmi_data *priv = policy->driver_data;
++	struct cpufreq_stats *stats = policy->stats;
++	int i, ret;
 +
 +	/*
-+	 * Let's try 10 times. If two consecutive reads are the same - done.
-+	 * This approach is aligned with SCMI v2 specification.
++	 * Since the driver callback is global and can be set for all
++	 * policy objects, there is a need to check if that policy has
++	 * statistics in the shared memory.
 +	 */
-+	for (i = 0; i < 10; i++) {
-+		memcpy_fromio(raw_stats[0], domain_stats->addr,
-+			      domain_stats->size);
-+		memcpy_fromio(raw_stats[1], domain_stats->addr,
-+			      domain_stats->size);
-+		if (!memcmp(raw_stats[0], raw_stats[1], domain_stats->size)) {
-+			ret = 0;
-+			break;
-+		}
-+	}
++	if (!policy->has_driver_stats)
++		return -EINVAL;
 +
++	ret = handle->perf_ops->statistics_get(handle, priv->domain_id, priv->stats);
 +	if (ret)
-+		goto free_buf;
++		return ret;
 +
-+	for (i = 0; i < dom->opp_count; i++) {
-+		perf = &raw_stats[0]->perf_level[i];
++	for (i = 0; i < priv->stats->state_num; i++)
++		stats->time_in_state[i] = priv->stats->time_in_state[i];
 +
-+		transition_count += __le64_to_cpu(perf->usage_count);
-+		stats->time_in_state[i] =
-+				__le64_to_cpu(perf->total_residency_us);
-+
-+		/* Speed-up and initialize the frequencies only once. */
-+		if (stats->freq_table[i] == 0) {
-+			index = domain_stats->opp_map[i];
-+			opp = &dom->opp[index];
-+			stats->freq_table[i] = opp->perf * dom->mult_factor;
-+		}
-+	}
-+
-+	stats->total_trans = transition_count;
-+
-+	stats->last_index = __le16_to_cpu(raw_stats[0]->curr_perf_level_id);
-+	stats->last_time = __le64_to_cpu(raw_stats[0]->ts_last_change_us);
-+
-+free_buf:
-+	vfree(raw_stats[1]);
-+	vfree(raw_stats[0]);
++	stats->total_trans = priv->stats->total_trans;
++	stats->last_index = priv->stats->last_index;
++	stats->last_time = priv->stats->last_time;
 +
 +	return ret;
 +}
 +
- static struct scmi_perf_ops perf_ops = {
- 	.limits_set = scmi_perf_limits_set,
- 	.limits_get = scmi_perf_limits_get,
-@@ -760,6 +969,7 @@ static struct scmi_perf_ops perf_ops = {
- 	.freq_get = scmi_dvfs_freq_get,
- 	.est_power_get = scmi_dvfs_est_power_get,
- 	.fast_switch_possible = scmi_fast_switch_possible,
-+	.statistics_get = scmi_dvfs_stats_get,
- };
+ static unsigned int scmi_cpufreq_get_rate(unsigned int cpu)
+ {
+ 	struct cpufreq_policy *policy = cpufreq_cpu_get_raw(cpu);
+@@ -147,6 +176,45 @@ scmi_get_cpu_power(unsigned long *power, unsigned long *KHz,
+ 	return 0;
+ }
  
- static int scmi_perf_set_notify_enabled(const struct scmi_handle *handle,
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index 7e5dd7d1e221..3316ff4f9d34 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -55,6 +55,15 @@ struct scmi_clock_info {
- 	};
- };
- 
-+struct scmi_perf_domain_stats {
-+	unsigned long long last_time;
-+	unsigned long long last_index;
-+	unsigned int total_trans;
-+	unsigned int state_num;
-+	u64 *time_in_state;
-+	unsigned int *freq_table;
-+};
++static int scmi_cpufreq_stats_init(struct cpufreq_policy *policy,
++				   struct scmi_data *priv, int nr_opp)
++{
++	struct scmi_perf_domain_stats *stats;
++	int ret;
 +
- struct scmi_handle;
++	stats = kzalloc(sizeof(struct scmi_perf_domain_stats), GFP_KERNEL);
++	if (!stats)
++		return -ENOMEM;
++
++	stats->time_in_state = kcalloc(nr_opp, sizeof(u64), GFP_KERNEL);
++	if (!stats->time_in_state) {
++		kfree(stats);
++		return -ENOMEM;
++	}
++
++	stats->freq_table = kcalloc(nr_opp, sizeof(unsigned int), GFP_KERNEL);
++	if (!stats->freq_table) {
++		kfree(stats->time_in_state);
++		kfree(stats);
++		return -ENOMEM;
++	}
++
++	priv->stats = stats;
++	priv->stats->state_num = nr_opp;
++	policy->has_driver_stats = true;
++	scmi_cpufreq_driver.get_statistics = scmi_cpufreq_stats_get;
++
++	ret = handle->perf_ops->statistics_get(handle, priv->domain_id, stats);
++	if (ret) {
++		kfree(stats->freq_table);
++		kfree(stats->time_in_state);
++		kfree(stats);
++		policy->has_driver_stats = false;
++	}
++
++	return ret;
++}
++
+ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ {
+ 	int ret, nr_opp;
+@@ -209,6 +277,10 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	/* SCMI allows DVFS request for any domain from any CPU */
+ 	policy->dvfs_possible_from_any_cpu = true;
  
- /**
-@@ -121,6 +130,8 @@ struct scmi_perf_ops {
- 			     unsigned long *rate, unsigned long *power);
- 	bool (*fast_switch_possible)(const struct scmi_handle *handle,
- 				     struct device *dev);
-+	int (*statistics_get)(const struct scmi_handle *handle, u32 domain_id,
-+			      struct scmi_perf_domain_stats *stats);
- };
++	ret = scmi_cpufreq_stats_init(policy, priv, nr_opp);
++	if (ret)
++		dev_warn(cpu_dev, "failed to init statistics: %d\n", ret);
++
+ 	latency = handle->perf_ops->transition_latency_get(handle, cpu_dev);
+ 	if (!latency)
+ 		latency = CPUFREQ_ETERNAL;
+@@ -236,6 +308,14 @@ static int scmi_cpufreq_exit(struct cpufreq_policy *policy)
  
- /**
+ 	dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &policy->freq_table);
+ 	dev_pm_opp_remove_all_dynamic(priv->cpu_dev);
++
++	if (priv->stats) {
++		policy->has_driver_stats = false;
++		kfree(priv->stats->time_in_state);
++		kfree(priv->stats->freq_table);
++		kfree(priv->stats);
++	}
++
+ 	kfree(priv);
+ 
+ 	return 0;
 -- 
 2.17.1
 
