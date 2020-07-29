@@ -2,90 +2,227 @@ Return-Path: <SRS0=Xm5K=BI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E39BC433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:01:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5796C433E1
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5769020809
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:01:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1596034870;
-	bh=ESM/C4n2/9SZm7+Qrh9WZ3Nyo1d10BOHwjAtSu+wytc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Glr/toTMfAzgaS9CAA7paqXUJ2/4Y0X/kG8cY/2oK4W0HcygrRfig/j8xdAPfiq6j
-	 j/zrsVkXzcoJ8CgyRpsneqyP68kC/V5TYMPQl2qWgLWuBih2wynQ8Wm/SOVT92H7Qe
-	 SQ5Vs/dDSESNn+RgXo1i97r+98ZY49NeeEZ2YYlo=
+	by mail.kernel.org (Postfix) with ESMTP id AAD1D20829
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 15:12:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726385AbgG2PBK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 11:01:10 -0400
-Received: from mail.kernel.org ([198.145.29.99]:37772 "EHLO mail.kernel.org"
+        id S1726449AbgG2PMY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 11:12:24 -0400
+Received: from foss.arm.com ([217.140.110.172]:53390 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726054AbgG2PBJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 29 Jul 2020 11:01:09 -0400
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id BF74E207E8;
-        Wed, 29 Jul 2020 15:01:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1596034869;
-        bh=ESM/C4n2/9SZm7+Qrh9WZ3Nyo1d10BOHwjAtSu+wytc=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=ikyk9lb/olM7+v7ejcklpKjX1TxtamqCPeSAIp0xtA7IAEt7QEM0UDxkzNNNzosw5
-         MCyBjrZyd2YJiyUU+L9hfpqZs5ckGC9TZlWwHF+E19ZIUB6GkdXNlCNzYrpWoB2/7e
-         dLVnnd5jKRn8M2XhUaGgKUY4DCLzQD3Mik1d2VL0=
-Date:   Wed, 29 Jul 2020 17:01:00 +0200
-From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Abhishek Pandit-Subedi <abhishekpandit@chromium.org>,
-        Rafael Wysocki <rafael.j.wysocki@intel.com>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "open list:BLUETOOTH DRIVERS" <linux-bluetooth@vger.kernel.org>,
-        ChromeOS Bluetooth Upstreaming 
-        <chromeos-bluetooth-upstreaming@chromium.org>,
-        Stephen Boyd <swboyd@chromium.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH v5 1/1] power: Emit changed uevent on
- wakeup_sysfs_add/remove
-Message-ID: <20200729150100.GA3508555@kroah.com>
-References: <20200707172845.4177903-1-abhishekpandit@chromium.org>
- <20200707102823.v5.1.I51f5a0be89595b73c4dc17e6cf4cc6f26dc7f2fc@changeid>
- <20200723183235.GA3445384@kroah.com>
- <CAJZ5v0jXcfO3YiMgkc7u=qqZy+jyT=RGagF3yAFnAhiJfyfcuQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0jXcfO3YiMgkc7u=qqZy+jyT=RGagF3yAFnAhiJfyfcuQ@mail.gmail.com>
+        id S1726365AbgG2PMX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 29 Jul 2020 11:12:23 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D067D6E;
+        Wed, 29 Jul 2020 08:12:23 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.37.12.35])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0CA0D3F66E;
+        Wed, 29 Jul 2020 08:12:20 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     sudeep.holla@arm.com, cristian.marussi@arm.com,
+        viresh.kumar@linaro.org, lukasz.luba@arm.com, rjw@rjwysocki.net
+Subject: [PATCH 1/4] cpufreq: Add support for statistics read from drivers
+Date:   Wed, 29 Jul 2020 16:12:05 +0100
+Message-Id: <20200729151208.27737-2-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200729151208.27737-1-lukasz.luba@arm.com>
+References: <20200729151208.27737-1-lukasz.luba@arm.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Jul 27, 2020 at 03:38:02PM +0200, Rafael J. Wysocki wrote:
-> On Thu, Jul 23, 2020 at 8:32 PM Greg Kroah-Hartman
-> <gregkh@linuxfoundation.org> wrote:
-> >
-> > On Tue, Jul 07, 2020 at 10:28:44AM -0700, Abhishek Pandit-Subedi wrote:
-> > > Udev rules that depend on the power/wakeup attribute don't get triggered
-> > > correctly if device_set_wakeup_capable is called after the device is
-> > > created. This can happen for several reasons (driver sets wakeup after
-> > > device is created, wakeup is changed on parent device, etc) and it seems
-> > > reasonable to emit a changed event when adding or removing attributes on
-> > > the device.
-> > >
-> > > Signed-off-by: Abhishek Pandit-Subedi <abhishekpandit@chromium.org>
-> >
-> > Rafael, any objection to this?  Do you want me to take it through my
-> > tree, or are you going to take it through yours?  Either is fine for me.
-> 
-> It's already there in my tree with the R-by tag from you.
+The cpufreq statistics are not collected when the 'fast switch' is in use.
+The information can be retrieved from firmware by the cpufreq driver, but
+the cpufreq interfaces must be extended in order to support it.
 
-{sigh}  Sorry for the noise.
+Introduce callback in cpufreq driver structure and additional flag in
+cpufreq policy to provide support for statistics maintained in firmware.
 
-greg k-h
+Since the cpufreq driver structure can be shared by many policy objects,
+the flag 'has_driver_stats' in policy makes sure that the framework will
+only use the statistics from cpufreq driver for actually supported CPUs.
+
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/cpufreq/cpufreq.c       | 22 +++++++++++++++++++
+ drivers/cpufreq/cpufreq_stats.c | 38 +++++++++++++++++++++------------
+ include/linux/cpufreq.h         | 32 +++++++++++++++++++++++++++
+ 3 files changed, 78 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
+index 17c1c3becd92..83098205e739 100644
+--- a/drivers/cpufreq/cpufreq.c
++++ b/drivers/cpufreq/cpufreq.c
+@@ -2543,6 +2543,28 @@ void cpufreq_update_limits(unsigned int cpu)
+ }
+ EXPORT_SYMBOL_GPL(cpufreq_update_limits);
+ 
++#ifdef CONFIG_CPU_FREQ_STAT
++/**
++ * cpufreq_update_statistics - Update statistics for a given policy.
++ * @policy: struct cpufreq_policy into which the current cpufreq_policy
++ *	is written
++ *
++ * Invoke the driver's ->get_statistics callback if present to fetch
++ * newest statistics from the driver.
++ */
++int cpufreq_update_statistics(struct cpufreq_policy *policy)
++{
++	if (!cpufreq_driver || !policy)
++		return -EINVAL;
++
++	if (cpufreq_driver->get_statistics)
++		return cpufreq_driver->get_statistics(policy);
++	else
++		return -EINVAL;
++}
++EXPORT_SYMBOL_GPL(cpufreq_update_statistics);
++#endif
++
+ /*********************************************************************
+  *               BOOST						     *
+  *********************************************************************/
+diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
+index 94d959a8e954..d2d975b3cc6d 100644
+--- a/drivers/cpufreq/cpufreq_stats.c
++++ b/drivers/cpufreq/cpufreq_stats.c
+@@ -11,19 +11,6 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ 
+-
+-struct cpufreq_stats {
+-	unsigned int total_trans;
+-	unsigned long long last_time;
+-	unsigned int max_state;
+-	unsigned int state_num;
+-	unsigned int last_index;
+-	u64 *time_in_state;
+-	spinlock_t lock;
+-	unsigned int *freq_table;
+-	unsigned int *trans_table;
+-};
+-
+ static void cpufreq_stats_update(struct cpufreq_stats *stats)
+ {
+ 	unsigned long long cur_time = get_jiffies_64();
+@@ -50,13 +37,36 @@ static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
+ }
+ cpufreq_freq_attr_ro(total_trans);
+ 
++static ssize_t cpufreq_stats_present_driver_data(struct cpufreq_policy *policy, char *buf)
++{
++	struct cpufreq_stats *stats = policy->stats;
++	ssize_t len = 0;
++	int i, ret;
++
++	spin_lock(&stats->lock);
++	ret = cpufreq_update_statistics(policy);
++	spin_unlock(&stats->lock);
++
++	if (ret)
++		return 0;
++
++	for (i = 0; i < stats->state_num; i++) {
++		len += sprintf(buf + len, "%u %llu\n",
++				stats->freq_table[i],
++				stats->time_in_state[i]);
++	}
++	return len;
++}
++
+ static ssize_t show_time_in_state(struct cpufreq_policy *policy, char *buf)
+ {
+ 	struct cpufreq_stats *stats = policy->stats;
+ 	ssize_t len = 0;
+ 	int i;
+ 
+-	if (policy->fast_switch_enabled)
++	if (policy->has_driver_stats)
++		return cpufreq_stats_present_driver_data(policy, buf);
++	else if (policy->fast_switch_enabled)
+ 		return 0;
+ 
+ 	spin_lock(&stats->lock);
+diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
+index e62b022cb07e..21074703e08c 100644
+--- a/include/linux/cpufreq.h
++++ b/include/linux/cpufreq.h
+@@ -138,6 +138,14 @@ struct cpufreq_policy {
+ 	/* cpufreq-stats */
+ 	struct cpufreq_stats	*stats;
+ 
++	/*
++	 * Flag indicating that cpufreq statistics can be taken from device driver.
++	 * The statistics are collected by firmware and the driver is able to retrieve
++	 * them. It is useful when the 'fast switch' is used or the firmware changes
++	 * frequency independently due to e.g. thermal issues.
++	 */
++	bool			has_driver_stats;
++
+ 	/* For cpufreq driver's internal use */
+ 	void			*driver_data;
+ 
+@@ -169,6 +177,18 @@ struct cpufreq_freqs {
+ 	u8 flags;		/* flags of cpufreq_driver, see below. */
+ };
+ 
++struct cpufreq_stats {
++	unsigned int total_trans;
++	unsigned long long last_time;
++	unsigned int max_state;
++	unsigned int state_num;
++	unsigned int last_index;
++	u64 *time_in_state;
++	spinlock_t lock;
++	unsigned int *freq_table;
++	unsigned int *trans_table;
++};
++
+ /* Only for ACPI */
+ #define CPUFREQ_SHARED_TYPE_NONE (0) /* None */
+ #define CPUFREQ_SHARED_TYPE_HW	 (1) /* HW does needed coordination */
+@@ -245,11 +265,17 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy);
+ void cpufreq_stats_free_table(struct cpufreq_policy *policy);
+ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+ 				     unsigned int new_freq);
++int cpufreq_update_statistics(struct cpufreq_policy *policy);
+ #else
+ static inline void cpufreq_stats_create_table(struct cpufreq_policy *policy) { }
+ static inline void cpufreq_stats_free_table(struct cpufreq_policy *policy) { }
+ static inline void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
+ 						   unsigned int new_freq) { }
++static int __maybe_unused
++cpufreq_update_statistics(struct cpufreq_policy *policy)
++{
++	return -EINVAL;
++}
+ #endif /* CONFIG_CPU_FREQ_STAT */
+ 
+ /*********************************************************************
+@@ -350,6 +376,12 @@ struct cpufreq_driver {
+ 	/* Called to update policy limits on firmware notifications. */
+ 	void		(*update_limits)(unsigned int cpu);
+ 
++	/*
++	 * Optional, used when driver can fetch statistics from firmware.
++	 * This callback function cannot sleep.
++	 */
++	int		(*get_statistics)(struct cpufreq_policy *policy);
++
+ 	/* optional */
+ 	int		(*bios_limit)(int cpu, unsigned int *limit);
+ 
+-- 
+2.17.1
+
