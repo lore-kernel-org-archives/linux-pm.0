@@ -2,173 +2,144 @@ Return-Path: <SRS0=Xm5K=BI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.6 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42E85C433E0
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:52:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4C2C433E0
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:56:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1C4AE2074B
-	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:52:37 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="VH5vh/h1"
+	by mail.kernel.org (Postfix) with ESMTP id 402CA20663
+	for <linux-pm@archiver.kernel.org>; Wed, 29 Jul 2020 10:56:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726840AbgG2Kwg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 29 Jul 2020 06:52:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54510 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726560AbgG2Kwf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 06:52:35 -0400
-Received: from mail-qv1-xf4a.google.com (mail-qv1-xf4a.google.com [IPv6:2607:f8b0:4864:20::f4a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C61FBC0619D2
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2020 03:52:35 -0700 (PDT)
-Received: by mail-qv1-xf4a.google.com with SMTP id j8so13033023qvu.3
-        for <linux-pm@vger.kernel.org>; Wed, 29 Jul 2020 03:52:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=date:in-reply-to:message-id:mime-version:references:subject:from:to
-         :cc;
-        bh=VdvFgU2sJajZQhv3MVeiLmUvHk37Zjgz6OyvSzeJgPI=;
-        b=VH5vh/h1CiQfGCWkgXImQT9oye7oyZd7c/0RHFe5kCvjyEHi8SZqVsYVK3FzkSMEHc
-         CEe1qOhBCT1n50JP4yH8vtSkP078jQ/EJVp1f/8qbRdugGfpmofvtdEgFpZzFcOIED4B
-         M+KzbyZ+tvs2VQiPMe6iEzRnPyDOP23GrahJaX5PXNHJxTkw+aP7qAAx/Q/heLxvpDN1
-         /Ae+V0g+QucjPDoDgLxIduaBk1Vlpb8I+Ch8ChqvGpGk9+MS6e38s7Lh6kJ3Nwgb2gwS
-         gOt7jv6yrotV1bXbuE52ftjFPKgXTJULkEx5B3riqwXE/Xg98Dd2AL2F9pQCTz9U7lyP
-         pBAw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:in-reply-to:message-id:mime-version
-         :references:subject:from:to:cc;
-        bh=VdvFgU2sJajZQhv3MVeiLmUvHk37Zjgz6OyvSzeJgPI=;
-        b=Napuq24y2F64mukWmhRg1w1bm2H02sofxgyG0HQWCCQKjhidHwe7PAPR6L6b9mSBYE
-         bmP7cr7GnhDVmcTrqG4BffWVp4Y+2Hm2WSTB07nG0M45gt6ANM4taueBj2qU9txcmQ4p
-         5VfbkUtDjrz13mEMH5vcnThcvzrp8vp5Nx6a0ofQsA16xPbRIKvd8D3iNIMji8ORL0q5
-         BG8FDo9eRV6B6tkLFFm4bcDa64gTuvT/KdjJHKLhQ56yXJ8skAxzYw2Uehm8yuw9Y4rK
-         n+IH68SgL+gX8a+s10Jh0XjpiMqBQ1558zUfPGkJirDraq57ZDdF+yokf/HOqLzCQtA3
-         ujQg==
-X-Gm-Message-State: AOAM533jTRpAymdOoueJpUba0BVJJ6dVz4lrVBPJ/2DJM+2+9IbDc/fr
-        uKjFEZsA3N6BTtMj7k4EceoUb0UbnHY8YFVj
-X-Google-Smtp-Source: ABdhPJzrjvNW+LcyVgXeMphH9MDQ9h2e+pswLPo96f6zIMh99r83nvSU7HUjLd/mvwbwHf5YpATud9FHal58LYu1
-X-Received: by 2002:a0c:aedf:: with SMTP id n31mr1300551qvd.16.1596019954867;
- Wed, 29 Jul 2020 03:52:34 -0700 (PDT)
-Date:   Wed, 29 Jul 2020 20:52:06 +1000
-In-Reply-To: <20200729105206.2991064-1-victording@google.com>
-Message-Id: <20200729205144.3.I01b89fb23d7498521c84cfdf417450cbbfca46bb@changeid>
-Mime-Version: 1.0
-References: <20200729105206.2991064-1-victording@google.com>
-X-Mailer: git-send-email 2.28.0.rc0.142.g3c755180ce-goog
-Subject: [PATCH 3/3] powercap: Add AMD Fam17h RAPL support
-From:   Victor Ding <victording@google.com>
-To:     LKML <linux-kernel@vger.kernel.org>
-Cc:     Victor Ding <victording@google.com>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Josh Poimboeuf <jpoimboe@redhat.com>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Sean Christopherson <sean.j.christopherson@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tony Luck <tony.luck@intel.com>,
-        Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
-        linux-pm@vger.kernel.org, x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+        id S1726353AbgG2K4L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 29 Jul 2020 06:56:11 -0400
+Received: from outbound.soverin.net ([116.202.65.218]:56213 "EHLO
+        outbound.soverin.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726299AbgG2K4L (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 29 Jul 2020 06:56:11 -0400
+X-Greylist: delayed 385 seconds by postgrey-1.27 at vger.kernel.org; Wed, 29 Jul 2020 06:56:10 EDT
+Received: from smtp.soverin.net (unknown [10.10.3.24])
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits))
+        (No client certificate requested)
+        by outbound.soverin.net (Postfix) with ESMTPS id C67E86017B;
+        Wed, 29 Jul 2020 10:49:44 +0000 (UTC)
+Received: from smtp.soverin.net (smtp.soverin.net [159.69.232.138]) by soverin.net
+From:   Jack Mitchell <ml@embed.me.uk>
+To:     linux-pm@vger.kernel.org
+Cc:     Sebastian Reichel <sre@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+        linux-kernel@vger.kernel.org,
+        Quentin Schulz <quentin.schulz@free-electrons.com>,
+        Jack Mitchell <ml@embed.me.uk>
+Subject: [PATCH] drivers: power: axp20x-battery: support setting charge_full_design
+Date:   Wed, 29 Jul 2020 11:49:13 +0100
+Message-Id: <20200729104913.627242-1-ml@embed.me.uk>
+MIME-Version: 1.0
+X-Virus-Scanned: clamav-milter 0.102.4 at c03mi01
+X-Virus-Status: Clean
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch enables AMD Fam17h RAPL support for the power capping
-framework. The support is as per AMD Fam17h Model31h (Zen2) and
-model 00-ffh (Zen1) PPR.
-
-Tested by comparing the results of following two sysfs entries and the
-values directly read from corresponding MSRs via /dev/cpu/[x]/msr:
-  /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj
-  /sys/class/powercap/intel-rapl/intel-rapl:0/intel-rapl:0:0/energy_uj
-
-Signed-off-by: Victor Ding <victording@google.com>
+Signed-off-by: Jack Mitchell <ml@embed.me.uk>
 ---
+ drivers/power/supply/axp20x_battery.c | 39 +++++++++++++++++++++++++++
+ 1 file changed, 39 insertions(+)
 
- arch/x86/include/asm/msr-index.h     |  1 +
- drivers/powercap/intel_rapl_common.c |  2 ++
- drivers/powercap/intel_rapl_msr.c    | 27 ++++++++++++++++++++++++++-
- 3 files changed, 29 insertions(+), 1 deletion(-)
-
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index c5e92317356e..533208998297 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -306,6 +306,7 @@
- #define MSR_PP1_POLICY			0x00000642
+diff --git a/drivers/power/supply/axp20x_battery.c b/drivers/power/supply/axp20x_battery.c
+index fe96f77bffa7..8ce4ebe7ccd5 100644
+--- a/drivers/power/supply/axp20x_battery.c
++++ b/drivers/power/supply/axp20x_battery.c
+@@ -60,6 +60,7 @@
  
- #define MSR_AMD_RAPL_POWER_UNIT		0xc0010299
-+#define MSR_AMD_CORE_ENERGY_STATUS	0xc001029a
- #define MSR_AMD_PKG_ENERGY_STATUS	0xc001029b
+ #define AXP20X_V_OFF_MASK		GENMASK(2, 0)
  
- /* Config TDP MSRs */
-diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
-index 61a63a16b5e7..8ca4413ef2de 100644
---- a/drivers/powercap/intel_rapl_common.c
-+++ b/drivers/powercap/intel_rapl_common.c
-@@ -992,6 +992,8 @@ static const struct x86_cpu_id rapl_ids[] __initconst = {
++#define AXP20X_BAT_MAX_CAP_VALID	BIT(7)
  
- 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNL,	&rapl_defaults_hsw_server),
- 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNM,	&rapl_defaults_hsw_server),
-+
-+	X86_MATCH_VENDOR_FAM(AMD, 0x17, &rapl_defaults_core),
- 	{}
- };
- MODULE_DEVICE_TABLE(x86cpu, rapl_ids);
-diff --git a/drivers/powercap/intel_rapl_msr.c b/drivers/powercap/intel_rapl_msr.c
-index 430b4819d6ab..31d10a169e41 100644
---- a/drivers/powercap/intel_rapl_msr.c
-+++ b/drivers/powercap/intel_rapl_msr.c
-@@ -47,6 +47,21 @@ static struct rapl_if_priv rapl_msr_priv_intel = {
- 	.limits[RAPL_DOMAIN_PACKAGE] = 2,
+ struct axp20x_batt_ps;
+ 
+@@ -86,6 +87,7 @@ struct axp20x_batt_ps {
+ 	struct axp20x_thermal_sensor sensor;
+ 	/* Maximum constant charge current */
+ 	unsigned int max_ccc;
++	unsigned int charge_full_design;
+ 	const struct axp_data	*data;
  };
  
-+static struct rapl_if_priv rapl_msr_priv_amd = {
-+	.reg_unit = MSR_AMD_RAPL_POWER_UNIT,
-+	.regs[RAPL_DOMAIN_PACKAGE] = {
-+		0, MSR_AMD_PKG_ENERGY_STATUS, 0, 0, 0 },
-+	.regs[RAPL_DOMAIN_PP0] = {
-+		0, MSR_AMD_CORE_ENERGY_STATUS, 0, 0, 0 },
-+	.regs[RAPL_DOMAIN_PP1] = {
-+		0, 0, 0, 0, 0 },
-+	.regs[RAPL_DOMAIN_DRAM] = {
-+		0, 0, 0, 0, 0 },
-+	.regs[RAPL_DOMAIN_PLATFORM] = {
-+		0, 0, 0, 0, 0},
-+	.limits[RAPL_DOMAIN_PACKAGE] = 1,
-+};
+@@ -260,6 +262,10 @@ static int axp20x_battery_get_prop(struct power_supply *psy,
+ 		val->intval = POWER_SUPPLY_HEALTH_GOOD;
+ 		break;
+ 
++	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++		val->intval = axp20x_batt->charge_full_design;
++		break;
 +
- /* Handles CPU hotplug on multi-socket systems.
-  * If a CPU goes online as the first CPU of the physical package
-  * we add the RAPL package to the system. Similarly, when the last
-@@ -129,7 +144,17 @@ static int rapl_msr_probe(struct platform_device *pdev)
+ 	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+ 		ret = axp20x_get_constant_charge_current(axp20x_batt,
+ 							 &val->intval);
+@@ -401,6 +407,30 @@ static int axp20x_battery_set_max_voltage(struct axp20x_batt_ps *axp20x_batt,
+ 				  AXP20X_CHRG_CTRL1_TGT_VOLT, val);
+ }
+ 
++static int axp20x_set_charge_full_design(struct axp20x_batt_ps *axp_batt,
++					      int charge_full_uah)
++{
++	/* (Unit: 1.456mAh) */
++	int max_capacity_units = charge_full_uah / 1456;
++	int ret;
++
++	u8 max_capacity_msb = (max_capacity_units & 0x7F00) >> 8;
++	u8 max_capacity_lsb = (max_capacity_units & 0xFF);
++
++	axp_batt->charge_full_design = max_capacity_units * 1456;
++
++	max_capacity_msb |= AXP20X_BAT_MAX_CAP_VALID;
++
++	ret = regmap_write(axp_batt->regmap, AXP288_FG_DES_CAP0_REG,
++			   max_capacity_lsb);
++
++	if (ret)
++		return ret;
++
++	return regmap_write(axp_batt->regmap, AXP288_FG_DES_CAP1_REG,
++			    max_capacity_msb);
++}
++
+ static int axp20x_set_constant_charge_current(struct axp20x_batt_ps *axp_batt,
+ 					      int charge_current)
  {
- 	int ret;
+@@ -492,6 +522,7 @@ static enum power_supply_property axp20x_battery_props[] = {
+ 	POWER_SUPPLY_PROP_STATUS,
+ 	POWER_SUPPLY_PROP_VOLTAGE_NOW,
+ 	POWER_SUPPLY_PROP_CURRENT_NOW,
++	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+ 	POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+ 	POWER_SUPPLY_PROP_HEALTH,
+@@ -675,6 +706,7 @@ static int axp20x_power_probe(struct platform_device *pdev)
+ 	if (!power_supply_get_battery_info(axp20x_batt->batt, &info)) {
+ 		int vmin = info.voltage_min_design_uv;
+ 		int ccc = info.constant_charge_current_max_ua;
++		int cfd = info.charge_full_design_uah;
  
--	rapl_msr_priv = &rapl_msr_priv_intel;
-+	switch (boot_cpu_data.x86_vendor) {
-+	case X86_VENDOR_INTEL:
-+		rapl_msr_priv = &rapl_msr_priv_intel;
-+		break;
-+	case X86_VENDOR_AMD:
-+		rapl_msr_priv = &rapl_msr_priv_amd;
-+		break;
-+	default:
-+		pr_err("intel-rapl does not support CPU vendor %d\n", boot_cpu_data.x86_vendor);
-+		return -ENODEV;
-+	}
- 	rapl_msr_priv->read_raw = rapl_msr_read_raw;
- 	rapl_msr_priv->write_raw = rapl_msr_write_raw;
+ 		if (vmin > 0 && axp20x_set_voltage_min_design(axp20x_batt,
+ 							      vmin))
+@@ -692,6 +724,13 @@ static int axp20x_power_probe(struct platform_device *pdev)
+ 			axp20x_batt->max_ccc = ccc;
+ 			axp20x_set_constant_charge_current(axp20x_batt, ccc);
+ 		}
++
++		if (cfd > 0 && axp20x_set_charge_full_design(axp20x_batt,
++							       cfd)) {
++			dev_err(&pdev->dev,
++				"couldn't set charge_full_design\n");
++			axp20x_batt->charge_full_design = 0;
++		}
+ 	}
  
+ 	error = axp20x_thermal_register_sensor(pdev, axp20x_batt);
 -- 
-2.28.0.rc0.142.g3c755180ce-goog
+2.28.0
 
