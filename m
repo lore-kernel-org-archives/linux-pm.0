@@ -2,103 +2,120 @@ Return-Path: <SRS0=1on1=BJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 53EFCC433E0
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jul 2020 16:26:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CF478C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jul 2020 16:51:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2420C2082E
-	for <linux-pm@archiver.kernel.org>; Thu, 30 Jul 2020 16:26:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1596126372;
-	bh=8hsmvnpGaJgTXpEgkgu4L6U77WHzbhfLO09R1m6ZOTY=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=CJYJ7m0k/TLDFqaDF+szNFu3VaN/rcIswKynLH31/C/D39i31CHOxsWA7y5CzTLgO
-	 8WygB87jKtSis8JivmwCLkTmd1apjxO20LiJKx9LAPjJNHPxe08waAPd8V+9fewjKg
-	 HhPsFjr46cpq7xH032oe+aqZUv+Otbd6q0JvBkno=
+	by mail.kernel.org (Postfix) with ESMTP id B88F820829
+	for <linux-pm@archiver.kernel.org>; Thu, 30 Jul 2020 16:51:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728469AbgG3Q0L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 30 Jul 2020 12:26:11 -0400
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:38042 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726275AbgG3Q0L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 30 Jul 2020 12:26:11 -0400
-Received: by mail-oi1-f193.google.com with SMTP id u63so12465730oie.5;
-        Thu, 30 Jul 2020 09:26:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=4y0trLDvxFm6X9a9D00px5raiFD5iq1zLoW+q4WbwgE=;
-        b=S8DvwnfIkhcuck+8UPqNgoZDWdfAqKvhbSViRr7h0sycvWUl6elj9cMKfFsrAue19Z
-         ieczi74JoDRE4Mh3J5Q0nuqmQL9wimmiFBGZ/61g70YNxPDeDoHbU60CrAIrNGQ0cZeX
-         UTbrQYcNsMEjYuUwa1egfZwtW29KvBtQ7tNh2+NWgwhNiXWbV4bKfJFwfa/6Z6L2cxs5
-         O4EXdnFfUe6NndFmUfKLsgtnP94/fx/Ra8qWBZsm3RgrhgrJOuem3PlEbFDWLtv4vIck
-         eGe5MhqDV5lg0TTtOaDgQdWntUGV5EMEnO6uCnjwdpliN68+9h8A+WR3vDt2G44McPM1
-         HySA==
-X-Gm-Message-State: AOAM533v4UhV0gjcvyr6voDClTYTx8iESSzOl9klMKu+Kl/emLGYZ0WR
-        bXrIhTjL6EmxYL3/JAHUpaWh0wqbGgMsTOZxoKqbAA==
-X-Google-Smtp-Source: ABdhPJxrT6AUgXEocJmQ7pCL9/znNdw1t9+xZb+8yxum3NWoVzCoScjZAmBR1bARnutUs3y1OkCoh27fTFb25d29gug=
-X-Received: by 2002:aca:4a89:: with SMTP id x131mr12785075oia.103.1596126370279;
- Thu, 30 Jul 2020 09:26:10 -0700 (PDT)
-MIME-Version: 1.0
-References: <d48d824ab3abacb2356878780979d7ed42191eaf.1596080365.git.viresh.kumar@linaro.org>
- <CAHLCerP4YPHc4sKD_RTq=Gxfj+ex4F=J2is1Y-UzGXcOuEOrOQ@mail.gmail.com>
- <20200730061041.gyprgwfkzfb64t3m@vireshk-mac-ubuntu> <CAHLCerMD_spZFHER-y9dOzr7qo9xKXZdqy3cFt+W9QUW4Ng3jw@mail.gmail.com>
- <20200730064112.lvbwas7zzqruvprk@vireshk-mac-ubuntu>
-In-Reply-To: <20200730064112.lvbwas7zzqruvprk@vireshk-mac-ubuntu>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 30 Jul 2020 18:25:59 +0200
-Message-ID: <CAJZ5v0ia-kjAboeREyDESxp9f_E_SVdDNj0aU4Xgxjf4-=QGTw@mail.gmail.com>
-Subject: Re: [PATCH] cpufreq: cached_resolved_idx can not be negative
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Amit Kucheria <amitk@kernel.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        id S1727072AbgG3Qvm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 30 Jul 2020 12:51:42 -0400
+Received: from foss.arm.com ([217.140.110.172]:42538 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726353AbgG3Qvl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 30 Jul 2020 12:51:41 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id F37141FB;
+        Thu, 30 Jul 2020 09:51:40 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.37.12.66])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 9CF543F66E;
+        Thu, 30 Jul 2020 09:51:39 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org
+Cc:     lukasz.luba@arm.com
+Subject: [PATCH] thermal: Update power allocator and devfreq cooling to SPDX licensing
+Date:   Thu, 30 Jul 2020 17:51:17 +0100
+Message-Id: <20200730165117.13998-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 30, 2020 at 8:41 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 30-07-20, 12:02, Amit Kucheria wrote:
-> > Looking at this more closely, I found another call site for
-> > cpufreq_frequency_table_target() in cpufreq.c that needs the index to
-> > be unsigned int.
-> >
-> > But then cpufreq_frequency_table_target() returns -EINVAL, so we
->
-> It returns -EINVAL only in the case where the relation is not valid,
-> which will never happen. Maybe that should be marked with WARN or BUG
-> and we should drop return value of -EINVAL.
->
-> Rafael ?
+Update the license to the SPDX licensing format.
 
-Yeah, make it a WARN_ON_ONCE() IMO.
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/thermal/devfreq_cooling.c     | 10 +---------
+ drivers/thermal/gov_power_allocator.c |  9 +--------
+ include/linux/devfreq_cooling.h       |  9 +--------
+ 3 files changed, 3 insertions(+), 25 deletions(-)
 
-> > should be able to handle int values.
->
-> And so no.
->
-> > I think you will need to fix the unconditional assignment of
-> >     policy->cached_resolved_idx = idx
-> > in cpufreq_driver_resolve_freq(). It doesn't check for -EINVAL, so the
-> > qcom driver is write in checking for a negative value.
->
-> Right, I don't want it to have that check for the reason stated above.
->
-> The point is I don't want code that verifies cached-idx at all, it is
-> useless.
->
-> --
-> viresh
+diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+index f7f32e98331b..a12d29096229 100644
+--- a/drivers/thermal/devfreq_cooling.c
++++ b/drivers/thermal/devfreq_cooling.c
+@@ -1,18 +1,10 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * devfreq_cooling: Thermal cooling device implementation for devices using
+  *                  devfreq
+  *
+  * Copyright (C) 2014-2015 ARM Limited
+  *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+- * kind, whether express or implied; without even the implied warranty
+- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+  * TODO:
+  *    - If OPPs are added or removed after devfreq cooling has
+  *      registered, the devfreq cooling won't react to it.
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 44636475b2a3..5cb518d8f156 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -1,16 +1,9 @@
++// SPDX-License-Identifier: GPL-2.0
+ /*
+  * A power allocator to manage temperature
+  *
+  * Copyright (C) 2014 ARM Ltd.
+  *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+- * kind, whether express or implied; without even the implied warranty
+- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+- * GNU General Public License for more details.
+  */
+ 
+ #define pr_fmt(fmt) "Power allocator: " fmt
+diff --git a/include/linux/devfreq_cooling.h b/include/linux/devfreq_cooling.h
+index 79a6e37a1d6f..9df2dfca68dd 100644
+--- a/include/linux/devfreq_cooling.h
++++ b/include/linux/devfreq_cooling.h
+@@ -1,17 +1,10 @@
++/* SPDX-License-Identifier: GPL-2.0 */
+ /*
+  * devfreq_cooling: Thermal cooling device implementation for devices using
+  *                  devfreq
+  *
+  * Copyright (C) 2014-2015 ARM Limited
+  *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- *
+- * This program is distributed "as is" WITHOUT ANY WARRANTY of any
+- * kind, whether express or implied; without even the implied warranty
+- * of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+  */
+ 
+ #ifndef __DEVFREQ_COOLING_H__
+-- 
+2.17.1
+
