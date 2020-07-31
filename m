@@ -2,90 +2,193 @@ Return-Path: <SRS0=1j1E=BK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2337C433E0
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Jul 2020 21:14:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB0F5C433E1
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Jul 2020 22:40:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9E41C22CA1
-	for <linux-pm@archiver.kernel.org>; Fri, 31 Jul 2020 21:14:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="VUOulxi+"
+	by mail.kernel.org (Postfix) with ESMTP id C6A9E22B3F
+	for <linux-pm@archiver.kernel.org>; Fri, 31 Jul 2020 22:40:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1596235233;
+	bh=mRsDkvKKu62Z1BCY0fD3PXr87Jikl9HYK4xq5PgIOas=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=hZfO83a45+h85LnqK2bVt1u+/H7G81lNjIBmL7Y2HtMJo1tfHl9MPF0O//gux18W2
+	 bwKdgcvym7cKWOCkjRCh0GhzjyLI42TOeik/I3S2qgDL1SiMGtmwvRVG+I+Sg2eRk+
+	 7M6UVnF7RkqE3O40xBe8h0ZDm5nHlWzevQsaqy3Y=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725968AbgGaVOg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 31 Jul 2020 17:14:36 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:26530 "EHLO m43-7.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728209AbgGaVOf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 31 Jul 2020 17:14:35 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1596230075; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=dURvjg+v1UCqBQ4hlCLmLOVZo/34TjDJA5WmTO9SFL8=; b=VUOulxi+y5X6mHPtfdp6MK73XyGu+cQfHjiVw282AFolzfvdaqfTp35c0HfrL9+CpIY/poAr
- MuySEtOUAfPOP96JnoU+2eb8/5Q/jhjAue+GhW5TuemACNrr66BJE8GgyVW+yDdMEFW/UYEO
- CG2qdXjQC3yoCIwivlWPQVJ4Hyc=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n19.prod.us-east-1.postgun.com with SMTP id
- 5f2489b2d2bd131f680e1a8b (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 31 Jul 2020 21:14:26
- GMT
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id C151DC433CA; Fri, 31 Jul 2020 21:14:25 +0000 (UTC)
-Received: from eberman-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: eberman)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id C71D7C433CA;
-        Fri, 31 Jul 2020 21:14:23 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org C71D7C433CA
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=eberman@codeaurora.org
-From:   Elliot Berman <eberman@codeaurora.org>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Andy Yan <andy.yan@rock-chips.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     Elliot Berman <eberman@codeaurora.org>, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, Trilok Soni <tsoni@codeaurora.org>,
-        Prasad Sodagudi <psodagud@codeaurora.org>
-Subject: [PATCH 0/4] Add restart commands for PM8150
-Date:   Fri, 31 Jul 2020 14:14:16 -0700
-Message-Id: <1596230060-6065-1-git-send-email-eberman@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
+        id S1726968AbgGaWkb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 31 Jul 2020 18:40:31 -0400
+Received: from mail-il1-f196.google.com ([209.85.166.196]:43376 "EHLO
+        mail-il1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726099AbgGaWka (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 31 Jul 2020 18:40:30 -0400
+Received: by mail-il1-f196.google.com with SMTP id y18so18188358ilp.10;
+        Fri, 31 Jul 2020 15:40:29 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=HfW9s2DGUedr2mUFf7i55ndR1OuYzXAhoJ0w+EZ2kis=;
+        b=im4nv6tYwP1mMyXBPqVrs1BBmlWOYzz+RRVg1AkoNNyEQ0XrnPa2cOwjSaRT728IgL
+         Eq4RCGAtZtWB39s4L22rM24sXssBBqMM0xdxRwGvStUyQI8i2sDMyQsdusmxPfT3PJh8
+         azlQ2z1KRCfMX+UuV6nJjNgGLlu0BXXtrNTzwLETVyKsIP/Nk4UboMuWRn+8eMulDcQH
+         gE+8On0L0tJubKNlpIG5104y2CAEzJRsZF6o/VJd5Wr+uPpHu3qECk/i4ar0xlZUVVwR
+         s/Tj2aDA2UAse6aJI2xLHUAAYwh0sc9A0SPfJo0MTAcM4ZRj3ais6JwKYOK1kueFydQV
+         sENA==
+X-Gm-Message-State: AOAM533Eitjmdzc3vRdIbq40m2CP6qZbDKCOwnNDuLe4Y/p95RP0UU8J
+        +Uz5RgkKjLWXZjBak9Le9w==
+X-Google-Smtp-Source: ABdhPJz6JvYVALKdg2VfBfWJh0CybxGekwW/qKcCum31wkZgSbPinffbdp+6olAeka8X9SswHlgntw==
+X-Received: by 2002:a92:150d:: with SMTP id v13mr5738888ilk.93.1596235229311;
+        Fri, 31 Jul 2020 15:40:29 -0700 (PDT)
+Received: from xps15 ([64.188.179.252])
+        by smtp.gmail.com with ESMTPSA id b2sm5569581ilf.0.2020.07.31.15.40.28
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 31 Jul 2020 15:40:28 -0700 (PDT)
+Received: (nullmailer pid 938876 invoked by uid 1000);
+        Fri, 31 Jul 2020 22:40:27 -0000
+Date:   Fri, 31 Jul 2020 16:40:27 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Dan Murphy <dmurphy@ti.com>
+Cc:     sre@kernel.org, devicetree@vger.kernel.org, r-rivera-matos@ti.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] dt-bindings: power: Add the bq25790 dt bindings
+Message-ID: <20200731224027.GA923778@bogus>
+References: <20200730145834.29227-1-dmurphy@ti.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200730145834.29227-1-dmurphy@ti.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-PM8150 uses reboot-mode framework to set magic values for bootloader to read
-during next boot. dm-verity wants to use "dm-verity device corrupted" [1] as
-the restart command, however the reboot-mode framework does not support spaces
-in the command line as devicetree property names cannot have spaces. This
-patch series adds two new optional array properties to reboot-mode framework: 
-reboot-mode-names and reboot-mode-magic. The arrays supply the commands and 
-magic values, respectively.
+On Thu, Jul 30, 2020 at 09:58:33AM -0500, Dan Murphy wrote:
+> Add the bindings for the bq25790.
+> 
+> Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+> Signed-off-by: Dan Murphy <dmurphy@ti.com>
+> ---
+>  .../bindings/power/supply/bq25790.yaml        | 87 +++++++++++++++++++
+>  1 file changed, 87 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/bq25790.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/bq25790.yaml b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
+> new file mode 100644
+> index 000000000000..97dd539c1625
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
+> @@ -0,0 +1,87 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +# Copyright (C) 2020 Texas Instruments Incorporated
+> +%YAML 1.2
+> +---
+> +$id: "http://devicetree.org/schemas/power/supply/bq25790.yaml#"
+> +$schema: "http://devicetree.org/meta-schemas/core.yaml#"
+> +
+> +title: TI BQ25790 Switch Mode Buck-Boost Charger
+> +
+> +maintainers:
+> +  - Dan Murphy <dmurphy@ti.com>
+> +
+> +description: |
+> +  BQ25790 is a highly integrated switch-mode buck-boost charger for 1-4 cell
+> +  Li-ion batteries and Li-polymer batteries. The device charges a battery from a
+> +  wide range of input sources including legacy USB adapters to high voltage USB
+> +  PD adapters and traditional barrel adapters.
+> +
+> +allOf:
+> +  - $ref: power-supply.yaml#
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - ti,bq25790
+> +      - ti,bq25792
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  ti,watchdog-timer:
+> +    $ref: /schemas/types.yaml#/definitions/uint32
+> +    description: |
+> +      Watchdog timer in milli seconds. 0 (default) disables the watchdog.
 
-[1]: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/md/dm-verity-target.c?h=v5.5#n255
+Add a standard unit suffix and you can drop the type. And maybe 
+s/timer/timeout/ would be a bit clearer.
 
-Elliot Berman (4):
-  dt-bindings: power: reset: Convert reboot-mode to YAML
-  dt-bindings: power: reset: Add alternate reboot mode format
-  power: reset: Add support for reboot mode alternate properties
-  arm64: dts: qcom: pm8150: Add reboot magic
+Also:
 
- .../bindings/power/reset/reboot-mode.txt           | 25 ---------
- .../bindings/power/reset/reboot-mode.yaml          | 64 ++++++++++++++++++++++
- arch/arm64/boot/dts/qcom/pm8150.dtsi               |  5 ++
- drivers/power/reset/reboot-mode.c                  | 42 +++++++++++++-
- 4 files changed, 110 insertions(+), 26 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
- create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+default: 0
 
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
+> +    minimum: 0
+> +    maximum: 160000
+> +    enum: [ 0, 500, 1000, 2000, 20000, 40000, 80000, 160000]
+> +
+> +  input-voltage-limit-microvolt:
+> +    description: |
+> +      Minimum input voltage limit in micro volts with a 100000 micro volt step.
+> +    minimum: 3600000
+> +    maximum: 22000000
+> +
+> +  input-current-limit-microamp:
+> +    description: |
+> +      Maximum input current limit in micro amps with a 100000 micro amp step.
+> +    minimum: 100000
+> +    maximum: 3300000
+> +
+> +  monitored-battery:
+> +    $ref: /schemas/types.yaml#/definitions/phandle
+> +    description: phandle to the battery node being monitored
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - monitored-battery
 
+Add:
+
+unevaluatedProperties: false
+
+> +
+> +examples:
+> +  - |
+> +    bat: battery {
+> +      compatible = "simple-battery";
+> +      constant-charge-current-max-microamp = <2000000>;
+> +      constant-charge-voltage-max-microvolt = <4200000>;
+> +      precharge-current-microamp = <160000>;
+> +      charge-term-current-microamp = <160000>;
+> +    };
+> +    #include <dt-bindings/gpio/gpio.h>
+> +    #include <dt-bindings/interrupt-controller/irq.h>
+> +    i2c0 {
+> +      #address-cells = <1>;
+> +      #size-cells = <0>;
+> +
+> +      bq25790: charger@6b {
+> +          compatible = "ti,bq25790";
+> +          reg = <0x6b>;
+> +          interrupt-parent = <&gpio1>;
+> +          interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
+
+Not documented.
+
+> +          ti,watchdog-timer = <2000>;
+> +          input-current-limit = <3000000>;
+> +          input-voltage-limit = <4500000>;
+
+Doesn't match the schema.
+
+> +          monitored-battery = <&bat>;
+> +      };
+> +    };
+> +
+> +...
+> -- 
+> 2.28.0
+> 
