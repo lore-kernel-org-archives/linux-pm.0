@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E237CC433DF
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69EA7C433E8
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BF437208A9
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 48A5E2080C
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="H6iLHnuM"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="Coxry305"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729105AbgHAMbh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Aug 2020 08:31:37 -0400
+        id S1729033AbgHAMb2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Aug 2020 08:31:28 -0400
 Received: from m43-7.mailgun.net ([69.72.43.7]:36350 "EHLO m43-7.mailgun.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728933AbgHAMbe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Aug 2020 08:31:34 -0400
+        id S1729050AbgHAMb1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 1 Aug 2020 08:31:27 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1596285093; h=Content-Transfer-Encoding: MIME-Version:
+ s=smtp; t=1596285086; h=Content-Transfer-Encoding: MIME-Version:
  References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=gIhiReezzOaGTqKnKkoV8bXXS3YqhQfx9Z2l8yG5Upg=; b=H6iLHnuMNaVA69PrnubAzY3JVag/s/pEBIH8TUsIjO43b6sLXAuE9n9vHPIJw7lnl3Of3ohu
- 7qUxKQj7FFkMBJwJoXMZhzsvkcns+jsLPp5sFz66jTgdZ9gi52I/lhpzA2jMlAIV2DsPvq8g
- REtKpEjlvzAr6tDx9Hcewv7Yqnc=
+ Sender; bh=T3gsh8DJJ2SBdn1sHsz2kpKTvtzE7ro3caTw1+lXGdA=; b=Coxry305QLZdSF0DHRtbz2m9d7NDtLJnQ6wppD2kkEbqkZ1rsnUbwbkblKw/d6qgVOeaBjJM
+ p6vDaHX6ke9oxnDcFfZfSq/w5I8jUfQ1sVCUDgdTs90bMh8Wpe0INyXO+U7NVs5ZN0Lmmei1
+ SJubWEjWQry/GRN5W1A04QcSq9w=
 X-Mailgun-Sending-Ip: 69.72.43.7
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n20.prod.us-east-1.postgun.com with SMTP id
- 5f25609beecfc978d3e75369 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Sat, 01 Aug 2020 12:31:23
+ smtp-out-n13.prod.us-east-1.postgun.com with SMTP id
+ 5f256098d2bd131f68145832 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Sat, 01 Aug 2020 12:31:20
  GMT
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 55BD9C433B6; Sat,  1 Aug 2020 12:31:22 +0000 (UTC)
+        id E19DCC433A0; Sat,  1 Aug 2020 12:31:19 +0000 (UTC)
 Received: from blr-ubuntu-253.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: sibis)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 8503CC433AD;
-        Sat,  1 Aug 2020 12:31:18 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 8503CC433AD
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id E4834C433AF;
+        Sat,  1 Aug 2020 12:31:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org E4834C433AF
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
 From:   Sibi Sankar <sibis@codeaurora.org>
@@ -52,9 +52,9 @@ Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, jonathan@marek.ca,
         linux-pm@vger.kernel.org, Sibi Sankar <sibis@codeaurora.org>
-Subject: [PATCH 6/7] arm64: dts: qcom: sm8150: Add OSM L3 interconnect provider
-Date:   Sat,  1 Aug 2020 18:00:48 +0530
-Message-Id: <20200801123049.32398-7-sibis@codeaurora.org>
+Subject: [PATCH 5/7] interconnect: qcom: Add EPSS L3 support on SM8250
+Date:   Sat,  1 Aug 2020 18:00:47 +0530
+Message-Id: <20200801123049.32398-6-sibis@codeaurora.org>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200801123049.32398-1-sibis@codeaurora.org>
 References: <20200801123049.32398-1-sibis@codeaurora.org>
@@ -65,43 +65,82 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add Operation State Manager (OSM) L3 interconnect provider node on
-SM8150 SoCs.
+Add Epoch Subsystem (EPSS) L3 interconnect provider support on
+SM8250 SoCs.
 
 Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 ---
- arch/arm64/boot/dts/qcom/sm8150.dtsi | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/interconnect/qcom/osm-l3.c | 23 +++++++++++++++++++++++
+ drivers/interconnect/qcom/sm8250.h |  2 ++
+ 2 files changed, 25 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8150.dtsi b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-index 0f6d84e8fd299..8563afd205ee9 100644
---- a/arch/arm64/boot/dts/qcom/sm8150.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sm8150.dtsi
-@@ -10,6 +10,7 @@
- #include <dt-bindings/soc/qcom,rpmh-rsc.h>
- #include <dt-bindings/clock/qcom,rpmh.h>
- #include <dt-bindings/clock/qcom,gcc-sm8150.h>
-+#include <dt-bindings/interconnect/qcom,osm-l3.h>
- #include <dt-bindings/interconnect/qcom,sm8150.h>
- #include <dt-bindings/thermal/thermal.h>
+diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
+index 27c9ece52efda..cbf4ef04491df 100644
+--- a/drivers/interconnect/qcom/osm-l3.c
++++ b/drivers/interconnect/qcom/osm-l3.c
+@@ -17,6 +17,7 @@
+ #include "sc7180.h"
+ #include "sdm845.h"
+ #include "sm8150.h"
++#include "sm8250.h"
  
-@@ -1184,6 +1185,16 @@ apps_bcm_voter: bcm_voter {
- 			};
- 		};
+ #define LUT_MAX_ENTRIES			40U
+ #define LUT_SRC				GENMASK(31, 30)
+@@ -29,6 +30,11 @@
+ #define OSM_REG_FREQ_LUT		0x110
+ #define OSM_REG_PERF_STATE		0x920
  
-+		osm_l3: interconnect@18321000 {
-+			compatible = "qcom,sm8150-osm-l3";
-+			reg = <0 0x18321000 0 0x1400>;
++/* EPSS Register offsets */
++#define EPSS_LUT_ROW_SIZE		4
++#define EPSS_REG_FREQ_LUT		0x100
++#define EPSS_REG_PERF_STATE		0x320
 +
-+			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
-+			clock-names = "xo", "alternate";
+ #define OSM_L3_MAX_LINKS		1
+ 
+ #define to_qcom_provider(_provider) \
+@@ -123,6 +129,22 @@ static const struct qcom_icc_desc sm8150_icc_osm_l3 = {
+ 	.reg_perf_state = OSM_REG_PERF_STATE,
+ };
+ 
++DEFINE_QNODE(sm8250_epss_apps_l3, SM8250_MASTER_EPSS_L3_APPS, 32, SM8250_SLAVE_EPSS_L3);
++DEFINE_QNODE(sm8250_epss_l3, SM8250_SLAVE_EPSS_L3, 32);
 +
-+			#interconnect-cells = <1>;
-+		};
++static struct qcom_icc_node *sm8250_epss_l3_nodes[] = {
++	[MASTER_EPSS_L3_APPS] = &sm8250_epss_apps_l3,
++	[SLAVE_EPSS_L3_SHARED] = &sm8250_epss_l3,
++};
 +
- 		cpufreq_hw: cpufreq@18323000 {
- 			compatible = "qcom,cpufreq-hw";
- 			reg = <0 0x18323000 0 0x1400>, <0 0x18325800 0 0x1400>,
++static const struct qcom_icc_desc sm8250_icc_epss_l3 = {
++	.nodes = sm8250_epss_l3_nodes,
++	.num_nodes = ARRAY_SIZE(sm8250_epss_l3_nodes),
++	.lut_row_size = EPSS_LUT_ROW_SIZE,
++	.reg_freq_lut = EPSS_REG_FREQ_LUT,
++	.reg_perf_state = EPSS_REG_PERF_STATE,
++};
++
+ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ {
+ 	struct qcom_osm_l3_icc_provider *qp;
+@@ -288,6 +310,7 @@ static const struct of_device_id osm_l3_of_match[] = {
+ 	{ .compatible = "qcom,sc7180-osm-l3", .data = &sc7180_icc_osm_l3 },
+ 	{ .compatible = "qcom,sdm845-osm-l3", .data = &sdm845_icc_osm_l3 },
+ 	{ .compatible = "qcom,sm8150-osm-l3", .data = &sm8150_icc_osm_l3 },
++	{ .compatible = "qcom,sm8250-epss-l3", .data = &sm8250_icc_epss_l3 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, osm_l3_of_match);
+diff --git a/drivers/interconnect/qcom/sm8250.h b/drivers/interconnect/qcom/sm8250.h
+index 7eb6c709c30d1..b31fb431a20fc 100644
+--- a/drivers/interconnect/qcom/sm8250.h
++++ b/drivers/interconnect/qcom/sm8250.h
+@@ -158,5 +158,7 @@
+ #define SM8250_SLAVE_VSENSE_CTRL_CFG		147
+ #define SM8250_SNOC_CNOC_MAS			148
+ #define SM8250_SNOC_CNOC_SLV			149
++#define SM8250_MASTER_EPSS_L3_APPS		150
++#define SM8250_SLAVE_EPSS_L3			151
+ 
+ #endif
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
