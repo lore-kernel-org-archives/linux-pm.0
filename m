@@ -2,137 +2,131 @@ Return-Path: <SRS0=sfwA=BL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC772C433E1
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 09:58:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DE444C433E0
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D67892076A
-	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 09:58:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AF5AF20888
+	for <linux-pm@archiver.kernel.org>; Sat,  1 Aug 2020 12:31:10 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="u+N0zjXA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726414AbgHAJ6L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 1 Aug 2020 05:58:11 -0400
-Received: from mga14.intel.com ([192.55.52.115]:62517 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725931AbgHAJ6L (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 1 Aug 2020 05:58:11 -0400
-IronPort-SDR: UnwnbRlA+ItkqMGZk9r/G1k4HJQy99aUzIYp0LoUwBqRXqa/M3llsjtNWS+GExX3cE111mxU6C
- 7zO684amoiPQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9699"; a="151124690"
-X-IronPort-AV: E=Sophos;i="5.75,420,1589266800"; 
-   d="scan'208";a="151124690"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga001.jf.intel.com ([10.7.209.18])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Aug 2020 02:58:10 -0700
-IronPort-SDR: ZDfrZn0QjnUvJT/F2KL9TKKXAfrJ2U2lSt0oSGdxz+07/cPJk4sQM/LeozycpnDUboLRG4Ajkx
- aQPPVvgKQ83g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.75,420,1589266800"; 
-   d="scan'208";a="365827366"
-Received: from lkp-server01.sh.intel.com (HELO e21119890065) ([10.239.97.150])
-  by orsmga001.jf.intel.com with ESMTP; 01 Aug 2020 02:58:08 -0700
-Received: from kbuild by e21119890065 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1k1oHI-0000PD-1q; Sat, 01 Aug 2020 09:58:08 +0000
-Date:   Sat, 01 Aug 2020 17:57:28 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- 86ed8b05f59717b20b75cd2a4a17cbd26788183a
-Message-ID: <5f253c88.I1tbN4ApJNdJ1Hl3%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1728632AbgHAMbK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 1 Aug 2020 08:31:10 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:59426 "EHLO
+        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728680AbgHAMbJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 1 Aug 2020 08:31:09 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1596285069; h=Content-Transfer-Encoding: MIME-Version:
+ References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=mVmxSFp7kd3V5fOQJG5CkOAtdy9fgnp0DEOyZ54Uj/U=; b=u+N0zjXAQAd5utGr8pG5SoiKe8lY8P756OaBOV3bXATQn4s/tLceVCfcFu7AxDEydQ1rln0s
+ UdzMroLxqLx+eOYJO0xm7AIUXFHtPYspX2Agn1CMCixQKbmprnEwPgMyln5JAcKKuH1wXXmR
+ DeB80+F7z6ply9upxvoxhno2s50=
+X-Mailgun-Sending-Ip: 104.130.122.29
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n17.prod.us-east-1.postgun.com with SMTP id
+ 5f25608c14acd1952bb778c5 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Sat, 01 Aug 2020 12:31:08
+ GMT
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id E518CC433CA; Sat,  1 Aug 2020 12:31:07 +0000 (UTC)
+Received: from blr-ubuntu-253.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: sibis)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 70C48C433CB;
+        Sat,  1 Aug 2020 12:31:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 70C48C433CB
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
+From:   Sibi Sankar <sibis@codeaurora.org>
+To:     robh+dt@kernel.org, georgi.djakov@linaro.org
+Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, jonathan@marek.ca,
+        linux-pm@vger.kernel.org, Sibi Sankar <sibis@codeaurora.org>
+Subject: [PATCH 2/7] interconnect: qcom: Add OSM L3 support on SM8150
+Date:   Sat,  1 Aug 2020 18:00:44 +0530
+Message-Id: <20200801123049.32398-3-sibis@codeaurora.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200801123049.32398-1-sibis@codeaurora.org>
+References: <20200801123049.32398-1-sibis@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: 86ed8b05f59717b20b75cd2a4a17cbd26788183a  Merge branch 'pm-cpuidle' into linux-next
+Add Operation State Manager (OSM) L3 interconnect provider support on
+SM8150 SoCs.
 
-elapsed time: 1261m
-
-configs tested: 66
-configs skipped: 1
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                             defconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a005-20200731
-i386                 randconfig-a004-20200731
-i386                 randconfig-a006-20200731
-i386                 randconfig-a002-20200731
-i386                 randconfig-a001-20200731
-i386                 randconfig-a003-20200731
-x86_64               randconfig-a015-20200731
-x86_64               randconfig-a014-20200731
-x86_64               randconfig-a016-20200731
-x86_64               randconfig-a012-20200731
-x86_64               randconfig-a013-20200731
-x86_64               randconfig-a011-20200731
-i386                 randconfig-a016-20200731
-i386                 randconfig-a012-20200731
-i386                 randconfig-a014-20200731
-i386                 randconfig-a015-20200731
-i386                 randconfig-a013-20200731
-i386                 randconfig-a011-20200731
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
+Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ drivers/interconnect/qcom/osm-l3.c | 15 +++++++++++++++
+ drivers/interconnect/qcom/sm8150.h |  2 ++
+ 2 files changed, 17 insertions(+)
+
+diff --git a/drivers/interconnect/qcom/osm-l3.c b/drivers/interconnect/qcom/osm-l3.c
+index 96fb9ff5ff2e8..00831c33e0fe5 100644
+--- a/drivers/interconnect/qcom/osm-l3.c
++++ b/drivers/interconnect/qcom/osm-l3.c
+@@ -16,6 +16,7 @@
+ 
+ #include "sc7180.h"
+ #include "sdm845.h"
++#include "sm8150.h"
+ 
+ #define LUT_MAX_ENTRIES			40U
+ #define LUT_SRC				GENMASK(31, 30)
+@@ -96,6 +97,19 @@ static const struct qcom_icc_desc sc7180_icc_osm_l3 = {
+ 	.num_nodes = ARRAY_SIZE(sc7180_osm_l3_nodes),
+ };
+ 
++DEFINE_QNODE(sm8150_osm_apps_l3, SM8150_MASTER_OSM_L3_APPS, 32, SM8150_SLAVE_OSM_L3);
++DEFINE_QNODE(sm8150_osm_l3, SM8150_SLAVE_OSM_L3, 32);
++
++static struct qcom_icc_node *sm8150_osm_l3_nodes[] = {
++	[MASTER_OSM_L3_APPS] = &sm8150_osm_apps_l3,
++	[SLAVE_OSM_L3] = &sm8150_osm_l3,
++};
++
++static const struct qcom_icc_desc sm8150_icc_osm_l3 = {
++	.nodes = sm8150_osm_l3_nodes,
++	.num_nodes = ARRAY_SIZE(sm8150_osm_l3_nodes),
++};
++
+ static int qcom_icc_set(struct icc_node *src, struct icc_node *dst)
+ {
+ 	struct qcom_osm_l3_icc_provider *qp;
+@@ -258,6 +272,7 @@ static int qcom_osm_l3_probe(struct platform_device *pdev)
+ static const struct of_device_id osm_l3_of_match[] = {
+ 	{ .compatible = "qcom,sc7180-osm-l3", .data = &sc7180_icc_osm_l3 },
+ 	{ .compatible = "qcom,sdm845-osm-l3", .data = &sdm845_icc_osm_l3 },
++	{ .compatible = "qcom,sm8150-osm-l3", .data = &sm8150_icc_osm_l3 },
+ 	{ }
+ };
+ MODULE_DEVICE_TABLE(of, osm_l3_of_match);
+diff --git a/drivers/interconnect/qcom/sm8150.h b/drivers/interconnect/qcom/sm8150.h
+index 3e01ac76ae1db..97996f64d799c 100644
+--- a/drivers/interconnect/qcom/sm8150.h
++++ b/drivers/interconnect/qcom/sm8150.h
+@@ -148,5 +148,7 @@
+ #define SM8150_SLAVE_VSENSE_CTRL_CFG		137
+ #define SM8150_SNOC_CNOC_MAS			138
+ #define SM8150_SNOC_CNOC_SLV			139
++#define SM8150_MASTER_OSM_L3_APPS		140
++#define SM8150_SLAVE_OSM_L3			141
+ 
+ #endif
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
+
