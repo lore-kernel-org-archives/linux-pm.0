@@ -2,66 +2,108 @@ Return-Path: <SRS0=bDVj=BP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5066C433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 20:16:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 522CFC433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 23:57:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9AD9622B42
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 20:16:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30DDB20823
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 23:57:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="W6CnF3IF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726305AbgHEUQU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Aug 2020 16:16:20 -0400
-Received: from foss.arm.com ([217.140.110.172]:32966 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726005AbgHEQS5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Aug 2020 12:18:57 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B93E91424;
-        Wed,  5 Aug 2020 09:03:18 -0700 (PDT)
-Received: from bogus (unknown [10.37.12.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id ADCEE3F7D7;
-        Wed,  5 Aug 2020 09:03:16 -0700 (PDT)
-Date:   Wed, 5 Aug 2020 17:03:12 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, cristian.marussi@arm.com,
-        rjw@rjwysocki.net, Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH 0/4] CPUFreq statistics retrieved by drivers
-Message-ID: <20200805160312.GC4818@bogus>
-References: <20200729151208.27737-1-lukasz.luba@arm.com>
- <a3354ae8-f40f-83f2-d6eb-7f588af75e97@gmail.com>
- <119ce268-18dc-7a4c-b0b2-3a66ff9ff4b0@arm.com>
- <20200805130436.3d2g7z2rsdoesuuk@vireshk-mac-ubuntu>
+        id S1726204AbgHEX5s (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Aug 2020 19:57:48 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57166 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726078AbgHEX5p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2020 19:57:45 -0400
+Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 393ABC061757
+        for <linux-pm@vger.kernel.org>; Wed,  5 Aug 2020 16:57:45 -0700 (PDT)
+Received: by mail-pj1-x1042.google.com with SMTP id f9so5533505pju.4
+        for <linux-pm@vger.kernel.org>; Wed, 05 Aug 2020 16:57:45 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google;
+        h=mime-version:content-transfer-encoding:in-reply-to:references
+         :subject:from:cc:to:date:message-id:user-agent;
+        bh=4ifd5xwQw/fF71sDAVj0NW6xVjjKI1lLoO8YrlRE1c0=;
+        b=W6CnF3IFM1qV4vtyI4l+BsHliSAapqyzRfwP5beGaDhXjDfZFPIU6UStOC92nizOTo
+         aWkDKwkFohx7OKn2mg8i/RSJrfwtBoR5s6iBJWAGa9yjAqbJVL7kn4mG5Ax8Ih/a0UGL
+         b1ZjUdMSZyOOwYExEooYKVQan12BTOgKsSKo0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:content-transfer-encoding
+         :in-reply-to:references:subject:from:cc:to:date:message-id
+         :user-agent;
+        bh=4ifd5xwQw/fF71sDAVj0NW6xVjjKI1lLoO8YrlRE1c0=;
+        b=B7lCaEQtismbKXbvxylPZ7/cRK0bxk4e8SF/Hz7HFAOKC4ZjKmtsfO4Ze2gUosqiaE
+         IRv7AAXbGyRN3izWrCY1Bt3bL1RKlQbLK51PP5IT4EPiIgB0Nr5HF/+yu3NowMSrjnI+
+         AW5Yr3YnKPxz6dektKXulVgl7W9GNwZC8PKHO5SctNyIH5jD+UXdfj/XatelsHyo4Riq
+         uvKDd2JeEgmx1LXE/hKywbBXklMKw9MYQ0t88Bo4Vn1AbqJW96bTicm/vhI09i4JrwGU
+         VdPHjUdR1J1T1VNfI0ndy+NdF33+w5vUXj1ftXTGuhy5Z52lZdLpBGRA4eKHVjy0rTp5
+         xiHA==
+X-Gm-Message-State: AOAM533f5EV9qVpwi3CRIA4MNAxFVzxAivQO0wAh9obu1kUBDDOxrkSm
+        JZJepz3LgDMDTqFFrqbg0/poR4HjPNY=
+X-Google-Smtp-Source: ABdhPJxdV4c+ByHIoyl3UTQ5JOq/H3l5NMy7snS9vWIKQev3DSMuRd8Yi8bmuJJTKYnajrrlgKX1jg==
+X-Received: by 2002:a17:90a:f68a:: with SMTP id cl10mr5578673pjb.40.1596671864307;
+        Wed, 05 Aug 2020 16:57:44 -0700 (PDT)
+Received: from chromium.org ([2620:15c:202:1:3e52:82ff:fe6c:83ab])
+        by smtp.gmail.com with ESMTPSA id go12sm4214725pjb.2.2020.08.05.16.57.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 05 Aug 2020 16:57:43 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200805130436.3d2g7z2rsdoesuuk@vireshk-mac-ubuntu>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <98050322-9ba6-303c-4ca4-07baa56ebd80@codeaurora.org>
+References: <1596541616-27688-1-git-send-email-rnayak@codeaurora.org> <1596541616-27688-2-git-send-email-rnayak@codeaurora.org> <159660954201.1360974.5176671532597020049@swboyd.mtv.corp.google.com> <98050322-9ba6-303c-4ca4-07baa56ebd80@codeaurora.org>
+Subject: Re: [PATCH 1/3] dt-bindings: power: Introduce 'assigned-performance-states' property
+From:   Stephen Boyd <swboyd@chromium.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
+To:     Rajendra Nayak <rnayak@codeaurora.org>, bjorn.andersson@linaro.org,
+        robh+dt@kernel.org, ulf.hansson@linaro.org
+Date:   Wed, 05 Aug 2020 16:57:41 -0700
+Message-ID: <159667186194.1360974.10053425753327700919@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.9.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 05, 2020 at 06:34:36PM +0530, Viresh Kumar wrote:
-> On 05-08-20, 12:04, Lukasz Luba wrote:
-> > I know that Viresh is going to develop patches and improve these
-> > cpufreq stats framework. Maybe he also had this 'aggregation' in mind.
-> > I will leave it him.
->
-> I am only going to look at cpufreq's view of stats independently from
-> the firmware.
->
+Quoting Rajendra Nayak (2020-08-05 01:13:06)
+>=20
+> On 8/5/2020 12:09 PM, Stephen Boyd wrote:
+> > Quoting Rajendra Nayak (2020-08-04 04:46:54)
+> >=20
+> >> +       device's performance, also known as DVFS techniques. The list =
+of performance
+> >> +       state values should correspond to the list of power domains sp=
+ecified as part
+> >> +       of the power-domains property.
+> >=20
+> > This is different than assigned-clock-rates. I guess that's OK because
+> > we don't need to assign parents with more specifiers. Maybe it should be
+> > worded more strongly to clearly state that each cell corresponds to one
+> > power domain? And that it should match the opp-level inside any OPP
+> > table for the power domain?
+>=20
+> Sure, I'll reword it to make it clear that we need the same number of cel=
+ls
+> as power-domains, and as you pointed out below that 0 corresponds to not =
+setting
+> anything.
+>=20
+> For the matching of opp-level inside the OPP table of the power-domain, I=
+ don't
+> think from the power-domain bindings we limit providers with only OPP tab=
+les to
+> support performance states? It could be just a range that the provider ma=
+nages
+> internally?
 
-+1, I agree with that. Kernel must avoid any logic to aggregate or
-interpret the data in a generic way. The userspace tools can manage that
-especially if this tend to be platform specific.
-
---
-Regards,
-Sudeep
+Ok. The example made it match so maybe that can be clarified as well
+that it doesn't need to match any OPP table performance state.
