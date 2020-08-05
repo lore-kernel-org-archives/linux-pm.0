@@ -2,100 +2,134 @@ Return-Path: <SRS0=bDVj=BP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 22D79C433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 16:41:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B354CC433E0
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 16:51:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E46872067D
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 16:41:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="gVqWoW0G"
+	by mail.kernel.org (Postfix) with ESMTP id 9749022D00
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 16:51:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725999AbgHEQlB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Aug 2020 12:41:01 -0400
-Received: from aserp2120.oracle.com ([141.146.126.78]:52080 "EHLO
-        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727115AbgHEQii (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2020 12:38:38 -0400
-Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
-        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 075BS1Fh028001;
-        Wed, 5 Aug 2020 11:34:08 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=date : from : to : cc
- : subject : message-id : references : mime-version : content-type :
- in-reply-to; s=corp-2020-01-29;
- bh=7pIsLGqMjIgL87suiIaeNB75q2taIqw/jMzR5b9gh7E=;
- b=gVqWoW0GUND4SXsTdTj42hKtT0Igc/eqPZHKXy9+Scve/pr7PhCMgzFgeQI5cpBodBpv
- 9kDGVgtNjb5MQCGBVcPm1yOR16evziikZafORHUebh4NXuNDy/zcWyx45GA72fWeMtkP
- 80mlyaQRUR+Bvz1kVB6AB7NI+8F/1o5vrLQl5IkMQkb9SPt4pnU3s4irs7nb2eP7jjw4
- SDHe2I5M0ATO2MW3KMNrJqQg/Jyjc8FFepZotFa3aK5K/TGExTwZ0ThJ2W2Iw1aG3hTg
- NTgV/wRElZ0Ils+pFAPXe0vnrNxKtp43x+54g8EJWhWxn/otPhiQDpQYgfKEvJvvKsad Ow== 
-Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
-        by aserp2120.oracle.com with ESMTP id 32qnd41rw0-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 05 Aug 2020 11:34:08 +0000
-Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
-        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 075BSswc034976;
-        Wed, 5 Aug 2020 11:34:08 GMT
-Received: from userv0122.oracle.com (userv0122.oracle.com [156.151.31.75])
-        by aserp3020.oracle.com with ESMTP id 32pdnt2jk4-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 05 Aug 2020 11:34:07 +0000
-Received: from abhmp0002.oracle.com (abhmp0002.oracle.com [141.146.116.8])
-        by userv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 075BY3U2012723;
-        Wed, 5 Aug 2020 11:34:03 GMT
-Received: from kadam (/41.57.98.10)
-        by default (Oracle Beehive Gateway v4.0)
-        with ESMTP ; Wed, 05 Aug 2020 04:34:02 -0700
-Date:   Wed, 5 Aug 2020 14:33:51 +0300
-From:   Dan Carpenter <dan.carpenter@oracle.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Dongdong Yang <contribute.kernel@gmail.com>, juri.lelli@redhat.com,
-        peterz@infradead.org, bsegall@google.com, gulinghua@xiaomi.com,
-        duhui@xiaomi.com, rocking@linux.alibaba.com,
-        devel@driverdev.osuosl.org, vincent.guittot@linaro.org,
-        tanggeliang@xiaomi.com, mingo@redhat.com, yangdongdong@xiaomi.com,
-        mgorman@suse.de, linux-pm@vger.kernel.org, rostedt@goodmis.org,
-        fengwei@xiaomi.com, taojun@xiaomi.com, dietmar.eggemann@arm.com,
-        huangqiwu@xiaomi.com, gregkh@linuxfoundation.org,
-        rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
-        zhangguoquan@xiaomi.com
-Subject: Re: [PATCH v3] Provide USF for the portable equipment.
-Message-ID: <20200805113351.GE1793@kadam>
-References: <cover.1596464894.git.yangdongdong@xiaomi.com>
- <20200804054728.ojudxu5fmd54lar5@vireshk-mac-ubuntu>
+        id S1728198AbgHEQvx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Aug 2020 12:51:53 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:54724 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728068AbgHEQtr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2020 12:49:47 -0400
+Received: from 89-64-88-23.dynamic.chello.pl (89.64.88.23) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.415)
+ id 685fe47108670c4b; Wed, 5 Aug 2020 18:49:42 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Sakari Ailus <sakari.ailus@linux.intel.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Alan Stern <stern@rowland.harvard.edu>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Wolfram Sang <wsa@kernel.org>
+Subject: Re: [PATCH] PM: runtime: Add kerneldoc comments to multiple helpers
+Date:   Wed, 05 Aug 2020 18:49:41 +0200
+Message-ID: <2587608.ek5DdOIzB0@kreacher>
+In-Reply-To: <20200805084928.GK13316@paasikivi.fi.intel.com>
+References: <2672940.cHDmkauF2A@kreacher> <CAJZ5v0jDpuKYJED90CveWgfYcoA60X5qYY6U6CJmEFd7KDiY-A@mail.gmail.com> <20200805084928.GK13316@paasikivi.fi.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200804054728.ojudxu5fmd54lar5@vireshk-mac-ubuntu>
-User-Agent: Mutt/1.9.4 (2018-02-28)
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9703 signatures=668679
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 spamscore=0 mlxscore=0
- bulkscore=0 adultscore=0 phishscore=0 malwarescore=0 mlxlogscore=987
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2008050096
-X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9703 signatures=668679
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 clxscore=1015 mlxscore=0
- priorityscore=1501 mlxlogscore=999 malwarescore=0 adultscore=0
- lowpriorityscore=0 spamscore=0 bulkscore=0 phishscore=0 impostorscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
- definitions=main-2008050096
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 04, 2020 at 11:17:28AM +0530, Viresh Kumar wrote:
-> Sending updated patchset for this isn't going to help you my friend. You need
-> people (maintainers) to agree on the idea here first.
+On Wednesday, August 5, 2020 10:49:28 AM CEST Sakari Ailus wrote:
+> Hi Rafael,
+> 
+> On Tue, Aug 04, 2020 at 12:15:03PM +0200, Rafael J. Wysocki wrote:
+> > Hi Sakari,
+> > 
+> > On Tue, Aug 4, 2020 at 1:05 AM Sakari Ailus
+> > <sakari.ailus@linux.intel.com> wrote:
+> > >
+> > > Hi Rafael,
+> > >
+> > > On Mon, Aug 03, 2020 at 01:36:52PM +0200, Rafael J. Wysocki wrote:
+> > > > Hi Sakari,
+> > > >
+> > > > On Mon, Aug 3, 2020 at 10:53 AM Sakari Ailus
+> > > > <sakari.ailus@linux.intel.com> wrote:
+> > > > >
+> > > > > Hi Rafael,
+> > > > >
+> > > > > Thanks for the patch.
+> > > > >
+> > > > > On Fri, Jul 31, 2020 at 07:03:26PM +0200, Rafael J. Wysocki wrote:
+> > > > > > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > >
+> > > > > > Add kerneldoc comments to multiple PM-runtime helper functions
+> > > > > > defined as static inline wrappers around lower-level routines to
+> > > > > > provide quick reference decumentation of their behavior.
+> > > > >
+> > > > > > Some of them are similar to each other with subtle differences only
+> > > > > > and the behavior of some of them may appear as counter-intuitive, so
+> > > > > > clarify all that to avoid confusion.
+> > > > > >
+> > > > > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > > > > > ---
+> > > > > >  include/linux/pm_runtime.h |  246 +++++++++++++++++++++++++++++++++++++++++++++
+> > > > > >  1 file changed, 246 insertions(+)
+> > > > > >
+> > > > > > Index: linux-pm/include/linux/pm_runtime.h
+> > > > > > ===================================================================
+> > > > > > --- linux-pm.orig/include/linux/pm_runtime.h
+> > > > > > +++ linux-pm/include/linux/pm_runtime.h
+> > > > > > @@ -60,58 +60,151 @@ extern void pm_runtime_put_suppliers(str
+> > > > > >  extern void pm_runtime_new_link(struct device *dev);
+> > > > > >  extern void pm_runtime_drop_link(struct device *dev);
+> > > > > >
+> > > > > > +/**
+> > > > > > + * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
+> > > > > > + * @dev: Target device.
+> > > > > > + *
+> > > > > > + * Increment the runtime PM usage counter of @dev if its runtime PM status is
+> > > > > > + * %RPM_ACTIVE and its runtime PM usage counter is greater than 0.
+> > > > >
+> > > > > The implementation of the non-runtime PM variants (used when CONFIG_PM is
+> > > > > disabled) isn't here but I think it'd be nice if their behaviour was also
+> > > > > documented here. pm_runtime_get_if_in_use() returns -EINVAL if CONFIG_PM is
+> > > > > disabled, for instance.
+> > > >
+> > > > These kerneldoc comments cover the CONFIG_PM case only.  The behavior
+> > > > for !CONFIG_PM needs to be figured out from the code, if it matters.
+> > > >
+> > > > I'm not sure why it would matter for pm_runtime_get_if_in_use(), in particular?
+> > >
+> > > Just as an example. It depends on the use case, but there have been bugs
+> > > related to these (e.g. commit 4d471563d87b2b83e73b8abffb9273950e6d2e36),
+> > > likely at least partly because it's extra manual work to figure out what a
+> > > given API function could return when it's not documented.
+> > 
+> > If it is a static inline wrapper around another exported function,
+> > whoever uses it should look at the documentation of the function being
+> > wrapped anyway, so IMO it is sufficient to document the return values
+> > in there and also (as stated in another message) this avoids the need
+> > to manually synchronize the kerneldoc comments every time a new return
+> > value is added or removed.
+> > 
+> > In the particular case above it might be useful to change
+> > pm_runtime_get_if_active() to return bool, make it return "false" if
+> > PM-runtime is disabled for the device and update the callers
+> > accordingly (some of them still appear to be doing the wrong thing).
+> > 
+> > IOW, it would return "true" only if the usage counter has been
+> > incremented and so it needs to be decremented.
+> 
+> In the case of above commit, the driver is interested in knowing whether
+> the device is powered on, and so accessible. That's the case if PM is
+> disabled, so it should return true. Then we do lose the information whether
+> the counter was touched. I guess we should keep it as-is.
 
-It doesn't take much work to make the code look nice.  Writing pretty
-code is always a good idea because then people assume you know what
-you're doing.
+Fair enough.
 
-regards,
-dan carpenter
+
 
