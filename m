@@ -2,92 +2,112 @@ Return-Path: <SRS0=bDVj=BP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC1C3C433E0
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 17:21:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2DEFC433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 17:30:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A747D22D06
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 17:21:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 983AC22D07
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 17:30:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728669AbgHERUt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Aug 2020 13:20:49 -0400
-Received: from foss.arm.com ([217.140.110.172]:33666 "EHLO foss.arm.com"
+        id S1728710AbgHERaN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Aug 2020 13:30:13 -0400
+Received: from foss.arm.com ([217.140.110.172]:33806 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728650AbgHERSG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 5 Aug 2020 13:18:06 -0400
+        id S1728629AbgHER1g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Aug 2020 13:27:36 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 1F4401FB;
-        Wed,  5 Aug 2020 03:35:07 -0700 (PDT)
-Received: from localhost (e108754-lin.cambridge.arm.com [10.1.198.53])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id B26013FA32;
-        Wed,  5 Aug 2020 03:35:06 -0700 (PDT)
-Date:   Wed, 5 Aug 2020 11:35:05 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     rjw@rjwysocki.net, dietmar.eggemann@arm.com,
-        catalin.marinas@arm.com, sudeep.holla@arm.com, will@kernel.org,
-        linux@armlinux.org.uk, mingo@redhat.com, peterz@infradead.org,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/7] cpufreq: set invariance scale factor on
- transition end
-Message-ID: <20200805103452.GA4817@arm.com>
-References: <20200722093732.14297-1-ionela.voinescu@arm.com>
- <20200722093732.14297-3-ionela.voinescu@arm.com>
- <20200730041334.cjg5mc5xpopd2lst@vireshk-mac-ubuntu>
- <20200803135838.GB9512@arm.com>
- <20200804062611.6jpra73hmhybdw3i@vireshk-mac-ubuntu>
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DE2281063;
+        Wed,  5 Aug 2020 05:41:33 -0700 (PDT)
+Received: from e107158-lin.cambridge.arm.com (e107158-lin.cambridge.arm.com [10.1.195.21])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A34A93FA1C;
+        Wed,  5 Aug 2020 05:41:31 -0700 (PDT)
+Date:   Wed, 5 Aug 2020 13:41:29 +0100
+From:   Qais Yousef <qais.yousef@arm.com>
+To:     Dongdong Yang <contribute.kernel@gmail.com>
+Cc:     Greg KH <gregkh@linuxfoundation.org>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "juri.lelli@redhat.com" <juri.lelli@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Dietmar Eggemann <Dietmar.Eggemann@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Benjamin Segall <bsegall@google.com>,
+        "mgorman@suse.de" <mgorman@suse.de>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "devel@driverdev.osuosl.org" <devel@driverdev.osuosl.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "yangdongdong@xiaomi.com" <yangdongdong@xiaomi.com>,
+        "yanziily@xiaomi.com" <yanziily@xiaomi.com>,
+        "rocking@linux.alibaba.com" <rocking@linux.alibaba.com>
+Subject: Re: [PATCH v4] sched: Provide USF for the portable equipment.
+Message-ID: <20200805124128.kfx7uofqnrtk6kux@e107158-lin.cambridge.arm.com>
+References: <cover.1596526941.git.yangdongdong@xiaomi.com>
+ <820a185b6765d6246ac34f612faedeb35189487c.1596526941.git.yangdongdong@xiaomi.com>
+ <20200804104331.6vphb2iclwz3buig@e107158-lin.cambridge.arm.com>
+ <CADhdXfpxWqYEL_cWVtEAxg-3OWgVZuZ5sLzNm6G+k484kG3HRw@mail.gmail.com>
+ <20200805095341.cmoxmy47ts3ntxee@e107158-lin.cambridge.arm.com>
+ <CADhdXfqJhE6F9q2dhnRhZGQvgJ0GSWXG1AmgL9i+rYqAwxvZDw@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20200804062611.6jpra73hmhybdw3i@vireshk-mac-ubuntu>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <CADhdXfqJhE6F9q2dhnRhZGQvgJ0GSWXG1AmgL9i+rYqAwxvZDw@mail.gmail.com>
+User-Agent: NeoMutt/20171215
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tuesday 04 Aug 2020 at 11:56:11 (+0530), Viresh Kumar wrote:
-[..]
-> > > >  - In __target_index(), cpufreq_freq_transition_end() is called only for
-> > > >    drivers that have synchronous notifications enabled. There is only one
-> > > >    driver that disables them,
-> > > > 
-> > > >    drivers/cpufreq/powernow-k8.c:1142: .flags = CPUFREQ_ASYNC_NOTIFICATION,
-> > > > 
-> > > >    which is deprecated.
-> > > 
-> > > I don't think this is deprecated.
-> 
-> Heh, maybe I misunderstood. I thought you are talking about the flag,
-> while you were talking about the driver.
-> 
-> > Sorry, possibly 'deprecated' is a strong word.
-> > 
-> > As far as I knew acpi_cpufreq was recommended more recently for K8/K10
-> > CPUs so that's why I decided not to create a special case for it, also
-> > considering that it was not supporting cpufreq-based frequency
-> > invariance to begin with.
-> > 
-> > We could support this as well by having a call to arch_set_freq_scale()
-> > on the else path in __target_index(). But given that there was only this
-> > one user of CPUFREQ_ASYNC_NOTIFICATION, I thought I'd propose this simpler
-> > version first.
-> > 
-> > Let me know if my reasoning is wrong.
-> 
-> Nevertheless, I don't think you need to mention this detail in
-> changelog for powernow-k8 as cpufreq_freq_transition_end() does get
-> called for it as well, by the driver instead of the core.
-> 
+On 08/05/20 19:13, Dongdong Yang wrote:
+> Appreciate Qais for your clamp implementation. I would like to add traces
+> for uclamp_rq_util_with and feedback you if I run into any issues.
 
-Agreed!
+Thanks.
 
-Many thanks,
-Ionela.
+FYI, top posting in LKML is frowned upon. Please put your answer underneath the
+quoted text.
 
-> -- 
-> viresh
+> 
+> The util would not be adjusted as soon as FB screen on notification be
+> received by USF from kernel level if it is set by sched_usf_non_ux, no
+> matter whether screen on or off. However, sched_util_clamp_min/max have not
+> been recovered until user space screen on detection. The screen on response
+> would not be in time for the sensitive user when many background tasks are
+> running.  Whether the kernel module could also
+> set sched_util_clamp_min/max?
+
+For boosting, are you just changing the sysctl or are you actively using
+sched_setattr() to boost tasks too?
+
+Please have a look at the documentation for the sysctl interface.
+
+	https://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git/tree/Documentation/admin-guide/sysctl/kernel.rst?h=sched/core#n1065
+
+In summary, they just control the _allowed_ levels. So you can use it to
+cap/throttle the maximum performance level the system is running at. But you
+can't use it to boost the whole system. You must use the sched_setattr() to
+boost important tasks individually or if all the tasks are in a cgroup you
+can use that. For cgroup interface there's a caveat. If you want to use it
+let me know so I can explain how boosting would work there.
+
+I advise to use the sched_setattr() interface to target and boost those
+important tasks only. You can as well be smart and target all the background
+tasks to cap them via sched_setattr(). In this case you wouldn't have to modify
+the sysctl_sched_util_clamp_min/max.
+
+I don't see uclamp being a suitable interface for in-kernel users. PM_QOS is
+more suitable in my opinion for in-kernel users if you want to impact the
+overall system performance.
+
+I might have misunderstood what you were saying above. If so, can you please
+rephrase?
+
+Thanks
+
+--
+Qais Yousef
