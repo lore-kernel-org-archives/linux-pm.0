@@ -2,129 +2,94 @@ Return-Path: <SRS0=bDVj=BP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6697C433DF
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 19:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85335C433DF
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 19:24:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8EDBD206D4
-	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 19:21:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="QLWP0f4m"
+	by mail.kernel.org (Postfix) with ESMTP id 447D72075D
+	for <linux-pm@archiver.kernel.org>; Wed,  5 Aug 2020 19:24:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728495AbgHETVX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 5 Aug 2020 15:21:23 -0400
-Received: from smtp-fw-9101.amazon.com ([207.171.184.25]:61112 "EHLO
-        smtp-fw-9101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728929AbgHERmr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 5 Aug 2020 13:42:47 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1596649366; x=1628185366;
-  h=date:from:to:cc:message-id:references:mime-version:
-   in-reply-to:subject;
-  bh=lNEkMbYi0vdrAauS7Kx1F2bZJKjVMy/W93IpO/fQsUY=;
-  b=QLWP0f4m1iXMxE7WwpXelDNbJnoNpF+g0+s6zbmV6NzsvnU9VULdxkeI
-   gY9/qb9cgZPYou8CeQkx/eJVolTOG/oZ7NyXiJT+rDnyjMXLfW03bDpfT
-   KqB676qf2oJz5gqmTw4a4slQHYINimnhvUdLlAyixXdcL2ljd5cHg23Bh
-   E=;
-IronPort-SDR: 9ySw8fWle7MttK7suY4BIhxnPpUpw/OAAJafe5LAcUtSaR7nXlHuY3JimXe5qJR44ypaJ2YRoP
- 96gheUehfPyA==
-X-IronPort-AV: E=Sophos;i="5.75,438,1589241600"; 
-   d="scan'208";a="57653120"
-Subject: Re: [PATCH v2 01/11] xen/manage: keep track of the on-going suspend mode
-Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-2c-579b7f5b.us-west-2.amazon.com) ([10.47.23.38])
-  by smtp-border-fw-out-9101.sea19.amazon.com with ESMTP; 05 Aug 2020 17:42:44 +0000
-Received: from EX13MTAUEB002.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan3.pdx.amazon.com [10.170.41.166])
-        by email-inbound-relay-2c-579b7f5b.us-west-2.amazon.com (Postfix) with ESMTPS id C5250A2967;
-        Wed,  5 Aug 2020 17:42:42 +0000 (UTC)
-Received: from EX13D08UEB001.ant.amazon.com (10.43.60.245) by
- EX13MTAUEB002.ant.amazon.com (10.43.60.12) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Wed, 5 Aug 2020 17:42:20 +0000
-Received: from EX13MTAUEA002.ant.amazon.com (10.43.61.77) by
- EX13D08UEB001.ant.amazon.com (10.43.60.245) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Wed, 5 Aug 2020 17:42:20 +0000
-Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
- (172.22.96.68) by mail-relay.amazon.com (10.43.61.169) with Microsoft SMTP
- Server id 15.0.1497.2 via Frontend Transport; Wed, 5 Aug 2020 17:42:19 +0000
-Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
-        id D027740865; Wed,  5 Aug 2020 17:42:19 +0000 (UTC)
-Date:   Wed, 5 Aug 2020 17:42:19 +0000
-From:   Anchal Agarwal <anchalag@amazon.com>
-To:     Boris Ostrovsky <boris.ostrovsky@oracle.com>
-CC:     Stefano Stabellini <sstabellini@kernel.org>, <tglx@linutronix.de>,
-        <mingo@redhat.com>, <bp@alien8.de>, <hpa@zytor.com>,
-        <x86@kernel.org>, <jgross@suse.com>, <linux-pm@vger.kernel.org>,
-        <linux-mm@kvack.org>, <kamatam@amazon.com>,
-        <konrad.wilk@oracle.com>, <roger.pau@citrix.com>,
-        <axboe@kernel.dk>, <davem@davemloft.net>, <rjw@rjwysocki.net>,
-        <len.brown@intel.com>, <pavel@ucw.cz>, <peterz@infradead.org>,
-        <eduval@amazon.com>, <sblbir@amazon.com>,
-        <xen-devel@lists.xenproject.org>, <vkuznets@redhat.com>,
-        <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <dwmw@amazon.co.uk>, <benh@kernel.crashing.org>
-Message-ID: <20200805174219.GA16105@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
-References: <alpine.DEB.2.21.2007211640500.17562@sstabellini-ThinkPad-T480s>
- <20200722180229.GA32316@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <alpine.DEB.2.21.2007221645430.17562@sstabellini-ThinkPad-T480s>
- <20200723225745.GB32316@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <alpine.DEB.2.21.2007241431280.17562@sstabellini-ThinkPad-T480s>
- <66a9b838-70ed-0807-9260-f2c31343a081@oracle.com>
- <20200730230634.GA17221@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <53b577a3-6af9-5587-7e47-485be38b3653@oracle.com>
- <20200804234201.GA23820@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
- <50d0dbe1-533e-792a-6916-8c72d623064a@oracle.com>
+        id S1729124AbgHETYP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 5 Aug 2020 15:24:15 -0400
+Received: from foss.arm.com ([217.140.110.172]:33804 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728709AbgHER1g (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 5 Aug 2020 13:27:36 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BD457D6E;
+        Wed,  5 Aug 2020 04:04:46 -0700 (PDT)
+Received: from [10.37.12.81] (unknown [10.37.12.81])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E4C2F3FA32;
+        Wed,  5 Aug 2020 04:04:44 -0700 (PDT)
+Subject: Re: [PATCH 0/4] CPUFreq statistics retrieved by drivers
+To:     Florian Fainelli <f.fainelli@gmail.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org
+Cc:     sudeep.holla@arm.com, cristian.marussi@arm.com,
+        viresh.kumar@linaro.org, rjw@rjwysocki.net
+References: <20200729151208.27737-1-lukasz.luba@arm.com>
+ <a3354ae8-f40f-83f2-d6eb-7f588af75e97@gmail.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <119ce268-18dc-7a4c-b0b2-3a66ff9ff4b0@arm.com>
+Date:   Wed, 5 Aug 2020 12:04:42 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <50d0dbe1-533e-792a-6916-8c72d623064a@oracle.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <a3354ae8-f40f-83f2-d6eb-7f588af75e97@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Aug 05, 2020 at 09:31:13AM -0400, Boris Ostrovsky wrote:
-> CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+
+
+On 8/4/20 6:27 PM, Florian Fainelli wrote:
 > 
 > 
+> On 7/29/2020 8:12 AM, Lukasz Luba wrote:
+>> Hi all,
+>>
+>> The existing CPUFreq framework does not tracks the statistics when the
+>> 'fast switch' is used or when firmware changes the frequency independently
+>> due to e.g. thermal reasons. However, the firmware might track the frequency
+>> changes and expose this to the kernel.
 > 
-> On 8/4/20 7:42 PM, Anchal Agarwal wrote:
-> >
-> > I think this could be done. PM_HIBERNATION_PREPARE could return -ENOTSUPP
-> > for arm and pvh dom0 when the notifier call chain is invoked for this case
-> > in hibernate(). This will then be an empty notifier just for checking two
-> > usecases.
-> > Also, for pvh dom0, the earlier code didn't register any notifier,
-> > with this approach you are suggesting setup the notifier for hvm/pvh dom0 and
-> > arm but fail during notifier call chain during PM_HIBERNATION_PREPARE ?
+> Or the firmware might have changed the CPU frequency in response to a
+> request from the secure world for instance.
+
+Possible
+
 > 
+>>
+>> This patch set aims to introduce CPUfreq statistics gathered by firmware
+>> and retrieved by CPUFreq driver. It would require a new API functions
+>> in the CPUFreq, which allows to poke drivers to get these stats.
 > 
-> Right.
+>  From a debugging perspective, it would be helpful if the firmware
+> maintained statistics were exposed as a super-set of the Linux cpufreq
+> statistics and aggregated into them such that you could view the normal
+> world vs. secure world residency of a given frequency point. This would
+> help because a lot of times, Linux requests freq X, but the secure world
+> requires freq Y (with X >= Y) and people do not really understand why
+> the resulting power usage is higher for instance.
 > 
+> What are your thoughts on this?
 > 
-> (Although the earlier code did register the notifier:
-> xen_setup_pm_notifier() would return an error for !xen_hvm_domain() and
-> PVH *is* an HVM domain, so registration would actually happen)
->
-Yes you are right. My bad, what I meant with "earlier code" was whatever we
-discussed w.r.t to removing the notifier all together, it won't be registered for
-pvh dom0.
-Anyways got the point :)
-> 
-> >
-> > I think still getting rid of suspend mode that was earlier a part of this
-> > notifier is a good idea as it seems redundant as you pointed out earlier.
-> 
-> 
-> Yes.
-> 
-> 
-> -boris
-Thanks,
-Anchal
-> 
-> 
+
+I know that Viresh is going to develop patches and improve these
+cpufreq stats framework. Maybe he also had this 'aggregation' in mind.
+I will leave it him.
+
+Thank you for your feedback.
+
+Regards,
+Lukasz
+
+
+
