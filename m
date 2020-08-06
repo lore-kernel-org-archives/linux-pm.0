@@ -2,85 +2,79 @@ Return-Path: <SRS0=7XOj=BQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MIME_BASE64_TEXT,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D27AEC433DF
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 17:55:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EB3EC433E0
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 17:55:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3774C206B2
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 17:55:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="QcJRFrIg"
+	by mail.kernel.org (Postfix) with ESMTP id D8D55206C3
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 17:55:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728332AbgHFRzZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Aug 2020 13:55:25 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:46434 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1727891AbgHFQ2v (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2020 12:28:51 -0400
-X-UUID: 155ce355808a464ab577f90b1ec586ed-20200806
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=NLDH9FVoVAm+xVXhqQoVsL3Aq/8DfsNuSyGryiajX7w=;
-        b=QcJRFrIgtJ+y1E3ChRm9NKV4aj7ax+65MZmJ9gcqNqJIPv5uy/WCZ8FcCD/AdJXxKVA/eQNdsjJhw7fDmFC4z9QQ+mdcMdp2Y1k5HwiK81iOZ8ZYCy2fH+xphMundZ92NgWeZUrxT716IvR2WPcaqI6PFgua26candVndChBDog=;
-X-UUID: 155ce355808a464ab577f90b1ec586ed-20200806
-Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw01.mediatek.com
-        (envelope-from <hector.yuan@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.10 Build 0809 with TLS)
-        with ESMTP id 314563032; Thu, 06 Aug 2020 20:18:43 +0800
-Received: from mtkcas07.mediatek.inc (172.21.101.84) by
- mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 6 Aug 2020 20:18:40 +0800
-Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas07.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 6 Aug 2020 20:18:41 +0800
-From:   Hector Yuan <hector.yuan@mediatek.com>
-To:     <linux-mediatek@lists.infradead.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Shawn Guo <shawnguo@kernel.org>, Li Yang <leoyang.li@nxp.com>,
-        Vinod Koul <vkoul@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        Geert Uytterhoeven <geert+renesas@glider.be>,
-        Olof Johansson <olof@lixom.net>
-CC:     <wsd_upstream@mediatek.com>, <hector.yuan@mediatek.com>
-Subject: [PATCH v1] cpufreq: mediatek-hw: Add support for Mediatek cpufreq HW driver
-Date:   Thu, 6 Aug 2020 20:18:38 +0800
-Message-ID: <1596716320-19811-1-git-send-email-hector.yuan@mediatek.com>
-X-Mailer: git-send-email 1.7.9.5
+        id S1726789AbgHFRzl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 Aug 2020 13:55:41 -0400
+Received: from foss.arm.com ([217.140.110.172]:45010 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728118AbgHFQ2v (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 6 Aug 2020 12:28:51 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BE883113E;
+        Thu,  6 Aug 2020 06:37:41 -0700 (PDT)
+Received: from bogus (unknown [10.37.12.53])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7A6EA3F7D7;
+        Thu,  6 Aug 2020 06:37:39 -0700 (PDT)
+Date:   Thu, 6 Aug 2020 14:37:31 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Florian Fainelli <f.fainelli@gmail.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, cristian.marussi@arm.com,
+        rjw@rjwysocki.net, Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH 0/4] CPUFreq statistics retrieved by drivers
+Message-ID: <20200806133731.GA4104@bogus>
+References: <20200729151208.27737-1-lukasz.luba@arm.com>
+ <a3354ae8-f40f-83f2-d6eb-7f588af75e97@gmail.com>
+ <119ce268-18dc-7a4c-b0b2-3a66ff9ff4b0@arm.com>
+ <20200805130436.3d2g7z2rsdoesuuk@vireshk-mac-ubuntu>
+ <20200805160312.GC4818@bogus>
+ <4962aa3c-2b56-5232-c5d7-286ca1363446@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
-Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4962aa3c-2b56-5232-c5d7-286ca1363446@gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-VGhlIENQVWZyZXEgSFcgcHJlc2VudCBpbiBzb21lIE1lZGlhdGVrIGNoaXBzZXRzIG9mZmxvYWRz
-IHRoZSBzdGVwcyBuZWNlc3NhcnkNCmZvciBjaGFuZ2luZyB0aGUgZnJlcXVlbmN5IG9mIENQVXMu
-IFRoZSBkcml2ZXIgaW1wbGVtZW50cyB0aGUgY3B1ZnJlcQ0KZHJpdmVyIGludGVyZmFjZSBmb3Ig
-dGhpcyBoYXJkd2FyZSBlbmdpbmUuIA0KDQpUaGlzIHBhdGNoIGRlcGVuZHMgb24gdGhlIE1UNjc5
-OSBEVFMgcGF0Y2ggc3VibWl0dGVkIGJ5IEhhbmtzIENoZW4NCiBodHRwczovL2xrbWwub3JnL2xr
-bWwvMjAyMC84LzQvMTA5NA0KDQpIZWN0b3IuWXVhbiAoMik6DQogIGNwdWZyZXE6IG1lZGlhdGVr
-LWh3OiBBZGQgc3VwcG9ydCBmb3IgTWVkaWF0ZWsgY3B1ZnJlcQ0KICBkdC1iaW5kaW5nczogY3B1
-ZnJlcTogYWRkICBNZWRpYVRlayBjcHVmcmVxIGJpbmRpbmdzDQoNCiAuLi4vYmluZGluZ3MvY3B1
-ZnJlcS9jcHVmcmVxLW1lZGlhdGVrLWh3LnlhbWwgICAgICB8ICAgNTYgKysrKysNCiBhcmNoL2Fy
-bTY0L2NvbmZpZ3MvZGVmY29uZmlnICAgICAgICAgICAgICAgICAgICAgICB8ICAgIDEgKw0KIGRy
-aXZlcnMvY3B1ZnJlcS9LY29uZmlnLmFybSAgICAgICAgICAgICAgICAgICAgICAgIHwgICAxMSAr
-DQogZHJpdmVycy9jcHVmcmVxL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAgICAgfCAg
-ICAxICsNCiBkcml2ZXJzL2NwdWZyZXEvbWVkaWF0ZWstY3B1ZnJlcS1ody5jICAgICAgICAgICAg
-ICB8ICAyNTUgKysrKysrKysrKysrKysrKysrKysNCiA1IGZpbGVzIGNoYW5nZWQsIDMyNCBpbnNl
-cnRpb25zKCspDQogY3JlYXRlIG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
-aW5kaW5ncy9jcHVmcmVxL2NwdWZyZXEtbWVkaWF0ZWstaHcueWFtbA0KIGNyZWF0ZSBtb2RlIDEw
-MDY0NCBkcml2ZXJzL2NwdWZyZXEvbWVkaWF0ZWstY3B1ZnJlcS1ody5jDQoNCg==
+On Wed, Aug 05, 2020 at 10:33:02AM -0700, Florian Fainelli wrote:
+>
+>
+> On 8/5/2020 9:03 AM, Sudeep Holla wrote:
+> > On Wed, Aug 05, 2020 at 06:34:36PM +0530, Viresh Kumar wrote:
+> >> On 05-08-20, 12:04, Lukasz Luba wrote:
+> >>> I know that Viresh is going to develop patches and improve these
+> >>> cpufreq stats framework. Maybe he also had this 'aggregation' in mind.
+> >>> I will leave it him.
+> >>
+> >> I am only going to look at cpufreq's view of stats independently from
+> >> the firmware.
+> >>
+> >
+> > +1, I agree with that. Kernel must avoid any logic to aggregate or
+> > interpret the data in a generic way. The userspace tools can manage that
+> > especially if this tend to be platform specific.
+>
+> We can probably standardize on how to expose the firmware maintained
+> statistics such that these tools do not have to widely vary from
+> platform to platform, right?
 
+Ofcourse. I just don't want any logic that interpret/analyse the stats
+comparing with the in-kernel stats or otherwise.
+
+--
+Regards,
+Sudeep
