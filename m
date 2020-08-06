@@ -2,83 +2,99 @@ Return-Path: <SRS0=7XOj=BQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD162C433E0
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 16:47:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 582FEC433E1
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 16:57:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 307CB23119
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 16:47:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B58723119
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 16:57:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1596733020;
+	bh=PoWQddXtujhSCVkBqg8jlbbT/TOIWo3jPZgW3tFasjw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=xd8rrFQW3W0ogFGldGe5CBv2FK3l7ahQYV0ENMagiIoPkrsGAxL8kalrJBlqKTgRr
+	 MdnHaIcqHFTwc4yP9f7L86yAkE9H25w4YvA9fZRQIIh/xgSfp2NBJxZ7QBbGTrDS5r
+	 xHvvE8+p+SCXEJZcdX/PAdgCmWaxFkaOvYQW/6ss=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729460AbgHFQrm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Aug 2020 12:47:42 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:50650 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728205AbgHFQn3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2020 12:43:29 -0400
-Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <colin.king@canonical.com>)
-        id 1k3izC-0004aV-Ms; Thu, 06 Aug 2020 16:43:22 +0000
-From:   Colin King <colin.king@canonical.com>
-To:     Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Matthias Brugger <matthias.bgg@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org
-Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][next] thermal: mediatek: remove redundant initialization of variables
-Date:   Thu,  6 Aug 2020 17:43:22 +0100
-Message-Id: <20200806164322.91568-1-colin.king@canonical.com>
-X-Mailer: git-send-email 2.27.0
+        id S1729725AbgHFQ47 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 Aug 2020 12:56:59 -0400
+Received: from mail-pg1-f194.google.com ([209.85.215.194]:36648 "EHLO
+        mail-pg1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728681AbgHFQkm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 6 Aug 2020 12:40:42 -0400
+Received: by mail-pg1-f194.google.com with SMTP id p3so27121834pgh.3;
+        Thu, 06 Aug 2020 09:39:44 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=NGFLJxMeBxJCNtUDHjRW6ZiLVs82vJu7FA4KSa9s8BU=;
+        b=ZCPVEgjElsHlVvJFI36AFgZD2tNn/l0eRBgVjjNS3JYOwTnpUesShQ64aaQwziztbg
+         hNS2kNv/jZWdMMypyaXYOLOf1gK0lwohQnM2IuUTgnPM+pzkqhAOPYd9s3zfA6Vb2t6Z
+         nH1hT0Xeq1UVIW+HqUyIyuGrVzfJnSX5FHLlNVCrT8SGcU/Wf9YtG0qgmw3A5gRqCb+S
+         5gH9zRtoFheT4myIHFBFrX8u//LKvDXTwmOuz3ZScaTlbR1bawzPlURrf11M740PNG2H
+         EPTS99wPwEYaVIksq+qij8ptMZl5IAsheWyWQmWIeYqjtMm7m5kb/O/LOylbv3pPgKSF
+         fnTA==
+X-Gm-Message-State: AOAM530qhH3iew1NiCRmMKQP9mDUaZTgVmVHCEtMKicywPqteTiJN2dg
+        COlVdatINMoMRr8rabbbY7jECEY=
+X-Google-Smtp-Source: ABdhPJylkZQ+5iAfHEgte0gd4yrfCNYNVomE5IG2p4UtcVZBqQMjGgI/WCTWEagKSExRTf0dapNetA==
+X-Received: by 2002:a6b:3bd4:: with SMTP id i203mr10428163ioa.205.1596723384461;
+        Thu, 06 Aug 2020 07:16:24 -0700 (PDT)
+Received: from xps15 ([64.188.179.252])
+        by smtp.gmail.com with ESMTPSA id a16sm1583882ilh.12.2020.08.06.07.16.23
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 06 Aug 2020 07:16:23 -0700 (PDT)
+Received: (nullmailer pid 782817 invoked by uid 1000);
+        Thu, 06 Aug 2020 14:16:22 -0000
+Date:   Thu, 6 Aug 2020 08:16:22 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Ansuel Smith <ansuelsmth@gmail.com>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Rob Herring <robh+dt@kernel.org>, devicetree@vger.kernel.org
+Subject: Re: [RFC PATCH 2/2] dt-bindings: cpufreq: Document Krait CPU Cache
+ scaling
+Message-ID: <20200806141622.GA782018@bogus>
+References: <20200805131200.3234-1-ansuelsmth@gmail.com>
+ <20200805131200.3234-3-ansuelsmth@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200805131200.3234-3-ansuelsmth@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Colin Ian King <colin.king@canonical.com>
+On Wed, 05 Aug 2020 15:11:59 +0200, Ansuel Smith wrote:
+> Document dedicated Krait CPU Cache Scaling driver.
+> 
+> Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+> ---
+>  .../bindings/cpufreq/krait-cache-scale.yaml   | 89 +++++++++++++++++++
+>  1 file changed, 89 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cache-scale.yaml
+> 
 
-There are several variables that are being initialized with values
-that are never read and the variables are being re-assigned later
-on. Remove the redundant initializations.
 
-Addresses-Coverity: ("Unused value")
-Signed-off-by: Colin Ian King <colin.king@canonical.com>
----
- drivers/thermal/mtk_thermal.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+My bot found errors running 'make dt_binding_check' on your patch:
 
-diff --git a/drivers/thermal/mtk_thermal.c b/drivers/thermal/mtk_thermal.c
-index 0bd7aa564bc2..88f3cf75af0d 100644
---- a/drivers/thermal/mtk_thermal.c
-+++ b/drivers/thermal/mtk_thermal.c
-@@ -573,12 +573,12 @@ static int raw_to_mcelsius_v1(struct mtk_thermal *mt, int sensno, s32 raw)
- 
- static int raw_to_mcelsius_v2(struct mtk_thermal *mt, int sensno, s32 raw)
- {
--	s32 format_1 = 0;
--	s32 format_2 = 0;
--	s32 g_oe = 1;
--	s32 g_gain = 1;
--	s32 g_x_roomt = 0;
--	s32 tmp = 0;
-+	s32 format_1;
-+	s32 format_2;
-+	s32 g_oe;
-+	s32 g_gain;
-+	s32 g_x_roomt;
-+	s32 tmp;
- 
- 	if (raw == 0)
- 		return 0;
--- 
-2.27.0
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.example.dt.yaml: qcom-krait-cache: l2-cpufreq: [[384000, 600000, 1200000]] is too short
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.example.dt.yaml: qcom-krait-cache: l2-rates: [[384000000, 1000000000, 1200000000]] is too short
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.example.dt.yaml: qcom-krait-cache: l2-volt: [[1100000, 1100000, 1150000]] is too short
+
+
+See https://patchwork.ozlabs.org/patch/1341295
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure dt-schema is up to date:
+
+pip3 install git+https://github.com/devicetree-org/dt-schema.git@master --upgrade
+
+Please check and re-submit.
 
