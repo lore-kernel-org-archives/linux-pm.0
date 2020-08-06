@@ -7,49 +7,49 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 14247C433DF
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 18:41:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35F4BC433E1
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 18:41:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 61B82221E2
-	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 18:41:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8075F221E2
+	for <linux-pm@archiver.kernel.org>; Thu,  6 Aug 2020 18:41:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1596739267;
-	bh=zSPJaWHqH2p/CnzlIYBwfeQwSQSWPlKg7XPNzrWLNhA=;
+	s=default; t=1596739268;
+	bh=jrfTfMqqNK4Bu08uryiHCRmAlSmR+sRWLonChf0RUVQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=pSsfxcrWwVj7tGVHASdkaV6Od3hiTFMawJJ+bURfbDtGurp7ZkPm7Qgipc6YYA1rY
-	 Y3NqWS9UV7JYhbH8/4Lj89H/w5YHGfI5LA0KzFF6bFU06DIGMmt1gfbDhoTzOXIkWQ
-	 YQyD1UfkCN6KacBcpsCI652Yc725D/xDG/CdtIMo=
+	b=Ko80Bor8GCEX7JN1MeB1nuvWoMc0pLOUAt50hQ/lwhrCg5Q98NtgQIs8LwkMDqoOC
+	 d2zfLqxMeB6XM3KUevuvylAh8L/BRQxRWIvsdwNiQaGfg4rq+G3zOBSnF7Y8w1ZOfe
+	 7QMvon8IscrF/aSeO60d2RQaaHBfi4TIJvM9rNgk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729598AbgHFSkX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 6 Aug 2020 14:40:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33614 "EHLO mail.kernel.org"
+        id S1729774AbgHFSlG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 6 Aug 2020 14:41:06 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33628 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729389AbgHFSkW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 6 Aug 2020 14:40:22 -0400
+        id S1729989AbgHFSkX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 6 Aug 2020 14:40:23 -0400
 Received: from localhost.localdomain (unknown [194.230.155.117])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 5D68A230FF;
-        Thu,  6 Aug 2020 18:24:25 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A6E9422EBD;
+        Thu,  6 Aug 2020 18:24:15 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1596738273;
-        bh=zSPJaWHqH2p/CnzlIYBwfeQwSQSWPlKg7XPNzrWLNhA=;
+        s=default; t=1596738259;
+        bh=jrfTfMqqNK4Bu08uryiHCRmAlSmR+sRWLonChf0RUVQ=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=S5KbQ5A9Y1pof988/YmoJ7Aa3Z9HTb54MDsEFrSUXTpzc8LRFH74k+14NcynvJz4r
-         BUrQZBTHPraTFJJmjSlc1Ft3yqBz/GxSSihYvWiOsSKQStmqnmtun1SbwMXH6YATtp
-         +dU3HKOOTlyG8degP9b5d7+7XoeTj1PK87Xl82lw=
+        b=s1m6Niw69C99kV9/wFls7VY3aooYZo58lNSDxmPoeT3N05Ac+qqHtOwpvIBmwewtn
+         Cj0y+jDgdQWZHi/wwx3p+oGGdAhCGVXSKu00oIsXJS+eFZM+uuSesef27ST3Tv3tui
+         l0XEBnV9iSiieJK6h+8Yr7I8B0YTwNKWidMKHhGk=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     linux-kernel@vger.kernel.org
 Cc:     Arnd Bergmann <arnd@arndb.de>,
         Krzysztof Kozlowski <krzk@kernel.org>,
-        Kukjin Kim <kgene@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
+        Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v2 36/41] cpufreq: s3c2412: use global s3c2412_cpufreq_setrefresh
-Date:   Thu,  6 Aug 2020 20:20:53 +0200
-Message-Id: <20200806182059.2431-36-krzk@kernel.org>
+        linux-samsung-soc@vger.kernel.org
+Subject: [PATCH v2 34/41] cpufreq: s3c24xx: split out registers
+Date:   Thu,  6 Aug 2020 20:20:51 +0200
+Message-Id: <20200806182059.2431-34-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200806181932.2253-1-krzk@kernel.org>
 References: <20200806181932.2253-1-krzk@kernel.org>
@@ -60,75 +60,142 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-There are two identical copies of the s3c2412_cpufreq_setrefresh
-function: a static one in the cpufreq driver and a global
-version in iotiming-s3c2412.c.
-
-As the function requires the use of a hardcoded register address
-from a header that we want to not be visible to drivers, just
-move the existing global function and add a declaration in
-one of the cpufreq header files.
+Each of the cpufreq drivers uses a fixed set of register
+bits, copy those definitions into the drivers to avoid
+including mach/regs-clock.h.
 
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+[krzk: Fix build by copying also S3C2410_LOCKTIME]
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- drivers/cpufreq/s3c2412-cpufreq.c            | 23 --------------------
- include/linux/soc/samsung/s3c-cpufreq-core.h |  1 +
- 2 files changed, 1 insertion(+), 23 deletions(-)
 
-diff --git a/drivers/cpufreq/s3c2412-cpufreq.c b/drivers/cpufreq/s3c2412-cpufreq.c
-index 38dc9e6db633..a77c63e92e1a 100644
---- a/drivers/cpufreq/s3c2412-cpufreq.c
-+++ b/drivers/cpufreq/s3c2412-cpufreq.c
-@@ -25,8 +25,6 @@
+---
+
+Changes since v1:
+1. Copy also S3C2410_LOCKTIME to the driver.
+---
+ drivers/cpufreq/s3c2410-cpufreq.c | 11 +++++++++--
+ drivers/cpufreq/s3c2412-cpufreq.c | 20 +++++++++++++++++++-
+ drivers/cpufreq/s3c2440-cpufreq.c | 24 ++++++++++++++++++++++--
+ drivers/cpufreq/s3c24xx-cpufreq.c |  5 ++++-
+ 4 files changed, 54 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/s3c2410-cpufreq.c b/drivers/cpufreq/s3c2410-cpufreq.c
+index 0c4f2ccd7e22..5c6cb590b63f 100644
+--- a/drivers/cpufreq/s3c2410-cpufreq.c
++++ b/drivers/cpufreq/s3c2410-cpufreq.c
+@@ -20,11 +20,18 @@
  #include <asm/mach/arch.h>
  #include <asm/mach/map.h>
  
--#include <mach/s3c2412.h>
+-#include <mach/regs-clock.h>
 -
- #include <mach/map.h>
+ #include <plat/cpu.h>
+ #include <plat/cpu-freq-core.h>
  
- #define S3C2410_CLKREG(x) ((x) + S3C24XX_VA_CLKPWR)
-@@ -156,27 +154,6 @@ static void s3c2412_cpufreq_setdivs(struct s3c_cpufreq_config *cfg)
- 	clk_set_parent(armclk, cfg->divs.dvs ? hclk : fclk);
- }
++#include <mach/map.h>
++
++#define S3C2410_CLKREG(x) ((x) + S3C24XX_VA_CLKPWR)
++
++#define S3C2410_CLKDIVN	    S3C2410_CLKREG(0x14)
++
++#define S3C2410_CLKDIVN_PDIVN	     (1<<0)
++#define S3C2410_CLKDIVN_HDIVN	     (1<<1)
++
+ /* Note, 2410A has an extra mode for 1:4:4 ratio, bit 2 of CLKDIV */
  
--static void s3c2412_cpufreq_setrefresh(struct s3c_cpufreq_config *cfg)
--{
--	struct s3c_cpufreq_board *board = cfg->board;
--	unsigned long refresh;
--
--	s3c_freq_dbg("%s: refresh %u ns, hclk %lu\n", __func__,
--		     board->refresh, cfg->freq.hclk);
--
--	/* Reduce both the refresh time (in ns) and the frequency (in MHz)
--	 * by 10 each to ensure that we do not overflow 32 bit numbers. This
--	 * should work for HCLK up to 133MHz and refresh period up to 30usec.
--	 */
--
--	refresh = (board->refresh / 10);
--	refresh *= (cfg->freq.hclk / 100);
--	refresh /= (1 * 1000 * 1000);	/* 10^6 */
--
--	s3c_freq_dbg("%s: setting refresh 0x%08lx\n", __func__, refresh);
--	__raw_writel(refresh, S3C2412_REFRESH);
--}
--
- /* set the default cpu frequency information, based on an 200MHz part
-  * as we have no other way of detecting the speed rating in software.
-  */
-diff --git a/include/linux/soc/samsung/s3c-cpufreq-core.h b/include/linux/soc/samsung/s3c-cpufreq-core.h
-index c578b07ccd5d..e0c7217a0f53 100644
---- a/include/linux/soc/samsung/s3c-cpufreq-core.h
-+++ b/include/linux/soc/samsung/s3c-cpufreq-core.h
-@@ -248,6 +248,7 @@ extern int s3c2412_iotiming_calc(struct s3c_cpufreq_config *cfg,
+ static void s3c2410_cpufreq_setdivs(struct s3c_cpufreq_config *cfg)
+diff --git a/drivers/cpufreq/s3c2412-cpufreq.c b/drivers/cpufreq/s3c2412-cpufreq.c
+index 53385a9ab957..d922d0d47c80 100644
+--- a/drivers/cpufreq/s3c2412-cpufreq.c
++++ b/drivers/cpufreq/s3c2412-cpufreq.c
+@@ -23,12 +23,30 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
  
- extern void s3c2412_iotiming_set(struct s3c_cpufreq_config *cfg,
- 				 struct s3c_iotimings *iot);
-+extern void s3c2412_cpufreq_setrefresh(struct s3c_cpufreq_config *cfg);
- #else
- #define s3c2412_iotiming_debugfs NULL
- #define s3c2412_iotiming_calc NULL
+-#include <mach/regs-clock.h>
+ #include <mach/s3c2412.h>
+ 
+ #include <plat/cpu.h>
+ #include <plat/cpu-freq-core.h>
+ 
++#include <mach/map.h>
++
++#define S3C2410_CLKREG(x) ((x) + S3C24XX_VA_CLKPWR)
++
++#define S3C2410_CLKDIVN	    S3C2410_CLKREG(0x14)
++
++#define S3C2412_CLKDIVN_PDIVN		(1<<2)
++#define S3C2412_CLKDIVN_HDIVN_MASK	(3<<0)
++#define S3C2412_CLKDIVN_ARMDIVN		(1<<3)
++#define S3C2412_CLKDIVN_DVSEN		(1<<4)
++#define S3C2412_CLKDIVN_HALFHCLK	(1<<5)
++#define S3C2412_CLKDIVN_USB48DIV	(1<<6)
++#define S3C2412_CLKDIVN_UARTDIV_MASK	(15<<8)
++#define S3C2412_CLKDIVN_UARTDIV_SHIFT	(8)
++#define S3C2412_CLKDIVN_I2SDIV_MASK	(15<<12)
++#define S3C2412_CLKDIVN_I2SDIV_SHIFT	(12)
++#define S3C2412_CLKDIVN_CAMDIV_MASK	(15<<16)
++#define S3C2412_CLKDIVN_CAMDIV_SHIFT	(16)
++
+ /* our clock resources. */
+ static struct clk *xtal;
+ static struct clk *fclk;
+diff --git a/drivers/cpufreq/s3c2440-cpufreq.c b/drivers/cpufreq/s3c2440-cpufreq.c
+index 3f772ba8896e..5fe7a891fa13 100644
+--- a/drivers/cpufreq/s3c2440-cpufreq.c
++++ b/drivers/cpufreq/s3c2440-cpufreq.c
+@@ -24,11 +24,31 @@
+ #include <asm/mach/arch.h>
+ #include <asm/mach/map.h>
+ 
+-#include <mach/regs-clock.h>
+-
+ #include <plat/cpu.h>
+ #include <plat/cpu-freq-core.h>
+ 
++#include <mach/map.h>
++
++#define S3C2410_CLKREG(x) ((x) + S3C24XX_VA_CLKPWR)
++#define S3C2410_CLKDIVN	    S3C2410_CLKREG(0x14)
++#define S3C2440_CAMDIVN	    S3C2410_CLKREG(0x18)
++
++#define S3C2440_CLKDIVN_PDIVN	     (1<<0)
++#define S3C2440_CLKDIVN_HDIVN_MASK   (3<<1)
++#define S3C2440_CLKDIVN_HDIVN_1      (0<<1)
++#define S3C2440_CLKDIVN_HDIVN_2      (1<<1)
++#define S3C2440_CLKDIVN_HDIVN_4_8    (2<<1)
++#define S3C2440_CLKDIVN_HDIVN_3_6    (3<<1)
++#define S3C2440_CLKDIVN_UCLK         (1<<3)
++
++#define S3C2440_CAMDIVN_CAMCLK_MASK  (0xf<<0)
++#define S3C2440_CAMDIVN_CAMCLK_SEL   (1<<4)
++#define S3C2440_CAMDIVN_HCLK3_HALF   (1<<8)
++#define S3C2440_CAMDIVN_HCLK4_HALF   (1<<9)
++#define S3C2440_CAMDIVN_DVSEN        (1<<12)
++
++#define S3C2442_CAMDIVN_CAMCLK_DIV3  (1<<5)
++
+ static struct clk *xtal;
+ static struct clk *fclk;
+ static struct clk *hclk;
+diff --git a/drivers/cpufreq/s3c24xx-cpufreq.c b/drivers/cpufreq/s3c24xx-cpufreq.c
+index ed0e713b1b57..cf0571e8fafb 100644
+--- a/drivers/cpufreq/s3c24xx-cpufreq.c
++++ b/drivers/cpufreq/s3c24xx-cpufreq.c
+@@ -28,9 +28,12 @@
+ #include <plat/cpu.h>
+ #include <plat/cpu-freq-core.h>
+ 
+-#include <mach/regs-clock.h>
++#include <mach/map.h>
+ 
+ /* note, cpufreq support deals in kHz, no Hz */
++#define S3C2410_CLKREG(x) ((x) + S3C24XX_VA_CLKPWR)
++#define S3C2410_LOCKTIME    S3C2410_CLKREG(0x00)
++#define S3C2410_MPLLCON     S3C2410_CLKREG(0x04)
+ 
+ static struct cpufreq_driver s3c24xx_driver;
+ static struct s3c_cpufreq_config cpu_cur;
 -- 
 2.17.1
 
