@@ -2,129 +2,69 @@ Return-Path: <SRS0=aUbL=BT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7A84C433E0
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Aug 2020 09:12:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE97C433E1
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Aug 2020 10:11:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C7191206B6
-	for <linux-pm@archiver.kernel.org>; Sun,  9 Aug 2020 09:12:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1596964357;
-	bh=EvMkiAV/QPaNxSiF1QV6aIN8GUE6bYJn6W6e14MfThU=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=z3X+LGKWRNI4+kR+JivzhB/dmhKQvXBUtmSKG0g7Iwdj2YgQfcDCupstVP1C3X7Wp
-	 1o/IL59EBI6GIfNzA2UoJIC6DB63mQoJGLpRwheKs8GdwYalNbA4cAs+adZjE+/b8h
-	 TqBA7KzsEMB5s4I3Att5dSDjYWT8Ha7h0wE8iR0g=
+	by mail.kernel.org (Postfix) with ESMTP id B402B206E9
+	for <linux-pm@archiver.kernel.org>; Sun,  9 Aug 2020 10:11:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726009AbgHIJMe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 9 Aug 2020 05:12:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:55624 "EHLO mail.kernel.org"
+        id S1726210AbgHIKLG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 9 Aug 2020 06:11:06 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38406 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725710AbgHIJMe (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 9 Aug 2020 05:12:34 -0400
-Received: from mail-lj1-f180.google.com (mail-lj1-f180.google.com [209.85.208.180])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        id S1726175AbgHIKLG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 9 Aug 2020 06:11:06 -0400
+Received: from gaia (unknown [95.146.230.158])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 68A5720729;
-        Sun,  9 Aug 2020 09:12:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1596964353;
-        bh=EvMkiAV/QPaNxSiF1QV6aIN8GUE6bYJn6W6e14MfThU=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=DOzwTXZctisZhFn3SMxaGkMAKPzOBqgDA8rZVkrzEHJTCnkctn56nOVEW8Bxh/KVm
-         VKg3RJtRqoTwIPmAv1Nhw1q8b5G9H6u7dfMU/7CyXJUO8B2xnTmAgu7PrVH/1kUQRS
-         sFbtIsBnnLeGufxim4j5A1e82yoJ4LPfGa4ztatU=
-Received: by mail-lj1-f180.google.com with SMTP id t23so6504149ljc.3;
-        Sun, 09 Aug 2020 02:12:33 -0700 (PDT)
-X-Gm-Message-State: AOAM530jM2F/lvAc3BAx5ZZyWkOCLlRLP9cQ1xJyM9jmG98VyRBsIMjY
-        2uOapglOfRYRq0W80rIFSSXAQUgXLnswGbcdixM=
-X-Google-Smtp-Source: ABdhPJznCulEjN/KcLzYGMk3mIIrcG1fmWkPOR29sS+cEcZOxbPrWV3J7BBHAjxBcBj1e9zHDrdwzNW8LNaWXqSZ+VM=
-X-Received: by 2002:a2e:86da:: with SMTP id n26mr10264938ljj.311.1596964351660;
- Sun, 09 Aug 2020 02:12:31 -0700 (PDT)
+        by mail.kernel.org (Postfix) with ESMTPSA id 11818206B2;
+        Sun,  9 Aug 2020 10:11:02 +0000 (UTC)
+Date:   Sun, 9 Aug 2020 11:11:00 +0100
+From:   Catalin Marinas <catalin.marinas@arm.com>
+To:     Guenter Roeck <linux@roeck-us.net>
+Cc:     Sumit Gupta <sumitg@nvidia.com>, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org, will@kernel.org, thierry.reding@gmail.com,
+        robh+dt@kernel.org, mirq-linux@rere.qmqm.pl,
+        devicetree@vger.kernel.org, jonathanh@nvidia.com, talho@nvidia.com,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        bbasu@nvidia.com, mperttunen@nvidia.com
+Subject: Re: [TEGRA194_CPUFREQ PATCH v6 3/3] cpufreq: Add Tegra194 cpufreq
+ driver
+Message-ID: <20200809101059.GA22286@gaia>
+References: <1594819885-31016-1-git-send-email-sumitg@nvidia.com>
+ <1594819885-31016-4-git-send-email-sumitg@nvidia.com>
+ <20200809004009.GA96704@roeck-us.net>
 MIME-Version: 1.0
-References: <20200724180857.22119-1-krzk@kernel.org> <3522860a-8158-6e71-9d65-01d0e0c15f0d@arm.com>
-In-Reply-To: <3522860a-8158-6e71-9d65-01d0e0c15f0d@arm.com>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Date:   Sun, 9 Aug 2020 11:12:20 +0200
-X-Gmail-Original-Message-ID: <CAJKOXPe3OeKFhmtbF4OZup_ii_rxRHTaSK5BT-3T6ijqUukqtg@mail.gmail.com>
-Message-ID: <CAJKOXPe3OeKFhmtbF4OZup_ii_rxRHTaSK5BT-3T6ijqUukqtg@mail.gmail.com>
-Subject: Re: [RFC] memory: exynos5422-dmc: Document mutex scope
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Kukjin Kim <kgene@kernel.org>, linux-pm@vger.kernel.org,
-        "linux-samsung-soc@vger.kernel.org" 
-        <linux-samsung-soc@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        linux-arm-kernel@lists.infradead.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200809004009.GA96704@roeck-us.net>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Aug 04, 2020 at 11:40:07AM +0100, Lukasz Luba wrote:
-> Hi Krzysztof,
->
-> On 7/24/20 7:08 PM, Krzysztof Kozlowski wrote:
-> > Document scope of the mutex used by driver.
-> >
-> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> >
-> > ---
-> >
-> > It seems mutex was introduced to protect:
-> > 1. setting actual frequency/voltage,
-> > 2. dmc->curr_rate (in exynos5_dmc_get_cur_freq()).
-> >
-> > However dmc->curr_rate in exynos5_dmc_get_status() is not protected. Is
-> > it a bug?
->
-> The callback get_dev_status() from devfreq->profile, which here is the
-> exynos5_dmc_get_status() should be already called with devfreq->lock
-> mutex hold, like e.g from simple_ondemand governor or directly
-> using update_devfreq exported function:
-> update_devfreq()
->   ->get_target_freq()
->     devfreq_update_stats()
->         df->profile->get_dev_status()
->
-> The dmc->curr_rate is also used from sysfs interface from devfreq.
-> The local dmc lock serializes also this use case (when the HW freq
-> has changed but not set yet into curr_rate.
+On Sat, Aug 08, 2020 at 05:40:09PM -0700, Guenter Roeck wrote:
+> On Wed, Jul 15, 2020 at 07:01:25PM +0530, Sumit Gupta wrote:
+> > Add support for CPU frequency scaling on Tegra194. The frequency
+> > of each core can be adjusted by writing a clock divisor value to
+> > a MSR on the core. The range of valid divisors is queried from
+> > the BPMP.
+> > 
+> > Signed-off-by: Mikko Perttunen <mperttunen@nvidia.com>
+> > Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+> 
+> If built as module:
+> 
+> ERROR: modpost: "__cpu_logical_map" [drivers/cpufreq/tegra194-cpufreq.ko] undefined!
 
-These are different locks. You cannot protect dmc->curr_rate with
-devfreq->lock in one place and dmc-lock in other place. This won't
-protect it.
+The exporting of this arm64 symbol went in last night.
 
-> > ---
-> >   drivers/memory/samsung/exynos5422-dmc.c | 1 +
-> >   1 file changed, 1 insertion(+)
-> >
-> > diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
-> > index 93e9c2429c0d..0388066a7d96 100644
-> > --- a/drivers/memory/samsung/exynos5422-dmc.c
-> > +++ b/drivers/memory/samsung/exynos5422-dmc.c
-> > @@ -114,6 +114,7 @@ struct exynos5_dmc {
-> >     void __iomem *base_drexi0;
-> >     void __iomem *base_drexi1;
-> >     struct regmap *clk_regmap;
-> > +   /* Protects curr_rate and frequency/voltage setting section */
-> >     struct mutex lock;
-> >     unsigned long curr_rate;
-> >     unsigned long curr_volt;
-> >
->
-> I assume this missing comment for the lock was required by some scripts.
-> In this case LGTM:
->
-> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-
-Such comments are always useful. It is also pointed by strict
-checkpatch:
-CHECK: struct mutex definition without comment
-
-Best regards,
-Krzysztof
+-- 
+Catalin
