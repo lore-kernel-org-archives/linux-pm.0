@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 65578C433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Aug 2020 19:28:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6207C433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Aug 2020 19:33:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3FE7622CBE
-	for <linux-pm@archiver.kernel.org>; Mon, 10 Aug 2020 19:28:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 68BBD22B4B
+	for <linux-pm@archiver.kernel.org>; Mon, 10 Aug 2020 19:33:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1597087738;
-	bh=CKEwHfjYMaMRptnZa9Xtr3VDwhMRZ/6+GvzVOGRbGrk=;
+	s=default; t=1597087988;
+	bh=hNul+hpMOhhwF35fU5uL+jxA8siVHVf4No5zO0w65EM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=2NSupV+1b8xEWzyJBFu+V27H6pGq23Hhl793H/jtWj9PK1ZwhYC9ZEiZ7veF2Jr6c
-	 6AHURxOLXyyl+iHGwNlRxwO4pj8ZPQIF+/6wH63tUNxaBvoEbhqiz4zykdus7MfQH2
-	 aBIOiXJb0gxfAm3RyKSnP9IU2PdI7OZRtgKjEVIw=
+	b=XlOrEwh3j2FDsopSk5Bt+kQ5nI3/k3DGz+cRlvJKOmIvWXSKW1TZ448qhblEwE8Gt
+	 eOPo+qs5IaYTIPWpNmHpJnUvb6IzBjdj8oyZ8jGMlz3K8lXW1T1bA+obKOMN1xmpLV
+	 vw/QP162/4pYlN2Jf7/th7kTLcwogv7qur/tkdNY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729513AbgHJT2u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 10 Aug 2020 15:28:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38730 "EHLO mail.kernel.org"
+        id S1728533AbgHJTJa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 10 Aug 2020 15:09:30 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35766 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729030AbgHJTKz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 10 Aug 2020 15:10:55 -0400
+        id S1728522AbgHJTJ3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 10 Aug 2020 15:09:29 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id F0E9622B47;
-        Mon, 10 Aug 2020 19:10:53 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id DE48D22CA1;
+        Mon, 10 Aug 2020 19:09:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1597086654;
-        bh=CKEwHfjYMaMRptnZa9Xtr3VDwhMRZ/6+GvzVOGRbGrk=;
+        s=default; t=1597086568;
+        bh=hNul+hpMOhhwF35fU5uL+jxA8siVHVf4No5zO0w65EM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=TBrfp/hMhlVkKIXRaxOZI6Je0wtyE11ji5/+08TfDwOmpEcAkuQ9mOZLpZRlftvrY
-         VmIxt430r3zj1RGR108AA/cawxO7HFcb64t8dyPIrcxHheNfMyy3/khkb6yLfG1UMw
-         6MAmEwdU+k35AWfqhAMatiDmvTl82TId7ziXe4Ew=
+        b=ncjRr/4T9gZRR/vagqYNyissyW9Fa5VLDHAC++lVcybtp+dqZK8iMkDbIys4eMAMR
+         6ZhtVTww0n25A0BZMNJIKP2/7DNYiq2D+orhiEXKsjo4cjXe2UrTciCmKCION3oF2j
+         XTA8Oo51HsCj8beZG+ypAbcLKUw22E71QD0r2okg=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
@@ -45,12 +45,12 @@ Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
         linux-samsung-soc@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org
-Subject: [PATCH AUTOSEL 5.7 19/60] memory: samsung: exynos5422-dmc: Do not ignore return code of regmap_read()
-Date:   Mon, 10 Aug 2020 15:09:47 -0400
-Message-Id: <20200810191028.3793884-19-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.8 21/64] memory: samsung: exynos5422-dmc: Do not ignore return code of regmap_read()
+Date:   Mon, 10 Aug 2020 15:08:16 -0400
+Message-Id: <20200810190859.3793319-21-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200810191028.3793884-1-sashal@kernel.org>
-References: <20200810191028.3793884-1-sashal@kernel.org>
+In-Reply-To: <20200810190859.3793319-1-sashal@kernel.org>
+References: <20200810190859.3793319-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -84,7 +84,7 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/memory/samsung/exynos5422-dmc.c b/drivers/memory/samsung/exynos5422-dmc.c
-index 22a43d6628336..3460ba55fd596 100644
+index 25196d6268e21..85b31d3de57ad 100644
 --- a/drivers/memory/samsung/exynos5422-dmc.c
 +++ b/drivers/memory/samsung/exynos5422-dmc.c
 @@ -270,12 +270,14 @@ static int find_target_freq_idx(struct exynos5_dmc *dmc,
