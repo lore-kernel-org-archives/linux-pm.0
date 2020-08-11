@@ -4,40 +4,42 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	SPF_HELO_NONE,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E7978C433E0
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Aug 2020 07:04:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 53BC2C433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Aug 2020 07:04:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CB09720772
-	for <linux-pm@archiver.kernel.org>; Tue, 11 Aug 2020 07:04:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 380FC2078E
+	for <linux-pm@archiver.kernel.org>; Tue, 11 Aug 2020 07:04:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728167AbgHKHEp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 11 Aug 2020 03:04:45 -0400
-Received: from inva020.nxp.com ([92.121.34.13]:41798 "EHLO inva020.nxp.com"
+        id S1727975AbgHKHEr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 11 Aug 2020 03:04:47 -0400
+Received: from inva020.nxp.com ([92.121.34.13]:41848 "EHLO inva020.nxp.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727871AbgHKHEo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 11 Aug 2020 03:04:44 -0400
+        id S1727915AbgHKHEq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 11 Aug 2020 03:04:46 -0400
 Received: from inva020.nxp.com (localhost [127.0.0.1])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 2CCDE1A1E73;
-        Tue, 11 Aug 2020 09:04:43 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id 558E41A1E6B;
+        Tue, 11 Aug 2020 09:04:44 +0200 (CEST)
 Received: from invc005.ap-rdc01.nxp.com (invc005.ap-rdc01.nxp.com [165.114.16.14])
-        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id B1DC91A1E6D;
-        Tue, 11 Aug 2020 09:04:38 +0200 (CEST)
+        by inva020.eu-rdc02.nxp.com (Postfix) with ESMTP id CA3DF1A08C8;
+        Tue, 11 Aug 2020 09:04:39 +0200 (CEST)
 Received: from 10.192.242.69 (shlinux2.ap.freescale.net [10.192.224.44])
-        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id E4A8240243;
-        Tue, 11 Aug 2020 09:04:32 +0200 (CEST)
+        by invc005.ap-rdc01.nxp.com (Postfix) with ESMTP id 045DF402A5;
+        Tue, 11 Aug 2020 09:04:33 +0200 (CEST)
 From:   Anson Huang <Anson.Huang@nxp.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org,
         shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de,
         festevam@gmail.com, linux-pm@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
 Cc:     Linux-imx@nxp.com
-Subject: [PATCH V2 1/2] thermal: imx: Use dev_err_probe() to simplify error handling
-Date:   Tue, 11 Aug 2020 14:59:44 +0800
-Message-Id: <1597129185-8460-1-git-send-email-Anson.Huang@nxp.com>
+Subject: [PATCH V2 2/2] thermal: imx8mm: Use dev_err_probe() to simplify error handling
+Date:   Tue, 11 Aug 2020 14:59:45 +0800
+Message-Id: <1597129185-8460-2-git-send-email-Anson.Huang@nxp.com>
 X-Mailer: git-send-email 2.7.4
+In-Reply-To: <1597129185-8460-1-git-send-email-Anson.Huang@nxp.com>
+References: <1597129185-8460-1-git-send-email-Anson.Huang@nxp.com>
 X-Virus-Scanned: ClamAV using ClamSMTP
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
@@ -52,49 +54,30 @@ Signed-off-by: Anson Huang <Anson.Huang@nxp.com>
 changes since V1:
 	- remove redundant return value print.
 ---
- drivers/thermal/imx_thermal.c | 22 ++++++----------------
- 1 file changed, 6 insertions(+), 16 deletions(-)
+ drivers/thermal/imx8mm_thermal.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/imx_thermal.c b/drivers/thermal/imx_thermal.c
-index 3f74ab4..2c7473d 100644
---- a/drivers/thermal/imx_thermal.c
-+++ b/drivers/thermal/imx_thermal.c
-@@ -716,14 +716,9 @@ static int imx_thermal_probe(struct platform_device *pdev)
+diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
+index f5124f1..a1e4f9b 100644
+--- a/drivers/thermal/imx8mm_thermal.c
++++ b/drivers/thermal/imx8mm_thermal.c
+@@ -146,13 +146,9 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 		return PTR_ERR(tmu->base);
  
- 	if (of_find_property(pdev->dev.of_node, "nvmem-cells", NULL)) {
- 		ret = imx_init_from_nvmem_cells(pdev);
--		if (ret) {
--			if (ret == -EPROBE_DEFER)
--				return ret;
--
--			dev_err(&pdev->dev, "failed to init from nvmem: %d\n",
--				ret);
--			return ret;
--		}
-+		if (ret)
-+			return dev_err_probe(&pdev->dev, ret,
-+					     "failed to init from nvmem\n");
- 	} else {
- 		ret = imx_init_from_tempmon_data(pdev);
- 		if (ret) {
-@@ -746,14 +741,9 @@ static int imx_thermal_probe(struct platform_device *pdev)
- 		     data->socdata->power_down_mask);
- 
- 	ret = imx_thermal_register_legacy_cooling(data);
--	if (ret) {
--		if (ret == -EPROBE_DEFER)
--			return ret;
--
--		dev_err(&pdev->dev,
--			"failed to register cpufreq cooling device: %d\n", ret);
+ 	tmu->clk = devm_clk_get(&pdev->dev, NULL);
+-	if (IS_ERR(tmu->clk)) {
+-		ret = PTR_ERR(tmu->clk);
+-		if (ret != -EPROBE_DEFER)
+-			dev_err(&pdev->dev,
+-				"failed to get tmu clock: %d\n", ret);
 -		return ret;
 -	}
-+	if (ret)
-+		return dev_err_probe(&pdev->dev, ret,
-+				     "failed to register cpufreq cooling device\n");
++	if (IS_ERR(tmu->clk))
++		return dev_err_probe(&pdev->dev, PTR_ERR(tmu->clk),
++				     "failed to get tmu clock\n");
  
- 	data->thermal_clk = devm_clk_get(&pdev->dev, NULL);
- 	if (IS_ERR(data->thermal_clk)) {
+ 	ret = clk_prepare_enable(tmu->clk);
+ 	if (ret) {
 -- 
 2.7.4
 
