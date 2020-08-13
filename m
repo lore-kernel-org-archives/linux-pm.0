@@ -2,140 +2,107 @@ Return-Path: <SRS0=PvxO=BX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D4FDC433E1
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Aug 2020 21:35:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0A2CDC433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Aug 2020 21:43:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DFF6A208B3
-	for <linux-pm@archiver.kernel.org>; Thu, 13 Aug 2020 21:35:22 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="cEJlGGye"
+	by mail.kernel.org (Postfix) with ESMTP id C864520768
+	for <linux-pm@archiver.kernel.org>; Thu, 13 Aug 2020 21:43:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1597355019;
+	bh=IXfIE7IdvntL4jx25eCUxHeiKz1ijKEPzAYipad0+Qg=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=1IExjkE+v/+2ZpocELCZT9XxzAAHFftZqjapckdBqdXIaS6t15XHW4mWJyW0NG5HK
+	 HkCqtO+KTwo3M8Hn8a3oU9W/F7kvatqsDJDlaVlVtvjSZ9bddju4p5MNq1/AmHEgVo
+	 fHawr70E+7lkAJIEHPnR9dQsPLuOUn741uwiKEuE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726679AbgHMVed (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Aug 2020 17:34:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51426 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726467AbgHMVec (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 17:34:32 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 823FBC061757;
-        Thu, 13 Aug 2020 14:34:32 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id v12so7788039ljc.10;
-        Thu, 13 Aug 2020 14:34:32 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=fZLsHIDpnTF+VfT0D85OABvcYZ+3mXctvnf5hSJQWzI=;
-        b=cEJlGGyeVOnUqLHStkUx6OeQErNRTVSS220RFZE6V8zt+iutywGEiDiWgxjOwmvT0W
-         QzHpMjc5mPTLcGxJ2ANM0rQHnB/BWFzwv1dv5PTx2/OnLnAxHKQKpUq7vf6gU+UePgRo
-         R82mDt9eh/+PIbdPd8SNW8gE30QIDV0U9eMs+0vTiVZe/GDv2bhzqv0Mbc2zRz8MTFex
-         MdhehJ/5k/Y7HLiQDC3mWACmwSEpjXc0c7bGjpHZutU43yvHm67c59185gu1yjgiz9xw
-         kJY5hODB9QVq4gjuzkNUx3c42T/R4KiR6M8NGQ6mWlZAE6m2Y3wG0ikeH3uG/MvqVVY/
-         yBvw==
+        id S1726467AbgHMVni (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Aug 2020 17:43:38 -0400
+Received: from mail-ed1-f66.google.com ([209.85.208.66]:45569 "EHLO
+        mail-ed1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726192AbgHMVni (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 17:43:38 -0400
+Received: by mail-ed1-f66.google.com with SMTP id di22so5305688edb.12;
+        Thu, 13 Aug 2020 14:43:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=fZLsHIDpnTF+VfT0D85OABvcYZ+3mXctvnf5hSJQWzI=;
-        b=VbJQPDGoOS37oBuzW9j00IOVhgcpTIeqVrTP8T4iUBnLSPF2d3rv7arX8b1bcrbHBn
-         3HbMf3s7Hgn2wf7z4sOod1SfJm7rIpuqPJLNhTZZqjycMDS9BtAUpBkF3Mf1fjiICY8l
-         YcXbYYskvmW7W7rjBoxLvaqBCiBgXYoXlPreErhy/wrjIez15u+iGLcyNadmzwinZRFP
-         0s/nHBzXdq1fAhSCmxcWp4cY4mAiMqbpvKbT0zEhdPfKEVC6hMzoMx9f1fDvOPD/eRta
-         rjZLLe2CFH12/hOMlT3zetOtHAFQ53Vu53nuE+1LW7gjtGtreIo0c3c246+9msDa6j25
-         jHhg==
-X-Gm-Message-State: AOAM530tsAF3FkZLlRa+uuUxlFRO2IpAlghpEo6HwirHzGtelArV2I1X
-        KNsWXdl94atb93Nv/LNCQLc=
-X-Google-Smtp-Source: ABdhPJxvfXQdfIk92pJtg8kgylRAvmzl0C/vMZ0PbV7h+vJYE5TyhNAGmBca3vdh/RJ0c0/LYmIYyg==
-X-Received: by 2002:a2e:b8cf:: with SMTP id s15mr3072321ljp.166.1597354470954;
-        Thu, 13 Aug 2020 14:34:30 -0700 (PDT)
-Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id j2sm1345309ljb.98.2020.08.13.14.34.29
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Aug 2020 14:34:30 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        David Heidelberg <david@ixit.cz>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        "Bruce E . Robertson" <bruce.e.robertson@intel.com>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        Jonghwa Lee <jonghwa3.lee@samsung.com>,
-        John Stultz <john.stultz@linaro.org>,
-        Vinay Simha BN <simhavcs@gmail.com>,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH v3 01/10] dt-bindings: battery: Add temperature properties
-Date:   Fri, 14 Aug 2020 00:34:00 +0300
-Message-Id: <20200813213409.24222-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200813213409.24222-1-digetx@gmail.com>
-References: <20200813213409.24222-1-digetx@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=P2eZuP6c506YZ5zFEOeI1NqJOh6HdWASDT5YVO36Yfc=;
+        b=MXxoEzbv/R7sMMN1okBlMNVuvbdhbtqaSV82wFn9kzSHk3SCKfKKMtufntnxyb7VP1
+         7KRWjlR28PLzL+glBKTaR0Yeir9jOOOOSlbk92Zn3JnKcmbWB72KCG/xQ0zDMRkac070
+         vi/QyfVnQI5kzQLlt9NICAUE2JomaNhnFhqPS7+KaPb64QCT8D9hefmED0bDJsW/cJBP
+         cYSKuGE4p8PlXcXoyfFiK8U1vcfn6E0HOnBdRv4CmtV+8s2t412kAQO+uO8Xb7FmQZbj
+         2/2n5KoMoJvYvdgahO8o1JWOKy1Uhk4QuK859H/7rNTmdw/HkAVXNi36lWuSDP+O+egH
+         lQKA==
+X-Gm-Message-State: AOAM533cPProeDKbAmEDXSOc6ScGKoiEPg1qgjsvnn6CvU2tGcxW/isX
+        g290+AbWyPyHHmgIHvamVqTcbomGT12EI0i78zU=
+X-Google-Smtp-Source: ABdhPJzd09nmrrCJYoR3gE7APmEQpllycPVmHXQVWNHLO79PNceUxD67BkFknbF7vgEWXuPDaTov9VIKDiVyDBBgmdo=
+X-Received: by 2002:a50:af86:: with SMTP id h6mr6825875edd.132.1597355016709;
+ Thu, 13 Aug 2020 14:43:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200717060849.12469-1-liwei.song@windriver.com>
+In-Reply-To: <20200717060849.12469-1-liwei.song@windriver.com>
+From:   Len Brown <lenb@kernel.org>
+Date:   Thu, 13 Aug 2020 17:43:25 -0400
+Message-ID: <CAJvTdKm9WHgQuP38Y2o1zQ-VgLKMMDup4crAPrW3pexoWft+6Q@mail.gmail.com>
+Subject: Re: [PATCH] tools/power turbostat: call pread64 in kernel directly
+To:     Liwei Song <liwei.song@windriver.com>
+Cc:     Linux PM list <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document generic battery temperature properties.
+Huh?
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- .../bindings/power/supply/battery.yaml        | 24 +++++++++++++++++++
- 1 file changed, 24 insertions(+)
+On Fri, Jul 17, 2020 at 2:09 AM Liwei Song <liwei.song@windriver.com> wrote:
+>
+> with 32-bit rootfs, the offset may out of range when set it
+> to 0xc0010299, define it as "unsigned long long" type and
+> call pread64 directly in kernel.
+>
+> Signed-off-by: Liwei Song <liwei.song@windriver.com>
+> ---
+>  tools/power/x86/turbostat/turbostat.c | 5 +++--
+>  1 file changed, 3 insertions(+), 2 deletions(-)
+>
+> diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+> index 33b370865d16..4c5cdfcb5721 100644
+> --- a/tools/power/x86/turbostat/turbostat.c
+> +++ b/tools/power/x86/turbostat/turbostat.c
+> @@ -33,6 +33,7 @@
+>  #include <sys/capability.h>
+>  #include <errno.h>
+>  #include <math.h>
+> +#include <sys/syscall.h>
+>
+>  char *proc_stat = "/proc/stat";
+>  FILE *outf;
+> @@ -381,11 +382,11 @@ int get_msr_fd(int cpu)
+>         return fd;
+>  }
+>
+> -int get_msr(int cpu, off_t offset, unsigned long long *msr)
+> +int get_msr(int cpu, unsigned long long offset, unsigned long long *msr)
+>  {
+>         ssize_t retval;
+>
+> -       retval = pread(get_msr_fd(cpu), msr, sizeof(*msr), offset);
+> +       retval = syscall(SYS_pread64, get_msr_fd(cpu), msr, sizeof(*msr), offset);
+>
+>         if (retval != sizeof *msr)
+>                 err(-1, "cpu%d: msr offset 0x%llx read failed", cpu, (unsigned long long)offset);
+> --
+> 2.17.1
+>
 
-diff --git a/Documentation/devicetree/bindings/power/supply/battery.yaml b/Documentation/devicetree/bindings/power/supply/battery.yaml
-index 932b736ce5c0..0c7e2e44793b 100644
---- a/Documentation/devicetree/bindings/power/supply/battery.yaml
-+++ b/Documentation/devicetree/bindings/power/supply/battery.yaml
-@@ -82,6 +82,27 @@ properties:
-       An array containing the temperature in degree Celsius,
-       for each of the battery capacity lookup table.
- 
-+  operating-range-celsius:
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description: operating temperature range of a battery
-+    items:
-+      - description: minimum temperature at which battery can operate
-+      - description: maximum temperature at which battery can operate
-+
-+  ambient-celsius:
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description: safe range of ambient temperature
-+    items:
-+      - description: alert when ambient temperature is lower than this value
-+      - description: alert when ambient temperature is higher than this value
-+
-+  alert-celsius:
-+    $ref: /schemas/types.yaml#/definitions/uint32-array
-+    description: safe range of battery temperature
-+    items:
-+      - description: alert when battery temperature is lower than this value
-+      - description: alert when battery temperature is higher than this value
-+
- required:
-   - compatible
- 
-@@ -130,6 +151,9 @@ examples:
-         /* table for 10 degree Celsius */
-         ocv-capacity-table-2 = <4250000 100>, <4200000 95>, <4185000 90>;
-         resistance-temp-table = <20 100>, <10 90>, <0 80>, <(-10) 60>;
-+        operating-range-celsius = <(-30) 50>;
-+        ambient-celsius = <(-5) 50>;
-+        alert-celsius = <0 40>;
-       };
- 
-       charger@11 {
+
 -- 
-2.27.0
-
+Len Brown, Intel Open Source Technology Center
