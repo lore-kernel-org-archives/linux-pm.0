@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60163C433E3
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:09:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AAE82C433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:09:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3E2E22078B
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:09:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 865E02078B
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:09:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="P5vAfsU5"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ErKBwp+P"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726962AbgHNAI4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Aug 2020 20:08:56 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46702 "EHLO
+        id S1726931AbgHNAH1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Aug 2020 20:07:27 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46686 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726959AbgHNAH3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 20:07:29 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5957EC061757;
-        Thu, 13 Aug 2020 17:07:29 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id i19so3949207lfj.8;
-        Thu, 13 Aug 2020 17:07:29 -0700 (PDT)
+        with ESMTP id S1726904AbgHNAH0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 20:07:26 -0400
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 157ECC061757;
+        Thu, 13 Aug 2020 17:07:26 -0700 (PDT)
+Received: by mail-lf1-x143.google.com with SMTP id i19so3949155lfj.8;
+        Thu, 13 Aug 2020 17:07:25 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Lr6InQs+cwUdZHYMsF5leEEXS/E4w6EG4rKFnYLtLUg=;
-        b=P5vAfsU5bDceymZMHPRLpNYC8PErfXyHQGA58gro3wnk2be2eYECXTz48ireW5nv8r
-         y/YX0fQkUVHcfDrksJY1YPGpkGZ+AV0OwEa75gS15UsTvXEkTUQWSoq4Bx5whwopJiME
-         a/rPrrTN//9o8MdQelhayURhtjOhGKdFLejcKQndoL9b7ShKi7GopvPQlKv6ehiA6JtR
-         FJLJ5gDGqIb/Yv4mvOt+m1xIpLNNLSN1qsVtP5jeFQmtucBWPly/cKQqjXZ1GdvPr6lb
-         +x7bKOlAKJNTacfUhBrgyI3Y6bq0sE3/8GJA4aGPMdUO3MBupwgXSaipZhf7vLG+7BS1
-         lE+A==
+        bh=6hV/jfb1j57ds6uWusc67dwvrbgr9Nuaem2xPT64pOI=;
+        b=ErKBwp+Pi3uw2mPs1tCdGXty9djbWFZh7U9QKleaHXoAfkxBNKfThE66Q/uzNnc7J4
+         aTk8+/JsZmycsCyPcO8wlyCxP/+7dhTSQleHzgB8RAXh9y9JX/qoA3h0Dt4KqGsgqWgT
+         32US2OzxXAYh3P3Bq+YMOkgwj1jgCvZwihVWC43so56FI4FPSpixkmxH7Ryz0yw9gdcO
+         oycjad2ZwnRCk/P+MMGMiuHDdDaSqD6SW/HA2t+uraoAPUbv+yCSmeRz8aO8ak/Vfyco
+         dauYMCWTVOLrANbGWhYaug2aCunXB+Mmt8gqYzR6ZB7AEUZVQQHPqWg9rQyiGNg8aABC
+         xSIA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Lr6InQs+cwUdZHYMsF5leEEXS/E4w6EG4rKFnYLtLUg=;
-        b=r1beLzr1H3IN25H6E9DSxnqZVRFiGy7TBqN9PB490J9jrhZv8Mge5jysAYPaet53mj
-         qrIspfPa6CC7/aBEPyE4BKZn8DQlueoTVrwsp/UygAvKHy47tdlBX3YsgGiJKAkpaFJZ
-         +VuAK8wWEfYX4DXYZCA7asdmt+Rvz/8g4QQsrKRTOzPGoWRXjsDpMhPdMVKa3839XICM
-         sRB+/LHWSHlZY9rC29uvkwpoq/NIAekJSfGr16/2yCNDSrHTz23Kd1GgMjSRykYtSMxe
-         oXdDTTVQYT4Mz3RShb2BuGOPzWVyfVRIbju4SPHk7c0t70DMTY0kMDypkkrZjEuj4oWT
-         Bk0A==
-X-Gm-Message-State: AOAM5324KniSFcLSirMZNVgtvuwepE9LAW2jvCXZYEdCv4+SMb+nYDQs
-        CR56yatgOBc6ARxWVZIQcxQ=
-X-Google-Smtp-Source: ABdhPJx94RkIBlhneQSzkJctTu1N95bLFx03tsVwIAUkVQuLUcSXbwQEO8fbyIi3+go7v+AgWAwMaw==
-X-Received: by 2002:a05:6512:74b:: with SMTP id c11mr3235370lfs.119.1597363647881;
-        Thu, 13 Aug 2020 17:07:27 -0700 (PDT)
+        bh=6hV/jfb1j57ds6uWusc67dwvrbgr9Nuaem2xPT64pOI=;
+        b=JsF5/m6Vo8IrQ2bGh5p1Szc0FRGeodkAXnBPQ5A9MOh0KlRvdZcED8EJD1blHyGqk6
+         hselcLmLVARvN0FiKgDu+7lRTJeDKldP0zrZ2I0HrNHedHhfzff8ipWQqry4iPF2T+eb
+         Wv5HMzKRVbMZuv8EFBHICpfod1KcGcmv3awNMnh+e3vFHpGD2+MyEtf4O2+kBrkzI+QA
+         s8EOMK3QJL7mM5rKdpNTNID7tSeZdALb+S5TAmcPYv87hG02M1LfBNPf/lIrliNHczZR
+         Dhlnd2dXuVDlE+mG7/afPHiy3xr/zqdPYmjNpTDmlE/aaNlRi1OUXDFilyavnHX4rnD0
+         EGEg==
+X-Gm-Message-State: AOAM5314hmV0lwt5UzIp/gCfKh/FBs0GV/JjR+hX0RUlttV7EmVIkS0U
+        mgEOXq0Mgn2fEmIMvG2A7VU=
+X-Google-Smtp-Source: ABdhPJyX4+8v8JUfhatSVHBEDRahqnCfgVnO8HrDC7HMA1cGJSRRGzDZfveHa/V3VlNsHtHH294fRg==
+X-Received: by 2002:ac2:58c6:: with SMTP id u6mr3340219lfo.105.1597363644627;
+        Thu, 13 Aug 2020 17:07:24 -0700 (PDT)
 Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id c17sm1504450lfr.23.2020.08.13.17.07.26
+        by smtp.gmail.com with ESMTPSA id c17sm1504450lfr.23.2020.08.13.17.07.23
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Aug 2020 17:07:27 -0700 (PDT)
+        Thu, 13 Aug 2020 17:07:24 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -73,9 +73,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v5 24/36] dt-bindings: memory: tegra30: Add memory client IDs
-Date:   Fri, 14 Aug 2020 03:06:09 +0300
-Message-Id: <20200814000621.8415-25-digetx@gmail.com>
+Subject: [PATCH v5 21/36] dt-bindings: memory: tegra30: emc: Document new interconnect property
+Date:   Fri, 14 Aug 2020 03:06:06 +0300
+Message-Id: <20200814000621.8415-22-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200814000621.8415-1-digetx@gmail.com>
 References: <20200814000621.8415-1-digetx@gmail.com>
@@ -86,90 +86,47 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Each memory client have a unique hardware ID, this patch adds these IDs.
+External memory controller is interconnected with memory controller and
+with external memory. Document new interconnect property which turns
+external memory controller into interconnect provider.
 
 Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- include/dt-bindings/memory/tegra30-mc.h | 67 +++++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ .../bindings/memory-controllers/nvidia,tegra30-emc.yaml     | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/include/dt-bindings/memory/tegra30-mc.h b/include/dt-bindings/memory/tegra30-mc.h
-index 169f005fbc78..930f708aca17 100644
---- a/include/dt-bindings/memory/tegra30-mc.h
-+++ b/include/dt-bindings/memory/tegra30-mc.h
-@@ -41,4 +41,71 @@
- #define TEGRA30_MC_RESET_VDE		16
- #define TEGRA30_MC_RESET_VI		17
+diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-emc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-emc.yaml
+index 112bae2fcbbd..c243986db420 100644
+--- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-emc.yaml
++++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-emc.yaml
+@@ -31,6 +31,9 @@ properties:
+   interrupts:
+     maxItems: 1
  
-+#define TEGRA30_MC_PTCR			0
-+#define TEGRA30_MC_DISPLAY0A		1
-+#define TEGRA30_MC_DISPLAY0AB		2
-+#define TEGRA30_MC_DISPLAY0B		3
-+#define TEGRA30_MC_DISPLAY0BB		4
-+#define TEGRA30_MC_DISPLAY0C		5
-+#define TEGRA30_MC_DISPLAY0CB		6
-+#define TEGRA30_MC_DISPLAY1B		7
-+#define TEGRA30_MC_DISPLAY1BB		8
-+#define TEGRA30_MC_EPPUP		9
-+#define TEGRA30_MC_G2PR			10
-+#define TEGRA30_MC_G2SR			11
-+#define TEGRA30_MC_MPEUNIFBR		12
-+#define TEGRA30_MC_VIRUV		13
-+#define TEGRA30_MC_AFIR			14
-+#define TEGRA30_MC_AVPCARM7R		15
-+#define TEGRA30_MC_DISPLAYHC		16
-+#define TEGRA30_MC_DISPLAYHCB		17
-+#define TEGRA30_MC_FDCDRD		18
-+#define TEGRA30_MC_FDCDRD2		19
-+#define TEGRA30_MC_G2DR			20
-+#define TEGRA30_MC_HDAR			21
-+#define TEGRA30_MC_HOST1XDMAR		22
-+#define TEGRA30_MC_HOST1XR		23
-+#define TEGRA30_MC_IDXSRD		24
-+#define TEGRA30_MC_IDXSRD2		25
-+#define TEGRA30_MC_MPE_IPRED		26
-+#define TEGRA30_MC_MPEAMEMRD		27
-+#define TEGRA30_MC_MPECSRD		28
-+#define TEGRA30_MC_PPCSAHBDMAR		29
-+#define TEGRA30_MC_PPCSAHBSLVR		30
-+#define TEGRA30_MC_SATAR		31
-+#define TEGRA30_MC_TEXSRD		32
-+#define TEGRA30_MC_TEXSRD2		33
-+#define TEGRA30_MC_VDEBSEVR		34
-+#define TEGRA30_MC_VDEMBER		35
-+#define TEGRA30_MC_VDEMCER		36
-+#define TEGRA30_MC_VDETPER		37
-+#define TEGRA30_MC_MPCORELPR		38
-+#define TEGRA30_MC_MPCORER		39
-+#define TEGRA30_MC_EPPU			40
-+#define TEGRA30_MC_EPPV			41
-+#define TEGRA30_MC_EPPY			42
-+#define TEGRA30_MC_MPEUNIFBW		43
-+#define TEGRA30_MC_VIWSB		44
-+#define TEGRA30_MC_VIWU			45
-+#define TEGRA30_MC_VIWV			46
-+#define TEGRA30_MC_VIWY			47
-+#define TEGRA30_MC_G2DW			48
-+#define TEGRA30_MC_AFIW			49
-+#define TEGRA30_MC_AVPCARM7W		50
-+#define TEGRA30_MC_FDCDWR		51
-+#define TEGRA30_MC_FDCDWR2		52
-+#define TEGRA30_MC_HDAW			53
-+#define TEGRA30_MC_HOST1XW		54
-+#define TEGRA30_MC_ISPW			55
-+#define TEGRA30_MC_MPCORELPW		56
-+#define TEGRA30_MC_MPCOREW		57
-+#define TEGRA30_MC_MPECSWR		58
-+#define TEGRA30_MC_PPCSAHBDMAW		59
-+#define TEGRA30_MC_PPCSAHBSLVW		60
-+#define TEGRA30_MC_SATAW		61
-+#define TEGRA30_MC_VDEBSEVW		62
-+#define TEGRA30_MC_VDEDBGW		63
-+#define TEGRA30_MC_VDEMBEW		64
-+#define TEGRA30_MC_VDETPMW		65
++  "#interconnect-cells":
++    const: 0
 +
- #endif
+   nvidia,memory-controller:
+     $ref: /schemas/types.yaml#/definitions/phandle
+     description:
+@@ -214,6 +217,7 @@ required:
+   - interrupts
+   - clocks
+   - nvidia,memory-controller
++  - "#interconnect-cells"
+ 
+ additionalProperties: false
+ 
+@@ -227,6 +231,8 @@ examples:
+ 
+         nvidia,memory-controller = <&mc>;
+ 
++        #interconnect-cells = <0>;
++
+         emc-timings-1 {
+             nvidia,ram-code = <1>;
+ 
 -- 
 2.27.0
 
