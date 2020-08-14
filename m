@@ -2,80 +2,221 @@ Return-Path: <SRS0=qxav=BY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48689C433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 06:09:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D2EC6C433E1
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 12:34:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1E34A20855
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 06:09:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1597385388;
-	bh=c/lfw5JZTqHPS72/1poOsY6BXX2T5S4whSMwu1pt5eI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=SWc24063DA4HY55KUWVeukrOf6jo07nD9ivQVuIu9OtTtUfy+Grl/Kmq+eSVXQUBh
-	 hIh8meIHoj61mgpl/+8+Z8yKf0ftL7AM6tZ1D1ENO+GW9yC/CaJJy/2XQ0lTmUk+3s
-	 SKjuzKWXGSmVbmXXbhW36Tx8zQZtcROrpBYpYbsI=
+	by mail.kernel.org (Postfix) with ESMTP id 9A7422087D
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 12:34:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="x/Zvl0ou"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726139AbgHNGJr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Aug 2020 02:09:47 -0400
-Received: from mail.kernel.org ([198.145.29.99]:59910 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726110AbgHNGJq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 14 Aug 2020 02:09:46 -0400
-Received: from localhost (83-86-89-107.cable.dynamic.v4.ziggo.nl [83.86.89.107])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EB34420708;
-        Fri, 14 Aug 2020 06:09:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1597385386;
-        bh=c/lfw5JZTqHPS72/1poOsY6BXX2T5S4whSMwu1pt5eI=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=P+8afEJYPSe8D5GzWDR+rbuzJP74xvyOyWi7jinVsDT4D5lcLOtbNCwVRwvg+JX/A
-         SQMtwV3zfdxM5yW7ytNYJhgPEJ4PsLkF14iD7jhk860pQrsJnR1Z5gms4QRYoBvUpK
-         7dt+cWsB70NvtYK+nqIHnY1AU/URLUWfbCIn2pCc=
-Date:   Fri, 14 Aug 2020 08:09:09 +0200
-From:   Greg KH <gregkh@linuxfoundation.org>
-To:     Qiwu Huang <yanziily@gmail.com>
-Cc:     sre@kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, jiangfei1@xiaomi.com,
-        Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: Re: [PATCH v8 1/4] power: supply: core: add quick charge type
- property
-Message-ID: <20200814060909.GD1409566@kroah.com>
-References: <cover.1597376585.git.huangqiwu@xiaomi.com>
- <ced256ea8ac2f3e54c33677facc4c2ef04dee643.1597376585.git.huangqiwu@xiaomi.com>
+        id S1726688AbgHNMep (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Aug 2020 08:34:45 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48198 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726651AbgHNMep (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 08:34:45 -0400
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8FA6C061384
+        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2020 05:34:44 -0700 (PDT)
+Received: by mail-lj1-x243.google.com with SMTP id h19so9729121ljg.13
+        for <linux-pm@vger.kernel.org>; Fri, 14 Aug 2020 05:34:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=8aVoGCMCcv9Pur2tl+i/JV47L57zCbtcAw9hM4hvPuc=;
+        b=x/Zvl0ougehRb3wVjQjr0HoONDuxi42khbGkjaslALueN2HvNKrxyJzDzpnyO5UTCt
+         r38QGo1s2yP2+BIioamuO13Uu/nlhVXKbM1iQleCylilcLu0ITIfrBP+DFnYqJcCaiHu
+         rhT4p0WmM6piixPya+OAjfBRKJuU2LBQtOJaTVWR3ZEg5DIdMxeGScmcbShOxEqxGoaI
+         W5mI7Bx93MLe4v8v4jHAlY201dYwrznnZwwNnMLw3/0gy6aSC4Je9XXs9O7CHYIKTLga
+         gmEuE4hMm8BdHmNx4JN9aiP93Lhioo8qqcwUMIM/o1q7q5cbxR1rXDYtXUFJzXIx7D7j
+         xksQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=8aVoGCMCcv9Pur2tl+i/JV47L57zCbtcAw9hM4hvPuc=;
+        b=iz1gOwj7HPmeP7fTM0fNtCdCL82klr9Po6eeHJUPOxoAW44GLSjh47TO68P4ei6DA/
+         tgO3S06hWp/TI8FAYnddxXGZqNjqKaxSXwtx/5zh7uufI2vQLVQ+FFsmNmJwS7KQp6F1
+         T9EYIuANOcadw9LlOg+baZGTx1LUrDlFf+uTfaPQbGMkKo4KH10r4FqDy10j4dKN4DZV
+         pMnP6KkhhJN4TcthILT5Rr+bMTCxDJ4uv0KSQ4T6pBlgDQwj7WsTCMlMQY/d3C5R0OMz
+         fVpIjSNJ43/qMmnLMRuqg93me/DJjuPREAcnL8p6Nla2WoTSlmMTO83yZ+Q/rQEGdD+r
+         CGgg==
+X-Gm-Message-State: AOAM5334ccGtm4jj3vEoUzXzaBWkZ3HrNl/wBuR8wJtPXj6vWKHskR6w
+        12ZScnawWMCgg1d9vNMIYfsLAzk+GIOjqHg5
+X-Google-Smtp-Source: ABdhPJyAOCGDj1qaSczJ9tlFNl4QXH/NCYtmOjrrS69NKLy68n1a3HBKwskLzM+LwY9ORriDJtSslg==
+X-Received: by 2002:a2e:8346:: with SMTP id l6mr1264611ljh.0.1597408483313;
+        Fri, 14 Aug 2020 05:34:43 -0700 (PDT)
+Received: from localhost.localdomain (h-98-128-180-79.NA.cust.bahnhof.se. [98.128.180.79])
+        by smtp.gmail.com with ESMTPSA id 12sm1733799lju.67.2020.08.14.05.34.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 14 Aug 2020 05:34:42 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        linux-pm@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Benjamin Gaignard <benjamin.gaignard@st.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH] cpuidle: psci: Allow PM domain to be initialized even if no OSI mode
+Date:   Fri, 14 Aug 2020 14:34:36 +0200
+Message-Id: <20200814123436.61851-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ced256ea8ac2f3e54c33677facc4c2ef04dee643.1597376585.git.huangqiwu@xiaomi.com>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 14, 2020 at 11:46:54AM +0800, Qiwu Huang wrote:
-> From: Qiwu Huang <huangqiwu@xiaomi.com>
-> 
-> Reports the kind of quick charge type based on
-> different adapter power.
-> 
-> Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
-> ---
->  Documentation/ABI/testing/sysfs-class-power | 21 +++++++++
->  drivers/power/supply/power_supply_sysfs.c   |  1 +
->  drivers/power/supply/qcom_smbb.c            | 51 +++++++++++++++++++++
->  include/linux/power_supply.h                | 14 ++++++
->  4 files changed, 87 insertions(+)
+If the PSCI OSI mode isn't supported or fails to be enabled, the PM domain
+topology with the genpd providers isn't initialized. This is perfectly fine
+from cpuidle-psci point of view.
 
-You should also submit your driver that uses these new attributes at the
-same time.  What happened to that request?  Otherwise no one really
-knows how these are being used, or if they even are used by anyone.
+However, since the PM domain topology in the DTS files is a description of
+the HW, no matter of whether the PSCI OSI mode is supported or not, other
+consumers besides the CPUs may rely on it.
 
-thanks,
+Therefore, let's always allow the initialization of the PM domain topology
+to succeed, independently of whether the PSCI OSI mode is supported.
+Consequentially we need to track if we succeed to enable the OSI mode, as
+to know when a domain idlestate can be selected.
 
-greg k-h
+Note that, CPU devices are still not being attached to the PM domain
+topology, unless the PSCI OSI mode is supported.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+ drivers/cpuidle/cpuidle-psci-domain.c | 49 +++++++++++++--------------
+ 1 file changed, 24 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
+index b6e9649ab0da..55653c110e3a 100644
+--- a/drivers/cpuidle/cpuidle-psci-domain.c
++++ b/drivers/cpuidle/cpuidle-psci-domain.c
+@@ -28,6 +28,7 @@ struct psci_pd_provider {
+ 
+ static LIST_HEAD(psci_pd_providers);
+ static bool psci_pd_allow_domain_state;
++static bool psci_osi_mode_enabled;
+ 
+ static int psci_pd_power_off(struct generic_pm_domain *pd)
+ {
+@@ -37,7 +38,7 @@ static int psci_pd_power_off(struct generic_pm_domain *pd)
+ 	if (!state->data)
+ 		return 0;
+ 
+-	if (!psci_pd_allow_domain_state)
++	if (!psci_pd_allow_domain_state || !psci_osi_mode_enabled)
+ 		return -EBUSY;
+ 
+ 	/* OSI mode is enabled, set the corresponding domain state. */
+@@ -190,7 +191,7 @@ static void psci_pd_remove(void)
+ 	}
+ }
+ 
+-static int psci_pd_init_topology(struct device_node *np, bool add)
++static int psci_pd_init_topology(struct device_node *np)
+ {
+ 	struct device_node *node;
+ 	struct of_phandle_args child, parent;
+@@ -203,9 +204,7 @@ static int psci_pd_init_topology(struct device_node *np, bool add)
+ 
+ 		child.np = node;
+ 		child.args_count = 0;
+-
+-		ret = add ? of_genpd_add_subdomain(&parent, &child) :
+-			of_genpd_remove_subdomain(&parent, &child);
++		ret = of_genpd_add_subdomain(&parent, &child);
+ 		of_node_put(parent.np);
+ 		if (ret) {
+ 			of_node_put(node);
+@@ -216,14 +215,21 @@ static int psci_pd_init_topology(struct device_node *np, bool add)
+ 	return 0;
+ }
+ 
+-static int psci_pd_add_topology(struct device_node *np)
++static void psci_pd_try_set_osi_mode(void)
+ {
+-	return psci_pd_init_topology(np, true);
+-}
++	int ret;
+ 
+-static void psci_pd_remove_topology(struct device_node *np)
+-{
+-	psci_pd_init_topology(np, false);
++	if (!psci_has_osi_support())
++		return;
++
++	/* Try to enable OSI mode. */
++	ret = psci_set_osi_mode();
++	if (ret) {
++		pr_warn("failed to enable OSI mode: %d\n", ret);
++		return;
++	}
++
++	psci_osi_mode_enabled = true;
+ }
+ 
+ static void psci_cpuidle_domain_sync_state(struct device *dev)
+@@ -249,10 +255,6 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+ 	if (!np)
+ 		return -ENODEV;
+ 
+-	/* Currently limit the hierarchical topology to be used in OSI mode. */
+-	if (!psci_has_osi_support())
+-		return 0;
+-
+ 	/*
+ 	 * Parse child nodes for the "#power-domain-cells" property and
+ 	 * initialize a genpd/genpd-of-provider pair when it's found.
+@@ -273,17 +275,15 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+ 		return 0;
+ 
+ 	/* Link genpd masters/subdomains to model the CPU topology. */
+-	ret = psci_pd_add_topology(np);
++	ret = psci_pd_init_topology(np);
+ 	if (ret)
+ 		goto remove_pd;
+ 
+-	/* Try to enable OSI mode. */
+-	ret = psci_set_osi_mode();
+-	if (ret) {
+-		pr_warn("failed to enable OSI mode: %d\n", ret);
+-		psci_pd_remove_topology(np);
+-		goto remove_pd;
+-	}
++	/*
++	 * If OSI mode isn't supported, the topology isn't used by CPUs, but
++	 * it may still be used by other consumers. Leave it initialized.
++	 */
++	psci_pd_try_set_osi_mode();
+ 
+ 	pr_info("Initialized CPU PM domain topology\n");
+ 	return 0;
+@@ -291,8 +291,7 @@ static int psci_cpuidle_domain_probe(struct platform_device *pdev)
+ put_node:
+ 	of_node_put(node);
+ remove_pd:
+-	if (pd_count)
+-		psci_pd_remove();
++	psci_pd_remove();
+ 	pr_err("failed to create CPU PM domains ret=%d\n", ret);
+ 	return ret;
+ }
+-- 
+2.25.1
+
