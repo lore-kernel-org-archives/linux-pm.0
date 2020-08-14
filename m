@@ -5,62 +5,62 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3D27C433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C270DC433E3
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CE8AA2068E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A14DB208B3
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:43 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="g+SB0f0T"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="As6zWn+l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726268AbgHNNm2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Aug 2020 09:42:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58696 "EHLO
+        id S1728556AbgHNNmk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Aug 2020 09:42:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58720 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728261AbgHNNm1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 09:42:27 -0400
-Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7A647C061384;
-        Fri, 14 Aug 2020 06:42:26 -0700 (PDT)
-Received: by mail-ej1-x644.google.com with SMTP id d6so9973061ejr.5;
-        Fri, 14 Aug 2020 06:42:26 -0700 (PDT)
+        with ESMTP id S1728518AbgHNNmf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 09:42:35 -0400
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 61736C061384;
+        Fri, 14 Aug 2020 06:42:35 -0700 (PDT)
+Received: by mail-ed1-x543.google.com with SMTP id bs17so6854768edb.1;
+        Fri, 14 Aug 2020 06:42:35 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0ea8aqWQ03A+LTiarGv9IDwr9wAWoEp4rehXTFeQjn4=;
-        b=g+SB0f0TPX12oxfdzGHhzA8P76UZsMAdpd7j48g9GUESskc1VmnOPcruldrvgjo7Yr
-         o8PZiHBw2FyGFNIrtkoJdM1kzd145t52VQTHNwhBKwLhRZeNt2heZXb/6Z5V7t+Kob5m
-         KPOj1b2jKR61Kmi0KtRg6wrj2FX3NG6FQqdJiF7LihoLPwvkJ1E1rwAjy2iwbNY7UoCe
-         SQCqlZJGgnJdmjsa3QpXW6Nb9jMmjmLpst25vGeaNHyx32NBV8OWdMBcRDlvm6o0/qyI
-         xzXnSkf24PkuCdYOnfy/MZpJ1RlCZZMP7qnx68Jw3UGq47mq5A21oYApVTUXSnw8Vte6
-         +ffw==
+        bh=I1za5GysOPtWQWJ7AUT6812STRUOq3UcNXr5lCeanqY=;
+        b=As6zWn+lPgGK3H5ouPqVtJISYiJHkGaSP0kZgo2tzD2ckwBRA2wjKeTRD8SWHFvsBq
+         au/4tzWcqFBOdux4Iph663HiXld6/YRFz8RhqUYVy2d2E6KAG0fm5ivr0kP/EDyWV6Kh
+         xcKO7z0auD2OY97WcYgqHeo+69uSmppRswCeFWD9JMwCvvr0Dc9xx4oR3qy/yLFJxY//
+         6K/jnolLRKdQr7WkluFA+BzAZfLzYvVWcpgZnWSezeXxPnKXclHMqJfsyutSggLXDLla
+         0Z2jzQMyilnVjH/BAGAEYkdjMYrRax9URc1ZDotI7VziKPPEf9wbHgzVOSFBbYYIvF1w
+         QJHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0ea8aqWQ03A+LTiarGv9IDwr9wAWoEp4rehXTFeQjn4=;
-        b=sIRoulmoW0SshhsYJBOhDmRfjk8muVQQSJloctNKBjzKEYCYp3xMrxvUFG89wbPfAe
-         oAz1Rln17Lkawx0jowHBNsP3ANH1RcJ97ghd5NeJ1M8JlY1r1nGR0Lx8ztspUqcXu9P5
-         kRo44OAwtN2CbIc8Xu/2qLeOxn0oyjpY1RkznkWRV2/ZzA1BSwQYnytHUPoENDs3uJ/h
-         P5/ZA57CX33in15f2h1PXZ0Lstrq/206ZhnZe8BLcDIMGeaTlpEBhWRgOeDuq9xPK/EA
-         s0qLDJpuhPhGWWWj7Jy4WtM3mfHvUnosYMoJAdP8UoGeRcdAq7BdTTEG7mPdhS2SxWJc
-         iMQA==
-X-Gm-Message-State: AOAM530Tz9MCmWfr/BMFLFlbcb1Wcs3HEP260vgCgz+xLw9TIpnXkOxr
-        JmnFK5KYoy72uou62ON3b70=
-X-Google-Smtp-Source: ABdhPJxOR9deuuaATcWM1zfhd3dzycAnv3BLjx6ASgIC+UpiV/kr2Q/cC9YCV/tEiESc0uNlm6TmhA==
-X-Received: by 2002:a17:906:1cd4:: with SMTP id i20mr2408850ejh.480.1597412545226;
-        Fri, 14 Aug 2020 06:42:25 -0700 (PDT)
+        bh=I1za5GysOPtWQWJ7AUT6812STRUOq3UcNXr5lCeanqY=;
+        b=l9GcM05NsA0HSFVlLlNcPRJgM1KRYvJzzOGWeTTl5MjKfP9T6fJ28vidcN9SrVpD0e
+         IK3LnKKXkZVeHv1mVNwevFa+0/ICYsag2NchNdKf6KScijax0CCYCrQ2fgotHOnT4t5K
+         X4ZjmC9h6B+TlogtUoCDPkcvJ8wNOu6n5S75J8sjEy9TPrBvzlRHD2+YZyQFiOvW27tN
+         WIMY0H025Z6PJ1EepH5bSBEDOcdOCikHBrMek1he1IRO5HIonZ7sUovZpqx6vOUXEXAz
+         f9c1u/0jq8YbGkMtMWksC+NQxFZAA6ZRALHa8ZlwbRwWXMTBUREGXtQgUtIh8C+1e647
+         qfag==
+X-Gm-Message-State: AOAM532osppnIWGaFwr53VPzdi4Zqq8BpzEX9RduTb0WPG76CkR/ELC/
+        RyfWa8TeRxvgw6xybqGhPDA=
+X-Google-Smtp-Source: ABdhPJx2k4MG7iEdVDeslT347UjBp7bBF1b+NBY5vchoCRwvt/GaIrHGb9TuxYB1CjKzALDpeMrufw==
+X-Received: by 2002:a50:ee0a:: with SMTP id g10mr2172023eds.289.1597412554058;
+        Fri, 14 Aug 2020 06:42:34 -0700 (PDT)
 Received: from Ansuel-XPS.localdomain (host-87-0-192-118.retail.telecomitalia.it. [87.0.192.118])
-        by smtp.googlemail.com with ESMTPSA id s2sm6767118ejd.17.2020.08.14.06.42.22
+        by smtp.googlemail.com with ESMTPSA id s2sm6767118ejd.17.2020.08.14.06.42.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Aug 2020 06:42:24 -0700 (PDT)
+        Fri, 14 Aug 2020 06:42:33 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amit.kucheria@linaro.org>
-Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
+Cc:     Ansuel Smith <ansuelsmth@gmail.com>, Rob Herring <robh@kernel.org>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Amit Kucheria <amitk@kernel.org>,
@@ -69,9 +69,9 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v6 6/8] drivers: thermal: tsens: Change calib_backup name for msm8960
-Date:   Fri, 14 Aug 2020 15:41:20 +0200
-Message-Id: <20200814134123.14566-7-ansuelsmth@gmail.com>
+Subject: [RFC PATCH v6 8/8] dt-bindings: thermal: tsens: Document ipq8064 bindings
+Date:   Fri, 14 Aug 2020 15:41:22 +0200
+Message-Id: <20200814134123.14566-9-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200814134123.14566-1-ansuelsmth@gmail.com>
 References: <20200814134123.14566-1-ansuelsmth@gmail.com>
@@ -82,27 +82,100 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Follow standard naming for calib secondary rom and change calib_backup
-to tsens_calsel.
+Document the use of bindings used for msm8960 tsens based devices.
+msm8960 use the same gcc regs and is set as a child of the qcom gcc.
 
 Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/thermal/qcom/tsens-8960.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ .../bindings/thermal/qcom-tsens.yaml          | 50 ++++++++++++++++---
+ 1 file changed, 43 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
-index ca83c7f838a5..a8c85bd6c71f 100644
---- a/drivers/thermal/qcom/tsens-8960.c
-+++ b/drivers/thermal/qcom/tsens-8960.c
-@@ -191,7 +191,7 @@ static int calibrate_8960(struct tsens_priv *priv)
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+index d7be931b42d2..9d480e3943a2 100644
+--- a/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
++++ b/Documentation/devicetree/bindings/thermal/qcom-tsens.yaml
+@@ -19,6 +19,11 @@ description: |
+ properties:
+   compatible:
+     oneOf:
++      - description: msm9860 TSENS based
++        items:
++          - enum:
++            - qcom,ipq8064-tsens
++
+       - description: v0.1 of TSENS
+         items:
+           - enum:
+@@ -85,12 +90,18 @@ properties:
+       Number of cells required to uniquely identify the thermal sensors. Since
+       we have multiple sensors this is set to 1
  
- 	data = qfprom_read(priv->dev, "calib");
- 	if (IS_ERR(data))
--		data = qfprom_read(priv->dev, "calib_backup");
-+		data = qfprom_read(priv->dev, "calib_sel");
- 	if (IS_ERR(data))
- 		return PTR_ERR(data);
++required:
++  - compatible
++  - interrupts
++  - "#thermal-sensor-cells"
++
+ allOf:
+   - if:
+       properties:
+         compatible:
+           contains:
+             enum:
++              - qcom,ipq8064-tsens
+               - qcom,msm8916-tsens
+               - qcom,msm8974-tsens
+               - qcom,msm8976-tsens
+@@ -111,17 +122,42 @@ allOf:
+         interrupt-names:
+           minItems: 2
  
+-required:
+-  - compatible
+-  - reg
+-  - "#qcom,sensors"
+-  - interrupts
+-  - interrupt-names
+-  - "#thermal-sensor-cells"
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,tsens-v0_1
++              - qcom,tsens-v1
++              - qcom,tsens-v2
++
++    then:
++      required:
++        - reg
++        - interrupt-names
++        - "#qcom,sensors"
+ 
+ additionalProperties: false
+ 
+ examples:
++  - |
++    #include <dt-bindings/interrupt-controller/arm-gic.h>
++    // Example msm9860 based SoC (ipq8064):
++    gcc: clock-controller {
++
++           /* ... */
++
++           tsens: thermal-sensor {
++                compatible = "qcom,ipq8064-tsens";
++
++                 nvmem-cells = <&tsens_calib>, <&tsens_calsel>;
++                 nvmem-cell-names = "calib", "calib_sel";
++                 interrupts = <GIC_SPI 178 IRQ_TYPE_LEVEL_HIGH>;
++
++                 #thermal-sensor-cells = <1>;
++          };
++    };
++
+   - |
+     #include <dt-bindings/interrupt-controller/arm-gic.h>
+     // Example 1 (legacy: for pre v1 IP):
 -- 
 2.27.0
 
