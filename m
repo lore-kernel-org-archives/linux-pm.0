@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57FE1C433E1
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78CEBC433E5
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:07:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 321FB207DA
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:07:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 511D8207DA
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 00:07:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="fT2X/WHG"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="nH8/nuDX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726786AbgHNAHP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 13 Aug 2020 20:07:15 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46634 "EHLO
+        id S1726768AbgHNAHO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 13 Aug 2020 20:07:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46630 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726761AbgHNAHO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 20:07:14 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A9DD9C061385;
-        Thu, 13 Aug 2020 17:07:13 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id t23so8128138ljc.3;
-        Thu, 13 Aug 2020 17:07:13 -0700 (PDT)
+        with ESMTP id S1726740AbgHNAHN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 13 Aug 2020 20:07:13 -0400
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72558C061384;
+        Thu, 13 Aug 2020 17:07:11 -0700 (PDT)
+Received: by mail-lj1-x243.google.com with SMTP id v12so8091724ljc.10;
+        Thu, 13 Aug 2020 17:07:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=enQXWXa7CxfwNeu1ctQcEFbFznRpVI/PIPqSe3dmn9s=;
-        b=fT2X/WHGIWN9qFvv6TLNL4L+JH4lBV6w7Hw9xzB7m7YipcGaPXAe//qgx/6I/G0ner
-         VOE80Q9FSV4cV6ccz6c3xU4CX35rsHAXuGvk1PbKEFX4oW2B6tieZ28GoBWH2rxj02xY
-         QYA9pta3/aKbi16nYk+a4BpINAtv6LkZbhpI1Qfh6/Us3NH4WlLpBkqKiLsHMb4bPuGc
-         +vBEMAM7Nde5Js1uzfDIt222+JPm9Ro8p6CJIX5aNhcar/SxNv4XnaQFVud97yueoSTG
-         EeDEtHGhJOIh63/OV5uoq2eGYPWFfVKVupvYWFX9yWKa4jGKrkRtppVhpkNzDjd1ghwj
-         dgsQ==
+        bh=Pct9NC8VO0a8nghXwi5ctazbfo4aqrjWxTsK8RkybFc=;
+        b=nH8/nuDXiy+4Qdh4ChCGp+9h4XJ/9orptXrVOfCGXo8g+bGPVp+4G6DKAvwtXVNGcw
+         3DJBl33KCs4+QjqTqoZ/qQgzaXBlsIj3EIL6WnA7qEZsl4chs+w/DA5HaJ+hgepPgCFH
+         JLZMbAQO86mgVlzXaZ/zvut7677+7DAwt34OYK8h2q6Azv+5UC1p5rjW1S2K8j+Xgm0y
+         oNaD/QUFefOibo4csQeD6FlxP+oiNdtWiVSyLuViPMRiAf7A5cwwDMdCqsM8bSeNu/id
+         1N36EyGbl/SK/faEi5nfVZOvfGGtpvidQqg0ZX+6SksOzafnhQs1lXcXd4jT7QN0hB8E
+         +lQA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=enQXWXa7CxfwNeu1ctQcEFbFznRpVI/PIPqSe3dmn9s=;
-        b=NL7hHkMNYt7q1hkxJad73NeIoN6iDoAxZYbGs0hkBV5spXYzfMpZwjAq34CxiL79KP
-         UZ4nb4wPasA9giYFU+MndAHh3ln725ZxY1kLS3smDspPg36Md1NmNydT/Mlw979lN00W
-         x3Ycy/1XeUM5dbOzS/RACcjfoJlTK6zACBNSg3GdYhUvSTesnSUFQ4wY1ZJ1kMsJ+SJr
-         71GBHCf7k90bcuRl5ObdI+SRIN1AAVztuf7f0m8XwB7pd6NMK8r+p7BXbL6cm1IXCe3o
-         +hX3JGPNJyn8CvFflxQrLrfm16y0GyBI3XkECYUtbQ5zra3y0gfvdOUC9vCwAKQcunTY
-         G2PA==
-X-Gm-Message-State: AOAM533jzTBY/aVeZF984/OlSmv/4/oiEayQNe2W03cGYi8eFddM3OMK
-        xitBHMBsVAh6veVIpgneWzk=
-X-Google-Smtp-Source: ABdhPJzfIHAKIWQU/LUL3hX6UDGeCUZOy/9fZTDOZx4s14uO/SyEtUjHIPep24IM1BlpBWm+N3r5ZQ==
-X-Received: by 2002:a2e:b165:: with SMTP id a5mr89666ljm.269.1597363632216;
-        Thu, 13 Aug 2020 17:07:12 -0700 (PDT)
+        bh=Pct9NC8VO0a8nghXwi5ctazbfo4aqrjWxTsK8RkybFc=;
+        b=FPw+C5+IlAIsVdmsIZt017ugZkBLqqzPNezUiWptWAaR35mJOd9mh3R5mOM0/g2yWH
+         kCLDW7fWbQXnapKGpBcmyicuUd5KcqzMrI98s71SWcfJjRMqN47zUr7cyoVTec6b0pq4
+         XN8cESL8MC3DYuZA/jqd0dLsFZs3xMNdFa0pTZlEUt7R0lTTNOd/EPfSqqsyMeJh2G7D
+         G/g73hEHXO2tfAmpzitvfC22CkXLKCpiF3rRPp5voppm7FMBwW1uGs9E1dHm8EDvatfE
+         AYpCQraT386vzujonqB3nZQ6XyCshfuHCHjpPu8NFtcfI6np74g7FyhfaM1p1t+mtR3u
+         AGbA==
+X-Gm-Message-State: AOAM5324BhZWhvNpoVVyXMtJ3gARCJWdAwv8TD5LfWzyTHi4qRCvEUXJ
+        BYI9GThosa0rI15HRBLIKLc=
+X-Google-Smtp-Source: ABdhPJxPiJZrWxjd5umBuvDpZgsGH2/Uz9/ZQbEwecYHehDNeedDfyMunYNlTn8uBO3uFSmir3TMrQ==
+X-Received: by 2002:a2e:9d91:: with SMTP id c17mr102359ljj.131.1597363629992;
+        Thu, 13 Aug 2020 17:07:09 -0700 (PDT)
 Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id c17sm1504450lfr.23.2020.08.13.17.07.11
+        by smtp.gmail.com with ESMTPSA id c17sm1504450lfr.23.2020.08.13.17.07.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Aug 2020 17:07:11 -0700 (PDT)
+        Thu, 13 Aug 2020 17:07:09 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -73,9 +73,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v5 10/36] PM / devfreq: tegra20: Silence deferred probe error
-Date:   Fri, 14 Aug 2020 03:05:55 +0300
-Message-Id: <20200814000621.8415-11-digetx@gmail.com>
+Subject: [PATCH v5 08/36] soc/tegra: fuse: Export tegra_read_ram_code()
+Date:   Fri, 14 Aug 2020 03:05:53 +0300
+Message-Id: <20200814000621.8415-9-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200814000621.8415-1-digetx@gmail.com>
 References: <20200814000621.8415-1-digetx@gmail.com>
@@ -86,37 +86,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Tegra EMC driver was turned into a regular kernel driver, it also could
-be compiled as a loadable kernel module now. Hence EMC clock isn't
-guaranteed to be available and clk_get("emc") may return -EPROBE_DEFER and
-there is no good reason to spam KMSG with a error about missing EMC clock
-in this case, so let's silence the deferred probe error.
+The tegra_read_ram_code() is used by EMC drivers and we're going to make
+these driver modular, hence this function needs to be exported.
 
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra20-devfreq.c | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/soc/tegra/fuse/tegra-apbmisc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/devfreq/tegra20-devfreq.c b/drivers/devfreq/tegra20-devfreq.c
-index ff82bac9ee4e..6469dc69c5e0 100644
---- a/drivers/devfreq/tegra20-devfreq.c
-+++ b/drivers/devfreq/tegra20-devfreq.c
-@@ -141,9 +141,11 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+diff --git a/drivers/soc/tegra/fuse/tegra-apbmisc.c b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+index 8e416ad91ee2..151eccb6069d 100644
+--- a/drivers/soc/tegra/fuse/tegra-apbmisc.c
++++ b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+@@ -3,6 +3,7 @@
+  * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
+  */
  
- 	/* EMC is a system-critical clock that is always enabled */
- 	tegra->emc_clock = devm_clk_get(&pdev->dev, "emc");
--	if (IS_ERR(tegra->emc_clock)) {
--		err = PTR_ERR(tegra->emc_clock);
--		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
-+	err = PTR_ERR_OR_ZERO(tegra->emc_clock);
-+	if (err) {
-+		if (err != -EPROBE_DEFER)
-+			dev_err(&pdev->dev, "failed to get emc clock: %d\n",
-+				err);
- 		return err;
- 	}
++#include <linux/export.h>
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+@@ -65,6 +66,7 @@ u32 tegra_read_ram_code(void)
  
+ 	return straps >> PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT;
+ }
++EXPORT_SYMBOL_GPL(tegra_read_ram_code);
+ 
+ static const struct of_device_id apbmisc_match[] __initconst = {
+ 	{ .compatible = "nvidia,tegra20-apbmisc", },
 -- 
 2.27.0
 
