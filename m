@@ -2,62 +2,62 @@ Return-Path: <SRS0=qxav=BY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B09DEC433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B085C433E3
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 87F4F2068E
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DC21C2068E
+	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 13:42:24 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Fnog6K1M"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KJL39l7i"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727980AbgHNNmJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Aug 2020 09:42:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58630 "EHLO
+        id S1728150AbgHNNmX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 14 Aug 2020 09:42:23 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58684 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726268AbgHNNmE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 09:42:04 -0400
-Received: from mail-ej1-x643.google.com (mail-ej1-x643.google.com [IPv6:2a00:1450:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCC02C061384;
-        Fri, 14 Aug 2020 06:42:03 -0700 (PDT)
-Received: by mail-ej1-x643.google.com with SMTP id o18so9969627eje.7;
-        Fri, 14 Aug 2020 06:42:03 -0700 (PDT)
+        with ESMTP id S1728137AbgHNNmX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 09:42:23 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77269C061384;
+        Fri, 14 Aug 2020 06:42:22 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id o18so9970722eje.7;
+        Fri, 14 Aug 2020 06:42:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7cQQ4WDJLZ/zyyhzDTf2NVjGL+CUR2rrNdCZgGLo0+Y=;
-        b=Fnog6K1MdRWWZtiu+ypFiEBOhpVW3EW05Ey5nakDXOk8IAy1f0MCrPzJZuIicFAPcY
-         MACz7l0yLcDjDVizhVO21w0pApYX7bfckrzaUn1vMxqP701Ubo0Bc3gMcLDRmEn3G2m/
-         4ZytHNfqyvZQVEhYiQMmrMbP7YE70dtGemCcsMUgrlJ3dhlyKIudAEqJc+OM4xTVFMhw
-         GOHYkt4Cle7ZWk9waEgvhj6Gbh9EYOSDrYMGFhr3viRptAGiTp+pIJXuhAXE7A2PVgGe
-         bRr6sjqeEJXL4JZqFGD2m490RmEqGZYJbZ61qstdpQBxXgiWtkBozzrxbx+ky8ngWb+f
-         dSJQ==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=6C8BvSP4USym3ZWGwZolFOiU9vS+iiX1kKb6Zh8Be9I=;
+        b=KJL39l7iiLLAHTs44tuWFhWW8lq+YUqBR3Zs4v7imsXOg2TJA2WHI0H5t5wwVbAv+4
+         p6wOdObNNiskDkBnZDBRovV/9hIIwPHY9iQ7qrw5S2kCPipfUG6n36osIsjBWy4jHTLO
+         4VH4UiqqzvH8A3EioerRDPjIQBy2jJXk/1gMVDUBBdfgpJOu/1FZmGF7/MvEPmeMDrOs
+         lEUWJKUn6OJQEOOaz85MxELpPm4cR5OzX0SvaCMsiYxCKK72xJMetHzpe5T13sbSfKA8
+         AIQJBU2OzGqI2v/7vmzOX16nooh35EBFnJs/rjdWrJFwHdcgZwza5WtMKJKCCISYQdI5
+         9H7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7cQQ4WDJLZ/zyyhzDTf2NVjGL+CUR2rrNdCZgGLo0+Y=;
-        b=IRFrs2qsv0wLHXpdxhsejCWfCCQTz6dIYrVNb1ZoU1LbfguLWIOpzKLgF3SVBNlO+c
-         GTBNtfggEjQGQr+vHsJ6nj0pQTyCq8aMdMV6HPkwNEwlu8KJBOJz80M7HXcH/RTpChLi
-         sIop98OVgYQVPuptuSJqd7j25NbaM25UyaxOQEbuzqke05Ijm/9SvXW9JzEevlYaX+ct
-         A+Eyt+L/vAqc2Ph12uDClWhW9IDA8FI4RRWXyPH7oMlOUbjUm3Nb0tx9XR307VJPo+Wt
-         Gq81iN8mx6Q7nXaFKUzirPqN8TEz8E8g4yqM3jK6yp34G9CjXBfS9KCZiAZkFFEksszF
-         ypng==
-X-Gm-Message-State: AOAM532yUtXozgGH9JOWa9B5J2xlVf2kkMgOFlOxVQh1Pq/Tp//1lA+n
-        s5PSmInR20Gu4UDToo9IoV0=
-X-Google-Smtp-Source: ABdhPJwmx7QSSyTVXTxqs3pecv1pGcO68Xfu47xoxRvm+0c6cpjsx3ArTyeaxJ2TKDBQiKwMYroClA==
-X-Received: by 2002:a17:906:ca5a:: with SMTP id jx26mr2348450ejb.62.1597412522437;
-        Fri, 14 Aug 2020 06:42:02 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=6C8BvSP4USym3ZWGwZolFOiU9vS+iiX1kKb6Zh8Be9I=;
+        b=IWm3aadfFPjB44E1mEkYSQDBiWgmxJXjYOcqxzP17wMUX2BFiYlfkWHbelwVnNNIC1
+         +WuBjZ1K740SfmW0utTujxjwRDohUYOP9dsfMI/M8w99yQLueAVhpO11/Ep0Op4oGRvH
+         4KjAeORyXwdhTLDf7oesAWD8CgHC9MU5SwkdAoPor+aYNt9s1Gris09e7VQKgluJIarF
+         ibvg/LSxYIDRwH3C1q8rF8Z06r0YZMn+MONPgn728VapFhbNj8bwZVYuUv5r0PrYPQiN
+         ejnTW5xuXay2Dzu07zfYmke2cw4GUB6kIkGFl03VCJwIZCNIowAivAXCatdutX1oK3uw
+         AIDA==
+X-Gm-Message-State: AOAM531SDvWxuto9BtwARy/bJr71ksG4k1J9tnb0efwppwVDCxdLbNEL
+        ZndKXF26EYLI6qNCBAGES2w=
+X-Google-Smtp-Source: ABdhPJxlN5eoLhcFX7QLuXxFQPmiYh7z5UmvgDAlEeihFYH7LapVxl6crihwIPWkYLiiqM+wGeMV3Q==
+X-Received: by 2002:a17:906:3b91:: with SMTP id u17mr2402895ejf.305.1597412541111;
+        Fri, 14 Aug 2020 06:42:21 -0700 (PDT)
 Received: from Ansuel-XPS.localdomain (host-87-0-192-118.retail.telecomitalia.it. [87.0.192.118])
-        by smtp.googlemail.com with ESMTPSA id s2sm6767118ejd.17.2020.08.14.06.41.58
+        by smtp.googlemail.com with ESMTPSA id s2sm6767118ejd.17.2020.08.14.06.42.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 14 Aug 2020 06:42:01 -0700 (PDT)
+        Fri, 14 Aug 2020 06:42:20 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Amit Kucheria <amit.kucheria@linaro.org>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -69,10 +69,12 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Rob Herring <robh+dt@kernel.org>,
         linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v6 0/8]  Add support for ipq8064 tsens
-Date:   Fri, 14 Aug 2020 15:41:14 +0200
-Message-Id: <20200814134123.14566-1-ansuelsmth@gmail.com>
+Subject: [RFC PATCH v6 5/8] drivers: thermal: tsens: Fix wrong get_temp for msm8960
+Date:   Fri, 14 Aug 2020 15:41:19 +0200
+Message-Id: <20200814134123.14566-6-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200814134123.14566-1-ansuelsmth@gmail.com>
+References: <20200814134123.14566-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -80,49 +82,100 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patchset convert msm8960 to reg_filed, use int_common instead 
-of a custom function and fix wrong tsens get_temp function for msm8960.
-Ipq8064 SoCs tsens driver is based on 8960 tsens driver. Ipq8064 needs
-to be registered as a gcc child as the tsens regs on this platform are
-shared with the controller.
-This is based on work and code here
-https://git.linaro.org/people/amit.kucheria/kernel.git/log/?h=wrk3/tsens-8960-breakage
+msm8960 based tsens have an hardcoded slope. Fix the calibrate function
+with the new added slope, change code_to_mdegC to use slope and conver
+get_temp to use reg_field.
 
-v6:
-* Fix spelling error (can't find the problem with variable misallignment)
-* Rework big if-else
-* Remove extra comments
-* Add description about different interrupts
-v5:
-* Conver driver to use reg_fiedl
-* Use init_common 
-* Drop custom set_trip and set_interrupt
-* Use common set_trip and set_interrupt
-* Fix bad get_temp function
-* Add missing hardcoded slope
-v4:
-* Fix compilation error and warning reported by the bot
-v3:
-* Change driver to register as child instead of use phandle
-v2:
-* Fix dt-bindings problems
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ drivers/thermal/qcom/tsens-8960.c | 43 +++++++++++++++++++++++--------
+ 1 file changed, 32 insertions(+), 11 deletions(-)
 
-Ansuel Smith (8):
-  drivers: thermal: tsens: use get_temp for tsens_valid
-  drivers: thermal: tsens: Add VER_0 tsens version
-  drivers: thermal: tsens: Convert msm8960 to reg_field
-  drivers: thermal: tsens: Use init_common for msm8960
-  drivers: thermal: tsens: Fix wrong get_temp for msm8960
-  drivers: thermal: tsens: Change calib_backup name for msm8960
-  drivers: thermal: tsens: Add support for ipq8064-tsens
-  dt-bindings: thermal: tsens: Document ipq8064 bindings
-
- .../bindings/thermal/qcom-tsens.yaml          |  50 ++++-
- drivers/thermal/qcom/tsens-8960.c             | 172 +++++++++++-------
- drivers/thermal/qcom/tsens.c                  | 130 +++++++++++--
- drivers/thermal/qcom/tsens.h                  |   7 +-
- 4 files changed, 270 insertions(+), 89 deletions(-)
-
+diff --git a/drivers/thermal/qcom/tsens-8960.c b/drivers/thermal/qcom/tsens-8960.c
+index 93d2c6c7d1bd..ca83c7f838a5 100644
+--- a/drivers/thermal/qcom/tsens-8960.c
++++ b/drivers/thermal/qcom/tsens-8960.c
+@@ -67,6 +67,14 @@
+ #define S9_STATUS_OFF		0x3674
+ #define S10_STATUS_OFF		0x3678
+ 
++#define TSENS_FACTOR		1
++
++u32 tsens_msm8960_slope[] = {
++			1176, 1176, 1154, 1176,
++			1111, 1132, 1132, 1199,
++			1132, 1199, 1132
++			};
++
+ static int suspend_8960(struct tsens_priv *priv)
+ {
+ 	int ret;
+@@ -187,8 +195,10 @@ static int calibrate_8960(struct tsens_priv *priv)
+ 	if (IS_ERR(data))
+ 		return PTR_ERR(data);
+ 
+-	for (i = 0; i < num_read; i++, s++)
+-		s->offset = data[i];
++	for (i = 0; i < num_read; i++, s++) {
++		s->slope = tsens_msm8960_slope[i];
++		s->offset = CAL_MDEGC - (data[i] * s->slope);
++	}
+ 
+ 	kfree(data);
+ 
+@@ -198,32 +208,43 @@ static int calibrate_8960(struct tsens_priv *priv)
+ /* Temperature on y axis and ADC-code on x-axis */
+ static inline int code_to_mdegC(u32 adc_code, const struct tsens_sensor *s)
+ {
+-	int slope, offset;
++	int num, degc;
++
++	num = (adc_code * s->slope) + s->offset;
+ 
+-	slope = thermal_zone_get_slope(s->tzd);
+-	offset = CAL_MDEGC - slope * s->offset;
++	if (num == 0)
++		degc = num;
++	else if (num > 0)
++		degc = (num + TSENS_FACTOR / 2)
++			/ TSENS_FACTOR;
++	else
++		degc = (num - TSENS_FACTOR / 2)
++			/ TSENS_FACTOR;
+ 
+-	return adc_code * slope + offset;
++	return degc;
+ }
+ 
+ static int get_temp_8960(const struct tsens_sensor *s, int *temp)
+ {
+ 	int ret;
+-	u32 code, trdy;
++	u32 last_temp = 0, trdy;
+ 	struct tsens_priv *priv = s->priv;
+ 	unsigned long timeout;
+ 
+ 	timeout = jiffies + usecs_to_jiffies(TIMEOUT_US);
+ 	do {
+-		ret = regmap_read(priv->tm_map, INT_STATUS_ADDR, &trdy);
++		ret = regmap_field_read(priv->rf[TRDY], &trdy);
+ 		if (ret)
+ 			return ret;
+-		if (!(trdy & TRDY_MASK))
++		if (!trdy)
+ 			continue;
+-		ret = regmap_read(priv->tm_map, s->status, &code);
++
++		ret = regmap_field_read(priv->rf[LAST_TEMP_0 + s->hw_id], &last_temp);
+ 		if (ret)
+ 			return ret;
+-		*temp = code_to_mdegC(code, s);
++
++		*temp = code_to_mdegC(last_temp, s);
++
+ 		return 0;
+ 	} while (time_before(jiffies, timeout));
+ 
 -- 
 2.27.0
 
