@@ -1,75 +1,599 @@
-Return-Path: <SRS0=9a4i=BZ=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=rI/Z=B2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ED38C433E1
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Aug 2020 22:12:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C7BA1C433DF
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Aug 2020 04:01:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 700822063A
-	for <linux-pm@archiver.kernel.org>; Sat, 15 Aug 2020 22:12:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1597529570;
-	bh=2YAaeXqnIxpTxcvp+gkdqr00TyuFnSBiXPvvQsS/1S8=;
-	h=In-Reply-To:References:Subject:From:Cc:To:Date:List-ID:From;
-	b=Y1HwVd9oxlcTpUDdTl//I7HH66Z2LS7Tqxg4U9yY3DGBRsuTn6En1jKhEx2YSqZ8f
-	 CxNTMSLyz1AZWyezBemZ37Sy7ZBT7V3TPSjtVxxpwSD+tNcIAFrnBhOZ6T6I+wmjHa
-	 6aDuug1UDPeHvb3+bby8WWTWSDRBQXPCs8hmZKd8=
+	by mail.kernel.org (Postfix) with ESMTP id 8288E2068E
+	for <linux-pm@archiver.kernel.org>; Sun, 16 Aug 2020 04:01:56 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=qubes-os.org header.i=frederic.pierret@qubes-os.org header.b="lnyYblSS"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728617AbgHOWMs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 15 Aug 2020 18:12:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41772 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728787AbgHOWK1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 15 Aug 2020 18:10:27 -0400
-Received: from kernel.org (unknown [104.132.0.74])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 20A4A22DBF;
-        Sat, 15 Aug 2020 08:03:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1597478593;
-        bh=2YAaeXqnIxpTxcvp+gkdqr00TyuFnSBiXPvvQsS/1S8=;
-        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
-        b=aTdvelhcDS6+WntNjpiJrmmTg0/fEpvpqr6npg7eBxu/5+LO+YqOhG1mdsrqX/7gs
-         nK9ebxaqXPHzYoN6LG83OIQaMCFXkZabbWZQa+D+SvWc8Q3/P1GPp5AWiefb29obck
-         4ObLJOn75w2Irkqn2mtHLriIM3G52qsge/ilfdyo=
-Content-Type: text/plain; charset="utf-8"
+        id S1726054AbgHPEB4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 16 Aug 2020 00:01:56 -0400
+Received: from sender4-of-o57.zoho.com ([136.143.188.57]:21794 "EHLO
+        sender4-of-o57.zoho.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725986AbgHPEBz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 16 Aug 2020 00:01:55 -0400
+X-Greylist: delayed 14404 seconds by postgrey-1.27 at vger.kernel.org; Sun, 16 Aug 2020 00:01:52 EDT
+ARC-Seal: i=1; a=rsa-sha256; t=1597479388; cv=none; 
+        d=zohomail.com; s=zohoarc; 
+        b=Oeui4NhIpFf/vYoqCoyVnS/mumVgazHNYAssht4ZRMuzjsjIzJIp6GoM14q2dfApMOBjAbKHHSgwdo4yzTjF/ykvX+1oyYA57Pg6Ls1SbLRvWA0RXK3UdI1i4ADLM5SvKT17gR6VpxPXabDsk3Ln/WRF68tq8c0O+NCY+0rYWqQ=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+        t=1597479388; h=Content-Type:Content-Transfer-Encoding:Cc:Date:From:MIME-Version:Message-ID:Subject:To; 
+        bh=+NeRn/sKZpJduIkYLFQukoIUUUTXbKtzYigJVOCvqKQ=; 
+        b=gOWemmA0PN4FK0jR5ztWfnyMNwcwyCtTCqSu8a891C1w/97I8vJ1ZWWI2ZMzHimYOajUr2iapYWNkv0E450AD1Dd72WvJml+IdfgrItkWbGSMBD5IAqKTvilHiiqPYdFaRBB8Nz0fZyAr45e4AktuOTSysYiMuGZOtrDVj+lmPw=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+        dkim=pass  header.i=qubes-os.org;
+        spf=pass  smtp.mailfrom=frederic.pierret@qubes-os.org;
+        dmarc=pass header.from=<frederic.pierret@qubes-os.org> header.from=<frederic.pierret@qubes-os.org>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1597479388;
+        s=s; d=qubes-os.org; i=frederic.pierret@qubes-os.org;
+        h=From:To:Cc:Message-ID:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding;
+        bh=+NeRn/sKZpJduIkYLFQukoIUUUTXbKtzYigJVOCvqKQ=;
+        b=lnyYblSSFFaRMK93wCCtwD4vshWojaF28IKt3r3X2Nwo7RsmnKTUAtq3gOj8Z8gZ
+        uPpCG5w1HffZYxK1mGPP7vEIsHNxOBMH0e/FJf/OYCs0OzBZxp4Z/y6fd/HeDFrB7jQ
+        i5lyJHtHf+XsXHQKSuV/mPhx/xvkItL+Ig9tzkl0=
+Received: from localhost.localdomain (45.152.181.220 [45.152.181.220]) by mx.zohomail.com
+        with SMTPS id 1597479384707347.4774858120187; Sat, 15 Aug 2020 01:16:24 -0700 (PDT)
+From:   =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?= 
+        <frederic.pierret@qubes-os.org>
+To:     sre@kernel.org, linux-pm@vger.kernel.org, davem@davemloft.net,
+        ast@kernel.org, axboe@kernel.dk, johannes.berg@intel.com,
+        mkubecek@suse.cz
+Cc:     =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Pierret=20=28fepitre=29?= 
+        <frederic.pierret@qubes-os.org>
+Message-ID: <20200815081616.4986-1-frederic.pierret@qubes-os.org>
+Subject: [PATCH 1/2] Create uapi power_supply from enums and power_supply_is_* funcs
+Date:   Sat, 15 Aug 2020 10:16:15 +0200
+X-Mailer: git-send-email 2.21.3
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
-In-Reply-To: <453b3897507838e95359d891ef967165bd167a4e.1597292833.git.viresh.kumar@linaro.org>
-References: <1597043179-17903-1-git-send-email-rnayak@codeaurora.org> <c6bba235a9a6fd777255bb4f1d16492fdcabc847.1597292833.git.viresh.kumar@linaro.org> <453b3897507838e95359d891ef967165bd167a4e.1597292833.git.viresh.kumar@linaro.org>
-Subject: Re: [PATCH 2/4] opp: Track device's resources configuration status
-From:   Stephen Boyd <sboyd@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>, mka@chromium.org,
-        sibis@codeaurora.org, linux-kernel@vger.kernel.org
-To:     Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>
-Date:   Sat, 15 Aug 2020 01:03:11 -0700
-Message-ID: <159747859192.33733.13232258434530046392@swboyd.mtv.corp.google.com>
-User-Agent: alot/0.9.1
+X-ZohoMailClient: External
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Quoting Viresh Kumar (2020-08-12 21:28:59)
-> The OPP core needs to track if the resources of devices are enabled or
-> configured or not, as it disables the resources when target_freq is set
-> to 0.
->=20
-> Handle that with a separate variable to make it easy to maintain.
->=20
-> Also note that we will unconditionally call clk_set_rate() in the case
-> where the resources are getting enabled again. This shouldn't have any
-> side effects anyway.
+It allows to create ioctl client for power_supply devices
 
-Any reason to want to do that? We'll have to grab the prepare lock in
-the clk framework to figure out that there's nothing to do sometimes. If
-anything, a comment may help to indicate that we call clk_set_rate()
-again, but don't expect it to matter much.
+Signed-off-by: Fr=C3=A9d=C3=A9ric Pierret (fepitre) <frederic.pierret@qubes=
+-os.org>
+---
+ include/linux/power_supply.h      | 242 +----------------------------
+ include/uapi/linux/power_supply.h | 247 ++++++++++++++++++++++++++++++
+ 2 files changed, 248 insertions(+), 241 deletions(-)
+ create mode 100644 include/uapi/linux/power_supply.h
+
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 97cc4b85bf61..eafe8a892527 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -17,193 +17,7 @@
+ #include <linux/leds.h>
+ #include <linux/spinlock.h>
+ #include <linux/notifier.h>
+-
+-/*
+- * All voltages, currents, charges, energies, time and temperatures in uV,
+- * =C2=B5A, =C2=B5Ah, =C2=B5Wh, seconds and tenths of degree Celsius unles=
+s otherwise
+- * stated. It's driver's job to convert its raw values to units in which
+- * this class operates.
+- */
+-
+-/*
+- * For systems where the charger determines the maximum battery capacity
+- * the min and max fields should be used to present these values to user
+- * space. Unused/unknown fields will not appear in sysfs.
+- */
+-
+-enum {
+-=09POWER_SUPPLY_STATUS_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_STATUS_CHARGING,
+-=09POWER_SUPPLY_STATUS_DISCHARGING,
+-=09POWER_SUPPLY_STATUS_NOT_CHARGING,
+-=09POWER_SUPPLY_STATUS_FULL,
+-};
+-
+-/* What algorithm is the charger using? */
+-enum {
+-=09POWER_SUPPLY_CHARGE_TYPE_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_CHARGE_TYPE_NONE,
+-=09POWER_SUPPLY_CHARGE_TYPE_TRICKLE,=09/* slow speed */
+-=09POWER_SUPPLY_CHARGE_TYPE_FAST,=09=09/* fast speed */
+-=09POWER_SUPPLY_CHARGE_TYPE_STANDARD,=09/* normal speed */
+-=09POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,=09/* dynamically adjusted speed */
+-=09POWER_SUPPLY_CHARGE_TYPE_CUSTOM,=09/* use CHARGE_CONTROL_* props */
+-=09POWER_SUPPLY_CHARGE_TYPE_LONGLIFE,=09/* slow speed, longer life */
+-};
+-
+-enum {
+-=09POWER_SUPPLY_HEALTH_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_HEALTH_GOOD,
+-=09POWER_SUPPLY_HEALTH_OVERHEAT,
+-=09POWER_SUPPLY_HEALTH_DEAD,
+-=09POWER_SUPPLY_HEALTH_OVERVOLTAGE,
+-=09POWER_SUPPLY_HEALTH_UNSPEC_FAILURE,
+-=09POWER_SUPPLY_HEALTH_COLD,
+-=09POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
+-=09POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
+-=09POWER_SUPPLY_HEALTH_OVERCURRENT,
+-=09POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED,
+-=09POWER_SUPPLY_HEALTH_WARM,
+-=09POWER_SUPPLY_HEALTH_COOL,
+-=09POWER_SUPPLY_HEALTH_HOT,
+-};
+-
+-enum {
+-=09POWER_SUPPLY_TECHNOLOGY_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_TECHNOLOGY_NiMH,
+-=09POWER_SUPPLY_TECHNOLOGY_LION,
+-=09POWER_SUPPLY_TECHNOLOGY_LIPO,
+-=09POWER_SUPPLY_TECHNOLOGY_LiFe,
+-=09POWER_SUPPLY_TECHNOLOGY_NiCd,
+-=09POWER_SUPPLY_TECHNOLOGY_LiMn,
+-};
+-
+-enum {
+-=09POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL,
+-=09POWER_SUPPLY_CAPACITY_LEVEL_LOW,
+-=09POWER_SUPPLY_CAPACITY_LEVEL_NORMAL,
+-=09POWER_SUPPLY_CAPACITY_LEVEL_HIGH,
+-=09POWER_SUPPLY_CAPACITY_LEVEL_FULL,
+-};
+-
+-enum {
+-=09POWER_SUPPLY_SCOPE_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_SCOPE_SYSTEM,
+-=09POWER_SUPPLY_SCOPE_DEVICE,
+-};
+-
+-enum power_supply_property {
+-=09/* Properties of type `int' */
+-=09POWER_SUPPLY_PROP_STATUS =3D 0,
+-=09POWER_SUPPLY_PROP_CHARGE_TYPE,
+-=09POWER_SUPPLY_PROP_HEALTH,
+-=09POWER_SUPPLY_PROP_PRESENT,
+-=09POWER_SUPPLY_PROP_ONLINE,
+-=09POWER_SUPPLY_PROP_AUTHENTIC,
+-=09POWER_SUPPLY_PROP_TECHNOLOGY,
+-=09POWER_SUPPLY_PROP_CYCLE_COUNT,
+-=09POWER_SUPPLY_PROP_VOLTAGE_MAX,
+-=09POWER_SUPPLY_PROP_VOLTAGE_MIN,
+-=09POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
+-=09POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
+-=09POWER_SUPPLY_PROP_VOLTAGE_NOW,
+-=09POWER_SUPPLY_PROP_VOLTAGE_AVG,
+-=09POWER_SUPPLY_PROP_VOLTAGE_OCV,
+-=09POWER_SUPPLY_PROP_VOLTAGE_BOOT,
+-=09POWER_SUPPLY_PROP_CURRENT_MAX,
+-=09POWER_SUPPLY_PROP_CURRENT_NOW,
+-=09POWER_SUPPLY_PROP_CURRENT_AVG,
+-=09POWER_SUPPLY_PROP_CURRENT_BOOT,
+-=09POWER_SUPPLY_PROP_POWER_NOW,
+-=09POWER_SUPPLY_PROP_POWER_AVG,
+-=09POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+-=09POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN,
+-=09POWER_SUPPLY_PROP_CHARGE_FULL,
+-=09POWER_SUPPLY_PROP_CHARGE_EMPTY,
+-=09POWER_SUPPLY_PROP_CHARGE_NOW,
+-=09POWER_SUPPLY_PROP_CHARGE_AVG,
+-=09POWER_SUPPLY_PROP_CHARGE_COUNTER,
+-=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
+-=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
+-=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
+-=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
+-=09POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
+-=09POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
+-=09POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
+-=09POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
+-=09POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
+-=09POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
+-=09POWER_SUPPLY_PROP_INPUT_POWER_LIMIT,
+-=09POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
+-=09POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
+-=09POWER_SUPPLY_PROP_ENERGY_FULL,
+-=09POWER_SUPPLY_PROP_ENERGY_EMPTY,
+-=09POWER_SUPPLY_PROP_ENERGY_NOW,
+-=09POWER_SUPPLY_PROP_ENERGY_AVG,
+-=09POWER_SUPPLY_PROP_CAPACITY, /* in percents! */
+-=09POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN, /* in percents! */
+-=09POWER_SUPPLY_PROP_CAPACITY_ALERT_MAX, /* in percents! */
+-=09POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN, /* in percents! */
+-=09POWER_SUPPLY_PROP_CAPACITY_LEVEL,
+-=09POWER_SUPPLY_PROP_TEMP,
+-=09POWER_SUPPLY_PROP_TEMP_MAX,
+-=09POWER_SUPPLY_PROP_TEMP_MIN,
+-=09POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
+-=09POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
+-=09POWER_SUPPLY_PROP_TEMP_AMBIENT,
+-=09POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN,
+-=09POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX,
+-=09POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
+-=09POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
+-=09POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+-=09POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
+-=09POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
+-=09POWER_SUPPLY_PROP_USB_TYPE,
+-=09POWER_SUPPLY_PROP_SCOPE,
+-=09POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
+-=09POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
+-=09POWER_SUPPLY_PROP_CALIBRATE,
+-=09POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
+-=09POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
+-=09POWER_SUPPLY_PROP_MANUFACTURE_DAY,
+-=09/* Properties of type `const char *' */
+-=09POWER_SUPPLY_PROP_MODEL_NAME,
+-=09POWER_SUPPLY_PROP_MANUFACTURER,
+-=09POWER_SUPPLY_PROP_SERIAL_NUMBER,
+-};
+-
+-enum power_supply_type {
+-=09POWER_SUPPLY_TYPE_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_TYPE_BATTERY,
+-=09POWER_SUPPLY_TYPE_UPS,
+-=09POWER_SUPPLY_TYPE_MAINS,
+-=09POWER_SUPPLY_TYPE_USB,=09=09=09/* Standard Downstream Port */
+-=09POWER_SUPPLY_TYPE_USB_DCP,=09=09/* Dedicated Charging Port */
+-=09POWER_SUPPLY_TYPE_USB_CDP,=09=09/* Charging Downstream Port */
+-=09POWER_SUPPLY_TYPE_USB_ACA,=09=09/* Accessory Charger Adapters */
+-=09POWER_SUPPLY_TYPE_USB_TYPE_C,=09=09/* Type C Port */
+-=09POWER_SUPPLY_TYPE_USB_PD,=09=09/* Power Delivery Port */
+-=09POWER_SUPPLY_TYPE_USB_PD_DRP,=09=09/* PD Dual Role Port */
+-=09POWER_SUPPLY_TYPE_APPLE_BRICK_ID,=09/* Apple Charging Method */
+-};
+-
+-enum power_supply_usb_type {
+-=09POWER_SUPPLY_USB_TYPE_UNKNOWN =3D 0,
+-=09POWER_SUPPLY_USB_TYPE_SDP,=09=09/* Standard Downstream Port */
+-=09POWER_SUPPLY_USB_TYPE_DCP,=09=09/* Dedicated Charging Port */
+-=09POWER_SUPPLY_USB_TYPE_CDP,=09=09/* Charging Downstream Port */
+-=09POWER_SUPPLY_USB_TYPE_ACA,=09=09/* Accessory Charger Adapters */
+-=09POWER_SUPPLY_USB_TYPE_C,=09=09/* Type C Port */
+-=09POWER_SUPPLY_USB_TYPE_PD,=09=09/* Power Delivery Port */
+-=09POWER_SUPPLY_USB_TYPE_PD_DRP,=09=09/* PD Dual Role Port */
+-=09POWER_SUPPLY_USB_TYPE_PD_PPS,=09=09/* PD Programmable Power Supply */
+-=09POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,=09/* Apple Charging Method */
+-};
+-
+-enum power_supply_notifier_events {
+-=09PSY_EVENT_PROP_CHANGED,
+-};
++#include <uapi/linux/power_supply.h>
+=20
+ union power_supply_propval {
+ =09int intval;
+@@ -451,60 +265,6 @@ extern void *power_supply_get_drvdata(struct power_sup=
+ply *psy);
+ /* For APM emulation, think legacy userspace. */
+ extern struct class *power_supply_class;
+=20
+-static inline bool power_supply_is_amp_property(enum power_supply_property=
+ psp)
+-{
+-=09switch (psp) {
+-=09case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
+-=09case POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN:
+-=09case POWER_SUPPLY_PROP_CHARGE_FULL:
+-=09case POWER_SUPPLY_PROP_CHARGE_EMPTY:
+-=09case POWER_SUPPLY_PROP_CHARGE_NOW:
+-=09case POWER_SUPPLY_PROP_CHARGE_AVG:
+-=09case POWER_SUPPLY_PROP_CHARGE_COUNTER:
+-=09case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
+-=09case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
+-=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+-=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
+-=09case POWER_SUPPLY_PROP_CURRENT_MAX:
+-=09case POWER_SUPPLY_PROP_CURRENT_NOW:
+-=09case POWER_SUPPLY_PROP_CURRENT_AVG:
+-=09case POWER_SUPPLY_PROP_CURRENT_BOOT:
+-=09=09return 1;
+-=09default:
+-=09=09break;
+-=09}
+-
+-=09return 0;
+-}
+-
+-static inline bool power_supply_is_watt_property(enum power_supply_propert=
+y psp)
+-{
+-=09switch (psp) {
+-=09case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
+-=09case POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN:
+-=09case POWER_SUPPLY_PROP_ENERGY_FULL:
+-=09case POWER_SUPPLY_PROP_ENERGY_EMPTY:
+-=09case POWER_SUPPLY_PROP_ENERGY_NOW:
+-=09case POWER_SUPPLY_PROP_ENERGY_AVG:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_MAX:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_MIN:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_NOW:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_AVG:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_OCV:
+-=09case POWER_SUPPLY_PROP_VOLTAGE_BOOT:
+-=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
+-=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
+-=09case POWER_SUPPLY_PROP_POWER_NOW:
+-=09=09return 1;
+-=09default:
+-=09=09break;
+-=09}
+-
+-=09return 0;
+-}
+-
+ #ifdef CONFIG_POWER_SUPPLY_HWMON
+ int power_supply_add_hwmon_sysfs(struct power_supply *psy);
+ void power_supply_remove_hwmon_sysfs(struct power_supply *psy);
+diff --git a/include/uapi/linux/power_supply.h b/include/uapi/linux/power_s=
+upply.h
+new file mode 100644
+index 000000000000..4400a9e1f991
+--- /dev/null
++++ b/include/uapi/linux/power_supply.h
+@@ -0,0 +1,247 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef __UAPI_LINUX_POWER_SUPPLY_H__
++#define __UAPI_LINUX_POWER_SUPPLY_H__
++
++/*
++ * All voltages, currents, charges, energies, time and temperatures in uV,
++ * =C2=B5A, =C2=B5Ah, =C2=B5Wh, seconds and tenths of degree Celsius unles=
+s otherwise
++ * stated. It's driver's job to convert its raw values to units in which
++ * this class operates.
++ */
++
++/*
++ * For systems where the charger determines the maximum battery capacity
++ * the min and max fields should be used to present these values to user
++ * space. Unused/unknown fields will not appear in sysfs.
++ */
++
++enum {
++=09POWER_SUPPLY_STATUS_UNKNOWN =3D 0,
++=09POWER_SUPPLY_STATUS_CHARGING,
++=09POWER_SUPPLY_STATUS_DISCHARGING,
++=09POWER_SUPPLY_STATUS_NOT_CHARGING,
++=09POWER_SUPPLY_STATUS_FULL,
++};
++
++/* What algorithm is the charger using? */
++enum {
++=09POWER_SUPPLY_CHARGE_TYPE_UNKNOWN =3D 0,
++=09POWER_SUPPLY_CHARGE_TYPE_NONE,
++=09POWER_SUPPLY_CHARGE_TYPE_TRICKLE,=09/* slow speed */
++=09POWER_SUPPLY_CHARGE_TYPE_FAST,=09=09/* fast speed */
++=09POWER_SUPPLY_CHARGE_TYPE_STANDARD,=09/* normal speed */
++=09POWER_SUPPLY_CHARGE_TYPE_ADAPTIVE,=09/* dynamically adjusted speed */
++=09POWER_SUPPLY_CHARGE_TYPE_CUSTOM,=09/* use CHARGE_CONTROL_* props */
++=09POWER_SUPPLY_CHARGE_TYPE_LONGLIFE,=09/* slow speed, longer life */
++};
++
++enum {
++=09POWER_SUPPLY_HEALTH_UNKNOWN =3D 0,
++=09POWER_SUPPLY_HEALTH_GOOD,
++=09POWER_SUPPLY_HEALTH_OVERHEAT,
++=09POWER_SUPPLY_HEALTH_DEAD,
++=09POWER_SUPPLY_HEALTH_OVERVOLTAGE,
++=09POWER_SUPPLY_HEALTH_UNSPEC_FAILURE,
++=09POWER_SUPPLY_HEALTH_COLD,
++=09POWER_SUPPLY_HEALTH_WATCHDOG_TIMER_EXPIRE,
++=09POWER_SUPPLY_HEALTH_SAFETY_TIMER_EXPIRE,
++=09POWER_SUPPLY_HEALTH_OVERCURRENT,
++=09POWER_SUPPLY_HEALTH_CALIBRATION_REQUIRED,
++=09POWER_SUPPLY_HEALTH_WARM,
++=09POWER_SUPPLY_HEALTH_COOL,
++=09POWER_SUPPLY_HEALTH_HOT,
++};
++
++enum {
++=09POWER_SUPPLY_TECHNOLOGY_UNKNOWN =3D 0,
++=09POWER_SUPPLY_TECHNOLOGY_NiMH,
++=09POWER_SUPPLY_TECHNOLOGY_LION,
++=09POWER_SUPPLY_TECHNOLOGY_LIPO,
++=09POWER_SUPPLY_TECHNOLOGY_LiFe,
++=09POWER_SUPPLY_TECHNOLOGY_NiCd,
++=09POWER_SUPPLY_TECHNOLOGY_LiMn,
++};
++
++enum {
++=09POWER_SUPPLY_CAPACITY_LEVEL_UNKNOWN =3D 0,
++=09POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL,
++=09POWER_SUPPLY_CAPACITY_LEVEL_LOW,
++=09POWER_SUPPLY_CAPACITY_LEVEL_NORMAL,
++=09POWER_SUPPLY_CAPACITY_LEVEL_HIGH,
++=09POWER_SUPPLY_CAPACITY_LEVEL_FULL,
++};
++
++enum {
++=09POWER_SUPPLY_SCOPE_UNKNOWN =3D 0,
++=09POWER_SUPPLY_SCOPE_SYSTEM,
++=09POWER_SUPPLY_SCOPE_DEVICE,
++};
++
++enum power_supply_property {
++=09/* Properties of type `int' */
++=09POWER_SUPPLY_PROP_STATUS =3D 0,
++=09POWER_SUPPLY_PROP_CHARGE_TYPE,
++=09POWER_SUPPLY_PROP_HEALTH,
++=09POWER_SUPPLY_PROP_PRESENT,
++=09POWER_SUPPLY_PROP_ONLINE,
++=09POWER_SUPPLY_PROP_AUTHENTIC,
++=09POWER_SUPPLY_PROP_TECHNOLOGY,
++=09POWER_SUPPLY_PROP_CYCLE_COUNT,
++=09POWER_SUPPLY_PROP_VOLTAGE_MAX,
++=09POWER_SUPPLY_PROP_VOLTAGE_MIN,
++=09POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
++=09POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN,
++=09POWER_SUPPLY_PROP_VOLTAGE_NOW,
++=09POWER_SUPPLY_PROP_VOLTAGE_AVG,
++=09POWER_SUPPLY_PROP_VOLTAGE_OCV,
++=09POWER_SUPPLY_PROP_VOLTAGE_BOOT,
++=09POWER_SUPPLY_PROP_CURRENT_MAX,
++=09POWER_SUPPLY_PROP_CURRENT_NOW,
++=09POWER_SUPPLY_PROP_CURRENT_AVG,
++=09POWER_SUPPLY_PROP_CURRENT_BOOT,
++=09POWER_SUPPLY_PROP_POWER_NOW,
++=09POWER_SUPPLY_PROP_POWER_AVG,
++=09POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
++=09POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN,
++=09POWER_SUPPLY_PROP_CHARGE_FULL,
++=09POWER_SUPPLY_PROP_CHARGE_EMPTY,
++=09POWER_SUPPLY_PROP_CHARGE_NOW,
++=09POWER_SUPPLY_PROP_CHARGE_AVG,
++=09POWER_SUPPLY_PROP_CHARGE_COUNTER,
++=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT,
++=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX,
++=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE,
++=09POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX,
++=09POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
++=09POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
++=09POWER_SUPPLY_PROP_CHARGE_CONTROL_START_THRESHOLD, /* in percents! */
++=09POWER_SUPPLY_PROP_CHARGE_CONTROL_END_THRESHOLD, /* in percents! */
++=09POWER_SUPPLY_PROP_INPUT_CURRENT_LIMIT,
++=09POWER_SUPPLY_PROP_INPUT_VOLTAGE_LIMIT,
++=09POWER_SUPPLY_PROP_INPUT_POWER_LIMIT,
++=09POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN,
++=09POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN,
++=09POWER_SUPPLY_PROP_ENERGY_FULL,
++=09POWER_SUPPLY_PROP_ENERGY_EMPTY,
++=09POWER_SUPPLY_PROP_ENERGY_NOW,
++=09POWER_SUPPLY_PROP_ENERGY_AVG,
++=09POWER_SUPPLY_PROP_CAPACITY, /* in percents! */
++=09POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN, /* in percents! */
++=09POWER_SUPPLY_PROP_CAPACITY_ALERT_MAX, /* in percents! */
++=09POWER_SUPPLY_PROP_CAPACITY_ERROR_MARGIN, /* in percents! */
++=09POWER_SUPPLY_PROP_CAPACITY_LEVEL,
++=09POWER_SUPPLY_PROP_TEMP,
++=09POWER_SUPPLY_PROP_TEMP_MAX,
++=09POWER_SUPPLY_PROP_TEMP_MIN,
++=09POWER_SUPPLY_PROP_TEMP_ALERT_MIN,
++=09POWER_SUPPLY_PROP_TEMP_ALERT_MAX,
++=09POWER_SUPPLY_PROP_TEMP_AMBIENT,
++=09POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MIN,
++=09POWER_SUPPLY_PROP_TEMP_AMBIENT_ALERT_MAX,
++=09POWER_SUPPLY_PROP_TIME_TO_EMPTY_NOW,
++=09POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
++=09POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
++=09POWER_SUPPLY_PROP_TIME_TO_FULL_AVG,
++=09POWER_SUPPLY_PROP_TYPE, /* use power_supply.type instead */
++=09POWER_SUPPLY_PROP_USB_TYPE,
++=09POWER_SUPPLY_PROP_SCOPE,
++=09POWER_SUPPLY_PROP_PRECHARGE_CURRENT,
++=09POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT,
++=09POWER_SUPPLY_PROP_CALIBRATE,
++=09POWER_SUPPLY_PROP_MANUFACTURE_YEAR,
++=09POWER_SUPPLY_PROP_MANUFACTURE_MONTH,
++=09POWER_SUPPLY_PROP_MANUFACTURE_DAY,
++=09/* Properties of type `const char *' */
++=09POWER_SUPPLY_PROP_MODEL_NAME,
++=09POWER_SUPPLY_PROP_MANUFACTURER,
++=09POWER_SUPPLY_PROP_SERIAL_NUMBER,
++};
++
++enum power_supply_type {
++=09POWER_SUPPLY_TYPE_UNKNOWN =3D 0,
++=09POWER_SUPPLY_TYPE_BATTERY,
++=09POWER_SUPPLY_TYPE_UPS,
++=09POWER_SUPPLY_TYPE_MAINS,
++=09POWER_SUPPLY_TYPE_USB,=09=09=09/* Standard Downstream Port */
++=09POWER_SUPPLY_TYPE_USB_DCP,=09=09/* Dedicated Charging Port */
++=09POWER_SUPPLY_TYPE_USB_CDP,=09=09/* Charging Downstream Port */
++=09POWER_SUPPLY_TYPE_USB_ACA,=09=09/* Accessory Charger Adapters */
++=09POWER_SUPPLY_TYPE_USB_TYPE_C,=09=09/* Type C Port */
++=09POWER_SUPPLY_TYPE_USB_PD,=09=09/* Power Delivery Port */
++=09POWER_SUPPLY_TYPE_USB_PD_DRP,=09=09/* PD Dual Role Port */
++=09POWER_SUPPLY_TYPE_APPLE_BRICK_ID,=09/* Apple Charging Method */
++};
++
++enum power_supply_usb_type {
++=09POWER_SUPPLY_USB_TYPE_UNKNOWN =3D 0,
++=09POWER_SUPPLY_USB_TYPE_SDP,=09=09/* Standard Downstream Port */
++=09POWER_SUPPLY_USB_TYPE_DCP,=09=09/* Dedicated Charging Port */
++=09POWER_SUPPLY_USB_TYPE_CDP,=09=09/* Charging Downstream Port */
++=09POWER_SUPPLY_USB_TYPE_ACA,=09=09/* Accessory Charger Adapters */
++=09POWER_SUPPLY_USB_TYPE_C,=09=09/* Type C Port */
++=09POWER_SUPPLY_USB_TYPE_PD,=09=09/* Power Delivery Port */
++=09POWER_SUPPLY_USB_TYPE_PD_DRP,=09=09/* PD Dual Role Port */
++=09POWER_SUPPLY_USB_TYPE_PD_PPS,=09=09/* PD Programmable Power Supply */
++=09POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,=09/* Apple Charging Method */
++};
++
++enum power_supply_notifier_events {
++=09PSY_EVENT_PROP_CHANGED,
++};
++
++static inline bool power_supply_is_amp_property(enum power_supply_property=
+ psp)
++{
++=09switch (psp) {
++=09case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
++=09case POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN:
++=09case POWER_SUPPLY_PROP_CHARGE_FULL:
++=09case POWER_SUPPLY_PROP_CHARGE_EMPTY:
++=09case POWER_SUPPLY_PROP_CHARGE_NOW:
++=09case POWER_SUPPLY_PROP_CHARGE_AVG:
++=09case POWER_SUPPLY_PROP_CHARGE_COUNTER:
++=09case POWER_SUPPLY_PROP_PRECHARGE_CURRENT:
++=09case POWER_SUPPLY_PROP_CHARGE_TERM_CURRENT:
++=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
++=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT_MAX:
++=09case POWER_SUPPLY_PROP_CURRENT_MAX:
++=09case POWER_SUPPLY_PROP_CURRENT_NOW:
++=09case POWER_SUPPLY_PROP_CURRENT_AVG:
++=09case POWER_SUPPLY_PROP_CURRENT_BOOT:
++=09=09return 1;
++=09default:
++=09=09break;
++=09}
++
++=09return 0;
++}
++
++static inline bool power_supply_is_watt_property(enum power_supply_propert=
+y psp)
++{
++=09switch (psp) {
++=09case POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN:
++=09case POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN:
++=09case POWER_SUPPLY_PROP_ENERGY_FULL:
++=09case POWER_SUPPLY_PROP_ENERGY_EMPTY:
++=09case POWER_SUPPLY_PROP_ENERGY_NOW:
++=09case POWER_SUPPLY_PROP_ENERGY_AVG:
++=09case POWER_SUPPLY_PROP_VOLTAGE_MAX:
++=09case POWER_SUPPLY_PROP_VOLTAGE_MIN:
++=09case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
++=09case POWER_SUPPLY_PROP_VOLTAGE_MIN_DESIGN:
++=09case POWER_SUPPLY_PROP_VOLTAGE_NOW:
++=09case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++=09case POWER_SUPPLY_PROP_VOLTAGE_OCV:
++=09case POWER_SUPPLY_PROP_VOLTAGE_BOOT:
++=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE:
++=09case POWER_SUPPLY_PROP_CONSTANT_CHARGE_VOLTAGE_MAX:
++=09case POWER_SUPPLY_PROP_POWER_NOW:
++=09=09return 1;
++=09default:
++=09=09break;
++=09}
++
++=09return 0;
++}
++
++#endif /* __UAPI_LINUX_POWER_SUPPLY_H__ */
+--=20
+2.21.3
+
+
