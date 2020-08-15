@@ -1,94 +1,75 @@
-Return-Path: <SRS0=qxav=BY=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=9a4i=BZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB99BC433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 18:08:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D668AC433E4
+	for <linux-pm@archiver.kernel.org>; Sat, 15 Aug 2020 21:52:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BC26020771
-	for <linux-pm@archiver.kernel.org>; Fri, 14 Aug 2020 18:08:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1597428516;
-	bh=PvD2WHINE2ePzk6MtdaqlCA2VO/Qth2YpgF17TvXsZQ=;
-	h=From:Date:Subject:To:Cc:List-ID:From;
-	b=H9OZzMzxsjcl/nQPxLx9JG1ztLICwObs88OaTSPXAu1OBoCSg9i7Hiw/JKyBiqVLJ
-	 wNkFonJB3+Bfpu+ooZavUld2df2UHN+cpvyGeGaVlfi/6f56K0+lSOP6nMVZ7XWD31
-	 xuKLYAYJxVWXnSdOcpG67lwC8IfSZ1mICATTFepo=
+	by mail.kernel.org (Postfix) with ESMTP id AAE982053B
+	for <linux-pm@archiver.kernel.org>; Sat, 15 Aug 2020 21:52:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=kemnade.info header.i=@kemnade.info header.b="P29QJOzu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726845AbgHNSIg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 14 Aug 2020 14:08:36 -0400
-Received: from mail-oo1-f65.google.com ([209.85.161.65]:38896 "EHLO
-        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726297AbgHNSIg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 14 Aug 2020 14:08:36 -0400
-Received: by mail-oo1-f65.google.com with SMTP id z11so2097859oon.5;
-        Fri, 14 Aug 2020 11:08:35 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=emIdfFsixl10m0M5c840U75hx82p0eU8c30F0GRjyEs=;
-        b=G8rQbKMNESZv3A0bItNXTG1sGgezFvNE1i8SrawBID6lUYFSyg4d/WZfUAVU+yXKcL
-         cWGTteMXBotRm+PmpOMCdh88uahQOJ2SpnHDbacgWk9u4udoSfNebRUszM4cKRBK7glt
-         zcawF1YiYgABAp6hSq0Zz09zJ85nrhZmUzGtZ74G0Wi4Pi3d65kj5Q2zRbr8jZPsFqF/
-         gMeryverEF5301AfMXPxdqg5be9zfdxhE++ne9uRcbYmCpcBh0S9UJlhS3t09SaKkNoG
-         0pAp4PMsj9yIXYHqZgQ4IZhdNvrXMqVcCUn3uXixKLg11r0yEILWRYAdrsvKvEYeBlcR
-         7M6Q==
-X-Gm-Message-State: AOAM530GgKnobSrPz6bCUVPSF//c8uCV8oqzS6UuoJKtLBniyH4tzlVX
-        1Y7N6sIk8jTcG1qxrzv+20E2TGFLq5HCg3lghxezrepVQQ4=
-X-Google-Smtp-Source: ABdhPJzKc++kR41IO5hzPDOT+ysOunMaS02XKpKOdv59xPu4JCqos/htNCsvhhXnfJVLIodkSJr0Ys+lGfP7zM2y9vE=
-X-Received: by 2002:a4a:e618:: with SMTP id f24mr2549592oot.75.1597428515436;
- Fri, 14 Aug 2020 11:08:35 -0700 (PDT)
+        id S1729004AbgHOVwJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 15 Aug 2020 17:52:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45650 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728968AbgHOVwC (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 15 Aug 2020 17:52:02 -0400
+Received: from mail.andi.de1.cc (mail.andi.de1.cc [IPv6:2a01:238:4321:8900:456f:ecd6:43e:202c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 333A3C0F26D0
+        for <linux-pm@vger.kernel.org>; Sat, 15 Aug 2020 10:22:16 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=kemnade.info; s=20180802; h=Content-Transfer-Encoding:MIME-Version:
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+        :Resent-Message-ID:In-Reply-To:References:List-Id:List-Help:List-Unsubscribe:
+        List-Subscribe:List-Post:List-Owner:List-Archive;
+        bh=JvLghbUswUlpt0JwASQDrmBEnasLkSkpyvZGI85Q00k=; b=P29QJOzu0baa+1b186//OqzMLC
+        iyaoiYkT7I4CXjFyF3EGi0RV7HOXpwICKD+xd0NIS2nxjArB1qO4SDzzZXDPN4TolRk3tLt5JogxW
+        WSvPphoXQU6iCad09MbfvCwoAD6QPLQ3IMmYgAs4rK2Ojz1SIQYKf2mLdHYpxeLmLDL8=;
+Received: from p200300ccff3e9c001a3da2fffebfd33a.dip0.t-ipconnect.de ([2003:cc:ff3e:9c00:1a3d:a2ff:febf:d33a] helo=aktux)
+        by mail.andi.de1.cc with esmtpsa (TLS1.2:ECDHE_RSA_AES_256_GCM_SHA384:256)
+        (Exim 4.89)
+        (envelope-from <andreas@kemnade.info>)
+        id 1k6zTg-0007Ic-I3; Sat, 15 Aug 2020 18:56:20 +0200
+Received: from andi by aktux with local (Exim 4.92)
+        (envelope-from <andreas@kemnade.info>)
+        id 1k6zTf-0002mV-Go; Sat, 15 Aug 2020 18:56:19 +0200
+From:   Andreas Kemnade <andreas@kemnade.info>
+To:     lee.jones@linaro.org, sre@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, b.galvani@gmail.com, phh@phh.me,
+        letux-kernel@openphoenux.org
+Cc:     Andreas Kemnade <andreas@kemnade.info>
+Subject: [PATCH 0/2] power: supply: RN5T618/RC5T619
+Date:   Sat, 15 Aug 2020 18:56:08 +0200
+Message-Id: <20200815165610.10647-1-andreas@kemnade.info>
+X-Mailer: git-send-email 2.20.1
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 14 Aug 2020 20:08:24 +0200
-Message-ID: <CAJZ5v0g42_UymEznQCjyaQMaDbO5txyDncAaGXogpSA9R8MZwQ@mail.gmail.com>
-Subject: [GIT PULL] One more power management update for v5.9-rc1
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+This series adds support for the RN5T618/RC5T619 charger and fuel gauge.
+Battery and input power status can be read.
 
-Please pull from the tag
+Andreas Kemnade (2):
+  power: supply: Add support for RN5T618/RC5T619 charger and fuel gauge
+  mfd: rn5t618: Add a power supply subdevice
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.9-rc1-3
+ drivers/mfd/rn5t618.c                |   1 +
+ drivers/power/supply/Kconfig         |   8 +
+ drivers/power/supply/Makefile        |   1 +
+ drivers/power/supply/rn5t618_power.c | 565 +++++++++++++++++++++++++++
+ 4 files changed, 575 insertions(+)
+ create mode 100644 drivers/power/supply/rn5t618_power.c
 
-with top-most commit f3db6de55e95eee6457a14912dd382a6cfc98edd
+-- 
+2.20.1
 
- Merge branch 'pm-cpufreq'
-
-on top of commit f6235eb189706bf38c82b5fa5f2db0d21bc1dcef
-
- Merge tag 'pm-5.9-rc1-2' of
-git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm
-
-to receive one more power management update for 5.9-rc1.
-
-This modifies the intel_pstate driver to allow it to work in the
-passive mode with hardware-managed P-states (HWP) enabled.
-
-Thanks!
-
-
----------------
-
-Rafael J. Wysocki (1):
-      cpufreq: intel_pstate: Implement passive mode with HWP enabled
-
----------------
-
- Documentation/admin-guide/pm/intel_pstate.rst |  89 +++++-----
- drivers/cpufreq/cpufreq.c                     |   6 +-
- drivers/cpufreq/intel_pstate.c                | 245 +++++++++++++++++++-------
- include/linux/cpufreq.h                       |   2 +
- 4 files changed, 229 insertions(+), 113 deletions(-)
