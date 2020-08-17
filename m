@@ -2,190 +2,171 @@ Return-Path: <SRS0=thCJ=B3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CD13EC433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 19:18:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 662E3C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 21:06:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B20D320789
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 19:18:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 45C9B2072D
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 21:06:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="KHItjRgF"
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="rAS9sIp3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404168AbgHQTSm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Aug 2020 15:18:42 -0400
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:53118 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387473AbgHQTS1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2020 15:18:27 -0400
-Received: from fllv0035.itg.ti.com ([10.64.41.0])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 07HJIE8w003381;
-        Mon, 17 Aug 2020 14:18:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1597691894;
-        bh=4JAd00xMiWrjvk4rZNCeC62B1mGwyRj0ceLiUfWiEyw=;
-        h=From:To:CC:Subject:Date:In-Reply-To:References;
-        b=KHItjRgFleFmDsE9dlxLeOe4Livzma9D8/Aq823EOdA3mF6c0HN6IJElEn30q/gzP
-         iEp2yyL0dmrmTL4vYjodBH3hkxbQ7z7bRpcjQ9HxlA0IQ8jG16kkoxKxV4GmEZVm3Y
-         rSGFZi9+r5O3h+uAPCDRg/ns8yfM/I/Z9/gmuszw=
-Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
-        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 07HJIEGI087266;
-        Mon, 17 Aug 2020 14:18:14 -0500
-Received: from DLEE111.ent.ti.com (157.170.170.22) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 17
- Aug 2020 14:18:14 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE111.ent.ti.com
- (157.170.170.22) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 17 Aug 2020 14:18:13 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 07HJID9I119292;
-        Mon, 17 Aug 2020 14:18:13 -0500
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC:     <dmurphy@ti.com>, Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: [PATCH v1 1/2] dt-bindings: power: Add the bq256xx dt bindings
-Date:   Mon, 17 Aug 2020 14:17:22 -0500
-Message-ID: <20200817191723.22416-2-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200817191723.22416-1-r-rivera-matos@ti.com>
-References: <20200817191723.22416-1-r-rivera-matos@ti.com>
+        id S1727781AbgHQVGc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Aug 2020 17:06:32 -0400
+Received: from cmta16.telus.net ([209.171.16.89]:55741 "EHLO cmta16.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726961AbgHQVGa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Aug 2020 17:06:30 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id 7mKkkX3u85b7l7mKmkHbuV; Mon, 17 Aug 2020 15:06:27 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1597698387; bh=w1JQC+7BHe1UBg4sceDdsbCzHYwBzcssB/FvTOGriz4=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=rAS9sIp3vV52fD0nNxi+appewT7Nx1CJtgQGGLkOUGrnwyIqaD4EonvFtSh824zgK
+         ypvBeJVOGYt8aoc1McGG1UYJDrfXMxa6xWLWVznjTUqofH6kNS878NbYZuYZ6l+rCV
+         UJ9V7HofUwjOSrlaTVUczZIYSIDoBSigv4FUvQwfsJfVTh1kjf3k7SzwSl8qUg6woR
+         usdwiskAGVRZsEUSALYCTcuvsgVBb4mbf+o+8zPeI59bckLnKxOonhK4sCBKW70lHQ
+         JGKoAgDwQohr4aesbwKZ9Dr8ECk7XghPm7fOAScxBmZepgiNGPSsY0jL+O3SaqRGLA
+         H3v6YF2ozKEbA==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=YPHhNiOx c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=kj9zAlcOel0A:10 a=8RpStYJGi7BMQs3j73kA:9
+ a=CjuIK1q_8ugA:10
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc:     "'Linux Documentation'" <linux-doc@vger.kernel.org>,
+        "'LKML'" <linux-kernel@vger.kernel.org>,
+        "'Peter Zijlstra'" <peterz@infradead.org>,
+        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
+        "'Giovanni Gherdovich'" <ggherdovich@suse.cz>,
+        "'Francisco Jerez'" <francisco.jerez.plata@intel.com>,
+        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>
+References: <4981405.3kqTVLv5tO@kreacher> <1709487.Bxjb1zNRZM@kreacher> <3226770.pJcYkdRNc2@kreacher> <122847018.uQ7iJ9lzrg@kreacher>
+In-Reply-To: <122847018.uQ7iJ9lzrg@kreacher>
+Subject: RE: [PATCH v7] cpufreq: intel_pstate: Implement passive mode with HWP enabled
+Date:   Mon, 17 Aug 2020 14:06:21 -0700
+Message-ID: <000901d674da$4521bda0$cf6538e0$@net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Content-Language: en-ca
+Thread-Index: AdZsF+Ny9o2RVgG1QuO4ZJYAcV1MWgIFjVRQ
+X-CMAE-Envelope: MS4wfFySA2QGM8mG30cHRJd1Wj1kfqMD3F2zODxcj2cwjNO5a/+/SOT2UmVspNrVRiHzRGtJFha2e0jq+KzeCZHm20awAASAP2NRIa73VqlOfD5QPiqfZNgn
+ iYNK+tfXZ3Kpz4gBfjVJOSL4GgB0+2pd1LmXGLMkAvcMvaZIKotHdVklR4+fiEDZaRS4PMdmGWgYtHo6ejl3+Rjui9IEc3CS39ZVjT0KzpAwyZKfClS26wAO
+ AdrAbvV28Mhv0NWQH0Ta9x2TMH+aAy1Z0gnGjSlj4ooG9JxizfP9b+vE9MvfFbJ6zXehAkiQVP9H7ZV63h18VrQ75WCjtudOzNUkeME3pr48848GiFQXWX05
+ g4zfmNN5FW5KeOZ5KkLHtXHi37uMWuGG3VOM+PIjAZhxAv20/SHNhEDF5871fxPlhylBXDRQMUQH8f2s7WT/hvfyTDgqWZPzf7m+Y1Kr1e5MEJmqTJs=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the bindings for the bq256xx series of battery charging ICs.
+On 2020.08.06 05:04 Rafael J. Wysocki wrote:
 
-Datasheets:
-- https://www.ti.com/lit/ds/symlink/bq25600.pdf
-- https://www.ti.com/lit/ds/symlink/bq25601.pdf
-- https://www.ti.com/lit/ds/symlink/bq25600d.pdf
-- https://www.ti.com/lit/ds/symlink/bq25601d.pdf
-- https://www.ti.com/lit/ds/symlink/bq25611d.pdf
-- https://www.ti.com/lit/ds/symlink/bq25618.pdf
-- https://www.ti.com/lit/ds/symlink/bq25619.pdf
+> Allow intel_pstate to work in the passive mode with HWP enabled and
+> make it set the HWP minimum performance limit (HWP floor) to the
+> P-state value given by the target frequency supplied by the cpufreq
+> governor, so as to prevent the HWP algorithm and the CPU scheduler
+> from working against each other, at least when the schedutil governor
+> is in use, and update the intel_pstate documentation accordingly.
 
-Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
----
- .../bindings/power/supply/bq256xx.yaml        | 99 +++++++++++++++++++
- 1 file changed, 99 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+...
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
-new file mode 100644
-index 000000000000..67db4ba9fdb6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
-@@ -0,0 +1,99 @@
-+# SPDX-License-Identifier: (GPL-2.0-only or BSD-2-Clause)
-+# Copyright (C) 2020 Texas Instruments Incorporated
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/bq256xx.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: TI bq256xx Switch Mode Buck Charger
-+
-+maintainers:
-+  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-+
-+description: |
-+  The bq256xx devices are a family of highly-integrated battery charge
-+  management and system power management ICs for single cell Li-ion and Li-
-+  polymer batteries.
-+
-+  Datasheets:
-+    - https://www.ti.com/lit/ds/symlink/bq25600.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25601.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25600d.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25601d.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25611d.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25618.pdf
-+    - https://www.ti.com/lit/ds/symlink/bq25619.pdf
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ti,bq25600
-+      - ti,bq25601
-+      - ti,bq25600d
-+      - ti,bq25601d
-+      - ti,bq25611d
-+      - ti,bq25618
-+      - ti,bq25619
-+
-+  reg:
-+    maxItems: 1
-+
-+  ti,watchdog-timer:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: |
-+      Watchdog timer in milli seconds. 0 (default) disables the watchdog
-+    minimum: 0
-+    maximum: 160000
-+    enum: [ 0, 40000, 80000, 160000]
-+
-+  input-voltage-limit-microvolt:
-+    description: |
-+       Minimum input voltage limit in micro volts with a 100000 micro volt step
-+    minimum: 3900000
-+    maximum: 5400000
-+
-+  input-current-limit-microamp:
-+    description: |
-+       Maximum input current limit in micro amps with a 100000 micro amp step
-+    minimum: 100000
-+    maximum: 3200000
-+
-+required:
-+  - compatible
-+  - reg
-+
-+examples:
-+  - |
-+    bat: battery {
-+      compatible = "simple-battery";
-+      constant-charge-current-max-microamp = <2040000>;
-+      constant-charge-voltage-max-microvolt = <4352000>;
-+      precharge-current-microamp = <180000>;
-+      termination-current-microamp = <180000>;
-+    };
-+    #include <dt-bindings/gpio/gpio.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c0 {
-+      pinctrl-names = "default";
-+      pinctrl-0 = <&i2c2_pins>;
-+
-+      status = "okay";
-+      clock-frequency = <400000>;
-+
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      bq25601@6b {
-+        compatible = "ti,bq25601";
-+        reg = <0x6b>;
-+        monitored-battery = <&bat>;
-+
-+        interrupt-parent = <&gpio1>;
-+        interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
-+        watchdog-timer = <40000>;
-+
-+        input-voltage-limit-microvolt = <4500000>;
-+        input-current-limit-microamp = <2400000>;
-+       };
-+    };
-+...
--- 
-2.28.0
+Hi Rafael,
+
+You may or may not recall, I mentioned my further feedback would be
+delayed, as I wanted to work on reducing the labour content of my
+most basic CPU frequency scaler test.
+
+I have tested kernel 5.9-rc1 for pretty much every intel_pstate
+variant and governor, and also the acpi-cpufreq driver.
+
+Other than changing governors, changes were only made via
+grub command line options and re-boot. EPP or EPB were never
+modified, they were always whatever default.
+
+performance governor: (left mostly blank, on purpose.)
+acpi-cpufreq:
+intel_cpufreq hwp: good
+intel_cpufreq no hwp:
+intel_pstate hwp:
+intel_pstate no hwp:
+
+ondemand governor:
+acpi-cpufreq: good
+intel_cpufreq hwp: bad
+intel_cpufreq no hwp: good
+
+conservative governor:
+acpi-cpufreq: good
+intel_cpufreq hwp: good
+intel_cpufreq no hwp: good
+
+schedutil governor:
+acpi-cpufreq: good
+intel_cpufreq hwp: bad
+intel_cpufreq no hwp: good
+
+powersave governor:
+acpi-cpufreq: good
+intel_cpufreq hwp: bad
+intel_cpufreq no hwp: good
+
+active-powersave governor:
+intel_pstate hwp: ? not smooth, suffers from the broken HWP issue.
+intel_pstate no hwp: good.
+Intel_pstate hwp, idle state 2 disabled: Better but still worse for power.
+
+Now, we don't actually care about CPU frequency, we care about power:
+
+ondemand governor:
+
+periodic workflow at 347 hertz.
+~58% load at 4.60 GHz (where hwp operates)
+~76% load at 3.5 GHz (where no hwp operates)
+
+intel_cpufreq hwp: 14.3 processor package watts. 51.5 watts on the mains to the computer.
+intel_cpufreq no hwp: 9.1 processor package watts. 45.5 watts on the mains to the computer. 
+
+schedutil governor:
+
+periodic workflow at 347 hertz.
+~36% load at 4.60 GHz (where hwp operates)
+~55% load at 3.2 GHz (where no hwp operates)
+
+intel_cpufreq hwp: 9.6 processor package watts. 45.8 watts on the mains to the computer.
+intel_cpufreq no hwp: ~6 processor package watts. ~41 watts on the mains to the computer. (noisy)
+
+powersave governor:
+
+periodic workflow at 347 hertz.
+~39.8% load at 2.00 GHz (where hwp operates)
+~92.5% load at 0.8 GHz (where no hwp operates)
+
+intel_cpufreq hwp: 2.6 processor package watts. 38 watts on the mains to the computer.
+intel_cpufreq no hwp: 1.9 processor package watts. 36 watts on the mains to the computer.
+
+active-powersave governor:
+
+periodic workflow at 347 hertz.
+~58% load at 4.60 GHz (where hwp operates)
+~72% load at 3.88 GHz (where no hwp operates) 
+
+intel_pstate hwp: 14.2 processor package watts. 52 watts on the mains to the computer.
+intel_pstate no hwp: 10.1 processor package watts. 48 watts on the mains to the computer.
+
+Link to web page with much of this same content which, in turn, links to various graphs.
+Coded, to avoid the barrage of bots:
+
+double u double u double u dot smythies dot com /~doug/linux/s18/hwp/v7/
+ 
+... Doug
+
 
