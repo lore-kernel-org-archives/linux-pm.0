@@ -2,182 +2,91 @@ Return-Path: <SRS0=thCJ=B3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04AAEC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 15:17:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 593D4C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 17:17:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D4445205CB
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 15:17:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="iQY2tb1e"
+	by mail.kernel.org (Postfix) with ESMTP id 42C3820748
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 17:17:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729097AbgHQPQh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Aug 2020 11:16:37 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:35790 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728778AbgHQPQd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2020 11:16:33 -0400
-Received: from lelv0265.itg.ti.com ([10.180.67.224])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 07HFGUbe083374;
-        Mon, 17 Aug 2020 10:16:30 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1597677390;
-        bh=NP+m4DM9evitJfx1NGVBxAFzXwAe985/WtezLdTg1LI=;
-        h=From:To:CC:Subject:Date;
-        b=iQY2tb1eXX5BHuyCA7VBHBfddP9NivHqrzWo+U4YgpVk7KcUklAgy7vFAoLQZRXUb
-         8rj4apEdH0RPEhj9wl1prTlg+c69Wfeo3AwHt9bDoXwhVBEfYSsEylO3FAvsl34bKG
-         GUGBQmBeV+4nbOT6gHki2f67U0FPYhpun1fk2LV4=
-Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
-        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 07HFGUZ2093097
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Mon, 17 Aug 2020 10:16:30 -0500
-Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE114.ent.ti.com
- (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 17
- Aug 2020 10:16:30 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE104.ent.ti.com
- (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Mon, 17 Aug 2020 10:16:30 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 07HFGT3P040477;
-        Mon, 17 Aug 2020 10:16:30 -0500
-From:   Dan Murphy <dmurphy@ti.com>
-To:     <sre@kernel.org>, <robh@kernel.org>
-CC:     <devicetree@vger.kernel.org>, <r-rivera-matos@ti.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        Dan Murphy <dmurphy@ti.com>
-Subject: [PATCH v2 1/2] dt-bindings: power: Add the bq25790 dt bindings
-Date:   Mon, 17 Aug 2020 10:16:28 -0500
-Message-ID: <20200817151629.11019-1-dmurphy@ti.com>
-X-Mailer: git-send-email 2.27.0
+        id S2389619AbgHQRRa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Aug 2020 13:17:30 -0400
+Received: from foss.arm.com ([217.140.110.172]:57932 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2389620AbgHQRRV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 17 Aug 2020 13:17:21 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 34E0631B;
+        Mon, 17 Aug 2020 10:17:11 -0700 (PDT)
+Received: from [10.37.12.68] (unknown [10.37.12.68])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 35A973F66B;
+        Mon, 17 Aug 2020 10:17:08 -0700 (PDT)
+Subject: Re: [PATCH 2/2] ARM: dts: exynos: Remove interrupts from DMC
+ controller in Exynos5422
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, willy.mh.wolff.ml@gmail.com,
+        k.konieczny@samsung.com, cw00.choi@samsung.com,
+        b.zolnierkie@samsung.com, chanwoo@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        s.nawrocki@samsung.com, kgene@kernel.org
+References: <20200708153420.29484-1-lukasz.luba@arm.com>
+ <20200708153420.29484-3-lukasz.luba@arm.com>
+ <20200817155021.GC15887@kozik-lap>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <2099aea9-5a63-6e5b-d7f9-4e6476584461@arm.com>
+Date:   Mon, 17 Aug 2020 18:17:06 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <20200817155021.GC15887@kozik-lap>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the bindings for the bq25790.
+Hi Krzysztof,
 
-Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Signed-off-by: Dan Murphy <dmurphy@ti.com>
----
+On 8/17/20 4:50 PM, Krzysztof Kozlowski wrote:
+> On Wed, Jul 08, 2020 at 04:34:20PM +0100, Lukasz Luba wrote:
+>> The interrupts in Dynamic Memory Controller in Exynos5422 and Odroid
+>> XU3-family boards are no longer needed. They have been used in order
+>> to workaround some issues in scheduled work in devfreq. Now when the
+>> devfreq framework design is improved, remove the interrupt driven
+>> approach and rely on devfreq monitoring mechanism with fixed intervals.
+>>
+>> Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>> ---
+>>   arch/arm/boot/dts/exynos5420.dtsi | 3 ---
+>>   1 file changed, 3 deletions(-)
+> 
+> I think the dependencies were merged so this can be safely applied
+> without bisectability problems?
 
-v2 - Changed ti,watchdog property, documented the interrupts, fixed exxamples
-for input-current and input-voltage
+I have created v2 of that fix and it got merged
+via Chanwoo's tree, the commit 4fc9a0470d2dc37028
+https://lkml.org/lkml/2020/7/10/1048
 
- .../bindings/power/supply/bq25790.yaml        | 95 +++++++++++++++++++
- 1 file changed, 95 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq25790.yaml
+That commit switched the driver default mode from 'irq driven' to
+new devfreq monitoring mechanism. Furthermore, when the driver is
+built as a module, you can try to use the 'irq mode', but for this
+you would need the DT IRQs description (this $subject tries to remove).
 
-diff --git a/Documentation/devicetree/bindings/power/supply/bq25790.yaml b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
-new file mode 100644
-index 000000000000..6d9178ce5a2b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/bq25790.yaml
-@@ -0,0 +1,95 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+# Copyright (C) 2020 Texas Instruments Incorporated
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/bq25790.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: TI BQ25790 Switch Mode Buck-Boost Charger
-+
-+maintainers:
-+  - Dan Murphy <dmurphy@ti.com>
-+
-+description: |
-+  BQ25790 is a highly integrated switch-mode buck-boost charger for 1-4 cell
-+  Li-ion batteries and Li-polymer batteries. The device charges a battery from a
-+  wide range of input sources including legacy USB adapters to high voltage USB
-+  PD adapters and traditional barrel adapters.
-+
-+allOf:
-+  - $ref: power-supply.yaml#
-+
-+properties:
-+  compatible:
-+    enum:
-+      - ti,bq25790
-+      - ti,bq25792
-+
-+  reg:
-+    maxItems: 1
-+
-+  ti,watchdog-timeout-ms:
-+    default: 0
-+    description: |
-+      Watchdog timer in milli seconds. 0 (default) disables the watchdog.
-+    minimum: 0
-+    maximum: 160000
-+    enum: [ 0, 500, 1000, 2000, 20000, 40000, 80000, 160000]
-+
-+  input-voltage-limit-microvolt:
-+    description: |
-+      Minimum input voltage limit in micro volts with a 100000 micro volt step.
-+    minimum: 3600000
-+    maximum: 22000000
-+
-+  input-current-limit-microamp:
-+    description: |
-+      Maximum input current limit in micro amps with a 100000 micro amp step.
-+    minimum: 100000
-+    maximum: 3300000
-+
-+  monitored-battery:
-+    $ref: /schemas/types.yaml#/definitions/phandle
-+    description: phandle to the battery node being monitored
-+
-+  interrupts:
-+    maxItems: 1
-+    description: |
-+      Interrupt sends an active low, 256 μs pulse to host to report the charger
-+      device status and faults.
-+
-+required:
-+  - compatible
-+  - reg
-+  - monitored-battery
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    bat: battery {
-+      compatible = "simple-battery";
-+      constant-charge-current-max-microamp = <2000000>;
-+      constant-charge-voltage-max-microvolt = <4200000>;
-+      precharge-current-microamp = <160000>;
-+      charge-term-current-microamp = <160000>;
-+    };
-+    #include <dt-bindings/gpio/gpio.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      bq25790: charger@6b {
-+          compatible = "ti,bq25790";
-+          reg = <0x6b>;
-+          interrupt-parent = <&gpio1>;
-+          interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
-+          ti,watchdog-timeout-ms = <2000>;
-+          input-current-limit-microamp = <3000000>;
-+          input-voltage-limit-microvolt = <4500000>;
-+          monitored-battery = <&bat>;
-+      };
-+    };
-+
-+...
--- 
-2.28.0
+I would like to keep this IRQ mode for experimentation, as I
+described in answers to Bartek's questions:
+https://lkml.org/lkml/2020/7/14/315
 
+Unfortunately, I am quite busy and won't make any progress before the
+LPC.
+
+Regards,
+Lukasz
