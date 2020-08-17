@@ -2,150 +2,92 @@ Return-Path: <SRS0=thCJ=B3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DC8CC433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 18:39:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5F13AC433E4
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 18:55:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 14CB120772
-	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 18:39:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3C7CF204EC
+	for <linux-pm@archiver.kernel.org>; Mon, 17 Aug 2020 18:55:45 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1597689558;
-	bh=edbWNmrNafTfCij1p8K3M06XAnE+gI9Q3iAOHpN7FFs=;
+	s=default; t=1597690545;
+	bh=ebV6n4RrdDkYsGcLdnPQDJFEnzE4Pi4mJ81KHMA4+8k=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=dQ+ZB9DkhujRkVuSb+WF3805h8fDYDLmIiMZ1mCvyYvXHZtz3JCTmE31z9EO4yZq9
-	 P9jFEIsxxZGzcK3T5ulmUDFBIcAgpQw0/L9Vc95mqNB1FCRlJA/3rnaiwBs+u9LhRJ
-	 WZQr8V1NDNYgn+2XFpurR4sryZ7RqLRbVOfyEtYo=
+	b=d5WwzDliaiyTCMVVGIXT5FQBGOjPm8di4KG/xpztVwlRVXD8kC2MWKAQ/LcIf4FgY
+	 jArqELFa/9p2XlVKeycPtA2+1o2Jmkfg+ogTeaGc9CXntE8ISKlvC7wquX5UUN/BZe
+	 ftJcPNgMqje5R2Uw7+jhnT78Q2vkZryGCecmRqGE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389317AbgHQSiu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 17 Aug 2020 14:38:50 -0400
-Received: from mail-ed1-f68.google.com ([209.85.208.68]:45097 "EHLO
-        mail-ed1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389022AbgHQSiZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2020 14:38:25 -0400
-Received: by mail-ed1-f68.google.com with SMTP id di22so13105061edb.12;
-        Mon, 17 Aug 2020 11:38:23 -0700 (PDT)
+        id S2403828AbgHQSzo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 17 Aug 2020 14:55:44 -0400
+Received: from mail-ej1-f65.google.com ([209.85.218.65]:39728 "EHLO
+        mail-ej1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730535AbgHQPu0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 17 Aug 2020 11:50:26 -0400
+Received: by mail-ej1-f65.google.com with SMTP id f24so18320903ejx.6;
+        Mon, 17 Aug 2020 08:50:25 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ygsRrFQKNNgr0RK++uWNK1Es6XzBSNHbUC5sc4XjiKQ=;
-        b=nSJMbLxHj64Y0EEqSkptelHN4fy6ILsP1yu/fB9R2kTZdY8BAX7iMIvaAfwwncMG8Y
-         kZmG72942WuiChC79nQsI8bhGCRm8cBdMXxl72C5KTQKthbFSZhAvzsX/MqiC5jg3J2C
-         ZABroBSa4rVL+tFbsk2DvCl94EL1f4yvrscMZoYKslgvxE7RHVTJOPHQhBKhUih6tox8
-         4r3GwsbPu6RESueYhzQe8BlR6ag/21BR747TiqSKpchtdGJGaaKbVeCkPwyLuQlhTmfP
-         pkLRVxNRQO7z6GNOuQevV8te1DWEzbM3QCcrrEq/rdipHxhD8Q5W/Kwnf/dARM2LXnGr
-         oKHA==
-X-Gm-Message-State: AOAM530tVFjYJJRPixyvaqrlzGeBoTUaa321+lUjceqTbUuy8xkLyPHE
-        l7MFnuz8IiE2Ew3kRFuu4Bo=
-X-Google-Smtp-Source: ABdhPJwTHkl2N45n7OMVOzl8gJxUEHQgoH3VvkybLtipP1zhCy2cCEkRCEFnt89iK8ZP7yOOj3jNyw==
-X-Received: by 2002:aa7:c6c3:: with SMTP id b3mr16422506eds.215.1597689502561;
-        Mon, 17 Aug 2020 11:38:22 -0700 (PDT)
+        bh=CvY+Gv9fZiNUpyRo8aOD2OAX4f7HvaEYlR7elhE0eDI=;
+        b=Z9tlqxxJD367x/vsFxQW1v7W2GGDyy8/7TJtOzee1d2tvH8PCI/cdgqHw3H+k6DXEm
+         wAt37Suvj1+IfZO3xr3yRiF6kGtM41lKo44G3AQ664Q6MWBZT8ZdyFXcV7WOIDSuQYAu
+         3c55axNm2VksqwpKUbf0FAGiouwKY7mFMfGLOP1yUf3JcjIZzzo/SU2x+VwcHSLsDfG3
+         RPBmQ4OL2D0zpqsGV52iGB7JrK9UfBfwvHjI0VcUUKoLC6RvbSownFkNn7tPDHS/r2CT
+         QtJpaSYpG042Hc+UpDeuCLHZwTVpc5qYLGckSiceELHVrJUurd0f8QJMUighkm168vGx
+         TABg==
+X-Gm-Message-State: AOAM532cK3jCFIk0qKYwBvgHPXWysWJ/qhKlESqlAQIlCPnyDSdqkeSm
+        VVjvtfhPGtiiyhJNHI4jz+s=
+X-Google-Smtp-Source: ABdhPJwUH2JfieM4+gZF9eNKg35FhFE+j87Rl4f371bQ3K5WOxcwB8LzeD/gzxX+LVyjfatGHlfezg==
+X-Received: by 2002:a17:906:78e:: with SMTP id l14mr16737436ejc.67.1597679424558;
+        Mon, 17 Aug 2020 08:50:24 -0700 (PDT)
 Received: from kozik-lap ([194.230.155.216])
-        by smtp.googlemail.com with ESMTPSA id c5sm14730574ejb.103.2020.08.17.11.38.20
+        by smtp.googlemail.com with ESMTPSA id g9sm14232950ejf.101.2020.08.17.08.50.23
         (version=TLS1_2 cipher=ECDHE-ECDSA-CHACHA20-POLY1305 bits=256/256);
-        Mon, 17 Aug 2020 11:38:21 -0700 (PDT)
-Date:   Mon, 17 Aug 2020 20:38:19 +0200
+        Mon, 17 Aug 2020 08:50:23 -0700 (PDT)
+Date:   Mon, 17 Aug 2020 17:50:21 +0200
 From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Florian Fainelli <f.fainelli@gmail.com>
-Cc:     Ray Jui <rjui@broadcom.com>, Scott Branden <sbranden@broadcom.com>,
-        bcm-kernel-feedback-list@broadcom.com,
-        Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Markus Mayer <mmayer@broadcom.com>,
-        Roger Quadros <rogerq@ti.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Kukjin Kim <kgene@kernel.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-omap@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
-        linux-pm@vger.kernel.org, Olof Johansson <olof@lixom.net>,
-        Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [RFT 12/16] memory: brcmstb_dpfe: Add separate entry for compile
- test
-Message-ID: <20200817183819.GI3464@kozik-lap>
-References: <20200724182328.3348-1-krzk@kernel.org>
- <20200724182328.3348-13-krzk@kernel.org>
- <7797a55e-bbf0-ef0f-daec-d56326167586@gmail.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, willy.mh.wolff.ml@gmail.com,
+        k.konieczny@samsung.com, cw00.choi@samsung.com,
+        b.zolnierkie@samsung.com, chanwoo@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        s.nawrocki@samsung.com, kgene@kernel.org
+Subject: Re: [PATCH 2/2] ARM: dts: exynos: Remove interrupts from DMC
+ controller in Exynos5422
+Message-ID: <20200817155021.GC15887@kozik-lap>
+References: <20200708153420.29484-1-lukasz.luba@arm.com>
+ <20200708153420.29484-3-lukasz.luba@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <7797a55e-bbf0-ef0f-daec-d56326167586@gmail.com>
+In-Reply-To: <20200708153420.29484-3-lukasz.luba@arm.com>
 User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Jul 24, 2020 at 11:40:09AM -0700, Florian Fainelli wrote:
-> On 7/24/20 11:23 AM, Krzysztof Kozlowski wrote:
-> > Add separate entry for Broadcom STB DPFE driver, selected by platforms
-> > by default.  This allows further customization and compile testing.
-> > 
-> > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > ---
-> > 
-> > I have other changes around drivers/memory/Kconfig pending. Sending them
-> > together would avoid conflicts.
-> > 
-> > ---
-> >  arch/arm/mach-bcm/Kconfig    |  1 +
-> >  arch/arm64/Kconfig.platforms |  1 +
-> >  drivers/memory/Kconfig       | 11 +++++++++++
-> >  drivers/memory/Makefile      |  2 +-
-> >  4 files changed, 14 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/arch/arm/mach-bcm/Kconfig b/arch/arm/mach-bcm/Kconfig
-> > index 1df0ee01ee02..b0c45238e69b 100644
-> > --- a/arch/arm/mach-bcm/Kconfig
-> > +++ b/arch/arm/mach-bcm/Kconfig
-> > @@ -208,6 +208,7 @@ config ARCH_BRCMSTB
-> >  	select ARM_GIC
-> >  	select ARM_ERRATA_798181 if SMP
-> >  	select HAVE_ARM_ARCH_TIMER
-> > +	select BRCMSTB_DPFE
-> >  	select BRCMSTB_L2_IRQ
-> >  	select BCM7120_L2_IRQ
-> >  	select ARCH_HAS_HOLES_MEMORYMODEL
-> > diff --git a/arch/arm64/Kconfig.platforms b/arch/arm64/Kconfig.platforms
-> > index ddc3bf75257f..f7791ed0ed6d 100644
-> > --- a/arch/arm64/Kconfig.platforms
-> > +++ b/arch/arm64/Kconfig.platforms
-> > @@ -68,6 +68,7 @@ config ARCH_BRCMSTB
-> >  	bool "Broadcom Set-Top-Box SoCs"
-> >  	select ARCH_HAS_RESET_CONTROLLER
-> >  	select BCM7038_L1_IRQ
-> > +	select BRCMSTB_DPFE
+On Wed, Jul 08, 2020 at 04:34:20PM +0100, Lukasz Luba wrote:
+> The interrupts in Dynamic Memory Controller in Exynos5422 and Odroid
+> XU3-family boards are no longer needed. They have been used in order
+> to workaround some issues in scheduled work in devfreq. Now when the
+> devfreq framework design is improved, remove the interrupt driven
+> approach and rely on devfreq monitoring mechanism with fixed intervals.
 > 
-> The select is probably not warranted, see below.
-> 
-> >  	select BRCMSTB_L2_IRQ
-> >  	select GENERIC_IRQ_CHIP
-> >  	select PINCTRL
-> > diff --git a/drivers/memory/Kconfig b/drivers/memory/Kconfig
-> > index cd4fc93b50df..fef6f0873fda 100644
-> > --- a/drivers/memory/Kconfig
-> > +++ b/drivers/memory/Kconfig
-> > @@ -54,6 +54,17 @@ config ATMEL_EBI
-> >  	  tree is used. This bus supports NANDs, external ethernet controller,
-> >  	  SRAMs, ATA devices, etc.
-> >  
-> > +config BRCMSTB_DPFE
-> > +	bool "Broadcom STB DPFE driver" if COMPILE_TEST
-> > +	depends on ARCH_BRCMSTB || COMPILE_TEST
-> 
-> Can you make it default ARCH_BRCMSTB and remove the select above?
-> 
-> With that:
-> 
-> Acked-by: Florian Fainelli <f.fainelli@gmail.com>
+> Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  arch/arm/boot/dts/exynos5420.dtsi | 3 ---
+>  1 file changed, 3 deletions(-)
 
-Applied with mentioned change.
+I think the dependencies were merged so this can be safely applied
+without bisectability problems?
 
 Best regards,
 Krzysztof
