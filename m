@@ -7,43 +7,43 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 637CAC433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Aug 2020 18:55:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B6E3C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Aug 2020 18:55:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 449CA20786
-	for <linux-pm@archiver.kernel.org>; Tue, 18 Aug 2020 18:55:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A82920786
+	for <linux-pm@archiver.kernel.org>; Tue, 18 Aug 2020 18:55:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="DTCHLnes"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="rAvlOa0D"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726711AbgHRSy7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 18 Aug 2020 14:54:59 -0400
-Received: from mail29.static.mailgun.info ([104.130.122.29]:49922 "EHLO
+        id S1726763AbgHRSzF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 18 Aug 2020 14:55:05 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:25148 "EHLO
         mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726752AbgHRSyu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2020 14:54:50 -0400
+        by vger.kernel.org with ESMTP id S1726670AbgHRSyo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 18 Aug 2020 14:54:44 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1597776889; h=References: In-Reply-To: Message-Id: Date:
+ s=smtp; t=1597776883; h=References: In-Reply-To: Message-Id: Date:
  Subject: Cc: To: From: Sender;
- bh=nh+RSm6RsPXE+qcY152AR0CU4QrxqI5oIYGuVIflNG4=; b=DTCHLnes/NeufWcXctllw2fLfCT777UNKUc/E+bcqlBF5LyV522gDyX6y0wwV5DbWNeuM6Jz
- OpfRk2wQpevXwHM3uOKSFEnt+B4cIvYowfH1AcAZG9mIspgHGVbyT+P45IBJju2PHO/UZ5s4
- AKDRUFBq9V2A7Ij0x5JANiHK5iU=
+ bh=dvwBrEbVERFUgM2LMCV1G2AljSQNPyFfudWmCq32qKw=; b=rAvlOa0DlJTgoMk8f3HPB+uc6A1jQLwM4L0wfg/F0D0viffyb8uUlrDO5Gil3K6yr31t9c9s
+ nco58KDEXmhb3lgUCrgsCq/SmncQBoDEV1W8yN4uEJ1A6ZCxj/HeJAZOdxz4NmW+5gff50Cu
+ 1OJkRlO/9uH++OKVMo6ZFRbQ8RU=
 X-Mailgun-Sending-Ip: 104.130.122.29
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n03.prod.us-east-1.postgun.com with SMTP id
- 5f3c23e2cbcd42bdeed534ca (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 18 Aug 2020 18:54:26
+ smtp-out-n06.prod.us-east-1.postgun.com with SMTP id
+ 5f3c23e191f8def8b2d7a43f (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Tue, 18 Aug 2020 18:54:25
  GMT
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id C8660C433CB; Tue, 18 Aug 2020 18:54:25 +0000 (UTC)
+        id 90DFAC433CB; Tue, 18 Aug 2020 18:54:24 +0000 (UTC)
 Received: from eberman-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: eberman)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 00BC9C433AD;
-        Tue, 18 Aug 2020 18:54:24 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 00BC9C433AD
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id A3193C43387;
+        Tue, 18 Aug 2020 18:54:23 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org A3193C43387
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=eberman@codeaurora.org
 From:   Elliot Berman <eberman@codeaurora.org>
@@ -56,9 +56,9 @@ Cc:     Elliot Berman <eberman@codeaurora.org>, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, Trilok Soni <tsoni@codeaurora.org>,
         Prasad Sodagudi <psodagud@codeaurora.org>
-Subject: [RESEND PATCH v1 3/4] power: reset: Add support for reboot mode alternate properties
-Date:   Tue, 18 Aug 2020 11:54:15 -0700
-Message-Id: <1597776856-12014-4-git-send-email-eberman@codeaurora.org>
+Subject: [RESEND PATCH v1 1/4] dt-bindings: power: reset: Convert reboot-mode to YAML
+Date:   Tue, 18 Aug 2020 11:54:13 -0700
+Message-Id: <1597776856-12014-2-git-send-email-eberman@codeaurora.org>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1597776856-12014-1-git-send-email-eberman@codeaurora.org>
 References: <1597776856-12014-1-git-send-email-eberman@codeaurora.org>
@@ -67,77 +67,100 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Reboot mode driver does not currently support reboot commands with
-spaces in them [1]. Add an optional new node "reboot-mode-names" and
-"reboot-mode-magic" which add an array of strings and u32s, respectively
-which would permit any string in this framework.
+Convert reboot-mode bindings to YAML.
 
 Signed-off-by: Elliot Berman <eberman@codeaurora.org>
 ---
- drivers/power/reset/reboot-mode.c | 42 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 41 insertions(+), 1 deletion(-)
+ .../bindings/power/reset/reboot-mode.txt           | 25 ------------
+ .../bindings/power/reset/reboot-mode.yaml          | 47 ++++++++++++++++++++++
+ 2 files changed, 47 insertions(+), 25 deletions(-)
+ delete mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+ create mode 100644 Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
 
-diff --git a/drivers/power/reset/reboot-mode.c b/drivers/power/reset/reboot-mode.c
-index b4076b1..363734d 100644
---- a/drivers/power/reset/reboot-mode.c
-+++ b/drivers/power/reset/reboot-mode.c
-@@ -64,8 +64,9 @@ int reboot_mode_register(struct reboot_mode_driver *reboot)
- 	struct mode_info *info;
- 	struct property *prop;
- 	struct device_node *np = reboot->dev->of_node;
-+	const char *mode_name;
- 	size_t len = strlen(PREFIX);
--	int ret;
-+	int ret, count, i;
- 
- 	INIT_LIST_HEAD(&reboot->head);
- 
-@@ -101,6 +102,45 @@ int reboot_mode_register(struct reboot_mode_driver *reboot)
- 		list_add_tail(&info->list, &reboot->head);
- 	}
- 
-+	count = of_property_count_u32_elems(np, "reboot-mode-magic");
-+	for (i = 0; i < count; i++) {
-+		info = devm_kzalloc(reboot->dev, sizeof(*info), GFP_KERNEL);
-+		if (!info) {
-+			ret = -ENOMEM;
-+			goto error;
-+		}
+diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt b/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
+deleted file mode 100644
+index de34f27..0000000
+--- a/Documentation/devicetree/bindings/power/reset/reboot-mode.txt
++++ /dev/null
+@@ -1,25 +0,0 @@
+-Generic reboot mode core map driver
+-
+-This driver get reboot mode arguments and call the write
+-interface to store the magic value in special register
+-or ram. Then the bootloader can read it and take different
+-action according to the argument stored.
+-
+-All mode properties are vendor specific, it is a indication to tell
+-the bootloader what to do when the system reboots, and should be named
+-as mode-xxx = <magic> (xxx is mode name, magic should be a none-zero value).
+-
+-For example modes common on Android platform:
+-- mode-normal: Normal reboot mode, system reboot with command "reboot".
+-- mode-recovery: Android Recovery mode, it is a mode to format the device or update a new image.
+-- mode-bootloader: Android fastboot mode, it's a mode to re-flash partitions on the Android based device.
+-- mode-loader: A bootloader mode, it's a mode used to download image on Rockchip platform,
+-	       usually used in development.
+-
+-Example:
+-	reboot-mode {
+-		mode-normal = <BOOT_NORMAL>;
+-		mode-recovery = <BOOT_RECOVERY>;
+-		mode-bootloader = <BOOT_FASTBOOT>;
+-		mode-loader = <BOOT_BL_DOWNLOAD>;
+-	}
+diff --git a/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+new file mode 100644
+index 0000000..a6c9102
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/reboot-mode.yaml
+@@ -0,0 +1,47 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/reboot-mode.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+		if (of_property_read_string_index(np, "reboot-mode-names", i,
-+						  &mode_name)) {
-+			dev_err(reboot->dev, "unable to read reboot-mode-names[%d]\n",
-+				i);
-+			ret = -EINVAL;
-+			goto error;
-+		}
-+		info->mode = kstrdup_const(mode_name, GFP_KERNEL);
-+		if (!info->mode) {
-+			ret = -ENOMEM;
-+			goto error;
-+		} else if (info->mode[0] == '\0') {
-+			dev_err(reboot->dev, "invalid reboot-mode-names[%d]: too short!\n",
-+				i);
-+			kfree_const(info->mode);
-+			ret = -EINVAL;
-+			goto error;
-+		}
++title: Generic reboot mode core map
 +
-+		if (of_property_read_u32_index(np, "reboot-mode-magic", i,
-+					       &info->magic)) {
-+			dev_err(reboot->dev, "unable to read reboot-mode-magic[%d]\n",
-+				i);
-+			kfree_const(info->mode);
-+			ret = -EINVAL;
-+			goto error;
-+		}
++maintainers:
++  - Andy Yan <andy.yan@rock-chips.com>
 +
-+		list_add_tail(&info->list, &reboot->head);
-+	}
++description: |
++  This driver get reboot mode arguments and call the write
++  interface to store the magic value in special register
++  or ram. Then the bootloader can read it and take different
++  action according to the argument stored.
 +
- 	reboot->reboot_notifier.notifier_call = reboot_mode_notify;
- 	register_reboot_notifier(&reboot->reboot_notifier);
- 
++  All mode properties are vendor specific, it is a indication to tell
++  the bootloader what to do when the system reboots, and should be named
++  as mode-xxx = <magic> (xxx is mode name, magic should be a non-zero value).
++
++  For example, modes common Android platform are:
++    - normal: Normal reboot mode, system reboot with command "reboot".
++    - recovery: Android Recovery mode, it is a mode to format the device or update a new image.
++    - bootloader: Android fastboot mode, it's a mode to re-flash partitions on the Android based device.
++    - loader: A bootloader mode, it's a mode used to download image on Rockchip platform,
++              usually used in development.
++
++properties:
++  mode-normal:
++      $ref: /schemas/types.yaml#/definitions/uint32
++      description: |
++        Default value to set on a reboot if no command was provided.
++
++patternProperties:
++  "^mode-.*$":
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++examples:
++  - |
++    reboot-mode {
++      mode-normal = <0>;
++      mode-recovery = <1>;
++      mode-bootloader = <2>;
++      mode-loader = <3>;
++    };
++...
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
