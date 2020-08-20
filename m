@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 455B5C433E3
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 07:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BC192C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 07:57:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 24DDA208B3
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 07:57:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98A212076E
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 07:57:10 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="JOhKqnxX"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="djA1hgKE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726968AbgHTH46 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Aug 2020 03:56:58 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42600 "EHLO
+        id S1726867AbgHTH5J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Aug 2020 03:57:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42572 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726951AbgHTH4y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2020 03:56:54 -0400
-Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C5D7C061383
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 00:56:53 -0700 (PDT)
-Received: by mail-pl1-x643.google.com with SMTP id y10so549287plr.11
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 00:56:53 -0700 (PDT)
+        with ESMTP id S1726844AbgHTH4r (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2020 03:56:47 -0400
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 075B2C061344
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 00:56:46 -0700 (PDT)
+Received: by mail-pj1-x1041.google.com with SMTP id 2so611993pjx.5
+        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 00:56:46 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=MKa/l++NJX3mb6HDqlPH9HCmk5UKEoj8jJyL9pAVlUc=;
-        b=JOhKqnxXyMfppUBIxlmvtEQlY5wB7zlwWW93yYoleBojKtOVakJwUIYj1ZKu4hzmZb
-         EKEtrRsslpuOJ6lZJaqD+bqa4AbhVNuOyzF8abrRSlnfiLB1UstLmeV0AgLrLqMr7frF
-         jZ7/sXrCNYPogK/+ohFMy/NlW0bTZ6dNRT/FIFnee66X/ZhU1eWzEPe7CqQ21fxnvvIo
-         lJWQ5fdhyFNVMMVIGukrmECNfz/6JlWWOepDnc0ODoCBVC7C7ZnSP3D81+RgzZM3r2Fa
-         NCf25h2gHBexgANYvR4Vsdbt3TNddA4eotdZtqvTC+OO+NpvXmNWzvPp8l2vAs0WNGWd
-         Uqsg==
+        bh=7cAYVPl8VrNuz/qq2w1qboUHzBiXW9tB7aHazhnx+PM=;
+        b=djA1hgKEGskSmARq3FIBrHUsYkkRYcjjVOCAopzAHSM3DdER8yOHcbaeLUYu5OrdvX
+         29WLW6jF8w82pw3sGSWKV4gumuYQhCXS4+Uo4wB648aMj1oTtl9KY8tJIO2c6MlCAz4H
+         XIkYwISLFxGmNwkmqb+OiuqROpFTHyyt33+A1MmQy3ItCODZx5ppQSlVAieEW8ahhIlX
+         OhsoT3yiRmkfL2VoIorrNcAF64tNwrUkhFBh3gtPNX6a1XkdAB50b0NjhU/iZryBEP+p
+         QYSe8XvJkTtiE6bt5CsFiWpW3o6QXx3WpQl+Yma5Qmee4izygCJael6hkfcplCxDECYN
+         moKA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=MKa/l++NJX3mb6HDqlPH9HCmk5UKEoj8jJyL9pAVlUc=;
-        b=Bm8aotCCSV+7QoOur+ubTP9wPTJvTfzk/IQbydz/l63KR72PzNAlDjQT3nL2llSevZ
-         didgwIT12XDw3KwKqhGPXymtBDKPmpEBdmuDjebo/mLxYX4sP01umfGx2GnEz2EL+BX7
-         c0541aNGGAOOlauVmUWlG631mD4NOr7OTIxHs5RcoATCceS5QhPVC343z7sx7jyO1Su3
-         5Li3CnL8LDF8cImQRggmEt7+0rawsOo+XX5D/DApQObskF+p0KfYbRwRMaCbsi3/wM/D
-         6NgxGz+0nZ3y+xt5AkUaXXx9cUl872k0omF1rdwIy8Ci2bVKtVnkbAF92eRnGgvpS/XZ
-         iNMw==
-X-Gm-Message-State: AOAM532SB4eMJbn8XpiKwPs+HHVzIUYQDU10VYr8+PwJUGRRQCgAh4yM
-        S+5EIYksqWhonQIZ9b0PUMH81g==
-X-Google-Smtp-Source: ABdhPJzWB+4yLlGmmwE4dywCJsMU0wuwok6h4p35XzVgwJJe1xwVCWD/kbQ46Cz8LSqBcayxXRk5gw==
-X-Received: by 2002:a17:902:868b:: with SMTP id g11mr1739808plo.9.1597910212779;
-        Thu, 20 Aug 2020 00:56:52 -0700 (PDT)
+        bh=7cAYVPl8VrNuz/qq2w1qboUHzBiXW9tB7aHazhnx+PM=;
+        b=uK9rgO6Sr4YGGD1VBcsRZ4cgciVn+zMZzPiZ/0G68Yi6Jo5LuB/LY0tphyjKoGOg0U
+         BaSP6Hje2GNXe9x6hwLa/+v7nhoMH840o8/Uk+Uz+C8R9V2yv7g6Naw7cO3lzgThtoLH
+         Re7mnb0ba2EUDF+8gbUZ1tHXsCgivffDPxizGmg7QBudwbk0BNoXYJW593iZ9mvGMspc
+         RKqSauLD0SrZEKWYra+m3Xplxqf4C+JE5s8wZ48J12Mhl583ycu+fM0nOTaTjYCdAp2O
+         WUBrS6LnBZe3yz6mtdbNaN324KrykMfSOLGQj61DlTxKfT5JQe83W7JmNJwzXAupsiZA
+         aCWg==
+X-Gm-Message-State: AOAM530foII9JuUp+svcsnkyM3s7C/1pjBc1JZRV0kWq/YDXOTaKVrmJ
+        htHM8GhD54aab330976f2qyLnw==
+X-Google-Smtp-Source: ABdhPJzRSKZYVMfP9/tr8oO0UXvoRbzfFJJfmGeZ3SD9CPHnYC/ddojFEpND02X48Kp8mtP708SYyQ==
+X-Received: by 2002:a17:902:be0f:: with SMTP id r15mr156256pls.84.1597910206510;
+        Thu, 20 Aug 2020 00:56:46 -0700 (PDT)
 Received: from localhost ([122.172.43.13])
-        by smtp.gmail.com with ESMTPSA id m19sm1596343pgd.21.2020.08.20.00.56.51
+        by smtp.gmail.com with ESMTPSA id v10sm21351892pjy.3.2020.08.20.00.56.45
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 20 Aug 2020 00:56:52 -0700 (PDT)
+        Thu, 20 Aug 2020 00:56:45 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     rnayak@codeaurora.org, Viresh Kumar <vireshk@kernel.org>,
         Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>
@@ -64,9 +64,9 @@ Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>, sibis@codeaurora.org,
         sbhanu@codeaurora.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V3 4/4] opp: Remove _dev_pm_opp_find_and_remove_table() wrapper
-Date:   Thu, 20 Aug 2020 13:26:34 +0530
-Message-Id: <ac1b1206c290a677921b55a4e94e18b12264208e.1597909885.git.viresh.kumar@linaro.org>
+Subject: [PATCH V3 2/4] opp: Reuse the enabled flag in !target_freq path
+Date:   Thu, 20 Aug 2020 13:26:32 +0530
+Message-Id: <9cefccfbf124c49f32c905549aad9ab284957065.1597909885.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
 In-Reply-To: <cover.1597909885.git.viresh.kumar@linaro.org>
 References: <cover.1597909885.git.viresh.kumar@linaro.org>
@@ -77,92 +77,71 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove the unnecessary wrapper and merge
-_dev_pm_opp_find_and_remove_table() with dev_pm_opp_remove_table().
+The OPP core needs to track if the resources of devices are
+enabled/configured or not, as it disables the resources when target_freq
+is set to 0.
+
+Handle that with the new enabled flag and remove otherwise complex
+conditional statements.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 21 ++++++++-------------
- drivers/opp/cpu.c  |  2 +-
- drivers/opp/of.c   |  2 +-
- drivers/opp/opp.h  |  1 -
- 4 files changed, 10 insertions(+), 16 deletions(-)
+ drivers/opp/core.c | 29 +++++++++++------------------
+ 1 file changed, 11 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 4edd2c3d6d91..6978b9218c6e 100644
+index 6f43ef4945b7..0b437d483b75 100644
 --- a/drivers/opp/core.c
 +++ b/drivers/opp/core.c
-@@ -2395,7 +2395,14 @@ int dev_pm_opp_unregister_notifier(struct device *dev,
- }
- EXPORT_SYMBOL(dev_pm_opp_unregister_notifier);
- 
--void _dev_pm_opp_find_and_remove_table(struct device *dev)
-+/**
-+ * dev_pm_opp_remove_table() - Free all OPPs associated with the device
-+ * @dev:	device pointer used to lookup OPP table.
-+ *
-+ * Free both OPPs created using static entries present in DT and the
-+ * dynamically added entries.
-+ */
-+void dev_pm_opp_remove_table(struct device *dev)
- {
- 	struct opp_table *opp_table;
- 
-@@ -2420,16 +2427,4 @@ void _dev_pm_opp_find_and_remove_table(struct device *dev)
- 	/* Drop reference taken while the OPP table was added */
- 	dev_pm_opp_put_opp_table(opp_table);
- }
--
--/**
-- * dev_pm_opp_remove_table() - Free all OPPs associated with the device
-- * @dev:	device pointer used to lookup OPP table.
-- *
-- * Free both OPPs created using static entries present in DT and the
-- * dynamically added entries.
-- */
--void dev_pm_opp_remove_table(struct device *dev)
--{
--	_dev_pm_opp_find_and_remove_table(dev);
--}
- EXPORT_SYMBOL_GPL(dev_pm_opp_remove_table);
-diff --git a/drivers/opp/cpu.c b/drivers/opp/cpu.c
-index b5055cc886ef..5004335cf0de 100644
---- a/drivers/opp/cpu.c
-+++ b/drivers/opp/cpu.c
-@@ -124,7 +124,7 @@ void _dev_pm_opp_cpumask_remove_table(const struct cpumask *cpumask,
- 			continue;
- 		}
- 
--		_dev_pm_opp_find_and_remove_table(cpu_dev);
-+		dev_pm_opp_remove_table(cpu_dev);
+@@ -886,22 +886,18 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
  	}
- }
  
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index 0430290670ab..7d9d4455a59e 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -616,7 +616,7 @@ static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
-  */
- void dev_pm_opp_of_remove_table(struct device *dev)
- {
--	_dev_pm_opp_find_and_remove_table(dev);
-+	dev_pm_opp_remove_table(dev);
- }
- EXPORT_SYMBOL_GPL(dev_pm_opp_of_remove_table);
+ 	if (unlikely(!target_freq)) {
++		ret = 0;
++
++		if (!opp_table->enabled)
++			goto put_opp_table;
++
+ 		/*
+ 		 * Some drivers need to support cases where some platforms may
+ 		 * have OPP table for the device, while others don't and
+ 		 * opp_set_rate() just needs to behave like clk_set_rate().
+ 		 */
+-		if (!_get_opp_count(opp_table)) {
+-			ret = 0;
+-			goto put_opp_table;
+-		}
+-
+-		if (!opp_table->required_opp_tables && !opp_table->regulators &&
+-		    !opp_table->paths) {
+-			dev_err(dev, "target frequency can't be 0\n");
+-			ret = -EINVAL;
++		if (!_get_opp_count(opp_table))
+ 			goto put_opp_table;
+-		}
  
-diff --git a/drivers/opp/opp.h b/drivers/opp/opp.h
-index 0c3de3f6db5c..78e876ec803e 100644
---- a/drivers/opp/opp.h
-+++ b/drivers/opp/opp.h
-@@ -217,7 +217,6 @@ void _get_opp_table_kref(struct opp_table *opp_table);
- int _get_opp_count(struct opp_table *opp_table);
- struct opp_table *_find_opp_table(struct device *dev);
- struct opp_device *_add_opp_dev(const struct device *dev, struct opp_table *opp_table);
--void _dev_pm_opp_find_and_remove_table(struct device *dev);
- struct dev_pm_opp *_opp_allocate(struct opp_table *opp_table);
- void _opp_free(struct dev_pm_opp *opp);
- int _opp_compare_key(struct dev_pm_opp *opp1, struct dev_pm_opp *opp2);
+ 		ret = _set_opp_bw(opp_table, NULL, dev, true);
+ 		if (ret)
+@@ -931,14 +927,11 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
+ 	old_freq = clk_get_rate(clk);
+ 
+ 	/* Return early if nothing to do */
+-	if (old_freq == freq) {
+-		if (!opp_table->required_opp_tables && !opp_table->regulators &&
+-		    !opp_table->paths) {
+-			dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
+-				__func__, freq);
+-			ret = 0;
+-			goto put_opp_table;
+-		}
++	if (opp_table->enabled && old_freq == freq) {
++		dev_dbg(dev, "%s: old/new frequencies (%lu Hz) are same, nothing to do\n",
++			__func__, freq);
++		ret = 0;
++		goto put_opp_table;
+ 	}
+ 
+ 	/*
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
