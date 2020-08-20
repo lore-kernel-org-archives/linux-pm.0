@@ -2,137 +2,154 @@ Return-Path: <SRS0=iPxC=B6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 09883C433DF
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 10:47:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B0676C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 12:00:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D848520724
-	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 10:47:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zkaFZto0"
+	by mail.kernel.org (Postfix) with ESMTP id 9B29622D00
+	for <linux-pm@archiver.kernel.org>; Thu, 20 Aug 2020 12:00:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731041AbgHTKqz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 20 Aug 2020 06:46:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40194 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731885AbgHTKoU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 20 Aug 2020 06:44:20 -0400
-Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com [IPv6:2607:f8b0:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 50344C061388
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 03:44:19 -0700 (PDT)
-Received: by mail-pf1-x442.google.com with SMTP id m8so830910pfh.3
-        for <linux-pm@vger.kernel.org>; Thu, 20 Aug 2020 03:44:19 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3PXtPhgN15xkqptqDoOT+6OR5bz1DwLunRYJNev9KR4=;
-        b=zkaFZto0eMoTUXrhXnN5c215rPk2SI+mYKS6axiQrRCTTNkAxc+HQ1zvbE+9q8CdK3
-         ejrwiC5XvbU1VEVR0PkGPGG669EkRUf07na+UAjM95hQEAsG4rAcauD7W4QS/mQQK9Ji
-         aHAzBEJD8cb3YAopp2IN0BnKR0TfeOemTuipy2eA7MsVI9rqpSpfngZuJ3YGffGgvoOr
-         2qaNwaJ3BQvjLM/eOrXzy4yluttDslK9WrVaLBIAQGyCyGmcBfTPfVT8FfIY5a1ueI/3
-         qAMmm3cwSJncp0MSZc3c4f5Ucf1L5617fzuL31JE1OimTfSyQCLy69f4jWzzKMfRVtbY
-         sboA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=3PXtPhgN15xkqptqDoOT+6OR5bz1DwLunRYJNev9KR4=;
-        b=X/EbFUbJD/eRhVolDzGxBm/gIj1nfZTPYZPs2b365hCk1vWJ2SXUpYmGRNReQKsYTd
-         /oN0T8eMJKWyyVeDqbSdO6qYv4xiz+PtoFvXyUTGaeINqbubYnfaYLyZDfNFB2cXIKdb
-         NiAGBidMoRrJMgIPP5A45I4wSCyg2bBklOwT860pp/C5e7429cVwqx7xOq0f9uqMqnCQ
-         EsSCmLFPSpTlBq9clP3Xm3tDR9YeJh6eGS2HMs/7JVX4bSdDusla/YICt9ck4hDsnnrP
-         II8rJprBgNbHGSx32YoQ6Or5QLX49kYxze7D0odmsclHCV5ekcPqlA7tueewULbtEBP2
-         n2rg==
-X-Gm-Message-State: AOAM531yzP4izCYKCPthZo5G4KmizoF9HHSg7KfVjJk37upSiacrjlGz
-        Va+Z4RKxV3USzpf99d9KNamAtg==
-X-Google-Smtp-Source: ABdhPJzGI4PMt2rxPglqL7BKdt2SWVVgHiE/GuL96GZfgXci06o5FRoVl3y2qYxeBmL8p5wYvmHOSw==
-X-Received: by 2002:a65:4808:: with SMTP id h8mr2045357pgs.113.1597920255960;
-        Thu, 20 Aug 2020 03:44:15 -0700 (PDT)
-Received: from localhost ([122.172.43.13])
-        by smtp.gmail.com with ESMTPSA id e8sm2352323pfd.34.2020.08.20.03.44.14
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 20 Aug 2020 03:44:15 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     rnayak@codeaurora.org, Adrian Hunter <adrian.hunter@intel.com>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Daniel Vetter <daniel@ffwll.ch>,
-        David Airlie <airlied@linux.ie>,
-        Fabio Estevam <festevam@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Qiang Yu <yuq825@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Rob Clark <robdclark@gmail.com>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Sean Paul <sean@poorly.run>, Shawn Guo <shawnguo@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        lima@lists.freedesktop.org, linux-arm-kernel@lists.infradead.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-spi@vger.kernel.org
-Subject: [PATCH 0/8] opp: Unconditionally call dev_pm_opp_of_remove_table()
-Date:   Thu, 20 Aug 2020 16:13:49 +0530
-Message-Id: <cover.1597919647.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+        id S1729442AbgHTL7V (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 20 Aug 2020 07:59:21 -0400
+Received: from mga06.intel.com ([134.134.136.31]:47846 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730471AbgHTKAc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 20 Aug 2020 06:00:32 -0400
+IronPort-SDR: suthkiEbz1NDtkMGO68hVELzy6g3F7/5ensOYb4fOJEFNw+G1rh8SbIYs3FDm9X6N7uZ8/lHlQ
+ p7Ks6qopk8eg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9718"; a="216808343"
+X-IronPort-AV: E=Sophos;i="5.76,332,1592895600"; 
+   d="scan'208";a="216808343"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga001.jf.intel.com ([10.7.209.18])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Aug 2020 03:00:29 -0700
+IronPort-SDR: 9vPQ1Ai56nlI3E3iimStg2e4+hwACdURfbH0hbUgl344ZMn+M3huu505oi+zVUr1LUB2Q5d6QH
+ zv/maG8VVCcw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.76,332,1592895600"; 
+   d="scan'208";a="371536268"
+Received: from lkp-server01.sh.intel.com (HELO 91ed66e1ca04) ([10.239.97.150])
+  by orsmga001.jf.intel.com with ESMTP; 20 Aug 2020 03:00:28 -0700
+Received: from kbuild by 91ed66e1ca04 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1k8hMx-00000h-Ln; Thu, 20 Aug 2020 10:00:27 +0000
+Date:   Thu, 20 Aug 2020 17:59:51 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ 1f08d51cd57fddbecc396183e544b1d6df98cbfa
+Message-ID: <5f3e4997.YKLVDrfCHX/SnJpi%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
+branch HEAD: 1f08d51cd57fddbecc396183e544b1d6df98cbfa  Merge branch 'opp/fixes' of git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm
 
-This cleans up some of the user code around calls to
-dev_pm_opp_of_remove_table().
+elapsed time: 726m
 
-All the patches can be picked by respective maintainers directly except
-for the last patch, which needs the previous two to get merged first.
+configs tested: 83
+configs skipped: 3
 
-These are based for 5.9-rc1.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Rajendra, Since most of these changes are related to qcom stuff, it
-would be great if you can give them a try. I wasn't able to test them
-due to lack of hardware.
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                     powernv_defconfig
+arm                          pcm027_defconfig
+arm                        mvebu_v7_defconfig
+arm                          pxa168_defconfig
+powerpc                     skiroot_defconfig
+sh                         ap325rxa_defconfig
+arc                 nsimosci_hs_smp_defconfig
+microblaze                      mmu_defconfig
+arm                         vf610m4_defconfig
+arm                           h5000_defconfig
+mips                        nlm_xlp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                             defconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20200818
+i386                 randconfig-a002-20200818
+i386                 randconfig-a001-20200818
+i386                 randconfig-a006-20200818
+i386                 randconfig-a003-20200818
+i386                 randconfig-a004-20200818
+x86_64               randconfig-a013-20200818
+x86_64               randconfig-a016-20200818
+x86_64               randconfig-a012-20200818
+x86_64               randconfig-a011-20200818
+x86_64               randconfig-a014-20200818
+x86_64               randconfig-a015-20200818
+i386                 randconfig-a016-20200818
+i386                 randconfig-a011-20200818
+i386                 randconfig-a015-20200818
+i386                 randconfig-a013-20200818
+i386                 randconfig-a012-20200818
+i386                 randconfig-a014-20200818
+i386                 randconfig-a016-20200819
+i386                 randconfig-a011-20200819
+i386                 randconfig-a015-20200819
+i386                 randconfig-a013-20200819
+i386                 randconfig-a012-20200819
+i386                 randconfig-a014-20200819
+riscv                            allyesconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-Viresh Kumar (8):
-  cpufreq: imx6q: Unconditionally call dev_pm_opp_of_remove_table()
-  drm/lima: Unconditionally call dev_pm_opp_of_remove_table()
-  drm/msm: Unconditionally call dev_pm_opp_of_remove_table()
-  mmc: sdhci-msm: Unconditionally call dev_pm_opp_of_remove_table()
-  spi: spi-geni-qcom: Unconditionally call dev_pm_opp_of_remove_table()
-  spi: spi-qcom-qspi: Unconditionally call dev_pm_opp_of_remove_table()
-  tty: serial: qcom_geni_serial: Unconditionally call
-    dev_pm_opp_of_remove_table()
-  qcom-geni-se: remove has_opp_table
-
- drivers/cpufreq/imx6q-cpufreq.c         | 10 ++--------
- drivers/gpu/drm/lima/lima_devfreq.c     |  6 +-----
- drivers/gpu/drm/lima/lima_devfreq.h     |  1 -
- drivers/gpu/drm/msm/disp/dpu1/dpu_kms.c | 10 +++-------
- drivers/gpu/drm/msm/disp/dpu1/dpu_kms.h |  1 -
- drivers/gpu/drm/msm/dsi/dsi_host.c      |  8 ++------
- drivers/mmc/host/sdhci-msm.c            | 11 +++--------
- drivers/spi/spi-geni-qcom.c             | 10 +++-------
- drivers/spi/spi-qcom-qspi.c             | 11 +++--------
- drivers/tty/serial/qcom_geni_serial.c   | 10 +++-------
- include/linux/qcom-geni-se.h            |  2 --
- 11 files changed, 20 insertions(+), 60 deletions(-)
-
--- 
-2.25.0.rc1.19.g042ed3e048af
-
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
