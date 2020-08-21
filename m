@@ -2,62 +2,61 @@ Return-Path: <SRS0=MHso=B7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA979C433EB
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26CCDC433E4
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A6BB5207C3
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 053EB208E4
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KCKHNZrw"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W7e8QLL/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727049AbgHUWUX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Aug 2020 18:20:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60990 "EHLO
+        id S1726773AbgHUWT7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Aug 2020 18:19:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60964 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726996AbgHUWUF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:20:05 -0400
-Received: from mail-ej1-x642.google.com (mail-ej1-x642.google.com [IPv6:2a00:1450:4864:20::642])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E171C0613ED;
-        Fri, 21 Aug 2020 15:20:04 -0700 (PDT)
-Received: by mail-ej1-x642.google.com with SMTP id g19so4279854ejc.9;
-        Fri, 21 Aug 2020 15:20:04 -0700 (PDT)
+        with ESMTP id S1726747AbgHUWT5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:19:57 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42756C061573;
+        Fri, 21 Aug 2020 15:19:56 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id si26so4268232ejb.12;
+        Fri, 21 Aug 2020 15:19:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=k7vQF+OxfgOKk0npVS0VvNYm6+7r6keuyTTIR2ujT+U=;
-        b=KCKHNZrwbEg94W23Rxj8Q1KBSJ8mNYqRfdIwfa2pVOfhPhfVlU/rlxlzSixkZxy+7W
-         6Z6nr9ReeguiAiv/b4UwP+9ysmd0auq70UoVifpEpYRqmr4gpdvZd7Znwi6tIMm/ceGZ
-         zeTK5ybOXuyQASvf3ZczSEWEk0f2ZiRLVJisD5zRYQfQBtgMQj/VbdkXflZTuoa82M3G
-         U1C2ecD6mBIQ24cB+/BnvW6SmpUtdPaTH09hlVvJB09QmHPmey2wae4qWe/quo5inCLr
-         /LpmZsHKjrBVw7qE2BergJgROMi3epNGOsNbUbsIxDjDnXzsHhy5GZnTrOkfK6Sm/7Of
-         +nNg==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=7Euhqf0kKa8bJk8hY6VIiEQD27H+m7/Zjj9fyz771ww=;
+        b=W7e8QLL/UILxZwiAdklCeQIidO1LLzLv/jj477YznHokzrs/jwc4XDHBocvHEKRcS7
+         C4k4OTeS2MJBKjJp2p1+UZRWaoGFznWR4y2r15ULdQud9LkesE/Og1hyjN+N5ddNKj54
+         eR0xfYGRlGOzsoLkDrFOgS2PPL/E80Ybd1I9Bs5NePnuitGku4JdnUlGtNqomoUsCBx7
+         rUwvGwZVmjc/ayRjLa84HTtY9OYDVx7nMKIJBlMluEpZ0KBxS4pEg5jg3djiJI3oVfx4
+         AUrJtyP2Zh187WNwWe5fKJ4mnNymXPMpe9PSM757wZuI53P/EuXETwae+Uj9pTbhcknV
+         hTlQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=k7vQF+OxfgOKk0npVS0VvNYm6+7r6keuyTTIR2ujT+U=;
-        b=TeJNEFBlUWQzCj8KjJhCU2UXsS/NMGQFgIRN6EmqhrAu5hh+w8agbfTiWStdU+qOvJ
-         E/YFn3g5rJnQI0TslmfhQSS+o7EG1H8AADrDD0J+0OpE99LhJacWB+Hf5It+VzH7mgPC
-         hsGM4CzOFh76So1mrrb9BaxMBZ+hkFF6vvLWIq565ftVvuKxjdaE8O+doUAOAElnoE/K
-         tzIy7HXPMrr7LLAVqy5Io6Dv/RTLJF0VOqUDm6AcYz/KM4cX0cUd/09C49adCcLiup2H
-         ywE6TVvUDWMLMhZvCKkjNuKhitQCwHP92opBmYBWvW+iysw2Qy756LAFbGxzXnskoDkQ
-         LbbA==
-X-Gm-Message-State: AOAM532CaPjSl9MS/C8+o+nR0eozeaHH0ixBREthDfRqi5KNjXJX8Z0a
-        B907GpQ/0RlSaGHfUuWIqmQ=
-X-Google-Smtp-Source: ABdhPJwE3p74e1G3s8fppsaS1ne3bDVk4xRiz7QIHEk0U4INmIbyzz7mWUEm2Cwbe6F+UPhpN+nffA==
-X-Received: by 2002:a17:906:af51:: with SMTP id ly17mr4897233ejb.81.1598048402972;
-        Fri, 21 Aug 2020 15:20:02 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=7Euhqf0kKa8bJk8hY6VIiEQD27H+m7/Zjj9fyz771ww=;
+        b=qcb+n+aoy9P+/d8VPKzsgMm3vBvDlZz7hGpIaUBvs+FgWM/dwaAioz8XZX8zpQeiJZ
+         GZQL/r8BVFuIKJTp6Dt9Qdpc/G7wRrjBn06xHbZ8GVVBxlosGGwqaI4xqbE43/rwBOEq
+         gelRw3ke4wU43jz7VBGNu1vzZi826IqkMPBuRgCSFAQpXAs/siww3Ks0CzecnXNnI1BC
+         em9AUN2DIHfWXDdukjEsco3V2onjkqnKPtuhOCG9bI2BH8HI8AD8eE3Yehjd1hMRafGj
+         wy4wYDNRho4jbyHhEaqJ0tkA5z4SPxXyHsi89IuMbz0ocpRDO/O5h2YvpnPpsgL96QA0
+         ehdw==
+X-Gm-Message-State: AOAM533UA5vXULaFwEmzbf8I4IOEs/YDrg7c6bOrHdv3ua617DD4uAsm
+        VUD6hVOlxoVKOv1G6DZv14I=
+X-Google-Smtp-Source: ABdhPJytrtdq9zPLl7O5jmDFGa+bREqtkDfuGd6hS1X1/YZJjB0xIhkRKGNYMWTMKR6aiTXJBfI1eQ==
+X-Received: by 2002:a17:906:d971:: with SMTP id rp17mr3788200ejb.31.1598048394799;
+        Fri, 21 Aug 2020 15:19:54 -0700 (PDT)
 Received: from localhost.localdomain ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id p23sm1780147edm.31.2020.08.21.15.20.01
+        by smtp.gmail.com with ESMTPSA id p23sm1780147edm.31.2020.08.21.15.19.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2020 15:20:02 -0700 (PDT)
+        Fri, 21 Aug 2020 15:19:54 -0700 (PDT)
 From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
 To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
         Dmitry Torokhov <dmitry.torokhov@gmail.com>,
@@ -69,12 +68,10 @@ Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
         linux-pm@vger.kernel.org
-Subject: [PATCH v2 6/6] MAINTAINERS: Add entry for ATC260x PMIC
-Date:   Sat, 22 Aug 2020 01:19:52 +0300
-Message-Id: <dcadc77041fafe425c0bad219d55437671cd205a.1598043782.git.cristian.ciocaltea@gmail.com>
+Subject: [PATCH v2 0/6] Add initial support for ATC260x PMICs
+Date:   Sat, 22 Aug 2020 01:19:46 +0300
+Message-Id: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
-References: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -82,39 +79,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add MAINTAINERS entry for ATC260x PMIC.
+This is re-spin of the patch series submitted some time ago by Mani,
+who added initial support (MFD core and regulators) for the Actions
+Semi ATC260x PMICs:
+https://lore.kernel.org/lkml/20190617155011.15376-1-manivannan.sadhasivam@linaro.org/
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-[cristian: change binding doc file path, add file patterns for onkey and
-           poweroff drivers, fix ordering, add myself as co-maintainer]
-Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
----
- MAINTAINERS | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+The ATC260x family of PMICs integrates Audio Codec, Power management,
+Clock generation and GPIO controller blocks. There are currently 3
+variants: ATC2603A, ATC2603C and ATC2609A.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index e28d8ad47d03..b57ac4e9aa11 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2899,6 +2899,18 @@ W:	http://www.openaoe.org/
- F:	Documentation/admin-guide/aoe/
- F:	drivers/block/aoe/
- 
-+ATC260X PMIC MFD DRIVER
-+M:	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-+M:	Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-+L:	linux-actions@lists.infradead.org
-+S:	Maintained
-+F:	Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
-+F:	drivers/input/misc/atc260x-onkey.c
-+F:	drivers/mfd/atc260*
-+F:	drivers/power/reset/atc260x-poweroff.c
-+F:	drivers/regulator/atc260x-regulator.c
-+F:	include/linux/mfd/atc260x/*
-+
- ATHEROS 71XX/9XXX GPIO DRIVER
- M:	Alban Bedel <albeu@free.fr>
- S:	Maintained
+In addition to the ATC2609A regulator functionality provided that time,
+this patchset adds support for the ATC2603C variant, together with some
+new functionalities for both chips: power controller and onkey input.
+The ATC2603A variant remains unsupported for the moment.
+
+This has been tested on RoseapplePi, a SBC based on the Action Semi S500
+SoC, which integrates ATC2603C PMIC. An initial support for this board
+has been already submitted:
+https://lore.kernel.org/lkml/cover.1592123160.git.cristian.ciocaltea@gmail.com/
+
+Please note that enabling the ATC260x PMICs on the compatible Actions
+Semi Owl SoC based boards depends on the following:
+
+* Actions Semi SIRQ driver (for PMIC DTS setup):
+  https://lore.kernel.org/lkml/cover.1597852360.git.cristian.ciocaltea@gmail.com/
+
+* I2C Atomic transfers in Actions Semi Owl driver (for proper operation
+  of the power controller driver):
+  https://lore.kernel.org/lkml/b086ef6d355d9730c839359e15eb06175283e323.1596485741.git.cristian.ciocaltea@gmail.com/
+  
+Thanks,
+Cristi
+
+Cristian Ciocaltea (6):
+  dt-bindings: mfd: Add Actions Semi ATC260x PMIC binding
+  mfd: Add MFD driver for ATC260x PMICs
+  regulator: Add regulator driver for ATC260x PMICs
+  power: reset: Add poweroff driver for ATC260x PMICs
+  input: atc260x: Add onkey driver for ATC260x PMICs
+  MAINTAINERS: Add entry for ATC260x PMIC
+
+ .../bindings/mfd/actions,atc260x.yaml         | 221 ++++++++
+ MAINTAINERS                                   |  12 +
+ drivers/input/misc/Kconfig                    |  11 +
+ drivers/input/misc/Makefile                   |   2 +-
+ drivers/input/misc/atc260x-onkey.c            | 304 +++++++++++
+ drivers/mfd/Kconfig                           |  18 +
+ drivers/mfd/Makefile                          |   3 +
+ drivers/mfd/atc260x-core.c                    | 290 ++++++++++
+ drivers/mfd/atc260x-i2c.c                     |  73 +++
+ drivers/power/reset/Kconfig                   |   8 +-
+ drivers/power/reset/Makefile                  |   1 +
+ drivers/power/reset/atc260x-poweroff.c        | 274 ++++++++++
+ drivers/regulator/Kconfig                     |   8 +
+ drivers/regulator/Makefile                    |   1 +
+ drivers/regulator/atc260x-regulator.c         | 511 ++++++++++++++++++
+ include/linux/mfd/atc260x/atc2603c.h          | 281 ++++++++++
+ include/linux/mfd/atc260x/atc2609a.h          | 308 +++++++++++
+ include/linux/mfd/atc260x/core.h              |  86 +++
+ 18 files changed, 2410 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+ create mode 100644 drivers/input/misc/atc260x-onkey.c
+ create mode 100644 drivers/mfd/atc260x-core.c
+ create mode 100644 drivers/mfd/atc260x-i2c.c
+ create mode 100644 drivers/power/reset/atc260x-poweroff.c
+ create mode 100644 drivers/regulator/atc260x-regulator.c
+ create mode 100644 include/linux/mfd/atc260x/atc2603c.h
+ create mode 100644 include/linux/mfd/atc260x/atc2609a.h
+ create mode 100644 include/linux/mfd/atc260x/core.h
+
 -- 
 2.28.0
 
