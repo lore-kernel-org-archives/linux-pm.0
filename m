@@ -2,152 +2,192 @@ Return-Path: <SRS0=MHso=B7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 26CCDC433E4
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 80497C433E1
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:23:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 053EB208E4
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:20:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 57D7A207DA
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:23:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W7e8QLL/"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="PI7GeONl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726773AbgHUWT7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Aug 2020 18:19:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60964 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726747AbgHUWT5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:19:57 -0400
-Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42756C061573;
-        Fri, 21 Aug 2020 15:19:56 -0700 (PDT)
-Received: by mail-ej1-x644.google.com with SMTP id si26so4268232ejb.12;
-        Fri, 21 Aug 2020 15:19:56 -0700 (PDT)
+        id S1726848AbgHUWWz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Aug 2020 18:22:55 -0400
+Received: from smtp-fw-4101.amazon.com ([72.21.198.25]:17353 "EHLO
+        smtp-fw-4101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726747AbgHUWWy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:22:54 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7Euhqf0kKa8bJk8hY6VIiEQD27H+m7/Zjj9fyz771ww=;
-        b=W7e8QLL/UILxZwiAdklCeQIidO1LLzLv/jj477YznHokzrs/jwc4XDHBocvHEKRcS7
-         C4k4OTeS2MJBKjJp2p1+UZRWaoGFznWR4y2r15ULdQud9LkesE/Og1hyjN+N5ddNKj54
-         eR0xfYGRlGOzsoLkDrFOgS2PPL/E80Ybd1I9Bs5NePnuitGku4JdnUlGtNqomoUsCBx7
-         rUwvGwZVmjc/ayRjLa84HTtY9OYDVx7nMKIJBlMluEpZ0KBxS4pEg5jg3djiJI3oVfx4
-         AUrJtyP2Zh187WNwWe5fKJ4mnNymXPMpe9PSM757wZuI53P/EuXETwae+Uj9pTbhcknV
-         hTlQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=7Euhqf0kKa8bJk8hY6VIiEQD27H+m7/Zjj9fyz771ww=;
-        b=qcb+n+aoy9P+/d8VPKzsgMm3vBvDlZz7hGpIaUBvs+FgWM/dwaAioz8XZX8zpQeiJZ
-         GZQL/r8BVFuIKJTp6Dt9Qdpc/G7wRrjBn06xHbZ8GVVBxlosGGwqaI4xqbE43/rwBOEq
-         gelRw3ke4wU43jz7VBGNu1vzZi826IqkMPBuRgCSFAQpXAs/siww3Ks0CzecnXNnI1BC
-         em9AUN2DIHfWXDdukjEsco3V2onjkqnKPtuhOCG9bI2BH8HI8AD8eE3Yehjd1hMRafGj
-         wy4wYDNRho4jbyHhEaqJ0tkA5z4SPxXyHsi89IuMbz0ocpRDO/O5h2YvpnPpsgL96QA0
-         ehdw==
-X-Gm-Message-State: AOAM533UA5vXULaFwEmzbf8I4IOEs/YDrg7c6bOrHdv3ua617DD4uAsm
-        VUD6hVOlxoVKOv1G6DZv14I=
-X-Google-Smtp-Source: ABdhPJytrtdq9zPLl7O5jmDFGa+bREqtkDfuGd6hS1X1/YZJjB0xIhkRKGNYMWTMKR6aiTXJBfI1eQ==
-X-Received: by 2002:a17:906:d971:: with SMTP id rp17mr3788200ejb.31.1598048394799;
-        Fri, 21 Aug 2020 15:19:54 -0700 (PDT)
-Received: from localhost.localdomain ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id p23sm1780147edm.31.2020.08.21.15.19.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2020 15:19:54 -0700 (PDT)
-From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>
-Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        =?UTF-8?q?Andreas=20F=C3=A4rber?= <afaerber@suse.de>,
-        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: [PATCH v2 0/6] Add initial support for ATC260x PMICs
-Date:   Sat, 22 Aug 2020 01:19:46 +0300
-Message-Id: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
-X-Mailer: git-send-email 2.28.0
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1598048573; x=1629584573;
+  h=date:from:to:subject:message-id:mime-version;
+  bh=pCzwDhN0iVXUQqFByiUrlU6LR1qEKbE8xAOG3bRhl3E=;
+  b=PI7GeONlDITVjEQYYTEFGC0SntSPRdAOCCdEiEL5+PfRsIVh8KYUmfr7
+   WL14IafWzt7Gmocc1Ibhh/MgIIP2uAvyGhThrmU3XqVcT7Jwfok68dnOL
+   wpC1x5upw7Lro74Z1FXhoST8oI00uPzJZI740Co7D8s0HXIGm7WgumXs9
+   c=;
+X-IronPort-AV: E=Sophos;i="5.76,338,1592870400"; 
+   d="scan'208";a="49403112"
+Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-2c-1968f9fa.us-west-2.amazon.com) ([10.43.8.6])
+  by smtp-border-fw-out-4101.iad4.amazon.com with ESMTP; 21 Aug 2020 22:22:50 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan3.pdx.amazon.com [10.170.41.166])
+        by email-inbound-relay-2c-1968f9fa.us-west-2.amazon.com (Postfix) with ESMTPS id 13476A260D;
+        Fri, 21 Aug 2020 22:22:48 +0000 (UTC)
+Received: from EX13D10UWB002.ant.amazon.com (10.43.161.130) by
+ EX13MTAUWB001.ant.amazon.com (10.43.161.249) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Fri, 21 Aug 2020 22:22:43 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (10.43.161.207) by
+ EX13D10UWB002.ant.amazon.com (10.43.161.130) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Fri, 21 Aug 2020 22:22:43 +0000
+Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
+ (172.22.96.68) by mail-relay.amazon.com (10.43.161.249) with Microsoft SMTP
+ Server id 15.0.1497.2 via Frontend Transport; Fri, 21 Aug 2020 22:22:43 +0000
+Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
+        id 8D45F40362; Fri, 21 Aug 2020 22:22:43 +0000 (UTC)
+Date:   Fri, 21 Aug 2020 22:22:43 +0000
+From:   Anchal Agarwal <anchalag@amazon.com>
+To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
+        <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
+        <jgross@suse.com>, <linux-pm@vger.kernel.org>,
+        <linux-mm@kvack.org>, <kamatam@amazon.com>,
+        <sstabellini@kernel.org>, <konrad.wilk@oracle.com>,
+        <roger.pau@citrix.com>, <axboe@kernel.dk>, <davem@davemloft.net>,
+        <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
+        <peterz@infradead.org>, <eduval@amazon.com>, <sblbir@amazon.com>,
+        <anchalag@amazon.com>, <xen-devel@lists.xenproject.org>,
+        <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>, <dwmw@amazon.co.uk>,
+        <benh@kernel.crashing.org>
+Subject: [PATCH v3 00/11] Fix PM hibernation in Xen guests
+Message-ID: <cover.1598042152.git.anchalag@amazon.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.21 (2010-09-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This is re-spin of the patch series submitted some time ago by Mani,
-who added initial support (MFD core and regulators) for the Actions
-Semi ATC260x PMICs:
-https://lore.kernel.org/lkml/20190617155011.15376-1-manivannan.sadhasivam@linaro.org/
-
-The ATC260x family of PMICs integrates Audio Codec, Power management,
-Clock generation and GPIO controller blocks. There are currently 3
-variants: ATC2603A, ATC2603C and ATC2609A.
-
-In addition to the ATC2609A regulator functionality provided that time,
-this patchset adds support for the ATC2603C variant, together with some
-new functionalities for both chips: power controller and onkey input.
-The ATC2603A variant remains unsupported for the moment.
-
-This has been tested on RoseapplePi, a SBC based on the Action Semi S500
-SoC, which integrates ATC2603C PMIC. An initial support for this board
-has been already submitted:
-https://lore.kernel.org/lkml/cover.1592123160.git.cristian.ciocaltea@gmail.com/
-
-Please note that enabling the ATC260x PMICs on the compatible Actions
-Semi Owl SoC based boards depends on the following:
-
-* Actions Semi SIRQ driver (for PMIC DTS setup):
-  https://lore.kernel.org/lkml/cover.1597852360.git.cristian.ciocaltea@gmail.com/
-
-* I2C Atomic transfers in Actions Semi Owl driver (for proper operation
-  of the power controller driver):
-  https://lore.kernel.org/lkml/b086ef6d355d9730c839359e15eb06175283e323.1596485741.git.cristian.ciocaltea@gmail.com/
+Hello,
+This series fixes PM hibernation for hvm guests running on xen hypervisor.
+The running guest could now be hibernated and resumed successfully at a
+later time. The fixes for PM hibernation are added to block and
+network device drivers i.e xen-blkfront and xen-netfront. Any other driver
+that needs to add S4 support if not already, can follow same method of
+introducing freeze/thaw/restore callbacks.
+The patches had been tested against upstream kernel and xen4.11. Large
+scale testing is also done on Xen based Amazon EC2 instances. All this testing
+involved running memory exhausting workload in the background.
   
-Thanks,
-Cristi
+Doing guest hibernation does not involve any support from hypervisor and
+this way guest has complete control over its state. Infrastructure
+restrictions for saving up guest state can be overcome by guest initiated
+hibernation.
+  
+These patches were send out as RFC before and all the feedback had been
+incorporated in the patches. The last v1 & v2 could be found here:
+  
+[v1]: https://lkml.org/lkml/2020/5/19/1312
+[v2]: https://lkml.org/lkml/2020/7/2/995
+All comments and feedback from v2 had been incorporated in v3 series.
 
-Cristian Ciocaltea (6):
-  dt-bindings: mfd: Add Actions Semi ATC260x PMIC binding
-  mfd: Add MFD driver for ATC260x PMICs
-  regulator: Add regulator driver for ATC260x PMICs
-  power: reset: Add poweroff driver for ATC260x PMICs
-  input: atc260x: Add onkey driver for ATC260x PMICs
-  MAINTAINERS: Add entry for ATC260x PMIC
+Known issues:
+1.KASLR causes intermittent hibernation failures. VM fails to resumes and
+has to be restarted. I will investigate this issue separately and shouldn't
+be a blocker for this patch series.
+2. During hibernation, I observed sometimes that freezing of tasks fails due
+to busy XFS workqueuei[xfs-cil/xfs-sync]. This is also intermittent may be 1
+out of 200 runs and hibernation is aborted in this case. Re-trying hibernation
+may work. Also, this is a known issue with hibernation and some
+filesystems like XFS has been discussed by the community for years with not an
+effectve resolution at this point.
 
- .../bindings/mfd/actions,atc260x.yaml         | 221 ++++++++
- MAINTAINERS                                   |  12 +
- drivers/input/misc/Kconfig                    |  11 +
- drivers/input/misc/Makefile                   |   2 +-
- drivers/input/misc/atc260x-onkey.c            | 304 +++++++++++
- drivers/mfd/Kconfig                           |  18 +
- drivers/mfd/Makefile                          |   3 +
- drivers/mfd/atc260x-core.c                    | 290 ++++++++++
- drivers/mfd/atc260x-i2c.c                     |  73 +++
- drivers/power/reset/Kconfig                   |   8 +-
- drivers/power/reset/Makefile                  |   1 +
- drivers/power/reset/atc260x-poweroff.c        | 274 ++++++++++
- drivers/regulator/Kconfig                     |   8 +
- drivers/regulator/Makefile                    |   1 +
- drivers/regulator/atc260x-regulator.c         | 511 ++++++++++++++++++
- include/linux/mfd/atc260x/atc2603c.h          | 281 ++++++++++
- include/linux/mfd/atc260x/atc2609a.h          | 308 +++++++++++
- include/linux/mfd/atc260x/core.h              |  86 +++
- 18 files changed, 2410 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
- create mode 100644 drivers/input/misc/atc260x-onkey.c
- create mode 100644 drivers/mfd/atc260x-core.c
- create mode 100644 drivers/mfd/atc260x-i2c.c
- create mode 100644 drivers/power/reset/atc260x-poweroff.c
- create mode 100644 drivers/regulator/atc260x-regulator.c
- create mode 100644 include/linux/mfd/atc260x/atc2603c.h
- create mode 100644 include/linux/mfd/atc260x/atc2609a.h
- create mode 100644 include/linux/mfd/atc260x/core.h
+Testing How to:
+---------------
+1. Setup xen hypervisor on a physical machine[ I used Ubuntu 16.04 +upstream
+xen-4.11]
+2. Bring up a HVM guest w/t kernel compiled with hibernation patches
+[I used ubuntu18.04 netboot bionic images and also Amazon Linux on-prem images].
+3. Create a swap file size=RAM size
+4. Update grub parameters and reboot
+5. Trigger pm-hibernation from within the VM
+
+Example:
+Set up a file-backed swap space. Swap file size>=Total memory on the system
+sudo dd if=/dev/zero of=/swap bs=$(( 1024 * 1024 )) count=4096 # 4096MiB
+sudo chmod 600 /swap
+sudo mkswap /swap
+sudo swapon /swap
+
+Update resume device/resume offset in grub if using swap file:
+resume=/dev/xvda1 resume_offset=200704 no_console_suspend=1
+
+Execute:
+--------
+sudo pm-hibernate
+OR
+echo disk > /sys/power/state && echo reboot > /sys/power/disk
+
+Compute resume offset code:
+"
+#!/usr/bin/env python
+import sys
+import array
+import fcntl
+
+#swap file
+f = open(sys.argv[1], 'r')
+buf = array.array('L', [0])
+
+#FIBMAP
+ret = fcntl.ioctl(f.fileno(), 0x01, buf)
+print buf[0]
+"
+
+Aleksei Besogonov (1):
+  PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA
+
+Anchal Agarwal (4):
+  x86/xen: Introduce new function to map HYPERVISOR_shared_info on
+    Resume
+  x86/xen: save and restore steal clock during PM hibernation
+  xen: Introduce wrapper for save/restore sched clock offset
+  xen: Update sched clock offset to avoid system instability in
+    hibernation
+
+Munehisa Kamata (5):
+  xen/manage: keep track of the on-going suspend mode
+  xenbus: add freeze/thaw/restore callbacks support
+  x86/xen: add system core suspend and resume callbacks
+  xen-blkfront: add callbacks for PM suspend and hibernation
+  xen-netfront: add callbacks for PM suspend and hibernation
+
+Thomas Gleixner (1):
+  genirq: Shutdown irq chips in suspend/resume during hibernation
+
+ arch/x86/xen/enlighten_hvm.c      |   7 +++
+ arch/x86/xen/suspend.c            |  63 ++++++++++++++++++++
+ arch/x86/xen/time.c               |  15 ++++-
+ arch/x86/xen/xen-ops.h            |   3 +
+ drivers/block/xen-blkfront.c      | 122 ++++++++++++++++++++++++++++++++++++--
+ drivers/net/xen-netfront.c        |  96 +++++++++++++++++++++++++++++-
+ drivers/xen/events/events_base.c  |   1 +
+ drivers/xen/manage.c              |  46 ++++++++++++++
+ drivers/xen/xenbus/xenbus_probe.c |  96 +++++++++++++++++++++++++-----
+ include/linux/irq.h               |   2 +
+ include/xen/xen-ops.h             |   3 +
+ include/xen/xenbus.h              |   3 +
+ kernel/irq/chip.c                 |   2 +-
+ kernel/irq/internals.h            |   1 +
+ kernel/irq/pm.c                   |  31 +++++++---
+ kernel/power/user.c               |   7 ++-
+ 16 files changed, 464 insertions(+), 34 deletions(-)
 
 -- 
-2.28.0
+2.16.6
 
