@@ -2,272 +2,177 @@ Return-Path: <SRS0=MHso=B7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BD94EC433E3
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 81546C433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:27:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 93BCF214F1
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:26:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C51F207C3
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 22:27:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="pGLkx5S4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Bxa+FV2C"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727020AbgHUW0x (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Aug 2020 18:26:53 -0400
-Received: from smtp-fw-9102.amazon.com ([207.171.184.29]:40937 "EHLO
-        smtp-fw-9102.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726761AbgHUW0x (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:26:53 -0400
+        id S1727066AbgHUW1A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Aug 2020 18:27:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33806 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726761AbgHUW06 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 18:26:58 -0400
+Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D50CEC061573;
+        Fri, 21 Aug 2020 15:26:57 -0700 (PDT)
+Received: by mail-ed1-x543.google.com with SMTP id l23so2843764edv.11;
+        Fri, 21 Aug 2020 15:26:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
-  t=1598048812; x=1629584812;
-  h=date:from:to:subject:message-id:references:mime-version:
-   in-reply-to;
-  bh=o7rPqzskox0maCiw1iUDOffDHLYZ5i4ym3CYeXYHbeI=;
-  b=pGLkx5S43yNAOy/06g5uigeQwr2sxemJOhOS8wEfRygayYlkBkFbrCBZ
-   /eJWOPMu0+aTIRhx9XJrFRn7RXloJe2vHIJfSdW+GqhyYizAvL4P5oyms
-   9qUvbAqL2SKvdg5uXJTjhi8t7+TgJg08QIruWJlCpXmf/jfTM0lWxza60
-   U=;
-X-IronPort-AV: E=Sophos;i="5.76,338,1592870400"; 
-   d="scan'208";a="69982703"
-Received: from sea32-co-svc-lb4-vlan3.sea.corp.amazon.com (HELO email-inbound-relay-2c-579b7f5b.us-west-2.amazon.com) ([10.47.23.38])
-  by smtp-border-fw-out-9102.sea19.amazon.com with ESMTP; 21 Aug 2020 22:26:49 +0000
-Received: from EX13MTAUEB002.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan3.pdx.amazon.com [10.170.41.166])
-        by email-inbound-relay-2c-579b7f5b.us-west-2.amazon.com (Postfix) with ESMTPS id BDD27A2A7C;
-        Fri, 21 Aug 2020 22:26:47 +0000 (UTC)
-Received: from EX13D08UEB001.ant.amazon.com (10.43.60.245) by
- EX13MTAUEB002.ant.amazon.com (10.43.60.12) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Fri, 21 Aug 2020 22:26:30 +0000
-Received: from EX13MTAUEA002.ant.amazon.com (10.43.61.77) by
- EX13D08UEB001.ant.amazon.com (10.43.60.245) with Microsoft SMTP Server (TLS)
- id 15.0.1497.2; Fri, 21 Aug 2020 22:26:29 +0000
-Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
- (172.22.96.68) by mail-relay.amazon.com (10.43.61.169) with Microsoft SMTP
- Server id 15.0.1497.2 via Frontend Transport; Fri, 21 Aug 2020 22:26:30 +0000
-Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
-        id CE42C40362; Fri, 21 Aug 2020 22:26:29 +0000 (UTC)
-Date:   Fri, 21 Aug 2020 22:26:29 +0000
-From:   Anchal Agarwal <anchalag@amazon.com>
-To:     <tglx@linutronix.de>, <mingo@redhat.com>, <bp@alien8.de>,
-        <hpa@zytor.com>, <x86@kernel.org>, <boris.ostrovsky@oracle.com>,
-        <jgross@suse.com>, <linux-pm@vger.kernel.org>,
-        <linux-mm@kvack.org>, <kamatam@amazon.com>,
-        <sstabellini@kernel.org>, <konrad.wilk@oracle.com>,
-        <roger.pau@citrix.com>, <axboe@kernel.dk>, <davem@davemloft.net>,
-        <rjw@rjwysocki.net>, <len.brown@intel.com>, <pavel@ucw.cz>,
-        <peterz@infradead.org>, <eduval@amazon.com>, <sblbir@amazon.com>,
-        <anchalag@amazon.com>, <xen-devel@lists.xenproject.org>,
-        <vkuznets@redhat.com>, <netdev@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>, <dwmw@amazon.co.uk>,
-        <benh@kernel.crashing.org>
-Subject: [PATCH v3 02/11] xenbus: add freeze/thaw/restore callbacks support
-Message-ID: <2d3a7ed32bf38e13e0141a631a453b6e4c7ba5dc.1598042152.git.anchalag@amazon.com>
-References: <cover.1598042152.git.anchalag@amazon.com>
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=2xVtjZRNRS3E8MVTp7lHDkvpy13Q1fp6Wa/UA+c8+FM=;
+        b=Bxa+FV2CpjigcBwmlJ0mAZ6CFy5eNN8qLauJWLCHmjyOrmPjCKQX+oKc18WbH/dX96
+         lQtBKJRd9iNGtLhKGRWVePgG+4jOgBBsRYArMhBWZTvPRueWGD9ko+My68SQN5wGQ6wN
+         VLKk6MMJ8BfmYZDprO6rX9nxtc2GlFJ1nGKYgOgBm7og9JbzxZMrPuTPN+aQY0j1Mij2
+         fXDi4vBb3kClkMtAtzx9z6UfZE95+mrx4bApQtyDd+5GUJ7isAJpriROBxvYzmXfAhvh
+         xa6LxLtqBDrGn6/lGLt4IzpFLqpvfrKGjVDaN3pTa8dOvkP7mGkcUGRgplgLJ9cX6XEE
+         pSyw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=2xVtjZRNRS3E8MVTp7lHDkvpy13Q1fp6Wa/UA+c8+FM=;
+        b=OA2DJFdejpEQmcNzP15Y87NQzFjYEWHXQsEd9cqK9O5fbWrsPc5Al7MAoecWOAA36c
+         gFTqxj/8IgyZW/BkNeqsW+uCK5zYcAh1m2zU2nVSXZNUf4YI7qiGjxivvgLnIfnSxsf7
+         XLJIhr6PRMvg8wMYZhb+pzbjdfd/LKt3Lfyn273iZzXS71qArL1IEu9v/vfTggX42FjV
+         czqOfhH654OhZUpWJD9kIlmGjun/hxrA4lWSNkhxoXphqUvh1dttQm6rlkWsOX0L7TL2
+         3jERgnAFDWxGLc/s1IxopWj5Kw5DtuDzrzQONG96e1oWpI3AO9RVi1vPp1FXTXQ8g8vB
+         WPVA==
+X-Gm-Message-State: AOAM531axZ7Iod8BX+DaJdtXY4gR1l5cOpVSDA4xD7sEYlhyJjDdVzpw
+        LeH79yrESPF63QmgCZ8tCvw=
+X-Google-Smtp-Source: ABdhPJxLrBiXYSrNYXMVCMuh+sIT//JDR2ezQOjASjRkpp2BLAQVyiAzZ32tZvDhOURB2PDhXBmssQ==
+X-Received: by 2002:a05:6402:6da:: with SMTP id n26mr5103065edy.262.1598048816550;
+        Fri, 21 Aug 2020 15:26:56 -0700 (PDT)
+Received: from BV030612LT ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id bx22sm2057801ejc.18.2020.08.21.15.26.55
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Aug 2020 15:26:56 -0700 (PDT)
+Date:   Sat, 22 Aug 2020 01:26:53 +0300
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>
+Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 0/6] Add initial support for ATC260x PMICs
+Message-ID: <20200821222653.GA2255465@BV030612LT>
+References: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cover.1598042152.git.anchalag@amazon.com>
-User-Agent: Mutt/1.5.21 (2010-09-15)
+In-Reply-To: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Munehisa Kamata <kamatam@amazon.com> 
+I have just realized I had omitted the changelog - sorry:
 
-Since commit b3e96c0c7562 ("xen: use freeze/restore/thaw PM events for
-suspend/resume/chkpt"), xenbus uses PMSG_FREEZE, PMSG_THAW and
-PMSG_RESTORE events for Xen suspend. However, they're actually assigned
-to xenbus_dev_suspend(), xenbus_dev_cancel() and xenbus_dev_resume()
-respectively, and only suspend and resume callbacks are supported at
-driver level. To support PM suspend and PM hibernation, modify the bus
-level PM callbacks to invoke not only device driver's suspend/resume but
-also freeze/thaw/restore.
+Changes in v2:
+- Reworked MFD core & I2C driver
+  * Integrated Lee's feedback
+  * Added support for using the regmap within atomic contexts
+  * Added support for ATC2603C chip variant
+  * Reorganized KConfig entries
+- Improved regulator driver
+  * Added support for ATC2603C variant
+  * Used helper macros for more compact specification of regulator_desc items
+  * Added more regulator capabilities
+- Added power controller driver
+  * Provides system poweroff/reboot functionalities
+  * Requires support for I2C Atomic transfers in the Owl driver (already submitted)
+- Added onkey driver: exposes the power button as an input device
+- Added yaml binding doc
+- Rebased patchset on kernel v5.9-rc1
 
-Note that we'll use freeze/restore callbacks even for PM suspend whereas
-suspend/resume callbacks are normally used in the case, becausae the
-existing xenbus device drivers already have suspend/resume callbacks
-specifically designed for Xen suspend. So we can allow the device
-drivers to keep the existing callbacks wihtout modification.
+Kind regards,
+Cristi
 
-[Anchal Agarwal: Changelog]:
-RFC v1->v2: Refactored the callbacks code
-    v1->v2: Use dev_warn instead of pr_warn, naming/initialization
-            conventions
-    v2->v3: Fixed is_xen_suspend naming convention
-Signed-off-by: Agarwal Anchal <anchalag@amazon.com>
-Signed-off-by: Munehisa Kamata <kamatam@amazon.com>
----
- drivers/xen/xenbus/xenbus_probe.c | 96 +++++++++++++++++++++++++++++++++------
- include/xen/xenbus.h              |  3 ++
- 2 files changed, 84 insertions(+), 15 deletions(-)
-
-diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-index 38725d97d909..e8ad7879bcd3 100644
---- a/drivers/xen/xenbus/xenbus_probe.c
-+++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -50,6 +50,7 @@
- #include <linux/io.h>
- #include <linux/slab.h>
- #include <linux/module.h>
-+#include <linux/suspend.h>
- 
- #include <asm/page.h>
- #include <asm/xen/hypervisor.h>
-@@ -599,16 +600,33 @@ int xenbus_dev_suspend(struct device *dev)
- 	struct xenbus_driver *drv;
- 	struct xenbus_device *xdev
- 		= container_of(dev, struct xenbus_device, dev);
-+	bool xen_suspend = is_xen_suspend();
- 
- 	DPRINTK("%s", xdev->nodename);
- 
- 	if (dev->driver == NULL)
- 		return 0;
- 	drv = to_xenbus_driver(dev->driver);
--	if (drv->suspend)
--		err = drv->suspend(xdev);
--	if (err)
--		dev_warn(dev, "suspend failed: %i\n", err);
-+	if (xen_suspend) {
-+		if (drv->suspend)
-+			err = drv->suspend(xdev);
-+	} else {
-+		if (drv->freeze) {
-+			err = drv->freeze(xdev);
-+			if (!err) {
-+				free_otherend_watch(xdev);
-+				free_otherend_details(xdev);
-+				return 0;
-+			}
-+		}
-+	}
-+
-+	if (err) {
-+		dev_warn(&xdev->dev, "%s %s failed: %d\n", xen_suspend ?
-+				"suspend" : "freeze", xdev->nodename, err);
-+		return err;
-+	}
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(xenbus_dev_suspend);
-@@ -619,6 +637,7 @@ int xenbus_dev_resume(struct device *dev)
- 	struct xenbus_driver *drv;
- 	struct xenbus_device *xdev
- 		= container_of(dev, struct xenbus_device, dev);
-+	bool xen_suspend = is_xen_suspend();
- 
- 	DPRINTK("%s", xdev->nodename);
- 
-@@ -627,23 +646,34 @@ int xenbus_dev_resume(struct device *dev)
- 	drv = to_xenbus_driver(dev->driver);
- 	err = talk_to_otherend(xdev);
- 	if (err) {
--		dev_warn(dev, "resume (talk_to_otherend) failed: %i\n", err);
-+		dev_warn(&xdev->dev, "%s (talk_to_otherend) %s failed: %d\n",
-+				xen_suspend ? "resume" : "restore",
-+				xdev->nodename, err);
- 		return err;
- 	}
- 
--	xdev->state = XenbusStateInitialising;
-+	if (xen_suspend) {
-+		xdev->state = XenbusStateInitialising;
-+		if (drv->resume)
-+			err = drv->resume(xdev);
-+	} else {
-+		if (drv->restore)
-+			err = drv->restore(xdev);
-+	}
- 
--	if (drv->resume) {
--		err = drv->resume(xdev);
--		if (err) {
--			dev_warn(dev, "resume failed: %i\n", err);
--			return err;
--		}
-+	if (err) {
-+		dev_warn(&xdev->dev, "%s %s failed: %d\n",
-+				xen_suspend ? "resume" : "restore",
-+				xdev->nodename, err);
-+		return err;
- 	}
- 
- 	err = watch_otherend(xdev);
- 	if (err) {
--		dev_warn(dev, "resume (watch_otherend) failed: %d\n", err);
-+		dev_warn(&xdev->dev, "%s (watch_otherend) %s failed: %d.\n",
-+				xen_suspend ? "resume" : "restore",
-+				xdev->nodename, err);
-+
- 		return err;
- 	}
- 
-@@ -653,8 +683,44 @@ EXPORT_SYMBOL_GPL(xenbus_dev_resume);
- 
- int xenbus_dev_cancel(struct device *dev)
- {
--	/* Do nothing */
--	DPRINTK("cancel");
-+	int err;
-+	struct xenbus_driver *drv;
-+	struct xenbus_device *xendev = to_xenbus_device(dev);
-+	bool xen_suspend = is_xen_suspend();
-+
-+	if (xen_suspend) {
-+		/* Do nothing */
-+		DPRINTK("cancel");
-+		return 0;
-+	}
-+
-+	DPRINTK("%s", xendev->nodename);
-+
-+	if (dev->driver == NULL)
-+		return 0;
-+	drv = to_xenbus_driver(dev->driver);
-+	err = talk_to_otherend(xendev);
-+	if (err) {
-+		dev_warn(&xendev->dev, "thaw (talk_to_otherend) %s failed: %d.\n",
-+			xendev->nodename, err);
-+		return err;
-+	}
-+
-+	if (drv->thaw) {
-+		err = drv->thaw(xendev);
-+		if (err) {
-+			dev_warn(&xendev->dev, "thaw %s failed: %d\n", xendev->nodename, err);
-+			return err;
-+		}
-+	}
-+
-+	err = watch_otherend(xendev);
-+	if (err) {
-+		dev_warn(&xendev->dev, "thaw (watch_otherend) %s failed: %d.\n",
-+			xendev->nodename, err);
-+		return err;
-+	}
-+
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(xenbus_dev_cancel);
-diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
-index 5a8315e6d8a6..8da964763255 100644
---- a/include/xen/xenbus.h
-+++ b/include/xen/xenbus.h
-@@ -104,6 +104,9 @@ struct xenbus_driver {
- 	int (*remove)(struct xenbus_device *dev);
- 	int (*suspend)(struct xenbus_device *dev);
- 	int (*resume)(struct xenbus_device *dev);
-+	int (*freeze)(struct xenbus_device *dev);
-+	int (*thaw)(struct xenbus_device *dev);
-+	int (*restore)(struct xenbus_device *dev);
- 	int (*uevent)(struct xenbus_device *, struct kobj_uevent_env *);
- 	struct device_driver driver;
- 	int (*read_otherend_details)(struct xenbus_device *dev);
--- 
-2.16.6
-
+On Sat, Aug 22, 2020 at 01:19:46AM +0300, Cristian Ciocaltea wrote:
+> This is re-spin of the patch series submitted some time ago by Mani,
+> who added initial support (MFD core and regulators) for the Actions
+> Semi ATC260x PMICs:
+> https://lore.kernel.org/lkml/20190617155011.15376-1-manivannan.sadhasivam@linaro.org/
+> 
+> The ATC260x family of PMICs integrates Audio Codec, Power management,
+> Clock generation and GPIO controller blocks. There are currently 3
+> variants: ATC2603A, ATC2603C and ATC2609A.
+> 
+> In addition to the ATC2609A regulator functionality provided that time,
+> this patchset adds support for the ATC2603C variant, together with some
+> new functionalities for both chips: power controller and onkey input.
+> The ATC2603A variant remains unsupported for the moment.
+> 
+> This has been tested on RoseapplePi, a SBC based on the Action Semi S500
+> SoC, which integrates ATC2603C PMIC. An initial support for this board
+> has been already submitted:
+> https://lore.kernel.org/lkml/cover.1592123160.git.cristian.ciocaltea@gmail.com/
+> 
+> Please note that enabling the ATC260x PMICs on the compatible Actions
+> Semi Owl SoC based boards depends on the following:
+> 
+> * Actions Semi SIRQ driver (for PMIC DTS setup):
+>   https://lore.kernel.org/lkml/cover.1597852360.git.cristian.ciocaltea@gmail.com/
+> 
+> * I2C Atomic transfers in Actions Semi Owl driver (for proper operation
+>   of the power controller driver):
+>   https://lore.kernel.org/lkml/b086ef6d355d9730c839359e15eb06175283e323.1596485741.git.cristian.ciocaltea@gmail.com/
+>   
+> Thanks,
+> Cristi
+> 
+> Cristian Ciocaltea (6):
+>   dt-bindings: mfd: Add Actions Semi ATC260x PMIC binding
+>   mfd: Add MFD driver for ATC260x PMICs
+>   regulator: Add regulator driver for ATC260x PMICs
+>   power: reset: Add poweroff driver for ATC260x PMICs
+>   input: atc260x: Add onkey driver for ATC260x PMICs
+>   MAINTAINERS: Add entry for ATC260x PMIC
+> 
+>  .../bindings/mfd/actions,atc260x.yaml         | 221 ++++++++
+>  MAINTAINERS                                   |  12 +
+>  drivers/input/misc/Kconfig                    |  11 +
+>  drivers/input/misc/Makefile                   |   2 +-
+>  drivers/input/misc/atc260x-onkey.c            | 304 +++++++++++
+>  drivers/mfd/Kconfig                           |  18 +
+>  drivers/mfd/Makefile                          |   3 +
+>  drivers/mfd/atc260x-core.c                    | 290 ++++++++++
+>  drivers/mfd/atc260x-i2c.c                     |  73 +++
+>  drivers/power/reset/Kconfig                   |   8 +-
+>  drivers/power/reset/Makefile                  |   1 +
+>  drivers/power/reset/atc260x-poweroff.c        | 274 ++++++++++
+>  drivers/regulator/Kconfig                     |   8 +
+>  drivers/regulator/Makefile                    |   1 +
+>  drivers/regulator/atc260x-regulator.c         | 511 ++++++++++++++++++
+>  include/linux/mfd/atc260x/atc2603c.h          | 281 ++++++++++
+>  include/linux/mfd/atc260x/atc2609a.h          | 308 +++++++++++
+>  include/linux/mfd/atc260x/core.h              |  86 +++
+>  18 files changed, 2410 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+>  create mode 100644 drivers/input/misc/atc260x-onkey.c
+>  create mode 100644 drivers/mfd/atc260x-core.c
+>  create mode 100644 drivers/mfd/atc260x-i2c.c
+>  create mode 100644 drivers/power/reset/atc260x-poweroff.c
+>  create mode 100644 drivers/regulator/atc260x-regulator.c
+>  create mode 100644 include/linux/mfd/atc260x/atc2603c.h
+>  create mode 100644 include/linux/mfd/atc260x/atc2609a.h
+>  create mode 100644 include/linux/mfd/atc260x/core.h
+> 
+> -- 
+> 2.28.0
+> 
