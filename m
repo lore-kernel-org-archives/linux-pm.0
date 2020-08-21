@@ -2,131 +2,100 @@ Return-Path: <SRS0=MHso=B7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 73C4CC433E1
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 19:34:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91064C433E1
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 20:49:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5A6392076E
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 19:34:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 60B6720738
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 20:49:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="AIcQN2Xg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726243AbgHUTeo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Aug 2020 15:34:44 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:54089 "HELO
-        netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with SMTP id S1725801AbgHUTeo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 15:34:44 -0400
-Received: (qmail 266418 invoked by uid 1000); 21 Aug 2020 15:34:42 -0400
-Date:   Fri, 21 Aug 2020 15:34:42 -0400
-From:   Alan Stern <stern@rowland.harvard.edu>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PM: sleep: core: Fix the handling of pending runtime
- resume requests
-Message-ID: <20200821193442.GA264863@rowland.harvard.edu>
-References: <7969920.MVx1BpXlEM@kreacher>
+        id S1726611AbgHUUto (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Aug 2020 16:49:44 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:29144 "EHLO
+        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726243AbgHUUtn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 16:49:43 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1598042983; h=Content-Transfer-Encoding: MIME-Version:
+ References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=WRPAZeilvd47qwxaLmDsAccJ+EomVymQZ4wOUU2EfTs=; b=AIcQN2XgFpkVj+5w0Nx6Gpw2nW+KorXKTuNU3wvsf2Rfjt/VBBlGrhvvt8NWrplIIaT3g4AP
+ M3bA3yHLGtOA+I+phsR25mZnmN10ITID8WvXPRyd2WWZz/frQvmVVjZbwlfWSthIJU5ZRvOa
+ gvkhMfXGv7HM7wx/Gxy6HxQOsD0=
+X-Mailgun-Sending-Ip: 104.130.122.29
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n07.prod.us-east-1.postgun.com with SMTP id
+ 5f40336691f122588b1f5ee0 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Fri, 21 Aug 2020 20:49:42
+ GMT
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 20795C433A1; Fri, 21 Aug 2020 20:49:41 +0000 (UTC)
+Received: from blr-ubuntu-253.qualcomm.com (blr-bdr-fw-01_GlobalNAT_AllZones-Outside.qualcomm.com [103.229.18.19])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: sibis)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id E6C4DC43395;
+        Fri, 21 Aug 2020 20:49:35 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org E6C4DC43395
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=sibis@codeaurora.org
+From:   Sibi Sankar <sibis@codeaurora.org>
+To:     bjorn.andersson@linaro.org, ulf.hansson@linaro.org,
+        khilman@kernel.org, swboyd@chromium.org
+Cc:     rjw@rjwysocki.net, agross@kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        gregkh@linuxfoundation.org, pavel@ucw.cz, len.brown@intel.com,
+        rnayak@codeaurora.org, dianders@chromium.org, mka@chromium.org,
+        Sibi Sankar <sibis@codeaurora.org>
+Subject: [PATCH v2 2/2] soc: qcom: aoss: Use both GENPD_FLAG_NO_SUSPEND/RESUME flags
+Date:   Sat, 22 Aug 2020 02:19:21 +0530
+Message-Id: <20200821204921.32536-2-sibis@codeaurora.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200821204921.32536-1-sibis@codeaurora.org>
+References: <20200821204921.32536-1-sibis@codeaurora.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7969920.MVx1BpXlEM@kreacher>
-User-Agent: Mutt/1.10.1 (2018-07-13)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Aug 21, 2020 at 07:41:02PM +0200, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> It has been reported that system-wide suspend may be aborted in the
-> absence of any wakeup events due to unforseen interactions of it with
-> the runtume PM framework.
-> 
-> One failing scenario is when there are multiple devices sharing an
-> ACPI power resource and runtime-resume needs to be carried out for
-> one of them during system-wide suspend (for example, because it needs
-> to be reconfigured before the whole system goes to sleep).  In that
-> case, the runtime-resume of that device involves turning the ACPI
-> power resource "on" which in turn causes runtime resume requests
-> to be queued up for all of the other devices sharing it.  Those
-> requests go to the runtime PM workqueue which is frozen during
-> system-wide suspend, so they are not actually taken care of until
-> the resume of the whole system, but the pm_runtime_barrier()
-> call in __device_suspend() sees them and triggers system wakeup
-> events for them which then cause the system-wide suspend to be
-> aborted if wakeup source objects are in active use.
-> 
-> Of course, the logic that leads to triggering those wakeup events is
-> questionable in the first place, because clearly there are cases in
-> which a pending runtime resume request for a device is not connected
-> to any real wakeup events in any way (like the one above).  Moreover,
-> if there is a pending runtime resume request for a device while
-> __device_suspend() is running for it, the physical state of the
-> device may not be in agreement with the "suspended" runtime PM status
-> of it (which may be the very reason for queuing up the runtime resume
-> request for it).
-> 
-> For these reasons, rework __device_suspend() to carry out synchronous
-> runtime-resume for devices with pending runtime resume requests before
-> attempting to invoke system-wide suspend callbacks for them with the
-> expectation that their drivers will trigger system-wide wakeup events
-> in the process of handling the runtime resume, if necessary.
-> 
-> Fixes: 1e2ef05bb8cf8 ("PM: Limit race conditions between runtime PM and system sleep (v2)")
-> Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
->  drivers/base/power/main.c |   12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
-> 
-> Index: linux-pm/drivers/base/power/main.c
-> ===================================================================
-> --- linux-pm.orig/drivers/base/power/main.c
-> +++ linux-pm/drivers/base/power/main.c
-> @@ -1606,13 +1606,13 @@ static int __device_suspend(struct devic
->  	}
->  
->  	/*
-> -	 * If a device configured to wake up the system from sleep states
-> -	 * has been suspended at run time and there's a resume request pending
-> -	 * for it, this is equivalent to the device signaling wakeup, so the
-> -	 * system suspend operation should be aborted.
-> +	 * If there's a runtime resume request pending for the device, resume
-> +	 * it before proceeding with invoking the system-wide suspend callbacks
-> +	 * for it, because the physical state of the device may not reflect the
-> +	 * "suspended" runtime PM status already in that case.
->  	 */
-> -	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-> -		pm_wakeup_event(dev, 0);
-> +	if (pm_runtime_barrier(dev))
-> +		pm_runtime_resume(dev);
+All the power domains exposed as part of the AOSS QMP driver require to
+stay unaltered during suspend/resume. They are powered on when the remote
+processors boots up and powered off on remote processor crash/shutdown.
+Mark the power domains with GENPD_FLAG_NO_SUSPEND and GENPD_FLAG_NO_RESUME
+to model this behavior.
 
-Is this really right?  Note that whenever pm_runtime_barrier() returns a 
-nonzero value, it already calls rpm_resume(dev, 0).  So the 
-pm_runtime_resume() call added here is redundant.
+Signed-off-by: Sibi Sankar <sibis@codeaurora.org>
+---
 
-Furthermore, by the logic used in this patch, the call to 
-pm_wakeup_event() in the original code is also redundant: Any required 
-wakeup event should have been generated when the runtime resume inside 
-pm_runtime_barrer() was carried out.  Removing a redundant function call 
-can't fix a bug!
+V2:
+ * Use the renamed flags
+ * Drop R-b/T-b
 
-This means that the code could be simplified to just:
+ drivers/soc/qcom/qcom_aoss.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-	pm_runtime_barrier(dev);
+diff --git a/drivers/soc/qcom/qcom_aoss.c b/drivers/soc/qcom/qcom_aoss.c
+index ed2c687c16b31..da763ac6bca2f 100644
+--- a/drivers/soc/qcom/qcom_aoss.c
++++ b/drivers/soc/qcom/qcom_aoss.c
+@@ -366,6 +366,7 @@ static int qmp_pd_add(struct qmp *qmp)
+ 		res[i].pd.name = sdm845_resources[i];
+ 		res[i].pd.power_on = qmp_pd_power_on;
+ 		res[i].pd.power_off = qmp_pd_power_off;
++		res[i].pd.flags = GENPD_FLAG_NO_SUSPEND | GENPD_FLAG_NO_RESUME;
+ 
+ 		ret = pm_genpd_init(&res[i].pd, NULL, true);
+ 		if (ret < 0) {
+-- 
+The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
+a Linux Foundation Collaborative Project
 
-Will this fix the reported bug?  It seems likely to me that the actual 
-problem with the failure scenario in the patch description was that 
-turning on an ACPI power resource causes runtime-resume requests to be 
-queued for all devices sharing that resource.  Wouldn't it make more 
-sense to resume only the device that requested it and leave the others 
-in runtime suspend?
-
-Alan Stern
