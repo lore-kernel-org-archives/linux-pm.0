@@ -2,61 +2,62 @@ Return-Path: <SRS0=MHso=B7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3DB9C433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 14:00:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B967C433E1
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 14:00:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C39C5206DA
-	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 14:00:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6A6D22177B
+	for <linux-pm@archiver.kernel.org>; Fri, 21 Aug 2020 14:00:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="tp9Nu4RN"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kgeWtd3N"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728633AbgHUOAm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 21 Aug 2020 10:00:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39892 "EHLO
+        id S1728854AbgHUOAu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 21 Aug 2020 10:00:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39906 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728236AbgHUOAk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 10:00:40 -0400
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com [IPv6:2a00:1450:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C72E7C061573;
-        Fri, 21 Aug 2020 07:00:39 -0700 (PDT)
-Received: by mail-ed1-x544.google.com with SMTP id b2so1506400edw.5;
-        Fri, 21 Aug 2020 07:00:39 -0700 (PDT)
+        with ESMTP id S1728780AbgHUOAp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 21 Aug 2020 10:00:45 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 48CE5C061574;
+        Fri, 21 Aug 2020 07:00:45 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id u21so1724325ejz.0;
+        Fri, 21 Aug 2020 07:00:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nt1Kd98grCASJIUWWiWXpg+ScuiPaXDgXJdNYD47wWE=;
-        b=tp9Nu4RNWrkklFOwMk18vBYIyTEHFyTZEyVFlr8zKr/VPtCIVHGqOIxlE7hs9ei1Js
-         buboWgyI8TVqd5OrwLyLlaPmkqgnpDIfI/yG2QQ/LpA+0jA2CYES4U31Ly1VQiKNQVkS
-         73vgs8cM2w46WdvrfuzVk4HRakgQaVYoTj5uXeLTP04r8663O/Am5OD5f75kgd8jM/pe
-         ImUwNdA9mRH8HjrXydueV9ox3/bSgyTLnY7VjYLxAFiTdN6R4GxV1HQBP8HHO1/mr2Eg
-         2EGhDDNldjLY+l1nG+3NLRnnKhcXYn8A1ABZA0WchTRe0nXn0wCFYndqX+rOSop/ke7T
-         D3+A==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=OSZpK9kwGLydB4QOqHGik97SZh68Cr5AJapAdxuuNUg=;
+        b=kgeWtd3NVY9p+WPW8IHdDM5phyXLxXa4QsFkPvx1y8lfNncmDzM2Cc0lJuRKfE8f6m
+         7b5cmM6BuXT3brvf1suue+T25ztJbL6bUn/r39Bcc1vn1a1hGGbdZLbmOJdGMZ0G1C5W
+         P8SQ1Zhuq+/Flkhmwgibg3OzFRxNcmBTxE4NNKpVhlgBPla3HJ1u2vaPOwNU87jNK/gc
+         LZBbbDCqkMk6Tr0RjMWkakgWUWJh+YN3wPeeEdlja4CAeH2vv21ycGYqix2+n4A0R8Mt
+         8/BQn+dP/RTMyhbs2g8NJ4E0ucgrP1A6VYOex9wTckb7sg4dVXT9+GKj9TOUUI2T34//
+         Q2QA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=nt1Kd98grCASJIUWWiWXpg+ScuiPaXDgXJdNYD47wWE=;
-        b=YxcyjeWOwU2iROiTZ+z5yhfZme6/kOrdBho4lFeD13dWg3g+Y8I3RHu3eux0AuzZEW
-         G5mvyAUTV+1wqRlgAjikwsjXE4sUKNFWStO1iburg7LPFaux6UUfn49ASCsWI0Ni6TmK
-         ZMYZZpokkIO325uBYfEUTCZN73DG6+1tJMKpn/yjijwBibj3s3B0J7Aeue8CAa2aKsqg
-         smLoXgEZdNLivian6qZushqNyviaHeILAC1x8O5rInNVaIGXJ/6Gc/Zf+hc+GO9Bzmf4
-         tc33su452GrV+0z0osuKZpnZxs/z23VO5anXb/GP8YB/TVL9y2l7lZlrBSCmsMlgtgv0
-         748A==
-X-Gm-Message-State: AOAM531m3Rsif6XRwcKULt/bsU/AlG7wKN2pjkBIZPmmhcApogAgATEu
-        kTxxjFntjMWgwVcgWLLt3F0=
-X-Google-Smtp-Source: ABdhPJwXWlhQMaNkBZ5lWOMS4F3g51moSS6ZPdFXV4Y2pPsLgA6kKM9kus4ugPjIzamA0wGCA/1Dzg==
-X-Received: by 2002:a05:6402:17cc:: with SMTP id s12mr1005802edy.293.1598018437105;
-        Fri, 21 Aug 2020 07:00:37 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=OSZpK9kwGLydB4QOqHGik97SZh68Cr5AJapAdxuuNUg=;
+        b=rsO/v/F+T3Kf5H3VWBYcsONr3L84g4dk5yWq02CHWMc5DF/+puqnLyJ/1o1wiCRf57
+         Vi1pEYseK4ZAtcGUkOQoQacTaCJfO5ktsBYr2O8ATYqCIk0paWkISbSxczOSekwVtBZc
+         ATq5E4uNUHf0jSxNYmwAUsfRX5eZLkNkaTUIWGsG2CSqNWOh7l0Lt0PJXdSasvgk7QdJ
+         CWRRC9ytmAmqkHDjfNCrYUuih5/pQyPcHEQG8hZ7JZXOm1VLYh/rosPxkNwzoxRLCpCL
+         jivWhM5wwGqyuYmzlq36/N60S3k1gGVCQfeBFuC2JDubeUiYFModEmELaM/60jqsguYl
+         BNHQ==
+X-Gm-Message-State: AOAM532PXM/ur6u1l/fyoYWxe4myjAQqJYWYO/C4q2/oOWWzrr+Wfuzt
+        C22mkkScraIKKW4RtYuzEdo=
+X-Google-Smtp-Source: ABdhPJy+rPt9DWKhlUipa4kKD90D+bKkwDOBPSwRPiv+ydWboWDvB6uFb+NlKgbbPD3g4Zfzh/S8tA==
+X-Received: by 2002:a17:907:36b:: with SMTP id rs11mr3168147ejb.544.1598018443883;
+        Fri, 21 Aug 2020 07:00:43 -0700 (PDT)
 Received: from Ansuel-XPS.localdomain (host-87-10-16-66.retail.telecomitalia.it. [87.10.16.66])
-        by smtp.googlemail.com with ESMTPSA id c7sm1152969edf.1.2020.08.21.07.00.35
+        by smtp.googlemail.com with ESMTPSA id c7sm1152969edf.1.2020.08.21.07.00.42
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Aug 2020 07:00:36 -0700 (PDT)
+        Fri, 21 Aug 2020 07:00:43 -0700 (PDT)
 From:   Ansuel Smith <ansuelsmth@gmail.com>
 To:     Sudeep Holla <sudeep.holla@arm.com>
 Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
@@ -64,10 +65,12 @@ Cc:     Ansuel Smith <ansuelsmth@gmail.com>,
         Viresh Kumar <viresh.kumar@linaro.org>,
         Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH v3 0/2] Add Krait Cache Scaling support
-Date:   Fri, 21 Aug 2020 16:00:19 +0200
-Message-Id: <20200821140026.19643-1-ansuelsmth@gmail.com>
+Subject: [RFC PATCH v3 2/2] dt-bindings: cpufreq: Document Krait CPU Cache scaling
+Date:   Fri, 21 Aug 2020 16:00:21 +0200
+Message-Id: <20200821140026.19643-3-ansuelsmth@gmail.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200821140026.19643-1-ansuelsmth@gmail.com>
+References: <20200821140026.19643-1-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -75,36 +78,99 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds Krait Cache scaling support using the cpufreq notifier.
-I have some doubt about where this should be actually placed (clk or cpufreq)?
-Also the original idea was to create a dedicated cpufreq driver (like it's done in
-the codeaurora qcom repo) by copying the cpufreq-dt driver and adding the cache
-scaling logic but i still don't know what is better. Have a very similar driver or
-add a dedicated driver only for the cache using the cpufreq notifier and do the
-scale on every freq transition.
-Thanks to everyone who will review or answer these questions.
+Document dedicated Krait CPU Cache Scaling driver.
 
-v3:
-* Use opp infrastructure
-* Update documentation
-
-v2:
-* Fix Documentation error reported by bot
-* Rework code to fail probe on missing required params
-* Optimize notifier callback to reduce CPU cycle
-
-Ansuel Smith (2):
-  cpufreq: qcom: Add Krait Cache Scaling support
-  dt-bindings: cpufreq: Document Krait CPU Cache scaling
-
- .../bindings/cpufreq/krait-cache-scale.yaml   |  79 ++++++
- drivers/cpufreq/Kconfig.arm                   |   9 +
- drivers/cpufreq/Makefile                      |   1 +
- drivers/cpufreq/krait-cache.c                 | 232 ++++++++++++++++++
- 4 files changed, 321 insertions(+)
+Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+---
+ .../bindings/cpufreq/krait-cache-scale.yaml   | 79 +++++++++++++++++++
+ 1 file changed, 79 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/cpufreq/krait-cache-scale.yaml
- create mode 100644 drivers/cpufreq/krait-cache.c
 
+diff --git a/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.yaml b/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.yaml
+new file mode 100644
+index 000000000000..f5f1c9b76656
+--- /dev/null
++++ b/Documentation/devicetree/bindings/cpufreq/krait-cache-scale.yaml
+@@ -0,0 +1,79 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/cpufreq/krait-cache-scale.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Krait Cpu Cache Frequency Scaling dedicated driver
++
++maintainers:
++  - Ansuel Smith <ansuelsmth@gmail.com>
++
++description: |
++  This Scale the Krait CPU Cache Frequency and optionally voltage
++  when the Cpu Frequency is changed (using the cpufreq notifier).
++
++  Cache is scaled with the max frequency across all core and the cache
++  frequency will scale based on the configured threshold in the dts.
++
++  The cache thresholds can be set to 3+ frequency bin, idle, nominal and
++  high.
++
++properties:
++  compatible:
++    const: qcom,krait-cache
++
++  clocks:
++    $ref: "/schemas/types.yaml#/definitions/phandle"
++    description: Phandle to the L2 CPU clock
++
++  clock-names:
++    const: "l2"
++
++  voltage-tolerance:
++    description: Same voltage tollerance of the Krait CPU
++
++  l2-cpufreq:
++    description: |
++      Threshold used by the driver to scale the L2 cache.
++      If the max CPU Frequency is more than the set frequency,
++      the driver will transition to the next frequency bin.
++      Value is in kHz
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    minItems: 3
++    items:
++      - description: idle
++      - description: nominal
++      - description: high
++
++  l2-supply:
++    $ref: "/schemas/types.yaml#/definitions/phandle"
++    description: Phandle to the L2 regulator supply.
++
++  opp-table: true
++
++required:
++  - compatible
++  - clocks
++  - clock-names
++  - voltage-tolerance
++  - l2-cpufreq
++  - l2-supply
++
++examples:
++  - |
++    qcom-krait-cache {
++      compatible = "qcom,krait-cache";
++      clocks = <&kraitcc 4>;
++      clock-names = "l2";
++      voltage-tolerance = <5>;
++      l2-cpufreq = <384000 600000 1200000>;
++      l2-supply = <&smb208_s1a>;
++
++      operating-points = <
++        /* kHz    uV */
++        384000  1100000
++        1000000  1100000
++        1200000  1150000
++      >;
++    };
 -- 
 2.27.0
 
