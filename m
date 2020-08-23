@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0926CC433DF
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:17:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AB2DC433E3
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:17:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D3CD42076D
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:17:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DEA5E2072D
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:17:41 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598199431;
-	bh=896l3mHbTpz7Udoblv0WC50trxhLboDp1OOqzgKW9jM=;
+	s=default; t=1598199461;
+	bh=CnRSnps+AJEG/CNxkZZ3JT+RUcAXLf0eIGA4Cov4d+8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=GW+vTHN3sD3Yj4t3RQ4wXE7Jsy7oHBlaIxK9DIpUwFAJ/BswWHTniJT9Oks+MlDfE
-	 5CdNfpxzBKxKHluDuRmsISvqWS2/q/HSO+Ut66TIcIqokEA0QeqsxvOtgasm5g3pjQ
-	 uxAI6y5Fgz/09miJE2V8BUdNTXtbCTL6g7pfFpuM=
+	b=u+SoemPAYvP4fQkt7CWAfJlVgb3S/8iE+i3aP6t5CpcBvSHvTDbFgGgUTXnLX9nUX
+	 TaLzZpVV0HtjuypGXdSSsHRz4y58H9QjvACmscfIxSi5zvIs0E5vVr759kEOX0hJzH
+	 Rw11w9+uHtxQgdcZsSoBZU4COA+lwdwqpQ0vfLF8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728138AbgHWQRJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Aug 2020 12:17:09 -0400
-Received: from mail.kernel.org ([198.145.29.99]:46412 "EHLO mail.kernel.org"
+        id S1728191AbgHWQRj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Aug 2020 12:17:39 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47000 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728121AbgHWQRH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 23 Aug 2020 12:17:07 -0400
+        id S1728174AbgHWQRV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 23 Aug 2020 12:17:21 -0400
 Received: from kozik-lap.proceq-device.com (unknown [194.230.155.216])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 43E132075B;
-        Sun, 23 Aug 2020 16:17:02 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 79BBE2072D;
+        Sun, 23 Aug 2020 16:17:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598199426;
-        bh=896l3mHbTpz7Udoblv0WC50trxhLboDp1OOqzgKW9jM=;
+        s=default; t=1598199440;
+        bh=CnRSnps+AJEG/CNxkZZ3JT+RUcAXLf0eIGA4Cov4d+8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=HuKsuY+eqO+A5PXgNMu8MX+x2WaM5UnMlzLnxerWZETbbSWDWVXnW1VhGg7pPK+xo
-         105L/fgGz6B9tFDyC3nwOyHLdpuuvHFDQsBhlEQJtIchsXgRZdzFUsCVLY+PJ2qu9v
-         tYHvP3WQX/qrZCrvvo0VDiyx89qasQwsBS/h9YZw=
+        b=auHjhuwkCd7pI2CH8VXG0d4rXiAOTn7549CnoGcR0isa3OD6lmhUbuPzOQeSVZ2Ih
+         qVsrJdktxrWBmkpSbH+5Sl4u13xqmc1p6yFv6zxyhnjr+kO/H8kNuaJDzjtVUDoAr3
+         09SCTA+NPhmxWpLwgijMlDyTnp+5VG7+YvKvAKes=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>,
         Linus Walleij <linus.walleij@linaro.org>,
@@ -55,9 +55,9 @@ To:     Rob Herring <robh+dt@kernel.org>,
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Anson Huang <Anson.Huang@nxp.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 15/22] dt-bindings: arm: fsl: Add ZII Ultra boards binding
-Date:   Sun, 23 Aug 2020 18:15:43 +0200
-Message-Id: <20200823161550.3981-15-krzk@kernel.org>
+Subject: [PATCH 18/22] arm64: dts: imx8mq-zii-ultra: Add hog suffixes to GPIO hogs
+Date:   Sun, 23 Aug 2020 18:15:46 +0200
+Message-Id: <20200823161550.3981-18-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200823161550.3981-1-krzk@kernel.org>
 References: <20200823161550.3981-1-krzk@kernel.org>
@@ -66,32 +66,52 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document the binding for Zodiac Inflight Innovations Ultra Boards.
+According to device tree specification, device node names should be
+somewhat generic and reflecting the function of the device so add the
+"hog" suffixes to all GPIO hog nodes.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- Documentation/devicetree/bindings/arm/fsl.yaml | 8 ++++++++
- 1 file changed, 8 insertions(+)
+ arch/arm64/boot/dts/freescale/imx8mq-zii-ultra.dtsi | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/arm/fsl.yaml b/Documentation/devicetree/bindings/arm/fsl.yaml
-index 93a21b10d115..f2e670e9ae54 100644
---- a/Documentation/devicetree/bindings/arm/fsl.yaml
-+++ b/Documentation/devicetree/bindings/arm/fsl.yaml
-@@ -379,6 +379,14 @@ properties:
-               - technexion,pico-pi-imx8m  # TechNexion PICO-PI-8M evk
-           - const: fsl,imx8mq
+diff --git a/arch/arm64/boot/dts/freescale/imx8mq-zii-ultra.dtsi b/arch/arm64/boot/dts/freescale/imx8mq-zii-ultra.dtsi
+index 0d1088dcaa02..fa7a041ffcfd 100644
+--- a/arch/arm64/boot/dts/freescale/imx8mq-zii-ultra.dtsi
++++ b/arch/arm64/boot/dts/freescale/imx8mq-zii-ultra.dtsi
+@@ -229,28 +229,28 @@
+ 	pinctrl-names = "default";
+ 	pinctrl-0 = <&pinctrl_gpio3_hog>;
  
-+      - description: Zodiac Inflight Innovations Ultra Boards
-+        items:
-+          - enum:
-+              - zii,imx8mq-ultra-rmb3
-+              - zii,imx8mq-ultra-zest
-+          - const: zii,imx8mq-ultra
-+          - const: fsl,imx8mq
-+
-       - description: i.MX8QXP based Boards
-         items:
-           - enum:
+-	usb-emulation {
++	usb-emulation-hog {
+ 		gpio-hog;
+ 		gpios = <10 GPIO_ACTIVE_HIGH>;
+ 		output-low;
+ 		line-name = "usb-emulation";
+ 	};
+ 
+-	usb-mode1 {
++	usb-mode1-hog {
+ 		gpio-hog;
+ 		gpios = <11 GPIO_ACTIVE_HIGH>;
+ 		output-high;
+ 		line-name = "usb-mode1";
+ 	};
+ 
+-	usb-pwr {
++	usb-pwr-hog {
+ 		gpio-hog;
+ 		gpios = <12 GPIO_ACTIVE_LOW>;
+ 		output-high;
+ 		line-name = "usb-pwr-ctrl-en-n";
+ 	};
+ 
+-	usb-mode2 {
++	usb-mode2-hog {
+ 		gpio-hog;
+ 		gpios = <13 GPIO_ACTIVE_HIGH>;
+ 		output-high;
 -- 
 2.17.1
 
