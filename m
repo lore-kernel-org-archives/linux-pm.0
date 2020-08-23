@@ -2,113 +2,138 @@ Return-Path: <SRS0=pjVF=CB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CB32C433E4
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:20:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1CC99C433DF
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 18:07:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3BB502075B
-	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 16:20:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598199606;
-	bh=yKCM7tLnXxMws8MTZ9jhKA97yUjAzHOZPP6ETkwSECU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=zXapgjSJ5MVL3KpewK9w+ji72J1HU5kcSpEvbbVb05EazHFvobXjzW3iRAR79KOLm
-	 3lXQ3GrytH2CHIu8DuWS30pOcpOM46OlPLQWikPca9x8RwuLjTGTNC9P0kv0W+FteR
-	 Ot3Ci3oNzuZNsIR4RVsXYePAS/xVSP26C1uKjCDg=
+	by mail.kernel.org (Postfix) with ESMTP id 05E0B2087D
+	for <linux-pm@archiver.kernel.org>; Sun, 23 Aug 2020 18:07:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727991AbgHWQQ2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 23 Aug 2020 12:16:28 -0400
-Received: from mail.kernel.org ([198.145.29.99]:44752 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727836AbgHWQQZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 23 Aug 2020 12:16:25 -0400
-Received: from kozik-lap.proceq-device.com (unknown [194.230.155.216])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id CC9C720767;
-        Sun, 23 Aug 2020 16:16:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598199384;
-        bh=yKCM7tLnXxMws8MTZ9jhKA97yUjAzHOZPP6ETkwSECU=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=J9UTaE5wLzgKph+nZVaiHPQI/bQFi3jkQu3Bq/mCJqqVDhAzVHrOGSla5kcuHNpfW
-         Rjsz3FrMJmE0UPj9VM21JQKK7tMGqF9soY6qz0m7GmBM3jaasdWJw1GufujloLb+5m
-         +QbsRgkisM82EefUDSBdUUPuwPJ4IegaiTipCzQA=
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Anson Huang <Anson.Huang@nxp.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 06/22] dt-bindings: pwm: imx-pwm: Add i.MX 8M compatibles
-Date:   Sun, 23 Aug 2020 18:15:34 +0200
-Message-Id: <20200823161550.3981-6-krzk@kernel.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200823161550.3981-1-krzk@kernel.org>
-References: <20200823161550.3981-1-krzk@kernel.org>
+        id S1725905AbgHWSHR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 23 Aug 2020 14:07:17 -0400
+Received: from mail.v3.sk ([167.172.186.51]:42430 "EHLO shell.v3.sk"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725867AbgHWSHR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 23 Aug 2020 14:07:17 -0400
+X-Greylist: delayed 389 seconds by postgrey-1.27 at vger.kernel.org; Sun, 23 Aug 2020 14:07:15 EDT
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by zimbra.v3.sk (Postfix) with ESMTP id 3E84CDF106;
+        Sun, 23 Aug 2020 17:59:46 +0000 (UTC)
+Received: from shell.v3.sk ([127.0.0.1])
+        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10032)
+        with ESMTP id uzF78zdjqwmD; Sun, 23 Aug 2020 17:59:45 +0000 (UTC)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by zimbra.v3.sk (Postfix) with ESMTP id 759FDDFA6B;
+        Sun, 23 Aug 2020 17:59:44 +0000 (UTC)
+X-Virus-Scanned: amavisd-new at zimbra.v3.sk
+Received: from shell.v3.sk ([127.0.0.1])
+        by localhost (zimbra.v3.sk [127.0.0.1]) (amavisd-new, port 10026)
+        with ESMTP id uf-79zAqGnZt; Sun, 23 Aug 2020 17:59:44 +0000 (UTC)
+Received: from localhost (unknown [109.183.109.54])
+        by zimbra.v3.sk (Postfix) with ESMTPSA id DC182DF106;
+        Sun, 23 Aug 2020 17:59:43 +0000 (UTC)
+Date:   Sun, 23 Aug 2020 20:00:41 +0200
+From:   Lubomir Rintel <lkundrak@v3.sk>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
+        Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 5/6] dt-bindings: mfd: ene-kb3930: Document
+ power-supplies and monitored-battery properties
+Message-ID: <20200823180041.GB209852@demiurge.local>
+References: <20200823140846.19299-1-digetx@gmail.com>
+ <20200823140846.19299-6-digetx@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200823140846.19299-6-digetx@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-DTSes with new i.MX 8M SoCs introduce their own compatibles so add them
-to fix dtbs_check warnings like:
+Hi,
 
-  arch/arm64/boot/dts/freescale/imx8mm-evk.dt.yaml: pwm@30660000:
-    compatible:0: 'fsl,imx8mm-pwm' is not one of ['fsl,imx1-pwm', 'fsl,imx27-pwm']
-    From schema: Documentation/devicetree/bindings/pwm/imx-pwm.yaml
+On Sun, Aug 23, 2020 at 05:08:45PM +0300, Dmitry Osipenko wrote:
+> Battery could be connected to the controller and in this case controller
+> will provide a battery-monitor function.
+> 
+> The power-supplies phandle property is needed in order to describe the
+> power supply which is used for charging of the battery, this allows to
+> determine whither battery is charging or discharging, depending on the
+> supply state.
+> 
+> The monitored-battery phandle provides information about the battery cell
+> characteristics.
 
-  arch/arm64/boot/dts/freescale/imx8mm-evk.dt.yaml: pwm@30660000:
-    compatible: ['fsl,imx8mm-pwm', 'fsl,imx27-pwm'] is too long
+I believe it would be better if you created a new binding document
+instead of reusing this one -- the hardware part iseems to be a
+different one and the firmware it runs seems to be behaving totally
+differently than the usual ENE firmware [1].
 
-  arch/arm64/boot/dts/freescale/imx8mm-evk.dt.yaml: pwm@30660000:
-    compatible: Additional items are not allowed ('fsl,imx27-pwm' was unexpected)
+[1] This eneec.c seems to be coming from ENE, so I'm assuming it's a
+    good enough description of how their firmware behaves:
+    https://git.kernel.org/pub/scm/linux/kernel/git/lkundrak/linux-mmp3-dell-ariel.git/tree/drivers/input/serio/eneec.c
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- Documentation/devicetree/bindings/pwm/imx-pwm.yaml | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Cheers
+Lubo
 
-diff --git a/Documentation/devicetree/bindings/pwm/imx-pwm.yaml b/Documentation/devicetree/bindings/pwm/imx-pwm.yaml
-index 01df06777cba..473863eb67e5 100644
---- a/Documentation/devicetree/bindings/pwm/imx-pwm.yaml
-+++ b/Documentation/devicetree/bindings/pwm/imx-pwm.yaml
-@@ -19,9 +19,17 @@ properties:
-       - 3
- 
-   compatible:
--    enum:
--      - fsl,imx1-pwm
--      - fsl,imx27-pwm
-+    oneOf:
-+      - enum:
-+          - fsl,imx1-pwm
-+          - fsl,imx27-pwm
-+      - items:
-+          - enum:
-+              - fsl,imx8mm-pwm
-+              - fsl,imx8mn-pwm
-+              - fsl,imx8mp-pwm
-+              - fsl,imx8mq-pwm
-+          - const: fsl,imx27-pwm
- 
-   reg:
-     maxItems: 1
--- 
-2.17.1
-
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  .../devicetree/bindings/mfd/ene-kb3930.yaml    | 18 ++++++++++++++++++
+>  1 file changed, 18 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/mfd/ene-kb3930.yaml b/Documentation/devicetree/bindings/mfd/ene-kb3930.yaml
+> index 5a1c4a959d9c..435728054f3a 100644
+> --- a/Documentation/devicetree/bindings/mfd/ene-kb3930.yaml
+> +++ b/Documentation/devicetree/bindings/mfd/ene-kb3930.yaml
+> @@ -29,6 +29,8 @@ properties:
+>      description: GPIO used with the shutdown protocol on Ariel
+>      maxItems: 2
+>  
+> +  monitored-battery: true
+> +  power-supplies: true
+>    system-power-controller: true
+>  
+>  required:
+> @@ -41,6 +43,19 @@ examples:
+>    - |
+>      #include <dt-bindings/gpio/gpio.h>
+>  
+> +    battery: battery-cell {
+> +            compatible = "simple-battery";
+> +            charge-full-design-microamp-hours = <3260000>;
+> +            energy-full-design-microwatt-hours = <24000000>;
+> +            operating-range-celsius = <0 40>;
+> +    };
+> +
+> +    mains: ac-adapter {
+> +      compatible = "gpio-charger";
+> +      charger-type = "mains";
+> +      gpios = <&gpio 125 GPIO_ACTIVE_LOW>;
+> +    };
+> +
+>      i2c {
+>        #address-cells = <1>;
+>        #size-cells = <0>;
+> @@ -52,6 +67,9 @@ examples:
+>  
+>          off-gpios = <&gpio 126 GPIO_ACTIVE_HIGH>,
+>                      <&gpio 127 GPIO_ACTIVE_HIGH>;
+> +
+> +        monitored-battery = <&battery>;
+> +        power-supplies = <&mains>;
+>        };
+>      };
+>  
+> -- 
+> 2.27.0
+> 
