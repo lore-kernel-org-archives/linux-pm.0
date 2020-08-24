@@ -2,119 +2,109 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 74829C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:36:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 552B0C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:48:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C424206F0
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:36:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598290618;
-	bh=xV9upgJFUdWJViQpTgljw0h9O9Oy/nU6sRG9fJrRqIA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=U4h1CPNrSKFsV/uIEinni5AniosDEmFzr1yu3GsUyHvu+2KMBM6RaYskcEGkkmKhU
-	 /V1F8/1BBlBTj/MaAgD0zTfjn9cZ0oGZpqSvONnE2mz4nPD348b1xHR6sCnqyjo5ik
-	 NTxPFy2bSWzEGw590582pLC3gyDgF5Ee5Qf1erWY=
+	by mail.kernel.org (Postfix) with ESMTP id 374982074D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:48:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726905AbgHXRd1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 13:33:27 -0400
-Received: from mail.kernel.org ([198.145.29.99]:56840 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726666AbgHXQ1p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Aug 2020 12:27:45 -0400
-Received: from kozik-lap.mshome.net (unknown [194.230.155.216])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 84EEC207CD;
-        Mon, 24 Aug 2020 16:27:25 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598286454;
-        bh=xV9upgJFUdWJViQpTgljw0h9O9Oy/nU6sRG9fJrRqIA=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Rbb5Xsxg/cfMuBlbOhmadtnzMEI+gV19eqcQz5I6FbgH9EE9d9S8KhzNKQoMQL/KP
-         UnqVKL7CBXxTmSlJC5S4xiX7r8RilT3hhfyDXF6IB/0wiSM/RJhVZB0jeyLvmP4DFa
-         8I3AJahzpeTvWZTFk/XhSw6z8DAu5DHFfokfQOiM=
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Rob Herring <robh+dt@kernel.org>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Will Deacon <will@kernel.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-        <u.kleine-koenig@pengutronix.de>,
-        Philipp Zabel <p.zabel@pengutronix.de>,
-        Guenter Roeck <linux@roeck-us.net>,
-        Li Yang <leoyang.li@nxp.com>, Han Xu <han.xu@nxp.com>,
-        Frank Li <frank.li@nxp.com>, Fugang Duan <fugang.duan@nxp.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v2 03/19] dt-bindings: gpio: fsl-imx-gpio: Add parsing of hogs
-Date:   Mon, 24 Aug 2020 18:26:36 +0200
-Message-Id: <20200824162652.21047-3-krzk@kernel.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200824162652.21047-1-krzk@kernel.org>
-References: <20200824162652.21047-1-krzk@kernel.org>
+        id S1726429AbgHXRsO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 13:48:14 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:58178 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725780AbgHXRsL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 13:48:11 -0400
+Received: from 89-64-88-199.dynamic.chello.pl (89.64.88.199) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
+ id 9859b31d30dcfd9f; Mon, 24 Aug 2020 19:48:09 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Doug Smythies <dsmythies@telus.net>
+Subject: [PATCH v2 5/5] cpufreq: intel_pstate: Restore cached EPP value during offline
+Date:   Mon, 24 Aug 2020 19:47:59 +0200
+Message-ID: <6584670.ihXX3PbFol@kreacher>
+In-Reply-To: <4169555.5IIHXK4Dsd@kreacher>
+References: <4169555.5IIHXK4Dsd@kreacher>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Allow parsing GPIO controller children nodes with GPIO hogs to fix
-warning:
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-  arch/arm64/boot/dts/freescale/imx8mq-evk.dt.yaml: gpio@30240000: 'wl-reg-on' does not match any of the regexes: 'pinctrl-[0-9]+'
-    From schema: Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
+Because hwp_req_cached contains the effective EPP value (0) when the
+"performance" scaling algorithm is used in the active mode, replace
+it with the cached EPP value during CPU offline to prevent it from
+being used (unexpectedly) after switching over from the active mode
+to the passive mode.
 
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Also rename intel_pstate_hwp_force_min_perf() because it will do more
+than just forcing the minimum performance now.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 ---
- .../devicetree/bindings/gpio/fsl-imx-gpio.yaml  | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml b/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
-index dffd9171ea66..620a52f944e8 100644
---- a/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
-+++ b/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
-@@ -53,6 +53,23 @@ properties:
+-> v2: New patch.
+
+---
+ drivers/cpufreq/intel_pstate.c | 21 ++++++++++++++++-----
+ 1 file changed, 16 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 37731d45f0ea..61d7179bccdd 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -904,14 +904,25 @@ static void intel_pstate_hwp_set(unsigned int cpu)
+ 	wrmsrl_on_cpu(cpu, MSR_HWP_REQUEST, value);
+ }
  
-   gpio-ranges: true
+-static void intel_pstate_hwp_force_min_perf(int cpu)
++static void intel_pstate_hwp_offline(int cpu)
+ {
+-	u64 value;
++	struct cpudata *cpudata = all_cpu_data[cpu];
++	u64 value = READ_ONCE(cpudata->hwp_req_cached);
+ 	int min_perf;
  
-+patternProperties:
-+  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
-+    type: object
-+    properties:
-+      gpio-hog: true
-+      gpios: true
-+      input: true
-+      output-high: true
-+      output-low: true
-+      line-name: true
+-	value = all_cpu_data[cpu]->hwp_req_cached;
++	if (boot_cpu_has(X86_FEATURE_HWP_EPP)) {
++		/*
++		 * In case the EPP has been set to "performance" by the
++		 * active mode "performance" scaling algorithm, replace that
++		 * temporary value with the cached EPP one.
++		 */
++		value &= ~GENMASK_ULL(31, 24);
++		value |= HWP_ENERGY_PERF_PREFERENCE(cpudata->epp_cached);
++		WRITE_ONCE(cpudata->hwp_req_cached, value);
++	}
 +
-+    required:
-+      - gpio-hog
-+      - gpios
-+
-+    additionalProperties: false
-+
- required:
-   - compatible
-   - reg
+ 	value &= ~GENMASK_ULL(31, 0);
+-	min_perf = HWP_LOWEST_PERF(all_cpu_data[cpu]->hwp_cap_cached);
++	min_perf = HWP_LOWEST_PERF(cpudata->hwp_cap_cached);
+ 
+ 	/* Set hwp_max = hwp_min */
+ 	value |= HWP_MAX_PERF(min_perf);
+@@ -2313,7 +2324,7 @@ static int intel_pstate_cpu_offline(struct cpufreq_policy *policy)
+ 	 * performance on CPU offline to prevent that from happening.
+ 	 */
+ 	if (hwp_active)
+-		intel_pstate_hwp_force_min_perf(policy->cpu);
++		intel_pstate_hwp_offline(policy->cpu);
+ 	else
+ 		intel_pstate_set_min_pstate(all_cpu_data[policy->cpu]);
+ 
 -- 
-2.17.1
+2.26.2
+
+
+
 
