@@ -2,166 +2,113 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 666CAC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1EDB2C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:35:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 383E720774
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:32:51 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="MdmzlP1F"
+	by mail.kernel.org (Postfix) with ESMTP id 0299120774
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:35:41 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726934AbgHXLcq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 07:32:46 -0400
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.52]:13489 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726475AbgHXLal (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 07:30:41 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1598268623;
-        s=strato-dkim-0002; d=gerhold.net;
-        h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:
-        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=LNrpIGVjKdlFFg7JrV48iDL/9D5btHkuQx1faS/GNEU=;
-        b=MdmzlP1FocVEqd05o+I0ToPylCOtIS6VLYqpWPGuqLgzYwMMxdDcPhkLJ/GMU/6XE0
-        7h3x3SU7tC1fHdA6zLYLI8O+KmbNT++Dvl52SclXHSJoU7nhc4kgXaxZYOFTzpyxsyU2
-        qM3FkngAxR3goZPpBIDzLkiSjBsgi2Xx9KjFGFDQTd+GuD+CYWwti3gcSGkWJO7uisQG
-        aw3TIomsglInr/qMpKc4owMnymEmEC97tpa6O8QLegh4KG/WtYFUkaIxQgt/rwkXTO7I
-        g5keka+Aqwi+Qw8zHT13OV7OxCSvoj4xx8ENlrkH2VVqqU6vqG1mUjBUgd2WuTsLRZvH
-        tlBg==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u26zEodhPgRDZ8j7Ic/MbIo="
-X-RZG-CLASS-ID: mo00
-Received: from gerhold.net
-        by smtp.strato.de (RZmta 46.10.7 DYNA|AUTH)
-        with ESMTPSA id g0b6c1w7OBULWmA
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-        Mon, 24 Aug 2020 13:30:21 +0200 (CEST)
-Date:   Mon, 24 Aug 2020 13:30:16 +0200
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Niklas Cassel <nks@flawful.org>
-Subject: Re: [RFC PATCH 1/3] opp: Reduce code duplication in
- _set_required_opps()
-Message-ID: <20200824113016.GA131681@gerhold.net>
-References: <20200730080146.25185-1-stephan@gerhold.net>
- <20200730080146.25185-2-stephan@gerhold.net>
- <20200824111820.rcaingohxw3wozgd@vireshk-i7>
+        id S1726158AbgHXLfY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 07:35:24 -0400
+Received: from foss.arm.com ([217.140.110.172]:60190 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727114AbgHXLeN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Aug 2020 07:34:13 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id ECC4E1063;
+        Mon, 24 Aug 2020 04:34:12 -0700 (PDT)
+Received: from [10.37.12.65] (unknown [10.37.12.65])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D50583F66B;
+        Mon, 24 Aug 2020 04:34:09 -0700 (PDT)
+Subject: Re: [PATCH 2/2] ARM: dts: exynos: Remove interrupts from DMC
+ controller in Exynos5422
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        "linux-samsung-soc@vger.kernel.org" 
+        <linux-samsung-soc@vger.kernel.org>, willy.mh.wolff.ml@gmail.com,
+        k.konieczny@samsung.com, Chanwoo Choi <cw00.choi@samsung.com>,
+        =?UTF-8?Q?Bart=c5=82omiej_=c5=bbo=c5=82nierkiewicz?= 
+        <b.zolnierkie@samsung.com>, chanwoo@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com,
+        s.nawrocki@samsung.com, kgene@kernel.org
+References: <20200708153420.29484-1-lukasz.luba@arm.com>
+ <20200708153420.29484-3-lukasz.luba@arm.com>
+ <20200817155021.GC15887@kozik-lap>
+ <2099aea9-5a63-6e5b-d7f9-4e6476584461@arm.com>
+ <CAJKOXPc063m_YcouAO2Q9piJ_GV1Fh9XeS3ZZ3KR=ZyMxPKZ5w@mail.gmail.com>
+ <CAJKOXPcfo+1UY2wmy0WhyNRo_KqS7sGb9d8bDskDTOehFZoN5Q@mail.gmail.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <7a531591-83e5-2c93-ef61-4154635f761e@arm.com>
+Date:   Mon, 24 Aug 2020 12:34:08 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200824111820.rcaingohxw3wozgd@vireshk-i7>
+In-Reply-To: <CAJKOXPcfo+1UY2wmy0WhyNRo_KqS7sGb9d8bDskDTOehFZoN5Q@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Aug 24, 2020 at 04:48:20PM +0530, Viresh Kumar wrote:
-> On 30-07-20, 10:01, Stephan Gerhold wrote:
-> > Move call to dev_pm_genpd_set_performance_state() to a separate
-> > function so we can avoid duplicating the code for the single and
-> > multiple genpd case.
-> > 
-> > Signed-off-by: Stephan Gerhold <stephan@gerhold.net>
-> > ---
-> >  drivers/opp/core.c | 40 +++++++++++++++++++++-------------------
-> >  1 file changed, 21 insertions(+), 19 deletions(-)
-> > 
-> > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-> > index 9d7fb45b1786..f7a476b55069 100644
-> > --- a/drivers/opp/core.c
-> > +++ b/drivers/opp/core.c
-> > @@ -781,6 +781,21 @@ static int _set_opp_custom(const struct opp_table *opp_table,
-> >  	return opp_table->set_opp(data);
-> >  }
-> >  
-> > +static int _set_required_opp(struct device *dev, struct device *pd_dev,
-> > +			     struct dev_pm_opp *opp, int i)
-> > +{
-> > +	unsigned int pstate = likely(opp) ? opp->required_opps[i]->pstate : 0;
-> > +	int ret;
-> > +
-> > +	ret = dev_pm_genpd_set_performance_state(pd_dev, pstate);
-> > +	if (ret) {
-> > +		dev_err(dev, "Failed to set performance rate of %s: %d (%d)\n",
-> > +			dev_name(pd_dev), pstate, ret);
-> > +	}
-> > +
-> > +	return ret;
-> > +}
-> > +
-> >  /* This is only called for PM domain for now */
-> >  static int _set_required_opps(struct device *dev,
-> >  			      struct opp_table *opp_table,
-> > @@ -788,22 +803,15 @@ static int _set_required_opps(struct device *dev,
-> >  {
-> >  	struct opp_table **required_opp_tables = opp_table->required_opp_tables;
-> >  	struct device **genpd_virt_devs = opp_table->genpd_virt_devs;
-> > -	unsigned int pstate;
-> > +	struct device *pd_dev;
-> >  	int i, ret = 0;
-> >  
-> >  	if (!required_opp_tables)
-> >  		return 0;
-> >  
-> >  	/* Single genpd case */
-> > -	if (!genpd_virt_devs) {
-> > -		pstate = likely(opp) ? opp->required_opps[0]->pstate : 0;
-> > -		ret = dev_pm_genpd_set_performance_state(dev, pstate);
-> > -		if (ret) {
-> > -			dev_err(dev, "Failed to set performance state of %s: %d (%d)\n",
-> > -				dev_name(dev), pstate, ret);
-> > -		}
-> > -		return ret;
-> > -	}
-> > +	if (!genpd_virt_devs)
-> > +		return _set_required_opp(dev, dev, opp, 0);
-> >  
-> >  	/* Multiple genpd case */
-> >  
-> > @@ -814,17 +822,11 @@ static int _set_required_opps(struct device *dev,
-> >  	mutex_lock(&opp_table->genpd_virt_dev_lock);
-> >  
-> >  	for (i = 0; i < opp_table->required_opp_count; i++) {
-> > -		pstate = likely(opp) ? opp->required_opps[i]->pstate : 0;
-> > -
-> > -		if (!genpd_virt_devs[i])
-> > -			continue;
+
+
+On 8/21/20 7:32 AM, Krzysztof Kozlowski wrote:
+> On Fri, 21 Aug 2020 at 08:31, Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>>
+>> On Mon, 17 Aug 2020 at 19:17, Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>>
+>>> Hi Krzysztof,
+>>>
+>>> On 8/17/20 4:50 PM, Krzysztof Kozlowski wrote:
+>>>> On Wed, Jul 08, 2020 at 04:34:20PM +0100, Lukasz Luba wrote:
+>>>>> The interrupts in Dynamic Memory Controller in Exynos5422 and Odroid
+>>>>> XU3-family boards are no longer needed. They have been used in order
+>>>>> to workaround some issues in scheduled work in devfreq. Now when the
+>>>>> devfreq framework design is improved, remove the interrupt driven
+>>>>> approach and rely on devfreq monitoring mechanism with fixed intervals.
+>>>>>
+>>>>> Reported-by: Willy Wolff <willy.mh.wolff.ml@gmail.com>
+>>>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>>>>> ---
+>>>>>    arch/arm/boot/dts/exynos5420.dtsi | 3 ---
+>>>>>    1 file changed, 3 deletions(-)
+>>>>
+>>>> I think the dependencies were merged so this can be safely applied
+>>>> without bisectability problems?
+>>>
+>>> I have created v2 of that fix and it got merged
+>>> via Chanwoo's tree, the commit 4fc9a0470d2dc37028
+>>> https://lkml.org/lkml/2020/7/10/1048
+>>>
+>>> That commit switched the driver default mode from 'irq driven' to
+>>> new devfreq monitoring mechanism. Furthermore, when the driver is
+>>> built as a module, you can try to use the 'irq mode', but for this
+>>> you would need the DT IRQs description (this $subject tries to remove).
+>>>
+>>> I would like to keep this IRQ mode for experimentation, as I
+>>> described in answers to Bartek's questions:
+>>> https://lkml.org/lkml/2020/7/14/315
+>>>
+>>> Unfortunately, I am quite busy and won't make any progress before the
+>>> LPC.
+>>
+>> None of these were the actual answer to my question, unless by "v2 of
+>> that fix and it got merged" means the dependencies?
+>>
+>> I'll drop it from the queue. Please resend if it is valid.
 > 
-> Don't we need this check anymore ?
+> Agh, not drop, I mean postpone for the next cycle (this is v5.11).
 > 
 
-You're right. Not sure why I removed it.
+Fair enough
 
-I suspect I had it in _set_required_opp() at some point, but I moved
-code around several times until I was happy with the result.
-
-We should just add it back.
-Should I send a v2 with it fixed or would you like to handle it?
-
-Thanks,
-Stephan
-
-> > +		pd_dev = genpd_virt_devs[i];
-> >  
-> > -		ret = dev_pm_genpd_set_performance_state(genpd_virt_devs[i], pstate);
-> > -		if (ret) {
-> > -			dev_err(dev, "Failed to set performance rate of %s: %d (%d)\n",
-> > -				dev_name(genpd_virt_devs[i]), pstate, ret);
-> > +		ret = _set_required_opp(dev, pd_dev, opp, i);
-> > +		if (ret)
-> >  			break;
-> > -		}
-> >  	}
-> >  	mutex_unlock(&opp_table->genpd_virt_dev_lock);
-> >  
-> > -- 
-> > 2.27.0
+Regards,
+Lukasz
