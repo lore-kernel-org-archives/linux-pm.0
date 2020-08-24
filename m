@@ -2,123 +2,181 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B969C433E4
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:43:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47109C433E3
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B21F20FC3
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:43:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 14AA22074D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zYrP/1bz"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UskvNm3E"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727047AbgHXKns (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 06:43:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54730 "EHLO
+        id S1727872AbgHXKqC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 06:46:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55086 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726580AbgHXKnl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 06:43:41 -0400
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E12EC061575
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 03:43:40 -0700 (PDT)
-Received: by mail-wm1-x344.google.com with SMTP id o21so7692998wmc.0
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 03:43:40 -0700 (PDT)
+        with ESMTP id S1727112AbgHXKpz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 06:45:55 -0400
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 275F0C061573;
+        Mon, 24 Aug 2020 03:45:49 -0700 (PDT)
+Received: by mail-ej1-x644.google.com with SMTP id md23so10502594ejb.6;
+        Mon, 24 Aug 2020 03:45:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=vfeJpdo+reXlUp8I9Xltf/bKT4P5/2EZI29RPHRcGTo=;
-        b=zYrP/1bzSHAaUnEcj4HL//n+vYvLSDc9feOiIUJl31IuKVau98RwHMSK/ozNps5bTR
-         oYKfl5nukEcPBR6oPloC6dUWnJMYinAJ5ZTA0uCMCnjENm12q3qNJLyM9fX7fpZsWKwf
-         sAjPWWliJ59AzuScUI1swcfCyVp7j0p8T+bs9qKTAtSAIjqsg799vQKGdoz1rKObLU80
-         SnesywaeXAUN22biSQs84mCq1cEZwFAayZBmrDkSk+3c1GHDVa2eLVFKtTdmZE4yO4bU
-         pDA3wJDt5ycrQrRl1889ScC1ZC/OoaxJjElqCH337TWJtCl4rjt6zn/82C+A0UGm+nIp
-         4SzA==
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=f6wdlEKoq+5Slr+UsziPsdyk2CY1PCYDCcZCpyAdvwo=;
+        b=UskvNm3ErsbR8Pp/wFDQea/LOjrsQ4lwIZJjMWNn1JqQJYresYEAPXPejRzFL60qex
+         VE2PGxG3z8KRswRMmM0oKcJxH4wfLw5UvtX4JnyAUPoKWu9sxdm0qD/ddj2zaeo5vMgE
+         KZeoYRVzeupKX/SneIEZ9AqQDO61XOR3UAzcYoPFcwipi1OS8bSVvAxM+lct67wWGrRQ
+         WoFGfSl7GIm+5MgTB/3tGzC54KHwQhZaDXdU/hYA/29sWSYgsMo2Xqb3cBh5O/NmY5R9
+         K9vbAnDlVC3IpZUgmny3LW/UUBYTGqa+eXFV+oY6U5DqQJs1C4JQPbuhL3NgHMj6ka9y
+         dPtA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=vfeJpdo+reXlUp8I9Xltf/bKT4P5/2EZI29RPHRcGTo=;
-        b=C0flaK41Nn0M+4U2sMkOvMjrTnn9eTHptEkQrilGLcqtFDT4Kjes4p+ASBuEGRTXUh
-         5N199pCXgEDWkXOS2BaodPY9ANrstYa/r8Pu0SqXUHIs8/Ki0m8rsDQd7XCJgLi5cXlk
-         y6KkOmJNQKwm5RX1N4SO4mH3vHBWe7uQjCvQg7Txn4R37fnPuMOh50HmgRs5wlDtuRGi
-         QBntUdc4XmxSV+rjijE6CjbPlZ0dZKyeG+vC8R4Gkk5oJwu0XMugOD+ZltgQgsxRnasQ
-         nj6A3jY+3VTvm16TRE0pghvJA7Rps+3C1d3CWYQUlWgn9afLDR5NY7Fikgkm/au9kJVj
-         q1KA==
-X-Gm-Message-State: AOAM530nwhFMDLyi2J8c4oujq2S06vBr2LXMhm6V810+rabzHDXxV4wK
-        Cq/pqdMA7pRxDj+0KSfQ7DuYkw==
-X-Google-Smtp-Source: ABdhPJyv9b5avO7XGdhprlSuqd/FKoiXA07sKRZlFBmahtp9hFgwnfD9BWbBCvoEh+hvSuNaA8PC7w==
-X-Received: by 2002:a1c:68c3:: with SMTP id d186mr5179539wmc.68.1598265818867;
-        Mon, 24 Aug 2020 03:43:38 -0700 (PDT)
-Received: from dell ([95.149.164.62])
-        by smtp.gmail.com with ESMTPSA id f9sm1783125wrm.5.2020.08.24.03.43.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2020 03:43:38 -0700 (PDT)
-Date:   Mon, 24 Aug 2020 11:43:36 +0100
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Lubomir Rintel <lkundrak@v3.sk>, Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Sebastian Reichel <sre@kernel.org>, devicetree@vger.kernel.org,
-        linux-tegra@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v1 1/6] mfd: Add driver for Embedded Controller found on
- Acer Iconia Tab A500
-Message-ID: <20200824104336.GK3248864@dell>
-References: <20200823140846.19299-1-digetx@gmail.com>
- <20200823140846.19299-2-digetx@gmail.com>
- <20200823181653.GC209852@demiurge.local>
- <82abab10-9af6-a9c4-b241-d5a3af5b588d@gmail.com>
- <20200824073331.GG3248864@dell>
- <f12d287a-f088-4c43-479d-5c044e554b30@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=f6wdlEKoq+5Slr+UsziPsdyk2CY1PCYDCcZCpyAdvwo=;
+        b=BOUAhbn+dwgjhScJXvuiz4Va037vSwo5yd/BDLejfqcvC0VaDZ2mt9vowBb7GZKo7V
+         N/uyQWbDQK8ATzkD3DLTD6NNPQoMretQFkENqTQLoIAo3NdwKVaUhQJ2ypHJLhwyg+AT
+         rUPxHqqLYPzlJmQvRRZsuvbrxVI2KAplyckVV6X7ZlIomwlMlw5D98kCFofGmqunFuKC
+         0wAQ/ZxgsE7jM2a6MFehnkCIZuTaKrWiMpmsHEdw6Bfoub23kFgMffh0w9hncAX+i4+k
+         L1KlAD4XvdwiXHkB9yfM/fcUTK7/XvCTZj/Xe1sVzjgqzlfrTZLw5K6qy+TenoiVrZND
+         i95w==
+X-Gm-Message-State: AOAM532enl1T4w0Q4fdYmU947gUZXkr3Nxynbgb1xUJBd2LvgG2t/8mh
+        YPznfxq8yHFQx/9qkPNFZY8Fo5k3riKia2wyo4o=
+X-Google-Smtp-Source: ABdhPJzEP44NtBFAfTFi6m+U0B8L72BF9hYGNpMJgnWY8VcgZq+4UR0vLLyZ7HOS1sZEFPyg+vJmWEtgQHp7weUp5fA=
+X-Received: by 2002:a17:906:2a04:: with SMTP id j4mr5218133eje.440.1598265947869;
+ Mon, 24 Aug 2020 03:45:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f12d287a-f088-4c43-479d-5c044e554b30@gmail.com>
+References: <20200823161550.3981-1-krzk@kernel.org> <20200823161550.3981-21-krzk@kernel.org>
+ <AM6PR04MB49668B0F67B02B2A33603B4880560@AM6PR04MB4966.eurprd04.prod.outlook.com>
+ <20200824091102.GA20819@kozik-lap> <CAA+hA=S=2SoF8egOq8h-eB9wZGDqrAw66VtW-bU9oBmzFSj9Bw@mail.gmail.com>
+ <VI1PR04MB52949085DFA5D29C2858094290560@VI1PR04MB5294.eurprd04.prod.outlook.com>
+ <20200824103237.GA26120@kozik-lap>
+In-Reply-To: <20200824103237.GA26120@kozik-lap>
+From:   Dong Aisheng <dongas86@gmail.com>
+Date:   Mon, 24 Aug 2020 18:30:33 +0800
+Message-ID: <CAA+hA=TD8bjmws7FXAP7zZR1dYgtLPzjFrhPg8XwZcpP2ef4ug@mail.gmail.com>
+Subject: Re: [PATCH 21/22] arm64: dts: imx8qxp: Remove i.MX7 compatible from USDHC
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     Bough Chen <haibo.chen@nxp.com>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+        Anson Huang <anson.huang@nxp.com>,
+        "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
+        Fabio Estevam <festevam@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
+        dl-linux-imx <linux-imx@nxp.com>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 24 Aug 2020, Dmitry Osipenko wrote:
+On Mon, Aug 24, 2020 at 6:32 PM Krzysztof Kozlowski <krzk@kernel.org> wrote=
+:
+>
+> On Mon, Aug 24, 2020 at 10:31:31AM +0000, Bough Chen wrote:
+> > > -----Original Message-----
+> > > From: Dong Aisheng [mailto:dongas86@gmail.com]
+> > > Sent: 2020=E5=B9=B48=E6=9C=8824=E6=97=A5 17:45
+> > > To: Krzysztof Kozlowski <krzk@kernel.org>
+> > > Cc: Aisheng Dong <aisheng.dong@nxp.com>; devicetree@vger.kernel.org;
+> > > linux-serial@vger.kernel.org; Anson Huang <anson.huang@nxp.com>;
+> > > linux-gpio@vger.kernel.org; Fabio Estevam <festevam@gmail.com>; Linus
+> > > Walleij <linus.walleij@linaro.org>; linux-pm@vger.kernel.org;
+> > > linux-mmc@vger.kernel.org; linux-kernel@vger.kernel.org;
+> > > linux-pwm@vger.kernel.org; Bartosz Golaszewski
+> > > <bgolaszewski@baylibre.com>; Rob Herring <robh+dt@kernel.org>;
+> > > linux-mtd@lists.infradead.org; dl-linux-imx <linux-imx@nxp.com>; Peng=
+utronix
+> > > Kernel Team <kernel@pengutronix.de>; Thierry Reding
+> > > <thierry.reding@gmail.com>; Shawn Guo <shawnguo@kernel.org>; Sascha
+> > > Hauer <s.hauer@pengutronix.de>; linux-arm-kernel@lists.infradead.org;
+> > > linux-watchdog@vger.kernel.org; Bough Chen <haibo.chen@nxp.com>
+> > > Subject: Re: [PATCH 21/22] arm64: dts: imx8qxp: Remove i.MX7 compatib=
+le
+> > > from USDHC
+> > >
+> > > On Mon, Aug 24, 2020 at 5:15 PM Krzysztof Kozlowski <krzk@kernel.org>
+> > > wrote:
+> > > >
+> > > > On Mon, Aug 24, 2020 at 09:00:19AM +0000, Aisheng Dong wrote:
+> > > > > > From: Krzysztof Kozlowski <krzk@kernel.org>
+> > > > > > Sent: Monday, August 24, 2020 12:16 AM
+> > > > > >
+> > > > > > The USDHC on i.MX 8QXP has its own compatible described in
+> > > > > > bindings and used in the driver (with its own quirks).  Remove
+> > > > > > additional fsl,imx7d-usdhc compatible to fix dtbs_check warning=
+s like:
+> > > > > >
+> > > > > >   arch/arm64/boot/dts/freescale/imx8qxp-ai_ml.dt.yaml:
+> > > mmc@5b010000:
+> > > > > >     compatible: ['fsl,imx8qxp-usdhc', 'fsl,imx7d-usdhc'] is too=
+ long
+> > > > > >     From schema:
+> > > > > > /ocumentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
+> > > > > >
+> > > > > >   arch/arm64/boot/dts/freescale/imx8qxp-ai_ml.dt.yaml:
+> > > mmc@5b010000:
+> > > > > >     compatible: Additional items are not allowed
+> > > > > > ('fsl,imx7d-usdhc' was
+> > > > > > unexpected)
+> > > > > >
+> > > > > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > > > >
+> > > > > For Patch 19-22, I think we should fix dt binding doc.
+> > > >
+> > > > Are you sure that these USDHC controllers are compatible with i.MX =
+7D?
+> > > > Could they really run with fsl,imx7d-usdhc compatible?
+> > >
+> > > AFAIK uSDHC on QXP is derived from the former platforms with adding a=
+ few
+> > > more new features. e.g. HS400ES/CMDQ.
+> > > Let me loop in uSDHC driver owner Haibo Chen to double confirm.
+> >
+> > Yes, usdhc of imx8qxp can work by using the compatible "fsl, imx7d-usdh=
+c", but will not support HS400ES/Command Queue any more. Also imx8qxp suppo=
+rt Auto CMD23, but imx7d not.
+> > And imx8qxp need to re-config the clock rate after system PM, imx7d do =
+not need to do this.
+>
+> Then we can leave the compatible in DTS and I will correct the device
+> tree schema.
 
-> 24.08.2020 10:33, Lee Jones пишет:
-> >> ...
-> >>>> +static struct a500_ec *a500_ec_scratch;
-> >>>
-> >>> If this is only used for power_off, please rename it. I've been told to
-> >>> do so in my driver: https://lore.kernel.org/lkml/20200519104933.GX271301@dell/
-> >>
-> >> I don't mind to rename the variable, but not sure whether it will be a
-> >> worthwhile change since _scratch is also a common naming scheme among
-> >> MFD drivers. Please see max77620_scratch for example, which I added
-> >> about a year ago.
-> > 
-> > If something is used once, it does not make it 'common'.
-> > 
-> > Not sure how this slipped my notice before, but I don't like it.
-> > 
-> > Ensure any global struct used for power_off only includes items
-> > required for this purpose.  It's unfortunate this API requires a
-> > global variable at all.
-> > 
-> 
-> Okay! I'll change it in the v2, thanks!
-> 
-> Thierry Reding was working on the shutdown API which should replace the
-> global variables, unfortunately he doesn't have enough time to finish
-> that work yet.
+Haibo,
 
-That would be really good. :)
+As Krzysztof is helping fix uSDHC binding doc in Patch 12/22,
+please double check with IC for the whole uSDHC derive relationships on i.M=
+X
+and feedback to Krzysztof if anything is wrong.
 
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+Regards
+Aisheng
+
+>
+> Best regards,
+> Krzysztof
