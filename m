@@ -2,112 +2,100 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB0E1C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F6F7C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:34:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97B612072D
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:30:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 02FBA2078A
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:34:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zb6H8ukR"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iI4wNU1g"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728543AbgHXJaS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 05:30:18 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43162 "EHLO
+        id S1728661AbgHXJeq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 05:34:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43808 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728432AbgHXJaP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 05:30:15 -0400
-Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E12FAC061574
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:30:14 -0700 (PDT)
-Received: by mail-pj1-x1041.google.com with SMTP id mt12so3974816pjb.4
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:30:14 -0700 (PDT)
+        with ESMTP id S1726138AbgHXJeZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 05:34:25 -0400
+Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1582C061573
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:34:24 -0700 (PDT)
+Received: by mail-wr1-x443.google.com with SMTP id c15so7927188wrs.11
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:34:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=pK5bVNvEUkGmkHt7h+22p1PRjllmkBfGKoPd86o06Lw=;
-        b=zb6H8ukRfhieLWr3DBnUXOTmg55+e5EVKeqsfa2altwwB4K1VmjB+xm8dp0KBc1B0F
-         KH/tRUbVH5H9kDw1etY4+d/Urtgr+0Uix5vBzCbL7jtkQ1eORBWByV8kv2G/GTNO34Vt
-         mSH6FAZHzaRAefjA6cu7fJfPaD6DxdXrTBmzBKhB6v3cEnUrPrwh8faxFALumEMVOqJA
-         CTTMXQeHQ8MSlQBI1kcnwyGWnp1vQ2Y8z7P0NgI/6mlqv0ZgTeOsB4RhP2gBC/WJvl+H
-         E/7v/z49lP1blJipG/yCn02u9NiwT7GRfdVRKXa+EBMMQvQmxFyFlkyzbmIzDvLjy4lx
-         1+hg==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=oQFrC1o3Nda9YLxSbgopWEOdNnQxrkWudyF2nTbVXVU=;
+        b=iI4wNU1gyMDP3WOfbrMsV5PNzotxiKE+bg3HG4dL4ZNpFQ5QXR1VjF7EaZVhqM5pbR
+         /apqB/5NXnbQO/3QcPmJa2ymAJrRdh3q+VNx0a0WUjVrqorgAvwGbIygf/nWdu0FJnlR
+         2VF43WNvEHWPrUMPWGcStgXCXrQu0Wt4FMh6t/B7KsM4x98lcwZjW40VVfETqRVT7u+B
+         YNLoQECf0W2p2wXdHaMUWqr7ZK7KKqGr2dI98GzCd0Gk03gAkK+va2bB9KNnzETyhrA4
+         SKMppU9b3ulLFxpyUTLBv1CO7H+HQ/8rLi1gdJkfeb+dDWshGrYd+KTB+cB2lMYgNSoL
+         4qeQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=pK5bVNvEUkGmkHt7h+22p1PRjllmkBfGKoPd86o06Lw=;
-        b=BYAVCixrz1TI/ZwNF6WDJ+7MFm0Lju+NNB/WqtK+M7pME/OzK8hJoC1PZLQ2iquD4t
-         lja/hA27tPetJn9+aKHbDk2e+aYfIZMfodxQ2+8iSDE//E4j51vl9lAzF/IGe4XEhVr7
-         Nnz7Fw0sUjkGIgt17B9JJ6NKN2uY1PttemOdepeXLLKKE8MIBCInScceJNb7R9fJQ5o6
-         Q0HpDMcaTkOT2w+Jl4A0/lt7c7kMHvZ1ZsP/+6QS4mPiYmctoztSXeu7Y5HgRnxhY3Pr
-         9U2arlaCdtvvikzSXUR/tQ0LtfbixkW1LryMoHrcZW8uDQ71pTLi+UPYE429Vwpaz8Kc
-         0kjg==
-X-Gm-Message-State: AOAM5301fk4f/4ZR7tdO5n5ITr1zUSkXrZp9clMvFzPO0ZZG2eWnKt9K
-        FVY2EyrHmyLATI1GnC0nr86Wqw==
-X-Google-Smtp-Source: ABdhPJwzqLJz/+aP8JzlsLfMYGqG9zUEjWrPHt0rxu0+/5xAZOVgSxNCJ+v8x4WUX1WjzQRFq4pUgA==
-X-Received: by 2002:a17:90a:448e:: with SMTP id t14mr3829392pjg.59.1598261414267;
-        Mon, 24 Aug 2020 02:30:14 -0700 (PDT)
-Received: from localhost ([122.172.43.13])
-        by smtp.gmail.com with ESMTPSA id y3sm9647312pjg.8.2020.08.24.02.30.13
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 24 Aug 2020 02:30:13 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     stable@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        Rajendra Nayak <rnayak@codeaurora.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
-        Stephen Boyd <swboyd@chromium.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH - for v5.7 stable] opp: Put opp table in dev_pm_opp_set_rate() for empty tables
-Date:   Mon, 24 Aug 2020 15:00:03 +0530
-Message-Id: <e7e9f887328c06800a79f3b48feb623fd15aa3d5.1598261323.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+        bh=oQFrC1o3Nda9YLxSbgopWEOdNnQxrkWudyF2nTbVXVU=;
+        b=Ohq+01PpAW+9VTdTaaxLrweFs7CSuWdaO4dnpnvTTeHhBXCLnQDRCXRMssyXf2/FMY
+         XohlMHJjGEWGcmgumWf7d7FBBB5odzwcC20ZgtzLp3ecRLgQaotBHkgY4YliUSU4FkQX
+         +VFYK3aY9LEkZgBDzcxIEja7bZHlp+sjVQhRgTvyzn8Jz0aYYK2ibfdYpyxjVZVnbsU4
+         iNDsydm43N0tPU/DvQpGd2r6ytIHnl17soUAaxQ/ZamDslguCufQnFDwUjK3N8z0OEg9
+         pFU6dgJc9zhhfQFfIcpSyNLwGKVKMWWgaXpNYYYByM2dgJuJHOEu3qSQ2HlMYTLSWKEv
+         Y6QQ==
+X-Gm-Message-State: AOAM532DxmQH1e4tABLm6dy9rKHOI04BcP6dEmrmjU3v/DxDEVba02b7
+        tz2C9D+LEI0RMLEa+Du7S6R5dQ==
+X-Google-Smtp-Source: ABdhPJzfp+hZthOM0E1QMoXJyd50y7e6J2eC0nSOR2g0GL2084Jm9DgaEpMukZ1glzmBjUeTo56zoQ==
+X-Received: by 2002:a5d:630b:: with SMTP id i11mr5231552wru.95.1598261663543;
+        Mon, 24 Aug 2020 02:34:23 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0? ([2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0])
+        by smtp.googlemail.com with ESMTPSA id y17sm5682961wma.17.2020.08.24.02.34.22
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2020 02:34:23 -0700 (PDT)
+Subject: Re: [PATCH v2] thermal: core: Fix use-after-free in
+ thermal_zone_device_unregister()
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200817235854.26816-1-digetx@gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <84ecfc78-bbe7-b4e0-a815-46b6225eca09@linaro.org>
+Date:   Mon, 24 Aug 2020 11:34:22 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <20200817235854.26816-1-digetx@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Stephen Boyd <swboyd@chromium.org>
+On 18/08/2020 01:58, Dmitry Osipenko wrote:
+> The user-after-free bug in thermal_zone_device_unregister() is reported by
+> KASAN. It happens because struct thermal_zone_device is released during of
+> device_unregister() invocation, and hence the "tz" variable shouldn't be
+> touched by thermal_notify_tz_delete(tz->id).
+> 
+> Fixes: 55cdf0a283b8 ("thermal: core: Add notifications call in the framework")
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
 
-commit 8979ef70850eb469e1094279259d1ef393ffe85f upstream.
+Applied, thanks !
 
-We get the opp_table pointer at the top of the function and so we should
-put the pointer at the end of the function like all other exit paths
-from this function do.
 
-Cc: v5.7+ <stable@vger.kernel.org> # v5.7+
-Fixes: aca48b61f963 ("opp: Manage empty OPP tables with clk handle")
-Reviewed-by: Rajendra Nayak <rnayak@codeaurora.org>
-Signed-off-by: Stephen Boyd <swboyd@chromium.org>
-[ Viresh: Split the patch into two ]
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-[ Viresh: Update the code for v5.7-stable ]
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/opp/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index bb7060d52eec..c94e725e6522 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -820,7 +820,7 @@ int dev_pm_opp_set_rate(struct device *dev, unsigned long target_freq)
- 		if (opp_table->required_opp_tables) {
- 			ret = _set_required_opps(dev, opp_table, NULL);
- 		} else if (!_get_opp_count(opp_table)) {
--			return 0;
-+			ret = 0;
- 		} else {
- 			dev_err(dev, "target frequency can't be 0\n");
- 			ret = -EINVAL;
 -- 
-2.25.0.rc1.19.g042ed3e048af
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
