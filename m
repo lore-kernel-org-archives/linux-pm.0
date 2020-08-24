@@ -2,147 +2,155 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7DC1BC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:48:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 645A8C433E4
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 18:55:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6A9AC2078D
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:48:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E678206BE
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 18:55:30 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="rxx2Czwe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726767AbgHXRsP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 13:48:15 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59188 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726391AbgHXRsO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 13:48:14 -0400
-Received: from 89-64-88-199.dynamic.chello.pl (89.64.88.199) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
- id cea15cfeb758298d; Mon, 24 Aug 2020 19:48:12 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Doug Smythies <dsmythies@telus.net>
-Subject: [PATCH v2 3/5] cpufreq: intel_pstate: Add ->offline and ->online callbacks
-Date:   Mon, 24 Aug 2020 19:43:31 +0200
-Message-ID: <2786976.RHVxHup3hB@kreacher>
-In-Reply-To: <4169555.5IIHXK4Dsd@kreacher>
-References: <4169555.5IIHXK4Dsd@kreacher>
+        id S1727046AbgHXSzY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 14:55:24 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47216 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726306AbgHXSzY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 14:55:24 -0400
+Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1FD8C061573;
+        Mon, 24 Aug 2020 11:55:23 -0700 (PDT)
+Received: by mail-lj1-x22e.google.com with SMTP id w14so10904441ljj.4;
+        Mon, 24 Aug 2020 11:55:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=qq+FwKaAL0+i+v9B+INTc0h8RAmxp7NQuyM7xAAxgP4=;
+        b=rxx2CzweB1rd+Z9fgBd8jNjjrS7CPMKwQcKUql4L6YBEzJSjR/wbXY1yE8trzq40wz
+         dWEeONiwi/DR9ws1D+fE102ak1bsSI3DJ4XIPblj4+rQWEVc4eJbOq01CzkjC4W9Vy3K
+         QokcS3iGm1gkC+xSzusq/wSGqKsymeBWx/5r03ZfDF0chjAvO0caMJRTzwQMthtcvEAE
+         aPYD6NlDs5237Nl2f4h7c9Q72PTTtjD0tJrn76aIzkMzsWDrw2yXZN2nOCuPpPgiIfyY
+         FkXt9Y/qBunn3Uxk+6d3rs8yIXVFAOizoKCpgcFpCfz6XH+QnBSyM1AN9BGQWGOo6NZz
+         3Ngw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=qq+FwKaAL0+i+v9B+INTc0h8RAmxp7NQuyM7xAAxgP4=;
+        b=p4iwJbd9uZPU+zCK/qSWdeEjgMF5OS1wuPrhrTbHVgNkhfS6rcXH69ehL/aF7dr+qS
+         S5Iu+nuQUYJFdvwMDt96eRO/CIefRHELTxi4nAjxG3G1gk/0sjNu39Jk4P/IOjRLpges
+         7cPI6cpRxnpiTmt8cUVQDjPNyXP1qgn2WLQ3dv7PvOmlVdiAx5uV3SfUdae0ifcTEtlO
+         6aeVaz4KobEyt8dXsyRFB0t+5/uN5obnHMFZdIFfyUmRWl9vX107N2i1QdXieOCZLKsb
+         3l/LI7EzPMAfXvGh0I5XNxhVKgAuc8HGxzuS6lCVECo/kj4w1KBnO+MVACTFLsmhGbKc
+         DDNg==
+X-Gm-Message-State: AOAM531aZOGDPkA9aeWLYTpTRI6ySiGiUnLPWIHu5OI6zXwEd1bW5VER
+        WbgjCdFTdekpl2mEXYTPmACSov2hqe4=
+X-Google-Smtp-Source: ABdhPJzWwTyU3v6bW25kjpxAXFiQU4GbZLc10ZygwhVenWjgzbqGxjhdCEEbHk9fUUyGsaH7gHH01A==
+X-Received: by 2002:a2e:96d9:: with SMTP id d25mr3476883ljj.408.1598295317815;
+        Mon, 24 Aug 2020 11:55:17 -0700 (PDT)
+Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
+        by smtp.googlemail.com with ESMTPSA id r1sm2442954lfc.44.2020.08.24.11.55.15
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2020 11:55:17 -0700 (PDT)
+Subject: Re: [PATCH v1 2/6] power: supply: Add battery gauge driver for Acer
+ Iconia Tab A500
+To:     Sebastian Reichel <sebastian.reichel@collabora.com>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
+        Lubomir Rintel <lkundrak@v3.sk>, devicetree@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200823140846.19299-1-digetx@gmail.com>
+ <20200823140846.19299-3-digetx@gmail.com>
+ <20200824140718.apoavlny6hlkm2ql@earth.universe>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <31ec6865-4a33-bde8-73a6-20c188ec2ee7@gmail.com>
+Date:   Mon, 24 Aug 2020 21:55:14 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20200824140718.apoavlny6hlkm2ql@earth.universe>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
+24.08.2020 17:07, Sebastian Reichel пишет:
+> Hi,
+...
+>> +static int a500_battery_get_serial_number(struct a500_battery *bat,
+>> +					  union power_supply_propval *val)
+>> +{
+>> +	unsigned int i;
+>> +	s32 ret = 0;
+>> +
+>> +	if (bat->serial[0])
+>> +		goto done;
+>> +
+>> +	a500_ec_lock(bat->ec_chip);
+>> +	for (i = 0; i < BATTERY_SERIAL_LEN / 2; i++) {
+>> +		ret = a500_ec_read_locked(bat->ec_chip,
+>> +					  &ec_data[REG_SERIAL_NUMBER].cmd);
+>> +		if (ret < 0) {
+>> +			bat->serial[0] = '\0';
+>> +			break;
+>> +		}
+>> +
+>> +		bat->serial[i * 2 + 0] = (ret >> 0) & 0xff;
+>> +		bat->serial[i * 2 + 1] = (ret >> 8) & 0xff;
+>> +	}
+>> +	a500_ec_unlock(bat->ec_chip);
+>> +done:
+>> +	val->strval = bat->serial;
+>> +
+>> +	return ret;
+>> +}
+> 
+> If battery is swapped, this will keep the old serial.
 
-Add ->offline and ->online driver callbacks to prepare for taking a
-CPU offline and to restore its working configuration when it goes
-back online, respectively, to avoid invoking the ->init callback on
-every CPU online which is quite a bit of unnecessary overhead.
+Hello, Sebastian! The battery isn't hot-swappable on A500, but it also
+should be okay to always re-read the serialno. I'll consider removing
+the caching in the v2, thanks.
 
-Define ->offline and ->online so that they can be used in the
-passive mode as well as in the active mode and because ->offline
-will do the majority of ->stop_cpu work, the passive mode does
-not need that callback any more, so drop it.
+...
+>> +	bat->psy = devm_power_supply_register_no_ws(&pdev->dev,
+>> +						    &a500_battery_desc,
+>> +						    &psy_cfg);
+>> +	err = PTR_ERR_OR_ZERO(bat->psy);
+>> +	if (err) {
+>> +		if (err == -EPROBE_DEFER)
+>> +			dev_dbg(&pdev->dev, "failed to register battery, deferring probe\n");
+>> +		else
+>> +			dev_err(&pdev->dev, "failed to register battery: %d\n",
+>> +				err);
+>> +		return err;
+>> +	}
+> 
+> if (IS_ERR(bat->psy))
+>     return dev_err_probe(&pdev->dev, PTR_ERR(err), "failed to register battery\n");
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+I didn't know that dev_err_probe() is available now, very nice! I'll use
+it in the v2, thanks.
 
--> v2: Typo fixes and changelog edits (Doug).
+...
+>> +MODULE_DESCRIPTION("Battery gauge driver for Acer Iconia Tab A500");
+>> +MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
+>> +MODULE_ALIAS("platform:acer-a500-iconia-battery");
+>> +MODULE_LICENSE("GPL v2");
+> 
+> MODULE_LICENSE("GPL");
+> 
+> Otherwise looks good to me.
 
----
- drivers/cpufreq/intel_pstate.c | 38 ++++++++++++++++++++++++++++------
- 1 file changed, 32 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 3d18934fa975..98836ac299db 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2297,28 +2297,51 @@ static int intel_pstate_verify_policy(struct cpufreq_policy_data *policy)
- 	return 0;
- }
- 
--static void intel_cpufreq_stop_cpu(struct cpufreq_policy *policy)
-+static int intel_pstate_cpu_offline(struct cpufreq_policy *policy)
- {
-+	pr_debug("CPU %d going offline\n", policy->cpu);
-+
-+	intel_pstate_exit_perf_limits(policy);
-+
-+	/*
-+	 * If the CPU is an SMT thread and it goes offline with the performance
-+	 * settings different from the minimum, it will prevent its sibling
-+	 * from getting to lower performance levels, so force the minimum
-+	 * performance on CPU offline to prevent that from happening.
-+	 */
- 	if (hwp_active)
- 		intel_pstate_hwp_force_min_perf(policy->cpu);
- 	else
- 		intel_pstate_set_min_pstate(all_cpu_data[policy->cpu]);
-+
-+	return 0;
-+}
-+
-+static int intel_pstate_cpu_online(struct cpufreq_policy *policy)
-+{
-+	pr_debug("CPU %d going online\n", policy->cpu);
-+
-+	intel_pstate_init_acpi_perf_limits(policy);
-+
-+	if (hwp_active)
-+		wrmsrl_on_cpu(policy->cpu, MSR_HWP_REQUEST,
-+			      all_cpu_data[policy->cpu]->hwp_req_cached);
-+
-+	return 0;
- }
- 
- static void intel_pstate_stop_cpu(struct cpufreq_policy *policy)
- {
--	pr_debug("CPU %d exiting\n", policy->cpu);
-+	pr_debug("CPU %d stopping\n", policy->cpu);
- 
- 	intel_pstate_clear_update_util_hook(policy->cpu);
- 	if (hwp_active)
- 		intel_pstate_hwp_save_state(policy);
--
--	intel_cpufreq_stop_cpu(policy);
- }
- 
- static int intel_pstate_cpu_exit(struct cpufreq_policy *policy)
- {
--	intel_pstate_exit_perf_limits(policy);
-+	pr_debug("CPU %d exiting\n", policy->cpu);
- 
- 	policy->fast_switch_possible = false;
- 
-@@ -2398,6 +2421,8 @@ static struct cpufreq_driver intel_pstate = {
- 	.init		= intel_pstate_cpu_init,
- 	.exit		= intel_pstate_cpu_exit,
- 	.stop_cpu	= intel_pstate_stop_cpu,
-+	.offline	= intel_pstate_cpu_offline,
-+	.online		= intel_pstate_cpu_online,
- 	.update_limits	= intel_pstate_update_limits,
- 	.name		= "intel_pstate",
- };
-@@ -2652,7 +2677,8 @@ static struct cpufreq_driver intel_cpufreq = {
- 	.fast_switch	= intel_cpufreq_fast_switch,
- 	.init		= intel_cpufreq_cpu_init,
- 	.exit		= intel_cpufreq_cpu_exit,
--	.stop_cpu	= intel_cpufreq_stop_cpu,
-+	.offline	= intel_pstate_cpu_offline,
-+	.online		= intel_pstate_cpu_online,
- 	.update_limits	= intel_pstate_update_limits,
- 	.name		= "intel_cpufreq",
- };
--- 
-2.26.2
-
-
-
-
+Okay, thank you!
