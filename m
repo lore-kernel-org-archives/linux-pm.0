@@ -2,333 +2,124 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1357BC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 21:04:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 31207C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 21:39:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E0CF720897
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 21:04:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 022D9207D3
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 21:39:05 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726241AbgHXVEK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 17:04:10 -0400
-Received: from foss.arm.com ([217.140.110.172]:43076 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727909AbgHXVEA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Aug 2020 17:04:00 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B1A2C1FB;
-        Mon, 24 Aug 2020 14:03:53 -0700 (PDT)
-Received: from e108754-lin.cambridge.arm.com (e108754-lin.cambridge.arm.com [10.1.199.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 478DE3F71F;
-        Mon, 24 Aug 2020 14:03:52 -0700 (PDT)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        dietmar.eggemann@arm.com, catalin.marinas@arm.com,
-        sudeep.holla@arm.com, will@kernel.org, valentin.schneider@arm.com
-Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, ionela.voinescu@arm.com
-Subject: [PATCH v3 2/5] cpufreq: move invariance setter calls in cpufreq core
-Date:   Mon, 24 Aug 2020 22:02:49 +0100
-Message-Id: <20200824210252.27486-3-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200824210252.27486-1-ionela.voinescu@arm.com>
-References: <20200824210252.27486-1-ionela.voinescu@arm.com>
+        id S1726241AbgHXVjF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 17:39:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44508 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726090AbgHXVjE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 17:39:04 -0400
+Received: from bhuna.collabora.co.uk (bhuna.collabora.co.uk [IPv6:2a00:1098:0:82:1000:25:2eeb:e3e3])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B179AC061574;
+        Mon, 24 Aug 2020 14:39:04 -0700 (PDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+        (Authenticated sender: sre)
+        with ESMTPSA id 99FF2297C57
+Received: by earth.universe (Postfix, from userid 1000)
+        id D3FA43C0C82; Mon, 24 Aug 2020 23:38:59 +0200 (CEST)
+Date:   Mon, 24 Aug 2020 23:38:59 +0200
+From:   Sebastian Reichel <sebastian.reichel@collabora.com>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
+        Lubomir Rintel <lkundrak@v3.sk>, devicetree@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v1 2/6] power: supply: Add battery gauge driver for Acer
+ Iconia Tab A500
+Message-ID: <20200824213859.6o3q5i2kvtk44lqi@earth.universe>
+References: <20200823140846.19299-1-digetx@gmail.com>
+ <20200823140846.19299-3-digetx@gmail.com>
+ <20200824140718.apoavlny6hlkm2ql@earth.universe>
+ <31ec6865-4a33-bde8-73a6-20c188ec2ee7@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="rq3bkynnovf3rl57"
+Content-Disposition: inline
+In-Reply-To: <31ec6865-4a33-bde8-73a6-20c188ec2ee7@gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To properly scale its per-entity load-tracking signals, the task scheduler
-needs to be given a frequency scale factor, i.e. some image of the current
-frequency the CPU is running at. Currently, this scale can be computed
-either by using counters (APERF/MPERF on x86, AMU on arm64), or by
-piggy-backing on the frequency selection done by cpufreq.
 
-For the latter, drivers have to explicitly set the scale factor
-themselves, despite it being purely boiler-plate code: the required
-information depends entirely on the kind of frequency switch callback
-implemented by the driver, i.e. either of: target_index(), target(),
-fast_switch() and setpolicy().
+--rq3bkynnovf3rl57
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The fitness of those callbacks with regard to driving the Frequency
-Invariance Engine (FIE) is studied below:
+Hi,
 
-target_index()
-==============
-Documentation states that the chosen frequency "must be determined by
-freq_table[index].frequency". It isn't clear if it *has* to be that
-frequency, or if it can use that frequency value to do some computation
-that ultimately leads to a different frequency selection. All drivers
-go for the former, while the vexpress-spc-cpufreq has an atypical
-implementation which is handled separately.
+On Mon, Aug 24, 2020 at 09:55:14PM +0300, Dmitry Osipenko wrote:
+> 24.08.2020 17:07, Sebastian Reichel =D0=BF=D0=B8=D1=88=D0=B5=D1=82:
+> >> +static int a500_battery_get_serial_number(struct a500_battery *bat,
+> >> +					  union power_supply_propval *val)
+> >> +{
+> >> +	unsigned int i;
+> >> +	s32 ret =3D 0;
+> >> +
+> >> +	if (bat->serial[0])
+> >> +		goto done;
+> >> +
+> >> +	a500_ec_lock(bat->ec_chip);
+> >> +	for (i =3D 0; i < BATTERY_SERIAL_LEN / 2; i++) {
+> >> +		ret =3D a500_ec_read_locked(bat->ec_chip,
+> >> +					  &ec_data[REG_SERIAL_NUMBER].cmd);
+> >> +		if (ret < 0) {
+> >> +			bat->serial[0] =3D '\0';
+> >> +			break;
+> >> +		}
+> >> +
+> >> +		bat->serial[i * 2 + 0] =3D (ret >> 0) & 0xff;
+> >> +		bat->serial[i * 2 + 1] =3D (ret >> 8) & 0xff;
+> >> +	}
+> >> +	a500_ec_unlock(bat->ec_chip);
+> >> +done:
+> >> +	val->strval =3D bat->serial;
+> >> +
+> >> +	return ret;
+> >> +}
+> >=20
+> > If battery is swapped, this will keep the old serial.
+>=20
+> Hello, Sebastian! The battery isn't hot-swappable on A500, but it also
+> should be okay to always re-read the serialno. I'll consider removing
+> the caching in the v2, thanks.
 
-Therefore, the hook works on the assumption the core can use
-freq_table[index].frequency.
+I assumed it would be hot-swappable because of a500_battery_get_presence().
+If it's not hot-swappable, the caching is fine.
 
-target()
-=======
-This has been flagged as deprecated since:
+-- Sebastian
 
-  commit 9c0ebcf78fde ("cpufreq: Implement light weight ->target_index() routine")
+--rq3bkynnovf3rl57
+Content-Type: application/pgp-signature; name="signature.asc"
 
-It also doesn't have that many users:
+-----BEGIN PGP SIGNATURE-----
 
-  gx-suspmod.c:439:       .target = cpufreq_gx_target,
-  s3c24xx-cpufreq.c:428:  .target = s3c_cpufreq_target,
-  intel_pstate.c:2528:    .target = intel_cpufreq_target,
-  cppc_cpufreq.c:401:     .target = cppc_cpufreq_set_target,
-  cpufreq-nforce2.c:371:  .target = nforce2_target,
-  sh-cpufreq.c:163:       .target = sh_cpufreq_target,
-  pcc-cpufreq.c:573:      .target = pcc_cpufreq_target,
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl9EM20ACgkQ2O7X88g7
++prI2BAAn2AN5O1hII/9SN9g6Y9PKVjcObQgTSKI9W8g16d0g+g6swLv4SOI5w+1
+gYt3Zi3X8uRK1kc92X2ZXQBdtacuqfArU+nK6fpwLfC13spffvpob9bBtNWMT0s1
+6tdpQ7yJtrRfTdIr+cVCrM6rj3Cp06gcd2+xF5+zpenaZZScR5g/bF9X05RYoplZ
+G9Nvjhwm6Rvm6O4XvzuNwDON4CGa0RG94th2W07FkGTrkob4FTJJ0bKgI/vtodAB
+gIkrcSaC4qcW5tkeZzt0iq+Fj5Ztm5aTH7voZ/AfBrCznMVgO9JjOnEH+ecRWexQ
+XcXrCT8z+FKUHIG+oUkM0WkqfaaOqB5NeeghwOnOCf41V1JVJIcm9GOTM7i1J8yF
+wwmY3aa8k3shIN6UfG7DqdW8DziqmS8vjHcdaprLCDjLfmJagWnSmYuU+3I2adsA
+ayydD8AJxGFIHPzUW0svjTCfSOHQPm2hM1U4Anye73WByf3zxGcSWTKMWCNYoLal
+COLYxVJIDNq2lkaHtme/7z0i84dnHzXvsrsUMJ4SXhCKYH0YQp8CzbkkXglgYtYe
+DjZptysEJL3RZPmQa0ft0J75oLvQ+VwrIEtPRWID7dry6i8RONP4SI5L6LxiQBYe
+fz/4qbyvmu/HQ/8nJsvYUMwFjmG/EVzN0cQGHuSxknM0H6Mq0+g=
+=pUMB
+-----END PGP SIGNATURE-----
 
-Similarly to the path taken for target_index() calls in the cpufreq core
-during a frequency change, all of the drivers above will mark the end of a
-frequency change by a call to cpufreq_freq_transition_end().
-
-Therefore, cpufreq_freq_transition_end() can be used as the location for
-the arch_set_freq_scale() call to potentially inform the scheduler of the
-frequency change.
-
-This change maintains the previous functionality for the drivers that
-implement the target_index() callback, while also adding support for the
-few drivers that implement the deprecated target() callback.
-
-fast_switch()
-=============
-This callback *has* to return the frequency that was selected.
-
-setpolicy()
-===========
-This callback does not have any designated way of informing what was the
-end choice. But there are only two drivers using setpolicy(), and none
-of them have current FIE support:
-
-  drivers/cpufreq/longrun.c:281:	.setpolicy	= longrun_set_policy,
-  drivers/cpufreq/intel_pstate.c:2215:	.setpolicy	= intel_pstate_set_policy,
-
-The intel_pstate is known to use counter-driven frequency invariance.
-
-Conclusion
-==========
-
-Given that the significant majority of current FIE enabled drivers use
-callbacks that lend themselves to triggering the setting of the FIE scale
-factor in a generic way, move the invariance setter calls to cpufreq core.
-
-As a result of setting the frequency scale factor in cpufreq core, after
-callbacks that lend themselves to trigger it, remove this functionality
-from the driver side.
-
-To be noted that despite marking a successful frequency change, many
-cpufreq drivers will consider the new frequency as the requested
-frequency, although this is might not be the one granted by the hardware.
-
-Therefore, the call to arch_set_freq_scale() is a "best effort" one, and
-it is up to the architecture if the new frequency is used in the new
-frequency scale factor setting (determined by the implementation of
-arch_set_freq_scale()) or eventually used by the scheduler (determined
-by the implementation of arch_scale_freq_capacity()). The architecture
-is in a better position to decide if it has better methods to obtain
-more accurate information regarding the current frequency and use that
-information instead (for example, the use of counters).
-
-Also, the implementation to arch_set_freq_scale() will now have to handle
-error conditions (current frequency == 0) in order to prevent the
-overhead in cpufreq core when the default arch_set_freq_scale()
-implementation is used.
-
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Suggested-by: Valentin Schneider <valentin.schneider@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-dt.c           | 10 +---------
- drivers/cpufreq/cpufreq.c              | 12 +++++++++++-
- drivers/cpufreq/qcom-cpufreq-hw.c      |  9 +--------
- drivers/cpufreq/scmi-cpufreq.c         | 12 ++----------
- drivers/cpufreq/scpi-cpufreq.c         |  6 +-----
- drivers/cpufreq/vexpress-spc-cpufreq.c | 12 ++----------
- 6 files changed, 18 insertions(+), 43 deletions(-)
-
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 944d7b45afe9..9fd4ce774f12 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -40,16 +40,8 @@ static int set_target(struct cpufreq_policy *policy, unsigned int index)
- {
- 	struct private_data *priv = policy->driver_data;
- 	unsigned long freq = policy->freq_table[index].frequency;
--	int ret;
--
--	ret = dev_pm_opp_set_rate(priv->cpu_dev, freq * 1000);
- 
--	if (!ret) {
--		arch_set_freq_scale(policy->related_cpus, freq,
--				    policy->cpuinfo.max_freq);
--	}
--
--	return ret;
-+	return dev_pm_opp_set_rate(priv->cpu_dev, freq * 1000);
- }
- 
- /*
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 02ab56b2a0d8..34533c6b3bd0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -446,6 +446,10 @@ void cpufreq_freq_transition_end(struct cpufreq_policy *policy,
- 
- 	cpufreq_notify_post_transition(policy, freqs, transition_failed);
- 
-+	arch_set_freq_scale(policy->related_cpus,
-+			    policy->cur,
-+			    policy->cpuinfo.max_freq);
-+
- 	policy->transition_ongoing = false;
- 	policy->transition_task = NULL;
- 
-@@ -2057,9 +2061,15 @@ EXPORT_SYMBOL(cpufreq_unregister_notifier);
- unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
- 					unsigned int target_freq)
- {
-+	unsigned int freq;
-+
- 	target_freq = clamp_val(target_freq, policy->min, policy->max);
-+	freq = cpufreq_driver->fast_switch(policy, target_freq);
-+
-+	arch_set_freq_scale(policy->related_cpus, freq,
-+			    policy->cpuinfo.max_freq);
- 
--	return cpufreq_driver->fast_switch(policy, target_freq);
-+	return freq;
- }
- EXPORT_SYMBOL_GPL(cpufreq_driver_fast_switch);
- 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 3fb044b907a8..aabe4306d92f 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -85,8 +85,6 @@ static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 	if (icc_scaling_enabled)
- 		qcom_cpufreq_set_bw(policy, freq);
- 
--	arch_set_freq_scale(policy->related_cpus, freq,
--			    policy->cpuinfo.max_freq);
- 	return 0;
- }
- 
-@@ -113,16 +111,11 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
- {
- 	void __iomem *perf_state_reg = policy->driver_data;
- 	unsigned int index;
--	unsigned long freq;
- 
- 	index = policy->cached_resolved_idx;
- 	writel_relaxed(index, perf_state_reg);
- 
--	freq = policy->freq_table[index].frequency;
--	arch_set_freq_scale(policy->related_cpus, freq,
--			    policy->cpuinfo.max_freq);
--
--	return freq;
-+	return policy->freq_table[index].frequency;
- }
- 
- static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
-diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
-index fb42e3390377..6dd1311660b5 100644
---- a/drivers/cpufreq/scmi-cpufreq.c
-+++ b/drivers/cpufreq/scmi-cpufreq.c
-@@ -48,16 +48,11 @@ static unsigned int scmi_cpufreq_get_rate(unsigned int cpu)
- static int
- scmi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	int ret;
- 	struct scmi_data *priv = policy->driver_data;
- 	struct scmi_perf_ops *perf_ops = handle->perf_ops;
- 	u64 freq = policy->freq_table[index].frequency;
- 
--	ret = perf_ops->freq_set(handle, priv->domain_id, freq * 1000, false);
--	if (!ret)
--		arch_set_freq_scale(policy->related_cpus, freq,
--				    policy->cpuinfo.max_freq);
--	return ret;
-+	return perf_ops->freq_set(handle, priv->domain_id, freq * 1000, false);
- }
- 
- static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
-@@ -67,11 +62,8 @@ static unsigned int scmi_cpufreq_fast_switch(struct cpufreq_policy *policy,
- 	struct scmi_perf_ops *perf_ops = handle->perf_ops;
- 
- 	if (!perf_ops->freq_set(handle, priv->domain_id,
--				target_freq * 1000, true)) {
--		arch_set_freq_scale(policy->related_cpus, target_freq,
--				    policy->cpuinfo.max_freq);
-+				target_freq * 1000, true))
- 		return target_freq;
--	}
- 
- 	return 0;
- }
-diff --git a/drivers/cpufreq/scpi-cpufreq.c b/drivers/cpufreq/scpi-cpufreq.c
-index b0f5388b8854..43db05b949d9 100644
---- a/drivers/cpufreq/scpi-cpufreq.c
-+++ b/drivers/cpufreq/scpi-cpufreq.c
-@@ -47,9 +47,8 @@ static unsigned int scpi_cpufreq_get_rate(unsigned int cpu)
- static int
- scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
- {
--	unsigned long freq = policy->freq_table[index].frequency;
-+	u64 rate = policy->freq_table[index].frequency * 1000;
- 	struct scpi_data *priv = policy->driver_data;
--	u64 rate = freq * 1000;
- 	int ret;
- 
- 	ret = clk_set_rate(priv->clk, rate);
-@@ -60,9 +59,6 @@ scpi_cpufreq_set_target(struct cpufreq_policy *policy, unsigned int index)
- 	if (clk_get_rate(priv->clk) != rate)
- 		return -EIO;
- 
--	arch_set_freq_scale(policy->related_cpus, freq,
--			    policy->cpuinfo.max_freq);
--
- 	return 0;
- }
- 
-diff --git a/drivers/cpufreq/vexpress-spc-cpufreq.c b/drivers/cpufreq/vexpress-spc-cpufreq.c
-index 4e8b1dee7c9a..e89b905754d2 100644
---- a/drivers/cpufreq/vexpress-spc-cpufreq.c
-+++ b/drivers/cpufreq/vexpress-spc-cpufreq.c
-@@ -182,7 +182,6 @@ static int ve_spc_cpufreq_set_target(struct cpufreq_policy *policy,
- {
- 	u32 cpu = policy->cpu, cur_cluster, new_cluster, actual_cluster;
- 	unsigned int freqs_new;
--	int ret;
- 
- 	cur_cluster = cpu_to_cluster(cpu);
- 	new_cluster = actual_cluster = per_cpu(physical_cluster, cpu);
-@@ -197,15 +196,8 @@ static int ve_spc_cpufreq_set_target(struct cpufreq_policy *policy,
- 			new_cluster = A15_CLUSTER;
- 	}
- 
--	ret = ve_spc_cpufreq_set_rate(cpu, actual_cluster, new_cluster,
--				      freqs_new);
--
--	if (!ret) {
--		arch_set_freq_scale(policy->related_cpus, freqs_new,
--				    policy->cpuinfo.max_freq);
--	}
--
--	return ret;
-+	return ve_spc_cpufreq_set_rate(cpu, actual_cluster, new_cluster,
-+				       freqs_new);
- }
- 
- static inline u32 get_table_count(struct cpufreq_frequency_table *table)
--- 
-2.17.1
-
+--rq3bkynnovf3rl57--
