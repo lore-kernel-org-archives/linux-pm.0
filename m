@@ -2,162 +2,68 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC243C433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 13:41:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67CDAC433E3
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 13:59:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CE66C204FD
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 13:41:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C892207CD
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 13:59:22 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727798AbgHXNlV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 09:41:21 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:56162 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726786AbgHXNhD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 09:37:03 -0400
-Received: from 89-64-88-199.dynamic.chello.pl (89.64.88.199) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
- id f763cbab1cc4ea0a; Mon, 24 Aug 2020 15:36:37 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Alan Stern <stern@rowland.harvard.edu>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        id S1727798AbgHXN7P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 09:59:15 -0400
+Received: from mga18.intel.com ([134.134.136.126]:50751 "EHLO mga18.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725921AbgHXN7P (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Aug 2020 09:59:15 -0400
+IronPort-SDR: ck4KHr0GO047tbCIxhmDsmvkoiqgTt4tP1032qn29B05m+IrXvL7Cvy/gvvDtV00MP8UcnScDh
+ LDEK2iabOLQw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9722"; a="143548622"
+X-IronPort-AV: E=Sophos;i="5.76,348,1592895600"; 
+   d="scan'208";a="143548622"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga001.fm.intel.com ([10.253.24.23])
+  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 24 Aug 2020 06:59:13 -0700
+IronPort-SDR: reFZjxq2YJRZLdfWlm2zwZelqtOY4FgNL+iJsBpyepv/3glq4dFSS7iUojrEqH2YVj3KaNrudO
+ aL9CCrVS+yHw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.76,348,1592895600"; 
+   d="scan'208";a="402358973"
+Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.163])
+  by fmsmga001.fm.intel.com with SMTP; 24 Aug 2020 06:59:10 -0700
+Received: by lahna (sSMTP sendmail emulation); Mon, 24 Aug 2020 16:59:09 +0300
+Date:   Mon, 24 Aug 2020 16:59:09 +0300
+From:   Mika Westerberg <mika.westerberg@linux.intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Alan Stern <stern@rowland.harvard.edu>,
+        Linux PM <linux-pm@vger.kernel.org>,
         LKML <linux-kernel@vger.kernel.org>,
         Linux ACPI <linux-acpi@vger.kernel.org>,
         Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>
-Subject: Re: [PATCH] PM: sleep: core: Fix the handling of pending runtime resume requests
-Date:   Mon, 24 Aug 2020 15:36:36 +0200
-Message-ID: <4922509.6NPD9QEisq@kreacher>
-In-Reply-To: <20200821193442.GA264863@rowland.harvard.edu>
-References: <7969920.MVx1BpXlEM@kreacher> <20200821193442.GA264863@rowland.harvard.edu>
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Subject: Re: [PATCH] PM: sleep: core: Fix the handling of pending runtime
+ resume requests
+Message-ID: <20200824135909.GL1375436@lahna.fi.intel.com>
+References: <7969920.MVx1BpXlEM@kreacher>
+ <20200821193442.GA264863@rowland.harvard.edu>
+ <20200824083452.GX1375436@lahna.fi.intel.com>
+ <2486532.D7zGhtygOF@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2486532.D7zGhtygOF@kreacher>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Friday, August 21, 2020 9:34:42 PM CEST Alan Stern wrote:
-> On Fri, Aug 21, 2020 at 07:41:02PM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > 
-> > It has been reported that system-wide suspend may be aborted in the
-> > absence of any wakeup events due to unforseen interactions of it with
-> > the runtume PM framework.
-> > 
-> > One failing scenario is when there are multiple devices sharing an
-> > ACPI power resource and runtime-resume needs to be carried out for
-> > one of them during system-wide suspend (for example, because it needs
-> > to be reconfigured before the whole system goes to sleep).  In that
-> > case, the runtime-resume of that device involves turning the ACPI
-> > power resource "on" which in turn causes runtime resume requests
-> > to be queued up for all of the other devices sharing it.  Those
-> > requests go to the runtime PM workqueue which is frozen during
-> > system-wide suspend, so they are not actually taken care of until
-> > the resume of the whole system, but the pm_runtime_barrier()
-> > call in __device_suspend() sees them and triggers system wakeup
-> > events for them which then cause the system-wide suspend to be
-> > aborted if wakeup source objects are in active use.
-> > 
-> > Of course, the logic that leads to triggering those wakeup events is
-> > questionable in the first place, because clearly there are cases in
-> > which a pending runtime resume request for a device is not connected
-> > to any real wakeup events in any way (like the one above).  Moreover,
-> > if there is a pending runtime resume request for a device while
-> > __device_suspend() is running for it, the physical state of the
-> > device may not be in agreement with the "suspended" runtime PM status
-> > of it (which may be the very reason for queuing up the runtime resume
-> > request for it).
-> > 
-> > For these reasons, rework __device_suspend() to carry out synchronous
-> > runtime-resume for devices with pending runtime resume requests before
-> > attempting to invoke system-wide suspend callbacks for them with the
-> > expectation that their drivers will trigger system-wide wakeup events
-> > in the process of handling the runtime resume, if necessary.
-> > 
-> > Fixes: 1e2ef05bb8cf8 ("PM: Limit race conditions between runtime PM and system sleep (v2)")
-> > Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-> > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > ---
-> >  drivers/base/power/main.c |   12 ++++++------
-> >  1 file changed, 6 insertions(+), 6 deletions(-)
-> > 
-> > Index: linux-pm/drivers/base/power/main.c
-> > ===================================================================
-> > --- linux-pm.orig/drivers/base/power/main.c
-> > +++ linux-pm/drivers/base/power/main.c
-> > @@ -1606,13 +1606,13 @@ static int __device_suspend(struct devic
-> >  	}
-> >  
-> >  	/*
-> > -	 * If a device configured to wake up the system from sleep states
-> > -	 * has been suspended at run time and there's a resume request pending
-> > -	 * for it, this is equivalent to the device signaling wakeup, so the
-> > -	 * system suspend operation should be aborted.
-> > +	 * If there's a runtime resume request pending for the device, resume
-> > +	 * it before proceeding with invoking the system-wide suspend callbacks
-> > +	 * for it, because the physical state of the device may not reflect the
-> > +	 * "suspended" runtime PM status already in that case.
-> >  	 */
-> > -	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
-> > -		pm_wakeup_event(dev, 0);
-> > +	if (pm_runtime_barrier(dev))
-> > +		pm_runtime_resume(dev);
-> 
-> Is this really right?  Note that whenever pm_runtime_barrier() returns a 
-> nonzero value, it already calls rpm_resume(dev, 0).  So the 
-> pm_runtime_resume() call added here is redundant.
+On Mon, Aug 24, 2020 at 03:38:39PM +0200, Rafael J. Wysocki wrote:
+> BTW, does the patch make the issue at hand go away?
 
-Yes, it is (it seems that I've looked at __pm_runtime_barrier() alone, not sure
-why).
-
-> Furthermore, by the logic used in this patch, the call to 
-> pm_wakeup_event() in the original code is also redundant: Any required 
-> wakeup event should have been generated when the runtime resume inside 
-> pm_runtime_barrer() was carried out.
-
-It should be redundant in the real wakeup event cases, but it may cause
-spurious suspend aborts to occur when there are no real system wakeup
-events.
-
-Actually, the original code is racy with respect to system wakeup events,
-because it depends on the exact time when the runtime-resume starts.  Namely,
-if it manages to start before the freezing of pm_wq, the wakeup will be lost
-unless the driver takes care of reporting it, which means that drivers really
-need to do that anyway.  And if they do that (which hopefully is the case), the
-pm_wakeup_event() call in the core may be dropped.
-
-> Removing a redundant function call can't fix a bug!
-
-That's true, but this particular call is redundant only if there is a real
-wakeup event.  Otherwise it may produce a spurious wakeup.
-
-> This means that the code could be simplified to just:
-> 
-> 	pm_runtime_barrier(dev);
-
-Yes, it could, so I'm going to re-spin the patch with this code simplification
-and updated changelog.
-
-> Will this fix the reported bug?
-
-I think so.
-
-> It seems likely to me that the actual 
-> problem with the failure scenario in the patch description was that 
-> turning on an ACPI power resource causes runtime-resume requests to be 
-> queued for all devices sharing that resource.  Wouldn't it make more 
-> sense to resume only the device that requested it and leave the others 
-> in runtime suspend?
-
-Please see the Mika's reply for a good explanation of this.
-
-Cheers!
-
-
-
+I asked the folks who have this particular hardware to try it out as I
+don't have access to this one. Hopefully we get the results back soon
+and once we do, I'll let you know.
