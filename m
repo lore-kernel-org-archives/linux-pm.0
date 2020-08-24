@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08D42C433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 16:30:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B5552C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 16:30:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D348A2072D
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 16:30:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8DBBF207CD
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 16:30:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598286631;
-	bh=1X/cRmfopwt+rCsRoYRr5R5QW8XW/gYCIDl6hjON3qs=;
+	s=default; t=1598286635;
+	bh=PdacYnFzAXKYzO75jZ6jRptISMDbTeC/IgkjXkml0CM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=IGOcZPhXSz1Ilgnvpt+rPMhu1ZTAd3Jm1MVYB4dMSX4lnH9BZ0ZA2/2pAUzUI/isi
-	 kLc9mOBHMaRkAeXzi8X2r92jlPzc2mSeLqobopIDXMVaJ+W11rEQRJhYL1Pb/ikW9m
-	 33p/M+O4/3+1YzpBU2x+by8Y+0ihbUJGStPyfxVc=
+	b=MWcSbo2Z+mFkLTF02e+zrXQPWel2ixxZH6JY8BWxL1o+aQueTx1CXFMpKjcbqwCz1
+	 x8P2T7psmmnbDeSck7lnpAe8W9sviyFL28aFDs87OvQ9ppa32WB7KTVxnP1Et8ailw
+	 3pX/QTss41rwnofakmFwFcxmIxKXrxCXrUM7ZFGE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728129AbgHXQ3F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 12:29:05 -0400
-Received: from mail.kernel.org ([198.145.29.99]:58452 "EHLO mail.kernel.org"
+        id S1728068AbgHXQ2q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 12:28:46 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57802 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728120AbgHXQ3C (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 24 Aug 2020 12:29:02 -0400
+        id S1728022AbgHXQ2f (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Aug 2020 12:28:35 -0400
 Received: from kozik-lap.mshome.net (unknown [194.230.155.216])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A084820838;
-        Mon, 24 Aug 2020 16:28:55 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 48A24207CD;
+        Mon, 24 Aug 2020 16:28:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598286541;
-        bh=1X/cRmfopwt+rCsRoYRr5R5QW8XW/gYCIDl6hjON3qs=;
+        s=default; t=1598286515;
+        bh=PdacYnFzAXKYzO75jZ6jRptISMDbTeC/IgkjXkml0CM=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=HTcV7Hq+Wz0fVWlImWpXbdNqymi7ZC+FwJ/OIwCOfq8K9wbZIjSZtBzDx6PFIz8fU
-         PIP0T6mdf09RI7GCUVUqF7RowOAcTp0QisWNDZj3RKLjEprWRBPyG38N/o8OlxbQ1l
-         vnvPxUrFusOoVuYCi0ANy/2bdox1qweZxaKgVQ/E=
+        b=Ym/mKHg/O93t27zPW8xdlsm8lZurF61bz6fwAKw/8jxPmxcGdSWXWq8gNAizCqtJ7
+         hiBF62A+9rlYM4r/FtwJs49Ozpt0uRstEdzlajjZQ9LwUaaztom8lQ/jHUk/b+LSZ6
+         cJUQ5yDqYJ0mL5ZvlxkW4YG0Khiferx573tQ0qQk=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>,
         Linus Walleij <linus.walleij@linaro.org>,
@@ -65,9 +65,9 @@ To:     Rob Herring <robh+dt@kernel.org>,
         linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v2 16/19] dt-bindings: interrupt-controller: fsl,irqsteer: Fix compatible matching
-Date:   Mon, 24 Aug 2020 18:26:49 +0200
-Message-Id: <20200824162652.21047-16-krzk@kernel.org>
+Subject: [PATCH v2 12/19] dt-bindings: mmc: fsl-imx-esdhc: Fix i.MX 8 compatible matching
+Date:   Mon, 24 Aug 2020 18:26:45 +0200
+Message-Id: <20200824162652.21047-12-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200824162652.21047-1-krzk@kernel.org>
 References: <20200824162652.21047-1-krzk@kernel.org>
@@ -76,37 +76,77 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The i.MX 8M DTSes use two compatibles so update the binding to fix
+The i.MX 8 DTSes use two compatibles so update the binding to fix
 dtbs_check warnings like:
 
-  arch/arm64/boot/dts/freescale/imx8mq-thor96.dt.yaml: interrupt-controller@32e2d000:
-    compatible: ['fsl,imx8m-irqsteer', 'fsl,imx-irqsteer'] is too long
-    From schema: Domentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
+  arch/arm64/boot/dts/freescale/imx8mn-evk.dt.yaml: mmc@30b40000:
+    compatible: ['fsl,imx8mn-usdhc', 'fsl,imx7d-usdhc'] is too long
+    From schema: Documentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
 
-  arch/arm64/boot/dts/freescale/imx8mq-thor96.dt.yaml: interrupt-controller@32e2d000:
-    compatible: Additional items are not allowed ('fsl,imx-irqsteer' was unexpected)
+  arch/arm64/boot/dts/freescale/imx8mn-evk.dt.yaml: mmc@30b40000:
+    compatible: Additional items are not allowed ('fsl,imx7d-usdhc' was unexpected)
+
+  arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dt.yaml: mmc@30b40000:
+    compatible: ['fsl,imx8mn-usdhc', 'fsl,imx7d-usdhc'] is too long
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- .../bindings/interrupt-controller/fsl,irqsteer.yaml       | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml b/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-index 360a575ef8b0..3b11a1a15398 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-+++ b/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-@@ -11,9 +11,11 @@ maintainers:
+---
+
+Changes since v1:
+1. Handle also fsl,imx8mm-usdhc and fsl,imx8qxp-usdhc
+---
+ .../bindings/mmc/fsl-imx-esdhc.yaml           | 40 +++++++++++--------
+ 1 file changed, 23 insertions(+), 17 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml b/Documentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
+index 10b45966f1b8..54f05e2a4246 100644
+--- a/Documentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
++++ b/Documentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
+@@ -21,23 +21,29 @@ description: |
  
  properties:
    compatible:
 -    enum:
--      - fsl,imx8m-irqsteer
--      - fsl,imx-irqsteer
+-      - fsl,imx25-esdhc
+-      - fsl,imx35-esdhc
+-      - fsl,imx51-esdhc
+-      - fsl,imx53-esdhc
+-      - fsl,imx6q-usdhc
+-      - fsl,imx6sl-usdhc
+-      - fsl,imx6sx-usdhc
+-      - fsl,imx6ull-usdhc
+-      - fsl,imx7d-usdhc
+-      - fsl,imx7ulp-usdhc
+-      - fsl,imx8mq-usdhc
+-      - fsl,imx8mm-usdhc
+-      - fsl,imx8mn-usdhc
+-      - fsl,imx8mp-usdhc
+-      - fsl,imx8qm-usdhc
+-      - fsl,imx8qxp-usdhc
 +    oneOf:
-+      - const: fsl,imx-irqsteer
++      - enum:
++          - fsl,imx25-esdhc
++          - fsl,imx35-esdhc
++          - fsl,imx51-esdhc
++          - fsl,imx53-esdhc
++          - fsl,imx6q-usdhc
++          - fsl,imx6sl-usdhc
++          - fsl,imx6sx-usdhc
++          - fsl,imx6ull-usdhc
++          - fsl,imx7d-usdhc
++          - fsl,imx7ulp-usdhc
++          - fsl,imx8mq-usdhc
++          - fsl,imx8mm-usdhc
++          - fsl,imx8qxp-usdhc
 +      - items:
-+          - const: fsl,imx8m-irqsteer
-+          - const: fsl,imx-irqsteer
++          - enum:
++              - fsl,imx8mm-usdhc
++              - fsl,imx8mn-usdhc
++              - fsl,imx8mp-usdhc
++              - fsl,imx8mq-usdhc
++              - fsl,imx8qxp-usdhc
++          - const: fsl,imx7d-usdhc
  
    reg:
      maxItems: 1
