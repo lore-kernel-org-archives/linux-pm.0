@@ -2,181 +2,128 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47109C433E3
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EC713C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 14AA22074D
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C889E2071E
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 10:46:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UskvNm3E"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="djzw2pFL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727872AbgHXKqC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 06:46:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55086 "EHLO
+        id S1726964AbgHXKqK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 06:46:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55072 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727112AbgHXKpz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 06:45:55 -0400
-Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 275F0C061573;
-        Mon, 24 Aug 2020 03:45:49 -0700 (PDT)
-Received: by mail-ej1-x644.google.com with SMTP id md23so10502594ejb.6;
-        Mon, 24 Aug 2020 03:45:49 -0700 (PDT)
+        with ESMTP id S1727000AbgHXKps (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 06:45:48 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75D75C061574
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 03:45:47 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id a5so8181341wrm.6
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 03:45:47 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=f6wdlEKoq+5Slr+UsziPsdyk2CY1PCYDCcZCpyAdvwo=;
-        b=UskvNm3ErsbR8Pp/wFDQea/LOjrsQ4lwIZJjMWNn1JqQJYresYEAPXPejRzFL60qex
-         VE2PGxG3z8KRswRMmM0oKcJxH4wfLw5UvtX4JnyAUPoKWu9sxdm0qD/ddj2zaeo5vMgE
-         KZeoYRVzeupKX/SneIEZ9AqQDO61XOR3UAzcYoPFcwipi1OS8bSVvAxM+lct67wWGrRQ
-         WoFGfSl7GIm+5MgTB/3tGzC54KHwQhZaDXdU/hYA/29sWSYgsMo2Xqb3cBh5O/NmY5R9
-         K9vbAnDlVC3IpZUgmny3LW/UUBYTGqa+eXFV+oY6U5DqQJs1C4JQPbuhL3NgHMj6ka9y
-         dPtA==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=X8bdXVUd2ZafGrZsydrb9Z2SDYX2iihTQNdU7gM/cJc=;
+        b=djzw2pFL0sp4R2OU4tnnwlDJLAAGiiLxvawtf/pn6iCIU6rKtkt8eaf+BO9jA5tE2W
+         HZovWyr/D7Ev8X3iAu7c+3MY4uzodttKCiscrln/O2s/iYqiN9YbWpUN4FyV4nGzBjg9
+         Do35p2yVIlrImH/KJctjLq2ogKxPgGIZeBKnMc+TspcSiWZOExXE41sQDtBBlRuHaz6a
+         XmI+4kdnLPo5RHDZnS4V1DlhaO2+G1oWBmVUvkplQ9h8RurrZRW5GakuTOQFrmqktkfX
+         ZzwwzpzXtTHBsetSZT4X3vJEMR66UvXTTL2O4Jh1ApfFSG6mYBIkW0Vs8orRt2G65qIq
+         bHHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=f6wdlEKoq+5Slr+UsziPsdyk2CY1PCYDCcZCpyAdvwo=;
-        b=BOUAhbn+dwgjhScJXvuiz4Va037vSwo5yd/BDLejfqcvC0VaDZ2mt9vowBb7GZKo7V
-         N/uyQWbDQK8ATzkD3DLTD6NNPQoMretQFkENqTQLoIAo3NdwKVaUhQJ2ypHJLhwyg+AT
-         rUPxHqqLYPzlJmQvRRZsuvbrxVI2KAplyckVV6X7ZlIomwlMlw5D98kCFofGmqunFuKC
-         0wAQ/ZxgsE7jM2a6MFehnkCIZuTaKrWiMpmsHEdw6Bfoub23kFgMffh0w9hncAX+i4+k
-         L1KlAD4XvdwiXHkB9yfM/fcUTK7/XvCTZj/Xe1sVzjgqzlfrTZLw5K6qy+TenoiVrZND
-         i95w==
-X-Gm-Message-State: AOAM532enl1T4w0Q4fdYmU947gUZXkr3Nxynbgb1xUJBd2LvgG2t/8mh
-        YPznfxq8yHFQx/9qkPNFZY8Fo5k3riKia2wyo4o=
-X-Google-Smtp-Source: ABdhPJzEP44NtBFAfTFi6m+U0B8L72BF9hYGNpMJgnWY8VcgZq+4UR0vLLyZ7HOS1sZEFPyg+vJmWEtgQHp7weUp5fA=
-X-Received: by 2002:a17:906:2a04:: with SMTP id j4mr5218133eje.440.1598265947869;
- Mon, 24 Aug 2020 03:45:47 -0700 (PDT)
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=X8bdXVUd2ZafGrZsydrb9Z2SDYX2iihTQNdU7gM/cJc=;
+        b=r6SbnKhw4t5/wk8pdF5SNf9etY0y+dOPFRCYYXWbReW9e6dG3fvkL1ZpwZfoTiNP6w
+         kVVMXvKhXc9AO0Tlf0GFTQLevSgKO/94t4dad4Iykm5Gs+B6SdufjtUlaozn0s9696LD
+         5Oqir4exc3Fg9Ib44CdbBhvyhjX0wTi0SRNLmaLB+uq1jQNZ7h0vH1EvVnOkForP1K5e
+         8tlt6uADbYKYPo7Ddj/09XYhW7hdDkzDLK6O0/JsNNN9QaQi3dtHlF1mdGFvl5QrLzrd
+         NDhLBTNLbxagTASthL4m+bwgQjY05WMzOOireUigXQ+HJYfMWoKQR+RtKC46g9cYtVYE
+         SoQg==
+X-Gm-Message-State: AOAM5316hfcX95AxLexcJRO+6qQTQHUkvpWHu9XgYnL5M4D2JtThXoFb
+        VORDwN1OPONAtA6LLXbnFleK7A==
+X-Google-Smtp-Source: ABdhPJwJNM3y0nTcF+wtJ6Cz0O5X4b7N5G51v7E2SaMTd8WX5GsGNsYigj8nrXHBthl9cvaB+mDhtg==
+X-Received: by 2002:adf:fe50:: with SMTP id m16mr5499738wrs.27.1598265946046;
+        Mon, 24 Aug 2020 03:45:46 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0? ([2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0])
+        by smtp.googlemail.com with ESMTPSA id j7sm10146855wmj.38.2020.08.24.03.45.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2020 03:45:45 -0700 (PDT)
+Subject: Re: [PATCH] thermal: ti-soc-thermal: Fix bogus thermal shutdowns for
+ omap4430
+To:     Pavel Machek <pavel@ucw.cz>, Tony Lindgren <tony@atomide.com>
+Cc:     Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-omap@vger.kernel.org, Merlijn Wajer <merlijn@wizzup.org>,
+        Sebastian Reichel <sebastian.reichel@collabora.com>
+References: <20200706183338.25622-1-tony@atomide.com>
+ <20200823211204.zerldmljfd6rrk7g@duo.ucw.cz>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <d359b309-7fa2-5089-df14-e27eafed96d1@linaro.org>
+Date:   Mon, 24 Aug 2020 12:45:44 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-References: <20200823161550.3981-1-krzk@kernel.org> <20200823161550.3981-21-krzk@kernel.org>
- <AM6PR04MB49668B0F67B02B2A33603B4880560@AM6PR04MB4966.eurprd04.prod.outlook.com>
- <20200824091102.GA20819@kozik-lap> <CAA+hA=S=2SoF8egOq8h-eB9wZGDqrAw66VtW-bU9oBmzFSj9Bw@mail.gmail.com>
- <VI1PR04MB52949085DFA5D29C2858094290560@VI1PR04MB5294.eurprd04.prod.outlook.com>
- <20200824103237.GA26120@kozik-lap>
-In-Reply-To: <20200824103237.GA26120@kozik-lap>
-From:   Dong Aisheng <dongas86@gmail.com>
-Date:   Mon, 24 Aug 2020 18:30:33 +0800
-Message-ID: <CAA+hA=TD8bjmws7FXAP7zZR1dYgtLPzjFrhPg8XwZcpP2ef4ug@mail.gmail.com>
-Subject: Re: [PATCH 21/22] arm64: dts: imx8qxp: Remove i.MX7 compatible from USDHC
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     Bough Chen <haibo.chen@nxp.com>,
-        Aisheng Dong <aisheng.dong@nxp.com>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
-        Anson Huang <anson.huang@nxp.com>,
-        "linux-gpio@vger.kernel.org" <linux-gpio@vger.kernel.org>,
-        Fabio Estevam <festevam@gmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "linux-pwm@vger.kernel.org" <linux-pwm@vger.kernel.org>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        "linux-mtd@lists.infradead.org" <linux-mtd@lists.infradead.org>,
-        dl-linux-imx <linux-imx@nxp.com>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "linux-watchdog@vger.kernel.org" <linux-watchdog@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20200823211204.zerldmljfd6rrk7g@duo.ucw.cz>
+Content-Type: text/plain; charset=UTF-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Aug 24, 2020 at 6:32 PM Krzysztof Kozlowski <krzk@kernel.org> wrote=
-:
->
-> On Mon, Aug 24, 2020 at 10:31:31AM +0000, Bough Chen wrote:
-> > > -----Original Message-----
-> > > From: Dong Aisheng [mailto:dongas86@gmail.com]
-> > > Sent: 2020=E5=B9=B48=E6=9C=8824=E6=97=A5 17:45
-> > > To: Krzysztof Kozlowski <krzk@kernel.org>
-> > > Cc: Aisheng Dong <aisheng.dong@nxp.com>; devicetree@vger.kernel.org;
-> > > linux-serial@vger.kernel.org; Anson Huang <anson.huang@nxp.com>;
-> > > linux-gpio@vger.kernel.org; Fabio Estevam <festevam@gmail.com>; Linus
-> > > Walleij <linus.walleij@linaro.org>; linux-pm@vger.kernel.org;
-> > > linux-mmc@vger.kernel.org; linux-kernel@vger.kernel.org;
-> > > linux-pwm@vger.kernel.org; Bartosz Golaszewski
-> > > <bgolaszewski@baylibre.com>; Rob Herring <robh+dt@kernel.org>;
-> > > linux-mtd@lists.infradead.org; dl-linux-imx <linux-imx@nxp.com>; Peng=
-utronix
-> > > Kernel Team <kernel@pengutronix.de>; Thierry Reding
-> > > <thierry.reding@gmail.com>; Shawn Guo <shawnguo@kernel.org>; Sascha
-> > > Hauer <s.hauer@pengutronix.de>; linux-arm-kernel@lists.infradead.org;
-> > > linux-watchdog@vger.kernel.org; Bough Chen <haibo.chen@nxp.com>
-> > > Subject: Re: [PATCH 21/22] arm64: dts: imx8qxp: Remove i.MX7 compatib=
-le
-> > > from USDHC
-> > >
-> > > On Mon, Aug 24, 2020 at 5:15 PM Krzysztof Kozlowski <krzk@kernel.org>
-> > > wrote:
-> > > >
-> > > > On Mon, Aug 24, 2020 at 09:00:19AM +0000, Aisheng Dong wrote:
-> > > > > > From: Krzysztof Kozlowski <krzk@kernel.org>
-> > > > > > Sent: Monday, August 24, 2020 12:16 AM
-> > > > > >
-> > > > > > The USDHC on i.MX 8QXP has its own compatible described in
-> > > > > > bindings and used in the driver (with its own quirks).  Remove
-> > > > > > additional fsl,imx7d-usdhc compatible to fix dtbs_check warning=
-s like:
-> > > > > >
-> > > > > >   arch/arm64/boot/dts/freescale/imx8qxp-ai_ml.dt.yaml:
-> > > mmc@5b010000:
-> > > > > >     compatible: ['fsl,imx8qxp-usdhc', 'fsl,imx7d-usdhc'] is too=
- long
-> > > > > >     From schema:
-> > > > > > /ocumentation/devicetree/bindings/mmc/fsl-imx-esdhc.yaml
-> > > > > >
-> > > > > >   arch/arm64/boot/dts/freescale/imx8qxp-ai_ml.dt.yaml:
-> > > mmc@5b010000:
-> > > > > >     compatible: Additional items are not allowed
-> > > > > > ('fsl,imx7d-usdhc' was
-> > > > > > unexpected)
-> > > > > >
-> > > > > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-> > > > >
-> > > > > For Patch 19-22, I think we should fix dt binding doc.
-> > > >
-> > > > Are you sure that these USDHC controllers are compatible with i.MX =
-7D?
-> > > > Could they really run with fsl,imx7d-usdhc compatible?
-> > >
-> > > AFAIK uSDHC on QXP is derived from the former platforms with adding a=
- few
-> > > more new features. e.g. HS400ES/CMDQ.
-> > > Let me loop in uSDHC driver owner Haibo Chen to double confirm.
-> >
-> > Yes, usdhc of imx8qxp can work by using the compatible "fsl, imx7d-usdh=
-c", but will not support HS400ES/Command Queue any more. Also imx8qxp suppo=
-rt Auto CMD23, but imx7d not.
-> > And imx8qxp need to re-config the clock rate after system PM, imx7d do =
-not need to do this.
->
-> Then we can leave the compatible in DTS and I will correct the device
-> tree schema.
+On 23/08/2020 23:12, Pavel Machek wrote:
+> Hi!
+> 
+>> We can sometimes get bogus thermal shutdowns on omap4430 at least with
+>> droid4 running idle with a battery charger connected:
+>>
+>> thermal thermal_zone0: critical temperature reached (143 C), shutting down
+>>
+>> Dumping out the register values shows we can occasionally get a 0x7f value
+>> that is outside the TRM listed values in the ADC conversion table. And then
+>> we get a normal value when reading again after that. Reading the register
+>> multiple times does not seem help avoiding the bogus values as they stay
+>> until the next sample is ready.
+>>
+>> Looking at the TRM chapter "18.4.10.2.3 ADC Codes Versus Temperature", we
+>> should have values from 13 to 107 listed with a total of 95 values. But
+>> looking at the omap4430_adc_to_temp array, the values are off, and the
+>> end values are missing. And it seems that the 4430 ADC table is similar
+>> to omap3630 rather than omap4460.
+>>
+>> Let's fix the issue by using values based on the omap3630 table and just
+>> ignoring invalid values. Compared to the 4430 TRM, the omap3630 table has
+>> the missing values added while the TRM table only shows every second
+>> value.
+>>
+>> Note that sometimes the ADC register values within the valid table can
+>> also be way off for about 1 out of 10 values. But it seems that those
+>> just show about 25 C too low values rather than too high values. So those
+>> do not cause a bogus thermal shutdown.
+> 
+> This does not seem to be in recent -next. Ping?
 
-Haibo,
+Pong.
 
-As Krzysztof is helping fix uSDHC binding doc in Patch 12/22,
-please double check with IC for the whole uSDHC derive relationships on i.M=
-X
-and feedback to Krzysztof if anything is wrong.
+Going back from vacation. Will be in next very soon.
 
-Regards
-Aisheng
 
->
-> Best regards,
-> Krzysztof
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
