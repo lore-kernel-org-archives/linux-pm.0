@@ -2,100 +2,137 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2F6F7C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:34:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E63FC433E3
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:46:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 02FBA2078A
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:34:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C95A2071E
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 09:46:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iI4wNU1g"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="QP3WPu9b"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728661AbgHXJeq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 05:34:46 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43808 "EHLO
+        id S1728392AbgHXJq2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 05:46:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35324 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726138AbgHXJeZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 05:34:25 -0400
+        with ESMTP id S1728937AbgHXImU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 04:42:20 -0400
 Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1582C061573
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:34:24 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id c15so7927188wrs.11
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 02:34:24 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 436DDC061573;
+        Mon, 24 Aug 2020 01:42:19 -0700 (PDT)
+Received: by mail-wr1-x443.google.com with SMTP id a5so7812800wrm.6;
+        Mon, 24 Aug 2020 01:42:19 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=oQFrC1o3Nda9YLxSbgopWEOdNnQxrkWudyF2nTbVXVU=;
-        b=iI4wNU1gyMDP3WOfbrMsV5PNzotxiKE+bg3HG4dL4ZNpFQ5QXR1VjF7EaZVhqM5pbR
-         /apqB/5NXnbQO/3QcPmJa2ymAJrRdh3q+VNx0a0WUjVrqorgAvwGbIygf/nWdu0FJnlR
-         2VF43WNvEHWPrUMPWGcStgXCXrQu0Wt4FMh6t/B7KsM4x98lcwZjW40VVfETqRVT7u+B
-         YNLoQECf0W2p2wXdHaMUWqr7ZK7KKqGr2dI98GzCd0Gk03gAkK+va2bB9KNnzETyhrA4
-         SKMppU9b3ulLFxpyUTLBv1CO7H+HQ/8rLi1gdJkfeb+dDWshGrYd+KTB+cB2lMYgNSoL
-         4qeQ==
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=FbqblzJhgrxr4jZgi3Lq34QqMg+Ttkj3vGhG8H42MbE=;
+        b=QP3WPu9b1QKlz3sDPT/E0l4eLPgQXgf9j16xq2ixoEUc4YlJj12mlVBgfq9loGF/TJ
+         inbamtbamkfPkYT3SfI0Eh4mq32N8+pl52ApN5zilY94tGLgqlZnZYGEg3vBl30ec3Rc
+         lRekNLBhwn7fVnXk6ocbZNYwxvicu0x1ikJHlNCEtv/eZmpH0IShjDQNXnVLqgCSsCM7
+         66JACXsjbYo5b75KtgOu33NpuUIcU/PsrlkUQ72cIXvlI+CtvFNRiFB0TS50tEk2t43h
+         PbfgiKOCWJRUf+GNeUadfRHUmsRxLBN0hqYkbF0TzgTh2NrcqM1Yw3UzBJbNiIaHD2Hi
+         WuiQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=oQFrC1o3Nda9YLxSbgopWEOdNnQxrkWudyF2nTbVXVU=;
-        b=Ohq+01PpAW+9VTdTaaxLrweFs7CSuWdaO4dnpnvTTeHhBXCLnQDRCXRMssyXf2/FMY
-         XohlMHJjGEWGcmgumWf7d7FBBB5odzwcC20ZgtzLp3ecRLgQaotBHkgY4YliUSU4FkQX
-         +VFYK3aY9LEkZgBDzcxIEja7bZHlp+sjVQhRgTvyzn8Jz0aYYK2ibfdYpyxjVZVnbsU4
-         iNDsydm43N0tPU/DvQpGd2r6ytIHnl17soUAaxQ/ZamDslguCufQnFDwUjK3N8z0OEg9
-         pFU6dgJc9zhhfQFfIcpSyNLwGKVKMWWgaXpNYYYByM2dgJuJHOEu3qSQ2HlMYTLSWKEv
-         Y6QQ==
-X-Gm-Message-State: AOAM532DxmQH1e4tABLm6dy9rKHOI04BcP6dEmrmjU3v/DxDEVba02b7
-        tz2C9D+LEI0RMLEa+Du7S6R5dQ==
-X-Google-Smtp-Source: ABdhPJzfp+hZthOM0E1QMoXJyd50y7e6J2eC0nSOR2g0GL2084Jm9DgaEpMukZ1glzmBjUeTo56zoQ==
-X-Received: by 2002:a5d:630b:: with SMTP id i11mr5231552wru.95.1598261663543;
-        Mon, 24 Aug 2020 02:34:23 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0? ([2a01:e34:ed2f:f020:cd42:2fa4:120f:76b0])
-        by smtp.googlemail.com with ESMTPSA id y17sm5682961wma.17.2020.08.24.02.34.22
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 24 Aug 2020 02:34:23 -0700 (PDT)
-Subject: Re: [PATCH v2] thermal: core: Fix use-after-free in
- thermal_zone_device_unregister()
-To:     Dmitry Osipenko <digetx@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20200817235854.26816-1-digetx@gmail.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <84ecfc78-bbe7-b4e0-a815-46b6225eca09@linaro.org>
-Date:   Mon, 24 Aug 2020 11:34:22 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=FbqblzJhgrxr4jZgi3Lq34QqMg+Ttkj3vGhG8H42MbE=;
+        b=ZQ18iiHRs/prN1Ei63AtBQJJL//DQBzTxXkw2fXaI4AlVfHCMxAlnx9UG5DljWnDzv
+         gaqewKYe1YZWpUmKTsnDKmIoPhUfCeXh5dr8xc6S17j9z4wnsrjnRucBfw8QrFnHNjzX
+         xsAtz17ZubqtTHe57JU6BW6+ly0EI6hWTRfHP8+2I7IRGuRolJcP4XBNiMlS9KTt4ZT2
+         jMUum3FS2riayoYtIEOVpHK9CdqTx/Mxz5nEKfY1cWvF7bW1yK7OqFjH8CTI/q700cdZ
+         mrv5I2JuzY6/wkUhbsGTJRxLWA/flNJ4DpgBzf6Npc9XRqWh13j4ZSO2vtYbwarJCP9w
+         q1Hg==
+X-Gm-Message-State: AOAM532BI97XU5AVvURpGpNSiwCUGiAFcoSXByA0NPYoHH+cFGSNfruz
+        D/v2dSYZqvUrkWSzmDvarlF80vJ8rTOckKUFJVJzirDaJE3fQA==
+X-Google-Smtp-Source: ABdhPJzAg8uQC8Mrf0XcBKdIu2nrOS4XC7CNiYSaA3zhrvxiaasEP+kVaYJgjFUamKAVfjf08TugaCoK1jLRBUkbid8=
+X-Received: by 2002:adf:9283:: with SMTP id 3mr4718276wrn.70.1598258537988;
+ Mon, 24 Aug 2020 01:42:17 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200817235854.26816-1-digetx@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+References: <cover.1597376585.git.huangqiwu@xiaomi.com> <ced256ea8ac2f3e54c33677facc4c2ef04dee643.1597376585.git.huangqiwu@xiaomi.com>
+ <20200814060909.GD1409566@kroah.com> <CAPtXDt1e3fi7ymW0-FSknUAYCQ80aL=4btbeA2e4Xre7+e7OtA@mail.gmail.com>
+ <20200818060707.GB1742213@kroah.com> <CAPtXDt26DdOi6JG7x3mTrR5YwArjkAeXY2TogRnK_xkSabhL2g@mail.gmail.com>
+ <20200824074357.GB4133866@kroah.com>
+In-Reply-To: <20200824074357.GB4133866@kroah.com>
+From:   Qiwu Huang <yanziily@gmail.com>
+Date:   Mon, 24 Aug 2020 16:42:06 +0800
+Message-ID: <CAPtXDt0yW7Kh6a9JGfXaha_wKVjae7U74m6K=631Ofh8_m4uvg@mail.gmail.com>
+Subject: Re: [PATCH v8 1/4] power: supply: core: add quick charge type property
+To:     Greg KH <gregkh@linuxfoundation.org>
+Cc:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Qiwu Huang <huangqiwu@xiaomi.com>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 18/08/2020 01:58, Dmitry Osipenko wrote:
-> The user-after-free bug in thermal_zone_device_unregister() is reported by
-> KASAN. It happens because struct thermal_zone_device is released during of
-> device_unregister() invocation, and hence the "tz" variable shouldn't be
-> touched by thermal_notify_tz_delete(tz->id).
-> 
-> Fixes: 55cdf0a283b8 ("thermal: core: Add notifications call in the framework")
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
+On Mon, Aug 24, 2020 at 3:43 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+>
+> On Mon, Aug 24, 2020 at 08:54:56AM +0800, Qiwu Huang wrote:
+> > On Tue, Aug 18, 2020 at 2:07 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+> > >
+> > > On Tue, Aug 18, 2020 at 09:56:28AM +0800, Qiwu Huang wrote:
+> > > > On Fri, Aug 14, 2020 at 2:09 PM Greg KH <gregkh@linuxfoundation.org> wrote:
+> > > > >
+> > > > > On Fri, Aug 14, 2020 at 11:46:54AM +0800, Qiwu Huang wrote:
+> > > > > > From: Qiwu Huang <huangqiwu@xiaomi.com>
+> > > > > >
+> > > > > > Reports the kind of quick charge type based on
+> > > > > > different adapter power.
+> > > > > >
+> > > > > > Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
+> > > > > > ---
+> > > > > >  Documentation/ABI/testing/sysfs-class-power | 21 +++++++++
+> > > > > >  drivers/power/supply/power_supply_sysfs.c   |  1 +
+> > > > > >  drivers/power/supply/qcom_smbb.c            | 51 +++++++++++++++++++++
+> > > > > >  include/linux/power_supply.h                | 14 ++++++
+> > > > > >  4 files changed, 87 insertions(+)
+> > > > >
+> > > > > You should also submit your driver that uses these new attributes at the
+> > > > > same time.  What happened to that request?  Otherwise no one really
+> > > > > knows how these are being used, or if they even are used by anyone.
+> > > > >
+> > > >
+> > > > I don't think I can submit the whole driver because our drivers are
+> > > > divided into three parts, the first part is in ADSP, the second part
+> > > > is in kernel and the third part is in Android Hal.This is the second
+> > > > part.
+> > >
+> > > WHat is "ADSP"?
+> >
+> > ADSP: advanced digital signal processor
+>
+> Ok, then just send the kernel driver.
+>
+> > > Just submit your kernel driver code, that's all we care about here.
+> > > Userspace code is not anything we can do anything with :)
+> >
+> > If we ported the full driver, we would break the existing driver
+> > structure because we would introduce more Qualcomm code. I think
+> > that's an unreasonable change.
+>
+> That doesn't make much sense.  You have a working driver for these apis,
+> just submit it for inclusion, it should never break any existing
+> drivers, otherwise your code wouldn't work either.
 
-Applied, thanks !
+We're an Android device, we're working on a Qualcomm based code, and
+from the current code tree, the current code tree is missing the QTI
+Charger code
+
+>
+> thanks,
+>
+> greg k-h
+
 
 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+Thanks
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+Qiwu
