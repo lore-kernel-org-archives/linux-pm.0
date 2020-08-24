@@ -2,103 +2,93 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E25CCC433E1
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:35:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 02A65C433E1
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:39:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BF3C5207D3
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:35:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CED1D2078D
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 11:39:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iqLr05L9"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="SR0SwN7M"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726887AbgHXLfj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 07:35:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34084 "EHLO
+        id S1726611AbgHXLjO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 07:39:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35350 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726907AbgHXLaj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 07:30:39 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B22CFC061574
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 04:30:30 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id m8so4664754pfh.3
-        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 04:30:30 -0700 (PDT)
+        with ESMTP id S1727034AbgHXLiv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 07:38:51 -0400
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 41DEEC061573;
+        Mon, 24 Aug 2020 04:38:40 -0700 (PDT)
+Received: by mail-lj1-x244.google.com with SMTP id i10so9230876ljn.2;
+        Mon, 24 Aug 2020 04:38:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=KFVBStf/gf1dn9u4zO2x0xipCrd73hHfqj8Q+elUA6k=;
-        b=iqLr05L9bMYf1Q1YOzzoOeQuCLaPr/lR39Wr1rxWF64ZbU0xLpZBF8iUwYh/a3/5VC
-         K1lL5Il0RvcoFxohuj31lGwRHYwD+h7NMKfo2lmfMQ1iLqLvNDujhvNcQEhp0Ae0kDH9
-         IR4OiPOcd9b1WB97D4SkdRLgWaPsEdhOG05MRr1Ov/lXXoEn0zTsTaIYgARNOdtLJDiw
-         xgIJKzGjmeXNxaLu0Olnx2evewVxzXldixTPJlzoU/ScmAPXIIk/P9rYR+qWb8HQ7hC7
-         XT2eIHtIgOR/PXaEs3pQAZzZ3qsR0AnInnRzshA7AaWSOuXTmeava6a40ndJRxvH4jUV
-         adLQ==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=COA2OoHledK6LxvVEpN2e5CT6+lH8tSEYYTfZmmyU+4=;
+        b=SR0SwN7M6dpgYK7DRYbwwCnClbUHBxGuJ5fyR4tdZrmskdS7xDOrOepiBGL5BqJ+s1
+         4qcix95iMTmwpAxwxcm9fOFJgwQECfE4mxvs47NM/OiEdmbqLuA8AE0LgOEAj6/b9Bh9
+         MFSL/6FpM99suqavlWe7Zbeg//rTkahk9GGG6CwXaD35Lni8Mdb/quypDi4t9iLjfo4r
+         J6Ne7zqRLtsCcOO5HgXSPq7kmFEuLySeXTu1JfiuJL9HixZBlA7sRd5I+gOiii+B+1zv
+         dtJEZvJyJYoIlr/3HPsoY+MC1VWNZqgXwZqErbMhf7eSQ5TUZdffF0sj0Cn1vtdZLCjR
+         In9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=KFVBStf/gf1dn9u4zO2x0xipCrd73hHfqj8Q+elUA6k=;
-        b=sfP/UZAskWxE42xPfUGPXXuQoQ/cWxm4wAf7z6eXONqsg8HDZX0NqY23NzMcnScmMc
-         97Tv+g8ACLyNK0CSyAvd3jibr1zBQ+WZnv+eOJjmUApcZ1BFcydq/wIMb87rnUyiws2i
-         LxyYnHA2oIQTHfUPC7svL6f+eJqrHhzOzZbWa0T4pa4MF5p7IwFjTeQPXJlbxZM/VrOq
-         UszhUO/OUKHADzOsx/CwMzDDj9CCBgAVVay1+J+6zeTBmet52BMTozg5a2sdVffgWKCF
-         6ylITTSpuCJ1NSgjHDyLAQTtBqNV3DHCZt5BluBAQY/GDQerSEQkGctVc8+ndhgnI8Az
-         U4Og==
-X-Gm-Message-State: AOAM530AjJtG+bddaf1fQvpDIYDfAeRL+RULr/+ls8y6SoQg7IlPmbG4
-        bGxLz7jDmB7JL8XfcUl0VQ9Hcw==
-X-Google-Smtp-Source: ABdhPJwof+0lVQnVChbft2uU8gERi7rnvy18l1DB/HKP5XCCoWFy6zzd0qvuoXraHA02UUv2w1CLsw==
-X-Received: by 2002:a05:6a00:851:: with SMTP id q17mr3790700pfk.214.1598268630288;
-        Mon, 24 Aug 2020 04:30:30 -0700 (PDT)
-Received: from localhost ([122.172.43.13])
-        by smtp.gmail.com with ESMTPSA id x13sm2714433pfr.69.2020.08.24.04.30.29
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 24 Aug 2020 04:30:29 -0700 (PDT)
-Date:   Mon, 24 Aug 2020 17:00:27 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Stephan Gerhold <stephan@gerhold.net>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Niklas Cassel <nks@flawful.org>
-Subject: Re: [RFC PATCH 2/3] opp: Set required OPPs in reverse order when
- scaling down
-Message-ID: <20200824113027.lzh6fp4bottjl6cc@vireshk-i7>
-References: <20200730080146.25185-1-stephan@gerhold.net>
- <20200730080146.25185-3-stephan@gerhold.net>
- <20200821163152.GA3422@gerhold.net>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=COA2OoHledK6LxvVEpN2e5CT6+lH8tSEYYTfZmmyU+4=;
+        b=fERC0izN1MZ4w1houtQn78zjYtkMaL0rhP9Btg0clkZD6VIpYkq+uPrC4QHyJkABj6
+         fL6foyqKZRmrrZNjD8+bqunDVAKyuuxanMhU4R6MIX4CQH4pzkEXzlM9R8SxgZZ/ix9f
+         5jGduoouvJrk3d1sYBQUmapDW5FunI3qOgtBzw8ahNZELkiKUv4qVyM7qyBRtsKKVLcC
+         PJofxX1JvUxZmoYi4SfBUqufY1mv4N9Nf8+MEaAJ7MZVLEplBQf9w+QHhDvh/mzNqoEg
+         o+nfjrK1K8F5qr8uyr6VkfUeiTenn1ggImeO9FIq9dG/CWGd2fpSD1zvPACc6B9yHRlH
+         VmwA==
+X-Gm-Message-State: AOAM533kLhWt69OIBDons0FFRbrH4VVvhbg2X5uEJb7E7X4Tyt+1cIAt
+        tG/48JTJk4L17BRfARpvBUwwFJOb2Ls=
+X-Google-Smtp-Source: ABdhPJxsOi1noSnwLv7Tf5DhsoD96d7iPEV0CBG6t4E1gTnBmk7t6lPxQXly/bV+TJiX2fyz+avHIg==
+X-Received: by 2002:a05:651c:1349:: with SMTP id j9mr2317590ljb.392.1598269118514;
+        Mon, 24 Aug 2020 04:38:38 -0700 (PDT)
+Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
+        by smtp.googlemail.com with ESMTPSA id h23sm2129796lji.139.2020.08.24.04.38.37
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 24 Aug 2020 04:38:37 -0700 (PDT)
+Subject: Re: [PATCH v1 3/6] leds: Add driver for Acer Iconia Tab A500
+To:     Pavel Machek <pavel@ucw.cz>
+Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Dan Murphy <dmurphy@ti.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Lubomir Rintel <lkundrak@v3.sk>, devicetree@vger.kernel.org,
+        linux-tegra@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20200823140846.19299-1-digetx@gmail.com>
+ <20200823140846.19299-4-digetx@gmail.com>
+ <20200823223037.5fkeg5ai6hry3axj@duo.ucw.cz>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <31e11f94-41cc-9181-cd08-95a074f3487b@gmail.com>
+Date:   Mon, 24 Aug 2020 14:38:37 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200821163152.GA3422@gerhold.net>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <20200823223037.5fkeg5ai6hry3axj@duo.ucw.cz>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 21-08-20, 18:31, Stephan Gerhold wrote:
-> This patch does not apply anymore after the cleanup you pushed to
-> opp/linux-next. I would be happy to send a v2 with that fixed.
+24.08.2020 01:30, Pavel Machek пишет:
+>> +	orange_led->cdev.name = "power-button-orange";
 > 
-> On my other OPP patch set you mentioned that you might apply these
-> directly with some of your own changes - would you also prefer to do it
-> yourself in this case or should I send a v2?
+> "orange:power" -- or what is this LED usually used for?
 
-I will pick the first 2 myself, that's fine. Lets see where we go with
-the third one :)
-
-> Still looking for your feedback on both patch sets by the way! :)
-
-Sorry about the delay, I was on vacation for over a week in between and
-this and the other patchset was a bit tricky (which you may have not
-realized, not sure, as I wondered if something will not work within
-the OPP core for v1 binding, but it did finally I believe) :)
-
--- 
-viresh
+The orange LED is supposed to indicate that battery is charging up.
