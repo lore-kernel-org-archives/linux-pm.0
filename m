@@ -2,123 +2,119 @@ Return-Path: <SRS0=SKF3=CC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2DB0C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:35:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 74829C433DF
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:36:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AB8C02067C
-	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:35:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4C424206F0
+	for <linux-pm@archiver.kernel.org>; Mon, 24 Aug 2020 17:36:58 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1598290618;
+	bh=xV9upgJFUdWJViQpTgljw0h9O9Oy/nU6sRG9fJrRqIA=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=U4h1CPNrSKFsV/uIEinni5AniosDEmFzr1yu3GsUyHvu+2KMBM6RaYskcEGkkmKhU
+	 /V1F8/1BBlBTj/MaAgD0zTfjn9cZ0oGZpqSvONnE2mz4nPD348b1xHR6sCnqyjo5ik
+	 NTxPFy2bSWzEGw590582pLC3gyDgF5Ee5Qf1erWY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727973AbgHXRfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 24 Aug 2020 13:35:38 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:55850 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726630AbgHXRff (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 24 Aug 2020 13:35:35 -0400
-Received: from 89-64-88-199.dynamic.chello.pl (89.64.88.199) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
- id c842b0c3f2076e9b; Mon, 24 Aug 2020 19:35:32 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux ACPI <linux-acpi@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH v2] PM: sleep: core: Fix the handling of pending runtime resume requests
-Date:   Mon, 24 Aug 2020 19:35:31 +0200
-Message-ID: <1954100.8R8RjBe1nF@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+        id S1726905AbgHXRd1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 24 Aug 2020 13:33:27 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56840 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726666AbgHXQ1p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 24 Aug 2020 12:27:45 -0400
+Received: from kozik-lap.mshome.net (unknown [194.230.155.216])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 84EEC207CD;
+        Mon, 24 Aug 2020 16:27:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1598286454;
+        bh=xV9upgJFUdWJViQpTgljw0h9O9Oy/nU6sRG9fJrRqIA=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Rbb5Xsxg/cfMuBlbOhmadtnzMEI+gV19eqcQz5I6FbgH9EE9d9S8KhzNKQoMQL/KP
+         UnqVKL7CBXxTmSlJC5S4xiX7r8RilT3hhfyDXF6IB/0wiSM/RJhVZB0jeyLvmP4DFa
+         8I3AJahzpeTvWZTFk/XhSw6z8DAu5DHFfokfQOiM=
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Rob Herring <robh+dt@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Will Deacon <will@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        =?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+        <u.kleine-koenig@pengutronix.de>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Li Yang <leoyang.li@nxp.com>, Han Xu <han.xu@nxp.com>,
+        Frank Li <frank.li@nxp.com>, Fugang Duan <fugang.duan@nxp.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH v2 03/19] dt-bindings: gpio: fsl-imx-gpio: Add parsing of hogs
+Date:   Mon, 24 Aug 2020 18:26:36 +0200
+Message-Id: <20200824162652.21047-3-krzk@kernel.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200824162652.21047-1-krzk@kernel.org>
+References: <20200824162652.21047-1-krzk@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Allow parsing GPIO controller children nodes with GPIO hogs to fix
+warning:
 
-It has been reported that system-wide suspend may be aborted in the
-absence of any wakeup events due to unforseen interactions of it with
-the runtume PM framework.
+  arch/arm64/boot/dts/freescale/imx8mq-evk.dt.yaml: gpio@30240000: 'wl-reg-on' does not match any of the regexes: 'pinctrl-[0-9]+'
+    From schema: Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
 
-One failing scenario is when there are multiple devices sharing an
-ACPI power resource and runtime-resume needs to be carried out for
-one of them during system-wide suspend (for example, because it needs
-to be reconfigured before the whole system goes to sleep).  In that
-case, the runtime-resume of that device involves turning the ACPI
-power resource "on" which in turn causes runtime-resume requests
-to be queued up for all of the other devices sharing it.  Those
-requests go to the runtime PM workqueue which is frozen during
-system-wide suspend, so they are not actually taken care of until
-the resume of the whole system, but the pm_runtime_barrier()
-call in __device_suspend() sees them and triggers system wakeup
-events for them which then cause the system-wide suspend to be
-aborted if wakeup source objects are in active use.
-
-Of course, the logic that leads to triggering those wakeup events is
-questionable in the first place, because clearly there are cases in
-which a pending runtime resume request for a device is not connected
-to any real wakeup events in any way (like the one above).  Moreover,
-it is racy, because the device may be resuming already by the time
-the pm_runtime_barrier() runs and so if the driver doesn't take care
-of signaling the wakeup event as appropriate, it will be lost.
-However, if the driver does take care of that, the extra
-pm_wakeup_event() call in the core is redundant.
-
-Accordingly, drop the conditional pm_wakeup_event() call fron
-__device_suspend() and make the latter call pm_runtime_barrier()
-alone.  Also modify the comment next to that call to reflect the new
-code and extend it to mention the need to avoid unwanted interactions
-between runtime PM and system-wide device suspend callbacks.
-
-Fixes: 1e2ef05bb8cf8 ("PM: Limit race conditions between runtime PM and system sleep (v2)")
-Reported-by: Mika Westerberg <mika.westerberg@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
+ .../devicetree/bindings/gpio/fsl-imx-gpio.yaml  | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
--> v2:
-   * Do not call pm_runtime_resume() if pm_runtime_barrier() returns 1,
-     because the device have been resumed by it already.
-   * Extend the comment next to the pm_runtime_barrier() call.
-   * Update the changelog in accordance with the above.
-
----
- drivers/base/power/main.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
-
-Index: linux-pm/drivers/base/power/main.c
-===================================================================
---- linux-pm.orig/drivers/base/power/main.c
-+++ linux-pm/drivers/base/power/main.c
-@@ -1606,13 +1606,17 @@ static int __device_suspend(struct devic
- 	}
+diff --git a/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml b/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
+index dffd9171ea66..620a52f944e8 100644
+--- a/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
++++ b/Documentation/devicetree/bindings/gpio/fsl-imx-gpio.yaml
+@@ -53,6 +53,23 @@ properties:
  
- 	/*
--	 * If a device configured to wake up the system from sleep states
--	 * has been suspended at run time and there's a resume request pending
--	 * for it, this is equivalent to the device signaling wakeup, so the
--	 * system suspend operation should be aborted.
-+	 * Wait for possible runtime PM transitions of the device in progress
-+	 * to complete and if there's a runtime resume request pending for it,
-+	 * resume it before proceeding with invoking the system-wide suspend
-+	 * callbacks for it.
-+	 *
-+	 * If the system-wide suspend callbacks below change the configuration
-+	 * of the device, they must disable runtime PM for it or otherwise
-+	 * ensure that its runtime-resume callbacks will not be confused by that
-+	 * change in case they are invoked going forward.
- 	 */
--	if (pm_runtime_barrier(dev) && device_may_wakeup(dev))
--		pm_wakeup_event(dev, 0);
-+	pm_runtime_barrier(dev);
+   gpio-ranges: true
  
- 	if (pm_wakeup_pending()) {
- 		dev->power.direct_complete = false;
-
-
++patternProperties:
++  "^(hog-[0-9]+|.+-hog(-[0-9]+)?)$":
++    type: object
++    properties:
++      gpio-hog: true
++      gpios: true
++      input: true
++      output-high: true
++      output-low: true
++      line-name: true
++
++    required:
++      - gpio-hog
++      - gpios
++
++    additionalProperties: false
++
+ required:
+   - compatible
+   - reg
+-- 
+2.17.1
 
