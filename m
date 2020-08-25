@@ -2,107 +2,126 @@ Return-Path: <SRS0=5v5e=CD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A803C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 17:02:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C4E8C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 17:53:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6B703207DF
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 17:02:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 081062080C
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 17:53:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="meuU0Zkw"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="k3t5RucN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726617AbgHYRCc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Aug 2020 13:02:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57290 "EHLO
+        id S1726356AbgHYRxu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Aug 2020 13:53:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37140 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726432AbgHYRB5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 13:01:57 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C77DDC061786
-        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2020 10:01:56 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id b17so12707723wru.2
-        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2020 10:01:56 -0700 (PDT)
+        with ESMTP id S1726090AbgHYRxt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 13:53:49 -0400
+Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com [IPv6:2607:f8b0:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 54F32C061574
+        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2020 10:53:49 -0700 (PDT)
+Received: by mail-ot1-x343.google.com with SMTP id h16so11108265oti.7
+        for <linux-pm@vger.kernel.org>; Tue, 25 Aug 2020 10:53:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=QNXnwR9p0uhARPXD5IdPdhRimuwkBpCRHZXkkYzIxeQ=;
-        b=meuU0Zkwwy7TRrTbdm6LUcRa5e3YU5RgQBubXJ47ZT+Lsi5779G+F1X6eYeme2O5ZK
-         p2YXUVA6EPBOQJ8xCp+iAq2xzLrx7ZKTIVrya5CPfG16nKyhpqBoYZgvIxvm/5K6Z2r+
-         78/DCncRswMvj1HScNrlpYXIKlojHDrvV4lbdROLjNgQmsOqTzU7CCGF1OeJzpJauMJw
-         dyqSZ/VXsQS0r5Nd4I+aB01EtTbUVdKSOe9ikHjB4+c1fu583F6SwzIn8WMgR0rZ95Hl
-         QJdygPc1CUeEDPE9zxO72ecB2l+o4UkJTKXeXJT1vAMzMMn/x/zn5KC51P70XrXvFdPP
-         r45Q==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=C1x1jyjBhFzCQy8a0EbMsi3qjsuzPMNqfqLhlXLSl7A=;
+        b=k3t5RucNoAwMD2XGqRLYQNKFhfSn1C0q4rGtp52+V7O6X/6WeDPvz2lk7ykbKchVOJ
+         kPCDzRJEovZZRaWBYKOZ/dGYhQ3tvXlh4IelW4WQAJEgZo4RP12M8sTKFFGxEQuMoxFQ
+         80sJYM2wFiGa55KienyTFIuZkrOZn2IPbVq5bd1X4wviQrMZmvMrrYpGp/GrXocAJYyN
+         wK27QECJDk71rlAOvF9ZNCkCTD2Tp3+Eypex5mWXwf/lOH+LZQ1gT1T3JCyYq1rjf0Oy
+         g3Uu6LEGQzfu0o/h01UYs6YqslQvZqhW4AqNXUPIoKn98U1VHlUsuLpR/2g7Mx1YMC7F
+         BpVA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=QNXnwR9p0uhARPXD5IdPdhRimuwkBpCRHZXkkYzIxeQ=;
-        b=L50vz/mFqKaI0QbgxEKjMhVJkpIGif5CJEh5kAuhkb0ZvR5UNyR7Tlqt1jQNGMB64v
-         +wYFFfB1SBktEM/wY8CS6lwwvtEPr8Y6eEUuP14jBNXTIbPRtpI14yn3WFj17uObFR27
-         +KOTVqZLH6dMUrxU5aSYhpfFsD43/wla0LaTRcyVVfrhhuRzglARDsdwt0f9n+DQbPHD
-         lgjjgInvyCnNIXy0I4/aiK6rOhLABGJetl5FPl62So1WfFtvT0LvD8nj/fYoSri6Y/EG
-         LShf3qwGPz3nT6caSj2rgTB0pQ1akTPY4yVsXqFRfmB7xmvR3n3CiCuBPqvypFHvM0Mg
-         TqHg==
-X-Gm-Message-State: AOAM530cdxdVcNkoB4bVBRpbLy89bYMtw/M7EGYsJmr49VYqS6olxeNO
-        T/QscEODiN4+YEgu1A1ASueGEJvqg1meXA==
-X-Google-Smtp-Source: ABdhPJygtIjUoGytXl0pS2x7kihR5qpo/+T9Ab3cspeev/uMhVEEZfjD6nvOU54rZeDnoPpVpNhnRA==
-X-Received: by 2002:adf:e78e:: with SMTP id n14mr10900629wrm.357.1598374915151;
-        Tue, 25 Aug 2020 10:01:55 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id y17sm6669008wma.17.2020.08.25.10.01.53
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 25 Aug 2020 10:01:54 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     saravanak@google.com, mdtipton@codeaurora.org,
-        okukatla@codeaurora.org, bjorn.andersson@linaro.org,
-        vincent.guittot@linaro.org, akashast@codeaurora.org,
-        georgi.djakov@linaro.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v3 1/3] interconnect: Add get_bw() callback
-Date:   Tue, 25 Aug 2020 20:01:50 +0300
-Message-Id: <20200825170152.6434-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200825170152.6434-1-georgi.djakov@linaro.org>
-References: <20200825170152.6434-1-georgi.djakov@linaro.org>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=C1x1jyjBhFzCQy8a0EbMsi3qjsuzPMNqfqLhlXLSl7A=;
+        b=NHvcMztaV/ciJArVt87Bbh0risGXU2WHglvAOAsuom1lRfkZ374WbsK6RgYw1/eH0V
+         wmJQzpmGCIy4/BVGa2v/wItwIq7cXg9aezkocMrhvEZfxXWPWw1KqaW3xOAOj53/vBUK
+         WY5Bu+3saaCFc6xbPLlGKjK2BX7mNnDp9MDB+/wxAvPT6ObEBt4cbMUPt96Jb77jBW1P
+         V2btEHmI16/ZtxR8hx/GtRDCxMPdnJcgmYLcApJvsleuL2ycowIR8uB6iRFA1n/K6MvA
+         46RI7dXIMRZ7qlmVpA3dp0+UMFvWXWZMUO/M+TIrF7boWH2e0zyy97nbpj5BuqvRbBmz
+         A64A==
+X-Gm-Message-State: AOAM533abY2ZRSDDWSEW3y1ElVkozRn2b53EpJWauDezloDUVvaw7l1Z
+        9nKiW+T5nvVgihrsan9SAuTSTc80sEyHQQ==
+X-Google-Smtp-Source: ABdhPJz82wuG/Ujs87c1fACgiNfpycutLB/WbcCGDf6CJAe7OGmHiti1fhnkkMUkGutRcWom15/OCA==
+X-Received: by 2002:a9d:27e7:: with SMTP id c94mr1043336otb.360.1598378028593;
+        Tue, 25 Aug 2020 10:53:48 -0700 (PDT)
+Received: from yoga ([2605:6000:e5cb:c100:8898:14ff:fe6d:34e])
+        by smtp.gmail.com with ESMTPSA id b10sm418053oiy.7.2020.08.25.10.53.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 25 Aug 2020 10:53:47 -0700 (PDT)
+Date:   Tue, 25 Aug 2020 12:53:45 -0500
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Stephen Boyd <swboyd@chromium.org>
+Cc:     Sibi Sankar <sibis@codeaurora.org>, khilman@kernel.org,
+        ulf.hansson@linaro.org, rjw@rjwysocki.net, agross@kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pm@vger.kernel.org, gregkh@linuxfoundation.org, pavel@ucw.cz,
+        len.brown@intel.com, rnayak@codeaurora.org, dianders@chromium.org,
+        mka@chromium.org
+Subject: Re: [PATCH v2 1/2] PM / Domains: Add GENPD_FLAG_NO_SUSPEND/RESUME
+ flags
+Message-ID: <20200825175345.GC3715@yoga>
+References: <20200821204921.32536-1-sibis@codeaurora.org>
+ <159804608868.334488.2486130699850456264@swboyd.mtv.corp.google.com>
+ <20200824164212.GA3715@yoga>
+ <159834001729.334488.11862381163144726708@swboyd.mtv.corp.google.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <159834001729.334488.11862381163144726708@swboyd.mtv.corp.google.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The interconnect controller hardware may support querying the current
-bandwidth settings, so add a callback for providers to implement this
-functionality if supported.
+On Tue 25 Aug 02:20 CDT 2020, Stephen Boyd wrote:
+> Quoting Bjorn Andersson (2020-08-24 09:42:12)
+> > On Fri 21 Aug 14:41 PDT 2020, Stephen Boyd wrote:
+[..]
+> > > I find it odd that this is modeled as a power domain instead of some
+> > > Qualcomm specific message that the remoteproc driver sends to AOSS. Is
+> > > there some sort of benefit the driver gets from using the power domain
+> > > APIs for this vs. using a custom API?
+> > 
+> > We need to send "up" and "down" notifications and this needs to happen
+> > at the same time as other standard resources are enabled/disabled.
+> > 
+> > Further more, at the time the all resources handled by the downstream
+> > driver was either power-domains (per above understanding) or clocks, so
+> > it made sense to me not to spin up a custom API.
+> > 
+>  
+> So the benefit is not spinning up a custom API? I'm not Ulf, but it
+> looks like this is hard to rationalize about as a power domain. It
+> doesn't have any benefit to model it this way besides to make it
+> possible to turn on with other power domains.
+> 
+> This modem remoteproc drivers isn't SoC agnostic anyway, it relies on
+> SMEM APIs, so standing up another small qmp_remoteproc_booted() and
+> qmp_remoteproc_shutdown() API would avoid adding a genpd flag here that
+> probably will never be used outside of this corner-case. There is also
+> some get/put EPROBE_DEFER sort of logic to implement, but otherwise it
+> would be possible to do this outside of power domains, and that seems
+> better given that this isn't really a power domain to start with.
 
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- include/linux/interconnect-provider.h | 2 ++
- 1 file changed, 2 insertions(+)
+In later platforms a few new users of the AOSS communication interface
+is introduced that certainly doesn't fit any existing API/framework in
+the kernel. So the plan was to pretty much expose qmp_send() to these
+drivers.
 
-diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
-index 4735518de515..520f70fe5a31 100644
---- a/include/linux/interconnect-provider.h
-+++ b/include/linux/interconnect-provider.h
-@@ -38,6 +38,7 @@ struct icc_node *of_icc_xlate_onecell(struct of_phandle_args *spec,
-  * @aggregate: pointer to device specific aggregate operation function
-  * @pre_aggregate: pointer to device specific function that is called
-  *		   before the aggregation begins (optional)
-+ * @get_bw: pointer to device specific function to get current bandwidth
-  * @xlate: provider-specific callback for mapping nodes from phandle arguments
-  * @dev: the device this interconnect provider belongs to
-  * @users: count of active users
-@@ -51,6 +52,7 @@ struct icc_provider {
- 	int (*aggregate)(struct icc_node *node, u32 tag, u32 avg_bw,
- 			 u32 peak_bw, u32 *agg_avg, u32 *agg_peak);
- 	void (*pre_aggregate)(struct icc_node *node);
-+	int (*get_bw)(struct icc_node *node, u32 *avg, u32 *peak);
- 	struct icc_node* (*xlate)(struct of_phandle_args *spec, void *data);
- 	struct device		*dev;
- 	int			users;
+My worry with using this interface is that we'll probably have to come
+up with some DT binding pieces and probably we'll end up adding yet
+another piece of hard coded information in the remoteproc drivers.
+
+But I'm not against us doing this work in favor of not having to
+introduce a one-off for this corner case.
+
+Regards,
+Bjorn
