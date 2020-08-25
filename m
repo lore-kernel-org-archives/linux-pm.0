@@ -2,77 +2,119 @@ Return-Path: <SRS0=5v5e=CD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F147C433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E207AC433E3
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:36:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 458BF20639
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:20:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B24CA2071E
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:36:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="lrAraWCD"
+	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="lGWpth+a";
+	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="Sz0AYd5G"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726241AbgHYNUh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Aug 2020 09:20:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50752 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725792AbgHYNUf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 09:20:35 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6E071C061574;
-        Tue, 25 Aug 2020 06:20:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=LRm0a/AB7+1jHaa0sot49R1mIGi0p1SlyxSDm8WQBUY=; b=lrAraWCD0S6gbXfgpQDHWUO/c9
-        h9fHLCFKRmzwX3tEO6KmBBJPdc2hC2xC5WOzhw8pvEPStATv125pL/mG+LzD+hfrKqJVp27Y0mNER
-        9aeCh3lIVcvwz3xMQ30QSJ9oELZaSR2ANlcR1FM80B7yrdX7N9ZB8JEqVgcWQp0CQfufwfzgf9B+W
-        feHcq1Y1tQnTThv0sDdbo49HNl0TnG08P6WBYs3Ic3AfN5b814aejFz/QqC408/5ipz+8R/Eb/wk0
-        IaozjHE1Ud/5cy0pdrYHwhGtwPqKow6xBRZvgY7qyHtHQjlGwSR+Y2nXk7DN6GtMra4WkUZ9wvtcg
-        v36HK0hA==;
-Received: from hch by casper.infradead.org with local (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kAYrq-0006b2-89; Tue, 25 Aug 2020 13:20:02 +0000
-Date:   Tue, 25 Aug 2020 14:20:02 +0100
-From:   Christoph Hellwig <hch@infradead.org>
-To:     Thomas Gleixner <tglx@linutronix.de>
-Cc:     mingo@redhat.com, bp@alien8.de, hpa@zytor.com, x86@kernel.org,
-        boris.ostrovsky@oracle.com, jgross@suse.com,
-        linux-pm@vger.kernel.org, linux-mm@kvack.org, kamatam@amazon.com,
-        sstabellini@kernel.org, konrad.wilk@oracle.com,
-        roger.pau@citrix.com, axboe@kernel.dk, davem@davemloft.net,
-        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
-        peterz@infradead.org, eduval@amazon.com, sblbir@amazon.com,
-        anchalag@amazon.com, xen-devel@lists.xenproject.org,
-        vkuznets@redhat.com, netdev@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dwmw@amazon.co.uk,
-        benh@kernel.crashing.org
-Subject: Re: [PATCH v3 05/11] genirq: Shutdown irq chips in suspend/resume
- during hibernation
-Message-ID: <20200825132002.GA25009@infradead.org>
-References: <cover.1598042152.git.anchalag@amazon.com>
- <d9bcd552c946ac56f3f17cc0c1be57247d4a3004.1598042152.git.anchalag@amazon.com>
- <87h7svqzxm.fsf@nanos.tec.linutronix.de>
+        id S1726736AbgHYNgV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Aug 2020 09:36:21 -0400
+Received: from wnew4-smtp.messagingengine.com ([64.147.123.18]:54433 "EHLO
+        wnew4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1726690AbgHYNgJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 09:36:09 -0400
+Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
+        by mailnew.west.internal (Postfix) with ESMTP id 8E1B1C3F;
+        Tue, 25 Aug 2020 09:36:07 -0400 (EDT)
+Received: from mailfrontend2 ([10.202.2.163])
+  by compute4.internal (MEProxy); Tue, 25 Aug 2020 09:36:08 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=fm3; bh=zIntnBuXpSaR3WFttpC6Z14pmK0
+        kj+KtCt/Fp/W1l5Y=; b=lGWpth+a8r/ZvS7rtzWVn9X0gS8TO+csaGZXXkrlcfa
+        mj1BQz9G3duhMcmGVb8b8CNVEqOoLQw/kEzaRVjtvJ26RSHOZuc+Nqabs6LnXIN6
+        +76QGjnXKpnoTwqwBV/EpQX1fZ44WmhhCy1JWEbvIK712Z4b6DlOmM5yCLwud28t
+        bHd3wMwGN+6B4s/CW4zkoPLfELmqx1PboJuDPldNI6bfA7AOzElkgmcsQ22JaT2j
+        r5s3gjFxU8GRLB5FiTETGIcOwYnnMvj40fnEgPypgyKyBAZLmj7IQN935MnJ7fEZ
+        VaXwdBZ9Yo31//4UuAc5nt5x7LMhql7EWHH81siEjzA==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:content-type:date:from:in-reply-to
+        :message-id:mime-version:references:subject:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=zIntnB
+        uXpSaR3WFttpC6Z14pmK0kj+KtCt/Fp/W1l5Y=; b=Sz0AYd5GZIofWgsXVWunT4
+        7C2x3rRtrodahcssA4o50ODgTN9LQ5JAxK6wAwwroXETMluH2YrwCsdR0cYIqOuZ
+        FetGbtUEwk1exx5bemtdxTGFZ4ORY+IY2FVfX9L2T9tLgE28c773PprywJetrWMc
+        Y4RzZHPT06Tr1UcEpj8SIuCwbTxmzmLiz3hQNjRVVX+itGtiv4FRMQK8gCe0vHdd
+        mCgoQVjcE26HI6w7dmuaM3Pa8d3YINN1zWBKA42Z3QygIARxJBlfhkBWycXSFn3I
+        uu5QicyICAay8X/wVLRag92+WjUesjLCMkDNW7QAr30p8tSX+IyrK80UMpFUqAEQ
+        ==
+X-ME-Sender: <xms:xxNFX70lvcFM3fLIKcBW1UaDrsY-pAJt7OlBnCd2N5FJDqnicHvQUQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedruddvtddgieelucetufdoteggodetrfdotf
+    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
+    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
+    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
+    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
+    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
+    gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgepudegne
+    curfgrrhgrmhepmhgrihhlfhhrohhmpehmrgigihhmvgestggvrhhnohdrthgvtghh
+X-ME-Proxy: <xmx:xxNFX6H7omXavv2gD_Bxs4Sk5cGKPZgswA-UZWPoSkxNCbPsGw3TPw>
+    <xmx:xxNFX74hREJYwgUv3l9HegXmWYpbWG1rE9BOlRDOhCCjXFm5IsaGlg>
+    <xmx:xxNFXw1-XpF8oeVbkfPMYvXdzsPyh2FAH5KHidbQCrFl9jJ9fFnBGQ>
+    <xmx:xxNFX2_qGKAorNi0f_WqSrCf8pmEphkvN_A2Y_NzUPHpXaGk1p-8cpU67Bc>
+Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
+        by mail.messagingengine.com (Postfix) with ESMTPA id DAC1F306005F;
+        Tue, 25 Aug 2020 09:36:06 -0400 (EDT)
+Date:   Tue, 25 Aug 2020 10:46:29 +0200
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Frank Lee <frank@allwinnertech.com>
+Cc:     anarsoul@gmail.com, tiny.windzz@gmail.com, rui.zhang@intel.com,
+        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
+        robh+dt@kernel.org, wens@csie.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, huangshuosheng@allwinnertech.com,
+        liyong@allwinnertech.com
+Subject: Re: [PATCH v5 09/16] thermal: sun8i: Add A100's THS controller
+ support
+Message-ID: <20200825084629.e6y27bz7ot33ychu@gilmour.lan>
+References: <cover.1595572867.git.frank@allwinnertech.com>
+ <48cc75920b5c69027134626157089d8b94942711.1595572867.git.frank@allwinnertech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="josxa6guw2ghbxyp"
 Content-Disposition: inline
-In-Reply-To: <87h7svqzxm.fsf@nanos.tec.linutronix.de>
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <48cc75920b5c69027134626157089d8b94942711.1595572867.git.frank@allwinnertech.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Aug 22, 2020 at 02:36:37AM +0200, Thomas Gleixner wrote:
-> From: Thomas Gleixner <tglx@linutronix.de>
-> 
-> followed by an empty new line before the actual changelog text
-> starts. That way the attribution of the patch when applying it will be
-> correct.
 
-The way he sent it attribution will be correct as he managed to get his
-MTU to send out the mail claiming to be from you.  But yes, it needs
-the second From line, _and_ the first from line needs to be fixed to
-be from him.
+--josxa6guw2ghbxyp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Jul 24, 2020 at 03:11:43PM +0800, Frank Lee wrote:
+> From: Yangtao Li <frank@allwinnertech.com>
+>=20
+> This patch add thermal sensor controller support for A100,
+> which is similar to the previous ones.
+>=20
+> Signed-off-by: Yangtao Li <frank@allwinnertech.com>
+
+Acked-by: Maxime Ripard <mripard@kernel.org>
+
+Thanks!
+Maxime
+
+--josxa6guw2ghbxyp
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCX0TP5QAKCRDj7w1vZxhR
+xWG7AP9ycCoJEEoU3y3szHM+UrV64jwpMJbJkqSRhWjjkX8F9QD+K2RIXAF7clKR
+QdTaqcpDsiiVINawzQ9tHkIRczGUvw0=
+=DZKj
+-----END PGP SIGNATURE-----
+
+--josxa6guw2ghbxyp--
