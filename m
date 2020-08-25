@@ -2,119 +2,155 @@ Return-Path: <SRS0=5v5e=CD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D0113C433E1
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:41:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D013FC433E3
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:51:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B019C207BC
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:41:12 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=cerno.tech header.i=@cerno.tech header.b="ZKthbNBZ";
-	dkim=pass (2048-bit key) header.d=messagingengine.com header.i=@messagingengine.com header.b="XeouHkmS"
+	by mail.kernel.org (Postfix) with ESMTP id AF0EC20786
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 13:51:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1598363480;
+	bh=eIq1K4YwKevM0Z+xrupyI1e4rDXhwcMQbYLXwiGI9/k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Pz3shkAlRoc16MuA2r4kjarUkzfx/6qorMz9CTdbADm9C+joibZroqzoLtIMatIb8
+	 aGZfiln+AJd5C8bTdizD9MOoNOT5F1DjjxvEOn4nvkjfC4Sb+aDzy1UKi0UjaByDpO
+	 UMsZnhw/3XS0fHt588E56bLQ35WtLtalibmDRYn4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726578AbgHYNjY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Aug 2020 09:39:24 -0400
-Received: from wnew4-smtp.messagingengine.com ([64.147.123.18]:47361 "EHLO
-        wnew4-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726700AbgHYNgG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 09:36:06 -0400
-Received: from compute4.internal (compute4.nyi.internal [10.202.2.44])
-        by mailnew.west.internal (Postfix) with ESMTP id 184A1CBD;
-        Tue, 25 Aug 2020 09:36:05 -0400 (EDT)
-Received: from mailfrontend2 ([10.202.2.163])
-  by compute4.internal (MEProxy); Tue, 25 Aug 2020 09:36:06 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
-        date:from:to:cc:subject:message-id:references:mime-version
-        :content-type:in-reply-to; s=fm3; bh=gR3pweVv8Px8rFqGtFTwA22x2JV
-        zhJpDs8kjnfvQrwU=; b=ZKthbNBZD5TqTReje9//nICE81ovQp6WKQ7Y+fkpX0r
-        342iOhR96x763J39eXLcp7DI1mlD3YDZhDLJATm4gLEsLe/RNUoCaI9NeaYsvGLZ
-        0zlkVOeB1kkv4PxAtLZo9u7Qj4JLJ8iczPcWJDqiVuTtxggRY9oMSl7gg2lTvBAd
-        oLNJ3rJ+TyBzvy8JnYqkAS1Ixz4kt+IyMs+6wnTTyLmC+4HQqeXt/eE8EpuQ1LHB
-        dPBWtkO5q5YdFUd/YtS9ZtuZf1eCgccExUR5TgdAJvhHVL0G8l+Rpt01L1kqO3ez
-        G11749iSX9SO+7KvmVlo7N4gKahSgFmy2YRlZJFIj/g==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-        messagingengine.com; h=cc:content-type:date:from:in-reply-to
-        :message-id:mime-version:references:subject:to:x-me-proxy
-        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; bh=gR3pwe
-        Vv8Px8rFqGtFTwA22x2JVzhJpDs8kjnfvQrwU=; b=XeouHkmSMaPgZGgkwK9gBE
-        UNk2kjv0ZMQZ2Fr/KgSKzkdqDaPRWGYFmg4lLN/tpy8/x8TCJiGOpnGUhoIeWjZ1
-        oXKim7/EoCdZKIdHUCsJmdEjDN59vQPwXhKWOtCTfnZwZIodjq+DEzHZe6Urw54Z
-        AVM62ScUqZq3e4oSqkajrSkywskehZdcqEEKQwEtraWbFWsIA/a+b9DGUQtP7xeS
-        EfK3tcq6IB1o0tiWeu4c8soUqh1YG5Exe7SHSSPFe/10lKi+LGWix+r7Cyg5nQvK
-        6VoIkcw5CnZ/ZwQ522Hs+g17LZl2iCJ2iYJ2vCMBs39H1IEAvALOATEGePYpCmCQ
-        ==
-X-ME-Sender: <xms:xBNFX-GTizd1cJM1xroLOltRl634NIUAvifSBznZOzNHqiQtNi1iGw>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeduiedruddvtddgieelucetufdoteggodetrfdotf
-    fvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfqfgfvpdfurfetoffkrfgpnffqhgen
-    uceurghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmne
-    cujfgurhepfffhvffukfhfgggtuggjsehgtderredttddvnecuhfhrohhmpeforgigihhm
-    vgcutfhiphgrrhguuceomhgrgihimhgvsegtvghrnhhordhtvggthheqnecuggftrfgrth
-    htvghrnhepleekgeehhfdutdeljefgleejffehfffgieejhffgueefhfdtveetgeehieeh
-    gedunecukfhppeeltddrkeelrdeikedrjeeinecuvehluhhsthgvrhfuihiivgepudegne
-    curfgrrhgrmhepmhgrihhlfhhrohhmpehmrgigihhmvgestggvrhhnohdrthgvtghh
-X-ME-Proxy: <xmx:xBNFX_U4rMYrAkLqnBfQTY0RMlnEj1Qh37H7CKzSwosC8p_-pfrG6g>
-    <xmx:xBNFX4K2vEGqg2mVktNWhMEBQTreRrbm7KAhpc2GJsmiLPL4w3LoBQ>
-    <xmx:xBNFX4HtDcqV4TQ3LcRfY7CLwE2J9YphicWvZBcxR-Bmu8juqzJzNA>
-    <xmx:xBNFXzOfOYUySZsapVxWYa_Lou44xH7I27efKX-UM8Rlmr95B_CRmkxyzZk>
-Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
-        by mail.messagingengine.com (Postfix) with ESMTPA id 070873060067;
-        Tue, 25 Aug 2020 09:36:03 -0400 (EDT)
-Date:   Tue, 25 Aug 2020 10:45:54 +0200
-From:   Maxime Ripard <maxime@cerno.tech>
-To:     Frank Lee <frank@allwinnertech.com>
-Cc:     anarsoul@gmail.com, tiny.windzz@gmail.com, rui.zhang@intel.com,
-        daniel.lezcano@linaro.org, amit.kucheria@verdurent.com,
-        robh+dt@kernel.org, wens@csie.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org, huangshuosheng@allwinnertech.com,
-        liyong@allwinnertech.com, Rob Herring <robh@kernel.org>
-Subject: Re: [PATCH v5 07/16] dt-bindings: thermal: sun8i: Add binding for
- A100's THS controller
-Message-ID: <20200825084554.rdml64n6qofjfzaa@gilmour.lan>
+        id S1726158AbgHYNvT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Aug 2020 09:51:19 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38588 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725926AbgHYNvS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 25 Aug 2020 09:51:18 -0400
+Received: from localhost (p54b33ab6.dip0.t-ipconnect.de [84.179.58.182])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 1FC0920738;
+        Tue, 25 Aug 2020 13:51:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1598363478;
+        bh=eIq1K4YwKevM0Z+xrupyI1e4rDXhwcMQbYLXwiGI9/k=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=c/nEA1x+7z5tdSDCHfM2LAtZREXzJ6s4HkGFN6S67BQdim72iZxz/GpoalDTz3RwP
+         /j2Xzj35IPHY1BTNwALSCQWqDUO384Y8Jjs50Goj8hZJ2OfihVB+iKk1N/B+vIdClc
+         amqwfY1JgAc6wOJPiKHGo+g48C6r7/OieN3ZJsNc=
+Date:   Tue, 25 Aug 2020 15:51:13 +0200
+From:   Wolfram Sang <wsa@kernel.org>
+To:     Maxime Ripard <maxime@cerno.tech>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Frank Lee <tiny.windzz@gmail.com>,
+        Frank Lee <frank@allwinnertech.com>,
+        Rob Herring <robh+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, gregory.clement@bootlin.com,
+        Thomas Gleixner <tglx@linutronix.de>, jason@lakedaemon.net,
+        Marc Zyngier <maz@kernel.org>,
+        Srini Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        "p.zabel" <p.zabel@pengutronix.de>,
+        Icenowy Zheng <icenowy@aosc.io>,
+        =?utf-8?Q?Ond=C5=99ej?= Jirman <megous@megous.com>,
+        clabbe@baylibre.com, bage@linutronix.de,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>, linux-i2c@vger.kernel.org,
+        linux-gpio <linux-gpio@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH v5 00/16] Allwinner A100 Initial support
+Message-ID: <20200825135113.GB1753@kunai>
+Mail-Followup-To: Wolfram Sang <wsa@kernel.org>,
+        Maxime Ripard <maxime@cerno.tech>, Lee Jones <lee.jones@linaro.org>,
+        Frank Lee <tiny.windzz@gmail.com>,
+        Frank Lee <frank@allwinnertech.com>,
+        Rob Herring <robh+dt@kernel.org>, Chen-Yu Tsai <wens@csie.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>, gregory.clement@bootlin.com,
+        Thomas Gleixner <tglx@linutronix.de>, jason@lakedaemon.net,
+        Marc Zyngier <maz@kernel.org>,
+        Srini Kandagatla <srinivas.kandagatla@linaro.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Vasily Khoruzhick <anarsoul@gmail.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        "p.zabel" <p.zabel@pengutronix.de>, Icenowy Zheng <icenowy@aosc.io>,
+        =?utf-8?Q?Ond=C5=99ej?= Jirman <megous@megous.com>,
+        clabbe@baylibre.com, bage@linutronix.de,
+        devicetree <devicetree@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-clk <linux-clk@vger.kernel.org>, linux-i2c@vger.kernel.org,
+        linux-gpio <linux-gpio@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 References: <cover.1595572867.git.frank@allwinnertech.com>
- <8280af8ad82ed340c0ef1c171684aaad91600679.1595572867.git.frank@allwinnertech.com>
+ <CAEExFWsvScMgi_Dftfq06HZiF8CFAmym8Z_tgQoHHAfiGxWt0g@mail.gmail.com>
+ <CAEExFWuwjmqAh0c3kMLS3Gs6UC2A8TtY-9nJeWxFPRDugtR4pA@mail.gmail.com>
+ <20200824080327.GH3248864@dell>
+ <20200825085532.vv4dpuzmjnshm5qn@gilmour.lan>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
-        protocol="application/pgp-signature"; boundary="2mi2ra6dsuvemjwu"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="xgyAXRrhYN0wYx8y"
 Content-Disposition: inline
-In-Reply-To: <8280af8ad82ed340c0ef1c171684aaad91600679.1595572867.git.frank@allwinnertech.com>
+In-Reply-To: <20200825085532.vv4dpuzmjnshm5qn@gilmour.lan>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
---2mi2ra6dsuvemjwu
+--xgyAXRrhYN0wYx8y
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Jul 24, 2020 at 03:10:57PM +0800, Frank Lee wrote:
-> From: Yangtao Li <frank@allwinnertech.com>
+On Tue, Aug 25, 2020 at 10:55:32AM +0200, Maxime Ripard wrote:
+> On Mon, Aug 24, 2020 at 09:03:27AM +0100, Lee Jones wrote:
+> > On Mon, 24 Aug 2020, Frank Lee wrote:
+> >=20
+> > > ping......
+> >=20
+> > "Please don't send content free pings and please allow a reasonable
+> >  time for review.  People get busy, go on holiday, attend conferences
+> >  and so on so unless there is some reason for urgency (like critical
+> >  bug fixes) please allow at least a couple of weeks for review.  If
+> >  there have been review comments then people may be waiting for those
+> >  to be addressed.  Sending content free pings just adds to the mail
+> >  volume (if they are seen at all) and if something has gone wrong
+> >  you'll have to resend the patches anyway so [RESEND]ing with any
+> >  comments addressed is generally a much better approach."
 >=20
-> Add a binding for A100's ths controller.
->=20
-> Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> This is true to some extent, but pinging after a month doesn't seem
+> unreasonable either.
 
-Acked-by: Maxime Ripard <mripard@kernel.org>
+Especially if resending would mean up to 16 patches sent again.
 
-Thanks!
-Maxime
 
---2mi2ra6dsuvemjwu
+--xgyAXRrhYN0wYx8y
 Content-Type: application/pgp-signature; name="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
 
-iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCX0TPwgAKCRDj7w1vZxhR
-xVXvAQCVS2UqbwhCN/0iWdJ29Re42njcjQn+u6Um4jTsFzJ4/gEA27LfAfTDUWdz
-xfaa1CgE73i2sYEqd69AtcBdh3AJPgo=
-=/qrb
+iQIzBAABCgAdFiEEOZGx6rniZ1Gk92RdFA3kzBSgKbYFAl9FF00ACgkQFA3kzBSg
+KbaQCw/7B0HkLUNDaoRkScvwvMsZwnYphPCyyQwyYSGMOlmp9LUnRLs8wgHuKwvF
+U65QpySYVeF2oRjy1Q5u7oXEQUnprwXLXkVaHt832UpeCw6nvKs/i8Rs8H+0tWo9
+/O7pxPMFrUouMTUAkAqKuKsCOFRflr2R32JquWopYWi+MgzoPAWV1OAtOC0XHdqw
+lWnioiMvY3Japg4eaqxLWZ5nqp8XYy+qXGwJdtiWkFu8+LnTvTcK+stQqROhYlKm
+6Cm6Uy13ngTrnB4ait2I/+YKuwljumU6m8xuxyb7a/j2ZWO80LBwoCiRdGNE1A7V
+SEDzhfVmYNjeHqCBB3Vryx5N5Bkz4Be6paj8tthKHjAXxBbLYfheaXeO6aLpd4l0
+sshVn10Dv84yYcL8GR4baFQCrNiZivjEZiVFXeiA6ygkQeNkQPoT4jGVYiHiNzuO
+y2TAjUKypZ2Dst24Q+38o9HUTa38mSIKKcif0SwmbryPq6NL0elOgd2F68KQJzSk
+ob/zI8yw9nK9Kiz6JpjvKBv+Aaf25R1U7a/URD0VcgJVdUv3X0RJ0yk79HSNeP89
+fEz9mx9k6sK09qRFLZTcYJ/whlSa0SONFcfEma3W7iVmDzjFDW0ZftzMneSFVRbp
+HY/EadYE5G3VNklMSNhyT9Bf9ArEoxN9osMTzwSgpiHzAovoq+o=
+=iNuN
 -----END PGP SIGNATURE-----
 
---2mi2ra6dsuvemjwu--
+--xgyAXRrhYN0wYx8y--
