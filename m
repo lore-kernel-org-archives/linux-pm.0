@@ -2,301 +2,151 @@ Return-Path: <SRS0=5v5e=CD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39098C433E4
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 06:40:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BF1D1C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 06:44:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0F76A2075F
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 06:40:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C3482075F
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 06:44:22 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="NtuL2p2K"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="fWkqe7h2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729068AbgHYGkd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Aug 2020 02:40:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43980 "EHLO
+        id S1729131AbgHYGoV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Aug 2020 02:44:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44622 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729115AbgHYGkL (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 02:40:11 -0400
-Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A6D3C061755;
-        Mon, 24 Aug 2020 23:40:10 -0700 (PDT)
-Received: by mail-pf1-x42f.google.com with SMTP id m8so6545626pfh.3;
-        Mon, 24 Aug 2020 23:40:10 -0700 (PDT)
+        with ESMTP id S1729116AbgHYGoU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 02:44:20 -0400
+Received: from mail-vk1-xa43.google.com (mail-vk1-xa43.google.com [IPv6:2607:f8b0:4864:20::a43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2DA41C061755
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 23:44:20 -0700 (PDT)
+Received: by mail-vk1-xa43.google.com with SMTP id s81so2582982vkb.3
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 23:44:20 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=XNDqjiCIpaut0CuIzazPI/rMTPorZ+MEGeDrCF91VIE=;
-        b=NtuL2p2KE/CpmwmHf88kJRdffEWZIUi4VnFkyBFT8zY7prtU/OX4jdfAa6KZIr70N1
-         nleJjF/TxFt3Q5w9te6tLtKVXrWsfm9EHwBVHYk5lPtjxr/DDLDBUeO2ePhLBm+f2hOT
-         dwNQ5cekSgzy5yx1vIXrSfnEQNd7h5Amt9Jh4gwbDaMqDaYPDln9BFIa5VSAhqxUX3QZ
-         wv7eCzwQv8YkmaLIqrElEnJpwPilzQwLhDc+qldEvkocm3OgrcaNjJleTIPwVhHwFoQw
-         pyqTF7aU4BmYxwpq3uvrCxStZPk8MNwqNhAPF++lGfT5wJot3sDkpGoytiTeTWunDY34
-         RNRA==
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=XJAMoTU8iPJ2XHvID+aYODKfhNhGKA98hb1eoQOOBaY=;
+        b=fWkqe7h2JlXjqCBifsBo1DomqyFcxD+MwZ64RmxkM3ByyKCVfF9elGSBuoMHyCcYS2
+         UBFKwj7oQqabnf5QdJMBg0f5GAJ6FwQnfiak89uIJm1t+JNeQblGGufYjQ80PPqMsKEo
+         lL1x7n/UwbjttP1Jy8jahAMssBJYJVA+5Qc7RsKvuXbccBeJK0wszJi70P2A5pclYVSR
+         PcA3bTxqE9kVnIz8YndYmtQ/PmmNACGwmSBny44NBdm0yMHag/Fr8LCbcPqVqd3RVb3L
+         crWd1nkGx9CbX6JZ44OMVT/pKD5PX79JDc+sHU03ACLJPDt7AAeevgp7IyWYcdJ96y0N
+         Eslg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=XNDqjiCIpaut0CuIzazPI/rMTPorZ+MEGeDrCF91VIE=;
-        b=mnNdc6lrtRVszQdRryZsqbzvh2c0c7KB2jumrPnLz0e1O8ZNHwjHvDJptEKuw9NB7+
-         UFMrQq8MWA3wPdwjRxd+UkW16zv/0rbYqVyV9kU8dOH2pkVkvMocf6XJaywxwJy4OtRQ
-         WUNm/K671GY8wzjONAQJiQlbsM5qa7AGjJwlCVkuXXbHp+Py72hI0Z8LXN/PskrPLXxO
-         KEnJ6miK5eKNY/ah7BXZJGZY9Z5JXblx0nHHCKdHHXPKkjjkkC0RqbkLlY9XwS0amZ/I
-         tHZHfou51PoVtGur0+qP7Dlzf44K2qru+iHXeb0PP3VEXy2w8T3la9vDC5hQSiZ9lnvN
-         uMlQ==
-X-Gm-Message-State: AOAM530nE04k0KLkKmMxLMd4U5ZyQU1jW1oz7qSXx/yfSW9gluKd7X5m
-        CmTEguOwZLJkgncu0+4kjzs=
-X-Google-Smtp-Source: ABdhPJyM54lcg3Rsd1ETWjHfIX9hhYqCP+hw3wQAELo7eJhrwYF5hZrKMG6XwB4/uhEH5wAeAQrB9g==
-X-Received: by 2002:a17:902:b402:: with SMTP id x2mr6258877plr.97.1598337609782;
-        Mon, 24 Aug 2020 23:40:09 -0700 (PDT)
-Received: from xiaomi.mioffice.cn ([43.224.245.179])
-        by smtp.gmail.com with ESMTPSA id z2sm14197283pfq.46.2020.08.24.23.40.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 24 Aug 2020 23:40:09 -0700 (PDT)
-From:   Qiwu Huang <yanziily@gmail.com>
-To:     sre@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        gregkh@linuxfoundation.org, Qiwu Huang <huangqiwu@xiaomi.com>
-Subject: [PATCH v9 1/4] power: supply: core: add quick charge type property
-Date:   Tue, 25 Aug 2020 14:37:56 +0800
-Message-Id: <eecb88f1b3d7197886ae9c598ef6c05a58916299.1598337073.git.huangqiwu@xiaomi.com>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <cover.1598337073.git.huangqiwu@xiaomi.com>
-References: <cover.1598337073.git.huangqiwu@xiaomi.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=XJAMoTU8iPJ2XHvID+aYODKfhNhGKA98hb1eoQOOBaY=;
+        b=Ce/GHIkxTocvG+HyYrPjjSvQFRSOv9n72JqkO9tEpuGjkMbstIl66ZQLkG/5IR2f0j
+         rrPuuYGRZmxQASn9WU0n0foyy2+Vl0RTgIuSADte55/ta5WBpOCgeAKx8GssjA1p9Due
+         MPcqt6m1/iOqPWSwufkqemBHJHdKD4SEBIQArmLEJSf/ZGkbInGXKyNKSMDvCeuGdd18
+         T47u+8dpd/D0w/ASLEigcSjTwvrbHCkcZUWAhxgHeKlTVFjJ+qRGpK3UpoqLl/xVIXu6
+         ZeZsiQeeqnDxqG3QXC4WWIuMOw3y41bH1PMy14YH6aCzmZlDMJGubuL86PE5kR2dclBy
+         xa0g==
+X-Gm-Message-State: AOAM533VOCrg8rxZNcy7pLozZXc6vMFKHyg3Ylvig7XcWxkoxnSOsLbJ
+        aIk0G2M+eXrtrrIhFZw6kibiavLeupE+0a0yY3CL1Q==
+X-Google-Smtp-Source: ABdhPJzKdRlKnr0X6BmbjTIZvsC9IPRFVtH+69UI+kMPkRKZFeq0AzmE4bQnjN3zfh/5kBle3QGy1jR+/FwARY/V9iQ=
+X-Received: by 2002:a1f:2cd0:: with SMTP id s199mr4733615vks.25.1598337859183;
+ Mon, 24 Aug 2020 23:44:19 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200730080146.25185-1-stephan@gerhold.net> <20200730080146.25185-4-stephan@gerhold.net>
+ <20200824112744.jsyaxrfbybyjpwex@vireshk-i7> <20200824115549.GB208090@gerhold.net>
+ <CAPDyKFojtArMRfO+Z8YaWCWw2fFYcO62x3eL1paNi5pKRg3Jww@mail.gmail.com>
+ <20200824150831.GA842@gerhold.net> <20200825044308.4y3w2urcikban7if@vireshk-i7>
+In-Reply-To: <20200825044308.4y3w2urcikban7if@vireshk-i7>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Tue, 25 Aug 2020 08:43:42 +0200
+Message-ID: <CAPDyKFp+71_WGwvdZ6DYamsDjgoRk57H5MjDAdQUtCtJpEHp2Q@mail.gmail.com>
+Subject: Re: [RFC PATCH 3/3] opp: Power on (virtual) power domains managed by
+ the OPP core
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Stephan Gerhold <stephan@gerhold.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Niklas Cassel <nks@flawful.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Qiwu Huang <huangqiwu@xiaomi.com>
+On Tue, 25 Aug 2020 at 06:43, Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 24-08-20, 17:08, Stephan Gerhold wrote:
+> > On Mon, Aug 24, 2020 at 04:36:57PM +0200, Ulf Hansson wrote:
+> > > That said, perhaps should rely on the consumer to deploy runtime PM
+> > > support, but let the OPP core to set up the device links for the genpd
+> > > virtual devices!?
+> > >
+> >
+> > Yes, that would be the alternative option.
+>
+> That is the right option IMO.
+>
+> > I would be fine with it as long as it also works for the CPUfreq case.
+> >
+> > I don't think anything manages runtime PM for the CPU device, just
+> > like no-one calls dev_pm_opp_set_rate(cpu_dev, 0). So with my patch the
+> > power domain is essentially kept always-on (except for system suspend).
+> > At least in my case this is intended.
+> >
+> > If device links also keep the power domains on if the consumer device
+> > does not make use of runtime PM it should work fine for my case.
+>
+> With device link, you only need to do rpm enable/disable on the consumer device
+> and it will get propagated by itself.
 
-Reports the kind of quick charge type based on
-different adapter power.
+Note that the default state for the genpd virtual device(s) is that
+runtime PM has been enabled for them. This means it's left in runtime
+suspended state, which allows its PM domain to be powered off (if all
+other devices and child domains for it allow that too, of course).
 
-Signed-off-by: Qiwu Huang <huangqiwu@xiaomi.com>
----
- Documentation/ABI/testing/sysfs-class-power | 21 ++++++
- drivers/power/supply/power_supply_sysfs.c   |  1 +
- drivers/power/supply/qcom_smbb.c            | 79 +++++++++++++++++++++
- include/linux/power_supply.h                | 14 ++++
- 4 files changed, 115 insertions(+)
+>
+> > Personally, I think my original patch (without device links) fits better
+> > into the OPP API, for the following two reasons.
+> >
+> > With device links:
+> >
+> >   1. Unlike regulators/interconnects, attached power domains would be
+> >      controlled by runtime PM instead of dev_pm_opp_set_rate(opp_dev, 0).
+> >
+> >   2. ... some driver using OPP tables might not make use of runtime PM.
+> >      In that case, the power domains would stay on the whole time,
+> >      even if dev_pm_opp_set_rate(opp_dev, 0) was called.
+> >
+> > With my patch, the power domain state is directly related to the
+> > dev_pm_opp_set_rate(opp_dev, 0) call, which is more intuitive than
+> > relying on the runtime PM state in my opinion.
+>
+> So opp-set-rate isn't in the best of shape TBH, some things are left for the
+> drivers while other are done by it. Regulator-enable/disable was moved to it
+> some time back as people needed something like that. While on the other hand,
+> clk_enable/disable doesn't happen there, nor does rpm enable/disable.
+>
+> Maybe one day we may want to do that, but lets make sure someone wants to do
+> that first.
+>
+> Anyway, even in that case both of the changes would be required. We must make
+> device links nevertheless first. And later on if required, we may want to do rpm
+> enable/disable on the consumer device itself.
 
-diff --git a/Documentation/ABI/testing/sysfs-class-power b/Documentation/ABI/testing/sysfs-class-power
-index 216d61a22f1e..dd3773dcf16a 100644
---- a/Documentation/ABI/testing/sysfs-class-power
-+++ b/Documentation/ABI/testing/sysfs-class-power
-@@ -708,3 +708,24 @@ Description:
- 
- 		Access: Read
- 		Valid values: 1-31
-+
-+What:		/sys/class/power_supply/<supply_name>/quick_charge_type
-+Date:		Jul 2020
-+Contact:	Fei Jiang <jiangfei1@xiaomi.com>
-+		Description:
-+		Reports the kind of quick charge type based on different adapter power.
-+		Different quick charge type represent different charging power.
-+		QUICK_CHARGE_NORMAL : Charging Power <= 10W
-+		QUICK_CHARGE_FAST : 10W < Charging Power <= 20W
-+		QUICK_CHARGE_FLASH : 20W < Charging Power <= 30W
-+		QUICK_CHARGE_TURBE : 30W < Charging Power <= 50W
-+		QUICK_CHARGE_SUPER : Charging Power > 50W
-+
-+		Access: Read-Only
-+		Valid values:
-+			0: QUICK_CHARGE_NORMAL,
-+			1: QUICK_CHARGE_FAST,
-+			2: QUICK_CHARGE_FLASH,
-+			3: QUICK_CHARGE_TURBE,
-+			4: QUICK_CHARGE_SUPER.
-+
-diff --git a/drivers/power/supply/power_supply_sysfs.c b/drivers/power/supply/power_supply_sysfs.c
-index bc79560229b5..9554d7907373 100644
---- a/drivers/power/supply/power_supply_sysfs.c
-+++ b/drivers/power/supply/power_supply_sysfs.c
-@@ -206,6 +206,7 @@ static struct power_supply_attr power_supply_attrs[] = {
- 	POWER_SUPPLY_ATTR(MODEL_NAME),
- 	POWER_SUPPLY_ATTR(MANUFACTURER),
- 	POWER_SUPPLY_ATTR(SERIAL_NUMBER),
-+	POWER_SUPPLY_ATTR(QUICK_CHARGE_TYPE),
- };
- 
- static struct attribute *
-diff --git a/drivers/power/supply/qcom_smbb.c b/drivers/power/supply/qcom_smbb.c
-index c890e1cec720..7dbb385531ca 100644
---- a/drivers/power/supply/qcom_smbb.c
-+++ b/drivers/power/supply/qcom_smbb.c
-@@ -90,6 +90,12 @@
- #define STATUS_CHG_FAST		BIT(7) /* Fast charging */
- #define STATUS_CHG_GONE		BIT(8) /* No charger is connected */
- 
-+#define IMAX_NORMAL		2000000
-+#define IMAX_FAST		4000000
-+#define IMAX_FLASH		6000000
-+#define IMAX_TURBE		10000000
-+#define IMAX_SUPER		12000000
-+
- enum smbb_attr {
- 	ATTR_BAT_ISAFE,
- 	ATTR_BAT_IMAX,
-@@ -111,6 +117,7 @@ struct smbb_charger {
- 
- 	bool dc_disabled;
- 	bool jeita_ext_temp;
-+	bool pd_verifed;
- 	unsigned long status;
- 	struct mutex statlock;
- 
-@@ -485,6 +492,58 @@ static const struct smbb_irq {
- 	{ "dc-valid", smbb_dc_valid_handler },
- };
- 
-+struct quick_charge {
-+	enum power_supply_type adap_type;
-+	enum power_supply_quick_charge_type adap_cap;
-+};
-+
-+static struct quick_charge adapter_cap[10] = {
-+	{ POWER_SUPPLY_TYPE_USB,		QUICK_CHARGE_NORMAL },
-+	{ POWER_SUPPLY_TYPE_USB_DCP,		QUICK_CHARGE_NORMAL },
-+	{ POWER_SUPPLY_TYPE_USB_CDP,		QUICK_CHARGE_NORMAL },
-+	{ POWER_SUPPLY_TYPE_USB_ACA,		QUICK_CHARGE_NORMAL },
-+	{ POWER_SUPPLY_TYPE_USB_FLOAT,		QUICK_CHARGE_NORMAL },
-+	{ POWER_SUPPLY_TYPE_USB_PD,		QUICK_CHARGE_FAST },
-+	{ POWER_SUPPLY_TYPE_USB_HVDCP,		QUICK_CHARGE_FAST },
-+	{ POWER_SUPPLY_TYPE_USB_HVDCP_3,	QUICK_CHARGE_FAST },
-+	{ POWER_SUPPLY_TYPE_USB_HVDCP_3P5,	QUICK_CHARGE_FAST },
-+	{0, 0},
-+};
-+
-+static int get_quick_charge_type(struct smbb_charger *chg)
-+{
-+	union power_supply_propval prop = {0, };
-+	int charger_type, rc;
-+	int i = 0;
-+
-+	rc = power_supply_get_property(chg->bat_psy,
-+			POWER_SUPPLY_PROP_STATUS, &prop);
-+	if (rc < 0)
-+		return rc;
-+	if (prop.intval == POWER_SUPPLY_STATUS_DISCHARGING)
-+		return 0;
-+
-+	rc = power_supply_get_property(chg->usb_psy,
-+			POWER_SUPPLY_PROP_USB_TYPE, &prop);
-+	if (rc < 0)
-+		return rc;
-+	charger_type = prop.intval;
-+
-+	/* when pd adapter is authenticated successfully */
-+	if ((charger_type == POWER_SUPPLY_TYPE_USB_PD) && chg->pd_verifed) {
-+		return QUICK_CHARGE_TURBE;
-+	}
-+
-+	while (adapter_cap[i].adap_type != 0) {
-+		if (charger_type == adapter_cap[i].adap_type) {
-+			return adapter_cap[i].adap_cap;
-+		}
-+		i++;
-+	}
-+
-+	return 0;
-+}
-+
- static int smbb_usbin_get_property(struct power_supply *psy,
- 		enum power_supply_property psp,
- 		union power_supply_propval *val)
-@@ -505,6 +564,9 @@ static int smbb_usbin_get_property(struct power_supply *psy,
- 	case POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX:
- 		val->intval = 2500000;
- 		break;
-+	case POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE:
-+		val->intval = get_quick_charge_type(chg);
-+		break;
- 	default:
- 		rc = -EINVAL;
- 		break;
-@@ -662,10 +724,26 @@ static int smbb_battery_set_property(struct power_supply *psy,
- 		const union power_supply_propval *val)
- {
- 	struct smbb_charger *chg = power_supply_get_drvdata(psy);
-+	int charger_type, bat_imax;
- 	int rc;
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_CURRENT_MAX:
-+		charger_type = get_quick_charge_type(chg);
-+		if (charger_type == QUICK_CHARGE_NORMAL)
-+			bat_imax = IMAX_NORMAL;
-+		else if (charger_type == QUICK_CHARGE_FAST)
-+			bat_imax = IMAX_FAST;
-+		else if (charger_type == QUICK_CHARGE_FLASH)
-+			bat_imax = IMAX_FLASH;
-+		else if (charger_type == QUICK_CHARGE_TURBE)
-+			bat_imax = IMAX_TURBE;
-+		else if (charger_type == QUICK_CHARGE_SUPER)
-+			bat_imax = IMAX_SUPER;
-+		else
-+			bat_imax = IMAX_NORMAL;
-+
-+		val->intval = min(val->intval, bat_imax)
- 		rc = smbb_charger_attr_write(chg, ATTR_BAT_IMAX, val->intval);
- 		break;
- 	case POWER_SUPPLY_PROP_VOLTAGE_MAX:
-@@ -695,6 +773,7 @@ static enum power_supply_property smbb_charger_properties[] = {
- 	POWER_SUPPLY_PROP_ONLINE,
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT,
- 	POWER_SUPPLY_PROP_CHARGE_CONTROL_LIMIT_MAX,
-+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
- };
- 
- static enum power_supply_property smbb_battery_properties[] = {
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index ac1345a48ad0..bd99658c05be 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -167,6 +167,7 @@ enum power_supply_property {
- 	POWER_SUPPLY_PROP_MODEL_NAME,
- 	POWER_SUPPLY_PROP_MANUFACTURER,
- 	POWER_SUPPLY_PROP_SERIAL_NUMBER,
-+	POWER_SUPPLY_PROP_QUICK_CHARGE_TYPE,
- };
- 
- enum power_supply_type {
-@@ -182,6 +183,10 @@ enum power_supply_type {
- 	POWER_SUPPLY_TYPE_USB_PD,		/* Power Delivery Port */
- 	POWER_SUPPLY_TYPE_USB_PD_DRP,		/* PD Dual Role Port */
- 	POWER_SUPPLY_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
-+	POWER_SUPPLY_TYPE_USB_HVDCP,		/* High Voltage DCP */
-+	POWER_SUPPLY_TYPE_USB_HVDCP_3,		/* Efficient High Voltage DCP */
-+	POWER_SUPPLY_TYPE_USB_HVDCP_3P5,	/* Efficient High Voltage DCP */
-+	POWER_SUPPLY_TYPE_USB_FLOAT,		/* Floating charger */
- };
- 
- enum power_supply_usb_type {
-@@ -197,6 +202,15 @@ enum power_supply_usb_type {
- 	POWER_SUPPLY_USB_TYPE_APPLE_BRICK_ID,	/* Apple Charging Method */
- };
- 
-+enum power_supply_quick_charge_type {
-+	QUICK_CHARGE_NORMAL = 0,		/* Charging Power <= 10W */
-+	QUICK_CHARGE_FAST,			/* 10W < Charging Power <= 20W */
-+	QUICK_CHARGE_FLASH,			/* 20W < Charging Power <= 30W */
-+	QUICK_CHARGE_TURBE,			/* 30W < Charging Power <= 50W */
-+	QUICK_CHARGE_SUPER,			/* Charging Power > 50W */
-+	QUICK_CHARGE_MAX,
-+};
-+
- enum power_supply_notifier_events {
- 	PSY_EVENT_PROP_CHANGED,
- };
--- 
-2.28.0
+This sounds like a reasonable step-by-step approach.
 
+Then, to create the device links, we should use DL_FLAG_PM_RUNTIME,
+DL_FLAG_STATELESS.
+
+But whether we should use DL_FLAG_RPM_ACTIVE as well, to initially
+runtime resume the supplier (the genpd virtual device), is harder to
+know - as that kind of depends on expectations by the consumer device
+driver.
+
+Kind regards
+Uffe
