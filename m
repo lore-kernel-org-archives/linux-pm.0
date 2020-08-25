@@ -2,149 +2,144 @@ Return-Path: <SRS0=5v5e=CD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3B71AC433E4
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AC27C433E1
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 05:50:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2479920737
-	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 04:59:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 056C52071E
+	for <linux-pm@archiver.kernel.org>; Tue, 25 Aug 2020 05:50:09 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sUtrjydE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728573AbgHYE4u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 25 Aug 2020 00:56:50 -0400
-Received: from smtprelay0018.hostedemail.com ([216.40.44.18]:35610 "EHLO
-        smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725792AbgHYE4q (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 00:56:46 -0400
-Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
-        by smtprelay04.hostedemail.com (Postfix) with ESMTP id B846B180A9F54;
-        Tue, 25 Aug 2020 04:56:42 +0000 (UTC)
-X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: chalk60_631385f27059
-X-Filterd-Recvd-Size: 5825
-Received: from joe-laptop.perches.com (unknown [47.151.133.149])
-        (Authenticated sender: joe@perches.com)
-        by omf08.hostedemail.com (Postfix) with ESMTPA;
-        Tue, 25 Aug 2020 04:56:38 +0000 (UTC)
-From:   Joe Perches <joe@perches.com>
-To:     Jiri Kosina <trivial@kernel.org>, oprofile-list@lists.sf.net,
-        linux-ide@vger.kernel.org, drbd-dev@lists.linbit.com,
-        linux-media@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linaro-mm-sig@lists.linaro.org, intel-gfx@lists.freedesktop.org,
-        linux-hwmon@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-bcache@vger.kernel.org, netdev@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-fsdevel@vger.kernel.org, reiserfs-devel@vger.kernel.org,
-        linux-nfs@vger.kernel.org
-Cc:     linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-alpha@vger.kernel.org, linux-ia64@vger.kernel.org,
-        sparclinux@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-mtd@lists.infradead.org, linux-s390@vger.kernel.org,
-        linux-scsi@vger.kernel.org, devel@driverdev.osuosl.org,
-        linux-fbdev@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kselftest@vger.kernel.org
-Subject: [PATCH 00/29] treewide: Convert comma separated statements
-Date:   Mon, 24 Aug 2020 21:55:57 -0700
-Message-Id: <cover.1598331148.git.joe@perches.com>
-X-Mailer: git-send-email 2.26.0
+        id S1726090AbgHYFuI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 25 Aug 2020 01:50:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36250 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728929AbgHYFuI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 25 Aug 2020 01:50:08 -0400
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 327FAC0613ED
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 22:50:07 -0700 (PDT)
+Received: by mail-pg1-x542.google.com with SMTP id w186so3943432pgb.8
+        for <linux-pm@vger.kernel.org>; Mon, 24 Aug 2020 22:50:07 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=vnJNUHtuFQUFx13e1DH6FdQTNcSlnOczZJdYD+gETKQ=;
+        b=sUtrjydErcLgPizhn/Xtx4ItBgxoAz/OtzMIkDhh/Q2SE9qFJyNZ2IWh/2wrLbP6F3
+         vMtRByRkp1mYza87avjNVjpHkG6lCbqxvXdcHvDFWIUUDogaJ2wO/o4/rENLnkbuOACB
+         Hps0Tvpynh9hWCbsYRkAKdJwaeblvE+o/JQuCsq1VknHKEl6aAc7zlJDEZijhlYuLR3i
+         ND/Go6sn4ST2/vDfSmtmhqTcmAI2UtUsC21eT/h6OZwd1Ipp6dRZnrCk2yFlAF7tZXmf
+         RGy1hmTFbfTZYLSQluB5wNe7oBjCkvwFyXaDTcVXAOzhh74RtFdCJtggaXeZT7b5TZrc
+         YyRg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=vnJNUHtuFQUFx13e1DH6FdQTNcSlnOczZJdYD+gETKQ=;
+        b=fKVHrjFZByKpoeXCehbd4kiNjoapduNlrFvD5S50PnXtDGH1AXcMAqOOukUln2Dofh
+         GKn1OslcsBPju2lfDw8VnBkg9SlyZxQjvIhnNeq4bNV3Gsuon0q0Ni49wMlUzPfVdVxA
+         Of5ootTxo/pA9NSP3rMmxgWnkgo55Q1VR0E6Xwfyua9DrpioJhmIO/IiQEg6bdKCZyCM
+         L2XFK2t+29hHbbb8jl23xCf8IPpAYRdmYd4q4LktJy43C16bgyzy6nuPqgIfciWxtGch
+         0B4emMZgc88H7zEZN+Vxvg1MnS/79TkryUU2DYJTZ89Ev0wlTMrbelYsQtZcUVMiemCu
+         3qmw==
+X-Gm-Message-State: AOAM532r1NiZpk15G5ymZ9lpPyhsW/Y+p41Z5z/m0XWpdD2mLjWZRCcI
+        GxwUn9mpepcnmvCr97kpnojSCg==
+X-Google-Smtp-Source: ABdhPJx7LW43H/WEVT3wFqJuqlI6n26TIbT5/snnF9dSqDbHnlNMONApn7rCm69tVvLefn/LYmHMeQ==
+X-Received: by 2002:a63:31d0:: with SMTP id x199mr5238003pgx.99.1598334606437;
+        Mon, 24 Aug 2020 22:50:06 -0700 (PDT)
+Received: from localhost ([122.172.43.13])
+        by smtp.gmail.com with ESMTPSA id o5sm2988556pgi.18.2020.08.24.22.50.05
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 24 Aug 2020 22:50:05 -0700 (PDT)
+Date:   Tue, 25 Aug 2020 11:20:03 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Jon Hunter <jonathanh@nvidia.com>
+Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V2] cpufreq: tegra186: Fix initial frequency
+Message-ID: <20200825055003.qfsuktsv7cyouxei@vireshk-i7>
+References: <20200824145907.331899-1-jonathanh@nvidia.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200824145907.331899-1-jonathanh@nvidia.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are many comma separated statements in the kernel.
-See:https://lore.kernel.org/lkml/alpine.DEB.2.22.394.2008201856110.2524@hadrien/
+On 24-08-20, 15:59, Jon Hunter wrote:
+> Commit 6cc3d0e9a097 ("cpufreq: tegra186: add
+> CPUFREQ_NEED_INITIAL_FREQ_CHECK flag") fixed CPUFREQ support for
+> Tegra186 but as a consequence the following warnings are now seen on
+> boot ...
+> 
+>  cpufreq: cpufreq_online: CPU0: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed to: 2035200 KHz
+>  cpufreq: cpufreq_online: CPU1: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU1: Unlisted initial frequency changed to: 2035200 KHz
+>  cpufreq: cpufreq_online: CPU2: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU2: Unlisted initial frequency changed to: 2035200 KHz
+>  cpufreq: cpufreq_online: CPU3: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU3: Unlisted initial frequency changed to: 2035200 KHz
+>  cpufreq: cpufreq_online: CPU4: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU4: Unlisted initial frequency changed to: 2035200 KHz
+>  cpufreq: cpufreq_online: CPU5: Running at unlisted freq: 0 KHz
+>  cpufreq: cpufreq_online: CPU5: Unlisted initial frequency changed to: 2035200 KHz
+> 
+> Fix this by adding a 'get' callback for the Tegra186 CPUFREQ driver to
+> retrieve the current operating frequency for a given CPU. The 'get'
+> callback uses the current 'ndiv' value that is programmed to determine
+> that current operating frequency.
+> 
+> Signed-off-by: Jon Hunter <jonathanh@nvidia.com>
+> ---
+> Changes since V1:
+> - Moved code into a 'get' callback
+> 
+>  drivers/cpufreq/tegra186-cpufreq.c | 30 ++++++++++++++++++++++++++++++
+>  1 file changed, 30 insertions(+)
+> 
+> diff --git a/drivers/cpufreq/tegra186-cpufreq.c b/drivers/cpufreq/tegra186-cpufreq.c
+> index 01e1f58ba422..0d0fcff60765 100644
+> --- a/drivers/cpufreq/tegra186-cpufreq.c
+> +++ b/drivers/cpufreq/tegra186-cpufreq.c
+> @@ -14,6 +14,7 @@
+>  
+>  #define EDVD_CORE_VOLT_FREQ(core)		(0x20 + (core) * 0x4)
+>  #define EDVD_CORE_VOLT_FREQ_F_SHIFT		0
+> +#define EDVD_CORE_VOLT_FREQ_F_MASK		0xffff
+>  #define EDVD_CORE_VOLT_FREQ_V_SHIFT		16
+>  
+>  struct tegra186_cpufreq_cluster_info {
+> @@ -91,10 +92,39 @@ static int tegra186_cpufreq_set_target(struct cpufreq_policy *policy,
+>  	return 0;
+>  }
+>  
+> +static unsigned int tegra186_cpufreq_get(unsigned int cpu)
+> +{
+> +	struct cpufreq_frequency_table *tbl;
+> +	struct cpufreq_policy *policy;
+> +	void __iomem *edvd_reg;
+> +	unsigned int i, freq = 0;
+> +	u32 ndiv;
+> +
+> +	policy = cpufreq_cpu_get(cpu);
+> +	if (!policy)
+> +		return -EINVAL;
 
-Convert the comma separated statements that are in if/do/while blocks
-to use braces and semicolons.
+This should be return 0;
 
-Many comma separated statements still exist but those are changes for
-another day.
-
-Joe Perches (29):
-  coding-style.rst: Avoid comma statements
-  alpha: Avoid comma separated statements
-  ia64: Avoid comma separated statements
-  sparc: Avoid comma separated statements
-  ata: Avoid comma separated statements
-  drbd: Avoid comma separated statements
-  lp: Avoid comma separated statements
-  dma-buf: Avoid comma separated statements
-  drm/gma500: Avoid comma separated statements
-  drm/i915: Avoid comma separated statements
-  hwmon: (scmi-hwmon): Avoid comma separated statements
-  Input: MT - Avoid comma separated statements
-  bcache: Avoid comma separated statements
-  media: Avoid comma separated statements
-  mtd: Avoid comma separated statements
-  8390: Avoid comma separated statements
-  fs_enet: Avoid comma separated statements
-  wan: sbni: Avoid comma separated statements
-  s390/tty3270: Avoid comma separated statements
-  scai/arm: Avoid comma separated statements
-  media: atomisp: Avoid comma separated statements
-  video: fbdev: Avoid comma separated statements
-  fuse: Avoid comma separated statements
-  reiserfs: Avoid comma separated statements
-  lib/zlib: Avoid comma separated statements
-  lib: zstd: Avoid comma separated statements
-  ipv6: fib6: Avoid comma separated statements
-  sunrpc: Avoid comma separated statements
-  tools: Avoid comma separated statements
-
- Documentation/process/coding-style.rst        |  17 +
- arch/alpha/kernel/pci_iommu.c                 |   8 +-
- arch/alpha/oprofile/op_model_ev4.c            |  22 +-
- arch/alpha/oprofile/op_model_ev5.c            |   8 +-
- arch/ia64/kernel/smpboot.c                    |   7 +-
- arch/sparc/kernel/smp_64.c                    |   7 +-
- drivers/ata/pata_icside.c                     |  21 +-
- drivers/block/drbd/drbd_receiver.c            |   6 +-
- drivers/char/lp.c                             |   6 +-
- drivers/dma-buf/st-dma-fence.c                |   7 +-
- drivers/gpu/drm/gma500/mdfld_intel_display.c  |  44 ++-
- drivers/gpu/drm/i915/gt/gen8_ppgtt.c          |   8 +-
- drivers/gpu/drm/i915/gt/intel_gt_requests.c   |   6 +-
- .../gpu/drm/i915/gt/selftest_workarounds.c    |   6 +-
- drivers/gpu/drm/i915/intel_runtime_pm.c       |   6 +-
- drivers/hwmon/scmi-hwmon.c                    |   6 +-
- drivers/input/input-mt.c                      |  11 +-
- drivers/md/bcache/bset.c                      |  12 +-
- drivers/md/bcache/sysfs.c                     |   6 +-
- drivers/media/i2c/msp3400-kthreads.c          |  12 +-
- drivers/media/pci/bt8xx/bttv-cards.c          |   6 +-
- drivers/media/pci/saa7134/saa7134-video.c     |   7 +-
- drivers/mtd/devices/lart.c                    |  10 +-
- drivers/net/ethernet/8390/axnet_cs.c          |  19 +-
- drivers/net/ethernet/8390/lib8390.c           |  14 +-
- drivers/net/ethernet/8390/pcnet_cs.c          |   6 +-
- .../ethernet/freescale/fs_enet/fs_enet-main.c |  11 +-
- drivers/net/wan/sbni.c                        | 101 +++---
- drivers/s390/char/tty3270.c                   |   6 +-
- drivers/scsi/arm/cumana_2.c                   |  19 +-
- drivers/scsi/arm/eesox.c                      |   9 +-
- drivers/scsi/arm/powertec.c                   |   9 +-
- .../media/atomisp/pci/atomisp_subdev.c        |   6 +-
- drivers/video/fbdev/tgafb.c                   |  12 +-
- fs/fuse/dir.c                                 |  24 +-
- fs/reiserfs/fix_node.c                        |  36 ++-
- lib/zlib_deflate/deftree.c                    |  49 ++-
- lib/zstd/compress.c                           | 120 ++++---
- lib/zstd/fse_compress.c                       |  24 +-
- lib/zstd/huf_compress.c                       |   6 +-
- net/ipv6/ip6_fib.c                            |  12 +-
- net/sunrpc/sysctl.c                           |   6 +-
- tools/lib/subcmd/help.c                       |  10 +-
- tools/power/cpupower/utils/cpufreq-set.c      |  14 +-
- tools/testing/selftests/vm/gup_benchmark.c    |  18 +-
- tools/testing/selftests/vm/userfaultfd.c      | 296 +++++++++++-------
- 46 files changed, 694 insertions(+), 382 deletions(-)
+Applied with that change. Thanks.
 
 -- 
-2.26.0
-
+viresh
