@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B1A27C433E1
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 16:00:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ACE1DC433DF
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 16:00:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 85B302080C
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 16:00:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7EC1E2080C
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 16:00:37 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598457635;
-	bh=mqR6dbxEf9z3vf/e9zsd9vKuP/SWTci1RRRc7pR/mng=;
-	h=From:To:Subject:Date:List-ID:From;
-	b=zYbe5cd4eMWGsI2VPJ4N2CpMmm31bU1YsqXpgPROibjspggwAhtsSZtkpseXkt0nj
-	 5tlWyjPMa0/wvtGW8zjnhu2BTm3OBY8q95x9YvmDphqvOVmKFpuvVKRlhsB5o1+HMr
-	 DK3cIvnm7PLpEiOU4pVBSwt3yrn85XuP29eKD2o4=
+	s=default; t=1598457637;
+	bh=Av1naSxIAEszcZFOnKr6q5AWvz2qDmIq55BsDqPUgJ0=;
+	h=From:To:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=p+qyHAyq4YiREfRHrs5t/kfAxi4GvHv3CsvV1OARqQjmeGBqdyjhPO81WodGRDaSP
+	 WAFZJF2a9jYlo0yw9LI3i0J6Mj/TKQl+ZMcRYvHi/YnBcr9PGF5QSPPYpEMzFQWcHz
+	 vwaHJPMmjsBMSWtXw1c0tq/9xlBhdE2BVRgYmYbE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726887AbgHZQAc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Aug 2020 12:00:32 -0400
-Received: from mail.kernel.org ([198.145.29.99]:35730 "EHLO mail.kernel.org"
+        id S1727024AbgHZQAd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Aug 2020 12:00:33 -0400
+Received: from mail.kernel.org ([198.145.29.99]:35794 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726788AbgHZQAZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Aug 2020 12:00:25 -0400
+        id S1726864AbgHZQA2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 26 Aug 2020 12:00:28 -0400
 Received: from localhost.localdomain (unknown [194.230.155.216])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 841C92075E;
-        Wed, 26 Aug 2020 16:00:21 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id C8546214F1;
+        Wed, 26 Aug 2020 16:00:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598457623;
-        bh=mqR6dbxEf9z3vf/e9zsd9vKuP/SWTci1RRRc7pR/mng=;
-        h=From:To:Subject:Date:From;
-        b=ProeJqdfv5Yw8CPijUlTSYb0EnUgcSzUyhpu2A6OQozvdgQbiLbd1Fv7Ci/g32HI1
-         p58z2hRxT22VlWtHVG+2HEsZOMCtGPc1qYsm2TNrTFwcUy7EIZl34RUz7LRpGWIclz
-         LKie1y3TgY7p3GgLm84hW37yvq5md3NEbNMWyFS4=
+        s=default; t=1598457625;
+        bh=Av1naSxIAEszcZFOnKr6q5AWvz2qDmIq55BsDqPUgJ0=;
+        h=From:To:Subject:Date:In-Reply-To:References:From;
+        b=bLP3IvtDEaFHpFSB2tLjFx6NksO1D+kJHPp9JKgL4zS3X1eFCfN8/j2aR9oIHPNaw
+         dbLxwwSVz38QY/qfpUe9OgCpIBk7SLX/SFxR+RE/CTq8e8333VYGpc8nK6w7/hzR7q
+         FYj6E9rxVmEQidkvbL2wM6U5Bds21ZC5kRTha2u8=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -45,62 +45,77 @@ To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Krzysztof Kozlowski <krzk@kernel.org>,
         linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-samsung-soc@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] cpufreq: s5pv210: Simplify with dev_err_probe()
-Date:   Wed, 26 Aug 2020 18:00:15 +0200
-Message-Id: <20200826160016.469-1-krzk@kernel.org>
+Subject: [PATCH 2/2] cpufreq: s5pv210: Use dev_err instead of pr_err in probe
+Date:   Wed, 26 Aug 2020 18:00:16 +0200
+Message-Id: <20200826160016.469-2-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200826160016.469-1-krzk@kernel.org>
+References: <20200826160016.469-1-krzk@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Common pattern of handling deferred probe can be simplified with
-dev_err_probe().  Less code and also it prints the error value.
+dev_err() allows easily to identify the device printing the message so
+no need for __func__.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/cpufreq/s5pv210-cpufreq.c | 18 ++++++------------
- 1 file changed, 6 insertions(+), 12 deletions(-)
+ drivers/cpufreq/s5pv210-cpufreq.c | 14 +++++---------
+ 1 file changed, 5 insertions(+), 9 deletions(-)
 
 diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
-index e84281e2561d..7dccdb364fcf 100644
+index 7dccdb364fcf..911a655895d8 100644
 --- a/drivers/cpufreq/s5pv210-cpufreq.c
 +++ b/drivers/cpufreq/s5pv210-cpufreq.c
-@@ -590,6 +590,7 @@ static struct notifier_block s5pv210_cpufreq_reboot_notifier = {
+@@ -616,8 +616,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
  
- static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- {
-+	struct device *dev = &pdev->dev;
- 	struct device_node *np;
- 	int id, result = 0;
- 
-@@ -602,21 +603,14 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
- 	 * cpufreq-dt driver.
- 	 */
- 	arm_regulator = regulator_get(NULL, "vddarm");
--	if (IS_ERR(arm_regulator)) {
--		if (PTR_ERR(arm_regulator) == -EPROBE_DEFER)
--			pr_debug("vddarm regulator not ready, defer\n");
--		else
--			pr_err("failed to get regulator vddarm\n");
--		return PTR_ERR(arm_regulator);
--	}
-+	if (IS_ERR(arm_regulator))
-+		return dev_err_probe(dev, PTR_ERR(arm_regulator),
-+				     "failed to get regulator vddarm\n");
- 
- 	int_regulator = regulator_get(NULL, "vddint");
- 	if (IS_ERR(int_regulator)) {
--		if (PTR_ERR(int_regulator) == -EPROBE_DEFER)
--			pr_debug("vddint regulator not ready, defer\n");
--		else
--			pr_err("failed to get regulator vddint\n");
--		result = PTR_ERR(int_regulator);
-+		result = dev_err_probe(dev, PTR_ERR(int_regulator),
-+				       "failed to get regulator vddint\n");
- 		goto err_int_regulator;
+ 	np = of_find_compatible_node(NULL, NULL, "samsung,s5pv210-clock");
+ 	if (!np) {
+-		pr_err("%s: failed to find clock controller DT node\n",
+-			__func__);
++		dev_err(dev, "failed to find clock controller DT node\n");
+ 		result = -ENODEV;
+ 		goto err_clock;
+ 	}
+@@ -625,16 +624,14 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 	clk_base = of_iomap(np, 0);
+ 	of_node_put(np);
+ 	if (!clk_base) {
+-		pr_err("%s: failed to map clock registers\n", __func__);
+-		result = -EFAULT;
++		dev_err(dev, "failed to map clock registers\n");
+ 		goto err_clock;
  	}
  
+ 	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
+ 		id = of_alias_get_id(np, "dmc");
+ 		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+-			pr_err("%s: failed to get alias of dmc node '%pOFn'\n",
+-				__func__, np);
++			dev_err(dev, "failed to get alias of dmc node '%pOFn'\n", np);
+ 			of_node_put(np);
+ 			result = id;
+ 			goto err_clk_base;
+@@ -642,8 +639,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 
+ 		dmc_base[id] = of_iomap(np, 0);
+ 		if (!dmc_base[id]) {
+-			pr_err("%s: failed to map dmc%d registers\n",
+-				__func__, id);
++			dev_err(dev, "failed to map dmc%d registers\n", id);
+ 			of_node_put(np);
+ 			result = -EFAULT;
+ 			goto err_dmc;
+@@ -652,7 +648,7 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+ 
+ 	for (id = 0; id < ARRAY_SIZE(dmc_base); ++id) {
+ 		if (!dmc_base[id]) {
+-			pr_err("%s: failed to find dmc%d node\n", __func__, id);
++			dev_err(dev, "failed to find dmc%d node\n", id);
+ 			result = -ENODEV;
+ 			goto err_dmc;
+ 		}
 -- 
 2.17.1
 
