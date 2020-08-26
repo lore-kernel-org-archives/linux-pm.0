@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 50B72C433E1
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 14:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA683C433E3
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 14:51:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 25D7922B4B
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 14:49:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9BF3021741
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 14:51:44 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598453361;
-	bh=eaW0aBiOy01iK8S2RsXiRKkJ6drv51HgzFij3kxD4oA=;
+	s=default; t=1598453504;
+	bh=ZBhWApDwCrDJpoKImS+nFVx4dksKMrud8X8VM0Co+6g=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=hZMqGN4ho6d0xFmYbAKbJmx8VOswwJBsKjJcutysN7Ay2cyto778Vh2dAjn47mupA
-	 NROnpPYVAVZOcU1xPr1uyqHQ3VoFfB1cGfuHWiInR64dm1zXWNwE1xopUcjOqJD2I5
-	 X6k5lMOlbJV/bbHICiOCbIJSAck8zlCt0YGkFyBY=
+	b=pfzcPBB9015tBUu+8DD0fdTwhp+CS+jZMH1JLPG9BnAbFE1prYU93k1zRkQ85uOn6
+	 uOkj5FBWZb2qTBA2EvIEEfchPeBGxHU4lxIHpLa/V+BlOaytIJqH5LNuPD4efEJo2R
+	 YFZFgSQQ2da4jT57uEkZvv5Jpc2x2FSznTOdxhrM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727061AbgHZOtR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Aug 2020 10:49:17 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33122 "EHLO mail.kernel.org"
+        id S1726843AbgHZOvn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Aug 2020 10:51:43 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33468 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726988AbgHZOtJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 26 Aug 2020 10:49:09 -0400
+        id S1727040AbgHZOtR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 26 Aug 2020 10:49:17 -0400
 Received: from localhost.localdomain (unknown [194.230.155.216])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 77922221E2;
-        Wed, 26 Aug 2020 14:49:07 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id A39C722B40;
+        Wed, 26 Aug 2020 14:49:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598453349;
-        bh=eaW0aBiOy01iK8S2RsXiRKkJ6drv51HgzFij3kxD4oA=;
+        s=default; t=1598453356;
+        bh=ZBhWApDwCrDJpoKImS+nFVx4dksKMrud8X8VM0Co+6g=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=EIcsim/r+XSjD0HHyIoS3Ng6iKV/5nUgqCui0TSYKp4aYcsObrLGH3YgQ/gdponOm
-         mxl5ZXg0kCiY+/4GrlTVjdKcQgoPwQVPmM+XZPJGSBuF81Pr7fs5S1f9VV+P3FPzhQ
-         D/VyFqRG1IIbgPQh8rUifP49+7Iw8IiZ78eJsMtM=
+        b=Ean4WHQ59iRFfzF4Ouy1Ef1zl4WcsGYtnATvmBVh9wuQybu3W98hJRX40J8lUarDH
+         DoiBoHPhWewfzSV4DsNvL1yTuWnUExRoMmNdm78R8LCMqMFPbDA/GH7RpJLFNbbq3m
+         Zt0S3fuKj9DwMz9FdQB6/opCUXZDcfv1bBmHwHRc=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
         "Andrew F. Davis" <afd@ti.com>, Sebastian Reichel <sre@kernel.org>,
@@ -45,9 +45,9 @@ To:     =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>,
         David Lechner <david@lechnology.com>, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH 2/5] power: supply: cpcap: Simplify with dev_err_probe()
-Date:   Wed, 26 Aug 2020 16:48:55 +0200
-Message-Id: <20200826144858.9584-2-krzk@kernel.org>
+Subject: [PATCH 5/5] power: supply: lego_ev3: Simplify with dev_err_probe()
+Date:   Wed, 26 Aug 2020 16:48:58 +0200
+Message-Id: <20200826144858.9584-5-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200826144858.9584-1-krzk@kernel.org>
 References: <20200826144858.9584-1-krzk@kernel.org>
@@ -61,27 +61,50 @@ dev_err_probe().  Less code and also it prints the error value.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/power/supply/cpcap-battery.c | 7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/power/supply/lego_ev3_battery.c | 24 +++++++++---------------
+ 1 file changed, 9 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/power/supply/cpcap-battery.c b/drivers/power/supply/cpcap-battery.c
-index 90eba364664b..295611b3b15e 100644
---- a/drivers/power/supply/cpcap-battery.c
-+++ b/drivers/power/supply/cpcap-battery.c
-@@ -747,11 +747,8 @@ static int cpcap_battery_init_iio(struct cpcap_battery_ddata *ddata)
- 	return 0;
+diff --git a/drivers/power/supply/lego_ev3_battery.c b/drivers/power/supply/lego_ev3_battery.c
+index 1ae3710909b7..ccb00be38e2c 100644
+--- a/drivers/power/supply/lego_ev3_battery.c
++++ b/drivers/power/supply/lego_ev3_battery.c
+@@ -166,27 +166,21 @@ static int lego_ev3_battery_probe(struct platform_device *pdev)
  
- out_err:
--	if (error != -EPROBE_DEFER)
--		dev_err(ddata->dev, "could not initialize VBUS or ID IIO: %i\n",
--			error);
--
--	return error;
-+	return dev_err_probe(ddata->dev, error,
-+			     "could not initialize VBUS or ID IIO\n");
- }
+ 	batt->iio_v = devm_iio_channel_get(dev, "voltage");
+ 	err = PTR_ERR_OR_ZERO(batt->iio_v);
+-	if (err) {
+-		if (err != -EPROBE_DEFER)
+-			dev_err(dev, "Failed to get voltage iio channel\n");
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err,
++				     "Failed to get voltage iio channel\n");
  
- /* Calibrate coulomb counter */
+ 	batt->iio_i = devm_iio_channel_get(dev, "current");
+ 	err = PTR_ERR_OR_ZERO(batt->iio_i);
+-	if (err) {
+-		if (err != -EPROBE_DEFER)
+-			dev_err(dev, "Failed to get current iio channel\n");
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err,
++				     "Failed to get current iio channel\n");
+ 
+ 	batt->rechargeable_gpio = devm_gpiod_get(dev, "rechargeable", GPIOD_IN);
+ 	err = PTR_ERR_OR_ZERO(batt->rechargeable_gpio);
+-	if (err) {
+-		if (err != -EPROBE_DEFER)
+-			dev_err(dev, "Failed to get rechargeable gpio\n");
+-		return err;
+-	}
++	if (err)
++		return dev_err_probe(dev, err,
++				     "Failed to get rechargeable gpio\n");
+ 
+ 	/*
+ 	 * The rechargeable battery indication switch cannot be changed without
 -- 
 2.17.1
 
