@@ -2,77 +2,54 @@ Return-Path: <SRS0=+XkI=CE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A48D1C433E1
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 11:54:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA510C433E3
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 12:05:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F6CC2080C
-	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 11:54:17 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="K9S6Gl/y"
+	by mail.kernel.org (Postfix) with ESMTP id C95122087C
+	for <linux-pm@archiver.kernel.org>; Wed, 26 Aug 2020 12:05:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729251AbgHZLyQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 26 Aug 2020 07:54:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33798 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729169AbgHZLur (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2020 07:50:47 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 091CDC061797
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2020 04:50:47 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id p11so838480pfn.11
-        for <linux-pm@vger.kernel.org>; Wed, 26 Aug 2020 04:50:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=tryfDmsq8J+S8CIysHu14Sy9xIe8k9L5z/SAmRPWEvQ=;
-        b=K9S6Gl/yPJf+4iRIOJURLX0jZIfzzKuoLqIWdhAwGNvRwUtT7rlO+a91+tpquF6m63
-         TqKnKg0EmKJmU1iAU7ZRvzgTJhWy5MlAsKJ727GsNY7I3yeh4calb536VT5LQUKuKsME
-         LJJerq2jwlelEqub3qvFIjfL7M8AcQEzhnOO0AwvM544Bqgbb3NVL9X3X0UWBJFGalye
-         BGqrpBUU8y4ua1rv9gYqbfNfuXkc7qKOQol/C1JpQl02XwFgq6XBF52SrkhA8aHoi4Yv
-         iTUGdM5pYqeVBft3p0T+exfAUm5tzMi0oDDaH+NWRLAdUTcUYp4O8ycUnR62H6rUFx0r
-         +kTg==
+        id S1729673AbgHZMFI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 26 Aug 2020 08:05:08 -0400
+Received: from mail-wr1-f67.google.com ([209.85.221.67]:42821 "EHLO
+        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729677AbgHZMFB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 26 Aug 2020 08:05:01 -0400
+Received: by mail-wr1-f67.google.com with SMTP id q14so1528555wrn.9;
+        Wed, 26 Aug 2020 05:05:00 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=tryfDmsq8J+S8CIysHu14Sy9xIe8k9L5z/SAmRPWEvQ=;
-        b=DbVETxLz0SY5QMOj1UxYDtGVslWCYZ3/aba9vyG2MMpKl5XbsQ0DnTG3ld1BYrNUq9
-         z6BYyoME9icFG9QVeIWHsGXgltnwUp1Qx5CsMmlQgdFsTpP7sJqTwH2A3GEsT5W/pBHI
-         ymHebpkzyX7UZSifzrpVVidWh4N4fLj+R1ncmti529nVKYJPbNHs/vU4pqRGrQAcp8uG
-         7v/DaIB0HfPxOwk0BQdNp1C22HMkP7pMA4GHJQfihvQ19lvPZzgEIGIp3UZMvvTNyZu0
-         3qPZlP6vpDqYxLrLv//f7RjY9C+wOtBF+pRR1FmYpmjfalzNLTIMhUadzYOVYiaSZ1wO
-         t8kw==
-X-Gm-Message-State: AOAM532wW3eV9EVkf2CE35xDU/VhuGvNdm23DbrzGhE5bFoxALoAOC2p
-        ONQnTuZuAHSibvWWKVqFpn8l1w==
-X-Google-Smtp-Source: ABdhPJztcwN8EHa6UOwG0fvOLxS69d/buMurM5WYvvacPyKM+b6A2zg2wIyMpy1yWByrjeHDs6epGA==
-X-Received: by 2002:a65:50c1:: with SMTP id s1mr9999244pgp.341.1598442646550;
-        Wed, 26 Aug 2020 04:50:46 -0700 (PDT)
-Received: from localhost ([122.172.43.13])
-        by smtp.gmail.com with ESMTPSA id c8sm2632593pfc.203.2020.08.26.04.50.45
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 26 Aug 2020 04:50:45 -0700 (PDT)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] opp: Allow opp-supported-hw to contain multiple versions
-Date:   Wed, 26 Aug 2020 17:20:29 +0530
-Message-Id: <c4d59ad206394e4f73ab7547c6cd99d95c032128.1598442485.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1598442485.git.viresh.kumar@linaro.org>
-References: <cover.1598442485.git.viresh.kumar@linaro.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=yeR3qMxY8QK4/wvsoj5cuxH3mWn/t2ot23DexX4h7MA=;
+        b=IxdmjIAk61phj86Vx2aVeUtyV1ZPH6KSc6YbsU2upSKiejQ2+9+5qYpeJ0vwQ1Ft4K
+         yBA/x5JdIzT2RFVMchiz886iNCuDWnEyLHUHakwU3eL9BNqVIQGscVT6s/uhE7zHPeyZ
+         1Peh8dJwsx6AgyoXqQkD6BVloLi9NBXaLjv0z9xgAKm9EF+d62CaFjPNm7ifPMrfgxzF
+         Lt3RKsbOBJNyf9ZFCrLIRKpfeshH0BFblASsrNDaY5gKMIkxRGKi8GyDlLW/VtlG3S9A
+         sQl674qG4AUx1TxijPipxKuofwQyhfGH1BofPnrl+xkzqvyWbYaxo5smqopN51ieUnWm
+         E0oA==
+X-Gm-Message-State: AOAM532RTMuiB3z/59l1yZhmZQCDDr5vZLxbi5MTtxhb0hWRedR50Qi8
+        5RWPrFjQLB55qJTyzQgffj6b+4oQm6983A==
+X-Google-Smtp-Source: ABdhPJzsVm84CbbIOidcz8nD79LPK/Ny1lXC+ZG5qTLEMI14VHYwfiCaAadaxv6yHSvDMychEJr93w==
+X-Received: by 2002:adf:e452:: with SMTP id t18mr14333704wrm.109.1598443498258;
+        Wed, 26 Aug 2020 05:04:58 -0700 (PDT)
+Received: from localhost.localdomain (static-176-175-69-188.ftth.abo.bbox.fr. [176.175.69.188])
+        by smtp.googlemail.com with ESMTPSA id k24sm4728420wmj.19.2020.08.26.05.04.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 26 Aug 2020 05:04:57 -0700 (PDT)
+From:   Guilhem Lettron <guilhem@barpilot.io>
+To:     Jacob Pan <jacob.jun.pan@linux.intel.com>,
+        Len Brown <lenb@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Guilhem Lettron <guilhem@barpilot.io>
+Subject: [PATCH] intel_idle: Add ICL support
+Date:   Wed, 26 Aug 2020 14:04:21 +0200
+Message-Id: <20200826120421.44356-1-guilhem@barpilot.io>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -80,85 +57,26 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The bindings allow multiple versions to be passed to "opp-supported-hw"
-property, either of which can result in enabling of the OPP.
+Use the same C-states as SKL
 
-Update code to allow that.
-
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Guilhem Lettron <guilhem@barpilot.io>
 ---
- drivers/opp/of.c | 47 +++++++++++++++++++++++++++++++++--------------
- 1 file changed, 33 insertions(+), 14 deletions(-)
+ drivers/idle/intel_idle.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index e39ddcc779af..5dac8bffd68c 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -434,9 +434,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_of_find_icc_paths);
- static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
- 			      struct device_node *np)
- {
--	unsigned int count = opp_table->supported_hw_count;
--	u32 version;
--	int ret;
-+	unsigned int levels = opp_table->supported_hw_count;
-+	int count, versions, ret, i, j;
-+	u32 val;
- 
- 	if (!opp_table->supported_hw) {
- 		/*
-@@ -451,21 +451,40 @@ static bool _opp_is_supported(struct device *dev, struct opp_table *opp_table,
- 			return true;
- 	}
- 
--	while (count--) {
--		ret = of_property_read_u32_index(np, "opp-supported-hw", count,
--						 &version);
--		if (ret) {
--			dev_warn(dev, "%s: failed to read opp-supported-hw property at index %d: %d\n",
--				 __func__, count, ret);
--			return false;
-+	count = of_property_count_u32_elems(np, "opp-supported-hw");
-+	if (count <= 0 || count % levels) {
-+		dev_err(dev, "%s: Invalid opp-supported-hw property (%d)\n",
-+			__func__, count);
-+		return false;
-+	}
-+
-+	versions = count / levels;
-+
-+	/* All levels in at least one of the versions should match */
-+	for (i = 0; i < versions; i++) {
-+		bool supported = true;
-+
-+		for (j = 0; j < levels; j++) {
-+			ret = of_property_read_u32_index(np, "opp-supported-hw",
-+							 i * levels + j, &val);
-+			if (ret) {
-+				dev_warn(dev, "%s: failed to read opp-supported-hw property at index %d: %d\n",
-+					 __func__, i * levels + j, ret);
-+				return false;
-+			}
-+
-+			/* Check if the level is supported */
-+			if (!(val & opp_table->supported_hw[j])) {
-+				supported = false;
-+				break;
-+			}
- 		}
- 
--		/* Both of these are bitwise masks of the versions */
--		if (!(version & opp_table->supported_hw[count]))
--			return false;
-+		if (supported)
-+			return true;
- 	}
- 
--	return true;
-+	return false;
- }
- 
- static int opp_parse_supplies(struct dev_pm_opp *opp, struct device *dev,
+diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
+index 8e0fb1a5bdbd..1bb539f09a4f 100644
+--- a/drivers/idle/intel_idle.c
++++ b/drivers/idle/intel_idle.c
+@@ -1145,6 +1145,8 @@ static const struct x86_cpu_id intel_idle_ids[] __initconst = {
+ 	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE_L,		&idle_cpu_skl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(KABYLAKE,		&idle_cpu_skl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(SKYLAKE_X,		&idle_cpu_skx),
++	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE,		&idle_cpu_skl),
++	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_L,		&idle_cpu_skl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(ICELAKE_X,		&idle_cpu_icx),
+ 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNL,	&idle_cpu_knl),
+ 	X86_MATCH_INTEL_FAM6_MODEL(XEON_PHI_KNM,	&idle_cpu_knl),
 -- 
-2.25.0.rc1.19.g042ed3e048af
+2.27.0
 
