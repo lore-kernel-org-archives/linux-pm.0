@@ -7,67 +7,66 @@ X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E0263C433E1
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 14:46:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C602C433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 14:53:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A98322054F
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 14:46:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0C57F22B4B
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 14:53:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="PCA2L3pm"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="ILW1nyp0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727892AbgH0Oq1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Aug 2020 10:46:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53890 "EHLO
+        id S1728180AbgH0Ox3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Aug 2020 10:53:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33556 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728077AbgH0ODp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2020 10:03:45 -0400
-Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CF124C06123A
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 06:54:33 -0700 (PDT)
-Received: by mail-pf1-x436.google.com with SMTP id y206so3547208pfb.10
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 06:54:33 -0700 (PDT)
+        with ESMTP id S1726393AbgH0OxZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2020 10:53:25 -0400
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 583F6C061264
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 07:53:23 -0700 (PDT)
+Received: by mail-pf1-x430.google.com with SMTP id k18so3692478pfp.7
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 07:53:23 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=kernelci-org.20150623.gappssmtp.com; s=20150623;
         h=message-id:date:mime-version:content-transfer-encoding:subject:to
          :from;
-        bh=eWNPcrHBmFU0v6fDVfSb0Cmxk6wHTgGW54+GR8/xd9U=;
-        b=PCA2L3pmnWZVU1f7O2oJ2EOBfAzt22J9d49jL+SXF6g4oFM/e9cgl66YgHw4QiuE04
-         w5X++aV7nX+b31On5JHx7lYTEkMY//LR6OQcBRaoq9lk0VDSgMvl88qaSmL7TzYVEXAL
-         43HoZ+qQ3WpjHTw/yLA8wfs8JbEK284ua0+iVvlS8zK9+hRxLU0bwKtI7GNPXPOS3qXO
-         fBWBe4CrZLIfotlmtRLBs9Cusff4yAggiz7sCRrYwJ71dMXdXn1hZxqvxEKtiqEATjJe
-         prFa3XJHhh+EDyrmrJmXZcxycrr+S0YfKKZthoLAfZnC6MSuICBc1dzAKpfV6ceWIjrq
-         2vwQ==
+        bh=7I0vg+HDkvC6tRwUcdh5SFwqOWSXsOmzdENn0ILneqs=;
+        b=ILW1nyp0tBrR1qw2bcs5k0/AxJCD8J3Cev0GQAcV+hnqYrY2iw6RBqEttzM2DwbnJJ
+         5Ho7GqtJiAQ87XE2sNSPez5vBFcrcCXYJuZuGOElS4pGJPXaz9YZUW1pO+9I/iuxGzch
+         8tVsCtP2MuRRWAVTmPvat52qlplO9Y275FfaNqytNOCt5nx97hMPkrqb/He2g6nHW2cS
+         TyeNi6PNURRFEtzpPVythxjmPkADaVnF3fEBAXMlgp6jmdr+LEIyCG1or23qOsBaUa1X
+         Wm5vLb+lTe49tc87dE5pOlFryBLHPoY14tFHDLcj/2sr8onCPVQSAkfm3U41X52czZkK
+         rBhg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:message-id:date:mime-version
          :content-transfer-encoding:subject:to:from;
-        bh=eWNPcrHBmFU0v6fDVfSb0Cmxk6wHTgGW54+GR8/xd9U=;
-        b=GVnrcEfmhWczEH3oEWF3Yv9zuSteGPU073/v4gcCfJS74qC2GML5f2NXbyacMOhHom
-         r5diedMXlWGsVy61WtJRtMrQESQft5iKO6pypO/5o/ySnZoo4veQMv/OXk3CK5uKLayu
-         rOsdniU58PUfXhqdaHver3MCHzo2Dj6Oiz0S8+kAVseUk5jwQ91PtY0mvoVtsppdoqeq
-         KnlalJasBVE+zC1rt48EMWIkDif2Ywe5zYU/Gp2L5/UJkZeiLVemBPP0MMT10ac2xnat
-         dSQMb9a20w+FnRE9jWlOoAnYzqfpPk5AAs9wXsirGMeah2Ky0JfMulQBIa2xY8nCFYBn
-         sqnQ==
-X-Gm-Message-State: AOAM533zpuTe0s4gO9wRBTPfkMxkQ7vq4pHVDPfXrsl1D6kKhJnVxmQC
-        emZxedUXNNxdOkw/WbNUln4qG2gGzRRUlQ==
-X-Google-Smtp-Source: ABdhPJzA9dJAfHq8L6Fq4wJ5AP5NzlohaCnMo8cZMYPeH1LZqkQtfkvJD55zJ8mkL4rTWfrNvKVyXQ==
-X-Received: by 2002:a62:ee06:: with SMTP id e6mr16436675pfi.313.1598536473309;
-        Thu, 27 Aug 2020 06:54:33 -0700 (PDT)
+        bh=7I0vg+HDkvC6tRwUcdh5SFwqOWSXsOmzdENn0ILneqs=;
+        b=aqStZIrFybgecfncau8EwnveTSfRSlYkwFMrmUa91r4iNhiXE7JFLFSNhbWT+g654+
+         h+HK/LhMiQHxU0uPHkwXnBXsjhPLcziYf5hbLyXf+gvfEA1u2EgnhPZu8X4NKS9p2cNP
+         uBsx8pe2bcldljp6zHOXIjGNZA6VmRu8HrwX31u/24aSpAgqd0iKnn5SobBokRHvQAJP
+         jSdZc0iQDZXuzoPWMUd8n75H+sWquBGrzLcYkgaTi6eatSFd8yRh5FYOrFCbCCsOc+Js
+         jaUTILZLAzDwnrXXacT9o6An17K++AIVvNX0p8hdXFfaX4MDRqScvVVeVVC3xEWcqpjA
+         zyHA==
+X-Gm-Message-State: AOAM530DqGNzAppf+npziZ5e7yUtNag6v0T+kTcfy9Ytb/JoiNl0U9A4
+        Ctfa2U5ONlVN7BUzkJ2rtWhcJw==
+X-Google-Smtp-Source: ABdhPJypfzIjS5G5g1TZwOtxUbp30V6dId36psZ8uOiahC2VJF+zqiPIIOK43Ps8yCmYrmxsfUGOzg==
+X-Received: by 2002:a17:902:bd8d:: with SMTP id q13mr16451706pls.142.1598540002911;
+        Thu, 27 Aug 2020 07:53:22 -0700 (PDT)
 Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id w10sm2382422pjq.46.2020.08.27.06.54.32
+        by smtp.gmail.com with ESMTPSA id f3sm3040350pfj.206.2020.08.27.07.53.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 27 Aug 2020 06:54:32 -0700 (PDT)
-Message-ID: <5f47bb18.1c69fb81.5f274.749d@mx.google.com>
-Date:   Thu, 27 Aug 2020 06:54:32 -0700 (PDT)
+        Thu, 27 Aug 2020 07:53:22 -0700 (PDT)
+Message-ID: <5f47c8e2.1c69fb81.3b49e.87d4@mx.google.com>
+Date:   Thu, 27 Aug 2020 07:53:22 -0700 (PDT)
 Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 X-Kernelci-Tree: pm
 X-Kernelci-Branch: testing
-X-Kernelci-Report-Type: build
+X-Kernelci-Report-Type: test
 X-Kernelci-Kernel: v5.9-rc2-17-gdc37b29f6d30
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 11 warnings (v5.9-rc2-17-gdc37b29f6d30)
+Subject: pm/testing sleep: 3 runs, 2 regressions (v5.9-rc2-17-gdc37b29f6d30)
 To:     rafael@kernel.org, linux-pm@vger.kernel.org,
         kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
 From:   "kernelci.org bot" <bot@kernelci.org>
@@ -76,138 +75,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 11 warnings (v5.9-rc2-17-gd=
-c37b29f6d30)
+pm/testing sleep: 3 runs, 2 regressions (v5.9-rc2-17-gdc37b29f6d30)
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-9-rc2-17-gdc37b29f6d30/
+Regressions Summary
+-------------------
 
-Tree: pm
-Branch: testing
-Git Describe: v5.9-rc2-17-gdc37b29f6d30
-Git Commit: dc37b29f6d3007e72ff3de80fcbeeed75843cfed
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
+platform             | arch  | lab           | compiler | defconfig        =
+  | results
+---------------------+-------+---------------+----------+------------------=
+--+--------
+exynos5422-odroidxu3 | arm   | lab-collabora | gcc-8    | multi_v7_defconfi=
+g | 0/1    =
 
-Warnings Detected:
-
-arc:
-
-arm64:
-    defconfig (gcc-8): 8 warnings
-
-arm:
-    multi_v7_defconfig (gcc-8): 3 warnings
-
-i386:
-
-mips:
-
-riscv:
-
-x86_64:
+mt8173-elm-hana      | arm64 | lab-collabora | gcc-8    | defconfig        =
+  | 0/1    =
 
 
-Warnings summary:
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.9-rc2=
+-17-gdc37b29f6d30/plan/sleep/
 
-    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
-dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
-s" property but its #size-cells (1) differs from / (2)
-    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
-dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
-s" property but its #address-cells (1) differs from / (2)
-    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
-iled prerequisite 'spi_bus_bridge'
-    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: War=
-ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
-its #size-cells (1) differs from / (2)
-    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: War=
-ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
-its #address-cells (1) differs from / (2)
-    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
-spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for =
-SPI bus
-    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
-spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells f=
-or SPI bus
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.9-rc2-17-gdc37b29f6d30
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      dc37b29f6d3007e72ff3de80fcbeeed75843cfed =
 
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
 
-Detailed per-defconfig build reports:
 
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
+Test Regressions
+---------------- =
 
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
 
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 8 warnings, 0 section mi=
-smatches
 
-Warnings:
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #address-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #size-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #address-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #size-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #address-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
-7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
-operty but its #size-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning =
-(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
-address-cells (1) differs from / (2)
-    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning =
-(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
-size-cells (1) differs from / (2)
+platform             | arch  | lab           | compiler | defconfig        =
+  | results
+---------------------+-------+---------------+----------+------------------=
+--+--------
+exynos5422-odroidxu3 | arm   | lab-collabora | gcc-8    | multi_v7_defconfi=
+g | 0/1    =
 
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
 
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
+  Details:     https://kernelci.org/test/plan/id/5f47beaed26b330e789fb52c
 
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
-tion mismatches
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc2-17-gdc37b2=
+9f6d30/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-exynos5422-odroidxu=
+3.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc2-17-gdc37b2=
+9f6d30/arm/multi_v7_defconfig/gcc-8/lab-collabora/sleep-exynos5422-odroidxu=
+3.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0821.0/armhf/rootfs.cpio.gz =
 
-Warnings:
-    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
-us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SP=
-I bus
-    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
-us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI b=
-us
-    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
-prerequisite 'spi_bus_bridge'
 
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
+  * sleep.login: https://kernelci.org/test/case/id/5f47beaed26b330e789fb52d
+      failing since 6 days (last pass: v5.9-rc1-4-g1f08d51cd57f, first fail=
+: v5.9-rc1-4-gcc15fd9892e2)  =
 
----
-For more info write to <info@kernelci.org>
+
+
+platform             | arch  | lab           | compiler | defconfig        =
+  | results
+---------------------+-------+---------------+----------+------------------=
+--+--------
+mt8173-elm-hana      | arm64 | lab-collabora | gcc-8    | defconfig        =
+  | 0/1    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5f47bc2d7e62e1d73b9fb42f
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc2-17-gdc37b2=
+9f6d30/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc2-17-gdc37b2=
+9f6d30/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0821.0/arm64/rootfs.cpio.gz =
+
+
+  * sleep.login: https://kernelci.org/test/case/id/5f47bc2d7e62e1d73b9fb430
+      failing since 7 days (last pass: v5.8-107-gb72b3ea38c81, first fail: =
+v5.9-rc1-4-g1f08d51cd57f)  =20
