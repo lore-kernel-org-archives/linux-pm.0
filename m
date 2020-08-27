@@ -2,118 +2,166 @@ Return-Path: <SRS0=43vj=CF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F2462C433DF
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 15:00:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A8F1C433E4
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 15:11:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CEDFB20678
-	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 15:00:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A05022B4B
+	for <linux-pm@archiver.kernel.org>; Thu, 27 Aug 2020 15:10:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nth4/rZi"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="eJry3dtL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726995AbgH0PAj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 27 Aug 2020 11:00:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34040 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728572AbgH0L4i (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2020 07:56:38 -0400
-Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com [IPv6:2607:f8b0:4864:20::e43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 08683C061234
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 04:01:36 -0700 (PDT)
-Received: by mail-vs1-xe43.google.com with SMTP id a1so2585815vsp.4
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 04:01:36 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=YjN36ux3ZCiiBlL2gD5vkxNtFHi1HK0Zk2s0f0PusEQ=;
-        b=nth4/rZi82Zdz4tORtG6KRkbO6PJcfhbUipiV7FzRSL7ARbIxYr/bK46JmHMNDbTWX
-         /cgbjFquc0bNf/O9zhcb50kBbuQT/lS/x/91HjSw/POXb2FfQGCzWKcC2DfjqUIh+aSN
-         waVMbLrc837pa9LSXJQBOpjxHx326Qd09J/H8tAMadBVGSKCnbfs+1DFxHWfcgtTAVvP
-         YXhk6Cl869ZBNCyaNJIAqpZe+3AqRVL5pSgcQXSB/W0Lpn6vS8GkQ/5PWNZzspG8BGba
-         apse2isGgrRFGohOdCM3+lUOZrnJw2U7KJg43iRhNC16HW9uDu1fhIAo8faNhAH+ngPp
-         8xeA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=YjN36ux3ZCiiBlL2gD5vkxNtFHi1HK0Zk2s0f0PusEQ=;
-        b=pAkwrw04G2rSpKryFvX5W23ltdtAPyAnlCp91xyYFVfij4KLgkZ5B3QLNaRJ4eKrCO
-         MUxHls9fVNX9dzyUveJ8Pf3Nq6EvqNRG/ncSAeKxAYtHzBNyxvaBPRODa1Mc5ZzKzPat
-         gyRHjDawSk78Ft6izsmFw0IN255cpcF1Nue4TCgnhnSrVTzzAUz44usgIg4NMYA4M52B
-         lKDjLvZ6tRN6BZjqqFbi4cKUAT7Os6aZAas7zxEW9tjZ1MVFtK7FC6/hQo9TyJL6rWy9
-         ypygNvhJDdY/Uwy/lyNKVBYJzhd9tgNq+Fg4npFp3alREf4/JIUGckxldcE1NI3qERg4
-         nPxA==
-X-Gm-Message-State: AOAM530nbM85vh7/XAvuZ0XUWPHkBPLWuKjKXcjLzjLQmQxeQU9/NgGu
-        Hq4SHfdmfhLIzH8Dh5sEySnWZsXVoWUwGKp+7cQR0g==
-X-Google-Smtp-Source: ABdhPJyJUYc+NBvK+NXE8XWvv2+AizG6r7WTq/pC7wizO0q+ooK8tNj0sdNML6eLDXSPdAK5R9iEpw1HwRiMxWxMe8g=
-X-Received: by 2002:a67:e3cc:: with SMTP id k12mr4760839vsm.173.1598526095417;
- Thu, 27 Aug 2020 04:01:35 -0700 (PDT)
-MIME-Version: 1.0
-References: <CA+G9fYvK5UkERLuBSRH5t2=j5==dbtw45GTMta9MafyJDqFsFA@mail.gmail.com>
- <20200827094651.3grvs6ungv3dh7y3@vireshk-i7>
-In-Reply-To: <20200827094651.3grvs6ungv3dh7y3@vireshk-i7>
-From:   Naresh Kamboju <naresh.kamboju@linaro.org>
-Date:   Thu, 27 Aug 2020 16:31:24 +0530
-Message-ID: <CA+G9fYsdpmd92vRWz8z5Lp+=F+vV4dNVZrc5o3MH5WVWD8pWvA@mail.gmail.com>
-Subject: Re: WARNING: at drivers/opp/core.c:678 dev_pm_opp_set_rate+0x4cc/0x5d4
- - on arm x15
+        id S1726929AbgH0PK6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 27 Aug 2020 11:10:58 -0400
+Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.52]:10938 "EHLO
+        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728874AbgH0LpU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 27 Aug 2020 07:45:20 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1598528669;
+        s=strato-dkim-0002; d=gerhold.net;
+        h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:
+        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+        bh=woZpEfnFaBE4cm7/zjsWew74v/fudZ9kURmp1bF8wmQ=;
+        b=eJry3dtLZnw52U2jiLBK5/IvrSSxCyi17Lzp5sXI5X76AAcW+oVzeOaRo0MGqRFT1l
+        7JxIJMfVSoqipbMTd1sIKLNiMejQXQeAbjKKXHFjW+tBRu0GLWLzQbrDiU/iBCeSVtdN
+        rdsAUCaJie7Pz5//Phs8o1dS+fDpnhXLCHDgAvH8PkKG1JyeA/rknodsRvElM/X8VFv3
+        VewlDeQ8LOIWdnWf/B3dAmZdAt4+OoBo5Zcpyb7DW/tQcgGDhceF9WYe4EXsta/zxRv4
+        zBGg2TpNGv3/8b5xuQ+rwbafG/AgQnMWuwefQLeEpD4kN8+6g3ovsOq4G/uV+HxztZbi
+        h6nw==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u26zEodhPgRDZ8j7Ic/Fboo="
+X-RZG-CLASS-ID: mo00
+Received: from gerhold.net
+        by smtp.strato.de (RZmta 46.10.7 DYNA|AUTH)
+        with ESMTPSA id g0b6c1w7RBiRtNJ
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+        Thu, 27 Aug 2020 13:44:27 +0200 (CEST)
+Date:   Thu, 27 Aug 2020 13:44:22 +0200
+From:   Stephan Gerhold <stephan@gerhold.net>
 To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     open list <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux-Next Mailing List <linux-next@vger.kernel.org>,
-        lkft-triage@lists.linaro.org,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
         Ulf Hansson <ulf.hansson@linaro.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>, sbhanu@codeaurora.org,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Stephen Boyd <sboyd@kernel.org>, nm@ti.com
-Content-Type: text/plain; charset="UTF-8"
+        Nishanth Menon <nm@ti.com>, Stephen Boyd <sboyd@kernel.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Niklas Cassel <nks@flawful.org>
+Subject: Re: [PATCH v2] opp: Power on (virtual) power domains managed by the
+ OPP core
+Message-ID: <20200827114422.GA1784@gerhold.net>
+References: <20200826093328.88268-1-stephan@gerhold.net>
+ <20200827100104.yuf2nzb6qras7zcw@vireshk-i7>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200827100104.yuf2nzb6qras7zcw@vireshk-i7>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 27 Aug 2020 at 15:16, Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 27-08-20, 15:04, Naresh Kamboju wrote:
-> > While boot testing arm x15 devices the Kernel warning noticed with linux next
-> > tag 20200825.
-> >
-> > BAD:  next-20200825
-> > GOOD:  next-20200824
-> >
-> > metadata:
-> >   git branch: master
-> >   git repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-> >   git commit: 3a00d3dfd4b68b208ecd5405e676d06c8ad6bb63
-> >   git describe: next-20200825
-> >   make_kernelversion: 5.9.0-rc2
-> >   kernel-config:
-> > https://builds.tuxbuild.com/LDTu4GFMmvkJspza5LJIjQ/kernel.config
-> >
-> > We are working on git bisect and boot testing on x15 and get back to you.
->
-> Was this working earlier ? But considering that multiple things
-> related to OPP broke recently, it may be a OPP core bug as well. Not
-> sure though.
->
-> Can you give me delta between both the next branches for drivers/opp/
-> path ? I didn't get these tags after fetching linux-next.
+On Thu, Aug 27, 2020 at 03:31:04PM +0530, Viresh Kumar wrote:
+> On 26-08-20, 11:33, Stephan Gerhold wrote:
+> > diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> > index 8b3c3986f589..7e53a7b94c59 100644
+> > --- a/drivers/opp/core.c
+> > +++ b/drivers/opp/core.c
+> > @@ -17,6 +17,7 @@
+> >  #include <linux/device.h>
+> >  #include <linux/export.h>
+> >  #include <linux/pm_domain.h>
+> > +#include <linux/pm_runtime.h>
+> >  #include <linux/regulator/consumer.h>
+> >  
+> >  #include "opp.h"
+> > @@ -1964,10 +1965,13 @@ static void _opp_detach_genpd(struct opp_table *opp_table)
+> >  		if (!opp_table->genpd_virt_devs[index])
+> >  			continue;
+> >  
+> > +		if (opp_table->genpd_virt_links && opp_table->genpd_virt_links[index])
+> > +			device_link_del(opp_table->genpd_virt_links[index]);
+> >  		dev_pm_domain_detach(opp_table->genpd_virt_devs[index], false);
+> >  		opp_table->genpd_virt_devs[index] = NULL;
+> >  	}
+> >  
+> > +	kfree(opp_table->genpd_virt_links);
+> >  	kfree(opp_table->genpd_virt_devs);
+> >  	opp_table->genpd_virt_devs = NULL;
+> >  }
+> > @@ -1999,8 +2003,10 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev,
+> >  {
+> >  	struct opp_table *opp_table;
+> >  	struct device *virt_dev;
+> > -	int index = 0, ret = -EINVAL;
+> > +	struct device_link *dev_link;
+> > +	int index = 0, ret = -EINVAL, num_devs;
+> >  	const char **name = names;
+> > +	u32 flags;
+> >  
+> >  	opp_table = dev_pm_opp_get_opp_table(dev);
+> >  	if (IS_ERR(opp_table))
+> > @@ -2049,6 +2055,32 @@ struct opp_table *dev_pm_opp_attach_genpd(struct device *dev,
+> 
+> I was about to apply this patch when I noticed that this routine does
+> return the array of virtual devices back to the caller, like the qcom
+> cpufreq driver in this case. IIRC we did it this way as a generic
+> solution for this in the OPP core wasn't preferable.
+> 
 
-git log --oneline next-20200824..next-20200825 -- drivers/opp/
-b0531b897c9a opp: Set required OPPs in reverse order when scaling down
-b11044e5204e opp: Reduce code duplication in _set_required_opps()
-c67ba698f5fe opp: Allow dev_pm_opp_get_opp_table() to return -EPROBE_DEFER
-8aaf6264fc7f opp: Remove _dev_pm_opp_find_and_remove_table() wrapper
-f3364e17d571 opp: Split out _opp_set_rate_zero()
-10b217365b94 opp: Reuse the enabled flag in !target_freq path
-72f80ce4ef9b opp: Rename regulator_enabled and use it as status of all resources
+Hmm. Actually I was using this parameter for initial testing, and forced
+on the power domains from the qcom-cpufreq-nvmem driver. For my v1 patch
+I wanted to enable the power domains in dev_pm_opp_set_rate(), so there
+using the virt_devs parameter was not possible.
 
-- Naresh
+On the other hand, creating the device links would be possible from the
+platform driver by using the parameter.
+
+> And so I think again if this patch should be picked instead of letting
+> the platform handle this ?
+> 
+
+It seems like originally the motivation for the parameter was that
+cpufreq consumers do *not* need to power on the power domains:
+
+Commit 17a8f868ae3e ("opp: Return genpd virtual devices from dev_pm_opp_attach_genpd()"):
+ "The cpufreq drivers don't need to do runtime PM operations on
+  the virtual devices returned by dev_pm_domain_attach_by_name() and so
+  the virtual devices weren't shared with the callers of
+  dev_pm_opp_attach_genpd() earlier.
+
+  But the IO device drivers would want to do that. This patch updates
+  the prototype of dev_pm_opp_attach_genpd() to accept another argument
+  to return the pointer to the array of genpd virtual devices."
+
+But the reason why I made this patch is that actually something *should*
+enable the power domains even for the cpufreq case.
+If every user of dev_pm_opp_attach_genpd() ends up creating these device
+links we might as well manage those directly from the OPP core.
+
+I cannot think of any use case where you would not want to manage those
+power domains using device links. And if there is such a use case,
+chances are good that this use case is so special that using the OPP API
+to set the performance states would not work either. In either case,
+this seems like something that should be discussed once there is such a
+use case.
+
+At the moment, there are only two users of dev_pm_opp_attach_genpd():
+
+  - cpufreq (qcom-cpufreq-nvmem)
+  - I/O (venus, recently added in linux-next [1])
+
+[1]: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git/commit/?id=9a538b83612c8b5848bf840c2ddcd86dda1c8c76
+
+In fact, venus adds the device link exactly the same way as in my patch.
+So we could move that to the OPP core, simplify the venus code and
+remove the virt_devs parameter. That would be my suggestion.
+
+I can submit a v3 with that if you agree (or we take this patch as-is
+and remove the parameter separately - I just checked and creating a
+device link twice does not seem to cause any problems...)
+
+Thanks!
+Stephan
