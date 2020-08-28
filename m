@@ -4,74 +4,75 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 011BCC433E2
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 06:08:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B9B5C433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 06:08:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D1FBD20791
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 06:08:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 416CE20CC7
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 06:08:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="nswnWFQb"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SrxGfjlS"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728192AbgH1GIg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Aug 2020 02:08:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34530 "EHLO
+        id S1728394AbgH1GIh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Aug 2020 02:08:37 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728354AbgH1GId (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Aug 2020 02:08:33 -0400
+        with ESMTP id S1728376AbgH1GIg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 28 Aug 2020 02:08:36 -0400
 Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 51AB5C061236
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 23:08:30 -0700 (PDT)
-Received: by mail-pf1-x443.google.com with SMTP id k15so105536pfc.12
-        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 23:08:30 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2F4DFC06123A
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 23:08:36 -0700 (PDT)
+Received: by mail-pf1-x443.google.com with SMTP id m8so124530pfh.3
+        for <linux-pm@vger.kernel.org>; Thu, 27 Aug 2020 23:08:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qLAjxAlrCMxjNqyejiXq+bbcpAkao+Zf6GfSzx0XooU=;
-        b=nswnWFQbby8eZequAZEvYr5Jjuak9S+823ghqqWSTOTx7ja8VvGzt34RFq7Gzj5Abi
-         mqqgRT9USNbs7wAf6cAaSnQZr+w/4wYerRcnbL0oOEWM6hCcY3Vocb/SSmcZPg78yRE6
-         q75+qzqdofCkOZl0rpSPtLVi0c8EVv9FLOS+Zx6tMtvpWUMnEdb7ZWmLnZgV3ycdstGM
-         r9XQWao1BfH0AB4xtBxP222lSqQy1FDwukTDHWeDDY70cCjFlBWLkUKv4awU1xLUWw3b
-         Dur0w0aqQ2Pmdxn7V2PB6RKn1yWMuRkcK+mf+/9QcVmjV88175vdUHylZ2X32cRE1u8W
-         mR1g==
+        bh=6WRaTf2Gohs3TLDF3wGUQ9G9N5Tc23L6BtLjYGmLUEU=;
+        b=SrxGfjlSHtoZ53w0yyeRWoksRPUDvXuF1tQa3TC5eogwV/wMrojFJRLdBDMb3Ib8mD
+         i7go8otHdJq4x1NpJaeFnV8xSSLxcGZmmVjFfAetnMo50XydrewRQU9KxK/sW22Myw4e
+         tmyNlpYJIspq1QaTaVJ10pL2hyZ8S3nXjPJL8oF8taR7RmxlGBm5zCeVwAbMhSHzUlhd
+         AMES7c2ZwjCskrC9mBKSuFz8eQWRRf1fi1SJEffyVFwIv1IPK4e2+OXNISP0w2pTv4cl
+         HvUScEBmNMhQb1UA8GCjSvkzM+uhJaVzu5MJyPnEKm02E86ci7Zu1uetDtUuEV6VpBz0
+         MHvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qLAjxAlrCMxjNqyejiXq+bbcpAkao+Zf6GfSzx0XooU=;
-        b=HKC6i9D3kkdP7r/qSG5PUOHdxcntErlgZAfuoMT/GF5/JOSA84QjlEkIMMSDty0YNv
-         7nucBkEBryq2nlJrWxYb8BOg/s7CpwisHXPSAhZ643at1Y6ufkplMke5wfdFeYt+ZJnE
-         gVO/CzmEOBSTxkXowVzMl4xiTV6eBc9yX3ojkx4uTwjQcnpMtZZ8Fozl1+NF3ymIzMmu
-         Hysu3hUBdk0VzEfKZRCiSwZDGGEDojl+S10dJoKioIIizEDu1+X/5P0wS2DuzMTnClOf
-         DFRRQUxXceBtHOqtjgT90YPc3U4AOgpHJ0ABMbObY1NrMmW25lV/nmVcJd/5+EdRrzkV
-         kepg==
-X-Gm-Message-State: AOAM531eZ81Q+sSo4x1uDbAbxzu0JNx7ejQ6QpVC6Qg6ouJw9HDJtYfj
-        iCbci/W4KBKbBFcM8bFwlTKwOw==
-X-Google-Smtp-Source: ABdhPJyOvvn+Q4rakrGQQ+Rd00VJpVXkec/r5tPCVFYNJTonrdI62sp+3CUmwsvFmBSkJ4FswUjBUQ==
-X-Received: by 2002:a63:1d5c:: with SMTP id d28mr96622pgm.82.1598594909878;
-        Thu, 27 Aug 2020 23:08:29 -0700 (PDT)
+        bh=6WRaTf2Gohs3TLDF3wGUQ9G9N5Tc23L6BtLjYGmLUEU=;
+        b=n1QaSgEh6fFp32JOffFHj49BPU02BxfnAiEDws88ggVGbKR+BzGKQ3iSamiPAhnGnG
+         B/adu3i0BsKclJNm6UTpcnbMV1VP3B6M8P3+5pLp34slVd9egPBoHv5oL1Q2Exvg7Ptp
+         gXG+p0QaruHuGhc+extwcyM4KXJeZH49ZCm9t4xeCHyhkkyRoGhF6s4fP2qV8OWYINeM
+         1ItsEv7M5FH9bZ2OeYfsJ7CheMwZWbVcoPtlWSHAlBzjNhIWC7ldxU/9srgRVEXitjNK
+         j9hTd7HMs/bSVJ6PGBPo0SBcDiADDhKd6jclSW64LcoRiJ39YSUl0c0f7BfHqLgSBo8r
+         XXiA==
+X-Gm-Message-State: AOAM531Sd5BaMeIYgv2hxjgOW4HrHkI1jjhNUB2lwsEEPe0tE1h06F91
+        umxWOD/BtlpQ233UZgZuzedwwA==
+X-Google-Smtp-Source: ABdhPJyGTO78SC04OqqG8B5jV4bqsUywCgAvAfGbb9iF7Ff+fqHfnL3QGRFHp0TSHPGGcRjTCncCZA==
+X-Received: by 2002:a63:754:: with SMTP id 81mr61971pgh.435.1598594915684;
+        Thu, 27 Aug 2020 23:08:35 -0700 (PDT)
 Received: from localhost ([122.167.135.199])
-        by smtp.gmail.com with ESMTPSA id cv3sm92193pjb.45.2020.08.27.23.08.28
+        by smtp.gmail.com with ESMTPSA id t19sm125832pjy.22.2020.08.27.23.08.34
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 27 Aug 2020 23:08:29 -0700 (PDT)
+        Thu, 27 Aug 2020 23:08:35 -0700 (PDT)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     rnayak@codeaurora.org, Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Mark Brown <broonie@kernel.org>
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Jiri Slaby <jirislaby@kernel.org>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Rafael Wysocki <rjw@rjwysocki.net>,
         Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
         Douglas Anderson <dianders@chromium.org>,
         Naresh Kamboju <naresh.kamboju@linaro.org>,
-        linux-arm-msm@vger.kernel.org, linux-spi@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-serial@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH V2 5/8] spi: spi-geni-qcom: Unconditionally call dev_pm_opp_of_remove_table()
-Date:   Fri, 28 Aug 2020 11:37:50 +0530
-Message-Id: <ea0864d41277e61fa31d304fbd4cf9af6b314269.1598594714.git.viresh.kumar@linaro.org>
+Subject: [PATCH V2 7/8] tty: serial: qcom_geni_serial: Unconditionally call dev_pm_opp_of_remove_table()
+Date:   Fri, 28 Aug 2020 11:37:52 +0530
+Message-Id: <583003f385a103b4c089ce8144a215c58cfb117a.1598594714.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
 In-Reply-To: <cover.1598594714.git.viresh.kumar@linaro.org>
 References: <cover.1598594714.git.viresh.kumar@linaro.org>
@@ -87,7 +88,7 @@ find the OPP table with error -ENODEV (i.e. OPP table not present for
 the device). And we can call dev_pm_opp_of_remove_table()
 unconditionally here.
 
-While at it, create a new label and put clkname on errors.
+While at it, create a new label to put clkname on errors.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
@@ -96,19 +97,19 @@ V2:
 - Compare with -ENODEV only for failures.
 - Create new label to put clkname.
 ---
- drivers/spi/spi-geni-qcom.c | 13 +++++--------
+ drivers/tty/serial/qcom_geni_serial.c | 13 +++++--------
  1 file changed, 5 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/spi/spi-geni-qcom.c b/drivers/spi/spi-geni-qcom.c
-index 80cea5cd3612..0dc3f4c55b0b 100644
---- a/drivers/spi/spi-geni-qcom.c
-+++ b/drivers/spi/spi-geni-qcom.c
-@@ -613,11 +613,9 @@ static int spi_geni_probe(struct platform_device *pdev)
- 		return PTR_ERR(mas->se.opp_table);
+diff --git a/drivers/tty/serial/qcom_geni_serial.c b/drivers/tty/serial/qcom_geni_serial.c
+index 3aa29d201f54..33f1af6c61d1 100644
+--- a/drivers/tty/serial/qcom_geni_serial.c
++++ b/drivers/tty/serial/qcom_geni_serial.c
+@@ -1433,11 +1433,9 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
+ 		return PTR_ERR(port->se.opp_table);
  	/* OPP table is optional */
  	ret = dev_pm_opp_of_add_table(&pdev->dev);
 -	if (!ret) {
--		mas->se.has_opp_table = true;
+-		port->se.has_opp_table = true;
 -	} else if (ret != -ENODEV) {
 +	if (ret && ret != -ENODEV) {
  		dev_err(&pdev->dev, "invalid OPP table in device tree\n");
@@ -116,28 +117,28 @@ index 80cea5cd3612..0dc3f4c55b0b 100644
 +		goto put_clkname;
  	}
  
- 	spi->bus_num = -1;
-@@ -669,8 +667,8 @@ static int spi_geni_probe(struct platform_device *pdev)
- spi_geni_probe_runtime_disable:
- 	pm_runtime_disable(dev);
- 	spi_master_put(spi);
--	if (mas->se.has_opp_table)
+ 	port->private_data.drv = drv;
+@@ -1478,8 +1476,8 @@ static int qcom_geni_serial_probe(struct platform_device *pdev)
+ 
+ 	return 0;
+ err:
+-	if (port->se.has_opp_table)
 -		dev_pm_opp_of_remove_table(&pdev->dev);
 +	dev_pm_opp_of_remove_table(&pdev->dev);
 +put_clkname:
- 	dev_pm_opp_put_clkname(mas->se.opp_table);
+ 	dev_pm_opp_put_clkname(port->se.opp_table);
  	return ret;
  }
-@@ -685,8 +683,7 @@ static int spi_geni_remove(struct platform_device *pdev)
+@@ -1489,8 +1487,7 @@ static int qcom_geni_serial_remove(struct platform_device *pdev)
+ 	struct qcom_geni_serial_port *port = platform_get_drvdata(pdev);
+ 	struct uart_driver *drv = port->private_data.drv;
  
- 	free_irq(mas->irq, spi);
- 	pm_runtime_disable(&pdev->dev);
--	if (mas->se.has_opp_table)
+-	if (port->se.has_opp_table)
 -		dev_pm_opp_of_remove_table(&pdev->dev);
 +	dev_pm_opp_of_remove_table(&pdev->dev);
- 	dev_pm_opp_put_clkname(mas->se.opp_table);
- 	return 0;
- }
+ 	dev_pm_opp_put_clkname(port->se.opp_table);
+ 	dev_pm_clear_wake_irq(&pdev->dev);
+ 	device_init_wakeup(&pdev->dev, false);
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
