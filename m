@@ -2,115 +2,127 @@ Return-Path: <SRS0=beHt=CG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31C75C433E6
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 17:33:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB70CC433E6
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 17:33:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0147D20DD4
-	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 17:33:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598635990;
-	bh=dVXhorCySV7p0XUAWBV8r7NvXycdCFYPc1TRtnibkH0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=k4r4P+HVv8OPcCoT0WxXQ7dqG1XEXMBGJN2jhkjpXoyDX1ihQsgTx0WrpbiQcn6iH
-	 DKT46lZPTu75uQ9wkIAsBZrHzw6DYpap0l6+och6wHA9WM1EyBCEWjYLN8YhXVrmzS
-	 pyT0NE3VIkbfri2/MWXUeT6DOh4MT08bU5uNkENg=
+	by mail.kernel.org (Postfix) with ESMTP id AB9392074A
+	for <linux-pm@archiver.kernel.org>; Fri, 28 Aug 2020 17:33:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726436AbgH1RdJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 28 Aug 2020 13:33:09 -0400
-Received: from mail.kernel.org ([198.145.29.99]:50592 "EHLO mail.kernel.org"
+        id S1726851AbgH1Rdu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 28 Aug 2020 13:33:50 -0400
+Received: from foss.arm.com ([217.140.110.172]:54116 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726266AbgH1RdI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 28 Aug 2020 13:33:08 -0400
-Received: from earth.universe (dyndsl-095-033-159-123.ewe-ip-backbone.de [95.33.159.123])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id A9E3C2074A;
-        Fri, 28 Aug 2020 17:33:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598635987;
-        bh=dVXhorCySV7p0XUAWBV8r7NvXycdCFYPc1TRtnibkH0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=XI8iOVvVyQ9dMHhUCxnfRWh5a5w6FGRz5T1tY1ZvwTXpaL5dMCzERUYBAN2GSvkJo
-         9iq4uXhAW4qtfVnhtZ6em2gZis/BUAURXIJ54KbZCU3CHDaA0+NuF0KAkfQTi+dagy
-         gc9Ig2Trhh8DCnMBHa2V4iNUD755yOOmY/drytY8=
-Received: by earth.universe (Postfix, from userid 1000)
-        id 078BA3C0C82; Fri, 28 Aug 2020 19:33:06 +0200 (CEST)
-Date:   Fri, 28 Aug 2020 19:33:06 +0200
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Jonathan Bakker <xc-racer2@live.ca>
-Cc:     krzk@kernel.org, jonghwa3.lee@samsung.com, tglx@linutronix.de,
-        kstewart@linuxfoundation.org, baolin.wang7@gmail.com,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 00/10] power: supply: Charger-manager improvements
-Message-ID: <20200828173305.u5n66ll57gn2b76s@earth.universe>
-References: <BN6PR04MB06603115D277DF264D9380E8A3BC0@BN6PR04MB0660.namprd04.prod.outlook.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="curnqtretflpgrou"
-Content-Disposition: inline
-In-Reply-To: <BN6PR04MB06603115D277DF264D9380E8A3BC0@BN6PR04MB0660.namprd04.prod.outlook.com>
+        id S1725979AbgH1Rdt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 28 Aug 2020 13:33:49 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 36F851FB;
+        Fri, 28 Aug 2020 10:33:49 -0700 (PDT)
+Received: from e108754-lin.cambridge.arm.com (unknown [10.1.199.49])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C11833F71F;
+        Fri, 28 Aug 2020 10:33:47 -0700 (PDT)
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
+        dietmar.eggemann@arm.com, catalin.marinas@arm.com,
+        sudeep.holla@arm.com, will@kernel.org, valentin.schneider@arm.com
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, ionela.voinescu@arm.com
+Subject: [PATCH v4 0/5] cpufreq: improve frequency invariance support
+Date:   Fri, 28 Aug 2020 18:32:58 +0100
+Message-Id: <20200828173303.11939-1-ionela.voinescu@arm.com>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi guys,
 
---curnqtretflpgrou
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please find here v4: 
+ - addressing Viresh's comments on patches 1/5 and 3/5, and
+ - with his Acked-by applied for the rest of the patches;
+ - v3 can be found at [3], and
+ - this is based on linux-next 20200827.
 
-Hi,
+Many thanks for the review,
+Ionela.
 
-On Thu, May 14, 2020 at 04:04:25PM -0700, Jonathan Bakker wrote:
-> Charger-manager is a virtual driver for unifying chargers, fuel gauges,
-> extcon devices, and a thermal device into a battery management system.
->=20
-> Unfortunately, it has been broken since commit 830ae442202e ("extcon:
-> Remove the deprecated extcon functions") when the extcon internal API
-> was changed but some drivers were not updated.  Additionally, it had
-> some race conditions and was unnecessarily complex.
->=20
-> A number of these patches come from a Tizen git tree(1); they have been
-> rebased and the commit messages cleaned up.
->=20
-> These changes have been tested on a couple of first-gen Galaxy S devices
-> based on s5pv210 with a modified max8998 driver so that a charger
-> regulator is exposed.  In addition to the max8998, this hardware has
-> a max17040 fuel gauge, fsa9480 extcon, and a generic thermal resistor
-> for temperature sensing.
->=20
-> 1) https://git.tizen.org/cgit/platform/kernel/linux-exynos/log/drivers/po=
-wer/charger-manager.c?h=3Dtizen_5.0
+---
+v2->v3
+ - v2 can be found at [2]
+ - 1/5 was introduced to check input frequencies to
+   arch_set_freq_scale() as recommended by Rafael
+ - The previous 2/7 was squashed into 1/7 - now 2/5, with additions to
+   the changelog as suggested by Rafael.
+ - The previous 3/7 (BL_SWITCHER handling) was dropped to be handled
+   in a separate patch. This does not change the current functionality.
+ - The previous 4/7 - now 3/5 is simplified as suggested by Viresh.
+ - 3/5 - cpufreq_supports_freq_invariance() replaces
+   cpufreq_sets_freq_scale(). The meaning chosen for
+   cpufreq_supports_freq_invariance() is whether it can set the frequency
+   scale factor, not whether arch_set_freq_scale() actually does.
+ - 4/5 - Change after Catalin's Ack: The changes to
+   arch_set_thermal_pressure() were dropped as they were done in a separate
+   patch. Therefore this patch now has a subset of the previous changes
+   at 5/7
+ - 5/5 - Change after Catalin's Ack:
+   s/cpufreq_sets_freq_scale/cpufreq_supports_freq_invariance
+ - v3 is based on linux-next 20200814
 
-Thanks, queued. I hope this does not trigger more people to use it.
-We really need a proper core feature for this.
 
--- Sebastian
+v1 -> v2:
+ - v1 can be found at [1]
+ - No cpufreq flags are introduced
+ - Previous patches 2/8 and 3/8 were squashed in this series under 1/7,
+   to ensure bisection.
+ - 2/7 was introduced as a proposal for Viresh's suggestion to use
+   policy->cur in the call to arch_set_freq_scale() and is extended to
+   support drivers that implement the target() callback as well
+ - Additional commit message changes are added to 1/7 and 2/7, to
+   clarify that the definition of arch_set_freq_scale() will filter 
+   settings of the scale factor, if unwanted
+ - 3/7 disables setting of the scale factor for
+   CONFIG_BL_SWITCHER, as Dietmar suggested
+ - Small change introduced in 4/7 to disable cpufreq-based frequency
+   invariance for the users of the default arch_set_freq_scale() call
+   which will not actually set a scale factor
+ - build issue solved (reported by 0day test)
+ - v2 is based on linux-next 20200716
+ - all functional tests in v1 were repeated for v2
 
---curnqtretflpgrou
-Content-Type: application/pgp-signature; name="signature.asc"
 
------BEGIN PGP SIGNATURE-----
+[1] https://lore.kernel.org/lkml/20200701090751.7543-1-ionela.voinescu@arm.com/
+[2] https://lore.kernel.org/lkml/20200722093732.14297-1-ionela.voinescu@arm.com/
+[3] https://lore.kernel.org/lkml/20200824210252.27486-1-ionela.voinescu@arm.com/
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl9JP8oACgkQ2O7X88g7
-+prZ+A/+KIUCbI6mn4h5I1HAy0txA5dSSTOsqLZ2UMCL12zN46q53vgjv69PBHxt
-+bBSnmDRPd3rW+EDe693lHBDKoxJ/A7lqQENeFw0lMsDaAHEsW7RKlF/rOIDIPKB
-DdbXJqfw3CQWBGZ35OCnTEGUDdH20EJINATS7B/8yVsbMYwnax6NENSj8iSSQf1B
-9IqW+rg63n+d9TFC85qL0L39bBOx13TxnYiG0BCdKRaZA3HMb2+FyHdMDyvi/nY7
-I577cq6GZb/uD+s2sbl575PwWfZpsn1OBhidmCpXg9lN6+dzPv6RnwaHDlAiM4Cq
-D6Pb/njPdIddJ3uMe7RptQgoh+wAL0gFZ5zHEY5jOMYOYxjMiNYGdvgzPkEYwogy
-EZTLJhGCtMQk6LLPnxrtWWJRztOkkul8BIWJyYLBz+dDL/7AF2gSmT7u+YVhfUj5
-DagDgufuAspY3ZLz16Omz5m/9u0MRe+KDocnTQNNS5NvR+AvxTlmNspqbu+G1yDq
-c6k4ZYuo/zvSU0sbaSICcDCvnQkXAoDLw8la1KvBnjZZM5kOh7sW1I7UI0dATVTn
-BoY41Uxx13wyckHgatpgAZO7NT9okBmY3l18awz01zZAQo4b1w7+/ZS8RkiMB5YQ
-uwG5WFPgdVuooK5LUO0Yew66rQFMgBy0HnEYSHmqX8oLBOLRw5M=
-=2ELG
------END PGP SIGNATURE-----
+Ionela Voinescu (3):
+  arch_topology: validate input frequencies to arch_set_freq_scale()
+  cpufreq: move invariance setter calls in cpufreq core
+  cpufreq: report whether cpufreq supports Frequency Invariance (FI)
 
---curnqtretflpgrou--
+Valentin Schneider (2):
+  arch_topology, cpufreq: constify arch_* cpumasks
+  arch_topology, arm, arm64: define arch_scale_freq_invariant()
+
+ arch/arm/include/asm/topology.h        |  1 +
+ arch/arm64/include/asm/topology.h      |  1 +
+ arch/arm64/kernel/topology.c           |  9 ++++++-
+ drivers/base/arch_topology.c           | 15 ++++++++++--
+ drivers/cpufreq/cpufreq-dt.c           | 10 +-------
+ drivers/cpufreq/cpufreq.c              | 33 +++++++++++++++++++++++---
+ drivers/cpufreq/qcom-cpufreq-hw.c      |  9 +------
+ drivers/cpufreq/scmi-cpufreq.c         | 12 ++--------
+ drivers/cpufreq/scpi-cpufreq.c         |  6 +----
+ drivers/cpufreq/vexpress-spc-cpufreq.c | 12 ++--------
+ include/linux/arch_topology.h          |  4 +++-
+ include/linux/cpufreq.h                |  8 ++++++-
+ 12 files changed, 70 insertions(+), 50 deletions(-)
+
+
+base-commit: 88abac0b753dfdd85362a26d2da8277cb1e0842b
+-- 
+2.17.1
+
