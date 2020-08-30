@@ -2,61 +2,62 @@ Return-Path: <SRS0=Bh+d=CI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D2D08C433E6
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:55:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26698C433E6
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:55:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B118C20CC7
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:55:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F37EC206CD
+	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:55:32 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VGHVZ9FE"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PPJEEYyR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726452AbgH3SzG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Aug 2020 14:55:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33262 "EHLO
+        id S1726517AbgH3SzO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Aug 2020 14:55:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33278 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726282AbgH3SzE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Aug 2020 14:55:04 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D957DC061573;
-        Sun, 30 Aug 2020 11:55:03 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id d2so2318593lfj.1;
-        Sun, 30 Aug 2020 11:55:03 -0700 (PDT)
+        with ESMTP id S1726485AbgH3SzI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Aug 2020 14:55:08 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 33601C061575;
+        Sun, 30 Aug 2020 11:55:07 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id c2so156291ljj.12;
+        Sun, 30 Aug 2020 11:55:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=KB/orVYY3/iyi1+OEIa3l5Zb1NRAkevYQaE0xhLNDhY=;
-        b=VGHVZ9FEWLfnTHug243P4hrtTxperC/kE3E0vF1ZeYaI0NEfmOXsDz/tlFNOyyoXJO
-         VHVbFyRVRpJGdnfBBnhG5nIx4FwKXEfDs4oPII6dsE354utxZJavTfqHr2bERsDWi19N
-         5ffZpKRR7KeVCo2el9CMtjXlZ/zj+KTbnPWgb+fhnUNsFSvOg+4Q+G28wxoRfD92xGeP
-         zJQAlhJW73evGxJ+4MwHpo5qjU/vI7OzbB8Xu1ei0lpV0r2q1by9iOAULtX9cXi2cCt5
-         d2SiqViqCGZI+ZjjcBe8ays+IdqFBa7y0JfZHzs5diwS3G9QFRrUHws/dkwBLl8oQpWf
-         eBLw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=L7rw93hhaf9uOHs3cGyY1kzgSun5Ciow1DW5ZdMuif0=;
+        b=PPJEEYyRhUNt3ZqTR4234D0FB37mqxaZbKxnwDv4ZQAZfC6uwZpU22Mbtk0fau9JVt
+         CSI5Uv97tE0MsP9TgcQH01ojbgIx7TmgEX0UohbxT/4BQ0Njl+eDaD537qSY7n03V+kU
+         TYEKBPp83EJt/bhyrWT/HnoUGnz00WkXw4lTOxZw7tojF4w4qAwMWiG0TZ/GGAZZHfe9
+         QJCbGppfYS+VB47FMBcqYvd7CD+KGj05Inc7wpTUUDcXdqVlFUyyzT98bVP2TTNneIlc
+         aXglX60rk3JRB5ZyrTBSavHfrMfvJXo5XIXnjAZXMMN/VBRR7wq2qjvPCLp6ytOF/brN
+         MqSw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=KB/orVYY3/iyi1+OEIa3l5Zb1NRAkevYQaE0xhLNDhY=;
-        b=qSZ8OmOeIP7SDgIn9MBEUlg3r72XdAnQsF0TYiZqjOGGM8kEhBnV7gCNeYLl4J/+j9
-         ixK3u+YPRgNZKvuJhQN2gRWA91vE9QF8t/aU7Q9YBtkZL7ojNoUoKuM70KkFvnAqJqlH
-         AxVBEj8TsS7pz9hal5C3ZOMElkPlouurDFLl8PtziyG7kugHGLNH7DmzpAQzyZ3ESTcY
-         ZbIKthr0p1VwAQ+lMCWWPPLGNEnjhoFk0C84MbqGO54cGIULc7+ehVmFeRdVVo9SD61e
-         fR5HoGipL9mwoVG7FiRRhLEHr0DvVXEstoXjCjAeegBHj42IzWmYTgA3CtOC63ih+Z7V
-         7RhQ==
-X-Gm-Message-State: AOAM5304v27W9h2U5wX0UUpU897ZC/qs7dMZdmjLP6fOqSs40imRJuhY
-        +zm2rvHJQoSy6nTdJtq8PRY=
-X-Google-Smtp-Source: ABdhPJxGQoR/UevvS7mGsEvM7E+6XaqGsRNUGzs6zBl/GWHaA1SVMDWljN1/Xw5Fab/puIiqg7EYNw==
-X-Received: by 2002:ac2:4d0f:: with SMTP id r15mr3955240lfi.114.1598813702322;
-        Sun, 30 Aug 2020 11:55:02 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=L7rw93hhaf9uOHs3cGyY1kzgSun5Ciow1DW5ZdMuif0=;
+        b=syCiVDFAm1l1tEQhLCovuHn8AbX9ocedjZhf1VFwqeMEUFkiHbXxuZWRbFvCIFBrko
+         mCUS26LtUQYca0UU2DRz5jslUt2pIPTi64thzntsiZrn8RF6y5CxxIzm+Y5+JFOAsQic
+         GgPJOdFGZXkMOF859ZYB8cgxhNctYmjapGJtSfXmIY71R7sbBeSMRcfEKhu6W1DCCaH/
+         L2RsB23S7B2vF3bsQUEP+JrBHPbsV0D942OTPI2w2I63KBCOzvbK4SqvwRdLzL8lfmvB
+         aAmiaewGYLZMfjF3Aj3pUhrVsJ+XkgFwGoknUohcrrr60Qp1jNU5A5gq+4pj/NnTIqa/
+         v1FA==
+X-Gm-Message-State: AOAM533SFelBrIyEFpqNBd3ZIV+8y0gmybZNlpc3W/Ds/X/+ZT+6X+1B
+        SicQ9CtHujaGn/TwNIJ18kY=
+X-Google-Smtp-Source: ABdhPJyKSJlL7/Ku2+I/3RK7/bmANJhmytCHcV2rJbOAlR7UcMUA7bJJCI4q+f5qkbVJgTG6Kg/SoA==
+X-Received: by 2002:a2e:985a:: with SMTP id e26mr2431462ljj.320.1598813705546;
+        Sun, 30 Aug 2020 11:55:05 -0700 (PDT)
 Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id n21sm21630ljc.89.2020.08.30.11.55.01
+        by smtp.gmail.com with ESMTPSA id n21sm21630ljc.89.2020.08.30.11.55.04
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Aug 2020 11:55:01 -0700 (PDT)
+        Sun, 30 Aug 2020 11:55:05 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
         Thierry Reding <thierry.reding@gmail.com>,
@@ -68,10 +69,12 @@ To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
 Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/6] Introduce Embedded Controller driver for Acer A500
-Date:   Sun, 30 Aug 2020 21:53:50 +0300
-Message-Id: <20200830185356.5365-1-digetx@gmail.com>
+Subject: [PATCH v2 3/6] mfd: Add driver for Embedded Controller found on Acer Iconia Tab A500
+Date:   Sun, 30 Aug 2020 21:53:53 +0300
+Message-Id: <20200830185356.5365-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200830185356.5365-1-digetx@gmail.com>
+References: <20200830185356.5365-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -79,74 +82,265 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello!
+Acer Iconia Tab A500 is an Android tablet device, it has ENE KB930
+Embedded Controller which provides battery-gauge, LED, GPIO and some
+other functions. The EC uses firmware that is specifically customized
+for Acer A500. This patch adds MFD driver for the Embedded Controller
+which allows to power-off / reboot the A500 device, it also provides
+a common register read/write API that will be used by the sub-devices.
 
-This series adds support for the Embedded Controller which is found on
-Acer Iconia Tab A500 (Android tablet device).
-
-The Embedded Controller is ENE KB930 and it's running firmware customized
-for the A500. The firmware interface may be reused by some other sibling
-Acer tablets, although none of those tablets are supported in upstream yet.
-Please review and apply, thanks in advance!
-
-Changelog:
-
-v2: - Factored out KB930 device-tree binding into a separate file, like it
-      was suggested by Lubomir Rintel.
-
-    - Switched to use regmap API like it was suggested by Lubomir Rintel.
-
-    - Added patch "regmap: Use flexible sleep" which allows not to hog
-      CPU while LED is switching state.
-
-    - Corrected MODULE_LICENSE to use "GPL" in all patches.
-
-    - Corrected MFD driver Kconfig entry like it was suggested by
-      Lubomir Rintel, it now depends on I2C.
-
-    - Switched to use I2C probe_new() in the MFD driver.
-
-    - Renamed the global pm_off variable, like it was suggested by
-      Lubomir Rintel and Lee Jones.
-
-    - Dropped serial number from the battery driver because I realized
-      that it's not a battery serial, but a device serial.
-
-    - Battery driver now uses dev_err_probe(), like it was suggested by
-      Sebastian Reichel.
-
-    - Dropped legacy LED_ON usage from the LED driver and renamed the
-      LEDs, like it was suggested by Pavel Machek. I also checked whether
-      LED-name customization via device-tree could be needed by other
-      potentially compatible devices and it shouldn't be needed, anyways it
-      won't be difficult to extend the code even if I'm wrong.
-
-Dmitry Osipenko (6):
-  dt-bindings: mfd: Add ENE KB930 Embedded Controller binding
-  regmap: Use flexible sleep
-  mfd: Add driver for Embedded Controller found on Acer Iconia Tab A500
-  power: supply: Add battery gauge driver for Acer Iconia Tab A500
-  leds: Add driver for Acer Iconia Tab A500
-  ARM: tegra: acer-a500: Add Embedded Controller
-
- .../devicetree/bindings/mfd/ene-kb930.yaml    |  66 ++++
- .../boot/dts/tegra20-acer-a500-picasso.dts    |  17 +
- drivers/base/regmap/regmap.c                  |   4 +-
- drivers/leds/Kconfig                          |   7 +
- drivers/leds/Makefile                         |   1 +
- drivers/leds/leds-acer-a500.c                 | 130 ++++++++
- drivers/mfd/Kconfig                           |  12 +
- drivers/mfd/Makefile                          |   1 +
- drivers/mfd/acer-ec-a500.c                    | 203 ++++++++++++
- drivers/power/supply/Kconfig                  |   6 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/acer_a500_battery.c      | 297 ++++++++++++++++++
- 12 files changed, 743 insertions(+), 2 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/mfd/ene-kb930.yaml
- create mode 100644 drivers/leds/leds-acer-a500.c
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/mfd/Kconfig        |  12 +++
+ drivers/mfd/Makefile       |   1 +
+ drivers/mfd/acer-ec-a500.c | 203 +++++++++++++++++++++++++++++++++++++
+ 3 files changed, 216 insertions(+)
  create mode 100644 drivers/mfd/acer-ec-a500.c
- create mode 100644 drivers/power/supply/acer_a500_battery.c
 
+diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
+index ecd791ad5e8f..7a0f4952c76e 100644
+--- a/drivers/mfd/Kconfig
++++ b/drivers/mfd/Kconfig
+@@ -2062,6 +2062,18 @@ config MFD_KHADAS_MCU
+ 	  additional drivers must be enabled in order to use the functionality
+ 	  of the device.
+ 
++config MFD_ACER_A500_EC
++	tristate "Embedded Controller driver for Acer Iconia Tab A500"
++	depends on I2C
++	depends on ARCH_TEGRA_2x_SOC || COMPILE_TEST
++	select MFD_CORE
++	select REGMAP
++	help
++	  Support for Acer Iconia Tab A500 Embedded Controller.
++
++	  The controller itself is ENE KB930, it is running firmware
++	  customized for the specific needs of the Acer A500 hardware.
++
+ menu "Multimedia Capabilities Port drivers"
+ 	depends on ARCH_SA1100
+ 
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index dd2cc7be7eaa..f6652fb33b7a 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -262,6 +262,7 @@ obj-$(CONFIG_MFD_ROHM_BD71828)	+= rohm-bd71828.o
+ obj-$(CONFIG_MFD_ROHM_BD718XX)	+= rohm-bd718x7.o
+ obj-$(CONFIG_MFD_STMFX) 	+= stmfx.o
+ obj-$(CONFIG_MFD_KHADAS_MCU) 	+= khadas-mcu.o
++obj-$(CONFIG_MFD_ACER_A500_EC)	+= acer-ec-a500.o
+ 
+ obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
+ 
+diff --git a/drivers/mfd/acer-ec-a500.c b/drivers/mfd/acer-ec-a500.c
+new file mode 100644
+index 000000000000..2785a6d9bcc4
+--- /dev/null
++++ b/drivers/mfd/acer-ec-a500.c
+@@ -0,0 +1,203 @@
++// SPDX-License-Identifier: GPL-2.0+
++/*
++ * MFD driver for Acer Iconia Tab A500 Embedded Controller.
++ *
++ * Copyright 2020 GRATE-driver project.
++ *
++ * Based on downstream driver from Acer Inc.
++ */
++
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/mfd/core.h>
++#include <linux/module.h>
++#include <linux/of_device.h>
++#include <linux/regmap.h>
++#include <linux/reboot.h>
++
++#define A500_EC_I2C_ERR_TIMEOUT		500
++#define A500_EC_POWER_CMD_TIMEOUT	1000
++
++enum {
++	REG_CURRENT_NOW = 0x03,
++	REG_SHUTDOWN = 0x52,
++	REG_WARM_REBOOT = 0x54,
++	REG_COLD_REBOOT = 0x55,
++};
++
++static struct i2c_client *a500_ec_client_pm_off;
++
++static int a500_ec_read(void *context, const void *reg_buf, size_t reg_size,
++			void *val_buf, size_t val_sizel)
++{
++	struct i2c_client *client = context;
++	unsigned int reg, retries = 5;
++	u16 *ret_val = val_buf;
++	s32 ret = 0;
++
++	if (reg_size != 1 || val_sizel != 2)
++		return -EOPNOTSUPP;
++
++	reg = *(u8 *)reg_buf;
++
++	while (retries-- > 0) {
++		ret = i2c_smbus_read_word_data(client, reg);
++		if (ret >= 0)
++			break;
++
++		msleep(A500_EC_I2C_ERR_TIMEOUT);
++	}
++
++	if (ret < 0) {
++		dev_err(&client->dev, "read 0x%x failed: %d\n", reg, ret);
++		return ret;
++	}
++
++	*ret_val = ret;
++
++	if (reg == REG_CURRENT_NOW)
++		fsleep(10000);
++
++	return 0;
++}
++
++static int a500_ec_write(void *context, const void *data, size_t count)
++{
++	struct i2c_client *client = context;
++	unsigned int reg, val, retries = 5;
++	s32 ret = 0;
++
++	if (count != 3)
++		return -EOPNOTSUPP;
++
++	reg = *(u8  *)(data + 0);
++	val = *(u16 *)(data + 1);
++
++	while (retries-- > 0) {
++		ret = i2c_smbus_write_word_data(client, reg, val);
++		if (ret >= 0)
++			break;
++
++		msleep(A500_EC_I2C_ERR_TIMEOUT);
++	}
++
++	if (ret < 0) {
++		dev_err(&client->dev, "write 0x%x failed: %d\n", reg, ret);
++		return ret;
++	}
++
++	return 0;
++}
++
++static const struct regmap_config a500_ec_regmap_config = {
++	.name = "KB930",
++	.reg_bits = 8,
++	.val_bits = 16,
++	.max_register = 0xff,
++};
++
++static const struct regmap_bus a500_ec_regmap_bus = {
++	.reg_format_endian_default = REGMAP_ENDIAN_NATIVE,
++	.val_format_endian_default = REGMAP_ENDIAN_LITTLE,
++	.write = a500_ec_write,
++	.read = a500_ec_read,
++	.max_raw_read = 2,
++};
++
++static void a500_ec_poweroff(void)
++{
++	i2c_smbus_write_word_data(a500_ec_client_pm_off, REG_SHUTDOWN, 0);
++
++	mdelay(A500_EC_POWER_CMD_TIMEOUT);
++}
++
++static int a500_ec_restart_notify(struct notifier_block *this,
++				  unsigned long reboot_mode, void *data)
++{
++	if (reboot_mode == REBOOT_WARM)
++		i2c_smbus_write_word_data(a500_ec_client_pm_off,
++					  REG_WARM_REBOOT, 0);
++	else
++		i2c_smbus_write_word_data(a500_ec_client_pm_off,
++					  REG_COLD_REBOOT, 1);
++
++	mdelay(A500_EC_POWER_CMD_TIMEOUT);
++
++	return NOTIFY_DONE;
++}
++
++static struct notifier_block a500_ec_restart_handler = {
++	.notifier_call = a500_ec_restart_notify,
++	.priority = 200,
++};
++
++static const struct mfd_cell a500_ec_cells[] = {
++	{ .name = "acer-a500-iconia-battery", },
++	{ .name = "acer-a500-iconia-leds", },
++};
++
++static int a500_ec_probe(struct i2c_client *client)
++{
++	struct regmap *rmap;
++	int err;
++
++	rmap = devm_regmap_init(&client->dev, &a500_ec_regmap_bus,
++				client, &a500_ec_regmap_config);
++	if (IS_ERR(rmap))
++		return PTR_ERR(rmap);
++
++	/* register battery and LED sub-devices */
++	err = devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO,
++				   a500_ec_cells, ARRAY_SIZE(a500_ec_cells),
++				   NULL, 0, NULL);
++	if (err) {
++		dev_err(&client->dev, "failed to add sub-devices: %d\n", err);
++		return err;
++	}
++
++	/* set up power management functions */
++	if (of_device_is_system_power_controller(client->dev.of_node)) {
++		a500_ec_client_pm_off = client;
++
++		err = register_restart_handler(&a500_ec_restart_handler);
++		if (err)
++			return err;
++
++		if (!pm_power_off)
++			pm_power_off = a500_ec_poweroff;
++	}
++
++	return 0;
++}
++
++static int a500_ec_remove(struct i2c_client *client)
++{
++	if (of_device_is_system_power_controller(client->dev.of_node)) {
++		if (pm_power_off == a500_ec_poweroff)
++			pm_power_off = NULL;
++
++		unregister_restart_handler(&a500_ec_restart_handler);
++	}
++
++	return 0;
++}
++
++static const struct of_device_id a500_ec_match[] = {
++	{ .compatible = "acer,a500-iconia-ec" },
++	{ }
++};
++MODULE_DEVICE_TABLE(of, a500_ec_match);
++
++static struct i2c_driver a500_ec_driver = {
++	.driver = {
++		.name = "acer-a500-embedded-controller",
++		.of_match_table = a500_ec_match,
++	},
++	.probe_new = a500_ec_probe,
++	.remove = a500_ec_remove,
++};
++module_i2c_driver(a500_ec_driver);
++
++MODULE_DESCRIPTION("Acer Iconia Tab A500 Embedded Controller driver");
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_LICENSE("GPL");
 -- 
 2.27.0
 
