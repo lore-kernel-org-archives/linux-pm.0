@@ -2,81 +2,67 @@ Return-Path: <SRS0=Ra4R=CJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAF25C433E6
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:16:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 38CFCC433E2
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:17:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C7FA621473
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:16:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1568920738
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:17:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=me.com header.i=@me.com header.b="Gb83WBSm"
+	dkim=pass (2048-bit key) header.d=me.com header.i=@me.com header.b="mAOYD9hr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725937AbgHaGQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Aug 2020 02:16:32 -0400
-Received: from st43p00im-ztbu10063701.me.com ([17.58.63.178]:33091 "EHLO
-        st43p00im-ztbu10063701.me.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725848AbgHaGQc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2020 02:16:32 -0400
-X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2020 02:16:32 EDT
+        id S1726557AbgHaGRw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Aug 2020 02:17:52 -0400
+Received: from st43p00im-ztfb10061701.me.com ([17.58.63.172]:35013 "EHLO
+        st43p00im-ztfb10061701.me.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725848AbgHaGRw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2020 02:17:52 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=me.com; s=1a1hai;
-        t=1598854279; bh=ot9oPwvCbcx3VziBeqQtXktHy0PvnAf0hNNzlroGiFs=;
+        t=1598854273; bh=jSqA1xFOAUD+TvU762gDeCqD5FhoITDAzXme6KHer7M=;
         h=From:To:Subject:Date:Message-Id;
-        b=Gb83WBSmJW+7LpcT2/C0tJHFwZMECiCEHAEeN+Os8XXe1Dq9Jk9S4cIkDE3LmfoPq
-         CfoU9Gd2uwaPO4+4p7byMhDokHVLBZN8ZskPdtKdi+bOJuSAWOvO2v4cceUkWiUDf7
-         CtFmG6RJyWyNYdpnN83MBxJ9Os4jPtUyqxwReY+IneFKyRPfuUskn/s9HaL4XzmRrx
-         Pcr4glPk194/WnOk/45U4t9S7AB3kVFDOJZGPyuDwXFzrrL0DfCA+ic7n6FBJGJQMi
-         Y81FnebSY/nA2UxiCUqnIOgBwXwY4LiDB+RLs3jtAYU7Ss70PfO/xwk/25wnXKJu/E
-         9g5BO7ZhAAv9w==
+        b=mAOYD9hrwveXdGKn2YRbw7cyuI9uOPjWNCqCjytOo3A0ipQ0PRb8gSqHgNdLAzFK/
+         ifBQFwZII0jUB+U7ThR+47J2VkGAiitzkJGb612/TW6hHI37XE8ZpolylVt+VQs6SD
+         2OpkuxRYzrSkotrnhiHi1rjHQQFslTk3w8DuJfdiuPSH3jhL0wkSaerzpbgyCsfPXl
+         GaXQeHPB+YbxoqEaJ2NauxVa4GUK806FKMTa0ZKS2pvivt6pOYeewX6H6mG2XA4F7G
+         8uDexGJ97yIi04EzKUzzaDiEa6wj8fICydmF8n2oQj8OEM/yyTZnVz1Gse9K1zQyEx
+         FaNoms7IBHxIw==
 Received: from localhost (unknown [80.214.144.204])
-        by st43p00im-ztbu10063701.me.com (Postfix) with ESMTPSA id BF8289A04C8;
-        Mon, 31 Aug 2020 06:11:18 +0000 (UTC)
+        by st43p00im-ztfb10061701.me.com (Postfix) with ESMTPSA id A4AD3AC036A;
+        Mon, 31 Aug 2020 06:11:13 +0000 (UTC)
 From:   Alain Volmat <avolmat@me.com>
 To:     Patrice Chotard <patrice.chotard@st.com>,
         linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
 Cc:     avolmat@me.com
-Subject: [PATCH 2/3] cpufreq: dt-platdev: Blacklist st,stih418 SoC
-Date:   Mon, 31 Aug 2020 08:10:12 +0200
-Message-Id: <20200831061013.4327-3-avolmat@me.com>
+Subject: [PATCH 0/3] Enable CPUFreq for STi stih418 SoC.
+Date:   Mon, 31 Aug 2020 08:10:10 +0200
+Message-Id: <20200831061013.4327-1-avolmat@me.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200831061013.4327-1-avolmat@me.com>
-References: <20200831061013.4327-1-avolmat@me.com>
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
  definitions=2020-08-31_01:2020-08-28,2020-08-31 signatures=0
 X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
- phishscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxscore=0
- mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ phishscore=0 bulkscore=0 spamscore=0 clxscore=1011 mlxscore=0
+ mlxlogscore=789 adultscore=0 classifier=spam adjust=0 reason=mlx
  scancount=1 engine=8.0.1-2006250000 definitions=main-2008310043
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add st,stih418 SoC in the blacklist since the cpufreq driver
-for this platform is already registering the driver.
+This serie enables cpufreq for the STi stih418 SoC.
 
-Signed-off-by: Alain Volmat <avolmat@me.com>
----
+Alain Volmat (3):
+  cpufreq: sti-cpufreq: add stih418 support
+  cpufreq: dt-platdev: Blacklist st,stih418 SoC
+  cpufreq: arm: Kconfig: add CPUFREQ_DT depend for STI CPUFREQ
+
+ drivers/cpufreq/Kconfig.arm          | 2 +-
  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/cpufreq/sti-cpufreq.c        | 6 ++++--
+ 3 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-index 7d01df7bfa6c..3776d960f405 100644
---- a/drivers/cpufreq/cpufreq-dt-platdev.c
-+++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-@@ -137,6 +137,7 @@ static const struct of_device_id blacklist[] __initconst = {
- 
- 	{ .compatible = "st,stih407", },
- 	{ .compatible = "st,stih410", },
-+	{ .compatible = "st,stih418", },
- 
- 	{ .compatible = "sigma,tango4", },
- 
--- 
-2.17.1
 
