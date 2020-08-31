@@ -2,119 +2,81 @@ Return-Path: <SRS0=Ra4R=CJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A787BC433E6
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:02:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EAF25C433E6
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:16:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 82BF1207EA
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:02:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C7FA621473
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 06:16:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="oyZKTm6T"
+	dkim=pass (2048-bit key) header.d=me.com header.i=@me.com header.b="Gb83WBSm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725848AbgHaGCL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Aug 2020 02:02:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51304 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725810AbgHaGCH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2020 02:02:07 -0400
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D48B7C061573
-        for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2020 23:02:06 -0700 (PDT)
-Received: by mail-pl1-x641.google.com with SMTP id v16so2534107plo.1
-        for <linux-pm@vger.kernel.org>; Sun, 30 Aug 2020 23:02:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=T0ddowV1YvN/aU8XxhlLoq1wELp6Tq70TmTHW0qRDVI=;
-        b=oyZKTm6Tk8Vfn+6jwN/7gGN7iSX68l/t/xvDbQcC2eXx4gwvTmqL2o1sL3NWAqGw9e
-         HlOdy/6xd2zXu5VIdMqgzyfvmP5PVD4c+iHDjw6shV3Yy16kPvWyIGSgpVDZyMla3KME
-         UnW071eobQ0jbulqrWPqjlMGi09kcOsSxM5E0FUoe9tmTWINaYbWM6Bt4FyWPho2hktn
-         6Hbf/Vua+a7ZbggXlT0Qo9cxJHzUVQMEz/UaTzitb2+IobwMNM5ZFpGNeZkpT+j3CeJZ
-         OlnsmqPbKN3DgHr0aDVbsL1FzQcgdA9z7O5zOw0hBdbaro50Sg+uldE9v18Bmjkbb14v
-         KXxw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=T0ddowV1YvN/aU8XxhlLoq1wELp6Tq70TmTHW0qRDVI=;
-        b=sytwnSYTni0M/Y7l//vGABq5Rk6kRxLYxDN+yd+lb/CJqac/HscGRR0jLnFE0zdmsv
-         JxmX0OBwR3mmC3vrrcZAppmIdlthDiYv4RlDlQOfNlaDlv7CIfPwiHejlvCY/+htv8Ks
-         K4dtiBLPSPb7Ny9YUIPKhr3SJKPt0KKRcVh5f8FmbljzbAxX9FVNhYTN6F96/zJkF1gL
-         74W334hH25n2vfg2QyggpELin6YcieRhcguSM0aFud4m18lcrqbWplfop5XGhpKOz9ZX
-         eAgzxzjFdlm8ByXlyRNlDjCQdn8ubdCI0AUj90pbGH3o/qOjqkfPnGRR+ppDt0H9+dNa
-         KGmw==
-X-Gm-Message-State: AOAM53034Q76S2habNxpHYghbFj4ewniCDRRw3dz0MS5MxRrEYUsTwaC
-        XIMkmj44ytaG7k/eQeJB+HmEag==
-X-Google-Smtp-Source: ABdhPJykLmYFCGwOE6bqP4q4MynlYfHpxLNeOGfCqaMjdqKJQBPGSdKEXOfXuxq0dm9PoHZkmhlxgg==
-X-Received: by 2002:a17:90a:4401:: with SMTP id s1mr171676pjg.79.1598853726264;
-        Sun, 30 Aug 2020 23:02:06 -0700 (PDT)
-Received: from localhost ([122.167.135.199])
-        by smtp.gmail.com with ESMTPSA id s20sm5932548pga.7.2020.08.30.23.02.05
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Sun, 30 Aug 2020 23:02:05 -0700 (PDT)
-Date:   Mon, 31 Aug 2020 11:32:03 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Naresh Kamboju <naresh.kamboju@linaro.org>
-Cc:     Stephen Rothwell <sfr@canb.auug.org.au>,
-        open list <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux-Next Mailing List <linux-next@vger.kernel.org>,
-        lkft-triage@lists.linaro.org,
-        Stephan Gerhold <stephan@gerhold.net>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>, sbhanu@codeaurora.org,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        Stephen Boyd <sboyd@kernel.org>, nm@ti.com
-Subject: Re: WARNING: at drivers/opp/core.c:678
- dev_pm_opp_set_rate+0x4cc/0x5d4 - on arm x15
-Message-ID: <20200831060203.7guhirtxb72odow2@vireshk-i7>
-References: <CA+G9fYvK5UkERLuBSRH5t2=j5==dbtw45GTMta9MafyJDqFsFA@mail.gmail.com>
- <20200827094651.3grvs6ungv3dh7y3@vireshk-i7>
- <20200827211832.3ebeda8a@canb.auug.org.au>
- <20200828045128.y7ybkd7dnvn4h6dt@vireshk-i7>
- <CA+G9fYsn1S-SieuP85-Z4qKO+aNyqJarrBR0xx0X-YbtF9eo0g@mail.gmail.com>
- <20200831044132.jb7aflr2sfbart2z@vireshk-i7>
- <CA+G9fYsLd77Wuz6Fdwr0w4eFvs=rX5ooewrztFtSe7MeyRJeGQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CA+G9fYsLd77Wuz6Fdwr0w4eFvs=rX5ooewrztFtSe7MeyRJeGQ@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+        id S1725937AbgHaGQc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Aug 2020 02:16:32 -0400
+Received: from st43p00im-ztbu10063701.me.com ([17.58.63.178]:33091 "EHLO
+        st43p00im-ztbu10063701.me.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1725848AbgHaGQc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2020 02:16:32 -0400
+X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Mon, 31 Aug 2020 02:16:32 EDT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=me.com; s=1a1hai;
+        t=1598854279; bh=ot9oPwvCbcx3VziBeqQtXktHy0PvnAf0hNNzlroGiFs=;
+        h=From:To:Subject:Date:Message-Id;
+        b=Gb83WBSmJW+7LpcT2/C0tJHFwZMECiCEHAEeN+Os8XXe1Dq9Jk9S4cIkDE3LmfoPq
+         CfoU9Gd2uwaPO4+4p7byMhDokHVLBZN8ZskPdtKdi+bOJuSAWOvO2v4cceUkWiUDf7
+         CtFmG6RJyWyNYdpnN83MBxJ9Os4jPtUyqxwReY+IneFKyRPfuUskn/s9HaL4XzmRrx
+         Pcr4glPk194/WnOk/45U4t9S7AB3kVFDOJZGPyuDwXFzrrL0DfCA+ic7n6FBJGJQMi
+         Y81FnebSY/nA2UxiCUqnIOgBwXwY4LiDB+RLs3jtAYU7Ss70PfO/xwk/25wnXKJu/E
+         9g5BO7ZhAAv9w==
+Received: from localhost (unknown [80.214.144.204])
+        by st43p00im-ztbu10063701.me.com (Postfix) with ESMTPSA id BF8289A04C8;
+        Mon, 31 Aug 2020 06:11:18 +0000 (UTC)
+From:   Alain Volmat <avolmat@me.com>
+To:     Patrice Chotard <patrice.chotard@st.com>,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     avolmat@me.com
+Subject: [PATCH 2/3] cpufreq: dt-platdev: Blacklist st,stih418 SoC
+Date:   Mon, 31 Aug 2020 08:10:12 +0200
+Message-Id: <20200831061013.4327-3-avolmat@me.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200831061013.4327-1-avolmat@me.com>
+References: <20200831061013.4327-1-avolmat@me.com>
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-08-31_01:2020-08-28,2020-08-31 signatures=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 suspectscore=0 malwarescore=0
+ phishscore=0 bulkscore=0 spamscore=0 clxscore=1015 mlxscore=0
+ mlxlogscore=999 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.0.1-2006250000 definitions=main-2008310043
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 31-08-20, 11:30, Naresh Kamboju wrote:
-> On Mon, 31 Aug 2020 at 10:11, Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 28-08-20, 15:42, Naresh Kamboju wrote:
-> > > Viresh,
-> > > I have applied the v2 patch series on top of linux next-20200824.
-> > > and tested again the reported kernel warning is fixed [1]
-> > >
-> > > [1] https://lkft.validation.linaro.org/scheduler/job/1717615#L1881
-> >
-> > Hi Naresh,
-> >
-> > You meant this one ?
-> >
-> > [PATCH V2 4/8] mmc: sdhci-msm: Unconditionally call dev_pm_opp_of_remove_table()
-> 
-> I have not tested individual patches instead applied all v2 of 8 patches
-> and tested.
+Add st,stih418 SoC in the blacklist since the cpufreq driver
+for this platform is already registering the driver.
 
-Ah okay, Thanks. That's the same.
+Signed-off-by: Alain Volmat <avolmat@me.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-To be honest, I wasn't targeting fixing this bug with that version,
-but it went well after all :)
-
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 7d01df7bfa6c..3776d960f405 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -137,6 +137,7 @@ static const struct of_device_id blacklist[] __initconst = {
+ 
+ 	{ .compatible = "st,stih407", },
+ 	{ .compatible = "st,stih410", },
++	{ .compatible = "st,stih418", },
+ 
+ 	{ .compatible = "sigma,tango4", },
+ 
 -- 
-viresh
+2.17.1
+
