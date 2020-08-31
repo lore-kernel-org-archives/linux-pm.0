@@ -2,113 +2,96 @@ Return-Path: <SRS0=Ra4R=CJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 717D9C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 15:38:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BE53C43461
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 15:38:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 511F321556
-	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 15:38:27 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="s8V6n0xA"
+	by mail.kernel.org (Postfix) with ESMTP id E18C3207EA
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 15:38:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1598888325;
+	bh=PpOTd+1JuLVd/oGNLu014WCPcxYLqueUtP1FoVeSTfg=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=TrrfWfVN3wEYeSWqpp9ymSZu/7Wic5VwrQ/voWx8r5W5pvKyz5b4E0qm7bH0aOWHR
+	 8JKcKwV2I/u+02Xi4CFsYtPKfpURp87J52iEOlcMJu31SNGl2I+1pJFxO5stwqZx7l
+	 bpt6KdVp12MFKi14q/4EuoHtRYfe8koraH8bwIpY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729234AbgHaPiV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 31 Aug 2020 11:38:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56456 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728885AbgHaPhz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 31 Aug 2020 11:37:55 -0400
-Received: from mail-io1-xd43.google.com (mail-io1-xd43.google.com [IPv6:2607:f8b0:4864:20::d43])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69A48C061573;
-        Mon, 31 Aug 2020 08:37:53 -0700 (PDT)
-Received: by mail-io1-xd43.google.com with SMTP id g13so6372009ioo.9;
-        Mon, 31 Aug 2020 08:37:53 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=eKhPg2peu0bzgNag4eCqNzrqsBROFucfPoSefuXeaw4=;
-        b=s8V6n0xALCLBzggML/oL2yBo0b4sDJ8Fn3DqT0kDfs/UOSNjzu72iqpAcc/jOJMKfr
-         A/X2ov0QZLPmxbLfzmr20VzbN4QpLVcB8/ifn3Hnv709YWR2nhhjTxPG24HCRl5kcDT/
-         vk5JoQYRHzNAmuWsYm7HmliEhq5ubgdI3t/2C8Ogm/yL+V7S3MJLBZ323Oq5Vt2/D3DB
-         OKh8Y2eauBBIl0MR/puj5LHTeekB602eHpsIHDKNxTijC2Ktrupnf9uOB+L0aFc+bCT8
-         3JIMkJ1d0l9l6M/R9X1Keodws4gRxelxxxJlBKkosrBYvuZneLQIHkRn4f6Sx1K7ePq5
-         lAzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=eKhPg2peu0bzgNag4eCqNzrqsBROFucfPoSefuXeaw4=;
-        b=n1hODbegBkoUw54XoTSBBzD8QeRjRpSzlSTgUW38Mf6oZqjwMEJ74kw1fIxS7vsUmx
-         vP8XWMBisTR6kulnH6kj7xaQUEep2NHs3OI8PM008MxWbPpmuaXt44LfafJ8ycHQhWCW
-         JMUOR1yWkJ29ewRsiEHNJbY16UnsRBuOHefZXMW1MGnfsJQo4U+zcGGTeKnNJwrCQDI+
-         ajKoqwkV+mplbVqKxFZkhveLjcneOwhVaiSqMO7JWvfilR4XH/D3xa2G7usQmlKtRagx
-         LqXkEsfivxDP4L6/UcJovCMZQgmtLumXt5kKaVmWomixFhDV/Z1YfG1d39XYwF1Q/HGV
-         747A==
-X-Gm-Message-State: AOAM531kkzl5xMwZTiz4q7MrG5DST0qLn5gcdRhvMGz/FcFeLAxMBmvy
-        ziI5isq7HNOOO9E5nn9vqApOOTkD08i+BzmH3vM=
-X-Google-Smtp-Source: ABdhPJwNBcqnCmmfCXu/qtgS8DcU6uT+FMOssh+c39rLoFbOIo6hVA6Vu3hW/p2ti6dlo5FyhXDcPgG1rpZIIDrEP2o=
-X-Received: by 2002:a5d:80c6:: with SMTP id h6mr1735767ior.2.1598888272759;
- Mon, 31 Aug 2020 08:37:52 -0700 (PDT)
+        id S1728586AbgHaPaW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 31 Aug 2020 11:30:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:39598 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728581AbgHaPaT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 31 Aug 2020 11:30:19 -0400
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 420B02083E;
+        Mon, 31 Aug 2020 15:30:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1598887819;
+        bh=PpOTd+1JuLVd/oGNLu014WCPcxYLqueUtP1FoVeSTfg=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=jqTlza5IIZqwpEW1OU3+TW5bFldNsXdG3980VmfciXYEMlXU+AkFg6SRRenfOAcLr
+         BV3Ug1udLb64wx1CLHY28eFzDRiEoFb9FeQ5CTo7ArOz/tHocIN9YOTfMFe+zdUAji
+         XIn5lUvljO4TR0AhmiTjwhCQQEOVNhBFzrHG6JXw=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Marco Elver <elver@google.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.8 30/42] cpuidle: Fixup IRQ state
+Date:   Mon, 31 Aug 2020 11:29:22 -0400
+Message-Id: <20200831152934.1023912-30-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200831152934.1023912-1-sashal@kernel.org>
+References: <20200831152934.1023912-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <cover.1593243079.git.syednwaris@gmail.com> <CACRpkdYyCNEUSOtCJMTm7t1z15oK7nH3KcTe5LreJAzZ0KtQuw@mail.gmail.com>
-In-Reply-To: <CACRpkdYyCNEUSOtCJMTm7t1z15oK7nH3KcTe5LreJAzZ0KtQuw@mail.gmail.com>
-From:   Syed Nayyar Waris <syednwaris@gmail.com>
-Date:   Mon, 31 Aug 2020 21:07:41 +0530
-Message-ID: <CACG_h5oW1o9JTngqUi7X2u4mrfjcjA5D9Kz-r6TmBw3orRQ63A@mail.gmail.com>
-Subject: Re: [PATCH v9 0/4] Introduce the for_each_set_clump macro
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Robert Richter <rrichter@marvell.com>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amit.kucheria@verdurent.com>,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Jul 16, 2020 at 6:19 PM Linus Walleij <linus.walleij@linaro.org> wrote:
->
-> Hi Syed,
->
-> sorry for taking so long. I was on vacation and a bit snowed
-> under by work.
->
-> On Sat, Jun 27, 2020 at 10:10 AM Syed Nayyar Waris <syednwaris@gmail.com> wrote:
->
-> > Since this patchset primarily affects GPIO drivers, would you like
-> > to pick it up through your GPIO tree?
->
-> I have applied the patches to an immutable branch and pushed
-> to kernelorg for testing (autobuilders will play with it I hope).
->
-> If all works fine I will merge this into my devel branch for v5.9.
->
-> It would be desirable if Andrew gave his explicit ACK on it too.
->
-> Yours,
-> Linus Walleij
+From: Peter Zijlstra <peterz@infradead.org>
 
-Hi Linus,
+[ Upstream commit 49d9c5936314e44d314c605c39cce0fd947f9c3a ]
 
-As a reminder, I would like to point out about the
-'for_each_set_clump' patchset. If it's alright and if anything is
-needed to take it further so that it is finally accepted.
+Match the pattern elsewhere in this file.
 
-Regards
-Syed Nayyar Waris
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org>
+Reviewed-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Tested-by: Marco Elver <elver@google.com>
+Link: https://lkml.kernel.org/r/20200821085348.251340558@infradead.org
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/cpuidle/cpuidle.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 87197319ab069..2fe4f3cdf54d7 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -153,7 +153,8 @@ static void enter_s2idle_proper(struct cpuidle_driver *drv,
+ 	 */
+ 	stop_critical_timings();
+ 	drv->states[index].enter_s2idle(dev, drv, index);
+-	WARN_ON(!irqs_disabled());
++	if (WARN_ON_ONCE(!irqs_disabled()))
++		local_irq_disable();
+ 	/*
+ 	 * timekeeping_resume() that will be called by tick_unfreeze() for the
+ 	 * first CPU executing it calls functions containing RCU read-side
+-- 
+2.25.1
+
