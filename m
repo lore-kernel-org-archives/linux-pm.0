@@ -1,167 +1,89 @@
-Return-Path: <SRS0=Bh+d=CI=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=Ra4R=CJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C51CC433E6
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4EA6C43461
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 03:22:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 593412098B
-	for <linux-pm@archiver.kernel.org>; Sun, 30 Aug 2020 18:56:08 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="eqfaNI4/"
+	by mail.kernel.org (Postfix) with ESMTP id 82E5F206A5
+	for <linux-pm@archiver.kernel.org>; Mon, 31 Aug 2020 03:22:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1598844162;
+	bh=41IsEe2nqK+mBIBJZKAilYQUgzH6n8IzJt8WNyWroZM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=efdcVdbVsT2r2Hxuh1exFczDZ8EmVtfo9EZjTiZUDPKv1Pt6IaZwU4M9wLr6Ruv3f
+	 HzTmzF768ePaKJUlqRLC/UDAB+g4jLQE6U6fpHyPIiqTeqXLRVl61eDLRc35TtJkBa
+	 RxzAp90w4EwV/l+9EQfjB0t2khC4cbJPDTMo/Xig=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726388AbgH3S4C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 30 Aug 2020 14:56:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33268 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726412AbgH3SzF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 30 Aug 2020 14:55:05 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2674BC061575;
-        Sun, 30 Aug 2020 11:55:05 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id c15so2325197lfi.3;
-        Sun, 30 Aug 2020 11:55:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=gyFVRrq7oNAkyBDcab1pW5QCuvDZJBB4EknZ7t3FCyQ=;
-        b=eqfaNI4/kuXYQV3upPkbU1Poja6coHGtkB3x+Zbdd5q/kvBXoQ3WVV9lVlV7SmiKJ2
-         u21imvSfFW/H0FNjchmlvEAXLj4xmsNmVgUbbZrvwGeNwR9G/mRS4eRzGYBM+cyW+gTg
-         IZ17Q0jzzEWXu17fMMVPiuT5wqW0NWC57P0Pb8ZN+uf/HwK04jKAr42E5pQtSYOVOchw
-         3DbZh8uUm1VtQllkW3Oh6HsMoH+tB0dT2jLFkUdlyPf9BO8wKy9EN1j0BhBtphNMxdgg
-         UYiUIxzauGngNYfKiHmjcosKfLOX1vKH1B5D91Ft2SIqdsTRkvsZwLx0nLnm/4RChzTF
-         Y6HQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=gyFVRrq7oNAkyBDcab1pW5QCuvDZJBB4EknZ7t3FCyQ=;
-        b=jvMu5R0E45gw2ptg3+6JANJyTs4ec0hUXNN7cbDT3sIRpAJqO04fFM1wKJkd2eYvjt
-         nZfV1yRt1iPeLroCYAsiCp6o+bjz5bheuPsffytGejAsy3OpZQ0a0KML8B5iYlqTPTuZ
-         DYKUZ4uQa5Lw+kbmSqXFQ0DhrMKpp8R625fFlr2vMneJWbJOUyYv3bhH2stMoOnegC3g
-         S/y3lIcpBYFL1wbwQWoVsTcktQpZ/ccC1dCEyDjysSq7tHIKdnFbgPT2rWM5xDr3kZoO
-         sVFqlJ29uEj9Y8ZGFZArvzINagdFXvBB0Rfqzrfj7VFz7+NykoONkHd7r2ZuFuTDGx7c
-         iXKg==
-X-Gm-Message-State: AOAM532l4G5JV47ZAxThsu1HaAVoqBMyo9cH2yiG8k1ptXnXRIbwuaYh
-        XG/3nMHD4o0nqBgS2s4B+Hc=
-X-Google-Smtp-Source: ABdhPJxSgb/zvqZMjCfnMXtPsXy8CIvbp061yJoZhxOfVfnVI7ZEnO98gX7KcwhZ8GNi9zDUFR/Yeg==
-X-Received: by 2002:ac2:51b4:: with SMTP id f20mr3884946lfk.188.1598813703445;
-        Sun, 30 Aug 2020 11:55:03 -0700 (PDT)
-Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id n21sm21630ljc.89.2020.08.30.11.55.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 30 Aug 2020 11:55:02 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        id S1727977AbgHaDWd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 30 Aug 2020 23:22:33 -0400
+Received: from mail.kernel.org ([198.145.29.99]:54098 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726687AbgHaDWb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 30 Aug 2020 23:22:31 -0400
+Received: from dragon (80.251.214.228.16clouds.com [80.251.214.228])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id D0F62206A5;
+        Mon, 31 Aug 2020 03:22:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1598844150;
+        bh=41IsEe2nqK+mBIBJZKAilYQUgzH6n8IzJt8WNyWroZM=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=mYyIc44uwfLmY/eyFTuvLvDK+TATNyuPbhEpAq4DgcS7R6NqZ2HdflWx7EtL1FEGr
+         MADFZF6/yPWRvqeLE0b71ap1LBcI9DHZsjFmY5m/vIL5Tb2AAJ/9twrbWoPtAkZ+J5
+         Ucv05I7a8+/mpLMAbFIkE6DQ7o77w466IRECylx4=
+Date:   Mon, 31 Aug 2020 11:22:22 +0800
+From:   Shawn Guo <shawnguo@kernel.org>
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        Mark Rutland <mark.rutland@arm.com>,
         Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Pavel Machek <pavel@ucw.cz>, Dan Murphy <dmurphy@ti.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Lubomir Rintel <lkundrak@v3.sk>,
-        Mark Brown <broonie@kernel.org>
-Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH v2 1/6] dt-bindings: mfd: Add ENE KB930 Embedded Controller binding
-Date:   Sun, 30 Aug 2020 21:53:51 +0300
-Message-Id: <20200830185356.5365-2-digetx@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200830185356.5365-1-digetx@gmail.com>
-References: <20200830185356.5365-1-digetx@gmail.com>
+        Anson Huang <Anson.Huang@nxp.com>,
+        Li Yang <leoyang.li@nxp.com>, Han Xu <han.xu@nxp.com>,
+        Frank Li <frank.li@nxp.com>, Fugang Duan <fugang.duan@nxp.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-pwm@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-watchdog@vger.kernel.org
+Subject: Re: [PATCH v3 14/19] dt-bindings: arm: fsl: Fix Toradex Colibri i.MX
+ 8 binding
+Message-ID: <20200831032221.GF4488@dragon>
+References: <20200825193536.7332-1-krzk@kernel.org>
+ <20200825193536.7332-15-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200825193536.7332-15-krzk@kernel.org>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add binding document for the ENE KB930 Embedded Controller.
+On Tue, Aug 25, 2020 at 09:35:31PM +0200, Krzysztof Kozlowski wrote:
+> The Toradex Colibri i.MX 8 Evaluation board has two Toradex compatibles
+> so it needs separate entry.  This fixes dtbs_check warning:
+> 
+>   arch/arm64/boot/dts/freescale/imx8qxp-colibri-eval-v3.dt.yaml: /:
+>     compatible: ['toradex,colibri-imx8x-eval-v3', 'toradex,colibri-imx8x', 'fsl,imx8qxp'] is not valid under any of the given schemas (Possible causes of the failure):
+>     arch/arm64/boot/dts/freescale/imx8qxp-colibri-eval-v3.dt.yaml: /: compatible: ['toradex,colibri-imx8x-eval-v3', 'toradex,colibri-imx8x', 'fsl,imx8qxp'] is too long
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- .../devicetree/bindings/mfd/ene-kb930.yaml    | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/ene-kb930.yaml
-
-diff --git a/Documentation/devicetree/bindings/mfd/ene-kb930.yaml b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
-new file mode 100644
-index 000000000000..635c8966ca22
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
-@@ -0,0 +1,66 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/ene-kb930.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: ENE KB930 Embedded Controller bindings
-+
-+description: |
-+  This binding describes the ENE KB930 Embedded Controller attached to an
-+  I2C bus.
-+
-+maintainers:
-+  - Dmitry Osipenko <digetx@gmail.com>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+        - acer,a500-iconia-ec # Acer A500 Iconia tablet device
-+      - enum:
-+        - ene,kb930
-+  reg:
-+    maxItems: 1
-+
-+  monitored-battery: true
-+  power-supplies: true
-+  system-power-controller: true
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    battery: battery-cell {
-+      compatible = "simple-battery";
-+      charge-full-design-microamp-hours = <3260000>;
-+      energy-full-design-microwatt-hours = <24000000>;
-+      operating-range-celsius = <0 40>;
-+    };
-+
-+    mains: ac-adapter {
-+      compatible = "gpio-charger";
-+      charger-type = "mains";
-+      gpios = <&gpio 125 0>;
-+    };
-+
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      embedded-controller@58 {
-+        compatible = "acer,a500-iconia-ec", "ene,kb930";
-+        reg = <0x58>;
-+
-+        system-power-controller;
-+
-+        monitored-battery = <&battery>;
-+        power-supplies = <&mains>;
-+      };
-+    };
-+
-+...
--- 
-2.27.0
-
+Applied, thanks.
