@@ -2,106 +2,92 @@ Return-Path: <SRS0=Ebod=CK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4C5AC433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 16:13:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCE69C43461
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8FB04208CA
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 16:13:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1598976833;
-	bh=wSYh3X+qxwyoZekqoM20nCWZcWw1dfhsCUJVuXIEPaE=;
-	h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:List-ID:
-	 From;
-	b=xNJrB0z4cZyHLCQ368UT9kMBxF9LcKKEEzQR9c3r5OhsgnIvcxT0HUylzd+iM6vm0
-	 a/uCH085vJ0BCfcelX8cYoLMTrbhr6ha7fHygOiKDfyMzlS7++bxSbUIKnb1FItQDh
-	 OKauBVoyxmRXO8HWrCH+hPEZqdFInGNZh3rOR1mk=
+	by mail.kernel.org (Postfix) with ESMTP id AADFE207D3
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728355AbgIAQNq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 12:13:46 -0400
-Received: from mail.kernel.org ([198.145.29.99]:54610 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731108AbgIAQNo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Sep 2020 12:13:44 -0400
-Received: from paulmck-ThinkPad-P72.home (unknown [50.45.173.55])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 76C99204EC;
-        Tue,  1 Sep 2020 16:13:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1598976820;
-        bh=wSYh3X+qxwyoZekqoM20nCWZcWw1dfhsCUJVuXIEPaE=;
-        h=Date:From:To:Cc:Subject:Reply-To:References:In-Reply-To:From;
-        b=WKc3b7+l3qEJxpTCJykOhIL5mC4+Tc+4xUuoNh86NmlHnYI62zNec4SSfKIrB0rAl
-         ejM533Ibu1SyDPQ5Dx6TmnAip7Lh6b8EbpmM29rchZrIEuzNWLMiSMXe5Dank5qQjr
-         uH/ubRDB/JaW46oPe7Zn39dD8nr2lIcTL1jF36E8=
-Received: by paulmck-ThinkPad-P72.home (Postfix, from userid 1000)
-        id 1FB1F35226A5; Tue,  1 Sep 2020 09:13:40 -0700 (PDT)
-Date:   Tue, 1 Sep 2020 09:13:40 -0700
-From:   "Paul E. McKenney" <paulmck@kernel.org>
-To:     peterz@infradead.org
-Cc:     Lina Iyer <ilina@codeaurora.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Naresh Kamboju <naresh.kamboju@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Saravana Kannan <saravanak@google.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        lkft-triage@lists.linaro.org, rcu@vger.kernel.org,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Anders Roxell <anders.roxell@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Lars Povlsen <lars.povlsen@microchip.com>,
-        madhuparnabhowmik10@gmail.com,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: WARNING: suspicious RCU usage - sdhci-pltfm: SDHCI platform and
- OF driver helper
-Message-ID: <20200901161340.GC29330@paulmck-ThinkPad-P72>
-Reply-To: paulmck@kernel.org
-References: <CA+G9fYuiJwN1ad955Xw4ShamX2=373r+56KsbpeverEs+i_NAg@mail.gmail.com>
- <20200831194402.GD2855@paulmck-ThinkPad-P72>
- <CAPDyKFq7KWo=4VmPhgrt7vEEQ_P6NdVgQp+MO_1cg1dtoVR_Fw@mail.gmail.com>
- <CAPDyKFrTERjpLrPOFtkqLyNsk2T_58Ye2FQ1mPf-0u78aWW=Xw@mail.gmail.com>
- <20200901104206.GU1362448@hirez.programming.kicks-ass.net>
- <CAPDyKFo0VkW-cgRSkvPQ0whpuJCo4OKcL1nmH7nz1tDEChOtVg@mail.gmail.com>
- <CAPDyKFrv+DTF8=twZZk_tenB-sLg6H-CFn9HVDVA5S2kK2=U5Q@mail.gmail.com>
- <20200901154417.GD20303@codeaurora.org>
- <20200901155014.GF2674@hirez.programming.kicks-ass.net>
+        id S1729795AbgIARj5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 13:39:57 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:64710 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729034AbgIARj4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 13:39:56 -0400
+Received: from 89-64-88-247.dynamic.chello.pl (89.64.88.247) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
+ id 9794ea559f62b2f3; Tue, 1 Sep 2020 19:39:54 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Doug Smythies <dsmythies@telus.net>,
+        Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
+Subject: [PATCH v4 1/5] cpufreq: intel_pstate: Refuse to turn off with HWP enabled
+Date:   Tue, 01 Sep 2020 19:25:53 +0200
+Message-ID: <5860605.v7HuRlE7Aj@kreacher>
+In-Reply-To: <3748218.V0HrpZKF9g@kreacher>
+References: <3748218.V0HrpZKF9g@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200901155014.GF2674@hirez.programming.kicks-ass.net>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 01, 2020 at 05:50:14PM +0200, peterz@infradead.org wrote:
-> On Tue, Sep 01, 2020 at 09:44:17AM -0600, Lina Iyer wrote:
-> > > > > > > I could add RCU_NONIDLE for the calls to pm_runtime_put_sync_suspend()
-> > > > > > > and pm_runtime_get_sync() in psci_enter_domain_idle_state(). Perhaps
-> > > > > > > that's the easiest approach, at least to start with.
-> 
-> > I think this would be nice. This should also cover the case, where PM domain
-> > power off notification callbacks call trace function internally. Right?
-> 
-> That's just more crap for me to clean up later :-(
-> 
-> trace_*_rcuidle() and RCU_NONIDLE() need to die, not proliferate.
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Moving the idle-entry boundary further in is good in any number of ways.
-But experience indicates that no matter how far you move it, there will
-be something complex further in.  Unless you are pushing it all the way
-into all the arch-specific code down as far as it can possibly go?
+After commit f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive
+mode with HWP enabled") it is possible to change the driver status
+to "off" via sysfs with HWP enabled, which effectively causes the
+driver to unregister itself, but HWP remains active and it forces the
+minimum performance, so even if another cpufreq driver is loaded,
+it will not be able to control the CPU frequency.
 
-							Thanx, Paul
+For this reason, make the driver refuse to change the status to
+"off" with HWP enabled.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+
+v1 -> v4: No changes
+
+---
+ drivers/cpufreq/intel_pstate.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index e0220a6fbc69..bcda1e700a73 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2716,9 +2716,15 @@ static int intel_pstate_update_status(const char *buf, size_t size)
+ {
+ 	int ret;
+ 
+-	if (size == 3 && !strncmp(buf, "off", size))
+-		return intel_pstate_driver ?
+-			intel_pstate_unregister_driver() : -EINVAL;
++	if (size == 3 && !strncmp(buf, "off", size)) {
++		if (!intel_pstate_driver)
++			return -EINVAL;
++
++		if (hwp_active)
++			return -EBUSY;
++
++		return intel_pstate_unregister_driver();
++	}
+ 
+ 	if (size == 6 && !strncmp(buf, "active", size)) {
+ 		if (intel_pstate_driver) {
+-- 
+2.26.2
+
+
+
+
