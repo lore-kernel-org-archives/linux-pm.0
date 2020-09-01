@@ -4,36 +4,36 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C42C0C433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 20:57:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7ACBCC433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 20:57:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AA120207D3
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 20:57:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6789C2083B
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 20:57:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728160AbgIAU5N (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 16:57:13 -0400
-Received: from foss.arm.com ([217.140.110.172]:50402 "EHLO foss.arm.com"
+        id S1728029AbgIAU4z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 16:56:55 -0400
+Received: from foss.arm.com ([217.140.110.172]:50364 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728098AbgIAU45 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Sep 2020 16:56:57 -0400
+        id S1727035AbgIAU4t (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Sep 2020 16:56:49 -0400
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6CEDB1424;
-        Tue,  1 Sep 2020 13:56:56 -0700 (PDT)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 51FB1113E;
+        Tue,  1 Sep 2020 13:56:49 -0700 (PDT)
 Received: from e108754-lin.cambridge.arm.com (e108754-lin.cambridge.arm.com [10.1.199.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 00F483F66F;
-        Tue,  1 Sep 2020 13:56:54 -0700 (PDT)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D1F7C3F66F;
+        Tue,  1 Sep 2020 13:56:47 -0700 (PDT)
 From:   Ionela Voinescu <ionela.voinescu@arm.com>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
         dietmar.eggemann@arm.com, catalin.marinas@arm.com,
         sudeep.holla@arm.com, will@kernel.org, valentin.schneider@arm.com
 Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, ionela.voinescu@arm.com
-Subject: [PATCH v5 4/5] arch_topology, cpufreq: constify arch_* cpumasks
-Date:   Tue,  1 Sep 2020 21:55:48 +0100
-Message-Id: <20200901205549.30096-5-ionela.voinescu@arm.com>
+Subject: [PATCH v5 1/5] arch_topology: validate input frequencies to arch_set_freq_scale()
+Date:   Tue,  1 Sep 2020 21:55:45 +0100
+Message-Id: <20200901205549.30096-2-ionela.voinescu@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200901205549.30096-1-ionela.voinescu@arm.com>
 References: <20200901205549.30096-1-ionela.voinescu@arm.com>
@@ -42,106 +42,35 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Valentin Schneider <valentin.schneider@arm.com>
+The current frequency passed to arch_set_freq_scale() could end up
+being 0, signaling an error in setting a new frequency. Also, if the
+maximum frequency in 0, this will result in a division by 0 error.
 
-The passed cpumask arguments to arch_set_freq_scale() and
-arch_freq_counters_available() are only iterated over, so reflect this
-in the prototype. This also allows to pass system cpumasks like
-cpu_online_mask without getting a warning.
+Therefore, validate these input values before using them for the
+setting of the frequency scale factor.
 
-Signed-off-by: Valentin Schneider <valentin.schneider@arm.com>
 Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Acked-by: Catalin Marinas <catalin.marinas@arm.com>
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
 Cc: Sudeep Holla <sudeep.holla@arm.com>
 Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- arch/arm64/kernel/topology.c  | 2 +-
- drivers/base/arch_topology.c  | 4 ++--
- drivers/cpufreq/cpufreq.c     | 5 +++--
- include/linux/arch_topology.h | 2 +-
- include/linux/cpufreq.h       | 3 ++-
- 5 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/base/arch_topology.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
-index 0801a0f3c156..9a9f2b8dedf5 100644
---- a/arch/arm64/kernel/topology.c
-+++ b/arch/arm64/kernel/topology.c
-@@ -253,7 +253,7 @@ static int __init init_amu_fie(void)
- }
- late_initcall_sync(init_amu_fie);
- 
--bool arch_freq_counters_available(struct cpumask *cpus)
-+bool arch_freq_counters_available(const struct cpumask *cpus)
- {
- 	return amu_freq_invariant() &&
- 	       cpumask_subset(cpus, amu_fie_cpus);
 diff --git a/drivers/base/arch_topology.c b/drivers/base/arch_topology.c
-index 42a08ef693ae..91de5331ac8a 100644
+index 75f72d684294..42a08ef693ae 100644
 --- a/drivers/base/arch_topology.c
 +++ b/drivers/base/arch_topology.c
-@@ -21,13 +21,13 @@
- #include <linux/sched.h>
- #include <linux/smp.h>
- 
--__weak bool arch_freq_counters_available(struct cpumask *cpus)
-+__weak bool arch_freq_counters_available(const struct cpumask *cpus)
- {
- 	return false;
- }
- DEFINE_PER_CPU(unsigned long, freq_scale) = SCHED_CAPACITY_SCALE;
- 
--void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+void arch_set_freq_scale(const struct cpumask *cpus, unsigned long cur_freq,
- 			 unsigned long max_freq)
- {
+@@ -33,6 +33,9 @@ void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
  	unsigned long scale;
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 570bf2ebe9d4..2ea245a6c0c0 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -160,8 +160,9 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
- }
- EXPORT_SYMBOL_GPL(get_cpu_idle_time);
+ 	int i;
  
--__weak void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
--		unsigned long max_freq)
-+__weak void arch_set_freq_scale(const struct cpumask *cpus,
-+				unsigned long cur_freq,
-+				unsigned long max_freq)
- {
- }
- EXPORT_SYMBOL_GPL(arch_set_freq_scale);
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index 69b1dabe39dc..810c83336257 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -30,7 +30,7 @@ static inline unsigned long topology_get_freq_scale(int cpu)
- 	return per_cpu(freq_scale, cpu);
- }
- 
--bool arch_freq_counters_available(struct cpumask *cpus);
-+bool arch_freq_counters_available(const struct cpumask *cpus);
- 
- DECLARE_PER_CPU(unsigned long, thermal_pressure);
- 
-diff --git a/include/linux/cpufreq.h b/include/linux/cpufreq.h
-index e54767e2a68a..9f779fbdbe7b 100644
---- a/include/linux/cpufreq.h
-+++ b/include/linux/cpufreq.h
-@@ -1011,7 +1011,8 @@ static inline void sched_cpufreq_governor_change(struct cpufreq_policy *policy,
- extern void arch_freq_prepare_all(void);
- extern unsigned int arch_freq_get_on_cpu(int cpu);
- 
--extern void arch_set_freq_scale(struct cpumask *cpus, unsigned long cur_freq,
-+extern void arch_set_freq_scale(const struct cpumask *cpus,
-+				unsigned long cur_freq,
- 				unsigned long max_freq);
- 
- /* the following are really really optional */
++	if (WARN_ON_ONCE(!cur_freq || !max_freq))
++		return;
++
+ 	/*
+ 	 * If the use of counters for FIE is enabled, just return as we don't
+ 	 * want to update the scale factor with information from CPUFREQ.
 -- 
 2.17.1
 
