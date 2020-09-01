@@ -2,123 +2,103 @@ Return-Path: <SRS0=Ebod=CK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8FC3C433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 14825C43461
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:48:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 93BD720FC3
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:07:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Z302qOXK"
+	by mail.kernel.org (Postfix) with ESMTP id DD8342064B
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:48:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728717AbgIAPHc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 11:07:32 -0400
-Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:23396 "EHLO
-        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1727886AbgIAPHa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 11:07:30 -0400
-Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
-        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 081Di55p087820;
-        Tue, 1 Sep 2020 10:08:49 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
- : date : message-id; s=pp1;
- bh=xFcTUIX01cLLAjK4w1JAdadIh0Qdzl7X/zatSLI9ejQ=;
- b=Z302qOXKFuUrmf4blDuX0goYyb0LfiStAGSSJkRdEHWAu4NTgU0+vntAQqSnklVBS45h
- AiylFju0oTxnN3PYcEPLMXjoKaHlBe+Z5LhNEnWc8ULccqyJy26dEyv2lbwvwLz/Ssgs
- 11iL4aD97aLmA1JbQnessMa3y6bFB9LLHfZAXK/y5mh4cXMusdvqtDZWHom/8HWxGANZ
- 7TyWBjXvrgms+q3WGxOuVUgm47hmyC7jSWy86+qQCODgg6yOIIXCkz4BD4iNZ6exzOs7
- hHf7lb39zBniyW2dceTz9tZxc1QXnVMaxuose8Jyyzm8AEHuSZKLV22boHWLzdmybcwm Bg== 
-Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
-        by mx0a-001b2d01.pphosted.com with ESMTP id 339msjne7m-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 01 Sep 2020 10:08:49 -0400
-Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
-        by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 081E7M0t006465;
-        Tue, 1 Sep 2020 14:08:48 GMT
-Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
-        by ppma01wdc.us.ibm.com with ESMTP id 337en90h4a-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Tue, 01 Sep 2020 14:08:48 +0000
-Received: from b03ledav006.gho.boulder.ibm.com (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
-        by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 081E8ix356754552
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Tue, 1 Sep 2020 14:08:44 GMT
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 190E3C6059;
-        Tue,  1 Sep 2020 14:08:47 +0000 (GMT)
-Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
-        by IMSVA (Postfix) with ESMTP id 8F0FBC6055;
-        Tue,  1 Sep 2020 14:08:46 +0000 (GMT)
-Received: from sofia.ibm.com (unknown [9.77.196.208])
-        by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
-        Tue,  1 Sep 2020 14:08:46 +0000 (GMT)
-Received: by sofia.ibm.com (Postfix, from userid 1000)
-        id B10CB2E301D; Tue,  1 Sep 2020 19:38:41 +0530 (IST)
-From:   "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-To:     Michael Ellerman <mpe@ellerman.id.au>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc:     linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org,
-        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle-pseries: Fix CEDE latency conversion from tb to us
-Date:   Tue,  1 Sep 2020 19:38:13 +0530
-Message-Id: <1598969293-29228-1-git-send-email-ego@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.8.3.1
-X-TM-AS-GCONF: 00
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
- definitions=2020-09-01_08:2020-09-01,2020-09-01 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxscore=0
- lowpriorityscore=0 malwarescore=0 suspectscore=0 phishscore=0
- clxscore=1011 impostorscore=0 priorityscore=1501 bulkscore=0 spamscore=0
- mlxlogscore=784 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2006250000 definitions=main-2009010113
+        id S1726226AbgIAPsx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 11:48:53 -0400
+Received: from mga11.intel.com ([192.55.52.93]:48835 "EHLO mga11.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1732026AbgIAPsr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Sep 2020 11:48:47 -0400
+IronPort-SDR: 7QyqeeF9PM8wiY4HvqH2v3fHnxlbiaK3QiGJ2wD/VKSicHCMo6irY3puck9y5Qt/bz7rmogtv6
+ WPSjra3DNLDg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9730"; a="154702982"
+X-IronPort-AV: E=Sophos;i="5.76,379,1592895600"; 
+   d="scan'208";a="154702982"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2020 08:48:46 -0700
+IronPort-SDR: 8FH0UfrrBXWxXyHdkkgUvalC6wpGa30rtJ7PUnZz7KP6UWjgXz/5za2vL7d9j7WQ0Tjo4LFVn/
+ epdAqIaO1aRA==
+X-IronPort-AV: E=Sophos;i="5.76,379,1592895600"; 
+   d="scan'208";a="477249681"
+Received: from spandruv-mobl.amr.corp.intel.com ([10.255.229.52])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Sep 2020 08:48:46 -0700
+Message-ID: <81b98c58eab0bf075d9ded2154a7a88020628c80.camel@linux.intel.com>
+Subject: Re: [PATCH] cpufreq: intel_pstate: Fix intel_pstate_get_hwp_max()
+ for turbo disabled cases.
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Francisco Jerez <currojerez@riseup.net>, linux-pm@vger.kernel.org
+Cc:     "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Caleb Callaway <caleb.callaway@intel.com>
+Date:   Tue, 01 Sep 2020 08:48:45 -0700
+In-Reply-To: <20200901030250.495928-1-currojerez@riseup.net>
+References: <20200901030250.495928-1-currojerez@riseup.net>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+On Mon, 2020-08-31 at 20:02 -0700, Francisco Jerez wrote:
+> This fixes the behavior of the scaling_max_freq and scaling_min_freq
+> sysfs files in systems which had turbo disabled by the BIOS.
+> 
+> Caleb noticed that the HWP is programmed to operate in the wrong
+> P-state range on his system when the CPUFREQ policy min/max frequency
+> is set via sysfs.  This seems to be because in his system
+> intel_pstate_get_hwp_max() is returning the maximum turbo P-state
+> even
+> though turbo was disabled by the BIOS, which causes intel_pstate to
+> scale kHz frequencies incorrectly e.g. setting the maximum turbo
+> frequency whenever the maximum guaranteed frequency is requested via
+> sysfs.
 
-commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
-CEDE(0)") sets the exit latency of CEDE(0) based on the latency values
-of the Extended CEDE states advertised by the platform. The values
-advertised by the platform are in timebase ticks. However the cpuidle
-framework requires the latency values in microseconds.
+When  turbo is disabled via MSR_IA32_MISC_ENABLE_TURBO_DISABLE (From
+BIOS), then no matter what we write to HWP. max, the hardware will clip
+to HWP_GUARANTEED_PERF.
 
-If the tb-ticks value advertised by the platform correspond to a value
-smaller than 1us, during the conversion from tb-ticks to microseconds,
-in the current code, the result becomes zero. This is incorrect as it
-puts a CEDE state on par with the snooze state.
+But it looks like this is some issue on properly disabling turbo from
+BIOS, since you observe turbo frequencies (via aperf, mperf) not just
+sysfs display issue.
 
-This patch fixes this by rounding up the result obtained while
-converting the latency value from tb-ticks to microseconds.
 
-Fixes: commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
-CEDE(0)")
 
-Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
----
- drivers/cpuidle/cpuidle-pseries.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Tested-by: Caleb Callaway <caleb.callaway@intel.com>
+> Signed-off-by: Francisco Jerez <currojerez@riseup.net>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index ff6d99e..9043358 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -361,7 +361,7 @@ static void __init fixup_cede0_latency(void)
- 	for (i = 0; i < nr_xcede_records; i++) {
- 		struct xcede_latency_record *record = &payload->records[i];
- 		u64 latency_tb = be64_to_cpu(record->latency_ticks);
--		u64 latency_us = tb_to_ns(latency_tb) / NSEC_PER_USEC;
-+		u64 latency_us = DIV_ROUND_UP_ULL(tb_to_ns(latency_tb), NSEC_PER_USEC);
- 
- 		if (latency_us < min_latency_us)
- 			min_latency_us = latency_us;
--- 
-1.9.4
+> ---
+>  drivers/cpufreq/intel_pstate.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/cpufreq/intel_pstate.c
+> b/drivers/cpufreq/intel_pstate.c
+> index e0220a6fbc69..7eb7b62bd5c4 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -825,7 +825,7 @@ static void intel_pstate_get_hwp_max(unsigned int
+> cpu, int *phy_max,
+>  
+>  	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
+>  	WRITE_ONCE(all_cpu_data[cpu]->hwp_cap_cached, cap);
+> -	if (global.no_turbo)
+> +	if (global.no_turbo || global.turbo_disabled)
+>  		*current_max = HWP_GUARANTEED_PERF(cap);
+>  	else
+>  		*current_max = HWP_HIGHEST_PERF(cap);
 
