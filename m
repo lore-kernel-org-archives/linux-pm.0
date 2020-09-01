@@ -2,34 +2,37 @@ Return-Path: <SRS0=Ebod=CK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C577C2BC0E
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AB23C43461
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 875212071B
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA18B20866
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 17:40:11 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729034AbgIARkC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 13:40:02 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59394 "EHLO
+        id S1727996AbgIARj4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 13:39:56 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:60258 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729385AbgIARj5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 13:39:57 -0400
+        with ESMTP id S1728254AbgIARjz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 13:39:55 -0400
 Received: from 89-64-88-247.dynamic.chello.pl (89.64.88.247) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.459)
- id 17a99e8a40e6e1df; Tue, 1 Sep 2020 19:39:55 +0200
+ id a294c7eb5a260088; Tue, 1 Sep 2020 19:39:53 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         LKML <linux-kernel@vger.kernel.org>,
         Doug Smythies <dsmythies@telus.net>,
         Artem Bityutskiy <artem.bityutskiy@linux.intel.com>
-Subject: [PATCH v4 0/5] cpufreq: intel_pstate: Address some HWP-related oddities
-Date:   Tue, 01 Sep 2020 19:23:06 +0200
-Message-ID: <3748218.V0HrpZKF9g@kreacher>
+Subject: [PATCH v4 2/5] cpufreq: intel_pstate: Update cached EPP in the active mode
+Date:   Tue, 01 Sep 2020 19:27:18 +0200
+Message-ID: <5673678.fo8E7psNGY@kreacher>
+In-Reply-To: <3748218.V0HrpZKF9g@kreacher>
+References: <3748218.V0HrpZKF9g@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -38,32 +41,93 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-The last two patches in the v3 needed to be updated to take re-enabling of HWP
-after an ACPI S3 suspend/resume cycle into account appropriately.  The first
-three patches are the same as before.
+Make intel_pstate update the cached EPP value when setting the EPP
+via sysfs in the active mode just like it is the case in the passive
+mode, for consistency, but also for the benefit of subsequent
+changes.
 
-The purpose of this series is to address some peculiarities related to
-taking CPUs offline/online and switching between different operation
-modes with HWP enabled that have become visible after allowing the
-driver to work in the passive mode with HWP enabled in 5.9-rc1 (and
-one that was there earlier, but can be addressed easily after the
-changes made in 5.9-rc1).
+No intentional functional impact.
 
-Please refer to the patch changelogs for details.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-For easier testing/review, the series is available from the git branch at:
+-> v2: No changes
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- intel_pstate-testing
+v2 -> v3:
+   * Do not change the read part of the EPP sysfs interface.
+   * Change the subject and update the changelog.
 
-I've done my best to address all of the possible corner cases, but the test
-matrix is quite extensive and I may have missed something, so go ahead
-and test.
+v3 -> v4: No changes
 
-Thanks,
-Rafael
+---
+ drivers/cpufreq/intel_pstate.c | 20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index bcda1e700a73..e540448e0bd0 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -644,6 +644,8 @@ static int intel_pstate_get_energy_pref_index(struct cpudata *cpu_data, int *raw
+ 
+ static int intel_pstate_set_epp(struct cpudata *cpu, u32 epp)
+ {
++	int ret;
++
+ 	/*
+ 	 * Use the cached HWP Request MSR value, because in the active mode the
+ 	 * register itself may be updated by intel_pstate_hwp_boost_up() or
+@@ -659,7 +661,11 @@ static int intel_pstate_set_epp(struct cpudata *cpu, u32 epp)
+ 	 * function, so it cannot run in parallel with the update below.
+ 	 */
+ 	WRITE_ONCE(cpu->hwp_req_cached, value);
+-	return wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
++	ret = wrmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, value);
++	if (!ret)
++		cpu->epp_cached = epp;
++
++	return ret;
+ }
+ 
+ static int intel_pstate_set_energy_pref_index(struct cpudata *cpu_data,
+@@ -762,10 +768,8 @@ static ssize_t store_energy_performance_preference(
+ 			cpufreq_stop_governor(policy);
+ 			ret = intel_pstate_set_epp(cpu, epp);
+ 			err = cpufreq_start_governor(policy);
+-			if (!ret) {
+-				cpu->epp_cached = epp;
++			if (!ret)
+ 				ret = err;
+-			}
+ 		}
+ 	}
+ 
+@@ -2378,6 +2382,12 @@ static int intel_pstate_cpu_init(struct cpufreq_policy *policy)
+ 	 */
+ 	policy->policy = CPUFREQ_POLICY_POWERSAVE;
+ 
++	if (hwp_active) {
++		struct cpudata *cpu = all_cpu_data[policy->cpu];
++
++		cpu->epp_cached = intel_pstate_get_epp(cpu, 0);
++	}
++
+ 	return 0;
+ }
+ 
+@@ -2585,7 +2595,7 @@ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 		policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY_HWP;
+ 		rdmsrl_on_cpu(cpu->cpu, MSR_HWP_REQUEST, &value);
+ 		WRITE_ONCE(cpu->hwp_req_cached, value);
+-		cpu->epp_cached = (value & GENMASK_ULL(31, 24)) >> 24;
++		cpu->epp_cached = intel_pstate_get_epp(cpu, value);
+ 	} else {
+ 		turbo_max = cpu->pstate.turbo_pstate;
+ 		policy->transition_delay_us = INTEL_CPUFREQ_TRANSITION_DELAY;
+-- 
+2.26.2
+
 
 
 
