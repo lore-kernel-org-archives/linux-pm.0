@@ -2,102 +2,141 @@ Return-Path: <SRS0=Ebod=CK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 746A1C433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 12:45:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63166C433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 13:22:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C7C0206EF
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 12:45:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3662A207EA
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 13:22:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OljWryjS"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hNonOjx0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727035AbgIAMpe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 08:45:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51896 "EHLO
+        id S1728172AbgIANWK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 09:22:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34246 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727894AbgIAMMh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 08:12:37 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4B489C061244
-        for <linux-pm@vger.kernel.org>; Tue,  1 Sep 2020 05:12:37 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id w14so1210697ljj.4
-        for <linux-pm@vger.kernel.org>; Tue, 01 Sep 2020 05:12:37 -0700 (PDT)
+        with ESMTP id S1728183AbgIANVt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 09:21:49 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D64BAC061245;
+        Tue,  1 Sep 2020 06:21:33 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id e11so1485029ljn.6;
+        Tue, 01 Sep 2020 06:21:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=eu1KXqfMY0kVWnLuJx6qu5Cov1wboqm87rUBKcm7yAM=;
-        b=OljWryjSPBpayWSYslBEad6cU+WlRNYtk/vNsNlzxDrrtWebylG14YuIZAXQMpNG7s
-         764t+n/1SE0az3qFcbzO7Pdss9btWXsgtJHmIA6QFlkVxIjzrmFI1JTqWay7cTMnIcu7
-         8uHIqGEFmI3dT8EnPR81rj2D1J75fFJutjQasT/LkNPDeZ+iPuGLc1LK//WRxu11oSNy
-         X+4AXyozZuMek0Js//+Zo5qnfg+nEBqsyDp6U2iF9xkMiz0fquTW40QRrXSaHgbcW6Ai
-         OvPGUE75SOVtXz0S69MKRWghqZjWUqgsXhldWlxVjUybbbsDPH3fo0vYKIZAvM4KVhdY
-         1nRQ==
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=AAwGBH9Pl98e0MOBgKPdwEfXEzau8aeh454hPp/x1WM=;
+        b=hNonOjx0uNrzojH5Oetsx+QHjTKAlpn1u2xckZp/ImUX4M2eLMKEYKM/LQ1i9kfL88
+         3blZngUlF6oxiiWlvBLRlbGEW90fjo5kyoOiKoBY/WYfYPPtZbu60eXGxqAo8naxQxIW
+         oRhNB5QlIz/2rhg4Q7DnOQJpJwc3BG4ooIZJngPUpLzPgq6BduCgtK60wXchlz9UQqCD
+         ADxKMgik/rt4rL6x0QyfP7dAOBTLrqAmex+6+ZhEoIIqAn/xqM2OHNHt3NlsNmk8TX9n
+         BnLoh3FFpBOL5w35kY1tNAlqDI1MXqUGeL7fl7IEFddXjHwAv0BZ5vQfBKXoUCeXZO/5
+         uA0w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=eu1KXqfMY0kVWnLuJx6qu5Cov1wboqm87rUBKcm7yAM=;
-        b=aFBqMZuRjugczPDZu7U2w8upMl0lUXeM+nnEJ5YL4Ui/f5NANiXvPBPDkaK9Ylxdie
-         1ZBeUcyU+rem5tM82jv1gPgUtKYdx4ozbf/KKMK4/LYXpR3qOJtnk7qnoC7mk6qsKbXv
-         s8fGbv/npJQNDqbZgy99JTTV6ZzM+tGuKxabdMsfGJYBtLEoyhbttb02JRmXDM/GOqWY
-         QUkBksh38WJK4hgwPI14UH1v7NcxXuqzK03a7m1jjGDtKJOitwWSFJg4FJE1ReVKMt3W
-         59flzY5iB6Dynuq2D5yaej84tCBZav3pdj86GJtirmfeG22vO/8vPJW3G7DFhNOHge3l
-         htww==
-X-Gm-Message-State: AOAM533zFptbXZgTdOhDt/PK/FM3tDF/WZosXmmM1Mm2Z7kEwIGhcKjv
-        es+EPOM+2JWq/97ketfwCJIGXA==
-X-Google-Smtp-Source: ABdhPJz7seY5100OHmxs8/EpqKSk1Bq7NPeAsIxjsz5vu6AxXqgjUAFCnJ8sYfx6Mk93VTfEMswqRQ==
-X-Received: by 2002:a2e:5857:: with SMTP id x23mr467020ljd.360.1598962355547;
-        Tue, 01 Sep 2020 05:12:35 -0700 (PDT)
-Received: from localhost.localdomain (h-98-128-180-79.NA.cust.bahnhof.se. [98.128.180.79])
-        by smtp.gmail.com with ESMTPSA id u6sm241193ljg.105.2020.09.01.05.12.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Sep 2020 05:12:34 -0700 (PDT)
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-To:     Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        linux-pm@vger.kernel.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Mark Rutland <mark.rutland@arm.com>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
+        bh=AAwGBH9Pl98e0MOBgKPdwEfXEzau8aeh454hPp/x1WM=;
+        b=ijozEiVsIx8JS5SLjvborTV/OdD9iWM1IQzbjRAP83vII/O+NRJqGtTyLtKtoATcIJ
+         Fzhy/PiR64N0bz5Kocthmztd0V2My4wtB68AAb5DUmGrGwREYqWMq5dn9KBZzRnYangE
+         xYq47laF580ndsUrgqNoEWAjpdgYYVXuh8kcreygJQJIQaNaAdKf5M5K0VR6mqts3Q7+
+         vnVVvU0wy2ZJx/0pZfrYQDXblbLV7nNHEok3MTwhMw098u2w2xCFS+2h5q0yrnDliNq/
+         DzsuZvTGEN2GT4tmwI4Xx+9GA2GRbmTqBthUr8jFSd8tzY+HNxFos5lCACkmGxKUZYcZ
+         WtCA==
+X-Gm-Message-State: AOAM5313NI7VDNAxIOgXPEaTQzXrfPWNoL+9fqs9SCEU97Ov481wwvmY
+        RlrraogarXImL/WRmMSI/tC8J4vwa3s=
+X-Google-Smtp-Source: ABdhPJyLxzIU+wmLlGsYIuh2GuFRSkigyBrqYDTRhDWzCG5tIEBTHurrOVD70DACcy6C/77sL3D56g==
+X-Received: by 2002:a05:651c:106f:: with SMTP id y15mr627124ljm.170.1598966491976;
+        Tue, 01 Sep 2020 06:21:31 -0700 (PDT)
+Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
+        by smtp.googlemail.com with ESMTPSA id f24sm49863lja.104.2020.09.01.06.21.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Sep 2020 06:21:31 -0700 (PDT)
+Subject: Re: [PATCH 3/3] ARM: tegra: Pass multiple versions in
+ opp-supported-hw property
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Benjamin Gaignard <benjamin.gaignard@st.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 0/2] cpuidle: psci: Always create the PM domains
-Date:   Tue,  1 Sep 2020 14:12:24 +0200
-Message-Id: <20200901121226.217568-1-ulf.hansson@linaro.org>
-X-Mailer: git-send-email 2.25.1
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephan Gerhold <stephan@gerhold.net>,
+        devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <cover.1598442485.git.viresh.kumar@linaro.org>
+ <b13f1b112532fe0189d1f7bbb50903d9e1defb07.1598442485.git.viresh.kumar@linaro.org>
+ <b0763074-859f-fccb-dde4-03d1a50ea021@gmail.com>
+ <20200831043908.mtw4dglybcmcabjb@vireshk-i7>
+ <0da380c2-9161-d450-afd2-4b159c8cfb7d@gmail.com>
+ <20200831084111.6udzvrdonxgzju4l@vireshk-i7>
+ <cbfa012b-8f50-e460-972c-c51fa52bb858@gmail.com>
+ <20200831110408.a6lwivim4w4jtkdc@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <603071ec-6ae4-7e34-26e4-f64065b01ee0@gmail.com>
+Date:   Tue, 1 Sep 2020 16:21:30 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <20200831110408.a6lwivim4w4jtkdc@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This coverletter is mainly to help keeping track of the patches part in the
-series. Please have a look at each patch for more details.
+31.08.2020 14:04, Viresh Kumar пишет:
+> On 31-08-20, 12:54, Dmitry Osipenko wrote:
+>> It's not clear to me how it could be applicable to the Tegra CPU OPP
+>> because Tegra depends on a combination of SPEEDO + PROCESS versions.
+>>
+>> It's not like all voltages are the same for all OPPs that have the same
+>> PROCESS ID, otherwise it indeed would be nice to have
+>> "opp-microvolt-process0", but unfortunately this variant is not suitable
+>> for Tegra because some freqs have different voltages using the same
+>> PROCESS ID and the same applies to the SPEEDO ID.
+> 
+> How exactly do you know what voltage belongs to a particular OPP ?
 
-Kind regards
-Ulf Hansson
+From these tables:
 
-Ulf Hansson (2):
-  firmware: psci: Extend psci_set_osi_mode() to allow reset to PC mode
-  cpuidle: psci: Allow PM domain to be initialized even if no OSI mode
+https://nv-tegra.nvidia.com/gitweb/?p=linux-2.6.git;a=blob;f=arch/arm/mach-tegra/tegra2_dvfs.c;hb=l4t/l4t-r16-r2#l157
 
- drivers/cpuidle/cpuidle-psci-domain.c | 57 ++++++++++++++-------------
- drivers/firmware/psci/psci.c          | 12 +++---
- include/linux/psci.h                  |  2 +-
- 3 files changed, 37 insertions(+), 34 deletions(-)
+https://nv-tegra.nvidia.com/gitweb/?p=linux-2.6.git;a=blob;f=arch/arm/mach-tegra/tegra3_dvfs.c;hb=l4t/l4t-r16-r2#l148
 
--- 
-2.25.1
+> 		opp@216000000 {
+> 			clock-latency-ns = <400000>;
+> 			opp-supported-hw = <0x0F 0x0003>;
+> 			opp-hz = /bits/ 64 <216000000>;
+> 			opp-microvolt-fast-process0 = <750000 750000 1125000>;
+> 			opp-microvolt-slow-process0 = <750000 850000 1125000>;
+> 
+> 		};
+> 
+> 		opp@312000000 {
+> 			clock-latency-ns = <400000>;
+> 			opp-supported-hw = <0x0F 0x0003>;
+> 			opp-hz = /bits/ 64 <312000000>;
+> 			opp-microvolt-fast-process0 = <750000 750000 1125000>;
+> 			opp-microvolt-slow-process0 = <750000 850000 1125000>;
+> 		};
+> 
+> You can make any combinations of such names that come from speedo,
+> process, or something else. If you can get this done as a fixed
+> formula then it is workable.
+> 
 
+IIUC, there is no fixed formula for Tegra, at least I don't see it. For
+example, if you'll take a look at the 1300MHz OPP of Tegra30, then you
+could see that this freq has a lot of voltages each depending on
+specific combination of SPEEDO+PROCESS versions.
