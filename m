@@ -2,116 +2,123 @@ Return-Path: <SRS0=Ebod=CK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C3290C433E6
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:01:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8FC3C433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:07:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9973A206CD
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:01:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 93BD720FC3
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Sep 2020 15:07:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="afn94a0r"
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="Z302qOXK"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727800AbgIAPBL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Sep 2020 11:01:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49682 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725989AbgIAPBK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 11:01:10 -0400
-Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B360DC061244;
-        Tue,  1 Sep 2020 08:01:09 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=c4Ee9icQII2DGAoMrIbwKT8Ude3XzoISGtg+XB13lKQ=; b=afn94a0rd08dIeIK+nPtOLy9ZF
-        2kHzRnga5rpNnJdpfqAdEkDoDXnbQLFe53sru0CkEghz/uu1jDS/OLaSJ+nTqEjhT34UhvcmEEJIY
-        MqjQVEuWOQeiiEIl9BzC7QTXM3oeEPCjpJZW0uTROZyy/No0zCe/etHYanQR7sMptJckLhBj1ciT8
-        pB3s3YkIryDdSN+nEtCUxp7av0xGykhSncbcxwlkFtcNGZVMyZ4FT31TI2XkJIpM72reeWASyq8Lo
-        1Es0Ru63eoYj9KldC//FQZ4EIGB9kRInPDRT/Y1JbvmfYRhsX3+W+/83DND1k4IpIOTaeVkdknDH/
-        mlMV2o1Q==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kD7mL-0004dC-KN; Tue, 01 Sep 2020 15:00:57 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 770E6300F7A;
-        Tue,  1 Sep 2020 17:00:55 +0200 (CEST)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 6633520BEB41B; Tue,  1 Sep 2020 17:00:55 +0200 (CEST)
-Date:   Tue, 1 Sep 2020 17:00:55 +0200
-From:   peterz@infradead.org
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Naresh Kamboju <naresh.kamboju@linaro.org>, paulmck@kernel.org,
+        id S1728717AbgIAPHc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Sep 2020 11:07:32 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:23396 "EHLO
+        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1727886AbgIAPHa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Sep 2020 11:07:30 -0400
+Received: from pps.filterd (m0127361.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 081Di55p087820;
+        Tue, 1 Sep 2020 10:08:49 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=from : to : cc : subject
+ : date : message-id; s=pp1;
+ bh=xFcTUIX01cLLAjK4w1JAdadIh0Qdzl7X/zatSLI9ejQ=;
+ b=Z302qOXKFuUrmf4blDuX0goYyb0LfiStAGSSJkRdEHWAu4NTgU0+vntAQqSnklVBS45h
+ AiylFju0oTxnN3PYcEPLMXjoKaHlBe+Z5LhNEnWc8ULccqyJy26dEyv2lbwvwLz/Ssgs
+ 11iL4aD97aLmA1JbQnessMa3y6bFB9LLHfZAXK/y5mh4cXMusdvqtDZWHom/8HWxGANZ
+ 7TyWBjXvrgms+q3WGxOuVUgm47hmyC7jSWy86+qQCODgg6yOIIXCkz4BD4iNZ6exzOs7
+ hHf7lb39zBniyW2dceTz9tZxc1QXnVMaxuose8Jyyzm8AEHuSZKLV22boHWLzdmybcwm Bg== 
+Received: from ppma01wdc.us.ibm.com (fd.55.37a9.ip4.static.sl-reverse.com [169.55.85.253])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 339msjne7m-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 01 Sep 2020 10:08:49 -0400
+Received: from pps.filterd (ppma01wdc.us.ibm.com [127.0.0.1])
+        by ppma01wdc.us.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 081E7M0t006465;
+        Tue, 1 Sep 2020 14:08:48 GMT
+Received: from b03cxnp08025.gho.boulder.ibm.com (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+        by ppma01wdc.us.ibm.com with ESMTP id 337en90h4a-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Tue, 01 Sep 2020 14:08:48 +0000
+Received: from b03ledav006.gho.boulder.ibm.com (b03ledav006.gho.boulder.ibm.com [9.17.130.237])
+        by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 081E8ix356754552
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Tue, 1 Sep 2020 14:08:44 GMT
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 190E3C6059;
+        Tue,  1 Sep 2020 14:08:47 +0000 (GMT)
+Received: from b03ledav006.gho.boulder.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 8F0FBC6055;
+        Tue,  1 Sep 2020 14:08:46 +0000 (GMT)
+Received: from sofia.ibm.com (unknown [9.77.196.208])
+        by b03ledav006.gho.boulder.ibm.com (Postfix) with ESMTP;
+        Tue,  1 Sep 2020 14:08:46 +0000 (GMT)
+Received: by sofia.ibm.com (Postfix, from userid 1000)
+        id B10CB2E301D; Tue,  1 Sep 2020 19:38:41 +0530 (IST)
+From:   "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+To:     Michael Ellerman <mpe@ellerman.id.au>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Saravana Kannan <saravanak@google.com>,
-        open list <linux-kernel@vger.kernel.org>,
-        linux-mmc <linux-mmc@vger.kernel.org>,
-        lkft-triage@lists.linaro.org, rcu@vger.kernel.org,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Anders Roxell <anders.roxell@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Rajendra Nayak <rnayak@codeaurora.org>,
-        John Stultz <john.stultz@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Lars Povlsen <lars.povlsen@microchip.com>,
-        madhuparnabhowmik10@gmail.com,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: WARNING: suspicious RCU usage - sdhci-pltfm: SDHCI platform and
- OF driver helper
-Message-ID: <20200901150055.GD2674@hirez.programming.kicks-ass.net>
-References: <CA+G9fYuiJwN1ad955Xw4ShamX2=373r+56KsbpeverEs+i_NAg@mail.gmail.com>
- <20200831194402.GD2855@paulmck-ThinkPad-P72>
- <CAPDyKFq7KWo=4VmPhgrt7vEEQ_P6NdVgQp+MO_1cg1dtoVR_Fw@mail.gmail.com>
- <CAPDyKFrTERjpLrPOFtkqLyNsk2T_58Ye2FQ1mPf-0u78aWW=Xw@mail.gmail.com>
- <20200901104206.GU1362448@hirez.programming.kicks-ass.net>
- <CAPDyKFo0VkW-cgRSkvPQ0whpuJCo4OKcL1nmH7nz1tDEChOtVg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFo0VkW-cgRSkvPQ0whpuJCo4OKcL1nmH7nz1tDEChOtVg@mail.gmail.com>
+        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc:     linux-pm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org,
+        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
+Subject: [PATCH] cpuidle-pseries: Fix CEDE latency conversion from tb to us
+Date:   Tue,  1 Sep 2020 19:38:13 +0530
+Message-Id: <1598969293-29228-1-git-send-email-ego@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.8.3.1
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-09-01_08:2020-09-01,2020-09-01 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxscore=0
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 phishscore=0
+ clxscore=1011 impostorscore=0 priorityscore=1501 bulkscore=0 spamscore=0
+ mlxlogscore=784 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009010113
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 01, 2020 at 02:35:52PM +0200, Ulf Hansson wrote:
-> On Tue, 1 Sep 2020 at 12:42, <peterz@infradead.org> wrote:
+From: "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>
 
-> > That said; I pushed the rcu_idle_enter() about as deep as it goes into
-> > generic code in commit 1098582a0f6c ("sched,idle,rcu: Push rcu_idle
-> > deeper into the idle path")
-> 
-> Aha, that commit should fix this problem, I think. Looks like that
-> commit was sent as a fix and included in the recent v5.9-rc3.
+commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
+CEDE(0)") sets the exit latency of CEDE(0) based on the latency values
+of the Extended CEDE states advertised by the platform. The values
+advertised by the platform are in timebase ticks. However the cpuidle
+framework requires the latency values in microseconds.
 
-AFAICT psci_enter_domain_idle_state() is still buggered. All that
-pm_runtime_*() stuff is using locks.
+If the tb-ticks value advertised by the platform correspond to a value
+smaller than 1us, during the conversion from tb-ticks to microseconds,
+in the current code, the result becomes zero. This is incorrect as it
+puts a CEDE state on par with the snooze state.
 
-Look at this:
+This patch fixes this by rounding up the result obtained while
+converting the latency value from tb-ticks to microseconds.
 
-  psci_enter_domain_idle_state()
-    pm_runtime_put_sync_suspend()
-      __pm_runtime_suspend()
-        spin_lock_irqsave(&dev->power.lock, flags);
+Fixes: commit d947fb4c965c ("cpuidle: pseries: Fixup exit latency for
+CEDE(0)")
 
-That's a definite fail after we've done rcu_idle_enter().
+Signed-off-by: Gautham R. Shenoy <ego@linux.vnet.ibm.com>
+---
+ drivers/cpuidle/cpuidle-pseries.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> > I suppose the next step is pushing it into individual driver when
-> > needed, something like the below perhaps. I realize the coupled idle
-> > state stuff is more complicated that most, but it's also not an area
-> > I've looked at in detail, so perhaps I've just made a bigger mess, but
-> > it ought to give you enough to get going I think.
-> 
-> These aren't coupled states. Instead, in cpuidle-psci, we are using PM
-> domains through genpd and runtime PM to manage "shared idle states"
-> between CPUs.
+diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
+index ff6d99e..9043358 100644
+--- a/drivers/cpuidle/cpuidle-pseries.c
++++ b/drivers/cpuidle/cpuidle-pseries.c
+@@ -361,7 +361,7 @@ static void __init fixup_cede0_latency(void)
+ 	for (i = 0; i < nr_xcede_records; i++) {
+ 		struct xcede_latency_record *record = &payload->records[i];
+ 		u64 latency_tb = be64_to_cpu(record->latency_ticks);
+-		u64 latency_us = tb_to_ns(latency_tb) / NSEC_PER_USEC;
++		u64 latency_us = DIV_ROUND_UP_ULL(tb_to_ns(latency_tb), NSEC_PER_USEC);
+ 
+ 		if (latency_us < min_latency_us)
+ 			min_latency_us = latency_us;
+-- 
+1.9.4
 
-Similar problem I'm thinking, 'complicated' stuff.
