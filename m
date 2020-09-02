@@ -2,149 +2,95 @@ Return-Path: <SRS0=6wxd=CL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.5 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,DKIM_INVALID,DKIM_SIGNED,FREEMAIL_FORGED_FROMDOMAIN,
-	FREEMAIL_FROM,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 51A74C433E7
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 17:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43C46C433E2
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 17:24:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2EFC5208B3
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 17:01:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="jaDoR8zH"
+	by mail.kernel.org (Postfix) with ESMTP id 0D5F5208CA
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 17:24:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599067482;
+	bh=4GhpqVhomlHq3S1HIM4iXts6y7OCYOqvF5xPqDyrGq8=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=2oOyKKBpQxnN9VWuZA4eVTnMlYL4bhvw4MsI6DzgglgS7Pp4TzkYh35tweQ51oFom
+	 PQkAklW8rDo3aaLm1KEWeuPZiGF2H+O6fk0dYp0IeRk4jxb7G/1mv/XOWDFAlKafE5
+	 +vN9Cz0MhOZcOHJg7VmgWGxu7r1JaKXaYjkCrARg=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728367AbgIBQ61 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Sep 2020 12:58:27 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35468 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727026AbgIBQ6X (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2020 12:58:23 -0400
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 464A4C061244;
-        Wed,  2 Sep 2020 09:58:22 -0700 (PDT)
-Received: by mail-wr1-x441.google.com with SMTP id z1so178144wrt.3;
-        Wed, 02 Sep 2020 09:58:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JcXQvmAkY/k2J1p9we4yfCScXrpnX5eBNUZhNJtw/Hk=;
-        b=jaDoR8zHGWv18DZ+k2xRN07EgfAnZ+2OtQTUEsDgS2Nvtiwv4dbl7FdLnw+v8ogXKP
-         IMQQbEAkaVY21jp4yPHkzkdnmeSKvw2i7L+6m+oITeHfBtrLGKyWUByU2JIh7fgnkQbp
-         bbg99vBEaeAYHE0xgr/9QZi1zx5d+2cnSbNhKc+IA804dttxHFV2YRdv5EMjr9DoY/qb
-         Yi2lVRfBCAutj3gUwyx5hQY+957XlH6H+Zix/qZuAs6QtD/SpLwRYbLNCFgmjk0N9QTw
-         0o4y6hpEJ1zIl7Wfl09nMZpS0hLGJ5Ae+VOfnr4xFTvFEz6ispXooDBEzykBeCcR9384
-         cDfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JcXQvmAkY/k2J1p9we4yfCScXrpnX5eBNUZhNJtw/Hk=;
-        b=KIZV47ZKQNePAhyQYW/F2G5xTRqjhwLmaryX/4jZXR+n/gfbPURF/37lKU0Eeyk7lg
-         j15do3nLMTcAQTjcavoq/uYUIUzOdGcPkohj4bVqG6H+5lcS76fNSfSSq3/IF6rlkbvW
-         ybguXjZjaTVgeCj9hda8VvGGYyWK5qIlK/b000m9xyWh2iX7GQLTSiJkRO437n3Jlgry
-         WCFLRY+emba9WOoaE8SDGtcEawxz+eXPkTKxwhoEJNaPckSlqU+sM1myGDpSPDJb4gYS
-         MaIlDJ4zMPA5qcklBWNw8LY6r+LEF/ml7viw+EK6VF/AYQjfhP4IsPmyMfjQKYp1Fmqf
-         YNqQ==
-X-Gm-Message-State: AOAM532XNCBO1o6fSVWTDpeR0TVR2wo80wPnb/xUVVn54quWOwxJejYK
-        4TCXEAGY2zTeV8aj+6FR24g=
-X-Google-Smtp-Source: ABdhPJyGog7lMzfBNy5rF2ditlUSIh4T71Lu/c3ROK2tC/kiQgMwPGZcTxRdjEoeV/4SjVJlTa4jew==
-X-Received: by 2002:a5d:4e0b:: with SMTP id p11mr7711127wrt.13.1599065900919;
-        Wed, 02 Sep 2020 09:58:20 -0700 (PDT)
-Received: from localhost.localdomain (cpc83661-brig20-2-0-cust443.3-3.cable.virginm.net. [82.28.105.188])
-        by smtp.gmail.com with ESMTPSA id c205sm369795wmd.33.2020.09.02.09.58.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Sep 2020 09:58:20 -0700 (PDT)
-From:   Alex Dewar <alex.dewar90@gmail.com>
-Cc:     Alex Dewar <alex.dewar90@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] power: supply: charger-manager: Tidy function
-Date:   Wed,  2 Sep 2020 17:58:16 +0100
-Message-Id: <20200902165816.401213-1-alex.dewar90@gmail.com>
-X-Mailer: git-send-email 2.28.0
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-To:     unlisted-recipients:; (no To-header on input)
+        id S1726448AbgIBRYl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Sep 2020 13:24:41 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41664 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726269AbgIBRYk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Sep 2020 13:24:40 -0400
+Received: from kozik-lap.mshome.net (unknown [194.230.155.106])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id E164F20684;
+        Wed,  2 Sep 2020 17:24:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599067480;
+        bh=4GhpqVhomlHq3S1HIM4iXts6y7OCYOqvF5xPqDyrGq8=;
+        h=From:To:Cc:Subject:Date:From;
+        b=Fh7V5yGzM6ENw0BoXJdPecdir2Fi2ixx6uLGszMiGaQk4ZdMsLP03zI5wrz0HCt7+
+         Xlc8HV4gaubACo0wZyABrpHN3338+TonZJGfXNL7yeWMA1PT2HEUv7CcWvgpnoa1Gn
+         Ytc/4kChDtdAo061LnxvqEqHHUBHjlmxZ8YO77sY=
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Leonard Crestez <leonard.crestez@nxp.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH 1/2] interconnect: core: Simplify with dev_err_probe()
+Date:   Wed,  2 Sep 2020 19:24:32 +0200
+Message-Id: <20200902172433.1138-1-krzk@kernel.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-check_charging_duration() contains some copy-pasted code, which makes it
-less readable. Refactor the function to be a bit tidier.
+Common pattern of handling deferred probe can be simplified with
+dev_err_probe().  Less code and the error value gets printed.
 
-I've also fixed a couple of typos.
-
-Signed-off-by: Alex Dewar <alex.dewar90@gmail.com>
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/power/supply/charger-manager.c | 39 +++++++++-----------------
- 1 file changed, 14 insertions(+), 25 deletions(-)
+ drivers/interconnect/core.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
-index 07992821e252..67c7b1fb6601 100644
---- a/drivers/power/supply/charger-manager.c
-+++ b/drivers/power/supply/charger-manager.c
-@@ -443,42 +443,31 @@ static int try_charger_enable(struct charger_manager *cm, bool enable)
-  * check_charging_duration - Monitor charging/discharging duration
-  * @cm: the Charger Manager representing the battery.
-  *
-- * If whole charging duration exceed 'charging_max_duration_ms',
-+ * If whole charging duration exceeds 'charging_max_duration_ms',
-  * cm stop charging to prevent overcharge/overheat. If discharging
-- * duration exceed 'discharging _max_duration_ms', charger cable is
-+ * duration exceeds 'discharging _max_duration_ms', charger cable is
-  * attached, after full-batt, cm start charging to maintain fully
-  * charged state for battery.
-  */
- static int check_charging_duration(struct charger_manager *cm)
- {
- 	struct charger_desc *desc = cm->desc;
--	u64 curr = ktime_to_ms(ktime_get());
- 	u64 duration;
--	int ret = false;
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index befd111049c0..3d5d719de175 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -444,18 +444,14 @@ struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ 	src_node = of_icc_get_from_provider(&src_args);
  
--	if (!desc->charging_max_duration_ms &&
--			!desc->discharging_max_duration_ms)
--		return ret;
--
--	if (cm->charger_enabled) {
--		duration = curr - cm->charging_start_time;
--
--		if (duration > desc->charging_max_duration_ms) {
--			dev_info(cm->dev, "Charging duration exceed %ums\n",
--				 desc->charging_max_duration_ms);
--			ret = true;
--		}
--	} else if (cm->battery_status == POWER_SUPPLY_STATUS_NOT_CHARGING) {
--		duration = curr - cm->charging_end_time;
-+	if ((desc->charging_max_duration_ms == 0 &&
-+			desc->discharging_max_duration_ms == 0))
-+		return false;
-+	if (!cm->charger_enabled &&
-+			cm->battery_status != POWER_SUPPLY_STATUS_NOT_CHARGING)
-+		return false;
- 
--		if (duration > desc->charging_max_duration_ms) {
--			dev_info(cm->dev, "Discharging duration exceed %ums\n",
--				 desc->discharging_max_duration_ms);
--			ret = true;
--		}
-+	duration = ktime_to_ms(ktime_get()) - cm->charging_start_time;
-+	if (duration > desc->charging_max_duration_ms) {
-+		dev_info(cm->dev, "Charging duration exceeds %ums\n",
-+				desc->charging_max_duration_ms);
-+		return true;
+ 	if (IS_ERR(src_node)) {
+-		if (PTR_ERR(src_node) != -EPROBE_DEFER)
+-			dev_err(dev, "error finding src node: %ld\n",
+-				PTR_ERR(src_node));
++		dev_err_probe(dev, PTR_ERR(src_node), "error finding src node\n");
+ 		return ERR_CAST(src_node);
  	}
--
--	return ret;
-+	return false;
- }
  
- static int cm_get_battery_temperature_by_psy(struct charger_manager *cm,
+ 	dst_node = of_icc_get_from_provider(&dst_args);
+ 
+ 	if (IS_ERR(dst_node)) {
+-		if (PTR_ERR(dst_node) != -EPROBE_DEFER)
+-			dev_err(dev, "error finding dst node: %ld\n",
+-				PTR_ERR(dst_node));
++		dev_err_probe(dev, PTR_ERR(dst_node), "error finding dst node\n");
+ 		return ERR_CAST(dst_node);
+ 	}
+ 
 -- 
-2.28.0
+2.17.1
 
