@@ -2,95 +2,91 @@ Return-Path: <SRS0=6wxd=CL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_ADSP_CUSTOM_MED,
-	FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,FREEMAIL_REPLYTO_END_DIGIT,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A53AC433E2
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:29:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AD03C433E7
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:32:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EEBC820767
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:29:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 390DD20767
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:32:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599060760;
+	bh=gBiAdSr/rlD2GPMPqMUuP5613nlb1jdrzG98kvU5uTY=;
+	h=Date:From:To:Cc:Subject:List-ID:From;
+	b=Y0ZCqS7PnAKLVzA1BDnC6N5RI5QQGve8f/PzTM0mph9L9mP1il20I6Ls6itOSvb39
+	 d4oPjN5TV8W4yIpN6Hxw7qCL4Kks/10fyQfjUSBpx7ineogFpLVrG7ecd5NEYa/QgW
+	 OEPvqVEBbll3vjTdqBlnqU+JSf5895G3hzkf9e7w=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726936AbgIBPZ4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Sep 2020 11:25:56 -0400
-Received: from mga04.intel.com ([192.55.52.120]:10435 "EHLO mga04.intel.com"
+        id S1728129AbgIBPch (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Sep 2020 11:32:37 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57602 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726927AbgIBPZs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Sep 2020 11:25:48 -0400
-IronPort-SDR: CmAeaSXKEuI2EX3CGO99S4RiPWEK8rouML4cKz2J2P5WbP12Orp0MPN/3cCSe55zZ2Qr5U6uHo
- 5PqNXGDO+2DQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9732"; a="154808921"
-X-IronPort-AV: E=Sophos;i="5.76,383,1592895600"; 
-   d="scan'208";a="154808921"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga004.fm.intel.com ([10.253.24.48])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Sep 2020 08:25:28 -0700
-IronPort-SDR: L67woUpoVuqgVtgy6pkvyyzRjvNctYT8LWivC1LtOEmUFWlgEn3YgaVHpkdyYY9cehcrxZ7c+N
- uMZlBfRn1XBQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.76,383,1592895600"; 
-   d="scan'208";a="325821419"
-Received: from linux.intel.com ([10.54.29.200])
-  by fmsmga004.fm.intel.com with ESMTP; 02 Sep 2020 08:25:28 -0700
-Received: from abityuts-desk1.ger.corp.intel.com (abityuts-desk1.ger.corp.intel.com [10.237.72.186])
-        by linux.intel.com (Postfix) with ESMTP id 341F158041C;
-        Wed,  2 Sep 2020 08:25:25 -0700 (PDT)
-Message-ID: <b59481655c29d081eea4f34c00166517738000e5.camel@gmail.com>
-Subject: Re: [RFC v4 1/1] selftests/cpuidle: Add support for cpuidle latency
- measurement
-From:   Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To:     Pratik Rajesh Sampat <psampat@linux.ibm.com>, rjw@rjwysocki.net,
-        daniel.lezcano@linaro.org, srivatsa@csail.mit.edu,
-        shuah@kernel.org, npiggin@gmail.com, ego@linux.vnet.ibm.com,
-        svaidy@linux.ibm.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-kselftest@vger.kernel.org,
-        pratik.r.sampat@gmail.com
-Date:   Wed, 02 Sep 2020 18:25:24 +0300
-In-Reply-To: <20200902114506.45809-2-psampat@linux.ibm.com>
-References: <20200902114506.45809-1-psampat@linux.ibm.com>
-         <20200902114506.45809-2-psampat@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.32.5 (3.32.5-1.fc30) 
+        id S1726941AbgIBPcf (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Sep 2020 11:32:35 -0400
+Received: from embeddedor (187-162-31-110.static.axtel.net [187.162.31.110])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0753D208CA;
+        Wed,  2 Sep 2020 15:32:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599060754;
+        bh=gBiAdSr/rlD2GPMPqMUuP5613nlb1jdrzG98kvU5uTY=;
+        h=Date:From:To:Cc:Subject:From;
+        b=02VlrZVDpXeIJFmuhXQHWRzQzXZcBm5YdfcDu5Dm85ecv/ADBPKebuLK8IlzPyfrO
+         gHh3gx32KmGCZ5kiPrlpaKMftGgPqM8p3S4uqMrHjS9Eiz+aCUB4b6UyoxqnmwfASJ
+         fipW98xGJ81469ZT5m9LqluK8ml9ajbw68qLT1es=
+Date:   Wed, 2 Sep 2020 10:38:46 -0500
+From:   "Gustavo A. R. Silva" <gustavoars@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Jonghwa Lee <jonghwa3.lee@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Jonathan Bakker <xc-racer2@live.ca>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        "Gustavo A. R. Silva" <gustavoars@kernel.org>
+Subject: [PATCH] power: supply: charger-manager: Fix info message in
+ check_charging_duration()
+Message-ID: <20200902153846.GA10327@embeddedor>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, 2020-09-02 at 17:15 +0530, Pratik Rajesh Sampat wrote:
-> Measure cpuidle latencies on wakeup to determine and compare with the
-> advertsied wakeup latencies for each idle state.
+A few months ago, commit e132fc6bb89b ("power: supply: charger-manager: Make decisions focussed on battery status")
+changed the expression in the if statement from "duration > desc->discharging_max_duration_ms"
+to "duration > desc->charging_max_duration_ms", but the arguments for dev_info() were left unchanged.
+Apparently, due to a copy-paste error.
 
-It looks like the measurements include more than just C-state wake,
-they also include the overhead of waking up the proces, context switch,
-and potentially any interrupts that happen on that CPU. I am not saying
-this is not interesting data, it surely is, but it is going to be
-larger than you see in cpuidle latency tables. Potentially
-significantly larger.
+Fix this by using the proper arguments for dev_info().
 
-Therefore, I am not sure this program should be advertised as "cpuidle
-measurement". It really measures the "IPI latency" in case of the IPI
-method.
+Addresses-Coverity-ID: 1496803 ("Copy-paste error")
+Fixes: e132fc6bb89b ("power: supply: charger-manager: Make decisions focussed on battery status")
+Signed-off-by: Gustavo A. R. Silva <gustavoars@kernel.org>
+---
+ drivers/power/supply/charger-manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-> A baseline measurement for each case of IPI and timers is taken at
-> 100 percent CPU usage to quantify for the kernel-userpsace overhead
-> during execution.
-
-At least on Intel platforms, this will mean that the IPI method won't
-cover deep C-states like, say, PC6, because one CPU is busy. Again, not
-saying this is not interesting, just pointing out the limitation.
-
-I was working on a somewhat similar stuff for x86 platforms, and I am
-almost ready to publish that on github. I can notify you when I do so
-if you are interested. But here is a small presentation of the approach
-that I did on Plumbers last year:
-
-https://youtu.be/Opk92aQyvt0?t=8266
-
-(the link points to the start of my talk)
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 07992821e252..6117018e89df 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -472,8 +472,8 @@ static int check_charging_duration(struct charger_manager *cm)
+ 		duration = curr - cm->charging_end_time;
+ 
+ 		if (duration > desc->charging_max_duration_ms) {
+-			dev_info(cm->dev, "Discharging duration exceed %ums\n",
+-				 desc->discharging_max_duration_ms);
++			dev_info(cm->dev, "Charging duration exceed %ums\n",
++				 desc->charging_max_duration_ms);
+ 			ret = true;
+ 		}
+ 	}
+-- 
+2.27.0
 
