@@ -2,137 +2,101 @@ Return-Path: <SRS0=6wxd=CL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1359EC433E6
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 07:25:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B81E4C433E7
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 07:26:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E3C3820826
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 07:25:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8C9112072A
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 07:26:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aWhkyKDW"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="XqtKCU8l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727801AbgIBHZG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Sep 2020 03:25:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60180 "EHLO
+        id S1726800AbgIBH0n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Sep 2020 03:26:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60446 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726247AbgIBHZF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2020 03:25:05 -0400
-Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04672C061246
-        for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2020 00:25:05 -0700 (PDT)
-Received: by mail-pj1-x1044.google.com with SMTP id ds1so1953445pjb.1
-        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2020 00:25:05 -0700 (PDT)
+        with ESMTP id S1726770AbgIBH0m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2020 03:26:42 -0400
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC380C061245
+        for <linux-pm@vger.kernel.org>; Wed,  2 Sep 2020 00:26:41 -0700 (PDT)
+Received: by mail-pf1-x443.google.com with SMTP id 17so2348806pfw.9
+        for <linux-pm@vger.kernel.org>; Wed, 02 Sep 2020 00:26:41 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=+tJBzI8lB5wRp0GmHPQXlUe4WhX44ejADtz0Zhvnig4=;
-        b=aWhkyKDWAf5betm7xqDa2cSgBjrX/ykPr83ItMwjnU8aSuoXBr6L5cgQA2wfKMApbI
-         kw6gED2PvEapoNJZ5BuBEykbjCWuQVICq/DMqc9hIa3OSwLAOaTaa5GOiwPaoA4Lb3PP
-         CT2A1RTX68yyGQtdLtMZBJUSgLmMs0jz2zo6bjcSIXqAnbk/LTUtwuA8UMskxth+Am+0
-         8orfpjeS8IeUv2Dxfxy3FxWqrxMYFukMWwuBF96mREo+fRklhDq/As1WbMpBJscIG3SD
-         AIqPjjmMpZFmNZlVK5tf6Lr1TVOR/ynpstIrM7IQKckzLhg4Ot8zqA/EHZ93B2YMxY9z
-         BBIA==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=sK/FM/QqHW73s3zW3v2JjJSuecpEd7zSzI7DvlhgvtQ=;
+        b=XqtKCU8lMX15QFQGjsxyjexwZtP40XT3gg9pHdjWkBLYqpOqAUiqyaoTAA/4b/UiYA
+         hqUUsfjkjxpJrPkI/LDSoFIOynR2ThCRlObFMDYSNq/dDCpP8AzvWQRbbEpP3ffA787F
+         0xR5/pdIJD/6H8GsEiMts4Z4bqsubw4rFzV5kQmGEm0q9YoIPmady1TKXYPFi54ikjRb
+         pdbbAl0EnhBeo0WN+HRZgIrzEIwdbv0MqGB5EJB+MkNGZxmtZhKiHXK1XaO5xyrmsucY
+         rYFCTvtJuduPYWfJrIHm84Ou9znEOkSQ7HGUgMz1XN1c4WOhGPKJrC+w/mdH5PO0QESD
+         B4zQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=+tJBzI8lB5wRp0GmHPQXlUe4WhX44ejADtz0Zhvnig4=;
-        b=me1SWiYA6rLizbMYX20zB2GvUu8AtWx/BKmGJ17znfaxnxDtDXMYCGrcgF7h2ROLMM
-         BV+qZq1rFcYkbMD5WOfZznolV30iSdQW5JycBmgphMd8mE9HiC5XINxuAXr4RJEjFZ9z
-         /x3YZzhmPmEE5KWphuVUgiMHmeWS7o/YO4QSXZFFj5XKGKAX/ZC+vFhQt+0MJi3Rsj8z
-         Q01YqJ11jgo3Tm9mcitkRhGPAbjKUWNrsSISOqd/rsLx5bPfYgimwPDRoyxXTHKGMxiD
-         kM5E2h032Yjs4+L560VX27w6ZwQauW43JnbIir5JVCWqeBae+x/gM1R3Tami7SD+nMSH
-         6Kcg==
-X-Gm-Message-State: AOAM531+cRlt4CSBP9A0uRqiE2zNQF+eQ6TgDjEwgewskPc0vIW8PhhK
-        4qS/eLQi6A33yA0biml0MJAHYoUlfdUk2Q==
-X-Google-Smtp-Source: ABdhPJxBiV6IU6Th5b0VjfN5Yh4wllGr8D63b3s0G1pEnxDa/etejmq6Y08SyqhjURtrz+Er6DVkog==
-X-Received: by 2002:a17:902:a50e:: with SMTP id s14mr1053168plq.164.1599031504547;
-        Wed, 02 Sep 2020 00:25:04 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=sK/FM/QqHW73s3zW3v2JjJSuecpEd7zSzI7DvlhgvtQ=;
+        b=qpOXeXR9L7ejUP/1wE60PzSVaHVh1P3MuwMgaoWqnvKz3byOs5Mm+JAEgZ6qgyit20
+         uXVHG5kqkVeWtX3VTlrY/mRll9NAtdW+yxr2uuT6hszZ8crWuqhVtrhUDlIKrpb7jvcb
+         uqFU6a03XUEx34JDYuxh8x0t29fmhL1nlXjpoZOvUGs+//bBE0wI00c67PcVbwbmKAOx
+         5YVLRq1BnB8jA9pI56qUbymLeI9QOKkp07ssl4pxIb2UwXmr4U7oEQx7rc2PBr9Ekarc
+         95RB82SXEi8D3V0NIaUsWiRgse/d9QOg2s7FOoTNXpEKNOgQQBr+Oc72l8zSzLuSTdMu
+         +hnA==
+X-Gm-Message-State: AOAM533JNbBZiKeLsJqVMqUAzhuajyz1I07gUCVzNRc8An5obMjsd/12
+        AVRZmqRr0yhCOEICTyyMiN3p6A==
+X-Google-Smtp-Source: ABdhPJyVyMe5GyvJB6vhb2TIoerfQydgDh9IXBXNBhHQurkhmi11WCku0J1xI1XV3iAgoQsk7MwdKg==
+X-Received: by 2002:a05:6a00:16c2:: with SMTP id l2mr2067448pfc.112.1599031601377;
+        Wed, 02 Sep 2020 00:26:41 -0700 (PDT)
 Received: from localhost ([122.167.135.199])
-        by smtp.gmail.com with ESMTPSA id h11sm4240987pgm.79.2020.09.02.00.25.03
+        by smtp.gmail.com with ESMTPSA id ih11sm3543286pjb.51.2020.09.02.00.26.40
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 02 Sep 2020 00:25:03 -0700 (PDT)
+        Wed, 02 Sep 2020 00:26:40 -0700 (PDT)
+Date:   Wed, 2 Sep 2020 12:56:38 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>, cristian.marussi@arm.com,
-        sudeep.holla@arm.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] cpufreq: stats: Remove locking
-Date:   Wed,  2 Sep 2020 12:54:42 +0530
-Message-Id: <d4a64a4310805b1641c2582e56fbda503688b789.1599031227.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1599031227.git.viresh.kumar@linaro.org>
-References: <cover.1599031227.git.viresh.kumar@linaro.org>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
+        cristian.marussi@arm.com, rjw@rjwysocki.net
+Subject: Re: [PATCH 0/4] CPUFreq statistics retrieved by drivers
+Message-ID: <20200902072638.zc352inj236ydgz7@vireshk-i7>
+References: <20200729151208.27737-1-lukasz.luba@arm.com>
+ <20200730085333.qubrsv7ufqninihd@vireshk-mac-ubuntu>
+ <20200730091014.GA13158@bogus>
+ <3b3a56e9-29ec-958f-fb3b-c689a9389d2f@arm.com>
+ <20200804053502.35d3x3vnb3mggtqs@vireshk-mac-ubuntu>
+ <f784bf30-83a6-55ff-8fa6-f7bd2d4399b9@arm.com>
+ <20200804103857.mxgkmt6qmmzejuzb@vireshk-mac-ubuntu>
+ <1f978078-b2df-a2e5-6af8-e73f65044ba7@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1f978078-b2df-a2e5-6af8-e73f65044ba7@arm.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The locking isn't required anymore as stats can get updated only from
-one place at a time. Remove it.
+On 04-08-20, 11:44, Lukasz Luba wrote:
+> On 8/4/20 11:38 AM, Viresh Kumar wrote:
+> > I don't think doing it with help of firmware is the right thing to do
+> > here then. For another platform we may not have a firmware which can
+> > help us, we need something in the opp core itself for that. Lemme see
+> > if I can do something about it.
+> 
+> OK, great, I will wait then with this patch series v2 which would change
+> into debugfs scmi only. Could you please add me on CC, I am very
+> interested in.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq_stats.c | 6 ------
- 1 file changed, 6 deletions(-)
+Here is an attempt.
 
-diff --git a/drivers/cpufreq/cpufreq_stats.c b/drivers/cpufreq/cpufreq_stats.c
-index fdf9e8556a49..d86ea9744649 100644
---- a/drivers/cpufreq/cpufreq_stats.c
-+++ b/drivers/cpufreq/cpufreq_stats.c
-@@ -19,7 +19,6 @@ struct cpufreq_stats {
- 	unsigned int state_num;
- 	unsigned int last_index;
- 	u64 *time_in_state;
--	spinlock_t lock;
- 	unsigned int *freq_table;
- 	unsigned int *trans_table;
- 
-@@ -41,7 +40,6 @@ static void cpufreq_stats_reset_table(struct cpufreq_stats *stats)
- {
- 	unsigned int count = stats->max_state;
- 
--	spin_lock(&stats->lock);
- 	memset(stats->time_in_state, 0, count * sizeof(u64));
- 	memset(stats->trans_table, 0, count * count * sizeof(int));
- 	stats->last_time = get_jiffies_64();
-@@ -50,7 +48,6 @@ static void cpufreq_stats_reset_table(struct cpufreq_stats *stats)
- 	/* Adjust for the time elapsed since reset was requested */
- 	atomic_set(&stats->reset_pending, 0);
- 	cpufreq_stats_update(stats, stats->reset_time);
--	spin_unlock(&stats->lock);
- }
- 
- static ssize_t show_total_trans(struct cpufreq_policy *policy, char *buf)
-@@ -244,7 +241,6 @@ void cpufreq_stats_create_table(struct cpufreq_policy *policy)
- 	stats->state_num = i;
- 	stats->last_time = get_jiffies_64();
- 	stats->last_index = freq_table_get_index(stats, policy->cur);
--	spin_lock_init(&stats->lock);
- 
- 	policy->stats = stats;
- 	ret = sysfs_create_group(&policy->kobj, &stats_attr_group);
-@@ -277,11 +273,9 @@ void cpufreq_stats_record_transition(struct cpufreq_policy *policy,
- 	if (old_index == -1 || new_index == -1 || old_index == new_index)
- 		return;
- 
--	spin_lock(&stats->lock);
- 	cpufreq_stats_update(stats, stats->last_time);
- 
- 	stats->last_index = new_index;
- 	stats->trans_table[old_index * stats->max_state + new_index]++;
- 	stats->total_trans++;
--	spin_unlock(&stats->lock);
- }
+http://lore.kernel.org/lkml/cover.1599031227.git.viresh.kumar@linaro.org
+
 -- 
-2.25.0.rc1.19.g042ed3e048af
-
+viresh
