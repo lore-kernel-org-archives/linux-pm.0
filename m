@@ -2,64 +2,75 @@ Return-Path: <SRS0=6wxd=CL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AE2AAC433E7
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:46:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8F295C433E2
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:47:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9486A208B3
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:46:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 73D5B208B3
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Sep 2020 15:47:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728241AbgIBPqx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Sep 2020 11:46:53 -0400
-Received: from foss.arm.com ([217.140.110.172]:38114 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727089AbgIBNcG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Sep 2020 09:32:06 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 872E811B3;
-        Wed,  2 Sep 2020 06:32:05 -0700 (PDT)
-Received: from bogus (unknown [10.57.4.218])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 12E373F68F;
-        Wed,  2 Sep 2020 06:32:02 -0700 (PDT)
-Date:   Wed, 2 Sep 2020 14:32:00 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        dietmar.eggemann@arm.com, catalin.marinas@arm.com, will@kernel.org,
-        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 1/5] arch_topology: validate input frequencies to
- arch_set_freq_scale()
-Message-ID: <20200902133200.GH25462@bogus>
-References: <20200901205549.30096-1-ionela.voinescu@arm.com>
- <20200901205549.30096-2-ionela.voinescu@arm.com>
+        id S1726307AbgIBPr2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Sep 2020 11:47:28 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:54363 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727088AbgIBNbh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Sep 2020 09:31:37 -0400
+Received: from 1.general.cking.uk.vpn ([10.172.193.212] helo=localhost)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <colin.king@canonical.com>)
+        id 1kDSr7-00023z-S9; Wed, 02 Sep 2020 13:31:17 +0000
+From:   Colin King <colin.king@canonical.com>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Myungjoo Ham <myungjoo.ham@samsung.com>,
+        Anton Vorontsov <anton.vorontsov@linaro.org>,
+        linux-pm@vger.kernel.org
+Cc:     kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH][next] charger-manager: fix incorrect check on charging_duration_ms
+Date:   Wed,  2 Sep 2020 14:31:17 +0100
+Message-Id: <20200902133117.108025-1-colin.king@canonical.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200901205549.30096-2-ionela.voinescu@arm.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 01, 2020 at 09:55:45PM +0100, Ionela Voinescu wrote:
-> The current frequency passed to arch_set_freq_scale() could end up
-> being 0, signaling an error in setting a new frequency. Also, if the
-> maximum frequency in 0, this will result in a division by 0 error.
->
-> Therefore, validate these input values before using them for the
-> setting of the frequency scale factor.
->
-> Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: Sudeep Holla <sudeep.holla@arm.com>
+From: Colin Ian King <colin.king@canonical.com>
 
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+Currently the duration check on the discharging duration setting is
+checking the charging duration rather than the discharging duration
+due to a cut-n-paste coding error. Fix this by checking the value
+desc->charging_max_duration_ms.
 
---
-Regards,
-Sudeep
+Addresses-Coverity: ("Copy-paste-error")
+Fixes: 8fcfe088e21a ("charger-manager: Support limit of maximum possible")
+Signed-off-by: Colin Ian King <colin.king@canonical.com>
+---
+ drivers/power/supply/charger-manager.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/charger-manager.c b/drivers/power/supply/charger-manager.c
+index 07992821e252..44d919954e9e 100644
+--- a/drivers/power/supply/charger-manager.c
++++ b/drivers/power/supply/charger-manager.c
+@@ -471,7 +471,7 @@ static int check_charging_duration(struct charger_manager *cm)
+ 	} else if (cm->battery_status == POWER_SUPPLY_STATUS_NOT_CHARGING) {
+ 		duration = curr - cm->charging_end_time;
+ 
+-		if (duration > desc->charging_max_duration_ms) {
++		if (duration > desc->discharging_max_duration_ms) {
+ 			dev_info(cm->dev, "Discharging duration exceed %ums\n",
+ 				 desc->discharging_max_duration_ms);
+ 			ret = true;
+-- 
+2.27.0
+
