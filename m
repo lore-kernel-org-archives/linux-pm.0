@@ -4,59 +4,59 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3707BC433E2
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:28:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4C9B8C43461
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:32:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 059B620758
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:28:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 217CA20BED
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:32:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uPSaeMXk"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="iZLw1CfU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728991AbgICO2H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 10:28:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35730 "EHLO
+        id S1729347AbgICOcK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 10:32:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35814 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729339AbgICO0z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 10:26:55 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 07144C061232
-        for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2020 06:21:25 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id a15so3713544ljk.2
-        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2020 06:21:25 -0700 (PDT)
+        with ESMTP id S1729303AbgICO1m (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 10:27:42 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5064C06121A
+        for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2020 06:21:22 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id k25so3629172ljg.9
+        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2020 06:21:22 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=7BpNBV1cm7la6W1fS6bQ1/MA8BOSMPEWVrrZqzxsT/U=;
-        b=uPSaeMXkyyLRBBA3MYvntJnZEFfHwEXbgHJfpigdMMBXoCspXzjGGR09GfuzAJb0Ag
-         XjpFBnf150tzC/9LbDcUxz/mrsMjDJtY8KbhSQUg8tOFd90cgGE9fVNcbjsAoobdE2QJ
-         fqwgByejHDBBL8kM4+Gns9fPLmZVC2c7qEH/465A1+TCLiW+Q5kHfX95XmHU49OxmZM4
-         n6+JJOBUzbxDGCMN2wh+IhqGOqVQvBvIAzOj75xrPIB2jrs6ZMtifzMsAWmlVv9iTaV2
-         SsZdFdWfTbL9fvUSNBLHy36Q8MtVueIKGDAlTCAM7x0GtnOoiI6DkwbqPQQYOuljCFtz
-         pEKQ==
+        bh=wcVYXgQ5pttw1IKCDgQFlSKYdGXdwjbBjMlIEbUjqiQ=;
+        b=iZLw1CfUpf3zao1xXVpOnJTFOmznOoCWLAU15PeWwd16NwdTP2lGXLKN4iSi6eR0i6
+         x+zv7dQuz4X0lGxw64dYnfTCDF3jXrFctSGJ1Qb+QeNWWJToXF/bayDRh0USlB20xWU2
+         xcYHy9v+xKy8bizid6TCyu1VQ/i1vAn+ZYkZk2cstVoPua/zC/DG9cLE91kpZAc022QI
+         inCfL8jDqhQIVS0+/YW/M0U5Dr2hs/eG2r2Kgrzagdw+hTG4alTmxvysUoOrDg9TsXa1
+         hV4inadOBaQVDQGWmHe6zE2vy9Oz36Hyl8Nt+CDAvzGQefDphw08x4xz00sppiHbMINu
+         t76w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=7BpNBV1cm7la6W1fS6bQ1/MA8BOSMPEWVrrZqzxsT/U=;
-        b=oWfRUqGK7lxQ6jdSGNRhzzh/teFU1/JpV49I+0e1GulAZ4xjSoyXKYMH6CNcBHgFms
-         vr8QQ4ERtcLOLDjIJA7mmMD6tsn3PmcvaWtqKjjQjQaHX377in40zAl11yHaVtyPcQUO
-         cfNpuJLt4Y08R4T2FSNwKbFMDNZY+aomLWsSg9c+20HwGzM/zfLjoqJ0Hyt/F+Dc2DTx
-         n6ohKyYH4r45FjXzWW7UgifgQ1ZhoHeiHWk4CUth6E5A4V5zz3ica2mFcY1g46ShM4n/
-         eTFZUBIkpJ5+5dbZvuERGhIQPVSZofwsM5Nlo/x6F5wPRk/XDWpdWthfpDnzZ4gKeWJb
-         Ybrg==
-X-Gm-Message-State: AOAM532u0EurJfOtCZuUBNhHI8wpvD4trfRa/zkKUjcG+QZMDSmiebcY
-        A/FxNi6M5ranMMuLdKQBp/poQA==
-X-Google-Smtp-Source: ABdhPJxaWsurvJpHfhRxcleSAC8OEQJKYsWv5D9wYRDeCZV5FaNmoiCYD8TWWprDX0A9XXZ5YUXoJA==
-X-Received: by 2002:a2e:b4e5:: with SMTP id s5mr1237015ljm.153.1599139283639;
-        Thu, 03 Sep 2020 06:21:23 -0700 (PDT)
+        bh=wcVYXgQ5pttw1IKCDgQFlSKYdGXdwjbBjMlIEbUjqiQ=;
+        b=rlM8Rj/s8yoQnii6tsaSH8Eun/1XdYhkpvH5KKB8CV8di5DH7e2rE146xqvPo+kps0
+         8C1H+yHPXuBDz7rG58PY84zIc7Zbr+blUjRFkFDuaXCXTFTz1rjN9/BpXBUAH8Y76CyF
+         fjITCHkd7qN4SutUB5kGIGzndCPiO7YGRhtkI4rVU3p0mPHLAski2kKmWvd+uNbU68wn
+         zKckD4y3aSzLLRZtpg87yX0miqZzmryKQMXXu5m8ar2gPE3JgFiCKz6FZi6qh+EH5vVx
+         f2lqwoKLTfwk8OhgCyv3+t8si22PsEGvwE1cXYbV8yCkb/gBFewufSmcRmcIj7TfNqeK
+         WQGA==
+X-Gm-Message-State: AOAM532ruhgyejUvot8ICsOUh35YCsrGB1IeKMKXdtOnlwfnIspuRkf7
+        yJ6yDccIwSE8tnEzvqP9dR0TuA==
+X-Google-Smtp-Source: ABdhPJwoWGc8Hxt5nyEATXELirHjbXfeqr2xI0d9g+TZMjeBMrNFljP+NwuSNqU1v5CsQS8IgUQ2yg==
+X-Received: by 2002:a2e:8215:: with SMTP id w21mr1246122ljg.43.1599139280959;
+        Thu, 03 Sep 2020 06:21:20 -0700 (PDT)
 Received: from eriador.lan ([188.162.64.138])
-        by smtp.gmail.com with ESMTPSA id e23sm584220lfj.80.2020.09.03.06.21.21
+        by smtp.gmail.com with ESMTPSA id e23sm584220lfj.80.2020.09.03.06.21.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Sep 2020 06:21:22 -0700 (PDT)
+        Thu, 03 Sep 2020 06:21:20 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -69,10 +69,11 @@ To:     Andy Gross <agross@kernel.org>,
         Lars-Peter Clausen <lars@metafoo.de>,
         Peter Meerwald-Stadler <pmeerw@pmeerw.net>
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org
-Subject: [PATCH v2 3/9] iio: adc: qcom-vadc: move several adc5 functions to common file
-Date:   Thu,  3 Sep 2020 16:21:03 +0300
-Message-Id: <20200903132109.1914011-4-dmitry.baryshkov@linaro.org>
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Craig Tatlor <ctatlor97@gmail.com>
+Subject: [PATCH v2 2/9] fixp-arith: add a linear interpolation function
+Date:   Thu,  3 Sep 2020 16:21:02 +0300
+Message-Id: <20200903132109.1914011-3-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200903132109.1914011-1-dmitry.baryshkov@linaro.org>
 References: <20200903132109.1914011-1-dmitry.baryshkov@linaro.org>
@@ -83,265 +84,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ADC-TM5 driver will make use of several functions from ADC5 driver. Move
-them to qcom-vadc-common driver.
+From: Craig Tatlor <ctatlor97@gmail.com>
 
+Adds a function to interpolate against two points,
+this is carried arount as a helper function by tons of drivers.
+
+Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/iio/adc/qcom-spmi-adc5.c   | 75 +++---------------------------
- drivers/iio/adc/qcom-vadc-common.c | 68 ++++++++++++++++++++++++++-
- drivers/iio/adc/qcom-vadc-common.h | 10 +++-
- 3 files changed, 82 insertions(+), 71 deletions(-)
+ include/linux/fixp-arith.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index b4b73c9920b4..30b8867b31e4 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -154,18 +154,6 @@ struct adc5_chip {
- 	const struct adc5_data	*data;
- };
+diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
+index 8396013785ef..281cb4f83dbe 100644
+--- a/include/linux/fixp-arith.h
++++ b/include/linux/fixp-arith.h
+@@ -141,4 +141,23 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
+ #define fixp_cos32_rad(rad, twopi)	\
+ 	fixp_sin32_rad(rad + twopi / 4, twopi)
  
--static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
--	{.num =  1, .den =  1},
--	{.num =  1, .den =  3},
--	{.num =  1, .den =  4},
--	{.num =  1, .den =  6},
--	{.num =  1, .den = 20},
--	{.num =  1, .den =  8},
--	{.num = 10, .den = 81},
--	{.num =  1, .den = 10},
--	{.num =  1, .den = 16}
--};
--
- static int adc5_read(struct adc5_chip *adc, u16 offset, u8 *data, int len)
- {
- 	return regmap_bulk_read(adc->regmap, adc->base + offset, data, len);
-@@ -181,55 +169,6 @@ static int adc5_masked_write(struct adc5_chip *adc, u16 offset, u8 mask, u8 val)
- 	return regmap_update_bits(adc->regmap, adc->base + offset, mask, val);
- }
- 
--static int adc5_prescaling_from_dt(u32 num, u32 den)
--{
--	unsigned int pre;
--
--	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
--		if (adc5_prescale_ratios[pre].num == num &&
--		    adc5_prescale_ratios[pre].den == den)
--			break;
--
--	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
--		return -EINVAL;
--
--	return pre;
--}
--
--static int adc5_hw_settle_time_from_dt(u32 value,
--					const unsigned int *hw_settle)
--{
--	unsigned int i;
--
--	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
--		if (value == hw_settle[i])
--			return i;
--	}
--
--	return -EINVAL;
--}
--
--static int adc5_avg_samples_from_dt(u32 value)
--{
--	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
--		return -EINVAL;
--
--	return __ffs(value);
--}
--
--static int adc5_decimation_from_dt(u32 value,
--					const unsigned int *decimation)
--{
--	unsigned int i;
--
--	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
--		if (value == decimation[i])
--			return i;
--	}
--
--	return -EINVAL;
--}
--
- static int adc5_read_voltage_data(struct adc5_chip *adc, u16 *data)
- {
- 	int ret;
-@@ -511,7 +450,7 @@ static int adc_read_raw_common(struct iio_dev *indio_dev,
- 			return ret;
- 
- 		ret = qcom_adc5_hw_scale(prop->scale_fn_type,
--			&adc5_prescale_ratios[prop->prescale],
-+			prop->prescale,
- 			adc->data,
- 			adc_code_volt, val);
- 		if (ret)
-@@ -717,7 +656,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32(node, "qcom,decimation", &value);
- 	if (!ret) {
--		ret = adc5_decimation_from_dt(value, data->decimation);
-+		ret = qcom_adc5_decimation_from_dt(value, data->decimation);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid decimation %d\n",
- 				chan, value);
-@@ -730,7 +669,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32_array(node, "qcom,pre-scaling", varr, 2);
- 	if (!ret) {
--		ret = adc5_prescaling_from_dt(varr[0], varr[1]);
-+		ret = qcom_adc5_prescaling_from_dt(varr[0], varr[1]);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid pre-scaling <%d %d>\n",
- 				chan, varr[0], varr[1]);
-@@ -759,11 +698,9 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 		if ((dig_version[0] >= ADC5_HW_SETTLE_DIFF_MINOR &&
- 			dig_version[1] >= ADC5_HW_SETTLE_DIFF_MAJOR) ||
- 			adc->data->info == &adc7_info)
--			ret = adc5_hw_settle_time_from_dt(value,
--							data->hw_settle_2);
-+			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_2);
- 		else
--			ret = adc5_hw_settle_time_from_dt(value,
--							data->hw_settle_1);
-+			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_1);
- 
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid hw-settle-time %d us\n",
-@@ -777,7 +714,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32(node, "qcom,avg-samples", &value);
- 	if (!ret) {
--		ret = adc5_avg_samples_from_dt(value);
-+		ret = qcom_adc5_avg_samples_from_dt(value);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid avg-samples %d\n",
- 				chan, value);
-diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index 5113aaa6ba67..d11f3343ad52 100644
---- a/drivers/iio/adc/qcom-vadc-common.c
-+++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -278,6 +278,18 @@ static const struct vadc_map_pt adcmap7_100k[] = {
- 	{ 2420, 130048 }
- };
- 
-+static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
-+	{.num =  1, .den =  1},
-+	{.num =  1, .den =  3},
-+	{.num =  1, .den =  4},
-+	{.num =  1, .den =  6},
-+	{.num =  1, .den = 20},
-+	{.num =  1, .den =  8},
-+	{.num = 10, .den = 81},
-+	{.num =  1, .den = 10},
-+	{.num =  1, .den = 16}
-+};
-+
- static int qcom_vadc_scale_hw_calib_volt(
- 				const struct vadc_prescale_ratio *prescale,
- 				const struct adc5_data *data,
-@@ -647,10 +659,12 @@ int qcom_vadc_scale(enum vadc_scale_fn_type scaletype,
- EXPORT_SYMBOL(qcom_vadc_scale);
- 
- int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
--		    const struct vadc_prescale_ratio *prescale,
-+		    unsigned int prescale_ratio,
- 		    const struct adc5_data *data,
- 		    u16 adc_code, int *result)
- {
-+	const struct vadc_prescale_ratio *prescale = &adc5_prescale_ratios[prescale_ratio];
-+
- 	if (!(scaletype >= SCALE_HW_CALIB_DEFAULT &&
- 		scaletype < SCALE_HW_CALIB_INVALID)) {
- 		pr_err("Invalid scale type %d\n", scaletype);
-@@ -662,6 +676,58 @@ int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
- }
- EXPORT_SYMBOL(qcom_adc5_hw_scale);
- 
-+int qcom_adc5_prescaling_from_dt(u32 num, u32 den)
++/**
++ * fixp_linear_interpolate() - interpolates a value from two known points
++ *
++ * @x0: x value of point 0
++ * @y0: y value of point 0
++ * @x1: x value of point 1
++ * @y1: y value of point 1
++ * @x: the linear interpolant
++ */
++static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
 +{
-+	unsigned int pre;
++	if (y0 == y1 || x == x0)
++		return y0;
++	if (x1 == x0 || x == x1)
++		return y1;
 +
-+	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
-+		if (adc5_prescale_ratios[pre].num == num &&
-+		    adc5_prescale_ratios[pre].den == den)
-+			break;
-+
-+	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
-+		return -EINVAL;
-+
-+	return pre;
++	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
 +}
-+EXPORT_SYMBOL(qcom_adc5_prescaling_from_dt);
 +
-+int qcom_adc5_hw_settle_time_from_dt(u32 value,
-+				     const unsigned int *hw_settle)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
-+		if (value == hw_settle[i])
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(qcom_adc5_hw_settle_time_from_dt);
-+
-+int qcom_adc5_avg_samples_from_dt(u32 value)
-+{
-+	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
-+		return -EINVAL;
-+
-+	return __ffs(value);
-+}
-+EXPORT_SYMBOL(qcom_adc5_avg_samples_from_dt);
-+
-+int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
-+		if (value == decimation[i])
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(qcom_adc5_decimation_from_dt);
-+
- int qcom_vadc_decimation_from_dt(u32 value)
- {
- 	if (!is_power_of_2(value) || value < VADC_DECIMATION_MIN ||
-diff --git a/drivers/iio/adc/qcom-vadc-common.h b/drivers/iio/adc/qcom-vadc-common.h
-index 17b2fc4d8bf2..7e5f6428e311 100644
---- a/drivers/iio/adc/qcom-vadc-common.h
-+++ b/drivers/iio/adc/qcom-vadc-common.h
-@@ -168,10 +168,18 @@ struct qcom_adc5_scale_type {
- };
- 
- int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
--		    const struct vadc_prescale_ratio *prescale,
-+		    unsigned int prescale_ratio,
- 		    const struct adc5_data *data,
- 		    u16 adc_code, int *result_mdec);
- 
-+int qcom_adc5_prescaling_from_dt(u32 num, u32 den);
-+
-+int qcom_adc5_hw_settle_time_from_dt(u32 value, const unsigned int *hw_settle);
-+
-+int qcom_adc5_avg_samples_from_dt(u32 value);
-+
-+int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation);
-+
- int qcom_vadc_decimation_from_dt(u32 value);
- 
- #endif /* QCOM_VADC_COMMON_H */
+ #endif
 -- 
 2.28.0
 
