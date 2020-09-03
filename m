@@ -2,274 +2,169 @@ Return-Path: <SRS0=Boio=CM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41B9DC433E9
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 15:11:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AE885C433E9
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 15:13:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12DD920758
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 15:11:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7C0BD20716
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 15:13:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SsJ+pR+j"
+	dkim=pass (2048-bit key) header.d=ibm.com header.i=@ibm.com header.b="dTa3ylzR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729161AbgICPLE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 11:11:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59172 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728975AbgICN5y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 09:57:54 -0400
-Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 280A8C061A01
-        for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2020 06:31:45 -0700 (PDT)
-Received: by mail-wm1-x343.google.com with SMTP id v4so2899181wmj.5
-        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2020 06:31:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=Uz4Jw+zKdFJ0416tNACRop3YdQEnLlXpW/XophXNKMc=;
-        b=SsJ+pR+jva11YMNYXuR8oKRz3WkjfDu0N2/d1aBy3h3hrm7VEI8InTw0eMtSsOHgyu
-         MzWwXYA11zNdok0KLUzWuTw14F3zPuhNNIVOtN+Az/NGR8ltkOdMawjTB80Wv0qgTKLm
-         8Q/B7J7qKDDjV46D4v7vn0X6K5GWf97hKFgKJOA0y/3Ud8XypXCmY7yY+zMwfK4NCjGp
-         onI2tSuL8PJJnsGGX9PGWb3jbnRwFO9ZR5rxaAJtZ0ghiE7L4RpAtWfXO+VWpfDCgRWE
-         EGYt3RaMCZ1IQLTHE5TBzew0hFAnVFz/ah2tM8QQOM8r2EktwqxZ/UP8O2enS0MttAZp
-         jItA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=Uz4Jw+zKdFJ0416tNACRop3YdQEnLlXpW/XophXNKMc=;
-        b=E5+9K9sqw6dEsZTl/fXORwjqy29QQTF/6f0MzmzkMkkYbjrLKYYSvC1UbGtUNFmGGV
-         aE7jOHtomZrcy7nUpPn/dhYWzEsrhN84vCiWgnXksPc9kC4wb5cwYUXX7lJ0Fbho39eq
-         /XsCn1cGpdDFMCY27JyIk1RoM7hk7wjf7Y0YfFBDpEzXlEXBd/fd+TpoTxB/PNh5ptht
-         tWGZ/jCf0SU3WgIPi/E4zqn0EsE62r8AjaKTIKB0PvR687reQQr0Nb0l3J0slKuCKXqm
-         RJXa6GCw87ZPOfdtKcJZjITRiMafgzJUUYIEuy/5jP1yPc+J9OSAGg1RevIvJVRmGGWV
-         Bg9Q==
-X-Gm-Message-State: AOAM5301XR0LP+1kQgp7uV+6qpmzRp4qOQ8vNeQcjIYK0EovaTBvi6VP
-        ER7t9jJxhZRTibU80dmqOBaFlzSHkvuHSg==
-X-Google-Smtp-Source: ABdhPJxaF4E+1j0XqyCtqYw54pZtJdjO9j2lnQ6PJO6Azl5mINnM05AxHMUeDBjRV0V0132YGxxFWg==
-X-Received: by 2002:a7b:c1d4:: with SMTP id a20mr2600512wmj.30.1599139903444;
-        Thu, 03 Sep 2020 06:31:43 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id b2sm4310768wmh.47.2020.09.03.06.31.42
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 03 Sep 2020 06:31:42 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org, bjorn.andersson@linaro.org
-Cc:     devicetree@vger.kernel.org, robh+dt@kernel.org,
-        sibis@codeaurora.org, mka@chromium.org, dianders@chromium.org,
-        georgi.djakov@linaro.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 5/7] arm64: dts: qcom: sdm845: Increase the number of interconnect cells
-Date:   Thu,  3 Sep 2020 16:31:32 +0300
-Message-Id: <20200903133134.17201-6-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20200903133134.17201-1-georgi.djakov@linaro.org>
-References: <20200903133134.17201-1-georgi.djakov@linaro.org>
+        id S1729133AbgICPNI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 11:13:08 -0400
+Received: from mx0b-001b2d01.pphosted.com ([148.163.158.5]:18844 "EHLO
+        mx0b-001b2d01.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728797AbgICMDK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 08:03:10 -0400
+Received: from pps.filterd (m0098417.ppops.net [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 083BYxRM180240;
+        Thu, 3 Sep 2020 08:00:16 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=subject : to :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=pp1;
+ bh=RwwxTYzL444FMU+fHZcE8N87UoE2Q8WJIZikb7QZa3I=;
+ b=dTa3ylzR3BGFnO0m4dOSwyzg+q4xQgTsYm2q0vzicbi1+UOKUaYnEimQleTvLKt28hTR
+ hJS96hjQvanU6/BndcA11lm9KkfB0ok8ZKaap0/CFqASfi7AlAA9ldltSUeF5NBFWXsY
+ uZTxXyjQoCOkY2ssQGKFMx++koaytSIBC7ojfJZaVjordMCrbqA/YwH3O13ROQwFsp3U
+ Nasj6dQB8kp2kaS3j6MmyGHqbiEQHUrZ9VGrSuRgnpUSRPj7rI/7s2IdRUKCCHJjzfz+
+ ng0LHlca+pr7wHIFPH5pWuYbXHgI9q9tk/XAwv9C6+1HbopNdfyPn5oGz5gsPkGZXCOo tA== 
+Received: from pps.reinject (localhost [127.0.0.1])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 33ay8ehgev-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 03 Sep 2020 08:00:16 -0400
+Received: from m0098417.ppops.net (m0098417.ppops.net [127.0.0.1])
+        by pps.reinject (8.16.0.36/8.16.0.36) with SMTP id 083BaRVf184429;
+        Thu, 3 Sep 2020 08:00:15 -0400
+Received: from ppma06ams.nl.ibm.com (66.31.33a9.ip4.static.sl-reverse.com [169.51.49.102])
+        by mx0a-001b2d01.pphosted.com with ESMTP id 33ay8ehgdd-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 03 Sep 2020 08:00:15 -0400
+Received: from pps.filterd (ppma06ams.nl.ibm.com [127.0.0.1])
+        by ppma06ams.nl.ibm.com (8.16.0.42/8.16.0.42) with SMTP id 083Bwq4M009411;
+        Thu, 3 Sep 2020 12:00:13 GMT
+Received: from b06avi18626390.portsmouth.uk.ibm.com (b06avi18626390.portsmouth.uk.ibm.com [9.149.26.192])
+        by ppma06ams.nl.ibm.com with ESMTP id 337e9gwtr5-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+        Thu, 03 Sep 2020 12:00:13 +0000
+Received: from d06av25.portsmouth.uk.ibm.com (d06av25.portsmouth.uk.ibm.com [9.149.105.61])
+        by b06avi18626390.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 083Bwddp41746860
+        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Thu, 3 Sep 2020 11:58:39 GMT
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 0500E11C0AF;
+        Thu,  3 Sep 2020 12:00:10 +0000 (GMT)
+Received: from d06av25.portsmouth.uk.ibm.com (unknown [127.0.0.1])
+        by IMSVA (Postfix) with ESMTP id 2BB7111C0A1;
+        Thu,  3 Sep 2020 12:00:08 +0000 (GMT)
+Received: from [9.79.210.158] (unknown [9.79.210.158])
+        by d06av25.portsmouth.uk.ibm.com (Postfix) with ESMTP;
+        Thu,  3 Sep 2020 12:00:07 +0000 (GMT)
+Subject: Re: [RFC v4 1/1] selftests/cpuidle: Add support for cpuidle latency
+ measurement
+To:     dedekind1@gmail.com, rjw@rjwysocki.net, daniel.lezcano@linaro.org,
+        srivatsa@csail.mit.edu, shuah@kernel.org, npiggin@gmail.com,
+        ego@linux.vnet.ibm.com, svaidy@linux.ibm.com,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-kselftest@vger.kernel.org, pratik.r.sampat@gmail.com
+References: <20200902114506.45809-1-psampat@linux.ibm.com>
+ <20200902114506.45809-2-psampat@linux.ibm.com>
+ <b59481655c29d081eea4f34c00166517738000e5.camel@gmail.com>
+From:   Pratik Sampat <psampat@linux.ibm.com>
+Message-ID: <fa616fed-66be-bcad-83b8-b1173a3a444f@linux.ibm.com>
+Date:   Thu, 3 Sep 2020 17:30:07 +0530
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.11.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <b59481655c29d081eea4f34c00166517738000e5.camel@gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-TM-AS-GCONF: 00
+X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.235,18.0.687
+ definitions=2020-09-03_05:2020-09-03,2020-09-03 signatures=0
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 suspectscore=0
+ mlxscore=0 phishscore=0 priorityscore=1501 impostorscore=0 adultscore=0
+ lowpriorityscore=0 clxscore=1015 mlxlogscore=907 spamscore=0 bulkscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2009030102
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Increase the number of interconnect-cells, as now we can include
-the tag information. The consumers can specify the path tag as an
-additional argument to the endpoints.
+Hello Artem,
 
-Tested-by: Sibi Sankar <sibis@codeaurora.org>
-Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
-Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
----
- arch/arm64/boot/dts/qcom/sdm845.dtsi | 48 ++++++++++++++--------------
- 1 file changed, 24 insertions(+), 24 deletions(-)
+On 02/09/20 8:55 pm, Artem Bityutskiy wrote:
+> On Wed, 2020-09-02 at 17:15 +0530, Pratik Rajesh Sampat wrote:
+>> Measure cpuidle latencies on wakeup to determine and compare with the
+>> advertsied wakeup latencies for each idle state.
 
-diff --git a/arch/arm64/boot/dts/qcom/sdm845.dtsi b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-index 2884577dcb77..253d95f43152 100644
---- a/arch/arm64/boot/dts/qcom/sdm845.dtsi
-+++ b/arch/arm64/boot/dts/qcom/sdm845.dtsi
-@@ -200,7 +200,7 @@ &LITTLE_CPU_SLEEP_1
- 			dynamic-power-coefficient = <100>;
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_0>;
-@@ -225,7 +225,7 @@ &LITTLE_CPU_SLEEP_1
- 			dynamic-power-coefficient = <100>;
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_100>;
-@@ -247,7 +247,7 @@ &LITTLE_CPU_SLEEP_1
- 			dynamic-power-coefficient = <100>;
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_200>;
-@@ -269,7 +269,7 @@ &LITTLE_CPU_SLEEP_1
- 			dynamic-power-coefficient = <100>;
- 			qcom,freq-domain = <&cpufreq_hw 0>;
- 			operating-points-v2 = <&cpu0_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_300>;
-@@ -291,7 +291,7 @@ &BIG_CPU_SLEEP_1
- 			dynamic-power-coefficient = <396>;
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_400>;
-@@ -313,7 +313,7 @@ &BIG_CPU_SLEEP_1
- 			dynamic-power-coefficient = <396>;
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_500>;
-@@ -335,7 +335,7 @@ &BIG_CPU_SLEEP_1
- 			dynamic-power-coefficient = <396>;
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_600>;
-@@ -357,7 +357,7 @@ &BIG_CPU_SLEEP_1
- 			dynamic-power-coefficient = <396>;
- 			qcom,freq-domain = <&cpufreq_hw 1>;
- 			operating-points-v2 = <&cpu4_opp_table>;
--			interconnects = <&gladiator_noc MASTER_APPSS_PROC &mem_noc SLAVE_EBI1>,
-+			interconnects = <&gladiator_noc MASTER_APPSS_PROC 3 &mem_noc SLAVE_EBI1 3>,
- 					<&osm_l3 MASTER_OSM_L3_APPS &osm_l3 SLAVE_OSM_L3>;
- 			#cooling-cells = <2>;
- 			next-level-cache = <&L2_700>;
-@@ -2011,49 +2011,49 @@ pcie1_lane: lanes@1c06200 {
- 		mem_noc: interconnect@1380000 {
- 			compatible = "qcom,sdm845-mem-noc";
- 			reg = <0 0x01380000 0 0x27200>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		dc_noc: interconnect@14e0000 {
- 			compatible = "qcom,sdm845-dc-noc";
- 			reg = <0 0x014e0000 0 0x400>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		config_noc: interconnect@1500000 {
- 			compatible = "qcom,sdm845-config-noc";
- 			reg = <0 0x01500000 0 0x5080>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		system_noc: interconnect@1620000 {
- 			compatible = "qcom,sdm845-system-noc";
- 			reg = <0 0x01620000 0 0x18080>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		aggre1_noc: interconnect@16e0000 {
- 			compatible = "qcom,sdm845-aggre1-noc";
- 			reg = <0 0x016e0000 0 0x15080>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		aggre2_noc: interconnect@1700000 {
- 			compatible = "qcom,sdm845-aggre2-noc";
- 			reg = <0 0x01700000 0 0x1f300>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
- 		mmss_noc: interconnect@1740000 {
- 			compatible = "qcom,sdm845-mmss-noc";
- 			reg = <0 0x01740000 0 0x1c100>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
-@@ -2156,9 +2156,9 @@ ipa: ipa@1e40000 {
- 			clocks = <&rpmhcc RPMH_IPA_CLK>;
- 			clock-names = "core";
- 
--			interconnects = <&aggre2_noc MASTER_IPA &mem_noc SLAVE_EBI1>,
--				        <&aggre2_noc MASTER_IPA &system_noc SLAVE_IMEM>,
--					<&gladiator_noc MASTER_APPSS_PROC &config_noc SLAVE_IPA_CFG>;
-+			interconnects = <&aggre2_noc MASTER_IPA 0 &mem_noc SLAVE_EBI1 0>,
-+					<&aggre2_noc MASTER_IPA 0 &system_noc SLAVE_IMEM 0>,
-+					<&gladiator_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_IPA_CFG 0>;
- 			interconnect-names = "memory",
- 					     "imem",
- 					     "config";
-@@ -3569,8 +3569,8 @@ usb_1: usb@a6f8800 {
- 
- 			resets = <&gcc GCC_USB30_PRIM_BCR>;
- 
--			interconnects = <&aggre2_noc MASTER_USB3_0 &mem_noc SLAVE_EBI1>,
--					<&gladiator_noc MASTER_APPSS_PROC &config_noc SLAVE_USB3_0>;
-+			interconnects = <&aggre2_noc MASTER_USB3_0 0 &mem_noc SLAVE_EBI1 0>,
-+					<&gladiator_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_USB3_0 0>;
- 			interconnect-names = "usb-ddr", "apps-usb";
- 
- 			usb_1_dwc3: dwc3@a600000 {
-@@ -3617,8 +3617,8 @@ usb_2: usb@a8f8800 {
- 
- 			resets = <&gcc GCC_USB30_SEC_BCR>;
- 
--			interconnects = <&aggre2_noc MASTER_USB3_1 &mem_noc SLAVE_EBI1>,
--					<&gladiator_noc MASTER_APPSS_PROC &config_noc SLAVE_USB3_1>;
-+			interconnects = <&aggre2_noc MASTER_USB3_1 0 &mem_noc SLAVE_EBI1 0>,
-+					<&gladiator_noc MASTER_APPSS_PROC 0 &config_noc SLAVE_USB3_1 0>;
- 			interconnect-names = "usb-ddr", "apps-usb";
- 
- 			usb_2_dwc3: dwc3@a800000 {
-@@ -4007,7 +4007,7 @@ gpu: gpu@5000000 {
- 
- 			qcom,gmu = <&gmu>;
- 
--			interconnects = <&mem_noc MASTER_GFX3D &mem_noc SLAVE_EBI1>;
-+			interconnects = <&mem_noc MASTER_GFX3D 0 &mem_noc SLAVE_EBI1 0>;
- 			interconnect-names = "gfx-mem";
- 
- 			gpu_opp_table: opp-table {
-@@ -4324,7 +4324,7 @@ lpasscc: clock-controller@17014000 {
- 		gladiator_noc: interconnect@17900000 {
- 			compatible = "qcom,sdm845-gladiator-noc";
- 			reg = <0 0x17900000 0 0xd080>;
--			#interconnect-cells = <1>;
-+			#interconnect-cells = <2>;
- 			qcom,bcm-voters = <&apps_bcm_voter>;
- 		};
- 
+Thank you for pointing me to your talk. It was very interesting!
+I certainly did not know about that the Intel architecture being aware
+of timers and pre-wakes the CPUs which makes the timer experiment
+observations void.
+
+> It looks like the measurements include more than just C-state wake,
+> they also include the overhead of waking up the proces, context switch,
+> and potentially any interrupts that happen on that CPU. I am not saying
+> this is not interesting data, it surely is, but it is going to be
+> larger than you see in cpuidle latency tables. Potentially
+> significantly larger.
+
+The measurements will definitely include overhead than just the C-State
+wakeup.
+
+However, we are also collecting a baseline measurement wherein we run
+the same test on a 100% busy CPU and the measurement of latency from
+that could be considered to the kernel-userspace overhead.
+The rest of the measurements would be considered keeping this baseline
+in mind.
+
+> Therefore, I am not sure this program should be advertised as "cpuidle
+> measurement". It really measures the "IPI latency" in case of the IPI
+> method.
+
+Now with the new found knowledge of timers in Intel, I understand that
+this really only seems to measure IPI latency and not timer latency,
+although both the observations shouldn't be too far off anyways.
+
+>> A baseline measurement for each case of IPI and timers is taken at
+>> 100 percent CPU usage to quantify for the kernel-userpsace overhead
+>> during execution.
+> At least on Intel platforms, this will mean that the IPI method won't
+> cover deep C-states like, say, PC6, because one CPU is busy. Again, not
+> saying this is not interesting, just pointing out the limitation.
+
+That's a valid point. We have similar deep idle states in POWER too.
+The idea here is that this test should be run on an already idle
+system, of course there will be kernel jitters along the way
+which can cause little skewness in observations across some CPUs but I
+believe the observations overall should be stable.
+
+Another solution to this could be using isolcpus, but that just
+increases the complexity all the more.
+If you have any suggestions of any other way that could guarantee
+idleness that would be great.
+
+>
+> I was working on a somewhat similar stuff for x86 platforms, and I am
+> almost ready to publish that on github. I can notify you when I do so
+> if you are interested. But here is a small presentation of the approach
+> that I did on Plumbers last year:
+>
+> https://youtu.be/Opk92aQyvt0?t=8266
+>
+> (the link points to the start of my talk)
+>
+Sure thing. Do notify me when it comes up.
+I would be happy to have a look at it.
+
+--
+Thanks!
+Pratik
+
