@@ -2,47 +2,48 @@ Return-Path: <SRS0=Boio=CM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9605FC2BC0E
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5D2FFC433E2
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6D49021556
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44D60208FE
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:40 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="av74VdDh"
+	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="CGjd2bhu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729092AbgICTWT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 15:22:19 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:42301 "EHLO m43-7.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729238AbgICTWQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Sep 2020 15:22:16 -0400
+        id S1729336AbgICTWi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 15:22:38 -0400
+Received: from mail29.static.mailgun.info ([104.130.122.29]:56869 "EHLO
+        mail29.static.mailgun.info" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728969AbgICTWi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 15:22:38 -0400
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1599160935; h=Content-Transfer-Encoding: MIME-Version:
- Message-Id: Date: Subject: Cc: To: From: Sender;
- bh=R0hh22KkhlltUAF3srHYTsHrJ/HEJF9yq02KfP6Tpb8=; b=av74VdDhGxO3iFJGXKjaESUHw+ZJE7VyLfavkNEK7gvkRhORHG/UycogWG55Q/oRzycTkIgg
- sMqMBhOxcukodV1mSCZJSW6u7FLJHb3cwwQ7J39thrXMDdmNAG7JqZNvQ7Jxz5MWTS1E8epJ
- jTwq7w0RBZyK5Rt7IQ1WrgS/abc=
-X-Mailgun-Sending-Ip: 69.72.43.7
+ s=smtp; t=1599160957; h=Content-Transfer-Encoding: MIME-Version:
+ References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=z084RdcIfNwQPxcUGwi7reNJTWovUpFU02zKdvjqZ24=; b=CGjd2bhu3s5jpjvQ9p6NEKGPP0VUrqwweMYwMZF/CgzvBkM89mkmOE201QkhHWgoKW+84EuT
+ eIp7ld1Ngip4hye/pDGeYJhSPiHUl4HQuUJZf68LUJJrgXwUUYbhKPWtljrTCkYMSi5sFKw/
+ MU11cYH8HSsumGeoF79han8HK0I=
+X-Mailgun-Sending-Ip: 104.130.122.29
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
  smtp-out-n07.prod.us-east-1.postgun.com with SMTP id
- 5f514263380a624e4dec679b (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 03 Sep 2020 19:22:11
+ 5f514267238e1efa3788613c (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 03 Sep 2020 19:22:15
  GMT
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 6F8A8C43387; Thu,  3 Sep 2020 19:22:10 +0000 (UTC)
+        id AD360C43395; Thu,  3 Sep 2020 19:22:14 +0000 (UTC)
 Received: from mdtipton-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 9BE8AC433C9;
-        Thu,  3 Sep 2020 19:22:09 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 9BE8AC433C9
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id EC5BCC43391;
+        Thu,  3 Sep 2020 19:22:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org EC5BCC43391
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=mdtipton@codeaurora.org
 From:   Mike Tipton <mdtipton@codeaurora.org>
@@ -51,10 +52,12 @@ Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
         linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
         Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH v4 0/6] interconnect: qcom: Misc bcm-voter changes and fixes
-Date:   Thu,  3 Sep 2020 12:21:43 -0700
-Message-Id: <20200903192149.30385-1-mdtipton@codeaurora.org>
+Subject: [PATCH v4 6/6] interconnect: qcom: Add support for per-BCM scaling factors
+Date:   Thu,  3 Sep 2020 12:21:49 -0700
+Message-Id: <20200903192149.30385-7-mdtipton@codeaurora.org>
 X-Mailer: git-send-email 2.24.0
+In-Reply-To: <20200903192149.30385-1-mdtipton@codeaurora.org>
+References: <20200903192149.30385-1-mdtipton@codeaurora.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -62,38 +65,69 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These changes are mostly unrelated, but there are some dependencies
-between them.
+Currently, bcm-voter always assumes requests are made in KBps and that
+BCM HW always wants them in Bps, so it always scales the requests by
+1000. However, certain use cases and BCMs may use different units.
+Thus, add support for BCM-specific scaling factors.
 
-v4:
-- Reorder series such that the fix comes first
-- Collect reviewed/acked-by from v3
+Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
+---
+ drivers/interconnect/qcom/bcm-voter.c | 4 ++--
+ drivers/interconnect/qcom/icc-rpmh.c  | 3 +++
+ drivers/interconnect/qcom/icc-rpmh.h  | 2 ++
+ 3 files changed, 7 insertions(+), 2 deletions(-)
 
-v3:
-- Improve qcom,tcs-wait property description
-- Stop using #define in property `default` doc
-
-v2:
-- New patch for generic qcom,icc.h bindings
-- New patch for documenting qcom,tcs-wait property
-- Update bcm_div() 'base' parameter from u64 to u32
-
-Mike Tipton (6):
-  interconnect: qcom: Fix small BW votes being truncated to zero
-  dt-bindings: interconnect: Add generic qcom bindings
-  dt-bindings: interconnect: Add property to set BCM TCS wait behavior
-  interconnect: qcom: Support bcm-voter-specific TCS wait behavior
-  interconnect: qcom: Only wait for completion in AMC/WAKE by default
-  interconnect: qcom: Add support for per-BCM scaling factors
-
- .../bindings/interconnect/qcom,bcm-voter.yaml | 20 ++++++
- drivers/interconnect/qcom/bcm-voter.c         | 63 ++++++++++++-------
- drivers/interconnect/qcom/icc-rpmh.c          |  3 +
- drivers/interconnect/qcom/icc-rpmh.h          | 20 ++----
- include/dt-bindings/interconnect/qcom,icc.h   | 26 ++++++++
- 5 files changed, 95 insertions(+), 37 deletions(-)
- create mode 100644 include/dt-bindings/interconnect/qcom,icc.h
-
+diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
+index d58b08f1f495..887d13721e52 100644
+--- a/drivers/interconnect/qcom/bcm-voter.c
++++ b/drivers/interconnect/qcom/bcm-voter.c
+@@ -85,10 +85,10 @@ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
+ 			agg_peak[bucket] = max(agg_peak[bucket], temp);
+ 		}
+ 
+-		temp = agg_avg[bucket] * 1000ULL;
++		temp = agg_avg[bucket] * bcm->vote_scale;
+ 		bcm->vote_x[bucket] = bcm_div(temp, bcm->aux_data.unit);
+ 
+-		temp = agg_peak[bucket] * 1000ULL;
++		temp = agg_peak[bucket] * bcm->vote_scale;
+ 		bcm->vote_y[bucket] = bcm_div(temp, bcm->aux_data.unit);
+ 	}
+ 
+diff --git a/drivers/interconnect/qcom/icc-rpmh.c b/drivers/interconnect/qcom/icc-rpmh.c
+index 3ac5182c9ab2..008846c17bec 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.c
++++ b/drivers/interconnect/qcom/icc-rpmh.c
+@@ -136,6 +136,9 @@ int qcom_icc_bcm_init(struct qcom_icc_bcm *bcm, struct device *dev)
+ 	INIT_LIST_HEAD(&bcm->list);
+ 	INIT_LIST_HEAD(&bcm->ws_list);
+ 
++	if (!bcm->vote_scale)
++		bcm->vote_scale = 1000;
++
+ 	/* Link Qnodes to their respective BCMs */
+ 	for (i = 0; i < bcm->num_nodes; i++) {
+ 		qn = bcm->nodes[i];
+diff --git a/drivers/interconnect/qcom/icc-rpmh.h b/drivers/interconnect/qcom/icc-rpmh.h
+index cb736b745e1a..10b1890345b1 100644
+--- a/drivers/interconnect/qcom/icc-rpmh.h
++++ b/drivers/interconnect/qcom/icc-rpmh.h
+@@ -80,6 +80,7 @@ struct qcom_icc_node {
+  * @addr: address offsets used when voting to RPMH
+  * @vote_x: aggregated threshold values, represents sum_bw when @type is bw bcm
+  * @vote_y: aggregated threshold values, represents peak_bw when @type is bw bcm
++ * @vote_scale: scaling factor for vote_x and vote_y
+  * @dirty: flag used to indicate whether the bcm needs to be committed
+  * @keepalive: flag used to indicate whether a keepalive is required
+  * @aux_data: auxiliary data used when calculating threshold values and
+@@ -95,6 +96,7 @@ struct qcom_icc_bcm {
+ 	u32 addr;
+ 	u64 vote_x[QCOM_ICC_NUM_BUCKETS];
+ 	u64 vote_y[QCOM_ICC_NUM_BUCKETS];
++	u64 vote_scale;
+ 	bool dirty;
+ 	bool keepalive;
+ 	struct bcm_db aux_data;
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
