@@ -2,135 +2,111 @@ Return-Path: <SRS0=Boio=CM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 772A4C433E9
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 156E1C433E2
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:38:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5865D20C09
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:22:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF6D5208C7
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 19:38:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="ZY3As8p4"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XDTyrwxi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729371AbgICTWp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 15:22:45 -0400
-Received: from m43-7.mailgun.net ([69.72.43.7]:10859 "EHLO m43-7.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729153AbgICTWk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Sep 2020 15:22:40 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1599160960; h=Content-Transfer-Encoding: MIME-Version:
- References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=TwIJpxRouKmM2OseNIA08YDmu9GtOwzMuftNT1neRqo=; b=ZY3As8p4RA7CqgxcVasLWJ9Ra2NshH77tegPpV2URw5nDXrRPzCXAXtoQSrF9Ampp699D4Zl
- orV701cXZIJl0QdF9utfdW2gDD4ogg/+RjsfvFE9y6AvDBHu3lCKvKm9kLNrrKr8iCLVOZju
- Oni263I3watuZH1nkteo0iqd5ok=
-X-Mailgun-Sending-Ip: 69.72.43.7
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n01.prod.us-east-1.postgun.com with SMTP id
- 5f514263ba408b30ceb3b41d (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Thu, 03 Sep 2020 19:22:11
- GMT
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 27E6DC433A1; Thu,  3 Sep 2020 19:22:11 +0000 (UTC)
-Received: from mdtipton-linux.qualcomm.com (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: mdtipton)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 2CE9CC433CB;
-        Thu,  3 Sep 2020 19:22:10 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 2CE9CC433CB
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=none smtp.mailfrom=mdtipton@codeaurora.org
-From:   Mike Tipton <mdtipton@codeaurora.org>
-To:     georgi.djakov@linaro.org
-Cc:     bjorn.andersson@linaro.org, agross@kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Mike Tipton <mdtipton@codeaurora.org>
-Subject: [PATCH v4 1/6] interconnect: qcom: Fix small BW votes being truncated to zero
-Date:   Thu,  3 Sep 2020 12:21:44 -0700
-Message-Id: <20200903192149.30385-2-mdtipton@codeaurora.org>
-X-Mailer: git-send-email 2.24.0
-In-Reply-To: <20200903192149.30385-1-mdtipton@codeaurora.org>
-References: <20200903192149.30385-1-mdtipton@codeaurora.org>
+        id S1728419AbgICTii (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 15:38:38 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55608 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727065AbgICTii (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 15:38:38 -0400
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7998C061244;
+        Thu,  3 Sep 2020 12:38:36 -0700 (PDT)
+Received: by mail-pg1-x541.google.com with SMTP id e33so2951888pgm.0;
+        Thu, 03 Sep 2020 12:38:36 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=1+PRg9GJGmbl7YnYKQJ3ieRwri+lWyr1AoHJtFqqzfU=;
+        b=XDTyrwxiwUj7AHZETwvXFoo35HWRbPoXlwP/FbsBaf6Al2eQNbsHAnW+0iPGFKbmaq
+         nejcoLn/Zvm4JkTzGT9ua9vZRd/ftmciHfydFU1GK9huJ3nv6DaGNijFsDrmexhGLvAu
+         emVMGNOzKzXTVtFthAPtR4nRpYMqXH/ST309n91/2L1MKENf019On8PhBFSOrtLf/gCX
+         ffLEEbt4SE1uIz0SujJGf0pY5KCDVnTil+FEmAIHFUteTw07DRYBOAAHkK3gm+Oj3woC
+         eoz0EEEWXe9xcZkHgoE3bt51DEt6DCzeQEKYCEUBqjuV8ShMdJqaJE+yEyooSLLBwnO3
+         e2dQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=1+PRg9GJGmbl7YnYKQJ3ieRwri+lWyr1AoHJtFqqzfU=;
+        b=cKygzNboLj+n/YHMY1sb/jMD+W8XQS1M5VjcUyAE7P69VUozCeYSZu2h+JegBeiI6E
+         Bjz7HJ4I6qlFB1GjyoPa56Wq0sqeSWWcQSRk0lHqwwu/yTr4Z7Zc7+uD5ZLNOLUGBLs2
+         42qWP2joF0CsQBwjC4TFUYOmGhp0STyOzrKNGgyDeu7SurXs4bqHmNzRdP151fP/bbQs
+         V4J1Mi0quNUUJjDHe9aY6CvopHFTzKJ/iCF2hpx8dKohOH/jtd+TVdTttJx3WeR2JyyR
+         4qXVyMvgeq68e8nar1mG15DwsugBcLXhv8IPu2087R8kfS0Y90l5e4qBsDJsN/zP27uf
+         6O7w==
+X-Gm-Message-State: AOAM531DTBfD1JkLWeYuWhY0AnVNqZKJ9Gm+dQ0O3G5XNYV/8P2VcGAE
+        fh5rtks4UYXc4SYg485eLmq58CS/Q7sOXM01NkM=
+X-Google-Smtp-Source: ABdhPJyVxxnHI3bjYTsaxgfjK/z4EYEYmnWMZOirCUvB2jFfpE6i5/Rp3uLLOtnEo459xCBB5O5oXfrTaEL7cNefMGY=
+X-Received: by 2002:a17:902:b289:: with SMTP id u9mr5445613plr.226.1599161915506;
+ Thu, 03 Sep 2020 12:38:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200903132109.1914011-1-dmitry.baryshkov@linaro.org> <20200903132109.1914011-5-dmitry.baryshkov@linaro.org>
+In-Reply-To: <20200903132109.1914011-5-dmitry.baryshkov@linaro.org>
+From:   Andy Shevchenko <andy.shevchenko@gmail.com>
+Date:   Thu, 3 Sep 2020 22:38:18 +0300
+Message-ID: <CAHp75Vf0yz1U3W03YEths5Eay7dOY10JGC6QqRkekZQx3MdRtg@mail.gmail.com>
+Subject: Re: [PATCH v2 4/9] iio: adc: qcom-vadc-common: use fixp_linear_interpolate
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        linux-arm-msm@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
+        devicetree <devicetree@vger.kernel.org>,
+        linux-iio <linux-iio@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Small BW votes that translate to less than a single BCM unit are
-currently truncated to zero. Ensure that non-zero BW requests always
-result in at least a vote of 1 to BCM.
+On Thu, Sep 3, 2020 at 5:33 PM Dmitry Baryshkov
+<dmitry.baryshkov@linaro.org> wrote:
+>
+> Use new function fixp_linear_interpolate() instead of hand-coding the
+> linar interpolation.
 
-Fixes: 976daac4a1c5 ("interconnect: qcom: Consolidate interconnect RPMh support")
-Signed-off-by: Mike Tipton <mdtipton@codeaurora.org>
----
- drivers/interconnect/qcom/bcm-voter.c | 27 +++++++++++++++++++--------
- 1 file changed, 19 insertions(+), 8 deletions(-)
+...
 
-diff --git a/drivers/interconnect/qcom/bcm-voter.c b/drivers/interconnect/qcom/bcm-voter.c
-index a3d2ef1d9903..609db9c95fd7 100644
---- a/drivers/interconnect/qcom/bcm-voter.c
-+++ b/drivers/interconnect/qcom/bcm-voter.c
-@@ -52,8 +52,20 @@ static int cmp_vcd(void *priv, struct list_head *a, struct list_head *b)
- 		return 1;
- }
- 
-+static u64 bcm_div(u64 num, u32 base)
-+{
-+	/* Ensure that small votes aren't lost. */
-+	if (num && num < base)
-+		return 1;
-+
-+	do_div(num, base);
-+
-+	return num;
-+}
-+
- static void bcm_aggregate(struct qcom_icc_bcm *bcm)
- {
-+	struct qcom_icc_node *node;
- 	size_t i, bucket;
- 	u64 agg_avg[QCOM_ICC_NUM_BUCKETS] = {0};
- 	u64 agg_peak[QCOM_ICC_NUM_BUCKETS] = {0};
-@@ -61,22 +73,21 @@ static void bcm_aggregate(struct qcom_icc_bcm *bcm)
- 
- 	for (bucket = 0; bucket < QCOM_ICC_NUM_BUCKETS; bucket++) {
- 		for (i = 0; i < bcm->num_nodes; i++) {
--			temp = bcm->nodes[i]->sum_avg[bucket] * bcm->aux_data.width;
--			do_div(temp, bcm->nodes[i]->buswidth * bcm->nodes[i]->channels);
-+			node = bcm->nodes[i];
-+			temp = bcm_div(node->sum_avg[bucket] * bcm->aux_data.width,
-+				       node->buswidth * node->channels);
- 			agg_avg[bucket] = max(agg_avg[bucket], temp);
- 
--			temp = bcm->nodes[i]->max_peak[bucket] * bcm->aux_data.width;
--			do_div(temp, bcm->nodes[i]->buswidth);
-+			temp = bcm_div(node->max_peak[bucket] * bcm->aux_data.width,
-+				       node->buswidth);
- 			agg_peak[bucket] = max(agg_peak[bucket], temp);
- 		}
- 
- 		temp = agg_avg[bucket] * 1000ULL;
--		do_div(temp, bcm->aux_data.unit);
--		bcm->vote_x[bucket] = temp;
-+		bcm->vote_x[bucket] = bcm_div(temp, bcm->aux_data.unit);
- 
- 		temp = agg_peak[bucket] * 1000ULL;
--		do_div(temp, bcm->aux_data.unit);
--		bcm->vote_y[bucket] = temp;
-+		bcm->vote_y[bucket] = bcm_div(temp, bcm->aux_data.unit);
- 	}
- 
- 	if (bcm->keepalive && bcm->vote_x[QCOM_ICC_BUCKET_AMC] == 0 &&
+>                 /* result is between search_index and search_index-1 */
+>                 /* interpolate linearly */
+> -               *output = (((s32)((pts[i].y - pts[i - 1].y) *
+> -                       (input - pts[i - 1].x)) /
+> -                       (pts[i].x - pts[i - 1].x)) +
+> -                       pts[i - 1].y);
+> +               *output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
+> +                                                 pts[i].x, pts[i].y,
+> +                                                 input);
+
+I'm wondering if it's related to linear_range.h API
+https://elixir.bootlin.com/linux/latest/source/include/linux/linear_range.h
+
+
+>         }
+>
+>         return 0;
+
+
 -- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+With Best Regards,
+Andy Shevchenko
