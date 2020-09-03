@@ -2,176 +2,286 @@ Return-Path: <SRS0=Boio=CM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FB0DC433E9
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 11:21:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01D8AC433E9
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 13:59:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 392492083B
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 11:21:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B9C4820C56
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 13:59:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XHOo/wjg"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="lJyZRId8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726479AbgICLPK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 07:15:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33766 "EHLO
+        id S1729033AbgICN66 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 09:58:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59194 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728422AbgICLOa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 07:14:30 -0400
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 506DFC061244;
-        Thu,  3 Sep 2020 04:00:35 -0700 (PDT)
-Received: by mail-wr1-x441.google.com with SMTP id m6so2767866wrn.0;
-        Thu, 03 Sep 2020 04:00:35 -0700 (PDT)
+        with ESMTP id S1728998AbgICN5y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 09:57:54 -0400
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02514C0619E7
+        for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2020 06:31:39 -0700 (PDT)
+Received: by mail-wm1-x341.google.com with SMTP id w2so2924251wmi.1
+        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2020 06:31:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:references:in-reply-to:subject:date:message-id
-         :mime-version:content-transfer-encoding:thread-index
-         :content-language;
-        bh=SE22zCSVEAoxI5J9vYZxU5jk2PTxW8rlRt79/vsQVMc=;
-        b=XHOo/wjgMIAcFXOEpJ8LD3JeyIS06RbRzdhJHQUNQryAsL5MqI9KCGWsJDlWGw6Hww
-         0r1qNVory+ouhS3YefBZ3bC51Wemkyd5AZ/T2v3yonZYSLyRjebFpnAJaRXEFjXiWSK/
-         DUUTknp8LIhWqVy8rhgEG9QW/cAssbuWgMFTs1OW7xUnSOUXWh1vBvG4/utmhUmshssd
-         ZolOYsiKduKgb0bRlz0wzBCTQfC/r6haJPeN3CvbPf70QjElIk39PqgeTz7KA4Ts2JVK
-         7t/MN3sATXo6IDk0wOjGSMRLimJGPLXCz3gIfStJcaNtRUWwumRdA8PcXB/BBbd6Devf
-         o0Mw==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=89sbNvX6ByvD6Ay+Fn+uPrui3FWgVd/+bGNAilB1it4=;
+        b=lJyZRId8ESKK6KkiXPxRWmfFHTNRw2ZnCPgVk03k7H66kDAafI3H5NU6WUPG0qZpst
+         UTtIyUNJI0w15ad0L3gxxAQwtsvw+irnMVJUsJCx5UVAT2u9Cqxs1hBq8J+1YMEOF+XG
+         BjjiwRaBCvk/EDZbpXVUGIC6Ks5ZVlHJWB1qKdxdD8fBUinnymUliE4JbZHmtEmkCPOp
+         a2k5qp/xwDEhxnKHT8h4H44LsHTHBmXp6AxAbvixk4kGFV+3edJDJcx0Jp+RULLMb4mc
+         MTTxgYXY4ae6HbLWSfhiuOk43aXJxQkyanTUTR3p/2UJsYX55R0Il5uSr6qkQNSDU8C6
+         0efQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:references:in-reply-to:subject:date
-         :message-id:mime-version:content-transfer-encoding:thread-index
-         :content-language;
-        bh=SE22zCSVEAoxI5J9vYZxU5jk2PTxW8rlRt79/vsQVMc=;
-        b=QTgzdgoYHeT45eXk00gc8Bc4McewHo3odEFQSSeUJ59oYewiSQfrCgkNJ4hvgPFuff
-         C4uPqc6vlpFGWpux7uN700of+KA1UoW7IBdPaloyxi12K/e5UGmvrIoo3yteHVLFEzfD
-         9Oz8SrYHosODRAKCatImudy9W5MwZX+K+ayu7HBc7NIMTzMR9+AK+R2YQ6qmFLoH8AIR
-         HmUYSWUcwvcp3/ap+iCp2tfVNPxihflKV4Bn0/zp5dfAvC0xXKqznatWudos8aMLoTQ5
-         USgFvd01UnssCMgOr+ay/4trHbRR8vsNr00GP77ofmr+lI031xmj56wTaV8+ovLsU62Z
-         PBGg==
-X-Gm-Message-State: AOAM5314cMMjEe/AAPItmX83AERq3F8O1MXHhU0QJE8LX2RcTxD5NZgN
-        IaHmu2sQNujaRfmal91xAGXnnSKkHuxTyg==
-X-Google-Smtp-Source: ABdhPJzT2JR3cqHJJ+PeIDEiZWnus85LDjLyqQxGZLcJGgQ0N86n6iNc76LXufOFcTVgGQkidXI/BA==
-X-Received: by 2002:adf:e7ce:: with SMTP id e14mr1741534wrn.43.1599130833155;
-        Thu, 03 Sep 2020 04:00:33 -0700 (PDT)
-Received: from AnsuelXPS ([5.170.166.111])
-        by smtp.gmail.com with ESMTPSA id s5sm3876136wrm.33.2020.09.03.04.00.31
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=89sbNvX6ByvD6Ay+Fn+uPrui3FWgVd/+bGNAilB1it4=;
+        b=uQmMpte8UCXQgaV97PJ4tDqAETtMadrGQPD3fkTQdLi5gT4gxSS0LgD6uinvGHc4nM
+         l760pjjdLoIUXcYOAM3Q4L5Qo0ZkNpYdpo5osZRt7XSmbZ/nB2Le615ELC8k7K90TFpB
+         Dkz7G0o1rvEuA9AMBfMc2XMU8jvQsDQVBUHhBebTrdSgLE0zkLojL3VVqJ04VS4ImfSN
+         bQOkUFSiZBTVqOObV7vzQcmgCDoaTkwwQwNw/8P3TWo4kQDKsVxYlWXmhCM1LjHd+K9N
+         H8RuiscV3mtt7DsjC+gUFH2Kux7X9b7foUJBqsyTLwIX22nUDVGkZMyTa8dHyNNfcqO9
+         SJpw==
+X-Gm-Message-State: AOAM532xc97O3UGehhFw+azevWti94fA6RzGogOjrv3nVBQ/xaAGckQP
+        kiB4F3/o+hQctqHck2/ODrwwklQ5IL033w==
+X-Google-Smtp-Source: ABdhPJyfvP3P/tSoS90CdR8DQNrmqnV6zZcTVXF3ffD6Mb+vujH+IBAPqt1kxcpHx3Qn+ScLCe+TQQ==
+X-Received: by 2002:a05:600c:2cc1:: with SMTP id l1mr2499601wmc.78.1599139898076;
+        Thu, 03 Sep 2020 06:31:38 -0700 (PDT)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id b2sm4310768wmh.47.2020.09.03.06.31.36
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 03 Sep 2020 04:00:32 -0700 (PDT)
-From:   <ansuelsmth@gmail.com>
-To:     "'Sibi Sankar'" <sibis@codeaurora.org>,
-        "'Viresh Kumar'" <viresh.kumar@linaro.org>
-Cc:     <vincent.guittot@linaro.org>, <saravanak@google.com>,
-        "'Sudeep Holla'" <sudeep.holla@arm.com>,
-        "'Rafael J. Wysocki'" <rjw@rjwysocki.net>,
-        "'Rob Herring'" <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20200821140026.19643-1-ansuelsmth@gmail.com> <20200824104053.kpjpwzl2iw3lpg2m@vireshk-i7> <b339e01f9d1e955137120daa06d26228@codeaurora.org> <039d01d67f6a$188700d0$49950270$@gmail.com> <20200903065314.y3ynhwydahaeg6o6@vireshk-i7> <6dc62d231c776b2cdfdc36cfe36e4140@codeaurora.org>
-In-Reply-To: <6dc62d231c776b2cdfdc36cfe36e4140@codeaurora.org>
-Subject: R: R: [RFC PATCH v3 0/2] Add Krait Cache Scaling support
-Date:   Thu, 3 Sep 2020 13:00:27 +0200
-Message-ID: <01f201d681e1$70ff1bc0$52fd5340$@gmail.com>
+        Thu, 03 Sep 2020 06:31:37 -0700 (PDT)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     linux-pm@vger.kernel.org, bjorn.andersson@linaro.org
+Cc:     devicetree@vger.kernel.org, robh+dt@kernel.org,
+        sibis@codeaurora.org, mka@chromium.org, dianders@chromium.org,
+        georgi.djakov@linaro.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 1/7] interconnect: Introduce xlate_extended() callback
+Date:   Thu,  3 Sep 2020 16:31:28 +0300
+Message-Id: <20200903133134.17201-2-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20200903133134.17201-1-georgi.djakov@linaro.org>
+References: <20200903133134.17201-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-X-Mailer: Microsoft Outlook 16.0
-Thread-Index: AQHE1KUT8lrzCHz2sVzN5qwVSE5wCwFurxwcAoW98xABeMrvawKX8ba/Aay9QdupLIiWEA==
-Content-Language: it
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Currently there is the xlate() callback, which is used by providers for
+mapping the nodes from phandle arguments. That's fine for simple mappings,
+but the phandle arguments could contain an additional data, such as tag
+information. Let's create another callback xlate_extended() for the cases
+where providers want also populate the path tag data.
 
+Tested-by: Sibi Sankar <sibis@codeaurora.org>
+Reviewed-by: Sibi Sankar <sibis@codeaurora.org>
+Reviewed-by: Matthias Kaehlcke <mka@chromium.org>
+Tested-by: Matthias Kaehlcke <mka@chromium.org>
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+---
+ drivers/interconnect/core.c           | 73 ++++++++++++++++++---------
+ include/linux/interconnect-provider.h | 17 ++++++-
+ 2 files changed, 65 insertions(+), 25 deletions(-)
 
-> -----Messaggio originale-----
-> Da: sibis=3Dcodeaurora.org@mg.codeaurora.org
-> <sibis=3Dcodeaurora.org@mg.codeaurora.org> Per conto di Sibi Sankar
-> Inviato: gioved=EC 3 settembre 2020 09:13
-> A: Viresh Kumar <viresh.kumar@linaro.org>
-> Cc: ansuelsmth@gmail.com; vincent.guittot@linaro.org;
-> saravanak@google.com; 'Sudeep Holla' <sudeep.holla@arm.com>; 'Rafael =
-J.
-> Wysocki' <rjw@rjwysocki.net>; 'Rob Herring' <robh+dt@kernel.org>; =
-linux-
-> pm@vger.kernel.org; devicetree@vger.kernel.org; linux-
-> kernel@vger.kernel.org
-> Oggetto: Re: R: [RFC PATCH v3 0/2] Add Krait Cache Scaling support
->=20
-> On 2020-09-03 12:23, Viresh Kumar wrote:
-> > On 31-08-20, 09:41, ansuelsmth@gmail.com wrote:
-> >> On 31-08-20, Sibi wrote:
-> >> > On 2020-08-24 16:10, Viresh Kumar wrote:
-> >> > > +Vincent/Saravana/Sibi
-> >> > >
-> >> > > On 21-08-20, 16:00, Ansuel Smith wrote:
-> >> > >> This adds Krait Cache scaling support using the cpufreq =
-notifier.
-> >> > >> I have some doubt about where this should be actually placed =
-(clk
-> or
-> >> > >> cpufreq)?
-> >> > >> Also the original idea was to create a dedicated cpufreq =
-driver
-(like
-> >> > >> it's done in
-> >> > >> the codeaurora qcom repo) by copying the cpufreq-dt driver and
-> adding
-> >> > >> the cache
-> >> > >> scaling logic but i still don't know what is better. Have a =
-very
-> >> > >> similar driver or
-> >> > >> add a dedicated driver only for the cache using the cpufreq
-notifier
-> >> > >> and do the
-> >> > >> scale on every freq transition.
-> >> > >> Thanks to everyone who will review or answer these questions.
-> >> > >
-> >> > > Saravana was doing something with devfreq to solve such issues =
-if I
-> >> > > wasn't mistaken.
-> >> > >
-> >> > > Sibi ?
-> >> >
-> >> > IIRC the final plan was to create a devfreq device
-> >> > and devfreq-cpufreq based governor to scale them, this
-> >> > way one can switch to a different governor if required.
-> >>
-> >> So in this case I should convert this patch to a devfreq driver-
-> >
-> > I think this should happen nevertheless. You are doing DVFS for a
-> > device which isn't a CPU and devfreq looks to be the right place of
-> > doing so.
-> >
-> >> Isn't overkill to use a governor for such a task?
-> >> (3 range based on the cpufreq?)
-> >
-> > I am not sure about the governor part here, maybe it won't be =
-required
-> > ?
->=20
-> Yeah I don't see it being needed in ^^
-> case as well. I just mentioned them as
-> an advantage in case you wanted to switch
-> to a different governor in the future.
->=20
-> https://lore.kernel.org/lkml/d0bc8877-6d41-f54e-1c4c-
-> 2fadbb9dcd0b@samsung.com/
->=20
-> A devfreq governor tracking cpufreq was
-> generally accepted but using a cpufreq
-> notifier to achieve that was discouraged.
->=20
-
-I read the patch discussion and it looks like at the very end they
-lost interest in pushing it. That would very fit what I need here so
-I'm asking how should I proceed? Keep the cpufreq notifier?
-Introduce a dedicated governor? Ask them to resume the pushing or
-try to include the changes to the passive governor by myself?=20
-
-> --
-> Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
-> a Linux Foundation Collaborative Project.
-
+diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
+index befd111049c0..6ccf55818e68 100644
+--- a/drivers/interconnect/core.c
++++ b/drivers/interconnect/core.c
+@@ -336,12 +336,13 @@ EXPORT_SYMBOL_GPL(of_icc_xlate_onecell);
+  * Looks for interconnect provider under the node specified by @spec and if
+  * found, uses xlate function of the provider to map phandle args to node.
+  *
+- * Returns a valid pointer to struct icc_node on success or ERR_PTR()
++ * Returns a valid pointer to struct icc_node_data on success or ERR_PTR()
+  * on failure.
+  */
+-struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
++struct icc_node_data *of_icc_get_from_provider(struct of_phandle_args *spec)
+ {
+ 	struct icc_node *node = ERR_PTR(-EPROBE_DEFER);
++	struct icc_node_data *data = NULL;
+ 	struct icc_provider *provider;
+ 
+ 	if (!spec)
+@@ -349,14 +350,33 @@ struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
+ 
+ 	mutex_lock(&icc_lock);
+ 	list_for_each_entry(provider, &icc_providers, provider_list) {
+-		if (provider->dev->of_node == spec->np)
+-			node = provider->xlate(spec, provider->data);
+-		if (!IS_ERR(node))
+-			break;
++		if (provider->dev->of_node == spec->np) {
++			if (provider->xlate_extended) {
++				data = provider->xlate_extended(spec, provider->data);
++				if (!IS_ERR(data)) {
++					node = data->node;
++					break;
++				}
++			} else {
++				node = provider->xlate(spec, provider->data);
++				if (!IS_ERR(node))
++					break;
++			}
++		}
+ 	}
+ 	mutex_unlock(&icc_lock);
+ 
+-	return node;
++	if (IS_ERR(node))
++		return ERR_CAST(node);
++
++	if (!data) {
++		data = kzalloc(sizeof(*data), GFP_KERNEL);
++		if (!data)
++			return ERR_PTR(-ENOMEM);
++		data->node = node;
++	}
++
++	return data;
+ }
+ EXPORT_SYMBOL_GPL(of_icc_get_from_provider);
+ 
+@@ -403,7 +423,7 @@ EXPORT_SYMBOL_GPL(devm_of_icc_get);
+ struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ {
+ 	struct icc_path *path;
+-	struct icc_node *src_node, *dst_node;
++	struct icc_node_data *src_data, *dst_data;
+ 	struct device_node *np;
+ 	struct of_phandle_args src_args, dst_args;
+ 	int ret;
+@@ -441,39 +461,46 @@ struct icc_path *of_icc_get_by_index(struct device *dev, int idx)
+ 
+ 	of_node_put(dst_args.np);
+ 
+-	src_node = of_icc_get_from_provider(&src_args);
++	src_data = of_icc_get_from_provider(&src_args);
+ 
+-	if (IS_ERR(src_node)) {
+-		if (PTR_ERR(src_node) != -EPROBE_DEFER)
++	if (IS_ERR(src_data)) {
++		if (PTR_ERR(src_data) != -EPROBE_DEFER)
+ 			dev_err(dev, "error finding src node: %ld\n",
+-				PTR_ERR(src_node));
+-		return ERR_CAST(src_node);
++				PTR_ERR(src_data));
++		return ERR_CAST(src_data);
+ 	}
+ 
+-	dst_node = of_icc_get_from_provider(&dst_args);
++	dst_data = of_icc_get_from_provider(&dst_args);
+ 
+-	if (IS_ERR(dst_node)) {
+-		if (PTR_ERR(dst_node) != -EPROBE_DEFER)
++	if (IS_ERR(dst_data)) {
++		if (PTR_ERR(dst_data) != -EPROBE_DEFER)
+ 			dev_err(dev, "error finding dst node: %ld\n",
+-				PTR_ERR(dst_node));
+-		return ERR_CAST(dst_node);
++				PTR_ERR(dst_data));
++		kfree(src_data);
++		return ERR_CAST(dst_data);
+ 	}
+ 
+ 	mutex_lock(&icc_lock);
+-	path = path_find(dev, src_node, dst_node);
++	path = path_find(dev, src_data->node, dst_data->node);
+ 	mutex_unlock(&icc_lock);
+ 	if (IS_ERR(path)) {
+ 		dev_err(dev, "%s: invalid path=%ld\n", __func__, PTR_ERR(path));
+-		return path;
++		goto free_icc_data;
+ 	}
+ 
++	if (src_data->tag && src_data->tag == dst_data->tag)
++		icc_set_tag(path, src_data->tag);
++
+ 	path->name = kasprintf(GFP_KERNEL, "%s-%s",
+-			       src_node->name, dst_node->name);
++			       src_data->node->name, dst_data->node->name);
+ 	if (!path->name) {
+ 		kfree(path);
+-		return ERR_PTR(-ENOMEM);
++		path = ERR_PTR(-ENOMEM);
+ 	}
+ 
++free_icc_data:
++	kfree(src_data);
++	kfree(dst_data);
+ 	return path;
+ }
+ EXPORT_SYMBOL_GPL(of_icc_get_by_index);
+@@ -975,7 +1002,7 @@ int icc_provider_add(struct icc_provider *provider)
+ {
+ 	if (WARN_ON(!provider->set))
+ 		return -EINVAL;
+-	if (WARN_ON(!provider->xlate))
++	if (WARN_ON(!provider->xlate && !provider->xlate_extended))
+ 		return -EINVAL;
+ 
+ 	mutex_lock(&icc_lock);
+diff --git a/include/linux/interconnect-provider.h b/include/linux/interconnect-provider.h
+index 4735518de515..4d535fddd5d3 100644
+--- a/include/linux/interconnect-provider.h
++++ b/include/linux/interconnect-provider.h
+@@ -14,6 +14,17 @@
+ struct icc_node;
+ struct of_phandle_args;
+ 
++/**
++ * struct icc_node_data - icc node data
++ *
++ * @node: icc node
++ * @tag: tag
++ */
++struct icc_node_data {
++	struct icc_node *node;
++	u32 tag;
++};
++
+ /**
+  * struct icc_onecell_data - driver data for onecell interconnect providers
+  *
+@@ -39,6 +50,7 @@ struct icc_node *of_icc_xlate_onecell(struct of_phandle_args *spec,
+  * @pre_aggregate: pointer to device specific function that is called
+  *		   before the aggregation begins (optional)
+  * @xlate: provider-specific callback for mapping nodes from phandle arguments
++ * @xlate_extended: vendor-specific callback for mapping node data from phandle arguments
+  * @dev: the device this interconnect provider belongs to
+  * @users: count of active users
+  * @inter_set: whether inter-provider pairs will be configured with @set
+@@ -52,6 +64,7 @@ struct icc_provider {
+ 			 u32 peak_bw, u32 *agg_avg, u32 *agg_peak);
+ 	void (*pre_aggregate)(struct icc_node *node);
+ 	struct icc_node* (*xlate)(struct of_phandle_args *spec, void *data);
++	struct icc_node_data* (*xlate_extended)(struct of_phandle_args *spec, void *data);
+ 	struct device		*dev;
+ 	int			users;
+ 	bool			inter_set;
+@@ -105,7 +118,7 @@ void icc_node_del(struct icc_node *node);
+ int icc_nodes_remove(struct icc_provider *provider);
+ int icc_provider_add(struct icc_provider *provider);
+ int icc_provider_del(struct icc_provider *provider);
+-struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec);
++struct icc_node_data *of_icc_get_from_provider(struct of_phandle_args *spec);
+ 
+ #else
+ 
+@@ -157,7 +170,7 @@ static inline int icc_provider_del(struct icc_provider *provider)
+ 	return -ENOTSUPP;
+ }
+ 
+-static inline struct icc_node *of_icc_get_from_provider(struct of_phandle_args *spec)
++static inline struct icc_node_data *of_icc_get_from_provider(struct of_phandle_args *spec)
+ {
+ 	return ERR_PTR(-ENOTSUPP);
+ }
