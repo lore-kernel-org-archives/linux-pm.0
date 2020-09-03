@@ -2,115 +2,331 @@ Return-Path: <SRS0=Boio=CM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC4CCC43461
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:49:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E91CFC433E2
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:50:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 932BC2072A
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:49:35 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C0B3920786
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Sep 2020 14:50:25 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zEWstPZ3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728596AbgICOte (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Sep 2020 10:49:34 -0400
-Received: from foss.arm.com ([217.140.110.172]:34558 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729161AbgICOTS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Sep 2020 10:19:18 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B7BC11045;
-        Thu,  3 Sep 2020 07:19:17 -0700 (PDT)
-Received: from bogus (unknown [10.57.4.218])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id DDCF03F71F;
-        Thu,  3 Sep 2020 07:19:15 -0700 (PDT)
-Date:   Thu, 3 Sep 2020 15:19:09 +0100
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Ionela Voinescu <ionela.voinescu@arm.com>
-Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        dietmar.eggemann@arm.com, catalin.marinas@arm.com, will@kernel.org,
-        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 3/5] cpufreq: report whether cpufreq supports
- Frequency Invariance (FI)
-Message-ID: <20200903141909.GA6492@bogus>
-References: <20200901205549.30096-1-ionela.voinescu@arm.com>
- <20200901205549.30096-4-ionela.voinescu@arm.com>
- <20200902132838.GF25462@bogus>
- <20200903134508.GB29370@arm.com>
+        id S1729261AbgICOuV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Sep 2020 10:50:21 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34132 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729242AbgICORO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Sep 2020 10:17:14 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8B75FC0619CA
+        for <linux-pm@vger.kernel.org>; Thu,  3 Sep 2020 06:21:39 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id d2so1913313lfj.1
+        for <linux-pm@vger.kernel.org>; Thu, 03 Sep 2020 06:21:39 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=V7/RoZUDbSidbaVmS9FeqN+fWeyUR1JKVWNxeicmHMg=;
+        b=zEWstPZ31aBryWxYNemcI3JoczurqsIM+kowklx4XBCk00IVh/93S1NcSLqpa8dESZ
+         iIyASHxbXJswE7RfL5pxrCIFdVShNGxkSCTpYifIDBG9byHWzuDDJwxOuAP25A2x/EZ7
+         yyDic2OOU7DpPvzVjfeEX4wAAhWZfZ/vKO/0xhaI2Wdhx3CAVMUpu3zHPtLe0+SSdQhe
+         ORBQo6jKrVIMZ4Eyk/B/nfD4PaETNV2pEDSIc+XHroBqNiGmxlY82t8PmnxS0E5mmQR3
+         thibgp7bjY7uHBPJ2sM8nBg9kMTRAW3Tfz9tz85nhMbyP4oe2w96+4I8//6+5ECGgKhn
+         zGjw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=V7/RoZUDbSidbaVmS9FeqN+fWeyUR1JKVWNxeicmHMg=;
+        b=DL0dpcjzKOu6VadYZXxNcFiFBinh/F0TLUHZ/fx8LGaAnf3uPkIgVkRyzVlL3m4Eww
+         919BLrJDHIoxZ6rXgw9N84RShmuaAUnci/GcityN/ysugf1A4aM97Jhb6SOoeEYxwfug
+         bBSU1YZknLwV7a+f1SZqxe+QGB5GcWdm6GrrQqmlhvzdO3qHAxGGi8MlNLCsgPbYXMrS
+         nDAByYIYOl4MWlmxwP3x1wSw9qNKYyPP85T5x+t+5m3ZmilpTsNNwIzHmShXelj+CNyE
+         JSGbVB8FWfjXqpcJy0lsIvkwQ7djrhqqD5WWUw9dOY2340ktVZ4Z3QEZaN0q6g+3Ala5
+         An9g==
+X-Gm-Message-State: AOAM531PVs+2YuZdUuB/pzqAichVuCjADetxWDNxyw+On4EYuuvISZQu
+        rjkuN3a/h5btNyk5+FBrt+Qn6g==
+X-Google-Smtp-Source: ABdhPJwJHC6RwnosYTlCNIMZruGq97X9zWxdMV8v4PXrUw4KhG99TMUWZdIe92dYoflftgWkWzCLxA==
+X-Received: by 2002:a19:4ad8:: with SMTP id x207mr1273135lfa.73.1599139297531;
+        Thu, 03 Sep 2020 06:21:37 -0700 (PDT)
+Received: from eriador.lan ([188.162.64.138])
+        by smtp.gmail.com with ESMTPSA id e23sm584220lfj.80.2020.09.03.06.21.35
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 03 Sep 2020 06:21:36 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org
+Subject: [PATCH v2 9/9] arm64: dts: sm8250-mtp: add thermal zones using pmic's adc-tm5
+Date:   Thu,  3 Sep 2020 16:21:09 +0300
+Message-Id: <20200903132109.1914011-10-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200903132109.1914011-1-dmitry.baryshkov@linaro.org>
+References: <20200903132109.1914011-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200903134508.GB29370@arm.com>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Sep 03, 2020 at 02:45:08PM +0100, Ionela Voinescu wrote:
-> Hi Sudeep,
-> 
-> Thank you for your review here and for the other patches.
-> 
-> On Wednesday 02 Sep 2020 at 14:28:38 (+0100), Sudeep Holla wrote:
-> [..]
-> > > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > > index 4d5fe777184a..570bf2ebe9d4 100644
-> > > --- a/drivers/cpufreq/cpufreq.c
-> > > +++ b/drivers/cpufreq/cpufreq.c
-> > > @@ -61,6 +61,12 @@ static struct cpufreq_driver *cpufreq_driver;
-> > >  static DEFINE_PER_CPU(struct cpufreq_policy *, cpufreq_cpu_data);
-> > >  static DEFINE_RWLOCK(cpufreq_driver_lock);
-> > >  
-> > > +static DEFINE_STATIC_KEY_FALSE(cpufreq_freq_invariance);
-> > > +bool cpufreq_supports_freq_invariance(void)
-> > > +{
-> > > +	return static_branch_likely(&cpufreq_freq_invariance);
-> > > +}
-> > > +
-> > >  /* Flag to suspend/resume CPUFreq governors */
-> > >  static bool cpufreq_suspended;
-> > >  
-> > > @@ -2720,6 +2726,15 @@ int cpufreq_register_driver(struct cpufreq_driver *driver_data)
-> > >  	cpufreq_driver = driver_data;
-> > >  	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-> > >  
-> > > +	/*
-> > > +	 * Mark support for the scheduler's frequency invariance engine for
-> > > +	 * drivers that implement target(), target_index() or fast_switch().
-> > > +	 */
-> > > +	if (!cpufreq_driver->setpolicy) {
-> > > +		static_branch_enable_cpuslocked(&cpufreq_freq_invariance);
-> > > +		pr_debug("supports frequency invariance");
-> > > +	}
-> > > +
-> > >  	if (driver_data->setpolicy)
-> > 
-> > [super nit] while I understand cpufreq_driver = driver_data, it looks odd
-> > if 2 consecutive statements refer it with different variables. Or am I
-> > confusing myself hugely.
-> > 
-> 
-> No, you are right. If you look at the rest of the register function,
-> after cpufreq_driver = driver_data, both driver_data and cpufreq_driver
-> are used. For me using cpufreq_driver seemed more natural as after being
-> assigned driver_data, it will continue to be used after registration.
->
+Port thermal zones definitions from msm-4.19 tree. Enable and add
+channel configuration to PMIC's ADC-TM definitions. Declare thermal
+zones and respective trip points.
 
-Ah OK, I haven't seen the whole file/function, just looked at the patch.
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ arch/arm64/boot/dts/qcom/sm8250-mtp.dts | 217 ++++++++++++++++++++++++
+ 1 file changed, 217 insertions(+)
 
-> If it's alright with you I won't make this change for now. It's possible
-> that a better solution is to change the other occurrences of either
-> cpufreq_driver or driver_data in a separate patch, to make things
-> consistent across the function.
-> 
-
-I am fine to keep it as is, hence I mentioned it as super nit. If there
-are other occurrences, then better to take it up separately.
-
+diff --git a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+index 6894f8490dae..4db5c1e4269e 100644
+--- a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
++++ b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+@@ -24,6 +24,104 @@ chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
+ 
++	thermal-zones {
++		xo-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 0>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		skin-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 1>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		mmw-pa1 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 2>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		conn-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150b_adc_tm 0>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		camera-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 0>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		skin-msm-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 1>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		mmw-pa2 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 2>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++	};
++
+ 	vph_pwr: vph-pwr-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "vph_pwr";
+@@ -358,6 +456,125 @@ &cdsp {
+ 	firmware-name = "qcom/sm8250/cdsp.mbn";
+ };
+ 
++&pm8150_adc {
++	xo-therm@4c {
++		reg = <ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm1@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150b_adc {
++	conn-therm@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150l_adc {
++	camera-flash-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-msm-therm@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm2@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150_adc_tm {
++	status = "okay";
++	io-channels = <&pm8150_adc ADC5_XO_THERM_100K_PU>,
++			<&pm8150_adc ADC5_AMUX_THM1_100K_PU>,
++			<&pm8150_adc ADC5_AMUX_THM2_100K_PU>;
++	io-channel-names = "xo-therm", "skin-therm", "pa-therm1";
++
++	xo-therm@0 {
++		reg = <0>;
++		qcom,adc-channel = <ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-therm@1 {
++		reg = <1>;
++		qcom,adc-channel = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm1@2 {
++		reg = <2>;
++		qcom,adc-channel = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150b_adc_tm {
++	status = "okay";
++	io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
++	io-channel-names = "conn-therm";
++
++	conn-therm@0 {
++		reg = <0>;
++		qcom,adc-channel = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150l_adc_tm {
++	status = "okay";
++	io-channels = <&pm8150l_adc ADC5_AMUX_THM1_100K_PU>,
++			<&pm8150l_adc ADC5_AMUX_THM2_100K_PU>,
++			<&pm8150l_adc ADC5_AMUX_THM3_100K_PU>;
++	io-channel-names = "camera-flash-therm", "skin-msm-therm", "pa-therm2";
++
++	camera-flash-therm@0 {
++		reg = <0>;
++		qcom,adc-channel = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-msm-therm@1 {
++		reg = <1>;
++		qcom,adc-channel = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm2@2 {
++		reg = <2>;
++		qcom,adc-channel = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
+ &qupv3_id_1 {
+ 	status = "okay";
+ };
 -- 
-Regards,
-Sudeep
+2.28.0
+
