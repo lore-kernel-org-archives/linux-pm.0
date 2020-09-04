@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 835DAC2BB84
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:24:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CAE2C43461
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4177E2074D
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:24:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E4A0B208C7
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599233088;
-	bh=7ETwMr2woIdl6WmCKhWye9ZYfEI514T+ZyzZWn5CT8Q=;
+	s=default; t=1599233105;
+	bh=AsONb93CXsGCysEwXEAxnPU7VWFjSTyiaEX2pb1M2ZE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=mfaNRuMJmsdbjLjBNPEQ74O4YPcg5hhlofl6D/UVM76KPpg4TXy606py1iK0/QhSu
-	 fizALQtI4PNQuADgAD4n5AZ0ZZoHv6iRJcErRvxFQWyIvYXnb/fCRuponhM6Pqb+zD
-	 LEjwOYG7rJXZSwrQ03MYt6CFniC+jgetZnT6zL5A=
+	b=bq8VNhXHGTqHSXYfnjJJV26QLmEUHbklg9e/dLuS1GK1HCPHmjo83LIGUtXuL9QLy
+	 Z/3j3RA+tNctwZN/d6G8U09UuOU34ZXzJOtKxSMP2p8kzMKPO/R9QKVeMwcA90s8b7
+	 7nvAysSIhnQmWSkzTTFu6r2qPEqax/dnir4FDoqs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730938AbgIDPYq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Sep 2020 11:24:46 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33428 "EHLO mail.kernel.org"
+        id S1731029AbgIDPZB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Sep 2020 11:25:01 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33654 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730991AbgIDPYm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 4 Sep 2020 11:24:42 -0400
+        id S1731025AbgIDPY4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Sep 2020 11:24:56 -0400
 Received: from kozik-lap.mshome.net (unknown [194.230.155.106])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id CD344207EA;
-        Fri,  4 Sep 2020 15:24:37 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 60DEF20772;
+        Fri,  4 Sep 2020 15:24:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599233082;
-        bh=7ETwMr2woIdl6WmCKhWye9ZYfEI514T+ZyzZWn5CT8Q=;
+        s=default; t=1599233095;
+        bh=AsONb93CXsGCysEwXEAxnPU7VWFjSTyiaEX2pb1M2ZE=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=FoWZJaagfp5IWcPyqFJnSqZN1o7c6hZJr4jH2FTrJjHMmkX8nZUQuGncGh6Z/hRW/
-         CxGHmJjgGM3959BM0hTZqSyUX3MTb6EGY/8QlKZFq3ybiJQws+x21A+nas/DmLp9YQ
-         DOxRgVxFOM6i/y2A621fDktzdpgHjO2OqAPf8dMM=
+        b=QDpqGE7KH8BNydNe5y8eAGpsNvjKveDRcRWy/plCr6Zn+t+lb/me7GDRN3F98FfMK
+         VIaoZuwzOlnAA1eMW+icWk5gDnZmWYnCkSo60x2a11m+TrFMCeDG0tzx5dqZPYq5gF
+         e6IMCVUblw5xbGOYT9yDPPQ+uLCnIJ4etg6bSX6o=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>, linux-clk@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -53,9 +53,9 @@ Cc:     Michael Turquette <mturquette@baylibre.com>,
         NXP Linux Team <linux-imx@nxp.com>,
         Guenter Roeck <linux@roeck-us.net>,
         Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v3 05/14] dt-bindings: watchdog: fsl-imx-wdt: Add i.MX 8M compatibles
-Date:   Fri,  4 Sep 2020 17:23:55 +0200
-Message-Id: <20200904152404.20636-6-krzk@kernel.org>
+Subject: [PATCH v3 08/14] dt-bindings: nvmem: imx-ocotp: Update i.MX 8M compatibles
+Date:   Fri,  4 Sep 2020 17:23:58 +0200
+Message-Id: <20200904152404.20636-9-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200904152404.20636-1-krzk@kernel.org>
 References: <20200904152404.20636-1-krzk@kernel.org>
@@ -64,45 +64,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-DTSes with new i.MX 8M SoCs introduce their own compatibles so add them
-to fix dtbs_check warnings like:
+DTSes with new i.MX 8M SoCs use two compatibles so update the binding to
+fix dtbs_check warnings like:
 
-  arch/arm64/boot/dts/freescale/imx8mm-var-som-symphony.dt.yaml: watchdog@30280000:
-    compatible:0: 'fsl,imx8mm-wdt' is not one of ['fsl,imx21-wdt']
-    From schema: Documentation/devicetree/bindings/watchdog/fsl-imx-wdt.yaml
+  arch/arm64/boot/dts/freescale/imx8mn-evk.dt.yaml: efuse@30350000: compatible:1: 'syscon' was expected
+    From schema: Documentation/devicetree/bindings/nvmem/imx-ocotp.yaml
 
-  arch/arm64/boot/dts/freescale/imx8mm-var-som-symphony.dt.yaml: watchdog@30280000:
-    compatible: ['fsl,imx8mm-wdt', 'fsl,imx21-wdt'] is too long
+  arch/arm64/boot/dts/freescale/imx8mn-evk.dt.yaml: efuse@30350000:
+    compatible: ['fsl,imx8mn-ocotp', 'fsl,imx8mm-ocotp', 'syscon'] is too long
 
-  arch/arm64/boot/dts/freescale/imx8mm-var-som-symphony.dt.yaml: watchdog@30280000:
-    compatible: Additional items are not allowed ('fsl,imx21-wdt' was unexpected)
+  arch/arm64/boot/dts/freescale/imx8mn-evk.dt.yaml: efuse@30350000:
+    compatible: Additional items are not allowed ('syscon' was unexpected)
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 Reviewed-by: Rob Herring <robh@kernel.org>
-Reviewed-by: Guenter Roeck <linux@roeck-us.net>
----
- .../devicetree/bindings/watchdog/fsl-imx-wdt.yaml     | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/watchdog/fsl-imx-wdt.yaml b/Documentation/devicetree/bindings/watchdog/fsl-imx-wdt.yaml
-index d96b93b11fad..991b4e33486e 100644
---- a/Documentation/devicetree/bindings/watchdog/fsl-imx-wdt.yaml
-+++ b/Documentation/devicetree/bindings/watchdog/fsl-imx-wdt.yaml
-@@ -14,8 +14,15 @@ allOf:
+---
+
+Changes since v2:
+1. Remove moved compatibles.
+---
+ .../devicetree/bindings/nvmem/imx-ocotp.yaml  | 38 +++++++++++--------
+ 1 file changed, 23 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/nvmem/imx-ocotp.yaml b/Documentation/devicetree/bindings/nvmem/imx-ocotp.yaml
+index 1c9d7f05f173..5a7284737229 100644
+--- a/Documentation/devicetree/bindings/nvmem/imx-ocotp.yaml
++++ b/Documentation/devicetree/bindings/nvmem/imx-ocotp.yaml
+@@ -19,21 +19,29 @@ allOf:
  
  properties:
    compatible:
--    enum:
--      - fsl,imx21-wdt
+-    items:
+-      - enum:
+-          - fsl,imx6q-ocotp
+-          - fsl,imx6sl-ocotp
+-          - fsl,imx6sx-ocotp
+-          - fsl,imx6ul-ocotp
+-          - fsl,imx6ull-ocotp
+-          - fsl,imx7d-ocotp
+-          - fsl,imx6sll-ocotp
+-          - fsl,imx7ulp-ocotp
+-          - fsl,imx8mq-ocotp
+-          - fsl,imx8mm-ocotp
+-          - fsl,imx8mn-ocotp
+-          - fsl,imx8mp-ocotp
+-      - const: syscon
 +    oneOf:
-+      - const: fsl,imx21-wdt
 +      - items:
 +          - enum:
-+              - fsl,imx8mm-wdt
-+              - fsl,imx8mn-wdt
-+              - fsl,imx8mp-wdt
-+              - fsl,imx8mq-wdt
-+          - const: fsl,imx21-wdt
++              - fsl,imx6q-ocotp
++              - fsl,imx6sl-ocotp
++              - fsl,imx6sx-ocotp
++              - fsl,imx6ul-ocotp
++              - fsl,imx6ull-ocotp
++              - fsl,imx7d-ocotp
++              - fsl,imx6sll-ocotp
++              - fsl,imx7ulp-ocotp
++              - fsl,imx8mq-ocotp
++              - fsl,imx8mm-ocotp
++          - const: syscon
++      - items:
++          - enum:
++              - fsl,imx8mn-ocotp
++              # i.MX8MP not really compatible with fsl,imx8mm-ocotp, however
++              # the code for getting SoC revision depends on fsl,imx8mm-ocotp
++              # compatible.
++              - fsl,imx8mp-ocotp
++          - const: fsl,imx8mm-ocotp
++          - const: syscon
  
    reg:
      maxItems: 1
