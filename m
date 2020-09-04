@@ -4,40 +4,40 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E22DBC2D0E0
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 308E7C43461
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:26:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AE8222074D
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF2822074D
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:26:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599233154;
-	bh=Dd93FE9oQpev+CVY2ipzNLkXaKzEf3vCB92IiF1lQ2Y=;
+	s=default; t=1599233161;
+	bh=Pq6AMCutClAdC1MVlFH4CnQL+gGmRAYhCy6R3i2GV1c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=FMbZVKHLmqajXUFWH8VA26K5qCSEpPkOXQ846Iop9+IQeJZX7UJ6//dQ1LYTnKvtG
-	 Xap5YBx9k725tTiQ42bHXCB6IvSvAxk5HrbLwOg3MV1SKDi/cUGrRvyz7fcAf/MSpZ
-	 DoPc0sjh+bZr381VxC5zKUJZINUuNIm47mkg5Auo=
+	b=VPjmxdl1VEAA7caZQ4AU2G/YUSwQj2hzh7uPhm26YVtSEOb51Oq+ysgDzJHr0c8tN
+	 ZYzKMXTK6qWY51/upxdJy+ZXkE9TERpU8nBxjugQFW7BDjNomOcV/qxd78fbeD+KhP
+	 BhJzPXEjKRX8TM4mD42wcQeGjOW/TvQ4Aic+xaYc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731059AbgIDPZ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Sep 2020 11:25:26 -0400
-Received: from mail.kernel.org ([198.145.29.99]:34110 "EHLO mail.kernel.org"
+        id S1731092AbgIDPZ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Sep 2020 11:25:58 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33728 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731051AbgIDPZU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 4 Sep 2020 11:25:20 -0400
+        id S1730476AbgIDPZB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Sep 2020 11:25:01 -0400
 Received: from kozik-lap.mshome.net (unknown [194.230.155.106])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B200220772;
-        Fri,  4 Sep 2020 15:25:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 942D02074D;
+        Fri,  4 Sep 2020 15:24:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599233119;
-        bh=Dd93FE9oQpev+CVY2ipzNLkXaKzEf3vCB92IiF1lQ2Y=;
+        s=default; t=1599233100;
+        bh=Pq6AMCutClAdC1MVlFH4CnQL+gGmRAYhCy6R3i2GV1c=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=G2g6yeunx3Er8BuGMgPm7rLE0oNqNL6t1jPmBNIWE1PGDPRu7FEN7h0TZI6XSmG5D
-         6AMwT61dT9xL6JpEZjcNNzY9aXQ8wqaN9TUkG0S/rpylmqhSB+zNZxptTHmkhEFJiK
-         ndzT/91ejUDsMmTe/jvdUAWhlr5rHwq5tXtYGa7Y=
+        b=pjis33CzlE4L8H5Hnvz2sDPU+++Cix7kCoiPDA0FaQM0iuGrWZ141pW18vBqPfqaT
+         Umi3jXeYOqFfHssMDCjdXC2mY1bme+uWigxNZiQQXnN/iI1NQK5KMKoaigEUqADwJK
+         6PFcpRACCzgdaObvVFzjEiaKq6yu/d9JATDLwVWQ=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>, linux-clk@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -53,9 +53,9 @@ Cc:     Michael Turquette <mturquette@baylibre.com>,
         NXP Linux Team <linux-imx@nxp.com>,
         Guenter Roeck <linux@roeck-us.net>,
         Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v3 13/14] dt-bindings: mtd: nand-controller: Fix matching with size-cells==1
-Date:   Fri,  4 Sep 2020 17:24:03 +0200
-Message-Id: <20200904152404.20636-14-krzk@kernel.org>
+Subject: [PATCH v3 09/14] dt-bindings: mfd: rohm,bd71847-pmic: Correct clock properties requirements
+Date:   Fri,  4 Sep 2020 17:23:59 +0200
+Message-Id: <20200904152404.20636-10-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200904152404.20636-1-krzk@kernel.org>
 References: <20200904152404.20636-1-krzk@kernel.org>
@@ -64,33 +64,54 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Most of Freescale/NXP GPMI device trees use size-cells==1 (even when
-actually not needed except few boards).  This fixes dtbs_check warnings
-like:
+The input clock and number of clock provider cells are not required for
+the PMIC to operate.  They are needed only for the optional bd718x7
+clock driver.
 
-    arch/arm64/boot/dts/freescale/imx8mm-beacon-kit.dt.yaml: nand-controller@33002000: #size-cells:0:0: 0 was expected
+Add also clock-output-names as driver takes use of it.
+
+This fixes dtbs_check warnings like:
+
+    arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dt.yaml: pmic@4b: 'clocks' is a required property
+    arch/arm64/boot/dts/freescale/imx8mn-ddr4-evk.dt.yaml: pmic@4b: '#clock-cells' is a required property
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+Acked-by: Matti Vaittinen <matti.vaittinen@fi.rohmeurope.com>
 ---
- Documentation/devicetree/bindings/mtd/nand-controller.yaml | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ .../devicetree/bindings/mfd/rohm,bd71847-pmic.yaml       | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/mtd/nand-controller.yaml b/Documentation/devicetree/bindings/mtd/nand-controller.yaml
-index 40fc5b0b2b8c..0879e1108837 100644
---- a/Documentation/devicetree/bindings/mtd/nand-controller.yaml
-+++ b/Documentation/devicetree/bindings/mtd/nand-controller.yaml
-@@ -34,7 +34,10 @@ properties:
-     const: 1
+diff --git a/Documentation/devicetree/bindings/mfd/rohm,bd71847-pmic.yaml b/Documentation/devicetree/bindings/mfd/rohm,bd71847-pmic.yaml
+index 77bcca2d414f..5d531051a153 100644
+--- a/Documentation/devicetree/bindings/mfd/rohm,bd71847-pmic.yaml
++++ b/Documentation/devicetree/bindings/mfd/rohm,bd71847-pmic.yaml
+@@ -38,6 +38,9 @@ properties:
+   "#clock-cells":
+     const: 0
  
-   "#size-cells":
--    const: 0
-+    description:
-+      Depends on your controller. Put zero unless you need a mapping between CS
-+      lines and dedicated memory regions.
-+    enum: [0, 1]
++  clock-output-names:
++    maxItems: 1
++
+ # The BD71847 abd BD71850 support two different HW states as reset target
+ # states. States are called as SNVS and READY. At READY state all the PMIC
+ # power outputs go down and OTP is reload. At the SNVS state all other logic
+@@ -116,12 +119,14 @@ required:
+   - compatible
+   - reg
+   - interrupts
+-  - clocks
+-  - "#clock-cells"
+   - regulators
  
-   ranges: true
+ additionalProperties: false
  
++dependencies:
++  '#clock-cells': [clocks]
++  clocks: ['#clock-cells']
++
+ examples:
+   - |
+     #include <dt-bindings/interrupt-controller/irq.h>
 -- 
 2.17.1
 
