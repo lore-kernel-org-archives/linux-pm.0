@@ -5,39 +5,39 @@ X-Spam-Level:
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EFDBC433E2
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8735DC433E2
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0492A2083B
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4CF4620797
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Sep 2020 15:25:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599233126;
-	bh=sGtFPuXEsVbIrliCojcp2Mbe+DlIhAJbh8Iyk2PAwVI=;
+	s=default; t=1599233128;
+	bh=98AU22xTYMCZ0QAZTXK9ChSrXEOj0TuIT22qgKEeDKo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=SDleUSIR4CEQU3ua9TDMhbVJ8f3+ONNN1wMww0Tkj/fhJvXKRL36y71XY+TH8f8iQ
-	 Pi+OMq1rVOEfJ5lAexM63D72t5cs/mF+3qWhnzPP/GzuX++PUwDDLIH9cy/2rIvlsg
-	 jDztfzLI3GaJAHHy9t99nwdNtI54QT2E2TamCUrQ=
+	b=qHtR5rVaYutGktRxCaKKKxEtyuslcTLBG5OGsTg4x1OinDA1dsPviFBcwpJnXPQFX
+	 1JugCPKgZcRWNwEC9gzj60OIJafqN9MixIr47KWxEZu0eq/yTo2/N0pACXFv2pm8/c
+	 8m6zEw5g6sAg5Yk8ycr+pPMzXiaugpg9C1uacIjo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731038AbgIDPZM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Sep 2020 11:25:12 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33812 "EHLO mail.kernel.org"
+        id S1731053AbgIDPZW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Sep 2020 11:25:22 -0400
+Received: from mail.kernel.org ([198.145.29.99]:34050 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730890AbgIDPZG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 4 Sep 2020 11:25:06 -0400
+        id S1731045AbgIDPZP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 4 Sep 2020 11:25:15 -0400
 Received: from kozik-lap.mshome.net (unknown [194.230.155.106])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 191C020770;
-        Fri,  4 Sep 2020 15:25:00 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 4DDCF20829;
+        Fri,  4 Sep 2020 15:25:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599233105;
-        bh=sGtFPuXEsVbIrliCojcp2Mbe+DlIhAJbh8Iyk2PAwVI=;
+        s=default; t=1599233114;
+        bh=98AU22xTYMCZ0QAZTXK9ChSrXEOj0TuIT22qgKEeDKo=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=zRirnnYd3FGxe0dUFdE8DvFE0FU/H0s3bbImFJXNJW7w9evOqWZTQvYfzxOY3YSJH
-         UuGEI33eBHTyUJ/lPD9ZTMWgvqgfrMRjcrklGPX6f92Z508TII5K67hwppcAVQw5dC
-         oBwibSc/29+qW9X+xSWPKGcoQ3CmZglEAs2qSsgY=
+        b=pjl+iSmQKDcuFKuJWoCO2KfDCopCbpvL/j6GNIQ56/n5nI6trH4Mvd5TovdpW1bVv
+         nH4RMK4IfSteEnnKQ6qlPsMbzkwxl2DIdMLXTOeS/eIHdJvAIfUqERAA8KE3TsJO7i
+         qUuqc3539Tq4VNzRPHXzyvE3JsJTmxuaTymnXfpg=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Rob Herring <robh+dt@kernel.org>, linux-clk@vger.kernel.org,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
@@ -53,9 +53,9 @@ Cc:     Michael Turquette <mturquette@baylibre.com>,
         NXP Linux Team <linux-imx@nxp.com>,
         Guenter Roeck <linux@roeck-us.net>,
         Krzysztof Kozlowski <krzk@kernel.org>
-Subject: [PATCH v3 10/14] dt-bindings: interrupt-controller: fsl,irqsteer: Fix compatible matching
-Date:   Fri,  4 Sep 2020 17:24:00 +0200
-Message-Id: <20200904152404.20636-11-krzk@kernel.org>
+Subject: [PATCH v3 12/14] dt-bindings: mtd: gpmi-nand: Fix matching of clocks on different SoCs
+Date:   Fri,  4 Sep 2020 17:24:02 +0200
+Message-Id: <20200904152404.20636-13-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200904152404.20636-1-krzk@kernel.org>
 References: <20200904152404.20636-1-krzk@kernel.org>
@@ -64,41 +64,126 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The i.MX 8M DTSes use two compatibles so update the binding to fix
-dtbs_check warnings like:
+Driver requires different amount of clocks for different SoCs.  Describe
+these requirements properly to fix dtbs_check warnings like:
 
-  arch/arm64/boot/dts/freescale/imx8mq-thor96.dt.yaml: interrupt-controller@32e2d000:
-    compatible: ['fsl,imx8m-irqsteer', 'fsl,imx-irqsteer'] is too long
-    From schema: Domentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-
-  arch/arm64/boot/dts/freescale/imx8mq-thor96.dt.yaml: interrupt-controller@32e2d000:
-    compatible: Additional items are not allowed ('fsl,imx-irqsteer' was unexpected)
+    arch/arm64/boot/dts/freescale/imx8mm-beacon-kit.dt.yaml: nand-controller@33002000: clock-names:1: 'gpmi_apb' was expected
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/interrupt-controller/fsl,irqsteer.yaml       | 8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml b/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-index 360a575ef8b0..3b11a1a15398 100644
---- a/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-+++ b/Documentation/devicetree/bindings/interrupt-controller/fsl,irqsteer.yaml
-@@ -11,9 +11,11 @@ maintainers:
+---
+
+Changes since v1:
+1. Do not require order of clocks (use pattern).
+---
+ .../devicetree/bindings/mtd/gpmi-nand.yaml    | 76 +++++++++++++++----
+ 1 file changed, 61 insertions(+), 15 deletions(-)
+
+diff --git a/Documentation/devicetree/bindings/mtd/gpmi-nand.yaml b/Documentation/devicetree/bindings/mtd/gpmi-nand.yaml
+index 28ff8c581837..e08e0a50929e 100644
+--- a/Documentation/devicetree/bindings/mtd/gpmi-nand.yaml
++++ b/Documentation/devicetree/bindings/mtd/gpmi-nand.yaml
+@@ -9,9 +9,6 @@ title: Freescale General-Purpose Media Interface (GPMI) binding
+ maintainers:
+   - Han Xu <han.xu@nxp.com>
  
- properties:
-   compatible:
--    enum:
--      - fsl,imx8m-irqsteer
--      - fsl,imx-irqsteer
-+    oneOf:
-+      - const: fsl,imx-irqsteer
-+      - items:
-+          - const: fsl,imx8m-irqsteer
-+          - const: fsl,imx-irqsteer
+-allOf:
+-  - $ref: "nand-controller.yaml"
+-
+ description: |
+   The GPMI nand controller provides an interface to control the NAND
+   flash chips. The device tree may optionally contain sub-nodes
+@@ -58,22 +55,10 @@ properties:
+   clocks:
+     minItems: 1
+     maxItems: 5
+-    items:
+-      - description: SoC gpmi io clock
+-      - description: SoC gpmi apb clock
+-      - description: SoC gpmi bch clock
+-      - description: SoC gpmi bch apb clock
+-      - description: SoC per1 bch clock
  
-   reg:
-     maxItems: 1
+   clock-names:
+     minItems: 1
+     maxItems: 5
+-    items:
+-      - const: gpmi_io
+-      - const: gpmi_apb
+-      - const: gpmi_bch
+-      - const: gpmi_bch_apb
+-      - const: per1_bch
+ 
+   fsl,use-minimum-ecc:
+     type: boolean
+@@ -107,6 +92,67 @@ required:
+ 
+ unevaluatedProperties: false
+ 
++allOf:
++  - $ref: "nand-controller.yaml"
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - fsl,imx23-gpmi-nand
++              - fsl,imx28-gpmi-nand
++    then:
++      properties:
++        clocks:
++          items:
++            - description: SoC gpmi io clock
++        clock-names:
++          items:
++            - const: gpmi_io
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - fsl,imx6q-gpmi-nand
++              - fsl,imx6sx-gpmi-nand
++    then:
++      properties:
++        clocks:
++          items:
++            - description: SoC gpmi io clock
++            - description: SoC gpmi apb clock
++            - description: SoC gpmi bch clock
++            - description: SoC gpmi bch apb clock
++            - description: SoC per1 bch clock
++        clock-names:
++          items:
++            - pattern: "^(gpmi_(io|apb|bch|bch_apb)|per1_bch)$"
++            - pattern: "^(gpmi_(io|apb|bch|bch_apb)|per1_bch)$"
++            - pattern: "^(gpmi_(io|apb|bch|bch_apb)|per1_bch)$"
++            - pattern: "^(gpmi_(io|apb|bch|bch_apb)|per1_bch)$"
++            - pattern: "^(gpmi_(io|apb|bch|bch_apb)|per1_bch)$"
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            const: fsl,imx7d-gpmi-nand
++    then:
++      properties:
++        clocks:
++          items:
++            - description: SoC gpmi io clock
++            - description: SoC gpmi bch apb clock
++        clock-names:
++          minItems: 2
++          maxItems: 2
++          items:
++            - pattern: "^gpmi_(io|bch_apb)$"
++            - pattern: "^gpmi_(io|bch_apb)$"
++
+ examples:
+   - |
+     nand-controller@8000c000 {
 -- 
 2.17.1
 
