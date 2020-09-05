@@ -5,23 +5,23 @@ X-Spam-Level:
 X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 607C6C433E2
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Sep 2020 14:33:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97BC6C433E2
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Sep 2020 16:01:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D60B2078E
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Sep 2020 14:33:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 403682074D
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Sep 2020 16:01:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728206AbgIEOdU convert rfc822-to-8bit (ORCPT
+        id S1726456AbgIEQBt convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 5 Sep 2020 10:33:20 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41564 "EHLO mail.kernel.org"
+        Sat, 5 Sep 2020 12:01:49 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40422 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728297AbgIEOdT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 5 Sep 2020 10:33:19 -0400
+        id S1726261AbgIEQBp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 5 Sep 2020 12:01:45 -0400
 From:   bugzilla-daemon@bugzilla.kernel.org
 To:     linux-pm@vger.kernel.org
 Subject: [Bug 209069] CPU stuck at 800 MHz at any load
-Date:   Sat, 05 Sep 2020 14:33:18 +0000
+Date:   Sat, 05 Sep 2020 16:01:44 +0000
 X-Bugzilla-Reason: AssignedTo
 X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: None
@@ -30,14 +30,14 @@ X-Bugzilla-Component: cpufreq
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: moonlapse81@gmail.com
+X-Bugzilla-Who: dsmythies@telus.net
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P1
 X-Bugzilla-Assigned-To: linux-pm@vger.kernel.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: cc
-Message-ID: <bug-209069-137361-AdXsHy1eKH@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: attachments.created
+Message-ID: <bug-209069-137361-ePrZVyI0yz@https.bugzilla.kernel.org/>
 In-Reply-To: <bug-209069-137361@https.bugzilla.kernel.org/>
 References: <bug-209069-137361@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
@@ -52,20 +52,17 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 https://bugzilla.kernel.org/show_bug.cgi?id=209069
 
-Oleh Vinichenko (moonlapse81@gmail.com) changed:
+--- Comment #11 from Doug Smythies (dsmythies@telus.net) ---
+Created attachment 292363
+  --> https://bugzilla.kernel.org/attachment.cgi?id=292363&action=edit
+example of needed information
 
-           What    |Removed                     |Added
-----------------------------------------------------------------------------
-                 CC|                            |moonlapse81@gmail.com
+Please, we need more information. Do you know for certain that you were
+defaulting to "active" mode before and now "passive" mode. What is your kernel
+configuration in the CPU frequency scaling area? What, if anything, is
+specified on your grub command line? What governor to you end up with?
 
---- Comment #9 from Oleh Vinichenko (moonlapse81@gmail.com) ---
-I hit this issue as well. On Lenovo ThinkPad W520, with SandyBridge CPU,
-Intel(R) Core(TM) i7-2860QM. gradually updated through versions 5.8.* from
-older kernels, while keeping kernel configuration the same. If this new change
-to be expected as default, there must be documentation about this new behaviour
-and what is required to keep active state. What is required to change in kernel
-configuration, if needed. This caused massive compilation time regressions and
-shoudl not be cast on users without update steps.
+attached is an example of needed information.
 
 -- 
 You are receiving this mail because:
