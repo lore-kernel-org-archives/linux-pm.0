@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 808BFC43461
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 21:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67799C43461
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 21:31:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 40F1E214DB
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 21:31:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2DE982145D
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 21:31:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FS2VnZXq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="sY7r//0A"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726564AbgIFVbW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Sep 2020 17:31:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56524 "EHLO
+        id S1726680AbgIFVb2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Sep 2020 17:31:28 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56542 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726292AbgIFVbU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Sep 2020 17:31:20 -0400
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA496C061573;
-        Sun,  6 Sep 2020 14:31:19 -0700 (PDT)
-Received: by mail-wr1-x444.google.com with SMTP id m6so13466909wrn.0;
-        Sun, 06 Sep 2020 14:31:19 -0700 (PDT)
+        with ESMTP id S1726655AbgIFVbZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Sep 2020 17:31:25 -0400
+Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5035DC061573;
+        Sun,  6 Sep 2020 14:31:24 -0700 (PDT)
+Received: by mail-wr1-x442.google.com with SMTP id o5so13387760wrn.13;
+        Sun, 06 Sep 2020 14:31:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=bpGLyTGFFFsvy7eUvf4p2N7aeZs8Bgtl+St8PzvtoYc=;
-        b=FS2VnZXqEK4soyQQqvVkielSnrBCZiDdtsGJHVCo3ElxbgBDSfgp+1Kc4U10jLfGvG
-         G9suTjVALZ+Bmkt9qh5aQToqNXhqunB9Or47SbkUrpC5orSTckt6b0YMv6NK97gan7B9
-         Dqvg/EC21qqeA7u3hrFLnX7xFZqU1Z3KUO6iCPy25DGY6826Z/N6VLQyVEesyIYVauxy
-         5kiEP1T8+d0X/rBYdlxSmZqS3eIycoWl2J42pUnP3MyKkTOC6e9ratgW5eOEYhwx1e7v
-         0uhwA+R0xcf+ARAiwviEMSs6fST+df++DNXW4KwumoMO64sI7xEKTh1kTLc5QtllfWlO
-         oL8g==
+        bh=Av0fZ69JkaQIBeo1B6gGY+Urq+AUCC2Cj5EXWWcsh8c=;
+        b=sY7r//0A54xnx1LywbfyeZ+zIU/CBIgWCWneYi5kGd62/5Ro2Em3qc3TiXDFB/WI76
+         htku8y5uCJNiCMMA7lWYESNng8WyoHSJhlGuurKz/FEZdgSXz+y/hQ2WFg+uUiIBjwON
+         GU8V9vD32gPSv/izlCqKVFQeeuRpKSwSt6NFFbGubi6o2FXyolL/Aqo1Cz5scdCNBwVQ
+         w6sv3UGyU4//SL65ZsWW+v14wxejJ39edzN+nSIpVQ2tf27lTcuWiQspzNS08Sl6IUFv
+         6QFUjfeewnjTrO/sVBBlyQgTYVjXr4uvIabrkAUh4y2jm0f9Frqg1JZKgrXanZtS6LG2
+         dGJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=bpGLyTGFFFsvy7eUvf4p2N7aeZs8Bgtl+St8PzvtoYc=;
-        b=qGY6tOZ/kr4ZS/RL/slyI1lq9MhacWXXxBQ70qEn31HkQKW5GVsZpk8ryuNb4F3Ntw
-         nbuDEKmncKDXGd90k+viMkdNxbOA//GVsXovJMlCvlwTpLI91hhS7wxoFmlcdSEODOU6
-         qUoaS2yJ63ts/xsI9kCrYgVwFL+Qf3oHVi+C+Iqt5tkxxRc6sfaero6AWDwq36BTse4v
-         b2ls/iA6bYh0Wr70+3IC3tBviG3AONnGAA035cXRgPhPeZTdpOwb1JufMkB+so5DUmxK
-         UhPe+/VY74Pl2yU5DaVQG96sPMZdm+R04dc0iVkpttB4fQwlMhx87go33zRPQW0S8kWg
-         vuOA==
-X-Gm-Message-State: AOAM533C2zgblzyX3I+fe7O0dt2TbY3joNMGVXFtF7fpsHgQ7Ifj3rKT
-        ZP30DKZQsIdNHR1+Nt1KC3Y=
-X-Google-Smtp-Source: ABdhPJx7z/S1YEZ5s0b0cxZIJrCnPHM1XlAwwVpdwEA4SaFyDEZf1DIKbczibKcM1LKyzLdrNnZniQ==
-X-Received: by 2002:adf:b101:: with SMTP id l1mr9964102wra.96.1599427878710;
-        Sun, 06 Sep 2020 14:31:18 -0700 (PDT)
+        bh=Av0fZ69JkaQIBeo1B6gGY+Urq+AUCC2Cj5EXWWcsh8c=;
+        b=kRBXiZ5jYWUCzSukh6pYiXhTJpKBTnA4vA9mUlOAl+H8yduVDAjODc4Hw2Jw+lOhLI
+         Oi8sjtTnemAEws/6JI7bsr5+GgumCE+cGTADfIlf6Qasn0vqLYPyqmOFSHxrQowpQQg+
+         4uP8jGXmFjBnlG2oS1Prr1gBYqAL7l+DVa8hprebg9BF8jPTkgaI+y+7N2Oy13K0rQVS
+         Mi6Etg7RGtnOqp9AuGE22u3LcD3Vpr9iVoEJQ7lTPZ6aXYpbet/e/kPtDb+1YYFM/7H8
+         OFvB4SV3b4VTFCsMHBLcOsR8c6tHuxT0zsOvbWB9LpNP0RxdsW16JDltxvHik5XqguEW
+         FqQQ==
+X-Gm-Message-State: AOAM532M4vXaMvAc2/pINFboDSbXcYbYbmJNQvrm9sSQmZwZBspi4O7b
+        unArGVAKxWwmS+uLBi4oJ5s=
+X-Google-Smtp-Source: ABdhPJw6JikAmn9yqKg5ZQcwYZA1p5ub9mbJ0xgYZtScZx2JqWRU4I3fN75+bbkOr3R5Kdp63OiMbw==
+X-Received: by 2002:adf:f7d0:: with SMTP id a16mr17560889wrq.381.1599427882957;
+        Sun, 06 Sep 2020 14:31:22 -0700 (PDT)
 Received: from localhost ([91.92.14.102])
-        by smtp.gmail.com with ESMTPSA id z19sm4605033wmi.3.2020.09.06.14.31.17
+        by smtp.gmail.com with ESMTPSA id 5sm23417637wmz.22.2020.09.06.14.31.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 06 Sep 2020 14:31:18 -0700 (PDT)
+        Sun, 06 Sep 2020 14:31:22 -0700 (PDT)
 From:   Iskren Chernev <iskren.chernev@gmail.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -66,10 +66,11 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         ~postmarketos/upstreaming@lists.sr.ht,
         Jonathan Bakker <xc-racer2@live.ca>,
         Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Iskren Chernev <iskren.chernev@gmail.com>
-Subject: [PATCH v4 1/7] power: supply: max17040: Use devm_ to automate remove
-Date:   Mon,  7 Sep 2020 00:30:50 +0300
-Message-Id: <20200906213056.2161410-2-iskren.chernev@gmail.com>
+        Iskren Chernev <iskren.chernev@gmail.com>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v4 3/7] dt-bindings: power: supply: Extend max17040 compatibility
+Date:   Mon,  7 Sep 2020 00:30:52 +0300
+Message-Id: <20200906213056.2161410-4-iskren.chernev@gmail.com>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200906213056.2161410-1-iskren.chernev@gmail.com>
 References: <20200906213056.2161410-1-iskren.chernev@gmail.com>
@@ -80,109 +81,57 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Two actions were performed during remove - power supply dereg and
-delayed work cleanup. Power supply dereg can be handled by using the
-devm_ version of the registration function. Work cleanup can be added as
-a devm_action.
+Maxim max17040 is a fuel gauge from a larger family utilising the Model
+Gauge technology. Document all different compatible strings that the
+max17040 driver recognizes.
 
-If probe fails after psy registration it will now be cleaned up
-properly.
+Some devices in the wild report double the capacity. The
+maxim,double-soc (from State-Of-Charge) property fixes that.
+Examples: https://lore.kernel.org/patchwork/patch/1263411/#1468420
 
 Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
-Tested-by: Jonathan Bakker <xc-racer2@live.ca>
+Reviewed-by: Rob Herring <robh@kernel.org>
 ---
- drivers/power/supply/max17040_battery.c | 39 +++++++++++++------------
- 1 file changed, 21 insertions(+), 18 deletions(-)
+ .../bindings/power/supply/max17040_battery.txt    | 15 ++++++++++++++-
+ 1 file changed, 14 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 6cb31b9a958dd..19b9e710bbd2f 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -207,6 +207,19 @@ static void max17040_check_changes(struct i2c_client *client)
- 	max17040_get_status(client);
- }
+diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+index 4e0186b8380fa..554bce82a08e6 100644
+--- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+@@ -2,7 +2,9 @@ max17040_battery
+ ~~~~~~~~~~~~~~~~
  
-+static void max17040_queue_work(struct max17040_chip *chip)
-+{
-+	queue_delayed_work(system_power_efficient_wq, &chip->work,
-+			   MAX17040_DELAY);
-+}
+ Required properties :
+- - compatible : "maxim,max17040" or "maxim,max77836-battery"
++ - compatible : "maxim,max17040", "maxim,max17041", "maxim,max17043",
++ 		"maxim,max17044", "maxim,max17048", "maxim,max17049",
++		"maxim,max17058", "maxim,max17059" or "maxim,max77836-battery"
+  - reg: i2c slave address
+ 
+ Optional properties :
+@@ -11,6 +13,10 @@ Optional properties :
+ 				generated. Can be configured from 1 up to 32
+ 				(%). If skipped the power up default value of
+ 				4 (%) will be used.
++- maxim,double-soc : 		Certain devices return double the capacity.
++				Specify this boolean property to divide the
++				reported value in 2 and thus normalize it.
++				SOC == State of Charge == Capacity.
+ - interrupts : 			Interrupt line see Documentation/devicetree/
+ 				bindings/interrupt-controller/interrupts.txt
+ - wakeup-source :		This device has wakeup capabilities. Use this
+@@ -31,3 +37,10 @@ Example:
+ 		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+ 		wakeup-source;
+ 	};
 +
-+static void max17040_stop_work(void *data)
-+{
-+	struct max17040_chip *chip = data;
-+
-+	cancel_delayed_work_sync(&chip->work);
-+}
-+
- static void max17040_work(struct work_struct *work)
- {
- 	struct max17040_chip *chip;
-@@ -223,8 +236,7 @@ static void max17040_work(struct work_struct *work)
- 	if (last_soc != chip->soc || last_status != chip->status)
- 		power_supply_changed(chip->battery);
- 
--	queue_delayed_work(system_power_efficient_wq, &chip->work,
--			   MAX17040_DELAY);
-+	max17040_queue_work(chip);
- }
- 
- static irqreturn_t max17040_thread_handler(int id, void *dev)
-@@ -339,7 +351,7 @@ static int max17040_probe(struct i2c_client *client,
- 	i2c_set_clientdata(client, chip);
- 	psy_cfg.drv_data = chip;
- 
--	chip->battery = power_supply_register(&client->dev,
-+	chip->battery = devm_power_supply_register(&client->dev,
- 				&max17040_battery_desc, &psy_cfg);
- 	if (IS_ERR(chip->battery)) {
- 		dev_err(&client->dev, "failed: power supply register\n");
-@@ -368,18 +380,11 @@ static int max17040_probe(struct i2c_client *client,
- 	}
- 
- 	INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
--	queue_delayed_work(system_power_efficient_wq, &chip->work,
--			   MAX17040_DELAY);
--
--	return 0;
--}
--
--static int max17040_remove(struct i2c_client *client)
--{
--	struct max17040_chip *chip = i2c_get_clientdata(client);
-+	ret = devm_add_action(&client->dev, max17040_stop_work, chip);
-+	if (ret)
-+		return ret;
-+	max17040_queue_work(chip);
- 
--	power_supply_unregister(chip->battery);
--	cancel_delayed_work(&chip->work);
- 	return 0;
- }
- 
-@@ -403,12 +408,11 @@ static int max17040_resume(struct device *dev)
- 	struct i2c_client *client = to_i2c_client(dev);
- 	struct max17040_chip *chip = i2c_get_clientdata(client);
- 
--	queue_delayed_work(system_power_efficient_wq, &chip->work,
--			   MAX17040_DELAY);
--
- 	if (client->irq && device_may_wakeup(dev))
- 		disable_irq_wake(client->irq);
- 
-+	max17040_queue_work(chip);
-+
- 	return 0;
- }
- 
-@@ -442,7 +446,6 @@ static struct i2c_driver max17040_i2c_driver = {
- 		.pm	= MAX17040_PM_OPS,
- 	},
- 	.probe		= max17040_probe,
--	.remove		= max17040_remove,
- 	.id_table	= max17040_id,
- };
- module_i2c_driver(max17040_i2c_driver);
++	battery-fuel-gauge@36 {
++		compatible = "maxim,max17048";
++		reg = <0x36>;
++		maxim,alert-low-soc-level = <10>;
++		maxim,double-soc;
++	};
 -- 
 2.28.0
 
