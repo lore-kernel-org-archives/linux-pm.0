@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7360C433E2
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 19:51:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0A01C433E2
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 19:52:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6CA4120C09
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 19:51:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 93FE6208B3
+	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 19:52:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="FjPv8tOM"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Oobg5koT"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726544AbgIFTvj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Sep 2020 15:51:39 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41350 "EHLO
+        id S1726564AbgIFTv5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Sep 2020 15:51:57 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41366 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726484AbgIFTva (ORCPT
+        with ESMTP id S1726493AbgIFTva (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Sep 2020 15:51:30 -0400
-Received: from mail-lf1-x133.google.com (mail-lf1-x133.google.com [IPv6:2a00:1450:4864:20::133])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 81E62C061573;
-        Sun,  6 Sep 2020 12:51:26 -0700 (PDT)
-Received: by mail-lf1-x133.google.com with SMTP id b12so6427473lfp.9;
-        Sun, 06 Sep 2020 12:51:26 -0700 (PDT)
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ADC5C061756;
+        Sun,  6 Sep 2020 12:51:28 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id d15so5546574lfq.11;
+        Sun, 06 Sep 2020 12:51:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=gyFVRrq7oNAkyBDcab1pW5QCuvDZJBB4EknZ7t3FCyQ=;
-        b=FjPv8tOM4FBh/CLhJkVsKZdT31s0rjSmN5qV1MfwaP7Iv5UON4zmgkqEJGqViLNq3W
-         yQtG9heHntzY/MHYNJxRvyjmXWoWDEYjMrCa3HoTqylNalhYnOiWxjVl+dq9bQgEBR6d
-         f1sOHI9t04+jc0rlXKWieqnK8UJfHkVHtcMVW0q1FX6nxQQdVARgsmbrNSwC1dmmShFz
-         U5vquJplAF7zWBVyAM51alG5WS8Dk4iNufN617XsMy2XOloJ6TWo0w9g1ZLryq1MxlH4
-         574fb4f6XMDdgcfFeJeY7RKflRmx36gcUS82WNL8J0eLngAD7Ges0sHM39wboaXvVkhO
-         YBDQ==
+        bh=35wLUHHiL0jcYl7dr+ydbL6W/M+IENF1DgF9AQYM8t8=;
+        b=Oobg5koT9Ox8v79M5WhWmKiVhX59pyNIUp9/wkzJHs3WGEBM3+96r9IBtOQktr1S/d
+         QnHjBaLyyhA2oWdyy1KBBJULvt16SxQxcsaE/iUac+Eb1nPlamVSUD5vhGuXl5SSbe11
+         TZKFDHVz7icmCrmH3fnIR4gwjbADsDpZhue2J8nRWMnKk8GLaxP9CRFnZYkgrqdS7emM
+         hsUN+OmSZnxiSEnQaxJ+UBuYxlYjDMDKm9VHwRcoo8aogoVFWVLxtpwEftu4ChkP2XVe
+         QejLkAIFhFCu6RS0q1Y+Qg1F1176Dk+blJNhugmazRt/Rm/1qHBqUZCSvCRB7YYCXLLq
+         2B1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=gyFVRrq7oNAkyBDcab1pW5QCuvDZJBB4EknZ7t3FCyQ=;
-        b=gW+1ZaoWZah87VTt83K/C/VWfm0R5T9j5mM0C6r6ZCCLIDHSYQcmdMDkVlw9hsYMlo
-         8ycrXmMu7Q7/rYWNmDzEyV2riil+ahKUrm44c2eHYIRn8kNaxa4xReuaNbCMgtoCJ2BZ
-         EGk14Y8T/yb5pyGg6JyUHiCpKiEBMWhryHACHg+NMiHHJw+xVK1flBsBWa2Y8Jh/pX9M
-         +b0i2P0gBGib0Ebn9mTZMg4Qz+nBO2AUb75rsbOWWB/SpaciRii07rJhGRlUwEdZMtfz
-         WfwofVGMSlvJXao4bg2EixB1YBpmoL7Nfiu0PVrq5iBK86wI6p5+MI3W6pDf2VTTRjT+
-         Br2g==
-X-Gm-Message-State: AOAM533OAY/Q7wEbzyLBxyWT9TaIHrglDYNZ7Qk06a6kS6GaMV2TatuL
-        035Kk2/A78XQ3SgaAjQ+KAY=
-X-Google-Smtp-Source: ABdhPJyQ4SMKxWY6kGyeKB7uBWsDjTbkL01fuiofXbrjJA1j/cifvBDot70J0IM0cDVq2ry6PzlvQA==
-X-Received: by 2002:a19:4ad8:: with SMTP id x207mr8509418lfa.73.1599421883105;
-        Sun, 06 Sep 2020 12:51:23 -0700 (PDT)
+        bh=35wLUHHiL0jcYl7dr+ydbL6W/M+IENF1DgF9AQYM8t8=;
+        b=c9xP2TlLGJoyHP4mb33u8AzR/THQCw4x4tEMJSQ/ohg4NAjWzasJ2ijBPg3sVZLEnS
+         M3PrpEo0UFft78XjG2ibAVh69kUhI3eQRk9+ynYf8uBvLawASxOHm8MefOpDWzJSdeYD
+         T1XkaZRU4JGwiCshBwKNjKO+03KSSh8YpA1Fz6PBn57JhSKVHyXIrPfB7XSd8OYPeitf
+         3fklXST9RCehisA72W8qHUIs8zAMC0ZRQzrlHih8SvY5XMb6mhsqH6Un0zF42WoEl+ZW
+         YO/XUT1PH1t9G1sufBIL8RVsoXDjrJfEw1IaHlMzLod8LWMjWli3MWmiVrABcnFl2Hyp
+         vOOQ==
+X-Gm-Message-State: AOAM533ciFEBd13uEkkpUafX5Y45NdVI6JqWXdIf4Xf7Y4XuL6ZIE3gE
+        KrSpBSZOjX8r5qDU4hFBqyg=
+X-Google-Smtp-Source: ABdhPJz1lqvoiCo/WdRrNpCNNEaDozq2pMzlNdc8l1vYlS76MU5hhy2Z1yaXF0kfHPjprP58FS8jTw==
+X-Received: by 2002:a19:6411:: with SMTP id y17mr8719678lfb.199.1599421887058;
+        Sun, 06 Sep 2020 12:51:27 -0700 (PDT)
 Received: from localhost.localdomain (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.gmail.com with ESMTPSA id b7sm4942574lfq.36.2020.09.06.12.51.22
+        by smtp.gmail.com with ESMTPSA id b7sm4942574lfq.36.2020.09.06.12.51.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Sep 2020 12:51:22 -0700 (PDT)
+        Sun, 06 Sep 2020 12:51:26 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
         Thierry Reding <thierry.reding@gmail.com>,
@@ -68,9 +68,9 @@ To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
 Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH v3 1/5] dt-bindings: mfd: Add ENE KB930 Embedded Controller binding
-Date:   Sun,  6 Sep 2020 22:50:59 +0300
-Message-Id: <20200906195103.1347-2-digetx@gmail.com>
+Subject: [PATCH v3 5/5] ARM: tegra: acer-a500: Add Embedded Controller
+Date:   Sun,  6 Sep 2020 22:51:03 +0300
+Message-Id: <20200906195103.1347-6-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20200906195103.1347-1-digetx@gmail.com>
 References: <20200906195103.1347-1-digetx@gmail.com>
@@ -81,86 +81,51 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add binding document for the ENE KB930 Embedded Controller.
+This patch adds device-tree node for the Embedded Controller which is
+found on the Picasso board. The Embedded Controller itself is ENE KB930,
+it provides functions like battery-gauge/LED/GPIO/etc and it uses firmware
+that is specifically customized for the Acer A500 device.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../devicetree/bindings/mfd/ene-kb930.yaml    | 66 +++++++++++++++++++
- 1 file changed, 66 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/ene-kb930.yaml
+ arch/arm/boot/dts/tegra20-acer-a500-picasso.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/mfd/ene-kb930.yaml b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
-new file mode 100644
-index 000000000000..635c8966ca22
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
-@@ -0,0 +1,66 @@
-+# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mfd/ene-kb930.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+index 2d683c9a1a5d..f92712e4bd34 100644
+--- a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
++++ b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+@@ -502,6 +502,16 @@ panel_ddc: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
 +
-+title: ENE KB930 Embedded Controller bindings
++			embedded-controller@58 {
++				compatible = "acer,a500-iconia-ec", "ene,kb930";
++				reg = <0x58>;
 +
-+description: |
-+  This binding describes the ENE KB930 Embedded Controller attached to an
-+  I2C bus.
++				system-power-controller;
 +
-+maintainers:
-+  - Dmitry Osipenko <digetx@gmail.com>
++				monitored-battery = <&bat1010>;
++				power-supplies = <&mains>;
++			};
+ 		};
+ 	};
+ 
+@@ -780,6 +790,13 @@ backlight: backlight {
+ 		default-brightness-level = <20>;
+ 	};
+ 
++	bat1010: battery-2s1p {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <3260000>;
++		energy-full-design-microwatt-hours = <24000000>;
++		operating-range-celsius = <0 40>;
++	};
 +
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+        - acer,a500-iconia-ec # Acer A500 Iconia tablet device
-+      - enum:
-+        - ene,kb930
-+  reg:
-+    maxItems: 1
-+
-+  monitored-battery: true
-+  power-supplies: true
-+  system-power-controller: true
-+
-+required:
-+  - compatible
-+  - reg
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    battery: battery-cell {
-+      compatible = "simple-battery";
-+      charge-full-design-microamp-hours = <3260000>;
-+      energy-full-design-microwatt-hours = <24000000>;
-+      operating-range-celsius = <0 40>;
-+    };
-+
-+    mains: ac-adapter {
-+      compatible = "gpio-charger";
-+      charger-type = "mains";
-+      gpios = <&gpio 125 0>;
-+    };
-+
-+    i2c {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+
-+      embedded-controller@58 {
-+        compatible = "acer,a500-iconia-ec", "ene,kb930";
-+        reg = <0x58>;
-+
-+        system-power-controller;
-+
-+        monitored-battery = <&battery>;
-+        power-supplies = <&mains>;
-+      };
-+    };
-+
-+...
+ 	/* PMIC has a built-in 32KHz oscillator which is used by PMC */
+ 	clk32k_in: clock@0 {
+ 		compatible = "fixed-clock";
 -- 
 2.27.0
 
