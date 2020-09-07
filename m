@@ -1,114 +1,109 @@
-Return-Path: <SRS0=uzaG=CP=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=fmUR=CQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 23508C10DAA
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 23:10:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52DD2C433E2
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 00:16:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD1C421582
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Sep 2020 23:10:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 025502151B
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 00:16:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A5/7U7PG"
+	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="kC8Xt+UW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726288AbgIFXKX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Sep 2020 19:10:23 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43336 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726401AbgIFXKF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Sep 2020 19:10:05 -0400
-Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F0836C061575;
-        Sun,  6 Sep 2020 16:10:04 -0700 (PDT)
-Received: by mail-lj1-x244.google.com with SMTP id u4so13054018ljd.10;
-        Sun, 06 Sep 2020 16:10:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=NUGRQoQOfkm+Q1r5IdMfVQrE6dq9XkDPp8w5VNp/XW4=;
-        b=A5/7U7PGysC7Lat9H1X1WrQsULCsjbslDkwUVOG/iH1O9q2QWz7FE1iJUxhr58Hj/4
-         V20PbyZt46CuVFG041pKscToJe7Lh0LiDjHeXOLOV/b9WDgUux8u2PDxnJzlLnxpamZ/
-         0BZf34CJxQOg9XSJ6oJEKfNmEkzFJe8hWPCZoJz6Wcdd1btLhc5lPXSntl/jUg7nd/Gt
-         wsB5UHchdcYkOtOj9KNPHwNFTwPq2i+f0ju5BKC1EsUMg42BJTNHkPONB971GDL8nck5
-         qF2WqdtKfm5Dur+zbkitJf39PTujSzjC1DuHJsmJopAYg8rWuSXvX+oIL0yYYYP7E3vW
-         UPKQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=NUGRQoQOfkm+Q1r5IdMfVQrE6dq9XkDPp8w5VNp/XW4=;
-        b=pr0hOZiRlos/aqs2jkWPfImblOxZmflO7YzSld9xkZKFcWbA/HYyY6fQwU25LFn9TO
-         Rq/EPENrWyoxBlgMn1h0Pc2265XFrZdiAEYROtis8QMr2ZyMipxaiJqnSfTCLOQfnn1e
-         W+/rjuHdw3EVZFyIXJCSo9R67LJ2xpxVQFjxzoA5E6Q+4nUqQ5qIJaqBIeqo5R7o4ieT
-         4hoJ+b9mmZn9+u2NM9tMSmflJxsjqdwHHtwa/YvPT2Dt9aZgrBz1VCwJ0df8t7//PUB7
-         1kdsUqJ7UMairPnLdIA+u6Evg6sv1vGD1J+CwyLK5vO+dQoFB/C/R4YGoWfdgSxDUHaV
-         dlVg==
-X-Gm-Message-State: AOAM532rxYqTbR/f9gg7lwR6GMtiS6h1O/0+7+buPfDGaEfMLKt2MToX
-        DAawBSXwzxEwRsh42W20oKc=
-X-Google-Smtp-Source: ABdhPJztcsF1D/9+BjP+M7FHssI19IN5D3FuSHqwt6KE+HfThPz7XhqQAk2eIXbCTe8Ozp1yUuG1PA==
-X-Received: by 2002:a2e:8798:: with SMTP id n24mr6018798lji.373.1599433803479;
-        Sun, 06 Sep 2020 16:10:03 -0700 (PDT)
-Received: from localhost.localdomain (h-82-196-111-59.NA.cust.bahnhof.se. [82.196.111.59])
-        by smtp.gmail.com with ESMTPSA id r17sm1325984ljp.117.2020.09.06.16.10.02
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 06 Sep 2020 16:10:02 -0700 (PDT)
-From:   Rikard Falkeborn <rikard.falkeborn@gmail.com>
-To:     linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Rikard Falkeborn <rikard.falkeborn@gmail.com>
-Subject: [PATCH 2/3] firmware: arm_scmi: Constify ops pointers in scmi_handle
-Date:   Mon,  7 Sep 2020 01:04:51 +0200
-Message-Id: <20200906230452.33410-3-rikard.falkeborn@gmail.com>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200906230452.33410-1-rikard.falkeborn@gmail.com>
-References: <20200906230452.33410-1-rikard.falkeborn@gmail.com>
+        id S1726692AbgIGAQl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Sep 2020 20:16:41 -0400
+Received: from cmta18.telus.net ([209.171.16.91]:58656 "EHLO cmta18.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726564AbgIGAQk (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 6 Sep 2020 20:16:40 -0400
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id F4plkpO5iiMStF4pnk1gM8; Sun, 06 Sep 2020 18:16:38 -0600
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1599437798; bh=6f5D6BntBLDfIBY82JWUrBrCSFl5V3/wNPJtcHK/pHg=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=kC8Xt+UWxFS7tqq8znBSolSAkZ7ryjbHauCRJholmIHuOJhuvT4LBAfnPByWi8PXM
+         Fj4H8zj9OGpjmamWesFy0kbkiiwSOx0z9kk3CAlJcrm7NC6ObKrJJv8VSNh2b29e6I
+         jzKHTCt+27xnzZrOCbIPQX84/rhTccngzBAE3ZQEfcFiYbydBnItlRMNyCPJj5Lbm8
+         8Mh7KBWfX4mlFblSiMBdeO51cuwDEwhY4AZb+iJh/paeTQVldI7zXCDt3seTp0UXQN
+         ol++HF6egTP5Go6SNT8W4gTF9DdqkrPo8yoEsYY0uMmuO/DtOp8qXvCgiD2Zx6Q97L
+         AeiRc/eKWvNiQ==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.3 cv=X7os11be c=1 sm=1 tr=0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=kj9zAlcOel0A:10 a=NUCYY5ABiiWEOdNnIBYA:9
+ a=CjuIK1q_8ugA:10
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
+Cc:     "'Linux Documentation'" <linux-doc@vger.kernel.org>,
+        "'LKML'" <linux-kernel@vger.kernel.org>,
+        "'Peter Zijlstra'" <peterz@infradead.org>,
+        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
+        "'Giovanni Gherdovich'" <ggherdovich@suse.cz>,
+        "'Francisco Jerez'" <francisco.jerez.plata@intel.com>,
+        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>
+References: <4981405.3kqTVLv5tO@kreacher> <1709487.Bxjb1zNRZM@kreacher> <3226770.pJcYkdRNc2@kreacher> <122847018.uQ7iJ9lzrg@kreacher> <000901d674da$4521bda0$cf6538e0$@net>
+In-Reply-To: <000901d674da$4521bda0$cf6538e0$@net>
+Subject: RE: [PATCH v7] cpufreq: intel_pstate: Implement passive mode with HWP enabled
+Date:   Sun, 6 Sep 2020 17:16:32 -0700
+Message-ID: <000401d684ac$26ee4880$74cad980$@net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+        charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AdZsF+Ny9o2RVgG1QuO4ZJYAcV1MWgIFjVRQA3cqLPA=
+Content-Language: en-ca
+X-CMAE-Envelope: MS4wfCZvXPEvELx7qhybaoshebBIm6qp8gVxi6FxeGfTzSxZzoG52v1iLvek6iZjvzw9WJO5JYAkmINNOeLPU8AGJS0C74uVY0VfDfh4TVPVabbVwfcUGCQt
+ YZtwvFRoQSFJeWxodlaRaK2Dj8XlYt0N4GJzPNNiTiz0aCXQ2tAy1JLZqVoBoCbIdYpjZ8XuUB1gI7kULWd79kNhgW6ciKL9e2HHsNDguVUgzN+nLso0ComW
+ 5IyHx8Vd7ojxTxTu7wjbHTSIjO18g840WNR/+/hg+AF7HyGI8abFWu7I6LRocBNsIvfaFk2ErV1jygffRw+7eMGcy8NCDAoIb1FuKURSUYKg527+lKkYqLXg
+ xVG+5vSofK7kuNJ5C3lo3bGN8YR321R5/KjhxedLmsAWGaAjmIjSPKHj5xIZ1tmnVrf3f7XmWPjGjEESzliSrvnBQHijBv4QS9dtMe0zzdr2Y7GKdcY=
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These are never modified, so make them const to allow drivers to make
-them const.
+Hi Rafael,
 
-Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
----
- include/linux/scmi_protocol.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+On 2020.08.17 14:06 Doug Smythies wrote:
+> On 2020.08.06 05:04 Rafael J. Wysocki wrote:
+> 
+> > Allow intel_pstate to work in the passive mode with HWP enabled and
+> > make it set the HWP minimum performance limit (HWP floor) to the
+> > P-state value given by the target frequency supplied by the cpufreq
+> > governor, so as to prevent the HWP algorithm and the CPU scheduler
+> > from working against each other, at least when the schedutil governor
+> > is in use, and update the intel_pstate documentation accordingly.
+> 
+...
+> 
+> powersave governor:
+> acpi-cpufreq: good
+> intel_cpufreq hwp: bad
+> intel_cpufreq no hwp: good
 
-diff --git a/include/linux/scmi_protocol.h b/include/linux/scmi_protocol.h
-index 7e5dd7d1e221..05570afc7f74 100644
---- a/include/linux/scmi_protocol.h
-+++ b/include/linux/scmi_protocol.h
-@@ -279,12 +279,12 @@ struct scmi_notify_ops {
- struct scmi_handle {
- 	struct device *dev;
- 	struct scmi_revision_info *version;
--	struct scmi_perf_ops *perf_ops;
--	struct scmi_clk_ops *clk_ops;
--	struct scmi_power_ops *power_ops;
--	struct scmi_sensor_ops *sensor_ops;
--	struct scmi_reset_ops *reset_ops;
--	struct scmi_notify_ops *notify_ops;
-+	const struct scmi_perf_ops *perf_ops;
-+	const struct scmi_clk_ops *clk_ops;
-+	const struct scmi_power_ops *power_ops;
-+	const struct scmi_sensor_ops *sensor_ops;
-+	const struct scmi_reset_ops *reset_ops;
-+	const struct scmi_notify_ops *notify_ops;
- 	/* for protocol internal use */
- 	void *perf_priv;
- 	void *clk_priv;
--- 
-2.28.0
+It occurs to me that my expectations as to what 
+is meant by "powersave" might not agree with yours. 
+
+For the powersave governor, this is what we have now:
+
+intel_cpufreq hwp == intel_pstate hwp
+intel_cpufreq no hwp == acpi-cpufreq == always minimum freq
+intel_pstate no hwp ~= acpi-cpufreq/ondemand
+
+Is that your understanding/intention?
+
+My expectation was/is:
+
+intel_cpufreq hwp == intel_cpufreq no hwp == acpi-cpufreq == always minimum freq
+intel_pstate no hwp ~= acpi-cpufreq/ondemand
+intel_pstate hwp == Unique. Say, extremely course version of ondemand.
+
+... Doug
+
 
