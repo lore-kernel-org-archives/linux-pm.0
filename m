@@ -7,50 +7,48 @@ X-Spam-Status: No, score=-13.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DD498C433E2
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:55:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4497FC43461
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 17:03:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 963802078E
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:55:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F4DA21556
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 17:03:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599497751;
-	bh=dRhKoUthx2GXS1YIyhC1huELrdF/mVVRO3qG47TjWT8=;
+	s=default; t=1599498213;
+	bh=lup5T2irzIUCHMoPAIqsw8rXYWJKnE3Njzl1ilDEaho=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=oQGDNj6shh9PoIgn5s24j5L6+MSASp78sgGyVALr2I6H1DKrc8CgNT65X/mip2/m+
-	 z1AheEK916EWYA3rtwk7lf7Pt7DrtxUd6goifdc99lHXWF3tcqaaHn0BZ8HCaynOC5
-	 05Cnjzt2aoH6xTVUUb9mjsOj9Hv54jF95p6ISs1Y=
+	b=jdbsvl6JWk+YyH3iq6YY19hmqfdddsAVOhznfoCSkPACw21g/h4y6KN2Mq+pteLQP
+	 HrPvc/ZgbQO9Nbzgr8SgLQg4FrpZhEBkCwMURyjen13YaLaaYJT8rxLd+nJT1TQzSX
+	 sJ0ZIR3JEvSTSLeo2Xe0rsmJt4jYtqg+66GOB/ns=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730670AbgIGQzT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Sep 2020 12:55:19 -0400
-Received: from mail.kernel.org ([198.145.29.99]:48036 "EHLO mail.kernel.org"
+        id S1730669AbgIGQdU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Sep 2020 12:33:20 -0400
+Received: from mail.kernel.org ([198.145.29.99]:47044 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730748AbgIGQeR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Sep 2020 12:34:17 -0400
+        id S1730382AbgIGQdO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 7 Sep 2020 12:33:14 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EBCCF21D90;
-        Mon,  7 Sep 2020 16:34:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id F099421BE5;
+        Mon,  7 Sep 2020 16:33:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599496455;
-        bh=dRhKoUthx2GXS1YIyhC1huELrdF/mVVRO3qG47TjWT8=;
+        s=default; t=1599496393;
+        bh=lup5T2irzIUCHMoPAIqsw8rXYWJKnE3Njzl1ilDEaho=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=KANUzJvCPIRoitjISW6/TdqF1RM18xxNJZIrm7lE1XAT5VHqic/E9Y+mGC5x+sNxY
-         ynDLAa8SxPB0K4xSqE9NDYIpzTixeBjZrXOGDruaA9lXOAw65Gv9ZUmDe0Az0DFCef
-         JxLasqJSQQYcTYS/AOu3ZgZqecsXlLfaF+9kINBo=
+        b=K6MbQYZ5INwa1JNSj9hisgBAEhHom7EiwaZxUFsUS7ftnbLl0S/PoybgvGG6fS5hU
+         Ci4FdplmEk/CBq5AWgFSjeuAgXvZu++nBdeXHVRXg6azH39rXY/QVw8tEqFccubHzm
+         2oHQ4tFH6V+Wv2WjDxRS3Ertb8MYaz68YyK/Q8LM=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Francisco Jerez <currojerez@riseup.net>,
-        Caleb Callaway <caleb.callaway@intel.com>,
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 36/43] cpufreq: intel_pstate: Fix intel_pstate_get_hwp_max() for turbo disabled
-Date:   Mon,  7 Sep 2020 12:33:22 -0400
-Message-Id: <20200907163329.1280888-36-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.8 42/53] cpufreq: intel_pstate: Refuse to turn off with HWP enabled
+Date:   Mon,  7 Sep 2020 12:32:08 -0400
+Message-Id: <20200907163220.1280412-42-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200907163329.1280888-1-sashal@kernel.org>
-References: <20200907163329.1280888-1-sashal@kernel.org>
+In-Reply-To: <20200907163220.1280412-1-sashal@kernel.org>
+References: <20200907163220.1280412-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -60,45 +58,50 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Francisco Jerez <currojerez@riseup.net>
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-[ Upstream commit eacc9c5a927e474c173a5d53dd7fb8e306511768 ]
+[ Upstream commit 43298db3009f06fe5c69e1ca8b6cfc2565772fa1 ]
 
-This fixes the behavior of the scaling_max_freq and scaling_min_freq
-sysfs files in systems which had turbo disabled by the BIOS.
+After commit f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive
+mode with HWP enabled") it is possible to change the driver status
+to "off" via sysfs with HWP enabled, which effectively causes the
+driver to unregister itself, but HWP remains active and it forces the
+minimum performance, so even if another cpufreq driver is loaded,
+it will not be able to control the CPU frequency.
 
-Caleb noticed that the HWP is programmed to operate in the wrong
-P-state range on his system when the CPUFREQ policy min/max frequency
-is set via sysfs.  This seems to be because in his system
-intel_pstate_get_hwp_max() is returning the maximum turbo P-state even
-though turbo was disabled by the BIOS, which causes intel_pstate to
-scale kHz frequencies incorrectly e.g. setting the maximum turbo
-frequency whenever the maximum guaranteed frequency is requested via
-sysfs.
+For this reason, make the driver refuse to change the status to
+"off" with HWP enabled.
 
-Tested-by: Caleb Callaway <caleb.callaway@intel.com>
-Signed-off-by: Francisco Jerez <currojerez@riseup.net>
-Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-[ rjw: Minor subject edits ]
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/intel_pstate.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/intel_pstate.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 5bad88f6ddd59..b9ca89dc75c7d 100644
+index 8c730a47e0537..97ed4fd0f1342 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -762,7 +762,7 @@ static void intel_pstate_get_hwp_max(unsigned int cpu, int *phy_max,
+@@ -2534,9 +2534,15 @@ static int intel_pstate_update_status(const char *buf, size_t size)
+ {
+ 	int ret;
  
- 	rdmsrl_on_cpu(cpu, MSR_HWP_CAPABILITIES, &cap);
- 	WRITE_ONCE(all_cpu_data[cpu]->hwp_cap_cached, cap);
--	if (global.no_turbo)
-+	if (global.no_turbo || global.turbo_disabled)
- 		*current_max = HWP_GUARANTEED_PERF(cap);
- 	else
- 		*current_max = HWP_HIGHEST_PERF(cap);
+-	if (size == 3 && !strncmp(buf, "off", size))
+-		return intel_pstate_driver ?
+-			intel_pstate_unregister_driver() : -EINVAL;
++	if (size == 3 && !strncmp(buf, "off", size)) {
++		if (!intel_pstate_driver)
++			return -EINVAL;
++
++		if (hwp_active)
++			return -EBUSY;
++
++		return intel_pstate_unregister_driver();
++	}
+ 
+ 	if (size == 6 && !strncmp(buf, "active", size)) {
+ 		if (intel_pstate_driver) {
 -- 
 2.25.1
 
