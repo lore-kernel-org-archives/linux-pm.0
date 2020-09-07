@@ -2,57 +2,106 @@ Return-Path: <SRS0=fmUR=CQ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A7A4C43461
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 15:14:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 923E8C433E2
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:47:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DA019217BA
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 15:14:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1073E208C7
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:47:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599497276;
+	bh=Wvu8NGaWM525ZYiB8wDCt6ajdHm2w09PCo61MkOKhLI=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
+	b=LycTpipyInavE0pKpqSHPyxPZm1AEyLE9GXKNuVTpufCKirrZQ5NsxRUUe/PM3oFn
+	 8vD4PrJbXcUldGZ7IOLyslWBzMYvBL2rdI2u9OR17Y8ZHlfZBp8AKX1eW8fEHlIROC
+	 Sam4u2L3S8LZhJVURswdWuZRtuVTt0GoYtvW9nsc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730020AbgIGPNy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Sep 2020 11:13:54 -0400
-Received: from vps0.lunn.ch ([185.16.172.187]:47336 "EHLO vps0.lunn.ch"
+        id S1730434AbgIGQra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Sep 2020 12:47:30 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49218 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730108AbgIGPNq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Sep 2020 11:13:46 -0400
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94)
-        (envelope-from <andrew@lunn.ch>)
-        id 1kFII4-00Dcq2-Ff; Mon, 07 Sep 2020 16:38:40 +0200
-Date:   Mon, 7 Sep 2020 16:38:40 +0200
-From:   Andrew Lunn <andrew@lunn.ch>
-To:     Pali =?iso-8859-1?Q?Roh=E1r?= <pali@kernel.org>
-Cc:     Jason Cooper <jason@lakedaemon.net>,
-        Gregory Clement <gregory.clement@bootlin.com>,
-        Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: armada-37xx: Add missing MODULE_DEVICE_TABLE
-Message-ID: <20200907143840.GU3112546@lunn.ch>
-References: <20200907132716.6379-1-pali@kernel.org>
+        id S1730815AbgIGQfU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 7 Sep 2020 12:35:20 -0400
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id E6D8721D94;
+        Mon,  7 Sep 2020 16:35:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599496519;
+        bh=Wvu8NGaWM525ZYiB8wDCt6ajdHm2w09PCo61MkOKhLI=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=aSX6PHErAvmcusnqoaeg2dmdxVuqJYswp8tETIme3Wckk6Kgm8W8ywYkxV6exgKq8
+         yOFH6TfpNb8UR2dyJovoY2WSIG73Z2BMq4X0bFbR6LhCSyyYEigxzECDWETuUsFra9
+         VDZCJbkrpNeikmVM29eMKDaVbldQo7yx7veZSJFI=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.14 14/17] cpufreq: intel_pstate: Refuse to turn off with HWP enabled
+Date:   Mon,  7 Sep 2020 12:34:57 -0400
+Message-Id: <20200907163500.1281543-14-sashal@kernel.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200907163500.1281543-1-sashal@kernel.org>
+References: <20200907163500.1281543-1-sashal@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+X-stable: review
+X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20200907132716.6379-1-pali@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Sep 07, 2020 at 03:27:16PM +0200, Pali Rohár wrote:
-> CONFIG_ARM_ARMADA_37XX_CPUFREQ is tristate option and therefore this
-> cpufreq driver can be compiled as a module. This patch adds missing
-> MODULE_DEVICE_TABLE which generates correct modalias for automatic
-> loading of this cpufreq driver when is compiled as an external module.
-> 
-> Signed-off-by: Pali Rohár <pali@kernel.org>
-> Fixes: 92ce45fb875d7 ("cpufreq: Add DVFS support for Armada 37xx")
+From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
 
-Reviewed-by: Andrew Lunn <andrew@lunn.ch>
+[ Upstream commit 43298db3009f06fe5c69e1ca8b6cfc2565772fa1 ]
 
-    Andrew
+After commit f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive
+mode with HWP enabled") it is possible to change the driver status
+to "off" via sysfs with HWP enabled, which effectively causes the
+driver to unregister itself, but HWP remains active and it forces the
+minimum performance, so even if another cpufreq driver is loaded,
+it will not be able to control the CPU frequency.
+
+For this reason, make the driver refuse to change the status to
+"off" with HWP enabled.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/cpufreq/intel_pstate.c | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
+index 5c41dc9aaa46d..be1a7bb0b4011 100644
+--- a/drivers/cpufreq/intel_pstate.c
++++ b/drivers/cpufreq/intel_pstate.c
+@@ -2098,9 +2098,15 @@ static int intel_pstate_update_status(const char *buf, size_t size)
+ {
+ 	int ret;
+ 
+-	if (size == 3 && !strncmp(buf, "off", size))
+-		return intel_pstate_driver ?
+-			intel_pstate_unregister_driver() : -EINVAL;
++	if (size == 3 && !strncmp(buf, "off", size)) {
++		if (!intel_pstate_driver)
++			return -EINVAL;
++
++		if (hwp_active)
++			return -EBUSY;
++
++		return intel_pstate_unregister_driver();
++	}
+ 
+ 	if (size == 6 && !strncmp(buf, "active", size)) {
+ 		if (intel_pstate_driver) {
+-- 
+2.25.1
+
