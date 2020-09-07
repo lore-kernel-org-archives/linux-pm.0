@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-13.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B2E8C43461
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:51:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79549C43461
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:55:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 08D6A2080A
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:51:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30BE321556
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Sep 2020 16:55:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599497471;
-	bh=kRGI6MiUzQgiO4GjNB5LCtBaozVobZUa1XRfOrzTVtE=;
+	s=default; t=1599497719;
+	bh=VZJnraZM6yoNBszRUhaP+fnBHLTcAb3TgTZWtLcSQ6c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=DPVXGDD028JfljwuK4aw0mxUSIskjPy6g/8/6q9pGVXWgfUNalmI4MTnHf66Cs5tZ
-	 +L9RdhFLTerjhvY4RDuqwYpaplCA74utMOaFaU3hSY1ctYZ+Zh806192rLgmyusL46
-	 7C5XB7tQmSxYLOcuHRfhLzapS+tohphHIGKZR9zQ=
+	b=YNQjyyNMliHuDH44J+dMbe4ySBeoaD0uyuRH1Bzay7JyGee/EP554LK+TbSXge/U5
+	 j9rsO8IwCC1X9WfkXlfOZcQPuC44sbKvMUiS41a5N0nEJZqt17iJKrhIGFrGw3Qe+S
+	 999aqpI2lLEl8TAAzGNTyWPorKx3hZVPdO6Un+l0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730793AbgIGQe6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Sep 2020 12:34:58 -0400
-Received: from mail.kernel.org ([198.145.29.99]:48602 "EHLO mail.kernel.org"
+        id S1731021AbgIGQzD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Sep 2020 12:55:03 -0400
+Received: from mail.kernel.org ([198.145.29.99]:48164 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730773AbgIGQew (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Sep 2020 12:34:52 -0400
+        id S1730749AbgIGQeR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 7 Sep 2020 12:34:17 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 3FE8321D90;
-        Mon,  7 Sep 2020 16:34:51 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id BB68121D82;
+        Mon,  7 Sep 2020 16:34:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599496492;
-        bh=kRGI6MiUzQgiO4GjNB5LCtBaozVobZUa1XRfOrzTVtE=;
+        s=default; t=1599496454;
+        bh=VZJnraZM6yoNBszRUhaP+fnBHLTcAb3TgTZWtLcSQ6c=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=okRBvkJ4ZC45CGalQHOdwmoNcoxWYiD/jQkUXYqmVJ8dBnX4w8n0RpgKUz5uX5YzT
-         Eq2AGOQo0xaapfwxkcmF7g+4aob2uPSQdv+HcSJl0mXNm6lVgB391EA+3boaKpep4x
-         E3BkkkHOqHsx/UToy5QpjQkMohx+DAwBpIDkYwDo=
+        b=xUm5ui/M9PL0A7FbaknGP2dK8yMBba2/tJ5xa0Yq0fxLiZQSolWUbPUuX2Fbbp8nD
+         KwVYVTgSCH+l+xiDV8NJJG6fmgGfUDiUSdcJR/lWavdacz5zhD8Qo//Ik8vh+oXsvn
+         U+ftZNrj3QKmIYjzvSARzkiOWeDGmMqCzjTHCh+M=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 20/26] cpufreq: intel_pstate: Refuse to turn off with HWP enabled
-Date:   Mon,  7 Sep 2020 12:34:20 -0400
-Message-Id: <20200907163426.1281284-20-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 35/43] cpufreq: intel_pstate: Refuse to turn off with HWP enabled
+Date:   Mon,  7 Sep 2020 12:33:21 -0400
+Message-Id: <20200907163329.1280888-35-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200907163426.1281284-1-sashal@kernel.org>
-References: <20200907163426.1281284-1-sashal@kernel.org>
+In-Reply-To: <20200907163329.1280888-1-sashal@kernel.org>
+References: <20200907163329.1280888-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -80,10 +80,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index 99166000ffb77..8fa22aa2ac65b 100644
+index 927eb3fd23660..5bad88f6ddd59 100644
 --- a/drivers/cpufreq/intel_pstate.c
 +++ b/drivers/cpufreq/intel_pstate.c
-@@ -2325,9 +2325,15 @@ static int intel_pstate_update_status(const char *buf, size_t size)
+@@ -2533,9 +2533,15 @@ static int intel_pstate_update_status(const char *buf, size_t size)
  {
  	int ret;
  
