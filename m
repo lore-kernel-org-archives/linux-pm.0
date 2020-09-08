@@ -2,122 +2,99 @@ Return-Path: <SRS0=Ia5J=CR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B695AC43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:55:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DFCAC433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 19:13:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8126B20936
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:55:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="k3aS2dqg"
+	by mail.kernel.org (Postfix) with ESMTP id D28DC20C09
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 19:13:34 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731384AbgIHRx7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 13:53:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56708 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731575AbgIHQMs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2020 12:12:48 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8BDF9C0612A0;
-        Tue,  8 Sep 2020 06:02:31 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id x77so9136842lfa.0;
-        Tue, 08 Sep 2020 06:02:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=sXdYuavoSim9Tcuk44WZc9LhOUgtTFe2gPoDBIPVjng=;
-        b=k3aS2dqgVxh8tukyJeMOiUKibIP2o5EK1HbLTyoj1EIHk7TXBXfx91plVBpAbo35qy
-         NaXcni2JH8medKewgjiZU/CwZhuyyzDFlI/Z9xpUeCU0lkCyZD45E5ZPHdBEouYyaXdg
-         xlEfoR8jczhnh9u9zzBkqeqjV3Blq31P2SC6AssPsVcuDQqHqKt7eow30dWh3i1Cr3vV
-         dG7WT7DbQUgb+vMjiIpI8zjM+S5d5DWAK86VF9S+L70rvooQyCzTJanbXzRP6oXzAFbn
-         QrqjtwB0bL4Bj4ik0lsOJeVFZjAvfnQ/X+Qw1d8e+ajyQj5kGEZOGd7OE2CvQF5FS4D5
-         aDeg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=sXdYuavoSim9Tcuk44WZc9LhOUgtTFe2gPoDBIPVjng=;
-        b=VmCVc9rfIotMPNgc37q0ACxdPm+ZjfxTFqzUhdwQTVxR0l88OWaUkGIfGgxBUm7Enq
-         ZcsVgLFG5JeQzPSI+jsxGwX1xtfHXH0FljM7Ed57/FDJQ6pK1SIfqLyCylwqNW7wbDsT
-         KOCzGwRgVaHBa3ezLpBmv6z1AaP+39cxt75Z271BL8Z8qPiDfDVi1xfQlMCLwDHJR4eO
-         SGL3zUiFdKKidb29xW/63ls1KZSvyviW26w8eq3pIjy0GoLrdBNzkpxfUKPRmpYDw4rA
-         B7sUcqk7Wn9fJQnPz4vK2AN/GI5Lr1EmCqKvdeo5HQvZEYqCzvJi7locVQnNH9VplIhb
-         zdaA==
-X-Gm-Message-State: AOAM530sOEJdPd6P2q5jg517yPWD6P/f/W8yDBG58AYlChQUwGbBZe3p
-        T1RxsP3TcdF2yi+R60NVoNsynQ/IWh4=
-X-Google-Smtp-Source: ABdhPJyW70T/kdnCb/1pV8W77Azb/IMUM2E4AXoICzEHT0yIVQzTbi8wqv56HWe91+MN1H6JJWYFWw==
-X-Received: by 2002:a19:8446:: with SMTP id g67mr12202070lfd.87.1599570149663;
-        Tue, 08 Sep 2020 06:02:29 -0700 (PDT)
-Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.googlemail.com with ESMTPSA id x11sm10286424ljh.106.2020.09.08.06.02.28
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 08 Sep 2020 06:02:28 -0700 (PDT)
-Subject: Re: [PATCH] PM / devfreq: tegra30: disable clock on error in probe
-To:     Dan Carpenter <dan.carpenter@oracle.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-References: <20200908072557.GC294938@mwanda>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <0d7fd969-8957-5db0-8c4d-2077e924181b@gmail.com>
-Date:   Tue, 8 Sep 2020 16:02:28 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1731207AbgIHTNc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 15:13:32 -0400
+Received: from foss.arm.com ([217.140.110.172]:56774 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731161AbgIHQFH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 12:05:07 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4CA921682;
+        Tue,  8 Sep 2020 07:09:03 -0700 (PDT)
+Received: from bogus (unknown [10.57.10.112])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 4059F3F73C;
+        Tue,  8 Sep 2020 07:09:01 -0700 (PDT)
+Date:   Tue, 8 Sep 2020 15:08:51 +0100
+From:   Sudeep Holla <sudeep.holla@arm.com>
+To:     Amit Kucheria <amitk@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Rob Herring <robh+dt@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Taniya Das <tdas@codeaurora.org>
+Subject: Re: [PATCH 5/7] cpufreq: qcom-hw: Use regmap for accessing hardware
+ registers
+Message-ID: <20200908140842.GA17621@bogus>
+References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org>
+ <20200908075716.30357-6-manivannan.sadhasivam@linaro.org>
+ <20200908103444.5e526uawa45om6lt@vireshk-i7>
+ <20200908111141.GB23095@mani>
+ <20200908111813.bbgfxo5v7qt6ujpc@vireshk-i7>
+ <CAHLCerMndYeEBOxtj8mV7OdOP9pufx+C7n1F9m+CFAneuh8DnA@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20200908072557.GC294938@mwanda>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHLCerMndYeEBOxtj8mV7OdOP9pufx+C7n1F9m+CFAneuh8DnA@mail.gmail.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-08.09.2020 10:25, Dan Carpenter пишет:
-> This error path needs to call clk_disable_unprepare().
+On Tue, Sep 08, 2020 at 05:18:35PM +0530, Amit Kucheria wrote:
+> On Tue, Sep 8, 2020 at 4:48 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+> >
+> > On 08-09-20, 16:41, Manivannan Sadhasivam wrote:
+> > > On 0908, Viresh Kumar wrote:
+> > > > On 08-09-20, 13:27, Manivannan Sadhasivam wrote:
+> > > > > Use regmap for accessing cpufreq registers in hardware.
+> > > >
+> > > > Why ? Please mention why a change is required in the log.
+> > > >
+> > >
+> > > Only because it is recommended to use regmap for abstracting the hw access.
+> >
+> > Yes it can be very useful in abstracting the hw access in case of
+> > busses like SPI/I2C, others, but in this case there is only one way of
+> > doing it with the exact same registers. I am not sure it is worth it
+> > here. FWIW, I have never played with regmaps personally, and so every
+> > chance I can be wrong here.
 > 
-> Fixes: 7296443b900e ("PM / devfreq: tegra30: Handle possible round-rate error")
-> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
-> ---
-> ---
->  drivers/devfreq/tegra30-devfreq.c | 4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
+> One could handle the reg offsets through a struct initialisation, but
+> then you end up with lots of #defines for bitmasks and bits for each
+> version of the IP. And the core code becomes a bit convoluted IMO,
+> trying to handle the differences.
 > 
-> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-> index e94a27804c20..dedd39de7367 100644
-> --- a/drivers/devfreq/tegra30-devfreq.c
-> +++ b/drivers/devfreq/tegra30-devfreq.c
-> @@ -836,7 +836,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
->  	if (rate < 0) {
->  		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
-> -		return rate;
-> +		err = rate;
-> +		goto disable_clk;
->  	}
->  
->  	tegra->max_freq = rate / KHZ;
-> @@ -897,6 +898,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	dev_pm_opp_remove_all_dynamic(&pdev->dev);
->  
->  	reset_control_reset(tegra->reset);
-> +disable_clk:
->  	clk_disable_unprepare(tegra->clock);
->  
->  	return err;
+> regmap hides the differences of the bit positions and register offsets
+> between several IP versions.
 > 
+> > > Moreover it handles the proper locking for us in the core (spinlock vs mutex).
+> >
+> > What locking do you need here ?
+> 
+> Right, locking isn't the main reason here.
 
-Hello, Dan! Thank you for the patch!
+If that is the case, IMO it is better to set disable_lock or something
+in config especially as this regmap_write is used in qcom_cpufreq_hw_fast_switch
 
-Reviewed-by: Dmitry Osipenko <digetx@gmail.com>
+-- 
+Regards,
+Sudeep
