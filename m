@@ -2,105 +2,69 @@ Return-Path: <SRS0=Ia5J=CR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 71E17C43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 08:05:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C493CC433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 08:27:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3C95921532
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 08:05:54 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="CLdfO9Rz"
+	by mail.kernel.org (Postfix) with ESMTP id 7D20521D79
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 08:27:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599553632;
+	bh=N6KwgwEUUkfj+0KseKFgjtNwc4nuJeqgrPxo94xJcQ0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=svYPYTRBam0KpsEwGE09mXbcI3qE4STC+vHkOfiNTymprT3uq7MirFFDWdHv8sUu6
+	 pvqZRruV6e/ssOPNwGjWPzHOsgMGEl09maMm0axNR2qL5OA5TzoNWD8aY4JHMkb/eX
+	 F4a9TsqsZ8MG5Uea9P7NxFvgM0bYsmg2qoUmLEmQ=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729908AbgIHH5f (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 03:57:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36282 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729723AbgIHH5c (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2020 03:57:32 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3849AC061755
-        for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2020 00:57:31 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id w7so10297114pfi.4
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2020 00:57:31 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=ITdkk36tx9oBNoeh+htptP26+GpLBLf3As2BXQ4eM1k=;
-        b=CLdfO9RzXJzpfk8lmE2Wst3FdItUkCfAYmuowNuE88a7a1WPiN6S9D5Z3S/rzKmDLM
-         haVL+hkxhNc+BfT6GpMVG4VRBJTFkKHn6vsyrMuSKCO241m+QripjjpGjtO8IABKQDI6
-         7T/IJbulr09PZ59rrhIa4yASomd9RbTXUD8b1R5Hw8orz8J8Q+Ella/jW9+o+LhszXYf
-         fhidD76Q8Tr+DXLcTeCxUj+F2HJJCXx1QmoYQokl+ziA+k0xaUrLEA96WofYQaS+xqG0
-         /ESezN1Pf0+wA6FkZrXvYkVYhUqZpzxHymCNtZuaoJiP8PjTI/ZflhvJ/f/AAcWSTz6I
-         mchg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=ITdkk36tx9oBNoeh+htptP26+GpLBLf3As2BXQ4eM1k=;
-        b=C7cK7KsaJ6zs6Z40y0WQTOfPMFoi21l1u4sNKWwt7gD+X+a9wzqQEmKvJA/7H6w2Mc
-         tBNmWBSGJNJIDOl+qIigUVRmH+SyX7mkiVSJR28y0wYmoYwAzgz/xKzz/6qg+cyJ09GG
-         hpM1Y3vS5oWvnGksToPjtfD/YlBMFrEWklMiR81ovUA32Iy1mw2Bwds72j/eTdoNlLeQ
-         RkO5NYFjcuRDBSwq455NI0K5pJwGdHsApO4dcwxUiBuaDenJhg4kUjBDCqixLxfe1gL+
-         3Bxc6Tf9YofXZx200llj6gaGyLMAEHnlKB1KuB1OGR4CJJtE6U70gg5tWxrwWajtwvH9
-         YdBw==
-X-Gm-Message-State: AOAM5320iATSZfWNBTNgtrVQeCc5lwhvFYruwmySK0i7d8/WJk6yHSlz
-        B1YTr2TX/jKalU02B3Y5rq13
-X-Google-Smtp-Source: ABdhPJxQqQutMxwbopIVDuWQ82nAqur0M9bIpK2rrrtnp1TxBVoi90q3P+vr1rg4AlMOCvDjvycO5Q==
-X-Received: by 2002:a17:902:6945:: with SMTP id k5mr2325037plt.131.1599551850609;
-        Tue, 08 Sep 2020 00:57:30 -0700 (PDT)
-Received: from localhost.localdomain ([103.59.133.81])
-        by smtp.googlemail.com with ESMTPSA id m21sm7560154pfo.13.2020.09.08.00.57.26
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Sep 2020 00:57:29 -0700 (PDT)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org,
-        agross@kernel.org, bjorn.andersson@linaro.org
-Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, dmitry.baryshkov@linaro.org,
-        tdas@codeaurora.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH 0/7] Add CPUFreq support for SM8250 SoC
-Date:   Tue,  8 Sep 2020 13:27:09 +0530
-Message-Id: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.17.1
+        id S1729744AbgIHI1L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 04:27:11 -0400
+Received: from mail.kernel.org ([198.145.29.99]:58802 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729564AbgIHI1K (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 04:27:10 -0400
+Received: from localhost (83-86-74-64.cable.dynamic.v4.ziggo.nl [83.86.74.64])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id EAD9D2076C;
+        Tue,  8 Sep 2020 08:27:09 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599553630;
+        bh=N6KwgwEUUkfj+0KseKFgjtNwc4nuJeqgrPxo94xJcQ0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Kp0WFZht4dl08Dtqmpc5qpcXEFRgqRB4GQq3GSFWwNJvAVLi1mCynHkn5bAC3Veym
+         uCpRSoJcX83s1Yo7d+p6IbwonioVHyZ628OcWq3fUpgAlCyDnXeqJThPhzE/7d8Rv4
+         31km3LScm8DwnYrBTzALqrNXJbfNkvvpl3mf98x4=
+Date:   Tue, 8 Sep 2020 10:27:22 +0200
+From:   Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To:     Joe Perches <joe@perches.com>
+Cc:     Sudeep Holla <sudeep.holla@arm.com>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Luis Chamberlain <mcgrof@kernel.org>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 1/4] drivers core: Use sysfs_emit and sysfs_emit_at for
+ show(device *...) functions
+Message-ID: <20200908082722.GA704757@kroah.com>
+References: <cover.1599501047.git.joe@perches.com>
+ <1fdeef21167fcf96c94255349401d004a18b7243.1599501047.git.joe@perches.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1fdeef21167fcf96c94255349401d004a18b7243.1599501047.git.joe@perches.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+On Mon, Sep 07, 2020 at 10:58:05AM -0700, Joe Perches wrote:
+> Convert the various sprintf fmaily calls in sysfs device show functions
+> to sysfs_emit and sysfs_emit_at for PAGE_SIZE buffer safety.
 
-This series adds CPUFreq support for Qualcomm SM8250 SoC. The existing
-qcom-hw driver is reworked to support the EPSS block on this SoC which
-handles the CPUFreq duties.
+But no sysfs_emit_at() calls are used in this patch :(
 
-The EPSS block supports additional features for which incremental patches
-will be submitted on top of this series!
+thanks,
 
-Thanks,
-Mani
-
-Bjorn Andersson (1):
-  arm64: dts: qcom: sm8250: Add cpufreq hw node
-
-Manivannan Sadhasivam (6):
-  dt-bindings: cpufreq: cpufreq-qcom-hw: Document SM8250 compatible
-  cpufreq: qcom-hw: Make use of cpufreq driver_data for passing pdev
-  cpufreq: qcom-hw: Make use of of_match data for offsets and row size
-  cpufreq: qcom-hw: Use regmap for accessing hardware registers
-  cpufreq: qcom-hw: Add cpufreq support for SM8250 SoC
-  cpufreq: qcom-hw: Use devm_platform_ioremap_resource() to simplify
-    code
-
- .../bindings/cpufreq/cpufreq-qcom-hw.txt      |   2 +-
- arch/arm64/boot/dts/qcom/sm8250.dtsi          |  22 +++
- drivers/cpufreq/qcom-cpufreq-hw.c             | 160 +++++++++++++-----
- 3 files changed, 143 insertions(+), 41 deletions(-)
-
--- 
-2.17.1
-
+greg k-h
