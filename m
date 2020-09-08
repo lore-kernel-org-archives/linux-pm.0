@@ -2,116 +2,81 @@ Return-Path: <SRS0=Ia5J=CR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 896C5C43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:17:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id ABA28C43461
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:32:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 523592145D
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:17:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YB1FIRYy"
+	by mail.kernel.org (Postfix) with ESMTP id 68B472080A
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:32:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599597160;
+	bh=ae6AMbW5Zbt4RvWuZiatLoN8hwJFRLDqXNWITg74j8A=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=Nq3YXYRO5+/Ny6Owr5VG32WdIseBFtQcg853RaTEE4b4waC/k48h205C4cq6LuW81
+	 NOZ/8B3NGYUtnTyTw8YvB5Ek9skjOLopji6bhWuEqNYjEezzm/nIxe2MfodQvPUDnS
+	 QMaiMYRaGDDN7oidw7DyPto9xoOCL4Gz9k6+vADk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730633AbgIHUQ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 16:16:59 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46398 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729305AbgIHPKB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Sep 2020 11:10:01 -0400
-Received: from mail-ot1-x341.google.com (mail-ot1-x341.google.com [IPv6:2607:f8b0:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C7B57C0A5534
-        for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2020 07:58:24 -0700 (PDT)
-Received: by mail-ot1-x341.google.com with SMTP id m12so12132852otr.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2020 07:58:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=9gggthlY+o0JLKVW4bDabhGMPHFWypt8dqyEIpp5HBQ=;
-        b=YB1FIRYyzS+ivsL/x+45ExVO0WH4Is9QWS50BvdosbbeX3Gi9nCtUp3J82nNmljBY6
-         2JWQ8OutTr8NVlmEj5knAEd5QvGTHBgwJGuOKKBrxGLIqUrSTCfdGuVlSplWSBuVYG50
-         1gRt3j7MlGKO3Vgm/lbDnz/Rr6omJsM1OVD/v0oDJTX71dK7psTcnMmqtUpToxc8zybt
-         4ejNbNqpq110GFV6L5J6HSaFqA/UgkLEzxllqqnoKmQ4UbGu6gRzTXzpmg+clp3rTrUT
-         SlGD+3IhJ/dsetPuwDX0gLdqgHqVCPqxO1fgcGCW6gJcc09yKjpzpaQTKnrRam+Iva7t
-         vlcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=9gggthlY+o0JLKVW4bDabhGMPHFWypt8dqyEIpp5HBQ=;
-        b=YSUPXQHf12/OozTPxnpu5wsKF90X6lrElXp44OOteL6aEl1K6LT2Va7MarL27YXVjg
-         Uqq8ykGbWSSLZQ3livUDNL7hJNF90w2P46JEeZlneJnfEMJbwDcVt0HvRNQMOE6ePlwS
-         ZfzoL6a9+S5mXTozsmqwY8AFtSN9kzI5iiZEu/TFzl6Z9qJ/kWLWxJhceQPVRPCHVs2x
-         ZINl3uZSiMqLX3Y7hNfDgTq2Y8D8Nho/jH64iDQAC5nKT6pq5G6JaK4Rsvq01kkjL2kP
-         56Jg2oTr7PVBCgdlg+iarpGSxBsEJ2JRZQdwvO1IZXJHaqakILUd53oyU0sYS1j4Y3VI
-         Mtew==
-X-Gm-Message-State: AOAM530Cs1vTQ8pZ7QoGiT/krjwoLvYYQHF989woQkx1HJ7ZctXBVqMZ
-        fB94RkFZcZQyo8OoZ2j7sH3u2A==
-X-Google-Smtp-Source: ABdhPJwzWVepX/rnpXMX9hm2hay4q1Tqm8YqYT8JJBjjmrghpuG4jHcnsb8c87sfS0CmGWklIjZJNw==
-X-Received: by 2002:a9d:7590:: with SMTP id s16mr1860963otk.23.1599577104131;
-        Tue, 08 Sep 2020 07:58:24 -0700 (PDT)
-Received: from yoga ([2605:6000:e5cb:c100:8898:14ff:fe6d:34e])
-        by smtp.gmail.com with ESMTPSA id y24sm3515779ooq.38.2020.09.08.07.58.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Sep 2020 07:58:23 -0700 (PDT)
-Date:   Tue, 8 Sep 2020 09:58:19 -0500
-From:   Bjorn Andersson <bjorn.andersson@linaro.org>
-To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc:     rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org,
-        agross@kernel.org, amitk@kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, dmitry.baryshkov@linaro.org,
-        tdas@codeaurora.org
-Subject: Re: [PATCH 1/7] dt-bindings: cpufreq: cpufreq-qcom-hw: Document
- SM8250 compatible
-Message-ID: <20200908145819.GN3715@yoga>
-References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org>
- <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
+        id S1729037AbgIHUci (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 16:32:38 -0400
+Received: from mail.kernel.org ([198.145.29.99]:40878 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726434AbgIHUci (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 16:32:38 -0400
+Received: from mail-ed1-f54.google.com (mail-ed1-f54.google.com [209.85.208.54])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9AA592080A;
+        Tue,  8 Sep 2020 20:32:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599597157;
+        bh=ae6AMbW5Zbt4RvWuZiatLoN8hwJFRLDqXNWITg74j8A=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=a/drOXrPUFcSOe5T7Wu/Brg0cAwHxDPwLy6+IbSTLvBWnzxRifbReAuKkjG8atNCX
+         DA6OTYolrj8KEkjEbdriEltxGOX7eWXwQhPtxcuak2nfY/PcZyFt975+sRtJbkrTC1
+         RQu6KElntPRstPYuVXNyaFQOq4Rm7Mc1AYYvdAV4=
+Received: by mail-ed1-f54.google.com with SMTP id l63so395293edl.9;
+        Tue, 08 Sep 2020 13:32:37 -0700 (PDT)
+X-Gm-Message-State: AOAM531TdnlK3rpoV06hbOj+gyZHH6eSItz9tS8+M8w/P9B8HITric/h
+        xVCzhM3fxMd6BUUHjtN/TgeCYq7AlJag5RPk198=
+X-Google-Smtp-Source: ABdhPJwMA0H8NIde0m0lJZ/ingPzRtfE0khao8PRkl6XIflfEfvU5DX+zreF3O7C3tOpXiUr8SA55OXc2jr2Fth2PLo=
+X-Received: by 2002:a50:ab1d:: with SMTP id s29mr887456edc.246.1599597156268;
+ Tue, 08 Sep 2020 13:32:36 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
+References: <20200730143122.28519-1-dmurphy@ti.com> <20200730143122.28519-2-dmurphy@ti.com>
+In-Reply-To: <20200730143122.28519-2-dmurphy@ti.com>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Tue, 8 Sep 2020 22:32:24 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPeTWko5zD-AJiAud+QvXgSj9_jjvEx3aBCNqRSYL0iJmQ@mail.gmail.com>
+Message-ID: <CAJKOXPeTWko5zD-AJiAud+QvXgSj9_jjvEx3aBCNqRSYL0iJmQ@mail.gmail.com>
+Subject: Re: [PATCH 2/2] power: bq27xxx: Fix spacing style and white space issues
+To:     Dan Murphy <dmurphy@ti.com>
+Cc:     sre@kernel.org, afd@ti.com, pali@kernel.org,
+        linux-pm@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue 08 Sep 02:57 CDT 2020, Manivannan Sadhasivam wrote:
-
-> Document the SM8250 SoC specific compatible for Qualcomm Cpufreq HW. The
-> hardware block which carries out CPUFreq operations on SM8250 SoC is
-> called EPSS.
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
-
-Please follow up, after this has been accepted, with a conversion of
-this binding to yaml.
-
-Regards,
-Bjorn
-
+On Thu, 30 Jul 2020 at 16:32, Dan Murphy <dmurphy@ti.com> wrote:
+>
+> Fix spacing style issues with the chip data array.  As well as fix
+> missing new line after variable declaration.
+>
+> Signed-off-by: Dan Murphy <dmurphy@ti.com>
 > ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> index 33856947c561..aea4ddb2b9e8 100644
-> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-> @@ -8,7 +8,7 @@ Properties:
->  - compatible
->  	Usage:		required
->  	Value type:	<string>
-> -	Definition:	must be "qcom,cpufreq-hw".
-> +	Definition:	must be "qcom,cpufreq-hw" or "qcom,sm8250-epss".
->  
->  - clocks
->  	Usage:		required
-> -- 
-> 2.17.1
-> 
+>  drivers/power/supply/bq27xxx_battery.c | 63 ++++++++++++++------------
+>  1 file changed, 33 insertions(+), 30 deletions(-)
+
+Hi all,
+
+Different topic. Do you know what is happening with Andrew's email? I
+receive bounces with 550, so permanent error (no recipient under this
+address).
+
+Best regards,
+Krzysztof
