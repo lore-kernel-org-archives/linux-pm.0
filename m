@@ -2,115 +2,84 @@ Return-Path: <SRS0=Ia5J=CR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5741CC43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 14:52:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CE56C43461
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:31:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 20E0F21D82
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 14:52:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 66921206A4
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:31:23 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599576774;
-	bh=ltST+N2nkPHvcvm7JM5iKGeE+dIaJdibruzqpP8T40g=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=n3gwgtVr3RFt5FlHnBQNw+I+WGonw66+5b0BgquJErodiXA+G07Du1pBoubu1UAe9
-	 4CMOe+ghr7GfuvKYOBOqmgpQC6PNEsrTMUBitBBHHh+Th00Q9CQYFwGFX52OJxoIHP
-	 feUYUgQZOn8ngHf5NPkBYAI80GuG3tGzKmhDjPbg=
+	s=default; t=1599582683;
+	bh=jo8XYvozevoqwLnr8Q8ChiN/Mq4AJaD2/hqaujjU+jw=;
+	h=From:To:Cc:Subject:Date:List-ID:From;
+	b=iVrTwPZRWzkmgTnDSsQYOMhQXO1lLybA7K9TT7MADlcFxBEqrqoqyZujwFFU8bldy
+	 ph2MxS0Y0SvdoSQAcyj6/y+72wUDEOudOlpj2Zv0QKAVxsj3Hu8n4yl6kKBTnBC+ve
+	 F71oEwdSQCZSg6ontGU0IN3vsx93Hc/EN+KRBjsw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729791AbgIHOws (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 10:52:48 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41852 "EHLO mail.kernel.org"
+        id S1731712AbgIHQay (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 12:30:54 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33604 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729781AbgIHO0H (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Sep 2020 10:26:07 -0400
-Received: from mail-ua1-f43.google.com (mail-ua1-f43.google.com [209.85.222.43])
+        id S1731436AbgIHQa1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 12:30:27 -0400
+Received: from localhost.localdomain (unknown [194.230.155.174])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id D466F221E5
-        for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2020 12:08:47 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id EB9DF22B4E;
+        Tue,  8 Sep 2020 14:59:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599566928;
-        bh=ltST+N2nkPHvcvm7JM5iKGeE+dIaJdibruzqpP8T40g=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=lvMYbcf2Ibl+iac3x1pKdiMwh0OR3WjP+192kCA8xya69fNPOeYR1yJxOTXQ+J+yc
-         ZxrTgF6czpTYAvCpXMIK7Lhl5AUBjmQvtpIQybs1OJUTe6q6j+e7omdFgoLTJi55jY
-         OuPkkXlHjmePtJck1Z9u25ED4sQIPfZQn/Xt3mH0=
-Received: by mail-ua1-f43.google.com with SMTP id o14so2091556ual.11
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2020 05:08:47 -0700 (PDT)
-X-Gm-Message-State: AOAM5337SoZBI4K9/iYz0UFNUFcKCnMcpgKvN8i2GQDL/Mp9vQrT2V6p
-        R4ewDoxWTt5gy6rBu7cnbH+YwMKNnGdUwT4+bECRMw==
-X-Google-Smtp-Source: ABdhPJzn5o5SdhSG4SNzohoTwQqYAZp7JwVtypVBguxbjsJFGyTmhXrdBWjuiaFKPmjaiikdExbd/KIqXlbl31C3Bcg=
-X-Received: by 2002:ab0:136f:: with SMTP id h44mr12688533uae.60.1599566926910;
- Tue, 08 Sep 2020 05:08:46 -0700 (PDT)
-MIME-Version: 1.0
-References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org>
- <20200908075716.30357-6-manivannan.sadhasivam@linaro.org> <20200908103444.5e526uawa45om6lt@vireshk-i7>
- <20200908111141.GB23095@mani> <20200908111813.bbgfxo5v7qt6ujpc@vireshk-i7> <CAHLCerMndYeEBOxtj8mV7OdOP9pufx+C7n1F9m+CFAneuh8DnA@mail.gmail.com>
-In-Reply-To: <CAHLCerMndYeEBOxtj8mV7OdOP9pufx+C7n1F9m+CFAneuh8DnA@mail.gmail.com>
-From:   Amit Kucheria <amitk@kernel.org>
-Date:   Tue, 8 Sep 2020 17:38:36 +0530
-X-Gmail-Original-Message-ID: <CAHLCerPm6MXr662CaA3zZm4fQ3dJ_StJt3Ehutc3xnc0L9wj3Q@mail.gmail.com>
-Message-ID: <CAHLCerPm6MXr662CaA3zZm4fQ3dJ_StJt3Ehutc3xnc0L9wj3Q@mail.gmail.com>
-Subject: Re: [PATCH 5/7] cpufreq: qcom-hw: Use regmap for accessing hardware registers
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Rob Herring <robh+dt@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
-        Taniya Das <tdas@codeaurora.org>
-Content-Type: text/plain; charset="UTF-8"
+        s=default; t=1599577169;
+        bh=jo8XYvozevoqwLnr8Q8ChiN/Mq4AJaD2/hqaujjU+jw=;
+        h=From:To:Cc:Subject:Date:From;
+        b=JPbf4sMP6KmcVCTAryLd32cvDGv2RaJpdhFq6aE4BYR2ha21kqZ/1SaAxL9ZPf8Mt
+         4G+jN5cNbtfuleQ/g0rZxuMgJCxoev6ierAyzkVjN+wSoN3KRcqonaa6ssaEyOYFSj
+         zexwbpNsyG8uRkJReKcoe/L7fIF6gPIwtkW99EB4=
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc:     Krzysztof Kozlowski <krzk@kernel.org>
+Subject: [PATCH] dt-bindings: power: Correct interrupt flags in examples
+Date:   Tue,  8 Sep 2020 16:59:22 +0200
+Message-Id: <20200908145922.4502-1-krzk@kernel.org>
+X-Mailer: git-send-email 2.17.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 8, 2020 at 5:18 PM Amit Kucheria <amitk@kernel.org> wrote:
->
-> On Tue, Sep 8, 2020 at 4:48 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 08-09-20, 16:41, Manivannan Sadhasivam wrote:
-> > > On 0908, Viresh Kumar wrote:
-> > > > On 08-09-20, 13:27, Manivannan Sadhasivam wrote:
-> > > > > Use regmap for accessing cpufreq registers in hardware.
-> > > >
-> > > > Why ? Please mention why a change is required in the log.
-> > > >
-> > >
-> > > Only because it is recommended to use regmap for abstracting the hw access.
-> >
-> > Yes it can be very useful in abstracting the hw access in case of
-> > busses like SPI/I2C, others, but in this case there is only one way of
-> > doing it with the exact same registers. I am not sure it is worth it
-> > here. FWIW, I have never played with regmaps personally, and so every
-> > chance I can be wrong here.
->
-> One could handle the reg offsets through a struct initialisation, but
-> then you end up with lots of #defines for bitmasks and bits for each
-> version of the IP. And the core code becomes a bit convoluted IMO,
-> trying to handle the differences.
->
-> regmap hides the differences of the bit positions and register offsets
-> between several IP versions.
->
-> > > Moreover it handles the proper locking for us in the core (spinlock vs mutex).
-> >
-> > What locking do you need here ?
->
-> Right, locking isn't the main reason here.
+GPIO_ACTIVE_x flags are not correct in the context of interrupt flags.
+These are simple defines so they could be used in DTS but they will not
+have the same meaning:
+1. GPIO_ACTIVE_HIGH = 0 = IRQ_TYPE_NONE
+2. GPIO_ACTIVE_LOW  = 1 = IRQ_TYPE_EDGE_RISING
 
-Having said this, perhaps this patch can be held back for now, since
-we're not yet using some of the features of regmap to abstract away
-bit fields and such.
+Correct the interrupt flags, assuming the author of the code wanted some
+logical behavior behind the name "ACTIVE_xxx", this is:
+  ACTIVE_LOW => IRQ_TYPE_LEVEL_LOW
 
-We don't strictly need it for just different register offsets.
+Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+---
+ .../devicetree/bindings/power/supply/act8945a-charger.txt       | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Regards,
-Amit
+diff --git a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+index c7dfb7cecf40..cb737a9e1f16 100644
+--- a/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
++++ b/Documentation/devicetree/bindings/power/supply/act8945a-charger.txt
+@@ -33,7 +33,7 @@ Example:
+ 			pinctrl-names = "default";
+ 			pinctrl-0 = <&pinctrl_charger_chglev &pinctrl_charger_lbo &pinctrl_charger_irq>;
+ 			interrupt-parent = <&pioA>;
+-			interrupts = <45 GPIO_ACTIVE_LOW>;
++			interrupts = <45 IRQ_TYPE_LEVEL_LOW>;
+ 
+ 			active-semi,chglev-gpios = <&pioA 12 GPIO_ACTIVE_HIGH>;
+ 			active-semi,lbo-gpios = <&pioA 72 GPIO_ACTIVE_LOW>;
+-- 
+2.17.1
+
