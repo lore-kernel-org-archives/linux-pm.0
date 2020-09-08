@@ -2,71 +2,110 @@ Return-Path: <SRS0=Ia5J=CR=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CA194C43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A21C433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:51:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A5DC2206E7
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:45:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 69DC72177B
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 16:51:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599583910;
+	bh=pW1S8wYQ7shAS4VTkFPTvct/ClWzUHOw3xWhbsYQUNo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=MsunH3W6ocDh0xX8qD3QH7NqNFLlgBzQjEWNilmk1fvTrsfDl8zJP30Cdva+aQhoR
+	 k8x6dws+OZbEtyQvawTDr1L80Q3UBz+T3Nn9dggPKFeLf/0ZuC2OAXf4qK+Gxy2c2e
+	 XGCmMwbANpE7baXII5EPGhpVlCfo6DvYDbJS+LGE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731900AbgIHQpK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 12:45:10 -0400
-Received: from foss.arm.com ([217.140.110.172]:58012 "EHLO foss.arm.com"
+        id S1732036AbgIHQvh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 12:51:37 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41926 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731775AbgIHQpG (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Sep 2020 12:45:06 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 423B61595;
-        Tue,  8 Sep 2020 05:51:16 -0700 (PDT)
-Received: from usa.arm.com (e103737-lin.cambridge.arm.com [10.1.197.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 39B9F3F73C;
-        Tue,  8 Sep 2020 05:51:15 -0700 (PDT)
-From:   Sudeep Holla <sudeep.holla@arm.com>
-To:     Rikard Falkeborn <rikard.falkeborn@gmail.com>,
-        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-kernel@vger.kernel.org
-Cc:     Sudeep Holla <sudeep.holla@arm.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] arm_scmi: Constify ops pointers in struct scmi_handle
-Date:   Tue,  8 Sep 2020 13:51:09 +0100
-Message-Id: <159956941201.2396.12740446851296711190.b4-ty@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200906230452.33410-1-rikard.falkeborn@gmail.com>
-References: <20200906230452.33410-1-rikard.falkeborn@gmail.com>
+        id S1731909AbgIHQvJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 12:51:09 -0400
+Received: from mail-oo1-f51.google.com (mail-oo1-f51.google.com [209.85.161.51])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id B576E2137B;
+        Tue,  8 Sep 2020 16:51:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599583868;
+        bh=pW1S8wYQ7shAS4VTkFPTvct/ClWzUHOw3xWhbsYQUNo=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=FgS6w9TKkNIumIokoiwznLHegSZ8da9H6/tyCUONyA8D6mS4MC5L9U2z22U5vpbaJ
+         F9LBw9H3U/ZQfNzWt6ceq2QpbMCME12qMJBPAnufXbEXaMdXUN5OQTdjSiBIy0r3bk
+         7U2jnKRg1UiTm9IReOgbeVZRQG6XO2kMrq5x8Ajs=
+Received: by mail-oo1-f51.google.com with SMTP id 4so4091291ooh.11;
+        Tue, 08 Sep 2020 09:51:08 -0700 (PDT)
+X-Gm-Message-State: AOAM5336w4FaUrgkkaZQMHIC9XcoaoO79MmlghHpn2rTwscnyo8U5huj
+        MQjZH4r+nvWe9apsBepBEXfpRVfNTTha4s0nQQ==
+X-Google-Smtp-Source: ABdhPJyVFdSAOgZ7160kEJoAezjYnztio3h9Ino2moi2r5NNuCCiGtHqBpSUtvivi5rsYhCBevOSckk/m/8RpCmF5Go=
+X-Received: by 2002:a4a:d306:: with SMTP id g6mr19090952oos.25.1599583867914;
+ Tue, 08 Sep 2020 09:51:07 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200904152404.20636-1-krzk@kernel.org> <20200904152404.20636-13-krzk@kernel.org>
+ <CAL_Jsq+tGQhkqtQszOx7nvr1PR=YFz2p1=OnWQ8JxmSg4qNkHA@mail.gmail.com> <20200907060958.GA4525@kozik-lap>
+In-Reply-To: <20200907060958.GA4525@kozik-lap>
+From:   Rob Herring <robh+dt@kernel.org>
+Date:   Tue, 8 Sep 2020 10:50:56 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJZ=PxDxH-=GUUg7WadZrAKjYbtE0sQ8h9YDGOGx6Ykwg@mail.gmail.com>
+Message-ID: <CAL_JsqJZ=PxDxH-=GUUg7WadZrAKjYbtE0sQ8h9YDGOGx6Ykwg@mail.gmail.com>
+Subject: Re: [PATCH v3 12/14] dt-bindings: mtd: gpmi-nand: Fix matching of
+ clocks on different SoCs
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-clk <linux-clk@vger.kernel.org>, devicetree@vger.kernel.org,
+        "moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        MTD Maling List <linux-mtd@lists.infradead.org>,
+        Linux PWM List <linux-pwm@vger.kernel.org>,
+        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        LINUX-WATCHDOG <linux-watchdog@vger.kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>,
+        NXP Linux Team <linux-imx@nxp.com>,
+        Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 7 Sep 2020 01:04:49 +0200, Rikard Falkeborn wrote:
-> A small patch series aiming to constify static scmi_*_ops structs in
-> drivers/firmware/arm_scmi. Since these are not modified, constify them
-> to allow the compiler to put them in read-only memory.
-> 
-> Rikard Falkeborn (3):
->   cpufreq: arm_scmi: Constify scmi_perf_ops pointers
->   firmware: arm_scmi: Constify ops pointers in scmi_handle
->   firmware: arm_scmi: Constify static scmi-ops
-> 
-> [...]
+On Mon, Sep 7, 2020 at 12:10 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+>
+> On Fri, Sep 04, 2020 at 04:36:39PM -0600, Rob Herring wrote:
+> > On Fri, Sep 4, 2020 at 9:25 AM Krzysztof Kozlowski <krzk@kernel.org> wrote:
+> > >
+> > > Driver requires different amount of clocks for different SoCs.  Describe
+> > > these requirements properly to fix dtbs_check warnings like:
+> > >
+> > >     arch/arm64/boot/dts/freescale/imx8mm-beacon-kit.dt.yaml: nand-controller@33002000: clock-names:1: 'gpmi_apb' was expected
+> > >
+> > > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> > >
+> > > ---
+> > >
+> > > Changes since v1:
+> > > 1. Do not require order of clocks (use pattern).
+> >
+> > To the extent that you can, you should fix the order in dts files
+> > first. If we just adjust the schemas to match the dts files, then
+> > what's the point?
+>
+> The DTSes do not have mixed order of clocks between each other, as fair
+> as I remember. It was fix after Sasha Hauer comment that order is not
+> necessarily good.
+>
+> We have the clock-names property, why enforcing the order?
 
+Because DT/OpenFirmware has always had a defined order for property
+values. '*-names' is just extra information.
 
-Applied to sudeep.holla/linux (for-next/scmi), thanks!
-
-[1/3] cpufreq: arm_scmi: Constify scmi_perf_ops pointers
-      https://git.kernel.org/sudeep.holla/c/69ecb3230b
-[2/3] firmware: arm_scmi: Constify ops pointers in scmi_handle
-      https://git.kernel.org/sudeep.holla/c/82894c1d39
-[3/3] firmware: arm_scmi: Constify static scmi-ops
-      https://git.kernel.org/sudeep.holla/c/3de7b83017
-
---
-
-Regards,
-Sudeep
-
+Rob
