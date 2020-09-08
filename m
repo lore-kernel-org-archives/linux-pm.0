@@ -7,37 +7,37 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D59D1C43461
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:14:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F3D9C433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:14:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9EE4A2145D
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:14:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0A828208FE
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 20:14:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599596061;
-	bh=sNzB6t/5kKkQ+Ltfcjtg8unu1ta56Hhvl+AG2wXjpr8=;
-	h=From:To:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=gAXACroVejshvl2HvMMoU2BOPBehzOa5NbdgOu8bUi14V6AeRDE5YYFOU1Nh85MHa
-	 zdSgbA0EBayxfhmP/kMQ7+7HOzYAeC5uytarDerX1/sPixla9XHv1nwAw+OJDS8DRc
-	 Hn8LoQnJ5r6j4bvWgz4wG3etvmlYEDdYnZKy/eUI=
+	s=default; t=1599596062;
+	bh=Ui8320bbgUjCC9ruXzFfhMB/rl1YdIK89+YTJtN2Kp4=;
+	h=From:To:Subject:Date:List-ID:From;
+	b=CxyU9V4kys59XACWbqhVdryiOKaUD6LbBk90DsioC1vR3Oo15WQBbADfLFtadlPHo
+	 REQ9ofb1mX4fgoj5B7vF9eNzxbluKkhKW+JFb5sQ2Gvt7ox3G861WkO1WM19M5qv5T
+	 BDN0GA8DlI1GiLzogFOL/iM+0Hq/wEI4jzHvJP6w=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731701AbgIHUNb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1731535AbgIHUNb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 8 Sep 2020 16:13:31 -0400
-Received: from mail.kernel.org ([198.145.29.99]:34070 "EHLO mail.kernel.org"
+Received: from mail.kernel.org ([198.145.29.99]:34022 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731222AbgIHUNa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Sep 2020 16:13:30 -0400
+        id S1731117AbgIHUNZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 16:13:25 -0400
 Received: from localhost.localdomain (unknown [194.230.155.174])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2341A21919;
-        Tue,  8 Sep 2020 20:13:27 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 127EB208FE;
+        Tue,  8 Sep 2020 20:13:22 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599596010;
-        bh=sNzB6t/5kKkQ+Ltfcjtg8unu1ta56Hhvl+AG2wXjpr8=;
-        h=From:To:Subject:Date:In-Reply-To:References:From;
-        b=gsnPn53TiN/dbM/VAPmS/R5HE8LefCbpm8Q2L3CaOSQPbuXnjyhGV39m3PDytut5Y
-         I8bggQ+fZLYRv1TN74BCjXucqJboDWBPvN13n6WsTeqs4xEhNwmP/cp7RlHoBlLFqP
-         neAeuTRUyfq+38cHhZTD36xl2YRPA3xaEEL5w0i4=
+        s=default; t=1599596005;
+        bh=Ui8320bbgUjCC9ruXzFfhMB/rl1YdIK89+YTJtN2Kp4=;
+        h=From:To:Subject:Date:From;
+        b=x2UVWU6fb2LVLh4tf7Xy3TSdCJWdWYMBPhljVetb11WwJJro1X/Hm6LUiGC8u92Ic
+         bV6QGDN1ItenUP0skZ+XqCzrWwed/Lf4l7fEmusgQmJ0G5hnRwrD1TOm91dcIjSkBw
+         4gOeiXQk0DgoM0saKyByNGik3LJArSMvapuzRud8=
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -47,37 +47,34 @@ To:     Sebastian Reichel <sre@kernel.org>,
         Krzysztof Kozlowski <krzk@kernel.org>,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7] power: supply: bq27xxx: adjust whitespace
-Date:   Tue,  8 Sep 2020 22:13:15 +0200
-Message-Id: <20200908201319.3567-3-krzk@kernel.org>
+Subject: [PATCH 1/7] dt-bindings: power: bq27xxx: add bq34z100
+Date:   Tue,  8 Sep 2020 22:13:13 +0200
+Message-Id: <20200908201319.3567-1-krzk@kernel.org>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200908201319.3567-1-krzk@kernel.org>
-References: <20200908201319.3567-1-krzk@kernel.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-No functional change.
+Add compatible for bq34z100 charger.
 
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
 ---
- drivers/power/supply/bq27xxx_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/devicetree/bindings/power/supply/bq27xxx.yaml | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
-index 65806f668b1f..2deac3fbb036 100644
---- a/drivers/power/supply/bq27xxx_battery.c
-+++ b/drivers/power/supply/bq27xxx_battery.c
-@@ -76,7 +76,7 @@
+diff --git a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+index 82f682705f44..45beefccf31a 100644
+--- a/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
++++ b/Documentation/devicetree/bindings/power/supply/bq27xxx.yaml
+@@ -51,6 +51,7 @@ properties:
+       - ti,bq27621
+       - ti,bq27z561
+       - ti,bq28z610
++      - ti,bq34z100
  
- /* BQ27Z561 has different layout for Flags register */
- #define BQ27Z561_FLAG_FDC	BIT(4) /* Battery fully discharged */
--#define BQ27Z561_FLAG_FC		BIT(5) /* Battery fully charged */
-+#define BQ27Z561_FLAG_FC	BIT(5) /* Battery fully charged */
- #define BQ27Z561_FLAG_DIS_CH	BIT(6) /* Battery is discharging */
- 
- /* control register params */
+   reg:
+     maxItems: 1
 -- 
 2.17.1
 
