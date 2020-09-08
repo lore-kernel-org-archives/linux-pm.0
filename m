@@ -4,56 +4,56 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D971C433E2
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:19:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A1ED2C433E2
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:39:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 327D52087D
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:19:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 686022078B
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Sep 2020 17:39:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599585556;
-	bh=1aTFK3wrKIl3Mo4Chtk/yn6JQv5X2Nyp1Ci6BW8SyI0=;
+	s=default; t=1599586750;
+	bh=R6Ri+kN/CWed2DNBZP62StZ1wEMT9FRwzqJU/Z6NzJU=;
 	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=nMrHR262sGJkmw9NSuysjeEUoc8Tb9s3d8T9QblApUEYdGeqei9QVl3d2Jkm6q0a8
-	 gfOJ4h78yK+3/URePjzrFxKlhd8tYXkS/L0cD/qIffvCgj7AGX3Be+K05TxNMDHRVv
-	 YdRIAl1vWw1FZUbAAQfK2UTtOJ5k0zcvaHtVYepw=
+	b=unofbOiUMSvNZu4ASUJcP15MP+4YcfpkriA45FjrzgMeyhnd9Y5iFlq81d/vQ91T6
+	 8iJSUcLYFC8KuWEyERMtO2w8dIUQV6NazI/voSi5tIzuiXbcblnJXEdhpyZ0A6M4hv
+	 T5MIEykw2fPjTb1Fu8EzUcVkWVOQtu8jlDlfoh4M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729802AbgIHRTL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Sep 2020 13:19:11 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57572 "EHLO mail.kernel.org"
+        id S1731730AbgIHRhw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Sep 2020 13:37:52 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56676 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731706AbgIHQSD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Sep 2020 12:18:03 -0400
-Received: from mail-vs1-f44.google.com (mail-vs1-f44.google.com [209.85.217.44])
+        id S1731497AbgIHQOi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Sep 2020 12:14:38 -0400
+Received: from mail-vk1-f172.google.com (mail-vk1-f172.google.com [209.85.221.172])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 0126421D7B
-        for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2020 12:00:55 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 9E3D12177B
+        for <linux-pm@vger.kernel.org>; Tue,  8 Sep 2020 11:56:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599566456;
-        bh=1aTFK3wrKIl3Mo4Chtk/yn6JQv5X2Nyp1Ci6BW8SyI0=;
+        s=default; t=1599566213;
+        bh=R6Ri+kN/CWed2DNBZP62StZ1wEMT9FRwzqJU/Z6NzJU=;
         h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=l3NmDWCO06o9xiQuRZqEa1r4dhu8Fk0XNlEfYZ2OPW6IjL+knBlTdumSn2gJeJ0Jy
-         3+3rbadz9qkvaHqvMuKf8EDi3R9gdrZuatWdXWu00JxCAvnuDLaBOzoeUcOdZ7UQ3h
-         LnqAbDsjW2Bo7N0a0nfa1VVJyc+pKUAnF5IvD/F4=
-Received: by mail-vs1-f44.google.com with SMTP id y194so8836863vsc.4
-        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2020 05:00:55 -0700 (PDT)
-X-Gm-Message-State: AOAM533bbrRhR1NE3iR0rwNn8Ldln0cK9M2JaSkOZBZytA/Hd4vZWVLd
-        QLGPwxmBL+AuSLvyVI5Fvy7YUu+wvaqkcvKmOY5I+g==
-X-Google-Smtp-Source: ABdhPJyYkWtg85XcWPeyawb3EFV2os5iuaBNJfXoSrodk+wDb1H3FBtK2+2Zl6YHEkrEqZ/LOKC+qbizNv8q7lZ0Xv0=
-X-Received: by 2002:a67:985:: with SMTP id 127mr13908841vsj.17.1599566455058;
- Tue, 08 Sep 2020 05:00:55 -0700 (PDT)
+        b=SWVtuNlaY3haAyUccxSNrLi9U6GD0Rq7hIeTqAhtRBaXTuYLkCgCZqUA4nZ4b9sy2
+         J1evluoWPMg7stsApZX/3qncZO1mNWBXD9CVvEwsdruxx+ZiOIIsxxz6cvnT/fSuNW
+         scht63IrgMsY+NhdHu/NdZcAl+7v8lOQtbBBUSg4=
+Received: by mail-vk1-f172.google.com with SMTP id q124so3975486vkb.8
+        for <linux-pm@vger.kernel.org>; Tue, 08 Sep 2020 04:56:53 -0700 (PDT)
+X-Gm-Message-State: AOAM531n9sNkirUEHT9piBE11aBfEk2ETlyea9zHWru+cooc6cwqPZH0
+        8YFdY5sYTzKzfU5WokTAjl/jtzLKUK2jj2D04bj8bw==
+X-Google-Smtp-Source: ABdhPJzC9NJ3nazYOiolZObh2wDJpo80fd4t69qUL8OOXd0xqmJBeClHzrZjJMv74mozY0KNwsRwK1UkuUL26gb9exU=
+X-Received: by 2002:a1f:26cd:: with SMTP id m196mr420652vkm.7.1599566212846;
+ Tue, 08 Sep 2020 04:56:52 -0700 (PDT)
 MIME-Version: 1.0
-References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org> <20200908075716.30357-8-manivannan.sadhasivam@linaro.org>
-In-Reply-To: <20200908075716.30357-8-manivannan.sadhasivam@linaro.org>
+References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org> <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
+In-Reply-To: <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
 From:   Amit Kucheria <amitk@kernel.org>
-Date:   Tue, 8 Sep 2020 17:30:44 +0530
-X-Gmail-Original-Message-ID: <CAHLCerPKahfGmj_vuuMXzUkqNZq+DVBLxkYqi5Q-D4ae4=8jFQ@mail.gmail.com>
-Message-ID: <CAHLCerPKahfGmj_vuuMXzUkqNZq+DVBLxkYqi5Q-D4ae4=8jFQ@mail.gmail.com>
-Subject: Re: [PATCH 7/7] cpufreq: qcom-hw: Use devm_platform_ioremap_resource()
- to simplify code
+Date:   Tue, 8 Sep 2020 17:26:42 +0530
+X-Gmail-Original-Message-ID: <CAHLCerNm_asVtBadWqRfEmhPRu3ARomM1bd+iJOOOcf0PzvWfQ@mail.gmail.com>
+Message-ID: <CAHLCerNm_asVtBadWqRfEmhPRu3ARomM1bd+iJOOOcf0PzvWfQ@mail.gmail.com>
+Subject: Re: [PATCH 1/7] dt-bindings: cpufreq: cpufreq-qcom-hw: Document
+ SM8250 compatible
 To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Viresh Kumar <viresh.kumar@linaro.org>,
@@ -75,47 +75,32 @@ X-Mailing-List: linux-pm@vger.kernel.org
 On Tue, Sep 8, 2020 at 1:27 PM Manivannan Sadhasivam
 <manivannan.sadhasivam@linaro.org> wrote:
 >
-> devm_platform_ioremap_resource() is the combination of
-> platform_get_resource() and devm_ioremap_resource(). Hence, use it to
-> simplify the code a bit.
+> Document the SM8250 SoC specific compatible for Qualcomm Cpufreq HW. The
+> hardware block which carries out CPUFreq operations on SM8250 SoC is
+> called EPSS.
 >
 > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 
 Reviewed-by: Amit Kucheria <amitk@kernel.org>
 
+
 > ---
->  drivers/cpufreq/qcom-cpufreq-hw.c | 11 +++--------
->  1 file changed, 3 insertions(+), 8 deletions(-)
+>  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 >
-> diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-> index c3c397cc3dc6..6eeeb2bd4dfa 100644
-> --- a/drivers/cpufreq/qcom-cpufreq-hw.c
-> +++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-> @@ -307,7 +307,6 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
->         struct of_phandle_args args;
->         struct device_node *cpu_np;
->         struct device *cpu_dev;
-> -       struct resource *res;
->         void __iomem *base;
->         struct qcom_cpufreq_data *data;
->         const struct of_device_id *match;
-> @@ -333,13 +332,9 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
+> diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> index 33856947c561..aea4ddb2b9e8 100644
+> --- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> +++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
+> @@ -8,7 +8,7 @@ Properties:
+>  - compatible
+>         Usage:          required
+>         Value type:     <string>
+> -       Definition:     must be "qcom,cpufreq-hw".
+> +       Definition:     must be "qcom,cpufreq-hw" or "qcom,sm8250-epss".
 >
->         index = args.args[0];
->
-> -       res = platform_get_resource(pdev, IORESOURCE_MEM, index);
-> -       if (!res)
-> -               return -ENODEV;
-> -
-> -       base = devm_ioremap(dev, res->start, resource_size(res));
-> -       if (!base)
-> -               return -ENOMEM;
-> +       base = devm_platform_ioremap_resource(pdev, index);
-> +       if (IS_ERR(base))
-> +               return PTR_ERR(base);
->
->         data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
->         if (!data) {
+>  - clocks
+>         Usage:          required
 > --
 > 2.17.1
 >
