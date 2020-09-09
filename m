@@ -2,115 +2,145 @@ Return-Path: <SRS0=5VHp=CS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69E68C43461
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:13:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E0C60C10DAA
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:14:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DED121D7F
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:13:00 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599671580;
-	bh=TODrVcs9lgVCPiXcAEfLvUZlnsS84ktzJrcnCMX1MKg=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:List-ID:From;
-	b=MBVBGtgWHlJzhDfGheShV8zgSCHD3/eqgx/QBI5x5tLdORFy+M2aow6OMPFIglDel
-	 oCy9fe5keKr4JbJNeSbUnv2SYJ2VUMVnPPc24cKzS0ajQyuaJkifZQ5Au52kLo8JBq
-	 b5PXeXX+poV3qg3Z+UwgVHxfa70XfN8oyuffyv54=
+	by mail.kernel.org (Postfix) with ESMTP id 81DC421D81
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:14:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="OWoVztvk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729993AbgIIRMD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Sep 2020 13:12:03 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57484 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728663AbgIIPcj (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Sep 2020 11:32:39 -0400
-Received: from localhost (fw-tnat.cambridge.arm.com [217.140.96.140])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 7681822240;
-        Wed,  9 Sep 2020 15:29:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1599665377;
-        bh=TODrVcs9lgVCPiXcAEfLvUZlnsS84ktzJrcnCMX1MKg=;
-        h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-        b=FY4sgLDDXx1wg27+Ljvut8xHybpkWQIHYtUAsv96blD6Wh6IeNsMO5lKZ4mATR23F
-         G2JVLlILS5NoIvW+hUvsFBsE0SCBbOD4sJNMPWwIiH4P5TcKH/x0yYb7nfTfqm+lH0
-         ZCd5YGHXme1dc0s7OslYkmkiil92Mu448CHiBotA=
-Date:   Wed, 09 Sep 2020 16:28:51 +0100
-From:   Mark Brown <broonie@kernel.org>
-To:     Fabio Estevam <festevam@gmail.com>, rnayak@codeaurora.org,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Jiri Slaby <jirislaby@kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        David Airlie <airlied@linux.ie>,
-        Adrian Hunter <adrian.hunter@intel.com>,
-        Daniel Vetter <daniel@ffwll.ch>, Qiang Yu <yuq825@gmail.com>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Andy Gross <agross@kernel.org>,
+        id S1731297AbgIIROn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Sep 2020 13:14:43 -0400
+Received: from mailgw01.mediatek.com ([210.61.82.183]:5095 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1729521AbgIIP3H (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2020 11:29:07 -0400
+X-UUID: 54b65d48d9f9404a9b46936ce49638ad-20200909
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=gd8IHDDlRyngneuXbVMKDrh2dBx36h1OwZpzKd/37SU=;
+        b=OWoVztvk/2gDHOQxxxuKbkXcfJo7Um4vHFAzTMDtSQqWZGt47UKRQCOdnJQWfU40AqkqH3tbGIg8ZQ7oF3O0diov6WuVAFsxIS/FOpIVbbZrJgRRHbSK1XspGRK95euy3/yumzj1F2VSPuuGrvqZqvgqqaXY6NTzlxHXDU6x0Tc=;
+X-UUID: 54b65d48d9f9404a9b46936ce49638ad-20200909
+Received: from mtkcas07.mediatek.inc [(172.21.101.84)] by mailgw01.mediatek.com
+        (envelope-from <hector.yuan@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 712776735; Wed, 09 Sep 2020 21:34:42 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 9 Sep 2020 21:34:40 +0800
+Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 9 Sep 2020 21:34:39 +0800
+From:   Hector Yuan <hector.yuan@mediatek.com>
+To:     <linux-mediatek@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        NXP Linux Team <linux-imx@nxp.com>
-Cc:     linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Douglas Anderson <dianders@chromium.org>,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        freedreno@lists.freedesktop.org,
-        Naresh Kamboju <naresh.kamboju@linaro.org>,
-        linux-spi@vger.kernel.org, linux-serial@vger.kernel.org,
-        lima@lists.freedesktop.org, Nishanth Menon <nm@ti.com>,
-        linux-mmc@vger.kernel.org, Stephen Boyd <sboyd@kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linux-kernel@vger.kernel.org
-In-Reply-To: <cover.1598594714.git.viresh.kumar@linaro.org>
-References: <cover.1598594714.git.viresh.kumar@linaro.org>
-Subject: Re: [PATCH V2 0/8] opp: Unconditionally call dev_pm_opp_of_remove_table()
-Message-Id: <159966533166.54485.703021491015822828.b4-ty@kernel.org>
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>
+CC:     <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
+        <hector.yuan@mediatek.com>
+Subject: [PATCH v6 2/2] dt-bindings: cpufreq: add bindings for MediaTek cpufreq HW
+Date:   Wed, 9 Sep 2020 21:34:36 +0800
+Message-ID: <1599658476-16562-3-git-send-email-hector.yuan@mediatek.com>
+X-Mailer: git-send-email 1.7.9.5
+In-Reply-To: <1599658476-16562-1-git-send-email-hector.yuan@mediatek.com>
+References: <1599658476-16562-1-git-send-email-hector.yuan@mediatek.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 28 Aug 2020 11:37:45 +0530, Viresh Kumar wrote:
-> This cleans up some of the user code around calls to
-> dev_pm_opp_of_remove_table().
-> 
-> All the patches can be picked by respective maintainers directly except
-> for the last patch, which needs the previous two to get merged first.
-> 
-> These are based for 5.9-rc1.
-> 
-> [...]
+RnJvbTogIkhlY3Rvci5ZdWFuIiA8aGVjdG9yLnl1YW5AbWVkaWF0ZWsuY29tPg0KDQpBZGQgZGV2
+aWNldHJlZSBiaW5kaW5ncyBmb3IgTWVkaWFUZWsgSFcgZHJpdmVyLg0KDQpTaWduZWQtb2ZmLWJ5
+OiBIZWN0b3IuWXVhbiA8aGVjdG9yLnl1YW5AbWVkaWF0ZWsuY29tPg0KLS0tDQogLi4uL2JpbmRp
+bmdzL2NwdWZyZXEvY3B1ZnJlcS1tZWRpYXRlay1ody55YW1sICAgICAgfCAgMTQxICsrKysrKysr
+KysrKysrKysrKysrDQogMSBmaWxlIGNoYW5nZWQsIDE0MSBpbnNlcnRpb25zKCspDQogY3JlYXRl
+IG1vZGUgMTAwNjQ0IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jcHVmcmVxL2Nw
+dWZyZXEtbWVkaWF0ZWstaHcueWFtbA0KDQpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL2NwdWZyZXEvY3B1ZnJlcS1tZWRpYXRlay1ody55YW1sIGIvRG9jdW1l
+bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2NwdWZyZXEvY3B1ZnJlcS1tZWRpYXRlay1ody55
+YW1sDQpuZXcgZmlsZSBtb2RlIDEwMDY0NA0KaW5kZXggMDAwMDAwMC4uMTE4YTE2Mw0KLS0tIC9k
+ZXYvbnVsbA0KKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2NwdWZyZXEv
+Y3B1ZnJlcS1tZWRpYXRlay1ody55YW1sDQpAQCAtMCwwICsxLDE0MSBAQA0KKyMgU1BEWC1MaWNl
+bnNlLUlkZW50aWZpZXI6IChHUEwtMi4wLW9ubHkgT1IgQlNELTItQ2xhdXNlKQ0KKyVZQU1MIDEu
+Mg0KKy0tLQ0KKyRpZDogaHR0cDovL2RldmljZXRyZWUub3JnL3NjaGVtYXMvY3B1ZnJlcS9jcHVm
+cmVxLW1lZGlhdGVrLWh3LnlhbWwjDQorJHNjaGVtYTogaHR0cDovL2RldmljZXRyZWUub3JnL21l
+dGEtc2NoZW1hcy9jb3JlLnlhbWwjDQorDQordGl0bGU6IE1lZGlhVGVrJ3MgQ1BVRlJFUSBCaW5k
+aW5ncw0KKw0KK21haW50YWluZXJzOg0KKyAgLSBIZWN0b3IgWXVhbiA8aGVjdG9yLnl1YW5AbWVk
+aWF0ZWsuY29tPg0KKw0KK2Rlc2NyaXB0aW9uOg0KKyAgQ1BVRlJFUSBIVyBpcyBhIGhhcmR3YXJl
+IGVuZ2luZSB1c2VkIGJ5IE1lZGlhVGVrDQorICBTb0NzIHRvIG1hbmFnZSBmcmVxdWVuY3kgaW4g
+aGFyZHdhcmUuIEl0IGlzIGNhcGFibGUgb2YgY29udHJvbGxpbmcgZnJlcXVlbmN5DQorICBmb3Ig
+bXVsdGlwbGUgY2x1c3RlcnMuDQorDQorcHJvcGVydGllczoNCisgIGNvbXBhdGlibGU6DQorICAg
+IGNvbnN0OiAibWVkaWF0ZWssY3B1ZnJlcS1odyINCisNCisgIHJlZzoNCisgICAgbWluSXRlbXM6
+IDENCisgICAgbWF4SXRlbXM6IDINCisgICAgZGVzY3JpcHRpb246IHwNCisgICAgICBBZGRyZXNz
+ZXMgYW5kIHNpemVzIGZvciB0aGUgbWVtb3J5IG9mIHRoZSBIVyBiYXNlcyBpbiBlYWNoIGZyZXF1
+ZW5jeSBkb21haW4uDQorDQorICByZWctbmFtZXM6DQorICAgIGl0ZW1zOg0KKyAgICAgIC0gY29u
+c3Q6ICJmcmVxLWRvbWFpbjAiDQorICAgICAgLSBjb25zdDogImZyZXEtZG9tYWluMSINCisgICAg
+ZGVzY3JpcHRpb246IHwNCisgICAgICBGcmVxdWVuY3kgZG9tYWluIG5hbWUuIGkuZS4NCisgICAg
+ICAiZnJlcS1kb21haW4wIiwgImZyZXEtZG9tYWluMSIuDQorDQorICAiI2ZyZXEtZG9tYWluLWNl
+bGxzIjoNCisgICAgY29uc3Q6IDENCisgICAgZGVzY3JpcHRpb246IHwNCisgICAgICBOdW1iZXIg
+b2YgY2VsbHMgaW4gYSBmcmVxZW5jeSBkb21haW4gc3BlY2lmaWVyLg0KKw0KKyAgbXRrLWZyZXEt
+ZG9tYWluOg0KKyAgICBtYXhJdGVtczogMQ0KKyAgICBkZXNjcmlwdGlvbjogfA0KKyAgICAgIERl
+ZmluZSB0aGlzIGNwdSBiZWxvbmdzIHRvIHdoaWNoIGZyZXF1ZW5jeSBkb21haW4uIGkuZS4NCisg
+ICAgICBjcHUwLTMgYmVsb25nIHRvIGZyZXF1ZW5jeSBkb21haW4wLA0KKyAgICAgIGNwdTQtNiBi
+ZWxvbmcgdG8gZnJlcXVlbmN5IGRvbWFpbjEuDQorDQorcmVxdWlyZWQ6DQorICAtIGNvbXBhdGli
+bGUNCisgIC0gcmVnDQorICAtIHJlZy1uYW1lcw0KKyAgLSAiI2ZyZXEtZG9tYWluLWNlbGxzIg0K
+Kw0KK2V4YW1wbGVzOg0KKyAgLSB8DQorICAgIGNwdXMgew0KKyAgICAgICAgICAgICNhZGRyZXNz
+LWNlbGxzID0gPDE+Ow0KKyAgICAgICAgICAgICNzaXplLWNlbGxzID0gPDA+Ow0KKw0KKyAgICAg
+ICAgICAgIGNwdTA6IGNwdUAwIHsNCisgICAgICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1
+IjsNCisgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE1NSI7DQorICAg
+ICAgICAgICAgICAgIGVuYWJsZS1tZXRob2QgPSAicHNjaSI7DQorICAgICAgICAgICAgICAgIG10
+ay1mcmVxLWRvbWFpbiA9IDwmY3B1ZnJlcV9odyAwPjsNCisgICAgICAgICAgICAgICAgcmVnID0g
+PDB4MDAwPjsNCisgICAgICAgICAgICB9Ow0KKw0KKyAgICAgICAgICAgIGNwdTE6IGNwdUAxIHsN
+CisgICAgICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1IjsNCisgICAgICAgICAgICAgICAg
+Y29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE1NSI7DQorICAgICAgICAgICAgICAgIGVuYWJsZS1t
+ZXRob2QgPSAicHNjaSI7DQorICAgICAgICAgICAgICAgIG10ay1mcmVxLWRvbWFpbiA9IDwmY3B1
+ZnJlcV9odyAwPjsNCisgICAgICAgICAgICAgICAgcmVnID0gPDB4MTAwPjsNCisgICAgICAgICAg
+ICB9Ow0KKw0KKyAgICAgICAgICAgIGNwdTI6IGNwdUAyIHsNCisgICAgICAgICAgICAgICAgZGV2
+aWNlX3R5cGUgPSAiY3B1IjsNCisgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJhcm0sY29y
+dGV4LWE1NSI7DQorICAgICAgICAgICAgICAgIGVuYWJsZS1tZXRob2QgPSAicHNjaSI7DQorICAg
+ICAgICAgICAgICAgIG10ay1mcmVxLWRvbWFpbiA9IDwmY3B1ZnJlcV9odyAwPjsNCisgICAgICAg
+ICAgICAgICAgcmVnID0gPDB4MjAwPjsNCisgICAgICAgICAgICB9Ow0KKw0KKyAgICAgICAgICAg
+IGNwdTM6IGNwdUAzIHsNCisgICAgICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1IjsNCisg
+ICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE1NSI7DQorICAgICAgICAg
+ICAgICAgIGVuYWJsZS1tZXRob2QgPSAicHNjaSI7DQorICAgICAgICAgICAgICAgIG10ay1mcmVx
+LWRvbWFpbiA9IDwmY3B1ZnJlcV9odyAwPjsNCisgICAgICAgICAgICAgICAgcmVnID0gPDB4MzAw
+PjsNCisgICAgICAgICAgICB9Ow0KKw0KKyAgICAgICAgICAgIGNwdTQ6IGNwdUA0IHsNCisgICAg
+ICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1IjsNCisgICAgICAgICAgICAgICAgY29tcGF0
+aWJsZSA9ICJhcm0sY29ydGV4LWE1NSI7DQorICAgICAgICAgICAgICAgIGVuYWJsZS1tZXRob2Qg
+PSAicHNjaSI7DQorICAgICAgICAgICAgICAgIG10ay1mcmVxLWRvbWFpbiA9IDwmY3B1ZnJlcV9o
+dyAxPjsNCisgICAgICAgICAgICAgICAgcmVnID0gPDB4NDAwPjsNCisgICAgICAgICAgICB9Ow0K
+Kw0KKyAgICAgICAgICAgIGNwdTU6IGNwdUA1IHsNCisgICAgICAgICAgICAgICAgZGV2aWNlX3R5
+cGUgPSAiY3B1IjsNCisgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE1
+NSI7DQorICAgICAgICAgICAgICAgIGVuYWJsZS1tZXRob2QgPSAicHNjaSI7DQorICAgICAgICAg
+ICAgICAgIG10ay1mcmVxLWRvbWFpbiA9IDwmY3B1ZnJlcV9odyAxPjsNCisgICAgICAgICAgICAg
+ICAgcmVnID0gPDB4NTAwPjsNCisgICAgICAgICAgICB9Ow0KKw0KKyAgICAgICAgICAgIGNwdTY6
+IGNwdUA2IHsNCisgICAgICAgICAgICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1IjsNCisgICAgICAg
+ICAgICAgICAgY29tcGF0aWJsZSA9ICJhcm0sY29ydGV4LWE3NSI7DQorICAgICAgICAgICAgICAg
+IGVuYWJsZS1tZXRob2QgPSAicHNjaSI7DQorICAgICAgICAgICAgICAgIG10ay1mcmVxLWRvbWFp
+biA9IDwmY3B1ZnJlcV9odyAxPjsNCisgICAgICAgICAgICAgICAgcmVnID0gPDB4NjAwPjsNCisg
+ICAgICAgICAgICB9Ow0KKw0KKyAgICAgICAgICAgIGNwdTc6IGNwdUA3IHsNCisgICAgICAgICAg
+ICAgICAgZGV2aWNlX3R5cGUgPSAiY3B1IjsNCisgICAgICAgICAgICAgICAgY29tcGF0aWJsZSA9
+ICJhcm0sY29ydGV4LWE3NSI7DQorICAgICAgICAgICAgICAgIGVuYWJsZS1tZXRob2QgPSAicHNj
+aSI7DQorICAgICAgICAgICAgICAgIG10ay1mcmVxLWRvbWFpbiA9IDwmY3B1ZnJlcV9odyAxPjsN
+CisgICAgICAgICAgICAgICAgcmVnID0gPDB4NzAwPjsNCisgICAgICAgICAgICB9Ow0KKyAgICB9
+Ow0KKw0KKyAgICAvKiAuLi4gKi8NCisNCisgICAgc29jIHsNCisgICAgICAgICNhZGRyZXNzLWNl
+bGxzID0gPDI+Ow0KKyAgICAgICAgI3NpemUtY2VsbHMgPSA8Mj47DQorDQorICAgICAgICBjcHVm
+cmVxX2h3OiBjcHVmcmVxQDExYmMwMCB7DQorICAgICAgICAgICAgY29tcGF0aWJsZSA9ICJtZWRp
+YXRlayxjcHVmcmVxLWh3IjsNCisgICAgICAgICAgICByZWcgPSA8MCAweDExYmMxMCAwIDB4OGM+
+LA0KKyAgICAgICAgICAgICAgIDwwIDB4MTFiY2EwIDAgMHg4Yz47DQorICAgICAgICAgICAgcmVn
+LW5hbWVzID0gImZyZXEtZG9tYWluMCIsICJmcmVxLWRvbWFpbjEiOw0KKyAgICAgICAgICAgICNm
+cmVxLWRvbWFpbi1jZWxscyA9IDwxPjsNCisgICAgICAgIH07DQorICAgIH07DQorDQorDQorDQor
+DQotLSANCjEuNy45LjUNCg==
 
-Applied to
-
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/spi.git for-next
-
-Thanks!
-
-[1/2] spi: spi-geni-qcom: Unconditionally call dev_pm_opp_of_remove_table()
-      commit: 7d568edff5cb7968cc5f29e85da15f941b8070b8
-[2/2] spi: spi-qcom-qspi: Unconditionally call dev_pm_opp_of_remove_table()
-      commit: 062cf7fc927d2546b58ed128383e5c52f26a00a5
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
