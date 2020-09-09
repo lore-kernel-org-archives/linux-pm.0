@@ -2,244 +2,361 @@ Return-Path: <SRS0=5VHp=CS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BC65C433E2
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 16:49:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C76D2C43461
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 16:54:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0675D21941
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 16:49:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8B2AC20C09
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 16:54:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QQ9REk01"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dtgEidWQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730614AbgIIQtf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Sep 2020 12:49:35 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53092 "EHLO
+        id S1730892AbgIIQEO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Sep 2020 12:04:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52510 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730883AbgIIQHR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2020 12:07:17 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89A72C0612A2
-        for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2020 07:43:06 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id r24so3921512ljm.3
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2020 07:43:06 -0700 (PDT)
+        with ESMTP id S1730871AbgIIQDk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2020 12:03:40 -0400
+Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com [IPv6:2a00:1450:4864:20::542])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D063EC061756;
+        Wed,  9 Sep 2020 09:03:39 -0700 (PDT)
+Received: by mail-ed1-x542.google.com with SMTP id c10so3216770edk.6;
+        Wed, 09 Sep 2020 09:03:39 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=yMvVXpSpVGDfdX14bLkO7U8LOBlYVmYuUOGPXx5qIqI=;
-        b=QQ9REk01gK8HMw9gq+R0GrwFAdnxdqqge4xTp6/7MQehjUS9y+wbanI6/644+8Jnoj
-         x0nJwH1JzaP99Y4Hk5xD20aNtEKBUGH0vq49poqM4naz0TVy8S/HlIIcdrZP2oqOeOH3
-         zNdU0CdhhsfgfqUeeFUekq/yFA4pUaabVp4C+U6M876Z7NXB9goGBQ3vVPEoweS3CBYC
-         aOvRW9r2zP4QTK8f3VY3ESF1+nLxm7MK5IODm0FOMDFG6p7h0/3cDGbRhTaYZrxxZpNL
-         A1NwBLGGTbORcve/wW4AtG16KNmL0sZ60qAoC2gqAPDu7L0zJJcEUQJ74JYoO0hjCH6j
-         IORw==
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=wFFzLDrI+LRiU6RjuLeqeQ9NmNXTj6WvqrdOw9KuB74=;
+        b=dtgEidWQWGnPfTY+p6W+UM6e8pUns0tL63U5Lx+mzClihOlw3YnZltPvaa4J+S+hm5
+         eppMOGnpvEqQobOmZwarAPE9FgbEtQNKvhwMj+Ap98TwK5Lu4ijDhfSdLGWnZjkXVcea
+         dh//8CGUm/WD60tLCP4eLk5MjUb68NYLrsleQCpSBqXxewUW1G3XxKF9dapNBYoOznh4
+         3p1FMVR+2t6kYiuJj9G8eHNIWiOklHQrJYJG5vobsCR99x/6CsDAjdI5ftwVL9ljdDQm
+         GsuABHYMl4nwDtyJcfOig//q+syxOeYre7gl9sfha9lBWJBnQ5t8QcqHkyiaILpHedw/
+         qG1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=yMvVXpSpVGDfdX14bLkO7U8LOBlYVmYuUOGPXx5qIqI=;
-        b=BbGwd3JrMkBvhdYFcYxgftulrKLAED7GVQcYCf1cuWMs2xEU6CQOZvlGdGCT8MR1Jj
-         z1E9lx1RdqKZTJOhv1X2hAs2GMbe+WeoXwYtpAEFbNXd4UX5g3PFgtWIfM+p2aOxNdT+
-         3BRZ57dcHVX6W/F8Phw2BXcT7Kyp0h1Wf1c0KYDSwjzXA7PffZ4Xbd24IuJbfBic+7SN
-         drL6ASoRAfuIXxEKITyd3RIAru+YDTFF9I869KVpTtsAblubpdScrJxA7w23g14D0svX
-         ca0nbcUGSR/JkPPObydMAxcLbXtA+ktq30L2AGDoNKo7xZGRAut2u113cItPelQy0Q2k
-         iEIA==
-X-Gm-Message-State: AOAM533T4yxtRk3aPzwBC40QVsOxHpKVDwyRFL1k/aznTFYfcN1lrYn3
-        dzOo/oeBvDSLqXmsY+xzo0FC2g==
-X-Google-Smtp-Source: ABdhPJxXHYgt5utpdo1iDhw6xcrA0sfYrG3fGr8zUuYpZCCfG44ZvKKajKg2fIEZzIw61sghcU/i2A==
-X-Received: by 2002:a2e:b4f5:: with SMTP id s21mr2161986ljm.270.1599662580464;
-        Wed, 09 Sep 2020 07:43:00 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.155])
-        by smtp.gmail.com with ESMTPSA id t12sm621665lfk.26.2020.09.09.07.42.58
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=wFFzLDrI+LRiU6RjuLeqeQ9NmNXTj6WvqrdOw9KuB74=;
+        b=PjfHECZK/U8QzAXCaKjZMa66eFosDYPAwk3RJuvDnLxtkExvwi8XBBvtB351HcrYs1
+         s3dd4a8nx20iNfI4Vu0X9RcFPWdxeDbIetd2Et9XfAsWY4OnnVBDUPUv3a/J66VzB+Cq
+         RmDqlWrhdIFT/Lwd3bht4Ec7Qm40cgdJjCfCXXGIme1TDEsORE0XU5Rvxox1M37QpZKs
+         tL0H9vCbawLP6foM1KyUO8Dv4W7zPHngU4yWmZhoAHMvyrodsVbbApka2iwyOU6hloGj
+         HCg/CftXAHDoJd+s65hacZEO4rBbzlxQ+iHq0sV92URXLOSnPcqltTonSh+u703CuCu/
+         QtOw==
+X-Gm-Message-State: AOAM533GtFqj4lO+f0R5Xs2dJpKg7dtVZZuHhOE1YRR9ok5Yvs/Qle9G
+        bT8QvCj2qZPfHlot0OSUcFJTwVJb0DA=
+X-Google-Smtp-Source: ABdhPJx6EOlwx44g53DleVKdxsTSqVWdmunkZ/V2Qwx8KdcFBUMu3uaER3jCrG+1ovQ9sIE93uMImw==
+X-Received: by 2002:a50:d98d:: with SMTP id w13mr5029328edj.37.1599667418391;
+        Wed, 09 Sep 2020 09:03:38 -0700 (PDT)
+Received: from BV030612LT ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id n14sm3065473edb.52.2020.09.09.09.03.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2020 07:42:59 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v3 02/10] dt-bindings: thermal: qcom: add adc-thermal monitor bindings
-Date:   Wed,  9 Sep 2020 17:42:40 +0300
-Message-Id: <20200909144248.54327-3-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200909144248.54327-1-dmitry.baryshkov@linaro.org>
-References: <20200909144248.54327-1-dmitry.baryshkov@linaro.org>
+        Wed, 09 Sep 2020 09:03:37 -0700 (PDT)
+Date:   Wed, 9 Sep 2020 19:03:34 +0300
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2 1/6] dt-bindings: mfd: Add Actions Semi ATC260x PMIC
+ binding
+Message-ID: <20200909160334.GA385382@BV030612LT>
+References: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
+ <863c9c1e44cfbe6184bf0bd4893ff456af0e7bb8.1598043782.git.cristian.ciocaltea@gmail.com>
+ <20200908214724.GA959481@bogus>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200908214724.GA959481@bogus>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add bindings for thermal monitor, part of Qualcomm PMIC5 chips. It is a
-close counterpart of VADC part of those PMICs.
+Hi Rob,
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
----
- .../bindings/thermal/qcom-spmi-adc-tm5.yaml   | 141 ++++++++++++++++++
- 1 file changed, 141 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
+Thanks for reviewing!
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-new file mode 100644
-index 000000000000..b3818357808b
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-@@ -0,0 +1,141 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom-spmi-adc-tm5.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Qualcomm's SPMI PMIC ADC-TM
-+maintainers:
-+  - Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-+
-+properties:
-+  compatible:
-+    const: qcom,spmi-adc-tm5
-+
-+  reg:
-+    maxItems: 1
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  "#thermal-sensor-cells":
-+    const: 1
-+    description:
-+      Number of cells required to uniquely identify the thermal sensors. Since
-+      we have multiple sensors this is set to 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 0
-+
-+  qcom,avg-samples:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Number of samples to be used for measurement.
-+    enum:
-+      - 1
-+      - 2
-+      - 4
-+      - 8
-+      - 16
-+    default: 1
-+
-+  qcom,decimation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: This parameter is used to decrease ADC sampling rate.
-+            Quicker measurements can be made by reducing decimation ratio.
-+    enum:
-+      - 250
-+      - 420
-+      - 840
-+    default: 840
-+
-+patternProperties:
-+  "^([-a-z0-9]*)@[0-9]+$":
-+    type: object
-+    description:
-+      Represent one thermal sensor.
-+
-+    properties:
-+      reg:
-+        description: Specify the sensor channel.
-+        maxItems: 1
-+
-+      io-channels:
-+        description:
-+          From common IIO binding. Used to pipe PMIC ADC channel to thermal monitor
-+
-+      qcom,adc-channel:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Corresponding ADC channel ID.
-+
-+      qcom,ratiometric:
-+        $ref: /schemas/types.yaml#/definitions/flag
-+        description:
-+          Channel calibration type.
-+          If this property is specified VADC will use the VDD reference
-+          (1.875V) and GND for channel calibration. If property is not found,
-+          channel will be calibrated with 0V and 1.25V reference channels,
-+          also known as absolute calibration.
-+
-+      qcom,hw-settle-time:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Time between AMUX getting configured and the ADC starting conversion.
-+
-+      qcom,pre-scaling:
-+        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        description: Used for scaling the channel input signal before the
-+          signal is fed to VADC. See qcom,spi-vadc specification for the list
-+          of possible values.
-+        minItems: 2
-+        maxItems: 2
-+
-+    required:
-+      - reg
-+      - qcom,adc-channel
-+
-+    additionalProperties:
-+      false
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - "#address-cells"
-+  - "#size-cells"
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+        #include <dt-bindings/iio/qcom,spmi-vadc.h>
-+        #include <dt-bindings/interrupt-controller/irq.h>
-+        pm8150b_adc: adc@3100 {
-+            compatible = "qcom,spmi-adc5";
-+            /* Other propreties are omitted */
-+            conn-therm@4f {
-+                reg = <ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time = <200>;
-+            };
-+        };
-+
-+        pm8150b_adc_tm: adc-tm@3500 {
-+            compatible = "qcom,spmi-adc-tm5";
-+            reg = <0x3500>;
-+            interrupts = <0x2 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
-+            #thermal-sensor-cells = <1>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            conn-therm@0 {
-+                reg = <0>;
-+                io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
-+                qcom,adc-channel = <ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time = <200>;
-+            };
-+        };
-+...
--- 
-2.28.0
+On Tue, Sep 08, 2020 at 03:47:24PM -0600, Rob Herring wrote:
+> On Sat, Aug 22, 2020 at 01:19:47AM +0300, Cristian Ciocaltea wrote:
+> > Add devicetree binding for Actions Semi ATC260x PMICs.
+> > 
+> > Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > ---
+> >  .../bindings/mfd/actions,atc260x.yaml         | 221 ++++++++++++++++++
+> >  1 file changed, 221 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > 
+> > diff --git a/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > new file mode 100644
+> > index 000000000000..4a55bbe1306e
+> > --- /dev/null
+> > +++ b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > @@ -0,0 +1,221 @@
+> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > +%YAML 1.2
+> > +---
+> > +$id: http://devicetree.org/schemas/mfd/actions,atc260x.yaml#
+> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > +
+> > +title: Actions Semi ATC260x Power Management IC bindings
+> > +
+> > +maintainers:
+> > +  - Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> > +  - Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > +
+> > +description: |
+> > +  ATC260x series PMICs integrates Audio Codec, Power Management, RTC, IR
+> > +  and GPIO controller blocks. Currently only the PM related functionalities
+> > +  (i.e. regulators and system power-off/reboot) for the ATC2603C and ATC2609A
+> > +  chip variants are supported.
+> > +  ATC2603C includes 3 programmable DC-DC converters and 9 LDO regulators.
+> > +  ATC2609A includes 5 programmable DC-DC converters and 10 LDO regulators.
+> > +
+> > +properties:
+> > +  compatible:
+> > +    enum:
+> > +      - actions,atc2603c
+> > +      - actions,atc2609a
+> > +
+> > +  reg:
+> > +    maxItems: 1
+> > +
+> > +  interrupts:
+> > +    maxItems: 1
+> > +
+> > +  pwrc:
+> > +    type: object
+> > +    description: |
+> > +      The power controller integrated in ATC260x provides system power-off
+> > +      and reboot operations.
+> 
+> No need for this node as there are no properties, just instantiate 
+> what's needed in the MFD driver.
 
+My intention was to allow the user specify what functionality in the MFD
+shall be enabled. For this particular case, if the 'pwrc' node is not
+provided, the power-off/reboot functions will be disabled.
+
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        enum:
+> > +          - actions,atc2603c-pwrc
+> > +          - actions,atc2609a-pwrc
+> > +
+> > +    required:
+> > +      - compatible
+> > +
+> > +    additionalProperties: false
+> > +
+> > +  onkey:
+> > +    type: object
+> > +    description: |
+> > +      Use the ONKEY built into ATC260x PMICs as an input device reporting
+> > +      power button status. ONKEY can be used to wakeup from low power
+> > +      modes and force a reset on long press.
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        enum:
+> > +          - actions,atc2603c-onkey
+> > +          - actions,atc2609a-onkey
+> > +
+> > +      actions,reset-time-sec:
+> > +        description: |
+> > +          Duration in seconds which the key should be kept pressed for device
+> > +          to reset automatically. The hardware default is 8. Use 0 to disable
+> > +          this functionality.
+> > +        enum: [0, 6, 8, 10, 12]
+> 
+> We already have 'power-off-time-sec' in input.yaml. How about adding 
+> 'reset-time-sec' there.
+
+Thanks for the suggestion, I was actually looking for this before
+choosing the custom property and just assumed this was not added for
+a particular reason.
+
+So I'm going to handle it. Would you like me to send a separate patch
+(not part of this series)?
+
+> This could really just be a property in the parent node.
+
+This is similar with 'pwrc': if 'onkey' node is not present, the ONKEY
+functionality will not be enabled.
+
+Is there a better/recommended approach to manage this MFD feature
+selection?
+
+> > +
+> > +    required:
+> > +      - compatible
+> > +
+> > +    additionalProperties: false
+> > +
+> > +  regulators:
+> > +    type: object
+> > +    description: |
+> > +      List of child nodes specifying the regulators, depending on chip variant:
+> > +      * ATC2603C: dcdc[1-3], ldo[1-3,5-8,11], switchldo1
+> > +      * ATC2609A: dcdc[0-4], ldo[0-9]
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        enum:
+> > +          - actions,atc2603c-regulator
+> > +          - actions,atc2609a-regulator
+> > +
+> > +      switchldo1:
+> > +        type: object
+> > +        $ref: ../regulator/regulator.yaml
+> > +
+> > +        properties:
+> > +          regulator-name: true
+> > +          regulator-boot-on: true
+> > +          regulator-always-on: true
+> > +          regulator-min-microvolt: true
+> > +          regulator-max-microvolt: true
+> > +          regulator-allow-bypass: true
+> > +          regulator-active-discharge: true
+> > +
+> > +        additionalProperties: false
+> > +
+> > +    patternProperties:
+> > +      "^(dcdc[0-4]|ldo[0-9]|ldo11|switchldo1)-supply$":
+> > +        description: ATC260x voltage regulators supplies
+> > +
+> > +      "^(dcdc[0-4]|ldo[0-9]|ldo11)$":
+> > +        type: object
+> > +        $ref: ../regulator/regulator.yaml
+> > +
+> > +        properties:
+> > +          regulator-name: true
+> > +          regulator-boot-on: true
+> > +          regulator-always-on: true
+> > +          regulator-min-microvolt: true
+> > +          regulator-max-microvolt: true
+> > +          regulator-allow-bypass: true
+> > +
+> > +        additionalProperties: false
+> > +
+> > +    allOf:
+> > +      - if:
+> > +          properties:
+> > +            compatible:
+> > +              contains:
+> > +                const: actions,atc2603c-regulator
+> > +        then:
+> > +          patternProperties:
+> > +            "^(dcdc[0,4]|ldo[0,4,9])(-supply)?$": false
+> > +
+> > +            "^(ldo|dcdc)":
+> > +              properties:
+> > +                regulator-allow-bypass: false
+> > +      - if:
+> > +          properties:
+> > +            compatible:
+> > +              contains:
+> > +                const: actions,atc2609a-regulator
+> > +        then:
+> > +          patternProperties:
+> > +            "^(ldo11|switchldo1)(-supply)?$": false
+> > +
+> > +            "^(dcdc|ldo[3-9])":
+> > +              properties:
+> > +                regulator-allow-bypass: false
+> > +
+> > +    required:
+> > +      - compatible
+> > +
+> > +    additionalProperties: false
+> > +
+> > +additionalProperties: false
+> > +
+> > +required:
+> > +  - compatible
+> > +  - reg
+> > +  - interrupts
+> > +
+> > +examples:
+> > +  - |
+> > +    #include <dt-bindings/interrupt-controller/arm-gic.h>
+> > +
+> > +    i2c0 {
+> > +      #address-cells = <1>;
+> > +      #size-cells = <0>;
+> > +
+> > +      pmic@65 {
+> > +        compatible = "actions,atc2603c";
+> > +        reg = <0x65>;
+> > +        interrupt-parent = <&sirq>;
+> > +        interrupts = <2 IRQ_TYPE_LEVEL_HIGH>;
+> > +
+> > +        pwrc {
+> > +          compatible = "actions,atc2603c-pwrc";
+> > +        };
+> > +
+> > +        onkey {
+> > +          compatible = "actions,atc2603c-onkey";
+> > +          actions,reset-time-sec = <6>;
+> > +        };
+> > +
+> > +        regulators {
+> > +          compatible = "actions,atc2603c-regulator";
+> > +
+> > +          dcdc1-supply = <&reg_5v0>;
+> > +          dcdc3-supply = <&reg_5v0>;
+> > +          ldo5-supply = <&reg_5v0>;
+> > +          switchldo1-supply = <&vcc>;
+> > +
+> > +          vdd_cpu: dcdc1 {
+> > +            regulator-name = "VDD_CPU";
+> > +            regulator-min-microvolt = <700000>;
+> > +            regulator-max-microvolt = <1400000>;
+> > +            regulator-always-on;
+> > +          };
+> > +
+> > +          vcc: dcdc3 {
+> > +            regulator-name = "VCC";
+> > +            regulator-min-microvolt = <2600000>;
+> > +            regulator-max-microvolt = <3300000>;
+> > +            regulator-always-on;
+> > +          };
+> > +
+> > +          vcc_3v1: ldo5 {
+> > +            regulator-name = "VCC_3V1";
+> > +            regulator-min-microvolt = <2600000>;
+> > +            regulator-max-microvolt = <3300000>;
+> > +          };
+> > +
+> > +          sd_vcc: switchldo1 {
+> > +            regulator-name = "SD_VCC";
+> > +            regulator-min-microvolt = <3000000>;
+> > +            regulator-max-microvolt = <3300000>;
+> > +            regulator-always-on;
+> > +            regulator-boot-on;
+> > +          };
+> > +        };
+> > +      };
+> > +    };
+> > +
+> > +...
+> > -- 
+> > 2.28.0
+> > 
+
+Kind regards,
+Cristi
