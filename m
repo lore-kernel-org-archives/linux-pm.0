@@ -2,124 +2,206 @@ Return-Path: <SRS0=5VHp=CS=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60F60C10DAA
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:21:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D0902C433E2
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:23:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DD3321556
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:21:47 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="sOj1ib2k"
+	by mail.kernel.org (Postfix) with ESMTP id 8A65D206D4
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Sep 2020 17:23:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599672191;
+	bh=ojYXfjO2DurN2C/opB53TRYM7STqyjyLj7tArEbYnYU=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=A3IUyxuq9hCbYcfPwZqx33NhUIytKwlftx5hZeantlV6Z8b78JxJVd4QiUzu5ZfwW
+	 T1c3F/iVKFLuRtbl4SL9PL3KinA2waIXkzXZIf6whZCKCQdAFoaZDb8EDFWALhHMpB
+	 QuvKisTR8b+tzeWWseBiUUpBczt8Kcrh2Wn07ioE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729135AbgIIRVo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Sep 2020 13:21:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45964 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730064AbgIIPXP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Sep 2020 11:23:15 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 86721C061242
-        for <linux-pm@vger.kernel.org>; Wed,  9 Sep 2020 07:43:14 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id a15so3921518ljk.2
-        for <linux-pm@vger.kernel.org>; Wed, 09 Sep 2020 07:43:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
-        b=sOj1ib2kl2SlVlUTM5hhtz7BMqvh2WSXwUCwvheygvKndh2ngHXDqcKNoc7mj8tYZk
-         01QtqZ0bxAWLEZ4WudeP6XKfC77xSfbEuYiJKkkb4u5AvEE7P6POu5pYSNWs8+yKaxd1
-         GfGyBAa6JywuElKfh3ASexqtPzVXubBXKO+KNhas2UbpFdGmVoNm16aURJLVm5M40p/p
-         BUwT0qHygUiWcMVE03rPHC0/8QyZe2jyWehhW1WILAYmQFQcKv8Xc9MnhBNz5ok+ftQh
-         T4K9KDD0uYhSoIAa0AcWpgL+oOXEklu53fwye3Tdx6FLAYax0gpgboJMl6zeIT2h2WF0
-         fIDQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
-        b=AR0mNeBW8iXoQFSrSZwA7fuboDts8jOeDTU5C+jqERUuO+Zk+EPTmBEwVpXhJ643AJ
-         2KfJxKUxCtEnFSoTdy9hv7Ofp+tvZBxWyxoPd0Dvnz9fk4nLl1jBJ2dfRjUQaS3nutEy
-         wHI4ucd0mpRGnYC7PIqIOsCeKv2fg6C7h9qUcWVqVFU7dmM8XwxzhHZr6mo9wyo9B5Pq
-         sIkx2R7g02+9w6tKrhvTIxSYNW7gzxXAmD87pqkE1dm/cx7LibffMvJgcFzNC7ocUJ1z
-         aE9trk3N99DilR0k3J4ubac3FmXQOsKWpIL1gJrnvn71UVz2PC6wFumR6BZ67gz6xbwH
-         D0MQ==
-X-Gm-Message-State: AOAM532lDtgyd43u5KtRj+bfURwr3B1JP+yU0fc1yXyQF7g7f4MpSe2/
-        3RZsrzIS/YDnUtAVUTD4isn3dQ==
-X-Google-Smtp-Source: ABdhPJw8HdhOumlwdp8/MgSIGzxjxCxBSs2n81KNfPpTNEZiW+9kSOqYfdiVoXJpyEyBoqTxdNCL4g==
-X-Received: by 2002:a2e:8798:: with SMTP id n24mr1956427lji.373.1599662592137;
-        Wed, 09 Sep 2020 07:43:12 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.155])
-        by smtp.gmail.com with ESMTPSA id t12sm621665lfk.26.2020.09.09.07.43.08
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Sep 2020 07:43:11 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v3 05/10] iio: adc: qcom-vadc-common: use fixp_linear_interpolate
-Date:   Wed,  9 Sep 2020 17:42:43 +0300
-Message-Id: <20200909144248.54327-6-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200909144248.54327-1-dmitry.baryshkov@linaro.org>
-References: <20200909144248.54327-1-dmitry.baryshkov@linaro.org>
+        id S1727005AbgIIRXE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Sep 2020 13:23:04 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33998 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726036AbgIIRXC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Sep 2020 13:23:02 -0400
+Received: from mail-ot1-f42.google.com (mail-ot1-f42.google.com [209.85.210.42])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 6C0452166E;
+        Wed,  9 Sep 2020 17:23:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599672181;
+        bh=ojYXfjO2DurN2C/opB53TRYM7STqyjyLj7tArEbYnYU=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=W40okwbvhzb3YNdQWWE61AnHf+7XtiOdb6MNYys5tClUSQqHRyUMpvh3j0fpRj3NS
+         33B56q0jVNPBQ3AsfsIRkXkarAFSMhPU2JsKSxRbZo06tvNmgrXsWwK3ewSbwGSrxC
+         B3BdieaaNhVMHkaDJiSZWYP+jSTalp6OSB3k8Ud8=
+Received: by mail-ot1-f42.google.com with SMTP id g10so2954608otq.9;
+        Wed, 09 Sep 2020 10:23:01 -0700 (PDT)
+X-Gm-Message-State: AOAM532QNqalj6R3eFLxyi/WKh/V+wpgcVI5mHOwFIhUjqcJfy/ZkstH
+        Yg8ez7sZHgduM4r4zDXprgUh9ezNBpfhIC0Ihg==
+X-Google-Smtp-Source: ABdhPJwF/BBwg1karh3OP6yS1l/x+0g03zifHTvvij6uGN/zcwIb/C59SHbjSoa84vatAmS8zyZQIW9jDnoPNpIu7AQ=
+X-Received: by 2002:a9d:411:: with SMTP id 17mr1405892otc.192.1599672180697;
+ Wed, 09 Sep 2020 10:23:00 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <cover.1598043782.git.cristian.ciocaltea@gmail.com>
+ <863c9c1e44cfbe6184bf0bd4893ff456af0e7bb8.1598043782.git.cristian.ciocaltea@gmail.com>
+ <20200908214724.GA959481@bogus> <20200909160334.GA385382@BV030612LT>
+In-Reply-To: <20200909160334.GA385382@BV030612LT>
+From:   Rob Herring <robh@kernel.org>
+Date:   Wed, 9 Sep 2020 11:22:48 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqL+21YH+_w3e6PnW0GqPyEAD6uU-hqHZercKK0xQwCOjg@mail.gmail.com>
+Message-ID: <CAL_JsqL+21YH+_w3e6PnW0GqPyEAD6uU-hqHZercKK0xQwCOjg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/6] dt-bindings: mfd: Add Actions Semi ATC260x PMIC binding
+To:     Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+Cc:     Lee Jones <lee.jones@linaro.org>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        =?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>,
+        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        Linux Input <linux-input@vger.kernel.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use new function fixp_linear_interpolate() instead of hand-coding the
-linear interpolation.
+On Wed, Sep 9, 2020 at 10:03 AM Cristian Ciocaltea
+<cristian.ciocaltea@gmail.com> wrote:
+>
+> Hi Rob,
+>
+> Thanks for reviewing!
+>
+> On Tue, Sep 08, 2020 at 03:47:24PM -0600, Rob Herring wrote:
+> > On Sat, Aug 22, 2020 at 01:19:47AM +0300, Cristian Ciocaltea wrote:
+> > > Add devicetree binding for Actions Semi ATC260x PMICs.
+> > >
+> > > Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > > ---
+> > >  .../bindings/mfd/actions,atc260x.yaml         | 221 ++++++++++++++++++
+> > >  1 file changed, 221 insertions(+)
+> > >  create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > >
+> > > diff --git a/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > > new file mode 100644
+> > > index 000000000000..4a55bbe1306e
+> > > --- /dev/null
+> > > +++ b/Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > > @@ -0,0 +1,221 @@
+> > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> > > +%YAML 1.2
+> > > +---
+> > > +$id: http://devicetree.org/schemas/mfd/actions,atc260x.yaml#
+> > > +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> > > +
+> > > +title: Actions Semi ATC260x Power Management IC bindings
+> > > +
+> > > +maintainers:
+> > > +  - Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+> > > +  - Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > > +
+> > > +description: |
+> > > +  ATC260x series PMICs integrates Audio Codec, Power Management, RTC, IR
+> > > +  and GPIO controller blocks. Currently only the PM related functionalities
+> > > +  (i.e. regulators and system power-off/reboot) for the ATC2603C and ATC2609A
+> > > +  chip variants are supported.
+> > > +  ATC2603C includes 3 programmable DC-DC converters and 9 LDO regulators.
+> > > +  ATC2609A includes 5 programmable DC-DC converters and 10 LDO regulators.
+> > > +
+> > > +properties:
+> > > +  compatible:
+> > > +    enum:
+> > > +      - actions,atc2603c
+> > > +      - actions,atc2609a
+> > > +
+> > > +  reg:
+> > > +    maxItems: 1
+> > > +
+> > > +  interrupts:
+> > > +    maxItems: 1
+> > > +
+> > > +  pwrc:
+> > > +    type: object
+> > > +    description: |
+> > > +      The power controller integrated in ATC260x provides system power-off
+> > > +      and reboot operations.
+> >
+> > No need for this node as there are no properties, just instantiate
+> > what's needed in the MFD driver.
+>
+> My intention was to allow the user specify what functionality in the MFD
+> shall be enabled. For this particular case, if the 'pwrc' node is not
+> provided, the power-off/reboot functions will be disabled.
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- drivers/iio/adc/qcom-vadc-common.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+IIRC, there's a flag property for this already.
 
-diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index d11f3343ad52..40d77b3af1bb 100644
---- a/drivers/iio/adc/qcom-vadc-common.c
-+++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -2,6 +2,7 @@
- #include <linux/bug.h>
- #include <linux/kernel.h>
- #include <linux/bitops.h>
-+#include <linux/fixp-arith.h>
- #include <linux/math64.h>
- #include <linux/log2.h>
- #include <linux/err.h>
-@@ -368,10 +369,9 @@ static int qcom_vadc_map_voltage_temp(const struct vadc_map_pt *pts,
- 	} else {
- 		/* result is between search_index and search_index-1 */
- 		/* interpolate linearly */
--		*output = (((s32)((pts[i].y - pts[i - 1].y) *
--			(input - pts[i - 1].x)) /
--			(pts[i].x - pts[i - 1].x)) +
--			pts[i - 1].y);
-+		*output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
-+						  pts[i].x, pts[i].y,
-+						  input);
- 	}
- 
- 	return 0;
--- 
-2.28.0
+>
+> > > +
+> > > +    properties:
+> > > +      compatible:
+> > > +        enum:
+> > > +          - actions,atc2603c-pwrc
+> > > +          - actions,atc2609a-pwrc
+> > > +
+> > > +    required:
+> > > +      - compatible
+> > > +
+> > > +    additionalProperties: false
+> > > +
+> > > +  onkey:
+> > > +    type: object
+> > > +    description: |
+> > > +      Use the ONKEY built into ATC260x PMICs as an input device reporting
+> > > +      power button status. ONKEY can be used to wakeup from low power
+> > > +      modes and force a reset on long press.
+> > > +
+> > > +    properties:
+> > > +      compatible:
+> > > +        enum:
+> > > +          - actions,atc2603c-onkey
+> > > +          - actions,atc2609a-onkey
+> > > +
+> > > +      actions,reset-time-sec:
+> > > +        description: |
+> > > +          Duration in seconds which the key should be kept pressed for device
+> > > +          to reset automatically. The hardware default is 8. Use 0 to disable
+> > > +          this functionality.
+> > > +        enum: [0, 6, 8, 10, 12]
+> >
+> > We already have 'power-off-time-sec' in input.yaml. How about adding
+> > 'reset-time-sec' there.
+>
+> Thanks for the suggestion, I was actually looking for this before
+> choosing the custom property and just assumed this was not added for
+> a particular reason.
 
+Probably just because the usual behavior of holding the power button
+is to power off rather than reset.
+
+> So I'm going to handle it. Would you like me to send a separate patch
+> (not part of this series)?
+
+Separate patch yes, but it can be part of the series.
+
+> > This could really just be a property in the parent node.
+>
+> This is similar with 'pwrc': if 'onkey' node is not present, the ONKEY
+> functionality will not be enabled.
+
+Would you really want/need to support wakeup, but disable long press
+feature? Seems like a single property would be sufficient.
+
+> Is there a better/recommended approach to manage this MFD feature
+> selection?
+
+But we have child nodes for this in other cases, so I guess it is fine.
+
+Rob
