@@ -2,119 +2,254 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7909BC2D0A7
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:25:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3066C43461
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:27:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3AC65221E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:25:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 89AD9221E3
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:27:16 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xGTfHy55"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728228AbgIJVYj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 17:24:39 -0400
-Received: from foss.arm.com ([217.140.110.172]:37282 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731004AbgIJOXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Sep 2020 10:23:12 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E3BEB11B3;
-        Thu, 10 Sep 2020 07:21:17 -0700 (PDT)
-Received: from [10.57.40.122] (unknown [10.57.40.122])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1B4783F66E;
-        Thu, 10 Sep 2020 07:21:08 -0700 (PDT)
-Subject: Re: [trivial PATCH] treewide: Convert switch/case fallthrough; to
- break;
-To:     Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
-        Jiri Kosina <trivial@kernel.org>
-Cc:     linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
-        oss-drivers@netronome.com, nouveau@lists.freedesktop.org,
-        alsa-devel <alsa-devel@alsa-project.org>,
-        dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org,
-        dm-devel@redhat.com, linux-mtd@lists.infradead.org,
-        linux-i2c@vger.kernel.org, sparclinux@vger.kernel.org,
-        kvmarm@lists.cs.columbia.edu, linux-rtc@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
-        dccp@vger.kernel.org, linux-rdma@vger.kernel.org,
-        linux-atm-general@lists.sourceforge.net,
-        linux-afs@lists.infradead.org, coreteam@netfilter.org,
-        intel-wired-lan@lists.osuosl.org, linux-serial@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
-        Kees Cook <kees.cook@canonical.com>,
-        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
-        intel-gfx@lists.freedesktop.org, linux-sctp@vger.kernel.org,
-        linux-mediatek@lists.infradead.org, linux-nvme@lists.infradead.org,
-        storagedev@microchip.com, ceph-devel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
-        linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
-        linux-usb@vger.kernel.org,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org,
-        netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org,
-        bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Will Deacon <will@kernel.org>
-References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-From:   Robin Murphy <robin.murphy@arm.com>
-Message-ID: <9372456a-8dcf-2735-57a4-e126aa5df3a6@arm.com>
-Date:   Thu, 10 Sep 2020 15:21:05 +0100
-User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101
- Thunderbird/68.12.0
+        id S1726802AbgIJV1B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 17:27:01 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52626 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731054AbgIJOK1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:10:27 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 66B85C0617B9
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:15 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id y2so3631559lfy.10
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:15 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=0I6pQWwOhUWc2K65OlZG19X3KN2sWbUfhTEkKlMLufk=;
+        b=xGTfHy55igiiYK6bgyw405lH2EtFNFnJvlAcrXT54GNglJh7Bis2x8BKPsrJjQBFWD
+         BFKd6CogmmwW5E/AMPL6G/vQNXNKyMv8MI+RqUlYvL/WYvnetd119tZCxTSqsXzxvBdA
+         khyOlWSRZgdmBaWgGwEqrfsbJqygyju+9Q9X7lNGRvlbE3Icjn1j/iGUcp3tmGtrtPHs
+         bzXsuHxFeHULvWaSR0d2Tnns0O2KYkw/ss/FiHR/xpdSNU/qBgvGMxo76dnIhk7B5Twl
+         ohVt6KfNJNOdBxJ2KUEEcYWNjn5C0guN4QsqMzZ245bEvihqCZATAnf7/EWh6MDuXjzp
+         PgXw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=0I6pQWwOhUWc2K65OlZG19X3KN2sWbUfhTEkKlMLufk=;
+        b=ikZXbmh+CEUC46+qd946u1ZAFZgupO654494vZ7OHZi5RDyIhH2gopyVRptEIdWoQR
+         s8An7nB0qIIzL8FuPl3yxL9R6ksV2+lluZ9E3Qg7rJsFhGBy625z3C4Wx0IMST/T9oqL
+         rWfJQdDwrWzRTqTQ2bfsjwXeO+OASkHa/TDiAysrXLldhybQyUmIFBWOqiuAh6+lyaHi
+         CL6VPWw+ZgfP2/TXeOOgB+SdMBvzp+Bw/G6AJsGA67SMrYfscFfgvYonH3P6JYU9TkCe
+         x4+osgmyiwpoJAjRdbi9XBN3MCe4TLeGs/WzWdGJdn2Tyshi9HF7LLJGYzUGAWdOqT6d
+         LMVQ==
+X-Gm-Message-State: AOAM533CxAois7USbAB+rwQshd4NsDo0n/ZryRS/mXujdSquQsiiRcYr
+        3utLuveqFl4vHL1wpa27psNCLA==
+X-Google-Smtp-Source: ABdhPJwuDTJMvIDU4B2g8FCgzdZ8i5NqWgAut6BhFEjNEwHrwdFafdlvccqiBqkf0uVJ7pMrC2paVA==
+X-Received: by 2002:a19:dc19:: with SMTP id t25mr4235141lfg.114.1599746413666;
+        Thu, 10 Sep 2020 07:00:13 -0700 (PDT)
+Received: from eriador.lan ([188.162.64.156])
+        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Sep 2020 07:00:13 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Subject: [PATCH v4 02/10] dt-bindings: thermal: qcom: add adc-thermal monitor bindings
+Date:   Thu, 10 Sep 2020 16:59:52 +0300
+Message-Id: <20200910140000.324091-3-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
+References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-GB
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2020-09-09 21:06, Joe Perches wrote:
-> fallthrough to a separate case/default label break; isn't very readable.
-> 
-> Convert pseudo-keyword fallthrough; statements to a simple break; when
-> the next label is case or default and the only statement in the next
-> label block is break;
-> 
-> Found using:
-> 
-> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
-> 
-> Miscellanea:
-> 
-> o Move or coalesce a couple label blocks above a default: block.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-> 
-> Compiled allyesconfig x86-64 only.
-> A few files for other arches were not compiled.
-> 
+Add bindings for thermal monitor, part of Qualcomm PMIC5 chips. It is a
+close counterpart of VADC part of those PMICs.
 
-[...]
-> diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> index c192544e874b..743db1abec40 100644
-> --- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> +++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
-> @@ -3777,7 +3777,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
->   	switch (FIELD_GET(IDR0_TTF, reg)) {
->   	case IDR0_TTF_AARCH32_64:
->   		smmu->ias = 40;
-> -		fallthrough;
-> +		break;
->   	case IDR0_TTF_AARCH64:
->   		break;
->   	default:
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ .../bindings/thermal/qcom-spmi-adc-tm5.yaml   | 151 ++++++++++++++++++
+ 1 file changed, 151 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
 
-I have to say I don't really agree with the readability argument for 
-this one - a fallthrough is semantically correct here, since the first 
-case is a superset of the second. It just happens that anything we would 
-do for the common subset is implicitly assumed (there are other 
-potential cases we simply haven't added support for at the moment), thus 
-the second case is currently empty.
+diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
+new file mode 100644
+index 000000000000..432a65839b89
+--- /dev/null
++++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
+@@ -0,0 +1,151 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/thermal/qcom-spmi-adc-tm5.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm's SPMI PMIC ADC Thermal Monitoring
++maintainers:
++  - Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
++
++properties:
++  compatible:
++    const: qcom,spmi-adc-tm5
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 1
++
++  "#thermal-sensor-cells":
++    const: 1
++    description:
++      Number of cells required to uniquely identify the thermal sensors. Since
++      we have multiple sensors this is set to 1
++
++  "#address-cells":
++    const: 1
++
++  "#size-cells":
++    const: 0
++
++  qcom,avg-samples:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: Number of samples to be used for measurement.
++    enum:
++      - 1
++      - 2
++      - 4
++      - 8
++      - 16
++    default: 1
++
++  qcom,decimation:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    description: This parameter is used to decrease ADC sampling rate.
++            Quicker measurements can be made by reducing decimation ratio.
++    enum:
++      - 250
++      - 420
++      - 840
++    default: 840
++
++patternProperties:
++  "^([-a-z0-9]*)@[0-9]+$":
++    type: object
++    description:
++      Represent one thermal sensor.
++
++    properties:
++      reg:
++        description: Specify the sensor channel.
++        maxItems: 1
++
++      io-channels:
++        description:
++          From common IIO binding. Used to pipe PMIC ADC channel to thermal monitor
++
++      qcom,adc-channel:
++        $ref: /schemas/types.yaml#/definitions/uint32
++        description: Corresponding ADC channel ID.
++
++      qcom,ratiometric:
++        $ref: /schemas/types.yaml#/definitions/flag
++        description:
++          Channel calibration type.
++          If this property is specified VADC will use the VDD reference
++          (1.875V) and GND for channel calibration. If property is not found,
++          channel will be calibrated with 0V and 1.25V reference channels,
++          also known as absolute calibration.
++
++      qcom,hw-settle-time:
++        $ref: /schemas/types.yaml#/definitions/uint32
++        description: Time between AMUX getting configured and the ADC starting conversion.
++
++      qcom,pre-scaling:
++        $ref: /schemas/types.yaml#/definitions/uint32-array
++        description: Used for scaling the channel input signal before the
++          signal is fed to VADC. See qcom,spi-vadc specification for the list
++          of possible values.
++        minItems: 2
++        maxItems: 2
++
++    required:
++      - reg
++      - qcom,adc-channel
++
++    additionalProperties:
++      false
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - "#address-cells"
++  - "#size-cells"
++  - "#thermal-sensor-cells"
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/iio/qcom,spmi-vadc.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    spmi_bus {
++        #address-cells = <1>;
++        #size-cells = <0>;
++        pm8150b_adc: adc@3100 {
++            reg = <0x3100>;
++            compatible = "qcom,spmi-adc5";
++            #address-cells = <1>;
++            #size-cells = <0>;
++            #io-channel-cells = <1>;
++            io-channel-ranges;
++
++            /* Other propreties are omitted */
++            conn-therm@4f {
++                reg = <ADC5_AMUX_THM3_100K_PU>;
++                qcom,ratiometric;
++                qcom,hw-settle-time = <200>;
++            };
++        };
++
++        pm8150b_adc_tm: adc-tm@3500 {
++            compatible = "qcom,spmi-adc-tm5";
++            reg = <0x3500>;
++            interrupts = <0x2 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
++            #thermal-sensor-cells = <1>;
++            #address-cells = <1>;
++            #size-cells = <0>;
++
++            conn-therm@0 {
++                reg = <0>;
++                io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
++                qcom,adc-channel = <ADC5_AMUX_THM3_100K_PU>;
++                qcom,ratiometric;
++                qcom,hw-settle-time = <200>;
++            };
++        };
++    };
++...
+-- 
+2.28.0
 
-This change actively obfuscates that distinction.
-
-Robin.
