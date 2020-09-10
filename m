@@ -2,85 +2,212 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B8A57C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 18:44:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46AF7C433E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:07:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72A0121D40
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 18:44:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EE0A820882
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:07:18 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="KpyFds9n"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="aZetXZi1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727027AbgIJSnl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 14:43:41 -0400
-Received: from lelv0142.ext.ti.com ([198.47.23.249]:58620 "EHLO
-        lelv0142.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725866AbgIJSRw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 14:17:52 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by lelv0142.ext.ti.com (8.15.2/8.15.2) with ESMTP id 08AGjjV5057212;
-        Thu, 10 Sep 2020 11:45:45 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1599756345;
-        bh=mGo45HNyVsJh9MrMbASyD3eQepVmN2osS7RHtgRFbMM=;
-        h=From:To:CC:Subject:Date;
-        b=KpyFds9ngk+ftnoC+TNLyXN92cT84SbXJLXajIAYTz5FwsG22luBX0DJzURyLg39k
-         DOU3fmROxeT7iO0daUhdjutxiS1zpkPVwcxM8//FFHyHKjtg7w/fwZh9sJYLNGEWNR
-         ALut7W1Tc1bzjnKbO2TBzapSPgQ5C5m3RuS1qVf4=
-Received: from DFLE113.ent.ti.com (dfle113.ent.ti.com [10.64.6.34])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 08AGjjoe119473
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Thu, 10 Sep 2020 11:45:45 -0500
-Received: from DFLE104.ent.ti.com (10.64.6.25) by DFLE113.ent.ti.com
- (10.64.6.34) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Thu, 10
- Sep 2020 11:45:45 -0500
-Received: from fllv0039.itg.ti.com (10.64.41.19) by DFLE104.ent.ti.com
- (10.64.6.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Thu, 10 Sep 2020 11:45:44 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0039.itg.ti.com (8.15.2/8.15.2) with ESMTP id 08AGjhP7022560;
-        Thu, 10 Sep 2020 11:45:44 -0500
-From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-To:     <sre@kernel.org>, <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC:     <dmurphy@ti.com>, Ricardo Rivera-Matos <r-rivera-matos@ti.com>
-Subject: [PATCH v3 0/2]  Introduce the BQ256XX family of chargers
-Date:   Thu, 10 Sep 2020 11:45:32 -0500
-Message-ID: <20200910164534.16987-1-r-rivera-matos@ti.com>
-X-Mailer: git-send-email 2.28.0
+        id S1725983AbgIJTHJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 15:07:09 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42816 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726913AbgIJTEx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 15:04:53 -0400
+Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8079C061573
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:04:48 -0700 (PDT)
+Received: by mail-pf1-x435.google.com with SMTP id d9so5222948pfd.3
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:04:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=AhGW/rqhwf4klt9eoOpbdDvweT+ZnxXrozTx8N78DSM=;
+        b=aZetXZi1BuqGx7VA19ts1CcLOGvdEP8Lyf7ScuOWzdXdHanvu0V8x+uJOelyxSbs9C
+         xM6fExit6fcS8DNDiFyEoa+GJ+/BEs4e9plroKeX1qtwrTl3rstUhGVGp+CenzeItWWG
+         h7f3KlvulEyKQT2t0k8andNg3MksUN66SIAxni9TYqe1jkf/LEhZumBW6TGOzLSeyczN
+         OUdCdyMyzITppzcA/jK0ikY4mDABFMhhQQIfmiUkoabCQMpab4byJp8Mqg2DBsdMP8/d
+         jQC+SkSrLoJbuc5hWIQFOstkE5OLnuu88KqYQkELvmKQ28moKJL57Qxcqf3S3EdU4ZCm
+         omtw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=AhGW/rqhwf4klt9eoOpbdDvweT+ZnxXrozTx8N78DSM=;
+        b=gATc7LKIM8dRYf6Hm4jmo+rE3TWoOaVE/MiRUoXchOsq5+ygyIQV9bgUOXZh0MfXse
+         YTvhlYW7Erip2J4BDeydHZtVr4saM5rFMUbPGD6kwhbhlcbj18NvKFUuvpFHTZStg+Z4
+         dllwrDiSztJvWH9eAVZk27lc8CSJVDiystXt1MsgzmK6CSIuLeEPNc/SnvjbGZ5r6i8w
+         HhS7rtZWMGmeA2kciGVzA5dglOBm/oAPHFmNophPHIqzaZvESVxRk4XmCG+d/P/oxg5H
+         6kWN7j4oDGXFAorApLAq5+ZoM8xfwzTtBNqCmhEvUHwRfrd4yzpZ6BJR2Yl73DOKGkAF
+         R5kg==
+X-Gm-Message-State: AOAM530iPW9TG0VRzJuQ2XthwH6adNzVMZHrR/BKwAADyxdi2jV8ZJbx
+        dcuRBGQx9qVUlbsnbiRConQzxTOfvpyS1Q==
+X-Google-Smtp-Source: ABdhPJyRpOn0H5Zm7wxncI2ariKStiXXXAl0D3g5cTqstovrPTsgQBLNleMGQJRg7thhz6egPSEIAg==
+X-Received: by 2002:a17:902:be0b:: with SMTP id r11mr7095479pls.84.1599764688436;
+        Thu, 10 Sep 2020 12:04:48 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id s129sm6686449pfb.39.2020.09.10.12.04.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Sep 2020 12:04:47 -0700 (PDT)
+Message-ID: <5f5a78cf.1c69fb81.faa20.1b3e@mx.google.com>
+Date:   Thu, 10 Sep 2020 12:04:47 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Kernel: v5.9-rc4-6-g23818c154bae
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 11 warnings (v5.9-rc4-6-g23818c154bae)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+pm/testing build: 7 builds: 0 failed, 7 passed, 11 warnings (v5.9-rc4-6-g23=
+818c154bae)
 
-This patchset introduces the bq256xx family of charging ICs. The bq256xx
-ICs are highly integrated, buck, switching chargers intended for use in 
-smartphones, tablets, and portable electronics.
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+9-rc4-6-g23818c154bae/
 
-Ricardo Rivera-Matos (2):
-  dt-bindings: power: Add the bq256xx dt bindings
-  power: supply: bq256xx: Introduce the BQ256XX charger driver
+Tree: pm
+Branch: testing
+Git Describe: v5.9-rc4-6-g23818c154bae
+Git Commit: 23818c154baeeb4bb6a8de39cdb9b1e589b6416a
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
- .../bindings/power/supply/bq256xx.yaml        |   97 +
- drivers/power/supply/Kconfig                  |   11 +
- drivers/power/supply/Makefile                 |    1 +
- drivers/power/supply/bq256xx_charger.c        | 1769 +++++++++++++++++
- 4 files changed, 1878 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/bq256xx.yaml
- create mode 100644 drivers/power/supply/bq256xx_charger.c
+Warnings Detected:
 
--- 
-2.28.0
+arc:
 
+arm64:
+    defconfig (gcc-8): 8 warnings
+
+arm:
+    multi_v7_defconfig (gcc-8): 3 warnings
+
+i386:
+
+mips:
+
+riscv:
+
+x86_64:
+
+
+Warnings summary:
+
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #size-cells (1) differs from / (2)
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #address-cells (1) differs from / (2)
+    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
+iled prerequisite 'spi_bus_bridge'
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #size-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #address-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for =
+SPI bus
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells f=
+or SPI bus
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+
+Detailed per-defconfig build reports:
+
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
+
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 8 warnings, 0 section mi=
+smatches
+
+Warnings:
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:127.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+size-cells (1) differs from / (2)
+
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
+
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
+
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
+tion mismatches
+
+Warnings:
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SP=
+I bus
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI b=
+us
+    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
+prerequisite 'spi_bus_bridge'
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---
+For more info write to <info@kernelci.org>
