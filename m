@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E2A0C433E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:30:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27064C2D0E1
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:30:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 431A8221E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:30:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E00CD221E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:30:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Jh+xxnpK"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jyOCZWMj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726675AbgIJVaK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 17:30:10 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51256 "EHLO
+        id S1727907AbgIJVaR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 17:30:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51292 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730959AbgIJOCp (ORCPT
+        with ESMTP id S1731008AbgIJOCp (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:02:45 -0400
 Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E0BEC061342
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:24 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id r24so8356420ljm.3
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:24 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C14DCC06134D
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:29 -0700 (PDT)
+Received: by mail-lj1-x242.google.com with SMTP id a22so8275017ljp.13
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:29 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=UYCbcxWK8UZvP4fORWPCdZHxSRcyR7TYHiknFeVjAjU=;
-        b=Jh+xxnpKuahJZ8tmJsw7L3PRa3inmR2J7XvJAbRQCOkXjIpQ9WjZ+kFo+vyZgLDn3M
-         9EQiTIpmT2u8q4yqtLwzenirl2Cf4GtbL4zRwuuUpH8T/11dUxYsmu5FDoSNBg8ByEYp
-         Asy7OSpAiAI31vThzHb//a5rRkcb9sp11w8vWkFOPQ7PROsdItn2bhkww0fX3XD9Bkk+
-         mESkwjK38GH/FbRMf0z+UrJiSqh0163hQ3FG5tN6lbU1WdMdinERgoE8aust7hLtoqRW
-         domyqMQ4odrzu47vyMQ/WjiEuwq2hzRPjkKgHa3iGuPDkWuaiRSNa/tWnM+MUMLlVixx
-         UGUA==
+        bh=kn0LCZSIusAON6ndXDb22Ts6Aylc8FP8Xrvohop7/2A=;
+        b=jyOCZWMjVMKBPqa1JxT7u6VAFL/7f2ZxGeSsgoWzlFAH4duBGkhSrfhmdcj1afx0ov
+         TGhyDk8QiOSfCEpIeBofPVZk5MJi1v+gsLhPtWzfBKgJ31PbbvRirO5xJwAWR3LJrbWW
+         LBSlNnPBzs85Hcucsn4CsWA5Axd1ZwQRO1Pyw088ns6c6owFMaO+TdxASj+Uplr4f1OB
+         F6ESSVEbIzCsjFfhq2e+CHzDuSh/657QFFEJ8L7DIp6EdpKurNT+8ew+db6kDOnNMOHY
+         kaLuP2bpcgApCtNge+yGGk2vCzk+A3U4OW00jlV7MG45vlpdyK8L2STQhM7r3fjeeJIa
+         PlvA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=UYCbcxWK8UZvP4fORWPCdZHxSRcyR7TYHiknFeVjAjU=;
-        b=cUOMgLszmzw7aWBG0hrYVAeYfQ3B1PGCrJiIdjUxOjMg5LlbuBR9hKl46MFurAuzoU
-         kL/WAht2kwy6CBiWmrssf89MV++f22MzAC4hNZqxmbzjLtauoVPA3noeYlxvPjFpHbfO
-         M6Ml8wkbBm31pWf6/AgZsAPiO40RjrSkF0hCXz8n390ogts8WlbSl8XBRhe8vLdQfQ1d
-         nK/AkvlhEQ0kvKn/5KBmG51o/8cND68nExyRWNXPDoyPXrQPKr3Pu7qOAfXlUfAigI96
-         Cz66+tGXBDXNr6AYjM25gqDkdmCBXkTUt6EaGHEdi405fbRRXIbtERpZNBQCZBgI/zJf
-         cdFA==
-X-Gm-Message-State: AOAM531ofTrhf4yJNd2g0LNNcR6d8qEXN9fVZZJ/3H6k8mI2FwF5US+A
-        zHdjlOvPaQyvzZWZ7DUtv91+pQ==
-X-Google-Smtp-Source: ABdhPJxw4BJkJfgrTpp5C3M5g3djMcYG2hnwFn51VZBQVWqAE+zHjjRWbCyT8AJMwZcs0U7dQArsJA==
-X-Received: by 2002:a2e:141d:: with SMTP id u29mr4542164ljd.243.1599746423060;
-        Thu, 10 Sep 2020 07:00:23 -0700 (PDT)
+        bh=kn0LCZSIusAON6ndXDb22Ts6Aylc8FP8Xrvohop7/2A=;
+        b=AYb6ViIut2wz25ymOSdJ9DF3jfZ9NEBx2Zthody9lU/1vKf35JF7UdFli/jd6Z66yd
+         JkqyO7FVLZWZ+nwTxPThiI/GT89Fp3XFpPxi3Wo/F6b3hyDVFqiGyZylF2ZUQMYrpT0f
+         xmd6wKCea5jaLjWp7Cc9ygQ3B/esf8GHZi3aa9t0SCJ7WTvFYOfzPBGItF5RfgkqLYNm
+         XOiMMvDzeFx/3XniZiFiGfTAKmbL7ewEUFhdSL3mAxr/9Pn6mWLJ6DYidrbDCJctPWp0
+         J6DjFJIOpD1wycfiyMJRR2fz720AO+k4ESeqfTpedIoBgLsyBrHyLZMn+qgY3k24MM39
+         SzLQ==
+X-Gm-Message-State: AOAM5327M2sxiShwRFx7ZQoiKRoFSwQ5zALpyq2bYCgQeG+I0I8IIuNi
+        qoge8S+p4dtALbe498HWAtZNVw==
+X-Google-Smtp-Source: ABdhPJw8QLdZnQr6ObcJ2xUOS68hjJEH9TCvIPrCQ6bGCaFueASbL/cTHgwWh+yh8QL3juWyGwEgkw==
+X-Received: by 2002:a2e:505:: with SMTP id 5mr4918856ljf.308.1599746428213;
+        Thu, 10 Sep 2020 07:00:28 -0700 (PDT)
 Received: from eriador.lan ([188.162.64.156])
-        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.21
+        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.26
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2020 07:00:22 -0700 (PDT)
+        Thu, 10 Sep 2020 07:00:27 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -71,9 +71,9 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v4 07/10] iio: provide of_iio_channel_get_by_name() and devm_ version it
-Date:   Thu, 10 Sep 2020 16:59:57 +0300
-Message-Id: <20200910140000.324091-8-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v4 10/10] arm64: dts: sm8250-mtp: add thermal zones using pmic's adc-tm5
+Date:   Thu, 10 Sep 2020 17:00:00 +0300
+Message-Id: <20200910140000.324091-11-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
 References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
@@ -84,136 +84,245 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There might be cases when the IIO channel is attached to the device
-subnode instead of being attached to the main device node. Allow drivers
-to query IIO channels by using device tree nodes.
+Port thermal zones definitions from msm-4.19 tree. Enable and add
+channel configuration to PMIC's ADC-TM definitions. Declare thermal
+zones and respective trip points.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/iio/inkern.c         | 34 ++++++++++++++++++++++++++--------
- include/linux/iio/consumer.h | 36 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 62 insertions(+), 8 deletions(-)
+ arch/arm64/boot/dts/qcom/sm8250-mtp.dts | 212 ++++++++++++++++++++++++
+ 1 file changed, 212 insertions(+)
 
-diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
-index ede99e0d5371..8ff0ac472de3 100644
---- a/drivers/iio/inkern.c
-+++ b/drivers/iio/inkern.c
-@@ -180,8 +180,8 @@ static struct iio_channel *of_iio_channel_get(struct device_node *np, int index)
- 	return ERR_PTR(err);
- }
+diff --git a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+index 6894f8490dae..d524cc5a0816 100644
+--- a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
++++ b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+@@ -24,6 +24,104 @@ chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
  
--static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
--						      const char *name)
-+struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
-+					       const char *name)
- {
- 	struct iio_channel *chan = NULL;
- 
-@@ -219,6 +219,7 @@ static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
- 
- 	return chan;
- }
-+EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name);
- 
- static struct iio_channel *of_iio_channel_get_all(struct device *dev)
- {
-@@ -261,12 +262,6 @@ static struct iio_channel *of_iio_channel_get_all(struct device *dev)
- 
- #else /* CONFIG_OF */
- 
--static inline struct iio_channel *
--of_iio_channel_get_by_name(struct device_node *np, const char *name)
--{
--	return NULL;
--}
--
- static inline struct iio_channel *of_iio_channel_get_all(struct device *dev)
- {
- 	return NULL;
-@@ -382,6 +377,29 @@ struct iio_channel *devm_iio_channel_get(struct device *dev,
- }
- EXPORT_SYMBOL_GPL(devm_iio_channel_get);
- 
-+struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
-+						    struct device_node *np,
-+						    const char *channel_name)
-+{
-+	struct iio_channel **ptr, *channel;
++	thermal-zones {
++		xo-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 0>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
 +
-+	ptr = devres_alloc(devm_iio_channel_free, sizeof(*ptr), GFP_KERNEL);
-+	if (!ptr)
-+		return ERR_PTR(-ENOMEM);
++		skin-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 1>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
 +
-+	channel = of_iio_channel_get_by_name(np, channel_name);
-+	if (IS_ERR(channel)) {
-+		devres_free(ptr);
-+		return channel;
-+	}
++		mmw-pa1 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 2>;
 +
-+	*ptr = channel;
-+	devres_add(dev, ptr);
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
 +
-+	return channel;
-+}
-+EXPORT_SYMBOL_GPL(devm_of_iio_channel_get_by_name);
++		conn-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150b_adc_tm 0>;
 +
- struct iio_channel *iio_channel_get_all(struct device *dev)
- {
- 	const char *name;
-diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
-index c4118dcb8e05..0a90ba8fa1bb 100644
---- a/include/linux/iio/consumer.h
-+++ b/include/linux/iio/consumer.h
-@@ -13,6 +13,7 @@
- struct iio_dev;
- struct iio_chan_spec;
- struct device;
-+struct device_node;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		camera-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 0>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		skin-msm-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 1>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		mmw-pa2 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 2>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++	};
++
+ 	vph_pwr: vph-pwr-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "vph_pwr";
+@@ -358,6 +456,120 @@ &cdsp {
+ 	firmware-name = "qcom/sm8250/cdsp.mbn";
+ };
  
- /**
-  * struct iio_channel - everything needed for a consumer to use a channel
-@@ -97,6 +98,41 @@ void iio_channel_release_all(struct iio_channel *chan);
-  */
- struct iio_channel *devm_iio_channel_get_all(struct device *dev);
- 
-+/**
-+ * of_iio_channel_get_by_name() - get description of all that is needed to access channel.
-+ * @np:			Pointer to consumer device tree node
-+ * @consumer_channel:	Unique name to identify the channel on the consumer
-+ *			side. This typically describes the channels use within
-+ *			the consumer. E.g. 'battery_voltage'
-+ */
-+#ifdef CONFIG_OF
-+struct iio_channel *of_iio_channel_get_by_name(struct device_node *np, const char *name);
-+#else
-+static inline struct iio_channel *
-+of_iio_channel_get_by_name(struct device_node *np, const char *name)
-+{
-+	return NULL;
-+}
-+#endif
++&pm8150_adc {
++	xo-therm@4c {
++		reg = <ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
 +
-+/**
-+ * devm_of_iio_channel_get_by_name() - Resource managed version of of_iio_channel_get_by_name().
-+ * @dev:		Pointer to consumer device.
-+ * @np:			Pointer to consumer device tree node
-+ * @consumer_channel:	Unique name to identify the channel on the consumer
-+ *			side. This typically describes the channels use within
-+ *			the consumer. E.g. 'battery_voltage'
-+ *
-+ * Returns a pointer to negative errno if it is not able to get the iio channel
-+ * otherwise returns valid pointer for iio channel.
-+ *
-+ * The allocated iio channel is automatically released when the device is
-+ * unbound.
-+ */
-+struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
-+						    struct device_node *np,
-+						    const char *consumer_channel);
++	skin-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
 +
- struct iio_cb_buffer;
- /**
-  * iio_channel_get_all_cb() - register callback for triggered capture
++	pa-therm1@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150b_adc {
++	conn-therm@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150l_adc {
++	camera-flash-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-msm-therm@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm2@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150_adc_tm {
++	status = "okay";
++
++	xo-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150_adc ADC5_XO_THERM_100K_PU>;
++		qcom,adc-channel = <ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-therm@1 {
++		reg = <1>;
++		io-channels = <&pm8150_adc ADC5_AMUX_THM1_100K_PU>;
++		qcom,adc-channel = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm1@2 {
++		reg = <2>;
++		io-channels = <&pm8150_adc ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150b_adc_tm {
++	status = "okay";
++
++	conn-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
++		qcom,adc-channel = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150l_adc_tm {
++	status = "okay";
++
++	camera-flash-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM1_100K_PU>;
++		qcom,adc-channel = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-msm-therm@1 {
++		reg = <1>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM2_100K_PU>;
++		qcom,adc-channel = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm2@2 {
++		reg = <2>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
+ &qupv3_id_1 {
+ 	status = "okay";
+ };
 -- 
 2.28.0
 
