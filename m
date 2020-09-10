@@ -2,113 +2,112 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.5 required=3.0 tests=BAYES_00,DKIM_INVALID,
+	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1349C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 14:18:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1DFCC433E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 16:32:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 464222087C
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 14:18:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8EBF020829
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 16:32:07 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uPNJQH4Z"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="HIA+ZBYA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730719AbgIJOQz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 10:16:55 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52984 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731122AbgIJOK6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:10:58 -0400
-Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6B8FC06179F
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:10 -0700 (PDT)
-Received: by mail-lj1-x22c.google.com with SMTP id u4so8286446ljd.10
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Y7MyZ2TAFWflP+dgDfOZRILQ5unvhNefHjzHbPK6lnw=;
-        b=uPNJQH4ZDH1SErn2VoMF7NeG9/CwPSkWhpQyPpAdVsFvRpia7azZAoR80hDV8JaHdH
-         SYM5q1GT1qs0Avr3xMeYVs1Qr82/B/v99vwbZQdvfNp9/J0ASt3lKnn7Yg98bXBviRr9
-         CqQ+jANQ0BhKDNN/Go86XnzMC1//J2G5omtfy8fgfFGhoZY8Qh630vFTH4lJZkdA0cCk
-         WBZP6h1ulHmLRycC+5ty+ASoGb1S4HHh73YdOIVAKa5yLoDoLGUrklbUoCcX9epI+znk
-         tSIvdfddzmP9RRDNrWsZ6C0AnvxW3lYSJQJ5AHuE0PXvLqSeNo2ZvEFltCmFDmZpSZPq
-         wcUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=Y7MyZ2TAFWflP+dgDfOZRILQ5unvhNefHjzHbPK6lnw=;
-        b=APLKU5jrRZqGvcg1s9KsDv5E5Eb1+HxRzIj+RF4WGUbTttho6wPpzqQUq4Nclmoj8b
-         dt/xssfU7NTNUP34oIjw0JqwrJgIcdEUNSPNNdq1t1OEPkHDIogQvwQvTJjJbAsQAeZP
-         o86IyiLj/aaVwWub6sUfAcvLn8ax5BL6yCSrRz1T3EQ41+As0bI7iw/Y/k/KofR6REa8
-         8XMaiuR6FI505oNvCyh44gKgRUbD8dJMBQkX5ERqoQkJe4TswSdyf72+hDOTiKefKfjz
-         AZFWxERjiErSzkz2GPx45Sou8VpMKZW6FyNoiiaVASK1VgyWMTkH6hEPjn9D1BJ35TBD
-         qP4A==
-X-Gm-Message-State: AOAM533wHi582wjmn+pAqXkXlaBK3sHbNPVq6Vc5FtrLZBTGJHeH7GyY
-        74n5UaYpFLfiqdKRVjmSyWy00w==
-X-Google-Smtp-Source: ABdhPJwv788ve/n35Qorbazt2TmGE6tS6NCan+WQy3ViD2fXgJ+VCgP/heVrwfzvp1ajLMjpge9Emg==
-X-Received: by 2002:a2e:8541:: with SMTP id u1mr4920154ljj.101.1599746408815;
-        Thu, 10 Sep 2020 07:00:08 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.156])
-        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2020 07:00:08 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v3 00/10] qcom: pm8150: add support for thermal monitoring
-Date:   Thu, 10 Sep 2020 16:59:50 +0300
-Message-Id: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
+        id S1726984AbgIJQbz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 12:31:55 -0400
+Received: from mo4-p01-ob.smtp.rzone.de ([81.169.146.166]:28205 "EHLO
+        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725866AbgIJQ0Y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 12:26:24 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1599755174;
+        s=strato-dkim-0002; d=gerhold.net;
+        h=Message-ID:Subject:Cc:To:From:Date:X-RZG-CLASS-ID:X-RZG-AUTH:From:
+        Subject:Sender;
+        bh=j4d59Y0kBRiNJToFL0y0NnSJVvNdlrKiKeGoVArTf0s=;
+        b=HIA+ZBYA574Emlou3jF1jYGgRGfLuaARiCzmLG5hEsjNclTbbG+yL9/tpa9RzQticQ
+        HHxlevd93LFFM+gOTsd09oke69aN22+OIk5SAGaircSe+vs8oORzzOc0azFLMXlBnRYr
+        Bk8z6blmF1M5nOKcM6hayOtocGHneO6u4nw5jK+249lgeiMcLI79OR632fAKX2g9NH4a
+        N4oPW04bV96nV66BFfMQ01TiOMwR0qHT0Lre3laEp7pKbDmHf3meEV2utV439zIxTQYy
+        5t2DD2mm9fbWk56pen56iPZfqwe1VeO0/1ZiD6OEoSves6Ubyu2zaYaSMs8UR0s+hBwY
+        NYDg==
+X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u26zEIdhPgVC7iy9yGr7ESbX"
+X-RZG-CLASS-ID: mo00
+Received: from gerhold.net
+        by smtp.strato.de (RZmta 46.10.7 DYNA|AUTH)
+        with ESMTPSA id g0b6c1w8AGQDJN6
+        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+        (Client did not present a certificate);
+        Thu, 10 Sep 2020 18:26:13 +0200 (CEST)
+Date:   Thu, 10 Sep 2020 18:26:10 +0200
+From:   Stephan Gerhold <stephan@gerhold.net>
+To:     Stephen Boyd <swboyd@chromium.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org
+Subject: Qcom clock performance votes on mainline
+Message-ID: <20200910162610.GA7008@gerhold.net>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch serie adds support for thermal monitoring block on Qualcomm's
-PMIC5 chips. PM8150{,b,l} and sm8250-mtp board device trees are extended
-to support thermal zones provided by this thermal monitoring block.
-Unlike the rest of PMIC thermal senses, these thermal zones describe
-particular thermistors, which differ between from board to board.
+Hi Stephen, Hi Rajendra,
 
-Changes since v3:
- - Fix DT description to spell "thermal monitoring" instead of just TM
- - Fix warnings in DT example
- - Add EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name)
- - Fixed whitespace chanes in qcom-vadc-common.c
- - Removed error message if IIO chanel get returns -EPROBE_DEFER
+while working on some MSM8916 things I've been staring at the downstream
+clock-gcc-8916.c [1] driver a bit. One thing that confuses me are the
+voltage/performance state votes that are made for certain clocks within
+the driver. Specifically lines like
 
-Changes since v2:
- - IIO: export of_iio_channel_get_by_name() function
- - dt-bindings: move individual io-channels to each thermal monitoring
-   channel rather than listing them all in device node
- - added fallback defaults to of_device_get_match_data calls in
-   qcom-spmi-adc5 and qcom-spmi-adc-tm5 drivers
- - minor typo fixes
+    VDD_DIG_FMAX_MAP2(LOW, 32000000, NOMINAL, 64000000),
 
-Changes since v1:
- - Introduce fixp_linear_interpolate() by Craig Tatlor
- - Lots of syntax/whitespace changes
- - Cleaned up register definitions per Jonathan's suggestion
- - Implemented most of the suggestions from Bjorn's and Jonathan's
-   review
+on certain clocks like UART, I2C or SPI. There does not seem to be
+anything equivalent in the mainline clock driver at the moment.
 
+As far as I understand from related discussions on mailing lists [2],
+these performance votes are not supposed to be added to the clock
+driver(s), but rather as required-opps within OPP tables of all the
+consumers. Is that correct?
 
+As a second question, I'm wondering about one particular case:
+I've been trying to get CPR / all the CPU frequencies working on MSM8916.
+For that, I already added performance state votes for VDDMX and CPR as
+required-opps to the CPU OPP table.
 
+After a recent discussion [3] with Viresh about where to enable power
+domains managed by the OPP core, I've been looking at all the
+performance state votes made in the downstream kernel again.
+
+Actually, the A53 PLL used for the higher CPU frequencies also has such
+voltage/performance state votes. The downstream driver declares the
+clock like [4]:
+
+		.vdd_class = &vdd_sr2_pll,
+		.fmax = (unsigned long [VDD_SR2_PLL_NUM]) {
+			[VDD_SR2_PLL_SVS] = 1000000000,
+			[VDD_SR2_PLL_NOM] = 1900000000,
+		},
+		.num_fmax = VDD_SR2_PLL_NUM,
+
+which ends up as votes for the VDDCX power domain.
+
+Now I'm wondering: Where should I make these votes on mainline?
+Should I add it as yet another required-opps to the CPU OPP table?
+
+It would be a bit of a special case because these votes are only done
+for the A53 PLL (which is only used for the higher CPU frequencies, not
+the lower ones)...
+
+Thanks in advance!
+Stephan
+
+[1]: https://source.codeaurora.org/quic/la/kernel/msm-3.10/tree/drivers/clk/qcom/clock-gcc-8916.c?h=LA.BR.1.2.9.1-02310-8x16.0
+[2]: https://lore.kernel.org/linux-arm-msm/20190129015547.213276-1-swboyd@chromium.org/
+[3]: https://lore.kernel.org/linux-pm/20200826093328.88268-1-stephan@gerhold.net/
+[4]: https://source.codeaurora.org/quic/la/kernel/msm-3.10/tree/drivers/clk/qcom/clock-gcc-8916.c?h=LA.BR.1.2.9.1-02310-8x16.0#n354
