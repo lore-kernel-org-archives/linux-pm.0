@@ -2,110 +2,116 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C4626C433E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:28:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3E69C2D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:28:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 79EC3221E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:28:16 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="U2WzOfWo"
+	by mail.kernel.org (Postfix) with ESMTP id 6242C221E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:28:18 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1599773298;
+	bh=rxvS6AwOCqkTF8dpA59A+IKXNYafSMKsYQi6sF6t5cY=;
+	h=In-Reply-To:References:Subject:From:Cc:To:Date:List-ID:From;
+	b=DPQ5W4QNLYHMz2hqlXSnTJvt+yRY5h1/zoYno8mJo+cTv5QWT1ZteBxtS4Y65jLcK
+	 EBM/TggcknNesLmwuaRzmY9NtMn2rWt8Dv+0ifEGjajkb7hseRIRI9dFGGbxmq0yqF
+	 QOnDGKwEjID+aHWycqhZyYfH8ArUjkdhg5sD+X5M=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727850AbgIJV1w (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 17:27:52 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52618 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731056AbgIJOJf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:09:35 -0400
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9D369C0617A9
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:14 -0700 (PDT)
-Received: by mail-lf1-x142.google.com with SMTP id y11so3651973lfl.5
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=fbds+t1ZnFoCEkxj1/mr3T/pqQY9+u5UlZ3GW4t2en8=;
-        b=U2WzOfWo+o9VwfTR9lkjfBPA3rwJdLwKAz85NWFW19wdSUdRq7KmYs6wtMjPhrWI6X
-         1fMtl/io8zCh6e91yPDswaupfIXFTTHvxz7H3mpoiNjQpVOGRmaQIfclvCMEBUGwr2dW
-         XOUcWUvriJmDaoxJGhMAarqRuwED0QjdXYnEdAt0z4pGzdkylgSKl4JWEj6CDQ036AvY
-         yt96CWgeWKNMLSFF8eyUVZAXBjFYZ3Ajy9RP1elZcW34Ng1ztEFv8clkDz/Je34kEMAV
-         7xt2Ggcfi2OQwuiZOFQ8+YD+SG4Lt/KXE2MHtasNvP2GTyb9Zx/1SZtjsgX6cS7zRmT9
-         yknQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=fbds+t1ZnFoCEkxj1/mr3T/pqQY9+u5UlZ3GW4t2en8=;
-        b=lSza+VKCk8yGPSh25hLWZP7vQOmpnIVLsSj9CQHJlSz2Ea5SrzKRzTIk5U+FY9zxU2
-         HVRpNXyPoe9pX+9mP3a4Nn2O+gCwRhwEb+vtTGERuFlS9x8zlX9rGdfz8EDAGOW4skYK
-         /0HWzyn4XhWOeKCO8RdVrA++d6FwqLSI3VipjvyexzGVqlVQwSiA0QFeI8sccVdBMx6q
-         iP4aTU3kyywZEACB7jRG/6IYf5xAVaK+zB9NhU89+OJkhvkpdohWCArkhF3anpByyLlV
-         0P1VFhdJE/5Jlbxj6CaiMW8OKgzqpDTvHve+s63IdPqMxKRlzmpgotOTvi4QyamMZKys
-         MaNw==
-X-Gm-Message-State: AOAM531wkzb+owEVy7Ve4cGbnW/uvXJFeznrOsh88xJ6LsXqINwsMAOU
-        rG5zcN66AnWgt2We9eC9R/5rpg==
-X-Google-Smtp-Source: ABdhPJyV1tWf7B3yzuaRTqD2awGWyPJLIOGIT+JvbFoAqm6Mhx44+04HtPsEqk+5IjbGxLD+phHRuQ==
-X-Received: by 2002:a19:7604:: with SMTP id c4mr4403298lff.132.1599746411945;
-        Thu, 10 Sep 2020 07:00:11 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.156])
-        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2020 07:00:11 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v4 01/10] iio: adc: qcom-spmi-adc5: fix driver name
-Date:   Thu, 10 Sep 2020 16:59:51 +0300
-Message-Id: <20200910140000.324091-2-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
-References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
+        id S1726978AbgIJV2Q (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 17:28:16 -0400
+Received: from mail.kernel.org ([198.145.29.99]:49390 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725828AbgIJV2E (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Sep 2020 17:28:04 -0400
+Received: from kernel.org (unknown [104.132.0.74])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 391E121D92;
+        Thu, 10 Sep 2020 21:28:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1599773283;
+        bh=rxvS6AwOCqkTF8dpA59A+IKXNYafSMKsYQi6sF6t5cY=;
+        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+        b=D8bMlInaMbzmreh8AWVaj6VOCmrieNuNvtw24IhlqGgE3O5WPH1Aay4HThqIRkplf
+         CwO54HfYwM892eVqkcQlyBaWP0JggqtjersZ8bFOzIjOYct8/7WQw/FMmdLzp33a4d
+         wOGyFEl57OAHhuuI1kjZr+/5nQdqrBK9XJpiXNRM=
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <20200910162610.GA7008@gerhold.net>
+References: <20200910162610.GA7008@gerhold.net>
+Subject: Re: Qcom clock performance votes on mainline
+From:   Stephen Boyd <sboyd@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-clk@vger.kernel.org
+To:     Rajendra Nayak <rnayak@codeaurora.org>,
+        Stephan Gerhold <stephan@gerhold.net>
+Date:   Thu, 10 Sep 2020 14:28:01 -0700
+Message-ID: <159977328190.2295844.1029544710226353839@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.9.1
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Remove superfluous '.c' from qcom-spmi-adc5 device driver name.
+Quoting Stephan Gerhold (2020-09-10 09:26:10)
+> Hi Stephen, Hi Rajendra,
+>=20
+> while working on some MSM8916 things I've been staring at the downstream
+> clock-gcc-8916.c [1] driver a bit. One thing that confuses me are the
+> voltage/performance state votes that are made for certain clocks within
+> the driver. Specifically lines like
+>=20
+>     VDD_DIG_FMAX_MAP2(LOW, 32000000, NOMINAL, 64000000),
+>=20
+> on certain clocks like UART, I2C or SPI. There does not seem to be
+> anything equivalent in the mainline clock driver at the moment.
+>=20
+> As far as I understand from related discussions on mailing lists [2],
+> these performance votes are not supposed to be added to the clock
+> driver(s), but rather as required-opps within OPP tables of all the
+> consumers. Is that correct?
 
-Fixes: e13d757279 ("iio: adc: Add QCOM SPMI PMIC5 ADC driver")
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Acked-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
----
- drivers/iio/adc/qcom-spmi-adc5.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yes.
 
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index b4b73c9920b4..c10aa28be70a 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -982,7 +982,7 @@ static int adc5_probe(struct platform_device *pdev)
- 
- static struct platform_driver adc5_driver = {
- 	.driver = {
--		.name = "qcom-spmi-adc5.c",
-+		.name = "qcom-spmi-adc5",
- 		.of_match_table = adc5_match_table,
- 	},
- 	.probe = adc5_probe,
--- 
-2.28.0
+>=20
+> As a second question, I'm wondering about one particular case:
+> I've been trying to get CPR / all the CPU frequencies working on MSM8916.
+> For that, I already added performance state votes for VDDMX and CPR as
+> required-opps to the CPU OPP table.
+>=20
+> After a recent discussion [3] with Viresh about where to enable power
+> domains managed by the OPP core, I've been looking at all the
+> performance state votes made in the downstream kernel again.
+>=20
+> Actually, the A53 PLL used for the higher CPU frequencies also has such
+> voltage/performance state votes. The downstream driver declares the
+> clock like [4]:
+>=20
+>                 .vdd_class =3D &vdd_sr2_pll,
+>                 .fmax =3D (unsigned long [VDD_SR2_PLL_NUM]) {
+>                         [VDD_SR2_PLL_SVS] =3D 1000000000,
+>                         [VDD_SR2_PLL_NOM] =3D 1900000000,
+>                 },
+>                 .num_fmax =3D VDD_SR2_PLL_NUM,
+>=20
+> which ends up as votes for the VDDCX power domain.
+>=20
+> Now I'm wondering: Where should I make these votes on mainline?
+> Should I add it as yet another required-opps to the CPU OPP table?
 
+Sounds like the right approach.
+
+>=20
+> It would be a bit of a special case because these votes are only done
+> for the A53 PLL (which is only used for the higher CPU frequencies, not
+> the lower ones)...
+
+Can that be put into the OPP table somehow for only the high
+frequencies? The OPP tables for CPUs sometimes cover the CPU PLL voltage
+requirements too so it doesn't seem like a totally bad idea.
