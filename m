@@ -2,125 +2,128 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B6767C433E2
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 20:06:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2592C433E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:04:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 73D6F221E7
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 20:06:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A9F021D81
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:04:09 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="ThfftGYq"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="WcGgdaRR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726301AbgIJUGT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 16:06:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52074 "EHLO
+        id S1727973AbgIJVEH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 17:04:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57182 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725933AbgIJUDm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 16:03:42 -0400
-Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ADCF7C0613ED
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 13:03:42 -0700 (PDT)
-Received: by mail-pg1-x532.google.com with SMTP id s65so3804891pgb.0
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 13:03:42 -0700 (PDT)
+        with ESMTP id S1731170AbgIJOhg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:37:36 -0400
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6F15C0617BC
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:16 -0700 (PDT)
+Received: by mail-lj1-x244.google.com with SMTP id a22so8273889ljp.13
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=iFDficNSci8qA9wFNJyygKnNTt9O8nMrmuFz9yCV5pU=;
-        b=ThfftGYqDO/6Ienq1czqP2kID3lipFmYlCjShbBFc67WGmMHoW3c+CzljeUYsA5WxD
-         K30jslTQU03cqtaQlcu5qhp3DKxEt/49q+/rbfeepllAnKkTTx5n5ZwR2Wkd6KH75JSf
-         oM4qDeDKaQ4yZN5CfArbQjUh1nH8zoA1JvK2HshJj5S6kQBHEONJaVMTVUmtb1kDodvz
-         t2Tu19pE5VcDe8439to8tgoxpna6TKmWYZg7W6xmwgcjtIgFhyBrwaeKTZBnQ5a7i8PV
-         i2yKJ9ec2v9j+IwJ07cnWkbXSjJp0xrXpgI6SwmnueXuBGCccP6vNMJmpaOvP9IdpQLW
-         K3xw==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=wcVYXgQ5pttw1IKCDgQFlSKYdGXdwjbBjMlIEbUjqiQ=;
+        b=WcGgdaRRvCVMPOMrzk8F0zJKKmXYDnx/T+2PstZPMVXOPjqh8utA+6+vILfHsug244
+         UlvTF+Cv7GA993X7lv/AnHiWokjLhHCdY/o/MAk/lHwbyu0dMRyCZIjZlZo1x5Mj3v3e
+         j5B78FNoLh0JLl6S4aIr4wYfyAwpqAqX1E9RVHyrZlTjH/NSufy6X1HFlExrh+i7NTMI
+         4u16BTA6G+MhSDCVH/h07hI04tVXg4+T8S5BPo5F/PfZ8kYtuz3S5wWEK2/OFJWxvMHJ
+         jjfiehwrYb1S+Pv9uTyiFpLE+BssJdGiBHGnGElC4KiOFrNr6tp6EXQIFi5enObhytNB
+         lSGQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=iFDficNSci8qA9wFNJyygKnNTt9O8nMrmuFz9yCV5pU=;
-        b=XtFHFZ9zDrRpEfLGvv3RxxRyQKJYP1/ga38/9nXTYrl/ZA+s2UM3krslz3Sm6XOSTC
-         S4UKG+yeDp25JLy5azR2kV1sk+M40M+acv466BL38ZjTIZIeMzkHX5aWMdhL+8TDS224
-         EOYMjUSwW/HftgXfUotjWTWEqqUF9r3z3djh6C7EXDBzhqe+5YO82kQdhe7ByYI/RiUn
-         +IkgWQxV8EKfbTqOTCoGArvGgkFPZqv9Z90R8tkP3WxeWi7DEy/W1T0u68VrRWW0YGin
-         vbhpk/yVELY4n7zpm8nMKVFkJcjW6JF+x0rkzsYMF4k00/5KwPzei98Y0CIA0MKkIPCl
-         rvcg==
-X-Gm-Message-State: AOAM531RIHV6KJmlOLiCKqKkUzs7XOetiSSvFrYvsx5N+jtO4E8JQwYG
-        SzBGIB+2La+0woM/fckozofihIJPO2Br7g==
-X-Google-Smtp-Source: ABdhPJwqA/dpRqgQMWYbg5XxNFJTi7KZYE4QizEhVeS6IzYSF6yn2tuzxQIbOEErZ9tYxbshui9NsQ==
-X-Received: by 2002:aa7:961b:0:b029:13e:d13d:a140 with SMTP id q27-20020aa7961b0000b029013ed13da140mr7145098pfg.40.1599768222252;
-        Thu, 10 Sep 2020 13:03:42 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id j19sm7020415pfe.108.2020.09.10.13.03.41
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=wcVYXgQ5pttw1IKCDgQFlSKYdGXdwjbBjMlIEbUjqiQ=;
+        b=bsr3gkba32G7NOlOtbaeQ5AIFzQn4C4rpxyT8XsTjk4/whN2RZxiavD/p0LgDKrXYj
+         IEJT3DkycfMXBmAQ9awjVRQt/GtIsSqze4P6f3pFxKTY8Uy67Q3jTyDQMAt6S8TX/Ugj
+         IzC31TTlLHlZFLFcV0POf7WhmHzkGValqOeckdHVyqfd/OAPr3DDb5+h3U2RO1kYi4fR
+         oUa5TEzyKjddDj32xiel0B9/43LUBU2hdAjjSaPIBJKLka22kTZ9jkKS3d7xFPbseOsp
+         TkJ+GjLxP9r8V2/RFY3X6dO0UC9kl3LWZD+NrBthfWoMP9Hc9E6IzHAYltch42eky8Dp
+         GpzA==
+X-Gm-Message-State: AOAM532IH1dKQgJzrTFo9ZXnd5t9O/f4gbNgOLtVTdubHTjYXgCzeChw
+        OzBP1xupZia1fR9BpbYVUvjClA==
+X-Google-Smtp-Source: ABdhPJxBUWMazHhh0NVRcv5in/kVk015eZcEEP/gzP/tFVbk7+tflyjNHMBiyncgOgFctGYV3Bn5zg==
+X-Received: by 2002:a2e:8506:: with SMTP id j6mr4109652lji.176.1599746415305;
+        Thu, 10 Sep 2020 07:00:15 -0700 (PDT)
+Received: from eriador.lan ([188.162.64.156])
+        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2020 13:03:41 -0700 (PDT)
-Message-ID: <5f5a869d.1c69fb81.d5c26.2b8a@mx.google.com>
-Date:   Thu, 10 Sep 2020 13:03:41 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Thu, 10 Sep 2020 07:00:14 -0700 (PDT)
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Craig Tatlor <ctatlor97@gmail.com>
+Subject: [PATCH v4 03/10] fixp-arith: add a linear interpolation function
+Date:   Thu, 10 Sep 2020 16:59:53 +0300
+Message-Id: <20200910140000.324091-4-dmitry.baryshkov@linaro.org>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
+References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: test
-X-Kernelci-Kernel: v5.9-rc4-6-g23818c154bae
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-Subject: pm/testing sleep: 6 runs, 1 regressions (v5.9-rc4-6-g23818c154bae)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 6 runs, 1 regressions (v5.9-rc4-6-g23818c154bae)
+From: Craig Tatlor <ctatlor97@gmail.com>
 
-Regressions Summary
--------------------
+Adds a function to interpolate against two points,
+this is carried arount as a helper function by tons of drivers.
 
-platform        | arch  | lab           | compiler | defconfig | results
-----------------+-------+---------------+----------+-----------+--------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 0/1    =
+Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
+Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+---
+ include/linux/fixp-arith.h | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
+diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
+index 8396013785ef..281cb4f83dbe 100644
+--- a/include/linux/fixp-arith.h
++++ b/include/linux/fixp-arith.h
+@@ -141,4 +141,23 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
+ #define fixp_cos32_rad(rad, twopi)	\
+ 	fixp_sin32_rad(rad + twopi / 4, twopi)
+ 
++/**
++ * fixp_linear_interpolate() - interpolates a value from two known points
++ *
++ * @x0: x value of point 0
++ * @y0: y value of point 0
++ * @x1: x value of point 1
++ * @y1: y value of point 1
++ * @x: the linear interpolant
++ */
++static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
++{
++	if (y0 == y1 || x == x0)
++		return y0;
++	if (x1 == x0 || x == x1)
++		return y1;
++
++	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
++}
++
+ #endif
+-- 
+2.28.0
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.9-rc4=
--6-g23818c154bae/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.9-rc4-6-g23818c154bae
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      23818c154baeeb4bb6a8de39cdb9b1e589b6416a =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform        | arch  | lab           | compiler | defconfig | results
-----------------+-------+---------------+----------+-----------+--------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 0/1    =
-
-
-  Details:     https://kernelci.org/test/plan/id/5f5a762b37624b2991d35392
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc4-6-g23818c1=
-54bae/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc4-6-g23818c1=
-54bae/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-0821.0/arm64/rootfs.cpio.gz =
-
-
-  * sleep.login: https://kernelci.org/test/case/id/5f5a762b37624b2991d35393
-      failing since 22 days (last pass: v5.8-107-gb72b3ea38c81, first fail:=
- v5.9-rc1-4-g1f08d51cd57f)  =20
