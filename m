@@ -2,120 +2,150 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 83106C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:18:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0270BC2D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:48:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 48D8421D81
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:18:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A934221D91
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 19:48:50 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="cWm3mdOo"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="mlDkMnbR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727026AbgIJTSQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 15:18:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44398 "EHLO
+        id S1725951AbgIJTst (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 15:48:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49702 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725913AbgIJTO7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 15:14:59 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4767DC061573
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:14:58 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id x23so1370120wmi.3
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:14:58 -0700 (PDT)
+        with ESMTP id S1725820AbgIJTso (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 15:48:44 -0400
+Received: from mail-pg1-x532.google.com (mail-pg1-x532.google.com [IPv6:2607:f8b0:4864:20::532])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B061C0613ED
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:48:43 -0700 (PDT)
+Received: by mail-pg1-x532.google.com with SMTP id w186so4833809pgb.8
+        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 12:48:43 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=NHiy0wGH0Z2PSWBSFDkr8vLYPebD0GpJug29FxTRcRE=;
-        b=cWm3mdOojlugDs8+acBDLk29ETxfONeSctt4U3ukGpeaGbTukDCUj5c36jtb5OM7qq
-         2ubNfIl7Wkf1vqZ5QWFoEVxXNyprjG3T9Fv7GeS9Onsjz2F/EFrRmvQnq78CQjxvWCda
-         dZwoLWf9A64IWB2OXLIN0WBzepkQFLGC21oI9w+cfzpKStwHVw2SFqdjjtJ/OIRaM3ek
-         05FWBDxiafcGejF96W1LWWNrSFWuRJFVoC5S9HuEQ9CqEnDtYJXohPRHjqbWHghBxApb
-         sdN5KZVEJZ89lwHfufyZ7gZanRWIzAlNinvXydN3dfdc5EowzwGLpb4DZj6tk2COwFCJ
-         9yAA==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=N5LBAHdiBxctQmBSfa30J5V4vBysdqmIn/TRftWnmcc=;
+        b=mlDkMnbRQVYtAUhAo6xZOyy4XNQqrj6IFFYyHzgM45S/9EuVKokaF0VmOHwKCBJWgN
+         6PguhDrCe+369YY7/MaDiKKPnkPvzBqGIq0qC+iZ5upzrOvYVjC8skYioMm9vli42kSc
+         0RhUMensgE2glUDqU5UOQX1QcziNCBzRDlIAPLTpIMgXrYIwQAjgSDIcxMVUz8E6cR80
+         Ch4MkWv5pKizPHatPUccasfB3IntGXg0vU1cANwYObzgGmCNBAQOhVbYsmhdKxbLbVlx
+         A6+/TtFQbw0LiSogbwT47cL4zkynraikpfCYEAlDdtWVnBZ+JAvnBjFl78ncbzWYiL0x
+         lf1A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=NHiy0wGH0Z2PSWBSFDkr8vLYPebD0GpJug29FxTRcRE=;
-        b=GiqPjcaZokLV8OuIqBwB/RWKOdLfDaN4JbqM0+utVys6FkpZz5zCErY71VEVzKg6sl
-         M2X2MUoeOnKjkjx0LdHHSDKiTMiD+mrJgh/WYhHsAOrRdpEMlkrcoJVrqNQCu+bPxK1t
-         1nvpJljGrX1Ijp9l2Rt/owsiOZcvlAydln1Z4cxWZO0ph4MhhvHZNVlXQPF4HPGFVK3a
-         DLOmL1ZEcM/CWJI5LX/YFq2pz2/FsRb6wDeNzuwaH3Q5QWpiuQMR02bAUpKa/0XIiQX8
-         rCoT3ICOxRxIVNwZHVws7ct8DF3Y+RdM4wekWOukVYfyjHLRjCJNM9SWKEdPNU6TYbm4
-         t4DA==
-X-Gm-Message-State: AOAM5331eo747jZ4Qlgf7UU0dIH2RN3z3L/e9ScUFKlLpbSvyzR9DOPh
-        aEomT6nxsc6bos+sVTwjhF10eA==
-X-Google-Smtp-Source: ABdhPJyzel4iOt0f1YOCRvX0c73LHI9kOU2nk9MtFaf2OSJgI6rjVeqrNDOQzeRzwi7A+ZtNb2brFg==
-X-Received: by 2002:a05:600c:2109:: with SMTP id u9mr1413131wml.147.1599765296745;
-        Thu, 10 Sep 2020 12:14:56 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:d5d9:c908:efdc:8b45? ([2a01:e34:ed2f:f020:d5d9:c908:efdc:8b45])
-        by smtp.googlemail.com with ESMTPSA id y1sm5074204wmd.22.2020.09.10.12.14.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 10 Sep 2020 12:14:56 -0700 (PDT)
-Subject: Re: [PATCH V2 1/2] thermal: ti-soc-thermal: Enable addition power
- management
-To:     Andreas Kemnade <andreas@kemnade.info>,
-        Adam Ford <aford173@gmail.com>
-Cc:     linux-pm@vger.kernel.org, aford@beaconembedded.com,
-        hns@goldelico.com, kernel test robot <lkp@intel.com>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>, linux-omap@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20200819125925.2119434-1-aford173@gmail.com>
- <20200910200152.72cc5d9f@aktux>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <4770327e-84fb-0543-097c-6525d762a01f@linaro.org>
-Date:   Thu, 10 Sep 2020 21:14:54 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=N5LBAHdiBxctQmBSfa30J5V4vBysdqmIn/TRftWnmcc=;
+        b=oF/fAQk9vmEUIEeR7122yTKYKGam/JQOWajllZWreqX66T+rx+Hw4OIgsZAS1nex8h
+         APbzBzbQa62+r532SpHKgze5YyHHLI9+d2NNitlTUOt1hDM1idehjRyH/IC4G3wRme73
+         cHqhLkdxG0xdF5pVEru5qvgRAXdm1U4Pv1OKWrMnK4zktCkQedBhAU0b4U7EuDr+pi3L
+         zrURBwK0NfmF/l8jh9FHgl0xXI7/qcZhWMsHLc0VUpRsFXW67vPX1eNf2K0LW4Ojzm5n
+         xeMmpx0ympyw/Kqz18H+l+1vu9Lqb7IeQgXTHkC1USd29+sCaq9CD6ZoBiAhYK8USJKN
+         my6Q==
+X-Gm-Message-State: AOAM533PMQQLWNCwwnue8LKTyx3BSapsGp50xk9nQxv/aNZFEnI08GgI
+        hO1iOF8XqZ7THWchijWAEqYolA==
+X-Google-Smtp-Source: ABdhPJwEpqxgA9dxc3OLhLmLfb8q5IcFv3oQjG9YFHzXv4M0gKbnFP9oWdE4jz8i6MJpxTA7qbx7JA==
+X-Received: by 2002:aa7:81c4:: with SMTP id c4mr7137859pfn.70.1599767323098;
+        Thu, 10 Sep 2020 12:48:43 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id h35sm5900489pgl.31.2020.09.10.12.48.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Sep 2020 12:48:42 -0700 (PDT)
+Message-ID: <5f5a831a.1c69fb81.8057e.f470@mx.google.com>
+Date:   Thu, 10 Sep 2020 12:48:42 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <20200910200152.72cc5d9f@aktux>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v5.9-rc4-6-g23818c154bae
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing baseline: 99 runs, 1 regressions (v5.9-rc4-6-g23818c154bae)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10/09/2020 20:01, Andreas Kemnade wrote:
-> On Wed, 19 Aug 2020 07:59:23 -0500
-> Adam Ford <aford173@gmail.com> wrote:
-> 
->> The bandgap sensor can be idled when the processor is too, but it
->> isn't currently being done, so the power consumption of OMAP3
->> boards can elevated if the bangap sensor is enabled.
->>
->> This patch attempts to use some additional power management
->> to idle the clock to the bandgap when not needed.
->>
->> Signed-off-by: Adam Ford <aford173@gmail.com>
->> Reported-by: kernel test robot <lkp@intel.com>
->> ---
->> V2: Fix issue where variable stating the suspend mode isn't being
->>     properly set and cleared.
->>
-> hmm, it is not in linux-next. Can we expect that for v5.10?
+pm/testing baseline: 99 runs, 1 regressions (v5.9-rc4-6-g23818c154bae)
 
-The reason I did not pick this patch is because lkp reported an error on it.
+Regressions Summary
+-------------------
 
-https://marc.info/?l=linux-pm&m=159788472017308&w=2
+platform | arch | lab           | compiler | defconfig          | results
+---------+------+---------------+----------+--------------------+--------
+panda    | arm  | lab-collabora | gcc-8    | multi_v7_defconfig | 4/5    =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.9-rc4=
+-6-g23818c154bae/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.9-rc4-6-g23818c154bae
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      23818c154baeeb4bb6a8de39cdb9b1e589b6416a =
 
 
 
+Test Regressions
+---------------- =
 
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+
+platform | arch | lab           | compiler | defconfig          | results
+---------+------+---------------+----------+--------------------+--------
+panda    | arm  | lab-collabora | gcc-8    | multi_v7_defconfig | 4/5    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5f5a7917d01d8b6575d35370
+
+  Results:     4 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc4-6-g23818c1=
+54bae/arm/multi_v7_defconfig/gcc-8/lab-collabora/baseline-panda.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc4-6-g23818c1=
+54bae/arm/multi_v7_defconfig/gcc-8/lab-collabora/baseline-panda.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05/armel/baseline/rootfs.cpio.gz =
+
+
+  * baseline.dmesg.alert: https://kernelci.org/test/case/id/5f5a7917d01d8b6=
+575d35374
+      failing since 22 days (last pass: v5.8-107-gb72b3ea38c81, first fail:=
+ v5.9-rc1-4-g1f08d51cd57f)
+      60 lines
+
+    2020-09-10 19:05:52.846000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c802
+    2020-09-10 19:05:52.852000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c803
+    2020-09-10 19:05:52.858000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c804
+    2020-09-10 19:05:52.864000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c805
+    2020-09-10 19:05:52.870000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c806
+    2020-09-10 19:05:52.876000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c807
+    2020-09-10 19:05:52.882000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c808
+    2020-09-10 19:05:52.888000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c809
+    2020-09-10 19:05:52.893000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c80a
+    2020-09-10 19:05:52.900000  kern  :alert : BUG: Bad page state in proce=
+ss swapper/0  pfn:9c80b
+    ... (49 line(s) more)
+      =20
