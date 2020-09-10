@@ -2,150 +2,119 @@ Return-Path: <SRS0=M6ZB=CT=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 13CC2C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7909BC2D0A7
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:25:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A2D08221E5
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:10:28 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="KKvbZN1S"
+	by mail.kernel.org (Postfix) with ESMTP id 3AC65221E2
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Sep 2020 21:25:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727800AbgIJVK0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Sep 2020 17:10:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56378 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731114AbgIJOcg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Sep 2020 10:32:36 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8D50C06138E
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:22 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id a22so8274402ljp.13
-        for <linux-pm@vger.kernel.org>; Thu, 10 Sep 2020 07:00:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=9ykRgAbS1+NNh7dx3qxwh0Qb3QTBtyJsrNZlzRunA0I=;
-        b=KKvbZN1SFa/gjwNr/RrbT87qA0xOk8yWGIRo8uaPv3RAMYNwYyc6lHZ2S5kNqtifAx
-         4MnF4TwMDO7PwIeJODUbDfSWkBr11wDPGVPOBf/5S0W/i7wL50qD64gg7Waxhfhn0Ucv
-         5bcSEM1yryJ5kfDnXKagqbM5ycL2xwC7Q7dLqLzi+41gBEbR+CH5IxksCG6Bx8dmkBrH
-         20tluDoLGAH0vvXv4B1rwxvHMMlDC+nufQ6ZePa/veSX9uxFE/T08amnSKVUlwaFM4VF
-         T8qzWTLFryfPfjElQljBlKBnGCw03jyhisH+lhFIzkyt6PlICMMk7YJ0rY+igM71c/vI
-         zmXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=9ykRgAbS1+NNh7dx3qxwh0Qb3QTBtyJsrNZlzRunA0I=;
-        b=IndP+SGKF0FL81KX5qQ237OE7sSW/ZV84b/wadU6tJxek82WucxrgmNPLw3NL7pdF4
-         P1lY81eqr/jJdYibUib4Lzwocubov1emU5mxwaccmrUm7opgU9s9NuVqEvCxmKstndDM
-         6iTyfRL84Yz1IKqKEe0nfa8ROw2BMiDbyb062XK3F21fcgGbnyI6PhymYDe6JZtYBwF3
-         mI75dpCPUx07aIRmO4eTqR9vtj8zpgKxUFp2hTu/kAsLjqp/Idv47gvDWzGoaNUJAvDt
-         ojBDyZ7jSbnVwB8Bhcheve9RGJyA/buW610dUzWqVzo+3N6IyzvcwqjGUgEG5AbfFrx2
-         ExGQ==
-X-Gm-Message-State: AOAM533QgenjCbe5BsPf6wlYs1kAG0vUTRdpQ8g4CgXN6uvegyCMwQ4h
-        SfXQnqbMR2qhZNTan35djyxdUQ==
-X-Google-Smtp-Source: ABdhPJwRV5S3T/UDuAz7QQFMs8pIuYr3gM1oUEqk1kSQQUsDjQVsox7dUCn0RDBy0bgdNyVLSyhGwA==
-X-Received: by 2002:a2e:b615:: with SMTP id r21mr4203124ljn.341.1599746421274;
-        Thu, 10 Sep 2020 07:00:21 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.156])
-        by smtp.gmail.com with ESMTPSA id t82sm1367646lff.43.2020.09.10.07.00.19
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Sep 2020 07:00:20 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v4 06/10] iio: adc: qcom-spmi-adc5: use of_device_get_match_data
-Date:   Thu, 10 Sep 2020 16:59:56 +0300
-Message-Id: <20200910140000.324091-7-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
-References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
+        id S1728228AbgIJVYj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Sep 2020 17:24:39 -0400
+Received: from foss.arm.com ([217.140.110.172]:37282 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731004AbgIJOXM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Sep 2020 10:23:12 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E3BEB11B3;
+        Thu, 10 Sep 2020 07:21:17 -0700 (PDT)
+Received: from [10.57.40.122] (unknown [10.57.40.122])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 1B4783F66E;
+        Thu, 10 Sep 2020 07:21:08 -0700 (PDT)
+Subject: Re: [trivial PATCH] treewide: Convert switch/case fallthrough; to
+ break;
+To:     Joe Perches <joe@perches.com>, LKML <linux-kernel@vger.kernel.org>,
+        Jiri Kosina <trivial@kernel.org>
+Cc:     linux-wireless@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        oss-drivers@netronome.com, nouveau@lists.freedesktop.org,
+        alsa-devel <alsa-devel@alsa-project.org>,
+        dri-devel@lists.freedesktop.org, linux-ide@vger.kernel.org,
+        dm-devel@redhat.com, linux-mtd@lists.infradead.org,
+        linux-i2c@vger.kernel.org, sparclinux@vger.kernel.org,
+        kvmarm@lists.cs.columbia.edu, linux-rtc@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-scsi@vger.kernel.org,
+        dccp@vger.kernel.org, linux-rdma@vger.kernel.org,
+        linux-atm-general@lists.sourceforge.net,
+        linux-afs@lists.infradead.org, coreteam@netfilter.org,
+        intel-wired-lan@lists.osuosl.org, linux-serial@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-mmc@vger.kernel.org,
+        Kees Cook <kees.cook@canonical.com>,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        intel-gfx@lists.freedesktop.org, linux-sctp@vger.kernel.org,
+        linux-mediatek@lists.infradead.org, linux-nvme@lists.infradead.org,
+        storagedev@microchip.com, ceph-devel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-nfs@vger.kernel.org,
+        linux-parisc@vger.kernel.org, netdev@vger.kernel.org,
+        linux-usb@vger.kernel.org,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        linux-mips@vger.kernel.org, iommu@lists.linux-foundation.org,
+        netfilter-devel@vger.kernel.org, linux-crypto@vger.kernel.org,
+        bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        Will Deacon <will@kernel.org>
+References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+From:   Robin Murphy <robin.murphy@arm.com>
+Message-ID: <9372456a-8dcf-2735-57a4-e126aa5df3a6@arm.com>
+Date:   Thu, 10 Sep 2020 15:21:05 +0100
+User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-GB
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use of_device_get_match_data() instead of hand-coding it manually.
+On 2020-09-09 21:06, Joe Perches wrote:
+> fallthrough to a separate case/default label break; isn't very readable.
+> 
+> Convert pseudo-keyword fallthrough; statements to a simple break; when
+> the next label is case or default and the only statement in the next
+> label block is break;
+> 
+> Found using:
+> 
+> $ grep-2.5.4 -rP --include=*.[ch] -n "fallthrough;(\s*(case\s+\w+|default)\s*:\s*){1,7}break;" *
+> 
+> Miscellanea:
+> 
+> o Move or coalesce a couple label blocks above a default: block.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Compiled allyesconfig x86-64 only.
+> A few files for other arches were not compiled.
+> 
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- drivers/iio/adc/qcom-spmi-adc5.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+[...]
+> diff --git a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> index c192544e874b..743db1abec40 100644
+> --- a/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> +++ b/drivers/iommu/arm/arm-smmu-v3/arm-smmu-v3.c
+> @@ -3777,7 +3777,7 @@ static int arm_smmu_device_hw_probe(struct arm_smmu_device *smmu)
+>   	switch (FIELD_GET(IDR0_TTF, reg)) {
+>   	case IDR0_TTF_AARCH32_64:
+>   		smmu->ias = 40;
+> -		fallthrough;
+> +		break;
+>   	case IDR0_TTF_AARCH64:
+>   		break;
+>   	default:
 
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index c2da8f068b87..ae27ed7a26ff 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -14,6 +14,7 @@
- #include <linux/math64.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-@@ -807,8 +808,6 @@ static int adc5_get_dt_data(struct adc5_chip *adc, struct device_node *node)
- 	struct adc5_channel_prop prop, *chan_props;
- 	struct device_node *child;
- 	unsigned int index = 0;
--	const struct of_device_id *id;
--	const struct adc5_data *data;
- 	int ret;
- 
- 	adc->nchannels = of_get_available_child_count(node);
-@@ -827,24 +826,21 @@ static int adc5_get_dt_data(struct adc5_chip *adc, struct device_node *node)
- 
- 	chan_props = adc->chan_props;
- 	iio_chan = adc->iio_chans;
--	id = of_match_node(adc5_match_table, node);
--	if (id)
--		data = id->data;
--	else
--		data = &adc5_data_pmic;
--	adc->data = data;
-+	adc->data = of_device_get_match_data(adc->dev);
-+	if (!adc->data)
-+		adc->data = &adc5_data_pmic;
- 
- 	for_each_available_child_of_node(node, child) {
--		ret = adc5_get_dt_channel_data(adc, &prop, child, data);
-+		ret = adc5_get_dt_channel_data(adc, &prop, child, adc->data);
- 		if (ret) {
- 			of_node_put(child);
- 			return ret;
- 		}
- 
- 		prop.scale_fn_type =
--			data->adc_chans[prop.channel].scale_fn_type;
-+			adc->data->adc_chans[prop.channel].scale_fn_type;
- 		*chan_props = prop;
--		adc_chan = &data->adc_chans[prop.channel];
-+		adc_chan = &adc->data->adc_chans[prop.channel];
- 
- 		iio_chan->channel = prop.channel;
- 		iio_chan->datasheet_name = prop.datasheet_name;
--- 
-2.28.0
+I have to say I don't really agree with the readability argument for 
+this one - a fallthrough is semantically correct here, since the first 
+case is a superset of the second. It just happens that anything we would 
+do for the common subset is implicitly assumed (there are other 
+potential cases we simply haven't added support for at the moment), thus 
+the second case is currently empty.
 
+This change actively obfuscates that distinction.
+
+Robin.
