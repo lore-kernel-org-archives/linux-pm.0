@@ -2,292 +2,234 @@ Return-Path: <SRS0=D55B=CU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.3 required=3.0 tests=BAYES_00,DATE_IN_PAST_96_XX,
-	DKIM_SIGNED,DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MSGID_FROM_MTA_HEADER,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1359FC2BC11
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 20:43:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35174C43461
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 20:45:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CDD25207FB
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 20:43:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB3C3221EB
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 20:45:13 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="eR8211hD"
+	dkim=pass (1024-bit key) header.d=amazon.com header.i=@amazon.com header.b="idhg3pi2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725873AbgIKUmk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Sep 2020 16:42:40 -0400
-Received: from mail-mw2nam10on2050.outbound.protection.outlook.com ([40.107.94.50]:55307
-        "EHLO NAM10-MW2-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725811AbgIKUmc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 11 Sep 2020 16:42:32 -0400
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=RJQ0eKDMkAzM93oHb697w5BZzqcIMMhfaLKV94M9WIcL4om0lUJGQlBTTcfj9HYwmeU3jSyuQ4yWQZFQ3CGtPzshEitICftMq4Z8cLPrI9w8b5LMszSi4M2fe+G1QTnB4yC/lXeyeu1roRz77OwvOkVSNFD0UPY1aAFnGk2vqg3tcYA7LUjCxpVngi6yySRQXw5tgtJ9PwAxEI0l/aPdbm0Wv/B+GGc5u0R7EK2i/QhZAbtSttDCjqULEr+gfkE9uuf7ao0cUBdTVKpioPeG+S5BlSMSz5wiDZzCq3y2haY6hdXo32Pq9doXDkJfdcmJc/qPnjUcVb/aV+Tm847PjA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Q5cERzMLA4/mMcPHMAkiTBzy/yigsylhEkkymh/VPqU=;
- b=GX6cblXRailG1b4CKcd6fmRsypiO68asiTlHYGenaKlK2uzmebv3ySbtL5yZU2jVKFOcLKtpXGxrubJZ8fVKz0q6EYX72XdhIo9kMTT3pL/iL4z8n23vvuQkaeKKByMQQ8WuDh7EjO9NchpwQ9CW0ohhVd9FAQinUtWMTyUzQOyvXKPOD2UO5hTCgJh/cBQcEzOUpZp5HWvXA5gReesQpwxc0VTR0vwNBHCOBk1eNT8T0MAWRcOHG+iwiT0DpVD0sdvXtAGmk4I6hbTsEoCGjbZ3ztkuPOSTtq2CoNR1aJjDURb5j/ByAMR6MVaFhac1a/3KD4Z8wi2xkVMH4oL0Vw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
+        id S1725816AbgIKUpB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Sep 2020 16:45:01 -0400
+Received: from smtp-fw-4101.amazon.com ([72.21.198.25]:6677 "EHLO
+        smtp-fw-4101.amazon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725803AbgIKUpA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 16:45:00 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amdcloud.onmicrosoft.com; s=selector2-amdcloud-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Q5cERzMLA4/mMcPHMAkiTBzy/yigsylhEkkymh/VPqU=;
- b=eR8211hDxNbBpE2OWgchf9U3F2Xnfb9iO/NKZ9vUnb3mmtdZcjNL7r+RIEYoynMN9DLfveWZDQK/Ijy/qW8Uo1JiRJQmk+tS4tO9OizqYQkLGUOQatKll7Qm6kq5EYX07I/HkGTWhDzyAd5dr7e9WwKMMSDuaegxIL9nUJrIF+Y=
-Authentication-Results: kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=none action=none header.from=amd.com;
-Received: from SN6PR12MB2685.namprd12.prod.outlook.com (2603:10b6:805:67::33)
- by SA0PR12MB4431.namprd12.prod.outlook.com (2603:10b6:806:95::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3370.16; Fri, 11 Sep
- 2020 20:42:27 +0000
-Received: from SN6PR12MB2685.namprd12.prod.outlook.com
- ([fe80::c0c8:60e:9d04:1409]) by SN6PR12MB2685.namprd12.prod.outlook.com
- ([fe80::c0c8:60e:9d04:1409%5]) with mapi id 15.20.3370.017; Fri, 11 Sep 2020
- 20:42:26 +0000
-From:   Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-To:     x86@kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
-        linux-efi@vger.kernel.org, linux-acpi@vger.kernel.org,
-        devel@acpica.org
-Cc:     Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Yazen Ghannam <yazen.ghannam@amd.com>,
-        Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-Subject: [PATCH v3 1/2] cper, apei, mce: Pass x86 CPER through the MCA handling chain
-Date:   Thu,  3 Sep 2020 18:45:30 -0500
-Message-Id: <20200903234531.162484-2-Smita.KoralahalliChannabasappa@amd.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200903234531.162484-1-Smita.KoralahalliChannabasappa@amd.com>
-References: <20200903234531.162484-1-Smita.KoralahalliChannabasappa@amd.com>
-Content-Type: text/plain
-X-ClientProxiedBy: DM6PR01CA0004.prod.exchangelabs.com (2603:10b6:5:296::9) To
- SN6PR12MB2685.namprd12.prod.outlook.com (2603:10b6:805:67::33)
+  d=amazon.com; i=@amazon.com; q=dns/txt; s=amazon201209;
+  t=1599857098; x=1631393098;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=M8uCPr9eXi5AxRmIWKQnXR89z2m5VaOqvl9N9mhNTFA=;
+  b=idhg3pi2y+YASPdmM/RLQ2ZOeSMcCCw/IHgDmIEZ/mU/9g/8ajUgLbpq
+   SoTC+Y2sMrVH2yFejT4RWf87BMhYEHgVE/6ip4NHINuViUBU38UrIUWy5
+   Oe+Va2C31/q94mIbt3sZQp0EpVKRDo4JBJSo1zxYzFZBYI/xjkOu+XUWT
+   A=;
+X-IronPort-AV: E=Sophos;i="5.76,417,1592870400"; 
+   d="scan'208";a="53535315"
+Received: from iad12-co-svc-p1-lb1-vlan3.amazon.com (HELO email-inbound-relay-2b-baacba05.us-west-2.amazon.com) ([10.43.8.6])
+  by smtp-border-fw-out-4101.iad4.amazon.com with ESMTP; 11 Sep 2020 20:44:55 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (pdx4-ws-svc-p6-lb7-vlan2.pdx.amazon.com [10.170.41.162])
+        by email-inbound-relay-2b-baacba05.us-west-2.amazon.com (Postfix) with ESMTPS id 209E5A1D19;
+        Fri, 11 Sep 2020 20:44:53 +0000 (UTC)
+Received: from EX13D05UWB002.ant.amazon.com (10.43.161.50) by
+ EX13MTAUWB001.ant.amazon.com (10.43.161.249) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Fri, 11 Sep 2020 20:44:48 +0000
+Received: from EX13MTAUWB001.ant.amazon.com (10.43.161.207) by
+ EX13D05UWB002.ant.amazon.com (10.43.161.50) with Microsoft SMTP Server (TLS)
+ id 15.0.1497.2; Fri, 11 Sep 2020 20:44:47 +0000
+Received: from dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com
+ (172.22.96.68) by mail-relay.amazon.com (10.43.161.249) with Microsoft SMTP
+ Server id 15.0.1497.2 via Frontend Transport; Fri, 11 Sep 2020 20:44:47 +0000
+Received: by dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com (Postfix, from userid 4335130)
+        id D03A640770; Fri, 11 Sep 2020 20:44:47 +0000 (UTC)
+Date:   Fri, 11 Sep 2020 20:44:47 +0000
+From:   Anchal Agarwal <anchalag@amazon.com>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+CC:     Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        "the arch/x86 maintainers" <x86@kernel.org>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Juergen Gross <jgross@suse.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        "Kamata, Munehisa" <kamatam@amazon.com>,
+        "Stefano Stabellini" <sstabellini@kernel.org>,
+        Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+        <roger.pau@citrix.com>, Jens Axboe <axboe@kernel.dk>,
+        David Miller <davem@davemloft.net>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Eduardo Valentin <eduval@amazon.com>,
+        "Singh, Balbir" <sblbir@amazon.com>,
+        <xen-devel@lists.xenproject.org>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        netdev <netdev@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        David Woodhouse <dwmw@amazon.co.uk>,
+        "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 00/11] Fix PM hibernation in Xen guests
+Message-ID: <20200911204447.GA23729@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+References: <cover.1598042152.git.anchalag@amazon.com>
+ <20200828182640.GA20719@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+ <CAJZ5v0jDtttvGaBCuwK40W7gsYNn4U2dNszsOmtU_dt29Lvb4g@mail.gmail.com>
+ <20200828183945.GA22160@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
 MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from ethanolx024ehost.amd.com (165.204.78.2) by DM6PR01CA0004.prod.exchangelabs.com (2603:10b6:5:296::9) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3370.16 via Frontend Transport; Fri, 11 Sep 2020 20:42:25 +0000
-X-Mailer: git-send-email 2.17.1
-X-Originating-IP: [165.204.78.2]
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: 3f312960-7800-4dff-d496-08d8569331a2
-X-MS-TrafficTypeDiagnostic: SA0PR12MB4431:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <SA0PR12MB4431A1CF483D7BE0C6143D5E90240@SA0PR12MB4431.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:6430;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: +Gv3he/jpgP8ZovKr/FrW7LuOiwGiaKdAKAkOWcHfHDYJ7e3qYfstN2lYB9mpGK+YOjsWx288bUdxx5sEZVp/Y6AJ0NoncDuIbKjlOr8xEjluVE6o1k21R+/jrHlWCbeLTnKIRO2Ile2O4xQnl00JBgFfUVYpqlJqrNfUJponPn9BN06wInRxhmCnRi4exqtbebCQ1ihnErI230F0tnSaq/blKJpDX4IrW0fwES0iiVaXkd1MvNR4hRiyCSov05DCxdLiQ20B9GmlDEzLl7TtqbaUgBlQgmVI0o9vZdQS9LrgLJWzdfi9ID2DM6PAxiC8f3XVAhPSvzT/pTNHfX2TticcybdHjjHTqBg4fX9ORu89/JT5RXEmQ0j3Ap2AGyqW8L/2gsuRMDWi9ysnq0RrQ==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR12MB2685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(39860400002)(366004)(376002)(346002)(136003)(396003)(8936002)(316002)(2616005)(8676002)(5660300002)(6666004)(956004)(54906003)(83380400001)(66946007)(1076003)(66476007)(52116002)(66556008)(36756003)(7696005)(7416002)(6486002)(966005)(16526019)(4326008)(2906002)(26005)(86362001)(478600001)(186003);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: xkR7G2HWl/sBBORstuIYWYv+FJWy5/wrKQ72AN5BxtNDOJ1ML2JVGYC/L78FaEZZla//K+mRR1koGwG0j/Xfi7++OUCbvMWq8YXJbMk0F1xdPcCHjS1sg8x4XtakpGWu0G3ZVG3cyoJEOH1QA2PXrAH9jLpjfiKWhU0fZ0Oyt8Fkpx1K5t7LCbHp2BnLApcxbpJzPcgdmuvR2xNotM9EgmZpGU8o5yD1i+NNTtEuzuYMbrxpiLatMlBc7oFXNT05r1wxyBf3Ot86Bu1bcAQCOQwQQhGykUoSp/lFDfO0/3DUaYZGNsVOgQjlRBLbQoN5tkKiejDOX/W+TIux2pvY9Vwc42PZ1HAtI92sovL2Mifk18h9YSD/qoqUzO78LzFA9v6N4Fms9a4s2GzYs21/Q1I6UIQWeHtL58z8TGhShsjT+G5LoBh3WdbFY7IqzbcWCUi6aKF+i5P2ABJ6x+oKgIX5eKS5n4NJef+oqu6uZJZfkrW5G2RznTR8M+3PdG6yNtHuWypeP+xS5nCQmAi8KT5E3a9keVVvO069Lyxm6PHDvmq76W13cHez6mVV5WAE8Q3W1PTi9cbEq+zVz2FrvGGIadHJg4cyTemL1W8xWEHKaJ75ZNBmiVXRUZX4k6aemKnZj9ptbq86r0MfiJ0tEA==
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 3f312960-7800-4dff-d496-08d8569331a2
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR12MB2685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Sep 2020 20:42:26.8369
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: IOtEfreI7gTmcZodehSa6iVFULxxsm/KLroYQl8ay4dNMfsUe94OcgsCLy0zjF4/H/kcQbbA8+vStCB3C6jw8g==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR12MB4431
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20200828183945.GA22160@dev-dsk-anchalag-2a-9c2d1d96.us-west-2.amazon.com>
+User-Agent: Mutt/1.5.21 (2010-09-15)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Linux Kernel uses ACPI Boot Error Record Table (BERT) to report fatal
-errors that occurred in a previous boot. The MCA errors in the BERT are
-reported using the x86 Processor Error Common Platform Error Record (CPER)
-format. Currently, the record prints out the raw MSR values and AMD relies
-on the raw record to provide MCA information.
+On Fri, Aug 28, 2020 at 06:39:45PM +0000, Anchal Agarwal wrote:
+> On Fri, Aug 28, 2020 at 08:29:24PM +0200, Rafael J. Wysocki wrote:
+> > CAUTION: This email originated from outside of the organization. Do not click links or open attachments unless you can confirm the sender and know the content is safe.
+> > 
+> > 
+> > 
+> > On Fri, Aug 28, 2020 at 8:26 PM Anchal Agarwal <anchalag@amazon.com> wrote:
+> > >
+> > > On Fri, Aug 21, 2020 at 10:22:43PM +0000, Anchal Agarwal wrote:
+> > > > Hello,
+> > > > This series fixes PM hibernation for hvm guests running on xen hypervisor.
+> > > > The running guest could now be hibernated and resumed successfully at a
+> > > > later time. The fixes for PM hibernation are added to block and
+> > > > network device drivers i.e xen-blkfront and xen-netfront. Any other driver
+> > > > that needs to add S4 support if not already, can follow same method of
+> > > > introducing freeze/thaw/restore callbacks.
+> > > > The patches had been tested against upstream kernel and xen4.11. Large
+> > > > scale testing is also done on Xen based Amazon EC2 instances. All this testing
+> > > > involved running memory exhausting workload in the background.
+> > > >
+> > > > Doing guest hibernation does not involve any support from hypervisor and
+> > > > this way guest has complete control over its state. Infrastructure
+> > > > restrictions for saving up guest state can be overcome by guest initiated
+> > > > hibernation.
+> > > >
+> > > > These patches were send out as RFC before and all the feedback had been
+> > > > incorporated in the patches. The last v1 & v2 could be found here:
+> > > >
+> > > > [v1]: https://lkml.org/lkml/2020/5/19/1312
+> > > > [v2]: https://lkml.org/lkml/2020/7/2/995
+> > > > All comments and feedback from v2 had been incorporated in v3 series.
+> > > >
+> > > > Known issues:
+> > > > 1.KASLR causes intermittent hibernation failures. VM fails to resumes and
+> > > > has to be restarted. I will investigate this issue separately and shouldn't
+> > > > be a blocker for this patch series.
+> > > > 2. During hibernation, I observed sometimes that freezing of tasks fails due
+> > > > to busy XFS workqueuei[xfs-cil/xfs-sync]. This is also intermittent may be 1
+> > > > out of 200 runs and hibernation is aborted in this case. Re-trying hibernation
+> > > > may work. Also, this is a known issue with hibernation and some
+> > > > filesystems like XFS has been discussed by the community for years with not an
+> > > > effectve resolution at this point.
+> > > >
+> > > > Testing How to:
+> > > > ---------------
+> > > > 1. Setup xen hypervisor on a physical machine[ I used Ubuntu 16.04 +upstream
+> > > > xen-4.11]
+> > > > 2. Bring up a HVM guest w/t kernel compiled with hibernation patches
+> > > > [I used ubuntu18.04 netboot bionic images and also Amazon Linux on-prem images].
+> > > > 3. Create a swap file size=RAM size
+> > > > 4. Update grub parameters and reboot
+> > > > 5. Trigger pm-hibernation from within the VM
+> > > >
+> > > > Example:
+> > > > Set up a file-backed swap space. Swap file size>=Total memory on the system
+> > > > sudo dd if=/dev/zero of=/swap bs=$(( 1024 * 1024 )) count=4096 # 4096MiB
+> > > > sudo chmod 600 /swap
+> > > > sudo mkswap /swap
+> > > > sudo swapon /swap
+> > > >
+> > > > Update resume device/resume offset in grub if using swap file:
+> > > > resume=/dev/xvda1 resume_offset=200704 no_console_suspend=1
+> > > >
+> > > > Execute:
+> > > > --------
+> > > > sudo pm-hibernate
+> > > > OR
+> > > > echo disk > /sys/power/state && echo reboot > /sys/power/disk
+> > > >
+> > > > Compute resume offset code:
+> > > > "
+> > > > #!/usr/bin/env python
+> > > > import sys
+> > > > import array
+> > > > import fcntl
+> > > >
+> > > > #swap file
+> > > > f = open(sys.argv[1], 'r')
+> > > > buf = array.array('L', [0])
+> > > >
+> > > > #FIBMAP
+> > > > ret = fcntl.ioctl(f.fileno(), 0x01, buf)
+> > > > print buf[0]
+> > > > "
+> > > >
+> > > > Aleksei Besogonov (1):
+> > > >   PM / hibernate: update the resume offset on SNAPSHOT_SET_SWAP_AREA
+> > > >
+> > > > Anchal Agarwal (4):
+> > > >   x86/xen: Introduce new function to map HYPERVISOR_shared_info on
+> > > >     Resume
+> > > >   x86/xen: save and restore steal clock during PM hibernation
+> > > >   xen: Introduce wrapper for save/restore sched clock offset
+> > > >   xen: Update sched clock offset to avoid system instability in
+> > > >     hibernation
+> > > >
+> > > > Munehisa Kamata (5):
+> > > >   xen/manage: keep track of the on-going suspend mode
+> > > >   xenbus: add freeze/thaw/restore callbacks support
+> > > >   x86/xen: add system core suspend and resume callbacks
+> > > >   xen-blkfront: add callbacks for PM suspend and hibernation
+> > > >   xen-netfront: add callbacks for PM suspend and hibernation
+> > > >
+> > > > Thomas Gleixner (1):
+> > > >   genirq: Shutdown irq chips in suspend/resume during hibernation
+> > > >
+> > > >  arch/x86/xen/enlighten_hvm.c      |   7 +++
+> > > >  arch/x86/xen/suspend.c            |  63 ++++++++++++++++++++
+> > > >  arch/x86/xen/time.c               |  15 ++++-
+> > > >  arch/x86/xen/xen-ops.h            |   3 +
+> > > >  drivers/block/xen-blkfront.c      | 122 ++++++++++++++++++++++++++++++++++++--
+> > > >  drivers/net/xen-netfront.c        |  96 +++++++++++++++++++++++++++++-
+> > > >  drivers/xen/events/events_base.c  |   1 +
+> > > >  drivers/xen/manage.c              |  46 ++++++++++++++
+> > > >  drivers/xen/xenbus/xenbus_probe.c |  96 +++++++++++++++++++++++++-----
+> > > >  include/linux/irq.h               |   2 +
+> > > >  include/xen/xen-ops.h             |   3 +
+> > > >  include/xen/xenbus.h              |   3 +
+> > > >  kernel/irq/chip.c                 |   2 +-
+> > > >  kernel/irq/internals.h            |   1 +
+> > > >  kernel/irq/pm.c                   |  31 +++++++---
+> > > >  kernel/power/user.c               |   7 ++-
+> > > >  16 files changed, 464 insertions(+), 34 deletions(-)
+> > > >
+> > > > --
+> > > > 2.16.6
+> > > >
+> > > A gentle ping on the series in case there is any more feedback or can we plan to
+> > > merge this? I can then send the series with minor fixes pointed by tglx@
+> > 
+> > Some more time, please!
+> >
+> Sure happy to answer any more questions and fix more BUGS!!
+> 
+> --
+> Anchal
+>
+A gentle ping on this one again!
 
-Extract the raw MSR values of MCA registers from the BERT and feed it into
-the standard mce_log() function through the existing x86/MCA RAS
-infrastructure. This will result in better decoding from the EDAC MCE
-decoder or the default notifier.
-
-The implementation is SMCA specific as the raw MCA register values are
-given in the register offset order of the MCAX address space.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
----
-Link:
-https://lkml.kernel.org/r/20200828203332.11129-2-Smita.KoralahalliChannabasappa@amd.com
-
-v3:
-	Moved arch specific declarations from generic header file to arch
-	specific header file.
-	Cleaned additional declarations which are unnecessary.
-	Included the check for context type.
-	Added a check to verify for the first MSR address in the register
-	layout.
-v2:
-	Fixed build error reported by kernel test robot.
-	Passed struct variable as function argument instead of entire struct
----
- arch/x86/include/asm/acpi.h     | 11 +++++++++
- arch/x86/include/asm/mce.h      |  3 +++
- arch/x86/kernel/acpi/apei.c     |  9 +++++++
- arch/x86/kernel/cpu/mce/apei.c  | 42 +++++++++++++++++++++++++++++++++
- drivers/firmware/efi/cper-x86.c | 10 +++++---
- 5 files changed, 72 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/acpi.h b/arch/x86/include/asm/acpi.h
-index ca0976456a6b..fb8404f65ab4 100644
---- a/arch/x86/include/asm/acpi.h
-+++ b/arch/x86/include/asm/acpi.h
-@@ -161,6 +161,8 @@ extern int x86_acpi_numa_init(void);
- 
- #define acpi_unlazy_tlb(x)	leave_mm(x)
- 
-+struct cper_ia_proc_ctx;
-+
- #ifdef CONFIG_ACPI_APEI
- static inline pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr)
- {
-@@ -179,6 +181,15 @@ static inline pgprot_t arch_apei_get_mem_attribute(phys_addr_t addr)
- 	 */
- 	return PAGE_KERNEL_NOENC;
- }
-+
-+int arch_apei_report_x86_error(struct cper_ia_proc_ctx *ctx_info,
-+			       u64 lapic_id);
-+#else
-+static inline int arch_apei_report_x86_error(struct cper_ia_proc_ctx *ctx_info,
-+					     u64 lapic_id)
-+{
-+	return -EINVAL;
-+}
- #endif
- 
- #define ACPI_TABLE_UPGRADE_MAX_PHYS (max_low_pfn_mapped << PAGE_SHIFT)
-diff --git a/arch/x86/include/asm/mce.h b/arch/x86/include/asm/mce.h
-index 109af5c7f515..c4e055d45905 100644
---- a/arch/x86/include/asm/mce.h
-+++ b/arch/x86/include/asm/mce.h
-@@ -287,6 +287,9 @@ struct cper_sec_mem_err;
- extern void apei_mce_report_mem_error(int corrected,
- 				      struct cper_sec_mem_err *mem_err);
- 
-+struct cper_ia_proc_ctx;
-+int apei_mce_report_x86_error(struct cper_ia_proc_ctx *ctx_info, u64 lapic_id);
-+
- /*
-  * Enumerate new IP types and HWID values in AMD processors which support
-  * Scalable MCA.
-diff --git a/arch/x86/kernel/acpi/apei.c b/arch/x86/kernel/acpi/apei.c
-index c22fb55abcfd..13d60a91eaa0 100644
---- a/arch/x86/kernel/acpi/apei.c
-+++ b/arch/x86/kernel/acpi/apei.c
-@@ -43,3 +43,12 @@ void arch_apei_report_mem_error(int sev, struct cper_sec_mem_err *mem_err)
- 	apei_mce_report_mem_error(sev, mem_err);
- #endif
- }
-+
-+int arch_apei_report_x86_error(struct cper_ia_proc_ctx *ctx_info, u64 lapic_id)
-+{
-+	int err = -EINVAL;
-+#ifdef CONFIG_X86_MCE
-+	err = apei_mce_report_x86_error(ctx_info, lapic_id);
-+#endif
-+	return err;
-+}
-diff --git a/arch/x86/kernel/cpu/mce/apei.c b/arch/x86/kernel/cpu/mce/apei.c
-index af8d37962586..65001d342302 100644
---- a/arch/x86/kernel/cpu/mce/apei.c
-+++ b/arch/x86/kernel/cpu/mce/apei.c
-@@ -26,6 +26,8 @@
- 
- #include "internal.h"
- 
-+#define MASK_MCA_STATUS 0xC0002001
-+
- void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
- {
- 	struct mce m;
-@@ -51,6 +53,46 @@ void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
- }
- EXPORT_SYMBOL_GPL(apei_mce_report_mem_error);
- 
-+int apei_mce_report_x86_error(struct cper_ia_proc_ctx *ctx_info, u64 lapic_id)
-+{
-+	const u64 *i_mce = ((const void *) (ctx_info + 1));
-+	unsigned int cpu;
-+	struct mce m;
-+
-+	if (!boot_cpu_has(X86_FEATURE_SMCA))
-+		return -EINVAL;
-+
-+	if ((ctx_info->msr_addr & MASK_MCA_STATUS) != MASK_MCA_STATUS)
-+		return -EINVAL;
-+
-+	mce_setup(&m);
-+
-+	m.extcpu = -1;
-+	m.socketid = -1;
-+
-+	for_each_possible_cpu(cpu) {
-+		if (cpu_data(cpu).initial_apicid == lapic_id) {
-+			m.extcpu = cpu;
-+			m.socketid = cpu_data(m.extcpu).phys_proc_id;
-+			break;
-+		}
-+	}
-+
-+	m.apicid = lapic_id;
-+	m.bank = (ctx_info->msr_addr >> 4) & 0xFF;
-+	m.status = *i_mce;
-+	m.addr = *(i_mce + 1);
-+	m.misc = *(i_mce + 2);
-+	/* Skipping MCA_CONFIG */
-+	m.ipid = *(i_mce + 4);
-+	m.synd = *(i_mce + 5);
-+
-+	mce_log(&m);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(apei_mce_report_x86_error);
-+
- #define CPER_CREATOR_MCE						\
- 	GUID_INIT(0x75a574e3, 0x5052, 0x4b29, 0x8a, 0x8e, 0xbe, 0x2c,	\
- 		  0x64, 0x90, 0xb8, 0x9d)
-diff --git a/drivers/firmware/efi/cper-x86.c b/drivers/firmware/efi/cper-x86.c
-index 2531de49f56c..2f2b0c431c18 100644
---- a/drivers/firmware/efi/cper-x86.c
-+++ b/drivers/firmware/efi/cper-x86.c
-@@ -2,6 +2,7 @@
- // Copyright (C) 2018, Advanced Micro Devices, Inc.
- 
- #include <linux/cper.h>
-+#include <linux/acpi.h>
- 
- /*
-  * We don't need a "CPER_IA" prefix since these are all locally defined.
-@@ -347,9 +348,12 @@ void cper_print_proc_ia(const char *pfx, const struct cper_sec_proc_ia *proc)
- 			       ctx_info->mm_reg_addr);
- 		}
- 
--		printk("%sRegister Array:\n", newpfx);
--		print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16, groupsize,
--			       (ctx_info + 1), ctx_info->reg_arr_size, 0);
-+		if (ctx_info->reg_ctx_type != CTX_TYPE_MSR ||
-+		    arch_apei_report_x86_error(ctx_info, proc->lapic_id)) {
-+			printk("%sRegister Array:\n", newpfx);
-+			print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16, groupsize,
-+				       (ctx_info + 1), ctx_info->reg_arr_size, 0);
-+		}
- 
- 		ctx_info = (struct cper_ia_proc_ctx *)((long)ctx_info + size);
- 	}
--- 
-2.17.1
-
+--
+Anchal
