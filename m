@@ -2,227 +2,112 @@ Return-Path: <SRS0=D55B=CU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 124D3C2D0E3
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 12:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B8F57C43461
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 15:22:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B5D4422209
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 12:33:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E55D207FB
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 15:22:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MpdvMpPq"
+	dkim=pass (2048-bit key) header.d=oracle.com header.i=@oracle.com header.b="fjp11hQg"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725886AbgIKMde (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Sep 2020 08:33:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34694 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725780AbgIKMcK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 08:32:10 -0400
-Received: from mail-il1-x144.google.com (mail-il1-x144.google.com [IPv6:2607:f8b0:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 596B7C061573;
-        Fri, 11 Sep 2020 05:32:10 -0700 (PDT)
-Received: by mail-il1-x144.google.com with SMTP id a19so4236131ilq.10;
-        Fri, 11 Sep 2020 05:32:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=ugTNUn8mm2Ku6DfVm6vxHRWJ3JTBU9LWayGqG53mxMw=;
-        b=MpdvMpPqMKWBctHOkuDpfxbTZK3NqQSwG0yCiF+ibrvu2DHy4mZCcuQx8xzubGiltk
-         fXkGxi9AehKRLwp0zIARnb4WngxM54WeeCagnuDxR29D12RJa1RwACdiwe9q5YMfIJYN
-         ZcUEatOXvTiO9nfXsyZEkNS2co1OVbLzgigfJdoFzuimQ1Fn9s8sKghAhXBZQAx/OENo
-         ziWEcXeoXQ1OdBgW99Ypps/x+fb6rEHBfc6A6iBRcPKTcTtOrep0VtJ0hv/Kg6weibPT
-         Wds0+wkvGyF/NhDJYTE+ScXFZX1lSo4xa05qmXHg/0sC/uX7kHss/xGwC1pxVFNmeCA2
-         QpGw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=ugTNUn8mm2Ku6DfVm6vxHRWJ3JTBU9LWayGqG53mxMw=;
-        b=aFNay7b0dKNebITLYAjLRyKY1KHJAYMPj18w7DsM965BPgUq2AWhZ1Z6L3mV+CYzrs
-         LWRtE4crh7Pa1vHDMrjrFeK7z1QER0Y67lwofE3CZ9a4RYR80XdMZCteSH54zu5bv5MB
-         Clht3l/DZjiSvZV3gy8e6qWRP5hrFkVBjWNThtr20W45usBLQ1d3iOCgJgOcfdUoUXn9
-         KuqlPiVwbrPv4bQPua4Avu0IWZUgHvAWq0bkSZfZFVzoyNacBI2zt7G1oFM1BqX8+glg
-         aQcUNcj9pgJBsKR9LcQ2izWQrOtgHl+gvUince3S5/DwN8BBN3ba/iGDLNf6CZUySFfZ
-         4qxg==
-X-Gm-Message-State: AOAM5327iensW63wa45mvShIVMVl8MoFC8xNe8oPCdt8HisMLBfP9c7T
-        ryZCRi3ptXt86fx2aNeKofZVeXvhMAQ=
-X-Google-Smtp-Source: ABdhPJxl2ZwcqutABattNSET4QKwUd7/IzX1WiTFxtg4ligGakYCwNb+FcHWlik94jksPpHtKPkWvw==
-X-Received: by 2002:a92:9646:: with SMTP id g67mr1536585ilh.116.1599827529114;
-        Fri, 11 Sep 2020 05:32:09 -0700 (PDT)
-Received: from aford-IdeaCentre-A730.lan (mn-10k-dhcp7-1791.dsl.hickorytech.net. [68.232.239.6])
-        by smtp.gmail.com with ESMTPSA id m18sm1144277iln.80.2020.09.11.05.32.07
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Sep 2020 05:32:08 -0700 (PDT)
-From:   Adam Ford <aford173@gmail.com>
-To:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
-Cc:     aford@beaconembedded.com, Adam Ford <aford173@gmail.com>,
-        kernel test robot <lkp@intel.com>,
-        Andreas Kemnade <andreas@kemnade.info>,
-        Tony Lindgren <tony@atomide.com>,
-        Russell King <linux@armlinux.org.uk>,
-        Eduardo Valentin <edubezval@gmail.com>,
-        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] thermal: ti-soc-thermal: Enable addition power management
-Date:   Fri, 11 Sep 2020 07:31:56 -0500
-Message-Id: <20200911123157.759379-1-aford173@gmail.com>
-X-Mailer: git-send-email 2.25.1
+        id S1726233AbgIKPWI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Sep 2020 11:22:08 -0400
+Received: from aserp2120.oracle.com ([141.146.126.78]:55304 "EHLO
+        aserp2120.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726297AbgIKPUU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 11:20:20 -0400
+Received: from pps.filterd (aserp2120.oracle.com [127.0.0.1])
+        by aserp2120.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08BFF3Zc061529;
+        Fri, 11 Sep 2020 15:19:31 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=subject : to :
+ references : from : message-id : date : mime-version : in-reply-to :
+ content-type : content-transfer-encoding; s=corp-2020-01-29;
+ bh=/MeEy7v1R447j4T1klPQoqAF2B+oLO9ldzBbaI8x8Es=;
+ b=fjp11hQgk0M2ieGImtTlL3liHO/dyA25V5DntaVVhLX6Ilu+T/TV1XPoOJjeyYixOdXH
+ zTu3b7QveAgDRj+O1ApqsEwqbXRl/lzWg7UZjAG6BWw4KrKZiZe0s1mRw0SMpwW/2LfK
+ 7YUZ5RbrKNusDmRcqbVYffyvdjomq6LGK4rSI1g0g1J8rhlMt28xUhkmSX9FazUWm2G2
+ KyuibgxuaFLMs7xnoMXncD3eDGWm9zUul8GDnF48Ys6F2/7Cr3rvA60y7UAHvg4x611m
+ A4nS3Z4JPOYu1YNBX3PDlGFv2TnzNlgfcG5BSV+f+eoo0qxkMfUYHDPryr29pkH/p7Bu Ng== 
+Received: from aserp3020.oracle.com (aserp3020.oracle.com [141.146.126.70])
+        by aserp2120.oracle.com with ESMTP id 33c2mmesjv-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Fri, 11 Sep 2020 15:19:31 +0000
+Received: from pps.filterd (aserp3020.oracle.com [127.0.0.1])
+        by aserp3020.oracle.com (8.16.0.42/8.16.0.42) with SMTP id 08BFFHDE118910;
+        Fri, 11 Sep 2020 15:19:31 GMT
+Received: from aserv0122.oracle.com (aserv0122.oracle.com [141.146.126.236])
+        by aserp3020.oracle.com with ESMTP id 33cmkd8cfk-1
+        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+        Fri, 11 Sep 2020 15:19:31 +0000
+Received: from abhmp0018.oracle.com (abhmp0018.oracle.com [141.146.116.24])
+        by aserv0122.oracle.com (8.14.4/8.14.4) with ESMTP id 08BFJK2q027490;
+        Fri, 11 Sep 2020 15:19:20 GMT
+Received: from [10.74.86.16] (/10.74.86.16)
+        by default (Oracle Beehive Gateway v4.0)
+        with ESMTP ; Fri, 11 Sep 2020 08:19:20 -0700
+Subject: Re: [PATCH v3 00/11] Fix PM hibernation in Xen guests
+To:     Anchal Agarwal <anchalag@amazon.com>, tglx@linutronix.de,
+        mingo@redhat.com, bp@alien8.de, hpa@zytor.com, x86@kernel.org,
+        jgross@suse.com, linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        kamatam@amazon.com, sstabellini@kernel.org, konrad.wilk@oracle.com,
+        roger.pau@citrix.com, axboe@kernel.dk, davem@davemloft.net,
+        rjw@rjwysocki.net, len.brown@intel.com, pavel@ucw.cz,
+        peterz@infradead.org, eduval@amazon.com, sblbir@amazon.com,
+        xen-devel@lists.xenproject.org, vkuznets@redhat.com,
+        netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+        dwmw@amazon.co.uk, benh@kernel.crashing.org
+References: <cover.1598042152.git.anchalag@amazon.com>
+From:   boris.ostrovsky@oracle.com
+Organization: Oracle Corporation
+Message-ID: <03baf888-5c10-429b-3206-b75d4af1e09e@oracle.com>
+Date:   Fri, 11 Sep 2020 11:19:13 -0400
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:78.0)
+ Gecko/20100101 Thunderbird/78.2.1
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <cover.1598042152.git.anchalag@amazon.com>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9741 signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 malwarescore=0 phishscore=0
+ mlxlogscore=999 bulkscore=0 adultscore=0 mlxscore=0 suspectscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2006250000
+ definitions=main-2009110126
+X-Proofpoint-Virus-Version: vendor=nai engine=6000 definitions=9741 signatures=668679
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 priorityscore=1501
+ phishscore=0 adultscore=0 bulkscore=0 clxscore=1011 mlxlogscore=999
+ malwarescore=0 suspectscore=0 lowpriorityscore=0 spamscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2006250000 definitions=main-2009110125
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The bandgap sensor can be idled when the processor is too, but it
-isn't currently being done, so the power consumption of OMAP3
-boards can elevated if the bangap sensor is enabled.
 
-This patch attempts to use some additional power management
-to idle the clock to the bandgap when not needed.
+On 8/21/20 6:22 PM, Anchal Agarwal wrote:
+>
+> Known issues:
+> 1.KASLR causes intermittent hibernation failures. VM fails to resumes and
+> has to be restarted. I will investigate this issue separately and shouldn't
+> be a blocker for this patch series.
 
-Signed-off-by: Adam Ford <aford173@gmail.com>
-Reported-by: kernel test robot <lkp@intel.com>
-Tested-by: Andreas Kemnade <andreas@kemnade.info> # GTA04
----
-V3:  bandgap_omap_cpu_notifier is only defined when CONFIG_PM_SLEEP
-     is enabled, so make all references to it also depend on
-     CONFIG_PM_SLEEP as well
 
-V2: Fix issue where variable stating the suspend mode isn't being
-    properly set and cleared.
+Is there any change in status for this? This has been noted since January.
 
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-index ab19ceff6e2a..5e596168ba73 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
-@@ -25,10 +25,20 @@
- #include <linux/of_platform.h>
- #include <linux/of_irq.h>
- #include <linux/io.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/device.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/pm.h>
-+#include <linux/of.h>
-+#include <linux/of_device.h>
- 
- #include "ti-bandgap.h"
- 
- static int ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id);
-+#ifdef CONFIG_PM_SLEEP
-+static int bandgap_omap_cpu_notifier(struct notifier_block *nb,
-+				  unsigned long cmd, void *v);
-+#endif
- 
- /***   Helper functions to access registers and their bitfields   ***/
- 
-@@ -1008,6 +1018,11 @@ int ti_bandgap_probe(struct platform_device *pdev)
- 		}
- 	}
- 
-+#ifdef CONFIG_PM_SLEEP
-+	bgp->nb.notifier_call = bandgap_omap_cpu_notifier;
-+	cpu_pm_register_notifier(&bgp->nb);
-+#endif
-+
- 	return 0;
- 
- remove_last_cooling:
-@@ -1041,7 +1056,9 @@ int ti_bandgap_remove(struct platform_device *pdev)
- 	struct ti_bandgap *bgp = platform_get_drvdata(pdev);
- 	int i;
- 
--	/* First thing is to remove sensor interfaces */
-+	cpu_pm_unregister_notifier(&bgp->nb);
-+
-+	/* Remove sensor interfaces */
- 	for (i = 0; i < bgp->conf->sensor_count; i++) {
- 		if (bgp->conf->sensors[i].unregister_cooling)
- 			bgp->conf->sensors[i].unregister_cooling(bgp, i);
-@@ -1150,9 +1167,43 @@ static int ti_bandgap_suspend(struct device *dev)
- 	if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
- 		clk_disable_unprepare(bgp->fclock);
- 
-+	bgp->is_suspended = true;
-+
- 	return err;
- }
- 
-+static int bandgap_omap_cpu_notifier(struct notifier_block *nb,
-+				  unsigned long cmd, void *v)
-+{
-+	struct ti_bandgap *bgp;
-+
-+	bgp = container_of(nb, struct ti_bandgap, nb);
-+
-+	spin_lock(&bgp->lock);
-+	switch (cmd) {
-+	case CPU_CLUSTER_PM_ENTER:
-+		if (bgp->is_suspended)
-+			break;
-+		ti_bandgap_save_ctxt(bgp);
-+		ti_bandgap_power(bgp, false);
-+		if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
-+			clk_disable(bgp->fclock);
-+		break;
-+	case CPU_CLUSTER_PM_ENTER_FAILED:
-+	case CPU_CLUSTER_PM_EXIT:
-+		if (bgp->is_suspended)
-+			break;
-+		if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
-+			clk_enable(bgp->fclock);
-+		ti_bandgap_power(bgp, true);
-+		ti_bandgap_restore_ctxt(bgp);
-+		break;
-+	}
-+	spin_unlock(&bgp->lock);
-+
-+	return NOTIFY_OK;
-+}
-+
- static int ti_bandgap_resume(struct device *dev)
- {
- 	struct ti_bandgap *bgp = dev_get_drvdata(dev);
-@@ -1161,6 +1212,7 @@ static int ti_bandgap_resume(struct device *dev)
- 		clk_prepare_enable(bgp->fclock);
- 
- 	ti_bandgap_power(bgp, true);
-+	bgp->is_suspended = false;
- 
- 	return ti_bandgap_restore_ctxt(bgp);
- }
-diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-index fce4657e9486..ed0ea4b17b25 100644
---- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-+++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
-@@ -12,6 +12,10 @@
- #include <linux/spinlock.h>
- #include <linux/types.h>
- #include <linux/err.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/device.h>
-+#include <linux/pm_runtime.h>
-+#include <linux/pm.h>
- 
- struct gpio_desc;
- 
-@@ -203,6 +207,8 @@ struct ti_bandgap {
- 	int				irq;
- 	struct gpio_desc		*tshut_gpiod;
- 	u32				clk_rate;
-+	struct notifier_block		nb;
-+	unsigned int is_suspended:1;
- };
- 
- /**
--- 
-2.25.1
 
+-boris
+
+
+> 2. During hibernation, I observed sometimes that freezing of tasks fails due
+> to busy XFS workqueuei[xfs-cil/xfs-sync]. This is also intermittent may be 1
+> out of 200 runs and hibernation is aborted in this case. Re-trying hibernation
+> may work. Also, this is a known issue with hibernation and some
+> filesystems like XFS has been discussed by the community for years with not an
+> effectve resolution at this point.
+>
