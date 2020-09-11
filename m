@@ -2,104 +2,105 @@ Return-Path: <SRS0=D55B=CU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 68A3EC43461
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 11:36:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 246CBC2D0F6
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 12:33:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 044A9221E7
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 11:36:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D30DC22208
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 12:33:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="k2uKWpn7"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lc6n1Kaa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725803AbgIKLgJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Sep 2020 07:36:09 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54238 "EHLO
+        id S1725919AbgIKMdn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Sep 2020 08:33:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34700 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725834AbgIKLf5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 07:35:57 -0400
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 79BDCC061796
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2020 04:35:37 -0700 (PDT)
-Received: by mail-pg1-x544.google.com with SMTP id 7so6438116pgm.11
-        for <linux-pm@vger.kernel.org>; Fri, 11 Sep 2020 04:35:37 -0700 (PDT)
+        with ESMTP id S1725902AbgIKMcM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 08:32:12 -0400
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id F1E67C061756;
+        Fri, 11 Sep 2020 05:32:11 -0700 (PDT)
+Received: by mail-io1-xd41.google.com with SMTP id u126so10775028iod.12;
+        Fri, 11 Sep 2020 05:32:11 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=KycsOi7S4N/nBLooPbnXXSV4SR9wjUe6iCxexLVUCD0=;
-        b=k2uKWpn7H//jNXvjMwXc7Bg+qjc/gvdqG5U6MePPIbX38khfArh8ol3jLT/BX51pKG
-         1v3YBzNb6OY1HA4cCTarS0p2U+55oNdx8wHzNQNTdywjvXUqeX/T4Qq+Oo0nJdqLEXXv
-         NLFLJmbh7joqZC21BYFlrWwOj8MNI6mtyde2GPs21/0qXrWNq4j5+y0EZV30oAhGjQR8
-         HWyipnRynroPOf5h4JwI4Z1gvd3kOMjgdK7af+zgdR2RTV0cgrTXPRuV3X6PgZDGhgKX
-         qqw3ySvUcUtBVOcxCTYsHvaNH0OODb0Y491W60rm+Pt+6mqkz64QwIHWHFJPou1RbwiX
-         jULw==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=0Sb49eUm0XrlnNsnZsPLqQ9U00n3jcPCCGAV2VtAgHI=;
+        b=lc6n1Kaa/wF17ufcjPO/ngCuQ9lEKwpFewkLAgOal4k3oEFKEtZXMsHExvbErNgW4Y
+         /1yhBN0xNaa+MvorWG4lj5SgsR6MdfF97Xtp1GEdGm9fV4Awomp/ru6KijDP0c4hG/Wo
+         1LLBcfx1S56swAtpr2fddq3hE/WBos01siWq1ERI6zlYru2wPoqsvsuG55A7aqM5kxWG
+         3GnBfYI+/97INTUmjaNNR03oi7Abq+XsngKHVdNdDWJEBj0tBn2BjHxQ8Zr/mvsAW9Sa
+         Bk9J6QJro6g5qnkb7vr8feWI4WjANL81MGy1wd9ibe/CjgF4nOzi4Me+SuBVq9DABK82
+         exbA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=KycsOi7S4N/nBLooPbnXXSV4SR9wjUe6iCxexLVUCD0=;
-        b=YDiC57fnJcNCTfMbOmFzya+XtyKqhEBbodRC2kDDG6ylBKtaMLir78og8LzHX/lGik
-         qgvfC4iHe5ytT3QZaFRG7ErsqOy5fZRhgnDKdcLsZhL0oiXZs0eCs8EWQ9h4fio8tZf2
-         48LgdvSCVBNnDwSyOm7K7K70+WLtUIy4JlRUGg40ii30PAEpql1mevYhNdJfNjahAeSO
-         1xfTpU3djYmuI0/LTYeiaoRZE+7P+sKb694b7CMCXrZxkZuil0FNYrKuQgCsMgjhu1vI
-         pHdgPrYI45nfKHfuaC7KmrfBx+Kw/efZkxLHrGILfRmDZ2B9OHyF4cGtIJ/sUXNay0zf
-         fkzA==
-X-Gm-Message-State: AOAM5326Ne73NHWiKs86jiiEUB9cU8w243HToN17Kp/Itg6CM0t7TRoO
-        m3O7lEGQonu9dd461b+vO7cW2w==
-X-Google-Smtp-Source: ABdhPJyyXvGwFaQdsNQbM6++Ut33lLn/dd07b1UkP/3vxznU7kfEoDReiBe9Y7J9oQkDfJu82o1sSw==
-X-Received: by 2002:a17:902:c151:: with SMTP id 17mr1638319plj.49.1599824136816;
-        Fri, 11 Sep 2020 04:35:36 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id z4sm2109200pfr.197.2020.09.11.04.35.35
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 11 Sep 2020 04:35:35 -0700 (PDT)
-Date:   Fri, 11 Sep 2020 17:05:32 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     peterz@infradead.org
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>, cristian.marussi@arm.com,
-        sudeep.holla@arm.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] cpufreq: stats: Defer stats update to
- cpufreq_stats_record_transition()
-Message-ID: <20200911113532.zq2bou4swixb2ymk@vireshk-i7>
-References: <cover.1599031227.git.viresh.kumar@linaro.org>
- <973bd0536c4957d03f36447398498cfacb2393d9.1599031227.git.viresh.kumar@linaro.org>
- <20200911101132.GC165568@hirez.programming.kicks-ass.net>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=0Sb49eUm0XrlnNsnZsPLqQ9U00n3jcPCCGAV2VtAgHI=;
+        b=F9mxqBCuOxVbWsqvp2+RBj8WyhYlUl8/5pmH9dvdS2/mInoyZ+wPt4lnG1kMquHbDn
+         YsqPPeo4Xg324CmsR7tl8+PRS7ZLM7U5l+rcPDFtdnR0Yp7Nl+neA3zc81REp7RToq1w
+         eq9OSOnfEd3B5mD/H54/jpSNxzA5+3EpKRt8TvCE3Y/M/1GF7gJmtfb5kV1c025WtoaO
+         EXhZLbKgm499y/eYBRU3cK5CQ7W4WajBfPQvybn26ZSXYlgBKn6Hjj/zn2weopv1Aar9
+         xai01IBMZsvXx5qDT2w7aQ7117VugeWxacPPBINlt2GZ+Z5sCQKT+UllAGCdsCaLT+4f
+         MANw==
+X-Gm-Message-State: AOAM531DtqYIYHC0btvDQ/X8vIDiuss5RsT1pIoj+XOlx7n1UhpSs2hT
+        4C+K/IyOqEWKUHevEWeANhQvS4/l6j4=
+X-Google-Smtp-Source: ABdhPJzHNqR+nZ6mQlao/3kciscoqAvYhSU0szgSBUbX1aqkqbfkR1HY4Kh8e/C90MsLYuX+4vS2Jg==
+X-Received: by 2002:a6b:9305:: with SMTP id v5mr1503265iod.201.1599827530934;
+        Fri, 11 Sep 2020 05:32:10 -0700 (PDT)
+Received: from aford-IdeaCentre-A730.lan (mn-10k-dhcp7-1791.dsl.hickorytech.net. [68.232.239.6])
+        by smtp.gmail.com with ESMTPSA id m18sm1144277iln.80.2020.09.11.05.32.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Sep 2020 05:32:10 -0700 (PDT)
+From:   Adam Ford <aford173@gmail.com>
+To:     linux-pm@vger.kernel.org, linux-omap@vger.kernel.org
+Cc:     aford@beaconembedded.com, Adam Ford <aford173@gmail.com>,
+        Tony Lindgren <tony@atomide.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] ARM: omap2plus_defconfig: Enable OMAP3_THERMAL
+Date:   Fri, 11 Sep 2020 07:31:57 -0500
+Message-Id: <20200911123157.759379-2-aford173@gmail.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200911123157.759379-1-aford173@gmail.com>
+References: <20200911123157.759379-1-aford173@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200911101132.GC165568@hirez.programming.kicks-ass.net>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11-09-20, 12:11, peterz@infradead.org wrote:
-> On Wed, Sep 02, 2020 at 12:54:41PM +0530, Viresh Kumar wrote:
-> > +	atomic_t reset_pending;
-> 
-> > +	atomic_set(&stats->reset_pending, 0);
-> > +	if (atomic_read(&stats->reset_pending))
-> > +	bool pending = atomic_read(&stats->reset_pending);
-> > +	atomic_set(&stats->reset_pending, 1);
-> > +	bool pending = atomic_read(&stats->reset_pending);
-> > +	if (atomic_read(&stats->reset_pending))
-> 
-> What do you think atomic_t is doing for you?
+With the additional power management options enabled,
+this patch enables OMAP3_THERMAL by default.
 
-I was trying to avoid races while two writes are going in parallel,
-but obviously as this isn't a RMW operation, it won't result in
-anything for me.
+Signed-off-by: Adam Ford <aford173@gmail.com>
+---
+V3:  No change
+V2:  No change
 
-Maybe what I should be doing is just READ_ONCE()/WRITE_ONCE()? So the
-other side doesn't see any intermediate value that was never meant to
-be set/read ?
-
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index fe383f5a92fb..efcc46305a47 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -303,6 +303,7 @@ CONFIG_THERMAL_GOV_FAIR_SHARE=y
+ CONFIG_THERMAL_GOV_USER_SPACE=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_TI_THERMAL=y
++CONFIG_OMAP3_THERMAL=y
+ CONFIG_OMAP4_THERMAL=y
+ CONFIG_OMAP5_THERMAL=y
+ CONFIG_DRA752_THERMAL=y
 -- 
-viresh
+2.25.1
+
