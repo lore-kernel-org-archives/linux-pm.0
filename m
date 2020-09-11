@@ -2,53 +2,62 @@ Return-Path: <SRS0=D55B=CU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DA563C433E2
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 16:36:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CDC92C433E2
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 17:46:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E3BF22206
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 16:36:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9E16D221EF
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Sep 2020 17:46:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1599842205;
-	bh=JiofwxkQFY1//Aziu3aNqmkxoILDQaiB4uUbMDE/Ocw=;
-	h=From:Date:Subject:To:Cc:List-ID:From;
-	b=QoLB23he7uhTpTeKKtYw5pp354XO6XDR7SOYjZSY/wPfK3paL6Q+wac0HWr9mUmoN
-	 kCTuyBhR7EddKVFFe9Bq3THgczgvxIZiyFdcfH0yraIM3+/uQjcf8zhdxBExW+J2dx
-	 y1PF6sI4eVKMk2MqsIAdy9uErkynTq+kW1Vv7zxE=
+	s=default; t=1599846386;
+	bh=sTa3GatGKt6R/9/VDk9yVheemV43/Ve3257BX9hqeTs=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=H2K2Zn//Nl3k8Z/29BKuav/HR9eQAU0bIwfRLX7LIq/+PGcwkdy9CIbIFtlFFwN2N
+	 NVA8V53GHVjBm7nYz6CGPGHV60qymj9Q1TsyjoY2+iF/nbSlFyJES5RgSfqZ1FowxO
+	 n3T7X05Q65WsnVX27CweUhYkL5CEXSRqW2hMK8II=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726420AbgIKQg3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Sep 2020 12:36:29 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:33179 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726147AbgIKPOz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 11:14:55 -0400
-Received: by mail-ot1-f68.google.com with SMTP id m12so8656458otr.0;
-        Fri, 11 Sep 2020 08:14:05 -0700 (PDT)
+        id S1725842AbgIKMRK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Sep 2020 08:17:10 -0400
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:40509 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725777AbgIKMQp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Sep 2020 08:16:45 -0400
+Received: by mail-oi1-f194.google.com with SMTP id t76so9215746oif.7;
+        Fri, 11 Sep 2020 05:16:44 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=aMmfzDJqgpNrWgPb0hQzPYfkLxYcxMPt+xFm1HcIqzI=;
-        b=dah/j5ypaVWUUKW8BBup8/IUwP/WtapQLGl3m4w/x0nNeaHXTVi95RIobHmnMHTDq9
-         3Nblq7mFJvR7irD1gCdtdy8Rjelu71PsKGSegHGn3v4+1D4NE4hG0Rc1e3MO8UIBPwtW
-         mVhW3KgdbIQ1VJ8a4vqRcGttKU6Kn6CiR8vQ0Uz1WPPYudVmMRfPKo+iVdo+dUX31TQ8
-         cTWXf5T8RXjY8glKHTDkarL/vxyxOJe5stEhCVlLw/UE5t7kWXDb4Wf4rq9lKpruKKAR
-         7RubIF7v3HeIcjVAMN8KMqaS1ZyfM4+5+KIg6e3I03s9/JgotTN3pGJyvzcuX45tdHxH
-         9WDw==
-X-Gm-Message-State: AOAM532gjCD6mj3xa8hX8xEmEn/g37Gd/FC3DWmqoyItIomxii59mHfE
-        CRFSpaz3ZF5LrUxliWdXohRtk0AJUGvLPbEMRVFsJ51jYOg=
-X-Google-Smtp-Source: ABdhPJxx3QVjtIlHHmaRr+FIyCSanSv+NHluSyI7EbqSdQdh1eTL6q1Ds6lIG1SyGm3w/AYvLlR/UPmAAwOAlzy3MVc=
-X-Received: by 2002:a9d:6010:: with SMTP id h16mr1499403otj.262.1599837244523;
- Fri, 11 Sep 2020 08:14:04 -0700 (PDT)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=xBfOLxbTh4kTcMU0r+KJNNeHONrOwn+AtKnHRK+5TXU=;
+        b=IwwZ9mW6Cg8dMSfG6X/YyXcgLl7O0heJkrmFSl9C+xWrLeS0aienU/aXSCDdpJpjW0
+         veBTIMMvjrkbZFUI9mg0ywFNHaD3LpUFOlGSVlhV1mIGGG/bWmg46qUmYzHM0vNDKZYU
+         moYXkzR0R/YRye678xqGTsg1KN//L6fQA8iU/oEZdkYnJ7TgAgcBaGZPJO5h6QlrmflL
+         b0ksbW8nb4AAiOoD+ijAB9HOv5i/Gt94X0ZZqdcnhqUESEBbo1OS7LsiRJSnkxOeZdyJ
+         GsQt+1D+9zzFgvHRvNv9LAFcP3td4oKPpdbB0VeW2onvUaWX47d0E9/IcAYF/AAB2JqM
+         EqGw==
+X-Gm-Message-State: AOAM533a2HdOP61SN1NBLlsfbihdAsGxMF1xr5+WfEENvHqs2H0//VfK
+        ooPQL0TwhOg/1L855oVo9xZOjf3baHwU625QuT8=
+X-Google-Smtp-Source: ABdhPJyCIAiCP8bbq24FgT0dntTldnj2QIOFwDjxpv+NiUuYcZ7IoSH6KvhpsQgj7qzed9PFFnbzWoMXH4Nd1Uy3JcE=
+X-Received: by 2002:aca:3e8b:: with SMTP id l133mr1136907oia.110.1599826604003;
+ Fri, 11 Sep 2020 05:16:44 -0700 (PDT)
 MIME-Version: 1.0
+References: <cover.1599031227.git.viresh.kumar@linaro.org> <973bd0536c4957d03f36447398498cfacb2393d9.1599031227.git.viresh.kumar@linaro.org>
+ <20200911101132.GC165568@hirez.programming.kicks-ass.net> <20200911113532.zq2bou4swixb2ymk@vireshk-i7>
+In-Reply-To: <20200911113532.zq2bou4swixb2ymk@vireshk-i7>
 From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 11 Sep 2020 17:13:53 +0200
-Message-ID: <CAJZ5v0jYBQ792GmDYMYOzxbmJC7HYzZFfQ4JR8LxDR=0goQ1_Q@mail.gmail.com>
-Subject: [GIT PULL] Power management updates for v5.9-rc5
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
+Date:   Fri, 11 Sep 2020 14:16:33 +0200
+Message-ID: <CAJZ5v0jt2ZyXB=2QAB0snC2XQ1N2TUjZGZjJ9vCDdAQHQ+3DpA@mail.gmail.com>
+Subject: Re: [PATCH 1/4] cpufreq: stats: Defer stats update to cpufreq_stats_record_transition()
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>, cristian.marussi@arm.com,
+        Sudeep Holla <sudeep.holla@arm.com>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
@@ -56,57 +65,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, Sep 11, 2020 at 1:36 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+>
+> On 11-09-20, 12:11, peterz@infradead.org wrote:
+> > On Wed, Sep 02, 2020 at 12:54:41PM +0530, Viresh Kumar wrote:
+> > > +   atomic_t reset_pending;
+> >
+> > > +   atomic_set(&stats->reset_pending, 0);
+> > > +   if (atomic_read(&stats->reset_pending))
+> > > +   bool pending = atomic_read(&stats->reset_pending);
+> > > +   atomic_set(&stats->reset_pending, 1);
+> > > +   bool pending = atomic_read(&stats->reset_pending);
+> > > +   if (atomic_read(&stats->reset_pending))
+> >
+> > What do you think atomic_t is doing for you?
+>
+> I was trying to avoid races while two writes are going in parallel,
+> but obviously as this isn't a RMW operation, it won't result in
+> anything for me.
+>
+> Maybe what I should be doing is just READ_ONCE()/WRITE_ONCE()? So the
+> other side doesn't see any intermediate value that was never meant to
+> be set/read ?
 
-Please pull from the tag
+If the value in question is a pointer or an int (or equivalent),
+READ_ONCE()/WRITE_ONCE() should be sufficient, and should be used at
+least as a matter of annotation of the sensitive code IMO.
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.9-rc5
+IIRC, atomic_set() and atomic_read() are pretty much the same as
+WRITE_ONCE() and READ_ONCE(), respectively, anyway.
 
-with top-most commit d64e6906d188f0ba6a4f82b3f42e0bd0598183fa
-
- Merge branch 'powercap'
-
-on top of commit f4d51dffc6c01a9e94650d95ce0104964f8ae822
-
- Linux 5.9-rc4
-
-to receive power management updates for 5.9-rc5.
-
-These fix three pieces of documentation and add new CPU IDs to the
-Intel RAPL power capping driver.
-
-Specifics:
-
- - Add CPU IDs of the TigerLake Desktop, RocketLake and AlderLake
-   chips to the Intel RAPL power capping driver (Zhang Rui).
-
- - Add the missing energy model performance domain item to the
-   struct device kerneldoc comment (Randy Dunlap).
-
- - Fix the struct powercap_control_type kerneldoc comment to match
-   the actual definition of that structure and add missing item to
-   the struct powercap_zone_ops kerneldoc comment (Amit Kucheria).
-
-Thanks!
-
-
----------------
-
-Amit Kucheria (1):
-      powercap: make documentation reflect code
-
-Randy Dunlap (1):
-      PM: <linux/device.h>: fix @em_pd kernel-doc warning
-
-Zhang Rui (3):
-      powercap/intel_rapl: add support for TigerLake Desktop
-      powercap/intel_rapl: add support for RocketLake
-      powercap/intel_rapl: add support for AlderLake
-
----------------
-
- drivers/powercap/intel_rapl_common.c |  3 +++
- include/linux/device.h               |  1 +
- include/linux/powercap.h             | 11 +++++------
- 3 files changed, 9 insertions(+), 6 deletions(-)
+Cheers!
