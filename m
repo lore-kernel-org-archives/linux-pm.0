@@ -2,117 +2,120 @@ Return-Path: <SRS0=trew=CX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 883E4C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 15:58:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 785A2C2D0E3
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 16:33:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 38650208DB
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 15:58:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3E2FE21BE5
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 16:33:37 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tXk9ALF7"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aUDJEPCk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726327AbgINP6U (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Sep 2020 11:58:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50234 "EHLO
+        id S1726239AbgINQdb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Sep 2020 12:33:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49768 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726501AbgINPsW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2020 11:48:22 -0400
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 69E6FC06174A
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2020 08:48:18 -0700 (PDT)
-Received: by mail-lf1-x142.google.com with SMTP id z17so13932224lfi.12
-        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2020 08:48:18 -0700 (PDT)
+        with ESMTP id S1726033AbgINPpn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Sep 2020 11:45:43 -0400
+Received: from mail-lf1-x131.google.com (mail-lf1-x131.google.com [IPv6:2a00:1450:4864:20::131])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A7ACAC06174A
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2020 08:45:36 -0700 (PDT)
+Received: by mail-lf1-x131.google.com with SMTP id w11so13972013lfn.2
+        for <linux-pm@vger.kernel.org>; Mon, 14 Sep 2020 08:45:36 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=5u2WKpvJkPwpwzBwkS2qywZLUc7DYqZR9DY2cNnCo/o=;
-        b=tXk9ALF7tchrZmK6zVA38a7xdIeE/C4aKYiP1SGuF42we+yB18X8iLgOskM0hv9qr/
-         ozpiDTf2brUJdueCqo7r5bQbFiaXSbMg5yCteJwLrzOZkaQvE2KPG0tp6hPWw/GA5S5v
-         wIWFHsbs1/945nEEf8xqUis0ELCmJE+Q+vC4LCkJAb+3C86NbgaSRaZSTcMVIJZnJjkl
-         fuOTUajTyXRUJ5uWOriU/oUR4wIYlDaungfCNdGqDgstcEXbNT4qd7h4Gy6+b1xe0sDu
-         CSuM1LbKREB5Rj2hnstNNACMGKEOrqovP0La0vxIccsxmr3Yqnu579tx/7AJrPiBHjeq
-         iurw==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=I1Diq3BVw3//vJqeDcLXAlMyOlmanauBDrj7DA7Bapg=;
+        b=aUDJEPCk0RcQKnW6Jt3+dgnCUbGNP8VTiZoqXo8QkUprwnChxH2RUbWoB/cLgQX2Rx
+         riIjyia/GLCJR9xVU04942RbOEFED35baENMdlCUNgF6PEUJsruLtw9P2wgxxvHcZdo1
+         8dnIN+mxtJeG9GZQl7WSoswNbvW7nvTXMlZk100dzBlnTyaoC33KqYHiLT/rDFEbelm0
+         qgYKQr7GNdiTmK3mIj6bqJhXoB4e081sdIcPTQHbneq/Cnn41Dxgybep14VDkzKaDVS5
+         37pnKSIy44Mxbs1HKblhUbJKz0QDHSYE+hvdUvhVfXHtH7oRP5H3jcG9PM67Vs2L9jYG
+         umbA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
          :content-transfer-encoding;
-        bh=5u2WKpvJkPwpwzBwkS2qywZLUc7DYqZR9DY2cNnCo/o=;
-        b=p7xjyJdHVoT9ohqMUKgSfetdyZmrnZumbHlECd/0XylV3C+Tw8rGTzTOWF3wZe2duq
-         csnSXd2+SnQ3NpRsRDziBvqEBrRFAwolIOC72iJWGs/dkIK33oF6g+mtVEjd+Q9mOoK3
-         Z12OFafWqLi1VkC2r2fAS3X+gvFCShA5WHCB17Z5fFY/b5cK8x6hAJ/q0BMsjdFNdpio
-         6eAd33Gtgd58o2qRtcoqDYZpWL6okT20MLd5L+A0sufzSRsfIfLU+h7elxX6T2cblztU
-         bsAV3S1ndSJRVYcjNsu1iFgdqIdI1ThAfqA+09p73YpgEn6ZLyNVd6yXfgK5lL3xHpk8
-         Bo2g==
-X-Gm-Message-State: AOAM533vTpc+fHYSEljz0jZY6OOlbVNzdoHzdDgvLhvWc5/SNP6Xqena
-        9H22bhkd8aoPY9uTxYJv7f+j/g==
-X-Google-Smtp-Source: ABdhPJzC7nlxFXckFgeTX+8mUDAhcpiy3wXnIASCwgXXMUIo0JmYFWrQ+wiMjL8ysXqls5qRGTQXkA==
-X-Received: by 2002:a19:145:: with SMTP id 66mr4764442lfb.61.1600098496882;
-        Mon, 14 Sep 2020 08:48:16 -0700 (PDT)
-Received: from eriador.lan ([188.162.64.187])
-        by smtp.gmail.com with ESMTPSA id f19sm3834650lfs.85.2020.09.14.08.48.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Sep 2020 08:48:16 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
+        bh=I1Diq3BVw3//vJqeDcLXAlMyOlmanauBDrj7DA7Bapg=;
+        b=GhxosjUy6vbstC1ZaPKQVm/b8SG0FpbWeKXiBU0WwVOuwlUrAMWAiSAGtJC3+XsWY1
+         cTI+sdZo8kmj5rtPBX+3x74lgtPgGCZ+LgqW3c+ekb8gSzWrjAmCoUoUzYFKBxbgt5Ce
+         Gc6h9LDWvd2FkaCh0gLaJNvnwWAdggQ/xugStw6sOfyIQsjh/L6noTtY+WmhC+cuPr4R
+         wZBImwNuKAmMIHiRfQcs9ZXGXWXIK1KpFnhrqT+f4SahjPm3a9/gq+9Pil9I8tsb6kHK
+         dT/kmADa1W4xDrrKyNjfQUapq+M117GW0Z4k3gZrbr5YrmboBUkr9yX+e8Z2XMd18T+k
+         W7kA==
+X-Gm-Message-State: AOAM531hzdJ+uUmfIJwHs9XmJG7cZNoLsCCDvPMkvLAMHfFa7zu6BhYs
+        dd0I/dcIEiBu0gIR0QZt45lqSg==
+X-Google-Smtp-Source: ABdhPJxtV7I4cIHpLZEVpRugay28tPPeWIt/1IZHQRAI99Q5d18DZ+ZTy9N5LpAUQnzFQm1TXpLMWA==
+X-Received: by 2002:ac2:48a2:: with SMTP id u2mr4534376lfg.359.1600098332759;
+        Mon, 14 Sep 2020 08:45:32 -0700 (PDT)
+Received: from [192.168.1.145] ([188.162.64.187])
+        by smtp.gmail.com with ESMTPSA id y17sm4115896ljm.55.2020.09.14.08.45.30
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 14 Sep 2020 08:45:32 -0700 (PDT)
+Subject: Re: [PATCH v3 00/10] qcom: pm8150: add support for thermal monitoring
+To:     Jonathan Cameron <jic23@kernel.org>
+Cc:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
         Hartmut Knaack <knaack.h@gmx.de>,
         Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v5 0/9] qcom: pm8150: add support for thermal monitoring
-Date:   Mon, 14 Sep 2020 18:48:00 +0300
-Message-Id: <20200914154809.192174-1-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
+References: <20200910140000.324091-1-dmitry.baryshkov@linaro.org>
+ <20200913112122.0f4ee51b@archlinux>
+From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Message-ID: <99063ca8-c795-416c-18cb-5c026879a13c@linaro.org>
+Date:   Mon, 14 Sep 2020 18:45:29 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200913112122.0f4ee51b@archlinux>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch serie adds support for thermal monitoring block on Qualcomm's
-PMIC5 chips. PM8150{,b,l} and sm8250-mtp board device trees are extended
-to support thermal zones provided by this thermal monitoring block.
-Unlike the rest of PMIC thermal senses, these thermal zones describe
-particular thermistors, which differ between from board to board.
+On 13/09/2020 13:21, Jonathan Cameron wrote:
+> On Thu, 10 Sep 2020 16:59:50 +0300
+> Dmitry Baryshkov <dmitry.baryshkov@linaro.org> wrote:
+> 
+>> This patch serie adds support for thermal monitoring block on Qualcomm's
+>> PMIC5 chips. PM8150{,b,l} and sm8250-mtp board device trees are extended
+>> to support thermal zones provided by this thermal monitoring block.
+>> Unlike the rest of PMIC thermal senses, these thermal zones describe
+>> particular thermistors, which differ between from board to board.
+>>
+> 
+> As far as I am concerned this series is now ready to go up to one or two
+> things in patch 8.  So on to the normal question based on the assumption
+> it will pick up other necessary reviews shortly...
 
-Changes since v4:
- - Added kernel-doc comments to ADC-TM structures
- - Used several sizeof(buf) instead of hand-conding register size
+Sending v5 right now, fixing issues in patch 8.
 
-Changes since v3:
- - Fix DT description to spell "thermal monitoring" instead of just TM
- - Fix warnings in DT example
- - Add EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name)
- - Fixed whitespace chanes in qcom-vadc-common.c
- - Removed error message if IIO chanel get returns -EPROBE_DEFER
+> 
+> What route do we want this to take?
+> I can do an immutable branch in IIO if that works for patches 1-8 and assume
+> the dt file changes will got via usual SoC path?  We are getting a fair way
+> into this cycle, so this may well end up happening next cycle depending
+> on how quick reviews come in.
 
-Changes since v2:
- - IIO: export of_iio_channel_get_by_name() function
- - dt-bindings: move individual io-channels to each thermal monitoring
-   channel rather than listing them all in device node
- - added fallback defaults to of_device_get_match_data calls in
-   qcom-spmi-adc5 and qcom-spmi-adc-tm5 drivers
- - minor typo fixes
-
-Changes since v1:
- - Introduce fixp_linear_interpolate() by Craig Tatlor
- - Lots of syntax/whitespace changes
- - Cleaned up register definitions per Jonathan's suggestion
- - Implemented most of the suggestions from Bjorn's and Jonathan's
-   review
+I think this makes sense. Thank you for your reviews.
 
 
-
+-- 
+With best wishes
+Dmitry
