@@ -2,234 +2,107 @@ Return-Path: <SRS0=trew=CX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT autolearn=ham
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC740C433E2
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 01:52:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB757C43461
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 03:05:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 66149208C7
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 01:52:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9758D221E7
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Sep 2020 03:05:18 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="dzCiJCPE"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725969AbgINBwV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 13 Sep 2020 21:52:21 -0400
-Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:37492 "EHLO
-        smtp2207-205.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1725965AbgINBwT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Sep 2020 21:52:19 -0400
-X-Alimail-AntiSpam: AC=CONTINUE;BC=0.07457206|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_system_inform|0.00567186-0.0021741-0.992154;FP=0|0|0|0|0|-1|-1|-1;HT=e01l10434;MF=liush@allwinnertech.com;NM=1;PH=DS;RN=15;RT=15;SR=0;TI=SMTPD_---.IWjNbES_1600048326;
-Received: from localhost.localdomain(mailfrom:liush@allwinnertech.com fp:SMTPD_---.IWjNbES_1600048326)
-          by smtp.aliyun-inc.com(10.147.41.120);
-          Mon, 14 Sep 2020 09:52:13 +0800
-From:   liush <liush@allwinnertech.com>
-To:     paul.walmsley@sifive.com, palmer@dabbelt.com,
-        aou@eecs.berkeley.edu, rjw@rjwysocki.net,
-        daniel.lezcano@linaro.org, anup.patel@wdc.com, atish.patra@wdc.com,
-        damien.lemoal@wdc.com, wangkefeng.wang@huawei.com, kernel@esmil.dk,
-        zong.li@sifive.com
-Cc:     linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, liush <liush@allwinnertech.com>
-Subject: [PATCH] cpuidle: add riscv cpuidle driver
-Date:   Mon, 14 Sep 2020 09:52:03 +0800
-Message-Id: <1600048323-2964-1-git-send-email-liush@allwinnertech.com>
-X-Mailer: git-send-email 2.7.4
+        id S1726115AbgINDFP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 13 Sep 2020 23:05:15 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:35987 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726105AbgINDFL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 13 Sep 2020 23:05:11 -0400
+X-UUID: fe5ed44f85de406f83c6fe252e68f761-20200914
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=nOOM9yhncstnm5UMFYqxtAtm4GAlmiu3+ZgwHqj+zAM=;
+        b=dzCiJCPEb/5+CFfoRt5fzPpcsC4wK/qsTPnvqvXcnpQtTkI1EnARo6jsRziDF9sZhXhwkGEdYa6YCamuDQNs2GAIhBrXprn+8XzqFWSg1pvsA56s1qaYlYm1/xja2dktphn0fyg0UWjUxNVqWFjI+PK8KlmrsBpxJW2puMutbUI=;
+X-UUID: fe5ed44f85de406f83c6fe252e68f761-20200914
+Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw02.mediatek.com
+        (envelope-from <henryc.chen@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 453261723; Mon, 14 Sep 2020 11:04:50 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs01n1.mediatek.inc (172.21.101.68) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Mon, 14 Sep 2020 11:04:48 +0800
+Received: from mtksdaap41.mediatek.inc (172.21.77.4) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Mon, 14 Sep 2020 11:04:48 +0800
+From:   Henry Chen <henryc.chen@mediatek.com>
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Stephen Boyd <swboyd@chromium.org>,
+        Ryan Case <ryandcase@chromium.org>,
+        Mark Brown <broonie@kernel.org>
+CC:     Mark Rutland <mark.rutland@arm.com>,
+        Nicolas Boichat <drinkcat@google.com>,
+        Fan Chen <fan.chen@mediatek.com>,
+        James Liao <jamesjj.liao@mediatek.com>,
+        Arvin Wang <arvin.wang@mediatek.com>,
+        Mike Turquette <mturquette@linaro.org>,
+        <devicetree@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
+        Henry Chen <henryc.chen@mediatek.com>
+Subject: [PATCH V5 09/17] dt-bindings: interconnect: add MT8183 interconnect dt-bindings
+Date:   Mon, 14 Sep 2020 11:04:36 +0800
+Message-ID: <1600052684-21198-10-git-send-email-henryc.chen@mediatek.com>
+X-Mailer: git-send-email 1.9.1
+In-Reply-To: <1600052684-21198-1-git-send-email-henryc.chen@mediatek.com>
+References: <1600052684-21198-1-git-send-email-henryc.chen@mediatek.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds a cpuidle driver for systems based RISCV architecture.
-This patch supports state WFI. Other states will be supported in the
-future.
-
-Signed-off-by: liush <liush@allwinnertech.com>
----
- arch/riscv/Kconfig               |  7 +++++
- arch/riscv/include/asm/cpuidle.h |  7 +++++
- arch/riscv/kernel/Makefile       |  1 +
- arch/riscv/kernel/cpuidle.c      |  8 ++++++
- drivers/cpuidle/Kconfig          |  5 ++++
- drivers/cpuidle/Kconfig.riscv    | 11 ++++++++
- drivers/cpuidle/Makefile         |  4 +++
- drivers/cpuidle/cpuidle-riscv.c  | 55 ++++++++++++++++++++++++++++++++++++++++
- 8 files changed, 98 insertions(+)
- create mode 100644 arch/riscv/include/asm/cpuidle.h
- create mode 100644 arch/riscv/kernel/cpuidle.c
- create mode 100644 drivers/cpuidle/Kconfig.riscv
- create mode 100644 drivers/cpuidle/cpuidle-riscv.c
-
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index df18372..c7ddb9d 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -86,6 +86,7 @@ config RISCV
- 	select SPARSE_IRQ
- 	select SYSCTL_EXCEPTION_TRACE
- 	select THREAD_INFO_IN_TASK
-+	select CPU_IDLE
- 
- config ARCH_MMAP_RND_BITS_MIN
- 	default 18 if 64BIT
-@@ -407,6 +408,12 @@ config BUILTIN_DTB
- 	depends on RISCV_M_MODE
- 	depends on OF
- 
-+menu "CPU Power Management"
-+
-+source "drivers/cpuidle/Kconfig"
-+
-+endmenu
-+
- menu "Power management options"
- 
- source "kernel/power/Kconfig"
-diff --git a/arch/riscv/include/asm/cpuidle.h b/arch/riscv/include/asm/cpuidle.h
-new file mode 100644
-index 00000000..2599d2f
---- /dev/null
-+++ b/arch/riscv/include/asm/cpuidle.h
-@@ -0,0 +1,7 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __RISCV_CPUIDLE_H
-+#define __RISCV_CPUIDLE_H
-+
-+extern void cpu_do_idle(void);
-+
-+#endif
-diff --git a/arch/riscv/kernel/Makefile b/arch/riscv/kernel/Makefile
-index dc93710..396ba9c 100644
---- a/arch/riscv/kernel/Makefile
-+++ b/arch/riscv/kernel/Makefile
-@@ -29,6 +29,7 @@ obj-y	+= riscv_ksyms.o
- obj-y	+= stacktrace.o
- obj-y	+= cacheinfo.o
- obj-y	+= patch.o
-+obj-y	+= cpuidle.o
- obj-$(CONFIG_MMU) += vdso.o vdso/
- 
- obj-$(CONFIG_RISCV_M_MODE)	+= traps_misaligned.o
-diff --git a/arch/riscv/kernel/cpuidle.c b/arch/riscv/kernel/cpuidle.c
-new file mode 100644
-index 00000000..a3289e7
---- /dev/null
-+++ b/arch/riscv/kernel/cpuidle.c
-@@ -0,0 +1,8 @@
-+// SPDX-License-Identifier: GPL-2.0
-+#include <asm/cpuidle.h>
-+
-+void cpu_do_idle(void)
-+{
-+	__asm__ __volatile__ ("wfi");
-+
-+}
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index c0aeedd..f6be0fd 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -62,6 +62,11 @@ depends on PPC
- source "drivers/cpuidle/Kconfig.powerpc"
- endmenu
- 
-+menu "RISCV CPU Idle Drivers"
-+depends on RISCV
-+source "drivers/cpuidle/Kconfig.riscv"
-+endmenu
-+
- config HALTPOLL_CPUIDLE
- 	tristate "Halt poll cpuidle driver"
- 	depends on X86 && KVM_GUEST
-diff --git a/drivers/cpuidle/Kconfig.riscv b/drivers/cpuidle/Kconfig.riscv
-new file mode 100644
-index 00000000..e86d36b
---- /dev/null
-+++ b/drivers/cpuidle/Kconfig.riscv
-@@ -0,0 +1,11 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+#
-+# RISCV CPU Idle drivers
-+#
-+config RISCV_CPUIDLE
-+        bool "Generic RISCV CPU idle Driver"
-+        select DT_IDLE_STATES
-+	select CPU_IDLE_MULTIPLE_DRIVERS
-+        help
-+          Select this option to enable generic cpuidle driver for RISCV.
-+	  Now only support C0 State.
-diff --git a/drivers/cpuidle/Makefile b/drivers/cpuidle/Makefile
-index 26bbc5e..4c83c4e 100644
---- a/drivers/cpuidle/Makefile
-+++ b/drivers/cpuidle/Makefile
-@@ -34,3 +34,7 @@ obj-$(CONFIG_MIPS_CPS_CPUIDLE)		+= cpuidle-cps.o
- # POWERPC drivers
- obj-$(CONFIG_PSERIES_CPUIDLE)		+= cpuidle-pseries.o
- obj-$(CONFIG_POWERNV_CPUIDLE)		+= cpuidle-powernv.o
-+
-+###############################################################################
-+# RISCV drivers
-+obj-$(CONFIG_RISCV_CPUIDLE)		+= cpuidle-riscv.o
-diff --git a/drivers/cpuidle/cpuidle-riscv.c b/drivers/cpuidle/cpuidle-riscv.c
-new file mode 100644
-index 00000000..5dddcfa
---- /dev/null
-+++ b/drivers/cpuidle/cpuidle-riscv.c
-@@ -0,0 +1,55 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * RISC-V CPU idle driver.
-+ *
-+ * Copyright (C) 2020-2022 Allwinner Ltd
-+ *
-+ * Based on code - driver/cpuidle/cpuidle-at91.c
-+ *
-+ */
-+#include <linux/cpuidle.h>
-+#include <linux/cpumask.h>
-+#include <linux/cpu_pm.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/slab.h>
-+#include <linux/platform_device.h>
-+#include <asm/cpuidle.h>
-+
-+#define MAX_IDLE_STATES	1
-+
-+/* TODO: Implement deeper idle states */
-+static int riscv_low_level_suspend_enter(int state)
-+{
-+	return 0;
-+}
-+
-+/* Actual code that puts the SoC in different idle states */
-+static int riscv_enter_idle(struct cpuidle_device *dev,
-+			struct cpuidle_driver *drv,
-+			       int index)
-+{
-+	return CPU_PM_CPU_IDLE_ENTER_PARAM(riscv_low_level_suspend_enter,
-+					   index, 0);
-+}
-+
-+static struct cpuidle_driver riscv_idle_driver = {
-+	.name			= "riscv_idle",
-+	.owner			= THIS_MODULE,
-+	.states[0]		= {
-+		.enter			= riscv_enter_idle,
-+		.exit_latency		= 1,
-+		.target_residency	= 1,
-+		.name			= "WFI",
-+		.desc			= "RISCV WFI",
-+	},
-+	.state_count = MAX_IDLE_STATES,
-+};
-+
-+static int __init riscv_cpuidle_init(void)
-+{
-+	return cpuidle_register(&riscv_idle_driver, NULL);
-+}
-+
-+device_initcall(riscv_cpuidle_init);
--- 
-2.7.4
+QWRkIGludGVyY29ubmVjdCBwcm92aWRlciBkdC1iaW5kaW5ncyBmb3IgTVQ4MTgzLg0KDQpTaWdu
+ZWQtb2ZmLWJ5OiBIZW5yeSBDaGVuIDxoZW5yeWMuY2hlbkBtZWRpYXRlay5jb20+DQotLS0NCiAu
+Li4vZGV2aWNldHJlZS9iaW5kaW5ncy9zb2MvbWVkaWF0ZWsvZHZmc3JjLnR4dCAgICAgICAgfCAg
+MiArKw0KIGluY2x1ZGUvZHQtYmluZGluZ3MvaW50ZXJjb25uZWN0L210ayxtdDgxODMtZW1pLmgg
+ICAgICB8IDE4ICsrKysrKysrKysrKysrKysrKw0KIDIgZmlsZXMgY2hhbmdlZCwgMjAgaW5zZXJ0
+aW9ucygrKQ0KIGNyZWF0ZSBtb2RlIDEwMDY0NCBpbmNsdWRlL2R0LWJpbmRpbmdzL2ludGVyY29u
+bmVjdC9tdGssbXQ4MTgzLWVtaS5oDQoNCmRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3Mvc29jL21lZGlhdGVrL2R2ZnNyYy50eHQgYi9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3Mvc29jL21lZGlhdGVrL2R2ZnNyYy50eHQNCmluZGV4IGQ1YTQ3ZDgu
+Ljc2Y2E2MWQgMTAwNjQ0DQotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3Mv
+c29jL21lZGlhdGVrL2R2ZnNyYy50eHQNCisrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9zb2MvbWVkaWF0ZWsvZHZmc3JjLnR4dA0KQEAgLTE0LDYgKzE0LDcgQEAgUmVxdWly
+ZWQgUHJvcGVydGllczoNCiAtIGNsb2NrLW5hbWVzOiBNdXN0IGluY2x1ZGUgdGhlIGZvbGxvd2lu
+ZyBlbnRyaWVzOg0KIAkiZHZmc3JjIjogRFZGU1JDIG1vZHVsZSBjbG9jaw0KIC0gY2xvY2tzOiBN
+dXN0IGNvbnRhaW4gYW4gZW50cnkgZm9yIGVhY2ggZW50cnkgaW4gY2xvY2stbmFtZXMuDQorLSAj
+aW50ZXJjb25uZWN0LWNlbGxzIDogc2hvdWxkIGNvbnRhaW4gMQ0KIA0KIEV4YW1wbGU6DQogDQpA
+QCAtMjIsNCArMjMsNSBAQCBFeGFtcGxlOg0KIAkJcmVnID0gPDAgMHgxMDAxMjAwMCAwIDB4MTAw
+MD47DQogCQljbG9ja3MgPSA8JmluZnJhY2ZnIENMS19JTkZSQV9EVkZTUkM+Ow0KIAkJY2xvY2st
+bmFtZXMgPSAiZHZmc3JjIjsNCisJCSNpbnRlcmNvbm5lY3QtY2VsbHMgPSA8MT47DQogCX07DQpk
+aWZmIC0tZ2l0IGEvaW5jbHVkZS9kdC1iaW5kaW5ncy9pbnRlcmNvbm5lY3QvbXRrLG10ODE4My1l
+bWkuaCBiL2luY2x1ZGUvZHQtYmluZGluZ3MvaW50ZXJjb25uZWN0L210ayxtdDgxODMtZW1pLmgN
+Cm5ldyBmaWxlIG1vZGUgMTAwNjQ0DQppbmRleCAwMDAwMDAwLi4yYTU0ODU2DQotLS0gL2Rldi9u
+dWxsDQorKysgYi9pbmNsdWRlL2R0LWJpbmRpbmdzL2ludGVyY29ubmVjdC9tdGssbXQ4MTgzLWVt
+aS5oDQpAQCAtMCwwICsxLDE4IEBADQorLyogU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0y
+LjAgKi8NCisNCisjaWZuZGVmIF9fRFRfQklORElOR1NfSU5URVJDT05ORUNUX01US19NVDgxODNf
+RU1JX0gNCisjZGVmaW5lIF9fRFRfQklORElOR1NfSU5URVJDT05ORUNUX01US19NVDgxODNfRU1J
+X0gNCisNCisjZGVmaW5lIE1UODE4M19TTEFWRV9ERFJfRU1JCQkJMA0KKyNkZWZpbmUgTVQ4MTgz
+X01BU1RFUl9NQ1VTWVMJCQkxDQorI2RlZmluZSBNVDgxODNfTUFTVEVSX0dQVQkJCTINCisjZGVm
+aW5lIE1UODE4M19NQVNURVJfTU1TWVMJCQkzDQorI2RlZmluZSBNVDgxODNfTUFTVEVSX01NX1ZQ
+VQkJCTQNCisjZGVmaW5lIE1UODE4M19NQVNURVJfTU1fRElTUAkJCTUNCisjZGVmaW5lIE1UODE4
+M19NQVNURVJfTU1fVkRFQwkJCTYNCisjZGVmaW5lIE1UODE4M19NQVNURVJfTU1fVkVOQwkJCTcN
+CisjZGVmaW5lIE1UODE4M19NQVNURVJfTU1fQ0FNCQkJOA0KKyNkZWZpbmUgTVQ4MTgzX01BU1RF
+Ul9NTV9JTUcJCQk5DQorI2RlZmluZSBNVDgxODNfTUFTVEVSX01NX01EUAkJCTEwDQorDQorI2Vu
+ZGlmDQotLSANCjEuOS4xDQo=
 
