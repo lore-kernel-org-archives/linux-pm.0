@@ -6,67 +6,59 @@ X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 80580C2D0E0
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:27:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9DB0C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:32:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 30A712145D
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:27:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 555C920732
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:32:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="GOkFdSk4"
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="q1iyu72u"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727865AbgIOS1k (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 14:27:40 -0400
-Received: from mail.skyhub.de ([5.9.137.197]:53664 "EHLO mail.skyhub.de"
+        id S1727937AbgIOSb7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 14:31:59 -0400
+Received: from mail.skyhub.de ([5.9.137.197]:54364 "EHLO mail.skyhub.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727903AbgIOS1h (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Sep 2020 14:27:37 -0400
+        id S1727895AbgIOSb4 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Sep 2020 14:31:56 -0400
 Received: from zn.tnic (p200300ec2f0e42009474dca2b756bdd4.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:4200:9474:dca2:b756:bdd4])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 1E8A91EC0246;
-        Tue, 15 Sep 2020 20:27:32 +0200 (CEST)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 7BE5F1EC0246;
+        Tue, 15 Sep 2020 20:31:51 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1600194452;
+        t=1600194711;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:content-type:
          content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=0HOksYl7KYGb0/Z/aOYhjWUD/dWuDEx2ok3TnQFcapw=;
-        b=GOkFdSk4VlXMHIJ+DBri4YMGuULYonokg+5IB9cp2PJrMzRazhKpCctRJGLsfqYm+xon6S
-        wFMLm9SeTSoL9UTf3Tmofk1U1s5ERbMFYdE5q3zQvkxCV047mrq+IMV5ZJYROunEKmBiO3
-        WsF/BDtlC4XOlMtOPeIunnfzYywUweE=
-Date:   Tue, 15 Sep 2020 20:27:30 +0200
+        bh=x77o73At3Ov0p8rWibLOd93HG8JfU43QR0fdkYUjAlY=;
+        b=q1iyu72uhDBKtmTnRKZLZ0RxP6EayFjaqvzZFSqc1a7rEg3nUZNcp6RIGiT8W26l9gsh5M
+        TL3P9C5n0R2m3S3qbl1KPEI6+Ub9HKNvehduAfh+QyFWmBaD/+LoDnMq8Ke/8CVq8WL0hL
+        SPd5zN0s0XnSt1AzL6zkya810QZzvko=
+Date:   Tue, 15 Sep 2020 20:31:50 +0200
 From:   Borislav Petkov <bp@alien8.de>
-To:     Roman Kiryanov <rkir@google.com>
-Cc:     rjw@rjwysocki.net, pavel@ucw.cz,
-        Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
-        x86@kernel.org, linux-pm@vger.kernel.org,
-        Greg KH <gregkh@linuxfoundation.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Alistair Delva <adelva@google.com>,
-        Haitao Shan <hshan@google.com>,
-        lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] arch: x86: power: cpu: init %gs before
- __restore_processor_state (clang)
-Message-ID: <20200915182730.GW14436@zn.tnic>
-References: <20200915172658.1432732-1-rkir@google.com>
- <20200915174643.GT14436@zn.tnic>
- <CAOGAQepp_1QXrNAAXbLpW8qrujfdszfU2rMoh804wKK-Ja66Yw@mail.gmail.com>
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     rjw@rjwysocki.net, x86@kernel.org, tony.luck@intel.com,
+        lenb@kernel.org, daniel.lezcano@linaro.org,
+        linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+        linux-pm@vger.kernel.org, ulf.hansson@linaro.org,
+        paulmck@kernel.org, tglx@linutronix.de, naresh.kamboju@linaro.org
+Subject: Re: [RFC][PATCH 0/4] Fix up ACPI processor idle vs RCU
+Message-ID: <20200915183150.GX14436@zn.tnic>
+References: <20200915103157.345404192@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAOGAQepp_1QXrNAAXbLpW8qrujfdszfU2rMoh804wKK-Ja66Yw@mail.gmail.com>
+In-Reply-To: <20200915103157.345404192@infradead.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 15, 2020 at 10:57:16AM -0700, Roman Kiryanov wrote:
-> I believe the kernel makes a questionable assumption on how clang
-> uses registers (gs will not be used if stack protection is disabled).
-> Both kernel and clang behaves unfortunate here.
+On Tue, Sep 15, 2020 at 12:31:57PM +0200, Peter Zijlstra wrote:
+> Boris tested an earlier version of these patches and they worked for his
+> 32bit Atom board that was triggering complaints.
 
-If the kernel is at fault here and this same thing happens with GCC,
-sure, but this is a clang-specific fix.
+Want me to test them again?
 
 -- 
 Regards/Gruss,
