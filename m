@@ -2,102 +2,77 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A1E0AC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:27:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3102CC43461
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 08:24:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 64F1E2080C
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:27:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B5E2B221E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 08:24:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="QQRnPO9D"
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="OoPBYUiC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726327AbgIOH1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 03:27:34 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53156 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726197AbgIOHYm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 03:24:42 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2BB4CC061788
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:41 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id d9so1429622pfd.3
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:41 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=PoM8dcszi4ABBEkuvRZ20RPA0JshzdDSlrpShM9qdPc=;
-        b=QQRnPO9DxxyQF69n+gAvyc5ZVThhlnOSdWwS8Q9nDB2v74a7XMzWD3iwM1BlhU8Xpx
-         N+7b7q225OlQDQ2Q+v/5IbSfrS4tzAIvbEpLWRa2BVkYgXHlZKVAhsdzbba7HZJ2EVr7
-         7uFjMe61muiKhTdkjeBe01EZxFxKPFBjt657vCgdBHW9ev9m2ckHLpo9Wx2lHAQuylPg
-         Qd7lB4e/alOo18mlRIMRZl9fAAQTOXm/l5ddG+zTmR0CLvhvuUuYYJd2/AjRFdQPEDlw
-         zN81QDuhpYU073BiLjtRAlOhm5tgztu1U/v6YzmfzXO3N1lxFvD/iPsfI9j2a0bvUPsk
-         h0aA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=PoM8dcszi4ABBEkuvRZ20RPA0JshzdDSlrpShM9qdPc=;
-        b=sHUFsZMg1bN+JWYHJ/8wZWXC1iP3vOh2hiTUZftycOyv4Pg5TzFCE91PGQQtdCHQ7n
-         zIS4Pmgcr8/Tn2o27MNzd3jtB7XCsibotdYSNwrDWfPQMR//isqaxozTwSmIbOkns6rb
-         0awB0FztHLYkAhyaH5feUtLPZGB5EkqvJmHaXx4w3or8mNhm0WRvPZzFIaE0jmz6jC6v
-         agv25QdWMTfl03SILLS/0Ub3vW32YhSHdbDxmw5gClutSQWA7Q63V+/Rux/xBLmgcT8V
-         AqNi0bVCOpeZ3CEH5bHKSz95DM0lfSB9fycFIMxWW+O4sFVkaa7qp/G2VJDjH/P6oqPt
-         RPIA==
-X-Gm-Message-State: AOAM530zpw2B5tlms7a9yW+/n0rWHb7P1tPNJ2l6OT0pJFqEsKlSqgxO
-        dgbGPF+6RMws+vZOcdqB2GEK
-X-Google-Smtp-Source: ABdhPJxbviGwmECdlzw7W63+DAmIWNu/LdmyT7qT+q7QnH5RbqsKAv3ZfzzIg5OxnW91hpmdMbLcVg==
-X-Received: by 2002:aa7:8816:0:b029:13e:d13d:a10b with SMTP id c22-20020aa788160000b029013ed13da10bmr16313072pfo.39.1600154680676;
-        Tue, 15 Sep 2020 00:24:40 -0700 (PDT)
-Received: from localhost.localdomain ([103.59.133.81])
-        by smtp.googlemail.com with ESMTPSA id m24sm10701501pgn.44.2020.09.15.00.24.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2020 00:24:40 -0700 (PDT)
-From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org,
-        agross@kernel.org, bjorn.andersson@linaro.org
-Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, dmitry.baryshkov@linaro.org,
-        tdas@codeaurora.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v2 1/5] dt-bindings: cpufreq: cpufreq-qcom-hw: Document Qcom EPSS compatible
-Date:   Tue, 15 Sep 2020 12:54:19 +0530
-Message-Id: <20200915072423.18437-2-manivannan.sadhasivam@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
-References: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
+        id S1726361AbgIOIYm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 04:24:42 -0400
+Received: from mail.skyhub.de ([5.9.137.197]:42312 "EHLO mail.skyhub.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726303AbgIOIQD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Sep 2020 04:16:03 -0400
+Received: from zn.tnic (p200300ec2f0e42005bd5729a6296255f.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:4200:5bd5:729a:6296:255f])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 4E2721EC058C;
+        Tue, 15 Sep 2020 10:15:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1600157716;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=yEJCfXwRj3yq0x1l28tMtuPd1vDO0s2J9nk983qf9F0=;
+        b=OoPBYUiCysYxcynou0G8+BD+lVSt+BH4l01auVyJjRXkXNcuz+g9OrEtK3u9E1pH+Wa1NF
+        1rXMIEuOkLoPDF1LdzHmvbOe/QmjpelvDafamvArRTUj0DIzP6l+49cGrIisCTKSGYYnXG
+        wlZkhrnXs+6tyvvnuK00dbdNBw5cUxE=
+Date:   Tue, 15 Sep 2020 10:15:14 +0200
+From:   Borislav Petkov <bp@alien8.de>
+To:     Smita Koralahalli Channabasappa <skoralah@amd.com>
+Cc:     x86@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-acpi@vger.kernel.org,
+        devel@acpica.org, Tony Luck <tony.luck@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Yazen Ghannam <yazen.ghannam@amd.com>
+Subject: Re: [PATCH v3 1/2] cper, apei, mce: Pass x86 CPER through the MCA
+ handling chain
+Message-ID: <20200915081514.GB14436@zn.tnic>
+References: <20200903234531.162484-1-Smita.KoralahalliChannabasappa@amd.com>
+ <20200903234531.162484-2-Smita.KoralahalliChannabasappa@amd.com>
+ <20200914153024.GC680@zn.tnic>
+ <a28aa613-8353-0052-31f6-34bc733abf59@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <a28aa613-8353-0052-31f6-34bc733abf59@amd.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The hardware block which carries out CPUFreq operations on SM8250 SoC is
-called EPSS. Hence, document the compatible.
+On Mon, Sep 14, 2020 at 04:16:10PM -0500, Smita Koralahalli Channabasappa wrote:
+> May be something like apei_smca_report_x86_error? Or probably an additional
+> SMCA-specific function call inside this generic APEI and MCA function call?
 
-Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Reviewed-by: Amit Kucheria <amitk@kernel.org>
-Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
----
- Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+apei_smca_report_x86_error() sounds ok. If there's need for any
+additional MCA handling from BERT, then that can be extended/refactored
+then.
 
-diff --git a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-index 33856947c561..9299028ee712 100644
---- a/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-+++ b/Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt
-@@ -8,7 +8,7 @@ Properties:
- - compatible
- 	Usage:		required
- 	Value type:	<string>
--	Definition:	must be "qcom,cpufreq-hw".
-+	Definition:	must be "qcom,cpufreq-hw" or "qcom,cpufreq-epss".
- 
- - clocks
- 	Usage:		required
+Thx.
+
 -- 
-2.17.1
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
