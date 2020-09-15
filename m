@@ -2,59 +2,60 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DBD2C433E2
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:24:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8008FC433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:25:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0553620EDD
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:24:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 40FE220897
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:25:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EC+Yh96N"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="c4p1+4NV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726195AbgIOHYl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 03:24:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53136 "EHLO
+        id S1726234AbgIOHZ3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 03:25:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53226 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726085AbgIOHYh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 03:24:37 -0400
-Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 616E1C06174A
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:37 -0700 (PDT)
-Received: by mail-pj1-x1044.google.com with SMTP id o16so1309772pjr.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:37 -0700 (PDT)
+        with ESMTP id S1726091AbgIOHY5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 03:24:57 -0400
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com [IPv6:2607:f8b0:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1B4BBC061797
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:57 -0700 (PDT)
+Received: by mail-pf1-x442.google.com with SMTP id n14so1415350pff.6
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=qLQnD0O574PmqchHwylwIu1vZvsCOyk6uoC7Y035P2k=;
-        b=EC+Yh96NN7VUrpu9VrwDTKqfosoTian8TpCa8LULjrmawU4sR9gh0aUhzzwrHCOq4j
-         +/0fBgCGwkZRKX5yBfcfCsZjDe3TjZHgbGOwLUEqzi8Qga6HspQEpXAP6tZZpOa10JFW
-         IbNUeVCE3ACdyHtvtfCx2N+XUsPwJFZmAA9o0QNQ+aw0DGjV7/OwEsg5GR+cRsoZGj2R
-         40DYzq3GQG6it509ZAv2ghXtAVRXYuq4ipvPZet8MTPfv/KuVHk1F/3sMTotq9n3s2VN
-         wo/MsNPCNakIjm63+BVO/HSyzeDIXClh7H0MV7mM1LPg6Twzy98zsAOvqAzVdx7PYvjY
-         WQZw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=oBilyFEf2/Z1J1tQYW2nP7ZczzAuGj9cFol63jX5QX4=;
+        b=c4p1+4NV8NlRzHFAx/uaoR2of/ipTcrRTAY9oJ5/Unn+O8Y3rY9sp4v8IGjx++3I4r
+         SQE/jrzc3GvToZgsexffViU0bU4gxhB4jn8e7r8Wgj6WZONFg9rHG7/EWTiD5LSQL1cN
+         sx7kAdf6ra1WKzU3T+FAT1AIJ/Gvb9jto+75QuGdepiFVzW7cxVS9a/m00DapVflZYfZ
+         pGXwNmTCmgzVEdYWTrQRc9ATICYARqOHfNurbxl7hAMXgD7EXjDO/M1pime+K5lzNEjQ
+         MsU2Whc+HCUIO9vMhpGT+tyPqd1m0tPAr9Jh985YurvzyyIr5rfD426v1/6+jMW+TeXp
+         QSBg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=qLQnD0O574PmqchHwylwIu1vZvsCOyk6uoC7Y035P2k=;
-        b=JWoWD5iAIYyCebRcBieiRlFtlRiZqZYWRTM/U4ovRMfIHTDte/qleOi3eTmdkLyJwW
-         S05u2HRaD+4KWW569sNP6QpjvKgF4524R67TaPd/COcSrNP6pF9KEjNAwcLTbqly5g//
-         Xsp/ExHH+2h7HQ1dANWJV6eYcMmLb1OJwahAE8ijNhE+dFhyNCR2zqW6vDu04kI87wQc
-         LlizAIPBq/ny9IJaQdYmmccoFwotGhxwk7hpB6KeJp0DBAJ96MQvmOSvuuQU1YKScGHM
-         rLapV9EEft4VTEUfAYQWeYfnFuNUK/Wn7p+3P0RbV8I8/Jaw5uAK0g6khH71NNVZzTvu
-         aInA==
-X-Gm-Message-State: AOAM531oHep8dx5XglBHF/Qtwp/7S9oW2QRntOmko89vaQxTY/Lr8X5C
-        vW24FMxdw47bxm4Z5g5/xmm2
-X-Google-Smtp-Source: ABdhPJy7OZY+IuFBCVarMJtkmyCdKUypcZIIyOiMzldBQTKxxQLcwNy30YZbhi5yU4EK+AAS9rs6Ug==
-X-Received: by 2002:a17:902:7103:b029:d1:e5e7:be75 with SMTP id a3-20020a1709027103b02900d1e5e7be75mr535859pll.79.1600154676753;
-        Tue, 15 Sep 2020 00:24:36 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=oBilyFEf2/Z1J1tQYW2nP7ZczzAuGj9cFol63jX5QX4=;
+        b=GrHbq1skvikSlXOfJGjIgZXUlsRaFT7LOn9yMj6BA296Y7rD9nLrglQ+3b1nzD1bn1
+         9lhZvmdinLWHxAn7EgSVfXroXJCDqo1kH4H3tIWQTBVudT/0gV3JwP+KAGH4JTYmj3sV
+         PqQu9IHT1C7UWpZ3e0R9/JIh1zXTA4eJASvc+PMZsVzhzA3576NyHctskAqhyiUrrOdx
+         F8HXx5lwHB5noNGnNZ3LFWZqj6qr3tBLidBQp2VaPXZcSh6V1erkSBLBvKjo5lItlboQ
+         SE/Vio6v2SMylF4LRNxkoQWkMmRtLHlw2rQ6iykPpRJyKCmH5inrsSkLZhe0v7LgJ1kx
+         rOuA==
+X-Gm-Message-State: AOAM531KEAz5iI3Niptaldx65lF65DKeVOeKGTk3oVjqlmhS5ALY4Ijb
+        XQqqzzy6YWbGdpb9DiszCxYz
+X-Google-Smtp-Source: ABdhPJzKMwHn18/aJgA+m+x05Z3G9Ii3hfInh23MjGpnxaaAD9SIavHD2LgB0dnAdxapI9FuMenKoA==
+X-Received: by 2002:a62:4e8a:0:b029:13c:1611:653b with SMTP id c132-20020a624e8a0000b029013c1611653bmr16134936pfb.13.1600154696590;
+        Tue, 15 Sep 2020 00:24:56 -0700 (PDT)
 Received: from localhost.localdomain ([103.59.133.81])
-        by smtp.googlemail.com with ESMTPSA id m24sm10701501pgn.44.2020.09.15.00.24.33
+        by smtp.googlemail.com with ESMTPSA id m24sm10701501pgn.44.2020.09.15.00.24.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2020 00:24:36 -0700 (PDT)
+        Tue, 15 Sep 2020 00:24:56 -0700 (PDT)
 From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org,
         agross@kernel.org, bjorn.andersson@linaro.org
@@ -63,51 +64,49 @@ Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, dmitry.baryshkov@linaro.org,
         tdas@codeaurora.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v2 0/5] Add CPUFreq support for SM8250 SoC
-Date:   Tue, 15 Sep 2020 12:54:18 +0530
-Message-Id: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
+Subject: [PATCH v2 5/5] cpufreq: qcom-hw: Add cpufreq support for SM8250 SoC
+Date:   Tue, 15 Sep 2020 12:54:23 +0530
+Message-Id: <20200915072423.18437-6-manivannan.sadhasivam@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
+References: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+SM8250 SoC uses EPSS block for carrying out the cpufreq duties. Hence, add
+support for it in the driver with relevant dev data.
 
-This series adds CPUFreq support for Qualcomm SM8250 SoC. The existing
-qcom-hw driver is reworked to support the EPSS block on this SoC which
-handles the CPUFreq duties.
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Reviewed-by: Amit Kucheria <amitk@kernel.org>
+Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+---
+ drivers/cpufreq/qcom-cpufreq-hw.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-The EPSS block supports additional features for which incremental patches
-will be submitted on top of this series!
-
-Thanks,
-Mani
-
-Changes in v2:
-
-* Dropped the regmap conversion patch
-* Used "qcom,cpufreq-epss" compatible and "epss_soc_data" for dev data
-* Switched to "of_device_get_match_data" API
-* Collected reviews from Amit, Viresh and Bjorn
-* Dropped patch [3/7] which got applied by Viresh
-
-Bjorn Andersson (1):
-  arm64: dts: qcom: sm8250: Add cpufreq hw node
-
-Manivannan Sadhasivam (4):
-  dt-bindings: cpufreq: cpufreq-qcom-hw: Document Qcom EPSS compatible
-  cpufreq: qcom-hw: Use devm_platform_ioremap_resource() to simplify
-    code
-  cpufreq: qcom-hw: Use of_device_get_match_data for offsets and row
-    size
-  cpufreq: qcom-hw: Add cpufreq support for SM8250 SoC
-
- .../bindings/cpufreq/cpufreq-qcom-hw.txt      |   2 +-
- arch/arm64/boot/dts/qcom/sm8250.dtsi          |  22 ++++
- drivers/cpufreq/qcom-cpufreq-hw.c             | 107 ++++++++++++------
- 3 files changed, 93 insertions(+), 38 deletions(-)
-
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index e3c46984a037..c485be839172 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -256,8 +256,17 @@ static const struct qcom_cpufreq_soc_data qcom_soc_data = {
+ 	.lut_row_size = 32,
+ };
+ 
++static const struct qcom_cpufreq_soc_data epss_soc_data = {
++	.reg_enable = 0x0,
++	.reg_freq_lut = 0x100,
++	.reg_volt_lut = 0x200,
++	.reg_perf_state = 0x320,
++	.lut_row_size = 4,
++};
++
+ static const struct of_device_id qcom_cpufreq_hw_match[] = {
+ 	{ .compatible = "qcom,cpufreq-hw", .data = &qcom_soc_data },
++	{ .compatible = "qcom,cpufreq-epss", .data = &epss_soc_data },
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
 -- 
 2.17.1
 
