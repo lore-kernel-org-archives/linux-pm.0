@@ -2,98 +2,133 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL
-	autolearn=no autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CBB4C43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:56:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7533DC433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:57:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1F59D20720
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:56:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 34F0921974
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:57:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="tfc56KAY"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="HBRJnVE0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727732AbgIOS4a (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 14:56:30 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47596 "EHLO
+        id S1727755AbgIOS5T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 14:57:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33234 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727812AbgIOSzg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 14:55:36 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 654A9C06174A
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 11:55:35 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id m5so4237582lfp.7
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 11:55:35 -0700 (PDT)
+        with ESMTP id S1727762AbgIORXI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:23:08 -0400
+Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9B068C061A28
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:11:03 -0700 (PDT)
+Received: by mail-pj1-x1044.google.com with SMTP id kk9so119686pjb.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:11:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=FXsyDbVr5yEsb37wNopfWhpCBZv90Q/bsc2OJ00Cmiw=;
-        b=tfc56KAYUnr6MuSg1LOpNOvk677yL0xfXUFKSEWmhSp0iLOCMpKRw24XQ/uXi5WH2z
-         OXnjyddTjvT93gML0OPEuCOCD0MFczZlHboO0q7qCzMEeYToXjrOWzuPv0Z677j//Pl5
-         0TAJ6WrdOacGo05o/EYFU8VA5o/XhZ6R+NKOjhCK2Yf4h2/4chJMF9OKQIxNcQ5b/xtl
-         /ldi1rAWLWHQV+0BJrKusQBj1XBYcXzZYgJBxwKLJ4LODVJAtyCZL9XC6lifrNvBrSMS
-         amFM3H5Wj2HpS9oS+Dzsyvd2F68bIP2iBDm3ygR7kI2yHXZe/rDD/AxJc/P5cdq0TLTb
-         g4Sg==
+        d=chromium.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=t80Xhl4ieaw4+4IDm2zgbCHUZGC+GFKM1u8bh3yil+k=;
+        b=HBRJnVE076xMyH+ZPFgWRMAbcqDlTLK3EKzvCzclTmiXZIsarEPBo/u/uCe/t2unaU
+         +BcFA1lMaJFc8LCsxwJ++J97q50ygi3uKm/L+OU/VkT2H0UXmbrVZpqyTTG13qlpgsPU
+         B1lUmGtcBzplMcrAwISvhhJpdamnXDblC94hw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=FXsyDbVr5yEsb37wNopfWhpCBZv90Q/bsc2OJ00Cmiw=;
-        b=QMnvUgOa8O8ECMeCvvJRD/CAm3w/lQL/jv+LVJp9BmrHP+I+MsK1YkVzuTf5qF6U7h
-         srdwcGm8GpmgjJ+bUGH+CRDpwnni4gosJUt0S/UGC/dWEXOXFgSTlcNJvsSETwNexOYX
-         pAs3De/wYDr5Xgs/chTXeIEARC0VZ+D16x2M+06kuBomwJWJ0aL9WjMihbHAma/lg6EF
-         DdyC+qzzz4+SjZKfOoUFFGHNTTlF9IQZs21MSO/4T2ErokXosPJOt/3tVrtGIOGh8Nr5
-         HN85fbdwUL0NiLF5ZomvOsaeZaZHbbXew9H1WSI9nkalrqctfVYDOgkOWHRh10vwSXSc
-         I3BA==
-X-Gm-Message-State: AOAM533LH6Pe1Hhz+TBu5rrDTIgWlvub8qvbgtWph1Ceem3vyjz68BBB
-        Q4t0NP0HVKvFfL5mcYQUQAEEvJY5ZO+6DWtqlACCQw==
-X-Google-Smtp-Source: ABdhPJxnBHvldJLq8O5w+u6tqm7YQBEdDP5mMvcqqzs9kVTAw3WbpW8xl0s4LUcUB7FkCx+1GKE8Unf8sXEaYt1KE6Q=
-X-Received: by 2002:a19:a41a:: with SMTP id q26mr6357544lfc.121.1600196133555;
- Tue, 15 Sep 2020 11:55:33 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=t80Xhl4ieaw4+4IDm2zgbCHUZGC+GFKM1u8bh3yil+k=;
+        b=H0eYbLGhuamQzUW3DH7D32Xzv+C/1CbJ1uAT5nA3RwJl99srzbfNsGb0fx/hX+DfLr
+         FrF7HnRVaOicI+ASp7vtF9XSAUhV7FVzaujTv09LloNuZ9hwCpHV1TfuO8+IpHMjO0u2
+         rWCiI+2tooENgu5C9S9Ry1N82eJBNwA4RhgeiRQsMOw6vtJc+gU4ptIS0RQQqpc6CqsF
+         AY13/SbzgZoKcBAJK4WhjUAkQ1Vaj/+R8RAyOSM8TITrKulVDZMqSjKKsuXQ8iPyqIkT
+         HqofI6FjIRd4xrwcK4M7CLAai5mzqW/aJS5kx38XyqTq8wiQshXTDqemx6T/MzLdPLsE
+         25zw==
+X-Gm-Message-State: AOAM533SqyqIR5bzWn2ihwbU0csIJ++uVYZBBXI8xmWaWl7ZB1JLdel4
+        7JdbL3Gots1N8/zJpcDvlMyHbg==
+X-Google-Smtp-Source: ABdhPJyOY9aSbKit2ivdA6JFIddmNJ8Von035R3JQswaFSKsJXehrc6lpg8VraygWmsTae8nE81gNA==
+X-Received: by 2002:a17:90a:b702:: with SMTP id l2mr363925pjr.82.1600189863016;
+        Tue, 15 Sep 2020 10:11:03 -0700 (PDT)
+Received: from localhost ([2620:15c:202:1:f693:9fff:fef4:e70a])
+        by smtp.gmail.com with ESMTPSA id a20sm13834008pfa.59.2020.09.15.10.11.02
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 15 Sep 2020 10:11:02 -0700 (PDT)
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Taniya Das <tdas@codeaurora.org>,
+        linux-arm-msm@vger.kernel.org,
+        Douglas Anderson <dianders@chromium.org>,
+        Matthias Kaehlcke <mka@chromium.org>
+Subject: [PATCH] cpufreq: qcom: Don't add frequencies without an OPP
+Date:   Tue, 15 Sep 2020 10:10:54 -0700
+Message-Id: <20200915101007.1.Iebcd373535de8eb0aa304ad22b062a5bbc88a665@changeid>
+X-Mailer: git-send-email 2.28.0.618.gf4bc123cb7-goog
 MIME-Version: 1.0
-References: <20200915172658.1432732-1-rkir@google.com> <20200915174643.GT14436@zn.tnic>
- <CAOGAQepp_1QXrNAAXbLpW8qrujfdszfU2rMoh804wKK-Ja66Yw@mail.gmail.com>
- <20200915182730.GW14436@zn.tnic> <CAOGAQeqhKS48Kd8W4y13ATT3m+nJSksF_U1SJ=SBrOZFrDq9Nw@mail.gmail.com>
- <20200915185210.GY14436@zn.tnic>
-In-Reply-To: <20200915185210.GY14436@zn.tnic>
-From:   Roman Kiryanov <rkir@google.com>
-Date:   Tue, 15 Sep 2020 11:55:22 -0700
-Message-ID: <CAOGAQepHV=7Xk4Xw4vw4+56NhDDvEQ+sYrRr-rHYLUbH_oRUmw@mail.gmail.com>
-Subject: Re: [PATCH] arch: x86: power: cpu: init %gs before
- __restore_processor_state (clang)
-To:     Borislav Petkov <bp@alien8.de>
-Cc:     rjw@rjwysocki.net, pavel@ucw.cz,
-        Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
-        x86@kernel.org, linux-pm@vger.kernel.org,
-        Greg KH <gregkh@linuxfoundation.org>,
-        Nick Desaulniers <ndesaulniers@google.com>,
-        Alistair Delva <adelva@google.com>,
-        Haitao Shan <hshan@google.com>,
-        lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 15, 2020 at 11:52 AM Borislav Petkov <bp@alien8.de> wrote:
->
-> On Tue, Sep 15, 2020 at 11:36:13AM -0700, Roman Kiryanov wrote:
-> > This is fair. Unfortunately I am not an x86 asm expert. I expect the proper
-> > fix should land into arch/x86/kernel/acpi/wakeup_64.S to init %gs
-> > (maybe some more registers) before "jmp restore_processor_state".
->
-> ... because "LLVM appears to be inlining functions with stack protectors
-> into functions compiled with -fno-stack-protector" and now the *kernel*
-> needs to init %gs?
->
-> How about LLVM stops doing those wrong inlining decisions?
+The driver currently adds all frequencies from the hardware LUT to
+the cpufreq table, regardless of whether the corresponding OPP
+exists. This prevents devices from disabling certain OPPs through
+the device tree and can result in CPU frequencies for which the
+interconnect bandwidth can't be adjusted. Only add frequencies
+with an OPP entry.
 
-This will remove the issue for a while until clang/gcc/other decides to use
-%gs for other purposes before the kernel initializes it.
+Fixes: 55538fbc79e9 ("cpufreq: qcom: Read voltage LUT and populate OPP")
+Signed-off-by: Matthias Kaehlcke <mka@chromium.org>
+---
 
-Regards,
-Roman.
+ drivers/cpufreq/qcom-cpufreq-hw.c | 21 +++++++++++++++------
+ 1 file changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
+index 3fb044b907a8..47b7d394d2ab 100644
+--- a/drivers/cpufreq/qcom-cpufreq-hw.c
++++ b/drivers/cpufreq/qcom-cpufreq-hw.c
+@@ -177,10 +177,15 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 			freq = cpu_hw_rate / 1000;
+ 
+ 		if (freq != prev_freq && core_count != LUT_TURBO_IND) {
+-			table[i].frequency = freq;
+-			qcom_cpufreq_update_opp(cpu_dev, freq, volt);
+-			dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
++			if (!qcom_cpufreq_update_opp(cpu_dev, freq, volt)) {
++				table[i].frequency = freq;
++				dev_dbg(cpu_dev, "index=%d freq=%d, core_count %d\n", i,
+ 				freq, core_count);
++			} else {
++				dev_warn(cpu_dev, "failed to update OPP for freq=%d\n", freq);
++				table[i].frequency = CPUFREQ_ENTRY_INVALID;
++			}
++
+ 		} else if (core_count == LUT_TURBO_IND) {
+ 			table[i].frequency = CPUFREQ_ENTRY_INVALID;
+ 		}
+@@ -197,9 +202,13 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
+ 			 * as the boost frequency
+ 			 */
+ 			if (prev->frequency == CPUFREQ_ENTRY_INVALID) {
+-				prev->frequency = prev_freq;
+-				prev->flags = CPUFREQ_BOOST_FREQ;
+-				qcom_cpufreq_update_opp(cpu_dev, prev_freq, volt);
++				if (!qcom_cpufreq_update_opp(cpu_dev, prev_freq, volt)) {
++					prev->frequency = prev_freq;
++					prev->flags = CPUFREQ_BOOST_FREQ;
++				} else {
++					dev_warn(cpu_dev, "failed to update OPP for freq=%d\n",
++						 freq);
++				}
+ 			}
+ 
+ 			break;
+-- 
+2.28.0.618.gf4bc123cb7-goog
+
