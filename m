@@ -2,102 +2,79 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F36A9C43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:49:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 72DA9C43461
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:52:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B424321974
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:49:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 32A15206E6
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 18:52:34 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="UDSiHR+L"
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="RSy11l4R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727755AbgIOSsy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 14:48:54 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33320 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727888AbgIOR1G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:27:06 -0400
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4D904C061221
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:24:46 -0700 (PDT)
-Received: by mail-pf1-x431.google.com with SMTP id o68so2359697pfg.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:24:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=Y1pACzzdEBRjHi4rSdwVdVaD3WaiuT67R2deRiZ6OMY=;
-        b=UDSiHR+LAP+ogYXhBbajpDwo3AARYaSAAgnUE+8DCeEG3/tj1TtKrcUCeH3dGJ2P/f
-         gBsXNgt3HBm+BnT+GSAsh0qVMWocPQCnyuhgrCVbESLn7fpGP5upx1nascFeJO/+snp8
-         ErYaOljNvSq0Vk2IyJ3U9sqTxiaECnG5Oudk4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=Y1pACzzdEBRjHi4rSdwVdVaD3WaiuT67R2deRiZ6OMY=;
-        b=eqfgre3ZvosRrQpEm6kQks4TfX83zOkXPMPsQC4Tgh48sP9xozebA/iXmvktO3Pbex
-         RRGjHK+Vz+O9A82tsxZJtTZe3mCSoqkBnPmB0ivD3SZ8r+XxZiW9xMAkxypgG2Pf2NVx
-         LpiumLuazQz5LDEa3w+RjjldFkD4Ze4hw2Az8gPKdLuAau35Uwm0kNJGeXZpVr6e+FOw
-         2/x4h+m3mDBKrCJUUx4gzKxdopOEtK7OfstX4XaVNgky/2RazCOm6AvSuCLmQI9etZEN
-         XBaQuMNaI+/8GQFMBe0ihAtPOSwbM+AibO6/r2smbpd2ie9NnrqARNBzdY4zvIT48nNK
-         fRbQ==
-X-Gm-Message-State: AOAM533pYZ01+M4jJOiYLUu3ggd9z0bE5PCDRpV3wsgEe81xmBWNN0xK
-        /19icjftAPqlDaOBHsr107QcSA==
-X-Google-Smtp-Source: ABdhPJxzIIZ3OEGJAXBsqEGT7Z5/CBoh2wSey9gTIyODiuKq2azSlSxgY08qj5qNugi92JuP7g4Glw==
-X-Received: by 2002:a62:6845:0:b029:13e:dcd:75bd with SMTP id d66-20020a6268450000b029013e0dcd75bdmr18840660pfc.12.1600190685583;
-        Tue, 15 Sep 2020 10:24:45 -0700 (PDT)
-Received: from localhost ([2620:15c:202:1:f693:9fff:fef4:e70a])
-        by smtp.gmail.com with ESMTPSA id f6sm14254540pfq.82.2020.09.15.10.24.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 15 Sep 2020 10:24:45 -0700 (PDT)
-Date:   Tue, 15 Sep 2020 10:24:44 -0700
-From:   Matthias Kaehlcke <mka@chromium.org>
-To:     Rajendra Nayak <rnayak@codeaurora.org>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        Doug Anderson <dianders@chromium.org>,
-        linux-pm@vger.kernel.org,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Javi Merino <javi.merino@kernel.org>
-Subject: Re: is 'dynamic-power-coefficient' expected to be based on 'real'
- power measurements?
-Message-ID: <20200915172444.GA2771744@google.com>
-References: <248bb01e-1746-c84c-78c4-3cf7d2541a70@codeaurora.org>
+        id S1727653AbgIOSwY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 14:52:24 -0400
+Received: from mail.skyhub.de ([5.9.137.197]:57524 "EHLO mail.skyhub.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727729AbgIOSwT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Sep 2020 14:52:19 -0400
+Received: from zn.tnic (p200300ec2f0e42009474dca2b756bdd4.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:4200:9474:dca2:b756:bdd4])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 460DC1EC00F4;
+        Tue, 15 Sep 2020 20:52:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1600195936;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=cKYB52P8O6386b7hXIPyVtrVyn81imJhI74svwiZIl0=;
+        b=RSy11l4ReWGZA+4hyM6z75EeGcglgNjRATmOcpgFHQ1ChMBtfSiIHPLtokKTom54+W5hku
+        p70V3gwFqLNKIzTzQ+2Cw2mKOEtweNedhnnQBqdO7I0fJFwcyA37AzboylBtxT5yv2oBHE
+        LpzQV6KsoU7oe/MSv05T1uwENZyROcA=
+Date:   Tue, 15 Sep 2020 20:52:10 +0200
+From:   Borislav Petkov <bp@alien8.de>
+To:     Roman Kiryanov <rkir@google.com>
+Cc:     rjw@rjwysocki.net, pavel@ucw.cz,
+        Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+        x86@kernel.org, linux-pm@vger.kernel.org,
+        Greg KH <gregkh@linuxfoundation.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Alistair Delva <adelva@google.com>,
+        Haitao Shan <hshan@google.com>,
+        lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] arch: x86: power: cpu: init %gs before
+ __restore_processor_state (clang)
+Message-ID: <20200915185210.GY14436@zn.tnic>
+References: <20200915172658.1432732-1-rkir@google.com>
+ <20200915174643.GT14436@zn.tnic>
+ <CAOGAQepp_1QXrNAAXbLpW8qrujfdszfU2rMoh804wKK-Ja66Yw@mail.gmail.com>
+ <20200915182730.GW14436@zn.tnic>
+ <CAOGAQeqhKS48Kd8W4y13ATT3m+nJSksF_U1SJ=SBrOZFrDq9Nw@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <248bb01e-1746-c84c-78c4-3cf7d2541a70@codeaurora.org>
+In-Reply-To: <CAOGAQeqhKS48Kd8W4y13ATT3m+nJSksF_U1SJ=SBrOZFrDq9Nw@mail.gmail.com>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-+Thermal folks
+On Tue, Sep 15, 2020 at 11:36:13AM -0700, Roman Kiryanov wrote:
+> This is fair. Unfortunately I am not an x86 asm expert. I expect the proper
+> fix should land into arch/x86/kernel/acpi/wakeup_64.S to init %gs
+> (maybe some more registers) before "jmp restore_processor_state".
 
-Hi Rajendra,
+... because "LLVM appears to be inlining functions with stack protectors
+into functions compiled with -fno-stack-protector" and now the *kernel*
+needs to init %gs?
 
-On Tue, Sep 15, 2020 at 11:14:00AM +0530, Rajendra Nayak wrote:
-> Hi Rob,
-> 
-> There has been some discussions on another thread [1] around the DPC (dynamic-power-coefficient) values
-> for CPU's being relative vs absolute (based on real power) and should they be used to derive 'real' power
-> at various OPPs in order to calculate things like 'sustainable-power' for thermal zones.
-> I believe relative values work perfectly fine for scheduling decisions, but with others using this for
-> calculating power values in mW, is there a need to document the property as something that *has* to be
-> based on real power measurements?
+How about LLVM stops doing those wrong inlining decisions?
 
-Relative values may work for scheduling decisions, but not for thermal
-management with the power allocator, at least not when CPU cooling devices
-are combined with others that specify their power consumption in absolute
-values. Such a configuration should be supported IMO.
+-- 
+Regards/Gruss,
+    Boris.
 
-Thanks
-
-Matthias
+https://people.kernel.org/tglx/notes-about-netiquette
