@@ -7,55 +7,55 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D1EBDC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:25:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BF66C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:27:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 92FD7216C4
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:25:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DAA720897
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 07:27:33 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rkVhHCR4"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="F9na49fU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726216AbgIOHZd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 03:25:33 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53210 "EHLO
+        id S1726035AbgIOH13 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 03:27:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53178 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726089AbgIOHY4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 03:24:56 -0400
-Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 376BDC06178B
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:53 -0700 (PDT)
-Received: by mail-pj1-x1044.google.com with SMTP id o16so1310096pjr.2
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:53 -0700 (PDT)
+        with ESMTP id S1726210AbgIOHYq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 03:24:46 -0400
+Received: from mail-pj1-x1043.google.com (mail-pj1-x1043.google.com [IPv6:2607:f8b0:4864:20::1043])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0AE86C061352
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:45 -0700 (PDT)
+Received: by mail-pj1-x1043.google.com with SMTP id kk9so1275761pjb.2
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 00:24:45 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=gpBy6S4s7kcqg91coRuOqVZPYknGPcfHwImzSvZky/w=;
-        b=rkVhHCR4kM3CLGYYwa7mLwKZ7acSuRX9dSYZMywqXERfG6jsTW3/zhDnMznY9L6iUA
-         e5Y5I3hKI2D3XwJC1lc34sQsWhcxgiqxR5o041E9O2+XY3sXQ4jXQyu7AVeDburLdWGs
-         PRjwD7BtOwOKxkUrwLUGYhANBf3a1ET4PbdB20ORbt/T0i9ivMS5DwhPt9V7I/zdIzlw
-         RX19bVyBklQCr+UOBgs81zFNYRpqXAOpuy02j5iUi8acSLJl/Y0rhM+P2FT7nvSD/0V9
-         QiL7rDtvk2VU6ipDP5TP1k1hJFfKODdjdP8b89c0Z8FZzlMLXl2kjyT0Kh3R+bftwRrT
-         qpuw==
+        bh=Y+BrNXRxv8fGST2O/AL4jHM4ZP3mKD824W/Sr7p4Ymk=;
+        b=F9na49fUZEvPUjtIioDeLh/fLkeokofNAIVa92pJv8M4U2GBo9NkQM9n1ytkKPwGzi
+         n+TipsGODY/oYhSJXn6gEPMTkYVQrmcSzb0K6MzAyXpBrFWL5PUduS9uTKL4qLhkC/jk
+         OmpgMo8f/QhGw8OURR+u5C+s/GyPQvhoOpaNPcGIQRU7Aa0drafj6OSxeyzDFC+v8zHc
+         Iwja8TeP5dM7B6pLzwp6xPuABXWUUMEmaPZ84z9WhCSvVZX2hZQ/yt7U8t5MgUxbfXqs
+         Mr2S+fm1RdbpVID2aaXf1sMiM3pD4gcDVXYB+6tRN/o7KnJjAl6YtbiOhDKao7iyobB/
+         dxrQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=gpBy6S4s7kcqg91coRuOqVZPYknGPcfHwImzSvZky/w=;
-        b=gf7GV7Ht07kGFKi5NYRieAlCIUzsLOwb9XLIh0Xn/ENthISSyrXTf9MDUHwu6Hjphh
-         agSD8JRN+cYZYwJFjMqAlnXwnz4c7IqLMrVq1kW6fHi6lInVK274ybK/Wu/S6rktRs1d
-         /UsXZgH0+W7p8j3L8MTT8wmhmdD2NcmPNt4KJM2BrURrNGx9fvXwWK6Hqfz0UYfQP8bB
-         Q3p9fbaIx0Nyw1YyijusOI60QndNSPM3+2HdzEWyiuN0bZyrz9qkEV/ctlS0gU+WMRjg
-         y5RdZDKSeYAMCQzz0xAUO2xBlMGL2tL88sgkykFPRKY2e/Zbk8V/Nt6m/LZWOmrNM8eG
-         IVPA==
-X-Gm-Message-State: AOAM532jeE3K2ZU8PRpBFKxfMFSXn95pPYNQVOVjuHu1Wjx47zdzYH67
-        80SN0JXTMI73Fm0D0DumH77L
-X-Google-Smtp-Source: ABdhPJwGL7MIRopWLQcIX1Qq5ev2qmGInH5AT0f5rXLvkirGfC2WU1Rv1kBELxg1NriS6gJj6AeeSg==
-X-Received: by 2002:a17:90b:289:: with SMTP id az9mr3003236pjb.31.1600154692664;
-        Tue, 15 Sep 2020 00:24:52 -0700 (PDT)
+        bh=Y+BrNXRxv8fGST2O/AL4jHM4ZP3mKD824W/Sr7p4Ymk=;
+        b=FnXAcklrGU64vD1bdMMURoewk6Clu1JKPSuyAGip2lphMJCqqyPD/CuxWGM0VCiN6n
+         cbC9BI5h+BHvFU5KZCRKdCnfs05x2pGIyxlK1LDvhwkw+RdCc+qr6C13hMqj4davRat6
+         Xiwh15P3cqUKv1FTeo4Ykn75hXcHGd7LOu1VqE0N5zc+eWQFkH+92erj3HDmKFsLUsRi
+         GdsvnRdH/PgGXa9PcE6oxFmUpMC/0vnFxO4yKC5IBDNVJAQw7bmGEDn4/sAdkGDdmxl5
+         rlX9Yjn4LJpJHAy0/0Pf6QFjzIVmXQvNZXI4ptlTA3o42zsNnvOd/tcw0ZO9P2TBPq4r
+         8gAA==
+X-Gm-Message-State: AOAM530/HP+LkM0kxF6jwNIYGk8NCN9e7JhQH305g3sajoqjYmE0mtAG
+        GfCrB5W7AZOoCf417yxxNk87
+X-Google-Smtp-Source: ABdhPJwogN5gW1S+CQKFPlA09s/TLUgaqlXK1CWyATAmwJH5fRmPj8m7nhWH/2p7pUiSs0FKRU7dAg==
+X-Received: by 2002:a17:90b:1741:: with SMTP id jf1mr2890833pjb.164.1600154684566;
+        Tue, 15 Sep 2020 00:24:44 -0700 (PDT)
 Received: from localhost.localdomain ([103.59.133.81])
-        by smtp.googlemail.com with ESMTPSA id m24sm10701501pgn.44.2020.09.15.00.24.48
+        by smtp.googlemail.com with ESMTPSA id m24sm10701501pgn.44.2020.09.15.00.24.40
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2020 00:24:52 -0700 (PDT)
+        Tue, 15 Sep 2020 00:24:44 -0700 (PDT)
 From:   Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, robh+dt@kernel.org,
         agross@kernel.org, bjorn.andersson@linaro.org
@@ -64,9 +64,9 @@ Cc:     amitk@kernel.org, linux-pm@vger.kernel.org,
         linux-arm-msm@vger.kernel.org, dmitry.baryshkov@linaro.org,
         tdas@codeaurora.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Subject: [PATCH v2 4/5] cpufreq: qcom-hw: Use of_device_get_match_data for offsets and row size
-Date:   Tue, 15 Sep 2020 12:54:22 +0530
-Message-Id: <20200915072423.18437-5-manivannan.sadhasivam@linaro.org>
+Subject: [PATCH v2 2/5] arm64: dts: qcom: sm8250: Add cpufreq hw node
+Date:   Tue, 15 Sep 2020 12:54:20 +0530
+Message-Id: <20200915072423.18437-3-manivannan.sadhasivam@linaro.org>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
 References: <20200915072423.18437-1-manivannan.sadhasivam@linaro.org>
@@ -75,227 +75,108 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-For preparing the driver to handle further SoC revisions, let's use the
-of_device_get_match_data() API for getting the device specific offsets
-and row size instead of defining them globally.
+From: Bjorn Andersson <bjorn.andersson@linaro.org>
 
+Add cpufreq HW device node to scale 4-Silver/3-Gold/1-Gold+ cores
+on SM8250 SoCs.
+
+Signed-off-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Reviewed-by: Amit Kucheria <amitk@kernel.org>
 ---
- drivers/cpufreq/qcom-cpufreq-hw.c | 89 ++++++++++++++++++++-----------
- 1 file changed, 59 insertions(+), 30 deletions(-)
+ arch/arm64/boot/dts/qcom/sm8250.dtsi | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
 
-diff --git a/drivers/cpufreq/qcom-cpufreq-hw.c b/drivers/cpufreq/qcom-cpufreq-hw.c
-index 8a303783927f..e3c46984a037 100644
---- a/drivers/cpufreq/qcom-cpufreq-hw.c
-+++ b/drivers/cpufreq/qcom-cpufreq-hw.c
-@@ -19,15 +19,21 @@
- #define LUT_L_VAL			GENMASK(7, 0)
- #define LUT_CORE_COUNT			GENMASK(18, 16)
- #define LUT_VOLT			GENMASK(11, 0)
--#define LUT_ROW_SIZE			32
- #define CLK_HW_DIV			2
- #define LUT_TURBO_IND			1
- 
--/* Register offsets */
--#define REG_ENABLE			0x0
--#define REG_FREQ_LUT			0x110
--#define REG_VOLT_LUT			0x114
--#define REG_PERF_STATE			0x920
-+struct qcom_cpufreq_soc_data {
-+	u32 reg_enable;
-+	u32 reg_freq_lut;
-+	u32 reg_volt_lut;
-+	u32 reg_perf_state;
-+	u8 lut_row_size;
-+};
+diff --git a/arch/arm64/boot/dts/qcom/sm8250.dtsi b/arch/arm64/boot/dts/qcom/sm8250.dtsi
+index e7d139e1a6ce..7eb0eda37b26 100644
+--- a/arch/arm64/boot/dts/qcom/sm8250.dtsi
++++ b/arch/arm64/boot/dts/qcom/sm8250.dtsi
+@@ -87,6 +87,7 @@
+ 			reg = <0x0 0x0>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_0>;
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			L2_0: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -102,6 +103,7 @@
+ 			reg = <0x0 0x100>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_100>;
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			L2_100: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -114,6 +116,7 @@
+ 			reg = <0x0 0x200>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_200>;
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			L2_200: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -126,6 +129,7 @@
+ 			reg = <0x0 0x300>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_300>;
++			qcom,freq-domain = <&cpufreq_hw 0>;
+ 			L2_300: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -138,6 +142,7 @@
+ 			reg = <0x0 0x400>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_400>;
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			L2_400: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -150,6 +155,7 @@
+ 			reg = <0x0 0x500>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_500>;
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			L2_500: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -163,6 +169,7 @@
+ 			reg = <0x0 0x600>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_600>;
++			qcom,freq-domain = <&cpufreq_hw 1>;
+ 			L2_600: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -175,6 +182,7 @@
+ 			reg = <0x0 0x700>;
+ 			enable-method = "psci";
+ 			next-level-cache = <&L2_700>;
++			qcom,freq-domain = <&cpufreq_hw 2>;
+ 			L2_700: l2-cache {
+ 			      compatible = "cache";
+ 			      next-level-cache = <&L3_0>;
+@@ -2076,6 +2084,20 @@
+ 				};
+ 			};
+ 		};
 +
-+struct qcom_cpufreq_data {
-+	void __iomem *base;
-+	const struct qcom_cpufreq_soc_data *soc_data;
-+};
- 
- static unsigned long cpu_hw_rate, xo_rate;
- static bool icc_scaling_enabled;
-@@ -76,10 +82,11 @@ static int qcom_cpufreq_update_opp(struct device *cpu_dev,
- static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 					unsigned int index)
- {
--	void __iomem *perf_state_reg = policy->driver_data;
-+	struct qcom_cpufreq_data *data = policy->driver_data;
-+	const struct qcom_cpufreq_soc_data *soc_data = data->soc_data;
- 	unsigned long freq = policy->freq_table[index].frequency;
- 
--	writel_relaxed(index, perf_state_reg);
-+	writel_relaxed(index, data->base + soc_data->reg_perf_state);
- 
- 	if (icc_scaling_enabled)
- 		qcom_cpufreq_set_bw(policy, freq);
-@@ -91,7 +98,8 @@ static int qcom_cpufreq_hw_target_index(struct cpufreq_policy *policy,
- 
- static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
- {
--	void __iomem *perf_state_reg;
-+	struct qcom_cpufreq_data *data;
-+	const struct qcom_cpufreq_soc_data *soc_data;
- 	struct cpufreq_policy *policy;
- 	unsigned int index;
- 
-@@ -99,9 +107,10 @@ static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
- 	if (!policy)
- 		return 0;
- 
--	perf_state_reg = policy->driver_data;
-+	data = policy->driver_data;
-+	soc_data = data->soc_data;
- 
--	index = readl_relaxed(perf_state_reg);
-+	index = readl_relaxed(data->base + soc_data->reg_perf_state);
- 	index = min(index, LUT_MAX_ENTRIES - 1);
- 
- 	return policy->freq_table[index].frequency;
-@@ -110,12 +119,13 @@ static unsigned int qcom_cpufreq_hw_get(unsigned int cpu)
- static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
- 						unsigned int target_freq)
- {
--	void __iomem *perf_state_reg = policy->driver_data;
-+	struct qcom_cpufreq_data *data = policy->driver_data;
-+	const struct qcom_cpufreq_soc_data *soc_data = data->soc_data;
- 	unsigned int index;
- 	unsigned long freq;
- 
- 	index = policy->cached_resolved_idx;
--	writel_relaxed(index, perf_state_reg);
-+	writel_relaxed(index, data->base + soc_data->reg_perf_state);
- 
- 	freq = policy->freq_table[index].frequency;
- 	arch_set_freq_scale(policy->related_cpus, freq,
-@@ -125,8 +135,7 @@ static unsigned int qcom_cpufreq_hw_fast_switch(struct cpufreq_policy *policy,
- }
- 
- static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
--				    struct cpufreq_policy *policy,
--				    void __iomem *base)
-+				    struct cpufreq_policy *policy)
- {
- 	u32 data, src, lval, i, core_count, prev_freq = 0, freq;
- 	u32 volt;
-@@ -134,6 +143,8 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
- 	struct dev_pm_opp *opp;
- 	unsigned long rate;
- 	int ret;
-+	struct qcom_cpufreq_data *drv_data = policy->driver_data;
-+	const struct qcom_cpufreq_soc_data *soc_data = drv_data->soc_data;
- 
- 	table = kcalloc(LUT_MAX_ENTRIES + 1, sizeof(*table), GFP_KERNEL);
- 	if (!table)
-@@ -160,14 +171,14 @@ static int qcom_cpufreq_hw_read_lut(struct device *cpu_dev,
- 	}
- 
- 	for (i = 0; i < LUT_MAX_ENTRIES; i++) {
--		data = readl_relaxed(base + REG_FREQ_LUT +
--				      i * LUT_ROW_SIZE);
-+		data = readl_relaxed(drv_data->base + soc_data->reg_freq_lut +
-+				      i * soc_data->lut_row_size);
- 		src = FIELD_GET(LUT_SRC, data);
- 		lval = FIELD_GET(LUT_L_VAL, data);
- 		core_count = FIELD_GET(LUT_CORE_COUNT, data);
- 
--		data = readl_relaxed(base + REG_VOLT_LUT +
--				      i * LUT_ROW_SIZE);
-+		data = readl_relaxed(drv_data->base + soc_data->reg_volt_lut +
-+				      i * soc_data->lut_row_size);
- 		volt = FIELD_GET(LUT_VOLT, data) * 1000;
- 
- 		if (src)
-@@ -237,6 +248,20 @@ static void qcom_get_related_cpus(int index, struct cpumask *m)
- 	}
- }
- 
-+static const struct qcom_cpufreq_soc_data qcom_soc_data = {
-+	.reg_enable = 0x0,
-+	.reg_freq_lut = 0x110,
-+	.reg_volt_lut = 0x114,
-+	.reg_perf_state = 0x920,
-+	.lut_row_size = 32,
-+};
++		cpufreq_hw: cpufreq@18591000 {
++			compatible = "qcom,sm8250-cpufreq-epss", "qcom,cpufreq-epss";
++			reg = <0 0x18591000 0 0x1000>,
++			      <0 0x18592000 0 0x1000>,
++			      <0 0x18593000 0 0x1000>;
++			reg-names = "freq-domain0", "freq-domain1",
++				    "freq-domain2";
 +
-+static const struct of_device_id qcom_cpufreq_hw_match[] = {
-+	{ .compatible = "qcom,cpufreq-hw", .data = &qcom_soc_data },
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
++			clocks = <&rpmhcc RPMH_CXO_CLK>, <&gcc GPLL0>;
++			clock-names = "xo", "alternate";
 +
- static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct platform_device *pdev = cpufreq_get_driver_data();
-@@ -245,6 +270,7 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	struct device_node *cpu_np;
- 	struct device *cpu_dev;
- 	void __iomem *base;
-+	struct qcom_cpufreq_data *data;
- 	int ret, index;
++			#freq-domain-cells = <1>;
++		};
+ 	};
  
- 	cpu_dev = get_cpu_device(policy->cpu);
-@@ -270,8 +296,17 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 	if (IS_ERR(base))
- 		return PTR_ERR(base);
- 
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		ret = -ENOMEM;
-+		goto error;
-+	}
-+
-+	data->soc_data = of_device_get_match_data(&pdev->dev);
-+	data->base = base;
-+
- 	/* HW should be in enabled state to proceed */
--	if (!(readl_relaxed(base + REG_ENABLE) & 0x1)) {
-+	if (!(readl_relaxed(base + data->soc_data->reg_enable) & 0x1)) {
- 		dev_err(dev, "Domain-%d cpufreq hardware not enabled\n", index);
- 		ret = -ENODEV;
- 		goto error;
-@@ -284,9 +319,9 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- 		goto error;
- 	}
- 
--	policy->driver_data = base + REG_PERF_STATE;
-+	policy->driver_data = data;
- 
--	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy, base);
-+	ret = qcom_cpufreq_hw_read_lut(cpu_dev, policy);
- 	if (ret) {
- 		dev_err(dev, "Domain-%d failed to read LUT\n", index);
- 		goto error;
-@@ -310,13 +345,13 @@ static int qcom_cpufreq_hw_cpu_init(struct cpufreq_policy *policy)
- static int qcom_cpufreq_hw_cpu_exit(struct cpufreq_policy *policy)
- {
- 	struct device *cpu_dev = get_cpu_device(policy->cpu);
--	void __iomem *base = policy->driver_data - REG_PERF_STATE;
-+	struct qcom_cpufreq_data *data = policy->driver_data;
- 	struct platform_device *pdev = cpufreq_get_driver_data();
- 
- 	dev_pm_opp_remove_all_dynamic(cpu_dev);
- 	dev_pm_opp_of_cpumask_remove_table(policy->related_cpus);
- 	kfree(policy->freq_table);
--	devm_iounmap(&pdev->dev, base);
-+	devm_iounmap(&pdev->dev, data->base);
- 
- 	return 0;
- }
-@@ -386,12 +421,6 @@ static int qcom_cpufreq_hw_driver_remove(struct platform_device *pdev)
- 	return cpufreq_unregister_driver(&cpufreq_qcom_hw_driver);
- }
- 
--static const struct of_device_id qcom_cpufreq_hw_match[] = {
--	{ .compatible = "qcom,cpufreq-hw" },
--	{}
--};
--MODULE_DEVICE_TABLE(of, qcom_cpufreq_hw_match);
--
- static struct platform_driver qcom_cpufreq_hw_driver = {
- 	.probe = qcom_cpufreq_hw_driver_probe,
- 	.remove = qcom_cpufreq_hw_driver_remove,
+ 	timer {
 -- 
 2.17.1
 
