@@ -2,46 +2,49 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADABEC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 79F29C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 865CE206BE
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4DF18206BE
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727671AbgIOWhQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 18:37:16 -0400
+        id S1727678AbgIOWhX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 18:37:23 -0400
 Received: from mga18.intel.com ([134.134.136.126]:55540 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727523AbgIOWhK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Sep 2020 18:37:10 -0400
-IronPort-SDR: H6iVlHaIwoCczI9bp99IJhUVZbYPh0k9oqgw+9UguwjxD9xf3pv9siRy6BVy25o3NF0xkp75Lw
- xSBK4NZ1bQiw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9745"; a="147112835"
+        id S1727673AbgIOWhQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Sep 2020 18:37:16 -0400
+IronPort-SDR: 4vUcubuTWcJIkP6aYAZY2JK1nDaKvsKzUZGtTw+TO7SF21mh4L7YgxASK9D/LziAqKmIgQSCR8
+ QUyFRYQ2srfQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9745"; a="147112837"
 X-IronPort-AV: E=Sophos;i="5.76,430,1592895600"; 
-   d="scan'208";a="147112835"
+   d="scan'208";a="147112837"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
   by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2020 15:37:07 -0700
-IronPort-SDR: NJYyqeCrAUCFY3EejBDrbgMu0QOJ9FBm3a0Vpp3JOZzQsLYA1VtP0YGJeEf+W79CVKO6nvUhU2
- Wm59Dmc3AtHA==
+IronPort-SDR: iq7oEeUhRErSHEFmoS1mtG6v8k484Mll85A5XWUdvLJoIQ/d0XYK5KKviH54zEvA6lzW29tjFP
+ 7UW+SNchzZXg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.76,430,1592895600"; 
-   d="scan'208";a="306813333"
+   d="scan'208";a="306813339"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
   by orsmga006.jf.intel.com with ESMTP; 15 Sep 2020 15:37:07 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: thermal: int340x: New notifications for INT340X thermal
-Date:   Tue, 15 Sep 2020 15:36:47 -0700
-Message-Id: <20200915223650.406046-1-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 2/3] thermal: core: Add new event for sending keep alive notifications
+Date:   Tue, 15 Sep 2020 15:36:49 -0700
+Message-Id: <20200915223650.406046-3-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20200915223650.406046-1-srinivas.pandruvada@linux.intel.com>
+References: <20200915223650.406046-1-srinivas.pandruvada@linux.intel.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
@@ -49,18 +52,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series contains notifications to user space using currently
-used mechanism in these drivers. 
+This event is sent by the platform firmware to confirm that
+user space thermal solution is alive. The response to this event
+from the user space thermal solution is platform specific.
 
-Srinivas Pandruvada (3):
-  thermal: int340x: Provide notification for OEM variable change
-  thermal: core: Add new event for sending keep alive notifications
-  thermal: int340x: Add keep alive response method
+Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+---
+ include/linux/thermal.h | 1 +
+ 1 file changed, 1 insertion(+)
 
- .../intel/int340x_thermal/int3400_thermal.c   | 51 +++++++++++++++----
- include/linux/thermal.h                       |  1 +
- 2 files changed, 41 insertions(+), 11 deletions(-)
-
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index 42ef807e5d84..42b69d4072a4 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -55,6 +55,7 @@ enum thermal_notify_event {
+ 	THERMAL_DEVICE_UP, /* Thermal device is up after a down event */
+ 	THERMAL_DEVICE_POWER_CAPABILITY_CHANGED, /* power capability changed */
+ 	THERMAL_TABLE_CHANGED, /* Thermal table(s) changed */
++	THERMAL_EVENT_KEEP_ALIVE, /* Request for user space handler to respond */
+ };
+ 
+ struct thermal_zone_device_ops {
 -- 
 2.25.4
 
