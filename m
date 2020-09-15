@@ -2,122 +2,96 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_IN_DEF_DKIM_WL
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AEEDAC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:57:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DA9EBC43461
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:58:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5AA6D2193E
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:57:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8A25F20936
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:58:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="q10yfnNW"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="gOM8yiiL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727996AbgIORrH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 13:47:07 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36938 "EHLO
+        id S1727804AbgIOR6P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 13:58:15 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38592 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727615AbgIORqv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:46:51 -0400
-Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 473CAC061788;
-        Tue, 15 Sep 2020 10:46:51 -0700 (PDT)
-Received: from zn.tnic (p200300ec2f0e42006096e946d741c4e4.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:4200:6096:e946:d741:c4e4])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 85C571EC032C;
-        Tue, 15 Sep 2020 19:46:49 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1600192009;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
-        bh=rmBa7gEzQYxBNGzsURQUEAttoyf870NKssUflXTeqCg=;
-        b=q10yfnNWGXiBR4ItVPXZCGDs9iOdT/kKwdkymGIzET6Usrbyfg/m/xLXMbJWVyu+Ylj9N/
-        qUMBLAqTn3Bxhy5xIzRIN+ZT8bXacFZ+ERU0CdywcWfI+XcugOR3XYFOgh42qu93Gqk2QM
-        vVPZeDeXh0qg5VKVF0F8CJJp8Ru0K70=
-Date:   Tue, 15 Sep 2020 19:46:43 +0200
-From:   Borislav Petkov <bp@alien8.de>
-To:     rkir@google.com
-Cc:     rjw@rjwysocki.net, pavel@ucw.cz, tglx@linutronix.de,
-        mingo@redhat.com, x86@kernel.org, linux-pm@vger.kernel.org,
-        gregkh@linuxfoundation.org, ndesaulniers@google.com,
-        adelva@google.com, Haitao Shan <hshan@google.com>,
-        lkml <linux-kernel@vger.kernel.org>
+        with ESMTP id S1727729AbgIOR5a (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:57:30 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06FEFC061788
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:57:29 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id z19so4077878lfr.4
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:57:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=zC/SbxYzkjp6OcGCx+rUfTP966C1m59d2H5efDgrVWA=;
+        b=gOM8yiiLag62BKZvBU1Ld3EaS+uEABdHMAHOQYXp4gYgK6MWnEoBDMAH46BUf5TmB+
+         TeiK1flI2V9KV9iTOku256yuojEHjYQL/SAkqm8hwmwq348GzbP3X55WgpJgFyA65Dwa
+         edcbkgZ7rYAClxokvf5Qgc9mIXDGstbDigyxRjuqO7KfNRieXo/v1P7K4TScxYmUoSs/
+         P5aQPFH6A9jxovWESXl9bVN6Ub7fP+bQIlsS7BGzFm5YRBD0C9sMWEkCH4yqIaNadUgv
+         YKZB3sxoc01LhnoKnY5chFTddDEGyKupJziTRTxccKqSUBlHJWEQp9W6um13MiR3jbSm
+         I+dA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=zC/SbxYzkjp6OcGCx+rUfTP966C1m59d2H5efDgrVWA=;
+        b=aqsl9Ss6Lk74zF568bUS3EsxZMIyMDswQfEgPVp+Lg2JIgSdAXsk3PXOR7xeoR4nAY
+         dPi5WzrQWB4oG7dazFTNRANDADzZHP+5EMwb/MMMnYFHPwi5kcxQ2V1HMIR4KhYeJMpP
+         S4cxCRLQTOHBQACfIXWagvQ6BOVvLByHn99QQ2qdMOJqfdUxZ30f2KaJbEM71Hkmu3yd
+         k3d9TyQT+5+twa8hTvt26uaOEaGW7syYPnn6dUC1pGbTSQ5lR/EOYFCG/aiiiKCJClmR
+         qqibWZL8cGgKDCn/oqLqJCXGAZYONjyz7vgnE78B0RZkJc/BnedEjFmXKdmECAUc1unn
+         utqQ==
+X-Gm-Message-State: AOAM532ka2e7qbLQ1UbMUA7s4rdOh1g8IWLPXD1V7OevyVZbeoQs2vDH
+        r1weNVqHtShseEbzU0ZS2ksXfapx6zci9Aothzdf+Q==
+X-Google-Smtp-Source: ABdhPJxiAfjaIb5OwsUu7wWgQQUH27aiEppISRg5ojFfZ2j3xreHT6y4fAfiPh/OE+XTn7Y+z1CPhpz3d5Jsez3n8n4=
+X-Received: by 2002:ac2:511c:: with SMTP id q28mr6086175lfb.411.1600192647744;
+ Tue, 15 Sep 2020 10:57:27 -0700 (PDT)
+MIME-Version: 1.0
+References: <20200915172658.1432732-1-rkir@google.com> <20200915174643.GT14436@zn.tnic>
+In-Reply-To: <20200915174643.GT14436@zn.tnic>
+From:   Roman Kiryanov <rkir@google.com>
+Date:   Tue, 15 Sep 2020 10:57:16 -0700
+Message-ID: <CAOGAQepp_1QXrNAAXbLpW8qrujfdszfU2rMoh804wKK-Ja66Yw@mail.gmail.com>
 Subject: Re: [PATCH] arch: x86: power: cpu: init %gs before
  __restore_processor_state (clang)
-Message-ID: <20200915174643.GT14436@zn.tnic>
-References: <20200915172658.1432732-1-rkir@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20200915172658.1432732-1-rkir@google.com>
+To:     Borislav Petkov <bp@alien8.de>
+Cc:     rjw@rjwysocki.net, pavel@ucw.cz,
+        Thomas Gleixner <tglx@linutronix.de>, mingo@redhat.com,
+        x86@kernel.org, linux-pm@vger.kernel.org,
+        Greg KH <gregkh@linuxfoundation.org>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        Alistair Delva <adelva@google.com>,
+        Haitao Shan <hshan@google.com>,
+        lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Sep 15, 2020 at 10:26:58AM -0700, rkir@google.com wrote:
-> From: Haitao Shan <hshan@google.com>
-> 
-> This is a workaround which fixes triple fault
-> in __restore_processor_state on clang when
-> built with LTO.
-> 
-> When load_TR_desc and load_mm_ldt are inlined into
-> fix_processor_context due to LTO, they cause
-> fix_processor_context (or in this case __restore_processor_state,
-> as fix_processor_context was inlined into __restore_processor_state)
-> to access the stack canary through %gs, but before
-> __restore_processor_state has restored the previous value
-> of %gs properly. LLVM appears to be inlining functions with stack
-> protectors into functions compiled with -fno-stack-protector,
-> which is likely a bug in LLVM's inliner that needs to be fixed.
-> 
-> The LLVM bug is here: https://bugs.llvm.org/show_bug.cgi?id=47479
-> 
-> Signed-off-by: Haitao Shan <hshan@google.com>
-> Signed-off-by: Roman Kiryanov <rkir@google.com>
+On Tue, Sep 15, 2020 at 10:46 AM Borislav Petkov <bp@alien8.de> wrote:
 
-Ok, google guys, pls make sure you Cc LKML too as this is where *all*
-patches and discussions are archived. Adding it now to Cc.
+Hi Borislav, thank you for a quick response.
 
-> ---
->  arch/x86/power/cpu.c | 10 ++++++++++
->  1 file changed, 10 insertions(+)
-> 
-> diff --git a/arch/x86/power/cpu.c b/arch/x86/power/cpu.c
-> index db1378c6ff26..e5677adb2d28 100644
-> --- a/arch/x86/power/cpu.c
-> +++ b/arch/x86/power/cpu.c
-> @@ -274,6 +274,16 @@ static void notrace __restore_processor_state(struct saved_context *ctxt)
->  /* Needed by apm.c */
->  void notrace restore_processor_state(void)
->  {
-> +#ifdef __clang__
-> +	// The following code snippet is copied from __restore_processor_state.
-> +	// Its purpose is to prepare GS segment before the function is called.
-> +#ifdef CONFIG_X86_64
-> +	wrmsrl(MSR_GS_BASE, saved_context.kernelmode_gs_base);
-> +#else
-> +	loadsegment(fs, __KERNEL_PERCPU);
-> +	loadsegment(gs, __KERNEL_STACK_CANARY);
-> +#endif
-> +#endif
+> Ok, google guys, pls make sure you Cc LKML too as this is where *all*
+> patches and discussions are archived. Adding it now to Cc.
 
-Ok, so why is the kernel supposed to take yet another ugly workaround
-because there's a bug in the compiler?
+Thank you, I did not know this.
 
-If it is too late to fix it there, then maybe disable LTO builds for the
-buggy version only.
+> Ok, so why is the kernel supposed to take yet another ugly workaround
+> because there's a bug in the compiler?
 
-We had a similar discussion this week and we already have one buggy
-compiler to deal with and this second one is not making it any easier...
+I believe the kernel makes a questionable assumption on how clang
+uses registers (gs will not be used if stack protection is disabled).
+Both kernel and clang behaves unfortunate here.
 
--- 
-Regards/Gruss,
-    Boris.
+> disable LTO
 
-https://people.kernel.org/tglx/notes-about-netiquette
+CFI depends on LTO.
