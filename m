@@ -7,41 +7,41 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10705C433E2
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07286C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D082920770
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B991320872
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:37:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727718AbgIOWhl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 18:37:41 -0400
-Received: from mga18.intel.com ([134.134.136.126]:55540 "EHLO mga18.intel.com"
+        id S1727556AbgIOWhu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 18:37:50 -0400
+Received: from mga18.intel.com ([134.134.136.126]:55545 "EHLO mga18.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727661AbgIOWhM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 15 Sep 2020 18:37:12 -0400
-IronPort-SDR: SPwCRArGs7XJQAzoVTMmRlAT2hb2TompAmWulAuBt5HlybzBi11HujMIqXY6DiqUpAzUpcAwe+
- XzP40cKRg9Kw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9745"; a="147112836"
+        id S1727665AbgIOWhN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 15 Sep 2020 18:37:13 -0400
+IronPort-SDR: whCXvDBSxHR95KUy3HOBjxgS1whIOcfbzD10l9iHezUG9tIbrR12ByDHcQYVnv0hD5v2neXAd8
+ jyT1LSGvKMqA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9745"; a="147112838"
 X-IronPort-AV: E=Sophos;i="5.76,430,1592895600"; 
-   d="scan'208";a="147112836"
+   d="scan'208";a="147112838"
 X-Amp-Result: SKIPPED(no attachment in message)
 X-Amp-File-Uploaded: False
 Received: from orsmga006.jf.intel.com ([10.7.209.51])
   by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2020 15:37:07 -0700
-IronPort-SDR: /TEsiT9aFADS/n2briVPbmXWdAqEWJfMs7jlqGM0vDhtRz/B9RySBfrd83Hgt15Y2ao7R60x0I
- H1gSX6Ru62EQ==
+IronPort-SDR: PwmIcDhQFwZqgW2LPuXodt5U9r1JMME4azuk8p7k2G/slEZW0dq8f0pK6Ad6FeaJPiBvYdZgbi
+ 8VQ53j7ERqZw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="5.76,430,1592895600"; 
-   d="scan'208";a="306813336"
+   d="scan'208";a="306813341"
 Received: from spandruv-desk.jf.intel.com ([10.54.75.21])
   by orsmga006.jf.intel.com with ESMTP; 15 Sep 2020 15:37:07 -0700
 From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Subject: [PATCH 1/3] thermal: int340x: Provide notification for OEM variable change
-Date:   Tue, 15 Sep 2020 15:36:48 -0700
-Message-Id: <20200915223650.406046-2-srinivas.pandruvada@linux.intel.com>
+Subject: [PATCH 3/3] thermal: int340x: Add keep alive response method
+Date:   Tue, 15 Sep 2020 15:36:50 -0700
+Message-Id: <20200915223650.406046-4-srinivas.pandruvada@linux.intel.com>
 X-Mailer: git-send-email 2.25.4
 In-Reply-To: <20200915223650.406046-1-srinivas.pandruvada@linux.intel.com>
 References: <20200915223650.406046-1-srinivas.pandruvada@linux.intel.com>
@@ -52,61 +52,75 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When we receive ACPI notification for OEM variable change pass the
-notification to user space handler. This will avoid polling for
-OEM variable change from user space.
+When firmware requests keep alive response, send an event to user space
+to confirm by using imok sysfs entry.
+
+Create a new sysf entry called "imok". User space can write an integer,
+which results in execution of IMOK ACPI method of INT3400 thermal zone
+device. This results in sending response to firmware request for keep
+alive.
 
 Signed-off-by: Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
 ---
- .../intel/int340x_thermal/int3400_thermal.c   | 22 +++++++++----------
- 1 file changed, 11 insertions(+), 11 deletions(-)
+ .../intel/int340x_thermal/int3400_thermal.c   | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
 diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 4f5859d4c780..2ca295e6e64d 100644
+index 2ca295e6e64d..0966551cbaaa 100644
 --- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
 +++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -349,30 +349,30 @@ static void int3400_notify(acpi_handle handle,
- {
- 	struct int3400_thermal_priv *priv = data;
- 	char *thermal_prop[5];
-+	int therm_event;
+@@ -14,6 +14,7 @@
  
- 	if (!priv)
- 		return;
+ #define INT3400_THERMAL_TABLE_CHANGED 0x83
+ #define INT3400_ODVP_CHANGED 0x88
++#define INT3400_KEEP_ALIVE 0xA0
  
- 	switch (event) {
+ enum int3400_thermal_uuid {
+ 	INT3400_THERMAL_PASSIVE_1,
+@@ -83,8 +84,33 @@ static struct bin_attribute *data_attributes[] = {
+ 	NULL,
+ };
+ 
++static ssize_t imok_store(struct device *dev, struct device_attribute *attr,
++			  const char *buf, size_t count)
++{
++	struct int3400_thermal_priv *priv = dev_get_drvdata(dev);
++	acpi_status status;
++	int input, ret;
++
++	ret = kstrtouint(buf, 10, &input);
++	if (ret)
++		return ret;
++	status = acpi_execute_simple_method(priv->adev->handle, "IMOK", input);
++	if (ACPI_FAILURE(status))
++		return -EIO;
++
++	return count;
++}
++
++static DEVICE_ATTR_WO(imok);
++
++static struct attribute *imok_attr[] = {
++	&dev_attr_imok.attr,
++	NULL
++};
++
+ static const struct attribute_group data_attribute_group = {
+ 	.bin_attrs = data_attributes,
++	.attrs = imok_attr,
+ };
+ 
+ static ssize_t available_uuids_show(struct device *dev,
+@@ -358,6 +384,9 @@ static void int3400_notify(acpi_handle handle,
  	case INT3400_THERMAL_TABLE_CHANGED:
--		thermal_prop[0] = kasprintf(GFP_KERNEL, "NAME=%s",
--				priv->thermal->type);
--		thermal_prop[1] = kasprintf(GFP_KERNEL, "TEMP=%d",
--				priv->thermal->temperature);
--		thermal_prop[2] = kasprintf(GFP_KERNEL, "TRIP=");
--		thermal_prop[3] = kasprintf(GFP_KERNEL, "EVENT=%d",
--				THERMAL_TABLE_CHANGED);
--		thermal_prop[4] = NULL;
--		kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE,
--				thermal_prop);
-+		therm_event = THERMAL_TABLE_CHANGED;
+ 		therm_event = THERMAL_TABLE_CHANGED;
  		break;
++	case INT3400_KEEP_ALIVE:
++		therm_event = THERMAL_EVENT_KEEP_ALIVE;
++		break;
  	case INT3400_ODVP_CHANGED:
  		evaluate_odvp(priv);
-+		therm_event = THERMAL_DEVICE_POWER_CAPABILITY_CHANGED;
- 		break;
- 	default:
- 		/* Ignore unknown notification codes sent to INT3400 device */
--		break;
-+		return;
- 	}
-+
-+	thermal_prop[0] = kasprintf(GFP_KERNEL, "NAME=%s", priv->thermal->type);
-+	thermal_prop[1] = kasprintf(GFP_KERNEL, "TEMP=%d", priv->thermal->temperature);
-+	thermal_prop[2] = kasprintf(GFP_KERNEL, "TRIP=");
-+	thermal_prop[3] = kasprintf(GFP_KERNEL, "EVENT=%d", therm_event);
-+	thermal_prop[4] = NULL;
-+	kobject_uevent_env(&priv->thermal->device.kobj, KOBJ_CHANGE, thermal_prop);
- }
- 
- static int int3400_thermal_get_temp(struct thermal_zone_device *thermal,
+ 		therm_event = THERMAL_DEVICE_POWER_CAPABILITY_CHANGED;
 -- 
 2.25.4
 
