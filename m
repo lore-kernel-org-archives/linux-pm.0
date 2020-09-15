@@ -2,177 +2,148 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDF0BC43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 21:27:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A1C5C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 21:37:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C7A320872
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 21:27:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B62982078E
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 21:37:53 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="kaC1Zpx2"
+	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="DoIbTW/2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728051AbgIOV0W (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 17:26:22 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41706 "EHLO
+        id S1728012AbgIOVhu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 17:37:50 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:44806 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727814AbgIOVUf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 17:20:35 -0400
-Received: from mail-vk1-xa41.google.com (mail-vk1-xa41.google.com [IPv6:2607:f8b0:4864:20::a41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6F162C061A27
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 14:17:58 -0700 (PDT)
-Received: by mail-vk1-xa41.google.com with SMTP id c63so1195307vkb.7
-        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 14:17:58 -0700 (PDT)
+        with ESMTP id S1728112AbgIOVgm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 17:36:42 -0400
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CDED1C06174A
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 14:36:28 -0700 (PDT)
+Received: by mail-pl1-x631.google.com with SMTP id c3so2034764plz.5
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 14:36:28 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=ZQ8NIm9Qkb4NV+7oBXD58GntPZaDX84Tgi/HUvr4KWE=;
-        b=kaC1Zpx25qz1YGaeXqTlqflGPbCKSjZGL7oZAOsU0vnXIeygiU3ExOmAYMMWSCg6mk
-         9TFYcnt8mfsWfleBPCV8Vp5pH7LxC+ZqC8f1muh+3Oq///bwakE2FQ/WyPI0qJZzcdIq
-         hNhZY9y0x3Zl86M6zkoaS/l/c8tIca2kgHg5kaSOfbEYdfuCUlvUZ2AZtsK/RnYO1DqL
-         lu4R1/Izr6ohSQho9hEkM5GwhY7tnJdsAiWblxWDWwj/mi5zARdKt/EoqpZZNYfRuss/
-         hrf2TZblCgwT3a7rZDZ7cSmJM5QoUkVjtN10JiUVrkN52eadMv+fAs4N5cq7+kvUV2vz
-         7m/w==
+        d=chromium.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=Q/ONZTq8yzKfu/JZ1zGnvLWpAzIfYzhKA8qIl7mniGY=;
+        b=DoIbTW/2CtgRJq92eSPalZa5mfpmnrfT0ofKnk+wQQuLo2PGBqHmm+aHXdoVihU7L5
+         JzjBgRroHOgcgX+2B+NngYYJyN052zZ2YT/wCOWSsMVrPcBFpmPLltbSL4WleFYWk4xX
+         HmpAXktw8Z7NpIydJI23Qo7yy9zpxzYZZKZBw=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=ZQ8NIm9Qkb4NV+7oBXD58GntPZaDX84Tgi/HUvr4KWE=;
-        b=cjVZjk5sTjQIiKM/6eKjk5m5fq1Ua+2GOUiFAzUh+WsNJ+Nwq0jRei07oyKTBUHV8m
-         iPf1cCUn19VhAkp0dws2KDiJ7pEISJwD/OVOwG3Jw8GeImnYHk0zeSydyZDFsROZBrIi
-         ESOvk2diH1E7OxnS1zRDCLSexWPQXjXjB84F/SR/sk3V73j96BmLQKQXlzdXU5if/z8y
-         9RIADL8EOTHet8YEjFwGMpUAtyhbmV/XfZCOiNdeuAKBA0qet4IrtCGIlmcuPT4wYZSN
-         hIvYFwGcDn/1n/54G+Xrz+nfbu6p+Z95/YbzaxVVjgWhdtGdcjoLQD854qzWleWjVD8J
-         L7/w==
-X-Gm-Message-State: AOAM532yOYg1mVFWXEckuzV9+317qEB1APAijrZFW+hwXYSHZD7BZR7z
-        VY/tZzaeD0uZ0nJiJU8juiOTyeKI6Bl1QVlDTCNevw==
-X-Google-Smtp-Source: ABdhPJzkqxjHAFBg3k5jzAdEV2hx1PnwR6GdaGFX3KsznlldhbbRXvFa9InxJnqBc6ToY0LSWqSIEQ0M54iWoHBVpsQ=
-X-Received: by 2002:a1f:6ec4:: with SMTP id j187mr2910363vkc.15.1600204677519;
- Tue, 15 Sep 2020 14:17:57 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Q/ONZTq8yzKfu/JZ1zGnvLWpAzIfYzhKA8qIl7mniGY=;
+        b=RBSN4SISfvBSGQY3YrpOISXlQwhEfBPiaQaYUSmIVb5wHBW6NdB/yK7H7yjM6D0qze
+         GXwf/gYEVIILcsYWE5wPbqxKtBWVn4eZnpW0+N3Jk0LDuCF8JreIrg1tGMoIFcyxACDR
+         KiUUf17IzgCUVhlRvZHvLPy7rCiId+fTUhSkSTLarArJDPLdWOOuMmMxr9CHqthjwrSs
+         7Es1LdtTVY77cJ2nPSlOzp5BAHnq/qJYRWEAmJEqmiEFEaR6Z+y+TFNtySFHulmsnhiL
+         qrZX4lOn8q/5FPcAGi3WrdidlO0Hjw1+UorPttgq/WcW9fh3xdqR31Zgi/np/pIFbXpP
+         pPRQ==
+X-Gm-Message-State: AOAM533RKCM9PH9jA3HzYs1DMbiaX0Nfi7roNv2VBwXY+NbO6PixVpoX
+        2M3pawLVvLU8d/qIb05xt8Ri9w==
+X-Google-Smtp-Source: ABdhPJx1PHMy//vOzR66thN4Z4MDTzaarCGbaq0XsSH22Cct3LbDQMW0bs1s+D0QMpWCoi3yZsKFvQ==
+X-Received: by 2002:a17:902:b7c7:b029:d1:cc21:9c38 with SMTP id v7-20020a170902b7c7b02900d1cc219c38mr9786815plz.21.1600205788381;
+        Tue, 15 Sep 2020 14:36:28 -0700 (PDT)
+Received: from localhost ([2620:15c:202:1:f693:9fff:fef4:e70a])
+        by smtp.gmail.com with ESMTPSA id a23sm12197586pgv.86.2020.09.15.14.36.27
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 15 Sep 2020 14:36:28 -0700 (PDT)
+Date:   Tue, 15 Sep 2020 14:36:26 -0700
+From:   Matthias Kaehlcke <mka@chromium.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Rajendra Nayak <rnayak@codeaurora.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        DTML <devicetree@vger.kernel.org>,
+        Doug Anderson <dianders@chromium.org>,
+        linux-pm@vger.kernel.org,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Javi Merino <javi.merino@kernel.org>
+Subject: Re: is 'dynamic-power-coefficient' expected to be based on 'real'
+ power measurements?
+Message-ID: <20200915213626.GD2771744@google.com>
+References: <248bb01e-1746-c84c-78c4-3cf7d2541a70@codeaurora.org>
+ <20200915172444.GA2771744@google.com>
+ <406d5d4e-d7d7-8a37-5501-119b734facb3@linaro.org>
+ <20200915175808.GB2771744@google.com>
+ <27785351-ba14-dc92-6761-d64962c29596@linaro.org>
+ <20200915211309.GC2771744@google.com>
+ <808029c4-3a05-1926-934d-10739190ab9e@linaro.org>
 MIME-Version: 1.0
-References: <20200904064705.239614-1-ulf.hansson@linaro.org> <20200904141304.GE29330@paulmck-ThinkPad-P72>
-In-Reply-To: <20200904141304.GE29330@paulmck-ThinkPad-P72>
-From:   Ulf Hansson <ulf.hansson@linaro.org>
-Date:   Tue, 15 Sep 2020 23:17:20 +0200
-Message-ID: <CAPDyKFrgs+EGZQr_cqWiq_7v1qDi3WBWQpmZFPwu034Y5a8M1Q@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: psci: Fix suspicious RCU usage
-To:     Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc:     "Paul E. McKenney" <paulmck@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Naresh Kamboju <naresh.kamboju@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <808029c4-3a05-1926-934d-10739190ab9e@linaro.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 4 Sep 2020 at 16:13, Paul E. McKenney <paulmck@kernel.org> wrote:
->
-> On Fri, Sep 04, 2020 at 08:47:05AM +0200, Ulf Hansson wrote:
-> > The commit eb1f00237aca ("lockdep,trace: Expose tracepoints"), started to
-> > expose us for tracepoints. This lead to the following RCU splat on an ARM64
-> > Qcom board.
-> >
-> > [    5.529634] WARNING: suspicious RCU usage
-> > [    5.537307] sdhci-pltfm: SDHCI platform and OF driver helper
-> > [    5.541092] 5.9.0-rc3 #86 Not tainted
-> > [    5.541098] -----------------------------
-> > [    5.541105] ../include/trace/events/lock.h:37 suspicious rcu_dereference_check() usage!
-> > [    5.541110]
-> > [    5.541110] other info that might help us debug this:
-> > [    5.541110]
-> > [    5.541116]
-> > [    5.541116] rcu_scheduler_active = 2, debug_locks = 1
-> > [    5.541122] RCU used illegally from extended quiescent state!
-> > [    5.541129] no locks held by swapper/0/0.
-> > [    5.541134]
-> > [    5.541134] stack backtrace:
-> > [    5.541143] CPU: 0 PID: 0 Comm: swapper/0 Not tainted 5.9.0-rc3 #86
-> > [    5.541149] Hardware name: Qualcomm Technologies, Inc. APQ 8016 SBC (DT)
-> > [    5.541157] Call trace:
-> > [    5.568185] sdhci_msm 7864900.sdhci: Got CD GPIO
-> > [    5.574186]  dump_backtrace+0x0/0x1c8
-> > [    5.574206]  show_stack+0x14/0x20
-> > [    5.574229]  dump_stack+0xe8/0x154
-> > [    5.574250]  lockdep_rcu_suspicious+0xd4/0xf8
-> > [    5.574269]  lock_acquire+0x3f0/0x460
-> > [    5.574292]  _raw_spin_lock_irqsave+0x80/0xb0
-> > [    5.574314]  __pm_runtime_suspend+0x4c/0x188
-> > [    5.574341]  psci_enter_domain_idle_state+0x40/0xa0
-> > [    5.574362]  cpuidle_enter_state+0xc0/0x610
-> > [    5.646487]  cpuidle_enter+0x38/0x50
-> > [    5.650651]  call_cpuidle+0x18/0x40
-> > [    5.654467]  do_idle+0x228/0x278
-> > [    5.657678]  cpu_startup_entry+0x24/0x70
-> > [    5.661153]  rest_init+0x1a4/0x278
-> > [    5.665061]  arch_call_rest_init+0xc/0x14
-> > [    5.668272]  start_kernel+0x508/0x540
-> >
-> > Following the path in pm_runtime_put_sync_suspend() from
-> > psci_enter_domain_idle_state(), it seems like we end up using the RCU.
-> > Therefore, let's simply silence the splat by informing the RCU about it
-> > with RCU_NONIDLE.
-> >
-> > Note that, this is a temporary solution. Instead we should strive to avoid
-> > using RCU_NONIDLE (and similar), but rather push rcu_idle_enter|exit()
-> > further down, closer to the arch specific code. However, as the CPU PM
-> > notifiers are also using the RCU, additional rework is needed.
-> >
-> > Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
-> > Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
->
-> Acked-by: Paul E. McKenney <paulmck@kernel.org>
+On Tue, Sep 15, 2020 at 11:23:49PM +0200, Daniel Lezcano wrote:
+> On 15/09/2020 23:13, Matthias Kaehlcke wrote:
+> > On Tue, Sep 15, 2020 at 10:55:52PM +0200, Daniel Lezcano wrote:
+> >> On 15/09/2020 19:58, Matthias Kaehlcke wrote:
+> >>> On Tue, Sep 15, 2020 at 07:50:10PM +0200, Daniel Lezcano wrote:
+> >>>> On 15/09/2020 19:24, Matthias Kaehlcke wrote:
+> >>>>> +Thermal folks
+> >>>>>
+> >>>>> Hi Rajendra,
+> >>>>>
+> >>>>> On Tue, Sep 15, 2020 at 11:14:00AM +0530, Rajendra Nayak wrote:
+> >>>>>> Hi Rob,
+> >>>>>>
+> >>>>>> There has been some discussions on another thread [1] around the DPC (dynamic-power-coefficient) values
+> >>>>>> for CPU's being relative vs absolute (based on real power) and should they be used to derive 'real' power
+> >>>>>> at various OPPs in order to calculate things like 'sustainable-power' for thermal zones.
+> >>>>>> I believe relative values work perfectly fine for scheduling decisions, but with others using this for
+> >>>>>> calculating power values in mW, is there a need to document the property as something that *has* to be
+> >>>>>> based on real power measurements?
+> >>>>>
+> >>>>> Relative values may work for scheduling decisions, but not for thermal
+> >>>>> management with the power allocator, at least not when CPU cooling devices
+> >>>>> are combined with others that specify their power consumption in absolute
+> >>>>> values. Such a configuration should be supported IMO.
+> >>>>
+> >>>> The energy model is used in the cpufreq cooling device and if the
+> >>>> sustainable power is consistent with the relative values then there is
+> >>>> no reason it shouldn't work.
+> >>>
+> >>> Agreed on thermal zones that exclusively use CPUs as cooling devices, but
+> >>> what when you have mixed zones, with CPUs with their pseudo-unit and e.g. a
+> >>> GPU that specifies its power in mW?
+> >>
+> >> Well, if a SoC vendor decides to mix the units, then there is nothing we
+> >> can do.
+> >>
+> >> When specifying the power numbers available for the SoC, they could be
+> >> all scaled against the highest power number.
+> > 
+> > The GPU was just one example, a device could have heat dissipating components
+> > that are not from the SoC vendor (e.g. WiFi, modem, backlight), and depending
+> > on the design it might not make sense to have separate thermal zones.
+> 
+> Is it possible to elaborate, I'm not sure to get the point ?
 
-Peter, Rafael,
+A device could have a thermal zone with the following cooling
+devices:
 
-Is $subject patch okay as the short term solution? If so, I can
-continue to look at the CPU PM notifiers, etc.
+- CPUs with power consumption specified as pmW (pseudo mW
+- A modem from a third party vendor. The modem can dissipate
+  significant heat and allows to throttle the bandwidth for
+  cooling. The power consumption of the modem is given in
+  mW.
 
-Kind regards
-Uffe
+These could be crammed together in a small form factor
+(e.g. ChromeCast or Chromebit) which makes it difficult to
+discern with a sensor what exactly is generating the heat,
+which is why you have a single thermal zone.
 
->
-> > ---
-> >  drivers/cpuidle/cpuidle-psci.c | 4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-> > index 74463841805f..d928b37718bd 100644
-> > --- a/drivers/cpuidle/cpuidle-psci.c
-> > +++ b/drivers/cpuidle/cpuidle-psci.c
-> > @@ -66,7 +66,7 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
-> >               return -1;
-> >
-> >       /* Do runtime PM to manage a hierarchical CPU toplogy. */
-> > -     pm_runtime_put_sync_suspend(pd_dev);
-> > +     RCU_NONIDLE(pm_runtime_put_sync_suspend(pd_dev));
-> >
-> >       state = psci_get_domain_state();
-> >       if (!state)
-> > @@ -74,7 +74,7 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
-> >
-> >       ret = psci_cpu_suspend_enter(state) ? -1 : idx;
-> >
-> > -     pm_runtime_get_sync(pd_dev);
-> > +     RCU_NONIDLE(pm_runtime_get_sync(pd_dev));
-> >
-> >       cpu_pm_exit();
-> >
-> > --
-> > 2.25.1
-> >
+IPA is used as governor for this zone, it can't make accurate
+decisions because one cooling device specifies it's power
+consumption in pmW and the other in mW.
