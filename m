@@ -2,86 +2,90 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B29FEC2D0E3
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:13:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D9F7C433E2
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:17:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7079D20809
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:13:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600208003;
-	bh=hmRoWUfsX+rP5y5X4C56iScRD9nF4SuKPA7BKbX8kdA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=e8kUA9opBUBmxW3C2n1Hxs3gJWJ7bHJt1a2uJrMTyBMdXc1TVxbxYbcW1i+NVZFxw
-	 U3DN4NWnScj42091WMqKid3F1ktVDejMNXmNVop70YKpFlzafXdvCoDLZeRBk/0/IL
-	 zNoERaBXrUsD6l1iB7mW6E6WqHUfqNwZfpwdr6ms=
+	by mail.kernel.org (Postfix) with ESMTP id 3B90220771
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 22:17:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727656AbgIOQlE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 12:41:04 -0400
-Received: from mail-il1-f194.google.com ([209.85.166.194]:32991 "EHLO
-        mail-il1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727755AbgIOQjA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 12:39:00 -0400
-Received: by mail-il1-f194.google.com with SMTP id x2so3654056ilm.0;
-        Tue, 15 Sep 2020 09:38:59 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=DTzkkYbk2jIELRszsQOMk/GOI+jJqqHog/KwqOMwjSE=;
-        b=TMp9N4f+SfGlvQFLyW3JN/5pqas+0v0ac3JHD5+1Z1p08NFAIwlOkxqIJ+hDC1+hgH
-         p0Ht37KMrG9ybD4slHhOOfeQ+EfZCGpCrHNmmKbeP2cx2/aVSOo8M6l4GhdtV+e7LeA1
-         +M8T/9l4gFn/fbP7WyCUvYIxFxAfVTJ0FfXWfL2+74T+vLyin4ne7RKZhh2rw40bgr1k
-         e4TXq/D7cQ75zammOVy7Ab2ReGZtxeH2dLVxq/Ayx6cc4DcC78lQS7Abb7qJStLXtH8E
-         pRrN88yUzwUE37GPTPY/QKvTjegXAYdy6m4cg70iBS40dhSqxtUcb1FwUVsx13hKY99x
-         5+Lg==
-X-Gm-Message-State: AOAM531Vud46FUAvPS2JYz0RvY/gYVst8dm+wxJl9ucsqqXcqYfplbYa
-        pweKGJM1phanFHt5T578rw==
-X-Google-Smtp-Source: ABdhPJzIqXAg61MtcWBLixcRoN4fp/9lBLh2wQnLqX1wSfxxtFaTCOycI/TjvPHZeEQEoMB6pi7FIw==
-X-Received: by 2002:a92:c60d:: with SMTP id p13mr12842226ilm.272.1600187939233;
-        Tue, 15 Sep 2020 09:38:59 -0700 (PDT)
-Received: from xps15 ([64.188.179.253])
-        by smtp.gmail.com with ESMTPSA id z10sm7762968ioi.13.2020.09.15.09.38.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 15 Sep 2020 09:38:58 -0700 (PDT)
-Received: (nullmailer pid 2089328 invoked by uid 1000);
-        Tue, 15 Sep 2020 16:38:56 -0000
-Date:   Tue, 15 Sep 2020 10:38:56 -0600
-From:   Rob Herring <robh@kernel.org>
-To:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc:     robh+dt@kernel.org, bjorn.andersson@linaro.org, amitk@kernel.org,
-        dmitry.baryshkov@linaro.org, rjw@rjwysocki.net,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        agross@kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, viresh.kumar@linaro.org,
-        tdas@codeaurora.org
-Subject: Re: [PATCH 1/7] dt-bindings: cpufreq: cpufreq-qcom-hw: Document
- SM8250 compatible
-Message-ID: <20200915163856.GA2089296@bogus>
-References: <20200908075716.30357-1-manivannan.sadhasivam@linaro.org>
- <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
+        id S1727443AbgIOWRn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 18:17:43 -0400
+Received: from jabberwock.ucw.cz ([46.255.230.98]:34280 "EHLO
+        jabberwock.ucw.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727994AbgIOWRc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 18:17:32 -0400
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+        id BF29D1C0B76; Wed, 16 Sep 2020 00:17:08 +0200 (CEST)
+Date:   Wed, 16 Sep 2020 00:17:08 +0200
+From:   Pavel Machek <pavel@denx.de>
+To:     rkir@google.com
+Cc:     rjw@rjwysocki.net, tglx@linutronix.de, mingo@redhat.com,
+        x86@kernel.org, linux-pm@vger.kernel.org,
+        gregkh@linuxfoundation.org, ndesaulniers@google.com,
+        adelva@google.com, Haitao Shan <hshan@google.com>
+Subject: Re: [PATCH] arch: x86: power: cpu: init %gs before
+ __restore_processor_state (clang)
+Message-ID: <20200915221708.GA26453@duo.ucw.cz>
+References: <20200915172658.1432732-1-rkir@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="OgqxwSJOaUobr8KG"
 Content-Disposition: inline
-In-Reply-To: <20200908075716.30357-2-manivannan.sadhasivam@linaro.org>
+In-Reply-To: <20200915172658.1432732-1-rkir@google.com>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 08 Sep 2020 13:27:10 +0530, Manivannan Sadhasivam wrote:
-> Document the SM8250 SoC specific compatible for Qualcomm Cpufreq HW. The
-> hardware block which carries out CPUFreq operations on SM8250 SoC is
-> called EPSS.
-> 
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> ---
->  Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
 
-Acked-by: Rob Herring <robh@kernel.org>
+--OgqxwSJOaUobr8KG
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi!
+
+> From: Haitao Shan <hshan@google.com>
+>=20
+> This is a workaround which fixes triple fault
+> in __restore_processor_state on clang when
+> built with LTO.
+>=20
+> When load_TR_desc and load_mm_ldt are inlined into
+> fix_processor_context due to LTO, they cause
+> fix_processor_context (or in this case __restore_processor_state,
+> as fix_processor_context was inlined into __restore_processor_state)
+> to access the stack canary through %gs, but before
+> __restore_processor_state has restored the previous value
+> of %gs properly. LLVM appears to be inlining functions with stack
+> protectors into functions compiled with -fno-stack-protector,
+> which is likely a bug in LLVM's inliner that needs to be fixed.
+
+That's rather ugly.
+
+Would it be easier to simply mark those functions as noinline or
+something like that?
+
+Best regards,
+									Pavel
+--=20
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blo=
+g.html
+
+--OgqxwSJOaUobr8KG
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCX2E9ZAAKCRAw5/Bqldv6
+8veRAKC2hGsrYPDP5OFAonBor0AIsn8EYQCdE67psrFL/QvNy3nROUmdaSHaoIY=
+=xRPX
+-----END PGP SIGNATURE-----
+
+--OgqxwSJOaUobr8KG--
