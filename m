@@ -2,159 +2,209 @@ Return-Path: <SRS0=NdGG=CY=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48079C43461
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:19:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32E0DC43461
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:24:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 004182193E
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:19:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E690C21D41
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Sep 2020 17:24:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RVIyTl6c"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="rDqPVRgn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727712AbgIORTo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Sep 2020 13:19:44 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59834 "EHLO
+        id S1727587AbgIORXv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Sep 2020 13:23:51 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33184 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727883AbgIORPd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:15:33 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 051EEC06121D;
-        Tue, 15 Sep 2020 10:01:17 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id q8so3875183lfb.6;
-        Tue, 15 Sep 2020 10:01:16 -0700 (PDT)
+        with ESMTP id S1727558AbgIORXI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Sep 2020 13:23:08 -0400
+Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6088C06174A
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:12:38 -0700 (PDT)
+Received: by mail-pg1-x52b.google.com with SMTP id j34so2313427pgi.7
+        for <linux-pm@vger.kernel.org>; Tue, 15 Sep 2020 10:12:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=H0YZs1pPwgJd7Ktmm4myWmRtfPUsH5VHa1+aQx55PSk=;
-        b=RVIyTl6cn7mdnTle5r2TB8rk6Z5oEtnLJ5ScwkQx8hgwsXp9QUmXVRlwB4uojEMlyK
-         ro4ICaJFazaA1mm+EfgVBI9hxAPzmmhJ64lz4e9XRqr/CqvyDMSlTIi0Jq4DCY/1tT26
-         lZ90elCBfhc46rgjopy+NisYGA97eLI+mgA9sV8BwFl4VzDJuGCE8wJmhnAMhcX+cwiK
-         VVsJbNpykSo75U56Bmx3jdegHXN1gwtsHTK88BBJRkMJxUd4BcjpwaHbCwYnGYPU7epw
-         ghh2waPDId+IGm4+zWuFtbnEpr9oY8ZzoiInt5wUgHUlgJNe36Jd/6L2agHbfAUq3+tf
-         QEbA==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=wArfFOE4fJBW1WANi2z6Wj4ItPVWsHijgHy95KGxxmw=;
+        b=rDqPVRgnt/U87dBHeAkXDI25fzRow5vRrmOjzfaJYOa45fa53HyBHptsWW3aDjMkw5
+         7F+DA2DalhqviJcxTBjEQKO6QZ8mvBMwgToHCmTz69lMvGaKHVXMbJWGTZbMxj4G0bmC
+         iU/Fe0J1qhPOAIZJo6aBgBZgzTflYc+jlwQha3CYBbmEQ9k2TjIuJnZMq/UXo8nc2xEP
+         AyEnm74BdEEzkQGvsT1mjeS0PHmzIoVMGLfNitlSRmbXpm/oQ9EDbzC/Q1EuTflm8DfO
+         9+HUfxIagO4dNkRuUvYLmeZaV7OcAPavyyUM2V0ISaw8yyhnOLJKZSf16zMs+EOP2N80
+         mdew==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=H0YZs1pPwgJd7Ktmm4myWmRtfPUsH5VHa1+aQx55PSk=;
-        b=bG3u3U/NzMoA2SlC2NYfKMb9JR4n9dYN62mECR7PXWeLewrEiHSYmDyFz081Ga7Dwi
-         kYzxc8eAsmhy9oh5IIVH7xUCrJ5XfVyLa5ZxDXPbcQGaLJBgllIIhKyYOgevauOl8czE
-         odjs96X2Fpr7EfCZN/x+IbeWqz22P5u2u56Cm44yy79AI35bWZ+kfwc24ylmW7vu29YU
-         O2GmhrUx/Nlvy2OJTaN2cq6/68H2/sIKhR/br+xlP24ZboDB+iVgZeU2JQScZA1WNso/
-         pPZK9B09XxJ1Y9E1Gr8+ZPa4ETDBwHAiypA+afcYZIym7NAQs/IDvVVs/tudcbj0jGjt
-         Dfiw==
-X-Gm-Message-State: AOAM531h1IaJWGWVbIeK09n92welCNQsoh4XmPGYmQ7crPAXnthwRxXf
-        7CfjdeMWA/xp7BG1HZ0co4maNSpPW1w=
-X-Google-Smtp-Source: ABdhPJwQLpjsE+qFpvuqxasOzAcBnwJF7tP1y9VybOqTsRjgyc1k0GY6l9M7N7DZMzsiWYmMb1c9Zg==
-X-Received: by 2002:ac2:548d:: with SMTP id t13mr6603232lfk.602.1600189274348;
-        Tue, 15 Sep 2020 10:01:14 -0700 (PDT)
-Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
-        by smtp.googlemail.com with ESMTPSA id 73sm4011754lff.118.2020.09.15.10.01.13
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 15 Sep 2020 10:01:13 -0700 (PDT)
-Subject: Re: [PATCH] PM / devfreq: tegra30: disable clock on error in probe
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Dan Carpenter <dan.carpenter@oracle.com>
-Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
-        kernel-janitors@vger.kernel.org
-References: <CGME20200908072627epcas1p41f2c8c2730d42bd8935a40b0ab8122f7@epcas1p4.samsung.com>
- <20200908072557.GC294938@mwanda>
- <2ceb045a-ebac-58d7-0250-4ea39d711ce8@samsung.com>
- <44560522-f04e-ade5-2e02-9df56a6f79ba@gmail.com>
- <e45c8ffc-ea24-1178-7bfa-62ca6bedbb3b@samsung.com>
- <2573cd77-1175-d194-7bfc-24d28b276846@samsung.com>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <5aac4d59-5e06-25a6-3de1-6a5a586b9e34@gmail.com>
-Date:   Tue, 15 Sep 2020 20:01:12 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=wArfFOE4fJBW1WANi2z6Wj4ItPVWsHijgHy95KGxxmw=;
+        b=P6B8T64w5I1GD0Hzl3vzLWB6cvBC6vA6VpRajpSRStlNSP7fY6S+H/Ts/5QOot8cEV
+         +1dWLq/vB1J9QjHfDjtKnwYSifqWFUexhtpT4v6je83vGowdmP1juBYBLOeCCccxePa8
+         5EAJ9kt+6YiyG3tmSObov5+xCq/gId4Tnu1hDzyhUz9riAhAQUIW515t53GqNugW+Hs1
+         cgLqX4Uq+nIzPjyfRFF6LVxxUd9ylipLf9DpHHB8cKxC++tmJApELk2ahxWi93J90ZWi
+         QL98BrMXwDxTK9mE5pqCkZD/Nn1gD/RQ2yEHJb2HzqBK+v0QENT7xA5pWm+g7FWGVS/b
+         2SXw==
+X-Gm-Message-State: AOAM5330SN9efGYhhgYBSjOSqPA1Xw12N3Vi6eMd5GUvUO45aF+h0Epu
+        prGagcrK4aE9wAvdm867Nvo1Ww==
+X-Google-Smtp-Source: ABdhPJxuLpYqpS6s+/wHfYi7sstpZRRmyZdieGp0oLpBqcricobdjQy/IdmjAvLz5SUMAU96Q9uyiQ==
+X-Received: by 2002:a63:6dc2:: with SMTP id i185mr14418799pgc.297.1600189958494;
+        Tue, 15 Sep 2020 10:12:38 -0700 (PDT)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id ih12sm118615pjb.24.2020.09.15.10.12.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 15 Sep 2020 10:12:37 -0700 (PDT)
+Message-ID: <5f60f605.1c69fb81.3e626.04dd@mx.google.com>
+Date:   Tue, 15 Sep 2020 10:12:37 -0700 (PDT)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-In-Reply-To: <2573cd77-1175-d194-7bfc-24d28b276846@samsung.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: test
+X-Kernelci-Kernel: v5.9-rc5
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+Subject: pm/testing sleep: 7 runs, 3 regressions (v5.9-rc5)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-15.09.2020 05:13, Chanwoo Choi пишет:
-> On 9/15/20 11:00 AM, Chanwoo Choi wrote:
->> Hi Dmitry,
->>
->> On 9/14/20 10:56 PM, Dmitry Osipenko wrote:
->>> 14.09.2020 10:09, Chanwoo Choi пишет:
->>>> Hi,
->>>>
->>>> On 9/8/20 4:25 PM, Dan Carpenter wrote:
->>>>> This error path needs to call clk_disable_unprepare().
->>>>>
->>>>> Fixes: 7296443b900e ("PM / devfreq: tegra30: Handle possible round-rate error")
->>>>> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
->>>>> ---
->>>>> ---
->>>>>  drivers/devfreq/tegra30-devfreq.c | 4 +++-
->>>>>  1 file changed, 3 insertions(+), 1 deletion(-)
->>>>>
->>>>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
->>>>> index e94a27804c20..dedd39de7367 100644
->>>>> --- a/drivers/devfreq/tegra30-devfreq.c
->>>>> +++ b/drivers/devfreq/tegra30-devfreq.c
->>>>> @@ -836,7 +836,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->>>>>  	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
->>>>>  	if (rate < 0) {
->>>>>  		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
->>>>> -		return rate;
->>>>> +		err = rate;
->>>>> +		goto disable_clk;
->>>>>  	}
->>>>>  
->>>>>  	tegra->max_freq = rate / KHZ;
->>>>> @@ -897,6 +898,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->>>>>  	dev_pm_opp_remove_all_dynamic(&pdev->dev);
->>>>>  
->>>>>  	reset_control_reset(tegra->reset);
->>>>> +disable_clk:
->>>>>  	clk_disable_unprepare(tegra->clock);
->>>>
->>>> Is it doesn't need to reset with reset_contrl_reset()?
->>>
->>> Hello, Chanwoo!
->>>
->>> It's reset just before the clk_round_rate() invocation, hence there
->>> shouldn't be a need to reset it second time.
->>
->> Do you mean that reset is deasserted automatically
->> when invoke clk_round_rate() on tegra?
+pm/testing sleep: 7 runs, 3 regressions (v5.9-rc5)
 
-I only mean that the tegra30-devfreq driver deasserts the reset before
-the clk_round_rate():
+Regressions Summary
+-------------------
 
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/devfreq/tegra30-devfreq.c?h=v5.9-rc5#n834
+platform          | arch  | lab           | compiler | defconfig          |=
+ results
+------------------+-------+---------------+----------+--------------------+=
+--------
+mt8173-elm-hana   | arm64 | lab-collabora | gcc-8    | defconfig          |=
+ 0/1    =
 
->> If tree, I think that 'reset_control_reset(tegra->reset)' invocation
-> 
-> I'm sorry for my typo. s/tree/true.
-> 
->> is not needed on 'remove_opp:' goto. Because already reset deassertion
->> is invoked by clk_round_rate(), it seems that doesn't need to invoke
->> anymore during exception case.
->>
->> Actually, it is not clear in my case.
+rk3288-veyron-jaq | arm   | lab-collabora | gcc-8    | multi_v7_defconfig |=
+ 1/2    =
 
-The reset_control_reset() in the error path of the driver probe function
-is placed that way to make the tear-down order match the driver removal
-order. Perhaps the reset could be moved before the remove_opp, but this
-change won't make any real difference, hence it already should be good
-as-is.
+rk3399-gru-kevin  | arm64 | lab-collabora | gcc-8    | defconfig          |=
+ 0/1    =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.9-rc5=
+/plan/sleep/
+
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.9-rc5
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      856deb866d16e29bd65952e0289066f6078af773 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform          | arch  | lab           | compiler | defconfig          |=
+ results
+------------------+-------+---------------+----------+--------------------+=
+--------
+mt8173-elm-hana   | arm64 | lab-collabora | gcc-8    | defconfig          |=
+ 0/1    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5f60e97ac522e8c179bed964
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc5/arm64/defc=
+onfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc5/arm64/defc=
+onfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0911.0/arm64/rootfs.cpio.gz =
+
+
+  * sleep.login: https://kernelci.org/test/case/id/5f60e97ac522e8c179bed965
+      failing since 26 days (last pass: v5.8-107-gb72b3ea38c81, first fail:=
+ v5.9-rc1-4-g1f08d51cd57f)  =
+
+
+
+platform          | arch  | lab           | compiler | defconfig          |=
+ results
+------------------+-------+---------------+----------+--------------------+=
+--------
+rk3288-veyron-jaq | arm   | lab-collabora | gcc-8    | multi_v7_defconfig |=
+ 1/2    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5f60eac3512e03365abed971
+
+  Results:     1 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc5/arm/multi_=
+v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-veyron-jaq.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc5/arm/multi_=
+v7_defconfig/gcc-8/lab-collabora/sleep-rk3288-veyron-jaq.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0911.0/armhf/rootfs.cpio.gz =
+
+
+  * sleep.rtcwake-mem-1: https://kernelci.org/test/case/id/5f60eac3512e0336=
+5abed973
+      new failure (last pass: v5.9-rc4-6-g23818c154bae)
+
+    2020-09-15 16:18:16.965000  [Enter `^Ec?' for help]
+    2020-09-15 16:18:28.761000  =EF=BF=BD
+    2020-09-15 16:18:28.761000  =
+
+    2020-09-15 16:18:28.761000  coreboot-7d042db9 Mon Oct 22 20:40:09 UTC 2=
+018 bootblock starting...
+    2020-09-15 16:18:28.761000  Exception handlers installed.
+    2020-09-15 16:18:28.772000  Configuring PLL at ff760030 with NF =3D 99,=
+ NR =3D 2 and NO =3D 2 (VCO =3D 1188000KHz, output =3D 594000KHz)
+    2020-09-15 16:18:28.784000  Configuring PLL at ff760020 with NF =3D 32,=
+ NR =3D 1 and NO =3D 2 (VCO =3D 768000KHz, output =3D 384000KHz)
+    2020-09-15 16:18:28.784000  Translation table is @ ff700000
+    2020-09-15 16:18:28.797000  Mapping address range [0x00000000:0x0000000=
+0) as uncached
+    2020-09-15 16:18:28.797000  Creating new subtable @ff720800 for [0xff70=
+0000:0xff800000)
+    ... (1154 line(s) more)
+      =
+
+
+
+platform          | arch  | lab           | compiler | defconfig          |=
+ results
+------------------+-------+---------------+----------+--------------------+=
+--------
+rk3399-gru-kevin  | arm64 | lab-collabora | gcc-8    | defconfig          |=
+ 0/1    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5f60e9a6d0472e779ebed955
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc5/arm64/defc=
+onfig/gcc-8/lab-collabora/sleep-rk3399-gru-kevin.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc5/arm64/defc=
+onfig/gcc-8/lab-collabora/sleep-rk3399-gru-kevin.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+0911.0/arm64/rootfs.cpio.gz =
+
+
+  * sleep.login: https://kernelci.org/test/case/id/5f60e9a6d0472e779ebed956
+      new failure (last pass: v5.9-rc4-6-g23818c154bae)  =20
