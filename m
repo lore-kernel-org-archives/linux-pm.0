@@ -2,168 +2,180 @@ Return-Path: <SRS0=SH1q=CZ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 767FCC433E2
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Sep 2020 18:55:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B76F1C43461
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Sep 2020 19:08:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 091FA20936
-	for <linux-pm@archiver.kernel.org>; Wed, 16 Sep 2020 18:55:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6947322205
+	for <linux-pm@archiver.kernel.org>; Wed, 16 Sep 2020 19:08:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="duLh2jWD"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="MjEFJzce"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728237AbgIPSyh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Sep 2020 14:54:37 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37312 "EHLO
+        id S1727617AbgIPTIF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Sep 2020 15:08:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48236 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727690AbgIPR6I (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2020 13:58:08 -0400
-Received: from mail-pg1-x52e.google.com (mail-pg1-x52e.google.com [IPv6:2607:f8b0:4864:20::52e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3A549C02C2BE
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2020 09:40:58 -0700 (PDT)
-Received: by mail-pg1-x52e.google.com with SMTP id j34so4214716pgi.7
-        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2020 09:40:58 -0700 (PDT)
+        with ESMTP id S1727370AbgIPTHv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2020 15:07:51 -0400
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4ED56C06174A;
+        Wed, 16 Sep 2020 12:07:50 -0700 (PDT)
+Received: by mail-lj1-x242.google.com with SMTP id k25so6849946ljg.9;
+        Wed, 16 Sep 2020 12:07:50 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=WhlGWVI3LaTH1p8+ldz6Qi6juBzyGEgCmFwW9Q3lN6w=;
-        b=duLh2jWD5Dgb7ko3teI+il54V3ud9S5mViXog9DWH845vNxR6yLnMgzngf/1tU1cpQ
-         u4rpIF1qiQji7whRdll2vGn+nmP/IQL7plBW3mcwU51tjdElN3oPVxJwaPvYM1ocONic
-         EFYaUtuJNTHvmwrpuDMWUh46BudzieMMzHfuE=
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=QihZ8Xz8SWvem6yekgcSVMIjh2NsmhJScWGu6NS+TEk=;
+        b=MjEFJzceOxDmHnZTXQpUriaxu7YZuYPh9ri7J4wMEmqYn62mY5W3Ir4+zMzkboPdV/
+         hij4RfkJbfESMIVrEsEq/ItYHrytO0JPLYerI14dkQvnC5SMw/3rahxv1q14TtPJeOLa
+         84/J/UKGojO41P/yW9EdEXjb/l55mIG+xE3bl3NkRu6jtr+vRaASQpxUdLILm30uGPzE
+         mjT+C/fSdJMJGx6zBVxdoRlboMKsPllVZhFDyhj9vvpf/+iA9ya8XOXpMad0aukZ+i3M
+         Gq6Lmx5u0G7PLryBoqvNU5CDB4BJ5KowGaa5QxjkIaTSxiASbO+Q09ykKfCXh0qg7DnW
+         /d1g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=WhlGWVI3LaTH1p8+ldz6Qi6juBzyGEgCmFwW9Q3lN6w=;
-        b=HkZCh+mhSTpsqe9JlCH1CBWTzF7eeVwerYlN40rPaambgM7atpDoU/mE0SdwlCj6GV
-         nAd4HDb4oD65ZiW6DruPm3aHPuMprRYbvHShDUOwujMUIwN4jV+So7Ili1wVEx6Wk8yh
-         cul6JYowjaswzNZLo8JNJYbFhmFknpFyc9DhwvJvgwlTpFbhEy8Ey66tiND3rxXX70En
-         Gu1kVnfxg9CrGX4pLom3wUWB6HkWWV59dd0v6aEzomut8Vn19Zapj2lh31gbbo05l1/3
-         FOW79vx57XGio7dmuarkgCQ18EmgZl1K0XftuSbJ0XCTwiT83jIb0QrPawdMhXpawy5w
-         rsNQ==
-X-Gm-Message-State: AOAM533x3OE6PDWhjQOS6xNvlqrS6xiiDEBth8ge2W6Ci4fLz9Nt189K
-        KQBU4gR98N7ddcg+B8obs4RO6A==
-X-Google-Smtp-Source: ABdhPJznGYU6LeZ9pKpPyRSNH2dEyT60pWBW0HCpYhZxfcK3eIVGa5mgxE9gqJq+UvYYbS0477ghFg==
-X-Received: by 2002:a62:ac18:0:b029:142:2501:34ef with SMTP id v24-20020a62ac180000b0290142250134efmr6829574pfe.72.1600274457743;
-        Wed, 16 Sep 2020 09:40:57 -0700 (PDT)
-Received: from localhost ([2620:15c:202:1:f693:9fff:fef4:e70a])
-        by smtp.gmail.com with ESMTPSA id g24sm3282695pfk.65.2020.09.16.09.40.56
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=QihZ8Xz8SWvem6yekgcSVMIjh2NsmhJScWGu6NS+TEk=;
+        b=RXhvS7ZfLbBaWmzLmhmi8b1FS8kaNonp8hNQmH3clJlG4Z/T3YgIxfdc2Ut5ST7O2C
+         yogiVPE2T9AWKBmFWnwKSTr988S8qaolUjB5KCXn2n3BUnWoJ87uEnZhhZ5f9/LR/xmO
+         dECvbAlG5O90lZytFyzkwHMTABQJ/P41eF7Z8nIkwpSto7RljzmU5zzXByK/T5n05H5Z
+         nQF/eVjUW7zt9sGtMq8gtUGa5rXkyRQiACzzilrSJZMpS3B7Km3UH0REpPX868qu71t2
+         RQm8f+VoYsNZWH+pKdwlwFTurmK8RNp/GNtCgSqEEtzMU4b6kj7M+8ScZQxnBAXFgeZP
+         xYrA==
+X-Gm-Message-State: AOAM531EuacXdktUrALxyVJUFyt4e6+0cGHR+RGf4LpiCE+BwFWUYFvw
+        9pAOi8aCQhKrFQkEGFzRSQUqbgrYVDE=
+X-Google-Smtp-Source: ABdhPJwLeJRJDNQ4ngutlFWCR9878+7Mq3GY8kKayy8m4NAmTnIKCJTR95DZytNYtYS+rulcgvIq4g==
+X-Received: by 2002:a2e:8956:: with SMTP id b22mr8844646ljk.85.1600283268428;
+        Wed, 16 Sep 2020 12:07:48 -0700 (PDT)
+Received: from [192.168.2.145] (109-252-170-211.dynamic.spd-mgts.ru. [109.252.170.211])
+        by smtp.googlemail.com with ESMTPSA id d18sm4722662lfm.178.2020.09.16.12.07.47
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 16 Sep 2020 09:40:56 -0700 (PDT)
-Date:   Wed, 16 Sep 2020 09:40:55 -0700
-From:   Matthias Kaehlcke <mka@chromium.org>
-To:     Rajendra Nayak <rnayak@codeaurora.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        DTML <devicetree@vger.kernel.org>,
-        Doug Anderson <dianders@chromium.org>,
-        linux-pm@vger.kernel.org,
-        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Javi Merino <javi.merino@kernel.org>
-Subject: Re: is 'dynamic-power-coefficient' expected to be based on 'real'
- power measurements?
-Message-ID: <20200916164055.GH2771744@google.com>
-References: <248bb01e-1746-c84c-78c4-3cf7d2541a70@codeaurora.org>
- <20200915172444.GA2771744@google.com>
- <406d5d4e-d7d7-8a37-5501-119b734facb3@linaro.org>
- <20200915175808.GB2771744@google.com>
- <27785351-ba14-dc92-6761-d64962c29596@linaro.org>
- <20200915211309.GC2771744@google.com>
- <808029c4-3a05-1926-934d-10739190ab9e@linaro.org>
- <20200915213626.GD2771744@google.com>
- <5553e9c4-9681-e223-8a31-ea0b0582668f@codeaurora.org>
+        Wed, 16 Sep 2020 12:07:47 -0700 (PDT)
+Subject: Re: [PATCH] PM / devfreq: tegra30: disable clock on error in probe
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Dan Carpenter <dan.carpenter@oracle.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        linux-pm@vger.kernel.org, linux-tegra@vger.kernel.org,
+        kernel-janitors@vger.kernel.org
+References: <CGME20200908072627epcas1p41f2c8c2730d42bd8935a40b0ab8122f7@epcas1p4.samsung.com>
+ <20200908072557.GC294938@mwanda>
+ <2ceb045a-ebac-58d7-0250-4ea39d711ce8@samsung.com>
+ <44560522-f04e-ade5-2e02-9df56a6f79ba@gmail.com>
+ <e45c8ffc-ea24-1178-7bfa-62ca6bedbb3b@samsung.com>
+ <2573cd77-1175-d194-7bfc-24d28b276846@samsung.com>
+ <5aac4d59-5e06-25a6-3de1-6a5a586b9e34@gmail.com>
+ <bccb08ef-7e48-0cc7-08b5-7177b84a5763@samsung.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <887f4b2d-9181-356c-5f09-23be30d2480c@gmail.com>
+Date:   Wed, 16 Sep 2020 22:07:46 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
+In-Reply-To: <bccb08ef-7e48-0cc7-08b5-7177b84a5763@samsung.com>
 Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <5553e9c4-9681-e223-8a31-ea0b0582668f@codeaurora.org>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Sender: linux-pm-owner@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 16, 2020 at 09:45:04AM +0530, Rajendra Nayak wrote:
+16.09.2020 05:38, Chanwoo Choi пишет:
+> On 9/16/20 2:01 AM, Dmitry Osipenko wrote:
+>> 15.09.2020 05:13, Chanwoo Choi пишет:
+>>> On 9/15/20 11:00 AM, Chanwoo Choi wrote:
+>>>> Hi Dmitry,
+>>>>
+>>>> On 9/14/20 10:56 PM, Dmitry Osipenko wrote:
+>>>>> 14.09.2020 10:09, Chanwoo Choi пишет:
+>>>>>> Hi,
+>>>>>>
+>>>>>> On 9/8/20 4:25 PM, Dan Carpenter wrote:
+>>>>>>> This error path needs to call clk_disable_unprepare().
+>>>>>>>
+>>>>>>> Fixes: 7296443b900e ("PM / devfreq: tegra30: Handle possible round-rate error")
+>>>>>>> Signed-off-by: Dan Carpenter <dan.carpenter@oracle.com>
+>>>>>>> ---
+>>>>>>> ---
+>>>>>>>  drivers/devfreq/tegra30-devfreq.c | 4 +++-
+>>>>>>>  1 file changed, 3 insertions(+), 1 deletion(-)
+>>>>>>>
+>>>>>>> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+>>>>>>> index e94a27804c20..dedd39de7367 100644
+>>>>>>> --- a/drivers/devfreq/tegra30-devfreq.c
+>>>>>>> +++ b/drivers/devfreq/tegra30-devfreq.c
+>>>>>>> @@ -836,7 +836,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>>>>>  	rate = clk_round_rate(tegra->emc_clock, ULONG_MAX);
+>>>>>>>  	if (rate < 0) {
+>>>>>>>  		dev_err(&pdev->dev, "Failed to round clock rate: %ld\n", rate);
+>>>>>>> -		return rate;
+>>>>>>> +		err = rate;
+>>>>>>> +		goto disable_clk;
+>>>>>>>  	}
+>>>>>>>  
+>>>>>>>  	tegra->max_freq = rate / KHZ;
+>>>>>>> @@ -897,6 +898,7 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>>>>>>>  	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+>>>>>>>  
+>>>>>>>  	reset_control_reset(tegra->reset);
+>>>>>>> +disable_clk:
+>>>>>>>  	clk_disable_unprepare(tegra->clock);
+>>>>>>
+>>>>>> Is it doesn't need to reset with reset_contrl_reset()?
+>>>>>
+>>>>> Hello, Chanwoo!
+>>>>>
+>>>>> It's reset just before the clk_round_rate() invocation, hence there
+>>>>> shouldn't be a need to reset it second time.
+>>>>
+>>>> Do you mean that reset is deasserted automatically
+>>>> when invoke clk_round_rate() on tegra?
+>>
+>> I only mean that the tegra30-devfreq driver deasserts the reset before
+>> the clk_round_rate():
+>>
+>> https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/devfreq/tegra30-devfreq.c?h=v5.9-rc5#n834
+>>
+>>>> If tree, I think that 'reset_control_reset(tegra->reset)' invocation
+>>>
+>>> I'm sorry for my typo. s/tree/true.
+>>>
+>>>> is not needed on 'remove_opp:' goto. Because already reset deassertion
+>>>> is invoked by clk_round_rate(), it seems that doesn't need to invoke
+>>>> anymore during exception case.
+>>>>
+>>>> Actually, it is not clear in my case.
+>>
+>> The reset_control_reset() in the error path of the driver probe function
+>> is placed that way to make the tear-down order match the driver removal
+>> order. Perhaps the reset could be moved before the remove_opp, but this
+>> change won't make any real difference, hence it already should be good
+>> as-is.
+>>
+>>
 > 
-> On 9/16/2020 3:06 AM, Matthias Kaehlcke wrote:
-> > On Tue, Sep 15, 2020 at 11:23:49PM +0200, Daniel Lezcano wrote:
-> > > On 15/09/2020 23:13, Matthias Kaehlcke wrote:
-> > > > On Tue, Sep 15, 2020 at 10:55:52PM +0200, Daniel Lezcano wrote:
-> > > > > On 15/09/2020 19:58, Matthias Kaehlcke wrote:
-> > > > > > On Tue, Sep 15, 2020 at 07:50:10PM +0200, Daniel Lezcano wrote:
-> > > > > > > On 15/09/2020 19:24, Matthias Kaehlcke wrote:
-> > > > > > > > +Thermal folks
-> > > > > > > > 
-> > > > > > > > Hi Rajendra,
-> > > > > > > > 
-> > > > > > > > On Tue, Sep 15, 2020 at 11:14:00AM +0530, Rajendra Nayak wrote:
-> > > > > > > > > Hi Rob,
-> > > > > > > > > 
-> > > > > > > > > There has been some discussions on another thread [1] around the DPC (dynamic-power-coefficient) values
-> > > > > > > > > for CPU's being relative vs absolute (based on real power) and should they be used to derive 'real' power
-> > > > > > > > > at various OPPs in order to calculate things like 'sustainable-power' for thermal zones.
-> > > > > > > > > I believe relative values work perfectly fine for scheduling decisions, but with others using this for
-> > > > > > > > > calculating power values in mW, is there a need to document the property as something that *has* to be
-> > > > > > > > > based on real power measurements?
-> > > > > > > > 
-> > > > > > > > Relative values may work for scheduling decisions, but not for thermal
-> > > > > > > > management with the power allocator, at least not when CPU cooling devices
-> > > > > > > > are combined with others that specify their power consumption in absolute
-> > > > > > > > values. Such a configuration should be supported IMO.
-> > > > > > > 
-> > > > > > > The energy model is used in the cpufreq cooling device and if the
-> > > > > > > sustainable power is consistent with the relative values then there is
-> > > > > > > no reason it shouldn't work.
-> > > > > > 
-> > > > > > Agreed on thermal zones that exclusively use CPUs as cooling devices, but
-> > > > > > what when you have mixed zones, with CPUs with their pseudo-unit and e.g. a
-> > > > > > GPU that specifies its power in mW?
-> > > > > 
-> > > > > Well, if a SoC vendor decides to mix the units, then there is nothing we
-> > > > > can do.
-> > > > > 
-> > > > > When specifying the power numbers available for the SoC, they could be
-> > > > > all scaled against the highest power number.
-> > > > 
-> > > > The GPU was just one example, a device could have heat dissipating components
-> > > > that are not from the SoC vendor (e.g. WiFi, modem, backlight), and depending
-> > > > on the design it might not make sense to have separate thermal zones.
-> > > 
-> > > Is it possible to elaborate, I'm not sure to get the point ?
-> > 
-> > A device could have a thermal zone with the following cooling
-> > devices:
-> > 
-> > - CPUs with power consumption specified as pmW (pseudo mW
-> > - A modem from a third party vendor. The modem can dissipate
-> >    significant heat and allows to throttle the bandwidth for
-> >    cooling. The power consumption of the modem is given in
-> >    mW.
-> > 
-> > These could be crammed together in a small form factor
-> > (e.g. ChromeCast or Chromebit) which makes it difficult to
-> > discern with a sensor what exactly is generating the heat,
-> > which is why you have a single thermal zone.
-> > 
-> > IPA is used as governor for this zone, it can't make accurate
-> > decisions because one cooling device specifies it's power
-> > consumption in pmW and the other in mW.
+> I have one more question.
+> When failed to enable clock on line829[1],
+> does it need any reset_control invocation?
+> In this case on line829, just return without any restoration 
+> about reset control.
 > 
-> Is there a real example upstream for this, or is it a theoretical
-> problem (which can exist in the future) we are trying to solve?
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/devfreq/tegra30-devfreq.c?h=v5.9-rc5#n829
+> 
 
-Sort of, there is the rk3288-based veyron-mickey, which uses CPUs,
-the GPU and ddrfreq as cooling devices in the same zone:
-
-https://chromium.googlesource.com/chromiumos/third_party/kernel/+/refs/heads/chromeos-4.19/arch/arm/boot/dts/rk3288-veyron-mickey.dts#42
-
-The device doesn't use IPA though, so mixed up units wouldn't matter in this
-case.
-
-From a quick grep in arch/arm(64)/boot/dts/ at least it seems that mixing
-cooling devices of different types is not a common case, though it doesn't
-necessarily reflect what is done in custom DTs.
+There is no need to deassert the reset if clk-enable fails because reset
+control of tegra30-devfreq is exclusive, i.e it isn't shared with any
+other peripherals, and thus, reset control could asserted/deasserted at
+any time by the devfreq driver. If clk-enable fails, then reset will
+stay asserted and it will be fine to re-assert it again.
