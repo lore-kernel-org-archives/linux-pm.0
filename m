@@ -5,49 +5,49 @@ X-Spam-Level:
 X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CF4AC43461
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 08:45:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 161B4C43461
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 08:51:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DCF320770
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 08:45:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C83332083B
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 08:51:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="lPIdu/lV"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="iGivtR7Z"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726355AbgIQIpP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 04:45:15 -0400
-Received: from hqnvemgate24.nvidia.com ([216.228.121.143]:5878 "EHLO
-        hqnvemgate24.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726285AbgIQIpO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 04:45:14 -0400
-Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate24.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
-        id <B5f6321c00001>; Thu, 17 Sep 2020 01:43:44 -0700
+        id S1726399AbgIQIva (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 04:51:30 -0400
+Received: from hqnvemgate26.nvidia.com ([216.228.121.65]:5355 "EHLO
+        hqnvemgate26.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726285AbgIQIv3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 04:51:29 -0400
+Received: from hqpgpgate101.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate26.nvidia.com (using TLS: TLSv1.2, DES-CBC3-SHA)
+        id <B5f631ffd0000>; Thu, 17 Sep 2020 01:36:13 -0700
 Received: from hqmail.nvidia.com ([172.20.161.6])
   by hqpgpgate101.nvidia.com (PGP Universal service);
-  Thu, 17 Sep 2020 01:45:13 -0700
+  Thu, 17 Sep 2020 01:36:26 -0700
 X-PGP-Universal: processed;
-        by hqpgpgate101.nvidia.com on Thu, 17 Sep 2020 01:45:13 -0700
+        by hqpgpgate101.nvidia.com on Thu, 17 Sep 2020 01:36:26 -0700
 Received: from [10.26.74.242] (10.124.1.5) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 17 Sep
- 2020 08:45:06 +0000
-Subject: Re: [Patch 2/2] cpufreq: tegra194: Fix unlisted boot freq warning
-From:   Jon Hunter <jonathanh@nvidia.com>
+ 2020 08:36:23 +0000
+Subject: Re: [Patch 1/2] cpufreq: tegra194: get consistent cpuinfo_cur_freq
 To:     Sumit Gupta <sumitg@nvidia.com>, <viresh.kumar@linaro.org>,
         <rjw@rjwysocki.net>, <thierry.reding@gmail.com>,
         <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
         <linux-arm-kernel@lists.infradead.org>,
-        <linux-kernel@vger.kernel.org>, <sudeep.holla@arm.com>
+        <linux-kernel@vger.kernel.org>
 CC:     <ksitaraman@nvidia.com>, <bbasu@nvidia.com>
 References: <1600276277-7290-1-git-send-email-sumitg@nvidia.com>
- <1600276277-7290-3-git-send-email-sumitg@nvidia.com>
- <53d4513d-0232-0287-9610-3e9ed8888273@nvidia.com>
-Message-ID: <f387abcc-f68f-37fb-32cb-d8eb9c75b37a@nvidia.com>
-Date:   Thu, 17 Sep 2020 09:45:03 +0100
+ <1600276277-7290-2-git-send-email-sumitg@nvidia.com>
+From:   Jon Hunter <jonathanh@nvidia.com>
+Message-ID: <81d2517d-6581-b491-c509-832fd1c0321e@nvidia.com>
+Date:   Thu, 17 Sep 2020 09:36:21 +0100
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
  Thunderbird/68.10.0
 MIME-Version: 1.0
-In-Reply-To: <53d4513d-0232-0287-9610-3e9ed8888273@nvidia.com>
+In-Reply-To: <1600276277-7290-2-git-send-email-sumitg@nvidia.com>
 X-Originating-IP: [10.124.1.5]
 X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
  HQMAIL107.nvidia.com (172.20.187.13)
@@ -55,50 +55,47 @@ Content-Type: text/plain; charset="utf-8"
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1600332224; bh=hkXgHpAJCj98mhBFpX/Xx3jMKH0Fmfp4GUiqjPmKgnc=;
-        h=X-PGP-Universal:Subject:From:To:CC:References:Message-ID:Date:
+        t=1600331773; bh=gtGu9UUsd//x7NyTheFLNifE/O+n3VvopAXmwSrwqbM=;
+        h=X-PGP-Universal:Subject:To:CC:References:From:Message-ID:Date:
          User-Agent:MIME-Version:In-Reply-To:X-Originating-IP:
          X-ClientProxiedBy:Content-Type:Content-Language:
          Content-Transfer-Encoding;
-        b=lPIdu/lV6xPaiAJYJ/X1tTpA2Im+0Ezxo1S/l66mu3rKs1XH6HcOx7a/fhwE2ETuN
-         TAxRK8mM59GciT0xIxQPbeZc2OIW0JY3sYYWiCJex6mZ1sAlAbC+5PnbAndvPdMTj4
-         SwU61bhmX4daXloN00qSAoFd/1IXm8SM1RYkNGEJ+mHAfssRPpTNd+bhLIYKg2Va63
-         AeproXEMWbbH9nejH60pyHdvhtv8EH2wtqb26f8vRDEKCCvEF0RFyxT2FgN8cB8mRo
-         f5jW9Rl7zHF2HjSd12e2ikBkqMm6EPp43C+cCUYV747d2DDtq596fl3Jrp1rZmiHWC
-         8IsfAR+sLG3vw==
+        b=iGivtR7ZwTdYMlg8h794S9mC5vPM3vQlLlftl3mo5bKRbxp7IqdTcW0q0N6AJIvJX
+         CZKARUptLgKBFmlySS9fTJCLezQxnSSSRaXc5BGjePPRMYyCdTTeS/oKMy/zo6KV+w
+         nDtMzVR/rRCDxaO7kCEaDo5/AoGZU3cuihyrIqbRniIAOi9k6sn3ZJh/yMJxacuvL9
+         jF+FQmvsfEwBhHsuJhz5SFoulhVJYXbGkzhwIOkbqP0x4BfeKFGS6/3uz54n0z+x15
+         ciyXj2dm3zPtRWKun+h5bnZsPLnWWMgb0IHayhJfVDm31eFpO9fgAysDj33mHlDWSr
+         oCp1yQEaHQ6ag==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
-On 17/09/2020 09:38, Jon Hunter wrote:
-> 
-> On 16/09/2020 18:11, Sumit Gupta wrote:
->> Warning coming during boot because the boot freq set by bootloader
->> gets filtered out due to big freq steps while creating freq_table.
->> Fixing this by setting closest ndiv value from freq_table.
->> Warning:
->>   cpufreq: cpufreq_online: CPU0: Running at unlisted freq
->>   cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed
->>
->> Also, added change in init to wait till current frequency becomes
->> equal or near to the previously requested frequency. This is done
->> because it takes some time to restore the previous frequency while
->> turning-on non-boot cores during exit from SC7(Suspend-to-RAM).
-> 
-> Same here ...
-> 
-> Fixes: df320f89359c ("cpufreq: Add Tegra194 cpufreq driver")
-> 
->>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
-> Reviewed-by: Jon Hunter <jonathanh@nvidia.com>
-> Tested-by: Jon Hunter <jonathanh@nvidia.com>
-> 
-> Viresh, this is also needed for v5.9.
 
-Adding Sudeep.
+On 16/09/2020 18:11, Sumit Gupta wrote:
+> Frequency returned by 'cpuinfo_cur_freq' using counters is not fixed
+> and keeps changing slightly. This change returns a consistent value
+> from freq_table. If the reconstructed frequency has acceptable delta
+> from the last written value, then return the frequency corresponding
+> to the last written ndiv value from freq_table. Otherwise, print a
+> warning and return the reconstructed freq.
 
+We should include the Fixes tag here ...
+
+Fixes: df320f89359c ("cpufreq: Add Tegra194 cpufreq driver")
+
+> 
+> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
+
+Otherwise ...
+
+Reviewed-by: Jon Hunter <jonathanh@nvidia.com>
+Tested-by: Jon Hunter <jonathanh@nvidia.com>
+
+Viresh, ideally we need to include this fix for v5.9. Do you need Sumit
+to resend with the Fixes tag or are you happy to add?
+
+Thanks
 Jon
 
 -- 
