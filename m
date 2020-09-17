@@ -2,101 +2,225 @@ Return-Path: <SRS0=qROV=C2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6EB92C2BBD1
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 15:42:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C0608C43461
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:02:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DF9F2223C
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 15:42:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 64D88206CA
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:02:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xXN9ybCy"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="HbhEn3C/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727668AbgIQPmD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 11:42:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38450 "EHLO
+        id S1728864AbgIQRB7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 13:01:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54600 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728124AbgIQPST (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 11:18:19 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4B54C061788
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2020 06:22:52 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id k15so2047900wrn.10
-        for <linux-pm@vger.kernel.org>; Thu, 17 Sep 2020 06:22:52 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:from:to:cc:references:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=iLZSPSD/ZsMU/VhPvC7PVhozMgUGYrN+a+2GW/HC5c4=;
-        b=xXN9ybCyme/x/KNyTDjjlQj/2XVtUTdaIzrIOGyPx72cu4ZpKLW5W+nYUsVAVO1vJh
-         t6hv3J6Ztg1hSM7ueLDl9x8AJ4NkIduTvSaWD8KvrYQ5AD0U76HE8/VcX4WgktMdSet6
-         pdkzZ9Iqd1JDxMyAMlmkge5JjjqHN86bYtfSnqBC8CeokkaTNRQoHO4RwCx3cTthW0+n
-         fRJrUOP61bYS4dLOD0cXRHjkq0U9EvS83ynp+LoLO4BOg4iqm0VsjDTaCtz7wgEg1tU2
-         /+f7QrxDcxzOD547T5YhqmEFh6TJ7/iqPsaO8m030YJBDsJ5VN5/sVhgV7DmUbTK+B1A
-         aYsQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:from:to:cc:references:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=iLZSPSD/ZsMU/VhPvC7PVhozMgUGYrN+a+2GW/HC5c4=;
-        b=eXRyBcAnuiLdNmvBhPtVCTLycxYLaFny8quy9+fgnZx4gIO40/t//q1kp9kPbRGuYV
-         3UWJl5vgNH9X/GwxFD5yT+16ID5hfKf+3FxjyojP/rVKDXQ7fio3lMwtu4mV53re421h
-         4LEZ1xPs9Fr6oqmVmzlQBFJe8VhCurCZc9M20yxAjWgtShYr7pI135NNnKF6EeM88mRj
-         Cq4kHCy5jte05kkfW5p9WRMf3Vk/1kPmYGQ6GW11ZyTZNaJpfaN/XwscHuHQeGjH34UC
-         1OG3zz6W18b9G8HPX7TMai6TaXRqk8w3SL5GSAUjCCOU3iXmyaE3NCXNRpu6QE+RLD/A
-         Y2Rg==
-X-Gm-Message-State: AOAM5322P1THCUvuQh/YAMdXjx2Zj7y+291d7/N9qdeipQZWRKWAXU5l
-        hmUhaAqLU/+jKwm/5+GY4iPJTQ==
-X-Google-Smtp-Source: ABdhPJztkq6byhLykI8VIdHer61V/nJiMFZCB2XFILnEb5UWHB4s/NHiHcaHOV8rjlaza1/Vewmlmg==
-X-Received: by 2002:adf:e952:: with SMTP id m18mr31706208wrn.171.1600348971148;
-        Thu, 17 Sep 2020 06:22:51 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:9934:ad8d:e364:de32? ([2a01:e34:ed2f:f020:9934:ad8d:e364:de32])
-        by smtp.googlemail.com with ESMTPSA id 18sm10622495wmj.28.2020.09.17.06.22.49
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 17 Sep 2020 06:22:50 -0700 (PDT)
-Subject: Re: [PATCH] thermal/drivers/cpuidle_cooling: Change the set_cur_state
- function
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     zhuguangqing83 <zhuguangqing83@gmail.com>, amit.kachhap@gmail.com,
-        viresh.kumar@linaro.org, javi.merino@kernel.org,
-        rui.zhang@intel.com, amitk@kernel.org, zhuguangqing@xiaomi.com
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <19e301d68ce3$de5f9840$9b1ec8c0$@gmail.com>
- <d1367763-335a-53ba-d4fc-7b02dbd59c88@linaro.org>
-Message-ID: <ca967b7d-d772-abc0-8dc2-d24af36f28cc@linaro.org>
-Date:   Thu, 17 Sep 2020 15:22:49 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        with ESMTP id S1728852AbgIQRB4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 13:01:56 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 17CABC061756;
+        Thu, 17 Sep 2020 10:01:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+        Content-Type:Content-ID:Content-Description;
+        bh=ezfq9/HhvT27qSext7o43eb8FqswuribWTEc7lyTkRU=; b=HbhEn3C/BsFhAWRE+2fvVuiSAe
+        kpapO+cEjw0GcpsmvKwJkPyeWa9w/4H1RaNf+clTI4z9YRICdP8HH8LeNQ1KU75oaBXBA9w++hfPo
+        MM44EqtfWhH97hK0SYWBvNMEf7hxEhH92MxbW2AsOIKCCfTB6jPmqc+YlKlTH/SH4B1vzhmj0xcDc
+        QroGG5MUhHZ7lEszHcqqsJC8Jkp6NB95QP8tCZG+qLdfWyqnlNe7jvAL+2sDfXJojmPriX0PAR8ze
+        8j5wQHB+yMvKwaPIS+bnIAMvhgMHNqnc7cXtdrbLPhm9BO40ymzy3LtVKBqVurPCI3B6wFxH1a3dL
+        Y7xMTp3g==;
+Received: from 089144214092.atnat0023.highway.a1.net ([89.144.214.92] helo=localhost)
+        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1kIxHz-0000Or-RK; Thu, 17 Sep 2020 17:01:44 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Josef Bacik <josef@toxicpanda.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Stefan Haberland <sth@linux.ibm.com>,
+        Jan Hoeppner <hoeppner@linux.ibm.com>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, nbd@other.debian.org,
+        linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+        linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        linux-block@vger.kernel.org
+Subject: [PATCH 01/14] block: move the NEED_PART_SCAN flag to struct gendisk
+Date:   Thu, 17 Sep 2020 18:57:07 +0200
+Message-Id: <20200917165720.3285256-2-hch@lst.de>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200917165720.3285256-1-hch@lst.de>
+References: <20200917165720.3285256-1-hch@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <d1367763-335a-53ba-d4fc-7b02dbd59c88@linaro.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 17/09/2020 14:33, Daniel Lezcano wrote:
+We can only scan for partitions on the whole disk, so move the flag
+from struct block_device to struct gendisk.
 
-[ .. ]
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ block/genhd.c             | 4 ++--
+ drivers/block/nbd.c       | 8 ++++----
+ drivers/ide/ide-gd.c      | 2 +-
+ fs/block_dev.c            | 7 +++----
+ include/linux/blk_types.h | 4 +---
+ include/linux/genhd.h     | 2 ++
+ 6 files changed, 13 insertions(+), 14 deletions(-)
 
-> It does not really matter if the update is delayed. Restarting the idle
-> injection at each update will be worth in the cooling context than
-> waiting an idle cycle.
-
-s/worth/worse/
-
-
-
-
-
+diff --git a/block/genhd.c b/block/genhd.c
+index 9d060e79eb31d8..7b56203c90a303 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -731,7 +731,7 @@ static void register_disk(struct device *parent, struct gendisk *disk,
+ 	if (!bdev)
+ 		goto exit;
+ 
+-	set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++	set_bit(GD_NEED_PART_SCAN, &disk->state);
+ 	err = blkdev_get(bdev, FMODE_READ, NULL);
+ 	if (err < 0)
+ 		goto exit;
+@@ -2112,7 +2112,7 @@ bool bdev_check_media_change(struct block_device *bdev)
+ 	if (__invalidate_device(bdev, true))
+ 		pr_warn("VFS: busy inodes on changed media %s\n",
+ 			bdev->bd_disk->disk_name);
+-	set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++	set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
+ 	return true;
+ }
+ EXPORT_SYMBOL(bdev_check_media_change);
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index 15eed210feeff4..2dca0aab0a9a25 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -315,7 +315,7 @@ static void nbd_size_update(struct nbd_device *nbd)
+ 			bd_set_nr_sectors(bdev, nr_sectors);
+ 			set_blocksize(bdev, config->blksize);
+ 		} else
+-			set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++			set_bit(GD_NEED_PART_SCAN, &nbd->disk->state);
+ 		bdput(bdev);
+ 	}
+ 	kobject_uevent(&nbd_to_dev(nbd)->kobj, KOBJ_CHANGE);
+@@ -1322,7 +1322,7 @@ static int nbd_start_device_ioctl(struct nbd_device *nbd, struct block_device *b
+ 		return ret;
+ 
+ 	if (max_part)
+-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++		set_bit(GD_NEED_PART_SCAN, &nbd->disk->state);
+ 	mutex_unlock(&nbd->config_lock);
+ 	ret = wait_event_interruptible(config->recv_wq,
+ 					 atomic_read(&config->recv_threads) == 0);
+@@ -1500,9 +1500,9 @@ static int nbd_open(struct block_device *bdev, fmode_t mode)
+ 		refcount_set(&nbd->config_refs, 1);
+ 		refcount_inc(&nbd->refs);
+ 		mutex_unlock(&nbd->config_lock);
+-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++		set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
+ 	} else if (nbd_disconnected(nbd->config)) {
+-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++		set_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
+ 	}
+ out:
+ 	mutex_unlock(&nbd_index_mutex);
+diff --git a/drivers/ide/ide-gd.c b/drivers/ide/ide-gd.c
+index 661e2aa9c96784..e2b6c82586ce8b 100644
+--- a/drivers/ide/ide-gd.c
++++ b/drivers/ide/ide-gd.c
+@@ -230,7 +230,7 @@ static int ide_gd_open(struct block_device *bdev, fmode_t mode)
+ 				bdev->bd_disk->disk_name);
+ 		drive->disk_ops->get_capacity(drive);
+ 		set_capacity(disk, ide_gd_capacity(drive));
+-		set_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++		set_bit(GD_NEED_PART_SCAN, &disk->state);
+ 	} else if (drive->dev_flags & IDE_DFLAG_FORMAT_IN_PROGRESS) {
+ 		ret = -EBUSY;
+ 		goto out_put_idkp;
+diff --git a/fs/block_dev.c b/fs/block_dev.c
+index 0b34955b9e360f..1a9325f4315769 100644
+--- a/fs/block_dev.c
++++ b/fs/block_dev.c
+@@ -910,7 +910,6 @@ struct block_device *bdget(dev_t dev)
+ 		bdev->bd_super = NULL;
+ 		bdev->bd_inode = inode;
+ 		bdev->bd_part_count = 0;
+-		bdev->bd_flags = 0;
+ 		inode->i_mode = S_IFBLK;
+ 		inode->i_rdev = dev;
+ 		inode->i_bdev = bdev;
+@@ -1385,7 +1384,7 @@ int bdev_disk_changed(struct block_device *bdev, bool invalidate)
+ 
+ 	lockdep_assert_held(&bdev->bd_mutex);
+ 
+-	clear_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags);
++	clear_bit(GD_NEED_PART_SCAN, &bdev->bd_disk->state);
+ 
+ rescan:
+ 	ret = blk_drop_partitions(bdev);
+@@ -1509,7 +1508,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, void *holder,
+ 			 * The latter is necessary to prevent ghost
+ 			 * partitions on a removed medium.
+ 			 */
+-			if (test_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags) &&
++			if (test_bit(GD_NEED_PART_SCAN, &disk->state) &&
+ 			    (!ret || ret == -ENOMEDIUM))
+ 				bdev_disk_changed(bdev, ret == -ENOMEDIUM);
+ 
+@@ -1539,7 +1538,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, void *holder,
+ 			if (bdev->bd_disk->fops->open)
+ 				ret = bdev->bd_disk->fops->open(bdev, mode);
+ 			/* the same as first opener case, read comment there */
+-			if (test_bit(BDEV_NEED_PART_SCAN, &bdev->bd_flags) &&
++			if (test_bit(GD_NEED_PART_SCAN, &disk->state) &&
+ 			    (!ret || ret == -ENOMEDIUM))
+ 				bdev_disk_changed(bdev, ret == -ENOMEDIUM);
+ 			if (ret)
+diff --git a/include/linux/blk_types.h b/include/linux/blk_types.h
+index 6ffa783e16335e..eb20e28184ab19 100644
+--- a/include/linux/blk_types.h
++++ b/include/linux/blk_types.h
+@@ -19,8 +19,6 @@ struct cgroup_subsys_state;
+ typedef void (bio_end_io_t) (struct bio *);
+ struct bio_crypt_ctx;
+ 
+-#define BDEV_NEED_PART_SCAN		0
+-
+ struct block_device {
+ 	dev_t			bd_dev;
+ 	int			bd_openers;
+@@ -39,7 +37,7 @@ struct block_device {
+ 	struct hd_struct *	bd_part;
+ 	/* number of times partitions within this device have been opened. */
+ 	unsigned		bd_part_count;
+-	unsigned long		bd_flags;
++
+ 	spinlock_t		bd_size_lock; /* for bd_inode->i_size updates */
+ 	struct gendisk *	bd_disk;
+ 	struct backing_dev_info *bd_bdi;
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 1c97cf84f011a7..38f23d75701379 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -191,6 +191,8 @@ struct gendisk {
+ 	void *private_data;
+ 
+ 	int flags;
++	unsigned long state;
++#define GD_NEED_PART_SCAN		0
+ 	struct rw_semaphore lookup_sem;
+ 	struct kobject *slave_dir;
+ 
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.28.0
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
