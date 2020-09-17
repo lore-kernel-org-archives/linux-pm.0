@@ -2,95 +2,105 @@ Return-Path: <SRS0=qROV=C2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C667AC433E2
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 18:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E19CC43464
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 20:05:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A22E22205
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 18:41:15 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="P6srGR6v"
+	by mail.kernel.org (Postfix) with ESMTP id 5761320725
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 20:05:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726532AbgIQSiL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 14:38:11 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54940 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728793AbgIQREK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 13:04:10 -0400
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4F606C06174A;
-        Thu, 17 Sep 2020 10:04:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
-        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-        Content-Type:Content-ID:Content-Description;
-        bh=1fBT9s1q2BeyeX5HlyXsJ+Y6Y5+WpSqbNQWYXqzlTr0=; b=P6srGR6vEznh8lHtplE7kMZUWt
-        NC07bfyxiYydvJofD1807i3dSytM+YwHGjTqXPxPxVItTdUyA3Y5tN/K5vADXgpxE6OZRhUADgvFU
-        xSQVyeLBnlSaVXGkYFI2TnoQgbrSA1qj7L6NeTFBTQiGAqnNO6EomBrAE8LBfpN/g97kN+89KshXt
-        3vH8sjjPHQN56MPFQdlJ43XVOo/g4nQmyS7PXGmypC56CULLI41HYb+f8SYkTZjCVSzth1iP0lbiI
-        Y7JIy2SR9IGcI1kT0VMb0xyLEAlWiOUgK2lQgr9pbh0UJmhEyE6SX3aG5bpiuzVgHzxmZS+i74gxH
-        VS4vkhvA==;
-Received: from 089144214092.atnat0023.highway.a1.net ([89.144.214.92] helo=localhost)
-        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kIxK6-0000Y8-TJ; Thu, 17 Sep 2020 17:03:55 +0000
-From:   Christoph Hellwig <hch@lst.de>
-To:     Jens Axboe <axboe@kernel.dk>
-Cc:     Josef Bacik <josef@toxicpanda.com>,
-        Minchan Kim <minchan@kernel.org>,
-        Stefan Haberland <sth@linux.ibm.com>,
-        Jan Hoeppner <hoeppner@linux.ibm.com>,
-        Joseph Qi <joseph.qi@linux.alibaba.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        linux-kernel@vger.kernel.org, nbd@other.debian.org,
-        linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
-        linux-pm@vger.kernel.org, linux-mm@kvack.org,
-        linux-block@vger.kernel.org
-Subject: [PATCH 02/14] block: switch register_disk to use blkdev_get_by_dev
-Date:   Thu, 17 Sep 2020 18:57:08 +0200
-Message-Id: <20200917165720.3285256-3-hch@lst.de>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200917165720.3285256-1-hch@lst.de>
-References: <20200917165720.3285256-1-hch@lst.de>
+        id S1726653AbgIQUFf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 16:05:35 -0400
+Received: from mga06.intel.com ([134.134.136.31]:35244 "EHLO mga06.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726438AbgIQUFc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Sep 2020 16:05:32 -0400
+IronPort-SDR: 1EqDDV9SWySMMXQjgrHW1/Tq43ZTXe22s50bgNybd15hjg4bWdlaVn0ZUNNKZFGLILKPh0ZVw+
+ 9up+rZjLo4DQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9747"; a="221336979"
+X-IronPort-AV: E=Sophos;i="5.77,271,1596524400"; 
+   d="scan'208";a="221336979"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2020 12:40:16 -0700
+IronPort-SDR: OJtaUmUU2VRk9KtKnU2JOdZ0Wx6lNOu+0+CFBjlBeB4odozE5Gxp9wTpGmmaUJi2k6Nfsj2iiR
+ 1ryN5FpIrCvQ==
+X-IronPort-AV: E=Sophos;i="5.77,271,1596524400"; 
+   d="scan'208";a="483882946"
+Received: from jekeller-mobl1.amr.corp.intel.com (HELO [10.212.151.155]) ([10.212.151.155])
+  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Sep 2020 12:40:13 -0700
+Subject: Re: [trivial PATCH] treewide: Convert switch/case fallthrough; to
+ break;
+To:     Keith Busch <kbusch@kernel.org>, Joe Perches <joe@perches.com>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Jiri Kosina <trivial@kernel.org>,
+        Kees Cook <kees.cook@canonical.com>,
+        Nick Desaulniers <ndesaulniers@google.com>,
+        linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+        linux-mips@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-crypto@vger.kernel.org, linux-ide@vger.kernel.org,
+        linux-atm-general@lists.sourceforge.net, netdev@vger.kernel.org,
+        intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+        nouveau@lists.freedesktop.org, linux-input@vger.kernel.org,
+        linux-i2c@vger.kernel.org, linux-rdma@vger.kernel.org,
+        iommu@lists.linux-foundation.org, dm-devel@redhat.com,
+        linux-media@vger.kernel.org, linux-mmc@vger.kernel.org,
+        linux-mtd@lists.infradead.org, intel-wired-lan@lists.osuosl.org,
+        oss-drivers@netronome.com, linux-usb@vger.kernel.org,
+        linux-wireless@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-nvme@lists.infradead.org, linux-pm@vger.kernel.org,
+        linux-rtc@vger.kernel.org, linux-scsi@vger.kernel.org,
+        storagedev@microchip.com, sparclinux@vger.kernel.org,
+        linux-serial@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-parisc@vger.kernel.org, linux-fbdev@vger.kernel.org,
+        linux-afs@lists.infradead.org, ceph-devel@vger.kernel.org,
+        linux-nfs@vger.kernel.org, bpf@vger.kernel.org,
+        dccp@vger.kernel.org, netfilter-devel@vger.kernel.org,
+        coreteam@netfilter.org, linux-sctp@vger.kernel.org,
+        alsa-devel <alsa-devel@alsa-project.org>
+References: <e6387578c75736d61b2fe70d9783d91329a97eb4.camel@perches.com>
+ <20200909205558.GA3384631@dhcp-10-100-145-180.wdl.wdc.com>
+From:   Jacob Keller <jacob.e.keller@intel.com>
+Organization: Intel Corporation
+Message-ID: <321069c8-a4c1-56ff-49fb-4c2bce1e6352@intel.com>
+Date:   Thu, 17 Sep 2020 12:40:13 -0700
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
+ Thunderbird/78.2.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
+In-Reply-To: <20200909205558.GA3384631@dhcp-10-100-145-180.wdl.wdc.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use blkdev_get_by_dev instead of open coding it using bdget_disk +
-blkdev_get.
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- block/genhd.c | 7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
 
-diff --git a/block/genhd.c b/block/genhd.c
-index 7b56203c90a303..f778716fac6cde 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -732,10 +732,9 @@ static void register_disk(struct device *parent, struct gendisk *disk,
- 		goto exit;
- 
- 	set_bit(GD_NEED_PART_SCAN, &disk->state);
--	err = blkdev_get(bdev, FMODE_READ, NULL);
--	if (err < 0)
--		goto exit;
--	blkdev_put(bdev, FMODE_READ);
-+	bdev = blkdev_get_by_dev(disk_devt(disk), FMODE_READ, NULL);
-+	if (!IS_ERR(bdev))
-+		blkdev_put(bdev, FMODE_READ);
- 
- exit:
- 	/* announce disk after possible partitions are created */
--- 
-2.28.0
+On 9/9/2020 1:55 PM, Keith Busch wrote:
+> On Wed, Sep 09, 2020 at 01:06:39PM -0700, Joe Perches wrote:
+>> diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+>> index eea0f453cfb6..8aac5bc60f4c 100644
+>> --- a/crypto/tcrypt.c
+>> +++ b/crypto/tcrypt.c
+>> @@ -2464,7 +2464,7 @@ static int do_test(const char *alg, u32 type, u32 mask, int m, u32 num_mb)
+>>  		test_hash_speed("streebog512", sec,
+>>  				generic_hash_speed_template);
+>>  		if (mode > 300 && mode < 400) break;
+>> -		fallthrough;
+>> +		break;
+>>  	case 399:
+>>  		break;
+> 
+> Just imho, this change makes the preceding 'if' look even more
+> pointless. Maybe the fallthrough was a deliberate choice? Not that my
+> opinion matters here as I don't know this module, but it looked a bit
+> odd to me.
+> 
 
+Yea this does look very odd..
