@@ -2,93 +2,167 @@ Return-Path: <SRS0=qROV=C2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_SANE_2
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D5B0C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 02:37:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2275C43461
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 03:28:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB8612074B
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 02:37:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B13E620872
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 03:28:03 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="bZSqCHxH"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Mn11vOjh"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726040AbgIQChI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 16 Sep 2020 22:37:08 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:31574 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1725886AbgIQChH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2020 22:37:07 -0400
-X-Greylist: delayed 303 seconds by postgrey-1.27 at vger.kernel.org; Wed, 16 Sep 2020 22:37:06 EDT
-X-UUID: b5f35bf3bcf240a48189df19bb23c453-20200917
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:MIME-Version:Content-Type:References:In-Reply-To:Date:CC:To:From:Subject:Message-ID; bh=55vZkGLvgoeApgdN8nM2vlO2w+ACfA3EPA25BOlXP70=;
-        b=bZSqCHxHRCTfgbe5XYPyHlPB48YAIS7XGniDa3QYe7igJJ5UHfaK9BSvttbbJGntPtI0pGBBgymqBvM2ego2yTc7UfPEPm7odDLc9RIg7pyxNnlLWOvvg2TiTw+y/rhfqfccY9WbvXyTsS0oG/U7zh3HvhKjxwsXWVOf9QJTwzM=;
-X-UUID: b5f35bf3bcf240a48189df19bb23c453-20200917
-Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
-        (envelope-from <hector.yuan@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 240590259; Thu, 17 Sep 2020 10:31:59 +0800
-Received: from mtkcas08.mediatek.inc (172.21.101.126) by
- mtkmbs01n2.mediatek.inc (172.21.101.79) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 17 Sep 2020 10:31:45 +0800
-Received: from [172.21.77.33] (172.21.77.33) by mtkcas08.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 17 Sep 2020 10:31:50 +0800
-Message-ID: <1600309910.7042.15.camel@mtkswgap22>
-Subject: Re: [PATCH v7] cpufreq: mediatek-hw: Add support for Mediatek
- cpufreq HW driver
-From:   Hector Yuan <hector.yuan@mediatek.com>
-To:     Rob Herring <robh+dt@kernel.org>
-CC:     Viresh Kumar <viresh.kumar@linaro.org>,
-        <linux-mediatek@lists.infradead.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>
-Date:   Thu, 17 Sep 2020 10:31:50 +0800
-In-Reply-To: <1600256353.7042.13.camel@mtkswgap22>
-References: <1599712262-8819-1-git-send-email-hector.yuan@mediatek.com>
-         <20200910050341.pgyieq3q7ijitosn@vireshk-i7>
-         <1599715851.7042.9.camel@mtkswgap22>
-         <20200910053406.t37rgioykzvk3oem@vireshk-i7>
-         <1600256353.7042.13.camel@mtkswgap22>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.2.3-0ubuntu6 
+        id S1726152AbgIQD2C (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 16 Sep 2020 23:28:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41022 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726101AbgIQD2C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 16 Sep 2020 23:28:02 -0400
+Received: from mail-qt1-x842.google.com (mail-qt1-x842.google.com [IPv6:2607:f8b0:4864:20::842])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 03938C0611C0
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2020 20:22:34 -0700 (PDT)
+Received: by mail-qt1-x842.google.com with SMTP id k25so805626qtu.4
+        for <linux-pm@vger.kernel.org>; Wed, 16 Sep 2020 20:22:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=qA8w6GQLbaTlzp5n8dcgkY3X2oVEZB3DGcmvh59/aDQ=;
+        b=Mn11vOjh/Pgg9MhlRULSR7tXA6ZixO1ybWFY4R1A5pbm+l+dZi99Ik6Dz8/SFCJOZZ
+         s1YfqhkXUuWOVzORUi9/hJLnBRejNT4uBEiqF1uhwCh+pGVe6rI8/wH0UBySQdONPnu2
+         yLjurEjdnc0DLZb4vBbq62+ijn8pt4QrMJPhkemj1PrGRBphp12LOpX4opxL05I0RVtj
+         4O8+mjdNL1tEpF8H1h0qLT9RgAl/fEtohF2mzCGlU5XBR+wBCslchXHtSLCafKXLJPmR
+         zg2SqEEqEGnveFdXk3e4S3pvw9LtRrrTjsExiE6jAfAf8k8PpJCoWkHQ+RQB432IqekD
+         qG9Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=qA8w6GQLbaTlzp5n8dcgkY3X2oVEZB3DGcmvh59/aDQ=;
+        b=SX0AMRj/RVniEp1A3AG3PZaCP6VZRP3mwMuS7ZqhKr0pDXp5Ki1ra2qZwF4rdGXHO9
+         IJAom5IgFcmVWftexhytChr0JeIErvBZr0Nkd09avoW9oKajHYRWe/y13oEJELu5sg9O
+         jTBGiIgwFEcdtlnjwHI3tdEjzibTirYxPYS0VdXG+8VoffM5CMAEnLJwBi8BRItMoYoH
+         39jIED0A3mQmIv5OxiBL1V6fwqTNZ+H6eHJ7fCEhyVtdWGQj8XoakKhO5Tc16V7nepjl
+         PLxPes8R1ogyuEy2xfB0gt0yNWs5huCribCSE5U1kmQ2R7ohkDWRKM5jZZooOUpX8JHX
+         3ZyA==
+X-Gm-Message-State: AOAM532Ems6uQw1J5MFINzolKU0xm/uLR202nuk9bpj5H/9QAd5MfLdz
+        fbvZmg4iY9m33ddj4Umc8QqJCQ==
+X-Google-Smtp-Source: ABdhPJwE1MP6yxSojZ/oW1Dvar69y++Fse0YxIRP8jIkfmkccLGWZ2OFc+TBgA+kkS9idIbPZJJT8Q==
+X-Received: by 2002:ac8:44b5:: with SMTP id a21mr13087829qto.314.1600312953278;
+        Wed, 16 Sep 2020 20:22:33 -0700 (PDT)
+Received: from pop-os.fios-router.home (pool-71-163-245-5.washdc.fios.verizon.net. [71.163.245.5])
+        by smtp.googlemail.com with ESMTPSA id g45sm21370801qtb.60.2020.09.16.20.22.32
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 16 Sep 2020 20:22:32 -0700 (PDT)
+From:   Thara Gopinath <thara.gopinath@linaro.org>
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, robh+dt@kernel.org,
+        agross@kernel.org, bjorn.andersson@linaro.org
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        lukasz.luba@arm.com, amitk@kernel.org
+Subject: [PATCH RFC 6/8] thermal: Modify thermal governors to do nothing for trip points being monitored for falling temperature
+Date:   Wed, 16 Sep 2020 23:22:24 -0400
+Message-Id: <20200917032226.820371-7-thara.gopinath@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20200917032226.820371-1-thara.gopinath@linaro.org>
+References: <20200917032226.820371-1-thara.gopinath@linaro.org>
 MIME-Version: 1.0
-X-TM-SNTS-SMTP: 7B895C27C73AF267B15AA01BCC80074C1740AE0C6671D6C49EB69B78158A5A792000:8
-X-MTK:  N
-Content-Transfer-Encoding: base64
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-SGksIFJvYiBzaXI6DQoNClNvcnJ5IHRvIGJvdGhlciB5b3UsIG1heSBJIGhhdmUgeW91ciByZXZp
-ZXcgY29tbWVudCBmb3IgdGhlIGJpbmRpbmcNCnBhcnQ/DQpBcHByZWNpYXRlZC4NCg0KT24gV2Vk
-LCAyMDIwLTA5LTE2IGF0IDE5OjM5ICswODAwLCBIZWN0b3IgWXVhbiB3cm90ZToNCj4gSGksIFJv
-YiBzaXI6DQo+IA0KPiBTb3JyeSB0byBib3RoZXIgeW91LCBtYXkgSSBoYXZlIHlvdXIgcmV2aWV3
-IGNvbW1lbnQgZm9yIHRoZSBiaW5kaW5nDQo+IHBhcnQ/DQo+IEFwcHJlY2lhdGVkLg0KPiANCj4g
-T24gVGh1LCAyMDIwLTA5LTEwIGF0IDExOjA0ICswNTMwLCBWaXJlc2ggS3VtYXIgd3JvdGU6DQo+
-ID4gT24gMTAtMDktMjAsIDEzOjMwLCBIZWN0b3IgWXVhbiB3cm90ZToNCj4gPiA+IE9uIFRodSwg
-MjAyMC0wOS0xMCBhdCAxMDozMyArMDUzMCwgVmlyZXNoIEt1bWFyIHdyb3RlOg0KPiA+ID4gPiBP
-biAxMC0wOS0yMCwgMTI6MzEsIEhlY3RvciBZdWFuIHdyb3RlOg0KPiA+ID4gPiA+IFRoZSBDUFVm
-cmVxIEhXIHByZXNlbnQgaW4gc29tZSBNZWRpYXRlayBjaGlwc2V0cyBvZmZsb2FkcyB0aGUgc3Rl
-cHMgbmVjZXNzYXJ5IGZvciBjaGFuZ2luZyB0aGUgZnJlcXVlbmN5IG9mIENQVXMuIA0KPiA+ID4g
-PiA+IFRoZSBkcml2ZXIgaW1wbGVtZW50cyB0aGUgY3B1ZnJlcSBkcml2ZXIgaW50ZXJmYWNlIGZv
-ciB0aGlzIGhhcmR3YXJlIGVuZ2luZS4gDQo+ID4gPiA+ID4gDQo+ID4gPiA+ID4gVGhpcyBwYXRj
-aCBkZXBlbmRzIG9uIHRoZSBNVDY3NzkgRFRTIHBhdGNoIHN1Ym1pdHRlZCBieSBIYW5rcyBDaGVu
-DQo+ID4gPiA+ID4gIGh0dHBzOi8vbGttbC5vcmcvbGttbC8yMDIwLzgvNC8xMDk0DQo+ID4gPiA+
-IA0KPiA+ID4gPiBUaGFua3MgZm9yIGhhbmdpbmcgdGhlcmUuIExvb2tzIGdvb2QgdG8gbWUuIEkg
-d2lsbCBhcHBseSBpdCBvbmNlIFJvYg0KPiA+ID4gPiBBY2sncyB0aGUgYmluZGluZyBwYXRjaC4N
-Cj4gPiA+ID4gDQo+ID4gPiANCj4gPiA+IE1hbnkgdGhhbmtzIGZvciB5b3VyIGhlbHAuIE1heSBJ
-IGtub3cgaWYgeW91IGNhbiBhZGQgUmV2aWV3ZWQtYnkgdGFnIHRvDQo+ID4gPiB0aGlzIHBhdGNo
-IHNldC4NCj4gPiANCj4gPiBTaW5jZSB0aGlzIHBhdGNoc2V0IGlzIGdvaW5nIHRvIGdldCBtZXJn
-ZWQgdmlhIG15IHRyZWUgKEFSTSBjcHVmcmVxDQo+ID4gdHJlZSksIGEgcmV2aWV3ZWQtYnkgaXNu
-J3QgcmVxdWlyZWQgaGVyZS4gSSB3aWxsIHF1ZXVlIGl0IHVwIGZvcg0KPiA+IDUuMTAtcmMxIGFm
-dGVyIEkgcmVjZWl2ZSBhbiBBY2sgZnJvbSBSb2IuDQo+ID4gDQo+ID4gPiBJIHdvdWxkIGxpa2Ug
-dG8gcHJlcGFyZSBzb21lIHBhdGNoZXMgZm9yIG1vcmUgZmVhdHVyZXMNCj4gPiA+IGJhc2VkIG9u
-IHRoaXMuIElzIHRoYXQgb2theSB0byB5b3U/IFRoYW5rcyBhZ2Fpbi4NCj4gPiANCj4gPiBUaGF0
-IHNob3VsZCBiZSBmaW5lLg0KPiA+IA0KPiANCj4gDQoNCg==
+For now, thermal governors other than step wise governorr do not support
+monitoring of falling temperature. Hence, in case of calls to the governor
+for trip points marked as THERMAL_TRIP_MONITOR_FALLING, return doing
+nothing.
+
+Signed-off-by: Thara Gopinath <thara.gopinath@linaro.org>
+---
+ drivers/thermal/gov_bang_bang.c       | 12 ++++++++++++
+ drivers/thermal/gov_fair_share.c      | 12 ++++++++++++
+ drivers/thermal/gov_power_allocator.c | 12 ++++++++++++
+ 3 files changed, 36 insertions(+)
+
+diff --git a/drivers/thermal/gov_bang_bang.c b/drivers/thermal/gov_bang_bang.c
+index 991a1c54296d..a662047e5961 100644
+--- a/drivers/thermal/gov_bang_bang.c
++++ b/drivers/thermal/gov_bang_bang.c
+@@ -99,6 +99,18 @@ static void thermal_zone_trip_update(struct thermal_zone_device *tz, int trip)
+ static int bang_bang_control(struct thermal_zone_device *tz, int trip)
+ {
+ 	struct thermal_instance *instance;
++	enum thermal_trip_monitor_type monitor_type =
++						THERMAL_TRIP_MONITOR_RISING;
++
++	/*
++	 * Return doing nothing if the trip point is monitored for
++	 * falling temperature
++	 */
++	if (tz->ops->get_trip_mon_type) {
++		tz->ops->get_trip_mon_type(tz, trip, &monitor_type);
++		if (monitor_type == THERMAL_TRIP_MONITOR_FALLING)
++			return 0;
++	}
+ 
+ 	thermal_zone_trip_update(tz, trip);
+ 
+diff --git a/drivers/thermal/gov_fair_share.c b/drivers/thermal/gov_fair_share.c
+index aaa07180ab48..064ad6ed67ad 100644
+--- a/drivers/thermal/gov_fair_share.c
++++ b/drivers/thermal/gov_fair_share.c
+@@ -81,6 +81,18 @@ static int fair_share_throttle(struct thermal_zone_device *tz, int trip)
+ 	int total_weight = 0;
+ 	int total_instance = 0;
+ 	int cur_trip_level = get_trip_level(tz);
++	enum thermal_trip_monitor_type monitor_type =
++						THERMAL_TRIP_MONITOR_RISING;
++
++	/*
++	 * Return doing nothing if the trip point is monitored for
++	 * falling temperature
++	 */
++	if (tz->ops->get_trip_mon_type) {
++		tz->ops->get_trip_mon_type(tz, trip, &monitor_type);
++		if (monitor_type == THERMAL_TRIP_MONITOR_FALLING)
++			return 0;
++	}
+ 
+ 	list_for_each_entry(instance, &tz->thermal_instances, tz_node) {
+ 		if (instance->trip != trip)
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 5cb518d8f156..0f674cd1b9b8 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -606,6 +606,8 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ {
+ 	int ret;
+ 	int switch_on_temp, control_temp;
++	enum thermal_trip_monitor_type monitor_type =
++						THERMAL_TRIP_MONITOR_RISING;
+ 	struct power_allocator_params *params = tz->governor_data;
+ 
+ 	/*
+@@ -615,6 +617,16 @@ static int power_allocator_throttle(struct thermal_zone_device *tz, int trip)
+ 	if (trip != params->trip_max_desired_temperature)
+ 		return 0;
+ 
++	/*
++	 * Return doing nothing if the trip point is monitored for
++	 * falling temperature
++	 */
++	if (tz->ops->get_trip_mon_type) {
++		tz->ops->get_trip_mon_type(tz, trip, &monitor_type);
++		if (monitor_type == THERMAL_TRIP_MONITOR_FALLING)
++			return 0;
++	}
++
+ 	ret = tz->ops->get_trip_temp(tz, params->trip_switch_on,
+ 				     &switch_on_temp);
+ 	if (!ret && (tz->temperature < switch_on_temp)) {
+-- 
+2.25.1
 
