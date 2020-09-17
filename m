@@ -2,40 +2,41 @@ Return-Path: <SRS0=qROV=C2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DB2B8C43461
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:04:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B2179C43461
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:07:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9B9982078D
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:04:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 60DB1221E3
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Sep 2020 17:07:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="vGDEFPJ7"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="dVblVyfN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728829AbgIQQ7t (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 12:59:49 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54274 "EHLO
+        id S1727091AbgIQRGk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 13:06:40 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55282 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728789AbgIQQ7r (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 12:59:47 -0400
+        with ESMTP id S1727016AbgIQRGT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 13:06:19 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E947EC06174A;
-        Thu, 17 Sep 2020 09:59:46 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 017F9C06174A;
+        Thu, 17 Sep 2020 10:06:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
-        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
-        Content-Description:In-Reply-To:References;
-        bh=HSelo8V/K+50+NYuLpI9PLlnsmvIK7gx8VI0Sz6V4PU=; b=vGDEFPJ707ptXPX4+9i9781old
-        xsNpeVCD4XZDVGcYjA+MbX7KhnFmO2+Yd5n3Vf0yEESEKcsLUbPxWwT15jA3buY1zl2MK6FfS0ROG
-        DZUMm0K5g0YSc9P06hadFGy4ElAsekq4P3uCLR9redzUX1H6V5ppdPeHjga6HRevxK+UAaYumvD8o
-        R5K7DdkgyGf6GvPxLtWtBVeQWFoLGRZBOJTo44ytDXTkLWYOsxYjrnPmoMNQVn2ULA+FN5FXWvO3M
-        cN0C195atpvFDiNWRYEw+cffFy3bh6UD8Gmx+H0YzX1600akIqtqGsy5vnbcTdZL0KnAsu+TLFfRq
-        x88nyRIw==;
+        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+        Content-Type:Content-ID:Content-Description;
+        bh=dTpGHfaq95OXqjnAvo7A5jn1vW+VHQingvSWd7mRhfA=; b=dVblVyfN+fTcNISCZS5iIws+BC
+        nshNxcvQkWH0ibcOL0xs/TRQkOhlK4eN3sDRhHbF/xGgSUZGewy33EbCLdtAwwc372oqX5f166L5u
+        u1yaXaaXQRuBmYny4mdIcVb6/Qf7d7WOq/L6AukmdLgb3QxNYUZ2rhXrzwgDaS9c7p8Uk/ZYYhQ5V
+        Rr9EDRoTiie6y0PZyxnUagbltHoMrUfhptqXjicfJAviGUvpTUr14Q3NG/MGusJmzMzT1A5u9ojuZ
+        fVu3NgduM4MDkJi/+/i8pFD2uvyCIn8XnneM/h5HL1pXaOm9+XVeZqxcAej9ZyYMH55kD0vMFehn8
+        IzaNM+fA==;
 Received: from 089144214092.atnat0023.highway.a1.net ([89.144.214.92] helo=localhost)
         by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kIxFq-0000Af-QF; Thu, 17 Sep 2020 16:59:31 +0000
+        id 1kIxME-0000lh-21; Thu, 17 Sep 2020 17:06:06 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Josef Bacik <josef@toxicpanda.com>,
@@ -51,10 +52,12 @@ Cc:     Josef Bacik <josef@toxicpanda.com>,
         linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
         linux-pm@vger.kernel.org, linux-mm@kvack.org,
         linux-block@vger.kernel.org
-Subject: remove blkdev_get as a public API
-Date:   Thu, 17 Sep 2020 18:57:06 +0200
-Message-Id: <20200917165720.3285256-1-hch@lst.de>
+Subject: [PATCH 03/14] block: cleanup blkdev_bszset
+Date:   Thu, 17 Sep 2020 18:57:09 +0200
+Message-Id: <20200917165720.3285256-4-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200917165720.3285256-1-hch@lst.de>
+References: <20200917165720.3285256-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
@@ -62,32 +65,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Jens,
+Use blkdev_get_by_dev instead of bdgrab + blkdev_get.
 
-this series removes blkdev_get as a public API, leaving it as just an
-implementation detail of blkdev_get_by_path and blkdev_get_by_dev.  The
-reason for that is that blkdev_get is a very confusing API that requires
-a struct block_device to be fed in, but then actually consumes the
-reference.  And it turns out just using the two above mentioned APIs
-actually significantly simplifies the code as well.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ block/ioctl.c | 13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-Diffstat:
- block/genhd.c                   |   11 ++--
- block/ioctl.c                   |   13 ++---
- drivers/block/nbd.c             |    8 +--
- drivers/block/pktcdvd.c         |   92 +++++-----------------------------------
- drivers/block/zram/zram_drv.c   |    7 +--
- drivers/char/raw.c              |   51 ++++++++--------------
- drivers/ide/ide-gd.c            |    2 
- drivers/s390/block/dasd_genhd.c |   13 +----
- fs/block_dev.c                  |   12 ++---
- fs/ocfs2/cluster/heartbeat.c    |   28 ++++--------
- include/linux/blk_types.h       |    4 -
- include/linux/blkdev.h          |    1 
- include/linux/genhd.h           |    2 
- include/linux/suspend.h         |    4 -
- include/linux/swap.h            |    3 -
- kernel/power/swap.c             |   21 +++------
- kernel/power/user.c             |   26 +++--------
- mm/swapfile.c                   |   45 ++++++++++---------
- 18 files changed, 119 insertions(+), 224 deletions(-)
+diff --git a/block/ioctl.c b/block/ioctl.c
+index ae74d0409afab9..06262c28f0c6c1 100644
+--- a/block/ioctl.c
++++ b/block/ioctl.c
+@@ -478,15 +478,14 @@ static int blkdev_bszset(struct block_device *bdev, fmode_t mode,
+ 	if (get_user(n, argp))
+ 		return -EFAULT;
+ 
+-	if (!(mode & FMODE_EXCL)) {
+-		bdgrab(bdev);
+-		if (blkdev_get(bdev, mode | FMODE_EXCL, &bdev) < 0)
+-			return -EBUSY;
+-	}
++	if (mode & FMODE_EXCL)
++		return set_blocksize(bdev, n);
+ 
++	if (IS_ERR(blkdev_get_by_dev(bdev->bd_dev, mode | FMODE_EXCL, &bdev)))
++		return -EBUSY;
+ 	ret = set_blocksize(bdev, n);
+-	if (!(mode & FMODE_EXCL))
+-		blkdev_put(bdev, mode | FMODE_EXCL);
++	blkdev_put(bdev, mode | FMODE_EXCL);
++
+ 	return ret;
+ }
+ 
+-- 
+2.28.0
+
