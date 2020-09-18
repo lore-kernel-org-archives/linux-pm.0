@@ -2,92 +2,129 @@ Return-Path: <SRS0=VqYW=C3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6ADBAC43463
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:41:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3DDB4C43464
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:42:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2B364214D8
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:41:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600396896;
-	bh=yj/lYPazjcLxTYPDL2xayjRqc9FZe9CiFPn3FykP1nQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=R2bcuuu06KHTnWH7gJoRRBlFe2u9nj+xjrqV5ys2kAFGdRdmxESUPOErxcPeEbCWY
-	 AEMBkCuqDIqDtDhzdTu4wLD08Or2S+9dSlu/ZKiRHeSGeMbfRJ+gkr2JB+qssWM8GP
-	 1hCoVljLGDLLJqSsHJafUQKc3E7MvKneHAeH8+kE=
+	by mail.kernel.org (Postfix) with ESMTP id 132E323770
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:42:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729201AbgIRCle (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 22:41:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:36642 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728597AbgIRCLP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Sep 2020 22:11:15 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2184D208E4;
-        Fri, 18 Sep 2020 02:11:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600395074;
-        bh=yj/lYPazjcLxTYPDL2xayjRqc9FZe9CiFPn3FykP1nQ=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=2Ge6oad9jq0vPKd5QCENAamWwz7CUqATdZm3jcwjpXThaBlr5V4LDf0hJd59gzhE0
-         Y7yTGRDyfNcJ8Ynw4djbgwiQ7SJpIZUgMi0jZtKtsn95q8r2SaOMnTDOIFLBnnTFLI
-         yeqym73g+QU4RviAxb5AGHCGq4XBcFUXv0zHhYNI=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jonathan Bakker <xc-racer2@live.ca>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 158/206] power: supply: max17040: Correct voltage reading
-Date:   Thu, 17 Sep 2020 22:07:14 -0400
-Message-Id: <20200918020802.2065198-158-sashal@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200918020802.2065198-1-sashal@kernel.org>
-References: <20200918020802.2065198-1-sashal@kernel.org>
+        id S1729852AbgIRCl7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 22:41:59 -0400
+Received: from out30-133.freemail.mail.aliyun.com ([115.124.30.133]:54714 "EHLO
+        out30-133.freemail.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728575AbgIRCLO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Sep 2020 22:11:14 -0400
+X-Alimail-AntiSpam: AC=PASS;BC=-1|-1;BR=01201311R141e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=e01e04395;MF=joseph.qi@linux.alibaba.com;NM=1;PH=DS;RN=19;SR=0;TI=SMTPD_---0U9Gue2N_1600395067;
+Received: from JosephdeMacBook-Pro.local(mailfrom:joseph.qi@linux.alibaba.com fp:SMTPD_---0U9Gue2N_1600395067)
+          by smtp.aliyun-inc.com(127.0.0.1);
+          Fri, 18 Sep 2020 10:11:07 +0800
+Subject: Re: [PATCH 09/14] ocfs2: cleanup o2hb_region_dev_store
+To:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
+Cc:     Josef Bacik <josef@toxicpanda.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Stefan Haberland <sth@linux.ibm.com>,
+        Jan Hoeppner <hoeppner@linux.ibm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, nbd@other.debian.org,
+        linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+        linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        linux-block@vger.kernel.org
+References: <20200917165720.3285256-1-hch@lst.de>
+ <20200917165720.3285256-10-hch@lst.de>
+From:   Joseph Qi <joseph.qi@linux.alibaba.com>
+Message-ID: <1c8a3a5a-aa59-f30e-4865-6777436c4225@linux.alibaba.com>
+Date:   Fri, 18 Sep 2020 10:11:07 +0800
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:68.0)
+ Gecko/20100101 Thunderbird/68.12.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200917165720.3285256-10-hch@lst.de>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jonathan Bakker <xc-racer2@live.ca>
 
-[ Upstream commit 0383024f811aa469df258039807810fc3793a105 ]
 
-According to the datasheet available at (1), the bottom four
-bits are always zero and the actual voltage is 1.25x this value
-in mV.  Since the kernel API specifies that voltages should be in
-uV, it should report 1250x the shifted value.
+On 2020/9/18 00:57, Christoph Hellwig wrote:
+> Use blkdev_get_by_dev instead of igrab (aka open coded bdgrab) +
+> blkdev_get.
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-1) https://datasheets.maximintegrated.com/en/ds/MAX17040-MAX17041.pdf
+Reviewed-by: Joseph Qi <joseph.qi@linux.alibaba.com>
 
-Signed-off-by: Jonathan Bakker <xc-racer2@live.ca>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/power/supply/max17040_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 33c40f79d23d5..2c35c13ad546f 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -109,7 +109,7 @@ static void max17040_get_vcell(struct i2c_client *client)
- 
- 	vcell = max17040_read_reg(client, MAX17040_VCELL);
- 
--	chip->vcell = vcell;
-+	chip->vcell = (vcell >> 4) * 1250;
- }
- 
- static void max17040_get_soc(struct i2c_client *client)
--- 
-2.25.1
-
+> ---
+>  fs/ocfs2/cluster/heartbeat.c | 28 ++++++++++------------------
+>  1 file changed, 10 insertions(+), 18 deletions(-)
+> 
+> diff --git a/fs/ocfs2/cluster/heartbeat.c b/fs/ocfs2/cluster/heartbeat.c
+> index 89d13e0705fe7b..0179a73a3fa2c4 100644
+> --- a/fs/ocfs2/cluster/heartbeat.c
+> +++ b/fs/ocfs2/cluster/heartbeat.c
+> @@ -1766,7 +1766,6 @@ static ssize_t o2hb_region_dev_store(struct config_item *item,
+>  	int sectsize;
+>  	char *p = (char *)page;
+>  	struct fd f;
+> -	struct inode *inode;
+>  	ssize_t ret = -EINVAL;
+>  	int live_threshold;
+>  
+> @@ -1793,20 +1792,16 @@ static ssize_t o2hb_region_dev_store(struct config_item *item,
+>  	    reg->hr_block_bytes == 0)
+>  		goto out2;
+>  
+> -	inode = igrab(f.file->f_mapping->host);
+> -	if (inode == NULL)
+> +	if (!S_ISBLK(f.file->f_mapping->host->i_mode))
+>  		goto out2;
+>  
+> -	if (!S_ISBLK(inode->i_mode))
+> -		goto out3;
+> -
+> -	reg->hr_bdev = I_BDEV(f.file->f_mapping->host);
+> -	ret = blkdev_get(reg->hr_bdev, FMODE_WRITE | FMODE_READ, NULL);
+> -	if (ret) {
+> +	reg->hr_bdev = blkdev_get_by_dev(f.file->f_mapping->host->i_rdev,
+> +					 FMODE_WRITE | FMODE_READ, NULL);
+> +	if (IS_ERR(reg->hr_bdev)) {
+> +		ret = PTR_ERR(reg->hr_bdev);
+>  		reg->hr_bdev = NULL;
+> -		goto out3;
+> +		goto out2;
+>  	}
+> -	inode = NULL;
+>  
+>  	bdevname(reg->hr_bdev, reg->hr_dev_name);
+>  
+> @@ -1909,16 +1904,13 @@ static ssize_t o2hb_region_dev_store(struct config_item *item,
+>  		       config_item_name(&reg->hr_item), reg->hr_dev_name);
+>  
+>  out3:
+> -	iput(inode);
+> +	if (ret < 0) {
+> +		blkdev_put(reg->hr_bdev, FMODE_READ | FMODE_WRITE);
+> +		reg->hr_bdev = NULL;
+> +	}
+>  out2:
+>  	fdput(f);
+>  out:
+> -	if (ret < 0) {
+> -		if (reg->hr_bdev) {
+> -			blkdev_put(reg->hr_bdev, FMODE_READ|FMODE_WRITE);
+> -			reg->hr_bdev = NULL;
+> -		}
+> -	}
+>  	return ret;
+>  }
+>  
+> 
