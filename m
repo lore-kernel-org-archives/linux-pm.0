@@ -5,47 +5,48 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC6A7C43464
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 77180C43463
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:33:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 69E4323600
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:31:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3D9BA23730
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:33:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600396279;
-	bh=yj/lYPazjcLxTYPDL2xayjRqc9FZe9CiFPn3FykP1nQ=;
+	s=default; t=1600396404;
+	bh=r0fzL6YVMGGhXXkUtEr7IjOsYdFCQGKvXJKkW9V/Jgk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=MrQasTaZrPC812BLdiyf0ZlL4r5MIND9Y8y9ZM07PhziKUgZP27/RXR4zG9F+YTbb
-	 C+94rqvF7ytYHUHbCxQP28cjzfp8fXQ3AW2XUYhAF8hn2a08q5ocGMFIP8IbS0aSYf
-	 KGLfnBbS1g9Tpj04AVM7VvBkALgn+XIGnMezb+Ds=
+	b=bsvZCFRlnPJXSt/hLDWsKFsvMOkzpWGo3Z+rNNFAQimlsiIs2a0o9+FcVeCZXKHl2
+	 rGzCkP/1yUSLQ/VmgTkWgmY3mRjhltrUXJDoPAo0sI+1pv0GbxV555Ugb8oIpcztJI
+	 CgPy7wLa9//R5Jruc1GM7eLF8FIYh5VYpI3d3GDM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728492AbgIRCOZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 22:14:25 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42208 "EHLO mail.kernel.org"
+        id S1728978AbgIRCdX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 22:33:23 -0400
+Received: from mail.kernel.org ([198.145.29.99]:41282 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729057AbgIRCOP (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Sep 2020 22:14:15 -0400
+        id S1729000AbgIRCNs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Sep 2020 22:13:48 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 8995E239ED;
-        Fri, 18 Sep 2020 02:14:14 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 238F123A1B;
+        Fri, 18 Sep 2020 02:13:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600395255;
-        bh=yj/lYPazjcLxTYPDL2xayjRqc9FZe9CiFPn3FykP1nQ=;
+        s=default; t=1600395227;
+        bh=r0fzL6YVMGGhXXkUtEr7IjOsYdFCQGKvXJKkW9V/Jgk=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=kncOSEcbLZbSsJb4cvJMvZ8HZAk7kT/DYh5eh9Dl4ftLXyUosJq1umej9ePSWKx8L
-         EGF8R9UhCgqNBkEL4LQRE4S7Z+hK1Kl8YMH5kuDhTjfeJ8sIZwXrlyTDZKT80oj3/8
-         RTSq44Af3Nse9ObbvMNl8Qb0XGdukh7xwGVnwB9U=
+        b=JiHuD5XWMXfBDH2laPvBYiy8JMfPjppQFCnCNZsIYhGKAgUJpBS9YoVo+ZaLN6eyr
+         tjQs2WnWh6TXGp2zpT+OwBJUIRWOOekpu+/87NwNXZymiN3LnnNew+ox0G9bRnF1+t
+         lOg232M9FwXjXUOUXyKTXxb6yS+HL/3LiuqXmbfU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Jonathan Bakker <xc-racer2@live.ca>,
-        Sebastian Reichel <sebastian.reichel@collabora.com>,
+Cc:     Pratik Rajesh Sampat <psampat@linux.ibm.com>,
+        Daniel Axtens <dja@axtens.net>,
+        Michael Ellerman <mpe@ellerman.id.au>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 096/127] power: supply: max17040: Correct voltage reading
-Date:   Thu, 17 Sep 2020 22:11:49 -0400
-Message-Id: <20200918021220.2066485-96-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.14 073/127] cpufreq: powernv: Fix frame-size-overflow in powernv_cpufreq_work_fn
+Date:   Thu, 17 Sep 2020 22:11:26 -0400
+Message-Id: <20200918021220.2066485-73-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200918021220.2066485-1-sashal@kernel.org>
 References: <20200918021220.2066485-1-sashal@kernel.org>
@@ -57,37 +58,55 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Jonathan Bakker <xc-racer2@live.ca>
+From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
 
-[ Upstream commit 0383024f811aa469df258039807810fc3793a105 ]
+[ Upstream commit d95fe371ecd28901f11256c610b988ed44e36ee2 ]
 
-According to the datasheet available at (1), the bottom four
-bits are always zero and the actual voltage is 1.25x this value
-in mV.  Since the kernel API specifies that voltages should be in
-uV, it should report 1250x the shifted value.
+The patch avoids allocating cpufreq_policy on stack hence fixing frame
+size overflow in 'powernv_cpufreq_work_fn'
 
-1) https://datasheets.maximintegrated.com/en/ds/MAX17040-MAX17041.pdf
-
-Signed-off-by: Jonathan Bakker <xc-racer2@live.ca>
-Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
+Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+Reviewed-by: Daniel Axtens <dja@axtens.net>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Link: https://lore.kernel.org/r/20200316135743.57735-1-psampat@linux.ibm.com
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/power/supply/max17040_battery.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/cpufreq/powernv-cpufreq.c | 13 ++++++++-----
+ 1 file changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index 33c40f79d23d5..2c35c13ad546f 100644
---- a/drivers/power/supply/max17040_battery.c
-+++ b/drivers/power/supply/max17040_battery.c
-@@ -109,7 +109,7 @@ static void max17040_get_vcell(struct i2c_client *client)
+diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+index 25c9a6cdd8614..dc81fc2bf8015 100644
+--- a/drivers/cpufreq/powernv-cpufreq.c
++++ b/drivers/cpufreq/powernv-cpufreq.c
+@@ -864,6 +864,7 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+ void powernv_cpufreq_work_fn(struct work_struct *work)
+ {
+ 	struct chip *chip = container_of(work, struct chip, throttle);
++	struct cpufreq_policy *policy;
+ 	unsigned int cpu;
+ 	cpumask_t mask;
  
- 	vcell = max17040_read_reg(client, MAX17040_VCELL);
+@@ -878,12 +879,14 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
+ 	chip->restore = false;
+ 	for_each_cpu(cpu, &mask) {
+ 		int index;
+-		struct cpufreq_policy policy;
  
--	chip->vcell = vcell;
-+	chip->vcell = (vcell >> 4) * 1250;
- }
- 
- static void max17040_get_soc(struct i2c_client *client)
+-		cpufreq_get_policy(&policy, cpu);
+-		index = cpufreq_table_find_index_c(&policy, policy.cur);
+-		powernv_cpufreq_target_index(&policy, index);
+-		cpumask_andnot(&mask, &mask, policy.cpus);
++		policy = cpufreq_cpu_get(cpu);
++		if (!policy)
++			continue;
++		index = cpufreq_table_find_index_c(policy, policy->cur);
++		powernv_cpufreq_target_index(policy, index);
++		cpumask_andnot(&mask, &mask, policy->cpus);
++		cpufreq_cpu_put(policy);
+ 	}
+ out:
+ 	put_online_cpus();
 -- 
 2.25.1
 
