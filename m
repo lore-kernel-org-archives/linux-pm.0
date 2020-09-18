@@ -2,102 +2,129 @@ Return-Path: <SRS0=VqYW=C3=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.0 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97004C43463
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:14:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 97365C43466
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 08:53:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 47D7B238A1
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:14:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600398880;
-	bh=olcSovhd3mqxcStuyRQwJpR7Kpxz7YoVX9eWDOiAVEc=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=Ay+knTIDwr1ZRyE4PSgSRWEtMDcb+jK0o1C0k8y6On+QvJsb+n3ByZLBrnV6LhPNs
-	 1aWzvDJwBcW2/2NaF3bJ6pBAf0UPVq10ctJQWxBdXmezJivFWNs9Cl4B1T5J9b2fZh
-	 E5IpmZspo/o3JLqauhlTrofjCmmuoIg4KhNnArU4=
+	by mail.kernel.org (Postfix) with ESMTP id 4475321D43
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 08:53:02 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="W/z/lqMI"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726769AbgIRDOj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 23:14:39 -0400
-Received: from mail.kernel.org ([198.145.29.99]:45808 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726479AbgIRCBo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Sep 2020 22:01:44 -0400
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B79A1235FA;
-        Fri, 18 Sep 2020 02:01:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600394503;
-        bh=olcSovhd3mqxcStuyRQwJpR7Kpxz7YoVX9eWDOiAVEc=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=GcnlEkM9DpS3aOEsWMtitzrrdI6LnJVjEZ62LzECo7UGaW21gPspj7tKkFKBjJFLp
-         CwsbihE6feT12eXerKTnUKI915QnYq7NIcsy+7tjSOZj2afnTa+dR1h9+0LSmOo08b
-         G7SXprcM3Tvmlwm0xoyVY7a6N7LSUVTzBqIhe69c=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dmitry Osipenko <digetx@gmail.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 027/330] PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
-Date:   Thu, 17 Sep 2020 21:56:07 -0400
-Message-Id: <20200918020110.2063155-27-sashal@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20200918020110.2063155-1-sashal@kernel.org>
-References: <20200918020110.2063155-1-sashal@kernel.org>
+        id S1726636AbgIRIw6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 18 Sep 2020 04:52:58 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60346 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726009AbgIRIw6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 18 Sep 2020 04:52:58 -0400
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D8562C06174A;
+        Fri, 18 Sep 2020 01:52:57 -0700 (PDT)
+Received: by mail-lj1-x244.google.com with SMTP id n25so4442122ljj.4;
+        Fri, 18 Sep 2020 01:52:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:organization:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=asjClMEVQUugwRnuiCaRpILyUTB6qCyLua353zU0XaA=;
+        b=W/z/lqMIRm38/rH5hoC1y6v6zRQO1N/LODV5dyUEiJu3Z0Ysqlp/3+8L1e9rLDMk2m
+         sBItJh8qIyGYm03eIK0hTdBoxXVBw4cghdDiPSwhWAZoWgfzs33gNea15pJClLwx2PyP
+         hHZXDHkjh03U3WZVcKBTqEHufGASOVouVB4m7BE5RIoKEh2joN3kIYcDTDJq0Chrbk2i
+         J/NdgDEshJe1yWvUgaAnM4jfYus4kL1oPcAFg4fuHOSe5l7mwswJJ6COScNBGhNcGGPN
+         q/gR4vXJlWd2ZXlKnLgsRNsC12UFA86our5/zZc8O5yxXBZ6W0BJN8M0aPB9fejtttXs
+         Ecww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:organization
+         :message-id:date:user-agent:mime-version:in-reply-to
+         :content-language:content-transfer-encoding;
+        bh=asjClMEVQUugwRnuiCaRpILyUTB6qCyLua353zU0XaA=;
+        b=bPGMdLSNGpN+eR9u0Fl1QDq/0v79LoG8B97Tw1jVC8CNpOvFs8jWZuY4atGcXXcyfe
+         s+OFC8sn/4DOnzifzBczsa9rC7ZwEf7pMNEbAN545w2VVBbQbqwPGMPw2t4clTNFPw5I
+         eQFp30PFhmnGQGoa0vKzhwfFyH1HhmjcEdSXBonhaAF8IrA82MvORwueUdl9vvZKpt+4
+         YY47lzll5sQ8CMO78s7UKjRthA9CvUd9hfOmHfZzOaxIZwHekwL0HnjFhhv0xEAnO32k
+         H8XAs3VNwCgraBWmrfu1RUgQoavdjfXdg8P0DEen5FuWug1pLvdKHJbrmIibj1Oxp8hh
+         hStg==
+X-Gm-Message-State: AOAM531X8clfpj3CiIKTNYJmczYVSI3k8dz6gF1VICKfVCd9QRKmjQNq
+        xV7PQ9i9jXLH3TM78Jk8AEo1eJ2NV4BV+A==
+X-Google-Smtp-Source: ABdhPJy1RlFuj0xDkan2bS2ZV4OPmRHWdA9YyD0WopBAfX+NGu2O9O4BkfmuLbcTQkb9zURbzOO0Aw==
+X-Received: by 2002:a2e:a48c:: with SMTP id h12mr12544381lji.221.1600419176113;
+        Fri, 18 Sep 2020 01:52:56 -0700 (PDT)
+Received: from ?IPv6:2a00:1fa0:44fb:767f:35b0:3244:6cdc:c4a2? ([2a00:1fa0:44fb:767f:35b0:3244:6cdc:c4a2])
+        by smtp.gmail.com with ESMTPSA id u1sm459692lfu.24.2020.09.18.01.52.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 18 Sep 2020 01:52:55 -0700 (PDT)
+Subject: Re: [PATCH 02/14] block: switch register_disk to use
+ blkdev_get_by_dev
+To:     Christoph Hellwig <hch@lst.de>, Jens Axboe <axboe@kernel.dk>
+Cc:     Josef Bacik <josef@toxicpanda.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Stefan Haberland <sth@linux.ibm.com>,
+        Jan Hoeppner <hoeppner@linux.ibm.com>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, nbd@other.debian.org,
+        linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+        linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        linux-block@vger.kernel.org
+References: <20200917165720.3285256-1-hch@lst.de>
+ <20200917165720.3285256-3-hch@lst.de>
+From:   Sergei Shtylyov <sergei.shtylyov@gmail.com>
+Organization: Brain-dead Software
+Message-ID: <091931b1-eb9c-e45e-c9e8-501554618508@gmail.com>
+Date:   Fri, 18 Sep 2020 11:52:39 +0300
+User-Agent: Mozilla/5.0 (Windows NT 6.3; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20200917165720.3285256-3-hch@lst.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dmitry Osipenko <digetx@gmail.com>
+Hello!
 
-[ Upstream commit 53b4b2aeee26f42cde5ff2a16dd0d8590c51a55a ]
+On 17.09.2020 19:57, Christoph Hellwig wrote:
 
-There is another kHz-conversion bug in the code, resulting in integer
-overflow. Although, this time the resulting value is 4294966296 and it's
-close to ULONG_MAX, which is okay in this case.
+> Use blkdev_get_by_dev instead of open coding it using bdget_disk +
+> blkdev_get.
 
-Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/devfreq/tegra30-devfreq.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+    I don't see where you are removing bdget_disk() call (situated just before
+the below code?)...
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index a6ba75f4106d8..e273011c83fbd 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -68,6 +68,8 @@
- 
- #define KHZ							1000
- 
-+#define KHZ_MAX						(ULONG_MAX / KHZ)
-+
- /* Assume that the bus is saturated if the utilization is 25% */
- #define BUS_SATURATION_RATIO					25
- 
-@@ -169,7 +171,7 @@ struct tegra_actmon_emc_ratio {
- };
- 
- static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
--	{ 1400000, ULONG_MAX },
-+	{ 1400000,    KHZ_MAX },
- 	{ 1200000,    750000 },
- 	{ 1100000,    600000 },
- 	{ 1000000,    500000 },
--- 
-2.25.1
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>   block/genhd.c | 7 +++----
+>   1 file changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/block/genhd.c b/block/genhd.c
+> index 7b56203c90a303..f778716fac6cde 100644
+> --- a/block/genhd.c
+> +++ b/block/genhd.c
+> @@ -732,10 +732,9 @@ static void register_disk(struct device *parent, struct gendisk *disk,
+>   		goto exit;
+>   
+>   	set_bit(GD_NEED_PART_SCAN, &disk->state);
+> -	err = blkdev_get(bdev, FMODE_READ, NULL);
+> -	if (err < 0)
+> -		goto exit;
+> -	blkdev_put(bdev, FMODE_READ);
+> +	bdev = blkdev_get_by_dev(disk_devt(disk), FMODE_READ, NULL);
+> +	if (!IS_ERR(bdev))
+> +		blkdev_put(bdev, FMODE_READ);
+>   
+>   exit:
+>   	/* announce disk after possible partitions are created */
 
+MBR, Sergei
