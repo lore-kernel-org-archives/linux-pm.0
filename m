@@ -5,52 +5,54 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F054C43464
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:03:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D701C43463
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:03:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F0E3023119
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:03:02 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3C7CC23119
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 03:03:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600398183;
-	bh=HTY1zQoaAK6BEfTs3XHzI6+YJrvBSelh3jUsNGfhxW8=;
+	s=default; t=1600398233;
+	bh=KgF/AJpqk+vmKHHC+vNBhLCqFwnLbqJ92CG2r6+ZfDs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=giwx8aZcJvbn44oqZp+ysSOQoNCK/w1pkqGzU6vtCOiviR3MB2IjAcaqhACPdrbz7
-	 vpmUkgO7zC5/XqmldkQDk7l/PIrIMKzTB8IEek/CCNQyaWExqz8B3oSeL4jCa5Ffdn
-	 RD9oeRtxCAPEKL8PuK/7/ru5EiYviVYciieng35k=
+	b=dXnqvHq6hdHJziWCaT9C4qAK3+oqKNYrJOSr0yzdXONEZON++LTIHogQy36F2cjAz
+	 ZuZU0TwkxBWuTyYSvLb0AFM1t76oOKNjxSrDiF61ViaaHeVqkWJGoTmAtU8e+p17L6
+	 L7U5dq555SugQwesxEDVmWfDiDtDtSXb8LVADydE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728092AbgIRDDC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 23:03:02 -0400
-Received: from mail.kernel.org ([198.145.29.99]:53314 "EHLO mail.kernel.org"
+        id S1730074AbgIRDDp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 23:03:45 -0400
+Received: from mail.kernel.org ([198.145.29.99]:52780 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726704AbgIRCFM (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Sep 2020 22:05:12 -0400
+        id S1727392AbgIRCE5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Sep 2020 22:04:57 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2A9AE238E3;
-        Fri, 18 Sep 2020 02:05:11 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0173923718;
+        Fri, 18 Sep 2020 02:04:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600394711;
-        bh=HTY1zQoaAK6BEfTs3XHzI6+YJrvBSelh3jUsNGfhxW8=;
+        s=default; t=1600394696;
+        bh=KgF/AJpqk+vmKHHC+vNBhLCqFwnLbqJ92CG2r6+ZfDs=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=yoQU0RZTUiEgXZ3xHMrWr2G/VV7lPyLkynrZTWekKxLEWpAVnC5+En5/OmYKaqIYf
-         sazQF/zerF2UkFnu8J2e0z0/sudMrE8MZzVkAeydOYBm2BuHHKcOcQ8LOWLncOwYxP
-         92rAH2gRclES8UMPWvXhBD3duFePikeIwIgFwJDs=
+        b=pXUD0sjRJU4rnMr2cYMyurEmXIn6XvAxdapxvTkvWRUTldMU8XzI7zSwZ7aZ9HocK
+         IOrOeQ+T9n0WfIHUoSpGm9/cZSS6xx+ViiPGjADv7ysue1M+qf3rfZ0uyzWHa2nM83
+         /wBjlmzm/rWBI0OwLSbkhaGTttJC83Sau5HlRNRU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Pratik Rajesh Sampat <psampat@linux.ibm.com>,
-        Daniel Axtens <dja@axtens.net>,
-        Michael Ellerman <mpe@ellerman.id.au>,
+Cc:     =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
+        <niklas.soderlund+renesas@ragnatech.se>,
+        Geert Uytterhoeven <geert+renesas@glider.be>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.4 196/330] cpufreq: powernv: Fix frame-size-overflow in powernv_cpufreq_work_fn
-Date:   Thu, 17 Sep 2020 21:58:56 -0400
-Message-Id: <20200918020110.2063155-196-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.4 184/330] thermal: rcar_thermal: Handle probe error gracefully
+Date:   Thu, 17 Sep 2020 21:58:44 -0400
+Message-Id: <20200918020110.2063155-184-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200918020110.2063155-1-sashal@kernel.org>
 References: <20200918020110.2063155-1-sashal@kernel.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 X-stable: review
 X-Patchwork-Hint: Ignore
 Content-Transfer-Encoding: 8bit
@@ -58,55 +60,40 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+From: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 
-[ Upstream commit d95fe371ecd28901f11256c610b988ed44e36ee2 ]
+[ Upstream commit 39056e8a989ef52486e063e34b4822b341e47b0e ]
 
-The patch avoids allocating cpufreq_policy on stack hence fixing frame
-size overflow in 'powernv_cpufreq_work_fn'
+If the common register memory resource is not available the driver needs
+to fail gracefully to disable PM. Instead of returning the error
+directly store it in ret and use the already existing error path.
 
-Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20200316135743.57735-1-psampat@linux.ibm.com
+Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20200310114709.1483860-1-niklas.soderlund+renesas@ragnatech.se
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/thermal/rcar_thermal.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 1806b1da43665..3a2f022f6bde2 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -902,6 +902,7 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
- void powernv_cpufreq_work_fn(struct work_struct *work)
- {
- 	struct chip *chip = container_of(work, struct chip, throttle);
-+	struct cpufreq_policy *policy;
- 	unsigned int cpu;
- 	cpumask_t mask;
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index d0873de718da9..43f0cd2bd0ae6 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -526,8 +526,10 @@ static int rcar_thermal_probe(struct platform_device *pdev)
+ 			res = platform_get_resource(pdev, IORESOURCE_MEM,
+ 						    mres++);
+ 			common->base = devm_ioremap_resource(dev, res);
+-			if (IS_ERR(common->base))
+-				return PTR_ERR(common->base);
++			if (IS_ERR(common->base)) {
++				ret = PTR_ERR(common->base);
++				goto error_unregister;
++			}
  
-@@ -916,12 +917,14 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 	chip->restore = false;
- 	for_each_cpu(cpu, &mask) {
- 		int index;
--		struct cpufreq_policy policy;
- 
--		cpufreq_get_policy(&policy, cpu);
--		index = cpufreq_table_find_index_c(&policy, policy.cur);
--		powernv_cpufreq_target_index(&policy, index);
--		cpumask_andnot(&mask, &mask, policy.cpus);
-+		policy = cpufreq_cpu_get(cpu);
-+		if (!policy)
-+			continue;
-+		index = cpufreq_table_find_index_c(policy, policy->cur);
-+		powernv_cpufreq_target_index(policy, index);
-+		cpumask_andnot(&mask, &mask, policy->cpus);
-+		cpufreq_cpu_put(policy);
- 	}
- out:
- 	put_online_cpus();
+ 			idle = 0; /* polling delay is not needed */
+ 		}
 -- 
 2.25.1
 
