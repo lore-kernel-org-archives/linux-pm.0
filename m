@@ -5,48 +5,49 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 77180C43463
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:33:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05B35C43463
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:38:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3D9BA23730
-	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:33:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C9B1D23770
+	for <linux-pm@archiver.kernel.org>; Fri, 18 Sep 2020 02:38:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600396404;
-	bh=r0fzL6YVMGGhXXkUtEr7IjOsYdFCQGKvXJKkW9V/Jgk=;
+	s=default; t=1600396691;
+	bh=Kvg4TYtCRyYFiO+X6QdpTQiPvFHaswMRec8XtHXSmN8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=bsvZCFRlnPJXSt/hLDWsKFsvMOkzpWGo3Z+rNNFAQimlsiIs2a0o9+FcVeCZXKHl2
-	 rGzCkP/1yUSLQ/VmgTkWgmY3mRjhltrUXJDoPAo0sI+1pv0GbxV555Ugb8oIpcztJI
-	 CgPy7wLa9//R5Jruc1GM7eLF8FIYh5VYpI3d3GDM=
+	b=dP43E/7cBHwYSMt08HnTEFXgHkBhaevb9nzoBxlacSfttpdxibGmH+mmrbXEsbxjC
+	 rPsulHwg1ZCs+CuttXVW4QsiGyRs3gJertkkWxKDlDssjc5edp8ZPiTxNALiGXL0do
+	 HY8XJEj8YvSWUOqlGPxv5r8jZpg7UHSSqMP2GGkk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728978AbgIRCdX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Sep 2020 22:33:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:41282 "EHLO mail.kernel.org"
+        id S1727561AbgIRCiA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Sep 2020 22:38:00 -0400
+Received: from mail.kernel.org ([198.145.29.99]:38814 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729000AbgIRCNs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Sep 2020 22:13:48 -0400
+        id S1727309AbgIRCMa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Sep 2020 22:12:30 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 238F123A1B;
-        Fri, 18 Sep 2020 02:13:47 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id E51022395C;
+        Fri, 18 Sep 2020 02:12:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600395227;
-        bh=r0fzL6YVMGGhXXkUtEr7IjOsYdFCQGKvXJKkW9V/Jgk=;
+        s=default; t=1600395149;
+        bh=Kvg4TYtCRyYFiO+X6QdpTQiPvFHaswMRec8XtHXSmN8=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=JiHuD5XWMXfBDH2laPvBYiy8JMfPjppQFCnCNZsIYhGKAgUJpBS9YoVo+ZaLN6eyr
-         tjQs2WnWh6TXGp2zpT+OwBJUIRWOOekpu+/87NwNXZymiN3LnnNew+ox0G9bRnF1+t
-         lOg232M9FwXjXUOUXyKTXxb6yS+HL/3LiuqXmbfU=
+        b=LFbE9k+i2w563HolCNKfu72VmXle8l0O+rtlkxEEnY4ifvDUSA/pwLACXrOdyoVCM
+         +gR0g1JOpQtKoO0aSCHqcIXAetZ2IBuwU6SwkbquTUaLfmkZfi/pZ0/rc868rR1fyt
+         6XuGxEorVZcF6uT30OSWf9Eghh/XGRVd60bA5mrI=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Pratik Rajesh Sampat <psampat@linux.ibm.com>,
-        Daniel Axtens <dja@axtens.net>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.14 073/127] cpufreq: powernv: Fix frame-size-overflow in powernv_cpufreq_work_fn
-Date:   Thu, 17 Sep 2020 22:11:26 -0400
-Message-Id: <20200918021220.2066485-73-sashal@kernel.org>
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+Subject: [PATCH AUTOSEL 4.14 008/127] PM / devfreq: tegra30: Fix integer overflow on CPU's freq max out
+Date:   Thu, 17 Sep 2020 22:10:21 -0400
+Message-Id: <20200918021220.2066485-8-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20200918021220.2066485-1-sashal@kernel.org>
 References: <20200918021220.2066485-1-sashal@kernel.org>
@@ -58,55 +59,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Pratik Rajesh Sampat <psampat@linux.ibm.com>
+From: Dmitry Osipenko <digetx@gmail.com>
 
-[ Upstream commit d95fe371ecd28901f11256c610b988ed44e36ee2 ]
+[ Upstream commit 53b4b2aeee26f42cde5ff2a16dd0d8590c51a55a ]
 
-The patch avoids allocating cpufreq_policy on stack hence fixing frame
-size overflow in 'powernv_cpufreq_work_fn'
+There is another kHz-conversion bug in the code, resulting in integer
+overflow. Although, this time the resulting value is 4294966296 and it's
+close to ULONG_MAX, which is okay in this case.
 
-Fixes: 227942809b52 ("cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling")
-Signed-off-by: Pratik Rajesh Sampat <psampat@linux.ibm.com>
-Reviewed-by: Daniel Axtens <dja@axtens.net>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-Link: https://lore.kernel.org/r/20200316135743.57735-1-psampat@linux.ibm.com
+Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- drivers/cpufreq/powernv-cpufreq.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ drivers/devfreq/tegra-devfreq.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index 25c9a6cdd8614..dc81fc2bf8015 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -864,6 +864,7 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
- void powernv_cpufreq_work_fn(struct work_struct *work)
- {
- 	struct chip *chip = container_of(work, struct chip, throttle);
-+	struct cpufreq_policy *policy;
- 	unsigned int cpu;
- 	cpumask_t mask;
+diff --git a/drivers/devfreq/tegra-devfreq.c b/drivers/devfreq/tegra-devfreq.c
+index 6627a7dce95c4..f6a2dd6b188fa 100644
+--- a/drivers/devfreq/tegra-devfreq.c
++++ b/drivers/devfreq/tegra-devfreq.c
+@@ -79,6 +79,8 @@
  
-@@ -878,12 +879,14 @@ void powernv_cpufreq_work_fn(struct work_struct *work)
- 	chip->restore = false;
- 	for_each_cpu(cpu, &mask) {
- 		int index;
--		struct cpufreq_policy policy;
+ #define KHZ							1000
  
--		cpufreq_get_policy(&policy, cpu);
--		index = cpufreq_table_find_index_c(&policy, policy.cur);
--		powernv_cpufreq_target_index(&policy, index);
--		cpumask_andnot(&mask, &mask, policy.cpus);
-+		policy = cpufreq_cpu_get(cpu);
-+		if (!policy)
-+			continue;
-+		index = cpufreq_table_find_index_c(policy, policy->cur);
-+		powernv_cpufreq_target_index(policy, index);
-+		cpumask_andnot(&mask, &mask, policy->cpus);
-+		cpufreq_cpu_put(policy);
- 	}
- out:
- 	put_online_cpus();
++#define KHZ_MAX						(ULONG_MAX / KHZ)
++
+ /* Assume that the bus is saturated if the utilization is 25% */
+ #define BUS_SATURATION_RATIO					25
+ 
+@@ -179,7 +181,7 @@ struct tegra_actmon_emc_ratio {
+ };
+ 
+ static struct tegra_actmon_emc_ratio actmon_emc_ratios[] = {
+-	{ 1400000, ULONG_MAX },
++	{ 1400000,    KHZ_MAX },
+ 	{ 1200000,    750000 },
+ 	{ 1100000,    600000 },
+ 	{ 1000000,    500000 },
 -- 
 2.25.1
 
