@@ -2,41 +2,40 @@ Return-Path: <SRS0=2KKr=C6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C0F63C43469
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C432EC43465
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 88789207DE
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7B10E207DE
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="ES2D2BfG"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WlAvqo0P"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726559AbgIUHUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726552AbgIUHUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 21 Sep 2020 03:20:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59384 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726297AbgIUHUQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2020 03:20:16 -0400
+        with ESMTP id S1726492AbgIUHUI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2020 03:20:08 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 92EFDC0613D2;
-        Mon, 21 Sep 2020 00:20:10 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EA5E8C0613D1;
+        Mon, 21 Sep 2020 00:20:07 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
-        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
-        Content-Type:Content-ID:Content-Description;
-        bh=rH7cSa9DL5os5jQC9jA3JdyjaAHSLlkPqftBlBnCr7E=; b=ES2D2BfGiz1kTREN1Zw1aEiUML
-        yN3tE0P5XRnER56mCx5PkI30Q59VGyQrEh5EPC/UmarLTKWmViIwsDGAAovnSV/BAkMyPQC5yGuxl
-        ENgWGtDJ6bDGN6rME7pQzGngkqzTaL2xxFlhhz9HJX7KfABNGAiqYtT6oCd4ti7TAgwVq4xw4YgEY
-        4IolEoVibJpRHqIQjemg+UD9WQIoeSYC6qIxNvGZYtNuFC02EX6qJM4q8oi4PthhKKrYRL7Ps62O+
-        MLBqEGi7Hq88Q9whqgktd1trmTObSIXUPvVu/znwzj3rjz06ExzSrAX5ni2VqijOLmMicWfwPbORl
-        BaJQKhbg==;
+        Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:Content-Type:Content-ID:
+        Content-Description:In-Reply-To:References;
+        bh=uiln3MtorCIt+OqTbXUWnLiMXWC8lUgm2hs2JozLc28=; b=WlAvqo0PcB605+Hw0QLRuD1pQx
+        BdyYtsNFPR3wMN5n8f93MPj6oeQPqy60GRR7KR8bYAlYCuZAV8luCL8w+E8yqR9ni0BMRscRRY/iW
+        BUZ16kWwXlC+tHFzJzi9sWaMYwaug6V8SIOW0b0kfNVKHHE181qPrix3SHrySoGyTgz1fO3D0O/W9
+        eeIwVaKs6zgWS3g2U3WN1SDQBNkp6w54ecHbNf+X36dRXVbSVKkTJOoOuUWusZDlmIpfwewvJnGpm
+        EjjwNpfnPKmsjgRiOI+gFhBvsYdAesrUy9JAiGqPs0teXQE5Ceg8fqbMPBSPgzUQ8Sy1TQ1zYmQyy
+        CsavluHw==;
 Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
         by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kKG7E-0003Ff-CG; Mon, 21 Sep 2020 07:20:00 +0000
+        id 1kKG73-0003Dm-IT; Mon, 21 Sep 2020 07:19:49 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Josef Bacik <josef@toxicpanda.com>,
@@ -52,12 +51,10 @@ Cc:     Josef Bacik <josef@toxicpanda.com>,
         linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
         linux-pm@vger.kernel.org, linux-mm@kvack.org,
         linux-block@vger.kernel.org
-Subject: [PATCH 10/14] mm: cleanup claim_swapfile
-Date:   Mon, 21 Sep 2020 09:19:54 +0200
-Message-Id: <20200921071958.307589-11-hch@lst.de>
+Subject: remove blkdev_get as a public API v2
+Date:   Mon, 21 Sep 2020 09:19:44 +0200
+Message-Id: <20200921071958.307589-1-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20200921071958.307589-1-hch@lst.de>
-References: <20200921071958.307589-1-hch@lst.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
@@ -65,31 +62,37 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use blkdev_get_by_dev instead of bdgrab + blkdev_get.
+Hi Jens,
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
----
- mm/swapfile.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+this series removes blkdev_get as a public API, leaving it as just an
+implementation detail of blkdev_get_by_path and blkdev_get_by_dev.  The
+reason for that is that blkdev_get is a very confusing API that requires
+a struct block_device to be fed in, but then actually consumes the
+reference.  And it turns out just using the two above mentioned APIs
+actually significantly simplifies the code as well.
 
-diff --git a/mm/swapfile.c b/mm/swapfile.c
-index 12f59e641b5e29..7438c4affc75fa 100644
---- a/mm/swapfile.c
-+++ b/mm/swapfile.c
-@@ -2920,10 +2920,10 @@ static int claim_swapfile(struct swap_info_struct *p, struct inode *inode)
- 	int error;
- 
- 	if (S_ISBLK(inode->i_mode)) {
--		p->bdev = bdgrab(I_BDEV(inode));
--		error = blkdev_get(p->bdev,
-+		p->bdev = blkdev_get_by_dev(inode->i_rdev,
- 				   FMODE_READ | FMODE_WRITE | FMODE_EXCL, p);
--		if (error < 0) {
-+		if (IS_ERR(p->bdev)) {
-+			error = PTR_ERR(p->bdev);
- 			p->bdev = NULL;
- 			return error;
- 		}
--- 
-2.28.0
+Changes since v1:
+ - fix a mismerged that left a stray bdget_disk around
+ - factour the partition scan at registration time code into a new
+   helper.
 
+Diffstat:
+ block/genhd.c                   |   35 ++++++---------
+ block/ioctl.c                   |   13 ++---
+ drivers/block/nbd.c             |    8 +--
+ drivers/block/pktcdvd.c         |   92 +++++-----------------------------------
+ drivers/block/zram/zram_drv.c   |    7 +--
+ drivers/char/raw.c              |   51 ++++++++--------------
+ drivers/ide/ide-gd.c            |    2 
+ drivers/s390/block/dasd_genhd.c |   15 +-----
+ fs/block_dev.c                  |   12 ++---
+ fs/ocfs2/cluster/heartbeat.c    |   28 ++++--------
+ include/linux/blk_types.h       |    4 -
+ include/linux/blkdev.h          |    1 
+ include/linux/genhd.h           |    2 
+ include/linux/suspend.h         |    4 -
+ include/linux/swap.h            |    3 -
+ kernel/power/swap.c             |   21 +++------
+ kernel/power/user.c             |   26 +++--------
+ mm/swapfile.c                   |   45 ++++++++++---------
+ 18 files changed, 130 insertions(+), 239 deletions(-)
