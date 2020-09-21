@@ -7,36 +7,36 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D777AC43463
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 41E03C43468
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 84D9020809
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F9CA206B2
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:21:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="nPdCKsa1"
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="WNqTBIMO"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726689AbgIUHVD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Sep 2020 03:21:03 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59398 "EHLO
+        id S1726543AbgIUHUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Sep 2020 03:20:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59356 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726547AbgIUHUR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2020 03:20:17 -0400
+        with ESMTP id S1726489AbgIUHUH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2020 03:20:07 -0400
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19D3FC061755;
-        Mon, 21 Sep 2020 00:20:17 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D64ACC0613D0;
+        Mon, 21 Sep 2020 00:20:06 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
         d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
         References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
         Content-Type:Content-ID:Content-Description;
-        bh=aWpQMjG3K8ZDoYTgVEFk+u0gKdJASH29rDnXXsv40lc=; b=nPdCKsa1AKYRb5HoCWLpMWnHZ2
-        WCzoTP4XCD0vyRaLIMn5iDFyYAA8Xb8Yddn7TOP2uVGBRq5AP3wK3vqVJFCaxhLv4Kt7Alp2qbVuS
-        tMAx1+5VCDlAsg7CXEFh2DA26uSrVwWRbVDQBrJ9zo8doVfGJfAhpINmK98BIZyZUGrC+K0x32iwX
-        LYBk5b1gPP3CeKR/yE/3rZTm2osd3al6VncOcoX/Ji3imqTpOVc8wf6lO72NvI5Rm+BOqOjrpAnmf
-        Qyb8TYf1JgO1QiDHTK29wr3DOXIzknAMqf5iWxna1LDXl9q6kzsxGQ8z64z9kpKzWizW5DRXA03qw
-        ZdXiB9DQ==;
+        bh=mK3IFrmKleYuDfPBu63jJazzBdauHkYdgkU6Y/JSZC8=; b=WNqTBIMOPCX7jPmyxhZHIGiZXL
+        X54zbFtIGp1EVhQ0T70mguh6oWP0ez2yzi/MA8sErwgmZKhWKjhNfpIasBHAK6pOyrxLzXh5dLDed
+        hHyxLf2UMs3aVvew5jXcOZXfHtUMRir0ynh0FWAK3sgBLb2vU7a3vJ5mEDSY4zf/UmB8fTV48QiiP
+        E9QXiNAcnkn+pTjR+OOX5NcmvHGzRE4bTYyb0hL2mbmAB6GgkAIvbo2449VSsxVo3+am0Od1lwrAz
+        nPQPR6C81/DDuFEDaH/6J7TasFFjQEPr0RbNfzfhGelHwt9w0t36aYqNCX5Hf8+sik2SFxHeJz0YQ
+        uYgPc5rQ==;
 Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
         by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kKG7J-0003JK-J0; Mon, 21 Sep 2020 07:20:05 +0000
+        id 1kKG79-0003Em-H2; Mon, 21 Sep 2020 07:19:55 +0000
 From:   Christoph Hellwig <hch@lst.de>
 To:     Jens Axboe <axboe@kernel.dk>
 Cc:     Josef Bacik <josef@toxicpanda.com>,
@@ -52,9 +52,9 @@ Cc:     Josef Bacik <josef@toxicpanda.com>,
         linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
         linux-pm@vger.kernel.org, linux-mm@kvack.org,
         linux-block@vger.kernel.org
-Subject: [PATCH 14/14] block: mark blkdev_get static
-Date:   Mon, 21 Sep 2020 09:19:58 +0200
-Message-Id: <20200921071958.307589-15-hch@lst.de>
+Subject: [PATCH 05/14] pktcdvd: use blkdev_get_by_dev instead of open coding it
+Date:   Mon, 21 Sep 2020 09:19:49 +0200
+Message-Id: <20200921071958.307589-6-hch@lst.de>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200921071958.307589-1-hch@lst.de>
 References: <20200921071958.307589-1-hch@lst.de>
@@ -65,47 +65,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are no users outside the core block code left now.
+Replace bdget + blkdev_get by blkdev_get_by_dev.
 
 Signed-off-by: Christoph Hellwig <hch@lst.de>
 ---
- fs/block_dev.c         | 3 +--
- include/linux/blkdev.h | 1 -
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ drivers/block/pktcdvd.c | 25 +++++++++++--------------
+ 1 file changed, 11 insertions(+), 14 deletions(-)
 
-diff --git a/fs/block_dev.c b/fs/block_dev.c
-index 2898d69be6b3e4..6b9d19ffa5af7b 100644
---- a/fs/block_dev.c
-+++ b/fs/block_dev.c
-@@ -1616,7 +1616,7 @@ static int __blkdev_get(struct block_device *bdev, fmode_t mode, void *holder,
-  * RETURNS:
-  * 0 on success, -errno on failure.
-  */
--int blkdev_get(struct block_device *bdev, fmode_t mode, void *holder)
-+static int blkdev_get(struct block_device *bdev, fmode_t mode, void *holder)
- {
- 	int ret, perm = 0;
+diff --git a/drivers/block/pktcdvd.c b/drivers/block/pktcdvd.c
+index bc870a5f15f77b..467dbd06b7cdb1 100644
+--- a/drivers/block/pktcdvd.c
++++ b/drivers/block/pktcdvd.c
+@@ -2110,16 +2110,18 @@ static int pkt_open_dev(struct pktcdvd_device *pd, fmode_t write)
+ 	int ret;
+ 	long lba;
+ 	struct request_queue *q;
++	struct block_device *bdev;
  
-@@ -1637,7 +1637,6 @@ int blkdev_get(struct block_device *bdev, fmode_t mode, void *holder)
- 	bdput(bdev);
+ 	/*
+ 	 * We need to re-open the cdrom device without O_NONBLOCK to be able
+ 	 * to read/write from/to it. It is already opened in O_NONBLOCK mode
+-	 * so bdget() can't fail.
++	 * so open should not fail.
+ 	 */
+-	bdget(pd->bdev->bd_dev);
+-	ret = blkdev_get(pd->bdev, FMODE_READ | FMODE_EXCL, pd);
+-	if (ret)
++	bdev = blkdev_get_by_dev(pd->bdev->bd_dev, FMODE_READ | FMODE_EXCL, pd);
++	if (IS_ERR(bdev)) {
++		ret = PTR_ERR(bdev);
+ 		goto out;
++	}
+ 
+ 	ret = pkt_get_last_written(pd, &lba);
+ 	if (ret) {
+@@ -2163,7 +2165,7 @@ static int pkt_open_dev(struct pktcdvd_device *pd, fmode_t write)
+ 	return 0;
+ 
+ out_putdev:
+-	blkdev_put(pd->bdev, FMODE_READ | FMODE_EXCL);
++	blkdev_put(bdev, FMODE_READ | FMODE_EXCL);
+ out:
  	return ret;
  }
--EXPORT_SYMBOL(blkdev_get);
+@@ -2500,7 +2502,6 @@ static int pkt_seq_show(struct seq_file *m, void *p)
+ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
+ {
+ 	int i;
+-	int ret = 0;
+ 	char b[BDEVNAME_SIZE];
+ 	struct block_device *bdev;
  
- /**
-  * blkdev_get_by_path - open a block device by name
-diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-index 5bd96fbab9b4c8..14117995091224 100644
---- a/include/linux/blkdev.h
-+++ b/include/linux/blkdev.h
-@@ -1975,7 +1975,6 @@ void blkdev_show(struct seq_file *seqf, off_t offset);
- #define BLKDEV_MAJOR_MAX	0
- #endif
+@@ -2523,12 +2524,9 @@ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
+ 		}
+ 	}
  
--int blkdev_get(struct block_device *bdev, fmode_t mode, void *holder);
- struct block_device *blkdev_get_by_path(const char *path, fmode_t mode,
- 		void *holder);
- struct block_device *blkdev_get_by_dev(dev_t dev, fmode_t mode, void *holder);
+-	bdev = bdget(dev);
+-	if (!bdev)
+-		return -ENOMEM;
+-	ret = blkdev_get(bdev, FMODE_READ | FMODE_NDELAY, NULL);
+-	if (ret)
+-		return ret;
++	bdev = blkdev_get_by_dev(dev, FMODE_READ | FMODE_NDELAY, NULL);
++	if (IS_ERR(bdev))
++		return PTR_ERR(bdev);
+ 	if (!blk_queue_scsi_passthrough(bdev_get_queue(bdev))) {
+ 		blkdev_put(bdev, FMODE_READ | FMODE_NDELAY);
+ 		return -EINVAL;
+@@ -2546,7 +2544,6 @@ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
+ 	pd->cdrw.thread = kthread_run(kcdrwd, pd, "%s", pd->name);
+ 	if (IS_ERR(pd->cdrw.thread)) {
+ 		pkt_err(pd, "can't start kernel thread\n");
+-		ret = -ENOMEM;
+ 		goto out_mem;
+ 	}
+ 
+@@ -2558,7 +2555,7 @@ static int pkt_new_dev(struct pktcdvd_device *pd, dev_t dev)
+ 	blkdev_put(bdev, FMODE_READ | FMODE_NDELAY);
+ 	/* This is safe: open() is still holding a reference. */
+ 	module_put(THIS_MODULE);
+-	return ret;
++	return -ENOMEM;
+ }
+ 
+ static int pkt_ioctl(struct block_device *bdev, fmode_t mode, unsigned int cmd, unsigned long arg)
 -- 
 2.28.0
 
