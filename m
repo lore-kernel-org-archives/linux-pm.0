@@ -2,112 +2,134 @@ Return-Path: <SRS0=2KKr=C6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7466C43463
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:12:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FA24C43465
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:20:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 84E8A20809
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:12:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCA152085B
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Sep 2020 07:20:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="QdjrGTmB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726211AbgIUHMI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Sep 2020 03:12:08 -0400
-Received: from szxga06-in.huawei.com ([45.249.212.32]:33922 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1726011AbgIUHMI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 21 Sep 2020 03:12:08 -0400
-Received: from DGGEMS413-HUB.china.huawei.com (unknown [172.30.72.60])
-        by Forcepoint Email with ESMTP id 2C66A4D19336C34FA5C8;
-        Mon, 21 Sep 2020 15:12:05 +0800 (CST)
-Received: from [127.0.0.1] (10.74.219.194) by DGGEMS413-HUB.china.huawei.com
- (10.3.19.213) with Microsoft SMTP Server id 14.3.487.0; Mon, 21 Sep 2020
- 15:11:58 +0800
-Subject: Re: [RFC PATCH] PM:runtime:Remove the link state check in function
- rpm_get_supplier()
-To:     <rafael@kernel.org>, <pavel@ucw.cz>, <sre@kernel.org>
-References: <1596088129-88814-1-git-send-email-chenxiang66@hisilicon.com>
-CC:     <john.garry@huawei.com>, <linux-pm@vger.kernel.org>,
-        <linuxarm@huawei.com>
-From:   "chenxiang (M)" <chenxiang66@hisilicon.com>
-Message-ID: <28bc46a7-7140-cc80-43a5-c1de8adfd81f@hisilicon.com>
-Date:   Mon, 21 Sep 2020 15:11:57 +0800
-User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:45.0) Gecko/20100101
- Thunderbird/45.2.0
+        id S1726467AbgIUHUD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Sep 2020 03:20:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59336 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726244AbgIUHUD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Sep 2020 03:20:03 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 40910C061755;
+        Mon, 21 Sep 2020 00:20:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=Content-Transfer-Encoding:MIME-Version:
+        References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:Sender:Reply-To:
+        Content-Type:Content-ID:Content-Description;
+        bh=MHbHWVb7i2hEAMu0TaoSE+DzMo7bJmFTrAxcV7DsN+w=; b=QdjrGTmBYZeIymqLkS2Q7P7Gx2
+        x/+QeM1ZWq6UNWGIuIw98ZbzMSin3O6GR2Dqe63K5UNQUUOzE7vPBVnGIMa3DBn5niO9lb1sFgrBn
+        5RMKASTBRXaAkVlkO8Kyi8JgzddOkZ6GTTCQGIe+6Hvy4U81+APlro4CQBGVJwDMQAkBKRa0Yf994
+        nJJb/0wnximkQPjjmI6IVA5Rugw2kdbbOAmmQ4vsEcOK0UrqBIqzRN3luW42L40fKfq3dultAauYu
+        C+DieuoB2H2QWyB6/7t+Pdj1SOXavXNHPo+NUDVBThHXu5Nje6MMkpS9H2TVXgKhGZ8CP96BQZXs6
+        ylSGEqqA==;
+Received: from p4fdb0c34.dip0.t-ipconnect.de ([79.219.12.52] helo=localhost)
+        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1kKG75-0003EK-N7; Mon, 21 Sep 2020 07:19:51 +0000
+From:   Christoph Hellwig <hch@lst.de>
+To:     Jens Axboe <axboe@kernel.dk>
+Cc:     Josef Bacik <josef@toxicpanda.com>,
+        Minchan Kim <minchan@kernel.org>,
+        Stefan Haberland <sth@linux.ibm.com>,
+        Jan Hoeppner <hoeppner@linux.ibm.com>,
+        Joseph Qi <joseph.qi@linux.alibaba.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, nbd@other.debian.org,
+        linux-ide@vger.kernel.org, linux-s390@vger.kernel.org,
+        linux-fsdevel@vger.kernel.org, ocfs2-devel@oss.oracle.com,
+        linux-pm@vger.kernel.org, linux-mm@kvack.org,
+        linux-block@vger.kernel.org
+Subject: [PATCH 02/14] block: cleanup partition scanning in register_disk
+Date:   Mon, 21 Sep 2020 09:19:46 +0200
+Message-Id: <20200921071958.307589-3-hch@lst.de>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200921071958.307589-1-hch@lst.de>
+References: <20200921071958.307589-1-hch@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <1596088129-88814-1-git-send-email-chenxiang66@hisilicon.com>
-Content-Type: text/plain; charset="gbk"; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.74.219.194]
-X-CFilter-Loop: Reflected
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by casper.infradead.org. See http://www.infradead.org/rpr.html
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Use blkdev_get_by_dev instead of open coding it using bdget_disk +
+blkdev_get, and split the code to read the partition table into a
+separate helper to make it a little more obvious.
 
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+---
+ block/genhd.c | 33 ++++++++++++++-------------------
+ 1 file changed, 14 insertions(+), 19 deletions(-)
 
-ÔÚ 2020/7/30 13:48, chenxiang Ð´µÀ:
-> From: Xiang Chen <chenxiang66@hisilicon.com>
->
-> To support runtime PM for hisi SAS driver (the dirver is in directory
-> drivers/scsi/hisi_sas), we add device link between scsi_device->sdev_gendev
-> (consumer device) and hisi_hba->dev(supplier device) with flags
-> DL_FLAG_PM_RUNTIME | DL_FLAG_RPM_ACTIVE.
-> After runtime suspended consumers and supplier, unload the dirver which
-> cause a hung. We find that it calls function device_release_driver_internal()
-> to release supplier device hisi_hba->dev, as the device link is busy,
-> it sets the device link as DL_STATE_SUPPLIER_UNBIND, and then call function
-> device_release_driver_internal() to release consumer device
-> scsi_device->sdev_gendev). Then It will try to call pm_runtime_get_sync()
-> to resume consumer device, as consumer-supplier relation exists, it will try
-> to resume supplier first, but as the link state is already set as
-> DL_STATE_SUPPLIER_UNBIND, so it skips resuming supplier and only resume
-> consumer which cause a hung (it sends IOs to resume scsi_device while
-> SAS controller is suspended). Simple flow is as follows:
->
-> device_release_driver_internal -> (supplier device)
->      if device_links_busy ->
-> 	    device_links_unbind_consumers ->
-> 		...
-> 		WRITE_ONCE(link->status, DL_STATE_SUPPLIER_UNBIND)
-> 		device_release_driver_internal (consumer device)
->      pm_runtime_get_sync -> (consumer device)
-> 	...
-> 	__rpm_callback ->
-> 	    rpm_get_suppliers ->
-> 		if link->state == DL_STATE_SUPPLIER_UNBIND -> skip the action of resuming the supplier
-> 		...
->      pm_runtime_clean_up_links
->      ...
-
-Hi Rafael, do you have any idea about this issue?
-
-> It should guarantee correct suspend/resume ordering between a supplier
-> device and its consumer devices (resume the supplier device before resuming
-> consumer devices, and suspend consumer devices before suspending supplier
-> device) for runtime PM, but it seems the check in rpm_get_supplier() breaks
-> the rule, so remove it.
->
-> Signed-off-by: Xiang Chen <chenxiang66@hisilicon.com>
-> ---
->   drivers/base/power/runtime.c | 3 +--
->   1 file changed, 1 insertion(+), 2 deletions(-)
->
-> diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> index 9f62790..a8edd92 100644
-> --- a/drivers/base/power/runtime.c
-> +++ b/drivers/base/power/runtime.c
-> @@ -291,8 +291,7 @@ static int rpm_get_suppliers(struct device *dev)
->   				device_links_read_lock_held()) {
->   		int retval;
->   
-> -		if (!(link->flags & DL_FLAG_PM_RUNTIME) ||
-> -		    READ_ONCE(link->status) == DL_STATE_SUPPLIER_UNBIND)
-> +		if (!(link->flags & DL_FLAG_PM_RUNTIME))
->   			continue;
->   
->   		retval = pm_runtime_get_sync(link->supplier);
-
+diff --git a/block/genhd.c b/block/genhd.c
+index 7b56203c90a303..05fb27cbb66784 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -673,11 +673,23 @@ static int exact_lock(dev_t devt, void *data)
+ 	return 0;
+ }
+ 
++static void disk_scan_partitions(struct gendisk *disk)
++{
++	struct block_device *bdev;
++
++	if (!get_capacity(disk) || !disk_part_scan_enabled(disk))
++		return;
++
++	set_bit(GD_NEED_PART_SCAN, &disk->state);
++	bdev = blkdev_get_by_dev(disk_devt(disk), FMODE_READ, NULL);
++	if (!IS_ERR(bdev))
++		blkdev_put(bdev, FMODE_READ);
++}
++
+ static void register_disk(struct device *parent, struct gendisk *disk,
+ 			  const struct attribute_group **groups)
+ {
+ 	struct device *ddev = disk_to_dev(disk);
+-	struct block_device *bdev;
+ 	struct disk_part_iter piter;
+ 	struct hd_struct *part;
+ 	int err;
+@@ -719,25 +731,8 @@ static void register_disk(struct device *parent, struct gendisk *disk,
+ 		return;
+ 	}
+ 
+-	/* No minors to use for partitions */
+-	if (!disk_part_scan_enabled(disk))
+-		goto exit;
+-
+-	/* No such device (e.g., media were just removed) */
+-	if (!get_capacity(disk))
+-		goto exit;
+-
+-	bdev = bdget_disk(disk, 0);
+-	if (!bdev)
+-		goto exit;
+-
+-	set_bit(GD_NEED_PART_SCAN, &disk->state);
+-	err = blkdev_get(bdev, FMODE_READ, NULL);
+-	if (err < 0)
+-		goto exit;
+-	blkdev_put(bdev, FMODE_READ);
++	disk_scan_partitions(disk);
+ 
+-exit:
+ 	/* announce disk after possible partitions are created */
+ 	dev_set_uevent_suppress(ddev, 0);
+ 	kobject_uevent(&ddev->kobj, KOBJ_ADD);
+-- 
+2.28.0
 
