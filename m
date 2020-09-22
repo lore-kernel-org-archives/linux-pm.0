@@ -2,102 +2,118 @@ Return-Path: <SRS0=E4ep=C7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B9E1C4727E
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:47:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB440C4741F
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:47:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BFB97221EB
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:47:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600775251;
-	bh=KhrRBx22Zo8YLhOA9Kmsv44o/2fP94Lgd5T40CutoBs=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Qidl/cTNDADQ1FVPnNgaDel3BNAStnb0Mn8JS3GnUUlmwJGOP1Nq9IlUwRK/dEswg
-	 YOd6iYwILw2nwwVRuqRjJbCSihpAFNwEJ2p72xFlfceqQSxcc8rmPRrk7BQDamH3wF
-	 zfv7drnLtltrMS+KyaeQ2jEGkZFcS++UfEol7J4g=
+	by mail.kernel.org (Postfix) with ESMTP id 81D9B22574
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:47:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PACATpXj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726746AbgIVLra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Sep 2020 07:47:30 -0400
-Received: from mail.kernel.org ([198.145.29.99]:48822 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726685AbgIVLp6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 22 Sep 2020 07:45:58 -0400
-Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com [209.85.208.50])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 2A3AF23600;
-        Tue, 22 Sep 2020 11:45:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1600775158;
-        bh=KhrRBx22Zo8YLhOA9Kmsv44o/2fP94Lgd5T40CutoBs=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=FWJTE6FZ+J4+3x+ntnTY7/64zukYESEjiMiU5E6qFeJU30GV4POgqVGBpGRhXp9ty
-         TBH5y1L1hwg/AbJJ7mXIDGkORCpNYdNx2sdKkqqG4/N6LPUxaE3yQH/9J4EegfRmCt
-         c7XDKbCqIA88Y7+X3/RJcyxxbfxZj5EHA4Yn7Iu8=
-Received: by mail-ed1-f50.google.com with SMTP id l17so15804688edq.12;
-        Tue, 22 Sep 2020 04:45:58 -0700 (PDT)
-X-Gm-Message-State: AOAM530NOEgLALt5SEtgvbv6ByNOnnC35algt/HTHB3Jy+KF3vlI6m9k
-        Z0xCweVUkygJsSSGWBSfqfUNW41FnzR5Js8SCr8=
-X-Google-Smtp-Source: ABdhPJxPZwz2sZgxkwXAxO6r3UJuoTaSBzjBPnrsefm9nDa0zYZ4j5Qq7O92PIlts1wDcqr2WEJd93Xn/6QwzI6Xz3s=
-X-Received: by 2002:a50:e78f:: with SMTP id b15mr3529383edn.104.1600775156644;
- Tue, 22 Sep 2020 04:45:56 -0700 (PDT)
+        id S1726776AbgIVLrn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Sep 2020 07:47:43 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40468 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726593AbgIVLnr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 07:43:47 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 854B5C0613D3;
+        Tue, 22 Sep 2020 04:43:35 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id k15so16673830wrn.10;
+        Tue, 22 Sep 2020 04:43:35 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=fonzV6H3kUDytr9hBf4pACI65W7dWeL4Kqz5kV0SbFc=;
+        b=PACATpXjJiE5Tn32tbKvxzUNsxjvLtHkBEeSydaLlSktZRHGZGAmEYgCPQsB2LOcMj
+         EyzHB8IbpkV3QyTISSCpu2WN/3nX9EOaUKOgCjukcZD0mEaMlLgEwFna1A96YovKMx48
+         lJzaaA4mQXGiJ7cI1sGqsimp1VAJVymJHweJO6F83r9plm31C/PMaEnDkxKXerccgKn6
+         v97eKOHdqt0kEV3APu5xNY9eg8GdxZQPy7GW/NI8oXpsgnBQ3zPVS0dGX/rfjOgvmKhO
+         lRTs6TZr+ge5ksz4D2QgcPJLc3dTvxBipjUXCiPYacmbgvOUrN0cqXmT0vRemTH5PJik
+         1/eQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=fonzV6H3kUDytr9hBf4pACI65W7dWeL4Kqz5kV0SbFc=;
+        b=ln4groWsWIklzxgTFB7K713ei/OSPwlUmtWzAiZL7t+8KgFF/HxqqhC3+EClJmO4Hb
+         kZokQJYyatLjK1ODGR1c4xxyVBOIHvQ++RXGa3FZ0JQ1VE+aLmlqCO/q4h42e1ZpkfXg
+         KPPIIs6DyxEzxT9C90TJNbRHONv2GUGlKgX5H9lvcFNfN9palpJrEYxpQu7M9yBGostu
+         sYE2sysmce5aPYV0ehN5tz3s1VVdJkYl/j3xAq5yMcX/CRyoHIvhUvVpPfzpNAdPpXXc
+         CUpPqcUX2+KQv8WZrVuDDd/1urCImjAvfRcsFXpoiAkeEht5Sxo7p7gV1T7D+FlDGMwz
+         aqjQ==
+X-Gm-Message-State: AOAM531foq4XrGMH7YBQEf8V14xzCL24vEbM+jfO4AS5LvrPm4byIos4
+        tdsMksCZHjQtYwlH82b8Msk=
+X-Google-Smtp-Source: ABdhPJy+VunF1iDFY7aPqp1/MDwEK8wlmoqgxzwCx5SDsDryUxm52DwAYq1ofpDrl79g+Dz7b6HBcw==
+X-Received: by 2002:adf:e6c2:: with SMTP id y2mr5173510wrm.117.1600775014282;
+        Tue, 22 Sep 2020 04:43:34 -0700 (PDT)
+Received: from localhost (178-169-161-196.razgrad.ddns.bulsat.com. [178.169.161.196])
+        by smtp.gmail.com with ESMTPSA id q13sm28732537wra.93.2020.09.22.04.43.32
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 22 Sep 2020 04:43:33 -0700 (PDT)
+From:   Iskren Chernev <iskren.chernev@gmail.com>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Jonathan Bakker <xc-racer2@live.ca>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
+        Iskren Chernev <iskren.chernev@gmail.com>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v5 5/7] dt-bindings: power: supply: max17040: Add maxim,rcomp
+Date:   Tue, 22 Sep 2020 14:42:35 +0300
+Message-Id: <20200922114237.1803628-6-iskren.chernev@gmail.com>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200922114237.1803628-1-iskren.chernev@gmail.com>
+References: <20200922114237.1803628-1-iskren.chernev@gmail.com>
 MIME-Version: 1.0
-References: <20200921210233.21449-1-krzk@kernel.org> <20200921210610.GA5338@amd>
- <CAJKOXPdwQc86H-S=C4v_1VCbd7RhC2Soepj_2LqG1e_E_bgAug@mail.gmail.com>
- <20200922093637.GK4792@sirena.org.uk> <346f2ecd-a015-7f26-b68d-10cf6b5343b6@ti.com>
-In-Reply-To: <346f2ecd-a015-7f26-b68d-10cf6b5343b6@ti.com>
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Date:   Tue, 22 Sep 2020 13:45:44 +0200
-X-Gmail-Original-Message-ID: <CAJKOXPfUsCMR4gbOvsasfgzhOe-7b3iHOboQeVhvKF7RvgQGsw@mail.gmail.com>
-Message-ID: <CAJKOXPfUsCMR4gbOvsasfgzhOe-7b3iHOboQeVhvKF7RvgQGsw@mail.gmail.com>
-Subject: Re: [PATCH] MAINTAINERS: move Milo Kim to credits
-To:     Dan Murphy <dmurphy@ti.com>
-Cc:     Mark Brown <broonie@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        linux-iio@vger.kernel.org,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        linux-leds@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-fbdev@vger.kernel.org,
-        linux-pwm@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 22 Sep 2020 at 13:36, Dan Murphy <dmurphy@ti.com> wrote:
->
-> All
->
-> On 9/22/20 4:36 AM, Mark Brown wrote:
-> > On Tue, Sep 22, 2020 at 09:08:37AM +0200, Krzysztof Kozlowski wrote:
-> >> On Mon, 21 Sep 2020 at 23:06, Pavel Machek <pavel@ucw.cz> wrote:
-> >>> I believe normal way would be to mark the entries "orphaned", not to
-> >>> drop them altogether. Plus, I believe someone from TI is likely to
-> >>> step up.
-> >> These are entries for specific drivers so they are covered by the
-> >> subsystem maintainers. You believe someone will step up, I believe if
-> >> these were important for TI, they would find the person some time ago,
-> >> so the emails won't bounce... This was similar with BQ chargers where
-> > It's fairly common for mobile parts to get dropped relatively quickly as
-> > the technology moves fairly quickly in that market, I think a lot of teh
-> > parts that Milo was working on were mobile ones.
->
-> These specific drivers don't see many patches applied to them. These
-> drivers did have a few patches this year to fix random bugs.
->
-> Since I have worked in these other subsystems if replacing the
-> Maintainer is desired over removal then my name and email can be added
-> like I did with Andrews.
->
-> Dan Murphy <dmurphy@ti.com>
+To compensate for the battery chemistry and operating conditions the
+chips support a compensation value. Specify one or two byte compensation
+via the maxim,rcomp byte array.
 
-I will add then yours name in v2 of this patch. Thanks for taking care of these.
+Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+ .../devicetree/bindings/power/supply/max17040_battery.txt   | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Best regards,
-Krzysztof
+diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+index 554bce82a08e6..2cf046d12d922 100644
+--- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
++++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+@@ -17,6 +17,11 @@ Optional properties :
+ 				Specify this boolean property to divide the
+ 				reported value in 2 and thus normalize it.
+ 				SOC == State of Charge == Capacity.
++- maxim,rcomp :			A value to compensate readings for various
++				battery chemistries and operating temperatures.
++				max17040,41 have 2 byte rcomp, default to
++				0x97 0x00. All other devices have one byte
++				rcomp, default to 0x97.
+ - interrupts : 			Interrupt line see Documentation/devicetree/
+ 				bindings/interrupt-controller/interrupts.txt
+ - wakeup-source :		This device has wakeup capabilities. Use this
+@@ -41,6 +46,7 @@ Example:
+ 	battery-fuel-gauge@36 {
+ 		compatible = "maxim,max17048";
+ 		reg = <0x36>;
++		maxim,rcomp = /bits/ 8 <0x56>;
+ 		maxim,alert-low-soc-level = <10>;
+ 		maxim,double-soc;
+ 	};
+-- 
+2.28.0
+
