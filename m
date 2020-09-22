@@ -2,77 +2,86 @@ Return-Path: <SRS0=E4ep=C7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BE3DC4363D
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 16:06:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E33E1C4363D
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 16:07:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3A2FF22206
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 16:06:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="RhvMSrGk"
+	by mail.kernel.org (Postfix) with ESMTP id 9B49D239D2
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 16:07:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1600790850;
+	bh=ZiwJUvaSFlx1/asaLqqaBoYnVyJQN8NlMctLP6sQWeI=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=G7akLET4n4GAfpXGzvMUdfUh2KgNsieFez1BGTzZA6yjdFgMln79+g7LSPgNCEHbw
+	 9bVJXzMMD7JtqWpPjN8BqiB7vbgTBU19Om7aM94bZMVAFGa8l0SSpgdq31QRZk6zsh
+	 tOU6/G4mBM8byeYsduaPN8mRlTa4F4nRLZZUvzOo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726601AbgIVQGt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Sep 2020 12:06:49 -0400
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:57482 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726577AbgIVQGt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 12:06:49 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 08MG6lRI009009;
-        Tue, 22 Sep 2020 11:06:47 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1600790807;
-        bh=fwBnnCBR4CpbSsAk4csWJ8DO1oh/xfiCJORpRbHF5ME=;
-        h=Subject:To:CC:References:From:Date:In-Reply-To;
-        b=RhvMSrGk8zDJ3oauz5zfJZm27loeElvKV854kHOBw5jlTC3c/HGFG5nbx3D2KDr1o
-         dk2mYBBFH+W4lTPjL0OrXhwIbDkU4DgKKHWq+tW4/ycPV4M1yGAve4aPpipmlE5haC
-         ID8qOVJ9OLKzxOUQDj3qeSewFM+KfY9XSY65P6gw=
-Received: from DLEE115.ent.ti.com (dlee115.ent.ti.com [157.170.170.26])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 08MG6lmV027815
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Tue, 22 Sep 2020 11:06:47 -0500
-Received: from DLEE115.ent.ti.com (157.170.170.26) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 22
- Sep 2020 11:06:47 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE115.ent.ti.com
- (157.170.170.26) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Tue, 22 Sep 2020 11:06:47 -0500
-Received: from [10.250.71.177] (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 08MG6k0f070715;
-        Tue, 22 Sep 2020 11:06:46 -0500
-Subject: Re: [PATCH 2/2] power: bq25980: Add support for the BQ259xx family
-To:     <sre@kernel.org>, <robh@kernel.org>
-CC:     <devicetree@vger.kernel.org>, <r-rivera-matos@ti.com>,
-        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-References: <20200831164849.31313-1-dmurphy@ti.com>
- <20200831164849.31313-2-dmurphy@ti.com>
-From:   Dan Murphy <dmurphy@ti.com>
-Message-ID: <699bf615-0f08-2d9b-8e47-25e2604f82ad@ti.com>
-Date:   Tue, 22 Sep 2020 11:06:46 -0500
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1726757AbgIVQH1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Sep 2020 12:07:27 -0400
+Received: from mail-oi1-f177.google.com ([209.85.167.177]:34306 "EHLO
+        mail-oi1-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726558AbgIVQHW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 12:07:22 -0400
+Received: by mail-oi1-f177.google.com with SMTP id n2so21610111oij.1;
+        Tue, 22 Sep 2020 09:07:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ZiwJUvaSFlx1/asaLqqaBoYnVyJQN8NlMctLP6sQWeI=;
+        b=ZMz9v5xA8TVx2zZBaR3m2xkOup0Vv9gzKp76KWuH7cyPAWdzBVyqE76VcBREsSKbS9
+         XmhZ600llBmB+h/Cv05NIo6QuOmUXiTucDm1E++JQnEC87asbviEy4PxfnzRzeKbfdZn
+         /NIXVT9sUS1AYNvW/aR3U/w84REidm68dPj3a5fXEWUJ6ds+2Jmv+9WBp2q6lrSA6Zy5
+         kWWkN66dnPNZgPj3LiLg0thz4Oxl22edJ2I6oBfWV/O7NMujTfi5rDtBPrf/ni2qv7dg
+         Moc5VeVa9vyI+PZ7F6IGAHIY84QBGe/F/Zm5XmnLtK6ZshXvthHIpyiDc8iUcEG+SNZy
+         mXlg==
+X-Gm-Message-State: AOAM532H3MJ1cgbhYPyhSCrtrL6wu6SMlCMivU5fyEKRLBlabIyx7T9J
+        Vnd6vb2noTVMCHDj8Xq8gy7MVreWiLu8akowPZ4=
+X-Google-Smtp-Source: ABdhPJxniD6JhtDmzvKhIf9BQHPSO3ocEi0tmyadGh6S4OPjujF2AkUQ/mnGSl9/ss0LzTuZEVN3FJdLQIyu7oP73Fo=
+X-Received: by 2002:aca:5b09:: with SMTP id p9mr2965041oib.68.1600790842017;
+ Tue, 22 Sep 2020 09:07:22 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <20200831164849.31313-2-dmurphy@ti.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Language: en-US
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <20200915032629.1772569-1-liushixin2@huawei.com>
+ <20200915031714.GA670377@yoga> <7hwo0qdeun.fsf@baylibre.com>
+In-Reply-To: <7hwo0qdeun.fsf@baylibre.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 22 Sep 2020 18:07:10 +0200
+Message-ID: <CAJZ5v0hbTH0_Lfkoed54=+PU87MHwTrmMkf_HVW1vNAig-M2jg@mail.gmail.com>
+Subject: Re: [PATCH -next] power: avs: qcom-cpr: simplify the return
+ expression of cpr_disable()
+To:     Kevin Hilman <khilman@baylibre.com>
+Cc:     Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Liu Shixin <liushixin2@huawei.com>,
+        Niklas Cassel <nks@flawful.org>,
+        Andy Gross <agross@kernel.org>,
+        Kevin Hilman <khilman@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello
+On Fri, Sep 18, 2020 at 10:12 PM Kevin Hilman <khilman@baylibre.com> wrote:
+>
+> Bjorn Andersson <bjorn.andersson@linaro.org> writes:
+>
+> > On Mon 14 Sep 22:26 CDT 2020, Liu Shixin wrote:
+> >
+> >> Simplify the return expression.
+> >>
+> >> Signed-off-by: Liu Shixin <liushixin2@huawei.com>
+> >
+> > Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
+>
+> Acked-by: Kevin Hilman <khilman@baylibre.com>
+>
+> Rafael, please apply directly.
 
-On 8/31/20 11:48 AM, Dan Murphy wrote:
-> Add support for the BQ25980, BQ25975 and BQ25960 family of flash
-> chargers.
-
-Gentle Bump
-
-
+Applied as 5.10 material with minor edits in the subject, thanks!
