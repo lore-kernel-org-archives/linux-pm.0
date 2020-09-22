@@ -2,61 +2,62 @@ Return-Path: <SRS0=E4ep=C7=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8E7E0C2D0E2
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:44:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 35CAFC2D0E2
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:46:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2943922574
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:44:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C2CEC221EB
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:46:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="a19IzS1k"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pCLsXh0V"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726655AbgIVLnm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Sep 2020 07:43:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40412 "EHLO
+        id S1726623AbgIVLqq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Sep 2020 07:46:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40740 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726629AbgIVLnX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 07:43:23 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 260C1C061755;
-        Tue, 22 Sep 2020 04:43:22 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id s13so2987701wmh.4;
-        Tue, 22 Sep 2020 04:43:22 -0700 (PDT)
+        with ESMTP id S1726678AbgIVLpf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 07:45:35 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CA9AC0613D5;
+        Tue, 22 Sep 2020 04:43:40 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id w5so16696330wrp.8;
+        Tue, 22 Sep 2020 04:43:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hx5o5MPaK7diP2i6MWvOvec7p9+pTYWAqdrxIV16j5g=;
-        b=a19IzS1kHQO70+YrqmLrKGarjNoDKBE8HeWYimBCTOXwa/I0kvA2OTwYQyGDeM4NI0
-         vYA/+MQa5UHZY+snA0BPnHwyksq3RB8Pn+gB7rub4IrNAJWd+nyC/hKygLhj3e23vkOM
-         3d7lWdoQ8sm+x6te2lBMta00NiYnuhly35WALC56aJyPgSFJJH7eVOGSkOkCIT3fqXy5
-         DTFwAr3tWEbo2t70wZ/0BHGykvUI96yfveMLF9VViQShL8TtmJzqakbEaaCuhPx7/dWp
-         rMbUcOUGCPlFtwEnoJcW/KAglOEgw2Z8GkYwyrc7v98kALdEl5e8LmBA4ptNFZpPskPL
-         CAMg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=OGGgDc0zw64X8TwEtKAZByA+ztkHxVMcszbd5ooLrjg=;
+        b=pCLsXh0VUjRRgzgjJWSD/of4QoW4h99ncz4DT3pAG3ijebmQaUYgUl8Xk1K5fVzEan
+         c3XXRrm1Y1tFTD2LDpx9OEmpFN2JcKm0N/fFjcWpnPoSJfdC56lLN0xNDSyK3YInYqiu
+         6Ktgwz9svQjKwm6u0c+viMw0Vd0kGMgQy8RFNQ1obpmPerrFllIVzJX1ku3eIGXaV25s
+         79xIoHZyS1Qq6dk3bXIPvi2meoe108ACnSGPHkS156TULAOSi60gX1qgsvi3LInppJ1G
+         5e1LaSfZE2yeAVzLwMAxrjzHcVfQcJS3dUVwI5SCHd9JLucg2mULFXjo5pf1g8F/QemO
+         r08g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hx5o5MPaK7diP2i6MWvOvec7p9+pTYWAqdrxIV16j5g=;
-        b=jo1lR1c/MGkfnA8i5uwN2cnAnUqQsqC5fdUX05UeDcwA+V95zl4Hlcq296MW7okXyT
-         b4W2ceR1wbEzwkUrjJIl2uU82fx4uuG88FqD4NhIIVx+GrT5UECSMnV3p4emy7jgt6Zp
-         a4okGye22h28z7jHz1ntxI2F5xxpLyA/Y9fOUjJuyBn3rIQRnSz6+N6ey/2ECnVAik58
-         itvElOVtmhvgCxtr5h9ocxPTXTmjil+DZfvZagI7BFVGeXMVWH0oJcgVJVtjssfaPQKe
-         jdUtJJd4AIdFAj2DqeRIOcRhlzxSlROHmt8ZgubmL+aXCOS4oIYCpNkHtnC4lxyNiQ7q
-         TQyw==
-X-Gm-Message-State: AOAM530y6bpSiEfWfpdY32Uoymr+khuWhaLtYvRgc2YBl/F74QPr/mne
-        ASTyHpzuCvz16WOFg2fmtCk=
-X-Google-Smtp-Source: ABdhPJwXPz4IBVcHUUaBogWlqzeGDAMa6qqmCb/lNjtX+tLgO5rjRDfkkqryocSu/hUJwsVSZMzVOA==
-X-Received: by 2002:a7b:c317:: with SMTP id k23mr580999wmj.44.1600775000716;
-        Tue, 22 Sep 2020 04:43:20 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=OGGgDc0zw64X8TwEtKAZByA+ztkHxVMcszbd5ooLrjg=;
+        b=HuoIicHrDx28WzDWfip8PJW586VtwtdXGJgHAAtTvsD0QiAVUSwJkGvhTODVuEHUsu
+         3nnny+g/sV1qfbPas9+elMJTiTtONxvR6gfEFtS+uRPa4TlmVmMtwdQX/eiWTjfIzpbg
+         QCQECbEsuW+ZOd0q8A/r/3uSRdfKxpJdZnJW9xIZgI64e+nM57dFLLyVB6nHBSkeYHOj
+         R+w3ChTueEpKnRm6BmqtI2VGJwyV9/hnLf8aeG9tYErtTYaFUpqQCKtPbsXIWKzmODRd
+         Y41UeILUT1N8IebPFCYcc7rNw7uxta/BfL6vMgSjo97mKPTdmhesK8WhLPkxNCNrcLKe
+         MBkQ==
+X-Gm-Message-State: AOAM5322oMQmbZmFoMXVwWFr5VnYJnAfwvgt92nqtGwg6Um2w04qPA5L
+        McT2cc93X36YuiageanatQ4=
+X-Google-Smtp-Source: ABdhPJxvOtvhAYygLTXEEoViRwoEgzFw0G9wWsmoKFVMXYBuAmg//sMcJGnXgeiUMHL2nWcC6Bpv8g==
+X-Received: by 2002:a5d:69c9:: with SMTP id s9mr4854602wrw.348.1600775018909;
+        Tue, 22 Sep 2020 04:43:38 -0700 (PDT)
 Received: from localhost (178-169-161-196.razgrad.ddns.bulsat.com. [178.169.161.196])
-        by smtp.gmail.com with ESMTPSA id z8sm3009611wrl.11.2020.09.22.04.43.18
+        by smtp.gmail.com with ESMTPSA id t17sm26522049wrx.82.2020.09.22.04.43.37
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Sep 2020 04:43:19 -0700 (PDT)
+        Tue, 22 Sep 2020 04:43:38 -0700 (PDT)
 From:   Iskren Chernev <iskren.chernev@gmail.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -66,63 +67,245 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         Jonathan Bakker <xc-racer2@live.ca>,
         Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
         Iskren Chernev <iskren.chernev@gmail.com>
-Subject: [PATCH v5 0/7] power: supply: max17040 support compatible devices
-Date:   Tue, 22 Sep 2020 14:42:30 +0300
-Message-Id: <20200922114237.1803628-1-iskren.chernev@gmail.com>
+Subject: [PATCH v5 7/7] power: supply: max17040: Support soc alert
+Date:   Tue, 22 Sep 2020 14:42:37 +0300
+Message-Id: <20200922114237.1803628-8-iskren.chernev@gmail.com>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200922114237.1803628-1-iskren.chernev@gmail.com>
+References: <20200922114237.1803628-1-iskren.chernev@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The max17040 fuel gauge is part of a family of 8 chips that have very
-similar mode of operations and registers.
+max17048 and max17049 support SOC alerts (interrupts when battery
+capacity changes by +/- 1%). At the moment the driver polls for changes
+every second. Using the alerts removes the need for polling.
 
-This patch set adds:
-- compatible strings for all supported devices and handles the minor
-  differences between them;
-- handling for devices reporting double capacity via maxim,double-soc;
-- handling for setting rcomp, a compensation value for more accurate
-  reading, affected by battery chemistry and operating temps;
-- suppot for SOC alerts (capacity changes by +/- 1%), to prevent polling
-  every second;
-- improved max17040 driver with regmap and devm_
+Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
+Tested-by: Jonathan Bakker <xc-racer2@live.ca>
+---
+ drivers/power/supply/max17040_battery.c | 82 ++++++++++++++++++++++---
+ 1 file changed, 73 insertions(+), 9 deletions(-)
 
-The datasheets of the supported devices are linked [0] [1] [2] [3].
-
-[0] https://datasheets.maximintegrated.com/en/ds/MAX17040-MAX17041.pdf
-[1] https://datasheets.maximintegrated.com/en/ds/MAX17043-MAX17044.pdf
-[2] https://datasheets.maximintegrated.com/en/ds/MAX17048-MAX17049.pdf
-[3] https://datasheets.maximintegrated.com/en/ds/MAX17058-MAX17059.pdf
-
-v4: https://lkml.org/lkml/2020/9/6/237
-v3: https://lkml.org/lkml/2020/6/24/874
-v2: https://lkml.org/lkml/2020/6/18/260
-v1: https://lkml.org/lkml/2020/6/8/682
-
-Changes from v4:
-- fix warning reported by kernel test robot <lkp@intel.com> for v4
-  patch 4/7
-- ensure all patches have Sign-off-by matching author (was violated
-  for v4 patch 2/7)
-
-Iskren Chernev (7):
-  power: supply: max17040: Use devm_ to automate remove
-  power: supply: max17040: Use regmap i2c
-  dt-bindings: power: supply: Extend max17040 compatibility
-  power: supply: max17040: Support compatible devices
-  dt-bindings: power: supply: max17040: Add maxim,rcomp
-  power: supply: max17040: Support setting rcomp
-  power: supply: max17040: Support soc alert
-
- .../power/supply/max17040_battery.txt         |  21 +-
- drivers/power/supply/Kconfig                  |  11 +-
- drivers/power/supply/max17040_battery.c       | 489 ++++++++++++------
- 3 files changed, 367 insertions(+), 154 deletions(-)
-
-
-base-commit: e64997027d5f171148687e58b78c8b3c869a6158
---
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index ae39ca5c6753e..1d7510a59295d 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -25,6 +25,7 @@
+ #define MAX17040_MODE	0x06
+ #define MAX17040_VER	0x08
+ #define MAX17040_CONFIG	0x0C
++#define MAX17040_STATUS	0x1A
+ #define MAX17040_CMD	0xFE
+ 
+ 
+@@ -33,7 +34,10 @@
+ #define MAX17040_RCOMP_DEFAULT  0x9700
+ 
+ #define MAX17040_ATHD_MASK		0x3f
++#define MAX17040_ALSC_MASK		0x40
+ #define MAX17040_ATHD_DEFAULT_POWER_UP	4
++#define MAX17040_STATUS_HD_MASK		0x1000
++#define MAX17040_STATUS_SC_MASK		0x2000
+ #define MAX17040_CFG_RCOMP_MASK		0xff00
+ 
+ enum chip_id {
+@@ -55,6 +59,7 @@ struct chip_data {
+ 	u16 vcell_div;
+ 	u8  has_low_soc_alert;
+ 	u8  rcomp_bytes;
++	u8  has_soc_alert;
+ };
+ 
+ static struct chip_data max17040_family[] = {
+@@ -65,6 +70,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 1,
+ 		.has_low_soc_alert = 0,
+ 		.rcomp_bytes = 2,
++		.has_soc_alert = 0,
+ 	},
+ 	[ID_MAX17041] = {
+ 		.reset_val = 0x0054,
+@@ -73,6 +79,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 1,
+ 		.has_low_soc_alert = 0,
+ 		.rcomp_bytes = 2,
++		.has_soc_alert = 0,
+ 	},
+ 	[ID_MAX17043] = {
+ 		.reset_val = 0x0054,
+@@ -81,6 +88,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 1,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 0,
+ 	},
+ 	[ID_MAX17044] = {
+ 		.reset_val = 0x0054,
+@@ -89,6 +97,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 1,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 0,
+ 	},
+ 	[ID_MAX17048] = {
+ 		.reset_val = 0x5400,
+@@ -97,6 +106,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 8,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 1,
+ 	},
+ 	[ID_MAX17049] = {
+ 		.reset_val = 0x5400,
+@@ -105,6 +115,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 4,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 1,
+ 	},
+ 	[ID_MAX17058] = {
+ 		.reset_val = 0x5400,
+@@ -113,6 +124,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 8,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 0,
+ 	},
+ 	[ID_MAX17059] = {
+ 		.reset_val = 0x5400,
+@@ -121,6 +133,7 @@ static struct chip_data max17040_family[] = {
+ 		.vcell_div = 4,
+ 		.has_low_soc_alert = 1,
+ 		.rcomp_bytes = 1,
++		.has_soc_alert = 0,
+ 	},
+ };
+ 
+@@ -156,6 +169,12 @@ static int max17040_set_low_soc_alert(struct max17040_chip *chip, u32 level)
+ 			MAX17040_ATHD_MASK, level);
+ }
+ 
++static int max17040_set_soc_alert(struct max17040_chip *chip, bool enable)
++{
++	return regmap_update_bits(chip->regmap, MAX17040_CONFIG,
++			MAX17040_ALSC_MASK, enable ? MAX17040_ALSC_MASK : 0);
++}
++
+ static int max17040_set_rcomp(struct max17040_chip *chip, u16 rcomp)
+ {
+ 	u16 mask = chip->data.rcomp_bytes == 2 ?
+@@ -300,11 +319,33 @@ static void max17040_work(struct work_struct *work)
+ 	max17040_queue_work(chip);
+ }
+ 
++/* Returns true if alert cause was SOC change, not low SOC */
++static bool max17040_handle_soc_alert(struct max17040_chip *chip)
++{
++	bool ret = true;
++	u32 data;
++
++	regmap_read(chip->regmap, MAX17040_STATUS, &data);
++
++	if (data & MAX17040_STATUS_HD_MASK) {
++		// this alert was caused by low soc
++		ret = false;
++	}
++	if (data & MAX17040_STATUS_SC_MASK) {
++		// soc change bit -- deassert to mark as handled
++		regmap_write(chip->regmap, MAX17040_STATUS,
++				data & ~MAX17040_STATUS_SC_MASK);
++	}
++
++	return ret;
++}
++
+ static irqreturn_t max17040_thread_handler(int id, void *dev)
+ {
+ 	struct max17040_chip *chip = dev;
+ 
+-	dev_warn(&chip->client->dev, "IRQ: Alert battery low level");
++	if (!(chip->data.has_soc_alert && max17040_handle_soc_alert(chip)))
++		dev_warn(&chip->client->dev, "IRQ: Alert battery low level\n");
+ 
+ 	/* read registers */
+ 	max17040_check_changes(chip);
+@@ -428,6 +469,7 @@ static int max17040_probe(struct i2c_client *client,
+ 	struct power_supply_config psy_cfg = {};
+ 	struct max17040_chip *chip;
+ 	enum chip_id chip_id;
++	bool enable_irq = false;
+ 	int ret;
+ 
+ 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
+@@ -479,6 +521,27 @@ static int max17040_probe(struct i2c_client *client,
+ 			return ret;
+ 		}
+ 
++		enable_irq = true;
++	}
++
++	if (client->irq && chip->data.has_soc_alert) {
++		ret = max17040_set_soc_alert(chip, 1);
++		if (ret) {
++			dev_err(&client->dev,
++				"Failed to set SOC alert: err %d\n", ret);
++			return ret;
++		}
++		enable_irq = true;
++	} else {
++		/* soc alerts negate the need for polling */
++		INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
++		ret = devm_add_action(&client->dev, max17040_stop_work, chip);
++		if (ret)
++			return ret;
++		max17040_queue_work(chip);
++	}
++
++	if (enable_irq) {
+ 		ret = max17040_enable_alert_irq(chip);
+ 		if (ret) {
+ 			client->irq = 0;
+@@ -487,12 +550,6 @@ static int max17040_probe(struct i2c_client *client,
+ 		}
+ 	}
+ 
+-	INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
+-	ret = devm_add_action(&client->dev, max17040_stop_work, chip);
+-	if (ret)
+-		return ret;
+-	max17040_queue_work(chip);
+-
+ 	return 0;
+ }
+ 
+@@ -503,7 +560,11 @@ static int max17040_suspend(struct device *dev)
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct max17040_chip *chip = i2c_get_clientdata(client);
+ 
+-	cancel_delayed_work(&chip->work);
++	if (client->irq && chip->data.has_soc_alert)
++		// disable soc alert to prevent wakeup
++		max17040_set_soc_alert(chip, 0);
++	else
++		cancel_delayed_work(&chip->work);
+ 
+ 	if (client->irq && device_may_wakeup(dev))
+ 		enable_irq_wake(client->irq);
+@@ -519,7 +580,10 @@ static int max17040_resume(struct device *dev)
+ 	if (client->irq && device_may_wakeup(dev))
+ 		disable_irq_wake(client->irq);
+ 
+-	max17040_queue_work(chip);
++	if (client->irq && chip->data.has_soc_alert)
++		max17040_set_soc_alert(chip, 1);
++	else
++		max17040_queue_work(chip);
+ 
+ 	return 0;
+ }
+-- 
 2.28.0
 
