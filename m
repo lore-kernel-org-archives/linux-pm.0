@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95951C4727E
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:48:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D2B9C4727E
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:49:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4931523600
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:48:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EF81522574
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Sep 2020 11:49:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZVWclc+M"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Nia7PZj2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726848AbgIVLsT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Sep 2020 07:48:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40450 "EHLO
+        id S1726925AbgIVLtC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Sep 2020 07:49:02 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40424 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726651AbgIVLnr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 07:43:47 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C5942C0613D2;
-        Tue, 22 Sep 2020 04:43:32 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id m6so16729333wrn.0;
-        Tue, 22 Sep 2020 04:43:32 -0700 (PDT)
+        with ESMTP id S1726559AbgIVLn0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Sep 2020 07:43:26 -0400
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B0921C0613CF;
+        Tue, 22 Sep 2020 04:43:24 -0700 (PDT)
+Received: by mail-wm1-x343.google.com with SMTP id w2so3006726wmi.1;
+        Tue, 22 Sep 2020 04:43:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=KmC8usmWBBoA5mPtxevHKJ6CD3ZMNl8u5jZGkkVgt1Q=;
-        b=ZVWclc+MwctyIPRIUhfXBvuBOqj6o8/Xyb6IddDkXI+yhl0raUEXN4mB2tRGxWfw4A
-         wOl6KJ+ZtRdvQWOE9V3oBIyGhjulWbxPvGdt4kEAY61WEm5N+KkLVF/OPodRTYVBWAMY
-         Qc0MA0ZaMzRITsUetbaKEm/WQucns5MuE8kZVq4xm7UHF7jRAyw0CSYirvcs6OUGO9TM
-         E/JgRu36Bqwz1ppRfohckDYUxAg+MeRsE70EPMB8dH9RlrUKSYb+LLyARFS9nWUe58j0
-         PCv91zZqiS/SmM7zau0IN9SsJBEJj0o6m+Ks/G/aQ3pr8Oimd+Nbw6BHgkkx1kco+odM
-         TPyg==
+        bh=bpGLyTGFFFsvy7eUvf4p2N7aeZs8Bgtl+St8PzvtoYc=;
+        b=Nia7PZj2XhIagSgk3TpOp9d4d1hmKtrp7i5bCGpK45loLkmt8j/QY9I+8Vp8H36X0D
+         RSvhcEiOwlRtoRvGBeBzo0f7DBrb2jFtHtxaM4szpYzNxgyvR4F51N2j/2a/l+EX6eDU
+         YJW7DpHl/ho/j5xCcBGU7a7unBKDZsfAZ39owbKr211UM+KKYwbSjC82M98lAdMkT2v4
+         gdSRzNCaa0/7vDUIPJdC21LBa2PBcYJiIMthz6fGOsVA14emPOKd6K4+83NRTOl2UQfE
+         gQsC+Vod8KCnDLM80hfClrl/PPLjNAfDxO/ukZoJbNzE6OIAFOeBiH6n5e0ibQH6mAa/
+         A9Yg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=KmC8usmWBBoA5mPtxevHKJ6CD3ZMNl8u5jZGkkVgt1Q=;
-        b=NeybxXlPYy+AfKQpchs6sxus8sS6RCB/WVSZUmmL9TdJB2ysGGfEl3h0f94Ep6K8vk
-         cwa7QcSuqlcMwsXeXsnKMpqhKJJpPIfEpJPrN1TeFwGeBIClvZ49hHDCdw6TYi3hoHqn
-         xXRasVIzCT5iJcC5yNtiu68dO4y4PtClil6YINAAA8p5iWeNzmZXZfApbZDCTtcpLcZO
-         wAsXq/DnqGBq8UGeSAewPl0EUzKli4rsRBr1UshWSHmt9dv5cJcteusFvSPi3I3QkNCC
-         xRLLF5qtIfh9D74ANvrk5/O8Py2xYlsFci1gWz/95aHcY9MU/x2NScSg75GQ92e8R6OW
-         w+fg==
-X-Gm-Message-State: AOAM5332Jm9rtwiSrZ3aaL0FZ90V7U7RjR/5+Yxu+JWwCSz55giSUrCw
-        2EXWcLvg1Uj9bfVA3KqIiZk=
-X-Google-Smtp-Source: ABdhPJwzQSjyORdx8kZ3Cr3tT4Q8VULuRGqnG9XOXaIoaypjmzPNm2mC1TTAwvr/8G40FLQPDqGjqA==
-X-Received: by 2002:adf:dcc3:: with SMTP id x3mr4841746wrm.120.1600775011452;
-        Tue, 22 Sep 2020 04:43:31 -0700 (PDT)
+        bh=bpGLyTGFFFsvy7eUvf4p2N7aeZs8Bgtl+St8PzvtoYc=;
+        b=f85BkCyLRNuD3tZPMlBcxhrI+5R3c8vzdhMETNQwnGNWowyaXQpq9RKHWOrvCDhu8S
+         vC3UBMUq4uPJdhv6TkRjYRo3FfjFEY7LVTVyJnEYmhRyJj1iYC8l5zB/nID5KblD9wOb
+         04Y4W7iMfLk8Ogqpg68Os+u9RVyI65vehkqUw9TkAPzFdQHHadyHSUW76T9nq/NaY1h7
+         SdOGm9YN3KIwcXnaB2H+nHpCqnZRqQi9KJy6V0WJo+Ct1B9N5ZekbPOu+UQyxIIPClXJ
+         gnMejPPRQNI9RWTwwXqNONLhqfX3MaRCZs5MNCJGHE4Hn2ER9NaWxh9Twl96PBPGJqEH
+         WUaw==
+X-Gm-Message-State: AOAM530RQ6S8COyHgWC451AGMLxygrlBKViqwnWn4Wsg4xgQTu8FOd4x
+        mS+lZ39DCLDjcI0Jg+5wknY=
+X-Google-Smtp-Source: ABdhPJy+nNu5DY6MJAxBvtzBp86fGbGhf547KSWKBEXiH3sweBE8GwULh/UfJNxysjX6SQAXdkkfKA==
+X-Received: by 2002:a1c:32c6:: with SMTP id y189mr588444wmy.51.1600775003382;
+        Tue, 22 Sep 2020 04:43:23 -0700 (PDT)
 Received: from localhost (178-169-161-196.razgrad.ddns.bulsat.com. [178.169.161.196])
-        by smtp.gmail.com with ESMTPSA id t17sm26521355wrx.82.2020.09.22.04.43.29
+        by smtp.gmail.com with ESMTPSA id c4sm4561954wme.27.2020.09.22.04.43.21
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 22 Sep 2020 04:43:30 -0700 (PDT)
+        Tue, 22 Sep 2020 04:43:22 -0700 (PDT)
 From:   Iskren Chernev <iskren.chernev@gmail.com>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>
@@ -66,11 +66,10 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         ~postmarketos/upstreaming@lists.sr.ht,
         Jonathan Bakker <xc-racer2@live.ca>,
         Vladimir Barinov <vladimir.barinov@cogentembedded.com>,
-        Iskren Chernev <iskren.chernev@gmail.com>,
-        kernel test robot <lkp@intel.com>
-Subject: [PATCH v5 4/7] power: supply: max17040: Support compatible devices
-Date:   Tue, 22 Sep 2020 14:42:34 +0300
-Message-Id: <20200922114237.1803628-5-iskren.chernev@gmail.com>
+        Iskren Chernev <iskren.chernev@gmail.com>
+Subject: [PATCH v5 1/7] power: supply: max17040: Use devm_ to automate remove
+Date:   Tue, 22 Sep 2020 14:42:31 +0300
+Message-Id: <20200922114237.1803628-2-iskren.chernev@gmail.com>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200922114237.1803628-1-iskren.chernev@gmail.com>
 References: <20200922114237.1803628-1-iskren.chernev@gmail.com>
@@ -80,314 +79,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The max17040 fuel gauge is part of a family of 8 chips that have very
-similar mode of operations and registers.
+Two actions were performed during remove - power supply dereg and
+delayed work cleanup. Power supply dereg can be handled by using the
+devm_ version of the registration function. Work cleanup can be added as
+a devm_action.
 
-This change adds:
-- compatible strings for all supported devices and handling for the
-  minor differences between them;
-- handling for devices reporting double capacity via maxim,double-soc;
-
-The datasheets of the supported devices are linked [0] [1] [2] [3].
-
-[0] https://datasheets.maximintegrated.com/en/ds/MAX17040-MAX17041.pdf
-[1] https://datasheets.maximintegrated.com/en/ds/MAX17043-MAX17044.pdf
-[2] https://datasheets.maximintegrated.com/en/ds/MAX17048-MAX17049.pdf
-[3] https://datasheets.maximintegrated.com/en/ds/MAX17058-MAX17059.pdf
+If probe fails after psy registration it will now be cleaned up
+properly.
 
 Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
 Tested-by: Jonathan Bakker <xc-racer2@live.ca>
-Reported-by: kernel test robot <lkp@intel.com>
 ---
- drivers/power/supply/Kconfig            |  10 +-
- drivers/power/supply/max17040_battery.c | 155 +++++++++++++++++++++---
- 2 files changed, 143 insertions(+), 22 deletions(-)
+ drivers/power/supply/max17040_battery.c | 39 +++++++++++++------------
+ 1 file changed, 21 insertions(+), 18 deletions(-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index 47a4e1d363fc3..de9e0fa9a861b 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -369,9 +369,13 @@ config BATTERY_MAX17040
- 	depends on I2C
- 	select REGMAP_I2C
- 	help
--	  MAX17040 is fuel-gauge systems for lithium-ion (Li+) batteries
--	  in handheld and portable equipment. The MAX17040 is configured
--	  to operate with a single lithium cell
-+	  Maxim models with ModelGauge are fuel-gauge systems for lithium-ion
-+	  (Li+) batteries in handheld and portable equipment, including
-+	  max17040, max17041, max17043, max17044, max17048, max17049, max17058,
-+	  max17059. It is also included in some batteries like max77836.
-+
-+	  Driver supports reporting SOC (State of Charge, i.e capacity),
-+	  voltage and configurable low-SOC wakeup interrupt.
- 
- config BATTERY_MAX17042
- 	tristate "Maxim MAX17042/17047/17050/8997/8966 Fuel Gauge"
 diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
-index fae4217960761..4bcec86d92098 100644
+index 6cb31b9a958dd..19b9e710bbd2f 100644
 --- a/drivers/power/supply/max17040_battery.c
 +++ b/drivers/power/supply/max17040_battery.c
-@@ -15,6 +15,7 @@
- #include <linux/delay.h>
- #include <linux/interrupt.h>
- #include <linux/power_supply.h>
-+#include <linux/of_device.h>
- #include <linux/max17040_battery.h>
- #include <linux/regmap.h>
- #include <linux/slab.h>
-@@ -33,12 +34,92 @@
- #define MAX17040_ATHD_MASK		0x3f
- #define MAX17040_ATHD_DEFAULT_POWER_UP	4
- 
-+enum chip_id {
-+	ID_MAX17040,
-+	ID_MAX17041,
-+	ID_MAX17043,
-+	ID_MAX17044,
-+	ID_MAX17048,
-+	ID_MAX17049,
-+	ID_MAX17058,
-+	ID_MAX17059,
-+};
-+
-+/* values that differ by chip_id */
-+struct chip_data {
-+	u16 reset_val;
-+	u16 vcell_shift;
-+	u16 vcell_mul;
-+	u16 vcell_div;
-+	u8  has_low_soc_alert;
-+};
-+
-+static struct chip_data max17040_family[] = {
-+	[ID_MAX17040] = {
-+		.reset_val = 0x0054,
-+		.vcell_shift = 4,
-+		.vcell_mul = 1250,
-+		.vcell_div = 1,
-+		.has_low_soc_alert = 0,
-+	},
-+	[ID_MAX17041] = {
-+		.reset_val = 0x0054,
-+		.vcell_shift = 4,
-+		.vcell_mul = 2500,
-+		.vcell_div = 1,
-+		.has_low_soc_alert = 0,
-+	},
-+	[ID_MAX17043] = {
-+		.reset_val = 0x0054,
-+		.vcell_shift = 4,
-+		.vcell_mul = 1250,
-+		.vcell_div = 1,
-+		.has_low_soc_alert = 1,
-+	},
-+	[ID_MAX17044] = {
-+		.reset_val = 0x0054,
-+		.vcell_shift = 4,
-+		.vcell_mul = 2500,
-+		.vcell_div = 1,
-+		.has_low_soc_alert = 1,
-+	},
-+	[ID_MAX17048] = {
-+		.reset_val = 0x5400,
-+		.vcell_shift = 0,
-+		.vcell_mul = 625,
-+		.vcell_div = 8,
-+		.has_low_soc_alert = 1,
-+	},
-+	[ID_MAX17049] = {
-+		.reset_val = 0x5400,
-+		.vcell_shift = 0,
-+		.vcell_mul = 625,
-+		.vcell_div = 4,
-+		.has_low_soc_alert = 1,
-+	},
-+	[ID_MAX17058] = {
-+		.reset_val = 0x5400,
-+		.vcell_shift = 0,
-+		.vcell_mul = 625,
-+		.vcell_div = 8,
-+		.has_low_soc_alert = 1,
-+	},
-+	[ID_MAX17059] = {
-+		.reset_val = 0x5400,
-+		.vcell_shift = 0,
-+		.vcell_mul = 625,
-+		.vcell_div = 4,
-+		.has_low_soc_alert = 1,
-+	},
-+};
-+
- struct max17040_chip {
- 	struct i2c_client		*client;
- 	struct regmap			*regmap;
- 	struct delayed_work		work;
- 	struct power_supply		*battery;
- 	struct max17040_platform_data	*pdata;
-+	struct chip_data		data;
- 
- 	/* battery capacity */
- 	int soc;
-@@ -46,27 +127,37 @@ struct max17040_chip {
- 	int status;
- 	/* Low alert threshold from 32% to 1% of the State of Charge */
- 	u32 low_soc_alert;
-+	/* some devices return twice the capacity */
-+	bool quirk_double_soc;
- };
- 
- static int max17040_reset(struct max17040_chip *chip)
- {
--	return regmap_write(chip->regmap, MAX17040_CMD, 0x0054);
-+	return regmap_write(chip->regmap, MAX17040_CMD, chip->data.reset_val);
+@@ -207,6 +207,19 @@ static void max17040_check_changes(struct i2c_client *client)
+ 	max17040_get_status(client);
  }
  
- static int max17040_set_low_soc_alert(struct max17040_chip *chip, u32 level)
- {
--	level = 32 - level;
-+	level = 32 - level * (chip->quirk_double_soc ? 2 : 1);
- 	return regmap_update_bits(chip->regmap, MAX17040_CONFIG,
- 			MAX17040_ATHD_MASK, level);
- }
- 
-+static int max17040_raw_vcell_to_uvolts(struct max17040_chip *chip, u16 vcell)
++static void max17040_queue_work(struct max17040_chip *chip)
 +{
-+	struct chip_data *d = &chip->data;
-+
-+	return (vcell >> d->vcell_shift) * d->vcell_mul / d->vcell_div;
++	queue_delayed_work(system_power_efficient_wq, &chip->work,
++			   MAX17040_DELAY);
 +}
 +
++static void max17040_stop_work(void *data)
++{
++	struct max17040_chip *chip = data;
 +
- static int max17040_get_vcell(struct max17040_chip *chip)
- {
- 	u32 vcell;
- 
- 	regmap_read(chip->regmap, MAX17040_VCELL, &vcell);
- 
--	return (vcell >> 4) * 1250;
-+	return max17040_raw_vcell_to_uvolts(chip, vcell);
- }
- 
- static int max17040_get_soc(struct max17040_chip *chip)
-@@ -75,7 +166,7 @@ static int max17040_get_soc(struct max17040_chip *chip)
- 
- 	regmap_read(chip->regmap, MAX17040_SOC, &soc);
- 
--	return soc >> 8;
-+	return soc >> (chip->quirk_double_soc ? 9 : 8);
- }
- 
- static int max17040_get_version(struct max17040_chip *chip)
-@@ -116,12 +207,16 @@ static int max17040_get_of_data(struct max17040_chip *chip)
- {
- 	struct device *dev = &chip->client->dev;
- 
-+	chip->quirk_double_soc = device_property_read_bool(dev,
-+							   "maxim,double-soc");
++	cancel_delayed_work_sync(&chip->work);
++}
 +
- 	chip->low_soc_alert = MAX17040_ATHD_DEFAULT_POWER_UP;
- 	device_property_read_u32(dev,
- 				 "maxim,alert-low-soc-level",
- 				 &chip->low_soc_alert);
- 
--	if (chip->low_soc_alert <= 0 || chip->low_soc_alert >= 33) {
-+	if (chip->low_soc_alert <= 0 ||
-+	    chip->low_soc_alert > (chip->quirk_double_soc ? 16 : 32)) {
- 		dev_err(dev, "maxim,alert-low-soc-level out of bounds\n");
- 		return -EINVAL;
- 	}
-@@ -219,8 +314,9 @@ static int max17040_set_property(struct power_supply *psy,
- 
- 	switch (psp) {
- 	case POWER_SUPPLY_PROP_CAPACITY_ALERT_MIN:
--		/* alert threshold can be programmed from 1% up to 32% */
--		if ((val->intval < 1) || (val->intval > 32)) {
-+		/* alert threshold can be programmed from 1% up to 16/32% */
-+		if ((val->intval < 1) ||
-+		    (val->intval > (chip->quirk_double_soc ? 16 : 32))) {
- 			ret = -EINVAL;
- 			break;
- 		}
-@@ -293,6 +389,7 @@ static int max17040_probe(struct i2c_client *client,
- 	struct i2c_adapter *adapter = client->adapter;
- 	struct power_supply_config psy_cfg = {};
+ static void max17040_work(struct work_struct *work)
+ {
  	struct max17040_chip *chip;
-+	enum chip_id chip_id;
- 	int ret;
+@@ -223,8 +236,7 @@ static void max17040_work(struct work_struct *work)
+ 	if (last_soc != chip->soc || last_status != chip->status)
+ 		power_supply_changed(chip->battery);
  
- 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE))
-@@ -305,9 +402,15 @@ static int max17040_probe(struct i2c_client *client,
- 	chip->client = client;
- 	chip->regmap = devm_regmap_init_i2c(client, &max17040_regmap);
- 	chip->pdata = client->dev.platform_data;
--	ret = max17040_get_of_data(chip);
--	if (ret)
--		return ret;
-+	chip_id = (enum chip_id) id->driver_data;
-+	if (client->dev.of_node) {
-+		ret = max17040_get_of_data(chip);
-+		if (ret)
-+			return ret;
-+		chip_id = (enum chip_id) (uintptr_t)
-+			of_device_get_match_data(&client->dev);
-+	}
-+	chip->data = max17040_family[chip_id];
+-	queue_delayed_work(system_power_efficient_wq, &chip->work,
+-			   MAX17040_DELAY);
++	max17040_queue_work(chip);
+ }
  
+ static irqreturn_t max17040_thread_handler(int id, void *dev)
+@@ -339,7 +351,7 @@ static int max17040_probe(struct i2c_client *client,
  	i2c_set_clientdata(client, chip);
  	psy_cfg.drv_data = chip;
-@@ -324,11 +427,11 @@ static int max17040_probe(struct i2c_client *client,
- 		return ret;
- 	dev_dbg(&chip->client->dev, "MAX17040 Fuel-Gauge Ver 0x%x\n", ret);
  
--	max17040_reset(chip);
-+	if (chip_id == ID_MAX17040 || chip_id == ID_MAX17041)
-+		max17040_reset(chip);
+-	chip->battery = power_supply_register(&client->dev,
++	chip->battery = devm_power_supply_register(&client->dev,
+ 				&max17040_battery_desc, &psy_cfg);
+ 	if (IS_ERR(chip->battery)) {
+ 		dev_err(&client->dev, "failed: power supply register\n");
+@@ -368,18 +380,11 @@ static int max17040_probe(struct i2c_client *client,
+ 	}
  
- 	/* check interrupt */
--	if (client->irq && of_device_is_compatible(client->dev.of_node,
--						   "maxim,max77836-battery")) {
-+	if (client->irq && chip->data.has_low_soc_alert) {
- 		ret = max17040_set_low_soc_alert(chip, chip->low_soc_alert);
- 		if (ret) {
- 			dev_err(&client->dev,
-@@ -391,16 +494,30 @@ static SIMPLE_DEV_PM_OPS(max17040_pm_ops, max17040_suspend, max17040_resume);
- #endif /* CONFIG_PM_SLEEP */
+ 	INIT_DEFERRABLE_WORK(&chip->work, max17040_work);
+-	queue_delayed_work(system_power_efficient_wq, &chip->work,
+-			   MAX17040_DELAY);
+-
+-	return 0;
+-}
+-
+-static int max17040_remove(struct i2c_client *client)
+-{
+-	struct max17040_chip *chip = i2c_get_clientdata(client);
++	ret = devm_add_action(&client->dev, max17040_stop_work, chip);
++	if (ret)
++		return ret;
++	max17040_queue_work(chip);
  
- static const struct i2c_device_id max17040_id[] = {
--	{ "max17040" },
--	{ "max77836-battery" },
--	{ }
-+	{ "max17040", ID_MAX17040 },
-+	{ "max17041", ID_MAX17041 },
-+	{ "max17043", ID_MAX17043 },
-+	{ "max77836-battery", ID_MAX17043 },
-+	{ "max17044", ID_MAX17044 },
-+	{ "max17048", ID_MAX17048 },
-+	{ "max17049", ID_MAX17049 },
-+	{ "max17058", ID_MAX17058 },
-+	{ "max17059", ID_MAX17059 },
-+	{ /* sentinel */ }
+-	power_supply_unregister(chip->battery);
+-	cancel_delayed_work(&chip->work);
+ 	return 0;
+ }
+ 
+@@ -403,12 +408,11 @@ static int max17040_resume(struct device *dev)
+ 	struct i2c_client *client = to_i2c_client(dev);
+ 	struct max17040_chip *chip = i2c_get_clientdata(client);
+ 
+-	queue_delayed_work(system_power_efficient_wq, &chip->work,
+-			   MAX17040_DELAY);
+-
+ 	if (client->irq && device_may_wakeup(dev))
+ 		disable_irq_wake(client->irq);
+ 
++	max17040_queue_work(chip);
++
+ 	return 0;
+ }
+ 
+@@ -442,7 +446,6 @@ static struct i2c_driver max17040_i2c_driver = {
+ 		.pm	= MAX17040_PM_OPS,
+ 	},
+ 	.probe		= max17040_probe,
+-	.remove		= max17040_remove,
+ 	.id_table	= max17040_id,
  };
- MODULE_DEVICE_TABLE(i2c, max17040_id);
- 
- static const struct of_device_id max17040_of_match[] = {
--	{ .compatible = "maxim,max17040" },
--	{ .compatible = "maxim,max77836-battery" },
--	{ },
-+	{ .compatible = "maxim,max17040", .data = (void *) ID_MAX17040 },
-+	{ .compatible = "maxim,max17041", .data = (void *) ID_MAX17041 },
-+	{ .compatible = "maxim,max17043", .data = (void *) ID_MAX17043 },
-+	{ .compatible = "maxim,max77836-battery", .data = (void *) ID_MAX17043 },
-+	{ .compatible = "maxim,max17044", .data = (void *) ID_MAX17044 },
-+	{ .compatible = "maxim,max17048", .data = (void *) ID_MAX17048 },
-+	{ .compatible = "maxim,max17049", .data = (void *) ID_MAX17049 },
-+	{ .compatible = "maxim,max17058", .data = (void *) ID_MAX17058 },
-+	{ .compatible = "maxim,max17059", .data = (void *) ID_MAX17059 },
-+	{ /* sentinel */ },
- };
- MODULE_DEVICE_TABLE(of, max17040_of_match);
- 
+ module_i2c_driver(max17040_i2c_driver);
 -- 
 2.28.0
 
