@@ -2,102 +2,206 @@ Return-Path: <SRS0=ZSGc=DA=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C493C4363D
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Sep 2020 15:17:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49293C4363D
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Sep 2020 15:24:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1CD6821D43
-	for <linux-pm@archiver.kernel.org>; Wed, 23 Sep 2020 15:17:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1600874275;
-	bh=YKyHn17lVWgC7Gvjoz5ddMmFNLMzWbB5wUQcmO87zPw=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Td1wiqomjo4hLZhT8O4s+OFH/Gwl4xSqfUdjpvsU+/MdpHCTRGO2drwYrTd0mbAqN
-	 5gmjH+t4CNI/tFCvwWZJtlwVXVS0oltZjbR+d/tEaZ7kjNi74ZsaO47TihQ65PTVho
-	 x2rsmt8/SDzMXnnhnuJBC+9wmhLhxxUSeLF3XduY=
+	by mail.kernel.org (Postfix) with ESMTP id 066632223E
+	for <linux-pm@archiver.kernel.org>; Wed, 23 Sep 2020 15:24:31 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="ZRRWb3Ps"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726634AbgIWPRy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 23 Sep 2020 11:17:54 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:39466 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726504AbgIWPRy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Sep 2020 11:17:54 -0400
-Received: by mail-ot1-f68.google.com with SMTP id u25so65000otq.6;
-        Wed, 23 Sep 2020 08:17:53 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=AKkObmW9WFZRFIJQwwPvMt/KAyiqqGXD9pYl1RmYb7o=;
-        b=BPTv0wwBUN6ts8ozS3UYwj1V/7ljmA9c6T1efrnX+aY1Oyd6nsmDRNwdadIrYZuwuE
-         ofHCzgrZB1CxyZAqJxERpeU3qYjfjBqO+gr9e7fS8qy72Ik1Kyd1XkhKh/bNuM4H+1nK
-         owAhbQAtf6pP32rdKT0m9OH7Bt4+t85svWr3fzBf2FreUSYxnkbHz5H8FhCo0So1+MJ1
-         t9xClzCpz3DeujMQwRuq7a+1TjjNPgajZHnF9NgP4CzaChYaukCYzSU3nAx9TDU5e96P
-         6aTijNV6tZFTyo9bKGAYgqg0bJPNzw9bEq4JX1DQZdED9AIh7BaHA0iKn5wIyipcvOXV
-         eP0g==
-X-Gm-Message-State: AOAM532MrwKqFpvGElII/4EIRkxMYevPjIrh6OvYYO6wpoSB6EwDuXZ/
-        iEMFIn4xrpZtoJ6RzvMD0HGIewq7HenQWCQKIic=
-X-Google-Smtp-Source: ABdhPJy2x6F/RAnpzP7PW0wXYvjb9iX6IdZ+A80YTufFP/u6VzmeP8+bzJRAeu++/FSjDMsOn61n1sMH/9/i4D1bdNM=
-X-Received: by 2002:a9d:6010:: with SMTP id h16mr124765otj.262.1600874273426;
- Wed, 23 Sep 2020 08:17:53 -0700 (PDT)
+        id S1726762AbgIWPYY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 23 Sep 2020 11:24:24 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:33134 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726638AbgIWPYY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 23 Sep 2020 11:24:24 -0400
+Received: from fllv0035.itg.ti.com ([10.64.41.0])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 08NFOMee022569;
+        Wed, 23 Sep 2020 10:24:22 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1600874662;
+        bh=XG7Whd3Om2bowv6dtVLcdP2kjKd0zNjYwmu0Q6trzE4=;
+        h=From:To:CC:Subject:Date:In-Reply-To:References;
+        b=ZRRWb3PsCewnvjibfnHw25ezNbsKro8T3RMUGgguAec+972+hKRphNgbOEKdUH/n9
+         TLMb/Xy0OKzQ1JiF+RwJcBmJF79WISOt+L1wbSZQzcmK6secoEpbGkmLMSuWnGlBJg
+         hug2YzWlUDXYtlTf84K4/m8uNCgkig1bzEqy5fZw=
+Received: from DLEE109.ent.ti.com (dlee109.ent.ti.com [157.170.170.41])
+        by fllv0035.itg.ti.com (8.15.2/8.15.2) with ESMTP id 08NFOMIL105524;
+        Wed, 23 Sep 2020 10:24:22 -0500
+Received: from DLEE106.ent.ti.com (157.170.170.36) by DLEE109.ent.ti.com
+ (157.170.170.41) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 23
+ Sep 2020 10:24:21 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE106.ent.ti.com
+ (157.170.170.36) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Wed, 23 Sep 2020 10:24:21 -0500
+Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 08NFOLur101795;
+        Wed, 23 Sep 2020 10:24:21 -0500
+From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+To:     <sre@kernel.org>, <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+CC:     <dmurphy@ti.com>, Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Subject: [PATCH v4 1/2] dt-bindings: power: Add the bq256xx dt bindings
+Date:   Wed, 23 Sep 2020 10:24:15 -0500
+Message-ID: <20200923152416.24822-2-r-rivera-matos@ti.com>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200923152416.24822-1-r-rivera-matos@ti.com>
+References: <20200923152416.24822-1-r-rivera-matos@ti.com>
 MIME-Version: 1.0
-References: <cover.1600238586.git.viresh.kumar@linaro.org> <c9dc39f9956ad9851511d6710e8f8a5cb142789e.1600238586.git.viresh.kumar@linaro.org>
- <CAJZ5v0hpT9CAb1hxKcQVA-OJP3UYja=Kqvgh-Ed4N8Ln+=2b5A@mail.gmail.com>
-In-Reply-To: <CAJZ5v0hpT9CAb1hxKcQVA-OJP3UYja=Kqvgh-Ed4N8Ln+=2b5A@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 23 Sep 2020 17:17:42 +0200
-Message-ID: <CAJZ5v0gvEZx+o8SRmZ6S9bCetVz0n3Fr4uDdAYvhj3rNdHVwHw@mail.gmail.com>
-Subject: Re: [PATCH V2 3/4] cpufreq: stats: Enable stats for fast-switch as well
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Lukasz Luba <lukasz.luba@arm.com>, cristian.marussi@arm.com,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Sep 23, 2020 at 5:14 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Wed, Sep 16, 2020 at 8:46 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > Now that all the blockers are gone for enabling stats in fast-switching
-> > case, enable it.
-> >
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
-> >  drivers/cpufreq/cpufreq.c       | 6 +++++-
-> >  drivers/cpufreq/cpufreq_stats.c | 6 ------
-> >  2 files changed, 5 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 47aa90f9a7c2..d5fe64e96be9 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -2057,8 +2057,12 @@ unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
-> >                                         unsigned int target_freq)
-> >  {
-> >         target_freq = clamp_val(target_freq, policy->min, policy->max);
-> > +       target_freq = cpufreq_driver->fast_switch(policy, target_freq);
-> >
-> > -       return cpufreq_driver->fast_switch(policy, target_freq);
-> > +       if (target_freq)
-> > +               cpufreq_stats_record_transition(policy, target_freq);
->
-> So this adds two extra branches in the scheduler path for the cases
-> when the stats are not used at all which seems avoidable to some
-> extent.
->
-> Can we check policy->stats upfront here and bail out right away if it
-> is not set, for example?
+Add the bindings for the bq256xx series of battery charging ICs.
 
-Well, scratch this, the next patch fixes it up.
+Datasheets:
+- https://www.ti.com/lit/ds/symlink/bq25600.pdf
+- https://www.ti.com/lit/ds/symlink/bq25601.pdf
+- https://www.ti.com/lit/ds/symlink/bq25600d.pdf
+- https://www.ti.com/lit/ds/symlink/bq25601d.pdf
+- https://www.ti.com/lit/ds/symlink/bq25611d.pdf
+- https://www.ti.com/lit/ds/symlink/bq25618.pdf
+- https://www.ti.com/lit/ds/symlink/bq25619.pdf
 
-Cheers!
+Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+
+---
+
+v4 - documents monitored-battery and interrupts, fixes example for
+ti,watchdog-timeout-ms
+
+ .../bindings/power/supply/bq256xx.yaml        | 110 ++++++++++++++++++
+ 1 file changed, 110 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+
+diff --git a/Documentation/devicetree/bindings/power/supply/bq256xx.yaml b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+new file mode 100644
+index 000000000000..18b54783e11a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/bq256xx.yaml
+@@ -0,0 +1,110 @@
++# SPDX-License-Identifier: (GPL-2.0-only or BSD-2-Clause)
++# Copyright (C) 2020 Texas Instruments Incorporated
++%YAML 1.2
++---
++$id: "http://devicetree.org/schemas/power/supply/bq256xx.yaml#"
++$schema: "http://devicetree.org/meta-schemas/core.yaml#"
++
++title: TI bq256xx Switch Mode Buck Charger
++
++maintainers:
++  - Ricardo Rivera-Matos <r-rivera-matos@ti.com>
++
++description: |
++  The bq256xx devices are a family of highly-integrated battery charge
++  management and system power management ICs for single cell Li-ion and Li-
++  polymer batteries.
++
++  Datasheets:
++    - https://www.ti.com/lit/ds/symlink/bq25600.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25601.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25600d.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25601d.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25611d.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25618.pdf
++    - https://www.ti.com/lit/ds/symlink/bq25619.pdf
++
++properties:
++  compatible:
++    enum:
++      - ti,bq25600
++      - ti,bq25601
++      - ti,bq25600d
++      - ti,bq25601d
++      - ti,bq25611d
++      - ti,bq25618
++      - ti,bq25619
++
++  reg:
++    maxItems: 1
++
++  ti,watchdog-timeout-ms:
++    $ref: /schemas/types.yaml#/definitions/uint32
++    default: 0
++    description: |
++      Watchdog timer in ms. 0 (default) disables the watchdog
++    minimum: 0
++    maximum: 160000
++    enum: [ 0, 40000, 80000, 160000]
++
++  input-voltage-limit-microvolt:
++    description: |
++       Minimum input voltage limit in µV with a 100000 µV step
++    minimum: 3900000
++    maximum: 5400000
++
++  input-current-limit-microamp:
++    description: |
++       Maximum input current limit in µA with a 100000 µA step
++    minimum: 100000
++    maximum: 3200000
++
++  monitored-battery:
++    $ref: /schemas/types.yaml#/definitions/phandle
++    description: phandle to the battery node being monitored
++
++  interrupts:
++    maxItems: 1
++    description: |
++      Interrupt sends an active low, 256 μs pulse to host to report the charger
++      device status and faults.
++
++required:
++  - compatible
++  - reg
++  - monitored-battery
++
++additionalProperties: false
++
++examples:
++  - |
++    bat: battery {
++      compatible = "simple-battery";
++      constant-charge-current-max-microamp = <2040000>;
++      constant-charge-voltage-max-microvolt = <4352000>;
++      precharge-current-microamp = <180000>;
++      charge-term-current-microamp = <180000>;
++    };
++    #include <dt-bindings/gpio/gpio.h>
++    #include <dt-bindings/interrupt-controller/irq.h>
++    i2c {
++
++      clock-frequency = <400000>;
++
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      charger@6b {
++        compatible = "ti,bq25601";
++        reg = <0x6b>;
++        monitored-battery = <&bat>;
++
++        interrupt-parent = <&gpio1>;
++        interrupts = <16 IRQ_TYPE_EDGE_FALLING>;
++        ti,watchdog-timeout-ms = <40000>;
++
++        input-voltage-limit-microvolt = <4500000>;
++        input-current-limit-microamp = <2400000>;
++       };
++    };
++...
+-- 
+2.28.0
+
