@@ -2,189 +2,99 @@ Return-Path: <SRS0=e+u9=DB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6CF93C4363D
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Sep 2020 13:28:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E12A9C4363D
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Sep 2020 13:34:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 174E423741
-	for <linux-pm@archiver.kernel.org>; Thu, 24 Sep 2020 13:28:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 96E3C2395C
+	for <linux-pm@archiver.kernel.org>; Thu, 24 Sep 2020 13:34:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="ZpqE+XWu"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="wWMf+nQe"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727849AbgIXN20 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 24 Sep 2020 09:28:26 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48470 "EHLO
+        id S1727985AbgIXNew (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 24 Sep 2020 09:34:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49462 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727809AbgIXN20 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Sep 2020 09:28:26 -0400
-Received: from mail-pj1-x1034.google.com (mail-pj1-x1034.google.com [IPv6:2607:f8b0:4864:20::1034])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35CB2C0613CE
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2020 06:28:26 -0700 (PDT)
-Received: by mail-pj1-x1034.google.com with SMTP id mm21so1699694pjb.4
-        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2020 06:28:26 -0700 (PDT)
+        with ESMTP id S1727533AbgIXNev (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 24 Sep 2020 09:34:51 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 95B81C0613CE
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2020 06:34:51 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id e16so3884531wrm.2
+        for <linux-pm@vger.kernel.org>; Thu, 24 Sep 2020 06:34:51 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=VYhbgvl85Zs3EN025pTqLMvAcOSvaQeILqmmhpwbPXk=;
-        b=ZpqE+XWuiaZtc7CuwfDkO4JPco8rrErwTH/aJgEX8lM7vXWbkbp5SamlYLZAL8VQMv
-         QNmw9+Ok7UFZ0PDFs+srA/SuqY47fzLKD3wYZGsPRLML6/OtIf63N3I1JX5pGsVxfVKm
-         0E38MmCzAifU5YVZbMneC8ep703aizLViXmDL0zNQ1nexBumMHCbxGe43BNqps6cx8oH
-         Lm1ymSbF4uZCvr85oYlTLWVjxMUXPkWi3YMbOxdui+rmD6MwZubcTXCVNcpnjKRM6++g
-         uFVgvf8el4NUreOXw6Wk8640OOEnO2ORicTlCJRVz7ddp2tYI6PxBSuj7kizPZpUDAA4
-         gmAw==
+        d=google.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=AHmQxIHTPufi+UR2RfGLNgHO/eGPtc+JmSaoagltYVc=;
+        b=wWMf+nQe5B/34hqIN8sqpervlaXL5/2jAPnWv88YCj6AJTvL9Viemp26b9S/QzgjJT
+         Kvn0I9+JfmDm7IvImZnITMdUtGXfvGsZv2gBPwDhzaXG2bUGvPWjyCQwN0sYWdJu57IX
+         ViFp2j1SODpDHoK2ZMPTh6/j229FaCU9pHDQBdjdytT+Eo1dFyqwKKl0WXdelRTT6f1J
+         x5Hs8COVRdDhy1UQwpQ+0itqy9Cj6GBMRZHLHWSJWuyoAEToYU5lm4OVDCZb+HPvJ+n1
+         1A7qBk0UVwrsz9a3Ci56pRhlnuCLuVtG0gNbu4se+m2dhLTI/GO4IC/PAkIRIOIR6WxK
+         QQ4A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=VYhbgvl85Zs3EN025pTqLMvAcOSvaQeILqmmhpwbPXk=;
-        b=geoob3RMXuZlAwZokGmmSMqjd6RrTnDNGR59yhVolyrZg1ZPGyKDknjC3o0H7KN76d
-         pFP6mXJ7ggV2KHgs/QeOhcOi8B6LakvrU39dg5Ot9mzYykM37lzUq9L7SQvPJurbkPaI
-         DRtfeCZIOJWZ8mbVvRx2cgUVt6vcqqdSkNZHaEfMh0oJ2NXaQIPACLlQf76KfjCvKWnu
-         LDRDQMCx5vSdrDDlp9D8sErfOzMqQA53ySRD2UaHC2soBAT6jL8lt2jmKQS++u33spS0
-         1uwwXRxl9NgfOb1HIvsaX9uoJPtcKU7Y1+zvbb/5KZMdEmPuVSxELyVITixZBSUFHHXl
-         h03Q==
-X-Gm-Message-State: AOAM531FUqbVbAEnQHkZGxN1Ga1Og5APkmjJtqmOKsPWOuXfY2aSF/RK
-        WrLQEaN4I0qYjWaLPfjVOkjPpg==
-X-Google-Smtp-Source: ABdhPJwVzYL1UQPOH/4RSv5TmHfWB0asqQS0YhgzVMrD3TxBJm6Hk4t0oFwbvMggZ3JefG0eQK20dg==
-X-Received: by 2002:a17:90b:883:: with SMTP id bj3mr3782396pjb.184.1600954105607;
-        Thu, 24 Sep 2020 06:28:25 -0700 (PDT)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id d193sm2968491pfd.181.2020.09.24.06.28.24
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=AHmQxIHTPufi+UR2RfGLNgHO/eGPtc+JmSaoagltYVc=;
+        b=NjbuTYYqHc4ZMCxCZJP6qEuzgs3N2oxnLiVEhgWtP+NL8u68npi8a6VCWkM+Q8ATaH
+         aNeSLb3x/gzya5z/z+6ERMkqxBde4KzK8RQrvGWADZUIBo6rZM9VxZVbu0haWpV1NSr9
+         67av4q0hGJa1M3meGiOq4Nw0OLuMCNimp1KGb67shBjOCZEBiIFZp0l73REbGUgnQ8Es
+         30i9/PGwcp6GrfhQXtWj0LTQnpZhzIngcZxdfmQl4CbWUM/cQdVxS/J769GV1aGK0spy
+         zPE/iY10CgVP2Bf+VSioMKXzsmoj3I1XVnmdZbW7UXcePIaP4A08esEJAKLsDDioFpYg
+         LKtA==
+X-Gm-Message-State: AOAM531LThuA+pWEusdtPfA79g1iEM+wTFu9huW2C14Z46/7TdOos8Wc
+        uh6VU7T6E7oxg0y85w5q+ZmRnQ==
+X-Google-Smtp-Source: ABdhPJzz1iuxB8yMgk8VfJVBob6+7W+AlkLoqZKC4tAXB33eouYnScSHMBpBmeoACCVJjNkW7/U/eg==
+X-Received: by 2002:adf:f986:: with SMTP id f6mr4949309wrr.270.1600954490182;
+        Thu, 24 Sep 2020 06:34:50 -0700 (PDT)
+Received: from google.com ([2a00:79e0:d:110:f693:9fff:fef4:a7ef])
+        by smtp.gmail.com with ESMTPSA id j26sm4411495wrc.79.2020.09.24.06.34.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 24 Sep 2020 06:28:24 -0700 (PDT)
-Message-ID: <5f6c9ef8.1c69fb81.38df2.7938@mx.google.com>
-Date:   Thu, 24 Sep 2020 06:28:24 -0700 (PDT)
-Content-Type: text/plain; charset="utf-8"
+        Thu, 24 Sep 2020 06:34:49 -0700 (PDT)
+Date:   Thu, 24 Sep 2020 14:34:46 +0100
+From:   Quentin Perret <qperret@google.com>
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     mingo@redhat.com, peterz@infradead.org, vincent.guittot@linaro.org,
+        catalin.marinas@arm.com, will@kernel.org, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org, dietmar.eggemann@arm.com,
+        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] sched/topology,schedutil: wrap sched domains rebuild
+Message-ID: <20200924133446.GA3920949@google.com>
+References: <20200924123937.20938-1-ionela.voinescu@arm.com>
+ <20200924123937.20938-2-ionela.voinescu@arm.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Report-Type: test
-X-Kernelci-Tree: pm
-X-Kernelci-Branch: testing
-X-Kernelci-Kernel: v5.9-rc6-37-ga31d518ec481
-Subject: pm/testing baseline: 117 runs,
- 2 regressions (v5.9-rc6-37-ga31d518ec481)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200924123937.20938-2-ionela.voinescu@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 117 runs, 2 regressions (v5.9-rc6-37-ga31d518ec481)
+On Thursday 24 Sep 2020 at 13:39:35 (+0100), Ionela Voinescu wrote:
+> @@ -433,6 +437,7 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
+>  }
+>  #else
+>  static void free_pd(struct perf_domain *pd) { }
+> +void rebuild_sched_domains_energy(void) { }
 
-Regressions Summary
--------------------
+Nit: maybe make that stub static inline in a header instead? I guess LTO
+and friends ought to clean that up for you, but it shouldn't hurt to give
+the compiler a little bit of help here.
 
-platform         | arch  | lab           | compiler | defconfig          | =
-results
------------------+-------+---------------+----------+--------------------+-=
--------
-panda            | arm   | lab-collabora | gcc-8    | multi_v7_defconfig | =
-4/5    =
+Otherwise, LGTM:
 
-rk3399-gru-kevin | arm64 | lab-collabora | gcc-8    | defconfig          | =
-82/88  =
+Acked-by: Quentin Perret <qperret@google.com>
 
-
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.9-rc6=
--37-ga31d518ec481/plan/baseline/
-
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.9-rc6-37-ga31d518ec481
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      a31d518ec48107762495760932218e57b2038289 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform         | arch  | lab           | compiler | defconfig          | =
-results
------------------+-------+---------------+----------+--------------------+-=
--------
-panda            | arm   | lab-collabora | gcc-8    | multi_v7_defconfig | =
-4/5    =
-
-
-  Details:     https://kernelci.org/test/plan/id/5f6c95d7fcb491cd43bf9ddf
-
-  Results:     4 PASS, 1 FAIL, 0 SKIP
-  Full config: multi_v7_defconfig
-  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc6-37-ga31d51=
-8ec481/arm/multi_v7_defconfig/gcc-8/lab-collabora/baseline-panda.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc6-37-ga31d51=
-8ec481/arm/multi_v7_defconfig/gcc-8/lab-collabora/baseline-panda.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
-.05/armel/baseline/rootfs.cpio.gz =
-
-
-  * baseline.dmesg.alert: https://kernelci.org/test/case/id/5f6c95d7fcb491c=
-d43bf9de5
-      failing since 35 days (last pass: v5.8-107-gb72b3ea38c81, first fail:=
- v5.9-rc1-4-g1f08d51cd57f)
-      60 lines
-
-    2020-09-24 12:49:21.521000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c802
-    2020-09-24 12:49:21.527000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c803
-    2020-09-24 12:49:21.533000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c804
-    2020-09-24 12:49:21.539000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c805
-    2020-09-24 12:49:21.544000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c806
-    2020-09-24 12:49:21.551000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c807
-    2020-09-24 12:49:21.556000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c808
-    2020-09-24 12:49:21.563000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c809
-    2020-09-24 12:49:21.568000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c80a
-    2020-09-24 12:49:21.575000  kern  :alert : BUG: Bad page state in proce=
-ss swapper/0  pfn:9c80b
-    ... (49 line(s) more)
-      =
-
-
-
-platform         | arch  | lab           | compiler | defconfig          | =
-results
------------------+-------+---------------+----------+--------------------+-=
--------
-rk3399-gru-kevin | arm64 | lab-collabora | gcc-8    | defconfig          | =
-82/88  =
-
-
-  Details:     https://kernelci.org/test/plan/id/5f6c9490ead7013653bf9dd7
-
-  Results:     82 PASS, 6 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.9-rc6-37-ga31d51=
-8ec481/arm64/defconfig/gcc-8/lab-collabora/baseline-rk3399-gru-kevin.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.9-rc6-37-ga31d51=
-8ec481/arm64/defconfig/gcc-8/lab-collabora/baseline-rk3399-gru-kevin.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
-.05/arm64/baseline/rootfs.cpio.gz =
-
-
-  * baseline.bootrr.rockchip-dp-probed: https://kernelci.org/test/case/id/5=
-f6c9490ead7013653bf9e06
-      new failure (last pass: v5.9-rc6-35-g5dee22f9d504)
-
-    2020-09-24 12:43:55.606000  /lava-2651837/1/../bin/lava-test-case
-      =20
+>  #endif /* CONFIG_ENERGY_MODEL && CONFIG_CPU_FREQ_GOV_SCHEDUTIL*/
+>  
+>  static void free_rootdomain(struct rcu_head *rcu)
+> -- 
+> 2.17.1
+> 
