@@ -2,67 +2,105 @@ Return-Path: <SRS0=jdfX=DC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 971BEC4727E
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Sep 2020 17:48:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 57C7CC4727E
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Sep 2020 18:38:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 44BE52371F
-	for <linux-pm@archiver.kernel.org>; Fri, 25 Sep 2020 17:48:55 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601056135;
-	bh=I6kqxpB5hsGUryaQXat2XetpsgUwLtdKU100daHEVIQ=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
-	b=JuGnyCJs7k1RHKZW2x2xZH7s0vf7ZZ6GmcApbkthDombaKb2A/O0Lia4ItH8mydRK
-	 0oOB0slWBjzuQhPQXkOGFvxEvYgI3lFAkCAm5Vbu8reLcXNHoZyOmiyTqk82cSx+lD
-	 ifvrawlVKIXOEb+mjpIXggyp8RTvtUk33RYrIaDo=
+	by mail.kernel.org (Postfix) with ESMTP id 1CD65208B6
+	for <linux-pm@archiver.kernel.org>; Fri, 25 Sep 2020 18:38:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729676AbgIYRsr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 25 Sep 2020 13:48:47 -0400
-Received: from mail.kernel.org ([198.145.29.99]:49226 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729673AbgIYRsr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 25 Sep 2020 13:48:47 -0400
-Subject: Re: [GIT PULL] Power management fixes for v5.9-rc7
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1601056126;
-        bh=I6kqxpB5hsGUryaQXat2XetpsgUwLtdKU100daHEVIQ=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=jNvemSVBFNzV6W4N6fI6Bz91MBobAaUpg8vz4krTPHr9xipyL/f+uXV0XDVYvlcwQ
-         bQs5+5XiSt/7bRQ8gd/2oUMFoTLPDUCyB78toE2l22sNlTVn0mcuvcAOxitCD4Spls
-         dloV71JeVDcCm9Rwc0SgOeszlpeakhJy9cKIIKKQ=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <CAJZ5v0hyx0Jh7Cc2ZpHTM0V+QzFrQtwsXbMjcBRp3TRFgY9vUQ@mail.gmail.com>
-References: <CAJZ5v0hyx0Jh7Cc2ZpHTM0V+QzFrQtwsXbMjcBRp3TRFgY9vUQ@mail.gmail.com>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <CAJZ5v0hyx0Jh7Cc2ZpHTM0V+QzFrQtwsXbMjcBRp3TRFgY9vUQ@mail.gmail.com>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.9-rc7
-X-PR-Tracked-Commit-Id: 6040723009060ed356dc93dd9a27e80b2206e59b
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 15083aa02561f6f208a253132c9d3b72af8c2b40
-Message-Id: <160105612653.19145.5008383902164847237.pr-tracker-bot@kernel.org>
-Date:   Fri, 25 Sep 2020 17:48:46 +0000
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+        id S1729727AbgIYSic (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 25 Sep 2020 14:38:32 -0400
+Received: from jabberwock.ucw.cz ([46.255.230.98]:54234 "EHLO
+        jabberwock.ucw.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727201AbgIYSic (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 25 Sep 2020 14:38:32 -0400
+Received: by jabberwock.ucw.cz (Postfix, from userid 1017)
+        id CA3DF1C0B77; Fri, 25 Sep 2020 20:38:28 +0200 (CEST)
+Date:   Fri, 25 Sep 2020 20:38:28 +0200
+From:   Pavel Machek <pavel@ucw.cz>
+To:     Christoph Hellwig <hch@lst.de>
+Cc:     Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Minho Ban <mhban@samsung.com>,
+        cgroups@vger.kernel.org, linux-block@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH 2/2] PM/hibernate: remove the bogus call to get_gendisk
+ in software_resume
+Message-ID: <20200925183828.GC7253@duo.ucw.cz>
+References: <20200925161447.1486883-1-hch@lst.de>
+ <20200925161447.1486883-3-hch@lst.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+        protocol="application/pgp-signature"; boundary="eRtJSFbw+EEWtPj3"
+Content-Disposition: inline
+In-Reply-To: <20200925161447.1486883-3-hch@lst.de>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Fri, 25 Sep 2020 18:53:13 +0200:
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.9-rc7
+--eRtJSFbw+EEWtPj3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/15083aa02561f6f208a253132c9d3b72af8c2b40
+Hi!
 
-Thank you!
+> get_gendisk grabs a reference on the disk and file operation, so this
+> code will leak both of them while having absolutely no use for the
+> gendisk itself.
+>=20
+> This effectively reverts commit 2df83fa4bce421f
+> ("PM / Hibernate: Use get_gendisk to verify partition if resume_file is i=
+nteger format")
+>=20
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> ---
+>  kernel/power/hibernate.c | 11 -----------
+>  1 file changed, 11 deletions(-)
+>=20
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index e7aa57fb2fdc33..7d0b99d2e69631 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -948,17 +948,6 @@ static int software_resume(void)
+> =20
+>  	/* Check if the device is there */
+>  	swsusp_resume_device =3D name_to_dev_t(resume_file);
+> -
+> -	/*
+> -	 * name_to_dev_t is ineffective to verify parition if resume_file is in
+> -	 * integer format. (e.g. major:minor)
+> -	 */
+> -	if (isdigit(resume_file[0]) && resume_wait) {
+> -		int partno;
+> -		while (!get_gendisk(swsusp_resume_device, &partno))
+> -			msleep(10);
+> -	}
 
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+I believe point of this code was to wait for resume device to appear
+-- see the resume_wait condition. It should not be simply removed.
+
+Best regards,
+								Pavel
+--=20
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+
+--eRtJSFbw+EEWtPj3
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iF0EABECAB0WIQRPfPO7r0eAhk010v0w5/Bqldv68gUCX245JAAKCRAw5/Bqldv6
+8nqrAJ9qEdwnZpnNgalnaGH1r71lg+ujCQCfdWZzlCzS9I0pHUwKmZCAgAYm75o=
+=9GW2
+-----END PGP SIGNATURE-----
+
+--eRtJSFbw+EEWtPj3--
