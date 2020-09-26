@@ -2,58 +2,87 @@ Return-Path: <SRS0=Pe0A=DD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1C12C2D0A8
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 14:05:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B81EDC2D0A8
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 17:36:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B328120659
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 14:05:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 88A8022B2D
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 17:36:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726244AbgIZOFa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 26 Sep 2020 10:05:30 -0400
-Received: from verein.lst.de ([213.95.11.211]:59235 "EHLO verein.lst.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725208AbgIZOFa (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 26 Sep 2020 10:05:30 -0400
-Received: by verein.lst.de (Postfix, from userid 2407)
-        id 2008168AFE; Sat, 26 Sep 2020 16:05:27 +0200 (CEST)
-Date:   Sat, 26 Sep 2020 16:05:26 +0200
-From:   Christoph Hellwig <hch@lst.de>
-To:     Pavel Machek <pavel@ucw.cz>
-Cc:     Christoph Hellwig <hch@lst.de>, Tejun Heo <tj@kernel.org>,
-        Jens Axboe <axboe@kernel.dk>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>, Minho Ban <mhban@samsung.com>,
-        cgroups@vger.kernel.org, linux-block@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [PATCH 2/2] PM/hibernate: remove the bogus call to get_gendisk
- in software_resume
-Message-ID: <20200926140526.GA10379@lst.de>
-References: <20200925161447.1486883-1-hch@lst.de> <20200925161447.1486883-3-hch@lst.de> <20200925183828.GC7253@duo.ucw.cz>
+        id S1729412AbgIZRgT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 26 Sep 2020 13:36:19 -0400
+Received: from mslow2.mail.gandi.net ([217.70.178.242]:36666 "EHLO
+        mslow2.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726244AbgIZRgT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2020 13:36:19 -0400
+Received: from relay11.mail.gandi.net (unknown [217.70.178.231])
+        by mslow2.mail.gandi.net (Postfix) with ESMTP id 6B26B3A2296;
+        Sat, 26 Sep 2020 17:36:17 +0000 (UTC)
+Received: from pc.localdomain (unknown [195.189.32.242])
+        (Authenticated sender: contact@artur-rojek.eu)
+        by relay11.mail.gandi.net (Postfix) with ESMTPSA id C1A97100007;
+        Sat, 26 Sep 2020 17:35:54 +0000 (UTC)
+From:   Artur Rojek <contact@artur-rojek.eu>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>
+Cc:     Paul Cercueil <paul@crapouillou.net>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Artur Rojek <contact@artur-rojek.eu>,
+        Rob Herring <robh@kernel.org>
+Subject: [PATCH v3 2/2] dt-bindings: power: ingenic,battery: add new compatibles
+Date:   Sat, 26 Sep 2020 19:35:29 +0200
+Message-Id: <20200926173529.25238-2-contact@artur-rojek.eu>
+X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200926173529.25238-1-contact@artur-rojek.eu>
+References: <20200926173529.25238-1-contact@artur-rojek.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20200925183828.GC7253@duo.ucw.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Sep 25, 2020 at 08:38:28PM +0200, Pavel Machek wrote:
-> > -	 * name_to_dev_t is ineffective to verify parition if resume_file is in
-> > -	 * integer format. (e.g. major:minor)
-> > -	 */
-> > -	if (isdigit(resume_file[0]) && resume_wait) {
-> > -		int partno;
-> > -		while (!get_gendisk(swsusp_resume_device, &partno))
-> > -			msleep(10);
-> > -	}
-> 
-> I believe point of this code was to wait for resume device to appear
-> -- see the resume_wait condition. It should not be simply removed.
+This binding can support Ingenic JZ4725B and JZ4770 SoCs, as they are
+compatible with Ingenic JZ4740 battery.
 
-But get_gendisk has absolutely no relation to a device appearing.  So
-whatever this code tried to do doesn't make any sense.
+Introduce the following compatible property combinations:
+ compatible = "ingenic,jz4725b-battery", "ingenic,jz4740-battery",
+ compatible = "ingenic,jz4770-battery", "ingenic,jz4740-battery"
+
+Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+Reviewed-by: Rob Herring <robh@kernel.org>
+---
+
+Changes:
+    v2: new patch
+    
+    v3: no change
+
+ .../devicetree/bindings/power/supply/ingenic,battery.yaml | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
+index 658ef92a5b82..683fa79ba2f3 100644
+--- a/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
++++ b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
+@@ -12,7 +12,13 @@ maintainers:
+ 
+ properties:
+   compatible:
+-    const: ingenic,jz4740-battery
++    oneOf:
++      - const: ingenic,jz4740-battery
++      - items:
++        - enum:
++          - ingenic,jz4725b-battery
++          - ingenic,jz4770-battery
++        - const: ingenic,jz4740-battery
+ 
+   io-channels:
+     maxItems: 1
+-- 
+2.28.0
+
