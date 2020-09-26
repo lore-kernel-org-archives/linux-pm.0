@@ -2,69 +2,95 @@ Return-Path: <SRS0=Pe0A=DD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	FREEMAIL_REPLYTO_END_DIGIT,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 513B6C47425
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 19:15:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01631C4727E
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 23:41:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0CEFE235F8
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 19:15:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A2CA2238E6
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 23:41:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="VR3M8UdV"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BMIuhpxy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729291AbgIZTPV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 26 Sep 2020 15:15:21 -0400
-Received: from rere.qmqm.pl ([91.227.64.183]:51312 "EHLO rere.qmqm.pl"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729106AbgIZTPU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 26 Sep 2020 15:15:20 -0400
-Received: from remote.user (localhost [127.0.0.1])
-        by rere.qmqm.pl (Postfix) with ESMTPSA id 4BzJC210pSz18;
-        Sat, 26 Sep 2020 21:05:34 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
-        t=1601147134; bh=i6GErGfH+UT41Llr031HN9MqOM80pBRiCXb/wqO7iKQ=;
-        h=Date:From:Subject:To:Cc:From;
-        b=VR3M8UdVC8FaxGAgq6IGf3dm6ilJIQwnWMSnpKo9en2np1zKJm654igWbl2Y/bYHX
-         QmBTH8H3feCEGAtG+H+z3HILrqeSfO1UgS7ya915CpoK8iri5YiMXYv+O4JaP2M5sa
-         jKKlsRehr1jxOOFz6/53Yy7OP1Mcte9m3yamq6rLPjRtPSW1ptbjkXeiQ8qENYbmlj
-         7RYVlf9VzVgvkXR0k4W4XMXGHDn82BtRBN1+DCiAdTiZ3zEQi1dlXfYt5o2uZ9EGuO
-         5E7gH4uqwc/04X3cehjnt4knoL6qMaVEZQWcN5z3vcH42nifgsClGI1iX/dgmJOqNK
-         iGZinkS/lKFbw==
-X-Virus-Status: Clean
-X-Virus-Scanned: clamav-milter 0.102.4 at mail
-Date:   Sat, 26 Sep 2020 21:05:31 +0200
-Message-Id: <cover.1601146802.git.mirq-linux@rere.qmqm.pl>
-From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
-Subject: [PATCH v4 0/2] power: bq25890: IBAT compensation support
+        id S1726382AbgIZXlz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 26 Sep 2020 19:41:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50218 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726311AbgIZXlz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2020 19:41:55 -0400
+Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC3D8C0613CE;
+        Sat, 26 Sep 2020 16:41:54 -0700 (PDT)
+Received: by mail-lf1-x12d.google.com with SMTP id u8so6935468lff.1;
+        Sat, 26 Sep 2020 16:41:54 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:references:in-reply-to:reply-to:from:date:message-id
+         :subject:to:cc;
+        bh=lgP48LmDi6OR55TkF8fuCZFClfYwvs7R4PpuOgG5rOo=;
+        b=BMIuhpxy9MD5mQ4V49vciGHOcDWUM2qZo2fGc2jnthCCTB+vfK9Yb42Gc8K2EmFiRa
+         iJozIDjoYKcXU8d5JwtodiwIG/Md4KmhSA+qRBvYWWR5l8XQ7G07O+pH+aQjWaq+Esew
+         l0YMWqJjofUqzp7VmGZVIg9rfNmDACHjOxO/d4GRxhu962dxiivWi90HOWbdOf2VO/z0
+         otpv2b27/C3v671FncQifBdp3bBVZ2uCoQB44/YXrKZocVlV5FoBoltu/jkHmO0Sj/K9
+         67oJy/43pRSGdmSsLCW/h2kwMi8u+7OvHWQu7354jQDraZ7bNl9dfDcI3CKaRFhskREq
+         yYFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:reply-to
+         :from:date:message-id:subject:to:cc;
+        bh=lgP48LmDi6OR55TkF8fuCZFClfYwvs7R4PpuOgG5rOo=;
+        b=HiSdOVnAebHttvkfxgG91mYXdopnG7V49p08awlnk75pHD52nSMUgyztINZUMmVOFk
+         ql1QkASQrCILvhOE7rAldIBFP8Yh4vfZh6We8Jf9y45MIgQrs7S/XwUNCv3T3h3cpKxh
+         6x0bzTH1IDnBOemzjW4Frd1j54IpF3ihlUpv9D7XHuQW2SYOSdGFY2pfmJS/FRCT5/EX
+         vi4qy61KYjFl1uUWQoZPrZX0JrYrU5S4bZ5SS2QF27N8JBfCuc07U04nn7/BpbbovUuL
+         71qHzVrFcEqf3ybd/ju9KRDWIywxLduqqXAVZJCKKKisGybosO5ezkR7WtB4efZeBaqL
+         Qq5g==
+X-Gm-Message-State: AOAM533coaMROvDgnllJqyjJbKafXrIb0aCgXIqntrH9Y7h6fxlIPliM
+        Cd7LuV4MoQMoeszOOjx75tRaHD58kxaFWKwYIF0=
+X-Google-Smtp-Source: ABdhPJyi8Qg/4C/eCF2XezRHXtKYOEgyHWgsmnY7E7R1VZ2MKMvVQMATSNs2tYCCfBe8pPSJrUdwp/H8v0IG3Z4sDq4=
+X-Received: by 2002:ac2:5458:: with SMTP id d24mr1572771lfn.446.1601163712190;
+ Sat, 26 Sep 2020 16:41:52 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-To:     Angus Ainslie <angus@akkea.ca>, Rob Herring <robh+dt@kernel.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Yauhen Kharuzhy <jekhor@gmail.com>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
+References: <CGME20200924100342epcas1p42ad5d9bf5f2316f8c9e3909dfaa49a75@epcas1p4.samsung.com>
+ <2dc9eeae-159e-c886-0278-f3c85d20bab5@samsung.com> <CAJZ5v0h3yLJjaxshWUdYAzGW2RhjWqeKv+iEumKQyOs16pc2oQ@mail.gmail.com>
+In-Reply-To: <CAJZ5v0h3yLJjaxshWUdYAzGW2RhjWqeKv+iEumKQyOs16pc2oQ@mail.gmail.com>
+Reply-To: cwchoi00@gmail.com
+From:   Chanwoo Choi <cwchoi00@gmail.com>
+Date:   Sun, 27 Sep 2020 08:41:16 +0900
+Message-ID: <CAGTfZH3u3i1V6UXmf0KvXwQ4=ytA7DPTdLKO3nnkKmbQ80kJyg@mail.gmail.com>
+Subject: Re: [GIT PULL] devfreq fixes for v5.9-rc7
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Chanwoo Choi <cw00.choi@samsung.com>,
+        "Rafael J. Wysocki <rjw@rjwysocki.net>" <rjw@rjwysocki.net>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-These two patches add support for IBAT compensation feature of bq2589x
-chargers.
+On Fri, Sep 25, 2020 at 11:38 PM Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Thu, Sep 24, 2020 at 12:03 PM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+> >
+> > Dear Rafael,
+> >
+> > This is devfreq-next pull request for v5.9-rc7. I add detailed description of
+> > this pull request on the following tag. Please pull devfreq with following updates.
+> > - tag name : devfreq-fixes-for-5.9-rc7
+>
+> Pulled, thanks!
+>
+> I would appreciate receiving pull requests a bit earlier before the
+> target -rc, though.
 
----
-v4 fixed property names for the features and dropped other applied or rejected
-   patches
-
-Michał Mirosław (2):
-  power: bq25890: document IBAT compensation DT properties
-  power: bq25890: support IBAT compensation
-
- .../devicetree/bindings/power/supply/bq25890.txt  |  4 ++++
- drivers/power/supply/bq25890_charger.c            | 15 +++++++++++++--
- 2 files changed, 17 insertions(+), 2 deletions(-)
+I'm sorry for late pull request for rc. I'll send pull request as you commented.
 
 -- 
-2.20.1
-
+Best Regards,
+Chanwoo Choi
