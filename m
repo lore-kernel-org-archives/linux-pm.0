@@ -2,163 +2,126 @@ Return-Path: <SRS0=Pe0A=DD=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76415C47420
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 17:36:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43A43C4741F
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 19:15:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 40C5C23119
-	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 17:36:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E015122207
+	for <linux-pm@archiver.kernel.org>; Sat, 26 Sep 2020 19:15:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=rere.qmqm.pl header.i=@rere.qmqm.pl header.b="hNGAkvK0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729272AbgIZRgT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 26 Sep 2020 13:36:19 -0400
-Received: from mslow2.mail.gandi.net ([217.70.178.242]:36660 "EHLO
-        mslow2.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726210AbgIZRgS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 26 Sep 2020 13:36:18 -0400
-Received: from relay11.mail.gandi.net (unknown [217.70.178.231])
-        by mslow2.mail.gandi.net (Postfix) with ESMTP id 5DB433A0A10;
-        Sat, 26 Sep 2020 17:36:16 +0000 (UTC)
-Received: from pc.localdomain (unknown [195.189.32.242])
-        (Authenticated sender: contact@artur-rojek.eu)
-        by relay11.mail.gandi.net (Postfix) with ESMTPSA id 412A0100002;
-        Sat, 26 Sep 2020 17:35:52 +0000 (UTC)
-From:   Artur Rojek <contact@artur-rojek.eu>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>
-Cc:     Paul Cercueil <paul@crapouillou.net>, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Artur Rojek <contact@artur-rojek.eu>
-Subject: [PATCH v3 1/2] dt-bindings: power: Convert ingenic,battery.txt to YAML
-Date:   Sat, 26 Sep 2020 19:35:28 +0200
-Message-Id: <20200926173529.25238-1-contact@artur-rojek.eu>
-X-Mailer: git-send-email 2.28.0
+        id S1729443AbgIZTPU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 26 Sep 2020 15:15:20 -0400
+Received: from rere.qmqm.pl ([91.227.64.183]:55371 "EHLO rere.qmqm.pl"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726183AbgIZTPT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 26 Sep 2020 15:15:19 -0400
+X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Sat, 26 Sep 2020 15:15:19 EDT
+Received: from remote.user (localhost [127.0.0.1])
+        by rere.qmqm.pl (Postfix) with ESMTPSA id 4BzJC30yhjz2KM;
+        Sat, 26 Sep 2020 21:05:35 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=rere.qmqm.pl; s=1;
+        t=1601147135; bh=A6FEbk0jOsce4uOG4hqYgXIH+C1qRtC4NLa/GQ9EAY0=;
+        h=Date:In-Reply-To:References:From:Subject:To:Cc:From;
+        b=hNGAkvK0zBV+8SNw0ZZPspmlwKmbKpnJ6JINGqy23i8riZDaSFAlqXbR7kAyARuEc
+         0Y5+UF6EPKqvchuFYmGoB9b1fMX0JvYHkwNJ/KulTqFHw3n+7n0s5FLyEkdsibII1H
+         hmjB84wiuXGP6DZ6NAz4lqgaebMB4yNjCJZ8vGwyVu596cc8RiZ4Ew2p2xC59iWRqI
+         oy0hZxAc18GiOURhWa0DrjKCeoGkLpFWbz7QJkIdRwmGQuaKv2B15TfUUfwwkPmbBR
+         f4xykrzI8acqpaHzzZj3nAYL1hqlfxiGkwaFL6tULMdtiFhbq32/9Bt9OwlJCJZTCU
+         nX2cmxAz1DnTw==
+X-Virus-Status: Clean
+X-Virus-Scanned: clamav-milter 0.102.4 at mail
+Date:   Sat, 26 Sep 2020 21:05:34 +0200
+Message-Id: <73bd1e2f62912bc97152078540f15fcf6438e6c1.1601146802.git.mirq-linux@rere.qmqm.pl>
+In-Reply-To: <cover.1601146802.git.mirq-linux@rere.qmqm.pl>
+References: <cover.1601146802.git.mirq-linux@rere.qmqm.pl>
+From:   =?UTF-8?q?Micha=C5=82=20Miros=C5=82aw?= <mirq-linux@rere.qmqm.pl>
+Subject: [PATCH v4 2/2] power: bq25890: support IBAT compensation
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+To:     Angus Ainslie <angus@akkea.ca>, Rob Herring <robh+dt@kernel.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Yauhen Kharuzhy <jekhor@gmail.com>
+Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Convert the textual documentation of Device Tree bindings for the
-Ingenic JZ47xx SoCs battery to YAML.
+Add configuration for compensation of IBAT measuring resistor in series
+with the battery.
 
-Signed-off-by: Artur Rojek <contact@artur-rojek.eu>
+Signed-off-by: Michał Mirosław <mirq-linux@rere.qmqm.pl>
 ---
+v4: renamed properties applying property-suffix
+---
+ drivers/power/supply/bq25890_charger.c | 15 +++++++++++++--
+ 1 file changed, 13 insertions(+), 2 deletions(-)
 
-Changes:
-    v2: move introduction of new compatibles into a separate patch
-    
-    v3: - drop description of `io-channels` property and set its maxItems,
-        - remove redundant quotes in `io-channel-names` property,
-        - drop `items` for `monitored-battery` property
-
- .../bindings/power/supply/ingenic,battery.txt | 31 -----------
- .../power/supply/ingenic,battery.yaml         | 55 +++++++++++++++++++
- 2 files changed, 55 insertions(+), 31 deletions(-)
- delete mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
- create mode 100644 Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
-
-diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt b/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
-deleted file mode 100644
-index 66430bf73815..000000000000
---- a/Documentation/devicetree/bindings/power/supply/ingenic,battery.txt
-+++ /dev/null
-@@ -1,31 +0,0 @@
--* Ingenic JZ47xx battery bindings
--
--Required properties:
--
--- compatible: Must be "ingenic,jz4740-battery".
--- io-channels: phandle and IIO specifier pair to the IIO device.
--  Format described in iio-bindings.txt.
--- monitored-battery: phandle to a "simple-battery" compatible node.
--
--The "monitored-battery" property must be a phandle to a node using the format
--described in battery.txt, with the following properties being required:
--
--- voltage-min-design-microvolt: Drained battery voltage.
--- voltage-max-design-microvolt: Fully charged battery voltage.
--
--Example:
--
--#include <dt-bindings/iio/adc/ingenic,adc.h>
--
--simple_battery: battery {
--	compatible = "simple-battery";
--	voltage-min-design-microvolt = <3600000>;
--	voltage-max-design-microvolt = <4200000>;
--};
--
--ingenic_battery {
--	compatible = "ingenic,jz4740-battery";
--	io-channels = <&adc INGENIC_ADC_BATTERY>;
--	io-channel-names = "battery";
--	monitored-battery = <&simple_battery>;
--};
-diff --git a/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
-new file mode 100644
-index 000000000000..658ef92a5b82
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/ingenic,battery.yaml
-@@ -0,0 +1,55 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+# Copyright 2019-2020 Artur Rojek
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/ingenic,battery.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Ingenic JZ47xx battery bindings
-+
-+maintainers:
-+  - Artur Rojek <contact@artur-rojek.eu>
-+
-+properties:
-+  compatible:
-+    const: ingenic,jz4740-battery
-+
-+  io-channels:
-+    maxItems: 1
-+
-+  io-channel-names:
-+    const: battery
-+
-+  monitored-battery:
-+    description: >
-+      phandle to a "simple-battery" compatible node.
-+
-+      This property must be a phandle to a node using the format described
-+      in battery.txt, with the following properties being required:
-+      - voltage-min-design-microvolt: drained battery voltage,
-+      - voltage-max-design-microvolt: fully charged battery voltage.
-+
-+required:
-+  - compatible
-+  - io-channels
-+  - io-channel-names
-+  - monitored-battery
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/iio/adc/ingenic,adc.h>
-+
-+    simple_battery: battery {
-+            compatible = "simple-battery";
-+            voltage-min-design-microvolt = <3600000>;
-+            voltage-max-design-microvolt = <4200000>;
-+    };
-+
-+    ingenic-battery {
-+            compatible = "ingenic,jz4740-battery";
-+            io-channels = <&adc INGENIC_ADC_BATTERY>;
-+            io-channel-names = "battery";
-+            monitored-battery = <&simple_battery>;
-+    };
+diff --git a/drivers/power/supply/bq25890_charger.c b/drivers/power/supply/bq25890_charger.c
+index 77150667e36b..ab8398f935c5 100644
+--- a/drivers/power/supply/bq25890_charger.c
++++ b/drivers/power/supply/bq25890_charger.c
+@@ -83,6 +83,8 @@ struct bq25890_init_data {
+ 	u8 boostf;	/* boost frequency		*/
+ 	u8 ilim_en;	/* enable ILIM pin		*/
+ 	u8 treg;	/* thermal regulation threshold */
++	u8 rbatcomp;	/* IBAT sense resistor value    */
++	u8 vclamp;	/* IBAT compensation voltage limit */
+ };
+ 
+ struct bq25890_state {
+@@ -258,6 +260,8 @@ enum bq25890_table_ids {
+ 	TBL_VREG,
+ 	TBL_BOOSTV,
+ 	TBL_SYSVMIN,
++	TBL_VBATCOMP,
++	TBL_RBATCOMP,
+ 
+ 	/* lookup tables */
+ 	TBL_TREG,
+@@ -299,6 +303,8 @@ static const union {
+ 	[TBL_VREG] =	{ .rt = {3840000, 4608000, 16000} },	 /* uV */
+ 	[TBL_BOOSTV] =	{ .rt = {4550000, 5510000, 64000} },	 /* uV */
+ 	[TBL_SYSVMIN] = { .rt = {3000000, 3700000, 100000} },	 /* uV */
++	[TBL_VBATCOMP] ={ .rt = {0,        224000, 32000} },	 /* uV */
++	[TBL_RBATCOMP] ={ .rt = {0,        140000, 20000} },	 /* uOhm */
+ 
+ 	/* lookup tables */
+ 	[TBL_TREG] =	{ .lt = {bq25890_treg_tbl, BQ25890_TREG_TBL_SIZE} },
+@@ -648,7 +654,9 @@ static int bq25890_hw_init(struct bq25890_device *bq)
+ 		{F_BOOSTI,	 bq->init_data.boosti},
+ 		{F_BOOSTF,	 bq->init_data.boostf},
+ 		{F_EN_ILIM,	 bq->init_data.ilim_en},
+-		{F_TREG,	 bq->init_data.treg}
++		{F_TREG,	 bq->init_data.treg},
++		{F_BATCMP,	 bq->init_data.rbatcomp},
++		{F_VCLAMP,	 bq->init_data.vclamp},
+ 	};
+ 
+ 	ret = bq25890_chip_reset(bq);
+@@ -859,11 +867,14 @@ static int bq25890_fw_read_u32_props(struct bq25890_device *bq)
+ 		{"ti,boost-max-current", false, TBL_BOOSTI, &init->boosti},
+ 
+ 		/* optional properties */
+-		{"ti,thermal-regulation-threshold", true, TBL_TREG, &init->treg}
++		{"ti,thermal-regulation-threshold", true, TBL_TREG, &init->treg},
++		{"ti,ibatcomp-micro-ohms", true, TBL_RBATCOMP, &init->rbatcomp},
++		{"ti,ibatcomp-clamp-microvolt", true, TBL_VBATCOMP, &init->vclamp},
+ 	};
+ 
+ 	/* initialize data for optional properties */
+ 	init->treg = 3; /* 120 degrees Celsius */
++	init->rbatcomp = init->vclamp = 0; /* IBAT compensation disabled */
+ 
+ 	for (i = 0; i < ARRAY_SIZE(props); i++) {
+ 		ret = device_property_read_u32(bq->dev, props[i].name,
 -- 
-2.28.0
+2.20.1
 
