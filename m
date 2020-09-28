@@ -4,98 +4,96 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F62AC47420
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 17:26:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E73CAC2D0A8
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 18:03:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EDD78208D5
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 17:26:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A0D4220BED
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 18:03:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601313997;
-	bh=MVuJMYEfoKyS2DK0TBPUXZXnjKmgMEwpT4AJqSdL/QI=;
+	s=default; t=1601316238;
+	bh=9u16AoaieNxjoPQeRkHHvZh6WKdi/Apr9v6huDiaVsc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=xhNpp5cDIhApN0oPLCOQKxXxHceAEHFYo2UXqr8IgTMeARdaSt4DGF/YZZyE/ABpz
-	 lCRK1jnEgoqCQw/E5yCXX4fVxwo9e7RDD42HM80KR3PC4TcSm/BJJxv3YWgcTb6CQ9
-	 4+03TH9lH+bw7T4jKuqwzCb8C7t3cvwEhobDrcoU=
+	b=cLD4OxDZOachNDUZ0mmXrWMBII+hDdbtmpZIyGMAaXwIMhVMKpOa84BonV/w7roqW
+	 ADDKSuImF468aW8u7QHwGt2TSOtFjnVkS6lhSMi083i0Q84XkZyauD8MT9xZeJMzTU
+	 95U+1QRFVBUXHGvBVSSpVnMiItlPnfXrKl23+tRs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726759AbgI1R0d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Sep 2020 13:26:33 -0400
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:44212 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726551AbgI1R0d (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2020 13:26:33 -0400
-Received: by mail-oi1-f193.google.com with SMTP id 185so2170358oie.11;
-        Mon, 28 Sep 2020 10:26:32 -0700 (PDT)
+        id S1726573AbgI1SD6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Sep 2020 14:03:58 -0400
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:46992 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726562AbgI1SD6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2020 14:03:58 -0400
+Received: by mail-oi1-f194.google.com with SMTP id u126so2298015oif.13;
+        Mon, 28 Sep 2020 11:03:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=2Bg8Mb9Gv2pIoiwK87TIqBreNFfJwQnzcH+LXnQL+4E=;
-        b=DKnyfgXTAWzRQeaW3JaGxzzoiSP0dqnknMWsftAehv4tdc2OeHIJAbqoFraSdjqOu4
-         QuC11py4w0cv3dl0kggtBOb5tWsdVhQfz+ktlbeZyItsUIjVObT9XgV5cI5MdKB7/0oz
-         Crv0RtmZHjWcVbRnEWu+xY2GJ7+GgoOjT+CGXB6qc4ph/VAnXxJXQXm0SyHkaUrSYZgU
-         E90My/BaNRR9Bcv9CF/Ba5nLiD4l1Mi/c3JlRNSAGlNf1jfxNR4aimdTRqmp/442AWNl
-         n4KraUiMG/4TfDG2L7Egf+xCusXknSn2yFfT3aFgjTW9F5p4oMa5vXkdbbHscnxt1ORg
-         4ZHw==
-X-Gm-Message-State: AOAM532e/W+wCx/kKtwVgbyD32AwJBMAaeDb5yxdP2jIAvbbI51zo/gt
-        yh6rc92gCcVeDiVylXIw3w==
-X-Google-Smtp-Source: ABdhPJwXO9pq9TJEGuCXdjVBWwl4RWh6eeuKeJMcErJlWKZi0dMMVwHrqzNAx4K4wDL4I9iZT4xUhA==
-X-Received: by 2002:a05:6808:914:: with SMTP id w20mr1614438oih.72.1601313992499;
-        Mon, 28 Sep 2020 10:26:32 -0700 (PDT)
+        bh=b47m6kGoNWc4/uwIrttlIVNkgPngBrRz1iBKHy3w57s=;
+        b=WpPAkT0iFvpxkxu0DV3jrp8TxkNZa71Pb53f92w6BXBnxH85Fm81PWIo8smqBHOkNq
+         0o6lWNyuZGRlgyqEPwOKVk95Rt/wYbvVa6XoDDrCo/ZyhKOMJnPJfbsHq5LDOXrONgv0
+         xA+Ni70wmsh6DCSVULxFjPi9K3w1WMqFREie5qNLoagU2S/AgF8D4J1ZKqYShl5dxC9T
+         fy1USMQmDNBQaww5Pj2Oe60NF7jGclRK/Q1AFA9AcbS2OsJriyrwrVhlmFE6Gzx/KeuV
+         EzRZ+sMhQuY/l80vX+yDjvQuoP1W/KemkQ2kJeWtsIvpjYkrfYZLuYCHMtBQpR7s/6yI
+         JrGQ==
+X-Gm-Message-State: AOAM532yXfmK+NWwtKGbPVmPTzbyjDMhBDLwjqmEnLByCFkH8EsKdrP3
+        wiPFpaCe8/IbMPdQFYnfhQ==
+X-Google-Smtp-Source: ABdhPJwUlNfZsjTADK9YsUbvwa2mVcVcPNzQHs7Phaize49QJOgmDZPGHTv6z/TvTWN15QcvW4twOQ==
+X-Received: by 2002:aca:4fd5:: with SMTP id d204mr83530oib.58.1601316236901;
+        Mon, 28 Sep 2020 11:03:56 -0700 (PDT)
 Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id y23sm2207192ooj.34.2020.09.28.10.26.31
+        by smtp.gmail.com with ESMTPSA id p8sm2261067oot.29.2020.09.28.11.03.55
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2020 10:26:31 -0700 (PDT)
-Received: (nullmailer pid 2933713 invoked by uid 1000);
-        Mon, 28 Sep 2020 17:26:31 -0000
-Date:   Mon, 28 Sep 2020 12:26:31 -0500
+        Mon, 28 Sep 2020 11:03:56 -0700 (PDT)
+Received: (nullmailer pid 2999675 invoked by uid 1000);
+        Mon, 28 Sep 2020 18:03:55 -0000
+Date:   Mon, 28 Sep 2020 13:03:55 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     kholk11@gmail.com
-Cc:     linux-pm@vger.kernel.org, konradybcio@gmail.com,
-        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        marijns95@gmail.com, martin.botka1@gmail.com, agross@kernel.org,
-        bjorn.andersson@linaro.org, phone-devel@vger.kernel.org,
-        georgi.djakov@linaro.org, linux-kernel@vger.kernel.org,
-        robh+dt@kernel.org
-Subject: Re: [PATCH 2/2] dt-bindings: interconnect: Add bindings for Qualcomm
- SDM660 NoC
-Message-ID: <20200928172631.GA2933280@bogus>
-References: <20200926125101.12712-1-kholk11@gmail.com>
- <20200926125101.12712-3-kholk11@gmail.com>
+To:     Ansuel Smith <ansuelsmth@gmail.com>
+Cc:     linux-pm@vger.kernel.org, MyungJoo Ham <myungjoo.ham@samsung.com>,
+        devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>
+Subject: Re: [PATCH 2/2] dt-bindings: devfreq: Document L2 Krait CPU Cache
+ devfreq driver
+Message-ID: <20200928180355.GA2999374@bogus>
+References: <20200927160515.6480-1-ansuelsmth@gmail.com>
+ <20200927160515.6480-2-ansuelsmth@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20200926125101.12712-3-kholk11@gmail.com>
+In-Reply-To: <20200927160515.6480-2-ansuelsmth@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 26 Sep 2020 14:51:01 +0200, kholk11@gmail.com wrote:
-> From: AngeloGioacchino Del Regno <kholk11@gmail.com>
+On Sun, 27 Sep 2020 18:05:13 +0200, Ansuel Smith wrote:
+> Document dedicated L2 Krait CPU Cache devfreq scaling driver.
 > 
-> Add the bindings for the Qualcomm SDM660-class NoC, valid for
-> SDM630, SDM636, SDM660 and SDA variants.
-> 
-> Signed-off-by: AngeloGioacchino Del Regno <kholk11@gmail.com>
+> Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
 > ---
->  .../bindings/interconnect/qcom,sdm660.yaml    | 146 ++++++++++++++++++
->  1 file changed, 146 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
+>  .../bindings/devfreq/krait-cache-devfreq.yaml | 77 +++++++++++++++++++
+>  1 file changed, 77 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.yaml
 > 
 
 
 My bot found errors running 'make dt_binding_check' on your patch:
 
-Error: Documentation/devicetree/bindings/interconnect/qcom,sdm660.example.dts:64.33-34 syntax error
-FATAL ERROR: Unable to parse input tree
-make[1]: *** [scripts/Makefile.lib:342: Documentation/devicetree/bindings/interconnect/qcom,sdm660.example.dt.yaml] Error 1
-make[1]: *** Waiting for unfinished jobs....
-make: *** [Makefile:1366: dt_binding_check] Error 2
+./Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.yaml: $id: relative path/filename doesn't match actual path or filename
+	expected: http://devicetree.org/schemas/devfreq/krait-cache-devfreq.yaml#
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.example.dt.yaml: qcom-krait-cache: clocks:0:1: missing phandle tag in 4
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.example.dt.yaml: qcom-krait-cache: clocks:0: [4294967295, 4] is too long
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.yaml
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.example.dt.yaml: qcom-krait-cache: 'voltage-tolerance' is a required property
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/devfreq/krait-cache-devfreq.yaml
 
 
-See https://patchwork.ozlabs.org/patch/1371756
+See https://patchwork.ozlabs.org/patch/1372099
 
 If you already ran 'make dt_binding_check' and didn't see the above
 error(s), then make sure dt-schema is up to date:
