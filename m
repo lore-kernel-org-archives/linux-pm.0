@@ -2,61 +2,62 @@ Return-Path: <SRS0=bGsN=DF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E58BC47420
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 19:59:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21969C4727C
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 19:59:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BB242076D
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 19:59:01 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C61432083B
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 19:59:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qrDsEFA0"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="d4VeKgmf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726656AbgI1T7B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Sep 2020 15:59:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34510 "EHLO
+        id S1726590AbgI1T7H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Sep 2020 15:59:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34518 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726590AbgI1T7A (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2020 15:59:00 -0400
-Received: from mail-wm1-x331.google.com (mail-wm1-x331.google.com [IPv6:2a00:1450:4864:20::331])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 092B9C061755;
-        Mon, 28 Sep 2020 12:59:00 -0700 (PDT)
-Received: by mail-wm1-x331.google.com with SMTP id y15so2383044wmi.0;
-        Mon, 28 Sep 2020 12:58:59 -0700 (PDT)
+        with ESMTP id S1726779AbgI1T7C (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2020 15:59:02 -0400
+Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21DF6C0613CE;
+        Mon, 28 Sep 2020 12:59:02 -0700 (PDT)
+Received: by mail-wr1-x433.google.com with SMTP id o5so2629566wrn.13;
+        Mon, 28 Sep 2020 12:59:02 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=R40nrCDfhihDaBak/buX8nywTFdAEmU4Ja2xlgkMpqk=;
-        b=qrDsEFA0vYMYm2cs78HiC7HnifY6UfEh5tE99eHZRifsMoXiOe8pimSaKCxFpIyss+
-         Xn2F4HfK6ESIgX81k0Li/LIO0d5y1O5Z5a+8RZ6gxr7bh1Et1i/PliJidTKZ9f1LHbxU
-         9yxCM04Gnfs+5ZGev8a8CZzw+JpV7nBB7YzEaEFnOwNVVUjnevqDDI6E0KJCsz/xlD7p
-         humPbko98hUZ4ENqkQo18eQdlJWOXtb0R0ui+ltQxTx35IAiNkagqqE0SB1YodXJXbwM
-         4EkSdpYwf9nvecNfUWkb/XmXyhNgkLaIPGsn9vlOvNPgjPtjDDwio53YSAxpqsuJr+PK
-         YxQg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=NbGMC82aTOHw69bBF16p394ydgQFm7eLIkNq9Ff7svQ=;
+        b=d4VeKgmfatPXqcyO6XPFl5Qo4rREUj/LJRcodj8RyAlelnhAxznsv+FWqw+1k7A5n3
+         ckWZw5D/CaKHYaYYLlriu9Y58GAXx11Z1JYxXeLsuG0qUrZvpR2IkAAzloJKwrt3hVeg
+         pMSthIDsge5xxWpbOgph0VeF7Qh4/nWSuHcd0bs6TZ5JuSs5yRQFJS5CmKiVofEpJak8
+         r0nFf/wqNDw5FA4e01A6sRJsR9Ar1/0zJKjR7hqnZhJDtNyhjh64aI9p9+Cwr3ab/e7A
+         n8RaCg4sRQYzaWImE6SEqd86MRC2yrhjpqI8x/jn1K2rfvGs3VxLrl0VdISvS8fr+amn
+         i4eA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=R40nrCDfhihDaBak/buX8nywTFdAEmU4Ja2xlgkMpqk=;
-        b=Iof8fhXwJzP8jwIeWvfTL2zCnAr9FjzSolH/w2HWtUTZ+IzSjD/BY9osTCqyHSTc9+
-         0jzF5f018upDeN/SJK0HU+fFZzUnfto4kUNHU8UI4c7mXxjF7I2I8o/kSp9Ze1uN8twj
-         gCCPB0UfThvAG0aCgpNzX6neBkK2oT5G0QiEg0j7GLBC8XHqZRTNz6Ux5RCbnTaVyIrt
-         a/aB2MXqcyHIcHsYJIch1RIXX3jmxnNYca0mv5SKWBk0YGOu97wEN8o7y51c9CVRfsQs
-         HwlWqwriLzX7MLXqmYjyb52BAMoq0ycLPYwhMxM5U78o9ZgIAbzYEwRYkD4tWjJov+o+
-         UTyA==
-X-Gm-Message-State: AOAM531y/bU5CCPx7jEgb5B8JqmryTIUe1CKvLTnLwFXlRJ97Hzisql9
-        B0USWquri6RRejLeKPYBBds=
-X-Google-Smtp-Source: ABdhPJwku5+xhjSNPN+gwulBq1wbSl0jOpoz06nnz0x0xvjXyMrJzi6pLqvi6Ba61eMBP2aBpLE8gg==
-X-Received: by 2002:a05:600c:220f:: with SMTP id z15mr751487wml.87.1601323138479;
-        Mon, 28 Sep 2020 12:58:58 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=NbGMC82aTOHw69bBF16p394ydgQFm7eLIkNq9Ff7svQ=;
+        b=Edgk/jQCd1UA8oijD3m4HjOSBpmwIgAWN+0G/a4MUzRdz1fOfmMRwTdX9Qm9pTbQEE
+         J/FGFQqpblsqfpp2QS4LCzl3Qxrv2gK41avNhk3x9T8R3Yn0Hh/3jSAT1A+Ponzze4aS
+         qvJK5n5c4ZU4szHzO00Ky0NQN6hAXpx9tFOCy65lfWzi1b7BIeagytajvsTg9DadTdiQ
+         AwDPsU4Y4busl8HzjnYomQTbas8KVBD+/um2coKSvuxogQbMz+cjpIcE/TmlYhoJAYH4
+         O2rMmAhHAkxRxRXtLy2uJVArDC5IlFwmGAFh4rSf9SiH8F1wFgKlaiMtFNyDK5cd2U1j
+         W4yg==
+X-Gm-Message-State: AOAM531YxutBRLXxDJyWuFHvL+vSPxrNQV4P5jlfqSxNXtHk3ByJS2D6
+        Y8J+aaMmWiWbmZgOsSg/cww=
+X-Google-Smtp-Source: ABdhPJya85/3p5+S9n9FcBpz3/kV9Q2zQVoxdyp9XDV/ritX+EuRAaJsknb/YBtOLMbrZLlxDw3zuQ==
+X-Received: by 2002:a5d:518b:: with SMTP id k11mr102696wrv.369.1601323140707;
+        Mon, 28 Sep 2020 12:59:00 -0700 (PDT)
 Received: from IcarusMOD.eternityproject.eu ([2.237.20.237])
-        by smtp.gmail.com with ESMTPSA id q4sm2607434wru.65.2020.09.28.12.58.57
+        by smtp.gmail.com with ESMTPSA id q4sm2607434wru.65.2020.09.28.12.58.59
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 28 Sep 2020 12:58:57 -0700 (PDT)
+        Mon, 28 Sep 2020 12:59:00 -0700 (PDT)
 From:   kholk11@gmail.com
 To:     bjorn.andersson@linaro.org
 Cc:     robh+dt@kernel.org, agross@kernel.org, georgi.djakov@linaro.org,
@@ -64,10 +65,12 @@ Cc:     robh+dt@kernel.org, agross@kernel.org, georgi.djakov@linaro.org,
         martin.botka1@gmail.com, linux-arm-msm@vger.kernel.org,
         phone-devel@vger.kernel.org, devicetree@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 0/2] Add SDM630/636/660 interconnect driver
-Date:   Mon, 28 Sep 2020 21:58:51 +0200
-Message-Id: <20200928195853.40084-1-kholk11@gmail.com>
+Subject: [PATCH v2 2/2] dt-bindings: interconnect: Add bindings for Qualcomm SDM660 NoC
+Date:   Mon, 28 Sep 2020 21:58:53 +0200
+Message-Id: <20200928195853.40084-3-kholk11@gmail.com>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20200928195853.40084-1-kholk11@gmail.com>
+References: <20200928195853.40084-1-kholk11@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -76,46 +79,168 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: AngeloGioacchino Del Regno <kholk11@gmail.com>
 
-This patch series adds the SDM660 interconnect provider driver in
-order to stop some timeouts and achieve some decent performance by
-avoiding to be NoC limited.
-It's also providing some power consumption improvement, but I have
-only measured that as less heat, which is quite important when
-working on thermally constrained devices like smartphones.
+Add the bindings for the Qualcomm SDM660-class NoC, valid for
+SDM630, SDM636, SDM660 and SDA variants.
 
-Please note that this driver's yaml binding is referring to a MMCC
-clock, so this series does depend on the SDM660 MMCC driver that I
-have sent separately.
-The multimedia clock is required only for the Multimedia NoC (mnoc).
-
-This patch series has been tested against the following devices:
- - Sony Xperia XA2 Ultra (SDM630 Nile Discovery)
- - Sony Xperia 10        (SDM630 Ganges Kirin)
- - Sony Xperia 10 Plus   (SDM636 Ganges Mermaid)
-
-Changes in v2:
- - Added missing qcom,mmcc-sdm660.h dt-binding include in the
-   interconnect/qcom,sdm660.yaml binding, as pointed out by
-   Rob Herring
-
-AngeloGioacchino Del Regno (2):
-  interconnect: qcom: Add SDM660 interconnect provider driver
-  dt-bindings: interconnect: Add bindings for Qualcomm SDM660 NoC
-
-AngeloGioacchino Del Regno (2):
-  interconnect: qcom: Add SDM660 interconnect provider driver
-  dt-bindings: interconnect: Add bindings for Qualcomm SDM660 NoC
-
- .../bindings/interconnect/qcom,sdm660.yaml    | 147 +++
- drivers/interconnect/qcom/Kconfig             |   9 +
- drivers/interconnect/qcom/Makefile            |   2 +
- drivers/interconnect/qcom/sdm660.c            | 919 ++++++++++++++++++
- .../dt-bindings/interconnect/qcom,sdm660.h    | 116 +++
- 5 files changed, 1193 insertions(+)
+Signed-off-by: AngeloGioacchino Del Regno <kholk11@gmail.com>
+---
+ .../bindings/interconnect/qcom,sdm660.yaml    | 147 ++++++++++++++++++
+ 1 file changed, 147 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
- create mode 100644 drivers/interconnect/qcom/sdm660.c
- create mode 100644 include/dt-bindings/interconnect/qcom,sdm660.h
 
+diff --git a/Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml b/Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
+new file mode 100644
+index 000000000000..440e9bc1382a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
+@@ -0,0 +1,147 @@
++# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/interconnect/qcom,sdm660.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm SDM660 Network-On-Chip interconnect
++
++maintainers:
++  - Georgi Djakov <georgi.djakov@linaro.org>
++
++description: |
++  The Qualcomm SDM660 interconnect providers support adjusting the
++  bandwidth requirements between the various NoC fabrics.
++
++properties:
++  reg:
++    maxItems: 1
++
++  compatible:
++    enum:
++      - qcom,sdm660-a2noc
++      - qcom,sdm660-bimc
++      - qcom,sdm660-cnoc
++      - qcom,sdm660-gnoc
++      - qcom,sdm660-mnoc
++      - qcom,sdm660-snoc
++
++  '#interconnect-cells':
++    const: 1
++
++  clocks:
++    minItems: 1
++    maxItems: 3
++
++  clock-names:
++    minItems: 1
++    maxItems: 3
++
++required:
++  - compatible
++  - reg
++  - '#interconnect-cells'
++  - clock-names
++  - clocks
++
++additionalProperties: false
++
++allOf:
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,sdm660-mnoc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: Bus Clock.
++            - description: Bus A Clock.
++            - description: CPU-NoC High-performance Bus Clock.
++        clock-names:
++          items:
++            - const: bus
++            - const: bus_a
++            - const: iface
++
++  - if:
++      properties:
++        compatible:
++          contains:
++            enum:
++              - qcom,sdm660-a2noc
++              - qcom,sdm660-bimc
++              - qcom,sdm660-cnoc
++              - qcom,sdm660-gnoc
++              - qcom,sdm660-snoc
++    then:
++      properties:
++        clocks:
++          items:
++            - description: Bus Clock.
++            - description: Bus A Clock.
++        clock-names:
++          items:
++            - const: bus
++            - const: bus_a
++
++examples:
++  - |
++      #include <dt-bindings/clock/qcom,rpmcc.h>
++      #include <dt-bindings/clock/qcom,mmcc-sdm660.h>
++
++      bimc: interconnect@1008000 {
++              compatible = "qcom,sdm660-bimc";
++              reg = <0x01008000 0x78000>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a";
++              clocks = <&rpmcc RPM_SMD_BIMC_CLK>,
++                       <&rpmcc RPM_SMD_BIMC_A_CLK>;
++      };
++
++      cnoc: interconnect@1500000 {
++              compatible = "qcom,sdm660-cnoc";
++              reg = <0x01500000 0x10000>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a";
++              clocks = <&rpmcc RPM_SMD_CNOC_CLK>,
++                       <&rpmcc RPM_SMD_CNOC_A_CLK>;
++      };
++
++      snoc: interconnect@1626000 {
++              compatible = "qcom,sdm660-snoc";
++              reg = <0x01626000 0x7090>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a";
++              clocks = <&rpmcc RPM_SMD_SNOC_CLK>,
++                       <&rpmcc RPM_SMD_SNOC_A_CLK>;
++      };
++
++      a2noc: interconnect@1704000 {
++              compatible = "qcom,sdm660-a2noc";
++              reg = <0x01704000 0xc100>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a";
++              clocks = <&rpmcc RPM_SMD_AGGR2_NOC_CLK>,
++                       <&rpmcc RPM_SMD_AGGR2_NOC_A_CLK>;
++      };
++
++      mnoc: interconnect@1745000 {
++              compatible = "qcom,sdm660-mnoc";
++              reg = <0x01745000 0xa010>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a", "iface";
++              clocks = <&rpmcc RPM_SMD_MMSSNOC_AXI_CLK>,
++                       <&rpmcc RPM_SMD_MMSSNOC_AXI_CLK_A>,
++                       <&mmcc AHB_CLK_SRC>;
++      };
++
++      gnoc: interconnect@17900000 {
++              compatible = "qcom,sdm660-gnoc";
++              reg = <0x17900000 0xe000>;
++              #interconnect-cells = <1>;
++              clock-names = "bus", "bus_a";
++              clocks = <&xo_board>, <&xo_board>;
++      };
 -- 
 2.28.0
 
