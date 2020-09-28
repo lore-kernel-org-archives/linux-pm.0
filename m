@@ -2,79 +2,105 @@ Return-Path: <SRS0=bGsN=DF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=ham
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 876EBC2D0A8
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 14:36:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F62AC47420
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 17:26:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 530FC21941
-	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 14:36:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EDD78208D5
+	for <linux-pm@archiver.kernel.org>; Mon, 28 Sep 2020 17:26:36 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1601313997;
+	bh=MVuJMYEfoKyS2DK0TBPUXZXnjKmgMEwpT4AJqSdL/QI=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=xhNpp5cDIhApN0oPLCOQKxXxHceAEHFYo2UXqr8IgTMeARdaSt4DGF/YZZyE/ABpz
+	 lCRK1jnEgoqCQw/E5yCXX4fVxwo9e7RDD42HM80KR3PC4TcSm/BJJxv3YWgcTb6CQ9
+	 4+03TH9lH+bw7T4jKuqwzCb8C7t3cvwEhobDrcoU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726607AbgI1Ogi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 28 Sep 2020 10:36:38 -0400
-Received: from mga07.intel.com ([134.134.136.100]:15624 "EHLO mga07.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726605AbgI1Ogi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 28 Sep 2020 10:36:38 -0400
-IronPort-SDR: M3g+HLk2PIalw2WgbrK1K0Kl+TrsaSTF13O+xrPgjuqi6hNBiNF0gn0H/wY4NRk9Knm9iv6Un1
- JIbx5mBQGSRg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9757"; a="226150015"
-X-IronPort-AV: E=Sophos;i="5.77,313,1596524400"; 
-   d="scan'208,223";a="226150015"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2020 07:36:38 -0700
-IronPort-SDR: TosxMyTyx96L5a/Bgu+oreZfZlS5D7K/GkM3Ti1oCt/z+9iqReLUqguKFgSn/fq852zKPLdB7/
- FO4nAG1zidoQ==
-X-IronPort-AV: E=Sophos;i="5.77,313,1596524400"; 
-   d="scan'208,223";a="488603680"
-Received: from zhangch3-mobl.ccr.corp.intel.com ([10.249.175.1])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Sep 2020 07:36:36 -0700
-Message-ID: <89e655dbf96777b897ceb721f82be0d5ea7210e0.camel@intel.com>
-Subject: [PATCH] cpufreq: intel_pstate: Fix missing return statement
-From:   Zhang Rui <rui.zhang@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Date:   Mon, 28 Sep 2020 22:36:34 +0800
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.28.5-0ubuntu0.18.04.1 
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+        id S1726759AbgI1R0d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 28 Sep 2020 13:26:33 -0400
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:44212 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726551AbgI1R0d (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 28 Sep 2020 13:26:33 -0400
+Received: by mail-oi1-f193.google.com with SMTP id 185so2170358oie.11;
+        Mon, 28 Sep 2020 10:26:32 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=2Bg8Mb9Gv2pIoiwK87TIqBreNFfJwQnzcH+LXnQL+4E=;
+        b=DKnyfgXTAWzRQeaW3JaGxzzoiSP0dqnknMWsftAehv4tdc2OeHIJAbqoFraSdjqOu4
+         QuC11py4w0cv3dl0kggtBOb5tWsdVhQfz+ktlbeZyItsUIjVObT9XgV5cI5MdKB7/0oz
+         Crv0RtmZHjWcVbRnEWu+xY2GJ7+GgoOjT+CGXB6qc4ph/VAnXxJXQXm0SyHkaUrSYZgU
+         E90My/BaNRR9Bcv9CF/Ba5nLiD4l1Mi/c3JlRNSAGlNf1jfxNR4aimdTRqmp/442AWNl
+         n4KraUiMG/4TfDG2L7Egf+xCusXknSn2yFfT3aFgjTW9F5p4oMa5vXkdbbHscnxt1ORg
+         4ZHw==
+X-Gm-Message-State: AOAM532e/W+wCx/kKtwVgbyD32AwJBMAaeDb5yxdP2jIAvbbI51zo/gt
+        yh6rc92gCcVeDiVylXIw3w==
+X-Google-Smtp-Source: ABdhPJwXO9pq9TJEGuCXdjVBWwl4RWh6eeuKeJMcErJlWKZi0dMMVwHrqzNAx4K4wDL4I9iZT4xUhA==
+X-Received: by 2002:a05:6808:914:: with SMTP id w20mr1614438oih.72.1601313992499;
+        Mon, 28 Sep 2020 10:26:32 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id y23sm2207192ooj.34.2020.09.28.10.26.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 28 Sep 2020 10:26:31 -0700 (PDT)
+Received: (nullmailer pid 2933713 invoked by uid 1000);
+        Mon, 28 Sep 2020 17:26:31 -0000
+Date:   Mon, 28 Sep 2020 12:26:31 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     kholk11@gmail.com
+Cc:     linux-pm@vger.kernel.org, konradybcio@gmail.com,
+        devicetree@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        marijns95@gmail.com, martin.botka1@gmail.com, agross@kernel.org,
+        bjorn.andersson@linaro.org, phone-devel@vger.kernel.org,
+        georgi.djakov@linaro.org, linux-kernel@vger.kernel.org,
+        robh+dt@kernel.org
+Subject: Re: [PATCH 2/2] dt-bindings: interconnect: Add bindings for Qualcomm
+ SDM660 NoC
+Message-ID: <20200928172631.GA2933280@bogus>
+References: <20200926125101.12712-1-kholk11@gmail.com>
+ <20200926125101.12712-3-kholk11@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20200926125101.12712-3-kholk11@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From 1027ed2cacb0b50676eb52dd0089076d951033d7 Mon Sep 17 00:00:00 2001
-From: Zhang Rui <rui.zhang@intel.com>
-Date: Mon, 28 Sep 2020 11:33:42 +0800
-Subject: [PATCH] cpufreq: intel_pstate: Fix missing return statement
+On Sat, 26 Sep 2020 14:51:01 +0200, kholk11@gmail.com wrote:
+> From: AngeloGioacchino Del Regno <kholk11@gmail.com>
+> 
+> Add the bindings for the Qualcomm SDM660-class NoC, valid for
+> SDM630, SDM636, SDM660 and SDA variants.
+> 
+> Signed-off-by: AngeloGioacchino Del Regno <kholk11@gmail.com>
+> ---
+>  .../bindings/interconnect/qcom,sdm660.yaml    | 146 ++++++++++++++++++
+>  1 file changed, 146 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
+> 
 
-Fix missing return statement when writing "off" to intel_pstate status
-sysfs I/F.
 
-Fixes: 55671ea3257a ("cpufreq: intel_pstate: Free memory only when turning off")
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- drivers/cpufreq/intel_pstate.c | 1 +
- 1 file changed, 1 insertion(+)
+My bot found errors running 'make dt_binding_check' on your patch:
 
-diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-index a827b000ef51..9a515c460a00 100644
---- a/drivers/cpufreq/intel_pstate.c
-+++ b/drivers/cpufreq/intel_pstate.c
-@@ -2781,6 +2781,7 @@ static int intel_pstate_update_status(const char *buf, size_t size)
- 
- 		cpufreq_unregister_driver(intel_pstate_driver);
- 		intel_pstate_driver_cleanup();
-+		return 0;
- 	}
- 
- 	if (size == 6 && !strncmp(buf, "active", size)) {
--- 
-2.17.1
+Error: Documentation/devicetree/bindings/interconnect/qcom,sdm660.example.dts:64.33-34 syntax error
+FATAL ERROR: Unable to parse input tree
+make[1]: *** [scripts/Makefile.lib:342: Documentation/devicetree/bindings/interconnect/qcom,sdm660.example.dt.yaml] Error 1
+make[1]: *** Waiting for unfinished jobs....
+make: *** [Makefile:1366: dt_binding_check] Error 2
 
+
+See https://patchwork.ozlabs.org/patch/1371756
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure dt-schema is up to date:
+
+pip3 install git+https://github.com/devicetree-org/dt-schema.git@master --upgrade
+
+Please check and re-submit.
 
