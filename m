@@ -2,101 +2,105 @@ Return-Path: <SRS0=dqF8=DG=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D64EC4CC6C
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Sep 2020 20:43:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AFE66C4727C
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Sep 2020 20:55:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1EB1020774
-	for <linux-pm@archiver.kernel.org>; Tue, 29 Sep 2020 20:43:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=smile-fr.20150623.gappssmtp.com header.i=@smile-fr.20150623.gappssmtp.com header.b="UgbWx+QL"
+	by mail.kernel.org (Postfix) with ESMTP id 5FC06208FE
+	for <linux-pm@archiver.kernel.org>; Tue, 29 Sep 2020 20:55:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729140AbgI2UnB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 29 Sep 2020 16:43:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38354 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728301AbgI2UnB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 29 Sep 2020 16:43:01 -0400
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 737D1C0613D0
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2020 13:43:00 -0700 (PDT)
-Received: by mail-wr1-x443.google.com with SMTP id k15so6906089wrn.10
-        for <linux-pm@vger.kernel.org>; Tue, 29 Sep 2020 13:43:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=smile-fr.20150623.gappssmtp.com; s=20150623;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=yxgmFTxkf8Q7snkiRmdFU3li5pqox2TGA0gnwiFInxo=;
-        b=UgbWx+QLzIaXuWGj5Ky/C2Dh/s+6ClhTiU6nRCRCCG20Ucbaw5PclR+ti4GKk1j6hL
-         NofBXmiD6yIiLMFyhMH3RjbPc+RNM/1FW/q6az8FGjQHm3++YOp1Pv+HcKrfVcU9/F2A
-         TF0cltucY5XzKDSvLpA+BNJB7ZmkaYuBI6ihPuSvYpaGZiOYHrhikW9LlzVLUQq/O7rx
-         rwWQZvd0t65zBXomYpYV0yU+Dv+qRr8+/cEAwaGzelE5JwgYRiPhYqJAbVkp3tdl1zz9
-         n2XQeXgqPY+KipSXI1az0+ZSFubPhOWpaAMOiIKE+5UKO6YpC4c+0jZqGGDkj931pc+j
-         oxHA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=yxgmFTxkf8Q7snkiRmdFU3li5pqox2TGA0gnwiFInxo=;
-        b=YZPW5Jjpx4/Ap4Uj649Tox6bIW5FpDsUbfr2EL5qIN++utqZ26E2rXytI/uW4T/vgv
-         9w6f5bhcdu6ofWFOvZ3OnF0wEOXwv7duYKNWKJytT7Lwr45Mo97zXNgA1kyowzEUy6wN
-         Ki9ufV6aGnDP7mvPBgku7lmePWo28sJHd8Wnswbk43t81mhb+55tW61GQLLWSLlThdUw
-         AePy8cNhnMNnV+bBi0tnV7VOayY4ZgXBd6om5f55PvBvfn/rYU5sSZVB1Rmi6ZnSOwKn
-         isq69QgX/BsZgeOrS9gCVB4CYmwwZCFiqf1DY6VWdGKA3aENuaJAA1B6zBNcIKUgfctY
-         Jacg==
-X-Gm-Message-State: AOAM531styOldeFz4BlcL3o+TLyh28sANVJPaRPYD9S+tSdrL9ynwqtk
-        tszJgGV8oLnN6GZqDqJLdMegGg==
-X-Google-Smtp-Source: ABdhPJw9IC5utvm4ax9rkKU/A7/jQf1cuLDFaUdt5CEfnkoqvrM2W2ynFzUbR7P/w7Jw/uEaYSl2xw==
-X-Received: by 2002:a5d:56cd:: with SMTP id m13mr6120637wrw.261.1601412179072;
-        Tue, 29 Sep 2020 13:42:59 -0700 (PDT)
-Received: from P-ASN-KEVALD.idf.intranet (85-170-108-21.rev.numericable.fr. [85.170.108.21])
-        by smtp.gmail.com with ESMTPSA id a10sm6780755wmj.38.2020.09.29.13.42.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 29 Sep 2020 13:42:58 -0700 (PDT)
-From:   Yoann Congal <yoann.congal@smile.fr>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Jonathan Corbet <corbet@lwn.net>
-Cc:     linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Yoann Congal <yoann.congal@smile.fr>
-Subject: [PATCH] Documentation: PM: Fix a reStructuredText syntax error
-Date:   Tue, 29 Sep 2020 22:41:58 +0200
-Message-Id: <20200929204157.26127-1-yoann.congal@smile.fr>
-X-Mailer: git-send-email 2.20.1
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        id S1728729AbgI2Uz1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 29 Sep 2020 16:55:27 -0400
+Received: from foss.arm.com ([217.140.110.172]:51334 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729293AbgI2Uz1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 29 Sep 2020 16:55:27 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A8AC612FC;
+        Tue, 29 Sep 2020 13:55:26 -0700 (PDT)
+Received: from e108754-lin.cambridge.arm.com (unknown [10.1.199.49])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id E2F313F85F;
+        Tue, 29 Sep 2020 13:55:24 -0700 (PDT)
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     mingo@redhat.com, peterz@infradead.org, vincent.guittot@linaro.org,
+        catalin.marinas@arm.com, will@kernel.org, rjw@rjwysocki.net,
+        viresh.kumar@linaro.org
+Cc:     dietmar.eggemann@arm.com, qperret@google.com,
+        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        ionela.voinescu@arm.com
+Subject: [PATCH v2 3/3] sched/topology: condition EAS enablement on FIE support
+Date:   Tue, 29 Sep 2020 21:54:42 +0100
+Message-Id: <20200929205442.24792-4-ionela.voinescu@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20200929205442.24792-1-ionela.voinescu@arm.com>
+References: <20200929205442.24792-1-ionela.voinescu@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Fix a reStructuredText syntax error in the cpuidle PM admin-guide
-documentation: the ``...'' quotation marks are parsed as partial ''...''
-reStructuredText markup and break the output formatting.
+In order to make accurate predictions across CPUs and for all performance
+states, Energy Aware Scheduling (EAS) needs frequency-invariant load
+tracking signals.
 
-This change them to "...".
+EAS task placement aims to minimize energy consumption, and does so in
+part by limiting the search space to only CPUs with the highest spare
+capacity (CPU capacity - CPU utilization) in their performance domain.
+Those candidates are the placement choices that will keep frequency at
+its lowest possible and therefore save the most energy.
 
-Signed-off-by: Yoann Congal <yoann.congal@smile.fr>
+But without frequency invariance, a CPU's utilization is relative to the
+CPU's current performance level, and not relative to its maximum
+performance level, which determines its capacity. As a result, it will
+fail to correctly indicate any potential spare capacity obtained by an
+increase in a CPU's performance level. Therefore, a non-invariant
+utilization signal would render the EAS task placement logic invalid.
+
+Now that we properly report support for the Frequency Invariance Engine
+(FIE) through arch_scale_freq_invariant() for arm and arm64 systems,
+while also ensuring a re-evaluation of the EAS use conditions for
+possible invariance status change, we can assert this is the case when
+initializing EAS. Warn and bail out otherwise.
+
+Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
+Suggested-by: Quentin Perret <qperret@google.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
 ---
- Documentation/admin-guide/pm/cpuidle.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ kernel/sched/topology.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
 
-diff --git a/Documentation/admin-guide/pm/cpuidle.rst b/Documentation/admin-guide/pm/cpuidle.rst
-index e70b365dbc60..191cfa4a450b 100644
---- a/Documentation/admin-guide/pm/cpuidle.rst
-+++ b/Documentation/admin-guide/pm/cpuidle.rst
-@@ -690,7 +690,7 @@ which of the two parameters is added to the kernel command line.  In the
- instruction of the CPUs (which, as a rule, suspends the execution of the program
- and causes the hardware to attempt to enter the shallowest available idle state)
- for this purpose, and if ``idle=poll`` is used, idle CPUs will execute a
--more or less ``lightweight'' sequence of instructions in a tight loop.  [Note
-+more or less "lightweight" sequence of instructions in a tight loop.  [Note
- that using ``idle=poll`` is somewhat drastic in many cases, as preventing idle
- CPUs from saving almost any energy at all may not be the only effect of it.
- For example, on Intel hardware it effectively prevents CPUs from using
+diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+index e0a8e55e7df0..cbe88b896f93 100644
+--- a/kernel/sched/topology.c
++++ b/kernel/sched/topology.c
+@@ -328,6 +328,7 @@ static void sched_energy_set(bool has_eas)
+  *    3. no SMT is detected.
+  *    4. the EM complexity is low enough to keep scheduling overheads low;
+  *    5. schedutil is driving the frequency of all CPUs of the rd;
++ *    6. frequency invariance support is present;
+  *
+  * The complexity of the Energy Model is defined as:
+  *
+@@ -376,6 +377,14 @@ static bool build_perf_domains(const struct cpumask *cpu_map)
+ 		goto free;
+ 	}
+ 
++	if (!arch_scale_freq_invariant()) {
++		if (sched_debug()) {
++			pr_warn("rd %*pbl: Disabling EAS: frequency-invariant load tracking not yet supported",
++				cpumask_pr_args(cpu_map));
++		}
++		goto free;
++	}
++
+ 	for_each_cpu(i, cpu_map) {
+ 		/* Skip already covered CPUs. */
+ 		if (find_pd(pd, i))
 -- 
-2.20.1
+2.17.1
 
