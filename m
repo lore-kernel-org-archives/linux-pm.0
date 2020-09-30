@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CEEEC4727F
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Sep 2020 10:02:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47062C47426
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Sep 2020 10:02:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 465EA2076E
-	for <linux-pm@archiver.kernel.org>; Wed, 30 Sep 2020 10:02:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 141E02076E
+	for <linux-pm@archiver.kernel.org>; Wed, 30 Sep 2020 10:02:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zQEQZW0D"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="GhtT1t08"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729343AbgI3KC2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 30 Sep 2020 06:02:28 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48404 "EHLO
+        id S1729350AbgI3KC3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 30 Sep 2020 06:02:29 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48432 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729320AbgI3KCX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2020 06:02:23 -0400
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 71EDBC0613D4
-        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2020 03:02:21 -0700 (PDT)
-Received: by mail-lf1-x141.google.com with SMTP id 197so790709lfo.11
-        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2020 03:02:21 -0700 (PDT)
+        with ESMTP id S1729338AbgI3KC1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 30 Sep 2020 06:02:27 -0400
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CCD2AC0613D4
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2020 03:02:26 -0700 (PDT)
+Received: by mail-lf1-x143.google.com with SMTP id z17so1381941lfi.12
+        for <linux-pm@vger.kernel.org>; Wed, 30 Sep 2020 03:02:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=SrU/yRE1S8/AMc1oy8Ss9KggAg13gKj+RuvcNBh8aEc=;
-        b=zQEQZW0DCWmuI5zcTbIKrsLcujLeMv9Qk8N1P/RqnswH3Q1NDUaSKRyvx/MV7rMve2
-         azzI5GSeIjg4qpKWORmfXo04pup7w9Y85/48hwLzmNsyjEikVQnCS7i/FfVIdZOwUeLb
-         62V7b/iDaG697KJ5tv4hNk7tntwKWBRQbdltHmpBy64XodvLcMcuZ0fVVLRl0LJa3fPn
-         7zEBt5jGkm8w3p6/w1jTDPrRus2sh0iqOR6okOMbaR35Mnad/cSA4IWb+OW6yHpqMp//
-         ge+WKJ8rSXtKq8QG7xohdBpded5jgSNac+c2PCDcDy733uSwvUK/z1m9wv4uUImuxCQR
-         zSog==
+        bh=JBF3uLUf/ZUhgh6mGdQvvNaF8GSfsySai+h7lBFUhRU=;
+        b=GhtT1t08Ph56NPAcAQC6LmY5ns+MZrBzgSs44FOH7//vU2cSlksOxefEmkuVifPXG5
+         CKoxL0Z+8oNj+oQV69azJnSy/ICsy0iHsKUGPQ0Q3FtO1eb0pKWPpCGHUJWaNS9uqq0r
+         SRY5ai9SrS3wkq6D1Qh62O7JY9CJZZHa8YbHbZOqh/6qjwg37LJI788nssjWpkIR0TE+
+         9uBOchlaAtyMhc2UzfLXIEW2ZL/i77hB+NYQd15yj5htk8nZJvsFopoBnCP12AAraXr7
+         4l3pwZCD4/c/Oo2PzXF08pD/SleE2MgYnZH0XNPnTDYF6Aa0Kr7ltBpwZDBa6QjXlsj/
+         C42A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=SrU/yRE1S8/AMc1oy8Ss9KggAg13gKj+RuvcNBh8aEc=;
-        b=IhRHUK/g6Bu5/TJDxvIwqAFM950jhj1avhkvaChxJXljqXwUubd9fJnQEHBGinu3qi
-         jWdQ97dCL6HPx/jfrcBnUJNIbm/WtWuEXEjQ7LjXmMryxTc9UHOB+QEw6VyJDScQgHtA
-         BVS+w7Px/FnyEggGxEE2/RAHMm4bqcrHg1qBJRti4yKWOY3eb9M7qyDBW/wpfa9ecJT4
-         5QUdEKI9L2Z3cFMGl0tSaIkxzEobkfcfskFwTd0XkE1o7KKvRL1HKfSbCqCI2DcizIWx
-         4Xd6RrkANIZSvHNGfezh4JP4KrOFwLoR3/evh63VeIHHhPiQTC3xWjKt0Lcoje9DPSlJ
-         3Pbw==
-X-Gm-Message-State: AOAM5307eCwZcNhPrFWGWFKOsxsKJJWDo0Ji+NFJSoTRtRAwJ8/1OYNz
-        iKNr+WuinnvATXM9Yijhw9Y2uw==
-X-Google-Smtp-Source: ABdhPJxlFmwjz8yleeywbRJD4fKWmsbs+woeeCDk+YaNkzithyTSSz+PaSHDJR08ADDHHE7933a1Ug==
-X-Received: by 2002:a19:610a:: with SMTP id v10mr658164lfb.414.1601460139753;
-        Wed, 30 Sep 2020 03:02:19 -0700 (PDT)
+        bh=JBF3uLUf/ZUhgh6mGdQvvNaF8GSfsySai+h7lBFUhRU=;
+        b=Yf7fFTHooo5zNI2cq+/y39NAGYCSYxC853UaaORHKq4TNwII+dz4doFX7YkVfg3B0Y
+         606Yf1vbnW1Yj8z0/H5rEu5YxoJa+KFdyjAchPU5rziNyqmI2NfqEU1gclMtEvqMOYNN
+         u7lQLDpPqR8SWO44FJTDS/Y0hSTOt84xONv3VGl+RGI+MeSsZGfF/s0cNy/Hkea0BB0n
+         SekpfciYxj2YOsFH9KR2S5IDqMYVq/OHYWiHOkNXIxq6g3YgtaUeTJQppcHP8RsPlMNg
+         m8s/D/6s2OqVzYODMEZSKoHM6GcwHohxIC3UIBZg/DxmnpJTlcxbkOSAsCCAu2HwaE45
+         aOHg==
+X-Gm-Message-State: AOAM5311w+kxnxGYXxqFulH8FEEzVFrUV505Pd5BhHcxU9UJtpcjuTe4
+        lasRnIsggz7NN9OrdoOS+m2kNA==
+X-Google-Smtp-Source: ABdhPJwLdRsV8ShcDVgqdgzb2XQIh3xK3OHV571k48uJcjfSvqN4ltaVWNaCHq0trfBaAKkwQ3PdKg==
+X-Received: by 2002:ac2:5463:: with SMTP id e3mr580716lfn.474.1601460145228;
+        Wed, 30 Sep 2020 03:02:25 -0700 (PDT)
 Received: from eriador.lan ([188.162.64.138])
-        by smtp.gmail.com with ESMTPSA id w4sm132479lff.231.2020.09.30.03.02.14
+        by smtp.gmail.com with ESMTPSA id w4sm132479lff.231.2020.09.30.03.02.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Sep 2020 03:02:19 -0700 (PDT)
+        Wed, 30 Sep 2020 03:02:24 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -71,10 +71,11 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>
-Subject: [PATCH v6 01/10] dt-bindings: thermal: qcom: add adc-thermal monitor bindings
-Date:   Wed, 30 Sep 2020 13:01:54 +0300
-Message-Id: <20200930100203.1988374-2-dmitry.baryshkov@linaro.org>
+        Jishnu Prakash <jprakash@qti.qualcomm.com>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v6 03/10] iio: adc: qcom-vadc: move several adc5 functions to common file
+Date:   Wed, 30 Sep 2020 13:01:56 +0300
+Message-Id: <20200930100203.1988374-4-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20200930100203.1988374-1-dmitry.baryshkov@linaro.org>
 References: <20200930100203.1988374-1-dmitry.baryshkov@linaro.org>
@@ -84,175 +85,266 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add bindings for thermal monitor, part of Qualcomm PMIC5 chips. It is a
-close counterpart of VADC part of those PMICs.
+ADC-TM5 driver will make use of several functions from ADC5 driver. Move
+them to qcom-vadc-common driver.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- .../bindings/thermal/qcom-spmi-adc-tm5.yaml   | 154 ++++++++++++++++++
- 1 file changed, 154 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
+ drivers/iio/adc/qcom-spmi-adc5.c   | 75 +++---------------------------
+ drivers/iio/adc/qcom-vadc-common.c | 68 ++++++++++++++++++++++++++-
+ drivers/iio/adc/qcom-vadc-common.h | 10 +++-
+ 3 files changed, 82 insertions(+), 71 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-new file mode 100644
-index 000000000000..9da2b349030d
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qcom-spmi-adc-tm5.yaml
-@@ -0,0 +1,154 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/thermal/qcom-spmi-adc-tm5.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
+diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
+index c10aa28be70a..c2da8f068b87 100644
+--- a/drivers/iio/adc/qcom-spmi-adc5.c
++++ b/drivers/iio/adc/qcom-spmi-adc5.c
+@@ -154,18 +154,6 @@ struct adc5_chip {
+ 	const struct adc5_data	*data;
+ };
+ 
+-static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
+-	{.num =  1, .den =  1},
+-	{.num =  1, .den =  3},
+-	{.num =  1, .den =  4},
+-	{.num =  1, .den =  6},
+-	{.num =  1, .den = 20},
+-	{.num =  1, .den =  8},
+-	{.num = 10, .den = 81},
+-	{.num =  1, .den = 10},
+-	{.num =  1, .den = 16}
+-};
+-
+ static int adc5_read(struct adc5_chip *adc, u16 offset, u8 *data, int len)
+ {
+ 	return regmap_bulk_read(adc->regmap, adc->base + offset, data, len);
+@@ -181,55 +169,6 @@ static int adc5_masked_write(struct adc5_chip *adc, u16 offset, u8 mask, u8 val)
+ 	return regmap_update_bits(adc->regmap, adc->base + offset, mask, val);
+ }
+ 
+-static int adc5_prescaling_from_dt(u32 num, u32 den)
+-{
+-	unsigned int pre;
+-
+-	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
+-		if (adc5_prescale_ratios[pre].num == num &&
+-		    adc5_prescale_ratios[pre].den == den)
+-			break;
+-
+-	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
+-		return -EINVAL;
+-
+-	return pre;
+-}
+-
+-static int adc5_hw_settle_time_from_dt(u32 value,
+-					const unsigned int *hw_settle)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
+-		if (value == hw_settle[i])
+-			return i;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+-static int adc5_avg_samples_from_dt(u32 value)
+-{
+-	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
+-		return -EINVAL;
+-
+-	return __ffs(value);
+-}
+-
+-static int adc5_decimation_from_dt(u32 value,
+-					const unsigned int *decimation)
+-{
+-	unsigned int i;
+-
+-	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
+-		if (value == decimation[i])
+-			return i;
+-	}
+-
+-	return -EINVAL;
+-}
+-
+ static int adc5_read_voltage_data(struct adc5_chip *adc, u16 *data)
+ {
+ 	int ret;
+@@ -511,7 +450,7 @@ static int adc_read_raw_common(struct iio_dev *indio_dev,
+ 			return ret;
+ 
+ 		ret = qcom_adc5_hw_scale(prop->scale_fn_type,
+-			&adc5_prescale_ratios[prop->prescale],
++			prop->prescale,
+ 			adc->data,
+ 			adc_code_volt, val);
+ 		if (ret)
+@@ -717,7 +656,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
+ 
+ 	ret = of_property_read_u32(node, "qcom,decimation", &value);
+ 	if (!ret) {
+-		ret = adc5_decimation_from_dt(value, data->decimation);
++		ret = qcom_adc5_decimation_from_dt(value, data->decimation);
+ 		if (ret < 0) {
+ 			dev_err(dev, "%02x invalid decimation %d\n",
+ 				chan, value);
+@@ -730,7 +669,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
+ 
+ 	ret = of_property_read_u32_array(node, "qcom,pre-scaling", varr, 2);
+ 	if (!ret) {
+-		ret = adc5_prescaling_from_dt(varr[0], varr[1]);
++		ret = qcom_adc5_prescaling_from_dt(varr[0], varr[1]);
+ 		if (ret < 0) {
+ 			dev_err(dev, "%02x invalid pre-scaling <%d %d>\n",
+ 				chan, varr[0], varr[1]);
+@@ -759,11 +698,9 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
+ 		if ((dig_version[0] >= ADC5_HW_SETTLE_DIFF_MINOR &&
+ 			dig_version[1] >= ADC5_HW_SETTLE_DIFF_MAJOR) ||
+ 			adc->data->info == &adc7_info)
+-			ret = adc5_hw_settle_time_from_dt(value,
+-							data->hw_settle_2);
++			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_2);
+ 		else
+-			ret = adc5_hw_settle_time_from_dt(value,
+-							data->hw_settle_1);
++			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_1);
+ 
+ 		if (ret < 0) {
+ 			dev_err(dev, "%02x invalid hw-settle-time %d us\n",
+@@ -777,7 +714,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
+ 
+ 	ret = of_property_read_u32(node, "qcom,avg-samples", &value);
+ 	if (!ret) {
+-		ret = adc5_avg_samples_from_dt(value);
++		ret = qcom_adc5_avg_samples_from_dt(value);
+ 		if (ret < 0) {
+ 			dev_err(dev, "%02x invalid avg-samples %d\n",
+ 				chan, value);
+diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
+index 5113aaa6ba67..d11f3343ad52 100644
+--- a/drivers/iio/adc/qcom-vadc-common.c
++++ b/drivers/iio/adc/qcom-vadc-common.c
+@@ -278,6 +278,18 @@ static const struct vadc_map_pt adcmap7_100k[] = {
+ 	{ 2420, 130048 }
+ };
+ 
++static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
++	{.num =  1, .den =  1},
++	{.num =  1, .den =  3},
++	{.num =  1, .den =  4},
++	{.num =  1, .den =  6},
++	{.num =  1, .den = 20},
++	{.num =  1, .den =  8},
++	{.num = 10, .den = 81},
++	{.num =  1, .den = 10},
++	{.num =  1, .den = 16}
++};
 +
-+title: Qualcomm's SPMI PMIC ADC Thermal Monitoring
-+maintainers:
-+  - Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+ static int qcom_vadc_scale_hw_calib_volt(
+ 				const struct vadc_prescale_ratio *prescale,
+ 				const struct adc5_data *data,
+@@ -647,10 +659,12 @@ int qcom_vadc_scale(enum vadc_scale_fn_type scaletype,
+ EXPORT_SYMBOL(qcom_vadc_scale);
+ 
+ int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
+-		    const struct vadc_prescale_ratio *prescale,
++		    unsigned int prescale_ratio,
+ 		    const struct adc5_data *data,
+ 		    u16 adc_code, int *result)
+ {
++	const struct vadc_prescale_ratio *prescale = &adc5_prescale_ratios[prescale_ratio];
 +
-+properties:
-+  compatible:
-+    const: qcom,spmi-adc-tm5
+ 	if (!(scaletype >= SCALE_HW_CALIB_DEFAULT &&
+ 		scaletype < SCALE_HW_CALIB_INVALID)) {
+ 		pr_err("Invalid scale type %d\n", scaletype);
+@@ -662,6 +676,58 @@ int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
+ }
+ EXPORT_SYMBOL(qcom_adc5_hw_scale);
+ 
++int qcom_adc5_prescaling_from_dt(u32 num, u32 den)
++{
++	unsigned int pre;
 +
-+  reg:
-+    maxItems: 1
++	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
++		if (adc5_prescale_ratios[pre].num == num &&
++		    adc5_prescale_ratios[pre].den == den)
++			break;
 +
-+  interrupts:
-+    maxItems: 1
++	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
++		return -EINVAL;
 +
-+  "#thermal-sensor-cells":
-+    const: 1
-+    description:
-+      Number of cells required to uniquely identify the thermal sensors. Since
-+      we have multiple sensors this is set to 1
++	return pre;
++}
++EXPORT_SYMBOL(qcom_adc5_prescaling_from_dt);
 +
-+  "#address-cells":
-+    const: 1
++int qcom_adc5_hw_settle_time_from_dt(u32 value,
++				     const unsigned int *hw_settle)
++{
++	unsigned int i;
 +
-+  "#size-cells":
-+    const: 0
++	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
++		if (value == hw_settle[i])
++			return i;
++	}
 +
-+  qcom,avg-samples:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Number of samples to be used for measurement.
-+    enum:
-+      - 1
-+      - 2
-+      - 4
-+      - 8
-+      - 16
-+    default: 1
++	return -EINVAL;
++}
++EXPORT_SYMBOL(qcom_adc5_hw_settle_time_from_dt);
 +
-+  qcom,decimation:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: This parameter is used to decrease ADC sampling rate.
-+            Quicker measurements can be made by reducing decimation ratio.
-+    enum:
-+      - 250
-+      - 420
-+      - 840
-+    default: 840
++int qcom_adc5_avg_samples_from_dt(u32 value)
++{
++	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
++		return -EINVAL;
 +
-+patternProperties:
-+  "^([-a-z0-9]*)@[0-7]$":
-+    type: object
-+    description:
-+      Represent one thermal sensor.
++	return __ffs(value);
++}
++EXPORT_SYMBOL(qcom_adc5_avg_samples_from_dt);
 +
-+    properties:
-+      reg:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Specify the sensor channel. There are 8 channels in PMIC5's ADC TM
-+        minimum: 0
-+        maximum: 7
++int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation)
++{
++	unsigned int i;
 +
-+      io-channels:
-+        description:
-+          From common IIO binding. Used to pipe PMIC ADC channel to thermal monitor
++	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
++		if (value == decimation[i])
++			return i;
++	}
 +
-+      qcom,ratiometric:
-+        $ref: /schemas/types.yaml#/definitions/flag
-+        description:
-+          Channel calibration type.
-+          If this property is specified VADC will use the VDD reference
-+          (1.875V) and GND for channel calibration. If property is not found,
-+          channel will be calibrated with 0V and 1.25V reference channels,
-+          also known as absolute calibration.
++	return -EINVAL;
++}
++EXPORT_SYMBOL(qcom_adc5_decimation_from_dt);
 +
-+      qcom,hw-settle-time-us:
-+        $ref: /schemas/types.yaml#/definitions/uint32
-+        description: Time between AMUX getting configured and the ADC starting conversion.
-+        enum: [15, 100, 200, 300, 400, 500, 600, 700, 1000, 2000, 4000, 8000, 16000, 32000, 64000, 128000]
+ int qcom_vadc_decimation_from_dt(u32 value)
+ {
+ 	if (!is_power_of_2(value) || value < VADC_DECIMATION_MIN ||
+diff --git a/drivers/iio/adc/qcom-vadc-common.h b/drivers/iio/adc/qcom-vadc-common.h
+index 17b2fc4d8bf2..7e5f6428e311 100644
+--- a/drivers/iio/adc/qcom-vadc-common.h
++++ b/drivers/iio/adc/qcom-vadc-common.h
+@@ -168,10 +168,18 @@ struct qcom_adc5_scale_type {
+ };
+ 
+ int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
+-		    const struct vadc_prescale_ratio *prescale,
++		    unsigned int prescale_ratio,
+ 		    const struct adc5_data *data,
+ 		    u16 adc_code, int *result_mdec);
+ 
++int qcom_adc5_prescaling_from_dt(u32 num, u32 den);
 +
-+      qcom,pre-scaling:
-+        $ref: /schemas/types.yaml#/definitions/uint32-array
-+        description: Used for scaling the channel input signal before the
-+          signal is fed to VADC. The configuration for this node is to know the
-+          pre-determined ratio and use it for post scaling. It is a pair of
-+          integers, denoting the numerator and denominator of the fraction by
-+          which input signal is multiplied. For example, <1 3> indicates the
-+          signal is scaled down to 1/3 of its value before ADC measurement.  If
-+          property is not found default value depending on chip will be used.
-+        items:
-+          - const: 1
-+          - enum: [ 1, 3, 4, 6, 20, 8, 10 ]
++int qcom_adc5_hw_settle_time_from_dt(u32 value, const unsigned int *hw_settle);
 +
-+    required:
-+      - reg
-+      - io-channels
++int qcom_adc5_avg_samples_from_dt(u32 value);
 +
-+    additionalProperties:
-+      false
++int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation);
 +
-+required:
-+  - compatible
-+  - reg
-+  - interrupts
-+  - "#address-cells"
-+  - "#size-cells"
-+  - "#thermal-sensor-cells"
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    #include <dt-bindings/iio/qcom,spmi-vadc.h>
-+    #include <dt-bindings/interrupt-controller/irq.h>
-+    spmi_bus {
-+        #address-cells = <1>;
-+        #size-cells = <0>;
-+        pm8150b_adc: adc@3100 {
-+            reg = <0x3100>;
-+            compatible = "qcom,spmi-adc5";
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+            #io-channel-cells = <1>;
-+            io-channel-ranges;
-+
-+            /* Other propreties are omitted */
-+            conn-therm@4f {
-+                reg = <ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time = <200>;
-+            };
-+        };
-+
-+        pm8150b_adc_tm: adc-tm@3500 {
-+            compatible = "qcom,spmi-adc-tm5";
-+            reg = <0x3500>;
-+            interrupts = <0x2 0x35 0x0 IRQ_TYPE_EDGE_RISING>;
-+            #thermal-sensor-cells = <1>;
-+            #address-cells = <1>;
-+            #size-cells = <0>;
-+
-+            conn-therm@0 {
-+                reg = <0>;
-+                io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
-+                qcom,ratiometric;
-+                qcom,hw-settle-time-us = <200>;
-+            };
-+        };
-+    };
-+...
+ int qcom_vadc_decimation_from_dt(u32 value);
+ 
+ #endif /* QCOM_VADC_COMMON_H */
 -- 
 2.28.0
 
