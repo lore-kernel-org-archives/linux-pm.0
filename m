@@ -2,199 +2,111 @@ Return-Path: <SRS0=sns4=DI=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 49E71C4727E
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Oct 2020 05:41:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C61FEC4727C
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Oct 2020 09:29:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 16337221EF
-	for <linux-pm@archiver.kernel.org>; Thu,  1 Oct 2020 05:41:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7E86E2176B
+	for <linux-pm@archiver.kernel.org>; Thu,  1 Oct 2020 09:29:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="s1Q/saU9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725892AbgJAFlp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 1 Oct 2020 01:41:45 -0400
-Received: from mga04.intel.com ([192.55.52.120]:51960 "EHLO mga04.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725878AbgJAFlp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 1 Oct 2020 01:41:45 -0400
-IronPort-SDR: wJTnD32kZGwS/qFVCwYEB1JHHw4be9VJs13jx2QhKFgVLJ9g3t70VmjxGyUgwzQv7pGGFeMjGl
- ZeCh05B27RcA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9760"; a="160038179"
-X-IronPort-AV: E=Sophos;i="5.77,323,1596524400"; 
-   d="scan'208";a="160038179"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga006.jf.intel.com ([10.7.209.51])
-  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Sep 2020 22:41:44 -0700
-IronPort-SDR: uBkZ39EbeLJ7e5mrq+PKvXGRBrsiNS6D0KaC2YX8e1vmgNsAS/47cgKSfmjArUhN0yVKsgpqEO
- N+XV/3fIlhJw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,323,1596524400"; 
-   d="scan'208";a="312878776"
-Received: from lkp-server02.sh.intel.com (HELO de448af6ea1b) ([10.239.97.151])
-  by orsmga006.jf.intel.com with ESMTP; 30 Sep 2020 22:41:42 -0700
-Received: from kbuild by de448af6ea1b with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1kNrLa-0000X2-3g; Thu, 01 Oct 2020 05:41:42 +0000
-Date:   Thu, 01 Oct 2020 13:41:35 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- 027a0d093137cac9655d241a1ace1b36ed1f455d
-Message-ID: <5f756c0f.9PnjvYfpKblFa61t%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1731725AbgJAJ3A (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 1 Oct 2020 05:29:00 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39850 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726992AbgJAJ3A (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 1 Oct 2020 05:29:00 -0400
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CC449C0613D0
+        for <linux-pm@vger.kernel.org>; Thu,  1 Oct 2020 02:28:59 -0700 (PDT)
+Received: by mail-lf1-x143.google.com with SMTP id w11so5714941lfn.2
+        for <linux-pm@vger.kernel.org>; Thu, 01 Oct 2020 02:28:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=lxkWfDdAWpwvBtJ5SN+i9/MI7hWoAZmdYZSbuiMF5cc=;
+        b=s1Q/saU96Gy2H/Dofqs2qd1CCDavdBoj4GMVSXUyaK8ica+XSwGnN79o9ZzXPQwMdH
+         06+Be2u51wAkBWGQwmyP1fy50YN5nLdqH8nIY7+Qn9wdXFzijNBYJvBXQr/8jDEtGnEy
+         QR6KtccrziT8JMWsMtQceg0yW1YKv4oQc46/Tya7oETpW8/2tjeVRyOUYv47vEzf3FGN
+         j+pG1JISk299IpLpkNgY8fg10+++3qWH+QWdyN1To/RvrdbAc1bvG6kOOvBdlhQlDU7G
+         NXX/ilT6e5jpbgYHQXMa/S48nAJexRFgc4qioGKc1jdVn8XvhVtpIar1o6D6uZt4uqhv
+         C6+Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=lxkWfDdAWpwvBtJ5SN+i9/MI7hWoAZmdYZSbuiMF5cc=;
+        b=OAe9+yTS0ahc0b9Dv6it3ZsboQF2Yz38KYC0goOxhyGzrC3oD3Ulvv5nTpPo31xmdy
+         pMV8ur7b5/ngXJ9od4JfDjnXcbisQWu0ChQjbCUqkP89YkMgYbnHxF4yYceSHP2VobsE
+         gxzcHfGfMq7g0WUw9vsdZsagRzR/ra1F1TAdEHEqnZlktUWddxr29U7tSa3aiNcapLoF
+         8+URRjfyxqECZEnV3g9cI8RRLVVNqX+fJMdPntbrEXW/P3PRgo5pTiAzqH2dJApPUKio
+         hhbTSbOjaf0CqFkhaHvOjOR7xdKBDOhcrMnCjA18YEcndhbBizuIMvnHXL4NgniuGNND
+         NkxA==
+X-Gm-Message-State: AOAM531SpqqPt8iZfzkQcT4JRmViKGpcdQK/9H6WeEoFx98W1MF7d1YW
+        zSRXDFtL414HzgPAfV+ofC0H7xR71ZNfDW86
+X-Google-Smtp-Source: ABdhPJx81QXnZltoLgULrsnB0tngKaoGSgv8AlLGGbgPF0eamLBnbHywvu4oYVAcxDqQbzpwx/cK4w==
+X-Received: by 2002:a19:9152:: with SMTP id y18mr2535251lfj.376.1601544538167;
+        Thu, 01 Oct 2020 02:28:58 -0700 (PDT)
+Received: from localhost.localdomain (h-155-4-133-169.NA.cust.bahnhof.se. [155.4.133.169])
+        by smtp.gmail.com with ESMTPSA id q24sm487922lfo.149.2020.10.01.02.28.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 01 Oct 2020 02:28:57 -0700 (PDT)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org
+Cc:     Lina Iyer <ilina@codeaurora.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Subject: [PATCH] MAINTAINERS: Add section for cpuidle-psci PM domain
+Date:   Thu,  1 Oct 2020 11:28:52 +0200
+Message-Id: <20201001092852.124740-1-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: 027a0d093137cac9655d241a1ace1b36ed1f455d  Merge branch 'acpi-numa' into linux-next
+The cpuidle-psci-domain.c is not listed in the section for the cpuidle
+driver for ARM PSCI. From discussions at LKML, Lorenzo and Sudeep prefer
+that we add a separate section for it, so let's do that and add myself as
+the maintainer for this part.
 
-elapsed time: 720m
-
-configs tested: 127
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                         shannon_defconfig
-arm                  colibri_pxa300_defconfig
-mips                          ath25_defconfig
-sh                        edosk7705_defconfig
-h8300                            allyesconfig
-powerpc                 mpc8540_ads_defconfig
-powerpc                 linkstation_defconfig
-c6x                         dsk6455_defconfig
-powerpc64                        alldefconfig
-c6x                        evmc6457_defconfig
-powerpc                     asp8347_defconfig
-arm                         mv78xx0_defconfig
-arm                           tegra_defconfig
-sh                           se7619_defconfig
-mips                        bcm63xx_defconfig
-nds32                            alldefconfig
-nios2                         10m50_defconfig
-powerpc                     rainier_defconfig
-xtensa                       common_defconfig
-sh                           sh2007_defconfig
-powerpc                  iss476-smp_defconfig
-powerpc                 mpc832x_rdb_defconfig
-sparc                            allyesconfig
-arm                          simpad_defconfig
-microblaze                    nommu_defconfig
-powerpc                   motionpro_defconfig
-arm                          gemini_defconfig
-powerpc                 mpc837x_mds_defconfig
-xtensa                           alldefconfig
-arm                         nhk8815_defconfig
-arm                         bcm2835_defconfig
-powerpc                      mgcoge_defconfig
-powerpc                  storcenter_defconfig
-microblaze                      mmu_defconfig
-sh                           se7750_defconfig
-m68k                            q40_defconfig
-arm                        multi_v5_defconfig
-arm                          lpd270_defconfig
-arm                        trizeps4_defconfig
-powerpc                      chrp32_defconfig
-arm                           stm32_defconfig
-mips                      loongson3_defconfig
-powerpc                      makalu_defconfig
-m68k                         apollo_defconfig
-arm                              zx_defconfig
-sh                           se7343_defconfig
-arm                            dove_defconfig
-mips                        nlm_xlr_defconfig
-mips                        jmr3927_defconfig
-powerpc                      katmai_defconfig
-sh                          rsk7203_defconfig
-sh                   sh7724_generic_defconfig
-sh                             espt_defconfig
-csky                                defconfig
-arm                          iop32x_defconfig
-powerpc                 mpc837x_rdb_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a003-20200930
-i386                 randconfig-a002-20200930
-i386                 randconfig-a006-20200930
-i386                 randconfig-a005-20200930
-i386                 randconfig-a004-20200930
-i386                 randconfig-a001-20200930
-x86_64               randconfig-a015-20200930
-x86_64               randconfig-a013-20200930
-x86_64               randconfig-a012-20200930
-x86_64               randconfig-a016-20200930
-x86_64               randconfig-a014-20200930
-x86_64               randconfig-a011-20200930
-i386                 randconfig-a011-20200930
-i386                 randconfig-a015-20200930
-i386                 randconfig-a012-20200930
-i386                 randconfig-a014-20200930
-i386                 randconfig-a016-20200930
-i386                 randconfig-a013-20200930
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a001-20200930
-x86_64               randconfig-a005-20200930
-x86_64               randconfig-a003-20200930
-x86_64               randconfig-a004-20200930
-x86_64               randconfig-a002-20200930
-x86_64               randconfig-a006-20200930
-
+Cc: Sudeep Holla <sudeep.holla@arm.com>
+Cc: Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+ MAINTAINERS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 45102f1fe361..be8e3e9a8e29 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4574,6 +4574,14 @@ L:	linux-arm-kernel@lists.infradead.org
+ S:	Supported
+ F:	drivers/cpuidle/cpuidle-psci.c
+ 
++CPUIDLE DRIVER - ARM PSCI PM DOMAIN
++M:	Ulf Hansson <ulf.hansson@linaro.org>
++L:	linux-pm@vger.kernel.org
++L:	linux-arm-kernel@lists.infradead.org
++S:	Supported
++F:	drivers/cpuidle/cpuidle-psci.h
++F:	drivers/cpuidle/cpuidle-psci-domain.c
++
+ CRAMFS FILESYSTEM
+ M:	Nicolas Pitre <nico@fluxnic.net>
+ S:	Maintained
+-- 
+2.25.1
+
