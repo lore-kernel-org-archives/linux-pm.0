@@ -2,102 +2,125 @@ Return-Path: <SRS0=E5yJ=DK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_INVALID,
-	DKIM_SIGNED,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAC36C47095
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 17:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2318AC47095
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 19:12:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B625220709
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 17:33:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=fail reason="signature verification failed" (1024-bit key) header.d=mailoo.org header.i=@mailoo.org header.b="dkMhJ5Qc"
+	by mail.kernel.org (Postfix) with ESMTP id D60C7206DD
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 19:12:33 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1601752353;
+	bh=qH+El+Idu9/X13MY5rS8/2uN35BsyZbyOKOMO6EuwM0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=kOsTxuShqWNgmFJiO/8jsrtZTQQu76gVxB1OdSPM0gk4Ihje8/f+aZS2JAODf+1kK
+	 N0hLjT+piFAzj7eDYLK72soLbD3wqex7M6p5Vf9cGr/V9xXD8HtuU1b6ebNrxhgH2J
+	 xrk+ATGG4na8oVEZraRW3Y8bVWDmxz2Y/brPn9i4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725835AbgJCRdm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 3 Oct 2020 13:33:42 -0400
-Received: from msg-2.mailo.com ([213.182.54.12]:55670 "EHLO msg-2.mailo.com"
+        id S1725826AbgJCTMd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 3 Oct 2020 15:12:33 -0400
+Received: from mail.kernel.org ([198.145.29.99]:33042 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725797AbgJCRdm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 3 Oct 2020 13:33:42 -0400
-X-Greylist: delayed 11171 seconds by postgrey-1.27 at vger.kernel.org; Sat, 03 Oct 2020 13:33:41 EDT
-DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple; d=mailoo.org; s=mailo;
-        t=1601735247; bh=imNu7MHThjAESrJNpmhOyRli59QkLGoI0kFTAxDCsF8=;
-        h=X-EA-Auth:Message-ID:Subject:From:To:Cc:Date:In-Reply-To:
-         References:Content-Type:MIME-Version:Content-Transfer-Encoding;
-        b=dkMhJ5QchIXG+Hy8U/wfRx6/oubjDIaRXvmWAAWFfawB6K0AxUrgCTw18dL4djFnk
-         ei6Jzj7BArFFCk2gZr7J3EdNa6kB46xr5jFll/hep3ZvnprKjz/A0HHTObsxf8PW9q
-         UHpjoKrDY4nwba5Q+7DYMhii3mSSOvc3yb8+q8Ks=
-Received: by b-3.in.mailobj.net [192.168.90.13] with ESMTP
-        via proxy.mailoo.org [213.182.55.207]
-        Sat,  3 Oct 2020 16:27:27 +0200 (CEST)
-X-EA-Auth: chZqOqSjMGhpYYrQYEHoviLKXI/U1P1qJspKX9NxQLD9OuH6MudHEBb/csrmzqyfTT+/ZA0dRFaEiu+ioS21gGuiUmLOx5GEte2jXfSbrto=
-Message-ID: <104955668ed768682adf1757e79022117460d268.camel@mailoo.org>
-Subject: Re: [PATCH 1/5] interconnect: qcom: Consolidate interconnect RPM
- support
-From:   Vincent Knecht <vincent.knecht@mailoo.org>
-To:     Jun Nie <jun.nie@linaro.org>, devicetree@vger.kernel.org,
-        georgi.djakov@linaro.org, bjorn.andersson@linaro.org,
-        agross@kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        robh@kernel.org
-Cc:     shawn.guo@linaro.org
-Date:   Sat, 03 Oct 2020 16:27:25 +0200
-In-Reply-To: <20200930081645.3434-2-jun.nie@linaro.org>
-References: <20200930081645.3434-1-jun.nie@linaro.org>
-         <20200930081645.3434-2-jun.nie@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
+        id S1725818AbgJCTMc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 3 Oct 2020 15:12:32 -0400
+Received: from earth.universe (unknown [185.213.155.232])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 7D080206DB;
+        Sat,  3 Oct 2020 19:12:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1601752351;
+        bh=qH+El+Idu9/X13MY5rS8/2uN35BsyZbyOKOMO6EuwM0=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=Sabh5m1SmeaY0uStCSD1KWWl9zXY2GLRcQPGFoEQjHVAUXuFwHFMq9jIYcI5pfQ3B
+         Qf5ugk+ig6qFNEaDhjWknGO2s6STqprv8vTAUaeRuscdkSvSI29jeI3tUAR1fPaAKi
+         95BfMererNVn8JfUOG/snH0U8M2EGCxA+YmGgKMQ=
+Received: by earth.universe (Postfix, from userid 1000)
+        id 4C58A3C0C87; Sat,  3 Oct 2020 21:12:29 +0200 (CEST)
+Date:   Sat, 3 Oct 2020 21:12:29 +0200
+From:   Sebastian Reichel <sre@kernel.org>
+To:     Iskren Chernev <iskren.chernev@gmail.com>
+Cc:     Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Jonathan Bakker <xc-racer2@live.ca>,
+        Vladimir Barinov <vladimir.barinov@cogentembedded.com>
+Subject: Re: [PATCH v5 0/7] power: supply: max17040 support compatible devices
+Message-ID: <20201003191229.dmxov4itycdhs4hy@earth.universe>
+References: <20200922114237.1803628-1-iskren.chernev@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; micalg=pgp-sha512;
+        protocol="application/pgp-signature"; boundary="q4k4oxhr25ei5syr"
+Content-Disposition: inline
+In-Reply-To: <20200922114237.1803628-1-iskren.chernev@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Le mercredi 30 septembre 2020 =C3=A0 16:16 +0800, Jun Nie a =C3=A9crit :
-> Add RPM based interconnect driver implements the set and aggregate
-> functionalities that translates bandwidth requests into RPM messages.
-> These modules provide a common set of functionalities for all
-> Qualcomm RPM based interconnect providers and should help reduce code
-> duplication when adding new providers.
+
+--q4k4oxhr25ei5syr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Tue, Sep 22, 2020 at 02:42:30PM +0300, Iskren Chernev wrote:
+> The max17040 fuel gauge is part of a family of 8 chips that have very
+> similar mode of operations and registers.
 >=20
-> Signed-off-by: Jun Nie <jun.nie@linaro.org>
-> ---
->  drivers/interconnect/qcom/Makefile  |   3 +-
->  drivers/interconnect/qcom/icc-rpm.c | 194 ++++++++++++++++++++++
->  drivers/interconnect/qcom/icc-rpm.h |  73 +++++++++
->  drivers/interconnect/qcom/msm8916.c | 241 ++--------------------------
->  4 files changed, 279 insertions(+), 232 deletions(-)
->  create mode 100644 drivers/interconnect/qcom/icc-rpm.c
->  create mode 100644 drivers/interconnect/qcom/icc-rpm.h
+> This patch set adds:
+> - compatible strings for all supported devices and handles the minor
+>   differences between them;
+> - handling for devices reporting double capacity via maxim,double-soc;
+> - handling for setting rcomp, a compensation value for more accurate
+>   reading, affected by battery chemistry and operating temps;
+> - suppot for SOC alerts (capacity changes by +/- 1%), to prevent polling
+>   every second;
+> - improved max17040 driver with regmap and devm_
 >=20
-> diff --git a/drivers/interconnect/qcom/Makefile
-> b/drivers/interconnect/qcom/Makefile
-> index 1702ece67dc5..f5e803489de0 100644
-> --- a/drivers/interconnect/qcom/Makefile
-> +++ b/drivers/interconnect/qcom/Makefile
-> @@ -9,7 +9,7 @@ icc-rpmh-obj				:=3D icc-rpmh.o
->  qnoc-sc7180-objs			:=3D sc7180.o
->  qnoc-sdm845-objs			:=3D sdm845.o
->  qnoc-sm8150-objs			:=3D sm8150.o
-> -icc-smd-rpm-objs			:=3D smd-rpm.o
-> +icc-smd-rpm-objs			:=3D smd-rpm.o icc-rpm.o
-> =20
->  obj-$(CONFIG_INTERCONNECT_QCOM_BCM_VOTER) +=3D icc-bcm-voter.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_MSM8916) +=3D qnoc-msm8916.o
-> @@ -21,3 +21,4 @@ obj-$(CONFIG_INTERCONNECT_QCOM_SC7180) +=3D qnoc-sc7180=
-.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_SDM845) +=3D qnoc-sdm845.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_SM8150) +=3D qnoc-sm8150.o
->  obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) +=3D icc-smd-rpm.o
-> +obj-$(CONFIG_INTERCONNECT_QCOM_SMD_RPM) +=3D icc-smd-rpm.o
+> The datasheets of the supported devices are linked [0] [1] [2] [3].
+>=20
+> [0] https://datasheets.maximintegrated.com/en/ds/MAX17040-MAX17041.pdf
+> [1] https://datasheets.maximintegrated.com/en/ds/MAX17043-MAX17044.pdf
+> [2] https://datasheets.maximintegrated.com/en/ds/MAX17048-MAX17049.pdf
+> [3] https://datasheets.maximintegrated.com/en/ds/MAX17058-MAX17059.pdf
+>=20
+> v4: https://lkml.org/lkml/2020/9/6/237
+> v3: https://lkml.org/lkml/2020/6/24/874
+> v2: https://lkml.org/lkml/2020/6/18/260
+> v1: https://lkml.org/lkml/2020/6/8/682
+>=20
+> Changes from v4:
+> - fix warning reported by kernel test robot <lkp@intel.com> for v4
+>   patch 4/7
+> - ensure all patches have Sign-off-by matching author (was violated
+>   for v4 patch 2/7)
 
-Duplicate ?
+Thanks, queued.
 
-Thanks for msm8939 work, please Cc: me on any related patch :-)
+-- Sebastian
 
+--q4k4oxhr25ei5syr
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
 
+iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl94zRIACgkQ2O7X88g7
++pq12g//USMO6LOjo7Z/QuPNh4ZNG9Go4FZmbMCH7zI8qbOD8MXNXhIZ+7fy1aFr
+SDJif+eai0hQTsb2o1B7Y0Z0eeSVsW624Sfnl5/hMONP+FPgptLT58nWY5R7yFYe
+PsvavVcyqmfSWDYnd8MG93i5nPGMHkNLVyxjiZpDWq+Jjv8WxEzEzVxhnMgKmXql
+yBi3QxyDKnupNaZpJyfe6wIRloTtLXaLs5LczbsqCq7e5weFluzE9psDeGPjlBqf
+VE8v8vrR99C8sYrH4YronPfAS2rJQ9ilJ1rgUpREdX/moo5OsUubb72XXvTKltB1
+HoNQQ7o2pLhBrB5LhaFfV8VQN80KJoc/qeKMLFTw2F/SPS2uboUEogemG3WCW5w2
+2IP5G6nrbnRPJbvfNkR8jo2RbNqxdKnV08HpPGW4RXKGNGermYuKKAFSbmEWL6zU
+U80wE5DEpoH/gTS5dyjfPiYjnmnF1pATSh7l5uI/95MkP2njfihpYhDHjdsZru/7
+bvta95mvDM2YrquVNNiZSgwbRWcR4HlB7VS65ITxf0abI33dCz24zGS6Gmd2kY2Y
+AieaRuO2mloB6olxImypRtr8B8J1jylfbRS2lXoeV2U3eoc+JDvM831VKWSiq8Zn
+1Rcs2/0WPsokn8TSxZL3gtdk77hz9oeRemRlVC7FBZDeVJsD7dQ=
+=fWvd
+-----END PGP SIGNATURE-----
 
-
+--q4k4oxhr25ei5syr--
