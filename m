@@ -7,41 +7,40 @@ X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3233DC41604
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 21:55:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 13BE7C41604
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 22:15:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E35CD20717
-	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 21:55:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DAF55206F8
+	for <linux-pm@archiver.kernel.org>; Sat,  3 Oct 2020 22:15:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725983AbgJCVzp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 3 Oct 2020 17:55:45 -0400
-Received: from smtprelay0101.hostedemail.com ([216.40.44.101]:32800 "EHLO
+        id S1726046AbgJCWPp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 3 Oct 2020 18:15:45 -0400
+Received: from smtprelay0208.hostedemail.com ([216.40.44.208]:57676 "EHLO
         smtprelay.hostedemail.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1725913AbgJCVzp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Oct 2020 17:55:45 -0400
+        by vger.kernel.org with ESMTP id S1725913AbgJCWPp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 3 Oct 2020 18:15:45 -0400
 Received: from filter.hostedemail.com (clb03-v110.bra.tucows.net [216.40.38.60])
-        by smtprelay01.hostedemail.com (Postfix) with ESMTP id EC9AE100E7B43;
-        Sat,  3 Oct 2020 21:55:43 +0000 (UTC)
+        by smtprelay05.hostedemail.com (Postfix) with ESMTP id C13E718029120;
+        Sat,  3 Oct 2020 22:15:44 +0000 (UTC)
 X-Session-Marker: 6A6F6540706572636865732E636F6D
-X-HE-Tag: prose47_3907d46271b0
-X-Filterd-Recvd-Size: 2898
+X-HE-Tag: land70_6101ae7271b0
+X-Filterd-Recvd-Size: 1838
 Received: from XPS-9350.home (unknown [47.151.133.149])
         (Authenticated sender: joe@perches.com)
-        by omf02.hostedemail.com (Postfix) with ESMTPA;
-        Sat,  3 Oct 2020 21:55:42 +0000 (UTC)
-Message-ID: <9822843f764520e1076a92fd9120294aa393a085.camel@perches.com>
-Subject: Re: [PATCH] test_power: add missing newlines when printing
- parameters by sysfs
+        by omf13.hostedemail.com (Postfix) with ESMTPA;
+        Sat,  3 Oct 2020 22:15:43 +0000 (UTC)
+Message-ID: <ebafdf9c1647070c45124786e71a0112f86d10b8.camel@perches.com>
+Subject: Re: [PATCH][next] power: supply: fix spelling mistake "unprecise"
+ -> "imprecise"
 From:   Joe Perches <joe@perches.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Xiongfeng Wang <wangxiongfeng2@huawei.com>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Date:   Sat, 03 Oct 2020 14:55:41 -0700
-In-Reply-To: <20201003215029.jsugcgpgrmcmydr3@earth.universe>
-References: <1599199798-27804-1-git-send-email-wangxiongfeng2@huawei.com>
-         <20201003212336.5et7erdf6fihqscu@earth.universe>
-         <472008b94f4b20915425db4714fdb505cb0cbe5a.camel@perches.com>
-         <20201003215029.jsugcgpgrmcmydr3@earth.universe>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Colin King <colin.king@canonical.com>
+Cc:     linux-pm@vger.kernel.org, kernel-janitors@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Date:   Sat, 03 Oct 2020 15:15:42 -0700
+In-Reply-To: <20201003215102.5hl5lvidyki2xu7b@earth.universe>
+References: <20200902101656.57676-1-colin.king@canonical.com>
+         <20201003215102.5hl5lvidyki2xu7b@earth.universe>
 Content-Type: text/plain; charset="ISO-8859-1"
 User-Agent: Evolution 3.36.4-0ubuntu1 
 MIME-Version: 1.0
@@ -50,44 +49,27 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, 2020-10-03 at 23:50 +0200, Sebastian Reichel wrote:
-> Hi,
-> 
-> On Sat, Oct 03, 2020 at 02:43:09PM -0700, Joe Perches wrote:
-> > On Sat, 2020-10-03 at 23:23 +0200, Sebastian Reichel wrote:
-> > > On Fri, Sep 04, 2020 at 02:09:58PM +0800, Xiongfeng Wang wrote:
-> > > > When I cat some module parameters by sysfs, it displays as follows.
-> > > > It's better to add a newline for easy reading.
-> > []
-> > > > root@syzkaller:~# cd /sys/module/test_power/parameters/
-> > > > root@syzkaller:/sys/module/test_power/parameters# cat ac_online
-> > > > onroot@syzkaller:/sys/module/test_power/parameters# cat battery_present
-> > > > trueroot@syzkaller:/sys/module/test_power/parameters# cat battery_health
-> > > > goodroot@syzkaller:/sys/module/test_power/parameters# cat battery_status
-> > > > dischargingroot@syzkaller:/sys/module/test_power/parameters# cat battery_technology
-> > > > LIONroot@syzkaller:/sys/module/test_power/parameters# cat usb_online
-> > > > onroot@syzkaller:/sys/module/test_power/parameters#
-> > > > 
-> > > > Signed-off-by: Xiongfeng Wang <wangxiongfeng2@huawei.com>
-> > > > ---
-> > > 
-> > > Thanks, queued.
-> > []
-> > > > diff --git a/drivers/power/supply/test_power.c b/drivers/power/supply/test_power.c
-> > []
-> > > > @@ -353,6 +353,7 @@ static int param_set_ac_online(const char *key, const struct kernel_param *kp)
-> > > >  static int param_get_ac_online(char *buffer, const struct kernel_param *kp)
-> > > >  {
-> > > >  	strcpy(buffer, map_get_key(map_ac_online, ac_online, "unknown"));
-> > > > +	strcat(buffer, "\n");
-> > > >  	return strlen(buffer);
-> > > >  }
+On Sat, 2020-10-03 at 23:51 +0200, Sebastian Reichel wrote:
+> On Wed, Sep 02, 2020 at 11:16:56AM +0100, Colin King wrote:
+> > From: Colin Ian King <colin.king@canonical.com>
+> > There is a spelling mistake in a dev_info message. Fix it.
 > > 
-> > All of these would be better as sprintf(buffer, "%s\n", <whatever>)
-> > so the output is scanned just once instead of scanned three times.
+> > Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> > ---
 > 
-> Agreed. Anybody willing to send a patch? :)
+> Thanks, queued.
+[]
+> > diff --git a/drivers/power/supply/rn5t618_power.c b/drivers/power/supply/rn5t618_power.c
+[]
+> > @@ -487,7 +487,7 @@ static int rn5t618_power_probe(struct platform_device *pdev)
+> >  		 * gauge will get decalibrated.
+> >  		 */
+> >  		dev_info(&pdev->dev, "Fuel gauge not enabled, enabling now\n");
+> > -		dev_info(&pdev->dev, "Expect unprecise results\n");
+> > +		dev_info(&pdev->dev, "Expect imprecise results\n");
 
-Well, you _are_ the maintainer. Why not you?
+Might as well be a single line too
+
+		dev_info(&pdev->dev, "Fuel gauge not enabled, enabling now - expect imprecise results\n");
 
 
