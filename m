@@ -2,82 +2,93 @@ Return-Path: <SRS0=LE0X=DM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A955AC46466
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:14:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 29758C4363A
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:33:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5DEFB20853
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:14:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BE3C5207EA
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:33:21 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="d47Zo6Of"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728061AbgJERN5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Oct 2020 13:13:57 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:54784 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726691AbgJERNy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 13:13:54 -0400
-Received: from 89-64-89-50.dynamic.chello.pl (89.64.89.50) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.489)
- id d247e9a3d79801fb; Mon, 5 Oct 2020 19:13:51 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux ACPI <linux-acpi@vger.kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Raymond Tan <raymond.tan@intel.com>
-Subject: [PATCH 1/2] ACPI: EC: PM: Flush EC work unconditionally after wakeup
-Date:   Mon, 05 Oct 2020 19:13:15 +0200
-Message-ID: <66772207.vZgp7G9zJX@kreacher>
-In-Reply-To: <1969699.iD4Ik4PeQO@kreacher>
-References: <1969699.iD4Ik4PeQO@kreacher>
+        id S1727965AbgJERdS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Oct 2020 13:33:18 -0400
+Received: from fllv0016.ext.ti.com ([198.47.19.142]:53196 "EHLO
+        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726600AbgJERdS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 13:33:18 -0400
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 095HXFUn041529;
+        Mon, 5 Oct 2020 12:33:15 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1601919195;
+        bh=6ETL33FBIngVUOzEHYnY66O2QOkqaMTE7Ld41zHA9VM=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=d47Zo6Ofqi2KI9vdg/kNBJGF16iMi1jSlRw5VI9eXWwZZWMtQJ0dz5GxRagZsqFd4
+         8A6AO7Hx86K+9R8OoMg6/mDs/RpYr/GzQ/mQ0kQWA6v4HXOMXLVpUu1a9GqlM0IzaR
+         dmJ1Q9f5Qq5iv3gxdTa8hwN68SW4ABDZpoZ2E1N0=
+Received: from DFLE114.ent.ti.com (dfle114.ent.ti.com [10.64.6.35])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 095HXF8d024532
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Mon, 5 Oct 2020 12:33:15 -0500
+Received: from DFLE112.ent.ti.com (10.64.6.33) by DFLE114.ent.ti.com
+ (10.64.6.35) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Mon, 5 Oct
+ 2020 12:33:14 -0500
+Received: from lelv0327.itg.ti.com (10.180.67.183) by DFLE112.ent.ti.com
+ (10.64.6.33) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Mon, 5 Oct 2020 12:33:14 -0500
+Received: from [10.250.79.43] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0327.itg.ti.com (8.15.2/8.15.2) with ESMTP id 095HXEmo008422;
+        Mon, 5 Oct 2020 12:33:14 -0500
+Subject: Re: [EXTERNAL] Re: [PATCH v5 2/2] power: supply: bq256xx: Introduce
+ the BQ256XX charger driver
+To:     Sebastian Reichel <sre@kernel.org>
+CC:     <robh+dt@kernel.org>, <linux-pm@vger.kernel.org>,
+        <devicetree@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        <dmurphy@ti.com>
+References: <20201001214034.5925-1-r-rivera-matos@ti.com>
+ <20201001214034.5925-3-r-rivera-matos@ti.com>
+ <20201003105448.eqeyfpr7dugsp4in@earth.universe>
+From:   Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+Message-ID: <8ff0ba7b-d310-f7e3-bfcb-3bb2079344d2@ti.com>
+Date:   Mon, 5 Oct 2020 12:33:13 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20201003105448.eqeyfpr7dugsp4in@earth.universe>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Subject: [PATCH] ACPI: EC: PM: Flush EC work unconditionally after wakeup
+Sebastian,
 
-Commit 607b9df63057 ("ACPI: EC: PM: Avoid flushing EC work when EC
-GPE is inactive") has been reported to cause some power button wakeup
-events to be missed on some systems, so modify acpi_ec_dispatch_gpe()
-to call acpi_ec_flush_work() unconditionally to effectively reverse
-the changes made by that commit.
-
-Also note that the problem which prompted commit 607b9df63057 is not
-reproducible any more on the affected machine.
-
-Fixes: 607b9df63057 ("ACPI: EC: PM: Avoid flushing EC work when EC GPE is inactive")
-Cc: 5.4+ <stable@vger.kernel.org> # 5.4+
-Reported-by: Raymond Tan <raymond.tan@intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/ec.c |    7 +++----
- 1 file changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-pm/drivers/acpi/ec.c
-===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -2019,12 +2019,11 @@ bool acpi_ec_dispatch_gpe(void)
- 	 * to allow the caller to process events properly after that.
- 	 */
- 	ret = acpi_dispatch_gpe(NULL, first_ec->gpe);
--	if (ret == ACPI_INTERRUPT_HANDLED) {
-+	if (ret == ACPI_INTERRUPT_HANDLED)
- 		pm_pr_dbg("ACPI EC GPE dispatched\n");
- 
--		/* Flush the event and query workqueues. */
--		acpi_ec_flush_work();
--	}
-+	/* Flush the event and query workqueues. */
-+	acpi_ec_flush_work();
- 
- 	return false;
- }
-
-
+On 10/3/20 5:54 AM, Sebastian Reichel wrote:
+> Hi Ricardo,
+>
+> On Thu, Oct 01, 2020 at 04:40:34PM -0500, Ricardo Rivera-Matos wrote:
+>> The BQ256XX family of devices are highly integrated buck chargers
+>> for single cell batteries.
+>>
+>> Signed-off-by: Ricardo Rivera-Matos <r-rivera-matos@ti.com>
+>>
+>> v5 - adds power_supply_put_battery_info() and devm_add_action_or_reset() calls
+>> ---
+> changes look good, but you are still missing
+> usb_unregister_notifier() calls on drival removal.
+ACK, I will add a driver removal function and make the appropriate 
+usb_unregister_notifier() calls.
+>
+> -- Sebastian
+Ricardo
 
