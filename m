@@ -2,32 +2,31 @@ Return-Path: <SRS0=LE0X=DM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42E70C4363A
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 18:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E6D42C47095
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 18:54:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EC00820E65
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 18:41:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AE49B20B80
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 18:54:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="BlKiMMCf"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="mCNV9SDa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728685AbgJESlb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Oct 2020 14:41:31 -0400
-Received: from hqnvemgate26.nvidia.com ([216.228.121.65]:18816 "EHLO
-        hqnvemgate26.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725940AbgJESlb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 14:41:31 -0400
-Received: from hqmail.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate26.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
-        id <B5f7b68c90002>; Mon, 05 Oct 2020 11:41:13 -0700
+        id S1729116AbgJESyP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Oct 2020 14:54:15 -0400
+Received: from hqnvemgate24.nvidia.com ([216.228.121.143]:8685 "EHLO
+        hqnvemgate24.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728944AbgJESyP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 14:54:15 -0400
+Received: from hqmail.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate24.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
+        id <B5f7b6b6b000f>; Mon, 05 Oct 2020 11:52:27 -0700
 Received: from [10.24.37.103] (10.124.1.5) by HQMAIL107.nvidia.com
  (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Mon, 5 Oct
- 2020 18:40:18 +0000
-Subject: Re: [Patch 1/2] cpufreq: tegra194: get consistent cpuinfo_cur_freq
+ 2020 18:54:04 +0000
+Subject: Re: [Patch 2/2] cpufreq: tegra194: Fix unlisted boot freq warning
 To:     Viresh Kumar <viresh.kumar@linaro.org>
 CC:     <rjw@rjwysocki.net>, <thierry.reding@gmail.com>,
         <jonathanh@nvidia.com>, <linux-pm@vger.kernel.org>,
@@ -36,15 +35,15 @@ CC:     <rjw@rjwysocki.net>, <thierry.reding@gmail.com>,
         <linux-kernel@vger.kernel.org>, <ksitaraman@nvidia.com>,
         <bbasu@nvidia.com>, Sumit Gupta <sumitg@nvidia.com>
 References: <1600276277-7290-1-git-send-email-sumitg@nvidia.com>
- <1600276277-7290-2-git-send-email-sumitg@nvidia.com>
- <20201005044621.t3stylpbsvzhxtyr@vireshk-i7>
+ <1600276277-7290-3-git-send-email-sumitg@nvidia.com>
+ <20201005045414.fmntm7ejad7zxcrv@vireshk-i7>
 From:   Sumit Gupta <sumitg@nvidia.com>
-Message-ID: <69929ea0-0304-3bbe-fd33-40f50791a0ec@nvidia.com>
-Date:   Tue, 6 Oct 2020 00:10:15 +0530
+Message-ID: <2c0daaa5-4aec-925d-c1e3-0f15fb93cc20@nvidia.com>
+Date:   Tue, 6 Oct 2020 00:24:01 +0530
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20201005044621.t3stylpbsvzhxtyr@vireshk-i7>
+In-Reply-To: <20201005045414.fmntm7ejad7zxcrv@vireshk-i7>
 Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -52,139 +51,57 @@ X-Originating-IP: [10.124.1.5]
 X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
  HQMAIL107.nvidia.com (172.20.187.13)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1601923278; bh=0bk80uFfUoVDAgV24Vm7g3jBPiC3DpODVsAsPneRk0I=;
+        t=1601923947; bh=WteRUhNn8LS7dvObuGW8ZJoWxg2jRgT1UeuqiBiT9uA=;
         h=Subject:To:CC:References:From:Message-ID:Date:User-Agent:
          MIME-Version:In-Reply-To:Content-Type:Content-Language:
          Content-Transfer-Encoding:X-Originating-IP:X-ClientProxiedBy;
-        b=BlKiMMCfdVZvY4zvTG3b6mgy+4VEJiAX3cwTK/w+ge8PXBtO1JETAEbthi8KM4gOj
-         AVtpHjlyhmm8wezrva1/F4tUr8f8GRYAH68hz/Rhqmge1TNNivS98ZWkS2DgU6NCU8
-         ADX0PqhOOfx7kAcDYbN2RHRuXoheVTwP/FIbMQzprZluAm0Y2a4RFHLahAlrrTZ01t
-         gAB+is+mLv0IJAyznUT4hG2LZrwPlRS4ke74k77BH0YbROc+DmMKcrzgf5B1y4Ab8B
-         +0rKc1DOGZ1RpQMnSJXMMDVCqi7FKMRcg2u9kdLva+enT0aZwfHSJy4yb/fHEv9ORP
-         EyKvSOsKruXvA==
+        b=mCNV9SDaMi0yln6EhW1QjxwYlU0taJo/6nPTN/JTBcXiGbez94uBt/wPFWylPa3k7
+         e6gX/XlAIil5qmyr8HO0VfRsWv8e9pQzMiXDSDSueXbzFBrtTcABPHkLqmD47/spPD
+         w6SWVQ7Yudf5paxJVW8OzDus1DksuheH5xhsP4i3EyVzZdamPJMgk967DdkIB588Rq
+         Xz69yrH0qJzN3uHHQatIkQJs2PUw/ytAVoxuE8RNS60wTp+q0s3UzXMCeapPih9ETu
+         nucCFEKb5AcbpYbW/kC/070QYfI0aiuKdsW60uzmAaGCdCxsrPaLIXzSkESo1eGQUI
+         BnoQ5zqrIcbhw==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 
->> Frequency returned by 'cpuinfo_cur_freq' using counters is not fixed
->> and keeps changing slightly. This change returns a consistent value
->> from freq_table. If the reconstructed frequency has acceptable delta
->> from the last written value, then return the frequency corresponding
->> to the last written ndiv value from freq_table. Otherwise, print a
->> warning and return the reconstructed freq.
+>> Warning coming during boot because the boot freq set by bootloader
+>> gets filtered out due to big freq steps while creating freq_table.
+>> Fixing this by setting closest ndiv value from freq_table.
+>> Warning:
+>>    cpufreq: cpufreq_online: CPU0: Running at unlisted freq
+>>    cpufreq: cpufreq_online: CPU0: Unlisted initial frequency changed
 >>
->> Signed-off-by: Sumit Gupta <sumitg@nvidia.com>
->> ---
->>   drivers/cpufreq/tegra194-cpufreq.c | 66 ++++++++++++++++++++++++++++++++------
->>   1 file changed, 57 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/cpufreq/tegra194-cpufreq.c b/drivers/cpufreq/tegra194-cpufreq.c
->> index e1d931c..d5b608d 100644
->> --- a/drivers/cpufreq/tegra194-cpufreq.c
->> +++ b/drivers/cpufreq/tegra194-cpufreq.c
->> @@ -180,9 +180,65 @@ static unsigned int tegra194_get_speed_common(u32 cpu, u32 delay)
->>        return (rate_mhz * KHZ); /* in KHz */
->>   }
->>
->> +static void get_cpu_ndiv(void *ndiv)
->> +{
->> +     u64 ndiv_val;
->> +
->> +     asm volatile("mrs %0, s3_0_c15_c0_4" : "=r" (ndiv_val) : );
->> +
->> +     *(u64 *)ndiv = ndiv_val;
->> +}
->> +
->> +static void set_cpu_ndiv(void *data)
->> +{
->> +     struct cpufreq_frequency_table *tbl = data;
->> +     u64 ndiv_val = (u64)tbl->driver_data;
->> +
->> +     asm volatile("msr s3_0_c15_c0_4, %0" : : "r" (ndiv_val));
->> +}
->> +
->>   static unsigned int tegra194_get_speed(u32 cpu)
->>   {
->> -     return tegra194_get_speed_common(cpu, US_DELAY);
->> +     struct cpufreq_frequency_table *table, *pos;
->> +     struct cpufreq_policy policy;
->> +     unsigned int rate;
->> +     u64 ndiv;
->> +     int err;
->> +
->> +     cpufreq_get_policy(&policy, cpu);
->> +     table = policy.freq_table;
+>> Also, added change in init to wait till current frequency becomes
+>> equal or near to the previously requested frequency. This is done
+>> because it takes some time to restore the previous frequency while
+>> turning-on non-boot cores during exit from SC7(Suspend-to-RAM).
 > 
-> Maybe getting freq-table from cluster specific data would be better/faster.
-> 
-will do the change in next patch version.
+> So you are trying to figure if the frequency is listed in freq-table or not,
+> otherwise setting the frequency to a value you think is appropriate. Right ?
+During boot, want to set the frequency from freq_table which is closest 
+to the one set by bootloader.
+During resume from suspend-to-idle, want to restore the frequency which 
+was set on non-boot cores before they were hotplug powered off.
 
->> +
->> +     /* reconstruct actual cpu freq using counters*/
->> +     rate = tegra194_get_speed_common(cpu, US_DELAY);
->> +
->> +     /* get last written ndiv value*/
->> +     err = smp_call_function_single(cpu, get_cpu_ndiv, &ndiv, true);
->> +     if (err) {
->> +             pr_err("cpufreq: Failed to get ndiv for CPU%d, ret:%d\n",
->> +                    cpu, err);
->> +             return rate;
->> +     }
->> +
->> +     /* if the reconstructed frequency has acceptable delta from
 > 
-> Both have got the multi-line comments wrong. Format is wrong and every sentence
-> needs to start with a capital letter.
-> 
-will correct.
+> This is what the cpufreq core already does when it printed these boot time
+> messages. Do we really need to add this much code in here ?
+We want to avoid the warning messages.
 
->> +      * the last written value, then return freq corresponding
->> +      * to the last written ndiv value from freq_table. This is
->> +      * done to return consistent value.
->> +      */
->> +     cpufreq_for_each_valid_entry(pos, table) {
->> +             if (pos->driver_data != ndiv)
->> +                     continue;
->> +
->> +             if (abs(pos->frequency - rate) > 115200) {
->> +                     pr_warn("cpufreq: high delta (%d) on CPU%d\n",
->> +                             abs(pos->frequency - rate), cpu);
->> +                     pr_warn("cpufreq: cur:%u, set:%u, set ndiv:%llu\n",
->> +                             rate, pos->frequency, ndiv);
 > 
-> Both of these can be merged in a single line I think. There is no need to print
-> delta as you already print both the frequencies.
+> If you really don't want to see the warning, how about fixing it the way cpufreq
+> core does ? i.e. with this call:
 > 
-Will do this also in next patch version.
+> ret = __cpufreq_driver_target(policy, policy->cur - 1, CPUFREQ_RELATION_L);
+> 
+The cpufreq core change will help in bootup case but not during the case 
+of resume.
+In this change, reading the previously stored value and restoring it 
+will also fix the warning message during resume.
 
->> +             } else {
->> +                     rate = pos->frequency;
->> +             }
->> +             break;
->> +     }
->> +     return rate;
->>   }
->>
->>   static int tegra194_cpufreq_init(struct cpufreq_policy *policy)
->> @@ -209,14 +265,6 @@ static int tegra194_cpufreq_init(struct cpufreq_policy *policy)
->>        return 0;
->>   }
->>
->> -static void set_cpu_ndiv(void *data)
->> -{
->> -     struct cpufreq_frequency_table *tbl = data;
->> -     u64 ndiv_val = (u64)tbl->driver_data;
->> -
->> -     asm volatile("msr s3_0_c15_c0_4, %0" : : "r" (ndiv_val));
->> -}
->> -
->>   static int tegra194_cpufreq_set_target(struct cpufreq_policy *policy,
->>                                       unsigned int index)
->>   {
->> --
->> 2.7.4
-> 
+
 > --
 > viresh
 > 
