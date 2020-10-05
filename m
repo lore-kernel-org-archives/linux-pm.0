@@ -2,35 +2,32 @@ Return-Path: <SRS0=LE0X=DM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DDC1C47095
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0205C4727D
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:14:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2368A212CC
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:13:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB17821548
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 17:14:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728009AbgJERNx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Oct 2020 13:13:53 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:45260 "EHLO
+        id S1725939AbgJERN5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Oct 2020 13:13:57 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:55396 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725815AbgJERNx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 13:13:53 -0400
+        with ESMTP id S1728043AbgJERNy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 13:13:54 -0400
 Received: from 89-64-89-50.dynamic.chello.pl (89.64.89.50) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.489)
- id b1023543e698b084; Mon, 5 Oct 2020 19:13:50 +0200
+ id 20ea6863fb1d4063; Mon, 5 Oct 2020 19:13:52 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux ACPI <linux-acpi@vger.kernel.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Todd Brandt <todd.e.brandt@linux.intel.com>
-Subject: [PATCH 2/2] ACPI: EC: PM: Drop ec_no_wakeup check from acpi_ec_dispatch_gpe()
-Date:   Mon, 05 Oct 2020 19:13:46 +0200
-Message-ID: <4751045.iUa6gZp90W@kreacher>
-In-Reply-To: <1969699.iD4Ik4PeQO@kreacher>
-References: <1969699.iD4Ik4PeQO@kreacher>
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/2] ACPI: EC: PM: Two fixes related to suspend-to-idle
+Date:   Mon, 05 Oct 2020 19:10:29 +0200
+Message-ID: <1969699.iD4Ik4PeQO@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -38,34 +35,14 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-It turns out that in some cases there are EC events to flush in
-acpi_ec_dispatch_gpe() even though the ec_no_wakeup kernel parameter
-is set and the EC GPE is disabled while sleeping, so drop the
-ec_no_wakeup check that prevents those events from being processed
-from acpi_ec_dispatch_gpe().
+The following two patches address two suspend-to-idle-related issues in the
+ACPI EC driver.
 
-Reported-by: Todd Brandt <todd.e.brandt@linux.intel.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/acpi/ec.c |    3 ---
- 1 file changed, 3 deletions(-)
+Please refer to the patch changelogs for details.
 
-Index: linux-pm/drivers/acpi/ec.c
-===================================================================
---- linux-pm.orig/drivers/acpi/ec.c
-+++ linux-pm/drivers/acpi/ec.c
-@@ -2011,9 +2011,6 @@ bool acpi_ec_dispatch_gpe(void)
- 	if (acpi_any_gpe_status_set(first_ec->gpe))
- 		return true;
- 
--	if (ec_no_wakeup)
--		return false;
--
- 	/*
- 	 * Dispatch the EC GPE in-band, but do not report wakeup in any case
- 	 * to allow the caller to process events properly after that.
+Thanks!
 
 
 
