@@ -2,105 +2,108 @@ Return-Path: <SRS0=LE0X=DM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB48C4363A
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 19:43:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 909DAC4363A
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 20:02:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 22D89212CC
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 19:43:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30C15212CC
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 20:02:03 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U6Qb2I2E"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727032AbgJETnw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Oct 2020 15:43:52 -0400
-Received: from static-213-198-238-194.adsl.eunet.rs ([213.198.238.194]:51494
-        "EHLO fx.arvanta.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727007AbgJETnw (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 15:43:52 -0400
-X-Greylist: delayed 3350 seconds by postgrey-1.27 at vger.kernel.org; Mon, 05 Oct 2020 15:43:52 EDT
-Received: from arya.arvanta.net (arya.arvanta.net [10.5.1.6])
-        by fx.arvanta.net (Postfix) with ESMTP id AC74F1C12E;
-        Mon,  5 Oct 2020 20:48:00 +0200 (CEST)
-Date:   Mon, 5 Oct 2020 20:47:59 +0200
-From:   Milan =?utf-8?Q?P=2E_Stani=C4=87?= <mps@arvanta.net>
-To:     Vicente Bergas <vicencb@gmail.com>
-Cc:     Sebastian Reichel <sebastian.reichel@collabora.com>,
-        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        kernel@collabora.com,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>
-Subject: Re: [PATCH] power: supply: sbs-battery: chromebook workaround for PEC
-Message-ID: <20201005184759.GA15677@arya.arvanta.net>
-References: <20201004224601.420786-1-sebastian.reichel@collabora.com>
- <9b4f62f2-0bf6-41bb-a946-bd94c75168b8@gmail.com>
+        id S1729489AbgJEUCD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Oct 2020 16:02:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34602 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729424AbgJEUCD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 16:02:03 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B8B23C0613CE;
+        Mon,  5 Oct 2020 13:02:02 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id w5so10963811wrp.8;
+        Mon, 05 Oct 2020 13:02:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=kDG90piP9bjjZ54VM7VZ8xIJjJTXJAd5c7/jB4KZCuw=;
+        b=U6Qb2I2EVdvXUonV7xvElgjAtpp5Q39Ju/U+JyYCWKusZ9PHt3ZW7VAe2oyxxPMAqC
+         Gt0YhdLms9ASnHGet4kNAFfvxQ7uyIZhr2rVfjRFxZfkbGrUGJ8hXSWnuW6ZvWEP6FOp
+         5bCGoAOZhUiA+uwkhJ+PTpW/WSLWAlgR6RTIFNcKra4FxY8PxQq7AchY32dmCdDkKe2/
+         LQymcfir9y2x+3OSvq6AwxNSSjZ4LVAAePapsoPLdEx534RH+Kzp9/AL0vDeQ7QyTnjP
+         9Nh4J3uDEXkphCLTh5irFrlrhVOoaIQegw1t7y+cSvsrUYENr+dG435WJUvfzDm8LpNR
+         XG9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=kDG90piP9bjjZ54VM7VZ8xIJjJTXJAd5c7/jB4KZCuw=;
+        b=rcA4Yl6DkgNZpj1gdFUUaOGCstO5yHeTqfQkYS2qM/1n1FyA2WyMwLJpKyKTFBuAit
+         2X+zhLE8imp4EYHPzzAsCdXJAfGg7+RS34MuV0LnS59ZGXEagvnVViSxgS782II9YEua
+         SXxT/kVgOp3llr5SYRHKiBYFJfWqlVenKRN7qIyRdxjhAriB59Zy+BmwIUWHFG/bw8Gc
+         LnTVEc+8bs6pFA5juVFpQ1G7C00VQrSGkE++hyE/iVUhdm8PfWD7D+LYDmMdLjxkDa29
+         knJG560qoBcktLcgNiAyM91sbtA6QSTK8CvcS8n+cP9THce9huNGTb6eA78xF1WKWYpC
+         K4zQ==
+X-Gm-Message-State: AOAM530k+FxUoD5UGeCASVHgsI1GYbF+FcVGN/i7b/uvsOvLeqvv42y5
+        Df2z5q6Fd0tbg8Gj96zwWYE=
+X-Google-Smtp-Source: ABdhPJx7wfmIUYe3PgJvRZq15QibKic8hinUwE91butGT+DJ065259eG14cshO9OX8cQ3GLHSYvqUg==
+X-Received: by 2002:adf:f903:: with SMTP id b3mr1108480wrr.142.1601928121488;
+        Mon, 05 Oct 2020 13:02:01 -0700 (PDT)
+Received: from localhost ([91.92.14.102])
+        by smtp.gmail.com with ESMTPSA id s19sm736954wmc.41.2020.10.05.13.00.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 05 Oct 2020 13:01:09 -0700 (PDT)
+From:   Iskren Chernev <iskren.chernev@gmail.com>
+To:     Sebastian Reichel <sre@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht,
+        Iskren Chernev <iskren.chernev@gmail.com>,
+        kernel test robot <lkp@intel.com>
+Subject: [PATCH] power: supply: max17040: Fix ptr to enum cast
+Date:   Mon,  5 Oct 2020 23:00:38 +0300
+Message-Id: <20201005200038.1032697-1-iskren.chernev@gmail.com>
+X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <9b4f62f2-0bf6-41bb-a946-bd94c75168b8@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi all,
+clang complains about casting pointers to smaller enum types.
 
-On Mon, 2020-10-05 at 19:53, Vicente Bergas wrote:
-> On Monday, October 5, 2020 12:46:01 AM CEST, Sebastian Reichel wrote:
-> > Looks like the I2C tunnel implementation from Chromebook's
-> > embedded controller does not handle PEC correctly. Fix this
-> > by disabling PEC for batteries behind those I2C tunnels as
-> > a workaround.
-> > 
-> > Reported-by: "Milan P. Stanić" <mps@arvanta.net>
-> > Reported-by: Vicente Bergas <vicencb@gmail.com>
-> > CC: Enric Balletbo i Serra <enric.balletbo@collabora.com>
-> > Fixes: 7222bd603dd2 ("power: supply: sbs-battery: add PEC support")
-> > Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-> > ---
-> > Hi,
-> > 
-> > This is compile-tested only, since I do not have a chromebook at
-> > hand. Please test if this fixes your issue.
-> 
-> Hi Sebastian,
-> tested on rk3399-gru-kevin with 5.9.0-rc8 and now the CPU usage is 0 when
-> idling.
-> dmesg reports:
-> [    1.370249] sbs-battery 9-000b: Disabling PEC because of broken Cros-EC
-> implementation
+Reported-by: kernel test robot <lkp@intel.com>
+Signed-off-by: Iskren Chernev <iskren.chernev@gmail.com>
+---
 
-Also I tested on same board and same kernel version and can confirm
-this.
- 
-> So,
-> Tested-by: Vicente Bergas <vicencb@gmail.com>
-> 
-> Thanks,
->  Vicente.
-> 
-> > -- Sebastian
-> > ---
-> >  drivers/power/supply/sbs-battery.c | 6 ++++++
-> >  1 file changed, 6 insertions(+)
-> > 
-> > diff --git a/drivers/power/supply/sbs-battery.c
-> > b/drivers/power/supply/sbs-battery.c
-> > index 13192cbcce71..b6a538ebb378 100644
-> > --- a/drivers/power/supply/sbs-battery.c
-> > +++ b/drivers/power/supply/sbs-battery.c
-> > @@ -279,6 +279,12 @@ static int sbs_update_presence(struct sbs_info
-> > *chip, bool is_present)
-> >  	else
-> >  		client->flags &= ~I2C_CLIENT_PEC;
-> >   +	if (of_device_is_compatible(client->dev.parent->of_node,
-> > "google,cros-ec-i2c-tunnel")
-> > +	    && client->flags & I2C_CLIENT_PEC) {
-> > +		dev_info(&client->dev, "Disabling PEC because of broken Cros-EC
-> > implementation\n");
-> > +		client->flags &= ~I2C_CLIENT_PEC;
-> > +	}
-> > +
-> >  	dev_dbg(&client->dev, "PEC: %s\n", (client->flags & I2C_CLIENT_PEC) ?
-> >  		"enabled" : "disabled");
-> 
+P.S. I fixed a similar issue in v5, but it was in another patch, and the
+test robot only complains about the first issue, so I missed this one.
+
+There is a similar warning in ltc2941-battery-gauge, let me know if I
+should submit a fix for it as well.
+
+ drivers/power/supply/max17040_battery.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+index 1d7510a59295d..d956c67d51558 100644
+--- a/drivers/power/supply/max17040_battery.c
++++ b/drivers/power/supply/max17040_battery.c
+@@ -247,7 +247,7 @@ static int max17040_get_of_data(struct max17040_chip *chip)
+ {
+ 	struct device *dev = &chip->client->dev;
+ 	struct chip_data *data = &max17040_family[
+-		(enum chip_id) of_device_get_match_data(dev)];
++		(uintptr_t) of_device_get_match_data(dev)];
+ 	int rcomp_len;
+ 	u8 rcomp[2];
+
+
+base-commit: f9d293364b452b651292ed3034dd06c57b1754d5
+--
+2.28.0
+
