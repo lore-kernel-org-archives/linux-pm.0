@@ -2,94 +2,92 @@ Return-Path: <SRS0=LE0X=DM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58603C4363A
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 11:34:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 305D0C4727D
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 13:13:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0E92D2080C
-	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 11:34:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1601897690;
-	bh=Ff+T3/WRh1h/Ue8vSCN2s+MOdIGJb7NnWx3uvWPgX1k=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=Z1S4uzWRFth2PD2nTP6bC52+SJ/1ee10swpIkoe2R0bawzGbvHCMA/JNCHUCs7pv0
-	 VYVLAkkmXYV662p5R2fRWzBjweepRzCWJeeDPmVkF1o5ZmYoltM24tTJCkrg4jyPWT
-	 0KeaYqF3DYmj02oXz/aAnwP9XErSqz3En/9a93gI=
+	by mail.kernel.org (Postfix) with ESMTP id DC49220848
+	for <linux-pm@archiver.kernel.org>; Mon,  5 Oct 2020 13:13:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CUWdgsqp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725947AbgJELet (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 5 Oct 2020 07:34:49 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:39441 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725843AbgJELet (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 07:34:49 -0400
-Received: by mail-oi1-f194.google.com with SMTP id c13so8377269oiy.6
-        for <linux-pm@vger.kernel.org>; Mon, 05 Oct 2020 04:34:49 -0700 (PDT)
+        id S1726015AbgJENN0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 5 Oct 2020 09:13:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55888 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725891AbgJENN0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 5 Oct 2020 09:13:26 -0400
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6173C0613CE;
+        Mon,  5 Oct 2020 06:13:25 -0700 (PDT)
+Received: by mail-ed1-x541.google.com with SMTP id g4so9267513edk.0;
+        Mon, 05 Oct 2020 06:13:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=mime-version:from:date:message-id:subject:to:cc;
+        bh=d4eE4p3+B8xLEYjWkMENxr3kighOszJ8l95I4ulqQBU=;
+        b=CUWdgsqpaVHkMUxSJagvGvjIaXWLvO6Gw78iwM00JIjl8bR576GAndbcVvtg9m5qK7
+         XjN9p5XWyp0+8G5E9NfxwPqdjju1GHGjcxetCWqMW2frJd9mbOOlQmdGdd2R6T7TcLXm
+         I2b6ZC6cfEsxttx9DOuDU4RC0lSK5cQ1Fk+uyMmTTf5QmHFbNAw8Pp1Bp7Zlzw53CeG4
+         MjSD4QwtdbwhUTqOHkPdylhCpH9ytsrc8RDSPbgasXrKisjLh3xd+FpUFxTsn8grj9NZ
+         ujjkVsv9tDPAjhX4cYhQavPaPvqRwFNIqZ11lag5RmgIOFMjxMiRUwiAGrMHXPSNvd8x
+         1tnA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=r6gY4bhrfB6SUv7OxXWkkMPAGlGzZ2ouw3/MLXRT6Yk=;
-        b=BBCIE15GJlDTN8pMucDK0es8XJe0/Gb+G5OzAGoEonJb0qcKMpBdh+s51eEfT3A31z
-         LsZzRPDHqLtpw11JbsruIFNvTuC5w4ASjgytL+ZKQH6rIubI5jj7x4ZFQnMsPhB2VU4R
-         5FgZoPEKfRH9lo6IrtFp+6VaTOe1LOtHOEr0vQQ6rnlCxkoJv3ku4/I6CpHj/8hLwOhk
-         B9sX2laxxqjNW/KOALh6WaMR98L4Stp860DSoiKzBIlwvSW+bDIOzeouNo+U+BRRm/KY
-         ljsdQTylM4aimbV+j8k1aVsVJHGDR1EWWW1bcD8M35Vu6Z9hdnqhnljRR+Jr/C5a0HE8
-         fcSA==
-X-Gm-Message-State: AOAM530ND6v3C//tPM+LxU6/mpM7WX1Z2qnSDSLiGeUsoNeVM2GhGIqT
-        64UhbhqRiMgrTy7CP9Linf0fR0XLJlg2wsEyt8TSaxsa
-X-Google-Smtp-Source: ABdhPJyc3yf5b+giWfAJR/IKrtMpOEKm9MkoB7Nig5gfHgljuX+Bz6FEPvX/7dvBpveqA8Wg8oy9g6CIr9kqTBf8XXc=
-X-Received: by 2002:aca:5c84:: with SMTP id q126mr5566490oib.71.1601897688846;
- Mon, 05 Oct 2020 04:34:48 -0700 (PDT)
+        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
+        bh=d4eE4p3+B8xLEYjWkMENxr3kighOszJ8l95I4ulqQBU=;
+        b=fqvWUgi/Anp5YKhOcTJUp4pbJoN1RS2nEQcmGDGJDvhgQtSrkECqEbzLX9zKgtWl1s
+         +vsI7HlC53pWg0gdO9j9H5hMu8ReDwHRQr5jE3Yc+C2L249z4YIFibegz++OV7q7rLOu
+         ae6t7jcs19qhxmmYwXUPNbX+8gi4NsAPbYKXwE9AW63j2vrINcBEr8tH5QbFG0LM95/0
+         5r8nKCDCc/QPSzHijcLviC6/E0QegZTvsvfYwWhA+hXlOoE62bd0ZFGilOMcn3NPHUWX
+         lES+tEGIZMI54hI8vULHpKCwremtSPe1KcwUy07jbVvfQKvtN1pG4F/PdwFH55lqKMcr
+         F6dA==
+X-Gm-Message-State: AOAM533M7KA37UhMwv8XKCRlMMBOasiNUbLSJz9va8E5BkVT+ZMAKepo
+        O77oqj22yKb8635DJE6RwJ6w26Yvag6dEZviMHM=
+X-Google-Smtp-Source: ABdhPJztT80xgdZTWATqu2sjbwP0+IzNt4mBZ2D5udiHdWCMr7qGwJa9JKyLjIjFFtEbU2JV7gu1SfEdMj8tAe/PvC8=
+X-Received: by 2002:a50:bb0c:: with SMTP id y12mr17418331ede.355.1601903600367;
+ Mon, 05 Oct 2020 06:13:20 -0700 (PDT)
 MIME-Version: 1.0
-References: <20201005112522.uzs2iax3umhxvtcl@vireshk-i7>
-In-Reply-To: <20201005112522.uzs2iax3umhxvtcl@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 5 Oct 2020 13:34:33 +0200
-Message-ID: <CAJZ5v0gMU6wne6E70Wqs-6Shp8PUFpd4hqPnG4RxnVOGJUT_Eg@mail.gmail.com>
-Subject: Re: [GIT PULL] OPP fixes for 5.10-rc1
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
+From:   Peter Geis <pgwipeout@gmail.com>
+Date:   Mon, 5 Oct 2020 09:13:08 -0400
+Message-ID: <CAMdYzYrYdDYF_Y_TwQ65u=Ymu2_8Rs9KWm_TfXcaPGTwucT=jg@mail.gmail.com>
+Subject: [Question] rtc wake behavior and sysfs
+To:     a.zummo@towertech.it, alexandre.belloni@bootlin.com,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>, len.brown@intel.com,
+        pavel@ucw.cz, Greg KH <gregkh@linuxfoundation.org>
+Cc:     linux-rtc@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 5, 2020 at 1:25 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> Hi Rafael,
->
-> This pull request contains following changes:
->
-> - Return -EPROBE_DEFER properly from dev_pm_opp_get_opp_table()
->   (Stephan Gerhold).
->
-> - Minor cleanups around required-opps (Stephan Gerhold).
->
-> - Extends opp-supported-hw property to contain multiple versions
->   (Viresh Kumar).
->
-> - Multiple cleanups around dev_pm_opp_attach_genpd() (Viresh Kumar).
->
-> - Multiple fixes, cleanups in the OPP core for overall better design
->   (Viresh Kumar).
->
-> -------------------------8<-------------------------
->
-> The following changes since commit a4501bac0e553bed117b7e1b166d49731caf7260:
->
->   opp: Enable resources again if they were disabled earlier (2020-08-20 11:30:22 +0530)
->
-> are available in the Git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git opp/linux-next
->
-> for you to fetch changes up to a5663c9b1e31c00e0bdfaf4d92eb51358fc3950f:
->
->   opp: Allow opp-level to be set to 0 (2020-09-16 14:02:34 +0530)
+Good Morning,
 
-Pulled, thanks!
+While testing suspend to ram on the Ouya, I encountered an interesting
+issue with the rtc-tps65910 driver.
+Attempting to use rtc-wake on the default configuration returned:
+rtcwake: /dev/rtc0 not enabled for wakeup events
+This is due to:
+eb5eba4ef722 drivers/rtc/rtc-tps65910.c: enable/disable wake in suspend/resume
+This commit changed this driver's behavior to not enable wakeup by
+default, but enables it when entering sleep mode.
+This seems to be odd behavior to me.
+Looking at a few other rtc drivers show they simply enable themselves
+as wakeup sources by default.
+
+I also found the sysfs entries are at /sys/devices/ ..
+/tps65910-rtc/power but are missing at /sys/class/rtc/rtc0/power/
+
+I have two questions.
+ - Should the sysfs wakeup entries be missing at /sys/class/rtc/rtc0/power/ ?
+ - Shouldn't a rtc be enabled as a wakeup source by default?
+
+Thank you for your time.
+
+Very Respectfully,
+Peter Geis
