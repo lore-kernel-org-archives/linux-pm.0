@@ -2,143 +2,143 @@ Return-Path: <SRS0=ZSVA=DN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8196DC4727F
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 07:43:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BE883C41604
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 07:57:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B22C2080A
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 07:43:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4A7212078E
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 07:57:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="K05jsex6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727246AbgJFHnh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Oct 2020 03:43:37 -0400
-Received: from mail-oo1-f66.google.com ([209.85.161.66]:45394 "EHLO
-        mail-oo1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726670AbgJFHnf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 03:43:35 -0400
-Received: by mail-oo1-f66.google.com with SMTP id h8so2944257ooc.12;
-        Tue, 06 Oct 2020 00:43:33 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=LzRJVHcc4AOcRIg5DtD/82Z3g3zvHdupm81fE1K+lIM=;
-        b=BW/5PAt2AJgMD9SfH/QsesYXt+U/6bJFbJQJfG5sxIYovIOzcyQ6gF2bIj00iMfQ8d
-         RZygqQIpMNr1c+c+L666giDhaIvxt5bpg7pDbrKAdRYbskhePtOFUFbeCsi0PR6i9hri
-         ukWIrXxRgbSvImT6J1AG3aaltDe/P34wE+52dYRr/0L4r82SfI/cnWcILSJRt6MC4EFH
-         SLfakT9+lnXcfJoqT4igN3gNVxCTnXPonal2wWndqUtrEghaWXsLvLlSScDMWEnpjS0m
-         HDh/nWOTCWl2WQupa64z+xozEO0bj2+IfqFYzSW5VUxjh8t+/MDCnCUK5icpBh4CnM7+
-         knFw==
-X-Gm-Message-State: AOAM531AZ0jK25lmTr78zk4FeDlzxsf7eKFhghkWNIuZSDrAmrWiyT8O
-        jhv9FD23b84uzn6+4x0NIIkF/ZddD/1VaqeSXVk=
-X-Google-Smtp-Source: ABdhPJyU6RRQM46ugWdopDgtkhgi7iGduwzWS1jU+uDheEg5pvon8IztULtlGUyDWuzb6A77GTJ3kgcTOraYuvM5h0M=
-X-Received: by 2002:a4a:4f17:: with SMTP id c23mr2343959oob.11.1601970213208;
- Tue, 06 Oct 2020 00:43:33 -0700 (PDT)
+        id S1727158AbgJFH47 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Oct 2020 03:56:59 -0400
+Received: from mailout3.samsung.com ([203.254.224.33]:20023 "EHLO
+        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726934AbgJFH47 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 03:56:59 -0400
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20201006075656epoutp03ddb70e8788330c5ced597033613db7d8~7WCb9NHj72468624686epoutp03k
+        for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2020 07:56:56 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20201006075656epoutp03ddb70e8788330c5ced597033613db7d8~7WCb9NHj72468624686epoutp03k
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1601971016;
+        bh=eGJ/o/4mHLr8azDiSIfZgtOCa4YXD3Uyr1TeR5gmAUw=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=K05jsex6CZ//NkIMIgyPhxM7kplqo0mi966D8H8lSwhJ8Ke/0VnpEVvCPorF07LK3
+         yD0nSgLGDVWWDH+DjKlVYMSb9MKXQ9k3/Ks43vK7wLcB9e9371S4vcjyR+EQhh1TKa
+         WdjHWOxMNfLOxnLS+JvYEKc5Jc+TA267WOt18V+c=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20201006075656epcas1p141f361f953fb4227d6d1810fc3510718~7WCbbgwr22887328873epcas1p1l;
+        Tue,  6 Oct 2020 07:56:56 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.154]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4C58ts1dMjzMqYlp; Tue,  6 Oct
+        2020 07:56:53 +0000 (GMT)
+Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        B7.4B.09543.5432C7F5; Tue,  6 Oct 2020 16:56:53 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
+        20201006075652epcas1p46e5781a799c2782c9f9fa61b0d1f3ebe~7WCX7QWHP3158031580epcas1p4L;
+        Tue,  6 Oct 2020 07:56:52 +0000 (GMT)
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20201006075652epsmtrp1b3dc79eea2bb85b6e5411b144e11dcc7~7WCX6sIH22802928029epsmtrp1d;
+        Tue,  6 Oct 2020 07:56:52 +0000 (GMT)
+X-AuditID: b6c32a35-35dff70000002547-d4-5f7c2345c9d1
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        45.29.08745.4432C7F5; Tue,  6 Oct 2020 16:56:52 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20201006075652epsmtip29934adc2804d8ca34c520cc65efb6f5a~7WCXmXszN1963719637epsmtip2R;
+        Tue,  6 Oct 2020 07:56:52 +0000 (GMT)
+Subject: Re: [GIT PULL] devfreq next for v5.10
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "Rafael J. Wysocki <rjw@rjwysocki.net>" <rjw@rjwysocki.net>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "Chanwoo Choi (chanwoo@kernel.org)" <chanwoo@kernel.org>,
+        =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <da43236a-b44e-d4d7-97c5-37ce3c447c95@samsung.com>
+Date:   Tue, 6 Oct 2020 17:10:15 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-References: <20201005183830.486085-1-robh@kernel.org> <20201005183830.486085-5-robh@kernel.org>
-In-Reply-To: <20201005183830.486085-5-robh@kernel.org>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Tue, 6 Oct 2020 09:43:22 +0200
-Message-ID: <CAMuHMdVfNE_vLgmCEH7-cat_OasxxZ958WMDUmaFi8PbbEvbaA@mail.gmail.com>
-Subject: Re: [PATCH 4/4] dt-bindings: Explicitly allow additional properties
- in common schemas
-To:     Rob Herring <robh@kernel.org>
-Cc:     "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "David S. Miller" <davem@davemloft.net>,
-        dmaengine <dmaengine@vger.kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        DRI Development <dri-devel@lists.freedesktop.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Jason Cooper <jason@lakedaemon.net>,
-        Jens Axboe <axboe@kernel.dk>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Marc Kleine-Budde <mkl@pengutronix.de>,
-        Marc Zyngier <maz@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Richard Weinberger <richard@nod.at>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Vivien Didelot <vivien.didelot@gmail.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Wolfgang Grandegger <wg@grandegger.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        linux-can@vger.kernel.org, linux-clk <linux-clk@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        linux-hwmon@vger.kernel.org, Linux I2C <linux-i2c@vger.kernel.org>,
-        linux-ide@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-        Linux Media Mailing List <linux-media@vger.kernel.org>,
-        "open list:BROADCOM NVRAM DRIVER" <linux-mips@vger.kernel.org>,
-        Linux MMC List <linux-mmc@vger.kernel.org>,
-        MTD Maling List <linux-mtd@lists.infradead.org>,
-        linux-pci <linux-pci@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux PWM List <linux-pwm@vger.kernel.org>,
-        linux-riscv <linux-riscv@lists.infradead.org>,
-        linux-rtc@vger.kernel.org,
-        "open list:SERIAL DRIVERS" <linux-serial@vger.kernel.org>,
-        linux-spi <linux-spi@vger.kernel.org>,
-        USB list <linux-usb@vger.kernel.org>,
-        Linux Watchdog Mailing List <linux-watchdog@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <CAJZ5v0giQRQG+V=XPVMJH4aRcvZo-JQ82bgw-KHAXBGfnEkgpQ@mail.gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprMJsWRmVeSWpSXmKPExsWy7bCmrq6rck28wdot7BYTb1xhsTjb9Ibd
+        4vKuOWwWn3uPMFrcblzBZjH3y1RmizOnL7E6sHtsWtXJ5rHlajuLR9+WVYwenzfJBbBEZdtk
+        pCampBYppOYl56dk5qXbKnkHxzvHm5oZGOoaWlqYKynkJeam2iq5+AToumXmAF2gpFCWmFMK
+        FApILC5W0rezKcovLUlVyMgvLrFVSi1IySmwLNArTswtLs1L10vOz7UyNDAwMgUqTMjO+DH3
+        OEvBXpaK5fsfszQwnmTuYuTgkBAwkeg5F9fFyMUhJLCDUeLagd+sEM4nRonla9sYIZzPjBKH
+        384C6uAE67i/8DsTRGIXo8T7J81sEM57RomfHbPZQKqEBfQkzqy+xApiiwhoSyxZdJUZpIhZ
+        4DqTROPFxUwgCTYBLYn9L26ANfALKEpc/fGYEcTmFbCTePtsPtg6FgEViU9bXoHViwqESZzc
+        1gJVIyhxcuYTFhCbUyBQ4uyq+2BzmAXEJW49mc8EYctLbH87B+rsqRwSLduTIWwXiYnf5zBC
+        2MISr45vYYewpSRe9rdB2dUSK08eAftMQqCDUWLL/gusEAljif1LJzOBQo9ZQFNi/S59iLCi
+        xM7fcxkh9vJJvPvawwoJYF6JjjYhiBJlicsP7jJB2JISi9s72SYwKs1C8s0sJB/MQvLBLIRl
+        CxhZVjGKpRYU56anFhsWGCLH9iZGcOrUMt3BOPHtB71DjEwcjIcYJTiYlUR49cIq4oV4UxIr
+        q1KL8uOLSnNSiw8xmgLDdyKzlGhyPjB555XEG5oaGRsbW5gYmpkaGiqJ8z68pRAvJJCeWJKa
+        nZpakFoE08fEwSnVwFR6/OPSDQtO/wx8wfM0Y6tlZu2+q3qmapHuKzWXeXIFlzxw+Bbz7atD
+        +bZMfec9n+I66jM1735rvD5dd7PPjqN1DtY7XO7GnJ7zw+U8q+TT3RvDbQWfn9RZoP/k6NnM
+        nmm/psp4/tPevTgme9HfroPWIre7VwkKNL05JTTHJniz9X6LI2dL/QQfikrcPXl1z9Gvc7xk
+        b9jlL2Bi8wxZZcNQFt0XcZFtm9G5wk6bx1Kv/55ZYpETOc27Qr9nI7N+k45W6oyLzm9m7BK/
+        dvp5fu8NpkcW90UXflVY5Vo8XUK96OA8wxsTtyYudrq6b0vXAyOhvcGa2v+2zqy+albY5pPq
+        WCLatXXLtnjviBQvRVUlluKMREMt5qLiRADWm1bVJgQAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFvrPLMWRmVeSWpSXmKPExsWy7bCSvK6Lck28wdq3shYTb1xhsTjb9Ibd
+        4vKuOWwWn3uPMFrcblzBZjH3y1RmizOnL7E6sHtsWtXJ5rHlajuLR9+WVYwenzfJBbBEcdmk
+        pOZklqUW6dslcGX8mHucpWAvS8Xy/Y9ZGhhPMncxcnJICJhI3F/4namLkYtDSGAHo8SauXeY
+        IBKSEtMuHgUq4gCyhSUOHy6GqHnLKNHy6RVYjbCAnsSZ1ZdYQWwRAW2JJYuuMoMUMQvcZJJ4
+        9q2PDaLjJqPEuxvPWECq2AS0JPa/uMEGYvMLKEpc/fGYEcTmFbCTePtsPthJLAIqEp+2QGwQ
+        FQiT2LnkMRNEjaDEyZlPwOZwCgRKnF11H2wOs4C6xJ95l5ghbHGJW0/mM0HY8hLb385hnsAo
+        PAtJ+ywkLbOQtMxC0rKAkWUVo2RqQXFuem6xYYFRXmq5XnFibnFpXrpecn7uJkZwHGlp7WDc
+        s+qD3iFGJg7GQ4wSHMxKIrx6YRXxQrwpiZVVqUX58UWlOanFhxilOViUxHm/zloYJySQnliS
+        mp2aWpBaBJNl4uCUamDitxHawsfY5PUz9bKlxDTmGIFlH15efxRxT+fPBHdej4CaeYatQaYL
+        ioudtC/zPXV6XvbOxrOrUM9z5pk9Wat2p/vvyzygHTFd5pvmthTDyAYXYeU359hXH/1hOSer
+        5jmbzYxTGj+aZh9n/aW4Iku1RWipi/ReVdPOI20Pz9hZ9ZTvD5IzuFd4edb8Rzu22cTFn3Ov
+        YdYS7r6lIRIrtflusZJNfeqGOY+aZFY/v3CJ24H3qv2W5TapkjnHynN/GBq8v+P8Jk5FTV90
+        vnJAQqNL2vqLu9ZsLfkfvLBQ63R9Cb+K4MIXhi36l5d27m41Utxu7aC+QmdN+nbWwyvv3Azd
+        0r4i4onWUZcPP0xatymxFGckGmoxFxUnAgBQstvdEgMAAA==
+X-CMS-MailID: 20201006075652epcas1p46e5781a799c2782c9f9fa61b0d1f3ebe
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20200929085610epcas1p2447455fd0bcde25f5dff466e71b7ac15
+References: <CGME20200929085610epcas1p2447455fd0bcde25f5dff466e71b7ac15@epcas1p2.samsung.com>
+        <b5d67c59-90c7-6a77-7420-a8783282430f@samsung.com>
+        <CAJZ5v0giQRQG+V=XPVMJH4aRcvZo-JQ82bgw-KHAXBGfnEkgpQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 5, 2020 at 8:39 PM Rob Herring <robh@kernel.org> wrote:
-> In order to add meta-schema checks for additional/unevaluatedProperties
-> being present, all schema need to make this explicit. As common/shared
-> schema are included by other schemas, they should always allow for
-> additionalProperties.
->
-> Signed-off-by: Rob Herring <robh@kernel.org>
+Dear Rafael,
 
->  Documentation/devicetree/bindings/bus/simple-pm-bus.yaml     | 2 ++
+On 10/1/20 12:56 AM, Rafael J. Wysocki wrote:
+> On Tue, Sep 29, 2020 at 10:56 AM Chanwoo Choi <cw00.choi@samsung.com> wrote:
+>>
+>> Dear Rafael,
+>>
+>> This is devfreq-next pull request for v5.10-rc1. I add detailed description of
+>> this pull request on the following tag. Please pull devfreq with following updates.
+>> - tag name : devfreq-next-for-5.10
+> 
+> Pulled, thanks!
 
-Acked-by: Geert Uytterhoeven <geert+renesas@glider.be>
+Thanks for pulled the request. But, I tried to check on linux-pm.git,
+I cannot find the pull request of devfreq patches for v5.10-rc1.
 
-Gr{oetje,eeting}s,
+Best Regards,
+Chanwoo Choi
 
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
