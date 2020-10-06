@@ -2,87 +2,103 @@ Return-Path: <SRS0=ZSVA=DN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 784ADC41604
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:09:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A4B7C41604
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:23:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 42B5520789
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:09:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BDC9B207EA
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:23:11 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="qpVabzX8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725981AbgJFRJS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Oct 2020 13:09:18 -0400
-Received: from foss.arm.com ([217.140.110.172]:52520 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725769AbgJFRJS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 6 Oct 2020 13:09:18 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0BC15D6E;
-        Tue,  6 Oct 2020 10:09:18 -0700 (PDT)
-Received: from localhost (e108754-lin.cambridge.arm.com [10.1.199.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9F8133F66B;
-        Tue,  6 Oct 2020 10:09:17 -0700 (PDT)
-Date:   Tue, 6 Oct 2020 18:09:16 +0100
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     catalin.marinas@arm.com, sudeep.holla@arm.com, will@kernel.org,
-        linux@armlinux.org.uk, rjw@rjwysocki.net, dietmar.eggemann@arm.com,
-        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] cpufreq,arm,arm64: restructure definitions of
- arch_set_freq_scale()
-Message-ID: <20201006170916.GB17897@arm.com>
-References: <20200924123016.13427-1-ionela.voinescu@arm.com>
- <20200924123016.13427-2-ionela.voinescu@arm.com>
- <20201006070551.kokmnsuzyzqxqbq5@vireshk-i7>
+        id S1726165AbgJFRXL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Oct 2020 13:23:11 -0400
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:39600 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726128AbgJFRXL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 13:23:11 -0400
+Received: from lelv0266.itg.ti.com ([10.180.67.225])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 096HN7JF124036;
+        Tue, 6 Oct 2020 12:23:07 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1602004987;
+        bh=41BcokSKV9gxGfkcOCDo5PCrNWnXiEAbwwDLF96Ay/U=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=qpVabzX8XIS9XB/EhB9bMbTnoeCq8ZLenN1WL2C1yF+5T07iUunabxBBFx+VKM7Rv
+         yFgG1WrxVQ3YIMWKJHo/0MW+K+mCCdm2XExKYp9T4H0sNwGqz4gaUDANBvYKfrR8w/
+         Tr0T7JDQ+3JNoGDRpZK3TUsDKQhRicPJTHo97lMs=
+Received: from DLEE114.ent.ti.com (dlee114.ent.ti.com [157.170.170.25])
+        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 096HN7wN076746
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Tue, 6 Oct 2020 12:23:07 -0500
+Received: from DLEE112.ent.ti.com (157.170.170.23) by DLEE114.ent.ti.com
+ (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Tue, 6 Oct
+ 2020 12:23:06 -0500
+Received: from fllv0040.itg.ti.com (10.64.41.20) by DLEE112.ent.ti.com
+ (157.170.170.23) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Tue, 6 Oct 2020 12:23:06 -0500
+Received: from [10.250.37.2] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 096HN6S2108408;
+        Tue, 6 Oct 2020 12:23:06 -0500
+Subject: Re: [PATCH][next] power: supply: bq25980: remove redundant zero check
+ on ret
+To:     Colin King <colin.king@canonical.com>,
+        Sebastian Reichel <sre@kernel.org>, <linux-pm@vger.kernel.org>
+CC:     <kernel-janitors@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20201006170600.545361-1-colin.king@canonical.com>
+From:   Dan Murphy <dmurphy@ti.com>
+Message-ID: <4239fc37-c1d4-23e5-c784-b171eb6173ab@ti.com>
+Date:   Tue, 6 Oct 2020 12:23:06 -0500
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201006070551.kokmnsuzyzqxqbq5@vireshk-i7>
-User-Agent: Mutt/1.9.4 (2018-02-28)
+In-Reply-To: <20201006170600.545361-1-colin.king@canonical.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Viresh,
+Colin
 
-On Tuesday 06 Oct 2020 at 12:35:51 (+0530), Viresh Kumar wrote:
-> On 24-09-20, 13:30, Ionela Voinescu wrote:
-> > diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-> > index 2ea245a6c0c0..f34d3a3d5ba6 100644
-> > --- a/drivers/cpufreq/cpufreq.c
-> > +++ b/drivers/cpufreq/cpufreq.c
-> > @@ -160,13 +160,6 @@ u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy)
-> >  }
-> >  EXPORT_SYMBOL_GPL(get_cpu_idle_time);
-> >  
-> > -__weak void arch_set_freq_scale(const struct cpumask *cpus,
-> > -				unsigned long cur_freq,
-> > -				unsigned long max_freq)
-> > -{
-> > -}
-> > -EXPORT_SYMBOL_GPL(arch_set_freq_scale);
-> > -
-> 
-> Why can't we have this anymore ? Because it is a macro now instead of a routine
-> for ARM ?
+On 10/6/20 12:06 PM, Colin King wrote:
+> From: Colin Ian King <colin.king@canonical.com>
+>
+> Currently ret is assigned to zero and the following statement checks
+> if it is non-zero. This check is redundant and can be removed
+>
+> Addresses-Coverity: ("Logically dead code")
+> Fixes: 5069185fc18e ("power: supply: bq25980: Add support for the BQ259xx family")
+> Signed-off-by: Colin Ian King <colin.king@canonical.com>
+> ---
+>   drivers/power/supply/bq25980_charger.c | 3 ---
+>   1 file changed, 3 deletions(-)
+>
+> diff --git a/drivers/power/supply/bq25980_charger.c b/drivers/power/supply/bq25980_charger.c
+> index 3995fb7cf060..f04f9acdb13b 100644
+> --- a/drivers/power/supply/bq25980_charger.c
+> +++ b/drivers/power/supply/bq25980_charger.c
+> @@ -613,9 +613,6 @@ static int bq25980_set_battery_property(struct power_supply *psy,
+>   	struct bq25980_device *bq = power_supply_get_drvdata(psy);
+>   	int ret = 0;
+>   
+> -	if (ret)
+> -		return ret;
+> -
+>   	switch (psp) {
+>   	case POWER_SUPPLY_PROP_CONSTANT_CHARGE_CURRENT:
+>   		ret = bq25980_set_const_charge_curr(bq, val->intval);
 
-Yes, instead of having a strong counterpart in arch_topology.c to be used
-for both arm64 and arm, I separated the definitions of the
-arch_set_freq_scale symbol in each architecture's topology.h in order to
-be filtered if needed (as is the case for arm's BL_SWITCHER).
+Thanks for the patch
 
-I could have kept either this weak stub definition or the stub that is
-now in cpufreq.h under "#ifndef arch_set_freq_scale", but I chose the
-latter as it's more aligned with the other architectural functions
-referenced in the commit message.
+Acked-by: Dan Murphy <dmurphy@ti.com>
 
-So this patch has both the purpose of enabling a nicer filtering of
-frequency invariance for BL_SWITCHER but also follows the definition
-pattern of the other functions so we don't keep having two mindsets when
-working with them.
-
-Thanks,
-Ionela.
