@@ -2,158 +2,156 @@ Return-Path: <SRS0=ZSVA=DN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PULL_REQUEST,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D37D3C41604
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 08:09:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 956B7C4741F
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 08:23:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DC7920789
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 08:09:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 581B02078E
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 08:23:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="moBV0FCO"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zz0oXuy8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726133AbgJFIJE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Oct 2020 04:09:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33508 "EHLO
+        id S1726643AbgJFIXF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Oct 2020 04:23:05 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35632 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725947AbgJFIJD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 04:09:03 -0400
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 60C31C061755
-        for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2020 01:09:02 -0700 (PDT)
-Received: by mail-pj1-x1042.google.com with SMTP id a17so1187114pju.1
-        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2020 01:09:02 -0700 (PDT)
+        with ESMTP id S1725960AbgJFIWy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 04:22:54 -0400
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45C0CC0613D8
+        for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2020 01:22:54 -0700 (PDT)
+Received: by mail-wr1-x441.google.com with SMTP id m6so12432498wrn.0
+        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2020 01:22:54 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:mime-version:content-disposition
-         :content-transfer-encoding:user-agent;
-        bh=IM2k4cVlmtEK6muT2xOn1tB16P30SzlvEHjvukRzcWU=;
-        b=moBV0FCOYwTDIBQRoXVTchQU96Qj5A+SjvBpxWW1Z5QEW7wMMJByzKG74Sjwhf0iZt
-         pZmgyeJBQUldylp3kTMnUpQIvmVVhvKcLEBXxysg/cebplaW2MtdKTAC7BqCc24Ok8xX
-         x77BQfK3IY2DCywn/8SrHgOAs4430NuU5slAIXt82vPyhIygiPP/bJTaavYB3eQm6rlR
-         UniqqisbJek5jQpfXaWX9X9b1HBu8wwIGMYaCJ+qtljSJpwEHCn0gQgPsW8ggIwSIxVT
-         9MlP8VozbwKAqXcPTHtGqRVHFiUyYueaT249/TIL5ss3UNrk8O2DbcJvH4xc/euoVNgP
-         8mjw==
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=gQZ92N8EMr7LGVwcFgd0mzk1VK6749oG4otqf+GLMOc=;
+        b=zz0oXuy8DvLu/oqK9eyLFeY6GHKr0NNTLe+2Dc/x+LalYxQQw6uANkSbT/JLx0kvFw
+         JsFeeLTos6PMTBn+7hMGtQhoLWEqq+QuVUSBlZUX0ftSWK1YjyFRCOSMOBqz5D6MKAf1
+         trjhFyJHYmtSCLJ5XHzS7cF0NIB/qannWZC+J0hX6vMT6mPQvXUmjZ455nksyYjcFU+P
+         Sjl2xSWKvUjPg0CnAC82f7nU5/tWpx/auKHYNX85Ug+b+OjV7o89Jn5KftNigXVWbulQ
+         oiixrU7pMYnJfnHsL1qk6QIXkuIzWdHeWBqffLu7TxlUGZ9S3im+iPRnZpD+Am2dPSXN
+         L+mA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:mime-version
-         :content-disposition:content-transfer-encoding:user-agent;
-        bh=IM2k4cVlmtEK6muT2xOn1tB16P30SzlvEHjvukRzcWU=;
-        b=jOkQJHo0Cd4KAshsiJ623piTEAyCm0XmZvFhT0XfxO3AxN2vPynxzXYMsxJHKermh8
-         X3dN24uRKPgHJ3tK+ur58bsal9HYF/8zzBQwDD9OOwuslljgm04VaFbMLfxaohVRXKC9
-         8PTT52NJ0kFQ1jVOGk0HdoE8Nr/Octj9/B78D6UBB9m201oGz0jE3mmyLrRHqZlKi0h6
-         dE3tnPjqP4UDoa7qwBC9h6evrftpJvsaXEb1hurmH43WGPYyTVSf3gntGW4MkBHmK81y
-         guXmpo9NXX6/zLCEDMsKQBzZlRdShRQOFd/MFeCM3qNAT84+1cdxzymjJ/kiJnvtEGIP
-         Ba4g==
-X-Gm-Message-State: AOAM530+BFST2oAVHis7i1KbwpSDOaGGBnJeoR1r4rntAem6PhFiD3SK
-        7uWH3tmpAma53gHTn91RhW2DCh2bQ4DFjg==
-X-Google-Smtp-Source: ABdhPJxQpVbXZ+k0A0VOHtGzOM1IAwKXihWel8dFSCcHye/B8808DDd4Yv6JayQq6wrnowMETXnnGA==
-X-Received: by 2002:a17:90a:840d:: with SMTP id j13mr3283582pjn.31.1601971741897;
-        Tue, 06 Oct 2020 01:09:01 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id 15sm2113363pgt.24.2020.10.06.01.09.00
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=gQZ92N8EMr7LGVwcFgd0mzk1VK6749oG4otqf+GLMOc=;
+        b=UpD8ENm3dsMoGW0/pdJQRvTa4xSehzaF0L7uc4soaw8Qa9DzGjTfb1jzdAawBOA7IG
+         0NBoW3iOCVHvnNBMN72+VvjD3XvDFHjMIzvcGLxNkg4JbLD3KckmTyJe6UZJYfOC/IEV
+         UPX5r0ygt+4NF7xssdWN7dOAY/nshS5bhD7ybZIMIKki6QJYBxtbWhYq0i+VaSiTzBkn
+         AkIlYRL0xeuDaK3rWDUO+1gE1gboIodRlVKa9dZjk5bpsF52OaQ7kHpE/KEzCfJK8RMb
+         5tKvWKaJtk6ygICI6Va2Cx0mwennww9V+cDpG6PQFbuxRD+TVMpqI+Tz7wYuebX6tnt7
+         YAUg==
+X-Gm-Message-State: AOAM531zzc+xshrQ+T0WJxV77AxnY6M2cl0ht3rSlwNqlqlSW044vGxk
+        9hTVOZuxFWkmsVxhJ9Q/LSaEKQ==
+X-Google-Smtp-Source: ABdhPJxneCP/XHEIGTuaYnepMY95XJGJWgT/9+OwKrX8AbsmbSuGbQwcSXMgWa3UoshUsl19yJaa5g==
+X-Received: by 2002:adf:fa52:: with SMTP id y18mr3564855wrr.264.1601972572464;
+        Tue, 06 Oct 2020 01:22:52 -0700 (PDT)
+Received: from [192.168.86.34] (cpc86377-aztw32-2-0-cust226.18-1.cable.virginm.net. [92.233.226.227])
+        by smtp.googlemail.com with ESMTPSA id v17sm3056116wrc.23.2020.10.06.01.22.49
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 06 Oct 2020 01:09:00 -0700 (PDT)
-Date:   Tue, 6 Oct 2020 13:38:59 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>
-Subject: [GIT PULL] cpufreq-arm for 5.10-rc1
-Message-ID: <20201006080859.rzwkdl5ijfbcp723@vireshk-i7>
+        Tue, 06 Oct 2020 01:22:51 -0700 (PDT)
+Subject: Re: [PATCH 4/4] dt-bindings: Explicitly allow additional properties
+ in common schemas
+To:     Rob Herring <robh@kernel.org>, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Cc:     Albert Ou <aou@eecs.berkeley.edu>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        "David S. Miller" <davem@davemloft.net>, dmaengine@vger.kernel.org,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        dri-devel@lists.freedesktop.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Jakub Kicinski <kuba@kernel.org>,
+        Jason Cooper <jason@lakedaemon.net>,
+        Jens Axboe <axboe@kernel.dk>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Marc Kleine-Budde <mkl@pengutronix.de>,
+        Marc Zyngier <maz@kernel.org>, Mark Brown <broonie@kernel.org>,
+        Mathieu Poirier <mathieu.poirier@linaro.org>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        Miquel Raynal <miquel.raynal@bootlin.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Pavel Machek <pavel@ucw.cz>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        Richard Weinberger <richard@nod.at>,
+        Sam Ravnborg <sam@ravnborg.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Vignesh Raghavendra <vigneshr@ti.com>,
+        Vinod Koul <vkoul@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Vivien Didelot <vivien.didelot@gmail.com>,
+        Wim Van Sebroeck <wim@linux-watchdog.org>,
+        Wolfgang Grandegger <wg@grandegger.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        linux-arm-kernel@lists.infradead.org, linux-can@vger.kernel.org,
+        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
+        linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
+        linux-ide@vger.kernel.org, linux-iio@vger.kernel.org,
+        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-mips@vger.kernel.org,
+        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-pwm@vger.kernel.org, linux-riscv@lists.infradead.org,
+        linux-rtc@vger.kernel.org, linux-serial@vger.kernel.org,
+        linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
+        linux-watchdog@vger.kernel.org
+References: <20201005183830.486085-1-robh@kernel.org>
+ <20201005183830.486085-5-robh@kernel.org>
+From:   Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+Message-ID: <9d2a9da4-d28d-dcf0-2b43-66e28b6b8dec@linaro.org>
+Date:   Tue, 6 Oct 2020 09:22:48 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <20201005183830.486085-5-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Rafael,
-
-This pull request contains following changes:
-
-- STI cpufreq driver updates to allow new hardware (Alain Volmat).
-
-- Minor tegra driver fixes around initial frequency mismatch warnings (Jon
-  Hunter).
-
-- dev_err simplification for s5pv210 driver (Krzysztof Kozlowski).
-
-- Qcom driver updates to allow new hardware and minor cleanup (Manivannan
-  Sadhasivam and Matthias Kaehlcke).
-
-- Add missing MODULE_DEVICE_TABLE for armada driver (Pali Rohár).
-
-- Improved defer-probe handling in cpufreq-dt driver (Stephan Gerhold).
-
-- Call dev_pm_opp_of_remove_table() unconditionally for imx driver (Viresh
-  Kumar).
-
--------------------------8<-------------------------
-
-The following changes since commit 90d46d71cce279d878793a0ed4b326b4027aca6c:
-
-  opp: Handle multiple calls for same OPP table in _of_add_opp_table_v1() (2020-09-16 13:56:08 +0530)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/vireshk/pm.git cpufreq/arm/linux-next
-
-for you to fetch changes up to bc9b9c5ab9d8d16157737db539929d57562926e9:
-
-  cpufreq: qcom: Don't add frequencies without an OPP (2020-09-16 15:22:15 +0530)
-
-----------------------------------------------------------------
-Alain Volmat (3):
-      cpufreq: sti-cpufreq: add stih418 support
-      cpufreq: dt-platdev: Blacklist st,stih418 SoC
-      cpufreq: arm: Kconfig: add CPUFREQ_DT depend for STI CPUFREQ
-
-Jon Hunter (1):
-      cpufreq: tegra186: Fix initial frequency
-
-Krzysztof Kozlowski (2):
-      cpufreq: s5pv210: Simplify with dev_err_probe()
-      cpufreq: s5pv210: Use dev_err instead of pr_err in probe
-
-Manivannan Sadhasivam (5):
-      cpufreq: qcom-hw: Make use of cpufreq driver_data for passing pdev
-      dt-bindings: cpufreq: cpufreq-qcom-hw: Document Qcom EPSS compatible
-      cpufreq: qcom-hw: Use devm_platform_ioremap_resource() to simplify code
-      cpufreq: qcom-hw: Use of_device_get_match_data for offsets and row size
-      cpufreq: qcom-hw: Add cpufreq support for SM8250 SoC
-
-Matthias Kaehlcke (1):
-      cpufreq: qcom: Don't add frequencies without an OPP
-
-Pali Rohár (1):
-      cpufreq: armada-37xx: Add missing MODULE_DEVICE_TABLE
-
-Stephan Gerhold (1):
-      cpufreq: dt: Refactor initialization to handle probe deferral properly
-
-Viresh Kumar (2):
-      cpufreq: imx6q: Unconditionally call dev_pm_opp_of_remove_table()
-      Merge commit 'ded10c47f39e' into HEAD
-
- Documentation/devicetree/bindings/cpufreq/cpufreq-qcom-hw.txt |   2 +-
- drivers/cpufreq/Kconfig.arm                                   |   2 +-
- drivers/cpufreq/armada-37xx-cpufreq.c                         |   6 +++
- drivers/cpufreq/cpufreq-dt-platdev.c                          |   1 +
- drivers/cpufreq/cpufreq-dt.c                                  | 286 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-----------------------------------------------------------------------
- drivers/cpufreq/imx6q-cpufreq.c                               |  10 +----
- drivers/cpufreq/qcom-cpufreq-hw.c                             | 135 ++++++++++++++++++++++++++++++++++++++++++++-----------------------
- drivers/cpufreq/s5pv210-cpufreq.c                             |  31 ++++++----------
- drivers/cpufreq/sti-cpufreq.c                                 |   6 ++-
- drivers/cpufreq/tegra186-cpufreq.c                            |  30 +++++++++++++++
- drivers/opp/core.c                                            |  22 ++++++++---
- drivers/opp/opp.h                                             |   2 +-
- 12 files changed, 305 insertions(+), 228 deletions(-)
 
 
--- 
-viresh
+On 05/10/2020 19:38, Rob Herring wrote:
+> In order to add meta-schema checks for additional/unevaluatedProperties
+> being present, all schema need to make this explicit. As common/shared
+> schema are included by other schemas, they should always allow for
+> additionalProperties.
+> 
+> Signed-off-by: Rob Herring<robh@kernel.org>
+> 
+>   Documentation/devicetree/bindings/nvmem/nvmem-consumer.yaml  | 2 ++
+>   Documentation/devicetree/bindings/nvmem/nvmem.yaml           | 2 ++
+
+for nvmem parts,
+
+Acked-by: Srinivas Kandagatla <srinivas.kandagatla@linaro.org>
+
+thanks,
+srini
