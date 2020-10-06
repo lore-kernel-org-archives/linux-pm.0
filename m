@@ -1,138 +1,105 @@
-Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=ZSVA=DN=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2CB45C4741F
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 22:48:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B43FC41604
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:59:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F19AB2184D
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 22:48:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 33ACC20760
+	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:59:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728938AbgJGWsk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 18:48:40 -0400
-Received: from relay8-d.mail.gandi.net ([217.70.183.201]:38265 "EHLO
-        relay8-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727353AbgJGWsi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 18:48:38 -0400
-X-Greylist: delayed 500 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2020 18:48:33 EDT
-X-Originating-IP: 90.65.88.165
-Received: from localhost (lfbn-lyo-1-1908-165.w90-65.abo.wanadoo.fr [90.65.88.165])
-        (Authenticated sender: alexandre.belloni@bootlin.com)
-        by relay8-d.mail.gandi.net (Postfix) with ESMTPSA id D577D1BF203;
-        Wed,  7 Oct 2020 22:48:27 +0000 (UTC)
-Date:   Thu, 8 Oct 2020 00:48:27 +0200
-From:   Alexandre Belloni <alexandre.belloni@bootlin.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Andrew Lunn <andrew@lunn.ch>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "David S. Miller" <davem@davemloft.net>, dmaengine@vger.kernel.org,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        dri-devel@lists.freedesktop.org,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Heiner Kallweit <hkallweit1@gmail.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Jason Cooper <jason@lakedaemon.net>,
-        Jens Axboe <axboe@kernel.dk>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Linus Walleij <linus.walleij@linaro.org>,
-        Marc Kleine-Budde <mkl@pengutronix.de>,
-        Marc Zyngier <maz@kernel.org>, Mark Brown <broonie@kernel.org>,
-        Mathieu Poirier <mathieu.poirier@linaro.org>,
-        Mauro Carvalho Chehab <mchehab@kernel.org>,
-        Miquel Raynal <miquel.raynal@bootlin.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Pavel Machek <pavel@ucw.cz>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Richard Weinberger <richard@nod.at>,
-        Sam Ravnborg <sam@ravnborg.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Vignesh Raghavendra <vigneshr@ti.com>,
-        Vinod Koul <vkoul@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Vivien Didelot <vivien.didelot@gmail.com>,
-        Wim Van Sebroeck <wim@linux-watchdog.org>,
-        Wolfgang Grandegger <wg@grandegger.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        linux-arm-kernel@lists.infradead.org, linux-can@vger.kernel.org,
-        linux-clk@vger.kernel.org, linux-gpio@vger.kernel.org,
-        linux-hwmon@vger.kernel.org, linux-i2c@vger.kernel.org,
-        linux-ide@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-input@vger.kernel.org, linux-leds@vger.kernel.org,
-        linux-media@vger.kernel.org, linux-mips@vger.kernel.org,
-        linux-mmc@vger.kernel.org, linux-mtd@lists.infradead.org,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-pwm@vger.kernel.org, linux-riscv@lists.infradead.org,
-        linux-rtc@vger.kernel.org, linux-serial@vger.kernel.org,
-        linux-spi@vger.kernel.org, linux-usb@vger.kernel.org,
-        linux-watchdog@vger.kernel.org
-Subject: Re: [PATCH 1/4] dt-bindings: Add missing 'unevaluatedProperties'
-Message-ID: <20201007224827.GK2804081@piout.net>
-References: <20201005183830.486085-1-robh@kernel.org>
- <20201005183830.486085-2-robh@kernel.org>
+        id S1726504AbgJFR7Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 6 Oct 2020 13:59:25 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:53861 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726442AbgJFR7Z (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 13:59:25 -0400
+Received: from 1.general.cking.uk.vpn ([10.172.193.212])
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <colin.king@canonical.com>)
+        id 1kPrFD-0000WP-5G; Tue, 06 Oct 2020 17:59:23 +0000
+To:     Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From:   Colin Ian King <colin.king@canonical.com>
+Subject: re: power: supply: bq25980: Add support for the BQ259xx family
+Message-ID: <af1a1044-5f45-ecaf-244e-90650f17ff17@canonical.com>
+Date:   Tue, 6 Oct 2020 18:59:22 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201005183830.486085-2-robh@kernel.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Hi
 
-On 05/10/2020 13:38:27-0500, Rob Herring wrote:
-> diff --git a/Documentation/devicetree/bindings/rtc/ingenic,rtc.yaml b/Documentation/devicetree/bindings/rtc/ingenic,rtc.yaml
-> index bc2c7e53a28e..60e93e86ad9d 100644
-> --- a/Documentation/devicetree/bindings/rtc/ingenic,rtc.yaml
-> +++ b/Documentation/devicetree/bindings/rtc/ingenic,rtc.yaml
-> @@ -68,6 +68,8 @@ required:
->    - clocks
->    - clock-names
->  
-> +unevaluatedProperties: false
+Static analysis with Coverity has detected a potential out-of-bounds
+read issue in the following commit:
 
-This one could be additionalProperties: false after adding start-year to
-the properties
+commit 5069185fc18e810715a91d80fcd075e03add600c
+Author: Dan Murphy <dmurphy@ti.com>
+Date:   Mon Aug 31 11:48:49 2020 -0500
 
-> +
->  examples:
->    - |
->      #include <dt-bindings/clock/jz4740-cgu.h>
-> diff --git a/Documentation/devicetree/bindings/rtc/s3c-rtc.yaml b/Documentation/devicetree/bindings/rtc/s3c-rtc.yaml
-> index 76bbf8b7555b..d51b236939bf 100644
-> --- a/Documentation/devicetree/bindings/rtc/s3c-rtc.yaml
-> +++ b/Documentation/devicetree/bindings/rtc/s3c-rtc.yaml
-> @@ -74,6 +74,8 @@ allOf:
->            items:
->              - const: rtc
->  
-> +unevaluatedProperties: false
-
-This one can be simply additionalProperties: false
+    power: supply: bq25980: Add support for the BQ259xx family
 
 
--- 
-Alexandre Belloni, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+Analysis is as follows:
+
+1099 static int bq25980_hw_init(struct bq25980_device *bq)
+1100 {
+1101        struct power_supply_battery_info bat_info = { };
+1102        int wd_reg_val;
+1103        int ret = 0;
+1104        int curr_val;
+1105        int volt_val;
+1106        int i;
+1107
+
+    1. Condition !bq->watchdog_timer, taking false branch.
+1108        if (!bq->watchdog_timer) {
+1109                ret = regmap_update_bits(bq->regmap,
+BQ25980_CHRGR_CTRL_3,
+1110                                         BQ25980_WATCHDOG_DIS,
+1111                                         BQ25980_WATCHDOG_DIS);
+1112        } else {
+
+    2. Condition i < 4, taking true branch.
+    6. Condition i < 4, taking true branch.
+    7. cond_at_most: Checking i < 4 implies that i may be up to 3 on the
+true branch.
+1113                for (i = 0; i < BQ25980_NUM_WD_VAL; i++) {
+
+    3. Condition bq->watchdog_timer > bq25980_watchdog_time[i], taking
+true branch.
+    4. Condition bq->watchdog_timer < bq25980_watchdog_time[i + 1],
+taking false branch.
+    8. Condition bq->watchdog_timer > bq25980_watchdog_time[i], taking
+true branch.
+
+Out-of-bounds read (OVERRUN)
+    9. overrun-local: Overrunning array bq25980_watchdog_time of 4
+4-byte elements at element index 4 (byte offset 19) using index i + 1
+(which evaluates to 4).
+
+1114                        if (bq->watchdog_timer >
+bq25980_watchdog_time[i] &&
+1115                            bq->watchdog_timer <
+bq25980_watchdog_time[i + 1]) {
+1116                                wd_reg_val = i;
+1117                                break;
+1118                        }
+    5. Jumping back to the beginning of the loop.
+1119                }
+
+Accessing bq25980_watchdog_time[i + 1] when i is 3 causes the
+out-of-range read
+
+Colin
