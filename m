@@ -2,139 +2,94 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A3280C41604
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 17:24:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D489C41604
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 17:31:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 531C2215A4
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 17:24:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BF93F2173E
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 17:31:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=gmx.net header.i=@gmx.net header.b="QCDZ714h"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727891AbgJGRX7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 13:23:59 -0400
-Received: from mga03.intel.com ([134.134.136.65]:1354 "EHLO mga03.intel.com"
+        id S1728460AbgJGRbJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 13:31:09 -0400
+Received: from mout.gmx.net ([212.227.17.21]:40575 "EHLO mout.gmx.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727969AbgJGRX7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Oct 2020 13:23:59 -0400
-IronPort-SDR: XejR/9Mbmw6bTXi00mTdvFcXXvW7H7Iu2Lb/jKLy7d/EEPiEaBUwyU5fT62lkUjjIarNomLzrB
- NetAGuBRXJEg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9767"; a="165087285"
-X-IronPort-AV: E=Sophos;i="5.77,347,1596524400"; 
-   d="scan'208";a="165087285"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga003.jf.intel.com ([10.7.209.27])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 Oct 2020 09:48:57 -0700
-IronPort-SDR: JS5WF/ZWWJ6drdqE9KPrrDpGO1nBnyE4kYAX0TQWWs/O+DP5LvoNAnanbch5hAQcdmV4FDKhDy
- /8xYVEACsEgA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,347,1596524400"; 
-   d="scan'208";a="311818207"
-Received: from linux.intel.com ([10.54.29.200])
-  by orsmga003.jf.intel.com with ESMTP; 07 Oct 2020 09:48:56 -0700
-Received: from debox1-desk2.jf.intel.com (debox1-desk2.jf.intel.com [10.54.75.16])
-        by linux.intel.com (Postfix) with ESMTP id 01586580867;
-        Wed,  7 Oct 2020 09:48:56 -0700 (PDT)
-From:   "David E. Box" <david.e.box@linux.intel.com>
-To:     bhelgaas@google.com, len.brown@intel.com, rafael@kernel.org
-Cc:     "David E. Box" <david.e.box@linux.intel.com>,
-        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: Disable PTM during suspend on Intel PCI bridges
-Date:   Wed,  7 Oct 2020 09:48:51 -0700
-Message-Id: <20201007164851.1218-1-david.e.box@linux.intel.com>
-X-Mailer: git-send-email 2.20.1
+        id S1726830AbgJGRbJ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Oct 2020 13:31:09 -0400
+X-Greylist: delayed 493 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2020 13:31:08 EDT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=gmx.net;
+        s=badeba3b8450; t=1602091867;
+        bh=gStd7CSr+9t8/90lKMyO+IPWH1Dnp3UnGNJgZmWHkzM=;
+        h=X-UI-Sender-Class:From:To:Cc:Subject:Date:In-Reply-To:References;
+        b=QCDZ714hsvbnGuh7Ey/C6xxPNnrlVRxMPZDarIW+uJfcob//j9m2MYBqVkadyODrP
+         /iMX+KBzJW2HLVxpSfXkAqUytbosRNqH69ljrqc3r0wjp3to2N6ivZtO7EkHANoJrS
+         NQjXwo7yvZUG8xM7ntn2axfcrptOgJ+7tCrxVZ3k=
+X-UI-Sender-Class: 01bb95c1-4bf8-414a-932a-4f6e2808ef9c
+Received: from [80.208.210.121] ([80.208.210.121]) by web-mail.gmx.net
+ (3c-app-gmx-bap48.server.lan [172.19.172.118]) (via HTTP); Wed, 7 Oct 2020
+ 19:16:34 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Message-ID: <trinity-45b0efdf-27a6-4b91-943f-c3782c637c0e-1602090994397@3c-app-gmx-bap48>
+From:   Frank Wunderlich <frank-w@public-files.de>
+To:     Michael Kao <michael.kao@mediatek.com>
+Cc:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com,
+        Mark Rutland <mark.rutland@arm.com>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Michael Kao <michael.kao@mediatek.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-mediatek@lists.infradead.org, hsinyi@chromium.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-arm-kernel@lists.infradead.org
+Subject: Aw: [v5 0/2] Add Mediatek thermal dirver and dtsi
+Content-Type: text/plain; charset=UTF-8
+Date:   Wed, 7 Oct 2020 19:16:34 +0200
+Importance: normal
+Sensitivity: Normal
+In-Reply-To: <20201007075437.6002-2-michael.kao@mediatek.com>
+References: <20201007075437.6002-1-michael.kao@mediatek.com>
+ <20201007075437.6002-2-michael.kao@mediatek.com>
+X-UI-Message-Type: mail
+X-Priority: 3
+X-Provags-ID: V03:K1:Csqd41G7AKxDFuH1C9SuyrD5jWqGjY8u5x7tZCZfuaePzhCmFah/9bWtJBjB+9cchHYoy
+ HvGlmXK7xp4TcX0XMJ7Th/1qaq+UVDkk6iVl+5Hep6tJSCTuxX+fQpTzRddjK245Qx8AsWhSoGgd
+ dN+cv0TMip0SRNyvEjmCoYAvYjelIYolj6sePUq4FUbMYKLnbiWDHq0XIcC9hle1K2QLKAmOT+zU
+ BniDlgIPOqfeLis8fVZ+yMaLuqqy2q6i9MiWVsPTr++2qpqS8mlRNAauD75xKsDP2jEyaw+Gb/fN
+ xU=
+X-UI-Out-Filterresults: notjunk:1;V03:K0:FOhYxd3LrBA=:AAmKeHNualD8W2ZgdqeDJf
+ paIZM1VccBIHD+Jh8HZMK8iuX8hCJ5L5vrBRFTjRfrtZ21do0V6l4JGSSAYkIKDRfKrUv2NkD
+ UohwpxWrh4DTp0XyRvTDZNwlij1XKOuWNF/jPT1JJnf6wSIy3AdIp4xmsrC0vCR8ERfl+5V33
+ BL5P1UCo4isP4GejH1145qQ7tanj6oXjn4RI9ru84NLdwrS2SAD0HAJkgEntGCnyQeZJq6O54
+ u5jURoftHEOQnMNpM3qApWFywhMZqgeDjoUDxtMxCtlIAHRl2xjDeoiDnysC6VeGLZ7mP4NDi
+ y4MzxCNEeAkLcwMFDl6kROidVZuIol5+/WzpTrJ4hjvCdq6kS7hDUyZYy5ThTkdjSlafrc9/w
+ +EOCzmbp0hbvp5gvUGK0qHhTDLwzXObd9f5c336shBeIeiJmlSA5OLAtpe91/Slhj232fr5iy
+ qGyEzcG2/3I1di4mlp20sbFaoXaaGf9Ls7l+zPQzO0zZMkmN22bqO2ofbOQ/j9Phx5CMMz0QN
+ QzvG/5vcFUeo6QF32HRdnRICyJYdSBjCVXxioBCtJJixZc/WSvReeD9SlBJJa+HHu4+luWXqN
+ qKNPe42vZHf4k/Z6K77wgNSRfqlXR3GSnyUbgXw2H3skG9SUCWF/J10+LHPaqNmYJVFFBD4OY
+ wm11Cdupl2YgNvBsCocwzKl38+oN67x9xrenG7U6hnTpbc6ufCVhMusEbu+7I1QpADZc=
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Intel Platform Controller Hubs (PCH) since Cannon Lake, the Precision
-Time Measurement (PTM) capability can prevent PCIe root ports from power
-gating during suspend-to-idle, causing increased power consumption on
-systems that suspend using Low Power S0 Idle [1]. The issue is yet to be
-root caused but believed to be coming from a race condition in the suspend
-flow as the incidence rate varies for different platforms on Linux but the
-issue does not occur at all in other operating systems. For now, disable
-the feature on suspend on all Intel root ports and enable again on resume.
+> Gesendet: Mittwoch, 07. Oktober 2020 um 09:54 Uhr
+> Von: "Michael Kao" <michael.kao@mediatek.com>
+> Betreff: [v5 0/2] Add Mediatek thermal dirver and dtsi
 
-Link: https://www.uefi.org/sites/default/files/resources/Intel_ACPI_Low_Power_S0_Idle.pdf
-Bug: https://bugzilla.kernel.org/show_bug.cgi?id=209361
-Tested-by: Len Brown <len.brown@intel.com>
-Signed-off-by: David E. Box <david.e.box@linux.intel.com>
----
- drivers/pci/quirks.c | 57 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 57 insertions(+)
+Hi,
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index bdf9b52567e0..e82b1f60c7a1 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -5632,3 +5632,60 @@ static void apex_pci_fixup_class(struct pci_dev *pdev)
- }
- DECLARE_PCI_FIXUP_CLASS_HEADER(0x1ac1, 0x089a,
- 			       PCI_CLASS_NOT_DEFINED, 8, apex_pci_fixup_class);
-+
-+#ifdef CONFIG_PCIE_PTM
-+/*
-+ * On Intel Platform Controller Hubs (PCH) since Cannon Lake, the Precision
-+ * Time Measurement (PTM) capability can prevent the PCIe root port from
-+ * power gating during suspend-to-idle, causing increased power consumption.
-+ * So disable the feature on suspend on all Intel root ports and enable
-+ * again on resume.
-+ */
-+static void quirk_intel_ptm_disable_suspend(struct pci_dev *dev)
-+{
-+	int pos;
-+	u32 ctrl;
-+
-+	if (!(dev->ptm_enabled && dev->ptm_root))
-+		return;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
-+	if (!pos)
-+		return;
-+
-+	pci_dbg(dev, "quirk: disabling PTM\n");
-+
-+	dev->ptm_enabled = 0;
-+	dev->ptm_root = 0;
-+
-+	pci_read_config_dword(dev, pos + PCI_PTM_CTRL, &ctrl);
-+	ctrl &= ~(PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT);
-+	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
-+}
-+
-+static void quirk_intel_ptm_enable_resume(struct pci_dev *dev)
-+{
-+	int pos;
-+	u32 ctrl;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_PTM);
-+	if (!pos)
-+		return;
-+
-+	pci_dbg(dev, "quirk: re-enabling PTM\n");
-+
-+	pci_read_config_dword(dev, pos + PCI_PTM_CTRL, &ctrl);
-+	ctrl |= PCI_PTM_CTRL_ENABLE | PCI_PTM_CTRL_ROOT;
-+	pci_write_config_dword(dev, pos + PCI_PTM_CTRL, ctrl);
-+
-+	dev->ptm_enabled = 1;
-+	dev->ptm_root = 1;
-+}
-+
-+DECLARE_PCI_FIXUP_CLASS_SUSPEND(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
-+				PCI_CLASS_BRIDGE_PCI, 8,
-+				quirk_intel_ptm_disable_suspend)
-+DECLARE_PCI_FIXUP_CLASS_RESUME(PCI_VENDOR_ID_INTEL, PCI_ANY_ID,
-+			       PCI_CLASS_BRIDGE_PCI, 8,
-+			       quirk_intel_ptm_enable_resume)
-+#endif
--- 
-2.20.1
+just a small typo "dirver" =3D> driver and coverletter (v5) does not match=
+ series (v1/without version),
+so it is not linked correctly in patchwork. I guess V1 is the right here..=
+.
+imho coverletter should also include platform (mt8183). There is already a=
+ mtk
+thermal driver which you want to extend for a new Chip.
 
+regards Frank
