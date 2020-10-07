@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6262C4363D
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63A40C47428
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 545D721775
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1C54821897
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uUrD7eWd"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="uFtBURH+"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728586AbgJGNzM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 09:55:12 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54542 "EHLO
+        id S1728570AbgJGNyz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 09:54:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54476 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728583AbgJGNzB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 09:55:01 -0400
+        with ESMTP id S1728536AbgJGNyz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 09:54:55 -0400
 Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3D69EC0613D7
-        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 06:55:01 -0700 (PDT)
-Received: by mail-lf1-x142.google.com with SMTP id h6so2401526lfj.3
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 06:55:01 -0700 (PDT)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68E64C0613D9
+        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 06:54:49 -0700 (PDT)
+Received: by mail-lf1-x142.google.com with SMTP id a7so1308574lfk.9
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 06:54:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0BX47xYPRl2ntUSRDODnxEZ8z0xfWMTgkLrEIea3zW8=;
-        b=uUrD7eWdbWWm+XB8iagkdGfmpmE1aMASNsVaLpPMZ4MEXOVqHv0hfYUofGC6aF3mYU
-         k6S/w1JWRJ2ix2DElE+tir99YZP8MbIrVNwkZPXTcESgWIIHPEmOdrtJtxnn5EchsNPy
-         sej7EeLHH1LCAt1p0y+TUlNNjPpvPxABNjn9A6uhzlEFBAdIRoscuJOKUVT+Tc5ugdzo
-         Jr21f15MNcNMeOlUniOagf9L+bOKM/8if3k4xVoH7EohIDySA/7t6jM7WqMwO+fy7g6C
-         TLYKjaLatMf330DRl9hLJ6CRQgf7b4A+jZvvLHS8+RVWQhArdOgVQZtosZJg3LPf5qAr
-         p1CQ==
+        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
+        b=uFtBURH+GBLaevo8g6cPWDqH7zEiO6ttieUedSBQrZea4Hlco0FLbEc5lMRvQv5Mo4
+         haQjIcg8xsZJzUID+l/b03Y3RmVN4a75yZaxf9dp6SvF7Be7dfm1R1LML3adXoh1Cag2
+         SZb2fL7/Hiy5QUvkDvRwLjcWeqPO1MrK3d6Ou/re6j71emqaPi+OVNPofZBA7drL+na/
+         ac91wolwQrvZd1zs4ay9ERrSLhW14kiaGK7QnjQRQn0Xp6C5XxFFYHxk5QhUh8lZ2qk8
+         wiDbobfDJjpr/Wx18Ne8HtD9SZW+d/KT6Uy1p/oyv4V5Jk/YIhsYAXU3RbI0N/Zvc6mc
+         kRhg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0BX47xYPRl2ntUSRDODnxEZ8z0xfWMTgkLrEIea3zW8=;
-        b=GMHw8qmiVzKPk0lC65//ZlB3+vnk/mdS/lx+ocsH3LskUGLdb7VnIhaipzmrYoGy8d
-         RlOp2qzJ8KwIaDwk+pPkjS4ig7PqxKSjNvwnY8j7uzVSP2GAGOHN5fQrtozOXTQHtHu3
-         7IQeJ5ctA4jdT2ZDFV7vW/2eH8/qlzmwy2I+bFp8nH0Jc1eeMN6NeUrQ0+etid9zm22D
-         U48EN+LhlC2pLq5QYwdhezyTqVT1a/lN/SrgaRXdMkErpv0zCZoUseo6gF7bl3XpzIIJ
-         ZV+jI9JmmKYoLVmSmzjMFKlnvPjvpecHOttdGe4RWfQpLlJf8qb5CJM9Ys5rAHtOuQE2
-         EaSg==
-X-Gm-Message-State: AOAM533pObkpw5qMl0zlRRWqNfYPugmhQdo4Q/bt+hopF36jz8WNLTaM
-        TCnpZ3m9WPdgcCsSfEqfrJOmqA==
-X-Google-Smtp-Source: ABdhPJzx8K/d+LbNbZIn+EygLNOPRbWtgNP+upWXchfIH8Pl3RSyysc3XHEvqAAMBO7Z8OWUaxGwnA==
-X-Received: by 2002:ac2:48ac:: with SMTP id u12mr934016lfg.375.1602078899644;
-        Wed, 07 Oct 2020 06:54:59 -0700 (PDT)
+        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
+        b=WACc+zc4aV13vKrbJ6qyZDQ6weib2+Mtb6a9dpi354JK9iPIIV04tfSo2+3j9VKk7F
+         m9grrXj92V8Xdmk2mdXhFhGInt2d4pF6o0lldcDXJM9yGD4VtTCVIQFWpcxrrcqPUjfA
+         RWGIgGEk1I4iLgccAi7koLrRAEdSC1S73sX3TN2fN3TW7RtHztVCkqi16PTev26vB80U
+         C78JLckjQsR12Zqn1ih15uorKnctkKyUR0GHK6HHXY8PW33iOmNJ/BM8TmxXQiVwKJlF
+         j3ZXY0Vo+0bIUmr6YefMk4cSUPHyva52TIqLn06CLh2rQJiHikkvcVvmjA6HmyaoK49n
+         PVQQ==
+X-Gm-Message-State: AOAM531SRyanNE+6+bRmOw1eGU2E/fLhsPN7ZCpGuNrMjy/95HNhKFYh
+        psiHYdKpU68uKslbfmtdHwiOIw==
+X-Google-Smtp-Source: ABdhPJzbO3zNETMnpVpRvluAZ6FR3Gy1w+BTC/UFV5bpDYMWQfx0bDAXQGzVWG9SInalGLksvjGkBA==
+X-Received: by 2002:a05:6512:3702:: with SMTP id z2mr926943lfr.35.1602078887854;
+        Wed, 07 Oct 2020 06:54:47 -0700 (PDT)
 Received: from localhost.localdomain ([188.162.65.250])
-        by smtp.gmail.com with ESMTPSA id n3sm339768lfq.274.2020.10.07.06.54.57
+        by smtp.gmail.com with ESMTPSA id n3sm339768lfq.274.2020.10.07.06.54.46
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Oct 2020 06:54:59 -0700 (PDT)
+        Wed, 07 Oct 2020 06:54:47 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -71,10 +71,11 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>
-Subject: [PATCH v7 09/10] arm64: dts: sm8250-mtp: add thermal zones using pmic's adc-tm5
-Date:   Wed,  7 Oct 2020 16:54:32 +0300
-Message-Id: <20201007135433.1041979-10-dmitry.baryshkov@linaro.org>
+        Jishnu Prakash <jprakash@qti.qualcomm.com>,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Subject: [PATCH v7 04/10] iio: adc: qcom-vadc-common: use fixp_linear_interpolate
+Date:   Wed,  7 Oct 2020 16:54:27 +0300
+Message-Id: <20201007135433.1041979-5-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
 References: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
@@ -84,240 +85,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Port thermal zones definitions from msm-4.19 tree. Enable and add
-channel configuration to PMIC's ADC-TM definitions. Declare thermal
-zones and respective trip points.
+Use new function fixp_linear_interpolate() instead of hand-coding the
+linear interpolation.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- arch/arm64/boot/dts/qcom/sm8250-mtp.dts | 207 ++++++++++++++++++++++++
- 1 file changed, 207 insertions(+)
+ drivers/iio/adc/qcom-vadc-common.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
-index fd194ed7fbc8..66da94f6956f 100644
---- a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
-+++ b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
-@@ -24,6 +24,104 @@ chosen {
- 		stdout-path = "serial0:115200n8";
- 	};
+diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
+index d11f3343ad52..40d77b3af1bb 100644
+--- a/drivers/iio/adc/qcom-vadc-common.c
++++ b/drivers/iio/adc/qcom-vadc-common.c
+@@ -2,6 +2,7 @@
+ #include <linux/bug.h>
+ #include <linux/kernel.h>
+ #include <linux/bitops.h>
++#include <linux/fixp-arith.h>
+ #include <linux/math64.h>
+ #include <linux/log2.h>
+ #include <linux/err.h>
+@@ -368,10 +369,9 @@ static int qcom_vadc_map_voltage_temp(const struct vadc_map_pt *pts,
+ 	} else {
+ 		/* result is between search_index and search_index-1 */
+ 		/* interpolate linearly */
+-		*output = (((s32)((pts[i].y - pts[i - 1].y) *
+-			(input - pts[i - 1].x)) /
+-			(pts[i].x - pts[i - 1].x)) +
+-			pts[i - 1].y);
++		*output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
++						  pts[i].x, pts[i].y,
++						  input);
+ 	}
  
-+	thermal-zones {
-+		xo-therm {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150_adc_tm 0>;
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		skin-therm {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150_adc_tm 1>;
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		mmw-pa1 {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150_adc_tm 2>;
-+
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		conn-therm {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150b_adc_tm 0>;
-+
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		camera-therm {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150l_adc_tm 0>;
-+
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		skin-msm-therm {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150l_adc_tm 1>;
-+
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+
-+		mmw-pa2 {
-+			polling-delay-passive = <0>;
-+			polling-delay = <0>;
-+			thermal-sensors = <&pm8150l_adc_tm 2>;
-+
-+			trips {
-+				active-config0 {
-+					temperature = <125000>;
-+					hysteresis = <1000>;
-+					type = "passive";
-+				};
-+			};
-+		};
-+	};
-+
- 	vph_pwr: vph-pwr-regulator {
- 		compatible = "regulator-fixed";
- 		regulator-name = "vph_pwr";
-@@ -378,6 +476,115 @@ &i2c15 {
- 	/* rtc6226 @ 64 */
- };
- 
-+&pm8150_adc {
-+	xo-therm@4c {
-+		reg = <ADC5_XO_THERM_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+
-+	skin-therm@4d {
-+		reg = <ADC5_AMUX_THM1_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+
-+	pa-therm1@4e {
-+		reg = <ADC5_AMUX_THM2_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+};
-+
-+&pm8150b_adc {
-+	conn-therm@4f {
-+		reg = <ADC5_AMUX_THM3_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+};
-+
-+&pm8150l_adc {
-+	camera-flash-therm@4d {
-+		reg = <ADC5_AMUX_THM1_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+
-+	skin-msm-therm@4e {
-+		reg = <ADC5_AMUX_THM2_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+
-+	pa-therm2@4f {
-+		reg = <ADC5_AMUX_THM3_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time = <200>;
-+	};
-+};
-+
-+&pm8150_adc_tm {
-+	status = "okay";
-+
-+	xo-therm@0 {
-+		reg = <0>;
-+		io-channels = <&pm8150_adc ADC5_XO_THERM_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+
-+	skin-therm@1 {
-+		reg = <1>;
-+		io-channels = <&pm8150_adc ADC5_AMUX_THM1_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+
-+	pa-therm1@2 {
-+		reg = <2>;
-+		io-channels = <&pm8150_adc ADC5_AMUX_THM2_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+};
-+
-+&pm8150b_adc_tm {
-+	status = "okay";
-+
-+	conn-therm@0 {
-+		reg = <0>;
-+		io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+};
-+
-+&pm8150l_adc_tm {
-+	status = "okay";
-+
-+	camera-flash-therm@0 {
-+		reg = <0>;
-+		io-channels = <&pm8150l_adc ADC5_AMUX_THM1_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+
-+	skin-msm-therm@1 {
-+		reg = <1>;
-+		io-channels = <&pm8150l_adc ADC5_AMUX_THM2_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+
-+	pa-therm2@2 {
-+		reg = <2>;
-+		io-channels = <&pm8150l_adc ADC5_AMUX_THM3_100K_PU>;
-+		qcom,ratiometric;
-+		qcom,hw-settle-time-us = <200>;
-+	};
-+};
-+
- &qupv3_id_0 {
- 	status = "okay";
- };
+ 	return 0;
 -- 
 2.28.0
 
