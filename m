@@ -2,67 +2,119 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9B18C4363C
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 09:09:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F3AF2C4363C
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:12:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6A5132080A
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 09:09:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AC09C20872
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:12:00 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="n5Kfsj9o"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726218AbgJGJJq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 05:09:46 -0400
-Received: from gloria.sntech.de ([185.11.138.130]:50366 "EHLO gloria.sntech.de"
+        id S1727014AbgJGKMA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 06:12:00 -0400
+Received: from z5.mailgun.us ([104.130.96.5]:38051 "EHLO z5.mailgun.us"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726269AbgJGJJq (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 7 Oct 2020 05:09:46 -0400
-X-Greylist: delayed 1824 seconds by postgrey-1.27 at vger.kernel.org; Wed, 07 Oct 2020 05:09:45 EDT
-Received: from ip5f5aa64a.dynamic.kabel-deutschland.de ([95.90.166.74] helo=diego.localnet)
-        by gloria.sntech.de with esmtpsa (TLS1.3:ECDHE_RSA_AES_256_GCM_SHA384:256)
-        (Exim 4.92)
-        (envelope-from <heiko@sntech.de>)
-        id 1kQ4ye-0004RV-Bl; Wed, 07 Oct 2020 10:39:12 +0200
-From:   Heiko =?ISO-8859-1?Q?St=FCbner?= <heiko@sntech.de>
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Nishanth Menon <nm@ti.com>, linux-pm@vger.kernel.org,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Aaro Koskinen <aaro.koskinen@iki.fi>,
-        Tony Lindgren <tony@atomide.com>,
+        id S1727297AbgJGKL7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Oct 2020 06:11:59 -0400
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1602065519; h=Content-Transfer-Encoding: Content-Type:
+ In-Reply-To: MIME-Version: Date: Message-ID: From: References: Cc: To:
+ Subject: Sender; bh=ioiudp9XALfKdIVzKVk4P9/mHsW/D6jALV6wDdyxdnQ=; b=n5Kfsj9o4hsTHyb0ZutCtH3tw2KqodBG35iW0nuaXJ79NJaxDlJK6gvXIeJfcnxpz0hVRx77
+ UjqyHZnV+6z5KC1v5MebIqWNcKFt4wfHCDiepL/9DHv8t8VfIr1M5V8NiWkrmN7R7Q5897I1
+ s6ChjWD2+WDFX0kNyYz+wz6H/Ik=
+X-Mailgun-Sending-Ip: 104.130.96.5
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n02.prod.us-west-2.postgun.com with SMTP id
+ 5f7d9466319d4e9cb51b6a20 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 07 Oct 2020 10:11:50
+ GMT
+Sender: jprakash=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 0E2F8C433FF; Wed,  7 Oct 2020 10:11:50 +0000 (UTC)
+Received: from [192.168.1.100] (unknown [157.46.213.197])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        (Authenticated sender: jprakash)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id B4A43C433CB;
+        Wed,  7 Oct 2020 10:11:43 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org B4A43C433CB
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=jprakash@codeaurora.org
+Subject: Re: [PATCH v6 07/10] thermal: qcom: add support for adc-tm5 PMIC
+ thermal monitor
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>,
         Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Niklas Cassel <nks@flawful.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Kevin Hilman <khilman@kernel.org>,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-rockchip@lists.infradead.org
-Subject: Re: [PATCH 2/4] power: avs: rockchip-io: Move the driver to the rockchip specific drivers
-Date:   Wed, 07 Oct 2020 10:39:11 +0200
-Message-ID: <1739403.NJMpfr3yiC@diego>
-In-Reply-To: <20201006160516.319830-3-ulf.hansson@linaro.org>
-References: <20201006160516.319830-1-ulf.hansson@linaro.org> <20201006160516.319830-3-ulf.hansson@linaro.org>
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
+Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Jishnu Prakash <jprakash@qti.qualcomm.com>
+References: <20200930100203.1988374-1-dmitry.baryshkov@linaro.org>
+ <20200930100203.1988374-8-dmitry.baryshkov@linaro.org>
+From:   Jishnu Prakash <jprakash@codeaurora.org>
+Message-ID: <073bec11-cd9e-7c3b-ae89-50486d36337a@codeaurora.org>
+Date:   Wed, 7 Oct 2020 15:41:40 +0530
+User-Agent: Mozilla/5.0 (Windows NT 10.0; WOW64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20200930100203.1988374-8-dmitry.baryshkov@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Am Dienstag, 6. Oktober 2020, 18:05:14 CEST schrieb Ulf Hansson:
-> The avs drivers are all SoC specific drivers that doesn't share any code.
-> Instead they are located in a directory, mostly to keep similar
-> functionality together. From a maintenance point of view, it makes better
-> sense to collect SoC specific drivers like these, into the SoC specific
-> directories.
-> 
-> Therefore, let's move the rockchip-io driver to the rockchip directory.
-> 
-> Cc: Heiko Stuebner <heiko@sntech.de>
-> Cc: linux-rockchip@lists.infradead.org
-> Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+Hi Dmitry,
 
-Acked-by: Heiko Stuebner <heiko@sntech.de>
+diff --git a/drivers/thermal/qcom/qcom-spmi-adc-tm5.c 
+b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+> new file mode 100644
+> index 000000000000..22d5414a3c5e
+> --- /dev/null
+> +++ b/drivers/thermal/qcom/qcom-spmi-adc-tm5.c
+> @@ -0,0 +1,621 @@
+> +// SPDX-License-Identifier: GPL-2.0-only
+> +/*
+> + * Copyright (c) 2012-2020, The Linux Foundation. All rights reserved.
+> + * Copyright (c) 2020 Linaro Limited
+> + */
+> +
+> +#include <linux/iio/consumer.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/regmap.h>
+> +#include <linux/thermal.h>
+> +
+> +#include "../../iio/adc/qcom-vadc-common.h"
+> +
 
+When I was testing the patches on SC7180, I found that I had to add this 
+line for fixing a compilation error for the FIELD_PREP macro:
 
+#include <linux/bitfield.h>
+
+Can you please check and confirm if its needed for compilation here?
+
+Thanks,
+
+Jishnu
 
