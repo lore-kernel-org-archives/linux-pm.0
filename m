@@ -2,97 +2,139 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AA53FC41604
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 08:39:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C71F6C4363C
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 09:03:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62A902080A
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 08:39:06 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="oabYzbNj"
+	by mail.kernel.org (Postfix) with ESMTP id 7640020872
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 09:03:39 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727878AbgJGIjC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 04:39:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33900 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727369AbgJGIjC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 04:39:02 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9A5A0C0613D3
-        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 01:39:01 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id a15so1145395ljk.2
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 01:39:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=X/CTq+Ii8YYGlsTBxUkE2J0PCQyVRe5tUNmSX2DD4CQ=;
-        b=oabYzbNjgTaVHV+r00t+tDC3+0dTVNdSOlaClGlLs21doOxTmPumwNt3J/PkkGf08q
-         AuTGo3ooXnG8RuZTGgQpKB9FdetN3mL1Hlip1qsF2GcSA+HVQcA59+6ijyu6vBbcyv75
-         LLm1YOI2EQWx76WQnPl1FiJzLTj3vsOZviWUxDWncuaZNgc7QSLT3eJ54Aa1XYamj88V
-         kRZ+L37Qg/FL6BKZVr0mlNd84XvttjbjA9uD0FYsK3qswfe5rLYw031s5NPeFLo5GeDO
-         JuwiwUkRVnUCvtqxvY9msYtYN/q5jUr7/1Upj9uA0u1OAid16UB1ZvLy5NYZHkQfsFxG
-         /H/w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=X/CTq+Ii8YYGlsTBxUkE2J0PCQyVRe5tUNmSX2DD4CQ=;
-        b=RHUitHm5qtMSHZzyZAIejkF7N5wl+Q2q12WGz+z+/4tdunHrU2ydEKVmln8ryHYPVe
-         shQL/OMhdjWhHtH5cJFFnVK34X/2ei662qn81QklDvIGeBy5dJfmsDwRy8JL9X7u2Qn0
-         U24VNv5wJ1t659OYHzjQbieL3/vlMB6YR3uMjpuakGbzmxFldOrxPKZjtF049QSA/xpl
-         GUGDDVt2i6ql831k3u6gIWKJ9a2cYEPow5iphVZ1BsVmzeDNv+6dyyvsCEpx6wcOWHq7
-         aTGks7QLGVwDwmqdbtJ7MPiys7+UNEBABLXF5ujUCTccku8uDF8N67YASstbQBNLqkd1
-         4dXw==
-X-Gm-Message-State: AOAM531DJ6xvpdjBCpR9hmmcR2GGMXUJXHa4EiUG2Ryb6LVjBtGKD+Fi
-        3TxPXFJWr5/UVR3TZMcPcalff9jSOAax+hckYh3gWA==
-X-Google-Smtp-Source: ABdhPJwvN/74UnKNYnZMEj9q7ob1QqvcR1emufgQbxmGvJ46Tg35bsCOcA3ioK4zL1xqdnw0xgR10qrV/kaLqGO/M3E=
-X-Received: by 2002:a2e:9b0c:: with SMTP id u12mr717572lji.338.1602059939987;
- Wed, 07 Oct 2020 01:38:59 -0700 (PDT)
-MIME-Version: 1.0
-References: <cover.1601974764.git.syednwaris@gmail.com>
-In-Reply-To: <cover.1601974764.git.syednwaris@gmail.com>
-From:   Linus Walleij <linus.walleij@linaro.org>
-Date:   Wed, 7 Oct 2020 10:38:49 +0200
-Message-ID: <CACRpkdZcfR8Vyavpi4xM1zJab6SgapGBYqK9GR2mp-xh=LuVsw@mail.gmail.com>
-Subject: Re: [PATCH v11 0/4] Introduce the for_each_set_clump macro
-To:     Syed Nayyar Waris <syednwaris@gmail.com>
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        William Breathitt Gray <vilhelm.gray@gmail.com>,
-        Michal Simek <michal.simek@xilinx.com>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Robert Richter <rrichter@marvell.com>,
-        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
-        Masahiro Yamada <yamada.masahiro@socionext.com>,
-        Zhang Rui <rui.zhang@intel.com>,
+        id S1726307AbgJGJDi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 05:03:38 -0400
+Received: from foss.arm.com ([217.140.110.172]:40512 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726269AbgJGJDi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Oct 2020 05:03:38 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 887C0113E;
+        Wed,  7 Oct 2020 02:03:37 -0700 (PDT)
+Received: from [10.57.52.96] (unknown [10.57.52.96])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7C9A63F71F;
+        Wed,  7 Oct 2020 02:03:34 -0700 (PDT)
+Subject: Re: [PATCH v2 3/3] dt-bindings: thermal: update sustainable-power
+ with abstract scale
+To:     Doug Anderson <dianders@chromium.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>, linux-doc@vger.kernel.org,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+        amitk@kernel.org, Jonathan Corbet <corbet@lwn.net>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "(Exiting) Amit Kucheria" <amit.kucheria@verdurent.com>,
-        Linux-Arch <linux-arch@vger.kernel.org>,
-        "open list:GPIO SUBSYSTEM" <linux-gpio@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        Dietmar.Eggemann@arm.com, Quentin Perret <qperret@google.com>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Rajendra Nayak <rnayak@codeaurora.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>
+References: <20201002114426.31277-1-lukasz.luba@arm.com>
+ <20201002114426.31277-4-lukasz.luba@arm.com>
+ <CAD=FV=UbNP5-G1z95F37Fmv8=n0JPSSwnPQO_K==WpAc4vAHWQ@mail.gmail.com>
+ <e9b6fc5a-45d3-168d-db38-6c068da26f6b@arm.com>
+ <CAD=FV=Xkg1zpsMW5rERbibnjrgY6opZi8Z9DUFkWebb7NHtU5w@mail.gmail.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <e80dc3ac-c115-887f-6c72-e0f3d8cd9c76@arm.com>
+Date:   Wed, 7 Oct 2020 10:03:32 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <CAD=FV=Xkg1zpsMW5rERbibnjrgY6opZi8Z9DUFkWebb7NHtU5w@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 6, 2020 at 11:20 AM Syed Nayyar Waris <syednwaris@gmail.com> wrote:
+Hi Doug,
 
-> Since this patchset primarily affects GPIO drivers, would you like
-> to pick it up through your GPIO tree?
+On 10/2/20 4:47 PM, Doug Anderson wrote:
+> Hi,
+> 
+> On Fri, Oct 2, 2020 at 8:13 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>
+>> Hi Doug,
+>>
+>> On 10/2/20 3:31 PM, Doug Anderson wrote:
+>>> Hi,
+>>>
+>>> On Fri, Oct 2, 2020 at 4:45 AM Lukasz Luba <lukasz.luba@arm.com> wrote:
+>>>>
+>>>> Update the documentation for the binding 'sustainable-power' and allow
+>>>> to provide values in an abstract scale. It is required when the cooling
+>>>> devices use an abstract scale for their power values.
+>>>>
+>>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>>>> ---
+>>>>    .../devicetree/bindings/thermal/thermal-zones.yaml  | 13 +++++++++----
+>>>>    1 file changed, 9 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+>>>> index 3ec9cc87ec50..4d8f2e37d1e6 100644
+>>>> --- a/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+>>>> +++ b/Documentation/devicetree/bindings/thermal/thermal-zones.yaml
+>>>> @@ -99,10 +99,15 @@ patternProperties:
+>>>>          sustainable-power:
+>>>>            $ref: /schemas/types.yaml#/definitions/uint32
+>>>>            description:
+>>>> -          An estimate of the sustainable power (in mW) that this thermal zone
+>>>> -          can dissipate at the desired control temperature. For reference, the
+>>>> -          sustainable power of a 4-inch phone is typically 2000mW, while on a
+>>>> -          10-inch tablet is around 4500mW.
+>>>> +          An estimate of the sustainable power (in mW or in an abstract scale)
+>>>> +         that this thermal zone can dissipate at the desired control
+>>>> +         temperature. For reference, the sustainable power of a 4-inch phone
+>>>> +         is typically 2000mW, while on a 10-inch tablet is around 4500mW.
+>>>> +
+>>>> +         It is possible to express the sustainable power in an abstract
+>>>> +         scale. This is the case when the related cooling devices use also
+>>>> +         abstract scale to express their power usage. The scale must be
+>>>> +         consistent.
+>>>
+>>> Two thoughts:
+>>>
+>>> 1. If we're going to allow "sustainable-power" to be in abstract
+>>> scale, why not allow "dynamic-power-coefficient" to be in abstract
+>>> scale too?  I assume that the whole reason against that originally was
+>>> the idea of device tree purity, but if we're allowing the abstract
+>>> scale here then there seems no reason not to allow it for
+>>> "dynamic-power-coefficient".
+>>
+>> With this binding it's a bit more tricky.
+>> I also have to discuss a few things internally. This requirement of
+>> uW/MHz/V^2 makes the code easier also for potential drivers
+>> like GPU (which are going to register the devfreq cooling with EM).
+>>
+>> Let me think about it, but for now I would just update these bits.
+>> These are required to proper IPA operation, the dyn.-pow.-coef. is a
+>> nice to have and possible next step.
+> 
+> I guess the problem is that Rajendra is currently planning to remove
+> all the "dynamic-power-coefficient" values from device tree right now
+> and move them to the source code because the numbers we currently have
+> in the device tree _are_ in abstract scale and thus violate the
+> bindings.  Moving this to source code won't help us get to more real
+> power numbers (since it'll still be abstract scale), it'll just be
+> pure churn.  If we're OK with the abstract scale in general then we
+> should allow it everywhere and not add churn for no reason.
+> 
+> 
 
-Definitely will, once we are finished!
+I just want to notify you that I had internal conversation about this
+'dynamic-power-coefficient' binding and abstract scale. We would
+change it as well, similarly to 'sustainable-power'. It must pass
+internal review and I will send the v3 of this series.
 
-I see Andy still has comments and we need more iterations.
-That is fine, because we are not in any hurry. Just keep posting
-it!
-
-Let's merge this for v5.11 when we are finished with it.
-
-Yours,
-Linus Walleij
+Regards,
+Lukasz
