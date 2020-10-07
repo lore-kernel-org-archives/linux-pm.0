@@ -2,154 +2,75 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MIME_BASE64_TEXT,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2AE92C4363C
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 05:19:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D67CDC41604
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 07:54:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9675B20B1F
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 05:19:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6D6462083B
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 07:54:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="G5cbNoRl"
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="cBEIf0WW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726408AbgJGFTE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 01:19:04 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59638 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725976AbgJGFTE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 01:19:04 -0400
-Received: from mail-pj1-x1042.google.com (mail-pj1-x1042.google.com [IPv6:2607:f8b0:4864:20::1042])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 494AFC061755
-        for <linux-pm@vger.kernel.org>; Tue,  6 Oct 2020 22:19:03 -0700 (PDT)
-Received: by mail-pj1-x1042.google.com with SMTP id h4so468663pjk.0
-        for <linux-pm@vger.kernel.org>; Tue, 06 Oct 2020 22:19:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=ayGMg8h43lG7PbBqTH8iqf1Q66kPpyBldgC5Ro0D6M8=;
-        b=G5cbNoRl9Gz+77Gjj21vI6W5SSUbGy9flyeg6kxobLbVaiGLTcBr9ER6WL7bZnUEWA
-         Xzmk19xbrDdwr3ax06nRdYaE30ysp5i16L6k36Y41wX6NAkozvbxzhL2WANIXJrBVHZF
-         60Nmd447wQiVnznC8cORn6OmJxoCy7v40Nk5IPRKu1DJ7YS4IZbOs17NoUAg+vwRBNBc
-         11jFakeqz1kFmummy3mgoANFhzI+DJjKY38f3NXkyNrW5PI3SOhiqFZ8WIpvuzIYlnBg
-         YDhDtgfX0oDpMf6AijVTf+hPPOfLzEfcTCqvFaQpn5cROjYuOdM4pnD314bwajil0hmm
-         QNGA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ayGMg8h43lG7PbBqTH8iqf1Q66kPpyBldgC5Ro0D6M8=;
-        b=J4omCsF/reiUDFaq02kGFsuUwLK6dZFY8ah/drh3EYLwEwTlEUO2liJd3ScHSzbwx3
-         EmSob9MOtH39AczbFk4mfZzXfHxa+3nvq5N4dFRC++XDi5LpO4edmpsGRt5M6swyz510
-         2YP+fs2SiCsDcwIi4jZ7ngaSEZC/GbulSaVgET9H56XB+jLjvvOXBqTGqLV6HGcXcTJ4
-         jAMep5h0+ezIRSS0jzSiKN6W8KpONTFf7wD4XHrcFizM+BoFk03siAzL2bauHeTYynzS
-         c/3G3vENiJBNW1mX6JXQsrk7hvoojj1VVy8fRsfIScJ0AkoklbOXc2rPXH35wGPapJjx
-         +Akg==
-X-Gm-Message-State: AOAM5325n0Cop1ui6GA0vk92k8YlmUAmHGn01HKmo1EI06zPSihTw1dO
-        nVPcDVkp7/LY+PtU1sVPOSRVzA==
-X-Google-Smtp-Source: ABdhPJw0AmrcCvj1IidFKL2G7Zx1qxG1/k3Tiba5CMBcvjISP4r66rueMQMCqlK+VkUlNy/sjIrrDw==
-X-Received: by 2002:a17:90a:a595:: with SMTP id b21mr1324973pjq.95.1602047942767;
-        Tue, 06 Oct 2020 22:19:02 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id k7sm765222pjs.9.2020.10.06.22.19.01
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 06 Oct 2020 22:19:02 -0700 (PDT)
-Date:   Wed, 7 Oct 2020 10:49:00 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v2] cpufreq: stats: Add memory barrier to store_reset()
-Message-ID: <20201007051900.3t22s2gzbaedw2jb@vireshk-i7>
-References: <4635763.B4JZuFUhXG@kreacher>
+        id S1727819AbgJGHys (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 03:54:48 -0400
+Received: from mailgw01.mediatek.com ([210.61.82.183]:58434 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1727783AbgJGHyq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 03:54:46 -0400
+X-UUID: 7ef162ae471a4838a307524fd0b0c3c3-20201007
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=CnyxkLbDuHIqQhWDCHDnStdnLN4hfclSRDq2vswcWhY=;
+        b=cBEIf0WWi2etrJOsw8wgOerd7/u3cWs+EUO35tE7KjVlU+J4YEfSH10hoWE10Hr/sWMaGmTSE9U8mYPm9fWiw9hhkQ39rUzf6IqHouzOwtN4GuR2CvXxrIxuw5LvNZcAItEyKGzvyirfj84ehfy3raXydFq3dt5QqpDVWgHZbu4=;
+X-UUID: 7ef162ae471a4838a307524fd0b0c3c3-20201007
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw01.mediatek.com
+        (envelope-from <michael.kao@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1612243403; Wed, 07 Oct 2020 15:54:41 +0800
+Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 7 Oct 2020 15:54:38 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by MTKCAS06.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 7 Oct 2020 15:54:39 +0800
+From:   Michael Kao <michael.kao@mediatek.com>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        <linux-pm@vger.kernel.org>, <srv_heupstream@mediatek.com>
+CC:     Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        <hsinyi@chromium.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        Michael Kao <michael.kao@mediatek.com>
+Subject: [v5 0/2] Add Mediatek thermal dirver and dtsi
+Date:   Wed, 7 Oct 2020 15:54:35 +0800
+Message-ID: <20201007075437.6002-2-michael.kao@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20201007075437.6002-1-michael.kao@mediatek.com>
+References: <20201007075437.6002-1-michael.kao@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4635763.B4JZuFUhXG@kreacher>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Type: text/plain
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 06-10-20, 21:43, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> 
-> There is nothing to prevent the CPU or the compiler from reordering
-> the writes to stats->reset_time and stats->reset_pending in
-> store_reset(), in which case the readers of stats->reset_time may see
-> a stale value.  Moreover, on 32-bit arches the write to reset_time
-> cannot be completed in one go, so the readers of it may see a
-> partially updated value in that case.
-> 
-> To prevent that from happening, add a write memory barrier between
-> the writes to stats->reset_time and stats->reset_pending in
-> store_reset() and corresponding read memory barrier in the
-> readers of stats->reset_time.
-> 
-> Fixes: 40c3bd4cfa6f ("cpufreq: stats: Defer stats update to cpufreq_stats_record_transition()")
-> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> ---
-> 
-> linux-next material.
-> 
-> -> v2: Pair read and write memory barriers as appropriate.
-> 
-> ---
->  drivers/cpufreq/cpufreq_stats.c |   20 ++++++++++++++++++--
->  1 file changed, 18 insertions(+), 2 deletions(-)
-> 
-> Index: linux-pm/drivers/cpufreq/cpufreq_stats.c
-> ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_stats.c
-> +++ linux-pm/drivers/cpufreq/cpufreq_stats.c
-> @@ -47,6 +47,11 @@ static void cpufreq_stats_reset_table(st
->  
->  	/* Adjust for the time elapsed since reset was requested */
->  	WRITE_ONCE(stats->reset_pending, 0);
-> +	/*
-> +	 * Prevent the reset_time read from being reordered before the
-> +	 * reset_pending accesses in cpufreq_stats_record_transition().
-> +	 */
-> +	smp_rmb();
->  	cpufreq_stats_update(stats, READ_ONCE(stats->reset_time));
->  }
->  
-> @@ -71,10 +76,16 @@ static ssize_t show_time_in_state(struct
->  
->  	for (i = 0; i < stats->state_num; i++) {
->  		if (pending) {
-> -			if (i == stats->last_index)
-> +			if (i == stats->last_index) {
-> +				/*
-> +				 * Prevent the reset_time read from occurring
-> +				 * before the reset_pending read above.
-> +				 */
-> +				smp_rmb();
->  				time = get_jiffies_64() - READ_ONCE(stats->reset_time);
-> -			else
-> +			} else {
->  				time = 0;
-> +			}
->  		} else {
->  			time = stats->time_in_state[i];
->  			if (i == stats->last_index)
-> @@ -99,6 +110,11 @@ static ssize_t store_reset(struct cpufre
->  	 * avoid races.
->  	 */
->  	WRITE_ONCE(stats->reset_time, get_jiffies_64());
-> +	/*
-> +	 * The memory barrier below is to prevent the readers of reset_time from
-> +	 * seeing a stale or partially updated value.
-> +	 */
-> +	smp_wmb();
->  	WRITE_ONCE(stats->reset_pending, 1);
->  
->  	return count;
+UmViYXNlIHRvIGtlcm5lbC01LjktcmMxLg0KDQpVcGRhdGUgY29udGVudDoNCg0KICAgIC0gUmVt
+b3ZlIHRoZSBbdjQsNy83XSB0aGVybWFsOiBtZWRpYXRlazogdXNlIHNwaW5sb2NrIHRvIHByb3Rl
+Y3QgUFRQQ09SRVNFTA0KDQpbMi8yXQ0KICAgIC0gQWRkIHRoZSBqdWRnZW1lbnQgdG8gdGhlIHZl
+cnNpb24gb2YgcmF3X3RvX21jZWxzaXVzLg0KDQpNaWNoYWVsIEthbyAoMSk6DQogIGFybTY0OiBk
+dHM6IG10ODE4MzogYWRkIHRoZXJtYWwgem9uZSBub2RlDQogIHRoZXJtYWw6IG1lZGlhdGVrOiBh
+ZGQgYW5vdGhlciBnZXRfdGVtcCBvcHMgZm9yIHRoZXJtYWwgc2Vuc29ycw0KDQogYXJjaC9hcm02
+NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSB8IDg0ICsrKysrKysrKysrKysrKysrKysr
+KysrKw0KIGRyaXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1hbC5jICAgICAgICAgICAgfCA3NyArKysr
+KysrKysrKysrKysrKysrKy0tDQogMiBmaWxlcyBjaGFuZ2VkLCAxNTQgaW5zZXJ0aW9ucygrKSwg
+NyBkZWxldGlvbnMoLSkNCg0KLS0gDQoyLjE4LjANCg==
 
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-
--- 
-viresh
