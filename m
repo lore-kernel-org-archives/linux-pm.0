@@ -2,156 +2,95 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BA619C41604
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:44:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 43554C41604
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:55:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5284221789
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:44:04 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="ELUnrwNl"
+	by mail.kernel.org (Postfix) with ESMTP id F32E221775
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 10:55:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727660AbgJGKoD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 06:44:03 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:21305 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726096AbgJGKoC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 06:44:02 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1602067440;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=Afqtaj9YGTNyFKnlxC+EHrLbHcV8SnptjdKNT34NPOU=;
-        b=ELUnrwNlzWZFjlCza0qZurW1hZWfG6E1Pbkz2kMNvjq7uJrlY3FKnO929YX7brJ1DWtoxm
-        8QHPlv+vpTnVyemhv3kigQa/30qd5HGUfkyV/NBSYbQEKbqWJ4nK5XUO/SDi1g68NPZidU
-        JuZu8sDXqoH02dytRetDj/PVWrabqwI=
-Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
- [209.85.218.69]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-211-A0EBfbwzPpq-VfMh8UG8Vw-1; Wed, 07 Oct 2020 06:43:59 -0400
-X-MC-Unique: A0EBfbwzPpq-VfMh8UG8Vw-1
-Received: by mail-ej1-f69.google.com with SMTP id s20so618405ejx.19
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 03:43:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Afqtaj9YGTNyFKnlxC+EHrLbHcV8SnptjdKNT34NPOU=;
-        b=ZhBkHq5mrHG9zNnJqeeLKUHIFt4/PwJQs0Riq+Ej3fKyAp+ubiCBx3oULGW5MqDSmb
-         aKyEPfaBoksqivUnCu/V35DphuXhTEDDmYKEBlOnyR0dLZ0l3dQ1MwHqZ1kdoiKbAOOa
-         qAGzG+LBMS1qOxjvpkkkb+5vSU+afgX1Nph9rxw5g8yi3Vlpns2Q9iZt9GNS20Z9res/
-         3jBvA2ZI3VxA8UmHAeX+BY2K1B2iol9eIV1A25oO304fqIuRL9SLItZCIsbrG2qSPmkW
-         UWqobPSseWxl67ieVPnGF2V4AjlZYGMLbkOUeVEfWdUNAmcM9acc3RRYxyS6K7KH9gER
-         4pvg==
-X-Gm-Message-State: AOAM531brmUxp5QzI55ZPdx82XeSUF6XNSztFa6owC9cwbriwetKSPV7
-        y5QGR+1/xnPe/eduBWhVwYFK90NcxUNdE5BdPnwiz3RAdef+Syj+ih/WPxO/UKW6k8LUyMn8HZr
-        soZwCDQmVo+EOmFyEUZw=
-X-Received: by 2002:a17:906:5fc6:: with SMTP id k6mr2670098ejv.494.1602067437408;
-        Wed, 07 Oct 2020 03:43:57 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJztInw6msXFcxzTPkh0FdiJxXhuHIih0Cqt1EYMAAZVvliSEPKTKpghAaXWPq6ZTA//xVHVPA==
-X-Received: by 2002:a17:906:5fc6:: with SMTP id k6mr2670082ejv.494.1602067437169;
-        Wed, 07 Oct 2020 03:43:57 -0700 (PDT)
-Received: from x1.localdomain (2001-1c00-0c0c-fe00-d2ea-f29d-118b-24dc.cable.dynamic.v6.ziggo.nl. [2001:1c00:c0c:fe00:d2ea:f29d:118b:24dc])
-        by smtp.gmail.com with ESMTPSA id o3sm1192485edv.63.2020.10.07.03.43.55
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 07 Oct 2020 03:43:56 -0700 (PDT)
-Subject: Re: [PATCH 0/4] powercap/dtpm: Add the DTPM framework
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rafael@kernel.org,
-        srinivas.pandruvada@linux.intel.com
-Cc:     lukasz.luba@arm.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, rui.zhang@intel.com
-References: <20201006122024.14539-1-daniel.lezcano@linaro.org>
-From:   Hans de Goede <hdegoede@redhat.com>
-Message-ID: <eb26a00d-eee0-a4d1-ed25-61a661ad5683@redhat.com>
-Date:   Wed, 7 Oct 2020 12:43:55 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1726660AbgJGKza (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 06:55:30 -0400
+Received: from foss.arm.com ([217.140.110.172]:41842 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726637AbgJGKza (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 7 Oct 2020 06:55:30 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0B9A411B3;
+        Wed,  7 Oct 2020 03:55:29 -0700 (PDT)
+Received: from [10.57.52.96] (unknown [10.57.52.96])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0795F3F71F;
+        Wed,  7 Oct 2020 03:55:19 -0700 (PDT)
+Subject: Re: [PATCH] [v2] thermal: core: add upper and lower limits to
+ power_actor_set_power
+To:     Michael Kao <michael.kao@mediatek.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        linux-pm@vger.kernel.org, srv_heupstream@mediatek.com
+Cc:     Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>, hsinyi@chromium.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org
+References: <20201007024332.30322-1-michael.kao@mediatek.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <9ecedd8a-fbc3-895c-d79c-f05af5c90ae5@arm.com>
+Date:   Wed, 7 Oct 2020 11:55:14 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20201006122024.14539-1-daniel.lezcano@linaro.org>
+In-Reply-To: <20201007024332.30322-1-michael.kao@mediatek.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
 
-On 10/6/20 2:20 PM, Daniel Lezcano wrote:
-> The density of components greatly increased the last decade bringing a
-> numerous number of heating sources which are monitored by more than 20
-> sensors on recent SoC. The skin temperature, which is the case
-> temperature of the device, must stay below approximately 45°C in order
-> to comply with the legal requirements.
+On 10/7/20 3:43 AM, Michael Kao wrote:
+> The upper and lower limits of thermal throttle state in the
+> DT do not apply to the Intelligent Power Allocation (IPA) governor.
+> Add the clamping for cooling device upper and lower limits in the
+> power_actor_set_power() used by IPA.
 > 
-> The skin temperature is managed as a whole by an user space daemon,
-> which is catching the current application profile, to allocate a power
-> budget to the different components where the resulting heating effect
-> will comply with the skin temperature constraint.
+> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> ---
+>   drivers/thermal/thermal_core.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> This technique is called the Dynamic Thermal Power Management.
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index 72bf159bcecc..a260e4a575f3 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -674,7 +674,7 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
+>   	if (ret)
+>   		return ret;
+>   
+> -	instance->target = state;
+> +	instance->target = clamp_val(state, instance->lower, instance->upper);
+>   	mutex_lock(&cdev->lock);
+>   	cdev->updated = false;
+>   	mutex_unlock(&cdev->lock);
 > 
-> The Linux kernel does not provide any unified interface to act on the
-> power of the different devices. Currently, the thermal framework is
-> changed to export artificially the performance states of different
-> devices via the cooling device software component with opaque values.
-> This change is done regardless of the in-kernel logic to mitigate the
-> temperature. The user space daemon uses all the available knobs to act
-> on the power limit and those differ from one platform to another.
-> 
-> This series provides a Dynamic Thermal Power Management framework to
-> provide an unified way to act on the power of the devices.
 
-Interesting, we have a discussion going on about a related
-(while at the same time almost orthogonal) discussion for
-setting policies for if the code managing the restraints
-(which on x86 is often hidden in firmware or ACPI DPTF tables)
-should have a bias towards trying to have as long a battery life
-as possible, vs maximum performance. I know those 2 aren't
-always opposite ends of a spectrum with race-to-idle, yet most
-modern x86 hardware has some notion of what I call performance-profiles
-where we can tell the firmware managing this to go for a bias towards
-low-power / balanced / performance.
+Please check the patch with scripts/checkpatch.pl before sending.
+It's again base64 encoded, I was able to apply it on my end with
+--ignore-whitespace, but still some odd char is there.
 
-I've send a RFC / sysfs API proposal for this here:
-https://lore.kernel.org/linux-pm/20201003131938.9426-1-hdegoede@redhat.com/
+If Daniel is OK to fix it when applying to the thermal branch, then:
 
-I've read the patches in this thread and as said already I think
-the 2 APIs are mostly orthogonal. The API in this thread is giving
-userspace direct access to detailed power-limits allowing userspace
-to configure things directly (and for things to work optimal userspace
-must do this). Where as in the x86 case with which I'm dealing everything
-is mostly handled in a black-box and userspace can merely configure
-the low-power / balanced / performance bias (*) of that black-box.
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+Tested-by: Lukasz Luba <lukasz.luba@arm.com>
 
-Still I think it is good if we are aware of each-others efforts here.
-
-So Daniel, if you can take a quick look at my proposal:
-https://lore.kernel.org/linux-pm/20201003131938.9426-1-hdegoede@redhat.com/
-
-That would be great. I think we definitely want to avoid having 2
-APIs for the same thing here. Again I don't think that is actually
-the case, but maybe you see this differently ?
+I would send a few patches on top of this one, to fully support the
+upper and lower limits in IPA.
 
 Regards,
-
-Hans
-
-
-*) bias might not always give the correct impression at least
-on some Thinkpads switching from balanced (which they call medium)
-to performance boosts the long time power-limit from aprox.
-15W to 25W which as expected results in a significant performance
-boost.
-
-Note usually we have no idea what the black-box knob which we are
-tweaking actually does, all we know is that it is there and
-Windows 10 often has a slider to configure it and users want
-the same functionality under Linux.
-
+Lukasz
