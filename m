@@ -2,349 +2,122 @@ Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 382F7C47427
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F903C4363D
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 14:34:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CF89E2193E
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:18 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="EAHbpqp2"
+	by mail.kernel.org (Postfix) with ESMTP id C4D9621548
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 14:34:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1602081297;
+	bh=yxJRNDxnbzWgYfu9mI4jTBn2/dLvCzBPtRUwDvF9ikY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=t7nLaJDIuaHwsetHE/gX6Ifzb0TaIJ86PxGUL5XULGyeYF0EtNhPg4EXn5mlrlArH
+	 vHUZfALl0UexKA2Q/lBqUso92miSeirQtATUoUvjLQjsI8HUuu1Fn69AIr31jNOxfE
+	 MyG/IF6skFsdWZbkNgPk0rfBKFLbE3XmFUfXKZLo=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728564AbgJGNzR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 09:55:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54486 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728560AbgJGNys (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 09:54:48 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E6510C0613D7
-        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 06:54:47 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id u8so2409051lff.1
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 06:54:47 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=JBF3uLUf/ZUhgh6mGdQvvNaF8GSfsySai+h7lBFUhRU=;
-        b=EAHbpqp21p2zdCmvj+TaCxF2mZ0ZZ8JoJrIEaaJqXV2tfjK6MasdDd8KRjgJo8qkjv
-         6nH1bg+7QByD7t3TJWdLCrR7X3BVPTJg6clDOb8JDucLP5yEOjZeGiBvjQiQ4QeJ5h2t
-         acNBVVZsVCgKt7L3YJ7y/mwcatNtZUowdpmq2i/gsFBtqeRegTwAHiSQUg6dV3t/hviM
-         vpR08vXU6pwDymvm0WYCEML4NWnmcU59QF0OLInratMSkRYfQ7HJwpEgrl/7xI6tHR7w
-         azgNuhM61jeYouKUhyCJXO4ogbnAbpCuVUev1CAMabjLkJXRHYy6UuzGilkSPVYbZs4N
-         pvbw==
+        id S1728628AbgJGOe5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 10:34:57 -0400
+Received: from mail-ot1-f67.google.com ([209.85.210.67]:43281 "EHLO
+        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728535AbgJGOe5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 10:34:57 -0400
+Received: by mail-ot1-f67.google.com with SMTP id n61so2377764ota.10;
+        Wed, 07 Oct 2020 07:34:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=JBF3uLUf/ZUhgh6mGdQvvNaF8GSfsySai+h7lBFUhRU=;
-        b=quHW1ADM2DrlDViO5Ptuo1OtUnNfDK481mIeZgNNhBZDuq5rnXSwIofrbEFKAdbWii
-         vvkgHynNgDgOwkCk7C4IKekiS5fd64cqpoUUe73I0LtDlKsvAbJNWbM5ysf6VoHdCXv6
-         iekTuHW4jbEX/Uvfj168/C+/gM5kVeVQD7k2P6mYR+UPLqkIaxYtOFnkDDMZNi+TP6zN
-         /a0/HWnQ+T4SnzROgSgpML8O4bvQ+lQrWqfbNIjpXhz+nVP0m6f4vfDEdfaFTEJoY3RI
-         lzVUho3y6YFpEaOv3nC9dfGeFQ5rdSR4nwjaF2Z5nRH55oYftyT4EvssGudBTdoun77v
-         FjaQ==
-X-Gm-Message-State: AOAM533MGY8O6xQkvUMarmFKivMmm49ta4tkNQ9CUe1TH1dS0rs/lbkC
-        pCNvZG9UM3KOjRnHwJRD8vv7og==
-X-Google-Smtp-Source: ABdhPJwcWXv/H522wjC304Hvzt0UVQvSRu4GAPm0ITvHapZWmolKxQ+aBmWo2CM9JJn8K8RMdNu2/Q==
-X-Received: by 2002:ac2:55a5:: with SMTP id y5mr1146402lfg.473.1602078886285;
-        Wed, 07 Oct 2020 06:54:46 -0700 (PDT)
-Received: from localhost.localdomain ([188.162.65.250])
-        by smtp.gmail.com with ESMTPSA id n3sm339768lfq.274.2020.10.07.06.54.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Oct 2020 06:54:45 -0700 (PDT)
-From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-To:     Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>
-Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v7 03/10] iio: adc: qcom-vadc: move several adc5 functions to common file
-Date:   Wed,  7 Oct 2020 16:54:26 +0300
-Message-Id: <20201007135433.1041979-4-dmitry.baryshkov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
-References: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=PgDc8dM2xrjB20bw4f4PiZlRABZ5H2dY1eMkVvg7OTU=;
+        b=ZiliCAk5eFLadW2BHu6zBenHCg99TiXL9geEI4s9rQOC3iZ+EeY2IFXfiGBa1mSmQL
+         hrisOTb1LaiuzZ30PMm3wzWJ6Qr5a5n+4FCABlQk+v5puwFz4hGe9T9sXx0eTybNSYaQ
+         Iy+BRx6ch0i7XbAW8FbyfJ0MvYj1ROACtvvOBe6j/yaR799imf2tskwGIU5enUB9dhXb
+         6BSrKFYGH5y09YHbmjjnXPLHKroYVHB6WTK4VqzmNP4WqxHjbESu0T8Pv50IIvy+W/Ng
+         dEBSn7whu8whe1ujAG9/PJs7fu4MUEQwCtAgLbFGqrWP/JfIQcVPnIv2qHQmLMfN+zfp
+         52Hg==
+X-Gm-Message-State: AOAM530Mn+hxadM3Jkv2G85ONI5cxFkfUlU+4+cSUGjHcFjrwU+920YD
+        X15BQAWwc5chuhF5UElOV7/kikSQbLTikH0aa9Y=
+X-Google-Smtp-Source: ABdhPJzu23bGwguFFrdflPnWMvQ9i8Nmkl4xL/jF3WIk7+7lZcfnMh87Zsp+cw/WRcpil19L3vljSNpmkgIAa3oLSbc=
+X-Received: by 2002:a9d:3626:: with SMTP id w35mr2148009otb.206.1602081295952;
+ Wed, 07 Oct 2020 07:34:55 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200924123016.13427-1-ionela.voinescu@arm.com>
+In-Reply-To: <20200924123016.13427-1-ionela.voinescu@arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 7 Oct 2020 16:34:44 +0200
+Message-ID: <CAJZ5v0hr+MZzokObNq5L0q1Fd0M5EXc6QmLXDv9b85P5b4yp4g@mail.gmail.com>
+Subject: Re: [PATCH 0/2]cpufreq,topology,arm: disable FI for BL_SWITCHER
+To:     Ionela Voinescu <ionela.voinescu@arm.com>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Sudeep Holla <sudeep.holla@arm.com>
+Cc:     Will Deacon <will@kernel.org>,
+        Russell King - ARM Linux <linux@armlinux.org.uk>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Valentin Schneider <valentin.schneider@arm.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux ARM <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-ADC-TM5 driver will make use of several functions from ADC5 driver. Move
-them to qcom-vadc-common driver.
+On Thu, Sep 24, 2020 at 2:30 PM Ionela Voinescu <ionela.voinescu@arm.com> wrote:
+>
+> This series is the result of the discussions ([1], [2]) around the
+> complications that the BL_SWITCHER poses when it comes to Frequency
+> Invariance (FI) and it aims to restart the discussions.
+>
+> To properly scale its per-entity load-tracking signals, the task
+> scheduler needs to be given a frequency scale factor, i.e. some image of
+> the current frequency the CPU is running at, relative to its maximum
+> frequency.
+>
+> But (reiterating the message in the changelog of patch 2/2), big.LITTLE
+> switching complicates the setting of a correct cpufreq-based frequency
+> invariance scale factor due to (as observed in
+> drivers/cpufreq/vexpress-spc-cpufreq.c):
+>  - Incorrect current and maximum frequencies as a result of the
+>    exposure of a virtual frequency table to the cpufreq core,
+>  - Missed updates as a result of asynchronous frequency adjustments
+>    caused by frequency changes in other CPU pairs.
+> More information on this feature can be found at [3].
+>
+> Given that its functionality is atypical in regards to FI and that this
+> is an old technology, patch 2/2 disable FI for when big.LITTLE switching
+> is configured in to prevent incorrect scale setting.
+>
+> For this purpose patch 1/2 changes the way arch_set_freq_scale() is
+> defined in architecture code which brings it in line with the logic of
+> other architectural function definitions while allowing for less invasive
+> filtering of FI support.
+>
+> In the discussions at [2], three possible solutions were suggested:
+>  - (1) conditioning FI by !CONFIG_BL_SWITCHER
+>  - (2) leave as is with note in driver specifying this FI broken
+>    functionality
+>  - (3) removing full BL_SWITCHER support
+>
+> This series restructures the solution at (1). The reason for it is that
+> the new patch limits the ifdef filtering to the arm topology include file,
+> a location where frequency invariance functions are defined. Therefore,
+> this seems more appropriate given that the b.L switcher is an arm
+> technology and that the new FI filtering location seems more natural for
+> conditioned FI disabling.
+>
+> Solutions (2) and (3) were not implemented given that there might be some
+> remaining users of this technology (Samsung Chromebook 2 - Samsung Exynos
+> 5 Octa 5420, Samsung Exynos 5 Octa 5800) and therefore leaving this
+> broken (2) seems equally bad to removing support for it (3).
+>
+> [1] https://lore.kernel.org/lkml/20200701090751.7543-5-ionela.voinescu@arm.com/
+> [2] https://lore.kernel.org/lkml/20200722093732.14297-4-ionela.voinescu@arm.com/
+> [3] https://lwn.net/Articles/481055/
 
-Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
----
- drivers/iio/adc/qcom-spmi-adc5.c   | 75 +++---------------------------
- drivers/iio/adc/qcom-vadc-common.c | 68 ++++++++++++++++++++++++++-
- drivers/iio/adc/qcom-vadc-common.h | 10 +++-
- 3 files changed, 82 insertions(+), 71 deletions(-)
-
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index c10aa28be70a..c2da8f068b87 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -154,18 +154,6 @@ struct adc5_chip {
- 	const struct adc5_data	*data;
- };
- 
--static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
--	{.num =  1, .den =  1},
--	{.num =  1, .den =  3},
--	{.num =  1, .den =  4},
--	{.num =  1, .den =  6},
--	{.num =  1, .den = 20},
--	{.num =  1, .den =  8},
--	{.num = 10, .den = 81},
--	{.num =  1, .den = 10},
--	{.num =  1, .den = 16}
--};
--
- static int adc5_read(struct adc5_chip *adc, u16 offset, u8 *data, int len)
- {
- 	return regmap_bulk_read(adc->regmap, adc->base + offset, data, len);
-@@ -181,55 +169,6 @@ static int adc5_masked_write(struct adc5_chip *adc, u16 offset, u8 mask, u8 val)
- 	return regmap_update_bits(adc->regmap, adc->base + offset, mask, val);
- }
- 
--static int adc5_prescaling_from_dt(u32 num, u32 den)
--{
--	unsigned int pre;
--
--	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
--		if (adc5_prescale_ratios[pre].num == num &&
--		    adc5_prescale_ratios[pre].den == den)
--			break;
--
--	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
--		return -EINVAL;
--
--	return pre;
--}
--
--static int adc5_hw_settle_time_from_dt(u32 value,
--					const unsigned int *hw_settle)
--{
--	unsigned int i;
--
--	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
--		if (value == hw_settle[i])
--			return i;
--	}
--
--	return -EINVAL;
--}
--
--static int adc5_avg_samples_from_dt(u32 value)
--{
--	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
--		return -EINVAL;
--
--	return __ffs(value);
--}
--
--static int adc5_decimation_from_dt(u32 value,
--					const unsigned int *decimation)
--{
--	unsigned int i;
--
--	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
--		if (value == decimation[i])
--			return i;
--	}
--
--	return -EINVAL;
--}
--
- static int adc5_read_voltage_data(struct adc5_chip *adc, u16 *data)
- {
- 	int ret;
-@@ -511,7 +450,7 @@ static int adc_read_raw_common(struct iio_dev *indio_dev,
- 			return ret;
- 
- 		ret = qcom_adc5_hw_scale(prop->scale_fn_type,
--			&adc5_prescale_ratios[prop->prescale],
-+			prop->prescale,
- 			adc->data,
- 			adc_code_volt, val);
- 		if (ret)
-@@ -717,7 +656,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32(node, "qcom,decimation", &value);
- 	if (!ret) {
--		ret = adc5_decimation_from_dt(value, data->decimation);
-+		ret = qcom_adc5_decimation_from_dt(value, data->decimation);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid decimation %d\n",
- 				chan, value);
-@@ -730,7 +669,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32_array(node, "qcom,pre-scaling", varr, 2);
- 	if (!ret) {
--		ret = adc5_prescaling_from_dt(varr[0], varr[1]);
-+		ret = qcom_adc5_prescaling_from_dt(varr[0], varr[1]);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid pre-scaling <%d %d>\n",
- 				chan, varr[0], varr[1]);
-@@ -759,11 +698,9 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 		if ((dig_version[0] >= ADC5_HW_SETTLE_DIFF_MINOR &&
- 			dig_version[1] >= ADC5_HW_SETTLE_DIFF_MAJOR) ||
- 			adc->data->info == &adc7_info)
--			ret = adc5_hw_settle_time_from_dt(value,
--							data->hw_settle_2);
-+			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_2);
- 		else
--			ret = adc5_hw_settle_time_from_dt(value,
--							data->hw_settle_1);
-+			ret = qcom_adc5_hw_settle_time_from_dt(value, data->hw_settle_1);
- 
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid hw-settle-time %d us\n",
-@@ -777,7 +714,7 @@ static int adc5_get_dt_channel_data(struct adc5_chip *adc,
- 
- 	ret = of_property_read_u32(node, "qcom,avg-samples", &value);
- 	if (!ret) {
--		ret = adc5_avg_samples_from_dt(value);
-+		ret = qcom_adc5_avg_samples_from_dt(value);
- 		if (ret < 0) {
- 			dev_err(dev, "%02x invalid avg-samples %d\n",
- 				chan, value);
-diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index 5113aaa6ba67..d11f3343ad52 100644
---- a/drivers/iio/adc/qcom-vadc-common.c
-+++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -278,6 +278,18 @@ static const struct vadc_map_pt adcmap7_100k[] = {
- 	{ 2420, 130048 }
- };
- 
-+static const struct vadc_prescale_ratio adc5_prescale_ratios[] = {
-+	{.num =  1, .den =  1},
-+	{.num =  1, .den =  3},
-+	{.num =  1, .den =  4},
-+	{.num =  1, .den =  6},
-+	{.num =  1, .den = 20},
-+	{.num =  1, .den =  8},
-+	{.num = 10, .den = 81},
-+	{.num =  1, .den = 10},
-+	{.num =  1, .den = 16}
-+};
-+
- static int qcom_vadc_scale_hw_calib_volt(
- 				const struct vadc_prescale_ratio *prescale,
- 				const struct adc5_data *data,
-@@ -647,10 +659,12 @@ int qcom_vadc_scale(enum vadc_scale_fn_type scaletype,
- EXPORT_SYMBOL(qcom_vadc_scale);
- 
- int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
--		    const struct vadc_prescale_ratio *prescale,
-+		    unsigned int prescale_ratio,
- 		    const struct adc5_data *data,
- 		    u16 adc_code, int *result)
- {
-+	const struct vadc_prescale_ratio *prescale = &adc5_prescale_ratios[prescale_ratio];
-+
- 	if (!(scaletype >= SCALE_HW_CALIB_DEFAULT &&
- 		scaletype < SCALE_HW_CALIB_INVALID)) {
- 		pr_err("Invalid scale type %d\n", scaletype);
-@@ -662,6 +676,58 @@ int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
- }
- EXPORT_SYMBOL(qcom_adc5_hw_scale);
- 
-+int qcom_adc5_prescaling_from_dt(u32 num, u32 den)
-+{
-+	unsigned int pre;
-+
-+	for (pre = 0; pre < ARRAY_SIZE(adc5_prescale_ratios); pre++)
-+		if (adc5_prescale_ratios[pre].num == num &&
-+		    adc5_prescale_ratios[pre].den == den)
-+			break;
-+
-+	if (pre == ARRAY_SIZE(adc5_prescale_ratios))
-+		return -EINVAL;
-+
-+	return pre;
-+}
-+EXPORT_SYMBOL(qcom_adc5_prescaling_from_dt);
-+
-+int qcom_adc5_hw_settle_time_from_dt(u32 value,
-+				     const unsigned int *hw_settle)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < VADC_HW_SETTLE_SAMPLES_MAX; i++) {
-+		if (value == hw_settle[i])
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(qcom_adc5_hw_settle_time_from_dt);
-+
-+int qcom_adc5_avg_samples_from_dt(u32 value)
-+{
-+	if (!is_power_of_2(value) || value > ADC5_AVG_SAMPLES_MAX)
-+		return -EINVAL;
-+
-+	return __ffs(value);
-+}
-+EXPORT_SYMBOL(qcom_adc5_avg_samples_from_dt);
-+
-+int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < ADC5_DECIMATION_SAMPLES_MAX; i++) {
-+		if (value == decimation[i])
-+			return i;
-+	}
-+
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(qcom_adc5_decimation_from_dt);
-+
- int qcom_vadc_decimation_from_dt(u32 value)
- {
- 	if (!is_power_of_2(value) || value < VADC_DECIMATION_MIN ||
-diff --git a/drivers/iio/adc/qcom-vadc-common.h b/drivers/iio/adc/qcom-vadc-common.h
-index 17b2fc4d8bf2..7e5f6428e311 100644
---- a/drivers/iio/adc/qcom-vadc-common.h
-+++ b/drivers/iio/adc/qcom-vadc-common.h
-@@ -168,10 +168,18 @@ struct qcom_adc5_scale_type {
- };
- 
- int qcom_adc5_hw_scale(enum vadc_scale_fn_type scaletype,
--		    const struct vadc_prescale_ratio *prescale,
-+		    unsigned int prescale_ratio,
- 		    const struct adc5_data *data,
- 		    u16 adc_code, int *result_mdec);
- 
-+int qcom_adc5_prescaling_from_dt(u32 num, u32 den);
-+
-+int qcom_adc5_hw_settle_time_from_dt(u32 value, const unsigned int *hw_settle);
-+
-+int qcom_adc5_avg_samples_from_dt(u32 value);
-+
-+int qcom_adc5_decimation_from_dt(u32 value, const unsigned int *decimation);
-+
- int qcom_vadc_decimation_from_dt(u32 value);
- 
- #endif /* QCOM_VADC_COMMON_H */
--- 
-2.28.0
-
+I can take this set with the ACKs from Viresh if that's fine by
+everyone.  Catalin?  Sudeep?
