@@ -1,105 +1,81 @@
-Return-Path: <SRS0=ZSVA=DN=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=+GJc=DO=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MIME_BASE64_TEXT,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B43FC41604
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:59:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9ACAEC4363C
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 07:54:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 33ACC20760
-	for <linux-pm@archiver.kernel.org>; Tue,  6 Oct 2020 17:59:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 38E7720870
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 07:54:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="b6Fmr8Nk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726504AbgJFR7Z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 6 Oct 2020 13:59:25 -0400
-Received: from youngberry.canonical.com ([91.189.89.112]:53861 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726442AbgJFR7Z (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 6 Oct 2020 13:59:25 -0400
-Received: from 1.general.cking.uk.vpn ([10.172.193.212])
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <colin.king@canonical.com>)
-        id 1kPrFD-0000WP-5G; Tue, 06 Oct 2020 17:59:23 +0000
-To:     Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
-Cc:     "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-From:   Colin Ian King <colin.king@canonical.com>
-Subject: re: power: supply: bq25980: Add support for the BQ259xx family
-Message-ID: <af1a1044-5f45-ecaf-244e-90650f17ff17@canonical.com>
-Date:   Tue, 6 Oct 2020 18:59:22 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.1
+        id S1727786AbgJGHyq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 03:54:46 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:40660 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1726041AbgJGHyp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 03:54:45 -0400
+X-UUID: 1325b920cac44fb287c480afbd5af271-20201007
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:Message-ID:Date:Subject:CC:To:From; bh=F3angfus8D4qiCoCshqcK9DbO+mBzjLtql8LLthz2OI=;
+        b=b6Fmr8NkB943gjcZ6xg6qH1lCMCmk3IrtVdMqAJqSveQsSZc/+sLh6QUKx+1UUJ4pe4jllQi2FntSSjNdXW7Xb7otaaB2wCjwJ06BljcvACq4/mnX5K8uF+b935NMJ74jKTneDxo03+Ii3oZZXpyyuiAiP6e6Oy0mdNdGdK1ETk=;
+X-UUID: 1325b920cac44fb287c480afbd5af271-20201007
+Received: from mtkcas08.mediatek.inc [(172.21.101.126)] by mailgw02.mediatek.com
+        (envelope-from <michael.kao@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1113135192; Wed, 07 Oct 2020 15:54:40 +0800
+Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Wed, 7 Oct 2020 15:54:38 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by MTKCAS06.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Wed, 7 Oct 2020 15:54:39 +0800
+From:   Michael Kao <michael.kao@mediatek.com>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        <linux-pm@vger.kernel.org>, <srv_heupstream@mediatek.com>
+CC:     Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        <hsinyi@chromium.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>
+Subject: 
+Date:   Wed, 7 Oct 2020 15:54:34 +0800
+Message-ID: <20201007075437.6002-1-michael.kao@mediatek.com>
+X-Mailer: git-send-email 2.18.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi
+bSAzMDhkNTMwZWU5YzI4YzdjNzI5YTUwMjAwNzM0MDU1MjJkMjdlMDkxIE1vbiBTZXAgMTcgMDA6
+MDA6MDAgMjAwMQ0KRnJvbTogTWljaGFlbCBLYW8gPG1pY2hhZWwua2FvQG1lZGlhdGVrLmNvbT4N
+CkRhdGU6IFdlZCwgNyBPY3QgMjAyMCAxNTo0Mjo1NyArMDgwMA0KU3ViamVjdDogW3Y1IDAvMl0g
+QWRkIE1lZGlhdGVrIHRoZXJtYWwgZGlydmVyIGFuZCBkdHNpDQpUaGlzIHBhdGNoc2V0IHN1cHBv
+cnRzIGZvciBNVDgxODMgY2hpcCB0byBtdGtfdGhlcm1hbC5jLg0KQWRkIHRoZXJtYWwgem9uZSBv
+ZiBhbGwgdGhlIHRoZXJtYWwgc2Vuc29yIGluIFNvQyBmb3INCmFub3RoZXIgZ2V0IHRlbXBlcmF0
+cnVlLiBUaGV5IGRvbid0IG5lZWQgdG8gdGhlcm1hbCB0aHJvdHRsZS4NCkFuZCB3ZSBiaW5kIGNv
+b2xlcnMgZm9yIHRoZXJtYWwgem9uZSBub2RlcyBvZiBjcHVfdGhlcm1hbC4NCg0KUmViYXNlIHRv
+IGtlcm5lbC01LjktcmMxLg0KDQpVcGRhdGUgY29udGVudDoNCg0KICAgIC0gUmVtb3ZlIHRoZSBb
+djQsNy83XSB0aGVybWFsOiBtZWRpYXRlazogdXNlIHNwaW5sb2NrIHRvIHByb3RlY3QgUFRQQ09S
+RVNFTA0KDQpbMi8yXQ0KICAgIC0gQWRkIHRoZSBqdWRnZW1lbnQgdG8gdGhlIHZlcnNpb24gb2Yg
+cmF3X3RvX21jZWxzaXVzLg0KDQpNaWNoYWVsIEthbyAoMSk6DQogIGFybTY0OiBkdHM6IG10ODE4
+MzogYWRkIHRoZXJtYWwgem9uZSBub2RlDQogIHRoZXJtYWw6IG1lZGlhdGVrOiBhZGQgYW5vdGhl
+ciBnZXRfdGVtcCBvcHMgZm9yIHRoZXJtYWwgc2Vuc29ycw0KDQogYXJjaC9hcm02NC9ib290L2R0
+cy9tZWRpYXRlay9tdDgxODMuZHRzaSB8IDg0ICsrKysrKysrKysrKysrKysrKysrKysrKw0KIGRy
+aXZlcnMvdGhlcm1hbC9tdGtfdGhlcm1hbC5jICAgICAgICAgICAgfCA3NyArKysrKysrKysrKysr
+KysrKysrKy0tDQogMiBmaWxlcyBjaGFuZ2VkLCAxNTQgaW5zZXJ0aW9ucygrKSwgNyBkZWxldGlv
+bnMoLSkNCg0KLS0NCg0K
 
-Static analysis with Coverity has detected a potential out-of-bounds
-read issue in the following commit:
-
-commit 5069185fc18e810715a91d80fcd075e03add600c
-Author: Dan Murphy <dmurphy@ti.com>
-Date:   Mon Aug 31 11:48:49 2020 -0500
-
-    power: supply: bq25980: Add support for the BQ259xx family
-
-
-Analysis is as follows:
-
-1099 static int bq25980_hw_init(struct bq25980_device *bq)
-1100 {
-1101        struct power_supply_battery_info bat_info = { };
-1102        int wd_reg_val;
-1103        int ret = 0;
-1104        int curr_val;
-1105        int volt_val;
-1106        int i;
-1107
-
-    1. Condition !bq->watchdog_timer, taking false branch.
-1108        if (!bq->watchdog_timer) {
-1109                ret = regmap_update_bits(bq->regmap,
-BQ25980_CHRGR_CTRL_3,
-1110                                         BQ25980_WATCHDOG_DIS,
-1111                                         BQ25980_WATCHDOG_DIS);
-1112        } else {
-
-    2. Condition i < 4, taking true branch.
-    6. Condition i < 4, taking true branch.
-    7. cond_at_most: Checking i < 4 implies that i may be up to 3 on the
-true branch.
-1113                for (i = 0; i < BQ25980_NUM_WD_VAL; i++) {
-
-    3. Condition bq->watchdog_timer > bq25980_watchdog_time[i], taking
-true branch.
-    4. Condition bq->watchdog_timer < bq25980_watchdog_time[i + 1],
-taking false branch.
-    8. Condition bq->watchdog_timer > bq25980_watchdog_time[i], taking
-true branch.
-
-Out-of-bounds read (OVERRUN)
-    9. overrun-local: Overrunning array bq25980_watchdog_time of 4
-4-byte elements at element index 4 (byte offset 19) using index i + 1
-(which evaluates to 4).
-
-1114                        if (bq->watchdog_timer >
-bq25980_watchdog_time[i] &&
-1115                            bq->watchdog_timer <
-bq25980_watchdog_time[i + 1]) {
-1116                                wd_reg_val = i;
-1117                                break;
-1118                        }
-    5. Jumping back to the beginning of the loop.
-1119                }
-
-Accessing bq25980_watchdog_time[i + 1] when i is 3 causes the
-out-of-range read
-
-Colin
