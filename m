@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7CE0C47095
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:54:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D480C47095
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 62A4821789
-	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:54:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BBDE52173E
+	for <linux-pm@archiver.kernel.org>; Wed,  7 Oct 2020 13:55:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="J0HrgTP+"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qRbYQiBH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728548AbgJGNyr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 7 Oct 2020 09:54:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54468 "EHLO
+        id S1728550AbgJGNzD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 7 Oct 2020 09:55:03 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54474 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728539AbgJGNyq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 09:54:46 -0400
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2C7DAC0613D2
-        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 06:54:46 -0700 (PDT)
-Received: by mail-lf1-x141.google.com with SMTP id d24so2374354lfa.8
-        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 06:54:46 -0700 (PDT)
+        with ESMTP id S1728572AbgJGNy5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 7 Oct 2020 09:54:57 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A0DFFC0613E0
+        for <linux-pm@vger.kernel.org>; Wed,  7 Oct 2020 06:54:53 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id a7so1308816lfk.9
+        for <linux-pm@vger.kernel.org>; Wed, 07 Oct 2020 06:54:53 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=u+ec5e/iUjJ8qDBtGE9xKBCADcm1RI8srVHT5OLXlvU=;
-        b=J0HrgTP+bdsiziFzBLAU3bFhSgcehD3IjjAumE61noLFhq70j+LNfR4NnX9nqFCeYT
-         9UzC/oIh1asAvqg3J1HbStk6aoQvGIml1fTYox6KJwNkqPYffm9bRoXCmhtTWRaPGKn2
-         frh2vEiA+bp3euj+YWZkmRgGB3eWHDrQm4rz/v2xTKxMaQqFVTGc/dOpqkHfLjTinLrP
-         P/vBvbdIKr7GsDQcujkJcb6C8lJGAjyDtTT3+825JbMEi55QG6E3PlO4k7A+OQDiaLXK
-         wnWF0Kv61acAbziZX7YQ8cbcIX9o1MKNT5k5C8bNeBtt8mJC9nCLMSlXJ6nYEW+au3Io
-         oc7Q==
+        bh=T0dKj6g81Qnwj432BHav6MjrRFfi+Md37xffdodCkkE=;
+        b=qRbYQiBHcjjH2TflXzmSvGVGGeZI54McKn/KZO1JRw6R1Z7IilvB3Zi4PYLFER+FqJ
+         n6b+C6yOjOD70hOX9Qt1mq2Gij0s5P1iy0fBHQ1aIYa81xp/nmfZDevL26nVgIWDybNX
+         JB/iRVp79WI9CyNkbUAWJ0nDgTfQNtC/VP2uFngoygGlcs2h34PqurEL3RmqHYP8NnTf
+         R8cPZeMHkKnVq5UISWwA4jr0AVxuRSYLOysiY4kVqkztJ+OrFSm8U2KIT2hJsFQyegwD
+         FvOQIA7XacxuKhQoIdjQvQfZE3BGuI1mpSBIyFeJeWp2aJ9zmVJUqwuhhVWQ7Bqh61Qz
+         sNJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=u+ec5e/iUjJ8qDBtGE9xKBCADcm1RI8srVHT5OLXlvU=;
-        b=cuRWSJNk7QuurIv6jn/brpXMulEwYRAXbvO+1rwn9hAJAXPN2zIrK+gSdj4P7Lw25u
-         /HHhXnve0ljVK9n5f4mz6tWEbkLNaL5DQNRU6M/88kDpkbzKVkJonncObFpC1pWWMZPX
-         2QCiltDMj8J2CQcTNA71LoycH+o2JWpZsvk+x2IxfZ7/3oPuvoH7y50mLhWptyMlzyto
-         YEz9wd3VCFOGbmdMYqs0j6ui8B5Vw+z1g5fhLB8JqfUCcE+SUPhtEpYjBwyQWB2kLwca
-         J96Fn+UfW5PrKWeKqvUys8cSrLDt8JpRGxKWV0gG54C7o9eGMrbLoZhH0fBtFe0YEUPL
-         8Kqw==
-X-Gm-Message-State: AOAM533O6EY0RKvl552EDYoflR2ZAAezAkJNHvs4lezyEvorZNcMnqb/
-        QTBKEfYcq6YvJ6t1RKq2zGNTIA==
-X-Google-Smtp-Source: ABdhPJzbdFLj0KVV5TfCbDkOYOXQF8BsCmIn/MeBPuzERCQJAPmCUR3WfIMSzkUI75efgUaNtyDVRg==
-X-Received: by 2002:ac2:53a5:: with SMTP id j5mr922652lfh.253.1602078884614;
-        Wed, 07 Oct 2020 06:54:44 -0700 (PDT)
+        bh=T0dKj6g81Qnwj432BHav6MjrRFfi+Md37xffdodCkkE=;
+        b=UeDhmsKNaYCzATzrxN6215uSuRV8U80ptHPMteyEeQy2X8lxn9xW7mr9qMQZr3DYnG
+         xja5DU6DlAZsfrKbwAk2uVUjZdD6X/h5030JkIqNWpDCUUHd7LaRRvYf+BrSlkdeu46K
+         WqPloFsurrV4ZdMfTXmRlhYYHqDs/M1uG854GJco43HosxgHs0rYy6EeYZWhNlJyg5FK
+         tWeTgwHH6Yym7DJHfZPtKySnVfSU5wRV3/EpqWX9Kba+VwWYGPti/U96p+8dz/s/FFBu
+         WcYcXW4/KxN/bZHgmlMIVL5rQz27iCAROm92efAhJ6Af6Sh4ohyBtOcL+v6yOtNPpQ1c
+         /pkA==
+X-Gm-Message-State: AOAM530Fs4W4zM2XXKMAej8rU5v0ea7QqPv030nWG6UtfT+CVCxrhRGu
+        YBIHvm/j+wJieFsBLXrbgOxxRw==
+X-Google-Smtp-Source: ABdhPJwA9zlaIhqeAMNQDa/8B9h+A8FVQVbLqZXmhGXoTcj+YC3HxhvEknF2hRlIyphz0T01S7Wksw==
+X-Received: by 2002:a19:6911:: with SMTP id e17mr1026062lfc.479.1602078892050;
+        Wed, 07 Oct 2020 06:54:52 -0700 (PDT)
 Received: from localhost.localdomain ([188.162.65.250])
-        by smtp.gmail.com with ESMTPSA id n3sm339768lfq.274.2020.10.07.06.54.42
+        by smtp.gmail.com with ESMTPSA id n3sm339768lfq.274.2020.10.07.06.54.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 07 Oct 2020 06:54:43 -0700 (PDT)
+        Wed, 07 Oct 2020 06:54:51 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -72,11 +72,10 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         Jishnu Prakash <jprakash@qti.qualcomm.com>,
-        Craig Tatlor <ctatlor97@gmail.com>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v7 02/10] fixp-arith: add a linear interpolation function
-Date:   Wed,  7 Oct 2020 16:54:25 +0300
-Message-Id: <20201007135433.1041979-3-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v7 06/10] iio: provide of_iio_channel_get_by_name() and devm_ version it
+Date:   Wed,  7 Oct 2020 16:54:29 +0300
+Message-Id: <20201007135433.1041979-7-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
 References: <20201007135433.1041979-1-dmitry.baryshkov@linaro.org>
@@ -86,46 +85,137 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Craig Tatlor <ctatlor97@gmail.com>
+There might be cases when the IIO channel is attached to the device
+subnode instead of being attached to the main device node. Allow drivers
+to query IIO channels by using device tree nodes.
 
-Adds a function to interpolate against two points,
-this is carried arount as a helper function by tons of drivers.
-
-Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- include/linux/fixp-arith.h | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/iio/inkern.c         | 34 ++++++++++++++++++++++++++--------
+ include/linux/iio/consumer.h | 36 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 62 insertions(+), 8 deletions(-)
 
-diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
-index 8396013785ef..281cb4f83dbe 100644
---- a/include/linux/fixp-arith.h
-+++ b/include/linux/fixp-arith.h
-@@ -141,4 +141,23 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
- #define fixp_cos32_rad(rad, twopi)	\
- 	fixp_sin32_rad(rad + twopi / 4, twopi)
+diff --git a/drivers/iio/inkern.c b/drivers/iio/inkern.c
+index ede99e0d5371..8ff0ac472de3 100644
+--- a/drivers/iio/inkern.c
++++ b/drivers/iio/inkern.c
+@@ -180,8 +180,8 @@ static struct iio_channel *of_iio_channel_get(struct device_node *np, int index)
+ 	return ERR_PTR(err);
+ }
+ 
+-static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
+-						      const char *name)
++struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
++					       const char *name)
+ {
+ 	struct iio_channel *chan = NULL;
+ 
+@@ -219,6 +219,7 @@ static struct iio_channel *of_iio_channel_get_by_name(struct device_node *np,
+ 
+ 	return chan;
+ }
++EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name);
+ 
+ static struct iio_channel *of_iio_channel_get_all(struct device *dev)
+ {
+@@ -261,12 +262,6 @@ static struct iio_channel *of_iio_channel_get_all(struct device *dev)
+ 
+ #else /* CONFIG_OF */
+ 
+-static inline struct iio_channel *
+-of_iio_channel_get_by_name(struct device_node *np, const char *name)
+-{
+-	return NULL;
+-}
+-
+ static inline struct iio_channel *of_iio_channel_get_all(struct device *dev)
+ {
+ 	return NULL;
+@@ -382,6 +377,29 @@ struct iio_channel *devm_iio_channel_get(struct device *dev,
+ }
+ EXPORT_SYMBOL_GPL(devm_iio_channel_get);
+ 
++struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
++						    struct device_node *np,
++						    const char *channel_name)
++{
++	struct iio_channel **ptr, *channel;
++
++	ptr = devres_alloc(devm_iio_channel_free, sizeof(*ptr), GFP_KERNEL);
++	if (!ptr)
++		return ERR_PTR(-ENOMEM);
++
++	channel = of_iio_channel_get_by_name(np, channel_name);
++	if (IS_ERR(channel)) {
++		devres_free(ptr);
++		return channel;
++	}
++
++	*ptr = channel;
++	devres_add(dev, ptr);
++
++	return channel;
++}
++EXPORT_SYMBOL_GPL(devm_of_iio_channel_get_by_name);
++
+ struct iio_channel *iio_channel_get_all(struct device *dev)
+ {
+ 	const char *name;
+diff --git a/include/linux/iio/consumer.h b/include/linux/iio/consumer.h
+index c4118dcb8e05..0a90ba8fa1bb 100644
+--- a/include/linux/iio/consumer.h
++++ b/include/linux/iio/consumer.h
+@@ -13,6 +13,7 @@
+ struct iio_dev;
+ struct iio_chan_spec;
+ struct device;
++struct device_node;
+ 
+ /**
+  * struct iio_channel - everything needed for a consumer to use a channel
+@@ -97,6 +98,41 @@ void iio_channel_release_all(struct iio_channel *chan);
+  */
+ struct iio_channel *devm_iio_channel_get_all(struct device *dev);
  
 +/**
-+ * fixp_linear_interpolate() - interpolates a value from two known points
-+ *
-+ * @x0: x value of point 0
-+ * @y0: y value of point 0
-+ * @x1: x value of point 1
-+ * @y1: y value of point 1
-+ * @x: the linear interpolant
++ * of_iio_channel_get_by_name() - get description of all that is needed to access channel.
++ * @np:			Pointer to consumer device tree node
++ * @consumer_channel:	Unique name to identify the channel on the consumer
++ *			side. This typically describes the channels use within
++ *			the consumer. E.g. 'battery_voltage'
 + */
-+static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
++#ifdef CONFIG_OF
++struct iio_channel *of_iio_channel_get_by_name(struct device_node *np, const char *name);
++#else
++static inline struct iio_channel *
++of_iio_channel_get_by_name(struct device_node *np, const char *name)
 +{
-+	if (y0 == y1 || x == x0)
-+		return y0;
-+	if (x1 == x0 || x == x1)
-+		return y1;
-+
-+	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
++	return NULL;
 +}
++#endif
 +
- #endif
++/**
++ * devm_of_iio_channel_get_by_name() - Resource managed version of of_iio_channel_get_by_name().
++ * @dev:		Pointer to consumer device.
++ * @np:			Pointer to consumer device tree node
++ * @consumer_channel:	Unique name to identify the channel on the consumer
++ *			side. This typically describes the channels use within
++ *			the consumer. E.g. 'battery_voltage'
++ *
++ * Returns a pointer to negative errno if it is not able to get the iio channel
++ * otherwise returns valid pointer for iio channel.
++ *
++ * The allocated iio channel is automatically released when the device is
++ * unbound.
++ */
++struct iio_channel *devm_of_iio_channel_get_by_name(struct device *dev,
++						    struct device_node *np,
++						    const char *consumer_channel);
++
+ struct iio_cb_buffer;
+ /**
+  * iio_channel_get_all_cb() - register callback for triggered capture
 -- 
 2.28.0
 
