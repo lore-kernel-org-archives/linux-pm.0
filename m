@@ -2,264 +2,145 @@ Return-Path: <SRS0=GrBh=DP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64860C43467
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:40:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D016C43467
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:41:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0D7F621897
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:40:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 233DB21897
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:41:02 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="bsj9ZzPR"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="qbxZ4bkL"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725979AbgJHHkz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1728243AbgJHHkz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Thu, 8 Oct 2020 03:40:55 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:29362 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728054AbgJHHkx (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2020 03:40:53 -0400
+Received: from mailout1.samsung.com ([203.254.224.24]:46079 "EHLO
+        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727819AbgJHHku (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2020 03:40:50 -0400
 Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20201008074048epoutp03edfc86a14f86fb029cd8b6129b3b4d56~79G6j7bZu2827028270epoutp03Q
+        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20201008074048epoutp01914b0f70202b8d6f80c92d597cfb61b6~79G6jfaF61010910109epoutp01g
         for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2020 07:40:48 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20201008074048epoutp03edfc86a14f86fb029cd8b6129b3b4d56~79G6j7bZu2827028270epoutp03Q
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20201008074048epoutp01914b0f70202b8d6f80c92d597cfb61b6~79G6jfaF61010910109epoutp01g
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
         s=mail20170921; t=1602142848;
-        bh=39e6ExivY2mFstp/IgohV18Cb7Qm5EgUQCntjmAe8+s=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=bsj9ZzPReUZTKw9CBh2ooxPwvclVYxAtOapJxp3WJUVwjGvTMI6ZYlAiE+fQ0G4IA
-         1M+ECzB9m36XcIZyfhqPAChjdU633ENvdcEovLyi6u1QfqPTsOXyv7B/f78Vu0Bdtp
-         DdFxj5L/OgB/uKglzEyz7vbdnRoevqbwwPg0nsKQ=
-Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
-        20201008074048epcas1p403bfb934b10db239fad69ab0663949ee~79G6If4vk2325723257epcas1p4W;
-        Thu,  8 Oct 2020 07:40:48 +0000 (GMT)
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.155]) by
-        epsnrtp2.localdomain (Postfix) with ESMTP id 4C6NRK3MfKzMqYkf; Thu,  8 Oct
-        2020 07:40:45 +0000 (GMT)
-Received: from epcas1p1.samsung.com ( [182.195.41.45]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        BC.7B.10463.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
+        bh=tnVpPq5RduDpY/hro1ifqwIj0aBN5FZ2kF5JbnaqwLE=;
+        h=From:To:Cc:Subject:Date:References:From;
+        b=qbxZ4bkLr6DV4tiUUKscoaFmLTQZVHUH+qozo2oOQB3mUkl+56zCBqDUcXlj3iUb/
+         y6w8C1BrkFc2QfLvaWbFom7g3twEn+nHsWpNagcx1L4tggEYKQAt0B+yLWueWjQZJM
+         RzH0aJKzuWgHq393v0jGnuXPnCD9iWsWCoY0LX74=
+Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
+        20201008074047epcas1p27f32825fc2ab3d151a9e5897349a77ef~79G6Cja2b0879108791epcas1p26;
+        Thu,  8 Oct 2020 07:40:47 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.154]) by
+        epsnrtp4.localdomain (Postfix) with ESMTP id 4C6NRH5ZkMzMqYkb; Thu,  8 Oct
+        2020 07:40:43 +0000 (GMT)
+Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        4E.2C.09543.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
 Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
-        20201008074041epcas1p33c3d6c73cf926f6d38d498e7dc15ea04~79G0BeMWJ0764107641epcas1p3N;
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15~79GzypXgW1333513335epcas1p16;
         Thu,  8 Oct 2020 07:40:41 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
         epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20201008074041epsmtrp17f3a00e7fc78162887e0edb72401fd73~79G0AdJZW2784427844epsmtrp14;
+        20201008074041epsmtrp1134546067f4fa22f6debf47f9d99a476~79GzyAxK72784527845epsmtrp10;
         Thu,  8 Oct 2020 07:40:41 +0000 (GMT)
-X-AuditID: b6c32a38-efbff700000028df-53-5f7ec279e97f
+X-AuditID: b6c32a35-35dff70000002547-cd-5f7ec2790be4
 Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        85.AB.08604.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        4C.5D.08745.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
 Received: from localhost.localdomain (unknown [10.113.221.102]) by
         epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20201008074041epsmtip153f27c707580b9be0b1492f3efe09928~79GzyNcCQ3068830688epsmtip1R;
-        Thu,  8 Oct 2020 07:40:41 +0000 (GMT)
+        20201008074040epsmtip1579bd5b0901662e0c16af30e051e17c6~79GzgNg8y3068830688epsmtip1Q;
+        Thu,  8 Oct 2020 07:40:40 +0000 (GMT)
 From:   Chanwoo Choi <cw00.choi@samsung.com>
 To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
 Cc:     mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com,
         cw00.choi@samsung.com, chanwoo@kernel.org,
         myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [PATCH 2/3] PM / devfreq: Unify frequency change to
- devfreq_update_target func
-Date:   Thu,  8 Oct 2020 16:54:02 +0900
-Message-Id: <20201008075403.26181-3-cw00.choi@samsung.com>
+Subject: [PATCH 0/3] PM / devfreq: Add devfreq_frequency tracepoint to track
+ frequency change
+Date:   Thu,  8 Oct 2020 16:54:00 +0900
+Message-Id: <20201008075403.26181-1-cw00.choi@samsung.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201008075403.26181-1-cw00.choi@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrLKsWRmVeSWpSXmKPExsWy7bCmrm7lobp4g0X/bCwm3rjCYnH9y3NW
-        i7NNb9gtLu+aw2bxufcIo8WlAwuYLD5veMxocbtxBZvFvo4HTA6cHrMbLrJ4tOy7xe6xaVUn
-        m8f7fVfZPPq2rGL0+LxJLoAtKtsmIzUxJbVIITUvOT8lMy/dVsk7ON453tTMwFDX0NLCXEkh
-        LzE31VbJxSdA1y0zB+gqJYWyxJxSoFBAYnGxkr6dTVF+aUmqQkZ+cYmtUmpBSk6BZYFecWJu
-        cWleul5yfq6VoYGBkSlQYUJ2xpPnC1gLtqpVXNi6j7GB8bN8FyMnh4SAicS199eZuxi5OIQE
-        djBK7LvUyAjhfGKUmH53CTuE841RorXvFRtMy7x5W1hBbCGBvYwSF/YGQRR9YZR4dH8nO0iC
-        TUBLYv+LG2ANIgJWEqf/d4DtYBaYzyjx9+5PRpCEsECkxI2LS1lAbBYBVYkDG7cxgdi8QA19
-        q1qZILbJS6zecIAZxOYUsJb4fvoH2CAJgUfsElt/72OHKHKRmHvyEtR5whKvjm+BiktJvOxv
-        g7KrJVaePMIG0dzBKLFl/wVWiISxxP6lk4G2cQCdpymxfpc+RFhRYufvuWCHMgvwSbz72sMK
-        UiIhwCvR0SYEUaIscfnBXag7JSUWt3dCneAhcXbLMmg49jFKzLzQxTSBUW4WwoYFjIyrGMVS
-        C4pz01OLDQtMkONsEyM43WlZ7GCc+/aD3iFGJg7GQ4wSHMxKIrzp3jXxQrwpiZVVqUX58UWl
-        OanFhxhNgaE3kVlKNDkfmHDzSuINTY2MjY0tTAzNTA0NlcR5H95SiBcSSE8sSc1OTS1ILYLp
-        Y+LglGpg6rQ+su7zD5Hw48qPVCwfFh4I/PwsIs6w8UnC19rL0lo9ombRgb8UQkP9M4Wicqvu
-        SYit2M148pHvwyWMx26W1x1dze1c9O/6/qenFOcHny2q7uL5EyOtrXd4xZ7Q0nMPLqSvWOUg
-        Hyc0WbdXuq8syHC39AehqQ78BdxK17p04naUVkzlUgtLM2N+eth+61S9N0elPrm+jUn4/pHr
-        74nYu9s0b7wX5u9+8n7b5r0LD+g89MtYeTT40Y30fNVLz4/NXOrWKlEwZdGN44/P8QevazX9
-        tKuBnaXD1Mers8rwyv2lvHpPeiuTps98fGVyzEG9oppJq27dcXVq5Og4GdP/+lnokz2Pf7dt
-        ObEkMPHOdCWW4oxEQy3mouJEAJudD68ABAAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFlrKLMWRmVeSWpSXmKPExsWy7bCSnG7lobp4g1VbRC0m3rjCYnH9y3NW
-        i7NNb9gtLu+aw2bxufcIo8WlAwuYLD5veMxocbtxBZvFvo4HTA6cHrMbLrJ4tOy7xe6xaVUn
-        m8f7fVfZPPq2rGL0+LxJLoAtissmJTUnsyy1SN8ugSvjyfMFrAVb1SoubN3H2MD4Wb6LkZND
-        QsBEYt68LaxdjFwcQgK7GSWa23ayQiQkJaZdPMrcxcgBZAtLHD5cDFHziVHi6fkGJpAaNgEt
-        if0vbrCB2CICNhJ3F19jAbGZBZYzSsxtFQSxhQXCJd7P7mUGsVkEVCUObNwG1ssrYCXRt6qV
-        CWKXvMTqDQfAajgFrCW+n/4BZgsB1azc94RpAiPfAkaGVYySqQXFuem5xYYFhnmp5XrFibnF
-        pXnpesn5uZsYwSGppbmDcfuqD3qHGJk4GA8xSnAwK4nwpnvXxAvxpiRWVqUW5ccXleakFh9i
-        lOZgURLnvVG4ME5IID2xJDU7NbUgtQgmy8TBKdXANFmjq2du8M9NH7f1BDgKCTA8m/qTqbvq
-        9jb191OU72pXG/hWirqsWStxdXbVth9P99+zXMGctXDCnynadSJ/UwtO3BDe1NB402mnk6OA
-        adkMaZGLl45e6nbf52d/hiH/NHuu3ed9rGZ/j1w8vviVRMzRe9snTM1xLuZw9ZZNtv8neuuq
-        uNvKZxbeGi18HL8fr57tuuSMl97Sf1PNGxsXTt7E9pbD5PmTJW7ba+zOh79daqO0ojT64tFX
-        X9IML3/3adjhe1jw2ZXS44rpi62YZ8VP0e56toZ3Tkv46gMMKxXsLp0XEb6WnRdjKmfylicy
-        +/oze3tl5VrLqyL/fzxdZNmoO+3Er/RfOzJuFf99c0WJpTgj0VCLuag4EQD8SDKOuAIAAA==
-X-CMS-MailID: 20201008074041epcas1p33c3d6c73cf926f6d38d498e7dc15ea04
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrIKsWRmVeSWpSXmKPExsWy7bCmgW7lobp4g45rehYTb1xhsbj+5Tmr
+        xdmmN+wWl3fNYbP43HuE0eLSgQVMFp83PGa0uN24gs1iX8cDJgdOj9kNF1k8WvbdYvfYtKqT
+        zeP9vqtsHn1bVjF6fN4kF8AWlW2TkZqYklqkkJqXnJ+SmZduq+QdHO8cb2pmYKhraGlhrqSQ
+        l5ibaqvk4hOg65aZA3SVkkJZYk4pUCggsbhYSd/Opii/tCRVISO/uMRWKbUgJafAskCvODG3
+        uDQvXS85P9fK0MDAyBSoMCE74+/6n8wFDzkrfqw/wN7AOIGji5GTQ0LAROLthWbmLkYuDiGB
+        HYwSRxb/ZodwPjFKdLy6wgLhfGaUWLR2FytMy5f7zVCJXYwSOzbsYIVwvjBKHNtxnxmkik1A
+        S2L/ixtsILaIgJXE6f8dYEuYBeYzSvy9+5MRJCEsEC9xrfkAWAOLgKrEz2cH2UFsXqCGpw3L
+        2SDWyUus3nAArFlC4BS7xKQtn5ghEi4S/2e8Z4SwhSVeHd/CDmFLSbzsb4OyqyVWnjzCBtHc
+        wSixZf8FqCeMJfYvnczUxcgBdJKmxPpd+hBhRYmdv+eCzWQW4JN497WHFaREQoBXoqNNCKJE
+        WeLyg7tMELakxOL2Tqg7PSS2td0EO01IIFZi0uVdjBMYZWchLFjAyLiKUSy1oDg3PbXYsMAQ
+        OZ42MYLTmpbpDsaJbz/oHWJk4mA8xCjBwawkwpvuXRMvxJuSWFmVWpQfX1Sak1p8iNEUGGAT
+        maVEk/OBiTWvJN7Q1MjY2NjCxNDM1NBQSZz34S2FeCGB9MSS1OzU1ILUIpg+Jg5OqQambGv7
+        zdwHn91d/a5OzrOhOOaK1MymQF9B5ocnolcoJ1gJT13sNyG8YeIk0yqT89I76o/oL78oPTd6
+        /iEFKQuh2Wm3Ww5FlJnqeJ239CvWuDiPb1NW8M78dr5bU+5tvSVcau9ywIyFTXrTb+njAuUR
+        q45tWqJ3zTrlZOnbD0+XxJ6ZIceZ/4Ote9aKaYb3m85w+Cv+tOJj9p4t1qN77csnh6RFQu9n
+        Xg1PE1WqM//EUen99e6/TVvuSfhaP1Zx4Et4veF866Ku8BlXCl7tF/d5Mql9/fZIAQ/ezOtx
+        +40YTwc47bL91Tnprj1jxM5dL58GFCxzS+10ylKv0p0p06k0d/vyzcEJnb6VffMSduxWYinO
+        SDTUYi4qTgQATNuNgvQDAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFuplluLIzCtJLcpLzFFi42LZdlhJTrfyUF28waJtbBYTb1xhsbj+5Tmr
+        xdmmN+wWl3fNYbP43HuE0eLSgQVMFp83PGa0uN24gs1iX8cDJgdOj9kNF1k8WvbdYvfYtKqT
+        zeP9vqtsHn1bVjF6fN4kF8AWxWWTkpqTWZZapG+XwJXxd/1P5oKHnBU/1h9gb2CcwNHFyMkh
+        IWAi8eV+M0sXIxeHkMAORol70/czQiQkJaZdPMrcxcgBZAtLHD5cDFHziVFi4fMGsBo2AS2J
+        /S9usIHYIgI2EncXX2MBsZkFljNKzG0VBLGFBWIlTk1dzgxiswioSvx8dpAdxOYVsJJ42rCc
+        DWKXvMTqDQeYJzDyLGBkWMUomVpQnJueW2xYYJSXWq5XnJhbXJqXrpecn7uJERxiWlo7GPes
+        +qB3iJGJg/EQowQHs5IIb7p3TbwQb0piZVVqUX58UWlOavEhRmkOFiVx3q+zFsYJCaQnlqRm
+        p6YWpBbBZJk4OKUamE5PvCprkfdQ6PeGhdOvdAlz5e5rX75ZIMbZ/5rLitRY/5mzux8kKoWL
+        P+GYsDleNnrHkivzV+tPjc5IqPWfqX3x4p51RYWP2yfMdmO6vLOi+MeJDffTGLfeufiZdbHH
+        5eO6xq80S556PDWsDW7dfOUU55m3TL82aOfd5JWNuCeqeIzT8eTqWUZvr8fZJXc63QiYOnPL
+        2t7knctaBV7Ez2JjOvj/wlt3E3km9V+hIhu3PGBpO7W/h0FMo/17y69i6TsTbOprPC+q5HKU
+        bzm7dzHT3rnunsbskx22cj2JcWD37r+/bvaEgz93Oh522yX67N2ZgPcHp6ptM1mZ0VFs98r1
+        UP4JH2tXXTmH+hmZr1KVWIozEg21mIuKEwER+n0MoAIAAA==
+X-CMS-MailID: 20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
 X-Sendblock-Type: SVC_REQ_APPROVE
 CMS-TYPE: 101P
 DLP-Filter: Pass
 X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20201008074041epcas1p33c3d6c73cf926f6d38d498e7dc15ea04
-References: <20201008075403.26181-1-cw00.choi@samsung.com>
-        <CGME20201008074041epcas1p33c3d6c73cf926f6d38d498e7dc15ea04@epcas1p3.samsung.com>
+X-CMS-RootMailID: 20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15
+References: <CGME20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15@epcas1p1.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The update_devfreq() and update_passive_devfreq() have the duplicate
-code when changing the target frequency on final stage. So, unify
-frequency change code to devfreq_update_target() to remove the
-duplicate code and to centralize the frequency change code.
+Add devfreq_tracepoint to track the correct timing of frequency change
+with following information:
+- device name
+- current frequency
+- previous frequency
+- load when change frequency
+- tracepoint path : /sys/kernel/debug/tracing/events/devfreq_frequency
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
----
- drivers/devfreq/devfreq.c          | 29 ++++++++++++++++-----
+And add devfreq_update_target() function to unify the frequency change code
+on both devfreq core and devfreq passive governor because there are redundant
+duplicate code. Lastly, Use fixed indentation size to improve readability
+for 'devfreq_monitor' tracepoint.
+
+Matthias already sent the patch[1]. Make patch3 by editing patch[1].
+[1]https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2108015.html
+
+Chanwoo Choi (2):
+  trace: events: devfreq: Use fixed indentation size to improve readability
+  PM / devfreq: Unify frequency change to devfreq_update_target func
+
+Matthias Kaehlcke (1):
+  PM / devfreq: Add tracepoint for frequency changes
+
+ drivers/devfreq/devfreq.c          | 37 +++++++++++++++++++++-----
  drivers/devfreq/governor.h         |  1 +
  drivers/devfreq/governor_passive.c | 42 +++++++-----------------------
- 3 files changed, 33 insertions(+), 39 deletions(-)
+ include/trace/events/devfreq.h     | 30 ++++++++++++++++++++-
+ 4 files changed, 70 insertions(+), 40 deletions(-)
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index 379aaaabf25d..5b069a8a1026 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -384,18 +384,19 @@ static int devfreq_set_target(struct devfreq *devfreq, unsigned long new_freq,
- 	return err;
- }
- 
--/* Load monitoring helper functions for governors use */
--
- /**
-- * update_devfreq() - Reevaluate the device and configure frequency.
-+ * devfreq_update_target() - Reevaluate the device and configure frequency
-+ *			   on the final stage.
-  * @devfreq:	the devfreq instance.
-+ * @freq:	the new frequency of parent device. This argument
-+ *		is only used for devfreq device using passive governor.
-  *
-- * Note: Lock devfreq->lock before calling update_devfreq
-- *	 This function is exported for governors.
-+ * Note: Lock devfreq->lock before calling devfreq_update_target. This function
-+ *	 should be only used by both update_devfreq() and devfreq governors.
-  */
--int update_devfreq(struct devfreq *devfreq)
-+int devfreq_update_target(struct devfreq *devfreq, unsigned long freq)
- {
--	unsigned long freq, min_freq, max_freq;
-+	unsigned long min_freq, max_freq;
- 	int err = 0;
- 	u32 flags = 0;
- 
-@@ -420,7 +421,21 @@ int update_devfreq(struct devfreq *devfreq)
- 	}
- 
- 	return devfreq_set_target(devfreq, freq, flags);
-+}
-+EXPORT_SYMBOL(devfreq_update_target);
-+
-+/* Load monitoring helper functions for governors use */
- 
-+/**
-+ * update_devfreq() - Reevaluate the device and configure frequency.
-+ * @devfreq:	the devfreq instance.
-+ *
-+ * Note: Lock devfreq->lock before calling update_devfreq
-+ *	 This function is exported for governors.
-+ */
-+int update_devfreq(struct devfreq *devfreq)
-+{
-+	return devfreq_update_target(devfreq, 0L);
- }
- EXPORT_SYMBOL(update_devfreq);
- 
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index eb6392d397b3..871150be4391 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -85,6 +85,7 @@ int devfreq_add_governor(struct devfreq_governor *governor);
- int devfreq_remove_governor(struct devfreq_governor *governor);
- 
- int devfreq_update_status(struct devfreq *devfreq, unsigned long freq);
-+int devfreq_update_target(struct devfreq *devfreq, unsigned long freq);
- 
- static inline int devfreq_update_stats(struct devfreq *df)
- {
-diff --git a/drivers/devfreq/governor_passive.c b/drivers/devfreq/governor_passive.c
-index 432a4cc683f7..8deb071d5d26 100644
---- a/drivers/devfreq/governor_passive.c
-+++ b/drivers/devfreq/governor_passive.c
-@@ -92,36 +92,6 @@ static int devfreq_passive_get_target_freq(struct devfreq *devfreq,
- 	return ret;
- }
- 
--static int update_devfreq_passive(struct devfreq *devfreq, unsigned long freq)
--{
--	int ret;
--
--	if (!devfreq->governor)
--		return -EINVAL;
--
--	mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
--
--	ret = devfreq->governor->get_target_freq(devfreq, &freq);
--	if (ret < 0)
--		goto out;
--
--	ret = devfreq->profile->target(devfreq->dev.parent, &freq, 0);
--	if (ret < 0)
--		goto out;
--
--	if (devfreq->profile->freq_table
--		&& (devfreq_update_status(devfreq, freq)))
--		dev_err(&devfreq->dev,
--			"Couldn't update frequency transition information.\n");
--
--	devfreq->previous_freq = freq;
--
--out:
--	mutex_unlock(&devfreq->lock);
--
--	return 0;
--}
--
- static int devfreq_passive_notifier_call(struct notifier_block *nb,
- 				unsigned long event, void *ptr)
- {
-@@ -131,17 +101,25 @@ static int devfreq_passive_notifier_call(struct notifier_block *nb,
- 	struct devfreq *parent = (struct devfreq *)data->parent;
- 	struct devfreq_freqs *freqs = (struct devfreq_freqs *)ptr;
- 	unsigned long freq = freqs->new;
-+	int ret = 0;
- 
-+	mutex_lock_nested(&devfreq->lock, SINGLE_DEPTH_NESTING);
- 	switch (event) {
- 	case DEVFREQ_PRECHANGE:
- 		if (parent->previous_freq > freq)
--			update_devfreq_passive(devfreq, freq);
-+			ret = devfreq_update_target(devfreq, freq);
-+
- 		break;
- 	case DEVFREQ_POSTCHANGE:
- 		if (parent->previous_freq < freq)
--			update_devfreq_passive(devfreq, freq);
-+			ret = devfreq_update_target(devfreq, freq);
- 		break;
- 	}
-+	mutex_unlock(&devfreq->lock);
-+
-+	if (ret < 0)
-+		dev_warn(&devfreq->dev,
-+			"failed to update devfreq using passive governor\n");
- 
- 	return NOTIFY_DONE;
- }
 -- 
 2.17.1
 
