@@ -2,120 +2,234 @@ Return-Path: <SRS0=GrBh=DP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9CC3C2BD10
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 20:45:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 616AEC433E7
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 20:59:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 60D1D22240
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 20:45:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E54C022203
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 20:59:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Y/D49zWH"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="KAZn8tcJ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730617AbgJHUp3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Oct 2020 16:45:29 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58562 "EHLO
+        id S1725931AbgJHU7O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Oct 2020 16:59:14 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60732 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728848AbgJHUp0 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2020 16:45:26 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 2687AC0613D2;
-        Thu,  8 Oct 2020 13:45:24 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id z22so7553378wmi.0;
-        Thu, 08 Oct 2020 13:45:24 -0700 (PDT)
+        with ESMTP id S1725882AbgJHU7O (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2020 16:59:14 -0400
+Received: from mail-il1-x142.google.com (mail-il1-x142.google.com [IPv6:2607:f8b0:4864:20::142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5F6EC0613D2;
+        Thu,  8 Oct 2020 13:59:13 -0700 (PDT)
+Received: by mail-il1-x142.google.com with SMTP id t18so7156678ilo.12;
+        Thu, 08 Oct 2020 13:59:13 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hlJS54LS1QeMz9CXsMLIWQSJKthUuahxWTnjdupvZw8=;
-        b=Y/D49zWH50fLTwowZ62kkutY8OxokW5uA6tbVKMO713V0yNnGGONc7AA1u638bC0s4
-         KTT9ceEdsiFWvyUU5OFSfKsmb7J10R2wU8EXTmKXR9NaaJeCVYYqyurGgaFqpB7o/tDh
-         Oz4mRzh1eAARN4joHEojuYhmx81sk5yoif4x2Bsbycj3iKuqQnWwsrG8Jf6kwBbfc/Aw
-         0gz3vcwaxCHEEyuwGxwKvR+9wgpCetGf0Lidyc6ZV/RlV99xV0ek1VRiyNDMDZbodLJD
-         KLFmGT0yjhjx/36Lc72iDMBYwjRQXqdrA/6HTb0+VmpVFCmtTNFTFMmE9OfPR9fwDPXa
-         GRzA==
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=8Q/EQhcs1vcXl6exyIHWBGzBWdidXnM11CQoUo331TY=;
+        b=KAZn8tcJYLP4ydNypVbG3Ck4t+RM6ez2oUOjMq+su6SeXb0XTSriximubAzYXzInw5
+         Og3jih//hLjpNmULRctgGP6DboBokziw76yj4uuI095a1pBLWOl7Px8DdNY8kmnaao0+
+         f/IeKu8AEbyF6kk8DITlH7ehMIjgZFlRTTX9eZT81tCaCnvv1ckJvJjN1/dB5KBPDqSC
+         58X8WdFdo+M1knd2VYnpkJvVHwU2yXUYccrTIgziHZMqPLFzwn3OtgDkJsPn6E7Vj4xA
+         +aMCK+m/rKui3CdhiFBEnj7mHOtY4h+AWX2tcwihUcOCEHgdSCn1PZfaSQgvebW5AtUy
+         yukg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=hlJS54LS1QeMz9CXsMLIWQSJKthUuahxWTnjdupvZw8=;
-        b=HmQVDVjx6J/wqIyl8n5Pv35SHzMknoFTe7pTSPwjS0VBcjVTO2jx1VHzcihMWRbIID
-         23weXrCUZqX3vfseXBqLx5f4IGzCEW/h9Jfdar/wTJdJ4orKW7TYhVryrtfbCmDfNS9y
-         8ab7NxSB1JUJv1gaSXv3j5JfpskoAPjSO0CZ98TcLmH60tjdINRkODOlvS8qdA0EOmpj
-         UQo61f96KrvEVMAvmJtJ7WCjSQcPzhICXvBg/+v/nJU3T/P2EEK8zQH0VD4/nGOT6Qjq
-         dCnsapVKYozIQKWpKlP3B+n7yugL0pqsWt9jq3u5Nf9OB36IaAPghrGy0ztjMOsYsdW6
-         Rntw==
-X-Gm-Message-State: AOAM530v8tNwwEtgEiR/nVCD4K9R3tSaXvHKuH2NPzsZ09XZSzmscFX+
-        uvV4ChpaMO501X2NpRSKO9M=
-X-Google-Smtp-Source: ABdhPJza7b1khwnjBmQP+L5sWLHROePRe7riFfCVoxP/UexYqgksh2pbERzzPt7d0zXz//IDCf0sdQ==
-X-Received: by 2002:a1c:6457:: with SMTP id y84mr10320458wmb.36.1602189921783;
-        Thu, 08 Oct 2020 13:45:21 -0700 (PDT)
-Received: from IcarusMOD.eternityproject.eu ([2.237.20.237])
-        by smtp.gmail.com with ESMTPSA id o14sm8640103wmc.36.2020.10.08.13.45.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 08 Oct 2020 13:45:21 -0700 (PDT)
-From:   kholk11@gmail.com
-To:     bjorn.andersson@linaro.org
-Cc:     robh+dt@kernel.org, agross@kernel.org, georgi.djakov@linaro.org,
-        kholk11@gmail.com, marijns95@gmail.com, konradybcio@gmail.com,
-        martin.botka1@gmail.com, linux-arm-msm@vger.kernel.org,
-        phone-devel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 0/2] Add SDM630/636/660 interconnect driver
-Date:   Thu,  8 Oct 2020 22:45:13 +0200
-Message-Id: <20201008204515.695210-1-kholk11@gmail.com>
-X-Mailer: git-send-email 2.28.0
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=8Q/EQhcs1vcXl6exyIHWBGzBWdidXnM11CQoUo331TY=;
+        b=stITGCmOv61yhU/gLYjWf9OzSY5lOEWi54iIXrVb6uJazR6ueeIH7vymSgBaMkT6Mq
+         RFlU90E2TrcWdjtOM734yXAmUhzCVI+RLeJIuZ5+EZMXw6sN4qodB7uUEXlatPN3v/Qx
+         jJWhMppWoLyDtTu6WUsuQa9QDDCEStFi+Kyl1uEiW6o+4kdS83bL1p8p8zFyQGLo/L/J
+         RMkxKT+zBWJxuEe+62XbETYWS0RZLbprOAlkEtAonUbkrLIK2YMavJCzKisGtm7ScUsQ
+         OXK+TfR91+Zm18U22ywMx9JeWXWcnaT3rIu4l5BZYYQdIWUV6kYos16I7fclwxYUzMQN
+         29ng==
+X-Gm-Message-State: AOAM532Gw2AeLa7T2DMkx4R2mrTPUZUumvJiGw4BOy7KL0z0URX0mUM1
+        HCWhdcSialZyfS8JtmcVsf9+J09dutsB9PewgJM9pVg1poI=
+X-Google-Smtp-Source: ABdhPJzPN71Uweb2NW0+SHEvtXJUe+jkBXhHFgRUldBdFWWCKN+x53Q6fjP3BNAJzXUq3qESPxCM4O7wQlRZ4c0bDOc=
+X-Received: by 2002:a92:d906:: with SMTP id s6mr7883981iln.89.1602190752682;
+ Thu, 08 Oct 2020 13:59:12 -0700 (PDT)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20200911123157.759379-1-aford173@gmail.com>
+In-Reply-To: <20200911123157.759379-1-aford173@gmail.com>
+From:   Adam Ford <aford173@gmail.com>
+Date:   Thu, 8 Oct 2020 15:59:01 -0500
+Message-ID: <CAHCN7xK2TQsjFUCty2TFgx9HsPMvuuSF6ae5iKCouWFsv7Npzw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] thermal: ti-soc-thermal: Enable addition power management
+To:     linux-pm@vger.kernel.org, Linux-OMAP <linux-omap@vger.kernel.org>
+Cc:     Adam Ford-BE <aford@beaconembedded.com>,
+        kernel test robot <lkp@intel.com>,
+        Andreas Kemnade <andreas@kemnade.info>,
+        Tony Lindgren <tony@atomide.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>, Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        arm-soc <linux-arm-kernel@lists.infradead.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: AngeloGioacchino Del Regno <kholk11@gmail.com>
+On Fri, Sep 11, 2020 at 7:32 AM Adam Ford <aford173@gmail.com> wrote:
+>
+> The bandgap sensor can be idled when the processor is too, but it
+> isn't currently being done, so the power consumption of OMAP3
+> boards can elevated if the bangap sensor is enabled.
+>
+> This patch attempts to use some additional power management
+> to idle the clock to the bandgap when not needed.
+>
+> Signed-off-by: Adam Ford <aford173@gmail.com>
+> Reported-by: kernel test robot <lkp@intel.com>
+> Tested-by: Andreas Kemnade <andreas@kemnade.info> # GTA04
+> ---
+> V3:  bandgap_omap_cpu_notifier is only defined when CONFIG_PM_SLEEP
+>      is enabled, so make all references to it also depend on
+>      CONFIG_PM_SLEEP as well
+>
 
-This patch series adds the SDM660 interconnect provider driver in
-order to stop some timeouts and achieve some decent performance by
-avoiding to be NoC limited.
-It's also providing some power consumption improvement, but I have
-only measured that as less heat, which is quite important when
-working on thermally constrained devices like smartphones.
+Gentle nudge on this one.  It was in the queue for a while, and got
+lost, then resurrected again.
 
-Please note that this driver's yaml binding is referring to a MMCC
-clock, so this series does depend on the SDM660 MMCC driver that I
-have sent separately.
-The multimedia clock is required only for the Multimedia NoC (mnoc).
+thanks
 
-This patch series has been tested against the following devices:
- - Sony Xperia XA2 Ultra (SDM630 Nile Discovery)
- - Sony Xperia 10        (SDM630 Ganges Kirin)
- - Sony Xperia 10 Plus   (SDM636 Ganges Mermaid)
+adam
 
-Changes in v2:
- - Added missing qcom,mmcc-sdm660.h dt-binding include in the
-   interconnect/qcom,sdm660.yaml binding, as pointed out by
-   Rob Herring
-
-Changes in v3:
- - Moved the dt-bindings/interconnect/qcom,sdm660.h header
-   to dt-bindings commit.
-
-AngeloGioacchino Del Regno (2):
-  dt-bindings: interconnect: Add bindings for Qualcomm SDM660 NoC
-  interconnect: qcom: Add SDM660 interconnect provider driver
-
- .../bindings/interconnect/qcom,sdm660.yaml    | 147 +++
- drivers/interconnect/qcom/Kconfig             |   9 +
- drivers/interconnect/qcom/Makefile            |   2 +
- drivers/interconnect/qcom/sdm660.c            | 919 ++++++++++++++++++
- .../dt-bindings/interconnect/qcom,sdm660.h    | 116 +++
- 5 files changed, 1193 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/interconnect/qcom,sdm660.yaml
- create mode 100644 drivers/interconnect/qcom/sdm660.c
- create mode 100644 include/dt-bindings/interconnect/qcom,sdm660.h
-
--- 
-2.28.0
-
+> V2: Fix issue where variable stating the suspend mode isn't being
+>     properly set and cleared.
+>
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.c b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> index ab19ceff6e2a..5e596168ba73 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.c
+> @@ -25,10 +25,20 @@
+>  #include <linux/of_platform.h>
+>  #include <linux/of_irq.h>
+>  #include <linux/io.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/device.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm.h>
+> +#include <linux/of.h>
+> +#include <linux/of_device.h>
+>
+>  #include "ti-bandgap.h"
+>
+>  static int ti_bandgap_force_single_read(struct ti_bandgap *bgp, int id);
+> +#ifdef CONFIG_PM_SLEEP
+> +static int bandgap_omap_cpu_notifier(struct notifier_block *nb,
+> +                                 unsigned long cmd, void *v);
+> +#endif
+>
+>  /***   Helper functions to access registers and their bitfields   ***/
+>
+> @@ -1008,6 +1018,11 @@ int ti_bandgap_probe(struct platform_device *pdev)
+>                 }
+>         }
+>
+> +#ifdef CONFIG_PM_SLEEP
+> +       bgp->nb.notifier_call = bandgap_omap_cpu_notifier;
+> +       cpu_pm_register_notifier(&bgp->nb);
+> +#endif
+> +
+>         return 0;
+>
+>  remove_last_cooling:
+> @@ -1041,7 +1056,9 @@ int ti_bandgap_remove(struct platform_device *pdev)
+>         struct ti_bandgap *bgp = platform_get_drvdata(pdev);
+>         int i;
+>
+> -       /* First thing is to remove sensor interfaces */
+> +       cpu_pm_unregister_notifier(&bgp->nb);
+> +
+> +       /* Remove sensor interfaces */
+>         for (i = 0; i < bgp->conf->sensor_count; i++) {
+>                 if (bgp->conf->sensors[i].unregister_cooling)
+>                         bgp->conf->sensors[i].unregister_cooling(bgp, i);
+> @@ -1150,9 +1167,43 @@ static int ti_bandgap_suspend(struct device *dev)
+>         if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+>                 clk_disable_unprepare(bgp->fclock);
+>
+> +       bgp->is_suspended = true;
+> +
+>         return err;
+>  }
+>
+> +static int bandgap_omap_cpu_notifier(struct notifier_block *nb,
+> +                                 unsigned long cmd, void *v)
+> +{
+> +       struct ti_bandgap *bgp;
+> +
+> +       bgp = container_of(nb, struct ti_bandgap, nb);
+> +
+> +       spin_lock(&bgp->lock);
+> +       switch (cmd) {
+> +       case CPU_CLUSTER_PM_ENTER:
+> +               if (bgp->is_suspended)
+> +                       break;
+> +               ti_bandgap_save_ctxt(bgp);
+> +               ti_bandgap_power(bgp, false);
+> +               if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+> +                       clk_disable(bgp->fclock);
+> +               break;
+> +       case CPU_CLUSTER_PM_ENTER_FAILED:
+> +       case CPU_CLUSTER_PM_EXIT:
+> +               if (bgp->is_suspended)
+> +                       break;
+> +               if (TI_BANDGAP_HAS(bgp, CLK_CTRL))
+> +                       clk_enable(bgp->fclock);
+> +               ti_bandgap_power(bgp, true);
+> +               ti_bandgap_restore_ctxt(bgp);
+> +               break;
+> +       }
+> +       spin_unlock(&bgp->lock);
+> +
+> +       return NOTIFY_OK;
+> +}
+> +
+>  static int ti_bandgap_resume(struct device *dev)
+>  {
+>         struct ti_bandgap *bgp = dev_get_drvdata(dev);
+> @@ -1161,6 +1212,7 @@ static int ti_bandgap_resume(struct device *dev)
+>                 clk_prepare_enable(bgp->fclock);
+>
+>         ti_bandgap_power(bgp, true);
+> +       bgp->is_suspended = false;
+>
+>         return ti_bandgap_restore_ctxt(bgp);
+>  }
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-bandgap.h b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> index fce4657e9486..ed0ea4b17b25 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> +++ b/drivers/thermal/ti-soc-thermal/ti-bandgap.h
+> @@ -12,6 +12,10 @@
+>  #include <linux/spinlock.h>
+>  #include <linux/types.h>
+>  #include <linux/err.h>
+> +#include <linux/cpu_pm.h>
+> +#include <linux/device.h>
+> +#include <linux/pm_runtime.h>
+> +#include <linux/pm.h>
+>
+>  struct gpio_desc;
+>
+> @@ -203,6 +207,8 @@ struct ti_bandgap {
+>         int                             irq;
+>         struct gpio_desc                *tshut_gpiod;
+>         u32                             clk_rate;
+> +       struct notifier_block           nb;
+> +       unsigned int is_suspended:1;
+>  };
+>
+>  /**
+> --
+> 2.25.1
+>
