@@ -2,145 +2,106 @@ Return-Path: <SRS0=GrBh=DP=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D016C43467
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:41:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CE4C8C4363A
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 10:14:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 233DB21897
-	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 07:41:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="qbxZ4bkL"
+	by mail.kernel.org (Postfix) with ESMTP id 3EEF120708
+	for <linux-pm@archiver.kernel.org>; Thu,  8 Oct 2020 10:14:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728243AbgJHHkz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 8 Oct 2020 03:40:55 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:46079 "EHLO
-        mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727819AbgJHHku (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 8 Oct 2020 03:40:50 -0400
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout1.samsung.com (KnoxPortal) with ESMTP id 20201008074048epoutp01914b0f70202b8d6f80c92d597cfb61b6~79G6jfaF61010910109epoutp01g
-        for <linux-pm@vger.kernel.org>; Thu,  8 Oct 2020 07:40:48 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.samsung.com 20201008074048epoutp01914b0f70202b8d6f80c92d597cfb61b6~79G6jfaF61010910109epoutp01g
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1602142848;
-        bh=tnVpPq5RduDpY/hro1ifqwIj0aBN5FZ2kF5JbnaqwLE=;
-        h=From:To:Cc:Subject:Date:References:From;
-        b=qbxZ4bkLr6DV4tiUUKscoaFmLTQZVHUH+qozo2oOQB3mUkl+56zCBqDUcXlj3iUb/
-         y6w8C1BrkFc2QfLvaWbFom7g3twEn+nHsWpNagcx1L4tggEYKQAt0B+yLWueWjQZJM
-         RzH0aJKzuWgHq393v0jGnuXPnCD9iWsWCoY0LX74=
-Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20201008074047epcas1p27f32825fc2ab3d151a9e5897349a77ef~79G6Cja2b0879108791epcas1p26;
-        Thu,  8 Oct 2020 07:40:47 +0000 (GMT)
-Received: from epsmges1p1.samsung.com (unknown [182.195.40.154]) by
-        epsnrtp4.localdomain (Postfix) with ESMTP id 4C6NRH5ZkMzMqYkb; Thu,  8 Oct
-        2020 07:40:43 +0000 (GMT)
-Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
-        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
-        4E.2C.09543.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
-Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15~79GzypXgW1333513335epcas1p16;
-        Thu,  8 Oct 2020 07:40:41 +0000 (GMT)
-Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
-        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20201008074041epsmtrp1134546067f4fa22f6debf47f9d99a476~79GzyAxK72784527845epsmtrp10;
-        Thu,  8 Oct 2020 07:40:41 +0000 (GMT)
-X-AuditID: b6c32a35-35dff70000002547-cd-5f7ec2790be4
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        4C.5D.08745.972CE7F5; Thu,  8 Oct 2020 16:40:41 +0900 (KST)
-Received: from localhost.localdomain (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20201008074040epsmtip1579bd5b0901662e0c16af30e051e17c6~79GzgNg8y3068830688epsmtip1Q;
-        Thu,  8 Oct 2020 07:40:40 +0000 (GMT)
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     mka@chromium.org, rostedt@goodmis.org, mingo@redhat.com,
-        cw00.choi@samsung.com, chanwoo@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [PATCH 0/3] PM / devfreq: Add devfreq_frequency tracepoint to track
- frequency change
-Date:   Thu,  8 Oct 2020 16:54:00 +0900
-Message-Id: <20201008075403.26181-1-cw00.choi@samsung.com>
-X-Mailer: git-send-email 2.17.1
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrIKsWRmVeSWpSXmKPExsWy7bCmgW7lobp4g45rehYTb1xhsbj+5Tmr
-        xdmmN+wWl3fNYbP43HuE0eLSgQVMFp83PGa0uN24gs1iX8cDJgdOj9kNF1k8WvbdYvfYtKqT
-        zeP9vqtsHn1bVjF6fN4kF8AWlW2TkZqYklqkkJqXnJ+SmZduq+QdHO8cb2pmYKhraGlhrqSQ
-        l5ibaqvk4hOg65aZA3SVkkJZYk4pUCggsbhYSd/Opii/tCRVISO/uMRWKbUgJafAskCvODG3
-        uDQvXS85P9fK0MDAyBSoMCE74+/6n8wFDzkrfqw/wN7AOIGji5GTQ0LAROLthWbmLkYuDiGB
-        HYwSRxb/ZodwPjFKdLy6wgLhfGaUWLR2FytMy5f7zVCJXYwSOzbsYIVwvjBKHNtxnxmkik1A
-        S2L/ixtsILaIgJXE6f8dYEuYBeYzSvy9+5MRJCEsEC9xrfkAWAOLgKrEz2cH2UFsXqCGpw3L
-        2SDWyUus3nAArFlC4BS7xKQtn5ghEi4S/2e8Z4SwhSVeHd/CDmFLSbzsb4OyqyVWnjzCBtHc
-        wSixZf8FqCeMJfYvnczUxcgBdJKmxPpd+hBhRYmdv+eCzWQW4JN497WHFaREQoBXoqNNCKJE
-        WeLyg7tMELakxOL2Tqg7PSS2td0EO01IIFZi0uVdjBMYZWchLFjAyLiKUSy1oDg3PbXYsMAQ
-        OZ42MYLTmpbpDsaJbz/oHWJk4mA8xCjBwawkwpvuXRMvxJuSWFmVWpQfX1Sak1p8iNEUGGAT
-        maVEk/OBiTWvJN7Q1MjY2NjCxNDM1NBQSZz34S2FeCGB9MSS1OzU1ILUIpg+Jg5OqQambGv7
-        zdwHn91d/a5OzrOhOOaK1MymQF9B5ocnolcoJ1gJT13sNyG8YeIk0yqT89I76o/oL78oPTd6
-        /iEFKQuh2Wm3Ww5FlJnqeJ239CvWuDiPb1NW8M78dr5bU+5tvSVcau9ywIyFTXrTb+njAuUR
-        q45tWqJ3zTrlZOnbD0+XxJ6ZIceZ/4Ote9aKaYb3m85w+Cv+tOJj9p4t1qN77csnh6RFQu9n
-        Xg1PE1WqM//EUen99e6/TVvuSfhaP1Zx4Et4veF866Ku8BlXCl7tF/d5Mql9/fZIAQ/ezOtx
-        +40YTwc47bL91Tnprj1jxM5dL58GFCxzS+10ylKv0p0p06k0d/vyzcEJnb6VffMSduxWYinO
-        SDTUYi4qTgQATNuNgvQDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFuplluLIzCtJLcpLzFFi42LZdlhJTrfyUF28waJtbBYTb1xhsbj+5Tmr
-        xdmmN+wWl3fNYbP43HuE0eLSgQVMFp83PGa0uN24gs1iX8cDJgdOj9kNF1k8WvbdYvfYtKqT
-        zeP9vqtsHn1bVjF6fN4kF8AWxWWTkpqTWZZapG+XwJXxd/1P5oKHnBU/1h9gb2CcwNHFyMkh
-        IWAi8eV+M0sXIxeHkMAORol70/czQiQkJaZdPMrcxcgBZAtLHD5cDFHziVFi4fMGsBo2AS2J
-        /S9usIHYIgI2EncXX2MBsZkFljNKzG0VBLGFBWIlTk1dzgxiswioSvx8dpAdxOYVsJJ42rCc
-        DWKXvMTqDQeYJzDyLGBkWMUomVpQnJueW2xYYJSXWq5XnJhbXJqXrpecn7uJERxiWlo7GPes
-        +qB3iJGJg/EQowQHs5IIb7p3TbwQb0piZVVqUX58UWlOavEhRmkOFiVx3q+zFsYJCaQnlqRm
-        p6YWpBbBZJk4OKUamE5PvCprkfdQ6PeGhdOvdAlz5e5rX75ZIMbZ/5rLitRY/5mzux8kKoWL
-        P+GYsDleNnrHkivzV+tPjc5IqPWfqX3x4p51RYWP2yfMdmO6vLOi+MeJDffTGLfeufiZdbHH
-        5eO6xq80S556PDWsDW7dfOUU55m3TL82aOfd5JWNuCeqeIzT8eTqWUZvr8fZJXc63QiYOnPL
-        2t7knctaBV7Ez2JjOvj/wlt3E3km9V+hIhu3PGBpO7W/h0FMo/17y69i6TsTbOprPC+q5HKU
-        bzm7dzHT3rnunsbskx22cj2JcWD37r+/bvaEgz93Oh522yX67N2ZgPcHp6ptM1mZ0VFs98r1
-        UP4JH2tXXTmH+hmZr1KVWIozEg21mIuKEwER+n0MoAIAAA==
-X-CMS-MailID: 20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15
-References: <CGME20201008074041epcas1p14111dc3070c66fce8d775e2fbae39f15@epcas1p1.samsung.com>
+        id S1729366AbgJHKOh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 8 Oct 2020 06:14:37 -0400
+Received: from foss.arm.com ([217.140.110.172]:48508 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729341AbgJHKOh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 8 Oct 2020 06:14:37 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 38C9631B;
+        Thu,  8 Oct 2020 03:14:36 -0700 (PDT)
+Received: from localhost (unknown [10.1.199.49])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CE4CD3F70D;
+        Thu,  8 Oct 2020 03:14:35 -0700 (PDT)
+Date:   Thu, 8 Oct 2020 11:14:34 +0100
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        daniel.lezcano@linaro.org, amitk@kernel.org,
+        Dietmar.Eggemann@arm.com
+Subject: Re: [PATCH 2/2] thermal: power allocator: estimate sustainable power
+ only once
+Message-ID: <20201008101434.GA23491@arm.com>
+References: <20201002122416.13659-1-lukasz.luba@arm.com>
+ <20201002122416.13659-3-lukasz.luba@arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201002122416.13659-3-lukasz.luba@arm.com>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add devfreq_tracepoint to track the correct timing of frequency change
-with following information:
-- device name
-- current frequency
-- previous frequency
-- load when change frequency
-- tracepoint path : /sys/kernel/debug/tracing/events/devfreq_frequency
+Hi Lukasz,
 
-And add devfreq_update_target() function to unify the frequency change code
-on both devfreq core and devfreq passive governor because there are redundant
-duplicate code. Lastly, Use fixed indentation size to improve readability
-for 'devfreq_monitor' tracepoint.
+On Friday 02 Oct 2020 at 13:24:16 (+0100), Lukasz Luba wrote:
+> The sustainable power value might come from the Device Tree or can be
+> estimated in run time. There is no need to estimate every time when the
+> governor is called and temperature is high. Instead, store the estimated
+> value and make it available via standard sysfs interface so it can be
+> checked from the user-space.
+> 
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  drivers/thermal/gov_power_allocator.c | 2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+> index f69fafe486a5..dd59085f38f5 100644
+> --- a/drivers/thermal/gov_power_allocator.c
+> +++ b/drivers/thermal/gov_power_allocator.c
+> @@ -204,6 +204,8 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+>  		estimate_pid_constants(tz, sustainable_power,
+>  				       params->trip_switch_on, control_temp,
+>  				       true);
+> +		/* Do the estimation only once and make available in sysfs */
+> +		tz->tzp->sustainable_power = sustainable_power;
 
-Matthias already sent the patch[1]. Make patch3 by editing patch[1].
-[1]https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg2108015.html
+After looking over the code, it does seems mostly useless to do the
+estimation every time the controller kicks in.
 
-Chanwoo Choi (2):
-  trace: events: devfreq: Use fixed indentation size to improve readability
-  PM / devfreq: Unify frequency change to devfreq_update_target func
+But I have two comments in this regard:
 
-Matthias Kaehlcke (1):
-  PM / devfreq: Add tracepoint for frequency changes
+ - The estimation is dependent on the temperature we control for which
+   can be changed from sysfs. While I don't see that as a big worry,
+   (sustainable power is an estimation anyway), it might be worth a
+   more detailed comment on why we don't expect this to be a problem,
+   or what we expect the consequences of computing sustainable power
+   only once could be.
 
- drivers/devfreq/devfreq.c          | 37 +++++++++++++++++++++-----
- drivers/devfreq/governor.h         |  1 +
- drivers/devfreq/governor_passive.c | 42 +++++++-----------------------
- include/trace/events/devfreq.h     | 30 ++++++++++++++++++++-
- 4 files changed, 70 insertions(+), 40 deletions(-)
+ - In the function comment for estimate_pid_constants() there is a
+   mention of sustainable power:
+   """
+    * Sustainable power is provided in case it was estimated.  The
+    * estimated sustainable_power should not be stored in the
+    * thermal_zone_parameters so it has to be passed explicitly to this
+    * function.
+   """
+   If we are going to compute the sustainable power estimation only once,
+   this comment should be removed, the estimated value should be added to
+   the trip point parameters before estimate_pid_constants(), and the
+   sustainable_power argument should be removed.
+   Otherwise we end up with conflicting information in the code.
 
--- 
-2.17.1
+Regards,
+Ionela.
 
+>  	}
+>  
+>  	err = control_temp - tz->temperature;
+> -- 
+> 2.17.1
+> 
