@@ -5,58 +5,58 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96611C4363D
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EC1CC35266
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B1EB222E7
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 10628222E7
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="yqYEPrXt"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OW/J3NuW"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388745AbgJIPpV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Oct 2020 11:45:21 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36946 "EHLO
+        id S2389470AbgJIPpe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Oct 2020 11:45:34 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37016 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389449AbgJIPpT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2020 11:45:19 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E324EC0613D9
-        for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2020 08:45:18 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id b22so11124374lfs.13
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2020 08:45:18 -0700 (PDT)
+        with ESMTP id S2389366AbgJIPpd (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2020 11:45:33 -0400
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1FCC7C0613D2
+        for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2020 08:45:33 -0700 (PDT)
+Received: by mail-lj1-x241.google.com with SMTP id a4so10030747lji.12
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2020 08:45:33 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=ppiJR77c+oyF2YPqQViuqav70ajnTqRX4XIvZy2HLv8=;
-        b=yqYEPrXtJyHyKi78NpIfgz5NJR/HgrPDcP6uMGuIC4u0TUtMT4AA7NoczlaHwwX7B+
-         pYJkQ5KsqWfwbWrk2k8FosS4kEM3ogb1vLag84mjjvdf0z1htGRt/g+DqFiK4WHjIThJ
-         StqYkJTnYYV/14APbiQylu0L9ucP1PA079pi9rF4qfixfaXbwgNvTpJ7zz2duL8pRkSn
-         vcnc7ohe5rh7HbDCDZ3mO/5NvgFmKdA68ASpGulzI19MGJKWU2jPpCYzQIBAZPhM69yD
-         CtQwCTD/ST2FPLV4qfVyiKgPntjmK2Z4zWtlzKFYOKZkdn0Ww5yb5A+/3NbM+lSyfMHM
-         Fdzw==
+        bh=IX5J13tHQBhV3OyuAx16FFIRHXqfdlDIoHquJV7x6Go=;
+        b=OW/J3NuWgPhMJqoOfdBVFraYf0bvh6VUfD9NDs0qFesTezLa3BEyOQPDm1pGtDqfhz
+         DSEiT09DGZOIOPqEKK3b9MqufIMif0m9O2l5cMWpWL3ucBxEm6H94Z9Z55IlK54twjTG
+         ctrihc7EcyCpOGY2yWph6/DH6Ej129C5woSLKuyqaz6lngtc2ySk+XsIWBujE/2VPElr
+         t05o0iSxbYO50tvhq2vEyMIJm1Lt0kuZBd1hmc2TWuma4fMmeRifl48Jypjild4tSnO0
+         JGLcb6Inxn/bpTGUVSowy1gmD8/mOZAqea6rasV0dcad/sREbxOXIjQ/jNu+E1xxloZV
+         o7aA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=ppiJR77c+oyF2YPqQViuqav70ajnTqRX4XIvZy2HLv8=;
-        b=lGDKxdrSl+Qrn3TC4ZTbbc22oLcIrJZ4cw97NaMrF9SzDaydVi5n82ToH9IYvcwJOr
-         Oi33GjMpGyK8K8je0H1rLuzjsIl3WVEtfgm6uYv7Z93f9B6cpjutFKHAhofLI6qNKeDW
-         AcdNLbioFx7p56RzCbsS4NHNEFqTJuygH5LNTEVbAbwZRXBd39itF2kE0iFd9CwkCFi3
-         Jl+wCpyPVN1SnhKD80jOenfDvGn7v/x8K0ofaPJhojmkIv8kLf9t0yveYCEmgbF1j66k
-         l0unyTpjdzT7X+kXmixvfq1nj/rwUC98cDN5ZnorLsvJOIzth42mHShUalHHHBjdobfl
-         bSDw==
-X-Gm-Message-State: AOAM532cXO3XrXkQJYuO/NWAlfXxift+kuh8wTkqCrMXtzY0melxuETw
-        JlPMQaYV92S9hDDjKmQxDAXudg==
-X-Google-Smtp-Source: ABdhPJzv6xde0hahyKDw5usEElwUcSIYhD7oBaPoeyTWik0BrSxwu6tuUQAYfGKITywwCTiMOdhtfw==
-X-Received: by 2002:a19:f245:: with SMTP id d5mr4100476lfk.97.1602258317288;
-        Fri, 09 Oct 2020 08:45:17 -0700 (PDT)
+        bh=IX5J13tHQBhV3OyuAx16FFIRHXqfdlDIoHquJV7x6Go=;
+        b=A3rjkGNp7KhkBK9O/SvF3MzB6Ih0A+puKNkArBAL/B5JuERQdnvKETKiksP+BNt2v1
+         ui9WtoCUzvOg5ZT/9OPckRCFabxkOON4NsnsmWxXIY8WULvl60tQTVCOacgyIXKGZMxd
+         xx/+oTpvfaga4yUxfgetRvPNQLn+iw9p3uAeAIOnhSXeIzcGsYV6SpWQqs+d2dK8fQ+M
+         WtCHE74EgELBIKSuhQhPw2xNS0ttHCXf7VjystaNzSmdv7FL9oqTCDS9OJm5welHx+GV
+         3SQYYkZwMh3aeF9gKAbfQ4NFM+KLTWq2wU7BhfSVJWCk0U1Lgiyq2biLo4ZGZvdyka+d
+         T5VA==
+X-Gm-Message-State: AOAM533/326c+iSSmZCA4ENmmzG3iwzxw2dKFVdy8WsvjWEAsGG8+C+F
+        oaqOGq1vNdoXLuChCeZ+E9t34Q==
+X-Google-Smtp-Source: ABdhPJyvn95Q+H4xMOp8MLAZtA/DwvP5V5KUYAIXkHEuyG8JrM0WAG/hVq9f+wA8MbcHlFHscr57Dw==
+X-Received: by 2002:a2e:b557:: with SMTP id a23mr5586986ljn.0.1602258331537;
+        Fri, 09 Oct 2020 08:45:31 -0700 (PDT)
 Received: from eriador.lan ([188.162.65.231])
-        by smtp.gmail.com with ESMTPSA id r4sm1505597lfc.162.2020.10.09.08.45.14
+        by smtp.gmail.com with ESMTPSA id r4sm1505597lfc.162.2020.10.09.08.45.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Oct 2020 08:45:16 -0700 (PDT)
+        Fri, 09 Oct 2020 08:45:30 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -72,9 +72,9 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         Jishnu Prakash <jprakash@qti.qualcomm.com>
-Subject: [PATCH v8 05/11] iio: adc: move qcom-vadc-common.h to include dir
-Date:   Fri,  9 Oct 2020 18:44:53 +0300
-Message-Id: <20201009154459.106189-6-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v8 10/11] arm64: dts: sm8250-mtp: add thermal zones using pmic's adc-tm5
+Date:   Fri,  9 Oct 2020 18:44:58 +0300
+Message-Id: <20201009154459.106189-11-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201009154459.106189-1-dmitry.baryshkov@linaro.org>
 References: <20201009154459.106189-1-dmitry.baryshkov@linaro.org>
@@ -84,117 +84,240 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-qcom-vadc-common module will be used by ADC thermal monitoring driver,
-so move it to global include dir.
+Port thermal zones definitions from msm-4.19 tree. Enable and add
+channel configuration to PMIC's ADC-TM definitions. Declare thermal
+zones and respective trip points.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 ---
- drivers/iio/adc/qcom-pm8xxx-xoadc.c                   | 3 +--
- drivers/iio/adc/qcom-spmi-adc5.c                      | 2 +-
- drivers/iio/adc/qcom-spmi-vadc.c                      | 3 +--
- drivers/iio/adc/qcom-vadc-common.c                    | 3 +--
- {drivers => include/linux}/iio/adc/qcom-vadc-common.h | 2 ++
- 5 files changed, 6 insertions(+), 7 deletions(-)
- rename {drivers => include/linux}/iio/adc/qcom-vadc-common.h (99%)
+ arch/arm64/boot/dts/qcom/sm8250-mtp.dts | 207 ++++++++++++++++++++++++
+ 1 file changed, 207 insertions(+)
 
-diff --git a/drivers/iio/adc/qcom-pm8xxx-xoadc.c b/drivers/iio/adc/qcom-pm8xxx-xoadc.c
-index 7e108da7d255..0610bf254771 100644
---- a/drivers/iio/adc/qcom-pm8xxx-xoadc.c
-+++ b/drivers/iio/adc/qcom-pm8xxx-xoadc.c
-@@ -10,6 +10,7 @@
-  * Author: Linus Walleij <linus.walleij@linaro.org>
-  */
+diff --git a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+index 98675e1f8204..95050f7d11f2 100644
+--- a/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
++++ b/arch/arm64/boot/dts/qcom/sm8250-mtp.dts
+@@ -24,6 +24,104 @@ chosen {
+ 		stdout-path = "serial0:115200n8";
+ 	};
  
-+#include <linux/iio/adc/qcom-vadc-common.h>
- #include <linux/iio/iio.h>
- #include <linux/iio/sysfs.h>
- #include <linux/module.h>
-@@ -21,8 +22,6 @@
- #include <linux/interrupt.h>
- #include <linux/regulator/consumer.h>
- 
--#include "qcom-vadc-common.h"
--
- /*
-  * Definitions for the "user processor" registers lifted from the v3.4
-  * Qualcomm tree. Their kernel has two out-of-tree drivers for the ADC:
-diff --git a/drivers/iio/adc/qcom-spmi-adc5.c b/drivers/iio/adc/qcom-spmi-adc5.c
-index c2da8f068b87..b10a0fcf09dc 100644
---- a/drivers/iio/adc/qcom-spmi-adc5.c
-+++ b/drivers/iio/adc/qcom-spmi-adc5.c
-@@ -7,6 +7,7 @@
- #include <linux/completion.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-+#include <linux/iio/adc/qcom-vadc-common.h>
- #include <linux/iio/iio.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
-@@ -19,7 +20,6 @@
- #include <linux/slab.h>
- 
- #include <dt-bindings/iio/qcom,spmi-vadc.h>
--#include "qcom-vadc-common.h"
- 
- #define ADC5_USR_REVISION1			0x0
- #define ADC5_USR_STATUS1			0x8
-diff --git a/drivers/iio/adc/qcom-spmi-vadc.c b/drivers/iio/adc/qcom-spmi-vadc.c
-index b0388f8a69f4..05ff948372b3 100644
---- a/drivers/iio/adc/qcom-spmi-vadc.c
-+++ b/drivers/iio/adc/qcom-spmi-vadc.c
-@@ -7,6 +7,7 @@
- #include <linux/completion.h>
- #include <linux/delay.h>
- #include <linux/err.h>
-+#include <linux/iio/adc/qcom-vadc-common.h>
- #include <linux/iio/iio.h>
- #include <linux/interrupt.h>
- #include <linux/kernel.h>
-@@ -20,8 +21,6 @@
- 
- #include <dt-bindings/iio/qcom,spmi-vadc.h>
- 
--#include "qcom-vadc-common.h"
--
- /* VADC register and bit definitions */
- #define VADC_REVISION2				0x1
- #define VADC_REVISION2_SUPPORTED_VADC		1
-diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index 40d77b3af1bb..ee94774b72e6 100644
---- a/drivers/iio/adc/qcom-vadc-common.c
-+++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -3,14 +3,13 @@
- #include <linux/kernel.h>
- #include <linux/bitops.h>
- #include <linux/fixp-arith.h>
-+#include <linux/iio/adc/qcom-vadc-common.h>
- #include <linux/math64.h>
- #include <linux/log2.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/units.h>
- 
--#include "qcom-vadc-common.h"
--
- /* Voltage to temperature */
- static const struct vadc_map_pt adcmap_100k_104ef_104fb[] = {
- 	{1758,	-40},
-diff --git a/drivers/iio/adc/qcom-vadc-common.h b/include/linux/iio/adc/qcom-vadc-common.h
-similarity index 99%
-rename from drivers/iio/adc/qcom-vadc-common.h
-rename to include/linux/iio/adc/qcom-vadc-common.h
-index 7e5f6428e311..03a9119edc71 100644
---- a/drivers/iio/adc/qcom-vadc-common.h
-+++ b/include/linux/iio/adc/qcom-vadc-common.h
-@@ -6,6 +6,8 @@
- #ifndef QCOM_VADC_COMMON_H
- #define QCOM_VADC_COMMON_H
- 
-+#include <linux/types.h>
++	thermal-zones {
++		xo-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 0>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
 +
- #define VADC_CONV_TIME_MIN_US			2000
- #define VADC_CONV_TIME_MAX_US			2100
++		skin-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 1>;
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		mmw-pa1 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150_adc_tm 2>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		conn-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150b_adc_tm 0>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		camera-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 0>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		skin-msm-therm {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 1>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++
++		mmw-pa2 {
++			polling-delay-passive = <0>;
++			polling-delay = <0>;
++			thermal-sensors = <&pm8150l_adc_tm 2>;
++
++			trips {
++				active-config0 {
++					temperature = <125000>;
++					hysteresis = <1000>;
++					type = "passive";
++				};
++			};
++		};
++	};
++
+ 	vph_pwr: vph-pwr-regulator {
+ 		compatible = "regulator-fixed";
+ 		regulator-name = "vph_pwr";
+@@ -378,6 +476,115 @@ &i2c15 {
+ 	/* rtc6226 @ 64 */
+ };
  
++&pm8150_adc {
++	xo-therm@4c {
++		reg = <ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm1@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150b_adc {
++	conn-therm@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150l_adc {
++	camera-flash-therm@4d {
++		reg = <ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	skin-msm-therm@4e {
++		reg = <ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++
++	pa-therm2@4f {
++		reg = <ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time = <200>;
++	};
++};
++
++&pm8150_adc_tm {
++	status = "okay";
++
++	xo-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150_adc ADC5_XO_THERM_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++
++	skin-therm@1 {
++		reg = <1>;
++		io-channels = <&pm8150_adc ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++
++	pa-therm1@2 {
++		reg = <2>;
++		io-channels = <&pm8150_adc ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++};
++
++&pm8150b_adc_tm {
++	status = "okay";
++
++	conn-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150b_adc ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++};
++
++&pm8150l_adc_tm {
++	status = "okay";
++
++	camera-flash-therm@0 {
++		reg = <0>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM1_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++
++	skin-msm-therm@1 {
++		reg = <1>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM2_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++
++	pa-therm2@2 {
++		reg = <2>;
++		io-channels = <&pm8150l_adc ADC5_AMUX_THM3_100K_PU>;
++		qcom,ratiometric;
++		qcom,hw-settle-time-us = <200>;
++	};
++};
++
+ &qupv3_id_0 {
+ 	status = "okay";
+ };
 -- 
 2.28.0
 
