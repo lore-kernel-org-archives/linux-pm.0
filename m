@@ -5,58 +5,58 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B4A6C43457
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5B86EC43467
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2AF3B222C3
-	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C5EA22370
+	for <linux-pm@archiver.kernel.org>; Fri,  9 Oct 2020 15:45:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bwohXV3Y"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a/NyN1qB"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389409AbgJIPpO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 9 Oct 2020 11:45:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36900 "EHLO
+        id S2389443AbgJIPpS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 9 Oct 2020 11:45:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36926 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389252AbgJIPpN (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2020 11:45:13 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 75578C0613D6
-        for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2020 08:45:11 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id f21so10058936ljh.7
-        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2020 08:45:11 -0700 (PDT)
+        with ESMTP id S2389442AbgJIPpQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 9 Oct 2020 11:45:16 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 663D4C0613D5
+        for <linux-pm@vger.kernel.org>; Fri,  9 Oct 2020 08:45:16 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id l2so11195479lfk.0
+        for <linux-pm@vger.kernel.org>; Fri, 09 Oct 2020 08:45:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=u+ec5e/iUjJ8qDBtGE9xKBCADcm1RI8srVHT5OLXlvU=;
-        b=bwohXV3YZo5cTz0TyNBCL/bMBJIwuPprPvrhOn48oBFgGvgBiXBPol+T7jzXJBlYAA
-         jUNORplCm8Wgt6R/yIDhzByfIanKQaRWKUsdeKHBlp9j7NJay5EhVgnn4OsBJuW8J5rT
-         4jY1ipSBsKUbbkCAHXDVjb+xgwIl+w8giDNkvPSQH/N1orSMRnrH/odd77upToDSb/tZ
-         C9bDTxulmJAh7cAMvpxWd8JWMXHySlcOgA90BBBcPtxqwOC2vrjeGvdHFEiwn/cJ+x5H
-         pLGtSKf/BZvDTvSJ6pjLxBWYBYY0TaULkbUVShYJDXk5SqlJa8+bv3Sdc2ab16TnE7Em
-         2sgw==
+        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
+        b=a/NyN1qBHmwcjyJPMEHdonVDKXS7DWlZT4d2U6JHV1IpNhHPzldV8MlqOoalcSg1o7
+         wP7ZM2ZjDX2xuQQPZ6tiOoC1DMuDODzVvubHE4+UiiVYa+Z4KoF0dueQcfjClCvF8htV
+         RT3cQjm/revmjP/04IigW/3kt9Emqc4r6TwrviAbLEnT89/+JGBOWGIWydBCiwZxlD4s
+         fuCdLoaEqRWPJymODD3VMw6Lg32WofShzxPapIcIAbNp9kmmc008k7iCj1ArU1tW7ISb
+         S9ZnYEAY9T8VQmU867y1Cgr3VA2jF9w8w//KbalsQV29ed9WUH3ZCG+5kykuJR/Ws/GY
+         beaw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=u+ec5e/iUjJ8qDBtGE9xKBCADcm1RI8srVHT5OLXlvU=;
-        b=aOiJnBNswofedJPC7jzstUtMw/QGprW5xRA8bPOeu98dCGLNCFLGUAUPSyBD5lmNkm
-         kddw+Ti37jNwRHXmUO5hXGl0H06As3pBKnqs5hWCjdnLkQRINCtFDbqV2SBN/7ett8fN
-         d7RmR9NVlhCymlIKdaQg76YnVsPTICw4vuFTVlk85BlvJc8HQszsaI2dJAv+ovevf/f2
-         Rd9dPKWiojVOEJcVdt2vWbXklWqh93iPbt4AKU+3XXcEjSUIQ7dY5+2pjRNg7VtYtERA
-         wyUh2pMtKKxXJK3u2cduw5Tp2na9mz7o28W7E9zrHd1XjY/oYPZjyZrVlTFGy0JOe71X
-         6Nvg==
-X-Gm-Message-State: AOAM533+n2tHJr5TvNAhofhvjlHuQkrR6agYyyGOtKCezPdmR8ZocIzx
-        UXgS5lz2dR0LwFpmV9yuV9XYlw==
-X-Google-Smtp-Source: ABdhPJx4YT06cf8vN3nDNG3Uu3PKq6LBvxoVB37Y6nn3qXNuVpxuivte4YhuJX4KuTYrszCj94VHFw==
-X-Received: by 2002:a2e:8042:: with SMTP id p2mr4336774ljg.90.1602258309858;
-        Fri, 09 Oct 2020 08:45:09 -0700 (PDT)
+        bh=SyrNRlrzgocwFtm4m1D+vgyjZWlJZcz7p/Dz+/oWD3I=;
+        b=ox8VJbJcEKcOhy8Ty46jhIhZ6nrDJVbNLp408zAwKd/jgh0ywvuqwHDgYbWfZUkj/2
+         Wvo/XTw0IfTmLugsYQ3SCvB6pPksSQWBEK+JF8cbOxUhhVYKw14HZmvrpKQDWGJXXSYU
+         rCd9hWMHQOORl9BPtppEoN0WKKdP3u2mZ0XFW+UMDA7OPrKTHE3qPuxbDv3gTUPrTYzS
+         HEQUIMeZF1JC+3w5g82VfTEu8GAuIQK00Z//hTz74/jxryIPI1TH6WK6NgvcBVmpWAoe
+         8QXFNY/pfejAJ0/hQxAhJpuUKdq+gZNJXVFLETvz15Eelo9oaD7PmgyNTbqFoNoQYS8R
+         vvJw==
+X-Gm-Message-State: AOAM531OgvnGfe3sDgLjXyTM9cZftyMNqrIU6a0+Cg7JPtYMjJtUDuer
+        BhNPgvraxPipZqH/z7/JGOoZVR11D1HAiTuJ
+X-Google-Smtp-Source: ABdhPJxxrCCHXMIr9nzhNuBFrehzppK5IHHmaW65LXYkXPafToY0k0uv9q5i+ToAbCEPA0OZfWUAKw==
+X-Received: by 2002:a05:6512:1182:: with SMTP id g2mr2033086lfr.198.1602258314846;
+        Fri, 09 Oct 2020 08:45:14 -0700 (PDT)
 Received: from eriador.lan ([188.162.65.231])
-        by smtp.gmail.com with ESMTPSA id r4sm1505597lfc.162.2020.10.09.08.45.07
+        by smtp.gmail.com with ESMTPSA id r4sm1505597lfc.162.2020.10.09.08.45.12
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 09 Oct 2020 08:45:09 -0700 (PDT)
+        Fri, 09 Oct 2020 08:45:14 -0700 (PDT)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -72,11 +72,10 @@ Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
         Jishnu Prakash <jprakash@qti.qualcomm.com>,
-        Craig Tatlor <ctatlor97@gmail.com>,
         Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v8 02/11] fixp-arith: add a linear interpolation function
-Date:   Fri,  9 Oct 2020 18:44:50 +0300
-Message-Id: <20201009154459.106189-3-dmitry.baryshkov@linaro.org>
+Subject: [PATCH v8 04/11] iio: adc: qcom-vadc-common: use fixp_linear_interpolate
+Date:   Fri,  9 Oct 2020 18:44:52 +0300
+Message-Id: <20201009154459.106189-5-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.28.0
 In-Reply-To: <20201009154459.106189-1-dmitry.baryshkov@linaro.org>
 References: <20201009154459.106189-1-dmitry.baryshkov@linaro.org>
@@ -86,46 +85,41 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Craig Tatlor <ctatlor97@gmail.com>
+Use new function fixp_linear_interpolate() instead of hand-coding the
+linear interpolation.
 
-Adds a function to interpolate against two points,
-this is carried arount as a helper function by tons of drivers.
-
-Signed-off-by: Craig Tatlor <ctatlor97@gmail.com>
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- include/linux/fixp-arith.h | 19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/iio/adc/qcom-vadc-common.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/fixp-arith.h b/include/linux/fixp-arith.h
-index 8396013785ef..281cb4f83dbe 100644
---- a/include/linux/fixp-arith.h
-+++ b/include/linux/fixp-arith.h
-@@ -141,4 +141,23 @@ static inline s32 fixp_sin32_rad(u32 radians, u32 twopi)
- #define fixp_cos32_rad(rad, twopi)	\
- 	fixp_sin32_rad(rad + twopi / 4, twopi)
+diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
+index d11f3343ad52..40d77b3af1bb 100644
+--- a/drivers/iio/adc/qcom-vadc-common.c
++++ b/drivers/iio/adc/qcom-vadc-common.c
+@@ -2,6 +2,7 @@
+ #include <linux/bug.h>
+ #include <linux/kernel.h>
+ #include <linux/bitops.h>
++#include <linux/fixp-arith.h>
+ #include <linux/math64.h>
+ #include <linux/log2.h>
+ #include <linux/err.h>
+@@ -368,10 +369,9 @@ static int qcom_vadc_map_voltage_temp(const struct vadc_map_pt *pts,
+ 	} else {
+ 		/* result is between search_index and search_index-1 */
+ 		/* interpolate linearly */
+-		*output = (((s32)((pts[i].y - pts[i - 1].y) *
+-			(input - pts[i - 1].x)) /
+-			(pts[i].x - pts[i - 1].x)) +
+-			pts[i - 1].y);
++		*output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
++						  pts[i].x, pts[i].y,
++						  input);
+ 	}
  
-+/**
-+ * fixp_linear_interpolate() - interpolates a value from two known points
-+ *
-+ * @x0: x value of point 0
-+ * @y0: y value of point 0
-+ * @x1: x value of point 1
-+ * @y1: y value of point 1
-+ * @x: the linear interpolant
-+ */
-+static inline int fixp_linear_interpolate(int x0, int y0, int x1, int y1, int x)
-+{
-+	if (y0 == y1 || x == x0)
-+		return y0;
-+	if (x1 == x0 || x == x1)
-+		return y1;
-+
-+	return y0 + ((y1 - y0) * (x - x0) / (x1 - x0));
-+}
-+
- #endif
+ 	return 0;
 -- 
 2.28.0
 
