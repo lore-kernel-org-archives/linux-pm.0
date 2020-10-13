@@ -1,224 +1,252 @@
-Return-Path: <SRS0=HpGD=DT=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=fxtO=DU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 93ED4C43457
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Oct 2020 22:34:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FCB7C83036
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 02:42:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 599102087E
-	for <linux-pm@archiver.kernel.org>; Mon, 12 Oct 2020 22:34:40 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="kfIleEMf"
+	by mail.kernel.org (Postfix) with ESMTP id 0971F20674
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 02:42:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390273AbgJLWej (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 12 Oct 2020 18:34:39 -0400
-Received: from z5.mailgun.us ([104.130.96.5]:55521 "EHLO z5.mailgun.us"
+        id S1728253AbgJMBfW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 12 Oct 2020 21:35:22 -0400
+Received: from mga11.intel.com ([192.55.52.93]:42342 "EHLO mga11.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390279AbgJLWei (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 12 Oct 2020 18:34:38 -0400
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1602542077; h=Content-Transfer-Encoding: MIME-Version:
- References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=CAA8HtrnxV68z7xJ7H069hnJ4UKgoDlQuitgfOh24BQ=; b=kfIleEMfX/jEj0XwSt/psS73/Xj5zmMEVcDWieYlKQOKjG34KrwL4vpZMplK5Tgim5zW37Vs
- Y1jCIx73MZRajk9CHuuEssR0unWaLoHkN6DMh+jmyzIsEjwVikKpOUcG2rGm6tYazdWGNTX/
- weHi21MyVpTko6SHnwtZka1JXTs=
-X-Mailgun-Sending-Ip: 104.130.96.5
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n04.prod.us-east-1.postgun.com with SMTP id
- 5f84d9fbef891f1ee26dfea6 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 12 Oct 2020 22:34:34
- GMT
-Sender: ilina=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 3FAA8C43391; Mon, 12 Oct 2020 22:34:34 +0000 (UTC)
-Received: from codeaurora.org (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: ilina)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 03746C43382;
-        Mon, 12 Oct 2020 22:34:32 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 03746C43382
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
-From:   Lina Iyer <ilina@codeaurora.org>
-To:     rjw@rjwysocki.net, ulf.hansson@linaro.org, linux-pm@vger.kernel.org
-Cc:     linux-arm-msm@vger.kernel.org, Lina Iyer <ilina@codeaurora.org>
-Subject: [PATCH 1/2] PM / runtime: register device's next wakeup
-Date:   Mon, 12 Oct 2020 16:33:59 -0600
-Message-Id: <20201012223400.23609-2-ilina@codeaurora.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201012223400.23609-1-ilina@codeaurora.org>
-References: <20201012223400.23609-1-ilina@codeaurora.org>
+        id S1728217AbgJMBfW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 12 Oct 2020 21:35:22 -0400
+IronPort-SDR: P9awuN7TupT5IotyhWeK8Uw+UNceI61F61evXtqluhY+5X0px3tSvVOhEBFqVwONg4EJoVJlRx
+ JEBVmXWUzEig==
+X-IronPort-AV: E=McAfee;i="6000,8403,9772"; a="162363817"
+X-IronPort-AV: E=Sophos;i="5.77,369,1596524400"; 
+   d="scan'208";a="162363817"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga005.jf.intel.com ([10.7.209.41])
+  by fmsmga102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Oct 2020 18:35:21 -0700
+IronPort-SDR: SN8WWaIprLB1wQSmfiEQDM4uoDndPtx+SZ4fyiWBjGzYk2Z+buQh8UtnbuvNTyyTOdBuufKq2E
+ abIQqRhw/3uw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,369,1596524400"; 
+   d="scan'208";a="530190952"
+Received: from lkp-server01.sh.intel.com (HELO aa1d92d39b27) ([10.239.97.150])
+  by orsmga005.jf.intel.com with ESMTP; 12 Oct 2020 18:35:19 -0700
+Received: from kbuild by aa1d92d39b27 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1kS9Dj-0000FD-4d; Tue, 13 Oct 2020 01:35:19 +0000
+Date:   Tue, 13 Oct 2020 09:34:40 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ 91e0225c546b542d828011feef9fb155e18b7941
+Message-ID: <5f850430.JehQN60BoOCjEESB%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some devices have a predictable interrupt pattern while executing a
-particular usecase. An example would be the VSYNC interrupt on devices
-associated with displays. A 60 Hz display could cause a periodic
-interrupt every 16 ms. A PM domain that holds such a device could power
-off and on at similar intervals.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
+branch HEAD: 91e0225c546b542d828011feef9fb155e18b7941  Merge branch 'pm-cpufreq' into linux-next
 
-Entering a domain idle state saves power, only if the domain remains in
-the idle state for the amount of time greater than or equal to the
-residency of the idle state. Knowing the next wakeup event of the device
-will help the PM domain governor make better idle state decisions.
+elapsed time: 721m
 
-Let's add the pm_runtime_set_next_wake() API for the device and document
-the usage of the API.
+configs tested: 178
+configs skipped: 3
 
-Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm                              allyesconfig
+arm                              allmodconfig
+arm64                               defconfig
+arm                     eseries_pxa_defconfig
+sh                             shx3_defconfig
+mips                            e55_defconfig
+arm                       spear13xx_defconfig
+arm                          imote2_defconfig
+arc                          axs101_defconfig
+arm                      tct_hammer_defconfig
+m68k                        mvme16x_defconfig
+mips                          rm200_defconfig
+mips                           jazz_defconfig
+sh                   sh7770_generic_defconfig
+powerpc                    sam440ep_defconfig
+sh                          rsk7264_defconfig
+powerpc                       ebony_defconfig
+arm                            mmp2_defconfig
+arm                           spitz_defconfig
+powerpc                  iss476-smp_defconfig
+s390                          debug_defconfig
+ia64                                defconfig
+powerpc                      cm5200_defconfig
+sh                          rsk7201_defconfig
+h8300                            allyesconfig
+arm                       mainstone_defconfig
+openrisc                 simple_smp_defconfig
+powerpc                 mpc832x_mds_defconfig
+powerpc                     asp8347_defconfig
+arm                  colibri_pxa270_defconfig
+mips                      loongson3_defconfig
+powerpc                     kilauea_defconfig
+arc                 nsimosci_hs_smp_defconfig
+arm                         palmz72_defconfig
+arm                      integrator_defconfig
+arm                        multi_v7_defconfig
+arm                              alldefconfig
+sh                             espt_defconfig
+c6x                         dsk6455_defconfig
+arm                      footbridge_defconfig
+mips                         mpc30x_defconfig
+sh                        dreamcast_defconfig
+mips                         db1xxx_defconfig
+arm                        realview_defconfig
+mips                           ip32_defconfig
+powerpc                 mpc834x_mds_defconfig
+xtensa                    xip_kc705_defconfig
+sh                   secureedge5410_defconfig
+arm                          iop32x_defconfig
+mips                      pistachio_defconfig
+openrisc                    or1ksim_defconfig
+powerpc                 mpc85xx_cds_defconfig
+arc                        vdk_hs38_defconfig
+powerpc                    amigaone_defconfig
+powerpc                    mvme5100_defconfig
+sh                              ul2_defconfig
+arm                            qcom_defconfig
+sh                        sh7785lcr_defconfig
+m68k                        stmark2_defconfig
+xtensa                  cadence_csp_defconfig
+x86_64                           allyesconfig
+mips                      fuloong2e_defconfig
+mips                           xway_defconfig
+arm                            xcep_defconfig
+powerpc                     tqm8548_defconfig
+parisc                              defconfig
+arc                              allyesconfig
+powerpc                 mpc8313_rdb_defconfig
+openrisc                            defconfig
+ia64                         bigsur_defconfig
+powerpc                 mpc836x_mds_defconfig
+powerpc                       maple_defconfig
+powerpc                     powernv_defconfig
+sh                           se7712_defconfig
+arm                         lubbock_defconfig
+sh                     sh7710voipgw_defconfig
+um                           x86_64_defconfig
+nios2                            allyesconfig
+powerpc                          g5_defconfig
+arc                             nps_defconfig
+m68k                        m5272c3_defconfig
+mips                           ip28_defconfig
+arm                         socfpga_defconfig
+sh                          urquell_defconfig
+arc                            hsdk_defconfig
+openrisc                         alldefconfig
+arm                           h3600_defconfig
+sh                             sh03_defconfig
+powerpc                      ppc40x_defconfig
+powerpc                 mpc836x_rdk_defconfig
+arm                       omap2plus_defconfig
+mips                       lemote2f_defconfig
+mips                         cobalt_defconfig
+arm                           corgi_defconfig
+m68k                        m5307c3_defconfig
+sh                          sdk7780_defconfig
+um                            kunit_defconfig
+arm                      jornada720_defconfig
+h8300                     edosk2674_defconfig
+powerpc                      pcm030_defconfig
+arm64                            alldefconfig
+arm                             rpc_defconfig
+powerpc                     tqm8555_defconfig
+arm                       multi_v4t_defconfig
+powerpc                   motionpro_defconfig
+mips                        workpad_defconfig
+sh                   rts7751r2dplus_defconfig
+powerpc                  mpc885_ads_defconfig
+arc                           tb10x_defconfig
+mips                          ath25_defconfig
+parisc                           allyesconfig
+nios2                         3c120_defconfig
+mips                           ip27_defconfig
+powerpc                     pq2fads_defconfig
+m68k                             allmodconfig
+ia64                             allmodconfig
+ia64                             allyesconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+s390                             allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a005-20201012
+i386                 randconfig-a006-20201012
+i386                 randconfig-a001-20201012
+i386                 randconfig-a003-20201012
+i386                 randconfig-a004-20201012
+i386                 randconfig-a002-20201012
+x86_64               randconfig-a016-20201012
+x86_64               randconfig-a015-20201012
+x86_64               randconfig-a012-20201012
+x86_64               randconfig-a013-20201012
+x86_64               randconfig-a014-20201012
+x86_64               randconfig-a011-20201012
+i386                 randconfig-a016-20201012
+i386                 randconfig-a015-20201012
+i386                 randconfig-a013-20201012
+i386                 randconfig-a012-20201012
+i386                 randconfig-a011-20201012
+i386                 randconfig-a014-20201012
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
+
+clang tested configs:
+x86_64               randconfig-a004-20201012
+x86_64               randconfig-a002-20201012
+x86_64               randconfig-a006-20201012
+x86_64               randconfig-a001-20201012
+x86_64               randconfig-a003-20201012
+x86_64               randconfig-a005-20201012
+
 ---
- Documentation/power/runtime_pm.rst | 21 ++++++++++++++++++++
- drivers/base/power/runtime.c       | 31 ++++++++++++++++++++++++++++++
- include/linux/pm.h                 |  2 ++
- include/linux/pm_runtime.h         |  1 +
- 4 files changed, 55 insertions(+)
-
-diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-index 0553008b6279..90a5ac481ad4 100644
---- a/Documentation/power/runtime_pm.rst
-+++ b/Documentation/power/runtime_pm.rst
-@@ -515,6 +515,14 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-       power.use_autosuspend isn't set, otherwise returns the expiration time
-       in jiffies
- 
-+  `int pm_runtime_set_next_event(struct device *dev, ktime_t next);`
-+    - notify runtime PM of the next event on the device. Devices that are
-+      sensitive to their domain idle enter/exit latencies may provide this
-+      information for use by the PM domain governor. The governor may determine
-+      if it worthwhile to enter a domain idle state. If the residency of the
-+      domain idle state is not met, the domain would waste more power entering
-+      and exiting the said idle state.
-+
- It is safe to execute the following helper functions from interrupt context:
- 
- - pm_request_idle()
-@@ -545,6 +553,7 @@ functions may also be used in interrupt context:
- - pm_runtime_put_sync()
- - pm_runtime_put_sync_suspend()
- - pm_runtime_put_sync_autosuspend()
-+- pm_runtime_set_next_event()
- 
- 5. Runtime PM Initialization, Device Probing and Removal
- ========================================================
-@@ -639,6 +648,18 @@ suspend routine).  It may be necessary to resume the device and suspend it again
- in order to do so.  The same is true if the driver uses different power levels
- or other settings for runtime suspend and system sleep.
- 
-+When a device enters idle at runtime, it may trigger the runtime PM up the
-+hierarchy. Devices that have an predictable interrupt pattern, may help
-+influence a better idle state determination of its parent. For example, a
-+display device could get a VSYNC interrupt every 16ms. A PM domain containing
-+the device, could also be entering and exiting idle due to runtime PM
-+coordination. If the domain were also entering runtime idle, we would know when
-+the domain would be waken up as a result of the display device waking up. Using
-+the device's next_event, the PM domain governor can make a better choice of the
-+idle state for the domain, knowing it would be be woken up by the device in the
-+near future. This is specially useful when the device is sensitive to its PM
-+domain's idle state enter and exit latencies.
-+
- During system resume, the simplest approach is to bring all devices back to full
- power, even if they had been suspended before the system suspend began.  There
- are several reasons for this, including:
-diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-index 8143210a5c54..53c2b3d962bc 100644
---- a/drivers/base/power/runtime.c
-+++ b/drivers/base/power/runtime.c
-@@ -122,6 +122,33 @@ u64 pm_runtime_suspended_time(struct device *dev)
- }
- EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
- 
-+/**
-+ * pm_runtime_set_next_wakeup_event - Notify PM framework of an impending event.
-+ * @dev: Device to handle
-+ * @next: impending interrupt/wakeup for the device
-+ */
-+int pm_runtime_set_next_event(struct device *dev, ktime_t next)
-+{
-+	unsigned long flags;
-+	int ret = -EINVAL;
-+
-+	/*
-+	 * Note the next pending wakeup of a device,
-+	 * if the device does not have runtime PM enabled.
-+	 */
-+	spin_lock_irqsave(&dev->power.lock, flags);
-+	if (!dev->power.disable_depth) {
-+		if (ktime_before(ktime_get(), next)) {
-+			dev->power.next_event = next;
-+			ret = 0;
-+		}
-+	}
-+	spin_unlock_irqrestore(&dev->power.lock, flags);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(pm_runtime_set_next_event);
-+
- /**
-  * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
-  * @dev: Device to handle.
-@@ -1380,6 +1407,9 @@ void __pm_runtime_disable(struct device *dev, bool check_resume)
- 	/* Update time accounting before disabling PM-runtime. */
- 	update_pm_runtime_accounting(dev);
- 
-+	/* Reset the next wakeup for the device */
-+	dev->power.next_event = KTIME_MAX;
-+
- 	if (!dev->power.disable_depth++)
- 		__pm_runtime_barrier(dev);
- 
-@@ -1609,6 +1639,7 @@ void pm_runtime_init(struct device *dev)
- 	dev->power.deferred_resume = false;
- 	INIT_WORK(&dev->power.work, pm_runtime_work);
- 
-+	dev->power.next_event = KTIME_MAX;
- 	dev->power.timer_expires = 0;
- 	hrtimer_init(&dev->power.suspend_timer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
- 	dev->power.suspend_timer.function = pm_suspend_timer_fn;
-diff --git a/include/linux/pm.h b/include/linux/pm.h
-index a30a4b54df52..9051658674a4 100644
---- a/include/linux/pm.h
-+++ b/include/linux/pm.h
-@@ -8,6 +8,7 @@
- #ifndef _LINUX_PM_H
- #define _LINUX_PM_H
- 
-+#include <linux/ktime.h>
- #include <linux/list.h>
- #include <linux/workqueue.h>
- #include <linux/spinlock.h>
-@@ -616,6 +617,7 @@ struct dev_pm_info {
- 	u64			active_time;
- 	u64			suspended_time;
- 	u64			accounting_timestamp;
-+	ktime_t			next_event;
- #endif
- 	struct pm_subsys_data	*subsys_data;  /* Owned by the subsystem. */
- 	void (*set_latency_tolerance)(struct device *, s32);
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index 6245caa18034..af6d35178335 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -59,6 +59,7 @@ extern void pm_runtime_get_suppliers(struct device *dev);
- extern void pm_runtime_put_suppliers(struct device *dev);
- extern void pm_runtime_new_link(struct device *dev);
- extern void pm_runtime_drop_link(struct device *dev);
-+extern int pm_runtime_set_next_event(struct device *dev, ktime_t next);
- 
- /**
-  * pm_runtime_get_if_in_use - Conditionally bump up runtime PM usage counter.
--- 
-The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
-a Linux Foundation Collaborative Project
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
