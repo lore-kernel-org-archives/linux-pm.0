@@ -2,111 +2,82 @@ Return-Path: <SRS0=fxtO=DU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 94C4DC433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D9103C433E7
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 14:15:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 414FF2479D
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FYwrlQmK"
+	by mail.kernel.org (Postfix) with ESMTP id 85BAE247F7
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 14:15:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388176AbgJMN7T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Oct 2020 09:59:19 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59576 "EHLO
+        id S2388541AbgJMOPI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Oct 2020 10:15:08 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33818 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388170AbgJMN7R (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 09:59:17 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 45740C0613D2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:15 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id q5so56234wmq.0
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:15 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=8bDJucZgJh5FF2qZq2dSXU5O6ciFzNhYy3NAEbiOW5U=;
-        b=FYwrlQmKtFjItcjW6NkFA6usPpaoxqkvxN79cTvEqLVez2ARTv8noXL+aHKz9UF49Z
-         yVXpMQ89CRyszsM4HeQ8CSiosmbuBKpjt0ILH+VmI+6+Umkf7ONAeQy+u3Xssg3oV9MM
-         GmmHDplpH3S3q3zVshgXn5CD5HFk2UBehaCr8EeMGdI4NlsHu6/AE2j08dIwmK9WgY7v
-         /7u/DY3dMA71zueWe76a1so59dbBTs3ApoT9oIYbcXPxWFzSwCygQcgV7D/V3RlOTI90
-         VPKw5NxJKEi5cqGslb9JoN6KvpqOWf2TRBZ7x6fed4Ukp+2xey6DZU+MkZVUU5eKBxtM
-         GmHg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=8bDJucZgJh5FF2qZq2dSXU5O6ciFzNhYy3NAEbiOW5U=;
-        b=ZK9OE9z/0ItOhNnGmENTwYPmBwo/lrCT4ntpwXrjMJUGl3lmXqReYMCopdpSWsXVR7
-         j2MpDFFmME2u6nSdDDWEfgZVgOsNXFK+eH0ujGE1KH/NXbb0zLoxcumtTX6vDfW7108K
-         pxQJKM8Gw5df/6gEcuI+vzVNj9jfDmTC21GnkfKwc4f8xj+TsQtrwxhkFfnmtb3xxAfm
-         iYzPVWwKbRCeooXNlNXNEmBm+nTPSV0a25E5yWlnB80+Mj2U5UQ4LvaS/ejsSexKkBjQ
-         f0rMc7Ndkm1WsacdOilv48TQGNVsc0Mok871fh7DaHPmiQ9EvgVZiTety9kTAD+ad2wr
-         lKlA==
-X-Gm-Message-State: AOAM533uqeNclSdBx2Pmnn6Zdbk9N5z9fk6KwJr+jUMjHCitGBdElah8
-        O3DJC6qSrRzr7p2Rh3MQrntuZnj/qp58eg==
-X-Google-Smtp-Source: ABdhPJyTqWE1iekyZsDPD0wv7UkeTZYONKeacFueCiZ9ySbqbFfs8FIbdlS+AoqntIL9/dCNMWdhWg==
-X-Received: by 2002:a7b:c4cb:: with SMTP id g11mr78968wmk.88.1602597553753;
-        Tue, 13 Oct 2020 06:59:13 -0700 (PDT)
-Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id a199sm17785wmd.8.2020.10.13.06.59.12
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 13 Oct 2020 06:59:13 -0700 (PDT)
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-To:     linux-pm@vger.kernel.org
-Cc:     mdtipton@codeaurora.org, okukatla@codeaurora.org,
-        sibis@codeaurora.org, saravanak@google.com,
-        bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org,
-        Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH 2/3] interconnect: qcom: sdm845: Init BCMs before creating the nodes
-Date:   Tue, 13 Oct 2020 16:59:12 +0300
-Message-Id: <20201013135913.29059-2-georgi.djakov@linaro.org>
-X-Mailer: git-send-email 2.28.0
-In-Reply-To: <20201013135913.29059-1-georgi.djakov@linaro.org>
-References: <20201013135913.29059-1-georgi.djakov@linaro.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+        with ESMTP id S2388538AbgJMOPH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 10:15:07 -0400
+Received: from albert.telenet-ops.be (albert.telenet-ops.be [IPv6:2a02:1800:110:4::f00:1a])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 70137C0613D0
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 07:15:07 -0700 (PDT)
+Received: from ramsan ([84.195.186.194])
+        by albert.telenet-ops.be with bizsmtp
+        id fSF52300Q4C55Sk06SF5rK; Tue, 13 Oct 2020 16:15:06 +0200
+Received: from rox.of.borg ([192.168.97.57])
+        by ramsan with esmtp (Exim 4.90_1)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1kSL4z-0006XK-KS; Tue, 13 Oct 2020 16:15:05 +0200
+Received: from geert by rox.of.borg with local (Exim 4.90_1)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1kSL4z-0007S1-Hw; Tue, 13 Oct 2020 16:15:05 +0200
+From:   Geert Uytterhoeven <geert+renesas@glider.be>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        linux-pm@vger.kernel.org,
+        Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH] PM: Domains: Add curly braces to delimit comment + statement block
+Date:   Tue, 13 Oct 2020 16:14:59 +0200
+Message-Id: <20201013141459.28599-1-geert+renesas@glider.be>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently if we use sync_state, by default the bandwidth is maxed out,
-but in order to set this in hardware, the BCMs (Bus Clock Managers) need
-to be initialized first. Move the BCM initialization before creating the
-nodes to fix this.
+There is not strict need to group a comment and a single statement in an
+if block, as comments are stripped by the pre-processor.  However,
+adding curly braces does make the code easier to read, and may avoid
+mistakes when changing the code later.
 
-Fixes: 7d3b0b0d8184 ("interconnect: qcom: Use icc_sync_state")
-Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- drivers/interconnect/qcom/sdm845.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/base/power/domain.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/interconnect/qcom/sdm845.c b/drivers/interconnect/qcom/sdm845.c
-index d79e3163e2c3..47556dc12ec0 100644
---- a/drivers/interconnect/qcom/sdm845.c
-+++ b/drivers/interconnect/qcom/sdm845.c
-@@ -489,6 +489,9 @@ static int qnoc_probe(struct platform_device *pdev)
- 		return ret;
- 	}
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 05bb4d4401b26e44..f4a28c33fafa03b2 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1270,13 +1270,14 @@ static int genpd_restore_noirq(struct device *dev)
+ 	 * first time for the given domain in the present cycle.
+ 	 */
+ 	genpd_lock(genpd);
+-	if (genpd->suspended_count++ == 0)
++	if (genpd->suspended_count++ == 0) {
+ 		/*
+ 		 * The boot kernel might put the domain into arbitrary state,
+ 		 * so make it appear as powered off to genpd_sync_power_on(),
+ 		 * so that it tries to power it on in case it was really off.
+ 		 */
+ 		genpd->status = GENPD_STATE_OFF;
++	}
  
-+	for (i = 0; i < qp->num_bcms; i++)
-+		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
-+
- 	for (i = 0; i < num_nodes; i++) {
- 		size_t j;
- 
-@@ -512,9 +515,6 @@ static int qnoc_probe(struct platform_device *pdev)
- 	}
- 	data->num_nodes = num_nodes;
- 
--	for (i = 0; i < qp->num_bcms; i++)
--		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
--
- 	platform_set_drvdata(pdev, qp);
- 
- 	return 0;
+ 	genpd_sync_power_on(genpd, true, 0);
+ 	genpd_unlock(genpd);
+-- 
+2.17.1
+
