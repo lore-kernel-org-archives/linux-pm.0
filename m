@@ -2,140 +2,107 @@ Return-Path: <SRS0=fxtO=DU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 00585C433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 10:21:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BB82C433E7
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 10:24:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ACE53207C3
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 10:21:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 44232221EB
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 10:24:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="baX5WSZ6"
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="V5HvdVYD"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387810AbgJMKVN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Oct 2020 06:21:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54114 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726935AbgJMKVM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 06:21:12 -0400
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8093BC0613D2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 03:21:12 -0700 (PDT)
-Received: by mail-wm1-x342.google.com with SMTP id e2so21191157wme.1
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 03:21:12 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=Isdnj7ywPpyzw3VK2rGw/3l/B3KgvYFYumf7odl6w+M=;
-        b=baX5WSZ6fBfa7WhogUTvoq9WWCzoYmgCcoy0Yw+jDc9uqWaEzi0Oqi+0AJx+HZSrLB
-         p88a/dAOpu/O1U/CffNSGmz1leN8bJwEFeYA2LcVEd/SzE9bxuTCfgyw/pQzFOuC+eBE
-         7dg1eRq58tto5/pJQeJO+gupOcltXnAbelSA+XR9mFipWzE5U83w0JluYz073g9zUXx9
-         ZfJzzlE3EOSBfuiJMTTQAK3WBtA+Chpu5f48+C8iqBTszDnxjhCDp0t6UFxTyeuYy5Pj
-         ++RZSEVeYSYq5JFZ5qBRxSDAwd39kUYpbTsLe4b/0iUFwWGkuhYlGfRsA/Mpj+cbc87d
-         qgTQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=Isdnj7ywPpyzw3VK2rGw/3l/B3KgvYFYumf7odl6w+M=;
-        b=pMeSviIqjjlkmPtXPo+JoJq5XXjwnzPt1nbRbyYtm2aWzqgLLwB3h3WfWUWJdi7ex9
-         cGnhv5zKZFnrw5U4M4Sznnu8OlNzHEvGTl3qUYY57OAgdil/0nYQbtmVBzoTmooE+ZO4
-         oqrPbSWHZqV8SymyoV02BI0KI1rUvCkeEC1FFgpV2no4BicLxXMMzTM2KUgONwpA1RE4
-         LTOUCPCPjDjzBDlyqj24SqImxcPSz2eIC7fCcpoC8VfvpgmC3e7p/OYb4SY0P9yJ52e/
-         ByKoWXTJCg7XbWr7Sju7J+WrtUwxg9FmyfQJHJ14Rqu93VSBh2UgDa8wYWXhkgomWLvJ
-         wJiQ==
-X-Gm-Message-State: AOAM530nibyLIO4wTeHLHiqXrlUtUaYhuSBHKTREZMGf/w73M1UAFoYl
-        jjz46UEd37T8jz9l9kp9Fw1Iew==
-X-Google-Smtp-Source: ABdhPJzU95PX4mPOUpPLXrtgK2LFOdkKKBEgDELP6aMUt94N+q30VRUZnT7qA/qS1JJ3E9zIu96vcg==
-X-Received: by 2002:a1c:87:: with SMTP id 129mr14651577wma.103.1602584471014;
-        Tue, 13 Oct 2020 03:21:11 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:8dea:c7dd:5d0e:51e6? ([2a01:e34:ed2f:f020:8dea:c7dd:5d0e:51e6])
-        by smtp.googlemail.com with ESMTPSA id h16sm30010895wre.87.2020.10.13.03.21.09
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 13 Oct 2020 03:21:10 -0700 (PDT)
-Subject: Re: [PATCH 1/2] thermal: power allocator: change the 'k_i'
- coefficient estimation
-To:     Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Cc:     amitk@kernel.org, Dietmar.Eggemann@arm.com
-References: <20201002122416.13659-1-lukasz.luba@arm.com>
- <20201002122416.13659-2-lukasz.luba@arm.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <cc0e6d85-28ad-3cfc-e5b8-75820552b716@linaro.org>
-Date:   Tue, 13 Oct 2020 12:21:09 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1729575AbgJMKYF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Oct 2020 06:24:05 -0400
+Received: from mailgw02.mediatek.com ([210.61.82.184]:50282 "EHLO
+        mailgw02.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S1729123AbgJMKYE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 06:24:04 -0400
+X-UUID: d848fabbf87a4677b5bbd929647894c6-20201013
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=qiedL0JxT+BhogXj0HkQMKXH7NoJA144Q5PDLAu55v0=;
+        b=V5HvdVYDIVnMjV1ReyIE25A/9J9z/mxi+7NkB1OuCxOlYph/vMTd8BA2APOe5kX0Ih0y8gWT+YmZQ+1d3evIhFSokidgtfHC5dyaileTKtng/JNX3DUZUcWDjZ0tVNsDhFnuoxrEudYfx9CmJA8i2K2PKavoGNb5uOg1XQJBIcE=;
+X-UUID: d848fabbf87a4677b5bbd929647894c6-20201013
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw02.mediatek.com
+        (envelope-from <michael.kao@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 1401521386; Tue, 13 Oct 2020 18:24:02 +0800
+Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
+ mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Tue, 13 Oct 2020 18:24:00 +0800
+Received: from mtksdccf07.mediatek.inc (172.21.84.99) by MTKCAS06.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Tue, 13 Oct 2020 18:24:00 +0800
+From:   Michael Kao <michael.kao@mediatek.com>
+To:     Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        <linux-pm@vger.kernel.org>, <srv_heupstream@mediatek.com>
+CC:     Eduardo Valentin <edubezval@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Mark Rutland <mark.rutland@arm.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        <hsinyi@chromium.org>, <devicetree@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>,
+        <linux-arm-kernel@lists.infradead.org>,
+        <linux-mediatek@lists.infradead.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        Michael Kao <michael.kao@mediatek.com>
+Subject: [v5 2/3] arm64: dts: mt8183: Configure CPU cooling
+Date:   Tue, 13 Oct 2020 18:23:57 +0800
+Message-ID: <20201013102358.22588-3-michael.kao@mediatek.com>
+X-Mailer: git-send-email 2.18.0
+In-Reply-To: <20201013102358.22588-1-michael.kao@mediatek.com>
+References: <20201013102358.22588-1-michael.kao@mediatek.com>
 MIME-Version: 1.0
-In-Reply-To: <20201002122416.13659-2-lukasz.luba@arm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+RnJvbTogTWF0dGhpYXMgS2FlaGxja2UgPG1rYUBjaHJvbWl1bS5vcmc+DQoNCkFkZCB0d28gcGFz
+c2l2ZSB0cmlwIHBvaW50cyBhdCA2OMKwQyBhbmQgODDCsEMgZm9yIHRoZSBDUFUgdGVtcGVyYXR1
+cmUuDQoNClNpZ25lZC1vZmYtYnk6IE1hdHRoaWFzIEthZWhsY2tlIDxta2FAY2hyb21pdW0ub3Jn
+Pg0KU2lnbmVkLW9mZi1ieTogTWljaGFlbCBLYW8gPG1pY2hhZWwua2FvQG1lZGlhdGVrLmNvbT4N
+Ci0tLQ0KIGFyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kgfCA1NiArKysr
+KysrKysrKysrKysrKysrKysrKysNCiAxIGZpbGUgY2hhbmdlZCwgNTYgaW5zZXJ0aW9ucygrKQ0K
+DQpkaWZmIC0tZ2l0IGEvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgxODMuZHRzaSBi
+L2FyY2gvYXJtNjQvYm9vdC9kdHMvbWVkaWF0ZWsvbXQ4MTgzLmR0c2kNCmluZGV4IDFjZDA5M2Nm
+MzNmMy4uMDYxNGYxOGExZWEyIDEwMDY0NA0KLS0tIGEvYXJjaC9hcm02NC9ib290L2R0cy9tZWRp
+YXRlay9tdDgxODMuZHRzaQ0KKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9tZWRpYXRlay9tdDgx
+ODMuZHRzaQ0KQEAgLTEwLDYgKzEwLDcgQEANCiAjaW5jbHVkZSA8ZHQtYmluZGluZ3MvaW50ZXJy
+dXB0LWNvbnRyb2xsZXIvaXJxLmg+DQogI2luY2x1ZGUgPGR0LWJpbmRpbmdzL3Jlc2V0LWNvbnRy
+b2xsZXIvbXQ4MTgzLXJlc2V0cy5oPg0KICNpbmNsdWRlIDxkdC1iaW5kaW5ncy9waHkvcGh5Lmg+
+DQorI2luY2x1ZGUgPGR0LWJpbmRpbmdzL3RoZXJtYWwvdGhlcm1hbC5oPg0KICNpbmNsdWRlICJt
+dDgxODMtcGluZnVuYy5oIg0KIA0KIC8gew0KQEAgLTQ1MCw2ICs0NTEsNjEgQEANCiAJCQkJcG9s
+bGluZy1kZWxheSA9IDw1MDA+Ow0KIAkJCQl0aGVybWFsLXNlbnNvcnMgPSA8JnRoZXJtYWwgMD47
+DQogCQkJCXN1c3RhaW5hYmxlLXBvd2VyID0gPDUwMDA+Ow0KKw0KKwkJCQl0cmlwcyB7DQorCQkJ
+CQl0aHJlc2hvbGQ6IHRyaXAtcG9pbnRAMCB7DQorCQkJCQkJdGVtcGVyYXR1cmUgPSA8NjgwMDA+
+Ow0KKwkJCQkJCWh5c3RlcmVzaXMgPSA8MjAwMD47DQorCQkJCQkJdHlwZSA9ICJwYXNzaXZlIjsN
+CisJCQkJCX07DQorDQorCQkJCQl0YXJnZXQ6IHRyaXAtcG9pbnRAMSB7DQorCQkJCQkJdGVtcGVy
+YXR1cmUgPSA8ODAwMDA+Ow0KKwkJCQkJCWh5c3RlcmVzaXMgPSA8MjAwMD47DQorCQkJCQkJdHlw
+ZSA9ICJwYXNzaXZlIjsNCisJCQkJCX07DQorDQorCQkJCQljcHVfY3JpdDogY3B1LWNyaXQgew0K
+KwkJCQkJCXRlbXBlcmF0dXJlID0gPDExNTAwMD47DQorCQkJCQkJaHlzdGVyZXNpcyA9IDwyMDAw
+PjsNCisJCQkJCQl0eXBlID0gImNyaXRpY2FsIjsNCisJCQkJCX07DQorCQkJCX07DQorDQorCQkJ
+CWNvb2xpbmctbWFwcyB7DQorCQkJCQltYXAwIHsNCisJCQkJCQl0cmlwID0gPCZ0YXJnZXQ+Ow0K
+KwkJCQkJCWNvb2xpbmctZGV2aWNlID0gPCZjcHUwDQorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQN
+CisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sDQorCQkJCQkJCQkgPCZjcHUxDQorCQkJCQkJCVRI
+RVJNQUxfTk9fTElNSVQNCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4sDQorCQkJCQkJCQkgPCZj
+cHUyDQorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQNCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVD4s
+DQorCQkJCQkJCQkgPCZjcHUzDQorCQkJCQkJCVRIRVJNQUxfTk9fTElNSVQNCisJCQkJCQkJVEhF
+Uk1BTF9OT19MSU1JVD47DQorCQkJCQkJY29udHJpYnV0aW9uID0gPDMwNzI+Ow0KKwkJCQkJfTsN
+CisJCQkJCW1hcDEgew0KKwkJCQkJCXRyaXAgPSA8JnRhcmdldD47DQorCQkJCQkJY29vbGluZy1k
+ZXZpY2UgPSA8JmNwdTQNCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVA0KKwkJCQkJCQlUSEVSTUFM
+X05PX0xJTUlUPiwNCisJCQkJCQkJCSA8JmNwdTUNCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVA0K
+KwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUPiwNCisJCQkJCQkJCSA8JmNwdTYNCisJCQkJCQkJVEhF
+Uk1BTF9OT19MSU1JVA0KKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUPiwNCisJCQkJCQkJCSA8JmNw
+dTcNCisJCQkJCQkJVEhFUk1BTF9OT19MSU1JVA0KKwkJCQkJCQlUSEVSTUFMX05PX0xJTUlUPjsN
+CisJCQkJCQljb250cmlidXRpb24gPSA8MTAyND47DQorCQkJCQl9Ow0KKwkJCQl9Ow0KIAkJCX07
+DQogDQogCQkJLyogVGhlIHR6dHMxIH4gdHp0czYgZG9uJ3QgbmVlZCB0byBwb2xsaW5nICovDQot
+LSANCjIuMTguMA0K
 
-Hi Lukasz,
-
-On 02/10/2020 14:24, Lukasz Luba wrote:
-> Intelligent Power Allocation (IPA) is built around the PID controller
-> concept. The initialization code tries to setup the environment based on
-> the information available in DT or estimate the value based on minimum
-> power reported by each of the cooling device. The estimation will have an
-> impact on the PID controller behaviour via the related 'k_po', 'k_pu',
-> 'k_i' coefficients and also on the power budget calculation.
-> 
-> This change prevents the situation when 'k_i' is relatively big compared
-> to 'k_po' and 'k_pu' values. This might happen when the estimation for
-> 'sustainable_power' returned small value, thus 'k_po' and 'k_pu' are
-> small.
-> 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-> ---
->  drivers/thermal/gov_power_allocator.c | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-> index 5cb518d8f156..f69fafe486a5 100644
-> --- a/drivers/thermal/gov_power_allocator.c
-> +++ b/drivers/thermal/gov_power_allocator.c
-> @@ -131,6 +131,7 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
->  	int ret;
->  	int switch_on_temp;
->  	u32 temperature_threshold;
-> +	s32 k_i;
->  
->  	ret = tz->ops->get_trip_temp(tz, trip_switch_on, &switch_on_temp);
->  	if (ret)
-> @@ -156,8 +157,11 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
->  		tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
->  			temperature_threshold;
->  
-> -	if (!tz->tzp->k_i || force)
-> -		tz->tzp->k_i = int_to_frac(10) / 1000;
-> +	if (!tz->tzp->k_i || force) {
-> +		k_i = tz->tzp->k_pu / 10;
-> +		tz->tzp->k_i = k_i > 0 ? k_i : 1;
-> +	}
-
-I do not understand the rational behind this change.
-
-Do you have some values to share describing what would be the impact of
-this change?
-
-Depending on the thermal behavior of a board, these coefficients could
-be very different, no ?
-
-
-
--- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
-
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
