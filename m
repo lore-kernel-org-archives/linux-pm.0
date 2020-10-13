@@ -2,352 +2,190 @@ Return-Path: <SRS0=fxtO=DU=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 61C4CC433DF
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 12:01:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 982DAC433DF
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 12:04:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0B9B020870
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 12:01:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1602590489;
-	bh=uDMrTXZvCi3GqbsSk6IY/HaOXXwfMR0GCoAdcBK7a+w=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=LKn4/UO+kWpiKoUQy8ImMLLVrMLf5Wq8FTnQu1t91xNe1lECs5PdPETvk9PkjYxwC
-	 2HPx8/berSUPjRe5pXY3GhTzV6tdaVBb6qhIxKEaekkK5H6xw4xO9vDo4miN/MztHp
-	 6mTRs5lqwhdxVXGy9SkfVbdg3RrIvU5gccpM3cxY=
+	by mail.kernel.org (Postfix) with ESMTP id 3E5262080A
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 12:04:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727744AbgJMMBI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Oct 2020 08:01:08 -0400
-Received: from mail.kernel.org ([198.145.29.99]:57902 "EHLO mail.kernel.org"
+        id S1726470AbgJMMEx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Oct 2020 08:04:53 -0400
+Received: from foss.arm.com ([217.140.110.172]:58788 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727403AbgJMLym (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 13 Oct 2020 07:54:42 -0400
-Received: from mail.kernel.org (ip5f5ad5b2.dynamic.kabel-deutschland.de [95.90.213.178])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 3B94B22264;
-        Tue, 13 Oct 2020 11:54:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1602590080;
-        bh=uDMrTXZvCi3GqbsSk6IY/HaOXXwfMR0GCoAdcBK7a+w=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=I2QkgwlYk/lJNutVOll2CAvrLlVeHevbzfa+Lp6I0nzhg5NL6ViITsNZGybLSUb7P
-         EwlHhmfrvbk8dcNPZF1UCjJb+EXVqBjIE2XLfoUDmFSm1JYwQ0oD88RMO/Wuqjc0Iq
-         OuXUqiucIYPzZGDIyleGItHXpNJhJPFYpHyPcfKs=
-Received: from mchehab by mail.kernel.org with local (Exim 4.94)
-        (envelope-from <mchehab@kernel.org>)
-        id 1kSIt4-006CUA-5O; Tue, 13 Oct 2020 13:54:38 +0200
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Linux Doc Mailing List <linux-doc@vger.kernel.org>
-Cc:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-        "Jonathan Corbet" <corbet@lwn.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+        id S1726412AbgJMMEx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 13 Oct 2020 08:04:53 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 41A971FB;
+        Tue, 13 Oct 2020 05:04:52 -0700 (PDT)
+Received: from [10.57.51.141] (unknown [10.57.51.141])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 035C73F719;
+        Tue, 13 Oct 2020 05:04:50 -0700 (PDT)
+Subject: Re: [PATCH 1/2] thermal: power allocator: change the 'k_i'
+ coefficient estimation
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: [PATCH v6 22/80] docs: remove some replace macros like |struct foo|
-Date:   Tue, 13 Oct 2020 13:53:37 +0200
-Message-Id: <f3fd632941e45a06b77de2a0c3fdca643aea67fd.1602589096.git.mchehab+huawei@kernel.org>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <cover.1602589096.git.mchehab+huawei@kernel.org>
-References: <cover.1602589096.git.mchehab+huawei@kernel.org>
+Cc:     amitk@kernel.org, Dietmar.Eggemann@arm.com
+References: <20201002122416.13659-1-lukasz.luba@arm.com>
+ <20201002122416.13659-2-lukasz.luba@arm.com>
+ <cc0e6d85-28ad-3cfc-e5b8-75820552b716@linaro.org>
+ <5f682bbb-b250-49e6-dbb7-aea522a58595@arm.com>
+ <326a84b4-1782-9e6b-2b95-9627767dd2f8@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <42360f0f-5d53-085b-536f-33df93b787ca@arm.com>
+Date:   Tue, 13 Oct 2020 13:04:48 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
+In-Reply-To: <326a84b4-1782-9e6b-2b95-9627767dd2f8@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 8bit
-Sender: Mauro Carvalho Chehab <mchehab@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-There are three files with replace macros for structs,
-mapping them into Sphinx 2.x C domain references.
 
-Well, this is broken on Sphinx 3.x. Also, for Sphinx 2.x,
-the automarkup macro should be able to take care of them.
 
-So, let's just drop those.
+On 10/13/20 12:22 PM, Daniel Lezcano wrote:
+> On 13/10/2020 12:59, Lukasz Luba wrote:
+>> Hi Daniel,
+>>
+>> On 10/13/20 11:21 AM, Daniel Lezcano wrote:
+>>>
+>>> Hi Lukasz,
+>>>
+>>> On 02/10/2020 14:24, Lukasz Luba wrote:
+>>>> Intelligent Power Allocation (IPA) is built around the PID controller
+>>>> concept. The initialization code tries to setup the environment based on
+>>>> the information available in DT or estimate the value based on minimum
+>>>> power reported by each of the cooling device. The estimation will
+>>>> have an
+>>>> impact on the PID controller behaviour via the related 'k_po', 'k_pu',
+>>>> 'k_i' coefficients and also on the power budget calculation.
+>>>>
+>>>> This change prevents the situation when 'k_i' is relatively big compared
+>>>> to 'k_po' and 'k_pu' values. This might happen when the estimation for
+>>>> 'sustainable_power' returned small value, thus 'k_po' and 'k_pu' are
+>>>> small.
+>>>>
+>>>> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+>>>> ---
+>>>>    drivers/thermal/gov_power_allocator.c | 8 ++++++--
+>>>>    1 file changed, 6 insertions(+), 2 deletions(-)
+>>>>
+>>>> diff --git a/drivers/thermal/gov_power_allocator.c
+>>>> b/drivers/thermal/gov_power_allocator.c
+>>>> index 5cb518d8f156..f69fafe486a5 100644
+>>>> --- a/drivers/thermal/gov_power_allocator.c
+>>>> +++ b/drivers/thermal/gov_power_allocator.c
+>>>> @@ -131,6 +131,7 @@ static void estimate_pid_constants(struct
+>>>> thermal_zone_device *tz,
+>>>>        int ret;
+>>>>        int switch_on_temp;
+>>>>        u32 temperature_threshold;
+>>>> +    s32 k_i;
+>>>>          ret = tz->ops->get_trip_temp(tz, trip_switch_on,
+>>>> &switch_on_temp);
+>>>>        if (ret)
+>>>> @@ -156,8 +157,11 @@ static void estimate_pid_constants(struct
+>>>> thermal_zone_device *tz,
+>>>>            tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
+>>>>                temperature_threshold;
+>>>>    -    if (!tz->tzp->k_i || force)
+>>>> -        tz->tzp->k_i = int_to_frac(10) / 1000;
+>>>> +    if (!tz->tzp->k_i || force) {
+>>>> +        k_i = tz->tzp->k_pu / 10;
+>>>> +        tz->tzp->k_i = k_i > 0 ? k_i : 1;
+>>>> +    }
+>>>
+>>> I do not understand the rational behind this change.
+>>
+>> This is the unfortunate impact of the EM abstract scale of power values.
+>> IPA didn't have to deal with it, because we always had milli-Watts.
+>> Because the EM allows the bogoWatts and some vendors already have
+>> them I have to re-evaluate the IPA.
+>>
+>>>
+>>> Do you have some values to share describing what would be the impact of
+>>> this change?
+>>
+>> Yes, here is an example:
+>> EM has 3 devices with abstract scale power values, where minimum power
+>> is 25 and max is 200. The minimum power is used by
+>> estimate_sustainable_power()
+>> as a sum of all devices' min power. Sustainable power is going to be
+>> estimated to 75.
+>>
+>> Then in the code we have 'temperature_threshold' which is in
+>> milli-Celcius, thus 15degC is 15000.
+>>
+>> We estimate 'k_po' according to:
+>> int_to_frac(sustainable_power) / temperature_threshold;
+>>
+>> which is:
+>> (75 << 10) / 15000 = ~75000 / 15000 = 5 <-- 'k_po'
+>>
+>> then k_pu:
+>> ((2*75) << 10) / 15000 = ~150000 / 15000 = 10
+>>
+>> Then the old 'k_i' is just hard-coded 10, which is
+>> the same order of magnitude to what is in 'k_pu'.
+>> It should be 1 order of magnitude smaller than 'k_pu'.
+>>
+>> I did some experiments and the bigger 'k_i' slows down a lot
+>> the rising temp. That's why this change.
+>>
+>> It was OK to have k_i=10 when we were in milliWatts world,
+>> when the min power value was bigger, thus 'k_pu' was also bigger
+>> than our hard-coded 'k_i'.
+>>
+>>>
+>>> Depending on the thermal behavior of a board, these coefficients could
+>>> be very different, no ?
+>>>
+>>
+>> Yes, I strongly believe that vendor engineers will make experiments with
+>> these values and not go with default. Then they will store the k_pu,
+>> k_po, k_i via sysfs interface, with also sustainable_power.
+> 
+> IMHO it is the opposite. For what I've seen, the IPA is not used or the
+> k_* are misunderstood, thus not changed. The PID regulation loop
+> technique is not quite used and known by everyone.
 
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
----
- Documentation/admin-guide/pm/cpufreq.rst | 11 ++--
- Documentation/driver-api/device_link.rst | 10 ++--
- Documentation/driver-api/pm/cpuidle.rst  | 65 +++++++++++-------------
- 3 files changed, 38 insertions(+), 48 deletions(-)
+There is quite a few DT entries of 'sustainable-power' so I assumed
+it is known, but you might be right.
 
-diff --git a/Documentation/admin-guide/pm/cpufreq.rst b/Documentation/admin-guide/pm/cpufreq.rst
-index 368e612145d2..6adb7988e0eb 100644
---- a/Documentation/admin-guide/pm/cpufreq.rst
-+++ b/Documentation/admin-guide/pm/cpufreq.rst
-@@ -1,7 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0
- .. include:: <isonum.txt>
- 
--.. |struct cpufreq_policy| replace:: :c:type:`struct cpufreq_policy <cpufreq_policy>`
- .. |intel_pstate| replace:: :doc:`intel_pstate <intel_pstate>`
- 
- =======================
-@@ -92,16 +91,16 @@ control the P-state of multiple CPUs at the same time and writing to it affects
- all of those CPUs simultaneously.
- 
- Sets of CPUs sharing hardware P-state control interfaces are represented by
--``CPUFreq`` as |struct cpufreq_policy| objects.  For consistency,
--|struct cpufreq_policy| is also used when there is only one CPU in the given
-+``CPUFreq`` as struct cpufreq_policy objects.  For consistency,
-+struct cpufreq_policy is also used when there is only one CPU in the given
- set.
- 
--The ``CPUFreq`` core maintains a pointer to a |struct cpufreq_policy| object for
-+The ``CPUFreq`` core maintains a pointer to a struct cpufreq_policy object for
- every CPU in the system, including CPUs that are currently offline.  If multiple
- CPUs share the same hardware P-state control interface, all of the pointers
--corresponding to them point to the same |struct cpufreq_policy| object.
-+corresponding to them point to the same struct cpufreq_policy object.
- 
--``CPUFreq`` uses |struct cpufreq_policy| as its basic data type and the design
-+``CPUFreq`` uses struct cpufreq_policy as its basic data type and the design
- of its user space interface is based on the policy concept.
- 
- 
-diff --git a/Documentation/driver-api/device_link.rst b/Documentation/driver-api/device_link.rst
-index bc2d89af88ce..76950d061632 100644
---- a/Documentation/driver-api/device_link.rst
-+++ b/Documentation/driver-api/device_link.rst
-@@ -1,7 +1,3 @@
--.. |struct dev_pm_domain| replace:: :c:type:`struct dev_pm_domain <dev_pm_domain>`
--.. |struct generic_pm_domain| replace:: :c:type:`struct generic_pm_domain <generic_pm_domain>`
--
--
- .. _device_link:
- 
- ============
-@@ -166,7 +162,7 @@ Examples
-   is the same as if the MMU was the parent of the master device.
- 
-   The fact that both devices share the same power domain would normally
--  suggest usage of a |struct dev_pm_domain| or |struct generic_pm_domain|,
-+  suggest usage of a struct dev_pm_domain or struct generic_pm_domain,
-   however these are not independent devices that happen to share a power
-   switch, but rather the MMU device serves the busmaster device and is
-   useless without it.  A device link creates a synthetic hierarchical
-@@ -202,7 +198,7 @@ Examples
- Alternatives
- ============
- 
--* A |struct dev_pm_domain| can be used to override the bus,
-+* A struct dev_pm_domain can be used to override the bus,
-   class or device type callbacks.  It is intended for devices sharing
-   a single on/off switch, however it does not guarantee a specific
-   suspend/resume ordering, this needs to be implemented separately.
-@@ -211,7 +207,7 @@ Alternatives
-   suspended.  Furthermore it cannot be used to enforce a specific shutdown
-   ordering or a driver presence dependency.
- 
--* A |struct generic_pm_domain| is a lot more heavyweight than a
-+* A struct generic_pm_domain is a lot more heavyweight than a
-   device link and does not allow for shutdown ordering or driver presence
-   dependencies.  It also cannot be used on ACPI systems.
- 
-diff --git a/Documentation/driver-api/pm/cpuidle.rst b/Documentation/driver-api/pm/cpuidle.rst
-index 3588bf078566..d477208604b8 100644
---- a/Documentation/driver-api/pm/cpuidle.rst
-+++ b/Documentation/driver-api/pm/cpuidle.rst
-@@ -1,11 +1,6 @@
- .. SPDX-License-Identifier: GPL-2.0
- .. include:: <isonum.txt>
- 
--.. |struct cpuidle_governor| replace:: :c:type:`struct cpuidle_governor <cpuidle_governor>`
--.. |struct cpuidle_device| replace:: :c:type:`struct cpuidle_device <cpuidle_device>`
--.. |struct cpuidle_driver| replace:: :c:type:`struct cpuidle_driver <cpuidle_driver>`
--.. |struct cpuidle_state| replace:: :c:type:`struct cpuidle_state <cpuidle_state>`
--
- ========================
- CPU Idle Time Management
- ========================
-@@ -54,7 +49,7 @@ platform that the Linux kernel can run on.  For this reason, data structures
- operated on by them cannot depend on any hardware architecture or platform
- design details as well.
- 
--The governor itself is represented by a |struct cpuidle_governor| object
-+The governor itself is represented by a struct cpuidle_governor object
- containing four callback pointers, :c:member:`enable`, :c:member:`disable`,
- :c:member:`select`, :c:member:`reflect`, a :c:member:`rating` field described
- below, and a name (string) used for identifying it.
-@@ -83,11 +78,11 @@ callbacks:
- 	  int (*enable) (struct cpuidle_driver *drv, struct cpuidle_device *dev);
- 
- 	The role of this callback is to prepare the governor for handling the
--	(logical) CPU represented by the |struct cpuidle_device| object	pointed
--	to by the ``dev`` argument.  The |struct cpuidle_driver| object pointed
-+	(logical) CPU represented by the struct cpuidle_device object	pointed
-+	to by the ``dev`` argument.  The struct cpuidle_driver object pointed
- 	to by the ``drv`` argument represents the ``CPUIdle`` driver to be used
- 	with that CPU (among other things, it should contain the list of
--	|struct cpuidle_state| objects representing idle states that the
-+	struct cpuidle_state objects representing idle states that the
- 	processor holding the given CPU can be asked to enter).
- 
- 	It may fail, in which case it is expected to return a negative error
-@@ -102,7 +97,7 @@ callbacks:
- 	  void (*disable) (struct cpuidle_driver *drv, struct cpuidle_device *dev);
- 
- 	Called to make the governor stop handling the (logical) CPU represented
--	by the |struct cpuidle_device| object pointed to by the ``dev``
-+	by the struct cpuidle_device object pointed to by the ``dev``
- 	argument.
- 
- 	It is expected to reverse any changes made by the ``->enable()``
-@@ -116,12 +111,12 @@ callbacks:
- 	                 bool *stop_tick);
- 
- 	Called to select an idle state for the processor holding the (logical)
--	CPU represented by the |struct cpuidle_device| object pointed to by the
-+	CPU represented by the struct cpuidle_device object pointed to by the
- 	``dev`` argument.
- 
- 	The list of idle states to take into consideration is represented by the
--	:c:member:`states` array of |struct cpuidle_state| objects held by the
--	|struct cpuidle_driver| object pointed to by the ``drv`` argument (which
-+	:c:member:`states` array of struct cpuidle_state objects held by the
-+	struct cpuidle_driver object pointed to by the ``drv`` argument (which
- 	represents the ``CPUIdle`` driver to be used with the CPU at hand).  The
- 	value returned by this callback is interpreted as an index into that
- 	array (unless it is a negative error code).
-@@ -136,7 +131,7 @@ callbacks:
- 	asking the processor to enter the idle state).
- 
- 	This callback is mandatory (i.e. the :c:member:`select` callback pointer
--	in |struct cpuidle_governor| must not be ``NULL`` for the registration
-+	in struct cpuidle_governor must not be ``NULL`` for the registration
- 	of the governor to succeed).
- 
- :c:member:`reflect`
-@@ -167,21 +162,21 @@ CPU idle time management (``CPUIdle``) drivers provide an interface between the
- other parts of ``CPUIdle`` and the hardware.
- 
- First of all, a ``CPUIdle`` driver has to populate the :c:member:`states` array
--of |struct cpuidle_state| objects included in the |struct cpuidle_driver| object
-+of struct cpuidle_state objects included in the struct cpuidle_driver object
- representing it.  Going forward this array will represent the list of available
- idle states that the processor hardware can be asked to enter shared by all of
- the logical CPUs handled by the given driver.
- 
- The entries in the :c:member:`states` array are expected to be sorted by the
--value of the :c:member:`target_residency` field in |struct cpuidle_state| in
-+value of the :c:member:`target_residency` field in struct cpuidle_state in
- the ascending order (that is, index 0 should correspond to the idle state with
- the minimum value of :c:member:`target_residency`).  [Since the
- :c:member:`target_residency` value is expected to reflect the "depth" of the
--idle state represented by the |struct cpuidle_state| object holding it, this
-+idle state represented by the struct cpuidle_state object holding it, this
- sorting order should be the same as the ascending sorting order by the idle
- state "depth".]
- 
--Three fields in |struct cpuidle_state| are used by the existing ``CPUIdle``
-+Three fields in struct cpuidle_state are used by the existing ``CPUIdle``
- governors for computations related to idle state selection:
- 
- :c:member:`target_residency`
-@@ -203,7 +198,7 @@ governors for computations related to idle state selection:
- 	any idle state at all.  [There are other flags used by the ``CPUIdle``
- 	core in special situations.]
- 
--The :c:member:`enter` callback pointer in |struct cpuidle_state|, which must not
-+The :c:member:`enter` callback pointer in struct cpuidle_state, which must not
- be ``NULL``, points to the routine to execute in order to ask the processor to
- enter this particular idle state:
- 
-@@ -212,14 +207,14 @@ enter this particular idle state:
-   void (*enter) (struct cpuidle_device *dev, struct cpuidle_driver *drv,
-                  int index);
- 
--The first two arguments of it point to the |struct cpuidle_device| object
-+The first two arguments of it point to the struct cpuidle_device object
- representing the logical CPU running this callback and the
--|struct cpuidle_driver| object representing the driver itself, respectively,
--and the last one is an index of the |struct cpuidle_state| entry in the driver's
-+struct cpuidle_driver object representing the driver itself, respectively,
-+and the last one is an index of the struct cpuidle_state entry in the driver's
- :c:member:`states` array representing the idle state to ask the processor to
- enter.
- 
--The analogous ``->enter_s2idle()`` callback in |struct cpuidle_state| is used
-+The analogous ``->enter_s2idle()`` callback in struct cpuidle_state is used
- only for implementing the suspend-to-idle system-wide power management feature.
- The difference between in and ``->enter()`` is that it must not re-enable
- interrupts at any point (even temporarily) or attempt to change the states of
-@@ -227,48 +222,48 @@ clock event devices, which the ``->enter()`` callback may do sometimes.
- 
- Once the :c:member:`states` array has been populated, the number of valid
- entries in it has to be stored in the :c:member:`state_count` field of the
--|struct cpuidle_driver| object representing the driver.  Moreover, if any
-+struct cpuidle_driver object representing the driver.  Moreover, if any
- entries in the :c:member:`states` array represent "coupled" idle states (that
- is, idle states that can only be asked for if multiple related logical CPUs are
--idle), the :c:member:`safe_state_index` field in |struct cpuidle_driver| needs
-+idle), the :c:member:`safe_state_index` field in struct cpuidle_driver needs
- to be the index of an idle state that is not "coupled" (that is, one that can be
- asked for if only one logical CPU is idle).
- 
- In addition to that, if the given ``CPUIdle`` driver is only going to handle a
- subset of logical CPUs in the system, the :c:member:`cpumask` field in its
--|struct cpuidle_driver| object must point to the set (mask) of CPUs that will be
-+struct cpuidle_driver object must point to the set (mask) of CPUs that will be
- handled by it.
- 
- A ``CPUIdle`` driver can only be used after it has been registered.  If there
- are no "coupled" idle state entries in the driver's :c:member:`states` array,
--that can be accomplished by passing the driver's |struct cpuidle_driver| object
-+that can be accomplished by passing the driver's struct cpuidle_driver object
- to :c:func:`cpuidle_register_driver()`.  Otherwise, :c:func:`cpuidle_register()`
- should be used for this purpose.
- 
--However, it also is necessary to register |struct cpuidle_device| objects for
-+However, it also is necessary to register struct cpuidle_device objects for
- all of the logical CPUs to be handled by the given ``CPUIdle`` driver with the
- help of :c:func:`cpuidle_register_device()` after the driver has been registered
- and :c:func:`cpuidle_register_driver()`, unlike :c:func:`cpuidle_register()`,
- does not do that automatically.  For this reason, the drivers that use
- :c:func:`cpuidle_register_driver()` to register themselves must also take care
--of registering the |struct cpuidle_device| objects as needed, so it is generally
-+of registering the struct cpuidle_device objects as needed, so it is generally
- recommended to use :c:func:`cpuidle_register()` for ``CPUIdle`` driver
- registration in all cases.
- 
--The registration of a |struct cpuidle_device| object causes the ``CPUIdle``
-+The registration of a struct cpuidle_device object causes the ``CPUIdle``
- ``sysfs`` interface to be created and the governor's ``->enable()`` callback to
- be invoked for the logical CPU represented by it, so it must take place after
- registering the driver that will handle the CPU in question.
- 
--``CPUIdle`` drivers and |struct cpuidle_device| objects can be unregistered
-+``CPUIdle`` drivers and struct cpuidle_device objects can be unregistered
- when they are not necessary any more which allows some resources associated with
- them to be released.  Due to dependencies between them, all of the
--|struct cpuidle_device| objects representing CPUs handled by the given
-+struct cpuidle_device objects representing CPUs handled by the given
- ``CPUIdle`` driver must be unregistered, with the help of
- :c:func:`cpuidle_unregister_device()`, before calling
- :c:func:`cpuidle_unregister_driver()` to unregister the driver.  Alternatively,
- :c:func:`cpuidle_unregister()` can be called to unregister a ``CPUIdle`` driver
--along with all of the |struct cpuidle_device| objects representing CPUs handled
-+along with all of the struct cpuidle_device objects representing CPUs handled
- by it.
- 
- ``CPUIdle`` drivers can respond to runtime system configuration changes that
-@@ -277,8 +272,8 @@ happen, for example, when the system's power source is switched from AC to
- battery or the other way around).  Upon a notification of such a change,
- a ``CPUIdle`` driver is expected to call :c:func:`cpuidle_pause_and_lock()` to
- turn ``CPUIdle`` off temporarily and then :c:func:`cpuidle_disable_device()` for
--all of the |struct cpuidle_device| objects representing CPUs affected by that
-+all of the struct cpuidle_device objects representing CPUs affected by that
- change.  Next, it can update its :c:member:`states` array in accordance with
- the new configuration of the system, call :c:func:`cpuidle_enable_device()` for
--all of the relevant |struct cpuidle_device| objects and invoke
-+all of the relevant struct cpuidle_device objects and invoke
- :c:func:`cpuidle_resume_and_unlock()` to allow ``CPUIdle`` to be used again.
--- 
-2.26.2
+> 
+>> But I have to also fix the hard-coded k_i in the estimation. As
+>> described above, when we have small power values from abstract scale,
+>> the k_i stays too big.
+> 
+> May be it is preferable to adjust the k_* dynamically given the
+> undershot and overshot results? And then add a set of less opaque
+> parameters for the user, like the time or watts, no?
+> 
 
+Hmmmm, this is interesting, I haven't thought about it. Thank you
+for this idea.
+That would require a re-design of current IPA. IPA trying to figure
+out better k_* values... I will discuss it internally.
+
+It would take time, definitely more than the proposed small fix
+addressing abstract scale and hard-coded 'k_i'.
+Do you think that this fix can be applied and then I can experiment
+on what you suggested?
+
+There is v3 reviewed by Ionela [1].
+
+Thank you for your comments.
+
+Regards,
+Lukasz
+
+[1] 
+https://lore.kernel.org/linux-pm/20201009135850.14727-1-lukasz.luba@arm.com/
