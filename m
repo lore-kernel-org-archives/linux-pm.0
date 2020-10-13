@@ -5,95 +5,108 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7122C433E7
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C3C18C43457
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5C0F524799
-	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6E4A02479A
+	for <linux-pm@archiver.kernel.org>; Tue, 13 Oct 2020 13:59:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="T0Lbzn5x"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="UHFX6ogs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388132AbgJMN7O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 13 Oct 2020 09:59:14 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59570 "EHLO
+        id S2388181AbgJMN7S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 13 Oct 2020 09:59:18 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59582 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387819AbgJMN7O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 09:59:14 -0400
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C935C0613D2
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:14 -0700 (PDT)
-Received: by mail-wm1-x341.google.com with SMTP id a72so23696wme.5
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:14 -0700 (PDT)
+        with ESMTP id S2388176AbgJMN7S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 13 Oct 2020 09:59:18 -0400
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88821C0613D6
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:16 -0700 (PDT)
+Received: by mail-wr1-x444.google.com with SMTP id n15so24206359wrq.2
+        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 06:59:16 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=xYqWuTW/0Vb6gGlVF7Mqhv2moxO3xlTQ1hwvFz7tpn0=;
-        b=T0Lbzn5xsQq5ohWfhjLZa15Y2tTnWUX4qvT414oZujmvMxJo0+sBsDhdPtjbxgPZ9W
-         wz0JOI3pw+Z3affCaTtFQvUQvEtByaCYO8yuH/nfIGKpioMewNxKLWrQwtokcaUyGC6G
-         8L2NKfLyN0J8Q5JITaulmvha9GwPTCPqkKizm42ET85yAes2eo3+7/F8XzYcOoSYjqxQ
-         MTa/FQmT9gB0Dn6CNedEDebc6QFPc7nqQcFCSUeQr2OLi8qL391+dlVpOHpqHbulKAWh
-         I6CGA21MWIHW6P31zpAzghqvcjAaqMlFDV4R8F2DdcJUmlXdOLT4wrnxht3qhb2EPSYl
-         NU3w==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=+bxQjF8JFA6Asp2x5Qy6bOVvEknWT2jmgAadI+Foe/4=;
+        b=UHFX6ogsO9YEIpG7gnor6Jqroymz8ZdFMfwBgY/YnjRGDWk0Pegm37VyPl2TgQF5kH
+         vj92LXD9MWFC9LoKlOn7V4+8rkWsBTmKCmznAkmSPV3OUi6bCeSKhnRT9a6QuXnPZeAW
+         78F/hDYd4oNUQ7IZYHKvywWP0tx0xrtnRkJp3bChNvTbz2ijfnaNWSmK8Y231P90Ya7h
+         Mnh7Y3mkorQ3UZ/KstidY7o0MLC2jaLpT38dGooda1B6XEz00X+NDIJOIH5CpIlJjnku
+         3mWCTkdgtru9x58w/kJNfIfozrbntdYPaL/PpP14Rj8ACE676wMRiKQMKdJOHX1sPgwb
+         uQBA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=xYqWuTW/0Vb6gGlVF7Mqhv2moxO3xlTQ1hwvFz7tpn0=;
-        b=bg0kDNBvxhvzD3JKQwREW/IS66i+bChaPLzygXCbw6R6ZsxeLD1zxI2rkgYeXigWW5
-         q/YN0wRm23NNWGMFsgEjtFC9BjCHJ9Ka6KYGlAccJ7JRE6RAVldC5T5WZ99S6V9a65st
-         QDddP0OM6lIripR1H84KG81S5VfdsAvHsRm3Y6g0NAwcp7v3A8gdZzoCR/hthUVch5/I
-         C1AyTZWV4HDhm9PyzkWxJK4Kq21tGu2scMa1DskebTizI6t9cmGtiwSkpEaLYlA/iOWO
-         EQ+6I2ptT8yIu4UjIno3xEYpA9kMVYhSDghYKTSfiVFJJuH38LASx2SXXvrOg51dAirF
-         87Mw==
-X-Gm-Message-State: AOAM5327o0ya0YPwAPzDfXKaMZe/8f0ypYsRCT07CrpJM6Ea2EEbtbgl
-        wEPAN9JNpXsRF5dqWHjvFobIe3tRjBpPVg==
-X-Google-Smtp-Source: ABdhPJxhjDWYCCReMk52XDj/uJUpC3UL0DI10mjq49N44EKAuYAhZl162evpZLmnK9N44Jw+wXmgwg==
-X-Received: by 2002:a7b:cc17:: with SMTP id f23mr58713wmh.166.1602597552536;
-        Tue, 13 Oct 2020 06:59:12 -0700 (PDT)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=+bxQjF8JFA6Asp2x5Qy6bOVvEknWT2jmgAadI+Foe/4=;
+        b=npibwHKE2WmFMCW+NMnho5zWPHrrQzxCsUGPPm020LgscYecqhFrVywHP2vcUxMc0F
+         9bL3ryH5J3F65ruyasonMAeF5cvgx9zvVN8a8JgG/ad7rtT0nBtSy+5Bjn0Hmwuk42JZ
+         LneLHOjvbQ2U+/q3ToHCAUJXsQtZHU9NKUtFSQ4wrFP+6kQPRrxk/gbICNeh455Eh5+N
+         sfbuT7sI4pyETucsA6/Xf4/44ebEIlZm93IZ68cQccGjKQvyI0/KMOBd3bOFU+NO1Rsx
+         GKlaNMdnn9nH8RTAQ7ACapitK0GBgfE36KkR9UqjU07/ay6LkTKe+2HzMdftFUZfHKCa
+         8Eug==
+X-Gm-Message-State: AOAM53391+cv9Nc4gh9w/CsEaCi/Tzk25tt9qAvQXvQ0gpYwn4pyFRFq
+        bZ66dcxFNrYnY2s7E8pnbGvFUhZRQ5duyQ==
+X-Google-Smtp-Source: ABdhPJySAnjh+044UzGZPOEf9/B71RqNokP2SUMBpwVEdgmbgwgSwLsXYJa+QYU6CxndkNvBNPltTQ==
+X-Received: by 2002:adf:a31a:: with SMTP id c26mr34581095wrb.378.1602597554919;
+        Tue, 13 Oct 2020 06:59:14 -0700 (PDT)
 Received: from localhost.localdomain ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id a199sm17785wmd.8.2020.10.13.06.59.11
+        by smtp.googlemail.com with ESMTPSA id a199sm17785wmd.8.2020.10.13.06.59.13
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 13 Oct 2020 06:59:11 -0700 (PDT)
+        Tue, 13 Oct 2020 06:59:14 -0700 (PDT)
 From:   Georgi Djakov <georgi.djakov@linaro.org>
 To:     linux-pm@vger.kernel.org
 Cc:     mdtipton@codeaurora.org, okukatla@codeaurora.org,
         sibis@codeaurora.org, saravanak@google.com,
         bjorn.andersson@linaro.org, linux-kernel@vger.kernel.org,
         Georgi Djakov <georgi.djakov@linaro.org>
-Subject: [PATCH 1/3] interconnect: Aggregate before setting initial bandwidth
-Date:   Tue, 13 Oct 2020 16:59:11 +0300
-Message-Id: <20201013135913.29059-1-georgi.djakov@linaro.org>
+Subject: [PATCH 3/3] interconnect: qcom: sc7180: Init BCMs before creating the nodes
+Date:   Tue, 13 Oct 2020 16:59:13 +0300
+Message-Id: <20201013135913.29059-3-georgi.djakov@linaro.org>
 X-Mailer: git-send-email 2.28.0
+In-Reply-To: <20201013135913.29059-1-georgi.djakov@linaro.org>
+References: <20201013135913.29059-1-georgi.djakov@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When setting the initial bandwidth, make sure to call the aggregate()
-function (if such is implemented for the current provider), to handle
-cases when data needs to be aggregated first.
+Currently if we use sync_state, by default the bandwidth is maxed out,
+but in order to set this in hardware, the BCMs (Bus Clock Managers) need
+to be initialized first. Move the BCM initialization before creating the
+nodes to fix this.
 
-Fixes: b1d681d8d324 ("interconnect: Add sync state support")
+Fixes: 7d3b0b0d8184 ("interconnect: qcom: Use icc_sync_state")
 Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
 ---
- drivers/interconnect/core.c | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/interconnect/qcom/sc7180.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/interconnect/core.c b/drivers/interconnect/core.c
-index eea47b4c84aa..974a66725d09 100644
---- a/drivers/interconnect/core.c
-+++ b/drivers/interconnect/core.c
-@@ -971,6 +971,9 @@ void icc_node_add(struct icc_node *node, struct icc_provider *provider)
+diff --git a/drivers/interconnect/qcom/sc7180.c b/drivers/interconnect/qcom/sc7180.c
+index bf11b82ed55c..8d9044ed18ab 100644
+--- a/drivers/interconnect/qcom/sc7180.c
++++ b/drivers/interconnect/qcom/sc7180.c
+@@ -553,6 +553,9 @@ static int qnoc_probe(struct platform_device *pdev)
+ 		return ret;
  	}
- 	node->avg_bw = node->init_avg;
- 	node->peak_bw = node->init_peak;
-+	if (provider->aggregate)
-+		provider->aggregate(node, 0, node->init_avg, node->init_peak,
-+				    &node->avg_bw, &node->peak_bw);
- 	provider->set(node, node);
- 	node->avg_bw = 0;
- 	node->peak_bw = 0;
+ 
++	for (i = 0; i < qp->num_bcms; i++)
++		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
++
+ 	for (i = 0; i < num_nodes; i++) {
+ 		size_t j;
+ 
+@@ -576,9 +579,6 @@ static int qnoc_probe(struct platform_device *pdev)
+ 	}
+ 	data->num_nodes = num_nodes;
+ 
+-	for (i = 0; i < qp->num_bcms; i++)
+-		qcom_icc_bcm_init(qp->bcms[i], &pdev->dev);
+-
+ 	platform_set_drvdata(pdev, qp);
+ 
+ 	return 0;
