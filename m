@@ -2,125 +2,173 @@ Return-Path: <SRS0=phhj=DV=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30AF6C433DF
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Oct 2020 09:04:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01BBEC43467
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Oct 2020 09:08:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C85CE20878
-	for <linux-pm@archiver.kernel.org>; Wed, 14 Oct 2020 09:04:46 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="s6HeF1SG"
+	by mail.kernel.org (Postfix) with ESMTP id A19EB214D8
+	for <linux-pm@archiver.kernel.org>; Wed, 14 Oct 2020 09:08:45 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727040AbgJNJEn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 14 Oct 2020 05:04:43 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37580 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727413AbgJNJEg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 14 Oct 2020 05:04:36 -0400
-Received: from mail-pj1-x1044.google.com (mail-pj1-x1044.google.com [IPv6:2607:f8b0:4864:20::1044])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 352F7C041E6B
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 21:25:35 -0700 (PDT)
-Received: by mail-pj1-x1044.google.com with SMTP id ds1so784422pjb.5
-        for <linux-pm@vger.kernel.org>; Tue, 13 Oct 2020 21:25:35 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=jqWcpa42URbsJYkeNmmPzi1+jlodeSMihJOMagBFEDU=;
-        b=s6HeF1SGVHGC2oyxQ8WdZxfrtDy2ZitX5zAuOzD9yQHVn4I2hw7IgAiExwnQDPTNwp
-         BQzt1X6Lqj/bV5R9WfIkgLiAMwGl79iatHK+6F34QMdfB2gEJBvUWHlF7OMek+eg7XNh
-         Zf8bOdnzDhDDd84GGrP30nYG6HAupQEe9duBKveBLqZZ5ub4YyYxUqs1GY8HXqlje7EG
-         9Srbo+QHUZcuAJdu2s2DY6uuTS2dCRk9JeEzXJz7g5Z5v3ROQW0wqrImBTQda6BpPv4B
-         gqgHetIwJDrXe31u47pP9izHMISBFfQNdl3cn7gFxF8oPNSm27NnMaim7WaboldcjiLt
-         FVXQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=jqWcpa42URbsJYkeNmmPzi1+jlodeSMihJOMagBFEDU=;
-        b=AcQUbZstPqVAeuwKVz37t5PUQjQtkK3sO6jAQ7gJs/J0NtsUj2UDeEC6PgU/WxJZYb
-         o5VCF5PfqgtLDlXTx0HRnr9v2EG80DvgPpxzepNtJbzzvd3/Ou3vd/UUbMUYNDS5c442
-         BTm6u2WJTwuyyHqrpiyXTLeMPiEtP2/MIKTI8wQzbUUQDdLiKOABmtevZrF+mLb6gmD4
-         ecjiA5gyD21TnWztOt+o2CKSNFx//v2JsBXc+JI5C7mnsjsShgPeRer8+yfCaaqJ4OGh
-         4IdqZJypyYw1/dbxac3nyVLx+Zz7cEL23RTq/v5eBvXGkP4WSUGZGMhgBWNV/lvu8WlH
-         kYCQ==
-X-Gm-Message-State: AOAM532bP/HBBM+xAYUwtylNjFGvExPjzXZGtxrybhzgj3Ulo4eJTIc9
-        cSaunAG1UnTTcdPCU4yzcMMfQA==
-X-Google-Smtp-Source: ABdhPJwZV7/AgPKuIFGMcWKwWD0cpwn6OGmDMCdsyMZsRdpT0FErCuGiayAGS2xywEAgwCY+6FKuRA==
-X-Received: by 2002:a17:902:7002:b029:d5:3e:3b0c with SMTP id y2-20020a1709027002b02900d5003e3b0cmr2581898plk.52.1602649534683;
-        Tue, 13 Oct 2020 21:25:34 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id n203sm1443308pfd.81.2020.10.13.21.25.33
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 13 Oct 2020 21:25:33 -0700 (PDT)
-Date:   Wed, 14 Oct 2020 09:55:31 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     Ionela Voinescu <ionela.voinescu@arm.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Nicola Mazzucato <nicola.mazzucato@arm.com>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        vireshk@kernel.org, daniel.lezcano@linaro.org, rjw@rjwysocki.net,
-        linux-kernel@vger.kernel.org, robh+dt@kernel.org,
-        chris.redpath@arm.com, morten.rasmussen@arm.com,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH v2 2/2] [RFC] CPUFreq: Add support for
- cpu-perf-dependencies
-Message-ID: <20201014042531.r7iykzygkvmpsqck@vireshk-i7>
-References: <20200924095347.32148-3-nicola.mazzucato@arm.com>
- <20201006071909.3cgz7i5v35dgnuzn@vireshk-i7>
- <2417d7b5-bc58-fa30-192c-e5991ec22ce0@arm.com>
- <20201008110241.dcyxdtqqj7slwmnc@vireshk-i7>
- <20201008150317.GB20268@arm.com>
- <56846759-e3a6-9471-827d-27af0c3d410d@arm.com>
- <20201009053921.pkq4pcyrv4r7ylzu@vireshk-i7>
- <20201012154915.GD16519@bogus>
- <20201012165219.GA3573@arm.com>
- <17819d4d-9e7e-9a38-4227-d0d10a0749f1@arm.com>
+        id S1726120AbgJNJIm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 14 Oct 2020 05:08:42 -0400
+Received: from foss.arm.com ([217.140.110.172]:56728 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726074AbgJNJIm (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 14 Oct 2020 05:08:42 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EB72A30E;
+        Wed, 14 Oct 2020 02:08:40 -0700 (PDT)
+Received: from [10.57.50.223] (unknown [10.57.50.223])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 7CE0D3F73C;
+        Wed, 14 Oct 2020 02:08:37 -0700 (PDT)
+Subject: Re: [PATCH v2 0/3] Clarify abstract scale usage for power values in
+ Energy Model, EAS and IPA
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
+        devicetree@vger.kernel.org, robh+dt@kernel.org, amitk@kernel.org,
+        corbet@lwn.net, Dietmar.Eggemann@arm.com, qperret@google.com,
+        dianders@chromium.org, mka@chromium.org, rnayak@codeaurora.org
+References: <20201002114426.31277-1-lukasz.luba@arm.com>
+ <d2960f6a-1805-1fb4-98ae-4a756d20370b@arm.com>
+ <765e6603-b614-fb72-64ff-248b42474803@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <b19c1f12-b7cf-fcae-4ebb-617019effe2e@arm.com>
+Date:   Wed, 14 Oct 2020 10:08:35 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17819d4d-9e7e-9a38-4227-d0d10a0749f1@arm.com>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <765e6603-b614-fb72-64ff-248b42474803@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12-10-20, 18:18, Lukasz Luba wrote:
-> On 10/12/20 5:52 PM, Ionela Voinescu wrote:
-> > On Monday 12 Oct 2020 at 16:49:30 (+0100), Sudeep Holla wrote:
-> > > On Fri, Oct 09, 2020 at 11:09:21AM +0530, Viresh Kumar wrote:
-> > > > - I wonder if we can keep using that instead of creating new bindings
-> > > >    for exact same stuff ? Though the difference here would be that the
-> > > >    OPP may not have any other entries.
-> > > 
-> > > Well summarised, sorry for chiming in late. I could have not summarised
-> > > any better. Just saw the big thread and was thinking of summarising.
-> > > If the last point on OPP is possible(i.e. no OPP entries but just use
-> > > it for fetch the information) for $subject patch is trying to achieve,
-> > > then it would be good.
+Hi Daniel,
 
-Under normal circumstances, I wouldn't have suggested empty opp-tables
-for sure but it doesn't seem worth adding another binding to get this
-information out :)
-
-> > 
-> > Just to put in my two pennies worth: using opp-shared (in possibly empty
-> > OPP table) as alternative to cpu-perf-dependencies sounds good enough
-> > to me as well.
+On 10/14/20 9:22 AM, Daniel Lezcano wrote:
 > 
-> +1
+> Hi Lukasz,
+> 
+> On 09/10/2020 11:16, Lukasz Luba wrote:
+>> Hi Rafael,
+>>
+>> On 10/2/20 12:44 PM, Lukasz Luba wrote:
+>>> Hi all,
+>>>
+>>> The Energy Model supports power values expressed in an abstract scale.
+>>> This has an impact on Intelligent Power Allocation (IPA) and should be
+>>> documented properly. There is also a need to update the DT binding for
+>>> the
+>>> 'sustainable-power' and allow it to have abstract scale as well.
+>>>
+>>> Changes:
+>>> v2:
+>>> - updated sustainable power section in IPA documentation
+>>> - updated DT binding for the 'sustainable-power'
+>>>
+>>> The v1 of the patch set and related discussion can be found in [1].
+>>>
+>>> Regards,
+>>> Lukasz Luba
+>>>
+>>> [1]
+>>> https://lore.kernel.org/linux-doc/20200929121610.16060-1-lukasz.luba@arm.com/
+>>>
+>>>
+>>> Lukasz Luba (3):
+>>>     docs: Clarify abstract scale usage for power values in Energy Model
+>>>     PM / EM: update the comments related to power scale
+>>>     dt-bindings: thermal: update sustainable-power with abstract scale
+>>>
+>>>    .../devicetree/bindings/thermal/thermal-zones.yaml  | 13 +++++++++----
+>>>    .../driver-api/thermal/power_allocator.rst          | 13 ++++++++++++-
+>>>    Documentation/power/energy-model.rst                | 13 +++++++++++++
+>>>    Documentation/scheduler/sched-energy.rst            |  5 +++++
+>>>    include/linux/energy_model.h                        | 11 +++++------
+>>>    kernel/power/energy_model.c                         |  2 +-
+>>>    6 files changed, 45 insertions(+), 12 deletions(-)
+>>>
+>>
+>> Could you take patch 1/3 and patch 2/3 via your PM tree,
+>> please? I will be very grateful.
+>>
+>> These patches just update the documentation and comments regarding
+>> an issue that we can have: bogoWatts in the Energy Model (and we
+>> already have). One of the drawbacks is that we cannot derive real energy
+>> from these numbers. Will see how this would evolve.
+> 
+> The purpose of the energy model is to provide these power numbers.
+> 
+> If the SoC vendors do not want to share those numbers, then better to
+> not use the energy model at all.
+> 
+> If they want to use the EAS and the IPA at all costs without sharing the
+> power numbers, then it is up to them to take responsibility of providing
+> consistent numbers, not the community to document how to hack the energy
+> model.
+> 
+> And that is even more true as mentioned by Doug: the power numbers are
+> not impossible to measure.
+> 
+> Documenting the scale values give the opportunity to the SoC vendor to
+> never share the power numbers, and even worst, that implies all the
+> existing and future frameworks based on the energy model (and its
+> evolution) *must* comply with these dummy values. That is the promise of
+> a real pain.
+> 
+> IMO, we must keep a strong constraint on the power values for the energy
+> model.
+> 
+> However, nothing prevents to write a recipe on a website explaining how
+> to use the energy model without the power numbers with a big warning
+> that could not work in the future if the energy model evolves or it
+> could be incompatible with the IPA.
+> 
+> I suggest to solve the energy model main issue: the SoC vendor do not
+> want to share the power numbers. Why not give the opportunity to load a
+> firmware where the power numbers will be ? The firmware could be in a
+> vendor partition for example.
+> 
+> 
 
-Now that (almost) everyone agrees, I don't think we need to make any
-change anywhere, in code or bindings. This should work right now as
-well.  The code should never try to create OPP tables and the core
-will not create one. Your driver (which want to get this information
-out of empty OPP tables) shall call dev_pm_opp_of_get_sharing_cpus(),
-which just parses the DT to get this information out.
+I understand your concerns. Unfortunately, the reality is that the
+bogoWatts are there. I had discussion about it a few days ago with
+Rajendra and Doug [1], where I was also opposed to allow bogoValue
+coming from DT 'dynamic-power-coefficient'. But I have discussed it
+internally and we allow, because developers would do it anyway.
 
--- 
-viresh
+Regarding your question with firmware where the power numbers can be
+stored. Unfortunately, it is quite opposite, FW might want to hide it.
+We even allow bogoWatts to come from firmware, the SCMI spec:
+(4.5.1 Performance domain management protocol background)
+'The power can be expressed in mW or in an abstract scale. Vendors are
+not obliged to reveal power costs if it is undesirable, but a linear
+scale is required.'
+The callback which does this is not able to check if the value is a
+bogoWatt [2].
+
+EAS can handle EM with bogoWatts, as I described in the patch.
+IPA has some issues: 'sustainable-power' in DT (which shouldn't be used
+when EM devices use abstract scale) but sysfs interface can be used.
+
+This patch set just align the SCMI spec with EM, EAS, IPA
+documentation and already present platforms which use it.
+
+I hope that the real milliWatts would come to EM via the DT
+'dynamic-power-coefficient' and function dev_pm_opp_of_register_em().
+But no guaranties as you can see in [1].
+
+Regards,
+Lukasz
+
+[1] 
+https://lore.kernel.org/linux-pm/62540312-65a2-b6d9-86ce-b4deaaa913c1@codeaurora.org/
+[2] 
+https://elixir.bootlin.com/linux/v5.9/source/drivers/cpufreq/scmi-cpufreq.c#L118
