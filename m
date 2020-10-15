@@ -2,139 +2,183 @@ Return-Path: <SRS0=rzrg=DW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2B3DDC433DF
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 12:24:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E2C3EC433DF
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 13:33:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BBBB522258
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 12:24:41 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="Tz7NR+uQ"
+	by mail.kernel.org (Postfix) with ESMTP id 82BBA2225B
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 13:33:49 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1602768829;
+	bh=GXiJpGzkgwRDRFIag5fxfatXfBT9rBWGc0DMkAh3jqc=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=MgeB7wka7spGE686TGFVk91H+TTc8r88AH1lKd/hBpBx+rUnHnaLHvwsQi97cLBJp
+	 GNKMzojPUrHZN8kj2m1F9BL9nk0+S2fFM6oUeVRMFe6pQr9FQ9CEmKlUWJdwsqAgNZ
+	 jgoHaEjFDkWsbF0aYmUK2ig27nI2nSt8ypWnAe1Q=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728020AbgJOMYl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Oct 2020 08:24:41 -0400
-Received: from mailgw01.mediatek.com ([210.61.82.183]:51801 "EHLO
-        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S1727373AbgJOMYj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2020 08:24:39 -0400
-X-UUID: 2de67f72ebda43bbb27e61c558fd17db-20201015
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
-        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=21mTreiQdBYOc+BuUKZApw7GoJYgp/DZH/ohzMH+aOE=;
-        b=Tz7NR+uQbVwVhlVt9q+V5morKv2TdP2wDNuSUDsZ48n0K5Ju+/I18YS/7vF7RCFBZEwUXmgAyC+NoyNk4odZ+vsGTLFG/FDMMmthWSBCA3TfXBUaTZBNafU/YvOWQYdzNnowrV4vnUU1sgbqq2871LPwhfr51RtjuEhBwrUJyiE=;
-X-UUID: 2de67f72ebda43bbb27e61c558fd17db-20201015
-Received: from mtkcas06.mediatek.inc [(172.21.101.30)] by mailgw01.mediatek.com
-        (envelope-from <hector.yuan@mediatek.com>)
-        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
-        with ESMTP id 77770749; Thu, 15 Oct 2020 20:24:35 +0800
-Received: from MTKCAS06.mediatek.inc (172.21.101.30) by
- mtkmbs07n2.mediatek.inc (172.21.101.141) with Microsoft SMTP Server (TLS) id
- 15.0.1497.2; Thu, 15 Oct 2020 20:24:33 +0800
-Received: from mtkswgap22.mediatek.inc (172.21.77.33) by MTKCAS06.mediatek.inc
- (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 15 Oct 2020 20:24:33 +0800
-From:   Hector Yuan <hector.yuan@mediatek.com>
-To:     <linux-mediatek@lists.infradead.org>,
-        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-CC:     <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
-        <hector.yuan@mediatek.com>
-Subject: [PATCH v2 1/1] cpufreq: mediatek-hw: Register EM power table
-Date:   Thu, 15 Oct 2020 20:24:27 +0800
-Message-ID: <1602764667-29009-2-git-send-email-hector.yuan@mediatek.com>
-X-Mailer: git-send-email 1.7.9.5
-In-Reply-To: <1602764667-29009-1-git-send-email-hector.yuan@mediatek.com>
-References: <1602764667-29009-1-git-send-email-hector.yuan@mediatek.com>
+        id S2387534AbgJONdt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Oct 2020 09:33:49 -0400
+Received: from mail-oo1-f66.google.com ([209.85.161.66]:36717 "EHLO
+        mail-oo1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729016AbgJONds (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2020 09:33:48 -0400
+Received: by mail-oo1-f66.google.com with SMTP id z1so716652ooj.3;
+        Thu, 15 Oct 2020 06:33:47 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=MtEg+rr20vQ/R5/UQ+HF4u9WrsNxMXTvc1d4Zer96zg=;
+        b=mJFZaAXoEf6K8y/VxJoREPL7H9p39jNG2HGiTXNaKmJF9jArQqNPhhMWd2hokT5FqV
+         qT1OZmSBMdhI7XyrCLNiZSDIHuAaW5dw+yY93MjMfqnR9PW7vND1omxoJbjrr1kK+jBs
+         DydbgMd92O00z5iHMaISEnJ2hArCH8441r6IAyvGpbobsy9U81cNgdvBvoPKkXyXI/0a
+         biebYZMLL+ACMkPCXIWCZo9vSXVLjxLtK5FwR2P0cJjpQWOC7VANHY1Nqc0VWwGnMn77
+         hIL1voDdaPkytCPJh16PBJ88CshpqimQlbCNjPKE7UR7KmFQGPewkfsC5tQO/d6YQ3NW
+         QqAw==
+X-Gm-Message-State: AOAM531s/rLliPbvDPR2EBKbWhnY+oFOSXc9yKOonMcXHW6oEeyfHpzP
+        il1xcE+yxNcG/WaTdVrH23jJvkwXy/nhoPlyf5/iIoOi
+X-Google-Smtp-Source: ABdhPJzpNx2QL1b4ZSR273hypRohu/l5UAbBhBrqcBEnPIOylvphrc2qFbIBNoDowB6zCV30c5h46sxrsqqUw33cerk=
+X-Received: by 2002:a4a:dc0d:: with SMTP id p13mr1373349oov.2.1602768827277;
+ Thu, 15 Oct 2020 06:33:47 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-MTK:  N
-Content-Transfer-Encoding: base64
+References: <20201002114426.31277-1-lukasz.luba@arm.com> <d2960f6a-1805-1fb4-98ae-4a756d20370b@arm.com>
+ <765e6603-b614-fb72-64ff-248b42474803@linaro.org> <b19c1f12-b7cf-fcae-4ebb-617019effe2e@arm.com>
+ <55d3fb0f-f7d8-63c5-2bdb-53eaa62380e0@linaro.org> <f660731e-132b-2514-f526-d7123ed3522c@arm.com>
+ <d04019bd-9e85-5f3e-2a1b-66780b8df3dc@linaro.org>
+In-Reply-To: <d04019bd-9e85-5f3e-2a1b-66780b8df3dc@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 15 Oct 2020 15:33:36 +0200
+Message-ID: <CAJZ5v0jmTYtMyujxxTBezmiO-j3iW_RjRKOkCpqU4gtRe+OJ2Q@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] Clarify abstract scale usage for power values in
+ Energy Model, EAS and IPA
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Dietmar Eggemann <Dietmar.Eggemann@arm.com>,
+        Quentin Perret <qperret@google.com>,
+        Doug Anderson <dianders@chromium.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        "Nayak, Rajendra" <rnayak@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-RnJvbTogIkhlY3Rvci5ZdWFuIiA8aGVjdG9yLnl1YW5AbWVkaWF0ZWsuY29tPg0KDQpSZWdpc3Rl
-ciBDUFUgcG93ZXIgdGFibGUgdG8gZW5lcmd5IG1vZGVsIGZyYW1ld29yaw0KDQpTaWduZWQtb2Zm
-LWJ5OiBIZWN0b3IuWXVhbiA8aGVjdG9yLnl1YW5AbWVkaWF0ZWsuY29tPg0KLS0tDQogZHJpdmVy
-cy9jcHVmcmVxL21lZGlhdGVrLWNwdWZyZXEtaHcuYyB8ICAgNTggKysrKysrKysrKysrKysrKysr
-KysrKysrKystLS0tLS0tDQogMSBmaWxlIGNoYW5nZWQsIDQ2IGluc2VydGlvbnMoKyksIDEyIGRl
-bGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvZHJpdmVycy9jcHVmcmVxL21lZGlhdGVrLWNwdWZy
-ZXEtaHcuYyBiL2RyaXZlcnMvY3B1ZnJlcS9tZWRpYXRlay1jcHVmcmVxLWh3LmMNCmluZGV4IDhm
-YTEyZTUuLjM3OWE1ZjQgMTAwNjQ0DQotLS0gYS9kcml2ZXJzL2NwdWZyZXEvbWVkaWF0ZWstY3B1
-ZnJlcS1ody5jDQorKysgYi9kcml2ZXJzL2NwdWZyZXEvbWVkaWF0ZWstY3B1ZnJlcS1ody5jDQpA
-QCAtNSw2ICs1LDcgQEANCiANCiAjaW5jbHVkZSA8bGludXgvYml0ZmllbGQuaD4NCiAjaW5jbHVk
-ZSA8bGludXgvY3B1ZnJlcS5oPg0KKyNpbmNsdWRlIDxsaW51eC9lbmVyZ3lfbW9kZWwuaD4NCiAj
-aW5jbHVkZSA8bGludXgvaW5pdC5oPg0KICNpbmNsdWRlIDxsaW51eC9rZXJuZWwuaD4NCiAjaW5j
-bHVkZSA8bGludXgvbW9kdWxlLmg+DQpAQCAtMTcsOSArMTgsMTAgQEANCiAjZGVmaW5lIExVVF9S
-T1dfU0laRQkJCTB4NA0KIA0KIGVudW0gew0KLQlSRUdfTFVUX1RBQkxFLA0KLQlSRUdfRU5BQkxF
-LA0KLQlSRUdfUEVSRl9TVEFURSwNCisJUkVHX0ZSRVFfTFVUX1RBQkxFLA0KKwlSRUdfRlJFUV9F
-TkFCTEUsDQorCVJFR19GUkVRX1BFUkZfU1RBVEUsDQorCVJFR19FTV9QT1dFUl9UQkwsDQogDQog
-CVJFR19BUlJBWV9TSVpFLA0KIH07DQpAQCAtMjcsMjMgKzI5LDQ0IEBAIGVudW0gew0KIHN0cnVj
-dCBjcHVmcmVxX210ayB7DQogCXN0cnVjdCBjcHVmcmVxX2ZyZXF1ZW5jeV90YWJsZSAqdGFibGU7
-DQogCXZvaWQgX19pb21lbSAqcmVnX2Jhc2VzW1JFR19BUlJBWV9TSVpFXTsNCisJaW50IG5yX29w
-cDsNCiAJY3B1bWFza190IHJlbGF0ZWRfY3B1czsNCiB9Ow0KIA0KIHN0YXRpYyBjb25zdCB1MTYg
-Y3B1ZnJlcV9tdGtfb2Zmc2V0c1tSRUdfQVJSQVlfU0laRV0gPSB7DQotCVtSRUdfTFVUX1RBQkxF
-XQkJPSAweDAsDQotCVtSRUdfRU5BQkxFXQkJPSAweDg0LA0KLQlbUkVHX1BFUkZfU1RBVEVdCT0g
-MHg4OCwNCisJW1JFR19GUkVRX0xVVF9UQUJMRV0JPSAweDAsDQorCVtSRUdfRlJFUV9FTkFCTEVd
-CT0gMHg4NCwNCisJW1JFR19GUkVRX1BFUkZfU1RBVEVdCT0gMHg4OCwNCisJW1JFR19FTV9QT1dF
-Ul9UQkxdCT0gMHgzRDAsDQogfTsNCiANCiBzdGF0aWMgc3RydWN0IGNwdWZyZXFfbXRrICptdGtf
-ZnJlcV9kb21haW5fbWFwW05SX0NQVVNdOw0KIA0KK3N0YXRpYyBpbnQgbXRrX2NwdWZyZXFfZ2V0
-X2NwdV9wb3dlcih1bnNpZ25lZCBsb25nICptVywNCisJCQkJICAgICB1bnNpZ25lZCBsb25nICpL
-SHosIHN0cnVjdCBkZXZpY2UgKmNwdV9kZXYpDQorew0KKwlzdHJ1Y3QgY3B1ZnJlcV9tdGsgKmMg
-PSBtdGtfZnJlcV9kb21haW5fbWFwW2NwdV9kZXYtPmlkXTsNCisJaW50IGk7DQorDQorCWZvciAo
-aSA9IDA7IGkgPCBjLT5ucl9vcHA7IGkrKykgew0KKwkJaWYgKGMtPnRhYmxlW2ldLmZyZXF1ZW5j
-eSA8ICpLSHopDQorCQkJYnJlYWs7DQorCX0NCisJaS0tOw0KKw0KKwkqS0h6ID0gYy0+dGFibGVb
-aV0uZnJlcXVlbmN5Ow0KKwkqbVcgPSByZWFkbF9yZWxheGVkKGMtPnJlZ19iYXNlc1tSRUdfRU1f
-UE9XRVJfVEJMXSArDQorCQkJICAgIGkgKiBMVVRfUk9XX1NJWkUpIC8gMTAwMDsNCisNCisJcmV0
-dXJuIDA7DQorfQ0KKw0KIHN0YXRpYyBpbnQgbXRrX2NwdWZyZXFfaHdfdGFyZ2V0X2luZGV4KHN0
-cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9saWN5LA0KIAkJCQkgICAgICAgdW5zaWduZWQgaW50IGlu
-ZGV4KQ0KIHsNCiAJc3RydWN0IGNwdWZyZXFfbXRrICpjID0gcG9saWN5LT5kcml2ZXJfZGF0YTsN
-CiANCi0Jd3JpdGVsX3JlbGF4ZWQoaW5kZXgsIGMtPnJlZ19iYXNlc1tSRUdfUEVSRl9TVEFURV0p
-Ow0KKwl3cml0ZWxfcmVsYXhlZChpbmRleCwgYy0+cmVnX2Jhc2VzW1JFR19GUkVRX1BFUkZfU1RB
-VEVdKTsNCiANCiAJcmV0dXJuIDA7DQogfQ0KQEAgLTU1LDcgKzc4LDcgQEAgc3RhdGljIHVuc2ln
-bmVkIGludCBtdGtfY3B1ZnJlcV9od19nZXQodW5zaWduZWQgaW50IGNwdSkNCiANCiAJYyA9IG10
-a19mcmVxX2RvbWFpbl9tYXBbY3B1XTsNCiANCi0JaW5kZXggPSByZWFkbF9yZWxheGVkKGMtPnJl
-Z19iYXNlc1tSRUdfUEVSRl9TVEFURV0pOw0KKwlpbmRleCA9IHJlYWRsX3JlbGF4ZWQoYy0+cmVn
-X2Jhc2VzW1JFR19GUkVRX1BFUkZfU1RBVEVdKTsNCiAJaW5kZXggPSBtaW4oaW5kZXgsIExVVF9N
-QVhfRU5UUklFUyAtIDEpOw0KIA0KIAlyZXR1cm4gYy0+dGFibGVbaW5kZXhdLmZyZXF1ZW5jeTsN
-CkBAIC02NCw2ICs4NywxNCBAQCBzdGF0aWMgdW5zaWduZWQgaW50IG10a19jcHVmcmVxX2h3X2dl
-dCh1bnNpZ25lZCBpbnQgY3B1KQ0KIHN0YXRpYyBpbnQgbXRrX2NwdWZyZXFfaHdfY3B1X2luaXQo
-c3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQogew0KIAlzdHJ1Y3QgY3B1ZnJlcV9tdGsg
-KmM7DQorCXN0cnVjdCBkZXZpY2UgKmNwdV9kZXY7DQorCXN0cnVjdCBlbV9kYXRhX2NhbGxiYWNr
-IGVtX2NiID0gRU1fREFUQV9DQihtdGtfY3B1ZnJlcV9nZXRfY3B1X3Bvd2VyKTsNCisNCisJY3B1
-X2RldiA9IGdldF9jcHVfZGV2aWNlKHBvbGljeS0+Y3B1KTsNCisJaWYgKCFjcHVfZGV2KSB7DQor
-CQlwcl9lcnIoImZhaWxlZCB0byBnZXQgY3B1JWQgZGV2aWNlXG4iLCBwb2xpY3ktPmNwdSk7DQor
-CQlyZXR1cm4gLUVOT0RFVjsNCisJfQ0KIA0KIAljID0gbXRrX2ZyZXFfZG9tYWluX21hcFtwb2xp
-Y3ktPmNwdV07DQogCWlmICghYykgew0KQEAgLTc3LDcgKzEwOCw5IEBAIHN0YXRpYyBpbnQgbXRr
-X2NwdWZyZXFfaHdfY3B1X2luaXQoc3RydWN0IGNwdWZyZXFfcG9saWN5ICpwb2xpY3kpDQogCXBv
-bGljeS0+ZHJpdmVyX2RhdGEgPSBjOw0KIA0KIAkvKiBIVyBzaG91bGQgYmUgaW4gZW5hYmxlZCBz
-dGF0ZSB0byBwcm9jZWVkIG5vdyAqLw0KLQl3cml0ZWxfcmVsYXhlZCgweDEsIGMtPnJlZ19iYXNl
-c1tSRUdfRU5BQkxFXSk7DQorCXdyaXRlbF9yZWxheGVkKDB4MSwgYy0+cmVnX2Jhc2VzW1JFR19G
-UkVRX0VOQUJMRV0pOw0KKw0KKwllbV9kZXZfcmVnaXN0ZXJfcGVyZl9kb21haW4oY3B1X2Rldiwg
-Yy0+bnJfb3BwLCAmZW1fY2IsIHBvbGljeS0+Y3B1cyk7DQogDQogCXJldHVybiAwOw0KIH0NCkBA
-IC05Myw3ICsxMjYsNyBAQCBzdGF0aWMgaW50IG10a19jcHVmcmVxX2h3X2NwdV9leGl0KHN0cnVj
-dCBjcHVmcmVxX3BvbGljeSAqcG9saWN5KQ0KIAl9DQogDQogCS8qIEhXIHNob3VsZCBiZSBpbiBw
-YXVzZWQgc3RhdGUgbm93ICovDQotCXdyaXRlbF9yZWxheGVkKDB4MCwgYy0+cmVnX2Jhc2VzW1JF
-R19FTkFCTEVdKTsNCisJd3JpdGVsX3JlbGF4ZWQoMHgwLCBjLT5yZWdfYmFzZXNbUkVHX0ZSRVFf
-RU5BQkxFXSk7DQogDQogCXJldHVybiAwOw0KIH0NCkBAIC0xMjIsNyArMTU1LDcgQEAgc3RhdGlj
-IGludCBtdGtfY3B1X2NyZWF0ZV9mcmVxX3RhYmxlKHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBk
-ZXYsDQogCWlmICghYy0+dGFibGUpDQogCQlyZXR1cm4gLUVOT01FTTsNCiANCi0JYmFzZV90YWJs
-ZSA9IGMtPnJlZ19iYXNlc1tSRUdfTFVUX1RBQkxFXTsNCisJYmFzZV90YWJsZSA9IGMtPnJlZ19i
-YXNlc1tSRUdfRlJFUV9MVVRfVEFCTEVdOw0KIA0KIAlmb3IgKGkgPSAwOyBpIDwgTFVUX01BWF9F
-TlRSSUVTOyBpKyspIHsNCiAJCWRhdGEgPSByZWFkbF9yZWxheGVkKGJhc2VfdGFibGUgKyAoaSAq
-IExVVF9ST1dfU0laRSkpOw0KQEAgLTE0MCw2ICsxNzMsNyBAQCBzdGF0aWMgaW50IG10a19jcHVf
-Y3JlYXRlX2ZyZXFfdGFibGUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwNCiAJfQ0KIA0K
-IAljLT50YWJsZVtpXS5mcmVxdWVuY3kgPSBDUFVGUkVRX1RBQkxFX0VORDsNCisJYy0+bnJfb3Bw
-ID0gaTsNCiANCiAJcmV0dXJuIDA7DQogfQ0KQEAgLTE5Miw3ICsyMjYsNyBAQCBzdGF0aWMgaW50
-IG10a19jcHVfcmVzb3VyY2VzX2luaXQoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwNCiAJ
-aWYgKElTX0VSUihiYXNlKSkNCiAJCXJldHVybiBQVFJfRVJSKGJhc2UpOw0KIA0KLQlmb3IgKGkg
-PSBSRUdfTFVUX1RBQkxFOyBpIDwgUkVHX0FSUkFZX1NJWkU7IGkrKykNCisJZm9yIChpID0gUkVH
-X0ZSRVFfTFVUX1RBQkxFOyBpIDwgUkVHX0FSUkFZX1NJWkU7IGkrKykNCiAJCWMtPnJlZ19iYXNl
-c1tpXSA9IGJhc2UgKyBvZmZzZXRzW2ldOw0KIA0KIAlyZXQgPSBtdGtfZ2V0X3JlbGF0ZWRfY3B1
-cyhpbmRleCwgYyk7DQotLSANCjEuNy45LjUNCg==
+On Wed, Oct 14, 2020 at 7:10 PM Daniel Lezcano
+<daniel.lezcano@linaro.org> wrote:
+>
+> On 14/10/2020 17:24, Lukasz Luba wrote:
+>
+> [ ... ]
+>
+> > We have to update the EM doc about allowed abstract scale, which
+> > implies EAS, IPA doc update with some information to the community that
+> > these components can handle it.
+> >
+> > The script will just make developers life easier, but the current
+> > documentation does not say anything about abstract scale.
+>
+> ... yes, because there is no consistency across the source of power
+> numbers and no tools to ensure DT power numbers consistency, yet.
+>
+> >> In any case, if the DT is specifying real numbers, and SCMI abstract
+> >> numbers or the opposite, obviously there is a conflict if we are using
+> >> both.
+> >
+> > True, DT only allows real numbers (I have Rob's opinion regarding
+> > patch 3/3).
+> >
+> > It's not that there is only SCMI which might use abstract scale. Qcom
+> > already has it and other vendors will follow (not exposing real
+> > numbers). They would register bogoWatts to EM because they know that EAS
+> > can deal with both.
+>
+> So vendors are using bogoWatts, despite the documentation.
+>
+> By updating the documentation saying it supports the abstract values,
+> that means every new framework, device with power values, will have to
+> comply with that. How is it possible to add a device with power numbers
+> if the existing ones are obfuscated ?
+>
+> With two subsystems using the energy model, evolving independently we
+> can see there are conflicts. With more subsystems, that may become a
+> source of confusion, especially with different contributors.
+>
+> I think the energy model should stick to milliwatts and keep the
+> documentation unchanged regarding this. And vendors should take the
+> responsibility of not sticking to the documentation.
+>
+> >> I suggest to fix the conflict first and provide the features to make the
+> >> numbers more easy to share (like the script described above and/or the
+> >> firmware file).
+> >>
+> >> Then with the right tools, everything can be documented.
+> >>
+> >
+> > We cannot block one way of registration to EM when the other was used.
+> > They might have correct and consistent numbers.
+>
+> What is the rational of using two firmware power information ?
+>
+> > It's up to the platform developers to choose the path:
+> > - go with bogoWatts - if they are not allowed to expose sensitive
+> >   information, use em_dev_register_perf_domain() in drivers, not DT;
+> >   make sure everything that is needed works; check the doc, which
+> >   sub-systems can handle it or needs some tuning (patches 1/3 and 2/3
+> >   try to help here);
+> > - use milliWatts - easier; DT is allowed; help from the community in
+> >   reviews, possible results comparisons; both EM registration ways
+> >   might be used;
+> >
+> > We cannot force vendors/OEM engineers to store milliWatts in the
+> > Energy Model if these values are protected by some NDA.
+>
+> If I am able to measure one real power value, (and I'm pretty sure it is
+> quite possible), whatever which one, it is possible to deduce all the
+> numbers with the linear scale. IMO that is a false debate. Anyway ...
+>
+> > Your proposed
+> > way of providing data into EM from user-space firmware.bin IMHO also
+> > falls into the same bucket. That information would be accessible in EM
+> > debugfs and they would avoid it.
+>
+> I think you misunderstood my point.
+>
+> There is the SCMI and the DT. Because there are two sources where it is
+> impossible to know if they are using the same units, we are stuck to
+> ensure a consistency for the kernel.
+>
+> The platform should use:
+>  - the SCMI only (scaled or real)
+>  - the DT only (real)
+>  [ - the firmware file only (scaled or real) ]
+>
+>
+> As it is not possible to know if they are scaled or real, there is no
+> choice except making them mutually exclusive.
+>
+> From my POV, it is not adequate to let SCMI power information co-exists
+> with the DT power information if we know they can be with different units.
+>
+> I've just expressed my opinions:
+>
+>  - vendors take responsibility of putting different units for the EM
+>
+>  - Power numbers should come from the same source
+>
+>
+> Up to Rafael to decide what to do with this documentation update.
 
+Well, I was hoping that you both would reach some kind of agreement.
+
+I don't feel like the decision is mine here to be honest.
