@@ -2,148 +2,165 @@ Return-Path: <SRS0=rzrg=DW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 47944C43457
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 10:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 46D3DC43467
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 11:25:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DC1A12225F
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 10:22:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="njFZ7+MC"
+	by mail.kernel.org (Postfix) with ESMTP id 04C8C20B1F
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 11:25:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389272AbgJOKWC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Oct 2020 06:22:02 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47028 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389258AbgJOKWC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2020 06:22:02 -0400
-Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 414BAC061755
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2020 03:22:00 -0700 (PDT)
-Received: by mail-wr1-x444.google.com with SMTP id n18so2763215wrs.5
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2020 03:22:00 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=HSLoaI3Bb+OZrae1XegNlhU8itLV0T9QFLmqbbYjrSE=;
-        b=njFZ7+MCpBTWYGR9y3/X+X/ytYtI07rgf4gZK9LzXmwOutQ8kBYZtgQDtP1kssCS44
-         xnvCjf9B8hjm8GsI3tMCgFSTnAzXI/BzTXUHGjw+Kv9m4yYCFV0vQO/nGZkaQHYI4KOY
-         mwjdo8uVWcGjiGJ/qS646+02iibE8IatAJt5W0yIjkNZrqqPQIjQFsaa2rGDMETeHsK/
-         1nLhBl2coETZoab3Dowu9J5fPiaJjk0FarQb46H0+BFPhgUbH4dwurPycn8ldNgs2f+s
-         XP6rXLQskJuqrZ8jBdwuURi1FXhq1Ae2vV5yI7nOHt0BFJREmVdwz6VSlwa0WhWKIuGp
-         /aVQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=HSLoaI3Bb+OZrae1XegNlhU8itLV0T9QFLmqbbYjrSE=;
-        b=Dgi3VXfRM/w9JPZqT5dApWrJZSsIvwad3y1dix5AswTo2WKySUtds44QsexztTVTW0
-         SXyUR9qjkcuzKpIrbFZWnVMoOkkBivi+hgx2zUYXX0fX7XcMyAS9pFpD9DYYNbp07RqE
-         JI2hK7KYfaHi+DRmmEk+jArTBdlxprP1sgCA8Ky/LqJSNKlpqJHGg3UrYBzGTYm3zuN2
-         oobR5NvYY083R6V3/ngTs3qXXCttwWYVpsDCsue4eohK5ZSDCx1OE3lXBLZJ9xBvfJvP
-         2TT7vzHMRuWRWap/g6Zlrkxi4cHh3Gv8UBF13yqNAXZETLqfJRmiJnrQnasenxwITo2v
-         wOAg==
-X-Gm-Message-State: AOAM531bkfBk5+EXQktAOOpPvZ2v7za/40D1raoe6ZS/dFbyU2mwXgy3
-        rFfE210AUIl42Y3+D4RGtBLKVA==
-X-Google-Smtp-Source: ABdhPJzJncH5BCQjJ4evPmXyN+1spvZRDp4Rs202jnAZ/jtV+lnqrDDddpV2zfaeIyf0COpuFX86AA==
-X-Received: by 2002:adf:f182:: with SMTP id h2mr3452294wro.199.1602757318825;
-        Thu, 15 Oct 2020 03:21:58 -0700 (PDT)
-Received: from ?IPv6:2a01:e34:ed2f:f020:5400:5b12:4f4c:844b? ([2a01:e34:ed2f:f020:5400:5b12:4f4c:844b])
-        by smtp.googlemail.com with ESMTPSA id u6sm3437856wmj.40.2020.10.15.03.21.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 15 Oct 2020 03:21:58 -0700 (PDT)
-Subject: Re: [PATCH v2 0/3] Clarify abstract scale usage for power values in
- Energy Model, EAS and IPA
-To:     Lukasz Luba <lukasz.luba@arm.com>
-Cc:     rjw@rjwysocki.net, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-doc@vger.kernel.org,
-        devicetree@vger.kernel.org, robh+dt@kernel.org, amitk@kernel.org,
-        corbet@lwn.net, Dietmar.Eggemann@arm.com, qperret@google.com,
-        dianders@chromium.org, mka@chromium.org, rnayak@codeaurora.org
-References: <20201002114426.31277-1-lukasz.luba@arm.com>
- <d2960f6a-1805-1fb4-98ae-4a756d20370b@arm.com>
- <765e6603-b614-fb72-64ff-248b42474803@linaro.org>
- <b19c1f12-b7cf-fcae-4ebb-617019effe2e@arm.com>
- <55d3fb0f-f7d8-63c5-2bdb-53eaa62380e0@linaro.org>
- <f660731e-132b-2514-f526-d7123ed3522c@arm.com>
- <d04019bd-9e85-5f3e-2a1b-66780b8df3dc@linaro.org>
- <3e3dd42c-48ac-7267-45c5-ca88205611bd@arm.com>
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-Message-ID: <00ceec64-3273-bb4a-6f38-22de8d877ab5@linaro.org>
-Date:   Thu, 15 Oct 2020 12:21:55 +0200
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
-MIME-Version: 1.0
-In-Reply-To: <3e3dd42c-48ac-7267-45c5-ca88205611bd@arm.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+        id S1728386AbgJOLZi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Oct 2020 07:25:38 -0400
+Received: from foss.arm.com ([217.140.110.172]:32830 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728329AbgJOLZH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Oct 2020 07:25:07 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EA2B813D5;
+        Thu, 15 Oct 2020 04:25:06 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.57.48.138])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id DAFFA3F66B;
+        Thu, 15 Oct 2020 04:25:04 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     daniel.lezcano@linaro.org, amitk@kernel.org,
+        Dietmar.Eggemann@arm.com, lukasz.luba@arm.com,
+        michael.kao@mediatek.com, rui.zhang@intel.com
+Subject: [PATCH v2 4/4] thermal: move power_actor_set_power into IPA
+Date:   Thu, 15 Oct 2020 12:24:41 +0100
+Message-Id: <20201015112441.4056-5-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201015112441.4056-1-lukasz.luba@arm.com>
+References: <20201015112441.4056-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 15/10/2020 11:00, Lukasz Luba wrote:
+Since the power actor section has one function power_actor_set_power()
+move it into Intelligent Power Allocation (IPA). There is no other user
+of that helper function. It would also allow to remove the check of
+cdev_is_power_actor() because the code which calls it in IPA already does
+the needed check. Make the function static since only IPA use it.
 
-[ ... ]
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/thermal/gov_power_allocator.c | 32 +++++++++++++++++++++
+ drivers/thermal/thermal_core.c        | 41 ---------------------------
+ drivers/thermal/thermal_core.h        |  2 --
+ 3 files changed, 32 insertions(+), 43 deletions(-)
 
->> There is the SCMI and the DT. Because there are two sources where it is
->> impossible to know if they are using the same units, we are stuck to
->> ensure a consistency for the kernel.
->>
->> The platform should use:
->>   - the SCMI only (scaled or real)
->>   - the DT only (real)
->>   [ - the firmware file only (scaled or real) ]
->>
-> 
-> Do you mean by SCMI - registration using em_dev_register_perf_domain() ?
-
-It was high level description, but yes, I guess it is the case.
-
->> As it is not possible to know if they are scaled or real, there is no
->> choice except making them mutually exclusive.
-> 
-> So you propose a bit more restriction in registration EM, to not get
-> lost in the future. I also have these doubts. Let's consider it and
-> maybe agree.
-> 
-> I've recommended Qcom to use em_dev_register_perf_domain() when they
-> have this obfuscated power values. Then any developer in the future
-> who wants to add EM for a new device on that platform, should use the
-> em_dev_register_perf_domain().
-> 
-> In this case the flag in EM that you have proposed makes sense.
-> We probably need an argument 'bool abstract_scale' in the
-> em_dev_register_perf_domain(..., bool abstract_scale)
-> as a source of information.
-
-I was suggesting to add a flag to the em_perf_domain structure giving
-the source of the power numbers.
-
-So if the IPA is having the 'sustainable-power' set in DT but the
-em_perf_domain is flagged with power number coming from SCMI, then they
-will be incompatible, the thermal zone will fail to register.
-
-
-> We would allow to co-exist em_dev_register_perf_domain(..., false)
-> with dev_pm_opp_of_register_em() EM devices.
-> 
-> Is it make sense?
-
-Well, it does not change my opinion. We should assume the energy model
-is always milliwatts. If the SoC vendors find a way to get around with
-bogoWatts, then good to them and up to them to deal with in the future.
-
-
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index eb8c9afadf19..b29e21c56a4f 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -254,6 +254,38 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ 	return power_range;
+ }
+ 
++/**
++ * power_actor_set_power() - limit the maximum power a cooling device consumes
++ * @cdev:	pointer to &thermal_cooling_device
++ * @instance:	thermal instance to update
++ * @power:	the power in milliwatts
++ *
++ * Set the cooling device to consume at most @power milliwatts. The limit is
++ * expected to be a cap at the maximum power consumption.
++ *
++ * Return: 0 on success, -EINVAL if the cooling device does not
++ * implement the power actor API or -E* for other failures.
++ */
++static int
++power_actor_set_power(struct thermal_cooling_device *cdev,
++		      struct thermal_instance *instance, u32 power)
++{
++	unsigned long state;
++	int ret;
++
++	ret = cdev->ops->power2state(cdev, power, &state);
++	if (ret)
++		return ret;
++
++	instance->target = clamp_val(state, instance->lower, instance->upper);
++	mutex_lock(&cdev->lock);
++	cdev->updated = false;
++	mutex_unlock(&cdev->lock);
++	thermal_cdev_update(cdev);
++
++	return 0;
++}
++
+ /**
+  * divvy_up_power() - divvy the allocated power between the actors
+  * @req_power:	each actor's requested power
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index d5540bfeee5e..96349ba59725 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -593,47 +593,6 @@ static void thermal_zone_device_check(struct work_struct *work)
+ 	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ }
+ 
+-/*
+- * Power actor section: interface to power actors to estimate power
+- *
+- * Set of functions used to interact to cooling devices that know
+- * how to estimate their devices power consumption.
+- */
+-
+-/**
+- * power_actor_set_power() - limit the maximum power a cooling device consumes
+- * @cdev:	pointer to &thermal_cooling_device
+- * @instance:	thermal instance to update
+- * @power:	the power in milliwatts
+- *
+- * Set the cooling device to consume at most @power milliwatts. The limit is
+- * expected to be a cap at the maximum power consumption.
+- *
+- * Return: 0 on success, -EINVAL if the cooling device does not
+- * implement the power actor API or -E* for other failures.
+- */
+-int power_actor_set_power(struct thermal_cooling_device *cdev,
+-			  struct thermal_instance *instance, u32 power)
+-{
+-	unsigned long state;
+-	int ret;
+-
+-	if (!cdev_is_power_actor(cdev))
+-		return -EINVAL;
+-
+-	ret = cdev->ops->power2state(cdev, power, &state);
+-	if (ret)
+-		return ret;
+-
+-	instance->target = clamp_val(state, instance->lower, instance->upper);
+-	mutex_lock(&cdev->lock);
+-	cdev->updated = false;
+-	mutex_unlock(&cdev->lock);
+-	thermal_cdev_update(cdev);
+-
+-	return 0;
+-}
+-
+ void thermal_zone_device_rebind_exception(struct thermal_zone_device *tz,
+ 					  const char *cdev_type, size_t size)
+ {
+diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
+index 14f8a829a84a..fc887d6f23ff 100644
+--- a/drivers/thermal/thermal_core.h
++++ b/drivers/thermal/thermal_core.h
+@@ -65,8 +65,6 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
+ 		cdev->ops->power2state;
+ }
+ 
+-int power_actor_set_power(struct thermal_cooling_device *cdev,
+-			  struct thermal_instance *ti, u32 power);
+ /**
+  * struct thermal_trip - representation of a point in temperature domain
+  * @np: pointer to struct device_node that this trip point was created from
 -- 
-<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+2.17.1
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
