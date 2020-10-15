@@ -2,48 +2,51 @@ Return-Path: <SRS0=rzrg=DW=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 08C41C4363D
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FC1C2D0A2
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 98231212CC
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 101BB2225A
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="PsR5+v0Q"
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="fZhNol8I"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388685AbgJOOqp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Oct 2020 10:46:45 -0400
-Received: from mail.skyhub.de ([5.9.137.197]:48138 "EHLO mail.skyhub.de"
+        id S2389265AbgJOOqr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Oct 2020 10:46:47 -0400
+Received: from mail.skyhub.de ([5.9.137.197]:48194 "EHLO mail.skyhub.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2388305AbgJOOqR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 15 Oct 2020 10:46:17 -0400
+        id S2389105AbgJOOqU (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 15 Oct 2020 10:46:20 -0400
 Received: from zn.tnic (p200300ec2f0ed2005c4d90d75300802a.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:d200:5c4d:90d7:5300:802a])
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
         (No client certificate requested)
-        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 4CBCD1EC0328;
-        Thu, 15 Oct 2020 16:46:16 +0200 (CEST)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 4AB351EC04D1;
+        Thu, 15 Oct 2020 16:46:19 +0200 (CEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
-        t=1602773176;
+        t=1602773179;
         h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
          to:to:cc:cc:mime-version:mime-version:content-type:
-         content-transfer-encoding:content-transfer-encoding:in-reply-to:
-         references; bh=rpunifJ24jwRTZS2TIiqk+YVW7s/WrEZ0ErJ6Xjz+kk=;
-        b=PsR5+v0QW6IRQyCgmP8YtQlaL/SmzuwT8hmSisd/dUW41yOTWs8mwj+R1VF6JT/MfiwbcS
-        K/ZgmuoYcIxH89Y4Wg7x6P7vZ4OT2Dx2nbr8EmiSYaHWhbT61CpGLhbhtzoQyZdqzbce1k
-        cWEizykX+SN1q/GTgbsaYvh/lQ1RzMQ=
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=yWYo35+XzQdIjKwQb+3WnhjfJWr6EkLKG83NImMbM0U=;
+        b=fZhNol8IrI4OyqN/JnoOOoPX3VFMi8ZEjg7DR5FArxPlB16MdoZyPuyCZcA6KjOLAVUwJt
+        B7ALWXDuUK0hEkC4DTErp44jxSg6XRwicullCXHzn03zv6q6w8CJsn9X6bivfxhWaqi3pd
+        P+DC2ULeNpor3LfSQ/3rm3tl3ccqFtk=
 From:   Borislav Petkov <bp@alien8.de>
 To:     X86 ML <x86@kernel.org>
 Cc:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
         Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
         LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/4] x86: Remove direct use of MSR_IA32_ENERGY_PERF_BIAS
-Date:   Thu, 15 Oct 2020 16:45:59 +0200
-Message-Id: <20201015144603.27933-1-bp@alien8.de>
+Subject: [PATCH 4/4] x86/msr: Do not allow writes to MSR_IA32_ENERGY_PERF_BIAS
+Date:   Thu, 15 Oct 2020 16:46:03 +0200
+Message-Id: <20201015144603.27933-5-bp@alien8.de>
 X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20201015144603.27933-1-bp@alien8.de>
+References: <20201015144603.27933-1-bp@alien8.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
@@ -52,35 +55,28 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Borislav Petkov <bp@suse.de>
 
-Hi all,
+Now that all in-kernel-tree users are converted to using the sysfs file,
+remove the MSR from the "allowlist".
 
-here's something from my todo list: remove all in-kernel tools use of
-that MSR and lastly drop it from the allowed-MSRs-list in the filtering.
+Signed-off-by: Borislav Petkov <bp@suse.de>
+---
+ arch/x86/kernel/msr.c | 3 ---
+ 1 file changed, 3 deletions(-)
 
-Out-of-tree tools should do a similar, trivial conversion.
-
-Constructive comments are, as always, appreciated.
-
-Thx.
-
-Borislav Petkov (4):
-  tools/power/cpupower: Read energy_perf_bias from sysfs
-  tools/power/turbostat: Read energy_perf_bias from sysfs
-  tools/power/x86_energy_perf_policy: Read energy_perf_bias from sysfs
-  x86/msr: Do not allow writes to MSR_IA32_ENERGY_PERF_BIAS
-
- arch/x86/kernel/msr.c                         |   3 -
- tools/power/cpupower/lib/cpupower.c           |  23 +++-
- tools/power/cpupower/lib/cpupower_intern.h    |   5 +
- tools/power/cpupower/utils/cpupower-info.c    |   2 +-
- tools/power/cpupower/utils/cpupower-set.c     |   2 +-
- tools/power/cpupower/utils/helpers/helpers.h  |   8 +-
- tools/power/cpupower/utils/helpers/misc.c     |  48 ++++++++
- tools/power/cpupower/utils/helpers/msr.c      |  28 -----
- tools/power/x86/turbostat/turbostat.c         |  29 ++++-
- .../x86_energy_perf_policy.c                  | 109 ++++++++++++++++--
- 10 files changed, 204 insertions(+), 53 deletions(-)
-
+diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+index c0d409810658..b1147862730c 100644
+--- a/arch/x86/kernel/msr.c
++++ b/arch/x86/kernel/msr.c
+@@ -99,9 +99,6 @@ static int filter_write(u32 reg)
+ 	if (!__ratelimit(&fw_rs))
+ 		return 0;
+ 
+-	if (reg == MSR_IA32_ENERGY_PERF_BIAS)
+-		return 0;
+-
+ 	pr_err("Write to unrecognized MSR 0x%x by %s (pid: %d). Please report to x86@kernel.org.\n",
+ 	       reg, current->comm, current->pid);
+ 
 -- 
 2.21.0
 
