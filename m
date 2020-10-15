@@ -7,177 +7,215 @@ X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2A43C433DF
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:45:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59A1DC43467
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3F8C421D7F
-	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:45:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F3B90218AC
+	for <linux-pm@archiver.kernel.org>; Thu, 15 Oct 2020 14:46:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ImcZK/AR"
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="DrJm/fwi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388862AbgJOOor (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 15 Oct 2020 10:44:47 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59636 "EHLO
+        id S2389131AbgJOOqW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 15 Oct 2020 10:46:22 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59900 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388847AbgJOOor (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2020 10:44:47 -0400
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 32F20C0613D6
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2020 07:44:46 -0700 (PDT)
-Received: by mail-wr1-x441.google.com with SMTP id n6so3772258wrm.13
-        for <linux-pm@vger.kernel.org>; Thu, 15 Oct 2020 07:44:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=ns1m02lPSeh1tASLMlG6AU/degRmJ6UjKHjGB53b4n0=;
-        b=ImcZK/ARIbT0i2dvRMtgGG1LbPKKa0EY0UfHjZ0tLJaYMylqk+PF13oLbny4hJBQDd
-         CX5wqqnjlLEGNbFT5L/JIAHUxak4XiyoUwWz+13okIJQvXpW8p1doR1a3Iq2KFEuxH0f
-         jIYYsEG4jzLCFd1jwlntJiW5Nro0SFcb61gx5pHpDvVyXvBJKAI9r+9L/On/zOw+z/GS
-         yU67f4q9DwVgUFzifjU4kFFM39y7QjsNiGTW5JnjlUOasAvxTP99J3xJq6ylyruzOnqu
-         G21fReacEZCUbgSr8XM4NDXWv65zXsTMSiLNnk1B1tleuDoWtYqGrKKD/8PTSiy5NODe
-         rgdA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=ns1m02lPSeh1tASLMlG6AU/degRmJ6UjKHjGB53b4n0=;
-        b=A3Jsz8HNX77Bz7jTqh31+7JfaLfhZsKDMfO6iAUamB4Pxqb5ajxR/7OHgE5kBtXFQW
-         pE/xJ5y1Wz+c5mk5KZyCr3M2Y+YLfND7ldCggBK3NZ9XI20RL8yICIcn3tMzayLxAKGc
-         Jdm7UV9Vb05boqlpMQiIBpkvKEFTUoOynWT3wNQBj0S+jT3R7PUy8ppex355iOm63KoC
-         zl/3+Uoek+ROrk1wi8VhrDy6hGF8AqNJVuyac3O85y0AN6wtk2WY8BwzNEg9TB6QDh4G
-         ttvPd8IpD09o9eUsIlq5R+N2KZ1sWM9nJeDtnfMRpxLAAc7zotc/YAr4sS6hWUNQRr/E
-         ixXg==
-X-Gm-Message-State: AOAM532OKatU81Y09M9XNgBA8AJPTSYp43QGRfW5rD3jnTXARfxtdL5d
-        HGVs4L0tkvhpTOvvYd/TudxqSg==
-X-Google-Smtp-Source: ABdhPJwB1QuSwWGogwylyajeyd69XloX/G8jxuUJoAwxApFMv3mghUJjPBmy4MPv54zYfFZ5OVKm8A==
-X-Received: by 2002:adf:c3cd:: with SMTP id d13mr4694475wrg.15.1602773084737;
-        Thu, 15 Oct 2020 07:44:44 -0700 (PDT)
-Received: from localhost.localdomain (lns-bzn-59-82-252-134-136.adsl.proxad.net. [82.252.134.136])
-        by smtp.gmail.com with ESMTPSA id 40sm5053800wrc.46.2020.10.15.07.44.43
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 15 Oct 2020 07:44:44 -0700 (PDT)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rjw@rjwysocki.net
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        ilina@codeaurora.org
-Subject: [PATCH 4/5] cpuidle: governor: Export the needed symbols
-Date:   Thu, 15 Oct 2020 16:44:30 +0200
-Message-Id: <20201015144431.9979-4-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201015144431.9979-1-daniel.lezcano@linaro.org>
-References: <20201015144431.9979-1-daniel.lezcano@linaro.org>
+        with ESMTP id S2389119AbgJOOqV (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 15 Oct 2020 10:46:21 -0400
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DB23C0613D6;
+        Thu, 15 Oct 2020 07:46:20 -0700 (PDT)
+Received: from zn.tnic (p200300ec2f0ed2005c4d90d75300802a.dip0.t-ipconnect.de [IPv6:2003:ec:2f0e:d200:5c4d:90d7:5300:802a])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 8940B1EC046E;
+        Thu, 15 Oct 2020 16:46:18 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1602773178;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=6cXGQZ8AQHng+4XungGa7nZ70/GyrbVXVlX6fuu7CYg=;
+        b=DrJm/fwiN0qXdnK+ZvABxRvzXgX67eg84ccSWhND17kKeCZLFWLTtqEdiUwgY/cPyePxCp
+        0lFWhsvakwQWmdDpVeRg5iorllb+EGyUUfZeHa+7rhxExedtMhuxen4eWrC/rDzKTcmS4l
+        ZenVBB609sPTXkNr9u41YjnAUfOodxw=
+From:   Borislav Petkov <bp@alien8.de>
+To:     X86 ML <x86@kernel.org>
+Cc:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+        Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/4] tools/power/x86_energy_perf_policy: Read energy_perf_bias from sysfs
+Date:   Thu, 15 Oct 2020 16:46:02 +0200
+Message-Id: <20201015144603.27933-4-bp@alien8.de>
+X-Mailer: git-send-email 2.21.0
+In-Reply-To: <20201015144603.27933-1-bp@alien8.de>
+References: <20201015144603.27933-1-bp@alien8.de>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the next patch, the governors will be converted to modules. Export
-the symbols of the different functions used by the governors.
+From: Borislav Petkov <bp@suse.de>
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+... and stop poking at the MSR directly.
+
+Signed-off-by: Borislav Petkov <bp@suse.de>
 ---
- drivers/cpuidle/governor.c | 3 +++
- include/linux/tick.h       | 2 ++
- kernel/sched/core.c        | 1 +
- kernel/time/tick-sched.c   | 9 +++++++++
- 4 files changed, 15 insertions(+)
+ .../x86_energy_perf_policy.c                  | 109 ++++++++++++++++--
+ 1 file changed, 99 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/cpuidle/governor.c b/drivers/cpuidle/governor.c
-index 6ec27ef096f5..2791fe352f51 100644
---- a/drivers/cpuidle/governor.c
-+++ b/drivers/cpuidle/governor.c
-@@ -120,6 +120,7 @@ void cpuidle_unregister_governor(struct cpuidle_governor *gov)
+diff --git a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
+index 3fe1eed900d4..ad6aed1fabf8 100644
+--- a/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
++++ b/tools/power/x86/x86_energy_perf_policy/x86_energy_perf_policy.c
+@@ -91,6 +91,9 @@ unsigned int has_hwp_request_pkg;	/* IA32_HWP_REQUEST_PKG */
  
- 	mutex_unlock(&cpuidle_lock);
- }
-+EXPORT_SYMBOL(cpuidle_unregister_governor);
+ unsigned int bdx_highest_ratio;
  
- /**
-  * cpuidle_register_governor - registers a governor
-@@ -150,6 +151,7 @@ int cpuidle_register_governor(struct cpuidle_governor *gov)
- 
- 	return ret;
- }
-+EXPORT_SYMBOL(cpuidle_register_governor);
- 
- /**
-  * cpuidle_governor_latency_req - Compute a latency constraint for CPU
-@@ -166,3 +168,4 @@ s64 cpuidle_governor_latency_req(unsigned int cpu)
- 
- 	return (s64)device_req * NSEC_PER_USEC;
- }
-+EXPORT_SYMBOL(cpuidle_governor_latency_req);
-diff --git a/include/linux/tick.h b/include/linux/tick.h
-index 7340613c7eff..8349ba050b9c 100644
---- a/include/linux/tick.h
-+++ b/include/linux/tick.h
-@@ -124,6 +124,7 @@ enum tick_dep_bits {
- 
- #ifdef CONFIG_NO_HZ_COMMON
- extern bool tick_nohz_enabled;
-+extern bool tick_nohz_is_enabled(void);
- extern bool tick_nohz_tick_stopped(void);
- extern bool tick_nohz_tick_stopped_cpu(int cpu);
- extern void tick_nohz_idle_stop_tick(void);
-@@ -149,6 +150,7 @@ static inline void tick_nohz_idle_stop_tick_protected(void)
- 
- #else /* !CONFIG_NO_HZ_COMMON */
- #define tick_nohz_enabled (0)
-+static inline int tick_nohz_is_enabled(void) { return 0 };
- static inline int tick_nohz_tick_stopped(void) { return 0; }
- static inline int tick_nohz_tick_stopped_cpu(int cpu) { return 0; }
- static inline void tick_nohz_idle_stop_tick(void) { }
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 2d95dc3f4644..ceba61bb364d 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -3838,6 +3838,7 @@ unsigned long nr_iowait_cpu(int cpu)
- {
- 	return atomic_read(&cpu_rq(cpu)->nr_iowait);
- }
-+EXPORT_SYMBOL_GPL(nr_iowait_cpu);
- 
- /*
-  * IO-wait accounting, and how its mostly bollocks (on SMP).
-diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-index f0199a4ba1ad..537716124d46 100644
---- a/kernel/time/tick-sched.c
-+++ b/kernel/time/tick-sched.c
-@@ -500,12 +500,19 @@ static int __init setup_tick_nohz(char *str)
- 
- __setup("nohz=", setup_tick_nohz);
- 
-+bool tick_nohz_is_enabled(void)
-+{
-+	return tick_nohz_enabled;
-+}
-+EXPORT_SYMBOL_GPL(tick_nohz_is_enabled);
++#define PATH_TO_CPU "/sys/devices/system/cpu/"
++#define SYSFS_PATH_MAX 255
 +
- bool tick_nohz_tick_stopped(void)
- {
- 	struct tick_sched *ts = this_cpu_ptr(&tick_cpu_sched);
- 
- 	return ts->tick_stopped;
+ /*
+  * maintain compatibility with original implementation, but don't document it:
+  */
+@@ -668,6 +671,48 @@ int put_msr(int cpu, int offset, unsigned long long new_msr)
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(tick_nohz_tick_stopped);
  
- bool tick_nohz_tick_stopped_cpu(int cpu)
++static unsigned int read_sysfs(const char *path, char *buf, size_t buflen)
++{
++	ssize_t numread;
++	int fd;
++
++	fd = open(path, O_RDONLY);
++	if (fd == -1)
++		return 0;
++
++	numread = read(fd, buf, buflen - 1);
++	if (numread < 1) {
++		close(fd);
++		return 0;
++	}
++
++	buf[numread] = '\0';
++	close(fd);
++
++	return (unsigned int) numread;
++}
++
++static unsigned int write_sysfs(const char *path, char *buf, size_t buflen)
++{
++	ssize_t numwritten;
++	int fd;
++
++	fd = open(path, O_WRONLY);
++	if (fd == -1)
++		return 0;
++
++	numwritten = write(fd, buf, buflen - 1);
++	if (numwritten < 1) {
++		perror("write failed\n");
++		close(fd);
++		return -1;
++	}
++
++	close(fd);
++
++	return (unsigned int) numwritten;
++}
++
+ void print_hwp_cap(int cpu, struct msr_hwp_cap *cap, char *str)
  {
-@@ -1066,6 +1073,7 @@ bool tick_nohz_idle_got_tick(void)
+ 	if (cpu != -1)
+@@ -745,17 +790,61 @@ void write_hwp_request(int cpu, struct msr_hwp_request *hwp_req, unsigned int ms
+ 	put_msr(cpu, msr_offset, msr);
+ }
+ 
++static int get_epb(int cpu)
++{
++	char path[SYSFS_PATH_MAX];
++	char linebuf[3];
++	char *endp;
++	long val;
++
++	if (!has_epb)
++		return -1;
++
++	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/power/energy_perf_bias", cpu);
++
++	if (!read_sysfs(path, linebuf, 3))
++		return -1;
++
++	val = strtol(linebuf, &endp, 0);
++	if (endp == linebuf || errno == ERANGE)
++		return -1;
++
++	return (int)val;
++}
++
++static int set_epb(int cpu, int val)
++{
++	char path[SYSFS_PATH_MAX];
++	char linebuf[3];
++	char *endp;
++	int ret;
++
++	if (!has_epb)
++		return -1;
++
++	snprintf(path, sizeof(path), PATH_TO_CPU "cpu%u/power/energy_perf_bias", cpu);
++	snprintf(linebuf, sizeof(linebuf), "%d", val);
++
++	ret = write_sysfs(path, linebuf, 3);
++	if (ret <= 0)
++		return -1;
++
++	val = strtol(linebuf, &endp, 0);
++	if (endp == linebuf || errno == ERANGE)
++		return -1;
++
++	return (int)val;
++}
++
+ int print_cpu_msrs(int cpu)
+ {
+-	unsigned long long msr;
+ 	struct msr_hwp_request req;
+ 	struct msr_hwp_cap cap;
++	int epb;
+ 
+-	if (has_epb) {
+-		get_msr(cpu, MSR_IA32_ENERGY_PERF_BIAS, &msr);
+-
+-		printf("cpu%d: EPB %u\n", cpu, (unsigned int) msr);
+-	}
++	epb = get_epb(cpu);
++	if (epb >= 0)
++		printf("cpu%d: EPB %u\n", cpu, (unsigned int) epb);
+ 
+ 	if (!has_hwp)
+ 		return 0;
+@@ -1038,15 +1127,15 @@ int enable_hwp_on_cpu(int cpu)
+ int update_cpu_msrs(int cpu)
+ {
+ 	unsigned long long msr;
+-
++	int epb;
+ 
+ 	if (update_epb) {
+-		get_msr(cpu, MSR_IA32_ENERGY_PERF_BIAS, &msr);
+-		put_msr(cpu, MSR_IA32_ENERGY_PERF_BIAS, new_epb);
++		epb = get_epb(cpu);
++		set_epb(cpu, new_epb);
+ 
+ 		if (verbose)
+ 			printf("cpu%d: ENERGY_PERF_BIAS old: %d new: %d\n",
+-				cpu, (unsigned int) msr, (unsigned int) new_epb);
++				cpu, epb, (unsigned int) new_epb);
  	}
- 	return false;
- }
-+EXPORT_SYMBOL_GPL(tick_nohz_idle_got_tick);
  
- /**
-  * tick_nohz_get_next_hrtimer - return the next expiration time for the hrtimer
-@@ -1117,6 +1125,7 @@ ktime_t tick_nohz_get_sleep_length(ktime_t *delta_next)
- 
- 	return ktime_sub(next_event, now);
- }
-+EXPORT_SYMBOL_GPL(tick_nohz_get_sleep_length);
- 
- /**
-  * tick_nohz_get_idle_calls_cpu - return the current idle calls counter value
+ 	if (update_turbo) {
 -- 
-2.17.1
+2.21.0
 
