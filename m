@@ -2,143 +2,140 @@ Return-Path: <SRS0=sttx=DX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CC85C433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:35:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6FA73C433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:43:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 51B922087D
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:35:07 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1602858907;
-	bh=6IwUUDBdBGsS76YZ96QinEnl1vKRQunDVSsgtJc3HKg=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=rBVrUg8EAT0MhEGuj1EfyTgNO7aJAWZxPJQ3MT/7oZrCs/t2/jOVrefIDsYpjgTBT
-	 HhDjLYa9NaoxNiBGyCBSf7JGFiEnlgKznrT1u0DWYMNmUG5H0qCTfbPKE1P4iQ73IB
-	 CFbMAk8zu9/awTlbWq79U+/bVpNaUSBpFHg1N/GQ=
+	by mail.kernel.org (Postfix) with ESMTP id 25ABA2087D
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:43:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408930AbgJPOfG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Oct 2020 10:35:06 -0400
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:39276 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2408929AbgJPOfG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2020 10:35:06 -0400
-Received: by mail-oi1-f193.google.com with SMTP id c13so2660367oiy.6;
-        Fri, 16 Oct 2020 07:35:05 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=BMrhIZD6r0of3W5tstYF8ZNKDB8ambJy+gjTSmYvPiw=;
-        b=tDsZee+FToTzIQZopfaC5WJ7U+RVCu0+fSgWYrebLaMi4zX4VTerGAAOMxsG6t3yit
-         HTlH4za27Wg7acWlb70vcmNNXaPIeZ/zzLkMinKRY1mpjct12KsrlzunN7Ac3nD1wiAg
-         0mpvZI56VEiR+GRPM9PwSvMsoS/xrpnNmnXT+AksKqOsA+ojEb25k+sF1EUnslGShXQG
-         yqwZihx7iVwq10K5L2ukCZ0bZ1SLc8HPysoE+54w5mqJMzy1WWQZGcqnb9BX6U/KRzDF
-         ATKDUIAne+EX3w/WpTOUbXpMYK9/XOcR3xI8VI0wf299ZEp9yAazSYdFLZH/Yn/emtmV
-         7g2g==
-X-Gm-Message-State: AOAM532Dla5nAbPlVXc6sgB7gGPj+PTYNZPaaDMt/R/GCBIkbQIOSjZ1
-        FbVEgvGy88NjZKMQJQYNUQpS2Md7fRM9OBGvxWw=
-X-Google-Smtp-Source: ABdhPJzwektfZX7s7ICU25OD4YqiBH+zmoJaUe0za277AGueUQMCvay8xkoH5mOrl2rYdv/ZEubJfU9OxKvlIpnvPeE=
-X-Received: by 2002:aca:724a:: with SMTP id p71mr2681753oic.157.1602858905300;
- Fri, 16 Oct 2020 07:35:05 -0700 (PDT)
-MIME-Version: 1.0
-References: <20201009033038.23157-1-yu.c.chen@intel.com>
-In-Reply-To: <20201009033038.23157-1-yu.c.chen@intel.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 16 Oct 2020 16:34:54 +0200
-Message-ID: <CAJZ5v0jcGWKz_LuWOaeZaNqJ0RX69Bw9wisZ=Ver7TKdJf8XNQ@mail.gmail.com>
-Subject: Re: [RFC][PATCH] cpufreq: intel_pstate: Delete intel_pstate sysfs if
- failed to register the driver
-To:     Chen Yu <yu.c.chen@intel.com>
-Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Len Brown <lenb@kernel.org>,
+        id S2395312AbgJPOnY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Oct 2020 10:43:24 -0400
+Received: from foss.arm.com ([217.140.110.172]:38476 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2395275AbgJPOnY (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 16 Oct 2020 10:43:24 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A2BF030E;
+        Fri, 16 Oct 2020 07:43:22 -0700 (PDT)
+Received: from [10.57.21.20] (unknown [10.57.21.20])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 698AA3F71F;
+        Fri, 16 Oct 2020 07:43:18 -0700 (PDT)
+Subject: Re: [PATCH v2 0/3] Clarify abstract scale usage for power values in
+ Energy Model, EAS and IPA
+To:     Quentin Perret <qperret@google.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Jonathan Corbet <corbet@lwn.net>,
+        Dietmar Eggemann <Dietmar.Eggemann@arm.com>,
+        Doug Anderson <dianders@chromium.org>,
+        Matthias Kaehlcke <mka@chromium.org>,
+        "Nayak, Rajendra" <rnayak@codeaurora.org>
+References: <b19c1f12-b7cf-fcae-4ebb-617019effe2e@arm.com>
+ <55d3fb0f-f7d8-63c5-2bdb-53eaa62380e0@linaro.org>
+ <f660731e-132b-2514-f526-d7123ed3522c@arm.com>
+ <d04019bd-9e85-5f3e-2a1b-66780b8df3dc@linaro.org>
+ <3e3dd42c-48ac-7267-45c5-ca88205611bd@arm.com>
+ <00ceec64-3273-bb4a-6f38-22de8d877ab5@linaro.org>
+ <CAJZ5v0hV8fwRnADdjiiF=zapO3AE6=_W_PeOQ_WhUirCcFkgdA@mail.gmail.com>
+ <e321191c-61d2-a15d-47c2-653b277984ca@linaro.org>
+ <20201016121844.GA2420691@google.com>
+ <b3c6d7a5-0564-6e84-77ff-9afe10d7ee27@linaro.org>
+ <20201016130905.GA2426638@google.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <deffb2b4-34cb-3f46-af89-cc216d1cf5c5@arm.com>
+Date:   Fri, 16 Oct 2020 15:42:57 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <20201016130905.GA2426638@google.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Oct 9, 2020 at 5:29 AM Chen Yu <yu.c.chen@intel.com> wrote:
->
-> There is a corner case that if the intel_pstate driver failed to be
-> registered(might be due to invalid MSR access) and with the acpi_cpufreq
-> loaded, the intel_pstate sysfs might still be created, which makes the
-> user confusing(turbostat for example):
->
-> grep . /sys/devices/system/cpu/cpu0/cpufreq/scaling_driver
-> acpi-cpufreq
->
-> grep . /sys/devices/system/cpu/intel_pstate/*
-> /sys/devices/system/cpu/intel_pstate/max_perf_pct:0
-> /sys/devices/system/cpu/intel_pstate/min_perf_pct:0
-> grep: /sys/devices/system/cpu/intel_pstate/no_turbo: Resource temporarily unavailable
-> grep: /sys/devices/system/cpu/intel_pstate/num_pstates: Resource temporarily unavailable
-> /sys/devices/system/cpu/intel_pstate/status:off
-> grep: /sys/devices/system/cpu/intel_pstate/turbo_pct: Resource temporarily unavailable
->
-> The existing of intel_pstate sysfs does not mean that the intel_pstate driver
-> has been successfully loaded(for example, echo off to status), but the
-> intel_pstate sysfs should not co-exist when acpi-cpufreq is also present.
-> Fix this issue by deleting the intel_pstate sysfs if the driver failed
-> to be loaded during bootup.
->
-> Reported-by: Wendy Wang <wendy.wang@intel.com>
-> Suggested-by: Zhang Rui <rui.zhang@intel.com>
-> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
-> ---
->  drivers/cpufreq/intel_pstate.c | 24 +++++++++++++++++++++++-
->  1 file changed, 23 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstate.c
-> index 9a515c460a00..8c5f9680de83 100644
-> --- a/drivers/cpufreq/intel_pstate.c
-> +++ b/drivers/cpufreq/intel_pstate.c
-> @@ -1420,6 +1420,26 @@ static void __init intel_pstate_sysfs_expose_params(void)
->         }
->  }
->
-> +static void __init intel_pstate_sysfs_clean(void)
-> +{
-> +       if (!intel_pstate_kobject)
-> +               return;
-> +
-> +       sysfs_remove_group(intel_pstate_kobject, &intel_pstate_attr_group);
-> +
-> +       if (per_cpu_limits)
-> +               goto release_kobj;
-> +
-> +       sysfs_remove_file(intel_pstate_kobject, &max_perf_pct.attr);
-> +       sysfs_remove_file(intel_pstate_kobject, &min_perf_pct.attr);
-> +
-> +       if (x86_match_cpu(intel_pstate_cpu_ee_disable_ids))
-> +               sysfs_remove_file(intel_pstate_kobject, &energy_efficiency.attr);
-> +
-> +release_kobj:
-> +       kobject_put(intel_pstate_kobject);
-> +}
-> +
->  static void intel_pstate_sysfs_expose_hwp_dynamic_boost(void)
->  {
->         int rc;
-> @@ -3063,8 +3083,10 @@ static int __init intel_pstate_init(void)
->         mutex_lock(&intel_pstate_driver_lock);
->         rc = intel_pstate_register_driver(default_driver);
->         mutex_unlock(&intel_pstate_driver_lock);
-> -       if (rc)
-> +       if (rc) {
-> +               intel_pstate_sysfs_clean();
->                 return rc;
-> +       }
->
->         if (hwp_active) {
->                 const struct x86_cpu_id *id;
-> --
 
-Applied as 5.10-rc material with some minor changes and the Srinivas'
-ACK, thanks!
+
+On 10/16/20 2:09 PM, Quentin Perret wrote:
+> On Friday 16 Oct 2020 at 14:50:29 (+0200), Daniel Lezcano wrote:
+>> On 16/10/2020 14:18, Quentin Perret wrote:
+>>> On Friday 16 Oct 2020 at 13:48:33 (+0200), Daniel Lezcano wrote:
+>>>> If the SCMI is returning abstract numbers, the thermal IPA governor will
+>>>> use these numbers as a reference to mitigate the temperature at the
+>>>> specified sustainable power which is expressed in mW in the DT. So it
+>>>> does not work and we can not detect such conflict.
+>>>>
+>>>> That is why I'm advocating to keep mW for the energy model and make the
+>>>> SCMI and DT power numbers incompatible.
+>>>
+>>> I think it's fair to say SCMI-provided number should only be compared to
+>>> other SCMI-provided numbers, so +1 on that. But what I don't understand
+>>> is why specifying the EM in mW helps with that?
+>>
+>> It is already specified in mW. I'm just saying to not add the
+>> 'scale'/'abstract'/'bogoWatt' in the documentation.
+>>
+>>> Can we not let the providers specify the unit?
+>>
+>> Yes, it is possible but the provider must give the 'unit' and the energy
+>> model must store this information along with the "power" numbers, so we
+>> can compare apple with apple.
+>>
+>> Today, the energy model is using the mW unit only and the providers are
+>> not telling the 'unit', so both are missing.
+>>
+>> Because both are missing, it does not make sense to talk about
+>> 'abstract' values in the energy model documentation until the above is
+>> fixed.
+> 
+> Right, so that sounds like a reasonable way forward with this series.
+> 
+> Lukasz would you be able to re-spin this with a first patch that allows
+> the EM provider to specify a unit? And perhaps we could use Doug's idea
+> for the sustained power DT binding and allow specifying a unit
+> explicitly there too, so we're sure to compare apples with apples.
+
+Do you mean a new entry in DT which will be always below
+'dynamic-power-coefficient' and/or 'sustainable-power' saying the unit
+of above value?
+
+There was discussion with Rob (and Doug) about this. I got the
+impression he was against any new DT stuff [1].
+We don't have to, I think we all agree that DT will only support mW.
+
+I have agreed to this idea having a 'flag' inside EM [2], which
+indicates the mW or bogoWatts. It could be set via API:
+em_dev_register_perf_domain() and this new last argument.
+
+I can write that patch. There is only two usage (3rd is on LKML) of
+that function. The DT way, which is via:
+dev_pm_opp_of_register_em() will always set 'true';
+Driver direct calls of em_dev_register_perf_domain(), will have to
+set appropriate value ('true' or 'false'). The EM struct em_perf_domain
+will have the new bool field set based on that.
+Is it make sense?
+
+Regards,
+Lukasz
+
+[1] 
+https://lore.kernel.org/lkml/CAL_JsqJ=brfbLiTm9D+p2N0Az-gcStbYj=RS2EaG50dHo0-5WA@mail.gmail.com/
+[2] 
+https://lore.kernel.org/lkml/3e3dd42c-48ac-7267-45c5-ca88205611bd@arm.com/
+
+> 
+> Thanks,
+> Quentin
+> 
