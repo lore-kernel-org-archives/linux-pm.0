@@ -2,103 +2,91 @@ Return-Path: <SRS0=sttx=DX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D44FCC433DF
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 15:31:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CCE96C433DF
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 15:37:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 58907207C4
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 15:31:13 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gerhold.net header.i=@gerhold.net header.b="gzopLuRK"
+	by mail.kernel.org (Postfix) with ESMTP id 6E2D720720
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 15:37:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1602862661;
+	bh=mjZjiNLOfNR5+q/reMCnhXpBFYpudgj2D4FLLuC/vYo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=07eC/129aBAjDMLOON/P2PEMzf047Ymosolwo5V6ruTJqjVu2UD6kWQ1XlLSXvfj6
+	 yqZ90zSwQMyhSMGSW71FB2Gh0BustUoFBTTDnuHUp5l3HuNg0u4f/k8O7OaU3S1RJk
+	 Yh6mnZ6kSGRp5T4GB04VxN3tKEQMOFUsLWDlZCuI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2408130AbgJPPbM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Oct 2020 11:31:12 -0400
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.51]:13468 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406032AbgJPPbM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2020 11:31:12 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1602862270;
-        s=strato-dkim-0002; d=gerhold.net;
-        h=In-Reply-To:References:Message-ID:Subject:Cc:To:From:Date:
-        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=RHHm2GRiu7U5GkLRxa3++Z6B/X0hzwPc1UHjyWgcsfg=;
-        b=gzopLuRK3y+snNq5IVXPtJI46k5Y0P7Cky5YowTOxxzmJf5jW8AE0lLv2b6v6MIlvw
-        Vn0vKfyQUrzqAPlCMzaqfaJv8l/oPventx/1d2UEIxBEchkApR9lH4BKtLCojOLVxOvZ
-        pFgCEVdmyIvWuDbJ2PheMhlGKAB0Sz54YQDxkzNLWtS0xcrHW4IhqdMvqfC1vXDyazRv
-        4MvQv+aJxekKzzWLcXAuwpVnpL8vp3eajCxS40BQ/yzapphIbVIyMfCeHXMPVoYqPFaA
-        CXOEhEmhyd4tdPK4kX+HAlMRdOQS7XuFP8EymdxnRV2EMPt9qhYMIRVqYGphDSiBz8So
-        WICA==
-X-RZG-AUTH: ":P3gBZUipdd93FF5ZZvYFPugejmSTVR2nRPhVOQ/OcYgojyw4j34+u26zEodhPgRDZ8jxIc2p"
-X-RZG-CLASS-ID: mo00
-Received: from gerhold.net
-        by smtp.strato.de (RZmta 47.2.1 DYNA|AUTH)
-        with ESMTPSA id 509a5aw9GFS7bjx
-        (using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
-        (Client did not present a certificate);
-        Fri, 16 Oct 2020 17:28:07 +0200 (CEST)
-Date:   Fri, 16 Oct 2020 17:28:02 +0200
-From:   Stephan Gerhold <stephan@gerhold.net>
-To:     Sudeep Holla <sudeep.holla@arm.com>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, ulf.hansson@linaro.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>, nks@flawful.org,
-        georgi.djakov@linaro.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org
-Subject: Re: [PATCH V2 1/2] opp: Allow dev_pm_opp_get_opp_table() to return
- -EPROBE_DEFER
-Message-ID: <20201016152802.GA3966@gerhold.net>
-References: <24ff92dd1b0ee1b802b45698520f2937418f8094.1598260050.git.viresh.kumar@linaro.org>
- <20201015180555.gacdzkofpibkdn2e@bogus>
- <20201016042434.org6ibdqsqbzcdww@vireshk-i7>
- <20201016060021.sotk72u4hioctg7o@bogus>
- <20201016111222.lvakbmjhlrocpogt@bogus>
+        id S2408385AbgJPPhk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Oct 2020 11:37:40 -0400
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:35599 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2408350AbgJPPhk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2020 11:37:40 -0400
+Received: by mail-ot1-f68.google.com with SMTP id f22so194013ots.2
+        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2020 08:37:40 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=szm/GbXah6hOlvML5pjEqHXfGiXMXqer628Kza3rp4o=;
+        b=gHqhyS+RhpBvUzOALffm+V/jtVi6YargGjUjLplhgVAdPAkFczU+Q4RuwfhHrkcMAU
+         7+KDtTWdXy/BJT8E1OJrytt8F2BC7FbMo6S5DKUYsif348OOz/IequUc+qOhEkFcVKse
+         rgFeJVkTpxPuKSDY3vjNKVhmydDUNjmLS3KtOk9jyBpNI1QC9LXclyGbEoBDG2qFnR39
+         Z03G3VifdbCAAF8rcvzvxrW4hjTzpxUt0hZRX4Tz9Plg/00ix6BOg6aYXXM8doLEWuN6
+         9kiG/aRQa145oKtASAt/6QLmweqAVS0nfj6oeS6fvDmOjYo0+13mAzDGHXSiNW3LGYkb
+         +Oxw==
+X-Gm-Message-State: AOAM531PpJOmcx/km3f1NbUq+qXNzqHJEk/p+ZET6SBSCgL3x7AcmW+X
+        QMYPfZysxc4OB+jQlrEuMqevRuiR6U6Vq2fSni78ZvbB
+X-Google-Smtp-Source: ABdhPJyr6XbdbPQKCol3cUpvHwwbI03Oddr44IjKdZ8PLrujQzEJvTyrQaEUWTwRkjama51hUHD8cWFHrFH0vvtMVlQ=
+X-Received: by 2002:a05:6830:30ae:: with SMTP id g14mr3186018ots.206.1602862659929;
+ Fri, 16 Oct 2020 08:37:39 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201016111222.lvakbmjhlrocpogt@bogus>
+References: <20201013074241.8797-1-rui.zhang@intel.com>
+In-Reply-To: <20201013074241.8797-1-rui.zhang@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 16 Oct 2020 17:37:28 +0200
+Message-ID: <CAJZ5v0jiT0sraaCBUvyHKnzL-5aZLyzBe7e7pnB-AmAdi=AStg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powercap/intel_rapl: Fix domain detection
+To:     Zhang Rui <rui.zhang@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "Pandruvada, Srinivas" <srinivas.pandruvada@intel.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Oct 16, 2020 at 12:12:22PM +0100, Sudeep Holla wrote:
-> On Fri, Oct 16, 2020 at 07:00:21AM +0100, Sudeep Holla wrote:
-> > On Fri, Oct 16, 2020 at 09:54:34AM +0530, Viresh Kumar wrote:
-> > > On 15-10-20, 19:05, Sudeep Holla wrote:
-> > > > OK, this breaks with SCMI which doesn't provide clocks but manage OPPs
-> > > > directly. Before this change clk_get(dev..) was allowed to fail and
-> > > > --EPROBE_DEFER was not an error.
-> > >
-> > > I think the change in itself is fine. We should be returning from
-> > > there if we get EPROBE_DEFER. The question is rather why are you
-> > > getting EPROBE_DEFER here ?
-> > >
-> >
-> > Ah OK, I didn't spend too much time, saw -EPROBE_DEFER, just reverted
-> > this patch and it worked. I need to check it in detail yet.
-> >
-> 
-> You confused me earlier. As I said there will be no clock provider
-> registered for SCMI CPU/Dev DVFS.
-> 	opp_table->clk = clk_get(dev, NULL);
-> will always return -EPROBE_DEFER as there is no clock provider for dev.
+On Tue, Oct 13, 2020 at 9:42 AM Zhang Rui <rui.zhang@intel.com> wrote:
+>
+> As only the low 32 bits of the RAPL_DOMAIN_REG_STATUS register
+> represents the energy counter, and the high 32 bits are reserved,
+> detecting the existence of a RAPL domain by checking the low 32 bits only.
+>
+> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+> ---
+>  drivers/powercap/intel_rapl_common.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/powercap/intel_rapl_common.c b/drivers/powercap/intel_rapl_common.c
+> index 983d75bd5bd1..2651ea6cd6d3 100644
+> --- a/drivers/powercap/intel_rapl_common.c
+> +++ b/drivers/powercap/intel_rapl_common.c
+> @@ -1228,7 +1228,7 @@ static int rapl_check_domain(int cpu, int domain, struct rapl_package *rp)
+>          * values, otherwise skip it.
+>          */
+>
+> -       ra.mask = ~0;
+> +       ra.mask = ENERGY_STATUS_MASK;
+>         if (rp->priv->read_raw(cpu, &ra) || !ra.value)
+>                 return -ENODEV;
+>
+> --
 
-Shouldn't it return -ENOENT if there is no clock for the SCMI case?
-With -EPROBE_DEFER I would expect that it shows up at some point.
+Both patches applied as 5.10-rc material with minor edits in the
+subject and changelog of the second patch.
 
-I tried to avoid a situation like this by ignoring all errors
-!= -EPROBE_DEFER. So if clk_get(dev, NULL) would return -ENOENT
-everything should work as expected...
-
-Thanks,
-Stephan
+Thanks!
