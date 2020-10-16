@@ -2,146 +2,169 @@ Return-Path: <SRS0=sttx=DX=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C778DC43467
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:43:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 05A66C43467
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:51:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 674EB20897
-	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:43:36 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=chromium.org header.i=@chromium.org header.b="DDrufvjw"
+	by mail.kernel.org (Postfix) with ESMTP id A3BB72158C
+	for <linux-pm@archiver.kernel.org>; Fri, 16 Oct 2020 14:51:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1602859879;
+	bh=b8KbWzrobiYR6wjteUrVIZU5c42BIgnadkyzhwSM4E8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=tRsj2lh5d/9C0Wd4WnlC/+BkGXHOXbuYwEzPGEcYvkm5gThlimqx6d1vC1uRxmQqG
+	 5m3sx8MuH6khZnQ0Icm3Z6At7EhptZDOsyI+db3qk9UFDXlhiwy2hPyNaNgQdnF/71
+	 u2iHEgjzPbqOVMs5yuqH6STlzBU+yDIvyUzy/Q+Q=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2409130AbgJPOng (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 16 Oct 2020 10:43:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56554 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2409121AbgJPOnf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2020 10:43:35 -0400
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DC66EC061755
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2020 07:43:34 -0700 (PDT)
-Received: by mail-pl1-x641.google.com with SMTP id p11so1401535pld.5
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2020 07:43:34 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=YPuIiy1x2gyQnunEdwb5wy6HvXF5oFtf7JOZzScqMK0=;
-        b=DDrufvjwHDKQ8iJUQE8GHUYBUmkAiCppfEChZjpFslFPtAR7eByXOdRhV04xfwHQ2d
-         Jtt/nyPuKmFri4TvzYe92S+CeTEs7R+uF0WIP6N6n5PEFudd9O5lUnBgNHt2d12msuLm
-         71yjl3LiMmG1TvFVcUEE5eo+EubpXnsSEqoGc=
+        id S2407671AbgJPOvP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 16 Oct 2020 10:51:15 -0400
+Received: from mail-oo1-f65.google.com ([209.85.161.65]:46180 "EHLO
+        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2407130AbgJPOvO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 16 Oct 2020 10:51:14 -0400
+Received: by mail-oo1-f65.google.com with SMTP id c25so665059ooe.13;
+        Fri, 16 Oct 2020 07:51:14 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
          :message-id:subject:to:cc;
-        bh=YPuIiy1x2gyQnunEdwb5wy6HvXF5oFtf7JOZzScqMK0=;
-        b=U7436OWxSUfI9To/wmP8/LucsWIvF0HGuW86ufPnx73Edb+5rK4VrEFC1ih/5h+jL4
-         VH/1AkDwvdoobuCvD6R1x6Yl3tfVT7avUrE8GBarDMgb8IiAhb190lKliZQfaDNYdZJe
-         vaOKDzleiiYieQW/W5YekoUdbfw6Hh8ByXLiSIV1jSSuyw5/9QfLVoixqDH8VSnGTTnw
-         +xbWg+25nRAYTcQGwuhYTSpAkFCUumnZ84fZT6Xee7pIL4X5fCzNaQpju+uVwYaLYQH3
-         cP9eormNVOfdQl73ymQUAA0doy88sgGlgn8LThHLYvKyn9uGtNQouKRRN1RbLuaH+D21
-         Qa4g==
-X-Gm-Message-State: AOAM532+KIDiCYYJxIqZSR2iGC0zvJdDBcjITwozlF27E8mu436wO/NE
-        gZRB+N64Qv57hGTqwFp2qx6bdCm8JOQMnA==
-X-Google-Smtp-Source: ABdhPJzTELgMe4MJpkQ2OQ9t7Jebip0CQi9UmNx0TbMsGQ3Haika8DkHOLn8NFUrpjAnUuV0xq7fyA==
-X-Received: by 2002:a17:90a:6b0a:: with SMTP id v10mr4400204pjj.141.1602859413438;
-        Fri, 16 Oct 2020 07:43:33 -0700 (PDT)
-Received: from mail-pf1-f176.google.com (mail-pf1-f176.google.com. [209.85.210.176])
-        by smtp.gmail.com with ESMTPSA id c12sm3004799pgd.57.2020.10.16.07.43.33
-        for <linux-pm@vger.kernel.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 16 Oct 2020 07:43:33 -0700 (PDT)
-Received: by mail-pf1-f176.google.com with SMTP id j18so1646062pfa.0
-        for <linux-pm@vger.kernel.org>; Fri, 16 Oct 2020 07:43:33 -0700 (PDT)
-X-Received: by 2002:a67:ec9a:: with SMTP id h26mr2255406vsp.34.1602858975177;
- Fri, 16 Oct 2020 07:36:15 -0700 (PDT)
+        bh=OvZLUwxXbsYt5GY0+KWs0O5JpZUG+90mhJIF+9eGBQQ=;
+        b=HZ5HjjaHeMqkRkQRGWyxpyLo6md2ywah9Am0X4mCz9PiwCvZkURHi2+JpDQAzMOHbJ
+         KvLg5zwcajmhlTaPZG3o+IQG8CPeWrHtnOYyHFDJNfPzydWbp1AtiwvpNXipG8ywBPdZ
+         ZpuJANiYeJIuELv3jttRnv4kXGMPOUMfbuqYhZuRHZb9mobhflEqxaNKaokltv9P60S1
+         yt+PU0IU6moOz8ZSYI1jjx1ii9U6tZ6NFe6I/PvNDFuWSt1blSu7jSsCpxVbHRGg8/Jt
+         MReHVK/ACfQNIShYaUGKGNDfRZB2CUj7IEoc/VccBQnC6ITPIFWG2Js2xHBws9syKOHW
+         FC3w==
+X-Gm-Message-State: AOAM532puJBVTm3DJeNjkiBQYrctGvAVkSLmyjSnTi9JERcs0G4ibG5k
+        kw2nqg89HVhcDulfhzq+QAt7KV0oSlLZThyqWnY=
+X-Google-Smtp-Source: ABdhPJw8jW44BfJvCmZodx50dYHRYCufqM/DoXtN34Tthnu+zshnry25BklsWhEZmu4o/uyug2ms+xRaxomIrI0Qr1s=
+X-Received: by 2002:a4a:dc0d:: with SMTP id p13mr3036465oov.2.1602859873680;
+ Fri, 16 Oct 2020 07:51:13 -0700 (PDT)
 MIME-Version: 1.0
-References: <b19c1f12-b7cf-fcae-4ebb-617019effe2e@arm.com> <55d3fb0f-f7d8-63c5-2bdb-53eaa62380e0@linaro.org>
- <f660731e-132b-2514-f526-d7123ed3522c@arm.com> <d04019bd-9e85-5f3e-2a1b-66780b8df3dc@linaro.org>
- <3e3dd42c-48ac-7267-45c5-ca88205611bd@arm.com> <00ceec64-3273-bb4a-6f38-22de8d877ab5@linaro.org>
- <CAJZ5v0hV8fwRnADdjiiF=zapO3AE6=_W_PeOQ_WhUirCcFkgdA@mail.gmail.com>
- <e321191c-61d2-a15d-47c2-653b277984ca@linaro.org> <20201016121844.GA2420691@google.com>
- <b3c6d7a5-0564-6e84-77ff-9afe10d7ee27@linaro.org> <20201016130905.GA2426638@google.com>
-In-Reply-To: <20201016130905.GA2426638@google.com>
-From:   Doug Anderson <dianders@chromium.org>
-Date:   Fri, 16 Oct 2020 07:36:03 -0700
-X-Gmail-Original-Message-ID: <CAD=FV=VXt_JdYjPdTSJPWpXR2Owz096WhzYrZcQZ8-znmQbkLg@mail.gmail.com>
-Message-ID: <CAD=FV=VXt_JdYjPdTSJPWpXR2Owz096WhzYrZcQZ8-znmQbkLg@mail.gmail.com>
-Subject: Re: [PATCH v2 0/3] Clarify abstract scale usage for power values in
- Energy Model, EAS and IPA
-To:     Quentin Perret <qperret@google.com>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
+References: <20201006122024.14539-1-daniel.lezcano@linaro.org>
+ <eb26a00d-eee0-a4d1-ed25-61a661ad5683@redhat.com> <8be66efd-7833-2c8a-427d-b0055c2f6ec1@linaro.org>
+ <97e5368b-228d-eca1-85a5-b918dfcfd336@redhat.com> <CAJZ5v0gwc_d1vnwDVWXY+i4f0T2r0tAz8xuWV7oS_afsy7OocQ@mail.gmail.com>
+ <63dfa6a1-0424-7985-7803-756c0c5cc4a5@redhat.com> <CAJZ5v0jpYpu3Tk7qq_MCVs0wUr-Dw0rY5EZELrVbQta0NZaoVA@mail.gmail.com>
+ <87d9a808-39d6-4949-c4f9-6a80d14a3768@redhat.com> <CAJZ5v0iWmmu5WV7cX7uNb61NMYQ7s0dnhg1K+T0x90b3sBfU9w@mail.gmail.com>
+ <943531a7-74d6-7c7f-67bc-2645b3ba7b8a@redhat.com>
+In-Reply-To: <943531a7-74d6-7c7f-67bc-2645b3ba7b8a@redhat.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Fri, 16 Oct 2020 16:51:02 +0200
+Message-ID: <CAJZ5v0j8o5Ot-4U0HmUtckUUBSNqC+TRB6CCRzqdjeE0p_XfvA@mail.gmail.com>
+Subject: Re: [RFC] Documentation: Add documentation for new
+ performance_profile sysfs class (Also Re: [PATCH 0/4] powercap/dtpm: Add the
+ DTPM framework)
+To:     Hans de Goede <hdegoede@redhat.com>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
-        "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
-        "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Amit Kucheria <amitk@kernel.org>,
-        Jonathan Corbet <corbet@lwn.net>,
-        Dietmar Eggemann <Dietmar.Eggemann@arm.com>,
-        Matthias Kaehlcke <mka@chromium.org>,
-        "Nayak, Rajendra" <rnayak@codeaurora.org>
+        "Zhang, Rui" <rui.zhang@intel.com>,
+        Bastien Nocera <hadess@hadess.net>,
+        Mark Pearson <mpearson@lenovo.com>,
+        "Limonciello, Mario" <Mario.Limonciello@dell.com>,
+        Darren Hart <dvhart@infradead.org>,
+        Andy Shevchenko <andy@infradead.org>,
+        Mark Gross <mgross@linux.intel.com>,
+        Elia Devito <eliadevito@gmail.com>,
+        Benjamin Berg <bberg@redhat.com>,
+        "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+        "platform-driver-x86@vger.kernel.org" 
+        <platform-driver-x86@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
-
-On Fri, Oct 16, 2020 at 6:09 AM Quentin Perret <qperret@google.com> wrote:
+On Fri, Oct 16, 2020 at 1:11 PM Hans de Goede <hdegoede@redhat.com> wrote:
 >
-> On Friday 16 Oct 2020 at 14:50:29 (+0200), Daniel Lezcano wrote:
-> > On 16/10/2020 14:18, Quentin Perret wrote:
-> > > On Friday 16 Oct 2020 at 13:48:33 (+0200), Daniel Lezcano wrote:
-> > >> If the SCMI is returning abstract numbers, the thermal IPA governor will
-> > >> use these numbers as a reference to mitigate the temperature at the
-> > >> specified sustainable power which is expressed in mW in the DT. So it
-> > >> does not work and we can not detect such conflict.
-> > >>
-> > >> That is why I'm advocating to keep mW for the energy model and make the
-> > >> SCMI and DT power numbers incompatible.
-> > >
-> > > I think it's fair to say SCMI-provided number should only be compared to
-> > > other SCMI-provided numbers, so +1 on that. But what I don't understand
-> > > is why specifying the EM in mW helps with that?
-> >
-> > It is already specified in mW. I'm just saying to not add the
-> > 'scale'/'abstract'/'bogoWatt' in the documentation.
-> >
-> > > Can we not let the providers specify the unit?
-> >
-> > Yes, it is possible but the provider must give the 'unit' and the energy
-> > model must store this information along with the "power" numbers, so we
-> > can compare apple with apple.
-> >
-> > Today, the energy model is using the mW unit only and the providers are
-> > not telling the 'unit', so both are missing.
-> >
-> > Because both are missing, it does not make sense to talk about
-> > 'abstract' values in the energy model documentation until the above is
-> > fixed.
+> <note folding the 2 threads we are having on this into one, adding every one from both threads to the Cc>
 >
-> Right, so that sounds like a reasonable way forward with this series.
+> Hi,
 >
-> Lukasz would you be able to re-spin this with a first patch that allows
-> the EM provider to specify a unit? And perhaps we could use Doug's idea
-> for the sustained power DT binding and allow specifying a unit
-> explicitly there too, so we're sure to compare apples with apples.
+> On 10/14/20 5:42 PM, Rafael J. Wysocki wrote:
+> > On Wed, Oct 14, 2020 at 4:06 PM Hans de Goede <hdegoede@redhat.com> wrote:
+> >> On 10/14/20 3:33 PM, Rafael J. Wysocki wrote:
+>
+> <snip>
+>
+> >>> First, a common place to register a DPTF system profile seems to be
+> >>> needed and, as I said above, I wouldn't expect more than one such
+> >>> thing to be present in the system at any given time, so it may be
+> >>> registered along with the list of supported profiles and user space
+> >>> will have to understand what they mean.
+> >>
+> >> Mostly Ack, I would still like to have an enum for DPTF system
+> >> profiles in the kernel and have a single piece of code map that
+> >> enum to profile names. This enum can then be extended as
+> >> necessary, but I want to avoid having one driver use
+> >> "Performance" and the other "performance" or one using
+> >> "performance-balanced" and the other "balanced-performance", etc.
+> >>
+> >> With the goal being that new drivers use existing values from
+> >> the enum as much as possible, but we extend it where necessary.
+> >
+> > IOW, just a table of known profile names with specific indices assigned to them.
+>
+> Yes.
+>
+> > This sounds reasonable.
+> >
+> >>> Second, irrespective of the above, it may be useful to have a
+> >>> consistent way to pass performance-vs-power preference information
+> >>> from user space to different parts of the kernel so as to allow them
+> >>> to adjust their operation and this could be done with a system-wide
+> >>> power profile attribute IMO.
+> >>
+> >> I agree, which is why I tried to tackle both things in one go,
+> >> but as you said doing both in 1 API is probably not the best idea.
+> >> So I believe we should park this second issue for now and revisit it
+> >> when we find a need for it.
+> >
+> > Agreed.
+> >
+> >> Do you have any specific userspace API in mind for the
+> >> DPTF system profile selection?
+> >
+> > Not really.
+>
+> So before /sys/power/profile was mentioned, but that seems more like
+> a thing which should have a set of fixed possible values, iow that is
+> out of scope for this discussion.
 
-The one issue that I started with, though, is that I wanted to be able
-to specify "sustainable-power" for a board in the device tree.  Unless
-you think you'll convince Rob that it's OK to provide a "units"
-property in the device tree then just adding a "units" to the API
-won't help us because you'll still be stuck mixing/matching with a
-value based in mW, right?  ...or are you suggesting that the
-board-specific value "sustainable-power" would also have to come from
-SCMI?  That would be pretty annoying.
+Yes.
 
--Doug
+> Since we all seem to agree that this is something which we need
+> specifically for DPTF profiles maybe just add:
+>
+> /sys/power/dptf_current_profile    (rw)
+> /sys/power/dptf_available_profiles (ro)
+>
+> (which will only be visible if a dptf-profile handler
+>  has been registered) ?
+>
+> Or more generic and thus better (in case other platforms
+> later need something similar) I think, mirror the:
+>
+> /sys/bus/cpu/devices/cpu#/cpufreq/energy_performance_* bits
+> for a system-wide energy-performance setting, so we get:
+>
+> /sys/power/energy_performance_preference
+> /sys/power/energy_performance_available_preferences
+
+But this is not about energy vs performance only in general, is it?
+
+> (again only visible when applicable) ?
+>
+> I personally like the second option best.
+
+But I would put it under /sys/firmware/ instead of /sys/power/ and I
+would call it something like platform_profile (and
+platform_profile_choices or similar).
+
+Cheers!
