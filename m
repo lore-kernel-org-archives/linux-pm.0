@@ -4,51 +4,51 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 351B0C43457
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:51:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 75ADBC43467
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:58:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EE79E22268
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:51:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2E8262226B
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:58:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603050706;
-	bh=EsmeZiwtz1CEd+9P9WiTqdjUZJhkzUS4Hese3uC56H0=;
+	s=default; t=1603051126;
+	bh=/h1xhoNENzWz7xFag+CiLh8ZiH59vFAEZBBj7oTBg2o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=LtI+qTnI37epGJofCvi3AK9Pw8PGRndiSg3QbAuommWcdE3+F5ZTHEgJ6UZny75BG
-	 wX0ajDdUrA6puL7gwuOP0EnRRjdpZ56bqFlwxtrHjKMAylxcxnop6e7LTxlxmgHJGo
-	 sQVpYLel7DQ84+mFAOaxafoqyHEkcI9OSSg9Qpns=
+	b=yF//6rTSDr2gCqj+8ecFQQGgMWSFrPPA68+KeNk92t+inP0rT/XtqtA69LnpjdJF+
+	 neslfvaGUxC7fn+zRcRuXM6OmrpOMK5HS4CmhhH3nIQxU0C2U+aB1ixT0F4AXiscug
+	 HilfQ6S63OHzt6E/+97L/z0OqDcNhoCWiAv8s/Sk=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388208AbgJRTve (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Oct 2020 15:51:34 -0400
-Received: from mail.kernel.org ([198.145.29.99]:33258 "EHLO mail.kernel.org"
+        id S1728031AbgJRT6p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Oct 2020 15:58:45 -0400
+Received: from mail.kernel.org ([198.145.29.99]:57342 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729308AbgJRTVQ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 18 Oct 2020 15:21:16 -0400
+        id S1727973AbgJRTS7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 18 Oct 2020 15:18:59 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 8BB7422314;
-        Sun, 18 Oct 2020 19:21:15 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id CB55E222B9;
+        Sun, 18 Oct 2020 19:18:58 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603048876;
-        bh=EsmeZiwtz1CEd+9P9WiTqdjUZJhkzUS4Hese3uC56H0=;
+        s=default; t=1603048739;
+        bh=/h1xhoNENzWz7xFag+CiLh8ZiH59vFAEZBBj7oTBg2o=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Q7VmQUoNpy1D21DsuUY7GLSV0gkgKNWW73asztbjVbuwFmxGsJ0u9on4Nhna6ozou
-         PkzATyWX6YPGpyEQ6kKPo2fhjbKYzVVdiOewp7qTpe7LwBGjn+CBfilLNb7QIZeAO9
-         wSzYPmuNwN2vFL7Qn/pjwed64RXpiW/iVTy+GcTI=
+        b=eHhpjGuDerafYdF/ub8Q8indf/x5NKMIjiUGnZIXF8RHS+QM2bs12LpBQuGDOKiQH
+         4TzSHMQ/vzNoJpv/qDWFISyUra47QpZ6CB1IViaU976p20ls5b/CU3oB1kY+/PKaz5
+         Zxjqq/PVVBG5xhgQeeu8LmL15dFepPs3QKyI3KEk=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Christoph Hellwig <hch@lst.de>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.8 040/101] PM: hibernate: remove the bogus call to get_gendisk() in software_resume()
-Date:   Sun, 18 Oct 2020 15:19:25 -0400
-Message-Id: <20201018192026.4053674-40-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 5.9 042/111] PM: hibernate: remove the bogus call to get_gendisk() in software_resume()
+Date:   Sun, 18 Oct 2020 15:16:58 -0400
+Message-Id: <20201018191807.4052726-42-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201018192026.4053674-1-sashal@kernel.org>
-References: <20201018192026.4053674-1-sashal@kernel.org>
+In-Reply-To: <20201018191807.4052726-1-sashal@kernel.org>
+References: <20201018191807.4052726-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -76,10 +76,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 11 deletions(-)
 
 diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 02ec716a49271..0e60e10ed66a3 100644
+index 1dee70815f3cd..2fc7d509a34fc 100644
 --- a/kernel/power/hibernate.c
 +++ b/kernel/power/hibernate.c
-@@ -851,17 +851,6 @@ static int software_resume(void)
+@@ -946,17 +946,6 @@ static int software_resume(void)
  
  	/* Check if the device is there */
  	swsusp_resume_device = name_to_dev_t(resume_file);
