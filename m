@@ -7,48 +7,48 @@ X-Spam-Status: No, score=-13.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6AECDC433DF
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:26:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D31F0C433DF
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:27:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 375CC222EC
-	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:26:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 91263222EB
+	for <linux-pm@archiver.kernel.org>; Sun, 18 Oct 2020 19:27:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603049212;
-	bh=pN4UVmEFdrHmz+bdkxbaYKM41nFhOg1T4hfcjmN95X0=;
+	s=default; t=1603049220;
+	bh=ixusXLZ0622zxJIC0QBU4XnVhfywpHExuB4ujs6RIvU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:List-ID:From;
-	b=BRGrKIib47qoKZUJR5LeYCNWQEOs8eCjR47qFqwqg+hhQzlzD9kwWvnKhJgsCSNeA
-	 9bx3xcqS0M9jQBPCHxi1xOfPR8dugw8nhdIjM4CLxV/Kgl3S9x2axjfDEalxhxjqnH
-	 SGK8m8ByBLyGbuLkJW3jzwouqBvrrAdQlZd1X2S4=
+	b=heDLMc/slx9Y+n5F7je63IH95w8pX2CCX4rgkfgCU+3z/IGpe9J08+/KXFZ2T8DJf
+	 8iF4KP9iuGqLms+FgOn75XGKw8vbF034N1p+4OnE/65crGyzUtproNnTsggjGV4eiS
+	 EX8xlLL1+WOjD9bQbyrMbEwnWJ55m3V24qPJE6MI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731850AbgJRT0u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 18 Oct 2020 15:26:50 -0400
-Received: from mail.kernel.org ([198.145.29.99]:38984 "EHLO mail.kernel.org"
+        id S1731915AbgJRT06 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 18 Oct 2020 15:26:58 -0400
+Received: from mail.kernel.org ([198.145.29.99]:42432 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731002AbgJRTYt (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 18 Oct 2020 15:24:49 -0400
+        id S1731911AbgJRT05 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 18 Oct 2020 15:26:57 -0400
 Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
         (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B6F06222E9;
-        Sun, 18 Oct 2020 19:24:48 +0000 (UTC)
+        by mail.kernel.org (Postfix) with ESMTPSA id E764F20791;
+        Sun, 18 Oct 2020 19:26:56 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603049089;
-        bh=pN4UVmEFdrHmz+bdkxbaYKM41nFhOg1T4hfcjmN95X0=;
+        s=default; t=1603049217;
+        bh=ixusXLZ0622zxJIC0QBU4XnVhfywpHExuB4ujs6RIvU=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=wLhNyJVOJ+A1JFOH4AE1vvwRV+bh9gNqvVtMpzXcLkvaEO3BFA79SbVLhD6AfRETs
-         k+u72NI5wr1kePxSUYxfqlaeInsJAByyeoRwGPxt2wxJV9b1QXHMv6+xmSSfaN2QQ2
-         HnQfjV9Ti2Kt4nHvkmz8MbRSKO8O6rEDVavuPvcw=
+        b=qhG+lEpsisVL5LxGlX6P7Y4yY/Zwtzwmu8GGyDOBSKoe+x7O4YeCPHEjA5/owl3xt
+         5JAP/7OEXRDNNWaPM6XWiPCNSTG5TbUBqMFxo/qezD0yNraDgGzG2VLpAXCkbiKaMb
+         XDbnbCXbPgBtOJZ8S6Rjv6eJIvVSNnXxB/nTnSkU=
 From:   Sasha Levin <sashal@kernel.org>
 To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
 Cc:     Christoph Hellwig <hch@lst.de>,
         "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
         Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 4.19 25/56] PM: hibernate: remove the bogus call to get_gendisk() in software_resume()
-Date:   Sun, 18 Oct 2020 15:23:46 -0400
-Message-Id: <20201018192417.4055228-25-sashal@kernel.org>
+Subject: [PATCH AUTOSEL 4.9 17/41] PM: hibernate: remove the bogus call to get_gendisk() in software_resume()
+Date:   Sun, 18 Oct 2020 15:26:11 -0400
+Message-Id: <20201018192635.4056198-17-sashal@kernel.org>
 X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201018192417.4055228-1-sashal@kernel.org>
-References: <20201018192417.4055228-1-sashal@kernel.org>
+In-Reply-To: <20201018192635.4056198-1-sashal@kernel.org>
+References: <20201018192635.4056198-1-sashal@kernel.org>
 MIME-Version: 1.0
 X-stable: review
 X-Patchwork-Hint: Ignore
@@ -76,10 +76,10 @@ Signed-off-by: Sasha Levin <sashal@kernel.org>
  1 file changed, 11 deletions(-)
 
 diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
-index 537a2a3c1dea2..28db51274ed0e 100644
+index 3c775d6b7317f..7b393faf930f8 100644
 --- a/kernel/power/hibernate.c
 +++ b/kernel/power/hibernate.c
-@@ -842,17 +842,6 @@ static int software_resume(void)
+@@ -834,17 +834,6 @@ static int software_resume(void)
  
  	/* Check if the device is there */
  	swsusp_resume_device = name_to_dev_t(resume_file);
