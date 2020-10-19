@@ -2,235 +2,166 @@ Return-Path: <SRS0=wPg3=D2=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C8F5C433DF
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Oct 2020 10:21:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D979C433E7
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Oct 2020 10:27:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 390F52225A
-	for <linux-pm@archiver.kernel.org>; Mon, 19 Oct 2020 10:21:51 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603102911;
-	bh=2fqUw0AoY6Pk2xH2+TUFFlq6KBDJJw/53H1Vj0b0txA=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=la6wd8Ddp3hOcrZHaV5GLUJ0aO5EXTNDzKWf2lAQ0rmpU+MZgp7ZgnLea52tqyupZ
-	 TS8ALnWMgwc2sQ2Qlq8MTY1RpjY5O6+CvyZmqqkCKaWeKDfVauyN/bEh7xtm0SXIfZ
-	 UOJb/QzP7FZadKnUCOv/15gYBjvZkLnKWwRU2IRE=
+	by mail.kernel.org (Postfix) with ESMTP id 9F3FC22276
+	for <linux-pm@archiver.kernel.org>; Mon, 19 Oct 2020 10:27:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="tqtSjjqN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726319AbgJSKVu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 19 Oct 2020 06:21:50 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:43019 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726514AbgJSKVu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2020 06:21:50 -0400
-Received: by mail-oi1-f195.google.com with SMTP id l85so11831162oih.10;
-        Mon, 19 Oct 2020 03:21:48 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Eo8JiUHhuUK7IspmWk7F2lVsjE1RNjG2QNSD7jFijGE=;
-        b=OtxCLrd67QyVE6RcQwUXKQ3/Tv0vzpl97AbSNMDoRPVB6+X8tT8xMRp2Gg9Lv9SYnh
-         7nPfD2PdthK9AJ6VXRES8RwA/LimzLBsDN5Fwq0SqClNWh18moag8gtS5hNKQsFdhoYl
-         jz5bmPRFO/VPxurlI1lSTdEdih7cVSrhlDdfotfIe8OmtXiKAAWBSFbeNs/q8X/cBUbb
-         HHRrY+FunLfR04YNftBrAD/GNYxdorkf+ZRzVL12oXdPWFbmfXF+qaAfhjDp9qCPAXRD
-         pBK4TPcuu7hLJzJn21EZy4tgJY778hFLuG91INVCLuAK0IMYhBof82bgMW6M8lcOmFZc
-         pT2A==
-X-Gm-Message-State: AOAM533MdiXjMeWgxDlh90PYYa8UXxM7hbhnPKPAdzshpKCvZM2q8wsH
-        BdAVgYvOu0QKHBjfYYs97Tyma7HRQfF/gZEkd4E=
-X-Google-Smtp-Source: ABdhPJyjHS6BMxsASjbjEcClwnrHpX7WJ3D5emE+hVmugZfXliMV9OTuWn/S+WLbTCDizzBwnK1KJhzgXzEztueG/ek=
-X-Received: by 2002:aca:5256:: with SMTP id g83mr10780293oib.71.1603102907740;
- Mon, 19 Oct 2020 03:21:47 -0700 (PDT)
+        id S1726882AbgJSK1o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 19 Oct 2020 06:27:44 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:22996 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726672AbgJSK1n (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 19 Oct 2020 06:27:43 -0400
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20201019102740epoutp028925f6df6791653611a9e61c58e298d6~-Xev_hMnX1509815098epoutp02s
+        for <linux-pm@vger.kernel.org>; Mon, 19 Oct 2020 10:27:40 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20201019102740epoutp028925f6df6791653611a9e61c58e298d6~-Xev_hMnX1509815098epoutp02s
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1603103260;
+        bh=yDoDNggOg225OrRqSzF1Bazr7Llyp7wh5Skp9ddw+sE=;
+        h=Subject:From:To:Cc:Date:In-Reply-To:References:From;
+        b=tqtSjjqN0J/CyHqud8XhIJe2YsS5jLLchn7D+Z/iQbmhafUN9rRsveinPyIho2H8v
+         gibGLwwlcDjawTb9CBJHsBFDH+gHqrLw05R1V7/Cp+gTMGM6P4ymywCyv3xNizYFXz
+         F+plIiExPtscarsXOZA/Y3QjHO6Z/7jPf6gx0T5w=
+Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20201019102739epcas1p42e5bfcd73ff2fa8b98b3cd0e920fd705~-XevXOg6F0830008300epcas1p4u;
+        Mon, 19 Oct 2020 10:27:39 +0000 (GMT)
+Received: from epsmges1p4.samsung.com (unknown [182.195.40.152]) by
+        epsnrtp4.localdomain (Postfix) with ESMTP id 4CFCcn42zwzMqYkj; Mon, 19 Oct
+        2020 10:27:37 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
+        0C.1B.10463.91A6D8F5; Mon, 19 Oct 2020 19:27:37 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
+        20201019102736epcas1p32f607ce884d698b00f7f3a4c89f7fbbb~-XesqXydC0660906609epcas1p3T;
+        Mon, 19 Oct 2020 10:27:36 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20201019102736epsmtrp21ee944d31054f04479a958947c9f1f89~-XespcpP31185611856epsmtrp2z;
+        Mon, 19 Oct 2020 10:27:36 +0000 (GMT)
+X-AuditID: b6c32a38-efbff700000028df-f5-5f8d6a195582
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        FB.EE.08604.81A6D8F5; Mon, 19 Oct 2020 19:27:36 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20201019102736epsmtip27f942c8dd0686286e094a9cede41c278~-XesV_66R0681806818epsmtip2S;
+        Mon, 19 Oct 2020 10:27:36 +0000 (GMT)
+Subject: Re: [PATCH v3 2/2] PM / devfreq: Add governor attribute flag for
+ specifc sysfs nodes
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+To:     Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+Cc:     leonard.crestez@nxp.com, lukasz.luba@arm.com,
+        enric.balletbo@collabora.com, hl@rock-chips.com,
+        thierry.reding@gmail.com, jonathanh@nvidia.com, abel.vesa@nxp.com,
+        k.konieczny@samsung.com, b.zolnierkie@samsung.com,
+        chanwoo@kernel.org, myungjoo.ham@samsung.com,
+        kyungmin.park@samsung.com
+Organization: Samsung Electronics
+Message-ID: <d198e358-f636-2f52-1d73-098f8bebffbf@samsung.com>
+Date:   Mon, 19 Oct 2020 19:41:01 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-References: <20201015193807.17423-1-ilina@codeaurora.org> <20201015193807.17423-2-ilina@codeaurora.org>
- <CAJZ5v0h4DewkbQnF84kO5bv7YYRu-7f67DhSTz-+aAy=c=32xQ@mail.gmail.com> <CAPDyKFow-QDSgPAhtJ5jMEyo0vitKstn_UChu3dbCcaj8XxBFA@mail.gmail.com>
-In-Reply-To: <CAPDyKFow-QDSgPAhtJ5jMEyo0vitKstn_UChu3dbCcaj8XxBFA@mail.gmail.com>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 19 Oct 2020 12:21:32 +0200
-Message-ID: <CAJZ5v0gbXwhaMkFd1MdYPE2APTxQqd8Kv-MMhGTU6eQdJuAZnw@mail.gmail.com>
-Subject: Re: [PATCH v3 1/2] PM / runtime: inform runtime PM of a device's next wakeup
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1db2fb62-0b82-409d-20a7-c2ef376d4580@samsung.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA01Te0xTVxzO6eP21q1yrIBHNIjXmE0USimFqwNnpm6Nw8GeCWroOnpDEWib
+        e2ERCRsojIdjwxCSrkFExpBHN0YlUKuE0FUXXkOHCIjdXOgmEShQHKtD4/oy47/vd37fd77z
+        /c45OFs4hYXgGeocilYrsghsHafrp12iiM0nK+VRtrtbyaZfbwCyQ9fOJc9P3OGQbUvTgDRM
+        WQDp+nGATRbrGzhkvVPHJYfPzPHIZtsSlxw112LkcqUVkOWP9Rh56Uwxj5wqasbIJ+Y6zgEo
+        M9QZgMxkawSyq3obT2ZsLcdklWcdmKzDYWLJnul7ObKvOluBbNkYmsw/lhmvohRKig6j1Gka
+        ZYY6PYF4+335Qbk0NkocId5LxhFhakU2lUAcSkyOeDMjy52DCPtUkZXrXkpWMAwh2h9Pa3Jz
+        qDCVhslJICitMku7VxvJKLKZXHV6ZJome584Kipa6iZ+nKnSGbq52mH8VE19Pa8QrGAVgI8j
+        GIMW255xK8A6XAhNAJUUtbB8hROg3zpW2b5iBSDXQAnvhaS0rtTP6gHo+blKv34BoFqX08va
+        COVosn2F7cEYDEe9MxNew0BYgKy3H2AeARs2s5ChfZjjaQTA7WjMNQ08WAD3o/nvrSwP5sCd
+        qG1u1isOgh+h/q5iP2cD6v/G7tXy4euoumvJy2HDTeie/SLLh7eh7vlabwYEXTiaWRhj+TIc
+        Qg5rJfDhjejRz53+bCFo2dHjH00+aum3Yj5xGUCdvbe4voYE9X5X7d4IdzvsQu1mkW95O7q6
+        egH4jNcjx99fcj0UBAWo7Auhj7IDjT6w+Y+wGX1bWo5VAUK/Jo5+TQT9mgj6/83qAacVBFNa
+        JjudYsTamLX3bQTeVx5OmsCF+cVIC2DhwAIQziYCBSkbKuRCgVKRd5qiNXI6N4tiLEDqHvB5
+        dkhQmsb9TdQ5crE0WiKRkDHiWKlYTGwSPN1dJhfCdEUOlUlRWop+oWPh/JBC1jbnQUGE3bw4
+        ePR62dBCtW22aWu8ceeWi+zDiYOi8ap7/+J5Txt1E9c+qzCE8uFNla3kWtKcY8L0y0suZmQo
+        eOCyPdEYfvfI6In7x45nvrMFDil7/onVTexhhJ1Xaq4YdnfM5j0pv9/33uOUT8ZhI736SlHq
+        SSruz2lefkEtVcCLDw/mNtTxxuLevRSSz3t+c+xzOH58h2j6yI23Aj6Q/KGm26IfpmCp0Jha
+        U1Y4bk06ahqx/HW7qeVs3w/OO5fN1wdrTrCSZmbOvdb9sGDf0qS0ubB4j1kVNHLqdO38ra81
+        B5QfVh0OyKPrQtf//nJog2D+VWVFXOBsov2RpS9wfGwy9Q2Cw6gU4nA2zSj+A88TQkxuBAAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrCIsWRmVeSWpSXmKPExsWy7bCSvK5EVm+8wcaHJhbLLh1ltNg4Yz2r
+        xcQbV1gsVn98zGix5vYhRosfG04xW7TMWsRiseDTDFaLs01v2C1W3P3IanF51xw2i8+9Rxgt
+        Or/MYrNY2NTCbnG7cQWbxc9d81gcBDzWzFvD6LHj7hJGj52z7rJ7bFrVyebR2/yOzWPjux1M
+        Hn9n7Wfx6NuyitHj8ya5AM4oLpuU1JzMstQifbsErowZa7azFpzlqJi6YAF7A+M3ti5GTg4J
+        AROJ9nntTF2MXBxCArsZJd6s2coCkZCUmHbxKHMXIweQLSxx+HAxRM1bRon5Z/awg9QIC8RL
+        3Fz/jRnEZhPQktj/4gbYUBGBWolXq6ezgtjMAiuYJBZ+FoJoXs4k8W/vWSaQBL+AosTVH48Z
+        QWxeATuJt2uPgMVZBFQlVr95DTZIVCBMYueSx0wQNYISJ2c+ATuOU8BeYvK2j2wQC9Ql/sy7
+        xAxhi0vcejKfCcKWl9j+dg7zBEbhWUjaZyFpmYWkZRaSlgWMLKsYJVMLinPTc4sNCwzzUsv1
+        ihNzi0vz0vWS83M3MYIjWktzB+P2VR/0DjEycTAeYpTgYFYS4Y0U7IoX4k1JrKxKLcqPLyrN
+        SS0+xCjNwaIkznujcGGckEB6YklqdmpqQWoRTJaJg1Oqgck6KmfKslul4rfydl2IZ22N/rXL
+        0cNCd7v6TjGBXpb/lXcEN9kd3hvuFzPl5crbBXx+u55t792pOjOmydHTR/yW0uHHWyf1HVzv
+        u6bRtaa+UfrEN/tDC5W2Zgpb37R/rHrJ61LFuxXTSz+0LolrldZ1+LXDI3/b0hO7/fTkBF+I
+        NOwIzzzdGVdyTD84tjbtq9XV545/us807mv+6bzkh0+K8RfrhoCt1YufPVyZMffDZS4WK5Us
+        P1/rqi8xTzq2nuz39GX8qbSWb2rk7PvnOmzzyxfG/6h6tr+Nkd+KMbH2WtGsM+HnGyfLrX7H
+        J8Rp3GR/TKvGeE7ZE99vUXJ3MsLFdrcJTsx5dW2eCOvr2UosxRmJhlrMRcWJAELi1pFXAwAA
+X-CMS-MailID: 20201019102736epcas1p32f607ce884d698b00f7f3a4c89f7fbbb
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20201007045340epcas1p3b4d0f9187f5330a45d20d9d9b79f1767
+References: <20201007050703.20759-1-cw00.choi@samsung.com>
+        <CGME20201007045340epcas1p3b4d0f9187f5330a45d20d9d9b79f1767@epcas1p3.samsung.com>
+        <20201007050703.20759-3-cw00.choi@samsung.com>
+        <4cb8ece7-9399-9ee0-5f93-6c19630308d6@gmail.com>
+        <1db2fb62-0b82-409d-20a7-c2ef376d4580@samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 19, 2020 at 12:01 PM Ulf Hansson <ulf.hansson@linaro.org> wrote:
->
-> On Fri, 16 Oct 2020 at 18:55, Rafael J. Wysocki <rafael@kernel.org> wrote:
-> >
-> > On Thu, Oct 15, 2020 at 9:38 PM Lina Iyer <ilina@codeaurora.org> wrote:
-> > >
-> > > Some devices may have a predictable interrupt pattern while executing
-> > > usecases. An example would be the VSYNC interrupt associated with
-> > > display devices. A 60 Hz display could cause a interrupt every 16 ms. If
-> > > the device were in a PM domain, the domain would need to be powered up
-> > > for device to resume and handle the interrupt.
-> > >
-> > > Entering a domain idle state saves power, only if the residency of the
-> > > idle state is met. Without knowing the idle duration of the domain, the
-> > > governor would just choose the deepest idle state that matches the QoS
-> > > requirements. The domain might be powered off just as the device is
-> > > expecting to wake up. If devices could inform runtime PM of their next
-> > > event, the parent PM domain's idle duration can be determined.
-> > >
-> > > So let's add the pm_runtime_set_next_wake() API for the device to notify
-> > > runtime PM of the impending wakeup and document it's usage.
-> > >
-> > > Signed-off-by: Lina Iyer <ilina@codeaurora.org>
-> > > ---
-> > > Changes in v2:
-> > >         - Update documentation
-> > >         - Remove runtime PM enabled check
-> > >         - Update commit text
-> > > ---
-> > >  Documentation/power/runtime_pm.rst | 17 +++++++++++++++++
-> > >  drivers/base/power/runtime.c       | 24 ++++++++++++++++++++++++
-> > >  include/linux/pm.h                 |  2 ++
-> > >  include/linux/pm_runtime.h         |  1 +
-> > >  4 files changed, 44 insertions(+)
-> > >
-> > > diff --git a/Documentation/power/runtime_pm.rst b/Documentation/power/runtime_pm.rst
-> > > index 0553008b6279..f6aaef15a511 100644
-> > > --- a/Documentation/power/runtime_pm.rst
-> > > +++ b/Documentation/power/runtime_pm.rst
-> > > @@ -515,6 +515,12 @@ drivers/base/power/runtime.c and include/linux/pm_runtime.h:
-> > >        power.use_autosuspend isn't set, otherwise returns the expiration time
-> > >        in jiffies
-> > >
-> > > +  `int pm_runtime_set_next_event(struct device *dev, ktime_t next);`
-> > > +    - inform runtime PM of the next event on the device. Devices that are
-> > > +      sensitive to their domain idle enter/exit latencies may provide this
-> > > +      information for use by the PM domain governor. The domain governor would
-> > > +      use this information to calculate it's sleep length.
-> > > +
-> > >  It is safe to execute the following helper functions from interrupt context:
-> > >
-> > >  - pm_request_idle()
-> > > @@ -545,6 +551,7 @@ functions may also be used in interrupt context:
-> > >  - pm_runtime_put_sync()
-> > >  - pm_runtime_put_sync_suspend()
-> > >  - pm_runtime_put_sync_autosuspend()
-> > > +- pm_runtime_set_next_event()
-> > >
-> > >  5. Runtime PM Initialization, Device Probing and Removal
-> > >  ========================================================
-> > > @@ -639,6 +646,16 @@ suspend routine).  It may be necessary to resume the device and suspend it again
-> > >  in order to do so.  The same is true if the driver uses different power levels
-> > >  or other settings for runtime suspend and system sleep.
-> > >
-> > > +When a device enters idle at runtime, it may trigger the runtime PM up the
-> > > +hierarchy and if device has a predictable interrupt pattern, we can even do a
-> > > +better job at determining the parent's idle state. For example, a display
-> > > +device gets a VSYNC interrupt every 16 ms when running at 60 Hz. When it's PM
-> > > +domain is powering down and happens to be at the boundary of the VSYNC
-> > > +interrupt, it may not be efficient to power off the domain. Knowing the next
-> > > +wake up (when available) for devices in the domain we can determine the idle
-> > > +duration of the domain. By comparing idle duration with the residencies of the
-> > > +domain idle states, we can be efficient in both power and performance.
-> > > +
-> > >  During system resume, the simplest approach is to bring all devices back to full
-> > >  power, even if they had been suspended before the system suspend began.  There
-> > >  are several reasons for this, including:
-> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > index 8143210a5c54..5d2ebacfd35e 100644
-> > > --- a/drivers/base/power/runtime.c
-> > > +++ b/drivers/base/power/runtime.c
-> > > @@ -122,6 +122,27 @@ u64 pm_runtime_suspended_time(struct device *dev)
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(pm_runtime_suspended_time);
-> > >
-> > > +/**
-> > > + * pm_runtime_set_next_wakeup_event - Notify PM framework of an impending event.
-> > > + * @dev: Device to handle
-> > > + * @next: impending interrupt/wakeup for the device
-> > > + */
-> > > +int pm_runtime_set_next_event(struct device *dev, ktime_t next)
-> > > +{
-> > > +       unsigned long flags;
-> > > +       int ret = -EINVAL;
-> > > +
-> > > +       spin_lock_irqsave(&dev->power.lock, flags);
-> > > +       if (ktime_before(ktime_get(), next)) {
-> > > +               dev->power.next_event = next;
-> > > +               ret = 0;
-> > > +       }
-> > > +       spin_unlock_irqrestore(&dev->power.lock, flags);
-> > > +
-> > > +       return ret;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(pm_runtime_set_next_event);
-> > > +
-> > >  /**
-> > >   * pm_runtime_deactivate_timer - Deactivate given device's suspend timer.
-> > >   * @dev: Device to handle.
-> > > @@ -1415,6 +1436,9 @@ void pm_runtime_enable(struct device *dev)
-> > >              "Enabling runtime PM for inactive device (%s) with active children\n",
-> > >              dev_name(dev));
-> > >
-> > > +       /* Reset the next wakeup for the device */
-> > > +       dev->power.next_event = KTIME_MAX;
-> > > +
-> > >         spin_unlock_irqrestore(&dev->power.lock, flags);
-> > >  }
-> > >  EXPORT_SYMBOL_GPL(pm_runtime_enable);
-> > > diff --git a/include/linux/pm.h b/include/linux/pm.h
-> > > index a30a4b54df52..9051658674a4 100644
-> > > --- a/include/linux/pm.h
-> > > +++ b/include/linux/pm.h
-> > > @@ -8,6 +8,7 @@
-> > >  #ifndef _LINUX_PM_H
-> > >  #define _LINUX_PM_H
-> > >
-> > > +#include <linux/ktime.h>
-> > >  #include <linux/list.h>
-> > >  #include <linux/workqueue.h>
-> > >  #include <linux/spinlock.h>
-> > > @@ -616,6 +617,7 @@ struct dev_pm_info {
-> > >         u64                     active_time;
-> > >         u64                     suspended_time;
-> > >         u64                     accounting_timestamp;
-> > > +       ktime_t                 next_event;
-> >
-> > While there are some cosmetic changes to be made, this particular bit
-> > is fundamentally questionable IMV, because next_event (which BTW would
-> > better be called next_wakeup IMO) is not used by PM-runtime.
-> >
-> > The only user of it will be genpd AFAICS, so I don't quite see a
-> > reason to inflict this extra memory cost on everybody, even if they
-> > don't care about genpd and may not even compile it in.
->
-> That's a good point!
->
-> May I suggest that the new data is put into the "struct
-> generic_pm_domain_data" instead, which means it will be allocated when
-> a device is attached to a genpd.
+On 10/19/20 1:11 PM, Chanwoo Choi wrote:
+> On 10/19/20 9:39 AM, Dmitry Osipenko wrote:
+>> ...
+>>> @@ -1361,6 +1373,9 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
+>>>  		goto out;
+>>>  	}
+>>>  
+>>> +	remove_sysfs_files(df, df->governor);
+>>> +	create_sysfs_files(df, governor);
+>>> +
+>>>  	prev_governor = df->governor;
+>>>  	df->governor = governor;
+>>>  	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
+>>> @@ -1460,39 +1475,6 @@ static ssize_t target_freq_show(struct device *dev,
+>>>  }
+>>
+>> The further code may revert df->governor to the prev_governor or set it
+> 
+> prev_governor is better. I'll change it.
+> 
+>> to NULL. The create_sysfs_files(df->governor) should be invoked at the
 
-Yes, something like that.
+Also, when creating and removing the sysfs files, devfreq instance is needed
+because of df->dev.kobj. So, *_sysfs_files need the two parameters.
 
-> Moreover, we should probably rename the API (and move the
-> implementation of it accordingly) from pm_runtime_set_next_event() to
-> dev_pm_genpd_set_next_wakeup().
+>> very end of the governor_store() and only in a case of success.
+> 
+> OK. I'll add more exception handling code.
+> 
+> 
 
-Right.
 
-> Unless we believe the interface could
-> be useful for other PM domain types (ACPI ?), then we could consider
-> adding a ->set_next_wakeup() callback to the struct dev_pm_domain and
-> implement the interface through a common
-> dev_pm_domain_set_next_wakeup() API.
-
-Maybe.
-
-That would depend on who the other user would be and I wouldn't worry
-about that upfront.
-
-Cheers!
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
