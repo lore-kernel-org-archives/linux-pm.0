@@ -2,25 +2,25 @@ Return-Path: <SRS0=4hIB=D4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87A10C388F9
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 19:14:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 808C7C388F9
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 19:14:48 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3F3312416E
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 19:14:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 304262415B
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 19:14:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392108AbgJUTOj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Oct 2020 15:14:39 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:59714 "EHLO
+        id S2504802AbgJUTOf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Oct 2020 15:14:35 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:50086 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2504800AbgJUTOg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2020 15:14:36 -0400
+        with ESMTP id S2409606AbgJUTOe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2020 15:14:34 -0400
 Received: from 89-77-60-66.dynamic.chello.pl (89.77.60.66) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.491)
- id 93d625418f3655fd; Wed, 21 Oct 2020 21:14:33 +0200
+ id 4e9c949d8a5aba96; Wed, 21 Oct 2020 21:14:31 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -28,9 +28,11 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Lukas Wunner <lukas@wunner.de>,
         Saravana Kannan <saravanak@google.com>,
         Xiang Chen <chenxiang66@hisilicon.com>
-Subject: [PATCH 0/3] PM: runtime: Fixes related to device links management
-Date:   Wed, 21 Oct 2020 21:10:08 +0200
-Message-ID: <6543936.FbWAdBN1tG@kreacher>
+Subject: [PATCH 2/3] PM: runtime: Drop pm_runtime_clean_up_links()
+Date:   Wed, 21 Oct 2020 21:13:10 +0200
+Message-ID: <1930592.Uf7JNTNZRN@kreacher>
+In-Reply-To: <6543936.FbWAdBN1tG@kreacher>
+References: <6543936.FbWAdBN1tG@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -38,45 +40,107 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Greg & all,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Commit d12544fb2aa9 ("PM: runtime: Remove link state checks in
-rpm_get/put_supplier()") merged recently introduced a weakness
-in the handling of device links in the runtime PM framework that
-may be confusing and even harmful.
+After commit d12544fb2aa9 ("PM: runtime: Remove link state checks in
+rpm_get/put_supplier()") nothing prevents the consumer device's
+runtime PM from acquiring additional references to the supplier
+device after pm_runtime_clean_up_links() has run (or even while it
+is running), so calling this function from __device_release_driver()
+may be pointless (or even harmful).
 
-Namely, the checks removed by that commit prevented PM-runtime from
-getting or dropping references to the supplier device whose driver
-was going away via its links to consumers, which specifically allowed
-the pm_runtime_clean_up_links() called from __device_release_driver()
-to run without interfering with runtime suspend/resume of consumer
-devices (which still might happen even though the drivers had been
-unbound from them by that time).
+Moreover, it ignores stateless device links, so the runtime PM
+handling of managed and stateless device links is inconsistent
+because of it, so better get rid of it entirely.
 
-After the above commit, calling pm_runtime_clean_up_links() from
-__device_release_driver() makes a little sense and it may be interfering
-destructively with regular PM-runtime suspend/resume control flows, so
-it needs to be either fixed or dropped altogether.  I prefer the latter,
-because among other things this removes an arbitrary difference in the
-handling of managed device links with respect to the stateless ones,
-so patch [2/3] is doing just that.
+Fixes: d12544fb2aa9 ("PM: runtime: Remove link state checks in rpm_get/put_supplier()")
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Cc: 5.1+ <stable@vger.kernel.org> # 5.1+
+---
+ drivers/base/dd.c            |    1 -
+ drivers/base/power/runtime.c |   36 ------------------------------------
+ include/linux/pm_runtime.h   |    2 --
+ 3 files changed, 39 deletions(-)
 
-However, in some rare cases pm_runtime_clean_up_links() may help to clean
-up leftover PM-runtime references, so if that function goes away, they
-need to be cleaned up elsewhere.  That's why patch [1/3] modifies
-__device_link_del() to drop them upon device link removal (which also
-needs to be done for stateless device links and that's why I'm regarding
-this patch as a fix).
-
-Finally, to avoid pointless overhead related to suspending and resuming
-the target device for multiple times in a row in __device_release_driver(),
-it is better to resume it upfront before checking its links to consumers,
-which is done by patch [3/3].
-
-While this series touches the driver core, it really is mostly related to
-runtime PM, so I can apply it if that's OK.
-
-Thanks!
+Index: linux-pm/drivers/base/dd.c
+===================================================================
+--- linux-pm.orig/drivers/base/dd.c
++++ linux-pm/drivers/base/dd.c
+@@ -1133,7 +1133,6 @@ static void __device_release_driver(stru
+ 		}
+ 
+ 		pm_runtime_get_sync(dev);
+-		pm_runtime_clean_up_links(dev);
+ 
+ 		driver_sysfs_remove(dev);
+ 
+Index: linux-pm/drivers/base/power/runtime.c
+===================================================================
+--- linux-pm.orig/drivers/base/power/runtime.c
++++ linux-pm/drivers/base/power/runtime.c
+@@ -1643,42 +1643,6 @@ void pm_runtime_remove(struct device *de
+ }
+ 
+ /**
+- * pm_runtime_clean_up_links - Prepare links to consumers for driver removal.
+- * @dev: Device whose driver is going to be removed.
+- *
+- * Check links from this device to any consumers and if any of them have active
+- * runtime PM references to the device, drop the usage counter of the device
+- * (as many times as needed).
+- *
+- * Links with the DL_FLAG_MANAGED flag unset are ignored.
+- *
+- * Since the device is guaranteed to be runtime-active at the point this is
+- * called, nothing else needs to be done here.
+- *
+- * Moreover, this is called after device_links_busy() has returned 'false', so
+- * the status of each link is guaranteed to be DL_STATE_SUPPLIER_UNBIND and
+- * therefore rpm_active can't be manipulated concurrently.
+- */
+-void pm_runtime_clean_up_links(struct device *dev)
+-{
+-	struct device_link *link;
+-	int idx;
+-
+-	idx = device_links_read_lock();
+-
+-	list_for_each_entry_rcu(link, &dev->links.consumers, s_node,
+-				device_links_read_lock_held()) {
+-		if (!(link->flags & DL_FLAG_MANAGED))
+-			continue;
+-
+-		while (refcount_dec_not_one(&link->rpm_active))
+-			pm_runtime_put_noidle(dev);
+-	}
+-
+-	device_links_read_unlock(idx);
+-}
+-
+-/**
+  * pm_runtime_get_suppliers - Resume and reference-count supplier devices.
+  * @dev: Consumer device.
+  */
+Index: linux-pm/include/linux/pm_runtime.h
+===================================================================
+--- linux-pm.orig/include/linux/pm_runtime.h
++++ linux-pm/include/linux/pm_runtime.h
+@@ -54,7 +54,6 @@ extern u64 pm_runtime_autosuspend_expira
+ extern void pm_runtime_update_max_time_suspended(struct device *dev,
+ 						 s64 delta_ns);
+ extern void pm_runtime_set_memalloc_noio(struct device *dev, bool enable);
+-extern void pm_runtime_clean_up_links(struct device *dev);
+ extern void pm_runtime_get_suppliers(struct device *dev);
+ extern void pm_runtime_put_suppliers(struct device *dev);
+ extern void pm_runtime_new_link(struct device *dev);
+@@ -276,7 +275,6 @@ static inline u64 pm_runtime_autosuspend
+ 				struct device *dev) { return 0; }
+ static inline void pm_runtime_set_memalloc_noio(struct device *dev,
+ 						bool enable){}
+-static inline void pm_runtime_clean_up_links(struct device *dev) {}
+ static inline void pm_runtime_get_suppliers(struct device *dev) {}
+ static inline void pm_runtime_put_suppliers(struct device *dev) {}
+ static inline void pm_runtime_new_link(struct device *dev) {}
 
 
 
