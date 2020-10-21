@@ -2,63 +2,167 @@ Return-Path: <SRS0=4hIB=D4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A5E1C5517A
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 04:58:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8940DC56201
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 06:35:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E031B22242
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 04:58:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3011422251
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 06:35:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2407127AbgJUE6M (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Oct 2020 00:58:12 -0400
-Received: from muru.com ([72.249.23.125]:46356 "EHLO muru.com"
+        id S2394470AbgJUGfW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Oct 2020 02:35:22 -0400
+Received: from mga02.intel.com ([134.134.136.20]:28199 "EHLO mga02.intel.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2406967AbgJUE6M (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Oct 2020 00:58:12 -0400
-X-Greylist: delayed 378 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2020 00:58:11 EDT
-Received: from atomide.com (localhost [127.0.0.1])
-        by muru.com (Postfix) with ESMTPS id C558880B0;
-        Wed, 21 Oct 2020 04:51:57 +0000 (UTC)
-Date:   Wed, 21 Oct 2020 07:51:45 +0300
-From:   Tony Lindgren <tony@atomide.com>
-To:     Sebastian Reichel <sre@kernel.org>
-Cc:     Dev Null <devnull@uvos.xyz>, linux-omap@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH 1/1] power: supply: cpcap-battery: improve handling of
- 3rd party and XT875 batteries.
-Message-ID: <20201021045145.GA5974@atomide.com>
-References: <20201020225312.b4ea29c9dc3ae00f23e39280@uvos.xyz>
- <20201020214126.tkf37xpehnpxli4a@earth.universe>
+        id S2387850AbgJUGfW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Oct 2020 02:35:22 -0400
+IronPort-SDR: ++E5wLLG+OlliEwKXoWgDyy7EuZ6/vQOSU47Zk6zd7eAgXcObhFcVk1kz0lo1FWAh7aaPshiDR
+ eyhb7ptzkSpg==
+X-IronPort-AV: E=McAfee;i="6000,8403,9780"; a="154271623"
+X-IronPort-AV: E=Sophos;i="5.77,400,1596524400"; 
+   d="scan'208";a="154271623"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga008.fm.intel.com ([10.253.24.58])
+  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Oct 2020 23:35:21 -0700
+IronPort-SDR: /9N1i2KD4BKs5GXi0nyMB4qjkjPuhmdnaNSYwXsuROeM/Zkngw5Ny+EUcboi9fqRDCZBXsnzti
+ O2Xr76wDiIUg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,400,1596524400"; 
+   d="scan'208";a="301926330"
+Received: from lkp-server01.sh.intel.com (HELO 2c14ddb8ab9c) ([10.239.97.150])
+  by fmsmga008.fm.intel.com with ESMTP; 20 Oct 2020 23:35:19 -0700
+Received: from kbuild by 2c14ddb8ab9c with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1kV7iR-00000e-83; Wed, 21 Oct 2020 06:35:19 +0000
+Date:   Wed, 21 Oct 2020 14:34:42 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ c4fc26703dbdd40a48d67bdb9fefd5b1607278a6
+Message-ID: <5f8fd682.W/nA/YzJWu3Epz3j%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201020214126.tkf37xpehnpxli4a@earth.universe>
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
+branch HEAD: c4fc26703dbdd40a48d67bdb9fefd5b1607278a6  Merge branch 'pm-core' into bleeding-edge
 
-* Sebastian Reichel <sre@kernel.org> [201020 21:41]:
-> The context of this patch is not available in cpcap-battery driver
-> from mainline. So this has dependencies on other patches, which
-> need to be submitted first. I currently do not have any pending
-> cpcap patches, but IIRC there was a big patchset which had to be
-> resubmitted.
+elapsed time: 722m
 
-Yes this $subject patch as a split up series should be based on
-the mainline kernel, and not on the WIP battery capacity patches.
-I doubt there will be any severe rebase issues for the capacity
-patches.
+configs tested: 94
+configs skipped: 2
 
-FYI, I'm slowly working on the battery capacity series but still
-need to decouple the battrery full status from charge current as
-that won't work for cases where we have CPU load :) We just need
-to set the status based on charger full interrupt.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-Regards,
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+mips                         tb0219_defconfig
+powerpc                          g5_defconfig
+m68k                        mvme147_defconfig
+arm                  colibri_pxa270_defconfig
+mips                  decstation_64_defconfig
+mips                         db1xxx_defconfig
+mips                           mtx1_defconfig
+arm                       netwinder_defconfig
+arm                          ep93xx_defconfig
+powerpc                     stx_gp3_defconfig
+sh                           se7722_defconfig
+m68k                        mvme16x_defconfig
+mips                     cu1000-neo_defconfig
+powerpc                      bamboo_defconfig
+arc                            hsdk_defconfig
+powerpc                     mpc83xx_defconfig
+arm                            zeus_defconfig
+xtensa                         virt_defconfig
+xtensa                          iss_defconfig
+xtensa                  cadence_csp_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a002-20201020
+i386                 randconfig-a005-20201020
+i386                 randconfig-a003-20201020
+i386                 randconfig-a001-20201020
+i386                 randconfig-a006-20201020
+i386                 randconfig-a004-20201020
+x86_64               randconfig-a011-20201020
+x86_64               randconfig-a013-20201020
+x86_64               randconfig-a016-20201020
+x86_64               randconfig-a015-20201020
+x86_64               randconfig-a012-20201020
+x86_64               randconfig-a014-20201020
+i386                 randconfig-a016-20201020
+i386                 randconfig-a014-20201020
+i386                 randconfig-a015-20201020
+i386                 randconfig-a013-20201020
+i386                 randconfig-a012-20201020
+i386                 randconfig-a011-20201020
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                                   rhel
+x86_64                           allyesconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                              defconfig
+x86_64                               rhel-8.3
+x86_64                                  kexec
 
-Tony
+clang tested configs:
+x86_64               randconfig-a001-20201020
+x86_64               randconfig-a002-20201020
+x86_64               randconfig-a003-20201020
+x86_64               randconfig-a006-20201020
+x86_64               randconfig-a005-20201020
+x86_64               randconfig-a004-20201020
+
+---
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
