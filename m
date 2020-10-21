@@ -2,262 +2,156 @@ Return-Path: <SRS0=4hIB=D4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2EC67C5DF9F
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 09:13:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B9AB4C561F8
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 09:15:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B4748221FC
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 09:13:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 377EE22249
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 09:15:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=veeam.com header.i=@veeam.com header.b="D1RQaq6u"
+	dkim=fail reason="signature verification failed" (2048-bit key) header.d=wdc.com header.i=@wdc.com header.b="YlcUoW/z";
+	dkim=pass (1024-bit key) header.d=sharedspace.onmicrosoft.com header.i=@sharedspace.onmicrosoft.com header.b="cO1uurt/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2437407AbgJUJNW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Oct 2020 05:13:22 -0400
-Received: from mx4.veeam.com ([104.41.138.86]:56796 "EHLO mx4.veeam.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2437398AbgJUJNV (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 21 Oct 2020 05:13:21 -0400
-X-Greylist: delayed 533 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2020 05:13:21 EDT
-Received: from mail.veeam.com (spbmbx01.amust.local [172.17.17.171])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mx4.veeam.com (Postfix) with ESMTPS id 8A0905C60C;
-        Wed, 21 Oct 2020 12:04:26 +0300 (MSK)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=veeam.com; s=mx4;
-        t=1603271066; bh=7pCinxh9CDdZ18baGj9Agc/InVPsneMyQj+wVyVjQ3I=;
-        h=From:To:Subject:Date:From;
-        b=D1RQaq6u5Gf6SP2mNiIVrCRlPSmaF6XvLmflwyZ7o4C8ia3u2i76fRSrT4beQCO05
-         yBr95+z13pJlPECDmYUR+W1eG8IdFt5fuPpnyP0aknKPqEapJX7GFwzvbP1K4dY+5J
-         IGFPiinN/RxRhRuxEA2BpzaqYdBybPJt1hCyn/4M=
-Received: from prgdevlinuxpatch01.amust.local (172.24.14.5) by
- spbmbx01.amust.local (172.17.17.171) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.595.3;
- Wed, 21 Oct 2020 12:04:24 +0300
-From:   Sergei Shtepa <sergei.shtepa@veeam.com>
-To:     <axboe@kernel.dk>, <viro@zeniv.linux.org.uk>, <hch@infradead.org>,
-        <darrick.wong@oracle.com>, <linux-xfs@vger.kernel.org>,
-        <linux-fsdevel@vger.kernel.org>, <rjw@rjwysocki.net>,
-        <len.brown@intel.com>, <pavel@ucw.cz>, <akpm@linux-foundation.org>,
-        <johannes.thumshirn@wdc.com>, <ming.lei@redhat.com>,
-        <jack@suse.cz>, <tj@kernel.org>, <gustavo@embeddedor.com>,
-        <bvanassche@acm.org>, <osandov@fb.com>, <koct9i@gmail.com>,
-        <damien.lemoal@wdc.com>, <steve@sk2.org>,
-        <linux-block@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-mm@kvack.org>,
-        <sergei.shtepa@veeam.com>
-Subject: [PATCH 0/2] block layer filter and block device snapshot module
-Date:   Wed, 21 Oct 2020 12:04:07 +0300
-Message-ID: <1603271049-20681-1-git-send-email-sergei.shtepa@veeam.com>
-X-Mailer: git-send-email 1.8.3.1
+        id S2437486AbgJUJPB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Oct 2020 05:15:01 -0400
+Received: from esa5.hgst.iphmx.com ([216.71.153.144]:49448 "EHLO
+        esa5.hgst.iphmx.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2437448AbgJUJPA (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2020 05:15:00 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=simple/simple;
+  d=wdc.com; i=@wdc.com; q=dns/txt; s=dkim.wdc.com;
+  t=1603271701; x=1634807701;
+  h=from:to:subject:date:message-id:references:
+   content-transfer-encoding:mime-version;
+  bh=zwebdYZrn11HCQ9u+BpygYkYNN8TdeiDgzspZ7gAL28=;
+  b=YlcUoW/z8BrOrTUvNnNTG36E6pLXR1luqvt/KPxUJp+BSXPog455ukun
+   TyvUOvdfV4cOhRGC+BIz3BH+yDEg2N6uyW7BK6BxHRAVhPn71txAoXA5+
+   /46LFarRf1G1eYjWsscVFeMZn+N3BgsBFyHUoIC9gwH7N5ULbnReR4KgP
+   /Kx9PGOgTi9bPdSJttj/PRSX8BRKPO/m7TFykiMMk8M8c2jOyjlJdKlkJ
+   bB9i1X7YqCeGUcHsg0UoQzD9KEDAs9VyZH8C2FOtIIOdxYoC3BBtQxtVb
+   FBtJBOpujQ8ZQ/IFEsLsLSLMavd9n6Q2eYdrDhxmjrb4BTZyvrdiQXRcH
+   w==;
+IronPort-SDR: GBfYxlXX9HIqPVXopqLJYKu5KnST30ySZYGHClQIu86l59nIhniyhWkWQ4KONLok2UKbqPGkMs
+ uGXuZphov3PL5sMfiuDxtU9UXJsprnJeMTXNkZTgRGvVxcZ9BA1WUGQ6Rer1+PGE/ip8U30xhe
+ MDI7/afFkIqPBBbCoNaX+sfZEgzjEJod7wq88xmHfdSiEj8QqNWErsPQU8zT7CRFnxpZQosUEd
+ LXBEmz1Wa6MjOsJBn3/kVd9t6p4xxoZMeZjPXxlRwAPfu5VMyNKRnDbSihM/nsiCaWdFk39Msn
+ gZg=
+X-IronPort-AV: E=Sophos;i="5.77,400,1596470400"; 
+   d="scan'208";a="150588293"
+Received: from mail-dm6nam11lp2172.outbound.protection.outlook.com (HELO NAM11-DM6-obe.outbound.protection.outlook.com) ([104.47.57.172])
+  by ob1.hgst.iphmx.com with ESMTP; 21 Oct 2020 17:14:58 +0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=epTczlV0IWrDJtW8eP021eoHSCtzmjj4TXgs+BS/JnT1IZAAdYwlga33UCrSvekufFtJbdh/u5Cch4wBrOihrIZNimbrCssckbSAwzrDeM7d6y1txb2lxNoMnqPQF/vIOV0HWaHIOWk1VBlouo8q1/uv+9Yp/mn3GJswsCGYi3nKsKQXzDFfgkiAdNrZnC45RLx4dFagP+8iCVdXF1Sz5ofDyg5Jtu8OyJtbPvh2SeI54Qr82nQhpTD3xYdNA4dHlN6yPSQ4kE/4OhDToQTkAZXsChSH6kToxJDtbJRlKee5FWxHySCQMhja542fBhs2oApXRg8EuLxd+ox62YRaqg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MtuegUvIuQue9dzELzMpc3s64JoVkp5pqRgzGDDCv+g=;
+ b=lFAcKeq9ReVTQKL+A6BE8SLeHkk28vZ5H1m0c6Rh4RHIwPM9NjUTYfYpB0zqz64fIsgbSiLCo+RpaWD30ZwNKL8UG90vvWLgk/lHE6dTqGprZ/nDttWB+9I4nKnhnWXkdQxAffObliafLdRQdDalsOffgms1DYG+J8jBSURWHpSByR6xNmd9YQkZ8riOpWBabDFfXYRQbfTW5WcVkdCNYbPFHSXNHyUVizEE4ijv81/9QkBOOhwJtJjLNZm2nCjzjR6k6W6lsgXULZHEczc7Y6dAUecfeYUD1yr8Csfpoqzvcejls7Sited3hfyC7BzAiwa1lucJEZZ9cjufHFgqIQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=wdc.com; dmarc=pass action=none header.from=wdc.com; dkim=pass
+ header.d=wdc.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=sharedspace.onmicrosoft.com; s=selector2-sharedspace-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=MtuegUvIuQue9dzELzMpc3s64JoVkp5pqRgzGDDCv+g=;
+ b=cO1uurt/iAnMLMZ+D+HM3aK9Af8ZpNO6f2IemY6lnoanr1DA6pQZurTzC6ZaEbw2CgnBMbq6miKC6T8BFVXHanfeVKwd8QUTajfCDxaBmYDyK3TfXd5Vb9ycokcRjCVofJlmYoscTW+2PGyx27RkCF7iJMEUKSAe4Wku88PqFLQ=
+Received: from SN4PR0401MB3598.namprd04.prod.outlook.com
+ (2603:10b6:803:47::21) by SN6PR04MB3885.namprd04.prod.outlook.com
+ (2603:10b6:805:48::20) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3477.25; Wed, 21 Oct
+ 2020 09:14:56 +0000
+Received: from SN4PR0401MB3598.namprd04.prod.outlook.com
+ ([fe80::619a:567c:d053:ce25]) by SN4PR0401MB3598.namprd04.prod.outlook.com
+ ([fe80::619a:567c:d053:ce25%6]) with mapi id 15.20.3477.028; Wed, 21 Oct 2020
+ 09:14:56 +0000
+From:   Johannes Thumshirn <Johannes.Thumshirn@wdc.com>
+To:     Sergei Shtepa <sergei.shtepa@veeam.com>,
+        "axboe@kernel.dk" <axboe@kernel.dk>,
+        "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+        "hch@infradead.org" <hch@infradead.org>,
+        "darrick.wong@oracle.com" <darrick.wong@oracle.com>,
+        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
+        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "len.brown@intel.com" <len.brown@intel.com>,
+        "pavel@ucw.cz" <pavel@ucw.cz>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "ming.lei@redhat.com" <ming.lei@redhat.com>,
+        "jack@suse.cz" <jack@suse.cz>, "tj@kernel.org" <tj@kernel.org>,
+        "gustavo@embeddedor.com" <gustavo@embeddedor.com>,
+        "bvanassche@acm.org" <bvanassche@acm.org>,
+        "osandov@fb.com" <osandov@fb.com>,
+        "koct9i@gmail.com" <koct9i@gmail.com>,
+        Damien Le Moal <Damien.LeMoal@wdc.com>,
+        "steve@sk2.org" <steve@sk2.org>,
+        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/2] Block layer filter - second version
+Thread-Topic: [PATCH 1/2] Block layer filter - second version
+Thread-Index: AQHWp4k5CXnJGcQARUyusr8QOJA1cg==
+Date:   Wed, 21 Oct 2020 09:14:56 +0000
+Message-ID: <SN4PR0401MB3598185077055334ADE1BB159B1C0@SN4PR0401MB3598.namprd04.prod.outlook.com>
+References: <1603271049-20681-1-git-send-email-sergei.shtepa@veeam.com>
+ <1603271049-20681-2-git-send-email-sergei.shtepa@veeam.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+authentication-results: veeam.com; dkim=none (message not signed)
+ header.d=none;veeam.com; dmarc=none action=none header.from=wdc.com;
+x-originating-ip: [129.253.240.72]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-ht: Tenant
+x-ms-office365-filtering-correlation-id: f9bd8372-86a8-4c8d-686f-08d875a1c6ff
+x-ms-traffictypediagnostic: SN6PR04MB3885:
+x-ld-processed: b61c8803-16f3-4c35-9b17-6f65f441df86,ExtAddr
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <SN6PR04MB388596BF151C6FE8954DF3A19B1C0@SN6PR04MB3885.namprd04.prod.outlook.com>
+wdcipoutbound: EOP-TRUE
+x-ms-oob-tlc-oobclassifiers: OLM:7219;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: n2387oY2YDYa/2zN2N8T6ZDIzxkqP4yzC+NTP4FWDxFiCSNEFEoJpcxSA44PFzuO5xpvCpNInLPIWYvi4PtsuVLNqWuqzONpP0uAGnrg3xFM6H3gK+hTwRipDaEc0OZ4WVnGjNOYwSzgZOkvefnGJ9XYzSTNbVqk4RMtoH6vIOn5CXbC+GQRhBI05icBEDsVZEsLE8iMIZU1pAFW22rHQtGrR/TKa+blJwa7doI+0hu0eLipm1wL4wjANlKS5MyCDWrbcc41Pb4uYbJRdecsxRHN2wDJY3RD5ySFgzR/5M0iUumPB6eqNcYEn6LnRWEk7o/cz1Kv1bdNr7IzsFTmOOCWstrvGzATChR2iu+t376hZXZCh1mhkkw1cBQK8LxF
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN4PR0401MB3598.namprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(346002)(396003)(136003)(376002)(39860400002)(66556008)(66946007)(2906002)(53546011)(91956017)(8936002)(478600001)(71200400001)(76116006)(66446008)(64756008)(316002)(110136005)(8676002)(7696005)(186003)(52536014)(4744005)(55016002)(66476007)(7416002)(26005)(6506007)(83380400001)(5660300002)(9686003)(33656002)(86362001)(921003);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata: EJmRbXtNHin3RlI9WH5C9MRP3SCaZLVdTIU5yD5IeG517h0o9d8imQbXCzGSj6T2KUJPpB4hHvWomBUvrXq+7pPWICusQ1cDxeoWT51mwZFsx9cE3nAg8Ek42DIROIDbfYBKrQD0g3SRmZ6j8M5U8uNBIdDY09TSAubbANTSmUVc+9m54+yWocDC7bIlt1rciGJcU7tWJuXER7/nkIrmZOhd1WJchq8pXyCE8Dh4cYwHt36KLEmbizLSPLHRb867o6VLIE/xJE21VKzV2bYBK2oSuen6ZZIFxJmQeJdWkUXJSu6rwvLDlAfzhYLrhUEzfJl0D4dfvHN2wdyUytGrKQweHCp1hiV6/TFCzKYRQd/BL3mn0JS325pkLbSfIoK9IEevI4wyjFQS5Afv0vhhdd71fOWwBKr7MFIkSJUoPHuHVXm9BrcnnkF/usglaPc3Pm6x+Tx4zpPdhRUvzXHsdqs9xPEDWy1nFyx0hVmYzllti1u+B9iIXAxbh3Vj6l5sumvQVHagJhP03QsMDP9K9tziHxF0UABmFg8vmWj9OIz13U2arCRmk+siKVwqgZPc0Bf0F0kMDMObDXXukRBTOeMK9vXjxpLcOktQm73gxV3rMsFEibUUcikEc7UlmrnpJl5QJexN/cHRqRZ8tpOibw==
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [172.24.14.5]
-X-ClientProxiedBy: spbmbx01.amust.local (172.17.17.171) To
- spbmbx01.amust.local (172.17.17.171)
-X-EsetResult: clean, is OK
-X-EsetId: 37303A295605D26A677562
-X-Veeam-MMEX: True
+X-OriginatorOrg: wdc.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN4PR0401MB3598.namprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: f9bd8372-86a8-4c8d-686f-08d875a1c6ff
+X-MS-Exchange-CrossTenant-originalarrivaltime: 21 Oct 2020 09:14:56.0467
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: b61c8803-16f3-4c35-9b17-6f65f441df86
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: uAUB5GTtTU80pKVWjQUI7RSr6wiQbgOWY1opyT4q0zKDLNks+XYT7ADrw9tXKbKpEBfF6yBRnVjlxqkUNtwX/tGEys+SSU/Jpbq1XL8dj/k=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR04MB3885
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello everyone! Requesting for your comments and suggestions.
-
-# blk-filter
-
-Block layer filter allows to intercept BIO requests to a block device.
-
-Interception is performed at the very beginning of the BIO request
-processing, and therefore does not affect the operation of the request
-processing queue. This also makes it possible to intercept requests from
-a specific block device, rather than from the entire disk.
-
-The logic of the submit_bio function has been changed - since the
-function execution results are not processed anywhere (except for swap
-and direct-io) the function won't return a value anymore.
-
-Now the submit_bio_direct() function is called whenever the result of
-the blk_qc_t function is required. submit_bio_direct() is not
-intercepted by the block layer filter. This is logical for swap and
-direct-io.
-
-Block layer filter allows you to enable and disable the filter driver on
-the fly. When a new block device is added, the filter driver can start
-filtering this device. When you delete a device, the filter can remove
-its own filter.
-
-The idea of multiple altitudes had to be abandoned in order to simplify
-implementation and make it more reliable. Different filter drivers can
-work simultaneously, but each on its own block device.
-
-# blk-snap
-
-We propose a new kernel module - blk-snap. This module implements
-snapshot and changed block tracking functionality. It is intended to
-create backup copies of any block devices without usage of device mapper.
-Snapshots are temporary and are destroyed after the backup process has
-finished. Changed block tracking allows for incremental and differential
-backup copies.
-
-blk-snap uses block layer filter. Block layer filter provides a callback
-to intercept bio-requests. If a block device disappears for whatever
-reason, send a synchronous request to remove the device from filtering.
-
-blk-snap kernel module is a product of a deep refactoring of the
-out-of-tree kernel veeamsnap kernel module
-(https://github.com/veeam/veeamsnap/):
-* all conditional compilation branches that served for the purpose of
-  compatibility with older kernels have been removed;
-* linux kernel code style has been applied;
-* blk-snap mostly takes advantage of the existing kernel code instead of
-  reinventing the wheel;
-* all redundant code (such as persistent cbt and snapstore collector)
-  has been removed.
-
-Several important things are still have to be done:
-* refactor the module interface for interaction with a user-space code -
-  it is already clear that the implementation of some calls can be
-  improved.
-
-Your feedback would be greatly appreciated!
-
-Sergei Shtepa (2):
-  Block layer filter - second version
-  blk-snap - snapshots and change-tracking for block devices
-
- block/Kconfig                               |  11 +
- block/Makefile                              |   1 +
- block/blk-core.c                            |  52 +-
- block/blk-filter-internal.h                 |  29 +
- block/blk-filter.c                          | 286 ++++++
- block/partitions/core.c                     |  14 +-
- drivers/block/Kconfig                       |   2 +
- drivers/block/Makefile                      |   1 +
- drivers/block/blk-snap/Kconfig              |  24 +
- drivers/block/blk-snap/Makefile             |  28 +
- drivers/block/blk-snap/big_buffer.c         | 193 ++++
- drivers/block/blk-snap/big_buffer.h         |  24 +
- drivers/block/blk-snap/blk-snap-ctl.h       | 190 ++++
- drivers/block/blk-snap/blk_deferred.c       | 566 +++++++++++
- drivers/block/blk-snap/blk_deferred.h       |  67 ++
- drivers/block/blk-snap/blk_descr_file.c     |  82 ++
- drivers/block/blk-snap/blk_descr_file.h     |  26 +
- drivers/block/blk-snap/blk_descr_mem.c      |  66 ++
- drivers/block/blk-snap/blk_descr_mem.h      |  14 +
- drivers/block/blk-snap/blk_descr_multidev.c |  86 ++
- drivers/block/blk-snap/blk_descr_multidev.h |  25 +
- drivers/block/blk-snap/blk_descr_pool.c     | 190 ++++
- drivers/block/blk-snap/blk_descr_pool.h     |  38 +
- drivers/block/blk-snap/blk_redirect.c       | 507 ++++++++++
- drivers/block/blk-snap/blk_redirect.h       |  73 ++
- drivers/block/blk-snap/blk_util.c           |  33 +
- drivers/block/blk-snap/blk_util.h           |  33 +
- drivers/block/blk-snap/cbt_map.c            | 210 +++++
- drivers/block/blk-snap/cbt_map.h            |  62 ++
- drivers/block/blk-snap/common.h             |  31 +
- drivers/block/blk-snap/ctrl_fops.c          | 691 ++++++++++++++
- drivers/block/blk-snap/ctrl_fops.h          |  19 +
- drivers/block/blk-snap/ctrl_pipe.c          | 562 +++++++++++
- drivers/block/blk-snap/ctrl_pipe.h          |  34 +
- drivers/block/blk-snap/ctrl_sysfs.c         |  73 ++
- drivers/block/blk-snap/ctrl_sysfs.h         |   5 +
- drivers/block/blk-snap/defer_io.c           | 397 ++++++++
- drivers/block/blk-snap/defer_io.h           |  39 +
- drivers/block/blk-snap/main.c               |  82 ++
- drivers/block/blk-snap/params.c             |  58 ++
- drivers/block/blk-snap/params.h             |  29 +
- drivers/block/blk-snap/rangevector.c        |  85 ++
- drivers/block/blk-snap/rangevector.h        |  31 +
- drivers/block/blk-snap/snapimage.c          | 982 ++++++++++++++++++++
- drivers/block/blk-snap/snapimage.h          |  16 +
- drivers/block/blk-snap/snapshot.c           | 225 +++++
- drivers/block/blk-snap/snapshot.h           |  17 +
- drivers/block/blk-snap/snapstore.c          | 929 ++++++++++++++++++
- drivers/block/blk-snap/snapstore.h          |  68 ++
- drivers/block/blk-snap/snapstore_device.c   | 532 +++++++++++
- drivers/block/blk-snap/snapstore_device.h   |  63 ++
- drivers/block/blk-snap/snapstore_file.c     |  52 ++
- drivers/block/blk-snap/snapstore_file.h     |  15 +
- drivers/block/blk-snap/snapstore_mem.c      |  91 ++
- drivers/block/blk-snap/snapstore_mem.h      |  20 +
- drivers/block/blk-snap/snapstore_multidev.c | 118 +++
- drivers/block/blk-snap/snapstore_multidev.h |  22 +
- drivers/block/blk-snap/tracker.c            | 449 +++++++++
- drivers/block/blk-snap/tracker.h            |  38 +
- drivers/block/blk-snap/tracking.c           | 270 ++++++
- drivers/block/blk-snap/tracking.h           |  13 +
- drivers/block/blk-snap/version.h            |   7 +
- fs/block_dev.c                              |   6 +-
- fs/direct-io.c                              |   2 +-
- fs/iomap/direct-io.c                        |   2 +-
- include/linux/bio.h                         |   4 +-
- include/linux/blk-filter.h                  |  76 ++
- include/linux/genhd.h                       |   8 +-
- kernel/power/swap.c                         |   2 +-
- mm/page_io.c                                |   4 +-
- 70 files changed, 9074 insertions(+), 26 deletions(-)
- create mode 100644 block/blk-filter-internal.h
- create mode 100644 block/blk-filter.c
- create mode 100644 drivers/block/blk-snap/Kconfig
- create mode 100644 drivers/block/blk-snap/Makefile
- create mode 100644 drivers/block/blk-snap/big_buffer.c
- create mode 100644 drivers/block/blk-snap/big_buffer.h
- create mode 100644 drivers/block/blk-snap/blk-snap-ctl.h
- create mode 100644 drivers/block/blk-snap/blk_deferred.c
- create mode 100644 drivers/block/blk-snap/blk_deferred.h
- create mode 100644 drivers/block/blk-snap/blk_descr_file.c
- create mode 100644 drivers/block/blk-snap/blk_descr_file.h
- create mode 100644 drivers/block/blk-snap/blk_descr_mem.c
- create mode 100644 drivers/block/blk-snap/blk_descr_mem.h
- create mode 100644 drivers/block/blk-snap/blk_descr_multidev.c
- create mode 100644 drivers/block/blk-snap/blk_descr_multidev.h
- create mode 100644 drivers/block/blk-snap/blk_descr_pool.c
- create mode 100644 drivers/block/blk-snap/blk_descr_pool.h
- create mode 100644 drivers/block/blk-snap/blk_redirect.c
- create mode 100644 drivers/block/blk-snap/blk_redirect.h
- create mode 100644 drivers/block/blk-snap/blk_util.c
- create mode 100644 drivers/block/blk-snap/blk_util.h
- create mode 100644 drivers/block/blk-snap/cbt_map.c
- create mode 100644 drivers/block/blk-snap/cbt_map.h
- create mode 100644 drivers/block/blk-snap/common.h
- create mode 100644 drivers/block/blk-snap/ctrl_fops.c
- create mode 100644 drivers/block/blk-snap/ctrl_fops.h
- create mode 100644 drivers/block/blk-snap/ctrl_pipe.c
- create mode 100644 drivers/block/blk-snap/ctrl_pipe.h
- create mode 100644 drivers/block/blk-snap/ctrl_sysfs.c
- create mode 100644 drivers/block/blk-snap/ctrl_sysfs.h
- create mode 100644 drivers/block/blk-snap/defer_io.c
- create mode 100644 drivers/block/blk-snap/defer_io.h
- create mode 100644 drivers/block/blk-snap/main.c
- create mode 100644 drivers/block/blk-snap/params.c
- create mode 100644 drivers/block/blk-snap/params.h
- create mode 100644 drivers/block/blk-snap/rangevector.c
- create mode 100644 drivers/block/blk-snap/rangevector.h
- create mode 100644 drivers/block/blk-snap/snapimage.c
- create mode 100644 drivers/block/blk-snap/snapimage.h
- create mode 100644 drivers/block/blk-snap/snapshot.c
- create mode 100644 drivers/block/blk-snap/snapshot.h
- create mode 100644 drivers/block/blk-snap/snapstore.c
- create mode 100644 drivers/block/blk-snap/snapstore.h
- create mode 100644 drivers/block/blk-snap/snapstore_device.c
- create mode 100644 drivers/block/blk-snap/snapstore_device.h
- create mode 100644 drivers/block/blk-snap/snapstore_file.c
- create mode 100644 drivers/block/blk-snap/snapstore_file.h
- create mode 100644 drivers/block/blk-snap/snapstore_mem.c
- create mode 100644 drivers/block/blk-snap/snapstore_mem.h
- create mode 100644 drivers/block/blk-snap/snapstore_multidev.c
- create mode 100644 drivers/block/blk-snap/snapstore_multidev.h
- create mode 100644 drivers/block/blk-snap/tracker.c
- create mode 100644 drivers/block/blk-snap/tracker.h
- create mode 100644 drivers/block/blk-snap/tracking.c
- create mode 100644 drivers/block/blk-snap/tracking.h
- create mode 100644 drivers/block/blk-snap/version.h
- create mode 100644 include/linux/blk-filter.h
-
---
-2.20.1
-
+On 21/10/2020 11:04, Sergei Shtepa wrote:=0A=
+> +	help=0A=
+> +	  Enabling this lets third-party kernel modules intercept=0A=
+> +	  bio requests for any block device. This allows them to implement=0A=
+=0A=
+The "third-party kernel modules" part sounds a bit worrisome to me. Especia=
+lly=0A=
+as this functionality is based on EXPORT_SYMBOL()s without the GPL suffix.=
+=0A=
+=0A=
+I read it as a "allow a proprietary module to mess with bios", which is a b=
+ig =0A=
+no-no to me.=0A=
+=0A=
+Not providing any sort of changelog doesn't help much either.=0A=
+=0A=
+Thanks,=0A=
+	Johannes=0A=
