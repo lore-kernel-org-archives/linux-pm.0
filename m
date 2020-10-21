@@ -2,129 +2,138 @@ Return-Path: <SRS0=4hIB=D4=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B9562C388F9
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 14:16:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C1442C55178
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 14:35:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4CB1422249
-	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 14:16:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4805A22275
+	for <linux-pm@archiver.kernel.org>; Wed, 21 Oct 2020 14:35:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=veeam.com header.i=@veeam.com header.b="W3XiTq17"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2442640AbgJUOQF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 21 Oct 2020 10:16:05 -0400
-Received: from atl4mhfb03.myregisteredsite.com ([209.17.115.119]:53314 "EHLO
-        atl4mhfb03.myregisteredsite.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S2408411AbgJUOQE (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 21 Oct 2020 10:16:04 -0400
-X-Greylist: delayed 306 seconds by postgrey-1.27 at vger.kernel.org; Wed, 21 Oct 2020 10:16:03 EDT
-Received: from jax4mhob22.registeredsite.com (jax4mhob22.registeredsite.com [64.69.218.110])
-        by atl4mhfb03.myregisteredsite.com (8.14.4/8.14.4) with ESMTP id 09LEAvFi020929
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2020 10:10:57 -0400
-Received: from mailpod.hostingplatform.com ([10.30.71.204])
-        by jax4mhob22.registeredsite.com (8.14.4/8.14.4) with ESMTP id 09LEAsfm028023
-        (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=FAIL)
-        for <linux-pm@vger.kernel.org>; Wed, 21 Oct 2020 10:10:54 -0400
-Received: (qmail 5719 invoked by uid 0); 21 Oct 2020 14:10:54 -0000
-X-TCPREMOTEIP: 83.128.90.119
-X-Authenticated-UID: mike@milosoftware.com
-Received: from unknown (HELO phenom.domain?not?set.invalid) (mike@milosoftware.com@83.128.90.119)
-  by 0 with ESMTPA; 21 Oct 2020 14:10:54 -0000
-From:   Mike Looijmans <mike.looijmans@topic.nl>
-To:     sre@kernel.org, robh+dt@kernel.org, devicetree@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Mike Looijmans <mike.looijmans@topic.nl>
-Subject: [PATCH] dt-bindings: power/supply: Add ltc4162-l-charger
-Date:   Wed, 21 Oct 2020 16:10:30 +0200
-Message-Id: <20201021141030.27751-1-mike.looijmans@topic.nl>
-X-Mailer: git-send-email 2.17.1
+        id S2443595AbgJUOfI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 21 Oct 2020 10:35:08 -0400
+Received: from mx4.veeam.com ([104.41.138.86]:46256 "EHLO mx4.veeam.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2443592AbgJUOfH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 21 Oct 2020 10:35:07 -0400
+Received: from mail.veeam.com (prgmbx01.amust.local [172.24.0.171])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mx4.veeam.com (Postfix) with ESMTPS id 29CA78A77D;
+        Wed, 21 Oct 2020 17:35:04 +0300 (MSK)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=veeam.com; s=mx4;
+        t=1603290904; bh=gcs9fDGrugmEFnHD7BVk3TKsrIQsLRHT9hgdToOOQuI=;
+        h=Date:From:To:CC:Subject:References:In-Reply-To:From;
+        b=W3XiTq17/EjMVJayE5rGdsC29XtujNHnsX7S2+TuMTBKQwGsHfaTM6Ahtdk/thl47
+         GskMaiU5eQDILnl6aTJnSfY8+VIAqFn1Qz+uuGKwU2w3NTGpxT1b8fiOfm5p451Ss8
+         RuKh+SJAXrlHpeoEUPjx6l6iyYBr/gc4MF2QujA4=
+Received: from veeam.com (172.24.14.5) by prgmbx01.amust.local (172.24.0.171)
+ with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.721.2; Wed, 21 Oct 2020
+ 16:35:02 +0200
+Date:   Wed, 21 Oct 2020 17:35:53 +0300
+From:   Sergei Shtepa <sergei.shtepa@veeam.com>
+To:     Matthew Wilcox <willy@infradead.org>
+CC:     Damien Le Moal <Damien.LeMoal@wdc.com>,
+        "axboe@kernel.dk" <axboe@kernel.dk>,
+        "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+        "hch@infradead.org" <hch@infradead.org>,
+        "darrick.wong@oracle.com" <darrick.wong@oracle.com>,
+        "linux-xfs@vger.kernel.org" <linux-xfs@vger.kernel.org>,
+        "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "len.brown@intel.com" <len.brown@intel.com>,
+        "pavel@ucw.cz" <pavel@ucw.cz>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        Johannes Thumshirn <Johannes.Thumshirn@wdc.com>,
+        "ming.lei@redhat.com" <ming.lei@redhat.com>,
+        "jack@suse.cz" <jack@suse.cz>, "tj@kernel.org" <tj@kernel.org>,
+        "gustavo@embeddedor.com" <gustavo@embeddedor.com>,
+        "bvanassche@acm.org" <bvanassche@acm.org>,
+        "osandov@fb.com" <osandov@fb.com>,
+        "koct9i@gmail.com" <koct9i@gmail.com>,
+        "steve@sk2.org" <steve@sk2.org>,
+        "linux-block@vger.kernel.org" <linux-block@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/2] Block layer filter - second version
+Message-ID: <20201021143553.GG20749@veeam.com>
+References: <1603271049-20681-1-git-send-email-sergei.shtepa@veeam.com>
+ <1603271049-20681-2-git-send-email-sergei.shtepa@veeam.com>
+ <BL0PR04MB65141320C7BF75B7142CA30CE71C0@BL0PR04MB6514.namprd04.prod.outlook.com>
+ <20201021114438.GK20115@casper.infradead.org>
+ <20201021125555.GE20749@veeam.com>
+ <20201021130753.GM20115@casper.infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+In-Reply-To: <20201021130753.GM20115@casper.infradead.org>
+X-Originating-IP: [172.24.14.5]
+X-ClientProxiedBy: prgmbx02.amust.local (172.24.0.172) To prgmbx01.amust.local
+ (172.24.0.171)
+X-EsetResult: clean, is OK
+X-EsetId: 37303A29C604D26A677566
+X-Veeam-MMEX: True
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for the LTC4162-L Li-Ion battery charger. The driver allows
-reading back telemetry and to set some charging options like the input
-current limit.
+The 10/21/2020 16:07, Matthew Wilcox wrote:
+> On Wed, Oct 21, 2020 at 03:55:55PM +0300, Sergei Shtepa wrote:
+> > The 10/21/2020 14:44, Matthew Wilcox wrote:
+> > > I don't understand why O_DIRECT gets to bypass the block filter.  Nor do
+> > > I understand why anybody would place a block filter on the swap device.
+> > > But if somebody did place a filter on the swap device, why should swap
+> > > be able to bypass the filter?
+> > 
+> > Yes, intercepting the swap partition is absurd. But we can't guarantee
+> > that the filter won't intercept swap.
+> > 
+> > Swap operation is related to the memory allocation logic. If a swap on
+> > the block device are accessed during memory allocation from filter,
+> > a deadlock occurs. We can allow filters to occasionally shoot off their
+> > feet, especially under high load. But I think it's better not to do it.
+> 
+> We already have logic to prevent this in Linux.  Filters need to
+> call memalloc_noio_save() while they might cause swap to happen and
+> memalloc_noio_restore() once it's safe for them to cause swap again.
 
-This adds the devicetree bindings.
+Yes, I looked at this function, it can really be useful for the filter.
+Then I don't need to enter the submit_bio_direct() function and the wait
+loop associated with the queue polling function blk_mq_poll() will have
+to be rewritten.
 
-Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
----
- .../bindings/power/supply/ltc4162-l.yaml      | 60 +++++++++++++++++++
- 1 file changed, 60 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
+> 
+> > "directly access" - it is not O_DIRECT. This means (I think) direct
+> > reading from the device file, like "dd if=/dev/sda1".
+> > As for intercepting direct reading, I don't know how to do the right thing.
+> > 
+> > The problem here is that in fs/block_dev.c in function __blkdev_direct_IO()
+> > uses the qc - value returned by the submit_bio() function.
+> > This value is used below when calling 
+> > blk_poll(bdev_get_queue(dev), qc, true).
+> > The filter cannot return a meaningful value of the blk_qc_t type when
+> > intercepting a request, because at that time it does not know which queue
+> > the request will fall into.
+> > 
+> > If function submit_bio() will always return BLK_QC_T_NONE - I think the
+> > algorithm of the __blk dev_direct_IO() will not work correctly.
+> > If we need to intercept direct access to a block device, we need to at
+> > least redo the __blkdev_direct_IO function, getting rid of blk_pool.
+> > I'm not sure it's necessary yet.
+> 
+> This isn't part of the block layer that I'm familiar with, so I can't
+> help solve this problem, but allowing O_DIRECT to bypass the block filter
+> is a hole that needs to be fixed before these patches can be considered.
 
-diff --git a/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-new file mode 100644
-index 000000000000..a23dd6f3fae0
---- /dev/null
-+++ b/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-@@ -0,0 +1,60 @@
-+# SPDX-License-Identifier: (GPL-2.0 OR BSD-2-Clause)
-+# Copyright (C) 2020 Topic Embedded Products
-+%YAML 1.2
-+---
-+$id: "http://devicetree.org/schemas/power/supply/ltc4162-l.yaml#"
-+$schema: "http://devicetree.org/meta-schemas/core.yaml#"
-+
-+title: Linear Technology (Analog Devices) LTC4162-L Charger
-+
-+maintainers:
-+  - Mike Looijmans <mike.looijmans@topic.nl>
-+
-+description: |
-+  The LTC ® 4162-L is an advanced monolithic synchronous step-down switching
-+  battery charger and PowerPath (TM) manager that seamlessly manages power
-+  distribution between input sources such as wall adapters, backplanes, solar
-+  panels, etc., and a rechargeable Lithium-Ion/Polymer battery.
-+
-+  Specifications about the charger can be found at:
-+    https://www.analog.com/en/products/ltc4162-s.html
-+
-+properties:
-+  compatible:
-+    enum:
-+      - lltc,ltc4162-l
-+
-+  reg:
-+    maxItems: 1
-+    description: I2C address of the charger.
-+
-+  lltc,rsnsb:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Battery sense resistor in milli Ohm.
-+    minimum: 1
-+
-+  lltc,rsnsi:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    description: Input current sense resistor in milli Ohm.
-+    minimum: 1
-+
-+required:
-+  - compatible
-+  - reg
-+  - lltc,rsnsb
-+  - lltc,rsnsi
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    i2c0 {
-+      #address-cells = <1>;
-+      #size-cells = <0>;
-+      charger: battery-charger@68 {
-+              compatible = "lltc,ltc4162-l";
-+              reg =  <0x68>;
-+              lltc,rsnsb = <10>;
-+              lltc,rsnsi = <16>;
-+      };
-+    };
+I think there is no such problem, but I will check, of course.
+
 -- 
-2.17.1
-
+Sergei Shtepa
+Veeam Software developer.
