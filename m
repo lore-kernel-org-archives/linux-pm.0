@@ -2,124 +2,94 @@ Return-Path: <SRS0=OwR8=D5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 118A8C5517A
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:58:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F18E5C388F7
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:58:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B905724631
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:58:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8BA37221FE
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:58:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=infradead.org header.i=@infradead.org header.b="Lfpzj/X0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2897712AbgJVL55 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Oct 2020 07:57:57 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:65220 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2897701AbgJVL54 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2020 07:57:56 -0400
-Received: from 89-64-87-167.dynamic.chello.pl (89.64.87.167) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.491)
- id a032c57bee7ada70; Thu, 22 Oct 2020 13:57:54 +0200
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH 1/2] cpufreq: intel_pstate: Avoid missing HWP max updates in passive mode
-Date:   Thu, 22 Oct 2020 13:57:02 +0200
-Message-ID: <76352140.UXiy1LajID@kreacher>
-In-Reply-To: <1666263.spd1I39WAV@kreacher>
-References: <1666263.spd1I39WAV@kreacher>
+        id S2897588AbgJVL6H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Oct 2020 07:58:07 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38072 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2897730AbgJVL6D (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2020 07:58:03 -0400
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 55BFEC0613CE;
+        Thu, 22 Oct 2020 04:58:03 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+        d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+        Content-Transfer-Encoding:Content-ID:Content-Description;
+        bh=I6klDVnQcrqiqkHEDRJqE0N4Ugd/ob+1NQ2ptWfMYdk=; b=Lfpzj/X0purmxvaViHT2xcRSq2
+        i8pKJrLPnsXE/XCPBnEE7X+4reJKp30RjIEvOLZ2K9O0/hiaQjSCQXjfN6WCyiYuGWIzpMY3FVzb8
+        SvqcAujgUefDduyLEpTdxR1IjA5i+sxu3abYYV4WH75S/oOo7NlOSVaSKg5MKVpFKONifJAhf+ppl
+        bb4P/Dt40ITxx6lgApona00JzQGEdqFZpqM54cq0KiyMni8aCnTROQVd9bJOtCbjMH/+a9Fd7xFrh
+        XZyvRXMcfmQWQbV3Wx2MQJp3vNvDHWDSwQUdYAPnvG40RbarjETHkPQTlXATVgUkcpvJ0ax5pK5ds
+        biBmVJ2w==;
+Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
+        by casper.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
+        id 1kVZEA-0007kY-1h; Thu, 22 Oct 2020 11:57:54 +0000
+Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (Client did not present a certificate)
+        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 2197030377D;
+        Thu, 22 Oct 2020 13:57:53 +0200 (CEST)
+Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
+        id 05AD2203CC4B2; Thu, 22 Oct 2020 13:57:53 +0200 (CEST)
+Date:   Thu, 22 Oct 2020 13:57:52 +0200
+From:   Peter Zijlstra <peterz@infradead.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        Amit Kucheria <amit.kucheria@verdurent.com>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Quentin Perret <qperret@google.com>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Lukasz Luba <lukasz.luba@arm.com>
+Subject: Re: [PATCH 2/2] thermal: cpufreq_cooling: Reuse effective_cpu_util()
+Message-ID: <20201022115752.GF2611@hirez.programming.kicks-ass.net>
+References: <cover.1594707424.git.viresh.kumar@linaro.org>
+ <b051b42f0c4f36d7177978e090c6a85df17922c6.1594707424.git.viresh.kumar@linaro.org>
+ <20200716115605.GR10769@hirez.programming.kicks-ass.net>
+ <20201022083255.37xl3lffwk5qo6uk@vireshk-i7>
+ <20201022090523.GV2628@hirez.programming.kicks-ass.net>
+ <20201022110656.gaphjv2tzhj4f5y6@vireshk-i7>
+ <CAJZ5v0jZC=UwW9L+KB3pugsTL9P1tZmvQ-sVMV-udn7+L_gEeA@mail.gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0jZC=UwW9L+KB3pugsTL9P1tZmvQ-sVMV-udn7+L_gEeA@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Thu, Oct 22, 2020 at 01:30:01PM +0200, Rafael J. Wysocki wrote:
 
-If the cpufreq policy max limit is changed when intel_pstate operates
-in the passive mode with HWP enabled and the "powersave" governor is
-used on top of it, the HWP max limit is not updated as appropriate.
+> Many people use intel_pstate in the active mode with HWP enabled too.
 
-Namely, in the "powersave" governor case, the target P-state
-is always equal to the policy min limit, so if the latter does
-not change, the "target_freq == policy->cur" check in
-__cpufreq_driver_target() is "true" and the
-"target_pstate != old_pstate" check in intel_cpufreq_update_pstate()
-is "false", so intel_cpufreq_adjust_hwp() is not invoked to update
-the HWP Request MSR and the HWP max limit is not updated as a result.
+We now have HWP-passive supported, afaict. So we should discourage that.
 
-To prevent that from occurring, modify __cpufreq_driver_target()
-to do the "target_freq == policy->cur" check only in the frequency
-table case and change intel_cpufreq_update_pstate() to do the
-"target_pstate != old_pstate" check only in the non-HWP case and
-let intel_cpufreq_adjust_hwp() always run in the HWP case (it will
-update HWP Request only if the cached value of the register is
-different from the new one including the limits, so if neither the
-target P-state value nor the max limit changes, the register write
-will still be avoided).
+That is; I'll care less and less about people not using schedutil as
+time goes on.
 
-Fixes: f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive mode with HWP enabled")
-Reported-by: Zhang Rui <rui.zhang@intel.com>
-Cc: 5.9+ <stable@vger.kernel.org> # 5.9+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c      |    6 +++---
- drivers/cpufreq/intel_pstate.c |   12 +++++-------
- 2 files changed, 8 insertions(+), 10 deletions(-)
+> Arguably, that doesn't need to compute the effective utilization, so I
+> guess it is not relevant for the discussion here, but it is not
+> negligible in general.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2550,14 +2550,12 @@ static int intel_cpufreq_update_pstate(s
- 	int old_pstate = cpu->pstate.current_pstate;
- 
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
--	if (target_pstate != old_pstate) {
-+	if (hwp_active) {
-+		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
-+		cpu->pstate.current_pstate = target_pstate;
-+	} else if (target_pstate != old_pstate) {
-+		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
- 		cpu->pstate.current_pstate = target_pstate;
--		if (hwp_active)
--			intel_cpufreq_adjust_hwp(cpu, target_pstate,
--						 fast_switch);
--		else
--			intel_cpufreq_adjust_perf_ctl(cpu, target_pstate,
--						      fast_switch);
- 	}
- 
- 	intel_cpufreq_trace(cpu, fast_switch ? INTEL_PSTATE_TRACE_FAST_SWITCH :
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2182,6 +2182,9 @@ int __cpufreq_driver_target(struct cpufr
- 	pr_debug("target for CPU %u: %u kHz, relation %u, requested %u kHz\n",
- 		 policy->cpu, target_freq, relation, old_target_freq);
- 
-+	if (cpufreq_driver->target)
-+		return cpufreq_driver->target(policy, target_freq, relation);
-+
- 	/*
- 	 * This might look like a redundant call as we are checking it again
- 	 * after finding index. But it is left intentionally for cases where
-@@ -2194,9 +2197,6 @@ int __cpufreq_driver_target(struct cpufr
- 	/* Save last value to restore later on errors */
- 	policy->restore_freq = policy->cur;
- 
--	if (cpufreq_driver->target)
--		return cpufreq_driver->target(policy, target_freq, relation);
--
- 	if (!cpufreq_driver->target_index)
- 		return -EINVAL;
- 
+Why not? cpufreq-cooling should still be able to throttle the system by
+setting HWP.Highest_Performance no?
 
-
-
+In which case it still needs an energy estimate.
