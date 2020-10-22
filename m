@@ -2,140 +2,121 @@ Return-Path: <SRS0=OwR8=D5=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B44CC388F2
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:45:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD953C388F7
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:57:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 377A82227F
-	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:45:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5DD1D24631
+	for <linux-pm@archiver.kernel.org>; Thu, 22 Oct 2020 11:57:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2502959AbgJVLpr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 22 Oct 2020 07:45:47 -0400
-Received: from foss.arm.com ([217.140.110.172]:55238 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2502778AbgJVLpr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 22 Oct 2020 07:45:47 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 2D0D8D6E;
-        Thu, 22 Oct 2020 04:45:46 -0700 (PDT)
-Received: from [10.57.20.67] (unknown [10.57.20.67])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 933593F66B;
-        Thu, 22 Oct 2020 04:45:43 -0700 (PDT)
-Subject: Re: [PATCH 2/5] thermal: devfreq_cooling: get a copy of device status
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
-        orjan.eide@arm.com, robh@kernel.org,
-        alyssa.rosenzweig@collabora.com, steven.price@arm.com,
-        airlied@linux.ie, daniel@ffwll.ch
-References: <20200921122007.29610-1-lukasz.luba@arm.com>
- <20200921122007.29610-3-lukasz.luba@arm.com>
- <199bf0e0-88b3-1908-c291-92c85bfe06b1@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <4ac3b6b0-0e3f-3971-78e6-362c367f8c30@arm.com>
-Date:   Thu, 22 Oct 2020 12:45:41 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S2897702AbgJVL5z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 22 Oct 2020 07:57:55 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:52126 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2897699AbgJVL5y (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 22 Oct 2020 07:57:54 -0400
+Received: from 89-64-87-167.dynamic.chello.pl (89.64.87.167) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.491)
+ id 18c6cd3a29713389; Thu, 22 Oct 2020 13:57:52 +0200
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH 2/2] cpufreq: Drop restore_freq from struct cpufreq_policy
+Date:   Thu, 22 Oct 2020 13:57:45 +0200
+Message-ID: <3286881.tlMdjJ8CK2@kreacher>
+In-Reply-To: <1666263.spd1I39WAV@kreacher>
+References: <1666263.spd1I39WAV@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <199bf0e0-88b3-1908-c291-92c85bfe06b1@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Daniel,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-On 10/14/20 3:34 PM, Daniel Lezcano wrote:
-> On 21/09/2020 14:20, Lukasz Luba wrote:
->> Devfreq cooling needs to now the correct status of the device in order
->> to operate. Do not rely on Devfreq last_status which might be a stale data
->> and get more up-to-date values of the load.
->>
->> Devfreq framework can change the device status in the background. To
->> mitigate this situation make a copy of the status structure and use it
->> for internal calculations.
->>
->> In addition this patch adds normalization function, which also makes sure
->> that whatever data comes from the device, it is in a sane range.
->>
->> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
->> ---
->>   drivers/thermal/devfreq_cooling.c | 52 +++++++++++++++++++++++++------
->>   1 file changed, 43 insertions(+), 9 deletions(-)
->>
->> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
->> index 7063ccb7b86d..cf045bd4d16b 100644
->> --- a/drivers/thermal/devfreq_cooling.c
->> +++ b/drivers/thermal/devfreq_cooling.c
->> @@ -227,6 +227,24 @@ static inline unsigned long get_total_power(struct devfreq_cooling_device *dfc,
->>   							       voltage);
->>   }
->>   
->> +static void _normalize_load(struct devfreq_dev_status *status)
->> +{
->> +	/* Make some space if needed */
->> +	if (status->busy_time > 0xffff) {
->> +		status->busy_time >>= 10;
->> +		status->total_time >>= 10;
->> +	}
->> +
->> +	if (status->busy_time > status->total_time)
->> +		status->busy_time = status->total_time;
->> +
->> +	status->busy_time *= 100;
->> +	status->busy_time /= status->total_time ? : 1;
->> +
->> +	/* Avoid division by 0 */
->> +	status->busy_time = status->busy_time ? : 1;
->> +	status->total_time = 100;
->> +}
-> 
-> Not sure that works if the devfreq governor is not on-demand.
-> 
-> Is it possible to use the energy model directly in devfreq to compute
-> the energy consumption given the state transitions since the last reading ?
+The restore_freq field in struct cpufreq_policy is only used by
+__target_index() in one place and a local variable in that function
+may as well be used instead of it, so drop it and modify
+__target_index() accordingly.
 
-This change is actually trying to create a safety net for what we do.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/cpufreq.c |   10 +++++-----
+ include/linux/cpufreq.h   |    5 -----
+ 2 files changed, 5 insertions(+), 10 deletions(-)
 
-In the original code we take the last_state directly:
--	struct devfreq_dev_status *status = &df->last_status;
+Index: linux-pm/drivers/cpufreq/cpufreq.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/cpufreq.c
++++ linux-pm/drivers/cpufreq/cpufreq.c
+@@ -2112,7 +2112,7 @@ static int __target_intermediate(struct
+ static int __target_index(struct cpufreq_policy *policy, int index)
+ {
+ 	struct cpufreq_freqs freqs = {.old = policy->cur, .flags = 0};
+-	unsigned int intermediate_freq = 0;
++	unsigned int restore_freq, intermediate_freq = 0;
+ 	unsigned int newfreq = policy->freq_table[index].frequency;
+ 	int retval = -EINVAL;
+ 	bool notify;
+@@ -2120,6 +2120,9 @@ static int __target_index(struct cpufreq
+ 	if (newfreq == policy->cur)
+ 		return 0;
+ 
++	/* Save last value to restore later on errors */
++	restore_freq = policy->cur;
++
+ 	notify = !(cpufreq_driver->flags & CPUFREQ_ASYNC_NOTIFICATION);
+ 	if (notify) {
+ 		/* Handle switching to intermediate frequency */
+@@ -2157,7 +2160,7 @@ static int __target_index(struct cpufreq
+ 		 */
+ 		if (unlikely(retval && intermediate_freq)) {
+ 			freqs.old = intermediate_freq;
+-			freqs.new = policy->restore_freq;
++			freqs.new = restore_freq;
+ 			cpufreq_freq_transition_begin(policy, &freqs);
+ 			cpufreq_freq_transition_end(policy, &freqs, 0);
+ 		}
+@@ -2194,9 +2197,6 @@ int __cpufreq_driver_target(struct cpufr
+ 	if (target_freq == policy->cur)
+ 		return 0;
+ 
+-	/* Save last value to restore later on errors */
+-	policy->restore_freq = policy->cur;
+-
+ 	if (!cpufreq_driver->target_index)
+ 		return -EINVAL;
+ 
+Index: linux-pm/include/linux/cpufreq.h
+===================================================================
+--- linux-pm.orig/include/linux/cpufreq.h
++++ linux-pm/include/linux/cpufreq.h
+@@ -65,7 +65,6 @@ struct cpufreq_policy {
+ 	unsigned int		max;    /* in kHz */
+ 	unsigned int		cur;    /* in kHz, only needed if cpufreq
+ 					 * governors are used */
+-	unsigned int		restore_freq; /* = policy->cur before transition */
+ 	unsigned int		suspend_freq; /* freq to set during suspend */
+ 
+ 	unsigned int		policy; /* see above */
+@@ -308,10 +307,6 @@ struct cpufreq_driver {
+ 	/* define one out of two */
+ 	int		(*setpolicy)(struct cpufreq_policy *policy);
+ 
+-	/*
+-	 * On failure, should always restore frequency to policy->restore_freq
+-	 * (i.e. old freq).
+-	 */
+ 	int		(*target)(struct cpufreq_policy *policy,
+ 				  unsigned int target_freq,
+ 				  unsigned int relation);	/* Deprecated */
 
-Then we simply multiply by 'busy_time' and div by 'total_time',
-without checks... The values might be huge or zero, etc.
-The _normalize_load() introduces this safety.
 
-Apart from that, just simply taking a pointer to &df->last_status does
-not protect us from:
-- working on a struct which might be modified at the same time in
-   background - not safe
-- that struct might not be updated by long time, because devfreq
-   didn't check it for a long (there are two polling modes in devfreq)
 
-So taking a mutex and then a trigger the device status check and
-make a copy of newest data. It is more safe.
-
-I think this can be treated as a fix, not a feature.
-
-> 
-> The power will be read directly from devfreq which will return:
-> 
-> nrj + (current_power * (jiffies - last_update)) / (jiffies - last_update)
-> 
-> The devfreq cooling device driver would result in a much simpler code, no?
-
-This is something that I would like to address after the EM changes are
-merged. It would be the next step, how to estimate the power by taking
-into consideration more information. This patch series just tries to
-make it possible to use EM. The model improvements would be next.
-
-Thank you Daniel for your review.
-
-Regards,
-Lukasz
