@@ -2,262 +2,133 @@ Return-Path: <SRS0=XRtZ=D6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E599C55179
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 10:18:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E556C56201
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 10:20:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CC4BE24248
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 10:18:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF2F224631
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 10:20:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="cQ1FbNMj"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ACFm6fNw"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S462039AbgJWKSo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Oct 2020 06:18:44 -0400
-Received: from mailout3.samsung.com ([203.254.224.33]:24332 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S461955AbgJWKSm (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 06:18:42 -0400
-Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20201023101837epoutp03bef1ff63939caf6e23137e9a3eb13c81~Al7-e_SUu1054510545epoutp035
-        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2020 10:18:37 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20201023101837epoutp03bef1ff63939caf6e23137e9a3eb13c81~Al7-e_SUu1054510545epoutp035
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1603448317;
-        bh=gSpjwtDZAIGXpaZRGaF4nnwdZdJaDTvK17CG4sljlkk=;
-        h=From:To:Cc:Subject:Date:References:From;
-        b=cQ1FbNMjJVtMWLGUPqPf2YTLcz2/zsO8oMwDLICju+dRIkQnsWH15CsmL8ZBVzzyW
-         2zvYjAoA/l0MQz2ZtRQBR0aZMUH+JrB5n+9GneDTp7OenMFNOb+V0e/q8OH46BcNhF
-         sxTFCrUsnOCHDtwD5gVUcugMbOLVFyQlk9CKjrzY=
-Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20201023101837epcas1p1a896c5da4c2569869d0e41f4ceabac2a~Al7_6xjnl1875118751epcas1p1X;
-        Fri, 23 Oct 2020 10:18:37 +0000 (GMT)
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.158]) by
-        epsnrtp1.localdomain (Postfix) with ESMTP id 4CHgDV5ZYkzMqYlt; Fri, 23 Oct
-        2020 10:18:34 +0000 (GMT)
-Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        AA.05.10463.7FDA29F5; Fri, 23 Oct 2020 19:18:31 +0900 (KST)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p4.samsung.com (KnoxPortal) with ESMTPA id
-        20201023101830epcas1p446aee869d0211a62f68cdf616b6203ed~Al740pbFC0848508485epcas1p4O;
-        Fri, 23 Oct 2020 10:18:30 +0000 (GMT)
-Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
-        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20201023101830epsmtrp2fc5e81293a31fcf59c9f55c6438c9f94~Al74z-1ev0982609826epsmtrp2Z;
-        Fri, 23 Oct 2020 10:18:30 +0000 (GMT)
-X-AuditID: b6c32a38-f11ff700000028df-2f-5f92adf747b9
-Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
-        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        93.4A.08745.6FDA29F5; Fri, 23 Oct 2020 19:18:30 +0900 (KST)
-Received: from localhost.localdomain (unknown [10.113.221.102]) by
-        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
-        20201023101830epsmtip1832b9286515f3d1c2fdbd952634e5bdd~Al74jobAQ2981029810epsmtip1y;
-        Fri, 23 Oct 2020 10:18:30 +0000 (GMT)
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     cw00.choi@samsung.com, chanwoo@kernel.org,
-        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
-Subject: [PATCH v2] PM / devfreq: Remove redundant governor_name from struct
- devfreq
-Date:   Fri, 23 Oct 2020 19:32:15 +0900
-Message-Id: <20201023103215.24647-1-cw00.choi@samsung.com>
-X-Mailer: git-send-email 2.17.1
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrPKsWRmVeSWpSXmKPExsWy7bCmnu73tZPiDSa9ZrGYeOMKi8X1L89Z
-        Lc42vWG3uLxrDpvF594jjBa3G1ewObB5bFrVyebRt2UVo8fnTXIBzFHZNhmpiSmpRQqpecn5
-        KZl56bZK3sHxzvGmZgaGuoaWFuZKCnmJuam2Si4+AbpumTlAe5UUyhJzSoFCAYnFxUr6djZF
-        +aUlqQoZ+cUltkqpBSk5BZYFesWJucWleel6yfm5VoYGBkamQIUJ2RmTll9iLNitV7HyyTmm
-        BsZtal2MnBwSAiYS3S13WLsYuTiEBHYwSixZMxvK+cQocfXXEVaQKiGBz4wS104rwnT0nV7B
-        DlG0i1Fi6dwTzBBFXxgluo9agdhsAloS+1/cYAOxRQSsJE7/7wCrYRZIkej/fYYFxBYWCJNY
-        vXE7WA2LgKrEkwcH2UFsXqD6e9ufskMsk5dYveEAM8gyCYF57BINN9+yQSRcJDaueAdVJCzx
-        6vgWKFtK4vO7vVA11RIrTx5hg2juYJTYsv8CK0TCWGL/0slMXYwcQBdpSqzfpQ8RVpTY+Xsu
-        I8ShfBLvvvawgpRICPBKdLQJQZQoS1x+cJcJwpaUWNzeyQZR4iHx6nUUJBhiJZYsmMQ6gVF2
-        FsL8BYyMqxjFUguKc9NTiw0LTJDjaBMjOCVpWexgnPv2g94hRiYOxkOMEhzMSiK8u9Unxgvx
-        piRWVqUW5ccXleakFh9iNAWG10RmKdHkfGBSzCuJNzQ1MjY2tjAxNDM1NFQS5/2j3REvJJCe
-        WJKanZpakFoE08fEwSnVwKSwwXbbc/EfTV79ykvEXwiUdmYE9hQ32c4125m/NrKuOtsr8yPz
-        M9uOJu/Tx4o1Tu95UiTJY7+n+vzx59uPbZn1qKTb8JBk84I64ScTQ/nPtSrdmCjAKhl1PPbB
-        vSLbmrrVr9+aK00JedZS46hktdDqyOulzzLefIvjX1xmqje7NP9Mke0Ka+Mt7+edl+Arsr1X
-        uEZ544o7TGY6U7ICG0V++fNc33ky3m/TLJYZdVbzIsNylabltc6MPa+5tp/HOdXUyl/LuNOp
-        RT5ljXP4tz129S0cuhPuv99c8Lxppb3TkoC7JwRvtHb2nrDi/hO9Zudhn/zWAJb0RRy/Eo8f
-        L2nx1Hq14uv8s12lYQ/slViKMxINtZiLihMBYoQtZNIDAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrHJMWRmVeSWpSXmKPExsWy7bCSnO63tZPiDS48E7WYeOMKi8X1L89Z
-        Lc42vWG3uLxrDpvF594jjBa3G1ewObB5bFrVyebRt2UVo8fnTXIBzFFcNimpOZllqUX6dglc
-        GZOWX2Is2K1XsfLJOaYGxm1qXYycHBICJhJ9p1ewdzFycQgJ7GCUeLLvEjNEQlJi2sWjQDYH
-        kC0scfhwMUTNJ0aJGZ+XsoLUsAloSex/cYMNxBYRsJG4u/gaC0g9s0CGxP/lSiBhYYEQiePH
-        5oGVswioSjx5cJAdxOYVsJK4t/0pO8QqeYnVGw4wT2DkWcDIsIpRMrWgODc9t9iwwCgvtVyv
-        ODG3uDQvXS85P3cTIzhItLR2MO5Z9UHvECMTB+MhRgkOZiUR3t3qE+OFeFMSK6tSi/Lji0pz
-        UosPMUpzsCiJ836dtTBOSCA9sSQ1OzW1ILUIJsvEwSnVwKRm9vb2vivmEeU8t38v4JlxSuH4
-        opida5Yfnxlul3c4n/3vEsNNrnfXXlV7uMOfSejVhYDK7HaznmN2GtZMGye/287/iHOD3OY6
-        VuWLne8UXxjcso483Om690nynQ2Hf7/oFtqwVX3ZBwdpHvYzFwtk/XyeWZd2SXhwCd4ueNm3
-        IUDeZYHhE+Ft096GC1hYTUp7OvN9o0fiTTn20JsL+7WPyq3fqLf+zdfkhT91jS6WmvC2larF
-        Tr3UtPyXDC8zyynRbZwhp/8EMaz8dqh63YmoMunZs8WvHXpd2DJ7r7j+TV35zI1JudoR/xh4
-        bDkiZfTenH5yS042cQ7jxyU3Lu3fGxoU3sej/P7o0qnLuy4rsRRnJBpqMRcVJwIAub1aD4EC
-        AAA=
-X-CMS-MailID: 20201023101830epcas1p446aee869d0211a62f68cdf616b6203ed
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20201023101830epcas1p446aee869d0211a62f68cdf616b6203ed
-References: <CGME20201023101830epcas1p446aee869d0211a62f68cdf616b6203ed@epcas1p4.samsung.com>
+        id S462101AbgJWKUa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Oct 2020 06:20:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47256 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S462100AbgJWKU3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 06:20:29 -0400
+Received: from mail-pl1-x643.google.com (mail-pl1-x643.google.com [IPv6:2607:f8b0:4864:20::643])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A1C2FC0613D2
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2020 03:20:29 -0700 (PDT)
+Received: by mail-pl1-x643.google.com with SMTP id v22so587293ply.12
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2020 03:20:29 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=57hzLQaJMNAPBdPxw7/Mh7ohBPiIWIlEXegmuy2e8tQ=;
+        b=ACFm6fNwdWbaykKnnsPWj9zBMxJwpz73jrCjLgAomymbDgslm3zxaXPbqzcb71RaHM
+         kwuqXrB3gabm92H3vWWYVAW5M1A5Zphih6/uG+hTIiSPtPOnAoff8PIRVsTBKEeLYA3o
+         +jcWayTNCzYFgYM8U7Pd64NyOish0Iv59WaarZfsvssYDjnMKunNebmgCUX9Zs3hKDWp
+         efHM6iqiV+eV1BNbGx3NWKyUcPSoGSAxFYwSeaqdz7tF1RskfaFOk2mTvFjArlV8FoGk
+         7/2S3Nmc6OGl3bm2asof4rTT8KwvfPlcZrbtuyNfeHFoPOwMvhldn7UN8QJBJ38zjLQP
+         2QjQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=57hzLQaJMNAPBdPxw7/Mh7ohBPiIWIlEXegmuy2e8tQ=;
+        b=XM1e5uL9nkpjhXIfIn599ZvQf7ZWXsJL0vLClMkvhf5EZRDC0uwOIVSB6Q2D5a1aS2
+         +/ETwIqi7FZaeIW+zENVwxnPvFb4pugpUbz3At2T8h3OBNAdxCejPHDcZ7vS7hdN3dTv
+         9+pFJg7+0S9eU46AmjIC6ZxZFcpICcXTnWakPkQVISTbLO4RzScnykSxXgVxkocfp+N7
+         OrpU28DNejhyeB/nBwy+tQFmwAAvyVCPwlrnN5TDztOHRbd4hRP6LXqBaL5F42UjJdOd
+         veFxYPROb/OJgx96ve9LOzLs+3oFETbqg1vLcxIV6+jX1ao15yx0Q+61kkhpxsRKeLkQ
+         TkYA==
+X-Gm-Message-State: AOAM5314YeWZL5PybBzccji7hSrTU9C4PWGtZ2rNMrv3x7KoVU47e1QJ
+        LYCTD7cRdx9ZtZ3AxW3rVPB04w==
+X-Google-Smtp-Source: ABdhPJz3hhe1HtBQtKMbcAD/xcUY7YzF7JhVwG8E7RIFh9XNFgbAk+A7U6IH3tjuxLu2kVMa1dbNpw==
+X-Received: by 2002:a17:902:9006:b029:d6:799:5df4 with SMTP id a6-20020a1709029006b02900d607995df4mr1842897plp.12.1603448429123;
+        Fri, 23 Oct 2020 03:20:29 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id 197sm1630711pfa.170.2020.10.23.03.20.28
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 23 Oct 2020 03:20:28 -0700 (PDT)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Amit Daniel Kachhap <amit.kachhap@gmail.com>,
+        Amit Kucheria <amitk@kernel.org>,
+        Ben Segall <bsegall@google.com>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Javi Merino <javi.merino@kernel.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Mel Gorman <mgorman@suse.de>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Cc:     linux-kernel@vger.kernel.org, Quentin Perret <qperret@google.com>,
+        Lukasz Luba <lukasz.luba@arm.com>, linux-pm@vger.kernel.org
+Subject: [PATCH V2 0/2] cpufreq_cooling: Get effective CPU utilization from scheduler
+Date:   Fri, 23 Oct 2020 15:50:19 +0530
+Message-Id: <cover.1603448113.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The devfreq structure instance contains the governor_name and a governor
-instance. When need to show the governor name, better to use the name
-of devfreq_governor structure. So, governor_name variable in struct devfreq
-is a redundant and unneeded variable. Remove the redundant governor_name
-of struct devfreq and then use the name of devfreq_governor instance.
+Hi Peter/Rafael,
 
-Signed-off-by: Chanwoo Choi <cw00.choi@samsung.com>
+I thought about the fallback thing getting registered by scheduler with
+cpufreq core, and after Peter's comment about two interactions with
+cpufreq I didn't like it much. Either way we are exposing the cpu
+utilization finding algorithm to rest of the kernel, through cpufreq or
+otherwise.
+
+And so kept it simple for now. Scheduler exposes a single routine,
+sched_cpu_util(), along with the related enum and that's all schedutil
+and cpufreq_cooling stuff want.
+
+V1->V2:
+- Name the routine as sched_cpu_util().
+- Make it more self sufficient and remove few parameters that aren't
+  required to be exposed anymore to rest of the kernel.
+- Better cleanups in schedutil and cpufreq_cooling.
+
 ---
-Changes from v1:
-- Rebase it on "[PATCH v5 0/2] PM / devfreq: Add governor feature and attribute flag"
 
- drivers/devfreq/devfreq.c  | 18 +++++++-----------
- drivers/devfreq/governor.h |  2 ++
- include/linux/devfreq.h    |  4 ----
- 3 files changed, 9 insertions(+), 15 deletions(-)
+Schedutil and fair.c use schedutil_cpu_util() to get an idea of how busy
+a CPU is. Do the same for cpufreq_cooling which uses CPU's idle time
+currently to get load, which is used to calculate the current power
+consumption of the CPUs, which isn't that accurate.
 
-diff --git a/drivers/devfreq/devfreq.c b/drivers/devfreq/devfreq.c
-index f6c55cf498ed..74f71588ace5 100644
---- a/drivers/devfreq/devfreq.c
-+++ b/drivers/devfreq/devfreq.c
-@@ -811,7 +811,6 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 	devfreq->dev.release = devfreq_dev_release;
- 	INIT_LIST_HEAD(&devfreq->node);
- 	devfreq->profile = profile;
--	strscpy(devfreq->governor_name, governor_name, DEVFREQ_NAME_LEN);
- 	devfreq->previous_freq = profile->initial_freq;
- 	devfreq->last_status.current_frequency = profile->initial_freq;
- 	devfreq->data = data;
-@@ -907,7 +906,7 @@ struct devfreq *devfreq_add_device(struct device *dev,
- 
- 	mutex_lock(&devfreq_list_lock);
- 
--	governor = try_then_request_governor(devfreq->governor_name);
-+	governor = try_then_request_governor(governor_name);
- 	if (IS_ERR(governor)) {
- 		dev_err(dev, "%s: Unable to find governor for the device\n",
- 			__func__);
-@@ -1250,7 +1249,7 @@ int devfreq_add_governor(struct devfreq_governor *governor)
- 		int ret = 0;
- 		struct device *dev = devfreq->dev.parent;
- 
--		if (!strncmp(devfreq->governor_name, governor->name,
-+		if (!strncmp(devfreq->governor->name, governor->name,
- 			     DEVFREQ_NAME_LEN)) {
- 			/* The following should never occur */
- 			if (devfreq->governor) {
-@@ -1312,7 +1311,7 @@ int devfreq_remove_governor(struct devfreq_governor *governor)
- 		int ret;
- 		struct device *dev = devfreq->dev.parent;
- 
--		if (!strncmp(devfreq->governor_name, governor->name,
-+		if (!strncmp(devfreq->governor->name, governor->name,
- 			     DEVFREQ_NAME_LEN)) {
- 			/* we should have a devfreq governor! */
- 			if (!devfreq->governor) {
-@@ -1407,7 +1406,6 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 	 */
- 	prev_governor = df->governor;
- 	df->governor = governor;
--	strncpy(df->governor_name, governor->name, DEVFREQ_NAME_LEN);
- 	ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
- 	if (ret) {
- 		dev_warn(dev, "%s: Governor %s not started(%d)\n",
-@@ -1415,13 +1413,11 @@ static ssize_t governor_store(struct device *dev, struct device_attribute *attr,
- 
- 		/* Restore previous governor */
- 		df->governor = prev_governor;
--		strncpy(df->governor_name, prev_governor->name,
--			DEVFREQ_NAME_LEN);
- 		ret = df->governor->event_handler(df, DEVFREQ_GOV_START, NULL);
- 		if (ret) {
- 			dev_err(dev,
- 				"%s: reverting to Governor %s failed (%d)\n",
--				__func__, df->governor_name, ret);
-+				__func__, prev_governor->name, ret);
- 			df->governor = NULL;
- 			goto out;
- 		}
-@@ -1457,7 +1453,7 @@ static ssize_t available_governors_show(struct device *d,
- 	 */
- 	if (IS_SUPPORTED_FLAG(df->governor->flags, IMMUTABLE)) {
- 		count = scnprintf(&buf[count], DEVFREQ_NAME_LEN,
--				  "%s ", df->governor_name);
-+				  "%s ", df->governor->name);
- 	/*
- 	 * The devfreq device shows the registered governor except for
- 	 * immutable governors such as passive governor .
-@@ -1900,7 +1896,7 @@ static int devfreq_summary_show(struct seq_file *s, void *data)
- 
- 	list_for_each_entry_reverse(devfreq, &devfreq_list, node) {
- #if IS_ENABLED(CONFIG_DEVFREQ_GOV_PASSIVE)
--		if (!strncmp(devfreq->governor_name, DEVFREQ_GOV_PASSIVE,
-+		if (!strncmp(devfreq->governor->name, DEVFREQ_GOV_PASSIVE,
- 							DEVFREQ_NAME_LEN)) {
- 			struct devfreq_passive_data *data = devfreq->data;
- 
-@@ -1926,7 +1922,7 @@ static int devfreq_summary_show(struct seq_file *s, void *data)
- 			"%-30s %-30s %-15s %-10s %10d %12ld %12ld %12ld\n",
- 			dev_name(&devfreq->dev),
- 			p_devfreq ? dev_name(&p_devfreq->dev) : "null",
--			devfreq->governor_name,
-+			devfreq->governor->name,
- 			polling_ms ? timer_name[timer] : "null",
- 			polling_ms,
- 			cur_freq,
-diff --git a/drivers/devfreq/governor.h b/drivers/devfreq/governor.h
-index df413b851bb2..2a52f97b542d 100644
---- a/drivers/devfreq/governor.h
-+++ b/drivers/devfreq/governor.h
-@@ -13,6 +13,8 @@
- 
- #include <linux/devfreq.h>
- 
-+#define DEVFREQ_NAME_LEN			16
-+
- #define to_devfreq(DEV)	container_of((DEV), struct devfreq, dev)
- 
- /* Devfreq events */
-diff --git a/include/linux/devfreq.h b/include/linux/devfreq.h
-index 2f4a74efa6be..82156721f459 100644
---- a/include/linux/devfreq.h
-+++ b/include/linux/devfreq.h
-@@ -15,8 +15,6 @@
- #include <linux/pm_opp.h>
- #include <linux/pm_qos.h>
- 
--#define DEVFREQ_NAME_LEN 16
--
- /* DEVFREQ governor name */
- #define DEVFREQ_GOV_SIMPLE_ONDEMAND	"simple_ondemand"
- #define DEVFREQ_GOV_PERFORMANCE		"performance"
-@@ -139,7 +137,6 @@ struct devfreq_stats {
-  *		using devfreq.
-  * @profile:	device-specific devfreq profile
-  * @governor:	method how to choose frequency based on the usage.
-- * @governor_name:	devfreq governor name for use with this devfreq
-  * @nb:		notifier block used to notify devfreq object that it should
-  *		reevaluate operable frequencies. Devfreq users may use
-  *		devfreq.nb to the corresponding register notifier call chain.
-@@ -176,7 +173,6 @@ struct devfreq {
- 	struct device dev;
- 	struct devfreq_dev_profile *profile;
- 	const struct devfreq_governor *governor;
--	char governor_name[DEVFREQ_NAME_LEN];
- 	struct notifier_block nb;
- 	struct delayed_work work;
- 
+Tested with hackbench and sysbench on Hikey (octa-core SMP) and no
+regression was observed.
+
+--
+Viresh
+
+Viresh Kumar (2):
+  sched/core: Rename and move schedutil_cpu_util() to core.c
+  thermal: cpufreq_cooling: Reuse sched_cpu_util()
+
+ drivers/thermal/cpufreq_cooling.c |  70 +++++-------------
+ include/linux/sched.h             |  19 +++++
+ kernel/sched/core.c               | 113 +++++++++++++++++++++++++++++
+ kernel/sched/cpufreq_schedutil.c  | 116 +-----------------------------
+ kernel/sched/fair.c               |   6 +-
+ kernel/sched/sched.h              |  29 +-------
+ 6 files changed, 156 insertions(+), 197 deletions(-)
+
 -- 
-2.17.1
+2.25.0.rc1.19.g042ed3e048af
 
