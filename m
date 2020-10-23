@@ -2,209 +2,122 @@ Return-Path: <SRS0=XRtZ=D6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MIME_BASE64_TEXT,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	UNPARSEABLE_RELAY,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C2256C55178
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 07:19:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F2340C56202
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 08:25:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 86A6F20936
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 07:19:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 99EAD22210
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 08:25:29 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=mediatek.com header.i=@mediatek.com header.b="oLXc/imY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S375669AbgJWHTd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Oct 2020 03:19:33 -0400
-Received: from mga03.intel.com ([134.134.136.65]:4264 "EHLO mga03.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S375667AbgJWHTd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 23 Oct 2020 03:19:33 -0400
-IronPort-SDR: U26DqdRpAYXC+56II940KWAhOjNkTYKAHe4Woqkm9i3OC7VlZHNX9FRDivLldL5siSYaCE3AEp
- TJjUNpa+C2yA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9782"; a="167734205"
-X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="167734205"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2020 00:19:29 -0700
-IronPort-SDR: DvYSmXdukfQKAyWVRhDnd+YKXcw0fvlY6zxQcX2JrQZY04BIfRjElkp3/idLmziCXYhM3AXKQt
- e/Tc+6K3cGEQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,407,1596524400"; 
-   d="scan'208";a="302675193"
-Received: from lkp-server01.sh.intel.com (HELO 1f55bd7cde4b) ([10.239.97.150])
-  by fmsmga007.fm.intel.com with ESMTP; 23 Oct 2020 00:19:27 -0700
-Received: from kbuild by 1f55bd7cde4b with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1kVrME-00006P-QZ; Fri, 23 Oct 2020 07:19:26 +0000
-Date:   Fri, 23 Oct 2020 15:19:15 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- 54e1ca2a19234787050e494833aad6800f8ee645
-Message-ID: <5f9283f3.us5z+Md+hkmv4U8n%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S460582AbgJWIZ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Oct 2020 04:25:26 -0400
+Received: from mailgw01.mediatek.com ([210.61.82.183]:54300 "EHLO
+        mailgw01.mediatek.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+        with ESMTP id S460535AbgJWIZP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 04:25:15 -0400
+X-UUID: 1980161871ce45309552688f71154944-20201023
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=mediatek.com; s=dk;
+        h=Content-Transfer-Encoding:Content-Type:MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:CC:To:From; bh=jUKvU/HzCuL2PPK0da8gu19V+NdKcPP0gYDYa+SwXrM=;
+        b=oLXc/imYIxdZ4AZKP6NZ7gJz4z1l91xCXtsjN4qAlDXT4dTafm45S/AY3g7u0OnFamR2eqEQkoKWnA1SlXc6T14Qyut+JcJzSXReox+my2mAWheBlu4zdHZ4fFBLZtVyxAHcY37PHG+SX+ZEDcjBYHmFjGxyrLJ2p14yiL+5fag=;
+X-UUID: 1980161871ce45309552688f71154944-20201023
+Received: from mtkexhb01.mediatek.inc [(172.21.101.102)] by mailgw01.mediatek.com
+        (envelope-from <hector.yuan@mediatek.com>)
+        (Cellopoint E-mail Firewall v4.1.14 Build 0819 with TLSv1.2 ECDHE-RSA-AES256-SHA384 256/256)
+        with ESMTP id 358697557; Fri, 23 Oct 2020 16:25:01 +0800
+Received: from mtkcas07.mediatek.inc (172.21.101.84) by
+ mtkmbs07n1.mediatek.inc (172.21.101.16) with Microsoft SMTP Server (TLS) id
+ 15.0.1497.2; Fri, 23 Oct 2020 16:24:59 +0800
+Received: from mtkswgap22.mediatek.inc (172.21.77.33) by mtkcas07.mediatek.inc
+ (172.21.101.73) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
+ Transport; Fri, 23 Oct 2020 16:24:59 +0800
+From:   Hector Yuan <hector.yuan@mediatek.com>
+To:     <linux-mediatek@lists.infradead.org>,
+        <linux-arm-kernel@lists.infradead.org>, <linux-pm@vger.kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Santosh Shilimkar <ssantosh@kernel.org>,
+        Amit Kucheria <amit.kucheria@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Dave Gerlach <d-gerlach@ti.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Robin Murphy <robin.murphy@arm.com>,
+        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+        <devicetree@vger.kernel.org>
+CC:     <linux-kernel@vger.kernel.org>, <wsd_upstream@mediatek.com>,
+        <hector.yuan@mediatek.com>
+Subject: [PATCH v1 5/6] cpufreq: mediatek-hw: Add SVS CPU initialization
+Date:   Fri, 23 Oct 2020 16:24:52 +0800
+Message-ID: <1603441493-18554-6-git-send-email-hector.yuan@mediatek.com>
+X-Mailer: git-send-email 1.7.9.5
+In-Reply-To: <1603441493-18554-1-git-send-email-hector.yuan@mediatek.com>
+References: <1603441493-18554-1-git-send-email-hector.yuan@mediatek.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
+X-MTK:  N
+Content-Transfer-Encoding: base64
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: 54e1ca2a19234787050e494833aad6800f8ee645  Merge branch 'acpi-utils' into linux-next
+RnJvbTogIkhlY3Rvci5ZdWFuIiA8aGVjdG9yLnl1YW5AbWVkaWF0ZWsuY29tPg0KDQpVc2UgcG1f
+cW9zIHRvIGJsb2NrIGNwdS1pZGxlIHN0YXRlIGZvciBTVlMgaW5pdGlhbGl6aW5nLg0KQ1BVcyBt
+dXN0IGJlIGluIHBvd2VyIG9uIHN0YXRlIHdoZW4gZG9pbmcgU1ZTLg0KQWRkIHBvbGxpbmcgYWNr
+IHdoaWxlIGNvdWZyZXEgaHcgaXMgcmVhZHkuKFNWUyBpbml0IGRvbmUpDQoNClNpZ25lZC1vZmYt
+Ynk6IEhlY3Rvci5ZdWFuIDxoZWN0b3IueXVhbkBtZWRpYXRlay5jb20+DQotLS0NCiBkcml2ZXJz
+L2NwdWZyZXEvbWVkaWF0ZWstY3B1ZnJlcS1ody5jIHwgICAzMiArKysrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKw0KIDEgZmlsZSBjaGFuZ2VkLCAzMiBpbnNlcnRpb25zKCspDQoNCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL2NwdWZyZXEvbWVkaWF0ZWstY3B1ZnJlcS1ody5jIGIvZHJpdmVycy9j
+cHVmcmVxL21lZGlhdGVrLWNwdWZyZXEtaHcuYw0KaW5kZXggMjQxZDkzZi4uMTVmYmEyMCAxMDA2
+NDQNCi0tLSBhL2RyaXZlcnMvY3B1ZnJlcS9tZWRpYXRlay1jcHVmcmVxLWh3LmMNCisrKyBiL2Ry
+aXZlcnMvY3B1ZnJlcS9tZWRpYXRlay1jcHVmcmVxLWh3LmMNCkBAIC03LDIwICs3LDI3IEBADQog
+I2luY2x1ZGUgPGxpbnV4L2NwdWZyZXEuaD4NCiAjaW5jbHVkZSA8bGludXgvZW5lcmd5X21vZGVs
+Lmg+DQogI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCisjaW5jbHVkZSA8bGludXgvaW9wb2xsLmg+
+DQogI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPg0KICNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4N
+CiAjaW5jbHVkZSA8bGludXgvb2ZfYWRkcmVzcy5oPg0KICNpbmNsdWRlIDxsaW51eC9vZl9wbGF0
+Zm9ybS5oPg0KKyNpbmNsdWRlIDxsaW51eC9wbV9xb3MuaD4NCiAjaW5jbHVkZSA8bGludXgvc2xh
+Yi5oPg0KIA0KICNkZWZpbmUgTFVUX01BWF9FTlRSSUVTCQkJMzJVDQogI2RlZmluZSBMVVRfRlJF
+UQkJCUdFTk1BU0soMTEsIDApDQogI2RlZmluZSBMVVRfUk9XX1NJWkUJCQkweDQNCisjZGVmaW5l
+IENQVUZSRVFfSFdfU1RBVFVTCQlCSVQoMCkNCisjZGVmaW5lIFNWU19IV19TVEFUVVMJCQlCSVQo
+MSkNCisjZGVmaW5lIFBPTExfVVNFQwkJCTEwMDANCisjZGVmaW5lIFRJTUVPVVRfVVNFQwkJCTMw
+MDAwMA0KIA0KIGVudW0gew0KIAlSRUdfRlJFUV9MVVRfVEFCTEUsDQogCVJFR19GUkVRX0VOQUJM
+RSwNCiAJUkVHX0ZSRVFfUEVSRl9TVEFURSwNCisJUkVHX0ZSRVFfSFdfU1RBVEUsDQogCVJFR19F
+TV9QT1dFUl9UQkwsDQogDQogCVJFR19BUlJBWV9TSVpFLA0KQEAgLTM3LDYgKzQ0LDcgQEAgc3Ry
+dWN0IGNwdWZyZXFfbXRrIHsNCiAJW1JFR19GUkVRX0xVVF9UQUJMRV0JPSAweDAsDQogCVtSRUdf
+RlJFUV9FTkFCTEVdCT0gMHg4NCwNCiAJW1JFR19GUkVRX1BFUkZfU1RBVEVdCT0gMHg4OCwNCisJ
+W1JFR19GUkVRX0hXX1NUQVRFXQk9IDB4OGMsDQogCVtSRUdfRU1fUE9XRVJfVEJMXQk9IDB4M0Qw
+LA0KIH07DQogDQpAQCAtODksNiArOTcsMTIgQEAgc3RhdGljIGludCBtdGtfY3B1ZnJlcV9od19j
+cHVfaW5pdChzdHJ1Y3QgY3B1ZnJlcV9wb2xpY3kgKnBvbGljeSkNCiAJc3RydWN0IGNwdWZyZXFf
+bXRrICpjOw0KIAlzdHJ1Y3QgZGV2aWNlICpjcHVfZGV2Ow0KIAlzdHJ1Y3QgZW1fZGF0YV9jYWxs
+YmFjayBlbV9jYiA9IEVNX0RBVEFfQ0IobXRrX2NwdWZyZXFfZ2V0X2NwdV9wb3dlcik7DQorCXN0
+cnVjdCBwbV9xb3NfcmVxdWVzdCAqcW9zX3JlcXVlc3Q7DQorCWludCBzaWcsIHB3cl9odyA9IENQ
+VUZSRVFfSFdfU1RBVFVTIHwgU1ZTX0hXX1NUQVRVUzsNCisNCisJcW9zX3JlcXVlc3QgPSBremFs
+bG9jKHNpemVvZigqcW9zX3JlcXVlc3QpLCBHRlBfS0VSTkVMKTsNCisJaWYgKCFxb3NfcmVxdWVz
+dCkNCisJCXJldHVybiAtRU5PTUVNOw0KIA0KIAljcHVfZGV2ID0gZ2V0X2NwdV9kZXZpY2UocG9s
+aWN5LT5jcHUpOw0KIAlpZiAoIWNwdV9kZXYpIHsNCkBAIC0xMDcsMTEgKzEyMSwyOSBAQCBzdGF0
+aWMgaW50IG10a19jcHVmcmVxX2h3X2NwdV9pbml0KHN0cnVjdCBjcHVmcmVxX3BvbGljeSAqcG9s
+aWN5KQ0KIAlwb2xpY3ktPmZyZXFfdGFibGUgPSBjLT50YWJsZTsNCiAJcG9saWN5LT5kcml2ZXJf
+ZGF0YSA9IGM7DQogDQorCS8qIExldCBDUFVzIGxlYXZlIGlkbGUtb2ZmIHN0YXRlIGZvciBTVlMg
+Q1BVIGluaXRpYWxpemluZyAqLw0KKwljcHVfbGF0ZW5jeV9xb3NfYWRkX3JlcXVlc3QocW9zX3Jl
+cXVlc3QsIDApOw0KKw0KIAkvKiBIVyBzaG91bGQgYmUgaW4gZW5hYmxlZCBzdGF0ZSB0byBwcm9j
+ZWVkIG5vdyAqLw0KIAl3cml0ZWxfcmVsYXhlZCgweDEsIGMtPnJlZ19iYXNlc1tSRUdfRlJFUV9F
+TkFCTEVdKTsNCiANCisJaWYgKHJlYWRsX3BvbGxfdGltZW91dChjLT5yZWdfYmFzZXNbUkVHX0ZS
+RVFfSFdfU1RBVEVdLCBzaWcsDQorCQkJICAgICAgIChzaWcgJiBwd3JfaHcpID09IHB3cl9odywg
+UE9MTF9VU0VDLA0KKwkJCSAgICAgICBUSU1FT1VUX1VTRUMpKSB7DQorCQlpZiAoIShzaWcgJiBD
+UFVGUkVRX0hXX1NUQVRVUykpIHsNCisJCQlwcl9pbmZvKCJjcHVmcmVxIGhhcmR3YXJlIG9mIENQ
+VSVkIGlzIG5vdCBlbmFibGVkXG4iLA0KKwkJCQlwb2xpY3ktPmNwdSk7DQorCQkJcmV0dXJuIC1F
+Tk9ERVY7DQorCQl9DQorDQorCQlwcl9pbmZvKCJTVlMgb2YgQ1BVJWQgaXMgbm90IGVuYWJsZWRc
+biIsIHBvbGljeS0+Y3B1KTsNCisJfQ0KKw0KIAllbV9kZXZfcmVnaXN0ZXJfcGVyZl9kb21haW4o
+Y3B1X2RldiwgYy0+bnJfb3BwLCAmZW1fY2IsIHBvbGljeS0+Y3B1cyk7DQogDQorCWNwdV9sYXRl
+bmN5X3Fvc19yZW1vdmVfcmVxdWVzdChxb3NfcmVxdWVzdCk7DQorCWtmcmVlKHFvc19yZXF1ZXN0
+KTsNCisNCiAJcmV0dXJuIDA7DQogfQ0KIA0KLS0gDQoxLjcuOS41DQo=
 
-elapsed time: 720m
-
-configs tested: 136
-configs skipped: 2
-
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-arm                         lpc18xx_defconfig
-arc                        vdk_hs38_defconfig
-mips                      bmips_stb_defconfig
-powerpc                      katmai_defconfig
-mips                         cobalt_defconfig
-powerpc                 mpc837x_mds_defconfig
-mips                          ath79_defconfig
-um                            kunit_defconfig
-powerpc                     ppa8548_defconfig
-powerpc                     akebono_defconfig
-powerpc                     tqm8541_defconfig
-sh                          kfr2r09_defconfig
-powerpc                     tqm8555_defconfig
-powerpc                      ppc40x_defconfig
-mips                      malta_kvm_defconfig
-arm                             mxs_defconfig
-arc                        nsim_700_defconfig
-powerpc                      ppc44x_defconfig
-mips                         db1xxx_defconfig
-sparc64                             defconfig
-sh                           se7343_defconfig
-h8300                               defconfig
-sh                           se7780_defconfig
-arm                            zeus_defconfig
-sh                           se7722_defconfig
-mips                     decstation_defconfig
-arm                      jornada720_defconfig
-sh                          lboxre2_defconfig
-arm                           efm32_defconfig
-sh                      rts7751r2d1_defconfig
-i386                             alldefconfig
-powerpc                    klondike_defconfig
-arm                            pleb_defconfig
-xtensa                              defconfig
-arm                    vt8500_v6_v7_defconfig
-powerpc                     redwood_defconfig
-sh                             sh03_defconfig
-sparc64                          alldefconfig
-sh                     magicpanelr2_defconfig
-arm                       aspeed_g4_defconfig
-arm                          moxart_defconfig
-mips                           jazz_defconfig
-arm                          lpd270_defconfig
-mips                            ar7_defconfig
-riscv                    nommu_virt_defconfig
-powerpc                      acadia_defconfig
-sh                              ul2_defconfig
-mips                  cavium_octeon_defconfig
-xtensa                    xip_kc705_defconfig
-m68k                        m5407c3_defconfig
-sh                             espt_defconfig
-arm                        realview_defconfig
-arm                           spitz_defconfig
-sh                               alldefconfig
-m68k                        mvme16x_defconfig
-mips                           rs90_defconfig
-powerpc                     mpc512x_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20201023
-i386                 randconfig-a005-20201023
-i386                 randconfig-a003-20201023
-i386                 randconfig-a001-20201023
-i386                 randconfig-a006-20201023
-i386                 randconfig-a004-20201023
-i386                 randconfig-a002-20201022
-i386                 randconfig-a005-20201022
-i386                 randconfig-a003-20201022
-i386                 randconfig-a001-20201022
-i386                 randconfig-a006-20201022
-i386                 randconfig-a004-20201022
-x86_64               randconfig-a011-20201022
-x86_64               randconfig-a013-20201022
-x86_64               randconfig-a016-20201022
-x86_64               randconfig-a015-20201022
-x86_64               randconfig-a012-20201022
-x86_64               randconfig-a014-20201022
-i386                 randconfig-a016-20201022
-i386                 randconfig-a014-20201022
-i386                 randconfig-a015-20201022
-i386                 randconfig-a012-20201022
-i386                 randconfig-a013-20201022
-i386                 randconfig-a011-20201022
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a001-20201022
-x86_64               randconfig-a002-20201022
-x86_64               randconfig-a003-20201022
-x86_64               randconfig-a006-20201022
-x86_64               randconfig-a004-20201022
-x86_64               randconfig-a005-20201022
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
