@@ -2,77 +2,112 @@ Return-Path: <SRS0=XRtZ=D6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1241C55179
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 09:48:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E8F6FC388F9
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 09:49:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7E3E92225F
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 09:48:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 737132225F
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 09:49:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="OY+DErmP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S461703AbgJWJr7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Oct 2020 05:47:59 -0400
-Received: from szxga07-in.huawei.com ([45.249.212.35]:40116 "EHLO huawei.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S461606AbgJWJr7 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 23 Oct 2020 05:47:59 -0400
-Received: from DGGEMS411-HUB.china.huawei.com (unknown [172.30.72.58])
-        by Forcepoint Email with ESMTP id E51D9FF76A67F7A51BAF;
-        Fri, 23 Oct 2020 17:47:56 +0800 (CST)
-Received: from huawei.com (10.90.53.225) by DGGEMS411-HUB.china.huawei.com
- (10.3.19.211) with Microsoft SMTP Server id 14.3.487.0; Fri, 23 Oct 2020
- 17:47:54 +0800
-From:   Zhang Qilong <zhangqilong3@huawei.com>
-To:     <rjw@rjwysocki.net>, <viresh.kumar@linaro.org>
-CC:     <linux-pm@vger.kernel.org>
-Subject: [PATCH -next] cpufreq: remove unnecessary break
-Date:   Fri, 23 Oct 2020 17:58:39 +0800
-Message-ID: <20201023095839.32218-1-zhangqilong3@huawei.com>
-X-Mailer: git-send-email 2.26.0.106.g9fadedd
+        id S461710AbgJWJtw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Oct 2020 05:49:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42536 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S461709AbgJWJtv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 05:49:51 -0400
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3E9E5C0613CE
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2020 02:49:50 -0700 (PDT)
+Received: by mail-pf1-x431.google.com with SMTP id y14so725567pfp.13
+        for <linux-pm@vger.kernel.org>; Fri, 23 Oct 2020 02:49:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=Ds+2AlesstNrjvv4nwcmxJSo/ieAs5ttHx4GXc+QWbk=;
+        b=OY+DErmPYRR3ebQio2a29igZWWNeZmqL3nn26tCPBqhUuOCHais3VBn1dsbfwJZAAU
+         FP24up9hB5LW8UM9pF56Nl/Fkt5U8296/ykJ8MFWk9X9+be91hyxbWsZrpSuJMscczNl
+         OmDQ6X16WFYJuzO9Lr0tzFKDEvigxw5OCbdaG69HUVzh6GFZB3ZlhT1Roy+C9m3n18HB
+         GlOjnQFyBEuAXOyTFQZYsxgILmX4vdZhCcRWVPylDoYjbovaj5Ct08Cbk4lOeMQblrKS
+         Nf9IVFwE3qsDGl9/mzKwHOsO35InyKZDEIlm4GijUHSvp9rcBTyyjGHYJb8EGgZkDo0+
+         9lpA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=Ds+2AlesstNrjvv4nwcmxJSo/ieAs5ttHx4GXc+QWbk=;
+        b=juqnbcypILfRelm3RDNOaIjI9wtDE0CcyDvbxlBnUiINXY5kBgdwUwMaPGhxYveNV9
+         93JgPaN4YDU+z8QGuLYmiSGcjhkg5EYJuuw2g7BgDV5MWB5UoZuKjrQfC8JSqk7bSqJH
+         UaYQusHsnFT0Lt/LWoV+HDBIWi0IYWnUAAMEFxu++XXDu4YnuRgnIEdnSAupBSBC2nyj
+         s0yQnj8SgMzGrj98iU4Fu1M3oV7UJIcNdZv7ATmzNNNiLLkpz397xiM1fPui4uZjyPGk
+         4ejXRXXeZBXRr4z3T43eaN0Sd16DWn0UMzPIsuzeovJiMbp5YR7PrW4nEMgt6JkM2O6g
+         Xf+A==
+X-Gm-Message-State: AOAM531GFzO69cPLEs8Md3qPuFVVUdRPCffTZQazfEA6awzNHWUkXTCC
+        DecYLgJcQ3hCcK7JEV7ibxDWxA==
+X-Google-Smtp-Source: ABdhPJxx/4ESNHLGEf1LUWJQ4QHYkPBY+5yW6nifdizpiMsp51gRj/0uMm1irkxLyMAT1nMWudlRBA==
+X-Received: by 2002:a17:90b:8c8:: with SMTP id ds8mr1554695pjb.40.1603446589577;
+        Fri, 23 Oct 2020 02:49:49 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id ch21sm1609961pjb.24.2020.10.23.02.49.48
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 23 Oct 2020 02:49:48 -0700 (PDT)
+Date:   Fri, 23 Oct 2020 15:19:46 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Zhang Qilong <zhangqilong3@huawei.com>
+Cc:     rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Subject: Re: [PATCH -next] cpufreq: remove unnecessary break
+Message-ID: <20201023094946.ufaq746d33or5pmk@vireshk-i7>
+References: <20201023095839.32218-1-zhangqilong3@huawei.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.90.53.225]
-X-CFilter-Loop: Reflected
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201023095839.32218-1-zhangqilong3@huawei.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-A 'break' is not needed because of previous 'return'
+On 23-10-20, 17:58, Zhang Qilong wrote:
+> A 'break' is not needed because of previous 'return'
+> 
+> Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
+> ---
+>  drivers/cpufreq/e_powersaver.c | 1 -
+>  drivers/cpufreq/longhaul.c     | 1 -
+>  2 files changed, 2 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+> index 776a58bab0ff..ab93bce8ae77 100644
+> --- a/drivers/cpufreq/e_powersaver.c
+> +++ b/drivers/cpufreq/e_powersaver.c
+> @@ -223,7 +223,6 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+>  	case EPS_BRAND_C3:
+>  		pr_cont("C3\n");
+>  		return -ENODEV;
+> -		break;
+>  	}
+>  	/* Enable Enhanced PowerSaver */
+>  	rdmsrl(MSR_IA32_MISC_ENABLE, val);
+> diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
+> index 123fb006810d..182a4dbca095 100644
+> --- a/drivers/cpufreq/longhaul.c
+> +++ b/drivers/cpufreq/longhaul.c
+> @@ -593,7 +593,6 @@ static void longhaul_setup_voltagescaling(void)
+>  		break;
+>  	default:
+>  		return;
+> -		break;
+>  	}
+>  	if (min_vid_speed >= highest_speed)
+>  		return;
 
-Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
----
- drivers/cpufreq/e_powersaver.c | 1 -
- drivers/cpufreq/longhaul.c     | 1 -
- 2 files changed, 2 deletions(-)
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index 776a58bab0ff..ab93bce8ae77 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -223,7 +223,6 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- 	case EPS_BRAND_C3:
- 		pr_cont("C3\n");
- 		return -ENODEV;
--		break;
- 	}
- 	/* Enable Enhanced PowerSaver */
- 	rdmsrl(MSR_IA32_MISC_ENABLE, val);
-diff --git a/drivers/cpufreq/longhaul.c b/drivers/cpufreq/longhaul.c
-index 123fb006810d..182a4dbca095 100644
---- a/drivers/cpufreq/longhaul.c
-+++ b/drivers/cpufreq/longhaul.c
-@@ -593,7 +593,6 @@ static void longhaul_setup_voltagescaling(void)
- 		break;
- 	default:
- 		return;
--		break;
- 	}
- 	if (min_vid_speed >= highest_speed)
- 		return;
 -- 
-2.17.1
-
+viresh
