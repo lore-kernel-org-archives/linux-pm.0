@@ -2,91 +2,67 @@ Return-Path: <SRS0=XRtZ=D6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3490C55178
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 21:45:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 06512C388F9
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 23:42:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 77D0C20936
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 21:45:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="hqS9jtc7";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="vN0BUduf"
+	by mail.kernel.org (Postfix) with ESMTP id C0C7020708
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 23:42:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603496545;
+	bh=wI4w6uky//I0p7iyNkMxzesogyDiGHZrvJRl9xshuDY=;
+	h=Subject:From:In-Reply-To:References:Date:To:Cc:List-ID:From;
+	b=isUl3iEPkZU286VDabKN/E4myec+eLuSSWoWGxdnKqBUaC5f7pD4CFrTn8dwVpIAD
+	 WfOi9VANAgkFTfAKgp81VMUj0ie0aQjzt64bwTUa/sSGHTOs/g80J7gd8NMvWQRw08
+	 O4QwOtoa2VsKSvnoCrEUKy4UbJmAl1Rzxwp6GQMw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1756830AbgJWVpU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Oct 2020 17:45:20 -0400
-Received: from Galois.linutronix.de ([193.142.43.55]:56196 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1756829AbgJWVpU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 17:45:20 -0400
-From:   Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1603489518;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PWPxXpTrrlDAeAy6R37UaEC62YtNtDdRIHMGAEIcaW4=;
-        b=hqS9jtc72zZGGGvuARTIcDq9Bv39aoItwcwnJj5bZVZ2Y4JcL/OEvlg+F4rBW/3QvdAo5W
-        o0oTfq/JEl4KlySZQgb8ctuo3u2t4yiY9b6aBcHTW1doqMSIHqCIOvyPOespByI8R6DteC
-        Mnc2b44dqqRk9b+Qv75thSsNdMP1/hFPGgZwGYvIST3FPSH+Cr6RBt2I+41mJMlymMsCys
-        mHJAgOydFcQv7eHmls5kMa3fy0LD5Pcz/XRmitDfDdEjcuX1a1GlLRAJpgSj9HpYAXHDLi
-        D2rO3RQkEqlalHqnhcm0LAiOEq6O4vCeeKCmk5lcO2FbWHiaWTLhSE4ogtegpA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1603489518;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         in-reply-to:in-reply-to:references:references;
-        bh=PWPxXpTrrlDAeAy6R37UaEC62YtNtDdRIHMGAEIcaW4=;
-        b=vN0BUdufar4GqRZsYtOJFbaVQZ+fsFLNAUb3ZoyM9mXLBSx29xYtazVk59Lodu4n6WWhfb
-        64PcddB3kDPYxGBw==
-To:     Geert Uytterhoeven <geert@linux-m68k.org>,
-        Tian Tao <tiantao6@hisilicon.com>
-Cc:     Niklas =?utf-8?Q?S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] thermal: replace spin_lock_irqsave by spin_lock in hard IRQ
-In-Reply-To: <CAMuHMdVcraVpetQwdj7hW5bCum1SUXz14X6NhcVtq3BH3Csyzw@mail.gmail.com>
-References: <1603249530-25218-1-git-send-email-tiantao6@hisilicon.com> <CAMuHMdVcraVpetQwdj7hW5bCum1SUXz14X6NhcVtq3BH3Csyzw@mail.gmail.com>
-Date:   Fri, 23 Oct 2020 23:45:17 +0200
-Message-ID: <877drg62he.fsf@nanos.tec.linutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain
+        id S1758806AbgJWXmS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Oct 2020 19:42:18 -0400
+Received: from mail.kernel.org ([198.145.29.99]:46466 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1758800AbgJWXmR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 23 Oct 2020 19:42:17 -0400
+Subject: Re: [GIT PULL] More ACPI updates for v5.10-rc1
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1603496536;
+        bh=wI4w6uky//I0p7iyNkMxzesogyDiGHZrvJRl9xshuDY=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=MU3SVbiYV3BZI4KOB8KvSVn/IS8dDLkPtMnuk6zCVt29ml2+ph0Otxvn/2sGu/8y0
+         PTOp1JxhHBqK2wK+D7ZnAgtxUSwDpAwNZ0bYitH2KNtPrzlfrgr9Mb4+RCJHESncoE
+         HZaYKQvXQf0VUuilEabKXY37g3c6z0cQV9Gs8Ipk=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0hSpDBUG34ahJDQqs4u+io9x5HBSy6wq15RENG6ci3cJA@mail.gmail.com>
+References: <CAJZ5v0hSpDBUG34ahJDQqs4u+io9x5HBSy6wq15RENG6ci3cJA@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0hSpDBUG34ahJDQqs4u+io9x5HBSy6wq15RENG6ci3cJA@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.10-rc1-2
+X-PR-Tracked-Commit-Id: 2818cc745445ae5866598fe45fe563ef843e30af
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: b76f733c3ff83089cf1e3f9ae233533649f999b3
+Message-Id: <160349653678.22217.760736587877571681.pr-tracker-bot@kernel.org>
+Date:   Fri, 23 Oct 2020 23:42:16 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Oct 22 2020 at 14:51, Geert Uytterhoeven wrote:
-> On Wed, Oct 21, 2020 at 2:15 PM Tian Tao <tiantao6@hisilicon.com> wrote:
->> The code has been in a irq-disabled context since it is hard IRQ. There
->> is no necessity to do it again.
->>
-> Is this also true if CONFIG_PREEMPT_RT=y, and all irq handlers execute
-> in the context of special tasks?
+The pull request you sent on Fri, 23 Oct 2020 19:31:24 +0200:
 
-On RT or even on mainline with 'threadirqs' on the command line all
-interrupts which are not explicitly requested with IRQF_NO_THREAD run
-their handlers in thread context. The same applies to soft interrupts.
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git acpi-5.10-rc1-2
 
-That means they are subject to the normal scheduler rules and no other
-code is going to acquire that lock from hard interrupt context either,
-so the irqsave() here is pointless in all cases.
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/b76f733c3ff83089cf1e3f9ae233533649f999b3
 
-Famous last words...
+Thank you!
 
-  ... unless the driver does magic things like having a hrtimer armed
-  which expires in hard interrupt context and touches the very same
-  lock, but that's not the case in this particular driver.
-
-So the change itself is correct, but the change log could do with some
-polishing. :)
-
-Thanks,
-
-        tglx
-
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
