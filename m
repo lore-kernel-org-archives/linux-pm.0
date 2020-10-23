@@ -2,36 +2,34 @@ Return-Path: <SRS0=XRtZ=D6=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 29360C4363A
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 15:36:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 59781C55179
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 15:36:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C85D920E65
-	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 15:36:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0B81E21D47
+	for <linux-pm@archiver.kernel.org>; Fri, 23 Oct 2020 15:36:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1750902AbgJWPgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 23 Oct 2020 11:36:49 -0400
-Received: from cloudserver094114.home.pl ([79.96.170.134]:48992 "EHLO
+        id S1750919AbgJWPgv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 23 Oct 2020 11:36:51 -0400
+Received: from cloudserver094114.home.pl ([79.96.170.134]:53802 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1750890AbgJWPgs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 11:36:48 -0400
+        with ESMTP id S1750907AbgJWPgv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 23 Oct 2020 11:36:51 -0400
 Received: from 89-64-88-190.dynamic.chello.pl (89.64.88.190) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.491)
- id fd4a279f45e740d9; Fri, 23 Oct 2020 17:36:46 +0200
+ id ee32e835f268b9f3; Fri, 23 Oct 2020 17:36:48 +0200
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>,
         Viresh Kumar <viresh.kumar@linaro.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>
-Subject: [PATCH v2 2/4] cpufreq: intel_pstate: Avoid missing HWP max updates in passive mode
-Date:   Fri, 23 Oct 2020 17:35:32 +0200
-Message-ID: <3212190.yEXfVNHMLB@kreacher>
-In-Reply-To: <2183878.gTFULuzKx9@kreacher>
-References: <2183878.gTFULuzKx9@kreacher>
+Subject: [PATCH v2 0/4] cpufreq: intel_pstate: Avoid missing HWP max limit updates with powersave governor
+Date:   Fri, 23 Oct 2020 17:21:50 +0200
+Message-ID: <2183878.gTFULuzKx9@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -39,79 +37,31 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi All,
 
-If the cpufreq policy max limit is changed when intel_pstate operates
-in the passive mode with HWP enabled and the "powersave" governor is
-used on top of it, the HWP max limit is not updated as appropriate.
+There is a problem in intel_pstate that if it works in the passive mode with
+HWP enabled, changing the policy max frequency may not cause the HWP max limit
+to be updated accordingly which is quite confusing and may be incorrect.
 
-Namely, in the "powersave" governor case, the target P-state
-is always equal to the policy min limit, so if the latter does
-not change, intel_cpufreq_adjust_hwp() is not invoked to update
-the HWP Request MSR due to the "target_pstate != old_pstate" check
-in intel_cpufreq_update_pstate(), so the HWP max limit is not
-updated as a result.
+That happens because of two checks, one in the cpufreq core and one in the
+driver itself, that are there to avoid unnecessary HW/FW updates when the
+current frequency doesn't change.  Of course, that is the case when the
+policy max limit changes under the "powersave" governor (which sets the
+current frequency to the policy min limit) and in that particular case,
+the checks turn out to be harmful.
 
-Also, if the CPUFREQ_NEED_UPDATE_LIMITS flag is not set for the
-driver and the target frequency does not change along with the
-policy max limit, the "target_freq == policy->cur" check in
-__cpufreq_driver_target() prevents the driver's ->target() callback
-from being invoked at all, so the HWP max limit is not updated.
+There is also an analogous problem in the schedutil governor that prevents
+driver callbacks from being invoked if the target frequency doesn't change
+and which also affects intel_pstate in the passive mode with HWP enabled
+(see the changelog of patch [4/4]).
 
-To prevent that occurring, set the CPUFREQ_NEED_UPDATE_LIMITS flag
-in the intel_cpufreq driver structure if HWP is enabled and modify
-intel_cpufreq_update_pstate() to do the "target_pstate != old_pstate"
-check only in the non-HWP case and let intel_cpufreq_adjust_hwp()
-always run in the HWP case (it will update HWP Request only if the
-cached value of the register is different from the new one including
-the limits, so if neither the target P-state value nor the max limit
-changes, the register write will still be avoided).
+The v2 addresses some review comments from Viresh and adds patches [3-4/4] to
+address the schedutil issue.
 
-Fixes: f6ebbcf08f37 ("cpufreq: intel_pstate: Implement passive mode with HWP enabled")
-Reported-by: Zhang Rui <rui.zhang@intel.com>
-Cc: 5.9+ <stable@vger.kernel.org> # 5.9+
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
+The cleanup posted as the [2/2] previously will be applied independently and
+it is not included in the v2.
 
-The v2 is just the intel_pstate changes (without the core changes) and setting
-the new flag.
-
----
- drivers/cpufreq/intel_pstate.c |   13 ++++++-------
- 1 file changed, 6 insertions(+), 7 deletions(-)
-
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2550,14 +2550,12 @@ static int intel_cpufreq_update_pstate(s
- 	int old_pstate = cpu->pstate.current_pstate;
- 
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
--	if (target_pstate != old_pstate) {
-+	if (hwp_active) {
-+		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
-+		cpu->pstate.current_pstate = target_pstate;
-+	} else if (target_pstate != old_pstate) {
-+		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
- 		cpu->pstate.current_pstate = target_pstate;
--		if (hwp_active)
--			intel_cpufreq_adjust_hwp(cpu, target_pstate,
--						 fast_switch);
--		else
--			intel_cpufreq_adjust_perf_ctl(cpu, target_pstate,
--						      fast_switch);
- 	}
- 
- 	intel_cpufreq_trace(cpu, fast_switch ? INTEL_PSTATE_TRACE_FAST_SWITCH :
-@@ -3014,6 +3012,7 @@ static int __init intel_pstate_init(void
- 			hwp_mode_bdw = id->driver_data;
- 			intel_pstate.attr = hwp_cpufreq_attrs;
- 			intel_cpufreq.attr = hwp_cpufreq_attrs;
-+			intel_cpufreq.flags |= CPUFREQ_NEED_UPDATE_LIMITS;
- 			if (!default_driver)
- 				default_driver = &intel_pstate;
- 
+Thanks!
 
 
 
