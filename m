@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6940AC4363A
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A0A1C5517A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 366DD222D9
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3F426222E8
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:49 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mDY2uq2k"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YV/1WFw0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419347AbgJYWSg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:18:36 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35148 "EHLO
+        id S1419371AbgJYWSq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:18:46 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35180 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419338AbgJYWSd (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:33 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1A8CAC0613D0;
-        Sun, 25 Oct 2020 15:18:33 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id j30so9423753lfp.4;
-        Sun, 25 Oct 2020 15:18:33 -0700 (PDT)
+        with ESMTP id S1419360AbgJYWSl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:41 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0D118C061755;
+        Sun, 25 Oct 2020 15:18:41 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id 77so9432676lfl.2;
+        Sun, 25 Oct 2020 15:18:40 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Jm9YF5Hl5xiQzRyo55jaqGijbDIMmn+mukworT9oCDs=;
-        b=mDY2uq2kL1k4S9q/v2EbI4njrePtAesq0Un2ovdy9jOM7UGItTaLvY80x6Zzq3tAHC
-         tabWFd8/eiWgMmKIGd2UacIC9HsLwCWND9Cmk0JkB2DkKZtfNIXbmQEK8+Vsj1j/s4Zz
-         5Zx7KxmlPREK6CUkPmHOt8nkSuqFtEbFDLpzSWGIbd5o7N3rigR+IUnLauPU6XLXryAT
-         yAUjUGI1OegWu4sLK76cOB055c7ztr5oHX1ffr7AldnPJaje80OkPifMREZAtn0H10lN
-         qGcQFNlAa5e7OFPZGh8ZJiulf20OjaPPs+KYMOwQYTFOI5/OP7z+Z8NTsuzrD7kcGRi1
-         m4+w==
+        bh=zjxBYYYDofDB9Xc2U/Srp0mvRhO4gkuJUBQqpWNNoV0=;
+        b=YV/1WFw0xY3isTwdScb3k2pex3Dai3xJdtff9FJqsRfSyKVdWHHs5DCXBfBgTpqldg
+         l4M4l39dmFECPUYA8K7mZbJJ9/dyLPqq81DL+nT1fAi3XuOYLgs75rpFJlw55Pz5Voyu
+         PqgjSMwWydryrom39MPZ3Opv96Y7IZPOp1k/+RuMn/FzvGvbyf4Cz65SKxu4cksxu7Mv
+         vYKDyyCF2dkUVBepQ6QBdISdwIO60wB6J/4Z0h9tH4RHnflO0s4EkyNE1XrFCVZGers+
+         qV0ypNS/sZp0b+/u1UFVx3YqsmStUaDMW8Sdemm34XE/gPL+FZltNkipyVVKTWOoH/Mk
+         ydZw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Jm9YF5Hl5xiQzRyo55jaqGijbDIMmn+mukworT9oCDs=;
-        b=hrDMF6A9tACIQSuZrC3dXp6mV96ZoDKC/Ew/QkNgDE2zpBvkkPWGXHvUJunOEG8y6s
-         DGr4Iitw40R+GdLNG6/q70L3VjyQAQMB/tkK5iPmk+slw73DyAfbWCMOZ+hj4ECBab6l
-         CZTe5A/Y8Qaef7Ln6ViRe4LSLho4MDBL8IBUkBd+G3fTkCc0J0rrrSSXlcIOrWhr1ncP
-         gVkFe6kIkqUJLXlrCZfVqleS/65ZVofX2LMI8L6AHwCnBPt1p0+6K5ohKN4agkxzy6js
-         RKdSMzk52cK0OlxLeMR4/WAitx3/kQF52TnSXMS4axedbk+gwMHUPoU8Eh/ELU89+K9M
-         cU7g==
-X-Gm-Message-State: AOAM531cvpp70+MH28tfoy5UVfke4PPm5lS31YAdelLeIyFohSl8YSXj
-        VLlyVJnZZyfSb2P/WxOhyxY=
-X-Google-Smtp-Source: ABdhPJxtHxIhWZZjOwiBsRdKvNg9UkDVL7rq3m5XJ0THmxZMcWrYOSL1KvozWahGzovqLpXx0YbxoQ==
-X-Received: by 2002:a19:be02:: with SMTP id o2mr3683087lff.314.1603664311626;
-        Sun, 25 Oct 2020 15:18:31 -0700 (PDT)
+        bh=zjxBYYYDofDB9Xc2U/Srp0mvRhO4gkuJUBQqpWNNoV0=;
+        b=nihlK0ylkfLdKNei2M9qZ+/XxOXuFyXHX47U9jI8VKN2kEX+m6UMFZIQWUyHWzNuEL
+         fptfOWZVcGNYsgMNStvSohoiU8en4nDRa4/7KHJv21IDmcrTG2yvjUK1fN28wCK1Y8qx
+         oxAwwUuXCfkppFKNoSsVd2wZBdKd9ghni/458FNE4nl27LBNPBsIgkIS+PmanUN/XXwv
+         +Bzs+Z/u2sRfnc3vN1vQHtKG6jJjFQnl/YhsgFursxU5AiKEcGvQ9Z/G/ejIQ41C5fMt
+         fGtF9zLs4ZNHD3nCLTLWj1QfdfFN0L79Jjx+9wbdQXWSnOWKmGQw/LzMiFZ9ubXXuwFI
+         Tmuw==
+X-Gm-Message-State: AOAM533a5vxpOA/S50tdxSzyHJ6LSJMEAPSnoEEe9HhHzDt0ZTvaBabX
+        R51Se2GHmUcEcz2AlSFwzIM=
+X-Google-Smtp-Source: ABdhPJwBd34BXTnyHpkHGOlFfGgghnvgLQ4l+3P5+e3cLu4M9Ce5jOuxIhq1ehyjQz2mLjcLOIJ2mA==
+X-Received: by 2002:a05:6512:301:: with SMTP id t1mr3615749lfp.232.1603664319577;
+        Sun, 25 Oct 2020 15:18:39 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.30
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:18:31 -0700 (PDT)
+        Sun, 25 Oct 2020 15:18:39 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 38/52] memory: tegra30-emc: Continue probing if timings are missing in device-tree
-Date:   Mon, 26 Oct 2020 01:17:21 +0300
-Message-Id: <20201025221735.3062-39-digetx@gmail.com>
+Subject: [PATCH v6 45/52] drm/tegra: dc: Extend debug stats with total number of events
+Date:   Mon, 26 Oct 2020 01:17:28 +0300
+Message-Id: <20201025221735.3062-46-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,77 +89,88 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-EMC driver will become mandatory after turning it into interconnect
-provider because interconnect users, like display controller driver, will
-fail to probe using newer device-trees that have interconnect properties.
-Thus make EMC driver to probe even if timings are missing in device-tree.
+It's useful to know the total number of underflow events and currently
+the debug stats are getting reset each time CRTC is being disabled. Let's
+account the overall number of events that doesn't get a reset.
 
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra30-emc.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ drivers/gpu/drm/tegra/dc.c | 10 ++++++++++
+ drivers/gpu/drm/tegra/dc.h |  5 +++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
-index b31e11f95462..78f770cf0d64 100644
---- a/drivers/memory/tegra/tegra30-emc.c
-+++ b/drivers/memory/tegra/tegra30-emc.c
-@@ -988,6 +988,11 @@ static struct device_node *emc_find_node_by_ram_code(struct device *dev)
- 	u32 value, ram_code;
- 	int err;
+diff --git a/drivers/gpu/drm/tegra/dc.c b/drivers/gpu/drm/tegra/dc.c
+index 986e7a0dde2a..f50a42170977 100644
+--- a/drivers/gpu/drm/tegra/dc.c
++++ b/drivers/gpu/drm/tegra/dc.c
+@@ -1539,6 +1539,11 @@ static int tegra_dc_show_stats(struct seq_file *s, void *data)
+ 	seq_printf(s, "underflow: %lu\n", dc->stats.underflow);
+ 	seq_printf(s, "overflow: %lu\n", dc->stats.overflow);
  
-+	if (of_get_child_count(dev->of_node) == 0) {
-+		dev_info(dev, "device-tree doesn't have memory timings\n");
-+		return NULL;
-+	}
++	seq_printf(s, "frames total: %lu\n", dc->stats.frames_total);
++	seq_printf(s, "vblank total: %lu\n", dc->stats.vblank_total);
++	seq_printf(s, "underflow total: %lu\n", dc->stats.underflow_total);
++	seq_printf(s, "overflow total: %lu\n", dc->stats.overflow_total);
 +
- 	ram_code = tegra_read_ram_code();
+ 	return 0;
+ }
  
- 	for_each_child_of_node(dev->of_node, np) {
-@@ -1057,6 +1062,9 @@ static long emc_round_rate(unsigned long rate,
- 	struct tegra_emc *emc = arg;
- 	unsigned int i;
+@@ -2289,6 +2294,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): frame end\n", __func__);
+ 		*/
++		dc->stats.frames_total++;
+ 		dc->stats.frames++;
+ 	}
  
-+	if (!emc->num_timings)
-+		return clk_get_rate(emc->clk);
+@@ -2297,6 +2303,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		dev_dbg(dc->dev, "%s(): vertical blank\n", __func__);
+ 		*/
+ 		drm_crtc_handle_vblank(&dc->base);
++		dc->stats.vblank_total++;
+ 		dc->stats.vblank++;
+ 	}
+ 
+@@ -2304,6 +2311,7 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): underflow\n", __func__);
+ 		*/
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+@@ -2311,11 +2319,13 @@ static irqreturn_t tegra_dc_irq(int irq, void *data)
+ 		/*
+ 		dev_dbg(dc->dev, "%s(): overflow\n", __func__);
+ 		*/
++		dc->stats.overflow_total++;
+ 		dc->stats.overflow++;
+ 	}
+ 
+ 	if (status & HEAD_UF_INT) {
+ 		dev_dbg_ratelimited(dc->dev, "%s(): head underflow\n", __func__);
++		dc->stats.underflow_total++;
+ 		dc->stats.underflow++;
+ 	}
+ 
+diff --git a/drivers/gpu/drm/tegra/dc.h b/drivers/gpu/drm/tegra/dc.h
+index 8fade75caef9..e3fc48f8154a 100644
+--- a/drivers/gpu/drm/tegra/dc.h
++++ b/drivers/gpu/drm/tegra/dc.h
+@@ -40,6 +40,11 @@ struct tegra_dc_stats {
+ 	unsigned long vblank;
+ 	unsigned long underflow;
+ 	unsigned long overflow;
 +
- 	min_rate = min(min_rate, emc->timings[emc->num_timings - 1].rate);
++	unsigned long frames_total;
++	unsigned long vblank_total;
++	unsigned long underflow_total;
++	unsigned long overflow_total;
+ };
  
- 	for (i = 0; i < emc->num_timings; i++) {
-@@ -1262,16 +1270,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	struct tegra_emc *emc;
- 	int err;
- 
--	if (of_get_child_count(pdev->dev.of_node) == 0) {
--		dev_info(&pdev->dev,
--			 "device-tree node doesn't have memory timings\n");
--		return -ENODEV;
--	}
--
--	np = emc_find_node_by_ram_code(&pdev->dev);
--	if (!np)
--		return -EINVAL;
--
- 	emc = devm_kzalloc(&pdev->dev, sizeof(*emc), GFP_KERNEL);
- 	if (!emc) {
- 		of_node_put(np);
-@@ -1285,10 +1283,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	emc->clk_nb.notifier_call = emc_clk_change_notify;
- 	emc->dev = &pdev->dev;
- 
--	err = emc_load_timings_from_dt(emc, np);
--	of_node_put(np);
--	if (err)
--		return err;
-+	np = emc_find_node_by_ram_code(&pdev->dev);
-+	if (np) {
-+		err = emc_load_timings_from_dt(emc, np);
-+		of_node_put(np);
-+		if (err)
-+			return err;
-+	}
- 
- 	emc->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(emc->regs))
+ struct tegra_windowgroup_soc {
 -- 
 2.27.0
 
