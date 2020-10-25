@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
-	version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 20637C388F7
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 67963C4363A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D78C2222E8
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 31914222E8
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:18:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gxb+k1hf"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="baiADdmv"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419298AbgJYWSU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:18:20 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35088 "EHLO
+        id S1419319AbgJYWS0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:18:26 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35110 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419291AbgJYWSS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:18 -0400
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 77CC0C0613D4;
-        Sun, 25 Oct 2020 15:18:18 -0700 (PDT)
-Received: by mail-lf1-x141.google.com with SMTP id c141so9409738lfg.5;
-        Sun, 25 Oct 2020 15:18:18 -0700 (PDT)
+        with ESMTP id S1419312AbgJYWSY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:24 -0400
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 25F79C0613CE;
+        Sun, 25 Oct 2020 15:18:24 -0700 (PDT)
+Received: by mail-lf1-x142.google.com with SMTP id l28so9412270lfp.10;
+        Sun, 25 Oct 2020 15:18:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qWoeVer2DQ4Ci/3B8ME3CGqRj1U6D4IaN098JD3Mytg=;
-        b=gxb+k1hf+1EwD78Exn86L0lJ4S+8qfCUwVItqgrv55I8MhOlS9Klk9RWUjExHu4HQ9
-         jlUnoDv6T2njdB+cUajN6QyoKSs1lZCFr9S21eeY29jbWIE4RuKWd8ChgLGhL0bTX335
-         af5B1lBJEQ7P7t9YfNtQfrlIsiZTu+FD+pRd7CbUIa2n2VJPL8TAtu+8QOBOvuNeVdxE
-         nj/w8L/LxEX+MYyu2NYsNrjN4qyYCssgfXUzPEBWd+mSXhz0XeFaNxieR4/hAN4pw+t5
-         CcpyeHf90IczdrswKl41AwtyBLV5z0egy3RJ0YvvlLTXu3nEqHuS7F5Y0ya9UZtu4TTi
-         uXng==
+        bh=EUjUPaHt1SM/rbNjaaosf0keIlgfJghzEnTIAKmBLW0=;
+        b=baiADdmvC1n8u5S9oCySw/VOnvKHAup04huGK6DB3va3DHCRhu+NENJU3rhUDVz+ll
+         T/qKn26rjsp5r0Iqv/TGa4vW59bwm79iIZf1hbnyn7jYwZq3zJU75KYPwq5JiUKyijxw
+         C1XePTRy95fzAgYXjTrMXN2RKA7UDf19PVBKV377UEEcYAGP6eQRQHyJuImfaSM74ZZ9
+         WOvI14zDyJ9XqwQuHUoM6TG6jxDX3xmiZmV+aK1Dk3ooarr+JggfzJ+2NBdfFUmwH0Co
+         1LiBfRQAIobPZw6ngIwtItpMQBZBS7Zc0gXaSQsgxW3PClq64RdKpC7HWH48Nh13S645
+         SNpA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qWoeVer2DQ4Ci/3B8ME3CGqRj1U6D4IaN098JD3Mytg=;
-        b=on4YeCF7NSTkrEbMtB1L0eRXYMiTQy4Hp5lBpYYNNELypPYzZh/TYCGxCVPg1CKAkX
-         TMPDITKBHMuXuYIi3nCXGAS8g/HSHp4emhl5yuKfOCoz2AuoODcrElnLLpPvSQT/dPBu
-         8Jpz+WS7qP68vo0bcB209DF1iABeJKc77AcApx/Vc3cM704Ryz8RFRy8VAW8Z794VYGL
-         TkMxOGPKwKlpAJXSNffCZHx9UlOJahD8zbbREr+LU6YmP0ll+fJLIghHlrpgSZ3rAPWf
-         QvkI+FeY7HAuDQixY8IjTp5RQfBffO/r4LSUWDQID2cA/ozTqF8AvIn0xf4uiE34je8O
-         G32A==
-X-Gm-Message-State: AOAM53282EKI8jSOKSHqrrNpknehePIVsOxTBsRL/C0AeF1L/dMLb5tq
-        TFyx2TnZcXb4PwNK6lKEHys=
-X-Google-Smtp-Source: ABdhPJy8F3ekilkLnsZ4j+jlUn3nnCvjuMLTsROqeMJeSfte9RBFfuUzA/bp0DJzIiFVvGdGqZm8PQ==
-X-Received: by 2002:a19:7009:: with SMTP id h9mr4427340lfc.201.1603664296977;
-        Sun, 25 Oct 2020 15:18:16 -0700 (PDT)
+        bh=EUjUPaHt1SM/rbNjaaosf0keIlgfJghzEnTIAKmBLW0=;
+        b=pQcuajQN59eXqrZgw15HlBugkuAtxcJItF3tXnI1RerBpfoKwnBny82wT+kGRNF5mI
+         jzs3vZ2qmTgJo50aYbV9vN8QZZP1g9blnLvEOxzx4yYJH94OtTU++AggstCiHSZrUeJe
+         r6FL6Ap2kmpebhIhDH/UirtbQ/PsBH4Jp2i6psOkJUksbZsiiPIev6Dz7g/nlU9m/ws4
+         Q9hAe6L6zrB1fq5U1eIQyqtysfMvnmGF4W5Q+HVy3/jFwp6ioZegtlpOv6TRdKtIsx5F
+         G60jkoMUZ++8s0f23j8sH/IDjVcKaOxgBu0uNbkbKTL06K6kyS7lqTl/x87pPTZL0Fii
+         SIqg==
+X-Gm-Message-State: AOAM532RDiXYp5TfW+ZZKceaOAc3nnKdNFh0ZcW603fCufyjAI+0HKP9
+        YI1oWs02ckTe73Voa4nT+n4W68GO5yA=
+X-Google-Smtp-Source: ABdhPJxth3ZWnKpchePBQUQe8A+OZsbsAJLioxg4K82Z79/f8b9W7z7GR5YS5NNWo3d7POb4I9QdKQ==
+X-Received: by 2002:a05:6512:20ca:: with SMTP id u10mr3869843lfr.247.1603664302677;
+        Sun, 25 Oct 2020 15:18:22 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.15
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.21
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:18:16 -0700 (PDT)
+        Sun, 25 Oct 2020 15:18:22 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 25/52] ARM: tegra: Add DVFS properties to Tegra20 EMC device-tree node
-Date:   Mon, 26 Oct 2020 01:17:08 +0300
-Message-Id: <20201025221735.3062-26-digetx@gmail.com>
+Subject: [PATCH v6 30/52] memory: tegra20-emc: Make driver modular
+Date:   Mon, 26 Oct 2020 01:17:13 +0300
+Message-Id: <20201025221735.3062-31-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,315 +89,68 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add EMC OPP DVFS/DFS tables and emc-stats subdev that will be used for
-dynamic memory bandwidth scaling, while EMC itself will perform voltage
-scaling. Update board device-trees with optional EMC core supply and
-remove unsupported OPPs.
+This patch adds modularization support to the Tegra20 EMC driver. Driver
+now can be compiled as a loadable kernel module.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../boot/dts/tegra20-acer-a500-picasso.dts    |  12 ++
- arch/arm/boot/dts/tegra20-colibri.dtsi        |   8 +
- arch/arm/boot/dts/tegra20-paz00.dts           |  10 +
- .../arm/boot/dts/tegra20-peripherals-opp.dtsi | 181 ++++++++++++++++++
- arch/arm/boot/dts/tegra20.dtsi                |  12 +-
- 5 files changed, 222 insertions(+), 1 deletion(-)
- create mode 100644 arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
+ drivers/memory/tegra/Kconfig       |  2 +-
+ drivers/memory/tegra/tegra20-emc.c | 17 ++++++++++++-----
+ 2 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
-index a0b829738e8f..f5c1591c8ea8 100644
---- a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
-+++ b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
-@@ -1058,9 +1058,21 @@ map0 {
- 		};
- 	};
+diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
+index b38e5255effe..ff426747cd7d 100644
+--- a/drivers/memory/tegra/Kconfig
++++ b/drivers/memory/tegra/Kconfig
+@@ -9,7 +9,7 @@ config TEGRA_MC
+ 	  NVIDIA Tegra SoCs.
  
-+	emc_opp_table0 {
-+		/delete-node/ opp@666000000;
-+		/delete-node/ opp@760000000;
-+	};
-+
-+	emc_opp_table1 {
-+		/delete-node/ opp@666000000;
-+		/delete-node/ opp@760000000;
-+	};
-+
- 	memory-controller@7000f400 {
- 		nvidia,use-ram-code;
+ config TEGRA20_EMC
+-	bool "NVIDIA Tegra20 External Memory Controller driver"
++	tristate "NVIDIA Tegra20 External Memory Controller driver"
+ 	default y
+ 	depends on ARCH_TEGRA_2x_SOC
+ 	help
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 027f46287dbf..0baa6590adea 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -724,6 +724,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, emc);
+ 	tegra_emc_debugfs_init(emc);
  
-+		core-supply = <&vdd_core>;
++	/*
++	 * Don't allow the kernel module to be unloaded. Unloading adds some
++	 * extra complexity which doesn't really worth the effort in a case of
++	 * this driver.
++	 */
++	try_module_get(THIS_MODULE);
 +
- 		emc-tables@0 {
- 			nvidia,ram-code = <0>; /* elpida-8gb */
+ 	return 0;
  
-diff --git a/arch/arm/boot/dts/tegra20-colibri.dtsi b/arch/arm/boot/dts/tegra20-colibri.dtsi
-index 6162d193e12c..78a2210bf9ae 100644
---- a/arch/arm/boot/dts/tegra20-colibri.dtsi
-+++ b/arch/arm/boot/dts/tegra20-colibri.dtsi
-@@ -611,6 +611,14 @@ i2c-thermtrip {
- 		};
- 	};
+ unset_cb:
+@@ -736,6 +743,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
+ 	{ .compatible = "nvidia,tegra20-emc", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
  
-+	emc_opp_table0 {
-+		/delete-node/ opp@760000000;
-+	};
-+
-+	emc_opp_table1 {
-+		/delete-node/ opp@760000000;
-+	};
-+
- 	memory-controller@7000f400 {
- 		emc-table@83250 {
- 			reg = <83250>;
-diff --git a/arch/arm/boot/dts/tegra20-paz00.dts b/arch/arm/boot/dts/tegra20-paz00.dts
-index ada2bed8b1b5..7b9f0f279744 100644
---- a/arch/arm/boot/dts/tegra20-paz00.dts
-+++ b/arch/arm/boot/dts/tegra20-paz00.dts
-@@ -311,9 +311,19 @@ nvec@7000c500 {
- 		reset-names = "i2c";
- 	};
+ static struct platform_driver tegra_emc_driver = {
+ 	.probe = tegra_emc_probe,
+@@ -745,9 +753,8 @@ static struct platform_driver tegra_emc_driver = {
+ 		.suppress_bind_attrs = true,
+ 	},
+ };
++module_platform_driver(tegra_emc_driver);
  
-+	emc_opp_table0 {
-+		/delete-node/ opp@760000000;
-+	};
-+
-+	emc_opp_table1 {
-+		/delete-node/ opp@760000000;
-+	};
-+
- 	memory-controller@7000f400 {
- 		nvidia,use-ram-code;
- 
-+		core-supply = <&core_vdd_reg>;
-+
- 		emc-tables@0 {
- 			nvidia,ram-code = <0x0>;
- 			#address-cells = <1>;
-diff --git a/arch/arm/boot/dts/tegra20-peripherals-opp.dtsi b/arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
-new file mode 100644
-index 000000000000..d10c61107702
---- /dev/null
-+++ b/arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
-@@ -0,0 +1,181 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/ {
-+	emc_icc_dvfs_opp_table: emc_opp_table0 {
-+		compatible = "operating-points-v2";
-+
-+		opp@36000000 {
-+			opp-microvolt = <950000 950000 1300000>;
-+			opp-hz = /bits/ 64 <36000000>;
-+		};
-+
-+		opp@47500000 {
-+			opp-microvolt = <950000 950000 1300000>;
-+			opp-hz = /bits/ 64 <47500000>;
-+		};
-+
-+		opp@50000000 {
-+			opp-microvolt = <950000 950000 1300000>;
-+			opp-hz = /bits/ 64 <50000000>;
-+		};
-+
-+		opp@54000000 {
-+			opp-microvolt = <950000 950000 1300000>;
-+			opp-hz = /bits/ 64 <54000000>;
-+		};
-+
-+		opp@57000000 {
-+			opp-microvolt = <950000 950000 1300000>;
-+			opp-hz = /bits/ 64 <57000000>;
-+		};
-+
-+		opp@100000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <100000000>;
-+		};
-+
-+		opp@108000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <108000000>;
-+		};
-+
-+		opp@126666000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <126666000>;
-+		};
-+
-+		opp@150000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <150000000>;
-+		};
-+
-+		opp@190000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <190000000>;
-+		};
-+
-+		opp@216000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <216000000>;
-+		};
-+
-+		opp@300000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <300000000>;
-+		};
-+
-+		opp@333000000 {
-+			opp-microvolt = <1000000 1000000 1300000>;
-+			opp-hz = /bits/ 64 <333000000>;
-+		};
-+
-+		opp@380000000 {
-+			opp-microvolt = <1100000 1100000 1300000>;
-+			opp-hz = /bits/ 64 <380000000>;
-+		};
-+
-+		opp@600000000 {
-+			opp-microvolt = <1200000 1200000 1300000>;
-+			opp-hz = /bits/ 64 <600000000>;
-+		};
-+
-+		opp@666000000 {
-+			opp-microvolt = <1200000 1200000 1300000>;
-+			opp-hz = /bits/ 64 <666000000>;
-+		};
-+
-+		opp@760000000 {
-+			opp-microvolt = <1300000 1300000 1300000>;
-+			opp-hz = /bits/ 64 <760000000>;
-+		};
-+	};
-+
-+	emc_bw_dfs_opp_table: emc_opp_table1 {
-+		compatible = "operating-points-v2";
-+
-+		opp@36000000 {
-+			opp-hz = /bits/ 64 <36000000>;
-+			opp-peak-kBps = <144000>;
-+		};
-+
-+		opp@47500000 {
-+			opp-hz = /bits/ 64 <47500000>;
-+			opp-peak-kBps = <190000>;
-+		};
-+
-+		opp@50000000 {
-+			opp-hz = /bits/ 64 <50000000>;
-+			opp-peak-kBps = <200000>;
-+		};
-+
-+		opp@54000000 {
-+			opp-hz = /bits/ 64 <54000000>;
-+			opp-peak-kBps = <216000>;
-+		};
-+
-+		opp@57000000 {
-+			opp-hz = /bits/ 64 <57000000>;
-+			opp-peak-kBps = <228000>;
-+		};
-+
-+		opp@100000000 {
-+			opp-hz = /bits/ 64 <100000000>;
-+			opp-peak-kBps = <400000>;
-+		};
-+
-+		opp@108000000 {
-+			opp-hz = /bits/ 64 <108000000>;
-+			opp-peak-kBps = <432000>;
-+		};
-+
-+		opp@126666000 {
-+			opp-hz = /bits/ 64 <126666000>;
-+			opp-peak-kBps = <506664>;
-+		};
-+
-+		opp@150000000 {
-+			opp-hz = /bits/ 64 <150000000>;
-+			opp-peak-kBps = <600000>;
-+		};
-+
-+		opp@190000000 {
-+			opp-hz = /bits/ 64 <190000000>;
-+			opp-peak-kBps = <760000>;
-+		};
-+
-+		opp@216000000 {
-+			opp-hz = /bits/ 64 <216000000>;
-+			opp-peak-kBps = <864000>;
-+		};
-+
-+		opp@300000000 {
-+			opp-hz = /bits/ 64 <300000000>;
-+			opp-peak-kBps = <1200000>;
-+		};
-+
-+		opp@333000000 {
-+			opp-hz = /bits/ 64 <333000000>;
-+			opp-peak-kBps = <1332000>;
-+		};
-+
-+		opp@380000000 {
-+			opp-hz = /bits/ 64 <380000000>;
-+			opp-peak-kBps = <1520000>;
-+		};
-+
-+		opp@600000000 {
-+			opp-hz = /bits/ 64 <600000000>;
-+			opp-peak-kBps = <2400000>;
-+		};
-+
-+		opp@666000000 {
-+			opp-hz = /bits/ 64 <666000000>;
-+			opp-peak-kBps = <2664000>;
-+		};
-+
-+		opp@760000000 {
-+			opp-hz = /bits/ 64 <760000000>;
-+			opp-peak-kBps = <3040000>;
-+		};
-+	};
-+};
-diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
-index 8f8ad81916e7..8a90d96c8773 100644
---- a/arch/arm/boot/dts/tegra20.dtsi
-+++ b/arch/arm/boot/dts/tegra20.dtsi
-@@ -6,6 +6,8 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/soc/tegra-pmc.h>
- 
-+#include "tegra20-peripherals-opp.dtsi"
-+
- / {
- 	compatible = "nvidia,tegra20";
- 	interrupt-parent = <&lic>;
-@@ -656,7 +658,7 @@ mc: memory-controller@7000f000 {
- 	};
- 
- 	emc: memory-controller@7000f400 {
--		compatible = "nvidia,tegra20-emc";
-+		compatible = "nvidia,tegra20-emc", "simple-mfd";
- 		reg = <0x7000f400 0x400>;
- 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
- 		clocks = <&tegra_car TEGRA20_CLK_EMC>;
-@@ -664,7 +666,15 @@ emc: memory-controller@7000f400 {
- 		#size-cells = <0>;
- 		#interconnect-cells = <0>;
- 
-+		operating-points-v2 = <&emc_icc_dvfs_opp_table>;
- 		nvidia,memory-controller = <&mc>;
-+
-+		emc-stats {
-+			compatible = "nvidia,tegra20-emc-statistics";
-+			operating-points-v2 = <&emc_bw_dfs_opp_table>;
-+			interconnects = <&mc TEGRA20_MC_MPCORER &emc>;
-+			interconnect-names = "cpu-read";
-+		};
- 	};
- 
- 	fuse@7000f800 {
+-static int __init tegra_emc_init(void)
+-{
+-	return platform_driver_register(&tegra_emc_driver);
+-}
+-subsys_initcall(tegra_emc_init);
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra20 EMC driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.27.0
 
