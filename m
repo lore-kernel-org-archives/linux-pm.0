@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4EDDC4363A
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:21:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3656FC4363A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A3E56222EA
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:21:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E861C222EC
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Qm1yEfa2"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="D3yF5UWr"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419347AbgJYWVs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:21:48 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35040 "EHLO
+        id S1418887AbgJYWV4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:21:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419251AbgJYWSH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:07 -0400
-Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 491E4C0613D0;
-        Sun, 25 Oct 2020 15:18:07 -0700 (PDT)
-Received: by mail-lj1-x242.google.com with SMTP id x16so7737748ljh.2;
-        Sun, 25 Oct 2020 15:18:07 -0700 (PDT)
+        with ESMTP id S1419242AbgJYWSE (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:04 -0400
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E02DFC061755;
+        Sun, 25 Oct 2020 15:18:03 -0700 (PDT)
+Received: by mail-lj1-x243.google.com with SMTP id a5so7686194ljj.11;
+        Sun, 25 Oct 2020 15:18:03 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=94ko1KEkvd/nrOtCbnF94w0cywfdZ0jax9HR6cDdRe0=;
-        b=Qm1yEfa2PRYppyIYsSGsQ5TtAvsTjs/w1RG8K6rIejNzxR30xYJQIaNybveQYKGldC
-         1RolfvORMYcSXn/MU5GwkomdntMip26KkF0gBqd9zExi0ApfuFwbCtO6kuWZPZrFcol5
-         UfpyvLJ4AM8BcGoQ/cGi/MD5NZfRfPdeplexgkmtBWbCgxKy1ePnxluoDSsyC1nzOW/S
-         1WcsWUjnRl9ofY6o5C3iHiVM6WDf1lclsKyUVZO2Y/8VasHw1spGbsInm5kqcpS8My+s
-         a20XQAV11bXpp2oHV7nQYzQ/0veTQasRJWXCT755xiW8F/fznAamBv/4sv1fPUNPdaUf
-         Oo8A==
+        bh=mWndnYNPQqILNSiWL6iTiqZhdvnXENgisKXO1ZAuXRA=;
+        b=D3yF5UWrGIQD6Q6QkzMYFLRBW922gtSyUQwXc87g+6+DHWwRO9e/5vmexGHJ+BTs7R
+         A344NC9u3pwugBvx8H65M+GDXcM0MnMfZExfEY60l0kJsJe0sEN/ujsabgxyRJbE3zd2
+         yTcqGIJEUsgoaVfYx+1THkPjR85b9Z7YzkawHNcHOd2CO9CZUZEfHvnS2a1TDPuuqbxD
+         S3SPnd8Oz5mAtLTYbj9dVikWdbJbdcIyMl4ikcPPCKm+d3GRYL0bpotDxgu3EalYg8gQ
+         ij8+y2iNMB+WXhWxcLvtjH/iXuYQY3qUatyRFfsOgZ/NgeNE08mgArkSUKjaNGsDCH+P
+         Df2A==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=94ko1KEkvd/nrOtCbnF94w0cywfdZ0jax9HR6cDdRe0=;
-        b=MVT6X3urNn/3HGAxdk5goXEwfQK9TEc/brUQAHfEJsBAkx2QZa+8s5K+RpbT0ffXla
-         gYPkw41DHRDVm64FA8GyHfUTVdKOK0Y58xuu63gxkYOHjfuG+cCJodNjjCSm00Oysr55
-         /4Ge/ZCs184NRrVpmbr+6uMlPieitxtg0/AF2QrOhCIs4q/eZJ3JXE1zyzMPJtve6v3v
-         MV92QeuF/PYnkZEMjsiEEPA3Qld9kX1Pa0lt5ZQeakc7rpZ9G5GnrcKPP73jm4CI6kfW
-         7IUpdzykxe1EitzuUAFre6jrgNyIUSWpm4p9E9aXMNHPSBiN1UFXmBHsBc+/iUgk+sTI
-         Db3A==
-X-Gm-Message-State: AOAM531BQ7AksbYOk8aCCN/e2HYAQQDhhpzXHvGVQFHYOGBUrDH5FPeF
-        VOaAskniouCxYSjTm0K/9L4=
-X-Google-Smtp-Source: ABdhPJxJP5vQ+dbu//2kEod4jKNlPCrGWMiwzB9P67Gj2wl/LtiawKQIxeELq3dtTUVaMOR+rGAZpw==
-X-Received: by 2002:a2e:7803:: with SMTP id t3mr4225150ljc.156.1603664285788;
-        Sun, 25 Oct 2020 15:18:05 -0700 (PDT)
+        bh=mWndnYNPQqILNSiWL6iTiqZhdvnXENgisKXO1ZAuXRA=;
+        b=M12HLX6VJTPpuoYKLuJPlmMydb6LRQ9lMqrGputVAMnQCC3YifjsoysO/4eTkfQA7u
+         AUTQbDh04usT6X45z/Xo+aFOO/DkfXQbYTvM8VAmjC5EHP1yko1Zpx/8VKj546hkPE8I
+         1RpwxS4Ms9S0EaPQb1l9LR1arPf6gB/olJi7n8QFM1X2bnQykxHB3h/Hlmp4OeSwtto4
+         5gI4TCgbG1ba5nJi0lNkmKiG8Pjxa2ia+kDrwoYtzthJcDmmSoA8jQAwWi2PsLGq/c7C
+         H4qC60VLWmhY0AcdCpnvhKiWMu0WBR+VEg4d0oLlmUNYF4fIikNcHCWB6iFef+K/ZCac
+         txQw==
+X-Gm-Message-State: AOAM532VavO8+F2hUSS26HecqzsZNrZkJC7385R68A5czZatDuMjCnbl
+        ZA0ivOcB7yNO8zRzGRYROPOANjD1UkY=
+X-Google-Smtp-Source: ABdhPJzi0WSxLH2DDzGc0b4e6DF3+sSPvg8oMr3VqgPstg50fpHlDvAVDRrKx78J3l/YaXTc72mrQg==
+X-Received: by 2002:a2e:8145:: with SMTP id t5mr4767803ljg.311.1603664282474;
+        Sun, 25 Oct 2020 15:18:02 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.04
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:18:05 -0700 (PDT)
+        Sun, 25 Oct 2020 15:18:02 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 15/52] dt-bindings: tegra30-actmon: Document OPP and interconnect properties
-Date:   Mon, 26 Oct 2020 01:16:58 +0300
-Message-Id: <20201025221735.3062-16-digetx@gmail.com>
+Subject: [PATCH v6 12/52] dt-bindings: memory: tegra124: mc: Document new interconnect property
+Date:   Mon, 26 Oct 2020 01:16:55 +0300
+Message-Id: <20201025221735.3062-13-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,60 +89,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Document EMC DFS OPP table and interconnect paths that will be used
-for scaling of system's memory bandwidth based on memory utilization
-statistics. Previously ACTMON was supposed to drive EMC clock rate
-directly, but now it should do it using interconnect framework in order
-to support shared voltage scaling in addition to the frequency scaling.
+Memory controller is interconnected with memory clients and with the
+External Memory Controller. Document new interconnect property which
+turns memory controller into interconnect provider.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../arm/tegra/nvidia,tegra30-actmon.txt       | 25 +++++++++++++++++++
- 1 file changed, 25 insertions(+)
+ .../bindings/memory-controllers/nvidia,tegra124-mc.yaml      | 5 +++++
+ 1 file changed, 5 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
-index ea670a5d7ee3..412e939c65cb 100644
---- a/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
-+++ b/Documentation/devicetree/bindings/arm/tegra/nvidia,tegra30-actmon.txt
-@@ -18,8 +18,30 @@ clock-names. See ../../clock/clock-bindings.txt for details.
- ../../reset/reset.txt for details.
- - reset-names: Must include the following entries:
-   - actmon
-+- operating-points-v2: See ../bindings/opp/opp.txt for details.
-+- interconnects: Should contain entries for memory clients sitting on
-+                 MC->EMC memory interconnect path.
-+- interconnect-names: Should include name of the interconnect path for each
-+                      interconnect entry. Consult TRM documentation for
-+                      information about available memory clients, see MEMORY
-+                      CONTROLLER section.
-+
-+For each opp entry in 'operating-points-v2' table:
-+- opp-supported-hw: bitfield indicating SoC speedo ID mask
-+- opp-peak-kBps: peak bandwidth of the memory channel
+diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-mc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-mc.yaml
+index 84d0339505b1..7b18b4d11e0a 100644
+--- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-mc.yaml
++++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-mc.yaml
+@@ -40,6 +40,9 @@ properties:
+   "#iommu-cells":
+     const: 1
  
- Example:
-+	dfs_opp_table: opp_table {
-+		compatible = "operating-points-v2";
++  "#interconnect-cells":
++    const: 1
 +
-+		opp@12750000 {
-+			opp-hz = /bits/ 64 <12750000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <51000>;
-+		};
-+		...
-+	};
-+
- 	actmon@6000c800 {
- 		compatible = "nvidia,tegra124-actmon";
- 		reg = <0x0 0x6000c800 0x0 0x400>;
-@@ -29,4 +51,7 @@ Example:
- 		clock-names = "actmon", "emc";
- 		resets = <&tegra_car 119>;
- 		reset-names = "actmon";
-+		operating-points-v2 = <&dfs_opp_table>;
-+		interconnects = <&mc TEGRA124_MC_MPCORER &emc>;
-+		interconnect-names = "cpu";
- 	};
+ patternProperties:
+   "^emc-timings-[0-9]+$":
+     type: object
+@@ -104,6 +107,7 @@ required:
+   - clock-names
+   - "#reset-cells"
+   - "#iommu-cells"
++  - "#interconnect-cells"
+ 
+ additionalProperties: false
+ 
+@@ -119,6 +123,7 @@ examples:
+ 
+         #iommu-cells = <1>;
+         #reset-cells = <1>;
++        #interconnect-cells = <1>;
+ 
+         emc-timings-3 {
+             nvidia,ram-code = <3>;
 -- 
 2.27.0
 
