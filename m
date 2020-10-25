@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C8BD8C5DF9E
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69D44C388F7
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:20:23 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9D5A0222C2
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:20:16 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 30188222EC
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:20:23 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="BodnatAi"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="X0ToN/oV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419335AbgJYWSc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:18:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35136 "EHLO
+        id S1418983AbgJYWUR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:20:17 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419328AbgJYWSa (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:30 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B6B91C0613CE;
-        Sun, 25 Oct 2020 15:18:29 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id i2so7712799ljg.4;
-        Sun, 25 Oct 2020 15:18:29 -0700 (PDT)
+        with ESMTP id S1419334AbgJYWSc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:32 -0400
+Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 050E2C0613CE;
+        Sun, 25 Oct 2020 15:18:32 -0700 (PDT)
+Received: by mail-lf1-x144.google.com with SMTP id l28so9412465lfp.10;
+        Sun, 25 Oct 2020 15:18:31 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=v6ur3FMhIFe8KvuxQxBkljzFbdkKufNSmZGLKBtZ/Ro=;
-        b=BodnatAiw/VKmtLioaT+neJet4GwmMhSrvQOmSWb1dBrf2P08gTcaOGU1uurLGXRxE
-         lGXcv57rEDS7EiB7mldnxCE+2vfBzzp4zayubegNwxxpzyWPLuMAQh2TlmdfgfCR4T8k
-         uxhWvqKrubngEgoCndecxTbFXI0MbfNe0MlVkh7BZMCmfRZBtfwyX+qvHirQFB9Tslxq
-         GEPI3vYHdH6pFo3ehTUEk82FitfIKVO6BH8XF9oL7tiIKQdAXsb1C4q6+MzwZr1qdMKa
-         /kCa2SoiMZCMAe6gUhf4JU2gyP5noYwf1hbeWI0ggx80umHA6r6/0u2Yj66wQ+L8dhNU
-         UDHg==
+        bh=W1b8ZCtPbYAycwosB5kS320YB1mdjTvGMBXwY+R9jzo=;
+        b=X0ToN/oVRPKqStlhK0bfO2Q5w/DPNlD6cNBHmbaCtKb8jaWbDO7Ayi55aG0NGBWohz
+         jKAAuEs/+VOmMLzEG7hpSjyLLm0tYkJYXZoKmybrF2nYa97PyCf+/JkXAUZIkinSHGqv
+         7Ba3Qk70c25uB0EDL9VRpH3qYkZ/H46PColN9qZ+RBv7ZUPiNj7YsFcjSCYPhSQdT9EE
+         Dy4gwoJ7pndvbz5kETPABcA2ygDqgvF1bjFP0HGa1E6j/5hJPry4OFVOB5CiKHz6ki8l
+         T0zL/UPeWt3okPWFA879+Yv133Wb0ohaKeMp8/SLwD/j4qafNQ+vxHpdw7tmLlXVbJuM
+         z7qA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=v6ur3FMhIFe8KvuxQxBkljzFbdkKufNSmZGLKBtZ/Ro=;
-        b=U/JB2uk77JumYUahvq4w/6De/TDVo1kO5Lx36432lEBYJG70pAhXd5aKUkpuy+ZJqX
-         IiwhLuvJOLchenBZSskQzlJ+6GsDZyJNfsqZvRI+LMhKAcCDihtkyJNrm4r4JXoDDQ3C
-         8pa5m8W1IG65Xz6GdUqGRi6OX5gIVGGNrqk9UksBScW1XYWdH3+7zm1/5ia7OJu3qqXP
-         46Wlq2WC4GPW6OjxJIi9OipVs0VT/F1iKeM0Wfp8Goi3jge1nR1Duxs/zLb4svLS+B07
-         247/PsKQTE2hZYfM+NDpFKZc7lUkGyWSqPFfy88GxwHiSsnmfIYNQXKIkCyAa47IjJZe
-         RJMA==
-X-Gm-Message-State: AOAM5311zVe9Z61g2QdgeARNJQ4aLkakJ7XM9ffY98XoMzChRbqBFhQl
-        EW2gJUy12HOjET04/v1SLqs=
-X-Google-Smtp-Source: ABdhPJyJrFTPUr3OlEv3PM6r3URpRj9d4p8+2HogxPn86GPceWkk33M9WYAtiheFrzdPsx3wQks5Ng==
-X-Received: by 2002:a2e:9a17:: with SMTP id o23mr5025831lji.242.1603664308300;
-        Sun, 25 Oct 2020 15:18:28 -0700 (PDT)
+        bh=W1b8ZCtPbYAycwosB5kS320YB1mdjTvGMBXwY+R9jzo=;
+        b=MQgAFpvfV0vSCWEfbZzrMIbFOVeiqXpG9cxN8uI+KPlMbVgl+h5ar7wQfEIOcyzDqu
+         1x/S9joVZjK9QouEHcqyTZhogpw2O1YPgPAUcekOWKZ7mYuCdzvteG+4OE4HVIvHp8wz
+         PiEvlsJLrqr4/3yVvKjE6D0Or5f8mh6D4m/2MMfgjvrXcUq+e9nZDQgMwb9O4Gv1EwyW
+         n3ekkT8o4QvLuypAW4ZTQNB/2rbLMutCb5BdS+yPsd53F71gR0JX7vkO0JGrP1um1aI9
+         PsrJOXpINJjjh+yqdnoNxEgdtSQSu6ovCGfoaqoHjBwGWRKn9F0wnISbCDVGbedWIWXD
+         YL3w==
+X-Gm-Message-State: AOAM531VpihHNmtvJCCvm9v6K0MpbcL7y8Lr2uDqMMrgzmF4Y5is7w5m
+        Cguf4FTfiS8UCnldRLvgldo=
+X-Google-Smtp-Source: ABdhPJxp17EeEFhIbCAYtV3D2oEW9N2dinWM4EbJDOTZMnGn8CXGsVfN2h9zdxOl/8fSqphNkRhleQ==
+X-Received: by 2002:a19:c1ce:: with SMTP id r197mr4333958lff.266.1603664310522;
+        Sun, 25 Oct 2020 15:18:30 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.27
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:18:27 -0700 (PDT)
+        Sun, 25 Oct 2020 15:18:30 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 35/52] memory: tegra: Add missing latency allowness entry for Page Table Cache
-Date:   Mon, 26 Oct 2020 01:17:18 +0300
-Message-Id: <20201025221735.3062-36-digetx@gmail.com>
+Subject: [PATCH v6 37/52] memory: tegra30-emc: Make driver modular
+Date:   Mon, 26 Oct 2020 01:17:20 +0300
+Message-Id: <20201025221735.3062-38-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,71 +89,97 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The PTC memory client misses the latency allowness entry and this patch
-adds it.
-
-This prevents erroneous clearing of MC_INTSTATUS 0x0 register during
-of the LA programming in tegra_mc_setup_latency_allowance() due to the
-missing entry. Note that this patch doesn't fix any known problems.
+This patch adds modularization support to the Tegra30 EMC driver. Driver
+now can be compiled as a loadable kernel module.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra114.c | 6 ++++++
- drivers/memory/tegra/tegra124.c | 6 ++++++
- drivers/memory/tegra/tegra30.c  | 6 ++++++
- 3 files changed, 18 insertions(+)
+ drivers/memory/tegra/Kconfig       |  2 +-
+ drivers/memory/tegra/mc.c          |  3 +++
+ drivers/memory/tegra/tegra30-emc.c | 17 ++++++++++++-----
+ 3 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/memory/tegra/tegra114.c b/drivers/memory/tegra/tegra114.c
-index 48ef01c3ff90..ed376ba2d2fe 100644
---- a/drivers/memory/tegra/tegra114.c
-+++ b/drivers/memory/tegra/tegra114.c
-@@ -15,6 +15,12 @@ static const struct tegra_mc_client tegra114_mc_clients[] = {
- 		.id = 0x00,
- 		.name = "ptcr",
- 		.swgroup = TEGRA_SWGROUP_PTC,
-+		.la = {
-+			.reg = 0x34c,
-+			.shift = 0,
-+			.mask = 0xff,
-+			.def = 0x0,
-+		},
- 	}, {
- 		.id = 0x01,
- 		.name = "display0a",
-diff --git a/drivers/memory/tegra/tegra124.c b/drivers/memory/tegra/tegra124.c
-index 0cede24479bf..e2389573d3c0 100644
---- a/drivers/memory/tegra/tegra124.c
-+++ b/drivers/memory/tegra/tegra124.c
-@@ -15,6 +15,12 @@ static const struct tegra_mc_client tegra124_mc_clients[] = {
- 		.id = 0x00,
- 		.name = "ptcr",
- 		.swgroup = TEGRA_SWGROUP_PTC,
-+		.la = {
-+			.reg = 0x34c,
-+			.shift = 0,
-+			.mask = 0xff,
-+			.def = 0x0,
-+		},
- 	}, {
- 		.id = 0x01,
- 		.name = "display0a",
-diff --git a/drivers/memory/tegra/tegra30.c b/drivers/memory/tegra/tegra30.c
-index fcdd812eed80..b1990b4133d8 100644
---- a/drivers/memory/tegra/tegra30.c
-+++ b/drivers/memory/tegra/tegra30.c
-@@ -36,6 +36,12 @@ static const struct tegra_mc_client tegra30_mc_clients[] = {
- 		.id = 0x00,
- 		.name = "ptcr",
- 		.swgroup = TEGRA_SWGROUP_PTC,
-+		.la = {
-+			.reg = 0x34c,
-+			.shift = 0,
-+			.mask = 0xff,
-+			.def = 0x0,
-+		},
- 	}, {
- 		.id = 0x01,
- 		.name = "display0a",
+diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
+index ac3dfe155505..61cdb5c04b18 100644
+--- a/drivers/memory/tegra/Kconfig
++++ b/drivers/memory/tegra/Kconfig
+@@ -20,7 +20,7 @@ config TEGRA20_EMC
+ 	  external memory.
+ 
+ config TEGRA30_EMC
+-	bool "NVIDIA Tegra30 External Memory Controller driver"
++	tristate "NVIDIA Tegra30 External Memory Controller driver"
+ 	default y
+ 	depends on TEGRA_MC && ARCH_TEGRA_3x_SOC
+ 	help
+diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
+index 53d61b05ebf8..15589bf8f5b6 100644
+--- a/drivers/memory/tegra/mc.c
++++ b/drivers/memory/tegra/mc.c
+@@ -6,6 +6,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
++#include <linux/export.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -346,6 +347,7 @@ int tegra_mc_write_emem_configuration(struct tegra_mc *mc, unsigned long rate)
+ 
+ 	return 0;
+ }
++EXPORT_SYMBOL_GPL(tegra_mc_write_emem_configuration);
+ 
+ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
+ {
+@@ -357,6 +359,7 @@ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
+ 
+ 	return dram_count;
+ }
++EXPORT_SYMBOL_GPL(tegra_mc_get_emem_device_count);
+ 
+ static int load_one_timing(struct tegra_mc *mc,
+ 			   struct tegra_mc_timing *timing,
+diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
+index 602dc4e08c61..b31e11f95462 100644
+--- a/drivers/memory/tegra/tegra30-emc.c
++++ b/drivers/memory/tegra/tegra30-emc.c
+@@ -1331,6 +1331,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, emc);
+ 	tegra_emc_debugfs_init(emc);
+ 
++	/*
++	 * Don't allow the kernel module to be unloaded. Unloading adds some
++	 * extra complexity which doesn't really worth the effort in a case of
++	 * this driver.
++	 */
++	try_module_get(THIS_MODULE);
++
+ 	return 0;
+ 
+ unset_cb:
+@@ -1381,6 +1388,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
+ 	{ .compatible = "nvidia,tegra30-emc", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
+ 
+ static struct platform_driver tegra_emc_driver = {
+ 	.probe = tegra_emc_probe,
+@@ -1391,9 +1399,8 @@ static struct platform_driver tegra_emc_driver = {
+ 		.suppress_bind_attrs = true,
+ 	},
+ };
++module_platform_driver(tegra_emc_driver);
+ 
+-static int __init tegra_emc_init(void)
+-{
+-	return platform_driver_register(&tegra_emc_driver);
+-}
+-subsys_initcall(tegra_emc_init);
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra30 EMC driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.27.0
 
