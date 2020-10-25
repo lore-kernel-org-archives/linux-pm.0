@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C1EC9C56201
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF815C4363A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8E37E20874
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AB8CB2076A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:22:42 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="i947Rcj1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="pMuTcykN"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419783AbgJYWWc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:22:32 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34990 "EHLO
+        id S1419194AbgJYWRz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:17:55 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34976 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419205AbgJYWR4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:17:56 -0400
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id ECC92C061755;
-        Sun, 25 Oct 2020 15:17:55 -0700 (PDT)
-Received: by mail-lj1-x243.google.com with SMTP id y16so7733070ljk.1;
-        Sun, 25 Oct 2020 15:17:55 -0700 (PDT)
+        with ESMTP id S1419189AbgJYWRx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:17:53 -0400
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A3E99C0613CE;
+        Sun, 25 Oct 2020 15:17:52 -0700 (PDT)
+Received: by mail-lf1-x143.google.com with SMTP id l28so9411383lfp.10;
+        Sun, 25 Oct 2020 15:17:52 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=1bx8gx8+d1g03DAKla/SIGpVTuVq7snjdNHpSyCav3o=;
-        b=i947Rcj1upUno+xtTpk05tqFfb8+q/5AIzJJvuhnPOcfBtRNeVcE8iww4PN98oK+3z
-         xxrAvSpkFvy9hrpK351SoA7AZyki2zig6s/0uSyjzUvlPLTTgTqft54DEjo4rVGospAq
-         8Xe7h2hJj6AJdjUYZ+uuxLwX6vqQ7xGUL3xUA79RAPMnMXA0m0CPeNTXQo1XtHgwiw3c
-         wMS7bL9Pw3Z96EaOw2TAqWJjtdhWJl2QRym5uLqITgcKLZXMurA58bdGTibokajBORWO
-         wnnWUJPaxJGjzB4fe72NVtUiNdVNPflO361f0nHsEF5HSGu0iQj1SEFIn3/bWypLqSYH
-         nXoA==
+        bh=XxBDmQPM1u3TxsC8gvQqVBRZUJtQqbbcwOXSeprhG3U=;
+        b=pMuTcykNw3g9kYCpJ7OFz9qPr2VLTMUmlxgpJ1q6B+Ai4QzKza1brA2TxVsV3t3ywn
+         pFOq5EcA6p+7ktWe1yLarZtj1dGRBOs8oDIb3eVD2CSYzbNW9L+wTMHRsdSsyLegSssp
+         K9p79pyZq/dqu4DyqjRrAxb5jVL0tgxfyLk7e+WYTd0dSDoTsRwUh2oTZ3eGf0LYo/Em
+         6GrUQGdIRxCi/ttEGpZ64bJY7pyoH8fMMdAe5yjsQu2o3QFuOG/KPBELiXgArLxCvTDY
+         srhAzu5vxqZVzmfYRiZVnoQ7x14Oh4r7rPKsm34Oopf+J5G1qHuNvvopB77xWfcr3vzs
+         Vcuw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=1bx8gx8+d1g03DAKla/SIGpVTuVq7snjdNHpSyCav3o=;
-        b=lRCEc/i9SaLCMtzVkpz+tA5OBlShOjYOWcKjNKG4swt5eInVF44wUMw7kDbptQQ/39
-         q2DBxP4PS+kYaRwMv5/Uc0NzHNGLqa0sOvgTDJs+X0fT2aT2VQHJw++kqbAqxXiVDuD8
-         SOXG7vg3DIKM/CP0sMRkUlcn6BBNUuklWKuPyv7RTXNYm114ZZqIewiVmrAtd5BAjWXs
-         klUKP4kifCLXLhalF/8yg+84kEtp3LcMc91qgkJ65nCA8QDYZq/T7t4ySrkLG57V90I/
-         By2787k5bH3fxx1zvxg4a2gZT+baDFUWb8WNHezye+NgZRSrukqWDbHzMcHLDkXo3V3P
-         8RBA==
-X-Gm-Message-State: AOAM5319l7IJfsdlBxXk+MuoZbSoFGspKsJO5WCUephDBYvwkEmmvcUq
-        GLmMl4oZARjndwhSjpklTJE=
-X-Google-Smtp-Source: ABdhPJz+1LjXdbQ+D/yc8viE9lMCwBHY23zU4GE4LsvRVfk/mxSEXHmG1SbwFx1wcRejokAz+Em7+w==
-X-Received: by 2002:a2e:7217:: with SMTP id n23mr4699165ljc.43.1603664274503;
-        Sun, 25 Oct 2020 15:17:54 -0700 (PDT)
+        bh=XxBDmQPM1u3TxsC8gvQqVBRZUJtQqbbcwOXSeprhG3U=;
+        b=VEfig5Qr1m0yKHvNr3cU1RFsuibopyIEe7LJKvDgtyJVHIFOv3lfMHgyAVPOSE1ukj
+         vP8iVEXjhHWrHFD/eMaLukR3JKAQOWbtBI57xMsXixGJk7ag639Hal6lEd3R7b4IXFC/
+         9wLKN4X2BaEIjA0k6DdbJnfi8nQ2z0QMB48IDEP+uiSyCp1/ORKEEcIvbh9iA0DsUc+M
+         bao/O04l21inuTYSoB57AYjlex44UK4IIypJTUE9iR37q2FO6Fm8j6Av+Cc2840Zpa3Q
+         sNB5gr4u6sp3zfyYMhCEjqGum/8JhSgfn27XQBZ6gMNLjSu97II8nhb6eFM7A6XXGPC9
+         ukxQ==
+X-Gm-Message-State: AOAM530cmBsNsug/7snUez4myIuJuQVE6mHBTa4rc4C85KKhRbiraIcI
+        K1W+aclPJp2C5mxM/zLezzk=
+X-Google-Smtp-Source: ABdhPJzneogPL95UN/cBtkWY5gKTrzlU3UHPgIt2MzqCBff5HU8piBWYDzFE7VGhxY92HYijisvZNQ==
+X-Received: by 2002:a05:6512:3455:: with SMTP id j21mr4440799lfr.135.1603664271160;
+        Sun, 25 Oct 2020 15:17:51 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.17.53
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.17.50
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:17:54 -0700 (PDT)
+        Sun, 25 Oct 2020 15:17:50 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 05/52] dt-bindings: memory: tegra20: mc: Document new interconnect property
-Date:   Mon, 26 Oct 2020 01:16:48 +0300
-Message-Id: <20201025221735.3062-6-digetx@gmail.com>
+Subject: [PATCH v6 02/52] soc/tegra: fuse: Export tegra_read_ram_code()
+Date:   Mon, 26 Oct 2020 01:16:45 +0300
+Message-Id: <20201025221735.3062-3-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,37 +89,34 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Memory controller is interconnected with memory clients and with the
-External Memory Controller. Document new interconnect property which
-turns memory controller into interconnect provider.
+The tegra_read_ram_code() is used by EMC drivers and we're going to make
+these driver modular, hence this function needs to be exported.
 
-Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- .../bindings/memory-controllers/nvidia,tegra20-mc.txt          | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/soc/tegra/fuse/tegra-apbmisc.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-mc.txt b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-mc.txt
-index e55328237df4..739b7c6f2e26 100644
---- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-mc.txt
-+++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-mc.txt
-@@ -16,6 +16,8 @@ Required properties:
-   IOMMU specifier needed to encode an address. GART supports only a single
-   address space that is shared by all devices, therefore no additional
-   information needed for the address encoding.
-+- #interconnect-cells : Should be 1. This cell represents memory client.
-+  The assignments may be found in header file <dt-bindings/memory/tegra20-mc.h>.
+diff --git a/drivers/soc/tegra/fuse/tegra-apbmisc.c b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+index cee207d10024..590c862538d0 100644
+--- a/drivers/soc/tegra/fuse/tegra-apbmisc.c
++++ b/drivers/soc/tegra/fuse/tegra-apbmisc.c
+@@ -3,6 +3,7 @@
+  * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
+  */
  
- Example:
- 	mc: memory-controller@7000f000 {
-@@ -27,6 +29,7 @@ Example:
- 		interrupts = <GIC_SPI 77 0x04>;
- 		#reset-cells = <1>;
- 		#iommu-cells = <0>;
-+		#interconnect-cells = <1>;
- 	};
++#include <linux/export.h>
+ #include <linux/kernel.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+@@ -90,6 +91,7 @@ u32 tegra_read_ram_code(void)
  
- 	video-codec@6001a000 {
+ 	return straps >> PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT;
+ }
++EXPORT_SYMBOL_GPL(tegra_read_ram_code);
+ 
+ static const struct of_device_id apbmisc_match[] __initconst = {
+ 	{ .compatible = "nvidia,tegra20-apbmisc", },
 -- 
 2.27.0
 
