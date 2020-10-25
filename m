@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B33F6C388F7
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60D7AC5517A
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:19:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7302B222E8
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:19:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2E90B222E8
+	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 22:19:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="UrP1B9Px"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="O0TjVomy"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1419487AbgJYWTk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 18:19:40 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35208 "EHLO
+        id S1419364AbgJYWSm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 18:18:42 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35172 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1419375AbgJYWSs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:48 -0400
-Received: from mail-lf1-x144.google.com (mail-lf1-x144.google.com [IPv6:2a00:1450:4864:20::144])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2657C061755;
-        Sun, 25 Oct 2020 15:18:47 -0700 (PDT)
-Received: by mail-lf1-x144.google.com with SMTP id h6so9405556lfj.3;
-        Sun, 25 Oct 2020 15:18:47 -0700 (PDT)
+        with ESMTP id S1419354AbgJYWSj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 18:18:39 -0400
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AF0D9C0613D2;
+        Sun, 25 Oct 2020 15:18:38 -0700 (PDT)
+Received: by mail-lj1-x242.google.com with SMTP id a4so7702142lji.12;
+        Sun, 25 Oct 2020 15:18:38 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=wCRnc5sl1MR5Wpdv1p2yGiH30cAgFbcAdvX4Ryr3kIw=;
-        b=UrP1B9PxB8RVvyOsCbd9Jw0/5tzpVXf8h1h5w6wOWzamD94BGHvcW066J7jVqBOvH5
-         IDugCwgXY8NvMVRYwcsLPMmHftdGNKn8Gu0KKUntAqQT/TLWdna/+t8HsCqRFrq/0hKN
-         tHCrcTFq4O8uGpoe2KPKQWypWT/J40eQNtIb5K9dqy6AI6GIpruJlFcn8MkcVJ3Bl7VU
-         WipN9cu81VlgjMOpWtTx4+uqGdu4eyPiJ3uBydMNHDskJLHzb+8ldlO14mg9cBKxO18I
-         uTvKe1C+Wp0S8aATpzGdHWdaiPv6j5PlXwjsZ0bCuPGv/QY6oT7vg8US/oYtaCmUFOmD
-         D81w==
+        bh=34s82dziDgtjgE1mmga3CEGdzqBry8pDI5SpO3RIz5Q=;
+        b=O0TjVomy7sTec0JSEBoEoVOg72u5g//g7ABf6m+HRcY9USmUYh5ieyO72yyyqWhriR
+         Xd0KeoMs7hkj5J4QuFiJeA37EKd/eFS5Bq185k9XAsFBl+keaKGarO0TFJB7PjzYo0VY
+         cvFK5gAadN1SA3GKiO0hLAriiNxHIFI+tqWYsVkRRkv/TCrlTXeD8vLyI3SS6ZoX5xUz
+         +opgDp0u8XpB7qNmjiXcTzpHtjg0SV/HLqfN2qUcN9Vwdlc5Er2PZRF1AzdqHS4Ykud2
+         KDsE+edq7eMFDmWws9UIx4qC6C67fDGxn+n7MuPrFcGpQ/dvfMO+gWUXRH0HhaZNl46S
+         HHnQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=wCRnc5sl1MR5Wpdv1p2yGiH30cAgFbcAdvX4Ryr3kIw=;
-        b=HZtBTXmk/5AnQyNhSoWOweWkg2oTeOh/7vlJBF6rUq6SGavNBXTt+enacvLRzZIC3A
-         F+l+mebbanIZBOqqzF1lVHHrnzap8HpnBOX+gnazD0NcKaSRj5GnXLcy82oWoy0NUPqZ
-         R6+8I8+Bazf0wGtSCBm3lIX7KtLr7xJCaiBCJ0J4B1/2fasDbHLmVe2vYyGndjpKNHbR
-         cSQ4GC/kC95EKa5IFzJeHMFYYsAn7jPT2ajdJwCJGb+tI3fVKQDkiV1rqtvVnq/Di343
-         AcEEqTt5hYqtssoOYUP3vjywoGB69UYjVJBAlRthKJInfx8L3+UB0UgJaav7tY+B75N3
-         wZzA==
-X-Gm-Message-State: AOAM530nski6wfBVwY2dlfh/ZH4r36kcag3fBgDTvogS1uABaGv3ef0k
-        Fo3qXvzBveKpL/tl4VYl/TY=
-X-Google-Smtp-Source: ABdhPJwwoWilcOIZLzXTPaOkI3oT5zrvX8bjmkI1iqYZEULY/UjpBQ8IKRPbzwvcebcWiw0QUoSk6g==
-X-Received: by 2002:a05:6512:3455:: with SMTP id j21mr4441541lfr.135.1603664326339;
-        Sun, 25 Oct 2020 15:18:46 -0700 (PDT)
+        bh=34s82dziDgtjgE1mmga3CEGdzqBry8pDI5SpO3RIz5Q=;
+        b=c/gff6ws6O6D322u4bQysYpmGlNZtyUeuIr3Wn+RmAaWKFEYCHNo2706/t7/5rwh7B
+         xAS7enT2hOfPqAr+6oZtf54zjQ5n0msxbXsZNN2+xG9CWFaIS1XZkeuG+jQ+iN1FNj+B
+         GSGWs3gGLYmh7wIlthQXrRxwIxfoe/3bvwFyZL/3qH8dwTz9y5H5900nAz90ED9Ic7k5
+         OdPCWrrCD7U/j6UVb9Aq7sVH1bt1vXbRlDoP3bEWOTBcLXQZbGNXmtyjOR16CqTxm7mp
+         YfF+driVdGwcUJFDR0Ld+wqduhJ1FsMesWPMNNR3TLht/wr+nCla3N94/H1/hFKKp+Qf
+         NNNg==
+X-Gm-Message-State: AOAM530k8If1mrMmxuZuJ+Vy5Rqjnxm8bL8UYlb9CAhljNG1lCGWLZfG
+        f31UC6rwxDkB2U9cGChh8go=
+X-Google-Smtp-Source: ABdhPJzpGbxU3dxTzUBB9eXcGkorGydSItojnxwUzoP1UK7n046ygK5N9HVGnibcbtno/Us0LjqKVg==
+X-Received: by 2002:a2e:8108:: with SMTP id d8mr4756026ljg.96.1603664317268;
+        Sun, 25 Oct 2020 15:18:37 -0700 (PDT)
 Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.45
+        by smtp.gmail.com with ESMTPSA id k13sm932423ljh.136.2020.10.25.15.18.36
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 15:18:45 -0700 (PDT)
+        Sun, 25 Oct 2020 15:18:36 -0700 (PDT)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v6 51/52] PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
-Date:   Mon, 26 Oct 2020 01:17:34 +0300
-Message-Id: <20201025221735.3062-52-digetx@gmail.com>
+Subject: [PATCH v6 43/52] memory: tegra: Remove superfluous error messages around platform_get_irq()
+Date:   Mon, 26 Oct 2020 01:17:26 +0300
+Message-Id: <20201025221735.3062-44-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201025221735.3062-1-digetx@gmail.com>
 References: <20201025221735.3062-1-digetx@gmail.com>
@@ -89,216 +89,61 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch moves ACTMON driver away from generating OPP table by itself,
-transitioning it to use the table which comes from device-tree. This
-change breaks compatibility with older device-trees in order to bring
-support for the interconnect framework to the driver. This is a mandatory
-change which needs to be done in order to implement interconnect-based
-memory DVFS. Users of legacy device-trees will get a message telling that
-theirs DT needs to be upgraded. Now ACTMON issues memory bandwidth request
-using dev_pm_opp_set_bw(), instead of driving EMC clock rate directly.
+The platform_get_irq() prints error message telling that interrupt is
+missing, hence there is no need to duplicated that message in the drivers.
 
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 91 ++++++++++++++++---------------
- 1 file changed, 48 insertions(+), 43 deletions(-)
+ drivers/memory/tegra/mc.c          | 4 +---
+ drivers/memory/tegra/tegra20-emc.c | 1 -
+ drivers/memory/tegra/tegra30-emc.c | 5 ++---
+ 3 files changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 3f732ab53573..1b0b91a71886 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -19,6 +19,8 @@
- #include <linux/reset.h>
- #include <linux/workqueue.h>
- 
-+#include <soc/tegra/fuse.h>
-+
- #include "governor.h"
- 
- #define ACTMON_GLB_STATUS					0x0
-@@ -155,6 +157,7 @@ struct tegra_devfreq_device {
- 
- struct tegra_devfreq {
- 	struct devfreq		*devfreq;
-+	struct opp_table	*opp_table;
- 
- 	struct reset_control	*reset;
- 	struct clk		*clock;
-@@ -612,34 +615,19 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
- static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
- 				u32 flags)
- {
--	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
--	struct devfreq *devfreq = tegra->devfreq;
- 	struct dev_pm_opp *opp;
--	unsigned long rate;
--	int err;
-+	int ret;
- 
- 	opp = devfreq_recommended_opp(dev, freq, flags);
- 	if (IS_ERR(opp)) {
--		dev_err(dev, "Failed to find opp for %lu Hz\n", *freq);
-+		dev_err(dev, "failed to find opp for %lu Hz\n", *freq);
- 		return PTR_ERR(opp);
- 	}
--	rate = dev_pm_opp_get_freq(opp);
--	dev_pm_opp_put(opp);
--
--	err = clk_set_min_rate(tegra->emc_clock, rate * KHZ);
--	if (err)
--		return err;
--
--	err = clk_set_rate(tegra->emc_clock, 0);
--	if (err)
--		goto restore_min_rate;
- 
--	return 0;
--
--restore_min_rate:
--	clk_set_min_rate(tegra->emc_clock, devfreq->previous_freq);
-+	ret = dev_pm_opp_set_bw(dev, opp);
-+	dev_pm_opp_put(opp);
- 
--	return err;
-+	return ret;
- }
- 
- static int tegra_devfreq_get_dev_status(struct device *dev,
-@@ -655,7 +643,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
- 	stat->private_data = tegra;
- 
- 	/* The below are to be used by the other governors */
--	stat->current_frequency = cur_freq;
-+	stat->current_frequency = cur_freq * KHZ;
- 
- 	actmon_dev = &tegra->devices[MCALL];
- 
-@@ -705,7 +693,7 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
- 		target_freq = max(target_freq, dev->target_freq);
+diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
+index 15589bf8f5b6..4a3bf08495c9 100644
+--- a/drivers/memory/tegra/mc.c
++++ b/drivers/memory/tegra/mc.c
+@@ -837,10 +837,8 @@ static int tegra_mc_probe(struct platform_device *pdev)
  	}
  
--	*freq = target_freq;
-+	*freq = target_freq * KHZ;
- 
- 	return 0;
- }
-@@ -773,13 +761,22 @@ static struct devfreq_governor tegra_devfreq_governor = {
- 
- static int tegra_devfreq_probe(struct platform_device *pdev)
- {
-+	u32 hw_version = BIT(tegra_sku_info.soc_speedo_id);
- 	struct tegra_devfreq_device *dev;
- 	struct tegra_devfreq *tegra;
-+	struct opp_table *opp_table;
- 	struct devfreq *devfreq;
- 	unsigned int i;
- 	long rate;
- 	int err;
- 
-+	/* legacy device-trees don't have OPP table and must be updated */
-+	if (!device_property_present(&pdev->dev, "operating-points-v2")) {
-+		dev_err(&pdev->dev, "OPP table not found, cannot continue\n");
-+		dev_err(&pdev->dev, "please update your device tree\n");
-+		return -ENODEV;
-+	}
-+
- 	tegra = devm_kzalloc(&pdev->dev, sizeof(*tegra), GFP_KERNEL);
- 	if (!tegra)
- 		return -ENOMEM;
-@@ -821,11 +818,29 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
-+	tegra->opp_table = dev_pm_opp_get_opp_table(&pdev->dev);
-+	if (IS_ERR(tegra->opp_table))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(tegra->opp_table),
-+				     "Failed to prepare OPP table\n");
-+
-+	opp_table = dev_pm_opp_set_supported_hw(&pdev->dev, &hw_version, 1);
-+	err = PTR_ERR_OR_ZERO(opp_table);
-+	if (err) {
-+		dev_err(&pdev->dev, "Failed to set supported HW: %d\n", err);
-+		goto put_table;
-+	}
-+
-+	err = dev_pm_opp_of_add_table(&pdev->dev);
-+	if (err) {
-+		dev_err(&pdev->dev, "Failed to add OPP table: %d\n", err);
-+		goto put_hw;
-+	}
-+
- 	err = clk_prepare_enable(tegra->clock);
- 	if (err) {
- 		dev_err(&pdev->dev,
- 			"Failed to prepare and enable ACTMON clock\n");
--		return err;
-+		goto remove_table;
- 	}
- 
- 	err = reset_control_reset(tegra->reset);
-@@ -849,23 +864,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 		dev->regs = tegra->regs + dev->config->offset;
- 	}
- 
--	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
--		rate = clk_round_rate(tegra->emc_clock, rate);
--
--		if (rate < 0) {
--			dev_err(&pdev->dev,
--				"Failed to round clock rate: %ld\n", rate);
--			err = rate;
--			goto remove_opps;
--		}
--
--		err = dev_pm_opp_add(&pdev->dev, rate / KHZ, 0);
--		if (err) {
--			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
--			goto remove_opps;
--		}
+ 	mc->irq = platform_get_irq(pdev, 0);
+-	if (mc->irq < 0) {
+-		dev_err(&pdev->dev, "interrupt not specified\n");
++	if (mc->irq < 0)
+ 		return mc->irq;
 -	}
--
- 	platform_set_drvdata(pdev, tegra);
  
- 	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
-@@ -881,7 +879,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+ 	WARN(!mc->soc->client_id_mask, "missing client ID mask for this SoC\n");
+ 
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 27242659dfd6..1519d6ce9b28 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -844,7 +844,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 
+ 	irq = platform_get_irq(pdev, 0);
+ 	if (irq < 0) {
+-		dev_err(&pdev->dev, "interrupt not specified\n");
+ 		dev_err(&pdev->dev, "please update your device tree\n");
+ 		return irq;
  	}
+diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
+index 66eae944ca6d..d2515d7f3c0b 100644
+--- a/drivers/memory/tegra/tegra30-emc.c
++++ b/drivers/memory/tegra/tegra30-emc.c
+@@ -1472,10 +1472,9 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 		return err;
  
- 	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
--	tegra_devfreq_profile.initial_freq /= KHZ;
- 
- 	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
- 				     "tegra_actmon", NULL);
-@@ -901,6 +898,12 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	reset_control_reset(tegra->reset);
- disable_clk:
- 	clk_disable_unprepare(tegra->clock);
-+remove_table:
-+	dev_pm_opp_of_remove_table(&pdev->dev);
-+put_hw:
-+	dev_pm_opp_put_supported_hw(tegra->opp_table);
-+put_table:
-+	dev_pm_opp_put_opp_table(tegra->opp_table);
- 
- 	return err;
- }
-@@ -912,11 +915,13 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	devfreq_remove_device(tegra->devfreq);
- 	devfreq_remove_governor(&tegra_devfreq_governor);
- 
--	dev_pm_opp_remove_all_dynamic(&pdev->dev);
--
- 	reset_control_reset(tegra->reset);
- 	clk_disable_unprepare(tegra->clock);
- 
-+	dev_pm_opp_of_remove_table(&pdev->dev);
-+	dev_pm_opp_put_supported_hw(tegra->opp_table);
-+	dev_pm_opp_put_opp_table(tegra->opp_table);
+ 	err = platform_get_irq(pdev, 0);
+-	if (err < 0) {
+-		dev_err(&pdev->dev, "interrupt not specified: %d\n", err);
++	if (err < 0)
+ 		return err;
+-	}
 +
- 	return 0;
- }
+ 	emc->irq = err;
  
+ 	err = devm_request_irq(&pdev->dev, emc->irq, tegra_emc_isr, 0,
 -- 
 2.27.0
 
