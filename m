@@ -1,341 +1,226 @@
-Return-Path: <SRS0=NrZp=EA=vger.kernel.org=linux-pm-owner@kernel.org>
+Return-Path: <SRS0=4E8L=EB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6D1D7C388F7
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 23:02:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8CB2CC5517A
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 00:39:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3BB1E22400
-	for <linux-pm@archiver.kernel.org>; Sun, 25 Oct 2020 23:02:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4594520756
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 00:39:19 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IuX4bdcv"
+	dkim=pass (1024-bit key) header.d=intel.onmicrosoft.com header.i=@intel.onmicrosoft.com header.b="gospHVgX"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1420347AbgJYXCR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 19:02:17 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41870 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1420354AbgJYXCD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 19:02:03 -0400
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 19B60C061755;
-        Sun, 25 Oct 2020 16:02:03 -0700 (PDT)
-Received: by mail-lf1-x143.google.com with SMTP id a7so9461100lfk.9;
-        Sun, 25 Oct 2020 16:02:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=YqWlegA0ek+s5nygUqKUAivUmzlJL24s2FNozZ5HuxA=;
-        b=IuX4bdcvq95NVSSbcKgg1EuqCNkjwRm3mloJ0zHjuiRAgRNc+CtqPf5w9u1cTqhws7
-         ewf48bVmuA80UrZUN0XyVkO9mWvPM1aTZzL9boe+3IrThvPqVKYv9blu20n1ghgxsljZ
-         Er1M4Pm1XutNqxds4vC/eRGiX/KsD8VQV9ClsX/YnN1T8xpiK4Uwqvw2gju0IAn8t0jX
-         D7OWh8j9V2fUpJlQaouiauAoxWJPUf5KGz1H5EX/KeYCsa3ZRnnRUyZIlsytkK8zOt+Q
-         KA2y4Cf8LcIVm8fYFD6xKJK7DGyf6HlhrpkJBVdwKlkUzjn3vHCeTuDngRFNL1/KOfBD
-         PGJA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=YqWlegA0ek+s5nygUqKUAivUmzlJL24s2FNozZ5HuxA=;
-        b=AN2ZMtJ7YPMWcPsh1STDPTWc2r9ihXxzT2pWB15z+vMz2YannyQM4IJU7YGpfDNPVC
-         r7UrO+ic5w9T0MB5Hb5Q/V7mN0ZfsmmznCtwKzopDUkKGkBW3talhaBVfZIPkHMuKXVQ
-         bv3eykASElVO7COtlDtLaFYG7oNP2nF0jFnv3OXa1OE3oaSnk4G1Yxr8Q4JgXl0tNbJ/
-         t5T6TbPXgdJQX/kzW5QqQObSpxvCCi0aE7KvWmK/jsfey1l74hDibiyD1ytoadhxs64Z
-         CUa3eu+CSi0jt4irHXqXwSGL2YZyh+r+rEa+YYB6b1GLIsnWyaDdwlJ1dWTUU/V99w/0
-         o+BQ==
-X-Gm-Message-State: AOAM533J/ezXnpk5KRSckHL9rsGABILVbdJqkR/k6BCMTbAtXgxBQ+SV
-        SbLq/MhopqlvutflWKlTRRE=
-X-Google-Smtp-Source: ABdhPJzVbYLU9U+xsQkP89pQFKoFHjKOTZ0Vg395iSUNCEirdnXGkRRPP/tYXSyRGFJu23YAptALcQ==
-X-Received: by 2002:a19:6514:: with SMTP id z20mr3859746lfb.456.1603666921588;
-        Sun, 25 Oct 2020 16:02:01 -0700 (PDT)
-Received: from localhost.localdomain (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.gmail.com with ESMTPSA id j16sm949619ljh.48.2020.10.25.16.02.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 25 Oct 2020 16:02:01 -0700 (PDT)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
-Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH RESEND v4 2/4] mfd: Add driver for Embedded Controller found on Acer Iconia Tab A500
-Date:   Mon, 26 Oct 2020 02:01:51 +0300
-Message-Id: <20201025230153.11729-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201025230153.11729-1-digetx@gmail.com>
-References: <20201025230153.11729-1-digetx@gmail.com>
+        id S1420884AbgJZAjS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 20:39:18 -0400
+Received: from mga03.intel.com ([134.134.136.65]:30125 "EHLO mga03.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1420874AbgJZAih (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sun, 25 Oct 2020 20:38:37 -0400
+IronPort-SDR: V2GiecckMO9ZhhG4weZv8NX2EwdiYwAlSm4K0jhd45l/F9ov+cU6Pfpg/CFuGa+VBcS0GEhn0Z
+ NJbNYzZ9jqbA==
+X-IronPort-AV: E=McAfee;i="6000,8403,9785"; a="167960000"
+X-IronPort-AV: E=Sophos;i="5.77,417,1596524400"; 
+   d="scan'208";a="167960000"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga004.jf.intel.com ([10.7.209.38])
+  by orsmga103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2020 17:38:36 -0700
+IronPort-SDR: NWnfmoweVKhceYnJFLmUykx2hcUpt8jp2DbEv0eIW9LVg/qjt+3EeNBwUDR27kN1v6J2l7J1Kq
+ mWtdmKVb8Kug==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.77,417,1596524400"; 
+   d="scan'208";a="467730532"
+Received: from fmsmsx602.amr.corp.intel.com ([10.18.126.82])
+  by orsmga004.jf.intel.com with ESMTP; 25 Oct 2020 17:38:35 -0700
+Received: from fmsmsx607.amr.corp.intel.com (10.18.126.87) by
+ fmsmsx602.amr.corp.intel.com (10.18.126.82) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Sun, 25 Oct 2020 17:38:35 -0700
+Received: from fmsmsx601.amr.corp.intel.com (10.18.126.81) by
+ fmsmsx607.amr.corp.intel.com (10.18.126.87) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.1713.5; Sun, 25 Oct 2020 17:38:34 -0700
+Received: from fmsedg601.ED.cps.intel.com (10.1.192.135) by
+ fmsmsx601.amr.corp.intel.com (10.18.126.81) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1713.5
+ via Frontend Transport; Sun, 25 Oct 2020 17:38:34 -0700
+Received: from NAM11-CO1-obe.outbound.protection.outlook.com (104.47.56.172)
+ by edgegateway.intel.com (192.55.55.70) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.1713.5; Sun, 25 Oct 2020 17:38:33 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=ec+qzFkPOjHk/MJQ1bDtHBfoQ2TolaeShfPqSxzuCzNhVk4LaiV72VxGC3I4OEzHwx0CUWmnVL5gipsf6eYgwmRpnCjtvEgntxD70tPdliRAgnVABqregaXtHhdxyS0KobKjyIux25njdrh69Qrw6MvhkoebYwmKBvhhF02PYAUvzAOzKVm+0NNlvUNXENGSPyVklMiVvKwfG1OGSfYX6drl+vPg+2bP6RLkA2cy8s5O286SSQGgLwJwcfwWW4huGBv3nVwCqlLqoZ+09xLSsGx3zLhQLhJw8Ijx14j1mvotyrwqpk4CLYGEDqO0Rvji65LohR+ImQP9kL4quHIQag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=POHANa+eDkgXYJDNU3Y0iPAgKW1aGHYmuM+lFsPa7vs=;
+ b=b/W7tbQ9DshCRAV5JowNuPRHBJq4VshbGdnOKlkrtCTF25wpWXUkASzEvv7e9nCtY6/+VphCN3fAxgiQaicGLNRi+REs1nRuWvYez6fGuNcMxSlFNTgjIRGYM8ot4W9fwcByrxHoRFUVQdoplJzCZYkl0v682YcADNstfusumkmBi3FHBfh1ZR+3L31W3wru2OexCpNyZ1p8AS+z7jKn5i1foVs7lyzhYlMqnV4OkqOImcp36VRH8fEPDwIx2MsoQoGe3Nl7NmQsioK1dng41Y1H0mHFoIdRYTGSK/YzwCfBWfS3z/iVRxnpkRbolA9Y41fq1zzNp6dmNadApaePOw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.onmicrosoft.com;
+ s=selector2-intel-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=POHANa+eDkgXYJDNU3Y0iPAgKW1aGHYmuM+lFsPa7vs=;
+ b=gospHVgXqRS7jku2UwYT8z+JZjzp1XGy7Qu41uyGtgo/EYsZkaxJeHNueKmIka9FfzpUDaIqmWAijsiimEKwGbbN3ZuHUStfUduNan4SK5cR2KkjY9TIYFbX7RWxwS19KeVKv0Atyr1v9NxkN2mxbNZQr3DUPmPAgL60XY5vJGM=
+Received: from SN6PR11MB3184.namprd11.prod.outlook.com (2603:10b6:805:bd::17)
+ by SN6PR11MB3230.namprd11.prod.outlook.com (2603:10b6:805:b8::29) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3499.18; Mon, 26 Oct
+ 2020 00:38:32 +0000
+Received: from SN6PR11MB3184.namprd11.prod.outlook.com
+ ([fe80::b901:8e07:4340:6704]) by SN6PR11MB3184.namprd11.prod.outlook.com
+ ([fe80::b901:8e07:4340:6704%7]) with mapi id 15.20.3477.028; Mon, 26 Oct 2020
+ 00:38:32 +0000
+From:   "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
+To:     "rppt@kernel.org" <rppt@kernel.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+CC:     "david@redhat.com" <david@redhat.com>,
+        "cl@linux.com" <cl@linux.com>,
+        "gor@linux.ibm.com" <gor@linux.ibm.com>,
+        "hpa@zytor.com" <hpa@zytor.com>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+        "will@kernel.org" <will@kernel.org>,
+        "penberg@kernel.org" <penberg@kernel.org>,
+        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
+        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+        "kirill@shutemov.name" <kirill@shutemov.name>,
+        "rientjes@google.com" <rientjes@google.com>,
+        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
+        "paulus@samba.org" <paulus@samba.org>,
+        "hca@linux.ibm.com" <hca@linux.ibm.com>,
+        "pavel@ucw.cz" <pavel@ucw.cz>, "bp@alien8.de" <bp@alien8.de>,
+        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+        "luto@kernel.org" <luto@kernel.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
+        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "palmer@dabbelt.com" <palmer@dabbelt.com>,
+        "Brown, Len" <len.brown@intel.com>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
+Subject: Re: [PATCH 2/4] PM: hibernate: improve robustness of mapping pages in
+ the direct map
+Thread-Topic: [PATCH 2/4] PM: hibernate: improve robustness of mapping pages
+ in the direct map
+Thread-Index: AQHWqrf6LRJhAvsqzE2DP+hB1ynbOKmpCzYA
+Date:   Mon, 26 Oct 2020 00:38:32 +0000
+Message-ID: <f20900a403bea9eb3f0814128e5ea46f6580f5a5.camel@intel.com>
+References: <20201025101555.3057-1-rppt@kernel.org>
+         <20201025101555.3057-3-rppt@kernel.org>
+In-Reply-To: <20201025101555.3057-3-rppt@kernel.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+user-agent: Evolution 3.30.1 (3.30.1-1.fc29) 
+authentication-results: kernel.org; dkim=none (message not signed)
+ header.d=none;kernel.org; dmarc=none action=none header.from=intel.com;
+x-originating-ip: [192.55.55.43]
+x-ms-publictraffictype: Email
+x-ms-office365-filtering-correlation-id: 5ad491d3-357f-4953-91f1-08d879477746
+x-ms-traffictypediagnostic: SN6PR11MB3230:
+x-ms-exchange-transport-forked: True
+x-microsoft-antispam-prvs: <SN6PR11MB323086788B7DC160D562C876C9190@SN6PR11MB3230.namprd11.prod.outlook.com>
+x-ms-oob-tlc-oobclassifiers: OLM:3513;
+x-ms-exchange-senderadcheck: 1
+x-microsoft-antispam: BCL:0;
+x-microsoft-antispam-message-info: cb1AbnusLUbxe3Z2OFEwyuQmnllpwLPiW2RpHypzcRYXBmx3CeRUtPwEmrbYX4Do0WwJpUx8dI4/FTEmGH1fynKKw2XbPVRSOaXqEhegw8TOUHreZ/XiAduKTnj44K0OxxirL9ypiZkuTz3k7BsJOBJ1l6/mr8V+PwOJ8twMRnuxeC9yKwWf027hLwdRWn2AScZRwmbmX0xNO0/QpBRUj4PE6WffuoSohBNqYGbqZxIDyY74lpJ3YugJ8u3rylLXai2JHfP0FvTWo5re8gq/96+kBmPJc02PDk8AMa545uL/sHxV5j+O9XiLw9+vxY1T5+Wejo2JDiKr3QhEErD3Vg==
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR11MB3184.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(366004)(346002)(396003)(39860400002)(136003)(376002)(91956017)(4326008)(478600001)(66446008)(7406005)(66946007)(66556008)(36756003)(86362001)(66476007)(6506007)(76116006)(7416002)(110136005)(5660300002)(64756008)(186003)(2906002)(8936002)(54906003)(316002)(83380400001)(26005)(2616005)(6512007)(6486002)(8676002)(4001150100001)(71200400001);DIR:OUT;SFP:1102;
+x-ms-exchange-antispam-messagedata: glmLmLB12U0y5RY0L+ZT1Mi/9/Lz/KB/6WAVVycPk1YVeMOwoGyGUWU4Fq1MVzaBaZukNjhLe5PIBbbdY3d+VVjt9Fl6xRXYUGpfjJmWIWZun4seSr0uF+OSZyJo8Z91mRWPTmCFJXeFJbXdgyTNr1d8zGfztjMC3TKVel+Vpcbv54fKsjYIPOfWIP4XgjdG//4b5fNq6tKs/LR0iALRreua4medRAoUnZodcCHhxttXr+vOg85DRBUCF2uj7DJZSNfk8bu23YNOYfNwkNG4nc7E61V9uIErZ3kUL7xtLNAhbfjxRTDx1bu5MKEbQ2tkaRQq5TRtMoNxSHae3wqOFEW6LsIScfQypJUmfFhOxe0NK+qJs4e5ZBTbE9bH8OuJkMKxmpJqxMs6exVbM5lx8SvPvDm5OhEAV1zcZOmvjdP5TGEwtmPNtotm5fo/pQFfaJtSaazRa50xGa6WNz6IKHxVYbxneMyg8iPwwfBUv0Siqv2vv/L68HBwEi+xK1NW+KJ/rOLgMtYzy8fjEq9kcLNDy1una7Xc2p/gb5eiBRJDTyYQ+0sH9DHRydMNU73L7I1Hm6RYifUr7bRVb5shA0iEUX10uRGV6sIZfwp+wg3no4kbrvxjQNpJkaCbOXu+gute91p7zWzUiPuNP/m7tw==
+Content-Type: text/plain; charset="utf-8"
+Content-ID: <1A64047B5DCE1A409D92B085E6D25DC1@namprd11.prod.outlook.com>
+Content-Transfer-Encoding: base64
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR11MB3184.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 5ad491d3-357f-4953-91f1-08d879477746
+X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Oct 2020 00:38:32.2198
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: EOqvkWZ3MNaT13nksG4s0qRyOCAw2mCf4k3JN5qlMHbWP/+ykROXQciwCEC8QPjPYsTstcrDbcEkIe/faBMY7w6mZB6T8UpndsedXRzgLyM=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN6PR11MB3230
+X-OriginatorOrg: intel.com
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Acer Iconia Tab A500 is an Android tablet device, it has ENE KB930
-Embedded Controller which provides battery-gauge, LED, GPIO and some
-other functions. The EC uses firmware that is specifically customized
-for Acer A500. This patch adds MFD driver for the Embedded Controller
-which allows to power-off / reboot the A500 device, it also provides
-a common register read/write API that will be used by the sub-devices.
-
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/mfd/Kconfig        |  12 +++
- drivers/mfd/Makefile       |   1 +
- drivers/mfd/acer-ec-a500.c | 203 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 216 insertions(+)
- create mode 100644 drivers/mfd/acer-ec-a500.c
-
-diff --git a/drivers/mfd/Kconfig b/drivers/mfd/Kconfig
-index 8b99a13669bf..527ba5054d80 100644
---- a/drivers/mfd/Kconfig
-+++ b/drivers/mfd/Kconfig
-@@ -2097,6 +2097,18 @@ config MFD_KHADAS_MCU
- 	  additional drivers must be enabled in order to use the functionality
- 	  of the device.
- 
-+config MFD_ACER_A500_EC
-+	tristate "Embedded Controller driver for Acer Iconia Tab A500"
-+	depends on I2C
-+	depends on ARCH_TEGRA_2x_SOC || COMPILE_TEST
-+	select MFD_CORE
-+	select REGMAP
-+	help
-+	  Support for Acer Iconia Tab A500 Embedded Controller.
-+
-+	  The controller itself is ENE KB930, it is running firmware
-+	  customized for the specific needs of the Acer A500 hardware.
-+
- menu "Multimedia Capabilities Port drivers"
- 	depends on ARCH_SA1100
- 
-diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
-index 1780019d2474..7bfc57c8b363 100644
---- a/drivers/mfd/Makefile
-+++ b/drivers/mfd/Makefile
-@@ -263,6 +263,7 @@ obj-$(CONFIG_MFD_ROHM_BD71828)	+= rohm-bd71828.o
- obj-$(CONFIG_MFD_ROHM_BD718XX)	+= rohm-bd718x7.o
- obj-$(CONFIG_MFD_STMFX) 	+= stmfx.o
- obj-$(CONFIG_MFD_KHADAS_MCU) 	+= khadas-mcu.o
-+obj-$(CONFIG_MFD_ACER_A500_EC)	+= acer-ec-a500.o
- 
- obj-$(CONFIG_SGI_MFD_IOC3)	+= ioc3.o
- obj-$(CONFIG_MFD_SIMPLE_MFD_I2C)	+= simple-mfd-i2c.o
-diff --git a/drivers/mfd/acer-ec-a500.c b/drivers/mfd/acer-ec-a500.c
-new file mode 100644
-index 000000000000..2785a6d9bcc4
---- /dev/null
-+++ b/drivers/mfd/acer-ec-a500.c
-@@ -0,0 +1,203 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * MFD driver for Acer Iconia Tab A500 Embedded Controller.
-+ *
-+ * Copyright 2020 GRATE-driver project.
-+ *
-+ * Based on downstream driver from Acer Inc.
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/i2c.h>
-+#include <linux/mfd/core.h>
-+#include <linux/module.h>
-+#include <linux/of_device.h>
-+#include <linux/regmap.h>
-+#include <linux/reboot.h>
-+
-+#define A500_EC_I2C_ERR_TIMEOUT		500
-+#define A500_EC_POWER_CMD_TIMEOUT	1000
-+
-+enum {
-+	REG_CURRENT_NOW = 0x03,
-+	REG_SHUTDOWN = 0x52,
-+	REG_WARM_REBOOT = 0x54,
-+	REG_COLD_REBOOT = 0x55,
-+};
-+
-+static struct i2c_client *a500_ec_client_pm_off;
-+
-+static int a500_ec_read(void *context, const void *reg_buf, size_t reg_size,
-+			void *val_buf, size_t val_sizel)
-+{
-+	struct i2c_client *client = context;
-+	unsigned int reg, retries = 5;
-+	u16 *ret_val = val_buf;
-+	s32 ret = 0;
-+
-+	if (reg_size != 1 || val_sizel != 2)
-+		return -EOPNOTSUPP;
-+
-+	reg = *(u8 *)reg_buf;
-+
-+	while (retries-- > 0) {
-+		ret = i2c_smbus_read_word_data(client, reg);
-+		if (ret >= 0)
-+			break;
-+
-+		msleep(A500_EC_I2C_ERR_TIMEOUT);
-+	}
-+
-+	if (ret < 0) {
-+		dev_err(&client->dev, "read 0x%x failed: %d\n", reg, ret);
-+		return ret;
-+	}
-+
-+	*ret_val = ret;
-+
-+	if (reg == REG_CURRENT_NOW)
-+		fsleep(10000);
-+
-+	return 0;
-+}
-+
-+static int a500_ec_write(void *context, const void *data, size_t count)
-+{
-+	struct i2c_client *client = context;
-+	unsigned int reg, val, retries = 5;
-+	s32 ret = 0;
-+
-+	if (count != 3)
-+		return -EOPNOTSUPP;
-+
-+	reg = *(u8  *)(data + 0);
-+	val = *(u16 *)(data + 1);
-+
-+	while (retries-- > 0) {
-+		ret = i2c_smbus_write_word_data(client, reg, val);
-+		if (ret >= 0)
-+			break;
-+
-+		msleep(A500_EC_I2C_ERR_TIMEOUT);
-+	}
-+
-+	if (ret < 0) {
-+		dev_err(&client->dev, "write 0x%x failed: %d\n", reg, ret);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct regmap_config a500_ec_regmap_config = {
-+	.name = "KB930",
-+	.reg_bits = 8,
-+	.val_bits = 16,
-+	.max_register = 0xff,
-+};
-+
-+static const struct regmap_bus a500_ec_regmap_bus = {
-+	.reg_format_endian_default = REGMAP_ENDIAN_NATIVE,
-+	.val_format_endian_default = REGMAP_ENDIAN_LITTLE,
-+	.write = a500_ec_write,
-+	.read = a500_ec_read,
-+	.max_raw_read = 2,
-+};
-+
-+static void a500_ec_poweroff(void)
-+{
-+	i2c_smbus_write_word_data(a500_ec_client_pm_off, REG_SHUTDOWN, 0);
-+
-+	mdelay(A500_EC_POWER_CMD_TIMEOUT);
-+}
-+
-+static int a500_ec_restart_notify(struct notifier_block *this,
-+				  unsigned long reboot_mode, void *data)
-+{
-+	if (reboot_mode == REBOOT_WARM)
-+		i2c_smbus_write_word_data(a500_ec_client_pm_off,
-+					  REG_WARM_REBOOT, 0);
-+	else
-+		i2c_smbus_write_word_data(a500_ec_client_pm_off,
-+					  REG_COLD_REBOOT, 1);
-+
-+	mdelay(A500_EC_POWER_CMD_TIMEOUT);
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block a500_ec_restart_handler = {
-+	.notifier_call = a500_ec_restart_notify,
-+	.priority = 200,
-+};
-+
-+static const struct mfd_cell a500_ec_cells[] = {
-+	{ .name = "acer-a500-iconia-battery", },
-+	{ .name = "acer-a500-iconia-leds", },
-+};
-+
-+static int a500_ec_probe(struct i2c_client *client)
-+{
-+	struct regmap *rmap;
-+	int err;
-+
-+	rmap = devm_regmap_init(&client->dev, &a500_ec_regmap_bus,
-+				client, &a500_ec_regmap_config);
-+	if (IS_ERR(rmap))
-+		return PTR_ERR(rmap);
-+
-+	/* register battery and LED sub-devices */
-+	err = devm_mfd_add_devices(&client->dev, PLATFORM_DEVID_AUTO,
-+				   a500_ec_cells, ARRAY_SIZE(a500_ec_cells),
-+				   NULL, 0, NULL);
-+	if (err) {
-+		dev_err(&client->dev, "failed to add sub-devices: %d\n", err);
-+		return err;
-+	}
-+
-+	/* set up power management functions */
-+	if (of_device_is_system_power_controller(client->dev.of_node)) {
-+		a500_ec_client_pm_off = client;
-+
-+		err = register_restart_handler(&a500_ec_restart_handler);
-+		if (err)
-+			return err;
-+
-+		if (!pm_power_off)
-+			pm_power_off = a500_ec_poweroff;
-+	}
-+
-+	return 0;
-+}
-+
-+static int a500_ec_remove(struct i2c_client *client)
-+{
-+	if (of_device_is_system_power_controller(client->dev.of_node)) {
-+		if (pm_power_off == a500_ec_poweroff)
-+			pm_power_off = NULL;
-+
-+		unregister_restart_handler(&a500_ec_restart_handler);
-+	}
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id a500_ec_match[] = {
-+	{ .compatible = "acer,a500-iconia-ec" },
-+	{ }
-+};
-+MODULE_DEVICE_TABLE(of, a500_ec_match);
-+
-+static struct i2c_driver a500_ec_driver = {
-+	.driver = {
-+		.name = "acer-a500-embedded-controller",
-+		.of_match_table = a500_ec_match,
-+	},
-+	.probe_new = a500_ec_probe,
-+	.remove = a500_ec_remove,
-+};
-+module_i2c_driver(a500_ec_driver);
-+
-+MODULE_DESCRIPTION("Acer Iconia Tab A500 Embedded Controller driver");
-+MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
-+MODULE_LICENSE("GPL");
--- 
-2.27.0
-
+T24gU3VuLCAyMDIwLTEwLTI1IGF0IDEyOjE1ICswMjAwLCBNaWtlIFJhcG9wb3J0IHdyb3RlOg0K
+PiBGcm9tOiBNaWtlIFJhcG9wb3J0IDxycHB0QGxpbnV4LmlibS5jb20+DQo+IA0KPiBXaGVuIERF
+QlVHX1BBR0VBTExPQyBvciBBUkNIX0hBU19TRVRfRElSRUNUX01BUCBpcyBlbmFibGVkIGEgcGFn
+ZSBtYXkNCj4gYmUNCj4gbm90IHByZXNlbnQgaW4gdGhlIGRpcmVjdCBtYXAgYW5kIGhhcyB0byBi
+ZSBleHBsaWNpdGx5IG1hcHBlZCBiZWZvcmUNCj4gaXQNCj4gY291bGQgYmUgY29waWVkLg0KPiAN
+Cj4gT24gYXJtNjQgaXQgaXMgcG9zc2libGUgdGhhdCBhIHBhZ2Ugd291bGQgYmUgcmVtb3ZlZCBm
+cm9tIHRoZSBkaXJlY3QNCj4gbWFwDQo+IHVzaW5nIHNldF9kaXJlY3RfbWFwX2ludmFsaWRfbm9m
+bHVzaCgpIGJ1dCBfX2tlcm5lbF9tYXBfcGFnZXMoKSB3aWxsDQo+IHJlZnVzZQ0KPiB0byBtYXAg
+dGhpcyBwYWdlIGJhY2sgaWYgREVCVUdfUEFHRUFMTE9DIGlzIGRpc2FibGVkLg0KDQpJdCBsb29r
+cyB0byBtZSB0aGF0IGFybTY0IF9fa2VybmVsX21hcF9wYWdlcygpIHdpbGwgc3RpbGwgYXR0ZW1w
+dCB0bw0KbWFwIGl0IGlmIHJvZGF0YV9mdWxsIGlzIHRydWUsIGhvdyBkb2VzIHRoaXMgaGFwcGVu
+Pw0KDQo+IEV4cGxpY2l0bHkgdXNlIHNldF9kaXJlY3RfbWFwX3tkZWZhdWx0LGludmFsaWR9X25v
+Zmx1c2goKSBmb3INCj4gQVJDSF9IQVNfU0VUX0RJUkVDVF9NQVAgY2FzZSBhbmQgZGVidWdfcGFn
+ZWFsbG9jX21hcF9wYWdlcygpIGZvcg0KPiBERUJVR19QQUdFQUxMT0MgY2FzZS4NCj4gDQo+IFdo
+aWxlIG9uIHRoYXQsIHJlbmFtZSBrZXJuZWxfbWFwX3BhZ2VzKCkgdG8gaGliZXJuYXRlX21hcF9w
+YWdlKCkgYW5kDQo+IGRyb3ANCj4gbnVtcGFnZXMgcGFyYW1ldGVyLg0KPiANCj4gU2lnbmVkLW9m
+Zi1ieTogTWlrZSBSYXBvcG9ydCA8cnBwdEBsaW51eC5pYm0uY29tPg0KPiAtLS0NCj4gIGtlcm5l
+bC9wb3dlci9zbmFwc2hvdC5jIHwgMjkgKysrKysrKysrKysrKysrKysrKy0tLS0tLS0tLS0NCj4g
+IDEgZmlsZSBjaGFuZ2VkLCAxOSBpbnNlcnRpb25zKCspLCAxMCBkZWxldGlvbnMoLSkNCj4gDQo+
+IGRpZmYgLS1naXQgYS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYyBiL2tlcm5lbC9wb3dlci9zbmFw
+c2hvdC5jDQo+IGluZGV4IGZhNDk5NDY2ZjY0NS4uZWNiN2IzMmNlNzdjIDEwMDY0NA0KPiAtLS0g
+YS9rZXJuZWwvcG93ZXIvc25hcHNob3QuYw0KPiArKysgYi9rZXJuZWwvcG93ZXIvc25hcHNob3Qu
+Yw0KPiBAQCAtNzYsMTYgKzc2LDI1IEBAIHN0YXRpYyBpbmxpbmUgdm9pZA0KPiBoaWJlcm5hdGVf
+cmVzdG9yZV9wcm90ZWN0X3BhZ2Uodm9pZCAqcGFnZV9hZGRyZXNzKSB7fQ0KPiAgc3RhdGljIGlu
+bGluZSB2b2lkIGhpYmVybmF0ZV9yZXN0b3JlX3VucHJvdGVjdF9wYWdlKHZvaWQNCj4gKnBhZ2Vf
+YWRkcmVzcykge30NCj4gICNlbmRpZiAvKiBDT05GSUdfU1RSSUNUX0tFUk5FTF9SV1ggICYmIENP
+TkZJR19BUkNIX0hBU19TRVRfTUVNT1JZICovDQo+ICANCj4gLSNpZiBkZWZpbmVkKENPTkZJR19E
+RUJVR19QQUdFQUxMT0MpIHx8DQo+IGRlZmluZWQoQ09ORklHX0FSQ0hfSEFTX1NFVF9ESVJFQ1Rf
+TUFQKQ0KPiAtc3RhdGljIGlubGluZSB2b2lkDQo+IC1rZXJuZWxfbWFwX3BhZ2VzKHN0cnVjdCBw
+YWdlICpwYWdlLCBpbnQgbnVtcGFnZXMsIGludCBlbmFibGUpDQo+ICtzdGF0aWMgaW5saW5lIHZv
+aWQgaGliZXJuYXRlX21hcF9wYWdlKHN0cnVjdCBwYWdlICpwYWdlLCBpbnQgZW5hYmxlKQ0KPiAg
+ew0KPiAtCV9fa2VybmVsX21hcF9wYWdlcyhwYWdlLCBudW1wYWdlcywgZW5hYmxlKTsNCj4gKwlp
+ZiAoSVNfRU5BQkxFRChDT05GSUdfQVJDSF9IQVNfU0VUX0RJUkVDVF9NQVApKSB7DQo+ICsJCXVu
+c2lnbmVkIGxvbmcgYWRkciA9ICh1bnNpZ25lZCBsb25nKXBhZ2VfYWRkcmVzcyhwYWdlKTsNCj4g
+KwkJaW50IHJldDsNCj4gKw0KPiArCQlpZiAoZW5hYmxlKQ0KPiArCQkJcmV0ID0gc2V0X2RpcmVj
+dF9tYXBfZGVmYXVsdF9ub2ZsdXNoKHBhZ2UpOw0KPiArCQllbHNlDQo+ICsJCQlyZXQgPSBzZXRf
+ZGlyZWN0X21hcF9pbnZhbGlkX25vZmx1c2gocGFnZSk7DQo+ICsNCj4gKwkJaWYgKFdBUk5fT04o
+cmV0KSkNCj4gKwkJCXJldHVybjsNCj4gKw0KPiArCQlmbHVzaF90bGJfa2VybmVsX3JhbmdlKGFk
+ZHIsIGFkZHIgKyBQQUdFX1NJWkUpOw0KPiArCX0gZWxzZSB7DQo+ICsJCWRlYnVnX3BhZ2VhbGxv
+Y19tYXBfcGFnZXMocGFnZSwgMSwgZW5hYmxlKTsNCj4gKwl9DQo+ICB9DQo+IC0jZWxzZQ0KPiAt
+c3RhdGljIGlubGluZSB2b2lkDQo+IC1rZXJuZWxfbWFwX3BhZ2VzKHN0cnVjdCBwYWdlICpwYWdl
+LCBpbnQgbnVtcGFnZXMsIGludCBlbmFibGUpIHt9DQo+IC0jZW5kaWYNCj4gIA0KPiAgc3RhdGlj
+IGludCBzd3N1c3BfcGFnZV9pc19mcmVlKHN0cnVjdCBwYWdlICopOw0KPiAgc3RhdGljIHZvaWQg
+c3dzdXNwX3NldF9wYWdlX2ZvcmJpZGRlbihzdHJ1Y3QgcGFnZSAqKTsNCj4gQEAgLTEzNjYsOSAr
+MTM3NSw5IEBAIHN0YXRpYyB2b2lkIHNhZmVfY29weV9wYWdlKHZvaWQgKmRzdCwgc3RydWN0DQo+
+IHBhZ2UgKnNfcGFnZSkNCj4gIAlpZiAoa2VybmVsX3BhZ2VfcHJlc2VudChzX3BhZ2UpKSB7DQo+
+ICAJCWRvX2NvcHlfcGFnZShkc3QsIHBhZ2VfYWRkcmVzcyhzX3BhZ2UpKTsNCj4gIAl9IGVsc2Ug
+ew0KPiAtCQlrZXJuZWxfbWFwX3BhZ2VzKHNfcGFnZSwgMSwgMSk7DQo+ICsJCWhpYmVybmF0ZV9t
+YXBfcGFnZShzX3BhZ2UsIDEpOw0KPiAgCQlkb19jb3B5X3BhZ2UoZHN0LCBwYWdlX2FkZHJlc3Mo
+c19wYWdlKSk7DQo+IC0JCWtlcm5lbF9tYXBfcGFnZXMoc19wYWdlLCAxLCAwKTsNCj4gKwkJaGli
+ZXJuYXRlX21hcF9wYWdlKHNfcGFnZSwgMCk7DQo+ICAJfQ0KPiAgfQ0KPiAgDQoNCklmIHNvbWVo
+b3cgYSBwYWdlIHdhcyB1bm1hcHBlZCBzdWNoIHRoYXQNCnNldF9kaXJlY3RfbWFwX2RlZmF1bHRf
+bm9mbHVzaCgpIHdvdWxkIGZhaWwsIHRoZW4gdGhpcyBjb2RlIGludHJvZHVjZXMNCmEgV0FSTiwg
+YnV0IGl0IHdpbGwgc3RpbGwgdHJ5IHRvIHJlYWQgdGhlIHVubWFwcGVkIHBhZ2UuIFdoeSBub3Qg
+anVzdA0KaGF2ZSB0aGUgV0FSTidzIGluc2lkZSBvZiBfX2tlcm5lbF9tYXBfcGFnZXMoKSBpZiB0
+aGV5IGZhaWwgYW5kIHRoZW4NCmhhdmUgYSB3YXJuaW5nIGZvciB0aGUgZGVidWcgcGFnZSBhbGxv
+YyBjYXNlcyBhcyB3ZWxsPyBTaW5jZSBsb2dpYw0KYXJvdW5kIGJvdGggZXhwZWN0cyB0aGVtIG5v
+dCB0byBmYWlsLg0KDQoNCg==
