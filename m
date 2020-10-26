@@ -2,168 +2,151 @@ Return-Path: <SRS0=4E8L=EB=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6059CC4363A
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 01:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCC35C388F7
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 01:48:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0BCBA22263
-	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 01:14:03 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 76C1620723
+	for <linux-pm@archiver.kernel.org>; Mon, 26 Oct 2020 01:48:44 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=intel.onmicrosoft.com header.i=@intel.onmicrosoft.com header.b="wRAtcj3s"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="Fj1f4Df/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1421079AbgJZBOC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 25 Oct 2020 21:14:02 -0400
-Received: from mga06.intel.com ([134.134.136.31]:21699 "EHLO mga06.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1421078AbgJZBOB (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sun, 25 Oct 2020 21:14:01 -0400
-IronPort-SDR: oH24CLvqQO/5R9dmmNDHuw1CNxQ/Lt9Ywb2fJU91gYYAiT1Hpyw/x5+WCpr3xTMYvbWssOHYoj
- gX3sTG1S/SCQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9785"; a="229499797"
-X-IronPort-AV: E=Sophos;i="5.77,417,1596524400"; 
-   d="scan'208";a="229499797"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga007.jf.intel.com ([10.7.209.58])
-  by orsmga104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Oct 2020 18:13:59 -0700
-IronPort-SDR: hzP5rd6h1liHzJ1ArnZZckrdy6N3K8dKKOLAieV/L4158tR82BX7e1LJDkOfSGvTLfex9Xdkji
- zZbFr3k+vAnQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,417,1596524400"; 
-   d="scan'208";a="360833707"
-Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
-  by orsmga007.jf.intel.com with ESMTP; 25 Oct 2020 18:13:59 -0700
-Received: from orsmsx601.amr.corp.intel.com (10.22.229.14) by
- ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
- 15.1.1713.5; Sun, 25 Oct 2020 18:13:59 -0700
-Received: from ORSEDG602.ED.cps.intel.com (10.7.248.7) by
- orsmsx601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.1713.5
- via Frontend Transport; Sun, 25 Oct 2020 18:13:59 -0700
-Received: from NAM02-BL2-obe.outbound.protection.outlook.com (104.47.38.51) by
- edgegateway.intel.com (134.134.137.103) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.1.1713.5; Sun, 25 Oct 2020 18:13:55 -0700
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=E+vFxiZRRV0bWM4jYv5POtHlru265Y3DPSxNqrIhDUCb+GzTKKUJ61tutXCrWEfQDHZQOPktXhb6MCna9hcQTFjhyNFo6WDVah6FDlJSmZRyNMWLpzHqYUyc/6pfxR493//oxKMidgDo2H9MbYieyClUqOLBw1QfOqwh69maAebAZMiFcdIMIMmt29B9/8Prsrp9VtgF5SS09rMwI0M26VvP5MyhonRi5iQcZhWGoKAMZQ3h09C6ybndWf6cXbC0ADwbOTI6rC9cAU5qzMkgrvFUZz6qD4FGZcKkGcH5L8TcLhAeD7MDBHyZBNecLdTy2y14dphaT31U1Sp/u9X4DQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GCdaGHTHtP8gtA6Z+FFbeq6bpqfZezEc0ccEOpAX4Es=;
- b=Yfh6uEdyv+jPo+OA2igO5GioyPMKCxAh2ylZZ+B44zaljjKGAMYaO//bRtV8t5uxTTiAdgKRn8NvXZTb42QlrtLtnZW13bcObagqEQg0IGBwb/9lfFk/dkr8TCO3iQVZajrLembZORVSP7YH5XvsHcFAW31QIXmN+hh58eO3AEvRyeYIimtf5ntS69Znf0SiRQzcNsoD4ixnKm5h6kM/VPOSaokJT3rmE6piy8fRbYT8j6Tyd86hu5svBy1/PzVZ++6uvqViCpjptgqAs4vI4WHfB7ovKShhXNtjDyRNs7BnRZMPXIXxLflL0kV4b3hMx8Z4uqv6uGnH15nCRbi8GA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
- dkim=pass header.d=intel.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=intel.onmicrosoft.com;
- s=selector2-intel-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GCdaGHTHtP8gtA6Z+FFbeq6bpqfZezEc0ccEOpAX4Es=;
- b=wRAtcj3sKYRJ5ymp7oUIK5o29NAVxQglEGvXMuvcl99D0fUGRZfhhEcycMPG1G5JM4QMLrnmoY64PR+Lb9yy17DI5n+g+y1GuapsyNA8MYoQeVWJn0UGEsbV7tgjpvQ3EDQD7xT+2OiJPLlOP4rhKPbqLiqUTnDmDSGcU2nEEDE=
-Received: from SN6PR11MB3184.namprd11.prod.outlook.com (2603:10b6:805:bd::17)
- by SA2PR11MB5098.namprd11.prod.outlook.com (2603:10b6:806:11c::23) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3477.27; Mon, 26 Oct
- 2020 01:13:52 +0000
-Received: from SN6PR11MB3184.namprd11.prod.outlook.com
- ([fe80::b901:8e07:4340:6704]) by SN6PR11MB3184.namprd11.prod.outlook.com
- ([fe80::b901:8e07:4340:6704%7]) with mapi id 15.20.3477.028; Mon, 26 Oct 2020
- 01:13:52 +0000
-From:   "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
-To:     "rppt@kernel.org" <rppt@kernel.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-CC:     "david@redhat.com" <david@redhat.com>,
-        "cl@linux.com" <cl@linux.com>,
-        "gor@linux.ibm.com" <gor@linux.ibm.com>,
-        "hpa@zytor.com" <hpa@zytor.com>,
-        "peterz@infradead.org" <peterz@infradead.org>,
-        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
-        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
-        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
-        "will@kernel.org" <will@kernel.org>,
-        "penberg@kernel.org" <penberg@kernel.org>,
-        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
-        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
-        "kirill@shutemov.name" <kirill@shutemov.name>,
-        "rientjes@google.com" <rientjes@google.com>,
-        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
-        "paulus@samba.org" <paulus@samba.org>,
-        "hca@linux.ibm.com" <hca@linux.ibm.com>,
-        "pavel@ucw.cz" <pavel@ucw.cz>, "bp@alien8.de" <bp@alien8.de>,
-        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
-        "luto@kernel.org" <luto@kernel.org>,
-        "davem@davemloft.net" <davem@davemloft.net>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "palmer@dabbelt.com" <palmer@dabbelt.com>,
-        "Brown, Len" <len.brown@intel.com>,
-        "mingo@redhat.com" <mingo@redhat.com>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
-Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
- manipulation
-Thread-Topic: [PATCH 0/4] arch, mm: improve robustness of direct map
- manipulation
-Thread-Index: AQHWqrf3SYgZeORHqEa1kMKSitw9UKmpFReA
-Date:   Mon, 26 Oct 2020 01:13:52 +0000
-Message-ID: <ae82f905a0092adb7e0f0ac206335c1883b3170f.camel@intel.com>
-References: <20201025101555.3057-1-rppt@kernel.org>
-In-Reply-To: <20201025101555.3057-1-rppt@kernel.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-user-agent: Evolution 3.30.1 (3.30.1-1.fc29) 
-authentication-results: kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=none action=none header.from=intel.com;
-x-originating-ip: [192.55.55.43]
-x-ms-publictraffictype: Email
-x-ms-office365-filtering-correlation-id: cc039678-a76b-496b-93bd-08d8794c6723
-x-ms-traffictypediagnostic: SA2PR11MB5098:
-x-ms-exchange-transport-forked: True
-x-microsoft-antispam-prvs: <SA2PR11MB50985A3DAC48AC5E20C24F6AC9190@SA2PR11MB5098.namprd11.prod.outlook.com>
-x-ms-oob-tlc-oobclassifiers: OLM:7691;
-x-ms-exchange-senderadcheck: 1
-x-microsoft-antispam: BCL:0;
-x-microsoft-antispam-message-info: DlgT42S+6Ct81Dm9PP4kfkEe/8Y/RjSpoRaeLZJ++8MLtIEIlars7vy2Nxa1GvGFJIE4G8LbnE9giiOyxBLLlGncblj8SQByYgMPKB/k70VDZQyo/LvvXdDzzIIuIAzytctc6tTCRgm2c9Th+wYPKujikSrPF1rC2GCwcLnTDsIE2ikyR24Olorsf1jQ1qpqLjl+/4LN9OVRBO5GLuMlbfGbYHWWL455mvXWrwT0I3zZzP3ml4Oqt9XkDRirpK/SMx9eHfH+S/sQcY/b8+SMB55B1SNuLKY+l71TIv40vFheD9PHS6iNXHyMD77MSMkQPrz6CFkuGC80OKHvyRT/6w==
-x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR11MB3184.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(39860400002)(396003)(346002)(376002)(136003)(366004)(2906002)(6506007)(8936002)(5660300002)(26005)(316002)(110136005)(86362001)(7416002)(83380400001)(4744005)(6486002)(4326008)(54906003)(4001150100001)(66446008)(66556008)(71200400001)(66946007)(66476007)(91956017)(8676002)(36756003)(186003)(2616005)(6512007)(7406005)(64756008)(76116006)(478600001);DIR:OUT;SFP:1102;
-x-ms-exchange-antispam-messagedata: 3eyK9ztK9ty2x56AFldcQ9PmeiaKtSRGFMDt7eqzfD/tu6WByW+j8aKkQ0ct9biUj6MgDPsBg2orjrc81BJqdLawoba+H0EZIypdkWEIM4mYsDxncmgtLEnibHV/st1N6tgiHq/+aAphYvWm8LpmJRwMZJmzisOwWOA4qhDx2XciyEJswGCeuliStWHcr1OWg2CgEVDolti+hVaqzxEi67n7PkvDM/68WRX15jSgxZ95f3sijpTwZhF+gpqLrSTHP2l0C1Jmxp/zHcZmp8DNj2lCzuv7i2ZuQVQTPa0M+tsluKejArzMzVRyDA5+qZK4nRv6C/2Vb/91Ny9xlYxDZdCv2D2nbj8qKAlVCHyu5tqu3C9Zh7PzWRAAfeTKwpbCHCcVGOS6s7gpmGIDvwbBHqblftp3vE+3KaZK5jsRiXD69qd9W8ZT5kFVnMlmwhfAyjdTlqS7DCRggfCnzWVNfMzPPN+KGSXdJNr0UOox9BW2rmSHODe3iFQDzyaln+LD7WPU5vs+PeO/a4jeNjzan4iMt62odWQNPVF3U4a0aAOKpeaYodXX2ct63nKoZuCriKCGIIzk5exuDYTT3yyw1DyvGI+Rvnx4Rw0YLbvPph/iTMQ099tSNm9XxZNCdgHZYD5hICuR6HSKyIEvgNMgtw==
-Content-Type: text/plain; charset="utf-8"
-Content-ID: <A4492F646F7F0A418B81F65A778FC5B5@namprd11.prod.outlook.com>
-Content-Transfer-Encoding: base64
+        id S1421229AbgJZBsn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 25 Oct 2020 21:48:43 -0400
+Received: from mailout2.samsung.com ([203.254.224.25]:22772 "EHLO
+        mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1418915AbgJZBsk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 25 Oct 2020 21:48:40 -0400
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout2.samsung.com (KnoxPortal) with ESMTP id 20201026014836epoutp028fed40db6f45acb303396482311211cc~BZ6i3zlps2969729697epoutp02B
+        for <linux-pm@vger.kernel.org>; Mon, 26 Oct 2020 01:48:36 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.samsung.com 20201026014836epoutp028fed40db6f45acb303396482311211cc~BZ6i3zlps2969729697epoutp02B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1603676916;
+        bh=37PnDkF5xPnXJofZfiHzZMGGvdWBOs4q7GwZvJLA/sg=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=Fj1f4Df/+DDZdNhwcSPmU4OOpPjj1cYA5McPqrv1pd8x6UncCLed6ASIqRAapnNP0
+         Wb9OMdUp8pLJYneQ+cBl05ZrLS9fU/gKLVpz84HvReUvgc6XafBLJTuxrGwEUSUaYM
+         ni4EShWMqr1KDgaeWGz+X3Pr1MgykB0WoGXhiDJA=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTP id
+        20201026014836epcas1p38144d3db17e8f9b63f6dab1f72e20c2a~BZ6iZWjPx3049830498epcas1p3m;
+        Mon, 26 Oct 2020 01:48:36 +0000 (GMT)
+Received: from epsmges1p3.samsung.com (unknown [182.195.40.158]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4CKHmf4wVczMqYm9; Mon, 26 Oct
+        2020 01:48:34 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p3.samsung.com (Symantec Messaging Gateway) with SMTP id
+        7C.94.09582.2FA269F5; Mon, 26 Oct 2020 10:48:34 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20201026014834epcas1p29d483b8c2aa3d7d7f3a62f0937d3b825~BZ6ghavLZ0717507175epcas1p2f;
+        Mon, 26 Oct 2020 01:48:34 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20201026014834epsmtrp22db458c732a0742ee7eded9e318128a6~BZ6ggpvpy3006630066epsmtrp2d;
+        Mon, 26 Oct 2020 01:48:34 +0000 (GMT)
+X-AuditID: b6c32a37-8afff7000000256e-ae-5f962af2c391
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        DB.6C.08604.2FA269F5; Mon, 26 Oct 2020 10:48:34 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20201026014833epsmtip20007a16e5de1e388492d733fec49ab01~BZ6gQJKa-1996219962epsmtip2h;
+        Mon, 26 Oct 2020 01:48:33 +0000 (GMT)
+Subject: Re: [PATCH v5 2/2] PM / devfreq: Add governor attribute flag for
+ specifc sysfs nodes
+To:     Dmitry Osipenko <digetx@gmail.com>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-tegra@vger.kernel.org
+Cc:     lukasz.luba@arm.com, enric.balletbo@collabora.com,
+        hl@rock-chips.com, thierry.reding@gmail.com, jonathanh@nvidia.com,
+        abel.vesa@nxp.com, k.konieczny@samsung.com,
+        b.zolnierkie@samsung.com, chanwoo@kernel.org,
+        myungjoo.ham@samsung.com, kyungmin.park@samsung.com
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <8bd3c09d-a55d-318c-afc6-88a2215110e1@samsung.com>
+Date:   Mon, 26 Oct 2020 11:02:23 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: SN6PR11MB3184.namprd11.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: cc039678-a76b-496b-93bd-08d8794c6723
-X-MS-Exchange-CrossTenant-originalarrivaltime: 26 Oct 2020 01:13:52.6366
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: KKKnNFImuHLI+4Vw+Koea6r9Mx1bOYKiGLXlTj4J/aQ3X1WvWnoCnIe38BbeUKOcrdhpUX7RdEVXLskwj3AppXXez7mw8KYhdsWEkKT9los=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA2PR11MB5098
-X-OriginatorOrg: intel.com
+In-Reply-To: <53199cd1-772c-f30e-4f74-93572d6875cb@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA02TfUxbVRjGc3ovl3YRuRQYZzCB3TmWwYBeSunFUdSMYMNAMURF/rBe6ZUS
+        Slt7QRzTBDayURzbmrmCtVI2ZK5Q5VNSCrOmQydGEwHBzQ2pDpUwLBsf23RibHu3yH+/vO/z
+        nuc854OPCCewaH65porRa2g1gW1Bhy7tSU1eSTQpRE7bLur85JeA6mvtCaKMV35Aqe7bNwBl
+        v+YG1L3ebxCqwXwOpdpXWoOo7w4vBVNTTgtGrTaPAcqwZsaos4cbgqlr9Rcw6i9nG/pUqNze
+        Zgdyx+xHQD5sng2W93cZMHnzES8m7/M6ePINswuVnxjsAvLV/thCQUlFloqhlYw+ntGUapXl
+        mjIZcaBIsV8hyRCRyWQmJSXiNXQlIyNy8guTc8vVvghE/Ju0utpXKqRZlkjNztJrq6uYeJWW
+        rZIRjE6p1mXqUli6kq3WlKWUaiufIEWiNIlP+GqF6sfh48G6q+hbd0ZtoA5cR5qAgA/xdOg2
+        H+M1gS18Ie4AcMnhwvwNIb4CYMNkAcd3AHzXoH448OnvAwg3cBHAm78sBHGiZQDPXT7k53Bc
+        Ae0Dl1A/R+DvwLEJD+YfQPBmHjSNdvL8DQxPhK6FKwG3UHwHnL53A/g5BM+Gfabzge2h+C44
+        +5sloI/EX4TjQw0PNGFw/P35gIEAl0Gj9XSAETwK/jRv5XEcB4989sGDmGt82GrRNgG+j3Pg
+        TEsYVw6Hi5cHgzmOhqveixjHh6BtfCywZ4g3Ajjo+j6Ia4ihq/M0z78Ogu+BPc5UrrwDDt//
+        EHC2j0Lv+vEgzioENh4VcpKdcMozy+N4G+w4ZsBOAcK8KYx5UwDzpgDm/83aAdoFtjI6trKM
+        YUmdePNV94PA206UOoDpz1spbsDjAzeAfISICLFsP6MQhijpg7WMXqvQV6sZ1g0kvuM1ItGR
+        pVrf59BUKUhJmlgsptLJDAlJElEh/yQ1KoR4GV3FVDCMjtE/nOPxBdF1vKN/6OYRd7rh74PP
+        hHkslqGn52oX6x7rHlXpBJ6MHlOESHz/donaa3jOSF+NLL15duZk9Ccxqn/ze4tK2mua897L
+        Tv96rn4gX/W64YuGvutJd8PQnesn9N7tv1IeMu3ZbcWLxpFTwy/HJNTaOpbpC2/DKU1NUpa1
+        O7wtedoIBQn7p/bujk1GbXmyuI5e6dK3WNTEz9PL9tjXbJMZpDFO5Hxy8kBj3uPKhRE8/42X
+        1gsK1tSdhVZpZFSPc0SUIbv1yt2afcVFz6+2mGbMIG7fxy3p2q+yqfGc3bm5Zxb3SutnqfUI
+        2Fi88cjcC1YiVLIwuqHXKUFEzdbPYxL0yx42k0BZFU0mInqW/g8aauaTZAQAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrPIsWRmVeSWpSXmKPExsWy7bCSvO4nrWnxBlPXMFssu3SU0WLjjPWs
+        FhNvXGGxWP3xMaPFmtuHGC1+bDjFbNEyaxGLxYJPM1gtzja9Ybe4vGsOm8Xn3iOMFp1fZrFZ
+        LGxqYbe43biCzeLnrnksDvwea+atYfTYcXcJo8fOWXfZPTat6mTz6G1+x+ax8d0OJo+/s/az
+        ePRtWcXo8XmTXABnFJdNSmpOZllqkb5dAlfG9Z097AU3WSq+7VnJ2MB4h7mLkZNDQsBEYt2z
+        zUA2F4eQwG5GiW+T5rNBJCQlpl08CpTgALKFJQ4fLoaoecsosXXyG7AaYYF4iTWbD7OA2CIC
+        tRKvVk9nBSliFuhlkujatZcVJCEk8I5R4sXVEBCbTUBLYv+LG2DN/AKKEld/PGYEsXkF7CQ2
+        TlsGdhGLgKrE3adzmEBsUYEwiZ1LHjNB1AhKnJz5BGwZp4CtxMT5k8FsZgF1iT/zLjFD2OIS
+        t57MZ4Kw5SWat85mnsAoPAtJ+ywkLbOQtMxC0rKAkWUVo2RqQXFuem6xYYFhXmq5XnFibnFp
+        Xrpecn7uJkZwHGtp7mDcvuqD3iFGJg7GQ4wSHMxKIrxzZKbGC/GmJFZWpRblxxeV5qQWH2KU
+        5mBREue9UbgwTkggPbEkNTs1tSC1CCbLxMEp1cCUc+Cz2LZDf9aFBdxQYDPZ/+noE3m2//si
+        7c1vCx2bye7yMtMrPW3VMY3zBj/dF0x+f/lJJss538VsPyOf16YuSQruvG3BY33qmdoy7o4L
+        J1Z33pAwL/vXuMZwXd0cDQFD+fkPra9+fm5gtbn43g6bxyXvwvfofFyootBW//uMhfKHRfdn
+        fH/VqlYaOTvFNkzb98/mLStfmwYypzDUC/L/47KvZdn8lcPuXEWK84PYTWmhtlqvftVUrJdy
+        YCha/OBzi0urFNe6ki8PLNeLRpjzy1w9seloU6fwyy15x2bpfPU3C/L9NfPIHZXqxUf3Rzxf
+        5u4zw1z3x8GjbaffxBxnZS93e59/6s8U7rTewyuuK7EUZyQaajEXFScCALfjQbJSAwAA
+X-CMS-MailID: 20201026014834epcas1p29d483b8c2aa3d7d7f3a62f0937d3b825
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20201023101247epcas1p14b14dc1be24842daac1dc7bd229d4570
+References: <20201023102632.740-1-cw00.choi@samsung.com>
+        <CGME20201023101247epcas1p14b14dc1be24842daac1dc7bd229d4570@epcas1p1.samsung.com>
+        <20201023102632.740-3-cw00.choi@samsung.com>
+        <53199cd1-772c-f30e-4f74-93572d6875cb@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-T24gU3VuLCAyMDIwLTEwLTI1IGF0IDEyOjE1ICswMjAwLCBNaWtlIFJhcG9wb3J0IHdyb3RlOg0K
-PiBJbmRlZWQsIGZvciBhcmNoaXRlY3R1cmVzIHRoYXQgZGVmaW5lIENPTkZJR19BUkNIX0hBU19T
-RVRfRElSRUNUX01BUA0KPiBpdCBpcw0KPiBwb3NzaWJsZSB0aGF0IF9fa2VybmVsX21hcF9wYWdl
-cygpIHdvdWxkIGZhaWwsIGJ1dCBzaW5jZSB0aGlzDQo+IGZ1bmN0aW9uIGlzDQo+IHZvaWQsIHRo
-ZSBmYWlsdXJlIHdpbGwgZ28gdW5ub3RpY2VkLg0KDQpDb3VsZCB5b3UgZWxhYm9yYXRlIG9uIGhv
-dyB0aGlzIGNvdWxkIGhhcHBlbj8gRG8geW91IG1lYW4gZHVyaW5nDQpydW50aW1lIHRvZGF5IG9y
-IGlmIHNvbWV0aGluZyBuZXcgd2FzIGludHJvZHVjZWQ/DQoNCg==
+On 10/26/20 1:30 AM, Dmitry Osipenko wrote:
+> 23.10.2020 13:26, Chanwoo Choi пишет:
+>> @@ -909,6 +915,8 @@ struct devfreq *devfreq_add_device(struct device *dev,
+>>  		goto err_init;
+>>  	}
+>>  
+>> +	create_sysfs_files(devfreq, governor);
+>> +
+>>  	devfreq->governor = governor;
+>>  	err = devfreq->governor->event_handler(devfreq, DEVFREQ_GOV_START,
+>>  						NULL);
+> 
+> Shouldn't sysfs be created *after* GOV_START? This is inconsistent with
+> governor_store().
+> 
+> 
+
+Good point. Thanks for the review. I'll edit it.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
