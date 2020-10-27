@@ -2,145 +2,199 @@ Return-Path: <SRS0=A9Dn=EC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5FCA4C388F9
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 18:08:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2387AC388F9
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 18:12:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 20E7120790
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 18:08:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D10422076D
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 18:12:05 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hQCVs6p0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1825026AbgJ0SHq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Oct 2020 14:07:46 -0400
-Received: from foss.arm.com ([217.140.110.172]:49550 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1824045AbgJ0SHp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Oct 2020 14:07:45 -0400
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8CFD5139F;
-        Tue, 27 Oct 2020 11:07:44 -0700 (PDT)
-Received: from e108754-lin.cambridge.arm.com (e108754-lin.cambridge.arm.com [10.1.199.49])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C7A103F66E;
-        Tue, 27 Oct 2020 11:07:42 -0700 (PDT)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     mingo@redhat.com, peterz@infradead.org, vincent.guittot@linaro.org,
-        catalin.marinas@arm.com, will@kernel.org, rjw@rjwysocki.net,
-        viresh.kumar@linaro.org
-Cc:     dietmar.eggemann@arm.com, qperret@google.com,
-        valentin.schneider@arm.com, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        ionela.voinescu@arm.com
-Subject: [PATCH RESEND v2 1/3] sched/topology,schedutil: wrap sched domains rebuild
-Date:   Tue, 27 Oct 2020 18:07:11 +0000
-Message-Id: <20201027180713.7642-2-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201027180713.7642-1-ionela.voinescu@arm.com>
-References: <20201027180713.7642-1-ionela.voinescu@arm.com>
+        id S1825617AbgJ0SMD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Oct 2020 14:12:03 -0400
+Received: from mail-ej1-f66.google.com ([209.85.218.66]:41144 "EHLO
+        mail-ej1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1825610AbgJ0SMB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 14:12:01 -0400
+Received: by mail-ej1-f66.google.com with SMTP id s15so3561428ejf.8;
+        Tue, 27 Oct 2020 11:11:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=X+QwCJaXCPvUM/NJPq7e7lq/Xt5tTU8EStNpjKh1NUA=;
+        b=hQCVs6p0LKbTCY7DsTZRnffqeCThDRKsG5kMgr17NA+33i+s71KRCBQePPTg2SjNFd
+         C8Nr3swnguyyrqutB7zZZxrDDCJjC+1IwRYSJ3lTc3mW9KDS5rvaaG9mdnH+Gn+9ddkA
+         6VepBD8lN6lWuz+UHmhNquWZlPMwH3kdq/lXqxhGWw4ydd70+iWmZrDsxLJ+IH62ztPl
+         F232IhDGaraBW4IQNckvHZQu1+I7bVrea/YplgyLNVDKjtSaovQzQG6adBnHTqI3odgK
+         SFmhcVqccWA0ZYpAskg4cSEf3RAmGsfgEEOB67JgAiK6ZwZR/t/wpfqqh4bWYXl5YBeM
+         1aKA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=X+QwCJaXCPvUM/NJPq7e7lq/Xt5tTU8EStNpjKh1NUA=;
+        b=YW+eda6CEZRraqk8ytQp1Mpz5A6ZY4ulohRx3KEd8htkgosIrrRb0god7zdQtahS8h
+         KB8oDL9omkw2AIm9gRADXS5a8S+kIn1S2ftZdarjROj8nUJl+Qi224m4d6/OLPlocvUS
+         4HyrLZXtGNfyhTfMD7+61bC4r/JgmrYpmUbfY0T/WdA3KWAybGmsYRlSa1+K9xV4FZ9A
+         Qc/gV/gr2h6xJekNygjm50XgSCYqh1yfHwrZEqSDUZ/pcxY1rJCpRRK0E7MVE5r9KQAY
+         8LW1T660AC7MbjQIvIdXFWexd9IaeNyvTP33bbJUzeWPxv6qgVZ+RAhxsEeWVqJfzoq/
+         3aoQ==
+X-Gm-Message-State: AOAM531zuEdyx2u1NA/GDuxiFlB+YrGEc9J10LPtaMW4lf8NDWeoKUnd
+        8xx4x+lp5Qb9qxzkDmLFu2Y=
+X-Google-Smtp-Source: ABdhPJweJPF6eEu3UsJ7mwptZ0e/+bndw18/+QzcId2TT5lSkFzF+bGSph4EwFUdqwBV1XJg0WZLjQ==
+X-Received: by 2002:a17:906:e103:: with SMTP id gj3mr3564877ejb.442.1603822318747;
+        Tue, 27 Oct 2020 11:11:58 -0700 (PDT)
+Received: from pce.localnet (host-95-249-217-124.retail.telecomitalia.it. [95.249.217.124])
+        by smtp.gmail.com with ESMTPSA id g8sm1472472ejp.73.2020.10.27.11.11.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Oct 2020 11:11:58 -0700 (PDT)
+From:   Elia Devito <eliadevito@gmail.com>
+To:     markpearson@lenovo.com, Mark Pearson <markpearson@lenovo.com>
+Cc:     dvhart@infradead.org, mgross@linux.intel.com,
+        mario.limonciello@dell.com, hadess@hadess.net, bberg@redhat.com,
+        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+        platform-driver-x86@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [PATCH] Documentation: Add documentation for new platform_profile sysfs attribute
+Date:   Tue, 27 Oct 2020 19:11:55 +0100
+Message-ID: <2177500.ElGaqSPkdT@pce>
+In-Reply-To: <20201027164219.868839-1-markpearson@lenovo.com>
+References: <markpearson@lenovo.com> <20201027164219.868839-1-markpearson@lenovo.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add the rebuild_sched_domains_energy() function to wrap the functionality
-that rebuilds the scheduling domains if any of the Energy Aware Scheduling
-(EAS) initialisation conditions change. This functionality is used when
-schedutil is added or removed or when EAS is enabled or disabled
-through the sched_energy_aware sysctl.
+Hi to all,
 
-Therefore, create a single function that is used in both these cases and
-that can be later reused.
+In data marted=EC 27 ottobre 2020 17:42:19 CET, Mark Pearson ha scritto:
+> From: Hans de Goede <hdegoede@redhat.com>
+>=20
+> On modern systems the platform performance, temperature, fan and other
+> hardware related characteristics are often dynamically configurable. The
+> profile is often automatically adjusted to the load by somei
+> automatic-mechanism (which may very well live outside the kernel).
+>=20
+> These auto platform-adjustment mechanisms often can be configured with
+> one of several 'platform-profiles', with either a bias towards low-power
+> consumption or towards performance (and higher power consumption and
+> thermals).
+>=20
+> Introduce a new platform_profile sysfs API which offers a generic API for
+> selecting the performance-profile of these automatic-mechanisms.
+>=20
+> Co-developed-by: Mark Pearson <markpearson@lenovo.com>
+> Signed-off-by: Mark Pearson <markpearson@lenovo.com>
+> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> ---
+> Changes in V1:
+>  - Moved from RFC to proposed patch
+>  - Added cool profile as requested
+>  - removed extra-profiles as no longer relevant
+>=20
+>  .../ABI/testing/sysfs-platform_profile        | 66 +++++++++++++++++++
+>  1 file changed, 66 insertions(+)
+>  create mode 100644 Documentation/ABI/testing/sysfs-platform_profile
+>=20
+> diff --git a/Documentation/ABI/testing/sysfs-platform_profile
+> b/Documentation/ABI/testing/sysfs-platform_profile new file mode 100644
+> index 000000000000..240bd3d7532b
+> --- /dev/null
+> +++ b/Documentation/ABI/testing/sysfs-platform_profile
+> @@ -0,0 +1,66 @@
+> +Platform-profile selection (e.g. /sys/firmware/acpi/platform_profile)
+> +
+> +On modern systems the platform performance, temperature, fan and other
+> +hardware related characteristics are often dynamically configurable. The
+> +profile is often automatically adjusted to the load by some
+> +automatic-mechanism (which may very well live outside the kernel).
+> +
+> +These auto platform-adjustment mechanisms often can be configured with
+> +one of several 'platform-profiles', with either a bias towards low-power
+> +consumption or towards performance (and higher power consumption and
+> +thermals).
+> +
+> +The purpose of the platform_profile attribute is to offer a generic sysfs
+> +API for selecting the platform-profile of these automatic-mechanisms.
+> +
+> +Note that this API is only for selecting the platform-profile, it is
+> +NOT a goal of this API to allow monitoring the resulting performance
+> +characteristics. Monitoring performance is best done with device/vendor
+> +specific tools such as e.g. turbostat.
+> +
+> +Specifically when selecting a high-performance profile the actual achiev=
+ed
+> +performance may be limited by various factors such as: the heat generated
+> +by other components, room temperature, free air flow at the bottom of a
+> +laptop, etc. It is explicitly NOT a goal of this API to let userspace kn=
+ow
+> +about any sub-optimal conditions which are impeding reaching the request=
+ed
+> +performance level.
+> +
+> +Since numbers are a rather meaningless way to describe platform-profiles
+> +this API uses strings to describe the various profiles. To make sure that
+> +userspace gets a consistent experience when using this API this API
+> +document defines a fixed set of profile-names. Drivers *must* map their
+> +internal profile representation/names onto this fixed set.
+> +
+> +If for some reason there is no good match when mapping then a new
+> profile-name +may be added. Drivers which wish to introduce new
+> profile-names must: +1. Have very good reasons to do so.
+> +2. Add the new profile-name to this document, so that future drivers whi=
+ch
+> also +   have a similar problem can use the same name.
+> +
+> +What:		/sys/firmware/acpi/platform_profile_choices
+> +Date:		October 2020
+> +Contact:	Hans de Goede <hdegoede@redhat.com>
+> +Description:
+> +		Reading this file gives a space separated list of profiles
+> +		supported for this device.
+> +
+> +		Drivers must use the following standard profile-names:
+> +
+> +		low-power:		Emphasises low power consumption
+> +		cool:			Emphasises cooler=20
+operation
+> +		quiet:			Emphasises quieter=20
+operation
+> +		balanced:		Balance between low power=20
+consumption
+> +					and performance
+> +		performance:		Emphasises performance=20
+(and may lead to
+> +					higher temperatures and=20
+fan speeds)
+> +
+> +		Userspace may expect drivers to offer at least several of=20
+these
+> +		standard profile-names.
+> +
+> +What:		/sys/firmware/acpi/platform_profile
+> +Date:		October 2020
+> +Contact:	Hans de Goede <hdegoede@redhat.com>
+> +Description:
+> +		Reading this file gives the current selected profile for=20
+this
+> +		device. Writing this file with one of the strings from
+> +		available_profiles changes the profile to the new value.
+> --
+> 2.28.0
 
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Acked-by: Quentin Perret <qperret@google.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- include/linux/sched/topology.h   |  8 ++++++++
- kernel/sched/cpufreq_schedutil.c |  9 +--------
- kernel/sched/topology.c          | 18 +++++++++++-------
- 3 files changed, 20 insertions(+), 15 deletions(-)
+=46rom my perspective now is perfect, thanks to all for the work.
 
-diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-index 9ef7bf686a9f..8f0f778b7c91 100644
---- a/include/linux/sched/topology.h
-+++ b/include/linux/sched/topology.h
-@@ -225,6 +225,14 @@ static inline bool cpus_share_cache(int this_cpu, int that_cpu)
- 
- #endif	/* !CONFIG_SMP */
- 
-+#if defined(CONFIG_ENERGY_MODEL) && defined(CONFIG_CPU_FREQ_GOV_SCHEDUTIL)
-+extern void rebuild_sched_domains_energy(void);
-+#else
-+static inline void rebuild_sched_domains_energy(void)
-+{
-+}
-+#endif
-+
- #ifndef arch_scale_cpu_capacity
- /**
-  * arch_scale_cpu_capacity - get the capacity scale factor of a given CPU.
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index e254745a82cb..37b303890336 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -899,16 +899,9 @@ struct cpufreq_governor *cpufreq_default_governor(void)
- cpufreq_governor_init(schedutil_gov);
- 
- #ifdef CONFIG_ENERGY_MODEL
--extern bool sched_energy_update;
--extern struct mutex sched_energy_mutex;
--
- static void rebuild_sd_workfn(struct work_struct *work)
- {
--	mutex_lock(&sched_energy_mutex);
--	sched_energy_update = true;
--	rebuild_sched_domains();
--	sched_energy_update = false;
--	mutex_unlock(&sched_energy_mutex);
-+	rebuild_sched_domains_energy();
- }
- static DECLARE_WORK(rebuild_sd_work, rebuild_sd_workfn);
- 
-diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-index dd7770226086..270bafb73506 100644
---- a/kernel/sched/topology.c
-+++ b/kernel/sched/topology.c
-@@ -211,6 +211,15 @@ unsigned int sysctl_sched_energy_aware = 1;
- DEFINE_MUTEX(sched_energy_mutex);
- bool sched_energy_update;
- 
-+void rebuild_sched_domains_energy(void)
-+{
-+	mutex_lock(&sched_energy_mutex);
-+	sched_energy_update = true;
-+	rebuild_sched_domains();
-+	sched_energy_update = false;
-+	mutex_unlock(&sched_energy_mutex);
-+}
-+
- #ifdef CONFIG_PROC_SYSCTL
- int sched_energy_aware_handler(struct ctl_table *table, int write,
- 		void *buffer, size_t *lenp, loff_t *ppos)
-@@ -223,13 +232,8 @@ int sched_energy_aware_handler(struct ctl_table *table, int write,
- 	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
- 	if (!ret && write) {
- 		state = static_branch_unlikely(&sched_energy_present);
--		if (state != sysctl_sched_energy_aware) {
--			mutex_lock(&sched_energy_mutex);
--			sched_energy_update = 1;
--			rebuild_sched_domains();
--			sched_energy_update = 0;
--			mutex_unlock(&sched_energy_mutex);
--		}
-+		if (state != sysctl_sched_energy_aware)
-+			rebuild_sched_domains_energy();
- 	}
- 
- 	return ret;
--- 
-2.17.1
+Regards
+Elia
+
+
 
