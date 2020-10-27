@@ -2,54 +2,55 @@ Return-Path: <SRS0=A9Dn=EC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 36431C55178
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CED20C4363A
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:48:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CD7C222282
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:45:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77B0B2074B
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:48:46 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603827944;
-	bh=5LjRjem2QXaBoOJgFxYZQ3h0kkMCmXPHhP9XF9aj7lA=;
+	s=default; t=1603828126;
+	bh=EoKaV0LObB+LCs3KUN9FklYBIFfuTgY+FAEpljpePoQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=sQVn+6VoZ9KIoc2M/zzcxVfOOu8C/c2GRNBBviO6DUKjhau5xRHR17biOB+OX3jcS
-	 y6pjOQ83PLyqoxJWQAuAa+u1q5k2/eaTE4lPTlJh4osa7w+PHXxPaVRU/trmFzabp6
-	 GHCR6uFkbCeNW19W1K4Yc4MOtoVNTRBx/ieDVFkc=
+	b=Ug901onZnlBsi2NtK+nAbFhuTI6/Z9wiXchb0CiXDBXh5xctc140A7MVv2k0vrRVZ
+	 MB3Tc3AY/+tKufjRUhRp5+0E8SAJtxNCuSSVQHijkvPRqYis9Fl9RzBZKt13XzyLGn
+	 z1xlh6IgJ/uyuVN8LSlhzo0grsF5hqSOV0WfYYlM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1818373AbgJ0Tpn convert rfc822-to-8bit (ORCPT
+        id S1830529AbgJ0Tsk convert rfc822-to-8bit (ORCPT
         <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Oct 2020 15:45:43 -0400
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:37443 "EHLO
+        Tue, 27 Oct 2020 15:48:40 -0400
+Received: from mail-ed1-f67.google.com ([209.85.208.67]:40162 "EHLO
         mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S372241AbgJ0TpD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 15:45:03 -0400
-Received: by mail-ed1-f67.google.com with SMTP id o18so2711118edq.4;
-        Tue, 27 Oct 2020 12:45:02 -0700 (PDT)
+        with ESMTP id S1830518AbgJ0Tsj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 15:48:39 -0400
+Received: by mail-ed1-f67.google.com with SMTP id p93so2704752edd.7;
+        Tue, 27 Oct 2020 12:48:37 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:content-transfer-encoding
          :in-reply-to;
-        bh=UXr3lQx2eUfq+7HOUXuSZyZipQWceSUVylQzeIR2XHY=;
-        b=k2bp+zUNx3D42YVNTRuRKULdR6PxzohVwvXlprjLA8zzXvBIuU1gkU+BiOfCgTp17y
-         MmLOiuO8Dj+jMngFlL58uNZTfUR4BPGHqnFpVdnXIDKrFtAdCfHsZEDFtx9XHHup+lTO
-         iBXXJO4HvuKX9KntZjMIbfzrZIBKdgpq3o88FlDiCiSNtuIiCfnh+oLN73WBeYXRWpQE
-         /mimuwnfu73qilolMc6QILZd2Od9IH/k8Is1HrxdXr80aIjB0Tfxt2xHtfnjdF528j9o
-         EzATmXGalZ9f4ywvEdjw+tShWOKgOKhBuOor9V65y/jaVmO0CJU3JeCqllsyOv3EoK5K
-         WgKQ==
-X-Gm-Message-State: AOAM5334bEY71tkCMWPhXXmw7Imr1p9Mb0LfoCjMHpa44PQ3EhGznL9X
-        31LeNaTd6DPOg7JiwLiZFjs=
-X-Google-Smtp-Source: ABdhPJwaxWnGgOULlhmBmWWDlDdWjWRSKpmgBSzdn7UsD1QIbybKhpRsl5k1KJK25+ecpRYHlVMGNQ==
-X-Received: by 2002:a05:6402:187:: with SMTP id r7mr3826580edv.360.1603827901570;
-        Tue, 27 Oct 2020 12:45:01 -0700 (PDT)
+        bh=DCnp21W838z3J54dqoT+LPZURnglQ0VUhiX4g0DgzEM=;
+        b=t6BUAd/p6xwdy6r6cAW1AjllXbBOFhn/BnO5pUxZ1kEnSTJAXkJVU61whMB6qBxRTD
+         yITiHFXnaHwSqcymOJxNywv1YJ5JcEV/aAp5XhHogrnNmKGxqQNIB6qihPPoCX8PRsOI
+         OAxPvJFr5bDMqqU+hJobkc8Dzb1HhxIzWbgyrd51kHv2HR2u05EwPl+bi3tPH7ThU4oj
+         rWrhyrVYrQvEyE9OMTP0ovTp3ZUQhZ4DOev8Dkxb2i3fHhJeXXRpKKV6M6KowJZIg28W
+         Jgm9C/lzpfcrGWwSBnIrzt/PnWA18NdIy8QSL9vn9acEGQqu5mH7+pbWEyVYf7PrUazx
+         w01Q==
+X-Gm-Message-State: AOAM5336xRqrJxnkNPctZ40cCDUM0KTCxuB0IrsFRVRRLhobPOCZxwB5
+        N2i+EcWzoVpC57auddFu7n0=
+X-Google-Smtp-Source: ABdhPJyGc94tfyRFl9VLzlaneyVsIYgUVM3YkjJxfOPWRF2V8kbYt5rWKEKhzQ7H5M62+MCIviirCw==
+X-Received: by 2002:a50:e447:: with SMTP id e7mr4040757edm.263.1603828117108;
+        Tue, 27 Oct 2020 12:48:37 -0700 (PDT)
 Received: from kozik-lap ([194.230.155.184])
-        by smtp.googlemail.com with ESMTPSA id bx24sm1609885ejb.51.2020.10.27.12.44.58
+        by smtp.googlemail.com with ESMTPSA id ss7sm1615086ejb.28.2020.10.27.12.48.34
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 27 Oct 2020 12:44:59 -0700 (PDT)
-Date:   Tue, 27 Oct 2020 20:44:57 +0100
+        Tue, 27 Oct 2020 12:48:35 -0700 (PDT)
+Date:   Tue, 27 Oct 2020 20:48:33 +0100
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
@@ -69,43 +70,85 @@ Cc:     Thierry Reding <thierry.reding@gmail.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: Re: [PATCH v6 08/52] dt-bindings: memory: tegra20: emc: Document
- mfd-simple compatible and statistics sub-device
-Message-ID: <20201027194457.GD140636@kozik-lap>
+Subject: Re: [PATCH v6 13/52] dt-bindings: memory: tegra124: emc: Document
+ new interconnect property
+Message-ID: <20201027194833.GE140636@kozik-lap>
 References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-9-digetx@gmail.com>
- <20201027090212.GG4244@kozik-lap>
- <1cce314a-1eab-61c9-099d-54f987b03761@gmail.com>
+ <20201025221735.3062-14-digetx@gmail.com>
+ <20201027102506.GB17089@kozik-lap>
+ <f38984b6-d53f-a43d-0387-e787b3c1924d@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8BIT
-In-Reply-To: <1cce314a-1eab-61c9-099d-54f987b03761@gmail.com>
+In-Reply-To: <f38984b6-d53f-a43d-0387-e787b3c1924d@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 10:22:19PM +0300, Dmitry Osipenko wrote:
-> 27.10.2020 12:02, Krzysztof Kozlowski пишет:
-> >> @@ -31,17 +32,34 @@ Example:
-> >>  		...
-> >>  	};
+On Tue, Oct 27, 2020 at 10:19:28PM +0300, Dmitry Osipenko wrote:
+> 27.10.2020 13:25, Krzysztof Kozlowski пишет:
+> > On Mon, Oct 26, 2020 at 01:16:56AM +0300, Dmitry Osipenko wrote:
+> >> External memory controller is interconnected with memory controller and
+> >> with external memory. Document new interconnect property which turns
+> >> External Memory Controller into interconnect provider.
+> >>
+> >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> >> ---
+> >>  .../bindings/memory-controllers/nvidia,tegra124-emc.yaml   | 7 +++++++
+> >>  1 file changed, 7 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
+> >> index 278549f9e051..ac00832ceac1 100644
+> >> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
+> >> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
+> >> @@ -29,6 +29,9 @@ properties:
+> >>      items:
+> >>        - const: emc
 > >>  
-> >> +	emc_bw_dfs_opp_table: emc_opp_table1 {
-> > Hyphens for node name.
+> >> +  "#interconnect-cells":
+> >> +    const: 0
+> >> +
+> >>    nvidia,memory-controller:
+> >>      $ref: /schemas/types.yaml#/definitions/phandle
+> >>      description:
+> >> @@ -327,6 +330,7 @@ required:
+> >>    - clocks
+> >>    - clock-names
+> >>    - nvidia,memory-controller
+> >> +  - "#interconnect-cells"
+> > 
+> > Another required property, what about all existing users of this binding?
 > 
-> We already use underscores for the Tegra CPU OPP table.
-> 
-> https://elixir.bootlin.com/linux/v5.10-rc1/source/arch/arm/boot/dts/tegra20-cpu-opp.dtsi#L4
-> 
-> What makes you think that hyphens will be a better choice? Is it a
-> documented naming convention?
+> EMC/devfreq drivers check presence of the new properties and ask users
+> to upgrade the DT. The kernel will continue to work fine using older
+> DTBs, but devfreq driver won't load.
 
-Unfortunately that's the source of confusion also for me because
-Devicetree spec mentions both of them (and does not specify preferences).
+If the devfreq was working fine before (with these older DTBs and older
+kernel) then you break the feature.
 
-The choice of dashes/hyphens comes now explicitly from all dtschema
-files.  Previously, the documentation were emails from Rob. :)
+If devfreq was not working or was not stable enough, then nothing is
+broken so such change is accepted.
+
+Which one is then?
+
+> 
+> >>  additionalProperties: false
+> >>  
+> >> @@ -345,6 +349,7 @@ examples:
+> >>  
+> >>          #iommu-cells = <1>;
+> >>          #reset-cells = <1>;
+> >> +        #interconnect-cells = <1>;
+> > 
+> > You meant '0'?
+> 
+> '1' is for the "mc" node in the example (not "emc" node).
+> 
+> Anyways, I'll move this hunk to the previous patch in order to fix the
+> kernel bot warning.
+
+Right, thanks.
 
 Best regards,
 Krzysztof
