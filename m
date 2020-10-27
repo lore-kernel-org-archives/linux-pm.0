@@ -2,233 +2,355 @@ Return-Path: <SRS0=A9Dn=EC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2439C56202
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 09:47:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4A382C388F9
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:10:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8F5FC22283
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 09:47:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DD83B22281
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:10:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603792053;
-	bh=Pl1YIiyGGfjvgMAFTtztDDJbHFrjgbxhmYzhd2ePY80=;
+	s=default; t=1603793407;
+	bh=ocYDoUv9J7ZasGgFzR7Z1Vz3sIn2AD2+eZvXE2Pu0zc=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=cxbqxOSjV+D3j6XiatGu9SMP5FsOmw5JgHEeWNieFxwb/lbFUr0osOVsR71jbG7fQ
-	 REGKRdA6kY1tX+LXzB8RrLPl27gwjy3I+nDjmRTm7y/uICYIaWBktNynv5Z9cnRK/b
-	 NyaobJUYByXyOtJqNOAES6TSbc7HbBVnkgSYgSFY=
+	b=myPsc0p/1c68a/X7M4ZxMp5WIwBoaB5JKS3CRToWH5MubASPanPAjiqsSNe16Xlm9
+	 K7TggT7UehtPG2/CU0j7CEW1lWPAjqOzSYAOLyKfjUC4Jy5PVv6dWPUqXT+dqW43+6
+	 ckD3vd5/pOYY3XRYlw31/k+U4V5JwJ1jSRd5WCf0=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2895929AbgJ0Jra (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Oct 2020 05:47:30 -0400
-Received: from mail.kernel.org ([198.145.29.99]:40368 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2895736AbgJ0Jr3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 27 Oct 2020 05:47:29 -0400
-Received: from kernel.org (unknown [87.70.96.83])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id B04362225C;
-        Tue, 27 Oct 2020 09:47:18 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603792049;
-        bh=Pl1YIiyGGfjvgMAFTtztDDJbHFrjgbxhmYzhd2ePY80=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=WDNJQHhLCatOfVLGrCrLXIjLiKWdqmmYKffrnwGW7M02wygaJ1BRI2eKsyTxCGKYu
-         HnOKFOuAHwe5+DtrbJi1yDI/0QFWqnQt1wDMe7w/rKrKstLjbMgz0k514MLDmiod/X
-         F6BoevFoxl1th9O2+p4RQpIj9hdeBiHrxbv10S9s=
-Date:   Tue, 27 Oct 2020 11:47:14 +0200
-From:   Mike Rapoport <rppt@kernel.org>
-To:     David Hildenbrand <david@redhat.com>
-Cc:     "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "cl@linux.com" <cl@linux.com>,
-        "gor@linux.ibm.com" <gor@linux.ibm.com>,
-        "hpa@zytor.com" <hpa@zytor.com>,
-        "peterz@infradead.org" <peterz@infradead.org>,
-        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
-        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
-        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
-        "penberg@kernel.org" <penberg@kernel.org>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
-        "will@kernel.org" <will@kernel.org>,
-        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
-        "kirill@shutemov.name" <kirill@shutemov.name>,
-        "rientjes@google.com" <rientjes@google.com>,
-        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
-        "paulus@samba.org" <paulus@samba.org>,
-        "hca@linux.ibm.com" <hca@linux.ibm.com>,
-        "bp@alien8.de" <bp@alien8.de>, "pavel@ucw.cz" <pavel@ucw.cz>,
-        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "luto@kernel.org" <luto@kernel.org>,
-        "davem@davemloft.net" <davem@davemloft.net>,
-        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
-        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "palmer@dabbelt.com" <palmer@dabbelt.com>,
-        "Brown, Len" <len.brown@intel.com>,
-        "mingo@redhat.com" <mingo@redhat.com>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
-Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
- manipulation
-Message-ID: <20201027094714.GI1154158@kernel.org>
-References: <20201025101555.3057-1-rppt@kernel.org>
- <ae82f905a0092adb7e0f0ac206335c1883b3170f.camel@intel.com>
- <20201026090526.GA1154158@kernel.org>
- <a0212b073b3b2f62c3dbf1bf398f03fa402997be.camel@intel.com>
- <20201027083816.GG1154158@kernel.org>
- <e5fc62b6-f644-4ed5-de5b-ffd8337861e4@redhat.com>
+        id S2897500AbgJ0KKA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Oct 2020 06:10:00 -0400
+Received: from mail-ed1-f65.google.com ([209.85.208.65]:41872 "EHLO
+        mail-ed1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2897493AbgJ0KJ6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 06:09:58 -0400
+Received: by mail-ed1-f65.google.com with SMTP id l24so797851edj.8;
+        Tue, 27 Oct 2020 03:09:55 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=bLSxqWlRWeWmLdqmeHTbNCMyQV0CNePnET7TnJ4RmSM=;
+        b=WKuP+s/TPKmPW9DRPKS216h0yqOiHUTncjhy3f0tDt2YcuTLRbHrh1xtIIjLVaqYui
+         HSGb175HwVOVDi8Q0QS69OzCTDQIKujqP9WzgmgERQJHQvno8xv1pUbSZxu6NGLyIQum
+         bIxIAr0D/gnL65dR23bUiUB4dnATQyv0+kAr7YZJRwzSeEh/cr6nF48QGGBlQTeQa4CM
+         BFG+U5kOXK0u6qlkUHDZgMqeIZDBGsQt8IXg4ZFRryjNRxsbTNlGePfy/LjIIII9ECT5
+         TimUjGn4z24l1Fs0JOPeLZKs80nUn57DYT6t6MXP+mvJgLT6ZUKgTs4Z7K1KO7TaMPc+
+         /J0A==
+X-Gm-Message-State: AOAM533K/Ezse6D2GK4rBL3KvA1XVW0jvIUJs6y6T94BeCLs/cwe4jnv
+        vZesehaymoP4DwhhbcepZ/Y=
+X-Google-Smtp-Source: ABdhPJydgamypsr6hBaDut2KCeh7NMWQzr0HQ9Xs5NCEX26/MJBL1bCkARqcSZWGa7SESvWc6DpjJg==
+X-Received: by 2002:a50:f785:: with SMTP id h5mr1327577edn.249.1603793395015;
+        Tue, 27 Oct 2020 03:09:55 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.184])
+        by smtp.googlemail.com with ESMTPSA id dp1sm739361ejc.74.2020.10.27.03.09.52
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Oct 2020 03:09:53 -0700 (PDT)
+Date:   Tue, 27 Oct 2020 11:09:51 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v6 33/52] memory: tegra20: Support interconnect framework
+Message-ID: <20201027100951.GA17089@kozik-lap>
+References: <20201025221735.3062-1-digetx@gmail.com>
+ <20201025221735.3062-34-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <e5fc62b6-f644-4ed5-de5b-ffd8337861e4@redhat.com>
+In-Reply-To: <20201025221735.3062-34-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 09:46:35AM +0100, David Hildenbrand wrote:
-> On 27.10.20 09:38, Mike Rapoport wrote:
-> > On Mon, Oct 26, 2020 at 06:05:30PM +0000, Edgecombe, Rick P wrote:
-> > > On Mon, 2020-10-26 at 11:05 +0200, Mike Rapoport wrote:
-> > > > On Mon, Oct 26, 2020 at 01:13:52AM +0000, Edgecombe, Rick P wrote:
-> > > > > On Sun, 2020-10-25 at 12:15 +0200, Mike Rapoport wrote:
-> > > > > > Indeed, for architectures that define
-> > > > > > CONFIG_ARCH_HAS_SET_DIRECT_MAP
-> > > > > > it is
-> > > > > > possible that __kernel_map_pages() would fail, but since this
-> > > > > > function is
-> > > > > > void, the failure will go unnoticed.
-> > > > > 
-> > > > > Could you elaborate on how this could happen? Do you mean during
-> > > > > runtime today or if something new was introduced?
-> > > > 
-> > > > A failure in__kernel_map_pages() may happen today. For instance, on
-> > > > x86
-> > > > if the kernel is built with DEBUG_PAGEALLOC.
-> > > > 
-> > > >          __kernel_map_pages(page, 1, 0);
-> > > > 
-> > > > will need to split, say, 2M page and during the split an allocation
-> > > > of
-> > > > page table could fail.
-> > > 
-> > > On x86 at least, DEBUG_PAGEALLOC expects to never have to break a page
-> > > on the direct map and even disables locking in cpa because it assumes
-> > > this. If this is happening somehow anyway then we should probably fix
-> > > that. Even if it's a debug feature, it will not be as useful if it is
-> > > causing its own crashes.
-> > > 
-> > > I'm still wondering if there is something I'm missing here. It seems
-> > > like you are saying there is a bug in some arch's, so let's add a WARN
-> > > in cross-arch code to log it as it crashes. A warn and making things
-> > > clearer seem like good ideas, but if there is a bug we should fix it.
-> > > The code around the callers still functionally assume re-mapping can't
-> > > fail.
-> > 
-> > Oh, I've meant x86 kernel *without* DEBUG_PAGEALLOC, and indeed the call
-> > that unmaps pages back in safe_copy_page will just reset a 4K page to
-> > NP because whatever made it NP at the first place already did the split.
-> > 
-> > Still, on arm64 with DEBUG_PAGEALLOC=n there is a possibility of a race
-> > between map/unmap dance in __vunmap() and safe_copy_page() that may
-> > cause access to unmapped memory:
-> > 
-> > __vunmap()
-> >      vm_remove_mappings()
-> >          set_direct_map_invalid()
-> > 					safe_copy_page()	
-> > 					    __kernel_map_pages()
-> > 					    	return
-> > 					    do_copy_page() -> fault
-> > 					   	
-> > This is a theoretical bug, but it is still not nice :) 							
-> > 
-> > > > Currently, the only user of __kernel_map_pages() outside
-> > > > DEBUG_PAGEALLOC
-> > > > is hibernation, but I think it would be safer to entirely prevent
-> > > > usage
-> > > > of __kernel_map_pages() when DEBUG_PAGEALLOC=n.
-> > > 
-> > > I totally agree it's error prone FWIW. On x86, my mental model of how
-> > > it is supposed to work is: If a page is 4k and NP it cannot fail to be
-> > > remapped. set_direct_map_invalid_noflush() should result in 4k NP
-> > > pages, and DEBUG_PAGEALLOC should result in all 4k pages on the direct
-> > > map. Are you seeing this violated or do I have wrong assumptions?
-> > 
-> > You are right, there is a set of assumptions about the remapping of the
-> > direct map pages that make it all work, at least on x86.
-> > But this is very subtle and it's not easy to wrap one's head around
-> > this.
-> > 
-> > That's why putting __kernel_map_pages() out of "common" use and
-> > keep it only for DEBUG_PAGEALLOC would make things clearer.
-> > 
-> > > Beyond whatever you are seeing, for the latter case of new things
-> > > getting introduced to an interface with hidden dependencies... Another
-> > > edge case could be a new caller to set_memory_np() could result in
-> > > large NP pages. None of the callers today should cause this AFAICT, but
-> > > it's not great to rely on the callers to know these details.
-> > A caller of set_memory_*() or set_direct_map_*() should expect a failure
-> > and be ready for that. So adding a WARN to safe_copy_page() is the first
-> > step in that direction :)
-> > 
+On Mon, Oct 26, 2020 at 01:17:16AM +0300, Dmitry Osipenko wrote:
+> Now Internal and External Memory Controllers are memory interconnection
+> providers. This allows us to use interconnect API for tuning of memory
+> configuration. EMC driver now supports OPPs and DVFS.
 > 
-> I am probably missing something important, but why are we saving/restoring
-> the content of pages that were explicitly removed from the identity mapping
-> such that nobody will access them?
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/memory/tegra/Kconfig       |   3 +-
+>  drivers/memory/tegra/mc.h          |  12 ++
+>  drivers/memory/tegra/tegra20-emc.c | 176 +++++++++++++++++++++++++++++
+>  drivers/memory/tegra/tegra20.c     |  34 ++++++
+>  4 files changed, 224 insertions(+), 1 deletion(-)
 > 
-> Pages that are not allocated should contain garbage or be zero
-> (init_on_free). That should be easy to handle without ever reading the page
-> content.
+> diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
+> index ff426747cd7d..ac3dfe155505 100644
+> --- a/drivers/memory/tegra/Kconfig
+> +++ b/drivers/memory/tegra/Kconfig
+> @@ -11,7 +11,8 @@ config TEGRA_MC
+>  config TEGRA20_EMC
+>  	tristate "NVIDIA Tegra20 External Memory Controller driver"
+>  	default y
+> -	depends on ARCH_TEGRA_2x_SOC
+> +	depends on TEGRA_MC && ARCH_TEGRA_2x_SOC
+> +	select PM_OPP
+>  	help
+>  	  This driver is for the External Memory Controller (EMC) found on
+>  	  Tegra20 chips. The EMC controls the external DRAM on the board.
+> diff --git a/drivers/memory/tegra/mc.h b/drivers/memory/tegra/mc.h
+> index abeb6a2cc36a..531fb4fb7b17 100644
+> --- a/drivers/memory/tegra/mc.h
+> +++ b/drivers/memory/tegra/mc.h
+> @@ -78,6 +78,18 @@
+>  
+>  #define MC_TIMING_UPDATE				BIT(0)
+>  
+> +static inline u32 tegra_mc_scale_percents(u64 val, unsigned int percents)
+> +{
+> +	val = val * percents;
+> +	do_div(val, 100);
+> +
+> +	/*
+> +	 * High freq + high boosting percent + large polling interval are
+> +	 * resulting in integer overflow when watermarks are calculated.
+> +	 */
+> +	return min_t(u64, val, U32_MAX);
+> +}
+> +
+>  static inline u32 mc_readl(struct tegra_mc *mc, unsigned long offset)
+>  {
+>  	return readl_relaxed(mc->regs + offset);
+> diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+> index 34085e26dced..69ccb3fe5b0b 100644
+> --- a/drivers/memory/tegra/tegra20-emc.c
+> +++ b/drivers/memory/tegra/tegra20-emc.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/clk/tegra.h>
+>  #include <linux/debugfs.h>
+>  #include <linux/err.h>
+> +#include <linux/interconnect-provider.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/io.h>
+>  #include <linux/iopoll.h>
+> @@ -16,11 +17,15 @@
+>  #include <linux/module.h>
+>  #include <linux/of.h>
+>  #include <linux/platform_device.h>
+> +#include <linux/pm_opp.h>
+> +#include <linux/slab.h>
+>  #include <linux/sort.h>
+>  #include <linux/types.h>
+>  
+>  #include <soc/tegra/fuse.h>
+>  
+> +#include "mc.h"
+> +
+>  #define EMC_INTSTATUS				0x000
+>  #define EMC_INTMASK				0x004
+>  #define EMC_DBG					0x008
+> @@ -144,6 +149,9 @@ struct emc_timing {
+>  
+>  struct tegra_emc {
+>  	struct device *dev;
+> +	struct tegra_mc *mc;
+> +	struct opp_table *opp_table;
+> +	struct icc_provider provider;
+>  	struct notifier_block clk_nb;
+>  	struct clk *clk;
+>  	void __iomem *regs;
+> @@ -658,6 +666,166 @@ static void tegra_emc_debugfs_init(struct tegra_emc *emc)
+>  			    emc, &tegra_emc_debug_max_rate_fops);
+>  }
+>  
+> +static inline struct tegra_emc *
+> +to_tegra_emc_provider(struct icc_provider *provider)
+> +{
+> +	return container_of(provider, struct tegra_emc, provider);
+> +}
+> +
+> +static struct icc_node_data *
+> +emc_of_icc_xlate_extended(struct of_phandle_args *spec, void *data)
+> +{
+> +	struct icc_provider *provider = data;
+> +	struct icc_node_data *ndata;
+> +	struct icc_node *node;
+> +
+> +	/* External Memory is the only possible ICC route */
+> +	list_for_each_entry(node, &provider->nodes, node_list) {
+> +		if (node->id != TEGRA_ICC_EMEM)
+> +			continue;
+> +
+> +		ndata = kzalloc(sizeof(*ndata), GFP_KERNEL);
+> +		if (!ndata)
+> +			return ERR_PTR(-ENOMEM);
+> +
+> +		/*
+> +		 * SRC and DST nodes should have matching TAG in order to have
+> +		 * it set by default for a requested path.
+> +		 */
+> +		ndata->tag = TEGRA_MC_ICC_TAG_ISO;
+> +		ndata->node = node;
+> +
+> +		return ndata;
+> +	}
+> +
+> +	return ERR_PTR(-EINVAL);
+> +}
+> +
+> +static int emc_icc_set(struct icc_node *src, struct icc_node *dst)
+> +{
+> +	struct tegra_emc *emc = to_tegra_emc_provider(dst->provider);
+> +	unsigned long long peak_bw = icc_units_to_bps(dst->peak_bw);
+> +	unsigned long long avg_bw = icc_units_to_bps(dst->avg_bw);
+> +	unsigned long long rate = max(avg_bw, peak_bw);
+> +	unsigned int dram_data_bus_width_bytes = 4;
+> +	long rounded_rate;
+> +	int err;
+> +
+> +	/*
+> +	 * Tegra20 EMC runs on x2 clock rate of SDRAM bus because DDR data
+> +	 * is sampled on both clock edges. This means that EMC clock rate
+> +	 * equals to the peak data rate.
+> +	 */
+> +	do_div(rate, dram_data_bus_width_bytes);
+> +	rate = min_t(u64, rate, U32_MAX);
+> +
+> +	rounded_rate = emc_round_rate(rate, 0, U32_MAX, emc);
+> +	if (rounded_rate < 0)
+> +		return rounded_rate;
+> +
+> +	err = dev_pm_opp_set_rate(emc->dev, rounded_rate);
+> +	if (err)
+> +		return err;
+> +
+> +	return 0;
+> +}
+> +
+> +static int tegra_emc_interconnect_init(struct tegra_emc *emc)
+> +{
+> +	const struct tegra_mc_soc *soc;
+> +	struct icc_node *node;
+> +	int err;
+> +
+> +	emc->mc = devm_tegra_get_memory_controller(emc->dev);
+> +	if (IS_ERR(emc->mc))
+> +		return PTR_ERR(emc->mc);
+> +
+> +	soc = emc->mc->soc;
+> +
+> +	emc->provider.dev = emc->dev;
+> +	emc->provider.set = emc_icc_set;
+> +	emc->provider.data = &emc->provider;
+> +	emc->provider.aggregate = soc->icc_ops->aggregate;
+> +	emc->provider.xlate_extended = emc_of_icc_xlate_extended;
+> +
+> +	err = icc_provider_add(&emc->provider);
+> +	if (err)
+> +		goto err_msg;
+> +
+> +	/* create External Memory Controller node */
+> +	node = icc_node_create(TEGRA_ICC_EMC);
+> +	err = PTR_ERR_OR_ZERO(node);
+> +	if (err)
+> +		goto del_provider;
+> +
+> +	node->name = "External Memory Controller";
+> +	icc_node_add(node, &emc->provider);
+> +
+> +	/* link External Memory Controller to External Memory (DRAM) */
+> +	err = icc_link_create(node, TEGRA_ICC_EMEM);
+> +	if (err)
+> +		goto remove_nodes;
+> +
+> +	/* create External Memory node */
+> +	node = icc_node_create(TEGRA_ICC_EMEM);
+> +	err = PTR_ERR_OR_ZERO(node);
+> +	if (err)
+> +		goto remove_nodes;
+> +
+> +	node->name = "External Memory (DRAM)";
+> +	icc_node_add(node, &emc->provider);
+> +
+> +	return 0;
+> +
+> +remove_nodes:
+> +	icc_nodes_remove(&emc->provider);
+> +del_provider:
+> +	icc_provider_del(&emc->provider);
+> +err_msg:
+> +	dev_err(emc->dev, "failed to initialize ICC: %d\n", err);
 
-I'm not familiar with hibernation to say anything smart here, but the
-help text of DEBUG_PAGEALLOC in Kconfig says:
+You will print such errors on all existing DTBs. Since it is not a
+failure of probe (it is actually quite expected, normal situation when
+booting with older DTB), let's change it to warning (here and in all
+other places and drivers).
 
-	... this option cannot be enabled in combination with
-	hibernation as that would result in incorrect warnings of memory
-	corruption after a resume because free pages are not saved to
-	the suspend image.
+> +
+> +	return err;
+> +}
+> +
+> +static int tegra_emc_opp_table_init(struct tegra_emc *emc)
+> +{
+> +	const char *rname = "core";
+> +	int err;
+> +
+> +	/*
+> +	 * Legacy device-trees don't have OPP table and EMC driver isn't
+> +	 * useful in this case.
+> +	 */
+> +	if (!device_property_present(emc->dev, "operating-points-v2")) {
+> +		dev_err(emc->dev, "OPP table not found\n");
+> +		dev_err(emc->dev, "please update your device tree\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	/* voltage scaling is optional */
+> +	if (device_property_present(emc->dev, "core-supply"))
+> +		emc->opp_table = dev_pm_opp_set_regulators(emc->dev, &rname, 1);
+> +	else
+> +		emc->opp_table = dev_pm_opp_get_opp_table(emc->dev);
+> +
+> +	if (IS_ERR(emc->opp_table))
+> +		return dev_err_probe(emc->dev, PTR_ERR(emc->opp_table),
+> +				     "failed to prepare OPP table\n");
+> +
+> +	err = dev_pm_opp_of_add_table(emc->dev);
+> +	if (err) {
+> +		dev_err(emc->dev, "failed to add OPP table: %d\n", err);
+> +		goto put_table;
+> +	}
+> +
+> +	return 0;
+> +
+> +put_table:
+> +	dev_pm_opp_put_opp_table(emc->opp_table);
+> +
+> +	return err;
+> +}
+> +
+>  static int tegra_emc_probe(struct platform_device *pdev)
+>  {
+>  	struct device_node *np;
+> @@ -717,8 +885,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
+>  		goto unset_cb;
+>  	}
+>  
+> +	err = tegra_emc_opp_table_init(emc);
+> +	if (err)
+> +		goto unreg_notifier;
 
-Probably you are right and free pages need to be handled differently,
-but it does not seem the case now.
+This looks like the ABI break I mentioned around DT bindings. Are the
+bindings marked as unstable?
 
-> The other user seems to be vm_remove_mappings(), where we only *temporarily*
-> remove the mapping - while hibernating, that code shouldn't be active
-> anymore I guess - or we could protect it from happening.
-
-Hmm, I _think_ vm_remove_mappings() shouldn't be active while
-hibernating, but I'm not 100% sure.
-
-> As I expressed in another mail, secretmem pages should rather not be saved
-> when hibernating - hibernation should be rather be disabled.
-
-Agree.
-
-> What am I missing?
-
-I think I miscommunicated the purpose of this set, which was to hide
-__kernel_map_pages() under DEBUG_PAGEALLOC and make hibernation use
-set_direct_map_*() explictly without major rework of free pages handling
-during hibernation.
-
-Does it help?
-
-> -- 
-> Thanks,
-> 
-> David / dhildenb
-> 
-
--- 
-Sincerely yours,
-Mike.
+Best regards,
+Krzysztof
