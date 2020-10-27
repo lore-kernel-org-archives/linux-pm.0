@@ -2,63 +2,59 @@ Return-Path: <SRS0=A9Dn=EC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2345C55178
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:39:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6387CC55178
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:39:40 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7190522267
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:39:01 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="A5QlT5Aj"
+	by mail.kernel.org (Postfix) with ESMTP id 17E13222D9
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 19:39:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603827580;
+	bh=TqdeKbdqomt0pCdLikA/s/iCEfGiwOdKuyQw8BO6JOs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=zvULzYk9ks+OhA0dXxx/66V4qODejdjmOpBHHbLcYpB9y2YCsqkEgn3sCWB7rmlTR
+	 ku8SE97U/mJ9614dIzIxwzk73uksn7BlBrCYDZ/exTR7gT+QCDAmHfjcFgcFD3OQmF
+	 7Mv7Uz7PdpZmNZfr4MMMTl9bEczyT7wicOH3lkJw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1755274AbgJ0TjA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Oct 2020 15:39:00 -0400
-Received: from mail-lf1-f67.google.com ([209.85.167.67]:36034 "EHLO
-        mail-lf1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2504430AbgJ0TjA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 15:39:00 -0400
-Received: by mail-lf1-f67.google.com with SMTP id h6so3890602lfj.3;
-        Tue, 27 Oct 2020 12:38:58 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=oSKJ52KX02pbIoZHYzF+rH9Iv+ZGut7jSb61YOY1u8k=;
-        b=A5QlT5Ajrg5hX3qeNVkBillmBH/crjEuzDP8STRVYmqQ2x6onxY/hq07gpy6OFWjmN
-         EjC/+CsbBUDSJRkmevpFr2r4akZGf9cbfA29AChzMkcEv/NGuqrNMJDULX2CgS0Voll+
-         brSwpHEXhEbTAkLXle27QRaoh4+k/W17Mskq51bJ7t2xgAFkzw05yzRFyZxRC0xJVY2O
-         40vSf6srqo6klIAYhkecoEgA9RjFHqTNYyHWJyEEqo2uD5snp2WESzI0WbGcXYEpXSd/
-         QWieY/p8Ox6t1VPdLTNWuMzD7PMCfQhKIdukSW1XIOayP6i5W/42RESI3Ou8b3QH9Y4b
-         bvzA==
+        id S1830349AbgJ0Tjg convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Oct 2020 15:39:36 -0400
+Received: from mail-ed1-f68.google.com ([209.85.208.68]:37830 "EHLO
+        mail-ed1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2504405AbgJ0Tjf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 15:39:35 -0400
+Received: by mail-ed1-f68.google.com with SMTP id o18so2697061edq.4;
+        Tue, 27 Oct 2020 12:39:34 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=oSKJ52KX02pbIoZHYzF+rH9Iv+ZGut7jSb61YOY1u8k=;
-        b=BfxHg98yQPLOtWdyR1YYvyY5Y1p5pB9gVtcdsI05ZDrmzcCR5bkmmVNJNZm0V9ful5
-         LIdxjjhHhZAWy9ZrjTtDAvuXJCLb9CynutOe56tjcF9h8CSImJKmOdw9Cv5+Dy1CQG1Q
-         eKKCykhLDR1SRt6NR9Axv3rJKC92ukjjVOuEdLdZIbg1T05qmjGn/8GqsI3DqyJsB/JE
-         NAtkL0tjnKUMfPe/ky/aCqMTk6LRYH1exfcMLTSPnT/0Z/NtOH9kzk1Ty1DY41iX1lD1
-         keNad6Q3zwZ3mWX7t8muuUwUeUHBvQcApJDqWU+gg7jUnoer1rWOqVUhn+ZczPbwCvXU
-         R0BQ==
-X-Gm-Message-State: AOAM530M72IHSdyKtKW++pwjxPZ9V7KAtsISeVZ1cDQgjb3dSM62/p+l
-        92jmehGX3wx+S0FVa65d0SCWgD2H3YQ=
-X-Google-Smtp-Source: ABdhPJxB1pU1rokYucpbd4/MZx1uZgD8u6sMCmHa6qc331GV6WUYPZB/6urRjr6Bn7o0SbCnnlBUNQ==
-X-Received: by 2002:a19:834e:: with SMTP id f75mr1362840lfd.111.1603827537672;
-        Tue, 27 Oct 2020 12:38:57 -0700 (PDT)
-Received: from [192.168.2.145] (109-252-193-186.dynamic.spd-mgts.ru. [109.252.193.186])
-        by smtp.googlemail.com with ESMTPSA id c4sm272462lfm.294.2020.10.27.12.38.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 27 Oct 2020 12:38:57 -0700 (PDT)
-Subject: Re: [PATCH v6 32/52] memory: tegra20-emc: Continue probing if timings
- are missing in device-tree
-To:     Thierry Reding <thierry.reding@gmail.com>
-Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=prGqBiI5JimrXFF/vzXUDQaJ2EGlRDSeqqtNy7sjrCk=;
+        b=eeR7ZZa3mX1J7wzslIN5qYkm+IQGhYbwJeOmzoTdhUPcL86D23ES7Jl5HoyCXGruDH
+         KTLluNLroz3oyiWpKcmD4dzPWoGbfnHGdbbhXlBwN+9m1/dDEacXhT9P97iQ0CLzb0Sc
+         fVzvHsbz+8fRmGrr/XFkCXGdFvEaA0N74CbVK+qmZQXBFh9krF5qDFV2PsPhRU6mZrR8
+         9ldQtTdh7mhiFABYLipfG6XGZxdK/PbDwlF7mYu6ANQIlgQSWeIl+vBFDvfFIcNtCXhG
+         7TkJD2+HMG50DA1gbOBxIVkSJTtEHoOpele95FXOm1rvC86K8M+1675sqGa+zdawEufW
+         JWiQ==
+X-Gm-Message-State: AOAM531T+qFshkMml7G943NSB/MjydGTj0s1rC7pkm4WIbrnXzhxi6hE
+        SnCkcDpDho/Da1wTAEM5lDc=
+X-Google-Smtp-Source: ABdhPJx/SLYaSJuvkdADGSTZROEQyUbm34KcNB5Cvm3aHaUVFHZ7v9Fg+sHR2VzYjZ1cuP6eGnu2Ow==
+X-Received: by 2002:a50:d0d0:: with SMTP id g16mr3879489edf.18.1603827573664;
+        Tue, 27 Oct 2020 12:39:33 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.184])
+        by smtp.googlemail.com with ESMTPSA id n22sm1534573edr.11.2020.10.27.12.39.31
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 27 Oct 2020 12:39:32 -0700 (PDT)
+Date:   Tue, 27 Oct 2020 20:39:30 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
         Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
         Michael Turquette <mturquette@baylibre.com>,
@@ -71,41 +67,83 @@ Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
         Viresh Kumar <vireshk@kernel.org>,
         Peter Geis <pgwipeout@gmail.com>,
         Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
+Subject: Re: [PATCH v6 09/52] dt-bindings: memory: tegra30: mc: Document new
+ interconnect property
+Message-ID: <20201027193930.GC140636@kozik-lap>
 References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-33-digetx@gmail.com> <20201027135244.GM1822510@ulmo>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <0c306309-6f49-cbac-99ce-6d956d5e910c@gmail.com>
-Date:   Tue, 27 Oct 2020 22:38:56 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <20201025221735.3062-10-digetx@gmail.com>
+ <20201027090550.GI4244@kozik-lap>
+ <7770b89e-f30b-3bfd-1e21-8ebbe905efcd@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20201027135244.GM1822510@ulmo>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <7770b89e-f30b-3bfd-1e21-8ebbe905efcd@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-27.10.2020 16:52, Thierry Reding пишет:
-> On Mon, Oct 26, 2020 at 01:17:15AM +0300, Dmitry Osipenko wrote:
->> EMC driver will become mandatory after turning it into interconnect
->> provider because interconnect users, like display controller driver, will
->> fail to probe using newer device-trees that have interconnect properties.
->> Thus make EMC driver to probe even if timings are missing in device-tree.
+On Tue, Oct 27, 2020 at 10:18:35PM +0300, Dmitry Osipenko wrote:
+> 27.10.2020 12:05, Krzysztof Kozlowski пишет:
+> > On Mon, Oct 26, 2020 at 01:16:52AM +0300, Dmitry Osipenko wrote:
+> >> Memory controller is interconnected with memory clients and with the
+> >> External Memory Controller. Document new interconnect property which
+> >> turns memory controller into interconnect provider.
+> >>
+> >> Acked-by: Rob Herring <robh@kernel.org>
+> >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> >> ---
+> >>  .../bindings/memory-controllers/nvidia,tegra30-mc.yaml       | 5 +++++
+> >>  1 file changed, 5 insertions(+)
+> >>
+> >> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-mc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-mc.yaml
+> >> index 84fd57bcf0dc..5436e6d420bc 100644
+> >> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-mc.yaml
+> >> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra30-mc.yaml
+> >> @@ -57,6 +57,9 @@ properties:
+> >>    "#iommu-cells":
+> >>      const: 1
+> >>  
+> >> +  "#interconnect-cells":
+> >> +    const: 1
+> >> +
+> >>  patternProperties:
+> >>    "^emc-timings-[0-9]+$":
+> >>      type: object
+> >> @@ -120,6 +123,7 @@ required:
+> >>    - clock-names
+> >>    - "#reset-cells"
+> >>    - "#iommu-cells"
+> >> +  - "#interconnect-cells"
+> > 
+> > Rob,
+> > 
+> > You were fine with adding a new required property which breaks all
+> > existing DTBs?
 > 
-> Does it really have to be mandatory? Sounds like that's going to make it
-> unnecessarily complicated to merge all of this. Is it complicated to
-> make interconnect support optional in consumer drivers?
+> This is a required property for the new bindings and optional for the
+> older. Does it really need to be made optional in the binding?
 
-Interconnect provider can't be optional if interconnect properties
-present in a device-tree because drivers that use ICC path will get
--EPROBE_DEFER until ICC provider is registered.
+Mhmm... that's an interesting point. I assumed that the bindings should
+reflect current status of the ABI, but I could imagine that you update
+the bindings while keeping the driver working with older DTBs.
 
-Older device-trees don't have ICC properties, and thus, the ICC
-users/consumers will get a dummy NULL ICC path in this case. I.e. ICC
-core handles this for us.
+How do you actually track then the ABI? If incompatible change can be
+added to the bindings, later anyone anytime can also update the driver
+to enforce the bindings. To require such property.
+
+Best regards,
+Krzysztof
+
+
+> 
+> > Were these bindings marked as unstable? The patchset does not even
+> > say/scream that it breaks the ABI, so this might be quite a surprise for
+> > someone...
+> 
+> Please see tegra_mc_interconnect_setup() in "memory: tegra-mc: Add
+> interconnect framework" patch, which check presence of the new ICC DT
+> property.
