@@ -2,71 +2,97 @@ Return-Path: <SRS0=A9Dn=EC=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,
-	DKIM_ADSP_CUSTOM_MED,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63220C388F9
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:15:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 68F2DC4363A
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:20:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DF9422281
-	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:15:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19D0B22283
+	for <linux-pm@archiver.kernel.org>; Tue, 27 Oct 2020 10:20:01 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="C/n8t7qi"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2897646AbgJ0KP3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 27 Oct 2020 06:15:29 -0400
-Received: from 14.143.115.186.static-Bangalore.vsnl.net.in ([14.143.115.186]:10400
-        "EHLO BLRMIESPC-1169" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-        with ESMTP id S2897644AbgJ0KP2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 06:15:28 -0400
-X-Greylist: delayed 693 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Oct 2020 06:15:26 EDT
-Received: from BLRMIESPC-1169 (localhost [127.0.0.1])
-        by BLRMIESPC-1169 (8.15.2/8.15.2/Debian-3) with ESMTP id 09RA04WK030701;
-        Tue, 27 Oct 2020 15:30:04 +0530
-Date:   Tue, 27 Oct 2020 15:30:04 +0530
-From:   ravisankarreddylingareddy@gmail.com
-To:     rjw@rjwysocki.net, pavel@ucw.cz, len.brown@intel.com,
-        rafael.j.wysocki@intel.com
-Cc:     masaya.takahashi@sony.com, Shingo.Takeuchi@sony.com,
-        Srinavasa.Nagaraju@sony.com, soumya.x.khasnis@sonymobile.com,
-        ravisankar.reddy@sony.com, linux-pm@vger.kernel.org
-Subject: [PATCH] PM: Use WQ_MEM_RECLAIM flag for PM workqueue
-Message-ID: <20201027100004.GA30670@tsappmail.ltts.com>
+        id S2897912AbgJ0KUA (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 27 Oct 2020 06:20:00 -0400
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:55966 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2897796AbgJ0KTu (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 27 Oct 2020 06:19:50 -0400
+Received: by mail-wm1-f66.google.com with SMTP id a72so802694wme.5
+        for <linux-pm@vger.kernel.org>; Tue, 27 Oct 2020 03:19:48 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=pZ4tF9Q35IB/PKnNsjsCcJxf1aDEpdznaVzDYuv50v0=;
+        b=C/n8t7qiHHIkKH6qBlW/WOBQPU58wfsvqwRg3TcTxZVnfjMweZXACSUeQ2Yr0SJona
+         bdgxQpS37set3XzGvi8D9HYTSw1RmWWModldxM0e+cGehXYXRU3K1mTjOK4kL6y6nXo5
+         /axUIi8EVPPR1jt57T2cmyeoVG/atnjZdaO6/010kCwExM5C4qTg8Gv2OwtoRDRI/Wxn
+         BmXfJXcLVV6OgliOWyqFM9J+HmGm+kg7QrCtLylTtWhX7bp2PpYVCEtkQbYr2pOTj/vX
+         hOgbmlhiz1rrdO/0zg6f1qwltCzISSTi3Q6IV68wglD4tuMZOCdDa7vWfcS9uy2c4oGG
+         wz9g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=pZ4tF9Q35IB/PKnNsjsCcJxf1aDEpdznaVzDYuv50v0=;
+        b=WVKBqywBToaV4Z+GWQKKPeXjyy21Uct9/MSG9ZOi1bDrRllSrKkCTz0mQcm5+LdznX
+         +lEl2YEjRNv0sb1XNZyVQqEa6OY7O+oY/FGns7DTrSOu1iwx1or+pEWInqvfS1RDTulQ
+         4HfRFefmhwVyApuGfY8ICXQhZ32+iWZkULqLjkb918vS+KbKygORfeCCaR9mpSvX4nED
+         jGR00nU7aI5Qfx7udoAd0+t2Z5Hbgaj2wyvHQy+647wbwg9b/pltKjWKdROreHJ5zpvU
+         8YSR6R5O6ZgoARNDPULv/MzZxqTtyuHekOVhMiPx3Khn+xn2pJPq5xFN3XHoSRyFuXeC
+         3toQ==
+X-Gm-Message-State: AOAM533P4T8VwnAdJdGr2VfapisPZRG9eNbTSzHqbmhbGYS5y/kPtU5+
+        21ZPTGZynobmtUZhPoRJHoKOTA==
+X-Google-Smtp-Source: ABdhPJzce/1cq7vO5et/wMCpGxoUY58Gq/wHtjsAUhmiTgM1W35aRGvgZYGxLwfJWRUAVClAG3qCoA==
+X-Received: by 2002:a7b:c8da:: with SMTP id f26mr1911316wml.178.1603793987905;
+        Tue, 27 Oct 2020 03:19:47 -0700 (PDT)
+Received: from ?IPv6:2a01:e34:ed2f:f020:6cbc:1a3:aabd:d451? ([2a01:e34:ed2f:f020:6cbc:1a3:aabd:d451])
+        by smtp.googlemail.com with ESMTPSA id l16sm1472264wrx.5.2020.10.27.03.19.45
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 27 Oct 2020 03:19:47 -0700 (PDT)
+Subject: Re: [PATCH 1/3] dt-bindings: thermal: mediatek: make resets property
+ optional
+To:     Fabien Parent <fparent@baylibre.com>,
+        linux-mediatek@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
+Cc:     matthias.bgg@gmail.com, robh+dt@kernel.org, amitk@kernel.org,
+        rui.zhang@intel.com
+References: <20201021164231.3029956-1-fparent@baylibre.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <d8a5ce64-04da-7a4a-bcb9-1cc25cea42db@linaro.org>
+Date:   Tue, 27 Oct 2020 11:19:44 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.24 (2015-08-30)
+In-Reply-To: <20201021164231.3029956-1-fparent@baylibre.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Deadlock is seen under below high memory usage scenario.
+On 21/10/2020 18:42, Fabien Parent wrote:
+> MT8516 Thermal IP does not support reset. Make the resets property
+> optional in order to be able to support MT8516 SoC.
+> 
+> Signed-off-by: Fabien Parent <fparent@baylibre.com>
+> ---
 
-kswapd waiting to reclaim memory is blocked on i/o kworker and pm_wq
-context which needs to wakeup i/o kworker is waiting for kthread
-creation which is again blocked in memory reclaim path.
+Applied, thanks
 
-Use WQ_MEM_RECLAIM flag for PM workqueue to avoid this deadlock.
 
-Signed-off-by: Ravisankar Reddy (Sony) <ravisankarreddylingareddy@gmail.com>
----
- kernel/power/main.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/kernel/power/main.c b/kernel/power/main.c
-index 40f86ec4ab30..ff5f3349e76f 100644
---- a/kernel/power/main.c
-+++ b/kernel/power/main.c
-@@ -933,7 +933,7 @@ EXPORT_SYMBOL_GPL(pm_wq);
- 
- static int __init pm_start_workqueue(void)
- {
--	pm_wq = alloc_workqueue("pm", WQ_FREEZABLE, 0);
-+	pm_wq = alloc_workqueue("pm", WQ_FREEZABLE | WQ_MEM_RECLAIM, 0);
- 
- 	return pm_wq ? 0 : -ENOMEM;
- }
+
 -- 
-2.17.1
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
