@@ -2,152 +2,142 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0FFE6C4363A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:25:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3AD7AC55179
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:27:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AEF3020706
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:25:58 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ZIXKHQrP"
+	by mail.kernel.org (Postfix) with ESMTP id E255A20704
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:27:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733023AbgJ1WZ5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:25:57 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54942 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732935AbgJ1WZo (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:25:44 -0400
-Received: from mail-vs1-xe44.google.com (mail-vs1-xe44.google.com [IPv6:2607:f8b0:4864:20::e44])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 90A0DC0613CF
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:25:44 -0700 (PDT)
-Received: by mail-vs1-xe44.google.com with SMTP id w25so435012vsk.9
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:25:44 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=EqOGNgE9WW0hrYEzgqgI3sT6nrO+744/k+/HNuwRgBQ=;
-        b=ZIXKHQrPLo/vu+fCaMw4w25P3q1sw1n88Nu+8inRgWDwQEgrJ4vxU1wEQFraBG8dU7
-         5UevqPsQcjUGHG6DvBqDkc/cxkWoxYa2y/1TdwNLdelQtTQO02VaRXEJvPluChU7goMs
-         Um3rALmFyg4mfhoToSdeyqS6uqd3L73TKxVjGela+sq1D1pDD1Vd+q4xU2zOPKW6Gq5+
-         RBO9ewiJl2em69+GwrJ1Sk6beugesleTYUltr9++E/HsN5dba3r8xNJt0mhtdjj/WLeX
-         ig/E/jbOqQEZioWdX2RqgaVYJ+bD6yju3yvKOBueai3025SBhUcT04uTWrR2zjkdfS+E
-         GNhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=EqOGNgE9WW0hrYEzgqgI3sT6nrO+744/k+/HNuwRgBQ=;
-        b=TzSlneyfjCNYGGCCimjJFlpvvwyKpS7NYfZv0ozdGBXjNsdvMTDn8J/RgQQD/BbOKw
-         ESs/rX8x+OGn887HpCon7DdyRg9KYx/WVbwb5KwCbY5+iW527uqskx4K8ufsjuXW1rMY
-         /4T507Aiu6CTjFRlcnJJ5c8Ca1vQ385phIlnR3SsEKFpm3Wdv/whNMfbLZkdujNZTvVO
-         +8BsZnsbq0Gx0me2FcXzphbO+fFCGyyfBWmkvPf8zrO4LdgSxh0ut6n13ms3PWFqYrev
-         Y7MC7PBjt7DKIVbxrtDUG4LRvKDTpV9jEvvr8DlGnnT42qWd4Bpt8lRDhCejNLgyNU+c
-         sYcA==
-X-Gm-Message-State: AOAM533YNX0TKJ3/nz96IA0ixpxV3sjQY1y6ytcyFtXt32rMfgAA5yhB
-        dvgoSFvsb9lEwn+XjH2TutwRDYZVBYtFuQ==
-X-Google-Smtp-Source: ABdhPJywy/ga60IcwttPdRHFJcWFGFtaDf05nbvaK244IuijPHjbk9Zoz8Mxk9rC7dAGM1m9ZGraNg==
-X-Received: by 2002:a62:aa0f:0:b029:162:ecc2:4d44 with SMTP id e15-20020a62aa0f0000b0290162ecc24d44mr8419846pff.52.1603899319799;
-        Wed, 28 Oct 2020 08:35:19 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id z4sm20pjn.0.2020.10.28.08.35.18
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 28 Oct 2020 08:35:18 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 21:05:16 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     zhuguangqing83 <zhuguangqing83@gmail.com>
-Cc:     rjw@rjwysocki.net, mingo@redhat.com, peterz@infradead.org,
-        juri.lelli@redhat.com, vincent.guittot@linaro.org,
-        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
-        mgorman@suse.de, bristot@redhat.com, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org,
-        'zhuguangqing' <zhuguangqing@xiaomi.com>
-Subject: Re: [PATCH] cpufreq: schedutil: set sg_policy->next_freq to the
- final cpufreq
-Message-ID: <20201028153516.5aimftwtjbqgayqc@vireshk-i7>
-References: <083a01d6ad19$fbdfbca0$f39f35e0$@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <083a01d6ad19$fbdfbca0$f39f35e0$@gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+        id S1733266AbgJ1W1Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:27:24 -0400
+Received: from foss.arm.com ([217.140.110.172]:40038 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1733250AbgJ1W1X (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Oct 2020 18:27:23 -0400
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4C08E19F0;
+        Wed, 28 Oct 2020 07:09:26 -0700 (PDT)
+Received: from e123648.arm.com (unknown [10.57.12.129])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 7C95E3F66E;
+        Wed, 28 Oct 2020 07:09:23 -0700 (PDT)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        vireshk@kernel.org, robh+dt@kernel.org
+Cc:     sboyd@kernel.org, nm@ti.com, rafael@kernel.org,
+        sudeep.holla@arm.com, daniel.lezcano@linaro.org,
+        Dietmar.Eggemann@arm.com, lukasz.luba@arm.com
+Subject: [PATCH 3/4] OPP: Add dev_pm_opp_set_sustainable_opp_freq()
+Date:   Wed, 28 Oct 2020 14:08:46 +0000
+Message-Id: <20201028140847.1018-4-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201028140847.1018-1-lukasz.luba@arm.com>
+References: <20201028140847.1018-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 28-10-20, 19:03, zhuguangqing83 wrote:
-> Thanks for your comments. Maybe my description was not clear before.
-> 
-> If I understand correctly, when policy->min/max get changed in the time
-> Window between get_next_freq() and sugov_fast_switch(), to be more
-> precise between cpufreq_driver_resolve_freq() and
-> cpufreq_driver_fast_switch(), the issue may happen.
-> 
-> For example, the first time schedutil callback gets called from the
-> scheduler, we reached get_next_freq() and calculate the next_freq,
-> suppose next_freq is 1.0 GHz, then sg_policy->next_freq is updated
-> to 1.0 GHz in sugov_update_next_freq(). If policy->min/max get
-> change right now, suppose policy->min is changed to 1.2 GHz, 
-> then the final next_freq is 1.2 GHz for there is another clamp
-> between policy->min and policy->max in cpufreq_driver_fast_switch().
-> Then sg_policy->next_freq(1.0 GHz) is not the final next_freq(1.2 GHz).
-> 
-> The second time schedutil callback gets called from the scheduler, there
-> are two issues:
-> (1) Suppose policy->min is still 1.2 GHz, we reached get_next_freq() and
-> calculate the next_freq, because sg_policy->limits_changed gets set to
-> true by sugov_limits() and there is a clamp between policy->min and
-> policy->max, so this time next_freq will be greater than or equal to 1.2
-> GHz, suppose next_freq is also 1.2 GHz. Now next_freq is 1.2 GHz and
-> sg_policy->next_freq is 1.0 GHz,  then we find
-> "if (sg_policy->next_freq == next_freq)" is not satisfied and we call
-> cpufreq driver to change the cpufreq to 1.2 GHz. Actually it's already
-> 1.2 GHz, it's not necessary to change this time.
+Add a new function allowing to set sustainable OPP from the drivers code.
+This is helpful when the device drivers populate the OPP table by
+themself.
 
-This isn't that bad, but ...
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ drivers/opp/core.c     | 49 ++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pm_opp.h |  8 +++++++
+ 2 files changed, 57 insertions(+)
 
-> (2) Suppose policy->min was changed again to 1.0 GHz before, we reached
-> get_next_freq() and calculate the next_freq, suppose next_freq is also
-> 1.0 GHz. Now next_freq is 1.0 GHz and sg_policy->next_freq is also 1.0 GHz,
-> then we find "if (sg_policy->next_freq == next_freq)" is satisfied and we
-> don't change the cpufreq. Actually we should change the cpufreq to 1.0 GHz
-> this time.
-
-This is a real problem we can get into. What about this diff instead ?
-
-diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-index 0c5c61a095f6..bf7800e853d3 100644
---- a/kernel/sched/cpufreq_schedutil.c
-+++ b/kernel/sched/cpufreq_schedutil.c
-@@ -105,7 +105,6 @@ static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
-        if (sg_policy->next_freq == next_freq)
-                return false;
+diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+index bb1e68b96d0e..753443f17327 100644
+--- a/drivers/opp/core.c
++++ b/drivers/opp/core.c
+@@ -325,6 +325,55 @@ unsigned long dev_pm_opp_get_sustainable_opp_freq(struct device *dev)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_opp_get_sustainable_opp_freq);
  
--       sg_policy->next_freq = next_freq;
-        sg_policy->last_freq_update_time = time;
- 
-        return true;
-@@ -115,7 +114,7 @@ static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
-                              unsigned int next_freq)
++/**
++ * dev_pm_opp_set_sustainable_opp_freq() - Find and set the OPP sustainable
++ *					   based on given frequency
++ * @dev:	device for which we do this operation
++ * @freq:	frequency which OPP is going to be marked
++ *
++ * Mark the OPP of a given frequency @freq as sustainable_opp. If there is
++ * already sustainable OPP, choose the highest frequency one and set.
++ *
++ * Return: This function return 0 when the new OPP is marked as sustainable
++ * or error return value, which can be:
++ * EINVAL:	for bad pointer or no match found for frequency search
++ * EEXIST:	if existing sustainable OPP has higher rate
++ */
++int dev_pm_opp_set_sustainable_opp_freq(struct device *dev, unsigned long freq)
++{
++	struct opp_table *opp_table;
++	struct dev_pm_opp *opp;
++	int ret = 0;
++
++	opp = dev_pm_opp_find_freq_exact(dev, freq, true);
++	if (IS_ERR_OR_NULL(opp))
++		return -EINVAL;
++
++	opp_table = _find_opp_table(dev);
++	if (IS_ERR(opp_table))
++		return -EINVAL;
++
++	if (opp_table->sustainable_opp) {
++		/* Pick the OPP with higher rate as sustainable OPP */
++		if (opp->rate > opp_table->sustainable_opp->rate) {
++			opp_table->sustainable_opp->sustainable = false;
++			opp->sustainable = true;
++			opp_table->sustainable_opp = opp;
++		} else {
++			ret = -EEXIST;
++		}
++	} else {
++		opp->sustainable = true;
++		opp_table->sustainable_opp = opp;
++	}
++
++	dev_pm_opp_put(opp);
++	dev_pm_opp_put_opp_table(opp_table);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_opp_set_sustainable_opp_freq);
++
+ int _get_opp_count(struct opp_table *opp_table)
  {
-        if (sugov_update_next_freq(sg_policy, time, next_freq))
--               cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
-+               sg_policy->next_freq = cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
+ 	struct dev_pm_opp *opp;
+diff --git a/include/linux/pm_opp.h b/include/linux/pm_opp.h
+index 363d5a2c1ef3..e634a6b00e65 100644
+--- a/include/linux/pm_opp.h
++++ b/include/linux/pm_opp.h
+@@ -107,6 +107,8 @@ unsigned long dev_pm_opp_get_max_volt_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_max_transition_latency(struct device *dev);
+ unsigned long dev_pm_opp_get_suspend_opp_freq(struct device *dev);
+ unsigned long dev_pm_opp_get_sustainable_opp_freq(struct device *dev);
++int dev_pm_opp_set_sustainable_opp_freq(struct device *dev,
++					unsigned long freq);
+ 
+ struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					      unsigned long freq,
+@@ -221,6 +223,12 @@ static inline unsigned long dev_pm_opp_get_sustainable_opp_freq(struct device *d
+ 	return 0;
  }
  
- static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
-@@ -124,6 +123,7 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
-        if (!sugov_update_next_freq(sg_policy, time, next_freq))
-                return;
- 
-+       sg_policy->next_freq = next_freq;
-        if (!sg_policy->work_in_progress) {
-                sg_policy->work_in_progress = true;
-                irq_work_queue(&sg_policy->irq_work);
-
++static inline int dev_pm_opp_set_sustainable_freq(struct device *dev,
++					unsigned long freq)
++{
++	return -EOPNOTSUPP;
++}
++
+ static inline struct dev_pm_opp *dev_pm_opp_find_freq_exact(struct device *dev,
+ 					unsigned long freq, bool available)
+ {
 -- 
-viresh
+2.17.1
+
