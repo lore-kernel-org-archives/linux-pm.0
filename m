@@ -2,156 +2,99 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E2C33C55179
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3978CC388F7
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 92A1720809
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C894C207DE
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="hPo+tdiO"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="YXgUXHAp"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729974AbgJ2AfL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 20:35:11 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:34086 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1731925AbgJ1WT3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:19:29 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1603923568;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=3/QY+frjp1dnSTegbpUI0625UXdGYc+dVdsYJMjhKKw=;
-        b=hPo+tdiO30k2vbOy7ImTffeWp/Af7uzgQIyNld+pQACHUm/CTN+VGwWGb+rWE5N9Ds3p9v
-        6c5gNtFUbLVWaaL3G7lsZEHzacTxrJYe1TbwhFBgAPcjC00puibdcxhfoJWxTTyLQUbcYs
-        rUR4fUnw7t4HTOPxmhaG32GzkiYeLjY=
-Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
- [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-195-5Kg-MYA4O2aB4WCrNYOgXA-1; Wed, 28 Oct 2020 07:17:50 -0400
-X-MC-Unique: 5Kg-MYA4O2aB4WCrNYOgXA-1
-Received: from smtp.corp.redhat.com (int-mx03.intmail.prod.int.phx2.redhat.com [10.5.11.13])
-        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
-        (No client certificate requested)
-        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 90BEC809DE4;
-        Wed, 28 Oct 2020 11:17:44 +0000 (UTC)
-Received: from [10.36.114.138] (ovpn-114-138.ams2.redhat.com [10.36.114.138])
-        by smtp.corp.redhat.com (Postfix) with ESMTP id 033EC6EF5E;
-        Wed, 28 Oct 2020 11:17:35 +0000 (UTC)
-Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
- manipulation
-To:     Mike Rapoport <rppt@kernel.org>
-Cc:     "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "cl@linux.com" <cl@linux.com>,
-        "gor@linux.ibm.com" <gor@linux.ibm.com>,
-        "hpa@zytor.com" <hpa@zytor.com>,
-        "peterz@infradead.org" <peterz@infradead.org>,
-        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
-        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
-        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
-        "penberg@kernel.org" <penberg@kernel.org>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
-        "will@kernel.org" <will@kernel.org>,
-        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
-        "kirill@shutemov.name" <kirill@shutemov.name>,
-        "rientjes@google.com" <rientjes@google.com>,
-        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
-        "paulus@samba.org" <paulus@samba.org>,
-        "hca@linux.ibm.com" <hca@linux.ibm.com>,
-        "bp@alien8.de" <bp@alien8.de>, "pavel@ucw.cz" <pavel@ucw.cz>,
-        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "luto@kernel.org" <luto@kernel.org>,
-        "davem@davemloft.net" <davem@davemloft.net>,
-        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
-        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "palmer@dabbelt.com" <palmer@dabbelt.com>,
-        "Brown, Len" <len.brown@intel.com>,
-        "mingo@redhat.com" <mingo@redhat.com>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
-References: <20201025101555.3057-1-rppt@kernel.org>
- <ae82f905a0092adb7e0f0ac206335c1883b3170f.camel@intel.com>
- <20201026090526.GA1154158@kernel.org>
- <a0212b073b3b2f62c3dbf1bf398f03fa402997be.camel@intel.com>
- <20201027083816.GG1154158@kernel.org>
- <e5fc62b6-f644-4ed5-de5b-ffd8337861e4@redhat.com>
- <20201028110945.GE1428094@kernel.org>
-From:   David Hildenbrand <david@redhat.com>
-Organization: Red Hat GmbH
-Message-ID: <5805fdd9-14e5-141c-773b-c46d2da57258@redhat.com>
-Date:   Wed, 28 Oct 2020 12:17:35 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+        id S1730207AbgJ2AfT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 20:35:19 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47908 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730113AbgJ2AfS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 20:35:18 -0400
+Received: from mail-vs1-xe43.google.com (mail-vs1-xe43.google.com [IPv6:2607:f8b0:4864:20::e43])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 82A28C0613D1
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 17:35:18 -0700 (PDT)
+Received: by mail-vs1-xe43.google.com with SMTP id f4so591744vsk.7
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 17:35:18 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=eWYH94BORZv4ozup4OC59HMYznaFyiTGBncXRcc6tuM=;
+        b=YXgUXHApiqcAnVatjPnEi407J7W2aEza7kXEObfTTVd4VTsEZwUSGbitW4GzZ44reN
+         HL52RtVoffqrmmiRa+J70ZoM0IBk8HwhDGtbpoJosVs+5haUvB6Bf7mQiSB3rZAgcOki
+         RMbhDoTHDUm0PK+fgKRoV2b5Qd7NkcKwkQB3tDXHJ59EbjLL2S3nzrbIm0eBy3ag3kSs
+         C6WC8KlnfhJ7qRGM3u15oVHwr0039EAlAbRtfkWqsuPEeXVWkUhHyokqVdAzCjydisum
+         qapHgHsBv9KYGQexSIGxivUrVR0j7yNmiNHhrA6QR9mdKUIvw66PVHpD3nM/I9arppu0
+         7Qzg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=eWYH94BORZv4ozup4OC59HMYznaFyiTGBncXRcc6tuM=;
+        b=JkX/BlHCjRlK+uGLwB8fyC6Vx8z6Qfwvkl6G2mQZyF90yQtZwREPa25lSoYH+1ZKja
+         garsDf+rTtVcE2kP9sWz3aZsIGxcY7IvVmUexlR/JCyx4SfMzLDSzgSfJx0VAu2H4uYr
+         DZuN26tCQ88GdyLDyHxRFIo20jKIAFP4cr29YQOMexOQ7qmXIsr8MloxLpRigISu7HC1
+         eRFm+W06CG4/AjyXSUJkrrL9V8PMHUAssJW/qIUpShkS/JICeCK+uYHEZTx8hqRlP4Xc
+         Mqrq9JSek4CPqqftRnd5wEkHj52BZLMqF908zZ7NW3QNIjf72nFhq0ZUII8cgJ+pFBQl
+         6f2Q==
+X-Gm-Message-State: AOAM533W00WfaeD//fcZBcuPTiNXgb5dYRgedz0TyZcEk4LgkB3hVSri
+        L5gxMtCESuu6XOCIhKmUEPVT673yUFrDow==
+X-Google-Smtp-Source: ABdhPJy32sza5hlY9q9DusherzKtC59C8yPszw9dBZkXd2Ch6JlZ9EJGtRX781Qk5m0PYnI6dFRCzg==
+X-Received: by 2002:aa7:9095:0:b029:164:75c4:5d15 with SMTP id i21-20020aa790950000b029016475c45d15mr578656pfa.49.1603864199760;
+        Tue, 27 Oct 2020 22:49:59 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id v79sm4207978pfc.197.2020.10.27.22.49.58
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 27 Oct 2020 22:49:59 -0700 (PDT)
+Date:   Wed, 28 Oct 2020 11:19:57 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Vincent Guittot <vincent.guittot@linaro.org>
+Cc:     Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@redhat.com>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-kernel <linux-kernel@vger.kernel.org>,
+        Quentin Perret <qperret@google.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>
+Subject: Re: [PATCH V2 1/2] sched/core: Rename and move schedutil_cpu_util()
+ to core.c
+Message-ID: <20201028054957.vr47r3wd3zjycten@vireshk-i7>
+References: <cover.1603448113.git.viresh.kumar@linaro.org>
+ <80c66f55ac7f04b3ecd4ebf12d69d86c89480fa7.1603448113.git.viresh.kumar@linaro.org>
+ <20201023103407.GK2594@hirez.programming.kicks-ass.net>
+ <20201023105452.aivb5o6dws76evc3@vireshk-i7>
+ <CAKfTPtBgqiR1zaoqL_q_sMNnXYrzZczTeE1TMF+WR6knHFjGRw@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20201028110945.GE1428094@kernel.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Scanned-By: MIMEDefang 2.79 on 10.5.11.13
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAKfTPtBgqiR1zaoqL_q_sMNnXYrzZczTeE1TMF+WR6knHFjGRw@mail.gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 28.10.20 12:09, Mike Rapoport wrote:
-> On Tue, Oct 27, 2020 at 09:46:35AM +0100, David Hildenbrand wrote:
->> On 27.10.20 09:38, Mike Rapoport wrote:
->>> On Mon, Oct 26, 2020 at 06:05:30PM +0000, Edgecombe, Rick P wrote:
->>>
->>>> Beyond whatever you are seeing, for the latter case of new things
->>>> getting introduced to an interface with hidden dependencies... Another
->>>> edge case could be a new caller to set_memory_np() could result in
->>>> large NP pages. None of the callers today should cause this AFAICT, but
->>>> it's not great to rely on the callers to know these details.
+On 23-10-20, 14:34, Vincent Guittot wrote:
+> Maybe it's time to make sched_util and pelt available for !SMP too.
 > 
->>> A caller of set_memory_*() or set_direct_map_*() should expect a failure
->>> and be ready for that. So adding a WARN to safe_copy_page() is the first
->>> step in that direction :)
->>>
->>
->> I am probably missing something important, but why are we saving/restoring
->> the content of pages that were explicitly removed from the identity mapping
->> such that nobody will access them?
-> 
-> Actually, we should not be saving/restoring free pages during
-> hibernation as there are several calls to mark_free_pages() that should
-> exclude the free pages from the snapshot. I've tried to find why the fix
-> that maps/unmaps a page to save it was required at the first place, but
-> I could not find bug reports.
-> 
-> The closest I've got is an email from Rafael that asked to update
-> "hibernate: handle DEBUG_PAGEALLOC" patch:
-> 
-> https://lore.kernel.org/linux-pm/200802200133.44098.rjw@sisk.pl/
-> 
-> Could it be that safe_copy_page() tries to workaround a non-existent
-> problem?
-> 
+> With util_est and uclamp, I can see some benefits for !SMP compare to ondemand
 
-Clould be! Also see
-
-https://lkml.kernel.org/r/38de5bb0-5559-d069-0ce0-daec66ef2746@suse.cz
-
-which restores free page content based on more kernel parameters, not 
-based on the original content.
+That's a decision you guys (sched maintainers) need to make :)
 
 -- 
-Thanks,
-
-David / dhildenb
-
+viresh
