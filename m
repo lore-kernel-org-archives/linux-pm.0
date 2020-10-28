@@ -2,146 +2,95 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id C5B5FC55179
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:30:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 585A8C55179
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:31:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7EFBC20829
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:30:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 01281207DE
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:31:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603931442;
-	bh=WNCPjsZP5pbQSAxe9i9e7kRn/mIXR/PcHMtlIN3Hv6M=;
+	s=default; t=1603931477;
+	bh=nBf0FvfekyoXxCn/n3mEUs/etvRYBm2KEkGylLz2Irw=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=W/DrGfgof2o/FmtL8wW+oUz+7wAe1CiwSmMamD1ZNMOPsuk02/3m5edceKuEjgQFz
-	 QfYM6HAzwiQO8JQ/clY7+1+Ydeh48EbJm+eEq9NDTBlHJexoxxqMVc0/nwVtMhygi8
-	 qByXC69R9lT8LCgNII65GW08QOTLxkoOxff2g5wc=
+	b=zN+IwCwRSqqDc5zXj/Bc0dHpC5qEmCtiu3k0kL7r0Q0hZWM05A3aNZjOAx3/5n6ZL
+	 sgoD+MToe0MrBGWin+b29KMSNOh96kGkEWgD3/q1XwuCisngOEmgUiUnrdNY59D+QV
+	 Yh0LKQOcuZsqbxSa2w/tVEYfp8W+tGk2yPfgquxA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388296AbgJ1WdU convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:33:20 -0400
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:39519 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388260AbgJ1WdT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:33:19 -0400
-Received: by mail-wr1-f67.google.com with SMTP id y12so734421wrp.6;
-        Wed, 28 Oct 2020 15:33:17 -0700 (PDT)
+        id S1728139AbgJ2AbP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 20:31:15 -0400
+Received: from mail-yb1-f193.google.com ([209.85.219.193]:39222 "EHLO
+        mail-yb1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387979AbgJ1Wbx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:31:53 -0400
+Received: by mail-yb1-f193.google.com with SMTP id 67so523104ybt.6;
+        Wed, 28 Oct 2020 15:31:52 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=9qMkACaxgBFGgp14/y74BYPbOoZe+yAscejmhiaaiHI=;
-        b=ToJRGbqWsOr5Tp0L0JDERd4/O/4KaV7gpvowMalTqutn+Bl3QeJ+jhBEUCj+LLX4mr
-         o+9MsOQjVNEg8bjb3mjmtVi8oNoODDyWg1j9QrlRJ/wlYdJpLzm/6h6Ki0R8XkqaIEK5
-         POxWy7Alag9mk20LJQRniaaJMfEWf2PwxaOEY/mdxe4COvcR0cYfRnp8MQRlQ4+3uBCZ
-         LfIcLmFUmIkhX6k9v7GHsdNn6wrPnskjbaabj1Ag0iJhLq7UB588yhqqWiSDBflG+46g
-         KWygY9/3GJwrxQMuFPFq+BrFgWSCFHCLqzZIfe3Y6Dya6M1AnOwMbM7PQpY9koYA0JOz
-         K4Iw==
-X-Gm-Message-State: AOAM531s2Bx6kOk3O7V0ebu9O1rxbrtdhouUSSYezSUQvzs5KNCwMIMy
-        4QPlg2QV2jHE/FZMijIzJhgPQTBjpimaSg==
-X-Google-Smtp-Source: ABdhPJzFsqaQeMhmEXSs9UrGO3Kmxrx9OhwqKP85Emfcv2bhHljDeQGLFfXI3feKDEwi+e1eh+cN1w==
-X-Received: by 2002:a50:d987:: with SMTP id w7mr441293edj.113.1603913252990;
-        Wed, 28 Oct 2020 12:27:32 -0700 (PDT)
-Received: from kozik-lap ([194.230.155.184])
-        by smtp.googlemail.com with ESMTPSA id y14sm205006edo.69.2020.10.28.12.27.30
+         :mime-version:content-disposition:in-reply-to;
+        bh=tEpfJA/Z9AKrEVaajdL+QptYcnQ05daCxtJhgSiGjgE=;
+        b=l9XoN6LYNC3x9xUohLGeJpFhQMXfNr78IAG9g/xgCeXfXelGdJ1YuxaU+fF8PVQ7O0
+         YY15sOOW8xDPUeszMqr/18+OmcNwNsfBqCMDcBH6MyOaKV1jhk/bh3uCDjX3Ir/kmoDv
+         w5BhDeeVLJ/i9awUuvu2PwIeiTda9+PJJWqpWwSFk2hjhgmfYlyXJW1Tr9FkR+iIWdQV
+         3pol5fOp+/YCp3mhpoHBDnICoAxtvGFhwGGFRSzKrIRoKpAILEjL4wEi85xKBDJntFwB
+         ONi8GjKqLScCDzE2ixcngT8kdm7laU9gDLvGS76lLXFoVG+blFnOCQ314Wnp1+FGr2jP
+         IjUQ==
+X-Gm-Message-State: AOAM53370wLcSDgRvL9MqFLCkOR+guyhgtjlXUcPXnqTIEvEW5oxcmjr
+        ijVE78JFnQvjqA7kSjQLNnuDLfieCg==
+X-Google-Smtp-Source: ABdhPJzMI0qpyEpldPp5Skmtq0XN2ZPZ/0VkR6YRCtR8HrbN2dO6boMbO257rWxdkY/LpYL4aX72Pg==
+X-Received: by 2002:a05:6830:1c62:: with SMTP id s2mr5192386otg.177.1603898192374;
+        Wed, 28 Oct 2020 08:16:32 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id h135sm2598822oib.23.2020.10.28.08.16.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 12:27:31 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 20:27:29 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
+        Wed, 28 Oct 2020 08:16:30 -0700 (PDT)
+Received: (nullmailer pid 4041362 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:16:29 -0000
+Date:   Wed, 28 Oct 2020 10:16:29 -0500
+From:   Rob Herring <robh@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
         Kyungmin Park <kyungmin.park@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Rob Herring <robh+dt@kernel.org>, linux-pm@vger.kernel.org,
         Chanwoo Choi <cw00.choi@samsung.com>,
         Mikko Perttunen <cyndis@kapsi.fi>,
+        Michael Turquette <mturquette@baylibre.com>,
         Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v6 13/52] dt-bindings: memory: tegra124: emc: Document
- new interconnect property
-Message-ID: <20201028192729.GA170285@kozik-lap>
+        Stephen Boyd <sboyd@kernel.org>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v6 03/52] dt-bindings: memory: tegra20: emc: Correct
+ registers range in example
+Message-ID: <20201028151629.GA4041307@bogus>
 References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-14-digetx@gmail.com>
- <20201027102506.GB17089@kozik-lap>
- <f38984b6-d53f-a43d-0387-e787b3c1924d@gmail.com>
- <20201027194833.GE140636@kozik-lap>
- <0a7aeebf-c5ab-13ea-3927-fa39512afd87@gmail.com>
+ <20201025221735.3062-4-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <0a7aeebf-c5ab-13ea-3927-fa39512afd87@gmail.com>
+In-Reply-To: <20201025221735.3062-4-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 11:16:29PM +0300, Dmitry Osipenko wrote:
-> 27.10.2020 22:48, Krzysztof Kozlowski пишет:
-> > On Tue, Oct 27, 2020 at 10:19:28PM +0300, Dmitry Osipenko wrote:
-> >> 27.10.2020 13:25, Krzysztof Kozlowski пишет:
-> >>> On Mon, Oct 26, 2020 at 01:16:56AM +0300, Dmitry Osipenko wrote:
-> >>>> External memory controller is interconnected with memory controller and
-> >>>> with external memory. Document new interconnect property which turns
-> >>>> External Memory Controller into interconnect provider.
-> >>>>
-> >>>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> >>>> ---
-> >>>>  .../bindings/memory-controllers/nvidia,tegra124-emc.yaml   | 7 +++++++
-> >>>>  1 file changed, 7 insertions(+)
-> >>>>
-> >>>> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
-> >>>> index 278549f9e051..ac00832ceac1 100644
-> >>>> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
-> >>>> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra124-emc.yaml
-> >>>> @@ -29,6 +29,9 @@ properties:
-> >>>>      items:
-> >>>>        - const: emc
-> >>>>  
-> >>>> +  "#interconnect-cells":
-> >>>> +    const: 0
-> >>>> +
-> >>>>    nvidia,memory-controller:
-> >>>>      $ref: /schemas/types.yaml#/definitions/phandle
-> >>>>      description:
-> >>>> @@ -327,6 +330,7 @@ required:
-> >>>>    - clocks
-> >>>>    - clock-names
-> >>>>    - nvidia,memory-controller
-> >>>> +  - "#interconnect-cells"
-> >>>
-> >>> Another required property, what about all existing users of this binding?
-> >>
-> >> EMC/devfreq drivers check presence of the new properties and ask users
-> >> to upgrade the DT. The kernel will continue to work fine using older
-> >> DTBs, but devfreq driver won't load.
-> > 
-> > If the devfreq was working fine before (with these older DTBs and older
-> > kernel) then you break the feature.
-> > 
-> > If devfreq was not working or was not stable enough, then nothing is
-> > broken so such change is accepted.
-> > 
-> > Which one is then?
+On Mon, 26 Oct 2020 01:16:46 +0300, Dmitry Osipenko wrote:
+> There is superfluous zero in the registers base address and registers
+> size should be twice bigger.
 > 
-> Definitely the latter. The current devfreq works okay'ish, but we rely
-> on hardware to recover from temporal FIFO underflows and it's a
-> user-visible problem which this series addresses.
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  .../bindings/memory-controllers/nvidia,tegra20-emc.txt          | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
 
-I understand. Fine with me, thanks for explanation.
-
-Best regards,
-Krzysztof
-
+Acked-by: Rob Herring <robh@kernel.org>
