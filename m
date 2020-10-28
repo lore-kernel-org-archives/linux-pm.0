@@ -2,97 +2,83 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E1BC56201
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:12:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DE09C56202
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:15:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 158C024724
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:12:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603923130;
-	bh=oTW2qxr417IFrYMw5d19YWxMQQBH3NrvvNvpAFXxV7s=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=fhYowBV7FqYzEqhjli9eCKJ/u31ipJtoNpaPzXnPDb0DJodsFWenX1xa/iuYBCOKt
-	 EjlI7EtskGhcwWjXpOLWz9zMvsJ8I+uda6g7J3lxTxtVd8acc9ZRm7uUDOGwSiATBO
-	 vAwi0/mvSelN6u2zMbJ06EvoQuSaxSrTxvDtUDog=
+	by mail.kernel.org (Postfix) with ESMTP id 257D3246CD
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:15:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730766AbgJ1WL4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:11:56 -0400
-Received: from mail-yb1-f195.google.com ([209.85.219.195]:35661 "EHLO
-        mail-yb1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730760AbgJ1WLz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:11:55 -0400
-Received: by mail-yb1-f195.google.com with SMTP id m188so504089ybf.2;
-        Wed, 28 Oct 2020 15:11:54 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=T8MLPXzg2SZx9c5xJhUu8LnS9OjmrbIOKKCNscuh58o=;
-        b=HOXi0BWmmQuKMoTzj0yDIlJF6ZWhxNG4O12J5pdvyoobkGFfTWm8mvkPSs72NN53nD
-         MU6xAziewhZwQX682lWYaD7umS/oshawRcoeGVCE2jSUiASeL9dHN6CdYEDo82Hezxu2
-         BwbvabQo8cERzT8xiA37gq1DKp1iz6GB8zy+I/mCZpgeeNEXtd36Ic1UoKPz9tpiMA1R
-         ibarWJaZUT7vysKoW6zDIFpZ6nEZZ95yd4M6hqqXWNv5H1VefXQQP7dUkrPRHXzrJwNJ
-         hGFp+LiUhmrUgKsHiQh6qYTQxRt+JxPRlwzoP2oDLvxlCcPjIC52x97mLn4nEeF+40Vi
-         2cvQ==
-X-Gm-Message-State: AOAM5327QgqUKDQ9ITSWjmo3N0yLNydIxxYgUZKehtLe45oKGfCeG0AM
-        OOFW3w3YNNck6T4GcmVUGdUFxR3GGw==
-X-Google-Smtp-Source: ABdhPJz7reJgOyNPbR/RoD8e8RtXXbZyuobF3ZC3HQeIbo0bO8WjCWxfxCDoSnL/csJ+nowSt3xcZA==
-X-Received: by 2002:a9d:6307:: with SMTP id q7mr5698617otk.218.1603898611758;
-        Wed, 28 Oct 2020 08:23:31 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id f18sm2703272oos.19.2020.10.28.08.23.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:23:31 -0700 (PDT)
-Received: (nullmailer pid 4050728 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:23:29 -0000
-Date:   Wed, 28 Oct 2020 10:23:29 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        devicetree@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-tegra@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>
-Subject: Re: [PATCH v6 04/52] dt-bindings: memory: tegra20: emc: Document
- nvidia, memory-controller property
-Message-ID: <20201028152329.GA4050679@bogus>
-References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-5-digetx@gmail.com>
+        id S1731169AbgJ1WPS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:15:18 -0400
+Received: from kvm5.telegraphics.com.au ([98.124.60.144]:51986 "EHLO
+        kvm5.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731268AbgJ1WPG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:15:06 -0400
+Received: from localhost (localhost.localdomain [127.0.0.1])
+        by kvm5.telegraphics.com.au (Postfix) with ESMTP id A654929A58;
+        Tue, 27 Oct 2020 23:26:19 -0400 (EDT)
+Date:   Wed, 28 Oct 2020 14:26:12 +1100 (AEDT)
+From:   Finn Thain <fthain@telegraphics.com.au>
+To:     Tom Rix <trix@redhat.com>
+cc:     linux-kernel@vger.kernel.org, clang-built-linux@googlegroups.com,
+        linux-pm@vger.kernel.org, linux-crypto@vger.kernel.org,
+        qat-linux@intel.com, amd-gfx@lists.freedesktop.org,
+        dri-devel@lists.freedesktop.org, linux-iio@vger.kernel.org,
+        linux-rdma@vger.kernel.org, linux-mmc@vger.kernel.org,
+        netdev@vger.kernel.org, linux-mediatek@lists.infradead.org,
+        linux-amlogic@lists.infradead.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linux-rtc@vger.kernel.org, linux-scsi@vger.kernel.org,
+        linux-aspeed@lists.ozlabs.org, linux-samsung-soc@vger.kernel.org,
+        linux-btrfs@vger.kernel.org, linux-nfs@vger.kernel.org,
+        tipc-discussion@lists.sourceforge.net, alsa-devel@alsa-project.org,
+        linux-rpi-kernel@lists.infradead.org, linux-tegra@vger.kernel.org
+Subject: Re: [RFC] clang tooling cleanups
+In-Reply-To: <20201027164255.1573301-1-trix@redhat.com>
+Message-ID: <alpine.LNX.2.23.453.2010281344120.31@nippy.intranet>
+References: <20201027164255.1573301-1-trix@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201025221735.3062-5-digetx@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 26 Oct 2020 01:16:47 +0300, Dmitry Osipenko wrote:
-> Tegra20 External Memory Controller talks to DRAM chips and it needs to be
-> reprogrammed when memory frequency changes. Tegra Memory Controller sits
-> behind EMC and these controllers are tightly coupled. This patch adds the
-> new phandle property which allows to properly express connection of EMC
-> and MC hardware in a device-tree, it also put the Tegra20 EMC binding on
-> par with Tegra30+ EMC bindings, which is handy to have.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  .../bindings/memory-controllers/nvidia,tegra20-emc.txt          | 2 ++
->  1 file changed, 2 insertions(+)
+
+On Tue, 27 Oct 2020, trix@redhat.com wrote:
+
+> This rfc will describe
+> An upcoming treewide cleanup.
+> How clang tooling was used to programatically do the clean up.
+> Solicit opinions on how to generally use clang tooling.
 > 
 
-Acked-by: Rob Herring <robh@kernel.org>
+This tooling is very impressive. It makes possible an idea that I had a 
+while ago, to help make code review more efficient. It works like this. 
+
+Suppose a patch, p, is the difference between the new tree, n, and the old 
+tree, o. That is, p = n - o.
+
+Now let clang-tidy be the transformation 't'. This gets you a much more 
+readable patch submission, P = t(n) - t(o).
+
+The only difficulty is that, if I submit P intead of p then 'git am' will 
+probably reject it. This is solved by a little tooling around git, such 
+that, should a patch P fail to apply, the relevant files are automatically 
+reformatted with the officially endorsed transformation t, to generate a 
+minimal cleanup patch, such that P can be automatically applied on top.
+
+If the patch submission process required* that every patch submission was 
+generated like P and not like p, it would immediately eliminate all 
+clean-up patches from the workload of all reviewers, and also make the 
+reviewers' job easier because all submissions are now formatted correctly, 
+and also avoid time lost to round-trips, such as, "you can have a 
+reviewed-by if you respin to fix some minor style issues".
+
+* Enforcing this, e.g. with checkpatch, is slightly more complicated, but 
+it works the same way: generate a minimal cleanup patch for the relevant 
+files, apply the patch-to-be-submitted, and finally confirm that the 
+modified files are unchanged under t.
