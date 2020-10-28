@@ -2,122 +2,93 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A2F58C388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:50:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 76C56C388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:53:07 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 55A3620735
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:50:57 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603925457;
-	bh=ib2Mb2Xx+KygaeNGMjyP4pKm03ZIl1AxBoHq6uQ9x2Q=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=pW3ti+Mj1cFcC+H6PUj3h6z3IAf/eVcnhc43yWpXSmcYw+2gQ9r7ua5W1xSqbWfPw
-	 vvIjkV3OHOMAudd4SZHvsyAj5qargPgXfsWNpRxolH45fghJOsOxvSDGa7FrzT3I+f
-	 2L85oQVnZ9Lh0JABEqEZIfJ8C4lxrQcZxWwNwrag=
+	by mail.kernel.org (Postfix) with ESMTP id 3031A20754
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:53:07 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727364AbgJ1WuD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:50:03 -0400
-Received: from mail-ua1-f66.google.com ([209.85.222.66]:39865 "EHLO
-        mail-ua1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389458AbgJ1WtQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:49:16 -0400
-Received: by mail-ua1-f66.google.com with SMTP id t15so188445ual.6;
-        Wed, 28 Oct 2020 15:49:14 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=QX0ENcNCRgqoRwA+YusJr6c818KTH5LROqERQdCNVs8=;
-        b=eYi/gNGqW3L/aL3r8BxdxzPw+5CvtA96dkSqAy2O7BPeeGsEYeE2MWy03BT1/FvBtN
-         6bBmCNAq04tpaSuAlZcjd9412MiUEOgGuCpgM3lojvXZundsqS5Mutob9hxRpQGulSVU
-         DKVBVtBCKINYj/owHeuf63IAu4pLsexArsREUNY/5RJ4ImgHR8Odt3F74oLfX3sYKZo1
-         aJH9MChccurJNwiZO+hO53LdUicPbyH/9D/LH0t9ftDWy53rnt2mFGh7f13TeFKWi0GC
-         hnkW7LNCx4I6IhQzSS9Q3Ey0+9vyukNDN1IP8IUpWB4x/uQmquzBkYKY9MjLqDEH0Io4
-         B7ug==
-X-Gm-Message-State: AOAM533pfI5njsXu8u5JUH3Kmekl5qJEsFfSajMstaNQuUs6QXC50TmM
-        Q1NFEdIDMcDA/QmQly7iDhbtNRz3+g==
-X-Google-Smtp-Source: ABdhPJyYAHXqPlvZ5xX1GDoTkHk3tTpQd2ChQUyWIgVIOlXap+r02KTeFGDxbyhKGUnxb6HGIN5QrQ==
-X-Received: by 2002:a4a:c68d:: with SMTP id m13mr6136474ooq.64.1603898794592;
-        Wed, 28 Oct 2020 08:26:34 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id f13sm2572772oij.0.2020.10.28.08.26.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:26:33 -0700 (PDT)
-Received: (nullmailer pid 4054817 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:26:32 -0000
-Date:   Wed, 28 Oct 2020 10:26:32 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v6 08/52] dt-bindings: memory: tegra20: emc: Document
- mfd-simple compatible and statistics sub-device
-Message-ID: <20201028152632.GA4051913@bogus>
-References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-9-digetx@gmail.com>
- <20201027090212.GG4244@kozik-lap>
- <1cce314a-1eab-61c9-099d-54f987b03761@gmail.com>
- <20201027194457.GD140636@kozik-lap>
- <ae06bd70-93f5-abe8-64d9-e5e991cd8ff8@gmail.com>
+        id S2389659AbgJ1Www (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:52:52 -0400
+Received: from leibniz.telenet-ops.be ([195.130.137.77]:56812 "EHLO
+        leibniz.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389655AbgJ1Wv6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:51:58 -0400
+X-Greylist: delayed 4199 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Oct 2020 18:51:57 EDT
+Received: from xavier.telenet-ops.be (xavier.telenet-ops.be [IPv6:2a02:1800:120:4::f00:14])
+        by leibniz.telenet-ops.be (Postfix) with ESMTPS id 4CLkR13wFdzMqwlG
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 10:53:17 +0100 (CET)
+Received: from ramsan.of.borg ([84.195.186.194])
+        by xavier.telenet-ops.be with bizsmtp
+        id lMtG2300W4C55Sk01MtGMp; Wed, 28 Oct 2020 10:53:17 +0100
+Received: from geert (helo=localhost)
+        by ramsan.of.borg with local-esmtp (Exim 4.93)
+        (envelope-from <geert@linux-m68k.org>)
+        id 1kXi8q-000lf0-Hq; Wed, 28 Oct 2020 10:53:16 +0100
+Date:   Wed, 28 Oct 2020 10:53:16 +0100 (CET)
+From:   Geert Uytterhoeven <geert@linux-m68k.org>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Aisheng Dong <aisheng.dong@nxp.com>,
+        linux-kernel@vger.kernel.org, linux-renesas-soc@vger.kernel.org
+Subject: Re: [PATCH] opp: Don't always remove static OPPs in
+ _of_add_opp_table_v1()
+In-Reply-To: <2c73ab54717ef358b118ea0cfb727b1427e7730a.1602648719.git.viresh.kumar@linaro.org>
+Message-ID: <alpine.DEB.2.22.394.2010281050200.183010@ramsan.of.borg>
+References: <2c73ab54717ef358b118ea0cfb727b1427e7730a.1602648719.git.viresh.kumar@linaro.org>
+User-Agent: Alpine 2.22 (DEB 394 2020-01-19)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ae06bd70-93f5-abe8-64d9-e5e991cd8ff8@gmail.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 11:18:34PM +0300, Dmitry Osipenko wrote:
-> 27.10.2020 22:44, Krzysztof Kozlowski пишет:
-> > On Tue, Oct 27, 2020 at 10:22:19PM +0300, Dmitry Osipenko wrote:
-> >> 27.10.2020 12:02, Krzysztof Kozlowski пишет:
-> >>>> @@ -31,17 +32,34 @@ Example:
-> >>>>  		...
-> >>>>  	};
-> >>>>  
-> >>>> +	emc_bw_dfs_opp_table: emc_opp_table1 {
-> >>> Hyphens for node name.
-> >>
-> >> We already use underscores for the Tegra CPU OPP table.
-> >>
-> >> https://elixir.bootlin.com/linux/v5.10-rc1/source/arch/arm/boot/dts/tegra20-cpu-opp.dtsi#L4
-> >>
-> >> What makes you think that hyphens will be a better choice? Is it a
-> >> documented naming convention?
-> > 
-> > Unfortunately that's the source of confusion also for me because
-> > Devicetree spec mentions both of them (and does not specify preferences).
-> > 
-> > The choice of dashes/hyphens comes now explicitly from all dtschema
-> > files.  Previously, the documentation were emails from Rob. :)
-> 
-> Okay, I'll change it in v7. So far I haven't seen warnings about it from
-> the schema-checker.
+ 	Hi Viresh,
 
-dtc with W=2 will warn.
+On Wed, 14 Oct 2020, Viresh Kumar wrote:
+> The patch missed returning 0 early in case of success and hence the
+> static OPPs got removed by mistake. Fix it.
+>
+> Fixes: 90d46d71cce2 ("opp: Handle multiple calls for same OPP table in _of_add_opp_table_v1()")
+> Reported-by: Aisheng Dong <aisheng.dong@nxp.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-The bigger issue is the name should be generic.
+This revives cpufreq on R-Car Gen2, and fixes a later s2ram regression
+in commit dc279ac6e5b4e06e ("cpufreq: dt: Refactor initialization to
+handle probe deferral properly"), where the PMIC is accessesed while
+the I2C controller is still suspended.
 
-Rob
+Tested-by: Geert Uytterhoeven <geert+renesas@glider.be>
 
+> --- a/drivers/opp/of.c
+> +++ b/drivers/opp/of.c
+> @@ -944,6 +944,8 @@ static int _of_add_opp_table_v1(struct device *dev, struct opp_table *opp_table)
+> 		nr -= 2;
+> 	}
+>
+> +	return 0;
+> +
+> remove_static_opp:
+> 	_opp_remove_all_static(opp_table);
+>
+> -- 
+> 2.25.0.rc1.19.g042ed3e048af
+
+Gr{oetje,eeting}s,
+
+ 						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+ 							    -- Linus Torvalds
