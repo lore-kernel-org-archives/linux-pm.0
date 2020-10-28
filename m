@@ -2,114 +2,118 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F38CEC4363A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:38:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 453E2C4363A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:40:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FB9620829
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:38:42 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="wAW/Rjf4"
+	by mail.kernel.org (Postfix) with ESMTP id DB3B0207E8
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:40:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725940AbgJ1Xil (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 19:38:41 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38692 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390567AbgJ1Xhj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:37:39 -0400
-Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 912C0C0613CF
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 16:37:39 -0700 (PDT)
-Received: by mail-pf1-x441.google.com with SMTP id y14so751060pfp.13
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 16:37:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=HOLVJZragnogI83AL7H7xsw1FRW50J26vaXwlw6VSvU=;
-        b=wAW/Rjf4En10sBEiY4jdkSvsj0xci8ukot36BnsZw/HtdrZJfLGQq3I/1tEqnlGtLy
-         YCjdYHuEa9i/IDF7Wh1+XVhCwxwMr4sMHTL5yMsgzJV+0eDJ6pWYVLH20Yr5xX4AlLzM
-         bClcW1MTKolJaQ15A2uPD9zA2SJo+dG7lB3+SMeX3F/l0Aephv7jEf7L+ghfWCyAgEWI
-         Kt3GqycLa+0BxJIcTG8ZYvJEOZpjhuqWLzKLlLhkTbSrXOjX/XIy1Nhb8RiVDSYx2den
-         CqKsxAZeGekYMWnCfZjR6DX6i7h0xzalwXjYfOkdKBrkTvlvWF3D/IjW4ENfA1t9JpcY
-         Yctw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=HOLVJZragnogI83AL7H7xsw1FRW50J26vaXwlw6VSvU=;
-        b=KwuKrI+Vhrp113II7lRCPvlHxsA2j3PQQMqNFAVMAZv8KDhNUG4QD88EILmRlbCi/q
-         LNCduY6GDB49ExG7G4nASsiIFQIAbyAS0wOWTE11dVYg7/S+8Tw33hIZd4KK36u4cjTo
-         0/k9uYFLApUPb/GVCVi4e7q0iDot/46529CeQmx/qx0TU6xuyIQEAtZlywctPnFzZ5Iy
-         Hu0qc4GZKhA1HpoH2NhcQgJv0aEPEN402bKal+xX9WK8lU5U755fxajgKk4EQ2ppa5+L
-         oLOnjsF0lDU2nunPCemep2fAEFqW6W8EovGEasVfbKf+5nNGeWYKpRkNTlgqQcpC+NV9
-         29gw==
-X-Gm-Message-State: AOAM5335ZS5iZsu2iebZAODbuA5gK7+8HSFxdX78wdbQ0dNSY8EQHH0e
-        A9h09sF/A30T67n25Kli0UWU3vYQxWKMvQ==
-X-Google-Smtp-Source: ABdhPJx2eljw7UcU0BCI0KQNkHipnmVzz2C1K9PAWVmK+t/4Y9zrp3nrvO1yv7RFXzMNRpax0Rcj1A==
-X-Received: by 2002:a63:4086:: with SMTP id n128mr4829611pga.387.1603865325897;
-        Tue, 27 Oct 2020 23:08:45 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id ge6sm3868281pjb.29.2020.10.27.23.08.44
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 27 Oct 2020 23:08:45 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 11:38:43 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Fabien Parent <fparent@baylibre.com>
-Cc:     linux-mediatek@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, matthias.bgg@gmail.com, rjw@rjwysocki.net
-Subject: Re: [PATCH 1/2] cpufreq: mediatek: Add support for mt8167
-Message-ID: <20201028060843.wlfjuyk5nnou7pfb@vireshk-i7>
-References: <20201013092709.3336709-1-fparent@baylibre.com>
+        id S1725300AbgJ1Xkk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 19:40:40 -0400
+Received: from youngberry.canonical.com ([91.189.89.112]:59547 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725968AbgJ1XjG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:39:06 -0400
+Received: from 1.general.cking.uk.vpn ([10.172.193.212])
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <colin.king@canonical.com>)
+        id 1kXkCJ-0004HL-0u; Wed, 28 Oct 2020 12:04:59 +0000
+Subject: Re: PM / devfreq: map devfreq drivers to governor using name
+From:   Colin Ian King <colin.king@canonical.com>
+To:     Nishanth Menon <nm@ti.com>
+Cc:     MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        linux-samsung-soc@vger.kernel.org
+References: <8aec701c-73d1-d2a1-c894-8dec844ed865@canonical.com>
+Message-ID: <e110c917-e65a-1e1b-925d-945cb99eef9a@canonical.com>
+Date:   Wed, 28 Oct 2020 12:04:58 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.3.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201013092709.3336709-1-fparent@baylibre.com>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <8aec701c-73d1-d2a1-c894-8dec844ed865@canonical.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 13-10-20, 11:27, Fabien Parent wrote:
-> Add compatible string for mediatek mt8167
+On 28/10/2020 12:00, Colin Ian King wrote:
+> Hi,
 > 
-> Signed-off-by: Fabien Parent <fparent@baylibre.com>
-> ---
->  drivers/cpufreq/cpufreq-dt-platdev.c | 1 +
->  drivers/cpufreq/mediatek-cpufreq.c   | 1 +
->  2 files changed, 2 insertions(+)
+> Static analysis of linux-next with Coverity has found a potential null
+> pointer dereference issue with the following commit:
 > 
-> diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
-> index 7d01df7bfa6c..b8d48ed37156 100644
-> --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> @@ -119,6 +119,7 @@ static const struct of_device_id blacklist[] __initconst = {
->  	{ .compatible = "mediatek,mt2712", },
->  	{ .compatible = "mediatek,mt7622", },
->  	{ .compatible = "mediatek,mt7623", },
-> +	{ .compatible = "mediatek,mt8167", },
->  	{ .compatible = "mediatek,mt817x", },
->  	{ .compatible = "mediatek,mt8173", },
->  	{ .compatible = "mediatek,mt8176", },
-> diff --git a/drivers/cpufreq/mediatek-cpufreq.c b/drivers/cpufreq/mediatek-cpufreq.c
-> index 7d1212c9b7c8..c09bff86bb9b 100644
-> --- a/drivers/cpufreq/mediatek-cpufreq.c
-> +++ b/drivers/cpufreq/mediatek-cpufreq.c
-> @@ -532,6 +532,7 @@ static const struct of_device_id mtk_cpufreq_machines[] __initconst = {
->  	{ .compatible = "mediatek,mt2712", },
->  	{ .compatible = "mediatek,mt7622", },
->  	{ .compatible = "mediatek,mt7623", },
-> +	{ .compatible = "mediatek,mt8167", },
->  	{ .compatible = "mediatek,mt817x", },
->  	{ .compatible = "mediatek,mt8173", },
->  	{ .compatible = "mediatek,mt8176", },
+> commit 1b5c1be2c88e8445a20fa1929e26c37e7ca8c926
+> Author: Nishanth Menon <nm@ti.com>
+> Date:   Mon Oct 29 15:01:45 2012 -0500
+> 
+>     PM / devfreq: map devfreq drivers to governor using name
+> 
+> 
+> The analysis is as follows for devfreq_remove_governor in
+> drivers/devfreq/devfreq.c
+> 
+> 1312
+> 
+> deref_ptr_in_call: Dereferencing pointer devfreq->governor.
+> 
+> 1313                if (!strncmp(devfreq->governor->name, governor->name,
+> 1314                             DEVFREQ_NAME_LEN)) {
+> 1315                        /* we should have a devfreq governor! */
+> 
+> Dereference before null check (REVERSE_INULL)
+> check_after_deref: Null-checking devfreq->governor suggests that it may
+> be null, but it has already been dereferenced on all paths leading to
+> the check.
+> 
+> 1316                        if (!devfreq->governor) {
+> 1317                                dev_warn(dev, "%s: Governor %s NOT
+> present\n",
+> 1318                                         __func__, governor->name);
+> 1319                                continue;
+> 1320                                /* Fall through */
+> 
+> So devfreq->governor->name is dereferencing devfreq->governor before a
+> null check on devfreq->governor
+> 
+> Colin
+> 
 
-Applied. Thanks.
+I forgot to mention, an identical issue also exists here:
 
--- 
-viresh
+1247        list_for_each_entry(devfreq, &devfreq_list, node) {
+1248                int ret = 0;
+1249                struct device *dev = devfreq->dev.parent;
+1250
+
+deref_ptr_in_call: Dereferencing pointer devfreq->governor.
+
+1251                if (!strncmp(devfreq->governor->name, governor->name,
+1252                             DEVFREQ_NAME_LEN)) {
+1253                        /* The following should never occur */
+
+Dereference before null check (REVERSE_INULL)
+check_after_deref: Null-checking devfreq->governor suggests that it may
+be null, but it has already been dereferenced on all paths leading to
+the check.
+
+1254                        if (devfreq->governor) {
+1255                                dev_warn(dev,
+1256                                         "%s: Governor %s already
+present\n",
+1257                                         __func__,
+devfreq->governor->name);
+
