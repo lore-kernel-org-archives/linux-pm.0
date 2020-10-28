@@ -6,90 +6,93 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B918EC388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B9C0C388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:04:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5F4C120754
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:56:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2E83520796
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:04:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603925768;
-	bh=vETilujXThJZI+TyR7+fvBcBPH+xXaqjcOBPuQDIfAg=;
+	s=default; t=1603926275;
+	bh=YcVlaq1mZwyLeo+vypROEA75km+l4zSDau/h7Bffl/g=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Jw9tOBz3rmsNSt56RE7Qn2pFXwkiN9AQZN7QjXMEzXswYtUEElfalzO0G1bJusVQK
-	 KEBDQA+1KL5vE2iQVy6IlmL7WOzP4gkpDxT21RPmVz7TBuzaOqfyyQGae7r8B+Rh6U
-	 igS+7pK2hJPph4QOK6+mPGsNyVlOe3mJZG1qpXxE=
+	b=0OQ3D+DdmrCp6O7GpJW0QqpnqoUhZgU4PUue3PL0Uk5LenJGWpJL7DjlfswdCQwTl
+	 Eze/I/jp3sHDBslOJm4lil9R/doYmrcRklbPBvexgmguk9yzzqfyvEzAC/HpHg/GWh
+	 O5wxjUxU8q9Qrs0ThxPN/ELGWl3aanak2N6SSGAU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389844AbgJ1Wz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:55:59 -0400
-Received: from mail-oo1-f66.google.com ([209.85.161.66]:35095 "EHLO
-        mail-oo1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389664AbgJ1Wx3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:53:29 -0400
-Received: by mail-oo1-f66.google.com with SMTP id n16so284666ooj.2;
-        Wed, 28 Oct 2020 15:53:28 -0700 (PDT)
+        id S2390111AbgJ1XE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 19:04:26 -0400
+Received: from mail-yb1-f196.google.com ([209.85.219.196]:39777 "EHLO
+        mail-yb1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732874AbgJ1XD6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:03:58 -0400
+Received: by mail-yb1-f196.google.com with SMTP id 67so580086ybt.6;
+        Wed, 28 Oct 2020 16:03:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=Z8qRO5fdt5NREdYFOvySAdOEhiWbrwmj4h+0kAQzcnw=;
-        b=jr7aYC4G57UCx1wz5KzVb62CyX+HTf9ssaVUqQNR9goooEQas0KlupcDB1NjtjoX3y
-         cZwA5swuYm7fC4ViEXbITJkdW2wRjfnvJPul1oAHGjrm//EEbIenMzRw1ZFeUpDyjx93
-         uP63t5uBfNknYx3ahBf5h0dxyf47O8iR6xrBz+8fuN++ui9azMWVR9kbrYIbvMKDknpV
-         8LJM5QSRr55LD53dMzLXda/lXqODG2y0OC0eMXnJGj0Hi5qCEOVvE0gsSWZ/GimQG3E4
-         P0tPBaXuOL98ueFG1NUZOScmQgOmkrvHW6nVP72DAeAOWMN9I9pDAl3ioj481qfj//kf
-         GsmQ==
-X-Gm-Message-State: AOAM532F3BonZpO5NHt+QDJC8A6oVkKpN3AOPU/JjDeBEEtgt8CJwxtK
-        DB1woXCt2+PWQ9TwRbdnchq5GQ4SQw==
-X-Google-Smtp-Source: ABdhPJz4rAItM9Tjr+B041aWkQLcJ4P9I8LjHRMJj9yAlwEt4a/QxGWhvpDv4Tv7mKuo7b3lREU2dg==
-X-Received: by 2002:a05:6830:144b:: with SMTP id w11mr5358743otp.82.1603899076759;
-        Wed, 28 Oct 2020 08:31:16 -0700 (PDT)
+        bh=d2bISq6eLdcKMjNlJcKgIH+JW7IlvZPJABIB1hmk538=;
+        b=Rr+N2aWWFilsMpaK/q/YSaQ0VLQ4L9nAcxY/2dhS8sq455eRRFs1Z/GvsAjN1/Jn1w
+         burA/5KTg7SOl074bw8Y1uv/hD+La0PFrwh+6QDnNaYSQsTVP+vz5XcdptPyxHODQO7l
+         44OrbOfqBPLg7I2gRKkcKoXYDf+FKLLqkAEOibbpRthtWNHdqGhrVVYB2N8aqHf1jGcD
+         4JvhG+KXWl9cTGK6e+NJq4fLHq26N508LW7l5anNJse5g1e36qVnfC5gPSbZTCDfZmAr
+         vPgvFQOQvxm1kdPcaabcVZVv4VCoXo7HFHPNYv4Cve1y4Lrm4JXrp8rJi8XO6EoKc39o
+         J5pg==
+X-Gm-Message-State: AOAM533IjHbJkoIFNDugzmE4Pv0USREtzbPOW+pdJzfElIbOSsVC5NAA
+        H3ezkLIqjjQug2F5EuCJZ8DpI+pylw==
+X-Google-Smtp-Source: ABdhPJxePufEKBxPy5ldMaGUPclbtmQjjTrYKwN9UnqPeafBvzPio38FSAsVM02kNVp5/lFXZ+YOiw==
+X-Received: by 2002:a9d:6aca:: with SMTP id m10mr5654973otq.282.1603899015746;
+        Wed, 28 Oct 2020 08:30:15 -0700 (PDT)
 Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id 105sm2094205otf.52.2020.10.28.08.31.15
+        by smtp.gmail.com with ESMTPSA id x14sm2656085ooo.43.2020.10.28.08.30.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:31:15 -0700 (PDT)
-Received: (nullmailer pid 4061457 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:31:14 -0000
-Date:   Wed, 28 Oct 2020 10:31:14 -0500
+        Wed, 28 Oct 2020 08:30:14 -0700 (PDT)
+Received: (nullmailer pid 4059892 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:30:13 -0000
+Date:   Wed, 28 Oct 2020 10:30:13 -0500
 From:   Rob Herring <robh@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Mikko Perttunen <cyndis@kapsi.fi>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-tegra@vger.kernel.org,
+Cc:     Stephen Boyd <sboyd@kernel.org>, devicetree@vger.kernel.org,
         Kyungmin Park <kyungmin.park@samsung.com>,
-        linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        linux-kernel@vger.kernel.org,
+        Krzysztof Kozlowski <krzk@kernel.org>,
         MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
         dri-devel@lists.freedesktop.org,
-        Jonathan Hunter <jonathanh@nvidia.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
         Michael Turquette <mturquette@baylibre.com>,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v6 19/52] dt-bindings: memory: tegra124: Add memory
- client IDs
-Message-ID: <20201028153114.GA4061412@bogus>
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        linux-tegra@vger.kernel.org,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org,
+        Rob Herring <robh+dt@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>
+Subject: Re: [PATCH v6 14/52] dt-bindings: memory: tegra124: emc: Document
+ OPP table and voltage regulator
+Message-ID: <20201028153013.GA4059862@bogus>
 References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-20-digetx@gmail.com>
+ <20201025221735.3062-15-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201025221735.3062-20-digetx@gmail.com>
+In-Reply-To: <20201025221735.3062-15-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 26 Oct 2020 01:17:02 +0300, Dmitry Osipenko wrote:
-> Each memory client have a unique hardware ID, this patch adds these IDs.
+On Mon, 26 Oct 2020 01:16:57 +0300, Dmitry Osipenko wrote:
+> Document new OPP table and voltage regulator properties which are needed
+> for supporting dynamic voltage-frequency scaling of the memory controller.
+> Some boards may have a fixed core voltage regulator, hence it's optional
+> because frequency scaling still may be desired.
 > 
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  include/dt-bindings/memory/tegra124-mc.h | 68 ++++++++++++++++++++++++
->  1 file changed, 68 insertions(+)
+>  .../memory-controllers/nvidia,tegra124-emc.yaml       | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
 > 
 
 Reviewed-by: Rob Herring <robh@kernel.org>
