@@ -2,117 +2,108 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE200C388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:07:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E4FEC4363A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:09:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A1D2E24724
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:07:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E24732474F
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:09:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603922860;
-	bh=s93hgAZBJXZW7aLi/sJVwH+2Bt3BegWezU5N485Chc0=;
+	s=default; t=1603922974;
+	bh=Mn006CKi7+bFI8aRSWwvXjzvohwC3AzTprOAI+qvE4o=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=VI2d/Oy5dVSUF4kYTgcRhZdOrrAYn+F+aR1XQWd3VRNqPvCRMWhok/tNSPVU+lHhX
-	 /HlUnc4Ff4Fq3xbc6fQBWFz+4b3SznJXMAe1gbyHq29FfH0yUwCi+dMR5vRIu0QEwX
-	 PaBWxRGWjLhoEFVascQzXVsSfKHnx/Mwmfs/SEO4=
+	b=qnTHawihAsjW1KwNtGggFBkxOf6sa0bZ+aB7V5SyUR/Ya28XCWPKZVyYJArYM0Kzw
+	 FjARgGuI7Qb4Sothv10ZPqSmF6PUoZ42Gec7jsgpSVvPEz3dYQkVn+GifUJi8oPpOt
+	 Of9p7Q3x85Pg8rK2O6BD7LFANHiKI3KknvNUp8ws=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730124AbgJ1WHa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:07:30 -0400
-Received: from mail-yb1-f193.google.com ([209.85.219.193]:35093 "EHLO
-        mail-yb1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730110AbgJ1WH2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:07:28 -0400
-Received: by mail-yb1-f193.google.com with SMTP id m188so495173ybf.2;
-        Wed, 28 Oct 2020 15:07:27 -0700 (PDT)
+        id S1730334AbgJ1WJc convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:09:32 -0400
+Received: from mail-lf1-f50.google.com ([209.85.167.50]:32804 "EHLO
+        mail-lf1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728604AbgJ1WJ3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:09:29 -0400
+Received: by mail-lf1-f50.google.com with SMTP id l2so814986lfk.0;
+        Wed, 28 Oct 2020 15:09:27 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=U9i72jITznoyLWceCi4kjFUr4fNuDlp2txdWJ3Q79bE=;
-        b=JvAitL9dJsvtpMeWcXUMRz59fkrK+t5aPGQHX+TavYnsnoaG0Ujh3N/hItJvcMzpq5
-         +vaqJ6oczXVJSyDKRQEDQxd1aEoLcA0MDTaEk6dzOXaDzVuCc+4SDmgOexwfxNJpZf0k
-         37kPoaa4RMI+S+gBGK4Q32wJq95ELTLvva2rYH2pdM6ms+PDiDDvP28KOplFBRzMFaGj
-         +j3l31LH2zDfczlEjqXW8QAA6bpoMUND1ByKrnaA8l1BfwbydA5Hgl/QcWfrHVqf9UVd
-         jSfzxidU3glXvkNRVJbhcXG5QsVbkBHgYvHJn/mbTWMv2nG01bquMBvo0D67L43WLYBX
-         UF1Q==
-X-Gm-Message-State: AOAM532yh/hXtmozSHSGYRSZzi6LnJ/VSGGyozTa8mSA6Xazpb5XIYDx
-        TVaC98mbnWxaH0H1z9IX6FvilVlIZQ==
-X-Google-Smtp-Source: ABdhPJxVfBAexzDeSfthE/C5FdehItFG5LcxBVZpHOboZx3jsIuqwOA58jPu7ZgCp/788T3Wo1UzIg==
-X-Received: by 2002:a9d:7390:: with SMTP id j16mr5739710otk.144.1603897740272;
-        Wed, 28 Oct 2020 08:09:00 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id x13sm2134399otq.75.2020.10.28.08.08.58
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=vP95c5G5AiWt8jFAMoFHGwxXSql0kCQrJ9xpkPgq6gg=;
+        b=HUEdEcL9oWOFN5GZBxdIaZuS75HZc1SpYh+XPYjnnLFtT7U0bcCPzpa2vlhwDxDdgk
+         yvYmhzdZIGzCPDQKugnJKn3R6erxAIXZYB6L5asjmhG+CNN3o8TOjW+DK110SCBYvO94
+         Thd+bpYWL74XjThcUosC0busfnRzkPQC+MmY97PSEALfA758uf2gLrKzegXjCSZbvZKL
+         NI2/QBv5TVO2dB3fn0j8dZuoTkBLj5rE1VI1e3Kf6UDmj3dBUyhbM8JfOl3jY7YWVotv
+         SI9tuug6nOZPt+NM8OhLG6cVNwMHV452ldJaNOcksWdHTvSwVTS1VZInkVyrTQI8AkIy
+         P2Gg==
+X-Gm-Message-State: AOAM5334bepW508TC6pThlk8737l4d4hm0IKTe5aplq3YlflMwF8IDXg
+        FOMUWXzU1pDtlsM3JnuAXfN8th22ngJeOQ==
+X-Google-Smtp-Source: ABdhPJyHdwuuiwRcW53qYzu6ELBzFaASak8bZZ7cUJm7qaJ+2lCiPhJEUbxJ3cDKZqX83Q9tfRG3aQ==
+X-Received: by 2002:a05:6402:134c:: with SMTP id y12mr460552edw.344.1603913305471;
+        Wed, 28 Oct 2020 12:28:25 -0700 (PDT)
+Received: from kozik-lap ([194.230.155.184])
+        by smtp.googlemail.com with ESMTPSA id p1sm261722ejd.33.2020.10.28.12.28.22
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:08:59 -0700 (PDT)
-Received: (nullmailer pid 4031254 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:08:58 -0000
-Date:   Wed, 28 Oct 2020 10:08:58 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Hector Yuan <hector.yuan@mediatek.com>
-Cc:     linux-mediatek@lists.infradead.org,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Santosh Shilimkar <ssantosh@kernel.org>,
-        Amit Kucheria <amit.kucheria@linaro.org>,
+        Wed, 28 Oct 2020 12:28:23 -0700 (PDT)
+Date:   Wed, 28 Oct 2020 20:28:21 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
         Stephen Boyd <sboyd@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        Dave Gerlach <d-gerlach@ti.com>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        Robin Murphy <robin.murphy@arm.com>,
-        Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
-        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org,
-        wsd_upstream@mediatek.com
-Subject: Re: [PATCH v8 2/3] dt-bindings: arm: cpus: Document
- 'mediatek,freq-domain' property
-Message-ID: <20201028150858.GA4029348@bogus>
-References: <1603700349-5922-1-git-send-email-hector.yuan@mediatek.com>
- <1603700349-5922-3-git-send-email-hector.yuan@mediatek.com>
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v6 41/52] memory: tegra124-emc: Use
+ devm_platform_ioremap_resource()
+Message-ID: <20201028192821.GB170285@kozik-lap>
+References: <20201025221735.3062-1-digetx@gmail.com>
+ <20201025221735.3062-42-digetx@gmail.com>
+ <20201027102707.GC17089@kozik-lap>
+ <d79e4972-acf9-f889-50b8-f0829a0e8e08@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1603700349-5922-3-git-send-email-hector.yuan@mediatek.com>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <d79e4972-acf9-f889-50b8-f0829a0e8e08@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 26, 2020 at 04:19:08PM +0800, Hector Yuan wrote:
-> From: "Hector.Yuan" <hector.yuan@mediatek.com>
+On Tue, Oct 27, 2020 at 11:30:31PM +0300, Dmitry Osipenko wrote:
+> 27.10.2020 13:27, Krzysztof Kozlowski пишет:
+> > On Mon, Oct 26, 2020 at 01:17:24AM +0300, Dmitry Osipenko wrote:
+> >> Use devm_platform_ioremap_resource() helper which makes code a bit
+> >> cleaner.
+> > 
+> > Such cleanups (and few other in this patchset) should be at beginning of
+> > patchset or even as part of a separate one.  I think there is not much
+> > stopping anyone from applying these... except that you put them in the
+> > middle of big dependency.
 > 
-> Add devicetree documentation for 'mediatek,freq-domain' property specific
-> to Mediatek CPUs. This property is used to reference the CPUFREQ node
-> along with the domain id.
+> Some of these cleanup patches can't be applied separately without a need
+> to make a rebase. I think it should be more preferred to have all the
+> patches within a single series.
 > 
-> Signed-off-by: Hector.Yuan <hector.yuan@mediatek.com>
-> ---
->  Documentation/devicetree/bindings/arm/cpus.yaml |    6 ++++++
->  1 file changed, 6 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
-> index 1222bf1..e995b26 100644
-> --- a/Documentation/devicetree/bindings/arm/cpus.yaml
-> +++ b/Documentation/devicetree/bindings/arm/cpus.yaml
-> @@ -255,6 +255,12 @@ properties:
->  
->        where voltage is in V, frequency is in MHz.
->  
-> +  mediatek,freq-domain:
-> +    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-> +    description:
-> +      CPUs supporting freq-domain must set their "mediatek,freq-domain" property
-> +      with phandle to a cpufreq_hw node followed by the domain id.
+> I'll try to reorder the patches in v7 if this will ease the review, thanks.
 
-This needs to be a common binding shared with SCMI domains.
+If feasible, that would be good. Thanks.
 
-> +
->    power-domains:
->      $ref: '/schemas/types.yaml#/definitions/phandle-array'
->      description:
-> -- 
-> 1.7.9.5
+Best regards,
+Krzysztof
+
