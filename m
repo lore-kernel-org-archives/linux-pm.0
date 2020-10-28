@@ -2,133 +2,89 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.5 required=3.0 tests=BAYES_00,DATE_IN_PAST_03_06,
+	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAA11C64E7A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:19:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3984BC4363A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:24:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7792A206D9
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:19:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D74D520709
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:24:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603923544;
-	bh=eCXz+icsPBbUt7e5/gqYfjD87B/R7/XDnyNtNoyBXrk=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=kQrIlDmXea3BefkSFsH0V/+FSsNZG/XHN8w7f6fSShz8Opqxp+tQAqVbsjZdvgQBs
-	 +4LwDoqQWPedwHBHpu/WR9s2UQhrXcMf1Rj0+/Vc1DWK3cuVANwVMeDrlh1PS0qDaC
-	 zRe7zjd6spTPwRRn0dbUbMKrQKHkE10uJlOi0UaY=
+	s=default; t=1603923872;
+	bh=ePu1vCWPPdWeOHpbPeJlHYIDphgb/LMQAW1e15I2Dro=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=GDBdal/2W210jBW/20ajhYrNQ99VgybCfYE5K1YnPPLmQQ4SeYTuHwMF15nXOvgXZ
+	 j9+JfrChTOaVaDxJDxPNLkTMJXiwJuJNsuzj9bI5oqU3jAQP5rFuXnT49NwndiylR5
+	 bOEyK7metKnMNNmGW4fu6xY2nW4EQ+Jh4FbSb7JI=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731866AbgJ1WTC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:19:02 -0400
-Received: from mail.kernel.org ([198.145.29.99]:60520 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1731779AbgJ1WRp (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 28 Oct 2020 18:17:45 -0400
-Received: from kernel.org (unknown [87.70.96.83])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id E673E246A2;
-        Wed, 28 Oct 2020 11:09:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603883399;
-        bh=eCXz+icsPBbUt7e5/gqYfjD87B/R7/XDnyNtNoyBXrk=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=rSkA1LMThGYa8UMoSh4pNOLlYk0Lxh/6LDfGk3lRhOIkmwmSNIL5gi4KdTIE8Tsxu
-         qd8mkHa8sLSEDYsQV8mEhfTUE/HscCn3fQbHDAv2vipDt0prchwp0fFl1i7QNwuZ5Y
-         aIHs1RviptzndqpoN78OxdW+Os4KYEQl9gh6FnDI=
-Date:   Wed, 28 Oct 2020 13:09:45 +0200
-From:   Mike Rapoport <rppt@kernel.org>
-To:     David Hildenbrand <david@redhat.com>
-Cc:     "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "cl@linux.com" <cl@linux.com>,
-        "gor@linux.ibm.com" <gor@linux.ibm.com>,
-        "hpa@zytor.com" <hpa@zytor.com>,
-        "peterz@infradead.org" <peterz@infradead.org>,
-        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
-        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
-        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
-        "penberg@kernel.org" <penberg@kernel.org>,
-        "linux-mm@kvack.org" <linux-mm@kvack.org>,
-        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
-        "will@kernel.org" <will@kernel.org>,
-        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
-        "kirill@shutemov.name" <kirill@shutemov.name>,
-        "rientjes@google.com" <rientjes@google.com>,
-        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
-        "paulus@samba.org" <paulus@samba.org>,
-        "hca@linux.ibm.com" <hca@linux.ibm.com>,
-        "bp@alien8.de" <bp@alien8.de>, "pavel@ucw.cz" <pavel@ucw.cz>,
-        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
-        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-        "luto@kernel.org" <luto@kernel.org>,
-        "davem@davemloft.net" <davem@davemloft.net>,
-        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
-        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
-        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
-        "tglx@linutronix.de" <tglx@linutronix.de>,
-        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
-        "x86@kernel.org" <x86@kernel.org>,
-        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-arm-kernel@lists.infradead.org" 
-        <linux-arm-kernel@lists.infradead.org>,
-        "palmer@dabbelt.com" <palmer@dabbelt.com>,
-        "Brown, Len" <len.brown@intel.com>,
-        "mingo@redhat.com" <mingo@redhat.com>,
-        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
-Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
- manipulation
-Message-ID: <20201028110945.GE1428094@kernel.org>
-References: <20201025101555.3057-1-rppt@kernel.org>
- <ae82f905a0092adb7e0f0ac206335c1883b3170f.camel@intel.com>
- <20201026090526.GA1154158@kernel.org>
- <a0212b073b3b2f62c3dbf1bf398f03fa402997be.camel@intel.com>
- <20201027083816.GG1154158@kernel.org>
- <e5fc62b6-f644-4ed5-de5b-ffd8337861e4@redhat.com>
+        id S1732943AbgJ1WYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:24:30 -0400
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:35172 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732535AbgJ1WY1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:24:27 -0400
+Received: by mail-oi1-f195.google.com with SMTP id w191so1255567oif.2;
+        Wed, 28 Oct 2020 15:24:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=/Sv2FVoxnqW/ZZL6On0xD6CMoZAcuyjIfOT9376yoH8=;
+        b=rqRSRRX7acYNnPFjl/UGml/5HXbamyNX+MDtOANAP4DRktQJN9smXodJnSiMShEQTN
+         mIISW5INDBHASkskNZUHtis0MqDNaDvXT+kl7308qejMTx2fxYWYfsTkFiEpEOhpCkAh
+         3aZ2WH1SogpZbydNbZ8nZ8p56hdmdCZVn9DZUDlnV+fmepjyp/BuTuPwFecGp8vYYOG+
+         kQ9xHwNwWuo7ZI2DziPafz2qGl565R5Ai92C3lELPIlcm8S8FKwVdofEBMgJagWum/Cd
+         EE8sfLpbsCj20NiI7pvvLAlvzU4VXgHa3jsLEhSHmN+7+qag+rbja+CeSrYE5UzY2bhZ
+         OWmA==
+X-Gm-Message-State: AOAM532t8TouyN3PfIy7wDEsT4G9UGHS0oUKBkznkO0ZYAuy/V03wfBV
+        vSsJuxUFl0k3r8moOWjsZ9aRn6tPbnBwDscLkUqi0vR5
+X-Google-Smtp-Source: ABdhPJyblUt9XGbqG//4Rk9sfsTFBrwwgwHA1TBlEHDbR6syB2Nw14Bq1Q16HKbBNe5BKXGGevPeQscCGwnL0JZWNpU=
+X-Received: by 2002:aca:30d7:: with SMTP id w206mr266429oiw.69.1603904785647;
+ Wed, 28 Oct 2020 10:06:25 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e5fc62b6-f644-4ed5-de5b-ffd8337861e4@redhat.com>
+References: <20201027185934.1586984-1-trix@redhat.com>
+In-Reply-To: <20201027185934.1586984-1-trix@redhat.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 28 Oct 2020 18:06:14 +0100
+Message-ID: <CAJZ5v0iGDnDbUnb5AYYMrV2st7Vc=kDSHp-YB1xKS-ccea8=XQ@mail.gmail.com>
+Subject: Re: [PATCH] cpufreq: speedstep: remove unneeded semicolon
+To:     trix@redhat.com
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 09:46:35AM +0100, David Hildenbrand wrote:
-> On 27.10.20 09:38, Mike Rapoport wrote:
-> > On Mon, Oct 26, 2020 at 06:05:30PM +0000, Edgecombe, Rick P wrote:
-> > 
-> > > Beyond whatever you are seeing, for the latter case of new things
-> > > getting introduced to an interface with hidden dependencies... Another
-> > > edge case could be a new caller to set_memory_np() could result in
-> > > large NP pages. None of the callers today should cause this AFAICT, but
-> > > it's not great to rely on the callers to know these details.
+On Tue, Oct 27, 2020 at 8:00 PM <trix@redhat.com> wrote:
+>
+> From: Tom Rix <trix@redhat.com>
+>
+> A semicolon is not needed after a switch statement.
+>
+> Signed-off-by: Tom Rix <trix@redhat.com>
+> ---
+>  drivers/cpufreq/speedstep-lib.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> diff --git a/drivers/cpufreq/speedstep-lib.c b/drivers/cpufreq/speedstep-lib.c
+> index a13a2d1e444e..0b66df4ed513 100644
+> --- a/drivers/cpufreq/speedstep-lib.c
+> +++ b/drivers/cpufreq/speedstep-lib.c
+> @@ -240,7 +240,7 @@ unsigned int speedstep_get_frequency(enum speedstep_processor processor)
+>                 return pentium3_get_frequency(processor);
+>         default:
+>                 return 0;
+> -       };
+> +       }
+>         return 0;
+>  }
+>  EXPORT_SYMBOL_GPL(speedstep_get_frequency);
+> --
 
-> > A caller of set_memory_*() or set_direct_map_*() should expect a failure
-> > and be ready for that. So adding a WARN to safe_copy_page() is the first
-> > step in that direction :)
-> > 
-> 
-> I am probably missing something important, but why are we saving/restoring
-> the content of pages that were explicitly removed from the identity mapping
-> such that nobody will access them?
-
-Actually, we should not be saving/restoring free pages during
-hibernation as there are several calls to mark_free_pages() that should
-exclude the free pages from the snapshot. I've tried to find why the fix
-that maps/unmaps a page to save it was required at the first place, but
-I could not find bug reports.
-
-The closest I've got is an email from Rafael that asked to update
-"hibernate: handle DEBUG_PAGEALLOC" patch:
-
-https://lore.kernel.org/linux-pm/200802200133.44098.rjw@sisk.pl/
-
-Could it be that safe_copy_page() tries to workaround a non-existent
-problem?
-
--- 
-Sincerely yours,
-Mike.
+Applied as 5.10-rc material, thanks!
