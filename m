@@ -2,108 +2,97 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3E4FEC4363A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:09:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 60E1BC56201
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:12:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E24732474F
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:09:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 158C024724
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:12:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603922974;
-	bh=Mn006CKi7+bFI8aRSWwvXjzvohwC3AzTprOAI+qvE4o=;
+	s=default; t=1603923130;
+	bh=oTW2qxr417IFrYMw5d19YWxMQQBH3NrvvNvpAFXxV7s=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=qnTHawihAsjW1KwNtGggFBkxOf6sa0bZ+aB7V5SyUR/Ya28XCWPKZVyYJArYM0Kzw
-	 FjARgGuI7Qb4Sothv10ZPqSmF6PUoZ42Gec7jsgpSVvPEz3dYQkVn+GifUJi8oPpOt
-	 Of9p7Q3x85Pg8rK2O6BD7LFANHiKI3KknvNUp8ws=
+	b=fhYowBV7FqYzEqhjli9eCKJ/u31ipJtoNpaPzXnPDb0DJodsFWenX1xa/iuYBCOKt
+	 EjlI7EtskGhcwWjXpOLWz9zMvsJ8I+uda6g7J3lxTxtVd8acc9ZRm7uUDOGwSiATBO
+	 vAwi0/mvSelN6u2zMbJ06EvoQuSaxSrTxvDtUDog=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730334AbgJ1WJc convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:09:32 -0400
-Received: from mail-lf1-f50.google.com ([209.85.167.50]:32804 "EHLO
-        mail-lf1-f50.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728604AbgJ1WJ3 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:09:29 -0400
-Received: by mail-lf1-f50.google.com with SMTP id l2so814986lfk.0;
-        Wed, 28 Oct 2020 15:09:27 -0700 (PDT)
+        id S1730766AbgJ1WL4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:11:56 -0400
+Received: from mail-yb1-f195.google.com ([209.85.219.195]:35661 "EHLO
+        mail-yb1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730760AbgJ1WLz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:11:55 -0400
+Received: by mail-yb1-f195.google.com with SMTP id m188so504089ybf.2;
+        Wed, 28 Oct 2020 15:11:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=vP95c5G5AiWt8jFAMoFHGwxXSql0kCQrJ9xpkPgq6gg=;
-        b=HUEdEcL9oWOFN5GZBxdIaZuS75HZc1SpYh+XPYjnnLFtT7U0bcCPzpa2vlhwDxDdgk
-         yvYmhzdZIGzCPDQKugnJKn3R6erxAIXZYB6L5asjmhG+CNN3o8TOjW+DK110SCBYvO94
-         Thd+bpYWL74XjThcUosC0busfnRzkPQC+MmY97PSEALfA758uf2gLrKzegXjCSZbvZKL
-         NI2/QBv5TVO2dB3fn0j8dZuoTkBLj5rE1VI1e3Kf6UDmj3dBUyhbM8JfOl3jY7YWVotv
-         SI9tuug6nOZPt+NM8OhLG6cVNwMHV452ldJaNOcksWdHTvSwVTS1VZInkVyrTQI8AkIy
-         P2Gg==
-X-Gm-Message-State: AOAM5334bepW508TC6pThlk8737l4d4hm0IKTe5aplq3YlflMwF8IDXg
-        FOMUWXzU1pDtlsM3JnuAXfN8th22ngJeOQ==
-X-Google-Smtp-Source: ABdhPJyHdwuuiwRcW53qYzu6ELBzFaASak8bZZ7cUJm7qaJ+2lCiPhJEUbxJ3cDKZqX83Q9tfRG3aQ==
-X-Received: by 2002:a05:6402:134c:: with SMTP id y12mr460552edw.344.1603913305471;
-        Wed, 28 Oct 2020 12:28:25 -0700 (PDT)
-Received: from kozik-lap ([194.230.155.184])
-        by smtp.googlemail.com with ESMTPSA id p1sm261722ejd.33.2020.10.28.12.28.22
+         :mime-version:content-disposition:in-reply-to;
+        bh=T8MLPXzg2SZx9c5xJhUu8LnS9OjmrbIOKKCNscuh58o=;
+        b=HOXi0BWmmQuKMoTzj0yDIlJF6ZWhxNG4O12J5pdvyoobkGFfTWm8mvkPSs72NN53nD
+         MU6xAziewhZwQX682lWYaD7umS/oshawRcoeGVCE2jSUiASeL9dHN6CdYEDo82Hezxu2
+         BwbvabQo8cERzT8xiA37gq1DKp1iz6GB8zy+I/mCZpgeeNEXtd36Ic1UoKPz9tpiMA1R
+         ibarWJaZUT7vysKoW6zDIFpZ6nEZZ95yd4M6hqqXWNv5H1VefXQQP7dUkrPRHXzrJwNJ
+         hGFp+LiUhmrUgKsHiQh6qYTQxRt+JxPRlwzoP2oDLvxlCcPjIC52x97mLn4nEeF+40Vi
+         2cvQ==
+X-Gm-Message-State: AOAM5327QgqUKDQ9ITSWjmo3N0yLNydIxxYgUZKehtLe45oKGfCeG0AM
+        OOFW3w3YNNck6T4GcmVUGdUFxR3GGw==
+X-Google-Smtp-Source: ABdhPJz7reJgOyNPbR/RoD8e8RtXXbZyuobF3ZC3HQeIbo0bO8WjCWxfxCDoSnL/csJ+nowSt3xcZA==
+X-Received: by 2002:a9d:6307:: with SMTP id q7mr5698617otk.218.1603898611758;
+        Wed, 28 Oct 2020 08:23:31 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id f18sm2703272oos.19.2020.10.28.08.23.30
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 12:28:23 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 20:28:21 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
+        Wed, 28 Oct 2020 08:23:31 -0700 (PDT)
+Received: (nullmailer pid 4050728 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:23:29 -0000
+Date:   Wed, 28 Oct 2020 10:23:29 -0500
+From:   Rob Herring <robh@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
+Cc:     Stephen Boyd <sboyd@kernel.org>, linux-pm@vger.kernel.org,
         Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
         Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
         Peter Geis <pgwipeout@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Rob Herring <robh+dt@kernel.org>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
         Nicolas Chauvet <kwizart@gmail.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v6 41/52] memory: tegra124-emc: Use
- devm_platform_ioremap_resource()
-Message-ID: <20201028192821.GB170285@kozik-lap>
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        devicetree@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-tegra@vger.kernel.org, Viresh Kumar <vireshk@kernel.org>
+Subject: Re: [PATCH v6 04/52] dt-bindings: memory: tegra20: emc: Document
+ nvidia, memory-controller property
+Message-ID: <20201028152329.GA4050679@bogus>
 References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-42-digetx@gmail.com>
- <20201027102707.GC17089@kozik-lap>
- <d79e4972-acf9-f889-50b8-f0829a0e8e08@gmail.com>
+ <20201025221735.3062-5-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <d79e4972-acf9-f889-50b8-f0829a0e8e08@gmail.com>
+In-Reply-To: <20201025221735.3062-5-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Oct 27, 2020 at 11:30:31PM +0300, Dmitry Osipenko wrote:
-> 27.10.2020 13:27, Krzysztof Kozlowski пишет:
-> > On Mon, Oct 26, 2020 at 01:17:24AM +0300, Dmitry Osipenko wrote:
-> >> Use devm_platform_ioremap_resource() helper which makes code a bit
-> >> cleaner.
-> > 
-> > Such cleanups (and few other in this patchset) should be at beginning of
-> > patchset or even as part of a separate one.  I think there is not much
-> > stopping anyone from applying these... except that you put them in the
-> > middle of big dependency.
+On Mon, 26 Oct 2020 01:16:47 +0300, Dmitry Osipenko wrote:
+> Tegra20 External Memory Controller talks to DRAM chips and it needs to be
+> reprogrammed when memory frequency changes. Tegra Memory Controller sits
+> behind EMC and these controllers are tightly coupled. This patch adds the
+> new phandle property which allows to properly express connection of EMC
+> and MC hardware in a device-tree, it also put the Tegra20 EMC binding on
+> par with Tegra30+ EMC bindings, which is handy to have.
 > 
-> Some of these cleanup patches can't be applied separately without a need
-> to make a rebase. I think it should be more preferred to have all the
-> patches within a single series.
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  .../bindings/memory-controllers/nvidia,tegra20-emc.txt          | 2 ++
+>  1 file changed, 2 insertions(+)
 > 
-> I'll try to reorder the patches in v7 if this will ease the review, thanks.
 
-If feasible, that would be good. Thanks.
-
-Best regards,
-Krzysztof
-
+Acked-by: Rob Herring <robh@kernel.org>
