@@ -2,150 +2,107 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A9E26C2D0A3
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 10:54:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CD2AC55179
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:05:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 44A2B20754
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 10:54:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1F02920759
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:05:31 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="qpZ40ZBN"
+	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="DVdwOLiQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726103AbgJ2Kyp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 06:54:45 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60150 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725956AbgJ2Kyp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 06:54:45 -0400
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5811BC0613CF
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 03:54:45 -0700 (PDT)
-Received: by mail-pg1-x541.google.com with SMTP id z24so2031170pgk.3
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 03:54:45 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=/IA93lh4Lo9Ev83453PFjMJYOWrNuSohoD4R/Qf7h+g=;
-        b=qpZ40ZBNm2WL8PgWyRonOOxc12GbaFU3Ow5DXPA8JGmpuQWACGPoRYA3r/IPm8ZUZ6
-         +Nt9ajxu6hljelx41t/eZ6wROT62k8OknOKEJEgCWv95rG+pwqdQsHAM5Gu0xWsDrLXK
-         UxnkHucGi8eeOC6JpN7CtSju69TtFoNgfAT2KxobKWaux2cuK/awQle/XUvNpuPrth3p
-         QwGrua3WEPKf9txCJm3+b/O3vPhMShWFSJyYSLX+quyEAgqxSE5VUy3GcoFnFyv+QUrs
-         Ld50D4VtProBuNkOChZOZ5rxXQBNsErWQHyk0SBi9Y8PR3vNAh4mcGXZaTOX9MrVHR2L
-         305A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=/IA93lh4Lo9Ev83453PFjMJYOWrNuSohoD4R/Qf7h+g=;
-        b=I/5g9mA1c7Gpu/je3J4FvimnL2Tn7WLKg53kApmOfLva5g94HQN2qCQKrcWdJsOUxw
-         hLzM3vd5Y8iA5sR09kxlwb7F9FUF39CgTeDfMXZ54VOsvyJHAK0KqTEwrzNFRvpZUsUr
-         9zEYL+8IoDlQ51SI6EgRBNFH9DURP6rQCzvglBrnVyrb0hjoeajGCF7TOlqYu555hOQQ
-         HuAZu7hgBsKsUL6+glHi2y2uzmshoqNNexaqjfUgB+ApzGYy6NG3GtpK84mEeeBY7rnH
-         /hTw7Mj5YThBmwGSXq/IFNDjZEH82d5JTlGSpV8P3lnhnrmcjRf3YJbTMSY8KpttGlNM
-         FFwA==
-X-Gm-Message-State: AOAM533JjBwF6OJNPkujGlL85o5Y2hLW6Ez4qXErzCZnHb1OqNVhs6pa
-        1oddvWsddjG0em4gdgkM9ePLjw==
-X-Google-Smtp-Source: ABdhPJxSguzvzWaoco54Zkd8E93SML/FmBfwW9LWBVavhKlWKfAgVE/uENIufgb7AnVyLOYvUXoXtQ==
-X-Received: by 2002:a65:5c02:: with SMTP id u2mr3507681pgr.173.1603968884849;
-        Thu, 29 Oct 2020 03:54:44 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id b4sm2566726pfi.208.2020.10.29.03.54.42
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 29 Oct 2020 03:54:42 -0700 (PDT)
-Date:   Thu, 29 Oct 2020 16:24:40 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [PATCH v2.1 4/4] cpufreq: schedutil: Always call driver if
- need_freq_update is set
-Message-ID: <20201029105440.gcaizotprhloxiih@vireshk-i7>
-References: <2183878.gTFULuzKx9@kreacher>
- <1905098.zDJocX6404@kreacher>
- <12275472.W5IoEtXICo@kreacher>
- <20201028035702.75f6rnbkvfaic4si@vireshk-i7>
- <CAJZ5v0ikw9M4-NOEqtoxqs_948iqaX4P5euiXD+VmpaDHd91vg@mail.gmail.com>
+        id S1727106AbgJ2LFa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 07:05:30 -0400
+Received: from fllv0015.ext.ti.com ([198.47.19.141]:52892 "EHLO
+        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726815AbgJ2LFa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 07:05:30 -0400
+Received: from lelv0265.itg.ti.com ([10.180.67.224])
+        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 09SFS63u018155;
+        Wed, 28 Oct 2020 10:28:06 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
+        s=ti-com-17Q1; t=1603898886;
+        bh=7Y8IMlS8Rjtuh3Bt1F7fB0E0fJme1LZMMGNHEg4TuLg=;
+        h=Subject:To:CC:References:From:Date:In-Reply-To;
+        b=DVdwOLiQSHX8V2LbMdZpX1FpOyCsAW5KZ3ASa9hYMNNop9pOupI2YuvIMR/56/qqX
+         E/ur3zV5VA5hCtC7sTzPB5F5nxCZTC5ZwuDJn3Tr8bfQvFESJgsjsaEE+F/NKteV2F
+         dQ8hCFXxrMxuqYxkyTiPKMZ852rn/jEosvs7tzZI=
+Received: from DFLE100.ent.ti.com (dfle100.ent.ti.com [10.64.6.21])
+        by lelv0265.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 09SFS6qn039511
+        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
+        Wed, 28 Oct 2020 10:28:06 -0500
+Received: from DFLE105.ent.ti.com (10.64.6.26) by DFLE100.ent.ti.com
+ (10.64.6.21) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 28
+ Oct 2020 10:28:06 -0500
+Received: from lelv0326.itg.ti.com (10.180.67.84) by DFLE105.ent.ti.com
+ (10.64.6.26) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
+ Frontend Transport; Wed, 28 Oct 2020 10:28:06 -0500
+Received: from [127.0.0.1] (ileax41-snat.itg.ti.com [10.172.224.153])
+        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 09SFS47m046337;
+        Wed, 28 Oct 2020 10:28:04 -0500
+Subject: Re: [PATCH] opp: fix bad error check logic in the opp helper register
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+CC:     <vireshk@kernel.org>, <nm@ti.com>, <sboyd@kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+References: <20201028141357.10345-1-t-kristo@ti.com>
+ <20201028145405.ucfepzt6xoxro6fi@vireshk-i7>
+From:   Tero Kristo <t-kristo@ti.com>
+Message-ID: <febd30f4-62b4-ad9c-9cd9-09841af140bf@ti.com>
+Date:   Wed, 28 Oct 2020 17:28:03 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0ikw9M4-NOEqtoxqs_948iqaX4P5euiXD+VmpaDHd91vg@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <20201028145405.ucfepzt6xoxro6fi@vireshk-i7>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-10-20, 11:42, Rafael J. Wysocki wrote:
-> On Thu, Oct 29, 2020 at 12:10 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> >
-> > On 27-10-20, 16:35, Rafael J. Wysocki wrote:
-> > > Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-> > > ===================================================================
-> > > --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-> > > +++ linux-pm/kernel/sched/cpufreq_schedutil.c
-> > > @@ -102,11 +102,12 @@ static bool sugov_should_update_freq(str
-> > >  static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
-> > >                                  unsigned int next_freq)
-> > >  {
-> > > -     if (sg_policy->next_freq == next_freq)
-> > > +     if (sg_policy->next_freq == next_freq && !sg_policy->need_freq_update)
-> > >               return false;
-> > >
-> > >       sg_policy->next_freq = next_freq;
-> > >       sg_policy->last_freq_update_time = time;
-> > > +     sg_policy->need_freq_update = false;
-> > >
-> > >       return true;
-> > >  }
-> > > @@ -161,10 +162,12 @@ static unsigned int get_next_freq(struct
-> > >
-> > >       freq = map_util_freq(util, freq, max);
-> > >
-> > > -     if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
-> > > +     if (cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS))
-> > > +             sg_policy->need_freq_update = true;
-> > > +     else if (freq == sg_policy->cached_raw_freq &&
-> > > +              !sg_policy->need_freq_update)
-> > >               return sg_policy->next_freq;
-> > >
-> > > -     sg_policy->need_freq_update = false;
-> > >       sg_policy->cached_raw_freq = freq;
-> > >       return cpufreq_driver_resolve_freq(policy, freq);
-> > >  }
-> >
-> > What about just this instead ?
-> >
-> >   static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
-> >                                    unsigned int next_freq)
-> >   {
-> >  -      if (sg_policy->next_freq == next_freq)
-> >  +      if (sg_policy->next_freq == next_freq &&
-> >  +          !cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS))
-> >                 return false;
-> >
-> >         sg_policy->next_freq = next_freq;
-> >         sg_policy->last_freq_update_time = time;
-> >
-> >         return true;
-> >   }
-> >
+On 28/10/2020 16:54, Viresh Kumar wrote:
+> On 28-10-20, 16:13, Tero Kristo wrote:
+>> The error check is incorrectly negated causing the helper to never
+>> register anything. This causes platforms that depend on this
+>> functionality to fail always with any cpufreq transition, and at least
+>> TI DRA7 based platforms fail to boot completely due to warning message
+>> flood from _generic_set_opp_regulator complaining about multiple
+>> regulators not being supported.
+>>
+>> Fixes: dd461cd9183f ("opp: Allow dev_pm_opp_get_opp_table() to return -EPROBE_DEFER")
+>> Signed-off-by: Tero Kristo <t-kristo@ti.com>
+>> ---
+>>   drivers/opp/core.c | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+>> index 2483e765318a..4ac4e7ce6b8b 100644
+>> --- a/drivers/opp/core.c
+>> +++ b/drivers/opp/core.c
+>> @@ -1930,7 +1930,7 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
+>>   		return ERR_PTR(-EINVAL);
+>>   
+>>   	opp_table = dev_pm_opp_get_opp_table(dev);
+>> -	if (!IS_ERR(opp_table))
+>> +	if (IS_ERR(opp_table))
+>>   		return opp_table;
+>>   
+>>   	/* This should be called before OPPs are initialized */
 > 
-> Without any changes in get_next_freq() this is not sufficient, because
-> get_next_freq() may skip the update too.
-> 
-> If the intention is to always let the driver callback run when
-> CPUFREQ_NEED_UPDATE_LIMITS is set, then both get_next_freq() and
-> sugov_update_next_freq() need to be modified.
+> A similar fix is already pushed in linux-next for this.
 
-Right, my mistake. I was just suggesting that we may not need to touch
-need_freq_update at all but just check the flag.
+Ah ok, good to hear. Just checked linux-next and I see the fix also, 
+sorry for the noise.
 
--- 
-viresh
+-Tero
+
+--
+Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
