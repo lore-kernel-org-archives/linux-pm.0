@@ -2,190 +2,111 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 41FF8C4363A
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:04:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A4A1DC5DF9D
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:22:04 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DFA2620791
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:04:40 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603933480;
-	bh=M+A5lI39lpqmGPGJFq4MY3NdrLbePWih7kMnf7yCqro=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=or8r+fQSgPh4xPHQUk23a+mYeua85EIJGnQD6nc/du2iVGiBg69ysI4Bl4TFBnmko
-	 9/6jULSqbyUGdphkXolSwprwNOumzCYD+4YHmT0P2iPXySBOtxQXkQZSjI/EqVqApD
-	 HSm5bzEf4RxexqcYXQvsVZiQXRsLWVcIshUOxwx4=
+	by mail.kernel.org (Postfix) with ESMTP id 45E8A20796
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:22:04 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="tDhfRl8l"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731326AbgJ2BE3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 21:04:29 -0400
-Received: from mail-oi1-f196.google.com ([209.85.167.196]:40036 "EHLO
-        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729465AbgJ1WGQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:06:16 -0400
-Received: by mail-oi1-f196.google.com with SMTP id m128so1173923oig.7;
-        Wed, 28 Oct 2020 15:06:15 -0700 (PDT)
+        id S1729644AbgJ1WE4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:04:56 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:50614 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728270AbgJ1WBG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:01:06 -0400
+Received: from mail-oi1-x244.google.com (mail-oi1-x244.google.com [IPv6:2607:f8b0:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7218AC0613CF
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:01:06 -0700 (PDT)
+Received: by mail-oi1-x244.google.com with SMTP id j7so1133710oie.12
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:01:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=UGEvSBlqCbH7r/XeVff2EFEE3W3a/89hWK9X3Eu9+ZI=;
+        b=tDhfRl8lL7XqVAS0dE9ih0wEOsD381IONb26mPbYM6z+rGn3WyK0u5UobSFx7JnaJT
+         XBxkLh/aTXCuPOrd7R97cbmTf3tBsvopShAd2rhYZVXnChpr0BI5840zNyBN3+RksuCv
+         pDU4pHD57XdjIyBKgMPioHw8IHfFmPeggSBXDtwvCpUknpq2/vgQMKI9wFUuDJXxiV22
+         GFf3nPBaqPXtmOFOjvQwcAHA9seK3iyBvXpDe0eYwVTe3j9aHrT2Rc4iPo5dj5bgSRGH
+         y45as3KX9exbNHVC+AAWPGZ2Wl+1ns0HTwvas/0qQwB9Yn2ub3tqD0bDWEaOD9Ozj6z1
+         zXMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=C6fODSQ4vr9/XMdY27bSNaiMwe4c2CZ3zY9crW4kgXQ=;
-        b=giofxv4nCdl9rEPf+VGNNkX/x9gpPIykurn5Pf4IcN2WjrYVxfn1KX65CLar3kDq+l
-         JVFeh1R9YyeWGlOLnqrB3FvqSytHgt4Hy5QWPVg7Y0lOSOD7xpyTo3818mnuwV+aqExj
-         CStrD/ZQGl6A/ZIhJKEmkKEfVfFSc/ahn5CXXgGGoBwgYIaxYMWYD4XxUH/K7D0sxPcF
-         tfUNMRc+xYB04T7Te2JnbDxCLmMM1aqEsruUTWvHe3Yn2GW9Vbf+25FAIZmmwlBFISdj
-         sHOgAnLHK2DUT9T0Z+VUjFim/5G+HHGGU4V6pvqoUJFQ+NuELBJGnpC00JfxqGk2jf2T
-         LyXQ==
-X-Gm-Message-State: AOAM530DQLZc5aVEDcKQhDgmX6hqUlTxwtxQuH2EKEROsAxjOOwU/BFK
-        fTSaXS9+Q75pOYRLB6EofCstx1bRqQ==
-X-Google-Smtp-Source: ABdhPJzrQ/sPPiQh1XWKgR+EAUUZ9HS2ocEuKqdVfGw3aS3RICzkEg8FJnv6OaOSMDEQcXRlXFSJlA==
-X-Received: by 2002:a05:6808:198:: with SMTP id w24mr5539933oic.69.1603898917913;
-        Wed, 28 Oct 2020 08:28:37 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id s20sm307873oof.39.2020.10.28.08.28.36
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:28:37 -0700 (PDT)
-Received: (nullmailer pid 4057539 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:28:35 -0000
-Date:   Wed, 28 Oct 2020 10:28:35 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: Re: [PATCH v6 08/52] dt-bindings: memory: tegra20: emc: Document
- mfd-simple compatible and statistics sub-device
-Message-ID: <20201028152835.GB4051913@bogus>
-References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-9-digetx@gmail.com>
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=UGEvSBlqCbH7r/XeVff2EFEE3W3a/89hWK9X3Eu9+ZI=;
+        b=l9Lh0UDmkPNqOgm6shw9fwR4De6w1Dn38MOwTuf2gfxN7wSm2tsEZ8l/hwjbmSvHbo
+         g8PaS11SfivaFaw0M21mBMx7h8O1yniJACPotX5/AHfXN/V19Jv1/h6KSecV1ja1Zwm/
+         w3Q1fdjq1vZQIzWvUH1JtAW2hQzidoQvLe3u/dmmEsPhi3tRH19Mffqd+IDEzM9GzjBh
+         4oEgZqu6YkVZywdB9TwScHHREXcKH3WEDoEVLnYV03D1JEMdVwh0RpREMvEJpgLAThGd
+         D5am+Kkz3hYwJxFmB1HEVBNB8eP5woPDCGlpE88q0KnS6Xd0QhOyOQjyftaD+zrQgpuq
+         2kdg==
+X-Gm-Message-State: AOAM5300oul7nrOM7XreN7hRH7HAEtfrxKQqvDVHus6R+2eYiVgkGuQH
+        yPsmrDtxrpoPb4uMClPzGEpc/c2CrEvPbQ==
+X-Google-Smtp-Source: ABdhPJwr2K1NnepE5uXMHDTSc5jfBqdvp6zG1zCPfe5GimQyYat9Pv1/3IU0ouG58kOUTa/MpOy4Gw==
+X-Received: by 2002:a17:90a:ab8b:: with SMTP id n11mr5453925pjq.162.1603864873109;
+        Tue, 27 Oct 2020 23:01:13 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id ei4sm3821960pjb.4.2020.10.27.23.01.11
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 27 Oct 2020 23:01:12 -0700 (PDT)
+Date:   Wed, 28 Oct 2020 11:31:09 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Frank Lee <frank@allwinnertech.com>
+Cc:     robdclark@gmail.com, sean@poorly.run, airlied@linux.ie,
+        daniel@ffwll.ch, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        rjw@rjwysocki.net, jcrouse@codeaurora.org, eric@anholt.net,
+        tiny.windzz@gmail.com, kholk11@gmail.com,
+        emil.velikov@collabora.com, gustavoars@kernel.org,
+        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        freedreno@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 3/3] drm/msm: Convert to devm_pm_opp_set_supported_hw
+Message-ID: <20201028060109.qlggrsza5jjfno4y@vireshk-i7>
+References: <20201012135517.19468-1-frank@allwinnertech.com>
+ <20201012135517.19468-4-frank@allwinnertech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201025221735.3062-9-digetx@gmail.com>
+In-Reply-To: <20201012135517.19468-4-frank@allwinnertech.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 26, 2020 at 01:16:51AM +0300, Dmitry Osipenko wrote:
-> External Memory Controller can gather various hardware statistics that
-> are intended to be used for debugging purposes and for dynamic frequency
-> scaling of memory bus.
+On 12-10-20, 21:55, Frank Lee wrote:
+> From: Yangtao Li <tiny.windzz@gmail.com>
 > 
-> Document the new mfd-simple compatible and EMC statistics sub-device.
-
-It's simple-mfd.
-
-That should only be used if the child has no dependencies on the parent 
-node (and driver).
-
-> The subdev contains EMC DFS OPP table and interconnect paths to be used
-> for dynamic scaling of system's memory bandwidth based on EMC utilization
-> statistics.
+> Use the devm_pm_opp_set_supported_hw() to avoid memory leaks in some cases.
 > 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
+> Signed-off-by: Yangtao Li <frank@allwinnertech.com>
 > ---
->  .../memory-controllers/nvidia,tegra20-emc.txt | 43 +++++++++++++++++--
->  1 file changed, 40 insertions(+), 3 deletions(-)
+>  drivers/gpu/drm/msm/adreno/a5xx_gpu.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
-> index 8d09b228ac42..382aabcd6952 100644
-> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
-> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
-> @@ -4,7 +4,7 @@ Properties:
->  - name : Should be emc
->  - #address-cells : Should be 1
->  - #size-cells : Should be 0
-> -- compatible : Should contain "nvidia,tegra20-emc".
-> +- compatible : Should contain "nvidia,tegra20-emc" and "simple-mfd".
->  - reg : Offset and length of the register set for the device
->  - nvidia,use-ram-code : If present, the sub-nodes will be addressed
->    and chosen using the ramcode board selector. If omitted, only one
-> @@ -17,7 +17,8 @@ Properties:
->  - core-supply: Phandle of voltage regulator of the SoC "core" power domain.
->  - operating-points-v2: See ../bindings/opp/opp.txt for details.
->  
-> -Child device nodes describe the memory settings for different configurations and clock rates.
-> +Child device nodes describe the memory settings for different configurations and clock rates,
-> +as well as EMC activity statistics collection sub-device.
->  
->  Example:
->  
-> @@ -31,17 +32,34 @@ Example:
->  		...
->  	};
->  
-> +	emc_bw_dfs_opp_table: emc_opp_table1 {
-> +		compatible = "operating-points-v2";
-> +
-> +		opp@36000000 {
-> +			opp-hz = /bits/ 64 <36000000>;
-> +			opp-peak-kBps = <144000>;
-> +		};
-> +		...
-> +	};
-> +
->  	memory-controller@7000f400 {
->  		#address-cells = < 1 >;
->  		#size-cells = < 0 >;
->  		#interconnect-cells = < 0 >;
-> -		compatible = "nvidia,tegra20-emc";
-> +		compatible = "nvidia,tegra20-emc", "simple-mfd";
->  		reg = <0x7000f400 0x400>;
->  		interrupts = <0 78 0x04>;
->  		clocks = <&tegra_car TEGRA20_CLK_EMC>;
->  		nvidia,memory-controller = <&mc>;
->  		core-supply = <&core_vdd_reg>;
->  		operating-points-v2 = <&emc_icc_dvfs_opp_table>;
-> +
-> +		emc-stats {
-> +			compatible = "nvidia,tegra20-emc-statistics";
-> +			operating-points-v2 = <&emc_bw_dfs_opp_table>;
-> +			interconnects = <&mc TEGRA20_MC_MPCORER &emc>;
-> +			interconnect-names = "cpu";
-> +		};
+> diff --git a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+> index 91726da82ed6..8d88f119a59f 100644
+> --- a/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+> +++ b/drivers/gpu/drm/msm/adreno/a5xx_gpu.c
+> @@ -1487,7 +1487,7 @@ static void check_speed_bin(struct device *dev)
+>  		nvmem_cell_put(cell);
 >  	}
 >  
+> -	dev_pm_opp_set_supported_hw(dev, &val, 1);
+> +	devm_pm_opp_set_supported_hw(dev, &val, 1);
+>  }
 >  
-> @@ -120,3 +138,22 @@ Properties:
->  						 0 0 0 0 0 0 0 0 0 0 0 0 0 0
->  						 0 0 0 0 >;
->  		};
-> +
-> +
-> +
-> +Embedded Memory Controller statistics gathering sub-device
-> +
-> +EMC statistics subdev gathers information about hardware utilization
-> +which is intended to be used for debugging purposes and for dynamic
-> +frequency scaling based on the collected stats.
-> +
-> +Properties:
-> +- name : Should be emc-stats.
-> +- compatible : Should contain "nvidia,tegra20-emc-statistics".
-> +- operating-points-v2: See ../bindings/opp/opp.txt for details.
-> +- interconnects: Should contain entries for memory clients sitting on
-> +                 MC->EMC memory interconnect path.
-> +- interconnect-names: Should include name of the interconnect path for each
-> +                      interconnect entry. Consult TRM documentation for
-> +                      information about available memory clients, see MEMORY
-> +                      CONTROLLER section.
-> -- 
-> 2.27.0
-> 
+>  struct msm_gpu *a5xx_gpu_init(struct drm_device *dev)
+
+Rob: Can I have your Ack to pick this patch up please ?
+
+-- 
+viresh
