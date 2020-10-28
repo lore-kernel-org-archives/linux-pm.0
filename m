@@ -2,110 +2,96 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6979DC388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:47:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4C0C4363A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:48:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0C779246CD
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:47:26 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="aLtikgMJ"
+	by mail.kernel.org (Postfix) with ESMTP id 065132245A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:48:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603921723;
+	bh=qiMwSODi7g8dA7dxdmEYk4xB5CZ93Rxucy8sfL+An1M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=awGUCDKGf24Qv3NFnQYtDbLxx0FeDEtjwacYey5jlUw5Pk2rRsjaetqYHvm99AM/W
+	 w9Rx3WVnLHSEF4Sc2D7BvLMP8Zu2ZhziuZC5uzxTXNXZKMXttFd+K+yERus/S6VgLs
+	 7yGEbzDWDvXro6lhRgDkKuSqKH1NdIxoZ5BE3XAw=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727694AbgJ1Vr0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 17:47:26 -0400
-Received: from fllv0016.ext.ti.com ([198.47.19.142]:44178 "EHLO
-        fllv0016.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727690AbgJ1VrY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:47:24 -0400
-Received: from fllv0034.itg.ti.com ([10.64.40.246])
-        by fllv0016.ext.ti.com (8.15.2/8.15.2) with ESMTP id 09SLlENC060082;
-        Wed, 28 Oct 2020 16:47:14 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1603921634;
-        bh=h/7TUYm8pFIf/Hkg1xDYYuruG/43UdD7rQyzE5uDz/A=;
-        h=Date:From:To:CC:Subject:References:In-Reply-To;
-        b=aLtikgMJOgSPhqZxbEHAf+kYRnkEu7pygc+1fCOpenlJBmN2tgMVFbEqbhcCQ4tpn
-         Fr/rdbL/7Uv08tuHOIIenom/F3fpSlSGXl4mMiz5p6BbG/c/mnFGGOIkxwEltYT4E3
-         Vy9Ie6vXSsWSK/4J6w6P5nTPTPZdEQl1W0UySJV4=
-Received: from DLEE100.ent.ti.com (dlee100.ent.ti.com [157.170.170.30])
-        by fllv0034.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 09SLlEvE124545
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 28 Oct 2020 16:47:14 -0500
-Received: from DLEE114.ent.ti.com (157.170.170.25) by DLEE100.ent.ti.com
- (157.170.170.30) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 28
- Oct 2020 16:47:13 -0500
-Received: from lelv0326.itg.ti.com (10.180.67.84) by DLEE114.ent.ti.com
- (157.170.170.25) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Wed, 28 Oct 2020 16:47:14 -0500
-Received: from localhost (ileax41-snat.itg.ti.com [10.172.224.153])
-        by lelv0326.itg.ti.com (8.15.2/8.15.2) with ESMTP id 09SLlD3k115294;
-        Wed, 28 Oct 2020 16:47:13 -0500
-Date:   Wed, 28 Oct 2020 16:47:13 -0500
-From:   Nishanth Menon <nm@ti.com>
-To:     Lukasz Luba <lukasz.luba@arm.com>
-CC:     <linux-kernel@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <devicetree@vger.kernel.org>,
-        <linux-arm-kernel@lists.infradead.org>, <vireshk@kernel.org>,
-        <robh+dt@kernel.org>, <sboyd@kernel.org>, <rafael@kernel.org>,
-        <sudeep.holla@arm.com>, <daniel.lezcano@linaro.org>,
-        <Dietmar.Eggemann@arm.com>
-Subject: Re: [PATCH 1/4] dt-bindings: opp: Introduce opp-sustainable bindings
-Message-ID: <20201028214713.zttk47qtua5jhieo@pureness>
-References: <20201028140847.1018-1-lukasz.luba@arm.com>
- <20201028140847.1018-2-lukasz.luba@arm.com>
+        id S1725898AbgJ1VdT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 17:33:19 -0400
+Received: from mail-yb1-f194.google.com ([209.85.219.194]:43971 "EHLO
+        mail-yb1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725979AbgJ1VdP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:33:15 -0400
+Received: by mail-yb1-f194.google.com with SMTP id d15so392233ybl.10;
+        Wed, 28 Oct 2020 14:33:13 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=nlJqqXXAH1t+pt7s0ccAWf7pcAID62bNuJtmD6PRncE=;
+        b=A7uIJO5L/ESrMYJbIAs9pb4sjGPenFSovbWB7VHfAvMfAIYeBaTKmHhpoxBwVkao6G
+         7ikFU4GeOWYFdRLu5QJgJ7j5BnuDaEhn2wF6/Umk+TzrMgr3iRFVAj5yVAK3bJF/OPyd
+         nx7VU9oVCTpBuZ6zkZkhdWSW8VxCCWdcUz/4SGJnW7qJkK268XjNZI11MTCeoF63nXhu
+         nFVn9sw8ju458ocL62tqP7W8oIs0EGCdj0G5FZm24I59fXqLwFlO6JN4ij6UucI9rc7D
+         /hYQ1LhMH+JAbs4rwLJ1a++kNa79XtCykIfGsF2o8Z2Fmf8glqWZGvTzrQZJlqPC6uaO
+         uY0g==
+X-Gm-Message-State: AOAM53215hzBxxfAMkozQo7OEYPqC9IiNvHTu7m2z9JVxiNCcOpkCNLP
+        tHFgvk8YAbZ3ugJMx/13Hl75J6ALjg==
+X-Google-Smtp-Source: ABdhPJy5UQJsgQmDLtE/+RjvN2Lhxh8sG17+hq4U7TOgu5yrnYqg9JmwYnTRx0VJDOZqz6UR5e+hJA==
+X-Received: by 2002:a9d:172f:: with SMTP id i47mr5804523ota.74.1603898986343;
+        Wed, 28 Oct 2020 08:29:46 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id h6sm2714750oia.51.2020.10.28.08.29.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Oct 2020 08:29:45 -0700 (PDT)
+Received: (nullmailer pid 4059166 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:29:44 -0000
+Date:   Wed, 28 Oct 2020 10:29:44 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-kernel@vger.kernel.org,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        Viresh Kumar <vireshk@kernel.org>, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Stephen Boyd <sboyd@kernel.org>
+Subject: Re: [PATCH v6 11/52] dt-bindings: memory: tegra30: emc: Document OPP
+ table and voltage regulator
+Message-ID: <20201028152944.GA4059076@bogus>
+References: <20201025221735.3062-1-digetx@gmail.com>
+ <20201025221735.3062-12-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201028140847.1018-2-lukasz.luba@arm.com>
-User-Agent: NeoMutt/20171215
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+In-Reply-To: <20201025221735.3062-12-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 14:08-20201028, Lukasz Luba wrote:
-> Add opp-sustainable as an additional property in the OPP node to describe
-> the sustainable performance level of the device. This will help to
-> estimate the sustainable performance of the whole system.
+On Mon, 26 Oct 2020 01:16:54 +0300, Dmitry Osipenko wrote:
+> Document new OPP table and voltage regulator properties which are needed
+> for supporting dynamic voltage-frequency scaling of the memory controller.
+> Some boards may have a fixed core voltage regulator, hence it's optional
+> because frequency scaling still may be desired.
 > 
-> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  Documentation/devicetree/bindings/opp/opp.txt | 4 ++++
->  1 file changed, 4 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-> index 9847dfeeffcb..cd01028de305 100644
-> --- a/Documentation/devicetree/bindings/opp/opp.txt
-> +++ b/Documentation/devicetree/bindings/opp/opp.txt
-> @@ -154,6 +154,10 @@ Optional properties:
->  - opp-suspend: Marks the OPP to be used during device suspend. If multiple OPPs
->    in the table have this, the OPP with highest opp-hz will be used.
->  
-> +- opp-sustainable: Marks the OPP as sustainable. This property can be used for
-> +  estimating sustainable performance of the whole system. If multiple OPPs in
-> +  the table have this, the OPP with highest opp-hz will be used.
-
-
-By "sustainable", do you mean sustainable across Process, Voltage and
-Temperature corners upto the max rated operational Power-ON hours
-without IDLE state being achieved on the processor?
-
-OR do you mean to leave it up to interpretation?
-> +
->  - opp-supported-hw: This property allows a platform to enable only a subset of
->    the OPPs from the larger set present in the OPP table, based on the current
->    version of the hardware (already known to the operating system).
-> -- 
-> 2.17.1
+>  .../memory-controllers/nvidia,tegra30-emc.yaml       | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 > 
 
--- 
-Regards,
-Nishanth Menon
-Key (0xDDB5849D1736249D) / Fingerprint: F8A2 8693 54EB 8232 17A3  1A34 DDB5 849D 1736 249D
+Reviewed-by: Rob Herring <robh@kernel.org>
