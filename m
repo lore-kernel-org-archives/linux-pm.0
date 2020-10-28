@@ -2,219 +2,107 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DATE_IN_PAST_12_24,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 43331C388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:26:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 63448C388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:29:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0047D207E8
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:26:12 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0F304207BC
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:29:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603927749;
+	bh=WQ5y7vsz0sHh+qs2p3QwYO0RfzhZ5zZncG8RLZlVqkE=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=aU6DCMztk42Iu6uzZvRAorePZ+kYfE1E6ItJuYM9ruYFVzoTGMREAlONnZ55UqiQk
+	 DavIzE2mrchAt7EI4VtRti8sg+tfCGZMQOTUGRvgWPoQSVfcmdYr54Kb3lIWdXJI4V
+	 6JD/JK7jVqd05gPs/vo527i73vG5IJqo/DafAgWY=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390362AbgJ1XZ5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 19:25:57 -0400
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:36241 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390287AbgJ1XZh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:25:37 -0400
-Received: by mail-oi1-f195.google.com with SMTP id y186so1389869oia.3;
-        Wed, 28 Oct 2020 16:25:36 -0700 (PDT)
+        id S2390440AbgJ1X3E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 19:29:04 -0400
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:38212 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390456AbgJ1X27 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:28:59 -0400
+Received: by mail-oi1-f196.google.com with SMTP id 9so1386093oir.5;
+        Wed, 28 Oct 2020 16:28:58 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=WRqdyxaHVERacl4jf/075/U1BNHD64QQhedn3+Sdi/8=;
-        b=Pb/rR75SIF+nwxRlmSbuUBwghXPIVLP3kqE+fwaRhW2TM9kCgWPGBHqIf9OtXtWn/a
-         22ZmW2KTl/85e49X1vy3W6nZUO9SavD4XgdihogxwFYXi/fN+xCY83box/Jfo67c1jGH
-         v7K4ev3WDBiQELzjwg+EW1WY78lEKI9CsslEJkckXeVh5QbxT5i9B5X7/rchK2PrAUvJ
-         9Cpsl7V1Yd3UxDtZE4MFU1O+d9cjHh10AOS01YmSuXe2848K7Q6drsrgSFUCAHufYywu
-         5G2onKErn+wHwxZbnuOADaVoAWWFH8NGw9Lt5fhow4V6kzhhmgc1+KvEM17gQyrolboU
-         qKjw==
-X-Gm-Message-State: AOAM530NFWvoVhhaDqaOwBIZMVku1sCTAHLYpOSij6jeKo0+hqTKvmOO
-        RCxtyZtErk2p6nNCYEjnxoeHQvgXv9WGrMN0b6Bu0CgEs84JLg==
-X-Google-Smtp-Source: ABdhPJyXYiynuJcGVEVWbMjMQv17WJ9Bdi5zI7Wuu0SiRqN/fHDXAy41dVJBMeByjeXKfMb+nbbdqdgyyPIFu/7hCdI=
-X-Received: by 2002:aca:c490:: with SMTP id u138mr4696584oif.54.1603878596951;
- Wed, 28 Oct 2020 02:49:56 -0700 (PDT)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=po6rWvf724844GvfQdAQJ9iq1eJb6p+ZDm6wv8whpKk=;
+        b=E5xxqK6y7A79J3A2gp3w3+vTOfQiOMxi6t5bTg7TpDNMz7tnwQw9NDm5ocCy8R9Qon
+         dVbxELWxqe0cs3lWe84efB6XhBt186vQeUul0ze6wwqW0AUGqprrSMJmcGIIdk3y1/R7
+         hn/NdDx/dQ7c3Cx+y0ayvqK1vMqTNIVRXf0NKTNDZafSGBzFfuHO4jGv8fs6VnfV/U5U
+         gC2tAzWHQpqxfp5xwGyVOHPgvXWTkkj8DuZVEDe/LrfOYsgWk+JDV4AvG+AKtYFPRmwk
+         yKwMKipu3dSf8O2M5ozM+Dtapg+CJ6BtxfL9qs+z8pczZiDmOzKMo9QM/6EdTYHlFwjU
+         sZOA==
+X-Gm-Message-State: AOAM531sm5KZhZpkpivhBe26LFj6sI3V0Yz7yT01b9aZ6LH3kjB77wst
+        J7/wTD9QFr3IdIyKApxtCO0ocRDXZQ==
+X-Google-Smtp-Source: ABdhPJyEh7pfMoCDgab0DcqZOZs2B3jYAs6qTKZm/Uw5JJr14+poImxFufG/tuafS8zONyupbh4GOQ==
+X-Received: by 2002:a05:6808:4d3:: with SMTP id a19mr5186027oie.10.1603896170982;
+        Wed, 28 Oct 2020 07:42:50 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id 61sm2196489otc.9.2020.10.28.07.42.50
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Oct 2020 07:42:50 -0700 (PDT)
+Received: (nullmailer pid 3992502 invoked by uid 1000);
+        Wed, 28 Oct 2020 14:42:49 -0000
+Date:   Wed, 28 Oct 2020 09:42:49 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Mike Looijmans <mike.looijmans@topic.nl>
+Cc:     linux-kernel@vger.kernel.org, robh+dt@kernel.org,
+        devicetree@vger.kernel.org, sre@kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v2] dt-bindings: power/supply: Add ltc4162-l-charger
+Message-ID: <20201028144249.GA3992062@bogus>
+References: <20201027070938.10157-1-mike.looijmans@topic.nl>
 MIME-Version: 1.0
-References: <24ff92dd1b0ee1b802b45698520f2937418f8094.1598260050.git.viresh.kumar@linaro.org>
- <f75c61f193f396608d592ae2a9938264d582c038.1598260050.git.viresh.kumar@linaro.org>
- <CAMuHMdXLQKN5n58NvOp43vhc3ryLXWurBSsmcW9Q=oW502PYOQ@mail.gmail.com>
- <20201013095613.mbgmjwzojg5wxmau@vireshk-i7> <CAMuHMdVAJdHVMtK3Sc4sJiJGAwz1J4dKODBFcNzgstaktyKkOw@mail.gmail.com>
- <20201016050347.ers54itzmxgijzsy@vireshk-i7> <CAMuHMdUUzoFxbJts3gVC7i5A5daa_TYzKdrGEHho=3a1eeC_ww@mail.gmail.com>
- <20201016080730.h7u3jmlyjbyhqn3t@vireshk-i7> <CAMuHMdV1pnE===53_8r596G=9ktw-UMqD3N=T_F34Yk9aw9wWA@mail.gmail.com>
- <20201028054829.42zckdtwvj67tcfl@vireshk-i7>
-In-Reply-To: <20201028054829.42zckdtwvj67tcfl@vireshk-i7>
-From:   Geert Uytterhoeven <geert@linux-m68k.org>
-Date:   Wed, 28 Oct 2020 10:49:45 +0100
-Message-ID: <CAMuHMdXnfG8riHYsd9PYSHTDvJ11zQ27y_JJh_9+obUxxLen0g@mail.gmail.com>
-Subject: Re: [PATCH V2 2/2] cpufreq: dt: Refactor initialization to handle
- probe deferral properly
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Stephan Gerhold <stephan@gerhold.net>,
-        Ulf Hansson <ulf.hansson@linaro.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        nks@flawful.org, Georgi Djakov <georgi.djakov@linaro.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Wolfram Sang <wsa@the-dreams.de>,
-        Linux I2C <linux-i2c@vger.kernel.org>,
-        Linux-Renesas <linux-renesas-soc@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201027070938.10157-1-mike.looijmans@topic.nl>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Viresh,
+On Tue, 27 Oct 2020 08:09:38 +0100, Mike Looijmans wrote:
+> Add support for the LTC4162-L Li-Ion battery charger. The driver allows
+> reading back telemetry and to set some charging options like the input
+> current limit.
+> 
+> This adds the devicetree bindings.
+> 
+> Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+> ---
+> v2: Use microohms, add lltc,cell-count
+> 
+>  .../bindings/power/supply/ltc4162-l.yaml      | 68 +++++++++++++++++++
+>  1 file changed, 68 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
+> 
 
-On Wed, Oct 28, 2020 at 6:48 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
-> On 27-10-20, 17:29, Geert Uytterhoeven wrote:
-> > On plain v5.9, with #define DEBUG and a few extra debug prints
-> > added, I get:
-> >
-> >     cpufreq_dt: cpufreq_init:164: policy->cpu = 0
-> >     cpufreq_dt: cpufreq_init:165: policy->cpus = 0
-> >     cpufreq_dt: cpufreq_init:166: policy->related_cpus =
-> >     cpufreq_dt: cpufreq_init:167: policy->real_cpus =
-> >     cpu cpu0: dev_pm_opp_of_get_sharing_cpus: Couldn't find opp node.
-> >     of: dev_pm_opp_of_cpumask_add_table:1049
-> >     of: dev_pm_opp_of_cpumask_add_table:1054: cpu 0
-> >     cpu cpu0: dev_pm_opp_of_add_table:954
-> >     cpu cpu0: dev_pm_opp_of_add_table:956:
-> > dev_pm_opp_get_opp_table_indexed() returned (ptrval)
-> >     cpu cpu0: _of_add_opp_table_v1:891
-> >     cpu cpu0: _of_add_opp_table_v1:893: _find_opp_table() returned (ptrval)
-> >     cpu cpu0: _of_add_opp_table_v1:909: 6 entries
-> >     cpu cpu0: dev_pm_opp_get_opp_count:331
-> >     cpu cpu0: dev_pm_opp_get_opp_count:333: _find_opp_table() returned (ptrval)
-> >     cpu cpu0: dev_pm_opp_get_opp_count:342: _get_opp_count() returned 6
-> >     cpu cpu0: dev_pm_opp_get_opp_count:331
-> >     cpu cpu0: dev_pm_opp_get_opp_count:333: _find_opp_table() returned (ptrval)
-> >     cpu cpu0: dev_pm_opp_get_opp_count:342: _get_opp_count() returned 6
-> >     cpu cpu0: dev_pm_opp_get_opp_count:331
-> >     cpu cpu0: dev_pm_opp_get_opp_count:333: _find_opp_table() returned (ptrval)
-> >     cpu cpu0: dev_pm_opp_get_opp_count:342: _get_opp_count() returned 6
-> >     cpu cpu0: Couldn't find proper 'dynamic-power-coefficient' in DT
-> >     cpu cpu0: Couldn't register Energy Model -22
-> >
-> > This happens quite late in the boot sequence, long after cpu1 has been
-> > brought online.
-> > So it finds the v1 opp table for cpu0, which has 6 entries.
-> > The last two messages should be harmless, right?
->
-> Yes.
->
-> > So you say cpufreq is not working? How can I verify that?
->
-> I said it because your earlier logs showed that we defered probed
-> again or the count was 0 and we failed. Something like that.
->
-> Give output of this to verify if cpufreq is working or not:
->
-> grep . /sys/devices/system/cpu/cpufreq/policy*/*
->
-> This will be empty if there is no cpufreq.
 
-/sys/devices/system/cpu/cpufreq/policy0/affected_cpus:0 1
-/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_cur_freq:375000
-/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_max_freq:1500000
-/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_min_freq:375000
-/sys/devices/system/cpu/cpufreq/policy0/cpuinfo_transition_latency:300000
-/sys/devices/system/cpu/cpufreq/policy0/related_cpus:0 1
-/sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies:375000
-750000 937500 1125000 1312500 1500000
-/sys/devices/system/cpu/cpufreq/policy0/scaling_available_governors:conservative
-ondemand userspace powersave performance schedutil
-/sys/devices/system/cpu/cpufreq/policy0/scaling_cur_freq:375000
-/sys/devices/system/cpu/cpufreq/policy0/scaling_driver:cpufreq-dt
-/sys/devices/system/cpu/cpufreq/policy0/scaling_governor:schedutil
-/sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq:1500000
-/sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq:375000
-/sys/devices/system/cpu/cpufreq/policy0/scaling_setspeed:<unsupported>
+My bot found errors running 'make dt_binding_check' on your patch:
 
-So it works in v5.9, but not in v5.10-rc1.
+yamllint warnings/errors:
 
-Bisection says it was broken by commit 90d46d71cce279d8 ("opp: Handle
-multiple calls for same OPP table in _of_add_opp_table_v1()").
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/ltc4162-l.example.dt.yaml: battery-charger@68: 'lltc,rsnsb', 'lltc,rsnsi' do not match any of the regexes: 'pinctrl-[0-9]+'
+	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
 
-> >     cpu cpu0: dev_pm_opp_get_opp_count:331
-> >     cpu cpu0: dev_pm_opp_get_opp_count:333: _find_opp_table() returned (ptrval)
-> >     cpu cpu0: dev_pm_opp_get_opp_count:342: _get_opp_count() returned 0
-> >     cpu cpu0: OPP table can't be empty
-> >
-> > Wait, _get_opp_count() returns 0?
->
-> Does this fix it for you as well ?
->
-> https://lore.kernel.org/lkml/2c73ab54717ef358b118ea0cfb727b1427e7730a.1602648719.git.viresh.kumar@linaro.org/
 
-Thanks, it does. I had arrived at the same conclusion after bisection.
+See https://patchwork.ozlabs.org/patch/1388291
 
-> I didn't point you to this earlier as your logs said something else.
+The base for the patch is generally the last rc1. Any dependencies
+should be noted.
 
-All my logs said _get_opp_count() returns 0.
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
-> > During s2ram, v5.10-rc1, it redoes most of the above, incl. touching the
-> > PMIC, which it shouldn't due in this phase of system resume:
-> >
-> >     Disabling non-boot CPUs ...
-> >     Enabling non-boot CPUs ...
-> >     cpufreq_dt: cpufreq_init:112: policy->cpu = 1
-> >     cpufreq_dt: cpufreq_init:113: policy->cpus = 1
-> >     cpufreq_dt: cpufreq_init:114: policy->related_cpus =
-> >     cpufreq_dt: cpufreq_init:115: policy->real_cpus =
-> >     of: dev_pm_opp_of_cpumask_add_table:1075
-> >     of: dev_pm_opp_of_cpumask_add_table:1080: cpu 0
-> >     cpu cpu0: dev_pm_opp_of_add_table:980
-> >     cpu cpu0: dev_pm_opp_of_add_table:982:
-> > dev_pm_opp_get_opp_table_indexed() returned f680980b
-> >     cpu cpu0: _of_add_opp_table_v1:914
-> >     cpu cpu0: _of_add_opp_table_v1:916: _find_opp_table() returned a4afd426
-> >     cpu cpu0: _of_add_opp_table_v1:937: 6 entries
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >
-> > The i2c controller is suspended, this could go boom...
-> >
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     of: dev_pm_opp_of_cpumask_add_table:1080: cpu 1
-> >     cpu cpu1: dev_pm_opp_of_add_table:980
-> >     cpu cpu1: dev_pm_opp_of_add_table:982:
-> > dev_pm_opp_get_opp_table_indexed() returned f680980b
-> >     cpu cpu1: _of_add_opp_table_v1:914
-> >     cpu cpu1: _of_add_opp_table_v1:916: _find_opp_table() returned 9087c76d
-> >     cpu cpu1: _of_add_opp_table_v1:937: 6 entries
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     i2c-sh_mobile e60b0000.i2c: Transfer request timed out
-> >     cpu cpu0: dev_pm_opp_get_opp_count:331
-> >     cpu cpu0: dev_pm_opp_get_opp_count:333: _find_opp_table() returned f680980b
-> >     cpu cpu0: dev_pm_opp_get_opp_count:342: _get_opp_count() returned 0
-> >     cpu cpu0: OPP table can't be empty
-> >     CPU1 is up
->
-> Lets make the normal boot work first and see about this later.
+pip3 install dtschema --upgrade
 
-This is also fixed by your patch: the PMIC is no longer accessed while
-suspended.
+Please check and re-submit.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
