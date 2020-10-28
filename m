@@ -2,122 +2,117 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 667A0C4363A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 154DBC56201
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:22 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0D67720735
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6A5F20759
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="orPttfCJ"
+	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Qitm16SU"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389758AbgJ1WzQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:55:16 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59944 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389780AbgJ1WzP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:55:15 -0400
-Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com [IPv6:2607:f8b0:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B866AC0613D1
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:55:14 -0700 (PDT)
-Received: by mail-oi1-x243.google.com with SMTP id k27so1271375oij.11
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:55:14 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=KfnjVkSYavUZpAOuFxYL10A68Gk+riZcuOkpLm+UKsQ=;
-        b=orPttfCJNvUzyey7uOGV6qbycVKTL/tawKuMW0R4tXOU76W3N/0abqCNmDOmSmvRKN
-         L2JU10SN8to5CTiFxG5wFlRZ+x6UlUgMbOG7N/pua3fxvZBZCJS+EYHvE8FzLHr3047a
-         IusQdNKndPmJTL/Pn2PASNVNzQizL4HKrr9h8Sa4s9vTWSzUv1vWxJlLWL7qBwiNZZH0
-         NL3jimF1eAupDw4lp9obwTBpfo4tAMxacCG2xG9Ai03ir7HEjMODGsb6q1L4ESlUir48
-         MW4RzbQapeOS637/B5YLbaa26ZNLRjDyIkCnrRdrCVaqLf/6SiGLh23zR+zTIGWZ/xQI
-         LDIA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=KfnjVkSYavUZpAOuFxYL10A68Gk+riZcuOkpLm+UKsQ=;
-        b=OLvdQhxVPAXz1OIegW3tE4A9J7PV7VVtEtsY2K5KHO6gmipbmV6BufVQ8mFw2o2lTm
-         rk0sAxQsLYBwnrB3uTt8nYGRzfXp5TrWQI8AuQd/BaymZirMbnBzSO9ZDA1robF8ViBG
-         D9sz2yCqWL93jr7WoZHan20hgcF4bhDJWsjGGaU8YBz0//1uXNh76jca9UmI8KZVZRIr
-         xwtV5JkMYkgo1rAVfvl5u1M7pHZmeGNGk6Gj70ig8xH01HId+ZUWkupJo43wlMywQJlJ
-         MoC3rrfXN8jKebWHWuKvLdp27RBvjKsMOiXKVvcgJPLjbhQ1cFQ0btWNmE1Zb8y4Z45f
-         hJFA==
-X-Gm-Message-State: AOAM5301UHz+V/KzX+9lzhWIoOgSWvnnDYIkzctK9vDVU9BXjmuOZN5m
-        bZkx4JyAr42m9g1DDk58Ty/rzq/NEDglSQ==
-X-Google-Smtp-Source: ABdhPJyMbjsKNL+0AaYE+74jjeyJZn6dVKEnUKfModkHmF8ww8t+Tpr9o99iUojODmy3PW8gk7wIdw==
-X-Received: by 2002:a17:90a:2c41:: with SMTP id p1mr4749376pjm.129.1603857999683;
-        Tue, 27 Oct 2020 21:06:39 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id q35sm3548111pja.28.2020.10.27.21.06.38
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 27 Oct 2020 21:06:38 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 09:36:37 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Guenter Roeck <linux@roeck-us.net>
-Cc:     ulf.hansson@linaro.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>, Pavel Machek <pavel@ucw.cz>,
-        Len Brown <len.brown@intel.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>, Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        linux-samsung-soc@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephan Gerhold <stephan@gerhold.net>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        nks@flawful.org, georgi.djakov@linaro.org,
-        linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH V2 1/2] opp: Allow dev_pm_opp_get_opp_table() to return
- -EPROBE_DEFER
-Message-ID: <20201028040637.26kw2qk7digel6yb@vireshk-i7>
-References: <24ff92dd1b0ee1b802b45698520f2937418f8094.1598260050.git.viresh.kumar@linaro.org>
- <20201027222428.GA125472@roeck-us.net>
+        id S2389726AbgJ1Wyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:54:50 -0400
+Received: from hqnvemgate25.nvidia.com ([216.228.121.64]:16472 "EHLO
+        hqnvemgate25.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733260AbgJ1Wyq (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:54:46 -0400
+Received: from hqmail.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate25.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
+        id <B5f9964a70001>; Wed, 28 Oct 2020 05:31:35 -0700
+Received: from [10.26.45.122] (10.124.1.5) by HQMAIL107.nvidia.com
+ (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 28 Oct
+ 2020 12:31:30 +0000
+Subject: Re: [PATCH V2] cpufreq: tegra186: Fix initial frequency
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+CC:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
+        <linux-kernel@vger.kernel.org>
+References: <20200824145907.331899-1-jonathanh@nvidia.com>
+ <20200825055003.qfsuktsv7cyouxei@vireshk-i7>
+ <09ac354e-a55b-5300-12ae-3f24c8f8b193@nvidia.com>
+ <20201016040700.wzfegk7hmabxgpff@vireshk-i7>
+ <9c37db70-9406-8005-3478-dc4a5e94c566@nvidia.com>
+ <c6ab92fe-e5ea-4568-6457-7a28c8496114@nvidia.com>
+ <20201028041152.733tkghz4vnqz2io@vireshk-i7>
+From:   Jon Hunter <jonathanh@nvidia.com>
+Message-ID: <382ba642-dbea-c36a-0c71-6e91ccb7b775@nvidia.com>
+Date:   Wed, 28 Oct 2020 12:31:28 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201027222428.GA125472@roeck-us.net>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <20201028041152.733tkghz4vnqz2io@vireshk-i7>
+Content-Type: text/plain; charset="utf-8"
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.124.1.5]
+X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
+ HQMAIL107.nvidia.com (172.20.187.13)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
+        t=1603888295; bh=WzzOaEYzIzsUI3cCl2d2uX4B6nM/EI/XkOk1VFdax78=;
+        h=Subject:To:CC:References:From:Message-ID:Date:User-Agent:
+         MIME-Version:In-Reply-To:Content-Type:Content-Language:
+         Content-Transfer-Encoding:X-Originating-IP:X-ClientProxiedBy;
+        b=Qitm16SUB86mjL+1uY8ctmLnjoeRyRtQ7q3QyhEocvw1dN2ObM8q4aqz+9Wky2kl2
+         DGwT+i5qqMWzB+LlDtkjFxwn86PfWN2tk8GCtyx8yRqIza+j6Ki4f1mZoUHZ2oqVtU
+         x2LcYeP1AG1x9lByZlAfYdpzuFaaivHUwVnj4cOlsSZwrlHFiTCBI5fBNiIJleIOdc
+         XbUZRui/wbJ7eqK2khGoaqy3E3bQYUQZl7jBVF/2km4aH5xemVDJAhcqA5barRBTHd
+         N6DB/GSWllOm6FooPVtMx5+qlPA7WyIs1G6TSjKtsWR3wjGWAwOYZn5L00Qk9/WeIf
+         PUFmVIB3jarYw==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 27-10-20, 15:24, Guenter Roeck wrote:
-> Trying again through different e-mail provider. My previous e-mail
-> got stuck in spam filters. Apologies if this is received multiple
-> times.
 
-I received only once :)
 
-> On Mon, Aug 24, 2020 at 02:39:32PM +0530, Viresh Kumar wrote:
-> > From: Stephan Gerhold <stephan@gerhold.net>
-> > 
-> [ ... ]
-
-You removed way too much and this lost the context. Keeping the
-routine's prototype line would have been useful.
-
-> >  
-> >  	opp_table = dev_pm_opp_get_opp_table(dev);
-> > -	if (!opp_table)
-> > -		return ERR_PTR(-ENOMEM);
-> > +	if (!IS_ERR(opp_table))
-> > +		return opp_table;
+On 28/10/2020 04:11, Viresh Kumar wrote:
+> On 26-10-20, 12:57, Jon Hunter wrote:
+>> Thinking about this some more, what are your thoughts on making the
+>> following change? 
+>>
+>> Basically, if the driver sets the CPUFREQ_NEED_INITIAL_FREQ_CHECK,
 > 
-> This should have been
+> This flag only means that the platform would like the core to check
+> the currently programmed frequency and get it in sync with the table.
+
+Yes exactly.
+
+>> then I wonder if we should not fail if the frequency return by
+>>> get() is not known.
 > 
-> 	if (IS_ERR(opp_table))
-> 		return opp_table;
+> When do we fail if the frequency isn't known ? That's the case where
+> we try to set it to one from the table.
 
-I believe this is the delta from dev_pm_opp_register_set_opp_helper()
-?
+Currently, if the frequency is not known, we fail right before we do the
+initial frequency check [0].
 
-A proper fix is already pushed in linux-next for this yesterday.
+> But (looking at your change), ->get() can't really return 0. We depend
+> on it to get us the exact frequency the hardware is programmed at
+> instead of reading a cached value in the software.
+
+Actually it can and it does currently. Note in tegra186_cpufreq_get()
+the variable 'freq' is initialised to 0, and if no match is found, then
+it returns 0. This is what happens currently on some Tegra186 boards.
+
+>>> This would fix the problem I see on Tegra186
+>> where the initial boot frequency may not be in the frequency table.
+> 
+> With current mainline, what's the problem you see now ? Sorry I missed
+> track of it a bit :)
+
+No problem, this has been an on-going saga now for sometime.
+
+Cheers
+Jon
+
+[0]
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/cpufreq.c#n1429
+[1]
+https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/tegra186-cpufreq.c#n95
 
 -- 
-viresh
+nvpublic
