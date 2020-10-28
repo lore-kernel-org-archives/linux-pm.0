@@ -2,96 +2,223 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A4C0C4363A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:48:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A320C56201
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:50:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 065132245A
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:48:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603921723;
-	bh=qiMwSODi7g8dA7dxdmEYk4xB5CZ93Rxucy8sfL+An1M=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=awGUCDKGf24Qv3NFnQYtDbLxx0FeDEtjwacYey5jlUw5Pk2rRsjaetqYHvm99AM/W
-	 w9Rx3WVnLHSEF4Sc2D7BvLMP8Zu2ZhziuZC5uzxTXNXZKMXttFd+K+yERus/S6VgLs
-	 7yGEbzDWDvXro6lhRgDkKuSqKH1NdIxoZ5BE3XAw=
+	by mail.kernel.org (Postfix) with ESMTP id 339462245A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 21:50:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725898AbgJ1VdT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 17:33:19 -0400
-Received: from mail-yb1-f194.google.com ([209.85.219.194]:43971 "EHLO
-        mail-yb1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725979AbgJ1VdP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:33:15 -0400
-Received: by mail-yb1-f194.google.com with SMTP id d15so392233ybl.10;
-        Wed, 28 Oct 2020 14:33:13 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=nlJqqXXAH1t+pt7s0ccAWf7pcAID62bNuJtmD6PRncE=;
-        b=A7uIJO5L/ESrMYJbIAs9pb4sjGPenFSovbWB7VHfAvMfAIYeBaTKmHhpoxBwVkao6G
-         7ikFU4GeOWYFdRLu5QJgJ7j5BnuDaEhn2wF6/Umk+TzrMgr3iRFVAj5yVAK3bJF/OPyd
-         nx7VU9oVCTpBuZ6zkZkhdWSW8VxCCWdcUz/4SGJnW7qJkK268XjNZI11MTCeoF63nXhu
-         nFVn9sw8ju458ocL62tqP7W8oIs0EGCdj0G5FZm24I59fXqLwFlO6JN4ij6UucI9rc7D
-         /hYQ1LhMH+JAbs4rwLJ1a++kNa79XtCykIfGsF2o8Z2Fmf8glqWZGvTzrQZJlqPC6uaO
-         uY0g==
-X-Gm-Message-State: AOAM53215hzBxxfAMkozQo7OEYPqC9IiNvHTu7m2z9JVxiNCcOpkCNLP
-        tHFgvk8YAbZ3ugJMx/13Hl75J6ALjg==
-X-Google-Smtp-Source: ABdhPJy5UQJsgQmDLtE/+RjvN2Lhxh8sG17+hq4U7TOgu5yrnYqg9JmwYnTRx0VJDOZqz6UR5e+hJA==
-X-Received: by 2002:a9d:172f:: with SMTP id i47mr5804523ota.74.1603898986343;
-        Wed, 28 Oct 2020 08:29:46 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id h6sm2714750oia.51.2020.10.28.08.29.44
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:29:45 -0700 (PDT)
-Received: (nullmailer pid 4059166 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:29:44 -0000
-Date:   Wed, 28 Oct 2020 10:29:44 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Kyungmin Park <kyungmin.park@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        linux-kernel@vger.kernel.org,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        devicetree@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        Viresh Kumar <vireshk@kernel.org>, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Stephen Boyd <sboyd@kernel.org>
-Subject: Re: [PATCH v6 11/52] dt-bindings: memory: tegra30: emc: Document OPP
- table and voltage regulator
-Message-ID: <20201028152944.GA4059076@bogus>
-References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-12-digetx@gmail.com>
+        id S1728084AbgJ1Vux (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 17:50:53 -0400
+Received: from out3-smtp.messagingengine.com ([66.111.4.27]:51889 "EHLO
+        out3-smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728078AbgJ1Vuv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:50:51 -0400
+Received: from compute6.internal (compute6.nyi.internal [10.202.2.46])
+        by mailout.nyi.internal (Postfix) with ESMTP id 828AA5C010C;
+        Wed, 28 Oct 2020 09:51:18 -0400 (EDT)
+Received: from mailfrontend1 ([10.202.2.162])
+  by compute6.internal (MEProxy); Wed, 28 Oct 2020 09:51:18 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cerno.tech; h=
+        date:from:to:cc:subject:message-id:references:mime-version
+        :content-type:in-reply-to; s=fm1; bh=XEi3b/ikOzRZVpcIsCkFHJrCB0T
+        T9mRX4XPqsjVQReA=; b=fb7A58dUoMME0Qr6F9aQlgZriS/wrT+3poHSDO6y647
+        JTBlMKVm7YbjpZpjHhumIwdng77By3lkD/Kit1AhYkSU5R4ygqtdbPDmRwrw6Ob/
+        bLsURf4AHlaimAdwovgdk/a+XfwqCkgccJGa3AWFqSKL+RKq8j2l+Np5tRCxROZ3
+        MB7OtZgz3/dkkwbZ5KQFvXzS7afMVzSrAsYJQQxjJubQDuFCjuvTQUFtPx86RL6i
+        8ulfh3E+ApUMtx0MbEkVeeMHqUKPZOuCAFrp6dKDaMNFSIVQwgA79NF4xnoD/T/H
+        AQv0jwO8bNdEUmH0bdApHeZavQXuYPcHvJN6DGze3jQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+        messagingengine.com; h=cc:content-type:date:from:in-reply-to
+        :message-id:mime-version:references:subject:to:x-me-proxy
+        :x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; bh=XEi3b/
+        ikOzRZVpcIsCkFHJrCB0TT9mRX4XPqsjVQReA=; b=Cb5ujczzgyomEnKfYrlyOX
+        j7j5g8idPNdVYE4podVHeADBdkjjfNsQkY1Aw3eTOr4/DdiJuWCyCCL1iUe0m7ob
+        0P3q9IZcVOjIfuhhQu/lInwu3zY+idQDDRrto12R5rSFLymr8QaqPrT+Y7a8/sVs
+        jV1bRcFfRaWaTDx3hbMpy9TLbKvuqgigb5Ao1QV7iYnhwCsMXGzS3M1cWpt19aKf
+        rLJM8eXT6xR/ORj3BvcH+q97sLOEI5k54a+bwoJMnHRdV7rYJFO/panrliniUoBl
+        E7uO7Pj6CYyhqNK7+Kh5vsVOp+4Xs7em097359eOkQPa1p4rKyO8ZYmiuXzhpdUA
+        ==
+X-ME-Sender: <xms:U3eZXzbiXxIssPOos5U_6u1h3e0iVOtYKy3B7o7pzxV-5gvOLJHCbg>
+    <xme:U3eZXybxzZ0FwymzrmCBjv1dGiFcSgw2lg7k8GSpcTKpO_giGXE7mlOPxS3j5eQcc
+    7Ms_9DkCW_L7l3cwxQ>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgedujedrledugdehiecutefuodetggdotefrodftvf
+    curfhrohhfihhlvgemucfhrghsthforghilhdpqfgfvfdpuffrtefokffrpgfnqfghnecu
+    uegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenuc
+    fjughrpeffhffvuffkfhggtggujgesghdtreertddtvdenucfhrhhomhepofgrgihimhgv
+    ucftihhprghrugcuoehmrgigihhmvgestggvrhhnohdrthgvtghhqeenucggtffrrghtth
+    gvrhhnpeelkeeghefhuddtleejgfeljeffheffgfeijefhgfeufefhtdevteegheeiheeg
+    udenucfkphepledtrdekledrieekrdejieenucevlhhushhtvghrufhiiigvpedtnecurf
+    grrhgrmhepmhgrihhlfhhrohhmpehmrgigihhmvgestggvrhhnohdrthgvtghh
+X-ME-Proxy: <xmx:U3eZX18pwHGczpU3JJfeabsIIQDr3yPTahGofD8VPmpM-jfjsypzVA>
+    <xmx:U3eZX5pjdN4rNg2LQyPLC8aiJ9W3t9EF4S6BjstCvc0MgoqiwMYo3Q>
+    <xmx:U3eZX-qIRuO4WL6h53oAkUaLc2-U6FiNkUZMukBiZNge-AwL54ReOg>
+    <xmx:VneZX-IQziRa6JmkEOZSGe0xbJHKNqjYxDCSvcqUythnZmmcuBnghA>
+Received: from localhost (lfbn-tou-1-1502-76.w90-89.abo.wanadoo.fr [90.89.68.76])
+        by mail.messagingengine.com (Postfix) with ESMTPA id E44E3328005D;
+        Wed, 28 Oct 2020 09:51:14 -0400 (EDT)
+Date:   Wed, 28 Oct 2020 14:51:13 +0100
+From:   Maxime Ripard <maxime@cerno.tech>
+To:     Frank Lee <frank@allwinnertech.com>
+Cc:     anarsoul@gmail.com, tiny.windzz@gmail.com, rui.zhang@intel.com,
+        daniel.lezcano@linaro.org, amitk@kernel.org, wens@csie.org,
+        linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thermal: sun8i: Use bitmap API instead of open code
+Message-ID: <20201028135113.tpuofnv2eyaiqjc5@gilmour.lan>
+References: <20201019115836.13982-1-frank@allwinnertech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="6recr47zk4glx63l"
 Content-Disposition: inline
-In-Reply-To: <20201025221735.3062-12-digetx@gmail.com>
+In-Reply-To: <20201019115836.13982-1-frank@allwinnertech.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 26 Oct 2020 01:16:54 +0300, Dmitry Osipenko wrote:
-> Document new OPP table and voltage regulator properties which are needed
-> for supporting dynamic voltage-frequency scaling of the memory controller.
-> Some boards may have a fixed core voltage regulator, hence it's optional
-> because frequency scaling still may be desired.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  .../memory-controllers/nvidia,tegra30-emc.yaml       | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+--6recr47zk4glx63l
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Frank,
+
+On Mon, Oct 19, 2020 at 07:58:36PM +0800, Frank Lee wrote:
+> From: Yangtao Li <frank@allwinnertech.com>
+>=20
+> Thw bitmap_* API is the standard way to access data in the bitfield.
+>=20
+> Signed-off-by: Yangtao Li <frank@allwinnertech.com>
+> ---
+>  drivers/thermal/sun8i_thermal.c | 35 +++++++++++++++++----------------
+>  1 file changed, 18 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_ther=
+mal.c
+> index f8b13071a6f4..f2e4a4f18101 100644
+> --- a/drivers/thermal/sun8i_thermal.c
+> +++ b/drivers/thermal/sun8i_thermal.c
+> @@ -8,6 +8,7 @@
+>   * Based on the work of Josef Gajdusek <atx@atx.name>
+>   */
+> =20
+> +#include <linux/bitmap.h>
+>  #include <linux/clk.h>
+>  #include <linux/device.h>
+>  #include <linux/interrupt.h>
+> @@ -74,7 +75,7 @@ struct ths_thermal_chip {
+>  	int		(*calibrate)(struct ths_device *tmdev,
+>  				     u16 *caldata, int callen);
+>  	int		(*init)(struct ths_device *tmdev);
+> -	int             (*irq_ack)(struct ths_device *tmdev);
+> +	void		(*irq_ack)(struct ths_device *tmdev);
+>  	int		(*calc_temp)(struct ths_device *tmdev,
+>  				     int id, int reg);
+>  };
+> @@ -82,6 +83,7 @@ struct ths_thermal_chip {
+>  struct ths_device {
+>  	const struct ths_thermal_chip		*chip;
+>  	struct device				*dev;
+> +	DECLARE_BITMAP(irq_bitmap, MAX_SENSOR_NUM);
+>  	struct regmap				*regmap;
+>  	struct reset_control			*reset;
+>  	struct clk				*bus_clk;
+> @@ -146,9 +148,11 @@ static const struct regmap_config config =3D {
+>  	.max_register =3D 0xfc,
+>  };
+> =20
+> -static int sun8i_h3_irq_ack(struct ths_device *tmdev)
+> +static void sun8i_h3_irq_ack(struct ths_device *tmdev)
+>  {
+> -	int i, state, ret =3D 0;
+> +	int i, state;
+> +
+> +	bitmap_zero(tmdev->irq_bitmap, tmdev->chip->sensor_num);
+> =20
+>  	regmap_read(tmdev->regmap, SUN8I_THS_IS, &state);
+> =20
+> @@ -156,16 +160,16 @@ static int sun8i_h3_irq_ack(struct ths_device *tmde=
+v)
+>  		if (state & SUN8I_THS_DATA_IRQ_STS(i)) {
+>  			regmap_write(tmdev->regmap, SUN8I_THS_IS,
+>  				     SUN8I_THS_DATA_IRQ_STS(i));
+> -			ret |=3D BIT(i);
+> +			bitmap_set(tmdev->irq_bitmap, i, 1);
+>  		}
+>  	}
+> -
+> -	return ret;
+>  }
+> =20
+> -static int sun50i_h6_irq_ack(struct ths_device *tmdev)
+> +static void sun50i_h6_irq_ack(struct ths_device *tmdev)
+>  {
+> -	int i, state, ret =3D 0;
+> +	int i, state;
+> +
+> +	bitmap_zero(tmdev->irq_bitmap, tmdev->chip->sensor_num);
+> =20
+>  	regmap_read(tmdev->regmap, SUN50I_H6_THS_DIS, &state);
+> =20
+> @@ -173,24 +177,21 @@ static int sun50i_h6_irq_ack(struct ths_device *tmd=
+ev)
+>  		if (state & SUN50I_H6_THS_DATA_IRQ_STS(i)) {
+>  			regmap_write(tmdev->regmap, SUN50I_H6_THS_DIS,
+>  				     SUN50I_H6_THS_DATA_IRQ_STS(i));
+> -			ret |=3D BIT(i);
+> +			bitmap_set(tmdev->irq_bitmap, i, 1);
+>  		}
+>  	}
+> -
+> -	return ret;
+
+The bitfield of the acked interrupts is mostly something internal to the
+handler, so I'm not really convinced about sharing that through the
+global structure.
+
+With that being said...
+
+>  }
+> =20
+>  static irqreturn_t sun8i_irq_thread(int irq, void *data)
+>  {
+>  	struct ths_device *tmdev =3D data;
+> -	int i, state;
+> +	int i;
+> =20
+> -	state =3D tmdev->chip->irq_ack(tmdev);
+> +	tmdev->chip->irq_ack(tmdev);
+> =20
+> -	for (i =3D 0; i < tmdev->chip->sensor_num; i++) {
+> -		if (state & BIT(i))
+> -			thermal_zone_device_update(tmdev->sensor[i].tzd,
+> -						   THERMAL_EVENT_UNSPECIFIED);
+> +	for_each_set_bit(i, tmdev->irq_bitmap, tmdev->chip->sensor_num) {
+> +		thermal_zone_device_update(tmdev->sensor[i].tzd,
+> +					   THERMAL_EVENT_UNSPECIFIED);
+
+=2E. for_each_set_bit is definitely cleaner and more readable.
+
+Since it can operate on any unsigned long pointer, maybe we can just
+make irq_ack return an unsigned long, and iterate over it here?
+
+Maxime
+
+--6recr47zk4glx63l
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRcEzekXsqa64kGDp7j7w1vZxhRxQUCX5l3UQAKCRDj7w1vZxhR
+xQEKAP48BfIcj9Q8gxnE2YBEXYyU7tgQIfISkMi7dzn50h8wbwEA3yd3/OWl142x
+5IZCV0EeZJVQ8kBG4+H8a/zJLoh7dgM=
+=1WKP
+-----END PGP SIGNATURE-----
+
+--6recr47zk4glx63l--
