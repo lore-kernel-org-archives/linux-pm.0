@@ -2,117 +2,94 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 154DBC56201
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B918EC388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:56:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C6A5F20759
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:55:21 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="Qitm16SU"
+	by mail.kernel.org (Postfix) with ESMTP id 5F4C120754
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:56:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603925768;
+	bh=vETilujXThJZI+TyR7+fvBcBPH+xXaqjcOBPuQDIfAg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=Jw9tOBz3rmsNSt56RE7Qn2pFXwkiN9AQZN7QjXMEzXswYtUEElfalzO0G1bJusVQK
+	 KEBDQA+1KL5vE2iQVy6IlmL7WOzP4gkpDxT21RPmVz7TBuzaOqfyyQGae7r8B+Rh6U
+	 igS+7pK2hJPph4QOK6+mPGsNyVlOe3mJZG1qpXxE=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389726AbgJ1Wyu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:54:50 -0400
-Received: from hqnvemgate25.nvidia.com ([216.228.121.64]:16472 "EHLO
-        hqnvemgate25.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733260AbgJ1Wyq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:54:46 -0400
-Received: from hqmail.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate25.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
-        id <B5f9964a70001>; Wed, 28 Oct 2020 05:31:35 -0700
-Received: from [10.26.45.122] (10.124.1.5) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Wed, 28 Oct
- 2020 12:31:30 +0000
-Subject: Re: [PATCH V2] cpufreq: tegra186: Fix initial frequency
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-CC:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        id S2389844AbgJ1Wz7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:55:59 -0400
+Received: from mail-oo1-f66.google.com ([209.85.161.66]:35095 "EHLO
+        mail-oo1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389664AbgJ1Wx3 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:53:29 -0400
+Received: by mail-oo1-f66.google.com with SMTP id n16so284666ooj.2;
+        Wed, 28 Oct 2020 15:53:28 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=Z8qRO5fdt5NREdYFOvySAdOEhiWbrwmj4h+0kAQzcnw=;
+        b=jr7aYC4G57UCx1wz5KzVb62CyX+HTf9ssaVUqQNR9goooEQas0KlupcDB1NjtjoX3y
+         cZwA5swuYm7fC4ViEXbITJkdW2wRjfnvJPul1oAHGjrm//EEbIenMzRw1ZFeUpDyjx93
+         uP63t5uBfNknYx3ahBf5h0dxyf47O8iR6xrBz+8fuN++ui9azMWVR9kbrYIbvMKDknpV
+         8LJM5QSRr55LD53dMzLXda/lXqODG2y0OC0eMXnJGj0Hi5qCEOVvE0gsSWZ/GimQG3E4
+         P0tPBaXuOL98ueFG1NUZOScmQgOmkrvHW6nVP72DAeAOWMN9I9pDAl3ioj481qfj//kf
+         GsmQ==
+X-Gm-Message-State: AOAM532F3BonZpO5NHt+QDJC8A6oVkKpN3AOPU/JjDeBEEtgt8CJwxtK
+        DB1woXCt2+PWQ9TwRbdnchq5GQ4SQw==
+X-Google-Smtp-Source: ABdhPJz4rAItM9Tjr+B041aWkQLcJ4P9I8LjHRMJj9yAlwEt4a/QxGWhvpDv4Tv7mKuo7b3lREU2dg==
+X-Received: by 2002:a05:6830:144b:: with SMTP id w11mr5358743otp.82.1603899076759;
+        Wed, 28 Oct 2020 08:31:16 -0700 (PDT)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id 105sm2094205otf.52.2020.10.28.08.31.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 28 Oct 2020 08:31:15 -0700 (PDT)
+Received: (nullmailer pid 4061457 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:31:14 -0000
+Date:   Wed, 28 Oct 2020 10:31:14 -0500
+From:   Rob Herring <robh@kernel.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Mikko Perttunen <cyndis@kapsi.fi>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-tegra@vger.kernel.org,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        linux-kernel@vger.kernel.org, Chanwoo Choi <cw00.choi@samsung.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
         Thierry Reding <thierry.reding@gmail.com>,
-        <linux-pm@vger.kernel.org>, <linux-tegra@vger.kernel.org>,
-        <linux-kernel@vger.kernel.org>
-References: <20200824145907.331899-1-jonathanh@nvidia.com>
- <20200825055003.qfsuktsv7cyouxei@vireshk-i7>
- <09ac354e-a55b-5300-12ae-3f24c8f8b193@nvidia.com>
- <20201016040700.wzfegk7hmabxgpff@vireshk-i7>
- <9c37db70-9406-8005-3478-dc4a5e94c566@nvidia.com>
- <c6ab92fe-e5ea-4568-6457-7a28c8496114@nvidia.com>
- <20201028041152.733tkghz4vnqz2io@vireshk-i7>
-From:   Jon Hunter <jonathanh@nvidia.com>
-Message-ID: <382ba642-dbea-c36a-0c71-6e91ccb7b775@nvidia.com>
-Date:   Wed, 28 Oct 2020 12:31:28 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        dri-devel@lists.freedesktop.org,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH v6 19/52] dt-bindings: memory: tegra124: Add memory
+ client IDs
+Message-ID: <20201028153114.GA4061412@bogus>
+References: <20201025221735.3062-1-digetx@gmail.com>
+ <20201025221735.3062-20-digetx@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20201028041152.733tkghz4vnqz2io@vireshk-i7>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL111.nvidia.com (172.20.187.18) To
- HQMAIL107.nvidia.com (172.20.187.13)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1603888295; bh=WzzOaEYzIzsUI3cCl2d2uX4B6nM/EI/XkOk1VFdax78=;
-        h=Subject:To:CC:References:From:Message-ID:Date:User-Agent:
-         MIME-Version:In-Reply-To:Content-Type:Content-Language:
-         Content-Transfer-Encoding:X-Originating-IP:X-ClientProxiedBy;
-        b=Qitm16SUB86mjL+1uY8ctmLnjoeRyRtQ7q3QyhEocvw1dN2ObM8q4aqz+9Wky2kl2
-         DGwT+i5qqMWzB+LlDtkjFxwn86PfWN2tk8GCtyx8yRqIza+j6Ki4f1mZoUHZ2oqVtU
-         x2LcYeP1AG1x9lByZlAfYdpzuFaaivHUwVnj4cOlsSZwrlHFiTCBI5fBNiIJleIOdc
-         XbUZRui/wbJ7eqK2khGoaqy3E3bQYUQZl7jBVF/2km4aH5xemVDJAhcqA5barRBTHd
-         N6DB/GSWllOm6FooPVtMx5+qlPA7WyIs1G6TSjKtsWR3wjGWAwOYZn5L00Qk9/WeIf
-         PUFmVIB3jarYw==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201025221735.3062-20-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 28/10/2020 04:11, Viresh Kumar wrote:
-> On 26-10-20, 12:57, Jon Hunter wrote:
->> Thinking about this some more, what are your thoughts on making the
->> following change? 
->>
->> Basically, if the driver sets the CPUFREQ_NEED_INITIAL_FREQ_CHECK,
+On Mon, 26 Oct 2020 01:17:02 +0300, Dmitry Osipenko wrote:
+> Each memory client have a unique hardware ID, this patch adds these IDs.
 > 
-> This flag only means that the platform would like the core to check
-> the currently programmed frequency and get it in sync with the table.
-
-Yes exactly.
-
->> then I wonder if we should not fail if the frequency return by
->>> get() is not known.
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  include/dt-bindings/memory/tegra124-mc.h | 68 ++++++++++++++++++++++++
+>  1 file changed, 68 insertions(+)
 > 
-> When do we fail if the frequency isn't known ? That's the case where
-> we try to set it to one from the table.
 
-Currently, if the frequency is not known, we fail right before we do the
-initial frequency check [0].
-
-> But (looking at your change), ->get() can't really return 0. We depend
-> on it to get us the exact frequency the hardware is programmed at
-> instead of reading a cached value in the software.
-
-Actually it can and it does currently. Note in tegra186_cpufreq_get()
-the variable 'freq' is initialised to 0, and if no match is found, then
-it returns 0. This is what happens currently on some Tegra186 boards.
-
->>> This would fix the problem I see on Tegra186
->> where the initial boot frequency may not be in the frequency table.
-> 
-> With current mainline, what's the problem you see now ? Sorry I missed
-> track of it a bit :)
-
-No problem, this has been an on-going saga now for sometime.
-
-Cheers
-Jon
-
-[0]
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/cpufreq.c#n1429
-[1]
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/drivers/cpufreq/tegra186-cpufreq.c#n95
-
--- 
-nvpublic
+Reviewed-by: Rob Herring <robh@kernel.org>
