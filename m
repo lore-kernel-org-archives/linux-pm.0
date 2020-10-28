@@ -4,111 +4,133 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DE56DC55179
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:41:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A5DAAC55179
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:41:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 90C8D20878
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:41:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C02A208FE
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 22:41:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603924866;
-	bh=vjfgUbz4y2wJtruwzrDI2OMdnuopwsGifqsJZrdaFkk=;
+	s=default; t=1603924872;
+	bh=XIEK/YlIEkhPPCZ0rUMBwvX3G7nZ6I4b2SL5W2aFfRQ=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=Ci5hQB4Jot9LUfIVbttALrXgTUxNz15OTmXFrOIQgxRpXC8VJTy916J3hBh/8Ibc4
-	 +AyHjsEuRk1Sm6K8WTTujpsyFQupSU6C4UcjEzGb6Aivs1XmzwPyygWhg8BCzU7Bwe
-	 SA2/kkuRvq4/UjGtTBvyytZ+Qm45ltwYp5PjEhCM=
+	b=f6QEB3TSkv6Hc9ApSxmc3iseZHPmtP7ZlyE0q27TkbRbqMJl8uQzhf4Y9rfrEdiVL
+	 yNM+7V/hZmXHaVh0lj+AiG38+CbUjr2IavhElEcLy5c5387XW0El25s5C4O1wcl3uZ
+	 98NMx9WLyX8n+kyixPgrO5jxa4JOBdpzMYuGsYUM=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389046AbgJ1Wkd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 18:40:33 -0400
-Received: from mail-oo1-f68.google.com ([209.85.161.68]:34204 "EHLO
-        mail-oo1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388995AbgJ1Wkc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:40:32 -0400
-Received: by mail-oo1-f68.google.com with SMTP id f1so281719oov.1;
-        Wed, 28 Oct 2020 15:40:32 -0700 (PDT)
+        id S2389013AbgJ1WkZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:40:25 -0400
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:37475 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388994AbgJ1Wjr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:39:47 -0400
+Received: by mail-ot1-f65.google.com with SMTP id m22so659757ots.4;
+        Wed, 28 Oct 2020 15:39:45 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=lKXnB8xG2TaqVrvcPL6FA2z+YJ8ahfjSqGNyGDBltcU=;
-        b=JTKs07W4m6Xy59Cl7cCd004l7SUKimDXcDryG4BPm3/jU2mgU2EXW+Ef6j7zshlHNn
-         ojrGGP8CEDmGfIdO7APe0y9hIiHVQLyZppqyXXhKVr1049acnh9gBQxiQBhDFIMp0UDZ
-         bMMqPcsEJMwCKTdIFV3v/w4JqtTZZ2TeC9dbDN6c8UYQudd+s+8bGxlho31Yqpdr8wb6
-         forYLRZz5+DmU6H2hKSlLLQwx8GZVhkIW9FTWs4z45/eVOQqA5OOZn7AAr5p8nQ9oWMb
-         06bg5D2/U9pLmCbFi8V0/wn20G+eGFOHQRJEeKEozwKuFY/y//DNKilAw/QJR74I0r1T
-         IqTA==
-X-Gm-Message-State: AOAM530MSOMWwMzi/kIKFJdOJoTZiMKEui48004C7cLcUYesLqfaIOAt
-        gcm4jJS/99VAIlblgQR34r1NxHFh8g==
-X-Google-Smtp-Source: ABdhPJxGfgDHb9sV61QRZqr3+b2EpSc8QEOhlDV3yJBm7iPuuiiW0sXa+K9nzL2t0RXDsbchOOiWDg==
-X-Received: by 2002:a9d:6751:: with SMTP id w17mr5813231otm.7.1603899520503;
-        Wed, 28 Oct 2020 08:38:40 -0700 (PDT)
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=o6EwXQBfcMS/8hppO1O8Dg2kVJUq26B2UJyAmaDjbzk=;
+        b=sRd22aRNw6zB6w/gluvROBwovTKpgYdsfCTCx/XJI8t+aLYXKHUchELoq+O5iqicEx
+         B3lmmug5j/oQmHOgyR+4/EAJjkhmfhdIMsHp/6Qi3oLmGBh0ojWzA3YKviFFAP1a04v/
+         7rcLJC8RsnISJzeCghZWLhB6iAzqprh88lNEBiTyxQ2chWIZJgVP/zpT1eeDuZ70wxVQ
+         PtqDbYH8RcPaka8eqeLXYF2b5q6k6q/KDgAlJa7nG5dZClgq8jO33lxe7JJmwdRG3wnr
+         A+t4Rfe1J9ufjzfYulrUN6Af1R28k+a4OKB8df/QWV20Bgjgov+LG6Y7+nZGdt9cPqOU
+         P5+g==
+X-Gm-Message-State: AOAM533DGIIz9S5G7j0mqgcBQf66m5C+K1SShYVUAgq+UgoRMcEWrQj8
+        1GVLhzFl7nEc44X3mom8m36PEMobvw==
+X-Google-Smtp-Source: ABdhPJwj/TyDdKmqYTN4xYvs7B9zlCOZD1OUjrbHekbCo/ATjXWibtj5dLIGJwVVW7gCH9am8fXsDQ==
+X-Received: by 2002:a4a:ea4b:: with SMTP id j11mr6145795ooe.56.1603898585153;
+        Wed, 28 Oct 2020 08:23:05 -0700 (PDT)
 Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id g3sm2824247oif.26.2020.10.28.08.38.39
+        by smtp.gmail.com with ESMTPSA id c20sm2076568otm.49.2020.10.28.08.23.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:38:39 -0700 (PDT)
-Received: (nullmailer pid 4071712 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:38:38 -0000
-Date:   Wed, 28 Oct 2020 10:38:38 -0500
+        Wed, 28 Oct 2020 08:23:04 -0700 (PDT)
+Received: (nullmailer pid 4050074 invoked by uid 1000);
+        Wed, 28 Oct 2020 15:23:03 -0000
+Date:   Wed, 28 Oct 2020 10:23:03 -0500
 From:   Rob Herring <robh@kernel.org>
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        rjw@rjwysocki.net, viresh.kumar@linaro.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH v3 1/2] dt-bindings: arm: cpus: Document
- 'qcom,freq-domain' property
-Message-ID: <20201028153838.GA4065833@bogus>
-References: <20201020153944.18047-1-manivannan.sadhasivam@linaro.org>
- <20201026143203.GA112606@bogus>
- <20201026145108.GG12646@builder.lan>
+To:     Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v6 04/52] dt-bindings: memory: tegra20: emc: Document
+ nvidia,memory-controller property
+Message-ID: <20201028152303.GA4041470@bogus>
+References: <20201025221735.3062-1-digetx@gmail.com>
+ <20201025221735.3062-5-digetx@gmail.com>
+ <20201027085417.GD4244@kozik-lap>
+ <54191034-dcb9-7cab-333b-5bb2553f0ed1@gmail.com>
+ <20201027193039.GA140636@kozik-lap>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20201026145108.GG12646@builder.lan>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201027193039.GA140636@kozik-lap>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Oct 26, 2020 at 09:51:08AM -0500, Bjorn Andersson wrote:
-> On Mon 26 Oct 09:32 CDT 2020, Rob Herring wrote:
-> 
-> > On Tue, Oct 20, 2020 at 09:09:43PM +0530, Manivannan Sadhasivam wrote:
-> > > Add devicetree documentation for 'qcom,freq-domain' property specific
-> > > to Qualcomm CPUs. This property is used to reference the CPUFREQ node
-> > > along with Domain ID (0/1).
+On Tue, Oct 27, 2020 at 08:30:39PM +0100, Krzysztof Kozlowski wrote:
+> On Tue, Oct 27, 2020 at 10:17:19PM +0300, Dmitry Osipenko wrote:
+> > 27.10.2020 11:54, Krzysztof Kozlowski пишет:
+> > > On Mon, Oct 26, 2020 at 01:16:47AM +0300, Dmitry Osipenko wrote:
+> > >> Tegra20 External Memory Controller talks to DRAM chips and it needs to be
+> > >> reprogrammed when memory frequency changes. Tegra Memory Controller sits
+> > >> behind EMC and these controllers are tightly coupled. This patch adds the
+> > >> new phandle property which allows to properly express connection of EMC
+> > >> and MC hardware in a device-tree, it also put the Tegra20 EMC binding on
+> > >> par with Tegra30+ EMC bindings, which is handy to have.
+> > >>
+> > >> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> > >> ---
+> > >>  .../bindings/memory-controllers/nvidia,tegra20-emc.txt          | 2 ++
+> > >>  1 file changed, 2 insertions(+)
+> > >>
+> > >> diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
+> > >> index 567cffd37f3f..1b0d4417aad8 100644
+> > >> --- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
+> > >> +++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
+> > >> @@ -12,6 +12,7 @@ Properties:
+> > >>    irrespective of ram-code configuration.
+> > >>  - interrupts : Should contain EMC General interrupt.
+> > >>  - clocks : Should contain EMC clock.
+> > >> +- nvidia,memory-controller : Phandle of the Memory Controller node.
 > > > 
-> > > Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> > > ---
-> > >  Documentation/devicetree/bindings/arm/cpus.yaml | 6 ++++++
-> > >  1 file changed, 6 insertions(+)
-> > > 
-> > > diff --git a/Documentation/devicetree/bindings/arm/cpus.yaml b/Documentation/devicetree/bindings/arm/cpus.yaml
-> > > index 1222bf1831fa..f40564bf004f 100644
-> > > --- a/Documentation/devicetree/bindings/arm/cpus.yaml
-> > > +++ b/Documentation/devicetree/bindings/arm/cpus.yaml
-> > > @@ -290,6 +290,12 @@ properties:
-> > >  
-> > >        * arm/msm/qcom,kpss-acc.txt
-> > >  
-> > > +  qcom,freq-domain:
-> > > +    $ref: '/schemas/types.yaml#/definitions/phandle-array'
-> > > +    description: |
-> > > +      CPUs supporting freq-domain must set their "qcom,freq-domain" property
-> > > +      with phandle to a cpufreq_hw node followed by the Domain ID(0/1).
-> > 
-> > There's no 3 patches doing the same thing. Mediatek and SCMI are the 
-> > others. This will need to be common. 
-> > 
+> > > It looks like you adding a required property which is an ABI break.
+> > The T20 EMC driver is unused so far in upstream and it will become used
+> > only once this series is applied. Hence it's fine to change the ABI.
 > 
-> This property is used by existing dtbs for Qualcomm sdm845, sm8150,
-> sm8250 and sc7180 based devices, so I expect that the support for the
-> existing property will stay.
+> The ABI is not about upstream, but downstream. 
 
-Indeed. Any of these can tolerate a change here?
+"If it's not upstream, it doesn't exist."
 
-We should still take QCom into account for whatever is come up with for 
-a common binding.
+Though we do have to account for out of tree users where the DT is not 
+in tree, but upstream drivers are used. Downstream as in vendor kernels 
+typically has loads of other crap.
+
+> There are no other
+> upstreams using this ABI. Unless you have in mind that existing T20 EMC
+> driver was a noop, doing absolutely nothing, therefore there is no
+> breakage of any other users?
+
+ABI breaks are ultimately up to the platform maintainers to decide.
 
 Rob
