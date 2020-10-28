@@ -2,97 +2,133 @@ Return-Path: <SRS0=Ui8E=ED=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9B9C0C388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:04:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EBC7AC388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:10:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2E83520796
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:04:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603926275;
-	bh=YcVlaq1mZwyLeo+vypROEA75km+l4zSDau/h7Bffl/g=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=0OQ3D+DdmrCp6O7GpJW0QqpnqoUhZgU4PUue3PL0Uk5LenJGWpJL7DjlfswdCQwTl
-	 Eze/I/jp3sHDBslOJm4lil9R/doYmrcRklbPBvexgmguk9yzzqfyvEzAC/HpHg/GWh
-	 O5wxjUxU8q9Qrs0ThxPN/ELGWl3aanak2N6SSGAU=
+	by mail.kernel.org (Postfix) with ESMTP id 868C320791
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:10:37 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="gWrTCdIf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390111AbgJ1XE0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 19:04:26 -0400
-Received: from mail-yb1-f196.google.com ([209.85.219.196]:39777 "EHLO
-        mail-yb1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732874AbgJ1XD6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:03:58 -0400
-Received: by mail-yb1-f196.google.com with SMTP id 67so580086ybt.6;
-        Wed, 28 Oct 2020 16:03:57 -0700 (PDT)
+        id S1729270AbgJ1XKd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 19:10:33 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34102 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726313AbgJ1XJm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:09:42 -0400
+Received: from mail-oi1-x22e.google.com (mail-oi1-x22e.google.com [IPv6:2607:f8b0:4864:20::22e])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 53D22C0613CF
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 16:09:42 -0700 (PDT)
+Received: by mail-oi1-x22e.google.com with SMTP id c72so1316995oig.9
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 16:09:42 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=rEqCJekFVdJTMohcwUl8YdkY5G5aqFn/B9lOvlebXSk=;
+        b=gWrTCdIfiB04joDQpWiGtlCqzLYQ86OtHnVZUZ5/AcNpr0RsnNsZmMHQ6wi/oYUxey
+         ipo8OMsx9z+YGFnF/mvfsgUHdiufYDOWghZ8PM/jZM9cBjJjjv5XmnDC+kgvlNgbcsLJ
+         A1UFuJ27R0xMrwiw8kWH+I80EJpyiFe8llpFohPKsqaGIr2hRPl6xTVor7dePBF0JMK+
+         4U9tU0rp/a2ZUgwQot2c5RLbb/Y9XprKkakugEmenZkY4g+l+A/uSD0O1C+QKkDxLx8W
+         4gwPbbyYoHvpPXpBvQu5Zn3CjS5B/h2REIdr8jXdpPv7uk8e9xcUJFPFBy+Lm+UP4o12
+         Axhw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=d2bISq6eLdcKMjNlJcKgIH+JW7IlvZPJABIB1hmk538=;
-        b=Rr+N2aWWFilsMpaK/q/YSaQ0VLQ4L9nAcxY/2dhS8sq455eRRFs1Z/GvsAjN1/Jn1w
-         burA/5KTg7SOl074bw8Y1uv/hD+La0PFrwh+6QDnNaYSQsTVP+vz5XcdptPyxHODQO7l
-         44OrbOfqBPLg7I2gRKkcKoXYDf+FKLLqkAEOibbpRthtWNHdqGhrVVYB2N8aqHf1jGcD
-         4JvhG+KXWl9cTGK6e+NJq4fLHq26N508LW7l5anNJse5g1e36qVnfC5gPSbZTCDfZmAr
-         vPgvFQOQvxm1kdPcaabcVZVv4VCoXo7HFHPNYv4Cve1y4Lrm4JXrp8rJi8XO6EoKc39o
-         J5pg==
-X-Gm-Message-State: AOAM533IjHbJkoIFNDugzmE4Pv0USREtzbPOW+pdJzfElIbOSsVC5NAA
-        H3ezkLIqjjQug2F5EuCJZ8DpI+pylw==
-X-Google-Smtp-Source: ABdhPJxePufEKBxPy5ldMaGUPclbtmQjjTrYKwN9UnqPeafBvzPio38FSAsVM02kNVp5/lFXZ+YOiw==
-X-Received: by 2002:a9d:6aca:: with SMTP id m10mr5654973otq.282.1603899015746;
-        Wed, 28 Oct 2020 08:30:15 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id x14sm2656085ooo.43.2020.10.28.08.30.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 08:30:14 -0700 (PDT)
-Received: (nullmailer pid 4059892 invoked by uid 1000);
-        Wed, 28 Oct 2020 15:30:13 -0000
-Date:   Wed, 28 Oct 2020 10:30:13 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Dmitry Osipenko <digetx@gmail.com>
-Cc:     Stephen Boyd <sboyd@kernel.org>, devicetree@vger.kernel.org,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        linux-kernel@vger.kernel.org,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        dri-devel@lists.freedesktop.org,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        linux-tegra@vger.kernel.org,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Viresh Kumar <vireshk@kernel.org>, linux-pm@vger.kernel.org,
-        Rob Herring <robh+dt@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>
-Subject: Re: [PATCH v6 14/52] dt-bindings: memory: tegra124: emc: Document
- OPP table and voltage regulator
-Message-ID: <20201028153013.GA4059862@bogus>
-References: <20201025221735.3062-1-digetx@gmail.com>
- <20201025221735.3062-15-digetx@gmail.com>
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=rEqCJekFVdJTMohcwUl8YdkY5G5aqFn/B9lOvlebXSk=;
+        b=SrtBorHJpetFNZNiqe/SOYttUqhV7XGRNGuP1f5I7A9esBPMmKMBFq6qvD7bx4TPtw
+         llr/gwb9rBLZrWmGoepS1QVhcKxnC7D6K22l/pGZCHr9HQ7IRNkSIJUKCnCuyUUNp0w9
+         sq4zzEtrWgQ3dqMjqJg8EUOdCVwu7xgbmoxj/5UCONVduvIgr9MhZ8TA/BnHfBRIm4og
+         OsBryYCTEFmIcfdqSs9t1Z+YBlceAFPr/cdQY12VyYglgRSXgJi/kj2hd4AJMCutkvfY
+         HnlJTrTK9OGkgKer5uzF1NIs/Xy8vMHGPgV+v1PAeHU5IL7eGiudjyEsmjj+lUcobwMO
+         IX+Q==
+X-Gm-Message-State: AOAM530RXAFZB/S7wbuJf7CtXF1hEJnkrfoT8MafT0y8a0rAMHoy5JKU
+        lLJQj/hdNPbzEWqcKQoGGZXRLRylnWgpvQ==
+X-Google-Smtp-Source: ABdhPJwKbSsxu4QC2yqarwx4WNYvFSoRu8Xrp9BhVFRsY6CB8akaUjVrmdLW/5JnZRdWzczkQmaq9w==
+X-Received: by 2002:a17:90a:7c03:: with SMTP id v3mr4924794pjf.233.1603857427232;
+        Tue, 27 Oct 2020 20:57:07 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id i22sm4186169pfq.160.2020.10.27.20.57.06
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 27 Oct 2020 20:57:06 -0700 (PDT)
+Date:   Wed, 28 Oct 2020 09:27:02 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [PATCH v2.1 4/4] cpufreq: schedutil: Always call driver if
+ need_freq_update is set
+Message-ID: <20201028035702.75f6rnbkvfaic4si@vireshk-i7>
+References: <2183878.gTFULuzKx9@kreacher>
+ <1905098.zDJocX6404@kreacher>
+ <12275472.W5IoEtXICo@kreacher>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201025221735.3062-15-digetx@gmail.com>
+In-Reply-To: <12275472.W5IoEtXICo@kreacher>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 26 Oct 2020 01:16:57 +0300, Dmitry Osipenko wrote:
-> Document new OPP table and voltage regulator properties which are needed
-> for supporting dynamic voltage-frequency scaling of the memory controller.
-> Some boards may have a fixed core voltage regulator, hence it's optional
-> because frequency scaling still may be desired.
-> 
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  .../memory-controllers/nvidia,tegra124-emc.yaml       | 11 +++++++++++
->  1 file changed, 11 insertions(+)
-> 
+On 27-10-20, 16:35, Rafael J. Wysocki wrote:
+> Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+> ===================================================================
+> --- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
+> +++ linux-pm/kernel/sched/cpufreq_schedutil.c
+> @@ -102,11 +102,12 @@ static bool sugov_should_update_freq(str
+>  static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
+>  				   unsigned int next_freq)
+>  {
+> -	if (sg_policy->next_freq == next_freq)
+> +	if (sg_policy->next_freq == next_freq && !sg_policy->need_freq_update)
+>  		return false;
+>  
+>  	sg_policy->next_freq = next_freq;
+>  	sg_policy->last_freq_update_time = time;
+> +	sg_policy->need_freq_update = false;
+>  
+>  	return true;
+>  }
+> @@ -161,10 +162,12 @@ static unsigned int get_next_freq(struct
+>  
+>  	freq = map_util_freq(util, freq, max);
+>  
+> -	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+> +	if (cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS))
+> +		sg_policy->need_freq_update = true;
+> +	else if (freq == sg_policy->cached_raw_freq &&
+> +		 !sg_policy->need_freq_update)
+>  		return sg_policy->next_freq;
+>  
+> -	sg_policy->need_freq_update = false;
+>  	sg_policy->cached_raw_freq = freq;
+>  	return cpufreq_driver_resolve_freq(policy, freq);
+>  }
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+What about just this instead ?
+
+  static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
+  				   unsigned int next_freq)
+  {
+ -	if (sg_policy->next_freq == next_freq)
+ +	if (sg_policy->next_freq == next_freq &&
+ +          !cpufreq_driver_test_flags(CPUFREQ_NEED_UPDATE_LIMITS))
+  		return false;
+  
+  	sg_policy->next_freq = next_freq;
+  	sg_policy->last_freq_update_time = time;
+  
+  	return true;
+  }
+
+-- 
+viresh
