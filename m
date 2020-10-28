@@ -2,118 +2,158 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5807DC4363A
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:34:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 91ACBC4363A
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAF1D20791
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:34:32 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3C8F1208B8
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 00:35:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="zFtm9F4S"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="t4eDpGE8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729511AbgJ2Aeb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 20:34:31 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:54026 "EHLO
+        id S1731971AbgJ1WTb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 18:19:31 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53800 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732129AbgJ1WU2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:20:28 -0400
-Received: from mail-il1-x143.google.com (mail-il1-x143.google.com [IPv6:2607:f8b0:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 68688C0613CF
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:20:28 -0700 (PDT)
-Received: by mail-il1-x143.google.com with SMTP id n5so1082173ile.7
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:20:28 -0700 (PDT)
+        with ESMTP id S1732298AbgJ1WTI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:19:08 -0400
+Received: from mail-oi1-x243.google.com (mail-oi1-x243.google.com [IPv6:2607:f8b0:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 428B0C0613CF;
+        Wed, 28 Oct 2020 15:19:08 -0700 (PDT)
+Received: by mail-oi1-x243.google.com with SMTP id 9so1220518oir.5;
+        Wed, 28 Oct 2020 15:19:08 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=wFPNpfscYErShEvirkWLIggeFX3qqltgvUGRMyDt6NY=;
-        b=zFtm9F4SgKfsz25tFNW39l2gYgywrmYErkJeKvUe0IiBChHLju8mK7smQzTBwwKSt0
-         lqf/BQDJzyeFB8iNcf2WO+D+IbQYaygVL6XYgNpc8H3nxS/VxC7njFvuopiWQ5HNMjqt
-         OUuAH/q6Tc28GZ7fDrGanjPOKTfYya10QYBA3VOffpeMvrHMQlceypPZgFqoFN0jglFf
-         J4/EZLbT84CW8hNEm3p4Ah6s6vAE5siHE1JLHJdc/nRhwgScyjoBZwJrlexEFFzwK/go
-         7H9hOXOSJjsyxKyJMjaodOSF1IuKa3Zhr6oYyNhTBi4CS1Ce5LeXVxGO6KBAI0nf6kB0
-         2yFQ==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding:content-language:thread-index;
+        bh=8gD3IH+hSkcxH7JoFBlZOoX1Uk//wUlm/rCuVf3b+ZY=;
+        b=t4eDpGE8fOJ2x7pHsHI1Lwb6CoP15JbT4+6J9JLPYBHT213DQLdXwfJJAByDnWHKmU
+         eLz8ofY8VjbD8KOhkA6shUlJRwUTEildECKqGZqfUrYNNwH6tvPLiWfnlEFSfEseHLnQ
+         XqFVpxVY7iZiSWH6hipf0DGfUVRZHPuyVvgn0u42Lv2PqJoqU6oBzNA+whfYCIQib2jR
+         La+kAPRKwReRWRLU7z76U/DSjBj6orjRCVCInYOWMw8gnUYlrSHpO99qrCqWE8K+/hcN
+         fAqoHaHugjPZKUHoAVOh3rEpNNZ+PtqHq0l+zn1bgfcHNvU9FxJVXlPI/icLqgqvCWWy
+         yIgw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=wFPNpfscYErShEvirkWLIggeFX3qqltgvUGRMyDt6NY=;
-        b=eOwFMcMoyZqxVhft7nPyAgu96lIq95aiRNnpLdS8LgkY4ek3QTagrRLMOHZzuOQ7uh
-         aTv4SyW90tyvIYeVKPAEOXezMN1PCzywXTZklHPlV5dipI7xET1awN9YRjYUTHGVtQ3A
-         wqJpQpmVJbKUY2ghXP+D2G7iHosm1nm5yHdr2vQcuy2qufcLSo7mpnvizBZ8h8is3vDS
-         ncMgfJbCF3pcS3w4FSjB7XZsnXka5e2Y517AnCIM/UU0j431V4nSu1jfCUaMdA72KFV8
-         a4xShVnM2whBM5GVawpL//S/tjY2cNmYFJudlBU8Ane8rXoKdiuQ/ROR82+rJSZGuDbT
-         wSpg==
-X-Gm-Message-State: AOAM530CxDZddS8xMBGhV6xd5W3axyISlkZ6CZWG6YHnHsF2fK85Qj+3
-        D1X0wfkMtpZjgIwGc3CZou/Z4J82MYcKdw==
-X-Google-Smtp-Source: ABdhPJxEtVm6sHDHKlwNoyZe+9lfdQoWx1RkjPgXUHFGpIrwVIAVS/n+ItZm0AaFjxkrdOmQfYMrzQ==
-X-Received: by 2002:a63:1543:: with SMTP id 3mr4941667pgv.158.1603865284490;
-        Tue, 27 Oct 2020 23:08:04 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id e184sm2107988pfe.146.2020.10.27.23.08.03
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding:content-language:thread-index;
+        bh=8gD3IH+hSkcxH7JoFBlZOoX1Uk//wUlm/rCuVf3b+ZY=;
+        b=EGG1FMkV6s4sKBp0vrFJkBge8Z8X2QoINpkCdiFQX4wPP55kn0NQoJaeSwLbxYGdi1
+         KutCOxuIvNdHEtVflgQmHlg9rxqCqqjl4Px913/g//zphmvVvAs0DjUJr4Vww8Ddg1ye
+         XMM7YPS3XT1Gshwh4Zv5TE+j9a+CCcacMQKzPuRx1XdRLJyJ5d2mnTENtiKrNLvuFYRU
+         NJxjLRHJcbAnI8gZlcphq6UfvGH1E/wxFXyr/beMl/jkC6Vs9tM1qJmPsvNTeXmXQvqd
+         wnIPgGMxkEPzJaRZZ2bT7d/6PWHQ+yjTeUIE3MYDZIi84UXaSCrHOVlEa3hz8qPvJCLO
+         /s5g==
+X-Gm-Message-State: AOAM5311/2iQ9J4OHxx7N+GtuatPBOcmYN908ecxpoUvnnO/zrK3oqV+
+        MKiSWyGotiy5JeYvStibpXyKembiVZrwzA==
+X-Google-Smtp-Source: ABdhPJyfaUZjoPdWS2g6YX+5xrIC6bs+XolLYXJRtUogH9yuc6bDOJdNQogE6nBk+8p835EwKdP8bA==
+X-Received: by 2002:a17:90b:58e:: with SMTP id t14mr6400791pjz.53.1603883017573;
+        Wed, 28 Oct 2020 04:03:37 -0700 (PDT)
+Received: from DESKTOPIUKEMQD ([209.9.72.215])
+        by smtp.gmail.com with ESMTPSA id h10sm5011813pgj.69.2020.10.28.04.03.33
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 27 Oct 2020 23:08:03 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 11:38:01 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Frank Lee <frank@allwinnertech.com>
-Cc:     patrice.chotard@st.com, rjw@rjwysocki.net, tiny.windzz@gmail.com,
-        linux-arm-kernel@lists.infradead.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] cpufreq: sti-cpufreq: fix mem leak in
- sti_cpufreq_set_opp_info()
-Message-ID: <20201028060801.4s5ujmbhiej2uzn7@vireshk-i7>
-References: <20201012140141.20296-1-frank@allwinnertech.com>
+        Wed, 28 Oct 2020 04:03:36 -0700 (PDT)
+From:   "zhuguangqing83" <zhuguangqing83@gmail.com>
+To:     "'Viresh Kumar'" <viresh.kumar@linaro.org>
+Cc:     <rjw@rjwysocki.net>, <mingo@redhat.com>, <peterz@infradead.org>,
+        <juri.lelli@redhat.com>, <vincent.guittot@linaro.org>,
+        <dietmar.eggemann@arm.com>, <rostedt@goodmis.org>,
+        <bsegall@google.com>, <mgorman@suse.de>, <bristot@redhat.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        "'zhuguangqing'" <zhuguangqing@xiaomi.com>
+Subject: Re: [PATCH] cpufreq: schedutil: set sg_policy->next_freq to the final cpufreq
+Date:   Wed, 28 Oct 2020 19:03:31 +0800
+Message-ID: <083a01d6ad19$fbdfbca0$f39f35e0$@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201012140141.20296-1-frank@allwinnertech.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: zh-cn
+Thread-Index: AdatGYlWbcNW7k9ySme9xhkhSbUCiw==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12-10-20, 22:01, Frank Lee wrote:
-> From: Yangtao Li <tiny.windzz@gmail.com>
+ 
+> On 27-10-20, 19:54, zhuguangqing83@gmail.com wrote:
+> > From: zhuguangqing <zhuguangqing@xiaomi.com>
+> >
+> > In the following code path, next_freq is clamped between policy->min
+> > and policy->max twice in functions cpufreq_driver_resolve_freq() and
+> > cpufreq_driver_fast_switch(). For there is no update_lock in the code
+> > path, policy->min and policy->max may be modified (one or more times),
+> > so sg_policy->next_freq updated in function sugov_update_next_freq()
+> > may be not the final cpufreq.
 > 
-> Use dev_pm_opp_put_prop_name() to avoid mem leak, which free opp_table.
+> Understood until here, but not sure I followed everything after that.
 > 
-> Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-> ---
->  drivers/cpufreq/sti-cpufreq.c | 7 ++++++-
->  1 file changed, 6 insertions(+), 1 deletion(-)
+> > Next time when we use
+> > "if (sg_policy->next_freq == next_freq)" to judge whether to update
+> > next_freq, we may get a wrong result.
+> >
+> > -> sugov_update_single()
+> >   -> get_next_freq()
+> >     -> cpufreq_driver_resolve_freq()
+> >   -> sugov_fast_switch()
+> >     -> sugov_update_next_freq()
+> >     -> cpufreq_driver_fast_switch()
+> >
+> > For example, at first sg_policy->next_freq is 1 GHz, but the final
+> > cpufreq is 1.2 GHz because policy->min is modified to 1.2 GHz when
+> > we reached cpufreq_driver_fast_switch(). Then next time, policy->min
+> > is changed before we reached cpufreq_driver_resolve_freq() and (assume)
+> > next_freq is 1 GHz, we find "if (sg_policy->next_freq == next_freq)" is
+> > satisfied so we don't change the cpufreq. Actually we should change
+> > the cpufreq to 1.0 GHz this time.
 > 
-> diff --git a/drivers/cpufreq/sti-cpufreq.c b/drivers/cpufreq/sti-cpufreq.c
-> index a5ad96d29adc..9668a48dad33 100644
-> --- a/drivers/cpufreq/sti-cpufreq.c
-> +++ b/drivers/cpufreq/sti-cpufreq.c
-> @@ -222,7 +222,8 @@ static int sti_cpufreq_set_opp_info(void)
->  	opp_table = dev_pm_opp_set_supported_hw(dev, version, VERSION_ELEMENTS);
->  	if (IS_ERR(opp_table)) {
->  		dev_err(dev, "Failed to set supported hardware\n");
-> -		return PTR_ERR(opp_table);
-> +		ret = PTR_ERR(opp_table);
-> +		goto err_put_prop_name;
->  	}
->  
->  	dev_dbg(dev, "pcode: %d major: %d minor: %d substrate: %d\n",
-> @@ -231,6 +232,10 @@ static int sti_cpufreq_set_opp_info(void)
->  		version[0], version[1], version[2]);
->  
->  	return 0;
-> +
-> +err_put_prop_name:
-> +	dev_pm_opp_put_prop_name(opp_table);
-> +	return ret;
->  }
->  
->  static int sti_cpufreq_fetch_syscon_registers(void)
+> FWIW, whenever policy->min/max gets changed, sg_policy->limits_changed
+> gets set to true by sugov_limits() and the next time schedutil
+> callback gets called from the scheduler, we will fix the frequency.
+> 
+> And so there shouldn't be any issue here, unless I am missing
+> something.
 
-Applied. Thanks.
+Thanks for your comments. Maybe my description was not clear before.
 
--- 
-viresh
+If I understand correctly, when policy->min/max get changed in the time
+Window between get_next_freq() and sugov_fast_switch(), to be more
+precise between cpufreq_driver_resolve_freq() and
+cpufreq_driver_fast_switch(), the issue may happen.
+
+For example, the first time schedutil callback gets called from the
+scheduler, we reached get_next_freq() and calculate the next_freq,
+suppose next_freq is 1.0 GHz, then sg_policy->next_freq is updated
+to 1.0 GHz in sugov_update_next_freq(). If policy->min/max get
+change right now, suppose policy->min is changed to 1.2 GHz, 
+then the final next_freq is 1.2 GHz for there is another clamp
+between policy->min and policy->max in cpufreq_driver_fast_switch().
+Then sg_policy->next_freq(1.0 GHz) is not the final next_freq(1.2 GHz).
+
+The second time schedutil callback gets called from the scheduler, there
+are two issues:
+(1) Suppose policy->min is still 1.2 GHz, we reached get_next_freq() and
+calculate the next_freq, because sg_policy->limits_changed gets set to
+true by sugov_limits() and there is a clamp between policy->min and
+policy->max, so this time next_freq will be greater than or equal to 1.2
+GHz, suppose next_freq is also 1.2 GHz. Now next_freq is 1.2 GHz and
+sg_policy->next_freq is 1.0 GHz,  then we find
+"if (sg_policy->next_freq == next_freq)" is not satisfied and we call
+cpufreq driver to change the cpufreq to 1.2 GHz. Actually it's already
+1.2 GHz, it's not necessary to change this time.
+
+(2) Suppose policy->min was changed again to 1.0 GHz before, we reached
+get_next_freq() and calculate the next_freq, suppose next_freq is also
+1.0 GHz. Now next_freq is 1.0 GHz and sg_policy->next_freq is also 1.0 GHz,
+then we find "if (sg_policy->next_freq == next_freq)" is satisfied and we
+don't change the cpufreq. Actually we should change the cpufreq to 1.0 GHz
+this time.
+
+> 
+> --
+> viresh
+
