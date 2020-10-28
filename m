@@ -2,207 +2,99 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8A79DC388F7
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:53:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AC6FFC56201
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 02:02:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1A0AF20782
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:53:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5E51C20704
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 02:02:30 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="IlxD5Zvq"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="FXluIHWs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728860AbgJ2Bxq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 21:53:46 -0400
-Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:20308 "EHLO
-        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728684AbgJ1V5Y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:57:24 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-        s=mimecast20190719; t=1603922242;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=7H6fn0sflmDKqkVqjVyUYl4il+uaeJMTU2fENiZAfKY=;
-        b=IlxD5ZvqfCZoDxG9JOCWsutMIdqX+kmawcmefVRWlopzX12/hJ78op/prNT3vZY5pIyX+5
-        tky7C/SbEdEBuUy3MbTcdqdV7+voJK3eetmSEPHfvAAbpRlPr2dJm9JXJNKUVL6eprbkdb
-        DnrzHXDpTOVCc/qk0sEQcvU10y8QHcc=
-Received: from mail-ej1-f70.google.com (mail-ej1-f70.google.com
- [209.85.218.70]) (Using TLS) by relay.mimecast.com with ESMTP id
- us-mta-170-CyUJpHcqM9e7ODdPglUyww-1; Wed, 28 Oct 2020 07:54:44 -0400
-X-MC-Unique: CyUJpHcqM9e7ODdPglUyww-1
-Received: by mail-ej1-f70.google.com with SMTP id p18so2060004ejl.14
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 04:54:44 -0700 (PDT)
+        id S1727355AbgJ1Vsx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 17:48:53 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48446 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727805AbgJ1Vsm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 17:48:42 -0400
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B4CE9C0613CF
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 14:48:40 -0700 (PDT)
+Received: by mail-io1-xd41.google.com with SMTP id s7so1061002iol.12
+        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 14:48:40 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=9EPUQ9ajfJzWj+hnvbYTUCoABm2jCaPKDMKTD4VLJ+o=;
+        b=FXluIHWspusLqK/Kg/uNQGa3Bqh2HOqioMgW1IjaXnh/FVi2SHaED4wWlJqfymNCjv
+         RCWtKoRJo73Ynh6NZ9t3K4I8FQPZpNfwelkrIsVMCGwuqw6GNB3hBI1+bqZB6jEcvlci
+         0HQawnOCc1YGigoQk/GhqbQOqZxZ92Ktw9J7Cy55LUugsDre4quH3JYisIqgPn2iOL1E
+         bjckKD+vobH+WAuFwQrfBYjXE/cVNAdPKcgxiR+EM2T4ROMHT7SXbmfqQmn2bMQ1/jrR
+         oqhMtpoaH6wzA3odYkft7wgHgGBOlQNjbCkdKVz+0aa6JCZ0GmMyXiC/Khl65EWIPbpU
+         CPMg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=7H6fn0sflmDKqkVqjVyUYl4il+uaeJMTU2fENiZAfKY=;
-        b=UZNuWuLdHzyLGqz3SXvLagysjSxuiG+WIvpxrlpRe7UFZZAoIeEeVJGiU2WjWLF2+c
-         pacz/kBr4hFWBL3D9zTtQKZFpKJJoIbYEAeJdPEpwDT6CjC8+kpVGT9RSTqUqYPuOFhf
-         AEzSH46UVi4P4awPaxLNqsRqo+4rGUSRtAaQtRNvDqU6q1/FXUUPQqLxJg8qRtT95LSH
-         yBb9GzlwdpgRE5gKyQ44nkY1kWAKIh0SyWGMIblqtRNjBIhwmCwEAMSTj95XMW90ERjH
-         E6dnyRZhFX1idjT+3jn6I+pLgOInqGQzRbwPyAvBV3CYrHs81Zqvw73RA6KwDKfcu5EQ
-         sIiw==
-X-Gm-Message-State: AOAM530eWVyrUHhyt4/h2UVBFfAXE1rHn6OLaMnjnar23txC9WV0HNB3
-        kGXA1m9/ErLml41GruTjJOpWUD8Pu/ujcL04iWwzxSqIHB8ql2bXSGzBPeBxOfC3M4X1/rx0pLJ
-        hkGjdiGPiQVBzLwJtHVU=
-X-Received: by 2002:a17:906:3290:: with SMTP id 16mr7055822ejw.308.1603886082962;
-        Wed, 28 Oct 2020 04:54:42 -0700 (PDT)
-X-Google-Smtp-Source: ABdhPJyki7zPz1WgRhVvswcqc8DYrUa2nHa46FuIilVQLasUTTavgZEBiFJ8BDY2RERDV8wGBbiebg==
-X-Received: by 2002:a17:906:3290:: with SMTP id 16mr7055799ejw.308.1603886082717;
-        Wed, 28 Oct 2020 04:54:42 -0700 (PDT)
-Received: from x1.localdomain (2001-1c00-0c0c-fe00-6c10-fbf3-14c4-884c.cable.dynamic.v6.ziggo.nl. [2001:1c00:c0c:fe00:6c10:fbf3:14c4:884c])
-        by smtp.gmail.com with ESMTPSA id r3sm2768715edw.42.2020.10.28.04.54.41
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 28 Oct 2020 04:54:42 -0700 (PDT)
-Subject: Re: [PATCH] Documentation: Add documentation for new platform_profile
- sysfs attribute
-To:     Mark Pearson <markpearson@lenovo.com>
-Cc:     dvhart@infradead.org, mgross@linux.intel.com,
-        mario.limonciello@dell.com, eliadevito@gmail.com,
-        hadess@hadess.net, bberg@redhat.com, linux-pm@vger.kernel.org,
-        linux-acpi@vger.kernel.org, platform-driver-x86@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <markpearson@lenovo.com>
- <20201027164219.868839-1-markpearson@lenovo.com>
-From:   Hans de Goede <hdegoede@redhat.com>
-Message-ID: <8749d17c-4d0b-5c29-a8c9-4a6704b422d6@redhat.com>
-Date:   Wed, 28 Oct 2020 12:54:41 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.3.1
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=9EPUQ9ajfJzWj+hnvbYTUCoABm2jCaPKDMKTD4VLJ+o=;
+        b=EVRTbPmjRNqV695Foaej9q8E7gqxWx4cBC5C95eg1TARq2zmvsVAN9ucWJW6mpqqw6
+         XeCO6Ug6kKHi+EtMtyU7mvJeDx3j4l1QYxeG79Xpxb+fCMo/vqx+brotl9GJj3yIY/Qf
+         Q/aZypvI1pa093J7uVloCRZcVyVABJ0md1AYHGFk9SVLTGwz2cec9f43GUKJ4V7Hn1nI
+         PDGTBUoAuyuByDl2Ab+M9Oz0PXO/VqzE6PrpCIMa2zRM/hlZ24+Kzcio2rWQTvZJUa3I
+         U6+BUCOxJ8iIa8XeerKRTAO3fb2bjWE7T0tQEsK76oiqfDo2lHkti3yLsOG1MQnnYDQL
+         kIZw==
+X-Gm-Message-State: AOAM531qq21mX9H7U7AzMiHzpTpfKHi4ws5w/QgPWHpFUyOf7ye7+Twf
+        8cTwqxYV1GB4hD0aAcNdobXdzwcgHeATMQ==
+X-Google-Smtp-Source: ABdhPJyab+BLUolrAaQS6Z5bkxxLTZ0qmvvT/57deuMD2GISr2XjIBTS9myTIcIcl7KRpP8uHevBhA==
+X-Received: by 2002:a63:c851:: with SMTP id l17mr4887683pgi.31.1603865176097;
+        Tue, 27 Oct 2020 23:06:16 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id 23sm3988680pgr.53.2020.10.27.23.06.14
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 27 Oct 2020 23:06:15 -0700 (PDT)
+Date:   Wed, 28 Oct 2020 11:36:13 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Frank Lee <frank@allwinnertech.com>
+Cc:     robdclark@gmail.com, sean@poorly.run, airlied@linux.ie,
+        daniel@ffwll.ch, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
+        rjw@rjwysocki.net, jcrouse@codeaurora.org, eric@anholt.net,
+        tiny.windzz@gmail.com, kholk11@gmail.com,
+        emil.velikov@collabora.com, gustavoars@kernel.org,
+        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        freedreno@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 0/3] Introduce devm_pm_opp_set_* API
+Message-ID: <20201028060613.qva32sirae4dtj6x@vireshk-i7>
+References: <20201012135517.19468-1-frank@allwinnertech.com>
 MIME-Version: 1.0
-In-Reply-To: <20201027164219.868839-1-markpearson@lenovo.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201012135517.19468-1-frank@allwinnertech.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
-
-A few minor nitpicks below, mostly stuff which I missed before, sorry.
-
-I suggest you make v2 part of the series where you actually add the
-drivers/acpi/... and the thinkpad_acpi.c bits to implement this.
-
-On 10/27/20 5:42 PM, Mark Pearson wrote:
-> From: Hans de Goede <hdegoede@redhat.com>
+On 12-10-20, 21:55, Frank Lee wrote:
+> Hi, this patchset introduce devm_pm_opp_set_prop_name() and
+> devm_pm_opp_set_supported_hw().
 > 
-> On modern systems the platform performance, temperature, fan and other
-> hardware related characteristics are often dynamically configurable. The
-> profile is often automatically adjusted to the load by somei
-
-s/somei/some/
-
-> automatic-mechanism (which may very well live outside the kernel).
+> Yangtao Li (3):
+>   opp: Add devres wrapper for dev_pm_opp_set_supported_hw
+>   opp: Add devres wrapper for dev_pm_opp_set_prop_name
+>   drm/msm: Convert to devm_pm_opp_set_supported_hw
 > 
-> These auto platform-adjustment mechanisms often can be configured with
-> one of several 'platform-profiles', with either a bias towards low-power
-> consumption or towards performance (and higher power consumption and
-> thermals).
+>  drivers/gpu/drm/msm/adreno/a5xx_gpu.c |  2 +-
+>  drivers/opp/core.c                    | 80 +++++++++++++++++++++++++++
+>  include/linux/pm_opp.h                | 14 +++++
+>  3 files changed, 95 insertions(+), 1 deletion(-)
 
-I think it is better to also drop the " (and higher power consumption and
-thermals)" bit here (and below) like you did for the cool and quiet parts.
+Applied. Thanks.
 
-Regards,
-
-Hans
-
-> Introduce a new platform_profile sysfs API which offers a generic API for
-> selecting the performance-profile of these automatic-mechanisms.
-> 
-> Co-developed-by: Mark Pearson <markpearson@lenovo.com>
-> Signed-off-by: Mark Pearson <markpearson@lenovo.com>
-> Signed-off-by: Hans de Goede <hdegoede@redhat.com>
-> ---
-> Changes in V1:
->  - Moved from RFC to proposed patch
->  - Added cool profile as requested
->  - removed extra-profiles as no longer relevant
-> 
->  .../ABI/testing/sysfs-platform_profile        | 66 +++++++++++++++++++
->  1 file changed, 66 insertions(+)
->  create mode 100644 Documentation/ABI/testing/sysfs-platform_profile
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-platform_profile b/Documentation/ABI/testing/sysfs-platform_profile
-> new file mode 100644
-> index 000000000000..240bd3d7532b
-> --- /dev/null
-> +++ b/Documentation/ABI/testing/sysfs-platform_profile
-> @@ -0,0 +1,66 @@
-> +Platform-profile selection (e.g. /sys/firmware/acpi/platform_profile)
-> +
-> +On modern systems the platform performance, temperature, fan and other
-> +hardware related characteristics are often dynamically configurable. The
-> +profile is often automatically adjusted to the load by some
-> +automatic-mechanism (which may very well live outside the kernel).
-> +
-> +These auto platform-adjustment mechanisms often can be configured with
-> +one of several 'platform-profiles', with either a bias towards low-power
-> +consumption or towards performance (and higher power consumption and
-> +thermals).
-> +
-> +The purpose of the platform_profile attribute is to offer a generic sysfs
-> +API for selecting the platform-profile of these automatic-mechanisms.
-> +
-> +Note that this API is only for selecting the platform-profile, it is
-> +NOT a goal of this API to allow monitoring the resulting performance
-> +characteristics. Monitoring performance is best done with device/vendor
-> +specific tools such as e.g. turbostat.
-> +
-> +Specifically when selecting a high-performance profile the actual achieved
-> +performance may be limited by various factors such as: the heat generated
-> +by other components, room temperature, free air flow at the bottom of a
-> +laptop, etc. It is explicitly NOT a goal of this API to let userspace know
-> +about any sub-optimal conditions which are impeding reaching the requested
-> +performance level.
-> +
-> +Since numbers are a rather meaningless way to describe platform-profiles
-> +this API uses strings to describe the various profiles. To make sure that
-> +userspace gets a consistent experience when using this API this API
-> +document defines a fixed set of profile-names. Drivers *must* map their
-> +internal profile representation/names onto this fixed set.
-> +
-> +If for some reason there is no good match when mapping then a new profile-name
-> +may be added. Drivers which wish to introduce new profile-names must:
-> +1. Have very good reasons to do so.
-> +2. Add the new profile-name to this document, so that future drivers which also
-> +   have a similar problem can use the same name.
-> +
-> +What:		/sys/firmware/acpi/platform_profile_choices
-> +Date:		October 2020
-> +Contact:	Hans de Goede <hdegoede@redhat.com>
-> +Description:
-> +		Reading this file gives a space separated list of profiles
-> +		supported for this device.
-> +
-> +		Drivers must use the following standard profile-names:
-> +
-> +		low-power:		Emphasises low power consumption
-> +		cool:			Emphasises cooler operation
-> +		quiet:			Emphasises quieter operation
-> +		balanced:		Balance between low power consumption
-> +					and performance
-> +		performance:		Emphasises performance (and may lead to
-> +					higher temperatures and fan speeds)
-> +
-> +		Userspace may expect drivers to offer at least several of these
-> +		standard profile-names.
-> +
-> +What:		/sys/firmware/acpi/platform_profile
-> +Date:		October 2020
-> +Contact:	Hans de Goede <hdegoede@redhat.com>
-> +Description:
-> +		Reading this file gives the current selected profile for this
-> +		device. Writing this file with one of the strings from
-> +		available_profiles changes the profile to the new value.
-> 
-
+-- 
+viresh
