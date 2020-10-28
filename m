@@ -7,102 +7,69 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 63448C388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:29:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0CF1DC4363A
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:33:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0F304207BC
-	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:29:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A3188207CD
+	for <linux-pm@archiver.kernel.org>; Wed, 28 Oct 2020 23:32:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603927749;
-	bh=WQ5y7vsz0sHh+qs2p3QwYO0RfzhZ5zZncG8RLZlVqkE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=aU6DCMztk42Iu6uzZvRAorePZ+kYfE1E6ItJuYM9ruYFVzoTGMREAlONnZ55UqiQk
-	 DavIzE2mrchAt7EI4VtRti8sg+tfCGZMQOTUGRvgWPoQSVfcmdYr54Kb3lIWdXJI4V
-	 6JD/JK7jVqd05gPs/vo527i73vG5IJqo/DafAgWY=
+	s=default; t=1603927979;
+	bh=kuucGMnUYKQNkrUGdSAOSrFVV9tKdC9VMLt9lSaC1xo=;
+	h=In-Reply-To:References:Subject:From:Cc:To:Date:List-ID:From;
+	b=FDPzXRhyUFhU0C0lLNnN82WmnL6KTpPlW/vlow/rzr3tpZHvfx2Xn4c7MvyPEkjxU
+	 7HNlz0sydwxyhorBjSi5Ws52QAUBOWbQEp37zubjHI31mTQX2zSduDfFi6z8jVfdFC
+	 kn0Bte/hHsGExK88zVjWjWg8FRRSC2PtzF59iHvA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390440AbgJ1X3E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 19:29:04 -0400
-Received: from mail-oi1-f196.google.com ([209.85.167.196]:38212 "EHLO
-        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2390456AbgJ1X27 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 19:28:59 -0400
-Received: by mail-oi1-f196.google.com with SMTP id 9so1386093oir.5;
-        Wed, 28 Oct 2020 16:28:58 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=po6rWvf724844GvfQdAQJ9iq1eJb6p+ZDm6wv8whpKk=;
-        b=E5xxqK6y7A79J3A2gp3w3+vTOfQiOMxi6t5bTg7TpDNMz7tnwQw9NDm5ocCy8R9Qon
-         dVbxELWxqe0cs3lWe84efB6XhBt186vQeUul0ze6wwqW0AUGqprrSMJmcGIIdk3y1/R7
-         hn/NdDx/dQ7c3Cx+y0ayvqK1vMqTNIVRXf0NKTNDZafSGBzFfuHO4jGv8fs6VnfV/U5U
-         gC2tAzWHQpqxfp5xwGyVOHPgvXWTkkj8DuZVEDe/LrfOYsgWk+JDV4AvG+AKtYFPRmwk
-         yKwMKipu3dSf8O2M5ozM+Dtapg+CJ6BtxfL9qs+z8pczZiDmOzKMo9QM/6EdTYHlFwjU
-         sZOA==
-X-Gm-Message-State: AOAM531sm5KZhZpkpivhBe26LFj6sI3V0Yz7yT01b9aZ6LH3kjB77wst
-        J7/wTD9QFr3IdIyKApxtCO0ocRDXZQ==
-X-Google-Smtp-Source: ABdhPJyEh7pfMoCDgab0DcqZOZs2B3jYAs6qTKZm/Uw5JJr14+poImxFufG/tuafS8zONyupbh4GOQ==
-X-Received: by 2002:a05:6808:4d3:: with SMTP id a19mr5186027oie.10.1603896170982;
-        Wed, 28 Oct 2020 07:42:50 -0700 (PDT)
-Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
-        by smtp.gmail.com with ESMTPSA id 61sm2196489otc.9.2020.10.28.07.42.50
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 28 Oct 2020 07:42:50 -0700 (PDT)
-Received: (nullmailer pid 3992502 invoked by uid 1000);
-        Wed, 28 Oct 2020 14:42:49 -0000
-Date:   Wed, 28 Oct 2020 09:42:49 -0500
-From:   Rob Herring <robh@kernel.org>
-To:     Mike Looijmans <mike.looijmans@topic.nl>
-Cc:     linux-kernel@vger.kernel.org, robh+dt@kernel.org,
-        devicetree@vger.kernel.org, sre@kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v2] dt-bindings: power/supply: Add ltc4162-l-charger
-Message-ID: <20201028144249.GA3992062@bogus>
-References: <20201027070938.10157-1-mike.looijmans@topic.nl>
+        id S2390101AbgJ1Xc6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 19:32:58 -0400
+Received: from mail.kernel.org ([198.145.29.99]:51664 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726859AbgJ1Xc5 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 28 Oct 2020 19:32:57 -0400
+Received: from kernel.org (unknown [104.132.1.79])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 3C0FE207BC;
+        Wed, 28 Oct 2020 23:32:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1603927977;
+        bh=kuucGMnUYKQNkrUGdSAOSrFVV9tKdC9VMLt9lSaC1xo=;
+        h=In-Reply-To:References:Subject:From:Cc:To:Date:From;
+        b=iYRqfEug23UYUTFOmnbUhJp+n8AxJjw91pqACy2XjfvqlxqErHHl2Q6rQwX2Ecr2F
+         yliMD+EV/m/sfo1NCIa3KJvZrCPNcRnvtYwMtPnSGPJY+93ie4q79w5FmtdIWTKG6Q
+         KGAL6YMQOQmU54OXkUWuNZHJiAgs4iRnbg2fbsY4=
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201027070938.10157-1-mike.looijmans@topic.nl>
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <e0df59de670b48a923246fae1f972317b84b2764.1603785323.git.viresh.kumar@linaro.org>
+References: <e0df59de670b48a923246fae1f972317b84b2764.1603785323.git.viresh.kumar@linaro.org>
+Subject: Re: [PATCH] opp: Reduce the size of critical section in _opp_table_kref_release()
+From:   Stephen Boyd <sboyd@kernel.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Rob Clark <robdclark@gmail.com>,
+        Dmitry Osipenko <digetx@gmail.com>,
+        linux-kernel@vger.kernel.org
+To:     Nishanth Menon <nm@ti.com>, Viresh Kumar <viresh.kumar@linaro.org>,
+        Viresh Kumar <vireshk@kernel.org>
+Date:   Wed, 28 Oct 2020 16:32:55 -0700
+Message-ID: <160392797572.884498.11353243518476305974@swboyd.mtv.corp.google.com>
+User-Agent: alot/0.9.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 27 Oct 2020 08:09:38 +0100, Mike Looijmans wrote:
-> Add support for the LTC4162-L Li-Ion battery charger. The driver allows
-> reading back telemetry and to set some charging options like the input
-> current limit.
-> 
-> This adds the devicetree bindings.
-> 
-> Signed-off-by: Mike Looijmans <mike.looijmans@topic.nl>
+Quoting Viresh Kumar (2020-10-27 00:57:06)
+> There is a lot of stuff here which can be done outside of the big
+> opp_table_lock, do that. This helps avoiding few circular dependency
+> lockdeps around debugfs and interconnects.
+>=20
+> Reported-by: Rob Clark <robdclark@gmail.com>
+> Reported-by: Dmitry Osipenko <digetx@gmail.com>
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > ---
-> v2: Use microohms, add lltc,cell-count
-> 
->  .../bindings/power/supply/ltc4162-l.yaml      | 68 +++++++++++++++++++
->  1 file changed, 68 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-> 
 
+Any Fixes tag?
 
-My bot found errors running 'make dt_binding_check' on your patch:
-
-yamllint warnings/errors:
-
-dtschema/dtc warnings/errors:
-/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/ltc4162-l.example.dt.yaml: battery-charger@68: 'lltc,rsnsb', 'lltc,rsnsi' do not match any of the regexes: 'pinctrl-[0-9]+'
-	From schema: /builds/robherring/linux-dt-review/Documentation/devicetree/bindings/power/supply/ltc4162-l.yaml
-
-
-See https://patchwork.ozlabs.org/patch/1388291
-
-The base for the patch is generally the last rc1. Any dependencies
-should be noted.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit.
-
+Reviewed-by: Stephen Boyd <sboyd@kernel.org>
