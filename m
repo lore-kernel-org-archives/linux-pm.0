@@ -2,107 +2,142 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F35CC63699
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:44:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 544FFC2D0A3
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:56:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3490921531
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:44:20 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="IFjlPGcC"
+	by mail.kernel.org (Postfix) with ESMTP id 03C7320EDD
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:56:17 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603958178;
+	bh=5V9raRTAO8xn/TWxASurP3gs711BOhAaxxP12fBIpug=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=uQ4GCCa49vwl+3LSo9Lsr+/FEIVtIYA1czgjpiwJ+rxUzkXj/M/aI3KZzMH3muUzi
+	 9R2tPJsAfj21SFZMP/Q9iuHkB3srfLa92y0YV1KHg/ok2Cqyz5v29SV/c7AcgI7UPt
+	 JC5tA6YNxRGl4Gv1Qo23huBWLu+IpI5mbMzzmXWU=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730165AbgJ2HkG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 03:40:06 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55394 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727889AbgJ2HYy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 03:24:54 -0400
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67065C0613E5
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 21:10:23 -0700 (PDT)
-Received: by mail-pl1-x641.google.com with SMTP id x23so686302plr.6
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 21:10:23 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=VtMYoH7uqw8segSlpcpBhgMzv0tEH1FAyE5x4ELwZvc=;
-        b=IFjlPGcCJsg+rrCXLPGWirDPkMDWOVrFgu1ZQsJ/12/k4uFBGE5W2C1zr4S2lQ8fDZ
-         Js0TgSs1Gi5Qo9Vf7LKcU6AUczD5Ch7bsJU/C5YjJw2Xa1cmUjaEOc9OFYyo/gwDt8Ah
-         5+sWKwXXMA7k1mVzbD2r8h7xyvo0aot2TDQpdpZpPrLNVdUnQcHZqc14BfYrZVbkFWRH
-         hqDx+0K6V9JAaOojJ/Rt/OEg4IDDIB9OCCoSvD+oguFOUS0xa/mivTX00s3NRmpukMYK
-         KfrwDsXRlSNTelbQWzDx/AIKZJlVCBFH2kjApE7+EwU7ABaskutN735ytPRhb+xMAjyh
-         qx6g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=VtMYoH7uqw8segSlpcpBhgMzv0tEH1FAyE5x4ELwZvc=;
-        b=NirmJVCJFMWdfmb+984lGVnyYIFpLMT/S68YPLH5fUIABF7luaSEfxMryeujODc/Gb
-         inSXRC19/5kOgAzMv/xvVKWJu6Sfht5LgwBiLHhwbA0CvDbEg/jcQLUYmU9aZOjiPnZY
-         PaAEDwwoSzd3MK0CUJpdR7b5Vq7OBemnfS8qWbjz3hUy9XiqbQYgiXyzh4I+amfVsqRZ
-         +BuTWfDTlxs9nID720l5rxW7dI2F0H6u1DLYo2RKioehMY628MdFX3A+E91LA/wbzC2v
-         EEP5vbOIabTcdHKGBr3JCSElNB4XNcJbzeUH2DQKMQosHHfsEet5m2Oj2wVwMk3jMSKm
-         QG3w==
-X-Gm-Message-State: AOAM532ucwKhASh9hwV1jRoYmH8nCcuxqDuBIre7DZMPY+NsNMngkxj7
-        9LyRuAba2lGBr+In8ldFf/3caQ==
-X-Google-Smtp-Source: ABdhPJwB+wZltGbkPfEulY/us8CH6U0GVvR4+yZJIJGeq/vLXBPgXhWC5ZATCaEuCnT2aQP5lb9Iog==
-X-Received: by 2002:a17:902:c404:b029:d6:30a7:dee8 with SMTP id k4-20020a170902c404b02900d630a7dee8mr2267617plk.78.1603944622778;
-        Wed, 28 Oct 2020 21:10:22 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id 66sm891814pgg.72.2020.10.28.21.10.20
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 28 Oct 2020 21:10:21 -0700 (PDT)
-Date:   Thu, 29 Oct 2020 09:40:19 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Stephen Boyd <sboyd@kernel.org>
-Cc:     Nishanth Menon <nm@ti.com>, Viresh Kumar <vireshk@kernel.org>,
-        linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Rob Clark <robdclark@gmail.com>,
-        Dmitry Osipenko <digetx@gmail.com>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] opp: Reduce the size of critical section in
- _opp_table_kref_release()
-Message-ID: <20201029041019.xps4dcavkvk6imp5@vireshk-i7>
-References: <e0df59de670b48a923246fae1f972317b84b2764.1603785323.git.viresh.kumar@linaro.org>
- <160392797572.884498.11353243518476305974@swboyd.mtv.corp.google.com>
+        id S1731722AbgJ2Hz4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 03:55:56 -0400
+Received: from mail.kernel.org ([198.145.29.99]:56062 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1731531AbgJ2Hyb (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Oct 2020 03:54:31 -0400
+Received: from kernel.org (unknown [87.70.96.83])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id E3F1620EDD;
+        Thu, 29 Oct 2020 07:54:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1603958070;
+        bh=5V9raRTAO8xn/TWxASurP3gs711BOhAaxxP12fBIpug=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=smkJOo6ejvJldTmaaqqEFjGX6LWRb76WicHCvCBcrN9qOMMNByoTCZCyPYd8JouA6
+         FsHRDDeFim9xIzvbeq0FyT0w7eXPAkBTo6qZkKSqULTgH8mtDPy6sKAI1NlM6RXbk0
+         gkAxCVUoVSgKd/P/vRphpHr37cKvq2I6Usohfbtc=
+Date:   Thu, 29 Oct 2020 09:54:16 +0200
+From:   Mike Rapoport <rppt@kernel.org>
+To:     "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
+Cc:     "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "david@redhat.com" <david@redhat.com>,
+        "cl@linux.com" <cl@linux.com>,
+        "gor@linux.ibm.com" <gor@linux.ibm.com>,
+        "hpa@zytor.com" <hpa@zytor.com>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+        "penberg@kernel.org" <penberg@kernel.org>,
+        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>,
+        "will@kernel.org" <will@kernel.org>,
+        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+        "kirill@shutemov.name" <kirill@shutemov.name>,
+        "rientjes@google.com" <rientjes@google.com>,
+        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
+        "paulus@samba.org" <paulus@samba.org>,
+        "hca@linux.ibm.com" <hca@linux.ibm.com>,
+        "pavel@ucw.cz" <pavel@ucw.cz>, "bp@alien8.de" <bp@alien8.de>,
+        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+        "luto@kernel.org" <luto@kernel.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
+        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "palmer@dabbelt.com" <palmer@dabbelt.com>,
+        "Brown, Len" <len.brown@intel.com>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
+Subject: Re: [PATCH 2/4] PM: hibernate: improve robustness of mapping pages
+ in the direct map
+Message-ID: <20201029075416.GJ1428094@kernel.org>
+References: <20201025101555.3057-1-rppt@kernel.org>
+ <20201025101555.3057-3-rppt@kernel.org>
+ <3b4b2b3559bd3dc68adcddf99415bae57152cb6b.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <160392797572.884498.11353243518476305974@swboyd.mtv.corp.google.com>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <3b4b2b3559bd3dc68adcddf99415bae57152cb6b.camel@intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 28-10-20, 16:32, Stephen Boyd wrote:
-> Quoting Viresh Kumar (2020-10-27 00:57:06)
-> > There is a lot of stuff here which can be done outside of the big
-> > opp_table_lock, do that. This helps avoiding few circular dependency
-> > lockdeps around debugfs and interconnects.
-> > 
-> > Reported-by: Rob Clark <robdclark@gmail.com>
-> > Reported-by: Dmitry Osipenko <digetx@gmail.com>
-> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-> > ---
+On Wed, Oct 28, 2020 at 09:15:38PM +0000, Edgecombe, Rick P wrote:
+> On Sun, 2020-10-25 at 12:15 +0200, Mike Rapoport wrote:
+> > +       if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+> > +               unsigned long addr = (unsigned
+> > long)page_address(page);
+> > +               int ret;
+> > +
+> > +               if (enable)
+> > +                       ret = set_direct_map_default_noflush(page);
+> > +               else
+> > +                       ret = set_direct_map_invalid_noflush(page);
+> > +
+> > +               if (WARN_ON(ret))
+> > +                       return;
+> > +
+> > +               flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> > +       } else {
+> > +               debug_pagealloc_map_pages(page, 1, enable);
+> > +       }
 > 
-> Any Fixes tag?
+> Looking at the arm side again, I think this might actually introduce a
+> regression for the arm/hibernate/DEBUG_PAGEALLOC combo.
+> 
+> Unlike __kernel_map_pages(), it looks like arm's cpa will always bail
+> in the set_direct_map_() functions if rodata_full is false.
+>
+> So if rodata_full was disabled but debug page alloc is on, then this
+> would now skip remapping the pages. I guess the significance depends
+> on whether hibernate could actually try to save any DEBUG_PAGEALLOC
+> unmapped pages. Looks like it to me though.
+ 
+__kernel_map_pages() on arm64 will also bail out if rodata_full is
+false:
 
-The circular dependency lockdep appears with 5.11 stuff and so we
-don't need to fix it in any of the earlier releases. And so I didn't
-wanted to bother with the fixes tag, as the code had been like this
-for ever.
+void __kernel_map_pages(struct page *page, int numpages, int enable)
+{
+	if (!debug_pagealloc_enabled() && !rodata_full)
+		return;
 
-> Reviewed-by: Stephen Boyd <sboyd@kernel.org>
+	set_memory_valid((unsigned long)page_address(page), numpages, enable);
+}
 
-Thanks a lot. I was a bit worried about the crazy idea I had to solve
-this :)
+So using set_direct_map() to map back pages removed from the direct map
+with __kernel_map_pages() seems safe to me.
 
 -- 
-viresh
+Sincerely yours,
+Mike.
