@@ -2,121 +2,182 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1C940C4363A
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:23:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 553F0C4363A
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:44:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C3AE520796
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:23:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ED20020791
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 01:44:00 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="X5W234U1"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="dVhSYE45"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729842AbgJ2BXN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 28 Oct 2020 21:23:13 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51086 "EHLO
+        id S1729114AbgJ2Bna (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 28 Oct 2020 21:43:30 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58628 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729864AbgJ1WDu (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 18:03:50 -0400
-Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 646BCC0613CF
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:03:50 -0700 (PDT)
-Received: by mail-pg1-x541.google.com with SMTP id z24so649256pgk.3
-        for <linux-pm@vger.kernel.org>; Wed, 28 Oct 2020 15:03:50 -0700 (PDT)
+        with ESMTP id S1729108AbgJ2Bn1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 28 Oct 2020 21:43:27 -0400
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 52ECCC0613D3;
+        Wed, 28 Oct 2020 18:43:27 -0700 (PDT)
+Received: by mail-pf1-x443.google.com with SMTP id e7so980616pfn.12;
+        Wed, 28 Oct 2020 18:43:27 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=ywjXoX2kkK2KmqL6ZyGoB6Pybvnry+Rvqj9uaI5d5iE=;
-        b=X5W234U1YTYXSeJeyK2Vk+eLiUVBUfulNxLgtgDTC7Y2iq0ShIDFDyJL/pdwnwYUa+
-         OEYlEzLQjjCTHnrkgNNR7g00BW8ESFAEEQT1XcoJj6ZFN54o+wKgCxjD+O60PhuDQ7vD
-         84AXSoKF6QrULCiwA8LXd2DmMUV2GG7NtSjIJ6BviQWr4LdyVlTkrWrzwGw1XwH04BXw
-         wUann1odVUWJfSTWmw+2UN7YWM3rbwimRI5KzkuOeG5fKlaBIz9oc3Vs4E2lZJFK3gLq
-         v5fMgJHzOEzcx8IjzPNRfwrnMS/3QWCVvcyZ6Acqu806VBeEArIYp+nxMc7wfmvp6hZI
-         ASUQ==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding:content-language:thread-index;
+        bh=zm+BBylRASVa9dMtNh5bPgNNd17WHbXMVEpNBzpq3mQ=;
+        b=dVhSYE45jQtWD2ThQ3ZLSJ8XraGdzSA0MBYZouwfUw6+V+rRhYHHOWUbF8/FCp2Ooa
+         wOnW7VbVMAmNRe4oyvUu4gb6YjetNDGaxB4i4gXUGi8Yf/WCkldqEkFIIUjLFMpT35lr
+         zim5pch0+zBeQEvvwoUkDGtiwnASLIAdEvsFJDuR/QYWX1fQG3jhTxZJws3RDucqyZnb
+         7xr1L+xquAqpSIXoZiVNhz1uvNrqqxi8OF9Bqi6RV+Y6bBZkvMvnVUaV1P+rwINfujlg
+         OJfi6FS0mdUYO51eG7zdWvBLAv1VacoYSb+2GtPB+6xU3VBvSBveKGzSnLaU7r80XZXM
+         w2Ig==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=ywjXoX2kkK2KmqL6ZyGoB6Pybvnry+Rvqj9uaI5d5iE=;
-        b=WY926k+428lezjSorzNPq0CPJAIupAvOTEjQx8wQVZvsFNdnGl00GpTtnmkpy7RT9n
-         AhH35GJ1E9uJEXUBNKPJmVg1yexGIqzDUGtNUCQEA5uzQqrrEIYpb7qehQrWjxiq5Zox
-         1YoQsfAjY3uzsXpOuj+1U3zubnIy/jFts+NkIYTHrGDVVNiaVPQzHO9GsCAR/gzzA1rK
-         e2a7bjxG87fqaIu/MYMR2kfn+v4FYASPWzh5OW7xC7qrG0HW0maxTklpSuwO+02OJJhO
-         N/WCTyiS4vANABvTtVjis8vMLyj67/mSxbXUUojNbe/2qQHl522z31vOSUUD23bHVTPN
-         bT6g==
-X-Gm-Message-State: AOAM533y9WYFLhkCic0ODWzDIKKxJB7UpotenKD1uxZyyxbLDfSQ3sj7
-        E2q5ewnh0vkt4z0j7Eyp587ZFBRo6QVVmg==
-X-Google-Smtp-Source: ABdhPJxGfGHUfZR5/hgoqBA9Cp4UZZF2zoq2xSX/vVSEcnm+GlrQO4gwem8tQVD3yMYhu0Zz27HGPQ==
-X-Received: by 2002:a63:e444:: with SMTP id i4mr6715119pgk.304.1603896392305;
-        Wed, 28 Oct 2020 07:46:32 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id y5sm3087840pfq.79.2020.10.28.07.46.30
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding:content-language:thread-index;
+        bh=zm+BBylRASVa9dMtNh5bPgNNd17WHbXMVEpNBzpq3mQ=;
+        b=jtUTsxHzM2du0ONi1akcp21afXY0w0TjX5q6m2w0Kw3lXWmq3SzYrr1vI0S/qk98b5
+         b3AurFL8Z2sr53KmGiPnBI2RkD538ati530QEk2pZbhRt3ZtJp4J1ee9JV6WlgyxWz9b
+         fEQtDmNrSUN02Gof4tYOo6b3weyCOD971lie1++PexjZpzydto/Bu7/qSYCI0UOnL51O
+         Ltm9It4Nd9On0uMo7lpyaR21ZFQ2HhudNvqXWck/JvfvNFVTEMFWEQF4UG3zxFvIabVD
+         4HkDzr7qqSmZsU8TtUjXTcsqnl3rMowuXZSLkn6PVO7SVBDfPFZ1kN5MyCFzRcwsaWzi
+         3Grg==
+X-Gm-Message-State: AOAM532ZjSI/7G4SNkoE0a1kgggDzFoicD10rvrHeX5VjdJheQsgXoca
+        1Ps63tBISt/7rHgDiDqOQPE=
+X-Google-Smtp-Source: ABdhPJw5L3vrpj7lO/plBSqLyF9BU3NXhOgTDHuD7jdlMk01oH68tI9UT3j6pUlwEtPqRAzrtcdcfQ==
+X-Received: by 2002:a17:90a:ec11:: with SMTP id l17mr1767038pjy.104.1603935806802;
+        Wed, 28 Oct 2020 18:43:26 -0700 (PDT)
+Received: from DESKTOPIUKEMQD ([209.9.72.215])
+        by smtp.gmail.com with ESMTPSA id c187sm848372pfc.153.2020.10.28.18.43.22
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Wed, 28 Oct 2020 07:46:31 -0700 (PDT)
-Date:   Wed, 28 Oct 2020 20:16:28 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Frank Lee <tiny.windzz@gmail.com>
-Cc:     Frank Lee <frank@allwinnertech.com>,
-        Rob Clark <robdclark@gmail.com>, Sean Paul <sean@poorly.run>,
-        airlied@linux.ie, daniel@ffwll.ch,
-        Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>, jcrouse@codeaurora.org,
-        eric@anholt.net, kholk11@gmail.com, emil.velikov@collabora.com,
-        gustavoars@kernel.org, linux-arm-msm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, freedreno@lists.freedesktop.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH 2/3] opp: Add devres wrapper for dev_pm_opp_set_prop_name
-Message-ID: <20201028144628.qm2t2hbzmouqkciy@vireshk-i7>
-References: <20201012135517.19468-1-frank@allwinnertech.com>
- <20201012135517.19468-3-frank@allwinnertech.com>
- <20201028102942.zc5hgqpo2bfrn6in@vireshk-i7>
- <CAEExFWvNgK2wbvmxZjsJR4g-VBq=ggsBLew77rzmNdkpqTRuDA@mail.gmail.com>
+        Wed, 28 Oct 2020 18:43:26 -0700 (PDT)
+From:   "zhuguangqing83" <zhuguangqing83@gmail.com>
+To:     "'Viresh Kumar'" <viresh.kumar@linaro.org>
+Cc:     <rjw@rjwysocki.net>, <mingo@redhat.com>, <peterz@infradead.org>,
+        <juri.lelli@redhat.com>, <vincent.guittot@linaro.org>,
+        <dietmar.eggemann@arm.com>, <rostedt@goodmis.org>,
+        <bsegall@google.com>, <mgorman@suse.de>, <bristot@redhat.com>,
+        <linux-pm@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
+        "'zhuguangqing'" <zhuguangqing@xiaomi.com>
+Subject: Re: [PATCH] cpufreq: schedutil: set sg_policy->next_freq to the final cpufreq
+Date:   Thu, 29 Oct 2020 09:43:20 +0800
+Message-ID: <095901d6ad94$e48d5140$ada7f3c0$@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAEExFWvNgK2wbvmxZjsJR4g-VBq=ggsBLew77rzmNdkpqTRuDA@mail.gmail.com>
-User-Agent: NeoMutt/20180716-391-311a52
+Content-Type: text/plain;
+        charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Outlook 16.0
+Content-Language: zh-cn
+Thread-Index: AdatlJoMZJNjnRtVR/qzDDJYqq4NUw==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 28-10-20, 19:02, Frank Lee wrote:
-> On Wed, Oct 28, 2020 at 6:29 PM Viresh Kumar <viresh.kumar@linaro.org> wrote:
+
+> On 28-10-20, 19:03, zhuguangqing83 wrote:
+> > Thanks for your comments. Maybe my description was not clear before.
 > >
-> > On 12-10-20, 21:55, Frank Lee wrote:
-> > > From: Yangtao Li <tiny.windzz@gmail.com>
-> > >
-> > > Add devres wrapper for dev_pm_opp_set_prop_name() to simplify driver
-> > > code.
-> > >
-> > > Signed-off-by: Yangtao Li <tiny.windzz@gmail.com>
-> > > Signed-off-by: Yangtao Li <frank@allwinnertech.com>
-> > > ---
-> > >  drivers/opp/core.c     | 39 +++++++++++++++++++++++++++++++++++++++
-> > >  include/linux/pm_opp.h |  6 ++++++
-> > >  2 files changed, 45 insertions(+)
+> > If I understand correctly, when policy->min/max get changed in the time
+> > Window between get_next_freq() and sugov_fast_switch(), to be more
+> > precise between cpufreq_driver_resolve_freq() and
+> > cpufreq_driver_fast_switch(), the issue may happen.
 > >
-> > On a second thought I am looking at dropping this one as you haven't
-> > added any users yet and I am afraid it will stay unused.
+> > For example, the first time schedutil callback gets called from the
+> > scheduler, we reached get_next_freq() and calculate the next_freq,
+> > suppose next_freq is 1.0 GHz, then sg_policy->next_freq is updated
+> > to 1.0 GHz in sugov_update_next_freq(). If policy->min/max get
+> > change right now, suppose policy->min is changed to 1.2 GHz,
+> > then the final next_freq is 1.2 GHz for there is another clamp
+> > between policy->min and policy->max in cpufreq_driver_fast_switch().
+> > Then sg_policy->next_freq(1.0 GHz) is not the final next_freq(1.2 GHz).
+> >
+> > The second time schedutil callback gets called from the scheduler, there
+> > are two issues:
+> > (1) Suppose policy->min is still 1.2 GHz, we reached get_next_freq() and
+> > calculate the next_freq, because sg_policy->limits_changed gets set to
+> > true by sugov_limits() and there is a clamp between policy->min and
+> > policy->max, so this time next_freq will be greater than or equal to 1.2
+> > GHz, suppose next_freq is also 1.2 GHz. Now next_freq is 1.2 GHz and
+> > sg_policy->next_freq is 1.0 GHz,  then we find
+> > "if (sg_policy->next_freq == next_freq)" is not satisfied and we call
+> > cpufreq driver to change the cpufreq to 1.2 GHz. Actually it's already
+> > 1.2 GHz, it's not necessary to change this time.
 > 
-> Now it looks like that dev_pm_opp_set_prop_name() is used relatively less.
-> Maybe we can wait until a caller, and then pick up the patch.
+> This isn't that bad, but ...
+> 
+> > (2) Suppose policy->min was changed again to 1.0 GHz before, we reached
+> > get_next_freq() and calculate the next_freq, suppose next_freq is also
+> > 1.0 GHz. Now next_freq is 1.0 GHz and sg_policy->next_freq is also 1.0 GHz,
+> > then we find "if (sg_policy->next_freq == next_freq)" is satisfied and we
+> > don't change the cpufreq. Actually we should change the cpufreq to 1.0 GHz
+> > this time.
+> 
+> This is a real problem we can get into. What about this diff instead ?
+> 
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index 0c5c61a095f6..bf7800e853d3 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -105,7 +105,6 @@ static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
+>         if (sg_policy->next_freq == next_freq)
+>                 return false;
+> 
+> -       sg_policy->next_freq = next_freq;
+>         sg_policy->last_freq_update_time = time;
+> 
+>         return true;
 
-I am even wondering if we should be adding any of the devm_* helpers
-for now to be honest. Even for the other one we have only one user.
-Them major user of the OPP core is the CPU subsystem and it is never
-going to use these devm_* helpers as the CPU device doesn't get bound
-to a driver, it is rather a fake platform device which gets the
-cpufreq drivers probed. So the only users of these devm_* helpers is
-going to be non-CPU devices. Considering that we have only one user
-right now, it may be better to just fix it instead of adding any of
-the devm_* helpers.
+It's a little strange that sg_policy->next_freq and 
+sg_policy->last_freq_update_time are not updated at the same time.
 
--- 
-viresh
+> @@ -115,7 +114,7 @@ static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
+>                               unsigned int next_freq)
+>  {
+>         if (sugov_update_next_freq(sg_policy, time, next_freq))
+> -               cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
+> +               sg_policy->next_freq = cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
+>  }
+> 
+
+Great, it also takes into account the issue that 0 is returned by the
+driver's ->fast_switch() callback to indicate an error condition.
+
+For policy->min/max may be not the real CPU frequency in OPPs, so
+next_freq got from get_next_freq() which is after clamping between
+policy->min and policy->max may be not the real CPU frequency in OPPs.
+In that case, if we use a real CPU frequency in OPPs returned from
+cpufreq_driver_fast_switch() to compare with next_freq,
+"if (sg_policy->next_freq == next_freq)" will never be satisfied, so we
+change the CPU frequency every time schedutil callback gets called from
+the scheduler. I see the current code in get_next_freq() as following,
+the issue mentioned above should not happen. Maybe it's just one of my
+unnecessary worries.
+
+static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+				  unsigned long util, unsigned long max)
+{
+......
+	if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+		return sg_policy->next_freq;
+......
+}
+
+>  static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
+> @@ -124,6 +123,7 @@ static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
+>         if (!sugov_update_next_freq(sg_policy, time, next_freq))
+>                 return;
+> 
+> +       sg_policy->next_freq = next_freq;
+>         if (!sg_policy->work_in_progress) {
+>                 sg_policy->work_in_progress = true;
+>                 irq_work_queue(&sg_policy->irq_work);
+> 
+> --
+> viresh
+
