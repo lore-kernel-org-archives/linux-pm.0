@@ -2,111 +2,72 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E1BCC4741F
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 22:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4F768C4741F
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 23:11:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2BD6620791
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 22:33:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604010782;
-	bh=ac7XsagJj8w/JNBhxQ+52kYQS1qe6gjgqnz+5QcEA7g=;
-	h=Subject:To:Cc:References:From:Date:In-Reply-To:List-ID:From;
-	b=XDzzytVKv66ffUXXKGN6zoLiFYAZcINRqgByc6X0RTl8YOula7kEyn98ZFI3IJYjB
-	 Ne0xAsnFZ60ZJP1t1PbNF1zbMTwAI1ogA8efE2d9K0Sm2EvK0hyAsAqyBrCs57R7TV
-	 OvByy8P4MhHzCLaHNRJBlxpEj/UtkYZhdBxzG9sM=
+	by mail.kernel.org (Postfix) with ESMTP id B622820838
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 23:11:24 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="Tng99f1x"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726038AbgJ2WdB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 18:33:01 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56098 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726092AbgJ2Wcq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 18:32:46 -0400
-Received: from mail-io1-xd42.google.com (mail-io1-xd42.google.com [IPv6:2607:f8b0:4864:20::d42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE71BC0613D2
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 15:32:46 -0700 (PDT)
-Received: by mail-io1-xd42.google.com with SMTP id r9so5438341ioo.7
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 15:32:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linuxfoundation.org; s=google;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=6XztGCZRt5A0usmhyuoZs86DEqCkXEdFp8vHyXCDEWQ=;
-        b=D0LRm+pzmZq/nQ+lBZVuYJGnQT2nlMbokQbXZAwwpc43BFjWt3Xn39+EuCVcyq5QEC
-         rHkCzHxWYgU1ocQ7QB5FRxq9OuPkCiRIjukO/slUMeNRzgshi01eqrQNiS/FbTMldBoa
-         KV9qPjIMKZjF3gQvcgylWRhhkr0QGgUT1qVxw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=6XztGCZRt5A0usmhyuoZs86DEqCkXEdFp8vHyXCDEWQ=;
-        b=tkWPa3EzIXqvlT3xjzvTzjk0zK9iilRLM4teDB/qH5Ihx/cWs33LY+qIUVekz1SUCg
-         lZ1P9UmwWoZl43sbckn2uWHrYHuVCA5nGKIKi2+7t9A9lWG4qq00Pm8+cSC3tAIehzz+
-         H61VgnUDtKT7+S6goPM6hnCxrW1tex4aTRqqnOP8GuYPgoT2nmNtsjSy6+QHhDm9BrvX
-         pB+9sXx+zqritz/V4JjseJWh168oPqjP2bOo2r5V14io3bCR5jrgpYKnzRdplRf41nWM
-         pSoxuybznH06BK2baZbjYjL2dWwy9GKJSBx1LcrZd5WsHomvomOpAyno147E8WEgD8Mv
-         G8yA==
-X-Gm-Message-State: AOAM531Fj2eDtVZ5Reqg0JQeaDtU4Mj/TOW7E8QGl40RGMZYqYeoTsu9
-        7foAoSjZKNK2X7LekrqnRA2hpg==
-X-Google-Smtp-Source: ABdhPJxKschXmJbQdhcb24ydYYi8j/PZKEMmao+aUIGVI6GDyNm3EDrWX1XdPNtwzO+TkDu56va6Yw==
-X-Received: by 2002:a5e:c248:: with SMTP id w8mr5393217iop.132.1604010765616;
-        Thu, 29 Oct 2020 15:32:45 -0700 (PDT)
-Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
-        by smtp.gmail.com with ESMTPSA id l4sm3062134ioj.41.2020.10.29.15.32.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 29 Oct 2020 15:32:44 -0700 (PDT)
-Subject: Re: [PATCH 1/4] tools/power/cpupower: Read energy_perf_bias from
- sysfs
-To:     Borislav Petkov <bp@alien8.de>
+        id S1725946AbgJ2XLY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 19:11:24 -0400
+Received: from mail.skyhub.de ([5.9.137.197]:49656 "EHLO mail.skyhub.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725372AbgJ2XLX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Oct 2020 19:11:23 -0400
+Received: from zn.tnic (p200300ec2f0ce900b7c12963b584fd72.dip0.t-ipconnect.de [IPv6:2003:ec:2f0c:e900:b7c1:2963:b584:fd72])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id EE19C1EC0258;
+        Fri, 30 Oct 2020 00:11:21 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1604013082;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=koqRWZmo0e5vtCu9n2okG5w+NCun2XvjE+ynY2NDFTo=;
+        b=Tng99f1xnIXhDLMhQYqYej0lMYHojGpbM0FXsH8zevIe+6rSq5bYSHYQuAlCprRXSvXGrl
+        XqdXnzgTJNzvj5Ye/9wZ4iZy3Sw9ORKg3w1mkSbn7BTmeDYyafLOS4fPY4K/v+1mHKwGp7
+        vNyay3oV2Cumj6CViMn8mq9G/8JPEAk=
+Date:   Fri, 30 Oct 2020 00:11:13 +0100
+From:   Borislav Petkov <bp@alien8.de>
+To:     Shuah Khan <skhan@linuxfoundation.org>
 Cc:     X86 ML <x86@kernel.org>, Thomas Renninger <trenn@suse.com>,
         Shuah Khan <shuah@kernel.org>, Len Brown <lenb@kernel.org>,
-        linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Shuah Khan <skhan@linuxfoundation.org>
+        linux-pm@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/4] tools/power/cpupower: Read energy_perf_bias from
+ sysfs
+Message-ID: <20201029231113.GG31903@zn.tnic>
 References: <20201015144603.27933-1-bp@alien8.de>
  <20201015144603.27933-2-bp@alien8.de>
  <7806e3c0-f435-18a0-c50d-eee3f1f7fccf@linuxfoundation.org>
  <20201016083754.GB8483@zn.tnic>
  <ca53e90a-f4eb-5007-a137-62729e3d74f0@linuxfoundation.org>
  <20201029215929.GF31903@zn.tnic>
-From:   Shuah Khan <skhan@linuxfoundation.org>
-Message-ID: <e0d61fa5-03b9-1761-1578-f4fb5ce54d96@linuxfoundation.org>
-Date:   Thu, 29 Oct 2020 16:32:43 -0600
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <e0d61fa5-03b9-1761-1578-f4fb5ce54d96@linuxfoundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20201029215929.GF31903@zn.tnic>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <e0d61fa5-03b9-1761-1578-f4fb5ce54d96@linuxfoundation.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 10/29/20 3:59 PM, Borislav Petkov wrote:
-> On Thu, Oct 29, 2020 at 03:38:43PM -0600, Shuah Khan wrote:
->> All of the other ones should be changed as such. Why add more?
+On Thu, Oct 29, 2020 at 04:32:43PM -0600, Shuah Khan wrote:
+> if (numwritten < 1) {
+> +        perror("write failed");
 > 
-> Because a patch should do one thing and one thing only. So a separate
-> patch which converts them all in one go should come ontop. But if you
-> insist for the ones I'm adding to have error handling, I can do that, of
-> course.
-> 
+> Please add filename to the error message.
 
-A separate patch is fine.
+Yes, you said so already and will do that in the next version.
 
+-- 
+Regards/Gruss,
+    Boris.
 
-if (numwritten < 1) {
-+        perror("write failed");
-
-Please add filename to the error message.
-
-Thanks. Since this depends on other changes, it can go through
-tip once this error message change is made.
-
-thanks,
--- Shuah
+https://people.kernel.org/tglx/notes-about-netiquette
