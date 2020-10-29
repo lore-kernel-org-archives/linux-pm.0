@@ -2,93 +2,273 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.9 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B10CC2D0A3
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:24:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 04A0CC55178
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:25:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9F56120838
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:24:02 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=ti.com header.i=@ti.com header.b="mxX6HFhG"
+	by mail.kernel.org (Postfix) with ESMTP id 93E14207BC
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 11:25:50 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603970750;
+	bh=i2rTPf/XJd0H15T9VnL5GfPHEDr1UUaozfiv8n//lS8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=JANe8rDEBwHTO45YaBmAPuJSqG/8jZrhHjrx6f5uFlSqW2WgaNhKVQbBc7pTli68q
+	 mC1HaP6hF0UI7es/jhfH3WYkNky0NKYs0lJOsnfE/Boue67j9zAMXTJruNtlEVbou4
+	 am306SrqgFWUQifx40KG2dcISFf4cof0c7GiNIvA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726174AbgJ2LYB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 07:24:01 -0400
-Received: from fllv0015.ext.ti.com ([198.47.19.141]:56330 "EHLO
-        fllv0015.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725774AbgJ2LYB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 07:24:01 -0400
-Received: from lelv0266.itg.ti.com ([10.180.67.225])
-        by fllv0015.ext.ti.com (8.15.2/8.15.2) with ESMTP id 09SEDxLw118461;
-        Wed, 28 Oct 2020 09:13:59 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ti.com;
-        s=ti-com-17Q1; t=1603894439;
-        bh=CGbk+TqltaWljJdz+345eX5OA+IoIF5ZNzvJtBc9gHY=;
-        h=From:To:CC:Subject:Date;
-        b=mxX6HFhGoBHnyILxu+I+zbgNowxtBCvhK6Tg1yU88Yju6IwiAbUydjh79W/abAB21
-         a5j2uO3l4Tk/nNJMTbYUu9OxPld/Y1MggYb1vh929i/7l6yszI86l60In/89P+8Q/y
-         gO7LR+kPDqoGj88CVS/olva6i6lLdXPJT/NI288w=
-Received: from DFLE103.ent.ti.com (dfle103.ent.ti.com [10.64.6.24])
-        by lelv0266.itg.ti.com (8.15.2/8.15.2) with ESMTPS id 09SEDxOT080689
-        (version=TLSv1.2 cipher=AES256-GCM-SHA384 bits=256 verify=FAIL);
-        Wed, 28 Oct 2020 09:13:59 -0500
-Received: from DFLE115.ent.ti.com (10.64.6.36) by DFLE103.ent.ti.com
- (10.64.6.24) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3; Wed, 28
- Oct 2020 09:13:59 -0500
-Received: from fllv0040.itg.ti.com (10.64.41.20) by DFLE115.ent.ti.com
- (10.64.6.36) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256_P256) id 15.1.1979.3 via
- Frontend Transport; Wed, 28 Oct 2020 09:13:59 -0500
-Received: from sokoban.bb.dnainternet.fi (ileax41-snat.itg.ti.com [10.172.224.153])
-        by fllv0040.itg.ti.com (8.15.2/8.15.2) with ESMTP id 09SEDvZK029136;
-        Wed, 28 Oct 2020 09:13:58 -0500
-From:   Tero Kristo <t-kristo@ti.com>
-To:     <vireshk@kernel.org>, <nm@ti.com>, <sboyd@kernel.org>,
-        <linux-pm@vger.kernel.org>
-CC:     <linux-kernel@vger.kernel.org>
-Subject: [PATCH] opp: fix bad error check logic in the opp helper register
-Date:   Wed, 28 Oct 2020 16:13:57 +0200
-Message-ID: <20201028141357.10345-1-t-kristo@ti.com>
-X-Mailer: git-send-email 2.17.1
+        id S1725805AbgJ2LZu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 07:25:50 -0400
+Received: from mail-oi1-f179.google.com ([209.85.167.179]:42719 "EHLO
+        mail-oi1-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725774AbgJ2LZt (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 07:25:49 -0400
+Received: by mail-oi1-f179.google.com with SMTP id c72so2802492oig.9;
+        Thu, 29 Oct 2020 04:25:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=QchY1rQBO8CSFd113tzUKvOK8asotum72xA9lUDpzIc=;
+        b=gNiWdrMZrCfKPlbBzNxTLTeu4oLjUy288fTNywiUgx2OzsjOHBRGYyPItpfOvnMkAv
+         kNbZw4GBEv2jfBwUNlKVoeN+75qv6Pyd+WRL1qXo1HMYiHgOcxIylSsF/zuorxzuFnXp
+         uJb9RqwSMhZ0IjYwlPzk85v4nULcDnY/xy2cRcfC35PZtGExhYZ5TrZoodIvken9KRiw
+         /AUa0Qo8RtSC3Le579QzI7zQ4LLoGOThx2msgOe1IuPn33YbcKW9vpZJr0QbisVid+pS
+         r8esAIcBJufnp3lRGgBo4fRr1CPTZ9x4kPKfq6Mo9qeoMf6yZ+84uXqghIfT1rbUZXAq
+         T7Bg==
+X-Gm-Message-State: AOAM532qnV+8YrXSZA3m7TYMHU5Q9N13+uL8B5VWe0dyXV+FriXfEo0l
+        xUSZHxZjgO2R5dC90nwB3FHZUK8VwRIAtKkct0Q=
+X-Google-Smtp-Source: ABdhPJx9CE4uF1ccjyYAqyCw3qpTvRqSxQHalV2jVP/wHFIrcYNGtma055Xz40efk5OWLEfk3yCow3a8TC21dbC/jA8=
+X-Received: by 2002:aca:4c86:: with SMTP id z128mr2634681oia.71.1603970748463;
+ Thu, 29 Oct 2020 04:25:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain
-X-EXCLAIMER-MD-CONFIG: e1e8a2fd-e40a-4ac6-ac9b-f7e9cc9ee180
+References: <markpearson@lenovo.com> <20201027164219.868839-1-markpearson@lenovo.com>
+ <5ca1ae238b23a611b8a490c244fd93cdcc36ef79.camel@hadess.net>
+In-Reply-To: <5ca1ae238b23a611b8a490c244fd93cdcc36ef79.camel@hadess.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 29 Oct 2020 12:25:37 +0100
+Message-ID: <CAJZ5v0hUzsCS0dZbT4RRQ31DgTiuCOmyCcJMji_DbU19ghaOdA@mail.gmail.com>
+Subject: Re: [PATCH] Documentation: Add documentation for new platform_profile
+ sysfs attribute
+To:     Bastien Nocera <hadess@hadess.net>,
+        Mark Pearson <markpearson@lenovo.com>
+Cc:     Darren Hart <dvhart@infradead.org>,
+        Mark Gross <mgross@linux.intel.com>,
+        Mario Limonciello <mario.limonciello@dell.com>,
+        Elia Devito <eliadevito@gmail.com>,
+        Benjamin Berg <bberg@redhat.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Platform Driver <platform-driver-x86@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Hans de Goede <hdegoede@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The error check is incorrectly negated causing the helper to never
-register anything. This causes platforms that depend on this
-functionality to fail always with any cpufreq transition, and at least
-TI DRA7 based platforms fail to boot completely due to warning message
-flood from _generic_set_opp_regulator complaining about multiple
-regulators not being supported.
+On Thu, Oct 29, 2020 at 2:53 AM Bastien Nocera <hadess@hadess.net> wrote:
+>
+> Hey Hans, Mark,
+>
+> On Tue, 2020-10-27 at 12:42 -0400, Mark Pearson wrote:
+> > From: Hans de Goede <hdegoede@redhat.com>
+> >
+> > On modern systems the platform performance, temperature, fan and
+> > other
+> > hardware related characteristics are often dynamically configurable.
+> > The
+> > profile is often automatically adjusted to the load by somei
+> > automatic-mechanism (which may very well live outside the kernel).
+> >
+> > These auto platform-adjustment mechanisms often can be configured
+> > with
+> > one of several 'platform-profiles', with either a bias towards low-
+> > power
 
-Fixes: dd461cd9183f ("opp: Allow dev_pm_opp_get_opp_table() to return -EPROBE_DEFER")
-Signed-off-by: Tero Kristo <t-kristo@ti.com>
----
- drivers/opp/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Strictly speaking, power is a rate, so it cannot be consumed.
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index 2483e765318a..4ac4e7ce6b8b 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1930,7 +1930,7 @@ struct opp_table *dev_pm_opp_register_set_opp_helper(struct device *dev,
- 		return ERR_PTR(-EINVAL);
- 
- 	opp_table = dev_pm_opp_get_opp_table(dev);
--	if (!IS_ERR(opp_table))
-+	if (IS_ERR(opp_table))
- 		return opp_table;
- 
- 	/* This should be called before OPPs are initialized */
--- 
-2.17.1
+So I would say "low-power operation" here.
 
---
-Texas Instruments Finland Oy, Porkkalankatu 22, 00180 Helsinki. Y-tunnus/Business ID: 0615521-4. Kotipaikka/Domicile: Helsinki
+> Can you please make sure to quote 'platform-profile' and 'profile-name'
+> this way all through the document? They're not existing words, and
+> quoting them shows that they're attribute names, rather than English.
+>
+> > consumption or towards performance (and higher power consumption and
+
+And analogously here.
+
+> > thermals).
+>
+> s/thermal/temperature/
+
+Right.
+
+> "A thermal" is something else (it's seasonal underwear for me ;)
+>
+> > Introduce a new platform_profile sysfs API which offers a generic API
+> > for
+> > selecting the performance-profile of these automatic-mechanisms.
+> >
+> > Co-developed-by: Mark Pearson <markpearson@lenovo.com>
+> > Signed-off-by: Mark Pearson <markpearson@lenovo.com>
+> > Signed-off-by: Hans de Goede <hdegoede@redhat.com>
+> > ---
+> > Changes in V1:
+> >  - Moved from RFC to proposed patch
+> >  - Added cool profile as requested
+> >  - removed extra-profiles as no longer relevant
+> >
+> >  .../ABI/testing/sysfs-platform_profile        | 66
+> > +++++++++++++++++++
+> >  1 file changed, 66 insertions(+)
+> >  create mode 100644 Documentation/ABI/testing/sysfs-platform_profile
+> >
+> > diff --git a/Documentation/ABI/testing/sysfs-platform_profile
+> > b/Documentation/ABI/testing/sysfs-platform_profile
+> > new file mode 100644
+> > index 000000000000..240bd3d7532b
+> > --- /dev/null
+> > +++ b/Documentation/ABI/testing/sysfs-platform_profile
+> > @@ -0,0 +1,66 @@
+> > +Platform-profile selection (e.g.
+> > /sys/firmware/acpi/platform_profile)
+> > +
+> > +On modern systems the platform performance, temperature, fan and
+> > other
+> > +hardware related characteristics are often dynamically configurable.
+> > The
+> > +profile is often automatically adjusted to the load by some
+> > +automatic-mechanism (which may very well live outside the kernel).
+> > +
+> > +These auto platform-adjustment mechanisms often can be configured
+> > with
+> > +one of several 'platform-profiles', with either a bias towards low-
+> > power
+> > +consumption or towards performance (and higher power consumption and
+> > +thermals).
+> > +
+> > +The purpose of the platform_profile attribute is to offer a generic
+> > sysfs
+> > +API for selecting the platform-profile of these automatic-
+> > mechanisms.
+> > +
+> > +Note that this API is only for selecting the platform-profile, it is
+> > +NOT a goal of this API to allow monitoring the resulting performance
+> > +characteristics. Monitoring performance is best done with
+> > device/vendor
+> > +specific tools such as e.g. turbostat.
+> > +
+> > +Specifically when selecting a high-performance profile the actual
+> > achieved
+> > +performance may be limited by various factors such as: the heat
+> > generated
+> > +by other components, room temperature, free air flow at the bottom
+> > of a
+> > +laptop, etc. It is explicitly NOT a goal of this API to let
+> > userspace know
+> > +about any sub-optimal conditions which are impeding reaching the
+> > requested
+> > +performance level.
+> > +
+> > +Since numbers are a rather meaningless way to describe platform-
+> > profiles
+>
+> It's not meaningless, but rather ambiguous. For a range of 1 to 5, is 1
+> high performance, and 5 low power, or vice-versa?
+
+It just is not useful. :-)
+
+> > +this API uses strings to describe the various profiles. To make sure
+> > that
+> > +userspace gets a consistent experience when using this API this API
+>
+> you can remove "when using this API".
+>
+> > +document defines a fixed set of profile-names. Drivers *must* map
+> > their
+> > +internal profile representation/names onto this fixed set.
+> > +
+> > +If for some reason there is no good match when mapping then a new
+> > profile-name
+> > +may be added.
+>
+> "for some reason" can be removed.
+
+Right.
+
+> >  Drivers which wish to introduce new profile-names must:
+> > +1. Have very good reasons to do so.
+>
+> "1. Explain why the existing 'profile-names' cannot be used"
+>
+> > +2. Add the new profile-name to this document, so that future drivers
+> > which also
+> > +   have a similar problem can use the same name.
+>
+> "2. Add the new 'profile-name' to the documentation so that other
+> drivers can use it, as well as user-space knowing clearly what
+> behaviour the 'profile-name' corresponds to"
+>
+> > +
+> > +What:          /sys/firmware/acpi/platform_profile_choices
+> > +Date:          October 2020
+> > +Contact:       Hans de Goede <hdegoede@redhat.com>
+> > +Description:
+> > +               Reading this file gives a space separated list of
+> > profiles
+> > +               supported for this device.
+>
+> "This file contains a space-separated list of profiles..."
+>
+> > +
+> > +               Drivers must use the following standard profile-
+> > names:
+> > +
+> > +               low-power:              Emphasises low power
+> > consumption
+
+Let's be precise, so "low-power operation", please (see above for the reason).
+
+> > +               cool:                   Emphasises cooler operation
+> > +               quiet:                  Emphasises quieter operation
+> > +               balanced:               Balance between low power
+> > consumption
+
+And same here and analogously everywhere.
+
+> > +                                       and performance
+> > +               performance:            Emphasises performance (and
+> > may lead to
+> > +                                       higher temperatures and fan
+> > speeds)
+>
+> I'd replace "Emphasises" with either "Focus on" or the US English
+> spelling of "Emphasizes".
+>
+> > +               Userspace may expect drivers to offer at least
+> > several of these
+> > +               standard profile-names.
+>
+> Replce "at least several" with "more than one".
+>
+> > +
+> > +What:          /sys/firmware/acpi/platform_profile
+> > +Date:          October 2020
+> > +Contact:       Hans de Goede <hdegoede@redhat.com>
+> > +Description:
+> > +               Reading this file gives the current selected profile
+> > for this
+> > +               device. Writing this file with one of the strings
+> > from
+> > +               available_profiles changes the profile to the new
+> > value.
+>
+> Is there another file which explains whether those sysfs value will
+> contain a trailing linefeed?
+>
+> Cheers
+>
