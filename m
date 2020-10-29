@@ -2,105 +2,174 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DEE74C2D0A3
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:56:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 970A4C55178
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:12:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8AACC20EDD
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:56:24 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="DueEfr9a"
+	by mail.kernel.org (Postfix) with ESMTP id 43C1520796
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:12:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1603959172;
+	bh=qbXUodulHRIhZjPrnRC7qfAlGRyh2vibUSxi3f3gDIk=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=pwAlAp7cF8yen9fR+J5U1EkGyfqgnbSCpiNpTNd7tUTiNCUgLQ/k85EuICz+Xdz1B
+	 XqWJ026ovJ8nqSc192SvpPBxKCKSgFUp9SW871Bq5IfzGsZwcg2OGU/dBlfYHwULsp
+	 bSJj9FrXD1eoi/V04w9PkJqHTQm+3PC5mBCXJoC4=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732317AbgJ2H4Y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 03:56:24 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60142 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731046AbgJ2HyA (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 03:54:00 -0400
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 85495C0613D5
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 00:53:59 -0700 (PDT)
-Received: by mail-pl1-x641.google.com with SMTP id j5so911624plk.7
-        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 00:53:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=E4sw3w4XrFVZNMUzdJHDOom34bhUJxhQlbaLUHYjXdc=;
-        b=DueEfr9al3mveAf2AlVsQ0gR2DKDGYDGjJTa0Vii6mWcNYhaeuLtqbkKodyHlYjQBC
-         3BkwpMOYAF1qGKSWmfmH5C9hNOyQB37RutYwOag1LIV02vP1Fnc4pOroCN4BlxMAiW1u
-         uePwv1krkhgMji5LJ5wadtnxysvC7OEana+RnLwkSYJvtYXRwdtktRzph/UO6mPREpSg
-         nJT1Eh5iW9m7MjTz7w8MUz9hPdlcQo72rGEQLbOCyQLy6qGy93f6nw3Nn63xq+0+EJEg
-         0H5Z3k3xakc8lSEy1IH1CH0WYfPWlJ4s51zs0iRC6tXg80TDdalS9EwzNFbFLAbsQEnw
-         aneg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=E4sw3w4XrFVZNMUzdJHDOom34bhUJxhQlbaLUHYjXdc=;
-        b=fK9Dzx9Jv5TQ+KiD8LKlXqm2Q3IQ/W5ehNe5hg/FgHXJcEdjPPKzAlgj+6F01l04An
-         v97QDdFFZHr7gqDVZDG9cPj23rWXGnoQF4yvczUFIWR3GRbhb1zmWuH+TBj13A2RCdPV
-         MR17cCknf7NVeeZ22321iQ+xz0/rplIMixwNYGYhU4jNnLyW4xJxmwRvDLsTjV6KuKEZ
-         tPGduqDuvmWonfVmP+UOUTFku5VZfycao0dV+sRsyPEjDRYbFk3vuk7ZF5TbzLMXTf7+
-         5Dc2FlJkXSyv6qIhYRvHdlNcqzZ9uhQVbs9i0r6stjI37ZWNNVF3346wsKmBqFa1nIA6
-         fUlg==
-X-Gm-Message-State: AOAM531mutXu8FWBUpax+W+X4Gp1Ay+GAhpVdqAbkkWCbAydXxMzmZD1
-        W3U45eb3Smqekep0MBQm15WrCY+MXyiIzQ==
-X-Google-Smtp-Source: ABdhPJxF27cGr7hvK/3UclnQsFJtoKHen+ck4vMPY0s5Ag+bdkxLWyKYRfRldLFwf1iay6yosmyI3g==
-X-Received: by 2002:a17:902:8215:b029:d5:f299:8b11 with SMTP id x21-20020a1709028215b02900d5f2998b11mr2876637pln.39.1603958039058;
-        Thu, 29 Oct 2020 00:53:59 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id t129sm1995388pfc.140.2020.10.29.00.53.57
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 29 Oct 2020 00:53:58 -0700 (PDT)
-Date:   Thu, 29 Oct 2020 13:23:56 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Lukasz Luba <lukasz.luba@arm.com>, vincent.guittot@linaro.org
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        vireshk@kernel.org, robh+dt@kernel.org, sboyd@kernel.org,
-        nm@ti.com, rafael@kernel.org, sudeep.holla@arm.com,
-        daniel.lezcano@linaro.org, Dietmar.Eggemann@arm.com
-Subject: Re: [PATCH 0/4] Add sustainable OPP concept
-Message-ID: <20201029075356.rruej6jlerhfa4oy@vireshk-i7>
-References: <20201028140847.1018-1-lukasz.luba@arm.com>
- <20201029074057.6ugmwyzna52x3oli@vireshk-i7>
+        id S1727021AbgJ2IMs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 04:12:48 -0400
+Received: from mail.kernel.org ([198.145.29.99]:36402 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727124AbgJ2IMo (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 29 Oct 2020 04:12:44 -0400
+Received: from kernel.org (unknown [87.70.96.83])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 0A03F2071A;
+        Thu, 29 Oct 2020 08:12:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1603959160;
+        bh=qbXUodulHRIhZjPrnRC7qfAlGRyh2vibUSxi3f3gDIk=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=g8myBvX3F7QMVEVZGRZCadikKouzosKdPwphfxNmTb0706ye5JKArlIlOSA0g+35M
+         6me55rfbMzVSIAa7goduVgsYpdWGNMWM5KuAGqTSniJqm2wv1rTdQ/V1NrKahAMSCR
+         IVJzOibzZsEV1oFExIFzDScBAXY1r5SLqohLdy6s=
+Date:   Thu, 29 Oct 2020 10:12:25 +0200
+From:   Mike Rapoport <rppt@kernel.org>
+To:     "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>
+Cc:     "will@kernel.org" <will@kernel.org>,
+        "david@redhat.com" <david@redhat.com>,
+        "cl@linux.com" <cl@linux.com>,
+        "gor@linux.ibm.com" <gor@linux.ibm.com>,
+        "hpa@zytor.com" <hpa@zytor.com>,
+        "peterz@infradead.org" <peterz@infradead.org>,
+        "catalin.marinas@arm.com" <catalin.marinas@arm.com>,
+        "dave.hansen@linux.intel.com" <dave.hansen@linux.intel.com>,
+        "borntraeger@de.ibm.com" <borntraeger@de.ibm.com>,
+        "penberg@kernel.org" <penberg@kernel.org>,
+        "linux-mm@kvack.org" <linux-mm@kvack.org>,
+        "iamjoonsoo.kim@lge.com" <iamjoonsoo.kim@lge.com>,
+        "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>,
+        "kirill@shutemov.name" <kirill@shutemov.name>,
+        "rientjes@google.com" <rientjes@google.com>,
+        "rppt@linux.ibm.com" <rppt@linux.ibm.com>,
+        "paulus@samba.org" <paulus@samba.org>,
+        "hca@linux.ibm.com" <hca@linux.ibm.com>,
+        "bp@alien8.de" <bp@alien8.de>, "pavel@ucw.cz" <pavel@ucw.cz>,
+        "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+        "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+        "luto@kernel.org" <luto@kernel.org>,
+        "davem@davemloft.net" <davem@davemloft.net>,
+        "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
+        "tglx@linutronix.de" <tglx@linutronix.de>,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        "linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>,
+        "x86@kernel.org" <x86@kernel.org>,
+        "rjw@rjwysocki.net" <rjw@rjwysocki.net>,
+        "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+        "benh@kernel.crashing.org" <benh@kernel.crashing.org>,
+        "linux-arm-kernel@lists.infradead.org" 
+        <linux-arm-kernel@lists.infradead.org>,
+        "palmer@dabbelt.com" <palmer@dabbelt.com>,
+        "Brown, Len" <len.brown@intel.com>,
+        "mingo@redhat.com" <mingo@redhat.com>,
+        "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        "paul.walmsley@sifive.com" <paul.walmsley@sifive.com>
+Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
+ manipulation
+Message-ID: <20201029081225.GK1428094@kernel.org>
+References: <20201025101555.3057-1-rppt@kernel.org>
+ <ae82f905a0092adb7e0f0ac206335c1883b3170f.camel@intel.com>
+ <20201026090526.GA1154158@kernel.org>
+ <a0212b073b3b2f62c3dbf1bf398f03fa402997be.camel@intel.com>
+ <20201027083816.GG1154158@kernel.org>
+ <20201028112011.GB27927@willie-the-truck>
+ <20201028113059.GG1428094@kernel.org>
+ <9e77d0a939eda3029d6ae89bd14d7f1465b0559d.camel@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201029074057.6ugmwyzna52x3oli@vireshk-i7>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <9e77d0a939eda3029d6ae89bd14d7f1465b0559d.camel@intel.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 29-10-20, 13:10, Viresh Kumar wrote:
-> On 28-10-20, 14:08, Lukasz Luba wrote:
-> > Hi all,
+On Wed, Oct 28, 2020 at 09:03:31PM +0000, Edgecombe, Rick P wrote:
+
+> > On Wed, Oct 28, 2020 at 11:20:12AM +0000, Will Deacon wrote:
+> > > On Tue, Oct 27, 2020 at 10:38:16AM +0200, Mike Rapoport wrote:
+> > > > 					   	
+> > > > This is a theoretical bug, but it is still not nice :) 		
+> > > > 					
+> > > 
+> > > Just to clarify: this patch series fixes this problem, right?
 > > 
-> > This patch set introduces a concept of sustainable OPP, which then can be used
-> > by kernel frameworks or governors for estimating system sustainable system
-> > state. This kind of estimation is done e.g. in thermal governor Intelligent
-> > Power Allocation (IPA), which calculates sustainable power of the whole system
-> > and then derives some coefficients for internal algorithm.
-> > 
-> > The patch set introduces a new DT bindings 'opp-sustainable', with parsing
-> > code. It also adds a function (in patch 3/4) which allows device drivers to set
-> > directly the sustainable OPP. This is helpful when the device drivers populate
-> > the OPP table by themself (example in patch 4/4).
+> > Yes.
 > > 
 > 
-> Can we please have some more information about this ? What does the
-> sustainable OPP mean ? How will platform guys know or learn about this
-> ? How we are going to use it finally ? What does it have to do with
-> temperature of the SoC or the thermal affects, etc.
+> Well, now I'm confused again.
+> 
+> As David pointed, __vunmap() should not be executing simultaneously
+> with the hibernate operation because hibernate can't snapshot while
+> data it needs to save is still updating. If a thread was paused when a
+> page was in an "invalid" state, it should be remapped by hibernate
+> before the copy.
+> 
+> To level set, before reading this mail, my takeaways from the
+> discussions on potential hibernate/debug page alloc problems were:
+> 
+> Potential RISC-V issue:
+> Doesn't have hibernate support
+> 
+> Potential ARM issue:
+> The logic around when it's cpa determines pages might be unmapped looks
+> correct for current callers.
+> 
+> Potential x86 page break issue:
+> Seems to be ok for now, but a new set_memory_np() caller could violate
+> assumptions in hibernate.
+> 
+> Non-obvious thorny logic: 
+> General agreement it would be good to separate dependencies.
+> 
+> Behavior of V1 of this patchset:
+> No functional change other than addition of a warn in hibernate.
 
-And that we need a real user of this first if it is ever going to be
-merged.
+There is a change that adds explicit use of set_direct_map() to
+hibernate. Currently, in case of arm64 with DEBUG_PAGEALLOC=n if a
+thread was paused when a page was in an "invalid" state hibernate will
+access an unmapped data because __kernel_map_pages() will bail out.
+After the change set_direct_map_default_noflush() would be used and the
+page will get mapped before copy.
+
+> So "does this fix the problem", "yes" leaves me a bit confused... Not
+> saying there couldn't be any problems, especially due to the thorniness
+> and cross arch stride, but what is it exactly and how does this series
+> fix it?
+
+This series goal was primarily to separate dependincies and make it
+clearer what DEBUG_PAGEALLOC and what SET_DIRECT_MAP are. As it turned
+out, there is also some lack of consistency between architectures that
+implement either of this so I tried to improve this as well.
+
+Honestly, I don't know if a thread can be paused at the time __vunmap()
+left invalid pages, but it could, there is an issue on arm64 with
+DEBUG_PAGEALLOC=n and this set fixes it.
+
+__vunmap()
+    vm_remove_mappings()
+        set_direct_map_invalid()
+	/* thread is frozen */
+ 					safe_copy_page()	
+ 					    __kernel_map_pages()
+						if (!debug_pagealloc())
+ 					    	    return
+ 					    do_copy_page() -> fault
 
 -- 
-viresh
+Sincerely yours,
+Mike.
