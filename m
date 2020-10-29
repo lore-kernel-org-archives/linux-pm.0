@@ -2,164 +2,132 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D201DC55178
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 728AAC55178
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:16:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8AB5320825
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:14:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 020CE2076E
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 08:16:13 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.b="FzwQIOYu"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728152AbgJ2IOs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 04:14:48 -0400
-Received: from mga14.intel.com ([192.55.52.115]:15863 "EHLO mga14.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727214AbgJ2IOs (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Oct 2020 04:14:48 -0400
-IronPort-SDR: ZtWtvBIzo/AtA6LkFtqhqCBJ2LztGhfEZoIqRRQbRm3mIFxpLwayR0dUKd+L8qbaAxSrovO+YC
- u2+O/baseihQ==
-X-IronPort-AV: E=McAfee;i="6000,8403,9788"; a="167599621"
-X-IronPort-AV: E=Sophos;i="5.77,429,1596524400"; 
-   d="scan'208";a="167599621"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga007.fm.intel.com ([10.253.24.52])
-  by fmsmga103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 28 Oct 2020 22:10:50 -0700
-IronPort-SDR: SYBoUfZdu/ewHjqWPlPi92xJwDnFwZBCIciHjHJ828PqiulpsWnHNyeT6uuWW0//ExUQTEt6wF
- Ybumm3XPVNNg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,429,1596524400"; 
-   d="scan'208";a="304464084"
-Received: from lkp-server02.sh.intel.com (HELO 72b1a4bebef6) ([10.239.97.151])
-  by fmsmga007.fm.intel.com with ESMTP; 28 Oct 2020 22:10:49 -0700
-Received: from kbuild by 72b1a4bebef6 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1kY0D1-00005F-LG; Thu, 29 Oct 2020 05:10:47 +0000
-Date:   Thu, 29 Oct 2020 13:10:46 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- 38d3e7dd7c4204c5d26188fe6edded709cfde97c
-Message-ID: <5f9a4ed6.YWfw4vprz0r9j6gs%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1726144AbgJ2IQN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 04:16:13 -0400
+Received: from us-smtp-delivery-124.mimecast.com ([216.205.24.124]:42397 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728567AbgJ2IQJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 04:16:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1603959368;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=2gRwEwp+09CxPY3cDDGs5AqZnz2L4R+qK1xrKBZP/ZQ=;
+        b=FzwQIOYuQiYs8AOF0jSWfKko4kM786oPEch3YBrlcCg33I3RWV/PZlhcWMBvasAKZSkQo1
+        UuhP3NJLwgXzCgQEtlOh5mPQq4rCYOYgBbezoY3+SbQWYchutULQci4oL/QzuQ14pQ8ItF
+        9+GZvbOb12lYwWmjY/pkzovIBd1ffUE=
+Received: from mimecast-mx01.redhat.com (mimecast-mx01.redhat.com
+ [209.132.183.4]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-521-GwWoSv2-OMqDqihE-45P3g-1; Thu, 29 Oct 2020 04:16:02 -0400
+X-MC-Unique: GwWoSv2-OMqDqihE-45P3g-1
+Received: from smtp.corp.redhat.com (int-mx04.intmail.prod.int.phx2.redhat.com [10.5.11.14])
+        (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+        (No client certificate requested)
+        by mimecast-mx01.redhat.com (Postfix) with ESMTPS id 5ED20809DC9;
+        Thu, 29 Oct 2020 08:15:57 +0000 (UTC)
+Received: from [10.36.112.181] (ovpn-112-181.ams2.redhat.com [10.36.112.181])
+        by smtp.corp.redhat.com (Postfix) with ESMTP id 3EBE05D9CC;
+        Thu, 29 Oct 2020 08:15:48 +0000 (UTC)
+Subject: Re: [PATCH 0/4] arch, mm: improve robustness of direct map
+ manipulation
+To:     Mike Rapoport <rppt@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc:     Albert Ou <aou@eecs.berkeley.edu>,
+        Andy Lutomirski <luto@kernel.org>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        Christoph Lameter <cl@linux.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Rientjes <rientjes@google.com>,
+        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+        "Kirill A. Shutemov" <kirill@shutemov.name>,
+        Len Brown <len.brown@intel.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Mike Rapoport <rppt@linux.ibm.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Will Deacon <will@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, linux-pm@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+        x86@kernel.org
+References: <20201025101555.3057-1-rppt@kernel.org>
+From:   David Hildenbrand <david@redhat.com>
+Organization: Red Hat GmbH
+Message-ID: <30075bb8-caed-c4de-c09e-e0f6fb964a8d@redhat.com>
+Date:   Thu, 29 Oct 2020 09:15:47 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.6.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20201025101555.3057-1-rppt@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-Scanned-By: MIMEDefang 2.79 on 10.5.11.14
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: 38d3e7dd7c4204c5d26188fe6edded709cfde97c  Merge branch 'pm-cpufreq' into bleeding-edge
+On 25.10.20 11:15, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> Hi,
+> 
+> During recent discussion about KVM protected memory, David raised a concern
+> about usage of __kernel_map_pages() outside of DEBUG_PAGEALLOC scope [1].
+> 
+> Indeed, for architectures that define CONFIG_ARCH_HAS_SET_DIRECT_MAP it is
+> possible that __kernel_map_pages() would fail, but since this function is
+> void, the failure will go unnoticed.
+> 
+> Moreover, there's lack of consistency of __kernel_map_pages() semantics
+> across architectures as some guard this function with
+> #ifdef DEBUG_PAGEALLOC, some refuse to update the direct map if page
+> allocation debugging is disabled at run time and some allow modifying the
+> direct map regardless of DEBUG_PAGEALLOC settings.
+> 
+> This set straightens this out by restoring dependency of
+> __kernel_map_pages() on DEBUG_PAGEALLOC and updating the call sites
+> accordingly.
+> 
 
-elapsed time: 725m
+So, I was primarily wondering if we really have to touch direct mappings 
+in hibernation code, or if we can avoid doing that. I was wondering if 
+we cannot simply do something like kmap() when trying to access a 
+!mapped page. Similar to reading old-os memory after kexec when in 
+kdump. Just a thought.
 
-configs tested: 91
-configs skipped: 2
+-- 
+Thanks,
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+David / dhildenb
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                    socrates_defconfig
-arm                         nhk8815_defconfig
-arm                         shannon_defconfig
-sh                            titan_defconfig
-sh                        sh7785lcr_defconfig
-mips                 decstation_r4k_defconfig
-arm                      jornada720_defconfig
-powerpc64                           defconfig
-mips                       capcella_defconfig
-arm                           tegra_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                    sam440ep_defconfig
-sh                          urquell_defconfig
-powerpc                      walnut_defconfig
-sh                          sdk7780_defconfig
-powerpc                     pseries_defconfig
-sh                              ul2_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a002-20201028
-i386                 randconfig-a005-20201028
-i386                 randconfig-a003-20201028
-i386                 randconfig-a001-20201028
-i386                 randconfig-a004-20201028
-i386                 randconfig-a006-20201028
-x86_64               randconfig-a011-20201028
-x86_64               randconfig-a013-20201028
-x86_64               randconfig-a016-20201028
-x86_64               randconfig-a015-20201028
-x86_64               randconfig-a012-20201028
-x86_64               randconfig-a014-20201028
-i386                 randconfig-a016-20201028
-i386                 randconfig-a014-20201028
-i386                 randconfig-a015-20201028
-i386                 randconfig-a013-20201028
-i386                 randconfig-a012-20201028
-i386                 randconfig-a011-20201028
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
-
-clang tested configs:
-x86_64               randconfig-a001-20201028
-x86_64               randconfig-a002-20201028
-x86_64               randconfig-a003-20201028
-x86_64               randconfig-a006-20201028
-x86_64               randconfig-a005-20201028
-x86_64               randconfig-a004-20201028
-
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
