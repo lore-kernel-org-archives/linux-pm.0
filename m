@@ -2,259 +2,274 @@ Return-Path: <SRS0=VPpk=EE=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52FE3C56201
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:23:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7E231C6379D
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:39:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ECA64214DB
-	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:23:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1603956186;
-	bh=ydKKLjnIGAQnlNnBFT/eI5WDiCpUdvgjw4RkqNPBoTs=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:List-ID:From;
-	b=wW+SBI0YFL7OFJThj6n2IoCTvQD/II7lniolQcYZCuHsnQoMSGJD4p9x6BHOU0B0f
-	 XBhj+ncnuvWwBKYere/ay2BhIkdMWcBHvYUEWcOgtHD1qycCvAUP1IBd+ZjK34WAIO
-	 I9A8YELI6fCtSP2jwq66waKO0APo2XDN0xzy1nvg=
+	by mail.kernel.org (Postfix) with ESMTP id 274F8214DB
+	for <linux-pm@archiver.kernel.org>; Thu, 29 Oct 2020 07:39:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="s82FEYC6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726591AbgJ2HWX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 29 Oct 2020 03:22:23 -0400
-Received: from mail.kernel.org ([198.145.29.99]:42034 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726151AbgJ2HV0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 29 Oct 2020 03:21:26 -0400
-Received: from coco.lan (ip5f5ad5de.dynamic.kabel-deutschland.de [95.90.213.222])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 1D568206A1;
-        Thu, 29 Oct 2020 07:21:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1603956079;
-        bh=ydKKLjnIGAQnlNnBFT/eI5WDiCpUdvgjw4RkqNPBoTs=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-        b=AXef/AhAlPh1hi9YsdIj4o1ixVYaGEAZM4H9T1mWHDD5hcqq9AHBGqQYLJm4zvkzm
-         vDRNtmfz4vMaZ1nCDFiLdWyz0Wl7IBqlNL9mj+lYOyRgbN8ZBRkoI4V/HMDyMBFkDS
-         A+Vrm0psmwUp0NppXp1qjXj8jB9uy8mTt+24KpoY=
-Date:   Thu, 29 Oct 2020 08:21:00 +0100
-From:   Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-To:     Richard Cochran <richardcochran@gmail.com>
-Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Mauro Carvalho Chehab <mchehab+samsung@kernel.org>,
-        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
-        "Jason A. Donenfeld" <Jason@zx2c4.com>,
-        Javier =?UTF-8?B?R29uesOhbGV6?= <javier@javigon.com>,
-        Jonathan Corbet <corbet@lwn.net>,
-        "Martin K. Petersen" <martin.petersen@oracle.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Alexandre Torgue <alexandre.torgue@st.com>,
-        Andrew Donnellan <ajd@linux.ibm.com>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Baolin Wang <baolin.wang7@gmail.com>,
-        Benson Leung <bleung@chromium.org>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Bruno Meneguele <bmeneg@redhat.com>,
-        Chunyan Zhang <zhang.lyra@gmail.com>,
-        Dan Murphy <dmurphy@ti.com>,
-        Dan Williams <dan.j.williams@intel.com>,
-        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
-        Fabrice Gasnier <fabrice.gasnier@st.com>,
-        Felipe Balbi <balbi@kernel.org>,
-        Frederic Barrat <fbarrat@linux.ibm.com>,
-        Guenter Roeck <groeck@chromium.org>,
-        Hanjun Guo <guohanjun@huawei.com>,
-        Heikki Krogerus <heikki.krogerus@linux.intel.com>,
-        Jens Axboe <axboe@kernel.dk>,
-        Johannes Thumshirn <johannes.thumshirn@wdc.com>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Juergen Gross <jgross@suse.com>,
-        Konstantin Khlebnikov <koct9i@gmail.com>,
-        Kranthi Kuntala <kranthi.kuntala@intel.com>,
-        Lakshmi Ramasubramanian <nramas@linux.microsoft.com>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Len Brown <lenb@kernel.org>,
-        Leonid Maksymchuk <leonmaxx@gmail.com>,
-        Ludovic Desroches <ludovic.desroches@microchip.com>,
-        Mario Limonciello <mario.limonciello@dell.com>,
-        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mika Westerberg <mika.westerberg@linux.intel.com>,
-        Mike Kravetz <mike.kravetz@oracle.com>,
-        Mimi Zohar <zohar@linux.ibm.com>,
-        Nayna Jain <nayna@linux.ibm.com>,
-        Nicolas Ferre <nicolas.ferre@microchip.com>,
-        Niklas Cassel <niklas.cassel@wdc.com>,
-        Oleh Kravchenko <oleg@kaa.org.ua>,
-        Orson Zhai <orsonzhai@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Peter Rosin <peda@axentia.se>, Petr Mladek <pmladek@suse.com>,
-        Philippe Bergheaud <felix@linux.ibm.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
-        Stefano Stabellini <sstabellini@kernel.org>,
-        Thinh Nguyen <Thinh.Nguyen@synopsys.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
-        Vishal Verma <vishal.l.verma@intel.com>,
-        linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-pm@vger.kernel.org,
-        linux-stm32@st-md-mailman.stormreply.com,
-        linux-usb@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        netdev@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH 20/33] docs: ABI: testing: make the files compatible
- with ReST output
-Message-ID: <20201029082100.4820072c@coco.lan>
-In-Reply-To: <20201028174427.GE9364@hoboy.vegasvil.org>
-References: <cover.1603893146.git.mchehab+huawei@kernel.org>
-        <4ebaaa0320101479e392ce2db4b62e24fdf15ef1.1603893146.git.mchehab+huawei@kernel.org>
-        <20201028174427.GE9364@hoboy.vegasvil.org>
-X-Mailer: Claws Mail 3.17.7 (GTK+ 2.24.32; x86_64-redhat-linux-gnu)
+        id S1727409AbgJ2HYt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 29 Oct 2020 03:24:49 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55396 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726943AbgJ2HYg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 29 Oct 2020 03:24:36 -0400
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88827C08EADC
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 00:19:56 -0700 (PDT)
+Received: by mail-pf1-x444.google.com with SMTP id x13so1588998pfa.9
+        for <linux-pm@vger.kernel.org>; Thu, 29 Oct 2020 00:19:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=pe6/VmVqlNcMj2jI2o/REuBVuS5E1KvQtckugKCVKUc=;
+        b=s82FEYC68+zzD8FSSWf6SEHKC5++Uiz5FUkYsgOP1E95IgEHJjAqkSLrRsn5VsYWld
+         Gk2AbAiPxSpwGvDgKEQ2OWnVB2bn+DTc5srU4Qer2kLVTBfp7toNTYXlGtAxsJvndnUI
+         uDpXK77zwrRBrcI9TRqA+d9wrrk82GSFf8rRAyWwdl/mU2JkY/HkpHDG5ClHt4gy8Lv0
+         tuu3nl7gf3ISssA5zCCkaCLEHl8yEcyKXTCCu9ekE3dIDLT+op2WtjXI+bSEeAS93PLw
+         NHTvhkpDLqW1P7i7d5+HpjrTeC3ud0fbEhotPDTVpVPuCkHkkmTj3azkH11fl6e91Euw
+         pcww==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=pe6/VmVqlNcMj2jI2o/REuBVuS5E1KvQtckugKCVKUc=;
+        b=QUgJD9r3XK3jl+B/cyoPrVwKCmimBklwJBkO+vNM95qw7itkT7znrl18FZd4esyTIp
+         qjx/BaLVdJWfpUDYp+K/nBX2f+UY5PS17BGjhKlTmfjmOMs2ypen26NFXZgGZuK7TEoo
+         CO4lyxerhfzBsWLMOUBFao+R5x4lbLEFzxJFbdQhrt896zzIVlOTGtWNfhbT+tqkfnFW
+         V2fv9Ya3/ITXKNtxNna2x1iNDZbSjRrFpLYOR3R9nla58ZmMONdic0u2q9vgb0+/JX8N
+         8rAejqI7602Y878JNSsSRraQO1agVck8e3QF2KIpxLCkJ0mHgLMqWdl7bTDL55lsTRtd
+         BD7A==
+X-Gm-Message-State: AOAM530xBYQk9FNE/tSFMddCu5uvOAADszR9wYu1Dfay17BswNx8i5kQ
+        4pAM5MfBOfKUJdzNalraBhAbdQ==
+X-Google-Smtp-Source: ABdhPJwqtqs9MmS/4Ufv/n9LpA9a2MnzNHgzU00OWZDwe/lod9Y7IUdHYUJYG/Qh4BIae7EpZ1xw7g==
+X-Received: by 2002:a17:90a:1102:: with SMTP id d2mr3130959pja.178.1603955995907;
+        Thu, 29 Oct 2020 00:19:55 -0700 (PDT)
+Received: from localhost ([122.181.54.133])
+        by smtp.gmail.com with ESMTPSA id ms10sm1741402pjb.46.2020.10.29.00.19.54
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 29 Oct 2020 00:19:54 -0700 (PDT)
+Date:   Thu, 29 Oct 2020 12:49:52 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     zhuguangqing83 <zhuguangqing83@gmail.com>
+Cc:     rjw@rjwysocki.net, mingo@redhat.com, peterz@infradead.org,
+        juri.lelli@redhat.com, vincent.guittot@linaro.org,
+        dietmar.eggemann@arm.com, rostedt@goodmis.org, bsegall@google.com,
+        mgorman@suse.de, bristot@redhat.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org,
+        'zhuguangqing' <zhuguangqing@xiaomi.com>
+Subject: Re: [PATCH] cpufreq: schedutil: set sg_policy->next_freq to the
+ final cpufreq
+Message-ID: <20201029071952.7yh5ncnxqxf62pjw@vireshk-i7>
+References: <095901d6ad94$e48d5140$ada7f3c0$@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <095901d6ad94$e48d5140$ada7f3c0$@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Richard,
+Your mail client is screwing the "In-reply-to" field of the message
+and that prevents it to appear properly in the thread in mailboxes of
+other people, please fix that.
 
-Em Wed, 28 Oct 2020 10:44:27 -0700
-Richard Cochran <richardcochran@gmail.com> escreveu:
-
-> On Wed, Oct 28, 2020 at 03:23:18PM +0100, Mauro Carvalho Chehab wrote:
+On 29-10-20, 09:43, zhuguangqing83 wrote:
+> > diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> > index 0c5c61a095f6..bf7800e853d3 100644
+> > --- a/kernel/sched/cpufreq_schedutil.c
+> > +++ b/kernel/sched/cpufreq_schedutil.c
+> > @@ -105,7 +105,6 @@ static bool sugov_update_next_freq(struct sugov_policy *sg_policy, u64 time,
+> >         if (sg_policy->next_freq == next_freq)
+> >                 return false;
+> > 
+> > -       sg_policy->next_freq = next_freq;
+> >         sg_policy->last_freq_update_time = time;
+> > 
+> >         return true;
 > 
-> > diff --git a/Documentation/ABI/testing/sysfs-uevent b/Documentation/ABI/testing/sysfs-uevent
-> > index aa39f8d7bcdf..d0893dad3f38 100644
-> > --- a/Documentation/ABI/testing/sysfs-uevent
-> > +++ b/Documentation/ABI/testing/sysfs-uevent
-> > @@ -19,7 +19,8 @@ Description:
-> >                  a transaction identifier so it's possible to use the same UUID
-> >                  value for one or more synthetic uevents in which case we
-> >                  logically group these uevents together for any userspace
-> > -                listeners. The UUID value appears in uevent as
-> > +                listeners. The UUID value appears in uevent as:  
+> It's a little strange that sg_policy->next_freq and 
+> sg_policy->last_freq_update_time are not updated at the same time.
 > 
-> I know almost nothing about Sphinx, but why have one colon here ^^^ and ...
-
-Good point. After re-reading the text, this ":" doesn't belong here.
-
+> > @@ -115,7 +114,7 @@ static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
+> >                               unsigned int next_freq)
+> >  {
+> >         if (sugov_update_next_freq(sg_policy, time, next_freq))
+> > -               cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
+> > +               sg_policy->next_freq = cpufreq_driver_fast_switch(sg_policy->policy, next_freq);
+> >  }
+> > 
 > 
-> > +
-> >                  "SYNTH_UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" environment
-> >                  variable.
-> >  
-> > @@ -30,18 +31,19 @@ Description:
-> >                  It's possible to define zero or more pairs - each pair is then
-> >                  delimited by a space character ' '. Each pair appears in
-> >                  synthetic uevent as "SYNTH_ARG_KEY=VALUE". That means the KEY
-> > -                name gains "SYNTH_ARG_" prefix to avoid possible collisions
-> > +                name gains `SYNTH_ARG_` prefix to avoid possible collisions
-> >                  with existing variables.
-> >  
-> > -                Example of valid sequence written to the uevent file:
-> > +                Example of valid sequence written to the uevent file::  
-> 
-> ... two here?
+> Great, it also takes into account the issue that 0 is returned by the
+> driver's ->fast_switch() callback to indicate an error condition.
 
-The main issue that this patch wants to solve is here:
+Yes but even my change wasn't good enough, more on it later.
 
-                This generates synthetic uevent including these variables::
+> For policy->min/max may be not the real CPU frequency in OPPs, so
 
-                    ACTION=add
-                    SYNTH_ARG_A=1
-                    SYNTH_ARG_B=abc
-                    SYNTH_UUID=fe4d7c9d-b8c6-4a70-9ef1-3d8a58d18eed
+No, that can't happen. If userspace tries to set a value too large or
+too small, we clamp that too to policy->max/min and so the below
+problem shall never occur.
 
-On Sphinx, consecutive lines with the same indent belongs to the same
-paragraph. So, without "::", the above will be displayed on a single line,
-which is undesired.
+> next_freq got from get_next_freq() which is after clamping between
+> policy->min and policy->max may be not the real CPU frequency in OPPs.
+> In that case, if we use a real CPU frequency in OPPs returned from
+> cpufreq_driver_fast_switch() to compare with next_freq,
+> "if (sg_policy->next_freq == next_freq)" will never be satisfied, so we
+> change the CPU frequency every time schedutil callback gets called from
+> the scheduler. I see the current code in get_next_freq() as following,
+> the issue mentioned above should not happen. Maybe it's just one of my
+> unnecessary worries.
 
-using "::" tells Sphinx to display as-is. It will also place it into a a 
-box (colored for html output) and using a monospaced font.
+Coming back to my patch (and yours too), it only fixes the fast-switch
+case and not the slow path which can also end up clamping the
+frequency. And to be honest, even the drivers can have their own
+clamping code in place, no one is stopping them too.
 
-The change at the "uevent file:" line was done just for coherency
-purposes.
+And we also need to do something about the cached_raw_freq as well, as
+it will not be in sync with next_freq anymore.
 
-Yet, after re-reading the text, there are other things that are not
-coherent. So, I guess the enclosed patch will work better for sys-uevent.
+Here is another attempt from me tackling this problem. The idea is to
+check if the previous freq update went as expected or not. And if not,
+we can't rely on next_freq or cached_raw_freq anymore. For this to
+work properly, we need to make sure policy->cur isn't getting updated
+at the same time when get_next_freq() is running. For that I have
+given a different meaning to work_in_progress flag, which now creates
+a lockless (kind of) critical section where we won't play with
+next_freq while the cpufreq core is updating the frequency.
 
-Thanks,
-Mauro
-
-docs: ABI: sysfs-uevent: make it compatible with ReST output
-
-- Replace " by ``, in order to use monospaced fonts;
-- mark literal blocks as such.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
-
-diff --git a/Documentation/ABI/testing/sysfs-uevent b/Documentation/ABI/testing/sysfs-uevent
-index aa39f8d7bcdf..0b6227706b35 100644
---- a/Documentation/ABI/testing/sysfs-uevent
-+++ b/Documentation/ABI/testing/sysfs-uevent
-@@ -6,42 +6,46 @@ Description:
-                 Enable passing additional variables for synthetic uevents that
-                 are generated by writing /sys/.../uevent file.
+diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+index 0c5c61a095f6..8991cc31b011 100644
+--- a/kernel/sched/cpufreq_schedutil.c
++++ b/kernel/sched/cpufreq_schedutil.c
+@@ -121,13 +121,8 @@ static void sugov_fast_switch(struct sugov_policy *sg_policy, u64 time,
+ static void sugov_deferred_update(struct sugov_policy *sg_policy, u64 time,
+                                  unsigned int next_freq)
+ {
+-       if (!sugov_update_next_freq(sg_policy, time, next_freq))
+-               return;
+-
+-       if (!sg_policy->work_in_progress) {
+-               sg_policy->work_in_progress = true;
++       if (sugov_update_next_freq(sg_policy, time, next_freq))
+                irq_work_queue(&sg_policy->irq_work);
+-       }
+ }
  
--                Recognized extended format is ACTION [UUID [KEY=VALUE ...].
-+                Recognized extended format is::
+ /**
+@@ -159,6 +154,15 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+        unsigned int freq = arch_scale_freq_invariant() ?
+                                policy->cpuinfo.max_freq : policy->cur;
  
--                The ACTION is compulsory - it is the name of the uevent action
--                ("add", "change", "remove"). There is no change compared to
--                previous functionality here. The rest of the extended format
--                is optional.
-+			ACTION [UUID [KEY=VALUE ...]
++       /*
++        * The previous frequency update didn't go as we expected it to be. Lets
++        * start again to make sure we don't miss any updates.
++        */
++       if (unlikely(policy->cur != sg_policy->next_freq)) {
++               sg_policy->next_freq = 0;
++               sg_policy->cached_raw_freq = 0;
++       }
 +
-+                The ACTION is compulsory - it is the name of the uevent
-+                action (``add``, ``change``, ``remove``). There is no change
-+                compared to previous functionality here. The rest of the
-+                extended format is optional.
+        freq = map_util_freq(util, freq, max);
  
-                 You need to pass UUID first before any KEY=VALUE pairs.
--                The UUID must be in "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-+                The UUID must be in ``xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx``
-                 format where 'x' is a hex digit. The UUID is considered to be
-                 a transaction identifier so it's possible to use the same UUID
-                 value for one or more synthetic uevents in which case we
-                 logically group these uevents together for any userspace
-                 listeners. The UUID value appears in uevent as
--                "SYNTH_UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" environment
-+                ``SYNTH_UUID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`` environment
-                 variable.
+        if (freq == sg_policy->cached_raw_freq && !sg_policy->need_freq_update)
+@@ -337,8 +341,14 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
  
-                 If UUID is not passed in, the generated synthetic uevent gains
--                "SYNTH_UUID=0" environment variable automatically.
-+                ``SYNTH_UUID=0`` environment variable automatically.
+        ignore_dl_rate_limit(sg_cpu, sg_policy);
  
-                 The KEY=VALUE pairs can contain alphanumeric characters only.
++       if (!sg_policy->policy->fast_switch_enabled) {
++               raw_spin_lock(&sg_policy->update_lock);
++               if (sg_policy->work_in_progress)
++                       goto unlock;
++       }
 +
-                 It's possible to define zero or more pairs - each pair is then
-                 delimited by a space character ' '. Each pair appears in
--                synthetic uevent as "SYNTH_ARG_KEY=VALUE". That means the KEY
--                name gains "SYNTH_ARG_" prefix to avoid possible collisions
-+                synthetic uevent as ``SYNTH_ARG_KEY=VALUE``. That means the KEY
-+                name gains ``SYNTH_ARG_`` prefix to avoid possible collisions
-                 with existing variables.
+        if (!sugov_should_update_freq(sg_policy, time))
+-               return;
++               goto unlock;
  
--                Example of valid sequence written to the uevent file:
-+                Example of valid sequence written to the uevent file::
- 
-                     add fe4d7c9d-b8c6-4a70-9ef1-3d8a58d18eed A=1 B=abc
- 
--                This generates synthetic uevent including these variables:
-+                This generates synthetic uevent including these variables::
- 
-                     ACTION=add
-                     SYNTH_ARG_A=1
-                     SYNTH_ARG_B=abc
-                     SYNTH_UUID=fe4d7c9d-b8c6-4a70-9ef1-3d8a58d18eed
+        /* Limits may have changed, don't skip frequency update */
+        busy = !sg_policy->need_freq_update && sugov_cpu_is_busy(sg_cpu);
+@@ -363,13 +373,14 @@ static void sugov_update_single(struct update_util_data *hook, u64 time,
+         * concurrently on two different CPUs for the same target and it is not
+         * necessary to acquire the lock in the fast switch case.
+         */
+-       if (sg_policy->policy->fast_switch_enabled) {
++       if (sg_policy->policy->fast_switch_enabled)
+                sugov_fast_switch(sg_policy, time, next_f);
+-       } else {
+-               raw_spin_lock(&sg_policy->update_lock);
++       else
+                sugov_deferred_update(sg_policy, time, next_f);
 +
- Users:
-                 udev, userspace tools generating synthetic uevents
++unlock:
++       if (!sg_policy->policy->fast_switch_enabled)
+                raw_spin_unlock(&sg_policy->update_lock);
+-       }
+ }
+ 
+ static unsigned int sugov_next_freq_shared(struct sugov_cpu *sg_cpu, u64 time)
+@@ -405,6 +416,9 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+ 
+        raw_spin_lock(&sg_policy->update_lock);
+ 
++       if (sg_policy->work_in_progress)
++               goto unlock;
++
+        sugov_iowait_boost(sg_cpu, time, flags);
+        sg_cpu->last_update = time;
+ 
+@@ -419,33 +433,30 @@ sugov_update_shared(struct update_util_data *hook, u64 time, unsigned int flags)
+                        sugov_deferred_update(sg_policy, time, next_f);
+        }
+ 
++unlock:
+        raw_spin_unlock(&sg_policy->update_lock);
+ }
+ 
+ static void sugov_work(struct kthread_work *work)
+ {
+        struct sugov_policy *sg_policy = container_of(work, struct sugov_policy, work);
+-       unsigned int freq;
+        unsigned long flags;
+ 
+        /*
+-        * Hold sg_policy->update_lock shortly to handle the case where:
+-        * incase sg_policy->next_freq is read here, and then updated by
+-        * sugov_deferred_update() just before work_in_progress is set to false
+-        * here, we may miss queueing the new update.
+-        *
+-        * Note: If a work was queued after the update_lock is released,
+-        * sugov_work() will just be called again by kthread_work code; and the
+-        * request will be proceed before the sugov thread sleeps.
++        * Prevent the schedutil hook to run in parallel while we are updating
++        * the frequency here and accessing next_freq.
+         */
+        raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
+-       freq = sg_policy->next_freq;
+-       sg_policy->work_in_progress = false;
++       sg_policy->work_in_progress = true;
+        raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+ 
+        mutex_lock(&sg_policy->work_lock);
+-       __cpufreq_driver_target(sg_policy->policy, freq, CPUFREQ_RELATION_L);
++       __cpufreq_driver_target(sg_policy->policy, sg_policy->next_freq, CPUFREQ_RELATION_L);
+        mutex_unlock(&sg_policy->work_lock);
++
++       raw_spin_lock_irqsave(&sg_policy->update_lock, flags);
++       sg_policy->work_in_progress = false;
++       raw_spin_unlock_irqrestore(&sg_policy->update_lock, flags);
+ }
+ 
+ static void sugov_irq_work(struct irq_work *irq_work)
+
+-- 
+viresh
