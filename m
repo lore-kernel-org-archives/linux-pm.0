@@ -2,133 +2,189 @@ Return-Path: <SRS0=aTLV=EF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A825C55179
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 544AFC63697
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:43:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B663C2151B
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:28:44 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604075324;
-	bh=rIOnIQjMALWiMW5KIXUE+2ERmys3otuvHxNeir74SP8=;
-	h=From:Date:Subject:To:Cc:List-ID:From;
-	b=YDagtcJpb2t9f3/Lz76F6/6w9+lKnKfS0xA38tY6057FP2QX4edxz1/gN+TI/bQIF
-	 PCB8hiEn4TYZBKoFasVkvV4KBfaZyTT1W2Pt7N3uX9x6giTAMZBqa0Ye7PgPr/wnNF
-	 71l0OeEeF0xcoTsS1CEXmIe/rB9vw5/5dqkVNnzw=
+	by mail.kernel.org (Postfix) with ESMTP id F2BA220727
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:43:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="INVfZz/f"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726072AbgJ3Q2o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Oct 2020 12:28:44 -0400
-Received: from mail-oi1-f194.google.com ([209.85.167.194]:44904 "EHLO
-        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725943AbgJ3Q2n (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 12:28:43 -0400
-Received: by mail-oi1-f194.google.com with SMTP id k27so7186991oij.11;
-        Fri, 30 Oct 2020 09:28:43 -0700 (PDT)
+        id S1727273AbgJ3QnK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Oct 2020 12:43:10 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55932 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727263AbgJ3QnH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 12:43:07 -0400
+Received: from mail-il1-x144.google.com (mail-il1-x144.google.com [IPv6:2607:f8b0:4864:20::144])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D5AF3C0613D9
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 09:43:05 -0700 (PDT)
+Received: by mail-il1-x144.google.com with SMTP id a20so7013988ilk.13
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 09:43:05 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=NZmqGfCg08N6iXx9q7TVWlSnhQqIDOwOjzOwbvXDxjI=;
+        b=INVfZz/fkvsZivy8jdRFY4jjuumPUnT03fIMmAZxhr2j3OQtTxmqWeMui9FFLMvZFz
+         QB2ePhBsJkuNysGjMHbU9DiLLxlLmss4JFzjBmUNAkJoiiGzYBFH/upOKm0AUQMizu+W
+         okAB9PgkVOM5lyq7RfM3eZWziu4Lw6xFmIPsA3WEdWrepzCLkMsPGFysW4PIdG4Ix46W
+         ABDHiqA089OjzR7YGXqWWnY73UPmGi5ssu5dObic6I8EipSHtDNSFTIEabkYZFtOUw53
+         gKZFvyCe8mIA4cQPQ5Ji/NguzzOPrnGBpJ5jXdtWnz2BLO+k8PETRjkg1JznRZelvTOY
+         uyUg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:from:date:message-id:subject:to:cc;
-        bh=N4XrkGP0kfHl+6C37uH3pC+4L7r56rDfCcTmxy0Tqe4=;
-        b=NSi8IEFeNftS6rA3ivbLaq1ck0bDnY9AjsC0/OBl4FQSOYDsn/CZgbsMkLTHC3d4Fw
-         A0R3xV1uZlZL9BSxzaEr0ruwR3YxPHjzFXQVKqtk0CdNwzM3P/6mzVz2WqBK40vUU2J0
-         WUA1wRgBYdfZ/mobS67DUBO2Qct5zkB/cPrd6fu+auy3FSGhmst1QwZjOTHf6kgcZ59i
-         ivOVAITQmMd7j9LtvN1fM5VyYcTxSdXtoQ5t+oTq/YVKC4HxGyVmurNASftJUAjBZSlk
-         YQED8lrdIYcF3KEasg1al08GJy4wW4QAlKTfO3uVqcBQOSAfanJCdZChnYkx9WeBSSi2
-         s/Mg==
-X-Gm-Message-State: AOAM531FyKJoebXyZzvNh/atC7Exg1lVeC5zJ9GkESxxTcDJVf/ECwYl
-        X0FWMARKF7JMHsUZis26gYnmYzEm+uTFtWT270ueHyVuPMc=
-X-Google-Smtp-Source: ABdhPJzWZ6yTjfPS5vwqqtSHtRnnbwbG5hJgNNxEv4FVatTJYAqTaWDcfM2oBIsSdR23WFtS9IljS74PvlS5EgWE0+E=
-X-Received: by 2002:aca:724a:: with SMTP id p71mr2159790oic.157.1604075322923;
- Fri, 30 Oct 2020 09:28:42 -0700 (PDT)
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=NZmqGfCg08N6iXx9q7TVWlSnhQqIDOwOjzOwbvXDxjI=;
+        b=amL5eJdNUE+d6OkU9scXZ/KHV463OUelMNrnMvebWFeWj+4QLUhUSyBT0/A1aHmJeq
+         lKngcc1929tKUbbbyQuGQXdA2ys+7CMi4paC3eIh7g7YHOxy1Vpz7JJJghKeoNQrgFPj
+         Zx3uhJbJYJOLB9q+2ZWzKuOumRpP81QIoY0bQZpHnMYuhtdmvSUemGpoY9IiuIglWpnL
+         vkmyekERpofgH+nPcEL2O1iwXkL6EP2p0NlCWPTadQuOFQAl8EYrWXtpDhBQowIP263G
+         Mpwa6d9ScSdM0KxSMEXUZ6fvlvlnGkaW/CaKAfWYNARU1M/Ovgg1rlh+Kqnt7lTAwqAR
+         6eTA==
+X-Gm-Message-State: AOAM531UQ6b749k257fExyAdJBObYB1XypDbT4UhHME2sVGtZODQuA3a
+        jnWM/RJbA/k6uIgA5/3f+E6zuGGhbXRJdfl+6IGiBA==
+X-Google-Smtp-Source: ABdhPJwYf7SWuKIRh8xsBOBodbVLmuU+KCM1QaVpZsez95JZOYKTbDYung3PLxm+lfmttII+vBXdnzsUUs8NHjrseg0=
+X-Received: by 2002:a92:6403:: with SMTP id y3mr2528711ilb.72.1604076184121;
+ Fri, 30 Oct 2020 09:43:04 -0700 (PDT)
 MIME-Version: 1.0
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 30 Oct 2020 17:28:32 +0100
-Message-ID: <CAJZ5v0jUdG-6MO8BWz0BsJTqFCbaad1Bk6MexFy8ugdgBFexLg@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for v5.10-rc2
-To:     Linus Torvalds <torvalds@linux-foundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <cover.1604042072.git.mchehab+huawei@kernel.org> <5bc78e5b68ed1e9e39135173857cb2e753be868f.1604042072.git.mchehab+huawei@kernel.org>
+In-Reply-To: <5bc78e5b68ed1e9e39135173857cb2e753be868f.1604042072.git.mchehab+huawei@kernel.org>
+From:   Mathieu Poirier <mathieu.poirier@linaro.org>
+Date:   Fri, 30 Oct 2020 10:42:53 -0600
+Message-ID: <CANLsYkxc2uzA57Hg5OX31JOx08JCZfynzebjABv=6H01796xGA@mail.gmail.com>
+Subject: Re: [PATCH v2 31/39] docs: ABI: cleanup several ABI documents
+To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>,
+        Jonathan Corbet <corbet@lwn.net>,
+        =?UTF-8?B?TWFyZWsgQmVow7pu?= <marek.behun@nic.cz>,
+        =?UTF-8?Q?Marek_Marczykowski=2DG=C3=B3recki?= 
+        <marmarek@invisiblethingslab.com>,
+        =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        =?UTF-8?Q?Roger_Pau_Monn=C3=A9?= <roger.pau@citrix.com>,
+        Alexander Antonov <alexander.antonov@linux.intel.com>,
+        Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+        Alexandre Torgue <alexandre.torgue@st.com>,
+        Andreas Klinger <ak@it-klinger.de>,
+        Andrew Donnellan <ajd@linux.ibm.com>,
+        Andrew Lunn <andrew@lunn.ch>,
+        Andy Shevchenko <andriy.shevchenko@intel.com>,
+        Anton Vorontsov <anton@enomsg.org>,
+        Asutosh Das <asutoshd@codeaurora.org>,
+        Bart Van Assche <bvanassche@acm.org>,
+        Bartosz Golaszewski <bgolaszewski@baylibre.com>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Bjorn Helgaas <bhelgaas@google.com>,
+        Boris Brezillon <bbrezillon@kernel.org>,
+        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
+        Cezary Rojewski <cezary.rojewski@intel.com>,
+        Chao Yu <chao@kernel.org>,
+        Christian Gromm <christian.gromm@microchip.com>,
+        Colin Cross <ccross@android.com>, Dan Murphy <dmurphy@ti.com>,
+        Dan Williams <dan.j.williams@intel.com>,
+        Daniel Thompson <daniel.thompson@linaro.org>,
+        Danil Kipnis <danil.kipnis@cloud.ionos.com>,
+        David Sterba <dsterba@suse.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Dongsheng Yang <dongsheng.yang@easystack.cn>,
+        Enric Balletbo i Serra <enric.balletbo@collabora.com>,
+        Florian Fainelli <f.fainelli@gmail.com>,
+        Frederic Barrat <fbarrat@linux.ibm.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Guenter Roeck <linux@roeck-us.net>,
+        Hanjun Guo <guohanjun@huawei.com>,
+        Hans Verkuil <hverkuil-cisco@xs4all.nl>,
+        Heiner Kallweit <hkallweit1@gmail.com>,
+        Ilya Dryomov <idryomov@gmail.com>,
+        Jack Wang <jinpu.wang@cloud.ionos.com>,
+        Jaegeuk Kim <jaegeuk@kernel.org>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Jason Gunthorpe <jgg@ziepe.ca>, Jens Axboe <axboe@kernel.dk>,
+        Jerry Snitselaar <jsnitsel@redhat.com>,
+        Jingoo Han <jingoohan1@gmail.com>,
+        Johan Hovold <johan@kernel.org>,
+        Jonas Meurer <jonas@freesources.org>,
+        Jonathan Cameron <jic23@kernel.org>,
+        Kajol Jain <kjain@linux.ibm.com>,
+        Kees Cook <keescook@chromium.org>,
+        Konstantin Khlebnikov <koct9i@gmail.com>,
+        Kranthi Kuntala <kranthi.kuntala@intel.com>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Lee Jones <lee.jones@linaro.org>, Len Brown <lenb@kernel.org>,
+        Linus Walleij <linus.walleij@linaro.org>,
+        Mario Limonciello <mario.limonciello@dell.com>,
+        Mark Gross <mgross@linux.intel.com>,
+        Maxime Coquelin <mcoquelin.stm32@gmail.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Michael Hennerich <Michael.Hennerich@analog.com>,
+        Mika Westerberg <mika.westerberg@linux.intel.com>,
+        Mike Leach <mike.leach@linaro.org>,
+        Oded Gabbay <oded.gabbay@gmail.com>,
+        Ohad Ben-Cohen <ohad@wizery.com>,
+        Oleh Kravchenko <oleg@kaa.org.ua>, Pavel Machek <pavel@ucw.cz>,
+        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
+        Peter Chen <peter.chen@nxp.com>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        PrasannaKumar Muralidharan <prasannatsmkumar@gmail.com>,
+        Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+        Roman Sudarikov <roman.sudarikov@linux.intel.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Samuel Thibault <samuel.thibault@ens-lyon.org>,
+        Saravana Kannan <saravanak@google.com>,
+        Sebastian Reichel <sre@kernel.org>,
+        Srinivas Kandagatla <srinivas.kandagatla@linaro.org>,
+        Stefan Achatz <erazor_de@users.sourceforge.net>,
+        Suzuki K Poulose <suzuki.poulose@arm.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Tom Rix <trix@redhat.com>, Tony Luck <tony.luck@intel.com>,
+        Vaibhav Jain <vaibhav@linux.ibm.com>,
+        Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
+        Wu Hao <hao.wu@intel.com>, ceph-devel@vger.kernel.org,
+        Coresight ML <coresight@lists.linaro.org>,
+        dri-devel@lists.freedesktop.org, linux-acpi@vger.kernel.org,
+        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+        linux-f2fs-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-i3c@lists.infradead.org,
+        linux-iio@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-remoteproc <linux-remoteproc@vger.kernel.org>,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+        Jonathan Cameron <Jonathan.Cameron@huawei.com>
 Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Linus,
+On Fri, 30 Oct 2020 at 01:41, Mauro Carvalho Chehab
+<mchehab+huawei@kernel.org> wrote:
+>
+> There are some ABI documents that, while they don't generate
+> any warnings, they have issues when parsed by get_abi.pl script
+> on its output result.
+>
+> Address them, in order to provide a clean output.
+>
+> Acked-by: Jonathan Cameron <Jonathan.Cameron@huawei.com> #for IIO
+> Reviewed-by: Tom Rix <trix@redhat.com> # for fpga-manager
+> Reviewed-By: Kajol Jain<kjain@linux.ibm.com> # for sysfs-bus-event_source-devices-hv_gpci and sysfs-bus-event_source-devices-hv_24x7
+> Acked-by: Oded Gabbay <oded.gabbay@gmail.com> # for Habanalabs
+> Acked-by: Vaibhav Jain <vaibhav@linux.ibm.com> # for sysfs-bus-papr-pmem
+> Signed-off-by: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+> ---
 
-Please pull from the tag
+>  .../testing/sysfs-bus-coresight-devices-etb10 |   5 +-
 
- git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-5.10-rc2
+For the CoreSight part:
 
-with top-most commit dea47cf45a7f9bb94684830c47d4b259d5f8d6af
-
- Merge branches 'pm-cpuidle' and 'pm-sleep'
-
-on top of commit 3650b228f83adda7e5ee532e2b90429c03f7b9ec
-
- Linux 5.10-rc1
-
-to receive power management fixes for 5.10-rc2.
-
-These fix a few issues related to running intel_pstate in the passive
-mode with HWP enabled, correct the handling of the max_cstate module
-parameter in intel_idle and make a few janitorial changes.
-
-Specifics:
-
- - Modify Kconfig to prevent configuring either the "conservative"
-   or the "ondemand" governor as the default cpufreq governor if
-   intel_pstate is selected, in which case "schedutil" is the
-   default choice for the default governor setting (Rafael Wysocki).
-
- - Modify the cpufreq core, intel_pstate and the schedutil governor
-   to avoid missing updates of the HWP max limit when intel_pstate
-   operates in the passive mode with HWP enabled (Rafael Wysocki).
-
- - Fix max_cstate module parameter handling in intel_idle for
-   processor models with C-state tables coming from ACPI (Chen Yu).
-
- - Clean up assorted pieces of power management code (Jackie Zamow,
-   Tom Rix, Zhang Qilong).
-
-Thanks!
-
-
----------------
-
-Chen Yu (1):
-      intel_idle: Fix max_cstate for processor models without C-state tables
-
-Jackie Zamow (1):
-      PM: sleep: fix typo in kernel/power/process.c
-
-Rafael J. Wysocki (5):
-      cpufreq: Avoid configuring old governors as default with intel_pstate
-      cpufreq: Introduce CPUFREQ_NEED_UPDATE_LIMITS driver flag
-      cpufreq: intel_pstate: Avoid missing HWP max updates in passive mode
-      cpufreq: Introduce cpufreq_driver_test_flags()
-      cpufreq: schedutil: Always call driver if
-CPUFREQ_NEED_UPDATE_LIMITS is set
-
-Tom Rix (1):
-      cpufreq: speedstep: remove unneeded semicolon
-
-Zhang Qilong (1):
-      cpufreq: e_powersaver: remove unreachable break
-
----------------
-
- drivers/cpufreq/Kconfig          |  2 ++
- drivers/cpufreq/cpufreq.c        | 15 ++++++++++++++-
- drivers/cpufreq/e_powersaver.c   |  1 -
- drivers/cpufreq/intel_pstate.c   | 13 ++++++-------
- drivers/cpufreq/longhaul.c       |  1 -
- drivers/cpufreq/speedstep-lib.c  |  2 +-
- drivers/idle/intel_idle.c        |  2 +-
- include/linux/cpufreq.h          | 11 ++++++++++-
- kernel/power/process.c           |  2 +-
- kernel/sched/cpufreq_schedutil.c |  6 ++++--
- 10 files changed, 39 insertions(+), 16 deletions(-)
+Reviewed-by: Mathieu Poirier <mathieu.poirier@linaro.org>
