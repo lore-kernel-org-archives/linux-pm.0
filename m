@@ -2,110 +2,118 @@ Return-Path: <SRS0=aTLV=EF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.6 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D9E3C00A89
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:46:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F583C00A89
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 17:12:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9B47C20727
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 16:46:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 41C3520791
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 17:12:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604076398;
-	bh=x3h1za4GlDp9JpJB/OhLNF3JbpPhEHysgPvAh+Sbiko=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
-	b=RQDeL6ENJIxWqicK+KarVC8TwmD2Rty6cbBo9S0DpFHVyDqa+fJh6Xs2KqCD129UU
-	 MLYjA33hA59r908h/55HGwdSaKLp3Z4rhqaye/2wzl2zGmIkz+9Pa5bwzYJsa0jE0B
-	 XJSzDZQY1I3mwuamJsNcgEDpukuDN6YvMOlvbeCw=
+	s=default; t=1604077973;
+	bh=sjfgvgsW7YiDlHy5H1c/FVOZ3eqmNley+6W/VlhyUDY=;
+	h=Subject:To:Cc:References:From:Date:In-Reply-To:List-ID:From;
+	b=t8xINLvHe/L+5UxKPOq2qph3H9iJu1QIh6lf4YaiN3GgEl4yYUy05HQJ1mUzrnTr/
+	 rn1AazgYEUldaOfUd2poe0urCEtumVwJS7E4UJGqFnQa/TQI2weRjS/o5efts4xcfm
+	 B8YaEYz0tP0t3cypvzxVkWa9Tv7TUVZVUMzyLszs=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726072AbgJ3Qqi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Oct 2020 12:46:38 -0400
-Received: from mail-ot1-f68.google.com ([209.85.210.68]:44171 "EHLO
-        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725943AbgJ3Qqh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 12:46:37 -0400
-Received: by mail-ot1-f68.google.com with SMTP id m26so6076010otk.11;
-        Fri, 30 Oct 2020 09:46:37 -0700 (PDT)
+        id S1725844AbgJ3RMw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Oct 2020 13:12:52 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:60566 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726272AbgJ3RMw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 13:12:52 -0400
+Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C8C4C0613D2
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 10:12:52 -0700 (PDT)
+Received: by mail-io1-xd41.google.com with SMTP id p7so8263483ioo.6
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 10:12:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linuxfoundation.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=FUbzL5XdQ1f8YYBKU5C0sP8LGZcBt1qJvGhftOqGF4E=;
+        b=aNbLbx6aajXxMw9iAkrV9bGley0HzSnyUh4Qz92ibH9zFMbBOmbUxysZ+za3eA6/D4
+         M37pzUQRVEb+i3WPAFry4wJ5J44lAb1M6S2Loajb2npO2n6ugKsni97Fc8wFh8eRn9n9
+         Ihw8IkvMQtK3fKBv3FMn700tiChrhL+MF94uU=
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=zdHn4Bghzba5wOelTeZ6mhUplKqje06p67vbKsYURC0=;
-        b=cFMBnFtwUKvmqXAdDDDbjD190ZucouS1+crWbSRnVgI3b/fHLOvFIW4kudTNuZ1TW+
-         zH4gB56F4bOiD3duQX0L08rd86k0PoOjL2JrJtYVtz+BYQPWbZsM33gEYUYqh70oKFn7
-         p7TkqXxq+9h/8B3w38mBNt64C7pf2++2t863VEkFa7RbEFV3w0jW4y38q/D4n5iYj9bv
-         lfH50ltOEzuactU0zTXgNuFR2Bi0KqA7hxo7b1ZdUib+UZajdFvz/CXD2wZImdaYSgYx
-         e0SMI+cmoHlg5Sgg1Ow+37TZDuwlTGdQ9rVqtya3uHBAk+P5PKq+wpvkqMzyfJMdAr/m
-         APtw==
-X-Gm-Message-State: AOAM532jN4UOomxjj8K/3WXDwcUWkFsJt+gwR0Iphposk5a0N9X1pJ8x
-        dHt7FIR/ftxTeE6sitK4vQbbEgCf0MAEAjGhFuFCXReXie4=
-X-Google-Smtp-Source: ABdhPJxQnyAvlfHtIgYhFfMOUC6BuhMQiwnFHpToclGQhxGMD4Ajfu4gnrgfD0oPO2jq5IWpmVzD470Ajv8wMlhEutc=
-X-Received: by 2002:a4a:e80b:: with SMTP id b11mr2575066oob.1.1604075920719;
- Fri, 30 Oct 2020 09:38:40 -0700 (PDT)
-MIME-Version: 1.0
-References: <6543936.FbWAdBN1tG@kreacher>
-In-Reply-To: <6543936.FbWAdBN1tG@kreacher>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 30 Oct 2020 17:38:29 +0100
-Message-ID: <CAJZ5v0hRMcsdGVOHCfeK4_k81L+PJSNq80kx1BpwDBs+WtgqpA@mail.gmail.com>
-Subject: Re: [PATCH 0/3] PM: runtime: Fixes related to device links management
-To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=FUbzL5XdQ1f8YYBKU5C0sP8LGZcBt1qJvGhftOqGF4E=;
+        b=MGwEAL5GHBJepbl1+esgfVEu56rUsUjWl+CO6WHfYDV/QMeIACVVY5C6l/ZGSFk2CM
+         +92F/aYOnXnA/MjPTyh+1ksbtRAShIgC1uJSRvzql2ax1lNM+tOUBIAFAvraxOmEmwWE
+         JlvEhlXvwbtHu5SeOo0lXskz1IJ2/FDg0oxtgPkcxKxXnBRQVMklIFWqVJcakYMJZ+im
+         QbHchIxBgvwExMm04TTN7i7GkaoMygiQPg2/S4cXCF1nZ3g4RpGmcV/NUFe+RT+T8amI
+         /+lqfyAaJ8+lbSJHwFRBik6exQE4Mn60vo6kosnP+5UOZAlB3QXTi1MLnTohS8iAsd/l
+         0osw==
+X-Gm-Message-State: AOAM532fLLeZj/J8dywfNw8W4t0rLkKogfbUfJD1x228Zd6KDiCJ2bIR
+        1q8iyxIiPT7k0PwrA69XX+VRbQ==
+X-Google-Smtp-Source: ABdhPJzYWtoBbDYvzZ3xNeVMyVANpnHjx84A3cXKcNETpEhPGLmyVqezsvv/c80LwFhG2z8oErxZcw==
+X-Received: by 2002:a02:c80a:: with SMTP id p10mr2701625jao.114.1604077971626;
+        Fri, 30 Oct 2020 10:12:51 -0700 (PDT)
+Received: from [192.168.1.112] (c-24-9-64-241.hsd1.co.comcast.net. [24.9.64.241])
+        by smtp.gmail.com with ESMTPSA id e12sm5004102ilq.65.2020.10.30.10.12.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 30 Oct 2020 10:12:51 -0700 (PDT)
+Subject: Re: [PATCH v1 4/4] x86/msr: Do not allow writes to
+ MSR_IA32_ENERGY_PERF_BIAS
+To:     Borislav Petkov <bp@alien8.de>, X86 ML <x86@kernel.org>
+Cc:     Thomas Renninger <trenn@suse.com>, Shuah Khan <shuah@kernel.org>,
+        Len Brown <lenb@kernel.org>, linux-pm@vger.kernel.org,
         LKML <linux-kernel@vger.kernel.org>,
-        Lukas Wunner <lukas@wunner.de>,
-        Saravana Kannan <saravanak@google.com>,
-        Xiang Chen <chenxiang66@hisilicon.com>
-Content-Type: text/plain; charset="UTF-8"
+        Shuah Khan <skhan@linuxfoundation.org>
+References: <20201029190259.3476-1-bp@alien8.de>
+ <20201029190259.3476-5-bp@alien8.de>
+From:   Shuah Khan <skhan@linuxfoundation.org>
+Message-ID: <f259f033-c62e-e1a2-2f46-85b7961ac0ad@linuxfoundation.org>
+Date:   Fri, 30 Oct 2020 11:12:50 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <20201029190259.3476-5-bp@alien8.de>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Greg,
+On 10/29/20 1:02 PM, Borislav Petkov wrote:
+> From: Borislav Petkov <bp@suse.de>
+> 
+> Now that all in-kernel-tree users are converted to using the sysfs file,
+> remove the MSR from the "allowlist".
+> 
+> Signed-off-by: Borislav Petkov <bp@suse.de>
+> ---
+>   arch/x86/kernel/msr.c | 3 ---
+>   1 file changed, 3 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/msr.c b/arch/x86/kernel/msr.c
+> index c0d409810658..b1147862730c 100644
+> --- a/arch/x86/kernel/msr.c
+> +++ b/arch/x86/kernel/msr.c
+> @@ -99,9 +99,6 @@ static int filter_write(u32 reg)
+>   	if (!__ratelimit(&fw_rs))
+>   		return 0;
+>   
+> -	if (reg == MSR_IA32_ENERGY_PERF_BIAS)
+> -		return 0;
+> -
+>   	pr_err("Write to unrecognized MSR 0x%x by %s (pid: %d). Please report to x86@kernel.org.\n",
+>   	       reg, current->comm, current->pid);
+>   
+> 
 
-On Wed, Oct 21, 2020 at 9:14 PM Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
->
-> Hi Greg & all,
->
-> Commit d12544fb2aa9 ("PM: runtime: Remove link state checks in
-> rpm_get/put_supplier()") merged recently introduced a weakness
-> in the handling of device links in the runtime PM framework that
-> may be confusing and even harmful.
->
-> Namely, the checks removed by that commit prevented PM-runtime from
-> getting or dropping references to the supplier device whose driver
-> was going away via its links to consumers, which specifically allowed
-> the pm_runtime_clean_up_links() called from __device_release_driver()
-> to run without interfering with runtime suspend/resume of consumer
-> devices (which still might happen even though the drivers had been
-> unbound from them by that time).
->
-> After the above commit, calling pm_runtime_clean_up_links() from
-> __device_release_driver() makes a little sense and it may be interfering
-> destructively with regular PM-runtime suspend/resume control flows, so
-> it needs to be either fixed or dropped altogether.  I prefer the latter,
-> because among other things this removes an arbitrary difference in the
-> handling of managed device links with respect to the stateless ones,
-> so patch [2/3] is doing just that.
->
-> However, in some rare cases pm_runtime_clean_up_links() may help to clean
-> up leftover PM-runtime references, so if that function goes away, they
-> need to be cleaned up elsewhere.  That's why patch [1/3] modifies
-> __device_link_del() to drop them upon device link removal (which also
-> needs to be done for stateless device links and that's why I'm regarding
-> this patch as a fix).
->
-> Finally, to avoid pointless overhead related to suspending and resuming
-> the target device for multiple times in a row in __device_release_driver(),
-> it is better to resume it upfront before checking its links to consumers,
-> which is done by patch [3/3].
->
-> While this series touches the driver core, it really is mostly related to
-> runtime PM, so I can apply it if that's OK.
+Thanks. Looks good to me.
 
-Any concerns regarding this series?
+Reviewed-by: Shuah Khan <skhan@linuxfoundation.org>
 
-If not, I'd like to queue it up for -rc3, because the current behavior
-in there is quite confusing (or worse).
-
-Cheers!
+thanks,
+-- Shuah
