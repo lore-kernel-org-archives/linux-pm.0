@@ -2,104 +2,109 @@ Return-Path: <SRS0=aTLV=EF=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-11.4 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E3103C388F9
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 11:29:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 876F2C4363A
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 11:48:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6F7432075E
-	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 11:29:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 27B6320825
+	for <linux-pm@archiver.kernel.org>; Fri, 30 Oct 2020 11:47:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="t7vRuGsi"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="WAUf3+d2"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726110AbgJ3L3m (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 30 Oct 2020 07:29:42 -0400
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34808 "EHLO
+        id S1726520AbgJ3Lr7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 30 Oct 2020 07:47:59 -0400
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37716 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725975AbgJ3L3m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 07:29:42 -0400
-Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 21238C0613CF
-        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 04:29:42 -0700 (PDT)
-Received: by mail-pg1-x542.google.com with SMTP id r10so4939246pgb.10
-        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 04:29:42 -0700 (PDT)
+        with ESMTP id S1726259AbgJ3Lr5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 30 Oct 2020 07:47:57 -0400
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3C725C0613D4
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 04:47:56 -0700 (PDT)
+Received: by mail-wm1-x341.google.com with SMTP id p22so2570343wmg.3
+        for <linux-pm@vger.kernel.org>; Fri, 30 Oct 2020 04:47:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
+        d=google.com; s=20161025;
         h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=4HxPaBB/T+MWPxFKC66xXUgQz4AK1HDV8G0JyKuoUvg=;
-        b=t7vRuGsiD6S8SDyDNJjlcW3D8hieb4F/x0gVxEUf+xkByh3UB9sW2pw96lzzu3r+Sc
-         V+SrFY6wvz08PUUrq6THVAwF+cugG5vc8oomA26kUp17NY6M2ckqjULm3B3ZkGJnktkO
-         SIMxL5zOIB5J87De1aG/WYEx0UOwzgz/lZ+JL09V4ibwDp+FKjA4hn/ylfabNvovQlWC
-         eJuwEMYWUjgJtSKqSYdH2kNNfOPHbBtkMmOBTEkdqAAvKGu7FfzI/ujLEq9tQG2cMMBW
-         BzHzVflFIBIa+S2SEGutzMb6ivLVH372Vwk41qbEWa56/vLDj0vJfm4tH/NsJnGO/xeM
-         2wvQ==
+         :content-disposition:in-reply-to;
+        bh=/VyNGryLroT7qe3Pp9ybD5lnQfay5phLuhwNvbxhxYo=;
+        b=WAUf3+d2JVTc2U3d/Gv0nJozocu951OOswUcD4xo4Epo9ZKRp2kywPmcI5+AU5Ugsz
+         UBdOx//W7jjKZser0nHrjrHeBnt9qZTzPXTgOViuENyjBKVk+UCwFV57rong8tik9US7
+         0vdI2MSbFnECyd+W32GDQdbCNM11iHJ49aIL7Pp96UzJg+rlbr9sVViA8uDktOwXOBtP
+         t6KE1+BfjVuNIPaaqymUGIbXvZiljCwXch95AOP8EgnaOYgWxtDwowi+CBmV9S6/jWhk
+         BHliUO4ci5VZ6iOI1sdxImSGdGpY8Pj588LX7bsBsdAQGIRtl7CfWi7FfQNO6XdkXx5q
+         spfg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=4HxPaBB/T+MWPxFKC66xXUgQz4AK1HDV8G0JyKuoUvg=;
-        b=c68F/2WRh0xPjmwyCUG4Etwh3Tm4m5C2uv4lVBQs8DHL9wOFtuaFF9+rPWcy24O+Co
-         1JIHUQpPmB1VyL2VL2UZP6JWCvjNwwOu/AWlZ9DPtNcc4qHdDtUbgxAJxeADH7Vl8JjR
-         4guEM9B8qwZTcufewP9OJ0OnUdt379JEAQTMQ7BbW0ELKKYHIz3DxwTO1o6WxbTd3J2d
-         cUYF8m35C/fDoGX8yUuCZ4Y9DpR548JpFPKF1tmihDerp0Xscb7icUCsIxIr2TmkQGwX
-         XldvezYqA6nkbpFRY19kR2NY99Cw0oddy+R52hO/1nZ5ecB+1MY+mkiQzAMQhdOA95Wl
-         PUoQ==
-X-Gm-Message-State: AOAM531WyUSxcWq8TLxHbejZw+TLJcXl02Wnq4VjjeScqP0lEFaZ/dKj
-        GHYIOfV/bC0H0JFT0u2MFr8Few==
-X-Google-Smtp-Source: ABdhPJxY5sNazMK40l9kvzCEB3G/fXCnzLJIOMT7lDEBOFXgft5gwM3ZPlv3KogMw+kWQKDSe2XldQ==
-X-Received: by 2002:a17:90b:3587:: with SMTP id mm7mr2453563pjb.234.1604057381701;
-        Fri, 30 Oct 2020 04:29:41 -0700 (PDT)
-Received: from localhost ([122.181.54.133])
-        by smtp.gmail.com with ESMTPSA id 189sm5632707pfw.215.2020.10.30.04.29.40
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 30 Oct 2020 04:29:40 -0700 (PDT)
-Date:   Fri, 30 Oct 2020 16:59:38 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Frank Lee <frank@allwinnertech.com>
-Cc:     robdclark@gmail.com, sean@poorly.run, airlied@linux.ie,
-        daniel@ffwll.ch, vireshk@kernel.org, nm@ti.com, sboyd@kernel.org,
-        rjw@rjwysocki.net, jcrouse@codeaurora.org, eric@anholt.net,
-        tiny.windzz@gmail.com, kholk11@gmail.com,
-        emil.velikov@collabora.com, gustavoars@kernel.org,
-        linux-arm-msm@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        freedreno@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH 0/3] Introduce devm_pm_opp_set_* API
-Message-ID: <20201030112938.uyqjvyfuklwjnmvc@vireshk-i7>
-References: <20201012135517.19468-1-frank@allwinnertech.com>
- <20201028060613.qva32sirae4dtj6x@vireshk-i7>
+         :mime-version:content-disposition:in-reply-to;
+        bh=/VyNGryLroT7qe3Pp9ybD5lnQfay5phLuhwNvbxhxYo=;
+        b=FHZzltEnpvWw1fHe9C/UxV5afL3hqTSQz3Dr9bWWs/l/fA1BYBnpakGGx1NF6ziqX0
+         nKEKmPQVLI4LQzAyykkRoOQtyJ4B6Jg86S3o6C+n+f4ykgFy7S9hUTtHKQvfW9dMVz5O
+         nXE0nUEsKqDD7vWqIi4DLdE/+m8NRqnBIBcJ6Z907v1SqWdTKW1E3BF43tENIAT/azT1
+         n+vH8zT3l+wKVUveEeYgEpBvaXQAi09DqMXtTuIV/i5iS6qfO7izG9DHaQw9B/AJ2YM2
+         toAvfX36M5SuEHcuwBofB+5yIkyh9G/MxgRove0WTRTwAwRgSUIvcvVj8O2foDB1KqZ7
+         TMIw==
+X-Gm-Message-State: AOAM532pVOVej29to2XV5zCw76kb9f86NOq5ZHlxsCHi8WcVc58zvcnt
+        RP7Q60z3DorRheuE18AhkQkShA==
+X-Google-Smtp-Source: ABdhPJzQqqcHNKkLNiq+QHTNOQAjhnt7BUATOLJhivtj8XRz7DO7X6ixIJae+JIM1g8qdueVyZWT1g==
+X-Received: by 2002:a1c:2905:: with SMTP id p5mr2242342wmp.187.1604058474636;
+        Fri, 30 Oct 2020 04:47:54 -0700 (PDT)
+Received: from google.com ([2a00:79e0:d:210:f693:9fff:fef4:a7ef])
+        by smtp.gmail.com with ESMTPSA id g8sm4434811wma.36.2020.10.30.04.47.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 30 Oct 2020 04:47:53 -0700 (PDT)
+Date:   Fri, 30 Oct 2020 11:47:50 +0000
+From:   Quentin Perret <qperret@google.com>
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        vireshk@kernel.org, robh+dt@kernel.org, nm@ti.com,
+        rafael@kernel.org, sboyd@kernel.org, daniel.lezcano@linaro.org,
+        sudeep.holla@arm.com, Dietmar.Eggemann@arm.com
+Subject: Re: [PATCH 2/4] OPP: Add support for parsing the 'opp-sustainable'
+ property
+Message-ID: <20201030114750.GA636720@google.com>
+References: <20201028140847.1018-1-lukasz.luba@arm.com>
+ <20201028140847.1018-3-lukasz.luba@arm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201028060613.qva32sirae4dtj6x@vireshk-i7>
-User-Agent: NeoMutt/20180716-391-311a52
+In-Reply-To: <20201028140847.1018-3-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 28-10-20, 11:36, Viresh Kumar wrote:
-> On 12-10-20, 21:55, Frank Lee wrote:
-> > Hi, this patchset introduce devm_pm_opp_set_prop_name() and
-> > devm_pm_opp_set_supported_hw().
-> > 
-> > Yangtao Li (3):
-> >   opp: Add devres wrapper for dev_pm_opp_set_supported_hw
-> >   opp: Add devres wrapper for dev_pm_opp_set_prop_name
-> >   drm/msm: Convert to devm_pm_opp_set_supported_hw
-> > 
-> >  drivers/gpu/drm/msm/adreno/a5xx_gpu.c |  2 +-
-> >  drivers/opp/core.c                    | 80 +++++++++++++++++++++++++++
-> >  include/linux/pm_opp.h                | 14 +++++
-> >  3 files changed, 95 insertions(+), 1 deletion(-)
-> 
-> Applied. Thanks.
+Hi Lukasz,
 
-And I have dropped all of them based on the discussion we are having.
-Thanks.
+On Wednesday 28 Oct 2020 at 14:08:45 (+0000), Lukasz Luba wrote:
+> +unsigned long dev_pm_opp_get_sustainable_opp_freq(struct device *dev)
+> +{
+> +	struct opp_table *opp_table;
+> +	unsigned long freq = 0;
+> +
+> +	opp_table = _find_opp_table(dev);
+> +	if (IS_ERR(opp_table))
+> +		return 0;
+> +
+> +	if (opp_table->sustainable_opp && opp_table->sustainable_opp->available)
+> +		freq = dev_pm_opp_get_freq(opp_table->sustainable_opp);
+> +
+> +	dev_pm_opp_put_opp_table(opp_table);
+> +
+> +	return freq;
+> +}
+> +EXPORT_SYMBOL_GPL(dev_pm_opp_get_sustainable_opp_freq);
 
--- 
-viresh
+I'm guessing this is what IPA will use to find out what the sustainable
+frequency is right?
+
+Is PM_OPP the right place for that? It feels odd IPA will get the EM
+from one place, which includes the performance state, and the sustained
+OPP from another. Should we move that to PM_EM instead?
+
+Thanks,
+Quentin
