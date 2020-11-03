@@ -7,56 +7,56 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 139CDC55178
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6F60AC2D0A3
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BAFFD223C7
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1820A223EA
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="ysK/IoiT"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bhgffm5o"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728258AbgKCPHk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Nov 2020 10:07:40 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53032 "EHLO
+        id S1728183AbgKCPHo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Nov 2020 10:07:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53022 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728168AbgKCPGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2020 10:06:45 -0500
+        with ESMTP id S1728103AbgKCPGm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2020 10:06:42 -0500
 Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9F57BC0613D1
-        for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2020 07:06:44 -0800 (PST)
-Received: by mail-lf1-x142.google.com with SMTP id y184so20647050lfa.12
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2020 07:06:44 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CBD4FC0613D1
+        for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2020 07:06:41 -0800 (PST)
+Received: by mail-lf1-x142.google.com with SMTP id l28so22571603lfp.10
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2020 07:06:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=z2aikAnlU4Rv0xJ54ndQnr8H+vElIy0SKy9Omrer1Ow=;
-        b=ysK/IoiTp/UV3EPWH4UVFRHclwAjajJUvSrrM3LNcbaoGkicwm6doZuxeL3S7sfb32
-         DMFErTSnQPcB0MgRCAtgupil1fcRLbb/LpGIBHCMUfHOsWw9qzbQxWIGEC67sBhHFAer
-         PDJ9z0Fcss7tqgwKKqbQgOpcdfRU+m6wbJZbaEljBcMhGeiN0O0pERIMF+E2xxDGATeT
-         JrjkX3Cju0HiFYns0PYd1VSMF6Yu9XGNMtlesWDovCfEjuzW3UrVQ+KcbZum6o7hIvFq
-         b27ldA7bQuHFTP0JoBqJcNNJM4rZpxEIgYrP2VCwickkqKCeq7rQvpP4TzbYkbbO2MjF
-         aJog==
+        bh=ueiVlvCkRERA4jFBXY1LOeFsJ+G2JGqDIygbStmt2x4=;
+        b=bhgffm5oQBW+6fiSHYCs6cMG+QkEaPHFd8ayqp4qY5zdtYkfBN2A+kFDYhKWnmfXzC
+         j31r1S3NxiL6kuZsmKzUYk3FcmMlgywkkt8fF5kDxv0SV8wOTLMywc9VNNorK9LWJbdY
+         c0jaEBrXboRtNdLTy2dEGzEl5e95vlr7fOWCbiREMddju+X5bn7IIePh1uxU2R01scl5
+         Vtqvr6G3wMJPKZWQG4Vm6V5zPfQXKqWrs2bMn3vqRN6Xbh6KEfiZXqyBxcpJ08QUjLYt
+         BQhwZ1okgi1J9Cn3QOOVooDMLTvpRiX52jRnjz2T3hlha2XPCUFAsKXH1QyhVIfpEn3o
+         keMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=z2aikAnlU4Rv0xJ54ndQnr8H+vElIy0SKy9Omrer1Ow=;
-        b=eaQll137Ms13dinr02b6jazIzFUtx/J3KO32d7JgxpkimCkmyu8rQjQ+VQoJgCCbes
-         Kdqzt9YNzrOaXfd0zIz4/kHIo80kyPnew7C54Uxx86w3uA3oQKyIbTtp00SNnZCIrKIJ
-         FjlHVUjdTzAB/0GQcofDgMQ/ESzbMw7vS+j92kQw1KzLWC+6oY8DkAx+DVCgcPC5rLz9
-         Pmg8O8uUgV1rH/NUatufLVgyveQjWhs+7hT3yfPqY7oycjId5bBbW7mLlmXD6debk/3d
-         sF+fAqOTG66z86yF+D3Xw7ifng4AuHkPOiLKjD23rMsGriHSHGIq2tVPQwc4oRXLmbzV
-         PUNQ==
-X-Gm-Message-State: AOAM5318Peh5fFP8w2eVe3YspLFSIo8iQghFZnJulfF8O0iLKSJ4lzM/
-        a61nX9N5f7EOjGePqtoeteZKrQ==
-X-Google-Smtp-Source: ABdhPJzaNwaa4JfoulcPt1J10kPgf3A10Pfy/kvKPYlSj4ezifUxRuTpYUt3gCD3A1Gn05zKdnj4Gw==
-X-Received: by 2002:a19:ca4b:: with SMTP id h11mr8466061lfj.6.1604416002518;
-        Tue, 03 Nov 2020 07:06:42 -0800 (PST)
+        bh=ueiVlvCkRERA4jFBXY1LOeFsJ+G2JGqDIygbStmt2x4=;
+        b=iX06mYNVZFsTRBlHG8W8jfU2EgHBoTSpvLPd3kqico+sKJo3ScD2Cj8lHMHpDvw4a/
+         sh3X6/8jnTJM+ZKb46ts2eyJLw4xJeedZIBtERQgzF37AeFghRkJPAG5lgjPPwDFYQ45
+         A3puAyYfq4zJ3s/GaUn+RWCJBwLBxRyzKQdSm//YJ6Hq6VcDy+87Vmyuax0tmN9lK44S
+         AVvV5ctSiulygQIvVUR+1nOf5vRqXk9+BMGofMG0z5Kj1vcnVpIpLXntbLah97tmWdnZ
+         2eYZRbngWga79ownFyL2Lzi7GT200DCr/zzclaq5Jgf4effb0zYX5fHkBrAwF9USU5Z/
+         rokQ==
+X-Gm-Message-State: AOAM531sLiXBQsb4MZr/k+1Spz1PNLjpnxhCmHugxiQGnXAnCBBNfL6w
+        YBOkP+4Vb9PNlIQAHBU/apDLDQ==
+X-Google-Smtp-Source: ABdhPJzvL548jIVHWEK3wkLNGd36Uico9ujbUgT1crbH/MUPdlT1HtTLICOjJpYtlqeLXhhVMoqNnQ==
+X-Received: by 2002:a19:7e85:: with SMTP id z127mr4717457lfc.493.1604415998774;
+        Tue, 03 Nov 2020 07:06:38 -0800 (PST)
 Received: from localhost.localdomain (h-155-4-131-134.NA.cust.bahnhof.se. [155.4.131.134])
-        by smtp.gmail.com with ESMTPSA id a25sm3522169lfo.141.2020.11.03.07.06.40
+        by smtp.gmail.com with ESMTPSA id a25sm3522169lfo.141.2020.11.03.07.06.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2020 07:06:41 -0800 (PST)
+        Tue, 03 Nov 2020 07:06:36 -0800 (PST)
 From:   Ulf Hansson <ulf.hansson@linaro.org>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
         Sudeep Holla <sudeep.holla@arm.com>,
@@ -70,10 +70,11 @@ Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
         Alexandre Torgue <alexandre.torgue@st.com>,
         Ulf Hansson <ulf.hansson@linaro.org>,
-        linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v2 3/3] cpuidle: psci: Enable suspend-to-idle for PSCI OSI mode
-Date:   Tue,  3 Nov 2020 16:06:27 +0100
-Message-Id: <20201103150627.233438-4-ulf.hansson@linaro.org>
+        linux-arm-kernel@lists.infradead.org,
+        Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH v2 1/3] PM: domains: Rename pm_genpd_syscore_poweroff|poweron()
+Date:   Tue,  3 Nov 2020 16:06:25 +0100
+Message-Id: <20201103150627.233438-2-ulf.hansson@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201103150627.233438-1-ulf.hansson@linaro.org>
 References: <20201103150627.233438-1-ulf.hansson@linaro.org>
@@ -83,135 +84,204 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-To select domain idlestates for cpuidle-psci when OSI mode has been
-enabled, the PM domains via genpd are being managed through runtime PM.
-This works fine for the regular idlepath, but it doesn't during system wide
-suspend. More precisely, the domain idlestates becomes temporarily
-disabled, which is because the PM core disables runtime PM for devices
-during system wide suspend.
+To better describe what the pm_genpd_syscore_poweroff|poweron() functions
+actually do, let's rename them to dev_pm_genpd_suspend|resume() and update
+the rather few callers of them accordingly (a couple of clocksource
+drivers).
 
-Later in the system suspend phase, genpd intends to deal with this from its
-->suspend_noirq() callback, but this doesn't work as expected for a device
-corresponding to a CPU, because the domain idlestates needs to be selected
-on a per CPU basis (the PM core doesn't invoke the callbacks like that).
+Moreover, let's take the opportunity to add some documentation of these
+exported functions, as that is currently missing.
 
-To address this problem, let's enable the syscore flag for the
-corresponding CPU device that becomes successfully attached to its PM
-domain (applicable only in OSI mode). This informs the PM core to skip
-invoke the system wide suspend/resume callbacks for the device, thus also
-prevents genpd from screwing up its internal state of it.
-
-Moreover, to properly select a domain idlestate for the CPUs during
-suspend-to-idle, let's assign a specific ->enter_s2idle() callback for the
-corresponding domain idlestate (applicable only in OSI mode). From that
-callback, let's invoke dev_pm_genpd_suspend|resume(), as this allows a
-domain idlestate to be selected for the current CPU by genpd.
-
+Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
 ---
 
 Changes in v2:
-	- Rebased upon recent changes.
-	- Updated the commit message.
+	- New patch.
 
 ---
- drivers/cpuidle/cpuidle-psci-domain.c |  2 ++
- drivers/cpuidle/cpuidle-psci.c        | 34 +++++++++++++++++++++++----
- 2 files changed, 32 insertions(+), 4 deletions(-)
+ drivers/base/power/domain.c   | 35 +++++++++++++++++++++--------------
+ drivers/clocksource/sh_cmt.c  |  8 ++++----
+ drivers/clocksource/sh_mtu2.c |  4 ++--
+ drivers/clocksource/sh_tmu.c  |  8 ++++----
+ include/linux/pm_domain.h     |  8 ++++----
+ 5 files changed, 35 insertions(+), 28 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-psci-domain.c b/drivers/cpuidle/cpuidle-psci-domain.c
-index 4a031c62f92a..ff2c3f8e4668 100644
---- a/drivers/cpuidle/cpuidle-psci-domain.c
-+++ b/drivers/cpuidle/cpuidle-psci-domain.c
-@@ -327,6 +327,8 @@ struct device *psci_dt_attach_cpu(int cpu)
- 	if (cpu_online(cpu))
- 		pm_runtime_get_sync(dev);
- 
-+	dev_pm_syscore_device(dev, true);
-+
- 	return dev;
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 743268996336..9b4881b67683 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1363,14 +1363,7 @@ static void genpd_complete(struct device *dev)
+ 	genpd_unlock(genpd);
  }
  
-diff --git a/drivers/cpuidle/cpuidle-psci.c b/drivers/cpuidle/cpuidle-psci.c
-index d928b37718bd..b51b5df08450 100644
---- a/drivers/cpuidle/cpuidle-psci.c
-+++ b/drivers/cpuidle/cpuidle-psci.c
-@@ -19,6 +19,7 @@
- #include <linux/of_device.h>
- #include <linux/platform_device.h>
- #include <linux/psci.h>
-+#include <linux/pm_domain.h>
- #include <linux/pm_runtime.h>
- #include <linux/slab.h>
- #include <linux/string.h>
-@@ -52,8 +53,9 @@ static inline int psci_enter_state(int idx, u32 state)
- 	return CPU_PM_CPU_IDLE_ENTER_PARAM(psci_cpu_suspend_enter, idx, state);
- }
- 
--static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
--					struct cpuidle_driver *drv, int idx)
-+static int __psci_enter_domain_idle_state(struct cpuidle_device *dev,
-+					  struct cpuidle_driver *drv, int idx,
-+					  bool s2idle)
+-/**
+- * genpd_syscore_switch - Switch power during system core suspend or resume.
+- * @dev: Device that normally is marked as "always on" to switch power for.
+- *
+- * This routine may only be called during the system core (syscore) suspend or
+- * resume phase for devices whose "always on" flags are set.
+- */
+-static void genpd_syscore_switch(struct device *dev, bool suspend)
++static void genpd_switch_state(struct device *dev, bool suspend)
  {
- 	struct psci_cpuidle_data *data = this_cpu_ptr(&psci_cpuidle_data);
- 	u32 *states = data->psci_states;
-@@ -66,7 +68,12 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
- 		return -1;
+ 	struct generic_pm_domain *genpd;
  
- 	/* Do runtime PM to manage a hierarchical CPU toplogy. */
--	RCU_NONIDLE(pm_runtime_put_sync_suspend(pd_dev));
-+	rcu_irq_enter_irqson();
-+	if (s2idle)
-+		dev_pm_genpd_suspend(pd_dev);
-+	else
-+		pm_runtime_put_sync_suspend(pd_dev);
-+	rcu_irq_exit_irqson();
- 
- 	state = psci_get_domain_state();
- 	if (!state)
-@@ -74,7 +81,12 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
- 
- 	ret = psci_cpu_suspend_enter(state) ? -1 : idx;
- 
--	RCU_NONIDLE(pm_runtime_get_sync(pd_dev));
-+	rcu_irq_enter_irqson();
-+	if (s2idle)
-+		dev_pm_genpd_resume(pd_dev);
-+	else
-+		pm_runtime_get_sync(pd_dev);
-+	rcu_irq_exit_irqson();
- 
- 	cpu_pm_exit();
- 
-@@ -83,6 +95,19 @@ static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
- 	return ret;
+@@ -1387,17 +1380,31 @@ static void genpd_syscore_switch(struct device *dev, bool suspend)
+ 	}
  }
  
-+static int psci_enter_domain_idle_state(struct cpuidle_device *dev,
-+					struct cpuidle_driver *drv, int idx)
-+{
-+	return __psci_enter_domain_idle_state(dev, drv, idx, false);
-+}
-+
-+static int psci_enter_s2idle_domain_idle_state(struct cpuidle_device *dev,
-+					       struct cpuidle_driver *drv,
-+					       int idx)
-+{
-+	return __psci_enter_domain_idle_state(dev, drv, idx, true);
-+}
-+
- static int psci_idle_cpuhp_up(unsigned int cpu)
+-void pm_genpd_syscore_poweroff(struct device *dev)
++/**
++ * dev_pm_genpd_suspend - Synchronously try to suspend the genpd for @dev
++ * @dev: The device that is attached to the genpd, that can be suspended.
++ *
++ * This routine should typically be called for a device that needs to be
++ * suspended during the syscore suspend phase.
++ */
++void dev_pm_genpd_suspend(struct device *dev)
  {
- 	struct device *pd_dev = __this_cpu_read(psci_cpuidle_data.dev);
-@@ -170,6 +195,7 @@ static int psci_dt_cpu_init_topology(struct cpuidle_driver *drv,
- 	 * deeper states.
- 	 */
- 	drv->states[state_count - 1].enter = psci_enter_domain_idle_state;
-+	drv->states[state_count - 1].enter_s2idle = psci_enter_s2idle_domain_idle_state;
- 	psci_cpuidle_use_cpuhp = true;
+-	genpd_syscore_switch(dev, true);
++	genpd_switch_state(dev, true);
+ }
+-EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweroff);
++EXPORT_SYMBOL_GPL(dev_pm_genpd_suspend);
  
- 	return 0;
+-void pm_genpd_syscore_poweron(struct device *dev)
++/**
++ * dev_pm_genpd_resume - Synchronously try to resume the genpd for @dev
++ * @dev: The device that is attached to the genpd, which needs to be resumed.
++ *
++ * This routine should typically be called for a device that needs to be resumed
++ * during the syscore resume phase.
++ */
++void dev_pm_genpd_resume(struct device *dev)
+ {
+-	genpd_syscore_switch(dev, false);
++	genpd_switch_state(dev, false);
+ }
+-EXPORT_SYMBOL_GPL(pm_genpd_syscore_poweron);
++EXPORT_SYMBOL_GPL(dev_pm_genpd_resume);
+ 
+ #else /* !CONFIG_PM_SLEEP */
+ 
+diff --git a/drivers/clocksource/sh_cmt.c b/drivers/clocksource/sh_cmt.c
+index 760777458a90..7275d95de435 100644
+--- a/drivers/clocksource/sh_cmt.c
++++ b/drivers/clocksource/sh_cmt.c
+@@ -658,7 +658,7 @@ static void sh_cmt_clocksource_suspend(struct clocksource *cs)
+ 		return;
+ 
+ 	sh_cmt_stop(ch, FLAG_CLOCKSOURCE);
+-	pm_genpd_syscore_poweroff(&ch->cmt->pdev->dev);
++	dev_pm_genpd_suspend(&ch->cmt->pdev->dev);
+ }
+ 
+ static void sh_cmt_clocksource_resume(struct clocksource *cs)
+@@ -668,7 +668,7 @@ static void sh_cmt_clocksource_resume(struct clocksource *cs)
+ 	if (!ch->cs_enabled)
+ 		return;
+ 
+-	pm_genpd_syscore_poweron(&ch->cmt->pdev->dev);
++	dev_pm_genpd_resume(&ch->cmt->pdev->dev);
+ 	sh_cmt_start(ch, FLAG_CLOCKSOURCE);
+ }
+ 
+@@ -760,7 +760,7 @@ static void sh_cmt_clock_event_suspend(struct clock_event_device *ced)
+ {
+ 	struct sh_cmt_channel *ch = ced_to_sh_cmt(ced);
+ 
+-	pm_genpd_syscore_poweroff(&ch->cmt->pdev->dev);
++	dev_pm_genpd_suspend(&ch->cmt->pdev->dev);
+ 	clk_unprepare(ch->cmt->clk);
+ }
+ 
+@@ -769,7 +769,7 @@ static void sh_cmt_clock_event_resume(struct clock_event_device *ced)
+ 	struct sh_cmt_channel *ch = ced_to_sh_cmt(ced);
+ 
+ 	clk_prepare(ch->cmt->clk);
+-	pm_genpd_syscore_poweron(&ch->cmt->pdev->dev);
++	dev_pm_genpd_resume(&ch->cmt->pdev->dev);
+ }
+ 
+ static int sh_cmt_register_clockevent(struct sh_cmt_channel *ch,
+diff --git a/drivers/clocksource/sh_mtu2.c b/drivers/clocksource/sh_mtu2.c
+index bfccb31e94ad..169a1fccc497 100644
+--- a/drivers/clocksource/sh_mtu2.c
++++ b/drivers/clocksource/sh_mtu2.c
+@@ -297,12 +297,12 @@ static int sh_mtu2_clock_event_set_periodic(struct clock_event_device *ced)
+ 
+ static void sh_mtu2_clock_event_suspend(struct clock_event_device *ced)
+ {
+-	pm_genpd_syscore_poweroff(&ced_to_sh_mtu2(ced)->mtu->pdev->dev);
++	dev_pm_genpd_suspend(&ced_to_sh_mtu2(ced)->mtu->pdev->dev);
+ }
+ 
+ static void sh_mtu2_clock_event_resume(struct clock_event_device *ced)
+ {
+-	pm_genpd_syscore_poweron(&ced_to_sh_mtu2(ced)->mtu->pdev->dev);
++	dev_pm_genpd_resume(&ced_to_sh_mtu2(ced)->mtu->pdev->dev);
+ }
+ 
+ static void sh_mtu2_register_clockevent(struct sh_mtu2_channel *ch,
+diff --git a/drivers/clocksource/sh_tmu.c b/drivers/clocksource/sh_tmu.c
+index d41df9ba3725..b00dec0655cb 100644
+--- a/drivers/clocksource/sh_tmu.c
++++ b/drivers/clocksource/sh_tmu.c
+@@ -292,7 +292,7 @@ static void sh_tmu_clocksource_suspend(struct clocksource *cs)
+ 
+ 	if (--ch->enable_count == 0) {
+ 		__sh_tmu_disable(ch);
+-		pm_genpd_syscore_poweroff(&ch->tmu->pdev->dev);
++		dev_pm_genpd_suspend(&ch->tmu->pdev->dev);
+ 	}
+ }
+ 
+@@ -304,7 +304,7 @@ static void sh_tmu_clocksource_resume(struct clocksource *cs)
+ 		return;
+ 
+ 	if (ch->enable_count++ == 0) {
+-		pm_genpd_syscore_poweron(&ch->tmu->pdev->dev);
++		dev_pm_genpd_resume(&ch->tmu->pdev->dev);
+ 		__sh_tmu_enable(ch);
+ 	}
+ }
+@@ -394,12 +394,12 @@ static int sh_tmu_clock_event_next(unsigned long delta,
+ 
+ static void sh_tmu_clock_event_suspend(struct clock_event_device *ced)
+ {
+-	pm_genpd_syscore_poweroff(&ced_to_sh_tmu(ced)->tmu->pdev->dev);
++	dev_pm_genpd_suspend(&ced_to_sh_tmu(ced)->tmu->pdev->dev);
+ }
+ 
+ static void sh_tmu_clock_event_resume(struct clock_event_device *ced)
+ {
+-	pm_genpd_syscore_poweron(&ced_to_sh_tmu(ced)->tmu->pdev->dev);
++	dev_pm_genpd_resume(&ced_to_sh_tmu(ced)->tmu->pdev->dev);
+ }
+ 
+ static void sh_tmu_register_clockevent(struct sh_tmu_channel *ch,
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 1ad0ec481416..a8f93328daec 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -280,11 +280,11 @@ static inline int dev_pm_genpd_remove_notifier(struct device *dev)
+ #endif
+ 
+ #ifdef CONFIG_PM_GENERIC_DOMAINS_SLEEP
+-void pm_genpd_syscore_poweroff(struct device *dev);
+-void pm_genpd_syscore_poweron(struct device *dev);
++void dev_pm_genpd_suspend(struct device *dev);
++void dev_pm_genpd_resume(struct device *dev);
+ #else
+-static inline void pm_genpd_syscore_poweroff(struct device *dev) {}
+-static inline void pm_genpd_syscore_poweron(struct device *dev) {}
++static inline void dev_pm_genpd_suspend(struct device *dev) {}
++static inline void dev_pm_genpd_resume(struct device *dev) {}
+ #endif
+ 
+ /* OF PM domain providers */
 -- 
 2.25.1
 
