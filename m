@@ -2,89 +2,93 @@ Return-Path: <SRS0=+UCx=EJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 88FEEC2D0A3
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:13:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 78AD1C388F7
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:24:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2F6DD223C7
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:13:59 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604416439;
-	bh=As5BcWw5h10I2lEv/HK9gzXmhyPt7zitVkuTgyN9i1k=;
-	h=From:To:Cc:Subject:Date:List-ID:From;
-	b=QYN4UfZzQEZjSKrtBoHLaq58ScraZJlEIj8TgxH3DQcFmhDJPVDA8kKYnLOEOJ7gP
-	 HY7zoX5CyJZYysFijI4rxsu31YtkRf1Bio74JrbxbHDeGcRu4cvqXTpViVBQYQyBEs
-	 8LnUr8mGJdii3S6Z74jzYC75Y2a0WJmkRcJp05iY=
+	by mail.kernel.org (Postfix) with ESMTP id 1DF4B223FD
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:24:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="rrVlj56y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728465AbgKCPNw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Nov 2020 10:13:52 -0500
-Received: from mail.kernel.org ([198.145.29.99]:56758 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728312AbgKCPMC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 3 Nov 2020 10:12:02 -0500
-Received: from pali.im (pali.im [31.31.79.79])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 27EB8206DB;
-        Tue,  3 Nov 2020 15:12:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1604416322;
-        bh=As5BcWw5h10I2lEv/HK9gzXmhyPt7zitVkuTgyN9i1k=;
-        h=From:To:Cc:Subject:Date:From;
-        b=NHTUy2F5RmIFRJAPsLrgNeoRooPAVmOmiKsjSXBINRfh1wK46g/77GYxQtL8yypC6
-         cmnqtvakV4FhbDhxds2Kpbkwi0uVOJ1CRNmAVeMhsxHqaGtaePLdffgeeeOdElCZy8
-         TfDYDVK8RgZS1O116qZsdjc7mZoUletk2wvbgaro=
-Received: by pali.im (Postfix)
-        id B37FA7E5; Tue,  3 Nov 2020 16:11:59 +0100 (CET)
-From:   =?UTF-8?q?Pali=20Roh=C3=A1r?= <pali@kernel.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/9] cpufreq: Add missing modalias for tristate drivers
-Date:   Tue,  3 Nov 2020 16:11:30 +0100
-Message-Id: <20201103151139.29690-1-pali@kernel.org>
-X-Mailer: git-send-email 2.20.1
+        id S1728323AbgKCPYf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Nov 2020 10:24:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55836 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728270AbgKCPY1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2020 10:24:27 -0500
+Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 83EA3C061A04
+        for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2020 07:24:27 -0800 (PST)
+Received: by mail-oo1-xc36.google.com with SMTP id z14so4271053oom.10
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2020 07:24:27 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=N71Zs4qg4W+XUXzJvJITvEfPb9AWspIlQairrp1whfg=;
+        b=rrVlj56yk2trpBYSpi4k2yd1xCK2bo7zfyPwMRTDKgj2zJFZf+rsg3l64hS6mNlXsJ
+         /lsnCjsBYlscUhZQjxreix9yr1FDyyJ44isM98ku6PfR5nfH8ewfPGTyJoG+z8DaKf3B
+         GC0lFyYci0jWLRuivuAjfzCGQfauYD+FIBoJ65Z0ysgZFvM7r9APNUcj/A/ERVF2MbLf
+         yty4WBGjCP2WpSIZHr96/NF2lvOu9gyd0kH5dNJE6T16tbnf8/wDcP2ZEnVaZTeW+uv8
+         AOywb/DHyLh7Si/JMqeCh4eS5XqaKQQMWQhjlysMgge2i4X83N4I6vLqLPfg4x7OeC6p
+         Yirg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=N71Zs4qg4W+XUXzJvJITvEfPb9AWspIlQairrp1whfg=;
+        b=Ysoxd1e8dvgQmje8Gmae0lmcf7FzAK/pjgphjIY6giJFk4QXWF7MRIbZrH6KZ66dGR
+         m2GfDB10FK46aCE20/fLvXW9QuAy3gJL8dFpIFtz49L5AWQMA5DPELpxSlCXz50v6+eK
+         HrpJBIjE6MLJ12eJSXwoC+DDKYYZKHo7llXl/Fy7eOC5XrkxJM8eJ5svb0cKBrUVm9j3
+         GPshX1WIqf8mveGSu5MS95FtQIThHfpKtMDuU1k9hbjJdKUnF3coYjIVKazHub/Pfjfu
+         kYwSV4m5QUkyeKm6JafXAUNegK5197ma5bJW4kDD7P2JBm5klJKI+/Y+2OfQxxpTNLT0
+         /2Mg==
+X-Gm-Message-State: AOAM533vFjlxqzc+Vh6PURrHStWEsG6vOt2EIV0UH4hmOtLnNA97ZpV1
+        XoIA8veUAqMBTnTZ3E2tVsVNUQ==
+X-Google-Smtp-Source: ABdhPJwU2NP+qjv7T5X33Bc5Qb64pjBRUiEN1Yk0nWz/TQ1GhwOuIu9xrFu+5vjm7/EyqQJ1LvpBNw==
+X-Received: by 2002:a4a:6b1a:: with SMTP id g26mr10661391ooc.13.1604417066733;
+        Tue, 03 Nov 2020 07:24:26 -0800 (PST)
+Received: from builder.lan (104-57-184-186.lightspeed.austtx.sbcglobal.net. [104.57.184.186])
+        by smtp.gmail.com with ESMTPSA id v5sm4548511otb.44.2020.11.03.07.24.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 03 Nov 2020 07:24:25 -0800 (PST)
+Date:   Tue, 3 Nov 2020 09:24:23 -0600
+From:   Bjorn Andersson <bjorn.andersson@linaro.org>
+To:     Mauro Carvalho Chehab <mchehab+huawei@kernel.org>
+Cc:     Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+        coresight@lists.linaro.org, dri-devel@lists.freedesktop.org,
+        linux-acpi@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-f2fs-devel@lists.sourceforge.net, linux-fpga@vger.kernel.org,
+        linux-gpio@vger.kernel.org, linux-i3c@lists.infradead.org,
+        linux-iio@vger.kernel.org, linux-kernel@vger.kernel.org,
+        linux-media@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-remoteproc@vger.kernel.org,
+        linux-stm32@st-md-mailman.stormreply.com,
+        linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 30/33] docs: ABI: cleanup several ABI documents
+Message-ID: <20201103004241.GD223412@builder.lan>
+References: <cover.1603893146.git.mchehab+huawei@kernel.org>
+ <95ef2cf3a58f4e50f17d9e58e0d9440ad14d0427.1603893146.git.mchehab+huawei@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <95ef2cf3a58f4e50f17d9e58e0d9440ad14d0427.1603893146.git.mchehab+huawei@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Some of cpufreq drivers are tristate, can be compiled as modules, but do
-not have defined modalias for automatic loading. This patch series add
-for all those cpufreq drivers missing MODULE_DEVICE_TABLE macro, based
-on OF definitions, or MODULE_ALIAS for platform drivers.
+On Wed 28 Oct 09:23 CDT 2020, Mauro Carvalho Chehab wrote:
+[..]
+>  .../ABI/testing/sysfs-class-remoteproc        |  14 +-
 
-MODULE_DEVICE_TABLE is not explictily added only for speedstep-centrino,
-speedstep-ich and speedstep-smi drivers as it was removed in commit
-b11d77fa300d9 ("cpufreq: Convert to new X86 CPU match macros").
+for this:
 
-Pali Rohár (9):
-  cpufreq: ap806: Add missing MODULE_DEVICE_TABLE
-  cpufreq: highbank: Add missing MODULE_DEVICE_TABLE
-  cpufreq: mediatek: Add missing MODULE_DEVICE_TABLE
-  cpufreq: qcom: Add missing MODULE_DEVICE_TABLE
-  cpufreq: st: Add missing MODULE_DEVICE_TABLE
-  cpufreq: sun50i: Add missing MODULE_DEVICE_TABLE
-  cpufreq: loongson1: Add missing MODULE_ALIAS
-  cpufreq: scpi: Add missing MODULE_ALIAS
-  cpufreq: vexpress-spc: Add missing MODULE_ALIAS
+Acked-by: Bjorn Andersson <bjorn.andersson@linaro.org>
 
- drivers/cpufreq/armada-8k-cpufreq.c    | 6 ++++++
- drivers/cpufreq/highbank-cpufreq.c     | 7 +++++++
- drivers/cpufreq/loongson1-cpufreq.c    | 1 +
- drivers/cpufreq/mediatek-cpufreq.c     | 1 +
- drivers/cpufreq/qcom-cpufreq-nvmem.c   | 1 +
- drivers/cpufreq/scpi-cpufreq.c         | 1 +
- drivers/cpufreq/sti-cpufreq.c          | 7 +++++++
- drivers/cpufreq/sun50i-cpufreq-nvmem.c | 1 +
- drivers/cpufreq/vexpress-spc-cpufreq.c | 1 +
- 9 files changed, 26 insertions(+)
-
--- 
-2.20.1
-
+Thanks,
+Bjorn
