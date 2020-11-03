@@ -2,150 +2,166 @@ Return-Path: <SRS0=+UCx=EJ=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 10FB2C2D0A3
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 14:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 48B0BC61DD8
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B94032242B
-	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 14:39:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ECCBC221FB
+	for <linux-pm@archiver.kernel.org>; Tue,  3 Nov 2020 15:07:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=shutemov-name.20150623.gappssmtp.com header.i=@shutemov-name.20150623.gappssmtp.com header.b="tYRtCsCJ"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="aKENhJfJ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727975AbgKCOje (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 3 Nov 2020 09:39:34 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48780 "EHLO
+        id S1728168AbgKCPHl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 3 Nov 2020 10:07:41 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53024 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727895AbgKCOjS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2020 09:39:18 -0500
+        with ESMTP id S1728158AbgKCPGm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 3 Nov 2020 10:06:42 -0500
 Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6A6EC0617A6
-        for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2020 06:39:17 -0800 (PST)
-Received: by mail-lj1-x244.google.com with SMTP id 23so19256506ljv.7
-        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2020 06:39:17 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0C030C0617A6
+        for <linux-pm@vger.kernel.org>; Tue,  3 Nov 2020 07:06:42 -0800 (PST)
+Received: by mail-lj1-x244.google.com with SMTP id p15so19436012ljj.8
+        for <linux-pm@vger.kernel.org>; Tue, 03 Nov 2020 07:06:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=shutemov-name.20150623.gappssmtp.com; s=20150623;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=M/CcLnAggfPJTPHCvJqAFAyQXrrFbGX8RqEWGTOIlRk=;
-        b=tYRtCsCJ97u7yAlrOFN203Mpt9jz/EvbuW4V+3hipSUNsR5M8ZDqWsq7efoMiN9R5c
-         nhVCnARjFr5alomHWUrG2S/QRxbOVwaEaiSQTgeF0uEgCJ7a2rbupEC/g2AUeshC9i6C
-         wIKR126viYncqhHiZROMnSmO9imaid0rNJepyxM6rr8Apn+RPbJ3qWs7P+ZnHrSgvOWA
-         QcXHZrEHzXM4SVCDzBK7zqXcUTu3T+G1dUvHRbLGUKs/I2DIfrL0bitkL+B4SCLYpFfX
-         lHpCGqsodauH4LxSQSOtDBLKGW1a7DHfcCp5nbfeol5ZCBBoivuqpYvLjRQisIJ68BoF
-         UMSA==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=Kdoh+vwsEl16Yv/ER7Hhev3sO3MvjrueZiYq3HqyYgg=;
+        b=aKENhJfJOgbz3Z80D8/HTRaDGis97wYnQ7c6Vk5LMIdkp8+btBMJV85vwFmdaGqtZF
+         vFuuCdmCgskoX9lAVsxq/VPlWhlkNHoVsfpTfzgaX/qylT3wlmo/wmvTOWqjEWXQOGZO
+         C+Ym+Aa5KsYsi+XPAU2q7FVpk4MUL/mqpaSCcABHwobDjgiiAY54kWsCwAUjl4rel6LN
+         5a4j7hHlgD8opdaOnLOipRT3Dm36PXH1KvC08Ht+19WwE4t76ZeMwJAE2gz715MYk9z+
+         FP8b0XmmZLYrVI7AvWawpeKptZfmj1Tj2VAjFaFRJ9z4rLGSuwc7VB8er4C12yb2fg9Y
+         lREg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=M/CcLnAggfPJTPHCvJqAFAyQXrrFbGX8RqEWGTOIlRk=;
-        b=SaaiVsTVNaNso9bPwKeR7IEYfNyCGB8JPtQljhyexie6u2ZTRNBK/cyKPV1bkYiwA1
-         eBEe5Mr18x+cd1EuPZ7FP6ZdQW1CIqNabBfIQM074GB/LNhT6BHtegClZ0zI4LjvaUHn
-         eeUt/LK065HBcuDh8DqJAaymhLjRNPnESl9Vif3IklCfa5Bz95s6iKIhfmcbnOA9NKyn
-         s5JEAprh095avOhmWc2WzvFRYqV9V6W/Z2oKqpRQxIjHLBqrBOuwDY6THXDM+odgPHQK
-         X93ZiGVqF5+8kHqVo5xfnMTUVhP4WcytxLfJ8ZT42JRzf4WVUMcF2ezfuDNOO6eJFLkS
-         w9OQ==
-X-Gm-Message-State: AOAM530ceXnvNwV5yGThoFSHtvNedJd35cVnP+MndyyV+GDLvyWagYxD
-        YEtNR2lG82hOpbuv+/T+63Tytg==
-X-Google-Smtp-Source: ABdhPJz+L8qrHCJkzOuQS8/wvO1dQM/ksNE/UzgTA6Cx0Ac2GRFSZ5fX6eoakfcdH0CZnI4/h7s3ng==
-X-Received: by 2002:a2e:879a:: with SMTP id n26mr9115208lji.347.1604414356208;
-        Tue, 03 Nov 2020 06:39:16 -0800 (PST)
-Received: from box.localdomain ([86.57.175.117])
-        by smtp.gmail.com with ESMTPSA id g27sm4334360ljl.91.2020.11.03.06.39.15
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=Kdoh+vwsEl16Yv/ER7Hhev3sO3MvjrueZiYq3HqyYgg=;
+        b=mygmEM+mUtI4HOzLkKO838ZCW6fvfMuf+AJSGxFcuQjqI4iERBpZm3Z6PsRqxycJPZ
+         jXdmXg6jAK0ZeSacnifgJcc8pvpLK/0NnPjijTSdYV+hdgkP793o4J8nqpojPAL7cSwC
+         uWmY/fIVkiAU7KijyeGEeOBO0JTDeDFNxXGk1pP/B/VmKo6WftJjAfyVCOpYqhcz1dVu
+         YeyPXkz1F52t+HJHctx+s7nvmaqV8iF1qcuGswpwMJ4873ckmTjmNXHBJA3u+XfMilEg
+         U6LJxB4yuFQwYsAHXO2np2OEMhApD792+DZB6UnZamw/YZWkIERq9FMSG6eiQ1h0yh6+
+         R98Q==
+X-Gm-Message-State: AOAM532tVZ2in5dmovgmea2z5fPQsaQZOI0aTdwcFAnuCmfGe2jdfJ1h
+        SkR6gBD50GYho7JziF91fL4EyVsma6s8UQ==
+X-Google-Smtp-Source: ABdhPJxL5L/dqtMLU8eglrRK4+pkCsIeAA+kIcRq8/oJXsL1Sx/dg6nEod+1dvGOt0AnvFCnoqtwgg==
+X-Received: by 2002:a2e:7c17:: with SMTP id x23mr9593284ljc.366.1604416000443;
+        Tue, 03 Nov 2020 07:06:40 -0800 (PST)
+Received: from localhost.localdomain (h-155-4-131-134.NA.cust.bahnhof.se. [155.4.131.134])
+        by smtp.gmail.com with ESMTPSA id a25sm3522169lfo.141.2020.11.03.07.06.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 03 Nov 2020 06:39:15 -0800 (PST)
-Received: by box.localdomain (Postfix, from userid 1000)
-        id 65F1510231C; Tue,  3 Nov 2020 17:39:16 +0300 (+03)
-Date:   Tue, 3 Nov 2020 17:39:16 +0300
-From:   "Kirill A. Shutemov" <kirill@shutemov.name>
-To:     Mike Rapoport <rppt@kernel.org>
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Andy Lutomirski <luto@kernel.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        Christoph Lameter <cl@linux.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Hildenbrand <david@redhat.com>,
-        David Rientjes <rientjes@google.com>,
-        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
-        Len Brown <len.brown@intel.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mike Rapoport <rppt@linux.ibm.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Will Deacon <will@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-pm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-        x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
-Subject: Re: [PATCH v3 2/4] PM: hibernate: make direct map manipulations more
- explicit
-Message-ID: <20201103143916.otz2o4h2dlmewn3h@box>
-References: <20201101170815.9795-1-rppt@kernel.org>
- <20201101170815.9795-3-rppt@kernel.org>
- <20201103110816.t6a3ebtgcm7mfogy@box>
- <20201103121350.GI4879@kernel.org>
+        Tue, 03 Nov 2020 07:06:39 -0800 (PST)
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Lorenzo Pieralisi <Lorenzo.Pieralisi@arm.com>,
+        linux-pm@vger.kernel.org
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Alexandre Torgue <alexandre.torgue@st.com>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v2 2/3] PM: domains: Enable dev_pm_genpd_suspend|resume() for suspend-to-idle
+Date:   Tue,  3 Nov 2020 16:06:26 +0100
+Message-Id: <20201103150627.233438-3-ulf.hansson@linaro.org>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20201103150627.233438-1-ulf.hansson@linaro.org>
+References: <20201103150627.233438-1-ulf.hansson@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201103121350.GI4879@kernel.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 03, 2020 at 02:13:50PM +0200, Mike Rapoport wrote:
-> On Tue, Nov 03, 2020 at 02:08:16PM +0300, Kirill A. Shutemov wrote:
-> > On Sun, Nov 01, 2020 at 07:08:13PM +0200, Mike Rapoport wrote:
-> > > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-> > > index 46b1804c1ddf..054c8cce4236 100644
-> > > --- a/kernel/power/snapshot.c
-> > > +++ b/kernel/power/snapshot.c
-> > > @@ -76,6 +76,32 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
-> > >  static inline void hibernate_restore_unprotect_page(void *page_address) {}
-> > >  #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
-> > >  
-> > > +static inline void hibernate_map_page(struct page *page, int enable)
-> > > +{
-> > > +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
-> > > +		unsigned long addr = (unsigned long)page_address(page);
-> > > +		int ret;
-> > > +
-> > > +		/*
-> > > +		 * This should not fail because remapping a page here means
-> > > +		 * that we only update protection bits in an existing PTE.
-> > > +		 * It is still worth to have WARN_ON() here if something
-> > > +		 * changes and this will no longer be the case.
-> > > +		 */
-> > > +		if (enable)
-> > > +			ret = set_direct_map_default_noflush(page);
-> > > +		else
-> > > +			ret = set_direct_map_invalid_noflush(page);
-> > > +
-> > > +		if (WARN_ON(ret))
-> > 
-> > _ONCE?
-> 
-> I've changed it to pr_warn() after David said people enable panic on
-> warn in production kernels.
+The dev_pm_genpd_suspend|resume() have so far only been used during the
+syscore suspend/resume phases. However, during suspend-to-idle, where the
+syscore phases doesn't exist, similar operations are sometimes needed.
 
-pr_warn_once()? :P
+An existing example are the timekeeping_suspend|resume() functions, which
+are being called both through a registered syscore ops during the syscore
+phases, but also as regular functions calls from cpuidle (via
+tick_freeze()) during suspend-to-idle.
 
+For similar reasons, let's enable the dev_pm_genpd_suspend|resume() APIs to
+be re-used for corresponding CPU devices that are attached to a genpd,
+during suspend-to-idle.
+
+Signed-off-by: Ulf Hansson <ulf.hansson@linaro.org>
+---
+
+Changes in v2:
+	- Renamed and add documentation of the APIs.
+	- Updated the commit message and its header.
+
+---
+ drivers/base/power/domain.c | 20 ++++++++++++++++----
+ 1 file changed, 16 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 9b4881b67683..4a55f3c949ae 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1366,18 +1366,27 @@ static void genpd_complete(struct device *dev)
+ static void genpd_switch_state(struct device *dev, bool suspend)
+ {
+ 	struct generic_pm_domain *genpd;
++	bool use_lock;
+ 
+ 	genpd = dev_to_genpd_safe(dev);
+ 	if (!genpd)
+ 		return;
+ 
++	use_lock = genpd_is_irq_safe(genpd);
++
++	if (use_lock)
++		genpd_lock(genpd);
++
+ 	if (suspend) {
+ 		genpd->suspended_count++;
+-		genpd_sync_power_off(genpd, false, 0);
++		genpd_sync_power_off(genpd, use_lock, 0);
+ 	} else {
+-		genpd_sync_power_on(genpd, false, 0);
++		genpd_sync_power_on(genpd, use_lock, 0);
+ 		genpd->suspended_count--;
+ 	}
++
++	if (use_lock)
++		genpd_unlock(genpd);
+ }
+ 
+ /**
+@@ -1385,7 +1394,9 @@ static void genpd_switch_state(struct device *dev, bool suspend)
+  * @dev: The device that is attached to the genpd, that can be suspended.
+  *
+  * This routine should typically be called for a device that needs to be
+- * suspended during the syscore suspend phase.
++ * suspended during the syscore suspend phase. It may also be called during
++ * suspend-to-idle to suspend a corresponding CPU device that is attached to a
++ * genpd.
+  */
+ void dev_pm_genpd_suspend(struct device *dev)
+ {
+@@ -1398,7 +1409,8 @@ EXPORT_SYMBOL_GPL(dev_pm_genpd_suspend);
+  * @dev: The device that is attached to the genpd, which needs to be resumed.
+  *
+  * This routine should typically be called for a device that needs to be resumed
+- * during the syscore resume phase.
++ * during the syscore resume phase. It may also be called during suspend-to-idle
++ * to resume a corresponding CPU device that is attached to a genpd.
+  */
+ void dev_pm_genpd_resume(struct device *dev)
+ {
 -- 
- Kirill A. Shutemov
+2.25.1
+
