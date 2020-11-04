@@ -2,127 +2,162 @@ Return-Path: <SRS0=WgFL=EK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F3D7DC2D0A3
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 18:56:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EA992C55179
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 20:34:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 967FD208C7
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 18:56:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9C4E72087D
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 20:34:21 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="Tyxa3OZ8"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="U2ezc04e"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731787AbgKDS4O (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Nov 2020 13:56:14 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59478 "EHLO
+        id S1732133AbgKDUeU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Nov 2020 15:34:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46554 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728675AbgKDS4O (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 13:56:14 -0500
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 73B14C0613D3
-        for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2020 10:56:12 -0800 (PST)
-Received: by mail-pg1-x52d.google.com with SMTP id 62so10057890pgg.12
-        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2020 10:56:12 -0800 (PST)
+        with ESMTP id S1732126AbgKDUeU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 15:34:20 -0500
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 072FDC0613D3;
+        Wed,  4 Nov 2020 12:34:20 -0800 (PST)
+Received: by mail-lj1-x241.google.com with SMTP id m16so24407221ljo.6;
+        Wed, 04 Nov 2020 12:34:19 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=5frHk8W4TX0vBPgk9ieAak19zZ8nMFl+vS8CXX8qUAc=;
-        b=Tyxa3OZ8oFuSDYomHUR8HLwuxB3ZB0ygJQZfqKXtNJsQKj/ijlDYVelzqenUz9gf1q
-         MUQi2rvt+lzL2oP5enfqluiyPXT+T72hS72DACeUBGolosebnNR3k1Fexd5HFKwHaYHs
-         kZPgYwipMxL0lF3sC8OndayvmqMAGA6volP9m6sSqj0Intf8xw8OEpX53uQ1iiuj4WfJ
-         8wfei5dyd6VayPC1oZw7R2iYi/gxkT2TkYuqX0X14hcne57L9RpIJ92HVq6NsuQpNHO7
-         SynSAvnZHQ8dcaoza8JmrxYEKLtCFpKX0Yqp2Hy1SCErnizOl27147ER8vGIpQ/h/KZQ
-         5Tdw==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=uupHzSrvUEtYcD/DIawVysd4yXQgmE4vD+y7+qxt6Iw=;
+        b=U2ezc04ej10ExV+0CyLzp4uqgAZAPzYkXBIJ4y2peICC07SPbkYjroOvm3uO9YeQGv
+         +C8zJxQJMHrt1u+SL3sGbag4fiKg/zfdV+NBK2Hmyfx+3P+DAm4EauKJgbgH023QzoUz
+         ngO3wg82SW46XUV5EyILcGNeGoIowLFVlx93HKv+ZOF5n2sBgDgX49Qw4NUcNVNf2euj
+         wDYK0P88tsu+rGsbPBfCR38tmuWSRzTdhUhiSgXB9z3SnRC3a3kmHBZOH7zrpJxonLX/
+         uAN+pIXl+DwD1nvLF26M0pg02Tos8bGac5euFUTP8LB8mlbFnBFxNIGwDsqFNWTykqCB
+         qiGg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=5frHk8W4TX0vBPgk9ieAak19zZ8nMFl+vS8CXX8qUAc=;
-        b=X4HnQ97A+r2K0m7EX041WsgJvQHxoTobXJvx8CBpg35eftMtVNP787u992tdn7imCB
-         0azDYzWGr4aGT7CVtvlS1tBE4fVmvlHjUdG8EzhD9FdHP/CU1nkm04JpYJJJl6h6vMI5
-         IfMor00x3Xd72G4ULij0SgOZE2DKEC22AmoKdeokjmBJ8jBRqEgNk9rJMQBsXIGZ9RDQ
-         8oaq965rotdyy+cbYIKxlDX1JPADPYTDGw7aZnXLSO4qj1FRMlnuR3fiLnO/7WEL7+fL
-         GFjH4QFM49TztfrO06t7Yz/HlcfBlSC96h1n7xX/nJK5KSiSrDsBCarFv45pP+nMYZXy
-         tMtg==
-X-Gm-Message-State: AOAM530Qk3GZ+lS6mYBgr59Wadvz6NTVevtiiSQ2gHcMb7lOFH4PNbaf
-        xnBT81A/MQrTSQH0eiuBh1pE1Q==
-X-Google-Smtp-Source: ABdhPJy+aZYSnstGd9tg+8Iip8vH+7+0GdEhD/4XarX0J7YWAYtkVT+0bBD0ZbIzB4EeJLiaS+E6ow==
-X-Received: by 2002:a65:4b81:: with SMTP id t1mr6581395pgq.263.1604516171108;
-        Wed, 04 Nov 2020 10:56:11 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id z206sm2745980pfc.3.2020.11.04.10.56.10
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=uupHzSrvUEtYcD/DIawVysd4yXQgmE4vD+y7+qxt6Iw=;
+        b=Omou78XoNpjktU7uoFPGxYrcrMOAT0Y9XuLYrRvSdJ5u0UKTT+2sFg3pkuC3RW89jp
+         2kZZYgf3w2api33+OkRYRtj07AsTlmjGvloFo0WkpeZytzNd3rRIR8f3UBFS5DTods5b
+         K3jv6gXFyt54YFneDi7iimg2gIN+Wlp9uppuDerqnjwkklY1+66nAHxOH3xeKGISoJml
+         jubYpsBZ6NH9s2UA2Shn+yzkzKodnkzTnBS0lo9eSomn2ODdaDZ8GorVenpQ95xMoY/L
+         CzfSyLFVc9pN0TCBbupxhVYunhzVqzMNbmMzB7l/r+oUzyKPL3vlhwlXFRbG7d4PXeXl
+         GfTg==
+X-Gm-Message-State: AOAM530L0ZRcljXpgrYhr7iPG5XFH7OKmmMpmpMLJ0D2fV9d+dTsPWQp
+        o6/JcXn+RwJPAKY4iZb6IiE=
+X-Google-Smtp-Source: ABdhPJxGq5biOfdM5okW6Eec6fIh7ZyYN13nU6kKvftLBxvRrRbwWYLAfWcEjdQXJubPSyIqi7160g==
+X-Received: by 2002:a2e:9148:: with SMTP id q8mr11976153ljg.182.1604522058483;
+        Wed, 04 Nov 2020 12:34:18 -0800 (PST)
+Received: from localhost.localdomain (109-252-192-83.dynamic.spd-mgts.ru. [109.252.192.83])
+        by smtp.gmail.com with ESMTPSA id u22sm615084ljk.45.2020.11.04.12.34.17
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2020 10:56:10 -0800 (PST)
-Message-ID: <5fa2f94a.1c69fb81.ce782.53e8@mx.google.com>
-Date:   Wed, 04 Nov 2020 10:56:10 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        Wed, 04 Nov 2020 12:34:17 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v5 1/4] dt-bindings: mfd: Add ENE KB930 Embedded Controller binding
+Date:   Wed,  4 Nov 2020 23:34:00 +0300
+Message-Id: <20201104203403.24937-2-digetx@gmail.com>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201104203403.24937-1-digetx@gmail.com>
+References: <20201104203403.24937-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Kernel: v5.10-rc2-15-gdddc237beebb
-X-Kernelci-Tree: pm
-X-Kernelci-Report-Type: test
-X-Kernelci-Branch: testing
-Subject: pm/testing sleep: 3 runs, 1 regressions (v5.10-rc2-15-gdddc237beebb)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 3 runs, 1 regressions (v5.10-rc2-15-gdddc237beebb)
+Add binding document for the ENE KB930 Embedded Controller.
 
-Regressions Summary
--------------------
+Reviewed-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ .../devicetree/bindings/mfd/ene-kb930.yaml    | 66 +++++++++++++++++++
+ 1 file changed, 66 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/mfd/ene-kb930.yaml
 
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+diff --git a/Documentation/devicetree/bindings/mfd/ene-kb930.yaml b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
+new file mode 100644
+index 000000000000..635c8966ca22
+--- /dev/null
++++ b/Documentation/devicetree/bindings/mfd/ene-kb930.yaml
+@@ -0,0 +1,66 @@
++# SPDX-License-Identifier: GPL-2.0-only OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/mfd/ene-kb930.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: ENE KB930 Embedded Controller bindings
++
++description: |
++  This binding describes the ENE KB930 Embedded Controller attached to an
++  I2C bus.
++
++maintainers:
++  - Dmitry Osipenko <digetx@gmail.com>
++
++properties:
++  compatible:
++    items:
++      - enum:
++        - acer,a500-iconia-ec # Acer A500 Iconia tablet device
++      - enum:
++        - ene,kb930
++  reg:
++    maxItems: 1
++
++  monitored-battery: true
++  power-supplies: true
++  system-power-controller: true
++
++required:
++  - compatible
++  - reg
++
++additionalProperties: false
++
++examples:
++  - |
++    battery: battery-cell {
++      compatible = "simple-battery";
++      charge-full-design-microamp-hours = <3260000>;
++      energy-full-design-microwatt-hours = <24000000>;
++      operating-range-celsius = <0 40>;
++    };
++
++    mains: ac-adapter {
++      compatible = "gpio-charger";
++      charger-type = "mains";
++      gpios = <&gpio 125 0>;
++    };
++
++    i2c {
++      #address-cells = <1>;
++      #size-cells = <0>;
++
++      embedded-controller@58 {
++        compatible = "acer,a500-iconia-ec", "ene,kb930";
++        reg = <0x58>;
++
++        system-power-controller;
++
++        monitored-battery = <&battery>;
++        power-supplies = <&mains>;
++      };
++    };
++
++...
+-- 
+2.27.0
 
-
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
-2-15-gdddc237beebb/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.10-rc2-15-gdddc237beebb
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      dddc237beebb79a67a6e2cc18b6a0a29a3a7a89c =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/5fa2ecee2f325a49d2fb5309
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc2-15-gdddc2=
-37beebb/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc2-15-gdddc2=
-37beebb/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-1022.0/arm64/rootfs.cpio.gz =
-
-
-
-  * sleep.login: https://kernelci.org/test/case/id/5fa2ecee2f325a49d2fb530a
-        failing since 76 days (last pass: v5.8-107-gb72b3ea38c81, first fai=
-l: v5.9-rc1-4-g1f08d51cd57f) =
-
- =20
