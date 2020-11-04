@@ -2,184 +2,329 @@ Return-Path: <SRS0=WgFL=EK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A6A68C388F7
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 10:38:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5027BC2D0A3
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 10:47:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 58CC8223AB
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 10:38:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D0ED6223AB
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 10:47:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="XSVTnpXv"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bvkw1V5h"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729589AbgKDKiL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Nov 2020 05:38:11 -0500
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:47744 "EHLO
-        mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729593AbgKDKhq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 05:37:46 -0500
-Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
-        by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20201104103727euoutp02b8ad885a9649d5dfac21ef52b0ed053e~ER72iwR1X2851928519euoutp02V
-        for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2020 10:37:27 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20201104103727euoutp02b8ad885a9649d5dfac21ef52b0ed053e~ER72iwR1X2851928519euoutp02V
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1604486247;
-        bh=2a12Ishl6dROfsBuQFSa17sVXwF7PkvSSX4ixHc5NZE=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=XSVTnpXvVIMSvFgZmeqCF/B8VONTwLh4V0JaoQ83jNaWuoWkgKLGvmKLjIZNw+zaP
-         LpNEe12z6OrBMc/olBConvkASSu8cfnBU2abKajKZ3ehTA4k5DKPC3nNoWj2TFbaF2
-         pRyitlNeI03e1ec1U+/quXbGGJiDbfdJ4AESRv8Y=
-Received: from eusmges1new.samsung.com (unknown [203.254.199.242]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTP id
-        20201104103726eucas1p2cd33ec5d3a164cc9c09a166fb136006b~ER72MDlCo1144911449eucas1p2q;
-        Wed,  4 Nov 2020 10:37:26 +0000 (GMT)
-Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges1new.samsung.com (EUCPMTA) with SMTP id A7.8F.06456.66482AF5; Wed,  4
-        Nov 2020 10:37:26 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20201104103726eucas1p2e8f7c32f13b4232d925e901284ada13d~ER71udMfb1145811458eucas1p2n;
-        Wed,  4 Nov 2020 10:37:26 +0000 (GMT)
-Received: from eusmgms1.samsung.com (unknown [182.198.249.179]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20201104103726eusmtrp1e530e1fe73ff14deca6c32d24728480c~ER71tjWgu0613806138eusmtrp1Z;
-        Wed,  4 Nov 2020 10:37:26 +0000 (GMT)
-X-AuditID: cbfec7f2-7efff70000001938-15-5fa28466ef04
-Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms1.samsung.com (EUCPMTA) with SMTP id 0F.75.06314.46482AF5; Wed,  4
-        Nov 2020 10:37:24 +0000 (GMT)
-Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
-        eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20201104103724eusmtip2a27f0801494ca72c6885d4086cb9b9bc~ER7z97sjL1005710057eusmtip28;
-        Wed,  4 Nov 2020 10:37:24 +0000 (GMT)
-From:   Sylwester Nawrocki <s.nawrocki@samsung.com>
-To:     georgi.djakov@linaro.org, cw00.choi@samsung.com, krzk@kernel.org
-Cc:     devicetree@vger.kernel.org, robh+dt@kernel.org,
-        a.swigon@samsung.com, myungjoo.ham@samsung.com,
-        inki.dae@samsung.com, sw0312.kim@samsung.com,
-        b.zolnierkie@samsung.com, m.szyprowski@samsung.com,
+        id S1729453AbgKDKrv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Nov 2020 05:47:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38548 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1727923AbgKDKru (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 05:47:50 -0500
+Received: from mail-wr1-x429.google.com (mail-wr1-x429.google.com [IPv6:2a00:1450:4864:20::429])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 28E08C0613D3
+        for <linux-pm@vger.kernel.org>; Wed,  4 Nov 2020 02:47:49 -0800 (PST)
+Received: by mail-wr1-x429.google.com with SMTP id 33so10711410wrl.7
+        for <linux-pm@vger.kernel.org>; Wed, 04 Nov 2020 02:47:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=GU32s5mPA9T+LP1F/Et8vMr9fZ2JQ8mwg1UEQD4eWu8=;
+        b=bvkw1V5hKN78NW4QcZv9NyVdAIrb4vlvn+od6Ecp1ixk+F46RTb0wcfOa80Qq18s+w
+         HVzrEYJEHvPHzr3yqcX0wjNYt/eAcnYRClzwoZCyAjIR5GIbgvmbeRbAlDhUh4TRskPT
+         D0FC72KWXp2Qz6LqicFC9ZDDmaLxqXyRFuUxLfwM97V88Zc9wZV9wxW2Y/dvncM9PRuh
+         1x9crXHaHDHOVBrAEeo6Z9f2k/30OpE3Z+72DRH7I96IleySEAe0xurcUUChFAfc0pip
+         Qs3QGkfbEL9tf+OwIfK15yME27NfJlaEZ3Z59xfsI59BNK04+Z/HCyqHylbQV6L6PFxw
+         guYA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=GU32s5mPA9T+LP1F/Et8vMr9fZ2JQ8mwg1UEQD4eWu8=;
+        b=MSnL6N271s5tsqv8eUnZ+Ja4Qb6hyHhqZiwEnB9jAdCJmN1kqDrLHbXmv0Ka4StkYP
+         isEqAO/sKk6K4AfPI2R/dPJLFkSfG5zay6Jw9+AYF3ABAig+SCdpAeN+npQl9ojPSA7C
+         GBsViu/w8+ZmD5fNwg+i8vThzK/u/meIYR76VLDMjKyjH0LXUcu/reVEER5bXV8g0sIy
+         nVS58iIu8N8mZalYQ+LXRBKFQ/hRkgBS/OqPBzyMEtibf08d1w/nNEuRbEejbDuDhu0P
+         nci1wlVE5xxa7xqAcy3IGEPVBKFV9bgy27jGeV71vtj8dfagdi0lwvHiiaErNxsGDlKf
+         pdiw==
+X-Gm-Message-State: AOAM532uTyrpNJ8E0i8F4tHQEjEdJ9PPSMyrfh9VV+ta7Hz3ugQmBlyw
+        kGC51SkWgmFRI53MvJuJxpxOYQ==
+X-Google-Smtp-Source: ABdhPJyVVftmmCjQPFNPPQ9Lslx9/HJFb5cVfCD00RdpvBxgIMnw65tEU707bNVVt8vDraA6F+fboQ==
+X-Received: by 2002:adf:ebc6:: with SMTP id v6mr30159657wrn.427.1604486867742;
+        Wed, 04 Nov 2020 02:47:47 -0800 (PST)
+Received: from ?IPv6:2a01:e34:ed2f:f020:9024:99cb:b881:4beb? ([2a01:e34:ed2f:f020:9024:99cb:b881:4beb])
+        by smtp.googlemail.com with ESMTPSA id u3sm1950444wrq.19.2020.11.04.02.47.46
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Wed, 04 Nov 2020 02:47:47 -0800 (PST)
+Subject: Re: [PATCH 4/4] powercap/drivers/dtpm: Add CPU energy model based
+ support
+To:     Lukasz Luba <lukasz.luba@arm.com>
+Cc:     rafael@kernel.org, srinivas.pandruvada@linux.intel.com,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-samsung-soc@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com
-Subject: [PATCH v8 4/7] PM / devfreq: exynos-bus: Add registration of
- interconnect child device
-Date:   Wed,  4 Nov 2020 11:36:54 +0100
-Message-Id: <20201104103657.18007-5-s.nawrocki@samsung.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201104103657.18007-1-s.nawrocki@samsung.com>
-X-Brightmail-Tracker: H4sIAAAAAAAAA0WSfSzUcRzH973fw/2Ys59j8x2irtTUkB7mO25NTXV/NLX1RxuiKz8P447d
-        D8XaKM+PJ1ouM+dpo7PCxWXEjMu1CUOoKMpzpZpjU1rl56f67/39fF7vz+e9z74UJm4kHKgo
-        ZTyjUspjJKQlbuj7PuQenl4denglcz+arsgAqFnTSKCJtUUCaY2DBHq5/pVEpZ16EhVPF+Fo
-        aKhJiPSz4wQabS8nkbnACJBmqEuAHhrfCtHkrXoSZXQahaj3cxaBNCXLpJ+NTK/LIWVT409J
-        2XSeSSB7XJsiK2zRAZlZ73yBDLSUhjExUYmMyvPEFcvItPefiLh2mxsb6gksFdRa5wILCtLH
-        YM3SnCAXWFJiuh7AhZlVkn+sAXg/XQM4SkybAdTNXcwF1LZjuOksz9QBuKw2Yv8MrTXfSM5A
-        0l6w4FnhttmO9oeZ8xU4B2F0NgYNbcUY17Cl5TBtbAXnNE67wq43r4XcBhHtC1tzbvLxXGBD
-        U/c2bkFL4bA5TcjNgXSPEPZO9uJ8In9Y3kfyvC38aGoR8toJ9pfk4zyfBmB+x+SOuQjAaVMl
-        4ClfODX4g+QGYbQbbGz35MsnYcvoXYyfbw1frdhwZWxLFhtKd8oimJ0p5ul9cFNXKuC1A8yb
-        +72TTAZ/Nvvw51ED+KRBTRQBl7L/uyoB0AF7JoFVRDCsl5K57sHKFWyCMsLjWqxCD7a+Uf8v
-        02obWB+52gNoCkisRN2GqlAxIU9kkxQ9AFKYxE50aqA/RCwKkyclM6rYUFVCDMP2AEcKl9iL
-        jlYvXxbTEfJ4Jpph4hjV366AsnBIBX5dPmdC6gJSguxnCKfVIM0R75oAC6l28UCzdrNhM1mb
-        FejaZ+87cycmuazV0eX4uS8f7klTleo9DxRVBruO2Ufr75LzrMzh8dGVA2Nj3hkLEqkxp67l
-        kpv78zFTgN0u9nZt8AxsH9U2dZwPcj60Vzpyuo3a7WR4sTQfOVDYsREswdlIuddBTMXK/wCa
-        E0XOQgMAAA==
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprAIsWRmVeSWpSXmKPExsVy+t/xe7opLYviDU7st7G4P6+V0WLjjPWs
-        Fte/PGe1mH/kHKvFla/v2Sym793EZjHp/gQWi/PnN7BbbHp8jdXi8q45bBafe48wWsw4v4/J
-        Yu2Ru+wWtxtXsFm07j3CbnH4TTurxYzJL9kcBD02repk87hzbQ+bx/3u40wem5fUe/RtWcXo
-        8XmTXABblJ5NUX5pSapCRn5xia1StKGFkZ6hpYWekYmlnqGxeayVkamSvp1NSmpOZllqkb5d
-        gl5G88PXrAW7BCt+9F9nbmBcwtfFyMEhIWAicXGDexcjF4eQwFJGiUMbfzJDxKUk5rcodTFy
-        ApnCEn+udbFB1HxilHj99zczSIJNwFCi92gfI4gtIuAhcap1LSuIzSwwg1ni9CxTEFtYIF5i
-        9ar/YPUsAqoS+27dZAeZzytgLbG1swZivrzE6g0HwEo4BWwkLn5uZgexhYBKFj8/xzSBkW8B
-        I8MqRpHU0uLc9NxiQ73ixNzi0rx0veT83E2MwNjYduzn5h2MlzYGH2IU4GBU4uE9sG1hvBBr
-        YllxZe4hRgkOZiURXqezp+OEeFMSK6tSi/Lji0pzUosPMZoC3TSRWUo0OR8Yt3kl8YamhuYW
-        lobmxubGZhZK4rwdAgdjhATSE0tSs1NTC1KLYPqYODilGhgXCsd+/GHMwNzVG7r9pOR8/tAv
-        Zndma7K6TmM6urPpycWKN6ZLzdu80ysOzd8iHNrz95fg5OO2qyKPah8+yqB249zvh+Ebi86c
-        VDY3sTyss2uWXtTRLH9prrd1LpqSz16sTT3tYWv64+VF01zp5gX/mvXjtrD7fju2NPMKZ8r6
-        p60q3wu6WHcpsRRnJBpqMRcVJwIAyEniaKMCAAA=
-X-CMS-MailID: 20201104103726eucas1p2e8f7c32f13b4232d925e901284ada13d
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20201104103726eucas1p2e8f7c32f13b4232d925e901284ada13d
-X-EPHeader: CA
-CMS-TYPE: 201P
-X-CMS-RootMailID: 20201104103726eucas1p2e8f7c32f13b4232d925e901284ada13d
-References: <20201104103657.18007-1-s.nawrocki@samsung.com>
-        <CGME20201104103726eucas1p2e8f7c32f13b4232d925e901284ada13d@eucas1p2.samsung.com>
+        rui.zhang@intel.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Palmer Dabbelt <palmerdabbelt@google.com>,
+        Anup Patel <anup.patel@wdc.com>,
+        Atish Patra <atish.patra@wdc.com>,
+        Marc Zyngier <maz@kernel.org>,
+        Andrew Jones <drjones@redhat.com>,
+        Michael Kelley <mikelley@microsoft.com>,
+        Mike Leach <mike.leach@linaro.org>,
+        Kajol Jain <kjain@linux.ibm.com>,
+        Daniel Jordan <daniel.m.jordan@oracle.com>,
+        Steven Price <steven.price@arm.com>
+References: <20201006122024.14539-1-daniel.lezcano@linaro.org>
+ <20201006122024.14539-5-daniel.lezcano@linaro.org>
+ <e8feea30-e5d5-9504-a42a-99fde9fdd64a@arm.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <ebdd4728-9105-49ef-e2a6-a17c2a502f34@linaro.org>
+Date:   Wed, 4 Nov 2020 11:47:45 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
+MIME-Version: 1.0
+In-Reply-To: <e8feea30-e5d5-9504-a42a-99fde9fdd64a@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds registration of a child platform device for the exynos
-interconnect driver. It is assumed that the interconnect provider will
-only be needed when #interconnect-cells property is present in the bus
-DT node, hence the child device will be created only when such a property
-is present.
 
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
----
-Changes for v8, v7, v6:
- - none.
+Hi Lukasz,
 
-Changes for v5:
- - new patch.
----
- drivers/devfreq/exynos-bus.c | 17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
 
-diff --git a/drivers/devfreq/exynos-bus.c b/drivers/devfreq/exynos-bus.c
-index 1e684a4..ee300ee 100644
---- a/drivers/devfreq/exynos-bus.c
-+++ b/drivers/devfreq/exynos-bus.c
-@@ -24,6 +24,7 @@
- 
- struct exynos_bus {
- 	struct device *dev;
-+	struct platform_device *icc_pdev;
- 
- 	struct devfreq *devfreq;
- 	struct devfreq_event_dev **edev;
-@@ -156,6 +157,8 @@ static void exynos_bus_exit(struct device *dev)
- 	if (ret < 0)
- 		dev_warn(dev, "failed to disable the devfreq-event devices\n");
- 
-+	platform_device_unregister(bus->icc_pdev);
-+
- 	dev_pm_opp_of_remove_table(dev);
- 	clk_disable_unprepare(bus->clk);
- 	if (bus->opp_table) {
-@@ -168,6 +171,8 @@ static void exynos_bus_passive_exit(struct device *dev)
- {
- 	struct exynos_bus *bus = dev_get_drvdata(dev);
- 
-+	platform_device_unregister(bus->icc_pdev);
-+
- 	dev_pm_opp_of_remove_table(dev);
- 	clk_disable_unprepare(bus->clk);
- }
-@@ -432,6 +437,18 @@ static int exynos_bus_probe(struct platform_device *pdev)
- 	if (ret < 0)
- 		goto err;
- 
-+	/* Create child platform device for the interconnect provider */
-+	if (of_get_property(dev->of_node, "#interconnect-cells", NULL)) {
-+		    bus->icc_pdev = platform_device_register_data(
-+						dev, "exynos-generic-icc",
-+						PLATFORM_DEVID_AUTO, NULL, 0);
-+
-+		    if (IS_ERR(bus->icc_pdev)) {
-+			    ret = PTR_ERR(bus->icc_pdev);
-+			    goto err;
-+		    }
-+	}
-+
- 	max_state = bus->devfreq->profile->max_state;
- 	min_freq = (bus->devfreq->profile->freq_table[0] / 1000);
- 	max_freq = (bus->devfreq->profile->freq_table[max_state - 1] / 1000);
+On 23/10/2020 15:27, Lukasz Luba wrote:
+> Hi Daniel,
+> 
+> 
+> On 10/6/20 1:20 PM, Daniel Lezcano wrote:
+>> With the powercap dtpm controller, we are able to plug devices with
+>> power limitation features in the tree.
+>>
+>> The following patch introduces the CPU power limitation based on the
+>> energy model and the performance states.
+>>
+>> The power limitation is done at the performance domain level. If some
+>> CPUs are unplugged, the corresponding power will be substracted from
+>> the performance domain total power.
+>>
+>> It is up to the platform to initialize the dtpm tree and add the CPU.
+>>
+>> Here is an example to create a simple tree with one root node called
+>> "pkg" and the cpu's performance domains.
+
+[ ... ]
+
+>> +static int set_pd_power_limit(struct powercap_zone *pcz, int cid,
+>> +                  u64 power_limit)
+>> +{
+>> +    struct dtpm *dtpm = to_dtpm(pcz);
+>> +    struct dtpm_cpu *dtpm_cpu = dtpm->private;
+>> +    struct em_perf_domain *pd;
+>> +    unsigned long freq;
+>> +    int i, nr_cpus;
+>> +
+>> +    spin_lock(&dtpm->lock);
+>> +
+>> +    power_limit = clamp_val(power_limit, dtpm->power_min,
+>> dtpm->power_max);
+>> +
+>> +    pd = em_cpu_get(dtpm_cpu->cpu);
+>> +
+>> +    nr_cpus = cpumask_weight(to_cpumask(pd->cpus));
+>> +
+>> +    for (i = 0; i < pd->nr_perf_states; i++) {
+>> +
+>> +        u64 power = pd->table[i].power * MICROWATT_PER_MILLIWATT;
+>> +
+>> +        if ((power * nr_cpus) > power_limit)
+> 
+> We have one node in that DTPM hierarchy tree, which represents all CPUs
+> which are in 'related_cpus' mask. I saw below that we just remove the
+> node in hotplug.
+
+The last CPU hotplugged will remove the node.
+
+> I have put a comment below asking if we could change the registration,
+> which will affect power calculation.
+> 
+> 
+>> +            break;
+>> +    }
+>> +
+>> +    freq = pd->table[i - 1].frequency;
+>> +
+>> +    freq_qos_update_request(&dtpm_cpu->qos_req, freq);
+>> +
+>> +    dtpm->power_limit = power_limit;
+>> +
+>> +    spin_unlock(&dtpm->lock);
+>> +
+>> +    return 0;
+>> +}
+>> +
+>> +static int get_pd_power_limit(struct powercap_zone *pcz, int cid, u64
+>> *data)
+>> +{
+>> +    struct dtpm *dtpm = to_dtpm(pcz);
+>> +
+>> +    spin_lock(&dtpm->lock);
+>> +    *data = dtpm->power_max;
+>> +    spin_unlock(&dtpm->lock);
+>> +
+>> +    return 0;
+>> +}
+>> +
+>> +static int get_pd_power_uw(struct powercap_zone *pcz, u64 *power_uw)
+>> +{
+>> +    struct dtpm *dtpm = to_dtpm(pcz);
+>> +    struct dtpm_cpu *dtpm_cpu = dtpm->private;
+>> +    struct em_perf_domain *pd;
+>> +    unsigned long freq;
+>> +    int i, nr_cpus;
+>> +
+>> +    freq = cpufreq_quick_get(dtpm_cpu->cpu);
+>> +    pd = em_cpu_get(dtpm_cpu->cpu);
+>> +    nr_cpus = cpumask_weight(to_cpumask(pd->cpus));
+>> +
+>> +    for (i = 0; i < pd->nr_perf_states; i++) {
+>> +
+>> +        if (pd->table[i].frequency < freq)
+>> +            continue;
+>> +
+>> +        *power_uw = pd->table[i].power *
+>> +            MICROWATT_PER_MILLIWATT * nr_cpus;
+> 
+> Same here, we have 'nr_cpus'.
+> 
+>> +
+>> +        return 0;
+>> +    }
+>> +
+>> +    return -EINVAL;
+>> +}
+>> +
+>> +static int cpu_release_zone(struct powercap_zone *pcz)
+>> +{
+>> +    struct dtpm *dtpm = to_dtpm(pcz);
+>> +    struct dtpm_cpu *dtpm_cpu = dtpm->private;
+>> +
+>> +    freq_qos_remove_request(&dtpm_cpu->qos_req);
+>> +
+>> +    return dtpm_release_zone(pcz);
+>> +}
+>> +
+>> +static struct powercap_zone_constraint_ops pd_constraint_ops = {
+>> +    .set_power_limit_uw = set_pd_power_limit,
+>> +    .get_power_limit_uw = get_pd_power_limit,
+>> +};
+>> +
+>> +static struct powercap_zone_ops pd_zone_ops = {
+>> +    .get_power_uw = get_pd_power_uw,
+>> +    .release = cpu_release_zone,
+>> +};
+>> +
+>> +static int cpuhp_dtpm_cpu_offline(unsigned int cpu)
+>> +{
+>> +    struct cpufreq_policy *policy;
+>> +    struct em_perf_domain *pd;
+>> +    struct dtpm *dtpm;
+>> +
+>> +    policy = cpufreq_cpu_get(cpu);
+>> +
+>> +    if (!policy)
+>> +        return 0;
+>> +
+>> +    pd = em_cpu_get(cpu);
+>> +    if (!pd)
+>> +        return -EINVAL;
+>> +
+>> +    dtpm = per_cpu(dtpm_per_cpu, cpu);
+>> +
+>> +    power_sub(dtpm, pd);
+>> +
+>> +    if (cpumask_weight(policy->cpus) != 1)
+>> +        return 0;
+>> +
+>> +    for_each_cpu(cpu, policy->related_cpus)
+>> +        per_cpu(dtpm_per_cpu, cpu) = NULL;
+> 
+> Hotplugging one CPU would affect others. I would keep them
+> all but marked somehow that CPU is offline.
+
+No, the last one will remove the node. This is checked in the test above
+(policy->cpus) != 1 ...
+
+>> +
+>> +    dtpm_unregister(dtpm);
+> 
+> Could we keep the node in the hierarchy on CPU hotplug?
+
+[ ... ]
+
+>> diff --git a/include/linux/dtpm.h b/include/linux/dtpm.h
+>> index 6696bdcfdb87..b62215a13baa 100644
+>> --- a/include/linux/dtpm.h
+>> +++ b/include/linux/dtpm.h
+>> @@ -70,4 +70,7 @@ int dtpm_register_parent(const char *name, struct
+>> dtpm *dtpm,
+>>   int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm
+>> *parent,
+>>             struct powercap_zone_ops *ops, int nr_constraints,
+>>             struct powercap_zone_constraint_ops *const_ops);
+>> +
+>> +int dtpm_register_cpu(struct dtpm *parent);
+>> +
+>>   #endif
+>>
+> 
+> I have a few comments for this DTPM CPU.
+> 
+> 1. Maybe we can register these CPUs differently. First register
+> the parent node as a separate dtpm based on 'policy->related_cpus. Then
+> register new children nodes, one for each CPU. When the CPU is up, mark
+> it as 'active'.
+> 
+> 2. We don't remove the node when the CPU is hotplugged, but we mark it
+> '!active' Or 'offline'. The power calculation could be done in upper
+> node, which takes into account that flag for children.
+> 
+> 3. We would only remove the node when it's module is unloaded (e.g. GPU)
+> 
+> That would make the tree more stable and also more detailed.
+> We would also account the power properly when one CPU went offline, but
+> the other are still there.
+> 
+> What do you think?
+
+The paradigm of the DTPM is the intermediate nodes (have children), are
+aggregating the power of their children and do not represent the real
+devices. The leaves are the real devices which are power manageable.
+
+In our case, the CPU DTPM is based on the performance state which is a
+group of CPUs, hence it is a leaf of the tree.
+
+I think you misunderstood the power is recomputed when the CPU is
+switched on/off and the node is removed when the last CPU is hotplugged.
+
+eg. 1000mW max per CPU, a performance domain with 4 CPUs.
+
+With all CPUs on, max power is 4000mW
+With 3 CPUs on, and 1 CPU off, max power is 3000mW
+
+etc...
+
+With 4 CPUs off, the node is removed.
+
+If the hardware evolves with a performance domain per CPU, we will end
+up with a leaf per CPU and a "cluster" on top of them.
+
+
 -- 
-2.7.4
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
