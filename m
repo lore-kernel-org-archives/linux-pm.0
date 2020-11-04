@@ -2,122 +2,214 @@ Return-Path: <SRS0=WgFL=EK=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EC77DC4742C
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:54:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 88BB0C4741F
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 17:35:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 968992080D
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:54:14 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="XM0pGDcM"
+	by mail.kernel.org (Postfix) with ESMTP id 3183420759
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 17:35:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732019AbgKDQyN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Nov 2020 11:54:13 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39690 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731403AbgKDQte (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 11:49:34 -0500
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3CA13C0613D3;
-        Wed,  4 Nov 2020 08:49:34 -0800 (PST)
-Received: by mail-lf1-x142.google.com with SMTP id l2so28077946lfk.0;
-        Wed, 04 Nov 2020 08:49:34 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AHtzrrepL8FLGGKPOwuB3OE0fpn5LFvoU4c2khdwzPk=;
-        b=XM0pGDcMd53mhhwvHwq2NuOHBudK621+lRSRX6ORhsBYU/+mmOkgtziFDbI04bAlDd
-         qAHJdK6azj3WR5sywwArvU0OlgtQxXMsZ/utcCcNBveXgtwsiGD2W9kGZ/2rMxlqmeov
-         hNZpXL8P/4NIyQOKW5BKS8TrBGIUx9gzgvr8O/vEQ7lq+OzNEdVLnOyqD45K61A7kFfN
-         6nNUAuvmw708ErfFqgWuzzvzU1kHkKh2ZedrRdqb1HWauu/GK4l9DsB/1OPJTvQGA8Ae
-         fMZfB/IK4UC+rXzjtX0iieh+/OAPCprZ6FR98khPEjEtxcBVnNvV+OVfSI0Lztvyf8Yx
-         Nq+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AHtzrrepL8FLGGKPOwuB3OE0fpn5LFvoU4c2khdwzPk=;
-        b=kEDl/G6fiBerktxrxtntM8Kgg6XzhgJlsoWnAsUfZ+QCH1h5o2tC4JPpKLcY13cxs2
-         vrSJUMtAjZa6J3Wk7haQTlnQIS/TUKZrqUHwvC0K3dTpxfm5vnYn5JZGk2a4SrnhY6lR
-         k9HJVYRlFNcZPT2hW3UjnuHP2JJqqffSh9oyxdo51tjyA6cO2L6Y/bFSbrR9rB6U2hSG
-         ADNWdNJKqNPcy2izaNLneE2kHyKJspBaNhoQEr9QY3SsC6AFShPcJ4I22lT3P2709W+B
-         pUGhoRClNWJ3FRs8IHI3kJDAmOX/5lGRD44x0fntnKz9hIEbFsgz/ITDSHFnV1jazWD7
-         HP9A==
-X-Gm-Message-State: AOAM532ly6Fx7ci+ZEpnOVx2IIqszCGapJXFtwuRzh5c11MNbxZiToqN
-        no9g/ft4JenWl7x9W+YtHTE=
-X-Google-Smtp-Source: ABdhPJzb2kabU1emK04P7CDpE6ygpI0Ouh+Sky5hlfE9yzMJYFBqyj9cy/H74kx+Re6BsAu8ih58Cw==
-X-Received: by 2002:a19:c8c2:: with SMTP id y185mr1328884lff.29.1604508572781;
-        Wed, 04 Nov 2020 08:49:32 -0800 (PST)
-Received: from localhost.localdomain (109-252-192-83.dynamic.spd-mgts.ru. [109.252.192.83])
-        by smtp.gmail.com with ESMTPSA id m2sm454587lfo.25.2020.11.04.08.49.31
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2020 08:49:32 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-Subject: [PATCH v7 02/47] soc/tegra: fuse: Export tegra_read_ram_code()
-Date:   Wed,  4 Nov 2020 19:48:38 +0300
-Message-Id: <20201104164923.21238-3-digetx@gmail.com>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201104164923.21238-1-digetx@gmail.com>
-References: <20201104164923.21238-1-digetx@gmail.com>
+        id S1728305AbgKDRfz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Nov 2020 12:35:55 -0500
+Received: from mx2.suse.de ([195.135.220.15]:45490 "EHLO mx2.suse.de"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729162AbgKDRfz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 4 Nov 2020 12:35:55 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 03279AD64;
+        Wed,  4 Nov 2020 17:35:53 +0000 (UTC)
+Subject: Re: [PATCH v4 1/4] mm: introduce debug_pagealloc_map_pages() helper
+To:     Mike Rapoport <rppt@kernel.org>,
+        Andrew Morton <akpm@linux-foundation.org>
+Cc:     Albert Ou <aou@eecs.berkeley.edu>,
+        Andy Lutomirski <luto@kernel.org>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        Christoph Lameter <cl@linux.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Hildenbrand <david@redhat.com>,
+        David Rientjes <rientjes@google.com>,
+        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+        "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+        "Kirill A. Shutemov" <kirill@shutemov.name>,
+        Len Brown <len.brown@intel.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Mike Rapoport <rppt@linux.ibm.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Will Deacon <will@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, linux-pm@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+        x86@kernel.org
+References: <20201103162057.22916-1-rppt@kernel.org>
+ <20201103162057.22916-2-rppt@kernel.org>
+From:   Vlastimil Babka <vbabka@suse.cz>
+Message-ID: <971e9638-2395-daf4-d19e-fe3cf5d34b98@suse.cz>
+Date:   Wed, 4 Nov 2020 18:35:50 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201103162057.22916-2-rppt@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The tegra_read_ram_code() is used by EMC drivers and we're going to make
-these driver modular, hence this function needs to be exported.
+On 11/3/20 5:20 PM, Mike Rapoport wrote:
+> From: Mike Rapoport <rppt@linux.ibm.com>
+> 
+> When CONFIG_DEBUG_PAGEALLOC is enabled, it unmaps pages from the kernel
+> direct mapping after free_pages(). The pages than need to be mapped back
+> before they could be used. Theese mapping operations use
+> __kernel_map_pages() guarded with with debug_pagealloc_enabled().
+> 
+> The only place that calls __kernel_map_pages() without checking whether
+> DEBUG_PAGEALLOC is enabled is the hibernation code that presumes
+> availability of this function when ARCH_HAS_SET_DIRECT_MAP is set.
+> Still, on arm64, __kernel_map_pages() will bail out when DEBUG_PAGEALLOC is
+> not enabled but set_direct_map_invalid_noflush() may render some pages not
+> present in the direct map and hibernation code won't be able to save such
+> pages.
+> 
+> To make page allocation debugging and hibernation interaction more robust,
+> the dependency on DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP has to be made
+> more explicit.
+> 
+> Start with combining the guard condition and the call to
+> __kernel_map_pages() into a single debug_pagealloc_map_pages() function to
+> emphasize that __kernel_map_pages() should not be called without
+> DEBUG_PAGEALLOC and use this new function to map/unmap pages when page
+> allocation debug is enabled.
+> 
+> Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> Reviewed-by: David Hildenbrand <david@redhat.com>
+> Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
 
-Acked-by: Thierry Reding <treding@nvidia.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
----
- drivers/soc/tegra/fuse/tegra-apbmisc.c | 2 ++
- 1 file changed, 2 insertions(+)
+Acked-by: Vlastimil Babka <vbabka@suse.cz>
 
-diff --git a/drivers/soc/tegra/fuse/tegra-apbmisc.c b/drivers/soc/tegra/fuse/tegra-apbmisc.c
-index cee207d10024..590c862538d0 100644
---- a/drivers/soc/tegra/fuse/tegra-apbmisc.c
-+++ b/drivers/soc/tegra/fuse/tegra-apbmisc.c
-@@ -3,6 +3,7 @@
-  * Copyright (c) 2014, NVIDIA CORPORATION.  All rights reserved.
-  */
- 
-+#include <linux/export.h>
- #include <linux/kernel.h>
- #include <linux/of.h>
- #include <linux/of_address.h>
-@@ -90,6 +91,7 @@ u32 tegra_read_ram_code(void)
- 
- 	return straps >> PMC_STRAPPING_OPT_A_RAM_CODE_SHIFT;
- }
-+EXPORT_SYMBOL_GPL(tegra_read_ram_code);
- 
- static const struct of_device_id apbmisc_match[] __initconst = {
- 	{ .compatible = "nvidia,tegra20-apbmisc", },
--- 
-2.27.0
+But, the "enable" param is hideous. I would rather have map and unmap variants 
+(and just did the same split for page poisoning) and this seems to be a good 
+opportunity. If David didn't propose it already, I'm surprised ;)
+
+> ---
+>   include/linux/mm.h  | 10 ++++++++++
+>   mm/memory_hotplug.c |  3 +--
+>   mm/page_alloc.c     |  6 ++----
+>   mm/slab.c           |  8 +++-----
+>   4 files changed, 16 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/mm.h b/include/linux/mm.h
+> index ef360fe70aaf..1fc0609056dc 100644
+> --- a/include/linux/mm.h
+> +++ b/include/linux/mm.h
+> @@ -2936,12 +2936,22 @@ kernel_map_pages(struct page *page, int numpages, int enable)
+>   {
+>   	__kernel_map_pages(page, numpages, enable);
+>   }
+> +
+> +static inline void debug_pagealloc_map_pages(struct page *page,
+> +					     int numpages, int enable)
+> +{
+> +	if (debug_pagealloc_enabled_static())
+> +		__kernel_map_pages(page, numpages, enable);
+> +}
+> +
+>   #ifdef CONFIG_HIBERNATION
+>   extern bool kernel_page_present(struct page *page);
+>   #endif	/* CONFIG_HIBERNATION */
+>   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+>   static inline void
+>   kernel_map_pages(struct page *page, int numpages, int enable) {}
+> +static inline void debug_pagealloc_map_pages(struct page *page,
+> +					     int numpages, int enable) {}
+>   #ifdef CONFIG_HIBERNATION
+>   static inline bool kernel_page_present(struct page *page) { return true; }
+>   #endif	/* CONFIG_HIBERNATION */
+> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+> index b44d4c7ba73b..e2b6043a4428 100644
+> --- a/mm/memory_hotplug.c
+> +++ b/mm/memory_hotplug.c
+> @@ -614,8 +614,7 @@ void generic_online_page(struct page *page, unsigned int order)
+>   	 * so we should map it first. This is better than introducing a special
+>   	 * case in page freeing fast path.
+>   	 */
+> -	if (debug_pagealloc_enabled_static())
+> -		kernel_map_pages(page, 1 << order, 1);
+> +	debug_pagealloc_map_pages(page, 1 << order, 1);
+>   	__free_pages_core(page, order);
+>   	totalram_pages_add(1UL << order);
+>   #ifdef CONFIG_HIGHMEM
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> index 23f5066bd4a5..9a66a1ff9193 100644
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1272,8 +1272,7 @@ static __always_inline bool free_pages_prepare(struct page *page,
+>   	 */
+>   	arch_free_page(page, order);
+>   
+> -	if (debug_pagealloc_enabled_static())
+> -		kernel_map_pages(page, 1 << order, 0);
+> +	debug_pagealloc_map_pages(page, 1 << order, 0);
+>   
+>   	kasan_free_nondeferred_pages(page, order);
+>   
+> @@ -2270,8 +2269,7 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
+>   	set_page_refcounted(page);
+>   
+>   	arch_alloc_page(page, order);
+> -	if (debug_pagealloc_enabled_static())
+> -		kernel_map_pages(page, 1 << order, 1);
+> +	debug_pagealloc_map_pages(page, 1 << order, 1);
+>   	kasan_alloc_pages(page, order);
+>   	kernel_poison_pages(page, 1 << order, 1);
+>   	set_page_owner(page, order, gfp_flags);
+> diff --git a/mm/slab.c b/mm/slab.c
+> index b1113561b98b..340db0ce74c4 100644
+> --- a/mm/slab.c
+> +++ b/mm/slab.c
+> @@ -1431,10 +1431,8 @@ static bool is_debug_pagealloc_cache(struct kmem_cache *cachep)
+>   #ifdef CONFIG_DEBUG_PAGEALLOC
+>   static void slab_kernel_map(struct kmem_cache *cachep, void *objp, int map)
+>   {
+> -	if (!is_debug_pagealloc_cache(cachep))
+> -		return;
+> -
+> -	kernel_map_pages(virt_to_page(objp), cachep->size / PAGE_SIZE, map);
+> +	debug_pagealloc_map_pages(virt_to_page(objp),
+> +				  cachep->size / PAGE_SIZE, map);
+>   }
+>   
+>   #else
+> @@ -2062,7 +2060,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)
+>   
+>   #if DEBUG
+>   	/*
+> -	 * If we're going to use the generic kernel_map_pages()
+> +	 * If we're going to use the generic debug_pagealloc_map_pages()
+>   	 * poisoning, then it's going to smash the contents of
+>   	 * the redzone and userword anyhow, so switch them off.
+>   	 */
+> 
 
