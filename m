@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25B28C4741F
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:53:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 83939C4742C
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:53:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D97202072C
-	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:53:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3BEFD206FA
+	for <linux-pm@archiver.kernel.org>; Wed,  4 Nov 2020 16:53:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l28eK///"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="VVcD04CQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731821AbgKDQxM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 4 Nov 2020 11:53:12 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39774 "EHLO
+        id S1731475AbgKDQtx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 4 Nov 2020 11:49:53 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39764 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731519AbgKDQty (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 11:49:54 -0500
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 578F2C0613D3;
-        Wed,  4 Nov 2020 08:49:54 -0800 (PST)
-Received: by mail-lf1-x141.google.com with SMTP id l2so28079515lfk.0;
-        Wed, 04 Nov 2020 08:49:54 -0800 (PST)
+        with ESMTP id S1731326AbgKDQtw (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 4 Nov 2020 11:49:52 -0500
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4BFBEC0613D3;
+        Wed,  4 Nov 2020 08:49:52 -0800 (PST)
+Received: by mail-lj1-x243.google.com with SMTP id p15so23744534ljj.8;
+        Wed, 04 Nov 2020 08:49:52 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=0Wup0jgVqkx9Z2UtrB2UQcATbTsL4I5PHiSg5IeKsK8=;
-        b=l28eK///7thfjpdLXMWhiHHWDQvoZhEFc21hkIrW2nmkPIUnISNVVRI5Q5kttUvAbX
-         HefPgitvaywJSbF6hjkjoFVpJ+2vLQ1/dFZZpb+bUt+Bd4DxzoTw2p8Pvp7REtz56vUg
-         ZHVZ9iLdALzbjUUucAR9l9J4mD4IGqTTlPq5tydYJ76/GVhIfZOufiSYBwQZddQyZRYj
-         wFlNveXYjeo+wcTWahXrWJxKYwnXBLjx0voygI6w+I9jYZCnW5VCNLXRbvFT2K06PAWJ
-         fm3BMEPBOl8NH1mb3ry3IqtrsJjEFsAz9jQEW2dapu+g01OSIcXuz6T6tcfI9l3+G+ju
-         OpdQ==
+        bh=oxnHcBpTwsbel9FOdCvOvGcVMdtgauZnQmlNHsVp5Wk=;
+        b=VVcD04CQnH0c3BLQrXh1uddglBv/7SPhavdQ0eJWso/vY0grDbo/Fkxh6Dly4r1flg
+         HoLEVy45sSPa95Cv5f9egO84I0o2e62MNpX/YWIG4fesDCJLNF0ShRD8yI+pXWVTFWDy
+         HIyJVT4NNrK9rCvpaPMA7/C2auJ7b2GUh3S6uzgyJq8mEPtfKAhbeupDW/kygT++WMnH
+         3/lJZcuFt2cbBV3Mjjstc7IYIOGp6oFmRI09L+IQUrYVJ4S/rDLtXMGwJBiw5Y2ptbJS
+         JGcWEX6o5xcSJRblb2Qjej7mGKHIDwNOjFI9JVDBzoI47aw9YYtufsziYW64mkWNSvRN
+         NeYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=0Wup0jgVqkx9Z2UtrB2UQcATbTsL4I5PHiSg5IeKsK8=;
-        b=Edx1ekzz88sMMTdMKhb2GDEEa2qulL5GMCX79EcKLMB7t4QvlupgUtnK9Yzky9/FID
-         d0I3uK0bCP1fuRAkk98cEkBhV6nL9gqKBjZXoNrx1cPUESzwepWCH8vLFokvE3oaLg6V
-         cbhmRtZSw7hbELL8x4bzikUhc2HmKBEbddp8C/sNIn+KJu7O+O5ksioeHueGXN6WwZcl
-         0R2FvVHL7zEQcijBuHfGHcae+/Xzg8c4m9TeB69p0wpKfRCYwpyc3U18gobQmrEu5Lnh
-         h1V6alzEI8ZmBed3EnO8tACiB5qcizO9kXzY3+ZD35fTMqm5JgP8jL+oPRfkGGfCwZFP
-         BMXQ==
-X-Gm-Message-State: AOAM531C6u8ihrYmXmrPlqRZN9R75OyvuEEgZcV7GInCmfRGiYu0v3ft
-        uvJDyuUFMRx4XUbaiXJfJTE=
-X-Google-Smtp-Source: ABdhPJxEeFZ6vuDc7FfaiND2otyL3xiZBcK7Vgh1+tUpTMHt4Cy8mql9zhsl6OV8nvicmg7VAmJMHw==
-X-Received: by 2002:a19:c8c6:: with SMTP id y189mr3343699lff.502.1604508592892;
-        Wed, 04 Nov 2020 08:49:52 -0800 (PST)
+        bh=oxnHcBpTwsbel9FOdCvOvGcVMdtgauZnQmlNHsVp5Wk=;
+        b=Ty2y4Sp12/4+UvenvgPJQ7Q1liGrlMTjEttZBka/CpONTVbHJH3js2DrMpeu+Q9bZZ
+         WsO6Z3RjCprT0UUyDiJyZ0HPR4KWl0KIJO163NM5Ak3VqFvkq+o4151QuGu9hEtOO2ml
+         styiD2y69ex4ZRSnbOVrwVFHc5rDN4B7Q0W1cbHfBV3i5EPVfdwPoTc2jNnq3qdbFE4R
+         i6qK5v94h2cLgX5+p8ldCJVseqIiO/LrmxJXBrE/EqeLQhWPzI27ECn/zYIZR3bQUUFG
+         xrTm0YY0YmKRACoxLzg64dXBfR88hiMXKeUrGkOqyquam+fEPIOi7+2SGT4OQxITQX6s
+         5G3A==
+X-Gm-Message-State: AOAM531d0gWYfebQtmBjmKCveuIUtxkWrms6PymQj45vAEX99Ix1Oz5I
+        vLgz6irIYC9Azp7qUAWzKG8=
+X-Google-Smtp-Source: ABdhPJzhfBMXlYWI18S++MTSPZhU9UyR3dQHKwnTiL0Uyf2OU3YVTGaRl9rOjVXV4E2ZDw6q4aFHtg==
+X-Received: by 2002:a2e:9cd2:: with SMTP id g18mr8150866ljj.164.1604508590557;
+        Wed, 04 Nov 2020 08:49:50 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-83.dynamic.spd-mgts.ru. [109.252.192.83])
-        by smtp.gmail.com with ESMTPSA id m2sm454587lfo.25.2020.11.04.08.49.51
+        by smtp.gmail.com with ESMTPSA id m2sm454587lfo.25.2020.11.04.08.49.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 04 Nov 2020 08:49:52 -0800 (PST)
+        Wed, 04 Nov 2020 08:49:50 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -77,9 +77,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v7 19/47] dt-bindings: memory: tegra124: Add memory client IDs
-Date:   Wed,  4 Nov 2020 19:48:55 +0300
-Message-Id: <20201104164923.21238-20-digetx@gmail.com>
+Subject: [PATCH v7 17/47] dt-bindings: memory: tegra20: Add memory client IDs
+Date:   Wed,  4 Nov 2020 19:48:53 +0300
+Message-Id: <20201104164923.21238-18-digetx@gmail.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201104164923.21238-1-digetx@gmail.com>
 References: <20201104164923.21238-1-digetx@gmail.com>
@@ -91,87 +91,72 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 Each memory client has unique hardware ID, add these IDs.
 
-Reviewed-by: Rob Herring <robh@kernel.org>
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- include/dt-bindings/memory/tegra124-mc.h | 68 ++++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+ include/dt-bindings/memory/tegra20-mc.h | 53 +++++++++++++++++++++++++
+ 1 file changed, 53 insertions(+)
 
-diff --git a/include/dt-bindings/memory/tegra124-mc.h b/include/dt-bindings/memory/tegra124-mc.h
-index 186e6b7e9b35..7e73bb400eca 100644
---- a/include/dt-bindings/memory/tegra124-mc.h
-+++ b/include/dt-bindings/memory/tegra124-mc.h
-@@ -54,4 +54,72 @@
- #define TEGRA124_MC_RESET_ISP2B		22
- #define TEGRA124_MC_RESET_GPU		23
+diff --git a/include/dt-bindings/memory/tegra20-mc.h b/include/dt-bindings/memory/tegra20-mc.h
+index 35e131eee198..6f8829508ad0 100644
+--- a/include/dt-bindings/memory/tegra20-mc.h
++++ b/include/dt-bindings/memory/tegra20-mc.h
+@@ -18,4 +18,57 @@
+ #define TEGRA20_MC_RESET_VDE		13
+ #define TEGRA20_MC_RESET_VI		14
  
-+#define TEGRA124_MC_PTCR		0
-+#define TEGRA124_MC_DISPLAY0A		1
-+#define TEGRA124_MC_DISPLAY0AB		2
-+#define TEGRA124_MC_DISPLAY0B		3
-+#define TEGRA124_MC_DISPLAY0BB		4
-+#define TEGRA124_MC_DISPLAY0C		5
-+#define TEGRA124_MC_DISPLAY0CB		6
-+#define TEGRA124_MC_AFIR		14
-+#define TEGRA124_MC_AVPCARM7R		15
-+#define TEGRA124_MC_DISPLAYHC		16
-+#define TEGRA124_MC_DISPLAYHCB		17
-+#define TEGRA124_MC_HDAR		21
-+#define TEGRA124_MC_HOST1XDMAR		22
-+#define TEGRA124_MC_HOST1XR		23
-+#define TEGRA124_MC_MSENCSRD		28
-+#define TEGRA124_MC_PPCSAHBDMAR		29
-+#define TEGRA124_MC_PPCSAHBSLVR		30
-+#define TEGRA124_MC_SATAR		31
-+#define TEGRA124_MC_VDEBSEVR		34
-+#define TEGRA124_MC_VDEMBER		35
-+#define TEGRA124_MC_VDEMCER		36
-+#define TEGRA124_MC_VDETPER		37
-+#define TEGRA124_MC_MPCORELPR		38
-+#define TEGRA124_MC_MPCORER		39
-+#define TEGRA124_MC_MSENCSWR		43
-+#define TEGRA124_MC_AFIW		49
-+#define TEGRA124_MC_AVPCARM7W		50
-+#define TEGRA124_MC_HDAW		53
-+#define TEGRA124_MC_HOST1XW		54
-+#define TEGRA124_MC_MPCORELPW		56
-+#define TEGRA124_MC_MPCOREW		57
-+#define TEGRA124_MC_PPCSAHBDMAW		59
-+#define TEGRA124_MC_PPCSAHBSLVW		60
-+#define TEGRA124_MC_SATAW		61
-+#define TEGRA124_MC_VDEBSEVW		62
-+#define TEGRA124_MC_VDEDBGW		63
-+#define TEGRA124_MC_VDEMBEW		64
-+#define TEGRA124_MC_VDETPMW		65
-+#define TEGRA124_MC_ISPRA		68
-+#define TEGRA124_MC_ISPWA		70
-+#define TEGRA124_MC_ISPWB		71
-+#define TEGRA124_MC_XUSB_HOSTR		74
-+#define TEGRA124_MC_XUSB_HOSTW		75
-+#define TEGRA124_MC_XUSB_DEVR		76
-+#define TEGRA124_MC_XUSB_DEVW		77
-+#define TEGRA124_MC_ISPRAB		78
-+#define TEGRA124_MC_ISPWAB		80
-+#define TEGRA124_MC_ISPWBB		81
-+#define TEGRA124_MC_TSECSRD		84
-+#define TEGRA124_MC_TSECSWR		85
-+#define TEGRA124_MC_A9AVPSCR		86
-+#define TEGRA124_MC_A9AVPSCW		87
-+#define TEGRA124_MC_GPUSRD		88
-+#define TEGRA124_MC_GPUSWR		89
-+#define TEGRA124_MC_DISPLAYT		90
-+#define TEGRA124_MC_SDMMCRA		96
-+#define TEGRA124_MC_SDMMCRAA		97
-+#define TEGRA124_MC_SDMMCR		98
-+#define TEGRA124_MC_SDMMCRAB		99
-+#define TEGRA124_MC_SDMMCWA		100
-+#define TEGRA124_MC_SDMMCWAA		101
-+#define TEGRA124_MC_SDMMCW		102
-+#define TEGRA124_MC_SDMMCWAB		103
-+#define TEGRA124_MC_VICSRD		108
-+#define TEGRA124_MC_VICSWR		109
-+#define TEGRA124_MC_VIW			114
-+#define TEGRA124_MC_DISPLAYD		115
++#define TEGRA20_MC_DISPLAY0A		0
++#define TEGRA20_MC_DISPLAY0AB		1
++#define TEGRA20_MC_DISPLAY0B		2
++#define TEGRA20_MC_DISPLAY0BB		3
++#define TEGRA20_MC_DISPLAY0C		4
++#define TEGRA20_MC_DISPLAY0CB		5
++#define TEGRA20_MC_DISPLAY1B		6
++#define TEGRA20_MC_DISPLAY1BB		7
++#define TEGRA20_MC_EPPUP		8
++#define TEGRA20_MC_G2PR			9
++#define TEGRA20_MC_G2SR			10
++#define TEGRA20_MC_MPEUNIFBR		11
++#define TEGRA20_MC_VIRUV		12
++#define TEGRA20_MC_AVPCARM7R		13
++#define TEGRA20_MC_DISPLAYHC		14
++#define TEGRA20_MC_DISPLAYHCB		15
++#define TEGRA20_MC_FDCDRD		16
++#define TEGRA20_MC_G2DR			17
++#define TEGRA20_MC_HOST1XDMAR		18
++#define TEGRA20_MC_HOST1XR		19
++#define TEGRA20_MC_IDXSRD		20
++#define TEGRA20_MC_MPCORER		21
++#define TEGRA20_MC_MPE_IPRED		22
++#define TEGRA20_MC_MPEAMEMRD		23
++#define TEGRA20_MC_MPECSRD		24
++#define TEGRA20_MC_PPCSAHBDMAR		25
++#define TEGRA20_MC_PPCSAHBSLVR		26
++#define TEGRA20_MC_TEXSRD		27
++#define TEGRA20_MC_VDEBSEVR		28
++#define TEGRA20_MC_VDEMBER		29
++#define TEGRA20_MC_VDEMCER		30
++#define TEGRA20_MC_VDETPER		31
++#define TEGRA20_MC_EPPU			32
++#define TEGRA20_MC_EPPV			33
++#define TEGRA20_MC_EPPY			34
++#define TEGRA20_MC_MPEUNIFBW		35
++#define TEGRA20_MC_VIWSB		36
++#define TEGRA20_MC_VIWU			37
++#define TEGRA20_MC_VIWV			38
++#define TEGRA20_MC_VIWY			39
++#define TEGRA20_MC_G2DW			40
++#define TEGRA20_MC_AVPCARM7W		41
++#define TEGRA20_MC_FDCDWR		42
++#define TEGRA20_MC_HOST1XW		43
++#define TEGRA20_MC_ISPW			44
++#define TEGRA20_MC_MPCOREW		45
++#define TEGRA20_MC_MPECSWR		46
++#define TEGRA20_MC_PPCSAHBDMAW		47
++#define TEGRA20_MC_PPCSAHBSLVW		48
++#define TEGRA20_MC_VDEBSEVW		49
++#define TEGRA20_MC_VDEMBEW		50
++#define TEGRA20_MC_VDETPMW		51
 +
  #endif
 -- 
