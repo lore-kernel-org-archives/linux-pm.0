@@ -2,228 +2,97 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EB605C00A89
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:34:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C097C00A89
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:37:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8D7C120936
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:34:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604576042;
-	bh=Bddnym2ScSgZW0MXOH6ivSBDQPosBdmDCn8iejOUWN0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=upSQ3TmiyUmafXPQ4vvmYo6F22NzuCQrjIFDcosDpsoQ+3OlcZsx2Eu9Lnx8N9Usv
-	 T//HZR0QZBKWzdCMu5U4wKzhuddPwhwbHBx0HTqgZcYPw56VugCGZBFzr2bXCmJkXi
-	 WrhlcMah8ZVk7mzUwxNHqyzp5mT8lo6em274zO/o=
+	by mail.kernel.org (Postfix) with ESMTP id 21D2020936
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:37:08 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HLeCb5Eq"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730244AbgKELdp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 06:33:45 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53756 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730015AbgKELcR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 5 Nov 2020 06:32:17 -0500
-Received: from kernel.org (unknown [2.55.183.164])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6CBFE2078E;
-        Thu,  5 Nov 2020 11:32:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1604575935;
-        bh=Bddnym2ScSgZW0MXOH6ivSBDQPosBdmDCn8iejOUWN0=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=lV6UuMgvF8R3zfaurE9MkrC6I4RRQ2ehwYW+6ca/MvBFcAHxNY9cvsP6pB/VOgFkz
-         490HRfm8GhZ2lwAZWCnAZGiXP7hhSKrUfsMb0TcYfEijy+kbMpqnBowIlTt59yIWhQ
-         v06Jxbw6wvDvaklmn4EOV9uG879gJBciLf4YrWYo=
-Date:   Thu, 5 Nov 2020 13:31:54 +0200
-From:   Mike Rapoport <rppt@kernel.org>
-To:     Vlastimil Babka <vbabka@suse.cz>
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Andy Lutomirski <luto@kernel.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        Christoph Lameter <cl@linux.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Hildenbrand <david@redhat.com>,
-        David Rientjes <rientjes@google.com>,
-        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
-        "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
-        "Kirill A. Shutemov" <kirill@shutemov.name>,
-        Len Brown <len.brown@intel.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mike Rapoport <rppt@linux.ibm.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Will Deacon <will@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-pm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v4 1/4] mm: introduce debug_pagealloc_map_pages() helper
-Message-ID: <20201105113154.GX4879@kernel.org>
-References: <20201103162057.22916-1-rppt@kernel.org>
- <20201103162057.22916-2-rppt@kernel.org>
- <971e9638-2395-daf4-d19e-fe3cf5d34b98@suse.cz>
+        id S1730484AbgKELgu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 06:36:50 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:45728 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730525AbgKELgp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 06:36:45 -0500
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 596EAC0613CF
+        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 03:36:44 -0800 (PST)
+Received: by mail-pg1-x542.google.com with SMTP id e21so1233306pgr.11
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 03:36:44 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=9nX6MrnGbrV8g0oNQ1XCMyTbppE1KSaLXnAch4lGiDo=;
+        b=HLeCb5EqJWh64lCAkn7kCbHtBY8KOc7cLuKk05dTMBxyvtljLoNrlfG3UkuVkSHZVG
+         ZLmN9tDU17kAbCI9yt3cUoCd3EvwDWoyiSqdVnDoCxNpeuVxDaFsYn94+Raq5eqv1Igm
+         RVGfpdj1McszdTKHNOMwCetsTGgNSDBGBSOy5e12nWG5BhXH5bIDvOfOp60lTBPjJKlG
+         0VGZG7dtN5JbkEM+aYFIMUpx+rFotlBuMkJXKhsZaUyV8IMa9yCokXHzkauFNP3wShlW
+         bdKaOEvQRHvTQV8Dxlz4E4E/MoiytcoVGri+jOwLuIMuofWZVxEZiWqkYQmdkhqxICE+
+         o1Gg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=9nX6MrnGbrV8g0oNQ1XCMyTbppE1KSaLXnAch4lGiDo=;
+        b=U989l5nW1iIH+XaVg0Jo8GIEzHqMWPAAMg7Ve+LtB53xOt49G9vXsMwVF9nkqojIym
+         WQVbCynAnhJP2wP3t/zudYbAihTiWwNdjdub2zcv4mZSedOh9VJCjAZu+LpKDEz6/nNA
+         q4aoVJ0hQxkJKK/0m3p1dUOOi2Xya3/ghBsCewP//vvHMyYKn9v97Z/+p8ye2JTCXIHo
+         nfj8q/E+7J4oQW13L2pguEGjS445i3CDiwHoT64YHHtiUSOk4g+0Q1GLL2omikOw1OBX
+         J3bvXupN9LghwsuZW+vCKVHqXzzqN23x+m5hBw4YrTY/y32TYgTw/is1jiz4JIQbjodk
+         1pfw==
+X-Gm-Message-State: AOAM533/APUAll+OhBF/+zQIPrTQc5pmuZ4JWt2UdbT++FBx/MFfOESS
+        D9Yu77KZSC0XFgCkGItLSsd8nQ==
+X-Google-Smtp-Source: ABdhPJykAJuGecKI0qUIgiERc0bqjbTR9lvBRzXdsizZqpBKWJRxDxQuQYfhRnU1PbWM/IriWuWsDw==
+X-Received: by 2002:aa7:9501:0:b029:155:3b11:d5c4 with SMTP id b1-20020aa795010000b02901553b11d5c4mr2076414pfp.76.1604576203874;
+        Thu, 05 Nov 2020 03:36:43 -0800 (PST)
+Received: from localhost ([122.172.12.172])
+        by smtp.gmail.com with ESMTPSA id k9sm2261001pfi.188.2020.11.05.03.36.42
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 05 Nov 2020 03:36:43 -0800 (PST)
+Date:   Thu, 5 Nov 2020 17:06:41 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     Zhang Rui <rui.zhang@intel.com>, Amit Kucheria <amitk@kernel.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] thermal: Rearrange thermal_zone_device_set_polling()
+Message-ID: <20201105113641.fnyugbdbhxovejuj@vireshk-i7>
+References: <c024f35421c67d7b1a3a20bc280fb5131ce6db43.1604567599.git.viresh.kumar@linaro.org>
+ <ce85bf38-c77c-c8f9-0bd6-f7c598078e7a@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <971e9638-2395-daf4-d19e-fe3cf5d34b98@suse.cz>
+In-Reply-To: <ce85bf38-c77c-c8f9-0bd6-f7c598078e7a@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 04, 2020 at 06:35:50PM +0100, Vlastimil Babka wrote:
-> On 11/3/20 5:20 PM, Mike Rapoport wrote:
-> > From: Mike Rapoport <rppt@linux.ibm.com>
+On 05-11-20, 12:32, Daniel Lezcano wrote:
+> On 05/11/2020 10:13, Viresh Kumar wrote:
+> > Rearrange thermal_zone_device_set_polling() to make it more readable and
+> > reduce duplicate code.
 > > 
-> > When CONFIG_DEBUG_PAGEALLOC is enabled, it unmaps pages from the kernel
-> > direct mapping after free_pages(). The pages than need to be mapped back
-> > before they could be used. Theese mapping operations use
-> > __kernel_map_pages() guarded with with debug_pagealloc_enabled().
-> > 
-> > The only place that calls __kernel_map_pages() without checking whether
-> > DEBUG_PAGEALLOC is enabled is the hibernation code that presumes
-> > availability of this function when ARCH_HAS_SET_DIRECT_MAP is set.
-> > Still, on arm64, __kernel_map_pages() will bail out when DEBUG_PAGEALLOC is
-> > not enabled but set_direct_map_invalid_noflush() may render some pages not
-> > present in the direct map and hibernation code won't be able to save such
-> > pages.
-> > 
-> > To make page allocation debugging and hibernation interaction more robust,
-> > the dependency on DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP has to be made
-> > more explicit.
-> > 
-> > Start with combining the guard condition and the call to
-> > __kernel_map_pages() into a single debug_pagealloc_map_pages() function to
-> > emphasize that __kernel_map_pages() should not be called without
-> > DEBUG_PAGEALLOC and use this new function to map/unmap pages when page
-> > allocation debug is enabled.
-> > 
-> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
-> > Reviewed-by: David Hildenbrand <david@redhat.com>
-> > Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
-> 
-> Acked-by: Vlastimil Babka <vbabka@suse.cz>
-> 
-> But, the "enable" param is hideous. I would rather have map and unmap
-> variants (and just did the same split for page poisoning) and this seems to
-> be a good opportunity. If David didn't propose it already, I'm surprised ;)
-
-I'm ok with map and unmap, and no, David didn't propose it already :)
-
+> > Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 > > ---
-> >   include/linux/mm.h  | 10 ++++++++++
-> >   mm/memory_hotplug.c |  3 +--
-> >   mm/page_alloc.c     |  6 ++----
-> >   mm/slab.c           |  8 +++-----
-> >   4 files changed, 16 insertions(+), 11 deletions(-)
-> > 
-> > diff --git a/include/linux/mm.h b/include/linux/mm.h
-> > index ef360fe70aaf..1fc0609056dc 100644
-> > --- a/include/linux/mm.h
-> > +++ b/include/linux/mm.h
-> > @@ -2936,12 +2936,22 @@ kernel_map_pages(struct page *page, int numpages, int enable)
-> >   {
-> >   	__kernel_map_pages(page, numpages, enable);
-> >   }
-> > +
-> > +static inline void debug_pagealloc_map_pages(struct page *page,
-> > +					     int numpages, int enable)
-> > +{
-> > +	if (debug_pagealloc_enabled_static())
-> > +		__kernel_map_pages(page, numpages, enable);
-> > +}
-> > +
-> >   #ifdef CONFIG_HIBERNATION
-> >   extern bool kernel_page_present(struct page *page);
-> >   #endif	/* CONFIG_HIBERNATION */
-> >   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
-> >   static inline void
-> >   kernel_map_pages(struct page *page, int numpages, int enable) {}
-> > +static inline void debug_pagealloc_map_pages(struct page *page,
-> > +					     int numpages, int enable) {}
-> >   #ifdef CONFIG_HIBERNATION
-> >   static inline bool kernel_page_present(struct page *page) { return true; }
-> >   #endif	/* CONFIG_HIBERNATION */
-> > diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> > index b44d4c7ba73b..e2b6043a4428 100644
-> > --- a/mm/memory_hotplug.c
-> > +++ b/mm/memory_hotplug.c
-> > @@ -614,8 +614,7 @@ void generic_online_page(struct page *page, unsigned int order)
-> >   	 * so we should map it first. This is better than introducing a special
-> >   	 * case in page freeing fast path.
-> >   	 */
-> > -	if (debug_pagealloc_enabled_static())
-> > -		kernel_map_pages(page, 1 << order, 1);
-> > +	debug_pagealloc_map_pages(page, 1 << order, 1);
-> >   	__free_pages_core(page, order);
-> >   	totalram_pages_add(1UL << order);
-> >   #ifdef CONFIG_HIGHMEM
-> > diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> > index 23f5066bd4a5..9a66a1ff9193 100644
-> > --- a/mm/page_alloc.c
-> > +++ b/mm/page_alloc.c
-> > @@ -1272,8 +1272,7 @@ static __always_inline bool free_pages_prepare(struct page *page,
-> >   	 */
-> >   	arch_free_page(page, order);
-> > -	if (debug_pagealloc_enabled_static())
-> > -		kernel_map_pages(page, 1 << order, 0);
-> > +	debug_pagealloc_map_pages(page, 1 << order, 0);
-> >   	kasan_free_nondeferred_pages(page, order);
-> > @@ -2270,8 +2269,7 @@ inline void post_alloc_hook(struct page *page, unsigned int order,
-> >   	set_page_refcounted(page);
-> >   	arch_alloc_page(page, order);
-> > -	if (debug_pagealloc_enabled_static())
-> > -		kernel_map_pages(page, 1 << order, 1);
-> > +	debug_pagealloc_map_pages(page, 1 << order, 1);
-> >   	kasan_alloc_pages(page, order);
-> >   	kernel_poison_pages(page, 1 << order, 1);
-> >   	set_page_owner(page, order, gfp_flags);
-> > diff --git a/mm/slab.c b/mm/slab.c
-> > index b1113561b98b..340db0ce74c4 100644
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -1431,10 +1431,8 @@ static bool is_debug_pagealloc_cache(struct kmem_cache *cachep)
-> >   #ifdef CONFIG_DEBUG_PAGEALLOC
-> >   static void slab_kernel_map(struct kmem_cache *cachep, void *objp, int map)
-> >   {
-> > -	if (!is_debug_pagealloc_cache(cachep))
-> > -		return;
-> > -
-> > -	kernel_map_pages(virt_to_page(objp), cachep->size / PAGE_SIZE, map);
-> > +	debug_pagealloc_map_pages(virt_to_page(objp),
-> > +				  cachep->size / PAGE_SIZE, map);
-> >   }
-> >   #else
-> > @@ -2062,7 +2060,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)
-> >   #if DEBUG
-> >   	/*
-> > -	 * If we're going to use the generic kernel_map_pages()
-> > +	 * If we're going to use the generic debug_pagealloc_map_pages()
-> >   	 * poisoning, then it's going to smash the contents of
-> >   	 * the redzone and userword anyhow, so switch them off.
-> >   	 */
-> > 
 > 
+> Hi Viresh,
+> 
+> I have a series where this function is reworked and conflicts with your
+> changes. The delay is converted into jiffies at init time and no
+> conversion happen in this function anymore.
+> 
+> Do you mind if we discard this patch ?
+
+Discarded :)
 
 -- 
-Sincerely yours,
-Mike.
+viresh
