@@ -2,181 +2,120 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.9 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,UNWANTED_LANGUAGE_BODY,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C86AC388F7
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 12:57:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BBD3FC00A89
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 13:06:08 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1912F20756
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 12:57:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 56E4420756
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 13:06:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1604581568;
+	bh=zqqMjXcLWsDo1oOrgHAtbn0aMm61BigDgIo3xMNjW3s=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=C475vy5T268hggwIWaw3sve0FgqUwGIMN2E1oV4XxqfcMohw6PRawzsYDOxzlBbHm
+	 0o4PDcLq9xkGoZjbpUeYOwi/00OEBSO4aiys0ZJ4MDutFFpf8jNt8/wTck8Wk6Ch8f
+	 5yujnWOrsSDa7IygcgJSlEvNZjXXpLzpUDGhlLR8=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730744AbgKEM4p (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 07:56:45 -0500
-Received: from foss.arm.com ([217.140.110.172]:60002 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730594AbgKEM4p (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 5 Nov 2020 07:56:45 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 43AB6142F;
-        Thu,  5 Nov 2020 04:56:44 -0800 (PST)
-Received: from e108754-lin.cambridge.arm.com (e108754-lin.cambridge.arm.com [10.1.198.32])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 0F4DB3F719;
-        Thu,  5 Nov 2020 04:56:42 -0800 (PST)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org,
-        sudeep.holla@arm.com
-Cc:     morten.rasmussen@arm.com, jeremy.linton@arm.com,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ionela.voinescu@arm.com
-Subject: [PATCH 3/8] cppc_cpufreq: simplify use of performance capabilities
-Date:   Thu,  5 Nov 2020 12:55:19 +0000
-Message-Id: <20201105125524.4409-4-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201105125524.4409-1-ionela.voinescu@arm.com>
-References: <20201105125524.4409-1-ionela.voinescu@arm.com>
+        id S1726777AbgKENGH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 08:06:07 -0500
+Received: from mail-ot1-f68.google.com ([209.85.210.68]:34016 "EHLO
+        mail-ot1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725468AbgKENGH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 08:06:07 -0500
+Received: by mail-ot1-f68.google.com with SMTP id j14so1341872ots.1;
+        Thu, 05 Nov 2020 05:06:06 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=kdZgb+k5dRx1eb1k/ksppuSD/98WX1sN0LMVhJbD6Rg=;
+        b=t23ZMnXX6xGpHg8GrvX18snEhLrzgFK0OrkIc4XZBGnT4l+/dqQVCvVoqTGr8utLDX
+         +F7O9wXlNlGsesxv5CwIB+auYfc7x7Jm6fw5SA+UtQ/8qEuKtspc2OHvNTCbzjMmFchv
+         JOhjMCy3zz39B5HbAvbUt0ImNcgvijJmdA0yVej8L6BGD+Mo0BILmtW/4RDuUEfUf9yf
+         rKRAIOLEsKvcuOuwauKzlb2lcwYqDbM5tUJPIhqKm6POjb93fp00Xj8HYHVi+X+6Mq7F
+         qyPSXBOphxnGBBA5lzK/8iAZ3m9e1tUscGtOQFbcCM3gAMoJ5r1eIUoSLj5Bqlbw186h
+         5KXQ==
+X-Gm-Message-State: AOAM531yW9nAsEpKtbmCVhrvlBN7uRNkTP0j794yXj5qrB7zxdr0LTo2
+        JI25782e1VDwy3HZVWc3wWxiPA/aSIEs5B/0ZKY=
+X-Google-Smtp-Source: ABdhPJzGcgK8kFkkRHcPJ7R6ZpgkZtLzu91vcYrqBSfeZKyD8GzRT5vpOuDGy5iawjTvnTj4D9+iz428w+vKigRUah8=
+X-Received: by 2002:a9d:222f:: with SMTP id o44mr1627406ota.321.1604581566378;
+ Thu, 05 Nov 2020 05:06:06 -0800 (PST)
+MIME-Version: 1.0
+References: <20201105125524.4409-1-ionela.voinescu@arm.com> <20201105125524.4409-9-ionela.voinescu@arm.com>
+In-Reply-To: <20201105125524.4409-9-ionela.voinescu@arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 5 Nov 2020 14:05:55 +0100
+Message-ID: <CAJZ5v0hheK3WrpKFXDUF1A4D9wt8ro3KJ73wqNwxn9DJyrt6zw@mail.gmail.com>
+Subject: Re: [PATCH 8/8] acpi: fix NONE coordination for domain mapping failure
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Len Brown <lenb@kernel.org>,
+        Sudeep Holla <sudeep.holla@arm.com>,
+        Morten Rasmussen <morten.rasmussen@arm.com>,
+        Jeremy Linton <jeremy.linton@arm.com>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The CPPC performance capabilities are used significantly throughout
-the driver. Simplify the use of them by introducing a local pointer
-"caps" to point to cpu_data->perf_caps, in functions that access
-performance capabilities often.
+On Thu, Nov 5, 2020 at 1:57 PM Ionela Voinescu <ionela.voinescu@arm.com> wrote:
+>
+> For errors parsing the _PSD domains, a separate domain is returned for
+> each CPU in the failed _PSD domain with no coordination (as per previous
+> comment). But contrary to the intention, the code was setting
+> CPUFREQ_SHARED_TYPE_ALL as coordination type.
+>
+> Change shared_type to CPUFREQ_SHARED_TYPE_NONE in case of errors parsing
+> the domain information. The function still return the error and the caller
+> is free to bail out the domain initialisation altogether in that case.
+>
+> Given that both functions return domains with a single CPU, this change
+> does not affect the functionality, but clarifies the intention.
 
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 40 +++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 17 deletions(-)
+Is this related to any other patches in the series?
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 317169453549..7cc9bd8568de 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -183,15 +183,16 @@ static int cppc_verify_policy(struct cpufreq_policy_data *policy)
- static void cppc_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	struct cppc_cpudata *cpu_data = all_cpu_data[policy->cpu];
-+	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
- 	unsigned int cpu = policy->cpu;
- 	int ret;
- 
--	cpu_data->perf_ctrls.desired_perf = cpu_data->perf_caps.lowest_perf;
-+	cpu_data->perf_ctrls.desired_perf = caps->lowest_perf;
- 
- 	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
- 	if (ret)
- 		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
--			 cpu_data->perf_caps.lowest_perf, cpu, ret);
-+			 caps->lowest_perf, cpu, ret);
- }
- 
- /*
-@@ -240,11 +241,12 @@ static unsigned int cppc_cpufreq_get_transition_delay_us(unsigned int cpu)
- static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
- 	struct cppc_cpudata *cpu_data = all_cpu_data[policy->cpu];
-+	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
- 	unsigned int cpu = policy->cpu;
- 	int ret = 0;
- 
- 	cpu_data->cpu = cpu;
--	ret = cppc_get_perf_caps(cpu, &cpu_data->perf_caps);
-+	ret = cppc_get_perf_caps(cpu, caps);
- 
- 	if (ret) {
- 		pr_debug("Err reading CPU%d perf capabilities. ret:%d\n",
-@@ -253,23 +255,27 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	}
- 
- 	/* Convert the lowest and nominal freq from MHz to KHz */
--	cpu_data->perf_caps.lowest_freq *= 1000;
--	cpu_data->perf_caps.nominal_freq *= 1000;
-+	caps->lowest_freq *= 1000;
-+	caps->nominal_freq *= 1000;
- 
- 	/*
- 	 * Set min to lowest nonlinear perf to avoid any efficiency penalty (see
- 	 * Section 8.4.7.1.1.5 of ACPI 6.1 spec)
- 	 */
--	policy->min = cppc_cpufreq_perf_to_khz(cpu_data, cpu_data->perf_caps.lowest_nonlinear_perf);
--	policy->max = cppc_cpufreq_perf_to_khz(cpu_data, cpu_data->perf_caps.nominal_perf);
-+	policy->min = cppc_cpufreq_perf_to_khz(cpu_data,
-+					       caps->lowest_nonlinear_perf);
-+	policy->max = cppc_cpufreq_perf_to_khz(cpu_data,
-+					       caps->nominal_perf);
- 
- 	/*
- 	 * Set cpuinfo.min_freq to Lowest to make the full range of performance
- 	 * available if userspace wants to use any perf between lowest & lowest
- 	 * nonlinear perf
- 	 */
--	policy->cpuinfo.min_freq = cppc_cpufreq_perf_to_khz(cpu_data, cpu_data->perf_caps.lowest_perf);
--	policy->cpuinfo.max_freq = cppc_cpufreq_perf_to_khz(cpu_data, cpu_data->perf_caps.nominal_perf);
-+	policy->cpuinfo.min_freq = cppc_cpufreq_perf_to_khz(cpu_data,
-+							    caps->lowest_perf);
-+	policy->cpuinfo.max_freq = cppc_cpufreq_perf_to_khz(cpu_data,
-+							    caps->nominal_perf);
- 
- 	policy->transition_delay_us = cppc_cpufreq_get_transition_delay_us(cpu);
- 	policy->shared_type = cpu_data->shared_type;
-@@ -283,7 +289,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 			if (unlikely(i == cpu))
- 				continue;
- 
--			memcpy(&all_cpu_data[i]->perf_caps, &cpu_data->perf_caps,
-+			memcpy(&all_cpu_data[i]->perf_caps, caps,
- 			       sizeof(cpu_data->perf_caps));
- 		}
- 	} else if (policy->shared_type == CPUFREQ_SHARED_TYPE_ALL) {
-@@ -298,18 +304,17 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	 * If 'highest_perf' is greater than 'nominal_perf', we assume CPU Boost
- 	 * is supported.
- 	 */
--	if (cpu_data->perf_caps.highest_perf > cpu_data->perf_caps.nominal_perf)
-+	if (caps->highest_perf > caps->nominal_perf)
- 		boost_supported = true;
- 
- 	/* Set policy->cur to max now. The governors will adjust later. */
--	policy->cur = cppc_cpufreq_perf_to_khz(cpu_data,
--					cpu_data->perf_caps.highest_perf);
--	cpu_data->perf_ctrls.desired_perf = cpu_data->perf_caps.highest_perf;
-+	policy->cur = cppc_cpufreq_perf_to_khz(cpu_data, caps->highest_perf);
-+	cpu_data->perf_ctrls.desired_perf =  caps->highest_perf;
- 
- 	ret = cppc_set_perf(cpu, &cpu_data->perf_ctrls);
- 	if (ret)
- 		pr_debug("Err setting perf value:%d on CPU:%d. ret:%d\n",
--			 cpu_data->perf_caps.highest_perf, cpu, ret);
-+			 caps->highest_perf, cpu, ret);
- 
- 	return ret;
- }
-@@ -368,6 +373,7 @@ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
- static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- {
- 	struct cppc_cpudata *cpu_data = all_cpu_data[policy->cpu];
-+	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
- 	int ret;
- 
- 	if (!boost_supported) {
-@@ -377,10 +383,10 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- 
- 	if (state)
- 		policy->max = cppc_cpufreq_perf_to_khz(cpu_data,
--					cpu_data->perf_caps.highest_perf);
-+						       caps->highest_perf);
- 	else
- 		policy->max = cppc_cpufreq_perf_to_khz(cpu_data,
--					cpu_data->perf_caps.nominal_perf);
-+						       caps->nominal_perf);
- 	policy->cpuinfo.max_freq = policy->max;
- 
- 	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
--- 
-2.17.1
-
+> Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
+> Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Viresh Kumar <viresh.kumar@linaro.org>
+> ---
+>  drivers/acpi/cppc_acpi.c         | 2 +-
+>  drivers/acpi/processor_perflib.c | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
+> index 75e36b909ae6..e1e46cc66eeb 100644
+> --- a/drivers/acpi/cppc_acpi.c
+> +++ b/drivers/acpi/cppc_acpi.c
+> @@ -477,7 +477,7 @@ int acpi_get_psd_map(unsigned int cpu, struct psd_data *domain)
+>         /* Assume no coordination on any error parsing domain info */
+>         cpumask_clear(domain->shared_cpu_map);
+>         cpumask_set_cpu(cpu, domain->shared_cpu_map);
+> -       domain->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+> +       domain->shared_type = CPUFREQ_SHARED_TYPE_NONE;
+>
+>         return -EFAULT;
+>  }
+> diff --git a/drivers/acpi/processor_perflib.c b/drivers/acpi/processor_perflib.c
+> index 5909e8fa4013..5ce638537791 100644
+> --- a/drivers/acpi/processor_perflib.c
+> +++ b/drivers/acpi/processor_perflib.c
+> @@ -710,7 +710,7 @@ int acpi_processor_preregister_performance(
+>                 if (retval) {
+>                         cpumask_clear(pr->performance->shared_cpu_map);
+>                         cpumask_set_cpu(i, pr->performance->shared_cpu_map);
+> -                       pr->performance->shared_type = CPUFREQ_SHARED_TYPE_ALL;
+> +                       pr->performance->shared_type = CPUFREQ_SHARED_TYPE_NONE;
+>                 }
+>                 pr->performance = NULL; /* Will be set for real in register */
+>         }
+> --
+> 2.17.1
+>
