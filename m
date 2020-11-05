@@ -2,105 +2,213 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6B06DC00A89
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:19:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C5154C4741F
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:34:01 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E279520A8B
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:19:50 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GioMw7Qm"
+	by mail.kernel.org (Postfix) with ESMTP id 6C2FD20A8B
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 11:34:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1604576041;
+	bh=XF8AFYO6bCr4yR/xfLGLwsLQBboi2XjYzZ3lYdi07mQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
+	b=JdxdHK4GMwxu2weYNyTb+xkzbhQsMGtrlPhlB1VF2JtuauHxDCaok3pkbnZccYWm3
+	 GSX54BHJYQHkun48rtIVlCY4iSJmuyYu7SMPot/FW4SVij3FaT2nUTn6pIWdCt2mAq
+	 ioNN5xKUp3c+mmpYsRDgKvUqat//QnnTtGZcRXLc=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726874AbgKELTu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 06:19:50 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43096 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726777AbgKELTt (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 06:19:49 -0500
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com [IPv6:2607:f8b0:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 969C0C0613CF;
-        Thu,  5 Nov 2020 03:19:49 -0800 (PST)
-Received: by mail-pg1-x543.google.com with SMTP id f38so1232293pgm.2;
-        Thu, 05 Nov 2020 03:19:49 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id;
-        bh=6LlDxVopvTXrZYYwDpHLRIcnyqCk1QP6hWaB4YmXDAA=;
-        b=GioMw7Qm8dt/8OrRBSfFZcZij1xGKpijpxDX/rNUGH2jXMCEFlGKkOO/9VZm7Q7OpV
-         vf1jlPButpWSR/f3tQKeNnyeaO7VIKVvmHBYLszKQiEI9FUw8UCxbH5HkuQZ5G7NG8RC
-         zacmnv1IZi4ZSmIGH1t9ryoc5bz4pmSpOdOqwajgY3vB8O6EnFBL3+I7Cm/L8RIoUWoN
-         0l9k54AnhZS3EYqnLD0Mg+HTa3fJIh3GgaOyHJEKbiImvD0KLA0TBIuH+1Hu1R4ZGbuh
-         y5/KGn97iLlFyuh9vUcVNhM7c4ACKW1DkTajPJgyXSZ/bl6cfre1WqMKeNvjT3At7+At
-         Imow==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=6LlDxVopvTXrZYYwDpHLRIcnyqCk1QP6hWaB4YmXDAA=;
-        b=mY4S0yvdv+pynggv75c+QYEWTeljlu0/7akX91uO2m/hnXZAC13N5LL1kn29TXsTIz
-         PIQH+TwgwGNVRxpBrZlsWmUl1tTplNK0FOw5o1TkHfBkNMFEHS10gRWAgShNHQvsj+AR
-         p7NFxKbC5QpxVso5zhyWjiGWBn42Z+VQqUG0Zh3lVdjwKwtiuaLLZ3Q6nDOK9PFwixQC
-         qIfh+IGbiIKVo9f8jZq83PZPLkXoiNjKU8w81BJ+FEPPPxlLaqfMGSZg2IRpV9tjwlSp
-         4ki/ACFQQlkdB/uv0MRijEwWLJAflfSDHcL/TYXXEmO6vREE2fSzIQK3vcHnIsb6snvO
-         uk6w==
-X-Gm-Message-State: AOAM531xzzograKMCIqhjvIccVR/YFC7KOuJ9edeBL+RaCGSnSAa7gq9
-        bR9EHCAWoy/zXrM/BkKH4IU=
-X-Google-Smtp-Source: ABdhPJwk+TpXZaS0XUcMx81Tj+dEYl+/2uiSGrGIMLNt42cLWXgtYqMJfpmDk6AZgW2BP1FCGDs9Zg==
-X-Received: by 2002:a17:90a:f2cd:: with SMTP id gt13mr1956116pjb.179.1604575189185;
-        Thu, 05 Nov 2020 03:19:49 -0800 (PST)
-Received: from mi-OptiPlex-7060.mioffice.cn ([209.9.72.215])
-        by smtp.gmail.com with ESMTPSA id n64sm2203486pfn.134.2020.11.05.03.19.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Nov 2020 03:19:48 -0800 (PST)
-From:   zhuguangqing83@gmail.com
-To:     amit.kachhap@gmail.com, daniel.lezcano@linaro.org,
-        viresh.kumar@linaro.org, javi.merino@kernel.org,
-        rui.zhang@intel.com, amitk@kernel.org
-Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        zhuguangqing <zhuguangqing@xiaomi.com>
-Subject: [PATCH] thermal/drivers/cpufreq_cooling: Update cpufreq_state only if state has changed
-Date:   Thu,  5 Nov 2020 19:19:14 +0800
-Message-Id: <20201105111914.9324-1-zhuguangqing83@gmail.com>
-X-Mailer: git-send-email 2.17.1
+        id S1730344AbgKELd5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 06:33:57 -0500
+Received: from mail.kernel.org ([198.145.29.99]:54232 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730342AbgKELdz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 5 Nov 2020 06:33:55 -0500
+Received: from kernel.org (unknown [2.55.183.164])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id B88CD2078E;
+        Thu,  5 Nov 2020 11:33:40 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1604576034;
+        bh=XF8AFYO6bCr4yR/xfLGLwsLQBboi2XjYzZ3lYdi07mQ=;
+        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+        b=O5NamY7Z8bpeRF5e27pgfGmymIeBQK9j8XG2gMXDjk8aw+eMLitnhVpAzHAcLwHhk
+         Sau6clNChqmtpHyfG8qukI1nlUaCTcmwOyX21+Rglf3ECyVc+/suIMbLHw9rP9no/V
+         w2/7NKEKvUcFmM9Q4PjHmX+gHCO2wRPhSdhuvRyw=
+Date:   Thu, 5 Nov 2020 13:33:33 +0200
+From:   Mike Rapoport <rppt@kernel.org>
+To:     Vlastimil Babka <vbabka@suse.cz>
+Cc:     Andrew Morton <akpm@linux-foundation.org>,
+        Albert Ou <aou@eecs.berkeley.edu>,
+        Andy Lutomirski <luto@kernel.org>,
+        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Catalin Marinas <catalin.marinas@arm.com>,
+        Christian Borntraeger <borntraeger@de.ibm.com>,
+        Christoph Lameter <cl@linux.com>,
+        "David S. Miller" <davem@davemloft.net>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        David Hildenbrand <david@redhat.com>,
+        David Rientjes <rientjes@google.com>,
+        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
+        "H. Peter Anvin" <hpa@zytor.com>,
+        Heiko Carstens <hca@linux.ibm.com>,
+        Ingo Molnar <mingo@redhat.com>,
+        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+        "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
+        "Kirill A. Shutemov" <kirill@shutemov.name>,
+        Len Brown <len.brown@intel.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Mike Rapoport <rppt@linux.ibm.com>,
+        Palmer Dabbelt <palmer@dabbelt.com>,
+        Paul Mackerras <paulus@samba.org>,
+        Paul Walmsley <paul.walmsley@sifive.com>,
+        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
+        Peter Zijlstra <peterz@infradead.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Will Deacon <will@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, linux-pm@vger.kernel.org,
+        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+        x86@kernel.org, "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>
+Subject: Re: [PATCH v4 2/4] PM: hibernate: make direct map manipulations more
+ explicit
+Message-ID: <20201105113333.GY4879@kernel.org>
+References: <20201103162057.22916-1-rppt@kernel.org>
+ <20201103162057.22916-3-rppt@kernel.org>
+ <9a0780b4-35f8-0ded-c473-d8ab4a26ade5@suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9a0780b4-35f8-0ded-c473-d8ab4a26ade5@suse.cz>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: zhuguangqing <zhuguangqing@xiaomi.com>
+On Wed, Nov 04, 2020 at 06:40:28PM +0100, Vlastimil Babka wrote:
+> On 11/3/20 5:20 PM, Mike Rapoport wrote:
+> > From: Mike Rapoport <rppt@linux.ibm.com>
+> > 
+> > When DEBUG_PAGEALLOC or ARCH_HAS_SET_DIRECT_MAP is enabled a page may be
+> > not present in the direct map and has to be explicitly mapped before it
+> > could be copied.
+> > 
+> > Introduce hibernate_map_page() that will explicitly use
+> > set_direct_map_{default,invalid}_noflush() for ARCH_HAS_SET_DIRECT_MAP case
+> > and debug_pagealloc_map_pages() for DEBUG_PAGEALLOC case.
+> > 
+> > The remapping of the pages in safe_copy_page() presumes that it only
+> > changes protection bits in an existing PTE and so it is safe to ignore
+> > return value of set_direct_map_{default,invalid}_noflush().
+> > 
+> > Still, add a pr_warn() so that future changes in set_memory APIs will not
+> > silently break hibernation.
+> > 
+> > Signed-off-by: Mike Rapoport <rppt@linux.ibm.com>
+> > Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> > Reviewed-by: David Hildenbrand <david@redhat.com>
+> > Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+> 
+> Acked-by: Vlastimil Babka <vbabka@suse.cz>
+> 
+> The bool param is a bit more acceptable here, being a private API. But if
+> debug_pagealloc_map_pages() becomes split, then it might be easier to split
+> this one too...
 
-If state has not changed successfully and we updated cpufreq_state,
-next time when the new state is equal to cpufreq_state (not changed
-successfully last time), we will return directly and miss a
-freq_qos_update_request() that should have been.
+Let's split here as well.
 
-Signed-off-by: zhuguangqing <zhuguangqing@xiaomi.com>
----
- drivers/thermal/cpufreq_cooling.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+> > ---
+> >   include/linux/mm.h      | 12 ------------
+> >   kernel/power/snapshot.c | 32 ++++++++++++++++++++++++++++++--
+> >   2 files changed, 30 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/include/linux/mm.h b/include/linux/mm.h
+> > index 1fc0609056dc..14e397f3752c 100644
+> > --- a/include/linux/mm.h
+> > +++ b/include/linux/mm.h
+> > @@ -2927,16 +2927,6 @@ static inline bool debug_pagealloc_enabled_static(void)
+> >   #if defined(CONFIG_DEBUG_PAGEALLOC) || defined(CONFIG_ARCH_HAS_SET_DIRECT_MAP)
+> >   extern void __kernel_map_pages(struct page *page, int numpages, int enable);
+> > -/*
+> > - * When called in DEBUG_PAGEALLOC context, the call should most likely be
+> > - * guarded by debug_pagealloc_enabled() or debug_pagealloc_enabled_static()
+> > - */
+> > -static inline void
+> > -kernel_map_pages(struct page *page, int numpages, int enable)
+> > -{
+> > -	__kernel_map_pages(page, numpages, enable);
+> > -}
+> > -
+> >   static inline void debug_pagealloc_map_pages(struct page *page,
+> >   					     int numpages, int enable)
+> >   {
+> > @@ -2948,8 +2938,6 @@ static inline void debug_pagealloc_map_pages(struct page *page,
+> >   extern bool kernel_page_present(struct page *page);
+> >   #endif	/* CONFIG_HIBERNATION */
+> >   #else	/* CONFIG_DEBUG_PAGEALLOC || CONFIG_ARCH_HAS_SET_DIRECT_MAP */
+> > -static inline void
+> > -kernel_map_pages(struct page *page, int numpages, int enable) {}
+> >   static inline void debug_pagealloc_map_pages(struct page *page,
+> >   					     int numpages, int enable) {}
+> >   #ifdef CONFIG_HIBERNATION
+> > diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> > index 46b1804c1ddf..57d54b9d84bb 100644
+> > --- a/kernel/power/snapshot.c
+> > +++ b/kernel/power/snapshot.c
+> > @@ -76,6 +76,34 @@ static inline void hibernate_restore_protect_page(void *page_address) {}
+> >   static inline void hibernate_restore_unprotect_page(void *page_address) {}
+> >   #endif /* CONFIG_STRICT_KERNEL_RWX  && CONFIG_ARCH_HAS_SET_MEMORY */
+> > +static inline void hibernate_map_page(struct page *page, int enable)
+> > +{
+> > +	if (IS_ENABLED(CONFIG_ARCH_HAS_SET_DIRECT_MAP)) {
+> > +		unsigned long addr = (unsigned long)page_address(page);
+> > +		int ret;
+> > +
+> > +		/*
+> > +		 * This should not fail because remapping a page here means
+> > +		 * that we only update protection bits in an existing PTE.
+> > +		 * It is still worth to have a warning here if something
+> > +		 * changes and this will no longer be the case.
+> > +		 */
+> > +		if (enable)
+> > +			ret = set_direct_map_default_noflush(page);
+> > +		else
+> > +			ret = set_direct_map_invalid_noflush(page);
+> > +
+> > +		if (ret) {
+> > +			pr_warn_once("Failed to remap page\n");
+> > +			return;
+> > +		}
+> > +
+> > +		flush_tlb_kernel_range(addr, addr + PAGE_SIZE);
+> > +	} else {
+> > +		debug_pagealloc_map_pages(page, 1, enable);
+> > +	}
+> > +}
+> > +
+> >   static int swsusp_page_is_free(struct page *);
+> >   static void swsusp_set_page_forbidden(struct page *);
+> >   static void swsusp_unset_page_forbidden(struct page *);
+> > @@ -1355,9 +1383,9 @@ static void safe_copy_page(void *dst, struct page *s_page)
+> >   	if (kernel_page_present(s_page)) {
+> >   		do_copy_page(dst, page_address(s_page));
+> >   	} else {
+> > -		kernel_map_pages(s_page, 1, 1);
+> > +		hibernate_map_page(s_page, 1);
+> >   		do_copy_page(dst, page_address(s_page));
+> > -		kernel_map_pages(s_page, 1, 0);
+> > +		hibernate_map_page(s_page, 0);
+> >   	}
+> >   }
+> > 
+> 
 
-diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index cc2959f22f01..00dc26c33899 100644
---- a/drivers/thermal/cpufreq_cooling.c
-+++ b/drivers/thermal/cpufreq_cooling.c
-@@ -438,13 +438,12 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	if (cpufreq_cdev->cpufreq_state == state)
- 		return 0;
- 
--	cpufreq_cdev->cpufreq_state = state;
--
- 	frequency = get_state_freq(cpufreq_cdev, state);
- 
- 	ret = freq_qos_update_request(&cpufreq_cdev->qos_req, frequency);
- 
- 	if (ret > 0) {
-+		cpufreq_cdev->cpufreq_state = state;
- 		cpus = cpufreq_cdev->policy->cpus;
- 		max_capacity = arch_scale_cpu_capacity(cpumask_first(cpus));
- 		capacity = frequency * max_capacity;
 -- 
-2.17.1
-
+Sincerely yours,
+Mike.
