@@ -2,25 +2,25 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D015CC4741F
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BB93C55178
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:31 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 787D7221FE
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 113392151B
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727275AbgKESZU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 13:25:20 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:65252 "EHLO
+        id S1730973AbgKESZX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 13:25:23 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61274 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726214AbgKESZU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:25:20 -0500
+        with ESMTP id S1726214AbgKESZW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:25:22 -0500
 Received: from 89-64-88-191.dynamic.chello.pl (89.64.88.191) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.514)
- id 4ff6dc8dccf7dc57; Thu, 5 Nov 2020 19:25:18 +0100
+ id 64633fd2ce86f13d; Thu, 5 Nov 2020 19:25:20 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -28,11 +28,9 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
         Zhang Rui <rui.zhang@intel.com>,
         LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] cpufreq: intel_pstate: Take target_min and target_max into account
-Date:   Thu, 05 Nov 2020 19:25:10 +0100
-Message-ID: <3200924.ySlC381xRO@kreacher>
-In-Reply-To: <7417968.Ghue05m4RV@kreacher>
-References: <7417968.Ghue05m4RV@kreacher>
+Subject: [PATCH 0/2] cpufreq: intel_pstate: Handle powersave governor correctly in the passive mode with HWP
+Date:   Thu, 05 Nov 2020 19:17:54 +0100
+Message-ID: <7417968.Ghue05m4RV@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -40,98 +38,29 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Hi,
 
-Make the intel_pstate driver take the new target_min and target_max
-cpufreq policy parameters into accout when it operates in the passive
-mode with HWP enabled, so as to fix the "powersave" governor behavior
-in that case (currently, HWP is allowed to scale the performance all
-the way up to the policy max limit when the "powersave" governor is
-used, but it should be contrained to the policy min limit then).
+Even after the changes made very recently, the handling of the powersave
+governor is not exactly as expected when intel_pstate operates in the
+"passive" mode with HWP enabled.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/intel_pstate.c |   32 ++++++++++++++++++++++----------
- 1 file changed, 22 insertions(+), 10 deletions(-)
+Namely, in that case HWP is not limited to the policy min frequency, but it
+can scale the frequency up to the policy max limit and it cannot be constrained
+currently, because the governor has no way to tell the driver how much room
+there is for adjustments around the target frequency passed to it.
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2527,7 +2527,7 @@ static void intel_cpufreq_trace(struct c
- }
- 
- static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
--				     bool fast_switch)
-+				     u32 target_max, bool fast_switch)
- {
- 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
- 
-@@ -2539,7 +2539,7 @@ static void intel_cpufreq_adjust_hwp(str
- 	 * field in it, so opportunistically update the max too if needed.
- 	 */
- 	value &= ~HWP_MAX_PERF(~0L);
--	value |= HWP_MAX_PERF(cpu->max_perf_ratio);
-+	value |= HWP_MAX_PERF(target_max);
- 
- 	if (value == prev)
- 		return;
-@@ -2562,19 +2562,31 @@ static void intel_cpufreq_adjust_perf_ct
- 			      pstate_funcs.get_val(cpu, target_pstate));
- }
- 
--static int intel_cpufreq_update_pstate(struct cpudata *cpu, int target_pstate,
--				       bool fast_switch)
-+static int intel_cpufreq_update_pstate(struct cpufreq_policy *policy,
-+				       int target_pstate, bool fast_switch)
- {
-+	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 	int old_pstate = cpu->pstate.current_pstate;
- 
--	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	if (hwp_active) {
--		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
--		cpu->pstate.current_pstate = target_pstate;
-+		int min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
-+		int max_pstate = max(min_pstate, cpu->max_perf_ratio);
-+		int target_min = DIV_ROUND_UP(policy->target_min,
-+					      cpu->pstate.scaling);
-+		int target_max = policy->target_max / cpu->pstate.scaling;
-+
-+		target_min = clamp_t(int, target_min, min_pstate, max_pstate);
-+		target_max = clamp_t(int, target_max, min_pstate, max_pstate);
-+
-+		target_pstate = clamp_t(int, target_pstate, target_min, target_max);
-+
-+		intel_cpufreq_adjust_hwp(cpu, target_pstate, target_max, fast_switch);
- 	} else if (target_pstate != old_pstate) {
-+		target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
-+
- 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
--		cpu->pstate.current_pstate = target_pstate;
- 	}
-+	cpu->pstate.current_pstate = target_pstate;
- 
- 	intel_cpufreq_trace(cpu, fast_switch ? INTEL_PSTATE_TRACE_FAST_SWITCH :
- 			    INTEL_PSTATE_TRACE_TARGET, old_pstate);
-@@ -2609,7 +2621,7 @@ static int intel_cpufreq_target(struct c
- 		break;
- 	}
- 
--	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, false);
-+	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, false);
- 
- 	freqs.new = target_pstate * cpu->pstate.scaling;
- 
-@@ -2628,7 +2640,7 @@ static unsigned int intel_cpufreq_fast_s
- 
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
- 
--	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, true);
-+	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, true);
- 
- 	return target_pstate * cpu->pstate.scaling;
- }
+For this reason, patch [1/2] introduces new policy parameters, target_min and
+target_max, that can be used by the governor to pass that information to the
+driver and modifies the powersave and peformance governors to use them.
+
+Patch [2/2] modifies intel_pstate to take them into account so as to fix the
+powersave governor issue, but they may be applicable for other purposes in the
+future (eg. if the driver is updated to pass the "desired" P-state to the HWP
+logic instead of just setting the HWP floor to the target one, both the
+powersave and performance governors will need target_min and target_max to
+basically work as documented).
+
+Thanks!
 
 
 
