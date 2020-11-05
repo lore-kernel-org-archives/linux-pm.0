@@ -2,136 +2,181 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CDB5C5517A
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15FB8C4741F
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:37:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 0CBB62151B
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9B1402151B
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:37:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=default; t=1604601428;
+	bh=5XsWCozg4ZQdxiYFvK6rLCgKaKnlhetHVn8T48701CA=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:List-ID:From;
+	b=bXXQKdE8X2tZz89CxFMczFhuG8BYEgQoiKg1zO8ljqllhxkea1UvYpNcd2TRaoQvV
+	 J9gdzEwvH7MgXENO+yc90QrkK7o1a+Hh8wlNBLD+4iYbkUw1H9Q1sP3q/AgdiaM92V
+	 u05HNRP8fyzd01/ceTwdONaep8q2eyBlgRw6nexA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731758AbgKESZX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 13:25:23 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:44024 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726729AbgKESZW (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:25:22 -0500
-Received: from 89-64-88-191.dynamic.chello.pl (89.64.88.191) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.514)
- id eb3d0aa0ebe85b20; Thu, 5 Nov 2020 19:25:19 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] cpufreq: Introduce target min and max frequency hints
-Date:   Thu, 05 Nov 2020 19:23:34 +0100
-Message-ID: <2233690.N3OVLkotou@kreacher>
-In-Reply-To: <7417968.Ghue05m4RV@kreacher>
-References: <7417968.Ghue05m4RV@kreacher>
+        id S1726996AbgKEShI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 13:37:08 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:43538 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726214AbgKEShH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:37:07 -0500
+Received: by mail-oi1-f195.google.com with SMTP id t143so2691606oif.10;
+        Thu, 05 Nov 2020 10:37:07 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=ToiqyHC98V7qJGXGI3S9IRKhf9is/zBp1DfmWd5kGWg=;
+        b=KRV3VYQO0kAbCRjvHkCR5T7GAvlEQt9tY7dHrvVuzC/AXgYDJ/eDRTvKZaBVCWoovZ
+         gJs+F/7GKfCpqd4P+n4ubltz03nAUs5v+9wDdWFfdGmo3hmKo0ZFyyUmf9x7B/AP3H9W
+         FxKUTKUni/7IJUCdfLwHDSCGRe7P3mk8TjGarq1SzKQAjFllMrPzbkQseCXnMM43OPa9
+         lqwct3l8suT26YtVkVXKPhWMPYQrudQYO+r9h9m55DfHSXNXVb/w53Tn/40cpeRlTsM/
+         vknOI2alNaFhB2O2wG4XTAAsRPZz/4+ea65uXfltbjk1CCGJKYtzIsQ4s8OYkQALkwRa
+         x6cw==
+X-Gm-Message-State: AOAM533zrjc8wiG6UjTuNu/Q+vmd6+LKflPJdxd1JKvWz+35XszgmAyC
+        2+Da+aWrd5j5fEIC3jF+KuzAI0AOFo+oAOZQh7I=
+X-Google-Smtp-Source: ABdhPJz4uNPUjtKlZk2wbluSksg5I2qyo5E7gmodreeqAef91jIlkMg3nkaf8gfEYmXNX+S0lBA+9ek4ROeId0nsGqc=
+X-Received: by 2002:aca:30d7:: with SMTP id w206mr482818oiw.69.1604601426735;
+ Thu, 05 Nov 2020 10:37:06 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+References: <20201103152237.9853-1-vbabka@suse.cz> <20201103152237.9853-4-vbabka@suse.cz>
+In-Reply-To: <20201103152237.9853-4-vbabka@suse.cz>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 5 Nov 2020 19:36:55 +0100
+Message-ID: <CAJZ5v0imRT9eXKg=Ucery3C8a=eVOLssB+e60vFBdA1YyAaj7g@mail.gmail.com>
+Subject: Re: [PATCH v2 3/5] kernel/power: allow hibernation with page_poison
+ sanity checking
+To:     Vlastimil Babka <vbabka@suse.cz>
+Cc:     Andrew Morton <akpm@linux-foundation.org>,
+        Linux Memory Management List <linux-mm@kvack.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Alexander Potapenko <glider@google.com>,
+        Kees Cook <keescook@chromium.org>,
+        Michal Hocko <mhocko@kernel.org>,
+        David Hildenbrand <david@redhat.com>,
+        Mateusz Nosek <mateusznosek0@gmail.com>,
+        Laura Abbott <labbott@kernel.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>,
+        Linux PM <linux-pm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Tue, Nov 3, 2020 at 4:24 PM Vlastimil Babka <vbabka@suse.cz> wrote:
+>
+> Page poisoning used to be incompatible with hibernation, as the state of
+> poisoned pages was lost after resume, thus enabling CONFIG_HIBERNATION forces
+> CONFIG_PAGE_POISONING_NO_SANITY. For the same reason, the poisoning with zeroes
+> variant CONFIG_PAGE_POISONING_ZERO used to disable hibernation. The latter
+> restriction was removed by commit 1ad1410f632d ("PM / Hibernate: allow
+> hibernation with PAGE_POISONING_ZERO") and similarly for init_on_free by commit
+> 18451f9f9e58 ("PM: hibernate: fix crashes with init_on_free=1") by making sure
+> free pages are cleared after resume.
+>
+> We can use the same mechanism to instead poison free pages with PAGE_POISON
+> after resume. This covers both zero and 0xAA patterns. Thus we can remove the
+> Kconfig restriction that disables page poison sanity checking when hibernation
+> is enabled.
+>
+> Signed-off-by: Vlastimil Babka <vbabka@suse.cz>
+> Cc: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+> Cc: Len Brown <len.brown@intel.com>
+> Cc: Pavel Machek <pavel@ucw.cz>
+> Cc: <linux-pm@vger.kernel.org>
 
-Some cpufreq drivers, like intel_pstate (in the passive mode with
-HWP enabled) or the CPPC driver, take the "target frequency" coming
-from the governor as a hint to pass to the hardware rather than the
-exact value to apply.  Then, the hardware may choose to run at
-whatever performance point it regards as appropriate, given the
-hint and some other data available to it.
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Of course, the performance point chosen by the hardware should
-stay within the policy min and max limits, but in some cases it may
-be necessary to request the hardware to limit the range of
-performance points to consider beyond that.
+for the hibernation part and I'm assuming that this patch will be
+routed through the mm tree.
 
-For example, if the powersave governor is in use, it attempts to
-make the hardware run at the policy min frequency, but that may
-not actually work if the hardware thinks that it has a reason to
-run faster and the policy max limit is above the policy min.
-
-In those cases, it is useful to pass additional information to the
-driver to indicate that it should tell the hardware to consider a
-narrower range of performance points, so add two new fields,
-target_min and target_max, to struct cpufreq_policy for this purpose
-and make the powersave and performance governors set them to indicate
-that the CPU is expected to run exactly at the given frequency (the
-policy min or max, respectively).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpufreq/cpufreq.c             |    3 +++
- drivers/cpufreq/cpufreq_performance.c |    4 ++++
- drivers/cpufreq/cpufreq_powersave.c   |    4 ++++
- include/linux/cpufreq.h               |   16 ++++++++++++++++
- 4 files changed, 27 insertions(+)
-
-Index: linux-pm/include/linux/cpufreq.h
-===================================================================
---- linux-pm.orig/include/linux/cpufreq.h
-+++ linux-pm/include/linux/cpufreq.h
-@@ -63,6 +63,8 @@ struct cpufreq_policy {
- 
- 	unsigned int		min;    /* in kHz */
- 	unsigned int		max;    /* in kHz */
-+	unsigned int		target_min; /* in kHz */
-+	unsigned int		target_max; /* in kHz */
- 	unsigned int		cur;    /* in kHz, only needed if cpufreq
- 					 * governors are used */
- 	unsigned int		suspend_freq; /* freq to set during suspend */
-Index: linux-pm/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq.c
-+++ linux-pm/drivers/cpufreq/cpufreq.c
-@@ -2272,6 +2272,9 @@ static int cpufreq_init_governor(struct
- 
- 	pr_debug("%s: for CPU %u\n", __func__, policy->cpu);
- 
-+	policy->target_min = policy->cpuinfo.min_freq;
-+	policy->target_max = policy->cpuinfo.max_freq;
-+
- 	if (policy->governor->init) {
- 		ret = policy->governor->init(policy);
- 		if (ret) {
-Index: linux-pm/drivers/cpufreq/cpufreq_performance.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_performance.c
-+++ linux-pm/drivers/cpufreq/cpufreq_performance.c
-@@ -14,6 +14,10 @@
- static void cpufreq_gov_performance_limits(struct cpufreq_policy *policy)
- {
- 	pr_debug("setting to %u kHz\n", policy->max);
-+
-+	policy->target_min = policy->max;
-+	policy->target_max = policy->max;
-+
- 	__cpufreq_driver_target(policy, policy->max, CPUFREQ_RELATION_H);
- }
- 
-Index: linux-pm/drivers/cpufreq/cpufreq_powersave.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/cpufreq_powersave.c
-+++ linux-pm/drivers/cpufreq/cpufreq_powersave.c
-@@ -14,6 +14,10 @@
- static void cpufreq_gov_powersave_limits(struct cpufreq_policy *policy)
- {
- 	pr_debug("setting to %u kHz\n", policy->min);
-+
-+	policy->target_min = policy->min;
-+	policy->target_max = policy->min;
-+
- 	__cpufreq_driver_target(policy, policy->min, CPUFREQ_RELATION_L);
- }
- 
-
-
-
+> ---
+>  kernel/power/hibernate.c |  2 +-
+>  kernel/power/power.h     |  2 +-
+>  kernel/power/snapshot.c  | 14 ++++++++++----
+>  mm/Kconfig.debug         |  1 -
+>  4 files changed, 12 insertions(+), 7 deletions(-)
+>
+> diff --git a/kernel/power/hibernate.c b/kernel/power/hibernate.c
+> index 2fc7d509a34f..da0b41914177 100644
+> --- a/kernel/power/hibernate.c
+> +++ b/kernel/power/hibernate.c
+> @@ -326,7 +326,7 @@ static int create_image(int platform_mode)
+>
+>         if (!in_suspend) {
+>                 events_check_enabled = false;
+> -               clear_free_pages();
+> +               clear_or_poison_free_pages();
+>         }
+>
+>         platform_leave(platform_mode);
+> diff --git a/kernel/power/power.h b/kernel/power/power.h
+> index 24f12d534515..778bf431ec02 100644
+> --- a/kernel/power/power.h
+> +++ b/kernel/power/power.h
+> @@ -106,7 +106,7 @@ extern int create_basic_memory_bitmaps(void);
+>  extern void free_basic_memory_bitmaps(void);
+>  extern int hibernate_preallocate_memory(void);
+>
+> -extern void clear_free_pages(void);
+> +extern void clear_or_poison_free_pages(void);
+>
+>  /**
+>   *     Auxiliary structure used for reading the snapshot image data and
+> diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
+> index 46b1804c1ddf..6b1c84afa891 100644
+> --- a/kernel/power/snapshot.c
+> +++ b/kernel/power/snapshot.c
+> @@ -1144,7 +1144,7 @@ void free_basic_memory_bitmaps(void)
+>         pr_debug("Basic memory bitmaps freed\n");
+>  }
+>
+> -void clear_free_pages(void)
+> +void clear_or_poison_free_pages(void)
+>  {
+>         struct memory_bitmap *bm = free_pages_map;
+>         unsigned long pfn;
+> @@ -1152,12 +1152,18 @@ void clear_free_pages(void)
+>         if (WARN_ON(!(free_pages_map)))
+>                 return;
+>
+> -       if (IS_ENABLED(CONFIG_PAGE_POISONING_ZERO) || want_init_on_free()) {
+> +       if (page_poisoning_enabled() || want_init_on_free()) {
+>                 memory_bm_position_reset(bm);
+>                 pfn = memory_bm_next_pfn(bm);
+>                 while (pfn != BM_END_OF_MAP) {
+> -                       if (pfn_valid(pfn))
+> -                               clear_highpage(pfn_to_page(pfn));
+> +                       if (pfn_valid(pfn)) {
+> +                               struct page *page = pfn_to_page(pfn);
+> +                               if (page_poisoning_enabled_static())
+> +                                       kernel_poison_pages(page, 1);
+> +                               else if (want_init_on_free())
+> +                                       clear_highpage(page);
+> +
+> +                       }
+>
+>                         pfn = memory_bm_next_pfn(bm);
+>                 }
+> diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
+> index 864f129f1937..c57786ad5be9 100644
+> --- a/mm/Kconfig.debug
+> +++ b/mm/Kconfig.debug
+> @@ -64,7 +64,6 @@ config PAGE_OWNER
+>
+>  config PAGE_POISONING
+>         bool "Poison pages after freeing"
+> -       select PAGE_POISONING_NO_SANITY if HIBERNATION
+>         help
+>           Fill the pages with poison patterns after free_pages() and verify
+>           the patterns before alloc_pages. The filling of the memory helps
+> --
+> 2.29.1
+>
