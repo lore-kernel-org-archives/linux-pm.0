@@ -2,48 +2,37 @@ Return-Path: <SRS0=Evqw=EL=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EAE44C55178
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:04:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D015CC4741F
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9843A20936
-	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:04:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 787D7221FE
+	for <linux-pm@archiver.kernel.org>; Thu,  5 Nov 2020 18:25:21 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729887AbgKESEN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 5 Nov 2020 13:04:13 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:45138 "EHLO
+        id S1727275AbgKESZU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 5 Nov 2020 13:25:20 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:65252 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729783AbgKESEM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:04:12 -0500
+        with ESMTP id S1726214AbgKESZU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 5 Nov 2020 13:25:20 -0500
 Received: from 89-64-88-191.dynamic.chello.pl (89.64.88.191) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.514)
- id 4284eb2aea7df779; Thu, 5 Nov 2020 19:04:09 +0100
+ id 4ff6dc8dccf7dc57; Thu, 5 Nov 2020 19:25:18 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Victor Ding <victording@google.com>
-Cc:     Zhang Rui <rui.zhang@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Kim Phillips <kim.phillips@amd.com>, linux-pm@vger.kernel.org,
-        Borislav Petkov <bp@alien8.de>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Joerg Roedel <jroedel@suse.de>,
-        Kan Liang <kan.liang@linux.intel.com>,
-        Pawan Gupta <pawan.kumar.gupta@linux.intel.com>,
-        "Peter Zijlstra (Intel)" <peterz@infradead.org>,
-        Sean Christopherson <sean.j.christopherson@intel.com>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Tony Luck <tony.luck@intel.com>,
-        Vineela Tummalapalli <vineela.tummalapalli@intel.com>,
-        x86@kernel.org
-Subject: Re: [PATCH v3 3/4] powercap: Add AMD Fam17h RAPL support
-Date:   Thu, 05 Nov 2020 19:04:08 +0100
-Message-ID: <2121012.oOYSSSs1xd@kreacher>
-In-Reply-To: <9ea15f21febf47d5d6f62911fe0141a2ae5d5e2b.camel@linux.intel.com>
-References: <20201027072358.13725-1-victording@google.com> <CANqTbdafN+NekRN3oO35o-7DXvu1p_9SwH_XVkw1DmbgSk9y6w@mail.gmail.com> <9ea15f21febf47d5d6f62911fe0141a2ae5d5e2b.camel@linux.intel.com>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] cpufreq: intel_pstate: Take target_min and target_max into account
+Date:   Thu, 05 Nov 2020 19:25:10 +0100
+Message-ID: <3200924.ySlC381xRO@kreacher>
+In-Reply-To: <7417968.Ghue05m4RV@kreacher>
+References: <7417968.Ghue05m4RV@kreacher>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7Bit
 Content-Type: text/plain; charset="us-ascii"
@@ -51,79 +40,98 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thursday, November 5, 2020 6:14:01 PM CET Srinivas Pandruvada wrote:
-> On Thu, 2020-11-05 at 14:53 +1100, Victor Ding wrote:
-> > On Wed, Nov 4, 2020 at 1:17 PM Srinivas Pandruvada
-> > <srinivas.pandruvada@linux.intel.com> wrote:
-> > > On Wed, 2020-11-04 at 12:43 +1100, Victor Ding wrote:
-> > > > On Wed, Nov 4, 2020 at 4:09 AM Srinivas Pandruvada
-> > > > <srinivas.pandruvada@linux.intel.com> wrote:
-> > > > > On Tue, 2020-11-03 at 17:10 +1100, Victor Ding wrote:
-> > > > > > On Mon, Nov 2, 2020 at 12:39 PM Zhang Rui <
-> > > > > > rui.zhang@intel.com>
-> > > > > > wrote:
-> > > > > > > On Tue, 2020-10-27 at 07:23 +0000, Victor Ding wrote:
-> > > > > > > > This patch enables AMD Fam17h RAPL support for the power
-> > > > > > > > capping
-> > > > > > > > framework. The support is as per AMD Fam17h Model31h
-> > > > > > > > (Zen2)
-> > > > > > > > and
-> > > > > > > > model 00-ffh (Zen1) PPR.
-> > > > > > > > 
-> > > > > > > > Tested by comparing the results of following two sysfs
-> > > > > > > > entries
-> > > > > > > > and
-> > > > > > > > the
-> > > > > > > > values directly read from corresponding MSRs via
-> > > > > > > > /dev/cpu/[x]/msr:
-> > > > > > > >   /sys/class/powercap/intel-rapl/intel-rapl:0/energy_uj
-> > > > > > > >   /sys/class/powercap/intel-rapl/intel-rapl:0/intel-
-> > > > > > > > rapl:0:0/energy_uj
-> > > > > 
-> > > > > Is this for just energy reporting? No capping of power?
-> > > > Correct, the hardware does not support capping of power.
-> > > I wonder if there is no capping, is this the right interface?
-> > > Do you have specific user space, which cares about this?
-> > We have tools that previously developed to measure energy status
-> > on Intel via the powercap interface. Powercap is the only interface
-> > allowing reading RAPL energy counters without requiring MSR access
-> > privileges. We want to use these tools on AMD with minimal
-> > modifications.
-> > I believe the powercap interface should support these counters,
-> > regardless of the use cases, mainly for two reasons:
-> > 1. Powercap interface already supports monitoring-only power domains,
-> > e.g. power limit is locked by BIOS or the (Intel) CPU does not expose
-> > an
-> > MSR for certain power domains. The latter is the exact situation on
-> > AMD;
-> > 2. As AMD has partially introduced the equivalent of Intel's RAPL, we
-> > should leverage this opportunity to reduce the divergence in the
-> > APIs. i.e.
-> > OS as a hardware abstraction layer should allow users to use the same
-> > set of APIs to access RAPL features if it issupported on both Intel
-> > and AMD.
-> > In this specific case, if users can query for Intel's RAPL counters
-> > via
-> > powercap, they should be able to do so as well for AMD's.
-> > > I think these counters are already exposed via hwmon sysf.
-> > Yes, they were introduced early this year. However, it is not the
-> > same as
-> > the counters exposed via powercap interface: powercap exposes the
-> > actual value of the energy counters while hwmon adds an accumulation
-> > layer on top.
-> > In addition, I don't think Intel's RAPL counters are exposed via
-> > hwmon;
-> > therefore: 1. existing fine grade power monitoring tools are not
-> > based on
-> > hwmon; 2. new tools cannot query the same set of counters via the
-> > same
-> > API so that they have to actively maintain two sets of logic.
-> 
-> Fine with me.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK, I'll queue up the series for 5.11 then if there are no other concerns.
+Make the intel_pstate driver take the new target_min and target_max
+cpufreq policy parameters into accout when it operates in the passive
+mode with HWP enabled, so as to fix the "powersave" governor behavior
+in that case (currently, HWP is allowed to scale the performance all
+the way up to the policy max limit when the "powersave" governor is
+used, but it should be contrained to the policy min limit then).
 
-Thanks!
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   32 ++++++++++++++++++++++----------
+ 1 file changed, 22 insertions(+), 10 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2527,7 +2527,7 @@ static void intel_cpufreq_trace(struct c
+ }
+ 
+ static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
+-				     bool fast_switch)
++				     u32 target_max, bool fast_switch)
+ {
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
+ 
+@@ -2539,7 +2539,7 @@ static void intel_cpufreq_adjust_hwp(str
+ 	 * field in it, so opportunistically update the max too if needed.
+ 	 */
+ 	value &= ~HWP_MAX_PERF(~0L);
+-	value |= HWP_MAX_PERF(cpu->max_perf_ratio);
++	value |= HWP_MAX_PERF(target_max);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -2562,19 +2562,31 @@ static void intel_cpufreq_adjust_perf_ct
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ }
+ 
+-static int intel_cpufreq_update_pstate(struct cpudata *cpu, int target_pstate,
+-				       bool fast_switch)
++static int intel_cpufreq_update_pstate(struct cpufreq_policy *policy,
++				       int target_pstate, bool fast_switch)
+ {
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	int old_pstate = cpu->pstate.current_pstate;
+ 
+-	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+ 	if (hwp_active) {
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
+-		cpu->pstate.current_pstate = target_pstate;
++		int min_pstate = max(cpu->pstate.min_pstate, cpu->min_perf_ratio);
++		int max_pstate = max(min_pstate, cpu->max_perf_ratio);
++		int target_min = DIV_ROUND_UP(policy->target_min,
++					      cpu->pstate.scaling);
++		int target_max = policy->target_max / cpu->pstate.scaling;
++
++		target_min = clamp_t(int, target_min, min_pstate, max_pstate);
++		target_max = clamp_t(int, target_max, min_pstate, max_pstate);
++
++		target_pstate = clamp_t(int, target_pstate, target_min, target_max);
++
++		intel_cpufreq_adjust_hwp(cpu, target_pstate, target_max, fast_switch);
+ 	} else if (target_pstate != old_pstate) {
++		target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
++
+ 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
+-		cpu->pstate.current_pstate = target_pstate;
+ 	}
++	cpu->pstate.current_pstate = target_pstate;
+ 
+ 	intel_cpufreq_trace(cpu, fast_switch ? INTEL_PSTATE_TRACE_FAST_SWITCH :
+ 			    INTEL_PSTATE_TRACE_TARGET, old_pstate);
+@@ -2609,7 +2621,7 @@ static int intel_cpufreq_target(struct c
+ 		break;
+ 	}
+ 
+-	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, false);
++	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, false);
+ 
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
+ 
+@@ -2628,7 +2640,7 @@ static unsigned int intel_cpufreq_fast_s
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 
+-	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, true);
++	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, true);
+ 
+ 	return target_pstate * cpu->pstate.scaling;
+ }
 
 
 
