@@ -7,44 +7,44 @@ X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D4CA8C388F2
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30678C388F2
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7A93F20936
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CADF420936
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="e3xbnbEs"
+	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="ffSe7ENo"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726460AbgKFHeR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:34:17 -0500
-Received: from mx07-00178001.pphosted.com ([185.132.182.106]:56246 "EHLO
+        id S1726459AbgKFHeO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:34:14 -0500
+Received: from mx07-00178001.pphosted.com ([185.132.182.106]:56230 "EHLO
         mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726121AbgKFHeQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:34:16 -0500
+        by vger.kernel.org with ESMTP id S1726198AbgKFHeO (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:34:14 -0500
 Received: from pps.filterd (m0046037.ppops.net [127.0.0.1])
-        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0A67WAXQ024861;
-        Fri, 6 Nov 2020 08:34:10 +0100
+        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0A67WF6s025144;
+        Fri, 6 Nov 2020 08:34:08 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : cc : subject
  : date : message-id : in-reply-to : references : mime-version :
  content-type; s=STMicroelectronics;
- bh=inRp6hPiIockC5nS3L+IsnkrSlcfoBjiyTAc2cHofEM=;
- b=e3xbnbEsdALKCaLVYR0ePYxAKiq/CS9GP9aC5E6L2v1pKb7p7OHLuD2geGnpSqc0OxLz
- F1opHCYdcCuiECzxL3CmTfrm8zUZqX6Ecn7SRXd9VK29bdPCfN3pKeRtDWoGM8Ng9OWM
- 34GTLIDytrSS1Zz3neDHr7tyWL+jU39Md1wuINXWTC1lZ2z2P13GLasPcYgDmMUfbGbJ
- PURIZVjDlFElxPoNKw2xBIuvksvW/JfueZQnfZx2pdyjk6dURmv4T4smW4s4QwKf/CL1
- 6KHARCRHZiIJY3A7KrxblNAYdJ7ME09hlMIjlmyOhJIsD0ypGf/Tq9mhJY+fUdFISz59 DA== 
+ bh=qmmIKwYZ90BVKQOZUzUSLDoaeQqLehemAxhOjRrw3Ik=;
+ b=ffSe7ENoXdV8XDBuIkygsPI7I9zlHv3zP1l2rV4mRzw2PHpcHk4X5iOK0JjzbtItO6ZB
+ Yl3yF3OUKPgMxpkCe8gU9IyDVPKm3W9h9Fw32zZkvPz7npE67bxg0111k/Z9GA9Tj83g
+ 5FKEGOJ8aI70R10PpIA8Kug3Qw/EWSs3o+Egl+5izPAWUv2sHFCx2SP/fIVk5i4A+GzK
+ da8ndJyCsd0b0yThI3dZi3/K9f0lGwLYISWOTWJh3QW9NrDcKe4bjJ/PTCnq03cppGAV
+ CYKQP0QGJWfo4WEbg9wHQ6SJSxj1hEoKJuD3konduBiMPLG5fWGzrR8wwv4jPnRr06M6 uQ== 
 Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
-        by mx07-00178001.pphosted.com with ESMTP id 34h00etmnb-1
+        by mx07-00178001.pphosted.com with ESMTP id 34h00etmn5-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 06 Nov 2020 08:34:10 +0100
+        Fri, 06 Nov 2020 08:34:08 +0100
 Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 57333100038;
-        Fri,  6 Nov 2020 08:34:10 +0100 (CET)
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 3E38C100038;
+        Fri,  6 Nov 2020 08:34:08 +0100 (CET)
 Received: from Webmail-eu.st.com (sfhdag2node3.st.com [10.75.127.6])
-        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 4D087226678;
-        Fri,  6 Nov 2020 08:34:10 +0100 (CET)
-Received: from localhost (10.75.127.48) by SFHDAG2NODE3.st.com (10.75.127.6)
- with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 6 Nov 2020 08:34:09
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 322F222667A;
+        Fri,  6 Nov 2020 08:34:08 +0100 (CET)
+Received: from localhost (10.75.127.50) by SFHDAG2NODE3.st.com (10.75.127.6)
+ with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 6 Nov 2020 08:34:07
  +0100
 From:   <patrice.chotard@st.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
@@ -57,16 +57,16 @@ CC:     <patrice.chotard@st.com>, Erwan Le Ray <erwan.leray@st.com>,
         Pierre-Yves MORDRET <pierre-yves.mordret@st.com>,
         <amelie.delaunay@st.com>, <erwan_leray@st.com>,
         <alain.volmat@st.com>
-Subject: [PATCH v1 4/4] i2c: stm32f7: Make usage of dev_wakeup_path() helper
-Date:   Fri, 6 Nov 2020 08:33:58 +0100
-Message-ID: <20201106073358.8379-5-patrice.chotard@st.com>
+Subject: [PATCH v1 1/4] PM / wakeup: Add dev_wakeup_path() helper
+Date:   Fri, 6 Nov 2020 08:33:55 +0100
+Message-ID: <20201106073358.8379-2-patrice.chotard@st.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201106073358.8379-1-patrice.chotard@st.com>
 References: <20201106073358.8379-1-patrice.chotard@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [10.75.127.48]
-X-ClientProxiedBy: SFHDAG7NODE2.st.com (10.75.127.20) To SFHDAG2NODE3.st.com
+X-Originating-IP: [10.75.127.50]
+X-ClientProxiedBy: SFHDAG4NODE3.st.com (10.75.127.12) To SFHDAG2NODE3.st.com
  (10.75.127.6)
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312,18.0.737
  definitions=2020-11-06_02:2020-11-05,2020-11-06 signatures=0
@@ -76,35 +76,45 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Patrice Chotard <patrice.chotard@st.com>
 
-Make usage of dev_wakeup_path() helper.
+Add dev_wakeup_path() helper to avoid to spread
+dev->power.wakeup_path test in drivers.
+
+In case CONFIG_PM_SLEEP is not set, wakeup_path is not defined,
+dev_wakeup_path() is returning false.
 
 Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
 ---
- drivers/i2c/busses/i2c-stm32f7.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ include/linux/pm_wakeup.h | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
-diff --git a/drivers/i2c/busses/i2c-stm32f7.c b/drivers/i2c/busses/i2c-stm32f7.c
-index f41f51a176a1..9aa8e65b511e 100644
---- a/drivers/i2c/busses/i2c-stm32f7.c
-+++ b/drivers/i2c/busses/i2c-stm32f7.c
-@@ -2322,7 +2322,7 @@ static int stm32f7_i2c_suspend(struct device *dev)
+diff --git a/include/linux/pm_wakeup.h b/include/linux/pm_wakeup.h
+index aa3da6611533..196a157456aa 100644
+--- a/include/linux/pm_wakeup.h
++++ b/include/linux/pm_wakeup.h
+@@ -84,6 +84,11 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && !!dev->power.wakeup;
+ }
  
- 	i2c_mark_adapter_suspended(&i2c_dev->adap);
++static inline bool device_wakeup_path(struct device *dev)
++{
++	return dev->power.wakeup_path;
++}
++
+ static inline void device_set_wakeup_path(struct device *dev)
+ {
+ 	dev->power.wakeup_path = true;
+@@ -174,6 +179,11 @@ static inline bool device_may_wakeup(struct device *dev)
+ 	return dev->power.can_wakeup && dev->power.should_wakeup;
+ }
  
--	if (!device_may_wakeup(dev) && !dev->power.wakeup_path) {
-+	if (!device_may_wakeup(dev) && !device_wakeup_path(dev)) {
- 		ret = stm32f7_i2c_regs_backup(i2c_dev);
- 		if (ret < 0) {
- 			i2c_mark_adapter_resumed(&i2c_dev->adap);
-@@ -2341,7 +2341,7 @@ static int stm32f7_i2c_resume(struct device *dev)
- 	struct stm32f7_i2c_dev *i2c_dev = dev_get_drvdata(dev);
- 	int ret;
++static inline bool device_wakeup_path(struct device *dev)
++{
++	return false;
++}
++
+ static inline void device_set_wakeup_path(struct device *dev) {}
  
--	if (!device_may_wakeup(dev) && !dev->power.wakeup_path) {
-+	if (!device_may_wakeup(dev) && !device_wakeup_path(dev)) {
- 		ret = pm_runtime_force_resume(dev);
- 		if (ret < 0)
- 			return ret;
+ static inline void __pm_stay_awake(struct wakeup_source *ws) {}
 -- 
 2.17.1
 
