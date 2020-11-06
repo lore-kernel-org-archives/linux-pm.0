@@ -2,124 +2,105 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 95D01C2D0A3
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0C870C388F2
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4970C21734
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:47 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A4BEE20825
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:52 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="mhYxA+hf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726558AbgKFHFq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:05:46 -0500
-Received: from mo-csw-fb1115.securemx.jp ([210.130.202.174]:60624 "EHLO
-        mo-csw-fb.securemx.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726524AbgKFHFl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:41 -0500
-X-Greylist: delayed 5290 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Nov 2020 02:05:39 EST
-Received: by mo-csw-fb.securemx.jp (mx-mo-csw-fb1115) id 0A65bTgp005425; Fri, 6 Nov 2020 14:37:29 +0900
-Received: by mo-csw.securemx.jp (mx-mo-csw1115) id 0A65arFR018126; Fri, 6 Nov 2020 14:36:53 +0900
-X-Iguazu-Qid: 2wHHmca9fb4omt8CsG
-X-Iguazu-QSIG: v=2; s=0; t=1604641012; q=2wHHmca9fb4omt8CsG; m=8omBj8jo2qzV/WJteuWe7FJml1+CQgKYuaV4OIgz5TE=
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-        by relay.securemx.jp (mx-mr1110) id 0A65ao5p023434;
-        Fri, 6 Nov 2020 14:36:51 +0900
-Received: from enc02.toshiba.co.jp ([61.202.160.51])
-        by imx12.toshiba.co.jp  with ESMTP id 0A65aov5024147;
-        Fri, 6 Nov 2020 14:36:50 +0900 (JST)
-Received: from hop101.toshiba.co.jp ([133.199.85.107])
-        by enc02.toshiba.co.jp  with ESMTP id 0A65anXV001086;
-        Fri, 6 Nov 2020 14:36:50 +0900
-From:   Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-To:     Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
-Cc:     <x86@kernel.org>, <linux-kernel@vger.kernel.org>,
-        <linux-pm@vger.kernel.org>, <linux-edac@vger.kernel.org>,
-        <linux-efi@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Tony Luck <tony.luck@intel.com>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <len.brown@intel.com>,
-        "Ard Biesheuvel" <ardb@kernel.org>,
-        Yazen Ghannam <yazen.ghannam@amd.com>
-Subject: Re: [PATCH v5] cper, apei, mce: Pass x86 CPER through the MCA handling chain
-References: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
-Date:   Fri, 06 Nov 2020 14:36:46 +0900
-In-Reply-To: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
-        (Smita Koralahalli's message of "Tue, 3 Nov 2020 10:49:52 -0600")
-X-TSB-HOP: ON
-Message-ID: <87a6vv9hch.fsf@kokedama.swc.toshiba.co.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
+        id S1726262AbgKFHFv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:05:51 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58960 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726544AbgKFHFk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:40 -0500
+Received: from mail-pl1-x642.google.com (mail-pl1-x642.google.com [IPv6:2607:f8b0:4864:20::642])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id AB04CC0613D4
+        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:05:40 -0800 (PST)
+Received: by mail-pl1-x642.google.com with SMTP id j5so242278plk.7
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:05:40 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=pxVky9l6SjSdLAcTA14Zb0ig0mPHGe9JAZ+xYlz+WWM=;
+        b=mhYxA+hfdYdKmPXf+5Uz0ENmGw87DnvuIRtIBfijjW125XoltnFPxPeJAjShhP1zZF
+         CzHGGfPvrH1yEQCVgAcTfBZmHN3ABIvSHx1IaK5Trurbt0YMJtiPt0HhqXRbpPJ7pVmw
+         Vj9iWoAHCCUyS23qBnzK518EtYvDXqzPRzD0KsDn1kPn9/XpFBg2Fz5UJAuSLVy7lRd7
+         d/ecLj2XoE46q4rsnj3OKtDW2ONjIFyjbc8J9B5IHqJvNzST0o4vuKdObU+KurINcgqS
+         34l1mY33qyM58jFdL+CPsZjlLQggsMs2cbeoy9a1GJsRw8pcgEnwd54lhRdiCdC1/vfa
+         XVbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=pxVky9l6SjSdLAcTA14Zb0ig0mPHGe9JAZ+xYlz+WWM=;
+        b=qakxZ6wvsIXr4gyyik8CTdDki7OZcyfwQd746ci5tSGHdAHSkYlV5PyE6XFQftb2y0
+         wAO4yMbkR7zUQaNMaCau+ljD0XrxnvIxqsQmd+47BTuE5WCWExAKexYwO9GJzcFZYp7/
+         Oz9IVXFj8tNvzg17F78Mgk640qBeXq+Cb+tIFGQ5BMDt80POvQ6E8T9OF0yQikB67sIL
+         oeQE7k9QP1eltmJUuGnmFpBbNA/SVNoarrMaPzrVWFx5ahkyWKeho/9SJyO5vVq4W1k5
+         067MFNhL1ldsaxRjIlRm7orcQb4IZsCeLI3oOti3vaYBFmLp/Sj5Gbtq+sVPNFvlTzCv
+         3szg==
+X-Gm-Message-State: AOAM531hN8xv65Dg46dlNsFpIoG1H2kQXkxgNOL+QWnZqaeD8pCpMKBG
+        GgyI9BBJ0sgZpyOszJYR/qdUmw==
+X-Google-Smtp-Source: ABdhPJzB5pJKmoygsJHbeXL3UzkTiA/e90EaTRfyPTER4FtLh1D97O8MORlGdkGm/5rhbsYmfMB2iQ==
+X-Received: by 2002:a17:902:6ac1:b029:d6:c43e:a42d with SMTP id i1-20020a1709026ac1b02900d6c43ea42dmr719733plt.21.1604646340242;
+        Thu, 05 Nov 2020 23:05:40 -0800 (PST)
+Received: from localhost ([122.172.12.172])
+        by smtp.gmail.com with ESMTPSA id z17sm551372pga.85.2020.11.05.23.05.39
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Thu, 05 Nov 2020 23:05:39 -0800 (PST)
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Stanimir Varbanov <stanimir.varbanov@linaro.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        digetx@gmail.com, linux-media@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 7/7] media: venus: dev_pm_opp_put_*() accepts NULL argument
+Date:   Fri,  6 Nov 2020 12:33:27 +0530
+Message-Id: <1b1c2086f01a27f7da6e6512dd47d47d153f626d.1604646059.git.viresh.kumar@linaro.org>
+X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
+In-Reply-To: <cover.1604646059.git.viresh.kumar@linaro.org>
+References: <cover.1604646059.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Smita,
+The dev_pm_opp_put_*() APIs now accepts a NULL opp_table pointer and so
+there is no need for us to carry the extra check. Drop them.
 
-Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> writes:
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/media/platform/qcom/venus/pm_helpers.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-> Linux Kernel uses ACPI Boot Error Record Table (BERT) to report fatal
-> errors that occurred in a previous boot. The MCA errors in the BERT are
-> reported using the x86 Processor Error Common Platform Error Record (CPER)
-> format. Currently, the record prints out the raw MSR values and AMD relies
-> on the raw record to provide MCA information.
->
-> Extract the raw MSR values of MCA registers from the BERT and feed it into
-> the standard mce_log() function through the existing x86/MCA RAS
-> infrastructure. This will result in better decoding from the EDAC MCE
-> decoder or the default notifier.
->
-> The implementation is SMCA specific as the raw MCA register values are
-> given in the register offset order of the MCAX address space.
->
-> [ Fix a build breakage in patch v1. ]
-> Reported-by: kernel test robot <lkp@intel.com>
-> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+diff --git a/drivers/media/platform/qcom/venus/pm_helpers.c b/drivers/media/platform/qcom/venus/pm_helpers.c
+index 57877eacecf0..e1e9130288ad 100644
+--- a/drivers/media/platform/qcom/venus/pm_helpers.c
++++ b/drivers/media/platform/qcom/venus/pm_helpers.c
+@@ -898,8 +898,7 @@ static void core_put_v4(struct device *dev)
+ 
+ 	if (core->has_opp_table)
+ 		dev_pm_opp_of_remove_table(dev);
+-	if (core->opp_table)
+-		dev_pm_opp_put_clkname(core->opp_table);
++	dev_pm_opp_put_clkname(core->opp_table);
+ 
+ }
+ 
+-- 
+2.25.0.rc1.19.g042ed3e048af
 
-[...]
-
-> diff --git a/drivers/firmware/efi/cper-x86.c b/drivers/firmware/efi/cper-x86.c
-> index 2531de49f56c..438ed9eff6d0 100644
-> --- a/drivers/firmware/efi/cper-x86.c
-> +++ b/drivers/firmware/efi/cper-x86.c
-> @@ -2,6 +2,7 @@
->  // Copyright (C) 2018, Advanced Micro Devices, Inc.
->  
->  #include <linux/cper.h>
-> +#include <linux/acpi.h>
-
-Did you mean to include <asm/acpi.h>?
-
->  
->  /*
->   * We don't need a "CPER_IA" prefix since these are all locally defined.
-> @@ -347,9 +348,13 @@ void cper_print_proc_ia(const char *pfx, const struct cper_sec_proc_ia *proc)
->  			       ctx_info->mm_reg_addr);
->  		}
->  
-> -		printk("%sRegister Array:\n", newpfx);
-> -		print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16, groupsize,
-> -			       (ctx_info + 1), ctx_info->reg_arr_size, 0);
-> +		if (ctx_info->reg_ctx_type != CTX_TYPE_MSR ||
-> +		    arch_apei_report_x86_error(ctx_info, proc->lapic_id)) {
-> +			printk("%sRegister Array:\n", newpfx);
-> +			print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16,
-> +				       groupsize, (ctx_info + 1),
-> +				       ctx_info->reg_arr_size, 0);
-> +		}
->  
->  		ctx_info = (struct cper_ia_proc_ctx *)((long)ctx_info + size);
->  	}
-
-With that addressed,
-
-FWIW,
-
-Reviewed-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
-
-Thanks,
-Punit
