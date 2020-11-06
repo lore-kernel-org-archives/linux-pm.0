@@ -2,124 +2,117 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67182C55178
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:26:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E64CC2D0A3
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:38:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C665F20720
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:26:43 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ADBSOuu5"
+	by mail.kernel.org (Postfix) with ESMTP id C562322203
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:38:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726988AbgKFKZ7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 05:25:59 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33784 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727039AbgKFKZ5 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 05:25:57 -0500
-Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 162C1C0613CF;
-        Fri,  6 Nov 2020 02:25:57 -0800 (PST)
-Received: by mail-pf1-x444.google.com with SMTP id z3so912670pfz.6;
-        Fri, 06 Nov 2020 02:25:57 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=Joo9G8dpZiV+ukJjlPwDuzRh/fKHk3sZ/ezTEfq1J4w=;
-        b=ADBSOuu5+RnTrJMu2JFScnn1lupC9Qpr98EKW+sFCRB/iyNTcmycd++3XsS5badlx5
-         cZ63ZZnjBnEvctAmrVciN/Zxdn/UoQ6/THkDUpkIMmoFqS+bEHbrCIKIbuk9tBX9sVt3
-         6xQAN24i3ZWvdr+dv2x55SjAtC67ulNMe4XiKEHEkq76W4KXTAp6cDFTyRx5Ibj0lGO4
-         IefgxPWOhzcsTP9gdQWj6T2k6rttE1TS0bv0VSbs3yd+q7XHO/sReL2JIxM+aGBt+0tO
-         CPyhp1UmLYWVnMWUjfvf+AkpuU9pLwh1oNbEIG0slAOrAnFk4rjhCtWpK5UQJgEGCbnY
-         IDWQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=Joo9G8dpZiV+ukJjlPwDuzRh/fKHk3sZ/ezTEfq1J4w=;
-        b=PaZlzvlthk7B8QDD6e9LiGcxe0nSHSqx9pi50iQrGXZgIXU+vPAvaEne7o7Q7TLJva
-         0MuqyIgRKyAZSrs4i6NomDB8WqbCj2eZcTUoUtOJzE76pSFP6SojeVO7V2ypltCXUxxQ
-         5exbhhHJB1GaN2zpkB+hzWKq6O44ed+pTDrDfpYHXSnD7v1v1R8O/mcURHQrn1mhGbpp
-         v3oaJUHR5SXA8xKy5n4dcFAwQwenP9NyJ5n7tsFaoRO3vIJXmekTOeNXpkJzC739z/Jl
-         Xidghoy4eADWdFd01UCJ0S4GCsvc51N8w+OU7o06SSenINjP1uOYAbYu96oPeeT0Glib
-         gG+g==
-X-Gm-Message-State: AOAM530K94CWCti9q/Fp5WijwRAyMs88ikXdytX3PpRWvx9iNoMulXj5
-        SLzziGk6O0cNgB6jgl0vzH8=
-X-Google-Smtp-Source: ABdhPJwDw1g9l1Dk4zO9BznC3YRYdFgm86kmCLKvigqSg0L0ZtfYcEW0oSDfLrD1kggsd38y8ALvlQ==
-X-Received: by 2002:a17:90a:ead3:: with SMTP id ev19mr1903770pjb.208.1604658356734;
-        Fri, 06 Nov 2020 02:25:56 -0800 (PST)
-Received: from localhost.localdomain ([2402:7500:57a:6823:8ab3:4b5d:4c53:f39b])
-        by smtp.gmail.com with ESMTPSA id g3sm1260633pgl.55.2020.11.06.02.25.53
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 06 Nov 2020 02:25:56 -0800 (PST)
-From:   Gene Chen <gene.chen.richtek@gmail.com>
-To:     sre@kernel.org, matthias.bgg@gmail.com, robh+dt@kernel.org
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        gene_chen@richtek.com, Wilma.Wu@mediatek.com,
-        shufan_lee@richtek.com, cy_huang@richtek.com,
-        benjamin.chao@mediatek.com
-Subject: [PATCH v6 03/11] mfd: mt6360: Indicate sub-dev compatible name by using "-"
-Date:   Fri,  6 Nov 2020 17:53:44 +0800
-Message-Id: <1604656432-10215-4-git-send-email-gene.chen.richtek@gmail.com>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <1604656432-10215-1-git-send-email-gene.chen.richtek@gmail.com>
-References: <1604656432-10215-1-git-send-email-gene.chen.richtek@gmail.com>
+        id S1726830AbgKFKiM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 05:38:12 -0500
+Received: from foss.arm.com ([217.140.110.172]:34668 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727094AbgKFKh6 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 6 Nov 2020 05:37:58 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B57BA147A;
+        Fri,  6 Nov 2020 02:37:56 -0800 (PST)
+Received: from [10.57.14.85] (unknown [10.57.14.85])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6AE973F719;
+        Fri,  6 Nov 2020 02:37:53 -0800 (PST)
+Subject: Re: [PATCH v3 3/3] [RFC] CPUFreq: Add support for
+ cpu-perf-dependencies
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Nicola Mazzucato <nicola.mazzucato@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        sudeep.holla@arm.com, rjw@rjwysocki.net, vireshk@kernel.org,
+        robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com,
+        daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
+        chris.redpath@arm.com
+References: <20201102120115.29993-1-nicola.mazzucato@arm.com>
+ <20201102120115.29993-4-nicola.mazzucato@arm.com>
+ <20201106092020.za3oxg7gutzc3y2b@vireshk-i7>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <0a334a73-45ef-58ff-7dfd-9df6f4ff290a@arm.com>
+Date:   Fri, 6 Nov 2020 10:37:51 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <20201106092020.za3oxg7gutzc3y2b@vireshk-i7>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Gene Chen <gene_chen@richtek.com>
+Hi Viresh,
 
-Indicate sub-dev compatible name by using "-".
+On 11/6/20 9:20 AM, Viresh Kumar wrote:
+> On 02-11-20, 12:01, Nicola Mazzucato wrote:
+>> This is a continuation of the previous v2, where we focused mostly on the
+>> dt binding.
+>>
+>> I am seeking some feedback/comments on the following two approaches.
+>>
+>> Intro:
+>> We have seen that in a system where performance control and hardware
+>> description do not match (i.e. per-cpu), we still need the information of
+>> how the v/f lines are shared among the cpus. We call this information
+>> "performance dependencies".
+>> We got this info through the opp-shared (the previous 2 patches aim for
+>> that).
+>>
+>> Problem:
+>> How do we share such info (retrieved from a cpufreq driver) to other
+>> consumers that rely on it? I have two proposals.
+> 
+> I haven't really stop thinking about what and how we should solve
+> this, but I have few concerns first.
+> 
+>> 2) drivers/thermal/cpufreq_cooling: Replace related_cpus with dependent_cpus
+> 
+> I am not sure if I understand completely on how this is going to be
+> modified/work.
+> 
+> The only use of related_cpus in the cooling driver is in the helper
+> cdev->get_requested_power(), where we need to find the total power
+> being consumed by devices controlled by the cooling device. Right ?
+> 
+> Now the cooling devices today are very closely related to the cpufreq
+> policy, the registration function itself takes a cpufreq policy as an
+> argument.
+> 
+> Consider that you have an octa-core platform and all the CPUs are
+> dependent on each other. With your suggested changes and hw control,
+> we will have different cpufreq policies for each CPU. And so we will
+> have a cooling device, cdev, for each CPU as well. When the IPA
+> governor calls cdev->get_requested_power(), why should we ever bother
+> to traverse the list of dependent_cpus and not related_cpus only ?
+> 
+> Otherwise the same CPU will have its load contributed to the power of
+> 8 cooling devices.
+> 
 
-Signed-off-by: Gene Chen <gene_chen@richtek.com>
-Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
----
- drivers/mfd/mt6360-core.c | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
+Good question.
 
-diff --git a/drivers/mfd/mt6360-core.c b/drivers/mfd/mt6360-core.c
-index befee70..692e47b 100644
---- a/drivers/mfd/mt6360-core.c
-+++ b/drivers/mfd/mt6360-core.c
-@@ -292,18 +292,18 @@ static const struct resource mt6360_ldo_resources[] = {
- };
- 
- static const struct mfd_cell mt6360_devs[] = {
--	OF_MFD_CELL("mt6360_adc", mt6360_adc_resources,
--		    NULL, 0, 0, "mediatek,mt6360_adc"),
--	OF_MFD_CELL("mt6360_chg", mt6360_chg_resources,
--		    NULL, 0, 0, "mediatek,mt6360_chg"),
--	OF_MFD_CELL("mt6360_led", mt6360_led_resources,
--		    NULL, 0, 0, "mediatek,mt6360_led"),
--	OF_MFD_CELL("mt6360_pmic", mt6360_pmic_resources,
--		    NULL, 0, 0, "mediatek,mt6360_pmic"),
--	OF_MFD_CELL("mt6360_ldo", mt6360_ldo_resources,
--		    NULL, 0, 0, "mediatek,mt6360_ldo"),
--	OF_MFD_CELL("mt6360_tcpc", NULL,
--		    NULL, 0, 0, "mediatek,mt6360_tcpc"),
-+	OF_MFD_CELL("mt6360-adc", mt6360_adc_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-adc"),
-+	OF_MFD_CELL("mt6360-chg", mt6360_chg_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-chg"),
-+	OF_MFD_CELL("mt6360-led", mt6360_led_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-led"),
-+	OF_MFD_CELL("mt6360-pmic", mt6360_pmic_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-pmic"),
-+	OF_MFD_CELL("mt6360-ldo", mt6360_ldo_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-ldo"),
-+	OF_MFD_CELL("mt6360-tcpc", NULL,
-+		    NULL, 0, 0, "mediatek,mt6360-tcpc"),
- };
- 
- static const unsigned short mt6360_slave_addr[MT6360_SLAVE_MAX] = {
--- 
-2.7.4
+How about a different interface for those cpufreq drivers?
+That new registration API would allow to specify the cpumask.
+Or rely on EM cpumask: em_span_cpus(em)
 
+Currently we have two ways to register cooling device:
+1. when the cpufreq driver set a flag CPUFREQ_IS_COOLING_DEV, the core
+will register cooling device
+2. cpufreq driver can explicitly call the registration function:
+cpufreq_cooling_register() with 'policy' as argument
+
+That would need substantial change to the cpufreq cooling code, from
+policy oriented to custom driver's cpumask (like EM registration).
+
+Regards,
+Lukasz
