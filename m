@@ -5,68 +5,70 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EA25C388F2
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4BBEBC5517A
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 03B3A20825
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DDB08208FE
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="b3Zpcyw1"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="o5Zr52H5"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726472AbgKFHFZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:05:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58882 "EHLO
+        id S1726487AbgKFHFf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:05:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58932 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726439AbgKFHFX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:23 -0500
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67FA3C0613D2
-        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:05:22 -0800 (PST)
-Received: by mail-pl1-x641.google.com with SMTP id f21so245478plr.5
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:05:22 -0800 (PST)
+        with ESMTP id S1726375AbgKFHFe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:34 -0500
+Received: from mail-pg1-x541.google.com (mail-pg1-x541.google.com [IPv6:2607:f8b0:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 63246C0613D2
+        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:05:34 -0800 (PST)
+Received: by mail-pg1-x541.google.com with SMTP id u4so221993pgr.9
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:05:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=qJNlvtq3Q/fhRhMrBVr0jOCxwM2F0N9xU97jImW1c4M=;
-        b=b3Zpcyw1zX1H4YDcNngNslvdi+HNpuoFhkHkD8WbuJXybYNAWn2baVM+TM517h5pIv
-         4C5xr5v4i/051DJ0+CGlh4jQKeHQ3mO/kpnaqNoHCMvcEtVdHgDDQji/9rGvVo6yat4H
-         CTaNB3AxT2pKMd/zsusOqCFPgUiK6tWxz8E6TYX2+eXr1cR3oTGqcxFJubu8eGlloERb
-         0isAsKYT2nwpZImXK8sRAAzYbJ/TjA2P2OmChl9z1OVHrGwJql2y2usKkNP3aHQYyOlQ
-         TWLa7MQuUFVsv7tRSoayCma2SF0EK8qYXOEuAlfsi6txB4eQEinff3Xybstl+yBkdr+m
-         gc6A==
+        bh=ehPUCc4BBH4w6xwbXHXZ9YzZ1LHDSwHspwqvBRHLfG8=;
+        b=o5Zr52H5GnqwIwaEUT6XGHpZ+Rk+X0IvKQ47cS0hprikNcIhQd95tQWJJ9xoEnMC6a
+         qq0CgW4B20Qmt6WOLolyORfkDV888lAdzgcGn74AVqm+Knjd7N42MMbPeXXOyU1tL0J4
+         7GWqIJq+ACgU+jrTV5fuw+yggsYOAd9L/MAjYtgC1nzSfvtVI2U9LNiyJN2qZeqPGwJT
+         kTg9vCMFltVucT2XqAblwjqtX1+OttYzVhENqzJfjyUNCk5Q0u9WKxarQa1qqwrWbPQC
+         AB8UTDeC1bGUO/Eya7Tey2URIlSqyJuMquf4COHmuHqW+TX8lkHBRXwAhDKO1VIf9w9g
+         W0UA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=qJNlvtq3Q/fhRhMrBVr0jOCxwM2F0N9xU97jImW1c4M=;
-        b=bO3Vz1d57Gjj+7MaRfCELc8UxI6MuujUDUDZRFqbwGBW7Jx7YYy0+amiUaJfqCTe+t
-         E+pbjQjCNsOACUBwAMRk+dgnAMtTYyappOz44y3Pqm53GF6HPV/QVbLBStVSx3xCEQIb
-         FxrUvvVVSE7Qq8bB0dXNygE36zxWoDxXI9va7YMipDgvBun4wpcnUkqdVgIeSnkv9sTX
-         dJe6Xjq0VUM5zcRwYLJCG3fW39ui2WcLQBaBItvjyY2fLRKs0JmubU53YAJqqxB9w8YU
-         CdVCVLs2TLC8gpb/1biixGT/BS8uUdEWXNVioBUtwc7zxYDKre+hett/sG2HIlE+SoXj
-         tA6Q==
-X-Gm-Message-State: AOAM531iw7tw5KELcvKYX0p3x6bZh+j3Anvkh5zNjFrcFeqhEftQSVm2
-        KdOVyKdTd94lAwagVUuUkK28cQ==
-X-Google-Smtp-Source: ABdhPJxxmtFJihSCZMzO8iC+QR+Wb7imnYNUNCmRFiSUJVg8xZNbVDDfHCA7BIT46Bcy4f5K9CLgQg==
-X-Received: by 2002:a17:902:7298:b029:d4:c71a:357a with SMTP id d24-20020a1709027298b02900d4c71a357amr794203pll.38.1604646321967;
-        Thu, 05 Nov 2020 23:05:21 -0800 (PST)
+        bh=ehPUCc4BBH4w6xwbXHXZ9YzZ1LHDSwHspwqvBRHLfG8=;
+        b=BKKtHiICIDzjgQ8N3Tyyqk8PWlcWlFweT6vuyA1YtWKu/e7ZKlNLZNlrzNlnFumSP9
+         DJQOp8tzU5mnS1TW03fTEojNpWep531jhwQwx1vlR4KoccdsfPytusvRemzqsdMShB7R
+         nO9Qa0kyUVmSf6ZhEMCGk4duMjiJIm1xjz9nBchHQrAkLxHvTph0fOwfErtqcKSKfOlz
+         kqC5yAHO+gKXAx1MhfjQ8fveC84gg0m5JcqK/APkxskEEu0mOBmEZZ/A4P8NP4PWKS38
+         ix8luWEp8Z6GWzWGfn0sukEXTdMy8UCXewCCOugZ4JzxObPWTpvZEoIyVjmVkhw/sdYp
+         4wPA==
+X-Gm-Message-State: AOAM530DnBLFPPclN4St9lwgPExG0X8W82PZqd+CvQbHRr0wNgjeJ4SA
+        Jp2cXK/dA/JXufLHD7koYlgyKA==
+X-Google-Smtp-Source: ABdhPJxV4aG+pPSqQiArJqkvpC3VHdnMlXqz893y069PmwZUjFiCvQoM0e21aZD+0OKoStOt+zy0BQ==
+X-Received: by 2002:a63:1212:: with SMTP id h18mr621177pgl.196.1604646333997;
+        Thu, 05 Nov 2020 23:05:33 -0800 (PST)
 Received: from localhost ([122.172.12.172])
-        by smtp.gmail.com with ESMTPSA id s9sm815857pfs.89.2020.11.05.23.05.20
+        by smtp.gmail.com with ESMTPSA id m6sm793084pfa.61.2020.11.05.23.05.33
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 05 Nov 2020 23:05:21 -0800 (PST)
+        Thu, 05 Nov 2020 23:05:33 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
-        Stephen Boyd <sboyd@kernel.org>
+To:     Qiang Yu <yuq825@gmail.com>, David Airlie <airlied@linux.ie>,
+        Daniel Vetter <daniel@ffwll.ch>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>, digetx@gmail.com,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/7] opp: Allow dev_pm_opp_put_*() APIs to accept NULL opp_table
-Date:   Fri,  6 Nov 2020 12:33:21 +0530
-Message-Id: <7c8e6cacc6aa09c4b3b2c4e892d91b6d4864b176.1604646059.git.viresh.kumar@linaro.org>
+        Rafael Wysocki <rjw@rjwysocki.net>,
+        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
+        digetx@gmail.com, dri-devel@lists.freedesktop.org,
+        lima@lists.freedesktop.org, linux-kernel@vger.kernel.org
+Subject: [PATCH 5/7] drm/lima: dev_pm_opp_put_*() accepts NULL argument
+Date:   Fri,  6 Nov 2020 12:33:25 +0530
+Message-Id: <2518c14df2f16cc3c4fee35499895a32513c174b.1604646059.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
 In-Reply-To: <cover.1604646059.git.viresh.kumar@linaro.org>
 References: <cover.1604646059.git.viresh.kumar@linaro.org>
@@ -76,77 +78,38 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This allows the callers to drop the unnecessary checks.
+The dev_pm_opp_put_*() APIs now accepts a NULL opp_table pointer and so
+there is no need for us to carry the extra check. Drop them.
 
 Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
- drivers/opp/core.c | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/gpu/drm/lima/lima_devfreq.c | 13 ++++---------
+ 1 file changed, 4 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/opp/core.c b/drivers/opp/core.c
-index b24f685823ae..9d145bb99a59 100644
---- a/drivers/opp/core.c
-+++ b/drivers/opp/core.c
-@@ -1660,6 +1660,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_supported_hw);
-  */
- void dev_pm_opp_put_supported_hw(struct opp_table *opp_table)
- {
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
+diff --git a/drivers/gpu/drm/lima/lima_devfreq.c b/drivers/gpu/drm/lima/lima_devfreq.c
+index bbe02817721b..e7b7b8dfd792 100644
+--- a/drivers/gpu/drm/lima/lima_devfreq.c
++++ b/drivers/gpu/drm/lima/lima_devfreq.c
+@@ -110,15 +110,10 @@ void lima_devfreq_fini(struct lima_device *ldev)
+ 		devfreq->opp_of_table_added = false;
+ 	}
  
-@@ -1716,6 +1719,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_prop_name);
-  */
- void dev_pm_opp_put_prop_name(struct opp_table *opp_table)
- {
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
+-	if (devfreq->regulators_opp_table) {
+-		dev_pm_opp_put_regulators(devfreq->regulators_opp_table);
+-		devfreq->regulators_opp_table = NULL;
+-	}
+-
+-	if (devfreq->clkname_opp_table) {
+-		dev_pm_opp_put_clkname(devfreq->clkname_opp_table);
+-		devfreq->clkname_opp_table = NULL;
+-	}
++	dev_pm_opp_put_regulators(devfreq->regulators_opp_table);
++	dev_pm_opp_put_clkname(devfreq->clkname_opp_table);
++	devfreq->regulators_opp_table = NULL;
++	devfreq->clkname_opp_table = NULL;
+ }
  
-@@ -1844,6 +1850,9 @@ void dev_pm_opp_put_regulators(struct opp_table *opp_table)
- {
- 	int i;
- 
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	if (!opp_table->regulators)
- 		goto put_opp_table;
- 
-@@ -1926,6 +1935,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_set_clkname);
-  */
- void dev_pm_opp_put_clkname(struct opp_table *opp_table)
- {
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
-@@ -1981,6 +1993,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_register_set_opp_helper);
-  */
- void dev_pm_opp_unregister_set_opp_helper(struct opp_table *opp_table)
- {
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	/* Make sure there are no concurrent readers while updating opp_table */
- 	WARN_ON(!list_empty(&opp_table->opp_list));
- 
-@@ -2109,6 +2124,9 @@ EXPORT_SYMBOL_GPL(dev_pm_opp_attach_genpd);
-  */
- void dev_pm_opp_detach_genpd(struct opp_table *opp_table)
- {
-+	if (unlikely(!opp_table))
-+		return;
-+
- 	/*
- 	 * Acquire genpd_virt_dev_lock to make sure virt_dev isn't getting
- 	 * used in parallel.
+ int lima_devfreq_init(struct lima_device *ldev)
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
