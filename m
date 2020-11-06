@@ -2,111 +2,108 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EE776C2D0A3
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:07:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 86566C388F2
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:25:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 715BB206DC
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:07:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2C3D621D81
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 10:25:51 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="a9yURkJB"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="boAnYnnl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726165AbgKFKHQ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 05:07:16 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59066 "EHLO
+        id S1726974AbgKFKZr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 05:25:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33750 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726075AbgKFKHQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 05:07:16 -0500
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4E290C0613CF
-        for <linux-pm@vger.kernel.org>; Fri,  6 Nov 2020 02:07:15 -0800 (PST)
-Received: by mail-pl1-x644.google.com with SMTP id f21so445992plr.5
-        for <linux-pm@vger.kernel.org>; Fri, 06 Nov 2020 02:07:15 -0800 (PST)
+        with ESMTP id S1726758AbgKFKZr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 05:25:47 -0500
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 18C13C0613CF;
+        Fri,  6 Nov 2020 02:25:46 -0800 (PST)
+Received: by mail-pf1-x441.google.com with SMTP id e7so889466pfn.12;
+        Fri, 06 Nov 2020 02:25:46 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to:user-agent;
-        bh=Xh2yyII4BN2Q0eHqaVwfCJTzF58UCCvCSQVIKFDV04Q=;
-        b=a9yURkJBvngqIkd0EW7So3jIDwRAQ3W43yeEA/MT3DTidowcoOWa4sDGM6UqBT6Yr2
-         AV4QEi2bzh/xRSGsRZHtPN6U8hatlLN0X4CMa/Jg+91WXv/T2U+9w8LYjBQ9/OgQANMb
-         +8LR1nrQY4uasl1uyyfvxLdXjeMOJDZGtVdq+GQkH+eQQwAIX3PJzLRcnYFAdti17eME
-         wIL8CHpY4x48ljBxbzxklflYrRccsCGi3LQEZqnK6Ipzjon0tuRjLUC90PQUjEc0xofq
-         l7LzfJkET9NcFMkczfmzwqQpr5s/8lxlOgGjPR2EmFqbLXJ+3jOGDZj6EIp1Sz1qmOxV
-         41oA==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id;
+        bh=FLfHJOXQm1uej3hFUFpWXlA26tRNkCfwwdzbi5ScsSQ=;
+        b=boAnYnnlhauGDB9+l9QIEa/OGeuCUKGw0IVSxJN9gJdIC6hpZjnMNyZCqrt7ZNMHQH
+         JNLfY5fx2T/HPrDCz7hd+ifKm7zIUt7eLpf1GeGmHdQCmvp7eBQuMHrPlqoki1NVuCsu
+         lT0WnCkWIf5pvZ9cMAKm5dfsThtHn3sU0jxdWx8Hvkfd02p8fPuDhZZIK3O5pw+Q4nig
+         a6NqUtyUFW8iEL0JyBqyZzoVC/Eh8EpvDNTrbsCTv1yP5enjlX2tjuTndCnznUfvhuv+
+         Uic8zjjG78/Bka3OyV1IXZxlKLcO6E9PDLXdOWJGPfdm2XnenJjENK5yOKW/lAK3Bjhd
+         etSQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=Xh2yyII4BN2Q0eHqaVwfCJTzF58UCCvCSQVIKFDV04Q=;
-        b=KvwIFwCYmBbC/T3OZCfOYGBLvK2/e8OIxKRO+k8KJqGy0i4db2USJmVy1Zh7bAsEuc
-         Zu7HzTIC7CMCrlXPAJUnHwFE6cLKRvszYl/AD+BkL0f11HwuAnBx8km0ZXSxnaVMdU+s
-         Bk0Fb8GMFhB3QnxbbAIaAIojexPP9aF8tvOMXzOYKQEJoKYLcE7bv7UUJ/zkR94xjXzh
-         QDLcCAHMuX//UAmmR7wU6EjJTmmHR8hyiRa8blcVxDnzEkqn+K+SZtP+SXAtQ3c7oBzP
-         PJIZngyzZ5pZs9e5jd+uGDUW2iLFywPgkEAY9m2wrPIBbIgLclP2Dy1L/vsWsBuT5vjf
-         Z+Dg==
-X-Gm-Message-State: AOAM531KJERAavOtMJCqWTwT1Xdj4wQ3vXhGvh2SxUyC8R1K4gHzCN+7
-        /EV9TDhy4Hm7X5leLbp/3y+wIA==
-X-Google-Smtp-Source: ABdhPJyVGNKHMQmLlALereriRPy7JZsHpyOHgoK9YawOfeu1b2OHOCZOlor3Gbdw0tJqF5fBHI8XBA==
-X-Received: by 2002:a17:902:724c:b029:d5:c1de:e34e with SMTP id c12-20020a170902724cb02900d5c1dee34emr1106053pll.71.1604657235380;
-        Fri, 06 Nov 2020 02:07:15 -0800 (PST)
-Received: from localhost ([122.172.12.172])
-        by smtp.gmail.com with ESMTPSA id ck21sm1755608pjb.56.2020.11.06.02.07.14
+        h=x-gm-message-state:from:to:cc:subject:date:message-id;
+        bh=FLfHJOXQm1uej3hFUFpWXlA26tRNkCfwwdzbi5ScsSQ=;
+        b=ghrmwFxnRMhpG535Dp+/zat4DUUU2HdThflPW1aL9XxCzgb7YaJ62tQwDkmL33KS4T
+         6GNjKZHui+uXQdjBoVqApUtFmHemHNe0SroyFXAIyCueqOfMh+LSoVFiSKaBC4qAISTH
+         67YoeLCUeOgsAqmPykIFwJEM6R9Ny4oQUsgkdoay6KRxUdPRCHiDGzaoHVYYupfeXx8V
+         r0bKuplKNX2UuMd4ffjc8EjID8wV5fxsoYmG8J3mIuqfIEixZwZAve6zTMu8/FSbkLLs
+         WrITSvoi6eZSnnOUyEb7SgBvSQ/NtiZWunPt+QJGgp6jWpJnyCNmTVnTA1qERIHjaabD
+         VGAA==
+X-Gm-Message-State: AOAM531RC/2GYLrafbPXoIN7fgeze0+NB6p71MUSoBlW8h/ppzi5aImM
+        n5tcz5OcWuItikYpC5+6sIE=
+X-Google-Smtp-Source: ABdhPJyLnNz9MpjtBAmV2AxZf7EJzZAtleTlmjqsR3z/9TVuGk5DSmdR9uWoBTFar7lvtqlLVgMuNQ==
+X-Received: by 2002:aa7:8287:0:b029:142:2501:39ec with SMTP id s7-20020aa782870000b0290142250139ecmr1228237pfm.59.1604658345723;
+        Fri, 06 Nov 2020 02:25:45 -0800 (PST)
+Received: from localhost.localdomain ([2402:7500:57a:6823:8ab3:4b5d:4c53:f39b])
+        by smtp.gmail.com with ESMTPSA id g3sm1260633pgl.55.2020.11.06.02.25.42
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Fri, 06 Nov 2020 02:07:14 -0800 (PST)
-Date:   Fri, 6 Nov 2020 15:37:12 +0530
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        "Rafael J. Wysocki" <rafael@kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] cpufreq: Introduce target min and max frequency hints
-Message-ID: <20201106100712.u336gbtblaxr2cit@vireshk-i7>
-References: <7417968.Ghue05m4RV@kreacher>
- <2233690.N3OVLkotou@kreacher>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2233690.N3OVLkotou@kreacher>
-User-Agent: NeoMutt/20180716-391-311a52
+        Fri, 06 Nov 2020 02:25:45 -0800 (PST)
+From:   Gene Chen <gene.chen.richtek@gmail.com>
+To:     sre@kernel.org, matthias.bgg@gmail.com, robh+dt@kernel.org
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
+        gene_chen@richtek.com, Wilma.Wu@mediatek.com,
+        shufan_lee@richtek.com, cy_huang@richtek.com,
+        benjamin.chao@mediatek.com
+Subject: [PATCH v6 0/11] mfd: mt6360: Merge different sub-devices I2C read/write
+Date:   Fri,  6 Nov 2020 17:53:41 +0800
+Message-Id: <1604656432-10215-1-git-send-email-gene.chen.richtek@gmail.com>
+X-Mailer: git-send-email 2.7.4
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 05-11-20, 19:23, Rafael J. Wysocki wrote:
-> Index: linux-pm/include/linux/cpufreq.h
-> ===================================================================
-> --- linux-pm.orig/include/linux/cpufreq.h
-> +++ linux-pm/include/linux/cpufreq.h
-> @@ -63,6 +63,8 @@ struct cpufreq_policy {
->  
->  	unsigned int		min;    /* in kHz */
->  	unsigned int		max;    /* in kHz */
-> +	unsigned int		target_min; /* in kHz */
-> +	unsigned int		target_max; /* in kHz */
->  	unsigned int		cur;    /* in kHz, only needed if cpufreq
->  					 * governors are used */
->  	unsigned int		suspend_freq; /* freq to set during suspend */
+This patch series merge different sub-device I2C read/write into one Regmap and
+fix coding style for well-organized.
 
-Rafael, honestly speaking I didn't like this patch very much. We need
-to fix a very specific problem with the intel-pstate driver when it is
-used with powersave/performance governor to make sure the hard limits
-are enforced. And this is something which no one else may face as
-well.
+Gene Chen (11)
+  mfd: mt6360: Rearrange include file
+  mfd: mt6360: Remove redundant brackets around raw numbers
+  mfd: mt6360: Indicate sub-dev compatible name by using
+  mfd: mt6360: Combine mt6360 pmic/ldo resources into mt6360
+  mfd: mt6360: Rename mt6360_pmu_data by mt6360_ddata
+  mfd: mt6360: Rename mt6360_pmu by mt6360
+  mfd: mt6360: Remove handle_post_irq callback function
+  mfd: mt6360: Fix flow which is used to check ic exist
+  mfd: mt6360: Merge header file into driver and remove unuse register define
+  mfd: mt6360: Merge different sub-devices I2C read/write
+  mfd: mt6360: Remove MT6360 regulator of_compatible
 
-What about doing something like this instead in the intel_pstate
-driver only to get this fixed ?
+ b/drivers/mfd/Kconfig       |    1 
+ b/drivers/mfd/mt6360-core.c |  555 +++++++++++++++++++++++++++++---------------
+ include/linux/mfd/mt6360.h  |  240 -------------------
+ 3 files changed, 377 insertions(+), 419 deletions(-)
 
-        if (!strcmp(policy->governor->name, "powersave") ||
-            !strcmp(policy->governor->name, "performance"))
-                hard-limit-to-be-enforced;
+changelogs between v2 & v3
+- Replace mt6360_data to mt6360_ddata
+- Split I2C read/write to regmap driver
 
-This would be a much simpler and contained approach IMHO.
+changelogs between v3 & v4
+- Merge back mt6360 regmap driver to MFD driver
 
--- 
-viresh
+changelogs between v4 & v5
+- use devm_regmap_init
+- define crc calculation magic number
+
+changelogs between v5 & v6
+- Remove unrelated change
+- Remove regulator device of_compatible
+
