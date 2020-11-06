@@ -2,106 +2,125 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1FD37C55179
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 11:14:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6794C55178
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 12:09:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B7CFA206C1
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 11:14:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2B0BF20724
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 12:09:43 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=alien8.de header.i=@alien8.de header.b="MvI/6O8q"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727130AbgKFLO2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 06:14:28 -0500
-Received: from foss.arm.com ([217.140.110.172]:35446 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727057AbgKFLO1 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 6 Nov 2020 06:14:27 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id A3D84147A;
-        Fri,  6 Nov 2020 03:14:26 -0800 (PST)
-Received: from [10.57.14.85] (unknown [10.57.14.85])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 745553F719;
-        Fri,  6 Nov 2020 03:14:23 -0800 (PST)
-Subject: Re: [PATCH v3 3/3] [RFC] CPUFreq: Add support for
- cpu-perf-dependencies
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Nicola Mazzucato <nicola.mazzucato@arm.com>,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        sudeep.holla@arm.com, rjw@rjwysocki.net, vireshk@kernel.org,
-        robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com,
-        daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
-        chris.redpath@arm.com
-References: <20201102120115.29993-1-nicola.mazzucato@arm.com>
- <20201102120115.29993-4-nicola.mazzucato@arm.com>
- <20201106092020.za3oxg7gutzc3y2b@vireshk-i7>
- <0a334a73-45ef-58ff-7dfd-9df6f4ff290a@arm.com>
- <20201106105514.bhtdklyhn7goml64@vireshk-i7>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <7f73bcd6-0f06-4ef0-7f02-0751e6c4d94b@arm.com>
-Date:   Fri, 6 Nov 2020 11:14:21 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        id S1727209AbgKFMJm (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 07:09:42 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49966 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726317AbgKFMJl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 07:09:41 -0500
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 91DF0C0613CF;
+        Fri,  6 Nov 2020 04:09:41 -0800 (PST)
+Received: from zn.tnic (p200300ec2f0d1f002c83f8cfec6c8cbe.dip0.t-ipconnect.de [IPv6:2003:ec:2f0d:1f00:2c83:f8cf:ec6c:8cbe])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id DFACC1EC0472;
+        Fri,  6 Nov 2020 13:09:39 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1604664580;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=3Ci7oTqucUEYbCOxujDfl/9l+12eKuq8wK76UMHgU9Y=;
+        b=MvI/6O8ql2JPvklh62TEq6HDldWkesRPzhwI2utlOiEmi7ukBo1NKFoJkSL/GYa7OAes+g
+        MDo1gDgwVVhZXH1LIcqpK/M4uenUh4Vq+DQHgMYuX895azCn/xh/b+Ef3a3Py0OJbhP/x7
+        pJRd5mD+SiELlRHYootUvkBRJHkorWE=
+Date:   Fri, 6 Nov 2020 13:09:23 +0100
+From:   Borislav Petkov <bp@alien8.de>
+To:     Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+Cc:     x86@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-acpi@vger.kernel.org,
+        Tony Luck <tony.luck@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Punit Agrawal <punit1.agrawal@toshiba.co.jp>,
+        Yazen Ghannam <yazen.ghannam@amd.com>
+Subject: Re: [PATCH v5] cper, apei, mce: Pass x86 CPER through the MCA
+ handling chain
+Message-ID: <20201106120923.GB14914@zn.tnic>
+References: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
 MIME-Version: 1.0
-In-Reply-To: <20201106105514.bhtdklyhn7goml64@vireshk-i7>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Tue, Nov 03, 2020 at 10:49:52AM -0600, Smita Koralahalli wrote:
+> diff --git a/arch/x86/kernel/cpu/mce/apei.c b/arch/x86/kernel/cpu/mce/apei.c
+> index af8d37962586..f56f0bc147e2 100644
+> --- a/arch/x86/kernel/cpu/mce/apei.c
+> +++ b/arch/x86/kernel/cpu/mce/apei.c
+> @@ -51,6 +51,62 @@ void apei_mce_report_mem_error(int severity, struct cper_sec_mem_err *mem_err)
+>  }
+>  EXPORT_SYMBOL_GPL(apei_mce_report_mem_error);
+>  
+> +int apei_smca_report_x86_error(struct cper_ia_proc_ctx *ctx_info, u64 lapic_id)
+> +{
+> +	const u64 *i_mce = ((const u64 *) (ctx_info + 1));
+> +	unsigned int cpu;
+> +	struct mce m;
+> +
+> +	if (!boot_cpu_has(X86_FEATURE_SMCA))
+> +		return -EINVAL;
+> +
+> +	/*
+> +	 * The starting address of the Register Array extracted from BERT
+> +	 * must match with the first expected register in the register
+> +	 * layout of MCAX address space. In SMCA systems this address
+> +	 * corresponds to banks's MCA_STATUS register.
 
+So which is it "MCAX" or "SMCA"? They both denote the same thing but
+let's stick to one to avoid unnecessary confusion. I'm guessing to
+"SMCA" because it is more wide-spread in the kernel...
 
-On 11/6/20 10:55 AM, Viresh Kumar wrote:
-> On 06-11-20, 10:37, Lukasz Luba wrote:
->> Good question.
->>
->> How about a different interface for those cpufreq drivers?
->> That new registration API would allow to specify the cpumask.
->> Or rely on EM cpumask: em_span_cpus(em)
->>
->> Currently we have two ways to register cooling device:
->> 1. when the cpufreq driver set a flag CPUFREQ_IS_COOLING_DEV, the core
->> will register cooling device
->> 2. cpufreq driver can explicitly call the registration function:
->> cpufreq_cooling_register() with 'policy' as argument
->>
->> That would need substantial change to the cpufreq cooling code, from
->> policy oriented to custom driver's cpumask (like EM registration).
-> 
-> I am even wondering if we should really make that change. Why do we
-> need the combined load of the CPUs to be sent back to the IPA governor
-> ? Why shouldn't they all do that (they == cdev) ?
-> 
-> This is a bit confusing to me, sorry about that. The cpufreq governors
-> take a look at all the CPUs utilization and set the frequency based on
-> the highest utilization (and not the total util).
-> 
-> While in this case we present the total load of the CPUs to the IPA
-> (based on the current frequency of the CPUs), in response to which it
-> tells us the frequency at which all the CPUs of the policy can run at
-> (I am not even sure if it is the right thing to do as the CPUs have
-> different loads). And how do we fit this dependent_cpus thing into
-> this.
-> 
-> Sorry, I am not sure what's the right way of doing thing here.
-> 
+> +	 *
+> +	 * The Register array size must be large enough to include all
+> +	 * the SMCA registers which we want to extract.
+> +	 *
+> +	 * The number of registers in the Register Array is determined
+> +	 * by Register Array Size/8 as defined in UEFI spec v2.8, sec
+> +	 * N.2.4.2.2. The register layout is fixed and currently the raw
+> +	 * data in the register array includes 6 SMCA registers which the
+> +	 * kernel can extract.
+> +	 */
+> +
+> +	if ((ctx_info->msr_addr & MSR_AMD64_SMCA_MC0_STATUS) !=
+> +	    MSR_AMD64_SMCA_MC0_STATUS || ctx_info->reg_arr_size < 48)
+> +		return -EINVAL;
 
-I also had similar doubts, because if we make frequency requests
-independently for each CPU, why not having N cooling devs, which
-will set independently QoS max freq for them...
+Split that if in two consecutive if-statements.
 
-What convinced me:
-EAS and FIE would know the 'real' frequency of the cluster, IPA
-can use it also and have only one cooling device per cluster.
+Also, why the ANDing and not simply do:
 
-We would like to keep this old style 'one cooling device per cpuset'.
-I don't have strong opinion and if it would appear that there are
-some errors in freq estimation for cluster, then maybe it does make
-more sense to have cdev per CPU...
+	if (ctx_info->msr_addr == MSR_AMD64_SMCA_MC0_STATUS)
 
+?
 
+I'm guessing you wanna match *all* MCi_STATUS MSRs - not only MC0, yes?
 
+If so, document that with in the comment above it.
+
+Thx.
+
+-- 
+Regards/Gruss,
+    Boris.
+
+https://people.kernel.org/tglx/notes-about-netiquette
