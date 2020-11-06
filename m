@@ -2,48 +2,49 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34E26C2D0A3
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0BF44C5517A
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B9D2020936
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A5A5E2071A
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:34:16 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="WYY/q3v9"
+	dkim=pass (2048-bit key) header.d=st.com header.i=@st.com header.b="LYkC9Vz7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726320AbgKFHeO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:34:14 -0500
-Received: from mx08-00178001.pphosted.com ([91.207.212.93]:38252 "EHLO
+        id S1726494AbgKFHeP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:34:15 -0500
+Received: from mx08-00178001.pphosted.com ([91.207.212.93]:38258 "EHLO
         mx07-00178001.pphosted.com" rhost-flags-OK-OK-OK-FAIL)
-        by vger.kernel.org with ESMTP id S1726121AbgKFHeO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:34:14 -0500
+        by vger.kernel.org with ESMTP id S1726242AbgKFHeP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:34:15 -0500
 Received: from pps.filterd (m0046661.ppops.net [127.0.0.1])
-        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0A67WHnH010171;
-        Fri, 6 Nov 2020 08:34:08 +0100
+        by mx07-00178001.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0A67WHJ5010174;
+        Fri, 6 Nov 2020 08:34:09 +0100
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=st.com; h=from : to : cc : subject
- : date : message-id : mime-version : content-type; s=STMicroelectronics;
- bh=hPyC0/74yWJK+Ac9p1ycHb4o7bsA/mfpFNODsdNnscE=;
- b=WYY/q3v9cTSi8KDOJLnDgEXffaYk2JtBK37Xm4QAbatpLS8qT/eU64faX5jjzx64mU1y
- 3Ry3iIJC9phNxH0O3fmDR4lcjEqFKeN+hUUyLgaB03kgU5MdTEGRWpH9B4QESMODLtOV
- jEpTg5j14G9LkvN7qY+A6OQT9l8kgkroDVBUuMQ/PU/cRDdLlYP4Z1V8bzayzay7olz6
- ZN6ScKqvEDBHtzK9eH0TmK9YC83FOWMhrR+RpNJr2Ys6gCGekLkXGcP8U4bBkZeMdKxI
- Muvw4OHbDPxUCvrEBWdAT2Ogeey3N0lFlll2/2wbRlkKSEeJKDVCtHCQlITZbCcX8w/u YA== 
+ : date : message-id : in-reply-to : references : mime-version :
+ content-type; s=STMicroelectronics;
+ bh=DW4TL1hhopvy7rJvSn490/m5hIsP5bvfPFPkyjlW1jk=;
+ b=LYkC9Vz7Vwziot4/+mylXc7dN2fG63JgmHOJHm6WOGCR9tYBR74Weejlu3Q5m7gD2jsP
+ vSBwmemP0ViRLf/nvmdo6PvJPF6BSICu4P/KrB/Tax6Bxv0J1BDExsecu2G/vUDZEN2V
+ eH1DQYQk6Melvym81D0Y5XfAuuMZYLM7UgmSEhznxtN+ndrnJTuTaeaUe5rAxwP9pPl0
+ 8pDJDKD29+jfO1q77+F1AhltsoMpyxiV2PdVDpfohyawWo4gNBe+oo+MCbW+2biTJO/R
+ PWVmRg1FVimZlf0BxxPZbH1A+VSwIOk0OjeSB1g8UsEZSgspY8x2Xm9e8Z9rx+7Ybyf8 QA== 
 Received: from beta.dmz-eu.st.com (beta.dmz-eu.st.com [164.129.1.35])
-        by mx07-00178001.pphosted.com with ESMTP id 34gywrckrh-1
+        by mx07-00178001.pphosted.com with ESMTP id 34gywrckrk-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 06 Nov 2020 08:34:08 +0100
+        Fri, 06 Nov 2020 08:34:09 +0100
 Received: from euls16034.sgp.st.com (euls16034.sgp.st.com [10.75.44.20])
-        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id 4A3DE10002A;
-        Fri,  6 Nov 2020 08:34:07 +0100 (CET)
+        by beta.dmz-eu.st.com (STMicroelectronics) with ESMTP id DC55C10002A;
+        Fri,  6 Nov 2020 08:34:08 +0100 (CET)
 Received: from Webmail-eu.st.com (sfhdag2node3.st.com [10.75.127.6])
-        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id 38623226678;
-        Fri,  6 Nov 2020 08:34:07 +0100 (CET)
-Received: from localhost (10.75.127.49) by SFHDAG2NODE3.st.com (10.75.127.6)
- with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 6 Nov 2020 08:34:06
+        by euls16034.sgp.st.com (STMicroelectronics) with ESMTP id CF995226678;
+        Fri,  6 Nov 2020 08:34:08 +0100 (CET)
+Received: from localhost (10.75.127.48) by SFHDAG2NODE3.st.com (10.75.127.6)
+ with Microsoft SMTP Server (TLS) id 15.0.1473.3; Fri, 6 Nov 2020 08:34:08
  +0100
 From:   <patrice.chotard@st.com>
 To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
@@ -54,15 +55,18 @@ CC:     <patrice.chotard@st.com>, Erwan Le Ray <erwan.leray@st.com>,
         Alexandre TORGUE <alexandre.torgue@st.com>,
         Fabrice Gasnier <fabrice.gasnier@st.com>,
         Pierre-Yves MORDRET <pierre-yves.mordret@st.com>,
-        <amelie.delaunay@st.com>
-Subject: [PATCH v1 0/4] PM: Add dev_wakeup_path() helper
-Date:   Fri, 6 Nov 2020 08:33:54 +0100
-Message-ID: <20201106073358.8379-1-patrice.chotard@st.com>
+        <amelie.delaunay@st.com>, <erwan_leray@st.com>,
+        <alain.volmat@st.com>
+Subject: [PATCH v1 2/4] PM: domains: Make usage of device_wakeup_path() helper
+Date:   Fri, 6 Nov 2020 08:33:56 +0100
+Message-ID: <20201106073358.8379-3-patrice.chotard@st.com>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201106073358.8379-1-patrice.chotard@st.com>
+References: <20201106073358.8379-1-patrice.chotard@st.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-X-Originating-IP: [10.75.127.49]
-X-ClientProxiedBy: SFHDAG2NODE1.st.com (10.75.127.4) To SFHDAG2NODE3.st.com
+X-Originating-IP: [10.75.127.48]
+X-ClientProxiedBy: SFHDAG4NODE1.st.com (10.75.127.10) To SFHDAG2NODE3.st.com
  (10.75.127.6)
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312,18.0.737
  definitions=2020-11-06_02:2020-11-05,2020-11-06 signatures=0
@@ -72,30 +76,35 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Patrice Chotard <patrice.chotard@st.com>
 
-Add dev_wakeup_path() helper to avoid to spread
-dev->power.wakeup_path test in drivers.
+Make usage of dev_wakeup_path() helper.
 
-Cc: amelie.delaunay@st.com,
-    erwan_leray@st.com,
-    fabrice.gasnier@st.com,
-    alexandre.torgue@st.com,
-    alain.volmat@st.com,
-    pierre-yves.mordret@st.com
+Signed-off-by: Patrice Chotard <patrice.chotard@st.com>
+---
+ drivers/base/power/domain.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-*** BLURB HERE ***
-
-Patrice Chotard (4):
-  PM / wakeup: Add dev_wakeup_path() helper
-  PM: domains: Make usage of device_wakeup_path() helper
-  PM: core: Make usage of device_wakeup_path() helper
-  i2c: stm32f7: Make usage of dev_wakeup_path() helper
-
- drivers/base/power/domain.c      |  4 ++--
- drivers/base/power/main.c        |  4 ++--
- drivers/i2c/busses/i2c-stm32f7.c |  4 ++--
- include/linux/pm_wakeup.h        | 10 ++++++++++
- 4 files changed, 16 insertions(+), 6 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 743268996336..e0894ef8457c 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -1142,7 +1142,7 @@ static int genpd_finish_suspend(struct device *dev, bool poweroff)
+ 	if (ret)
+ 		return ret;
+ 
+-	if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
++	if (device_wakeup_path(dev) && genpd_is_active_wakeup(genpd))
+ 		return 0;
+ 
+ 	if (genpd->dev_ops.stop && genpd->dev_ops.start &&
+@@ -1196,7 +1196,7 @@ static int genpd_resume_noirq(struct device *dev)
+ 	if (IS_ERR(genpd))
+ 		return -EINVAL;
+ 
+-	if (dev->power.wakeup_path && genpd_is_active_wakeup(genpd))
++	if (device_wakeup_path(dev) && genpd_is_active_wakeup(genpd))
+ 		return pm_generic_resume_noirq(dev);
+ 
+ 	genpd_lock(genpd);
 -- 
 2.17.1
 
