@@ -2,111 +2,124 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96A96C2D0A3
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 95D01C2D0A3
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3969F208FE
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:39 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="vJ5Si/G8"
+	by mail.kernel.org (Postfix) with ESMTP id 4970C21734
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726375AbgKFHFh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:05:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58940 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726523AbgKFHFh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:37 -0500
-Received: from mail-pg1-x543.google.com (mail-pg1-x543.google.com [IPv6:2607:f8b0:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5E20CC0613CF
-        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:05:37 -0800 (PST)
-Received: by mail-pg1-x543.google.com with SMTP id i26so236655pgl.5
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:05:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=OM4R8kvz7DcEDGoVL/+jwadYBnqD63FlUWgPugvm78I=;
-        b=vJ5Si/G8zW5asLYK4yzoXUH4+0noPeaZCYzJx6PYHk+ao2dzwXa9pytvIQHVFHK5Ne
-         vBEoN04Ch3a1Gg8/qxcpogXvPkWOJK7Xa6Vsrg9HJ2iRgrSkLzwZzJ5HojbFqYCCbXZt
-         aFK8L8fkGrFm88BWuj5hBUoXR/aSe0H1TumxaT3sDKDCMe82hj6cjfywQElRrKHacejx
-         3d9cbL/yM4akOHEJ3TUOn/TniQKyGE5eQiOcAv7hO2OPghXeHc2WFIH3nzHf88MGZwTr
-         AlctnMbWTwX7sMvAQcgDy0+W45oH8VVJyBoXLwuHYQZt1YYKxtFOV2vgpByiR71Aznl4
-         XJ8g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=OM4R8kvz7DcEDGoVL/+jwadYBnqD63FlUWgPugvm78I=;
-        b=iT+yGuSQxbs475YwzZZSlJYS/oWh1VcscIcOrDHd4INambj6qjNNtUJNzxsmi9Y2Hp
-         BDej5hhkreb4/mNtQmCv1xkN/iKkkDxq5XP2Pl5CLE09lPin2FTtPhQMvpHbAbi0gjqf
-         LTxPXKuUUwySPvru6+Zy0VbJ0qP5ZyK5z7X0SkyAWF8JkzoMv92gFY6UWdBRxJUhBViA
-         QXYri4nSctSBrR882oxsnSPXuie99InupK7H2sgoyWrJe5ws44K3H8yTmuVdlUxh6SQb
-         FjE48HXy9pVRC7tGBldyJY+gxVJlAdqLkVgc7YJQXPBOXweHd5+sjRvXTOcTH9wFTbYF
-         PSyQ==
-X-Gm-Message-State: AOAM531693M8OEWlaMlkdnkrtby/7qwSliC1pAAqbv+38BKqTUAza6lY
-        8hrgk9+/IOb2PNjn9w0W7AITtw==
-X-Google-Smtp-Source: ABdhPJwE+7aKzU0Jx/bREINzle5y+qOHgpi0m23MkC+FXdDxSl8y9riR1SAMwq1YP0KhdPSWuKLI5Q==
-X-Received: by 2002:a62:1c92:0:b029:15c:aff1:b16f with SMTP id c140-20020a621c920000b029015caff1b16fmr687698pfc.0.1604646336961;
-        Thu, 05 Nov 2020 23:05:36 -0800 (PST)
-Received: from localhost ([122.172.12.172])
-        by smtp.gmail.com with ESMTPSA id z11sm819019pfk.52.2020.11.05.23.05.36
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 05 Nov 2020 23:05:36 -0800 (PST)
-From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     Rob Herring <robh@kernel.org>,
-        Tomeu Vizoso <tomeu.vizoso@collabora.com>,
-        Steven Price <steven.price@arm.com>,
-        Alyssa Rosenzweig <alyssa.rosenzweig@collabora.com>,
-        David Airlie <airlied@linux.ie>,
-        Daniel Vetter <daniel@ffwll.ch>
-Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Rafael Wysocki <rjw@rjwysocki.net>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        digetx@gmail.com, dri-devel@lists.freedesktop.org,
-        linux-kernel@vger.kernel.org
-Subject: [PATCH 6/7] drm/panfrost: dev_pm_opp_put_*() accepts NULL argument
-Date:   Fri,  6 Nov 2020 12:33:26 +0530
-Message-Id: <43be6d118201f9feb70fb030390fddce0852ab0b.1604646059.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1604646059.git.viresh.kumar@linaro.org>
-References: <cover.1604646059.git.viresh.kumar@linaro.org>
+        id S1726558AbgKFHFq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:05:46 -0500
+Received: from mo-csw-fb1115.securemx.jp ([210.130.202.174]:60624 "EHLO
+        mo-csw-fb.securemx.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726524AbgKFHFl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:41 -0500
+X-Greylist: delayed 5290 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Nov 2020 02:05:39 EST
+Received: by mo-csw-fb.securemx.jp (mx-mo-csw-fb1115) id 0A65bTgp005425; Fri, 6 Nov 2020 14:37:29 +0900
+Received: by mo-csw.securemx.jp (mx-mo-csw1115) id 0A65arFR018126; Fri, 6 Nov 2020 14:36:53 +0900
+X-Iguazu-Qid: 2wHHmca9fb4omt8CsG
+X-Iguazu-QSIG: v=2; s=0; t=1604641012; q=2wHHmca9fb4omt8CsG; m=8omBj8jo2qzV/WJteuWe7FJml1+CQgKYuaV4OIgz5TE=
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+        by relay.securemx.jp (mx-mr1110) id 0A65ao5p023434;
+        Fri, 6 Nov 2020 14:36:51 +0900
+Received: from enc02.toshiba.co.jp ([61.202.160.51])
+        by imx12.toshiba.co.jp  with ESMTP id 0A65aov5024147;
+        Fri, 6 Nov 2020 14:36:50 +0900 (JST)
+Received: from hop101.toshiba.co.jp ([133.199.85.107])
+        by enc02.toshiba.co.jp  with ESMTP id 0A65anXV001086;
+        Fri, 6 Nov 2020 14:36:50 +0900
+From:   Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+To:     Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
+Cc:     <x86@kernel.org>, <linux-kernel@vger.kernel.org>,
+        <linux-pm@vger.kernel.org>, <linux-edac@vger.kernel.org>,
+        <linux-efi@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Tony Luck <tony.luck@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>,
+        "Ard Biesheuvel" <ardb@kernel.org>,
+        Yazen Ghannam <yazen.ghannam@amd.com>
+Subject: Re: [PATCH v5] cper, apei, mce: Pass x86 CPER through the MCA handling chain
+References: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
+Date:   Fri, 06 Nov 2020 14:36:46 +0900
+In-Reply-To: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
+        (Smita Koralahalli's message of "Tue, 3 Nov 2020 10:49:52 -0600")
+X-TSB-HOP: ON
+Message-ID: <87a6vv9hch.fsf@kokedama.swc.toshiba.co.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/26.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The dev_pm_opp_put_*() APIs now accepts a NULL opp_table pointer and so
-there is no need for us to carry the extra check. Drop them.
+Hi Smita,
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/gpu/drm/panfrost/panfrost_devfreq.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com> writes:
 
-diff --git a/drivers/gpu/drm/panfrost/panfrost_devfreq.c b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-index 8ab025d0035f..97b5abc7c188 100644
---- a/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-+++ b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-@@ -170,10 +170,8 @@ void panfrost_devfreq_fini(struct panfrost_device *pfdev)
- 		pfdevfreq->opp_of_table_added = false;
- 	}
- 
--	if (pfdevfreq->regulators_opp_table) {
--		dev_pm_opp_put_regulators(pfdevfreq->regulators_opp_table);
--		pfdevfreq->regulators_opp_table = NULL;
--	}
-+	dev_pm_opp_put_regulators(pfdevfreq->regulators_opp_table);
-+	pfdevfreq->regulators_opp_table = NULL;
- }
- 
- void panfrost_devfreq_resume(struct panfrost_device *pfdev)
--- 
-2.25.0.rc1.19.g042ed3e048af
+> Linux Kernel uses ACPI Boot Error Record Table (BERT) to report fatal
+> errors that occurred in a previous boot. The MCA errors in the BERT are
+> reported using the x86 Processor Error Common Platform Error Record (CPER)
+> format. Currently, the record prints out the raw MSR values and AMD relies
+> on the raw record to provide MCA information.
+>
+> Extract the raw MSR values of MCA registers from the BERT and feed it into
+> the standard mce_log() function through the existing x86/MCA RAS
+> infrastructure. This will result in better decoding from the EDAC MCE
+> decoder or the default notifier.
+>
+> The implementation is SMCA specific as the raw MCA register values are
+> given in the register offset order of the MCAX address space.
+>
+> [ Fix a build breakage in patch v1. ]
+> Reported-by: kernel test robot <lkp@intel.com>
+> Signed-off-by: Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>
 
+[...]
+
+> diff --git a/drivers/firmware/efi/cper-x86.c b/drivers/firmware/efi/cper-x86.c
+> index 2531de49f56c..438ed9eff6d0 100644
+> --- a/drivers/firmware/efi/cper-x86.c
+> +++ b/drivers/firmware/efi/cper-x86.c
+> @@ -2,6 +2,7 @@
+>  // Copyright (C) 2018, Advanced Micro Devices, Inc.
+>  
+>  #include <linux/cper.h>
+> +#include <linux/acpi.h>
+
+Did you mean to include <asm/acpi.h>?
+
+>  
+>  /*
+>   * We don't need a "CPER_IA" prefix since these are all locally defined.
+> @@ -347,9 +348,13 @@ void cper_print_proc_ia(const char *pfx, const struct cper_sec_proc_ia *proc)
+>  			       ctx_info->mm_reg_addr);
+>  		}
+>  
+> -		printk("%sRegister Array:\n", newpfx);
+> -		print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16, groupsize,
+> -			       (ctx_info + 1), ctx_info->reg_arr_size, 0);
+> +		if (ctx_info->reg_ctx_type != CTX_TYPE_MSR ||
+> +		    arch_apei_report_x86_error(ctx_info, proc->lapic_id)) {
+> +			printk("%sRegister Array:\n", newpfx);
+> +			print_hex_dump(newpfx, "", DUMP_PREFIX_OFFSET, 16,
+> +				       groupsize, (ctx_info + 1),
+> +				       ctx_info->reg_arr_size, 0);
+> +		}
+>  
+>  		ctx_info = (struct cper_ia_proc_ctx *)((long)ctx_info + size);
+>  	}
+
+With that addressed,
+
+FWIW,
+
+Reviewed-by: Punit Agrawal <punit1.agrawal@toshiba.co.jp>
+
+Thanks,
+Punit
