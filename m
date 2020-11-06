@@ -2,112 +2,179 @@ Return-Path: <SRS0=UEvt=EM=vger.kernel.org=linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 70AC4C55ABD
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BB930C2D0A3
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:26:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 15438206F4
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:05:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 567C920936
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 07:26:28 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="HCi2LBTk"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="jxLgNT0y"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726477AbgKFHF1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 02:05:27 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58890 "EHLO
+        id S1726229AbgKFH01 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 02:26:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33916 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725848AbgKFHFZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:05:25 -0500
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 634F5C0613D2
-        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:05:25 -0800 (PST)
-Received: by mail-pl1-x644.google.com with SMTP id p4so251942plr.1
-        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:05:25 -0800 (PST)
+        with ESMTP id S1725842AbgKFH01 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 02:26:27 -0500
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 87E72C0613CF
+        for <linux-pm@vger.kernel.org>; Thu,  5 Nov 2020 23:26:27 -0800 (PST)
+Received: by mail-pf1-x441.google.com with SMTP id z3so509317pfz.6
+        for <linux-pm@vger.kernel.org>; Thu, 05 Nov 2020 23:26:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=SsT44B8TOti3vqDBsPwYpvUpQYIln1nI64StpRu+PIY=;
-        b=HCi2LBTkx3q9cFQ31LcoZa9qzduR7Ac4seDkJ2c5MmJURGaxGFDI0oPLEZ/s8JDq5G
-         /YF0e7tcr7QMwRDVOOBYsK1EzYoPLJflHiJSV8s8s1WWBz5l8NL5CfLQ8YofnxC8LANE
-         FGjPHxse7Vtg/yymkrq0UEzqqbIBrAVjIeIhOUjIdysrypGwrNSkUemIpO7NuxJi1RKh
-         nlyiuoY5AVcJPT78mO9gV1jtljiE4i7fNZT6lpSu5ucdgKdnWUjAWJNX+wne1CidvnPT
-         50zsQuRiiCQ4KNmqe4HUgraFHUmgNxif9ZRzdF4VFubxr2a2s4p3KinEnytaWsoaEoqH
-         DdSA==
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=iszUMX9XQ69DFWc+MhNBALOcQvlyTEUUCx/JW2obvyI=;
+        b=jxLgNT0yJKjQKYTwXPRc+ugmIkNpIt9eh6dIyeLxG5yvVFrEmA0kiHx94esGqce6as
+         vq24g9yf/g6LA5Uz4fB3sgd2pcQyuJvHX0Vb1zLc3ubJsQYZl7LxKDSXItEdR7CPHLzT
+         kmIl+jiSp3z2jJyTA2cuqpU7b+nQmeO/LNGho6dhYUY4RBChpI8B5+PCC/PtaTdr5aY+
+         MyUp77prU4csjw5yUVUgyT9bL2+7/ipCYPntK9j6Kzd7Kj3G1yJ+4OGFadSfpKkD61bl
+         8tFAVVy/Uo1q4xcSaxJ0NznSH/VuIETWRk2vGSmYkbve6VcwSfFS96hFdWHteT7WiR6Q
+         OZhA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=SsT44B8TOti3vqDBsPwYpvUpQYIln1nI64StpRu+PIY=;
-        b=ob+0bI1OSh5gquKlycJgcUIzDS5xQguATh/SaVrBSTHsXE808bYQk+56KSsV+z8vEW
-         80NAUMolUh+Smd8vvoelV2JWr+pVO5TUQa+2sfpk3cXwlgoCHtg78zYXHH7KFlEnRjC3
-         wvLVssCFFHD42feICQrxStb2rVWPxjzcppGI0SF3i6ZfPk/+t/R+gO/RIbM+ZG3W3Ytb
-         qS2JY/aPzN6WK/+KM2Fl0T67q4IgHHkxXx+PS0QmQe3FO0UD8zv2rkwFreuTK9QvgdaL
-         r4K9X8hmV+6Emg++81RpezTc69mK9G+QFrZDtd+aOyaj72IWPwsycbaVk7KLd5ga/0gd
-         h4kg==
-X-Gm-Message-State: AOAM532vmKqXuA2V1B/6YyUJuoBYY8i3vt07Ip6x/vhZaaI6jSN+IJCZ
-        uVJnvecZ177wY7H+Y3aiEqlZzA==
-X-Google-Smtp-Source: ABdhPJzTw4Z9ly/m7vj29VejC+Lv8wxuy+qjENFj9LgRVcYmKAG9oZQjcLDLep5pV84Ym59o1+4Q1g==
-X-Received: by 2002:a17:902:bcc6:b029:d4:db82:4439 with SMTP id o6-20020a170902bcc6b02900d4db824439mr565906pls.63.1604646324964;
-        Thu, 05 Nov 2020 23:05:24 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=iszUMX9XQ69DFWc+MhNBALOcQvlyTEUUCx/JW2obvyI=;
+        b=WYtEydFSJWVlRUIatAboyRm77WSgMfzdQCtTLs3QKdI02WJfSWwhzzjw3Jh2mXizPm
+         9z8NZPpPTf1PM1E+AlP4fbiRsq+jOya28I0mXuIGWfA3yZ7HUQ/IfwHqS9ug2ATF6PHT
+         kjwFX9PrPaQo+8XhNHA5ssHNfY4KR66odhBsm8E8e9j6h54qHZn1mflJJx8GLqlob90/
+         4xahy7YUcB7MwOifeSom0D/mSSnxv//GwZ4ZoNmrbsj1LZtXfYSoUl70H1eyrmvrwolp
+         13eRbMev0115PgkXVhF+GT0aNWXFkcDV7opo2v2Bpu/Oawr/Abg3U8Z9cmPxS13RoPDp
+         GM5g==
+X-Gm-Message-State: AOAM5315sZavShsEj+vwwV0J9GGJrClfl3SXBlFNmJNIbq2ESdQ2JpGt
+        JFzQRpdF82dZ0VtWcNQO3fXmrq9VSbwsZg==
+X-Google-Smtp-Source: ABdhPJzMudjmsnAflVOqQiwenRD/t1+Dsu4JX36nuNDTRL/kpoJsTWHD7jNukonngjvlJSd5GV1NTQ==
+X-Received: by 2002:a17:90a:588d:: with SMTP id j13mr1000147pji.236.1604647587117;
+        Thu, 05 Nov 2020 23:26:27 -0800 (PST)
 Received: from localhost ([122.172.12.172])
-        by smtp.gmail.com with ESMTPSA id 192sm803859pfz.200.2020.11.05.23.05.24
+        by smtp.gmail.com with ESMTPSA id z23sm776215pgf.12.2020.11.05.23.26.25
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 05 Nov 2020 23:05:24 -0800 (PST)
+        Thu, 05 Nov 2020 23:26:25 -0800 (PST)
+Date:   Fri, 6 Nov 2020 12:56:24 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>
+To:     Viresh Kumar <vireshk@kernel.org>, Nishanth Menon <nm@ti.com>,
+        Stephen Boyd <sboyd@kernel.org>
 Cc:     linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
-        Stephen Boyd <sboyd@kernel.org>, Nishanth Menon <nm@ti.com>,
-        digetx@gmail.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/7] cpufreq: dt: dev_pm_opp_put_regulators() accepts NULL argument
-Date:   Fri,  6 Nov 2020 12:33:22 +0530
-Message-Id: <1277c2aa85ccc4fca1792b8311ea6af0c99ffc82.1604646059.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1604646059.git.viresh.kumar@linaro.org>
-References: <cover.1604646059.git.viresh.kumar@linaro.org>
+        Rafael Wysocki <rjw@rjwysocki.net>, robdclark@gmail.com,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] opp: Allocate the OPP table outside of opp_table_lock
+Message-ID: <20201106072624.jfr4qloe47etzj47@vireshk-i7>
+References: <ef43f01ac06976b2aa2b17266d307bb1a4f7e6f9.1604294460.git.viresh.kumar@linaro.org>
+ <836b442002d598437e3e6b56d3e07087e5c08afd.1604294460.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <836b442002d598437e3e6b56d3e07087e5c08afd.1604294460.git.viresh.kumar@linaro.org>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The dev_pm_opp_put_*() APIs now accepts a NULL opp_table pointer and so
-there is no need for us to carry the extra checks. Drop them.
+On 02-11-20, 10:51, Viresh Kumar wrote:
+> diff --git a/drivers/opp/core.c b/drivers/opp/core.c
+> +/*
+> + * We need to make sure that the OPP table for a device doesn't get added twice,
+> + * if this routine gets called in parallel with the same device pointer.
+> + *
+> + * The simplest way to enforce that is to perform everything (find existing
+> + * table and if not found, create a new one) under the opp_table_lock, so only
+> + * one creator gets access to the same. But that expands the critical section
+> + * under the lock and may end up causing circular dependencies with frameworks
+> + * like debugfs, interconnect or clock framework as they may be direct or
+> + * indirect users of OPP core.
+> + *
+> + * And for that reason we have to go for a bit tricky implementation here, which
+> + * uses the opp_tables_busy flag to indicate if another creator is in the middle
+> + * of adding an OPP table and others should wait for it to finish.
+> + */
+>  static struct opp_table *_opp_get_opp_table(struct device *dev, int index)
+>  {
+>  	struct opp_table *opp_table;
+>  
+> -	/* Hold our table modification lock here */
+> +again:
+>  	mutex_lock(&opp_table_lock);
+>  
+>  	opp_table = _find_opp_table_unlocked(dev);
+>  	if (!IS_ERR(opp_table))
+>  		goto unlock;
+>  
+> +	/*
+> +	 * The opp_tables list or an OPP table's dev_list is getting updated by
+> +	 * another user, wait for it to finish.
+> +	 */
+> +	if (unlikely(opp_tables_busy)) {
+> +		mutex_unlock(&opp_table_lock);
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+> +	opp_tables_busy = true;
+>  	opp_table = _managed_opp(dev, index);
+> +
+> +	/* Drop the lock to reduce the size of critical section */
+> +	mutex_unlock(&opp_table_lock);
+> +
+>  	if (opp_table) {
+>  		if (!_add_opp_dev(dev, opp_table)) {
+>  			dev_pm_opp_put_opp_table(opp_table);
+>  			opp_table = ERR_PTR(-ENOMEM);
+>  		}
+> -		goto unlock;
+> +
+> +		mutex_lock(&opp_table_lock);
+> +	} else {
+> +		opp_table = _allocate_opp_table(dev, index);
+> +
+> +		mutex_lock(&opp_table_lock);
+> +		if (!IS_ERR(opp_table))
+> +			list_add(&opp_table->node, &opp_tables);
+>  	}
+>  
+> -	opp_table = _allocate_opp_table(dev, index);
+> +	opp_tables_busy = false;
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cpufreq-dt.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+And here is a fix that will be merged with this patch while applying.  It is
+required as _allocate_opp_table() (which calls _find_table_of_opp_np())  isn't
+called with the opp_table_lock anymore.
 
-diff --git a/drivers/cpufreq/cpufreq-dt.c b/drivers/cpufreq/cpufreq-dt.c
-index 66b3db5efb53..5c049428a6f5 100644
---- a/drivers/cpufreq/cpufreq-dt.c
-+++ b/drivers/cpufreq/cpufreq-dt.c
-@@ -291,8 +291,7 @@ static int dt_cpufreq_early_init(struct device *dev, int cpu)
- out:
- 	if (priv->have_static_opps)
- 		dev_pm_opp_of_cpumask_remove_table(priv->cpus);
--	if (priv->opp_table)
--		dev_pm_opp_put_regulators(priv->opp_table);
-+	dev_pm_opp_put_regulators(priv->opp_table);
- 	free_cpumask_var(priv->cpus);
- 	return ret;
- }
-@@ -305,8 +304,7 @@ static void dt_cpufreq_release(void)
- 		dev_pm_opp_free_cpufreq_table(priv->cpu_dev, &priv->freq_table);
- 		if (priv->have_static_opps)
- 			dev_pm_opp_of_cpumask_remove_table(priv->cpus);
--		if (priv->opp_table)
--			dev_pm_opp_put_regulators(priv->opp_table);
-+		dev_pm_opp_put_regulators(priv->opp_table);
- 		free_cpumask_var(priv->cpus);
- 		list_del(&priv->node);
- 	}
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index c718092757d9..6b7f0066942d 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -112,8 +112,6 @@ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
+        struct opp_table *opp_table;
+        struct device_node *opp_table_np;
+ 
+-       lockdep_assert_held(&opp_table_lock);
+-
+        opp_table_np = of_get_parent(opp_np);
+        if (!opp_table_np)
+                goto err;
+@@ -121,12 +119,15 @@ static struct opp_table *_find_table_of_opp_np(struct device_node *opp_np)
+        /* It is safe to put the node now as all we need now is its address */
+        of_node_put(opp_table_np);
+ 
++       mutex_lock(&opp_table_lock);
+        list_for_each_entry(opp_table, &opp_tables, node) {
+                if (opp_table_np == opp_table->np) {
+                        _get_opp_table_kref(opp_table);
++                       mutex_unlock(&opp_table_lock);
+                        return opp_table;
+                }
+        }
++       mutex_unlock(&opp_table_lock);
+ 
+ err:
+        return ERR_PTR(-ENODEV);
+
 -- 
-2.25.0.rc1.19.g042ed3e048af
-
+viresh
