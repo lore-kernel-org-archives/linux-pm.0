@@ -6,48 +6,48 @@ X-Spam-Status: No, score=-7.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SIGNED_OFF_BY,
 	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 32FFFC388F2
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 18:32:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 509C9C2D0A3
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 18:32:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C941120B80
-	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 18:31:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EAF1C221F8
+	for <linux-pm@archiver.kernel.org>; Fri,  6 Nov 2020 18:32:57 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604687519;
-	bh=S50eH4oSyArNjxdilPRYL7RzxYSblTl9Ajyk1HkpWPY=;
+	s=default; t=1604687578;
+	bh=coR55jciSvIFkXB4KL8sQCEV2ctxxQzRp6hETSW1eOE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=tFEgbcJ+MD99BctwLrb8gPXhYHwSNL7QjrEnfDwTavqzycP6C4IrAzbOboYiOSgMY
-	 J+7wUaFwje/b/8OVYjni5wjfY4AKZZdmePIcVXc7ylT3cHF6Mfc+LxZXsG/5pE/rcT
-	 XiP99Z92Rzvov2X14p4Ejn4zQHKvsd7BzI+4GFcA=
+	b=VplzQTW8D8a5+eVUJCUlk4Qs16wV7L5MBkBIfhLxHrH6juc7L+mK9M4lnOAex9bVj
+	 4DeDfFFycS0pPIBMhWlQ+hsGajxEwXVeUSl+dDkE6GqnoSIUQbziB9j7N9sc8GuMaK
+	 yMZRQP0XIH+xxx7G/H/QeTb6N8D+jPMVJ38bZFcA=
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727904AbgKFSb4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 6 Nov 2020 13:31:56 -0500
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:39972 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727183AbgKFSb4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 13:31:56 -0500
-Received: by mail-ed1-f67.google.com with SMTP id p93so2244155edd.7;
-        Fri, 06 Nov 2020 10:31:54 -0800 (PST)
+        id S1727069AbgKFScy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 6 Nov 2020 13:32:54 -0500
+Received: from mail-ed1-f68.google.com ([209.85.208.68]:44194 "EHLO
+        mail-ed1-f68.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726075AbgKFScx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 6 Nov 2020 13:32:53 -0500
+Received: by mail-ed1-f68.google.com with SMTP id y15so2089555ede.11;
+        Fri, 06 Nov 2020 10:32:51 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=ksREXILjDbgZ4Gen6Qp8nquIOlE9XtM49f933fBtxc8=;
-        b=KzdDibjywqcpptocTyEElGBNGKvAk5m4VDguI5BaLMlhUHm/S6hbZX8aQHPp6Vn5cv
-         AE5T/8xQMwW6ImIXna9THTNFz9OpuM55b1bsOtvkF+mml2m6VyPcEHBS6NzQEpORpqfJ
-         42bDs0g+G/RMn9WRjCZ4wluPUbTY/d9oZI/3B73HY674FQBlLNsI2jkjWF8/Exq5CHKl
-         e2LvVeHoziawq26NnAdFubMDA0D8JXUBS5cNrTmq9lqGGXFrktIXiQb+FdIDFguXEbjD
-         CfeR8fu5cdurtWAFGTdkPFrJmohhdAb7OV4SRzUs3e+GHIUpv6HPU2yb5kOwPkJEF8s1
-         Xbzw==
-X-Gm-Message-State: AOAM530A3gJMGRzAkAFtFriF4hOB2ma7T16iFJlnuRXkiiRDlB9FbbhP
-        Ok4YIKspmVOiLCNk1RaqcaQ=
-X-Google-Smtp-Source: ABdhPJytVUHuz7iwUNDClUjPiESutNNy9BlIv4ZaWJMy8XF5HVAcYZoy8MtjogURRGcIAxPciYleQg==
-X-Received: by 2002:aa7:de86:: with SMTP id j6mr3564915edv.353.1604687514023;
-        Fri, 06 Nov 2020 10:31:54 -0800 (PST)
+        bh=wlqnu3kh6XxuBopLwHKSesOZDYblr5mvOU662DmL/14=;
+        b=XUnUPnhYwZyZz4cDN4wmGCa6fkdM0SWFiM8zJ2YnOV1ih0B1UeSUHKcTCVEQjeHQz1
+         yYgkvFM37FZSTmDssTURpPlAwCbOIYzrJoUzX63V4xWXoX2FVBgauP+yJ5PQWHLCKqvx
+         d9MJqB9WTxqakb+bOOJb7gE3D+epKALhEpm/FNx+izmAEiaNB88+FXS3PvtltuF8UVXs
+         6r4oXbq9QkY8q9i7UMOX54gj25hJYfU8Ds/7nwziMEfPwzTGNpDlL7I9+tVETqG9h8v2
+         gfBnRLyxHU7Q8xrqoy9JVgVBEi96i2YhfeA7jdJmwvs8GZB8q/DiW31PiIlJbw8OYbQQ
+         wqRw==
+X-Gm-Message-State: AOAM532agG/jfzczNI+yEHdF2ghXP4C9OXcb6lhl5qW/7qAY6a7/274p
+        MkYeeMJmw/9LasxFzZAJa5g=
+X-Google-Smtp-Source: ABdhPJysBETw2OKO/y2t2f3uzbaB0a2i9/BYSM2XsqM4nZRH6RmJYYAOOYFH9TJ10tsbJnv1RfwKKA==
+X-Received: by 2002:aa7:cb92:: with SMTP id r18mr3553775edt.13.1604687571150;
+        Fri, 06 Nov 2020 10:32:51 -0800 (PST)
 Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id x2sm1470514ejb.86.2020.11.06.10.31.51
+        by smtp.googlemail.com with ESMTPSA id f19sm1627353edy.13.2020.11.06.10.32.49
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 06 Nov 2020 10:31:52 -0800 (PST)
-Date:   Fri, 6 Nov 2020 19:31:50 +0100
+        Fri, 06 Nov 2020 10:32:49 -0800 (PST)
+Date:   Fri, 6 Nov 2020 19:32:48 +0100
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
@@ -67,29 +67,30 @@ Cc:     Thierry Reding <thierry.reding@gmail.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: Re: [PATCH v7 10/47] dt-bindings: memory: tegra30: emc: Document new
- interconnect property
-Message-ID: <20201106183150.GJ65086@kozik-lap>
+Subject: Re: [PATCH v7 11/47] dt-bindings: memory: tegra30: emc: Document OPP
+ table and voltage regulator
+Message-ID: <20201106183248.GK65086@kozik-lap>
 References: <20201104164923.21238-1-digetx@gmail.com>
- <20201104164923.21238-11-digetx@gmail.com>
+ <20201104164923.21238-12-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20201104164923.21238-11-digetx@gmail.com>
+In-Reply-To: <20201104164923.21238-12-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 04, 2020 at 07:48:46PM +0300, Dmitry Osipenko wrote:
-> External memory controller is interconnected with memory controller and
-> with external memory. Document new interconnect property which turns
-> External Memory Controller into interconnect provider.
+On Wed, Nov 04, 2020 at 07:48:47PM +0300, Dmitry Osipenko wrote:
+> Document new OPP table and voltage regulator properties which are needed
+> for supporting dynamic voltage-frequency scaling of the memory controller.
+> Some boards may have a fixed core voltage regulator, hence it's optional
+> because frequency scaling still may be desired.
 > 
-> Acked-by: Rob Herring <robh@kernel.org>
+> Reviewed-by: Rob Herring <robh@kernel.org>
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  .../bindings/memory-controllers/nvidia,tegra30-emc.yaml     | 6 ++++++
->  1 file changed, 6 insertions(+)
+>  .../memory-controllers/nvidia,tegra30-emc.yaml       | 12 ++++++++++++
+>  1 file changed, 12 insertions(+)
 
 Thanks, applied.
 
