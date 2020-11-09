@@ -2,143 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CC64FC388F7
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 14:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E3E6C2D0A3
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 15:00:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7EBE220E65
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 14:42:03 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=default; t=1604932923;
-	bh=XyH/OGSoZtwKFi7Dr6r4PbxrZ95WCPZt6ITMBGRDbT8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:List-ID:From;
-	b=N3fTMCfcAo4SsFDrUC+wZH3miV7LbS+k3P8g5ue/LIN9ujDlxx6GIOIvrk2UP970o
-	 WSZdc3isZJTbd5hhwUHowVbypwmN3n/3DJmDKqoOEM4iDIWlLRyUxT/67ftE6CboBW
-	 pygMLRQb0+6RKo9Z+742NTJOshrXUZ1XTmOk1rVo=
+	by mail.kernel.org (Postfix) with ESMTP id D261920853
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 15:00:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731266AbgKIOmC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Nov 2020 09:42:02 -0500
-Received: from mail.kernel.org ([198.145.29.99]:56442 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729454AbgKIOmC (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 9 Nov 2020 09:42:02 -0500
-Received: from kernel.org (unknown [77.125.7.142])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 6D215206E3;
-        Mon,  9 Nov 2020 14:41:52 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1604932922;
-        bh=XyH/OGSoZtwKFi7Dr6r4PbxrZ95WCPZt6ITMBGRDbT8=;
-        h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-        b=AACidaKdvM9fjww+sp/aLxSmuCgmX5y5VInfhx0TIj5OjJteJpSMpOU9k+cy2ANao
-         bPCbw8OTl+tQ2hkhXviYnObTrxDMTytkrEn70tTATzIjRMFL7twkjoJg60mbELrRtH
-         jrhu4hO9i4CTCZoHNJYPLc9KZT9JgGfbJFGI+3OU=
-Date:   Mon, 9 Nov 2020 16:41:48 +0200
-From:   Mike Rapoport <rppt@kernel.org>
-To:     Vlastimil Babka <vbabka@suse.cz>
-Cc:     Andrew Morton <akpm@linux-foundation.org>,
-        Albert Ou <aou@eecs.berkeley.edu>,
-        Andy Lutomirski <luto@kernel.org>,
-        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-        Borislav Petkov <bp@alien8.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christian Borntraeger <borntraeger@de.ibm.com>,
-        Christoph Lameter <cl@linux.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        David Hildenbrand <david@redhat.com>,
-        David Rientjes <rientjes@google.com>,
-        "Edgecombe, Rick P" <rick.p.edgecombe@intel.com>,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Heiko Carstens <hca@linux.ibm.com>,
-        Ingo Molnar <mingo@redhat.com>,
-        Joonsoo Kim <iamjoonsoo.kim@lge.com>,
-        "Kirill A . Shutemov" <kirill.shutemov@linux.intel.com>,
-        "Kirill A. Shutemov" <kirill@shutemov.name>,
-        Len Brown <len.brown@intel.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Mike Rapoport <rppt@linux.ibm.com>,
-        Palmer Dabbelt <palmer@dabbelt.com>,
-        Paul Mackerras <paulus@samba.org>,
-        Paul Walmsley <paul.walmsley@sifive.com>,
-        Pavel Machek <pavel@ucw.cz>, Pekka Enberg <penberg@kernel.org>,
-        Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Will Deacon <will@kernel.org>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        linux-mm@kvack.org, linux-pm@vger.kernel.org,
-        linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-        x86@kernel.org
-Subject: Re: [PATCH v5 1/5] mm: introduce debug_pagealloc_{map,unmap}_pages()
- helpers
-Message-ID: <20201109144148.GE301837@kernel.org>
-References: <20201108065758.1815-1-rppt@kernel.org>
- <20201108065758.1815-2-rppt@kernel.org>
- <4bd5ae2b-4fc6-73dc-b83b-e71826990946@suse.cz>
+        id S1730449AbgKIPAg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Nov 2020 10:00:36 -0500
+Received: from szxga05-in.huawei.com ([45.249.212.191]:7505 "EHLO
+        szxga05-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729899AbgKIPAf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 10:00:35 -0500
+Received: from DGGEMS402-HUB.china.huawei.com (unknown [172.30.72.59])
+        by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4CVDgr53Fkzhf9l;
+        Mon,  9 Nov 2020 23:00:24 +0800 (CST)
+Received: from huawei.com (10.175.127.227) by DGGEMS402-HUB.china.huawei.com
+ (10.3.19.202) with Microsoft SMTP Server id 14.3.487.0; Mon, 9 Nov 2020
+ 23:00:28 +0800
+From:   Zhang Qilong <zhangqilong3@huawei.com>
+To:     <rjw@rjwysocki.net>, <fugang.duan@nxp.com>, <davem@davemloft.net>,
+        <kuba@kernel.org>
+CC:     <linux-pm@vger.kernel.org>, <netdev@vger.kernel.org>
+Subject: [PATCH v2 2/2] net: fec: Fix reference count leak in fec series ops
+Date:   Mon, 9 Nov 2020 23:04:16 +0800
+Message-ID: <20201109150416.1877878-3-zhangqilong3@huawei.com>
+X-Mailer: git-send-email 2.25.4
+In-Reply-To: <20201109150416.1877878-1-zhangqilong3@huawei.com>
+References: <20201109150416.1877878-1-zhangqilong3@huawei.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4bd5ae2b-4fc6-73dc-b83b-e71826990946@suse.cz>
+Content-Transfer-Encoding: 7BIT
+Content-Type:   text/plain; charset=US-ASCII
+X-Originating-IP: [10.175.127.227]
+X-CFilter-Loop: Reflected
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 09, 2020 at 12:33:46PM +0100, Vlastimil Babka wrote:
-> On 11/8/20 7:57 AM, Mike Rapoport wrote:
-> > --- a/mm/slab.c
-> > +++ b/mm/slab.c
-> > @@ -1428,21 +1428,19 @@ static bool is_debug_pagealloc_cache(struct kmem_cache *cachep)
-> >   	return false;
-> >   }
-> > -#ifdef CONFIG_DEBUG_PAGEALLOC
-> >   static void slab_kernel_map(struct kmem_cache *cachep, void *objp, int map)
-> >   {
-> >   	if (!is_debug_pagealloc_cache(cachep))
-> >   		return;
-> 
-> Hmm, I didn't notice earlier, sorry.
-> The is_debug_pagealloc_cache() above includes a
-> debug_pagealloc_enabled_static() check, so it should be fine to use
-> __kernel_map_pages() directly below. Otherwise we generate two static key
-> checks for the same key needlessly.
+pm_runtime_get_sync() will increment pm usage at first and it will
+resume the device later. If runtime of the device has error or
+device is in inaccessible state(or other error state), resume
+operation will fail. If we do not call put operation to decrease
+the reference, it will result in reference count leak. Moreover,
+this device cannot enter the idle state and always stay busy or other
+non-idle state later. So we fixed it by replacing it with
+pm_runtime_general_get.
 
-Ok, I'll revert slab changes.
+Fixes: 8fff755e9f8d0 ("net: fec: Ensure clocks are enabled while using mdio bus")
+Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
+---
+ drivers/net/ethernet/freescale/fec_main.c | 12 +++++-------
+ 1 file changed, 5 insertions(+), 7 deletions(-)
 
-> > -	kernel_map_pages(virt_to_page(objp), cachep->size / PAGE_SIZE, map);
-> > +	if (map)
-> > +		debug_pagealloc_map_pages(virt_to_page(objp),
-> > +					  cachep->size / PAGE_SIZE);
-> > +	else
-> > +		debug_pagealloc_unmap_pages(virt_to_page(objp),
-> > +					    cachep->size / PAGE_SIZE);
-> >   }
-> > -#else
-> > -static inline void slab_kernel_map(struct kmem_cache *cachep, void *objp,
-> > -				int map) {}
-> > -
-> > -#endif
-> > -
-> >   static void poison_obj(struct kmem_cache *cachep, void *addr, unsigned char val)
-> >   {
-> >   	int size = cachep->object_size;
-> > @@ -2062,7 +2060,7 @@ int __kmem_cache_create(struct kmem_cache *cachep, slab_flags_t flags)
-> >   #if DEBUG
-> >   	/*
-> > -	 * If we're going to use the generic kernel_map_pages()
-> > +	 * If we're going to use the generic debug_pagealloc_map_pages()
-> >   	 * poisoning, then it's going to smash the contents of
-> >   	 * the redzone and userword anyhow, so switch them off.
-> >   	 */
-> > 
-> 
-
+diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
+index d7919555250d..695720f8263f 100644
+--- a/drivers/net/ethernet/freescale/fec_main.c
++++ b/drivers/net/ethernet/freescale/fec_main.c
+@@ -1808,7 +1808,7 @@ static int fec_enet_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
+ 	int ret = 0, frame_start, frame_addr, frame_op;
+ 	bool is_c45 = !!(regnum & MII_ADDR_C45);
+ 
+-	ret = pm_runtime_get_sync(dev);
++	ret = pm_runtime_general_get(dev);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -1867,11 +1867,9 @@ static int fec_enet_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
+ 	int ret, frame_start, frame_addr;
+ 	bool is_c45 = !!(regnum & MII_ADDR_C45);
+ 
+-	ret = pm_runtime_get_sync(dev);
++	ret = pm_runtime_general_get(dev);
+ 	if (ret < 0)
+ 		return ret;
+-	else
+-		ret = 0;
+ 
+ 	if (is_c45) {
+ 		frame_start = FEC_MMFR_ST_C45;
+@@ -2275,7 +2273,7 @@ static void fec_enet_get_regs(struct net_device *ndev,
+ 	u32 i, off;
+ 	int ret;
+ 
+-	ret = pm_runtime_get_sync(dev);
++	ret = pm_runtime_general_get(dev);
+ 	if (ret < 0)
+ 		return;
+ 
+@@ -2976,7 +2974,7 @@ fec_enet_open(struct net_device *ndev)
+ 	int ret;
+ 	bool reset_again;
+ 
+-	ret = pm_runtime_get_sync(&fep->pdev->dev);
++	ret = pm_runtime_general_get(&fep->pdev->dev);
+ 	if (ret < 0)
+ 		return ret;
+ 
+@@ -3770,7 +3768,7 @@ fec_drv_remove(struct platform_device *pdev)
+ 	struct device_node *np = pdev->dev.of_node;
+ 	int ret;
+ 
+-	ret = pm_runtime_get_sync(&pdev->dev);
++	ret = pm_runtime_general_get(&pdev->dev);
+ 	if (ret < 0)
+ 		return ret;
+ 
 -- 
-Sincerely yours,
-Mike.
+2.25.4
+
