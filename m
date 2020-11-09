@@ -2,119 +2,65 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 99090C2D0A3
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 16:57:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 23BFEC2D0A3
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 17:25:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 5D87620809
-	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 16:57:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BDC72216C4
+	for <linux-pm@archiver.kernel.org>; Mon,  9 Nov 2020 17:25:08 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730736AbgKIQ5H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Nov 2020 11:57:07 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:46558 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731027AbgKIQ5G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 11:57:06 -0500
-Received: from 89-64-87-89.dynamic.chello.pl (89.64.87.89) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.520)
- id b729a6806886ddaf; Mon, 9 Nov 2020 17:57:03 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Doug Smythies <dsmythies@telus.net>
-Subject: [PATCH v2 4/4] cpufreq: intel_pstate: Take CPUFREQ_GOV_FLAG_STRICT_TARGET into account
-Date:   Mon, 09 Nov 2020 17:55:42 +0100
-Message-ID: <2345253.LYi3vV7ftd@kreacher>
-In-Reply-To: <13269660.K2JYd4sGFX@kreacher>
-References: <13269660.K2JYd4sGFX@kreacher>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+        id S1731010AbgKIRZH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Nov 2020 12:25:07 -0500
+Received: from foss.arm.com ([217.140.110.172]:43368 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730588AbgKIRZH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 9 Nov 2020 12:25:07 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 12C3331B;
+        Mon,  9 Nov 2020 09:25:07 -0800 (PST)
+Received: from e123648.arm.com (unknown [10.57.22.122])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 47E223F719;
+        Mon,  9 Nov 2020 09:25:05 -0800 (PST)
+From:   Lukasz Luba <lukasz.luba@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        rafael@kernel.org
+Cc:     daniel.lezcano@linaro.org, rjw@rjwysocki.net, lukasz.luba@arm.com
+Subject: [PATCH] powercap: Adjust printing the constraint name with new line
+Date:   Mon,  9 Nov 2020 17:24:52 +0000
+Message-Id: <20201109172452.6923-1-lukasz.luba@arm.com>
+X-Mailer: git-send-email 2.17.1
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+The constraint name has limit of size 30, which sometimes might be hit.
+When this happens the new line might be lost. Prevent this and set the
+new line when the name string is too long."
 
-Make intel_pstate take the new CPUFREQ_GOV_FLAG_STRICT_TARGET
-governor flag into account when it operates in the passive mode with
-HWP enabled, so as to fix the "powersave" governor behavior in that
-case (currently, HWP is allowed to scale the performance all the way
-up to the policy max limit when the "powersave" governor is used,
-but it should be constrained to the policy min limit then).
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/cpufreq/intel_pstate.c |   16 +++++++++-------
- 1 file changed, 9 insertions(+), 7 deletions(-)
+ drivers/powercap/powercap_sys.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-pm/drivers/cpufreq/intel_pstate.c
-===================================================================
---- linux-pm.orig/drivers/cpufreq/intel_pstate.c
-+++ linux-pm/drivers/cpufreq/intel_pstate.c
-@@ -2527,7 +2527,7 @@ static void intel_cpufreq_trace(struct c
- }
- 
- static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
--				     bool fast_switch)
-+				     bool strict, bool fast_switch)
- {
- 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
- 
-@@ -2539,7 +2539,7 @@ static void intel_cpufreq_adjust_hwp(str
- 	 * field in it, so opportunistically update the max too if needed.
- 	 */
- 	value &= ~HWP_MAX_PERF(~0L);
--	value |= HWP_MAX_PERF(cpu->max_perf_ratio);
-+	value |= HWP_MAX_PERF(strict ? target_pstate : cpu->max_perf_ratio);
- 
- 	if (value == prev)
- 		return;
-@@ -2562,14 +2562,16 @@ static void intel_cpufreq_adjust_perf_ct
- 			      pstate_funcs.get_val(cpu, target_pstate));
- }
- 
--static int intel_cpufreq_update_pstate(struct cpudata *cpu, int target_pstate,
--				       bool fast_switch)
-+static int intel_cpufreq_update_pstate(struct cpufreq_policy *policy,
-+				       int target_pstate, bool fast_switch)
- {
-+	struct cpudata *cpu = all_cpu_data[policy->cpu];
- 	int old_pstate = cpu->pstate.current_pstate;
- 
- 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
- 	if (hwp_active) {
--		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
-+		intel_cpufreq_adjust_hwp(cpu, target_pstate,
-+					 policy->strict_target, fast_switch);
- 		cpu->pstate.current_pstate = target_pstate;
- 	} else if (target_pstate != old_pstate) {
- 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
-@@ -2609,7 +2611,7 @@ static int intel_cpufreq_target(struct c
- 		break;
+diff --git a/drivers/powercap/powercap_sys.c b/drivers/powercap/powercap_sys.c
+index f808c5fa9838..575f9fdb810e 100644
+--- a/drivers/powercap/powercap_sys.c
++++ b/drivers/powercap/powercap_sys.c
+@@ -174,6 +174,10 @@ static ssize_t show_constraint_name(struct device *dev,
+ 								"%s\n", name);
+ 			buf[POWERCAP_CONSTRAINT_NAME_LEN] = '\0';
+ 			len = strlen(buf);
++
++			/* When the 'name' is too long, don't lose new line */
++			if (strlen(name) >= POWERCAP_CONSTRAINT_NAME_LEN)
++				buf[POWERCAP_CONSTRAINT_NAME_LEN - 1] = '\n';
+ 		}
  	}
  
--	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, false);
-+	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, false);
- 
- 	freqs.new = target_pstate * cpu->pstate.scaling;
- 
-@@ -2628,7 +2630,7 @@ static unsigned int intel_cpufreq_fast_s
- 
- 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
- 
--	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, true);
-+	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, true);
- 
- 	return target_pstate * cpu->pstate.scaling;
- }
-
-
+-- 
+2.17.1
 
