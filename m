@@ -2,274 +2,93 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1DB3FC55ABD
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 18:31:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A86D0C388F7
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 18:43:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DCDD620809
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 18:31:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 590C420797
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 18:43:38 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731281AbgKJSbJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Nov 2020 13:31:09 -0500
-Received: from mx2.suse.de ([195.135.220.15]:34588 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730164AbgKJSbI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Nov 2020 13:31:08 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 8DCEAAC23;
-        Tue, 10 Nov 2020 18:31:06 +0000 (UTC)
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Len Brown <lenb@kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc:     Jon Grimm <Jon.Grimm@amd.com>,
-        Nathan Fontenot <Nathan.Fontenot@amd.com>,
-        Yazen Ghannam <Yazen.Ghannam@amd.com>,
-        Thomas Lendacky <Thomas.Lendacky@amd.com>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Pu Wen <puwen@hygon.cn>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Doug Smythies <dsmythies@telus.net>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-acpi@vger.kernel.org,
-        Nathan Fontenot <nathan.fontenot@amd.com>,
-        Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: [PATCH v2 1/3] x86, sched: Calculate frequency invariance for AMD systems
-Date:   Tue, 10 Nov 2020 19:30:52 +0100
-Message-Id: <20201110183054.15883-2-ggherdovich@suse.cz>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20201110183054.15883-1-ggherdovich@suse.cz>
-References: <20201110183054.15883-1-ggherdovich@suse.cz>
+        id S1730468AbgKJSnh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Nov 2020 13:43:37 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:41793 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725862AbgKJSnh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 13:43:37 -0500
+Received: by mail-ot1-f65.google.com with SMTP id n15so13537047otl.8;
+        Tue, 10 Nov 2020 10:43:36 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=qfF817wJaKnDcwT0IKwc1uZghn3u6l9Ye68zq2YepQ4=;
+        b=dbG98dFfBLRxD8drxvR28faKe9i2vy5hpxiQZhN39Wc13ZqCcXGyLy6/OoWAzHKIis
+         Fazp8LmxfhUJJsyzOSUgasZUE+HT8AABly7KG0S8YPbggVO5XpgTbD+kESUR08TfXhUb
+         c3crBVq2pwV20viGjCBxpOj2d1ADD9m/MHOWO70LXjRV/FL0aYhkK0f3iz+gw0XNeKiU
+         0/o78U+4fjL7jEURVBBb2Q1mtOtWz4Ul+7E5oH6p13TsVYzRw9NuOsKPYYYigtexj35S
+         v6GGEOa2CB/4kouqlEcy+o/Nn6Hy1CiyrrTKR6bzRdRXeby50xTeDumBzKhkPmc6ruoh
+         4hbA==
+X-Gm-Message-State: AOAM532mHVvZVFWRzFOhGgAq+B0mvv6vzIN+HB4ICXKbn51RaOLT+Z1f
+        UlycBmPj+sYXxt7+mHs/CucRuCTlGRltvPQBCqt7g/6Q
+X-Google-Smtp-Source: ABdhPJxq07j93VE1nFV7eLHotemy6m3UOXzm0GmXLearoWZTy6R/eBXSo/yppKxoZoU7GHPZ1KVHeua4k9bodvTGS7Y=
+X-Received: by 2002:a9d:171a:: with SMTP id i26mr15722847ota.260.1605033816601;
+ Tue, 10 Nov 2020 10:43:36 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20201023110254.26360-1-yu.c.chen@intel.com>
+In-Reply-To: <20201023110254.26360-1-yu.c.chen@intel.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Tue, 10 Nov 2020 19:43:25 +0100
+Message-ID: <CAJZ5v0jxAwOHbUwpqibvjW-LbZmhOPwaPrekZ6JRcQVGKb+AjQ@mail.gmail.com>
+Subject: Re: [PATCH] PM / suspend: Print the driver flags of device during
+ suspend resume
+To:     Chen Yu <yu.c.chen@intel.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Nathan Fontenot <nathan.fontenot@amd.com>
+On Fri, Oct 23, 2020 at 1:02 PM Chen Yu <yu.c.chen@intel.com> wrote:
+>
+> Currently there are 4 driver flags to control system suspend/resume
+> behavior: DPM_FLAG_NO_DIRECT_COMPLETE, DPM_FLAG_SMART_PREPARE,
+> DPM_FLAG_SMART_SUSPEND and DPM_FLAG_MAY_SKIP_RESUME. Print these flags
+> during suspend resume so as to get a brief understanding of the
+> expected behavior of each device, and to facilitate suspend/resume
+> debugging/tuning.
+>
+> To enable this tracing:
+> echo 'file drivers/base/power/main.c +p' >
+> /sys/kernel/debug/dynamic_debug/control
+>
+> Signed-off-by: Chen Yu <yu.c.chen@intel.com>
+> ---
+>  drivers/base/power/main.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/base/power/main.c b/drivers/base/power/main.c
+> index 205a06752ca9..be6744bdfc93 100644
+> --- a/drivers/base/power/main.c
+> +++ b/drivers/base/power/main.c
+> @@ -442,9 +442,9 @@ static pm_callback_t pm_noirq_op(const struct dev_pm_ops *ops, pm_message_t stat
+>
+>  static void pm_dev_dbg(struct device *dev, pm_message_t state, const char *info)
+>  {
+> -       dev_dbg(dev, "%s%s%s\n", info, pm_verb(state.event),
+> +       dev_dbg(dev, "%s%s%s driver flags: %x\n", info, pm_verb(state.event),
+>                 ((state.event & PM_EVENT_SLEEP) && device_may_wakeup(dev)) ?
+> -               ", may wakeup" : "");
+> +               ", may wakeup" : "", dev->power.driver_flags);
+>  }
+>
+>  static void pm_dev_err(struct device *dev, pm_message_t state, const char *info,
+> --
 
-This is the first pass in creating the ability to calculate the
-frequency invariance on AMD systems. This approach uses the CPPC
-highest performance and nominal performance values that range from
-0 - 255 instead of a high and base frquency. This is because we do
-not have the ability on AMD to get a highest frequency value.
-
-On AMD systems the highest performance and nominal performance
-vaues do correspond to the highest and base frequencies for the system
-so using them should produce an appropriate ratio but some tweaking
-is likely necessary.
-
-Due to CPPC being initialized later in boot than when the frequency
-invariant calculation is currently made, I had to create a callback
-from the CPPC init code to do the calculation after we have CPPC
-data.
-
-Signed-off-by: Nathan Fontenot <nathan.fontenot@amd.com>
-[ ggherdovich@suse.cz: made safe under CPU hotplug ]
-Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
----
- arch/x86/include/asm/topology.h |  8 ++++
- arch/x86/kernel/smpboot.c       | 81 +++++++++++++++++++++++++++++++--
- drivers/acpi/cppc_acpi.c        |  3 ++
- 3 files changed, 87 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index f4234575f3fd..9799d4da282d 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -218,4 +218,12 @@ static inline void arch_set_max_freq_ratio(bool turbo_disabled)
- }
- #endif
- 
-+#ifdef CONFIG_ACPI
-+void init_freq_invariance_cppc(void);
-+#else
-+static inline void init_freq_invariance_cppc(void)
-+{
-+}
-+#endif
-+
- #endif /* _ASM_X86_TOPOLOGY_H */
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index de776b2e6046..7077f44759b5 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -82,6 +82,10 @@
- #include <asm/hw_irq.h>
- #include <asm/stackprotector.h>
- 
-+#ifdef CONFIG_ACPI
-+#include <acpi/cppc_acpi.h>
-+#endif
-+
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU_READ_MOSTLY(cpumask_var_t, cpu_sibling_map);
- EXPORT_PER_CPU_SYMBOL(cpu_sibling_map);
-@@ -148,7 +152,7 @@ static inline void smpboot_restore_warm_reset_vector(void)
- 	*((volatile u32 *)phys_to_virt(TRAMPOLINE_PHYS_LOW)) = 0;
- }
- 
--static void init_freq_invariance(bool secondary);
-+static void init_freq_invariance(bool secondary, bool cppc_ready);
- 
- /*
-  * Report back to the Boot Processor during boot time or to the caller processor
-@@ -186,7 +190,7 @@ static void smp_callin(void)
- 	 */
- 	set_cpu_sibling_map(raw_smp_processor_id());
- 
--	init_freq_invariance(true);
-+	init_freq_invariance(true, false);
- 
- 	/*
- 	 * Get our bogomips.
-@@ -1340,7 +1344,7 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 	set_sched_topology(x86_topology);
- 
- 	set_cpu_sibling_map(0);
--	init_freq_invariance(false);
-+	init_freq_invariance(false, false);
- 	smp_sanity_check();
- 
- 	switch (apic_intr_mode) {
-@@ -2027,6 +2031,46 @@ static bool intel_set_max_freq_ratio(void)
- 	return true;
- }
- 
-+#ifdef CONFIG_ACPI
-+static bool amd_set_max_freq_ratio(void)
-+{
-+	struct cppc_perf_caps perf_caps;
-+	u64 highest_perf, nominal_perf;
-+	u64 perf_ratio;
-+	int rc;
-+
-+	rc = cppc_get_perf_caps(0, &perf_caps);
-+	if (rc) {
-+		pr_debug("Could not retrieve perf counters (%d)\n", rc);
-+		return false;
-+	}
-+
-+	highest_perf = perf_caps.highest_perf;
-+	nominal_perf = perf_caps.nominal_perf;
-+
-+	if (!highest_perf || !nominal_perf) {
-+		pr_debug("Could not retrieve highest or nominal performance\n");
-+		return false;
-+	}
-+
-+	perf_ratio = div_u64(highest_perf * SCHED_CAPACITY_SCALE, nominal_perf);
-+	if (!perf_ratio) {
-+		pr_debug("Non-zero highest/nominal perf values led to a 0 ratio\n");
-+		return false;
-+	}
-+
-+	arch_turbo_freq_ratio = perf_ratio;
-+	arch_set_max_freq_ratio(false);
-+
-+	return true;
-+}
-+#else
-+static bool amd_set_max_freq_ratio(void)
-+{
-+	return false;
-+}
-+#endif
-+
- static void init_counter_refs(void)
- {
- 	u64 aperf, mperf;
-@@ -2038,7 +2082,7 @@ static void init_counter_refs(void)
- 	this_cpu_write(arch_prev_mperf, mperf);
- }
- 
--static void init_freq_invariance(bool secondary)
-+static void init_freq_invariance(bool secondary, bool cppc_ready)
- {
- 	bool ret = false;
- 
-@@ -2054,6 +2098,12 @@ static void init_freq_invariance(bool secondary)
- 
- 	if (boot_cpu_data.x86_vendor == X86_VENDOR_INTEL)
- 		ret = intel_set_max_freq_ratio();
-+	else if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD) {
-+		if (!cppc_ready) {
-+			return;
-+		}
-+		ret = amd_set_max_freq_ratio();
-+	}
- 
- 	if (ret) {
- 		init_counter_refs();
-@@ -2063,6 +2113,27 @@ static void init_freq_invariance(bool secondary)
- 	}
- }
- 
-+#ifdef CONFIG_ACPI
-+static DEFINE_MUTEX(freq_invariance_lock);
-+
-+void init_freq_invariance_cppc(void)
-+{
-+	static bool freq_invariance_late;
-+
-+	mutex_lock(&freq_invariance_lock);
-+
-+	if (!freq_invariance_late) {
-+		init_freq_invariance(false, true);
-+		freq_invariance_late = true;
-+	}
-+
-+	mutex_unlock(&freq_invariance_lock);
-+
-+	if (static_branch_likely(&arch_scale_freq_key))
-+		init_counter_refs();
-+}
-+#endif
-+
- static void disable_freq_invariance_workfn(struct work_struct *work)
- {
- 	static_branch_disable(&arch_scale_freq_key);
-@@ -2112,7 +2183,7 @@ void arch_scale_freq_tick(void)
- 	schedule_work(&disable_freq_invariance_work);
- }
- #else
--static inline void init_freq_invariance(bool secondary)
-+static inline void init_freq_invariance(bool secondary, bool cppc_ready)
- {
- }
- #endif /* CONFIG_X86_64 */
-diff --git a/drivers/acpi/cppc_acpi.c b/drivers/acpi/cppc_acpi.c
-index 7a99b19bb893..368b13cb975d 100644
---- a/drivers/acpi/cppc_acpi.c
-+++ b/drivers/acpi/cppc_acpi.c
-@@ -39,6 +39,7 @@
- #include <linux/ktime.h>
- #include <linux/rwsem.h>
- #include <linux/wait.h>
-+#include <linux/topology.h>
- 
- #include <acpi/cppc_acpi.h>
- 
-@@ -850,6 +851,8 @@ int acpi_cppc_processor_probe(struct acpi_processor *pr)
- 		goto out_free;
- 	}
- 
-+	init_freq_invariance_cppc();
-+
- 	kfree(output.pointer);
- 	return 0;
- 
--- 
-2.26.2
-
+Applied (with some edits in the subject and changelog) as 5.11 material, thanks!
