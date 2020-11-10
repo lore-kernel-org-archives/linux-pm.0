@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
 	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 31FE5C4741F
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:41:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B09E8C4741F
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:41:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C5643206D8
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:41:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 56431207D3
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:41:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Lxn/uhOB"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Z9mT0bsY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730520AbgKJCld (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Nov 2020 21:41:33 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35610 "EHLO
+        id S1729451AbgKJCl5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Nov 2020 21:41:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35682 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730066AbgKJClb (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 21:41:31 -0500
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9EFB4C0613D3
-        for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2020 18:41:29 -0800 (PST)
-Received: by mail-pg1-x544.google.com with SMTP id h6so8866268pgk.4
-        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2020 18:41:29 -0800 (PST)
+        with ESMTP id S1728066AbgKJCl5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 21:41:57 -0500
+Received: from mail-pg1-x542.google.com (mail-pg1-x542.google.com [IPv6:2607:f8b0:4864:20::542])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 88397C0613CF
+        for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2020 18:41:57 -0800 (PST)
+Received: by mail-pg1-x542.google.com with SMTP id r186so8878160pgr.0
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2020 18:41:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-disposition:in-reply-to:user-agent;
-        bh=WCOY4IMrlHpe9VU35gF/zByAnrSLbBEzV7qQu2kBJd4=;
-        b=Lxn/uhOBDwxB83RBFnsrqtlFnW8KbcVFAhrlo9WKhTF4Sz2XTBcjv+xruokz1nKSUy
-         A+2QWxXhhSLiMp19Civc3VZy3sfm8KHGlPaSGa+6+LDgNO8rysirWdgZstnsg1SBQo25
-         MWk10hJ998bf7gSKgxG9FgmbqsM+xCVH4XVY4ftdG8EAoXZutNwuqct1O2jVtt49g5Op
-         ynnEKVB9sEGGazuHz6UzmGTqwT3wezsKNuAfYY3yCB2VdcN9XGrp3BBdnEdjddnHGi2G
-         JfWpOXIKcvfs2v37vgoYTLg/HUZ0pQM60fiWzHQPezsc64CnNXHRCEAcrYC4kQS65Gd2
-         A7Wg==
+        bh=TWpSaYihRWmyIMIqazCaAykBbsdUWTsb9alXGFMU7hs=;
+        b=Z9mT0bsY5F9Tdy0MG5QIGody8bzqtfCiujHRTIxkroqfE+qssZTNXrJ+2A1RAGPm2Q
+         4wYHEO604Jpz+d99RF3bwsgMNp8Ucavouleq1LyjgDKCV+2XvWOE26rfMpK81mRIDUoR
+         66XaN6fm+bOVH7WkKlEjUuZKMg/AiA3ymbHbNr3f5lB/DH7JbUqIRb5PPFZTobLwmqAv
+         uzchxxnOim4KL39pTGDDyW9hxGMCI6BT7Jj0jyNEHDCLaFn8iURR/bNc/2FH3CLg9f0E
+         /NROUgy/j8xSjdmoLne9a26DnYLsGw1A/r0rhunacBjeqpWLmWxmL3pNgVt6Awt5dmxn
+         CxvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to:user-agent;
-        bh=WCOY4IMrlHpe9VU35gF/zByAnrSLbBEzV7qQu2kBJd4=;
-        b=Ezb/oiC+zmNtfABR4hzxM6x+Z4xQ/HsImHU61KD54ry0SdErCK1T+gY3nH3Yf2GP2R
-         W8cXFJuZj3xn6haoNkA9Y3o2GU1mYZBtLbyVI7+e9XD6BsDwnQBiAUTKl7a6sec9DPsA
-         ECYwNkfFqR04H/RKCHXvl4fj6CoYFOY/DX80BfxbZysL62FbmNUOdj2iE+EBsABsBDKr
-         fXZAJqRC88WCra+v9asAhl6som2MkxWx2dtc97GuAGM7dKJfAlCWlUqIOH3z4RNn9+8b
-         suMY7tkskyYeaMylSG3mu8HoF4xz414HdIikwjxGwTh2bENLIrJX+N8K909YhelFLJA+
-         26hQ==
-X-Gm-Message-State: AOAM532gbK/fFLikqpmKGlt4L7p7Vuv0qI2fD3XVU/L72MPK65hnKRYR
-        14PiYNIJW3YGcoASXEAEJXTxFQ==
-X-Google-Smtp-Source: ABdhPJwhYtOsJXeV0/ou8PbpvaNkFfROJ+N4JJ2Gdt/Jt7Y68WXn6m32bIjMNzk/cSYTrZ/nGz9lQQ==
-X-Received: by 2002:a65:50c8:: with SMTP id s8mr8683055pgp.197.1604976089181;
-        Mon, 09 Nov 2020 18:41:29 -0800 (PST)
+        bh=TWpSaYihRWmyIMIqazCaAykBbsdUWTsb9alXGFMU7hs=;
+        b=diX9kXhILKYgA/O6oIsVShAYRu0G5Db+Sbe4iP0dH1SBWqMd63qtMDWrek0gXXsts0
+         HnYenYeeNGMCQLvBL/sBuKucVZFaM9udPLkoe/FAcfpKiYEJqOwgj35KZGbJ4gKMYbrX
+         T2hEOvR70d/oZo+7heYMSUknqqmaJIx8b6zyWx7piSvRc7jK2NrKUh492YUxhvGLH4ab
+         xm0wOmmky4FGUt9x70aM6ALEmY0HJl62uyQsIMi5cqtAhF41swPNUNDer8RHFpgG59xl
+         BmM0M3+s81JHcIHJQSy5YwKAVl+wtjSBTmTR7bJFogfwTkd/1kN5C1TF/ynG18NAiNIo
+         sj9g==
+X-Gm-Message-State: AOAM531vI6TMmZWuibfAs5nvjje2tgReSWVObEfGYgqOZJI7l0MbSBSy
+        Q+2MVDFXUO0uCWXGV+0DLHajHg==
+X-Google-Smtp-Source: ABdhPJwxLdPp+7tVxWo+LjKbWefo6ZaPw1ibzzP0gKL8JqANqXIiOc++wp9eQrNlXox01h8cEXuB+Q==
+X-Received: by 2002:a17:90a:ae16:: with SMTP id t22mr2436241pjq.55.1604976117120;
+        Mon, 09 Nov 2020 18:41:57 -0800 (PST)
 Received: from localhost ([122.172.12.172])
-        by smtp.gmail.com with ESMTPSA id z22sm903214pje.16.2020.11.09.18.41.27
+        by smtp.gmail.com with ESMTPSA id k25sm12513992pfi.42.2020.11.09.18.41.55
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 09 Nov 2020 18:41:28 -0800 (PST)
-Date:   Tue, 10 Nov 2020 08:11:26 +0530
+        Mon, 09 Nov 2020 18:41:56 -0800 (PST)
+Date:   Tue, 10 Nov 2020 08:11:54 +0530
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
 Cc:     Linux PM <linux-pm@vger.kernel.org>,
@@ -66,89 +66,72 @@ Cc:     Linux PM <linux-pm@vger.kernel.org>,
         Zhang Rui <rui.zhang@intel.com>,
         LKML <linux-kernel@vger.kernel.org>,
         Doug Smythies <dsmythies@telus.net>
-Subject: Re: [PATCH v2 1/4] cpufreq: Introduce governor flags
-Message-ID: <20201110024126.v4yxai5hpguj5p5b@vireshk-i7>
+Subject: Re: [PATCH v2 2/4] cpufreq: Introduce CPUFREQ_GOV_FLAG_STRICT_TARGET
+Message-ID: <20201110024154.rptitysdmwyv3whh@vireshk-i7>
 References: <13269660.K2JYd4sGFX@kreacher>
- <1876249.M1ZxxmeKtZ@kreacher>
+ <1691551.0Fp6MP5ZGR@kreacher>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1876249.M1ZxxmeKtZ@kreacher>
+In-Reply-To: <1691551.0Fp6MP5ZGR@kreacher>
 User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09-11-20, 17:51, Rafael J. Wysocki wrote:
+On 09-11-20, 17:52, Rafael J. Wysocki wrote:
 > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > 
-> A new cpufreq governor flag will be added subsequently, so replace
-> the bool dynamic_switching fleid in struct cpufreq_governor with a
-> flags field and introduce CPUFREQ_GOV_FLAG_DYN_SWITCH to set for
-> the "dynamic switching" governors instead of it.
-> 
-> No intentional functional impact.
+> Introduce a new governor flag, CPUFREQ_GOV_FLAG_STRICT_TARGET, for
+> the govenors that want the target frequency to be set exactly to the
+> given value without leaving any room for adjustments on the hardware
+> side and set this flag for the powersave and performance governors.
 > 
 > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/cpufreq/cpufreq.c          |    2 +-
->  drivers/cpufreq/cpufreq_governor.h |    2 +-
->  include/linux/cpufreq.h            |    9 +++++++--
->  kernel/sched/cpufreq_schedutil.c   |    2 +-
->  4 files changed, 10 insertions(+), 5 deletions(-)
+>  drivers/cpufreq/cpufreq_performance.c |    1 +
+>  drivers/cpufreq/cpufreq_powersave.c   |    1 +
+>  include/linux/cpufreq.h               |    3 +++
+>  3 files changed, 5 insertions(+)
 > 
-> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> Index: linux-pm/drivers/cpufreq/cpufreq_performance.c
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
-> +++ linux-pm/drivers/cpufreq/cpufreq.c
-> @@ -2254,7 +2254,7 @@ static int cpufreq_init_governor(struct
->  		return -EINVAL;
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_performance.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_performance.c
+> @@ -20,6 +20,7 @@ static void cpufreq_gov_performance_limi
+>  static struct cpufreq_governor cpufreq_gov_performance = {
+>  	.name		= "performance",
+>  	.owner		= THIS_MODULE,
+> +	.flags		= CPUFREQ_GOV_FLAG_STRICT_TARGET,
+>  	.limits		= cpufreq_gov_performance_limits,
+>  };
 >  
->  	/* Platform doesn't want dynamic frequency switching ? */
-> -	if (policy->governor->dynamic_switching &&
-
-I completely forgot that we had something like this :)
-
-> +	if (policy->governor->flags & CPUFREQ_GOV_FLAG_DYN_SWITCH &&
->  	    cpufreq_driver->flags & CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING) {
->  		struct cpufreq_governor *gov = cpufreq_fallback_governor();
->  
-> Index: linux-pm/drivers/cpufreq/cpufreq_governor.h
+> Index: linux-pm/drivers/cpufreq/cpufreq_powersave.c
 > ===================================================================
-> --- linux-pm.orig/drivers/cpufreq/cpufreq_governor.h
-> +++ linux-pm/drivers/cpufreq/cpufreq_governor.h
-> @@ -156,7 +156,7 @@ void cpufreq_dbs_governor_limits(struct
->  #define CPUFREQ_DBS_GOVERNOR_INITIALIZER(_name_)			\
->  	{								\
->  		.name = _name_,						\
-> -		.dynamic_switching = true,				\
-> +		.flags = CPUFREQ_GOV_FLAG_DYN_SWITCH,			\
->  		.owner = THIS_MODULE,					\
->  		.init = cpufreq_dbs_governor_init,			\
->  		.exit = cpufreq_dbs_governor_exit,			\
+> --- linux-pm.orig/drivers/cpufreq/cpufreq_powersave.c
+> +++ linux-pm/drivers/cpufreq/cpufreq_powersave.c
+> @@ -21,6 +21,7 @@ static struct cpufreq_governor cpufreq_g
+>  	.name		= "powersave",
+>  	.limits		= cpufreq_gov_powersave_limits,
+>  	.owner		= THIS_MODULE,
+> +	.flags		= CPUFREQ_GOV_FLAG_STRICT_TARGET,
+>  };
+>  
+>  MODULE_AUTHOR("Dominik Brodowski <linux@brodo.de>");
 > Index: linux-pm/include/linux/cpufreq.h
 > ===================================================================
 > --- linux-pm.orig/include/linux/cpufreq.h
 > +++ linux-pm/include/linux/cpufreq.h
-> @@ -565,12 +565,17 @@ struct cpufreq_governor {
->  					 char *buf);
->  	int	(*store_setspeed)	(struct cpufreq_policy *policy,
->  					 unsigned int freq);
-> -	/* For governors which change frequency dynamically by themselves */
-> -	bool			dynamic_switching;
->  	struct list_head	governor_list;
->  	struct module		*owner;
-> +	u8			flags;
->  };
+> @@ -575,6 +575,9 @@ struct cpufreq_governor {
+>  /* For governors which change frequency dynamically by themselves */
+>  #define CPUFREQ_GOV_FLAG_DYN_SWITCH	BIT(0)
 >  
-> +/* Governor flags */
+> +/* For governors wanting the target frequency to be set exactly */
+> +#define CPUFREQ_GOV_FLAG_STRICT_TARGET	BIT(1)
 > +
-> +/* For governors which change frequency dynamically by themselves */
-> +#define CPUFREQ_GOV_FLAG_DYN_SWITCH	BIT(0)
-
-Maybe just drop the FLAG_ part as we don't use it for other cpufreq related
-flags as well. That will also give us space to write DYN as DYNAMIC (it may be
-better as we use the full name in CPUFREQ_NO_AUTO_DYNAMIC_SWITCHING).
+>  
+>  /* Pass a target to the cpufreq driver */
+>  unsigned int cpufreq_driver_fast_switch(struct cpufreq_policy *policy,
 
 Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
