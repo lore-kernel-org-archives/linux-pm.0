@@ -2,114 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-6.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 02ECBC5517A
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 17:25:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C8698C388F7
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 17:28:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AE75420809
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 17:25:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74A7F20809
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 17:28:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726307AbgKJRZ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Nov 2020 12:25:26 -0500
-Received: from mga01.intel.com ([192.55.52.88]:61204 "EHLO mga01.intel.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726152AbgKJRZ0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Nov 2020 12:25:26 -0500
-IronPort-SDR: L0kOyrsKANivfp5SHOQIyw8ovcGchWZ2BfbyN3RVtjgdA5PjvGnQScmDmp4UIAWDxtBMoUYKrS
- 98p1OcSZpJhw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9801"; a="187983038"
-X-IronPort-AV: E=Sophos;i="5.77,466,1596524400"; 
-   d="scan'208";a="187983038"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2020 09:25:22 -0800
-IronPort-SDR: 89+SA59M9uozLTZpI8yPaKZus9uHxxs4ACMYnZPLspc8G+5pQikcItIA1+kSVOF5NG3aP4EoAQ
- y2JJZ/DGq4pA==
-X-IronPort-AV: E=Sophos;i="5.77,466,1596524400"; 
-   d="scan'208";a="541414921"
-Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.163])
-  by orsmga005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2020 09:25:19 -0800
-Received: by lahna (sSMTP sendmail emulation); Tue, 10 Nov 2020 19:25:17 +0200
-Date:   Tue, 10 Nov 2020 19:25:17 +0200
-From:   Mika Westerberg <mika.westerberg@linux.intel.com>
-To:     "Limonciello, Mario" <Mario.Limonciello@dell.com>
-Cc:     Greg KH <gregkh@linuxfoundation.org>,
-        Bastien Nocera <hadess@hadess.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Mathias Nyman <mathias.nyman@linux.intel.com>
-Subject: Re: How to enable auto-suspend by default
-Message-ID: <20201110172517.GC2495@lahna.fi.intel.com>
-References: <fe8ab4cab3740afd261fa902f14ecae002a1122d.camel@hadess.net>
- <X6p6ubTOoMPUPPXi@kroah.com>
- <DM6PR19MB2636C94B56D5FBC0BD98A1B0FAE90@DM6PR19MB2636.namprd19.prod.outlook.com>
+        id S1726827AbgKJR2S (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Nov 2020 12:28:18 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61634 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726152AbgKJR2S (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 12:28:18 -0500
+Received: from 89-64-88-129.dynamic.chello.pl (89.64.88.129) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.520)
+ id fda285157de01d86; Tue, 10 Nov 2020 18:28:16 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Doug Smythies <dsmythies@telus.net>
+Subject: [PATCH v3 4/4] cpufreq: intel_pstate: Take CPUFREQ_GOV_STRICT_TARGET into account
+Date:   Tue, 10 Nov 2020 18:27:40 +0100
+Message-ID: <10431634.ybq6RTg3ZS@kreacher>
+In-Reply-To: <11312387.r5AVKgp8zO@kreacher>
+References: <13269660.K2JYd4sGFX@kreacher> <11312387.r5AVKgp8zO@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <DM6PR19MB2636C94B56D5FBC0BD98A1B0FAE90@DM6PR19MB2636.namprd19.prod.outlook.com>
-Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 10, 2020 at 04:02:33PM +0000, Limonciello, Mario wrote:
-> > 
-> > On Tue, Nov 10, 2020 at 11:57:07AM +0100, Bastien Nocera wrote:
-> > > Hey,
-> > >
-> > > systemd has been shipping this script to enable auto-suspend on a
-> > > number of USB and PCI devices:
-> > >
-> > https://github.com/systemd/systemd/blob/master/tools/chromiumos/gen_autosuspen
-> > d_rules.py
-> > >
-> > > The problem here is twofold. First, the list of devices is updated from
-> > > ChromeOS, and the original list obviously won't be updated by ChromeOS
-> > > developers unless a device listed exists in a ChromeBook computer,
-> > > which means a number of devices that do support autosuspend aren't
-> > > listed.
-> > >
-> > > The other problem is that this list needs to exist at all, and that it
-> > > doesn't seem possible for device driver developers (at various levels
-> > > of the stack) to opt-in to auto-suspend when all the variants of the
-> > > device (or at least detectable ones) support auto-suspend.
-> > 
-> > A driver can say they support autosuspend today, but I think you are
-> > concerned about the devices that are controlled by class-compliant
-> > drivers, right?  And for those, no, we can't do this in the kernel as
-> > there are just too many broken devices out there.
-> > 
-> 
-> I guess what Bastien is getting at is for newer devices supported by class
-> drivers rather than having to store an allowlist in udev rules, can we set
-> the allowlist in the kernel instead.  Then distributions that either don't
-> use systemd or don't regularly update udev rules from systemd can take
-> advantage of better defaults on modern hardware.
-> 
-> The one item that stood out to me in that rules file was 8086:a0ed.
-> It's listed as "Volteer XHCI", but that same device ID is actually present
-> in an XPS 9310 in front of me as well and used by the xhci-pci kernel module.
-> 
-> Given we're effectively ending up with the combination of runtime PM turned
-> on by udev rules, do we need something like this for that ID:
-> 
-> https://github.com/torvalds/linux/commit/6a7c533d4a1854f54901a065d8c672e890400d8a
-> 
-> @Mika Westerberg should 8086:a0ed be quirked like the TCSS xHCI too?
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-I think this one is the TGL PCH xHCI. The quirk currently for xHCI
-controllers that are part of the TCSS (Type-C SubSystem) where it is
-important to put all devices into low power mode whenever possible,
-otherwise it keeps the whole block on.
+Make intel_pstate take the new CPUFREQ_GOV_STRICT_TARGET governor
+flag into account when it operates in the passive mode with HWP
+enabled, so as to fix the "powersave" governor behavior in that
+case (currently, HWP is allowed to scale the performance all the
+way up to the policy max limit when the "powersave" governor is
+used, but it should be constrained to the policy min limit then).
 
-Typically we haven't done that for PCH side xHCI controllers though, but
-I don't see why not if it works that is. Adding Mathias to comment more
-on that since he is the xHCI maintainer.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+---
+ drivers/cpufreq/intel_pstate.c |   16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2527,7 +2527,7 @@ static void intel_cpufreq_trace(struct c
+ }
+ 
+ static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
+-				     bool fast_switch)
++				     bool strict, bool fast_switch)
+ {
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
+ 
+@@ -2539,7 +2539,7 @@ static void intel_cpufreq_adjust_hwp(str
+ 	 * field in it, so opportunistically update the max too if needed.
+ 	 */
+ 	value &= ~HWP_MAX_PERF(~0L);
+-	value |= HWP_MAX_PERF(cpu->max_perf_ratio);
++	value |= HWP_MAX_PERF(strict ? target_pstate : cpu->max_perf_ratio);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -2562,14 +2562,16 @@ static void intel_cpufreq_adjust_perf_ct
+ 			      pstate_funcs.get_val(cpu, target_pstate));
+ }
+ 
+-static int intel_cpufreq_update_pstate(struct cpudata *cpu, int target_pstate,
+-				       bool fast_switch)
++static int intel_cpufreq_update_pstate(struct cpufreq_policy *policy,
++				       int target_pstate, bool fast_switch)
+ {
++	struct cpudata *cpu = all_cpu_data[policy->cpu];
+ 	int old_pstate = cpu->pstate.current_pstate;
+ 
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+ 	if (hwp_active) {
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate, fast_switch);
++		intel_cpufreq_adjust_hwp(cpu, target_pstate,
++					 policy->strict_target, fast_switch);
+ 		cpu->pstate.current_pstate = target_pstate;
+ 	} else if (target_pstate != old_pstate) {
+ 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
+@@ -2609,7 +2611,7 @@ static int intel_cpufreq_target(struct c
+ 		break;
+ 	}
+ 
+-	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, false);
++	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, false);
+ 
+ 	freqs.new = target_pstate * cpu->pstate.scaling;
+ 
+@@ -2628,7 +2630,7 @@ static unsigned int intel_cpufreq_fast_s
+ 
+ 	target_pstate = DIV_ROUND_UP(target_freq, cpu->pstate.scaling);
+ 
+-	target_pstate = intel_cpufreq_update_pstate(cpu, target_pstate, true);
++	target_pstate = intel_cpufreq_update_pstate(policy, target_pstate, true);
+ 
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+
+
+
