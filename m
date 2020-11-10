@@ -2,100 +2,140 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.3 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 258ADC5517A
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:42:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E1A3C2D0A3
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:47:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C8D6A206D8
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:42:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 01A41206D8
+	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 02:47:27 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Zsg4iWoT"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="Kw2B6lyk"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730863AbgKJCmH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 9 Nov 2020 21:42:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:35710 "EHLO
+        id S1729452AbgKJCr1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 9 Nov 2020 21:47:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36530 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730767AbgKJCmH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 21:42:07 -0500
-Received: from mail-ed1-x543.google.com (mail-ed1-x543.google.com [IPv6:2a00:1450:4864:20::543])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3699DC0613CF;
-        Mon,  9 Nov 2020 18:42:07 -0800 (PST)
-Received: by mail-ed1-x543.google.com with SMTP id q3so11021133edr.12;
-        Mon, 09 Nov 2020 18:42:07 -0800 (PST)
+        with ESMTP id S1728607AbgKJCr1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 9 Nov 2020 21:47:27 -0500
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 09F14C0613CF
+        for <linux-pm@vger.kernel.org>; Mon,  9 Nov 2020 18:47:27 -0800 (PST)
+Received: by mail-pl1-x641.google.com with SMTP id g11so5714862pll.13
+        for <linux-pm@vger.kernel.org>; Mon, 09 Nov 2020 18:47:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=QCjYkiKx/BLbkTnM57KeeyWfIIziL5lqmCR+tLSMR44=;
-        b=Zsg4iWoTqV4+rtURxHXllynTBuA4nWWvMo+UiK9CQ7lZHpjbkgmliNdf6e/WzPVjJY
-         ehNqG21n+asoXlObj5AjawpWZnp6yjrKpzn869GVTby2zWUs29ytPtWYLKJ8ow8dmKxd
-         2h4Q7FvGmEYCIyolTKuvEyRPw+OcxCj69Qr3TIp2rxhQYGaT3s7udWQN3fAwWplj0eJY
-         P+A//XqNtHtiqDtKE9ViT9bw4EqdvHu9QoRMttlBlp1VLbFbTFa17dmI/mipbthaAw3V
-         M8EsULKvB73OROdsSLQ3wjr48dj12OPx5uU/YDDYwQq0tb+w2LRno5CNGhY3FDRQi/xK
-         vu/w==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=6UuLx7prIHda8827z12iEWkf6vSvIP09lTJVmS5Ox0Q=;
+        b=Kw2B6lykWnSw7p5AV07ZJWL2A+cDzPdUYe9FzX/Us+etFHFI/T/T661fzpgfpmkB23
+         L0s3IqzWxMuEpLtG2nf6epBUGvBgNQslbrwL/xWnLHM+dK3GSDrF8rS8Ot0Oc564aJVq
+         519Wx4Vc34QuvNNgwC7LCzTeN+G1UMlAKa5NF+0slmhYZh6HLDYjufjEZVDPLlIGIQQe
+         VLqdYK/5TswL8tpPoztGNjJ6kb5bI+IoagL3MAll0zOwQtq40+uQ1lh3Pd4g/04WfzRU
+         Ijgf2QTBUMV3h0wJsQ3ydF/lb4a7N9BHcoTppT3suDT0Hqj+oetpijIKCSsBuOfIKIVK
+         ZH/g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=QCjYkiKx/BLbkTnM57KeeyWfIIziL5lqmCR+tLSMR44=;
-        b=ikiaKmYe3uhQLzHoZRGrYln1U2hgFWv2ArQhhmuH/Sb1vehvXOjz0cbZKXIaVpl5wX
-         enRf+ZgmEBCVMmqBaTIMLwweYoy+1zZSWRZV4K7WBwBIBHLotsyMnz0ZW60tbFKE3JBh
-         SrRgnExShS98oE3NN1GR2ys+sbjZtEIq+uF4itiMjHb6TVSwrQSdvUIpikT7J9grAiLG
-         j9pWSUoUqYoxYWhs4eE+KlmnKexQx0CCpTIpoeIrdmhZrwrjO756G3iwjpRIeUgBbKrp
-         Ibmqjd7agVXURZ1FW3k+FwJJzXfGdWnNMYtezCO0J2PSRyG9bIMMMA3UY6acpKF6cfCm
-         66dQ==
-X-Gm-Message-State: AOAM530O6R6Vt5/SEZj+5gS2UX6+WXfRg2i13BjBHPr3ekPemf4a5v0H
-        W7YUvIc4yXvmEhaNBhT3Ss2RGeLpK57o0CnT840=
-X-Google-Smtp-Source: ABdhPJw9ZR4CJPCuMASm2QQ/j/4SMvjISo5Zk7ZNgeCoXiPCvzyuz63NEMfHWflBUgaN05eNycB1U3GZuVGAhk7ojiU=
-X-Received: by 2002:aa7:d9c2:: with SMTP id v2mr18335063eds.95.1604976126023;
- Mon, 09 Nov 2020 18:42:06 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=6UuLx7prIHda8827z12iEWkf6vSvIP09lTJVmS5Ox0Q=;
+        b=RW1ROownaW/zUFS1XkNn4dVCekm8fcA4tJMXu6LupevpZVs5VcNSF4Yjd5yXMVzWXl
+         SeObvqXD79ixVq4XxqEDIN1cRSo2wrhv97UsyvIKh+kbNmFDUfl3ShHAQa47bCypogXW
+         3yFK6+MZySTdvuWlCXCnRJ2h0YtyaumcTFMk6XLpsppExc5KNDkkOExYJQLu6F6GsrR+
+         TljugDYcf1GRgOddU5yc7VebQNuxqLz6njDzqcSgElWUNf17s8C8q51mNAZwLieYFxYf
+         F9PPcNOZLmeM1+K+I8adLpdGivSWd5hv+repa4b4PyKArR5ZsWiGRqItpGkcKlaXwYrT
+         H9KA==
+X-Gm-Message-State: AOAM533cLF4EharRupruhj5AQDW0lvH4irCN6ChsPds2QxFnK0b5s5ua
+        qTPWA44cUyWFOtL8CGavNGUDuw==
+X-Google-Smtp-Source: ABdhPJxrMfhkgS5xHKwvNJHFu2FRs4gK6JPlC1peRayhgiaY1blEDcAwRDcyQi3TKu5oxZkNxe3KuQ==
+X-Received: by 2002:a17:902:d309:b029:d7:cc2d:1ee7 with SMTP id b9-20020a170902d309b02900d7cc2d1ee7mr1676854plc.10.1604976446323;
+        Mon, 09 Nov 2020 18:47:26 -0800 (PST)
+Received: from localhost ([122.172.12.172])
+        by smtp.gmail.com with ESMTPSA id i11sm12461961pfq.156.2020.11.09.18.47.25
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Mon, 09 Nov 2020 18:47:25 -0800 (PST)
+Date:   Tue, 10 Nov 2020 08:17:23 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux PM <linux-pm@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Doug Smythies <dsmythies@telus.net>
+Subject: Re: [PATCH v2 3/4] cpufreq: Add strict_target to struct
+ cpufreq_policy
+Message-ID: <20201110024723.a5ouawbgj5ftyfe4@vireshk-i7>
+References: <13269660.K2JYd4sGFX@kreacher>
+ <2826323.52ZM0ncLkd@kreacher>
 MIME-Version: 1.0
-References: <20201103151139.29690-1-pali@kernel.org> <20201103151139.29690-7-pali@kernel.org>
-In-Reply-To: <20201103151139.29690-7-pali@kernel.org>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Tue, 10 Nov 2020 10:41:54 +0800
-Message-ID: <CAEExFWsw-SbzS8+ORrOBR1BZD8h1rkkSjTq8AYQEw_gmPnH6ag@mail.gmail.com>
-Subject: Re: [PATCH 6/9] cpufreq: sun50i: Add missing MODULE_DEVICE_TABLE
-To:     =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2826323.52ZM0ncLkd@kreacher>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 3, 2020 at 11:14 PM Pali Roh=C3=A1r <pali@kernel.org> wrote:
->
-> This patch adds missing MODULE_DEVICE_TABLE definition which generates
-> correct modalias for automatic loading of this cpufreq driver when it is
-> compiled as an external module.
->
-> Signed-off-by: Pali Roh=C3=A1r <pali@kernel.org>
-> Fixes: f328584f7bff8 ("cpufreq: Add sun50i nvmem based CPU scaling driver=
-")
+On 09-11-20, 17:53, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> Add a new field to be set when the CPUFREQ_GOV_FLAG_STRICT_TARGET
+> flag is set for the current governor to struct cpufreq_policy, so
+> that the drivers needing to check CPUFREQ_GOV_FLAG_STRICT_TARGET do
+> not have to access the governor object during every frequency
+> transition.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 > ---
->  drivers/cpufreq/sun50i-cpufreq-nvmem.c | 1 +
->  1 file changed, 1 insertion(+)
->
-> diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun=
-50i-cpufreq-nvmem.c
-> index 9907a165135b..2deed8d8773f 100644
-> --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> @@ -167,6 +167,7 @@ static const struct of_device_id sun50i_cpufreq_match=
-_list[] =3D {
->         { .compatible =3D "allwinner,sun50i-h6" },
->         {}
->  };
-> +MODULE_DEVICE_TABLE(of, sun50i_cpufreq_match_list);
+>  drivers/cpufreq/cpufreq.c |    2 ++
+>  include/linux/cpufreq.h   |    6 ++++++
+>  2 files changed, 8 insertions(+)
+> 
+> Index: linux-pm/drivers/cpufreq/cpufreq.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpufreq/cpufreq.c
+> +++ linux-pm/drivers/cpufreq/cpufreq.c
+> @@ -2280,6 +2280,8 @@ static int cpufreq_init_governor(struct
+>  		}
+>  	}
+>  
+> +	policy->strict_target = !!(policy->governor->flags & CPUFREQ_GOV_FLAG_STRICT_TARGET);
+> +
+>  	return 0;
+>  }
+>  
+> Index: linux-pm/include/linux/cpufreq.h
+> ===================================================================
+> --- linux-pm.orig/include/linux/cpufreq.h
+> +++ linux-pm/include/linux/cpufreq.h
+> @@ -109,6 +109,12 @@ struct cpufreq_policy {
+>  	bool			fast_switch_enabled;
+>  
+>  	/*
+> +	 * Set if the CPUFREQ_GOV_FLAG_STRICT_TARGET flag is set for the
+> +	 * current governor.
+> +	 */
+> +	bool			strict_target;
+> +
+> +	/*
+>  	 * Preferred average time interval between consecutive invocations of
+>  	 * the driver to set the frequency for this policy.  To be set by the
+>  	 * scaling driver (0, which is the default, means no preference).
 
-Reviewed-by: Yangtao Li <tiny.windzz@gmail.com>
+I was kind of hoping to avoid adding a field here when I proposed updating the
+gov structure. I do understand the performance related penalty of accessing the
+gov structure for fast switch case though and so wonder if we really need this,
+then should we avoid changing the gov structure at all ? I mean there is only
+one user of that field now, do we really need a flag for it ? We can just do the
+string comparison here with powersave and performance to set strict_target.
 
-Thx!
+Whatever you feel is better though.
+
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+-- 
+viresh
