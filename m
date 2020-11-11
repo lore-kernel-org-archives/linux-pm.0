@@ -2,107 +2,161 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BB270C56201
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 21:40:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 65EE8C55ABD
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:15:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 57F2B20825
-	for <linux-pm@archiver.kernel.org>; Tue, 10 Nov 2020 21:40:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2D4D6221E9
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:15:15 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=telus.net header.i=@telus.net header.b="T1z9fXpq"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="qF7inbuZ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730894AbgKJVjG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Nov 2020 16:39:06 -0500
-Received: from cmta16.telus.net ([209.171.16.89]:45881 "EHLO cmta16.telus.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726467AbgKJVhH (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 10 Nov 2020 16:37:07 -0500
-Received: from dougxps ([173.180.45.3])
-        by cmsmtp with SMTP
-        id cbK1kTpijRYCLcbK2kWwMz; Tue, 10 Nov 2020 14:37:04 -0700
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
-        t=1605044224; bh=6RjS39imp4A53kCw78FIMCvUMdoDh1IXVgnkUAf3UMg=;
-        h=From:To:Cc:References:In-Reply-To:Subject:Date;
-        b=T1z9fXpqwau1NgKWRAOiyB6Jic4n6eTuEhjfajeNFNnsNIpSL6z8jdS8TWAffHbo0
-         X2nMsgeAOKfnyXU2Ewy49CcCiNWCY4qyA49zxNbGFfXRfR5w6nseFSYISaZXPzAzVr
-         LKblQPFZ3ikvoVhAjX9Qif3Nrh/ewGIUHEzm1ltFkpCqpXcmXrGcpWglDuY5IidxI8
-         eiS8YbNtnRe74M7cE9sR1A3/DyKOjygZuc7lUTSTgSIB0TYpkfn+3xPQIoBo3gb8M/
-         /tlCBuFRZ7EiGtAFpMd2DMcQQAcpOqpbAqiMZ0OQARDTpUa/lTBjphzbjlmZbzVm6g
-         4r7EgtmuEkfeQ==
-X-Telus-Authed: none
-X-Authority-Analysis: v=2.4 cv=ReVVt3hv c=1 sm=1 tr=0 ts=5fab0800
- a=ZeVyObKPoMU90SgYCeSZ1g==:117 a=ZeVyObKPoMU90SgYCeSZ1g==:17
- a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=kj9zAlcOel0A:10 a=acWEPiQgkH2VWHeUEa0A:9
- a=CjuIK1q_8ugA:10
-From:   "Doug Smythies" <dsmythies@telus.net>
-To:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>
-Cc:     "'Rafael J. Wysocki'" <rafael@kernel.org>,
-        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
-        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
-        "'Zhang Rui'" <rui.zhang@intel.com>,
-        "'LKML'" <linux-kernel@vger.kernel.org>,
-        "'Linux PM'" <linux-pm@vger.kernel.org>
-References: <13269660.K2JYd4sGFX@kreacher> <11312387.r5AVKgp8zO@kreacher>
-In-Reply-To: <11312387.r5AVKgp8zO@kreacher>
-Subject: RE: [PATCH v3 0/4] cpufreq: intel_pstate: Handle powersave governor correctly in the passive mode with HWP
-Date:   Tue, 10 Nov 2020 13:37:00 -0800
-Message-ID: <000d01d6b7a9$a1abdf80$e5039e80$@net>
+        id S1732631AbgKKBPO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Nov 2020 20:15:14 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48702 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732618AbgKKBPN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 20:15:13 -0500
+Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5F268C0613D1;
+        Tue, 10 Nov 2020 17:15:13 -0800 (PST)
+Received: by mail-wm1-x341.google.com with SMTP id h2so569214wmm.0;
+        Tue, 10 Nov 2020 17:15:13 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=GjtsQsCJihSVkHPvVSyTh7Vo5P6YOsjZY4JHUUyWhBM=;
+        b=qF7inbuZED40ZBEQgZcwkqESS4IjxsImcS2LNNhro247GdyhS6mRzfBj2+cwCOhgB9
+         4nIJmO+mxfdP6vrPAljdcRNmyebyAFGRENHzzyVGH3qCfMsLANCqNmhy7YZJoL1yTOS0
+         RYsTdfsSftdj/R+USlBrsoDaC/UiplaNwmVKBu8umu8ur9d0iRXQUWDFpqB8yEXwvbTj
+         NnFEzT3C3mcUapMKQLMDqLrZ8QN8naKTBNY07osHlStGlUr3z45FILOnlDmU7LdUi0LB
+         NjyxgInWCLa79c6IywQRax0SxuDEfFbgLEMxyEt5PDOtLzyUUVHOapmvbD23JTAlg4bN
+         z0pQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=GjtsQsCJihSVkHPvVSyTh7Vo5P6YOsjZY4JHUUyWhBM=;
+        b=AEfuTcX/jjMhzd8XXuaDDwjbmtxy+gwfz9T2FyWshu2qkbHVXiEmN9c7XHSag4lTja
+         z7WRybC7WAq3DUn2Jc59igMVaBhMJhAFUYuEY28mc/TBdxLvZL+6JUz1WWGUg0sZsBjT
+         dg5VI2hIQtVnfFGvXLukrlVuYBar87JVBthSywS9iHt3kwmb7I7PZtS53nZmdGiFXVkm
+         IEoycBMJRbRwVvgGikDp01MYyimYDPDwhAPpPX5jgOHhCUkPQ9U2K4r9954YGrVLX4S6
+         OS13WbHjVcZ+qJSY+lQ+7rtuNdYbJlSK4GHM78niNtRWCYV0objbL0NdpeA9fw2iMNLP
+         ZhmA==
+X-Gm-Message-State: AOAM530R/QSo0J8KETXHQ6KUyWvGduXEbasocVJbhZaZ1g1A1EV0Mql8
+        H8KUmhbU0IKIx8XNPLLQ0wY=
+X-Google-Smtp-Source: ABdhPJyZqr0B5HiYFrwPQUJcJTg6auyvSPy/3Lsois7R4I91PYn27QXinYePPmkAhhFSbVJzzb1LyA==
+X-Received: by 2002:a1c:99d3:: with SMTP id b202mr939369wme.0.1605057312178;
+        Tue, 10 Nov 2020 17:15:12 -0800 (PST)
+Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
+        by smtp.gmail.com with ESMTPSA id g131sm564329wma.35.2020.11.10.17.15.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 10 Nov 2020 17:15:11 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: [PATCH v8 02/26] memory: tegra20-emc: Use dev_pm_opp_set_clkname()
+Date:   Wed, 11 Nov 2020 04:14:32 +0300
+Message-Id: <20201111011456.7875-3-digetx@gmail.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201111011456.7875-1-digetx@gmail.com>
+References: <20201111011456.7875-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-        charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Content-Language: en-ca
-Thread-Index: Ada3huWgkL5djedHQomhtWyn688yUAAH3TGw
-X-CMAE-Envelope: MS4xfLVijRtsDugUe7KJYTX4tlRXrQiAD2LZuGJtWUE4edhXcSDDU8MwGOxBF9r2xHeamcjZQEm5oq7cEedqNVNzzq9nKj3Q9BoVkia2PU1DiFKS51N9eWUz
- dZnlpkCCMVUAisZO8mAIyf3VcZ7hUdXVy/RXJVzjkoK5yOrMLHaxA1PTnP8KaVLmKFDN2WMGlKsO5U69GbV+spCJYnfYRxqNti5+HreC3GsNfe3ut3icCEjy
- MIDCC1G3xg7OBwETGleeAJYfNGss/A/v0r3G6RiIHqZWSeI5AffnVQDI2weh40yhl9wzLXxrrsmNJh79xZvSQ/P5fQ73lY5FxfggjFAArSpUrjrsNlz4uAa7
- K9cDJMJWfZan+ac35aQWelmglUJyDYzAWvbIuIs1rP3IFn3vbEw=
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 2020.11.10 09:22 Rafael J. Wysocki wrote:
-> On Monday, November 9, 2020 5:49:49 PM CET Rafael J. Wysocki wrote:
->>
->> Even after the changes made very recently, the handling of the powersave
->> governor is not exactly as expected when intel_pstate operates in the
->> "passive" mode with HWP enabled.
->>
->> Namely, in that case HWP is not limited to the policy min frequency, but it
->> can scale the frequency up to the policy max limit and it cannot be constrained
->> currently, because there are no provisions for that in the framework.
->>
->> To address that, patches [1-3/4] add a new governor flag to indicate that this
->> governor wants the target frequency to be set to the exact value passed to the
->> driver, if possible, and change the powersave and performance governors to have
->> that flag set.
->>
->> The last patch makes intel_pstate take that flag into account when programming
->> the HWP Request MSR.
-> 
-> The v3 simply uses different names for the new governor flags.
+The dev_pm_opp_get_opp_table() shouldn't be used by drivers, use
+dev_pm_opp_set_clkname() instead.
 
-Thank you.
+Suggested-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/memory/tegra/tegra20-emc.c | 30 +++++++++++++++++++-----------
+ 1 file changed, 19 insertions(+), 11 deletions(-)
 
-I tested v2, with positive results, as reported for v1. I do not have time to
-re-test v3.
-
-My input is to also default this flag to be set for the userspace and ondemand governors.
-
-userspace: I tested with and without this flag set, and the flag is needed if
-the user expects the scaling_setspeed to be enforced.
-Disclaimer: I don't normally actually use the userspace governor.
-
-ondemand: from my tests, the ondemand response more closely mimics acpi-ondemand with the flag set.
-Power consumption has been better for the limited testing done.
-However, it is also a function of work/sleep frequency for periodic workflows and a function of
-INTEL_CPUFREQ_TRANSITION_DELAY_HWP. I am saying that my ability to support the suggestion to default
-to setting the flag is a little weak.
-
-... Doug
-
+diff --git a/drivers/memory/tegra/tegra20-emc.c b/drivers/memory/tegra/tegra20-emc.c
+index 5e10aa97809f..bb3f315c9587 100644
+--- a/drivers/memory/tegra/tegra20-emc.c
++++ b/drivers/memory/tegra/tegra20-emc.c
+@@ -902,7 +902,7 @@ static int tegra_emc_interconnect_init(struct tegra_emc *emc)
+ 
+ static int tegra_emc_opp_table_init(struct tegra_emc *emc)
+ {
+-	struct opp_table *opp_table;
++	struct opp_table *reg_opp_table = NULL, *clk_opp_table;
+ 	const char *rname = "core";
+ 	int err;
+ 
+@@ -917,19 +917,24 @@ static int tegra_emc_opp_table_init(struct tegra_emc *emc)
+ 	}
+ 
+ 	/* voltage scaling is optional */
+-	if (device_property_present(emc->dev, "core-supply"))
+-		opp_table = dev_pm_opp_set_regulators(emc->dev, &rname, 1);
+-	else
+-		opp_table = dev_pm_opp_get_opp_table(emc->dev);
++	if (device_property_present(emc->dev, "core-supply")) {
++		reg_opp_table = dev_pm_opp_set_regulators(emc->dev, &rname, 1);
++		if (IS_ERR(reg_opp_table))
++			return dev_err_probe(emc->dev, PTR_ERR(reg_opp_table),
++					     "failed to set OPP regulator\n");
++	}
+ 
+-	if (IS_ERR(opp_table))
+-		return dev_err_probe(emc->dev, PTR_ERR(opp_table),
+-				     "failed to prepare OPP table\n");
++	clk_opp_table = dev_pm_opp_set_clkname(emc->dev, NULL);
++	err = PTR_ERR_OR_ZERO(clk_opp_table);
++	if (err) {
++		dev_err(emc->dev, "failed to set OPP clk: %d\n", err);
++		goto put_reg_table;
++	}
+ 
+ 	err = dev_pm_opp_of_add_table(emc->dev);
+ 	if (err) {
+ 		dev_err(emc->dev, "failed to add OPP table: %d\n", err);
+-		goto put_table;
++		goto put_clk_table;
+ 	}
+ 
+ 	dev_info(emc->dev, "current clock rate %lu MHz\n",
+@@ -946,8 +951,11 @@ static int tegra_emc_opp_table_init(struct tegra_emc *emc)
+ 
+ remove_table:
+ 	dev_pm_opp_of_remove_table(emc->dev);
+-put_table:
+-	dev_pm_opp_put_regulators(opp_table);
++put_clk_table:
++	dev_pm_opp_put_clkname(clk_opp_table);
++put_reg_table:
++	if (reg_opp_table)
++		dev_pm_opp_put_regulators(reg_opp_table);
+ 
+ 	return err;
+ }
+-- 
+2.29.2
 
