@@ -2,165 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 883BCC56201
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:54:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5EB0CC4742C
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 08:13:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3D43F21D7F
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:54:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 18BE5206B5
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 08:13:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725922AbgKKHym (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Nov 2020 02:54:42 -0500
-Received: from mga18.intel.com ([134.134.136.126]:19625 "EHLO mga18.intel.com"
+        id S1726097AbgKKIN2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Nov 2020 03:13:28 -0500
+Received: from mx2.suse.de ([195.135.220.15]:48932 "EHLO mx2.suse.de"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725900AbgKKHyl (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 11 Nov 2020 02:54:41 -0500
-IronPort-SDR: QOQTVZTRS4r8XJZA0wV6qLvMbnkfrtJFUVL2T9MRQBxU4C2Gnq2ZeDgPv6hejVAfFKJID9Jshl
- Judm44s8N/oA==
-X-IronPort-AV: E=McAfee;i="6000,8403,9801"; a="157890239"
-X-IronPort-AV: E=Sophos;i="5.77,468,1596524400"; 
-   d="scan'208";a="157890239"
-X-Amp-Result: SKIPPED(no attachment in message)
-X-Amp-File-Uploaded: False
-Received: from fmsmga002.fm.intel.com ([10.253.24.26])
-  by orsmga106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2020 23:54:40 -0800
-IronPort-SDR: I8Zwyw9hG4a75lHeIQ3pFJG3MVIEFICPjkY+fkwu8WVemHN1/scHgtK82svPLX0b11zOXQ8G6V
- OP/SEZ0PIIHA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.77,468,1596524400"; 
-   d="scan'208";a="360451002"
-Received: from lkp-server02.sh.intel.com (HELO 5b2c7e53fe46) ([10.239.97.151])
-  by fmsmga002.fm.intel.com with ESMTP; 10 Nov 2020 23:54:39 -0800
-Received: from kbuild by 5b2c7e53fe46 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1kckxi-00000e-E1; Wed, 11 Nov 2020 07:54:38 +0000
-Date:   Wed, 11 Nov 2020 15:53:39 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- a786b09de56abff9e68458128c25d0f16f4dc964
-Message-ID: <5fab9883.La15Loi1BjnQLo6F%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1725468AbgKKIN2 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Nov 2020 03:13:28 -0500
+X-Virus-Scanned: by amavisd-new at test-mx.suse.de
+Received: from relay2.suse.de (unknown [195.135.221.27])
+        by mx2.suse.de (Postfix) with ESMTP id 73CA3ACC5;
+        Wed, 11 Nov 2020 08:13:26 +0000 (UTC)
+From:   Thomas Renninger <trenn@suse.de>
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Rafael Wysocki <rjw@rjwysocki.net>,
+        Jonathan Corbet <corbet@lwn.net>, linux-pm@vger.kernel.org,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Shuah Khan <shuah@kernel.org>, linux-doc@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] cpufreq: stats: Switch to ktime and msec instead of jiffies and usertime
+Date:   Wed, 11 Nov 2020 09:13:24 +0100
+Message-ID: <2047155.4hzcE6bcFl@c100>
+In-Reply-To: <20201111051350.qxevqcca5775h2xa@vireshk-i7>
+References: <0e0fb542b6f6b26944cb2cf356041348aeac95f6.1605006378.git.viresh.kumar@linaro.org> <1832747.5iOEhN7m9D@c100> <20201111051350.qxevqcca5775h2xa@vireshk-i7>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: a786b09de56abff9e68458128c25d0f16f4dc964  Merge branch 'pm-cpuidle' into bleeding-edge
+Am Mittwoch, 11. November 2020, 06:13:50 CET schrieb Viresh Kumar:
+> On 10-11-20, 13:53, Thomas Renninger wrote:
+> > Am Dienstag, 10. November 2020, 12:07:37 CET schrieb Viresh Kumar:
+> > > The cpufreq and thermal core, both provide sysfs statistics to help
+> > > userspace learn about the behavior of frequencies and cooling states.
+> > > 
+> > > This is how they look:
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:1200000 399
+> > > 
+> > > The results look like this after this commit:
+> > > /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state:1200000 3830
+> > 
+> > How would userspace know whether it's ms or 10ms?
 
-elapsed time: 728m
+Again:
+How would userspace know whether it's ms or 10ms?
 
-configs tested: 92
-configs skipped: 2
+> > whatabout a new file with the same convention as cooling devices (adding ms):
+> Keeping two files for same stuff is not great, and renaming the file
+> breaks userspace ABI.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+No exactly the other way around:
+- Renaming, breaks the userspace ABI.
+- Two files would be the super correct way to go:
+  - Deprecate the old file and keep the 10ms around for some years
+    ./Documentation/ABI/obsolete
+  - Add the new interface and document it in:
+   ./Documentation/ABI/testing
 
-gcc tested configs:
-arm                                 defconfig
-arm64                               defconfig
-arm64                            allyesconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc64                           defconfig
-arm                       omap2plus_defconfig
-mips                  maltasmvp_eva_defconfig
-arc                 nsimosci_hs_smp_defconfig
-sh                          landisk_defconfig
-powerpc                       ebony_defconfig
-sh                           se7619_defconfig
-xtensa                  nommu_kc705_defconfig
-powerpc                 mpc85xx_cds_defconfig
-powerpc                 mpc836x_rdk_defconfig
-sh                                  defconfig
-arm                            pleb_defconfig
-m68k                       m5275evb_defconfig
-sh                            shmin_defconfig
-mips                        maltaup_defconfig
-arm                        magician_defconfig
-mips                 decstation_r4k_defconfig
-powerpc                 mpc836x_mds_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-x86_64               randconfig-a003-20201110
-x86_64               randconfig-a005-20201110
-x86_64               randconfig-a004-20201110
-x86_64               randconfig-a002-20201110
-x86_64               randconfig-a006-20201110
-x86_64               randconfig-a001-20201110
-i386                 randconfig-a006-20201110
-i386                 randconfig-a005-20201110
-i386                 randconfig-a002-20201110
-i386                 randconfig-a001-20201110
-i386                 randconfig-a003-20201110
-i386                 randconfig-a004-20201110
-i386                 randconfig-a012-20201110
-i386                 randconfig-a014-20201110
-i386                 randconfig-a016-20201110
-i386                 randconfig-a011-20201110
-i386                 randconfig-a015-20201110
-i386                 randconfig-a013-20201110
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+As this is about a minor cpufreq_stat debug file, it is enough if
+you rename to:
+> /sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state_ms
+Ideally document it in ./Documentation/ABI/testing
+But I guess for this one this is also not mandatory.
 
-clang tested configs:
-x86_64               randconfig-a015-20201110
-x86_64               randconfig-a011-20201110
-x86_64               randconfig-a014-20201110
-x86_64               randconfig-a013-20201110
-x86_64               randconfig-a016-20201110
-x86_64               randconfig-a012-20201110
+Then userspace can do:
+MS_FILE="/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state_ms"
+10MS_FILE="/sys/devices/system/cpu/cpufreq/policy0/stats/time_in_state"
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+if [ -r "$MS_FILE" ]; then
+    POLICY0_MS=$(<"$MS_FILE")
+    echo "Found ms stats file"
+elif [ -r "$10MS_FILE" ]; then
+    echo "Found 10ms stats file, converting..."
+    POLICY0_MS=$(<"$10MS_FILE")
+    POLICY0_MS=$(echo "$POLICY0_MS 10 /" |dc)
+else
+    echo "cpufreq stat not compiled in?"
+fi
+
+> I am not sure what's the right thing to do here.
+
+Use a new *_ms name.
+If you are unsure how many people this still might use, keep the old file and mark
+it deprecated and remove it in some years.
+You could also add:
+pr_info("%s userspace process accessed deprecated sysfs file %s", task->comm, OLD_SYSFS_FILE_PATH);
+To find other userspace apps making use of it.
+
+...
+ 
+> I already fixed this recently and stats don't appear empty for fast
+> switch anymore.
+
+Then cpufreq_stats could be a module again?
+
+      Thomas
+
+
