@@ -2,224 +2,211 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E6B74C56202
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:18:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A0A8C388F7
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 02:03:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A8CAB221F7
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:18:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A521B216C4
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 02:03:04 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ZeXs811q"
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="JvGLoOf0"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732576AbgKKBPK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Nov 2020 20:15:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48686 "EHLO
+        id S1732086AbgKKCDE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Nov 2020 21:03:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56144 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732471AbgKKBPK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 20:15:10 -0500
-Received: from mail-wm1-x341.google.com (mail-wm1-x341.google.com [IPv6:2a00:1450:4864:20::341])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C30AFC0613D3;
-        Tue, 10 Nov 2020 17:15:09 -0800 (PST)
-Received: by mail-wm1-x341.google.com with SMTP id c16so557184wmd.2;
-        Tue, 10 Nov 2020 17:15:09 -0800 (PST)
+        with ESMTP id S1731657AbgKKCDD (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 21:03:03 -0500
+Received: from mail-pf1-x430.google.com (mail-pf1-x430.google.com [IPv6:2607:f8b0:4864:20::430])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B5083C0613D1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2020 18:03:03 -0800 (PST)
+Received: by mail-pf1-x430.google.com with SMTP id v12so576687pfm.13
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2020 18:03:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=yWy0jS3uOBmOClD+6tlZ3ZyzkxvorDo2b8v+9CLbSUY=;
-        b=ZeXs811qmAd8eFTi3qIsbEfXYdu2cgoWjmZTdwr17unMQcI5e15tFGnNjAor8PUQYv
-         ldXZ9w3u4wX2Iij5QDdvNOS0obd/0MgzNaO20nssVCtadSAeyxsdCPzwgQssVx/rl+Zh
-         pjZ/+nDS0K5TJnIsM4ZWXEslg3ZhBP+YD38lYww9cleitLMR43ddnfncUUkWLyLs+u28
-         RlFBcxgBZRx6NUFWZXtZ1qP2r08q6P4hnvmeoijdDelfgObkGk5MFwiAjYUjIrmzkW+E
-         HVxi/DZYNd558CoMlIUhaUTIobalgek/Seeh5kKWxW6YDztIpm/vyFoOXNaO50kUZJhp
-         r/Zw==
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=wIyanm+pnc8+Ym8gxqXLwxyv7qPzzJpDPrQ2Np/CV8w=;
+        b=JvGLoOf0Cu45obFTnyPktYbKADXXCjAkZe2I+GEuIUBbPmnZSPbY3wrdeU0+SByj0/
+         /r8sEPfoYonb05v7eqLhBYrU5kN1mRailGmoqwruXBkaXRlZ6tiEtElAbmwfYMuEDMNO
+         hEreJqH6f4CS/fz1Sss4bzh6C/1QQ5n7fqE8lEwGjtjuHMSmtOXNBlmVLzThDvXfhd+M
+         s6S9jcyjaVGS14WobnvuNEYvg9bGFUHitwPHwBrI15TC75O5lD34wJ2gIow8bCJU389V
+         uAPrZIEatjglE77RYm3eWB5npXTR9aY0e2g4949qQ+tP1g2YFruOfeq9zkfHyUonC3ou
+         OMrg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=yWy0jS3uOBmOClD+6tlZ3ZyzkxvorDo2b8v+9CLbSUY=;
-        b=la3qQkLUJ8ZIvePqezbTIuR8PEnpTVQLudNS9TDaPMv+qGciwgAHTGr7CkpElVwURM
-         BK/YG3ypdb/01KRz8Ut1U8AfkAA3TDzxamFguN1b3+OUAP2AiYCMJsjWE89l5MaZB2x1
-         PI28NsabnFageFHM5DLUHrmMYP3J7btm+6m3DjGU0NK64txqnQAcl8N99WopQABhnyal
-         RD0LQr9dM6XqfxXjBozOh+5LbOOGUk2mL+Za3OALkvbsuTHUt4YokYm2x54rLH358JWB
-         stXISL+Pyzjuy/n1VfsowJoxT5U+PyYgS7cetRnj2KSCksYSh4jG+Eq80CyKD067VMS3
-         Mg4Q==
-X-Gm-Message-State: AOAM533R+XOHZ1wOXwEk7LBbJjwD2C2pX7ljS+SxCaPBs81Zm90pfu0S
-        O/Cs43gMp5FOqqtV+bY/OmI=
-X-Google-Smtp-Source: ABdhPJwfFe41HRMpB4RcaGsjLNpSv1VBTsXR2iVFVBGsBpIcOU2lcc40D6Nj2ZSCL+ZpUoRkL1c9xg==
-X-Received: by 2002:a1c:bd0b:: with SMTP id n11mr918758wmf.111.1605057308488;
-        Tue, 10 Nov 2020 17:15:08 -0800 (PST)
-Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id g131sm564329wma.35.2020.11.10.17.15.06
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=wIyanm+pnc8+Ym8gxqXLwxyv7qPzzJpDPrQ2Np/CV8w=;
+        b=IJ9CwuJUr8FH/0FTazZJTW5FC8l0jfzx3dc2Bo+RJjL/EioSOrW00op2Tx6W4cXf7m
+         y/Um2M886sy1DFqLjNrmpnv4FnVmS8eQrIZrv+OIEZghLqpcOlGZo7Toe70igdN3LDRs
+         RcX+9BFbKu8rrklHYR9GYXhpkmyU+LO/SKeg5OtlaRQk+J7uLtJYqeiSAsVmzoPso71J
+         9NYqslXCmoshtgBvPVZrVzsTxbSffpV2bNX/8ZhfHdnyZAFTDm/+hS3khQxx6+KaHa9p
+         mX4ISmPK8z8RltVOz6JQ6/OkUOPsSASuw6IMnu8zFLKuuiYtxE2v+KKDrL6/Un4uIlE0
+         UxRg==
+X-Gm-Message-State: AOAM530lvmnwLzg90y8rVR0B9Onm6M2Y7AsOtINvkf/musrNr1DX6otp
+        sJyDrxn49H4wZGUb8iEr4k1xEA==
+X-Google-Smtp-Source: ABdhPJymZoPJwE2Fh9mbRdNIUp0VafvyZObjgwhvJhwwXZ9nVhi/HP8LbKT/axsqGwHe+1fhNDNi/g==
+X-Received: by 2002:a62:7ccd:0:b029:18b:9083:ae1b with SMTP id x196-20020a627ccd0000b029018b9083ae1bmr20066947pfc.27.1605060182707;
+        Tue, 10 Nov 2020 18:03:02 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id t128sm426145pfb.111.2020.11.10.18.03.01
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2020 17:15:07 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v8 00/26] Introduce memory interconnect for NVIDIA Tegra SoCs
-Date:   Wed, 11 Nov 2020 04:14:30 +0300
-Message-Id: <20201111011456.7875-1-digetx@gmail.com>
-X-Mailer: git-send-email 2.29.2
+        Tue, 10 Nov 2020 18:03:01 -0800 (PST)
+Message-ID: <5fab4655.1c69fb81.603f7.1bc4@mx.google.com>
+Date:   Tue, 10 Nov 2020 18:03:01 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: v5.10-rc3-25-gfc4b18739b23
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 11 warnings (v5.10-rc3-25-gfc4b18739b23)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series brings initial support for memory interconnect to Tegra20,
-Tegra30 and Tegra124 SoCs.
+pm/testing build: 7 builds: 0 failed, 7 passed, 11 warnings (v5.10-rc3-25-g=
+fc4b18739b23)
 
-For the starter only display controllers and devfreq devices are getting
-interconnect API support, others could be supported later on. The display
-controllers have the biggest demand for interconnect API right now because
-dynamic memory frequency scaling can't be done safely without taking into
-account bandwidth requirement from the displays. In particular this series
-fixes distorted display output on T30 Ouya and T124 TK1 devices.
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
+10-rc3-25-gfc4b18739b23/
 
-Changelog:
+Tree: pm
+Branch: testing
+Git Describe: v5.10-rc3-25-gfc4b18739b23
+Git Commit: fc4b18739b234869e8ee6c499ed8b69e3281a262
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
-v8: - Patches that are already applied by Krzysztof Kozlowski not included.
+Warnings Detected:
 
-    - Removed tegra20-devfreq.c from MAINTAINERS, suggested by Chanwoo Choi.
+arc:
 
-    - The patch "memory: tegra20-emc: Add devfreq support" now removes
-      PM_OPP for Tegra20 EMC driver from Kconfig, suggested by Chanwoo Choi.
+arm64:
+    defconfig (gcc-8): 8 warnings
 
-    - Now using devm_devfreq_add_device() for Tegra20 devfreq, suggested by
-      Chanwoo Choi.
+arm:
+    multi_v7_defconfig (gcc-8): 3 warnings
 
-    - Added acks from Chanwoo Choi. Although, devfreq patches probably
-      should go via devfreq tree in order to avoid conflicts with the
-      other previously-applied patches by Chanwoo.
+i386:
 
-    - Dropped superfluous dev_pm_opp_get_opp_table() from patch "devfreq:
-      tegra30: Support interconnect and OPPs from device-tree".
+mips:
 
-    - Silenced another minor W=1 compilation warning reported by kernel
-      test robot.
+riscv:
 
-    - Added couple extra minor clean-up changes, including those that will
-      ease further code changes. Added these new patches:
+x86_64:
 
-        memory: tegra20-emc: Remove IRQ number from error message
-        memory: tegra20-emc: Factor out clk initialization
-        memory: tegra30-emc: Factor out clk initialization
 
-      Note that some of the new T124 changes are compile-tested only,
-      but I expect that we will re-test them fully soon.
+Warnings summary:
 
-    - Added patch that fixes compilation of a non-Tegra kernels.
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #size-cells (1) differs from / (2)
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #address-cells (1) differs from / (2)
+    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
+iled prerequisite 'spi_bus_bridge'
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #size-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #address-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for =
+SPI bus
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells f=
+or SPI bus
 
-        memory: tegra: Correct stub of devm_tegra_memory_controller_get()
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
 
-    - Replaced dev_pm_opp_get_opp_table() with dev_pm_opp_set_clkname(),
-      as was suggested by Viresh Kumar in other thread.
+Detailed per-defconfig build reports:
 
-    - Added patch that will allow T124 EMC driver to probe even if DT
-      doesn't have memory timings, this was missed by accident previously.
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
 
-        memory: tegra124-emc: Continue probing if timings are missing in device-tree
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
 
-Dmitry Osipenko (26):
-  memory: tegra: Correct stub of devm_tegra_memory_controller_get()
-  memory: tegra20-emc: Use dev_pm_opp_set_clkname()
-  memory: tegra20-emc: Factor out clk initialization
-  memory: tegra20-emc: Add devfreq support
-  memory: tegra20-emc: Remove IRQ number from error message
-  memory: tegra30: Add FIFO sizes to memory clients
-  memory: tegra30-emc: Make driver modular
-  memory: tegra30-emc: Continue probing if timings are missing in
-    device-tree
-  memory: tegra30: Support interconnect framework
-  memory: tegra30-emc: Factor out clk initialization
-  memory: tegra124-emc: Make driver modular
-  memory: tegra124-emc: Continue probing if timings are missing in
-    device-tree
-  memory: tegra124: Support interconnect framework
-  drm/tegra: dc: Support memory bandwidth management
-  drm/tegra: dc: Extend debug stats with total number of events
-  PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
-  PM / devfreq: tegra30: Separate configurations per-SoC generation
-  PM / devfreq: tegra20: Deprecate in a favor of emc-stat based driver
-  ARM: tegra: Correct EMC registers size in Tegra20 device-tree
-  ARM: tegra: Add interconnect properties to Tegra20 device-tree
-  ARM: tegra: Add interconnect properties to Tegra30 device-tree
-  ARM: tegra: Add interconnect properties to Tegra124 device-tree
-  ARM: tegra: Add nvidia,memory-controller phandle to Tegra20 EMC
-    device-tree
-  ARM: tegra: Add DVFS properties to Tegra20 EMC device-tree node
-  ARM: tegra: Add DVFS properties to Tegra30 EMC and ACTMON device-tree
-    nodes
-  ARM: tegra: Add DVFS properties to Tegra124 EMC and ACTMON device-tree
-    nodes
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 8 warnings, 0 section mi=
+smatches
 
- MAINTAINERS                                   |   1 -
- arch/arm/boot/dts/tegra124-apalis-emc.dtsi    |   8 +
- .../arm/boot/dts/tegra124-jetson-tk1-emc.dtsi |   8 +
- arch/arm/boot/dts/tegra124-nyan-big-emc.dtsi  |  10 +
- .../arm/boot/dts/tegra124-nyan-blaze-emc.dtsi |  10 +
- .../boot/dts/tegra124-peripherals-opp.dtsi    | 419 ++++++++++++++++++
- arch/arm/boot/dts/tegra124.dtsi               |  31 ++
- .../boot/dts/tegra20-acer-a500-picasso.dts    |   7 +
- arch/arm/boot/dts/tegra20-colibri.dtsi        |   4 +
- arch/arm/boot/dts/tegra20-paz00.dts           |   6 +
- .../arm/boot/dts/tegra20-peripherals-opp.dtsi |  92 ++++
- arch/arm/boot/dts/tegra20.dtsi                |  33 +-
- .../tegra30-asus-nexus7-grouper-common.dtsi   |   4 +
- ...30-asus-nexus7-grouper-memory-timings.dtsi |  12 +
- .../arm/boot/dts/tegra30-peripherals-opp.dtsi | 383 ++++++++++++++++
- arch/arm/boot/dts/tegra30.dtsi                |  33 +-
- drivers/clk/tegra/Makefile                    |   3 +-
- drivers/clk/tegra/clk-tegra124-emc.c          |  41 +-
- drivers/clk/tegra/clk-tegra124.c              |  27 +-
- drivers/clk/tegra/clk.h                       |  16 +-
- drivers/devfreq/Kconfig                       |  10 -
- drivers/devfreq/Makefile                      |   1 -
- drivers/devfreq/tegra20-devfreq.c             | 210 ---------
- drivers/devfreq/tegra30-devfreq.c             | 154 ++++---
- drivers/gpu/drm/tegra/Kconfig                 |   1 +
- drivers/gpu/drm/tegra/dc.c                    | 359 +++++++++++++++
- drivers/gpu/drm/tegra/dc.h                    |  19 +
- drivers/gpu/drm/tegra/drm.c                   |  14 +
- drivers/gpu/drm/tegra/hub.c                   |   3 +
- drivers/gpu/drm/tegra/plane.c                 | 121 +++++
- drivers/gpu/drm/tegra/plane.h                 |  15 +
- drivers/memory/tegra/Kconfig                  |   9 +-
- drivers/memory/tegra/mc.c                     |   3 +
- drivers/memory/tegra/tegra124-emc.c           | 395 +++++++++++++++--
- drivers/memory/tegra/tegra124.c               |  82 +++-
- drivers/memory/tegra/tegra20-emc.c            | 192 ++++++--
- drivers/memory/tegra/tegra30-emc.c            | 406 +++++++++++++++--
- drivers/memory/tegra/tegra30.c                | 239 +++++++++-
- include/linux/clk/tegra.h                     |   8 +
- include/soc/tegra/emc.h                       |  16 -
- include/soc/tegra/mc.h                        |   2 +-
- 41 files changed, 2971 insertions(+), 436 deletions(-)
- create mode 100644 arch/arm/boot/dts/tegra124-peripherals-opp.dtsi
- create mode 100644 arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
- create mode 100644 arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
- delete mode 100644 drivers/devfreq/tegra20-devfreq.c
- delete mode 100644 include/soc/tegra/emc.h
+Warnings:
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+size-cells (1) differs from / (2)
 
--- 
-2.29.2
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
 
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
+
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
+tion mismatches
+
+Warnings:
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SP=
+I bus
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI b=
+us
+    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
+prerequisite 'spi_bus_bridge'
+
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
+
+---
+For more info write to <info@kernelci.org>
