@@ -8,56 +8,56 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7B2CCC388F7
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:17:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EB478C63697
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:18:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3964F221F1
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:17:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A6A18221F1
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 01:18:06 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="CcfAfEc6"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="RbTk3q7R"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732743AbgKKBP2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 10 Nov 2020 20:15:28 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48752 "EHLO
+        id S1732584AbgKKBRt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 10 Nov 2020 20:17:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48734 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732668AbgKKBP2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 20:15:28 -0500
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 944CBC0613D1;
-        Tue, 10 Nov 2020 17:15:27 -0800 (PST)
-Received: by mail-wr1-x443.google.com with SMTP id 33so732280wrl.7;
-        Tue, 10 Nov 2020 17:15:27 -0800 (PST)
+        with ESMTP id S1732692AbgKKBPW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 10 Nov 2020 20:15:22 -0500
+Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 49C9FC0613D1;
+        Tue, 10 Nov 2020 17:15:22 -0800 (PST)
+Received: by mail-wm1-x344.google.com with SMTP id c9so518232wml.5;
+        Tue, 10 Nov 2020 17:15:22 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=tGnE/w0793PmiZunMZUFRQQsSOAX6VpoE5tQ0qL0TNQ=;
-        b=CcfAfEc6Wxuq43NPB2gcWjtzwD+rbTxfWxHbeLec/lZwZ6dFPoXjmeEUgLjljQgcld
-         8bVDr2hyPhV0gPawzmCUcXpu5S1kfmWxH0asby0EFWuIEvCGEIWJH0Fhyg66gyRTdZVh
-         QoDQo7/B8uOk3Ag8f5qy05A0PJa7Xj3rv7xDKjTcwC68fYmEhbnd+s/XpaMfFWtqb+Pl
-         +6VLSz3am4vwEWBFThAUB2PPFLh8DnT4pMDBmJl3eRlLSiAhHxWaxZZAtuv50i8MBKxf
-         g3j7DQA8P/hivATvNN7WiIbLK6ZOjG00myzY8WtM134yExNprTRQQQsid2x2eCZv3FLk
-         tDSA==
+        bh=sD7fDvHXiFm4cObgHl+AP6M6ck+IL5n1B/jSpmdDcPc=;
+        b=RbTk3q7RRknepGH85+194oMbJV9LgjnL3ciRibGPuNbAijPEkMeaoXu6Q8x+3QGOYn
+         wGeB4uh+kvLlmnP6btaQxproSvbqDdomplczcs+6JfHcW9zanRk0I6IWgIO20GS63tNU
+         z7IbYjCdEgVsFiIt4guwH8mQEAk9mzN0JdCxRv5shFtyeJ0WyHswjsbhXZhq7U4cfXgK
+         +BTaiEDpHXiOpOeYi3U2EWWeSnR0HNovG+uDTFKrMwCiBfgZ7UHlaUJnZu6KCw9eS4yd
+         fJAfUkjNrJTQVRp3EM4NA241LWEXA6X948lxnilQwY/lIdDC7IqxA7FTEqB/z9b3TXM+
+         4wEg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=tGnE/w0793PmiZunMZUFRQQsSOAX6VpoE5tQ0qL0TNQ=;
-        b=J2F/wJphY5rOooEcPqQmU94Yncif4cQgexsb9fo/1ZDhmRTQSb4iGmVaRlebZkKJBu
-         J4iXNeSLnyc6RJHQ1YSssXb8equzV0HItrg6PT7/sWeseu8IgsopUguj678qAjNrNk23
-         x/y5zNQj2qobVykr5O/JiCyUxU0IdypnXs6mPk0fKO3w+UEpIIwN6GzwsdI2aDQOKdIs
-         bbOx5vYSAu9QzMs4Ym15ClwRgBlqz3JavOqLulB1ZUKRfguclkAR10giEsdXd+TkNITt
-         oCOW6+SUgAsLfE6aBVfcc1r70x6fdjXuHVwDE1WePzw2N+Nyi4K1Pg8RngQDJPtbGVli
-         x9aA==
-X-Gm-Message-State: AOAM531gZ+cImgW1/XEaiHtZh+G0FdgxcKoBiRap6fhBZoK8fNw44UD1
-        8yal7OXfD3WmV2DmievhHzQ=
-X-Google-Smtp-Source: ABdhPJxT2Qem7xK8FMBf7L9oqeIzo9kSbIvbZEskaZoYi7GPZRzXLlBpaEcV3CmGbBmP3438ikSLUQ==
-X-Received: by 2002:adf:ecc9:: with SMTP id s9mr24606051wro.246.1605057326400;
-        Tue, 10 Nov 2020 17:15:26 -0800 (PST)
+        bh=sD7fDvHXiFm4cObgHl+AP6M6ck+IL5n1B/jSpmdDcPc=;
+        b=ChsmLjSRAr0U1GwvKHbymMAgzSieW+lUfhhW5BkXwarrZTUscqvsY3rbaPHMT1bodJ
+         rvgn1BR0DpRdhdSCnM+5OlQrzVBUEWg0DdDI5l1cOuxrwgnf3klsO+3Chhlwa3N4ZkY8
+         H9/ZOlrjfu1Cv8x+GTLfJtJFdcAGX99uC3WE/ZTOrFEafeeqqM0Pwuc8HsHd0+RssUK5
+         jG12RPmdLlfT+tlO3/7NcilOZQ4TuxqWWsvAmvFJKFzFuQHQOev2q0oUOClbSas56X5O
+         8NtHGOqLTbVylv61IPW4CQwzGjQJFpoO8dwhnIlpRLMhiIR73q6jVSzHISvEc9IkyijZ
+         ZqMw==
+X-Gm-Message-State: AOAM5318fFtIEVcDd27N5cM5jeKeZJdwQuD1JkXtJ1YYVjCGIQnfokNh
+        CoezFrAH0m8NlO9xRNNA0XQ=
+X-Google-Smtp-Source: ABdhPJzNduKCx2DAGT1kO0vBmCfERMYx7fsFrNi6wBTY2U9wsA00dOl7NAFy7l9BVNsyp+sLa6cJiQ==
+X-Received: by 2002:a1c:6a0d:: with SMTP id f13mr913973wmc.172.1605057320997;
+        Tue, 10 Nov 2020 17:15:20 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id g131sm564329wma.35.2020.11.10.17.15.24
+        by smtp.gmail.com with ESMTPSA id g131sm564329wma.35.2020.11.10.17.15.19
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Nov 2020 17:15:25 -0800 (PST)
+        Tue, 10 Nov 2020 17:15:20 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v8 10/26] memory: tegra30-emc: Factor out clk initialization
-Date:   Wed, 11 Nov 2020 04:14:40 +0300
-Message-Id: <20201111011456.7875-11-digetx@gmail.com>
+Subject: [PATCH v8 07/26] memory: tegra30-emc: Make driver modular
+Date:   Wed, 11 Nov 2020 04:14:37 +0300
+Message-Id: <20201111011456.7875-8-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201111011456.7875-1-digetx@gmail.com>
 References: <20201111011456.7875-1-digetx@gmail.com>
@@ -88,112 +88,97 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Factor out clk initialization and make it resource-managed. This makes
-easier to follow code and will help to make further changes cleaner.
+Add modularization support to the Tegra30 EMC driver, which now can be
+compiled as a loadable kernel module.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/memory/tegra/tegra30-emc.c | 70 ++++++++++++++++++++----------
- 1 file changed, 47 insertions(+), 23 deletions(-)
+ drivers/memory/tegra/Kconfig       |  2 +-
+ drivers/memory/tegra/mc.c          |  3 +++
+ drivers/memory/tegra/tegra30-emc.c | 17 ++++++++++++-----
+ 3 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
-index d27df842a667..1df42e212d73 100644
---- a/drivers/memory/tegra/tegra30-emc.c
-+++ b/drivers/memory/tegra/tegra30-emc.c
-@@ -1550,6 +1550,49 @@ static int tegra_emc_opp_table_init(struct tegra_emc *emc)
- 	return err;
- }
+diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
+index 8cc1ec5be443..2a4a16bcf91c 100644
+--- a/drivers/memory/tegra/Kconfig
++++ b/drivers/memory/tegra/Kconfig
+@@ -21,7 +21,7 @@ config TEGRA20_EMC
+ 	  external memory.
  
-+static void devm_tegra_emc_unset_callback(void *data)
-+{
-+	tegra20_clk_set_emc_round_callback(NULL, NULL);
-+}
-+
-+static void devm_tegra_emc_unreg_clk_notifier(void *data)
-+{
-+	struct tegra_emc *emc = data;
-+
-+	clk_notifier_unregister(emc->clk, &emc->clk_nb);
-+}
-+
-+static int tegra_emc_init_clk(struct tegra_emc *emc)
-+{
-+	int err;
-+
-+	tegra20_clk_set_emc_round_callback(emc_round_rate, emc);
-+
-+	err = devm_add_action_or_reset(emc->dev, devm_tegra_emc_unset_callback,
-+				       NULL);
-+	if (err)
-+		return err;
-+
-+	emc->clk = devm_clk_get(emc->dev, NULL);
-+	if (IS_ERR(emc->clk)) {
-+		dev_err(emc->dev, "failed to get EMC clock: %pe\n", emc->clk);
-+		return PTR_ERR(emc->clk);
-+	}
-+
-+	err = clk_notifier_register(emc->clk, &emc->clk_nb);
-+	if (err) {
-+		dev_err(emc->dev, "failed to register clk notifier: %d\n", err);
-+		return err;
-+	}
-+
-+	err = devm_add_action_or_reset(emc->dev,
-+				       devm_tegra_emc_unreg_clk_notifier, emc);
-+	if (err)
-+		return err;
-+
-+	return 0;
-+}
-+
- static int tegra_emc_probe(struct platform_device *pdev)
- {
- 	struct device_node *np;
-@@ -1599,25 +1642,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 		return err;
- 	}
- 
--	tegra20_clk_set_emc_round_callback(emc_round_rate, emc);
--
--	emc->clk = devm_clk_get(&pdev->dev, "emc");
--	if (IS_ERR(emc->clk)) {
--		err = PTR_ERR(emc->clk);
--		dev_err(&pdev->dev, "failed to get emc clock: %d\n", err);
--		goto unset_cb;
--	}
--
--	err = clk_notifier_register(emc->clk, &emc->clk_nb);
--	if (err) {
--		dev_err(&pdev->dev, "failed to register clk notifier: %d\n",
--			err);
--		goto unset_cb;
--	}
-+	err = tegra_emc_init_clk(emc);
-+	if (err)
-+		return err;
- 
- 	err = tegra_emc_opp_table_init(emc);
- 	if (err)
--		goto unreg_notifier;
-+		return err;
- 
- 	platform_set_drvdata(pdev, emc);
- 	tegra_emc_rate_requests_init(emc);
-@@ -1632,13 +1663,6 @@ static int tegra_emc_probe(struct platform_device *pdev)
- 	try_module_get(THIS_MODULE);
+ config TEGRA30_EMC
+-	bool "NVIDIA Tegra30 External Memory Controller driver"
++	tristate "NVIDIA Tegra30 External Memory Controller driver"
+ 	default y
+ 	depends on TEGRA_MC && ARCH_TEGRA_3x_SOC
+ 	help
+diff --git a/drivers/memory/tegra/mc.c b/drivers/memory/tegra/mc.c
+index a7e6a8e4c95a..44064de962c2 100644
+--- a/drivers/memory/tegra/mc.c
++++ b/drivers/memory/tegra/mc.c
+@@ -6,6 +6,7 @@
+ #include <linux/clk.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
++#include <linux/export.h>
+ #include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+@@ -346,6 +347,7 @@ int tegra_mc_write_emem_configuration(struct tegra_mc *mc, unsigned long rate)
  
  	return 0;
--
--unreg_notifier:
--	clk_notifier_unregister(emc->clk, &emc->clk_nb);
--unset_cb:
--	tegra20_clk_set_emc_round_callback(NULL, NULL);
--
--	return err;
  }
++EXPORT_SYMBOL_GPL(tegra_mc_write_emem_configuration);
  
- static int tegra_emc_suspend(struct device *dev)
+ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
+ {
+@@ -357,6 +359,7 @@ unsigned int tegra_mc_get_emem_device_count(struct tegra_mc *mc)
+ 
+ 	return dram_count;
+ }
++EXPORT_SYMBOL_GPL(tegra_mc_get_emem_device_count);
+ 
+ static int load_one_timing(struct tegra_mc *mc,
+ 			   struct tegra_mc_timing *timing,
+diff --git a/drivers/memory/tegra/tegra30-emc.c b/drivers/memory/tegra/tegra30-emc.c
+index 1be28e28ec34..d0926088360a 100644
+--- a/drivers/memory/tegra/tegra30-emc.c
++++ b/drivers/memory/tegra/tegra30-emc.c
+@@ -1330,6 +1330,13 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	platform_set_drvdata(pdev, emc);
+ 	tegra_emc_debugfs_init(emc);
+ 
++	/*
++	 * Don't allow the kernel module to be unloaded. Unloading adds some
++	 * extra complexity which doesn't really worth the effort in a case of
++	 * this driver.
++	 */
++	try_module_get(THIS_MODULE);
++
+ 	return 0;
+ 
+ unset_cb:
+@@ -1380,6 +1387,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
+ 	{ .compatible = "nvidia,tegra30-emc", },
+ 	{},
+ };
++MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
+ 
+ static struct platform_driver tegra_emc_driver = {
+ 	.probe = tegra_emc_probe,
+@@ -1390,9 +1398,8 @@ static struct platform_driver tegra_emc_driver = {
+ 		.suppress_bind_attrs = true,
+ 	},
+ };
++module_platform_driver(tegra_emc_driver);
+ 
+-static int __init tegra_emc_init(void)
+-{
+-	return platform_driver_register(&tegra_emc_driver);
+-}
+-subsys_initcall(tegra_emc_init);
++MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra30 EMC driver");
++MODULE_LICENSE("GPL v2");
 -- 
 2.29.2
 
