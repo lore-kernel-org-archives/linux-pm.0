@@ -2,64 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.1 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 505D8C56201
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49010C56201
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:54:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E3F6E20825
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:33:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CA794206B5
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 07:54:08 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="mBY07o0W"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="SeyOkpJ8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725900AbgKKHdG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Nov 2020 02:33:06 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52068 "EHLO
+        id S1725929AbgKKHyH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Nov 2020 02:54:07 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55284 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726046AbgKKHdB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2020 02:33:01 -0500
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CAC11C0613D1;
-        Tue, 10 Nov 2020 23:32:59 -0800 (PST)
-Received: by mail-lf1-x141.google.com with SMTP id a9so859538lfh.2;
-        Tue, 10 Nov 2020 23:32:59 -0800 (PST)
+        with ESMTP id S1725859AbgKKHyG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2020 02:54:06 -0500
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7922AC0613D1
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2020 23:54:06 -0800 (PST)
+Received: by mail-pl1-x641.google.com with SMTP id j5so559337plk.7
+        for <linux-pm@vger.kernel.org>; Tue, 10 Nov 2020 23:54:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=V5haJlrCzHhZjookFyzKI1ofwRfXaAn0aRWFtwOvZPM=;
-        b=mBY07o0WYOO3KPVX9ikNGcfO0oosoLOui+74cafSO4z+uokoYQoq0NNwCqF4dWSBQ5
-         H4Jhs5vLdQ191L3nLezXVMst6CirPN7bQCoBhNSlb1bR9C75HchTsOU4ddLT2LL6mAWX
-         Dvk0b4S/anJkLgSMSsODY9QpIeCgvo7oURWz9oY8W8HBi4y3f1xW8y9rvism9ipr+zA+
-         doQKmSlzb/V6dTwBAB93tluEkYwJaFc90gfqF2go5vzYx9Yi0iQKS7Xp3SXnuidOBMPV
-         vEJtVgsKSxOpZIyNYQiqGQg42YW5BgyZS4y/d0WBXlhV8yZfOg9LrGbckxALMCFwa4Yf
-         +iMg==
+        d=linaro.org; s=google;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to
+         :user-agent;
+        bh=BR1T4epV+HHBrX5I3Lx7g9aCKzjxl36+gayU6Vo90zk=;
+        b=SeyOkpJ8VAnb9K1v6QHwyuE+XDQ7Xb5qgsNsN17V6pSCy+q1aUZltHVrwUB6hoVNUJ
+         kyi1hz3GZB0PUzYnYm5NHuDH4DtZLQ6r7LinuCTWmBnv++Pcns6Z44NLADK8nCUPq+2Z
+         lUAZJJD/ofBTydNaZsP70StUTV3P14W4YTnOf2MmHlIO00RSoHGw/LnoMgUFva/t02jt
+         Cq7ItmcBBwiJsCiFGCnQ6OwdXO7K2pdOTRCxVVRlJlC9Ivp6OLV2wqZm0q7JGzPRVz7B
+         ewCJe+iAbFC6PK7GZk/6Vnj4udyUn6bTmvaD+GiJHFydjtBRGzYuyAAJkgFvEKUueX/h
+         fT3Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=V5haJlrCzHhZjookFyzKI1ofwRfXaAn0aRWFtwOvZPM=;
-        b=BNKbsErvONUOj/03siVmA6A63AmVpOLRpsYvVHesGAY4f8ANm1fW+G0YGzObc0/cvX
-         rxohdoTNAxAb3cf9UHBX67dr+iMvYHEc+mP+iM3OF9/RnB0mT7XgA9SBqkiJPzUSuqxU
-         xpMnXpBBLFYxzgmG59ebeBdfv4M/rtRrTydgZFXKrbJnhMegNqHImr+H9D93CXszBDec
-         vr5OiRlawgkVEYMzM9KqkiyoRA5dGMzqQbbgSm50IB2zQb/dVVuJZmE+MTDi4d3AXxhG
-         oMKGRIXRyBKnx+4zDD+jn5hN7Li/vZ5QP3QmE9eO8y9UjuNqldjPaTXPbCSsaVSdISub
-         V8rA==
-X-Gm-Message-State: AOAM531HVNV5llbfYCgk+TaLKR3x+C/EG/qXnh4BQFfJcwvEr8J8g2XA
-        g1KHCvORn59nzxFQ7gp1csc=
-X-Google-Smtp-Source: ABdhPJxhZEjV2QRG7aWHgF16Bn0c+eyj1kfpgdHs/q2P1g52eKn79RkzViwPJ+N7nj1DvZzVrM0B2Q==
-X-Received: by 2002:ac2:43cf:: with SMTP id u15mr2226361lfl.382.1605079978165;
-        Tue, 10 Nov 2020 23:32:58 -0800 (PST)
-Received: from [192.168.2.145] (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.googlemail.com with ESMTPSA id q7sm92352ljp.81.2020.11.10.23.32.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 10 Nov 2020 23:32:57 -0800 (PST)
-Subject: Re: [PATCH v8 09/26] memory: tegra30: Support interconnect framework
-To:     Viresh Kumar <viresh.kumar@linaro.org>
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        bh=BR1T4epV+HHBrX5I3Lx7g9aCKzjxl36+gayU6Vo90zk=;
+        b=NJlri7lQyRMK1udtDG+u82YBqFBquvf/8LgQ6wAcUiWhf/bbOTinwbmbvFu4NisPNR
+         sdbiOcSSSoEUrxhOxy4zy0WDlW/+gCj1vcXXO6gx+TPWm5mx4Ab2h7TY3djz80WuQwcq
+         ly8bsOgoWXF/JbPcfBSwHvbLbhvFZiY7NifPFPKuZ1sOgQDomw+pvRo6ozFEvrx7E5FJ
+         bVbUwgdtCNNLGGr+Otutbn4oCVhDcMMhD4lbtmd0AQo9nZ8XjJoOX6EUhH+LSqjMYcOI
+         4Zw01O3qqiCLd89K3DZ404lJKZAR3rHraqa/QdDAHNIAMF5WG9F/I9/fW8pI5o2VKDcU
+         HS9w==
+X-Gm-Message-State: AOAM530bM1XTKaItiiWMX5IcXLSDp2/USqpeEKVHCbee8XqIN7egBM9a
+        6cvAQKq09JMJwHRXr4IgPBHVxw==
+X-Google-Smtp-Source: ABdhPJxOHg/sWON4ePkTuSAP4y8SzDQlWRi72cjAP6aV88j0N4jbC+I/d/e9bu0uQlLakGN5MNj7pg==
+X-Received: by 2002:a17:902:82c3:b029:d6:c377:c87d with SMTP id u3-20020a17090282c3b02900d6c377c87dmr19915711plz.37.1605081245903;
+        Tue, 10 Nov 2020 23:54:05 -0800 (PST)
+Received: from localhost ([122.172.12.172])
+        by smtp.gmail.com with ESMTPSA id v18sm1450609pfn.35.2020.11.10.23.54.04
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Tue, 10 Nov 2020 23:54:04 -0800 (PST)
+Date:   Wed, 11 Nov 2020 13:24:02 +0530
+From:   Viresh Kumar <viresh.kumar@linaro.org>
+To:     Dmitry Osipenko <digetx@gmail.com>
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
         Georgi Djakov <georgi.djakov@linaro.org>,
@@ -77,51 +79,58 @@ Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+Subject: Re: [PATCH v8 09/26] memory: tegra30: Support interconnect framework
+Message-ID: <20201111075402.y52c2zwcw74eeyko@vireshk-i7>
 References: <20201111011456.7875-1-digetx@gmail.com>
  <20201111011456.7875-10-digetx@gmail.com>
  <20201111055313.tefidnmc7f4yb3jk@vireshk-i7>
  <185e9140-fdce-29ef-68c3-aa7da02b249d@gmail.com>
  <20201111061855.2azilyhfoxwzpoir@vireshk-i7>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <7f5c15c6-44d2-c997-442c-8f6670794f0e@gmail.com>
-Date:   Wed, 11 Nov 2020 10:32:56 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+ <7f5c15c6-44d2-c997-442c-8f6670794f0e@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20201111061855.2azilyhfoxwzpoir@vireshk-i7>
 Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <7f5c15c6-44d2-c997-442c-8f6670794f0e@gmail.com>
+User-Agent: NeoMutt/20180716-391-311a52
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-11.11.2020 09:18, Viresh Kumar пишет:
-> On 11-11-20, 09:14, Dmitry Osipenko wrote:
->> 11.11.2020 08:53, Viresh Kumar пишет:
->>>> +static int tegra_emc_opp_table_init(struct tegra_emc *emc)
->>>> +{
->>>> +	struct opp_table *reg_opp_table = NULL, *clk_opp_table, *hw_opp_table;
->>>> +	u32 hw_version = BIT(tegra_sku_info.soc_speedo_id);
->>>> +	const char *rname = "core";
->>>> +	int err;
->>>> +
->>>> +	/*
->>>> +	 * Legacy device-trees don't have OPP table and EMC driver isn't
->>>> +	 * useful in this case.
->>>> +	 */
->>>> +	if (!device_property_present(emc->dev, "operating-points-v2")) {
->>> I don't understand why you want to check this ? The below call to
->>> dev_pm_opp_of_add_table() will fail anyway and that should be good for
->>> you.
->>>
->>
->> The dev_pm_opp_of_add_table() will produce a error message which doesn't
->> give a clue about what's wrong, i.e. that device-tree needs to be updated.
+On 11-11-20, 10:32, Dmitry Osipenko wrote:
+> 11.11.2020 09:18, Viresh Kumar пишет:
+> > On 11-11-20, 09:14, Dmitry Osipenko wrote:
+> >> The dev_pm_opp_of_add_table() will produce a error message which doesn't
+> >> give a clue about what's wrong, i.e. that device-tree needs to be updated.
+> > 
+> > If you think that you need to print something more, then you can do
+> > that in the error message you print when dev_pm_opp_of_add_table()
+> > fails. I would suggest to drop this redundant check here.
+> > 
 > 
-> If you think that you need to print something more, then you can do
-> that in the error message you print when dev_pm_opp_of_add_table()
-> fails. I would suggest to drop this redundant check here.
-> 
+> Please give the rationale.
 
-Please give the rationale.
+The rationale is that the check is already performed by
+dev_pm_opp_of_add_table() and it isn't going to add *any* benefit to
+check it again here. Such a check for matching compatible platforms is
+normally fine, but not for this. This is like open coding part of
+dev_pm_opp_of_add_table(), and so is redundant. The
+dev_pm_opp_of_add_table() helper also checks for OPPv1 bindings in the
+DT (yes you won't be using them on your platform) and so relying on
+that API is a better thing to do.
+
+As you already said, you just wanted a better print message and so you
+have added this check. If you really care only about the print
+message, then you can add a print of your choice in the driver but
+otherwise this check is not going to benefit you much I am afraid.
+
+Having said that, this isn't the code I maintain. I need to guarantee
+that the OPP core APIs are used properly and are not misused and so I
+have a higher say there. But in this case all I can do is _suggest_
+and not enforce. And as I said earlier, I suggest to drop this
+redundant check in order to make your code better and faster.
+
+Thanks.
+
+-- 
+viresh
