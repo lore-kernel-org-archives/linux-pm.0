@@ -2,118 +2,251 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4F74C388F9
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:47:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 03210C388F9
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:54:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 889C92072C
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:47:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97C9C2072C
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:54:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="B/+8hOwV"
+	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="PPLt2ov7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726993AbgKKQrV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Nov 2020 11:47:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55960 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726849AbgKKQrT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 11 Nov 2020 11:47:19 -0500
-Received: from mail-wr1-x443.google.com (mail-wr1-x443.google.com [IPv6:2a00:1450:4864:20::443])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7FF87C0613D6
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2020 08:47:18 -0800 (PST)
-Received: by mail-wr1-x443.google.com with SMTP id c17so3129806wrc.11
-        for <linux-pm@vger.kernel.org>; Wed, 11 Nov 2020 08:47:18 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:content-transfer-encoding:in-reply-to;
-        bh=iFsaSefHhmkCScyFYoknkXxLil5Qp2yw29m3QJALDc0=;
-        b=B/+8hOwVHut4qAjEftspH+8vOftFemj7qMkkqsNfSt9PH1QrCUn7bFMuufqiEPYHvf
-         CdmPz2mS5JPSwdBBTN3N+khMGnoAGP2AMLWxir+wYUZpoPc8LzHTAHww18QLMHCLtGYB
-         WdS1kZXw1Wk0uKOLDhIKppmqhF3IRsIPWNzfTn9bLxl5JmBlg6Q7imM185QgomyT7bns
-         goQSjXEEH8X/SURQO3CsKV8CgFklhDx6f8EPYOP2Wn8iCNBG0Nh+SLEoIZhcKXUsGWMQ
-         Qy/b3ca3qV3J2XYHhKzCGO+yZLvq7xFp70cyUOg4Cn2HgU4qdJ00TQIkU9tKw04hBuju
-         YPXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:content-transfer-encoding
-         :in-reply-to;
-        bh=iFsaSefHhmkCScyFYoknkXxLil5Qp2yw29m3QJALDc0=;
-        b=T6Mhuk3rrMA7slvSfE9wdrLZFU7543V/glVEwklD8z8Kqf6K7SrqhXpXaJ/rPSTVsn
-         Zkxz6OioZxniYvjNEB8XfQY4lmkeNP1O6v7fGRPl93z1sV5GUmUHve3A2pD6U0tcrYtU
-         8HXND9iPi0UcLECH1W/IKCFpCKDyAJVMzdEPWatQg4dyvueW+nsPXd16OOFw8noDIwu6
-         5Bsz+tVzKspzeXHPR/ZOzrBc/Ko54fVs73P1xfd4lNgdeG1NNj+D59grg0m02k1vwldQ
-         1xmqQMqYnf0tvNJU29hK0tSTsPJMOcrV+5z+jEjS8AoU2aTTryzEpV2vFn/0e2pXz004
-         cPSA==
-X-Gm-Message-State: AOAM533LQvGOw/gbEeTxC018yjEwSD6xBvil8071gKKq/Y2Dj+KRFM+X
-        +PWT8tcEPUW5BxqTpeD7QoY6Yg==
-X-Google-Smtp-Source: ABdhPJzRnnvVYKTjowXa7ib7kM/imqHcA0TsWc1jxSxFSms9DDStsTD9noYghcLYEnaRaNhZGEfe7g==
-X-Received: by 2002:adf:ffc3:: with SMTP id x3mr2959101wrs.32.1605113237207;
-        Wed, 11 Nov 2020 08:47:17 -0800 (PST)
-Received: from dell ([91.110.221.159])
-        by smtp.gmail.com with ESMTPSA id s4sm3225443wro.10.2020.11.11.08.47.15
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 11 Nov 2020 08:47:16 -0800 (PST)
-Date:   Wed, 11 Nov 2020 16:47:14 +0000
-From:   Lee Jones <lee.jones@linaro.org>
-To:     Gene Chen <gene.chen.richtek@gmail.com>
-Cc:     sre@kernel.org, matthias.bgg@gmail.com, robh+dt@kernel.org,
-        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-mediatek@lists.infradead.org, linux-kernel@vger.kernel.org,
-        gene_chen@richtek.com, Wilma.Wu@mediatek.com,
-        shufan_lee@richtek.com, cy_huang@richtek.com,
-        benjamin.chao@mediatek.com
-Subject: Re: [PATCH v6 11/11] mfd: mt6360: Remove MT6360 regulator
- of_compatible attribute
-Message-ID: <20201111164714.GR2063125@dell>
-References: <1604656432-10215-1-git-send-email-gene.chen.richtek@gmail.com>
- <1604656432-10215-12-git-send-email-gene.chen.richtek@gmail.com>
+        id S1725979AbgKKQyz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Nov 2020 11:54:55 -0500
+Received: from z5.mailgun.us ([104.130.96.5]:30709 "EHLO z5.mailgun.us"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726216AbgKKQyy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Nov 2020 11:54:54 -0500
+DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
+ s=smtp; t=1605113694; h=In-Reply-To: Content-Type: MIME-Version:
+ References: Message-ID: Subject: Cc: To: From: Date: Sender;
+ bh=O6OuMly3TJfbOBSpo9PbutFIcuKKSbbn6XrVvKQNwmg=; b=PPLt2ov7gEKx5jx6/YmHS5rzKRCzV7PgUE6yKBD4Rx8rWqbNTQrGl+VauHvPaZWD/5NOqC/C
+ Nz8QxzrtxAT26gxZ8g3zxvXqZCLZDpLDBJHlLjniAi7Z201uuqwXS3En2DRgYjAr24eWhrtW
+ ft+3hyirYKBzl56lAPGPEdL7ERY=
+X-Mailgun-Sending-Ip: 104.130.96.5
+X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
+Received: from smtp.codeaurora.org
+ (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
+ smtp-out-n05.prod.us-east-1.postgun.com with SMTP id
+ 5fac1107d6d93bf0e9431e87 (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 11 Nov 2020 16:27:51
+ GMT
+Sender: ilina=codeaurora.org@mg.codeaurora.org
+Received: by smtp.codeaurora.org (Postfix, from userid 1001)
+        id 94E1CC433FF; Wed, 11 Nov 2020 16:27:50 +0000 (UTC)
+Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        (Authenticated sender: ilina)
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 85ED7C433C9;
+        Wed, 11 Nov 2020 16:27:49 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 85ED7C433C9
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
+Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
+Date:   Wed, 11 Nov 2020 09:27:48 -0700
+From:   Lina Iyer <ilina@codeaurora.org>
+To:     Ulf Hansson <ulf.hansson@linaro.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>
+Subject: Re: [PATCH v5 2/2] PM / Domains: use device's next wakeup to
+ determine domain idle state
+Message-ID: <X6wRBLmvzztNai4y@codeaurora.org>
+References: <20201106164811.3698-1-ilina@codeaurora.org>
+ <20201106164811.3698-3-ilina@codeaurora.org>
+ <CAPDyKFrv-3USmNLR3gjgaTEuTrWuYZjs3qCtnjxSOWqrxv5qsA@mail.gmail.com>
+ <X6l/OcHG37HzgFL8@codeaurora.org>
+ <CAPDyKFr8fdbMM1nsx-RZcMVtveJUP3p38z=HkL1T2C=QgM3gkQ@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1604656432-10215-12-git-send-email-gene.chen.richtek@gmail.com>
+In-Reply-To: <CAPDyKFr8fdbMM1nsx-RZcMVtveJUP3p38z=HkL1T2C=QgM3gkQ@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, 06 Nov 2020, Gene Chen wrote:
+On Tue, Nov 10 2020 at 03:02 -0700, Ulf Hansson wrote:
+>On Mon, 9 Nov 2020 at 18:41, Lina Iyer <ilina@codeaurora.org> wrote:
+>>
+>> On Mon, Nov 09 2020 at 08:27 -0700, Ulf Hansson wrote:
+>> >On Fri, 6 Nov 2020 at 17:48, Lina Iyer <ilina@codeaurora.org> wrote:
+>> >>
+>> [...]
+>> >> +static void update_domain_next_wakeup(struct generic_pm_domain *genpd, ktime_t now)
+>> >> +{
+>> >> +       ktime_t domain_wakeup = KTIME_MAX;
+>> >> +       ktime_t next_wakeup;
+>> >> +       struct pm_domain_data *pdd;
+>> >> +       struct gpd_link *link;
+>> >> +
+>> >> +       /* Find the earliest wakeup for all devices in the domain */
+>> >> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
+>> >> +               next_wakeup = to_gpd_data(pdd)->next_wakeup;
+>> >> +               if (next_wakeup != KTIME_MAX && !ktime_before(next_wakeup, now))
+>> >> +                       if (ktime_before(next_wakeup, domain_wakeup))
+>> >> +                               domain_wakeup = next_wakeup;
+>> >
+>> >If it turns out that one of the device's next_wakeup is before "now",
+>> >leading to ktime_before() above returns true - then I think you should
+>> >bail out, no?
+>> >
+>> >At least, we shouldn't just continue and ignore this case, right?
+>> >
+>> No, that could be a very common case. Drivers are not expected to clean
+>> up the next wakeup by setting it to KTIME_MAX. The best we can do is
+>> to make a choice with the valid information we have. This will also map
+>> to the current behavior. Say if all next wakeup information provided to
+>> the devices were in the past, we would be no worse (or better) than what
+>> we do without this change.
+>
+>Well, I don't quite agree (at least not yet), but let me elaborate, as
+>I think we can do better without having to add complexity.
+>
+>Normally, I don't think a driver needs to clean up its device's next
+>wakeup in between the remote wakeups, instead it should just set a new
+>value.
+>
+>That's because, even if the driver acts to a remote wakeup or deals
+>with a request entering a queue, the driver needs to runtime resume
+>its device during this period. This prevents genpd from power off the
+>PM domain, hence also the genpd governor from potentially looking at
+>"invalid" wakeup information for its attached devices.
+>
+Could you elaborate a bit? Why would a remote wakeup affect the next
+wakeup. I'm afraid that I'm not getting the situation correctly.
 
-> From: Gene Chen <gene_chen@richtek.com>
-> 
-> Remove MT6360 regulator of_compatible attribute because
-> MFD device should just instantiate the platform device.
-> 
-> Signed-off-by: Gene Chen <gene_chen@richtek.com>
-> ---
->  drivers/mfd/mt6360-core.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/mfd/mt6360-core.c b/drivers/mfd/mt6360-core.c
-> index 4bcfa7f..539ab43 100644
-> --- a/drivers/mfd/mt6360-core.c
-> +++ b/drivers/mfd/mt6360-core.c
-> @@ -340,7 +340,7 @@ static const struct mfd_cell mt6360_devs[] = {
->  	OF_MFD_CELL("mt6360-led", mt6360_led_resources,
->  		    NULL, 0, 0, "mediatek,mt6360-led"),
->  	OF_MFD_CELL("mt6360-regulator", mt6360_regulator_resources,
-> -		    NULL, 0, 0, "mediatek,mt6360-regulator"),
-> +		    NULL, 0, 0, NULL),
+>Of course, I assume there are situations, where a driver actually
+>needs to do a clean up of its device's next wakeup, but that should be
+>less frequent and likely when a remote wakeup is disabled (for
+>whatever reason).
+>
+A common case would be that the driver does not know when the usecase is
+being turned off and therefore may not be able to set the next wakeup to
+max. If the stale value continues to exist then we may never power off
+the domain.
 
-If you're no longer providing an OF compatible, you should use one of
-the simper helpers.
+>> >> +       /*
+>> >> +        * Find the next wakeup from devices that can determine their own wakeup
+>> >> +        * to find when the domain would wakeup and do it for every device down
+>> >> +        * the hierarchy. It is not worth while to sleep if the state's residency
+>> >> +        * cannot be met.
+>> >> +        */
+>> >> +       update_domain_next_wakeup(genpd, now);
+>> >> +       if (genpd->next_wakeup != KTIME_MAX) {
+>> >> +               /* Let's find out the deepest domain idle state, the devices prefer */
+>> >> +               while (state_idx >= 0) {
+>> >> +                       if (next_wakeup_allows_state(genpd, state_idx, now)) {
+>> >> +                               genpd->max_off_time_changed = true;
+>> >> +                               break;
+>> >> +                       }
+>> >> +                       state_idx--;
+>> >> +               }
+>> >> +
+>> >> +               if (state_idx < 0) {
+>> >> +                       state_idx = 0;
+>> >> +                       genpd->cached_power_down_ok = false;
+>> >> +                       goto done;
+>> >> +               }
+>> >> +       }
+>> >> +
+>> >
+>> >The above would introduce unnecessary overhead, as it may become
+>> >executed in cases when it's not needed.
+>> >
+>> >For example, there's no point doing the above, if the domain doesn't
+>> >specify residency values for its idle states.
+>> >
+>> We would still need to ensure that the next wakeup is after the
+>> power_off_latency, if specified.
+>
+>Good point! Although, I would rather avoid adding the overhead, unless
+>the residency is specified. Do you see a problem with this approach?
+>
+Hmmm, no strong objections. However, we still need to run through the
+states to make sure the residency is not set and have a variable track
+that. The devices wouldn't know that and would still continue to set the
+next wakeup, unless we find a way to let them know we are not using this
+feature for the domain.
 
->  	OF_MFD_CELL("mt6360-tcpc", NULL,
->  		    NULL, 0, 0, "mediatek,mt6360-tcpc"),
->  };
+>Another option is to add a new governor, but if possible, I would like
+>to avoid that.
+>
+Absolutely, we should avoid that.
 
--- 
-Lee Jones [李琼斯]
-Senior Technical Lead - Developer Services
-Linaro.org │ Open source software for Arm SoCs
-Follow Linaro: Facebook | Twitter | Blog
+>>
+>> >Additionally, we don't need to recompute the domain's next wakup,
+>> >unless a device has got a new next_wakeup value set for it. In this
+>> >case, we can just select a state based upon an previously computed
+>> >value, thus avoiding the recomputation.
+>> >
+>> If the domain's next wakeup was in the past, then using our previously
+>> computed state may be incorrect.
+>
+>I am not saying you should use the previously computed *idlestate*,
+>but the previously computed next wakeup.
+>
+I guess this falls into the first discussion, should be use the next
+wakeup from the past.
+
+>>
+>> >>         if (!genpd->max_off_time_changed) {
+>> >>                 genpd->state_idx = genpd->cached_power_down_state_idx;
+>> >>                 return genpd->cached_power_down_ok;
+>> >> @@ -228,17 +295,21 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
+>> >>         genpd->max_off_time_ns = -1;
+>> >>         genpd->max_off_time_changed = false;
+>> >>         genpd->cached_power_down_ok = true;
+>> >> -       genpd->state_idx = genpd->state_count - 1;
+>> >>
+>> >> -       /* Find a state to power down to, starting from the deepest. */
+>> >> -       while (!__default_power_down_ok(pd, genpd->state_idx)) {
+>> >> -               if (genpd->state_idx == 0) {
+>> >> +       /*
+>> >> +        * Find a state to power down to, starting from the state
+>> >> +        * determined by the next wakeup.
+>> >> +        */
+>> >> +       while (!__default_power_down_ok(pd, state_idx)) {
+>> >> +               if (state_idx == 0) {
+>> >>                         genpd->cached_power_down_ok = false;
+>> >>                         break;
+>> >>                 }
+>> >> -               genpd->state_idx--;
+>> >> +               state_idx--;
+>> >>         }
+>> >>
+>> >> +done:
+>> >> +       genpd->state_idx = state_idx;
+>> >>         genpd->cached_power_down_state_idx = genpd->state_idx;
+>> >>         return genpd->cached_power_down_ok;
+>> >>  }
+>> >
+>> >Another thing to consider for the above changes, is that the
+>> >cpu_power_down_ok() calls into default_power_down_ok().
+>> >
+>> >Even if I am fine with the approach taken in $subject patch, I think
+>> >it's important to try to keep the path a slim as possible as it's also
+>> >executed in the CPU idlepath.
+>> Wouldn't this be called only the last CPU is powering down and only if
+>> the domain is ready to power down?
+>>
+>> >For example, $subject change means also
+>> >that we end up calling ktime_get() twice in the same path, introducing
+>> >unnecessary overhead. We can do better and avoid that by restructuring
+>> >the code a bit, don't you think?
+>> >
+>> Hmmm, we could. I will submit a follow on patch to reorganize the code
+>> so the ktime_get() would be called only once for either of the
+>> power_down_ok callbacks.
+>
+>If possible, I would rather make it part of the series. Just fold in
+>some "rework" patch before extending the governor, that should be
+>possible I think.
+>
+Sure. Since this would affect changing the default_power_down_ok(), I
+thought a follow on patch would be appropriate.
+
+Thanks,
+Lina
