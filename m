@@ -2,251 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
+	MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 03210C388F9
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 82075C61DD8
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 20:37:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97C9C2072C
-	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 16:54:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1913A216C4
+	for <linux-pm@archiver.kernel.org>; Wed, 11 Nov 2020 20:37:41 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="PPLt2ov7"
+	dkim=pass (1024-bit key) header.d=amdcloud.onmicrosoft.com header.i=@amdcloud.onmicrosoft.com header.b="RWdJh7XF"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725979AbgKKQyz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 11 Nov 2020 11:54:55 -0500
-Received: from z5.mailgun.us ([104.130.96.5]:30709 "EHLO z5.mailgun.us"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726216AbgKKQyy (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 11 Nov 2020 11:54:54 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1605113694; h=In-Reply-To: Content-Type: MIME-Version:
- References: Message-ID: Subject: Cc: To: From: Date: Sender;
- bh=O6OuMly3TJfbOBSpo9PbutFIcuKKSbbn6XrVvKQNwmg=; b=PPLt2ov7gEKx5jx6/YmHS5rzKRCzV7PgUE6yKBD4Rx8rWqbNTQrGl+VauHvPaZWD/5NOqC/C
- Nz8QxzrtxAT26gxZ8g3zxvXqZCLZDpLDBJHlLjniAi7Z201uuqwXS3En2DRgYjAr24eWhrtW
- ft+3hyirYKBzl56lAPGPEdL7ERY=
-X-Mailgun-Sending-Ip: 104.130.96.5
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n05.prod.us-east-1.postgun.com with SMTP id
- 5fac1107d6d93bf0e9431e87 (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Wed, 11 Nov 2020 16:27:51
- GMT
-Sender: ilina=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 94E1CC433FF; Wed, 11 Nov 2020 16:27:50 +0000 (UTC)
-Received: from localhost (i-global254.qualcomm.com [199.106.103.254])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        (Authenticated sender: ilina)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 85ED7C433C9;
-        Wed, 11 Nov 2020 16:27:49 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 85ED7C433C9
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
-Date:   Wed, 11 Nov 2020 09:27:48 -0700
-From:   Lina Iyer <ilina@codeaurora.org>
-To:     Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>
-Subject: Re: [PATCH v5 2/2] PM / Domains: use device's next wakeup to
- determine domain idle state
-Message-ID: <X6wRBLmvzztNai4y@codeaurora.org>
-References: <20201106164811.3698-1-ilina@codeaurora.org>
- <20201106164811.3698-3-ilina@codeaurora.org>
- <CAPDyKFrv-3USmNLR3gjgaTEuTrWuYZjs3qCtnjxSOWqrxv5qsA@mail.gmail.com>
- <X6l/OcHG37HzgFL8@codeaurora.org>
- <CAPDyKFr8fdbMM1nsx-RZcMVtveJUP3p38z=HkL1T2C=QgM3gkQ@mail.gmail.com>
+        id S1726188AbgKKUhi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 11 Nov 2020 15:37:38 -0500
+Received: from mail-mw2nam12on2086.outbound.protection.outlook.com ([40.107.244.86]:60896
+        "EHLO NAM12-MW2-obe.outbound.protection.outlook.com"
+        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+        id S1725971AbgKKUhh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 11 Nov 2020 15:37:37 -0500
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
+ b=W56Wvu8ku6MwGB2dC8DRcPW1YQLd1xctNU5mfb1a81iDNfHogp4du4xrTmHl7GFOuf1/hU361j798mUtboPGrQYuzOmzcm+kOWzFrmw1UWqsCIuoASrf5bTJmPAJpQ9D9dsecrrznMNaBGt57X9XioAhUYQQs8VhKgUGh1N4AxnXFB6+XhOad8QQ/c0zY2FSrRzU+delp+7EIrrbhKqsFzoX5BmR+11efCbUShvFQqzn1BUDhZYZ4YhopFd4OHmfOkE1RsDhca5YDea3Nuic6dmmnlz48AAs6UiLOm536jwpuuf0wUfhGVjvJDw/iwgFG9e03yYVxsNR7cS3r2ujag==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector9901;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jxeCTyHawwcEmWvz8X0ctbv4qA40ywc94iv127apNqE=;
+ b=j4lYeQ4itt8V44HCdtBsmmphsiXqGvp8tNNVMHzhxEpB7OaHZMaUi0aGQ76PaEQsMfRkkANKQEbNgI1xYIsZrt/coNVuI7W6B75Y9Z7vxDs8VBkrara7y96Tl54/JD3xMnO5lyUTiEW5bTcFOCeqepTFwCxPQSgP+Bl2UTRnLZ7hkKxwKTVtvPVKajp8b7geaCG3oi0Is3QzjPYH84knSC4AbhHQs++C/NAWkzmWI8I5ZB9P2ezPumkw9wNjKbAfKBdTSA8SKkxhoeeJN5nDGb1Jfud+7X2V56VbmKPF39tC2wOmqqAecsrdEt3t2aSry65LqVTWjlA8KRPkPQTDVQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
+ header.d=amd.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=amdcloud.onmicrosoft.com; s=selector2-amdcloud-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=jxeCTyHawwcEmWvz8X0ctbv4qA40ywc94iv127apNqE=;
+ b=RWdJh7XFr7Q8pXtd//SyjvBdoFSgEPWcHJf1P0TjkxS3pi9MKdt0wii2jq5sTsIyQ00EfQtyDi3rKpZ6pUvdgj5p0KEdq9ukaWXhdzfUr5s5HivTnYxZ40zgY838JIUL7SlV1GupXLaOXykH6FxtFl2zr53KVJCZHA6Nj5T469k=
+Authentication-Results: amd.com; dkim=none (message not signed)
+ header.d=none;amd.com; dmarc=none action=none header.from=amd.com;
+Received: from SN6PR12MB2685.namprd12.prod.outlook.com (2603:10b6:805:67::33)
+ by SN1PR12MB2367.namprd12.prod.outlook.com (2603:10b6:802:26::31) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3541.21; Wed, 11 Nov
+ 2020 20:37:34 +0000
+Received: from SN6PR12MB2685.namprd12.prod.outlook.com
+ ([fe80::a160:c63e:b49a:8f9a]) by SN6PR12MB2685.namprd12.prod.outlook.com
+ ([fe80::a160:c63e:b49a:8f9a%3]) with mapi id 15.20.3541.025; Wed, 11 Nov 2020
+ 20:37:34 +0000
+Subject: Re: [PATCH v5] cper, apei, mce: Pass x86 CPER through the MCA
+ handling chain
+From:   Smita Koralahalli Channabasappa <skoralah@amd.com>
+To:     Punit Agrawal <punit1.agrawal@toshiba.co.jp>,
+        Borislav Petkov <bp@alien8.de>
+Cc:     Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+        x86@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-edac@vger.kernel.org,
+        linux-efi@vger.kernel.org, linux-acpi@vger.kernel.org,
+        Tony Luck <tony.luck@intel.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <len.brown@intel.com>,
+        Ard Biesheuvel <ardb@kernel.org>,
+        Yazen Ghannam <yazen.ghannam@amd.com>
+References: <20201103164952.5126-1-Smita.KoralahalliChannabasappa@amd.com>
+ <87a6vv9hch.fsf@kokedama.swc.toshiba.co.jp> <20201106120950.GC14914@zn.tnic>
+ <874klz9vk9.fsf@kokedama.swc.toshiba.co.jp>
+ <982e0243-b144-f8b6-d69d-45af94ed8bb9@amd.com>
+Message-ID: <651b7dba-d36a-d4db-4a0f-fd67aa9b985f@amd.com>
+Date:   Wed, 11 Nov 2020 14:37:29 -0600
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.2.1
+In-Reply-To: <982e0243-b144-f8b6-d69d-45af94ed8bb9@amd.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Language: en-US
+X-Originating-IP: [2603:8080:1840:5c4:2d3f:50b3:ce8f:b4ef]
+X-ClientProxiedBy: DM5PR2001CA0009.namprd20.prod.outlook.com
+ (2603:10b6:4:16::19) To SN6PR12MB2685.namprd12.prod.outlook.com
+ (2603:10b6:805:67::33)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <CAPDyKFr8fdbMM1nsx-RZcMVtveJUP3p38z=HkL1T2C=QgM3gkQ@mail.gmail.com>
+X-MS-Exchange-MessageSentRepresentingType: 1
+Received: from [IPv6:2603:8080:1840:5c4:2d3f:50b3:ce8f:b4ef] (2603:8080:1840:5c4:2d3f:50b3:ce8f:b4ef) by DM5PR2001CA0009.namprd20.prod.outlook.com (2603:10b6:4:16::19) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3541.25 via Frontend Transport; Wed, 11 Nov 2020 20:37:33 +0000
+X-MS-PublicTrafficType: Email
+X-MS-Office365-Filtering-HT: Tenant
+X-MS-Office365-Filtering-Correlation-Id: fa6fe525-6a81-48ca-2ca1-08d886819ec7
+X-MS-TrafficTypeDiagnostic: SN1PR12MB2367:
+X-MS-Exchange-Transport-Forked: True
+X-Microsoft-Antispam-PRVS: <SN1PR12MB23675E71B8535F55D09383E090E80@SN1PR12MB2367.namprd12.prod.outlook.com>
+X-MS-Oob-TLC-OOBClassifiers: OLM:10000;
+X-MS-Exchange-SenderADCheck: 1
+X-Microsoft-Antispam: BCL:0;
+X-Microsoft-Antispam-Message-Info: Q8VEB0bDruBWogtTxiLi8iuhHuTi19+fbpr4jXkzQidSLY6qiNVu0Mf6HhTa+jpx9HintzpPjlZD7br0uMBAbfwh+U2xbOuJXVsXvymrBh7y4QnbZBJ25M3EjaVoWIVfDiWrthTfGZbgEc04fcmbDzOMdsz970D1ZnyUe8g8iukvv6O+327hLXZY6KmZQKRCeyJuLeKR57V+Hc1ZrNKgleayyFtC5nrS4ySFjwFAPD1lEWvh8jcAxoAPN7PocYTwN7SXAqnDCuGfHg36SN3UkRZdLnygA7wzCsTb310RwNjEycMPfzxmP1gxp6BcpXfIwQzFY1IbiMq3cd+DpsZ5PjYtJGHJNm2D3JPuWTQ/GQR3UDodMTOwBssCpY8z7TBN
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SN6PR12MB2685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(376002)(396003)(346002)(136003)(39860400002)(366004)(478600001)(36756003)(110136005)(54906003)(316002)(2906002)(31696002)(83380400001)(31686004)(53546011)(16526019)(186003)(8676002)(66556008)(2616005)(5660300002)(7416002)(8936002)(6486002)(4326008)(6666004)(66946007)(66476007)(52116002)(43740500002);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?cHhYeXA5d2Zkd0l3elN0VU54bHJ2NzdsNzAwTitPWHpWczl0RnZqRkIyOCtw?=
+ =?utf-8?B?UkwzRHpHanBNUVIyOGg5WXZ6dkNwaVQ2VThpbk9hNitaanJJYnVrVCtMUGty?=
+ =?utf-8?B?U1d4K1RtR2RvNHRXbXlreHJvY0N3cG9FKzY5Qzlvc1V5RnplOWhOSk9iTmNL?=
+ =?utf-8?B?MDU0YVZlY2tEWHNXL3VmRXZqZGJoTFJzdkFoenphOFlmMTVDUWVuSFJmVTU4?=
+ =?utf-8?B?dmZzbmkydkpxY040Q2lFSTdLWWc3anNJVG1wOWVNdmVBMy9INCtLSmhzb05U?=
+ =?utf-8?B?ODU3UnVqL1NkaXN6aENtUDRvS3E1Z2dJMEFJcmhGb2J1cDF4UFlDM29Wb3hy?=
+ =?utf-8?B?bWo2eXJ2YlAyZVVvb3JzRitxOHVqYVNqUFVPS2pmOXlSN1JITnMwcStaeE5L?=
+ =?utf-8?B?OU5JSEdGOVArNk1zME9EcCtFNys4UU11akVmMjZvN3ZFL1VndVRkUVBqMkpL?=
+ =?utf-8?B?L1BXK3VPTlZWSzFROE5MWG11eVVXUVBGQStjY09VV08xNUhobmx1QkMwZW9L?=
+ =?utf-8?B?QkhVc3YwL0QxZ2Z1b2QrbFNMU3BzbitOTmJVK2pPdzlncjNKeTU2MUZpaUhk?=
+ =?utf-8?B?M25SNmN5TlpnKytVT240NE50emtoU05KUTQzN2NzeHFhTGVFRzM1eThTTlp0?=
+ =?utf-8?B?ak1pM0dIVGJ6K2tYQ1FuZ3dlZ2pxN1dNZFFGY1BNVHE2QlEyU0pWTTVuTExM?=
+ =?utf-8?B?a3NTRDd1bmZ1a1NOY2hRT1JEekF2TWVia2srSU83QlBRVWVuV0cyRzdiQ0tr?=
+ =?utf-8?B?MjdXdHRyZ0cyRVNRU2lnd0FyQXhneGhTbk55cDczd1ZEb3RrZGlIK2JsRU51?=
+ =?utf-8?B?UHFsVVFUMGhzSVc0UTZZV3lydFd6Yk9ydWlXNjRjMFR4U1hRcEE3SGNuVnNh?=
+ =?utf-8?B?YTlVZWNpTU1PcFl1c2tVbVEvRi84MVNsdXlHSGxPRUZBRGdCM1lBUndvdVha?=
+ =?utf-8?B?UDZmTVYzU2JxNGlQaWNET090UExFQnZrRFVWYjNCV015UHZPdmxNYUtNWU4v?=
+ =?utf-8?B?dThIVjF4NGRpdmYxU2RITExJN1lwYnU1MmtrbHhWRkxMMURnTjVjZnNhbUxW?=
+ =?utf-8?B?TWFpV2J4cEFnUHluNWc3dktaNUIwWGIydVhubHg2bjNvVWxSTDQraTNVdVJ2?=
+ =?utf-8?B?di83T2ZyalYvNWhTd0oxSDFlQzFBK1NDUnE3ODM1QmlienlmQ0RSaVk4b1Nk?=
+ =?utf-8?B?Zk5LNTlvVm51L3dQSitnOWFjSkpqQmw4VFpGdjEweVh4UXFKQXlsZTZiV094?=
+ =?utf-8?B?WWdyekltTkNkRkNNaThZZkdFQUNRcmIvUkJ3UkhsSGJkQm1Wdz09?=
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: fa6fe525-6a81-48ca-2ca1-08d886819ec7
+X-MS-Exchange-CrossTenant-AuthSource: SN6PR12MB2685.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 11 Nov 2020 20:37:34.8050
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: T25XRBktqS343o6u0Q4FK72bxfKeS8Gasy05k4FkrSVDqIulgHNShMdUtD2pw8iAkMHxLMOFmgKziXHj8HvNug==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SN1PR12MB2367
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 10 2020 at 03:02 -0700, Ulf Hansson wrote:
->On Mon, 9 Nov 2020 at 18:41, Lina Iyer <ilina@codeaurora.org> wrote:
+Punit,
+
+On 11/9/20 1:05 PM, Smita Koralahalli Channabasappa wrote:
+
+> On 11/8/20 7:18 PM, Punit Agrawal wrote:
+>> Borislav Petkov <bp@alien8.de> writes:
+>>> On Fri, Nov 06, 2020 at 02:36:46PM +0900, Punit Agrawal wrote:
+>>>>> diff --git a/drivers/firmware/efi/cper-x86.c b/drivers/firmware/efi/cper-x86.c
+>>>>> index 2531de49f56c..438ed9eff6d0 100644
+>>>>> --- a/drivers/firmware/efi/cper-x86.c
+>>>>> +++ b/drivers/firmware/efi/cper-x86.c
+>>>>> @@ -2,6 +2,7 @@
+>>>>>    // Copyright (C) 2018, Advanced Micro Devices, Inc.
+>>>>>      #include <linux/cper.h>
+>>>>> +#include <linux/acpi.h>
+>>>> Did you mean to include <asm/acpi.h>?
+>>> Why?
+>> Because arch_apei_report_x86_error() used in the patch is defined
+>> there. The indirect include works but pulls in additional definitions
+>> not needed by the patch.
 >>
->> On Mon, Nov 09 2020 at 08:27 -0700, Ulf Hansson wrote:
->> >On Fri, 6 Nov 2020 at 17:48, Lina Iyer <ilina@codeaurora.org> wrote:
->> >>
->> [...]
->> >> +static void update_domain_next_wakeup(struct generic_pm_domain *genpd, ktime_t now)
->> >> +{
->> >> +       ktime_t domain_wakeup = KTIME_MAX;
->> >> +       ktime_t next_wakeup;
->> >> +       struct pm_domain_data *pdd;
->> >> +       struct gpd_link *link;
->> >> +
->> >> +       /* Find the earliest wakeup for all devices in the domain */
->> >> +       list_for_each_entry(pdd, &genpd->dev_list, list_node) {
->> >> +               next_wakeup = to_gpd_data(pdd)->next_wakeup;
->> >> +               if (next_wakeup != KTIME_MAX && !ktime_before(next_wakeup, now))
->> >> +                       if (ktime_before(next_wakeup, domain_wakeup))
->> >> +                               domain_wakeup = next_wakeup;
->> >
->> >If it turns out that one of the device's next_wakeup is before "now",
->> >leading to ktime_before() above returns true - then I think you should
->> >bail out, no?
->> >
->> >At least, we shouldn't just continue and ignore this case, right?
->> >
->> No, that could be a very common case. Drivers are not expected to clean
->> up the next wakeup by setting it to KTIME_MAX. The best we can do is
->> to make a choice with the valid information we have. This will also map
->> to the current behavior. Say if all next wakeup information provided to
->> the devices were in the past, we would be no worse (or better) than what
->> we do without this change.
->
->Well, I don't quite agree (at least not yet), but let me elaborate, as
->I think we can do better without having to add complexity.
->
->Normally, I don't think a driver needs to clean up its device's next
->wakeup in between the remote wakeups, instead it should just set a new
->value.
->
->That's because, even if the driver acts to a remote wakeup or deals
->with a request entering a queue, the driver needs to runtime resume
->its device during this period. This prevents genpd from power off the
->PM domain, hence also the genpd governor from potentially looking at
->"invalid" wakeup information for its attached devices.
->
-Could you elaborate a bit? Why would a remote wakeup affect the next
-wakeup. I'm afraid that I'm not getting the situation correctly.
+>> Do you prefer the more generic include?
+> I agree, it's generally a good practice to avoid pulling up additional
+> definitions. I had this when I made the declaration in generic header
+> file and may be I did not consider it changing initially as my build
+> didn't break after moving the declaration from generic header to arch
+> specific header file.
+> I will take care henceforth and make the changes as required.
 
->Of course, I assume there are situations, where a driver actually
->needs to do a clean up of its device's next wakeup, but that should be
->less frequent and likely when a remote wakeup is disabled (for
->whatever reason).
->
-A common case would be that the driver does not know when the usecase is
-being turned off and therefore may not be able to set the next wakeup to
-max. If the stale value continues to exist then we may never power off
-the domain.
+The asm specific include throws out a warning when I run checkpatch.pl
 
->> >> +       /*
->> >> +        * Find the next wakeup from devices that can determine their own wakeup
->> >> +        * to find when the domain would wakeup and do it for every device down
->> >> +        * the hierarchy. It is not worth while to sleep if the state's residency
->> >> +        * cannot be met.
->> >> +        */
->> >> +       update_domain_next_wakeup(genpd, now);
->> >> +       if (genpd->next_wakeup != KTIME_MAX) {
->> >> +               /* Let's find out the deepest domain idle state, the devices prefer */
->> >> +               while (state_idx >= 0) {
->> >> +                       if (next_wakeup_allows_state(genpd, state_idx, now)) {
->> >> +                               genpd->max_off_time_changed = true;
->> >> +                               break;
->> >> +                       }
->> >> +                       state_idx--;
->> >> +               }
->> >> +
->> >> +               if (state_idx < 0) {
->> >> +                       state_idx = 0;
->> >> +                       genpd->cached_power_down_ok = false;
->> >> +                       goto done;
->> >> +               }
->> >> +       }
->> >> +
->> >
->> >The above would introduce unnecessary overhead, as it may become
->> >executed in cases when it's not needed.
->> >
->> >For example, there's no point doing the above, if the domain doesn't
->> >specify residency values for its idle states.
->> >
->> We would still need to ensure that the next wakeup is after the
->> power_off_latency, if specified.
->
->Good point! Although, I would rather avoid adding the overhead, unless
->the residency is specified. Do you see a problem with this approach?
->
-Hmmm, no strong objections. However, we still need to run through the
-states to make sure the residency is not set and have a variable track
-that. The devices wouldn't know that and would still continue to set the
-next wakeup, unless we find a way to let them know we are not using this
-feature for the domain.
+WARNING: Use #include <linux/acpi.h> instead of <asm/acpi.h>
+#215: FILE: drivers/firmware/efi/cper-x86.c:5:
++#include <asm/acpi.h>
 
->Another option is to add a new governor, but if possible, I would like
->to avoid that.
->
-Absolutely, we should avoid that.
-
->>
->> >Additionally, we don't need to recompute the domain's next wakup,
->> >unless a device has got a new next_wakeup value set for it. In this
->> >case, we can just select a state based upon an previously computed
->> >value, thus avoiding the recomputation.
->> >
->> If the domain's next wakeup was in the past, then using our previously
->> computed state may be incorrect.
->
->I am not saying you should use the previously computed *idlestate*,
->but the previously computed next wakeup.
->
-I guess this falls into the first discussion, should be use the next
-wakeup from the past.
-
->>
->> >>         if (!genpd->max_off_time_changed) {
->> >>                 genpd->state_idx = genpd->cached_power_down_state_idx;
->> >>                 return genpd->cached_power_down_ok;
->> >> @@ -228,17 +295,21 @@ static bool default_power_down_ok(struct dev_pm_domain *pd)
->> >>         genpd->max_off_time_ns = -1;
->> >>         genpd->max_off_time_changed = false;
->> >>         genpd->cached_power_down_ok = true;
->> >> -       genpd->state_idx = genpd->state_count - 1;
->> >>
->> >> -       /* Find a state to power down to, starting from the deepest. */
->> >> -       while (!__default_power_down_ok(pd, genpd->state_idx)) {
->> >> -               if (genpd->state_idx == 0) {
->> >> +       /*
->> >> +        * Find a state to power down to, starting from the state
->> >> +        * determined by the next wakeup.
->> >> +        */
->> >> +       while (!__default_power_down_ok(pd, state_idx)) {
->> >> +               if (state_idx == 0) {
->> >>                         genpd->cached_power_down_ok = false;
->> >>                         break;
->> >>                 }
->> >> -               genpd->state_idx--;
->> >> +               state_idx--;
->> >>         }
->> >>
->> >> +done:
->> >> +       genpd->state_idx = state_idx;
->> >>         genpd->cached_power_down_state_idx = genpd->state_idx;
->> >>         return genpd->cached_power_down_ok;
->> >>  }
->> >
->> >Another thing to consider for the above changes, is that the
->> >cpu_power_down_ok() calls into default_power_down_ok().
->> >
->> >Even if I am fine with the approach taken in $subject patch, I think
->> >it's important to try to keep the path a slim as possible as it's also
->> >executed in the CPU idlepath.
->> Wouldn't this be called only the last CPU is powering down and only if
->> the domain is ready to power down?
->>
->> >For example, $subject change means also
->> >that we end up calling ktime_get() twice in the same path, introducing
->> >unnecessary overhead. We can do better and avoid that by restructuring
->> >the code a bit, don't you think?
->> >
->> Hmmm, we could. I will submit a follow on patch to reorganize the code
->> so the ktime_get() would be called only once for either of the
->> power_down_ok callbacks.
->
->If possible, I would rather make it part of the series. Just fold in
->some "rework" patch before extending the governor, that should be
->possible I think.
->
-Sure. Since this would affect changing the default_power_down_ok(), I
-thought a follow on patch would be appropriate.
+Should I just keep the generic include?
 
 Thanks,
-Lina
+Smita
+
