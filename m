@@ -2,61 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D54D9C63798
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 22:49:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B4967C63697
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 22:49:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7DEFF2223F
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 22:49:50 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5A8DF20B80
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 22:49:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="JsLA4C9V"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="s+hrBoYa"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726979AbgKLWth (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Nov 2020 17:49:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52316 "EHLO
+        id S1727853AbgKLWt5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Nov 2020 17:49:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:52332 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726759AbgKLWth (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 17:49:37 -0500
-Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 0A382C0613D1;
-        Thu, 12 Nov 2020 14:49:37 -0800 (PST)
-Received: by mail-lf1-x141.google.com with SMTP id u19so4714909lfr.7;
-        Thu, 12 Nov 2020 14:49:36 -0800 (PST)
+        with ESMTP id S1726348AbgKLWt4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 17:49:56 -0500
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DEC81C0613D1;
+        Thu, 12 Nov 2020 14:49:40 -0800 (PST)
+Received: by mail-lf1-x143.google.com with SMTP id u18so10928669lfd.9;
+        Thu, 12 Nov 2020 14:49:40 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JRRndN9/UEYEu3XOF4YS3nhu9zqLn65PBOWVgCTZnIE=;
-        b=JsLA4C9Vc4ei9b7IMzUQkm97p+fdH8lzlCwNFNdB8JW6I/k1o4PJaprSUTuR22Dj/L
-         tV26fqARhKHX8M86SxqR2wWfet0lZaKj59VPs+aqeGzvhoWCfcWUtwA+KZu84T6L0Gs+
-         B9QX8oSzx4RK6LPogfy0RjH9E/jCqgBNVXTHK3kScLmEcHu61cWB0AmdzlLJ/ag2xzb7
-         4yOuW6CrVg/qQKh3CqTHuL9/kYsL38jnynMSVkVTvdLTISM+o6H2oYKO85kZMlCwZTHZ
-         /RBrfrfd5fRSKLJhwopiYigIGxsKF4S8ITHQ9X8zm1v2wQxWax/B4CvHbzFQzLIZeYOx
-         l+SA==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=aK7+Uow12DffvZAo4NEAmVyVnXleO87WAIYyYASIccY=;
+        b=s+hrBoYajZcpg8vW5jbID66ikh/sLL9MufWJVWB1oRSIegQ0uvry+CVKlN2TJL61r4
+         v9JZ1MdFoaOiCPsbDEGqRfflAyiGw6wyY2C4gGbhWiGch7gx6sR7fwQGkDvdPa2Es/v3
+         pfPSnF/zwzIQQbcBeI5GjXIC8B50uNykm1YUjdbCmcuvBGVaePs2lMbw4YBH7cDcbe3L
+         ZeJx/QYqVlYfopHDPpTqtrG3O+/Kys45/VLZYO1jhz8Ri2H2WhUsNC6jmt/YfMqRvp2M
+         KdZ89n/Am97bIRJlFDGmZkDNU/hGwmi3s5Voky2CU3R3leg9aFUi4tkqa6bWb5bOHLn7
+         uing==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=JRRndN9/UEYEu3XOF4YS3nhu9zqLn65PBOWVgCTZnIE=;
-        b=pDXVFC4yUPWwp2trdKAZTSQ7CLhATUHXg41k9NRGfWt7vDjl5p2bB4sOUU+y1yrB5l
-         yEF4I0jyWITjm91WspGuKltP1mq7K8w3Rak4qYcvdf8jfvQICX3xyE7OPDMMZeb4iJ6l
-         L2G/3aa3+iKEv1KjFk//n7Hr622VfpP+QvmY2Nme7dLuiSgYDRahBenUr8JDQW1PTRaX
-         y/P2hqjX3NGISu8WaUc5dsoEMIdio6ERYBN7yS6BZYx/CQ549ROsw6U+GFNwjmGPBTp5
-         Vk6dqft3bJYpOMJXDj4OBS7uO9NpnnfEeNemyy2D1F+Low078zMiYtn413kcl+LB8STy
-         9jzA==
-X-Gm-Message-State: AOAM5324DTWFSqNykjK7rr9bq+TpPav88QU4Q/dMkhAp8Nm+saV8cgGM
-        R/fDa3Iumdqo5B9SymZP5Ug=
-X-Google-Smtp-Source: ABdhPJzqMHciZtLA09dlBKKcc8/W6mwRKVJimZ7efGgp43lQlr3Z1CkeXygF1oL9zW64dwTQyzUagA==
-X-Received: by 2002:a19:e08:: with SMTP id 8mr581771lfo.441.1605221375534;
-        Thu, 12 Nov 2020 14:49:35 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=aK7+Uow12DffvZAo4NEAmVyVnXleO87WAIYyYASIccY=;
+        b=jfArDet+r2hT/Cm/NflEzwynNJ6isTHsoy3hJPfB0+Ky6ETlgRky3bZjINWXeWb0Qw
+         d94FdTtLGnBgwdTWXnSlnbCSAxeMOt3uL0GkS8WZVNGlGub0VdTflDKirNfuNueJwR9Y
+         pxFaRwUN5SiVujDf9F6pQebT4lPaTtpMP6W4wb2gfEX4QRZ02oQ7x/EkNupdV+KYqDbu
+         /vbyLuKSDpzu6LRyQkqA4U2B1ZXW+u9jQ8ZeLmdlHQMdc53C3BBz9s+ZjJz26d+Me9qe
+         a3Fa770bafKyTFEjEmhqtTMrhBW4nL4AETkIHRIDHxxlEnhfYtRbU/xG/BdoA275aE/m
+         cdjw==
+X-Gm-Message-State: AOAM530dNCqSyEEHcxvUKkajfQwfuy0B3U8mb79hbGY1humAhq8j3a8c
+        n5qA6lvWpWN6F4K7BgDA418=
+X-Google-Smtp-Source: ABdhPJw+wIotxRLnXRScqM6tMbUv9ylmiyYmTE1XRiROX6r/EknFOxcy7uxwXO6q+p5DB8COzDkFbg==
+X-Received: by 2002:a19:915:: with SMTP id 21mr683584lfj.528.1605221379469;
+        Thu, 12 Nov 2020 14:49:39 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id z187sm1006536lfc.126.2020.11.12.14.49.34
+        by smtp.gmail.com with ESMTPSA id z187sm1006536lfc.126.2020.11.12.14.49.38
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 12 Nov 2020 14:49:34 -0800 (PST)
+        Thu, 12 Nov 2020 14:49:38 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
         Thierry Reding <thierry.reding@gmail.com>,
@@ -64,91 +65,63 @@ To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
         Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
 Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
         linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v6 0/4] Introduce Embedded Controller driver for Acer A500
-Date:   Fri, 13 Nov 2020 01:49:19 +0300
-Message-Id: <20201112224923.4028-1-digetx@gmail.com>
+Subject: [PATCH v6 4/4] ARM: tegra: acer-a500: Add Embedded Controller
+Date:   Fri, 13 Nov 2020 01:49:23 +0300
+Message-Id: <20201112224923.4028-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201112224923.4028-1-digetx@gmail.com>
+References: <20201112224923.4028-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series adds support for the Embedded Controller which is found on
-Acer Iconia Tab A500 (Android tablet device).
+This patch adds device-tree node for the Embedded Controller which is
+found on the Picasso board. The Embedded Controller itself is ENE KB930,
+it provides functions like battery-gauge/LED/GPIO/etc and it uses firmware
+that is specifically customized for the Acer A500 device.
 
-The Embedded Controller is ENE KB930 and it's running firmware customized
-for the A500. The firmware interface may be reused by some other sibling
-Acer tablets, although none of those tablets are supported in upstream yet.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/boot/dts/tegra20-acer-a500-picasso.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-Changelog:
-
-v6: - Fixed dtschema-checker warning about a wrong indentation, reported
-      by kernel bot for v5.
-
-v5: - No changes. Re-sending again in order to check whether dtschema-bot
-      warning is resolved now, which didn't happen in v4 because bot used
-      older 5.9 kernel code base instead of 5.10.
-
-v4: - No code changes. Added r-b from Rob Herring and Sebastian Reichel.
-      Re-sending for 5.11.
-
-    - The v3 of LED driver was applied by Pavel Machek and already presents
-      in v5.10 kernel.
-
-v3: - Rebased on a recent linux-next. Fixed new merge conflict and dropped
-      "regmap: Use flexible sleep" patch because it's already applied.
-
-v2: - Factored out KB930 device-tree binding into a separate file, like it
-      was suggested by Lubomir Rintel.
-
-    - Switched to use regmap API like it was suggested by Lubomir Rintel.
-
-    - Added patch "regmap: Use flexible sleep" which allows not to hog
-      CPU while LED is switching state.
-
-    - Corrected MODULE_LICENSE to use "GPL" in all patches.
-
-    - Corrected MFD driver Kconfig entry like it was suggested by
-      Lubomir Rintel, it now depends on I2C.
-
-    - Switched to use I2C probe_new() in the MFD driver.
-
-    - Renamed the global pm_off variable, like it was suggested by
-      Lubomir Rintel and Lee Jones.
-
-    - Dropped serial number from the battery driver because I realized
-      that it's not a battery serial, but a device serial.
-
-    - Battery driver now uses dev_err_probe(), like it was suggested by
-      Sebastian Reichel.
-
-    - Dropped legacy LED_ON usage from the LED driver and renamed the
-      LEDs, like it was suggested by Pavel Machek. I also checked whether
-      LED-name customization via device-tree could be needed by other
-      potentially compatible devices and it shouldn't be needed, anyways it
-      won't be difficult to extend the code even if I'm wrong.
-
-
-Dmitry Osipenko (4):
-  dt-bindings: mfd: Add ENE KB930 Embedded Controller binding
-  mfd: Add driver for Embedded Controller found on Acer Iconia Tab A500
-  power: supply: Add battery gauge driver for Acer Iconia Tab A500
-  ARM: tegra: acer-a500: Add Embedded Controller
-
- .../devicetree/bindings/mfd/ene-kb930.yaml    |  65 ++++
- .../boot/dts/tegra20-acer-a500-picasso.dts    |  17 +
- drivers/mfd/Kconfig                           |  12 +
- drivers/mfd/Makefile                          |   1 +
- drivers/mfd/acer-ec-a500.c                    | 203 ++++++++++++
- drivers/power/supply/Kconfig                  |   6 +
- drivers/power/supply/Makefile                 |   1 +
- drivers/power/supply/acer_a500_battery.c      | 297 ++++++++++++++++++
- 8 files changed, 602 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/mfd/ene-kb930.yaml
- create mode 100644 drivers/mfd/acer-ec-a500.c
- create mode 100644 drivers/power/supply/acer_a500_battery.c
-
+diff --git a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+index 5ab6872cd84c..3b9ac3324fd5 100644
+--- a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
++++ b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+@@ -533,6 +533,16 @@ panel_ddc: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++
++			embedded-controller@58 {
++				compatible = "acer,a500-iconia-ec", "ene,kb930";
++				reg = <0x58>;
++
++				system-power-controller;
++
++				monitored-battery = <&bat1010>;
++				power-supplies = <&mains>;
++			};
+ 		};
+ 	};
+ 
+@@ -820,6 +830,13 @@ backlight: backlight {
+ 		default-brightness-level = <20>;
+ 	};
+ 
++	bat1010: battery-2s1p {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <3260000>;
++		energy-full-design-microwatt-hours = <24000000>;
++		operating-range-celsius = <0 40>;
++	};
++
+ 	/* PMIC has a built-in 32KHz oscillator which is used by PMC */
+ 	clk32k_in: clock@0 {
+ 		compatible = "fixed-clock";
 -- 
 2.29.2
 
