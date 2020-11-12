@@ -5,56 +5,57 @@ X-Spam-Level:
 X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 741D8C6369E
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 14:11:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21220C6379D
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 14:11:27 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B63322248
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 14:11:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA2A02224A
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 14:11:26 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="MdZ32xry"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="kR+AKuBR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728473AbgKLOLV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Nov 2020 09:11:21 -0500
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:55000 "EHLO
+        id S1728490AbgKLOLY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Nov 2020 09:11:24 -0500
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:54998 "EHLO
         mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728468AbgKLOLS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 09:11:18 -0500
+        with ESMTP id S1728460AbgKLOLR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 09:11:17 -0500
 Received: from eucas1p2.samsung.com (unknown [182.198.249.207])
-        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20201112141104euoutp01b7e9af1cb5c30160e970fb5c8223a83d~GyAqM0HMi1450314503euoutp01E
+        by mailout1.w1.samsung.com (KnoxPortal) with ESMTP id 20201112141104euoutp0143382f4fce3ab18dd6b2758791e2d791~GyApyfZ6I1532515325euoutp01O
         for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2020 14:11:04 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20201112141104euoutp01b7e9af1cb5c30160e970fb5c8223a83d~GyAqM0HMi1450314503euoutp01E
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout1.w1.samsung.com 20201112141104euoutp0143382f4fce3ab18dd6b2758791e2d791~GyApyfZ6I1532515325euoutp01O
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
         s=mail20170921; t=1605190264;
-        bh=z4JUTeobWI7rzPyDZAkdJgoWhMqzwKoLxg3F51G+v3g=;
+        bh=8FAfU6BCkgvgjJdMmzUzX4KRpyPprgS4czs4hFuFKFA=;
         h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=MdZ32xryOVIcEXiPOIOV1pUX3J4lTl4ZfIV7rTUNqPbCWipYfLbHdDXkgjchrzma5
-         PlsKifBugrItATisdEdqn8eNZ7ZKjTq0GtmAABRnMMZuWld8L6lie5wLqlxwO5867n
-         G6Q3C5B59eWwjCQ7o2FTVzU98FSGOh13buZICB6E=
+        b=kR+AKuBRvjAA2OjtddsqMbOQ6XNWQwAYPjsrvJEO4tbZzw/bsOPFnliRG7puh8Bxs
+         li5DTh2LHb8UfcacXzUuyse5XF2rtp6+JoVATaH5ay5vyqhh/qArDCod6fGYmtpnZp
+         3X4pMIFJYdQeGSZNGn5ZmJX21EWNYG9UZnvpHZu8=
 Received: from eusmges2new.samsung.com (unknown [203.254.199.244]) by
         eucas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20201112141056eucas1p1202ef75341f398d7da3df75b4802441e~GyAiGBz672319123191eucas1p11;
-        Thu, 12 Nov 2020 14:10:56 +0000 (GMT)
+        20201112141050eucas1p1d1e59396140fd85dd242a396a05c7601~GyAdJRPjk2413224132eucas1p1s;
+        Thu, 12 Nov 2020 14:10:50 +0000 (GMT)
 Received: from eucas1p2.samsung.com ( [182.198.249.207]) by
-        eusmges2new.samsung.com (EUCPMTA) with SMTP id 00.C9.44805.F624DAF5; Thu, 12
-        Nov 2020 14:10:56 +0000 (GMT)
-Received: from eusmtrp1.samsung.com (unknown [182.198.249.138]) by
-        eucas1p1.samsung.com (KnoxPortal) with ESMTPA id
-        20201112141055eucas1p10bb68467fbb8c481b1275433f5f5f467~GyAhpP6402134621346eucas1p1x;
-        Thu, 12 Nov 2020 14:10:55 +0000 (GMT)
+        eusmges2new.samsung.com (EUCPMTA) with SMTP id AA.B9.44805.A624DAF5; Thu, 12
+        Nov 2020 14:10:50 +0000 (GMT)
+Received: from eusmtrp2.samsung.com (unknown [182.198.249.139]) by
+        eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20201112141050eucas1p250f62d09adf38b97c521ef67b4b540f0~GyAcf3gsG0207802078eucas1p2u;
+        Thu, 12 Nov 2020 14:10:50 +0000 (GMT)
 Received: from eusmgms2.samsung.com (unknown [182.198.249.180]) by
-        eusmtrp1.samsung.com (KnoxPortal) with ESMTP id
-        20201112141055eusmtrp1092c57ac19bc5475fd4d52639f4074da~GyAhocMCc1178311783eusmtrp1G;
-        Thu, 12 Nov 2020 14:10:55 +0000 (GMT)
-X-AuditID: cbfec7f4-b37ff7000000af05-71-5fad426ff678
+        eusmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20201112141050eusmtrp2d0b31be7d84f9c38df7f625982557052~GyAceJ01R1054310543eusmtrp2X;
+        Thu, 12 Nov 2020 14:10:50 +0000 (GMT)
+X-AuditID: cbfec7f4-b4fff7000000af05-60-5fad426a7beb
 Received: from eusmtip2.samsung.com ( [203.254.199.222]) by
-        eusmgms2.samsung.com (EUCPMTA) with SMTP id 3D.0F.16282.F624DAF5; Thu, 12
-        Nov 2020 14:10:55 +0000 (GMT)
+        eusmgms2.samsung.com (EUCPMTA) with SMTP id 06.0F.16282.9624DAF5; Thu, 12
+        Nov 2020 14:10:49 +0000 (GMT)
 Received: from AMDC3061.digital.local (unknown [106.120.51.75]) by
         eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20201112141054eusmtip281ef57b5904537952b6019311d571aac~GyAg4LImV0118501185eusmtip2O;
-        Thu, 12 Nov 2020 14:10:54 +0000 (GMT)
+        20201112141049eusmtip2a60c36a4c3acd15056f7ea83e788a079~GyAbtIaiE3001030010eusmtip28;
+        Thu, 12 Nov 2020 14:10:49 +0000 (GMT)
 From:   Sylwester Nawrocki <s.nawrocki@samsung.com>
 To:     georgi.djakov@linaro.org, cw00.choi@samsung.com,
         inki.dae@samsung.com
@@ -65,347 +66,387 @@ Cc:     krzk@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org,
         linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org, s.nawrocki@samsung.com
-Subject: [PATCH v9 5/5] drm: exynos: mixer: Add interconnect support
-Date:   Thu, 12 Nov 2020 15:09:31 +0100
-Message-Id: <20201112140931.31139-6-s.nawrocki@samsung.com>
+Subject: [PATCH v9 2/5] interconnect: Add generic interconnect driver for
+ Exynos SoCs
+Date:   Thu, 12 Nov 2020 15:09:28 +0100
+Message-Id: <20201112140931.31139-3-s.nawrocki@samsung.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201112140931.31139-1-s.nawrocki@samsung.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrBKsWRmVeSWpSXmKPExsWy7djP87oFTmvjDY4+ZrS4P6+V0WLjjPWs
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrBKsWRmVeSWpSXmKPExsWy7djP87pZTmvjDQ5M1LG4P6+V0WLjjPWs
         Fte/PGe1mH/kHKvFla/v2Sym793EZjHp/gQWi/PnN7BbbHp8jdXi8q45bBafe48wWsw4v4/J
         Yu2Ru+wWtxtXsFm07j3CbnH4TTurxYzJL9kcBD02repk87hzbQ+bx/3u40wem5fUe/RtWcXo
-        8XmTXABbFJdNSmpOZllqkb5dAlfGtOOLmQt2eFYc/fKVrYHxsnUXIyeHhICJxL9XLSxdjFwc
-        QgIrGCXmHF/BDuF8YZQ4/O4UK4TzmVHi/MbFjDAth6//gEosZ5T48+glI1zLkalPwKrYBAwl
-        eo/2AdkcHCICnhInG/RBapgFmpklGpo3gdUIC7hIfDzwgw3EZhFQlfj9sJkNpJ5XwFqi43kN
-        xDJ5idUbDjCD2JwCNhJzn7aClfMKCEqcnPmEBcRmBqpp3jqbGWS+hMB8TomJN+awQDS7SNze
-        tRfKFpZ4dXwLO4QtI3F6cg8LREMzo0TP7tvsEM4ERon7xxdA/WktcefcL7CLmAU0Jdbv0ocI
-        O0p0Ll7BChKWEOCTuPFWEOIIPolJ26YzQ4R5JTrahCCqVSR+r5rOBGFLSXQ/+Q91jofE76kb
-        mScwKs5C8s4sJO/MQti7gJF5FaN4amlxbnpqsVFearlecWJucWleul5yfu4mRmBiO/3v+Jcd
-        jMtffdQ7xMjEwXiIUYKDWUmEV9lhTbwQb0piZVVqUX58UWlOavEhRmkOFiVx3qQtQCmB9MSS
-        1OzU1ILUIpgsEwenVANT2YYSmwWb9T4knnqU0m4g/MOt9M5Pq1XvI+onNU25s8Vl5ox77y8I
-        LtN2lhcr5/US+7S3RvtRof+Jb/kfCz/ln638cHRNweECq5c/G2x3nHrEeGHu2wcnrN5290zL
-        K9Oyktwu4vvtWNt5r59PF109L7ZkrununV5Pr1tO04n7PqNwW5tGz4L0x7tNFuwJsFeZPEF5
-        nx33kgPRO964Z260PCa+OrJqQVo7u+tD1wSZGQu8mV6KnVx5ZYrqjxUdhtOXXFzvlar+P1yE
-        v/kGS6jou2NCxjFfixQyEqzjXttYnQzYpMe8RnEuY/GEY3fF387X3iP7p3tB7poYw1nXxRfG
-        X3hwxmXKFf28X2F+qRclQpRYijMSDbWYi4oTAaXRE2XbAwAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrFIsWRmVeSWpSXmKPExsVy+t/xe7r5TmvjDXatV7S4P6+V0WLjjPWs
-        Fte/PGe1mH/kHKvFla/v2Sym793EZjHp/gQWi/PnN7BbbHp8jdXi8q45bBafe48wWsw4v4/J
-        Yu2Ru+wWtxtXsFm07j3CbnH4TTurxYzJL9kcBD02repk87hzbQ+bx/3u40wem5fUe/RtWcXo
-        8XmTXABblJ5NUX5pSapCRn5xia1StKGFkZ6hpYWekYmlnqGxeayVkamSvp1NSmpOZllqkb5d
-        gl7GtOOLmQt2eFYc/fKVrYHxsnUXIyeHhICJxOHrP1i7GLk4hASWMkps/3KZuYuRAyghJTG/
-        RQmiRljiz7UuNhBbSOATo8S2Vi8Qm03AUKL3aB8jiC0i4Cux+uQkFpA5zAKTmSUe3W4BaxAW
-        cJH4eOAHmM0ioCrx+2EzG8h8XgFriY7nNRDz5SVWbzjADGJzCthIzH3aCrXLWmJ/dxsTiM0r
-        IChxcuYTFpBWZgF1ifXzhEDCzECtzVtnM09gFJyFpGoWQtUsJFULGJlXMYqklhbnpucWG+kV
-        J+YWl+al6yXn525iBEbqtmM/t+xgXPnqo94hRiYOxkOMEhzMSiK8yg5r4oV4UxIrq1KL8uOL
-        SnNSiw8xmgI9M5FZSjQ5H5gq8kriDc0MTA1NzCwNTC3NjJXEeU2OADUJpCeWpGanphakFsH0
-        MXFwSjUwzd017aNizR0j4eSWA+JP3wpa1ebu3H/+WvAxqT9WLdWPEzcs3B/gfmOL56fb9xNm
-        pPovU4l2iY20ftp6JyRC/sXU+eLKulksPXt+STLurA8QnGLeqnODVfBh6v9XXZ+XSlmcsi/Z
-        EaZ9vVcwfz8j/5Lg/tvCYb+3M3aIFtY39z+zSr1wPWzbY04t33te9VKMD+p9e/8fYH7/2fWw
-        4meWvyZxZhvepb6aMHNCO8PCV4dijEvW86fYzD2joVDXfzu+OOGXRJBRpQyH8Mxzbhqi5Ukq
-        ddePmc2dYBH7pu3jjYL0dGuX23cPXSqZtPXbun/vHzJ4a6rlb/+8cWfrqqlzJqjv9IgWW3WA
-        WXeiKdcXJZbijERDLeai4kQAmJo2HF0DAAA=
-X-CMS-MailID: 20201112141055eucas1p10bb68467fbb8c481b1275433f5f5f467
+        8XmTXABbFJdNSmpOZllqkb5dAlfGqqWNTAXbgivmH77M2sA4w62LkZNDQsBE4vGcpSxdjFwc
+        QgIrGCVe/L/FCuF8YZT4uOgtE0iVkMBnRok/27xhOqavbGeHKFrOKHHh/m8WuI7WrxcZQarY
+        BAwleo/2AdkcHCICnhInG/RBapgFmpklGpo3gdUIC4RLPD4+hw3EZhFQlTj2ZhU7iM0rYC3R
+        tP4wG8Q2eYnVGw4wg9icAjYSc5+2skHUCEqcnPmEBcRmBqpp3jqbGWSBhMB8Tonue9dZIJpd
+        JGZ9WgU1SFji1fEt7BC2jMT/nfOZIBqaGSV6dt9mh3AmMErcP76AEaLKWuLOuV9sIC8wC2hK
+        rN+lDxF2lJhx4AwTSFhCgE/ixltBiCP4JCZtm84MEeaV6GgTgqhWkfi9ajoThC0l0f3kP9Rp
+        HhJLP7xnnsCoOAvJO7OQvDMLYe8CRuZVjOKppcW56anFRnmp5XrFibnFpXnpesn5uZsYgYnt
+        9L/jX3YwLn/1Ue8QIxMH4yFGCQ5mJRFeZYc18UK8KYmVValF+fFFpTmpxYcYpTlYlMR5k7YA
+        pQTSE0tSs1NTC1KLYLJMHJxSDUxu3aHNy3jcze979nhf6ZCtYFT3uptdFbub29rO6OTsV0uy
+        jFxra6265X44vVbLUTPfau2Y7pl0KDR5ncMbJv1LFxK/bronYVih3tWze8cpvfkNHTnmKh37
+        esLnn21Mu6D31lzzjPQE6w1zXWVz9K+dZz7vUx4z62Gq7ZSDPyJ/TzkXp3zD2CMjqF7m+6rj
+        +04s/Naq9sOlIK3XTXfvgQ9v3xx6V/2tWyY59+dr3uenXznrfJM8wvNxT93OCB3Tf3buM7sP
+        nX3XumXPiYnp2w53d0pK76/oWugdpjpbWPflrF8lxq+dJcO7F+k5NE948vD68zIZPhMWnSjd
+        v3stTytWrnyTraKgtc1fzrUrUYmlOCPRUIu5qDgRAMNmdCXbAwAA
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrNIsWRmVeSWpSXmKPExsVy+t/xe7pZTmvjDTodLO7Pa2W02DhjPavF
+        9S/PWS3mHznHanHl63s2i+l7N7FZTLo/gcXi/PkN7BabHl9jtbi8aw6bxefeI4wWM87vY7JY
+        e+Quu8XtxhVsFq17j7BbHH7TzmoxY/JLNgdBj02rOtk87lzbw+Zxv/s4k8fmJfUefVtWMXp8
+        3iQXwBalZ1OUX1qSqpCRX1xiqxRtaGGkZ2hpoWdkYqlnaGwea2VkqqRvZ5OSmpNZllqkb5eg
+        l7FqaSNTwbbgivmHL7M2MM5w62Lk5JAQMJGYvrKdvYuRi0NIYCmjxMELu9i6GDmAElIS81uU
+        IGqEJf5c62KDqPnEKDFp8XEWkASbgKFE79E+RhBbRMBXYvXJSSwgRcwCk5klHt1uYQNJCAuE
+        Sty9+40dxGYRUJU49mYVmM0rYC3RtP4wG8QGeYnVGw4wg9icAjYSc5+2gsWFgGr2d7cxQdQL
+        Spyc+YQF5DhmAXWJ9fOEQMLMQK3NW2czT2AUnIWkahZC1SwkVQsYmVcxiqSWFuem5xYb6RUn
+        5haX5qXrJefnbmIExuq2Yz+37GBc+eqj3iFGJg7GQ4wSHMxKIrzKDmvihXhTEiurUovy44tK
+        c1KLDzGaAn0zkVlKNDkfmCzySuINzQxMDU3MLA1MLc2MlcR5TY4ANQmkJ5akZqemFqQWwfQx
+        cXBKNTDFZL4pvmlZv0LF/3HAvNWbLjzdY37i8vXdBQW7+XoD18y9udfEfNXul28ObOLZPUPy
+        XvCCCpE4facDLuVTd+/wFVBf/W7tb5a5sbE+9347CmrLp235fFRG6/bO1qjOG8HWrL76rziO
+        inV/iZS+cmr2WcvbywLPpfEW7jslep57uzG75/rmS6t/FOl7rtu/d/HZY5ZcBs6v7R4qpfyY
+        ZTH/ts+UgCUVar4hJ85NCn0S7HElL8c+vuLltBy7ZWavPKfeiPe8so3116OZ88T7TKZ3S1dF
+        hi0R3sbxwPDqEhul4qkfgndbPO5bzSWwbu/vLZ3ZnfX1GTW3kwM5wkLFLid7zL+rxzhRoPxm
+        9nKpFJt0JZbijERDLeai4kQAd6HGqF4DAAA=
+X-CMS-MailID: 20201112141050eucas1p250f62d09adf38b97c521ef67b4b540f0
 X-Msg-Generator: CA
 Content-Type: text/plain; charset="utf-8"
-X-RootMTR: 20201112141055eucas1p10bb68467fbb8c481b1275433f5f5f467
+X-RootMTR: 20201112141050eucas1p250f62d09adf38b97c521ef67b4b540f0
 X-EPHeader: CA
 CMS-TYPE: 201P
-X-CMS-RootMailID: 20201112141055eucas1p10bb68467fbb8c481b1275433f5f5f467
+X-CMS-RootMailID: 20201112141050eucas1p250f62d09adf38b97c521ef67b4b540f0
 References: <20201112140931.31139-1-s.nawrocki@samsung.com>
-        <CGME20201112141055eucas1p10bb68467fbb8c481b1275433f5f5f467@eucas1p1.samsung.com>
+        <CGME20201112141050eucas1p250f62d09adf38b97c521ef67b4b540f0@eucas1p2.samsung.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds interconnect support to exynos-mixer. The mixer works
-the same as before when CONFIG_INTERCONNECT is 'n'.
+This patch adds a generic interconnect driver for Exynos SoCs in order
+to provide interconnect functionality for each "samsung,exynos-bus"
+compatible device.
 
-For proper operation of the video mixer block we need to ensure the
-interconnect busses like DMC or LEFTBUS provide enough bandwidth so
-as to avoid DMA buffer underruns in the mixer block. I.e we need to
-prevent those busses from operating in low perfomance OPPs when
-the mixer is running.
-In this patch the bus bandwidth request is done through the interconnect
-API, the bandwidth value is calculated from selected DRM mode, i.e.
-video plane width, height, refresh rate and pixel format.
+The SoC topology is a graph (or more specifically, a tree) and its
+edges are described by specifying in the 'interconnects' property
+the interconnect consumer path for each interconnect provider DT node.
 
-The bandwidth setting is synchronized with VSYNC when we are switching
-to lower bandwidth. This is required to ensure enough bandwidth for
-the device since new settings are normally being applied in the hardware
-synchronously with VSYNC.
+Each bus is now an interconnect provider and an interconnect node as
+well (cf. Documentation/interconnect/interconnect.rst), i.e. every bus
+registers itself as a node. Node IDs are not hard coded but rather
+assigned dynamically at runtime. This approach allows for using this
+driver with various Exynos SoCs.
 
-Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
+Frequencies requested via the interconnect API for a given node are
+propagated to devfreq using dev_pm_qos_update_request(). Please note
+that it is not an error when CONFIG_INTERCONNECT is 'n', in which
+case all interconnect API functions are no-op.
+
+The samsung,data-clk-ratio DT property is used to specify the ratio
+of the interconect bandwidth to the minimum data clock frequency
+for each bus.
+
+Due to unspecified relative probing order, -EPROBE_DEFER may be
+propagated to ensure that the parent is probed before its children.
+
 Reviewed-by: Chanwoo Choi <cw00.choi@samsung.com>
 Tested-by: Chanwoo Choi <cw00.choi@samsung.com>
-Co-developed-by: Artur Świgoń <a.swigon@samsung.com>
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 Signed-off-by: Artur Świgoń <a.swigon@samsung.com>
-Co-developed-by: Marek Szyprowski <m.szyprowski@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 Signed-off-by: Sylwester Nawrocki <s.nawrocki@samsung.com>
 ---
 Changes for v9:
- - whitespace cleanup,
- - Co-developed-by/Signed-off-by tags corrections.
+ - Makefile and Kconfig fixes/improvements.
 
 Changes for v8:
- - updated comment in mixer_probe()
+ - renamed drivers/interconnect/exynos to drivers/interconnect/samsung,
+ - added missing driver sync_state callback assignment.
 
 Changes for v7:
- - fixed incorrect setting of the ICC bandwidth when the mixer is
-   disabled, now the bandwidth is set explicitly to 0 in such case.
+ - adjusted to the DT property changes: "interconnects" instead
+   of "samsung,interconnect-parent", "samsung,data-clk-ratio"
+   instead of "bus-width",
+ - adaptation to of_icc_get_from_provider() function changes
+   in v5.10-rc1.
 
 Changes for v6:
- - the icc_set_bw() call is now only done when calculated value for
-   a crtc changes, this avoids unnecessary calls per each video frame
- - added synchronization of the interconnect bandwidth setting with
-   the mixer VSYNC in order to avoid buffer underflow when we lower
-   the interconnect bandwidth when the hardware still operates with
-   previous mode settings that require higher bandwidth. This fixed
-   IOMMU faults observed e.g. during switching from two planes to
-   a single plane operation.
+ - corrected of_node dereferencing in exynos_icc_get_parent()
+   function,
+ - corrected initialization of icc_node->name so as to avoid
+   direct of_node->name dereferencing,
+ - added parsing of bus-width DT property.
 
 Changes for v5:
- - renamed soc_path variable to icc_path
+ - adjust to renamed exynos,interconnect-parent-node property,
+ - use automatically generated platform device id as the interconect
+   node id instead of a now unavailable devfreq->id field,
+ - add icc_ prefix to some variables to make the code more self-commenting,
+ - use icc_nodes_remove() instead of icc_node_del() + icc_node_destroy(),
+ - adjust to exynos,interconnect-parent-node property rename to
+   samsung,interconnect-parent,
+ - converted to a separate platform driver in drivers/interconnect.
 ---
- drivers/gpu/drm/exynos/exynos_mixer.c | 146 ++++++++++++++++++++++++++++++++--
- 1 file changed, 138 insertions(+), 8 deletions(-)
+ drivers/interconnect/Kconfig          |   1 +
+ drivers/interconnect/Makefile         |   1 +
+ drivers/interconnect/samsung/Kconfig  |  13 +++
+ drivers/interconnect/samsung/Makefile |   4 +
+ drivers/interconnect/samsung/exynos.c | 199 ++++++++++++++++++++++++++++++++++
+ 5 files changed, 218 insertions(+)
+ create mode 100644 drivers/interconnect/samsung/Kconfig
+ create mode 100644 drivers/interconnect/samsung/Makefile
+ create mode 100644 drivers/interconnect/samsung/exynos.c
 
-diff --git a/drivers/gpu/drm/exynos/exynos_mixer.c b/drivers/gpu/drm/exynos/exynos_mixer.c
-index af192e5..502ce04 100644
---- a/drivers/gpu/drm/exynos/exynos_mixer.c
-+++ b/drivers/gpu/drm/exynos/exynos_mixer.c
-@@ -13,6 +13,7 @@
- #include <linux/component.h>
- #include <linux/delay.h>
- #include <linux/i2c.h>
-+#include <linux/interconnect.h>
- #include <linux/interrupt.h>
- #include <linux/irq.h>
- #include <linux/kernel.h>
-@@ -73,6 +74,7 @@ enum mixer_flag_bits {
- 	MXR_BIT_INTERLACE,
- 	MXR_BIT_VP_ENABLED,
- 	MXR_BIT_HAS_SCLK,
-+	MXR_BIT_REQUEST_BW,
- };
+diff --git a/drivers/interconnect/Kconfig b/drivers/interconnect/Kconfig
+index 5b7204e..d637a89 100644
+--- a/drivers/interconnect/Kconfig
++++ b/drivers/interconnect/Kconfig
+@@ -13,5 +13,6 @@ if INTERCONNECT
  
- static const uint32_t mixer_formats[] = {
-@@ -99,6 +101,13 @@ struct mixer_context {
- 	struct exynos_drm_plane	planes[MIXER_WIN_NR];
- 	unsigned long		flags;
+ source "drivers/interconnect/imx/Kconfig"
+ source "drivers/interconnect/qcom/Kconfig"
++source "drivers/interconnect/samsung/Kconfig"
  
-+	struct icc_path		*icc_path;
-+	/* memory bandwidth on the interconnect bus in B/s */
-+	unsigned long		icc_bandwidth;
-+	/* mutex protecting @icc_bandwidth */
-+	struct mutex		icc_lock;
-+	struct work_struct	work;
+ endif
+diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+index d203520..97d393f 100644
+--- a/drivers/interconnect/Makefile
++++ b/drivers/interconnect/Makefile
+@@ -6,3 +6,4 @@ icc-core-objs				:= core.o bulk.o
+ obj-$(CONFIG_INTERCONNECT)		+= icc-core.o
+ obj-$(CONFIG_INTERCONNECT_IMX)		+= imx/
+ obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
++obj-$(CONFIG_INTERCONNECT_SAMSUNG)	+= samsung/
+diff --git a/drivers/interconnect/samsung/Kconfig b/drivers/interconnect/samsung/Kconfig
+new file mode 100644
+index 0000000..6820e4f
+--- /dev/null
++++ b/drivers/interconnect/samsung/Kconfig
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: GPL-2.0-only
++config INTERCONNECT_SAMSUNG
++	bool "Samsung SoC interconnect drivers"
++	depends on ARCH_EXYNOS || COMPILE_TEST
++	help
++	  Interconnect drivers for Samsung SoCs.
 +
- 	int			irq;
- 	void __iomem		*mixer_regs;
- 	void __iomem		*vp_regs;
-@@ -754,6 +763,9 @@ static irqreturn_t mixer_irq_handler(int irq, void *arg)
- 		val |= MXR_INT_CLEAR_VSYNC;
- 		val &= ~MXR_INT_STATUS_VSYNC;
- 
-+		if (test_and_clear_bit(MXR_BIT_REQUEST_BW, &ctx->flags))
-+			schedule_work(&ctx->work);
++config INTERCONNECT_EXYNOS
++	tristate "Exynos generic interconnect driver"
++	depends on INTERCONNECT_SAMSUNG
++	default y if ARCH_EXYNOS
++	help
++	  Generic interconnect driver for Exynos SoCs.
+diff --git a/drivers/interconnect/samsung/Makefile b/drivers/interconnect/samsung/Makefile
+new file mode 100644
+index 0000000..e19d1df
+--- /dev/null
++++ b/drivers/interconnect/samsung/Makefile
+@@ -0,0 +1,4 @@
++# SPDX-License-Identifier: GPL-2.0
++exynos-interconnect-objs		:= exynos.o
 +
- 		/* interlace scan need to check shadow register */
- 		if (test_bit(MXR_BIT_INTERLACE, &ctx->flags)
- 		    && !mixer_is_synced(ctx))
-@@ -934,6 +946,76 @@ static void mixer_disable_vblank(struct exynos_drm_crtc *crtc)
- 	mixer_reg_writemask(mixer_ctx, MXR_INT_EN, 0, MXR_INT_EN_VSYNC);
- }
- 
-+/**
-+ * mixer_get_memory_bandwidth - calculate memory bandwidth for current crtc mode
-+ * @crtc: a crtc with DRM mode to calculate the bandwidth for
++obj-$(CONFIG_INTERCONNECT_EXYNOS)	+= exynos-interconnect.o
+diff --git a/drivers/interconnect/samsung/exynos.c b/drivers/interconnect/samsung/exynos.c
+new file mode 100644
+index 0000000..6559d8c
+--- /dev/null
++++ b/drivers/interconnect/samsung/exynos.c
+@@ -0,0 +1,199 @@
++// SPDX-License-Identifier: GPL-2.0-only
++/*
++ * Exynos generic interconnect provider driver
 + *
-+ * Return: memory bandwidth in B/s
++ * Copyright (c) 2020 Samsung Electronics Co., Ltd.
 + *
-+ * This function returns memory bandwidth calculated as a sum of amount of data
-+ * per second for each plane. The calculation is based on maximum possible pixel
-+ * resolution for a plane so as to avoid different bandwidth request per each
-+ * video frame. The formula used for calculation for each plane is:
-+ *
-+ * bw = width * height * frame_rate / interlace / (hor_subs * vert_subs)
-+ *
-+ * where:
-+ *  - width, height - (DRM mode) video frame width and height in pixels,
-+ *  - frame_rate - DRM mode frame refresh rate,
-+ *  - interlace: 1 - in case of progressive and 2 in case of interlaced video,
-+ *  - hor_subs, vert_subs - accordingly horizontal and vertical pixel
-+ *    subsampling for a plane.
++ * Authors: Artur Świgoń <a.swigon@samsung.com>
++ *          Sylwester Nawrocki <s.nawrocki@samsung.com>
 + */
-+static unsigned int mixer_get_memory_bandwidth(struct exynos_drm_crtc *crtc)
++#include <linux/device.h>
++#include <linux/interconnect-provider.h>
++#include <linux/module.h>
++#include <linux/of.h>
++#include <linux/platform_device.h>
++#include <linux/pm_qos.h>
++#include <linux/slab.h>
++
++#define EXYNOS_ICC_DEFAULT_BUS_CLK_RATIO	8
++
++struct exynos_icc_priv {
++	struct device *dev;
++
++	/* One interconnect node per provider */
++	struct icc_provider provider;
++	struct icc_node *node;
++
++	struct dev_pm_qos_request qos_req;
++	u32 bus_clk_ratio;
++};
++
++static struct icc_node *exynos_icc_get_parent(struct device_node *np)
 +{
-+	struct drm_display_mode *mode = &crtc->base.state->adjusted_mode;
-+	struct mixer_context *ctx = crtc->ctx;
-+	unsigned long bw, bandwidth = 0;
-+	int i, j, sub;
++	struct of_phandle_args args;
++	struct icc_node_data *icc_node_data;
++	struct icc_node *icc_node;
++	int num, ret;
 +
-+	for (i = 0; i < MIXER_WIN_NR; i++) {
-+		struct drm_plane *plane = &ctx->planes[i].base;
-+		const struct drm_format_info *format;
++	num = of_count_phandle_with_args(np, "interconnects",
++					 "#interconnect-cells");
++	if (num < 1)
++		return NULL; /* parent nodes are optional */
 +
-+		if (plane->state && plane->state->crtc && plane->state->fb) {
-+			format = plane->state->fb->format;
-+			bw = mode->hdisplay * mode->vdisplay *
-+							drm_mode_vrefresh(mode);
-+			if (mode->flags & DRM_MODE_FLAG_INTERLACE)
-+				bw /= 2;
-+			for (j = 0; j < format->num_planes; j++) {
-+				sub = j ? (format->vsub * format->hsub) : 1;
-+				bandwidth += format->cpp[j] * bw / sub;
-+			}
-+		}
-+	}
++	/* Get the interconnect target node */
++	ret = of_parse_phandle_with_args(np, "interconnects",
++					"#interconnect-cells", 0, &args);
++	if (ret < 0)
++		return ERR_PTR(ret);
 +
-+	return bandwidth;
++	icc_node_data = of_icc_get_from_provider(&args);
++	of_node_put(args.np);
++
++	if (IS_ERR(icc_node_data))
++		return ERR_CAST(icc_node_data);
++
++	icc_node = icc_node_data->node;
++	kfree(icc_node_data);
++
++	return icc_node;
 +}
 +
-+static void mixer_set_icc_bandwidth(struct mixer_context *ctx,
-+				    unsigned long bandwidth)
++static int exynos_generic_icc_set(struct icc_node *src, struct icc_node *dst)
 +{
-+	u32 avg_bw, peak_bw;
++	struct exynos_icc_priv *src_priv = src->data, *dst_priv = dst->data;
++	s32 src_freq = max(src->avg_bw, src->peak_bw) / src_priv->bus_clk_ratio;
++	s32 dst_freq = max(dst->avg_bw, dst->peak_bw) / dst_priv->bus_clk_ratio;
++	int ret;
 +
-+	/* add 20% safety margin */
-+	bandwidth = bandwidth / 4 * 5;
-+
-+	avg_bw = peak_bw = Bps_to_icc(bandwidth);
-+	icc_set_bw(ctx->icc_path, avg_bw, peak_bw);
-+
-+	dev_dbg(ctx->dev, "safe bandwidth %lu Bps\n", bandwidth);
-+}
-+
-+static void mixer_icc_request_fn(struct work_struct *work)
-+{
-+	struct mixer_context *ctx = container_of(work, struct mixer_context,
-+						 work);
-+	mutex_lock(&ctx->icc_lock);
-+	mixer_set_icc_bandwidth(ctx, ctx->icc_bandwidth);
-+	mutex_unlock(&ctx->icc_lock);
-+}
-+
- static void mixer_atomic_begin(struct exynos_drm_crtc *crtc)
- {
- 	struct mixer_context *ctx = crtc->ctx;
-@@ -980,12 +1062,35 @@ static void mixer_disable_plane(struct exynos_drm_crtc *crtc,
- 
- static void mixer_atomic_flush(struct exynos_drm_crtc *crtc)
- {
--	struct mixer_context *mixer_ctx = crtc->ctx;
-+	struct mixer_context *ctx = crtc->ctx;
-+	int bw, prev_bw;
- 
--	if (!test_bit(MXR_BIT_POWERED, &mixer_ctx->flags))
-+	if (!test_bit(MXR_BIT_POWERED, &ctx->flags))
- 		return;
- 
--	mixer_enable_sync(mixer_ctx);
-+	/*
-+	 * Request necessary bandwidth on the interconnects. If new
-+	 * bandwidth is greater than current value set the new value
-+	 * immediately. Otherwise request lower bandwidth only after
-+	 * VSYNC, after the HW has actually switched to new video
-+	 * frame settings.
-+	 */
-+	if (ctx->icc_path) {
-+		bw = mixer_get_memory_bandwidth(crtc);
-+
-+		mutex_lock(&ctx->icc_lock);
-+		prev_bw = ctx->icc_bandwidth;
-+		ctx->icc_bandwidth = bw;
-+
-+		if (bw > prev_bw)
-+			mixer_set_icc_bandwidth(ctx, bw);
-+		else if (bw < prev_bw)
-+			set_bit(MXR_BIT_REQUEST_BW, &ctx->flags);
-+
-+		mutex_unlock(&ctx->icc_lock);
++	ret = dev_pm_qos_update_request(&src_priv->qos_req, src_freq);
++	if (ret < 0) {
++		dev_err(src_priv->dev, "failed to update PM QoS of %s (src)\n",
++			src->name);
++		return ret;
 +	}
 +
-+	mixer_enable_sync(ctx);
- 	exynos_crtc_handle_event(crtc);
- }
- 
-@@ -1036,6 +1141,8 @@ static void mixer_atomic_disable(struct exynos_drm_crtc *crtc)
- 
- 	pm_runtime_put(ctx->dev);
- 
-+	mixer_set_icc_bandwidth(ctx, 0);
-+
- 	clear_bit(MXR_BIT_POWERED, &ctx->flags);
- }
- 
-@@ -1223,19 +1330,33 @@ static int mixer_probe(struct platform_device *pdev)
- 	struct device *dev = &pdev->dev;
- 	const struct mixer_drv_data *drv;
- 	struct mixer_context *ctx;
-+	struct icc_path *path;
- 	int ret;
- 
-+	/*
-+	 * Returns NULL if CONFIG_INTERCONNECT is disabled or if "interconnects"
-+	 * property does not exist. May return ERR_PTR(-EPROBE_DEFER).
-+	 */
-+	path = of_icc_get(dev, NULL);
-+	if (IS_ERR(path))
-+		return PTR_ERR(path);
-+
- 	ctx = devm_kzalloc(&pdev->dev, sizeof(*ctx), GFP_KERNEL);
- 	if (!ctx) {
- 		DRM_DEV_ERROR(dev, "failed to alloc mixer context.\n");
--		return -ENOMEM;
-+		ret = -ENOMEM;
-+		goto err;
- 	}
- 
- 	drv = of_device_get_match_data(dev);
- 
-+	INIT_WORK(&ctx->work, mixer_icc_request_fn);
-+	mutex_init(&ctx->icc_lock);
-+
- 	ctx->pdev = pdev;
- 	ctx->dev = dev;
- 	ctx->mxr_ver = drv->version;
-+	ctx->icc_path = path;
- 
- 	if (drv->is_vp_enabled)
- 		__set_bit(MXR_BIT_VP_ENABLED, &ctx->flags);
-@@ -1247,17 +1368,26 @@ static int mixer_probe(struct platform_device *pdev)
- 	pm_runtime_enable(dev);
- 
- 	ret = component_add(&pdev->dev, &mixer_component_ops);
--	if (ret)
-+	if (ret) {
- 		pm_runtime_disable(dev);
--
-+		goto err;
++	ret = dev_pm_qos_update_request(&dst_priv->qos_req, dst_freq);
++	if (ret < 0) {
++		dev_err(dst_priv->dev, "failed to update PM QoS of %s (dst)\n",
++			dst->name);
++		return ret;
 +	}
++
 +	return 0;
-+err:
-+	icc_put(path);
- 	return ret;
- }
- 
- static int mixer_remove(struct platform_device *pdev)
- {
--	pm_runtime_disable(&pdev->dev);
-+	struct device *dev = &pdev->dev;
-+	struct mixer_context *ctx = dev_get_drvdata(dev);
++}
 +
-+	pm_runtime_disable(dev);
++static struct icc_node *exynos_generic_icc_xlate(struct of_phandle_args *spec,
++						 void *data)
++{
++	struct exynos_icc_priv *priv = data;
 +
-+	component_del(dev, &mixer_component_ops);
- 
--	component_del(&pdev->dev, &mixer_component_ops);
-+	icc_put(ctx->icc_path);
- 
- 	return 0;
- }
++	if (spec->np != priv->dev->parent->of_node)
++		return ERR_PTR(-EINVAL);
++
++	return priv->node;
++}
++
++static int exynos_generic_icc_remove(struct platform_device *pdev)
++{
++	struct exynos_icc_priv *priv = platform_get_drvdata(pdev);
++	struct icc_node *parent_node, *node = priv->node;
++
++	parent_node = exynos_icc_get_parent(priv->dev->parent->of_node);
++	if (parent_node && !IS_ERR(parent_node))
++		icc_link_destroy(node, parent_node);
++
++	icc_nodes_remove(&priv->provider);
++	icc_provider_del(&priv->provider);
++
++	return 0;
++}
++
++static int exynos_generic_icc_probe(struct platform_device *pdev)
++{
++	struct device *bus_dev = pdev->dev.parent;
++	struct exynos_icc_priv *priv;
++	struct icc_provider *provider;
++	struct icc_node *icc_node, *icc_parent_node;
++	int ret;
++
++	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
++	if (!priv)
++		return -ENOMEM;
++
++	priv->dev = &pdev->dev;
++	platform_set_drvdata(pdev, priv);
++
++	provider = &priv->provider;
++
++	provider->set = exynos_generic_icc_set;
++	provider->aggregate = icc_std_aggregate;
++	provider->xlate = exynos_generic_icc_xlate;
++	provider->dev = bus_dev;
++	provider->inter_set = true;
++	provider->data = priv;
++
++	ret = icc_provider_add(provider);
++	if (ret < 0)
++		return ret;
++
++	icc_node = icc_node_create(pdev->id);
++	if (IS_ERR(icc_node)) {
++		ret = PTR_ERR(icc_node);
++		goto err_prov_del;
++	}
++
++	priv->node = icc_node;
++	icc_node->name = devm_kasprintf(&pdev->dev, GFP_KERNEL, "%pOFn",
++					bus_dev->of_node);
++	if (of_property_read_u32(bus_dev->of_node, "samsung,data-clock-ratio",
++				 &priv->bus_clk_ratio))
++		priv->bus_clk_ratio = EXYNOS_ICC_DEFAULT_BUS_CLK_RATIO;
++
++	/*
++	 * Register a PM QoS request for the parent (devfreq) device.
++	 */
++	ret = dev_pm_qos_add_request(bus_dev, &priv->qos_req,
++				     DEV_PM_QOS_MIN_FREQUENCY, 0);
++	if (ret < 0)
++		goto err_node_del;
++
++	icc_node->data = priv;
++	icc_node_add(icc_node, provider);
++
++	icc_parent_node = exynos_icc_get_parent(bus_dev->of_node);
++	if (IS_ERR(icc_parent_node)) {
++		ret = PTR_ERR(icc_parent_node);
++		goto err_pmqos_del;
++	}
++	if (icc_parent_node) {
++		ret = icc_link_create(icc_node, icc_parent_node->id);
++		if (ret < 0)
++			goto err_pmqos_del;
++	}
++
++	return 0;
++
++err_pmqos_del:
++	dev_pm_qos_remove_request(&priv->qos_req);
++err_node_del:
++	icc_nodes_remove(provider);
++err_prov_del:
++	icc_provider_del(provider);
++	return ret;
++}
++
++static struct platform_driver exynos_generic_icc_driver = {
++	.driver = {
++		.name = "exynos-generic-icc",
++		.sync_state = icc_sync_state,
++	},
++	.probe = exynos_generic_icc_probe,
++	.remove = exynos_generic_icc_remove,
++};
++module_platform_driver(exynos_generic_icc_driver);
++
++MODULE_DESCRIPTION("Exynos generic interconnect driver");
++MODULE_AUTHOR("Artur Świgoń <a.swigon@samsung.com>");
++MODULE_AUTHOR("Sylwester Nawrocki <s.nawrocki@samsung.com>");
++MODULE_LICENSE("GPL v2");
++MODULE_ALIAS("platform:exynos-generic-icc");
 -- 
 2.7.4
 
