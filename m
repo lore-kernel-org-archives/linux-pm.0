@@ -2,264 +2,211 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A50FEC55ABD
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 18:26:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 49F15C5519F
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 18:28:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 53F3122227
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 18:26:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D228722240
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 18:28:12 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="129N+MAz"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726552AbgKLS0b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Nov 2020 13:26:31 -0500
-Received: from mx2.suse.de ([195.135.220.15]:58982 "EHLO mx2.suse.de"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1726504AbgKLS0Y (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 12 Nov 2020 13:26:24 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id 2F536B053;
-        Thu, 12 Nov 2020 18:26:22 +0000 (UTC)
-From:   Giovanni Gherdovich <ggherdovich@suse.cz>
-To:     Borislav Petkov <bp@alien8.de>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Len Brown <lenb@kernel.org>,
-        "Rafael J . Wysocki" <rjw@rjwysocki.net>
-Cc:     Jon Grimm <Jon.Grimm@amd.com>,
-        Nathan Fontenot <Nathan.Fontenot@amd.com>,
-        Yazen Ghannam <Yazen.Ghannam@amd.com>,
-        Thomas Lendacky <Thomas.Lendacky@amd.com>,
-        Mel Gorman <mgorman@techsingularity.net>,
-        Pu Wen <puwen@hygon.cn>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Doug Smythies <dsmythies@telus.net>, x86@kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-acpi@vger.kernel.org,
-        Giovanni Gherdovich <ggherdovich@suse.cz>
-Subject: [PATCH v4 2/3] x86, sched: Use midpoint of max_boost and max_P for frequency invariance on AMD EPYC
-Date:   Thu, 12 Nov 2020 19:26:13 +0100
-Message-Id: <20201112182614.10700-3-ggherdovich@suse.cz>
-X-Mailer: git-send-email 2.26.2
-In-Reply-To: <20201112182614.10700-1-ggherdovich@suse.cz>
-References: <20201112182614.10700-1-ggherdovich@suse.cz>
+        id S1726336AbgKLS2L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Nov 2020 13:28:11 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:39768 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726181AbgKLS2J (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 13:28:09 -0500
+Received: from mail-pl1-x62c.google.com (mail-pl1-x62c.google.com [IPv6:2607:f8b0:4864:20::62c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4C256C0613D1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2020 10:28:09 -0800 (PST)
+Received: by mail-pl1-x62c.google.com with SMTP id cp9so3242430plb.1
+        for <linux-pm@vger.kernel.org>; Thu, 12 Nov 2020 10:28:09 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=MIrfsDl/yljzir2CVn3OagwRLyBtGtaVtZ+FCLryKNU=;
+        b=129N+MAzSZnnE+1RI3F4B58xYMcEAuZnLEZVCSFQA+lICkYFgyhPL4qAbUAlzze5pJ
+         v/kaxVMF+UQ16lFr9vCMWljXhBQnRqvhhp7ZYJWs4efLOtfOHAIpPU9YnxF0FhyS/43d
+         N2ZTZzrhxGZ88J4o8zI0AlkiaitwsxorUkqfkxZBM25DsEWbg9yyx8fc3tgMVNuuAiyK
+         cpBjiOL+BAOQ7xfSTCRbBbuo+uavAbMMc+Nx+HXYvFyghLlwQaf24XPxxqc85sT1TXwb
+         JM+ydB0sRLeUIlmG01lNPpqfMnGsCGxU9tTW1ATLl0Jjh1HyJvsmYYVtRfLvVai4wNbs
+         dw7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=MIrfsDl/yljzir2CVn3OagwRLyBtGtaVtZ+FCLryKNU=;
+        b=MIEgapiTd5goT4YSB9+uUu0q5NJnOzZFijJ81k+Pkgdp5blyNIDRPEDLMEWCjPu6eh
+         vX73yqb5fdM1rUFTxhiwqV1devnxUuLULRypIcBEtn4FjAkIiri4GEY0vW2mxmGugCrM
+         cG2ikwj3P6P6QwDDfbt1MAGA5N7Bapny84t2q5RYl3sgGNsSE/xt7SAqso86J4HIJ49I
+         iPvvN7pz+CK0I54xupj+tD93SC7XU0f8BE/C1Z4hNm+JvLFRiHyxeFIeFgxB9g9Ui/5Q
+         99z2v4FXDFHakafzZJ6TNu9DXOqllADoeBwAAvLnNe0jFKSqYciJchew4zLRmbsNPrvj
+         WglQ==
+X-Gm-Message-State: AOAM5332OByy82qqpSFLkE6tkY0FUND9XNNZCJGZhdfB0BHpFFS4oys+
+        WUqSzyEiuRbo4GiwEYkEEU6kPQ==
+X-Google-Smtp-Source: ABdhPJwAivYx+ss+S8lNjDzL2apls26rSIZ8h7lQZWmXKGEzznDVu7ZF3gGdN/X7Pv2onHM3HwMbiw==
+X-Received: by 2002:a17:902:ab98:b029:d8:c5e8:978a with SMTP id f24-20020a170902ab98b02900d8c5e8978amr608858plr.56.1605205688809;
+        Thu, 12 Nov 2020 10:28:08 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id d10sm7346352pjj.38.2020.11.12.10.28.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 12 Nov 2020 10:28:07 -0800 (PST)
+Message-ID: <5fad7eb7.1c69fb81.9bed3.e36f@mx.google.com>
+Date:   Thu, 12 Nov 2020 10:28:07 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Report-Type: build
+X-Kernelci-Tree: pm
+X-Kernelci-Branch: testing
+X-Kernelci-Kernel: pm-5.10-rc4-33-g52d108cd060d
+Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
+ 11 warnings (pm-5.10-rc4-33-g52d108cd060d)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Frequency invariant accounting calculations need the ratio
-freq_curr/freq_max, but freq_max is unknown as it depends on dynamic power
-allocation between cores: AMD EPYC CPUs implement "Core Performance Boost".
-Three candidates are considered to estimate this value:
+pm/testing build: 7 builds: 0 failed, 7 passed, 11 warnings (pm-5.10-rc4-33=
+-g52d108cd060d)
 
-- maximum non-boost frequency
-- maximum boost frequency
-- the mid point between the above two
+Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/pm-=
+5.10-rc4-33-g52d108cd060d/
 
-Experimental data on an AMD EPYC Zen2 machine slightly favors the third
-option, which is applied with this patch.
+Tree: pm
+Branch: testing
+Git Describe: pm-5.10-rc4-33-g52d108cd060d
+Git Commit: 52d108cd060dea3403c01d460c2ffbc7eaaf4a9c
+Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
+Built: 7 unique architectures
 
-The analysis uses the ondemand cpufreq governor as baseline, and compares
-it with schedutil in a number of configurations. Using the freq_max value
-described above offers a moderate advantage in performance and efficiency:
+Warnings Detected:
 
-sugov-max (freq_max=max_boost) performs the worst on tbench: less
-throughput and reduced efficiency than the other invariant-schedutil
-options (see "Data Overview" below). Consider that tbench is generally a
-problematic case as no schedutil version currently is better than ondemand.
+arc:
 
-sugov-P0 (freq_max=max_P) is the worst on dbench, while the other sugov's
-can surpass ondemand with less filesystem latency and slightly increased
-efficiency.
+arm64:
+    defconfig (gcc-8): 8 warnings
 
-1. DATA OVERVIEW
-2. DETAILED PERFORMANCE TABLES
-3. POWER CONSUMPTION TABLE
+arm:
+    multi_v7_defconfig (gcc-8): 3 warnings
 
-1. DATA OVERVIEW
-================
+i386:
 
-sugov-noinv : non-invariant schedutil governor
-sugov-max   : invariant schedutil, freq_max=max_boost
-sugov-mid   : invariant schedutil, freq_max=midpoint
-sugov-P0    : invariant schedutil, freq_max=max_P
-perfgov     : performance governor
+mips:
 
-driver      : acpi_cpufreq
-machine     : AMD EPYC 7742 (Zen2, aka "Rome"), dual socket,
-              128 cores / 256 threads, SATA SSD storage, 250G of memory,
-	      XFS filesystem
+riscv:
 
-Benchmarks are described in the next section.
-Tilde (~) means the value is the same as baseline.
+x86_64:
 
--------------------------------------------------------------------------------------
-            ondemand  perfgov  sugov-noinv  sugov-max  sugov-mid  sugov-P0  better if
--------------------------------------------------------------------------------------
-                                        PERFORMANCE RATIOS
-tbench        1.00       1.44       0.90       0.87       0.93       0.93      higher
-dbench        1.00       0.91       0.95       0.94       0.94       1.06      lower
-kernbench     1.00       0.93       ~          ~          ~          0.97      lower
-gitsource     1.00       0.66       0.97       0.96       ~          0.95      lower
--------------------------------------------------------------------------------------
-                                    PERFORMANCE-PER-WATT RATIOS
-tbench        1.00       1.16       0.84       0.84       0.88       0.85      higher
-dbench        1.00       1.03       1.02       1.02       1.02       0.93      higher
-kernbench     1.00       1.05       ~          ~          ~          ~         higher
-gitsource     1.00       1.46       1.04       1.04       ~          1.05      higher
 
-2. DETAILED PERFORMANCE TABLES
-==============================
+Warnings summary:
 
-Benchmark          : tbench4 (i.e. dbench4 over the network, actually loopback)
-Varying parameter  : number of clients
-Unit               : MB/sec (higher is better)
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #size-cells (1) differs from / (2)
+    3    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.=
+dtsi:7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-range=
+s" property but its #address-cells (1) differs from / (2)
+    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
+iled prerequisite 'spi_bus_bridge'
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #size-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: War=
+ning (dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but =
+its #address-cells (1) differs from / (2)
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for =
+SPI bus
+    1    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (=
+spi_bus_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells f=
+or SPI bus
 
-                  5.9.0-ondemand (BASELINE)                   5.9.0-perfgov               5.9.0-sugov-noinv
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Hmean  1        427.19  +- 0.16% (        )     778.35  +- 0.10% (  82.20%)     346.92  +- 0.14% ( -18.79%)
-Hmean  2        853.82  +- 0.09% (        )    1536.23  +- 0.03% (  79.93%)     694.36  +- 0.05% ( -18.68%)
-Hmean  4       1657.54  +- 0.12% (        )    2938.18  +- 0.12% (  77.26%)    1362.81  +- 0.11% ( -17.78%)
-Hmean  8       3301.87  +- 0.06% (        )    5679.10  +- 0.04% (  72.00%)    2693.35  +- 0.04% ( -18.43%)
-Hmean  16      6139.65  +- 0.05% (        )    9498.81  +- 0.04% (  54.71%)    4889.97  +- 0.17% ( -20.35%)
-Hmean  32     11170.28  +- 0.09% (        )   17393.25  +- 0.08% (  55.71%)    9104.55  +- 0.09% ( -18.49%)
-Hmean  64     19322.97  +- 0.17% (        )   31573.91  +- 0.08% (  63.40%)   18552.52  +- 0.40% (  -3.99%)
-Hmean  128    30383.71  +- 0.11% (        )   37416.91  +- 0.15% (  23.15%)   25938.70  +- 0.41% ( -14.63%)
-Hmean  256    31143.96  +- 0.41% (        )   30908.76  +- 0.88% (  -0.76%)   29754.32  +- 0.24% (  -4.46%)
-Hmean  512    30858.49  +- 0.26% (        )   38524.60  +- 1.19% (  24.84%)   42080.39  +- 0.56% (  36.37%)
-Hmean  1024   39187.37  +- 0.19% (        )   36213.86  +- 0.26% (  -7.59%)   39555.98  +- 0.12% (   0.94%)
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
 
-                            5.9.0-sugov-max                 5.9.0-sugov-mid                  5.9.0-sugov-P0
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Hmean  1        352.59  +- 1.03% ( -17.46%)     352.08  +- 0.75% ( -17.58%)     352.31  +- 1.48% ( -17.53%)
-Hmean  2        697.32  +- 0.08% ( -18.33%)     700.16  +- 0.20% ( -18.00%)     696.79  +- 0.06% ( -18.39%)
-Hmean  4       1369.88  +- 0.04% ( -17.35%)    1369.72  +- 0.07% ( -17.36%)    1365.91  +- 0.05% ( -17.59%)
-Hmean  8       2696.79  +- 0.04% ( -18.33%)    2711.06  +- 0.04% ( -17.89%)    2715.10  +- 0.61% ( -17.77%)
-Hmean  16      4725.03  +- 0.03% ( -23.04%)    4875.65  +- 0.02% ( -20.59%)    4953.05  +- 0.28% ( -19.33%)
-Hmean  32      9231.65  +- 0.10% ( -17.36%)    8704.89  +- 0.27% ( -22.07%)   10562.02  +- 0.36% (  -5.45%)
-Hmean  64     15364.27  +- 0.19% ( -20.49%)   17786.64  +- 0.15% (  -7.95%)   19665.40  +- 0.22% (   1.77%)
-Hmean  128    42100.58  +- 0.13% (  38.56%)   34946.28  +- 0.13% (  15.02%)   38635.79  +- 0.06% (  27.16%)
-Hmean  256    30660.23  +- 1.08% (  -1.55%)   32307.67  +- 0.54% (   3.74%)   31153.27  +- 0.12% (   0.03%)
-Hmean  512    24604.32  +- 0.14% ( -20.27%)   40408.50  +- 1.10% (  30.95%)   38800.29  +- 1.23% (  25.74%)
-Hmean  1024   35535.47  +- 0.28% (  -9.32%)   41070.38  +- 2.56% (   4.81%)   31308.29  +- 2.52% ( -20.11%)
+Detailed per-defconfig build reports:
 
-Benchmark          : dbench (filesystem stressor)
-Varying parameter  : number of clients
-Unit               : seconds (lower is better)
+---------------------------------------------------------------------------=
+-----
+32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
+ion mismatches
 
-NOTE-1: This dbench version measures the average latency of a set of filesystem
-        operations, as we found the traditional dbench metric (throughput) to be
-	misleading.
-NOTE-2: Due to high variability, we partition the original dataset and apply
-        statistical bootrapping (a resampling method). Accuracy is reported in the
-	form of 95% confidence intervals.
+---------------------------------------------------------------------------=
+-----
+defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
+smatches
 
-                  5.9.0-ondemand (BASELINE)                   5.9.0-perfgov               5.9.0-sugov-noinv
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SubAmean  1         98.79  +- 0.92 (        )      83.36  +- 0.82 (  15.62%)      84.82  +- 0.92 (  14.14%)
-SubAmean  2        116.00  +- 0.89 (        )     102.12  +- 0.77 (  11.96%)     109.63  +- 0.89 (   5.49%)
-SubAmean  4        149.90  +- 1.03 (        )     132.12  +- 0.91 (  11.86%)     143.90  +- 1.15 (   4.00%)
-SubAmean  8        182.41  +- 1.13 (        )     159.86  +- 0.93 (  12.36%)     165.82  +- 1.03 (   9.10%)
-SubAmean  16       237.83  +- 1.23 (        )     219.46  +- 1.14 (   7.72%)     229.28  +- 1.19 (   3.59%)
-SubAmean  32       334.34  +- 1.49 (        )     309.94  +- 1.42 (   7.30%)     321.19  +- 1.36 (   3.93%)
-SubAmean  64       576.61  +- 2.16 (        )     540.75  +- 2.00 (   6.22%)     551.27  +- 1.99 (   4.39%)
-SubAmean  128     1350.07  +- 4.14 (        )    1205.47  +- 3.20 (  10.71%)    1280.26  +- 3.75 (   5.17%)
-SubAmean  256     3444.42  +- 7.97 (        )    3698.00 +- 27.43 (  -7.36%)    3494.14  +- 7.81 (  -1.44%)
-SubAmean  2048   39457.89 +- 29.01 (        )   34105.33 +- 41.85 (  13.57%)   39688.52 +- 36.26 (  -0.58%)
+---------------------------------------------------------------------------=
+-----
+defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 8 warnings, 0 section mi=
+smatches
 
-                            5.9.0-sugov-max                 5.9.0-sugov-mid                  5.9.0-sugov-P0
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SubAmean  1         85.68  +- 1.04 (  13.27%)      84.16  +- 0.84 (  14.81%)      83.99  +- 0.90 (  14.99%)
-SubAmean  2        108.42  +- 0.95 (   6.54%)     109.91  +- 1.39 (   5.24%)     112.06  +- 0.91 (   3.39%)
-SubAmean  4        136.90  +- 1.04 (   8.67%)     137.59  +- 0.93 (   8.21%)     136.55  +- 0.95 (   8.91%)
-SubAmean  8        163.15  +- 0.96 (  10.56%)     166.07  +- 1.02 (   8.96%)     165.81  +- 0.99 (   9.10%)
-SubAmean  16       224.86  +- 1.12 (   5.45%)     223.83  +- 1.06 (   5.89%)     230.66  +- 1.19 (   3.01%)
-SubAmean  32       320.51  +- 1.38 (   4.13%)     322.85  +- 1.49 (   3.44%)     321.96  +- 1.46 (   3.70%)
-SubAmean  64       553.25  +- 1.93 (   4.05%)     554.19  +- 2.08 (   3.89%)     562.26  +- 2.22 (   2.49%)
-SubAmean  128     1264.35  +- 3.72 (   6.35%)    1256.99  +- 3.46 (   6.89%)    2018.97 +- 18.79 ( -49.55%)
-SubAmean  256     3466.25  +- 8.25 (  -0.63%)    3450.58  +- 8.44 (  -0.18%)    5032.12 +- 38.74 ( -46.09%)
-SubAmean  2048   39133.10 +- 45.71 (   0.82%)   39905.95 +- 34.33 (  -1.14%)   53811.86 +-193.04 ( -36.38%)
+Warnings:
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/broadcom/stingray/stingray-usb.dtsi:=
+7.3-14: Warning (dma_ranges_format): /usb:dma-ranges: empty "dma-ranges" pr=
+operty but its #size-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+address-cells (1) differs from / (2)
+    /scratch/linux/arch/arm64/boot/dts/qcom/ipq6018.dtsi:185.3-14: Warning =
+(dma_ranges_format): /soc:dma-ranges: empty "dma-ranges" property but its #=
+size-cells (1) differs from / (2)
 
-Benchmark          : kernbench (kernel compilation)
-Varying parameter  : number of jobs
-Unit               : seconds (lower is better)
+---------------------------------------------------------------------------=
+-----
+haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
+section mismatches
 
-                  5.9.0-ondemand (BASELINE)                   5.9.0-perfgov               5.9.0-sugov-noinv
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Amean  2        471.71 +- 26.61% (        )     409.88 +- 16.99% (  13.11%)     430.63  +- 0.18% (   8.71%)
-Amean  4        211.87  +- 0.58% (        )     194.03  +- 0.74% (   8.42%)     215.33  +- 0.64% (  -1.63%)
-Amean  8        109.79  +- 1.27% (        )     101.43  +- 1.53% (   7.61%)     111.05  +- 1.95% (  -1.15%)
-Amean  16        59.50  +- 1.28% (        )      55.61  +- 1.35% (   6.55%)      59.65  +- 1.78% (  -0.24%)
-Amean  32        34.94  +- 1.22% (        )      32.36  +- 1.95% (   7.41%)      35.44  +- 0.63% (  -1.43%)
-Amean  64        22.58  +- 0.38% (        )      20.97  +- 1.28% (   7.11%)      22.41  +- 1.73% (   0.74%)
-Amean  128       17.72  +- 0.44% (        )      16.68  +- 0.32% (   5.88%)      17.65  +- 0.96% (   0.37%)
-Amean  256       16.44  +- 0.53% (        )      15.76  +- 0.32% (   4.18%)      16.76  +- 0.60% (  -1.93%)
-Amean  512       16.54  +- 0.21% (        )      15.62  +- 0.41% (   5.53%)      16.84  +- 0.85% (  -1.83%)
+---------------------------------------------------------------------------=
+-----
+i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
+n mismatches
 
-                            5.9.0-sugov-max                 5.9.0-sugov-mid                  5.9.0-sugov-P0
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Amean  2        421.30  +- 0.24% (  10.69%)     419.26  +- 0.15% (  11.12%)     414.38  +- 0.33% (  12.15%)
-Amean  4  	217.81  +- 5.53% (  -2.80%)     211.63  +- 0.99% (   0.12%)     208.43  +- 0.47% (   1.63%)
-Amean  8  	108.80  +- 0.43% (   0.90%)     108.48  +- 1.44% (   1.19%)     108.59  +- 3.08% (   1.09%)
-Amean  16 	 58.84  +- 0.74% (   1.12%)      58.37  +- 0.94% (   1.91%)      57.78  +- 0.78% (   2.90%)
-Amean  32 	 34.04  +- 2.00% (   2.59%)      34.28  +- 1.18% (   1.91%)      33.98  +- 2.21% (   2.75%)
-Amean  64 	 22.22  +- 1.69% (   1.60%)      22.27  +- 1.60% (   1.38%)      22.25  +- 1.41% (   1.47%)
-Amean  128	 17.55  +- 0.24% (   0.97%)      17.53  +- 0.94% (   1.04%)      17.49  +- 0.43% (   1.30%)
-Amean  256	 16.51  +- 0.46% (  -0.40%)      16.48  +- 0.48% (  -0.19%)      16.44  +- 1.21% (   0.00%)
-Amean  512	 16.50  +- 0.35% (   0.19%)      16.35  +- 0.42% (   1.14%)      16.37  +- 0.33% (   0.99%)
+---------------------------------------------------------------------------=
+-----
+multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
+tion mismatches
 
-Benchmark          : gitsource (time to run the git unit test suite)
-Varying parameter  : none
-Unit               : seconds (lower is better)
+Warnings:
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SP=
+I bus
+    /scratch/linux/arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_b=
+us_bridge): /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI b=
+us
+    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
+prerequisite 'spi_bus_bridge'
 
-                  5.9.0-ondemand (BASELINE)                   5.9.0-perfgov               5.9.0-sugov-noinv
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Amean          1035.76  +- 0.30% (        )     688.21  +- 0.04% (  33.56%)    1003.85  +- 0.14% (   3.08%)
+---------------------------------------------------------------------------=
+-----
+x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
+ction mismatches
 
-                            5.9.0-sugov-max                 5.9.0-sugov-mid                  5.9.0-sugov-P0
-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Amean           995.82  +- 0.08% (   3.86%)    1011.98  +- 0.03% (   2.30%)     986.87  +- 0.19% (   4.72%)
-
-3. POWER CONSUMPTION TABLE
-==========================
-
-Average power consumption (watts).
-
---------------------------------------------------------------------------
-            ondemand  perfgov  sugov-noinv  sugov-max  sugov-mid  sugov-P0
---------------------------------------------------------------------------
-tbench4     227.25     281.83     244.17     236.76     241.50     247.99
-dbench4     151.97     161.87     157.08     158.10     158.06     153.73
-kernbench   162.78     167.22     162.90     164.19     164.65     164.72
-gitsource   133.65     139.00     133.04     134.43     134.18     134.32
-
-Signed-off-by: Giovanni Gherdovich <ggherdovich@suse.cz>
 ---
- arch/x86/kernel/smpboot.c | 2 ++
- 1 file changed, 2 insertions(+)
-
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index a4ab5cf6aeab..c5dd5f6199d9 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -2054,6 +2054,8 @@ static bool amd_set_max_freq_ratio(void)
- 	}
- 
- 	perf_ratio = div_u64(highest_perf * SCHED_CAPACITY_SCALE, nominal_perf);
-+	/* midpoint between max_boost and max_P */
-+	perf_ratio = (perf_ratio + SCHED_CAPACITY_SCALE) >> 1;
- 	if (!perf_ratio) {
- 		pr_debug("Non-zero highest/nominal perf values led to a 0 ratio\n");
- 		return false;
--- 
-2.26.2
-
+For more info write to <info@kernelci.org>
