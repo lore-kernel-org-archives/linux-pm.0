@@ -8,55 +8,55 @@ X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1B542C56201
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 10:40:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 977E4C2D0A3
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 10:40:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B2CF822210
-	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 10:40:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 372BF22228
+	for <linux-pm@archiver.kernel.org>; Thu, 12 Nov 2020 10:40:29 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="IcWuSIKC"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gFnKmgf9"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727960AbgKLKkW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 12 Nov 2020 05:40:22 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51590 "EHLO
+        id S1728001AbgKLKk2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 12 Nov 2020 05:40:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51612 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727980AbgKLKkU (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 05:40:20 -0500
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 13D9DC0613D1;
-        Thu, 12 Nov 2020 02:40:20 -0800 (PST)
-Received: by mail-pg1-x544.google.com with SMTP id i13so3819841pgm.9;
-        Thu, 12 Nov 2020 02:40:20 -0800 (PST)
+        with ESMTP id S1728000AbgKLKk1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 12 Nov 2020 05:40:27 -0500
+Received: from mail-pf1-x442.google.com (mail-pf1-x442.google.com [IPv6:2607:f8b0:4864:20::442])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31E06C0613D1;
+        Thu, 12 Nov 2020 02:40:27 -0800 (PST)
+Received: by mail-pf1-x442.google.com with SMTP id c66so4160597pfa.4;
+        Thu, 12 Nov 2020 02:40:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=fuFh7v4DZWLJYDeYz2BQitAp+sMw0pW2PYhG2t9htnw=;
-        b=IcWuSIKCZLcksR9lrAahz2mPNwRkx/fSgQeArXLiTuXXLAl3oHRhYeUpL4nifwyh92
-         /XtfUTYAc4OETWVvkn+hPoBFSFDI8kDnMLW0K1AXo62qdowJ+l8SNEV0TRRxbtdSwyvf
-         CtNd0l8nuXPnqsmrFpe/d/nT+s3ywg/CyxlWmog0yWc/Q9Hws+tg9vdVg8mhJwRi2sAx
-         qvglKCskEiedDOTkdlvMJprn29ohhOeQogZpMqlnxIDvb2pifE59NDpmoIod34DgiKGJ
-         NribVN3EpfsfDjFG8/uwDhnWeCp9oV+aKp70wQie6cXcrLeJswKex1Xw5BPWnelV/kL5
-         59gA==
+        bh=kmywJl/aDPZ8Djl80CkqitFsv9eXGzrnwpaDbuS6TqE=;
+        b=gFnKmgf9WUj00cMS+ML1cOc8wfX/uSoWwl1npaDaGB6/w+bJYpQP1GEExHFxBYRDJ8
+         OUyKEZM5MUYTMTwv+15zMTr8NU0oQHME5hLX35qcv26dpNxM2s76dJ+cBolAZPk2V7V5
+         mSO1NggUJYQEj//BvIc8FT6AojXPCk9o3ChwYPsSabc/ULf22J98clVnbSHg4OqudJjy
+         nT6E1jmPwjsEAZ6Yz73F9P/1qyKE4KjsP3lbi7uvZhlaovqG1TVbfewNoKSgz9voL7Oi
+         RVR09eP9lub18BeeiWg5tPinH75FKrnngj4Vi8aKIwCIVzZ0FFA5AVfAIADg8f77SQaE
+         qWsA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references;
-        bh=fuFh7v4DZWLJYDeYz2BQitAp+sMw0pW2PYhG2t9htnw=;
-        b=XNi16Y9S4kO7z7/K1bC/wY5oCRTEDAWzNWyCpvrnb0kYmxDO3f5Ow/cF7b3fr4oOsA
-         YCOizG0P3YAn89/E0HtHaf+qhfjU65Wqatmm1DCo8hwvQwC1W6kO0QbWG3muM1oaKkLY
-         kx+wkgd3wonW88mgtE5dJ+qKY1lGneLMEGIFBmw0nsdWFAYPVLAPem2L2CZnP+ozLrc0
-         +keR1CCYXhfuEZldHYxN5HQMlAFwjCz+YfuAbQ19YpT2/FgXJzMLwam/dKoyevbdtery
-         3LMcrj/9F2c+xNO92eS6AOT/XW2RtLndiXO1E2NQTGQ4w2pVgrFgBrBKQfmfLhBnGiIH
-         dr6Q==
-X-Gm-Message-State: AOAM533dmnWvOh/cvBWr3yezWLW0NIHp8Wfo4j5s5RjZlbpOMHTNZpBn
-        7cZS+RfqyQtemgb/5i+pfR4=
-X-Google-Smtp-Source: ABdhPJw3cjZGAPK5XbQoBb0M17MOCtgKgaYhpxCg582yemDVGdn/EVDpUPFOUS6KnfxvVbEr1cPsXw==
-X-Received: by 2002:a17:90a:ef8f:: with SMTP id m15mr8801957pjy.33.1605177619640;
-        Thu, 12 Nov 2020 02:40:19 -0800 (PST)
+        bh=kmywJl/aDPZ8Djl80CkqitFsv9eXGzrnwpaDbuS6TqE=;
+        b=SZLLsN0NRDMjih6lfSNy0KBkpI26ApSkMgh1PEVrDvP2JlooZBfYIYtj++T9ZtYqw+
+         DmbHP+zEfLyOEAbcZLo5yUYPJz4/HJE4cfiOnoG3CllGINKlAMs5LI+1BS+81vxAnV3O
+         NM/igCPvQq51T6fV8DH9NESLcoVAfD03u0jlYud5F7vd9HlJB4dPIYZIv1/qGJAQ8sL4
+         6foVhNfS2lyAuxSIvZZVw/tuIjPb/Y6HMkRo5sLDsZ19F3YHBEoMZPBJEJWaHNYRp2CS
+         Kgi84BSHOt2DMCCT6K+y8Mk0GD5VZxMuKqTvdfCTiB32cFkz8bSnPkGvYwGVR23ijksr
+         emAg==
+X-Gm-Message-State: AOAM533X2kc+6dH7bsS1evsmpKxHNjg50Ldenz4sCQwVEIxc72yCM+yp
+        RePSRD6kLCNV4IY4i4Le4Ug=
+X-Google-Smtp-Source: ABdhPJzHWAVZ7MtKk3Zd+ft3me+B7GAg6xgzuPfUReSTRxvMIosr7MrbrA96N1FpTrBABqHgcEzG2w==
+X-Received: by 2002:a63:d70b:: with SMTP id d11mr24597790pgg.94.1605177626791;
+        Thu, 12 Nov 2020 02:40:26 -0800 (PST)
 Received: from localhost.localdomain ([2402:7500:47a:a27:cf8e:7817:51df:a883])
-        by smtp.gmail.com with ESMTPSA id mp16sm6414094pjb.13.2020.11.12.02.40.16
+        by smtp.gmail.com with ESMTPSA id mp16sm6414094pjb.13.2020.11.12.02.40.23
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Thu, 12 Nov 2020 02:40:19 -0800 (PST)
+        Thu, 12 Nov 2020 02:40:26 -0800 (PST)
 From:   Gene Chen <gene.chen.richtek@gmail.com>
 To:     sre@kernel.org, matthias.bgg@gmail.com, robh+dt@kernel.org
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
@@ -65,9 +65,9 @@ Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         gene_chen@richtek.com, Wilma.Wu@mediatek.com,
         shufan_lee@richtek.com, cy_huang@richtek.com,
         benjamin.chao@mediatek.com
-Subject: [PATCH v7 04/11] mfd: mt6360: Combine mt6360 pmic/ldo resources into mt6360 regulator resources
-Date:   Thu, 12 Nov 2020 18:39:51 +0800
-Message-Id: <1605177598-23501-5-git-send-email-gene.chen.richtek@gmail.com>
+Subject: [PATCH v7 06/11] mfd: mt6360: Rename mt6360_pmu by mt6360
+Date:   Thu, 12 Nov 2020 18:39:53 +0800
+Message-Id: <1605177598-23501-7-git-send-email-gene.chen.richtek@gmail.com>
 X-Mailer: git-send-email 2.7.4
 In-Reply-To: <1605177598-23501-1-git-send-email-gene.chen.richtek@gmail.com>
 References: <1605177598-23501-1-git-send-email-gene.chen.richtek@gmail.com>
@@ -77,51 +77,118 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Gene Chen <gene_chen@richtek.com>
 
-Combine mt6360 pmic/ldo resources into mt6360 regulator resources
-to simplify the similar resources object.
+Rename mt6360_pmu by mt6360, because of including
+not only PMU part, but also entire MT6360 IC
 
 Signed-off-by: Gene Chen <gene_chen@richtek.com>
 Acked-for-MFD-by: Lee Jones <lee.jones@linaro.org>
 ---
- drivers/mfd/mt6360-core.c | 11 +++--------
- 1 file changed, 3 insertions(+), 8 deletions(-)
+ drivers/mfd/mt6360-core.c | 41 ++++++++++++++++++++---------------------
+ 1 file changed, 20 insertions(+), 21 deletions(-)
 
 diff --git a/drivers/mfd/mt6360-core.c b/drivers/mfd/mt6360-core.c
-index 692e47b..5119e51 100644
+index 332eb5d..f75122b 100644
 --- a/drivers/mfd/mt6360-core.c
 +++ b/drivers/mfd/mt6360-core.c
-@@ -265,7 +265,7 @@ static const struct resource mt6360_led_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(MT6360_FLED1_STRB_TO_EVT, "fled1_strb_to_evt"),
+@@ -119,7 +119,7 @@
+ #define MT6360_LDO6_PGB_EVT		126
+ #define MT6360_LDO7_PGB_EVT		127
+ 
+-static const struct regmap_irq mt6360_pmu_irqs[] =  {
++static const struct regmap_irq mt6360_irqs[] =  {
+ 	REGMAP_IRQ_REG_LINE(MT6360_CHG_TREG_EVT, 8),
+ 	REGMAP_IRQ_REG_LINE(MT6360_CHG_AICR_EVT, 8),
+ 	REGMAP_IRQ_REG_LINE(MT6360_CHG_MIVR_EVT, 8),
+@@ -216,9 +216,9 @@ static int mt6360_pmu_handle_post_irq(void *irq_drv_data)
+ 		MT6360_PMU_IRQ_SET, MT6360_IRQ_RETRIG, MT6360_IRQ_RETRIG);
+ }
+ 
+-static struct regmap_irq_chip mt6360_pmu_irq_chip = {
+-	.irqs = mt6360_pmu_irqs,
+-	.num_irqs = ARRAY_SIZE(mt6360_pmu_irqs),
++static struct regmap_irq_chip mt6360_irq_chip = {
++	.irqs = mt6360_irqs,
++	.num_irqs = ARRAY_SIZE(mt6360_irqs),
+ 	.num_regs = MT6360_PMU_IRQ_REGNUM,
+ 	.mask_base = MT6360_PMU_CHG_MASK1,
+ 	.status_base = MT6360_PMU_CHG_IRQ1,
+@@ -308,7 +308,7 @@ static const unsigned short mt6360_slave_addr[MT6360_SLAVE_MAX] = {
+ 	MT6360_TCPC_SLAVEID,
  };
  
--static const struct resource mt6360_pmic_resources[] = {
-+static const struct resource mt6360_regulator_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(MT6360_BUCK1_PGB_EVT, "buck1_pgb_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_BUCK1_OC_EVT, "buck1_oc_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_BUCK1_OV_EVT, "buck1_ov_evt"),
-@@ -278,9 +278,6 @@ static const struct resource mt6360_pmic_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO7_OC_EVT, "ldo7_oc_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO6_PGB_EVT, "ldo6_pgb_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO7_PGB_EVT, "ldo7_pgb_evt"),
--};
--
--static const struct resource mt6360_ldo_resources[] = {
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO1_OC_EVT, "ldo1_oc_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO2_OC_EVT, "ldo2_oc_evt"),
- 	DEFINE_RES_IRQ_NAMED(MT6360_LDO3_OC_EVT, "ldo3_oc_evt"),
-@@ -298,10 +295,8 @@ static const struct mfd_cell mt6360_devs[] = {
- 		    NULL, 0, 0, "mediatek,mt6360-chg"),
- 	OF_MFD_CELL("mt6360-led", mt6360_led_resources,
- 		    NULL, 0, 0, "mediatek,mt6360-led"),
--	OF_MFD_CELL("mt6360-pmic", mt6360_pmic_resources,
--		    NULL, 0, 0, "mediatek,mt6360-pmic"),
--	OF_MFD_CELL("mt6360-ldo", mt6360_ldo_resources,
--		    NULL, 0, 0, "mediatek,mt6360-ldo"),
-+	OF_MFD_CELL("mt6360-regulator", mt6360_regulator_resources,
-+		    NULL, 0, 0, "mediatek,mt6360-regulator"),
- 	OF_MFD_CELL("mt6360-tcpc", NULL,
- 		    NULL, 0, 0, "mediatek,mt6360-tcpc"),
+-static int mt6360_pmu_probe(struct i2c_client *client)
++static int mt6360_probe(struct i2c_client *client)
+ {
+ 	struct mt6360_ddata *ddata;
+ 	unsigned int reg_data;
+@@ -339,10 +339,10 @@ static int mt6360_pmu_probe(struct i2c_client *client)
+ 		return -ENODEV;
+ 	}
+ 
+-	mt6360_pmu_irq_chip.irq_drv_data = ddata;
++	mt6360_irq_chip.irq_drv_data = ddata;
+ 	ret = devm_regmap_add_irq_chip(&client->dev, ddata->regmap, client->irq,
+ 				       IRQF_TRIGGER_FALLING, 0,
+-				       &mt6360_pmu_irq_chip, &ddata->irq_data);
++				       &mt6360_irq_chip, &ddata->irq_data);
+ 	if (ret) {
+ 		dev_err(&client->dev, "Failed to add Regmap IRQ Chip\n");
+ 		return ret;
+@@ -374,7 +374,7 @@ static int mt6360_pmu_probe(struct i2c_client *client)
+ 	return 0;
+ }
+ 
+-static int __maybe_unused mt6360_pmu_suspend(struct device *dev)
++static int __maybe_unused mt6360_suspend(struct device *dev)
+ {
+ 	struct i2c_client *i2c = to_i2c_client(dev);
+ 
+@@ -384,7 +384,7 @@ static int __maybe_unused mt6360_pmu_suspend(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int __maybe_unused mt6360_pmu_resume(struct device *dev)
++static int __maybe_unused mt6360_resume(struct device *dev)
+ {
+ 
+ 	struct i2c_client *i2c = to_i2c_client(dev);
+@@ -395,25 +395,24 @@ static int __maybe_unused mt6360_pmu_resume(struct device *dev)
+ 	return 0;
+ }
+ 
+-static SIMPLE_DEV_PM_OPS(mt6360_pmu_pm_ops,
+-			 mt6360_pmu_suspend, mt6360_pmu_resume);
++static SIMPLE_DEV_PM_OPS(mt6360_pm_ops, mt6360_suspend, mt6360_resume);
+ 
+-static const struct of_device_id __maybe_unused mt6360_pmu_of_id[] = {
+-	{ .compatible = "mediatek,mt6360_pmu", },
++static const struct of_device_id __maybe_unused mt6360_of_id[] = {
++	{ .compatible = "mediatek,mt6360", },
+ 	{},
  };
+-MODULE_DEVICE_TABLE(of, mt6360_pmu_of_id);
++MODULE_DEVICE_TABLE(of, mt6360_of_id);
+ 
+-static struct i2c_driver mt6360_pmu_driver = {
++static struct i2c_driver mt6360_driver = {
+ 	.driver = {
+-		.name = "mt6360_pmu",
+-		.pm = &mt6360_pmu_pm_ops,
+-		.of_match_table = of_match_ptr(mt6360_pmu_of_id),
++		.name = "mt6360",
++		.pm = &mt6360_pm_ops,
++		.of_match_table = of_match_ptr(mt6360_of_id),
+ 	},
+-	.probe_new = mt6360_pmu_probe,
++	.probe_new = mt6360_probe,
+ };
+-module_i2c_driver(mt6360_pmu_driver);
++module_i2c_driver(mt6360_driver);
+ 
+ MODULE_AUTHOR("Gene Chen <gene_chen@richtek.com>");
+-MODULE_DESCRIPTION("MT6360 PMU I2C Driver");
++MODULE_DESCRIPTION("MT6360 I2C Driver");
+ MODULE_LICENSE("GPL v2");
 -- 
 2.7.4
 
