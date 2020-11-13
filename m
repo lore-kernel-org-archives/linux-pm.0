@@ -2,64 +2,66 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-3.9 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.4 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B5989C63697
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Nov 2020 08:48:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BCC56C63697
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Nov 2020 08:53:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 52FA4206CA
-	for <linux-pm@archiver.kernel.org>; Fri, 13 Nov 2020 08:48:30 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5D3B42078D
+	for <linux-pm@archiver.kernel.org>; Fri, 13 Nov 2020 08:53:52 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="bwZrPnyq"
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="RaaGs8W4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726207AbgKMIs3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 13 Nov 2020 03:48:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33038 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726249AbgKMIs2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2020 03:48:28 -0500
-Received: from mail-wm1-x344.google.com (mail-wm1-x344.google.com [IPv6:2a00:1450:4864:20::344])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6A2F8C0617A6
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2020 00:48:28 -0800 (PST)
-Received: by mail-wm1-x344.google.com with SMTP id w24so7679485wmi.0
-        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2020 00:48:28 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=subject:to:cc:references:from:autocrypt:message-id:date
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=OXNLGzI568pdIo9vXw49CKPhrcpuIJbWHVRFLUXXX1Y=;
-        b=bwZrPnyqZrci6UeDZHCYSnw/VAGBVtUNSBdLyiPHzVyahUbJtFeRtrWKsfz7x1ovZC
-         UQ+oxsZBvoH+DJuoPleWhP6cZq6avdm+WTq2XdD03M8pfmwUO/jDFESPF0UOHF251Gl9
-         +IRGZkIN1/j9mjevvHtj1miiXZT/z3tiS95GEByU/ZQOEBQXXf3F1sJhKqi1NnHKsBQ+
-         eWqec9XRvt62Eyjxji7JGpZvvTTVgw1vg1Im/Y8eCTIT/Yq36Yt9s6kmGhwsXZxOdeoZ
-         JG9eFG4BlZDJ+HRdYApLoI16ucmucoWr/cOvstFlBYeT3daN1gId6OWV29m02e/+6Qqj
-         7oPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:autocrypt
-         :message-id:date:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=OXNLGzI568pdIo9vXw49CKPhrcpuIJbWHVRFLUXXX1Y=;
-        b=kv392uwmkp8ZO1VEKfplHKakYtjS/UDeMrBkubPy6jitUy36VwxtgESSuaNszi9vUn
-         Bvtm2donFPfXPnbc0FunXVvBznTRsycpEfr2TcafXCOFOBPJuPr0W2QjzrkK/L5VMr9Z
-         bFIRs+VLwxosET98NVcK5KgWo8JE38/qBr+LwjIV9Cn2SQ2BI7wyXoRDs5kHfBfgRb++
-         N+7YAVz5wRy+DtzrZfhCmkzQ7N1mjm7LF0xVVBJtFv9vji4W6LITnQ0IQh1JiXnOhPQn
-         3IEO5/YVPFb0w1kGglh2fE5lD/Nw4yT+u1YZowMYgQNss7rav15h3J1zgg9Ud3r3xet4
-         ZOkg==
-X-Gm-Message-State: AOAM533rY4b+sLNy96s0ZSpbx/UmpGtZjF9IUI90pzHySHcDtO8QR8eE
-        R1/JNPu7B5x4EroZJ2FZJdCkWQ==
-X-Google-Smtp-Source: ABdhPJzk7D0uQ6FoaVTAbiAUaj9wWqVP2TYIpQIU2r/XVYU03ErBlQTzLEANBj+fk+mldiYFxcle5Q==
-X-Received: by 2002:a1c:6a0d:: with SMTP id f13mr1390884wmc.172.1605257307130;
-        Fri, 13 Nov 2020 00:48:27 -0800 (PST)
-Received: from [10.44.66.8] ([212.45.67.2])
-        by smtp.googlemail.com with ESMTPSA id p3sm3924898wrs.50.2020.11.13.00.48.25
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 13 Nov 2020 00:48:26 -0800 (PST)
+        id S1726202AbgKMIxv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 13 Nov 2020 03:53:51 -0500
+Received: from mailout4.samsung.com ([203.254.224.34]:54149 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726205AbgKMIxv (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 13 Nov 2020 03:53:51 -0500
+Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20201113085347epoutp04b524a9d63b4afd1c4d990d9bb0fbd862~HBU6YZL3Q2862328623epoutp04S
+        for <linux-pm@vger.kernel.org>; Fri, 13 Nov 2020 08:53:47 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20201113085347epoutp04b524a9d63b4afd1c4d990d9bb0fbd862~HBU6YZL3Q2862328623epoutp04S
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1605257627;
+        bh=CmhQQ+b8Nd14NE83uFOol/Pb/bgGtMAeG2yEorHiLng=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=RaaGs8W4NGnLjqEhrgATAWHDMA/uYX9JkZ4SJxJLtMtSS6wv3xiVd4t9e84lWq61e
+         DjcDn2QCa5t0L12x3FqK+SPFt7BDrAKT+dre3CvSVZyZi5peko01DQde2s/gMbuzIL
+         OH33m4itVPEV1CUQmmV6A33lJW6KD0cEKJlnLldY=
+Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20201113085346epcas1p4d8103c2ea5ecc14e318301bdcb107c6c~HBU5xVZM92081020810epcas1p45;
+        Fri, 13 Nov 2020 08:53:46 +0000 (GMT)
+Received: from epsmges1p5.samsung.com (unknown [182.195.40.152]) by
+        epsnrtp2.localdomain (Postfix) with ESMTP id 4CXXLw3dnXzMqYkX; Fri, 13 Nov
+        2020 08:53:44 +0000 (GMT)
+Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
+        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
+        33.21.09577.8994EAF5; Fri, 13 Nov 2020 17:53:44 +0900 (KST)
+Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTPA id
+        20201113085343epcas1p198641b74a3aff97168379b595e37b7fa~HBU3OC3Bm2769827698epcas1p1A;
+        Fri, 13 Nov 2020 08:53:43 +0000 (GMT)
+Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
+        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
+        20201113085343epsmtrp24919d78d46d76d4d4ac3f71d7533107d~HBU3NOwmf2268222682epsmtrp28;
+        Fri, 13 Nov 2020 08:53:43 +0000 (GMT)
+X-AuditID: b6c32a39-bfdff70000002569-e5-5fae4998deb6
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        D4.D1.08745.7994EAF5; Fri, 13 Nov 2020 17:53:43 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20201113085343epsmtip2326aba259bb05a3468ef94574a790136~HBU26NvLh2166221662epsmtip2W;
+        Fri, 13 Nov 2020 08:53:43 +0000 (GMT)
 Subject: Re: [PATCH v9 0/5] Exynos: Simple QoS for exynos-bus using
  interconnect
-To:     Sylwester Nawrocki <s.nawrocki@samsung.com>, cw00.choi@samsung.com,
+To:     Georgi Djakov <georgi.djakov@linaro.org>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
         inki.dae@samsung.com
 Cc:     krzk@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org,
         a.swigon@samsung.com, myungjoo.ham@samsung.com,
@@ -68,88 +70,102 @@ Cc:     krzk@kernel.org, devicetree@vger.kernel.org, robh+dt@kernel.org,
         linux-pm@vger.kernel.org, linux-samsung-soc@vger.kernel.org,
         dri-devel@lists.freedesktop.org,
         linux-arm-kernel@lists.infradead.org
-References: <CGME20201112141041eucas1p1a29130955afd4ec1d5d94cf17183920c@eucas1p1.samsung.com>
- <20201112140931.31139-1-s.nawrocki@samsung.com>
-From:   Georgi Djakov <georgi.djakov@linaro.org>
-Autocrypt: addr=georgi.djakov@linaro.org; prefer-encrypt=mutual; keydata=
- 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
- KEmKjLDvB0pePJkdTw==
-Message-ID: <b0a8e994-06d2-e04a-579c-40580b71f760@linaro.org>
-Date:   Fri, 13 Nov 2020 10:48:24 +0200
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <9cb7e3a6-2a3f-8f46-2bf1-d6d8ea01613b@samsung.com>
+Date:   Fri, 13 Nov 2020 18:07:54 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
 MIME-Version: 1.0
-In-Reply-To: <20201112140931.31139-1-s.nawrocki@samsung.com>
-Content-Type: text/plain; charset=utf-8
+In-Reply-To: <b0a8e994-06d2-e04a-579c-40580b71f760@linaro.org>
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFjrJJsWRmVeSWpSXmKPExsWy7bCmnu4Mz3XxBucnSVrcn9fKaLFxxnpW
+        i/lHzrFaXPn6ns1i+t5NbBaT7k9gsTh/fgO7xabH11gtLu+aw2bxufcIo8WM8/uYLNYeuctu
+        cbtxBZtF694j7BaH37SzWsyY/JLNQcBj06pONo871/awedzvPs7ksXlJvUffllWMHp83yQWw
+        RWXbZKQmpqQWKaTmJeenZOal2yp5B8c7x5uaGRjqGlpamCsp5CXmptoqufgE6Lpl5gDdraRQ
+        lphTChQKSCwuVtK3synKLy1JVcjILy6xVUotSMkpsCzQK07MLS7NS9dLzs+1MjQwMDIFKkzI
+        zph9eAtjwTS+irkzrjE1MB7k7mLk5JAQMJFovjSDHcQWEtjBKNG3TK+LkQvI/sQosaD9NiuE
+        85lRYvXSZnaYju/HVrBAJHYxShx++JAZov09o0TnTlkQW1ggSGLi/SNgDSIChRJznv4Ea2AW
+        eM0kcfjmeSaQBJuAlsT+FzfYQGx+AUWJqz8eM4LYvAJ2Eqv2TWUBsVkEVCXOHDwJViMqECZx
+        clsLVI2gxMmZT8BqOIHqFy98xwpiMwuIS9x6Mp8JwpaX2P52DjPIYgmBFxwSGz7sZIN4wUVi
+        y6qFUO8IS7w6vgXKlpL4/G4vVE21xMqTR9ggmjsYJbbsv8AKkTCW2L90MtAGDqANmhLrd+lD
+        hBUldv6eywixmE/i3dceVpASCQFeiY42IYgSZYnLD+4yQdiSEovbO9kmMCrNQvLOLCQvzELy
+        wiyEZQsYWVYxiqUWFOempxYbFpgix/YmRnCa1rLcwTj97Qe9Q4xMHIyHGCU4mJVEeJUd1sQL
+        8aYkVlalFuXHF5XmpBYfYjQFBvBEZinR5HxgpsgriTc0NTI2NrYwMTQzNTRUEuf9o90RLySQ
+        nliSmp2aWpBaBNPHxMEp1cCkeTV5otCUpUrxx/06WGcEmK/cafU1asrevSIZetGF9dv2+VWx
+        +Tt47hWOrH5z+bxN5d9TMVKrn4bdveTYGau1cRbn7GMMiec5P8dkFOw9IOF43dRExbxzy66Y
+        p22cjdO5dUPkQ3vPnGqad3WHz7JpC4r+CvaYbVIMMHz/YNUPn5IsnpBpbTY+Vu8ri7SE4945
+        3ngjrbQ9Y6eIeaRKff+tz4eOrbOWqNys+OqeUU7rhmeyjE/drCI78tze/7H2VT25aOLdO4fm
+        C/9LtN/n7HSS1bFwafP5O5zulc9yL3LvqMt/mMkp83Ox/7PDF7bueHT8wTGOE/eNGSuKy/IW
+        PK4zEBdeIBLOc+ZI/EezZ0FKLMUZiYZazEXFiQDXa5MTXAQAAA==
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFtrKIsWRmVeSWpSXmKPExsWy7bCSvO50z3XxBv2LDS3uz2tltNg4Yz2r
+        xfwj51gtrnx9z2Yxfe8mNotJ9yewWJw/v4HdYtPja6wWl3fNYbP43HuE0WLG+X1MFmuP3GW3
+        uN24gs2ide8RdovDb9pZLWZMfsnmIOCxaVUnm8eda3vYPO53H2fy2Lyk3qNvyypGj8+b5ALY
+        orhsUlJzMstSi/TtErgyZh/ewlgwja9i7oxrTA2MB7m7GDk5JARMJL4fW8HSxcjFISSwg1Fi
+        4vM57BAJSYlpF48ydzFyANnCEocPF0PUvGWUmHroBQtIjbBAkMTE+0fA6kUECiXOTrkENohZ
+        4DWTxJyJ39khOg4zStxbcZoRpIpNQEti/4sbbCA2v4CixNUfj8HivAJ2Eqv2TQWbyiKgKnHm
+        4EmwGlGBMImdSx4zQdQISpyc+QSshhOofvHCd6wgNrOAusSfeZeYIWxxiVtP5jNB2PIS29/O
+        YZ7AKDwLSfssJC2zkLTMQtKygJFlFaNkakFxbnpusWGBUV5quV5xYm5xaV66XnJ+7iZGcMxq
+        ae1g3LPqg94hRiYOxkOMEhzMSiK8yg5r4oV4UxIrq1KL8uOLSnNSiw8xSnOwKInzfp21ME5I
+        ID2xJDU7NbUgtQgmy8TBKdXAZBk0JVeJgSNPSbqjKo352FtLG+N3Xy977Xiz+XzlHU/119Ym
+        Z3fGxU51PFczxapdkOH5luwNHsVn+gqrXZl2rGl4uGJ60+WS42mnyh6ZLTx1xJDhVKmB9Zaj
+        1fbaD9iVCpd03I5+Kb9Aes7JQ3MNP9V0RDxJeO3FEBLHd/6+Wt6TFTlSMwOrji9c1bhs0sRl
+        6pFCqxbEqh3rkPDc80DpaWPamvOGZxZnv5T7urEh6deE01nqArcUJop8/3R+a5JlHfOJxWqu
+        TEvfn22RO+esF7y04u6J9pJLFWE6ex9qrpu6ehnrjr3JN5543TjvVLzL78IzFbftp4/op25b
+        amJlz5z3suNf26ozPuve56f41ymxFGckGmoxFxUnAgArIZi3SAMAAA==
+X-CMS-MailID: 20201113085343epcas1p198641b74a3aff97168379b595e37b7fa
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20201112141041eucas1p1a29130955afd4ec1d5d94cf17183920c
+References: <CGME20201112141041eucas1p1a29130955afd4ec1d5d94cf17183920c@eucas1p1.samsung.com>
+        <20201112140931.31139-1-s.nawrocki@samsung.com>
+        <b0a8e994-06d2-e04a-579c-40580b71f760@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 11/12/20 16:09, Sylwester Nawrocki wrote:
+On 11/13/20 5:48 PM, Georgi Djakov wrote:
+> On 11/12/20 16:09, Sylwester Nawrocki wrote:
+>>
+>> This patchset adds interconnect API support for the Exynos SoC "samsung,
+>> exynos-bus" compatible devices, which already have their corresponding
+>> exynos-bus driver in the devfreq subsystem.  Complementing the devfreq
+>> driver with an interconnect functionality allows to ensure the QoS
+>> requirements of devices accessing the system memory (e.g. video processing
+>> devices) are fulfilled and allows to avoid issues like the one discussed
+>> in thread [1].
+>>
+>> This patch series adds implementation of the interconnect provider per each
+>> "samsung,exynos-bus" compatible DT node, with one interconnect node per
+>> provider.  The interconnect code which was previously added as a part of
+>> the devfreq driver has been converted to a separate platform driver.
+>> In the devfreq a corresponding virtual child platform device is registered.
+>> Integration of devfreq and interconnect frameworks is achieved through
+>> the PM QoS API.
+>>
+>> A sample interconnect consumer for exynos-mixer is added in patch 5/5,
+>> it is currently added only for exynos4412 and allows to address the
+>> mixer DMA underrun error issues [1].
 > 
-> This patchset adds interconnect API support for the Exynos SoC "samsung,
-> exynos-bus" compatible devices, which already have their corresponding
-> exynos-bus driver in the devfreq subsystem.  Complementing the devfreq
-> driver with an interconnect functionality allows to ensure the QoS
-> requirements of devices accessing the system memory (e.g. video processing
-> devices) are fulfilled and allows to avoid issues like the one discussed
-> in thread [1].
-> 
-> This patch series adds implementation of the interconnect provider per each
-> "samsung,exynos-bus" compatible DT node, with one interconnect node per
-> provider.  The interconnect code which was previously added as a part of
-> the devfreq driver has been converted to a separate platform driver.
-> In the devfreq a corresponding virtual child platform device is registered.
-> Integration of devfreq and interconnect frameworks is achieved through
-> the PM QoS API.
-> 
-> A sample interconnect consumer for exynos-mixer is added in patch 5/5,
-> it is currently added only for exynos4412 and allows to address the
-> mixer DMA underrun error issues [1].
+> Good work Sylwester! Thank you and all the reviewers! What would be the merge
+> path for this patchset? Looks like there is no build dependency between patches.
+> Should i take just patches 2,3 or also patch 1? Chanwoo?
 
-Good work Sylwester! Thank you and all the reviewers! What would be the merge
-path for this patchset? Looks like there is no build dependency between patches.
-Should i take just patches 2,3 or also patch 1? Chanwoo?
+Hi Georgi,
 
-Thanks,
-Georgi
+If you take the patch 2,3, I'll apply patch 1,4 to devfreq.git.
+
+Hi Sylwester,
+First of all, thanks for your work to finish it for a long time.
+I'm very happy about finishing this work. It is very necessary feature
+for the QoS. Once again, thank for your work.
+
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
