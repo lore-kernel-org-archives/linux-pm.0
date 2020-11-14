@@ -3,44 +3,44 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
-	autolearn_force=no version=3.4.0
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 512E7C63697
-	for <linux-pm@archiver.kernel.org>; Sat, 14 Nov 2020 15:37:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE6FCC6369E
+	for <linux-pm@archiver.kernel.org>; Sat, 14 Nov 2020 15:38:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1D4E822277
-	for <linux-pm@archiver.kernel.org>; Sat, 14 Nov 2020 15:37:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CCFAF2225E
+	for <linux-pm@archiver.kernel.org>; Sat, 14 Nov 2020 15:38:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726513AbgKNPg7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 14 Nov 2020 10:36:59 -0500
-Received: from mail-wr1-f67.google.com ([209.85.221.67]:35267 "EHLO
-        mail-wr1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726955AbgKNPg7 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Nov 2020 10:36:59 -0500
-Received: by mail-wr1-f67.google.com with SMTP id k2so13664552wrx.2;
-        Sat, 14 Nov 2020 07:36:58 -0800 (PST)
+        id S1726955AbgKNPhs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 14 Nov 2020 10:37:48 -0500
+Received: from mail-wm1-f66.google.com ([209.85.128.66]:38216 "EHLO
+        mail-wm1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726356AbgKNPhs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 14 Nov 2020 10:37:48 -0500
+Received: by mail-wm1-f66.google.com with SMTP id m125so7785412wmm.3;
+        Sat, 14 Nov 2020 07:37:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:date:from:to:cc:subject:message-id:references
          :mime-version:content-disposition:in-reply-to;
-        bh=6P1mcO2kNRJbbh/T0XZ9QtQQ26OuRe5uLfwAgAsxH8Q=;
-        b=K9Cbseo2cRhdtKcdjgY1tdqr1Pra1M/ugDiNOp7DpHDDHqX6pJaeWQsAjRUItgw5l+
-         cJWdTDDyat1pfIGY7k83khLeq4jUumPVwiGsLHcZRhgVwv+WGu7BQJoK2z4jQ3NOuT3T
-         WWV1iNycrxb41i/S8Bi9M0052mhNimFFm6ugGhnTOWmbD/szA+0jdiRfirOz15z2kN4I
-         3ZBXmVNHTPeSPDwhMf0Qlyh4arw9U09cyT2r5VafDhb95UBeOhWc20fK/SaH/Ihnt5SS
-         zfghxe8SRLrBc7YCKEyMsvz9JeXN5q6nPa05rXH34aqXEzIYAPfOByYNQq5pCK4s88U4
-         541Q==
-X-Gm-Message-State: AOAM530WDUDKcgkWGIrCoLr4qx3UDumjNKLIYpoJcFLF1F7y/0t7G2JX
-        I1cykHLGBKQRunnECiMl6wstLb7RSTy6UA==
-X-Google-Smtp-Source: ABdhPJw/ztErj0PDs063eF71cDChBodWTwASgTPBkCh49ytR3SgplH/2PxKc4YKX8d3OpILcg9/WqA==
-X-Received: by 2002:a5d:660f:: with SMTP id n15mr10404788wru.345.1605368217307;
-        Sat, 14 Nov 2020 07:36:57 -0800 (PST)
+        bh=ZmlbFh0hWx58b0n2enEM67BSZj4OZbN+MaKTEZMGf/M=;
+        b=CAVCmtLL9ffu7b2hSUyPP9s/GiGoii4JPUBQjOlFtL66shdkRU7/dziT8ZC1T7BCyw
+         VqpqsE5qKY3dMmL1wVJNx5+tCl1FM82pdMnnYyGOTm7NY74csA+l42tgMmPXSC48QdWw
+         HYqbZf0/CSq2aWiXVpe55rh3s4Pt8zJj96rA4fo8lsgFF2WNyB8RQOoK5v+Kie8ZhbnN
+         1Y4kMHvKXMNCT022INAtKT/Hrqk+ODSrNOwmqe8QebvwY/8W9Tk1hXyiVceGI2iib9TO
+         8F4IKygfnvipbqMwq5qmYMcLLLPLmCoh2QBPAntETTiSzhPo2frU6YCogripgUdrfcfi
+         Pbog==
+X-Gm-Message-State: AOAM5319zOTGQ8y1XIYADerUKFHjzCHlm8Di8aXZkzWFLRT0mq50ziH+
+        EmIJ7LHLxOJcA4c1kD8CSAM=
+X-Google-Smtp-Source: ABdhPJyzI7AG4iGUF1QmLcRFpwG9j3+/23Zyv6fGfHY4T0G4UfxJYHELxIV+Rch7MrTMAHHH5in7ow==
+X-Received: by 2002:a1c:acc1:: with SMTP id v184mr6898730wme.63.1605368265988;
+        Sat, 14 Nov 2020 07:37:45 -0800 (PST)
 Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id l16sm14975132wrx.5.2020.11.14.07.36.55
+        by smtp.googlemail.com with ESMTPSA id m22sm15946562wrb.97.2020.11.14.07.37.44
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 14 Nov 2020 07:36:55 -0800 (PST)
-Date:   Sat, 14 Nov 2020 16:36:54 +0100
+        Sat, 14 Nov 2020 07:37:44 -0800 (PST)
+Date:   Sat, 14 Nov 2020 16:37:43 +0100
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 To:     Dmitry Osipenko <digetx@gmail.com>
 Cc:     Thierry Reding <thierry.reding@gmail.com>,
@@ -59,27 +59,27 @@ Cc:     Thierry Reding <thierry.reding@gmail.com>,
         Nicolas Chauvet <kwizart@gmail.com>,
         linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v8 01/26] memory: tegra: Correct stub of
- devm_tegra_memory_controller_get()
-Message-ID: <20201114153654.GA4106@kozik-lap>
+Subject: Re: [PATCH v8 03/26] memory: tegra20-emc: Factor out clk
+ initialization
+Message-ID: <20201114153743.GC4106@kozik-lap>
 References: <20201111011456.7875-1-digetx@gmail.com>
- <20201111011456.7875-2-digetx@gmail.com>
+ <20201111011456.7875-4-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20201111011456.7875-2-digetx@gmail.com>
+In-Reply-To: <20201111011456.7875-4-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 11, 2020 at 04:14:31AM +0300, Dmitry Osipenko wrote:
-> Correct typo in a stub of devm_tegra_memory_controller_get() to fix a
-> non-ARM kernel compile-testing.
+On Wed, Nov 11, 2020 at 04:14:33AM +0300, Dmitry Osipenko wrote:
+> Factor out clk initialization and make it resource-managed. This makes
+> easier to follow code and will help to make further changes cleaner.
 > 
-> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
 > Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 > ---
->  include/soc/tegra/mc.h | 2 +-
+>  drivers/memory/tegra/tegra20-emc.c | 70 ++++++++++++++++++++----------
+>  1 file changed, 47 insertions(+), 23 deletions(-)
 
 Thanks, applied.
 
