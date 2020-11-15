@@ -2,61 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-6.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33CEAC55ABD
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CB3E6C6379D
 	for <linux-pm@archiver.kernel.org>; Sun, 15 Nov 2020 21:33:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EAC2822453
-	for <linux-pm@archiver.kernel.org>; Sun, 15 Nov 2020 21:33:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 97DC324170
+	for <linux-pm@archiver.kernel.org>; Sun, 15 Nov 2020 21:33:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="E175ZaO5"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="lXS3HiSs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727593AbgKOVdS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 15 Nov 2020 16:33:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58000 "EHLO
+        id S1727815AbgKOVdY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 15 Nov 2020 16:33:24 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58014 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727425AbgKOVdR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Nov 2020 16:33:17 -0500
+        with ESMTP id S1727425AbgKOVdW (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 15 Nov 2020 16:33:22 -0500
 Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 657CDC0613CF;
-        Sun, 15 Nov 2020 13:33:17 -0800 (PST)
-Received: by mail-lf1-x143.google.com with SMTP id v144so22300520lfa.13;
-        Sun, 15 Nov 2020 13:33:17 -0800 (PST)
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A70B6C0617A6;
+        Sun, 15 Nov 2020 13:33:20 -0800 (PST)
+Received: by mail-lf1-x143.google.com with SMTP id j205so22379425lfj.6;
+        Sun, 15 Nov 2020 13:33:20 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=h8MxeHCuATJ53PU3I8a6+czrbv101Npis+Hx7wYKzuk=;
-        b=E175ZaO5saZJgpUFcFDwuW78olO2XrOuQzlEEbEJg1BvpqE4a7qwch7OanQfFjeL4o
-         ghVsnHGG13jbuGP89iiXo0M+uwar9l6qqtBQBxfY/C4A/+5km1O3bSZIjwXl9HAEPcRh
-         ADTQTHcsJIRKE1UEXwho0rBcIjXBxzTfNTJ9U+LbdkzCJgRVj6nSx/OMuvLcoTRM6UGr
-         ky7YVrZAaM5qB8gCYOudoT2zvTBtq5s2VJ1JGFpT7uhJJFs4QmsTf4+nMZxGNc3C88RE
-         TWgoZ2FrtSFTXzFZHdKxXhZAeAzvFTXoT7sx8kmuhxhsKHnsFFAYOmt/BdAQtOd2TmLM
-         Pt4g==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=iEcxOMp1NLOMF0Qi1vlqDEHmnss3NDqpNYlgo52Rbfc=;
+        b=lXS3HiSsnEqc6AR8AaWtwNjKCLrhEhS+nSrbmu8b7vopM4l8ZVWioON+5jYSsLoaM8
+         a1arLGaw+zTR6pSwBXSN3/eKjQbPc0jBcRKgjaIj1TqdrIMlN6RqDUemAQOAVEhLe/yT
+         I9DNoqlMV/phAzqeaJE8P0vySPpPbajdujVkKTxz950TzWhOOq21KGhOLvVJAyNMZz0Z
+         Gf9RswheRxrrMFsh4NihXTH4sOW1FyCfVSh9NcFMbFq7byuQ2TbX6N5XRNkiNdQhEIv1
+         tIIs1p+nU4euvgjHf40aAHQhDX/1ypg6yBlcERsssVDi0TuoYwPtEXXq/TY84IfUJaD9
+         tp2w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=h8MxeHCuATJ53PU3I8a6+czrbv101Npis+Hx7wYKzuk=;
-        b=FYBdo2G243i8123gVSCT8IO1dN3SCWqRxdsSxTROP/gB7e8+txit8Rzh0l5TttObRt
-         hXaMg8+Je4NWJVBGp36wqumUFdlxy8s2fXNfeEf01PutHdBmomxfCGIFNag6Qnu5F6k2
-         YH5vE84It0ynPfRaFbmRUmVLbzbD0pRwRHtIPPnZ4NqBPXDktitA6FV7U4q6wYiEs0FY
-         Tcz3hcPfBqkhZi7GXCiDz0H+4w0o3tTvos1LaTtUs0ZR/MvgH8Chnk18f5l+STA/giZH
-         nt/RngnGgHXlytZgTBFCnax9CamX0kHA1LabMnf4wfSE/lkCGFag1IUGSWF2l6wxsX2Z
-         LIEQ==
-X-Gm-Message-State: AOAM530GaAQhMbBHwqcw7VgEf4oZpJwv4gLMJMWZu8JGfX+rxEGLVCr3
-        /p+usFGqKxhBPUy3zr2aTWtJeTfhf6Q=
-X-Google-Smtp-Source: ABdhPJw3I34vHvS+uGktSMHOB5ZzWOMlk40iewa5kpkKZ8zqF+Fcp9wbTvoQJOR09JFzFR3j3itg+g==
-X-Received: by 2002:a19:c181:: with SMTP id r123mr4843928lff.335.1605475995788;
-        Sun, 15 Nov 2020 13:33:15 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=iEcxOMp1NLOMF0Qi1vlqDEHmnss3NDqpNYlgo52Rbfc=;
+        b=W2mF4Spu2Z/gBo/OxKbmsY2ak42Ef3emDrYPqCuA7oknpg3QP4/S3MB19k7dQBvLva
+         xXPbxdc0sawWGhhqVbSsC9irtolXQYaZURmYD4QbH95DYL+2rFvr/JxOO3iH+xle69K5
+         HM+ymLORIfG4w2EubB0mn4KhcZra64ZIuT4eGjw7aPtQmGtRzOoYe7T8VkHt4z22jchP
+         sl30WQKQIt3PBAsSHsvfq3qn2Vz4B5Pv5cdILuzraImcI36Hgz6w0wzEtxYiBTmJdnMC
+         NtmtqvUJ33uB/ZdIj2/ZFCc+WJ5IrUTuyAQIc54dseLEVPCtuXzj0k8dMF0lof0/9PEz
+         XkNQ==
+X-Gm-Message-State: AOAM530WuFrpQWDaTfy1S0F/R64YnDwWrRbol94V2qS6hdgqf6QEcAzw
+        xd5KaEG3KEKRcUy6t3Nw/ro=
+X-Google-Smtp-Source: ABdhPJxQn0b1TgtIIsx4pYPR1+xf/Od/q1CGBVV94Ksm1gZDO5gg75PeUHiFEI7NDYOLoBlz0r+ohg==
+X-Received: by 2002:ac2:4543:: with SMTP id j3mr4040093lfm.511.1605475999179;
+        Sun, 15 Nov 2020 13:33:19 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id o3sm2462055lfo.217.2020.11.15.13.33.14
+        by smtp.gmail.com with ESMTPSA id o3sm2462055lfo.217.2020.11.15.13.33.18
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 15 Nov 2020 13:33:15 -0800 (PST)
+        Sun, 15 Nov 2020 13:33:18 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -75,118 +76,65 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v9 00/17] Introduce memory interconnect for NVIDIA Tegra SoCs
-Date:   Mon, 16 Nov 2020 00:29:05 +0300
-Message-Id: <20201115212922.4390-1-digetx@gmail.com>
+Subject: [PATCH v9 03/17] memory: tegra124-emc: Continue probing if timings are missing in device-tree
+Date:   Mon, 16 Nov 2020 00:29:08 +0300
+Message-Id: <20201115212922.4390-4-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201115212922.4390-1-digetx@gmail.com>
+References: <20201115212922.4390-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series brings initial support for memory interconnect to Tegra20,
-Tegra30 and Tegra124 SoCs.
+EMC driver will become mandatory after turning it into interconnect
+provider because interconnect users, like display controller driver, will
+fail to probe using newer device-trees that have interconnect properties.
+Thus make EMC driver to probe even if timings are missing in device-tree.
 
-For the starter only display controllers and devfreq devices are getting
-interconnect API support, others could be supported later on. The display
-controllers have the biggest demand for interconnect API right now because
-dynamic memory frequency scaling can't be done safely without taking into
-account bandwidth requirement from the displays. In particular this series
-fixes distorted display output on T30 Ouya and T124 TK1 devices.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/memory/tegra/tegra124-emc.c | 26 +++++++++-----------------
+ 1 file changed, 9 insertions(+), 17 deletions(-)
 
-Changelog:
-
-v9: - Squashed "memory: tegra30-emc: Factor out clk initialization" into
-      patch "tegra30: Support interconnect framework".
-      Suggested by Krzysztof Kozlowski.
-
-    - Improved Kconfig in the patch "memory: tegra124-emc: Make driver modular"
-      by adding CONFIG_TEGRA124_CLK_EMC entry, which makes clk-driver changes
-      to look a bit more cleaner. Suggested by Krzysztof Kozlowski.
-
-    - Dropped voltage regulator support from ICC and DT patches for now
-      because there is a new discussion about using a power domain abstraction
-      for controlling the regulator, which is likely to happen.
-
-    - Replaced direct "operating-points-v2" property checking in EMC drivers
-      with checking of a returned error code from dev_pm_opp_of_add_table().
-      Note that I haven't touched T20 EMC driver because it's very likely
-      that we'll replace that code with a common helper soon anyways.
-      Suggested by Viresh Kumar.
-
-    - The T30 DT patches now include EMC OPP changes for Ouya board, which
-      is available now in linux-next.
-
-Dmitry Osipenko (17):
-  memory: tegra30: Support interconnect framework
-  memory: tegra124-emc: Make driver modular
-  memory: tegra124-emc: Continue probing if timings are missing in
-    device-tree
-  memory: tegra124: Support interconnect framework
-  drm/tegra: dc: Support memory bandwidth management
-  drm/tegra: dc: Extend debug stats with total number of events
-  PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
-  PM / devfreq: tegra30: Separate configurations per-SoC generation
-  PM / devfreq: tegra20: Deprecate in a favor of emc-stat based driver
-  ARM: tegra: Correct EMC registers size in Tegra20 device-tree
-  ARM: tegra: Add interconnect properties to Tegra20 device-tree
-  ARM: tegra: Add interconnect properties to Tegra30 device-tree
-  ARM: tegra: Add interconnect properties to Tegra124 device-tree
-  ARM: tegra: Add nvidia,memory-controller phandle to Tegra20 EMC
-    device-tree
-  ARM: tegra: Add EMC OPP properties to Tegra20 device-trees
-  ARM: tegra: Add EMC OPP and ICC properties to Tegra30 EMC and ACTMON
-    device-tree nodes
-  ARM: tegra: Add EMC OPP and ICC properties to Tegra124 EMC and ACTMON
-    device-tree nodes
-
- MAINTAINERS                                   |   1 -
- arch/arm/boot/dts/tegra124-apalis-emc.dtsi    |   8 +
- .../arm/boot/dts/tegra124-jetson-tk1-emc.dtsi |   8 +
- arch/arm/boot/dts/tegra124-nyan-big-emc.dtsi  |  10 +
- .../arm/boot/dts/tegra124-nyan-blaze-emc.dtsi |  10 +
- .../boot/dts/tegra124-peripherals-opp.dtsi    | 419 ++++++++++++++++++
- arch/arm/boot/dts/tegra124.dtsi               |  31 ++
- .../boot/dts/tegra20-acer-a500-picasso.dts    |   5 +
- arch/arm/boot/dts/tegra20-colibri.dtsi        |   4 +
- arch/arm/boot/dts/tegra20-paz00.dts           |   4 +
- .../arm/boot/dts/tegra20-peripherals-opp.dtsi |  92 ++++
- arch/arm/boot/dts/tegra20.dtsi                |  33 +-
- ...30-asus-nexus7-grouper-memory-timings.dtsi |  12 +
- arch/arm/boot/dts/tegra30-ouya.dts            |   8 +
- .../arm/boot/dts/tegra30-peripherals-opp.dtsi | 383 ++++++++++++++++
- arch/arm/boot/dts/tegra30.dtsi                |  33 +-
- drivers/clk/tegra/Kconfig                     |   3 +
- drivers/clk/tegra/Makefile                    |   2 +-
- drivers/clk/tegra/clk-tegra124-emc.c          |  41 +-
- drivers/clk/tegra/clk-tegra124.c              |  26 +-
- drivers/clk/tegra/clk.h                       |  18 +-
- drivers/devfreq/Kconfig                       |  10 -
- drivers/devfreq/Makefile                      |   1 -
- drivers/devfreq/tegra20-devfreq.c             | 210 ---------
- drivers/devfreq/tegra30-devfreq.c             | 154 ++++---
- drivers/gpu/drm/tegra/Kconfig                 |   1 +
- drivers/gpu/drm/tegra/dc.c                    | 359 +++++++++++++++
- drivers/gpu/drm/tegra/dc.h                    |  19 +
- drivers/gpu/drm/tegra/drm.c                   |  14 +
- drivers/gpu/drm/tegra/hub.c                   |   3 +
- drivers/gpu/drm/tegra/plane.c                 | 121 +++++
- drivers/gpu/drm/tegra/plane.h                 |  15 +
- drivers/memory/tegra/Kconfig                  |   5 +-
- drivers/memory/tegra/tegra124-emc.c           | 382 ++++++++++++++--
- drivers/memory/tegra/tegra124.c               |  82 +++-
- drivers/memory/tegra/tegra30-emc.c            | 349 ++++++++++++++-
- drivers/memory/tegra/tegra30.c                | 173 +++++++-
- include/linux/clk/tegra.h                     |   8 +
- include/soc/tegra/emc.h                       |  16 -
- 39 files changed, 2699 insertions(+), 374 deletions(-)
- create mode 100644 arch/arm/boot/dts/tegra124-peripherals-opp.dtsi
- create mode 100644 arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
- create mode 100644 arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
- delete mode 100644 drivers/devfreq/tegra20-devfreq.c
- delete mode 100644 include/soc/tegra/emc.h
-
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index edfbf6d6d357..8fb8c1af25c9 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -1201,23 +1201,15 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 	ram_code = tegra_read_ram_code();
+ 
+ 	np = tegra_emc_find_node_by_ram_code(pdev->dev.of_node, ram_code);
+-	if (!np) {
+-		dev_err(&pdev->dev,
+-			"no memory timings for RAM code %u found in DT\n",
+-			ram_code);
+-		return -ENOENT;
+-	}
+-
+-	err = tegra_emc_load_timings_from_dt(emc, np);
+-	of_node_put(np);
+-	if (err)
+-		return err;
+-
+-	if (emc->num_timings == 0) {
+-		dev_err(&pdev->dev,
+-			"no memory timings for RAM code %u registered\n",
+-			ram_code);
+-		return -ENOENT;
++	if (np) {
++		err = tegra_emc_load_timings_from_dt(emc, np);
++		of_node_put(np);
++		if (err)
++			return err;
++	} else {
++		dev_info(&pdev->dev,
++			 "no memory timings for RAM code %u found in DT\n",
++			 ram_code);
+ 	}
+ 
+ 	err = emc_init(emc);
 -- 
 2.29.2
 
