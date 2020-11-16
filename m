@@ -2,127 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D3835C55ABD
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:23:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C9CFC63798
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:48:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8AD922225E
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:23:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3504F20797
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:48:46 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VIZWt/gj"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="PWRkUGRP"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728999AbgKPTXX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Nov 2020 14:23:23 -0500
-Received: from mail.kernel.org ([198.145.29.99]:33724 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725379AbgKPTXX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Nov 2020 14:23:23 -0500
-Received: from localhost (189.sub-72-105-114.myvzw.com [72.105.114.189])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id EBB302225B;
-        Mon, 16 Nov 2020 19:23:21 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1605554602;
-        bh=g0rPF891hY5n20OTuoyLNjb51WCLMjcMNMxWkW5x6r4=;
-        h=Date:From:To:Cc:Subject:In-Reply-To:From;
-        b=VIZWt/gjTQ1W6GTJzcOu2+w+1Ha5xbdud4IgZiDCWP5doSWm55i2h73+907fxRY16
-         ibe+ErD/e4baLmQZPeoImfqKuVP/mYVU4OAv/a/9SFT9FhIXpPXvWsQ1jhpbDlsaAD
-         9lyN61KTZBXdK6L+bzT8WvWOe3BJnFmsF9J6KIkI=
-Date:   Mon, 16 Nov 2020 13:23:20 -0600
-From:   Bjorn Helgaas <helgaas@kernel.org>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "David E. Box" <david.e.box@linux.intel.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Len Brown <len.brown@intel.com>,
-        Linux PCI <linux-pci@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PCI: Disable PTM during suspend on Intel PCI bridges
-Message-ID: <20201116192320.GA1290192@bjorn-Precision-5520>
+        id S1730464AbgKPTsk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Nov 2020 14:48:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38222 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730270AbgKPTsj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 14:48:39 -0500
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EC88EC0613CF;
+        Mon, 16 Nov 2020 11:48:38 -0800 (PST)
+Received: by mail-lj1-x242.google.com with SMTP id r17so21500883ljg.5;
+        Mon, 16 Nov 2020 11:48:38 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=vPNjoYNRStRNwZP0NAyFtfDW7IEy6fPv1BNAKkfHQ8M=;
+        b=PWRkUGRPFi5Tbx+qKEh9/3wx25dNdFlpMiI9uvWyXTfrA6mRGvyt5y7zRpv6V9VACh
+         OGMxWi0wgitEifNzuoovwar78dOWUowL827NPMH4PWMe+JKyqrV6L5ojdFTYQ9XfB0Ph
+         ggWI3yJ59PsXwifg/WJOrAABfe+1/YW9+IGbxLoxDy142wpBZd00wH9TfR7sRg1QUTXY
+         a6q7QBwWExb3ec/Dv6ICs/YqURlR2rG5EhAFOS5/+SzKervuimUvro1qnGp9zmQA7brD
+         jWJmg2Da/NwHhIBi4/mkJaZOnhF6F/f7DY9zB/EJBRUYcEBtBqaFL//TcnHUfyAHaKnL
+         ftmg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=vPNjoYNRStRNwZP0NAyFtfDW7IEy6fPv1BNAKkfHQ8M=;
+        b=SaJ6UVebr7Ku6AxxFohYUwk2T/6Yqh5dqxqvT2vW8kZbryFDG2dul78PxhPrFJN8ms
+         mQDK6d+uM+qI6sKW0lIYuCN1IhemXJgO1IMJt0zNDd0PDpWH2YCGcTQTWEcFl4Vridz9
+         PL7CxOwSMkWMpROrkKWtLp/7B3nGz+xYJgsE7SE7Bk/xZX3LsNDdPLRIXy05Rpbb4gnJ
+         63p4nU+L+ZcSPlL90p7S6eGGs5lrPE9sAy/MVqp2qzZb67jG8g/Qx+5GzNuhmdiiGzsp
+         YPJw4NPhUdqCrnggmDO6S5jLN65Pfqc68gCrP9R132oBpqC3+Xl9o+tfIAZNZO9as7pa
+         qPmw==
+X-Gm-Message-State: AOAM53051kETy185HxvslFIH/V4xHu2Y73oqcMsdvl5tPZ5WJ9i6YTR2
+        oXxJOFjdemkNtQ9B/+deKKQ=
+X-Google-Smtp-Source: ABdhPJwuOfvzBZ8yauT6UvhVmlPOY1t9vDAgwLceAF2NQgh7qqxo8hzr/SlGRLFK+MsJGyD+VqiNEQ==
+X-Received: by 2002:a05:651c:2c1:: with SMTP id f1mr348925ljo.192.1605556117444;
+        Mon, 16 Nov 2020 11:48:37 -0800 (PST)
+Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
+        by smtp.gmail.com with ESMTPSA id n5sm2864286lfb.306.2020.11.16.11.48.36
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 16 Nov 2020 11:48:36 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
+Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v7 4/4] ARM: tegra: acer-a500: Add Embedded Controller
+Date:   Mon, 16 Nov 2020 22:48:27 +0300
+Message-Id: <20201116194827.28947-5-digetx@gmail.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201116194827.28947-1-digetx@gmail.com>
+References: <20201116194827.28947-1-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CAJZ5v0gwSe=o_Ta0MR6XTn4BmHjs=ewTVJHe6OTp18ho+5h1Eg@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 16, 2020 at 06:53:09PM +0100, Rafael J. Wysocki wrote:
-> On Wed, Oct 7, 2020 at 7:10 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
-> > On Wed, Oct 07, 2020 at 06:53:16PM +0200, Rafael J. Wysocki wrote:
-> > > On Wed, Oct 7, 2020 at 6:49 PM David E. Box <david.e.box@linux.intel.com> wrote:
-> > > >
-> > > > On Intel Platform Controller Hubs (PCH) since Cannon Lake, the Precision
-> > > > Time Measurement (PTM) capability can prevent PCIe root ports from power
-> > > > gating during suspend-to-idle, causing increased power consumption on
-> > > > systems that suspend using Low Power S0 Idle [1]. The issue is yet to be
-> > > > root caused but believed to be coming from a race condition in the suspend
-> > > > flow as the incidence rate varies for different platforms on Linux but the
-> > > > issue does not occur at all in other operating systems. For now, disable
-> > > > the feature on suspend on all Intel root ports and enable again on resume.
-> > >
-> > > IMV it should also be noted that there is no particular reason why PTM
-> > > would need to be enabled while the whole system is suspended.  At
-> > > least it doesn't seem to be particularly useful in that state.
-> >
-> > Is this a hardware erratum?  If not, and this is working as designed,
-> > it sounds like we'd need to apply this quirk to every device that
-> > supports PTM.  That's not really practical.
-> 
-> Why not?
+This patch adds device-tree node for the Embedded Controller which is
+found on the Picasso board. The Embedded Controller itself is ENE KB930,
+it provides functions like battery-gauge/LED/GPIO/etc and it uses firmware
+that is specifically customized for the Acer A500 device.
 
-My objection was that the original patch is a quirk that applies only
-to Intel devices.
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ arch/arm/boot/dts/tegra20-acer-a500-picasso.dts | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-If this is a generic thing that should be done for *all* devices that
-support PTM, that's fine, but it should not be a quirk, and it should
-not involve a list of Vendor or Device IDs.
+diff --git a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+index d9ef3857ba03..1da3bcc8003e 100644
+--- a/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
++++ b/arch/arm/boot/dts/tegra20-acer-a500-picasso.dts
+@@ -533,6 +533,16 @@ panel_ddc: i2c@1 {
+ 			reg = <1>;
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
++
++			embedded-controller@58 {
++				compatible = "acer,a500-iconia-ec", "ene,kb930";
++				reg = <0x58>;
++
++				system-power-controller;
++
++				monitored-battery = <&bat1010>;
++				power-supplies = <&mains>;
++			};
+ 		};
+ 	};
+ 
+@@ -820,6 +830,13 @@ backlight: backlight {
+ 		default-brightness-level = <20>;
+ 	};
+ 
++	bat1010: battery-2s1p {
++		compatible = "simple-battery";
++		charge-full-design-microamp-hours = <3260000>;
++		energy-full-design-microwatt-hours = <24000000>;
++		operating-range-celsius = <0 40>;
++	};
++
+ 	/* PMIC has a built-in 32KHz oscillator which is used by PMC */
+ 	clk32k_in: clock@0 {
+ 		compatible = "fixed-clock";
+-- 
+2.29.2
 
-> It looks like the capability should be saved by pci_save_state() (it
-> isn't ATM, which appears to be a mistake) and restored by
-> pci_restore_state(), so if that is implemented, the saving can be
-> combined with the disabling in principle.
-
-Yup, looks like a mistake.  Maybe David can fix that at the same time
-(probably a separate patch, though).  I don't have a way to test it,
-but he probably does.
-
-> > The bugzilla says "there is no erratum as this does not affect
-> > Windows," but that doesn't answer the question.  What I want to know
-> > is whether this is a *hardware* defect and whether it will be fixed in
-> > future hardware.
-> 
-> I cannot answer this question, sorry.
-> 
-> ATM we only know that certain SoCs may not enter the deepest idle
-> state if PTM is enabled on some PCIe root ports during suspend.
-> 
-> Disabling PTM on those ports while suspending helps and hence the patch.
-> 
-> It doesn't appear to qualify as a "hardware defect".
-> 
-> > If it's a "wont-fix" hardware issue, we can just disable PTM
-> > completely on Intel hardware and we won't have to worry about it
-> > during suspend.
-> 
-> I'm not following the logic here, sorry again.
-> 
-> First of all, there are systems that never suspend, so why would they
-> be affected by the remedy (whatever it is)?
-> 
-> Second, it is not about the suspend failing entirely.  It's about
-> being able to make the system draw less power while suspended.
-> 
-> Generally, if someone said "I can make the system draw less power
-> while suspended if I disable PCIe feature X during suspend", would you
-> disregard that?
-
-My questions were all prompted by the Intel-specific nature of the
-original patch, which suggests an ongoing maintenance burden.  If it
-can be done generically, I have no problem with it.
-
-Bjorn
