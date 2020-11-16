@@ -2,421 +2,152 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.6 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 69818C63697
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:49:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1996FC6379D
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 20:09:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 106172080A
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:49:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B6A6020A8B
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 20:09:01 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="kfll7CQT"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="aWShKzvX";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="XxhLiqV1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730567AbgKPTsq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Nov 2020 14:48:46 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38216 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730191AbgKPTsi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 14:48:38 -0500
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E88E4C0613D1;
-        Mon, 16 Nov 2020 11:48:37 -0800 (PST)
-Received: by mail-lf1-x142.google.com with SMTP id s30so26837234lfc.4;
-        Mon, 16 Nov 2020 11:48:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=CFJiOxbFynL24gVLzjszwGgwYXRjyPqIbyEb12EfMGo=;
-        b=kfll7CQTsMktmJodIydfzR+WQnqBI5nIwdImfxZxmYVBnl2nbANHz6SJoq9UQAT+wv
-         nZufjO6LQRCgZNO/VDLmUhB4X8c92ovuejZ8wcstfdJaCXM0sJYs4nabZaHqUVHM5/7B
-         ymGOxcbKYndKM/p73qrKF1h1mWvsvmrDmrLxwek95dEiy0tK3Q1y1i5MlmwgyOJQuVFS
-         OYr4/zlVr8TtdRvdOv3iPhKiqTNLZQAXz1ScYGaq65Jx09hDYE8H9fmycDUqoqc3ELQA
-         spn+iMVg8hpRQLJZ4sbXhBYw/+JVBRNyTbDtlC4H51SRNSa/156T+pNFNSrg3wbGQgn5
-         pJfg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=CFJiOxbFynL24gVLzjszwGgwYXRjyPqIbyEb12EfMGo=;
-        b=tGlOPJENdDAmYIWvPoCN9+OdN7O4+AfB6NmjjvBEvM/JxfbCgPFu0vkF1AA8qzHttL
-         NPGqOdgnFb0WLkHp/nfCb52s7S0wGYLY5tmRpb80vNW5XLYTtvtQRW4v141Gfm1vD5Wy
-         wSCXoOhGRDdX9sguCsst6aJkorOne3infoF7qUUpZigiHswH0/rLeKnnj9pnIqp381j4
-         6+2KrqCDUi4d/PohnmRYGnOCRdg5JV8oYS5LfiVF0tG6X/lQGOp3pZhplyUbl9ttDVj5
-         RLWqETud4cKVUSAAzdwZlrBt+GYxkdEalqfYYqDQxaRvk93MbQXBWfDQmEsDoPWX7WML
-         +DWw==
-X-Gm-Message-State: AOAM531YlQDy6mv1caPfhiMz8sOUuf5gYgLMbaLJFiGk87PETo9OmpYE
-        +8yG6mCf0TDfu9Q1GPG1NQ8=
-X-Google-Smtp-Source: ABdhPJz2Fk5Rlkf92uMft6oqoDIMKOs5WvLaGQMEbaOaK4adheOXKs431Jj/SicC5sWjrLRCw2sUKQ==
-X-Received: by 2002:a19:4102:: with SMTP id o2mr397937lfa.166.1605556116405;
-        Mon, 16 Nov 2020 11:48:36 -0800 (PST)
-Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id n5sm2864286lfb.306.2020.11.16.11.48.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 16 Nov 2020 11:48:35 -0800 (PST)
-From:   Dmitry Osipenko <digetx@gmail.com>
-To:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>
-Cc:     devicetree@vger.kernel.org, linux-tegra@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v7 3/4] power: supply: Add battery gauge driver for Acer Iconia Tab A500
-Date:   Mon, 16 Nov 2020 22:48:26 +0300
-Message-Id: <20201116194827.28947-4-digetx@gmail.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201116194827.28947-1-digetx@gmail.com>
-References: <20201116194827.28947-1-digetx@gmail.com>
+        id S1731722AbgKPUIc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Nov 2020 15:08:32 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:43350 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726643AbgKPUIb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 15:08:31 -0500
+Date:   Mon, 16 Nov 2020 20:08:28 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1605557309;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=peDNfF+HZPUmdgkgBtUN3jkmX7nTFV65Rz6J8vjKBaA=;
+        b=aWShKzvXB+NwB7/XkI8Ai51RbYRzdJooSH7Ia2fTkLqL1ZDplMbyX13Xe/pilJ/5eUp58y
+        qQ2c+eCy7N9E/FU1ZNspH/cK7cniIamrlYxK7nMLu2ffqhZAqsAuDgby8AYAuWefmHAZjK
+        FAgfGi8AXuJynrZmU+a0hjPvA27AdqQcTlvV0/1W7lFj2ojmiyYSeG0fmD5Hps6VRsTTC6
+        dEk49GTtCJ8RPZ65HCazuPCEvEyT7mHAAwtgJgfb7ZSwd5r/9jlm0AEHnkdwZWF8XZhEWM
+        i3iXwg1RXoKtHF40j4HPDTwTTNw5YTzQFo2MaUCw1RJtfE9tuS683f1q49fn6w==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1605557309;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=peDNfF+HZPUmdgkgBtUN3jkmX7nTFV65Rz6J8vjKBaA=;
+        b=XxhLiqV1nx8NpUJtzjQ2ICnONKuS4HVKIHGX7+CGQQh69pV7G+u0JKgzoHMuvU7HXeqjK5
+        rOTBRyL/I/UKa7DA==
+From:   "tip-bot2 for Borislav Petkov" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-kernel@vger.kernel.org
+To:     linux-tip-commits@vger.kernel.org
+Subject: [tip: x86/misc] tools/power/turbostat: Read energy_perf_bias from sysfs
+Cc:     Borislav Petkov <bp@suse.de>, Len Brown <lenb@kernel.org>,
+        linux-pm@vger.kernel.org, x86@kernel.org,
+        linux-kernel@vger.kernel.org
+In-Reply-To: <20201029190259.3476-3-bp@alien8.de>
+References: <20201029190259.3476-3-bp@alien8.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Message-ID: <160555730832.11244.4666731063927349137.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2.linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This patch adds battery gauge driver for Acer Iconia Tab A500 device.
-The battery gauge function is provided via the Embedded Controller,
-which is found on the Acer A500.
+The following commit has been merged into the x86/misc branch of tip:
 
-Reviewed-by: Sebastian Reichel <sebastian.reichel@collabora.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Commit-ID:     6d6501d912a9a5e1b73d7fbf419b90a8ec11ed7a
+Gitweb:        https://git.kernel.org/tip/6d6501d912a9a5e1b73d7fbf419b90a8ec11ed7a
+Author:        Borislav Petkov <bp@suse.de>
+AuthorDate:    Thu, 15 Oct 2020 14:50:16 +02:00
+Committer:     Borislav Petkov <bp@suse.de>
+CommitterDate: Mon, 16 Nov 2020 17:42:46 +01:00
+
+tools/power/turbostat: Read energy_perf_bias from sysfs
+
+... instead of poking at the MSR directly.
+
+Signed-off-by: Borislav Petkov <bp@suse.de>
+Cc: Len Brown <lenb@kernel.org>
+Cc: linux-pm@vger.kernel.org
+Link: https://lkml.kernel.org/r/20201029190259.3476-3-bp@alien8.de
 ---
- drivers/power/supply/Kconfig             |   6 +
- drivers/power/supply/Makefile            |   1 +
- drivers/power/supply/acer_a500_battery.c | 297 +++++++++++++++++++++++
- 3 files changed, 304 insertions(+)
- create mode 100644 drivers/power/supply/acer_a500_battery.c
+ tools/power/x86/turbostat/turbostat.c | 29 +++++++++++++++++++++-----
+ 1 file changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/power/supply/Kconfig b/drivers/power/supply/Kconfig
-index eec646c568b7..bc493173ddbc 100644
---- a/drivers/power/supply/Kconfig
-+++ b/drivers/power/supply/Kconfig
-@@ -774,4 +774,10 @@ config RN5T618_POWER
- 	  This driver can also be built as a module. If so, the module will be
- 	  called rn5t618_power.
+diff --git a/tools/power/x86/turbostat/turbostat.c b/tools/power/x86/turbostat/turbostat.c
+index 33b3708..0baec7e 100644
+--- a/tools/power/x86/turbostat/turbostat.c
++++ b/tools/power/x86/turbostat/turbostat.c
+@@ -1721,6 +1721,25 @@ int get_mp(int cpu, struct msr_counter *mp, unsigned long long *counterp)
+ 	return 0;
+ }
  
-+config BATTERY_ACER_A500
-+	tristate "Acer Iconia Tab A500 battery driver"
-+	depends on MFD_ACER_A500_EC
-+	help
-+	  Say Y to include support for Acer Iconia Tab A500 battery fuel gauge.
-+
- endif # POWER_SUPPLY
-diff --git a/drivers/power/supply/Makefile b/drivers/power/supply/Makefile
-index dd4b86318cd9..0607a3d64c0f 100644
---- a/drivers/power/supply/Makefile
-+++ b/drivers/power/supply/Makefile
-@@ -98,3 +98,4 @@ obj-$(CONFIG_CHARGER_BD70528)	+= bd70528-charger.o
- obj-$(CONFIG_CHARGER_BD99954)	+= bd99954-charger.o
- obj-$(CONFIG_CHARGER_WILCO)	+= wilco-charger.o
- obj-$(CONFIG_RN5T618_POWER)	+= rn5t618_power.o
-+obj-$(CONFIG_BATTERY_ACER_A500)	+= acer_a500_battery.o
-diff --git a/drivers/power/supply/acer_a500_battery.c b/drivers/power/supply/acer_a500_battery.c
-new file mode 100644
-index 000000000000..32a0bfcac08f
---- /dev/null
-+++ b/drivers/power/supply/acer_a500_battery.c
-@@ -0,0 +1,297 @@
-+// SPDX-License-Identifier: GPL-2.0+
-+/*
-+ * Battery driver for Acer Iconia Tab A500.
-+ *
-+ * Copyright 2020 GRATE-driver project.
-+ *
-+ * Based on downstream driver from Acer Inc.
-+ * Based on NVIDIA Gas Gauge driver for SBS Compliant Batteries.
-+ *
-+ * Copyright (c) 2010, NVIDIA Corporation.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/power_supply.h>
-+#include <linux/regmap.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/workqueue.h>
-+
-+enum {
-+	REG_CAPACITY,
-+	REG_VOLTAGE,
-+	REG_CURRENT,
-+	REG_DESIGN_CAPACITY,
-+	REG_TEMPERATURE,
-+};
-+
-+#define EC_DATA(_reg, _psp) {			\
-+	.psp = POWER_SUPPLY_PROP_ ## _psp,	\
-+	.reg = _reg,				\
-+}
-+
-+static const struct battery_register {
-+	enum power_supply_property psp;
-+	unsigned int reg;
-+} ec_data[] = {
-+	[REG_CAPACITY]		= EC_DATA(0x00, CAPACITY),
-+	[REG_VOLTAGE]		= EC_DATA(0x01, VOLTAGE_NOW),
-+	[REG_CURRENT]		= EC_DATA(0x03, CURRENT_NOW),
-+	[REG_DESIGN_CAPACITY]	= EC_DATA(0x08, CHARGE_FULL_DESIGN),
-+	[REG_TEMPERATURE]	= EC_DATA(0x0a, TEMP),
-+};
-+
-+static const enum power_supply_property a500_battery_properties[] = {
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_PRESENT,
-+	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_TECHNOLOGY,
-+	POWER_SUPPLY_PROP_TEMP,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+};
-+
-+struct a500_battery {
-+	struct delayed_work poll_work;
-+	struct power_supply *psy;
-+	struct regmap *regmap;
-+	unsigned int capacity;
-+};
-+
-+static bool a500_battery_update_capacity(struct a500_battery *bat)
++int get_epb(int cpu)
 +{
-+	unsigned int capacity;
-+	int err;
++	char path[128 + PATH_BYTES];
++	int ret, epb = -1;
++	FILE *fp;
 +
-+	err = regmap_read(bat->regmap, ec_data[REG_CAPACITY].reg, &capacity);
-+	if (err)
-+		return false;
++	sprintf(path, "/sys/devices/system/cpu/cpu%d/power/energy_perf_bias", cpu);
 +
-+	/* capacity can be >100% even if max value is 100% */
-+	capacity = min(capacity, 100u);
++	fp = fopen_or_die(path, "r");
 +
-+	if (bat->capacity != capacity) {
-+		bat->capacity = capacity;
-+		return true;
-+	}
++	ret = fscanf(fp, "%d", &epb);
++	if (ret != 1)
++		err(1, "%s(%s)", __func__, path);
 +
-+	return false;
++	fclose(fp);
++
++	return epb;
 +}
 +
-+static int a500_battery_get_status(struct a500_battery *bat)
-+{
-+	if (bat->capacity < 100) {
-+		if (power_supply_am_i_supplied(bat->psy))
-+			return POWER_SUPPLY_STATUS_CHARGING;
-+		else
-+			return POWER_SUPPLY_STATUS_DISCHARGING;
-+	}
-+
-+	return POWER_SUPPLY_STATUS_FULL;
-+}
-+
-+static void a500_battery_unit_adjustment(struct device *dev,
-+					 enum power_supply_property psp,
-+					 union power_supply_propval *val)
-+{
-+	const unsigned int base_unit_conversion = 1000;
-+	const unsigned int temp_kelvin_to_celsius = 2731;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		val->intval *= base_unit_conversion;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_TEMP:
-+		val->intval -= temp_kelvin_to_celsius;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_PRESENT:
-+		val->intval = !!val->intval;
-+		break;
-+
-+	default:
-+		dev_dbg(dev,
-+			"%s: no need for unit conversion %d\n", __func__, psp);
-+	}
-+}
-+
-+static int a500_battery_get_ec_data_index(struct device *dev,
-+					  enum power_supply_property psp)
-+{
-+	unsigned int i;
-+
-+	/*
-+	 * DESIGN_CAPACITY register always returns a non-zero value if
-+	 * battery is connected and zero if disconnected, hence we'll use
-+	 * it for judging the battery presence.
-+	 */
-+	if (psp == POWER_SUPPLY_PROP_PRESENT)
-+		psp = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
-+
-+	for (i = 0; i < ARRAY_SIZE(ec_data); i++)
-+		if (psp == ec_data[i].psp)
-+			return i;
-+
-+	dev_dbg(dev, "%s: invalid property %u\n", __func__, psp);
-+
-+	return -EINVAL;
-+}
-+
-+static int a500_battery_get_property(struct power_supply *psy,
-+				     enum power_supply_property psp,
-+				     union power_supply_propval *val)
-+{
-+	struct a500_battery *bat = power_supply_get_drvdata(psy);
-+	struct device *dev = psy->dev.parent;
-+	int ret = 0;
-+
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = a500_battery_get_status(bat);
-+		break;
-+
-+	case POWER_SUPPLY_PROP_TECHNOLOGY:
-+		val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CAPACITY:
-+		a500_battery_update_capacity(bat);
-+		val->intval = bat->capacity;
-+		break;
-+
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+	case POWER_SUPPLY_PROP_PRESENT:
-+	case POWER_SUPPLY_PROP_TEMP:
-+		ret = a500_battery_get_ec_data_index(dev, psp);
-+		if (ret < 0)
-+			break;
-+
-+		ret = regmap_read(bat->regmap, ec_data[ret].reg, &val->intval);
-+		break;
-+
-+	default:
-+		dev_err(dev, "%s: invalid property %u\n", __func__, psp);
-+		return -EINVAL;
-+	}
-+
-+	if (!ret) {
-+		/* convert units to match requirements of power supply class */
-+		a500_battery_unit_adjustment(dev, psp, val);
-+	}
-+
-+	dev_dbg(dev, "%s: property = %d, value = %x\n",
-+		__func__, psp, val->intval);
-+
-+	/* return NODATA for properties if battery not presents */
-+	if (ret)
-+		return -ENODATA;
-+
-+	return 0;
-+}
-+
-+static void a500_battery_poll_work(struct work_struct *work)
-+{
-+	struct a500_battery *bat;
-+	bool capacity_changed;
-+
-+	bat = container_of(work, struct a500_battery, poll_work.work);
-+	capacity_changed = a500_battery_update_capacity(bat);
-+
-+	if (capacity_changed)
-+		power_supply_changed(bat->psy);
-+
-+	/* continuously send uevent notification */
-+	schedule_delayed_work(&bat->poll_work, 30 * HZ);
-+}
-+
-+static const struct power_supply_desc a500_battery_desc = {
-+	.name = "ec-battery",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = a500_battery_properties,
-+	.get_property = a500_battery_get_property,
-+	.num_properties = ARRAY_SIZE(a500_battery_properties),
-+	.external_power_changed = power_supply_changed,
-+};
-+
-+static int a500_battery_probe(struct platform_device *pdev)
-+{
-+	struct power_supply_config psy_cfg = {};
-+	struct a500_battery *bat;
-+
-+	bat = devm_kzalloc(&pdev->dev, sizeof(*bat), GFP_KERNEL);
-+	if (!bat)
-+		return -ENOMEM;
-+
-+	platform_set_drvdata(pdev, bat);
-+
-+	psy_cfg.of_node = pdev->dev.parent->of_node;
-+	psy_cfg.drv_data = bat;
-+
-+	bat->regmap = dev_get_regmap(pdev->dev.parent, "KB930");
-+	if (!bat->regmap)
-+		return -EINVAL;
-+
-+	bat->psy = devm_power_supply_register_no_ws(&pdev->dev,
-+						    &a500_battery_desc,
-+						    &psy_cfg);
-+	if (IS_ERR(bat->psy))
-+		return dev_err_probe(&pdev->dev, PTR_ERR(bat->psy),
-+				     "failed to register battery\n");
-+
-+	INIT_DELAYED_WORK(&bat->poll_work, a500_battery_poll_work);
-+	schedule_delayed_work(&bat->poll_work, HZ);
-+
-+	return 0;
-+}
-+
-+static int a500_battery_remove(struct platform_device *pdev)
-+{
-+	struct a500_battery *bat = dev_get_drvdata(&pdev->dev);
-+
-+	cancel_delayed_work_sync(&bat->poll_work);
-+
-+	return 0;
-+}
-+
-+static int __maybe_unused a500_battery_suspend(struct device *dev)
-+{
-+	struct a500_battery *bat = dev_get_drvdata(dev);
-+
-+	cancel_delayed_work_sync(&bat->poll_work);
-+
-+	return 0;
-+}
-+
-+static int __maybe_unused a500_battery_resume(struct device *dev)
-+{
-+	struct a500_battery *bat = dev_get_drvdata(dev);
-+
-+	schedule_delayed_work(&bat->poll_work, HZ);
-+
-+	return 0;
-+}
-+
-+static SIMPLE_DEV_PM_OPS(a500_battery_pm_ops,
-+			 a500_battery_suspend, a500_battery_resume);
-+
-+static struct platform_driver a500_battery_driver = {
-+	.driver = {
-+		.name = "acer-a500-iconia-battery",
-+		.pm = &a500_battery_pm_ops,
-+	},
-+	.probe = a500_battery_probe,
-+	.remove = a500_battery_remove,
-+};
-+module_platform_driver(a500_battery_driver);
-+
-+MODULE_DESCRIPTION("Battery gauge driver for Acer Iconia Tab A500");
-+MODULE_AUTHOR("Dmitry Osipenko <digetx@gmail.com>");
-+MODULE_ALIAS("platform:acer-a500-iconia-battery");
-+MODULE_LICENSE("GPL");
--- 
-2.29.2
-
+ void get_apic_id(struct thread_data *t)
+ {
+ 	unsigned int eax, ebx, ecx, edx;
+@@ -3631,9 +3650,8 @@ dump_sysfs_pstate_config(void)
+  */
+ int print_epb(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+ {
+-	unsigned long long msr;
+ 	char *epb_string;
+-	int cpu;
++	int cpu, epb;
+ 
+ 	if (!has_epb)
+ 		return 0;
+@@ -3649,10 +3667,11 @@ int print_epb(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+ 		return -1;
+ 	}
+ 
+-	if (get_msr(cpu, MSR_IA32_ENERGY_PERF_BIAS, &msr))
++	epb = get_epb(cpu);
++	if (epb < 0)
+ 		return 0;
+ 
+-	switch (msr & 0xF) {
++	switch (epb) {
+ 	case ENERGY_PERF_BIAS_PERFORMANCE:
+ 		epb_string = "performance";
+ 		break;
+@@ -3666,7 +3685,7 @@ int print_epb(struct thread_data *t, struct core_data *c, struct pkg_data *p)
+ 		epb_string = "custom";
+ 		break;
+ 	}
+-	fprintf(outf, "cpu%d: MSR_IA32_ENERGY_PERF_BIAS: 0x%08llx (%s)\n", cpu, msr, epb_string);
++	fprintf(outf, "cpu%d: EPB: %d (%s)\n", cpu, epb, epb_string);
+ 
+ 	return 0;
+ }
