@@ -2,78 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+X-Spam-Status: No, score=-7.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9CC86C6379F
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:12:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4DF2FC2D0A3
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:18:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 747B920888
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:12:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00DD820797
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:18:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732624AbgKPRMT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Nov 2020 12:12:19 -0500
-Received: from relay11.mail.gandi.net ([217.70.178.231]:52821 "EHLO
-        relay11.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731130AbgKPRMT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 12:12:19 -0500
-X-Greylist: delayed 2863 seconds by postgrey-1.27 at vger.kernel.org; Mon, 16 Nov 2020 12:12:18 EST
-Received: from localhost (91-175-115-186.subs.proxad.net [91.175.115.186])
-        (Authenticated sender: gregory.clement@bootlin.com)
-        by relay11.mail.gandi.net (Postfix) with ESMTPSA id 96CFF100041;
-        Mon, 16 Nov 2020 17:12:15 +0000 (UTC)
-From:   Gregory CLEMENT <gregory.clement@bootlin.com>
-To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        devicetree@vger.kernel.org
-Cc:     Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Lars Povlsen <lars.povlsen@microchip.com>,
-        <Steen.Hegelund@microchip.com>
-Subject: [PATCH 1/5] dt-bindings: reset: ocelot: Add documentation for 'microchip,reset-switch-core' property
-Date:   Mon, 16 Nov 2020 18:11:55 +0100
-Message-Id: <20201116171159.1735315-2-gregory.clement@bootlin.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201116171159.1735315-1-gregory.clement@bootlin.com>
-References: <20201116171159.1735315-1-gregory.clement@bootlin.com>
+        id S1732537AbgKPRSX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Nov 2020 12:18:23 -0500
+Received: from mail-oi1-f195.google.com ([209.85.167.195]:32961 "EHLO
+        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730775AbgKPRSX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 12:18:23 -0500
+Received: by mail-oi1-f195.google.com with SMTP id k26so19624909oiw.0;
+        Mon, 16 Nov 2020 09:18:22 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=T8nCjWUklv1uqL5YB3imQHkVHNrDBkeRqNKVQtv+q4E=;
+        b=QrqI1gCD2NU1I5box1wQhY7XaOsPRrDNeHvHUiNtEch+26cgS3AlbLoYwblKhhS2q/
+         vBuJwq69sBS6uQhVRwH/0zuJikucBL1trMBJnbfxqp1B+jO45OqMlr3c2F4bdzzdmsSS
+         y1FqHiOHE9+evk55p9nqq+Yyp9+a1NwaJ9T3RpmQHR86JUpUdbJPWtbqBEamn/38vK50
+         qstcQ6/0setMSk3+JsBmYY3KyRPl3II3IPG7SGjDUb96J+XRlTzkWzXTmEqFV8E5mcxx
+         eav8yc0c4gEumAE/TwsWHup20XXSlT1PG/It5OAuKm6LbpW2psgXctyuKSxzwWXwlYul
+         Q6+w==
+X-Gm-Message-State: AOAM5310c/sdGHhZdfHlmS+cofkEVovP22Rjn1AnnU48N27VEFrxRc0J
+        BTR8Xn2Hy38ctwNbi57aEfhnBjhJTvLMhBiRi/s=
+X-Google-Smtp-Source: ABdhPJz5XPbFXE2ilVfkNa74UnNgwcDqoGYqP6YkthwqxGvtXSvOA2EjmjOb2Q4FzPkRp5O0dWClbJJV6D3zEd68cJQ=
+X-Received: by 2002:aca:c4c9:: with SMTP id u192mr340787oif.69.1605547102222;
+ Mon, 16 Nov 2020 09:18:22 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20201023060417.517246-1-josephjang@google.com> <X66J0plvSKqFbDIy@kroah.com>
+In-Reply-To: <X66J0plvSKqFbDIy@kroah.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 16 Nov 2020 18:18:11 +0100
+Message-ID: <CAJZ5v0jVQWSawNuKOB+F+2rkneexsd4bYBLBzCkKRq8ssRapbw@mail.gmail.com>
+Subject: Re: [PATCH v3] power: suspend: Move dpm_watchdog to suspend.c and
+ enhance it
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     Joseph Jang <josephjang@google.com>,
+        "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Pavel Machek <pavel@ucw.cz>, Len Brown <len.brown@intel.com>,
+        Petr Mladek <pmladek@suse.com>,
+        Sergey Senozhatsky <sergey.senozhatsky@gmail.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>, jonglin@google.com,
+        woodylin@google.com, Mark Cheng <markcheng@google.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Lars Povlsen <lars.povlsen@microchip.com>
+On Fri, Nov 13, 2020 at 2:26 PM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Fri, Oct 23, 2020 at 02:04:17PM +0800, Joseph Jang wrote:
+> > Since dpm_watchdog just cover device power management, we proposed to
+> > move it to core power suspend.c to cover not only device power management
+> > hang issues, but also core power management hand issues.
+> >
+> > Since dpm_watchdog stands for device pm, we propose to use new name sleep
+> > timer and new timeout handler to cover more sleep hang issues. The new
+> > timeout handler will dump disk sleep task at first round timeout and
+> > trigger kernel panic at second round timeout.
+> > The default timer for each round is defined in
+> > CONFIG_PM_SLEEP_TIMER_TIMEOUT.
+> >
+> > Signed-off-by: Joseph Jang <josephjang@google.com>
+>
+> It still seems odd you can't use a watchdog for this, as you really have
+> just implemented the same thing here, but "open coded" the logic.
+>
+> I'll let Rafael chime in here too, as he knows this area much better
+> than I as to if this is viable or not.
 
-This documents the 'microchip,reset-switch-core' property in the
-ocelot-reset driver.
+It is viable AFAICS.
 
-Signed-off-by: Lars Povlsen <lars.povlsen@microchip.com>
----
- .../devicetree/bindings/power/reset/ocelot-reset.txt        | 6 ++++++
- 1 file changed, 6 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-index 4d530d815484..20fff03753ad 100644
---- a/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-+++ b/Documentation/devicetree/bindings/power/reset/ocelot-reset.txt
-@@ -9,9 +9,15 @@ microchip Sparx5 armv8 SoC's.
- Required Properties:
-  - compatible: "mscc,ocelot-chip-reset" or "microchip,sparx5-chip-reset"
- 
-+Optional properties:
-+- microchip,reset-switch-core : Perform a switch core reset at the
-+  time of driver load. This is may be used to initialize the switch
-+  core to a known state (before other drivers are loaded).
-+
- Example:
- 	reset@1070008 {
- 		compatible = "mscc,ocelot-chip-reset";
- 		reg = <0x1070008 0x4>;
-+		microchip,reset-switch-core;
- 	};
- 
--- 
-2.29.2
-
+Just make the existing thing work with dev == NULL and use it as needed.
