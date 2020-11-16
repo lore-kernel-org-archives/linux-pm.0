@@ -2,85 +2,91 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SIGNED_OFF_BY,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SIGNED_OFF_BY,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F940C61DD8
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 16:30:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A92F6C6369E
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:12:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4D9B620776
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 16:30:33 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="ID2QDj/7"
+	by mail.kernel.org (Postfix) with ESMTP id 7077A20888
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:12:47 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731921AbgKPQaE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Nov 2020 11:30:04 -0500
-Received: from z5.mailgun.us ([104.130.96.5]:21731 "EHLO z5.mailgun.us"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730591AbgKPQaD (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 16 Nov 2020 11:30:03 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1605544203; h=Message-Id: Date: Subject: Cc: To: From:
- Sender; bh=OcOxP9SoB2zIBSz04f/3dy8QWxDpqnS+1Xsbwg8a9Zg=; b=ID2QDj/734p9SOFQOU7xwEnwcNiw1W50Am3PqkgC9dgxjcfi4J4rFMCfWOuqDeuXdzjq/EOj
- 1tExce6qYgCwqjUMTYPgNLGIRgX7MY8Q6W0nl7YGShypB0ywkFwHyHwoh+jcYsnJvuMFTO7a
- TM19yF4FPAdZtzKJ9I5dKPhL//4=
-X-Mailgun-Sending-Ip: 104.130.96.5
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n09.prod.us-east-1.postgun.com with SMTP id
- 5fb2a90a07fe4e8a18ca5edd (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 16 Nov 2020 16:30:02
- GMT
-Sender: mojha=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id 94930C43464; Mon, 16 Nov 2020 16:30:01 +0000 (UTC)
-Received: from mojha-linux.qualcomm.com (unknown [202.46.22.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: mojha)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id D57B1C433C6;
-        Mon, 16 Nov 2020 16:29:58 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org D57B1C433C6
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=mojha@codeaurora.org
-From:   Mukesh Ojha <mojha@codeaurora.org>
-To:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org,
-        Mukesh Ojha <mojha@codeaurora.org>
-Subject: [PATCH] thermal: Fix NULL pointer dereference issue
-Date:   Mon, 16 Nov 2020 21:59:41 +0530
-Message-Id: <1605544181-5348-1-git-send-email-mojha@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
+        id S1732656AbgKPRMX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Nov 2020 12:12:23 -0500
+Received: from relay3-d.mail.gandi.net ([217.70.183.195]:37859 "EHLO
+        relay3-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732620AbgKPRMX (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 12:12:23 -0500
+X-Originating-IP: 91.175.115.186
+Received: from localhost (91-175-115-186.subs.proxad.net [91.175.115.186])
+        (Authenticated sender: gregory.clement@bootlin.com)
+        by relay3-d.mail.gandi.net (Postfix) with ESMTPSA id AD68960011;
+        Mon, 16 Nov 2020 17:12:20 +0000 (UTC)
+From:   Gregory CLEMENT <gregory.clement@bootlin.com>
+To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        devicetree@vger.kernel.org
+Cc:     Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Lars Povlsen <lars.povlsen@microchip.com>,
+        <Steen.Hegelund@microchip.com>,
+        Gregory CLEMENT <gregory.clement@bootlin.com>
+Subject: [PATCH 5/5] MIPS: dts: mscc: add reset support for Luton and Jaguar2
+Date:   Mon, 16 Nov 2020 18:11:59 +0100
+Message-Id: <20201116171159.1735315-6-gregory.clement@bootlin.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201116171159.1735315-1-gregory.clement@bootlin.com>
+References: <20201116171159.1735315-1-gregory.clement@bootlin.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Cooling stats variable inside thermal_cooling_device_stats_update()
-can get NULL. We should add a NULL check on stat inside for sanity.
+Allow Luton and Jaguar2 SoC to use reset feature by adding the reset
+node.
 
-Signed-off-by: Mukesh Ojha <mojha@codeaurora.org>
+Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
 ---
- drivers/thermal/thermal_sysfs.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/mips/boot/dts/mscc/jaguar2.dtsi | 6 ++++++
+ arch/mips/boot/dts/mscc/luton.dtsi   | 5 +++++
+ 2 files changed, 11 insertions(+)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index a6f371f..f52708f 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -754,6 +754,9 @@ void thermal_cooling_device_stats_update(struct thermal_cooling_device *cdev,
- {
- 	struct cooling_dev_stats *stats = cdev->stats;
+diff --git a/arch/mips/boot/dts/mscc/jaguar2.dtsi b/arch/mips/boot/dts/mscc/jaguar2.dtsi
+index 42b2b0a51ddc..f5f7b81c4044 100644
+--- a/arch/mips/boot/dts/mscc/jaguar2.dtsi
++++ b/arch/mips/boot/dts/mscc/jaguar2.dtsi
+@@ -60,6 +60,12 @@ cpu_ctrl: syscon@70000000 {
+ 			reg = <0x70000000 0x2c>;
+ 		};
  
-+	if (!stats)
-+		return;
++		reset@71010008 {
++			compatible = "mscc,luton-chip-reset";
++			reg = <0x71010008 0x4>;
++			microchip,reset-switch-core;
++		};
 +
- 	spin_lock(&stats->lock);
+ 		intc: interrupt-controller@70000070 {
+ 			compatible = "mscc,jaguar2-icpu-intr";
+ 			reg = <0x70000070 0x94>;
+diff --git a/arch/mips/boot/dts/mscc/luton.dtsi b/arch/mips/boot/dts/mscc/luton.dtsi
+index 2a170b84c5a9..4a26c2874386 100644
+--- a/arch/mips/boot/dts/mscc/luton.dtsi
++++ b/arch/mips/boot/dts/mscc/luton.dtsi
+@@ -56,6 +56,11 @@ cpu_ctrl: syscon@10000000 {
+ 			reg = <0x10000000 0x2c>;
+ 		};
  
- 	if (stats->state == new_state)
++		reset@00070090 {
++			compatible = "mscc,luton-chip-reset";
++			reg = <0x70090 0x4>;
++		};
++
+ 		intc: interrupt-controller@10000084 {
+ 			compatible = "mscc,luton-icpu-intr";
+ 			reg = <0x10000084 0x70>;
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center,
-Inc. is a member of the Code Aurora Forum, a Linux Foundation Collaborative Project
+2.29.2
 
