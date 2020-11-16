@@ -2,116 +2,127 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-4.1 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5CA8BC61DD8
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:53:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D3835C55ABD
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:23:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 05D7F20B80
-	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 17:53:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8AD922225E
+	for <linux-pm@archiver.kernel.org>; Mon, 16 Nov 2020 19:23:44 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="VIZWt/gj"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1733309AbgKPRxV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 16 Nov 2020 12:53:21 -0500
-Received: from mail-ot1-f66.google.com ([209.85.210.66]:43406 "EHLO
-        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732758AbgKPRxV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 16 Nov 2020 12:53:21 -0500
-Received: by mail-ot1-f66.google.com with SMTP id y22so16846139oti.10;
-        Mon, 16 Nov 2020 09:53:20 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=l7+Z3mrIb8Sp0oVQFXi8OYd9zBdaHaRXhlQ8/Dy+0xg=;
-        b=Ryru2wbXXLNUWNAzbJoowtDcA3rIoCtvzq+d6RI51iTi9x2HN6U51B8sjI8SL5C1X5
-         4RL5QcRY0gHZY4tGfn4/Ql+EcEv0ke95qdMfCLM5gc+nYXBbtjH+yWPqQIjbzyiEIrg9
-         GOWe+a2N569WEYeufSuXIYC5ykHkA+jLYD1Fo1bk7Oe4n1z5xEJ2BuWNUVOgfUT/yXjx
-         81veXU1KG626WOauEgLizN+B78Iulj5KWrMLt5/uIJjFblb4HVwiOhZtY64d8hfNd9R2
-         KgbFN7eIuvBouIGrIKGaXhN1xZOkW6nILqlbNjiVBbzn8b7YCcP/pxuelus4CzKm8POC
-         XlsQ==
-X-Gm-Message-State: AOAM532EgA8GbM0IRe/DUGQB8jJSwfxwz/O6AXthgplbzr4Owb2qFzX1
-        ttT6oBgwwmlYnhT3QJiLIA1NaSZ9pvQUU/yGs9k=
-X-Google-Smtp-Source: ABdhPJxc7w+YIJgU/sF8DM8t4ZQPGnBVp2AsN1ZOK0nspYoAfne633B/qNgtj2Qq+5bp4UroC0ZID28fsOp812JpIB4=
-X-Received: by 2002:a9d:171a:: with SMTP id i26mr345705ota.260.1605549200640;
- Mon, 16 Nov 2020 09:53:20 -0800 (PST)
-MIME-Version: 1.0
-References: <CAJZ5v0gRph3UMffWqUVqTnDE149Ai-SbzmhjzZU1x=QOzAZeZA@mail.gmail.com>
- <20201007171024.GA3252529@bjorn-Precision-5520>
-In-Reply-To: <20201007171024.GA3252529@bjorn-Precision-5520>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 16 Nov 2020 18:53:09 +0100
-Message-ID: <CAJZ5v0gwSe=o_Ta0MR6XTn4BmHjs=ewTVJHe6OTp18ho+5h1Eg@mail.gmail.com>
-Subject: Re: [PATCH] PCI: Disable PTM during suspend on Intel PCI bridges
-To:     Bjorn Helgaas <helgaas@kernel.org>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        "David E. Box" <david.e.box@linux.intel.com>,
+        id S1728999AbgKPTXX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 16 Nov 2020 14:23:23 -0500
+Received: from mail.kernel.org ([198.145.29.99]:33724 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725379AbgKPTXX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 16 Nov 2020 14:23:23 -0500
+Received: from localhost (189.sub-72-105-114.myvzw.com [72.105.114.189])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id EBB302225B;
+        Mon, 16 Nov 2020 19:23:21 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1605554602;
+        bh=g0rPF891hY5n20OTuoyLNjb51WCLMjcMNMxWkW5x6r4=;
+        h=Date:From:To:Cc:Subject:In-Reply-To:From;
+        b=VIZWt/gjTQ1W6GTJzcOu2+w+1Ha5xbdud4IgZiDCWP5doSWm55i2h73+907fxRY16
+         ibe+ErD/e4baLmQZPeoImfqKuVP/mYVU4OAv/a/9SFT9FhIXpPXvWsQ1jhpbDlsaAD
+         9lyN61KTZBXdK6L+bzT8WvWOe3BJnFmsF9J6KIkI=
+Date:   Mon, 16 Nov 2020 13:23:20 -0600
+From:   Bjorn Helgaas <helgaas@kernel.org>
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     "David E. Box" <david.e.box@linux.intel.com>,
         Bjorn Helgaas <bhelgaas@google.com>,
         Len Brown <len.brown@intel.com>,
         Linux PCI <linux-pci@vger.kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Subject: Re: [PATCH] PCI: Disable PTM during suspend on Intel PCI bridges
+Message-ID: <20201116192320.GA1290192@bjorn-Precision-5520>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAJZ5v0gwSe=o_Ta0MR6XTn4BmHjs=ewTVJHe6OTp18ho+5h1Eg@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Oct 7, 2020 at 7:10 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
->
-> On Wed, Oct 07, 2020 at 06:53:16PM +0200, Rafael J. Wysocki wrote:
-> > On Wed, Oct 7, 2020 at 6:49 PM David E. Box <david.e.box@linux.intel.com> wrote:
+On Mon, Nov 16, 2020 at 06:53:09PM +0100, Rafael J. Wysocki wrote:
+> On Wed, Oct 7, 2020 at 7:10 PM Bjorn Helgaas <helgaas@kernel.org> wrote:
+> > On Wed, Oct 07, 2020 at 06:53:16PM +0200, Rafael J. Wysocki wrote:
+> > > On Wed, Oct 7, 2020 at 6:49 PM David E. Box <david.e.box@linux.intel.com> wrote:
+> > > >
+> > > > On Intel Platform Controller Hubs (PCH) since Cannon Lake, the Precision
+> > > > Time Measurement (PTM) capability can prevent PCIe root ports from power
+> > > > gating during suspend-to-idle, causing increased power consumption on
+> > > > systems that suspend using Low Power S0 Idle [1]. The issue is yet to be
+> > > > root caused but believed to be coming from a race condition in the suspend
+> > > > flow as the incidence rate varies for different platforms on Linux but the
+> > > > issue does not occur at all in other operating systems. For now, disable
+> > > > the feature on suspend on all Intel root ports and enable again on resume.
 > > >
-> > > On Intel Platform Controller Hubs (PCH) since Cannon Lake, the Precision
-> > > Time Measurement (PTM) capability can prevent PCIe root ports from power
-> > > gating during suspend-to-idle, causing increased power consumption on
-> > > systems that suspend using Low Power S0 Idle [1]. The issue is yet to be
-> > > root caused but believed to be coming from a race condition in the suspend
-> > > flow as the incidence rate varies for different platforms on Linux but the
-> > > issue does not occur at all in other operating systems. For now, disable
-> > > the feature on suspend on all Intel root ports and enable again on resume.
+> > > IMV it should also be noted that there is no particular reason why PTM
+> > > would need to be enabled while the whole system is suspended.  At
+> > > least it doesn't seem to be particularly useful in that state.
 > >
-> > IMV it should also be noted that there is no particular reason why PTM
-> > would need to be enabled while the whole system is suspended.  At
-> > least it doesn't seem to be particularly useful in that state.
->
-> Is this a hardware erratum?  If not, and this is working as designed,
-> it sounds like we'd need to apply this quirk to every device that
-> supports PTM.  That's not really practical.
+> > Is this a hardware erratum?  If not, and this is working as designed,
+> > it sounds like we'd need to apply this quirk to every device that
+> > supports PTM.  That's not really practical.
+> 
+> Why not?
 
-Why not?
+My objection was that the original patch is a quirk that applies only
+to Intel devices.
 
-It looks like the capability should be saved by pci_save_state() (it
-isn't ATM, which appears to be a mistake) and restored by
-pci_restore_state(), so if that is implemented, the saving can be
-combined with the disabling in principle.
+If this is a generic thing that should be done for *all* devices that
+support PTM, that's fine, but it should not be a quirk, and it should
+not involve a list of Vendor or Device IDs.
 
-> The bugzilla says "there is no erratum as this does not affect
-> Windows," but that doesn't answer the question.  What I want to know
-> is whether this is a *hardware* defect and whether it will be fixed in
-> future hardware.
+> It looks like the capability should be saved by pci_save_state() (it
+> isn't ATM, which appears to be a mistake) and restored by
+> pci_restore_state(), so if that is implemented, the saving can be
+> combined with the disabling in principle.
 
-I cannot answer this question, sorry.
+Yup, looks like a mistake.  Maybe David can fix that at the same time
+(probably a separate patch, though).  I don't have a way to test it,
+but he probably does.
 
-ATM we only know that certain SoCs may not enter the deepest idle
-state if PTM is enabled on some PCIe root ports during suspend.
+> > The bugzilla says "there is no erratum as this does not affect
+> > Windows," but that doesn't answer the question.  What I want to know
+> > is whether this is a *hardware* defect and whether it will be fixed in
+> > future hardware.
+> 
+> I cannot answer this question, sorry.
+> 
+> ATM we only know that certain SoCs may not enter the deepest idle
+> state if PTM is enabled on some PCIe root ports during suspend.
+> 
+> Disabling PTM on those ports while suspending helps and hence the patch.
+> 
+> It doesn't appear to qualify as a "hardware defect".
+> 
+> > If it's a "wont-fix" hardware issue, we can just disable PTM
+> > completely on Intel hardware and we won't have to worry about it
+> > during suspend.
+> 
+> I'm not following the logic here, sorry again.
+> 
+> First of all, there are systems that never suspend, so why would they
+> be affected by the remedy (whatever it is)?
+> 
+> Second, it is not about the suspend failing entirely.  It's about
+> being able to make the system draw less power while suspended.
+> 
+> Generally, if someone said "I can make the system draw less power
+> while suspended if I disable PCIe feature X during suspend", would you
+> disregard that?
 
-Disabling PTM on those ports while suspending helps and hence the patch.
+My questions were all prompted by the Intel-specific nature of the
+original patch, which suggests an ongoing maintenance burden.  If it
+can be done generically, I have no problem with it.
 
-It doesn't appear to qualify as a "hardware defect".
-
-> If it's a "wont-fix" hardware issue, we can just disable PTM
-> completely on Intel hardware and we won't have to worry about it
-> during suspend.
-
-I'm not following the logic here, sorry again.
-
-First of all, there are systems that never suspend, so why would they
-be affected by the remedy (whatever it is)?
-
-Second, it is not about the suspend failing entirely.  It's about
-being able to make the system draw less power while suspended.
-
-Generally, if someone said "I can make the system draw less power
-while suspended if I disable PCIe feature X during suspend", would you
-disregard that?
+Bjorn
