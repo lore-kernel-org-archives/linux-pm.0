@@ -2,79 +2,61 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 98E22C63777
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:16:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 92AB3C6379D
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:18:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 32E3D22267
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:16:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 315AC205F4
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:18:17 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=nvidia.com header.i=@nvidia.com header.b="CH01VTU1"
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="mGW8g3vh"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728014AbgKSTPk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Nov 2020 14:15:40 -0500
-Received: from hqnvemgate26.nvidia.com ([216.228.121.65]:4203 "EHLO
-        hqnvemgate26.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727658AbgKSTPk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2020 14:15:40 -0500
-Received: from hqmail.nvidia.com (Not Verified[216.228.121.13]) by hqnvemgate26.nvidia.com (using TLS: TLSv1.2, AES256-SHA)
-        id <B5fb6c4600001>; Thu, 19 Nov 2020 11:15:44 -0800
-Received: from [10.26.75.251] (10.124.1.5) by HQMAIL107.nvidia.com
- (172.20.187.13) with Microsoft SMTP Server (TLS) id 15.0.1473.3; Thu, 19 Nov
- 2020 19:15:34 +0000
-Subject: Re: [PATCH v2 6/6] thermal: tegra: Avoid setting edp_irq when not
- relevant
-To:     Nicolas Chauvet <kwizart@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>
-CC:     <linux-tegra@vger.kernel.org>, <linux-pm@vger.kernel.org>,
-        <stable@vger.kernel.org>
-References: <20200927150956.34609-1-kwizart@gmail.com>
- <20200927150956.34609-7-kwizart@gmail.com>
-From:   Jon Hunter <jonathanh@nvidia.com>
-Message-ID: <1ddb2245-fde0-644c-e89a-5f94015fc682@nvidia.com>
-Date:   Thu, 19 Nov 2020 19:15:32 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
-MIME-Version: 1.0
-In-Reply-To: <20200927150956.34609-7-kwizart@gmail.com>
-Content-Type: text/plain; charset="utf-8"
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.124.1.5]
-X-ClientProxiedBy: HQMAIL101.nvidia.com (172.20.187.10) To
- HQMAIL107.nvidia.com (172.20.187.13)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nvidia.com; s=n1;
-        t=1605813344; bh=P8wOcgzHDHysvM8DY3r9OjnAvldoeo1HaRws/7olnzk=;
-        h=Subject:To:CC:References:From:Message-ID:Date:User-Agent:
-         MIME-Version:In-Reply-To:Content-Type:Content-Language:
-         Content-Transfer-Encoding:X-Originating-IP:X-ClientProxiedBy;
-        b=CH01VTU1yk62xWDzFhYBAQDNIm3Mvs9desaptzLSFYzvwpr+hZVXezGSoHtgC+CcM
-         +MtAg8In8yk1AQX78dNipQFYuLZB+JN7PlAGJapCVQehuWPIkFmQBRHNT97M6U21/6
-         MLHNkjQClI+FmimiHEwv+HidDUaXenXtBS5cELxnFH+vSY6wuzz1xvC9UOKu/ml+jU
-         j2Wd4PyLPVUGjqu4oJpWwC2nI4lth6Bc7fQjqLIFUmLrnjXi1knd4WN3zjBM2xDLAk
-         od2C+br5Semsr8k4EJR2NLr18UPqEPwxgjNkl1pkwndUTrZQ/kaYY5+EuKnlM6Lpfs
-         7IyBcrkwFoWBw==
+        id S1727990AbgKSTR4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Nov 2020 14:17:56 -0500
+Received: from mail.kernel.org ([198.145.29.99]:36614 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728214AbgKSTRz (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 19 Nov 2020 14:17:55 -0500
+Subject: Re: [GIT PULL] Power management fixes for v5.10-rc5
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1605813472;
+        bh=ejxItLtjAUsfwaXAd8x+kBdH3zC/gENtYyELlUJYpZQ=;
+        h=From:In-Reply-To:References:Date:To:Cc:From;
+        b=mGW8g3vhUqdsF6k6JzBV7Ywe3PdVgebarvnSpKZLCE7AZxLbc7ppQKesKBDzXpnXr
+         UdNwpsNKECkCEx7sB8ERveSiu73GJmhr8TMhWI5cFG4a8cZKUhHemKxBJx92Qaa7E/
+         19HYvey0csIIJ5h8oNbaG6cD1+yfU1EKZNht5xE8=
+From:   pr-tracker-bot@kernel.org
+In-Reply-To: <CAJZ5v0jBUToP9sxeuhw_AVwoPNc8RwJD_31WoCLSOiXH6Dcy8A@mail.gmail.com>
+References: <CAJZ5v0jBUToP9sxeuhw_AVwoPNc8RwJD_31WoCLSOiXH6Dcy8A@mail.gmail.com>
+X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
+X-PR-Tracked-Message-Id: <CAJZ5v0jBUToP9sxeuhw_AVwoPNc8RwJD_31WoCLSOiXH6Dcy8A@mail.gmail.com>
+X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.10-rc5
+X-PR-Tracked-Commit-Id: 3a8ac4d39651c71d6d2f3376b13d0bad1484249a
+X-PR-Merge-Tree: torvalds/linux.git
+X-PR-Merge-Refname: refs/heads/master
+X-PR-Merge-Commit-Id: 4ca35b4f45092634df21dada47746571a34cc09c
+Message-Id: <160581347268.16071.9742795392696011236.pr-tracker-bot@kernel.org>
+Date:   Thu, 19 Nov 2020 19:17:52 +0000
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+The pull request you sent on Thu, 19 Nov 2020 19:27:00 +0100:
 
+> git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git pm-5.10-rc5
 
-On 27/09/2020 16:09, Nicolas Chauvet wrote:
-> According to the binding, the edp_irq is not available on tegra124/132
+has been merged into torvalds/linux.git:
+https://git.kernel.org/torvalds/c/4ca35b4f45092634df21dada47746571a34cc09c
 
-It appears that the binding doc is not update to date or missing the
-relevant information. Looking at the Tegra124 TRM I see that there is a
-SOCTHERM EDP IRQ (51) and so maybe the correct fix is to add this.
-
-Cheers
-Jon
+Thank you!
 
 -- 
-nvpublic
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/prtracker.html
