@@ -2,64 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D74C1C388F9
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:18:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 15315C56201
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 21:04:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 76607205F4
-	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 19:18:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA51F2223F
+	for <linux-pm@archiver.kernel.org>; Thu, 19 Nov 2020 21:04:36 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="B5ks8KkB"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="Z7nCUKE/"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727817AbgKSTRw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 19 Nov 2020 14:17:52 -0500
-Received: from mail.kernel.org ([198.145.29.99]:36554 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727687AbgKSTRw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 19 Nov 2020 14:17:52 -0500
-Subject: Re: [GIT PULL] thermal fixes for v5.10-rc5
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1605813471;
-        bh=x2Ro2aifnVMAkjvIfVfwOvSLKlMRwHBJ77oomaGMbvk=;
-        h=From:In-Reply-To:References:Date:To:Cc:From;
-        b=B5ks8KkBnEJf65g5+w7XGR1jWT55CNTfZegcC5LKZDoVGC2zRo1cpfUPbaoWOwiOe
-         bJ7jQlgzdZW8h8w7SN1HuyItDdjSOWc9qWy4y/knXHHGBVohxhTrbNyMq6R1YpjtQH
-         qVjN7uOUug9p/gMfetY1x/+qVH03IEQr9jt7HyKM=
-From:   pr-tracker-bot@kernel.org
-In-Reply-To: <e1bcd711-a3bf-58aa-7efd-053fa0fe5514@linaro.org>
-References: <e1bcd711-a3bf-58aa-7efd-053fa0fe5514@linaro.org>
-X-PR-Tracked-List-Id: <linux-kernel.vger.kernel.org>
-X-PR-Tracked-Message-Id: <e1bcd711-a3bf-58aa-7efd-053fa0fe5514@linaro.org>
-X-PR-Tracked-Remote: ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git tags/thermal-v5.10-rc5
-X-PR-Tracked-Commit-Id: b98467fe96d2415836d154ecfe1cd389bf4147b5
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 841d6e9ec9e345054dd4a28ef5feceb73e9702be
-Message-Id: <160581347193.16071.2364006405758432404.pr-tracker-bot@kernel.org>
-Date:   Thu, 19 Nov 2020 19:17:51 +0000
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     Linus Torvalds <torvalds@linux-foundation.org>,
-        Linux PM mailing list <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Tony Lindgren <tony@atomide.com>, Keerthy <j-keerthy@ti.com>,
-        Peter Ujfalusi <peter.ujfalusi@ti.com>
+        id S1726117AbgKSVEP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 19 Nov 2020 16:04:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40326 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725944AbgKSVEP (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 19 Nov 2020 16:04:15 -0500
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC926C0613CF;
+        Thu, 19 Nov 2020 13:04:14 -0800 (PST)
+Received: by mail-lf1-x143.google.com with SMTP id d17so10279226lfq.10;
+        Thu, 19 Nov 2020 13:04:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=vuoOcEDX9Qk97tEXio5KifV8glbdNQVJZyvTphvDqvk=;
+        b=Z7nCUKE/RQ9qg0YGyxWOSuPZzYClCIPVG4dDKfgZzvnvTz+99/YQDvGHCnf2I8CnGW
+         pkAsHgEoGSwjk8OYL63JspMqMqxAzRUP5d0wxkfE4lVzgYFcZMXxvfmRsSvUvWQPyP7x
+         LahO0WpXbtbIKsm9ZwYvUbynYvK0V0wg/JbPCCP5/9fsQDK9lQ3hCVM+eaEDvrFjMMMt
+         DjRG4PfvdeoM2ECV8SP01up2ardmTKM4KOC/SwGwFlTeWnVtvfcswkdL+mxdxijByohA
+         49fnigdv7xhIi6jPOhXAN2/jDVK5yfVH2dXU5Zi4oxPj+yCg+xe9hQfco0qZEaGUeZfI
+         NVkw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=vuoOcEDX9Qk97tEXio5KifV8glbdNQVJZyvTphvDqvk=;
+        b=IL18VSMELiBKzlrzQTROIRGPzjCEsSsWVOwCNma7bbBc5V6UAS+YcGgW5z+RYr4FFu
+         xg2SZyYE6jhawyAc6paOBQ7n/uhimPK4uPRV0OyuIC4VyWEwB8xaHlZhmPdHavooJ5dt
+         yWvtkrag/sW77jzkrHHCyYmyha3rQMW/h1tmG5UDEH7cABaAJJ2JK5ksO7M7+uG9PQed
+         3qB3qLXzhzKA37IOxnqYEqwaGiXlmjrFAxALAC25hQ74OmtrkUZZr7IxvQKYKYlNzcOr
+         lkg/zNEkpXa/hTXotE8bv6914PXiArLfO912DEXKcJizs2vPsbSQFIdrymNSN1U5Octn
+         gWyg==
+X-Gm-Message-State: AOAM530hYJWAzCZXHlAZMsujzYI6v7wUhBL9jBvUNr0SuKVDyjxuaSTp
+        sJKoiOGjKq5e9Vl55xMm4q7XXL4wVDw=
+X-Google-Smtp-Source: ABdhPJy+CtxWZMIEcLdTw+ve3E4A1aRfbrnZczo8enZeKkTgfMpY2z1d+lCeAwy727IwHQB3omIh1g==
+X-Received: by 2002:a19:2390:: with SMTP id j138mr6480480lfj.390.1605819853222;
+        Thu, 19 Nov 2020 13:04:13 -0800 (PST)
+Received: from [192.168.2.145] (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
+        by smtp.googlemail.com with ESMTPSA id y11sm91684lfl.119.2020.11.19.13.04.11
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 19 Nov 2020 13:04:12 -0800 (PST)
+Subject: Re: [PATCH v9 07/17] PM / devfreq: tegra30: Support interconnect and
+ OPPs from device-tree
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+References: <20201115212922.4390-1-digetx@gmail.com>
+ <20201115212922.4390-8-digetx@gmail.com>
+ <20201117100705.i62qr4gosvu76o22@vireshk-i7>
+ <956315a9-e806-3b18-6792-f01057a6c511@gmail.com>
+ <20201118042117.q6nkwm7exakgfvu3@vireshk-i7>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <150be162-cb1a-4e30-8937-e99cd1c4255b@gmail.com>
+Date:   Fri, 20 Nov 2020 00:04:11 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <20201118042117.q6nkwm7exakgfvu3@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The pull request you sent on Thu, 19 Nov 2020 12:00:32 +0100:
+18.11.2020 07:21, Viresh Kumar пишет:
+...
+>>>> +	/* legacy device-trees don't have OPP table and must be updated */
+>>>> +	if (!device_property_present(&pdev->dev, "operating-points-v2")) {
+>>>> +		dev_err(&pdev->dev,
+>>>> +			"OPP table not found, please update your device tree\n");
+>>>> +		return -ENODEV;
+>>>> +	}
+>>>> +
+>>>
+>>> You forgot to remove this ?
+>>
+>> Yes, good catch. I'm planning to replace this code with a common helper
+>> sometime soon, so if there won't be another reasons to make a new
+>> revision, then I'd prefer to keep it as-is for now.
+> 
+> You should just replace this patch only with a version of V9.1 and you
+> aren't really required to resend the whole series. And you should fix
+> it before it gets merged. This isn't a formatting issue which we just
+> let through. I trust you when you say that you will fix it, but this
+> must be fixed now.
+> 
 
-> ssh://git@gitolite.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git tags/thermal-v5.10-rc5
-
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/841d6e9ec9e345054dd4a28ef5feceb73e9702be
-
-Thank you!
-
--- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+Should be easier to resend it all. I'll update it over the weekend, thanks.
