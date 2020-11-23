@@ -2,62 +2,62 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C123C64EBC
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 85E3AC5519F
 	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:32:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 20E512076E
+	by mail.kernel.org (Postfix) with ESMTP id 4CCBA2078B
 	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:32:14 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="H5/A5kOy"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="J9nvRBz6"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727222AbgKWAba (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Nov 2020 19:31:30 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58552 "EHLO
+        id S1727658AbgKWAb5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Nov 2020 19:31:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58566 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726997AbgKWAb1 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2020 19:31:27 -0500
-Received: from mail-lj1-x22e.google.com (mail-lj1-x22e.google.com [IPv6:2a00:1450:4864:20::22e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5767C0613CF;
-        Sun, 22 Nov 2020 16:31:26 -0800 (PST)
-Received: by mail-lj1-x22e.google.com with SMTP id 142so16134858ljj.10;
-        Sun, 22 Nov 2020 16:31:26 -0800 (PST)
+        with ESMTP id S1727154AbgKWAba (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2020 19:31:30 -0500
+Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E3751C0613CF;
+        Sun, 22 Nov 2020 16:31:29 -0800 (PST)
+Received: by mail-lj1-x243.google.com with SMTP id y7so1246026lji.8;
+        Sun, 22 Nov 2020 16:31:29 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=3Y9KUYQXFWobegekZ4zPhL5ARhA2nWflhNK/oNr6bdk=;
-        b=H5/A5kOyLY0oVkNtoWKQmcdGyTE1+KcgXYsx8JyXLjHo7ep5Ik/3zpjt8eySXl5AA+
-         541aLVsGoPgxUj3lMdR17woVQ42rGpYQtwWo1IHzO1b0gPuiHhl35huwBOG+RD8IIbVy
-         69wVGXMhbVWT3UqQEwYid/lihhMrWzDTBRjQjpQADE8zdfVor453dvKpaJOiJRJt3ZVV
-         VPi7qYx4zobTNEQwiFjYvjeJmKewzUAnm8KHLOGbLS/yCmqb4Xt1bqO9MVqbD9zUxWWC
-         NyenYYNr9LPAl4ui5Ry0wuG5/9YIi85aJQOXlm+cJRDKVfZgE9+Z6mBlHgHkiwq0pcQN
-         Y0kg==
+        bh=Dchum/w5tW6S8qZoSmLsyitcs7JqpsShTrIAD3uRjUU=;
+        b=J9nvRBz6Js/3sgpIHkpAp2rDUTMw5pKAFbwUpoYVu0lfan8DJ+kjCH8AtXBeEEvXSU
+         PJ7PWqIxA2GsCBg3XGIoiZebGSXQScYYX73Na/+STvQQ9iBlA9JVvINCDc+YWda7NsHu
+         3hXqPpZQesgXDmVZI0DWF50yaJe0d7xjlBhTQM0PhgZw57NvhE2y2bIrCbJ2dwyNYDPp
+         jtKUIEcKoBoQYF0aReziDUA1ni67nQDgmk8Bz4ADBABGh9wr9wPXMeQgqs1lJbmnjlty
+         SBA6IfK601FUd+TmZafFA+BUiTfSaG9evjHWinTXr7EDqIylq3McyrREZ5w1CMBxCtaW
+         erSA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=3Y9KUYQXFWobegekZ4zPhL5ARhA2nWflhNK/oNr6bdk=;
-        b=M3SN5QoeI0dHy89AJfLqAzZ29CqZ0kt6JHYOQpRtPWJpcXcdnP77ViaUimnALhfBCq
-         RpUSJ1M0eKIA2FTURI9lv+xd84Yf8UkKgV/K+Iktp+t5zGxkCAvBZXkzUSt5p4EVQw62
-         Dh8SMt0isfgvplKzURZF4p2jTatEfWkMVSHrbL+AL1Oql0QsFBonrFN2ZW9LVTbEzD20
-         bXwpEDrToSblyHlbkRPE/7/e2Cc+3uir5DSTfe6mmEBnqf+0RW5PeJjGFyMZw829yRkV
-         9yWaaLzRrnzVCFt25X2pF/waloSCzPk/BBEIl4nHsZ8/QoyvL7FvaVKxW02yC4U/UR1o
-         kl+g==
-X-Gm-Message-State: AOAM531k8ysE5OBxWVolojImgDsJKoDp4856FsFedkELARPDESw2MxUW
-        Grlu0vZknpR4RI6IhYMFllI=
-X-Google-Smtp-Source: ABdhPJwO5SaJ5T+5ab0sn3bkeLiA3DH7189vRtm4fDihRAT72keII2jooRcxvKxfgTL3XNQY0rr6aQ==
-X-Received: by 2002:a2e:8e22:: with SMTP id r2mr12646442ljk.275.1606091485176;
-        Sun, 22 Nov 2020 16:31:25 -0800 (PST)
+        bh=Dchum/w5tW6S8qZoSmLsyitcs7JqpsShTrIAD3uRjUU=;
+        b=PaNddvvYaVPTRLgeZ7nwoUYBkYlrrddv3IC9nUHz244IVx/d1dx2RxR06sv+9nRg5L
+         Gm1B7f1QefHQyPVbbK1lGA8wkE5qNnha2aVDQSHlCdGHTPTVQAYpr5INTWgY21Co94kd
+         NNjNHm/gC+dqcgpEISytaxuy0UFSicDF9H8XyGf3FRtyGSOptXy6G56wkAq60cn4W3wR
+         N9cdaQR57UdksRLdMx+qN6srUQQ3V5ErxW0XPc2fm0aEV3/C0FW0hdz8kKSp/B5HqPFL
+         7Z8reTccI27r62nPupr1G3hIOQWpKks6PT9zkmazLruQrNLv5ea7hi+MYgnRaPgxV4+g
+         GW7Q==
+X-Gm-Message-State: AOAM530vz5ASF1UdowjQJCOYvCLrFcRKzVKuR38scu9cs1hzWzkvM59A
+        nDDPTwCVQho92hcJxRzoe8k=
+X-Google-Smtp-Source: ABdhPJxEJhSidQzxn6kqr5+uZqLMCHycJHz+Y9DBjIFbucmabSO5Jsye5L0YZOEMU5Jnnk1z0cyk3Q==
+X-Received: by 2002:a05:651c:119b:: with SMTP id w27mr11546092ljo.189.1606091488478;
+        Sun, 22 Nov 2020 16:31:28 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id r27sm1225823lfn.290.2020.11.22.16.31.24
+        by smtp.gmail.com with ESMTPSA id r27sm1225823lfn.290.2020.11.22.16.31.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2020 16:31:24 -0800 (PST)
+        Sun, 22 Nov 2020 16:31:28 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v10 10/19] PM / devfreq: tegra30: Separate configurations per-SoC generation
-Date:   Mon, 23 Nov 2020 03:27:14 +0300
-Message-Id: <20201123002723.28463-11-digetx@gmail.com>
+Subject: [PATCH v10 13/19] ARM: tegra: Add interconnect properties to Tegra20 device-tree
+Date:   Mon, 23 Nov 2020 03:27:17 +0300
+Message-Id: <20201123002723.28463-14-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201123002723.28463-1-digetx@gmail.com>
 References: <20201123002723.28463-1-digetx@gmail.com>
@@ -88,169 +88,74 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Previously we were using count-weight of the T124 for T30 in order to
-get EMC clock rate that was reasonable for T30. In fact the count-weight
-should be x2 times smaller on T30, but then devfreq was producing a bit
-too low EMC clock rate for ISO memory clients, like display controller
-for example.
+Add interconnect properties to the Memory Controller, External Memory
+Controller and the Display Controller nodes in order to describe hardware
+interconnection.
 
-Now both Tegra ACTMON and Tegra DRM display drivers support interconnect
-framework and display driver tells to ICC what a minimum memory bandwidth
-is needed, preventing FIFO underflows. Thus, now we can use a proper
-count-weight value for Tegra30 and MC_ALL device config needs a bit more
-aggressive boosting.
-
-Add a separate ACTMON driver configuration that is specific to Tegra30.
-
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- drivers/devfreq/tegra30-devfreq.c | 68 ++++++++++++++++++++++++-------
- 1 file changed, 54 insertions(+), 14 deletions(-)
+ arch/arm/boot/dts/tegra20.dtsi | 26 +++++++++++++++++++++++++-
+ 1 file changed, 25 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-index 145ef91ae092..117cad7968ab 100644
---- a/drivers/devfreq/tegra30-devfreq.c
-+++ b/drivers/devfreq/tegra30-devfreq.c
-@@ -57,13 +57,6 @@
- #define ACTMON_BELOW_WMARK_WINDOW				3
- #define ACTMON_BOOST_FREQ_STEP					16000
+diff --git a/arch/arm/boot/dts/tegra20.dtsi b/arch/arm/boot/dts/tegra20.dtsi
+index 9347f7789245..2e1304493f7d 100644
+--- a/arch/arm/boot/dts/tegra20.dtsi
++++ b/arch/arm/boot/dts/tegra20.dtsi
+@@ -111,6 +111,17 @@ dc@54200000 {
  
--/*
-- * Activity counter is incremented every 256 memory transactions, and each
-- * transaction takes 4 EMC clocks for Tegra124; So the COUNT_WEIGHT is
-- * 4 * 256 = 1024.
-- */
--#define ACTMON_COUNT_WEIGHT					0x400
--
- /*
-  * ACTMON_AVERAGE_WINDOW_LOG2: default value for @DEV_CTRL_K_VAL, which
-  * translates to 2 ^ (K_VAL + 1). ex: 2 ^ (6 + 1) = 128
-@@ -111,7 +104,7 @@ enum tegra_actmon_device {
- 	MCCPU,
- };
+ 			nvidia,head = <0>;
  
--static const struct tegra_devfreq_device_config actmon_device_configs[] = {
-+static const struct tegra_devfreq_device_config tegra124_device_configs[] = {
- 	{
- 		/* MCALL: All memory accesses (including from the CPUs) */
- 		.offset = 0x1c0,
-@@ -133,6 +126,28 @@ static const struct tegra_devfreq_device_config actmon_device_configs[] = {
- 	},
- };
- 
-+static const struct tegra_devfreq_device_config tegra30_device_configs[] = {
-+	{
-+		/* MCALL: All memory accesses (including from the CPUs) */
-+		.offset = 0x1c0,
-+		.irq_mask = 1 << 26,
-+		.boost_up_coeff = 200,
-+		.boost_down_coeff = 50,
-+		.boost_up_threshold = 20,
-+		.boost_down_threshold = 10,
-+	},
-+	{
-+		/* MCCPU: memory accesses from the CPUs */
-+		.offset = 0x200,
-+		.irq_mask = 1 << 25,
-+		.boost_up_coeff = 800,
-+		.boost_down_coeff = 40,
-+		.boost_up_threshold = 27,
-+		.boost_down_threshold = 10,
-+		.avg_dependency_threshold = 16000, /* 16MHz in kHz units */
-+	},
-+};
++			interconnects = <&mc TEGRA20_MC_DISPLAY0A &emc>,
++					<&mc TEGRA20_MC_DISPLAY0B &emc>,
++					<&mc TEGRA20_MC_DISPLAY1B &emc>,
++					<&mc TEGRA20_MC_DISPLAY0C &emc>,
++					<&mc TEGRA20_MC_DISPLAYHC &emc>;
++			interconnect-names = "wina",
++					     "winb",
++					     "winb-vfilter",
++					     "winc",
++					     "cursor";
 +
- /**
-  * struct tegra_devfreq_device - state specific to an ACTMON device
-  *
-@@ -155,6 +170,12 @@ struct tegra_devfreq_device {
- 	unsigned long target_freq;
- };
+ 			rgb {
+ 				status = "disabled";
+ 			};
+@@ -128,6 +139,17 @@ dc@54240000 {
  
-+struct tegra_devfreq_soc_data {
-+	const struct tegra_devfreq_device_config *configs;
-+	/* Weight value for count measurements */
-+	unsigned int count_weight;
-+};
+ 			nvidia,head = <1>;
+ 
++			interconnects = <&mc TEGRA20_MC_DISPLAY0AB &emc>,
++					<&mc TEGRA20_MC_DISPLAY0BB &emc>,
++					<&mc TEGRA20_MC_DISPLAY1BB &emc>,
++					<&mc TEGRA20_MC_DISPLAY0CB &emc>,
++					<&mc TEGRA20_MC_DISPLAYHCB &emc>;
++			interconnect-names = "wina",
++					     "winb",
++					     "winb-vfilter",
++					     "winc",
++					     "cursor";
 +
- struct tegra_devfreq {
- 	struct devfreq		*devfreq;
- 	struct opp_table	*opp_table;
-@@ -171,11 +192,13 @@ struct tegra_devfreq {
- 	struct delayed_work	cpufreq_update_work;
- 	struct notifier_block	cpu_rate_change_nb;
+ 			rgb {
+ 				status = "disabled";
+ 			};
+@@ -630,15 +652,17 @@ mc: memory-controller@7000f000 {
+ 		interrupts = <GIC_SPI 77 IRQ_TYPE_LEVEL_HIGH>;
+ 		#reset-cells = <1>;
+ 		#iommu-cells = <0>;
++		#interconnect-cells = <1>;
+ 	};
  
--	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
-+	struct tegra_devfreq_device devices[2];
+-	memory-controller@7000f400 {
++	emc: memory-controller@7000f400 {
+ 		compatible = "nvidia,tegra20-emc";
+ 		reg = <0x7000f400 0x400>;
+ 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_HIGH>;
+ 		clocks = <&tegra_car TEGRA20_CLK_EMC>;
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
++		#interconnect-cells = <0>;
+ 	};
  
- 	unsigned int		irq;
- 
- 	bool			started;
-+
-+	const struct tegra_devfreq_soc_data *soc;
- };
- 
- struct tegra_actmon_emc_ratio {
-@@ -488,7 +511,7 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
- 	tegra_devfreq_update_avg_wmark(tegra, dev);
- 	tegra_devfreq_update_wmark(tegra, dev);
- 
--	device_writel(dev, ACTMON_COUNT_WEIGHT, ACTMON_DEV_COUNT_WEIGHT);
-+	device_writel(dev, tegra->soc->count_weight, ACTMON_DEV_COUNT_WEIGHT);
- 	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
- 
- 	val |= ACTMON_DEV_CTRL_ENB_PERIODIC;
-@@ -779,6 +802,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 	if (!tegra)
- 		return -ENOMEM;
- 
-+	tegra->soc = of_device_get_match_data(&pdev->dev);
-+
- 	tegra->regs = devm_platform_ioremap_resource(pdev, 0);
- 	if (IS_ERR(tegra->regs))
- 		return PTR_ERR(tegra->regs);
-@@ -852,9 +877,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
- 
- 	tegra->max_freq = rate / KHZ;
- 
--	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
-+	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
- 		dev = tegra->devices + i;
--		dev->config = actmon_device_configs + i;
-+		dev->config = tegra->soc->configs + i;
- 		dev->regs = tegra->regs + dev->config->offset;
- 	}
- 
-@@ -916,9 +941,24 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+static const struct tegra_devfreq_soc_data tegra124_soc = {
-+	.configs = tegra124_device_configs,
-+
-+	/*
-+	 * Activity counter is incremented every 256 memory transactions,
-+	 * and each transaction takes 4 EMC clocks.
-+	 */
-+	.count_weight = 4 * 256,
-+};
-+
-+static const struct tegra_devfreq_soc_data tegra30_soc = {
-+	.configs = tegra30_device_configs,
-+	.count_weight = 2 * 256,
-+};
-+
- static const struct of_device_id tegra_devfreq_of_match[] = {
--	{ .compatible = "nvidia,tegra30-actmon" },
--	{ .compatible = "nvidia,tegra124-actmon" },
-+	{ .compatible = "nvidia,tegra30-actmon",  .data = &tegra30_soc, },
-+	{ .compatible = "nvidia,tegra124-actmon", .data = &tegra124_soc, },
- 	{ },
- };
- 
+ 	fuse@7000f800 {
 -- 
 2.29.2
 
