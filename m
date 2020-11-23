@@ -5,59 +5,59 @@ X-Spam-Level:
 X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01916C8300C
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3A26DC5519F
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:32:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BB1A72078B
-	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:31:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 00A8A2078B
+	for <linux-pm@archiver.kernel.org>; Mon, 23 Nov 2020 00:32:11 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="ES3jJEuM"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YufEOZGl"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727496AbgKWAbi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 22 Nov 2020 19:31:38 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58590 "EHLO
+        id S1727393AbgKWAbd (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 22 Nov 2020 19:31:33 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726997AbgKWAbh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2020 19:31:37 -0500
-Received: from mail-lf1-x12e.google.com (mail-lf1-x12e.google.com [IPv6:2a00:1450:4864:20::12e])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 866A4C0613CF;
-        Sun, 22 Nov 2020 16:31:35 -0800 (PST)
-Received: by mail-lf1-x12e.google.com with SMTP id a9so21452491lfh.2;
-        Sun, 22 Nov 2020 16:31:35 -0800 (PST)
+        with ESMTP id S1727119AbgKWAbc (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 22 Nov 2020 19:31:32 -0500
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 14982C0613CF;
+        Sun, 22 Nov 2020 16:31:32 -0800 (PST)
+Received: by mail-lj1-x241.google.com with SMTP id r18so1385730ljc.2;
+        Sun, 22 Nov 2020 16:31:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=7OvydWlfMXgO/KNOaprymyQ2ECcFyi64JacxpdVtbzc=;
-        b=ES3jJEuM3Dq7+isH6lUcIeR/O03fqJKTS1R0WwOD3vzqxSZNVEJOWOZ5ckmDinym0+
-         vRHyDO3cNjHUk4KaXtVn/dJdQ+Bwv4WBJXcRYtqt4zddvS0nz+8nWHZS1SxN9E2UCsBu
-         KWnFSejnVFWua3Ko+XwM7e0apHxPciuplT4mCtb4KFw78BpNQMfTIpXAK0jjXR4yPjSS
-         4m1wme42haED1zgXk/PmNkK8MlJldvav/8G7hVi+Jxmd4VlWj5qHcEbM+QFYBcD4JJr9
-         EgaQZHxWj1Nexzi8FfmAmHzeQi2dBXfPltMomnUldlgXjAKVEqAZtjeKyOPTC5xRSw+b
-         LCQA==
+        bh=pLbRWZodAWHryje7XdgngwZooRzE7B+sWeFpLwWIFLg=;
+        b=YufEOZGlcie2JDpQAxDfwDTP/9PGmFqD1aL94c96xtWFoZ9+VeGl/wyxS1ZXO6h5Tx
+         3OCD7XeGobT/HJcOVPfQ+POUnxXMJnKN6zlOSrPAtLNWr9Ex/Szu8Bz2OEdKDW1DA/fs
+         y1Sho+MhZEZ2dE8WdYqDyGrtQd/HOQo/ppbwCfaJvvd+UHsRW7+f/KCuEJRrckJGO91d
+         BbyAoZ7zQSu++obmcY7YbEsaQKGprDAltUFh3nE9TGDgxkD2l4S5sTJLaVrxDEmuIF/Q
+         wF8a1nn8iGTValzQ04cBO6nuXlCIfnbD+XNDlmtH7UtT+izKD4nLQAHj+PrVdPskTbE9
+         0JvQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=7OvydWlfMXgO/KNOaprymyQ2ECcFyi64JacxpdVtbzc=;
-        b=cP/ZS1hGVYZiyQrVxTKkpm3HJNSI097Go3rJkJGWH0bapsRxLBgNp70Ig9xeg3MGS/
-         viwUGp0H5qAcRWRuAz/NEpM5Cl/qjai7pyPdquvnvBDgWdVqRQ8tM2s8VMumLL2sFFU2
-         1hn+a3A7/dcRJL2Bu1T9TFnDn2MD/XnLznoYtkCCsUi6U7MG2QqGrll9EUL++eQQlFdJ
-         aKWrEr9fsY0k5DxFg3FUD5mcofxGPxkbXEPIGeBZbo+6NlBlqDkkhon+vmwCYkDQsgjK
-         5qGWGExnjXSofT+1qTm6EwmZsZycf2ZmIirYKaYUT1XduK8HzFtByqee7du7x5PYhpbg
-         4pWQ==
-X-Gm-Message-State: AOAM533kOc2dHv9v0jcVPPAR7VgSuXrFqIymMNWGwaunQs2H3sxp3sa4
-        OX5EDL6y7rws90EiZtZaj1A=
-X-Google-Smtp-Source: ABdhPJwtawPyXGRV72VOoSsuj3T/a97TSkgvj1FngOPmKrUtA+61JwHsa8WuU1G7xLZsXckd+Nm5eg==
-X-Received: by 2002:a19:6d8:: with SMTP id 207mr2262975lfg.42.1606091494031;
-        Sun, 22 Nov 2020 16:31:34 -0800 (PST)
+        bh=pLbRWZodAWHryje7XdgngwZooRzE7B+sWeFpLwWIFLg=;
+        b=oRxhUCZQsONpO8s0pF8GhqRMgX+HG+nEwcu0LO78vFxzBIa0vT93hVrJSdbfdZv4Jo
+         +Buv5UbaJbX6d7R9lQpjfoD3H/Zy/fbXRrueDSgXx7d5UqRom4GwmwbPXuFjtjKclHf4
+         q+oC9S7WQdRW0KBeBjueXHp5jaNUY77SK3mYahoneS4pjMrlse8u3jEGXnb8n4eOSrh9
+         RXSo4HTlbQ2tDkGE3GTvEpNt4xWIFzxBlFGyvAjdoxrgHxlfUvgFrHpC50trRJoBgLuR
+         P7mOhxQQ3I2LoUZQJr9yU7TebnFJO/zJtA+TZ2Ej+NgFa2B1XSdw9fDu7vKT34UvoUYK
+         G37w==
+X-Gm-Message-State: AOAM532CO/Giyxqsu1qQhWs1f0MmekSEZmXT9IxDcK+sijfMGtrzFiXM
+        ZeoY9f5r4vfnP+tcPHOV1lg=
+X-Google-Smtp-Source: ABdhPJzlbOW1fWwxx4IasK5xVIghnxNQsUMTnkUV04K/2TB50nUcGltAPpOpooNRptnY6x45PgCotA==
+X-Received: by 2002:a2e:b16a:: with SMTP id a10mr1407672ljm.446.1606091490637;
+        Sun, 22 Nov 2020 16:31:30 -0800 (PST)
 Received: from localhost.localdomain (109-252-193-159.dynamic.spd-mgts.ru. [109.252.193.159])
-        by smtp.gmail.com with ESMTPSA id r27sm1225823lfn.290.2020.11.22.16.31.32
+        by smtp.gmail.com with ESMTPSA id r27sm1225823lfn.290.2020.11.22.16.31.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 22 Nov 2020 16:31:33 -0800 (PST)
+        Sun, 22 Nov 2020 16:31:30 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -76,9 +76,9 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: [PATCH v10 18/19] ARM: tegra: Add EMC OPP and ICC properties to Tegra30 EMC and ACTMON device-tree nodes
-Date:   Mon, 23 Nov 2020 03:27:22 +0300
-Message-Id: <20201123002723.28463-19-digetx@gmail.com>
+Subject: [PATCH v10 15/19] ARM: tegra: Add interconnect properties to Tegra124 device-tree
+Date:   Mon, 23 Nov 2020 03:27:19 +0300
+Message-Id: <20201123002723.28463-16-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201123002723.28463-1-digetx@gmail.com>
 References: <20201123002723.28463-1-digetx@gmail.com>
@@ -88,479 +88,72 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add EMC OPP tables and interconnect paths that will be used for
-dynamic memory bandwidth scaling based on memory utilization statistics.
-Update board device-trees by removing unsupported EMC OPPs.
-
-Note that ACTMON watches all memory interconnect paths, but we use a
-single CPU-READ interconnect path for driving memory bandwidth, for
-simplicity.
+Add interconnect properties to the Memory Controller, External Memory
+Controller and the Display Controller nodes in order to describe hardware
+interconnection.
 
 Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
 ---
- ...30-asus-nexus7-grouper-memory-timings.dtsi |  12 +
- arch/arm/boot/dts/tegra30-ouya.dts            |   8 +
- .../arm/boot/dts/tegra30-peripherals-opp.dtsi | 383 ++++++++++++++++++
- arch/arm/boot/dts/tegra30.dtsi                |   6 +
- 4 files changed, 409 insertions(+)
- create mode 100644 arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
+ arch/arm/boot/dts/tegra124.dtsi | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
-diff --git a/arch/arm/boot/dts/tegra30-asus-nexus7-grouper-memory-timings.dtsi b/arch/arm/boot/dts/tegra30-asus-nexus7-grouper-memory-timings.dtsi
-index bc0f6f29b956..bcff0997ee51 100644
---- a/arch/arm/boot/dts/tegra30-asus-nexus7-grouper-memory-timings.dtsi
-+++ b/arch/arm/boot/dts/tegra30-asus-nexus7-grouper-memory-timings.dtsi
-@@ -1563,3 +1563,15 @@ timing-667000000 {
+diff --git a/arch/arm/boot/dts/tegra124.dtsi b/arch/arm/boot/dts/tegra124.dtsi
+index 64f488ba1e72..1801e30b1d3a 100644
+--- a/arch/arm/boot/dts/tegra124.dtsi
++++ b/arch/arm/boot/dts/tegra124.dtsi
+@@ -113,6 +113,19 @@ dc@54200000 {
+ 			iommus = <&mc TEGRA_SWGROUP_DC>;
+ 
+ 			nvidia,head = <0>;
++
++			interconnects = <&mc TEGRA124_MC_DISPLAY0A &emc>,
++					<&mc TEGRA124_MC_DISPLAY0B &emc>,
++					<&mc TEGRA124_MC_DISPLAY0C &emc>,
++					<&mc TEGRA124_MC_DISPLAYHC &emc>,
++					<&mc TEGRA124_MC_DISPLAYD &emc>,
++					<&mc TEGRA124_MC_DISPLAYT &emc>;
++			interconnect-names = "wina",
++					     "winb",
++					     "winc",
++					     "cursor",
++					     "wind",
++					     "wint";
  		};
- 	};
- };
-+
-+&emc_icc_dvfs_opp_table {
-+	/delete-node/ opp@750000000,1300;
-+	/delete-node/ opp@800000000,1300;
-+	/delete-node/ opp@900000000,1350;
-+};
-+
-+&emc_bw_dfs_opp_table {
-+	/delete-node/ opp@750000000;
-+	/delete-node/ opp@800000000;
-+	/delete-node/ opp@900000000;
-+};
-diff --git a/arch/arm/boot/dts/tegra30-ouya.dts b/arch/arm/boot/dts/tegra30-ouya.dts
-index a5f16ad6c8f4..74da1360d297 100644
---- a/arch/arm/boot/dts/tegra30-ouya.dts
-+++ b/arch/arm/boot/dts/tegra30-ouya.dts
-@@ -4509,3 +4509,11 @@ drive_groups {
- 		nvidia,slew-rate-falling = <TEGRA_PIN_SLEW_RATE_SLOWEST>;
- 	};
- };
-+
-+&emc_icc_dvfs_opp_table {
-+	/delete-node/ opp@900000000,1350;
-+};
-+
-+&emc_bw_dfs_opp_table {
-+	/delete-node/ opp@900000000;
-+};
-diff --git a/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi b/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
-new file mode 100644
-index 000000000000..cbe84d25e726
---- /dev/null
-+++ b/arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
-@@ -0,0 +1,383 @@
-+// SPDX-License-Identifier: GPL-2.0
-+
-+/ {
-+	emc_icc_dvfs_opp_table: emc-dvfs-opp-table {
-+		compatible = "operating-points-v2";
-+
-+		opp@12750000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <12750000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@12750000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <12750000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@12750000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <12750000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@25500000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <25500000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@25500000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <25500000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@25500000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <25500000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@27000000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <27000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@27000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <27000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@27000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <27000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@51000000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <51000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@51000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <51000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@51000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <51000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@54000000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <54000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@54000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <54000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@54000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <54000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@102000000,950 {
-+			opp-microvolt = <950000 950000 1350000>;
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@102000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@102000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@108000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <108000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp@108000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <108000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@204000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <204000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp@204000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <204000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@333500000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <333500000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@333500000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <333500000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@333500000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <333500000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@375000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <375000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@375000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <375000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@375000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <375000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@400000000,1000 {
-+			opp-microvolt = <1000000 1000000 1350000>;
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@400000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x0001>;
-+		};
-+
-+		opp@400000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@416000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <416000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp@416000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <416000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@450000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <450000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp@450000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <450000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@533000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <533000000>;
-+			opp-supported-hw = <0x0007>;
-+		};
-+
-+		opp@533000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <533000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@625000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <625000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@625000000,1250 {
-+			opp-microvolt = <1250000 1250000 1350000>;
-+			opp-hz = /bits/ 64 <625000000>;
-+			opp-supported-hw = <0x0008>;
-+		};
-+
-+		opp@667000000,1200 {
-+			opp-microvolt = <1200000 1200000 1350000>;
-+			opp-hz = /bits/ 64 <667000000>;
-+			opp-supported-hw = <0x0006>;
-+		};
-+
-+		opp@750000000,1300 {
-+			opp-microvolt = <1300000 1300000 1350000>;
-+			opp-hz = /bits/ 64 <750000000>;
-+			opp-supported-hw = <0x0004>;
-+		};
-+
-+		opp@800000000,1300 {
-+			opp-microvolt = <1300000 1300000 1350000>;
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x0004>;
-+		};
-+
-+		opp@900000000,1350 {
-+			opp-microvolt = <1350000 1350000 1350000>;
-+			opp-hz = /bits/ 64 <900000000>;
-+			opp-supported-hw = <0x0004>;
-+		};
-+	};
-+
-+	emc_bw_dfs_opp_table: emc-bandwidth-opp-table {
-+		compatible = "operating-points-v2";
-+
-+		opp@12750000 {
-+			opp-hz = /bits/ 64 <12750000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <102000>;
-+		};
-+
-+		opp@25500000 {
-+			opp-hz = /bits/ 64 <25500000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <204000>;
-+		};
-+
-+		opp@27000000 {
-+			opp-hz = /bits/ 64 <27000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <216000>;
-+		};
-+
-+		opp@51000000 {
-+			opp-hz = /bits/ 64 <51000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <408000>;
-+		};
-+
-+		opp@54000000 {
-+			opp-hz = /bits/ 64 <54000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <432000>;
-+		};
-+
-+		opp@102000000 {
-+			opp-hz = /bits/ 64 <102000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <816000>;
-+		};
-+
-+		opp@108000000 {
-+			opp-hz = /bits/ 64 <108000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <864000>;
-+		};
-+
-+		opp@204000000 {
-+			opp-hz = /bits/ 64 <204000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <1632000>;
-+		};
-+
-+		opp@333500000 {
-+			opp-hz = /bits/ 64 <333500000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <2668000>;
-+		};
-+
-+		opp@375000000 {
-+			opp-hz = /bits/ 64 <375000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <3000000>;
-+		};
-+
-+		opp@400000000 {
-+			opp-hz = /bits/ 64 <400000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <3200000>;
-+		};
-+
-+		opp@416000000 {
-+			opp-hz = /bits/ 64 <416000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <3328000>;
-+		};
-+
-+		opp@450000000 {
-+			opp-hz = /bits/ 64 <450000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <3600000>;
-+		};
-+
-+		opp@533000000 {
-+			opp-hz = /bits/ 64 <533000000>;
-+			opp-supported-hw = <0x000F>;
-+			opp-peak-kBps = <4264000>;
-+		};
-+
-+		opp@625000000 {
-+			opp-hz = /bits/ 64 <625000000>;
-+			opp-supported-hw = <0x000E>;
-+			opp-peak-kBps = <5000000>;
-+		};
-+
-+		opp@667000000 {
-+			opp-hz = /bits/ 64 <667000000>;
-+			opp-supported-hw = <0x0006>;
-+			opp-peak-kBps = <5336000>;
-+		};
-+
-+		opp@750000000 {
-+			opp-hz = /bits/ 64 <750000000>;
-+			opp-supported-hw = <0x0004>;
-+			opp-peak-kBps = <6000000>;
-+		};
-+
-+		opp@800000000 {
-+			opp-hz = /bits/ 64 <800000000>;
-+			opp-supported-hw = <0x0004>;
-+			opp-peak-kBps = <6400000>;
-+		};
-+
-+		opp@900000000 {
-+			opp-hz = /bits/ 64 <900000000>;
-+			opp-supported-hw = <0x0004>;
-+			opp-peak-kBps = <7200000>;
-+		};
-+	};
-+};
-diff --git a/arch/arm/boot/dts/tegra30.dtsi b/arch/arm/boot/dts/tegra30.dtsi
-index 2caf6cc6f4b1..44a6dbba7081 100644
---- a/arch/arm/boot/dts/tegra30.dtsi
-+++ b/arch/arm/boot/dts/tegra30.dtsi
-@@ -6,6 +6,8 @@
- #include <dt-bindings/interrupt-controller/arm-gic.h>
- #include <dt-bindings/soc/tegra-pmc.h>
  
-+#include "tegra30-peripherals-opp.dtsi"
+ 		dc@54240000 {
+@@ -127,6 +140,15 @@ dc@54240000 {
+ 			iommus = <&mc TEGRA_SWGROUP_DCB>;
+ 
+ 			nvidia,head = <1>;
 +
- / {
- 	compatible = "nvidia,tegra30";
- 	interrupt-parent = <&lic>;
-@@ -417,6 +419,9 @@ actmon@6000c800 {
- 		clock-names = "actmon", "emc";
- 		resets = <&tegra_car TEGRA30_CLK_ACTMON>;
- 		reset-names = "actmon";
-+		operating-points-v2 = <&emc_bw_dfs_opp_table>;
-+		interconnects = <&mc TEGRA30_MC_MPCORER &emc>;
-+		interconnect-names = "cpu-read";
++			interconnects = <&mc TEGRA124_MC_DISPLAY0AB &emc>,
++					<&mc TEGRA124_MC_DISPLAY0BB &emc>,
++					<&mc TEGRA124_MC_DISPLAY0CB &emc>,
++					<&mc TEGRA124_MC_DISPLAYHCB &emc>;
++			interconnect-names = "wina",
++					     "winb",
++					     "winc",
++					     "cursor";
+ 		};
+ 
+ 		hdmi: hdmi@54280000 {
+@@ -628,6 +650,7 @@ mc: memory-controller@70019000 {
+ 
+ 		#iommu-cells = <1>;
+ 		#reset-cells = <1>;
++		#interconnect-cells = <1>;
  	};
  
- 	gpio: gpio@6000d000 {
-@@ -780,6 +785,7 @@ emc: memory-controller@7000f400 {
- 		clocks = <&tegra_car TEGRA30_CLK_EMC>;
+ 	emc: external-memory-controller@7001b000 {
+@@ -637,6 +660,8 @@ emc: external-memory-controller@7001b000 {
+ 		clock-names = "emc";
  
  		nvidia,memory-controller = <&mc>;
-+		operating-points-v2 = <&emc_icc_dvfs_opp_table>;
- 
- 		#interconnect-cells = <0>;
++
++		#interconnect-cells = <0>;
  	};
+ 
+ 	sata@70020000 {
 -- 
 2.29.2
 
