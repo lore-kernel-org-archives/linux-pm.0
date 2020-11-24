@@ -7,59 +7,57 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A5F5AC63798
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A3EC6C8300F
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 629552076B
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 623992073C
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="kvRa/6Hh";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Xn2MJd7O"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="Y2VbOtcu";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="jQJQqodQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731380AbgKXJgr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:47 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:42012 "EHLO
+        id S1731415AbgKXJgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:49 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:41996 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731394AbgKXJgn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:43 -0500
-Date:   Tue, 24 Nov 2020 09:36:40 -0000
+        with ESMTP id S1731412AbgKXJgp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:45 -0500
+Date:   Tue, 24 Nov 2020 09:36:42 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210601;
+        s=2020; t=1606210603;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=lO5ZHbUqgy1e13Nn2VWdTq6xUECl0QZzesxWrbNE0ZI=;
-        b=kvRa/6Hh66YWS0ih6/elYdU6XYvvuUHVeBhwxOssJWfhmkRMQe8kuKtCOlGvY2OYBINP8o
-        hakP5H84/2jK/PoxWyVeZcxMzHWP7JmGjUukeKcBvcWIQOoK3Ilx0QTIVK9/+aVwUORd0A
-        veGPiavCRf47grxAyy/UTCsOCOZsvzWIPhUclhRYq0qo+XHdRo7V0ZP7X8Mop7dR7yzeH6
-        lNq/mh9LHtd9w3RK8wwktYHd+MpijJzAdyYdwKjpYvNTze/mpJmQfnMhTvWiPDjB2NmKtN
-        IKM8JvvS20yjxiuKSkugrunptRHaUeX9Ul0QnO+Dfpg+rrElejX1FEJp0dtGqA==
+        bh=XBTnKv9xGZXqUan4gxnt8PICOA0KJEV8MjfsJPWBaIM=;
+        b=Y2VbOtcuZV/mMrkpXAb3h01OEq4Q4mDlCeZUHMtLVGJDOr/6gLd3C2NXSpM3DYyxGKZ7Aj
+        xFYZl05HI93H7U4e8g2/v0afq46eiJR2JWRg8oT35WbdHuocMq8x9swCvLEupXzTNER4rT
+        WUqIe4JjxW3tnSEu9KSHfJWYYFBq0SH0XOo4DUzxESjjFTBXVgJe1rrhfDVM+KOvuBY5Nz
+        RY4glskz6t4DKRoasy+YUfep3rYn6W+ULM5LlCuY1HiwhuNVy/lhtGrDF6TDss6jcG7w5y
+        1GAElGrmvWUvEWuN+BwnxLZfWoaC7ifkc53vyVtlEjwA7G7yaNk0/LJB769xsw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210601;
+        s=2020e; t=1606210603;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=lO5ZHbUqgy1e13Nn2VWdTq6xUECl0QZzesxWrbNE0ZI=;
-        b=Xn2MJd7ONi21UbQXu5PZ8QQPpM65l6GapavGnuRBoywFY//pob8sleVdSYfsByeadiWcgl
-        z35sAtW5vfRZbNAA==
-From:   "thermal-bot for Fabien Parent" <tip-bot2@linutronix.de>
+        bh=XBTnKv9xGZXqUan4gxnt8PICOA0KJEV8MjfsJPWBaIM=;
+        b=jQJQqodQiKIRlHT68dJJuvogZtfY/gif1wZqI47lwy+FFxcNkn+MoAF12yz7rhXHiifdA2
+        FSvhF3BtHrKxbKDA==
+From:   "thermal-bot for Bernard Zhao" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: mediatek: add
- documentation for MT8516 SoC
-Cc:     Fabien Parent <fparent@baylibre.com>,
-        Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] drivers/thermal/core: Optimize trip points check
+Cc:     Bernard Zhao <bernard@vivo.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201021164231.3029956-2-fparent@baylibre.com>
-References: <20201021164231.3029956-2-fparent@baylibre.com>
+In-Reply-To: <20201027013743.62392-1-bernard@vivo.com>
+References: <20201027013743.62392-1-bernard@vivo.com>
 MIME-Version: 1.0
-Message-ID: <160621060070.11115.15664259225956658366.tip-bot2@tip-bot2>
+Message-ID: <160621060274.11115.1871630758046158914.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -70,35 +68,47 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     c707f973df1706020f4a4669b5f1932e90c0f29c
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//c707f973df1706020f4a4669b5f1932e90c0f29c
-Author:        Fabien Parent <fparent@baylibre.com>
-AuthorDate:    Wed, 21 Oct 2020 18:42:30 +02:00
+Commit-ID:     37b2539e63d6570c9ee51b1d48bdecb334df367d
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//37b2539e63d6570c9ee51b1d48bdecb334df367d
+Author:        Bernard Zhao <bernard@vivo.com>
+AuthorDate:    Mon, 26 Oct 2020 18:37:42 -07:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 27 Oct 2020 11:18:54 +01:00
+CommitterDate: Tue, 27 Oct 2020 09:53:19 +01:00
 
-dt-bindings: thermal: mediatek: add documentation for MT8516 SoC
+drivers/thermal/core: Optimize trip points check
 
-Add binding documentation for the MediaTek MT8516 SoC.
-The SoC thermal IP is similar to MT2701.
+The trip points are checked one by one with multiple condition
+branches where one condition is enough to disable the trip point.
 
-Signed-off-by: Fabien Parent <fparent@baylibre.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Merge all these conditions in a single 'OR' statement.
+
+Signed-off-by: Bernard Zhao <bernard@vivo.com>
+Suggested-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201021164231.3029956-2-fparent@baylibre.com
----
- Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 1 +
- 1 file changed, 1 insertion(+)
+Link: https://lore.kernel.org/r/20201027013743.62392-1-bernard@vivo.com
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-index 2d20f6b..5c7e7bd 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -14,6 +14,7 @@ Required properties:
-   - "mediatek,mt2712-thermal" : For MT2712 family of SoCs
-   - "mediatek,mt7622-thermal" : For MT7622 SoC
-   - "mediatek,mt8183-thermal" : For MT8183 family of SoCs
-+  - "mediatek,mt8516-thermal", "mediatek,mt2701-thermal : For MT8516 family of SoCs
- - reg: Address range of the thermal controller
- - interrupts: IRQ for the thermal controller
- - clocks, clock-names: Clocks needed for the thermal controller. required
+[dlezcano] Changed patch description
+---
+ drivers/thermal/thermal_core.c |  9 +++------
+ 1 file changed, 3 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index 96349ba..90e38cc 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1358,12 +1358,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 		goto release_device;
+ 
+ 	for (count = 0; count < trips; count++) {
+-		if (tz->ops->get_trip_type(tz, count, &trip_type))
+-			set_bit(count, &tz->trips_disabled);
+-		if (tz->ops->get_trip_temp(tz, count, &trip_temp))
+-			set_bit(count, &tz->trips_disabled);
+-		/* Check for bogus trip points */
+-		if (trip_temp == 0)
++		if (tz->ops->get_trip_type(tz, count, &trip_type) ||
++		    tz->ops->get_trip_temp(tz, count, &trip_temp) ||
++		    !trip_temp)
+ 			set_bit(count, &tz->trips_disabled);
+ 	}
+ 
