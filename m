@@ -7,62 +7,61 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4573FC6379D
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:37:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9F484C56202
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DF53D2073C
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5C7932076B
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="4qDxxqvc";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="KVCET2l7"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="2i4LyS/s";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="NbxiB3IC"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731386AbgKXJgw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53958 "EHLO
+        id S1731374AbgKXJgq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53946 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731411AbgKXJgn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:43 -0500
+        with ESMTP id S1731384AbgKXJgl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:41 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6324C0613D6
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2020 01:36:43 -0800 (PST)
-Date:   Tue, 24 Nov 2020 09:36:41 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 02925C0613D6
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2020 01:36:41 -0800 (PST)
+Date:   Tue, 24 Nov 2020 09:36:38 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210602;
+        s=2020; t=1606210599;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wExZYRNkp/HIMhjeYFYbwhs8Jj28DvP1cT5nP0o6670=;
-        b=4qDxxqvc+Fpj9V5R/qXEUvLe3+ruwJoI6VM7452ojH5XUWfIp6bB/IM3z7NK2jzI59dt4e
-        7lrBPIxjYhzQN0JKDS4OjvN7vroxdcJXV1rYxNewwzj+e7H1itN4xtrqvj0x58jRuQxPBl
-        0ydPwWO/v8cIPibDmFXViWC0H4t90WTeLlqxLoUqx5K9fwlPf0gK4vJmMel6R3zSTbwVpw
-        ZQyIVUhZnbuSscHz2ZA0UEXi8ui7IkOhz45HDPbnseOEdOVP2mfSRLlYhe0XL750on7HIQ
-        LTb96z3b8OttoY4JzNwM7mzmR4GL4CfGkzp2V3qqsXKU+E5x6BPQuq9RueEItQ==
+        bh=MNlFZCEV9vHuzyBDPDF80McHvHB0YadK7F/rDVCN6Hw=;
+        b=2i4LyS/sUDL/ydQ1f+WmZj9c0XoQQTIwVucLYiY52AzlT7u1/WhYyTFImsHJ3/+FgJcdI8
+        I8QwvEhoBfnv9d6sXN+Mvxv/vhs09ST76LdzLItPePvRcRdgGoN6XWcu9xs/6pDikjcPhR
+        FAR5YxBTSx9FRUdszR5/BZAMy0xz/fAnmtuT8d7pKqMgfwAqaS3zMbHfUze/l2qnxYfqO4
+        x5CLVhP5LT/uqo5GbIvTAWGHc/HEtBQO+s3BPd4vrKKpsAb8DbVQG3/Co0PLIt9q+EQhTm
+        orkp5Pfo60sxrHF/ZhXmEt7+mAbzFVu4a4FESDegXiuGlhA22QFSRZYWiGJ76g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210602;
+        s=2020e; t=1606210599;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wExZYRNkp/HIMhjeYFYbwhs8Jj28DvP1cT5nP0o6670=;
-        b=KVCET2l73Q/LE0JtS/rKdc0uqgKx3PWx21UqKqvs/9kuFa2jKQeQZfWm7+3FaRgg2PHeYk
-        +ZKBEeGqTJResEAw==
-From:   "thermal-bot for Fabien Parent" <tip-bot2@linutronix.de>
+        bh=MNlFZCEV9vHuzyBDPDF80McHvHB0YadK7F/rDVCN6Hw=;
+        b=NbxiB3IC31zzJwEFY5fmT2XGerdC4b+LbdD257UfNi/ZlbB4bGdJ5ohCdNaPAZ6aww5G7g
+        wGhqHgZOMZLuBRAg==
+From:   "thermal-bot for Yangtao Li" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] dt-bindings: thermal: mediatek: make resets
- property optional
-Cc:     Fabien Parent <fparent@baylibre.com>,
-        Rob Herring <robh@kernel.org>,
+Subject: [thermal: thermal/next] thermal: sun8i: Use bitmap API instead of open code
+Cc:     Yangtao Li <frank@allwinnertech.com>,
+        Maxime Ripard <mripard@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201021164231.3029956-1-fparent@baylibre.com>
-References: <20201021164231.3029956-1-fparent@baylibre.com>
+In-Reply-To: <20201109114624.23035-1-frank@allwinnertech.com>
+References: <20201109114624.23035-1-frank@allwinnertech.com>
 MIME-Version: 1.0
-Message-ID: <160621060139.11115.15221822048764705565.tip-bot2@tip-bot2>
+Message-ID: <160621059850.11115.4933980390217289137.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -73,41 +72,112 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     07df39d03c34bd7baf4c26e41a5dd92ec56e9081
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//07df39d03c34bd7baf4c26e41a5dd92ec56e9081
-Author:        Fabien Parent <fparent@baylibre.com>
-AuthorDate:    Wed, 21 Oct 2020 18:42:29 +02:00
+Commit-ID:     e01aac535353e013f9a5c9675232458906b895da
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e01aac535353e013f9a5c9675232458906b895da
+Author:        Yangtao Li <frank@allwinnertech.com>
+AuthorDate:    Mon, 09 Nov 2020 19:46:24 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 27 Oct 2020 11:18:29 +01:00
+CommitterDate: Thu, 12 Nov 2020 11:05:12 +01:00
 
-dt-bindings: thermal: mediatek: make resets property optional
+thermal: sun8i: Use bitmap API instead of open code
 
-MT8516 Thermal IP does not support reset. Make the resets property
-optional in order to be able to support MT8516 SoC.
+The bitmap_* API is the standard way to access data in the bitfield.
+So convert irq_ack to return an unsigned long, and make things to use
+bitmap API.
 
-Signed-off-by: Fabien Parent <fparent@baylibre.com>
-Acked-by: Rob Herring <robh@kernel.org>
+Signed-off-by: Yangtao Li <frank@allwinnertech.com>
+Acked-by: Maxime Ripard <mripard@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201021164231.3029956-1-fparent@baylibre.com
+Link: https://lore.kernel.org/r/20201109114624.23035-1-frank@allwinnertech.com
 ---
- Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/sun8i_thermal.c | 33 ++++++++++++++++----------------
+ 1 file changed, 17 insertions(+), 16 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-index 1e249c4..2d20f6b 100644
---- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-+++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
-@@ -20,12 +20,12 @@ Required properties:
-                        clocks are:
- 		       "therm":	 Main clock needed for register access
- 		       "auxadc": The AUXADC clock
--- resets: Reference to the reset controller controlling the thermal controller.
- - mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
- - mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
- - #thermal-sensor-cells : Should be 0. See Documentation/devicetree/bindings/thermal/thermal-sensor.yaml for a description.
+diff --git a/drivers/thermal/sun8i_thermal.c b/drivers/thermal/sun8i_thermal.c
+index f8b1307..8c80bd0 100644
+--- a/drivers/thermal/sun8i_thermal.c
++++ b/drivers/thermal/sun8i_thermal.c
+@@ -8,6 +8,7 @@
+  * Based on the work of Josef Gajdusek <atx@atx.name>
+  */
  
- Optional properties:
-+- resets: Reference to the reset controller controlling the thermal controller.
- - nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
-                unspecified default values shall be used.
- - nvmem-cell-names: Should be "calibration-data"
++#include <linux/bitmap.h>
+ #include <linux/clk.h>
+ #include <linux/device.h>
+ #include <linux/interrupt.h>
+@@ -74,7 +75,7 @@ struct ths_thermal_chip {
+ 	int		(*calibrate)(struct ths_device *tmdev,
+ 				     u16 *caldata, int callen);
+ 	int		(*init)(struct ths_device *tmdev);
+-	int             (*irq_ack)(struct ths_device *tmdev);
++	unsigned long	(*irq_ack)(struct ths_device *tmdev);
+ 	int		(*calc_temp)(struct ths_device *tmdev,
+ 				     int id, int reg);
+ };
+@@ -146,9 +147,10 @@ static const struct regmap_config config = {
+ 	.max_register = 0xfc,
+ };
+ 
+-static int sun8i_h3_irq_ack(struct ths_device *tmdev)
++static unsigned long sun8i_h3_irq_ack(struct ths_device *tmdev)
+ {
+-	int i, state, ret = 0;
++	unsigned long irq_bitmap = 0;
++	int i, state;
+ 
+ 	regmap_read(tmdev->regmap, SUN8I_THS_IS, &state);
+ 
+@@ -156,16 +158,17 @@ static int sun8i_h3_irq_ack(struct ths_device *tmdev)
+ 		if (state & SUN8I_THS_DATA_IRQ_STS(i)) {
+ 			regmap_write(tmdev->regmap, SUN8I_THS_IS,
+ 				     SUN8I_THS_DATA_IRQ_STS(i));
+-			ret |= BIT(i);
++			bitmap_set(&irq_bitmap, i, 1);
+ 		}
+ 	}
+ 
+-	return ret;
++	return irq_bitmap;
+ }
+ 
+-static int sun50i_h6_irq_ack(struct ths_device *tmdev)
++static unsigned long sun50i_h6_irq_ack(struct ths_device *tmdev)
+ {
+-	int i, state, ret = 0;
++	unsigned long irq_bitmap = 0;
++	int i, state;
+ 
+ 	regmap_read(tmdev->regmap, SUN50I_H6_THS_DIS, &state);
+ 
+@@ -173,24 +176,22 @@ static int sun50i_h6_irq_ack(struct ths_device *tmdev)
+ 		if (state & SUN50I_H6_THS_DATA_IRQ_STS(i)) {
+ 			regmap_write(tmdev->regmap, SUN50I_H6_THS_DIS,
+ 				     SUN50I_H6_THS_DATA_IRQ_STS(i));
+-			ret |= BIT(i);
++			bitmap_set(&irq_bitmap, i, 1);
+ 		}
+ 	}
+ 
+-	return ret;
++	return irq_bitmap;
+ }
+ 
+ static irqreturn_t sun8i_irq_thread(int irq, void *data)
+ {
+ 	struct ths_device *tmdev = data;
+-	int i, state;
+-
+-	state = tmdev->chip->irq_ack(tmdev);
++	unsigned long irq_bitmap = tmdev->chip->irq_ack(tmdev);
++	int i;
+ 
+-	for (i = 0; i < tmdev->chip->sensor_num; i++) {
+-		if (state & BIT(i))
+-			thermal_zone_device_update(tmdev->sensor[i].tzd,
+-						   THERMAL_EVENT_UNSPECIFIED);
++	for_each_set_bit(i, &irq_bitmap, tmdev->chip->sensor_num) {
++		thermal_zone_device_update(tmdev->sensor[i].tzd,
++					   THERMAL_EVENT_UNSPECIFIED);
+ 	}
+ 
+ 	return IRQ_HANDLED;
