@@ -7,57 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D1DBC2D0E4
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 616F1C56201
 	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2543720888
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB16220897
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ixIGaC3/";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="XQ6N3taf"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="mKkdpUNC";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="8ahQzYDV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731377AbgKXJgp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:45 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:42012 "EHLO
+        id S1731419AbgKXJgs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:48 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:42112 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731374AbgKXJgk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:40 -0500
-Date:   Tue, 24 Nov 2020 09:36:37 -0000
+        with ESMTP id S1731384AbgKXJgr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:47 -0500
+Date:   Tue, 24 Nov 2020 09:36:44 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210598;
+        s=2020; t=1606210605;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BB9NNXwp6WyAPDk8ApDaiyGL3fi0BQibQ0N1oLy5FB8=;
-        b=ixIGaC3/kVesZydE3/bC6Xy2XUIroiMLm/+yIpx77tR1AoesN7+u/Dm7dLtVVP+J9iFCb2
-        VuEBOsESIOLxjdGixhcsQEF3jtxKbnTMl7PVYtwndW8WwE6QQkNNb8c5KdV8yMrbLx/Ymu
-        fhc8+hkyLI/YNFzqiDz+AUnGjJfOR5bt6alnvB0ahzbmcJWQNQNYeNoZItIS2qiMMSb39w
-        4IA2R6K6LqZTCNRKZgdIzD1pjPGUGtdv7IEmO08QmItBpi80ZfHbXzyg9HQ7loJI5Bnugo
-        RS2eeWKkrCaut6hwIZprzIZkysuVFrTz7HKlaHbk0Uhl5v49sHoqLlB84OiwnA==
+        bh=E7JX6Pzemlt727AZxrgxhUPVgUk8XmClNLTEFP9IKWM=;
+        b=mKkdpUNCw2PH9tY+2CoW5jHdUxUF6WIcryYj3G9idZUK2SWEDJk6XzUtZCHgxN16rGgmyC
+        hO2KeRT4lOVe2SoDgLQtoNNybvDiKFBYxFGdzeAws7A3N7jMIghaL73OifzR8tUj31Agdq
+        EpxYjjQzJPiPjY1vH3XT4FwcArsEh1bzpeiUZjCSJ8VdbmDcSYAW4ATw5ekulBskgF4C1L
+        RZz8V9gZhBXtAl70swDogG7haB2lkD+KPOeKRoxhTFd6s45XU+EGtLDZli47qpCWse4dXJ
+        m3u90lFLjxMvyHYMaJ+oxoE7VWOXhIW31MuzBT4+i23M92k8mecPx/rmw+YPow==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210598;
+        s=2020e; t=1606210605;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=BB9NNXwp6WyAPDk8ApDaiyGL3fi0BQibQ0N1oLy5FB8=;
-        b=XQ6N3tafZrztXXrC9cgOObwwpKSdMPr767s2egm96QnVuZwe46kCx/1L2QWDTuzAl/KYXC
-        V/JWc2ACbN7xMxDA==
-From:   "thermal-bot for Bernard Zhao" <tip-bot2@linutronix.de>
+        bh=E7JX6Pzemlt727AZxrgxhUPVgUk8XmClNLTEFP9IKWM=;
+        b=8ahQzYDVr2wRI73rDoC+va0zBazbgzV+FfhgbWXAUpI4WfIiqtiaJtjqzuCTcgt/bOSZN6
+        DEjg5opLMVXdYQCg==
+From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/hwmon: Cleanup coding style a bit
-Cc:     Bernard Zhao <bernard@vivo.com>,
+Subject: [thermal: thermal/next] thermal: power_allocator: Respect upper and
+ lower bounds for cooling device
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201102023121.3312-1-bernard@vivo.com>
-References: <20201102023121.3312-1-bernard@vivo.com>
+In-Reply-To: <20201015112441.4056-3-lukasz.luba@arm.com>
+References: <20201015112441.4056-3-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Message-ID: <160621059771.11115.1021341423442981344.tip-bot2@tip-bot2>
+Message-ID: <160621060492.11115.4305995116543175135.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -68,37 +69,52 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     030a48b0f6ce393d78b8d33debb1e2043b8cc156
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//030a48b0f6ce393d78b8d33debb1e2043b8cc156
-Author:        Bernard Zhao <bernard@vivo.com>
-AuthorDate:    Sun, 01 Nov 2020 18:31:21 -08:00
+Commit-ID:     8132df3a06a41823aa370dbb4ff08f48fa07f6df
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8132df3a06a41823aa370dbb4ff08f48fa07f6df
+Author:        Lukasz Luba <lukasz.luba@arm.com>
+AuthorDate:    Thu, 15 Oct 2020 12:24:39 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 12 Nov 2020 11:24:01 +01:00
+CommitterDate: Tue, 27 Oct 2020 09:44:32 +01:00
 
-thermal/drivers/hwmon: Cleanup coding style a bit
+thermal: power_allocator: Respect upper and lower bounds for cooling device
 
-Function thermal_add_hwmon_sysfs, hwmon will be NULL when
-new_hwmon_device = 0, so there is no need to check, kfree will
-handle NULL point.
+The thermal cooling device specified in DT might be instantiated for
+a thermal zone trip point with a limited set of OPPs to operate on. This
+configuration should be supported by Intelligent Power Allocation (IPA),
+since it is a standard for other governors. Change the code and allow IPA
+to get power value of lower and upper bound set for a given cooling
+device.
 
-Signed-off-by: Bernard Zhao <bernard@vivo.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201102023121.3312-1-bernard@vivo.com
+Link: https://lore.kernel.org/r/20201015112441.4056-3-lukasz.luba@arm.com
 ---
- drivers/thermal/thermal_hwmon.c | 3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ drivers/thermal/gov_power_allocator.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
-index 8b92e00..ad03262 100644
---- a/drivers/thermal/thermal_hwmon.c
-+++ b/drivers/thermal/thermal_hwmon.c
-@@ -206,8 +206,7 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
- 	if (new_hwmon_device)
- 		hwmon_device_unregister(hwmon->device);
-  free_mem:
--	if (new_hwmon_device)
--		kfree(hwmon);
-+	kfree(hwmon);
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index ab0be26..eb8c9af 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -96,7 +96,10 @@ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
+ 		if (instance->trip != params->trip_max_desired_temperature)
+ 			continue;
  
- 	return result;
- }
+-		if (power_actor_get_min_power(cdev, &min_power))
++		if (!cdev_is_power_actor(cdev))
++			continue;
++
++		if (cdev->ops->state2power(cdev, instance->upper, &min_power))
+ 			continue;
+ 
+ 		sustainable_power += min_power;
+@@ -398,7 +401,8 @@ static int allocate_power(struct thermal_zone_device *tz,
+ 
+ 		weighted_req_power[i] = frac_to_int(weight * req_power[i]);
+ 
+-		if (power_actor_get_max_power(cdev, &max_power[i]))
++		if (cdev->ops->state2power(cdev, instance->lower,
++					   &max_power[i]))
+ 			continue;
+ 
+ 		total_req_power += req_power[i];
