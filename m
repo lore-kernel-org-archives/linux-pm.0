@@ -7,57 +7,57 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5405C8300E
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7D1DBC2D0E4
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9FDBC20888
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2543720888
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QVyQy7Wc";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="1Qd9yiiY"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ixIGaC3/";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="XQ6N3taf"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731394AbgKXJgr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:47 -0500
+        id S1731377AbgKXJgp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:45 -0500
 Received: from Galois.linutronix.de ([193.142.43.55]:42012 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731419AbgKXJgp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:45 -0500
-Date:   Tue, 24 Nov 2020 09:36:43 -0000
+        with ESMTP id S1731374AbgKXJgk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:40 -0500
+Date:   Tue, 24 Nov 2020 09:36:37 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210604;
+        s=2020; t=1606210598;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=tMm0mPKjlAtftC+p9/E/fI1CxV3Gyh/83fub4zeLyYg=;
-        b=QVyQy7WcFxX0wprn18AknqKZSr+miAUNhoOjk46WTIK91dgLkXEnkrL4M+dD6qaHiBzFQ3
-        ZNUfl75MMDuNAr6FUwDJPX8HwAVU53mjU6Al76Gq5LsoWIoUO1OPv8nwiDAf+/cw49RLa+
-        iYWuxzhKqYnE2qodztCcyeys9/6NlCuAb68L7NPZ98k0vXkom4VXefId96aTmJpYspREKa
-        l0xbcPOWN2jCI3qEPHy0f7PJkG8HA+S08Uzxvk3N5xkGKVZ50Guaess9N0oGXn5k/q3OXQ
-        ju7YCG6CMN5R7GqtAMGTT2/IJnact+NT51MKNEcD/QqznyhIx1WdPnuesSwDIQ==
+        bh=BB9NNXwp6WyAPDk8ApDaiyGL3fi0BQibQ0N1oLy5FB8=;
+        b=ixIGaC3/kVesZydE3/bC6Xy2XUIroiMLm/+yIpx77tR1AoesN7+u/Dm7dLtVVP+J9iFCb2
+        VuEBOsESIOLxjdGixhcsQEF3jtxKbnTMl7PVYtwndW8WwE6QQkNNb8c5KdV8yMrbLx/Ymu
+        fhc8+hkyLI/YNFzqiDz+AUnGjJfOR5bt6alnvB0ahzbmcJWQNQNYeNoZItIS2qiMMSb39w
+        4IA2R6K6LqZTCNRKZgdIzD1pjPGUGtdv7IEmO08QmItBpi80ZfHbXzyg9HQ7loJI5Bnugo
+        RS2eeWKkrCaut6hwIZprzIZkysuVFrTz7HKlaHbk0Uhl5v49sHoqLlB84OiwnA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210604;
+        s=2020e; t=1606210598;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=tMm0mPKjlAtftC+p9/E/fI1CxV3Gyh/83fub4zeLyYg=;
-        b=1Qd9yiiY5+Ox5uXIsxza62r4sUGk2v7hMQfS0kOwUjAeAP3YuZe/kvCanw0t22/ty7BJK3
-        IzvSc5SgZcw+qHDw==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=BB9NNXwp6WyAPDk8ApDaiyGL3fi0BQibQ0N1oLy5FB8=;
+        b=XQ6N3tafZrztXXrC9cgOObwwpKSdMPr767s2egm96QnVuZwe46kCx/1L2QWDTuzAl/KYXC
+        V/JWc2ACbN7xMxDA==
+From:   "thermal-bot for Bernard Zhao" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: core: Move power_actor_set_power into IPA
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] thermal/drivers/hwmon: Cleanup coding style a bit
+Cc:     Bernard Zhao <bernard@vivo.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201015112441.4056-5-lukasz.luba@arm.com>
-References: <20201015112441.4056-5-lukasz.luba@arm.com>
+In-Reply-To: <20201102023121.3312-1-bernard@vivo.com>
+References: <20201102023121.3312-1-bernard@vivo.com>
 MIME-Version: 1.0
-Message-ID: <160621060347.11115.7900113051506397394.tip-bot2@tip-bot2>
+Message-ID: <160621059771.11115.1021341423442981344.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -68,135 +68,37 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     345a8af7ea63ac75a9000159d6298769d3d50f91
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//345a8af7ea63ac75a9000159d6298769d3d50f91
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Thu, 15 Oct 2020 12:24:41 +01:00
+Commit-ID:     030a48b0f6ce393d78b8d33debb1e2043b8cc156
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//030a48b0f6ce393d78b8d33debb1e2043b8cc156
+Author:        Bernard Zhao <bernard@vivo.com>
+AuthorDate:    Sun, 01 Nov 2020 18:31:21 -08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 27 Oct 2020 09:44:32 +01:00
+CommitterDate: Thu, 12 Nov 2020 11:24:01 +01:00
 
-thermal: core: Move power_actor_set_power into IPA
+thermal/drivers/hwmon: Cleanup coding style a bit
 
-Since the power actor section has one function power_actor_set_power()
-move it into Intelligent Power Allocation (IPA). There is no other user
-of that helper function. It would also allow to remove the check of
-cdev_is_power_actor() because the code which calls it in IPA already does
-the needed check. Make the function static since only IPA use it.
+Function thermal_add_hwmon_sysfs, hwmon will be NULL when
+new_hwmon_device = 0, so there is no need to check, kfree will
+handle NULL point.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Bernard Zhao <bernard@vivo.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201015112441.4056-5-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20201102023121.3312-1-bernard@vivo.com
 ---
- drivers/thermal/gov_power_allocator.c | 32 ++++++++++++++++++++-
- drivers/thermal/thermal_core.c        | 41 +--------------------------
- drivers/thermal/thermal_core.h        |  2 +-
- 3 files changed, 32 insertions(+), 43 deletions(-)
+ drivers/thermal/thermal_hwmon.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index eb8c9af..b29e21c 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -255,6 +255,38 @@ static u32 pid_controller(struct thermal_zone_device *tz,
- }
+diff --git a/drivers/thermal/thermal_hwmon.c b/drivers/thermal/thermal_hwmon.c
+index 8b92e00..ad03262 100644
+--- a/drivers/thermal/thermal_hwmon.c
++++ b/drivers/thermal/thermal_hwmon.c
+@@ -206,8 +206,7 @@ int thermal_add_hwmon_sysfs(struct thermal_zone_device *tz)
+ 	if (new_hwmon_device)
+ 		hwmon_device_unregister(hwmon->device);
+  free_mem:
+-	if (new_hwmon_device)
+-		kfree(hwmon);
++	kfree(hwmon);
  
- /**
-+ * power_actor_set_power() - limit the maximum power a cooling device consumes
-+ * @cdev:	pointer to &thermal_cooling_device
-+ * @instance:	thermal instance to update
-+ * @power:	the power in milliwatts
-+ *
-+ * Set the cooling device to consume at most @power milliwatts. The limit is
-+ * expected to be a cap at the maximum power consumption.
-+ *
-+ * Return: 0 on success, -EINVAL if the cooling device does not
-+ * implement the power actor API or -E* for other failures.
-+ */
-+static int
-+power_actor_set_power(struct thermal_cooling_device *cdev,
-+		      struct thermal_instance *instance, u32 power)
-+{
-+	unsigned long state;
-+	int ret;
-+
-+	ret = cdev->ops->power2state(cdev, power, &state);
-+	if (ret)
-+		return ret;
-+
-+	instance->target = clamp_val(state, instance->lower, instance->upper);
-+	mutex_lock(&cdev->lock);
-+	cdev->updated = false;
-+	mutex_unlock(&cdev->lock);
-+	thermal_cdev_update(cdev);
-+
-+	return 0;
-+}
-+
-+/**
-  * divvy_up_power() - divvy the allocated power between the actors
-  * @req_power:	each actor's requested power
-  * @max_power:	each actor's maximum available power
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index d5540bf..96349ba 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -593,47 +593,6 @@ static void thermal_zone_device_check(struct work_struct *work)
- 	thermal_zone_device_update(tz, THERMAL_EVENT_UNSPECIFIED);
+ 	return result;
  }
- 
--/*
-- * Power actor section: interface to power actors to estimate power
-- *
-- * Set of functions used to interact to cooling devices that know
-- * how to estimate their devices power consumption.
-- */
--
--/**
-- * power_actor_set_power() - limit the maximum power a cooling device consumes
-- * @cdev:	pointer to &thermal_cooling_device
-- * @instance:	thermal instance to update
-- * @power:	the power in milliwatts
-- *
-- * Set the cooling device to consume at most @power milliwatts. The limit is
-- * expected to be a cap at the maximum power consumption.
-- *
-- * Return: 0 on success, -EINVAL if the cooling device does not
-- * implement the power actor API or -E* for other failures.
-- */
--int power_actor_set_power(struct thermal_cooling_device *cdev,
--			  struct thermal_instance *instance, u32 power)
--{
--	unsigned long state;
--	int ret;
--
--	if (!cdev_is_power_actor(cdev))
--		return -EINVAL;
--
--	ret = cdev->ops->power2state(cdev, power, &state);
--	if (ret)
--		return ret;
--
--	instance->target = clamp_val(state, instance->lower, instance->upper);
--	mutex_lock(&cdev->lock);
--	cdev->updated = false;
--	mutex_unlock(&cdev->lock);
--	thermal_cdev_update(cdev);
--
--	return 0;
--}
--
- void thermal_zone_device_rebind_exception(struct thermal_zone_device *tz,
- 					  const char *cdev_type, size_t size)
- {
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 416cdb1..8df600f 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -65,8 +65,6 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
- 		cdev->ops->power2state;
- }
- 
--int power_actor_set_power(struct thermal_cooling_device *cdev,
--			  struct thermal_instance *ti, u32 power);
- /**
-  * struct thermal_trip - representation of a point in temperature domain
-  * @np: pointer to struct device_node that this trip point was created from
