@@ -7,59 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 609C3C83012
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DFE9AC83011
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 23AAB20888
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9FAEE20888
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="QB5ncI//";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="JEi79KDA"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="mHtWMHum";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="2VtrFOQH"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731425AbgKXJgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1731384AbgKXJgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Tue, 24 Nov 2020 04:36:49 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:41996 "EHLO
+Received: from Galois.linutronix.de ([193.142.43.55]:42038 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731386AbgKXJgs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:48 -0500
-Date:   Tue, 24 Nov 2020 09:36:45 -0000
+        with ESMTP id S1731415AbgKXJgp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:45 -0500
+Date:   Tue, 24 Nov 2020 09:36:42 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210606;
+        s=2020; t=1606210602;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=gZGZw1gg8jtu7jbm4IbnFbWzEhJIDiC6FWQLQy6YKbk=;
-        b=QB5ncI//Tzq6FJXdC6nMsaI3K2w6LLYpQUdZYraIyw1D8PefuwMMaXjdeucjyV+TLr6ChY
-        1k4zlzyYeCqDWRUxdicjCm2yrjD/gsKPXSKmBZ9zXLyTjoVEL2BXX9rSnj9lMTvJfUGvpR
-        6wddeAqNMkQcFsp+Husy2sMlewBeVO03ScDf1Wv83BG/GH4R8H3u9DZX3gF56+cGTkATkP
-        kJjazCOxh7HMwCG3vrgJAM2oQNrho1CdlJZchNp+m4Io85HMbPC3hwNvZiZnGk6eqRNd30
-        wi66gtxZwoldQn0oBI/o3HUI1Xeg1s5zv/PFEZzJLBMcrkRgeVM3lTBnDjJA4A==
+        bh=3l4BzCI8goj/iv2JoAQsSj8xAsEOqpCy/YHg3A72i1o=;
+        b=mHtWMHumkMkdhnu8HrObZB195zweXBPlCwTxU/wjYWN/OpfBNuzrLkUZOBDHR1kvRxbGWU
+        LZpw+UrVlydZzItdW5XJC89OUwJ/BFsipO6jgaIKUpEG8PmF3mJre8DtRzf+CXt88QSuum
+        +HuAQ6YryH1x3wcAtVLwM4rHuYRftwxRGz1SiPNaYI9jiRRYgrB2zHxvqDlnf5kbDIkQY+
+        j1fFPdbqNGjjNXJUHwaLAzUzKdtK/V0RmN/vBT3Z9wqmBblmCvW9kriU2BzGJl6ScVqX+O
+        soBYJg7I/RNeDoWqPAs/agsHpHXZVc43t6JkHXZbv9B40vQZVWeoi6eeAP42cQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210606;
+        s=2020e; t=1606210602;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=gZGZw1gg8jtu7jbm4IbnFbWzEhJIDiC6FWQLQy6YKbk=;
-        b=JEi79KDAzukOZXNGpkKzdF6ntmAK4/hPlmKyvNnLp9gOkEBNWwSExco8SVVFyr3qwjx6Oq
-        mEfIGH0hh2BfzIAA==
-From:   "thermal-bot for Michael Kao" <tip-bot2@linutronix.de>
+        bh=3l4BzCI8goj/iv2JoAQsSj8xAsEOqpCy/YHg3A72i1o=;
+        b=2VtrFOQHiR6EqLNgRA7LVRJgL6t39BSpEPkxLo8BuvWvcP/jQynUKuOHKNyMTGhE5bfnA8
+        S0CrFpcnfG848BAQ==
+From:   "thermal-bot for Tian Tao" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: core: Add upper and lower limits to
- power_actor_set_power
-Cc:     Michael Kao <michael.kao@mediatek.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] thermal/drivers/rcar: Replace
+ spin_lock_irqsave by spin_lock in hard IRQ
+Cc:     Tian Tao <tiantao6@hisilicon.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201007024332.30322-1-michael.kao@mediatek.com>
-References: <20201007024332.30322-1-michael.kao@mediatek.com>
+In-Reply-To: <1603760790-37748-1-git-send-email-tiantao6@hisilicon.com>
+References: <1603760790-37748-1-git-send-email-tiantao6@hisilicon.com>
 MIME-Version: 1.0
-Message-ID: <160621060566.11115.363303793358263038.tip-bot2@tip-bot2>
+Message-ID: <160621060206.11115.3591765536623361655.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -70,39 +69,49 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     4ab17ed1318609da5c36cb7e427a1d24e52a7d6f
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4ab17ed1318609da5c36cb7e427a1d24e52a7d6f
-Author:        Michael Kao <michael.kao@mediatek.com>
-AuthorDate:    Wed, 07 Oct 2020 10:43:32 +08:00
+Commit-ID:     4eb7d0cd590d99b6010b5b87a88804cda09a85da
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//4eb7d0cd590d99b6010b5b87a88804cda09a85da
+Author:        Tian Tao <tiantao6@hisilicon.com>
+AuthorDate:    Tue, 27 Oct 2020 09:06:30 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 26 Oct 2020 19:46:35 +01:00
+CommitterDate: Tue, 27 Oct 2020 10:45:22 +01:00
 
-thermal: core: Add upper and lower limits to power_actor_set_power
+thermal/drivers/rcar: Replace spin_lock_irqsave by spin_lock in hard IRQ
 
-The upper and lower limits of thermal throttle state in the
-DT do not apply to the Intelligent Power Allocation (IPA) governor.
-Add the clamping for cooling device upper and lower limits in the
-power_actor_set_power() used by IPA.
+On RT or even on mainline with 'threadirqs' on the command line all
+interrupts which are not explicitly requested with IRQF_NO_THREAD
+run their handlers in thread context. The same applies to soft interrupts.
+That means they are subject to the normal scheduler rules and no other
+code is going to acquire that lock from hard interrupt context either,
+so the irqsave() here is pointless in all cases.
 
-Signed-off-by: Michael Kao <michael.kao@mediatek.com>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
-Tested-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Tian Tao <tiantao6@hisilicon.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201007024332.30322-1-michael.kao@mediatek.com
+Link: https://lore.kernel.org/r/1603760790-37748-1-git-send-email-tiantao6@hisilicon.com
 ---
- drivers/thermal/thermal_core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/thermal/rcar_thermal.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index c6d74bc..2ea3633 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -672,7 +672,7 @@ int power_actor_set_power(struct thermal_cooling_device *cdev,
- 	if (ret)
- 		return ret;
+diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+index 5c2a13b..6ae757d 100644
+--- a/drivers/thermal/rcar_thermal.c
++++ b/drivers/thermal/rcar_thermal.c
+@@ -409,16 +409,15 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
+ {
+ 	struct rcar_thermal_common *common = data;
+ 	struct rcar_thermal_priv *priv;
+-	unsigned long flags;
+ 	u32 status, mask;
  
--	instance->target = state;
-+	instance->target = clamp_val(state, instance->lower, instance->upper);
- 	mutex_lock(&cdev->lock);
- 	cdev->updated = false;
- 	mutex_unlock(&cdev->lock);
+-	spin_lock_irqsave(&common->lock, flags);
++	spin_lock(&common->lock);
+ 
+ 	mask	= rcar_thermal_common_read(common, INTMSK);
+ 	status	= rcar_thermal_common_read(common, STR);
+ 	rcar_thermal_common_write(common, STR, 0x000F0F0F & mask);
+ 
+-	spin_unlock_irqrestore(&common->lock, flags);
++	spin_unlock(&common->lock);
+ 
+ 	status = status & ~mask;
+ 
