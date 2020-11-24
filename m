@@ -7,61 +7,63 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AB54CC64E7D
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C75FC71155
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 57D1621D93
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 158C7208C3
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="UsmyA/WF";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="KMSlBG2r"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bdLb+GjL";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="/8DxIZHQ"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731335AbgKXJgh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:37 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53930 "EHLO
+        id S1731422AbgKXJgp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:45 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53940 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731329AbgKXJgh (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:37 -0500
+        with ESMTP id S1731377AbgKXJgj (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:39 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 318D0C0613D6
-        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2020 01:36:37 -0800 (PST)
-Date:   Tue, 24 Nov 2020 09:36:33 -0000
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CE1CC0613D6;
+        Tue, 24 Nov 2020 01:36:39 -0800 (PST)
+Date:   Tue, 24 Nov 2020 09:36:36 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210595;
+        s=2020; t=1606210597;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wpK3ZOcc9IN3mbPVIFozPu3q/CF/W1GZ9Jktq79y/8M=;
-        b=UsmyA/WFhOseeKjKxWM6LzMuTEbDfgOtHXPQExs9cD9v6kDj5mPyVYwqA8XATz6y6scpfh
-        BqwBU/te3uViw8VP/2lcDksLVCxGCGHqF0n5viNrAHMs9/P0CTtGkRlOSM4zts6PSeeVLp
-        3OO7ROEPUBIhL3JEoSVTSPSblUOSHu5Dl6mzxYIAP+y/MQed+lupVhi5Zt4z7b5IAIHrfa
-        wHRNATEO3u8Y/8+/neL7pmhl7siLbYK4Oh4Fxiw0euUVW4I1P/wB+zs5b3aPJAM8HVTIqc
-        1Rd26ahZOowAA2vFjB438eCTAwDP65MfOZpGB4hBvl4o7wAJTl8/3QLw9+wqqA==
+        bh=0Rr1olwPsduJoSlDBlgVnYq3Dyq3H3lG9aBuxY+YJgY=;
+        b=bdLb+GjL9GC1CQW5OxHln8M3zRyDo80syFtdrM2YSmPBS/SA9MkdGU+IodNOqBrqMQSWw8
+        8qxn9UCxYTfhOshHaEAqDU7DIfJhEGjnD7Tq0dQrPbheo4psqyN9FvFUFiN/d2boH1O8yy
+        x2BkIu/osBWeV6WwTj+PbcA3pihArBASA01rYSR3/4gyUx7a+uUVVxg2Qkw0yxHXuYK0v1
+        mduNXtnJeVcFge5GvII7NvVCwQ+Iquv8sy3dnCXV/pOuIUjX/p535ToBmGT0leVdwj1bBY
+        R9KGdJ6DTRyWSHFYif3a0ZwBVOgWBMs0WvHfpWK/7NTFwDM9dUUjzddjkzcUcw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210595;
+        s=2020e; t=1606210597;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=wpK3ZOcc9IN3mbPVIFozPu3q/CF/W1GZ9Jktq79y/8M=;
-        b=KMSlBG2rMTSKlN7sTyn9HC+uuXqn3jjCRAGq059b1SWyrAymNAORgrQvgoJ56MnTF8frlN
-        ILOeLbKI+5lWCeBg==
-From:   "thermal-bot for Martin Blumenstingl" <tip-bot2@linutronix.de>
+        bh=0Rr1olwPsduJoSlDBlgVnYq3Dyq3H3lG9aBuxY+YJgY=;
+        b=/8DxIZHQdTfPgmOlNY4M+cj8zjsfowsqzqFAS8erptKFIrIMPjU8kzAfqVfyc+ZIZPThd9
+        kSxtnOehaoXvGqDg==
+From:   "thermal-bot for Zhuguangqing" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: amlogic: Add hwmon support
-Cc:     Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-        Neil Armstrong <narmstrong@baylibre.com>,
+Subject: [thermal: thermal/next] thermal/drivers/cpufreq_cooling: Update
+ cpufreq_state only if state has changed
+Cc:     "v5.4+" <stable@vger.kernel.org>,
+        Zhuguangqing <zhuguangqing@xiaomi.com>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201115190658.631578-1-martin.blumenstingl@googlemail.com>
-References: <20201115190658.631578-1-martin.blumenstingl@googlemail.com>
+In-Reply-To: <20201106092243.15574-1-zhuguangqing83@gmail.com>
+References: <20201106092243.15574-1-zhuguangqing83@gmail.com>
 MIME-Version: 1.0
-Message-ID: <160621059356.11115.5710672427369092678.tip-bot2@tip-bot2>
+Message-ID: <160621059697.11115.16868017639431284982.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -72,56 +74,46 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     cb68a8580e2086fad38597af4c60d39de8df0cde
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//cb68a8580e2086fad38597af4c60d39de8df0cde
-Author:        Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-AuthorDate:    Sun, 15 Nov 2020 20:06:58 +01:00
+Commit-ID:     236761f19a4f373354f1dcf399b57753f1f4b871
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//236761f19a4f373354f1dcf399b57753f1f4b871
+Author:        Zhuguangqing <zhuguangqing@xiaomi.com>
+AuthorDate:    Fri, 06 Nov 2020 17:22:43 +08:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 16 Nov 2020 10:30:53 +01:00
+CommitterDate: Thu, 12 Nov 2020 12:23:35 +01:00
 
-thermal: amlogic: Add hwmon support
+thermal/drivers/cpufreq_cooling: Update cpufreq_state only if state has changed
 
-Many monitoring tools read the CPU temperature using the hwmon
-interface. Expose the thermal sensors on Amlogic boards as hwmon
-devices.
+If state has not changed successfully and we updated cpufreq_state,
+next time when the new state is equal to cpufreq_state (not changed
+successfully last time), we will return directly and miss a
+freq_qos_update_request() that should have been.
 
-Without this lm_sensors' "sensors" tool does not find any temperature
-sensors. Now it prints:
-  cpu_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +44.7 C  (crit = +110.0 C)
-
-  ddr_thermal-virtual-0
-  Adapter: Virtual device
-  temp1:        +45.9 C  (crit = +110.0 C)
-
-Signed-off-by: Martin Blumenstingl <martin.blumenstingl@googlemail.com>
-Reviewed-by: Neil Armstrong <narmstrong@baylibre.com>
+Fixes: 5130802ddbb1 ("thermal: cpu_cooling: Switch to QoS requests for freq limits")
+Cc: v5.4+ <stable@vger.kernel.org> # v5.4+
+Signed-off-by: Zhuguangqing <zhuguangqing@xiaomi.com>
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201115190658.631578-1-martin.blumenstingl@googlemail.com
+Link: https://lore.kernel.org/r/20201106092243.15574-1-zhuguangqing83@gmail.com
 ---
- drivers/thermal/amlogic_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/cpufreq_cooling.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
-index ccb1fe1..dffe3ba 100644
---- a/drivers/thermal/amlogic_thermal.c
-+++ b/drivers/thermal/amlogic_thermal.c
-@@ -29,6 +29,7 @@
- #include <linux/thermal.h>
+diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
+index cc2959f..612f063 100644
+--- a/drivers/thermal/cpufreq_cooling.c
++++ b/drivers/thermal/cpufreq_cooling.c
+@@ -438,13 +438,11 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
+ 	if (cpufreq_cdev->cpufreq_state == state)
+ 		return 0;
  
- #include "thermal_core.h"
-+#include "thermal_hwmon.h"
+-	cpufreq_cdev->cpufreq_state = state;
+-
+ 	frequency = get_state_freq(cpufreq_cdev, state);
  
- #define TSENSOR_CFG_REG1			0x4
- 	#define TSENSOR_CFG_REG1_RSET_VBG	BIT(12)
-@@ -287,6 +288,9 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
- 		return ret;
- 	}
- 
-+	if (devm_thermal_add_hwmon_sysfs(pdata->tzd))
-+		dev_warn(&pdev->dev, "Failed to add hwmon sysfs attributes\n");
-+
- 	ret = amlogic_thermal_initialize(pdata);
- 	if (ret)
- 		return ret;
+ 	ret = freq_qos_update_request(&cpufreq_cdev->qos_req, frequency);
+-
+ 	if (ret > 0) {
++		cpufreq_cdev->cpufreq_state = state;
+ 		cpus = cpufreq_cdev->policy->cpus;
+ 		max_capacity = arch_scale_cpu_capacity(cpumask_first(cpus));
+ 		capacity = frequency * max_capacity;
