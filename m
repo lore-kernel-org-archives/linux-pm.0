@@ -7,58 +7,63 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 616F1C56201
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 283D9C64E8A
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB16220897
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 93FDF208B8
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:55 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="mKkdpUNC";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="8ahQzYDV"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="LLHUJEdH";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="miN6RSGV"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731419AbgKXJgs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:48 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:42112 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731384AbgKXJgr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:47 -0500
-Date:   Tue, 24 Nov 2020 09:36:44 -0000
+        id S1731414AbgKXJgo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53936 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731329AbgKXJgh (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:37 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C4DEAC0613D6
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2020 01:36:37 -0800 (PST)
+Date:   Tue, 24 Nov 2020 09:36:35 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210605;
+        s=2020; t=1606210596;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=E7JX6Pzemlt727AZxrgxhUPVgUk8XmClNLTEFP9IKWM=;
-        b=mKkdpUNCw2PH9tY+2CoW5jHdUxUF6WIcryYj3G9idZUK2SWEDJk6XzUtZCHgxN16rGgmyC
-        hO2KeRT4lOVe2SoDgLQtoNNybvDiKFBYxFGdzeAws7A3N7jMIghaL73OifzR8tUj31Agdq
-        EpxYjjQzJPiPjY1vH3XT4FwcArsEh1bzpeiUZjCSJ8VdbmDcSYAW4ATw5ekulBskgF4C1L
-        RZz8V9gZhBXtAl70swDogG7haB2lkD+KPOeKRoxhTFd6s45XU+EGtLDZli47qpCWse4dXJ
-        m3u90lFLjxMvyHYMaJ+oxoE7VWOXhIW31MuzBT4+i23M92k8mecPx/rmw+YPow==
+        bh=u9CNCdHL9grMRHRieiIBp66qzTGOduWUa3PoySw5lQ0=;
+        b=LLHUJEdHb/2GN+0UWMJbLeov92CfXwk7C+9CoXMcfswqm5AGSs1aUYXYll0tRqZ93CXB3D
+        kbcGlA7ZIdq1zfYEDlClRLPGxD5WhJLRvU9IvfRDspBQ3CLVsaa4zY5QzrqDFhsKf6ksq6
+        DT/4NUST/M0snGNdrs0p/6HyE4hLVk/X2MXGfPbtYeNmpYDGG0VUuwQl1D3FaU2SMZZwCA
+        AvMqb4eEj7Z7Ev736UFWcbGKJ3YvM/3ATgu7E6Fi5i2REaV90I30M5tFimlKPIFDUndy6z
+        gRqi34f5npl8KQCrJaXwmrjBe+sucqfL/ppJZf4Q7AL1+xcpFuOXE9uR0vwa8A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210605;
+        s=2020e; t=1606210596;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=E7JX6Pzemlt727AZxrgxhUPVgUk8XmClNLTEFP9IKWM=;
-        b=8ahQzYDVr2wRI73rDoC+va0zBazbgzV+FfhgbWXAUpI4WfIiqtiaJtjqzuCTcgt/bOSZN6
-        DEjg5opLMVXdYQCg==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=u9CNCdHL9grMRHRieiIBp66qzTGOduWUa3PoySw5lQ0=;
+        b=miN6RSGVqsAlLcxfXWsNaYAWjnRHb+nU797wPeQ36gWaGo9InjS7vg015oq0VK987tOWzc
+        o7z7way4ep8v02DQ==
+From:   "thermal-bot for Viresh Kumar" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: power_allocator: Respect upper and
- lower bounds for cooling device
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] docs: thermal: time_in_state is displayed in
+ msec and not usertime
+Cc:     Viresh Kumar <viresh.kumar@linaro.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201015112441.4056-3-lukasz.luba@arm.com>
-References: <20201015112441.4056-3-lukasz.luba@arm.com>
+In-Reply-To: =?utf-8?q?=3Cd5461bdf9ab6b6fee7f28f538582edbb426aa077=2E16050?=
+ =?utf-8?q?04905=2Egit=2Eviresh=2Ekumar=40linaro=2Eorg=3E?=
+References: =?utf-8?q?=3Cd5461bdf9ab6b6fee7f28f538582edbb426aa077=2E160500?=
+ =?utf-8?q?4905=2Egit=2Eviresh=2Ekumar=40linaro=2Eorg=3E?=
 MIME-Version: 1.0
-Message-ID: <160621060492.11115.4305995116543175135.tip-bot2@tip-bot2>
+Message-ID: <160621059529.11115.17145263247398186723.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,52 +74,36 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     8132df3a06a41823aa370dbb4ff08f48fa07f6df
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//8132df3a06a41823aa370dbb4ff08f48fa07f6df
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Thu, 15 Oct 2020 12:24:39 +01:00
+Commit-ID:     ce7c01557465e920f5bccc5878b8dec165eeb80b
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ce7c01557465e920f5bccc5878b8dec165eeb80b
+Author:        Viresh Kumar <viresh.kumar@linaro.org>
+AuthorDate:    Tue, 10 Nov 2020 16:13:37 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 27 Oct 2020 09:44:32 +01:00
+CommitterDate: Thu, 12 Nov 2020 12:35:02 +01:00
 
-thermal: power_allocator: Respect upper and lower bounds for cooling device
+docs: thermal: time_in_state is displayed in msec and not usertime
 
-The thermal cooling device specified in DT might be instantiated for
-a thermal zone trip point with a limited set of OPPs to operate on. This
-configuration should be supported by Intelligent Power Allocation (IPA),
-since it is a standard for other governors. Change the code and allow IPA
-to get power value of lower and upper bound set for a given cooling
-device.
+The sysfs stats for cooling devices shows the time_in_state in msec,
+remove the unwanted usertime comment.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201015112441.4056-3-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/d5461bdf9ab6b6fee7f28f538582edbb426aa077.1605004905.git.viresh.kumar@linaro.org
 ---
- drivers/thermal/gov_power_allocator.c | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ Documentation/driver-api/thermal/sysfs-api.rst | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index ab0be26..eb8c9af 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -96,7 +96,10 @@ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
- 		if (instance->trip != params->trip_max_desired_temperature)
- 			continue;
+diff --git a/Documentation/driver-api/thermal/sysfs-api.rst b/Documentation/driver-api/thermal/sysfs-api.rst
+index b40b1f8..e7520cb 100644
+--- a/Documentation/driver-api/thermal/sysfs-api.rst
++++ b/Documentation/driver-api/thermal/sysfs-api.rst
+@@ -654,8 +654,7 @@ stats/time_in_state_ms:
+ 	The amount of time spent by the cooling device in various cooling
+ 	states. The output will have "<state> <time>" pair in each line, which
+ 	will mean this cooling device spent <time> msec of time at <state>.
+-	Output will have one line for each of the supported states.  usertime
+-	units here is 10mS (similar to other time exported in /proc).
++	Output will have one line for each of the supported states.
+ 	RO, Required
  
--		if (power_actor_get_min_power(cdev, &min_power))
-+		if (!cdev_is_power_actor(cdev))
-+			continue;
-+
-+		if (cdev->ops->state2power(cdev, instance->upper, &min_power))
- 			continue;
  
- 		sustainable_power += min_power;
-@@ -398,7 +401,8 @@ static int allocate_power(struct thermal_zone_device *tz,
- 
- 		weighted_req_power[i] = frac_to_int(weight * req_power[i]);
- 
--		if (power_actor_get_max_power(cdev, &max_power[i]))
-+		if (cdev->ops->state2power(cdev, instance->lower,
-+					   &max_power[i]))
- 			continue;
- 
- 		total_req_power += req_power[i];
