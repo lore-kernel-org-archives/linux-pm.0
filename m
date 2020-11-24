@@ -7,58 +7,62 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C1B7C83010
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4573FC6379D
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:37:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB0202073C
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DF53D2073C
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:59 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="v+G7VKiZ";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="8NdhEhVn"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="4qDxxqvc";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="KVCET2l7"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731412AbgKXJgt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:49 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:42100 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731425AbgKXJgr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:47 -0500
-Date:   Tue, 24 Nov 2020 09:36:44 -0000
+        id S1731386AbgKXJgw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:52 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53958 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731411AbgKXJgn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:43 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6324C0613D6
+        for <linux-pm@vger.kernel.org>; Tue, 24 Nov 2020 01:36:43 -0800 (PST)
+Date:   Tue, 24 Nov 2020 09:36:41 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210605;
+        s=2020; t=1606210602;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AUuQ5Wd8zG5kC8x8S8SxmQyELHjut+4U+xV2p/WJzvI=;
-        b=v+G7VKiZGsbWnjut/pyv6Xp19ghJ1FUhBgLTJWhvcWbIvMu+o5j4e4cM0qzgWLFTFxJM1e
-        g+AMMZf6y1XS/ytEoVe568Vy8nzNFncWwFmzGZpNa5OnqVmnQ+lzgWDZ6Z3VcpcWrzj60D
-        OnRp9lS+WrPab2DdBGQPSTfv24+6gHTky59sRDX+5LX8mxR53zUSNLggyMzIZZxGsCX9Ve
-        yWyqMuNsrYhwRMNT8OoL2tuxcwGUdSXDiwbtDUP0dy4GPOKsMhty8+rYzx6aa1Pv2GT0N0
-        aROFDFSUCRBwiDSLOb+8aoCsJIoGlqdpw0YAMBFn4l/EQOPOWp2X8+7Zs/k2Kg==
+        bh=wExZYRNkp/HIMhjeYFYbwhs8Jj28DvP1cT5nP0o6670=;
+        b=4qDxxqvc+Fpj9V5R/qXEUvLe3+ruwJoI6VM7452ojH5XUWfIp6bB/IM3z7NK2jzI59dt4e
+        7lrBPIxjYhzQN0JKDS4OjvN7vroxdcJXV1rYxNewwzj+e7H1itN4xtrqvj0x58jRuQxPBl
+        0ydPwWO/v8cIPibDmFXViWC0H4t90WTeLlqxLoUqx5K9fwlPf0gK4vJmMel6R3zSTbwVpw
+        ZQyIVUhZnbuSscHz2ZA0UEXi8ui7IkOhz45HDPbnseOEdOVP2mfSRLlYhe0XL750on7HIQ
+        LTb96z3b8OttoY4JzNwM7mzmR4GL4CfGkzp2V3qqsXKU+E5x6BPQuq9RueEItQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210605;
+        s=2020e; t=1606210602;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=AUuQ5Wd8zG5kC8x8S8SxmQyELHjut+4U+xV2p/WJzvI=;
-        b=8NdhEhVneGfrgpc7zID/GufV/9dhrDvdZb4P0lvJvI0GX72ynB6aT34sAwneOu+UPxlerM
-        FTMgfd7FlqA8+IDA==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=wExZYRNkp/HIMhjeYFYbwhs8Jj28DvP1cT5nP0o6670=;
+        b=KVCET2l73Q/LE0JtS/rKdc0uqgKx3PWx21UqKqvs/9kuFa2jKQeQZfWm7+3FaRgg2PHeYk
+        +ZKBEeGqTJResEAw==
+From:   "thermal-bot for Fabien Parent" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: core: Remove unused functions in
- power actor section
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+Subject: [thermal: thermal/next] dt-bindings: thermal: mediatek: make resets
+ property optional
+Cc:     Fabien Parent <fparent@baylibre.com>,
+        Rob Herring <robh@kernel.org>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201015112441.4056-4-lukasz.luba@arm.com>
-References: <20201015112441.4056-4-lukasz.luba@arm.com>
+In-Reply-To: <20201021164231.3029956-1-fparent@baylibre.com>
+References: <20201021164231.3029956-1-fparent@baylibre.com>
 MIME-Version: 1.0
-Message-ID: <160621060418.11115.18099361884279660318.tip-bot2@tip-bot2>
+Message-ID: <160621060139.11115.15221822048764705565.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -69,98 +73,41 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     87d2380260524e55e090e14012c1b07c1f6d4096
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//87d2380260524e55e090e14012c1b07c1f6d4096
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Thu, 15 Oct 2020 12:24:40 +01:00
+Commit-ID:     07df39d03c34bd7baf4c26e41a5dd92ec56e9081
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//07df39d03c34bd7baf4c26e41a5dd92ec56e9081
+Author:        Fabien Parent <fparent@baylibre.com>
+AuthorDate:    Wed, 21 Oct 2020 18:42:29 +02:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 27 Oct 2020 09:44:32 +01:00
+CommitterDate: Tue, 27 Oct 2020 11:18:29 +01:00
 
-thermal: core: Remove unused functions in power actor section
+dt-bindings: thermal: mediatek: make resets property optional
 
-Since the Intelligent Power Allocation (IPA) uses different way to get
-minimum and maximum power for a given cooling device, the helper functions
-are not needed. There is no other code which uses them, so remove the
-helper functions.
+MT8516 Thermal IP does not support reset. Make the resets property
+optional in order to be able to support MT8516 SoC.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Fabien Parent <fparent@baylibre.com>
+Acked-by: Rob Herring <robh@kernel.org>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201015112441.4056-4-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20201021164231.3029956-1-fparent@baylibre.com
 ---
- drivers/thermal/thermal_core.c | 47 +---------------------------------
- drivers/thermal/thermal_core.h |  4 +---
- 2 files changed, 51 deletions(-)
+ Documentation/devicetree/bindings/thermal/mediatek-thermal.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 2ea3633..d5540bf 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -601,53 +601,6 @@ static void thermal_zone_device_check(struct work_struct *work)
-  */
+diff --git a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+index 1e249c4..2d20f6b 100644
+--- a/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
++++ b/Documentation/devicetree/bindings/thermal/mediatek-thermal.txt
+@@ -20,12 +20,12 @@ Required properties:
+                        clocks are:
+ 		       "therm":	 Main clock needed for register access
+ 		       "auxadc": The AUXADC clock
+-- resets: Reference to the reset controller controlling the thermal controller.
+ - mediatek,auxadc: A phandle to the AUXADC which the thermal controller uses
+ - mediatek,apmixedsys: A phandle to the APMIXEDSYS controller.
+ - #thermal-sensor-cells : Should be 0. See Documentation/devicetree/bindings/thermal/thermal-sensor.yaml for a description.
  
- /**
-- * power_actor_get_max_power() - get the maximum power that a cdev can consume
-- * @cdev:	pointer to &thermal_cooling_device
-- * @max_power:	pointer in which to store the maximum power
-- *
-- * Calculate the maximum power consumption in milliwats that the
-- * cooling device can currently consume and store it in @max_power.
-- *
-- * Return: 0 on success, -EINVAL if @cdev doesn't support the
-- * power_actor API or -E* on other error.
-- */
--int power_actor_get_max_power(struct thermal_cooling_device *cdev,
--			      u32 *max_power)
--{
--	if (!cdev_is_power_actor(cdev))
--		return -EINVAL;
--
--	return cdev->ops->state2power(cdev, 0, max_power);
--}
--
--/**
-- * power_actor_get_min_power() - get the mainimum power that a cdev can consume
-- * @cdev:	pointer to &thermal_cooling_device
-- * @min_power:	pointer in which to store the minimum power
-- *
-- * Calculate the minimum power consumption in milliwatts that the
-- * cooling device can currently consume and store it in @min_power.
-- *
-- * Return: 0 on success, -EINVAL if @cdev doesn't support the
-- * power_actor API or -E* on other error.
-- */
--int power_actor_get_min_power(struct thermal_cooling_device *cdev,
--			      u32 *min_power)
--{
--	unsigned long max_state;
--	int ret;
--
--	if (!cdev_is_power_actor(cdev))
--		return -EINVAL;
--
--	ret = cdev->ops->get_max_state(cdev, &max_state);
--	if (ret)
--		return ret;
--
--	return cdev->ops->state2power(cdev, max_state, min_power);
--}
--
--/**
-  * power_actor_set_power() - limit the maximum power a cooling device consumes
-  * @cdev:	pointer to &thermal_cooling_device
-  * @instance:	thermal instance to update
-diff --git a/drivers/thermal/thermal_core.h b/drivers/thermal/thermal_core.h
-index 681209d..416cdb1 100644
---- a/drivers/thermal/thermal_core.h
-+++ b/drivers/thermal/thermal_core.h
-@@ -65,10 +65,6 @@ static inline bool cdev_is_power_actor(struct thermal_cooling_device *cdev)
- 		cdev->ops->power2state;
- }
- 
--int power_actor_get_max_power(struct thermal_cooling_device *cdev,
--			      u32 *max_power);
--int power_actor_get_min_power(struct thermal_cooling_device *cdev,
--			      u32 *min_power);
- int power_actor_set_power(struct thermal_cooling_device *cdev,
- 			  struct thermal_instance *ti, u32 power);
- /**
+ Optional properties:
++- resets: Reference to the reset controller controlling the thermal controller.
+ - nvmem-cells: A phandle to the calibration data provided by a nvmem device. If
+                unspecified default values shall be used.
+ - nvmem-cell-names: Should be "calibration-data"
