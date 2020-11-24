@@ -7,63 +7,58 @@ X-Spam-Status: No, score=-20.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7C75FC71155
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6C4A7C8300C
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 158C7208C3
-	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 24FA22073C
+	for <linux-pm@archiver.kernel.org>; Tue, 24 Nov 2020 09:36:57 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="bdLb+GjL";
-	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="/8DxIZHQ"
+	dkim=pass (2048-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="YljscaKp";
+	dkim=permerror (0-bit key) header.d=linutronix.de header.i=@linutronix.de header.b="ITnu1sy4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731422AbgKXJgp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 24 Nov 2020 04:36:45 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53940 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731377AbgKXJgj (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:39 -0500
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 5CE1CC0613D6;
-        Tue, 24 Nov 2020 01:36:39 -0800 (PST)
-Date:   Tue, 24 Nov 2020 09:36:36 -0000
+        id S1731427AbgKXJgr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 24 Nov 2020 04:36:47 -0500
+Received: from Galois.linutronix.de ([193.142.43.55]:41996 "EHLO
+        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1731380AbgKXJgm (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 24 Nov 2020 04:36:42 -0500
+Date:   Tue, 24 Nov 2020 09:36:39 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1606210597;
+        s=2020; t=1606210600;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0Rr1olwPsduJoSlDBlgVnYq3Dyq3H3lG9aBuxY+YJgY=;
-        b=bdLb+GjL9GC1CQW5OxHln8M3zRyDo80syFtdrM2YSmPBS/SA9MkdGU+IodNOqBrqMQSWw8
-        8qxn9UCxYTfhOshHaEAqDU7DIfJhEGjnD7Tq0dQrPbheo4psqyN9FvFUFiN/d2boH1O8yy
-        x2BkIu/osBWeV6WwTj+PbcA3pihArBASA01rYSR3/4gyUx7a+uUVVxg2Qkw0yxHXuYK0v1
-        mduNXtnJeVcFge5GvII7NvVCwQ+Iquv8sy3dnCXV/pOuIUjX/p535ToBmGT0leVdwj1bBY
-        R9KGdJ6DTRyWSHFYif3a0ZwBVOgWBMs0WvHfpWK/7NTFwDM9dUUjzddjkzcUcw==
+        bh=KJfL2LsYMscoYyCDv7WQ70nL6AqMd/1N2MMnjyZmeVM=;
+        b=YljscaKpVtJEMycfRuYGt6QAVfbpLEn2t2ZwKASFVmWk9EpkIPXLcFGhqP9+IxMZsw6Ihs
+        2tgqsgWVHOj9XrCVI35iqiR3Ra0SSZ/Jznk3m9Ug34zT/EX0J5wsFE1t2LqsNEzvnrMkL/
+        H/wpiJWmokylCpedwidDrTRecCN2X7pq97eg8O/hr1OaApob9rU2wV+dskco7JJNJmH73w
+        BN6nrb9hqtXT+wRd5/JRy4j672YdCOVUXW49e4aKDSjdMnBV3ZPVKitzEkfVkbrjUz+LLg
+        M49kdpnBEdDIs+EFhBZr+8rvyXsryTQO+eTEj1VQFlE+OukRWb6+TkruDpUBdQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1606210597;
+        s=2020e; t=1606210600;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0Rr1olwPsduJoSlDBlgVnYq3Dyq3H3lG9aBuxY+YJgY=;
-        b=/8DxIZHQdTfPgmOlNY4M+cj8zjsfowsqzqFAS8erptKFIrIMPjU8kzAfqVfyc+ZIZPThd9
-        kSxtnOehaoXvGqDg==
-From:   "thermal-bot for Zhuguangqing" <tip-bot2@linutronix.de>
+        bh=KJfL2LsYMscoYyCDv7WQ70nL6AqMd/1N2MMnjyZmeVM=;
+        b=ITnu1sy4FDCUlIGQvPZT5/9tt8YJG8CBW9hdwnnLjIWdOAWrzimgg73WoJyDYgnus4fEZa
+        ytj9zZtNZSu7GEBg==
+From:   "thermal-bot for Sumeet Pawnikar" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal/drivers/cpufreq_cooling: Update
- cpufreq_state only if state has changed
-Cc:     "v5.4+" <stable@vger.kernel.org>,
-        Zhuguangqing <zhuguangqing@xiaomi.com>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201106092243.15574-1-zhuguangqing83@gmail.com>
-References: <20201106092243.15574-1-zhuguangqing83@gmail.com>
+Subject: [thermal: thermal/next] thermal: intel: pch: fix S0ix failure due to
+ PCH temperature above threshold
+Cc:     Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>, amitk@kernel.org
+In-Reply-To: <20201106170633.20838-1-sumeet.r.pawnikar@intel.com>
+References: <20201106170633.20838-1-sumeet.r.pawnikar@intel.com>
 MIME-Version: 1.0
-Message-ID: <160621059697.11115.16868017639431284982.tip-bot2@tip-bot2>
+Message-ID: <160621059919.11115.10218760882582089616.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -74,46 +69,151 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     236761f19a4f373354f1dcf399b57753f1f4b871
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//236761f19a4f373354f1dcf399b57753f1f4b871
-Author:        Zhuguangqing <zhuguangqing@xiaomi.com>
-AuthorDate:    Fri, 06 Nov 2020 17:22:43 +08:00
+Commit-ID:     ef63b043ac8645d2540d7b50dd3e09c53db3d504
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//ef63b043ac8645d2540d7b50dd3e09c53db3d504
+Author:        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+AuthorDate:    Fri, 06 Nov 2020 22:36:33 +05:30
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 12 Nov 2020 12:23:35 +01:00
+CommitterDate: Sat, 07 Nov 2020 19:02:31 +01:00
 
-thermal/drivers/cpufreq_cooling: Update cpufreq_state only if state has changed
+thermal: intel: pch: fix S0ix failure due to PCH temperature above threshold
 
-If state has not changed successfully and we updated cpufreq_state,
-next time when the new state is equal to cpufreq_state (not changed
-successfully last time), we will return directly and miss a
-freq_qos_update_request() that should have been.
+When system tries to enter S0ix suspend state, just after active load
+scenarios, it fails due to PCH current temperature is higher than set
+threshold.
+This patch introduces delay loop mechanism that allows PCH temperature
+to go down below threshold during suspend so it won't fail to enter S0ix.
+Add delay loop timeout and count as module parameters for user to tune it,
+if required based on system design. This change notifies the different
+warning messages like when PCH temperature above the threshold and
+executing delay loop. Also, notify the messages when it success or
+failure for S0ix entry.
+Previously out of 1000 runs around 3 to 5 times it might fail to enter
+S0ix just after heavy workload. With this change, S0ix failures reduced
+as PCH cools down below threshold.
 
-Fixes: 5130802ddbb1 ("thermal: cpu_cooling: Switch to QoS requests for freq limits")
-Cc: v5.4+ <stable@vger.kernel.org> # v5.4+
-Signed-off-by: Zhuguangqing <zhuguangqing@xiaomi.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Signed-off-by: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
+Reviewed-by: Zhang Rui <rui.zhang@intel.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201106092243.15574-1-zhuguangqing83@gmail.com
+Link: https://lore.kernel.org/r/20201106170633.20838-1-sumeet.r.pawnikar@intel.com
 ---
- drivers/thermal/cpufreq_cooling.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ drivers/thermal/intel/intel_pch_thermal.c | 76 ++++++++++++++++++++--
+ 1 file changed, 70 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/thermal/cpufreq_cooling.c b/drivers/thermal/cpufreq_cooling.c
-index cc2959f..612f063 100644
---- a/drivers/thermal/cpufreq_cooling.c
-+++ b/drivers/thermal/cpufreq_cooling.c
-@@ -438,13 +438,11 @@ static int cpufreq_set_cur_state(struct thermal_cooling_device *cdev,
- 	if (cpufreq_cdev->cpufreq_state == state)
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index 3b813eb..0a9e445 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -7,14 +7,16 @@
+  *     Tushar Dave <tushar.n.dave@intel.com>
+  */
+ 
++#include <linux/acpi.h>
++#include <linux/delay.h>
+ #include <linux/module.h>
+-#include <linux/types.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
+-#include <linux/acpi.h>
++#include <linux/pm.h>
++#include <linux/suspend.h>
+ #include <linux/thermal.h>
++#include <linux/types.h>
+ #include <linux/units.h>
+-#include <linux/pm.h>
+ 
+ /* Intel PCH thermal Device IDs */
+ #define PCH_THERMAL_DID_HSW_1	0x9C24 /* Haswell PCH */
+@@ -35,6 +37,7 @@
+ #define WPT_TSREL	0x0A	/* Thermal Sensor Report Enable and Lock */
+ #define WPT_TSMIC	0x0C	/* Thermal Sensor SMI Control */
+ #define WPT_CTT	0x0010	/* Catastrophic Trip Point */
++#define WPT_TSPM	0x001C	/* Thermal Sensor Power Management */
+ #define WPT_TAHV	0x0014	/* Thermal Alert High Value */
+ #define WPT_TALV	0x0018	/* Thermal Alert Low Value */
+ #define WPT_TL		0x00000040	/* Throttle Value */
+@@ -55,6 +58,22 @@
+ #define WPT_TL_T1L	0x1ff00000	/* T1 Level */
+ #define WPT_TL_TTEN	0x20000000	/* TT Enable */
+ 
++/* Resolution of 1/2 degree C and an offset of -50C */
++#define PCH_TEMP_OFFSET	(-50)
++#define GET_WPT_TEMP(x)	((x) * MILLIDEGREE_PER_DEGREE / 2 + WPT_TEMP_OFFSET)
++#define WPT_TEMP_OFFSET	(PCH_TEMP_OFFSET * MILLIDEGREE_PER_DEGREE)
++#define GET_PCH_TEMP(x)	(((x) / 2) + PCH_TEMP_OFFSET)
++
++/* Amount of time for each cooling delay, 100ms by default for now */
++static unsigned int delay_timeout = 100;
++module_param(delay_timeout, int, 0644);
++MODULE_PARM_DESC(delay_timeout, "amount of time delay for each iteration.");
++
++/* Number of iterations for cooling delay, 10 counts by default for now */
++static unsigned int delay_cnt = 10;
++module_param(delay_cnt, int, 0644);
++MODULE_PARM_DESC(delay_cnt, "total number of iterations for time delay.");
++
+ static char driver_name[] = "Intel PCH thermal driver";
+ 
+ struct pch_thermal_device {
+@@ -183,13 +202,58 @@ static int pch_wpt_get_temp(struct pch_thermal_device *ptd, int *temp)
+ static int pch_wpt_suspend(struct pch_thermal_device *ptd)
+ {
+ 	u8 tsel;
++	u8 pch_delay_cnt = 1;
++	u16 pch_thr_temp, pch_cur_temp;
+ 
+-	if (ptd->bios_enabled)
++	/* Shutdown the thermal sensor if it is not enabled by BIOS */
++	if (!ptd->bios_enabled) {
++		tsel = readb(ptd->hw_base + WPT_TSEL);
++		writeb(tsel & 0xFE, ptd->hw_base + WPT_TSEL);
++		return 0;
++	}
++
++	/* Do not check temperature if it is not a S0ix capable platform */
++	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
  		return 0;
  
--	cpufreq_cdev->cpufreq_state = state;
--
- 	frequency = get_state_freq(cpufreq_cdev, state);
+-	tsel = readb(ptd->hw_base + WPT_TSEL);
++	/* Do not check temperature if it is not s2idle */
++	if (pm_suspend_via_firmware())
++		return 0;
++
++	/* Get the PCH temperature threshold value */
++	pch_thr_temp = GET_PCH_TEMP(WPT_TEMP_TSR & readw(ptd->hw_base + WPT_TSPM));
++
++	/* Get the PCH current temperature value */
++	pch_cur_temp = GET_PCH_TEMP(WPT_TEMP_TSR & readw(ptd->hw_base + WPT_TEMP));
  
- 	ret = freq_qos_update_request(&cpufreq_cdev->qos_req, frequency);
--
- 	if (ret > 0) {
-+		cpufreq_cdev->cpufreq_state = state;
- 		cpus = cpufreq_cdev->policy->cpus;
- 		max_capacity = arch_scale_cpu_capacity(cpumask_first(cpus));
- 		capacity = frequency * max_capacity;
+-	writeb(tsel & 0xFE, ptd->hw_base + WPT_TSEL);
++	/*
++	 * If current PCH temperature is higher than configured PCH threshold
++	 * value, run some delay loop with sleep to let the current temperature
++	 * go down below the threshold value which helps to allow system enter
++	 * lower power S0ix suspend state. Even after delay loop if PCH current
++	 * temperature stays above threshold, notify the warning message
++	 * which helps to indentify the reason why S0ix entry was rejected.
++	 */
++	while (pch_delay_cnt <= delay_cnt) {
++		if (pch_cur_temp <= pch_thr_temp)
++			break;
++
++		dev_warn(&ptd->pdev->dev,
++			"CPU-PCH current temp [%dC] higher than the threshold temp [%dC], sleep %d times for %d ms duration\n",
++			pch_cur_temp, pch_thr_temp, pch_delay_cnt, delay_timeout);
++		msleep(delay_timeout);
++		/* Read the PCH current temperature for next cycle. */
++		pch_cur_temp = GET_PCH_TEMP(WPT_TEMP_TSR & readw(ptd->hw_base + WPT_TEMP));
++		pch_delay_cnt++;
++	}
++
++	if (pch_cur_temp > pch_thr_temp)
++		dev_warn(&ptd->pdev->dev,
++			"CPU-PCH is hot [%dC] even after delay, continue to suspend. S0ix might fail\n",
++			pch_cur_temp);
++	else
++		dev_info(&ptd->pdev->dev,
++			"CPU-PCH is cool [%dC], continue to suspend\n", pch_cur_temp);
+ 
+ 	return 0;
+ }
