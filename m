@@ -2,111 +2,115 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-12.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27E89C83018
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 227E7C56201
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 16:24:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C3C0A2087C
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:45 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BA6DD2087C
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 16:24:12 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Aw+AJlSs"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="YavSxQY4"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729153AbgKYPmL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 10:42:11 -0500
-Received: from mail.kernel.org ([198.145.29.99]:53724 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730501AbgKYPgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 25 Nov 2020 10:36:25 -0500
-Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
-        (No client certificate requested)
-        by mail.kernel.org (Postfix) with ESMTPSA id 8966921D1A;
-        Wed, 25 Nov 2020 15:36:23 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=default; t=1606318584;
-        bh=RMrGW5fUW+s/0FXfRqugpnfe2Ya9KtsxGllhgvAD7i0=;
-        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-        b=Aw+AJlSs8MfW4pDekDU0mEXzNzH7cz2w+yYif5/D2bTvg95jXrBcGVVT0s4Xvy597
-         rdn0c4suSfwRcH3Ry/H9HjOJGBCgfiFKFLxUGNOoCs2zT4tG2CmPfTQLULe6rUutvQ
-         HzzSt3owMP4L8S71s1nB13u/FrlD1+gHxyQZLX1Q=
-From:   Sasha Levin <sashal@kernel.org>
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Dmitry Osipenko <digetx@gmail.com>,
-        Peter Geis <pgwipeout@gmail.com>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
-        linux-tegra@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.9 24/33] cpuidle: tegra: Annotate tegra_pm_set_cpu_in_lp2() with RCU_NONIDLE
-Date:   Wed, 25 Nov 2020 10:35:41 -0500
-Message-Id: <20201125153550.810101-24-sashal@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201125153550.810101-1-sashal@kernel.org>
-References: <20201125153550.810101-1-sashal@kernel.org>
+        id S1730809AbgKYQYM (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 11:24:12 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57804 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730747AbgKYQYL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 11:24:11 -0500
+Received: from mail-pf1-x444.google.com (mail-pf1-x444.google.com [IPv6:2607:f8b0:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DDE55C0613D4;
+        Wed, 25 Nov 2020 08:24:11 -0800 (PST)
+Received: by mail-pf1-x444.google.com with SMTP id x24so2805177pfn.6;
+        Wed, 25 Nov 2020 08:24:11 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:subject:message-id:mime-version:content-disposition;
+        bh=3+3gfHD91/328qfooN+OsmJ9PHiYPgpjIR8tzOiYBHo=;
+        b=YavSxQY4iVhrdX0h9CXAQtfQY3M/lSfjiujDt3l6QkRWufd91bgIX9sSzVy/CJPQrq
+         O5CBFNRz30U5BB2MtV0PC7AlA7DIr1/WCYNY6O5N3bDGVQzIb2auyr/opkOZ/7bHa9CW
+         LQ4zKVgVpfc30Ou7esFAYnagn3CYfwnMQKlvKuJ+QFnmEaluVp/REQeVECsmrJnWeaYC
+         iKC4so2wF9PdUkTGZrRwc7unrzLxFU3jCjfaiaHM0J99PfhqD/vuk5pUuRTxtySIVsMI
+         cPUwyixg1xr3OpqZ8pW6FqcXtNq3aKrjc6ySOfwHdPX7pwyikvv8a7p1OwmraJD0fF0a
+         8frQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:subject:message-id:mime-version
+         :content-disposition;
+        bh=3+3gfHD91/328qfooN+OsmJ9PHiYPgpjIR8tzOiYBHo=;
+        b=X294hHSYw+JW2o2oKavxnMqe6lfRAjGrwJIfFpPuUoH7FdR+bnGCOq/QMuVsc3FEXZ
+         wJbl0eZvo8FylYm37g7K17T4SRNy+F86EZAfXpu5ACSvlk21mixgsupu4AFHOB6sk76o
+         hp9cW4XdSar6GB+BHed8Z7jmtXjn4E99/GQydwe2MwTrb4O311KT0iedTfp/52wvO49J
+         NgkubN9s/zJoNUiSCCZ+5UDJhGhz5VF3+6I7aP4/wIV2powN3jR4LpGMuOAj0nH4j+mX
+         VhZPtD4ctfVbAjL04ofTlb4II0620ECFAUWOFMbb02bn/zW0GRwFYklqBDg4fW54foNh
+         HPwQ==
+X-Gm-Message-State: AOAM531QkS1+D6I9g8rnTQrZvGXFQsBKLaEfDgmTD7yRZOz4Ps0ixIIO
+        AMBv6cypowGdCYZ37YK0Z3U=
+X-Google-Smtp-Source: ABdhPJxClJOLijc/qN4Y2TsUHFrwBBO/dNGfLQT1DiaRCkxu34lVJljgWO/JNiNtq4Nwes8TWw/gNw==
+X-Received: by 2002:a62:61c2:0:b029:197:f5ee:6ffa with SMTP id v185-20020a6261c20000b0290197f5ee6ffamr3134826pfb.18.1606321451401;
+        Wed, 25 Nov 2020 08:24:11 -0800 (PST)
+Received: from paju ([116.124.119.85])
+        by smtp.gmail.com with ESMTPSA id e4sm2613862pfh.90.2020.11.25.08.24.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Nov 2020 08:24:10 -0800 (PST)
+Date:   Thu, 26 Nov 2020 01:24:05 +0900
+From:   Dongjin Kim <tobetter@gmail.com>
+To:     Guillaume La Roque <glaroque@baylibre.com>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-amlogic@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] thermal: amlogic_thermal: Add hwmon support
+Message-ID: <20201125162405.GA1263100@paju>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Dmitry Osipenko <digetx@gmail.com>
+Expose Amlogic thermal as HWMON devices.
 
-[ Upstream commit c39de538a06e76d89b7e598a71e16688009cd56c ]
+	$ sensors
+	cpu_thermal-virtual-0
+	Adapter: Virtual device
+	temp1:        +32.2 C  (crit = +110.0 C)
 
-Annotate tegra_pm_set[clear]_cpu_in_lp2() with RCU_NONIDLE in order to
-fix lockdep warning about suspicious RCU usage of a spinlock during late
-idling phase.
+	ddr_thermal-virtual-0
+	Adapter: Virtual device
+	temp1:        +33.4 C  (crit = +110.0 C)
 
- WARNING: suspicious RCU usage
- ...
- include/trace/events/lock.h:13 suspicious rcu_dereference_check() usage!
- ...
-  (dump_stack) from (lock_acquire)
-  (lock_acquire) from (_raw_spin_lock)
-  (_raw_spin_lock) from (tegra_pm_set_cpu_in_lp2)
-  (tegra_pm_set_cpu_in_lp2) from (tegra_cpuidle_enter)
-  (tegra_cpuidle_enter) from (cpuidle_enter_state)
-  (cpuidle_enter_state) from (cpuidle_enter_state_coupled)
-  (cpuidle_enter_state_coupled) from (cpuidle_enter)
-  (cpuidle_enter) from (do_idle)
- ...
-
-Tested-by: Peter Geis <pgwipeout@gmail.com>
-Reported-by: Peter Geis <pgwipeout@gmail.com>
-Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Dongjin Kim <tobetter@gmail.com>
 ---
- drivers/cpuidle/cpuidle-tegra.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/thermal/amlogic_thermal.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
-index e8956706a2917..191966dc8d023 100644
---- a/drivers/cpuidle/cpuidle-tegra.c
-+++ b/drivers/cpuidle/cpuidle-tegra.c
-@@ -189,7 +189,7 @@ static int tegra_cpuidle_state_enter(struct cpuidle_device *dev,
- 	}
+diff --git a/drivers/thermal/amlogic_thermal.c b/drivers/thermal/amlogic_thermal.c
+index ccb1fe18e993..2fce96c32586 100644
+--- a/drivers/thermal/amlogic_thermal.c
++++ b/drivers/thermal/amlogic_thermal.c
+@@ -29,6 +29,7 @@
+ #include <linux/thermal.h>
  
- 	local_fiq_disable();
--	tegra_pm_set_cpu_in_lp2();
-+	RCU_NONIDLE(tegra_pm_set_cpu_in_lp2());
- 	cpu_pm_enter();
+ #include "thermal_core.h"
++#include "thermal_hwmon.h"
  
- 	switch (index) {
-@@ -207,7 +207,7 @@ static int tegra_cpuidle_state_enter(struct cpuidle_device *dev,
- 	}
+ #define TSENSOR_CFG_REG1			0x4
+ 	#define TSENSOR_CFG_REG1_RSET_VBG	BIT(12)
+@@ -291,6 +292,9 @@ static int amlogic_thermal_probe(struct platform_device *pdev)
+ 	if (ret)
+ 		return ret;
  
- 	cpu_pm_exit();
--	tegra_pm_clear_cpu_in_lp2();
-+	RCU_NONIDLE(tegra_pm_clear_cpu_in_lp2());
- 	local_fiq_enable();
++	if (devm_thermal_add_hwmon_sysfs(pdata->tzd))
++		dev_warn(&pdev->dev, "failed to add hwmon sysfs attributes\n");
++
+ 	ret = amlogic_thermal_enable(pdata);
  
- 	return err ?: index;
+ 	return ret;
 -- 
-2.27.0
+2.25.1
 
