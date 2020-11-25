@@ -2,70 +2,70 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 89150C6379D
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 922C2C5519F
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2BF1920872
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3867D20872
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:35 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="V6OKSBNQ"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="oAcj5kFn"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730062AbgKYOtS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 09:49:18 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42834 "EHLO
+        id S1730087AbgKYOt0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 09:49:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42858 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730060AbgKYOtR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 09:49:17 -0500
-Received: from mail-pg1-x544.google.com (mail-pg1-x544.google.com [IPv6:2607:f8b0:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B2940C0613D4;
-        Wed, 25 Nov 2020 06:49:17 -0800 (PST)
-Received: by mail-pg1-x544.google.com with SMTP id w4so2602754pgg.13;
-        Wed, 25 Nov 2020 06:49:17 -0800 (PST)
+        with ESMTP id S1730012AbgKYOtZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 09:49:25 -0500
+Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2A27C0613D4;
+        Wed, 25 Nov 2020 06:49:25 -0800 (PST)
+Received: by mail-pl1-x641.google.com with SMTP id b23so1208213pls.11;
+        Wed, 25 Nov 2020 06:49:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=M1I3F4x93QBnka2nDGMC5JfGYk1bQ37Bl9iSSpmaDtM=;
-        b=V6OKSBNQAvJAezd5Hag6RU+goMxEycQIFMoSvwEDmtYjQTm4niWguaDLAlkBibiR/V
-         meOjPykv6FOs3DnqRC1QTqE7M2xEHc6eXCw6pLVlKrZwdXL85Qt4CmR7p9076J6wR7YG
-         RQUnnkdBAQDle5moSc/Y3+GfSvgmc4hXU1jLZE2niBI9iXxTB8YVM0EVRnklvdgo46T9
-         LAb9pUsgjky9JeGXJhKCnteIZ+juI+LVRlkRrRDYrwaoXG+z57wCHwIFoKuVTpzZEJ5o
-         A5nSDhHUoNw6tH+SThvpHDoCaC+HBsV30hgEifYoql/vjXxhTFQMq2v6dmeZWq3fAeyP
-         bxJw==
+        bh=zftXlCMDlUv3M6vYJwCp4nHdd8CdLRlT8N27SkFN6/4=;
+        b=oAcj5kFn+GXNeuFnTvWWt/1y57oIZmm6b8sZRxT66t7+Z6TRw0kFySi1R0dKDqpREE
+         QPh0BdX6S6mSaWP28wfeCdid03A1yFBiTG5rfft6MEwb3qOrS5XckvF+4JtFuvadtipf
+         MTtZ6MdDATbQXsu67k0raOwycnef4cGsjx2yyoyBo8IWjmlpOS5gsnIUXsOzMqds7YJR
+         EW0C7PmLUi188Y7OyglJNON6jzC7jhRUviQc2ENap4HfiqgpQH0CiXge4Ile+LvRCwqJ
+         rZJzSSkBomRycNZg2LOR/81eDuprr5X9h4gQTMP50CxD/mgcQLA/N9WxWSRfVOqt9IYG
+         ojFw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=M1I3F4x93QBnka2nDGMC5JfGYk1bQ37Bl9iSSpmaDtM=;
-        b=G9gcUZrCmmBpWumGAxjwWxwfbtB3VhzK78pUcdaMqzkLvYzt6p67Z8Cd8ToWYSEo3H
-         e6TWtoS3uIZqfEaOMA0/ezIQ3Sks2W3zIME6IMMQVwGuaKOoVxg8pIxKFAyuBxi236Z8
-         HoIxgTAAl5qkF30/M4hd0QePVfTnBG9gnaOqx3vBvgz6WazqV5RN0FxtX43WGAnoCtwm
-         g2vkkfOOAGSUKjuMnQHYZ03Zah9TvLw55Szl0c3bXrzX10UzC6UJlkWSSZhuhfIBbgRZ
-         tyRgIxlfW5D420COAgW12tTs5c1cyxR0QfmykgyrQxcHdBmgDAsdTU4q93LgEBYWS5ON
-         vjCQ==
-X-Gm-Message-State: AOAM531aD9NDiP2D8HjPOc+u4MvwpFp9s98OrolfIgF2NxUM+zt2LO8N
-        fn2Br0pr9GlC7Ef6C2DKmVg=
-X-Google-Smtp-Source: ABdhPJys2pndSbrJqWCmE3inBNlXC1mcUssPb95pqUUsVTS32Fiue1SiOq0yd36BjrpnyWawhAuDUg==
-X-Received: by 2002:a17:90a:e018:: with SMTP id u24mr4649278pjy.189.1606315757273;
-        Wed, 25 Nov 2020 06:49:17 -0800 (PST)
+        bh=zftXlCMDlUv3M6vYJwCp4nHdd8CdLRlT8N27SkFN6/4=;
+        b=LCyzc0DJp1wWuqK+QuZBJXyygMwr191sCzecowyqTzm7ybhTCutp4/jUdD067QotX/
+         v/qt/d6DdORUcD4ZX0XMey+2Y/FGNdIMjEeRdG+w4B3rtKYkUKUF+WM/cKIbCpg/u2LZ
+         hi25US6HsRJ2myI0K4UFN6QUFIKP5ku4MmWhGUguJCQAgPgLQegSpDTCEmO22ek3IM23
+         3uGECYSfISTw0EgJgnXceBf85U5ozlVx6Hxbi62sV0SvAluIgWg4e2sg15sJwc3LLm2z
+         vdle0kUDp+qjCBpRNoZy/hUNC1H/oVCmbdqrTg56yYz8fxzbaqvPGCG26Z2xrncioV8J
+         bSug==
+X-Gm-Message-State: AOAM533vg+er7zpQ4SFcp/5P/Cpw4XbanxDVPkDbsCJTZ9w/MsYUgnpK
+        +ufpWk0FNNhWW0Xd566r7Cs=
+X-Google-Smtp-Source: ABdhPJwgGop2hVzbU3cBE0dD+oz2HBIhBsnVKLAmmb2QwR8CJylr2aJsYf5Apz5eWU2MVTNgGU161g==
+X-Received: by 2002:a17:902:9b85:b029:da:1684:cc82 with SMTP id y5-20020a1709029b85b02900da1684cc82mr3487168plp.41.1606315765405;
+        Wed, 25 Nov 2020 06:49:25 -0800 (PST)
 Received: from localhost ([2405:6580:31a1:500:1ac0:4dff:fe39:5426])
-        by smtp.gmail.com with ESMTPSA id p6sm3385984pjt.13.2020.11.25.06.49.16
+        by smtp.gmail.com with ESMTPSA id i29sm2412718pgb.10.2020.11.25.06.49.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2020 06:49:16 -0800 (PST)
+        Wed, 25 Nov 2020 06:49:24 -0800 (PST)
 From:   Punit Agrawal <punitagrawal@gmail.com>
 To:     rjw@rjwysocki.net
 Cc:     Punit Agrawal <punitagrawal@gmail.com>, wei.huang2@amd.com,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         bp@alien8.de, x86@kernel.org
-Subject: [RFC PATCH 2/4] cpufreq: acpi-cpufreq: Add processor to the ignore PSD override list
-Date:   Wed, 25 Nov 2020 23:48:45 +0900
-Message-Id: <20201125144847.3920-3-punitagrawal@gmail.com>
+Subject: [RFC PATCH 4/4] cpufreq: acpi-cpufreq: Use identifiers for AMD processor family
+Date:   Wed, 25 Nov 2020 23:48:47 +0900
+Message-Id: <20201125144847.3920-5-punitagrawal@gmail.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201125144847.3920-1-punitagrawal@gmail.com>
 References: <20201125144847.3920-1-punitagrawal@gmail.com>
@@ -75,43 +75,39 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Booting Linux on a Zen2 based processor (family: 0x17, model: 0x60,
-stepping: 0x1) shows the following message in the logs -
-
-    acpi_cpufreq: overriding BIOS provided _PSD data
-
-Although commit 5368512abe08 ("acpi-cpufreq: Honor _PSD table setting
-on new AMD CPUs") indicates that the override is not required for Zen3
-onwards, it seems that domain information can be trusted even on
-certain earlier systems. Update the check, to skip the override for
-Zen2 processors known to work without the override.
+Replace the raw values for AMD processor family with recently
+introduced identifier macros to improve code readability and
+maintainability.
 
 Signed-off-by: Punit Agrawal <punitagrawal@gmail.com>
-Cc: Wei Huang <wei.huang2@amd.com>
 ---
- drivers/cpufreq/acpi-cpufreq.c | 9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ drivers/cpufreq/acpi-cpufreq.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/cpufreq/acpi-cpufreq.c b/drivers/cpufreq/acpi-cpufreq.c
-index b1e7df96d428..29f1cd93541e 100644
+index 29f1cd93541e..d8b8300ae9e0 100644
 --- a/drivers/cpufreq/acpi-cpufreq.c
 +++ b/drivers/cpufreq/acpi-cpufreq.c
-@@ -198,8 +198,13 @@ static int override_acpi_psd(unsigned int cpu_id)
- 	if (c->x86_vendor == X86_VENDOR_AMD) {
- 		if (!check_amd_hwpstate_cpu(cpu_id))
- 			return false;
--
--		return c->x86 < 0x19;
-+		/*
-+		 * CPU's before Zen3 (except some Zen2) need the
-+		 * override.
-+		 */
-+		return (c->x86 < 0x19) &&
-+			!(c->x86 == 0x17 && c->x86_model == 0x60 &&
-+			  c->x86_stepping == 0x1);
+@@ -202,8 +202,8 @@ static int override_acpi_psd(unsigned int cpu_id)
+ 		 * CPU's before Zen3 (except some Zen2) need the
+ 		 * override.
+ 		 */
+-		return (c->x86 < 0x19) &&
+-			!(c->x86 == 0x17 && c->x86_model == 0x60 &&
++		return (c->x86 < AMD_FAM_ZEN3) &&
++			!(c->x86 == AMD_FAM_ZEN && c->x86_model == 0x60 &&
+ 			  c->x86_stepping == 0x1);
  	}
  
- 	return false;
+@@ -735,7 +735,7 @@ static int acpi_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ 	switch (perf->control_register.space_id) {
+ 	case ACPI_ADR_SPACE_SYSTEM_IO:
+ 		if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+-		    boot_cpu_data.x86 == 0xf) {
++		    boot_cpu_data.x86 == AMD_FAM_K8) {
+ 			pr_debug("AMD K8 systems must use native drivers.\n");
+ 			result = -ENODEV;
+ 			goto err_unreg;
 -- 
 2.29.2
 
