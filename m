@@ -2,201 +2,356 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 552AFC63798
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:12:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2FE7FC64E7D
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:37:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ECA4220857
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:12:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DhKi5OC8"
+	by mail.kernel.org (Postfix) with ESMTP id E900721D81
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:37:31 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730142AbgKYPLj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 10:11:39 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46290 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1729640AbgKYPLi (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 10:11:38 -0500
-Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com [IPv6:2607:f8b0:4864:20::242])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C269C061A4F
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 07:11:31 -0800 (PST)
-Received: by mail-oi1-x242.google.com with SMTP id a130so3154054oif.7
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 07:11:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=KhouDFsqki7Gy7e25xqYBbfXim5cXw795bT1eo81Xzs=;
-        b=DhKi5OC8Ur4Zm2+OE+tFBLFuXfc8do+T1RzzHNu+Yog3JYYT2iwU28JYwWKu/qP8uz
-         plmqJV23D3qj1oFDX56KAJP9TsfE17RFe+hi4MQpRFAvIOWK1zxDGkykUkIDA71H/Ve+
-         Rsk6IS74+XnrhOWM9cGTKJzylovB0TXD4nI7inJjlCGKQCYfB2TIt88o3Ha8RJrCEUni
-         LUObNG0RGxeBKniI7QDu7Rh8j+Ye11zOPLJmXLUXXzc6kVpQyUYXVsUg7iWGyzx/DhOa
-         /Fo9AejZsd79AKZzl6JifI+9yJoozeEMTE00D2p44b7n6Ir2GhMlC49hdAgxjgsMga02
-         SzKQ==
+        id S1730779AbgKYPgs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 10:36:48 -0500
+Received: from mail-ot1-f65.google.com ([209.85.210.65]:39156 "EHLO
+        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730762AbgKYPgr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 10:36:47 -0500
+Received: by mail-ot1-f65.google.com with SMTP id z24so2571073oto.6;
+        Wed, 25 Nov 2020 07:36:46 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=KhouDFsqki7Gy7e25xqYBbfXim5cXw795bT1eo81Xzs=;
-        b=b3Rma6koHsb03BN8sHwSXgtmrUAUUfGQSbWpzP4MJjv9lyVFiXhIksw6u86Op976US
-         McqZgEN0cj8xY6Epsqb5B46WBCNqLFZcj6C2WFYaaaHPhITliML4N3ZwfmCC1qnVIFKW
-         RTokSTmQaPnMZM4OalGFHkIqGRn38qNjEA8CSNfrhMZsnwBMK7BjxzyYzSZ+gH1yn56K
-         X2lZghvw3iujJRIx6eKeWLxEIt6VP8ImRoak6CfezBH0hrloFV0ttT0UoK4QBxEnBRmD
-         WTjm8xgZ4dP3CzskCLW/GA7AgVXKnQyMWkA2Sz/ryeeshRDg4nqEpx3fa4wNYkcMu1pf
-         1iEg==
-X-Gm-Message-State: AOAM532AX4dv4M/20SJXykOnIEGDXlbxGXlCjEFYBpqWDrzgAouZHyxu
-        4z6P6FUkH19GpxSSi3MSmmEMo3U+E2wo1N52kYP/EA==
-X-Google-Smtp-Source: ABdhPJx1C0mlZ1qHr6cS5D413otFJ7/k79MvTeKPZdG1JtfzZ4qqY9mjd3ubV4DYwBYgm4SdocaDNnM002LY6xZXrFo=
-X-Received: by 2002:aca:1110:: with SMTP id 16mr2489983oir.12.1606317089916;
- Wed, 25 Nov 2020 07:11:29 -0800 (PST)
+         :message-id:subject:to:cc;
+        bh=QdWYEG6bO7REfLvFs+b2+Rv03aviCzC1Gj+Qcf4HxmE=;
+        b=qYNLxFGRnGAx4WbBMZdqKcO1yCxZonB7nYWCVSY/SZ/7oBL1/ZCyNJwhIbmOhibdHS
+         3RyIWbeWoytdECw+OQD0vmxCopzBsUg3voAjuMStnSWJnIaS5MJL8+rHKkEtAF85BZNv
+         EETC+ZkQ32Ymz6ayNm4rVO+EPeTWcvnM8U+Wb6tSv6pSJcSCmylrBKmJr5xwPxHjBoOO
+         NlXSqtAG2hZIzg1hZp0c0GwVWS7fn9BO6p683tjKusyNdUF2hgX/vA2F3EY4b/UIfolN
+         i4Uk1iFnTo50Odk756LGTcI+4aV6ExcI9gkDAATPVkgiayzqtuNO0Lp/mQQYYJgLwTF2
+         bi6w==
+X-Gm-Message-State: AOAM532ZPl9/p7NwKrZCFjAtFs0awjIwW656OAcWQBvVDpYgctAMmlOw
+        dmvB//3Z9symo6qndpCF0gUKkAzBhsmkrOVC2hk=
+X-Google-Smtp-Source: ABdhPJyFB8kcatLquZaRhm57RGkEio8a614ZZVcLM/xICN9Gau/Ge2wE3BIM0QhhOECIKeEBVh8tBfavTF8YISvOEy0=
+X-Received: by 2002:a05:6830:2385:: with SMTP id l5mr3177933ots.321.1606318605731;
+ Wed, 25 Nov 2020 07:36:45 -0800 (PST)
 MIME-Version: 1.0
-References: <CAEGmHFFjV2UKm3L1G5JF6Ve47L1-aKBAGrCxN3pPX1HO9R-aUg@mail.gmail.com>
-In-Reply-To: <CAEGmHFFjV2UKm3L1G5JF6Ve47L1-aKBAGrCxN3pPX1HO9R-aUg@mail.gmail.com>
-From:   Furquan Shaikh <furquan@google.com>
-Date:   Wed, 25 Nov 2020 07:11:13 -0800
-Message-ID: <CAEGmHFHmYujYMRLxoyF8Vj4-HAWAqLwu9zCw2FJhJdgh1SKL0g@mail.gmail.com>
-Subject: Re: [RFC] ACPI PM during kernel poweroff/reboot
-To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>
-Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+References: <cover.1606198885.git.viresh.kumar@linaro.org> <f2eeee144a2e50540bff77d7bbe7351f154e2742.1606198885.git.viresh.kumar@linaro.org>
+In-Reply-To: <f2eeee144a2e50540bff77d7bbe7351f154e2742.1606198885.git.viresh.kumar@linaro.org>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Wed, 25 Nov 2020 16:36:34 +0100
+Message-ID: <CAJZ5v0g=2EHGMFUWQ_4+SA6gZN-3s0KTxT9VfY+Ah30e0NfhVw@mail.gmail.com>
+Subject: Re: [PATCH V4 1/3] sched/core: Move schedutil_cpu_util() to core.c
+To:     Viresh Kumar <viresh.kumar@linaro.org>
+Cc:     Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Vincent Guittot <vincent.guittot@linaro.org>,
+        Juri Lelli <juri.lelli@redhat.com>,
+        Dietmar Eggemann <dietmar.eggemann@arm.com>,
+        Steven Rostedt <rostedt@goodmis.org>,
+        Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+        Daniel Bristot de Oliveira <bristot@redhat.com>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
         Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        linux-pm@vger.kernel.org, Aaron Durbin <adurbin@google.com>,
-        Duncan Laurie <dlaurie@google.com>
+        Quentin Perret <qperret@google.com>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Linux PM <linux-pm@vger.kernel.org>
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 12, 2020 at 11:19 AM Furquan Shaikh <furquan@google.com> wrote:
+On Tue, Nov 24, 2020 at 7:26 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
 >
-> On x86 Chromebooks, we have observed this issue for a long time now -
-> when the system is powered off or rebooted, ACPI PM is not invoked and
-> this results in PowerResource _OFF methods not being invoked for any
-> of the devices. The _OFF methods are invoked correctly in case of
-> suspend-to-idle (S0ix) and suspend-to-memory(S3). However, they do not
-> get invoked when `poweroff` or `reboot` are triggered.
+> There is nothing schedutil specific in schedutil_cpu_util(), move it to
+> core.c and define it only for CONFIG_SMP.
 >
-> One of the differences between suspend, hibernate and shutdown paths
-> in Linux kernel is that the shutdown path does not use the typical
-> device PM phases (prepare, freeze/suspend, poweroff) as used by
-> suspend/hibernate. Instead the shutdown path makes use of
-> .shutdown_pre() and .shutdown() callbacks.
+> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+
+For the schedutil part:
+
+Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+
+> ---
+>  kernel/sched/core.c              | 108 +++++++++++++++++++++++++++++++
+>  kernel/sched/cpufreq_schedutil.c | 106 ------------------------------
+>  kernel/sched/sched.h             |  12 +---
+>  3 files changed, 109 insertions(+), 117 deletions(-)
 >
-> If I understand correctly, .shutdown() has been around for a long time
-> and existed even before the PM callbacks were added. Thus,
-> pm->poweroff() and .shutdown() are supposed to be analogous and
-> consistent in the behavior. This is why runtime PM is disallowed by
-> device_shutdown() before it calls .shutdown() (i.e. to keep behavior
-> consistent for both paths). However, in practice, there are
-> differences in behavior for the pm->poweroff() and .shutdown() paths
-> since the shutdown path does not execute any PM domain operations.
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index d2003a7d5ab5..b81265aec4a0 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -5117,6 +5117,114 @@ struct task_struct *idle_task(int cpu)
+>         return cpu_rq(cpu)->idle;
+>  }
 >
-> Because of this difference in behavior, shutdown path never invokes
-> ACPI PM and thus the ACPI PowerResources are not turned off when the
-> system is rebooted or powered off (sleep S5). On Chromebooks, it is
-> critical to run the _OFF methods for poweroff/reboot in order to
-> ensure that the device power off sequencing requirements are met.
-> Currently, these requirements are violated which impact the
-> reliability of devices over the lifetime of the platform.
->
-> There are a few ways in which this can be addressed:
->
-> 1. Similar to the case of hibernation, a new
-> PMSG_POWEROFF/PM_EVENT_POWEROFF can be introduced to invoke device
-> power management phases using `dpm_suspend_start(PMSG_POWEROFF)` and
-> `dpm_suspend_end(PMSG_POWEROFF)`. However, as the shutdown path uses
-> the class/bus/driver .shutdown() callbacks, adding dpm phases for
-> poweroff complicates the order of operations. If the dpm phases are
-> run before .shutdown() callbacks, then it will result in the callbacks
-> accessing devices after they are powered off. If the .shutdown()
-> callbacks are run before dpm phases, then the pm->poweroff() calls are
-> made after the device shutdown is done. Since .shutdown() and
-> pm->poweroff() are supposed to be analogous, having both calls in the
-> shutdown path is not only redundant but also results in incorrect
-> behavior.
->
-> 2. Another option is to update device_shutdown() to make
-> pm_domain.poweroff calls after the class/bus/driver .shutdown() is
-> done. However, this suffers from the same problem as #1 above i.e. it
-> is redundant and creates conflicting order of operations.
->
-> 3. Third possible solution is to detach the device from the PM domain
-> after it is shutdown. Currently, device drivers perform a detach
-> operation only when the device is removed. However, in case of
-> poweroff/reboot as the device is already shutdown, detaching PM domain
-> will give it the opportunity to ensure that any power resources are
-> correctly turned off before the system shuts down.
->
-> Out of these, I think #3 makes the most sense as it does not introduce
-> any conflicting operations. I verified that the following diff results
-> in _OFF methods getting invoked in both poweroff and reboot cases:
->
-> diff --git a/drivers/base/core.c b/drivers/base/core.c
-> index 94df2ba1bbed..e55d65fbb4a9 100644
-> --- a/drivers/base/core.c
-> +++ b/drivers/base/core.c
-> @@ -23,6 +23,7 @@
->  #include <linux/of_device.h>
->  #include <linux/genhd.h>
->  #include <linux/mutex.h>
-> +#include <linux/pm_domain.h>
->  #include <linux/pm_runtime.h>
->  #include <linux/netdevice.h>
->  #include <linux/sched/signal.h>
-> @@ -3230,6 +3231,8 @@ void device_shutdown(void)
->                         dev->driver->shutdown(dev);
->                 }
->
-> +               dev_pm_domain_detach(dev, true);
+> +#ifdef CONFIG_SMP
+> +/*
+> + * This function computes an effective utilization for the given CPU, to be
+> + * used for frequency selection given the linear relation: f = u * f_max.
+> + *
+> + * The scheduler tracks the following metrics:
+> + *
+> + *   cpu_util_{cfs,rt,dl,irq}()
+> + *   cpu_bw_dl()
+> + *
+> + * Where the cfs,rt and dl util numbers are tracked with the same metric and
+> + * synchronized windows and are thus directly comparable.
+> + *
+> + * The cfs,rt,dl utilization are the running times measured with rq->clock_task
+> + * which excludes things like IRQ and steal-time. These latter are then accrued
+> + * in the irq utilization.
+> + *
+> + * The DL bandwidth number otoh is not a measured metric but a value computed
+> + * based on the task model parameters and gives the minimal utilization
+> + * required to meet deadlines.
+> + */
+> +unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+> +                                unsigned long max, enum schedutil_type type,
+> +                                struct task_struct *p)
+> +{
+> +       unsigned long dl_util, util, irq;
+> +       struct rq *rq = cpu_rq(cpu);
 > +
->                 device_unlock(dev);
->                 if (parent)
->                         device_unlock(parent);
+> +       if (!uclamp_is_used() &&
+> +           type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt)) {
+> +               return max;
+> +       }
+> +
+> +       /*
+> +        * Early check to see if IRQ/steal time saturates the CPU, can be
+> +        * because of inaccuracies in how we track these -- see
+> +        * update_irq_load_avg().
+> +        */
+> +       irq = cpu_util_irq(rq);
+> +       if (unlikely(irq >= max))
+> +               return max;
+> +
+> +       /*
+> +        * Because the time spend on RT/DL tasks is visible as 'lost' time to
+> +        * CFS tasks and we use the same metric to track the effective
+> +        * utilization (PELT windows are synchronized) we can directly add them
+> +        * to obtain the CPU's actual utilization.
+> +        *
+> +        * CFS and RT utilization can be boosted or capped, depending on
+> +        * utilization clamp constraints requested by currently RUNNABLE
+> +        * tasks.
+> +        * When there are no CFS RUNNABLE tasks, clamps are released and
+> +        * frequency will be gracefully reduced with the utilization decay.
+> +        */
+> +       util = util_cfs + cpu_util_rt(rq);
+> +       if (type == FREQUENCY_UTIL)
+> +               util = uclamp_rq_util_with(rq, util, p);
+> +
+> +       dl_util = cpu_util_dl(rq);
+> +
+> +       /*
+> +        * For frequency selection we do not make cpu_util_dl() a permanent part
+> +        * of this sum because we want to use cpu_bw_dl() later on, but we need
+> +        * to check if the CFS+RT+DL sum is saturated (ie. no idle time) such
+> +        * that we select f_max when there is no idle time.
+> +        *
+> +        * NOTE: numerical errors or stop class might cause us to not quite hit
+> +        * saturation when we should -- something for later.
+> +        */
+> +       if (util + dl_util >= max)
+> +               return max;
+> +
+> +       /*
+> +        * OTOH, for energy computation we need the estimated running time, so
+> +        * include util_dl and ignore dl_bw.
+> +        */
+> +       if (type == ENERGY_UTIL)
+> +               util += dl_util;
+> +
+> +       /*
+> +        * There is still idle time; further improve the number by using the
+> +        * irq metric. Because IRQ/steal time is hidden from the task clock we
+> +        * need to scale the task numbers:
+> +        *
+> +        *              max - irq
+> +        *   U' = irq + --------- * U
+> +        *                 max
+> +        */
+> +       util = scale_irq_capacity(util, irq, max);
+> +       util += irq;
+> +
+> +       /*
+> +        * Bandwidth required by DEADLINE must always be granted while, for
+> +        * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+> +        * to gracefully reduce the frequency when no tasks show up for longer
+> +        * periods of time.
+> +        *
+> +        * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+> +        * bw_dl as requested freq. However, cpufreq is not yet ready for such
+> +        * an interface. So, we only do the latter for now.
+> +        */
+> +       if (type == FREQUENCY_UTIL)
+> +               util += cpu_bw_dl(rq);
+> +
+> +       return min(max, util);
+> +}
+> +#endif /* CONFIG_SMP */
+> +
+>  /**
+>   * find_process_by_pid - find a process with a matching PID value.
+>   * @pid: the pid in question.
+> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
+> index e254745a82cb..2d44befb322b 100644
+> --- a/kernel/sched/cpufreq_schedutil.c
+> +++ b/kernel/sched/cpufreq_schedutil.c
+> @@ -169,112 +169,6 @@ static unsigned int get_next_freq(struct sugov_policy *sg_policy,
+>         return cpufreq_driver_resolve_freq(policy, freq);
+>  }
 >
-> This was discussed on the mailing list some time back[1] in the
-> context of a different use case. However, the idea of detaching
-> devices (on any bus) from the PM domain during shutdown is important
-> to ensure correct power sequencing for the devices.
+> -/*
+> - * This function computes an effective utilization for the given CPU, to be
+> - * used for frequency selection given the linear relation: f = u * f_max.
+> - *
+> - * The scheduler tracks the following metrics:
+> - *
+> - *   cpu_util_{cfs,rt,dl,irq}()
+> - *   cpu_bw_dl()
+> - *
+> - * Where the cfs,rt and dl util numbers are tracked with the same metric and
+> - * synchronized windows and are thus directly comparable.
+> - *
+> - * The cfs,rt,dl utilization are the running times measured with rq->clock_task
+> - * which excludes things like IRQ and steal-time. These latter are then accrued
+> - * in the irq utilization.
+> - *
+> - * The DL bandwidth number otoh is not a measured metric but a value computed
+> - * based on the task model parameters and gives the minimal utilization
+> - * required to meet deadlines.
+> - */
+> -unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+> -                                unsigned long max, enum schedutil_type type,
+> -                                struct task_struct *p)
+> -{
+> -       unsigned long dl_util, util, irq;
+> -       struct rq *rq = cpu_rq(cpu);
+> -
+> -       if (!uclamp_is_used() &&
+> -           type == FREQUENCY_UTIL && rt_rq_is_runnable(&rq->rt)) {
+> -               return max;
+> -       }
+> -
+> -       /*
+> -        * Early check to see if IRQ/steal time saturates the CPU, can be
+> -        * because of inaccuracies in how we track these -- see
+> -        * update_irq_load_avg().
+> -        */
+> -       irq = cpu_util_irq(rq);
+> -       if (unlikely(irq >= max))
+> -               return max;
+> -
+> -       /*
+> -        * Because the time spend on RT/DL tasks is visible as 'lost' time to
+> -        * CFS tasks and we use the same metric to track the effective
+> -        * utilization (PELT windows are synchronized) we can directly add them
+> -        * to obtain the CPU's actual utilization.
+> -        *
+> -        * CFS and RT utilization can be boosted or capped, depending on
+> -        * utilization clamp constraints requested by currently RUNNABLE
+> -        * tasks.
+> -        * When there are no CFS RUNNABLE tasks, clamps are released and
+> -        * frequency will be gracefully reduced with the utilization decay.
+> -        */
+> -       util = util_cfs + cpu_util_rt(rq);
+> -       if (type == FREQUENCY_UTIL)
+> -               util = uclamp_rq_util_with(rq, util, p);
+> -
+> -       dl_util = cpu_util_dl(rq);
+> -
+> -       /*
+> -        * For frequency selection we do not make cpu_util_dl() a permanent part
+> -        * of this sum because we want to use cpu_bw_dl() later on, but we need
+> -        * to check if the CFS+RT+DL sum is saturated (ie. no idle time) such
+> -        * that we select f_max when there is no idle time.
+> -        *
+> -        * NOTE: numerical errors or stop class might cause us to not quite hit
+> -        * saturation when we should -- something for later.
+> -        */
+> -       if (util + dl_util >= max)
+> -               return max;
+> -
+> -       /*
+> -        * OTOH, for energy computation we need the estimated running time, so
+> -        * include util_dl and ignore dl_bw.
+> -        */
+> -       if (type == ENERGY_UTIL)
+> -               util += dl_util;
+> -
+> -       /*
+> -        * There is still idle time; further improve the number by using the
+> -        * irq metric. Because IRQ/steal time is hidden from the task clock we
+> -        * need to scale the task numbers:
+> -        *
+> -        *              max - irq
+> -        *   U' = irq + --------- * U
+> -        *                 max
+> -        */
+> -       util = scale_irq_capacity(util, irq, max);
+> -       util += irq;
+> -
+> -       /*
+> -        * Bandwidth required by DEADLINE must always be granted while, for
+> -        * FAIR and RT, we use blocked utilization of IDLE CPUs as a mechanism
+> -        * to gracefully reduce the frequency when no tasks show up for longer
+> -        * periods of time.
+> -        *
+> -        * Ideally we would like to set bw_dl as min/guaranteed freq and util +
+> -        * bw_dl as requested freq. However, cpufreq is not yet ready for such
+> -        * an interface. So, we only do the latter for now.
+> -        */
+> -       if (type == FREQUENCY_UTIL)
+> -               util += cpu_bw_dl(rq);
+> -
+> -       return min(max, util);
+> -}
+> -
+>  static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
+>  {
+>         struct rq *rq = cpu_rq(sg_cpu->cpu);
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index df80bfcea92e..0db6bcf0881f 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -2484,7 +2484,6 @@ static inline unsigned long capacity_orig_of(int cpu)
+>  {
+>         return cpu_rq(cpu)->cpu_capacity_orig;
+>  }
+> -#endif
 >
-> One of the concerns that was raised on the above thread was slowing
-> down the shutdown process when not needed. I think this can be handled
-> by adding a sysfs attribute to allow platforms to decide if they need
-> the ability to power off PM domains on shutdown/reboot path.
+>  /**
+>   * enum schedutil_type - CPU utilization type
+> @@ -2501,8 +2500,6 @@ enum schedutil_type {
+>         ENERGY_UTIL,
+>  };
 >
-> Questions that I am looking to get feedback/comments are:
+> -#ifdef CONFIG_CPU_FREQ_GOV_SCHEDUTIL
+> -
+>  unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+>                                  unsigned long max, enum schedutil_type type,
+>                                  struct task_struct *p);
+> @@ -2533,14 +2530,7 @@ static inline unsigned long cpu_util_rt(struct rq *rq)
+>  {
+>         return READ_ONCE(rq->avg_rt.util_avg);
+>  }
+> -#else /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+> -static inline unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
+> -                                unsigned long max, enum schedutil_type type,
+> -                                struct task_struct *p)
+> -{
+> -       return 0;
+> -}
+> -#endif /* CONFIG_CPU_FREQ_GOV_SCHEDUTIL */
+> +#endif
 >
-> 1. Is my assessment of the problem and understanding of the
-> .shutdown() and pm.poweroff() correct?
-> 2. Does the solution #3 i.e. detaching PM domain after shutting down
-> device on shutdown path makes sense?
-> 3. Are there other possible approaches to solve this problem that can
-> be explored?
-> 4. Do we still have the performance concern about the shutdown path? I
-> don=E2=80=99t think anything has changed since that thread, so this is
-> probably still true.
-> 5. Does the use of sysfs attribute make sense to let platform control
-> if it wants to detach PM domains on shutdown path?
+>  #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
+>  static inline unsigned long cpu_util_irq(struct rq *rq)
+> --
+> 2.25.0.rc1.19.g042ed3e048af
 >
-> Sorry about the long thread and thank you so much for your time!
->
-> Thanks,
-> Furquan
->
-> [1] https://lore.kernel.org/linux-pm/HE1PR04MB30046668C9F4FFAB5C07E693886=
-D0@HE1PR04MB3004.eurprd04.prod.outlook.com/T/#mbd80804857f38c66aa5e825cdd4b=
-61ba6b12317d
-
-Hello,
-
-Gentle ping. Just wanted to check if there are any
-comments/suggestions on the proposal above or how this problem can be
-addressed. This has been one of the long standing problems impacting
-all ACPI-based Chrome OS devices.
-
-Thanks,
-Furquan
