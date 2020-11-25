@@ -2,123 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 12268C63777
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 07:34:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F1E9FC56201
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 08:07:50 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B1444208C3
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 07:34:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A00BB20857
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 08:07:50 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726463AbgKYHeT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 02:34:19 -0500
-Received: from mslow2.mail.gandi.net ([217.70.178.242]:48070 "EHLO
-        mslow2.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728062AbgKYHeS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 02:34:18 -0500
-Received: from relay8-d.mail.gandi.net (unknown [217.70.183.201])
-        by mslow2.mail.gandi.net (Postfix) with ESMTP id 8043F3BAD07
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 07:20:00 +0000 (UTC)
-X-Originating-IP: 91.175.115.186
-Received: from localhost (91-175-115-186.subs.proxad.net [91.175.115.186])
-        (Authenticated sender: gregory.clement@bootlin.com)
-        by relay8-d.mail.gandi.net (Postfix) with ESMTPSA id 6A2A01BF204;
-        Wed, 25 Nov 2020 07:19:37 +0000 (UTC)
-From:   Gregory CLEMENT <gregory.clement@bootlin.com>
-To:     Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        devicetree@vger.kernel.org
-Cc:     Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        Lars Povlsen <lars.povlsen@microchip.com>,
-        <Steen.Hegelund@microchip.com>,
-        Gregory CLEMENT <gregory.clement@bootlin.com>
-Subject: [PATCH v2 2/3] power: reset: ocelot: Add support 2 other MIPS based SoCs
-Date:   Wed, 25 Nov 2020 08:19:19 +0100
-Message-Id: <20201125071920.126978-3-gregory.clement@bootlin.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201125071920.126978-1-gregory.clement@bootlin.com>
-References: <20201125071920.126978-1-gregory.clement@bootlin.com>
+        id S1726819AbgKYIHI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 03:07:08 -0500
+Received: from mga09.intel.com ([134.134.136.24]:65092 "EHLO mga09.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1726325AbgKYIHI (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Nov 2020 03:07:08 -0500
+IronPort-SDR: 0LxcttN07aAYUtUiTtigLEC5/gAp+Rnp2NTYdQl4Vw+7WFFTURcle6pL7aauFFPoS89Ve8/vtA
+ 6Tl569TnMDyQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9815"; a="172244065"
+X-IronPort-AV: E=Sophos;i="5.78,368,1599548400"; 
+   d="scan'208";a="172244065"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by orsmga102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2020 00:07:05 -0800
+IronPort-SDR: i8smOXMHi2IWQtJp5vzRd/iYtOun9bTO172CUBgV17TJhR9iQnXIDS5/Zc/5MhBzDdn62x/UR4
+ j3oauEfYsRoQ==
+X-IronPort-AV: E=Sophos;i="5.78,368,1599548400"; 
+   d="scan'208";a="332892300"
+Received: from lahna.fi.intel.com (HELO lahna) ([10.237.72.163])
+  by orsmga006-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2020 00:07:02 -0800
+Received: by lahna (sSMTP sendmail emulation); Wed, 25 Nov 2020 10:06:59 +0200
+Date:   Wed, 25 Nov 2020 10:06:59 +0200
+From:   Mika Westerberg <mika.westerberg@linux.intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Linux ACPI <linux-acpi@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux PCI <linux-pci@vger.kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Bjorn Helgaas <helgaas@kernel.org>,
+        Kai-Heng Feng <kai.heng.feng@canonical.com>
+Subject: Re: [PATCH v1 1/2] PM: ACPI: PCI: Drop acpi_pm_set_bridge_wakeup()
+Message-ID: <20201125080659.GB2532@lahna.fi.intel.com>
+References: <27714988.CF3CpBaniU@kreacher>
+ <2261308.G18gbxz5ee@kreacher>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2261308.G18gbxz5ee@kreacher>
+Organization: Intel Finland Oy - BIC 0357606-4 - Westendinkatu 7, 02160 Espoo
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This adds reset support for Luton and Jaguar2 in the ocelot-reset
-driver. They are both MIPS based belonging to the Vcore III family.
+On Tue, Nov 24, 2020 at 08:44:00PM +0100, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> 
+> The idea behind acpi_pm_set_bridge_wakeup() was to allow bridges to
+> be reference counted for wakeup enabling, because they may be enabled
+> to signal wakeup on behalf of their subordinate devices and that
+> may happen for multiple times in a row, whereas for the other devices
+> it only makes sense to enable wakeup signaling once.
+> 
+> However, this becomes problematic if the bridge itself is suspended,
+> because it is treated as a "regular" device in that case and the
+> reference counting doesn't work.
+> 
+> For instance, suppose that there are two devices below a bridge and
+> they both can signal wakeup.  Every time one of them is suspended,
+> wakeup signaling is enabled for the bridge, so when they both have
+> been suspended, the bridge's wakeup reference counter value is 2.
+> 
+> Say that the bridge is suspended subsequently and acpi_pci_wakeup()
+> is called for it.  Because the bridge can signal wakeup, that
+> function will invoke acpi_pm_set_device_wakeup() to configure it
+> and __acpi_pm_set_device_wakeup() will be called with the last
+> argument equal to 1.  This causes __acpi_device_wakeup_enable()
+> invoked by it to omit the reference counting, because the reference
+> counter of the target device (the bridge) is 2 at that time.
+> 
+> Now say that the bridge resumes and one of the device below it
+> resumes too, so the bridge's reference counter becomes 0 and
+> wakeup signaling is disabled for it, but there is still the other
+> suspended device which may need the bridge to signal wakeup on its
+> behalf and that is not going to work.
+> 
+> To address this scenario, use wakeup enable reference counting for
+> all devices, not just for bridges, so drop the last argument from
+> __acpi_device_wakeup_enable() and __acpi_pm_set_device_wakeup(),
+> which causes acpi_pm_set_device_wakeup() and
+> acpi_pm_set_bridge_wakeup() to become identical, so drop the latter
+> and use the former instead of it everywhere.
+> 
+> Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Acked-by: Alexandre Belloni <alexandre.belloni@bootlin.com>
-Signed-off-by: Gregory CLEMENT <gregory.clement@bootlin.com>
----
- drivers/power/reset/ocelot-reset.c | 30 +++++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/power/reset/ocelot-reset.c b/drivers/power/reset/ocelot-reset.c
-index f74e1dbb4ba3..8caa90cb58fc 100644
---- a/drivers/power/reset/ocelot-reset.c
-+++ b/drivers/power/reset/ocelot-reset.c
-@@ -29,6 +29,8 @@ struct ocelot_reset_context {
- 	struct notifier_block restart_handler;
- };
- 
-+#define BIT_OFF_INVALID				32
-+
- #define SOFT_CHIP_RST BIT(0)
- 
- #define ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL	0x24
-@@ -50,9 +52,11 @@ static int ocelot_restart_handle(struct notifier_block *this,
- 			   ctx->props->vcore_protect, 0);
- 
- 	/* Make the SI back to boot mode */
--	regmap_update_bits(ctx->cpu_ctrl, ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL,
--			   IF_SI_OWNER_MASK << if_si_owner_bit,
--			   IF_SI_OWNER_SIBM << if_si_owner_bit);
-+	if (if_si_owner_bit != BIT_OFF_INVALID)
-+		regmap_update_bits(ctx->cpu_ctrl,
-+				   ICPU_CFG_CPU_SYSTEM_CTRL_GENERAL_CTRL,
-+				   IF_SI_OWNER_MASK << if_si_owner_bit,
-+				   IF_SI_OWNER_SIBM << if_si_owner_bit);
- 
- 	pr_emerg("Resetting SoC\n");
- 
-@@ -96,6 +100,20 @@ static int ocelot_reset_probe(struct platform_device *pdev)
- 	return err;
- }
- 
-+static const struct reset_props reset_props_jaguar2 = {
-+	.syscon		 = "mscc,ocelot-cpu-syscon",
-+	.protect_reg     = 0x20,
-+	.vcore_protect   = BIT(2),
-+	.if_si_owner_bit = 6,
-+};
-+
-+static const struct reset_props reset_props_luton = {
-+	.syscon		 = "mscc,ocelot-cpu-syscon",
-+	.protect_reg     = 0x20,
-+	.vcore_protect   = BIT(2),
-+	.if_si_owner_bit = BIT_OFF_INVALID, /* n/a */
-+};
-+
- static const struct reset_props reset_props_ocelot = {
- 	.syscon		 = "mscc,ocelot-cpu-syscon",
- 	.protect_reg     = 0x20,
-@@ -112,6 +130,12 @@ static const struct reset_props reset_props_sparx5 = {
- 
- static const struct of_device_id ocelot_reset_of_match[] = {
- 	{
-+		.compatible = "mscc,jaguar2-chip-reset",
-+		.data = &reset_props_jaguar2
-+	}, {
-+		.compatible = "mscc,luton-chip-reset",
-+		.data = &reset_props_luton
-+	}, {
- 		.compatible = "mscc,ocelot-chip-reset",
- 		.data = &reset_props_ocelot
- 	}, {
--- 
-2.29.2
-
+Reviewed-by: Mika Westerberg <mika.westerberg@linux.intel.com>
