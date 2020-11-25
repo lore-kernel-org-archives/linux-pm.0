@@ -2,223 +2,111 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 828EDC64E75
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:39:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 27E89C83018
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3221C221F9
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:39:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C3C0A2087C
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:42:45 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=kernel.org header.i=@kernel.org header.b="Aw+AJlSs"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731501AbgKYPjP (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 10:39:15 -0500
-Received: from mail-oi1-f195.google.com ([209.85.167.195]:33442 "EHLO
-        mail-oi1-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731348AbgKYPjO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 10:39:14 -0500
-Received: by mail-oi1-f195.google.com with SMTP id k26so3294536oiw.0;
-        Wed, 25 Nov 2020 07:39:13 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=n5xSQTyUsJM93Omkz7IRjm41LBe2hmulti89Q+8iUXs=;
-        b=ABtTFa3RsfQBp8Ju1uQu2nHbV0aGhj8+8Df6jJC/bqx7stK9llVw6sBDwBcVbRVJCj
-         Iod1IidLLDPIG7f1N+WCcO9mtQSdmbKvQzHB4AO2ApyCMCYVjirY3qzE25S1OD7ozRbC
-         gCZu3Irb/78h9W+d70eT65M01VBOFRY5JpVSs1K+tSU2JHn73sU7FyzJPnaVER0Rxxr2
-         6nPK8DUtBDp04QSqvP1Zrncjo/rTDUEdEbOtGOKcqRTvwH86PgzBAW0iVpWFPz8EhDQt
-         7TonUUaz6DAyX1xcui7/ELxAzdQaV+64Ot+jSMScrlhnL1cnubTwsJmqIH8w89WqDrnp
-         V4sg==
-X-Gm-Message-State: AOAM531FblKBp4m2tIpNs84jfwVmjy5MbcX9TCY868Hrd7Nopnzb5F3l
-        X4HhsQGE/Byti6bZGS77AnZhVPzrkb4EqEWLKmc=
-X-Google-Smtp-Source: ABdhPJziNLz54izQ6PorN/fd02CYz9ZBBteVjfLTJ4T0xPBTJ5aNIs3FpFGRLIwojB7tpQIuX2j1IcgD0r0R4tePVhY=
-X-Received: by 2002:aca:da02:: with SMTP id r2mr2611827oig.157.1606318753021;
- Wed, 25 Nov 2020 07:39:13 -0800 (PST)
+        id S1729153AbgKYPmL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 10:42:11 -0500
+Received: from mail.kernel.org ([198.145.29.99]:53724 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1730501AbgKYPgZ (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 25 Nov 2020 10:36:25 -0500
+Received: from sasha-vm.mshome.net (c-73-47-72-35.hsd1.nh.comcast.net [73.47.72.35])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 8966921D1A;
+        Wed, 25 Nov 2020 15:36:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1606318584;
+        bh=RMrGW5fUW+s/0FXfRqugpnfe2Ya9KtsxGllhgvAD7i0=;
+        h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+        b=Aw+AJlSs8MfW4pDekDU0mEXzNzH7cz2w+yYif5/D2bTvg95jXrBcGVVT0s4Xvy597
+         rdn0c4suSfwRcH3Ry/H9HjOJGBCgfiFKFLxUGNOoCs2zT4tG2CmPfTQLULe6rUutvQ
+         HzzSt3owMP4L8S71s1nB13u/FrlD1+gHxyQZLX1Q=
+From:   Sasha Levin <sashal@kernel.org>
+To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
+Cc:     Dmitry Osipenko <digetx@gmail.com>,
+        Peter Geis <pgwipeout@gmail.com>,
+        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
+        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org,
+        linux-tegra@vger.kernel.org
+Subject: [PATCH AUTOSEL 5.9 24/33] cpuidle: tegra: Annotate tegra_pm_set_cpu_in_lp2() with RCU_NONIDLE
+Date:   Wed, 25 Nov 2020 10:35:41 -0500
+Message-Id: <20201125153550.810101-24-sashal@kernel.org>
+X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201125153550.810101-1-sashal@kernel.org>
+References: <20201125153550.810101-1-sashal@kernel.org>
 MIME-Version: 1.0
-References: <cover.1606198885.git.viresh.kumar@linaro.org> <9a5442b916f9667e714dd84fe4e3fc26f8bcc887.1606198885.git.viresh.kumar@linaro.org>
-In-Reply-To: <9a5442b916f9667e714dd84fe4e3fc26f8bcc887.1606198885.git.viresh.kumar@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Wed, 25 Nov 2020 16:39:01 +0100
-Message-ID: <CAJZ5v0jp1Pana18qu_gQX9=dQZC-e4p87Q1jgh1jAqei5t7JmQ@mail.gmail.com>
-Subject: Re: [PATCH V4 2/3] sched/core: Rename schedutil_cpu_util() and allow
- rest of the kernel to use it
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     Ingo Molnar <mingo@redhat.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Juri Lelli <juri.lelli@redhat.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
-        Daniel Bristot de Oliveira <bristot@redhat.com>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Quentin Perret <qperret@google.com>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-stable: review
+X-Patchwork-Hint: Ignore
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, Nov 24, 2020 at 7:26 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> There is nothing schedutil specific in schedutil_cpu_util(), rename it
-> to effective_cpu_util(). Also create and expose another wrapper
-> sched_cpu_util() which can be used by other parts of the kernel, like
-> thermal core (that will be done in a later commit).
->
-> Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
+From: Dmitry Osipenko <digetx@gmail.com>
 
-For the schedutil change:
+[ Upstream commit c39de538a06e76d89b7e598a71e16688009cd56c ]
 
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Annotate tegra_pm_set[clear]_cpu_in_lp2() with RCU_NONIDLE in order to
+fix lockdep warning about suspicious RCU usage of a spinlock during late
+idling phase.
 
-> ---
->  include/linux/sched.h            | 21 +++++++++++++++++++++
->  kernel/sched/core.c              | 11 +++++++++--
->  kernel/sched/cpufreq_schedutil.c |  2 +-
->  kernel/sched/fair.c              |  6 +++---
->  kernel/sched/sched.h             | 19 ++-----------------
->  5 files changed, 36 insertions(+), 23 deletions(-)
->
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 063cd120b459..926b944dae5e 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1926,6 +1926,27 @@ extern long sched_getaffinity(pid_t pid, struct cpumask *mask);
->  #define TASK_SIZE_OF(tsk)      TASK_SIZE
->  #endif
->
-> +#ifdef CONFIG_SMP
-> +/**
-> + * enum cpu_util_type - CPU utilization type
-> + * @FREQUENCY_UTIL:    Utilization used to select frequency
-> + * @ENERGY_UTIL:       Utilization used during energy calculation
-> + *
-> + * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
-> + * need to be aggregated differently depending on the usage made of them. This
-> + * enum is used within sched_cpu_util() to differentiate the types of
-> + * utilization expected by the callers, and adjust the aggregation accordingly.
-> + */
-> +enum cpu_util_type {
-> +       FREQUENCY_UTIL,
-> +       ENERGY_UTIL,
-> +};
-> +
-> +/* Returns effective CPU utilization, as seen by the scheduler */
-> +unsigned long sched_cpu_util(int cpu, enum cpu_util_type type,
-> +                            unsigned long max);
-> +#endif /* CONFIG_SMP */
-> +
->  #ifdef CONFIG_RSEQ
->
->  /*
-> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> index b81265aec4a0..845c976ccd53 100644
-> --- a/kernel/sched/core.c
-> +++ b/kernel/sched/core.c
-> @@ -5138,8 +5138,8 @@ struct task_struct *idle_task(int cpu)
->   * based on the task model parameters and gives the minimal utilization
->   * required to meet deadlines.
->   */
-> -unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
-> -                                unsigned long max, enum schedutil_type type,
-> +unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-> +                                unsigned long max, enum cpu_util_type type,
->                                  struct task_struct *p)
->  {
->         unsigned long dl_util, util, irq;
-> @@ -5223,6 +5223,13 @@ unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
->
->         return min(max, util);
->  }
-> +
-> +unsigned long sched_cpu_util(int cpu, enum cpu_util_type type,
-> +                            unsigned long max)
-> +{
-> +       return effective_cpu_util(cpu, cpu_util_cfs(cpu_rq(cpu)), max, type,
-> +                                 NULL);
-> +}
->  #endif /* CONFIG_SMP */
->
->  /**
-> diff --git a/kernel/sched/cpufreq_schedutil.c b/kernel/sched/cpufreq_schedutil.c
-> index 2d44befb322b..e71627a3792b 100644
-> --- a/kernel/sched/cpufreq_schedutil.c
-> +++ b/kernel/sched/cpufreq_schedutil.c
-> @@ -178,7 +178,7 @@ static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
->         sg_cpu->max = max;
->         sg_cpu->bw_dl = cpu_bw_dl(rq);
->
-> -       return schedutil_cpu_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL, NULL);
-> +       return effective_cpu_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL, NULL);
->  }
->
->  /**
-> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-> index 290f9e38378c..0e1c8eb7ad53 100644
-> --- a/kernel/sched/fair.c
-> +++ b/kernel/sched/fair.c
-> @@ -6499,7 +6499,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
->                  * is already enough to scale the EM reported power
->                  * consumption at the (eventually clamped) cpu_capacity.
->                  */
-> -               sum_util += schedutil_cpu_util(cpu, util_cfs, cpu_cap,
-> +               sum_util += effective_cpu_util(cpu, util_cfs, cpu_cap,
->                                                ENERGY_UTIL, NULL);
->
->                 /*
-> @@ -6509,7 +6509,7 @@ compute_energy(struct task_struct *p, int dst_cpu, struct perf_domain *pd)
->                  * NOTE: in case RT tasks are running, by default the
->                  * FREQUENCY_UTIL's utilization can be max OPP.
->                  */
-> -               cpu_util = schedutil_cpu_util(cpu, util_cfs, cpu_cap,
-> +               cpu_util = effective_cpu_util(cpu, util_cfs, cpu_cap,
->                                               FREQUENCY_UTIL, tsk);
->                 max_util = max(max_util, cpu_util);
->         }
-> @@ -6607,7 +6607,7 @@ static int find_energy_efficient_cpu(struct task_struct *p, int prev_cpu)
->                          * IOW, placing the task there would make the CPU
->                          * overutilized. Take uclamp into account to see how
->                          * much capacity we can get out of the CPU; this is
-> -                        * aligned with schedutil_cpu_util().
-> +                        * aligned with sched_cpu_util().
->                          */
->                         util = uclamp_rq_util_with(cpu_rq(cpu), util, p);
->                         if (!fits_capacity(util, cpu_cap))
-> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-> index 0db6bcf0881f..4fab3b930ace 100644
-> --- a/kernel/sched/sched.h
-> +++ b/kernel/sched/sched.h
-> @@ -2485,23 +2485,8 @@ static inline unsigned long capacity_orig_of(int cpu)
->         return cpu_rq(cpu)->cpu_capacity_orig;
->  }
->
-> -/**
-> - * enum schedutil_type - CPU utilization type
-> - * @FREQUENCY_UTIL:    Utilization used to select frequency
-> - * @ENERGY_UTIL:       Utilization used during energy calculation
-> - *
-> - * The utilization signals of all scheduling classes (CFS/RT/DL) and IRQ time
-> - * need to be aggregated differently depending on the usage made of them. This
-> - * enum is used within schedutil_freq_util() to differentiate the types of
-> - * utilization expected by the callers, and adjust the aggregation accordingly.
-> - */
-> -enum schedutil_type {
-> -       FREQUENCY_UTIL,
-> -       ENERGY_UTIL,
-> -};
-> -
-> -unsigned long schedutil_cpu_util(int cpu, unsigned long util_cfs,
-> -                                unsigned long max, enum schedutil_type type,
-> +unsigned long effective_cpu_util(int cpu, unsigned long util_cfs,
-> +                                unsigned long max, enum cpu_util_type type,
->                                  struct task_struct *p);
->
->  static inline unsigned long cpu_bw_dl(struct rq *rq)
-> --
-> 2.25.0.rc1.19.g042ed3e048af
->
+ WARNING: suspicious RCU usage
+ ...
+ include/trace/events/lock.h:13 suspicious rcu_dereference_check() usage!
+ ...
+  (dump_stack) from (lock_acquire)
+  (lock_acquire) from (_raw_spin_lock)
+  (_raw_spin_lock) from (tegra_pm_set_cpu_in_lp2)
+  (tegra_pm_set_cpu_in_lp2) from (tegra_cpuidle_enter)
+  (tegra_cpuidle_enter) from (cpuidle_enter_state)
+  (cpuidle_enter_state) from (cpuidle_enter_state_coupled)
+  (cpuidle_enter_state_coupled) from (cpuidle_enter)
+  (cpuidle_enter) from (do_idle)
+ ...
+
+Tested-by: Peter Geis <pgwipeout@gmail.com>
+Reported-by: Peter Geis <pgwipeout@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ drivers/cpuidle/cpuidle-tegra.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-tegra.c b/drivers/cpuidle/cpuidle-tegra.c
+index e8956706a2917..191966dc8d023 100644
+--- a/drivers/cpuidle/cpuidle-tegra.c
++++ b/drivers/cpuidle/cpuidle-tegra.c
+@@ -189,7 +189,7 @@ static int tegra_cpuidle_state_enter(struct cpuidle_device *dev,
+ 	}
+ 
+ 	local_fiq_disable();
+-	tegra_pm_set_cpu_in_lp2();
++	RCU_NONIDLE(tegra_pm_set_cpu_in_lp2());
+ 	cpu_pm_enter();
+ 
+ 	switch (index) {
+@@ -207,7 +207,7 @@ static int tegra_cpuidle_state_enter(struct cpuidle_device *dev,
+ 	}
+ 
+ 	cpu_pm_exit();
+-	tegra_pm_clear_cpu_in_lp2();
++	RCU_NONIDLE(tegra_pm_clear_cpu_in_lp2());
+ 	local_fiq_enable();
+ 
+ 	return err ?: index;
+-- 
+2.27.0
+
