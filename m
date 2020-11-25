@@ -2,206 +2,330 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL autolearn=no
+X-Spam-Status: No, score=-11.2 required=3.0 tests=BAYES_00,DATE_IN_PAST_06_12,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 42009C56202
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 18:30:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25180C64E7A
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 20:46:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CCDCA205F4
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 18:30:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C6BAC2075A
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 20:46:25 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="PAe1RcAO"
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="hlWaZ2WY"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732426AbgKYSaB (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 13:30:01 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49228 "EHLO
+        id S1730850AbgKYUp5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 15:45:57 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42440 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730418AbgKYSaB (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 13:30:01 -0500
-Received: from mail-ot1-x343.google.com (mail-ot1-x343.google.com [IPv6:2607:f8b0:4864:20::343])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EB94C061A4F
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 10:30:01 -0800 (PST)
-Received: by mail-ot1-x343.google.com with SMTP id f16so3073445otl.11
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 10:30:01 -0800 (PST)
+        with ESMTP id S1730847AbgKYUp4 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 15:45:56 -0500
+Received: from mail-ej1-x644.google.com (mail-ej1-x644.google.com [IPv6:2a00:1450:4864:20::644])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6DE6EC0613D4;
+        Wed, 25 Nov 2020 12:45:56 -0800 (PST)
+Received: by mail-ej1-x644.google.com with SMTP id lv15so4866544ejb.12;
+        Wed, 25 Nov 2020 12:45:56 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=Veno44/33te6T5lrpYk+J6jOlOlNleQplyEwHwgUesQ=;
-        b=PAe1RcAOojRSiku7TXC7udY08ozLfLQ+F8nlRCWfCs5aULe+GEZwPKIK3tVNGTJ9iL
-         0wb1snSoRz5UbIu3Vdfc+65dBd1xvZMlqJ2aJKrBWmkoxmF9hfh6arfBU6P8fVXg3lAz
-         YKMt/4SFwqGqYNxsUJfHTmdwK7igdc1gCbSNAagNA/bOqtC39OaSqvL43OGxR5Ijarhl
-         oTLZArtE/qszhn0X02WZ+SaO23ZrIqRS+I/b7k6ds/gkxYZsSnllabg7MmIGCtPNigNY
-         E+UdiUa6NyYT6woJ/gQeV/EWsxifxD1TFQObkwPM7SfzgW8usx5QsLzaA9UfOCgxp4Q8
-         IwXg==
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=0aYRiLyBFmRyxgu5Ay1i1UapzreHrDDoNdvvukWevAE=;
+        b=hlWaZ2WYGa5wwewNydjlFNb4ry0GxCfzX2QIJQtjg0oDrF85R2OgosDVPWug3glqer
+         zXF4EQYRdG4fb485hnEaNaPjlWQYQ6WPG/vSlSBgq2CdZ9nAXpW3E/194B+Akz0MFK/L
+         gKFLacAIspmK6MGVroPGWf5639yulRYy9nYZ8aultfJqWMtkurYSYgOkyWGycNkuRteg
+         SPuLa4z1OoVRPOB52WMdaBn0TLrh7sAGXXu6PIsExtv+4dXw7wnkX/pPbLgDicTsHuJa
+         eP/Daj193NtCtPON7rBsS7vIFnEV1d3MEVMFJLK0GdeDuAP7Gg52Zw3ayoOeZporkHL0
+         3wYQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Veno44/33te6T5lrpYk+J6jOlOlNleQplyEwHwgUesQ=;
-        b=WfOx6o4slwzwYKoXYQ3+SdWCZSJJlbF85QP5R70H+sFOW2BfFmPe0G9O2yxiv0WpIr
-         ecDNtXR1SrSaNdYeKEyGh0UZbkFQO5MmobrGuFh/FynsOJ9pyDSnSIXQGmkIxTHJyhZR
-         AeIr61PzkTghAzn1Gtk+FN6s4s+OFUPa3sjPQQjYyj9V4NGnj6OQCgTgP1mfYWq/Mrso
-         22wxGpRNfUlZeoTERH4816Q9mdryl0m2djIyhCsb1aO2afx7ldlUDr2zfjJZIjXDxHGm
-         SwoizIz/saXQBfvi1Mv8LfFJRZP2+kQKcCAxnO17p8bDHP+9sJ7igiaNNwcd1h5YFlUv
-         3w5A==
-X-Gm-Message-State: AOAM533MFCZ7mIz5HdraiNGaCFp10eBJzFD76FxQQ5AmMELxT3vxohL9
-        zS8es5uFlFcrF+bdzEO46Pki/hAzEZ48fTWGuTLvTg==
-X-Google-Smtp-Source: ABdhPJx5TFaj9TYPhw4LnPzBAqsv3w+L5iV4Fafgkq9HeR5SAeqAOEXjVa/wPc0eaUlWZ4HSjfREwY1/iRwjoLnO3zM=
-X-Received: by 2002:a05:6830:1e7a:: with SMTP id m26mr3901039otr.104.1606328999288;
- Wed, 25 Nov 2020 10:29:59 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=0aYRiLyBFmRyxgu5Ay1i1UapzreHrDDoNdvvukWevAE=;
+        b=euWDk70TgR7WTrBC1cFqHQW0s1c6a1I4pBuOV68QneovxwHlnvlbw9+O+fW7jXe6fJ
+         QmyWrmHlmX++NUmG7QlzJ5RcQu14vvRV98uSLS4Dy8yUBU2v6b0cnmFBd7ucjndUSddf
+         5LxLP6aYM5P9Xaq/dll0t3GiapIaNXpCgfA2Hb+mr3uvvKtM0yVumJBBzbi1ilPFq+oe
+         /bVDKCdNaljMCjh5xeJh+sJLjJPSgcqOII6fz34xwnLZ6AQpKTcgLaSugYjoEpBlVKhD
+         fzYBZjr9N1ygdWEixyc5i2Bw+zvbeuf6t2bDb1SKncDyQFA4dm3r9Ypk8rxxiOVb04k8
+         UyfA==
+X-Gm-Message-State: AOAM533QUk+LVDa9G5NShI6ELtMDNiHp5kTBcAHp3PnnUgNQ6s9bxA30
+        bFHe2uU+82LVSgF5uqf4kck=
+X-Google-Smtp-Source: ABdhPJxcaSF9a/6e77h6NQjmmXwaVtHoeD5NyDSMyvuiFRJigPpMlrYmzpvTFepPauNnW3IgMSL2AA==
+X-Received: by 2002:a17:906:7c95:: with SMTP id w21mr4569302ejo.304.1606337155067;
+        Wed, 25 Nov 2020 12:45:55 -0800 (PST)
+Received: from ansuel-xps20.localdomain (93-39-149-95.ip76.fastwebnet.it. [93.39.149.95])
+        by smtp.gmail.com with ESMTPSA id u9sm1856945ejt.35.2020.11.25.12.45.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Nov 2020 12:45:53 -0800 (PST)
+Date:   Wed, 25 Nov 2020 13:22:28 +0100
+From:   Ansuel Smith <ansuelsmth@gmail.com>
+To:     Amit Kucheria <amit.kucheria@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
+        Linux PM list <linux-pm@vger.kernel.org>,
+        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
+        <devicetree@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH v6 2/8] drivers: thermal: tsens: Add VER_0 tsens
+ version
+Message-ID: <20201125122228.GB23592@ansuel-xps20.localdomain>
+References: <20200814134123.14566-1-ansuelsmth@gmail.com>
+ <20200814134123.14566-3-ansuelsmth@gmail.com>
+ <CAHLCerMArOceCFQ1XFbsZCAnUdKVX3TVnAb502w+kxmO97bdJg@mail.gmail.com>
 MIME-Version: 1.0
-References: <CAEGmHFFjV2UKm3L1G5JF6Ve47L1-aKBAGrCxN3pPX1HO9R-aUg@mail.gmail.com>
- <CAJZ5v0hqU-qiM8ddYUT_u0Lm3RNM19gNcXye_s5v3DeCHr7mZQ@mail.gmail.com>
- <CAEGmHFFxxOxNBjut68azQ5eMh71J+ysJeX9SOak6WwNetuJnwA@mail.gmail.com> <CAJZ5v0j_XWiJyd4zyyuUf41WDEcu5TEo5tT7cYXi8FFqXpBzfA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0j_XWiJyd4zyyuUf41WDEcu5TEo5tT7cYXi8FFqXpBzfA@mail.gmail.com>
-From:   Furquan Shaikh <furquan@google.com>
-Date:   Wed, 25 Nov 2020 10:29:43 -0800
-Message-ID: <CAEGmHFE6EfUQ-RE+sXEppOGKxPJ3i9hUSWUDPAGXDjxYm0P_kw@mail.gmail.com>
-Subject: Re: [RFC] ACPI PM during kernel poweroff/reboot
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Aaron Durbin <adurbin@google.com>,
-        Duncan Laurie <dlaurie@google.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CAHLCerMArOceCFQ1XFbsZCAnUdKVX3TVnAb502w+kxmO97bdJg@mail.gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Wed, Nov 25, 2020 at 9:51 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Wed, Nov 25, 2020 at 6:43 PM Furquan Shaikh <furquan@google.com> wrote:
+On Mon, Nov 23, 2020 at 01:35:22AM +0530, Amit Kucheria wrote:
+> Hi Ansuel,
+> 
+> See comments inline.
+> 
+> On Fri, Aug 14, 2020 at 7:12 PM Ansuel Smith <ansuelsmth@gmail.com> wrote:
 > >
-> > On Wed, Nov 25, 2020 at 8:39 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
-> > >
-> > > On Thu, Nov 12, 2020 at 8:19 PM Furquan Shaikh <furquan@google.com> wrote:
-> > > >
-> > > > On x86 Chromebooks, we have observed this issue for a long time now -
-> > > > when the system is powered off or rebooted, ACPI PM is not invoked and
-> > > > this results in PowerResource _OFF methods not being invoked for any
-> > > > of the devices. The _OFF methods are invoked correctly in case of
-> > > > suspend-to-idle (S0ix) and suspend-to-memory(S3). However, they do not
-> > > > get invoked when `poweroff` or `reboot` are triggered.
-> > > >
-> > > > One of the differences between suspend, hibernate and shutdown paths
-> > > > in Linux kernel is that the shutdown path does not use the typical
-> > > > device PM phases (prepare, freeze/suspend, poweroff) as used by
-> > > > suspend/hibernate. Instead the shutdown path makes use of
-> > > > .shutdown_pre() and .shutdown() callbacks.
-> > > >
-> > > > If I understand correctly, .shutdown() has been around for a long time
-> > > > and existed even before the PM callbacks were added. Thus,
-> > > > pm->poweroff() and .shutdown() are supposed to be analogous and
-> > > > consistent in the behavior.
-> > >
-> > > Well, not quite.
-> > >
-> > > ->shutdown() is expected to be a lightweight operation also suitable
-> > > for kexec() and similar situations where ->poweroff() may not work.
-> > >
-> > > > This is why runtime PM is disallowed by
-> > > > device_shutdown() before it calls .shutdown() (i.e. to keep behavior
-> > > > consistent for both paths). However, in practice, there are
-> > > > differences in behavior for the pm->poweroff() and .shutdown() paths
-> > > > since the shutdown path does not execute any PM domain operations.
-> > >
-> > > That's correct.
-> > >
-> > > > Because of this difference in behavior, shutdown path never invokes
-> > > > ACPI PM and thus the ACPI PowerResources are not turned off when the
-> > > > system is rebooted or powered off (sleep S5). On Chromebooks, it is
-> > > > critical to run the _OFF methods for poweroff/reboot in order to
-> > > > ensure that the device power off sequencing requirements are met.
-> > > > Currently, these requirements are violated which impact the
-> > > > reliability of devices over the lifetime of the platform.
-> > > >
-> > > > There are a few ways in which this can be addressed:
-> > > >
-> > > > 1. Similar to the case of hibernation, a new
-> > > > PMSG_POWEROFF/PM_EVENT_POWEROFF can be introduced to invoke device
-> > > > power management phases using `dpm_suspend_start(PMSG_POWEROFF)` and
-> > > > `dpm_suspend_end(PMSG_POWEROFF)`. However, as the shutdown path uses
-> > > > the class/bus/driver .shutdown() callbacks, adding dpm phases for
-> > > > poweroff complicates the order of operations. If the dpm phases are
-> > > > run before .shutdown() callbacks, then it will result in the callbacks
-> > > > accessing devices after they are powered off. If the .shutdown()
-> > > > callbacks are run before dpm phases, then the pm->poweroff() calls are
-> > > > made after the device shutdown is done. Since .shutdown() and
-> > > > pm->poweroff() are supposed to be analogous, having both calls in the
-> > > > shutdown path is not only redundant but also results in incorrect
-> > > > behavior.
-> > > >
-> > > > 2. Another option is to update device_shutdown() to make
-> > > > pm_domain.poweroff calls after the class/bus/driver .shutdown() is
-> > > > done. However, this suffers from the same problem as #1 above i.e. it
-> > > > is redundant and creates conflicting order of operations.
-> > > >
-> > > > 3. Third possible solution is to detach the device from the PM domain
-> > > > after it is shutdown. Currently, device drivers perform a detach
-> > > > operation only when the device is removed. However, in case of
-> > > > poweroff/reboot as the device is already shutdown, detaching PM domain
-> > > > will give it the opportunity to ensure that any power resources are
-> > > > correctly turned off before the system shuts down.
-> > >
-> > > 4. Make Chromebooks call something like hibernation_platform_enter()
-> > > on S5 entries (including reboot).
+> > VER_0 is used to describe device based on tsens version before v0.1.
+> > These device are devices based on msm8960 for example apq8064 or
+> > ipq806x.
 > >
-> > Actually, Chromebooks do not support S4 and hence CONFIG_HIBERNATION.
->
-> This doesn't matter.  The ->poweroff callbacks can still be used by
-> them (of course, that part of the current hibernation support code
-> needs to be put under a more general Kconfig option for that, but this
-> is a technical detail).
-
-Ah I see what you are saying. Just to be sure I understand this
-correctly. Is this what you are thinking:
-1. Extract hibernation_platform_enter() and any other helpers required
-to trigger the PM phases for shutdown into a separate unit controlled
-by a more general Kconfig.
-2. Add a new Kconfig that enables support for performing PM phases
-during the poweroff/reboot phases.
-3. Based on this new Kconfig selection, LINUX_REBOOT_CMD_RESTART,
-LINUX_REBOOT_CMD_HALT, LINUX_REBOOT_CMD_POWER_OFF will be updated to
-use the new paths instead of the current lightweight calls.
-
->
-> > This is done for a number of reasons including security. Hence, I
-> > don't think using hibernation_platform_enter() would be an option.
->
-> Yes, it is an option.
->
-> Having "hibernation" in the name need not mean that the given piece of
-> code is really hibernation-specific ...
-
-Sorry, I had misunderstood the suggestion before. I have attempted to
-outline your proposal with some more details above.
-
->
-> > >
-> > > > Out of these, I think #3 makes the most sense as it does not introduce
-> > > > any conflicting operations. I verified that the following diff results
-> > > > in _OFF methods getting invoked in both poweroff and reboot cases:
-> > >
-> > > This won't work for PCI devices though, only for devices in the ACPI
-> > > PM domain, so it is not sufficient in general.
+> > Signed-off-by: Ansuel Smith <ansuelsmth@gmail.com>
+> > ---
+> >  drivers/thermal/qcom/tsens.c | 122 +++++++++++++++++++++++++++++++----
+> >  drivers/thermal/qcom/tsens.h |   7 +-
+> >  2 files changed, 114 insertions(+), 15 deletions(-)
 > >
-> > That is true. The proposed solution only handles detaching of PM
-> > domains. I understand your point about this not working for any
-> > devices not part of the PM domain. The issues that we have observed in
-> > shutdown/reboot paths have been specific to ACPI power resources
-> > controlling the sequencing to external devices.
+> > diff --git a/drivers/thermal/qcom/tsens.c b/drivers/thermal/qcom/tsens.c
+> > index 9fe9a2b26705..965c4799918a 100644
+> > --- a/drivers/thermal/qcom/tsens.c
+> > +++ b/drivers/thermal/qcom/tsens.c
+> > @@ -516,6 +516,15 @@ static irqreturn_t tsens_irq_thread(int irq, void *data)
+> >                         dev_dbg(priv->dev, "[%u] %s: no violation:  %d\n",
+> >                                 hw_id, __func__, temp);
+> >                 }
+> > +
+> > +               if (tsens_version(priv) < VER_0_1) {
+> > +                       /* Constraint: There is only 1 interrupt control register for all
+> > +                        * 11 temperature sensor. So monitoring more than 1 sensor based
+> > +                        * on interrupts will yield inconsistent result. To overcome this
+> > +                        * issue we will monitor only sensor 0 which is the master sensor.
+> > +                        */
+> > +                       break;
+> > +               }
+> >         }
+> >
+> >         return IRQ_HANDLED;
+> > @@ -531,6 +540,13 @@ static int tsens_set_trips(void *_sensor, int low, int high)
+> >         int high_val, low_val, cl_high, cl_low;
+> >         u32 hw_id = s->hw_id;
+> >
+> > +       if (tsens_version(priv) < VER_0_1) {
+> > +               /* Pre v0.1 IP had a single register for each type of interrupt
+> > +                * and thresholds
+> > +                */
+> > +               hw_id = 0;
+> > +       }
+> > +
+> >         dev_dbg(dev, "[%u] %s: proposed thresholds: (%d:%d)\n",
+> >                 hw_id, __func__, low, high);
+> >
+> > @@ -584,18 +600,21 @@ int get_temp_tsens_valid(const struct tsens_sensor *s, int *temp)
+> >         u32 valid;
+> >         int ret;
+> >
+> > -       ret = regmap_field_read(priv->rf[valid_idx], &valid);
+> > -       if (ret)
+> > -               return ret;
+> > -       while (!valid) {
+> > -               /* Valid bit is 0 for 6 AHB clock cycles.
+> > -                * At 19.2MHz, 1 AHB clock is ~60ns.
+> > -                * We should enter this loop very, very rarely.
+> > -                */
+> > -               ndelay(400);
+> > +       /* VER_0 doesn't have VALID bit */
+> > +       if (tsens_version(priv) >= VER_0_1) {
+> >                 ret = regmap_field_read(priv->rf[valid_idx], &valid);
+> >                 if (ret)
+> >                         return ret;
+> > +               while (!valid) {
+> > +                       /* Valid bit is 0 for 6 AHB clock cycles.
+> > +                        * At 19.2MHz, 1 AHB clock is ~60ns.
+> > +                        * We should enter this loop very, very rarely.
+> > +                        */
+> > +                       ndelay(400);
+> > +                       ret = regmap_field_read(priv->rf[valid_idx], &valid);
+> > +                       if (ret)
+> > +                               return ret;
+> > +               }
+> 
+> Let's revisit this after fixing patch 1.
+> 
+> 
+> >         }
+> >
+> >         /* Valid bit is set, OK to read the temperature */
+> > @@ -763,6 +782,10 @@ int __init init_common(struct tsens_priv *priv)
+> >                 goto err_put_device;
+> >         }
+> >
+> > +       /* VER_0 have only tm_map */
+> > +       if (!priv->srot_map)
+> > +               priv->srot_map = priv->tm_map;
+> > +
+> >         if (tsens_version(priv) > VER_0_1) {
+> >                 for (i = VER_MAJOR; i <= VER_STEP; i++) {
+> >                         priv->rf[i] = devm_regmap_field_alloc(dev, priv->srot_map,
+> > @@ -781,6 +804,10 @@ int __init init_common(struct tsens_priv *priv)
+> >                 ret = PTR_ERR(priv->rf[TSENS_EN]);
+> >                 goto err_put_device;
+> >         }
+> > +       /* in VER_0 TSENS need to be explicitly enabled */
+> > +       if (tsens_version(priv) == VER_0)
+> > +               regmap_field_write(priv->rf[TSENS_EN], 1);
+> > +
+> >         ret = regmap_field_read(priv->rf[TSENS_EN], &enabled);
+> >         if (ret)
+> >                 goto err_put_device;
+> > @@ -803,6 +830,61 @@ int __init init_common(struct tsens_priv *priv)
+> >                 goto err_put_device;
+> >         }
+> >
+> > +       priv->rf[TSENS_EN] = devm_regmap_field_alloc(dev, priv->tm_map,
+> > +                                                    priv->fields[TSENS_EN]);
+> > +       if (IS_ERR(priv->rf[TSENS_EN])) {
+> > +               ret = PTR_ERR(priv->rf[TSENS_EN]);
+> > +               goto err_put_device;
+> > +       }
+> > +
+> > +       priv->rf[TSENS_SW_RST] = devm_regmap_field_alloc(
+> > +               dev, priv->tm_map, priv->fields[TSENS_EN]);
+> > +       if (IS_ERR(priv->rf[TSENS_EN])) {
+> > +               ret = PTR_ERR(priv->rf[TSENS_EN]);
+> > +               goto err_put_device;
+> > +       }
+> > +
+> > +       priv->rf[LOW_INT_CLEAR_0] = devm_regmap_field_alloc(
+> > +               dev, priv->tm_map, priv->fields[LOW_INT_CLEAR_0]);
+> > +       if (IS_ERR(priv->rf[LOW_INT_CLEAR_0])) {
+> > +               ret = PTR_ERR(priv->rf[LOW_INT_CLEAR_0]);
+> > +               goto err_put_device;
+> > +       }
+> > +
+> > +       priv->rf[UP_INT_CLEAR_0] = devm_regmap_field_alloc(
+> > +               dev, priv->tm_map, priv->fields[UP_INT_CLEAR_0]);
+> > +       if (IS_ERR(priv->rf[UP_INT_CLEAR_0])) {
+> > +               ret = PTR_ERR(priv->rf[UP_INT_CLEAR_0]);
+> > +               goto err_put_device;
+> > +       }
+> > +
+> > +       /* VER_0 require to set MIN and MAX THRESH */
+> > +       if (tsens_version(priv) < VER_0_1) {
+> > +               priv->rf[MIN_THRESH_0] = devm_regmap_field_alloc(
+> > +                       dev, priv->tm_map, priv->fields[MIN_THRESH_0]);
+> > +               if (IS_ERR(priv->rf[MIN_THRESH_0])) {
+> > +                       ret = PTR_ERR(priv->rf[MIN_THRESH_0]);
+> > +                       goto err_put_device;
+> > +               }
+> > +
+> > +               priv->rf[MAX_THRESH_0] = devm_regmap_field_alloc(
+> > +                       dev, priv->tm_map, priv->fields[MAX_THRESH_0]);
+> > +               if (IS_ERR(priv->rf[MAX_THRESH_0])) {
+> > +                       ret = PTR_ERR(priv->rf[MAX_THRESH_0]);
+> > +                       goto err_put_device;
+> > +               }
+> > +
+> > +               regmap_field_write(priv->rf[MIN_THRESH_0], 0);
+> > +               regmap_field_write(priv->rf[MAX_THRESH_0], 120000);
+> > +       }
+> > +
+> > +       priv->rf[TRDY] =
+> > +               devm_regmap_field_alloc(dev, priv->tm_map, priv->fields[TRDY]);
+> > +       if (IS_ERR(priv->rf[TRDY])) {
+> > +               ret = PTR_ERR(priv->rf[TRDY]);
+> > +               goto err_put_device;
+> > +       }
+> > +
+> >         /* This loop might need changes if enum regfield_ids is reordered */
+> >         for (j = LAST_TEMP_0; j <= UP_THRESH_15; j += 16) {
+> >                 for (i = 0; i < priv->feat->max_sensors; i++) {
+> > @@ -856,7 +938,11 @@ int __init init_common(struct tsens_priv *priv)
+> >         }
+> >
+> >         spin_lock_init(&priv->ul_lock);
+> > -       tsens_enable_irq(priv);
+> > +
+> > +       /* VER_0 interrupt doesn't need to be enabled */
+> > +       if (tsens_version(priv) >= VER_0_1)
+> > +               tsens_enable_irq(priv);
+> > +
+> >         tsens_debug_init(op);
+> >
+> >  err_put_device:
+> > @@ -952,10 +1038,18 @@ static int tsens_register_irq(struct tsens_priv *priv, char *irqname,
+> >                 if (irq == -ENXIO)
+> >                         ret = 0;
+> >         } else {
+> > -               ret = devm_request_threaded_irq(&pdev->dev, irq,
+> > -                                               NULL, thread_fn,
+> > -                                               IRQF_ONESHOT,
+> > -                                               dev_name(&pdev->dev), priv);
+> > +               /* VER_0 interrupt is TRIGGER_RISING, VER_0_1 and up is ONESHOT */
+> > +               if (tsens_version(priv) > VER_0)
+> > +                       ret = devm_request_threaded_irq(&pdev->dev, irq, NULL,
+> > +                                                       thread_fn, IRQF_ONESHOT,
+> > +                                                       dev_name(&pdev->dev),
+> > +                                                       priv);
+> > +               else
+> > +                       ret = devm_request_threaded_irq(&pdev->dev, irq,
+> > +                                                       thread_fn, NULL,
+> > +                                                       IRQF_TRIGGER_RISING,
+> > +                                                       dev_name(&pdev->dev),
+> > +                                                       priv);
+> 
+> 
+> Just set a flag variable to ONESHOT OR TRIGGER_RISING and use that in the call.
+> 
+> >                 if (ret)
+> >                         dev_err(&pdev->dev, "%s: failed to get irq\n",
+> >                                 __func__);
+> > diff --git a/drivers/thermal/qcom/tsens.h b/drivers/thermal/qcom/tsens.h
+> > index 59d01162c66a..f1120791737c 100644
+> > --- a/drivers/thermal/qcom/tsens.h
+> > +++ b/drivers/thermal/qcom/tsens.h
+> > @@ -25,7 +25,8 @@ struct tsens_priv;
+> >
+> >  /* IP version numbers in ascending order */
+> >  enum tsens_ver {
+> > -       VER_0_1 = 0,
+> > +       VER_0 = 0,
+> > +       VER_0_1,
+> >         VER_1_X,
+> >         VER_2_X,
+> >  };
+> > @@ -441,6 +442,10 @@ enum regfield_ids {
+> >         CRIT_THRESH_14,
+> >         CRIT_THRESH_15,
+> >
+> > +       /* VER_0 MIN MAX THRESH */
+> > +       MIN_THRESH_0,
+> > +       MAX_THRESH_0,
+> > +
+> 
+> Consider reusing LOW_THRESH_0 and UP_THRESH_0 for these?
 >
-> PCI devices PM can use power resources too.  For instance, this has
-> been quite common for discrete GPUs in laptops IIRC.
 
-Sorry about my naive question: Is the power resource not described
-using ACPI in this case? (I haven't run into a situation with PCI
-devices using non-ACPI power resources, so curious to understand the
-scenario).
+As we already have defined LOW_THRESH and UP how can we reuse that
+regfield to define MIN and MAX? 
+
+> >         /* WATCHDOG */
+> >         WDOG_BARK_STATUS,
+> >         WDOG_BARK_CLEAR,
+> > --
+> > 2.27.0
+> >
