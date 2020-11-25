@@ -2,138 +2,201 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-18.3 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_IN_DEF_DKIM_WL
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 117B1C64E75
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 552AFC63798
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:12:06 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AACB120872
-	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 14:49:34 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ECA4220857
+	for <linux-pm@archiver.kernel.org>; Wed, 25 Nov 2020 15:12:05 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="GVYg3xM2"
+	dkim=pass (2048-bit key) header.d=google.com header.i=@google.com header.b="DhKi5OC8"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730072AbgKYOtV (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 25 Nov 2020 09:49:21 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42846 "EHLO
+        id S1730142AbgKYPLj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 25 Nov 2020 10:11:39 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46290 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730060AbgKYOtV (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 09:49:21 -0500
-Received: from mail-pl1-x644.google.com (mail-pl1-x644.google.com [IPv6:2607:f8b0:4864:20::644])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 499ECC0613D4;
-        Wed, 25 Nov 2020 06:49:21 -0800 (PST)
-Received: by mail-pl1-x644.google.com with SMTP id r2so1225763pls.3;
-        Wed, 25 Nov 2020 06:49:21 -0800 (PST)
+        with ESMTP id S1729640AbgKYPLi (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 25 Nov 2020 10:11:38 -0500
+Received: from mail-oi1-x242.google.com (mail-oi1-x242.google.com [IPv6:2607:f8b0:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1C269C061A4F
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 07:11:31 -0800 (PST)
+Received: by mail-oi1-x242.google.com with SMTP id a130so3154054oif.7
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2020 07:11:31 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=AIKPa1FL2cnfSTR46Lr5Q79oKqEZPubQ7TacswKWIKY=;
-        b=GVYg3xM20FqRqiKLB+pnHYwY7Og5m5L8mmEYsKuBbrpOtSSXH1IHLyeckTjRwAujBn
-         c67Ur9vcMH2Mie0E3MrpgQ/9gzeJpYRrZe27fCjvzZQyjqtg3aYY7m32WI5Fjzc2q5e6
-         4fD7Xw7oJL96BuIJ5pAq08D40uOr8Hu/3v2/lZz3cV02juIWJe9UvQdT/SWDMumOu+ez
-         X5I20Wjc/H6mdMI3yVmOdhxfpnhrLvAFKuiRf8FPFPWibkih3wjjXStBWidbvcE9zFxi
-         izpR9GsPeXQwzYrPeyP2NiQ2d5sOOF1HCi0mdAAegou9ogXaZISzjTlkLu8Fivfa6D0u
-         LfwA==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=KhouDFsqki7Gy7e25xqYBbfXim5cXw795bT1eo81Xzs=;
+        b=DhKi5OC8Ur4Zm2+OE+tFBLFuXfc8do+T1RzzHNu+Yog3JYYT2iwU28JYwWKu/qP8uz
+         plmqJV23D3qj1oFDX56KAJP9TsfE17RFe+hi4MQpRFAvIOWK1zxDGkykUkIDA71H/Ve+
+         Rsk6IS74+XnrhOWM9cGTKJzylovB0TXD4nI7inJjlCGKQCYfB2TIt88o3Ha8RJrCEUni
+         LUObNG0RGxeBKniI7QDu7Rh8j+Ye11zOPLJmXLUXXzc6kVpQyUYXVsUg7iWGyzx/DhOa
+         /Fo9AejZsd79AKZzl6JifI+9yJoozeEMTE00D2p44b7n6Ir2GhMlC49hdAgxjgsMga02
+         SzKQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=AIKPa1FL2cnfSTR46Lr5Q79oKqEZPubQ7TacswKWIKY=;
-        b=npgQjLGFE/pzaulXJ70+polYLxrYa0AVYYnw7n1RUVxW9DAvvN6UEgZNsA9mf64c1L
-         f/Zavfi00k3J8dTpGdYofrkSKxPNmz+H100A+/EZJFrgBntNCqp/TlAGcdTH6saRzwzG
-         vhCeLjc/pjt45id1YMa2OkiLfTrCeUiuISfALm1/ueOzzCIDd4fVZwmtHUkHQ8Z7cuGP
-         2Puo8hcJEXX/IlrfLm0bQlzcrwBCkzs1WB9Hu50zGgJafMTcDsjhpHqmUDIGb0bzc/OY
-         TnkTqhLJ4EeMhAz+XiaLJyPCvpRKQv7LOny/Oy5GhdFoC1+b0Enz4P6X8cdywkwuHXNm
-         g0fQ==
-X-Gm-Message-State: AOAM532fEImrmUnPzb3SZUWRgh9NSFouZ51ZjjVBTtIsQD9XqH9dDAeN
-        KrGF56Avw216bNhRKGe2jpw=
-X-Google-Smtp-Source: ABdhPJyYy2zfmyhZSFhYhTYxi01YCv/nD705q1p/WRUWT9/V1nH3K3ts3Cf7mS9tbporYi1Yd9OuMQ==
-X-Received: by 2002:a17:902:b688:b029:d6:ad52:ffab with SMTP id c8-20020a170902b688b02900d6ad52ffabmr3480270pls.61.1606315760860;
-        Wed, 25 Nov 2020 06:49:20 -0800 (PST)
-Received: from localhost ([2405:6580:31a1:500:1ac0:4dff:fe39:5426])
-        by smtp.gmail.com with ESMTPSA id 17sm2393448pfu.180.2020.11.25.06.49.20
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2020 06:49:20 -0800 (PST)
-From:   Punit Agrawal <punitagrawal@gmail.com>
-To:     rjw@rjwysocki.net
-Cc:     Punit Agrawal <punitagrawal@gmail.com>, wei.huang2@amd.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        bp@alien8.de, x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-        Ingo Molnar <mingo@redhat.com>
-Subject: [RFC PATCH 3/4] x86/cpu: amd: Define processor families
-Date:   Wed, 25 Nov 2020 23:48:46 +0900
-Message-Id: <20201125144847.3920-4-punitagrawal@gmail.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201125144847.3920-1-punitagrawal@gmail.com>
-References: <20201125144847.3920-1-punitagrawal@gmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=KhouDFsqki7Gy7e25xqYBbfXim5cXw795bT1eo81Xzs=;
+        b=b3Rma6koHsb03BN8sHwSXgtmrUAUUfGQSbWpzP4MJjv9lyVFiXhIksw6u86Op976US
+         McqZgEN0cj8xY6Epsqb5B46WBCNqLFZcj6C2WFYaaaHPhITliML4N3ZwfmCC1qnVIFKW
+         RTokSTmQaPnMZM4OalGFHkIqGRn38qNjEA8CSNfrhMZsnwBMK7BjxzyYzSZ+gH1yn56K
+         X2lZghvw3iujJRIx6eKeWLxEIt6VP8ImRoak6CfezBH0hrloFV0ttT0UoK4QBxEnBRmD
+         WTjm8xgZ4dP3CzskCLW/GA7AgVXKnQyMWkA2Sz/ryeeshRDg4nqEpx3fa4wNYkcMu1pf
+         1iEg==
+X-Gm-Message-State: AOAM532AX4dv4M/20SJXykOnIEGDXlbxGXlCjEFYBpqWDrzgAouZHyxu
+        4z6P6FUkH19GpxSSi3MSmmEMo3U+E2wo1N52kYP/EA==
+X-Google-Smtp-Source: ABdhPJx1C0mlZ1qHr6cS5D413otFJ7/k79MvTeKPZdG1JtfzZ4qqY9mjd3ubV4DYwBYgm4SdocaDNnM002LY6xZXrFo=
+X-Received: by 2002:aca:1110:: with SMTP id 16mr2489983oir.12.1606317089916;
+ Wed, 25 Nov 2020 07:11:29 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <CAEGmHFFjV2UKm3L1G5JF6Ve47L1-aKBAGrCxN3pPX1HO9R-aUg@mail.gmail.com>
+In-Reply-To: <CAEGmHFFjV2UKm3L1G5JF6Ve47L1-aKBAGrCxN3pPX1HO9R-aUg@mail.gmail.com>
+From:   Furquan Shaikh <furquan@google.com>
+Date:   Wed, 25 Nov 2020 07:11:13 -0800
+Message-ID: <CAEGmHFHmYujYMRLxoyF8Vj4-HAWAqLwu9zCw2FJhJdgh1SKL0g@mail.gmail.com>
+Subject: Re: [RFC] ACPI PM during kernel poweroff/reboot
+To:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>
+Cc:     ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        linux-pm@vger.kernel.org, Aaron Durbin <adurbin@google.com>,
+        Duncan Laurie <dlaurie@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-So far, the AMD processor identifier (family, models, stepping) are
-referred to by raw values making it easy to make mistakes. It is also
-harder to read and maintain. Additionally, these values are also being
-used in subsystems outside the arch code where not everybody maybe be
-as familiar with the processor identifiers.
+On Thu, Nov 12, 2020 at 11:19 AM Furquan Shaikh <furquan@google.com> wrote:
+>
+> On x86 Chromebooks, we have observed this issue for a long time now -
+> when the system is powered off or rebooted, ACPI PM is not invoked and
+> this results in PowerResource _OFF methods not being invoked for any
+> of the devices. The _OFF methods are invoked correctly in case of
+> suspend-to-idle (S0ix) and suspend-to-memory(S3). However, they do not
+> get invoked when `poweroff` or `reboot` are triggered.
+>
+> One of the differences between suspend, hibernate and shutdown paths
+> in Linux kernel is that the shutdown path does not use the typical
+> device PM phases (prepare, freeze/suspend, poweroff) as used by
+> suspend/hibernate. Instead the shutdown path makes use of
+> .shutdown_pre() and .shutdown() callbacks.
+>
+> If I understand correctly, .shutdown() has been around for a long time
+> and existed even before the PM callbacks were added. Thus,
+> pm->poweroff() and .shutdown() are supposed to be analogous and
+> consistent in the behavior. This is why runtime PM is disallowed by
+> device_shutdown() before it calls .shutdown() (i.e. to keep behavior
+> consistent for both paths). However, in practice, there are
+> differences in behavior for the pm->poweroff() and .shutdown() paths
+> since the shutdown path does not execute any PM domain operations.
+>
+> Because of this difference in behavior, shutdown path never invokes
+> ACPI PM and thus the ACPI PowerResources are not turned off when the
+> system is rebooted or powered off (sleep S5). On Chromebooks, it is
+> critical to run the _OFF methods for poweroff/reboot in order to
+> ensure that the device power off sequencing requirements are met.
+> Currently, these requirements are violated which impact the
+> reliability of devices over the lifetime of the platform.
+>
+> There are a few ways in which this can be addressed:
+>
+> 1. Similar to the case of hibernation, a new
+> PMSG_POWEROFF/PM_EVENT_POWEROFF can be introduced to invoke device
+> power management phases using `dpm_suspend_start(PMSG_POWEROFF)` and
+> `dpm_suspend_end(PMSG_POWEROFF)`. However, as the shutdown path uses
+> the class/bus/driver .shutdown() callbacks, adding dpm phases for
+> poweroff complicates the order of operations. If the dpm phases are
+> run before .shutdown() callbacks, then it will result in the callbacks
+> accessing devices after they are powered off. If the .shutdown()
+> callbacks are run before dpm phases, then the pm->poweroff() calls are
+> made after the device shutdown is done. Since .shutdown() and
+> pm->poweroff() are supposed to be analogous, having both calls in the
+> shutdown path is not only redundant but also results in incorrect
+> behavior.
+>
+> 2. Another option is to update device_shutdown() to make
+> pm_domain.poweroff calls after the class/bus/driver .shutdown() is
+> done. However, this suffers from the same problem as #1 above i.e. it
+> is redundant and creates conflicting order of operations.
+>
+> 3. Third possible solution is to detach the device from the PM domain
+> after it is shutdown. Currently, device drivers perform a detach
+> operation only when the device is removed. However, in case of
+> poweroff/reboot as the device is already shutdown, detaching PM domain
+> will give it the opportunity to ensure that any power resources are
+> correctly turned off before the system shuts down.
+>
+> Out of these, I think #3 makes the most sense as it does not introduce
+> any conflicting operations. I verified that the following diff results
+> in _OFF methods getting invoked in both poweroff and reboot cases:
+>
+> diff --git a/drivers/base/core.c b/drivers/base/core.c
+> index 94df2ba1bbed..e55d65fbb4a9 100644
+> --- a/drivers/base/core.c
+> +++ b/drivers/base/core.c
+> @@ -23,6 +23,7 @@
+>  #include <linux/of_device.h>
+>  #include <linux/genhd.h>
+>  #include <linux/mutex.h>
+> +#include <linux/pm_domain.h>
+>  #include <linux/pm_runtime.h>
+>  #include <linux/netdevice.h>
+>  #include <linux/sched/signal.h>
+> @@ -3230,6 +3231,8 @@ void device_shutdown(void)
+>                         dev->driver->shutdown(dev);
+>                 }
+>
+> +               dev_pm_domain_detach(dev, true);
+> +
+>                 device_unlock(dev);
+>                 if (parent)
+>                         device_unlock(parent);
+>
+> This was discussed on the mailing list some time back[1] in the
+> context of a different use case. However, the idea of detaching
+> devices (on any bus) from the PM domain during shutdown is important
+> to ensure correct power sequencing for the devices.
+>
+> One of the concerns that was raised on the above thread was slowing
+> down the shutdown process when not needed. I think this can be handled
+> by adding a sysfs attribute to allow platforms to decide if they need
+> the ability to power off PM domains on shutdown/reboot path.
+>
+> Questions that I am looking to get feedback/comments are:
+>
+> 1. Is my assessment of the problem and understanding of the
+> .shutdown() and pm.poweroff() correct?
+> 2. Does the solution #3 i.e. detaching PM domain after shutting down
+> device on shutdown path makes sense?
+> 3. Are there other possible approaches to solve this problem that can
+> be explored?
+> 4. Do we still have the performance concern about the shutdown path? I
+> don=E2=80=99t think anything has changed since that thread, so this is
+> probably still true.
+> 5. Does the use of sysfs attribute make sense to let platform control
+> if it wants to detach PM domains on shutdown path?
+>
+> Sorry about the long thread and thank you so much for your time!
+>
+> Thanks,
+> Furquan
+>
+> [1] https://lore.kernel.org/linux-pm/HE1PR04MB30046668C9F4FFAB5C07E693886=
+D0@HE1PR04MB3004.eurprd04.prod.outlook.com/T/#mbd80804857f38c66aa5e825cdd4b=
+61ba6b12317d
 
-As a first step towards improving the status quo, add macros for the
-AMD processor families and propagate them through the existing
-cpu_device_id.h header used for this purpose.
+Hello,
 
-Signed-off-by: Punit Agrawal <punitagrawal@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: x86@kernel.org
----
- arch/x86/include/asm/amd-family.h    | 18 ++++++++++++++++++
- arch/x86/include/asm/cpu_device_id.h |  2 ++
- 2 files changed, 20 insertions(+)
- create mode 100644 arch/x86/include/asm/amd-family.h
+Gentle ping. Just wanted to check if there are any
+comments/suggestions on the proposal above or how this problem can be
+addressed. This has been one of the long standing problems impacting
+all ACPI-based Chrome OS devices.
 
-diff --git a/arch/x86/include/asm/amd-family.h b/arch/x86/include/asm/amd-family.h
-new file mode 100644
-index 000000000000..dff4d13b8e74
---- /dev/null
-+++ b/arch/x86/include/asm/amd-family.h
-@@ -0,0 +1,18 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _ASM_X86_AMD_FAMILY_H
-+#define _ASM_X86_AMD_FAMILY_H
-+
-+#define AMD_FAM_K5			0x04
-+#define AMD_FAM_K6			0x05
-+#define AMD_FAM_K7			0x06
-+#define AMD_FAM_K8			0x0F
-+#define AMD_FAM_K10			0x10
-+#define AMD_FAM_K8_K10_HYBRID		0x11
-+#define AMD_FAM_LLANO			0x12
-+#define AMD_FAM_BOBCAT			0x14
-+#define AMD_FAM_BULLDOZER		0x15
-+#define AMD_FAM_JAGUAR			0x16
-+#define AMD_FAM_ZEN			0x17
-+#define AMD_FAM_ZEN3			0x19
-+
-+#endif /* _ASM_X86_AMD_FAMILY_H */
-diff --git a/arch/x86/include/asm/cpu_device_id.h b/arch/x86/include/asm/cpu_device_id.h
-index eb8fcede9e3b..bbb48ba4c7ff 100644
---- a/arch/x86/include/asm/cpu_device_id.h
-+++ b/arch/x86/include/asm/cpu_device_id.h
-@@ -12,6 +12,8 @@
- #include <linux/mod_devicetable.h>
- /* Get the INTEL_FAM* model defines */
- #include <asm/intel-family.h>
-+/* Get the AMD model defines */
-+#include <asm/amd-family.h>
- /* And the X86_VENDOR_* ones */
- #include <asm/processor.h>
- 
--- 
-2.29.2
-
+Thanks,
+Furquan
