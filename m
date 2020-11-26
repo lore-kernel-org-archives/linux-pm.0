@@ -2,343 +2,147 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E4AFAC56202
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 17:25:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A6976C56202
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 17:26:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A02BF21D7E
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 17:25:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6C55121D7E
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 17:26:26 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="l06CNRd3"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404314AbgKZRZC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Nov 2020 12:25:02 -0500
-Received: from outbound-smtp14.blacknight.com ([46.22.139.231]:58093 "EHLO
-        outbound-smtp14.blacknight.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S2404312AbgKZRZC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 12:25:02 -0500
-X-Greylist: delayed 393 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Nov 2020 12:25:00 EST
-Received: from mail.blacknight.com (pemlinmail01.blacknight.ie [81.17.254.10])
-        by outbound-smtp14.blacknight.com (Postfix) with ESMTPS id 919C81C4444
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2020 17:18:26 +0000 (GMT)
-Received: (qmail 18254 invoked from network); 26 Nov 2020 17:18:26 -0000
-Received: from unknown (HELO techsingularity.net) (mgorman@techsingularity.net@[84.203.22.4])
-  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 26 Nov 2020 17:18:26 -0000
-Date:   Thu, 26 Nov 2020 17:18:24 +0000
-From:   Mel Gorman <mgorman@techsingularity.net>
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Marcelo Tosatti <mtosatti@redhat.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Subject: [PATCH] cpuidle: Allow configuration of the polling interval before
- cpuidle enters a c-state
-Message-ID: <20201126171824.GK3371@techsingularity.net>
+        id S2391653AbgKZR0K (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Nov 2020 12:26:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37120 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2391347AbgKZR0K (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 12:26:10 -0500
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 3DAEFC0613D4;
+        Thu, 26 Nov 2020 09:26:10 -0800 (PST)
+Received: by mail-wr1-x441.google.com with SMTP id m6so2935880wrg.7;
+        Thu, 26 Nov 2020 09:26:10 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to:user-agent;
+        bh=6I0lhLGzPPM0MoECXGUi5YFC71JrYnGKvoQDQPmtiJ8=;
+        b=l06CNRd31zgbywkafp4M3M36NmeEp98oXvZIbgFZaXjPDiITJXkrhLw6e82PRokFMq
+         kSV+0rsWu3t278MiKn8FxZ0GpnGOdkRNRc8kI1ao3FfuuXk6Psqs49YxCD+ES1ohhwHn
+         778H50Vz+qsL2LOxPPnWXeM9yik6M3kLd5UNS8iViAW/shl88g/0RGv+uzDhvTh02TDU
+         G2JiVIVyK5ICAVInvipDuRW8GKiL5EgPM4rcdsxRdWxIgGHo1Ciw4FZ6SmbNfL7H12Gh
+         po6yduAQos4jRyU+BqDlJWwB5xzD/y7S8MFJIyFKNtTN5wOfjlurvHwLREINC+5TBPxt
+         BhpQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to:user-agent;
+        bh=6I0lhLGzPPM0MoECXGUi5YFC71JrYnGKvoQDQPmtiJ8=;
+        b=VYPXWMsYf4+FDeXqIsuYWkmCcOnJ56GBo2L9mcCD1JNDaDWZ/z5u9MwufJ6S3YPyEl
+         UoQQl0FNRDjRPfZbaOvSaCerL6Op3UAqxFg/kH7AsY49pfcljj+920w4+VWpscWl4aOj
+         t6DRjBLIc90t+s6y2GiQAD5U9r+mIqA/M6/h+THn9DeGGCaBeIeIeIONGGzBJMXLRmCI
+         qjYNczZTfEP+0JCK799oXJKezY+seqxqaSy3qHsLttNudLdjIwQ+va/y6JiViHCkgI5w
+         kiTDb7cZNijC10UqoNXTbUy4yJobj+i5x4WfV7xqqz4G1GYcwMxQDrLMHJRGvtG25y4A
+         vqhg==
+X-Gm-Message-State: AOAM530iQTbRUNTvRBxi4nrUe/sbg6YhWIGK9XCaiwb7mPpAs3EVs2Rp
+        iG7ey2hCpXJ4n4MxVCjgSwk=
+X-Google-Smtp-Source: ABdhPJyaBeHdgoQF3J1Ovn0wtkH7fvTi8SaOzT7ic/NJzEli3QaHlrGWzuvtjGLemmZWpI00pWevgQ==
+X-Received: by 2002:a5d:690c:: with SMTP id t12mr5123901wru.405.1606411568938;
+        Thu, 26 Nov 2020 09:26:08 -0800 (PST)
+Received: from localhost ([217.111.27.204])
+        by smtp.gmail.com with ESMTPSA id s4sm9982577wru.56.2020.11.26.09.26.06
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2020 09:26:07 -0800 (PST)
+Date:   Thu, 26 Nov 2020 18:26:05 +0100
+From:   Thierry Reding <thierry.reding@gmail.com>
+To:     Dmitry Osipenko <digetx@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: Re: [PATCH v7 17/47] dt-bindings: memory: tegra20: Add memory client
+ IDs
+Message-ID: <X7/lLaZJNp+Vfczk@ulmo>
+References: <20201104164923.21238-1-digetx@gmail.com>
+ <20201104164923.21238-18-digetx@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: multipart/signed; micalg=pgp-sha256;
+        protocol="application/pgp-signature"; boundary="u/+LBcE/GZY9+OI4"
 Content-Disposition: inline
-User-Agent: Mutt/1.10.1 (2018-07-13)
+In-Reply-To: <20201104164923.21238-18-digetx@gmail.com>
+User-Agent: Mutt/2.0.2 (d9268908) (2020-11-20)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-It was noted that a few workloads that idle rapidly regressed when commit
-36fcb4292473 ("cpuidle: use first valid target residency as poll time")
-was merged. The workloads in question were heavy communicators that idle
-rapidly and were impacted by the c-state exit latency as the active CPUs
-were not polling at the time of wakeup. As they were not particularly
-realistic workloads, it was not considered to be a major problem.
 
-Unfortunately, a bug was then reported for a real workload in a production
-environment that relied on large numbers of threads operating in a worker
-pool pattern. These threads would idle for periods of time slightly
-longer than the C1 exit latency and so incurred the c-state exit latency.
-The application is sensitive to wakeup latency and appears to indirectly
-rely on behaviour prior to commit on a37b969a61c1 ("cpuidle: poll_state:
-Add time limit to poll_idle()") to poll for long enough to avoid the exit
-latency cost.
+--u/+LBcE/GZY9+OI4
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-The current behaviour favours power consumption over wakeup latency
-and it is reasonable behaviour but it should be tunable. In theory
-applications could use /dev/cpu_dma_latency but not all applications
-are aware of cpu_dma_latency. Similarly, a tool could be installed
-that opens cpu_dma_latency for the whole system but such a tool is not
-always available, is not always known to the sysadmin or the tool can have
-unexpected side-effects if it tunes more than cpu_dma_latency. In practice,
-it is more common for sysadmins to try idle=poll (which is x86 specific)
-or try disabling c-states and hope for the best.
+On Wed, Nov 04, 2020 at 07:48:53PM +0300, Dmitry Osipenko wrote:
+> Each memory client has unique hardware ID, add these IDs.
+>=20
+> Acked-by: Rob Herring <robh@kernel.org>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  include/dt-bindings/memory/tegra20-mc.h | 53 +++++++++++++++++++++++++
+>  1 file changed, 53 insertions(+)
 
-This patch makes it straight-forward to configure how long a CPU should
-poll before entering a c-state. By default, there is no behaviour change.
-At build time a decision can be made to favour performance over power
-by default even if that potentially impacts turbo boosting for workloads
-that are sensitive to wakeup latency. In the event the kernel default is
-not suitable, the kernel command line can be used as a substitute for
-implementing cpu_dma_latency support in an application or requiring an
-additional tool to be installed.
+Is there any chance you could drop these dt-bindings include patches
+(17, 18 and 19) so that I can pick them up into the Tegra tree? The
+device tree changes that I was going to pick up depend on this and
+fail to build if applied as-is.
 
-Note that it is not expected that tuning for longer polling times will be a
-universal win. For example, extra polling might prevent a turbo state being
-used or prevent hyperthread resources being released to an SMT sibling.
+I was looking at your linux-mem-ctrl tree and had initially thought I
+could just pull in one of the branches to get these dependencies, but it
+looks like the dt-bindings patches are on the for-v5.11/tegra-mc branch,
+which the ARM SoC maintainers wouldn't like to see me pull in for a
+dependency on device tree changes.
 
-By default, nothing has changed but here is an example of tbench4
-comparing the default "poll based on the min cstate" vs "poll based on
-the max cstate"
+If this is all fixed at this point, I'll just have to push back the
+device tree changes to v5.12, or perhaps see if the ARM SoC maintainers
+are willing to take a late pull request that's based on v5.11-rc1.
 
-tbench4
-			  min-cstate		 max-cstate
-Hmean     1        512.88 (   0.00%)      566.74 *  10.50%*
-Hmean     2        999.47 (   0.00%)     1090.01 *   9.06%*
-Hmean     4       1960.83 (   0.00%)     2106.62 *   7.44%*
-Hmean     8       3828.61 (   0.00%)     4097.93 *   7.03%*
-Hmean     16      6899.44 (   0.00%)     7120.38 *   3.20%*
-Hmean     32     10718.38 (   0.00%)    10672.44 *  -0.43%*
-Hmean     64     12672.21 (   0.00%)    12608.15 *  -0.51%*
-Hmean     128    20744.83 (   0.00%)    21147.02 *   1.94%*
-Hmean     256    20646.60 (   0.00%)    20608.48 *  -0.18%*
-Hmean     320    20892.89 (   0.00%)    20831.99 *  -0.29%*
+Thierry
 
-Signed-off-by: Mel Gorman <mgorman@techsingularity.net>
----
- Documentation/admin-guide/kernel-parameters.txt | 25 +++++++++
- drivers/cpuidle/Kconfig                         | 57 +++++++++++++++++++++
- drivers/cpuidle/cpuidle.c                       | 67 +++++++++++++++++++++++--
- include/linux/moduleparam.h                     |  5 ++
- kernel/params.c                                 |  1 +
- 5 files changed, 151 insertions(+), 4 deletions(-)
+--u/+LBcE/GZY9+OI4
+Content-Type: application/pgp-signature; name="signature.asc"
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 526d65d8573a..382126781b0e 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -719,6 +719,31 @@
- 			policy to use. This governor must be registered in the
- 			kernel before the cpufreq driver probes.
- 
-+	cpuidle.poll=
-+			[CPU_IDLE]
-+			Format: <int>
-+			Set the time in microseconds a CPU should poll
-+			in cpuidle for a new task before entering
-+			a sleep state. The default is usually fine
-+			but may need to be tuned for workloads that
-+			are both latency-sensitive and idles rapidly
-+			for short durations. Limiting c-states can
-+			be insufficient if the polling time is still
-+			too short, the application has no knowledge
-+			of /dev/cpu_dma_latency, there are multiple
-+			applications or the environment does not allow
-+			the installation of a userspace tool that controls
-+			cpu_dma_latency.
-+
-+			-1: default, poll based on the shallowest enabled c-state
-+			-2: poll based on the deepest enabled c-state. If no
-+			    c-states are enabled then poll based on the tick
-+			-3: poll up until a tick would force a resched event
-+			>0: poll for a fixed duration in nanoseconds. Poll
-+			    range is limited. The lowest bound is the
-+			    shallowest enabled c-state.  The maximum
-+			    bound is based on the tick
-+
- 	cpu_init_udelay=N
- 			[X86] Delay for N microsec between assert and de-assert
- 			of APIC INIT to start processors.  This delay occurs
-diff --git a/drivers/cpuidle/Kconfig b/drivers/cpuidle/Kconfig
-index c0aeedd66f02..7c9d2073db85 100644
---- a/drivers/cpuidle/Kconfig
-+++ b/drivers/cpuidle/Kconfig
-@@ -47,6 +47,63 @@ config CPU_IDLE_GOV_HALTPOLL
- config DT_IDLE_STATES
- 	bool
- 
-+choice
-+	prompt "CPU Idle default polling interval before entering an idle state"
-+	default CPUIDLE_DEFAULT_POLL_MINCSTATE
-+	help
-+	  CPU Idle polls briefly waiting for a new task to be runnable. This
-+	  setting determines what the default polling interval is. Lower
-+	  polling intervals will optimise for power consumption while higher
-+	  intervals will favour wakeup latency in cases where a task is
-+	  queued before the CPU enters a c-state. If c-states are unavailable
-+	  at runtime, polling will poll for up to a tick.
-+
-+	config CPUIDLE_DEFAULT_POLL_MINCSTATE
-+		bool "interval mincstate"
-+	help
-+	  Polling interval will be the same as the shallowest enabled c-state
-+	  e.g. C1 exit latency
-+
-+	config CPUIDLE_DEFAULT_POLL_MAXCSTATE
-+		bool "interval maxcstate"
-+	help
-+	  Polling interval will be the same as the deepest enabled c-state
-+	  e.g. C3 exit latency
-+
-+	config CPUIDLE_DEFAULT_POLL_TICK
-+		bool "interval tick"
-+	help
-+	  Polling interval will be up to a tick interval or until the idle
-+	  task needs to reschedule. e.g. a kernel with HZ of 250 could
-+	  potentially poll up to 4ms.
-+
-+	config CPUIDLE_DEFAULT_POLL_FIXED
-+		bool "interval fixed"
-+	help
-+	  Polling can be specified as a fixed interval regardless of
-+	  c-states. This option is only useful in the case where there
-+	  is a known class of applications that have a fixed latency
-+	  that is not necessarily related to the underlying c-state
-+	  capabilities and there is a need for the polling interval
-+	  to be be hardware invariant.
-+endchoice
-+
-+config CPUIDLE_DEFAULT_POOL_FIXED_INTERVAL
-+	depends on CPUIDLE_DEFAULT_POLL_FIXED
-+	int "Default polling inverval for CPU Idle"
-+	default 2
-+	help
-+	  This is the fixed interval used for cpuidle polling if
-+	  CPUIDLE_DEFAULT_POLL_FIXED is selected.
-+
-+config CPUIDLE_DEFAULT_POLL
-+	int
-+	default -1 if CPUIDLE_DEFAULT_POLL_MINCSTATE
-+	default -2 if CPUIDLE_DEFAULT_POLL_MAXCSTATE
-+	default -3 if CPUIDLE_DEFAULT_POLL_TICK
-+	default CPUIDLE_DEFAULT_POOL_FIXED_INTERVAL if CPUIDLE_DEFAULT_POLL_FIXED
-+
-+
- menu "ARM CPU Idle Drivers"
- depends on ARM || ARM64
- source "drivers/cpuidle/Kconfig.arm"
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 83af15f77f66..32a745bb7eb8 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -368,6 +368,25 @@ void cpuidle_reflect(struct cpuidle_device *dev, int index)
- 		cpuidle_curr_governor->reflect(dev, index);
- }
- 
-+static struct kernel_param_ops poll_param_ops = {
-+	.set =          param_set_llong,
-+	.get =          param_get_llong,
-+};
-+
-+/* Poll based on the shallowest enabled cstate */
-+#define CPUIDLE_POLL_MINCSTATE	-1
-+
-+/* Poll based on the deepest enabled cstate */
-+#define CPUIDLE_POLL_MAXCSTATE	-2
-+
-+/* Poll up to when a tick forces a resched event */
-+#define CPUIDLE_POLL_TICK	-3
-+
-+/* Sanity check to guard against future options */
-+#define CPUIDLE_POLL_BOUND	CPUIDLE_POLL_TICK
-+
-+static long long param_poll = CONFIG_CPUIDLE_DEFAULT_POLL;
-+
- /**
-  * cpuidle_poll_time - return amount of time to poll for,
-  * governors can override dev->poll_limit_ns if necessary
-@@ -380,21 +399,60 @@ u64 cpuidle_poll_time(struct cpuidle_driver *drv,
- 		      struct cpuidle_device *dev)
- {
- 	int i;
--	u64 limit_ns;
-+	u64 min_limit_ns, max_limit_ns;
- 
- 	if (dev->poll_limit_ns)
- 		return dev->poll_limit_ns;
- 
--	limit_ns = TICK_NSEC;
-+	/* Sanitise param_poll. */
-+	param_poll = clamp_t(int, param_poll, CPUIDLE_POLL_BOUND, TICK_NSEC);
-+	if (param_poll > 0)
-+		param_poll *= NSEC_PER_USEC;
-+
-+	/* Find the min and max exit latencies for c-states */
-+	max_limit_ns = 0;
-+	min_limit_ns = TICK_NSEC;
- 	for (i = 1; i < drv->state_count; i++) {
-+		u64 state_limit;
-+
- 		if (dev->states_usage[i].disable)
- 			continue;
- 
--		limit_ns = drv->states[i].target_residency_ns;
-+		state_limit = drv->states[i].target_residency_ns;
-+		min_limit_ns = min_t(u64, min_limit_ns, state_limit);
-+		max_limit_ns = max_t(u64, max_limit_ns, state_limit);
-+	}
-+
-+	/* Select a polling interval */
-+	switch (param_poll) {
-+	case CPUIDLE_POLL_MINCSTATE:
-+		dev->poll_limit_ns = min_limit_ns;
-+		break;
-+	case CPUIDLE_POLL_MAXCSTATE:
-+		/* If there are no enabled c-states, use the tick interval */
-+		if (!max_limit_ns)
-+			max_limit_ns = TICK_NSEC;
-+
-+		dev->poll_limit_ns = max_limit_ns;
-+		break;
-+	case CPUIDLE_POLL_TICK:
-+		dev->poll_limit_ns = TICK_NSEC;
-+		break;
-+	default:
-+		/* If there are no enabled c-states, make sure param_poll is used */
-+		if (!max_limit_ns)
-+			min_limit_ns = 1;
-+
-+		dev->poll_limit_ns = clamp_t(u64, param_poll, min_limit_ns, TICK_NSEC);
- 		break;
- 	}
- 
--	dev->poll_limit_ns = limit_ns;
-+
-+	/*
-+	 * Polling parameter reported as usec to match the values reported
-+	 * for c-cstate exit latencies in sysfs.
-+	 */
-+	param_poll = dev->poll_limit_ns / NSEC_PER_USEC;;
- 
- 	return dev->poll_limit_ns;
- }
-@@ -755,4 +813,5 @@ static int __init cpuidle_init(void)
- 
- module_param(off, int, 0444);
- module_param_string(governor, param_governor, CPUIDLE_NAME_LEN, 0444);
-+module_param_cb(poll, &poll_param_ops, &param_poll, 0444);
- core_initcall(cpuidle_init);
-diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-index 6388eb9734a5..418cf714580d 100644
---- a/include/linux/moduleparam.h
-+++ b/include/linux/moduleparam.h
-@@ -438,6 +438,11 @@ extern int param_set_long(const char *val, const struct kernel_param *kp);
- extern int param_get_long(char *buffer, const struct kernel_param *kp);
- #define param_check_long(name, p) __param_check(name, p, long)
- 
-+extern const struct kernel_param_ops param_ops_llong;
-+extern int param_set_llong(const char *val, const struct kernel_param *kp);
-+extern int param_get_llong(char *buffer, const struct kernel_param *kp);
-+#define param_check_llong(name, p) __param_check(name, p, long long)
-+
- extern const struct kernel_param_ops param_ops_ulong;
- extern int param_set_ulong(const char *val, const struct kernel_param *kp);
- extern int param_get_ulong(char *buffer, const struct kernel_param *kp);
-diff --git a/kernel/params.c b/kernel/params.c
-index 164d79330849..a2b0e5b1b26b 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -239,6 +239,7 @@ STANDARD_PARAM_DEF(ushort,	unsigned short,		"%hu",		kstrtou16);
- STANDARD_PARAM_DEF(int,		int,			"%i",		kstrtoint);
- STANDARD_PARAM_DEF(uint,	unsigned int,		"%u",		kstrtouint);
- STANDARD_PARAM_DEF(long,	long,			"%li",		kstrtol);
-+STANDARD_PARAM_DEF(llong,	long long,		"%lli",		kstrtoll);
- STANDARD_PARAM_DEF(ulong,	unsigned long,		"%lu",		kstrtoul);
- STANDARD_PARAM_DEF(ullong,	unsigned long long,	"%llu",		kstrtoull);
- STANDARD_PARAM_DEF(hexint,	unsigned int,		"%#08x", 	kstrtouint);
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCAAdFiEEiOrDCAFJzPfAjcif3SOs138+s6EFAl+/5SkACgkQ3SOs138+
+s6E7hA/+KCUsyWXHkq1zseaJ5gCXuvTLINqhxC1oK5TJvCQ7BFh3567X8Qg1Sd85
+W4KQS5u4lGrHEfDgGILPcdO/GdlOWrYLUpLVnwHMX4/F2Jy8Ey/cPHPDLN469A53
+B0qntX6JoeJKFU/mGmvf0xQie/QpZvjBfMFrCdQhA/UueGOdJYBMKb8o5hmQgLi9
+LWVnTdSrxaht6vl32SeO452KjQvUBZSnCh9weUvpzhcPtOJm8hn6Fnmc1erDw9bX
+QokJFiB0XDvsFJoBtbQQx2/jHXFihBCdlxiuxJvEKb/0n3qrYzr6n9Vasjpb0gap
+83nRKdl4MNJsJ6KjoMZtjVt93x37sam6giILq98SIKJos5jz4WK8PKUiOIyQZryb
+AJL2NRM9gdtfUkm3YHcePioeyNsr2baRqF2kuv+VsnyYOHKqSilmRX0fOXn63kKg
+0wNfDmMPA63/UfYSweeTnDZerFZdJwV04+PFOt6OCffoZEe+uDCnpmrn0Gv91Hrp
+HJEai7zzj8yZqHUCqNRP8SadYHWXQjz0a42CoD1UHyoeMQnvApxCdAn3vQ9R6WBM
+n0BdCx0blXhamA3xb2EPVwPZ4huLcxwCRTKDRcRMbMUL400k3MGk9EnHeXa85YgU
+NKeI2QOdzGQ788QbBHfdD7iBjEPcHLx98w3zxgISsEElIUXDMfY=
+=f5yy
+-----END PGP SIGNATURE-----
+
+--u/+LBcE/GZY9+OI4--
