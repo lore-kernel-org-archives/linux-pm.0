@@ -2,164 +2,283 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
 	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC23BC56202
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 18:24:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 227A1C63697
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 18:47:21 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 72E1F20B80
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 18:24:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CAD0E21D91
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 18:47:20 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="jDVhj2QA"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404074AbgKZSYz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Nov 2020 13:24:55 -0500
-Received: from mail-oi1-f193.google.com ([209.85.167.193]:45237 "EHLO
-        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2404028AbgKZSYy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 13:24:54 -0500
-Received: by mail-oi1-f193.google.com with SMTP id l206so3123504oif.12;
-        Thu, 26 Nov 2020 10:24:53 -0800 (PST)
+        id S2404699AbgKZSrU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Nov 2020 13:47:20 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49602 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2403877AbgKZSrU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 13:47:20 -0500
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A08F0C0613D4
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2020 10:47:18 -0800 (PST)
+Received: by mail-pg1-x52c.google.com with SMTP id s63so2330011pgc.8
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2020 10:47:18 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=q6ggobS69pywsEBBezcfDxpX7vxdlKSt+ZDcAFlZM8Y=;
+        b=jDVhj2QAcPaprg1kxnGC27TZNXeWHHjmE3hrIQWbJJRjMoYM5MAJFzFwZd9/Kdm5gO
+         zDwp7qLUpmcRJ7MhEpppBM43jIr9Yyz1fgvC+rOWA/lIst6KRLJxi1wxjC94/v794FW1
+         CAILkc3Rj2v68Gx3OiPsLfOt5+58SWIdBZJgmbyl7eYycRHmebSdpMQ7zFaGDlfbYac+
+         lk1USRetkyoftP+P13+HmOUeUL2SMbkwQZ7K0Z8Bnk8g8oFmoS9LdESe+liH18cJJAup
+         yPemcQzzgAF+Z4jXEtiO10mav54RPHfJ1lSTvOMtla8aXomziWxCAhgycnhpgk4ru10V
+         FFdw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=0CeBIsTgv2OXbQ0s5p+qCPKhIhxADq0Kgs1y7GjU1q4=;
-        b=oQxYnmDKRXU6VKSL8zBn0z4NMdgR+k+9tmKfcBmjKGARA1eJ34m0vUGCcTSxuS74E6
-         LmlvqhbcihfMrdK/cFAto1vszfMZOOFDNeXUfle79u3cguU0CGEXgsePy6uCoZV5O/fB
-         u8cvl/vyIrw+w2eUKgVWd453JT7xi0QttadU3peodUDr17Y5E7hyssWnsHS787jkl38y
-         aPW6+aDTaiTlGOQT/ZOWSzr+LRKUoG3+8BVQUW9SdKpWEEoX1bt4ow1VXm7ohCg7zMGq
-         1lPDcurq/ry2pp6NyQH0yurrEibrq/sYGt1KtaZFzkEp3K1Ycwmr6IeZIXEHYW4pYbkm
-         IAlw==
-X-Gm-Message-State: AOAM533hn1ZO4JZzrQLJwAEvpx7cg1HnSx3Jcqi4TbtV/K7r9ac60Avr
-        GEOkDVwuIK5XiFS1n2zcbcpzNOkMJIZ8T6Y7B/c=
-X-Google-Smtp-Source: ABdhPJwcv4N4tGVYy983i4LAa/FVbm6w8IR3F/d094yK3WYkikCe4MdVrIqft1PMFfspkiTltRT3BfUEEPHd5TKaLq4=
-X-Received: by 2002:aca:5a42:: with SMTP id o63mr2762003oib.69.1606415093334;
- Thu, 26 Nov 2020 10:24:53 -0800 (PST)
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=q6ggobS69pywsEBBezcfDxpX7vxdlKSt+ZDcAFlZM8Y=;
+        b=n1/je1EVFyBCBVFXhyYHxnltg2JHcRrvnT+DUTx7t2GZV2C188ZISMLPDwOgVQneF9
+         aBv3LiAPUvWg/IjJmopw3NQ75Z8Fw323tBM2/U8NrbOJJx11I1Zc5Y1C9i0HiTfEXWjL
+         /TywJNkiitG/RVv+JH1Q1RRqKd+Mb2IhOwJU6tMRNhBvMDv+331PrFlp87LFtASg8LmE
+         ONOoa3FZoOEOs9ElCltBbm6dtB/4+fB8ZPzyvv97WMv+PB0E2kFvdX2Uw260mO0iyJxh
+         HctN9fAOhnIfHmFAo32MKTv/Jukx+pHnnFQaxGfIBKAlbG7iuIL30wR8Ynedd0XRuSzC
+         bSAQ==
+X-Gm-Message-State: AOAM533AdiZ76qtLHmNSKUhVne1dC0L4juxyo+YBfBeN3qb/O+smzLOC
+        7wGBbwdafg6W8kM7CGKdD4M8CA==
+X-Google-Smtp-Source: ABdhPJzgqJ3cGjRP6oFc7FqMV7uDPGhipIu9/xlq5UuTJ7iT02/UCNzWzX6kFXT0gQeoCGQRdV0nzQ==
+X-Received: by 2002:a17:90a:cc01:: with SMTP id b1mr5090833pju.121.1606416438198;
+        Thu, 26 Nov 2020 10:47:18 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id w11sm7594617pjr.2.2020.11.26.10.47.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2020 10:47:17 -0800 (PST)
+Message-ID: <5fbff835.1c69fb81.22a14.027f@mx.google.com>
+Date:   Thu, 26 Nov 2020 10:47:17 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-References: <20201126171824.GK3371@techsingularity.net>
-In-Reply-To: <20201126171824.GK3371@techsingularity.net>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Thu, 26 Nov 2020 19:24:41 +0100
-Message-ID: <CAJZ5v0hz4dBzUcvoyLoJf8Fmajws-uP3MB-_4dmzEYvMDJwEwQ@mail.gmail.com>
-Subject: Re: [PATCH] cpuidle: Allow configuration of the polling interval
- before cpuidle enters a c-state
-To:     Mel Gorman <mgorman@techsingularity.net>
-Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Marcelo Tosatti <mtosatti@redhat.com>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: pm-5.10-rc6-75-g735f7fba25ec
+X-Kernelci-Report-Type: test
+Subject: pm/testing baseline: 128 runs,
+ 5 regressions (pm-5.10-rc6-75-g735f7fba25ec)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Nov 26, 2020 at 6:25 PM Mel Gorman <mgorman@techsingularity.net> wrote:
->
-> It was noted that a few workloads that idle rapidly regressed when commit
-> 36fcb4292473 ("cpuidle: use first valid target residency as poll time")
-> was merged. The workloads in question were heavy communicators that idle
-> rapidly and were impacted by the c-state exit latency as the active CPUs
-> were not polling at the time of wakeup. As they were not particularly
-> realistic workloads, it was not considered to be a major problem.
->
-> Unfortunately, a bug was then reported for a real workload in a production
-> environment that relied on large numbers of threads operating in a worker
-> pool pattern. These threads would idle for periods of time slightly
-> longer than the C1 exit latency and so incurred the c-state exit latency.
-> The application is sensitive to wakeup latency and appears to indirectly
-> rely on behaviour prior to commit on a37b969a61c1 ("cpuidle: poll_state:
-> Add time limit to poll_idle()") to poll for long enough to avoid the exit
-> latency cost.
+pm/testing baseline: 128 runs, 5 regressions (pm-5.10-rc6-75-g735f7fba25ec)
 
-Well, this means that it depends on the governor to mispredict short
-idle durations (so it selects "poll" over "C1" when it should select
-"C1" often enough) and on the lack of a polling limit (or a large
-enough one).
+Regressions Summary
+-------------------
 
-While the latter can be kind of addressed by increasing the polling
-limit, the misprediction in the governor really isn't guaranteed to
-happen and it really is necessary to have a PM QoS request in place to
-ensure a suitable latency.
+platform               | arch  | lab          | compiler | defconfig       =
+   | regressions
+-----------------------+-------+--------------+----------+-----------------=
+---+------------
+bcm2837-rpi-3-b        | arm64 | lab-baylibre | gcc-8    | defconfig       =
+   | 1          =
 
-> The current behaviour favours power consumption over wakeup latency
-> and it is reasonable behaviour but it should be tunable.
+beagle-xm              | arm   | lab-baylibre | gcc-8    | multi_v7_defconf=
+ig | 1          =
 
-Only if there is no way to cover all of the relevant use cases in a
-generally acceptable way without adding more module params etc.
+hifive-unleashed-a00   | riscv | lab-baylibre | gcc-8    | defconfig       =
+   | 1          =
 
-In this particular case, it should be possible to determine a polling
-limit acceptable to everyone.
+meson-sm1-khadas-vim3l | arm64 | lab-baylibre | gcc-8    | defconfig       =
+   | 2          =
 
-BTW, I admit that using the exit latency of the lowest enabled C-state
-was kind of arbitrary and it was based on the assumption that it would
-make more sense to try to enter C1 instead of polling for that much
-time, but C1 is an exception, because it is often artificially made
-particularly attractive to the governors (by reducing its target
-residency as much as possible).  Also making the polling limit that
-short distorts the governor statistics somewhat.
 
-So the polling limit equal to the target residency of C1 really may be
-overly aggressive and something tick-based may work better in general
-(e.g. 1/8 or 1/16 of the tick period).
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/pm-5.10-=
+rc6-75-g735f7fba25ec/plan/baseline/
 
-In principle, a multiple of C1 target residency could be used too.
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: pm-5.10-rc6-75-g735f7fba25ec
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      735f7fba25ec002ec984d45612afaa3a553fe05d =
 
-> In theory applications could use /dev/cpu_dma_latency but not all applications
-> are aware of cpu_dma_latency. Similarly, a tool could be installed
-> that opens cpu_dma_latency for the whole system but such a tool is not
-> always available, is not always known to the sysadmin or the tool can have
-> unexpected side-effects if it tunes more than cpu_dma_latency. In practice,
-> it is more common for sysadmins to try idle=poll (which is x86 specific)
 
-And really should be avoided if one cares about turbo or wants to
-avoid thermal issues.
 
-> or try disabling c-states and hope for the best.
->
-> This patch makes it straight-forward to configure how long a CPU should
-> poll before entering a c-state.
+Test Regressions
+---------------- =
 
-Well, IMV this is not straightforward at all.
 
-It requires the admin to know how cpuidle works and why this
-particular polling limit is likely to be suitable for the given
-workload.  And whether or not the default polling limit should be
-changed at all.
 
-Honestly, nobody knows that in advance (with all due respect) and this
-would cause people to try various settings at random and stick to the
-one that they feel works best for them without much understanding.
+platform               | arch  | lab          | compiler | defconfig       =
+   | regressions
+-----------------------+-------+--------------+----------+-----------------=
+---+------------
+bcm2837-rpi-3-b        | arm64 | lab-baylibre | gcc-8    | defconfig       =
+   | 1          =
 
-> By default, there is no behaviour change.
-> At build time a decision can be made to favour performance over power
-> by default even if that potentially impacts turbo boosting for workloads
-> that are sensitive to wakeup latency. In the event the kernel default is
-> not suitable, the kernel command line can be used as a substitute for
-> implementing cpu_dma_latency support in an application or requiring an
-> additional tool to be installed.
->
-> Note that it is not expected that tuning for longer polling times will be a
-> universal win. For example, extra polling might prevent a turbo state being
-> used or prevent hyperthread resources being released to an SMT sibling.
->
-> By default, nothing has changed but here is an example of tbench4
-> comparing the default "poll based on the min cstate" vs "poll based on
-> the max cstate"
->
-> tbench4
->                           min-cstate             max-cstate
-> Hmean     1        512.88 (   0.00%)      566.74 *  10.50%*
-> Hmean     2        999.47 (   0.00%)     1090.01 *   9.06%*
-> Hmean     4       1960.83 (   0.00%)     2106.62 *   7.44%*
-> Hmean     8       3828.61 (   0.00%)     4097.93 *   7.03%*
-> Hmean     16      6899.44 (   0.00%)     7120.38 *   3.20%*
-> Hmean     32     10718.38 (   0.00%)    10672.44 *  -0.43%*
-> Hmean     64     12672.21 (   0.00%)    12608.15 *  -0.51%*
-> Hmean     128    20744.83 (   0.00%)    21147.02 *   1.94%*
-> Hmean     256    20646.60 (   0.00%)    20608.48 *  -0.18%*
-> Hmean     320    20892.89 (   0.00%)    20831.99 *  -0.29%*
 
-I'm wondering if you have similar results for "poll based on 2 x min
-cstate" (or 4 x min cstate for that matter).
+  Details:     https://kernelci.org/test/plan/id/5fbfed7f30f0e39781c94d06
+
+  Results:     4 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm64/defconfig/gcc-8/lab-baylibre/baseline-bcm2837-rpi-3-b.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/arm64/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.dmesg.crit: https://kernelci.org/test/case/id/5fbfed7f30f0e397=
+81c94d09
+        new failure (last pass: v5.10-rc5-65-g0a1829d7eb6a)
+        1 lines
+
+    2020-11-26 17:59:27.947000+00:00  Connected to bcm2837-rpi-3-b console =
+[channel connected] (~$quit to exit)
+    2020-11-26 17:59:27.947000+00:00  (user:khilman) is already connected
+    2020-11-26 17:59:43.330000+00:00  =00
+    2020-11-26 17:59:43.331000+00:00  =
+
+    2020-11-26 17:59:43.346000+00:00  U-Boot 2018.11 (Dec 04 2018 - 10:54:3=
+2 -0800)
+    2020-11-26 17:59:43.346000+00:00  =
+
+    2020-11-26 17:59:43.346000+00:00  DRAM:  948 MiB
+    2020-11-26 17:59:43.379000+00:00  RPI 3 Model B (0xa02082)
+    2020-11-26 17:59:43.454000+00:00  MMC:   mmc@7e202000: 0, sdhci@7e30000=
+0: 1
+    2020-11-26 17:59:43.486000+00:00  Loading Environment from FAT... *** W=
+arning - bad CRC, using default environment =
+
+    ... (378 line(s) more)  =
+
+ =
+
+
+
+platform               | arch  | lab          | compiler | defconfig       =
+   | regressions
+-----------------------+-------+--------------+----------+-----------------=
+---+------------
+beagle-xm              | arm   | lab-baylibre | gcc-8    | multi_v7_defconf=
+ig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fbfefa7ad470c4563c94df9
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: multi_v7_defconfig
+  Compiler:    gcc-8 (arm-linux-gnueabihf-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm/multi_v7_defconfig/gcc-8/lab-baylibre/baseline-beagle-xm.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm/multi_v7_defconfig/gcc-8/lab-baylibre/baseline-beagle-xm.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/armel/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/5fbfefa7ad470c4563c94=
+dfa
+        new failure (last pass: v5.10-rc5-65-g0a1829d7eb6a) =
+
+ =
+
+
+
+platform               | arch  | lab          | compiler | defconfig       =
+   | regressions
+-----------------------+-------+--------------+----------+-----------------=
+---+------------
+hifive-unleashed-a00   | riscv | lab-baylibre | gcc-8    | defconfig       =
+   | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fbfe9fc08d3be7eabc94cc3
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (riscv64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a00.=
+txt
+  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/riscv/defconfig/gcc-8/lab-baylibre/baseline-hifive-unleashed-a00.=
+html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/riscv/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/5fbfe9fc08d3be7eabc94=
+cc4
+        new failure (last pass: pm-5.10-rc4-33-g52d108cd060d) =
+
+ =
+
+
+
+platform               | arch  | lab          | compiler | defconfig       =
+   | regressions
+-----------------------+-------+--------------+----------+-----------------=
+---+------------
+meson-sm1-khadas-vim3l | arm64 | lab-baylibre | gcc-8    | defconfig       =
+   | 2          =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fbfed9b32b71de4bac94cdb
+
+  Results:     3 PASS, 2 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-sm1-khadas-vim3=
+l.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/pm-5.10-rc6-75-g735=
+f7fba25ec/arm64/defconfig/gcc-8/lab-baylibre/baseline-meson-sm1-khadas-vim3=
+l.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/arm64/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.dmesg.alert: https://kernelci.org/test/case/id/5fbfed9b32b71de=
+4bac94cdf
+        new failure (last pass: v5.10-rc5-65-g0a1829d7eb6a)
+        11 lines
+
+    2020-11-26 18:01:57.808000+00:00  kern  :alert : Mem abort info:
+    2020-11-26 18:01:57.808000+00:00  kern  :alert :   ESR =3D 0x96000006
+    2020-11-26 18:01:57.849000+00:00  kern  :alert :   EC =3D 0x25: DABT (c=
+urrent EL), IL =3D 32 bits
+    2020-11-26 18:01:57.849000+00:00  kern  :alert :   SET =3D 0, FnV =3D 0
+    2020-11-26 18:01:57.850000+00:00  kern  :alert :   EA =3D 0, S1PTW =3D 0
+    2020-11-26 18:01:57.850000+00:00  kern  :alert : Data abort info:
+    2020-11-26 18:01:57.850000+00:00  kern  :alert :   ISV =3D 0, ISS =3D 0=
+x00000006
+    2020-11-26 18:01:57.850000+00:00  kern  :alert :   CM =3D 0, WnR =3D 0
+    2020-11-26 18:01:57.850000+00:00  kern  :alert : user pgtable: 4k pages=
+, 48-bit VAs, pgdp=3D0000000044be4000
+    2020-11-26 18:01:57.850000+00:00  kern  :alert : [0000000000000002] pgd=
+=3D0000000044be6003, p4d=3D0000000044be6003, pud=3D0000000044be7003, pmd=3D=
+0000000000000000   =
+
+
+  * baseline.dmesg.emerg: https://kernelci.org/test/case/id/5fbfed9b32b71de=
+4bac94ce0
+        new failure (last pass: v5.10-rc5-65-g0a1829d7eb6a)
+        2 lines
+
+    2020-11-26 18:01:57.887000+00:00  kern  :emerg : Code: d503233f a9bf7bf=
+d 910003fd 97ffffe0 (79400401)    =
+
+ =20
