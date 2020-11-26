@@ -2,29 +2,29 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 25DFAC64E7A
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 52C8AC64E90
 	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D5F372158C
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 276092158C
+	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388014AbgKZWai (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Nov 2020 17:30:38 -0500
-Received: from bin-mail-out-06.binero.net ([195.74.38.229]:36802 "EHLO
-        bin-mail-out-06.binero.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S2387992AbgKZWai (ORCPT
+        id S1732550AbgKZWaj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Nov 2020 17:30:39 -0500
+Received: from vsp-unauthed02.binero.net ([195.74.38.227]:39178 "EHLO
+        vsp-unauthed02.binero.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388465AbgKZWai (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 17:30:38 -0500
-X-Halon-ID: fe6e0644-3036-11eb-a78a-0050569116f7
+X-Halon-ID: ff5c21c7-3036-11eb-a78a-0050569116f7
 Authorized-sender: niklas.soderlund@fsdn.se
 Received: from bismarck.berto.se (p4fca2458.dip0.t-ipconnect.de [79.202.36.88])
         by bin-vsp-out-03.atm.binero.net (Halon) with ESMTPA
-        id fe6e0644-3036-11eb-a78a-0050569116f7;
-        Thu, 26 Nov 2020 23:30:32 +0100 (CET)
+        id ff5c21c7-3036-11eb-a78a-0050569116f7;
+        Thu, 26 Nov 2020 23:30:34 +0100 (CET)
 From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
 To:     Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -32,9 +32,9 @@ To:     Geert Uytterhoeven <geert+renesas@glider.be>,
 Cc:     linux-renesas-soc@vger.kernel.org,
         =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 1/3] dt-bindings: thermal: rcar-gen3-thermal: Add r8a779a0 support
-Date:   Thu, 26 Nov 2020 23:30:26 +0100
-Message-Id: <20201126223028.3119044-2-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 3/3] thermal: rcar_gen3_thermal: Add r8a779a0 support
+Date:   Thu, 26 Nov 2020 23:30:28 +0100
+Message-Id: <20201126223028.3119044-4-niklas.soderlund+renesas@ragnatech.se>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
 References: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
@@ -45,61 +45,45 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for R-Car V3U. The V3U IP differs a bit from its siblings in
-such way that it have 4 TSC nodes and the interrupts are not routed to
-the INTC-AP but to the ECM.
+Add support for R-Car V3U. The new THCODE values are taken from the
+example in the datasheet.
 
 Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
 ---
- .../bindings/thermal/rcar-gen3-thermal.yaml     | 17 +++++++++++++++--
- 1 file changed, 15 insertions(+), 2 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-index f386f2a7c06c95c7..b33a76eeac4e4fed 100644
---- a/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-+++ b/Documentation/devicetree/bindings/thermal/rcar-gen3-thermal.yaml
-@@ -26,13 +26,16 @@ properties:
-       - renesas,r8a77961-thermal # R-Car M3-W+
-       - renesas,r8a77965-thermal # R-Car M3-N
-       - renesas,r8a77980-thermal # R-Car V3H
-+      - renesas,r8a779a0-thermal # R-Car V3U
-+
-   reg:
-     minItems: 2
--    maxItems: 3
-+    maxItems: 4
-     items:
-       - description: TSC1 registers
-       - description: TSC2 registers
-       - description: TSC3 registers
-+      - description: TSC4 registers
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
+index 94f2c133a47f66b6..75c69fe6e9553f25 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -60,13 +60,14 @@
+ #define MCELSIUS(temp)	((temp) * 1000)
+ #define GEN3_FUSE_MASK	0xFFF
  
-   interrupts:
-     items:
-@@ -55,12 +58,22 @@ properties:
- required:
-   - compatible
-   - reg
--  - interrupts
-   - clocks
-   - power-domains
-   - resets
-   - "#thermal-sensor-cells"
+-#define TSC_MAX_NUM	3
++#define TSC_MAX_NUM	4
  
-+if:
-+  not:
-+    properties:
-+      compatible:
-+        contains:
-+          enum:
-+            - renesas,r8a779a0-thermal
-+then:
-+  required:
-+    - interrupts
-+
- additionalProperties: false
+ /* default THCODE values if FUSEs are missing */
+ static const int thcodes[TSC_MAX_NUM][3] = {
+ 	{ 3397, 2800, 2221 },
+ 	{ 3393, 2795, 2216 },
+ 	{ 3389, 2805, 2237 },
++	{ 3415, 2694, 2195 },
+ };
  
- examples:
+ /* Structure for thermal temperature calculation */
+@@ -276,6 +277,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
+ 		.compatible = "renesas,r8a77980-thermal",
+ 		.data = &rcar_gen3_ths_tj_1,
+ 	},
++	{
++		.compatible = "renesas,r8a779a0-thermal",
++		.data = &rcar_gen3_ths_tj_1,
++	},
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
 -- 
 2.29.2
 
