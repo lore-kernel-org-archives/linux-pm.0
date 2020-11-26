@@ -2,28 +2,29 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 75B3FC63798
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C985FC64E75
 	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2B6902145D
+	by mail.kernel.org (Postfix) with ESMTP id 8FC742158C
 	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730728AbgKZWag (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Nov 2020 17:30:36 -0500
-Received: from bin-mail-out-06.binero.net ([195.74.38.229]:24963 "EHLO
+        id S2391551AbgKZWai (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 26 Nov 2020 17:30:38 -0500
+Received: from bin-mail-out-06.binero.net ([195.74.38.229]:31261 "EHLO
         bin-mail-out-06.binero.net" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1732550AbgKZWag (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 17:30:36 -0500
-X-Halon-ID: fa841939-3036-11eb-a78a-0050569116f7
+        by vger.kernel.org with ESMTP id S2388014AbgKZWai (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 17:30:38 -0500
+X-Halon-ID: fee6f52a-3036-11eb-a78a-0050569116f7
 Authorized-sender: niklas.soderlund@fsdn.se
 Received: from bismarck.berto.se (p4fca2458.dip0.t-ipconnect.de [79.202.36.88])
         by bin-vsp-out-03.atm.binero.net (Halon) with ESMTPA
-        id fa841939-3036-11eb-a78a-0050569116f7;
-        Thu, 26 Nov 2020 23:30:31 +0100 (CET)
+        id fee6f52a-3036-11eb-a78a-0050569116f7;
+        Thu, 26 Nov 2020 23:30:33 +0100 (CET)
 From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
 To:     Geert Uytterhoeven <geert+renesas@glider.be>,
@@ -31,10 +32,12 @@ To:     Geert Uytterhoeven <geert+renesas@glider.be>,
 Cc:     linux-renesas-soc@vger.kernel.org,
         =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
         <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 0/3] thermal: Add support for R-Car V3U (r8a779a0)
-Date:   Thu, 26 Nov 2020 23:30:25 +0100
-Message-Id: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
+Subject: [PATCH 2/3] arm64: dts: renesas: r8a779a0: Add thermal support
+Date:   Thu, 26 Nov 2020 23:30:27 +0100
+Message-Id: <20201126223028.3119044-3-niklas.soderlund+renesas@ragnatech.se>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
+References: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -42,41 +45,101 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hello,
+Add support for thermal.
 
-This series enables support for the R-Car V3U r8a779a0 thermal IP. It 
-needs to touch both the device tree schema and driver as the IP is a tad 
-different then its siblings in the Gen3 family.
+Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+---
+ arch/arm64/boot/dts/renesas/r8a779a0.dtsi | 70 +++++++++++++++++++++++
+ 1 file changed, 70 insertions(+)
 
-  - It have 4 TSC cells instead of 2-3 that is used in other SoCs.
-
-  - The interrupts are no longer wired to the INTC-AP so the driver 
-    can't make use of them directly and are therefor made optional for 
-    the V3U bindings. For this reason this series depends on [1].
-
-The driver is tested together with it's dependency [1] and [2] on V3U 
-and all 4 thermal sensors behaves as expected. The driver has also been 
-tested on other R-Car Gen3 SoC for regressions, none where found.
-
-The additional THCODE tuning parameters used in 3/3 are taken from the 
-datasheet example and may need to be updated. In future the tuning 
-parameters shall be read from fused registers on the IP directly and the 
-hardcoded values in the driver only used as fallback for IP where the 
-values are not fused.
-
-1. [PATCH] thermal: rcar_gen3_thermal: Do not use interrupts for normal operation
-2. [PATCH 0/2] clk: renesas: r8a779a0: Add clocks to support thermal
-
-Niklas Söderlund (3):
-  dt-bindings: thermal: rcar-gen3-thermal: Add r8a779a0 support
-  arm64: dts: renesas: r8a779a0: Add thermal support
-  thermal: rcar_gen3_thermal: Add r8a779a0 support
-
- .../bindings/thermal/rcar-gen3-thermal.yaml   | 17 ++++-
- arch/arm64/boot/dts/renesas/r8a779a0.dtsi     | 70 +++++++++++++++++++
- drivers/thermal/rcar_gen3_thermal.c           |  7 +-
- 3 files changed, 91 insertions(+), 3 deletions(-)
-
+diff --git a/arch/arm64/boot/dts/renesas/r8a779a0.dtsi b/arch/arm64/boot/dts/renesas/r8a779a0.dtsi
+index 6cf77ce9aa9372ce..5bcce5fcfbf5f43d 100644
+--- a/arch/arm64/boot/dts/renesas/r8a779a0.dtsi
++++ b/arch/arm64/boot/dts/renesas/r8a779a0.dtsi
+@@ -91,6 +91,18 @@ sysc: system-controller@e6180000 {
+ 			#power-domain-cells = <1>;
+ 		};
+ 
++		tsc: thermal@e6190000 {
++			compatible = "renesas,r8a779a0-thermal";
++			reg = <0 0xe6190000 0 0x100>,
++			      <0 0xe6198000 0 0x100>,
++			      <0 0xe61a0000 0 0x100>,
++			      <0 0xe61a8000 0 0x100>;
++			clocks = <&cpg CPG_MOD 919>;
++			power-domains = <&sysc R8A779A0_PD_ALWAYS_ON>;
++			resets = <&cpg 919>;
++			#thermal-sensor-cells = <1>;
++		};
++
+ 		scif0: serial@e6e60000 {
+ 			compatible = "renesas,scif-r8a779a0",
+ 				     "renesas,rcar-gen3-scif", "renesas,scif";
+@@ -123,6 +135,64 @@ prr: chipid@fff00044 {
+ 		};
+ 	};
+ 
++	thermal-zones {
++		sensor_thermal1: sensor-thermal1 {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++			thermal-sensors = <&tsc 0>;
++
++			trips {
++				sensor1_crit: sensor1-crit {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++
++		sensor_thermal2: sensor-thermal2 {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++			thermal-sensors = <&tsc 1>;
++
++			trips {
++				sensor2_crit: sensor2-crit {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++
++		sensor_thermal3: sensor-thermal3 {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++			thermal-sensors = <&tsc 2>;
++
++			trips {
++				sensor3_crit: sensor3-crit {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++
++		sensor_thermal4: sensor-thermal4 {
++			polling-delay-passive = <250>;
++			polling-delay = <1000>;
++			thermal-sensors = <&tsc 3>;
++
++			trips {
++				sensor4_crit: sensor4-crit {
++					temperature = <120000>;
++					hysteresis = <1000>;
++					type = "critical";
++				};
++			};
++		};
++	};
++
+ 	timer {
+ 		compatible = "arm,armv8-timer";
+ 		interrupts-extended = <&gic GIC_PPI 13 (GIC_CPU_MASK_SIMPLE(1) | IRQ_TYPE_LEVEL_LOW)>,
 -- 
 2.29.2
 
