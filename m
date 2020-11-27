@@ -6,26 +6,25 @@ X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A7FAEC63798
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 14:40:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50CDDC63798
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 14:46:12 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 655D021D81
-	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 14:40:07 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 12918221EB
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 14:46:12 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730696AbgK0OkG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Nov 2020 09:40:06 -0500
-Received: from outbound-smtp54.blacknight.com ([46.22.136.238]:35805 "EHLO
-        outbound-smtp54.blacknight.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729913AbgK0OkG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2020 09:40:06 -0500
-X-Greylist: delayed 307 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Nov 2020 09:40:06 EST
-Received: from mail.blacknight.com (pemlinmail04.blacknight.ie [81.17.254.17])
-        by outbound-smtp54.blacknight.com (Postfix) with ESMTPS id E5433FA975
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2020 14:34:58 +0000 (GMT)
-Received: (qmail 18228 invoked from network); 27 Nov 2020 14:34:58 -0000
+        id S1731008AbgK0Op6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Nov 2020 09:45:58 -0500
+Received: from outbound-smtp14.blacknight.com ([46.22.139.231]:55797 "EHLO
+        outbound-smtp14.blacknight.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1729913AbgK0Op5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 27 Nov 2020 09:45:57 -0500
+Received: from mail.blacknight.com (pemlinmail02.blacknight.ie [81.17.254.11])
+        by outbound-smtp14.blacknight.com (Postfix) with ESMTPS id 336281C389B
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2020 14:45:56 +0000 (GMT)
+Received: (qmail 22099 invoked from network); 27 Nov 2020 14:45:56 -0000
 Received: from unknown (HELO techsingularity.net) (mgorman@techsingularity.net@[84.203.22.4])
-  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 27 Nov 2020 14:34:58 -0000
-Date:   Fri, 27 Nov 2020 14:34:57 +0000
+  by 81.17.254.9 with ESMTPSA (AES256-SHA encrypted, authenticated); 27 Nov 2020 14:45:55 -0000
+Date:   Fri, 27 Nov 2020 14:45:54 +0000
 From:   Mel Gorman <mgorman@techsingularity.net>
 To:     Marcelo Tosatti <mtosatti@redhat.com>
 Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
@@ -34,7 +33,7 @@ Cc:     "Rafael J. Wysocki" <rafael@kernel.org>,
         Linux PM <linux-pm@vger.kernel.org>
 Subject: Re: [PATCH] cpuidle: Allow configuration of the polling interval
  before cpuidle enters a c-state
-Message-ID: <20201127143457.GP3371@techsingularity.net>
+Message-ID: <20201127144554.GQ3371@techsingularity.net>
 References: <20201126171824.GK3371@techsingularity.net>
  <CAJZ5v0hz4dBzUcvoyLoJf8Fmajws-uP3MB-_4dmzEYvMDJwEwQ@mail.gmail.com>
  <20201127140811.GA39892@fuller.cnet>
@@ -48,8 +47,6 @@ List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 On Fri, Nov 27, 2020 at 11:08:11AM -0300, Marcelo Tosatti wrote:
-> > Well, IMV this is not straightforward at all.
-> > 
 > > It requires the admin to know how cpuidle works and why this
 > > particular polling limit is likely to be suitable for the given
 > > workload.  And whether or not the default polling limit should be
@@ -65,12 +62,11 @@ On Fri, Nov 27, 2020 at 11:08:11AM -0300, Marcelo Tosatti wrote:
 > 
 > https://www.kernel.org/doc/Documentation/virtual/kvm/halt-polling.txt
 
-I'm aware of the haltpoll driver and why it's needed there. Given that
-it adds cost to the refect callback and increases exit latency that it
-would be unpopular on bare metal.
-
-I'm prototyping a v2 that simply picks different balance point to see if
-that gets a better reception.
+I'm aware of the haltpoll governor and why it makes sense for KVM. As
+adaptive polling would increase the exit latency, I assumed it would be
+an unpopular approach on bare metal. If that is not the case, then it
+would make more sense that the haltpoll adaptive logic would simply be
+part of the core and not a per-governor decision.
 
 -- 
 Mel Gorman
