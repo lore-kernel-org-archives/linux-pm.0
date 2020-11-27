@@ -2,88 +2,148 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 52C8AC64E90
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 87436C63777
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 05:08:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 276092158C
-	for <linux-pm@archiver.kernel.org>; Thu, 26 Nov 2020 22:30:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5589B2222F
+	for <linux-pm@archiver.kernel.org>; Fri, 27 Nov 2020 05:08:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1732550AbgKZWaj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 26 Nov 2020 17:30:39 -0500
-Received: from vsp-unauthed02.binero.net ([195.74.38.227]:39178 "EHLO
-        vsp-unauthed02.binero.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388465AbgKZWai (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 26 Nov 2020 17:30:38 -0500
-X-Halon-ID: ff5c21c7-3036-11eb-a78a-0050569116f7
-Authorized-sender: niklas.soderlund@fsdn.se
-Received: from bismarck.berto.se (p4fca2458.dip0.t-ipconnect.de [79.202.36.88])
-        by bin-vsp-out-03.atm.binero.net (Halon) with ESMTPA
-        id ff5c21c7-3036-11eb-a78a-0050569116f7;
-        Thu, 26 Nov 2020 23:30:34 +0100 (CET)
-From:   =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-To:     Geert Uytterhoeven <geert+renesas@glider.be>,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org
-Cc:     linux-renesas-soc@vger.kernel.org,
-        =?UTF-8?q?Niklas=20S=C3=B6derlund?= 
-        <niklas.soderlund+renesas@ragnatech.se>
-Subject: [PATCH 3/3] thermal: rcar_gen3_thermal: Add r8a779a0 support
-Date:   Thu, 26 Nov 2020 23:30:28 +0100
-Message-Id: <20201126223028.3119044-4-niklas.soderlund+renesas@ragnatech.se>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
-References: <20201126223028.3119044-1-niklas.soderlund+renesas@ragnatech.se>
+        id S1729251AbgK0FIh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 27 Nov 2020 00:08:37 -0500
+Received: from mga01.intel.com ([192.55.52.88]:11951 "EHLO mga01.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1725854AbgK0FIh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 27 Nov 2020 00:08:37 -0500
+IronPort-SDR: mDvdwMVhmYUeZLlLE3G7IwD587kBXnLaCXrs8ZHTGxCuhWhHHl8m6QXfhUSyLQQPF1jFHZk5r1
+ DgXLRF26DGZQ==
+X-IronPort-AV: E=McAfee;i="6000,8403,9817"; a="190507769"
+X-IronPort-AV: E=Sophos;i="5.78,373,1599548400"; 
+   d="scan'208";a="190507769"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from orsmga006.jf.intel.com ([10.7.209.51])
+  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Nov 2020 21:08:36 -0800
+IronPort-SDR: mGbRks6uP/ToKFZIBlX7StXZ2TX6GXKIhwKCbm5MGHTRUqmtHUENnwxyC9fnx20l2n0r1KEcFQ
+ 8EqCk2s7oB9w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="5.78,373,1599548400"; 
+   d="scan'208";a="333561546"
+Received: from lkp-server01.sh.intel.com (HELO fe15a1cd36f8) ([10.239.97.150])
+  by orsmga006.jf.intel.com with ESMTP; 26 Nov 2020 21:08:35 -0800
+Received: from kbuild by fe15a1cd36f8 with local (Exim 4.92)
+        (envelope-from <lkp@intel.com>)
+        id 1kiVzm-00001o-IU; Fri, 27 Nov 2020 05:08:34 +0000
+Date:   Fri, 27 Nov 2020 13:08:07 +0800
+From:   kernel test robot <lkp@intel.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
+        linux-acpi@vger.kernel.org
+Subject: [pm:bleeding-edge] BUILD SUCCESS
+ dda536829065b24b80296e5df9b57dfe3ae57c91
+Message-ID: <5fc089b7.WCm6iz3bFhgqDrlJ%lkp@intel.com>
+User-Agent: Heirloom mailx 12.5 6/20/10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add support for R-Car V3U. The new THCODE values are taken from the
-example in the datasheet.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
+branch HEAD: dda536829065b24b80296e5df9b57dfe3ae57c91  Merge branch 'pm-cpufreq' into bleeding-edge
 
-Signed-off-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+elapsed time: 723m
+
+configs tested: 77
+configs skipped: 3
+
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+gcc tested configs:
+arm                                 defconfig
+arm64                            allyesconfig
+arm64                               defconfig
+arm                              allyesconfig
+arm                              allmodconfig
+powerpc                      ep88xc_defconfig
+powerpc                        fsp2_defconfig
+powerpc                      acadia_defconfig
+powerpc                     mpc5200_defconfig
+powerpc                      chrp32_defconfig
+arm                      tct_hammer_defconfig
+powerpc                     rainier_defconfig
+m68k                        mvme147_defconfig
+mips                         tb0219_defconfig
+powerpc                     tqm8555_defconfig
+mips                    maltaup_xpa_defconfig
+mips                        bcm47xx_defconfig
+mips                           ip28_defconfig
+powerpc                      katmai_defconfig
+powerpc                       eiger_defconfig
+powerpc                      ppc44x_defconfig
+ia64                             allmodconfig
+ia64                                defconfig
+ia64                             allyesconfig
+m68k                             allmodconfig
+m68k                                defconfig
+m68k                             allyesconfig
+nios2                               defconfig
+arc                              allyesconfig
+nds32                             allnoconfig
+c6x                              allyesconfig
+nds32                               defconfig
+nios2                            allyesconfig
+csky                                defconfig
+alpha                               defconfig
+alpha                            allyesconfig
+xtensa                           allyesconfig
+h8300                            allyesconfig
+arc                                 defconfig
+sh                               allmodconfig
+parisc                              defconfig
+s390                             allyesconfig
+parisc                           allyesconfig
+s390                                defconfig
+i386                             allyesconfig
+sparc                            allyesconfig
+sparc                               defconfig
+i386                                defconfig
+mips                             allyesconfig
+mips                             allmodconfig
+powerpc                          allyesconfig
+powerpc                          allmodconfig
+powerpc                           allnoconfig
+i386                 randconfig-a004-20201127
+i386                 randconfig-a003-20201127
+i386                 randconfig-a002-20201127
+i386                 randconfig-a005-20201127
+i386                 randconfig-a001-20201127
+i386                 randconfig-a006-20201127
+i386                 randconfig-a012-20201127
+i386                 randconfig-a013-20201127
+i386                 randconfig-a011-20201127
+i386                 randconfig-a016-20201127
+i386                 randconfig-a014-20201127
+i386                 randconfig-a015-20201127
+riscv                    nommu_k210_defconfig
+riscv                            allyesconfig
+riscv                    nommu_virt_defconfig
+riscv                             allnoconfig
+riscv                               defconfig
+riscv                          rv32_defconfig
+riscv                            allmodconfig
+x86_64                    rhel-7.6-kselftests
+x86_64                               rhel-8.3
+x86_64                           allyesconfig
+x86_64                              defconfig
+x86_64                                  kexec
+
 ---
- drivers/thermal/rcar_gen3_thermal.c | 7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_thermal.c
-index 94f2c133a47f66b6..75c69fe6e9553f25 100644
---- a/drivers/thermal/rcar_gen3_thermal.c
-+++ b/drivers/thermal/rcar_gen3_thermal.c
-@@ -60,13 +60,14 @@
- #define MCELSIUS(temp)	((temp) * 1000)
- #define GEN3_FUSE_MASK	0xFFF
- 
--#define TSC_MAX_NUM	3
-+#define TSC_MAX_NUM	4
- 
- /* default THCODE values if FUSEs are missing */
- static const int thcodes[TSC_MAX_NUM][3] = {
- 	{ 3397, 2800, 2221 },
- 	{ 3393, 2795, 2216 },
- 	{ 3389, 2805, 2237 },
-+	{ 3415, 2694, 2195 },
- };
- 
- /* Structure for thermal temperature calculation */
-@@ -276,6 +277,10 @@ static const struct of_device_id rcar_gen3_thermal_dt_ids[] = {
- 		.compatible = "renesas,r8a77980-thermal",
- 		.data = &rcar_gen3_ths_tj_1,
- 	},
-+	{
-+		.compatible = "renesas,r8a779a0-thermal",
-+		.data = &rcar_gen3_ths_tj_1,
-+	},
- 	{},
- };
- MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
--- 
-2.29.2
-
+0-DAY CI Kernel Test Service, Intel Corporation
+https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
