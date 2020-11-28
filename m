@@ -7,37 +7,41 @@ X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F92C64E7D
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:58:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E0B8C83012
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:59:47 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E1A5D246E4
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:58:42 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E469B22456
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:59:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726992AbgK1R5z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Nov 2020 12:57:55 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:50352 "EHLO
+        id S1730213AbgK1R7i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Nov 2020 12:59:38 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:50349 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1733041AbgK1Rzz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 12:55:55 -0500
+        with ESMTP id S1732978AbgK1Rzy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 12:55:54 -0500
 Received: from 220-133-187-190.hinet-ip.hinet.net ([220.133.187.190] helo=localhost)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <kai.heng.feng@canonical.com>)
-        id 1kj4RB-0006Sy-2o; Sat, 28 Nov 2020 17:55:10 +0000
+        id 1kj4R5-0006Sg-Rv; Sat, 28 Nov 2020 17:55:04 +0000
 From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
-        Andy Shevchenko <andy.shevchenko@gmail.com>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
         Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        Chuhong Yuan <hslester96@gmail.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Peter Kaestle <peter@piie.net>,
+        Matthew Garrett <mjg59@google.com>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Takashi Iwai <tiwai@suse.de>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
         Akinobu Mita <akinobu.mita@gmail.com>,
         linux-pm@vger.kernel.org (open list:THERMAL),
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 3/3] thermal: intel: intel_pch_thermal: Indicate userspace usage
-Date:   Sun, 29 Nov 2020 01:54:50 +0800
-Message-Id: <20201128175450.12456-3-kai.heng.feng@canonical.com>
+Subject: [PATCH 2/3] thermal: int340x: Indicate userspace usage
+Date:   Sun, 29 Nov 2020 01:54:49 +0800
+Message-Id: <20201128175450.12456-2-kai.heng.feng@canonical.com>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201128175450.12456-1-kai.heng.feng@canonical.com>
 References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
@@ -55,47 +59,49 @@ thermal shutdown.
 
 Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- drivers/thermal/intel/intel_pch_thermal.c | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+ drivers/thermal/intel/int340x_thermal/int3400_thermal.c     | 1 +
+ .../thermal/intel/int340x_thermal/int340x_thermal_zone.c    | 6 +-----
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 3b813ebb6ca1..e55e6318d733 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -270,6 +270,10 @@ static struct thermal_zone_device_ops tzd_ops = {
- 	.get_trip_temp = pch_get_trip_temp,
+diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+index 0966551cbaaa..2002bc96eb3c 100644
+--- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
++++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
+@@ -439,6 +439,7 @@ static struct thermal_zone_device_ops int3400_thermal_ops = {
+ static struct thermal_zone_params int3400_thermal_params = {
+ 	.governor_name = "user_space",
+ 	.no_hwmon = true,
++	.userspace = true,
  };
  
-+static struct thermal_zone_params tzd_params = {
+ static void int3400_setup_gddv(struct int3400_thermal_priv *priv)
+diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+index 6e479deff76b..a103eb42ef2d 100644
+--- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
++++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
+@@ -208,6 +208,7 @@ EXPORT_SYMBOL_GPL(int340x_thermal_read_trips);
+ static struct thermal_zone_params int340x_thermal_params = {
+ 	.governor_name = "user_space",
+ 	.no_hwmon = true,
 +	.userspace = true,
-+};
-+
- enum board_ids {
- 	board_hsw,
- 	board_wpt,
-@@ -346,21 +350,16 @@ static int intel_pch_thermal_probe(struct pci_dev *pdev,
- 		goto error_cleanup;
+ };
  
- 	ptd->tzd = thermal_zone_device_register(bi->name, nr_trips, 0, ptd,
--						&tzd_ops, NULL, 0, 0);
-+						&tzd_ops, &tzd_params, 0, 0);
- 	if (IS_ERR(ptd->tzd)) {
- 		dev_err(&pdev->dev, "Failed to register thermal zone %s\n",
- 			bi->name);
- 		err = PTR_ERR(ptd->tzd);
- 		goto error_cleanup;
+ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+@@ -259,14 +260,9 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
+ 		ret = PTR_ERR(int34x_thermal_zone->zone);
+ 		goto err_thermal_zone;
  	}
--	err = thermal_zone_device_enable(ptd->tzd);
--	if (err)
--		goto err_unregister;
+-	ret = thermal_zone_device_enable(int34x_thermal_zone->zone);
+-	if (ret)
+-		goto err_enable;
  
- 	return 0;
+ 	return int34x_thermal_zone;
  
--err_unregister:
--	thermal_zone_device_unregister(ptd->tzd);
- error_cleanup:
- 	iounmap(ptd->hw_base);
- error_release:
+-err_enable:
+-	thermal_zone_device_unregister(int34x_thermal_zone->zone);
+ err_thermal_zone:
+ 	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
+ 	kfree(int34x_thermal_zone->aux_trips);
 -- 
 2.29.2
 
