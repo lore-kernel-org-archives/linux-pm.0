@@ -2,106 +2,99 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E0B8C83012
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:59:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D5EF5C83029
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 22:17:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E469B22456
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:59:46 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BCCB7221FF
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 22:17:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730213AbgK1R7i (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Nov 2020 12:59:38 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:50349 "EHLO
+        id S1729344AbgK1Vts (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Nov 2020 16:49:48 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:50331 "EHLO
         youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1732978AbgK1Rzy (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 12:55:54 -0500
+        with ESMTP id S1732712AbgK1Rzo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 12:55:44 -0500
 Received: from 220-133-187-190.hinet-ip.hinet.net ([220.133.187.190] helo=localhost)
         by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
         (Exim 4.86_2)
         (envelope-from <kai.heng.feng@canonical.com>)
-        id 1kj4R5-0006Sg-Rv; Sat, 28 Nov 2020 17:55:04 +0000
+        id 1kj4R0-0006RD-4E; Sat, 28 Nov 2020 17:54:58 +0000
 From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
 To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
 Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Peter Kaestle <peter@piie.net>,
-        Matthew Garrett <mjg59@google.com>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Takashi Iwai <tiwai@suse.de>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
         linux-pm@vger.kernel.org (open list:THERMAL),
         linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 2/3] thermal: int340x: Indicate userspace usage
-Date:   Sun, 29 Nov 2020 01:54:49 +0800
-Message-Id: <20201128175450.12456-2-kai.heng.feng@canonical.com>
+Subject: [PATCH 1/3] thermal: core: Add indication for userspace usage
+Date:   Sun, 29 Nov 2020 01:54:48 +0800
+Message-Id: <20201128175450.12456-1-kai.heng.feng@canonical.com>
 X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201128175450.12456-1-kai.heng.feng@canonical.com>
-References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The device isn't present under ACPI ThermalZone, and there's a dedicated
-userspace daemon for this thermal device.
+We are seeing thermal shutdown on Intel based mobile workstations, the
+shutdown happens during the first trip handle in
+thermal_zone_device_register():
+kernel: thermal thermal_zone15: critical temperature reached (101 C), shutting down
 
-Let thermal core know it shouldn't handle trips to avoid surprising
-thermal shutdown.
+However, we shouldn't do a thermal shutdown here, since
+1) We may want to use a dedicated daemon, Intel's thermald in this case,
+to handle thermal shutdown.
+
+2) For ACPI based system, _CRT doesn't mean shutdown unless it's inside
+ThermalZone. ACPI Spec, 11.4.4 _CRT (Critical Temperature):
+"... If this object it present under a device, the device’s driver
+evaluates this object to determine the device’s critical cooling
+temperature trip point. This value may then be used by the device’s
+driver to program an internal device temperature sensor trip point."
+
+So a "critical trip" here merely means we should take a more aggressive
+cooling method.
+
+So add an indication to let thermal core know it should leave thermal
+device to userspace to handle.
 
 Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- drivers/thermal/intel/int340x_thermal/int3400_thermal.c     | 1 +
- .../thermal/intel/int340x_thermal/int340x_thermal_zone.c    | 6 +-----
- 2 files changed, 2 insertions(+), 5 deletions(-)
+ drivers/thermal/thermal_core.c | 3 +++
+ include/linux/thermal.h        | 2 ++
+ 2 files changed, 5 insertions(+)
 
-diff --git a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-index 0966551cbaaa..2002bc96eb3c 100644
---- a/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-+++ b/drivers/thermal/intel/int340x_thermal/int3400_thermal.c
-@@ -439,6 +439,7 @@ static struct thermal_zone_device_ops int3400_thermal_ops = {
- static struct thermal_zone_params int3400_thermal_params = {
- 	.governor_name = "user_space",
- 	.no_hwmon = true,
-+	.userspace = true,
- };
- 
- static void int3400_setup_gddv(struct int3400_thermal_priv *priv)
-diff --git a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-index 6e479deff76b..a103eb42ef2d 100644
---- a/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-+++ b/drivers/thermal/intel/int340x_thermal/int340x_thermal_zone.c
-@@ -208,6 +208,7 @@ EXPORT_SYMBOL_GPL(int340x_thermal_read_trips);
- static struct thermal_zone_params int340x_thermal_params = {
- 	.governor_name = "user_space",
- 	.no_hwmon = true,
-+	.userspace = true,
- };
- 
- struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
-@@ -259,14 +260,9 @@ struct int34x_thermal_zone *int340x_thermal_zone_add(struct acpi_device *adev,
- 		ret = PTR_ERR(int34x_thermal_zone->zone);
- 		goto err_thermal_zone;
+diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+index c6d74bc1c90b..6561e3767529 100644
+--- a/drivers/thermal/thermal_core.c
++++ b/drivers/thermal/thermal_core.c
+@@ -1477,6 +1477,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+ 			goto unregister;
  	}
--	ret = thermal_zone_device_enable(int34x_thermal_zone->zone);
--	if (ret)
--		goto err_enable;
  
- 	return int34x_thermal_zone;
++	if (tz->tzp && tz->tzp->userspace)
++		thermal_zone_device_disable(tz);
++
+ 	mutex_lock(&thermal_list_lock);
+ 	list_add_tail(&tz->node, &thermal_tz_list);
+ 	mutex_unlock(&thermal_list_lock);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index d07ea27e72a9..e8e8fac78fc8 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -247,6 +247,8 @@ struct thermal_zone_params {
+ 	 */
+ 	bool no_hwmon;
  
--err_enable:
--	thermal_zone_device_unregister(int34x_thermal_zone->zone);
- err_thermal_zone:
- 	acpi_lpat_free_conversion_table(int34x_thermal_zone->lpat_table);
- 	kfree(int34x_thermal_zone->aux_trips);
++	bool userspace;
++
+ 	int num_tbps;	/* Number of tbp entries */
+ 	struct thermal_bind_params *tbp;
+ 
 -- 
 2.29.2
 
