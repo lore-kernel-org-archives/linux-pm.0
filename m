@@ -2,135 +2,119 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B34AAC83027
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 22:17:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DF65FC63798
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 23:44:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 81A2422240
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 22:17:00 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 85FE620691
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 23:44:46 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.b="gVpNv7k1"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731661AbgK1Vts (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 28 Nov 2020 16:49:48 -0500
-Received: from szxga06-in.huawei.com ([45.249.212.32]:8470 "EHLO
-        szxga06-in.huawei.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1730098AbgK1Shz (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 13:37:55 -0500
-Received: from DGGEMS407-HUB.china.huawei.com (unknown [172.30.72.60])
-        by szxga06-in.huawei.com (SkyGuard) with ESMTP id 4Cjht84KQXzhj0M;
-        Sat, 28 Nov 2020 14:49:04 +0800 (CST)
-Received: from huawei.com (10.175.127.227) by DGGEMS407-HUB.china.huawei.com
- (10.3.19.207) with Microsoft SMTP Server id 14.3.487.0; Sat, 28 Nov 2020
- 14:49:18 +0800
-From:   Zhang Qilong <zhangqilong3@huawei.com>
-To:     <kuba@kernel.org>, <fugang.duan@nxp.com>, <davem@davemloft.net>,
-        <rjw@rjwysocki.net>, <geert@linux-m68k.org>
-CC:     <netdev@vger.kernel.org>, <linux-pm@vger.kernel.org>
-Subject: [PATCH v2] PM: runtime: replace pm_runtime_resume_and_get with pm_runtime_resume_and_get_sync
-Date:   Sat, 28 Nov 2020 14:52:43 +0800
-Message-ID: <20201128065243.2870987-1-zhangqilong3@huawei.com>
-X-Mailer: git-send-email 2.25.4
+        id S1726280AbgK1Xoa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Nov 2020 18:44:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58782 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725989AbgK1Xoa (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 18:44:30 -0500
+Received: from mail-lj1-x244.google.com (mail-lj1-x244.google.com [IPv6:2a00:1450:4864:20::244])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id CFF9EC0613D2;
+        Sat, 28 Nov 2020 15:43:49 -0800 (PST)
+Received: by mail-lj1-x244.google.com with SMTP id s9so10696883ljo.11;
+        Sat, 28 Nov 2020 15:43:49 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=A4+PFcgBTaTkF/FKuE+BID+gT0pT9KH7sfkapQYrDBs=;
+        b=gVpNv7k10XC4rlKGb9EcFr7zYdHtXwjROi/InIq1J3ZF3npx6NDQQXS0ZGWAwzjANE
+         bmvzWqQ+tzXgbHC8ej9+1Qg5G7Db8Qv5riUhQqpfToy+4z68V6mf5HEuxlZwT/1qxhdR
+         ZCrpnW4B6LyEG5+RhpZbDSHRqeJwtjkev+Ota+srXUSAHZDUPfG+cw0/rzpghuelGiDE
+         HN6CHUCq26kboAP3Ows7IqCU1qhrCudrg5i3DXn8nRLp5rds/fmycSOMIcboDfz0YIR0
+         PWRVVhj8Bum9hVrWI0hfr9Trv6riq4mCB6gchWPWArROM4CXoCuqvZOnc3O1aFSXBlVq
+         kTCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=A4+PFcgBTaTkF/FKuE+BID+gT0pT9KH7sfkapQYrDBs=;
+        b=pr3JCrsHAwLzOgYNk25d0qp9GZ7+T9JVeAfFILpv3cm+TmzY8KcoSsRJAt0GkgLf+S
+         lozRmD4VHLrKomwUu4fQhRQoDcKuM4PqozL5bm87nKkLtf9bTN69Y8bWfr6dOLAQSlu3
+         ltNIQPDDe89ceYCFWNru5W3/avviD132qBsZGH+u4IkUyjbmLEc1SA1XiMAl9AujRDT1
+         ApV0hmiiWLJYY13T06o2oA3ypSUHFOQNPdAt8N7vugXuM8DOSrxq9yb9UAIYFXb9pgUq
+         vcroM4inQeLpFcLPqvFobj7D9mgI0mhaeqYhI24VAZk7ZeJNxPs+EXXXF4i0jdU7I+k5
+         25IA==
+X-Gm-Message-State: AOAM533t35JOWBb239akFhl+kzTfBgOkMAvGSZCfwHTYTIcUIgBBe7sG
+        e5Oi2ztohjaoBb6FhB+GJo4=
+X-Google-Smtp-Source: ABdhPJxQN1oIJ2E8TWVf/0E50zZwAIiDDZM8RiEZuUNYAgmgLbJphpCZAkSV5TGeb+Pl7Kkz2288/A==
+X-Received: by 2002:a05:651c:211e:: with SMTP id a30mr6754336ljq.18.1606607028392;
+        Sat, 28 Nov 2020 15:43:48 -0800 (PST)
+Received: from localhost.localdomain (h-158-174-22-6.NA.cust.bahnhof.se. [158.174.22.6])
+        by smtp.gmail.com with ESMTPSA id k185sm1223370lfd.294.2020.11.28.15.43.47
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 28 Nov 2020 15:43:47 -0800 (PST)
+From:   Rikard Falkeborn <rikard.falkeborn@gmail.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Amit Kucheria <amitk@kernel.org>
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Rikard Falkeborn <rikard.falkeborn@gmail.com>
+Subject: [PATCH] thermal: Constify static attribute_group structs
+Date:   Sun, 29 Nov 2020 00:43:42 +0100
+Message-Id: <20201128234342.36684-1-rikard.falkeborn@gmail.com>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
-Content-Type:   text/plain; charset=US-ASCII
-X-Originating-IP: [10.175.127.227]
-X-CFilter-Loop: Reflected
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-In the pm_runtime_resume_and_get, pm_runtime_resume() is
-synchronous. Caller had to look into the implementation
-to verify that a change for pm_runtime_resume_and_get [0].
-So we use pm_rauntime_resume_and_get_sync to replace it to
-avoid making the same mistake while fixing
-pm_runtime_get_sync.
+The only usage of these structs is to assign their address to the
+thermal_zone_attribute_groups array, which consists of pointers to
+const, so make them const to allow the compiler to put them in read-only
+memory.
 
-[0]https://lore.kernel.org/netdev/20201110092933.3342784-1-zhangqilong3@huawei.com/T/#t
-Fixes: dd8088d5a896 ("PM: runtime: Add pm_runtime_resume_and_get to deal with usage counter")
-Signed-off-by: Zhang Qilong <zhangqilong3@huawei.com>
+Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
 ---
-Changelog:
-v2
-- change the fixes tag.
----
- drivers/net/ethernet/freescale/fec_main.c | 10 +++++-----
- include/linux/pm_runtime.h                |  4 ++--
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/thermal/thermal_sysfs.c | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/net/ethernet/freescale/fec_main.c b/drivers/net/ethernet/freescale/fec_main.c
-index 04f24c66cf36..6bfc46da2943 100644
---- a/drivers/net/ethernet/freescale/fec_main.c
-+++ b/drivers/net/ethernet/freescale/fec_main.c
-@@ -1808,7 +1808,7 @@ static int fec_enet_mdio_read(struct mii_bus *bus, int mii_id, int regnum)
- 	int ret = 0, frame_start, frame_addr, frame_op;
- 	bool is_c45 = !!(regnum & MII_ADDR_C45);
+diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
+index a6f371fc9af2..0866e949339b 100644
+--- a/drivers/thermal/thermal_sysfs.c
++++ b/drivers/thermal/thermal_sysfs.c
+@@ -425,7 +425,7 @@ static struct attribute *thermal_zone_dev_attrs[] = {
+ 	NULL,
+ };
  
--	ret = pm_runtime_resume_and_get(dev);
-+	ret = pm_runtime_resume_and_get_sync(dev);
- 	if (ret < 0)
- 		return ret;
+-static struct attribute_group thermal_zone_attribute_group = {
++static const struct attribute_group thermal_zone_attribute_group = {
+ 	.attrs = thermal_zone_dev_attrs,
+ };
  
-@@ -1867,7 +1867,7 @@ static int fec_enet_mdio_write(struct mii_bus *bus, int mii_id, int regnum,
- 	int ret, frame_start, frame_addr;
- 	bool is_c45 = !!(regnum & MII_ADDR_C45);
+@@ -434,7 +434,7 @@ static struct attribute *thermal_zone_mode_attrs[] = {
+ 	NULL,
+ };
  
--	ret = pm_runtime_resume_and_get(dev);
-+	ret = pm_runtime_resume_and_get_sync(dev);
- 	if (ret < 0)
- 		return ret;
+-static struct attribute_group thermal_zone_mode_attribute_group = {
++static const struct attribute_group thermal_zone_mode_attribute_group = {
+ 	.attrs = thermal_zone_mode_attrs,
+ };
  
-@@ -2273,7 +2273,7 @@ static void fec_enet_get_regs(struct net_device *ndev,
- 	u32 i, off;
- 	int ret;
- 
--	ret = pm_runtime_resume_and_get(dev);
-+	ret = pm_runtime_resume_and_get_sync(dev);
- 	if (ret < 0)
- 		return;
- 
-@@ -2974,7 +2974,7 @@ fec_enet_open(struct net_device *ndev)
- 	int ret;
- 	bool reset_again;
- 
--	ret = pm_runtime_resume_and_get(&fep->pdev->dev);
-+	ret = pm_runtime_resume_and_get_sync(&fep->pdev->dev);
- 	if (ret < 0)
- 		return ret;
- 
-@@ -3768,7 +3768,7 @@ fec_drv_remove(struct platform_device *pdev)
- 	struct device_node *np = pdev->dev.of_node;
- 	int ret;
- 
--	ret = pm_runtime_resume_and_get(&pdev->dev);
-+	ret = pm_runtime_resume_and_get_sync(&pdev->dev);
- 	if (ret < 0)
- 		return ret;
- 
-diff --git a/include/linux/pm_runtime.h b/include/linux/pm_runtime.h
-index b492ae00cc90..c83edb7473fc 100644
---- a/include/linux/pm_runtime.h
-+++ b/include/linux/pm_runtime.h
-@@ -387,14 +387,14 @@ static inline int pm_runtime_get_sync(struct device *dev)
+@@ -468,7 +468,7 @@ static umode_t thermal_zone_passive_is_visible(struct kobject *kobj,
+ 	return 0;
  }
  
- /**
-- * pm_runtime_resume_and_get - Bump up usage counter of a device and resume it.
-+ * pm_runtime_resume_and_get_sync - Bump up usage counter of a device and resume it.
-  * @dev: Target device.
-  *
-  * Resume @dev synchronously and if that is successful, increment its runtime
-  * PM usage counter. Return 0 if the runtime PM usage counter of @dev has been
-  * incremented or a negative error code otherwise.
-  */
--static inline int pm_runtime_resume_and_get(struct device *dev)
-+static inline int pm_runtime_resume_and_get_sync(struct device *dev)
- {
- 	int ret;
- 
+-static struct attribute_group thermal_zone_passive_attribute_group = {
++static const struct attribute_group thermal_zone_passive_attribute_group = {
+ 	.attrs = thermal_zone_passive_attrs,
+ 	.is_visible = thermal_zone_passive_is_visible,
+ };
 -- 
-2.25.4
+2.29.2
 
