@@ -2,96 +2,100 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 11617C3E8C5
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 02:21:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 34F92C64E7D
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:58:43 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id BF1AB207CD
-	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 02:21:05 +0000 (UTC)
-Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="W+c4WcPI"
+	by mail.kernel.org (Postfix) with ESMTP id E1A5D246E4
+	for <linux-pm@archiver.kernel.org>; Sat, 28 Nov 2020 17:58:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730285AbgK1B4d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 27 Nov 2020 20:56:33 -0500
-Received: from m42-4.mailgun.net ([69.72.42.4]:19866 "EHLO m42-4.mailgun.net"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728558AbgK1Bkc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Fri, 27 Nov 2020 20:40:32 -0500
-DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1606527590; h=References: In-Reply-To: Message-Id: Date:
- Subject: Cc: To: From: Sender;
- bh=pJvZfnlN+I7hdxtQ7If5F/t9qx8IuKWMTGk2I9ahoqc=; b=W+c4WcPIkP3hsM/qjneW2DbG/W2igyUkFglt1T7ZI9FIEuNArD4mlVvzsA59J2SpW4UNAylj
- vS9M834nUo/arLGPO3DmQST4pxMl8uPCFb35GmSQ0E0D3OPWvH/sEohF+Pwoo4KsIVg7TMJy
- +YdjH1kqsSMJHO9g0wmuDcUDxeA=
-X-Mailgun-Sending-Ip: 69.72.42.4
-X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
-Received: from smtp.codeaurora.org
- (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n04.prod.us-east-1.postgun.com with SMTP id
- 5fc1aa65b9b39088ed6be20d (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Sat, 28 Nov 2020 01:39:49
- GMT
-Sender: pkondeti=codeaurora.org@mg.codeaurora.org
-Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id AF268C43461; Sat, 28 Nov 2020 01:39:48 +0000 (UTC)
-Received: from codeaurora.org (unknown [202.46.22.19])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
-        (No client certificate requested)
-        (Authenticated sender: pkondeti)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id E00EBC433C6;
-        Sat, 28 Nov 2020 01:39:44 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org E00EBC433C6
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
-Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=pkondeti@codeaurora.org
-From:   Pavankumar Kondeti <pkondeti@codeaurora.org>
-To:     linux-kernel@vger.kernel.org
-Cc:     linux-pm@vger.kernel.org,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Pavankumar Kondeti <pkondeti@codeaurora.org>,
-        Lukasz Luba <lukasz.luba@arm.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Quentin Perret <qperret@google.com>,
-        "Gustavo A. R. Silva" <gustavo@embeddedor.com>
-Subject: [RESEND PATCH V3] PM / EM: Micro optimization in em_cpu_energy
-Date:   Sat, 28 Nov 2020 07:09:23 +0530
-Message-Id: <1606527564-27238-1-git-send-email-pkondeti@codeaurora.org>
-X-Mailer: git-send-email 2.7.4
-In-Reply-To: <671427cc-2abb-68eb-5e54-0851785efa84@intel.com>
-References: <671427cc-2abb-68eb-5e54-0851785efa84@intel.com>
+        id S1726992AbgK1R5z (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 28 Nov 2020 12:57:55 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:50352 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733041AbgK1Rzz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 28 Nov 2020 12:55:55 -0500
+Received: from 220-133-187-190.hinet-ip.hinet.net ([220.133.187.190] helo=localhost)
+        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <kai.heng.feng@canonical.com>)
+        id 1kj4RB-0006Sy-2o; Sat, 28 Nov 2020 17:55:10 +0000
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
+Cc:     Kai-Heng Feng <kai.heng.feng@canonical.com>,
+        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        Chuhong Yuan <hslester96@gmail.com>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        linux-pm@vger.kernel.org (open list:THERMAL),
+        linux-kernel@vger.kernel.org (open list)
+Subject: [PATCH 3/3] thermal: intel: intel_pch_thermal: Indicate userspace usage
+Date:   Sun, 29 Nov 2020 01:54:50 +0800
+Message-Id: <20201128175450.12456-3-kai.heng.feng@canonical.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201128175450.12456-1-kai.heng.feng@canonical.com>
+References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-When the sum of the utilization of CPUs in a power domain is zero,
-return the energy as 0 without doing any computations.
+The device isn't present under ACPI ThermalZone, and there's a dedicated
+userspace daemon for this thermal device.
 
-Acked-by: Quentin Perret <qperret@google.com>
-Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-Signed-off-by: Pavankumar Kondeti <pkondeti@codeaurora.org>
+Let thermal core know it shouldn't handle trips to avoid surprising
+thermal shutdown.
+
+Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
 ---
- include/linux/energy_model.h | 3 +++
- 1 file changed, 3 insertions(+)
+ drivers/thermal/intel/intel_pch_thermal.c | 11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-diff --git a/include/linux/energy_model.h b/include/linux/energy_model.h
-index b67a51c..8810f1f 100644
---- a/include/linux/energy_model.h
-+++ b/include/linux/energy_model.h
-@@ -103,6 +103,9 @@ static inline unsigned long em_cpu_energy(struct em_perf_domain *pd,
- 	struct em_perf_state *ps;
- 	int i, cpu;
+diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
+index 3b813ebb6ca1..e55e6318d733 100644
+--- a/drivers/thermal/intel/intel_pch_thermal.c
++++ b/drivers/thermal/intel/intel_pch_thermal.c
+@@ -270,6 +270,10 @@ static struct thermal_zone_device_ops tzd_ops = {
+ 	.get_trip_temp = pch_get_trip_temp,
+ };
  
-+	if (!sum_util)
-+		return 0;
++static struct thermal_zone_params tzd_params = {
++	.userspace = true,
++};
 +
- 	/*
- 	 * In order to predict the performance state, map the utilization of
- 	 * the most utilized CPU of the performance domain to a requested
+ enum board_ids {
+ 	board_hsw,
+ 	board_wpt,
+@@ -346,21 +350,16 @@ static int intel_pch_thermal_probe(struct pci_dev *pdev,
+ 		goto error_cleanup;
+ 
+ 	ptd->tzd = thermal_zone_device_register(bi->name, nr_trips, 0, ptd,
+-						&tzd_ops, NULL, 0, 0);
++						&tzd_ops, &tzd_params, 0, 0);
+ 	if (IS_ERR(ptd->tzd)) {
+ 		dev_err(&pdev->dev, "Failed to register thermal zone %s\n",
+ 			bi->name);
+ 		err = PTR_ERR(ptd->tzd);
+ 		goto error_cleanup;
+ 	}
+-	err = thermal_zone_device_enable(ptd->tzd);
+-	if (err)
+-		goto err_unregister;
+ 
+ 	return 0;
+ 
+-err_unregister:
+-	thermal_zone_device_unregister(ptd->tzd);
+ error_cleanup:
+ 	iounmap(ptd->hw_base);
+ error_release:
 -- 
-Qualcomm India Private Limited, on behalf of Qualcomm Innovation Center, Inc.
-Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum, a Linux Foundation Collaborative Project.
+2.29.2
 
