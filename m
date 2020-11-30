@@ -3,68 +3,137 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
 X-Spam-Status: No, score=-3.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BC76BC83014
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:40:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6908FC63777
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:41:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 99E8A22249
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:40:05 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 254702074A
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:41:14 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388156AbgK3Sjv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Nov 2020 13:39:51 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:46014 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388112AbgK3Sju (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2020 13:39:50 -0500
-Received: from 89-64-87-210.dynamic.chello.pl (89.64.87.210) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.530)
- id 1d25a2f50d092b2e; Mon, 30 Nov 2020 19:39:08 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Doug Smythies <dsmythies@telus.net>,
-        Giovanni Gherdovich <ggherdovich@suse.com>
-Subject: [RFC][PATCH 0/2] cpufreq: Allow drivers to receive more information from the governor
-Date:   Mon, 30 Nov 2020 19:33:49 +0100
-Message-ID: <1817571.2o5Kk4Ohv2@kreacher>
+        id S1728772AbgK3SlN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Nov 2020 13:41:13 -0500
+Received: from mga04.intel.com ([192.55.52.120]:50761 "EHLO mga04.intel.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727182AbgK3SlN (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Nov 2020 13:41:13 -0500
+IronPort-SDR: fHZTW5Cr+3BVT1mMo++LBjAAL2lEndh8GVZwc9V6BmyVKJ2vfrjFCh4Li+7z+PAxK+5sx6SgRo
+ 3aShGJ0BgIhw==
+X-IronPort-AV: E=McAfee;i="6000,8403,9821"; a="170124485"
+X-IronPort-AV: E=Sophos;i="5.78,382,1599548400"; 
+   d="scan'208";a="170124485"
+X-Amp-Result: SKIPPED(no attachment in message)
+X-Amp-File-Uploaded: False
+Received: from fmsmga004.fm.intel.com ([10.253.24.48])
+  by fmsmga104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Nov 2020 10:39:18 -0800
+IronPort-SDR: msdywq7HqrNzT1Hb5ew0nb3WdQsbUFcBqRZZnlMw0NTddmC3lKbUAR/NXDbqIhHPtnwNK9ZcVY
+ 6UAXf2JmV+2g==
+X-IronPort-AV: E=Sophos;i="5.78,382,1599548400"; 
+   d="scan'208";a="364356541"
+Received: from nathanhs-mobl1.amr.corp.intel.com ([10.209.72.72])
+  by fmsmga004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 30 Nov 2020 10:39:18 -0800
+Message-ID: <f863f2e1e322a8819c660f5eefbbc4acf7522990.camel@linux.intel.com>
+Subject: Re: [PATCH 1/3] thermal: core: Add indication for userspace usage
+From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
+To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc:     Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Zhang Rui <rui.zhang@intel.com>, amitk@kernel.org,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+Date:   Mon, 30 Nov 2020 10:39:17 -0800
+In-Reply-To: <D53454A1-5ED0-4B4D-B22F-8663C9970ECD@canonical.com>
+References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
+         <004fe225-1009-06d8-b297-c03a4c67550f@linaro.org>
+         <860126B8-1152-4EE3-B15E-B4E45EFE879F@canonical.com>
+         <fc67ad02826fb3adfd8457e1a0baf234a8fa3fce.camel@linux.intel.com>
+         <34348B03-5E27-49A0-A704-6332BAC00758@canonical.com>
+         <585bb5d3ee5bea063795682108576c3464ba72b6.camel@linux.intel.com>
+         <D53454A1-5ED0-4B4D-B22F-8663C9970ECD@canonical.com>
+Content-Type: text/plain; charset="UTF-8"
+User-Agent: Evolution 3.34.4 (3.34.4-1.fc31) 
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+On Tue, 2020-12-01 at 02:22 +0800, Kai-Heng Feng wrote:
+> > On Dec 1, 2020, at 02:13, Srinivas Pandruvada <
+> > srinivas.pandruvada@linux.intel.com> wrote:
+> 
+> [snipped] 
+> 
+> > > > What about creating an new callback
+> > > > 
+> > > > enum thermal_trip_status {
+> > > > 	THERMAL_TRIP_DISABLED = 0,
+> > > > 	THERMAL_TRIP_ENABLED,
+> > > > };
+> > > > 
+> > > > int get_trip_status(struct thermal_zone_device *, int trip,
+> > > > enum
+> > > > thermal_trip_status *state);
+> > > > 
+> > > > Then in 
+> > > > static void handle_thermal_trip(struct thermal_zone_device *tz,
+> > > > int
+> > > > trip)
+> > > > {
+> > > > 
+> > > > /* before tz->ops->get_trip_temp(tz, trip, &trip_temp); */
+> > > > if (tz->ops->get_trip_status) {
+> > > > 	enum thermal_trip_status *status;
+> > > > 
+> > > > 	if (!tz->ops->get_trip_status(tz, trip, &status)) {
+> > > > 		if (status == THERMAL_TRIP_DISABLED)
+> > > > 			return;	
+> > > > 	}
+> > > > }
+> > > > ...
+> > > > ...
+> > > > 
+> > > > }
+> > > > 
+> > > > 
+> > > > This callback will help the cases:
+> > > > - Allows drivers to selectively disable certain trips during
+> > > > init
+> > > > state
+> > > > or system resume where there can be spikes or always. int340x
+> > > > drivers
+> > > > can disable always.
+> > > 
+> > > This sounds really great. This is indeed can happen on system
+> > > resume,
+> > > before userspace process thaw.
+> > > 
+> > > > - Still give options for drivers to handle critical trip even
+> > > > if
+> > > > they
+> > > > are bound to user space governors. User space process may be
+> > > > dead,
+> > > > so
+> > > > still allow kernel to process graceful shutdown
+> > > 
+> > > To make the scenario happen, do we need a new sysfs to let
+> > > usespace
+> > > enable it with THERMAL_TRIP_ENABLED?
+> > This should be drivers call not user space.
+> 
+> Understood. So after thermal_zone_device_register(), the driver can
+> decide to what to return on get_trip_temp().
+get_trip_status()
 
-Using intel_pstate in the passive mode with HWP enabled, in particular under
-the schedutil governor, is still kind of problematic, because it has to assume
-that it should not allow the frequency to fall below the one requested by the
-governor.  For this reason, it translates the target frequency into HWP.REQ.MIN
-which generally causes the processor to run a bit too fast.
+> Let me work on a new patch if there's no other concern.
+Better to wait for confirmation from Daniel and others.
 
-Moreover, this allows the HWP algorithm to use any frequency between the target
-one and HWP.REQ.MAX that corresponds to the policy max limit and some workloads
-cause it to go for the max turbo frequency prematurely which hurts energy-
-efficiency without improving performance, even though the schedutil governor
-itself would not allow the frequency to ramp up so fast.
+Thanks,
+Srinivas
 
-This patch series attempts to improve the situation by introducing a new driver
-callback allowing the driver to receive more information from the governor.  In
-particular, this allows the min (required) and target (desired) performance
-levels to be passed to it and those can be used to give better hints to the
-hardware.
-
-Patch [1/2] updates the core and the schedutil governor and patch [2/2] modifies
-intel_pstate to use the new callback when appropriate.
-
-Please refer to the patch changelogs for details.
-
-Thanks!
-
-
+> 
+> Kai-Heng
+> 
+> > Thanks,
+> > Srinivas
 
