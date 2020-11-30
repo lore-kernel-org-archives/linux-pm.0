@@ -2,103 +2,204 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 81844C63777
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 22:51:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CA4C8C64E7B
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 22:51:39 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3174220725
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 22:51:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 77C3020725
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 22:51:39 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="dX39QC8v"
+	dkim=pass (1024-bit key) header.d=mg.codeaurora.org header.i=@mg.codeaurora.org header.b="xiyODCng"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730600AbgK3Wvg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Nov 2020 17:51:36 -0500
-Received: from z5.mailgun.us ([104.130.96.5]:10604 "EHLO z5.mailgun.us"
+        id S1726614AbgK3Wvj (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Nov 2020 17:51:39 -0500
+Received: from m42-4.mailgun.net ([69.72.42.4]:42515 "EHLO m42-4.mailgun.net"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729392AbgK3Wvg (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 30 Nov 2020 17:51:36 -0500
+        id S1729392AbgK3Wvi (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Mon, 30 Nov 2020 17:51:38 -0500
 DKIM-Signature: a=rsa-sha256; v=1; c=relaxed/relaxed; d=mg.codeaurora.org; q=dns/txt;
- s=smtp; t=1606776677; h=Content-Transfer-Encoding: MIME-Version:
- Message-Id: Date: Subject: Cc: To: From: Sender;
- bh=wIHgMmsHCnSa0+3dsCDmblT5fCSV3MruKCNgTVpRPVY=; b=dX39QC8vUuMraPgr1dc8iNAJjwiQQlgE6l21I9KHrGAPq1zzsyXgpL9N5rxJempL9qmlzkw4
- C/ov1B/zxMMztXrjAOysDTFxcTB5XHb0opFZBMTtrk11dWEw1EHBAr4VWP38S33AA+0E0ifR
- DeHrf5CziXC5//FOI4BycQW6MCg=
-X-Mailgun-Sending-Ip: 104.130.96.5
+ s=smtp; t=1606776681; h=Content-Transfer-Encoding: MIME-Version:
+ References: In-Reply-To: Message-Id: Date: Subject: Cc: To: From:
+ Sender; bh=HDl7UOGHxlMEeXUemp2TyRoeQg3MLQW/KGfzfmyonC4=; b=xiyODCngbJ36p7HFn6jVvHBDy5SzZnxYm3N6pzH4Z98L20MzpT9WNHCbsHyNgL5S7Klxlc+b
+ oOdHsyYRFdjPPZ7zHdB+PWfvyB8Qn3mJE2eajA9vQtYubCKXNtxYt6VS35bypU9dqeSa/SAw
+ IdEGCVANzHPhdn4MluW3e+11BHo=
+X-Mailgun-Sending-Ip: 69.72.42.4
 X-Mailgun-Sid: WyI5ZDFmMiIsICJsaW51eC1wbUB2Z2VyLmtlcm5lbC5vcmciLCAiYmU5ZTRhIl0=
 Received: from smtp.codeaurora.org
  (ec2-35-166-182-171.us-west-2.compute.amazonaws.com [35.166.182.171]) by
- smtp-out-n03.prod.us-east-1.postgun.com with SMTP id
- 5fc577471f6054cb8d557f0e (version=TLS1.2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 30 Nov 2020 22:50:47
+ smtp-out-n06.prod.us-west-2.postgun.com with SMTP id
+ 5fc5774a265512b1b2e7f3ee (version=TLS1.2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256); Mon, 30 Nov 2020 22:50:50
  GMT
 Sender: ilina=codeaurora.org@mg.codeaurora.org
 Received: by smtp.codeaurora.org (Postfix, from userid 1001)
-        id C92CFC43461; Mon, 30 Nov 2020 22:50:46 +0000 (UTC)
+        id E73A9C433ED; Mon, 30 Nov 2020 22:50:49 +0000 (UTC)
 Received: from codeaurora.org (i-global254.qualcomm.com [199.106.103.254])
         (using TLSv1.2 with cipher ECDHE-RSA-AES128-SHA256 (128/128 bits))
         (No client certificate requested)
         (Authenticated sender: ilina)
-        by smtp.codeaurora.org (Postfix) with ESMTPSA id 823B9C433ED;
-        Mon, 30 Nov 2020 22:50:45 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 823B9C433ED
+        by smtp.codeaurora.org (Postfix) with ESMTPSA id 7F727C43460;
+        Mon, 30 Nov 2020 22:50:48 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.3.2 smtp.codeaurora.org 7F727C43460
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; dmarc=none (p=none dis=none) header.from=codeaurora.org
 Authentication-Results: aws-us-west-2-caf-mail-1.web.codeaurora.org; spf=fail smtp.mailfrom=ilina@codeaurora.org
 From:   Lina Iyer <ilina@codeaurora.org>
 To:     rjw@rjwysocki.net, ulf.hansson@linaro.org
 Cc:     linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         Lina Iyer <ilina@codeaurora.org>
-Subject: [PATCH v6 0/3] Better domain idle from device wakeup patterns
-Date:   Mon, 30 Nov 2020 15:50:36 -0700
-Message-Id: <20201130225039.15981-1-ilina@codeaurora.org>
+Subject: [PATCH v6 2/3] PM / domains: inform PM domain of a device's next wakeup
+Date:   Mon, 30 Nov 2020 15:50:38 -0700
+Message-Id: <20201130225039.15981-3-ilina@codeaurora.org>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201130225039.15981-1-ilina@codeaurora.org>
+References: <20201130225039.15981-1-ilina@codeaurora.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi,
+Some devices may have a predictable interrupt pattern while executing
+usecases. An example would be the VSYNC interrupt associated with
+display devices. A 60 Hz display could cause a interrupt every 16 ms. If
+the device were in a PM domain, the domain would need to be powered up
+for device to resume and handle the interrupt.
 
-The v5[1] of the series brought out some interesting discussions. The
-most important being is it worth adding the additional expense to all PM
-domains even if no wakeup pattern is available. It seems like
-maintaining a domain specific flag that the governor could check is a
-generic enough option. That should disable additional overhead for
-domains that do not need this feature.
+Entering a domain idle state saves power, only if the residency of the
+idle state is met. Without knowing the idle duration of the domain, the
+governor would just choose the deepest idle state that matches the QoS
+requirements. The domain might be powered off just as the device is
+expecting to wake up. If devices could inform PM frameworks of their
+next event, the parent PM domain's idle duration can be determined.
 
-Ulf suggested that we could allow wakeups only if any of the domain idle
-state specifies a residency. However, we don't want to check for next
-wakeup everytime the domain enters idle just because the domain
-specifies an idle state with residency. This is also not desired.
+So let's add the dev_pm_genpd_set_next_wakeup() API for the device to
+inform PM domains of the impending wakeup. This information will be the
+domain governor to determine the best idle state given the wakeup.
 
-Also, if the domain checks for next wakeup, should the parent domains of
-the domain also check for next wakeup? And when do we set that up? These
-are questions that we don't know the answers yet. So, let's enable the
-domain governor only if the domain sets up the flag or when the device
-in the domain specifies the next wakeup.
+Signed-off-by: Lina Iyer <ilina@codeaurora.org>
+---
+Changes in v6:
+	- Update documentation
+Changes in v5:
+	- Fix commit text as pointed by Ulf
+	- Use -EOPNOTSUPP
+Changes in v4:
+	- Use PM domain data to store next_wakeup
+	- Drop runtime PM documentation
+Changes in v3:
+	- Fix unwanted change
+Changes in v2:
+	- Update documentation
+	- Remove runtime PM enabled check
+	- Update commit text
+---
+ drivers/base/power/domain.c | 41 +++++++++++++++++++++++++++++++++++++
+ include/linux/pm_domain.h   |  8 ++++++++
+ 2 files changed, 49 insertions(+)
 
-The previous post of the series explaining why this is a useful feature
-is v5[1]. Please let me know what you think.
-
-Thanks,
-Lina
-
-[1]. https://www.spinics.net/lists/linux-arm-msm/msg75555.html
-
-Lina Iyer (3):
-  PM / Domains: add domain feature flag for next wakeup
-  PM / domains: inform PM domain of a device's next wakeup
-  PM / Domains: use device's next wakeup to determine domain idle state
-
- drivers/base/power/domain.c          |  59 ++++++++++++++++
- drivers/base/power/domain_governor.c | 102 ++++++++++++++++++++++++---
- include/linux/pm_domain.h            |  37 ++++++++--
- 3 files changed, 183 insertions(+), 15 deletions(-)
-
+diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
+index 1e6c0bf1c945..191539a8e06d 100644
+--- a/drivers/base/power/domain.c
++++ b/drivers/base/power/domain.c
+@@ -408,6 +408,46 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
+ }
+ EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
+ 
++/**
++ * dev_pm_genpd_set_next_wakeup - Notify PM framework of an impending wakeup.
++ *
++ * @dev: Device to handle
++ * @next: impending interrupt/wakeup for the device
++ *
++ * Allow devices to inform of the next wakeup. But, if the domain were already
++ * powered off, we will not wakeup the domain to recompute it's idle duration.
++ * Although devices are expected to update the next_wakeup after the end of
++ * their usecase as well, it is possible the devices themselves may not know
++ * about that. Stale @next will be ignored when powering off the domain.
++ */
++int dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
++{
++	struct generic_pm_domain *genpd;
++	struct generic_pm_domain_data *gpd_data;
++	int ret = -EINVAL;
++
++	genpd = dev_to_genpd_safe(dev);
++	if (!genpd)
++		return -ENODEV;
++
++	if (WARN_ON(!dev->power.subsys_data ||
++		    !dev->power.subsys_data->domain_data))
++		return ret;
++
++	genpd_lock(genpd);
++	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
++	if (ktime_before(ktime_get(), next)) {
++		gpd_data->next_wakeup = next;
++		genpd->flags |= GENPD_FLAG_GOV_NEXT_WAKEUP;
++		ret = 0;
++	}
++	genpd_unlock(genpd);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
++
++
+ static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
+ {
+ 	unsigned int state_idx = genpd->state_idx;
+@@ -1450,6 +1490,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
+ 	gpd_data->td.constraint_changed = true;
+ 	gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
+ 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
++	gpd_data->next_wakeup = KTIME_MAX;
+ 
+ 	spin_lock_irq(&dev->power.lock);
+ 
+diff --git a/include/linux/pm_domain.h b/include/linux/pm_domain.h
+index 1f359bd19f77..cc27d3d88849 100644
+--- a/include/linux/pm_domain.h
++++ b/include/linux/pm_domain.h
+@@ -9,6 +9,7 @@
+ #define _LINUX_PM_DOMAIN_H
+ 
+ #include <linux/device.h>
++#include <linux/ktime.h>
+ #include <linux/mutex.h>
+ #include <linux/pm.h>
+ #include <linux/err.h>
+@@ -197,6 +198,7 @@ struct generic_pm_domain_data {
+ 	struct notifier_block *power_nb;
+ 	int cpu;
+ 	unsigned int performance_state;
++	ktime_t	next_wakeup;
+ 	void *data;
+ };
+ 
+@@ -229,6 +231,7 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state);
+ int dev_pm_genpd_add_notifier(struct device *dev, struct notifier_block *nb);
+ int dev_pm_genpd_remove_notifier(struct device *dev);
+ void genpd_enable_next_wakeup(struct generic_pm_domain *genpd, bool enable);
++int dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next);
+ 
+ extern struct dev_power_governor simple_qos_governor;
+ extern struct dev_power_governor pm_domain_always_on_gov;
+@@ -291,6 +294,11 @@ static void genpd_enable_next_wakeup(struct generic_pm_domain *genpd,
+ 				     bool enable)
+ { }
+ 
++static inline int dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
++{
++	return -EOPNOTSUPP;
++}
++
+ #define simple_qos_governor		(*(struct dev_power_governor *)(NULL))
+ #define pm_domain_always_on_gov		(*(struct dev_power_governor *)(NULL))
+ #endif
 -- 
 The Qualcomm Innovation Center, Inc. is a member of the Code Aurora Forum,
 a Linux Foundation Collaborative Project
