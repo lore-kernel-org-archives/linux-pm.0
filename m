@@ -2,93 +2,183 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5BD38C71156
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:24:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id A164FC63777
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:39:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 18ED7206F9
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:24:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 642152074A
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 18:39:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388015AbgK3SYg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Nov 2020 13:24:36 -0500
-Received: from mail-ed1-f67.google.com ([209.85.208.67]:38077 "EHLO
-        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388112AbgK3SYg (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2020 13:24:36 -0500
-Received: by mail-ed1-f67.google.com with SMTP id y4so17472354edy.5;
-        Mon, 30 Nov 2020 10:24:13 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=I9ONVBtfScKIMTye82bfGQ5rddLKQrmuSaE2Zj5EgGI=;
-        b=irAHwtaB9jiuv+vG00w505UybL5aiKHDguodT6LJytjnXVtNtlwJ76oRFwituz8twK
-         WEPEW0R6JStai9TjYrNdp2xpsuZL7WgA/sRsUW7E6KdmtetiXt/tURyp4XuPYCpfqU8P
-         ABz3fqwZ6TKFKv5glz0IsRpd4miRvplFOKliaYL92niQOKVnogCK92Je/nJ75o6LYtEc
-         sNEMz1lQgDvtpgqAE+hccYt7VFx+OX87lUVhXvfxhg2GJsEIrcOSTNYgR+nbSV4wBKEi
-         l7NdNWUkryCRWIkformrHmA9jBPxXIk9IKbcrfwfUhq/CnqwW7be6khT7zadS96PwKCn
-         gSig==
-X-Gm-Message-State: AOAM533PavAV4lPijyay5l0BGiK+ve6wAtdtYgnN1skGvu5hg0laMHsG
-        kO21O1iyYd2qEoVvX0TR5WU=
-X-Google-Smtp-Source: ABdhPJwYHGbHVMApFqE392EkdKd4CbGtej8nEk3tKKJMIPVxgXA2gu998VoT05uHS0KZ4By5J9o3BA==
-X-Received: by 2002:a50:8f64:: with SMTP id 91mr23297490edy.310.1606760628069;
-        Mon, 30 Nov 2020 10:23:48 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id v18sm789274edx.30.2020.11.30.10.23.46
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 30 Nov 2020 10:23:47 -0800 (PST)
-Date:   Mon, 30 Nov 2020 20:23:45 +0200
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Georgi Djakov <georgi.djakov@linaro.org>
-Cc:     Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
-Subject: Re: [PATCH v10 01/19] dt-bindings: memory: tegra20: emc: Document
- opp-supported-hw property
-Message-ID: <20201130182345.GA28450@kozik-lap>
-References: <20201123002723.28463-1-digetx@gmail.com>
- <20201123002723.28463-2-digetx@gmail.com>
- <46b3bab7-1c2c-2f50-6e41-f411e532357b@linaro.org>
+        id S2388138AbgK3Sjs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Nov 2020 13:39:48 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61374 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388112AbgK3Sjs (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2020 13:39:48 -0500
+Received: from 89-64-87-210.dynamic.chello.pl (89.64.87.210) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.530)
+ id 6703218980216aac; Mon, 30 Nov 2020 19:39:05 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Doug Smythies <dsmythies@telus.net>,
+        Giovanni Gherdovich <ggherdovich@suse.com>
+Subject: [RFC][PATCH 2/2] cpufreq: intel_pstate: Implement the ->adjust_perf() callback
+Date:   Mon, 30 Nov 2020 19:37:55 +0100
+Message-ID: <9641625.O8ij7EI7nc@kreacher>
+In-Reply-To: <1817571.2o5Kk4Ohv2@kreacher>
+References: <1817571.2o5Kk4Ohv2@kreacher>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46b3bab7-1c2c-2f50-6e41-f411e532357b@linaro.org>
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 30, 2020 at 11:48:18AM +0200, Georgi Djakov wrote:
-> On 23.11.20 2:27, Dmitry Osipenko wrote:
-> > Document opp-supported-hw property, which is not strictly necessary to
-> > have on Tegra20, but it's very convenient to have because all other SoC
-> > core devices will use hardware versioning, and thus, it's good to maintain
-> > the consistency.
-> 
-> Hi Dmitry,
-> 
-> I believe Krzysztof is waiting for Ack on the binding before merging
-> this patch (and the rest), but unfortunately it was not sent to the
-> DT mailing list for review.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Indeed I am still waiting for Rob's and Thierry's acks for this and the
-following patches.  It has been just a week so I'll give it few more
-days.
+Make intel_pstate expose the ->adjust_perf() callback when it
+operates in the passive mode with HWP enabled which causes the
+schedutil governor to use that callback instead of ->fast_switch().
 
-Best regards,
-Krzysztof
+The minimum and target performance-level values passed by the
+governor to ->adjust_perf() are converted to HWP.REQ.MIN and
+HWP.REQ.DESIRED, respectively, which allows the processor to
+adjust its configuration to maximize energy-efficiency while
+providing sufficient capacity.
+
+The "busy" argument of ->adjust_perf() is used to omit updates
+that are likely to cause performance to drop below the expected
+level.
+
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpufreq/intel_pstate.c |   77 ++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 65 insertions(+), 12 deletions(-)
+
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2526,20 +2526,19 @@ static void intel_cpufreq_trace(struct c
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
+ 
+-static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
+-				     bool strict, bool fast_switch)
++static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 min, u32 max,
++				     u32 desired, bool fast_switch)
+ {
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
+ 
+ 	value &= ~HWP_MIN_PERF(~0L);
+-	value |= HWP_MIN_PERF(target_pstate);
++	value |= HWP_MIN_PERF(min);
+ 
+-	/*
+-	 * The entire MSR needs to be updated in order to update the HWP min
+-	 * field in it, so opportunistically update the max too if needed.
+-	 */
+ 	value &= ~HWP_MAX_PERF(~0L);
+-	value |= HWP_MAX_PERF(strict ? target_pstate : cpu->max_perf_ratio);
++	value |= HWP_MAX_PERF(max);
++
++	value &= ~HWP_DESIRED_PERF(~0L);
++	value |= HWP_DESIRED_PERF(desired);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -2569,11 +2568,15 @@ static int intel_cpufreq_update_pstate(s
+ 	int old_pstate = cpu->pstate.current_pstate;
+ 
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+-	if (hwp_active)
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate,
+-					 policy->strict_target, fast_switch);
+-	else if (target_pstate != old_pstate)
++	if (hwp_active) {
++		int max_pstate = policy->strict_target ?
++				 	target_pstate : cpu->max_perf_ratio;
++
++		intel_cpufreq_adjust_hwp(cpu, target_pstate, max_pstate, 0,
++					 fast_switch);
++	} else if (target_pstate != old_pstate) {
+ 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
++	}
+ 
+ 	cpu->pstate.current_pstate = target_pstate;
+ 
+@@ -2634,6 +2637,54 @@ static unsigned int intel_cpufreq_fast_s
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
++static void intel_cpufreq_adjust_perf(unsigned int cpunum, bool busy,
++				      unsigned long min_perf,
++				      unsigned long target_perf,
++				      unsigned long capacity)
++{
++	struct cpudata *cpu = all_cpu_data[cpunum];
++	int old_pstate = cpu->pstate.current_pstate;
++	int cap_pstate, min_pstate, max_pstate, target_pstate;
++
++	update_turbo_state();
++	cap_pstate = global.turbo_disabled ? cpu->pstate.max_pstate :
++					     cpu->pstate.turbo_pstate;
++
++	/* Optimization: Avoid unnecessary divisions. */
++
++	target_pstate = cap_pstate;
++	if (target_perf < capacity) {
++		target_pstate = DIV_ROUND_UP(cap_pstate * target_perf, capacity);
++		/*
++		 * Do not reduce the target P-state if the CPU has been busy
++		 * recently, as the reduction is likely to be premature then.
++		 */
++		if (target_pstate < old_pstate && busy)
++			target_pstate = old_pstate;
++	}
++
++	min_pstate = cap_pstate;
++	if (min_perf < capacity)
++		min_pstate = DIV_ROUND_UP(cap_pstate * min_perf, capacity);
++
++	if (min_pstate < cpu->pstate.min_pstate)
++		min_pstate = cpu->pstate.min_pstate;
++
++	if (min_pstate < cpu->min_perf_ratio)
++		min_pstate = cpu->min_perf_ratio;
++
++	max_pstate = min(cap_pstate, cpu->max_perf_ratio);
++	if (max_pstate < min_pstate)
++		max_pstate = min_pstate;
++
++	target_pstate = clamp_t(int, target_pstate, min_pstate, max_pstate);
++
++	intel_cpufreq_adjust_hwp(cpu, min_pstate, max_pstate, target_pstate, true);
++
++	cpu->pstate.current_pstate = target_pstate;
++	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
++}
++
+ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	int max_state, turbo_max, min_freq, max_freq, ret;
+@@ -3032,6 +3083,8 @@ static int __init intel_pstate_init(void
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.flags |= CPUFREQ_NEED_UPDATE_LIMITS;
++			intel_cpufreq.fast_switch = NULL;
++			intel_cpufreq.adjust_perf = intel_cpufreq_adjust_perf;
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
+
+
 
