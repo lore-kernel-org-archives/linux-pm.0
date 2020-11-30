@@ -2,172 +2,272 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AF1FC5519F
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 08:25:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D8382C8300F
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 08:30:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4C0DE20731
-	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 08:25:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 703D0206CA
+	for <linux-pm@archiver.kernel.org>; Mon, 30 Nov 2020 08:30:53 +0000 (UTC)
+Authentication-Results: mail.kernel.org;
+	dkim=pass (1024-bit key) header.d=samsung.com header.i=@samsung.com header.b="c0tNLxwR"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727189AbgK3IYs convert rfc822-to-8bit (ORCPT
-        <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 30 Nov 2020 03:24:48 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:35854 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726390AbgK3IYs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2020 03:24:48 -0500
-Received: from mail-pl1-f198.google.com ([209.85.214.198])
-        by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <kai.heng.feng@canonical.com>)
-        id 1kjeTd-0006fc-T1
-        for linux-pm@vger.kernel.org; Mon, 30 Nov 2020 08:24:06 +0000
-Received: by mail-pl1-f198.google.com with SMTP id x17so7306447pll.8
-        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2020 00:24:05 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
-         :content-transfer-encoding:message-id:references:to;
-        bh=WC2KrYmZEQhS4bYbMRHeasgDxnYze36syp9Jw0G7Zl0=;
-        b=JFIuATL/bqdVrt/ieMJ4XOra6JmoRIEcVZozvztnfi00UFBA0Rvf9lWJgYx12wn45H
-         LYsZljxWBiYIkpxnEKS0lFFWYOEBK1FwEKbDxH87ZBVavY3yl+Es7noX7Qfu/nzi60qb
-         3HbPQ90sAprTNo7A0m4ot8SSPBVrqJVQfKK50U+91H/ixV1+nV5hh4QwCKi9Ua4xW5Ps
-         SIQNN/tBGU6z/3aSd1b7OBJVfw+RWf2YzIJHjMXFAfUevJdyrbSqCUa8J7AkYJOI4C0r
-         bLutb0Pn7rOqhFEE1UlylypgFkVLAcjwVmmI3neFjx0Im3XRiqt3m8GOH8Cr0Gldc8Uz
-         O8og==
-X-Gm-Message-State: AOAM533d1eEDZxS1wHRQcod+2fiRZ/S7wv2xUlXEIo+sjtQIsrsRcZYt
-        Aym5E1S1n1T38O3FtWUXyix7iTgEEeBNw7FWE727PGTG+lwchJD+X5oWrNQzxRN3Ti5G+7wwk4F
-        65tUBLqE1tG6yZKkeui4pxCC/dwIwcxxqQsja
-X-Received: by 2002:a17:90a:14e5:: with SMTP id k92mr24400246pja.169.1606724644260;
-        Mon, 30 Nov 2020 00:24:04 -0800 (PST)
-X-Google-Smtp-Source: ABdhPJzzpiB/Npvx890VnGQHhXB2QM0Ikm4RSl0RFlxwAF94yhlBPWrtFx1sj/qbXacJqNEkN4/TDw==
-X-Received: by 2002:a17:90a:14e5:: with SMTP id k92mr24400219pja.169.1606724643869;
-        Mon, 30 Nov 2020 00:24:03 -0800 (PST)
-Received: from [192.168.1.208] (220-133-187-190.HINET-IP.hinet.net. [220.133.187.190])
-        by smtp.gmail.com with ESMTPSA id y188sm15679637pfy.98.2020.11.30.00.24.01
-        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Mon, 30 Nov 2020 00:24:03 -0800 (PST)
-Content-Type: text/plain;
-        charset=utf-8
-Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.20.0.2.21\))
-Subject: Re: [PATCH 1/3] thermal: core: Add indication for userspace usage
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-In-Reply-To: <004fe225-1009-06d8-b297-c03a4c67550f@linaro.org>
-Date:   Mon, 30 Nov 2020 16:23:59 +0800
-Cc:     Zhang Rui <rui.zhang@intel.com>, amitk@kernel.org,
-        "open list:THERMAL" <linux-pm@vger.kernel.org>,
-        open list <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-Content-Transfer-Encoding: 8BIT
-Message-Id: <860126B8-1152-4EE3-B15E-B4E45EFE879F@canonical.com>
-References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
- <004fe225-1009-06d8-b297-c03a4c67550f@linaro.org>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-X-Mailer: Apple Mail (2.3654.20.0.2.21)
+        id S1727685AbgK3Iav (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 30 Nov 2020 03:30:51 -0500
+Received: from mailout4.samsung.com ([203.254.224.34]:44361 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726667AbgK3Iau (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 30 Nov 2020 03:30:50 -0500
+Received: from epcas1p2.samsung.com (unknown [182.195.41.46])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20201130083006epoutp046a2942ad3659d7cf9c6fdeb11b4ccb2e~MO_F47zse0089600896epoutp04S
+        for <linux-pm@vger.kernel.org>; Mon, 30 Nov 2020 08:30:06 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20201130083006epoutp046a2942ad3659d7cf9c6fdeb11b4ccb2e~MO_F47zse0089600896epoutp04S
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1606725006;
+        bh=Mt/gdIsFl1M12MFRytnwm1abg7voXmSQOUlTijrF/j0=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=c0tNLxwRL6vnJ4bVraRUOGFIW9tS1CI4ZkPOkDqhPU0HyxViSVDAN0V5iteGeupAa
+         kdYvZdlaaUlnCIrY4ye0HFg38Np30JFL62smFYrzL3orB+aEsCZ5dIaLYJAEIxhykH
+         pv5LR0yBMkvPcPpk1+ePrDoQyHUHYOtegcJ7lG7g=
+Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
+        epcas1p4.samsung.com (KnoxPortal) with ESMTP id
+        20201130083005epcas1p480f9d22c867543847495688f7331db92~MO_E2dxFa0894908949epcas1p4p;
+        Mon, 30 Nov 2020 08:30:05 +0000 (GMT)
+Received: from epsmges1p2.samsung.com (unknown [182.195.40.156]) by
+        epsnrtp1.localdomain (Postfix) with ESMTP id 4Ckz1l1yvtz4x9QC; Mon, 30 Nov
+        2020 08:30:03 +0000 (GMT)
+Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
+        epsmges1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
+        BF.F7.63458.B8DA4CF5; Mon, 30 Nov 2020 17:30:03 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
+        20201130083001epcas1p22f14f300f10546db02dc53183e8c196c~MO_BcgFtV1026010260epcas1p2r;
+        Mon, 30 Nov 2020 08:30:01 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20201130083001epsmtrp12bba35f31748f0e58ac47cddc8699ce0~MO_BaMzuj3161831618epsmtrp1Y;
+        Mon, 30 Nov 2020 08:30:01 +0000 (GMT)
+X-AuditID: b6c32a36-6dfff7000000f7e2-a0-5fc4ad8b140e
+Received: from epsmtip1.samsung.com ( [182.195.34.30]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        B8.54.13470.98DA4CF5; Mon, 30 Nov 2020 17:30:01 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip1.samsung.com (KnoxPortal) with ESMTPA id
+        20201130083001epsmtip1b15540c60c5e93579b52f1ed5fe124d5~MO_Ay9IdD3262532625epsmtip1X;
+        Mon, 30 Nov 2020 08:30:01 +0000 (GMT)
+Subject: Re: [PATCH v10 00/19] Introduce memory interconnect for NVIDIA
+ Tegra SoCs
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <d12880ba-6780-cfee-7667-3723fcad9f3a@samsung.com>
+Date:   Mon, 30 Nov 2020 17:44:39 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
+MIME-Version: 1.0
+In-Reply-To: <20201123002723.28463-1-digetx@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrOJsWRmVeSWpSXmKPExsWy7bCmvm732iPxBu9WcFq8+/SU1WL1x8eM
+        Fle+vmezmL53E5tFy6xFLBbnz29gt9j6dA2TxdmmN+wWl3fNYbP43HuE0aLzyyw2i4unXC1u
+        N65gs5i0diqjxdln3hate4+wW/y7tpHF4ueueSwWmx8cY3MQ9nh/o5XdY+esu+wel879YfbY
+        tKqTzePOtT1sHve7jzN59Da/Y/Po27KK0ePzJrkAzqhsm4zUxJTUIoXUvOT8lMy8dFsl7+B4
+        53hTMwNDXUNLC3MlhbzE3FRbJRefAF23zBygp5QUyhJzSoFCAYnFxUr6djZF+aUlqQoZ+cUl
+        tkqpBSk5BZYFesWJucWleel6yfm5VoYGBkamQIUJ2Rl/W66zFuwxrzh7YRNLA+NyzS5GTg4J
+        AROJb3NXsnUxcnEICexglHjxaB4LhPOJUeLJtm4o5xujxOydF9lgWtZvXMUKkdjLKPFtRxMj
+        hPOeUWLJ7DUsIFXCAiESd/+8BqsSEbjJIrF8xT+gdg4OZoEqiU1/vEFq2AS0JPa/uAE2lV9A
+        UeLqj8eMIDavgJ1E45QTTCA2i4CqxK8ri8FsUYEwiZPbWqBqBCVOznwCtotTwEzi5+GjYDaz
+        gLjErSfzmSBseYntb+cwg9wgIdDPKXFpyj9miBdcJFbNmghlC0u8Or6FHcKWknjZ3wZlV0us
+        PHmEDaK5g1Fiy/4LrBAJY4n9SyczQTyjKbF+lz5EWFFi5++5jBCL+STefe1hBSmREOCV6GgT
+        gihRlrj84C4ThC0psbi9k20Co9IsJO/MQvLCLCQvzEJYtoCRZRWjWGpBcW56arFhgRFydG9i
+        BKd4LbMdjJPeftA7xMjEwXiIUYKDWUmEN4PjYLwQb0piZVVqUX58UWlOavEhRlNgAE9klhJN
+        zgdmmbySeENTI2NjYwsTQzNTQ0Mlcd4/2h3xQgLpiSWp2ampBalFMH1MHJxSDUxy7tfXVRZO
+        WnV33a2YCY8PpxXIeaUHpHDlf0t8sPNSeM2JlYltSoX/7OpOFv588HK1x8PJ3w/t6Z2p+LVv
+        RV3kR6sj08MPCD+rMDgZ5/84QXi3YoWLbv724vh9W7TfxKiFla75tm/JvG92qUs/3ZV+n7h+
+        tWD8tdQK5aMBWxdaC9xfU7H9bc2DLoaIhmvbg06yrNZ48Nq0aPKFAnvvu4wRix5n7zyuNtvn
+        v2bB+bu257+yxYkzCr6J1vM8Zbq479OKyyUNtbF2D1p/3DGSm9xtzr9lxezgtZ8yVmz4lvjh
+        07En2xiilibbTbiX9Izv0yNzGT22nq9mNUEC6aF7pXqeyc+Rt3XSF9lRK/a6572KEktxRqKh
+        FnNRcSIAjXo+K3oEAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrIIsWRmVeSWpSXmKPExsWy7bCSnG7n2iPxBque6Vi8+/SU1WL1x8eM
+        Fle+vmezmL53E5tFy6xFLBbnz29gt9j6dA2TxdmmN+wWl3fNYbP43HuE0aLzyyw2i4unXC1u
+        N65gs5i0diqjxdln3hate4+wW/y7tpHF4ueueSwWmx8cY3MQ9nh/o5XdY+esu+wel879YfbY
+        tKqTzePOtT1sHve7jzN59Da/Y/Po27KK0ePzJrkAzigum5TUnMyy1CJ9uwSujL8t11kL9phX
+        nL2wiaWBcblmFyMnh4SAicT6jatYQWwhgd2MEhPfWEPEJSWmXTzK3MXIAWQLSxw+XNzFyAVU
+        8pZRYun5JrB6YYEQiWk3PjGDJEQE7rJITPpxiw0kwSxQJbFw7WI2iI5ORon2hqOMIAk2AS2J
+        /S9ugBXxCyhKXP3xGCzOK2An0TjlBBOIzSKgKvHrymIwW1QgTGLnksdMEDWCEidnPmEBsTkF
+        zCR+Hj7KArFMXeLPvEvMELa4xK0n85kgbHmJ7W/nME9gFJ6FpH0WkpZZSFpmIWlZwMiyilEy
+        taA4Nz232LDAMC+1XK84Mbe4NC9dLzk/dxMjONa1NHcwbl/1Qe8QIxMH4yFGCQ5mJRHeDI6D
+        8UK8KYmVValF+fFFpTmpxYcYpTlYlMR5bxQujBMSSE8sSc1OTS1ILYLJMnFwSjUwJQrLxCjf
+        2mfh4JjsG2A2IfRLBpu+XduNphWrtW45y59/nTsnVGKOsKWPa6NY2Z/k+Gb2sy0iXzbHPLg9
+        5ew9i4sn3f6pG7xp2iL31iIy3eSe1OcXhb8+HvmywSx3o+Hq/cz5ZbG/LYWTNHT+v1jecXnn
+        j1krpIMr56lauH/xNbxq0Fl7+tg9Zseij6fSn/AWLQ9alFfTsOuHhrGkrPTT3ubFTrKzjRKe
+        yJ/LSL/hGcd/Sm2h6c0vvB2lGd9WbxVk22xxuGHNJq8Qf446Q1n1rHfMYuuf//W5bzn9S9cZ
+        +Qh+2cyUOfN4NWI0mOJ9L5RUHfmxJDE12mDT0anl/5T3t9yXPDttsY7d/DMGPySVWIozEg21
+        mIuKEwGzxjm4ZAMAAA==
+X-CMS-MailID: 20201130083001epcas1p22f14f300f10546db02dc53183e8c196c
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20201123003254epcas1p1763e1ce693d7cb8e2f20d521e701ad5f
+References: <CGME20201123003254epcas1p1763e1ce693d7cb8e2f20d521e701ad5f@epcas1p1.samsung.com>
+        <20201123002723.28463-1-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Dmitry,
+
+The v5.10-rc6 was released from linus git tree.
+Generally, I will send the pull-quest about devfreq to linux-pm.git maintainer
+after releasing the v5.1-rc7 for the integration test on linux-pm.git.
+
+The icc patches in this patch have not yet merged. If these patches
+are not merged before v5.10-rc7, Maybe, I'll apply the devfreq patches
+for v5.12-rc1.
+
+Best Regards,
+Chanwoo Choi
 
 
-> On Nov 30, 2020, at 15:57, Daniel Lezcano <daniel.lezcano@linaro.org> wrote:
+On 11/23/20 9:27 AM, Dmitry Osipenko wrote:
+> This series brings initial support for memory interconnect to Tegra20,
+> Tegra30 and Tegra124 SoCs.
 > 
+> For the starter only display controllers and devfreq devices are getting
+> interconnect API support, others could be supported later on. The display
+> controllers have the biggest demand for interconnect API right now because
+> dynamic memory frequency scaling can't be done safely without taking into
+> account bandwidth requirement from the displays. In particular this series
+> fixes distorted display output on T30 Ouya and T124 TK1 devices.
 > 
-> [Added Srinivas]
+> Changelog:
 > 
-> On 28/11/2020 18:54, Kai-Heng Feng wrote:
->> We are seeing thermal shutdown on Intel based mobile workstations, the
->> shutdown happens during the first trip handle in
->> thermal_zone_device_register():
->> kernel: thermal thermal_zone15: critical temperature reached (101 C), shutting down
->> 
->> However, we shouldn't do a thermal shutdown here, since
->> 1) We may want to use a dedicated daemon, Intel's thermald in this case,
->> to handle thermal shutdown.
->> 
->> 2) For ACPI based system, _CRT doesn't mean shutdown unless it's inside
->> ThermalZone. ACPI Spec, 11.4.4 _CRT (Critical Temperature):
->> "... If this object it present under a device, the device’s driver
->> evaluates this object to determine the device’s critical cooling
->> temperature trip point. This value may then be used by the device’s
->> driver to program an internal device temperature sensor trip point."
->> 
->> So a "critical trip" here merely means we should take a more aggressive
->> cooling method.
+> v10 - In a longer run it will be much nicer if we could support EMC
+>       hardware versioning on Tegra20 and it's not late to support it now.
+>       Hence I added these new patches:
 > 
-> Well, actually it is stated before:
+>         dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
+>         memory: tegra20: Support hardware versioning and clean up OPP table initialization
 > 
-> "This object, when defined under a thermal zone, returns the critical
-> temperature at which OSPM must shutdown the system".
-
-This means specifically for the ACPI ThermalZone in AML, e.g.:
-
-ThermalZone (TZ0) {
-....
-    Method(_CRT) { ... }
- } // end of TZ0
-
-However the device is not under any ACPI ThermalZone.
-
+>     - Removed error message from tegra30-devfreq driver about missing OPP
+>       properties in a device-tree because EMC driver already prints that
+>       message and it uses OPP API error code instead of checking DT directly,
+>       which is a more correct way of doing that.
 > 
-> That is what does the thermal subsystem, no ?
+> v9: - Squashed "memory: tegra30-emc: Factor out clk initialization" into
+>       patch "tegra30: Support interconnect framework".
+>       Suggested by Krzysztof Kozlowski.
 > 
->> So add an indication to let thermal core know it should leave thermal
->> device to userspace to handle.
+>     - Improved Kconfig in the patch "memory: tegra124-emc: Make driver modular"
+>       by adding CONFIG_TEGRA124_CLK_EMC entry, which makes clk-driver changes
+>       to look a bit more cleaner. Suggested by Krzysztof Kozlowski.
 > 
-> You may want to check the 'HOT' trip point and then use the notification
-> mechanism to get notified in userspace and take action from there (eg.
-> offline some CPUs).
-
-For this particular issue we are facing, the thermal shutdown happens in thermal_zone_device_register() and userspace isn't up yet.
-
-Kai-Heng
-
+>     - Dropped voltage regulator support from ICC and DT patches for now
+>       because there is a new discussion about using a power domain abstraction
+>       for controlling the regulator, which is likely to happen.
 > 
->> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
->> ---
->> drivers/thermal/thermal_core.c | 3 +++
->> include/linux/thermal.h        | 2 ++
->> 2 files changed, 5 insertions(+)
->> 
->> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
->> index c6d74bc1c90b..6561e3767529 100644
->> --- a/drivers/thermal/thermal_core.c
->> +++ b/drivers/thermal/thermal_core.c
->> @@ -1477,6 +1477,9 @@ thermal_zone_device_register(const char *type, int trips, int mask,
->> 			goto unregister;
->> 	}
->> 
->> +	if (tz->tzp && tz->tzp->userspace)
->> +		thermal_zone_device_disable(tz);
->> +
->> 	mutex_lock(&thermal_list_lock);
->> 	list_add_tail(&tz->node, &thermal_tz_list);
->> 	mutex_unlock(&thermal_list_lock);
->> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
->> index d07ea27e72a9..e8e8fac78fc8 100644
->> --- a/include/linux/thermal.h
->> +++ b/include/linux/thermal.h
->> @@ -247,6 +247,8 @@ struct thermal_zone_params {
->> 	 */
->> 	bool no_hwmon;
->> 
->> +	bool userspace;
->> +
->> 	int num_tbps;	/* Number of tbp entries */
->> 	struct thermal_bind_params *tbp;
->> 
->> 
+>     - Replaced direct "operating-points-v2" property checking in EMC drivers
+>       with checking of a returned error code from dev_pm_opp_of_add_table().
+>       Note that I haven't touched T20 EMC driver because it's very likely
+>       that we'll replace that code with a common helper soon anyways.
+>       Suggested by Viresh Kumar.
 > 
+>     - The T30 DT patches now include EMC OPP changes for Ouya board, which
+>       is available now in linux-next.
 > 
-> -- 
-> <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+> Dmitry Osipenko (19):
+>   dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
+>   memory: tegra20: Support hardware versioning and clean up OPP table
+>     initialization
+>   memory: tegra30: Support interconnect framework
+>   memory: tegra124-emc: Make driver modular
+>   memory: tegra124-emc: Continue probing if timings are missing in
+>     device-tree
+>   memory: tegra124: Support interconnect framework
+>   drm/tegra: dc: Support memory bandwidth management
+>   drm/tegra: dc: Extend debug stats with total number of events
+>   PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
+>   PM / devfreq: tegra30: Separate configurations per-SoC generation
+>   PM / devfreq: tegra20: Deprecate in a favor of emc-stat based driver
+>   ARM: tegra: Correct EMC registers size in Tegra20 device-tree
+>   ARM: tegra: Add interconnect properties to Tegra20 device-tree
+>   ARM: tegra: Add interconnect properties to Tegra30 device-tree
+>   ARM: tegra: Add interconnect properties to Tegra124 device-tree
+>   ARM: tegra: Add nvidia,memory-controller phandle to Tegra20 EMC
+>     device-tree
+>   ARM: tegra: Add EMC OPP properties to Tegra20 device-trees
+>   ARM: tegra: Add EMC OPP and ICC properties to Tegra30 EMC and ACTMON
+>     device-tree nodes
+>   ARM: tegra: Add EMC OPP and ICC properties to Tegra124 EMC and ACTMON
+>     device-tree nodes
 > 
-> Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-> <http://twitter.com/#!/linaroorg> Twitter |
-> <http://www.linaro.org/linaro-blog/> Blog
-
+>  .../memory-controllers/nvidia,tegra20-emc.txt |   6 +
+>  MAINTAINERS                                   |   1 -
+>  arch/arm/boot/dts/tegra124-apalis-emc.dtsi    |   8 +
+>  .../arm/boot/dts/tegra124-jetson-tk1-emc.dtsi |   8 +
+>  arch/arm/boot/dts/tegra124-nyan-big-emc.dtsi  |  10 +
+>  .../arm/boot/dts/tegra124-nyan-blaze-emc.dtsi |  10 +
+>  .../boot/dts/tegra124-peripherals-opp.dtsi    | 419 ++++++++++++++++++
+>  arch/arm/boot/dts/tegra124.dtsi               |  31 ++
+>  .../boot/dts/tegra20-acer-a500-picasso.dts    |   5 +
+>  arch/arm/boot/dts/tegra20-colibri.dtsi        |   4 +
+>  arch/arm/boot/dts/tegra20-paz00.dts           |   4 +
+>  .../arm/boot/dts/tegra20-peripherals-opp.dtsi | 109 +++++
+>  arch/arm/boot/dts/tegra20.dtsi                |  33 +-
+>  ...30-asus-nexus7-grouper-memory-timings.dtsi |  12 +
+>  arch/arm/boot/dts/tegra30-ouya.dts            |   8 +
+>  .../arm/boot/dts/tegra30-peripherals-opp.dtsi | 383 ++++++++++++++++
+>  arch/arm/boot/dts/tegra30.dtsi                |  33 +-
+>  drivers/clk/tegra/Kconfig                     |   3 +
+>  drivers/clk/tegra/Makefile                    |   2 +-
+>  drivers/clk/tegra/clk-tegra124-emc.c          |  41 +-
+>  drivers/clk/tegra/clk-tegra124.c              |  26 +-
+>  drivers/clk/tegra/clk.h                       |  18 +-
+>  drivers/devfreq/Kconfig                       |  10 -
+>  drivers/devfreq/Makefile                      |   1 -
+>  drivers/devfreq/tegra20-devfreq.c             | 210 ---------
+>  drivers/devfreq/tegra30-devfreq.c             | 147 +++---
+>  drivers/gpu/drm/tegra/Kconfig                 |   1 +
+>  drivers/gpu/drm/tegra/dc.c                    | 359 +++++++++++++++
+>  drivers/gpu/drm/tegra/dc.h                    |  19 +
+>  drivers/gpu/drm/tegra/drm.c                   |  14 +
+>  drivers/gpu/drm/tegra/hub.c                   |   3 +
+>  drivers/gpu/drm/tegra/plane.c                 | 121 +++++
+>  drivers/gpu/drm/tegra/plane.h                 |  15 +
+>  drivers/memory/tegra/Kconfig                  |   5 +-
+>  drivers/memory/tegra/tegra124-emc.c           | 377 ++++++++++++++--
+>  drivers/memory/tegra/tegra124.c               |  82 +++-
+>  drivers/memory/tegra/tegra20-emc.c            |  48 +-
+>  drivers/memory/tegra/tegra30-emc.c            | 344 +++++++++++++-
+>  drivers/memory/tegra/tegra30.c                | 173 +++++++-
+>  include/linux/clk/tegra.h                     |   8 +
+>  include/soc/tegra/emc.h                       |  16 -
+>  41 files changed, 2725 insertions(+), 402 deletions(-)
+>  create mode 100644 arch/arm/boot/dts/tegra124-peripherals-opp.dtsi
+>  create mode 100644 arch/arm/boot/dts/tegra20-peripherals-opp.dtsi
+>  create mode 100644 arch/arm/boot/dts/tegra30-peripherals-opp.dtsi
+>  delete mode 100644 drivers/devfreq/tegra20-devfreq.c
+>  delete mode 100644 include/soc/tegra/emc.h
+> 
