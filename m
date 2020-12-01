@@ -4,27 +4,27 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_75_100,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 97EAAC64E7B
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8B211C83012
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 502C62084C
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 323A720757
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729198AbgLAMlT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Dec 2020 07:41:19 -0500
-Received: from comms.puri.sm ([159.203.221.185]:35374 "EHLO comms.puri.sm"
+        id S1731010AbgLAMl2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Dec 2020 07:41:28 -0500
+Received: from comms.puri.sm ([159.203.221.185]:35386 "EHLO comms.puri.sm"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728023AbgLAMlT (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Dec 2020 07:41:19 -0500
+        id S1730990AbgLAMl0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Dec 2020 07:41:26 -0500
 Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 19AC2E03EB;
-        Tue,  1 Dec 2020 04:40:09 -0800 (PST)
+        by comms.puri.sm (Postfix) with ESMTP id 8BF4BE0439;
+        Tue,  1 Dec 2020 04:40:32 -0800 (PST)
 Received: from comms.puri.sm ([127.0.0.1])
         by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id Ioa4Ai4RcKXx; Tue,  1 Dec 2020 04:40:07 -0800 (PST)
+        with ESMTP id f3w60y6nUj9H; Tue,  1 Dec 2020 04:40:30 -0800 (PST)
 From:   Martin Kepplinger <martin.kepplinger@puri.sm>
 To:     robh@kernel.org, shawnguo@kernel.org, festevam@gmail.com,
         catalin.marinas@arm.com, will@kernel.org, georgi.djakov@linaro.org,
@@ -32,11 +32,10 @@ To:     robh@kernel.org, shawnguo@kernel.org, festevam@gmail.com,
 Cc:     kernel@pengutronix.de, linux-imx@nxp.com, kernel@puri.sm,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Leonard Crestez <leonard.crestez@nxp.com>,
         Martin Kepplinger <martin.kepplinger@puri.sm>
-Subject: [PATCH v2 1/7] arm64: dts: imx8m: Add NOC nodes
-Date:   Tue,  1 Dec 2020 13:39:26 +0100
-Message-Id: <20201201123932.12312-2-martin.kepplinger@puri.sm>
+Subject: [PATCH v2 6/7] arm64: defconfig: updates for 5.10
+Date:   Tue,  1 Dec 2020 13:39:31 +0100
+Message-Id: <20201201123932.12312-7-martin.kepplinger@puri.sm>
 In-Reply-To: <20201201123932.12312-1-martin.kepplinger@puri.sm>
 References: <20201201123932.12312-1-martin.kepplinger@puri.sm>
 Content-Transfer-Encoding: 8bit
@@ -44,122 +43,386 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Leonard Crestez <leonard.crestez@nxp.com>
+Include the defconfig updates for v5.10 that shouldn't change the
+config itself at all.
 
-Add initial support for dynamic frequency scaling of main NOC.
-
-Make DDRC the parent of the NOC (using passive governor) so that the
-main NOC is automatically scaled together with DDRC by default.
-
-Support for proactive scaling via interconnect will come on top.
-
-Signed-off-by: Leonard Crestez <leonard.crestez@nxp.com>
-Tested-by: Martin Kepplinger <martin.kepplinger@puri.sm> (imx8mq)
+Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
 ---
- arch/arm64/boot/dts/freescale/imx8mm.dtsi | 22 ++++++++++++++++++++++
- arch/arm64/boot/dts/freescale/imx8mn.dtsi | 22 ++++++++++++++++++++++
- arch/arm64/boot/dts/freescale/imx8mq.dtsi | 22 ++++++++++++++++++++++
- 3 files changed, 66 insertions(+)
+ arch/arm64/configs/defconfig | 82 +++++++++++-------------------------
+ 1 file changed, 24 insertions(+), 58 deletions(-)
 
-diff --git a/arch/arm64/boot/dts/freescale/imx8mm.dtsi b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-index c824f2615fe8..835b19f0ea42 100644
---- a/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mm.dtsi
-@@ -921,6 +921,28 @@
- 
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mm-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MM_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-150M {
-+					opp-hz = /bits/ 64 <150000000>;
-+				};
-+				opp-375M {
-+					opp-hz = /bits/ 64 <375000000>;
-+				};
-+				opp-750M {
-+					opp-hz = /bits/ 64 <750000000>;
-+				};
-+			};
-+		};
-+
- 		aips4: bus@32c00000 {
- 			compatible = "fsl,aips-bus", "simple-bus";
- 			reg = <0x32c00000 0x400000>;
-diff --git a/arch/arm64/boot/dts/freescale/imx8mn.dtsi b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-index a06d2a6268e6..8e2d413f97d4 100644
---- a/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mn.dtsi
-@@ -772,6 +772,28 @@
- 
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mn-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MN_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-100M {
-+					opp-hz = /bits/ 64 <100000000>;
-+				};
-+				opp-600M {
-+					opp-hz = /bits/ 64 <600000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
- 		aips4: bus@32c00000 {
- 			compatible = "fsl,aips-bus", "simple-bus";
- 			reg = <0x32c00000 0x400000>;
-diff --git a/arch/arm64/boot/dts/freescale/imx8mq.dtsi b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-index a841a023e8e0..d139a46ee8ce 100644
---- a/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-+++ b/arch/arm64/boot/dts/freescale/imx8mq.dtsi
-@@ -1158,6 +1158,28 @@
- 			};
- 		};
- 
-+		noc: interconnect@32700000 {
-+			compatible = "fsl,imx8mq-noc", "fsl,imx8m-noc";
-+			reg = <0x32700000 0x100000>;
-+			clocks = <&clk IMX8MQ_CLK_NOC>;
-+			devfreq = <&ddrc>;
-+			operating-points-v2 = <&noc_opp_table>;
-+
-+			noc_opp_table: opp-table {
-+				compatible = "operating-points-v2";
-+
-+				opp-133M {
-+					opp-hz = /bits/ 64 <133333333>;
-+				};
-+				opp-400M {
-+					opp-hz = /bits/ 64 <400000000>;
-+				};
-+				opp-800M {
-+					opp-hz = /bits/ 64 <800000000>;
-+				};
-+			};
-+		};
-+
- 		bus@32c00000 { /* AIPS4 */
- 			compatible = "fsl,aips-bus", "simple-bus";
- 			reg = <0x32c00000 0x400000>;
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 867cc4a5f00f..1fed16950a7c 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -13,7 +13,6 @@ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_NUMA_BALANCING=y
+ CONFIG_MEMCG=y
+-CONFIG_MEMCG_SWAP=y
+ CONFIG_BLK_CGROUP=y
+ CONFIG_CGROUP_PIDS=y
+ CONFIG_CGROUP_HUGETLB=y
+@@ -65,7 +64,6 @@ CONFIG_ARM64_VA_BITS_48=y
+ CONFIG_SCHED_MC=y
+ CONFIG_SCHED_SMT=y
+ CONFIG_NUMA=y
+-CONFIG_SECCOMP=y
+ CONFIG_KEXEC=y
+ CONFIG_KEXEC_FILE=y
+ CONFIG_CRASH_DUMP=y
+@@ -83,7 +81,6 @@ CONFIG_CPU_FREQ_GOV_POWERSAVE=m
+ CONFIG_CPU_FREQ_GOV_USERSPACE=y
+ CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+ CONFIG_CPU_FREQ_GOV_CONSERVATIVE=m
+-CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
+ CONFIG_CPUFREQ_DT=y
+ CONFIG_ACPI_CPPC_CPUFREQ=m
+ CONFIG_ARM_ALLWINNER_SUN50I_CPUFREQ_NVMEM=m
+@@ -99,14 +96,12 @@ CONFIG_ARM_SCPI_PROTOCOL=y
+ CONFIG_RASPBERRYPI_FIRMWARE=y
+ CONFIG_INTEL_STRATIX10_SERVICE=y
+ CONFIG_INTEL_STRATIX10_RSU=m
+-CONFIG_QCOM_SCM=y
+ CONFIG_EFI_CAPSULE_LOADER=y
+ CONFIG_IMX_SCU=y
+ CONFIG_IMX_SCU_PD=y
+ CONFIG_ACPI=y
+ CONFIG_ACPI_APEI=y
+ CONFIG_ACPI_APEI_GHES=y
+-CONFIG_ACPI_APEI_PCIEAER=y
+ CONFIG_ACPI_APEI_MEMORY_FAILURE=y
+ CONFIG_ACPI_APEI_EINJ=y
+ CONFIG_VIRTUALIZATION=y
+@@ -181,12 +176,11 @@ CONFIG_QRTR_SMD=m
+ CONFIG_QRTR_TUN=m
+ CONFIG_BPF_JIT=y
+ CONFIG_CAN=m
++CONFIG_CAN_FLEXCAN=m
+ CONFIG_CAN_RCAR=m
+ CONFIG_CAN_RCAR_CANFD=m
+-CONFIG_CAN_FLEXCAN=m
+ CONFIG_BT=m
+ CONFIG_BT_HIDP=m
+-# CONFIG_BT_HS is not set
+ # CONFIG_BT_LE is not set
+ CONFIG_BT_LEDS=y
+ # CONFIG_BT_DEBUGFS is not set
+@@ -223,13 +217,13 @@ CONFIG_PCI_HOST_THUNDER_ECAM=y
+ CONFIG_PCIE_ROCKCHIP_HOST=m
+ CONFIG_PCIE_BRCMSTB=m
+ CONFIG_PCI_LAYERSCAPE=y
+-CONFIG_PCIE_LAYERSCAPE_GEN4=y
+ CONFIG_PCI_HISI=y
+ CONFIG_PCIE_QCOM=y
+ CONFIG_PCIE_ARMADA_8K=y
+ CONFIG_PCIE_KIRIN=y
+ CONFIG_PCIE_HISI_STB=y
+ CONFIG_PCIE_TEGRA194_HOST=m
++CONFIG_PCIE_LAYERSCAPE_GEN4=y
+ CONFIG_PCI_ENDPOINT=y
+ CONFIG_PCI_ENDPOINT_CONFIGFS=y
+ CONFIG_PCI_EPF_TEST=m
+@@ -239,7 +233,6 @@ CONFIG_FW_LOADER_USER_HELPER=y
+ CONFIG_FW_LOADER_USER_HELPER_FALLBACK=y
+ CONFIG_HISILICON_LPC=y
+ CONFIG_SIMPLE_PM_BUS=y
+-CONFIG_FSL_MC_BUS=y
+ CONFIG_TEGRA_ACONNECT=m
+ CONFIG_MTD=y
+ CONFIG_MTD_BLOCK=y
+@@ -258,7 +251,6 @@ CONFIG_MTD_NAND_MARVELL=y
+ CONFIG_MTD_NAND_FSL_IFC=y
+ CONFIG_MTD_NAND_QCOM=y
+ CONFIG_MTD_SPI_NOR=y
+-CONFIG_SPI_CADENCE_QUADSPI=y
+ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_NBD=m
+ CONFIG_VIRTIO_BLK=y
+@@ -343,18 +335,18 @@ CONFIG_SNI_NETSEC=y
+ CONFIG_STMMAC_ETH=m
+ CONFIG_TI_K3_AM65_CPSW_NUSS=y
+ CONFIG_QCOM_IPA=m
+-CONFIG_MDIO_BUS_MUX_MMIOREG=y
+-CONFIG_MDIO_BUS_MUX_MULTIPLEXER=y
++CONFIG_MESON_GXL_PHY=m
+ CONFIG_AQUANTIA_PHY=y
+ CONFIG_MARVELL_PHY=m
+ CONFIG_MARVELL_10G_PHY=m
+-CONFIG_MESON_GXL_PHY=m
+ CONFIG_MICREL_PHY=y
+ CONFIG_MICROSEMI_PHY=y
+ CONFIG_AT803X_PHY=y
+ CONFIG_REALTEK_PHY=m
+ CONFIG_ROCKCHIP_PHY=y
+ CONFIG_VITESSE_PHY=y
++CONFIG_MDIO_BUS_MUX_MULTIPLEXER=y
++CONFIG_MDIO_BUS_MUX_MMIOREG=y
+ CONFIG_USB_PEGASUS=m
+ CONFIG_USB_RTL8150=m
+ CONFIG_USB_RTL8152=m
+@@ -439,7 +431,6 @@ CONFIG_I2C_IMX=y
+ CONFIG_I2C_IMX_LPI2C=y
+ CONFIG_I2C_MESON=y
+ CONFIG_I2C_MV64XXX=y
+-CONFIG_I2C_OMAP=y
+ CONFIG_I2C_OWL=y
+ CONFIG_I2C_PXA=y
+ CONFIG_I2C_QCOM_CCI=m
+@@ -455,6 +446,7 @@ CONFIG_SPI=y
+ CONFIG_SPI_ARMADA_3700=y
+ CONFIG_SPI_BCM2835=m
+ CONFIG_SPI_BCM2835AUX=m
++CONFIG_SPI_CADENCE_QUADSPI=y
+ CONFIG_SPI_FSL_LPSPI=y
+ CONFIG_SPI_FSL_QUADSPI=y
+ CONFIG_SPI_NXP_FLEXSPI=y
+@@ -485,7 +477,6 @@ CONFIG_PINCTRL_IMX8MP=y
+ CONFIG_PINCTRL_IMX8MQ=y
+ CONFIG_PINCTRL_IMX8QXP=y
+ CONFIG_PINCTRL_IMX8DXL=y
+-CONFIG_PINCTRL_MSM=y
+ CONFIG_PINCTRL_IPQ8074=y
+ CONFIG_PINCTRL_IPQ6018=y
+ CONFIG_PINCTRL_MSM8916=y
+@@ -500,7 +491,6 @@ CONFIG_PINCTRL_SDM845=y
+ CONFIG_PINCTRL_SM8150=y
+ CONFIG_PINCTRL_SM8250=y
+ CONFIG_GPIO_ALTERA=m
+-CONFIG_GPIO_DAVINCI=y
+ CONFIG_GPIO_DWAPB=y
+ CONFIG_GPIO_MB86S7X=y
+ CONFIG_GPIO_MPC8XXX=y
+@@ -517,11 +507,7 @@ CONFIG_GPIO_PCA953X_IRQ=y
+ CONFIG_GPIO_BD9571MWV=m
+ CONFIG_GPIO_MAX77620=y
+ CONFIG_GPIO_SL28CPLD=m
+-CONFIG_POWER_AVS=y
+-CONFIG_QCOM_CPR=y
+-CONFIG_ROCKCHIP_IODOMAIN=y
+ CONFIG_POWER_RESET_MSM=y
+-CONFIG_POWER_RESET_QCOM_PON=m
+ CONFIG_POWER_RESET_XGENE=y
+ CONFIG_POWER_RESET_SYSCON=y
+ CONFIG_SYSCON_REBOOT_MODE=y
+@@ -537,10 +523,10 @@ CONFIG_SENSORS_INA3221=m
+ CONFIG_THERMAL_GOV_POWER_ALLOCATOR=y
+ CONFIG_CPU_THERMAL=y
+ CONFIG_THERMAL_EMULATION=y
+-CONFIG_QORIQ_THERMAL=m
+-CONFIG_SUN8I_THERMAL=y
+ CONFIG_IMX_SC_THERMAL=m
+ CONFIG_IMX8MM_THERMAL=m
++CONFIG_QORIQ_THERMAL=m
++CONFIG_SUN8I_THERMAL=y
+ CONFIG_ROCKCHIP_THERMAL=m
+ CONFIG_RCAR_THERMAL=y
+ CONFIG_RCAR_GEN3_THERMAL=y
+@@ -557,7 +543,6 @@ CONFIG_WATCHDOG=y
+ CONFIG_SL28CPLD_WATCHDOG=m
+ CONFIG_ARM_SP805_WATCHDOG=y
+ CONFIG_ARM_SBSA_WATCHDOG=y
+-CONFIG_ARM_SMC_WATCHDOG=y
+ CONFIG_S3C2410_WATCHDOG=y
+ CONFIG_DW_WATCHDOG=y
+ CONFIG_SUNXI_WATCHDOG=m
+@@ -566,6 +551,7 @@ CONFIG_IMX_SC_WDT=m
+ CONFIG_QCOM_WDT=m
+ CONFIG_MESON_GXBB_WATCHDOG=m
+ CONFIG_MESON_WATCHDOG=m
++CONFIG_ARM_SMC_WATCHDOG=y
+ CONFIG_RENESAS_WDT=y
+ CONFIG_UNIPHIER_WATCHDOG=y
+ CONFIG_BCM2835_WDT=y
+@@ -612,13 +598,12 @@ CONFIG_MEDIA_CAMERA_SUPPORT=y
+ CONFIG_MEDIA_ANALOG_TV_SUPPORT=y
+ CONFIG_MEDIA_DIGITAL_TV_SUPPORT=y
+ CONFIG_MEDIA_SDR_SUPPORT=y
+-CONFIG_MEDIA_CONTROLLER=y
+-CONFIG_VIDEO_V4L2_SUBDEV_API=y
+ CONFIG_MEDIA_PLATFORM_SUPPORT=y
+ # CONFIG_DVB_NET is not set
+ CONFIG_MEDIA_USB_SUPPORT=y
+ CONFIG_USB_VIDEO_CLASS=m
+ CONFIG_V4L_PLATFORM_DRIVERS=y
++CONFIG_VIDEO_QCOM_CAMSS=m
+ CONFIG_VIDEO_RCAR_CSI2=m
+ CONFIG_VIDEO_RCAR_VIN=m
+ CONFIG_VIDEO_SUN6I_CSI=m
+@@ -633,7 +618,6 @@ CONFIG_SDR_PLATFORM_DRIVERS=y
+ CONFIG_VIDEO_RCAR_DRIF=m
+ CONFIG_VIDEO_IMX219=m
+ CONFIG_VIDEO_OV5645=m
+-CONFIG_VIDEO_QCOM_CAMSS=m
+ CONFIG_DRM=m
+ CONFIG_DRM_I2C_NXP_TDA998X=m
+ CONFIG_DRM_MALI_DISPLAY=m
+@@ -665,8 +649,8 @@ CONFIG_DRM_PANEL_RAYDIUM_RM67191=m
+ CONFIG_DRM_PANEL_SITRONIX_ST7703=m
+ CONFIG_DRM_PANEL_TRULY_NT35597_WQXGA=m
+ CONFIG_DRM_DISPLAY_CONNECTOR=m
+-CONFIG_DRM_NWL_MIPI_DSI=m
+ CONFIG_DRM_LONTIUM_LT9611=m
++CONFIG_DRM_NWL_MIPI_DSI=m
+ CONFIG_DRM_SII902X=m
+ CONFIG_DRM_SIMPLE_BRIDGE=m
+ CONFIG_DRM_THINE_THC63LVD1024=m
+@@ -687,7 +671,6 @@ CONFIG_DRM_PANFROST=m
+ CONFIG_FB=y
+ CONFIG_FB_MODE_HELPERS=y
+ CONFIG_FB_EFI=y
+-CONFIG_BACKLIGHT_GENERIC=m
+ CONFIG_BACKLIGHT_PWM=m
+ CONFIG_BACKLIGHT_LP855X=m
+ CONFIG_LOGO=y
+@@ -700,12 +683,6 @@ CONFIG_SND_HDA_CODEC_HDMI=m
+ CONFIG_SND_SOC=y
+ CONFIG_SND_BCM2835_SOC_I2S=m
+ CONFIG_SND_SOC_FSL_SAI=m
+-CONFIG_SND_SOC_FSL_ASRC=m
+-CONFIG_SND_SOC_FSL_MICFIL=m
+-CONFIG_SND_SOC_FSL_EASRC=m
+-CONFIG_SND_IMX_SOC=m
+-CONFIG_SND_SOC_IMX_SPDIF=m
+-CONFIG_SND_SOC_IMX_AUDMIX=m
+ CONFIG_SND_MESON_AXG_SOUND_CARD=m
+ CONFIG_SND_MESON_GX_SOUND_CARD=m
+ CONFIG_SND_SOC_QCOM=m
+@@ -718,7 +695,6 @@ CONFIG_SND_SOC_ROCKCHIP_RT5645=m
+ CONFIG_SND_SOC_RK3399_GRU_SOUND=m
+ CONFIG_SND_SOC_SAMSUNG=y
+ CONFIG_SND_SOC_RCAR=m
+-CONFIG_SND_SUN4I_I2S=m
+ CONFIG_SND_SUN4I_SPDIF=m
+ CONFIG_SND_SOC_TEGRA=m
+ CONFIG_SND_SOC_TEGRA210_AHUB=m
+@@ -738,7 +714,6 @@ CONFIG_SND_SOC_WSA881X=m
+ CONFIG_SND_SIMPLE_CARD=m
+ CONFIG_SND_AUDIO_GRAPH_CARD=m
+ CONFIG_I2C_HID=m
+-CONFIG_USB_CONN_GPIO=m
+ CONFIG_USB=y
+ CONFIG_USB_OTG=y
+ CONFIG_USB_XHCI_HCD=y
+@@ -871,7 +846,6 @@ CONFIG_VIRTIO_BALLOON=y
+ CONFIG_VIRTIO_MMIO=y
+ CONFIG_XEN_GNTDEV=y
+ CONFIG_XEN_GRANT_DEV_ALLOC=y
+-CONFIG_MFD_CROS_EC_DEV=y
+ CONFIG_CHROME_PLATFORMS=y
+ CONFIG_CROS_EC=y
+ CONFIG_CROS_EC_I2C=y
+@@ -897,8 +871,8 @@ CONFIG_QCOM_A53PLL=y
+ CONFIG_QCOM_CLK_APCS_MSM8916=y
+ CONFIG_QCOM_CLK_SMD_RPM=y
+ CONFIG_QCOM_CLK_RPMH=y
+-CONFIG_IPQ_GCC_8074=y
+ CONFIG_IPQ_GCC_6018=y
++CONFIG_IPQ_GCC_8074=y
+ CONFIG_MSM_GCC_8916=y
+ CONFIG_MSM_GCC_8994=y
+ CONFIG_MSM_MMCC_8996=y
+@@ -906,12 +880,9 @@ CONFIG_MSM_GCC_8998=y
+ CONFIG_QCS_GCC_404=y
+ CONFIG_SC_GCC_7180=y
+ CONFIG_SDM_CAMCC_845=m
+-CONFIG_SDM_GCC_845=y
+ CONFIG_SDM_GPUCC_845=y
+ CONFIG_SDM_VIDEOCC_845=y
+ CONFIG_SDM_DISPCC_845=y
+-CONFIG_SM_GCC_8150=y
+-CONFIG_SM_GCC_8250=y
+ CONFIG_SM_GPUCC_8150=y
+ CONFIG_SM_GPUCC_8250=y
+ CONFIG_QCOM_HFPLL=y
+@@ -942,7 +913,7 @@ CONFIG_RASPBERRYPI_POWER=y
+ CONFIG_FSL_DPAA=y
+ CONFIG_FSL_MC_DPIO=y
+ CONFIG_QCOM_AOSS_QMP=y
+-CONFIG_QCOM_COMMAND_DB=y
++CONFIG_QCOM_CPR=y
+ CONFIG_QCOM_GENI_SE=y
+ CONFIG_QCOM_RMTFS_MEM=m
+ CONFIG_QCOM_RPMH=y
+@@ -954,26 +925,25 @@ CONFIG_QCOM_SMP2P=y
+ CONFIG_QCOM_SMSM=y
+ CONFIG_QCOM_SOCINFO=m
+ CONFIG_QCOM_APR=m
+-CONFIG_ARCH_R8A774A1=y
+-CONFIG_ARCH_R8A774B1=y
+-CONFIG_ARCH_R8A774C0=y
+-CONFIG_ARCH_R8A774E1=y
++CONFIG_ARCH_R8A77995=y
++CONFIG_ARCH_R8A77990=y
+ CONFIG_ARCH_R8A77950=y
+ CONFIG_ARCH_R8A77951=y
++CONFIG_ARCH_R8A77965=y
+ CONFIG_ARCH_R8A77960=y
+ CONFIG_ARCH_R8A77961=y
+-CONFIG_ARCH_R8A77965=y
+-CONFIG_ARCH_R8A77970=y
+ CONFIG_ARCH_R8A77980=y
+-CONFIG_ARCH_R8A77990=y
+-CONFIG_ARCH_R8A77995=y
+-CONFIG_ARCH_R8A779A0=y
++CONFIG_ARCH_R8A77970=y
++CONFIG_ARCH_R8A774C0=y
++CONFIG_ARCH_R8A774E1=y
++CONFIG_ARCH_R8A774A1=y
++CONFIG_ARCH_R8A774B1=y
++CONFIG_ROCKCHIP_IODOMAIN=y
+ CONFIG_ROCKCHIP_PM_DOMAINS=y
+ CONFIG_ARCH_TEGRA_132_SOC=y
+ CONFIG_ARCH_TEGRA_210_SOC=y
+ CONFIG_ARCH_TEGRA_186_SOC=y
+ CONFIG_ARCH_TEGRA_194_SOC=y
+-CONFIG_ARCH_TEGRA_234_SOC=y
+ CONFIG_ARCH_K3_AM6_SOC=y
+ CONFIG_ARCH_K3_J721E_SOC=y
+ CONFIG_TI_SCI_PM_DOMAINS=y
+@@ -1032,9 +1002,9 @@ CONFIG_PHY_UNIPHIER_USB3=y
+ CONFIG_PHY_TEGRA_XUSB=y
+ CONFIG_ARM_SMMU_V3_PMU=m
+ CONFIG_FSL_IMX8_DDR_PMU=m
+-CONFIG_HISI_PMU=y
+ CONFIG_QCOM_L2_PMU=y
+ CONFIG_QCOM_L3_PMU=y
++CONFIG_HISI_PMU=y
+ CONFIG_NVMEM_IMX_OCOTP=y
+ CONFIG_NVMEM_IMX_OCOTP_SCU=y
+ CONFIG_QCOM_QFPROM=y
+@@ -1050,14 +1020,12 @@ CONFIG_FPGA_REGION=m
+ CONFIG_OF_FPGA_REGION=m
+ CONFIG_TEE=y
+ CONFIG_OPTEE=y
+-CONFIG_SLIMBUS=m
++CONFIG_MUX_MMIO=y
+ CONFIG_SLIM_QCOM_CTRL=m
+ CONFIG_SLIM_QCOM_NGD_CTRL=m
+-CONFIG_MUX_MMIO=y
+ CONFIG_INTERCONNECT=y
+ CONFIG_INTERCONNECT_QCOM=y
+ CONFIG_INTERCONNECT_QCOM_MSM8916=m
+-CONFIG_INTERCONNECT_QCOM_OSM_L3=m
+ CONFIG_INTERCONNECT_QCOM_SDM845=m
+ CONFIG_INTERCONNECT_QCOM_SM8150=m
+ CONFIG_INTERCONNECT_QCOM_SM8250=m
+@@ -1075,7 +1043,6 @@ CONFIG_CUSE=m
+ CONFIG_OVERLAY_FS=m
+ CONFIG_VFAT_FS=y
+ CONFIG_HUGETLBFS=y
+-CONFIG_CONFIGFS_FS=y
+ CONFIG_EFIVAR_FS=y
+ CONFIG_SQUASHFS=y
+ CONFIG_NFS_FS=y
+@@ -1098,7 +1065,6 @@ CONFIG_CRYPTO_DEV_CCREE=m
+ CONFIG_CRYPTO_DEV_HISI_SEC2=m
+ CONFIG_CRYPTO_DEV_HISI_ZIP=m
+ CONFIG_CRYPTO_DEV_HISI_HPRE=m
+-CONFIG_CRYPTO_DEV_HISI_TRNG=m
+ CONFIG_CMA_SIZE_MBYTES=32
+ CONFIG_PRINTK_TIME=y
+ CONFIG_DEBUG_INFO=y
 -- 
 2.20.1
 
