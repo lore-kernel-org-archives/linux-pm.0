@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id DC03EC83019
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8C6D7C71156
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:42:19 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8BCA220757
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:41:38 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3F6C820757
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 12:42:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730990AbgLAMld (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Dec 2020 07:41:33 -0500
-Received: from comms.puri.sm ([159.203.221.185]:35408 "EHLO comms.puri.sm"
+        id S1730139AbgLAMmE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Dec 2020 07:42:04 -0500
+Received: from comms.puri.sm ([159.203.221.185]:35464 "EHLO comms.puri.sm"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729872AbgLAMlc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 1 Dec 2020 07:41:32 -0500
+        id S1727055AbgLAMmE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 1 Dec 2020 07:42:04 -0500
 Received: from localhost (localhost [127.0.0.1])
-        by comms.puri.sm (Postfix) with ESMTP id 2D3E7E0424;
-        Tue,  1 Dec 2020 04:40:22 -0800 (PST)
+        by comms.puri.sm (Postfix) with ESMTP id 72BD2E041F;
+        Tue,  1 Dec 2020 04:40:35 -0800 (PST)
 Received: from comms.puri.sm ([127.0.0.1])
         by localhost (comms.puri.sm [127.0.0.1]) (amavisd-new, port 10024)
-        with ESMTP id SAy1r9kj4rRw; Tue,  1 Dec 2020 04:40:21 -0800 (PST)
+        with ESMTP id bbQC5XMFBkhi; Tue,  1 Dec 2020 04:40:34 -0800 (PST)
 From:   Martin Kepplinger <martin.kepplinger@puri.sm>
 To:     robh@kernel.org, shawnguo@kernel.org, festevam@gmail.com,
         catalin.marinas@arm.com, will@kernel.org, georgi.djakov@linaro.org,
@@ -33,9 +33,9 @@ Cc:     kernel@pengutronix.de, linux-imx@nxp.com, kernel@puri.sm,
         devicetree@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         Martin Kepplinger <martin.kepplinger@puri.sm>
-Subject: [PATCH v2 4/7] dt-bindings: mxsfb: Add interconnect bindings for LCDIF path
-Date:   Tue,  1 Dec 2020 13:39:29 +0100
-Message-Id: <20201201123932.12312-5-martin.kepplinger@puri.sm>
+Subject: [PATCH v2 7/7] arm64: defconfig: Enable interconnect for imx8mq
+Date:   Tue,  1 Dec 2020 13:39:32 +0100
+Message-Id: <20201201123932.12312-8-martin.kepplinger@puri.sm>
 In-Reply-To: <20201201123932.12312-1-martin.kepplinger@puri.sm>
 References: <20201201123932.12312-1-martin.kepplinger@puri.sm>
 Content-Transfer-Encoding: 8bit
@@ -43,30 +43,28 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Add optional interconnect properties for the dram path requests.
+Enable INTERCONNECT_IMX8MQ in order to make interconnect more widely
+available for testing.
 
 Signed-off-by: Martin Kepplinger <martin.kepplinger@puri.sm>
 ---
- Documentation/devicetree/bindings/display/mxsfb.txt | 6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/arm64/configs/defconfig | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/Documentation/devicetree/bindings/display/mxsfb.txt b/Documentation/devicetree/bindings/display/mxsfb.txt
-index c985871c46b3..d494a2674290 100644
---- a/Documentation/devicetree/bindings/display/mxsfb.txt
-+++ b/Documentation/devicetree/bindings/display/mxsfb.txt
-@@ -15,6 +15,12 @@ Required properties:
-     - "pix" for the LCDIF block clock
-     - (MX6SX-only) "axi", "disp_axi" for the bus interface clock
- 
-+Optional properties:
-+- interconnects : interconnect path specifier for LCDIF according to
-+		Documentation/devicetree/bindings/interconnect/interconnect.txt.
-+- interconnect-names: the name describing the interconnect path.
-+		Should be "dram" for i.MX8MQ.
-+
- Required sub-nodes:
-   - port: The connection to an encoder chip.
- 
+diff --git a/arch/arm64/configs/defconfig b/arch/arm64/configs/defconfig
+index 1fed16950a7c..830c26a95b3d 100644
+--- a/arch/arm64/configs/defconfig
++++ b/arch/arm64/configs/defconfig
+@@ -1023,7 +1023,8 @@ CONFIG_OPTEE=y
+ CONFIG_MUX_MMIO=y
+ CONFIG_SLIM_QCOM_CTRL=m
+ CONFIG_SLIM_QCOM_NGD_CTRL=m
+-CONFIG_INTERCONNECT=y
++CONFIG_INTERCONNECT_IMX=m
++CONFIG_INTERCONNECT_IMX8MQ=m
+ CONFIG_INTERCONNECT_QCOM=y
+ CONFIG_INTERCONNECT_QCOM_MSM8916=m
+ CONFIG_INTERCONNECT_QCOM_SDM845=m
 -- 
 2.20.1
 
