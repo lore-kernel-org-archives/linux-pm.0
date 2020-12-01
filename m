@@ -2,127 +2,108 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 01FF2C64E7B
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 19:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 55203C83013
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 19:29:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 93D852168B
-	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 19:16:19 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 03C75204EC
+	for <linux-pm@archiver.kernel.org>; Tue,  1 Dec 2020 19:29:45 +0000 (UTC)
 Authentication-Results: mail.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernelci-org.20150623.gappssmtp.com header.i=@kernelci-org.20150623.gappssmtp.com header.b="PC8Haoyy"
+	dkim=pass (2048-bit key) header.d=linaro.org header.i=@linaro.org header.b="xLTJ2dkm"
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727432AbgLATQT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 1 Dec 2020 14:16:19 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34234 "EHLO
+        id S2404368AbgLAT30 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 1 Dec 2020 14:29:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36304 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727375AbgLATQS (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2020 14:16:18 -0500
-Received: from mail-pf1-x42a.google.com (mail-pf1-x42a.google.com [IPv6:2607:f8b0:4864:20::42a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C2909C0613D4
-        for <linux-pm@vger.kernel.org>; Tue,  1 Dec 2020 11:15:38 -0800 (PST)
-Received: by mail-pf1-x42a.google.com with SMTP id q22so1482547pfk.12
-        for <linux-pm@vger.kernel.org>; Tue, 01 Dec 2020 11:15:38 -0800 (PST)
+        with ESMTP id S2404353AbgLAT30 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 1 Dec 2020 14:29:26 -0500
+Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 04772C0617A7
+        for <linux-pm@vger.kernel.org>; Tue,  1 Dec 2020 11:28:46 -0800 (PST)
+Received: by mail-wr1-x441.google.com with SMTP id p8so4506123wrx.5
+        for <linux-pm@vger.kernel.org>; Tue, 01 Dec 2020 11:28:45 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=gs2j2J7AT5nnsyo0SZgLOxwTiwS7dTpaglVIrL+O4yI=;
-        b=PC8HaoyyA3NJlubTR6Oer8hqD0IjhQ3ar9nd7ssYRZw5HCi9/R3fuki+EazGBvO7AZ
-         mV9VoRgTlaSfeQcWJxz8BHx1k8uk2oKyuctwmj7tVU1JgGGV790VnG7Cfast/0AFiraY
-         WPpVgliHwz1jXqYLhUqv5Jynu2ap8hbfTBPGoFUoeisIkXiBz6XZPnOEEIYRjO9WeXO1
-         hG9ML2NatBfzSSIPFXRqOUKJkUv5R1gQ90kl4hxe8eb9WUbALob6H56QFok0YC0eHcUJ
-         v6yq3Q9OGISa0mO6cjFidHYR95qkOEvtgkWWOwBffHvCRgNqdhjhivWdXSznWeVEgM28
-         w/0w==
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=biB1E7VQfFhALxeshFh3G0/O96X9L1epLBYd8Sfk+Nw=;
+        b=xLTJ2dkmFyetvAQs8XCbA2YVz+kk+PyA+BSVGtk7vkhZpJmN7WYZ2fbRETpXYZcULa
+         mPJvpt+mMKnLdanZ7jRUu2dZTos/9GX0AStqszpT9FSBJkn96JZNBTmMVRA9SffEiA6R
+         SPvFFszUJ4ewvKZW7029b0hxeFLwHIuzX4Lcxxhc+ntQ8FDEgIuvdeAYM6iYS/bUHEUb
+         ucgaFtDeQxpmu8m18BUNUtpWu5X5bXmoVpWGbghatw7F+DIrtldAcySmsO2CWA5EB0Lc
+         wy2Bk2ht9HGAB2tyDQOwisu9hj/e5BJn+AWsEKw4hDvHhOgk9KPMh74F+Gn+SAQ3+T84
+         jgMA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=gs2j2J7AT5nnsyo0SZgLOxwTiwS7dTpaglVIrL+O4yI=;
-        b=apfhhdyPhxJu01dra43cUegJ73iKZaR9s4C7vm4Vefk+VrMKk64mDccoDM6rMuj5sa
-         VWIRZEpVqUWhnmNJ/L12/CQ+uJug7IjcfkqOlZY7YQL3E5HU/xlPUPtiDWNy/gLFtpqT
-         Bq8oRrbI56SUsg/Rp0mABR+FW2mpU1M5hLf7HvG5eEJ6/ijTl8SENd6CTxc7w+tSjTw/
-         uI+YuFVzL1fZce9i+BdVkhuNGhxZ+xAJ9q3szEoseVh/IOEKKU9y0+39IJw7HbOlRvY5
-         2g8rekEyxeW2B4cUII1GocNMD7FAcl4S5RlV43C2P2D7+fvbEtgYWB6wd+iIyijbfzgh
-         ZHqw==
-X-Gm-Message-State: AOAM530//qiRe9DSl9a7XcSkwsJDh13i1lndIItOHkNNv7ML6JoA6Iur
-        OaMAZ3bOSL8NX5kZdB14tz7lHUxJEgMq0g==
-X-Google-Smtp-Source: ABdhPJxBC7lRVoq6tWMjsqnblSf6+BB4mIA6uzUzlp66KHB4Ri4yZ0Gy9QjscHgbBgOK1QHitFxLfw==
-X-Received: by 2002:a05:6a00:848:b029:197:e659:e236 with SMTP id q8-20020a056a000848b0290197e659e236mr3908107pfk.74.1606850138339;
-        Tue, 01 Dec 2020 11:15:38 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id a25sm507203pfg.138.2020.12.01.11.15.37
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=biB1E7VQfFhALxeshFh3G0/O96X9L1epLBYd8Sfk+Nw=;
+        b=jZebo3HZn+Bak/z17u1IA/xQOgm3c6PEQNNolH6+Y+4W/mdXgVwgKSTxNGyoFqiKXw
+         1Q2btFbDOUMPwo7YuQLalx0S4d9TC+zysF+Ni7cu1soR7k2he88cHYofmL6Zf2Tupgj/
+         Ebi4a+3ETmg5TgGX4Tc8KacbUWZ2+yMj5owdHw6Agg3HEUhSMQUMfexmK9bDnNoUy4UN
+         ebjRGIG2mksnOmDHVk03GJRjUJUQuxorj4ckI/rS/Z7/F5o9oqQCvKbpvKDHlqYo47rE
+         EXGvu0cfMlLpEbK0TcgFzWI+gj8Yio3BV7KWpYlzVZteZ/Q6ZGofj3L6vS5sb2hJg1qg
+         Gf0w==
+X-Gm-Message-State: AOAM533LRnzIVTtWtVmFnP8/Kol/3lrtZ4gz3XB4V6Dc3a1gembzdgp4
+        zAABJBzRZe49GGQfpj59BY+Kp/IfobgHIg==
+X-Google-Smtp-Source: ABdhPJx95WGJ6TQR/QZKhtS/lpYNafznf+2LBdWmdQISBKxr3euml49jW2IQLZ682viiVEd3D3KW/g==
+X-Received: by 2002:a5d:4b81:: with SMTP id b1mr5842762wrt.372.1606850924675;
+        Tue, 01 Dec 2020 11:28:44 -0800 (PST)
+Received: from localhost.localdomain (lns-bzn-59-82-252-140-184.adsl.proxad.net. [82.252.140.184])
+        by smtp.gmail.com with ESMTPSA id n123sm1317922wmn.7.2020.12.01.11.28.43
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 01 Dec 2020 11:15:37 -0800 (PST)
-Message-ID: <5fc69659.1c69fb81.e3d6f.132f@mx.google.com>
-Date:   Tue, 01 Dec 2020 11:15:37 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.10-rc6-78-gc6c91db76539e
-X-Kernelci-Report-Type: test
-Subject: pm/testing sleep: 5 runs, 1 regressions (v5.10-rc6-78-gc6c91db76539e)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+        Tue, 01 Dec 2020 11:28:44 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     rjw@rjwysocki.net
+Cc:     ulf.hansson@linaro.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, daniel.lezcano@linaro.org,
+        lukasz.luba@arm.com, Thara Gopinath <thara.gopinath@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Ram Chandrasekar <rkumbako@codeaurora.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Andy Shevchenko <andy.shevchenko@gmail.com>,
+        Akinobu Mita <akinobu.mita@gmail.com>
+Subject: [PATCH v4 1/4] units: Add Watt units
+Date:   Tue,  1 Dec 2020 20:27:58 +0100
+Message-Id: <20201201192801.27607-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201201192801.27607-1-daniel.lezcano@linaro.org>
+References: <20201201192801.27607-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 5 runs, 1 regressions (v5.10-rc6-78-gc6c91db76539e)
+As there are the temperature units, let's add the Watt macros definition.
 
-Regressions Summary
--------------------
+Cc: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: Lina Iyer <ilina@codeaurora.org>
+Cc: Ram Chandrasekar <rkumbako@codeaurora.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Cc: Lukasz Luba <lukasz.luba@arm.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ include/linux/units.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+diff --git a/include/linux/units.h b/include/linux/units.h
+index aaf716364ec3..92c234e71cab 100644
+--- a/include/linux/units.h
++++ b/include/linux/units.h
+@@ -4,6 +4,10 @@
 
+ #include <linux/kernel.h>
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
-6-78-gc6c91db76539e/plan/sleep/
++#define MILLIWATT_PER_WATT	1000L
++#define MICROWATT_PER_MILLIWATT	1000L
++#define MICROWATT_PER_WATT	1000000L
++
+ #define ABSOLUTE_ZERO_MILLICELSIUS -273150
 
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.10-rc6-78-gc6c91db76539e
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      c6c91db76539e729139e47085af40adf240800a4 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/5fc687ffc6c03a7c30c94cf9
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc6-78-gc6c91=
-db76539e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc6-78-gc6c91=
-db76539e/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-1130.0/arm64/rootfs.cpio.gz =
-
-
-
-  * sleep.login: https://kernelci.org/test/case/id/5fc687ffc6c03a7c30c94cfa
-        failing since 104 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
-il: v5.9-rc1-4-g1f08d51cd57f) =
-
- =20
+ static inline long milli_kelvin_to_millicelsius(long t)
+--
+2.17.1
