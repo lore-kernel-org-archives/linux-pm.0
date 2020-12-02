@@ -5,47 +5,47 @@ X-Spam-Level:
 X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF625C83017
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 566BCC8301B
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B981D21D7F
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2119421D7F
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725984AbgLBQTD (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Dec 2020 11:19:03 -0500
-Received: from mx0a-00154904.pphosted.com ([148.163.133.20]:56372 "EHLO
-        mx0a-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728503AbgLBQSs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2020 11:18:48 -0500
-Received: from pps.filterd (m0170391.ppops.net [127.0.0.1])
-        by mx0a-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2G1vFo013375;
-        Wed, 2 Dec 2020 11:18:08 -0500
+        id S1728481AbgLBQTI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Dec 2020 11:19:08 -0500
+Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:63536 "EHLO
+        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1728595AbgLBQSr (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2020 11:18:47 -0500
+Received: from pps.filterd (m0170397.ppops.net [127.0.0.1])
+        by mx0b-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2G6S9E032316;
+        Wed, 2 Dec 2020 11:18:06 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=smtpout1;
- bh=LK3wlPcq02ms/q02UlZeAFuCGJqTAohQZjmc5EcmfFo=;
- b=dKZQ4XhonMuKGN6UX3xzFeiDqkUmwm3/d+0DgwAN3nApfb2ba5KY8l1sC4WaEHJmeYnz
- bj+8XIwJsjl/VUrHWHoOWe84hDxoYVK2QAkgzL3baW1wGkrANRoa+GdGIZOyJ/HABpDc
- bD63Xjso5yCSHUoWttTNs+mW0BHtNp3BPeJn4TUyeV3L9Ns80JHbTE+UgWNhiOpghkK3
- AV1IZwRPSEiJPPN0ctBe7TeR5U6f9wxiFt19q+Fc7fI65qIXdC8YBOYGsl1vKdxmcbdC
- KxHsjPeccR8xgoCVz5ta3NADwH5nZ3SyTtAofg776b2/mTZrtL0bANUiIUbSsDuOm25q aQ== 
+ bh=Bmk7Zjvi9X+Swpw2hnAWUI3bYSwnfmYTchixWgSaeE4=;
+ b=ZiiqItWSukaAy8VL+c9RXShTGsvMJC4OotIgGyEZCv3pScs7FrGGj89Ww95ntN6ozbNR
+ k0+EcxmBQZ6eZeVxhlmDR9Vcy4pPqixcKoqyY969pqIvk+Ger40XzaaNoQ0PhE0Uj3AZ
+ ym4a8T7zMf/rWO/GXJLop+PmfJ1w18z2waVgsfd/d5JLjbtmy/5eSiCZAwQvj6iUx63J
+ +zh/o9Y4heRMKMlOqQBQqEWm/VtUDDC7MzyUI8D+lqOVhv/k3RVqfjvFBM7t3nPuXdBs
+ naDBBhI/kh+M+Q907OYy/4MGFSt7dTTmyrwL78XBH9yoT1FbmQQhApf55EDbC0Q/wTCo FQ== 
 Received: from mx0a-00154901.pphosted.com (mx0a-00154901.pphosted.com [67.231.149.39])
-        by mx0a-00154904.pphosted.com with ESMTP id 353jk2rpnt-1
+        by mx0b-00154904.pphosted.com with ESMTP id 353ggyrwc8-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 02 Dec 2020 11:18:08 -0500
-Received: from pps.filterd (m0134746.ppops.net [127.0.0.1])
-        by mx0a-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2GEsXG044458;
-        Wed, 2 Dec 2020 11:18:07 -0500
+        Wed, 02 Dec 2020 11:18:06 -0500
+Received: from pps.filterd (m0142699.ppops.net [127.0.0.1])
+        by mx0a-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2GDDaR114781;
+        Wed, 2 Dec 2020 11:18:05 -0500
 Received: from ausxippc110.us.dell.com (AUSXIPPC110.us.dell.com [143.166.85.200])
-        by mx0a-00154901.pphosted.com with ESMTP id 3569ejnfje-2
+        by mx0a-00154901.pphosted.com with ESMTP id 3565vm86w5-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 02 Dec 2020 11:18:07 -0500
+        Wed, 02 Dec 2020 11:18:05 -0500
 X-LoopCount0: from 10.173.37.130
 X-PREM-Routing: D-Outbound
 X-IronPort-AV: E=Sophos;i="5.78,387,1599541200"; 
-   d="scan'208";a="1013735379"
+   d="scan'208";a="1013735361"
 From:   Mario Limonciello <mario.limonciello@dell.com>
 To:     Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
         Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -59,11 +59,10 @@ Cc:     linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
         Stefan Assmann <sassmann@redhat.com>,
         David Miller <davem@davemloft.net>, darcari@redhat.com,
         Yijun.Shen@dell.com, Perry.Yuan@dell.com,
-        Mario Limonciello <mario.limonciello@dell.com>,
-        Yijun Shen <yijun.shen@dell.com>
-Subject: [PATCH v2 3/5] e1000e: Add Dell's Comet Lake systems into s0ix heuristics
-Date:   Wed,  2 Dec 2020 10:17:46 -0600
-Message-Id: <20201202161748.128938-4-mario.limonciello@dell.com>
+        Vitaly Lifshits <vitaly.lifshits@intel.com>
+Subject: [PATCH v2 1/5] e1000e: fix S0ix flow to allow S0i3.2 subset entry
+Date:   Wed,  2 Dec 2020 10:17:44 -0600
+Message-Id: <20201202161748.128938-2-mario.limonciello@dell.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201202161748.128938-1-mario.limonciello@dell.com>
 References: <20201202161748.128938-1-mario.limonciello@dell.com>
@@ -71,83 +70,68 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312,18.0.737
  definitions=2020-12-02_08:2020-11-30,2020-12-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 malwarescore=0
- impostorscore=0 lowpriorityscore=0 mlxscore=0 spamscore=0 bulkscore=0
- clxscore=1015 suspectscore=0 priorityscore=1501 mlxlogscore=999
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
+ impostorscore=0 clxscore=1011 bulkscore=0 adultscore=0 mlxlogscore=999
+ lowpriorityscore=0 mlxscore=0 spamscore=0 priorityscore=1501
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012020096
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 malwarescore=0 phishscore=0 bulkscore=0
- spamscore=0 mlxscore=0 mlxlogscore=999 adultscore=0 suspectscore=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 suspectscore=0
+ malwarescore=0 mlxscore=0 mlxlogscore=999 adultscore=0 bulkscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
  definitions=main-2012020096
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dell's Comet Lake Latitude and Precision systems containing i219LM are
-properly configured and should use the s0ix flows.
+From: Vitaly Lifshits <vitaly.lifshits@intel.com>
 
-Tested-by: Yijun Shen <yijun.shen@dell.com>
-Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+Changed a configuration in the flows to align with
+architecture requirements to achieve S0i3.2 substate.
+
+Also fixed a typo in the previous commit 632fbd5eb5b0
+("e1000e: fix S0ix flows for cable connected case").
+
+Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
+Tested-by: Aaron Brown <aaron.f.brown@intel.com>
+Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
 ---
- drivers/net/ethernet/intel/e1000e/s0ix.c | 33 +++++++++++++++++++++---
- 1 file changed, 29 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
-index c3013edbd9e4..74043e80c32f 100644
---- a/drivers/net/ethernet/intel/e1000e/s0ix.c
-+++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
-@@ -1,5 +1,7 @@
- // SPDX-License-Identifier: GPL-2.0
--/* Copyright(c) 1999 - 2018 Intel Corporation. */
-+/* Copyright(c) 1999 - 2018 Intel Corporation.
-+ * Copyright(c) 2020 Dell Inc.
-+ */
+diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
+index b30f00891c03..128ab6898070 100644
+--- a/drivers/net/ethernet/intel/e1000e/netdev.c
++++ b/drivers/net/ethernet/intel/e1000e/netdev.c
+@@ -6475,13 +6475,13 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
  
- #include <linux/netdevice.h>
+ 	/* Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data |= BIT(28);
++	mac_data &= ~BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
  
-@@ -44,6 +46,26 @@ static bool e1000e_check_me(u16 device_id)
- 	return false;
- }
+ 	/* Enable K1 off to enable mPHY Power Gating */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data |= BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
  
-+static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
-+{
-+	if (dev->subsystem_vendor == PCI_VENDOR_ID_DELL) {
-+		switch (dev->subsystem_device) {
-+		case 0x099f: /* Latitude 5310 */
-+		case 0x09a0: /* Latitude 5410 */
-+		case 0x09c9: /* Latitude 5410 */
-+		case 0x09a1: /* Latitude 5510 */
-+		case 0x09a2: /* Precision 3550 */
-+		case 0x09c0: /* Latitude 5411 */
-+		case 0x09c1: /* Latitude 5511 */
-+		case 0x09c2: /* Precision 3551 */
-+		case 0x09c3: /* Precision 7550 */
-+		case 0x09c4: /* Precision 7750 */
-+			return true;
-+		}
-+	}
-+	return false;
-+}
-+
- void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
- {
- 	struct e1000_hw *hw = &adapter->hw;
-@@ -273,8 +295,11 @@ void e1000e_maybe_enable_s0ix(struct e1000_adapter *adapter)
- 	/* require cannon point or later */
- 	if (hw->mac.type < e1000_pch_cnp)
- 		return;
--	/* turn off on ME configurations */
--	if (e1000e_check_me(pdev->device))
--		return;
-+	/* check for allowlist of systems */
-+	if (!e1000e_check_subsystem_allowlist(pdev)) {
-+		/* turn off on ME configurations */
-+		if (e1000e_check_me(pdev->device))
-+			return;
-+	}
- 	adapter->flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
- }
+ 	/* Enable mPHY power gating for any link and speed */
+ 	mac_data = er32(FEXTNVM8);
+@@ -6525,11 +6525,11 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
+ 	/* Disable K1 off */
+ 	mac_data = er32(FEXTNVM6);
+ 	mac_data &= ~BIT(31);
+-	ew32(FEXTNVM12, mac_data);
++	ew32(FEXTNVM6, mac_data);
+ 
+ 	/* Disable Ungate PGCB clock */
+ 	mac_data = er32(FEXTNVM9);
+-	mac_data &= ~BIT(28);
++	mac_data |= BIT(28);
+ 	ew32(FEXTNVM9, mac_data);
+ 
+ 	/* Cancel not waking from dynamic
 -- 
 2.25.1
 
