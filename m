@@ -2,113 +2,86 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-7.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 341FDC83018
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 12:08:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8D622C64E90
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 12:24:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE5F222203
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 12:08:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 083602222A
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 12:24:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729457AbgLBMIs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Dec 2020 07:08:48 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:49002 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726562AbgLBMIp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2020 07:08:45 -0500
-Received: from mail-wr1-x442.google.com (mail-wr1-x442.google.com [IPv6:2a00:1450:4864:20::442])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id DE480C061A48
-        for <linux-pm@vger.kernel.org>; Wed,  2 Dec 2020 04:07:20 -0800 (PST)
-Received: by mail-wr1-x442.google.com with SMTP id z7so3637825wrn.3
-        for <linux-pm@vger.kernel.org>; Wed, 02 Dec 2020 04:07:20 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=tJ0R6+v3eDzrBmGIX3GXY/fGfGw8OCjkiLlbM8B6B9o=;
-        b=vfptUf5IkKYkxbzItlOYECG9qv59hYSXmZBoOJ1La3FcAa+KmxnKb0RRyMxspcne3P
-         6LtxeQPXbBqX+5s3Fm/YX/MGoyEeCjd+O7PJGRAsvgYrnM+gWB+PzZ5wN7kMEJ/Rhvod
-         2SEY/egivugsKPlbzLmhFPq4fp4a1TGbLJZt9E7WkOjVj82EWZcNLnV2FtYmVRX2vXK2
-         ybE+H/yE2+pyfnhoWld1fzl1B+JAgG3BnCgvnyj81iLuvanxO088MyTg8lfh3SGWgNdq
-         Knca8rrlRIMNTBxmUUs9wwy9XCZ2Anwl+crFlPbZwhFqhc52uJY0QGR0ZeawyJnq2aaV
-         AhUA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=tJ0R6+v3eDzrBmGIX3GXY/fGfGw8OCjkiLlbM8B6B9o=;
-        b=iP7BoVKLkpI/k6Bt5o2719bcE8ozR1kzj2hPvUOsyxSXVZ2zA7YJQwFWeBX9LoapFe
-         BOn2gGt4t8h31NxxHv1d5EgvNo25pwmpLw6fD+EQu28t6Q9LWGt8ZFgWwm19/yeubt0Z
-         4WtF9JzKBe5ARxAzdMJXwRBvCFh7vYMj2cB9aRN6BQrQbdHIpgClBKBdPh0inE4IoPPn
-         DVWUGMomia/XV7zbYoMa4PbcZcduBg1ft9kKCLeVNQn9e1FhmJJsJFVFfKAVgz5RBjYe
-         DwhvGQ92u8q+8Zr0ouONhEHR7tnhmZsquKT47YpJ6DrV+LFUghFxT9ZkCc2HM2/Aub9D
-         BpjQ==
-X-Gm-Message-State: AOAM530wXuaVHY12gxE2MFe99TKKet7tglo0kyr+IYiLI6hjinRoU201
-        35hpkXnYyEK1fiZTCK6zTV3zCA==
-X-Google-Smtp-Source: ABdhPJyVV9LngqpFKQFLuB1i33MBGVebiM9WuqJV0kr00aFtWoz1g78HEIrjzt/861ILbYDFIBdj1A==
-X-Received: by 2002:adf:e481:: with SMTP id i1mr2969550wrm.282.1606910839458;
-        Wed, 02 Dec 2020 04:07:19 -0800 (PST)
-Received: from localhost.localdomain (lns-bzn-59-82-252-140-184.adsl.proxad.net. [82.252.140.184])
-        by smtp.gmail.com with ESMTPSA id c1sm1755132wml.8.2020.12.02.04.07.18
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 02 Dec 2020 04:07:18 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
-Cc:     amitk@kernel.org, linux-kernel@vger.kernel.org,
+        id S1727387AbgLBMYa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Dec 2020 07:24:30 -0500
+Received: from mail.kernel.org ([198.145.29.99]:52640 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1727178AbgLBMY3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Dec 2020 07:24:29 -0500
+X-Gm-Message-State: AOAM5332nu8oqb9AUF/wU4smTGw+zRxL5LunjezBxuIe0+WhBpP2O1iu
+        gCqISMUsTbCGJ7/35AQny9XiEJUNrJ+l2syF3SU=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=default; t=1606911828;
+        bh=oa7UfaUP3+xFmxloS25xR2K5dpFVJxrXIk+MwfRXBZY=;
+        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+        b=kMYogxUxKcXGs8GpKM6ZF0u8wOqW40HJn37gmHCJ05psgxxLAWTqbWZG3VVd3lb5h
+         BT6eP1XaVpPlfZtkGeith70uOCd+7pFPBR5AvF5ah9Br2QX/wqk+SYAsxXAuqWpet6
+         ngzACC+1cd6PJF6hT572GomlYn5YFUWQ9rpzsbO4=
+X-Google-Smtp-Source: ABdhPJyC/BitHigFIbOKUBueddX1xbZID1vUveQ/Aj0NJNpD8QfuK7AsqevTSakwULDKnR7Term8eac0hqFIyj83LOs=
+X-Received: by 2002:a05:6402:31b6:: with SMTP id dj22mr2256983edb.348.1606911826521;
+ Wed, 02 Dec 2020 04:23:46 -0800 (PST)
+MIME-Version: 1.0
+References: <20201201123932.12312-1-martin.kepplinger@puri.sm>
+ <20201201123932.12312-8-martin.kepplinger@puri.sm> <cb498c2c-e052-390a-c64a-2be44d1d2b42@linaro.org>
+ <a2c0fae4-13c5-9114-876f-bc324138e6cc@puri.sm> <20201202080321.GB6087@kozik-lap>
+ <CAJKOXPcAbmugB9k-1Ldo=Q1J0CbOcxMtgC005w=DmWukThVcWA@mail.gmail.com> <226e76a8-011e-ece5-d8fa-b52dbc81787b@puri.sm>
+In-Reply-To: <226e76a8-011e-ece5-d8fa-b52dbc81787b@puri.sm>
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+Date:   Wed, 2 Dec 2020 14:23:34 +0200
+X-Gmail-Original-Message-ID: <CAJKOXPc6BEw3A+pO9HOK4h59jZ2_TEfKcz79f7PbkPhJdPhE_w@mail.gmail.com>
+Message-ID: <CAJKOXPc6BEw3A+pO9HOK4h59jZ2_TEfKcz79f7PbkPhJdPhE_w@mail.gmail.com>
+Subject: Re: [PATCH v2 7/7] arm64: defconfig: Enable interconnect for imx8mq
+To:     Martin Kepplinger <martin.kepplinger@puri.sm>
+Cc:     Georgi Djakov <georgi.djakov@linaro.org>, robh@kernel.org,
+        shawnguo@kernel.org, festevam@gmail.com, catalin.marinas@arm.com,
+        will@kernel.org, cdleonard@gmail.com, kernel@pengutronix.de,
+        linux-imx@nxp.com, kernel@puri.sm, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
         linux-pm@vger.kernel.org
-Subject: [PATCH 3/4] thermal/core: Use precomputed jiffies for the polling
-Date:   Wed,  2 Dec 2020 13:06:56 +0100
-Message-Id: <20201202120657.1969-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201202120657.1969-1-daniel.lezcano@linaro.org>
-References: <20201202120657.1969-1-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The delays are also stored in jiffies based unit. Use them instead of
-the ms.
+On Wed, 2 Dec 2020 at 13:30, Martin Kepplinger
+<martin.kepplinger@puri.sm> wrote:
+> >>>>> -CONFIG_INTERCONNECT=y
+> >>>>
+> >>>> Why are you removing this line?
+> >>>
+> >>> savedefconfig removes it. INTERCONNECT_IMX below depends on it.
+> >>
+> >> It's save to remove it as other Interconnect options are directly
+> >> dependant.
+> >
+> > Ugh, my bad, it is not allowed to remove it. My review was too fast.
+> > INTERCONNECT_IMX depends on it, so the INTERCONNECT must stay,
+> >
+> > It is selected by TEGRA_MC which is independent here, so you should keep it.
+> >
+>
+> thanks for reviewing! Just to be clear: We're talking about defconfig,
+> so if I keep INTERCONNECT that means that I do `make savedefconfig`
+> which removes it (it's of course still enabled, just redundant in
+> defconfig output), and then *manually* add INTERCONNECT. That would
+> indicate that there's a Kconfig bug.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/thermal/thermal_core.c | 13 ++++---------
- 1 file changed, 4 insertions(+), 9 deletions(-)
+I don't get the point. You should not send the savedefconfig output as
+is, without any adjustments and checks. You can run savedefconfig
+because it nicely puts your entries in the proper place, but it's not
+a bug  that it removes features which we *want to keep*. Where is a
+bug in Kconfig?
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index 3111ca2c87a1..237480429ba9 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -291,14 +291,9 @@ static int __init thermal_register_governors(void)
- static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
- 					    int delay)
- {
--	if (delay > 1000)
-+	if (delay)
- 		mod_delayed_work(system_freezable_power_efficient_wq,
--				 &tz->poll_queue,
--				 round_jiffies(msecs_to_jiffies(delay)));
--	else if (delay)
--		mod_delayed_work(system_freezable_power_efficient_wq,
--				 &tz->poll_queue,
--				 msecs_to_jiffies(delay));
-+				 &tz->poll_queue, delay);
- 	else
- 		cancel_delayed_work(&tz->poll_queue);
- }
-@@ -317,9 +312,9 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
- 	mutex_lock(&tz->lock);
- 
- 	if (!stop && tz->passive)
--		thermal_zone_device_set_polling(tz, tz->passive_delay_ms);
-+		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
- 	else if (!stop && tz->polling_delay_ms)
--		thermal_zone_device_set_polling(tz, tz->polling_delay_ms);
-+		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
- 	else
- 		thermal_zone_device_set_polling(tz, 0);
- 
--- 
-2.17.1
-
+Best regards,
+Krzysztof
