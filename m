@@ -2,136 +2,78 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 566BCC8301B
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30A0FC64E7B
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:59:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2119421D7F
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:19:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id B506920B1F
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 16:59:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728481AbgLBQTI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Dec 2020 11:19:08 -0500
-Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:63536 "EHLO
-        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728595AbgLBQSr (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2020 11:18:47 -0500
-Received: from pps.filterd (m0170397.ppops.net [127.0.0.1])
-        by mx0b-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2G6S9E032316;
-        Wed, 2 Dec 2020 11:18:06 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-transfer-encoding; s=smtpout1;
- bh=Bmk7Zjvi9X+Swpw2hnAWUI3bYSwnfmYTchixWgSaeE4=;
- b=ZiiqItWSukaAy8VL+c9RXShTGsvMJC4OotIgGyEZCv3pScs7FrGGj89Ww95ntN6ozbNR
- k0+EcxmBQZ6eZeVxhlmDR9Vcy4pPqixcKoqyY969pqIvk+Ger40XzaaNoQ0PhE0Uj3AZ
- ym4a8T7zMf/rWO/GXJLop+PmfJ1w18z2waVgsfd/d5JLjbtmy/5eSiCZAwQvj6iUx63J
- +zh/o9Y4heRMKMlOqQBQqEWm/VtUDDC7MzyUI8D+lqOVhv/k3RVqfjvFBM7t3nPuXdBs
- naDBBhI/kh+M+Q907OYy/4MGFSt7dTTmyrwL78XBH9yoT1FbmQQhApf55EDbC0Q/wTCo FQ== 
-Received: from mx0a-00154901.pphosted.com (mx0a-00154901.pphosted.com [67.231.149.39])
-        by mx0b-00154904.pphosted.com with ESMTP id 353ggyrwc8-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Wed, 02 Dec 2020 11:18:06 -0500
-Received: from pps.filterd (m0142699.ppops.net [127.0.0.1])
-        by mx0a-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B2GDDaR114781;
-        Wed, 2 Dec 2020 11:18:05 -0500
-Received: from ausxippc110.us.dell.com (AUSXIPPC110.us.dell.com [143.166.85.200])
-        by mx0a-00154901.pphosted.com with ESMTP id 3565vm86w5-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Wed, 02 Dec 2020 11:18:05 -0500
-X-LoopCount0: from 10.173.37.130
-X-PREM-Routing: D-Outbound
-X-IronPort-AV: E=Sophos;i="5.78,387,1599541200"; 
-   d="scan'208";a="1013735361"
-From:   Mario Limonciello <mario.limonciello@dell.com>
-To:     Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-        Tony Nguyen <anthony.l.nguyen@intel.com>,
-        intel-wired-lan@lists.osuosl.org
-Cc:     linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
-        Netdev <netdev@vger.kernel.org>,
-        Alexander Duyck <alexander.duyck@gmail.com>,
-        Jakub Kicinski <kuba@kernel.org>,
-        Sasha Netfin <sasha.neftin@intel.com>,
-        Aaron Brown <aaron.f.brown@intel.com>,
-        Stefan Assmann <sassmann@redhat.com>,
-        David Miller <davem@davemloft.net>, darcari@redhat.com,
-        Yijun.Shen@dell.com, Perry.Yuan@dell.com,
-        Vitaly Lifshits <vitaly.lifshits@intel.com>
-Subject: [PATCH v2 1/5] e1000e: fix S0ix flow to allow S0i3.2 subset entry
-Date:   Wed,  2 Dec 2020 10:17:44 -0600
-Message-Id: <20201202161748.128938-2-mario.limonciello@dell.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201202161748.128938-1-mario.limonciello@dell.com>
-References: <20201202161748.128938-1-mario.limonciello@dell.com>
+        id S2387444AbgLBQ6r (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Dec 2020 11:58:47 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:37526 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2387406AbgLBQ6q (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 2 Dec 2020 11:58:46 -0500
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 93450C0617A7;
+        Wed,  2 Dec 2020 08:58:06 -0800 (PST)
+Received: from zn.tnic (p200300ec2f161b00329c23fffea6a903.dip0.t-ipconnect.de [IPv6:2003:ec:2f16:1b00:329c:23ff:fea6:a903])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id 830941EC0445;
+        Wed,  2 Dec 2020 17:58:01 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1606928281;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=4SYz5A8E74jG9es8toNezShE0M+RoGJkzH20/QYIE8Q=;
+        b=fpKVI19DRZhZmRzIpX8nD+aXjuLlXCOm02tH82sa9bq7Y6m+wbwlu3u8qBqv72UQiCr8JJ
+        eCm5oO5T0c62yTbboKrocW20ScDjRb+QqpAf4VbxXc7Y14wKlKOvEb9qStOCrqq7PSY/Rw
+        ojogo8+WDa62XDentxhYItfMIm1PgGE=
+Date:   Wed, 2 Dec 2020 17:57:56 +0100
+From:   Borislav Petkov <bp@alien8.de>
+To:     Punit Agrawal <punitagrawal@gmail.com>
+Cc:     rjw@rjwysocki.net, wei.huang2@amd.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+        Ingo Molnar <mingo@redhat.com>,
+        Tom Lendacky <thomas.lendacky@amd.com>,
+        Yazen Ghannam <yazen.ghannam@amd.com>
+Subject: Re: [RFC PATCH 3/4] x86/cpu: amd: Define processor families
+Message-ID: <20201202165756.GE2951@zn.tnic>
+References: <20201125144847.3920-1-punitagrawal@gmail.com>
+ <20201125144847.3920-4-punitagrawal@gmail.com>
+ <20201130140018.GC6019@zn.tnic>
+ <87pn3s2t5d.fsf@stealth>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312,18.0.737
- definitions=2020-12-02_08:2020-11-30,2020-12-02 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
- impostorscore=0 clxscore=1011 bulkscore=0 adultscore=0 mlxlogscore=999
- lowpriorityscore=0 mlxscore=0 spamscore=0 priorityscore=1501
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012020096
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 spamscore=0 phishscore=0 suspectscore=0
- malwarescore=0 mlxscore=0 mlxlogscore=999 adultscore=0 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012020096
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <87pn3s2t5d.fsf@stealth>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Vitaly Lifshits <vitaly.lifshits@intel.com>
+On Wed, Dec 02, 2020 at 11:13:02PM +0900, Punit Agrawal wrote:
+> Didn't realize the core was internal only.
 
-Changed a configuration in the flows to align with
-architecture requirements to achieve S0i3.2 substate.
+F10h is not internal only - all I'm saying is that "K10" wasn't use
+inside AMD AFAIR.
 
-Also fixed a typo in the previous commit 632fbd5eb5b0
-("e1000e: fix S0ix flows for cable connected case").
+> Makes sense - I will follow your suggestion in the next version.
 
-Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
----
- drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Well, I don't think it is worth the churn, TBH.
 
-diff --git a/drivers/net/ethernet/intel/e1000e/netdev.c b/drivers/net/ethernet/intel/e1000e/netdev.c
-index b30f00891c03..128ab6898070 100644
---- a/drivers/net/ethernet/intel/e1000e/netdev.c
-+++ b/drivers/net/ethernet/intel/e1000e/netdev.c
-@@ -6475,13 +6475,13 @@ static void e1000e_s0ix_entry_flow(struct e1000_adapter *adapter)
- 
- 	/* Ungate PGCB clock */
- 	mac_data = er32(FEXTNVM9);
--	mac_data |= BIT(28);
-+	mac_data &= ~BIT(28);
- 	ew32(FEXTNVM9, mac_data);
- 
- 	/* Enable K1 off to enable mPHY Power Gating */
- 	mac_data = er32(FEXTNVM6);
- 	mac_data |= BIT(31);
--	ew32(FEXTNVM12, mac_data);
-+	ew32(FEXTNVM6, mac_data);
- 
- 	/* Enable mPHY power gating for any link and speed */
- 	mac_data = er32(FEXTNVM8);
-@@ -6525,11 +6525,11 @@ static void e1000e_s0ix_exit_flow(struct e1000_adapter *adapter)
- 	/* Disable K1 off */
- 	mac_data = er32(FEXTNVM6);
- 	mac_data &= ~BIT(31);
--	ew32(FEXTNVM12, mac_data);
-+	ew32(FEXTNVM6, mac_data);
- 
- 	/* Disable Ungate PGCB clock */
- 	mac_data = er32(FEXTNVM9);
--	mac_data &= ~BIT(28);
-+	mac_data |= BIT(28);
- 	ew32(FEXTNVM9, mac_data);
- 
- 	/* Cancel not waking from dynamic
+I'd prefer comments over the f/m/s checks which explain what is matched
+much better than defines for family numbers which are inadequate when
+one needs to match the model too, for one.
+
 -- 
-2.25.1
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
