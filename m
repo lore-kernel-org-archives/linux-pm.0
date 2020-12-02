@@ -2,110 +2,90 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 39817C64E8A
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 17:20:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 255B3C64E7C
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 17:23:02 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D894D22247
-	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 17:20:58 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C17A0221FA
+	for <linux-pm@archiver.kernel.org>; Wed,  2 Dec 2020 17:23:01 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730786AbgLBRU0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 2 Dec 2020 12:20:26 -0500
-Received: from foss.arm.com ([217.140.110.172]:45556 "EHLO foss.arm.com"
+        id S2389044AbgLBRWy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 2 Dec 2020 12:22:54 -0500
+Received: from foss.arm.com ([217.140.110.172]:45626 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728815AbgLBRU0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 2 Dec 2020 12:20:26 -0500
+        id S2388999AbgLBRWx (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 2 Dec 2020 12:22:53 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 53A021FB;
-        Wed,  2 Dec 2020 09:19:39 -0800 (PST)
-Received: from [10.57.31.176] (unknown [10.57.31.176])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E905E3F575;
-        Wed,  2 Dec 2020 09:19:36 -0800 (PST)
-Subject: Re: [PATCH v4 3/4] powercap/drivers/dtpm: Add API for dynamic thermal
- power management
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     rjw@rjwysocki.net, ulf.hansson@linaro.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Ram Chandrasekar <rkumbako@codeaurora.org>,
-        Zhang Rui <rui.zhang@intel.com>, Arnd Bergmann <arnd@arndb.de>,
-        "open list:GENERIC INCLUDE/ASM HEADER FILES" 
-        <linux-arch@vger.kernel.org>
-References: <20201201192801.27607-1-daniel.lezcano@linaro.org>
- <20201201192801.27607-4-daniel.lezcano@linaro.org>
- <9db21e5e-ede0-87c3-a556-8a5e666d52bc@arm.com>
-Message-ID: <b26cab76-a18f-06ee-23d6-bbcc4393364e@arm.com>
-Date:   Wed, 2 Dec 2020 17:19:35 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 71A541396;
+        Wed,  2 Dec 2020 09:22:07 -0800 (PST)
+Received: from ubuntu.arm.com (unknown [10.57.34.77])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 37F543F575;
+        Wed,  2 Dec 2020 09:22:05 -0800 (PST)
+From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
+To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        sudeep.holla@arm.com, rjw@rjwysocki.net, vireshk@kernel.org,
+        robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com
+Cc:     daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
+        chris.redpath@arm.com, nicola.mazzucato@arm.com
+Subject: [PATCH v4 0/4] CPUFreq: Add support for opp-sharing cpus
+Date:   Wed,  2 Dec 2020 17:23:52 +0000
+Message-Id: <20201202172356.10508-1-nicola.mazzucato@arm.com>
+X-Mailer: git-send-email 2.27.0
 MIME-Version: 1.0
-In-Reply-To: <9db21e5e-ede0-87c3-a556-8a5e666d52bc@arm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi All,
 
+In this V4 posting I have fixed suggestions on opp/of and have added the
+implementation for scmi-cpufreq driver.
 
-On 12/2/20 12:37 PM, Lukasz Luba wrote:
-> Hi Daniel,
-> 
-> I realized small issue when I went through this new mutex code
-> (which is safer IMHO).
-> 
-> On 12/1/20 7:28 PM, Daniel Lezcano wrote:
-> 
-> [snip]
-> 
->> +int dtpm_register(const char *name, struct dtpm *dtpm, struct dtpm 
->> *parent)
->> +{
->> +    struct powercap_zone *pcz;
->> +
->> +    if (!pct)
->> +        return -EAGAIN;
->> +
->> +    if (root && !parent)
->> +        return -EBUSY;
->> +
->> +    if (!root && parent)
->> +        return -EINVAL;
->> +
->> +    if (parent && parent->ops)
->> +        return -EINVAL;
->> +
-> 
-> Maybe it worth to add a check of dtpm pointer here, just to play safe?
-> 
->      if (!dtpm)
->          return -EINVAL;
-> 
-> The dtpm->ops might explode when we don't capture this miss-usage during
-> reviews of future drivers/shim layers. What do you think?
-> 
-> 
->> +    if (dtpm->ops && !(dtpm->ops->set_power_uw &&
->> +               dtpm->ops->get_power_uw &&
->> +               dtpm->ops->release))
->> +        return -EINVAL;
->> +
-> 
-> I am going to stress test the whole series with hotplug today
-> and add review for patch 4/4.
-> 
+This is to support systems where exposed cpu performance controls are more
+fine-grained that the platform's ability to scale cpus independently.
 
-I have tested with a hotplug stress and looks OK with the mutex.
-You can add again the tag:
+[v4]
+  * Remove unconditional set of opp_table->shared_opp to exclusive
+  * Add implementation for scmi-cpufreq
+  * Change subject
 
-Tested-by: Lukasz Luba <lukasz.luba@arm.com>
+These patches are on top of:
+next-20201201 + Lukasz Luba's patches (waiting for Rafael) [1]
 
-Regards,
-Lukasz
+[v3]
+  * Remove proposal for new 'cpu-performance-dependencies' as we instead
+    can reuse the opp table.
+  * Update documentation for devicetree/bindings/opp
+  * Minor changes within opp to support empty opp table
+  * Rework the RFC by adding a second proposal
+
+[v2]
+  * Fix errors when running make dt_binding_check
+  * Improve commit message description for the dt-binding
+  * Add RFC for implementation in cpufreq-core and one of its
+    drivers.
+
+Nicola Mazzucato (3):
+  dt-bindings/opp: Update documentation for opp-shared
+  opp/of: Allow empty opp-table with opp-shared
+  scmi-cpufreq: get opp_shared_cpus from opp-v2 for EM
+
+Sudeep Holla (1):
+  cpufreq: blacklist Arm Vexpress platforms in cpufreq-dt-platdev
+
+ Documentation/devicetree/bindings/opp/opp.txt | 53 +++++++++++++++++++
+ drivers/cpufreq/cpufreq-dt-platdev.c          |  2 +
+ drivers/cpufreq/scmi-cpufreq.c                | 51 ++++++++++++------
+ drivers/opp/of.c                              |  7 ++-
+ 4 files changed, 95 insertions(+), 18 deletions(-)
+
+[1] https://lore.kernel.org/linux-pm/20201124104346.27167-1-lukasz.luba@arm.com/
+
+-- 
+2.27.0
+
