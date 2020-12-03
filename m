@@ -2,59 +2,60 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E5B33C19437
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 47710C197BF
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A163622203
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:52 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 159A0222BB
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1731464AbgLCTZl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Dec 2020 14:25:41 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57922 "EHLO
+        id S1731539AbgLCTZo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Dec 2020 14:25:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57936 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731274AbgLCTZk (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 14:25:40 -0500
-Received: from mail-lj1-x243.google.com (mail-lj1-x243.google.com [IPv6:2a00:1450:4864:20::243])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 11CF4C061A4F;
-        Thu,  3 Dec 2020 11:24:54 -0800 (PST)
-Received: by mail-lj1-x243.google.com with SMTP id y7so3803236lji.8;
-        Thu, 03 Dec 2020 11:24:53 -0800 (PST)
+        with ESMTP id S1731274AbgLCTZo (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 14:25:44 -0500
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9710CC061A53;
+        Thu,  3 Dec 2020 11:24:57 -0800 (PST)
+Received: by mail-lf1-x142.google.com with SMTP id s30so4389187lfc.4;
+        Thu, 03 Dec 2020 11:24:57 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=0vdqoVk7jZ2jxWA9BC/vseouYc6KoArds7fmTvWx1ic=;
-        b=RMYisD79xUNJyOuYEIpNL+qBI6QzRZS7dnU5G7l/ngi5uAuA7KDp8yYjPTsMAsnjHV
-         byuQdmvjH5mevMbisQSAfoDF/3FHJyQBSiSTaUQtirVIM58NV1AuhDozTtKvCqqMo5wo
-         RrcgRA/3fVXNoMv6hLdjWWhrDUq9sZZQ/4xF5d8e82K7aYQxVZXvo28PffZIosP9OOF2
-         YVJTHxEBDLcMK1ltKHy05N1KgeNytMxmY7+RUylPTR6tyNvKufZQNVwEVY5FVnuz7qKK
-         016RxKKwnVblujB7AKFUPuODy+5p4p78eAUmVm6XvuUm28D1gJO9aD919cQXYwY08tVw
-         qnGg==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=SYqB7FEw68SeQwuJRfi2dBM2z15ZxlZU6C2m0canOnM=;
+        b=Pr0Le4etOSKVXWy3cGOsqOt+0vzs9sf8rQM5IyYBVp5G9GN2/DW6LWs1ApUicGc7i1
+         M+YytAFtY8nEGtEdO7JhETTh3NxGZyg35DZT0vBq8GVK11E8YR5Sndyt0INkYbAnf1cF
+         iobLZ0cuDo81WDx/9PT3OXiFbWr4bjUVHxXhD9d1gJMwcXvxyxCLwG8SiJwAEtqsV4jo
+         z9SfjCvzN0uID+ZUUlI+6GM+amWL0oQiJu2U5snHnUTDtDPDZRsNc6UidmynRyDJ4bZl
+         dxjtifDwa7igequowJ71odqZKK6XFZzIqWV25zwA/3EdX3pdh66MsYoTotzjNRotsal+
+         uZcg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
-         :content-transfer-encoding;
-        bh=0vdqoVk7jZ2jxWA9BC/vseouYc6KoArds7fmTvWx1ic=;
-        b=VtxvUr6kjW8kq9+/OIsSRcMdSLGzXDX/jg8nQqG3Nkm+mvj/vJAAM3Hr/L5fAXkDv9
-         zGCnlzo62ekzqkPgHWF8l6GHPcUMDdaQMkHtwtH8rgXr4pqg8zfforEaHtr+OQ8Hc1w3
-         R/Dx0+WHidYTAtdLuogJP8ta/iNFFVZhtvFQVzXfOF1GAvRCIUWmiwCAaCMLG7pbR3tc
-         fyBqK3e5jiUDJDFJTSa2f5a7KiBnAy4k9cJGeTvSsdEuX3R2GgXF36cKIbL1SrTVV0Dn
-         UhpT4uFo7frZtEOtC8QLd9QdfSorc7PeDTpyzB0vD49+WHEKsZLU35dsWtaM4lLZDevZ
-         pYxQ==
-X-Gm-Message-State: AOAM5326ZFACVkvWh+x3Cg5C5hYkeHEDebuqR1TnyIYKimxagTOYmFNW
-        8QWpEUXB8Os0bla7ENip8vs=
-X-Google-Smtp-Source: ABdhPJxw4Qgyc1vVgaMWRobIch5SX5jjIzX5fai8cPaaY+T91gaDkGMOwxpj2FF6xBiUDJXWx0Q62g==
-X-Received: by 2002:a2e:a547:: with SMTP id e7mr1746599ljn.108.1607023491036;
-        Thu, 03 Dec 2020 11:24:51 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=SYqB7FEw68SeQwuJRfi2dBM2z15ZxlZU6C2m0canOnM=;
+        b=W6oZ7OWBEGmDTpwLMnJEo9bBaI6HQwcY+QDCKnf5tfeRKzoe+Hudfs9mxNbtG/F6Ys
+         z1tRHc+u2/Rvszs1ckqNRC/uAF3fpyDGV67HOLhbQQ4CvYxhD+/xI0leayeBdWmHBtnN
+         gmllEXGKUitT6RjlHOmVW0vEd9ATK2AuQC+fxA/EO7eWPpv/DKFAbNIZEUfquBipfOtH
+         n/jm0FkedUMFX9dBRMfBx0ve2ASmgyeY/76uheUcJa4YRlYpr8mLyaDNLisa4PYTEx2G
+         CV6zmW4n2YxRT0Vz6AGAeyCH6AZnGeK8gZNfY46VHJyb9w7ELw/55IwHKJtt4gGywJye
+         +GzA==
+X-Gm-Message-State: AOAM5336OVW5USPSc+WnaeepbbW6xUxQbhtrxKpyQvGoVbJvsu9GEcAR
+        RmKlANFr9eqwtn1EfQJVf1E=
+X-Google-Smtp-Source: ABdhPJxi7UryfrgVga7hnMUJ0VT2Iv7eujd+n+wRolEJmab+RVeVHvezqhw0cOenUKR28zwhWtW2mA==
+X-Received: by 2002:ac2:4844:: with SMTP id 4mr1751535lfy.64.1607023495978;
+        Thu, 03 Dec 2020 11:24:55 -0800 (PST)
 Received: from localhost.localdomain (109-252-192-53.dynamic.spd-mgts.ru. [109.252.192.53])
-        by smtp.gmail.com with ESMTPSA id z7sm861932lfq.50.2020.12.03.11.24.49
+        by smtp.gmail.com with ESMTPSA id z7sm861932lfq.50.2020.12.03.11.24.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Dec 2020 11:24:50 -0800 (PST)
+        Thu, 03 Dec 2020 11:24:55 -0800 (PST)
 From:   Dmitry Osipenko <digetx@gmail.com>
 To:     Thierry Reding <thierry.reding@gmail.com>,
         Jonathan Hunter <jonathanh@nvidia.com>,
@@ -74,118 +75,393 @@ To:     Thierry Reding <thierry.reding@gmail.com>,
 Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
         devicetree@vger.kernel.org
-Subject: [PATCH v11 00/10] Introduce memory interconnect for NVIDIA Tegra SoCs
-Date:   Thu,  3 Dec 2020 22:24:29 +0300
-Message-Id: <20201203192439.16177-1-digetx@gmail.com>
+Subject: [PATCH v11 04/10] memory: tegra124-emc: Make driver modular
+Date:   Thu,  3 Dec 2020 22:24:33 +0300
+Message-Id: <20201203192439.16177-5-digetx@gmail.com>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201203192439.16177-1-digetx@gmail.com>
+References: <20201203192439.16177-1-digetx@gmail.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This series brings initial support for memory interconnect to Tegra20,
-Tegra30 and Tegra124 SoCs.
+Add modularization support to the Tegra124 EMC driver, which now can be
+compiled as a loadable kernel module.
 
-For the starter only display controllers and devfreq devices are getting
-interconnect API support, others could be supported later on. The display
-controllers have the biggest demand for interconnect API right now because
-dynamic memory frequency scaling can't be done safely without taking into
-account bandwidth requirement from the displays. In particular this series
-fixes distorted display output on T30 Ouya and T124 TK1 devices.
+Note that EMC clock must be registered at clk-init time, otherwise PLLM
+will be disabled as unused clock at boot time if EMC driver is compiled
+as a module. Hence add a prepare/complete callbacks. similarly to what is
+done for the Tegra20/30 EMC drivers.
 
-Changelog:
-
-v11: - Added acks from Georgi Djakov.
-
-     - CC'ed devicetree@vger.kernel.org in order to make the dt-bindings
-       patch ("Document opp-supported-hw property") visible to the DT
-       maintainers.
-
-     - Rebased on a recent linux-next, note that some of v10 DT patches
-       were already applied by Thierry into tegra tree, as well as one
-       devfreq patch which removed the older tegra20-devfreq driver was
-       applied by Chanwoo Choi to the devfreq tree.
-
-     - Note that patch "memory: tegra20: Support hardware versioning and
-       clean up OPP table initialization" fixes the noisy (but harmless)
-       warning which happens because DT patches were applied before the
-       code changes. This problem was spotted in current linux-next by
-       Jonathan Hunter, hence could be worthwhile to pick up this patch
-       for the v5.11.
-
-v10 - In a longer run it will be much nicer if we could support EMC
-      hardware versioning on Tegra20 and it's not late to support it now.
-      Hence I added these new patches:
-
-        dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
-        memory: tegra20: Support hardware versioning and clean up OPP table initialization
-
-    - Removed error message from tegra30-devfreq driver about missing OPP
-      properties in a device-tree because EMC driver already prints that
-      message and it uses OPP API error code instead of checking DT directly,
-      which is a more correct way of doing that.
-
-v9: - Squashed "memory: tegra30-emc: Factor out clk initialization" into
-      patch "tegra30: Support interconnect framework".
-      Suggested by Krzysztof Kozlowski.
-
-    - Improved Kconfig in the patch "memory: tegra124-emc: Make driver modular"
-      by adding CONFIG_TEGRA124_CLK_EMC entry, which makes clk-driver changes
-      to look a bit more cleaner. Suggested by Krzysztof Kozlowski.
-
-    - Dropped voltage regulator support from ICC and DT patches for now
-      because there is a new discussion about using a power domain abstraction
-      for controlling the regulator, which is likely to happen.
-
-    - Replaced direct "operating-points-v2" property checking in EMC drivers
-      with checking of a returned error code from dev_pm_opp_of_add_table().
-      Note that I haven't touched T20 EMC driver because it's very likely
-      that we'll replace that code with a common helper soon anyways.
-      Suggested by Viresh Kumar.
-
-    - The T30 DT patches now include EMC OPP changes for Ouya board, which
-      is available now in linux-next.
-
-Dmitry Osipenko (10):
-  dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
-  memory: tegra20: Support hardware versioning and clean up OPP table
-    initialization
-  memory: tegra30: Support interconnect framework
-  memory: tegra124-emc: Make driver modular
-  memory: tegra124-emc: Continue probing if timings are missing in
-    device-tree
-  memory: tegra124: Support interconnect framework
-  drm/tegra: dc: Support memory bandwidth management
-  drm/tegra: dc: Extend debug stats with total number of events
-  PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
-  PM / devfreq: tegra30: Separate configurations per-SoC generation
-
- .../memory-controllers/nvidia,tegra20-emc.txt |   6 +
- drivers/clk/tegra/Kconfig                     |   3 +
- drivers/clk/tegra/Makefile                    |   2 +-
- drivers/clk/tegra/clk-tegra124-emc.c          |  41 +-
- drivers/clk/tegra/clk-tegra124.c              |  26 +-
- drivers/clk/tegra/clk.h                       |  18 +-
- drivers/devfreq/tegra30-devfreq.c             | 147 ++++---
- drivers/gpu/drm/tegra/Kconfig                 |   1 +
- drivers/gpu/drm/tegra/dc.c                    | 359 +++++++++++++++++
- drivers/gpu/drm/tegra/dc.h                    |  19 +
- drivers/gpu/drm/tegra/drm.c                   |  14 +
- drivers/gpu/drm/tegra/hub.c                   |   3 +
- drivers/gpu/drm/tegra/plane.c                 | 121 ++++++
- drivers/gpu/drm/tegra/plane.h                 |  15 +
- drivers/memory/tegra/Kconfig                  |   5 +-
- drivers/memory/tegra/tegra124-emc.c           | 377 ++++++++++++++++--
- drivers/memory/tegra/tegra124.c               |  82 +++-
- drivers/memory/tegra/tegra20-emc.c            |  48 +--
- drivers/memory/tegra/tegra30-emc.c            | 344 +++++++++++++++-
- drivers/memory/tegra/tegra30.c                | 173 +++++++-
- include/linux/clk/tegra.h                     |   8 +
- include/soc/tegra/emc.h                       |  16 -
- 22 files changed, 1651 insertions(+), 177 deletions(-)
+Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ drivers/clk/tegra/Kconfig            |  3 ++
+ drivers/clk/tegra/Makefile           |  2 +-
+ drivers/clk/tegra/clk-tegra124-emc.c | 41 ++++++++++++++++++++++++----
+ drivers/clk/tegra/clk-tegra124.c     | 26 ++++++++++++++++--
+ drivers/clk/tegra/clk.h              | 18 ++++++++----
+ drivers/memory/tegra/Kconfig         |  3 +-
+ drivers/memory/tegra/tegra124-emc.c  | 31 ++++++++++++++-------
+ include/linux/clk/tegra.h            |  8 ++++++
+ include/soc/tegra/emc.h              | 16 -----------
+ 9 files changed, 106 insertions(+), 42 deletions(-)
  delete mode 100644 include/soc/tegra/emc.h
 
+diff --git a/drivers/clk/tegra/Kconfig b/drivers/clk/tegra/Kconfig
+index deaa4605824c..90df619dc087 100644
+--- a/drivers/clk/tegra/Kconfig
++++ b/drivers/clk/tegra/Kconfig
+@@ -7,3 +7,6 @@ config TEGRA_CLK_DFLL
+ 	depends on ARCH_TEGRA_124_SOC || ARCH_TEGRA_210_SOC
+ 	select PM_OPP
+ 	def_bool y
++
++config TEGRA124_CLK_EMC
++	bool
+diff --git a/drivers/clk/tegra/Makefile b/drivers/clk/tegra/Makefile
+index eec2313fd37e..7b1816856eb5 100644
+--- a/drivers/clk/tegra/Makefile
++++ b/drivers/clk/tegra/Makefile
+@@ -22,7 +22,7 @@ obj-$(CONFIG_ARCH_TEGRA_3x_SOC)		+= clk-tegra20-emc.o
+ obj-$(CONFIG_ARCH_TEGRA_114_SOC)	+= clk-tegra114.o
+ obj-$(CONFIG_ARCH_TEGRA_124_SOC)	+= clk-tegra124.o
+ obj-$(CONFIG_TEGRA_CLK_DFLL)		+= clk-tegra124-dfll-fcpu.o
+-obj-$(CONFIG_TEGRA124_EMC)		+= clk-tegra124-emc.o
++obj-$(CONFIG_TEGRA124_CLK_EMC)		+= clk-tegra124-emc.o
+ obj-$(CONFIG_ARCH_TEGRA_132_SOC)	+= clk-tegra124.o
+ obj-y					+= cvb.o
+ obj-$(CONFIG_ARCH_TEGRA_210_SOC)	+= clk-tegra210.o
+diff --git a/drivers/clk/tegra/clk-tegra124-emc.c b/drivers/clk/tegra/clk-tegra124-emc.c
+index 745f9faa98d8..bdf6f4a51617 100644
+--- a/drivers/clk/tegra/clk-tegra124-emc.c
++++ b/drivers/clk/tegra/clk-tegra124-emc.c
+@@ -11,7 +11,9 @@
+ #include <linux/clk-provider.h>
+ #include <linux/clk.h>
+ #include <linux/clkdev.h>
++#include <linux/clk/tegra.h>
+ #include <linux/delay.h>
++#include <linux/export.h>
+ #include <linux/io.h>
+ #include <linux/module.h>
+ #include <linux/of_address.h>
+@@ -21,7 +23,6 @@
+ #include <linux/string.h>
+ 
+ #include <soc/tegra/fuse.h>
+-#include <soc/tegra/emc.h>
+ 
+ #include "clk.h"
+ 
+@@ -80,6 +81,9 @@ struct tegra_clk_emc {
+ 	int num_timings;
+ 	struct emc_timing *timings;
+ 	spinlock_t *lock;
++
++	tegra124_emc_prepare_timing_change_cb *prepare_timing_change;
++	tegra124_emc_complete_timing_change_cb *complete_timing_change;
+ };
+ 
+ /* Common clock framework callback implementations */
+@@ -176,6 +180,9 @@ static struct tegra_emc *emc_ensure_emc_driver(struct tegra_clk_emc *tegra)
+ 	if (tegra->emc)
+ 		return tegra->emc;
+ 
++	if (!tegra->prepare_timing_change || !tegra->complete_timing_change)
++		return NULL;
++
+ 	if (!tegra->emc_node)
+ 		return NULL;
+ 
+@@ -241,7 +248,7 @@ static int emc_set_timing(struct tegra_clk_emc *tegra,
+ 
+ 	div = timing->parent_rate / (timing->rate / 2) - 2;
+ 
+-	err = tegra_emc_prepare_timing_change(emc, timing->rate);
++	err = tegra->prepare_timing_change(emc, timing->rate);
+ 	if (err)
+ 		return err;
+ 
+@@ -259,7 +266,7 @@ static int emc_set_timing(struct tegra_clk_emc *tegra,
+ 
+ 	spin_unlock_irqrestore(tegra->lock, flags);
+ 
+-	tegra_emc_complete_timing_change(emc, timing->rate);
++	tegra->complete_timing_change(emc, timing->rate);
+ 
+ 	clk_hw_reparent(&tegra->hw, __clk_get_hw(timing->parent));
+ 	clk_disable_unprepare(tegra->prev_parent);
+@@ -473,8 +480,8 @@ static const struct clk_ops tegra_clk_emc_ops = {
+ 	.get_parent = emc_get_parent,
+ };
+ 
+-struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
+-				   spinlock_t *lock)
++struct clk *tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
++				      spinlock_t *lock)
+ {
+ 	struct tegra_clk_emc *tegra;
+ 	struct clk_init_data init;
+@@ -538,3 +545,27 @@ struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
+ 
+ 	return clk;
+ };
++
++void tegra124_clk_set_emc_callbacks(tegra124_emc_prepare_timing_change_cb *prep_cb,
++				    tegra124_emc_complete_timing_change_cb *complete_cb)
++{
++	struct clk *clk = __clk_lookup("emc");
++	struct tegra_clk_emc *tegra;
++	struct clk_hw *hw;
++
++	if (clk) {
++		hw = __clk_get_hw(clk);
++		tegra = container_of(hw, struct tegra_clk_emc, hw);
++
++		tegra->prepare_timing_change = prep_cb;
++		tegra->complete_timing_change = complete_cb;
++	}
++}
++EXPORT_SYMBOL_GPL(tegra124_clk_set_emc_callbacks);
++
++bool tegra124_clk_emc_driver_available(struct clk_hw *hw)
++{
++	struct tegra_clk_emc *tegra = container_of(hw, struct tegra_clk_emc, hw);
++
++	return tegra->prepare_timing_change && tegra->complete_timing_change;
++}
+diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
+index e931319dcc9d..934520aab6e3 100644
+--- a/drivers/clk/tegra/clk-tegra124.c
++++ b/drivers/clk/tegra/clk-tegra124.c
+@@ -1500,6 +1500,26 @@ static void __init tegra124_132_clock_init_pre(struct device_node *np)
+ 	writel(plld_base, clk_base + PLLD_BASE);
+ }
+ 
++static struct clk *tegra124_clk_src_onecell_get(struct of_phandle_args *clkspec,
++						void *data)
++{
++	struct clk_hw *hw;
++	struct clk *clk;
++
++	clk = of_clk_src_onecell_get(clkspec, data);
++	if (IS_ERR(clk))
++		return clk;
++
++	hw = __clk_get_hw(clk);
++
++	if (clkspec->args[0] == TEGRA124_CLK_EMC) {
++		if (!tegra124_clk_emc_driver_available(hw))
++			return ERR_PTR(-EPROBE_DEFER);
++	}
++
++	return clk;
++}
++
+ /**
+  * tegra124_132_clock_init_post - clock initialization postamble for T124/T132
+  * @np: struct device_node * of the DT node for the SoC CAR IP block
+@@ -1516,10 +1536,10 @@ static void __init tegra124_132_clock_init_post(struct device_node *np)
+ 				  &pll_x_params);
+ 	tegra_init_special_resets(1, tegra124_reset_assert,
+ 				  tegra124_reset_deassert);
+-	tegra_add_of_provider(np, of_clk_src_onecell_get);
++	tegra_add_of_provider(np, tegra124_clk_src_onecell_get);
+ 
+-	clks[TEGRA124_CLK_EMC] = tegra_clk_register_emc(clk_base, np,
+-							&emc_lock);
++	clks[TEGRA124_CLK_EMC] = tegra124_clk_register_emc(clk_base, np,
++							   &emc_lock);
+ 
+ 	tegra_register_devclks(devclks, ARRAY_SIZE(devclks));
+ 
+diff --git a/drivers/clk/tegra/clk.h b/drivers/clk/tegra/clk.h
+index 6b565f6b5f66..c3e36b5dcc75 100644
+--- a/drivers/clk/tegra/clk.h
++++ b/drivers/clk/tegra/clk.h
+@@ -881,16 +881,22 @@ void tegra_super_clk_gen5_init(void __iomem *clk_base,
+ 			void __iomem *pmc_base, struct tegra_clk *tegra_clks,
+ 			struct tegra_clk_pll_params *pll_params);
+ 
+-#ifdef CONFIG_TEGRA124_EMC
+-struct clk *tegra_clk_register_emc(void __iomem *base, struct device_node *np,
+-				   spinlock_t *lock);
++#ifdef CONFIG_TEGRA124_CLK_EMC
++struct clk *tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
++				      spinlock_t *lock);
++bool tegra124_clk_emc_driver_available(struct clk_hw *emc_hw);
+ #else
+-static inline struct clk *tegra_clk_register_emc(void __iomem *base,
+-						 struct device_node *np,
+-						 spinlock_t *lock)
++static inline struct clk *
++tegra124_clk_register_emc(void __iomem *base, struct device_node *np,
++			  spinlock_t *lock)
+ {
+ 	return NULL;
+ }
++
++static inline bool tegra124_clk_emc_driver_available(struct clk_hw *emc_hw)
++{
++	return false;
++}
+ #endif
+ 
+ void tegra114_clock_tune_cpu_trimmers_high(void);
+diff --git a/drivers/memory/tegra/Kconfig b/drivers/memory/tegra/Kconfig
+index ca7077a06f4c..f5b451403c58 100644
+--- a/drivers/memory/tegra/Kconfig
++++ b/drivers/memory/tegra/Kconfig
+@@ -32,9 +32,10 @@ config TEGRA30_EMC
+ 	  external memory.
+ 
+ config TEGRA124_EMC
+-	bool "NVIDIA Tegra124 External Memory Controller driver"
++	tristate "NVIDIA Tegra124 External Memory Controller driver"
+ 	default y
+ 	depends on TEGRA_MC && ARCH_TEGRA_124_SOC
++	select TEGRA124_CLK_EMC
+ 	help
+ 	  This driver is for the External Memory Controller (EMC) found on
+ 	  Tegra124 chips. The EMC controls the external DRAM on the board.
+diff --git a/drivers/memory/tegra/tegra124-emc.c b/drivers/memory/tegra/tegra124-emc.c
+index ee8ee39e98ed..edfbf6d6d357 100644
+--- a/drivers/memory/tegra/tegra124-emc.c
++++ b/drivers/memory/tegra/tegra124-emc.c
+@@ -9,16 +9,17 @@
+ #include <linux/clk-provider.h>
+ #include <linux/clk.h>
+ #include <linux/clkdev.h>
++#include <linux/clk/tegra.h>
+ #include <linux/debugfs.h>
+ #include <linux/delay.h>
+ #include <linux/io.h>
++#include <linux/module.h>
+ #include <linux/of_address.h>
+ #include <linux/of_platform.h>
+ #include <linux/platform_device.h>
+ #include <linux/sort.h>
+ #include <linux/string.h>
+ 
+-#include <soc/tegra/emc.h>
+ #include <soc/tegra/fuse.h>
+ #include <soc/tegra/mc.h>
+ 
+@@ -562,8 +563,8 @@ static struct emc_timing *tegra_emc_find_timing(struct tegra_emc *emc,
+ 	return timing;
+ }
+ 
+-int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
+-				    unsigned long rate)
++static int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
++					   unsigned long rate)
+ {
+ 	struct emc_timing *timing = tegra_emc_find_timing(emc, rate);
+ 	struct emc_timing *last = &emc->last_timing;
+@@ -790,8 +791,8 @@ int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
+ 	return 0;
+ }
+ 
+-void tegra_emc_complete_timing_change(struct tegra_emc *emc,
+-				      unsigned long rate)
++static void tegra_emc_complete_timing_change(struct tegra_emc *emc,
++					     unsigned long rate)
+ {
+ 	struct emc_timing *timing = tegra_emc_find_timing(emc, rate);
+ 	struct emc_timing *last = &emc->last_timing;
+@@ -987,6 +988,7 @@ static const struct of_device_id tegra_emc_of_match[] = {
+ 	{ .compatible = "nvidia,tegra132-emc" },
+ 	{}
+ };
++MODULE_DEVICE_TABLE(of, tegra_emc_of_match);
+ 
+ static struct device_node *
+ tegra_emc_find_node_by_ram_code(struct device_node *node, u32 ram_code)
+@@ -1226,9 +1228,19 @@ static int tegra_emc_probe(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, emc);
+ 
++	tegra124_clk_set_emc_callbacks(tegra_emc_prepare_timing_change,
++				       tegra_emc_complete_timing_change);
++
+ 	if (IS_ENABLED(CONFIG_DEBUG_FS))
+ 		emc_debugfs_init(&pdev->dev, emc);
+ 
++	/*
++	 * Don't allow the kernel module to be unloaded. Unloading adds some
++	 * extra complexity which doesn't really worth the effort in a case of
++	 * this driver.
++	 */
++	try_module_get(THIS_MODULE);
++
+ 	return 0;
+ };
+ 
+@@ -1240,9 +1252,8 @@ static struct platform_driver tegra_emc_driver = {
+ 		.suppress_bind_attrs = true,
+ 	},
+ };
++module_platform_driver(tegra_emc_driver);
+ 
+-static int tegra_emc_init(void)
+-{
+-	return platform_driver_register(&tegra_emc_driver);
+-}
+-subsys_initcall(tegra_emc_init);
++MODULE_AUTHOR("Mikko Perttunen <mperttunen@nvidia.com>");
++MODULE_DESCRIPTION("NVIDIA Tegra124 EMC driver");
++MODULE_LICENSE("GPL v2");
+diff --git a/include/linux/clk/tegra.h b/include/linux/clk/tegra.h
+index 3f01d43f0598..eb016fc9cc0b 100644
+--- a/include/linux/clk/tegra.h
++++ b/include/linux/clk/tegra.h
+@@ -136,6 +136,7 @@ extern void tegra210_clk_emc_dll_update_setting(u32 emc_dll_src_value);
+ extern void tegra210_clk_emc_update_setting(u32 emc_src_value);
+ 
+ struct clk;
++struct tegra_emc;
+ 
+ typedef long (tegra20_clk_emc_round_cb)(unsigned long rate,
+ 					unsigned long min_rate,
+@@ -146,6 +147,13 @@ void tegra20_clk_set_emc_round_callback(tegra20_clk_emc_round_cb *round_cb,
+ 					void *cb_arg);
+ int tegra20_clk_prepare_emc_mc_same_freq(struct clk *emc_clk, bool same);
+ 
++typedef int (tegra124_emc_prepare_timing_change_cb)(struct tegra_emc *emc,
++						    unsigned long rate);
++typedef void (tegra124_emc_complete_timing_change_cb)(struct tegra_emc *emc,
++						      unsigned long rate);
++void tegra124_clk_set_emc_callbacks(tegra124_emc_prepare_timing_change_cb *prep_cb,
++				    tegra124_emc_complete_timing_change_cb *complete_cb);
++
+ struct tegra210_clk_emc_config {
+ 	unsigned long rate;
+ 	bool same_freq;
+diff --git a/include/soc/tegra/emc.h b/include/soc/tegra/emc.h
+deleted file mode 100644
+index 05199a97ccf4..000000000000
+--- a/include/soc/tegra/emc.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-/*
+- * Copyright (c) 2014 NVIDIA Corporation. All rights reserved.
+- */
+-
+-#ifndef __SOC_TEGRA_EMC_H__
+-#define __SOC_TEGRA_EMC_H__
+-
+-struct tegra_emc;
+-
+-int tegra_emc_prepare_timing_change(struct tegra_emc *emc,
+-				    unsigned long rate);
+-void tegra_emc_complete_timing_change(struct tegra_emc *emc,
+-				      unsigned long rate);
+-
+-#endif /* __SOC_TEGRA_EMC_H__ */
 -- 
 2.29.2
 
