@@ -2,114 +2,258 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 27425C63777
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 12:42:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id BAA90C64E7A
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 13:10:42 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C66CB21D91
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 12:42:36 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 6348122259
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 13:10:42 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2388757AbgLCMmg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Dec 2020 07:42:36 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:51706 "EHLO
+        id S2387872AbgLCNK0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Dec 2020 08:10:26 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56050 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2387998AbgLCMmf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 07:42:35 -0500
-Received: from merlin.infradead.org (merlin.infradead.org [IPv6:2001:8b0:10b:1231::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 952C5C061A4F;
-        Thu,  3 Dec 2020 04:41:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-        d=infradead.org; s=merlin.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-        References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-        Content-Transfer-Encoding:Content-ID:Content-Description;
-        bh=rcY1pTuzOztjgznyvJvtInjHpKkyW5kZe8ZvS4Mqiwo=; b=swl2bpoKojQhZhwjiyg7JMJngF
-        PncZValpmxIZQ5xpwjLKsGr0/y+u9btEM6ialPYA4ySFjOnc2EFkyShoIbXs+72+STp1uSCPd99Co
-        3hqjrdIjGLjqTfn52CmR/Prx8W9yE3Fi48MNrfs33S5tnBXwRzx3gyUjtwqewh85PEEu1Rd58yYA/
-        rF+6EPe3SjSPlm6/7838UQKrxW9lT89DmrX2U0AwxwtwokPBGfgBaASdCbr6M7DYmsu8K5O10me0s
-        hCMZrmo7Lhavv4GYAhJjzvOin3ChO5vv5TL15oT7cf8dRjwUnjbagMLgk67vtssawBdTpJiQu89in
-        drfBZOZA==;
-Received: from j217100.upc-j.chello.nl ([24.132.217.100] helo=noisy.programming.kicks-ass.net)
-        by merlin.infradead.org with esmtpsa (Exim 4.92.3 #3 (Red Hat Linux))
-        id 1kknvb-0004Vz-IS; Thu, 03 Dec 2020 12:41:43 +0000
-Received: from hirez.programming.kicks-ass.net (hirez.programming.kicks-ass.net [192.168.1.225])
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-        (Client did not present a certificate)
-        by noisy.programming.kicks-ass.net (Postfix) with ESMTPS id 80A23300DAE;
-        Thu,  3 Dec 2020 13:41:41 +0100 (CET)
-Received: by hirez.programming.kicks-ass.net (Postfix, from userid 1000)
-        id 6A194223615CE; Thu,  3 Dec 2020 13:41:41 +0100 (CET)
-Date:   Thu, 3 Dec 2020 13:41:41 +0100
-From:   Peter Zijlstra <peterz@infradead.org>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Doug Smythies <dsmythies@telus.net>,
-        Giovanni Gherdovich <ggherdovich@suse.com>
-Subject: Re: [RFC][PATCH 1/2] cpufreq: Add special-purpose fast-switching
- callback for drivers
-Message-ID: <20201203124141.GP3021@hirez.programming.kicks-ass.net>
-References: <1817571.2o5Kk4Ohv2@kreacher>
- <2174134.tL5yAn4CWt@kreacher>
+        with ESMTP id S2387855AbgLCNK0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 08:10:26 -0500
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 060EAC061A4E
+        for <linux-pm@vger.kernel.org>; Thu,  3 Dec 2020 05:09:40 -0800 (PST)
+Received: by mail-wr1-x444.google.com with SMTP id r3so1828525wrt.2
+        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2020 05:09:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=rkrWWgy/zAJu0GV6hLcEd4kiWgcX7eH0p2FvB1NfSaM=;
+        b=GnT4MwE0rexDgVy9iVAB+xaJVO2aSitrLemSfO3X0m/uHDffUgDe99WVZ7CmIyHEgE
+         ySVZiyXirmMf99StbP7Z1KdhL2NRzx2ls+pHaZNWF0Tzny41rYvPjmd2mkQsHvSbHOr+
+         iNmpyrX8GjO8eRdX5dR4LkLqp1KX3fUk+RrSZhoqgS2OAzHGfJwkfeY1N4qlGqpmx2C5
+         4i0gAUIDx+sfRyWHJWfCSFRXGJIB3clsDFb9xH/bUDNgKpPECzXMjyx5Rx/b1kfq0ImY
+         YlXYuXLA7hTAPuUQZuE2xpPQqsXk4reC5W0ntOFl5QToPjLrTl0CSQMTgPYDsMKLKmQU
+         Zu3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=rkrWWgy/zAJu0GV6hLcEd4kiWgcX7eH0p2FvB1NfSaM=;
+        b=Gj/HNolR1m/1XLHq1vWUuexSMK1++k4G5TpAri9eWCvxVgmhmweVFjICE9zpr0VQOT
+         JfYKa+fh309PVdxPZKipuXJW/4EUqpVo+NgYqdddRoJGyMvHMI5b0EI/vKY3MbF6Ue08
+         SGwOyQnfC6VedaZ2My1YKQtFNgWD3HYpq8HmRJ872EJqVo9I44E4dSYhtnJS9Cd/6U/C
+         iEflQuBmjxh2691L4FgBkt4gG0cSr2LbR4prljh3qJa8UVsvXwB0Er/MkMe9wJqp02bg
+         xK8l2RFLRn8sLakOyL9YrY2qfCbnlxkoLojvKF0r51+gQ5DciFWax8XMq7AZ0nDcenRD
+         jDpg==
+X-Gm-Message-State: AOAM532z1LDcJam+4ubQwcx0iVpy2GoEzdu1jsprFFzWwaH+hkhq4dTZ
+        r9QN0x82Jrs4HYLcPXqwlqaltQ==
+X-Google-Smtp-Source: ABdhPJz8FWWXiz2Jj8ehlbzz4IZAsN6vLYDaoQyFJcPRXYhvTfUYcQJ7n9arDiqpba2Wmv2W4Vsyig==
+X-Received: by 2002:adf:e7d0:: with SMTP id e16mr3772346wrn.114.1607000978486;
+        Thu, 03 Dec 2020 05:09:38 -0800 (PST)
+Received: from ?IPv6:2a01:e34:ed2f:f020:1c7d:2d7a:9709:b9a2? ([2a01:e34:ed2f:f020:1c7d:2d7a:9709:b9a2])
+        by smtp.googlemail.com with ESMTPSA id d17sm1861139wro.62.2020.12.03.05.09.36
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 03 Dec 2020 05:09:37 -0800 (PST)
+Subject: Re: [PATCH v2 2/5] thermal: devfreq_cooling: get a copy of device
+ status
+To:     Lukasz Luba <lukasz.luba@arm.com>, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org, dri-devel@lists.freedesktop.org
+Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
+        orjan.eide@arm.com, robh@kernel.org,
+        alyssa.rosenzweig@collabora.com, steven.price@arm.com,
+        airlied@linux.ie, daniel@ffwll.ch, ionela.voinescu@arm.com
+References: <20201118120358.17150-1-lukasz.luba@arm.com>
+ <20201118120358.17150-3-lukasz.luba@arm.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <5d4743b9-5b2f-8494-8d10-6a5fd2c0fdfd@linaro.org>
+Date:   Thu, 3 Dec 2020 14:09:36 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2174134.tL5yAn4CWt@kreacher>
+In-Reply-To: <20201118120358.17150-3-lukasz.luba@arm.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Nov 30, 2020 at 07:37:01PM +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On 18/11/2020 13:03, Lukasz Luba wrote:
+> Devfreq cooling needs to now the correct status of the device in order
+> to operate. Do not rely on Devfreq last_status which might be a stale data
+> and get more up-to-date values of the load.
 > 
-> First off, some cpufreq drivers (eg. intel_pstate) can pass hints
-> beyond the current target frequency to the hardware and there are no
-
-Everything CPPC, which is quite a bit these days.
-
-
-> +	/*
-> +	 * ->fast_switch() replacement for drivers that use an internal
-> +	 * representation of performance levels and can pass hints other than
-> +	 * the target performance level to the hardware.
-> +	 */
-> +	void		(*adjust_perf)(unsigned int cpu, bool busy,
-> +				       unsigned long min_perf,
-> +				       unsigned long target_perf,
-> +				       unsigned long capacity);
+> Devfreq framework can change the device status in the background. To
+> mitigate this situation make a copy of the status structure and use it
+> for internal calculations.
+> 
+> In addition this patch adds normalization function, which also makes sure
+> that whatever data comes from the device, it is in a sane range.
+> 
+> Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+> ---
+>  drivers/thermal/devfreq_cooling.c | 52 +++++++++++++++++++++++++------
+>  1 file changed, 43 insertions(+), 9 deletions(-)
+> 
+> diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
+> index 659c0143c9f0..925523694462 100644
+> --- a/drivers/thermal/devfreq_cooling.c
+> +++ b/drivers/thermal/devfreq_cooling.c
+> @@ -227,20 +227,46 @@ static inline unsigned long get_total_power(struct devfreq_cooling_device *dfc,
+>  							       voltage);
+>  }
 >  
-
-I'm not sure @busy makes sense, that's more a hack because @util had a
-dip and should remain inside schedutil.
-
-
-> @@ -454,6 +455,25 @@ static void sugov_update_single(struct u
->  	util = sugov_get_util(sg_cpu);
->  	max = sg_cpu->max;
->  	util = sugov_iowait_apply(sg_cpu, time, util, max);
-> +
-> +	/*
-> +	 * This code runs under rq->lock for the target CPU, so it won't run
-> +	 * concurrently on two different CPUs for the same target and it is not
-> +	 * necessary to acquire the lock in the fast switch case.
-> +	 */
-> +	if (sg_policy->direct_fast_switch) {
-> +		/*
-> +		 * In this case, any optimizations that can be done are up to
-> +		 * the driver.
-> +		 */
-> +		cpufreq_driver_adjust_perf(sg_cpu->cpu,
-> +					   sugov_cpu_is_busy(sg_cpu),
-> +					   map_util_perf(sg_cpu->bw_dl),
-> +					   map_util_perf(util), max);
-> +		sg_policy->last_freq_update_time = time;
-> +		return;
+> +static void _normalize_load(struct devfreq_dev_status *status)
+> +{
+> +	/* Make some space if needed */
+> +	if (status->busy_time > 0xffff) {
+> +		status->busy_time >>= 10;
+> +		status->total_time >>= 10;
 > +	}
+> +
+> +	if (status->busy_time > status->total_time)
+> +		status->busy_time = status->total_time;
 
-Instead of adding more branches, would it makes sense to simply set a
-whole different util_hook in this case?
+How the condition above is possible?
+
+> +	status->busy_time *= 100;
+> +	status->busy_time /= status->total_time ? : 1;
+> +
+> +	/* Avoid division by 0 */
+> +	status->busy_time = status->busy_time ? : 1;
+> +	status->total_time = 100;
+
+Why not base the normalization on 1024? and use an intermediate u64.
+
+For example:
+
+static u32 _normalize_load(struct devfreq_dev_status *status)
+{
+	u64 load = 0;
+
+	/* Prevent divison by zero */
+	if (!status->busy_time)
+		return 0;
+
+	/*
+	 * Assuming status->total_time is always greater or equal
+	 * to status->busy_time, it can not be equal to zero because
+	 * of the test above
+	 */
+	load = status->busy_time * 1024;
+	load /= status->total_time;
+
+	/*
+	 * load is always [1..1024[, so it can not be truncated by a
+	 * u64 -> u32 coercive cast
+	 */
+	return (u32)load;
+}
+
+
+> +}
+>  
+>  static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cdev,
+>  					       u32 *power)
+>  {
+>  	struct devfreq_cooling_device *dfc = cdev->devdata;
+>  	struct devfreq *df = dfc->devfreq;
+> -	struct devfreq_dev_status *status = &df->last_status;
+> +	struct devfreq_dev_status status;
+>  	unsigned long state;
+> -	unsigned long freq = status->current_frequency;
+> +	unsigned long freq;
+>  	unsigned long voltage;
+>  	u32 dyn_power = 0;
+>  	u32 static_power = 0;
+>  	int res;
+>  
+> +	mutex_lock(&df->lock);
+> +	res = df->profile->get_dev_status(df->dev.parent, &status);
+> +	mutex_unlock(&df->lock);
+> +	if (res)
+> +		return res;
+> +
+> +	freq = status.current_frequency;
+> +
+>  	state = freq_get_state(dfc, freq);
+>  	if (state == THERMAL_CSTATE_INVALID) {
+>  		res = -EAGAIN;
+> @@ -268,16 +294,18 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
+>  	} else {
+>  		dyn_power = dfc->power_table[state];
+>  
+> +		_normalize_load(&status);
+
+		load = _normalize_load(&status);
+
+> +
+>  		/* Scale dynamic power for utilization */
+> -		dyn_power *= status->busy_time;
+> -		dyn_power /= status->total_time;
+> +		dyn_power *= status.busy_time;
+> +		dyn_power /= status.total_time;
+
+		/*
+		 * May be change dyn_power to a u64 to prevent overflow
+		 * when multiplied by 'load'
+		 */
+		dyn_power = (dyn_power * load) / 1024;
+
+>  		/* Get static power */
+>  		static_power = get_static_power(dfc, freq);
+>  
+>  		*power = dyn_power + static_power;
+>  	}
+>  
+> -	trace_thermal_power_devfreq_get_power(cdev, status, freq, *power);
+> +	trace_thermal_power_devfreq_get_power(cdev, &status, freq, *power);
+>  
+>  	return 0;
+>  fail:
+> @@ -309,14 +337,20 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+>  {
+>  	struct devfreq_cooling_device *dfc = cdev->devdata;
+>  	struct devfreq *df = dfc->devfreq;
+> -	struct devfreq_dev_status *status = &df->last_status;
+> -	unsigned long freq = status->current_frequency;
+> +	struct devfreq_dev_status status;
+>  	unsigned long busy_time;
+> +	unsigned long freq;
+>  	s32 dyn_power;
+>  	u32 static_power;
+>  	s32 est_power;
+>  	int i;
+>  
+> +	mutex_lock(&df->lock);
+> +	status = df->last_status;
+> +	mutex_unlock(&df->lock);
+> +
+> +	freq = status.current_frequency;
+> +
+>  	if (dfc->power_ops->get_real_power) {
+>  		/* Scale for resource utilization */
+>  		est_power = power * dfc->res_util;
+> @@ -328,8 +362,8 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
+>  		dyn_power = dyn_power > 0 ? dyn_power : 0;
+>  
+>  		/* Scale dynamic power for utilization */
+> -		busy_time = status->busy_time ?: 1;
+> -		est_power = (dyn_power * status->total_time) / busy_time;
+> +		busy_time = status.busy_time ?: 1;
+> +		est_power = (dyn_power * status.total_time) / busy_time;
+>  	}
+>  
+>  	/*
+> 
+
+
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
+
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
