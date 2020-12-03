@@ -2,131 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CAB46C8301A
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 13:39:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9AEDBC43211
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 14:45:15 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1B4EE20449
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 13:39:22 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 36E1122D49
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 14:45:15 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729328AbgLCNhe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Dec 2020 08:37:34 -0500
-Received: from mail.kernel.org ([198.145.29.99]:47984 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2436561AbgLCNaX (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 3 Dec 2020 08:30:23 -0500
-From:   Sasha Levin <sashal@kernel.org>
-Authentication-Results: mail.kernel.org; dkim=permerror (bad message/signature format)
-To:     linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Cc:     Peter Zijlstra <peterz@infradead.org>,
-        "Rafael J . Wysocki" <rafael.j.wysocki@intel.com>,
-        Sasha Levin <sashal@kernel.org>, linux-pm@vger.kernel.org
-Subject: [PATCH AUTOSEL 5.9 28/39] intel_idle: Fix intel_idle() vs tracing
-Date:   Thu,  3 Dec 2020 08:28:22 -0500
-Message-Id: <20201203132834.930999-28-sashal@kernel.org>
-X-Mailer: git-send-email 2.27.0
-In-Reply-To: <20201203132834.930999-1-sashal@kernel.org>
-References: <20201203132834.930999-1-sashal@kernel.org>
+        id S2389314AbgLCOo7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Dec 2020 09:44:59 -0500
+Received: from mail-oi1-f196.google.com ([209.85.167.196]:34797 "EHLO
+        mail-oi1-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2389190AbgLCOo6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 09:44:58 -0500
+Received: by mail-oi1-f196.google.com with SMTP id s18so2408764oih.1;
+        Thu, 03 Dec 2020 06:44:42 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=UbGjEkaZE0D9a7AyFWG5aWHAuEZDZ69DNAnE5cwlxJ4=;
+        b=MMm9XfqVXbQOewTedN9LEuYBBbfmB6pdZ6nl21i6o+b4g4erQFbr2WpuAGWOnQ+NYH
+         ijL+JlWMEfxPRTx3ceBhcJsGEQg24N+zd2wiGf27qURagM+v6dmt7r6KY04BE+tMAHcU
+         0Pe8U+vjNEa51Oq0JKM8iFHUvIUA7IsJJU99dQebylteiizvCHob1QGRvP5iwPeUfXw5
+         RpKfc/A3tsfMWdcGXx9VDB/0CFdQGF7fD011W0ES2yrc483zD/uiu8epZx0yiFpgWEM6
+         NJHC5c52UWnHb2KI/HXsKGDS3wJwQilrMOLfm3TBormjBz7FANChJqJo+VcQrEZ7S+1k
+         VTfg==
+X-Gm-Message-State: AOAM530u1dLZ6WKIiozKgWXXbUGBZCCDsJi+S8qSKV7Lg0ECNzk34pA8
+        rmP4fK6QIyew4OA1F7vrumgL7ysg8KpP0z4c5GA=
+X-Google-Smtp-Source: ABdhPJxCB1f9GdvXE8F8LsYWDp/UuWVx87acnLfAlUxHfs6nA2EctCvgQWDEs0+k6q/Szn3sqGyXicrvLFdOiWSe4+Y=
+X-Received: by 2002:aca:cf4a:: with SMTP id f71mr2085846oig.157.1607006657415;
+ Thu, 03 Dec 2020 06:44:17 -0800 (PST)
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-Content-Transfer-Encoding: 8bit
+References: <1817571.2o5Kk4Ohv2@kreacher> <2174134.tL5yAn4CWt@kreacher> <20201203124141.GP3021@hirez.programming.kicks-ass.net>
+In-Reply-To: <20201203124141.GP3021@hirez.programming.kicks-ass.net>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 3 Dec 2020 15:44:04 +0100
+Message-ID: <CAJZ5v0hhsRmije05gg+Hp2maivoF7i1n33LxYWEnSxhsWV1u=A@mail.gmail.com>
+Subject: Re: [RFC][PATCH 1/2] cpufreq: Add special-purpose fast-switching
+ callback for drivers
+To:     Peter Zijlstra <peterz@infradead.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Doug Smythies <dsmythies@telus.net>,
+        Giovanni Gherdovich <ggherdovich@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Peter Zijlstra <peterz@infradead.org>
+On Thu, Dec 3, 2020 at 1:42 PM Peter Zijlstra <peterz@infradead.org> wrote:
+>
+> On Mon, Nov 30, 2020 at 07:37:01PM +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+> >
+> > First off, some cpufreq drivers (eg. intel_pstate) can pass hints
+> > beyond the current target frequency to the hardware and there are no
+>
+> Everything CPPC, which is quite a bit these days.
 
-[ Upstream commit 6e1d2bc675bd57640f5658a4a657ae488db4c204 ]
+Right, but that is still "some". :-) I can add it to the list of
+examples, though.
 
-cpuidle->enter() callbacks should not call into tracing because RCU
-has already been disabled. Instead of doing the broadcast thing
-itself, simply advertise to the cpuidle core that those states stop
-the timer.
+> > +     /*
+> > +      * ->fast_switch() replacement for drivers that use an internal
+> > +      * representation of performance levels and can pass hints other than
+> > +      * the target performance level to the hardware.
+> > +      */
+> > +     void            (*adjust_perf)(unsigned int cpu, bool busy,
+> > +                                    unsigned long min_perf,
+> > +                                    unsigned long target_perf,
+> > +                                    unsigned long capacity);
+> >
+>
+> I'm not sure @busy makes sense, that's more a hack because @util had a
+> dip and should remain inside schedutil.
 
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Acked-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Link: https://lkml.kernel.org/r/20201123143510.GR3021@hirez.programming.kicks-ass.net
-Signed-off-by: Sasha Levin <sashal@kernel.org>
----
- drivers/idle/intel_idle.c | 37 ++++++++++++++++++++-----------------
- 1 file changed, 20 insertions(+), 17 deletions(-)
+So I did it this way, because schedutil would need to store the old
+value of target_perf for this and intel_pstate already does that.
 
-diff --git a/drivers/idle/intel_idle.c b/drivers/idle/intel_idle.c
-index d09b807e1c3a1..cc6d1b12388e1 100644
---- a/drivers/idle/intel_idle.c
-+++ b/drivers/idle/intel_idle.c
-@@ -122,26 +122,9 @@ static __cpuidle int intel_idle(struct cpuidle_device *dev,
- 	struct cpuidle_state *state = &drv->states[index];
- 	unsigned long eax = flg2MWAIT(state->flags);
- 	unsigned long ecx = 1; /* break on interrupt flag */
--	bool tick;
--
--	if (!static_cpu_has(X86_FEATURE_ARAT)) {
--		/*
--		 * Switch over to one-shot tick broadcast if the target C-state
--		 * is deeper than C1.
--		 */
--		if ((eax >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK) {
--			tick = true;
--			tick_broadcast_enter();
--		} else {
--			tick = false;
--		}
--	}
- 
- 	mwait_idle_with_hints(eax, ecx);
- 
--	if (!static_cpu_has(X86_FEATURE_ARAT) && tick)
--		tick_broadcast_exit();
--
- 	return index;
- }
- 
-@@ -1223,6 +1206,20 @@ static bool __init intel_idle_acpi_cst_extract(void)
- 	return false;
- }
- 
-+static bool __init intel_idle_state_needs_timer_stop(struct cpuidle_state *state)
-+{
-+	unsigned long eax = flg2MWAIT(state->flags);
-+
-+	if (boot_cpu_has(X86_FEATURE_ARAT))
-+		return false;
-+
-+	/*
-+	 * Switch over to one-shot tick broadcast if the target C-state
-+	 * is deeper than C1.
-+	 */
-+	return !!((eax >> MWAIT_SUBSTATE_SIZE) & MWAIT_CSTATE_MASK);
-+}
-+
- static void __init intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
- {
- 	int cstate, limit = min_t(int, CPUIDLE_STATE_MAX, acpi_state_table.count);
-@@ -1265,6 +1262,9 @@ static void __init intel_idle_init_cstates_acpi(struct cpuidle_driver *drv)
- 		if (disabled_states_mask & BIT(cstate))
- 			state->flags |= CPUIDLE_FLAG_OFF;
- 
-+		if (intel_idle_state_needs_timer_stop(state))
-+			state->flags |= CPUIDLE_FLAG_TIMER_STOP;
-+
- 		state->enter = intel_idle;
- 		state->enter_s2idle = intel_idle_s2idle;
- 	}
-@@ -1503,6 +1503,9 @@ static void __init intel_idle_init_cstates_icpu(struct cpuidle_driver *drv)
- 		     !(cpuidle_state_table[cstate].flags & CPUIDLE_FLAG_ALWAYS_ENABLE)))
- 			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_OFF;
- 
-+		if (intel_idle_state_needs_timer_stop(&drv->states[drv->state_count]))
-+			drv->states[drv->state_count].flags |= CPUIDLE_FLAG_TIMER_STOP;
-+
- 		drv->state_count++;
- 	}
- 
--- 
-2.27.0
+But if a new util_hook is used in this case, the existing space in
+sg_policy may be used for that.
 
+> > @@ -454,6 +455,25 @@ static void sugov_update_single(struct u
+> >       util = sugov_get_util(sg_cpu);
+> >       max = sg_cpu->max;
+> >       util = sugov_iowait_apply(sg_cpu, time, util, max);
+> > +
+> > +     /*
+> > +      * This code runs under rq->lock for the target CPU, so it won't run
+> > +      * concurrently on two different CPUs for the same target and it is not
+> > +      * necessary to acquire the lock in the fast switch case.
+> > +      */
+> > +     if (sg_policy->direct_fast_switch) {
+> > +             /*
+> > +              * In this case, any optimizations that can be done are up to
+> > +              * the driver.
+> > +              */
+> > +             cpufreq_driver_adjust_perf(sg_cpu->cpu,
+> > +                                        sugov_cpu_is_busy(sg_cpu),
+> > +                                        map_util_perf(sg_cpu->bw_dl),
+> > +                                        map_util_perf(util), max);
+> > +             sg_policy->last_freq_update_time = time;
+> > +             return;
+> > +     }
+>
+> Instead of adding more branches, would it makes sense to simply set a
+> whole different util_hook in this case?
+
+Looks doable without too much code duplication.  Lemme try.
