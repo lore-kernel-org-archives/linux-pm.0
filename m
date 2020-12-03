@@ -2,163 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.2 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EF993C433FE
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:20:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EE21AC0007A
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 97150221F5
-	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:20:29 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 99559221F5
+	for <linux-pm@archiver.kernel.org>; Thu,  3 Dec 2020 19:25:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727620AbgLCTU3 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Dec 2020 14:20:29 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57126 "EHLO
+        id S1731264AbgLCTZf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Dec 2020 14:25:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57918 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727088AbgLCTU2 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 14:20:28 -0500
-Received: from mail-yb1-xb42.google.com (mail-yb1-xb42.google.com [IPv6:2607:f8b0:4864:20::b42])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 7D242C061A51
-        for <linux-pm@vger.kernel.org>; Thu,  3 Dec 2020 11:19:48 -0800 (PST)
-Received: by mail-yb1-xb42.google.com with SMTP id x2so3045473ybt.11
-        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2020 11:19:48 -0800 (PST)
+        with ESMTP id S1731171AbgLCTZe (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 14:25:34 -0500
+Received: from mail-lf1-x141.google.com (mail-lf1-x141.google.com [IPv6:2a00:1450:4864:20::141])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id A5089C061A4E;
+        Thu,  3 Dec 2020 11:24:53 -0800 (PST)
+Received: by mail-lf1-x141.google.com with SMTP id s30so4388939lfc.4;
+        Thu, 03 Dec 2020 11:24:53 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=UUYfB3LhbOXH/qWX5ow3QLdCqkjf8YNWyBuEVSInt6w=;
-        b=tAd4JdpSkRPjjrscn5ThUbDcRYUSaRgmc8LmMW8HU7IePg47OQhCVJdawgzjaN7syv
-         e3N3DviCmLqpIzkG8sO9XhRF7Xf5itcYmV+qZhq7FZqrC0InNtmGC17CoIJH1Wfphncr
-         Rg3+TeoBuBit3SqGgU3LvdQFbIl4Hfvd3BljTLXwQyaI0Nmmgvg8oNhs51a3TPi3/ykN
-         3T79WmLyPDK6zN22VMLIOPq8xzaeDsW3ln56eq9MCq3v+uSGTB7yi3dNZ01zx+siGqKN
-         vaiTRladSGMR+rgnYUqa2sd69sMLzM0Csre6QiBaviz0vCyosEHEY5UGK4etRXSK2MqN
-         PnAQ==
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references
+         :mime-version:content-transfer-encoding;
+        bh=WUhKJyasXG2LBKITKz4o43ZB62Ht6r3ypNcA03zC6GA=;
+        b=piGC8uTtwm+ToJJ3OM+dvwV39aEqVZGjI8n4Bbn/lXm9Umo3CS1+ycC3T0gOosRlxL
+         uZHpFeHecPv+Ih4UYrGS/HGdYU70ttFQc40caN1Z4PeOGcQ8P1oI3xm7nKmmSmFu1dg9
+         tDblp2woZRIL6fk1HZ8oL5gEIB47rb7fW2jzjopLDWCI8bqhrELv+S2y4dzIbg4wu65Z
+         Jz2HGwnDv+t5Fkb7UWDeixf1NQcS9ORqvVckvBc+z4x3vwFDjQIB8WqjnaJz05YSobhY
+         Pt85u6jH1Yl5uu6NPyP6QN7rjgwQ38vJtkpQ/PjxzoK6FMHbvNS+QX6gTxdputOZHwtY
+         tGgA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=UUYfB3LhbOXH/qWX5ow3QLdCqkjf8YNWyBuEVSInt6w=;
-        b=IAWyIGGRDsj0O3xPjXM81PRiYBQz8Rb4u4bj7SipDZg+q96w0k+2XdosH1ZpZYurT7
-         EjjRrxkZYUkxn3bfl6kFoawxuKYwNugoRSj+pXG56RwN6oxjZZE06ZD5QIKlihw7R7lL
-         u66FLp7bglcvyFcOPmqMCL3Rwq/bl++frFkUkXY72k37VzSP25hqBWHmrBKSXGO8qMf3
-         WFWWDpJnanpLx0rf0iod6F2wzNImKIvTsavLMN+oMXQNohD+1KKAbgwJTvD9828lSZ9O
-         L+VpHUkK+VcJvFUXrjmO2Pt+uKfjKtGRAlGFzMZcNXbgZOWJmMVOuDTrYyT7N/brt0yt
-         BYVw==
-X-Gm-Message-State: AOAM532Qx5PrO2MtHedBWS1pfUflWI7snNpqzMKHCAeT1hd/0Y6jhgjN
-        tCBIgW2X/WxYEFjdRjzaUu7lBlTI73LmdchfnVWRNw==
-X-Google-Smtp-Source: ABdhPJyhXbsmp80bw0icNNI9ciSn4KKgQYFLMDbMBvVHnJ7Dp8BN0RFUQsPErKCI3u7Ti+5A7pCXg92G1jadJjuVlVw=
-X-Received: by 2002:a25:8401:: with SMTP id u1mr1068640ybk.96.1607023187549;
- Thu, 03 Dec 2020 11:19:47 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references:mime-version:content-transfer-encoding;
+        bh=WUhKJyasXG2LBKITKz4o43ZB62Ht6r3ypNcA03zC6GA=;
+        b=tUmtWZUI0EtQ2nZQ1dFPCCMYhCLVZsAdSa4QYc+sI+6sAqr5l9tvd2dGYkpXwHXaOh
+         4tx9F04Tt4y2umCHo/ZV8KhOCv8xueZJ92pSXB2ImXuxYJhaZqBBBqi3Y2uf2hOU2igb
+         ksl/2g4f9vDL8j1IN0UJqo/LtUq9HhUY/g6x/Ec8ZVTlNoHps930184fCb5xjT/sGeRx
+         DxT59O9mkzs9IHDd0HNnJ1SAADquOx7hDCjI+pjMLPDPoNrFGSFDFHlvxOyb1lAQjYpQ
+         lHkT2kG0CuUg+pwBXT4KATD1Ni8h3Vq3bKo5e3RD5AtxrsbskvB9hz7EgeElFIcbl7Y1
+         1n0w==
+X-Gm-Message-State: AOAM5309eZL3Xkr/Nax0Vi9SMaQCSpETCiGUz0oBsbAymUH8MmqOuqps
+        Eu8HW/xqxfo3H7jgsxFNZlO0q8WvVAM=
+X-Google-Smtp-Source: ABdhPJyaASpHVGCirgSfO/q5vizNXp8daCV4N7sSu9YBJ9ArVgBxlQn2qEeoa2k4nh9uBlcmQKlIkA==
+X-Received: by 2002:ac2:51b4:: with SMTP id f20mr1866998lfk.338.1607023492203;
+        Thu, 03 Dec 2020 11:24:52 -0800 (PST)
+Received: from localhost.localdomain (109-252-192-53.dynamic.spd-mgts.ru. [109.252.192.53])
+        by smtp.gmail.com with ESMTPSA id z7sm861932lfq.50.2020.12.03.11.24.51
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 03 Dec 2020 11:24:51 -0800 (PST)
+From:   Dmitry Osipenko <digetx@gmail.com>
+To:     Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+Subject: [PATCH v11 01/10] dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
+Date:   Thu,  3 Dec 2020 22:24:30 +0300
+Message-Id: <20201203192439.16177-2-digetx@gmail.com>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201203192439.16177-1-digetx@gmail.com>
+References: <20201203192439.16177-1-digetx@gmail.com>
 MIME-Version: 1.0
-References: <20201203175756.1405564-1-thierry.reding@gmail.com> <CAJZ5v0g_FC6Pikrvk2PK=XMvAwqjaNOcYXHYS6eqv6Zc0JgqNQ@mail.gmail.com>
-In-Reply-To: <CAJZ5v0g_FC6Pikrvk2PK=XMvAwqjaNOcYXHYS6eqv6Zc0JgqNQ@mail.gmail.com>
-From:   Saravana Kannan <saravanak@google.com>
-Date:   Thu, 3 Dec 2020 11:19:11 -0800
-Message-ID: <CAGETcx9wrKNfvV36v1YJLa_A8jtb6OvZRMjsNG9AYxLPDvdpgQ@mail.gmail.com>
-Subject: Re: [PATCH] driver core: Reorder devices on successful probe
-To:     "Rafael J. Wysocki" <rafael@kernel.org>
-Cc:     Thierry Reding <thierry.reding@gmail.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        linux-tegra <linux-tegra@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 3, 2020 at 10:17 AM Rafael J. Wysocki <rafael@kernel.org> wrote:
->
-> On Thu, Dec 3, 2020 at 6:58 PM Thierry Reding <thierry.reding@gmail.com> wrote:
-> >
-> > From: Thierry Reding <treding@nvidia.com>
-> >
-> > Device drivers usually depend on the fact that the devices that they
-> > control are suspended in the same order that they were probed in. In
-> > most cases this is already guaranteed via deferred probe.
-> >
-> > However, there's one case where this can still break: if a device is
-> > instantiated before a dependency (for example if it appears before the
-> > dependency in device tree) but gets probed only after the dependency is
-> > probed. Instantiation order would cause the dependency to get probed
-> > later, in which case probe of the original device would be deferred and
-> > the suspend/resume queue would get reordered properly. However, if the
-> > dependency is provided by a built-in driver and the device depending on
-> > that driver is controlled by a loadable module, which may only get
-> > loaded after the root filesystem has become available, we can be faced
-> > with a situation where the probe order ends up being different from the
-> > suspend/resume order.
-> >
-> > One example where this happens is on Tegra186, where the ACONNECT is
-> > listed very early in device tree (sorted by unit-address) and depends on
-> > BPMP (listed very late because it has no unit-address) for power domains
-> > and clocks/resets. If the ACONNECT driver is built-in, there is no
-> > problem because it will be probed before BPMP, causing a probe deferral
-> > and that in turn reorders the suspend/resume queue. However, if built as
-> > a module, it will end up being probed after BPMP, and therefore not
-> > result in a probe deferral, and therefore the suspend/resume queue will
-> > stay in the instantiation order. This in turn causes problems because
-> > ACONNECT will be resumed before BPMP, which will result in a hang
-> > because the ACONNECT's power domain cannot be powered on as long as the
-> > BPMP is still suspended.
-> >
-> > Fix this by always reordering devices on successful probe. This ensures
-> > that the suspend/resume queue is always in probe order and hence meets
-> > the natural expectations of drivers vs. their dependencies.
-> >
-> > Reported-by: Jonathan Hunter <jonathanh@nvidia.com>
-> > Signed-off-by: Thierry Reding <treding@nvidia.com>
->
-> Saravana had submitted a very similar patch (I don't have a pointer to
-> that one though) and I was against it at that time due to
-> overhead-related concerns.  There still are some, but maybe that
-> doesn't matter in practice.
+Document opp-supported-hw property, which is not strictly necessary to
+have on Tegra20, but it's very convenient to have because all other SoC
+core devices will use hardware versioning, and thus, it's good to maintain
+the consistency.
 
-Yeah, it's a very similar patch but I also suggested deleting the
-reorder done in the deferred probe code (I'm pretty sure we can drop
-it). Here's the thread:
-https://lore.kernel.org/lkml/20200625032430.152447-1-saravanak@google.com/
+Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+---
+ .../bindings/memory-controllers/nvidia,tegra20-emc.txt      | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Btw, I've been wondering about this recently. Do we even need
-device_pm_move_to_tail() to do the recursive thing once we do "add
-device to end of list when added" + "move probed devices to the end
-after probe" thing here? Doesn't this guarantee that none of the
-consumers can come before the supplier in the dpm list?
+diff --git a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
+index 67ac8d1297da..cc443fcf4bec 100644
+--- a/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
++++ b/Documentation/devicetree/bindings/memory-controllers/nvidia,tegra20-emc.txt
+@@ -16,6 +16,12 @@ Properties:
+ - #interconnect-cells : Should be 0.
+ - operating-points-v2: See ../bindings/opp/opp.txt for details.
+ 
++For each opp entry in 'operating-points-v2' table:
++- opp-supported-hw: One bitfield indicating SoC process ID mask
++
++	A bitwise AND is performed against this value and if any bit
++	matches, the OPP gets enabled.
++
+ Optional properties:
+ - core-supply: Phandle of voltage regulator of the SoC "core" power domain.
+ 
+-- 
+2.29.2
 
--Saravana
-
->
-> Also, I kind of expect this to blow up somewhere, but since I have no
-> examples ready from the top of my head, I think let's try and see, so:
->
-> Acked-by: Rafael. J. Wysocki <rafael@kernel.org>
->
-> > ---
-> >  drivers/base/dd.c | 7 +++++++
-> >  1 file changed, 7 insertions(+)
-> >
-> > diff --git a/drivers/base/dd.c b/drivers/base/dd.c
-> > index 148e81969e04..cfc079e738bb 100644
-> > --- a/drivers/base/dd.c
-> > +++ b/drivers/base/dd.c
-> > @@ -370,6 +370,13 @@ static void driver_bound(struct device *dev)
-> >
-> >         device_pm_check_callbacks(dev);
-> >
-> > +       /*
-> > +        * Reorder successfully probed devices to the end of the device list.
-> > +        * This ensures that suspend/resume order matches probe order, which
-> > +        * is usually what drivers rely on.
-> > +        */
-> > +       device_pm_move_to_tail(dev);
-> > +
-> >         /*
-> >          * Make sure the device is no longer in one of the deferred lists and
-> >          * kick off retrying all pending devices
-> > --
-> > 2.29.2
-> >
