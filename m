@@ -2,49 +2,50 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 44F16C433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFBA5C193FE
 	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:21:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D805022C9C
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:21:25 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 98C3622CA2
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:21:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729971AbgLDUVJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Dec 2020 15:21:09 -0500
-Received: from mx0a-00154904.pphosted.com ([148.163.133.20]:18714 "EHLO
-        mx0a-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1726828AbgLDUVJ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 15:21:09 -0500
-Received: from pps.filterd (m0170392.ppops.net [127.0.0.1])
-        by mx0a-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KEKHv025096;
-        Fri, 4 Dec 2020 15:20:28 -0500
+        id S1730791AbgLDUVN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Dec 2020 15:21:13 -0500
+Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:53368 "EHLO
+        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1730480AbgLDUVM (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 15:21:12 -0500
+Received: from pps.filterd (m0170396.ppops.net [127.0.0.1])
+        by mx0b-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KEHET027750;
+        Fri, 4 Dec 2020 15:20:31 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
- subject : date : message-id : mime-version : content-transfer-encoding;
- s=smtpout1; bh=dFXfLQm5P73Jl59mQybirbxXxGY/DsvJra5ASUwR8TU=;
- b=ll8BxRjfwTdjKWfHMjqcFE7bNvmL1vrrJNhJ/jk/XDcmlTAsm4grfb/1dVb9JhEk58AJ
- NnPLeHROqDWwwLfLSbAJSffEYy5Cra604NbN+WY1eVCjfku00FgBKVJJUln0iqRWArlc
- Hm7f+d/FEO32+wWEff9vcKJIhXgi6HDZ5QTLuji8Xs+WFAoaO5qoCsWJ7P8mLZzNi1AW
- FJAFm6UZzfeyXpEF2gxE+6nFnbsXIrSL+ScsDBuFyXRJ7jgdvHaC+h2HqP/qmExXfybe
- IADR7CyPBcO6posKpCL04ARvTkHd7+KtEBQB0xPVwD5+simy0+1WaXMaqraolVwEYuXT gg== 
-Received: from mx0b-00154901.pphosted.com (mx0b-00154901.pphosted.com [67.231.157.37])
-        by mx0a-00154904.pphosted.com with ESMTP id 353jkhv7y9-1
+ subject : date : message-id : in-reply-to : references : mime-version :
+ content-transfer-encoding; s=smtpout1;
+ bh=AHnb657ZVkd3rGKeu3xGSOupjj5816VejdnfGan8hNg=;
+ b=Z8O/Px1CkKM+v1MyLm/Dn8zln6nYo5D8n+xY26BzkpDHQDcCPUtruNIzv0b4QUSz9OGK
+ oshN5D/5jy34i6Nz/xBNrXfBrgUlWXfYWUm0jTVBm0wNzfXS0eZJhngYzgL1wDCruE1n
+ FpJbOO0CJMCYz5UH4QI46Hsq4pM0FWApHuSJnMZBJURI2YryC2ox3bQg3SlV9ub4uvh2
+ n/IqNsr0i4a1xt1Z/Oe8D99N+CycNkO5ZtL9yhSFimNpbrm/sJwzTvWN0GXbFgE8f2oU
+ ZJgbzqviqQyK7/d1N1lQMWxCeiUF5FjioicY1HWOTSft2jc3cErjAyvP2EIxUS3cqiAV jA== 
+Received: from mx0a-00154901.pphosted.com (mx0a-00154901.pphosted.com [67.231.149.39])
+        by mx0b-00154904.pphosted.com with ESMTP id 354fjthj5g-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 04 Dec 2020 15:20:28 -0500
-Received: from pps.filterd (m0144104.ppops.net [127.0.0.1])
-        by mx0b-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KDtgO159954;
-        Fri, 4 Dec 2020 15:20:27 -0500
+        Fri, 04 Dec 2020 15:20:31 -0500
+Received: from pps.filterd (m0134746.ppops.net [127.0.0.1])
+        by mx0a-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KJEbM143512;
+        Fri, 4 Dec 2020 15:20:30 -0500
 Received: from ausxipps310.us.dell.com (AUSXIPPS310.us.dell.com [143.166.148.211])
-        by mx0b-00154901.pphosted.com with ESMTP id 357rmtkkh2-1
+        by mx0a-00154901.pphosted.com with ESMTP id 357ua80kun-2
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 04 Dec 2020 15:20:27 -0500
+        Fri, 04 Dec 2020 15:20:30 -0500
 X-LoopCount0: from 10.173.37.130
 X-PREM-Routing: D-Outbound
 X-IronPort-AV: E=Sophos;i="5.78,393,1599541200"; 
-   d="scan'208";a="573039887"
+   d="scan'208";a="573039895"
 From:   Mario Limonciello <mario.limonciello@dell.com>
 To:     Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
         Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -60,83 +61,53 @@ Cc:     linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
         Yijun.Shen@dell.com, Perry.Yuan@dell.com,
         anthony.wong@canonical.com,
         Mario Limonciello <mario.limonciello@dell.com>
-Subject: [PATCH v3 0/7] Improve s0ix flows for systems i219LM
-Date:   Fri,  4 Dec 2020 14:09:13 -0600
-Message-Id: <20201204200920.133780-1-mario.limonciello@dell.com>
+Subject: [PATCH v3 7/7] e1000e: Add another Dell TGL notebook system into S0ix heuristics
+Date:   Fri,  4 Dec 2020 14:09:20 -0600
+Message-Id: <20201204200920.133780-8-mario.limonciello@dell.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
+References: <20201204200920.133780-1-mario.limonciello@dell.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.312,18.0.737
  definitions=2020-12-04_09:2020-12-04,2020-12-04 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 mlxlogscore=729
- mlxscore=0 suspectscore=0 spamscore=0 bulkscore=0 adultscore=0
- priorityscore=1501 impostorscore=0 malwarescore=0 lowpriorityscore=0
- clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012040115
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=840 spamscore=0
- phishscore=0 adultscore=0 suspectscore=0 mlxscore=0 bulkscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2009150000 definitions=main-2012040115
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0
+ lowpriorityscore=0 impostorscore=0 adultscore=0 priorityscore=1501
+ phishscore=0 clxscore=1015 mlxscore=0 malwarescore=0 bulkscore=0
+ mlxlogscore=999 suspectscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.12.0-2009150000 definitions=main-2012040115
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 malwarescore=0 spamscore=0
+ adultscore=0 mlxscore=0 suspectscore=0 mlxlogscore=999 phishscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
+ definitions=main-2012040115
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-commit e086ba2fccda ("e1000e: disable s0ix entry and exit flows for ME systems")
-disabled s0ix flows for systems that have various incarnations of the
-i219-LM ethernet controller.  This was done because of some regressions
-caused by an earlier
-commit 632fbd5eb5b0e ("e1000e: fix S0ix flows for cable connected case")
-with i219-LM controller.
+This Tiger Lake system is not yet released, but has been validated
+on pre-release hardware.
 
-Performing suspend to idle with these ethernet controllers requires a properly
-configured system.  To make enabling such systems easier, this patch
-series allows determining if enabled and turning on using ethtool.
+This is being submitted separately from released hardware in case of
+a regression between pre-release and release hardware so this commit
+can be reverted alone.
 
-The flows have also been confirmed to be configured correctly on Dell's Latitude
-and Precision CML systems containing the i219-LM controller, when the kernel also
-contains the fix for s0i3.2 entry previously submitted here and now part of this
-series.
-https://marc.info/?l=linux-netdev&m=160677194809564&w=2
+Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
+---
+ drivers/net/ethernet/intel/e1000e/s0ix.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-Patches 4 through 7 will turn the behavior on by default for some of Dell's
-CML and TGL systems.
-
-Changes from v2 to v3:
- - Correct some grammar and spelling issues caught by Bjorn H.
-   * s/s0ix/S0ix/ in all commit messages
-   * Fix a typo in commit message
-   * Fix capitalization of proper nouns
- - Add more pre-release systems that pass
- - Re-order the series to add systems only at the end of the series
- - Add Fixes tag to a patch in series.
-
-Changes from v1 to v2:
- - Directly incorporate Vitaly's dependency patch in the series
- - Split out s0ix code into it's own file
- - Adjust from DMI matching to PCI subsystem vendor ID/device matching
- - Remove module parameter and sysfs, use ethtool flag instead.
- - Export s0ix flag to ethtool private flags
- - Include more people and lists directly in this submission chain.
-
-Mario Limonciello (6):
-  e1000e: Move all S0ix related code into its own source file
-  e1000e: Export S0ix flags to ethtool
-  e1000e: Add Dell's Comet Lake systems into S0ix heuristics
-  e1000e: Add more Dell CML systems into S0ix heuristics
-  e1000e: Add Dell TGL desktop systems into S0ix heuristics
-  e1000e: Add another Dell TGL notebook system into S0ix heuristics
-
-Vitaly Lifshits (1):
-  e1000e: fix S0ix flow to allow S0i3.2 subset entry
-
- drivers/net/ethernet/intel/e1000e/Makefile  |   2 +-
- drivers/net/ethernet/intel/e1000e/e1000.h   |   4 +
- drivers/net/ethernet/intel/e1000e/ethtool.c |  40 +++
- drivers/net/ethernet/intel/e1000e/netdev.c  | 272 +----------------
- drivers/net/ethernet/intel/e1000e/s0ix.c    | 311 ++++++++++++++++++++
- 5 files changed, 361 insertions(+), 268 deletions(-)
- create mode 100644 drivers/net/ethernet/intel/e1000e/s0ix.c
-
---
+diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
+index cc04aeaa2292..3f2985fac67c 100644
+--- a/drivers/net/ethernet/intel/e1000e/s0ix.c
++++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
+@@ -63,6 +63,7 @@ static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
+ 		case 0x0a40: /* Notebook 0x0a40 */
+ 		case 0x0a41: /* Notebook 0x0a41 */
+ 		case 0x0a42: /* Notebook 0x0a42 */
++		case 0x0a22: /* Notebook 0x0a22 */
+ 		case 0x0a2e: /* Desktop  0x0a2e */
+ 		case 0x0a30: /* Desktop  0x0a30 */
+ 			return true;
+-- 
 2.25.1
 
