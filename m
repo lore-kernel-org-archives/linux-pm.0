@@ -5,56 +5,56 @@ X-Spam-Level:
 X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 72399C4361A
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 02:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 879ECC4361A
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 02:57:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3B5BF224DE
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 02:56:55 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 514E6224DE
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 02:57:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726488AbgLDC4y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 3 Dec 2020 21:56:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43366 "EHLO
+        id S1726112AbgLDC5P (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 3 Dec 2020 21:57:15 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43362 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726112AbgLDC4y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 21:56:54 -0500
-Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 4AA80C094241
-        for <linux-pm@vger.kernel.org>; Thu,  3 Dec 2020 18:55:26 -0800 (PST)
-Received: by mail-lf1-x142.google.com with SMTP id s30so5723704lfc.4
-        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2020 18:55:26 -0800 (PST)
+        with ESMTP id S1727195AbgLDC5P (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 3 Dec 2020 21:57:15 -0500
+Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D2ABCC09425B
+        for <linux-pm@vger.kernel.org>; Thu,  3 Dec 2020 18:55:38 -0800 (PST)
+Received: by mail-lf1-x143.google.com with SMTP id j205so5713533lfj.6
+        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2020 18:55:38 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=kheJmCyDI4R5PgXqJsIVVX5lZh86mdMPpHXrUUt/fHo=;
-        b=R6XRhBdoGrWXkV8N/DwEVhvjyVxFDq+6j6z5pACnCc3ycb0afXDbJdE91idETZGXcx
-         JOko52r78Mtq601o7nd1Jo+lvMLQ9+4GOtKcgjNSY+1Isa7bC2jPVqSGNh/azmH43wT+
-         qnD1jOZpwFaUHQGuo4zFi8EUGQQAzbrE1PN/b4XCPpXWFL1dsbR8BL40v1Q6ynlsmnbc
-         xwvrosg0BXiK5dBOYGZIjsIHinrOIkGPXhdZLfEdI/0ddTkUPeDoKqERIWzWhGEASrgU
-         2ByUHhMrFcPjKpycb5Iy8TtFALbEGk0YgO3pcoOA8QePnX6n5ZTBSlOhmpJPx5EPbLlG
-         3eCA==
+        bh=ZSgtsld/jErWqUbZ6AQEllOU8y9wlhXnzPgaFJHrUyg=;
+        b=CFJXFKorX1v57fHzUaPjeI/66wq4W2kEMc672Dw8tjexqJqLVT3ImUJm3kAcbHe8m8
+         akXngp4ulHCvjIUrNVIk4SsuHPPv/CbNrplb0Pq+1SHHt4of9kjuIJ9jiwhFq+FIWdb0
+         6oEhC51GLZhMofQw/i79ZXK1NVXZtX9Uaoe4j/M76xYTVWLoZy/T7+e3OPM2G5YG0/Y9
+         Kb7UARn0KIYJcuNYddrap/1ZerX1s6K4LsagsbdXIBVSJkSSvho2w2yK5UGZCRz6J+ym
+         VemqSWQ1pqg6+DYj1UDMVpgMv2+R/AcB8gR+aLJp4ehSBLOyXkxOyEqiY44zIQnPggx4
+         yZEQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=kheJmCyDI4R5PgXqJsIVVX5lZh86mdMPpHXrUUt/fHo=;
-        b=L26yy4Yiw44agnqY+xieUspchxOi+q11nZgZaKN3nBOgyk5hR80wqRr3stTQh+FNap
-         J17uWmRjQLbUbBJJKVfAWlBd/nwSeNxLA6ca9plsOL1J4eQiZq99TGwT0qOxGVwFArB4
-         r28TO5yRu31Wc2HuIMEbomVAVmpO3lDRRv3SiYvrVs+zGzeYRcc7S2yG3uPslqT8TJHw
-         YNKXFgYvP0Ms9megyLp79WswozkQBmcBqu564D6deGNpJ7k3u3bd0rFzswj5IDN9yp6T
-         1cSNyY/1cztm+fQd7qjdYAigGY847vs7BKGIJndYtPAh3Hye8DjrxX5iga+cU66CbPQK
-         KDVw==
-X-Gm-Message-State: AOAM533lvbKTpVtTYUyK7VrB2hw3uV4ZJq3thTTdq7Vygxoi3quwJPrS
-        GDAu7WXq6WboBTx3/TCAf1e7AA==
-X-Google-Smtp-Source: ABdhPJx2LLD1xrVQw9UHOJUHWQjRe+ecZMZn3p8IuVU8NUEu3Ag4M+HZWGtJ3FhhvjRa2kMKy2yP8w==
-X-Received: by 2002:a05:6512:36c7:: with SMTP id e7mr2696179lfs.79.1607050524841;
-        Thu, 03 Dec 2020 18:55:24 -0800 (PST)
+        bh=ZSgtsld/jErWqUbZ6AQEllOU8y9wlhXnzPgaFJHrUyg=;
+        b=SC4V68HDfIiDfhofMnhDIsTfSYwYoWr4oXdFXZN6FmTQl6hXPiSv96Eg2vsD7zR+/O
+         iXSo+ILgbiUm6pPR7V399QZNvy0UdFsdPWNeL31xzb383BeiUFMc4iMG/kUltPd+A7KS
+         knwQu+E+XL/30ERjEVmR8KxzakB5yVRTlLuTa8M13hRFH6sDtfJJKE+BoJbtcaeznW69
+         +lyeUEI6VpdsNjeNxGpO9hikQ4ss5lcHwIIpF0y/6BBYQ8vco/sIoNQU8/lCFJB6yNoS
+         m4WMTbb1NGA+O2w0fAo2tSUErQ1+dtDEUiSJAsls88A3PkFwEm6vYhayVL5KwjpcDJGK
+         kSGw==
+X-Gm-Message-State: AOAM530cHy6bz2KJkN16AKZOaIomvqAKl05ant7IDxc1wZ4jPu/VvlDt
+        JvJK3UiXfKKIMKNjj2TaUkfCFA==
+X-Google-Smtp-Source: ABdhPJx2ULcZp88C/DFdKtUFZqlkK4dYWOlWjsMNQxzHfvjIp5wtM2z9UsKTSqlqitPrhvjHWgffSQ==
+X-Received: by 2002:a19:e04c:: with SMTP id g12mr2496970lfj.261.1607050537378;
+        Thu, 03 Dec 2020 18:55:37 -0800 (PST)
 Received: from eriador.lumag.spb.ru ([188.162.64.117])
-        by smtp.gmail.com with ESMTPSA id b8sm1131667ljo.68.2020.12.03.18.55.22
+        by smtp.gmail.com with ESMTPSA id b8sm1131667ljo.68.2020.12.03.18.55.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Dec 2020 18:55:24 -0800 (PST)
+        Thu, 03 Dec 2020 18:55:36 -0800 (PST)
 From:   Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
 To:     Andy Gross <agross@kernel.org>,
         Bjorn Andersson <bjorn.andersson@linaro.org>,
@@ -69,11 +69,10 @@ To:     Andy Gross <agross@kernel.org>,
 Cc:     linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
         devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
         Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Jishnu Prakash <jprakash@qti.qualcomm.com>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>
-Subject: [PATCH v10 04/15] iio: adc: qcom-vadc-common: use fixp_linear_interpolate
-Date:   Fri,  4 Dec 2020 05:54:58 +0300
-Message-Id: <20201204025509.1075506-5-dmitry.baryshkov@linaro.org>
+        Jishnu Prakash <jprakash@qti.qualcomm.com>
+Subject: [PATCH v10 09/15] iio: adc: qcom-vadc-common: rewrite vadc7 die temp calculation
+Date:   Fri,  4 Dec 2020 05:55:03 +0300
+Message-Id: <20201204025509.1075506-10-dmitry.baryshkov@linaro.org>
 X-Mailer: git-send-email 2.29.2
 In-Reply-To: <20201204025509.1075506-1-dmitry.baryshkov@linaro.org>
 References: <20201204025509.1075506-1-dmitry.baryshkov@linaro.org>
@@ -83,41 +82,109 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use new function fixp_linear_interpolate() instead of hand-coding the
-linear interpolation.
+qcom_vadc7_scale_hw_calib_die_temp() uses a table format different from
+the rest of volt/temp conversion functions in this file. Also the
+conversion functions results in non-monothonic values conversion, which
+seems wrong.
+
+Rewrite qcom_vadc7_scale_hw_calib_die_temp() to use
+qcom_vadc_map_voltage_temp() directly, like the rest of conversion
+functions do.
 
 Signed-off-by: Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 ---
- drivers/iio/adc/qcom-vadc-common.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/iio/adc/qcom-vadc-common.c       | 50 +++++++-----------------
+ include/linux/iio/adc/qcom-vadc-common.h |  5 ---
+ 2 files changed, 15 insertions(+), 40 deletions(-)
 
 diff --git a/drivers/iio/adc/qcom-vadc-common.c b/drivers/iio/adc/qcom-vadc-common.c
-index d11f3343ad52..40d77b3af1bb 100644
+index 45a38602f66a..0c705bb473fe 100644
 --- a/drivers/iio/adc/qcom-vadc-common.c
 +++ b/drivers/iio/adc/qcom-vadc-common.c
-@@ -2,6 +2,7 @@
- #include <linux/bug.h>
- #include <linux/kernel.h>
- #include <linux/bitops.h>
-+#include <linux/fixp-arith.h>
- #include <linux/math64.h>
- #include <linux/log2.h>
- #include <linux/err.h>
-@@ -368,10 +369,9 @@ static int qcom_vadc_map_voltage_temp(const struct vadc_map_pt *pts,
- 	} else {
- 		/* result is between search_index and search_index-1 */
- 		/* interpolate linearly */
--		*output = (((s32)((pts[i].y - pts[i - 1].y) *
--			(input - pts[i - 1].x)) /
--			(pts[i].x - pts[i - 1].x)) +
--			pts[i - 1].y);
-+		*output = fixp_linear_interpolate(pts[i - 1].x, pts[i - 1].y,
-+						  pts[i].x, pts[i].y,
-+						  input);
- 	}
+@@ -101,18 +101,18 @@ static const struct vadc_map_pt adcmap_100k_104ef_104fb_1875_vref[] = {
+ };
  
- 	return 0;
+ static const struct vadc_map_pt adcmap7_die_temp[] = {
+-	{ 433700, 1967},
+-	{ 473100, 1964},
+-	{ 512400, 1957},
+-	{ 551500, 1949},
+-	{ 590500, 1940},
+-	{ 629300, 1930},
+-	{ 667900, 1921},
+-	{ 706400, 1910},
+-	{ 744600, 1896},
+-	{ 782500, 1878},
+-	{ 820100, 1859},
+-	{ 857300, 0},
++	{ 857300, 160000 },
++	{ 820100, 140000 },
++	{ 782500, 120000 },
++	{ 744600, 100000 },
++	{ 706400, 80000 },
++	{ 667900, 60000 },
++	{ 629300, 40000 },
++	{ 590500, 20000 },
++	{ 551500, 0 },
++	{ 512400, -20000 },
++	{ 473100, -40000 },
++	{ 433700, -60000 },
+ };
+ 
+ /*
+@@ -585,33 +585,13 @@ static int qcom_vadc7_scale_hw_calib_die_temp(
+ 				u16 adc_code, int *result_mdec)
+ {
+ 
+-	int voltage, vtemp0, temp, i;
++	int voltage;
+ 
+ 	voltage = qcom_vadc_scale_code_voltage_factor(adc_code,
+ 				prescale, data, 1);
+ 
+-	if (adcmap7_die_temp[0].x > voltage) {
+-		*result_mdec = DIE_TEMP_ADC7_SCALE_1;
+-		return 0;
+-	}
+-
+-	if (adcmap7_die_temp[ARRAY_SIZE(adcmap7_die_temp) - 1].x <= voltage) {
+-		*result_mdec = DIE_TEMP_ADC7_MAX;
+-		return 0;
+-	}
+-
+-	for (i = 0; i < ARRAY_SIZE(adcmap7_die_temp); i++)
+-		if (adcmap7_die_temp[i].x > voltage)
+-			break;
+-
+-	vtemp0 = adcmap7_die_temp[i - 1].x;
+-	voltage = voltage - vtemp0;
+-	temp = div64_s64(voltage * DIE_TEMP_ADC7_SCALE_FACTOR,
+-		adcmap7_die_temp[i - 1].y);
+-	temp += DIE_TEMP_ADC7_SCALE_1 + (DIE_TEMP_ADC7_SCALE_2 * (i - 1));
+-	*result_mdec = temp;
+-
+-	return 0;
++	return qcom_vadc_map_voltage_temp(adcmap7_die_temp, ARRAY_SIZE(adcmap7_die_temp),
++			voltage, result_mdec);
+ }
+ 
+ static int qcom_vadc_scale_hw_smb_temp(
+diff --git a/include/linux/iio/adc/qcom-vadc-common.h b/include/linux/iio/adc/qcom-vadc-common.h
+index 1d337dd9e3dc..58216124d89d 100644
+--- a/include/linux/iio/adc/qcom-vadc-common.h
++++ b/include/linux/iio/adc/qcom-vadc-common.h
+@@ -54,11 +54,6 @@
+ #define R_PU_100K				100000
+ #define RATIO_MAX_ADC7				BIT(14)
+ 
+-#define DIE_TEMP_ADC7_SCALE_1			-60000
+-#define DIE_TEMP_ADC7_SCALE_2			20000
+-#define DIE_TEMP_ADC7_SCALE_FACTOR		1000
+-#define DIE_TEMP_ADC7_MAX			160000
+-
+ /*
+  * VADC_CALIB_ABSOLUTE: uses the 625mV and 1.25V as reference channels.
+  * VADC_CALIB_RATIOMETRIC: uses the reference voltage (1.8V) and GND for
 -- 
 2.29.2
 
