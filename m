@@ -2,212 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-28.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+	INCLUDES_PATCH,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E13FDC4167B
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 07:56:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 553E0C4361A
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 10:08:37 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A498C22571
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 07:56:11 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 05D472251D
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 10:08:36 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728718AbgLDH4L (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Dec 2020 02:56:11 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33076 "EHLO
+        id S1729731AbgLDKIf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Dec 2020 05:08:35 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53564 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728448AbgLDH4L (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 02:56:11 -0500
-Received: from mail-pj1-x1035.google.com (mail-pj1-x1035.google.com [IPv6:2607:f8b0:4864:20::1035])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D3D8EC094243
-        for <linux-pm@vger.kernel.org>; Thu,  3 Dec 2020 23:54:28 -0800 (PST)
-Received: by mail-pj1-x1035.google.com with SMTP id lb18so75478pjb.5
-        for <linux-pm@vger.kernel.org>; Thu, 03 Dec 2020 23:54:28 -0800 (PST)
+        with ESMTP id S1726330AbgLDKIf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 05:08:35 -0500
+Received: from mail-wr1-x42c.google.com (mail-wr1-x42c.google.com [IPv6:2a00:1450:4864:20::42c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BA36BC061A4F
+        for <linux-pm@vger.kernel.org>; Fri,  4 Dec 2020 02:07:54 -0800 (PST)
+Received: by mail-wr1-x42c.google.com with SMTP id 23so4736261wrc.8
+        for <linux-pm@vger.kernel.org>; Fri, 04 Dec 2020 02:07:54 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=vxgQnlOkVa4dYGNjfZH6hivkdxn7yWwel2GIm45M5wg=;
-        b=t39pm2kAZa5Z/NMONoSnvIXVY9ag+zIwJ9t/F5t+ZHHLEQjbc59l5whpEZW4J24tmS
-         oE55hnfY+G+oC5hPvvnvCFILhbnTLETmn+nUxUq4kfi2jn2Olwgcu5ay9OmuiuiSELlq
-         aRKqrsSJuxnTtVYm3H2Ci4B04MfZKwGZ/lksrpt0s31y/pmn0tpwep2KQezJEOtlaseY
-         WWIlLXaHBpws0vZ1b4k2fkoFxUgBm9rI8nJ6Sn+IGe2bnGKVDJwCsHctLUDWhZHiUeRo
-         6euPxhuF3FDTGO3jezA3yy9PhG3Oj01pAgkniudn0C9Emd9tsus309x+zcthpBOyimoF
-         6+XA==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=phb77RRmwMx9FOp/xmUGf7SRH51PNvbCxvc4HcUSeE4=;
+        b=j9P29CViKJdJak3UVUD76CuCEv7hNITzR/v2VxUcCeDG0I+PmqLd4FxTHQTbTPQilL
+         0l/UmRlI3xo3vW6zhWJNxZNRiuZhDbLcuv5QpXjzIYFXZi87rUQuW/fBXLOGeoOMYIdX
+         h6WeBUdToEsdtSMEIRpTp8kLSKHfW4nHyTisPsxCOB95sU2C9VrC7ms5axoq28pgc+oB
+         +xi+DLx/fryIfsMzK7NeTsEQH59tIytsNFPqtTBlstWE+7m3/MW5sAaLBqwuAl7Aw8U/
+         Flm/J6uimgtuPTrQK4KAXI0QRPxVSFkc7Th/hKT5XfMbT/GDo7Z6M7B2DAwFOw+N5J26
+         bSWQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=vxgQnlOkVa4dYGNjfZH6hivkdxn7yWwel2GIm45M5wg=;
-        b=XdQ68mlc6LbF+jzbXmqkN3ijYV2aupZIpDnxO8m2UB4hz+G87PkM2QZkkV3o6d0Kz7
-         DWmBHlbTfOPDOxHUbQBewp26KQoTdp2kLU1KW5z/fzixqzA14B4gZWgU9FrPJYCmlA/S
-         joImAgcD9i2tXqdmwRs73nU8zo7u7bS3tGAkIV77cUtzxBX6eFh7SW+OSSZPl7aEKd/x
-         1kvCibpSTaYabbFILLsU9dUcXZmQY5DvhkC2ZLkk5clvRhtMgeoH/gusjQMmOqX0mRua
-         ldIGT5XC+prKGPXEyfA01P4uUPAak6PxYclCYW8lbmWFvVBAlAD5pNUxK2I30aNnSnAM
-         AHvA==
-X-Gm-Message-State: AOAM532tcxWRWSZOYUu+oK8wAgxSiuhMTQjcL+w1JsImcsEGyBk2mG8l
-        2eL5UAUMvjMIqNKD+k6bpMWMqQ==
-X-Google-Smtp-Source: ABdhPJzalY4K9Dv1kQQ94q5uUsOpiuNKNqno9SzS2dEBSHnZKhwSaQ4rD0SP05uNyqE5HqYjC/BerQ==
-X-Received: by 2002:a17:90b:ec2:: with SMTP id gz2mr3023301pjb.143.1607068468448;
-        Thu, 03 Dec 2020 23:54:28 -0800 (PST)
-Received: from localhost.localdomain (li519-153.members.linode.com. [66.175.222.153])
-        by smtp.gmail.com with ESMTPSA id l190sm3822262pfl.205.2020.12.03.23.54.24
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 03 Dec 2020 23:54:27 -0800 (PST)
-From:   Jun Nie <jun.nie@linaro.org>
-To:     devicetree@vger.kernel.org, georgi.djakov@linaro.org,
-        bjorn.andersson@linaro.org, agross@kernel.org,
-        linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, robh@kernel.org
-Cc:     vincent.knecht@mailoo.org, shawn.guo@linaro.org,
-        Jun Nie <jun.nie@linaro.org>
-Subject: [PATCH v2 4/5] dt-bindings: interconnect: Add Qualcomm MSM8939 DT bindings
-Date:   Fri,  4 Dec 2020 15:53:44 +0800
-Message-Id: <20201204075345.5161-5-jun.nie@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201204075345.5161-1-jun.nie@linaro.org>
-References: <20201204075345.5161-1-jun.nie@linaro.org>
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=phb77RRmwMx9FOp/xmUGf7SRH51PNvbCxvc4HcUSeE4=;
+        b=pkrfGvgBcqRWAtWrIRtYrjZ7xGtbYmyMWKSzKSYo0SpDM5bDM1dPl2Ii+rjfbx9AJ0
+         S0uzP7GFRGSzwTvOdEeidJRULnIBbYU61uhmB1wWYwTzyYD+0vv1ERd7YdF+8oymmYEp
+         lINC+PM62yEDpfcsrZhedjLC3vyRsIWMPM8lBQgVPdSzLIzQE8nhxV2FYkmEGnq790v+
+         BUUwNXN0bPfRTvtIxzDogmX7znFfnP865e/u3t3jq+/+7Ayqbak5ult6vjngp95iKwc5
+         KECLXm+5cTkrSZf8UmEA5BFvanhdOqhDGdHEMDBM6hkdE1GoIk7aK1qKT1i8eHfvRITZ
+         S9lg==
+X-Gm-Message-State: AOAM531C2Iq9WndE2NbABrX4SGSw+D+Wt330wcdxVEEjHy+UhvLGqH/f
+        vQ9CgMSE/HWgpDJ6HBv4B+aoEQ==
+X-Google-Smtp-Source: ABdhPJzXEuT2SPVr0xRjGjbcbMb+lwCxOUUlJ3oUOZVUW2IgipiHytB3QW2hT8+5EEGY333c1uL9Kw==
+X-Received: by 2002:adf:f0c3:: with SMTP id x3mr3898762wro.327.1607076473361;
+        Fri, 04 Dec 2020 02:07:53 -0800 (PST)
+Received: from localhost.localdomain ([212.45.67.2])
+        by smtp.googlemail.com with ESMTPSA id 90sm2913435wrl.60.2020.12.04.02.07.51
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Fri, 04 Dec 2020 02:07:52 -0800 (PST)
+From:   Georgi Djakov <georgi.djakov@linaro.org>
+To:     gregkh@linuxfoundation.org
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        georgi.djakov@linaro.org
+Subject: [GIT PULL] interconnect changes for 5.11
+Date:   Fri,  4 Dec 2020 12:07:55 +0200
+Message-Id: <20201204100755.2350-1-georgi.djakov@linaro.org>
+X-Mailer: git-send-email 2.29.0
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Qualcomm MSM8939 platform has several bus fabrics that could be
-controlled and tuned dynamically according to the bandwidth demand.
+Hello Greg,
 
-Signed-off-by: Jun Nie <jun.nie@linaro.org>
-Reviewed-by: Rob Herring <robh@kernel.org>
----
- .../bindings/interconnect/qcom,rpm.yaml       |   4 +
- .../dt-bindings/interconnect/qcom,msm8939.h   | 105 ++++++++++++++++++
- 2 files changed, 109 insertions(+)
- create mode 100644 include/dt-bindings/interconnect/qcom,msm8939.h
+This is the pull request with the interconnect changes for the 5.11-rc1
+merge window. The highlight is a new driver for Samsung Exynos SoCs.
 
-diff --git a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-index d720b68b3ead..983d71fb5399 100644
---- a/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-+++ b/Documentation/devicetree/bindings/interconnect/qcom,rpm.yaml
-@@ -23,6 +23,10 @@ properties:
-       - qcom,msm8916-bimc
-       - qcom,msm8916-pcnoc
-       - qcom,msm8916-snoc
-+      - qcom,msm8939-bimc
-+      - qcom,msm8939-pcnoc
-+      - qcom,msm8939-snoc
-+      - qcom,msm8939-snoc-mm
-       - qcom,qcs404-bimc
-       - qcom,qcs404-pcnoc
-       - qcom,qcs404-snoc
-diff --git a/include/dt-bindings/interconnect/qcom,msm8939.h b/include/dt-bindings/interconnect/qcom,msm8939.h
-new file mode 100644
-index 000000000000..c22369a4b9f5
---- /dev/null
-+++ b/include/dt-bindings/interconnect/qcom,msm8939.h
-@@ -0,0 +1,105 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Qualcomm interconnect IDs
-+ *
-+ * Copyright (c) 2020, Linaro Ltd.
-+ * Author: Jun Nie <jun.nie@linaro.org>
-+ */
-+
-+#ifndef __DT_BINDINGS_INTERCONNECT_QCOM_MSM8939_H
-+#define __DT_BINDINGS_INTERCONNECT_QCOM_MSM8939_H
-+
-+#define BIMC_SNOC_SLV			0
-+#define MASTER_QDSS_BAM			1
-+#define MASTER_QDSS_ETR			2
-+#define MASTER_SNOC_CFG			3
-+#define PCNOC_SNOC_SLV			4
-+#define SLAVE_APSS			5
-+#define SLAVE_CATS_128			6
-+#define SLAVE_OCMEM_64			7
-+#define SLAVE_IMEM			8
-+#define SLAVE_QDSS_STM			9
-+#define SLAVE_SRVC_SNOC			10
-+#define SNOC_BIMC_0_MAS			11
-+#define SNOC_BIMC_1_MAS			12
-+#define SNOC_BIMC_2_MAS			13
-+#define SNOC_INT_0			14
-+#define SNOC_INT_1			15
-+#define SNOC_INT_BIMC			16
-+#define SNOC_PCNOC_MAS			17
-+#define SNOC_QDSS_INT			18
-+
-+#define MASTER_VIDEO_P0			0
-+#define MASTER_JPEG			1
-+#define MASTER_VFE			2
-+#define MASTER_MDP_PORT0		3
-+#define MASTER_MDP_PORT1		4
-+#define MASTER_CPP			5
-+#define SNOC_MM_INT_0			6
-+#define SNOC_MM_INT_1			7
-+#define SNOC_MM_INT_2			8
-+
-+#define BIMC_SNOC_MAS			0
-+#define MASTER_AMPSS_M0			1
-+#define MASTER_GRAPHICS_3D		2
-+#define MASTER_TCU0			3
-+#define SLAVE_AMPSS_L2			4
-+#define SLAVE_EBI_CH0			5
-+#define SNOC_BIMC_0_SLV			6
-+#define SNOC_BIMC_1_SLV			7
-+#define SNOC_BIMC_2_SLV			8
-+
-+#define MASTER_BLSP_1			0
-+#define MASTER_DEHR			1
-+#define MASTER_LPASS			2
-+#define MASTER_CRYPTO_CORE0		3
-+#define MASTER_SDCC_1			4
-+#define MASTER_SDCC_2			5
-+#define MASTER_SPDM			6
-+#define MASTER_USB_HS1			7
-+#define MASTER_USB_HS2			8
-+#define PCNOC_INT_0			9
-+#define PCNOC_INT_1			10
-+#define PCNOC_MAS_0			11
-+#define PCNOC_MAS_1			12
-+#define PCNOC_SLV_0			13
-+#define PCNOC_SLV_1			14
-+#define PCNOC_SLV_2			15
-+#define PCNOC_SLV_3			16
-+#define PCNOC_SLV_4			17
-+#define PCNOC_SLV_8			18
-+#define PCNOC_SLV_9			19
-+#define PCNOC_SNOC_MAS			20
-+#define SLAVE_BIMC_CFG			21
-+#define SLAVE_BLSP_1			22
-+#define SLAVE_BOOT_ROM			23
-+#define SLAVE_CAMERA_CFG		24
-+#define SLAVE_CLK_CTL			25
-+#define SLAVE_CRYPTO_0_CFG			26
-+#define SLAVE_DEHR_CFG			27
-+#define SLAVE_DISPLAY_CFG			28
-+#define SLAVE_GRAPHICS_3D_CFG			29
-+#define SLAVE_IMEM_CFG			30
-+#define SLAVE_LPASS			31
-+#define SLAVE_MPM			32
-+#define SLAVE_MSG_RAM			33
-+#define SLAVE_MSS			34
-+#define SLAVE_PDM			35
-+#define SLAVE_PMIC_ARB			36
-+#define SLAVE_PCNOC_CFG			37
-+#define SLAVE_PRNG			38
-+#define SLAVE_QDSS_CFG			39
-+#define SLAVE_RBCPR_CFG			40
-+#define SLAVE_SDCC_1			41
-+#define SLAVE_SDCC_2			42
-+#define SLAVE_SECURITY			43
-+#define SLAVE_SNOC_CFG			44
-+#define SLAVE_SPDM			45
-+#define SLAVE_TCSR			46
-+#define SLAVE_TLMM			47
-+#define SLAVE_USB_HS1			48
-+#define SLAVE_USB_HS2			49
-+#define SLAVE_VENUS_CFG			50
-+#define SNOC_PCNOC_SLV			51
-+
-+#endif
--- 
-2.17.1
+Patches have been in linux-next without any reported issues. Please pull
+into char-misc-next.
 
+Thanks,
+Georgi
+
+The following changes since commit 3cea11cd5e3b00d91caf0b4730194039b45c5891:
+
+  Linux 5.10-rc2 (2020-11-01 14:43:51 -0800)
+
+are available in the Git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/djakov/icc.git tags/icc-5.11-rc1
+
+for you to fetch changes up to 2a211904aca6e68b800177ba5094a0fbe0a8b522:
+
+  MAINTAINERS: Add entry for Samsung interconnect drivers (2020-11-30 17:26:23 +0200)
+
+----------------------------------------------------------------
+interconnect changes for 5.11
+
+Here are the interconnect changes for the 5.10-rc1 merge window
+consisting of new driver and a cleanup.
+
+Driver changes:
+- New driver for Samsung Exynos SoCs
+- Misc cleanups
+
+Signed-off-by: Georgi Djakov <georgi.djakov@linaro.org>
+
+----------------------------------------------------------------
+Georgi Djakov (1):
+      interconnect: qcom: Simplify the vcd compare function
+
+Sylwester Nawrocki (2):
+      interconnect: Add generic interconnect driver for Exynos SoCs
+      MAINTAINERS: Add entry for Samsung interconnect drivers
+
+ MAINTAINERS                           |   8 +
+ drivers/interconnect/Kconfig          |   1 +
+ drivers/interconnect/Makefile         |   1 +
+ drivers/interconnect/qcom/bcm-voter.c |  15 +-
+ drivers/interconnect/samsung/Kconfig  |  13 +
+ drivers/interconnect/samsung/Makefile |   4 +
+ drivers/interconnect/samsung/exynos.c | 199 ++++++++
+ 7 files changed, 230 insertions(+), 11 deletions(-)
+ create mode 100644 drivers/interconnect/samsung/Kconfig
+ create mode 100644 drivers/interconnect/samsung/Makefile
+ create mode 100644 drivers/interconnect/samsung/exynos.c
