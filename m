@@ -7,45 +7,45 @@ X-Spam-Status: No, score=-20.2 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
 	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7FD81C0018C
-	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:22:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2C64CC1B0D9
+	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:22:05 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4974E22CA2
+	by mail.kernel.org (Postfix) with ESMTP id E14D122B40
 	for <linux-pm@archiver.kernel.org>; Fri,  4 Dec 2020 20:22:04 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728110AbgLDUVL (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 4 Dec 2020 15:21:11 -0500
-Received: from mx0b-00154904.pphosted.com ([148.163.137.20]:51318 "EHLO
-        mx0b-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729917AbgLDUVK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 15:21:10 -0500
-Received: from pps.filterd (m0170396.ppops.net [127.0.0.1])
-        by mx0b-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KEHtf027745;
-        Fri, 4 Dec 2020 15:20:29 -0500
+        id S2388330AbgLDUV1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 4 Dec 2020 15:21:27 -0500
+Received: from mx0a-00154904.pphosted.com ([148.163.133.20]:21346 "EHLO
+        mx0a-00154904.pphosted.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S2388189AbgLDUVL (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 4 Dec 2020 15:21:11 -0500
+Received: from pps.filterd (m0170392.ppops.net [127.0.0.1])
+        by mx0a-00154904.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KEICe025074;
+        Fri, 4 Dec 2020 15:20:31 -0500
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=dell.com; h=from : to : cc :
  subject : date : message-id : in-reply-to : references : mime-version :
  content-transfer-encoding; s=smtpout1;
- bh=Y6f9sAG/INUVh8vyUVXJekKtUdBIzutr9gx9oKs5RNg=;
- b=T0fR8aZ4i7YAnHV3kai465/1tZ554oBktApTR4L4NHcAB5EaLt20vFxOSL5hNaHsmJ+S
- Lxb4NE8t74/g5WVIwNNrn1D0rDUgM1wAQHoAo4lH5lSn8X2AffqkmywBsqcTEj4Eb54v
- GExf51DK9JinlOm50VJE87cc/SQR7xhejDvyjjLefDwcXP2lJ1I/7PPaqUVlk1Ta5sDG
- ahpQjnia0d1D/G7+IvDIyTzAUCp3maukBOsHGS275Kuw5McK40rcC40PBxpyf335Lxc+
- hAvfP1dUqYmPzBYU/pOwEqyOlDcZ01G4IFJucekh15HvMNuw7PMihkymMu9xuyfALbXn gA== 
+ bh=O2msH3+P3E3WNuVH5XQQnPf1sFoIo+wGo+bEN/vxDZ4=;
+ b=OLTZBBJmmo6bcPzfxiiXBqQUhjYT6Mh1496t9cidHCVCCsnovaw2SXWKDB8x9bGqhEjd
+ j8+Hx4O8y9N4/JbHZYKC2wSb8hRmaxnIiIITuBwQPWdqtL9Fp2n3f4Hh2ZFGaS1zrX+U
+ oPAxqCQKig8PVYa4vMm8o737kAeffbqsHiadl+XZGuQRq2vw65NJYkqUIIYU8IqNY+2b
+ NVksUf4Dufrq/zzhCETAZvG2ojoNXpniFKHlx59J1nR9YXJnj513vse89ti3rkGf6mi+
+ RirzS3/pEiA9k31oXcJ/YZsZezKHO5TR+3pGYEMPPZDdk3DiWnlZWpyXOGCrXaG7sAOa eA== 
 Received: from mx0b-00154901.pphosted.com (mx0b-00154901.pphosted.com [67.231.157.37])
-        by mx0b-00154904.pphosted.com with ESMTP id 354fjthj5e-1
+        by mx0a-00154904.pphosted.com with ESMTP id 353jkhv7yd-1
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-        Fri, 04 Dec 2020 15:20:29 -0500
+        Fri, 04 Dec 2020 15:20:30 -0500
 Received: from pps.filterd (m0144104.ppops.net [127.0.0.1])
-        by mx0b-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KDtgS159954;
-        Fri, 4 Dec 2020 15:20:28 -0500
+        by mx0b-00154901.pphosted.com (8.16.0.42/8.16.0.42) with SMTP id 0B4KDtgU159954;
+        Fri, 4 Dec 2020 15:20:29 -0500
 Received: from ausxipps310.us.dell.com (AUSXIPPS310.us.dell.com [143.166.148.211])
-        by mx0b-00154901.pphosted.com with ESMTP id 357rmtkkh2-4
+        by mx0b-00154901.pphosted.com with ESMTP id 357rmtkkh2-6
         (version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-        Fri, 04 Dec 2020 15:20:28 -0500
+        Fri, 04 Dec 2020 15:20:29 -0500
 X-LoopCount0: from 10.173.37.130
 X-PREM-Routing: D-Outbound
 X-IronPort-AV: E=Sophos;i="5.78,393,1599541200"; 
-   d="scan'208";a="573039891"
+   d="scan'208";a="573039894"
 From:   Mario Limonciello <mario.limonciello@dell.com>
 To:     Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
         Tony Nguyen <anthony.l.nguyen@intel.com>,
@@ -60,11 +60,10 @@ Cc:     linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
         David Miller <davem@davemloft.net>, darcari@redhat.com,
         Yijun.Shen@dell.com, Perry.Yuan@dell.com,
         anthony.wong@canonical.com,
-        Mario Limonciello <mario.limonciello@dell.com>,
-        Yijun Shen <yijun.shen@dell.com>
-Subject: [PATCH v3 3/7] e1000e: Export S0ix flags to ethtool
-Date:   Fri,  4 Dec 2020 14:09:16 -0600
-Message-Id: <20201204200920.133780-4-mario.limonciello@dell.com>
+        Mario Limonciello <mario.limonciello@dell.com>
+Subject: [PATCH v3 6/7] e1000e: Add Dell TGL desktop systems into S0ix heuristics
+Date:   Fri,  4 Dec 2020 14:09:19 -0600
+Message-Id: <20201204200920.133780-7-mario.limonciello@dell.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201204200920.133780-1-mario.limonciello@dell.com>
 References: <20201204200920.133780-1-mario.limonciello@dell.com>
@@ -77,103 +76,39 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishsc
  priorityscore=1501 impostorscore=0 malwarescore=0 lowpriorityscore=0
  clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
  engine=8.12.0-2009150000 definitions=main-2012040115
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 bulkscore=0 malwarescore=0 spamscore=0
- adultscore=0 mlxscore=0 suspectscore=0 mlxlogscore=999 phishscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2009150000
- definitions=main-2012040115
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 spamscore=0
+ phishscore=0 adultscore=0 suspectscore=0 mlxscore=0 bulkscore=0
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.12.0-2009150000 definitions=main-2012040115
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This flag can be used for debugging and development purposes
-including determining if S0ix flows work properly for a system
-not currently recognized by heuristics.
+These Tiger Lake systems are not yet released, but have been validated
+on pre-release hardware.
 
-Tested-by: Yijun Shen <yijun.shen@dell.com>
+This is being submitted separately from released hardware in case of
+a regression between pre-release and release hardware so this commit
+can be reverted alone.
+
 Signed-off-by: Mario Limonciello <mario.limonciello@dell.com>
 ---
- drivers/net/ethernet/intel/e1000e/ethtool.c | 40 +++++++++++++++++++++
- 1 file changed, 40 insertions(+)
+ drivers/net/ethernet/intel/e1000e/s0ix.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-diff --git a/drivers/net/ethernet/intel/e1000e/ethtool.c b/drivers/net/ethernet/intel/e1000e/ethtool.c
-index 03215b0aee4b..eb683949ebfe 100644
---- a/drivers/net/ethernet/intel/e1000e/ethtool.c
-+++ b/drivers/net/ethernet/intel/e1000e/ethtool.c
-@@ -23,6 +23,13 @@ struct e1000_stats {
- 	int stat_offset;
- };
- 
-+static const char e1000e_priv_flags_strings[][ETH_GSTRING_LEN] = {
-+#define E1000E_PRIV_FLAGS_S0IX_ENABLED	BIT(0)
-+	"s0ix-enabled",
-+};
-+
-+#define E1000E_PRIV_FLAGS_STR_LEN ARRAY_SIZE(e1000e_priv_flags_strings)
-+
- #define E1000_STAT(str, m) { \
- 		.stat_string = str, \
- 		.type = E1000_STATS, \
-@@ -1776,6 +1783,8 @@ static int e1000e_get_sset_count(struct net_device __always_unused *netdev,
- 		return E1000_TEST_LEN;
- 	case ETH_SS_STATS:
- 		return E1000_STATS_LEN;
-+	case ETH_SS_PRIV_FLAGS:
-+		return E1000E_PRIV_FLAGS_STR_LEN;
- 	default:
- 		return -EOPNOTSUPP;
- 	}
-@@ -2097,6 +2106,10 @@ static void e1000_get_strings(struct net_device __always_unused *netdev,
- 			p += ETH_GSTRING_LEN;
+diff --git a/drivers/net/ethernet/intel/e1000e/s0ix.c b/drivers/net/ethernet/intel/e1000e/s0ix.c
+index 0dd2e2702ebb..cc04aeaa2292 100644
+--- a/drivers/net/ethernet/intel/e1000e/s0ix.c
++++ b/drivers/net/ethernet/intel/e1000e/s0ix.c
+@@ -63,6 +63,8 @@ static bool e1000e_check_subsystem_allowlist(struct pci_dev *dev)
+ 		case 0x0a40: /* Notebook 0x0a40 */
+ 		case 0x0a41: /* Notebook 0x0a41 */
+ 		case 0x0a42: /* Notebook 0x0a42 */
++		case 0x0a2e: /* Desktop  0x0a2e */
++		case 0x0a30: /* Desktop  0x0a30 */
+ 			return true;
  		}
- 		break;
-+	case ETH_SS_PRIV_FLAGS:
-+		memcpy(data, e1000e_priv_flags_strings,
-+		       E1000E_PRIV_FLAGS_STR_LEN * ETH_GSTRING_LEN);
-+		break;
  	}
- }
- 
-@@ -2305,6 +2318,31 @@ static int e1000e_get_ts_info(struct net_device *netdev,
- 	return 0;
- }
- 
-+static u32 e1000e_get_priv_flags(struct net_device *netdev)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	u32 priv_flags = 0;
-+
-+	if (adapter->flags2 & FLAG2_ENABLE_S0IX_FLOWS)
-+		priv_flags |= E1000E_PRIV_FLAGS_S0IX_ENABLED;
-+
-+	return priv_flags;
-+}
-+
-+static int e1000e_set_priv_flags(struct net_device *netdev, u32 priv_flags)
-+{
-+	struct e1000_adapter *adapter = netdev_priv(netdev);
-+	unsigned int flags2 = adapter->flags2;
-+
-+	flags2 &= ~FLAG2_ENABLE_S0IX_FLOWS;
-+	if (priv_flags & E1000E_PRIV_FLAGS_S0IX_ENABLED)
-+		flags2 |= FLAG2_ENABLE_S0IX_FLOWS;
-+	if (flags2 != adapter->flags2)
-+		adapter->flags2 = flags2;
-+
-+	return 0;
-+}
-+
- static const struct ethtool_ops e1000_ethtool_ops = {
- 	.supported_coalesce_params = ETHTOOL_COALESCE_RX_USECS,
- 	.get_drvinfo		= e1000_get_drvinfo,
-@@ -2336,6 +2374,8 @@ static const struct ethtool_ops e1000_ethtool_ops = {
- 	.set_eee		= e1000e_set_eee,
- 	.get_link_ksettings	= e1000_get_link_ksettings,
- 	.set_link_ksettings	= e1000_set_link_ksettings,
-+	.get_priv_flags		= e1000e_get_priv_flags,
-+	.set_priv_flags		= e1000e_set_priv_flags,
- };
- 
- void e1000e_set_ethtool_ops(struct net_device *netdev)
 -- 
 2.25.1
 
