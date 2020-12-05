@@ -2,79 +2,133 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.5 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_2 autolearn=no
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 285FDC4361A
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 15:45:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 909F9C18E57
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 18:39:09 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id ED19F23110
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 15:45:21 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7600122E00
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 18:39:09 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726934AbgLEPnJ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 5 Dec 2020 10:43:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:36380 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726408AbgLEOvX (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Dec 2020 09:51:23 -0500
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com [IPv6:2a00:1450:4864:20::542])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D68FCC02B8E7;
-        Sat,  5 Dec 2020 06:50:33 -0800 (PST)
-Received: by mail-ed1-x542.google.com with SMTP id b73so8911036edf.13;
-        Sat, 05 Dec 2020 06:50:33 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc;
-        bh=fE7hhQCsZ0dxRQftIk4H5MLE1LJWvrYc+nxt72jtj2c=;
-        b=caEhGBt0PVlv8f9SxJ5d09x8H7ZVsXon9H7vfQMlQ4gZbfnZf+SMX4spPtf5O/FxaD
-         SmuhzaqwR+zz5zKXtodJcoQfFiXwxx2Bdwbmx02XPsrPK2m0oCxG4QdHbHTNW5L+KtSF
-         Idn9zHfayVE1PkzSI6U8y2081E9BEvIs+oXRGfNqPa5lN6AI2dV4Ec7eAKXH/ibQlskI
-         kYVwVStaTIgeHbmzR9PKaVg8k2rRKNBvaHlZ/+b1JXjczClZORn4AemTQ2AABbjELFEN
-         N6KRUTSsuG9mYBne36UTPYwqa9IHw8esXnkATEWDH+gYbVJXm4sFhXv5cC6WeTuQJPMO
-         m55Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=fE7hhQCsZ0dxRQftIk4H5MLE1LJWvrYc+nxt72jtj2c=;
-        b=hxTXQeYECoh3DwNBqslj64f3yvPylFNtRCrYytYHq0TlPOoc9RjWPN1NmXD+WMnDc/
-         LGkUVoAQswIMxj3GfwONOsbPA4BiNAXUDRGR8wzkmKolgsT6XSliOBE+9ZcsiL1VOLzO
-         4I74VwLj1W+Bgzaq0YYpoWPDjFj+Nrv586WhmTt8RUtyDySCeDLvOAmoN8p1pHabz2mk
-         OCtnAU8eAUhjwltmrM30dQk++4ldI5QVBBvJos1jhyjEk5aAucRxm5y18xz1itb3soDl
-         xizXycO/zpC1cmH+9gU0IAxqHu780d5Ff/s0doxlx7fgAOBhVstZFG0ohHPRcxcp6+tv
-         Ggvw==
-X-Gm-Message-State: AOAM532gJfD5tUElxV/OHF0QZSfdV3bgPpgnnB9Xd8c4j/zioftceR81
-        kICL/REQ/cPBWtlqIU48ybap8z6BY2c90KGl8SE=
-X-Google-Smtp-Source: ABdhPJwO6r2XwZQ4VgYoSwl6u3ZpXZ2lwSq6bLqK1/RkxaWHcw0xhvmV1lhhrnS+B+KwuEarPyXhgSt6sihPxLJJKZQ=
-X-Received: by 2002:aa7:c0d6:: with SMTP id j22mr9178723edp.31.1607179832552;
- Sat, 05 Dec 2020 06:50:32 -0800 (PST)
+        id S1729191AbgLEST1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 5 Dec 2020 13:19:27 -0500
+Received: from mail.kernel.org ([198.145.29.99]:43214 "EHLO mail.kernel.org"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1728037AbgLERyc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Sat, 5 Dec 2020 12:54:32 -0500
+Received: from archlinux (cpc108967-cmbg20-2-0-cust86.5-4.cable.virginm.net [81.101.6.87])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.kernel.org (Postfix) with ESMTPSA id 4D63A22D72;
+        Sat,  5 Dec 2020 17:08:34 +0000 (UTC)
+Date:   Sat, 5 Dec 2020 17:08:30 +0000
+From:   Jonathan Cameron <jic23@kernel.org>
+To:     Dmitry Baryshkov <dmitry.baryshkov@linaro.org>
+Cc:     Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Zhang Rui <rui.zhang@intel.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>,
+        Hartmut Knaack <knaack.h@gmx.de>,
+        Lars-Peter Clausen <lars@metafoo.de>,
+        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
+        linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-iio@vger.kernel.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Jishnu Prakash <jprakash@qti.qualcomm.com>
+Subject: Re: [PATCH v10 00/15] qcom: pm8150: add support for thermal
+ monitoring
+Message-ID: <20201205170830.4d56ecb7@archlinux>
+In-Reply-To: <20201204025509.1075506-1-dmitry.baryshkov@linaro.org>
+References: <20201204025509.1075506-1-dmitry.baryshkov@linaro.org>
+X-Mailer: Claws Mail 3.17.8 (GTK+ 2.24.32; x86_64-pc-linux-gnu)
 MIME-Version: 1.0
-References: <20201204070901.24592-1-huangshuosheng@allwinnertech.com>
-In-Reply-To: <20201204070901.24592-1-huangshuosheng@allwinnertech.com>
-From:   Frank Lee <tiny.windzz@gmail.com>
-Date:   Sat, 5 Dec 2020 22:50:18 +0800
-Message-ID: <CAEExFWvbNBg4hFZAHwh2X8mM+rMHrCN_gy5Vhh4z5rQyt512qQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cpufreq: sun50i: add a100 cpufreq support
-To:     Shuosheng Huang <huangshuosheng@allwinnertech.com>
-Cc:     Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>, jernej.skrabec@siol.net,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        devicetree <devicetree@vger.kernel.org>,
-        Linux ARM <linux-arm-kernel@lists.infradead.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Linux PM <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-HI Maxime,
+On Fri,  4 Dec 2020 05:54:54 +0300
+Dmitry Baryshkov <dmitry.baryshkov@linaro.org> wrote:
 
-Any comment?
+> This patch serie adds support for thermal monitoring block on Qualcomm's
+> PMIC5 chips. PM8150{,b,l} and sm8250-mtp board device trees are extended
+> to support thermal zones provided by this thermal monitoring block.
+> Unlike the rest of PMIC thermal senses, these thermal zones describe
+> particular thermistors, which differ between from board to board.
 
-BR / Yangtao
+I've just taken another look through the various IIO parts in here and 
+I think they are fine.
+
+My assumption is that given the timing this isn't going to make the merge
+window now.  Hence I'll be looking to do an immutable branch based on rc1
+once it's available (assuming everyone else is fine with this version).
+
+Thanks,
+
+Jonathan
+
+> 
+> Changes since v9:
+>  - In patch 12 add comments to the code as requested by Daniel Lezcano.
+>  - Change copyright comment in qcom-spmi-adc-tm5.c to clearly note
+>    driver history.
+> 
+> Changes since v8:
+>  - Simplified qcom_vadc_map_voltage_temp() code by removing ascending
+>    tables support
+>  - Simplified qcom-vadc-common volt/temp mapping code
+>  - Implement suggestions by Matthias Kaehlcke: message formatting,
+>    rewrite comments, remove unused variable initialization.
+> 
+> Changes since v7:
+>  - Move qcom-vadc-common.h header to include/linux/iio/adc/ dir.
+>  - Use explicit sizeof(var) instead of hand-coding 1 when accessing
+>    adc-tm registers.
+>  - Remove buffer read from adc_tm5_init().
+>  - Remove extra on-stack var from adc_tm5_get_temp().
+>  - Minor formatting changes as suggested Daniel.
+> 
+> Changes since v6:
+>  - Added include <linux/bitfield.h> as noted by Jishnu Prakash.
+> 
+> Changes since v5:
+>  - Reworked DT bindings:
+>    * Removed qcom,adc-channel, instead it is parsed from io-channels
+>    * Renamed qcom,hw-settle-time to include -us suffix
+>  - Re-added monitor enabling which got lost during refactored. Noted by
+>    Jishnu Prakash.
+>  - Use threaded IRQ handler as susggested by Jishnu.
+> 
+> Changes since v4:
+>  - Added kernel-doc comments to ADC-TM structures
+>  - Used several sizeof(buf) instead of hand-conding register size
+> 
+> Changes since v3:
+>  - Fix DT description to spell "thermal monitoring" instead of just TM
+>  - Fix warnings in DT example
+>  - Add EXPORT_SYMBOL_GPL(of_iio_channel_get_by_name)
+>  - Fixed whitespace chanes in qcom-vadc-common.c
+>  - Removed error message if IIO chanel get returns -EPROBE_DEFER
+> 
+> Changes since v2:
+>  - IIO: export of_iio_channel_get_by_name() function
+>  - dt-bindings: move individual io-channels to each thermal monitoring
+>    channel rather than listing them all in device node
+>  - added fallback defaults to of_device_get_match_data calls in
+>    qcom-spmi-adc5 and qcom-spmi-adc-tm5 drivers
+>  - minor typo fixes
+> 
+> Changes since v1:
+>  - Introduce fixp_linear_interpolate() by Craig Tatlor
+>  - Lots of syntax/whitespace changes
+>  - Cleaned up register definitions per Jonathan's suggestion
+>  - Implemented most of the suggestions from Bjorn's and Jonathan's
+>    review
+> 
+> 
+
