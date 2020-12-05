@@ -2,102 +2,178 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.5 required=3.0 tests=BAYES_00,DATE_IN_PAST_06_12,
-	DKIMWL_WL_HIGH,DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+X-Spam-Status: No, score=-9.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D73D1C4361B
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 18:39:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id DDA98C1B087
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 19:53:33 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C90522E00
-	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 18:39:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BCC6123125
+	for <linux-pm@archiver.kernel.org>; Sat,  5 Dec 2020 19:53:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726070AbgLESjI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sat, 5 Dec 2020 13:39:08 -0500
-Received: from mail.kernel.org ([198.145.29.99]:52240 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729060AbgLEST0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Sat, 5 Dec 2020 13:19:26 -0500
-X-Gm-Message-State: AOAM530rZvufIYDMZt26gNUG5RApapqZ8Y2cP44Unvq+L5DuhIBfaW27
-        U9TU/9RADUs/Kfq22fh8C9NRNNahT2VNZFvQKUw=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1607169800;
-        bh=seGZVZkmbRbAGNfBaEwnHNJz6yAmsoeRn++CrRNw8OA=;
-        h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-        b=r/m6oqK22Erl2MqrnLg9eD3zf5UZc624z12peBhOxMCoQSHvq565ABgL4KeUGqMCy
-         ygRbYLZmmSysPgbITLaEWVvQHbe6mtpPYf4uQCAV7b5/XxsKP5XQGHSiwUNYpSHT5R
-         YxRViUUjMyuUmZzJAlT/OAog8jqGUmOPa1hk84r1ZLOjYrQ5eq2rChijzsOd9NFU60
-         QSi5t0K15s+8dfBk+yikh2S0qiGu2duVPD99RY7mu2T9YSGClka9hKLnUzASWeNkPk
-         tkJRvlFvtQbefPdwgx5i5c9RBHnUV8fS9IH8pOBNPfJw4d6GxiythCGuwrld5Zkwl4
-         CqKxhhRHk03ZA==
-X-Google-Smtp-Source: ABdhPJwAH/kp4eaHl02pSf3B6JIRqxzOHZ8IjG0Ih32p0Z4u2qbz20IUOtVxN383FyxVTPjMQLENzpJ5tq9ps+LN6Mc=
-X-Received: by 2002:a05:6808:9a9:: with SMTP id e9mr6349307oig.4.1607169800015;
- Sat, 05 Dec 2020 04:03:20 -0800 (PST)
-MIME-Version: 1.0
-References: <20201204165030.3747484-1-arnd@kernel.org> <X8rFzqURIVHeH4SL@builder.lan>
-In-Reply-To: <X8rFzqURIVHeH4SL@builder.lan>
-From:   Arnd Bergmann <arnd@kernel.org>
-Date:   Sat, 5 Dec 2020 13:03:03 +0100
-X-Gmail-Original-Message-ID: <CAK8P3a2BSN7sUvRLgbpJTFws-=-Va30LNLvLEXbN46KewOy2dQ@mail.gmail.com>
-Message-ID: <CAK8P3a2BSN7sUvRLgbpJTFws-=-Va30LNLvLEXbN46KewOy2dQ@mail.gmail.com>
-Subject: Re: [PATCH] interconnect: qcom: fix rpmh link failures
-To:     Bjorn Andersson <bjorn.andersson@linaro.org>
-Cc:     Andy Gross <agross@kernel.org>,
+        id S1726254AbgLETxa (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sat, 5 Dec 2020 14:53:30 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:55002 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726173AbgLETx2 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sat, 5 Dec 2020 14:53:28 -0500
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C1693C0613D1;
+        Sat,  5 Dec 2020 11:52:41 -0800 (PST)
+Received: by mail-lj1-x242.google.com with SMTP id s11so1863826ljp.4;
+        Sat, 05 Dec 2020 11:52:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=bBF57HirJUWNF1QYKQCv5cFAIUWWtnZdZjsBsF1FLJE=;
+        b=IdysiPjmnPVweioFPBqM2j0kXFOrazfcFWyxe+MuLYeOEAC2vr1O37U8hUDQcLe8C5
+         xxd+KyrAq4eW4uYdJ69QH+WpDKc1Dhg1DCO0Iey/XGIdIydoRgvfFbdoalfIsJWZq2Z3
+         iMIgHy8nTthhfK6rf+aL8juA5ZMNuw7tVT+DeZbOcQcb+dyKG69/HmAjUD4ynpgbAqX/
+         uR3sJlzTwaCm9CDD7IP5d1l5VJZ3pMesUY3XUJj+wr2zZa1kQwiYbkkFR9JrMiADJFqy
+         j3koh2M3FZ5JzRfwgDddQORHcQCV+tUDVOUggU4P0PK6r4Tug67HItzMaZr5sx1jLQ82
+         GBkg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=bBF57HirJUWNF1QYKQCv5cFAIUWWtnZdZjsBsF1FLJE=;
+        b=uYoYtlo/QRee2K8HOzaRcHCDc4/UxYIOJpbQcxgQrI3ku73g68Wm/lS69gO4XWChF/
+         wIa0u5gmCd0cLXsimBV+g4HLh+Hs7gc8XucDJGgdyVW7bTwdn1RJIIqUGj4j/x+M441j
+         SweuuM+/qnRFNtSk0TlMQb3rJyxo+edzRA47wcVLKnYimNaA0G2g1IxUbljDuoD7b9NI
+         MzkxDQ+kudRGaRhkf59+cmu4NPpdr7bC49MvBRBpEZv1ryQUvs/nNNYmPLIuvmJeefGh
+         a07DwGCj+aeDaLIyPaF0YH86W7d/yaSo0PpYErbfyEGDx2pXp5qXQpSLjIqLFyQsjlvI
+         fK4w==
+X-Gm-Message-State: AOAM530zKQx+6BcH+266KG8FD+lyhp9Bhxr3cII64zQYqGGwuFobnDGa
+        8tDDlkZQHUTHe6EhHq3dNCoS1TPYPSY=
+X-Google-Smtp-Source: ABdhPJzGAM8dSVUfPrR/U+Sun2Ezu5zVBu5XVo94j8F7KWeaq9PoGepIjjXZVKrnnHP9DQTWYaRB2Q==
+X-Received: by 2002:a2e:8053:: with SMTP id p19mr5590859ljg.321.1607197960096;
+        Sat, 05 Dec 2020 11:52:40 -0800 (PST)
+Received: from [192.168.2.145] (109-252-192-53.dynamic.spd-mgts.ru. [109.252.192.53])
+        by smtp.googlemail.com with ESMTPSA id p28sm2465992ljn.22.2020.12.05.11.52.38
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sat, 05 Dec 2020 11:52:39 -0800 (PST)
+Subject: Re: [PATCH v11 04/10] memory: tegra124-emc: Make driver modular
+To:     Thierry Reding <thierry.reding@gmail.com>
+Cc:     Jonathan Hunter <jonathanh@nvidia.com>,
         Georgi Djakov <georgi.djakov@linaro.org>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Sibi Sankar <sibis@codeaurora.org>,
-        Evan Green <evgreen@chromium.org>,
-        Jonathan Marek <jonathan@marek.ca>,
-        Odelu Kukatla <okukatla@codeaurora.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
         Krzysztof Kozlowski <krzk@kernel.org>,
-        David Dai <daidavid1@codeaurora.org>,
-        linux-arm-msm <linux-arm-msm@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+        linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+References: <20201203192439.16177-1-digetx@gmail.com>
+ <20201203192439.16177-5-digetx@gmail.com> <X8pmqVRFaBtkwDtr@ulmo>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <76eb57bf-feaf-ad86-a2d6-152897af7f2f@gmail.com>
+Date:   Sat, 5 Dec 2020 22:52:38 +0300
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <X8pmqVRFaBtkwDtr@ulmo>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Sat, Dec 5, 2020 at 12:27 AM Bjorn Andersson
-<bjorn.andersson@linaro.org> wrote:
-> On Fri 04 Dec 10:50 CST 2020, Arnd Bergmann wrote:
+04.12.2020 19:41, Thierry Reding пишет:
+...
+>> +bool tegra124_clk_emc_driver_available(struct clk_hw *hw)
+>> +{
+>> +	struct tegra_clk_emc *tegra = container_of(hw, struct tegra_clk_emc, hw);
+>> +
+>> +	return tegra->prepare_timing_change && tegra->complete_timing_change;
+>> +}
+> 
+> This looks a bit hackish and I prefer the way this was done for
+> Tegra210.
 
->
-> Your patch looks correct to me, so:
-> Reviewed-by: Bjorn Andersson <bjorn.andersson@linaro.org>
->
->
-> But we're going to have to sprinkle a handful of these throughout the
-> tree and we're not a lot of people who "understand" what it does (and at
-> least I keep getting them wrong...)
+I may have an opposite opinion :)
 
-Right, I already ran into another one.
+> But that's mostly an implementation detail and we can always
+> restructure this if we want to.
 
-> Perhaps it would be more reasonable to maintain this long term if we
-> drop the possibility of compile testing these drivers independently of
-> rpmh and command db? (I.e. drop the function stubs and rely on
-> RPMH/COMMAND_DB to enable building under COMPILE_TEST)?
+This is true. I'm not saying that the current v11 variant is absolutely
+ideal, but it should be good enough for the starter (IMO) and actually I
+don't have any ideas right about what could be done better.
 
-Agreed, I think that would be best. As long as RPMH and COMMAND_DB
-can individually be enabled for CONFIG_COMPILE_TEST, all the
-drivers will get enabled in an allmodconfig build, and we can just
-list the dependencies.
+>> diff --git a/drivers/clk/tegra/clk-tegra124.c b/drivers/clk/tegra/clk-tegra124.c
+>> index e931319dcc9d..934520aab6e3 100644
+>> --- a/drivers/clk/tegra/clk-tegra124.c
+>> +++ b/drivers/clk/tegra/clk-tegra124.c
+>> @@ -1500,6 +1500,26 @@ static void __init tegra124_132_clock_init_pre(struct device_node *np)
+>>  	writel(plld_base, clk_base + PLLD_BASE);
+>>  }
+>>  
+>> +static struct clk *tegra124_clk_src_onecell_get(struct of_phandle_args *clkspec,
+>> +						void *data)
+>> +{
+>> +	struct clk_hw *hw;
+>> +	struct clk *clk;
+>> +
+>> +	clk = of_clk_src_onecell_get(clkspec, data);
+>> +	if (IS_ERR(clk))
+>> +		return clk;
+>> +
+>> +	hw = __clk_get_hw(clk);
+>> +
+>> +	if (clkspec->args[0] == TEGRA124_CLK_EMC) {
+>> +		if (!tegra124_clk_emc_driver_available(hw))
+>> +			return ERR_PTR(-EPROBE_DEFER);
+>> +	}
+>> +
+>> +	return clk;
+>> +}
+> 
+> Hm... why exactly do we need this? On Tegra210 and later, the EMC driver
+> is the only consumer of the EMC clock and since it also provides some of
+> the necessary parts to scale the EMC clock, that's a chicken and egg
+> problem.
 
-I don't really like the headers too much that have an
-#ifdef CONFIG_SUBSYSTEM with an alternative set of
-inline functions, unless there is a reasonable expectations that
-drivers work fine if that subsystem is disabled.
+The T124 EMC driver has an existing active user for the EMC clock, the
+devfreq/actmon driver which watches and drives the EMC clock rate. The
+EMC clock shan't be requested by the devfreq driver until EMC driver is
+ready, the only sensible way to achieve this is implemented by this patch.
 
-E.g. having the option to disable IPv6 makes sense despite
-the complexity that adds, but compile-testing a driver without
-a required subsystem that can also be enabled for compile-testing
-hurts more than it helps.
+The devfreq driver doesn't support T210 (yet?) and you should witness
+the problem if you'll try to implement the T210 support.
 
-> And just to make it clear, I think we should merge your patch to fix
-> v5.11; then consider to simplify this past that.
+> I'm not sure I fully understand how this is supposed to work
+> here and why we can't do this in a similar way than Tegra210.
 
-Yes, sounds good.
+The CCF returns -EPROBE_DEFER for clk_get() only until clock provider is
+registered, otherwise it returns a dummy/stub clock once provider is
+available and clk (of the provider) isn't registered. The CCF provider
+for the EMC clock is the tegra-clk driver, not the EMC driver.
 
-       Arnd
+Once clk_get() is invoked by a clk user, the CCF performs the clk lookup
+using the DT specifier and this lookup is aborted with a -EPROBE_DEFER
+from the clk_src_onecell_get() callback if EMC driver isn't loaded yet.
+I don't think that there are any other variants to achieve this behaviour.
+
+I also prefer to have a clean separation of the clk and EMC drivers
+because this is a much more expressive variant than mixing drivers
+together in obscure way. The pre-T210 EMC drivers don't need to touch
+clk registers for programming of the memory timings, hence those EMC
+drivers are in a bit better position than the T210 driver.
+
+The T210 EMC driver also could have a cleaner separation by using a
+special tegra-clk API for the clk/EMC functions, instead of shoving a
+raw clk IO pointer to the EMC driver. It feels like I was already
+suggesting this about a half-year ago, before the T210 driver was merged.
