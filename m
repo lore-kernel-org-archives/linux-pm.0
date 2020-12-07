@@ -2,225 +2,126 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56CFAC0018C
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:37:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30CE2C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 15:14:20 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 25AA52337F
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:37:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 0709623719
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 15:14:19 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726485AbgLGOhO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 09:37:14 -0500
-Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.80]:36080 "EHLO
-        mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726182AbgLGOhO (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 09:37:14 -0500
-X-Greylist: delayed 364 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Dec 2020 09:37:11 EST
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607351660;
-        s=strato-dkim-0002; d=fossekall.de;
-        h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
-        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
-        bh=9xO2wGJAhLl5pgcUNhK9yul/eE7Yn45liR+B7i+kPok=;
-        b=bUCZNyla++hyJpObKFpiZ0neT7TbNG2Rf63zlxDAsTqrtti58qZAJiBptbie9fekF6
-        AcFkAtJvMeUj4c2skWz89a0wrAtCU8+m3WCrOXw5VGA8WCNBvYBMFdBdwpIYdPEFYeof
-        oMsTodqQlF2U3O2IyDIFm5HS7klbH3ABO7fszllWoZrS7XcrEi8gaMYB74N1kM/Lg9Q/
-        tGkiQ/sZEp4JKLDjVuSJBEUjWANQ89wp9Cv91hGauiJ6b+vk/aCQdooqzSThb7E2okqO
-        eopppwxq5T9h99oDtX9egEQA0W7GrRlDga7OvlJfbwfLx6bdsCHjRWmx9eo+bmDsF/Ma
-        i0ng==
-X-RZG-AUTH: ":O2kGeEG7b/pS1EzgE2y7nF0STYsSLflpbjNKxx7cGrBOdI6BL9pkS3QW19mO7I+/JwRspuzJFZuRzQ=="
-X-RZG-CLASS-ID: mo00
-Received: from aerfugl
-        by smtp.strato.de (RZmta 47.3.4 AUTH)
-        with ESMTPSA id g02087wB7ESDOVe
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
-        (Client did not present a certificate);
-        Mon, 7 Dec 2020 15:28:13 +0100 (CET)
-Received: from koltrast.a98shuttle.de ([192.168.1.27] helo=a98shuttle.de)
-        by aerfugl with smtp (Exim 4.89)
-        (envelope-from <michael@a98shuttle.de>)
-        id 1kmHUg-0001T2-TJ; Mon, 07 Dec 2020 15:28:02 +0100
-Received: (nullmailer pid 17895 invoked by uid 502);
-        Mon, 07 Dec 2020 14:28:02 -0000
-From:   Michael Klein <michael@fossekall.de>
-To:     Sebastian Reichel <sre@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@siol.net>,
-        Michael Klein <michael@fossekall.de>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v3 1/3] power: reset: new driver regulator-poweroff
-Date:   Mon,  7 Dec 2020 15:27:54 +0100
-Message-Id: <20201207142756.17819-2-michael@fossekall.de>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201207142756.17819-1-michael@fossekall.de>
-References: <20201128103958.q6glewhhch7vtczr@gilmour>
- <20201207142756.17819-1-michael@fossekall.de>
+        id S1725915AbgLGPOT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 10:14:19 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:47110 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725781AbgLGPOT (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 10:14:19 -0500
+Received: from mail-pj1-x102f.google.com (mail-pj1-x102f.google.com [IPv6:2607:f8b0:4864:20::102f])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 334C9C061793
+        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 07:13:39 -0800 (PST)
+Received: by mail-pj1-x102f.google.com with SMTP id l23so7624173pjg.1
+        for <linux-pm@vger.kernel.org>; Mon, 07 Dec 2020 07:13:39 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=2P4ubLZqiZby9eo7uK3XkAZ8iDln/RpgCSdwMxU4gTw=;
+        b=daKy0osk2zM/BC2p+v7kvr89NIQmZdzX1gCibelN0ZsLtP92buWQzl1VEGW+PwliVh
+         P9x7Px23iOZzvOLxhST3I8stgGwpoI31hIMHCf+kxdLUCbUChdjMtZRBRkPIn/MlKppC
+         Z//IicRolfz7iK5nhYvSMdUWFtJA77g8dk4v3H86TjF7/mjSe17FKCCnYzPPjTq1aT9B
+         DGUdt48eBO5aiQQk0IjsMT9pUlVkA4RUVuU6l7FAsw3KWubJSDcYj7M56TrD9+7b3/0s
+         1nQSTOClNkb9mbd/zyxdW7f/Uuv0DlSFexuHGXjZxXdq7UYRbaSef4u6iuVv1AXGCjA9
+         Fu7g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=2P4ubLZqiZby9eo7uK3XkAZ8iDln/RpgCSdwMxU4gTw=;
+        b=s7qwMudZ3olQOKSTdpNQDW1fq3o7qYHk/uqcXOWEnEdfSDepleq1HV1pFYud7lHbRI
+         KrK9JgXp3QM8cqhr1yNYqpJO7ksjVcFUGWkbl7R26AviNB/Y23FVszTIHpwLxahXJe46
+         3ChP5+DvRo4PeaLaNxiGShVGoQkW0b2bfQh4PCE6lcerHm/eer7Trf1AwPrBK/joFsn+
+         lPHjoG/0gazbTlqPFy1Y52mEcRtMPCcjm61kS2dKWMfC2fbIxK13DljFps/595yRHQOV
+         Yb1hPW7+m7qP4XvGRtqRbwDrJUxzBli9TrFjG7q9lpAlMO/jdJAXx2VOQMYAbNjpR8p5
+         q11w==
+X-Gm-Message-State: AOAM531VGFavhTfZ0yDLU9VKx7ezkOuhWwatquAVJAlsbwXiGCoRE0j2
+        n+o6fb8P7MZvIoodrTyRnMUr8A==
+X-Google-Smtp-Source: ABdhPJzuAeWAkVkkeFg7zYMcTAIs+cbLPO2pv4BukdCU/NAWg1bC20rWZ/ubSRL2f9XOtaHmu4gGZA==
+X-Received: by 2002:a17:90a:fd08:: with SMTP id cv8mr16556523pjb.29.1607354018725;
+        Mon, 07 Dec 2020 07:13:38 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id b17sm14607933pfi.61.2020.12.07.07.13.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Dec 2020 07:13:38 -0800 (PST)
+Message-ID: <5fce46a2.1c69fb81.40ba.1ef3@mx.google.com>
+Date:   Mon, 07 Dec 2020 07:13:38 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.10-rc7-87-g960e625edeb5
+X-Kernelci-Report-Type: test
+Subject: pm/testing baseline: 131 runs,
+ 1 regressions (v5.10-rc7-87-g960e625edeb5)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-This driver registers a pm_power_off function to disable a set of
-regulators defined in the devicetree to turn off the board.
+pm/testing baseline: 131 runs, 1 regressions (v5.10-rc7-87-g960e625edeb5)
 
-Signed-off-by: Michael Klein <michael@fossekall.de>
----
- drivers/power/reset/Kconfig              |   7 ++
- drivers/power/reset/Makefile             |   1 +
- drivers/power/reset/regulator-poweroff.c | 107 +++++++++++++++++++++++
- 3 files changed, 115 insertions(+)
- create mode 100644 drivers/power/reset/regulator-poweroff.c
+Regressions Summary
+-------------------
 
-diff --git a/drivers/power/reset/Kconfig b/drivers/power/reset/Kconfig
-index d55b3727e00e..ae6cb7b0bd4d 100644
---- a/drivers/power/reset/Kconfig
-+++ b/drivers/power/reset/Kconfig
-@@ -177,6 +177,13 @@ config POWER_RESET_QNAP
- 
- 	  Say Y if you have a QNAP NAS.
- 
-+config POWER_RESET_REGULATOR
-+	bool "Regulator subsystem power-off driver"
-+	depends on OF && REGULATOR
-+	help
-+	  This driver supports turning off your board by disabling a set
-+	  of regulators defined in the devicetree.
-+
- config POWER_RESET_RESTART
- 	bool "Restart power-off driver"
- 	help
-diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
-index c51eceba9ea3..9dc49d3a57ff 100644
---- a/drivers/power/reset/Makefile
-+++ b/drivers/power/reset/Makefile
-@@ -19,6 +19,7 @@ obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
- obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
- obj-$(CONFIG_POWER_RESET_LTC2952) += ltc2952-poweroff.o
- obj-$(CONFIG_POWER_RESET_QNAP) += qnap-poweroff.o
-+obj-$(CONFIG_POWER_RESET_REGULATOR) += regulator-poweroff.o
- obj-$(CONFIG_POWER_RESET_RESTART) += restart-poweroff.o
- obj-$(CONFIG_POWER_RESET_ST) += st-poweroff.o
- obj-$(CONFIG_POWER_RESET_VERSATILE) += arm-versatile-reboot.o
-diff --git a/drivers/power/reset/regulator-poweroff.c b/drivers/power/reset/regulator-poweroff.c
-new file mode 100644
-index 000000000000..df2ca4fdcc49
---- /dev/null
-+++ b/drivers/power/reset/regulator-poweroff.c
-@@ -0,0 +1,107 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/*
-+ * Force-disables a regulator to power down a device
-+ *
-+ * Michael Klein <michael@fossekall.de>
-+ *
-+ * Copyright (C) 2020 Michael Klein
-+ *
-+ * Based on the gpio-poweroff driver.
-+ */
-+#include <linux/delay.h>
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/of.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/consumer.h>
-+
-+#define DEFAULT_TIMEOUT_MS 3000
-+
-+/*
-+ * Hold configuration here, cannot be more than one instance of the driver
-+ * since pm_power_off itself is global.
-+ */
-+static struct regulator **poweroff_regulators;
-+static u32 timeout = DEFAULT_TIMEOUT_MS;
-+
-+static void regulator_poweroff_do_poweroff(void)
-+{
-+	struct regulator **it;
-+
-+	if (poweroff_regulators)
-+		for (it = poweroff_regulators; *it; ++it)
-+			if (regulator_is_enabled(*it))
-+				regulator_force_disable(*it);
-+
-+	/* give it some time */
-+	mdelay(timeout);
-+
-+	WARN_ON(1);
-+}
-+
-+static int regulator_poweroff_probe(struct platform_device *pdev)
-+{
-+	int count;
-+	const char *name;
-+	struct regulator **it;
-+	struct property *prop;
-+	struct device_node *node = pdev->dev.of_node;
-+
-+	/* If a pm_power_off function has already been added, leave it alone */
-+	if (pm_power_off != NULL) {
-+		dev_err(&pdev->dev,
-+			"%s: pm_power_off function already registered\n",
-+		       __func__);
-+		return -EBUSY;
-+	}
-+
-+	count = of_property_count_strings(node, "regulator-names");
-+	if (count <= 0)
-+		return -ENOENT;
-+
-+	poweroff_regulators = devm_kcalloc(&pdev->dev, count + 1,
-+		sizeof(struct regulator *), GFP_KERNEL);
-+
-+	it = poweroff_regulators;
-+	of_property_for_each_string(node, "regulator-names", prop, name) {
-+		*it = devm_regulator_get(&pdev->dev, name);
-+		if (IS_ERR(*it))
-+			return PTR_ERR(*it);
-+		it++;
-+	}
-+
-+	of_property_read_u32(node, "timeout-ms", &timeout);
-+
-+	pm_power_off = &regulator_poweroff_do_poweroff;
-+	return 0;
-+}
-+
-+static int regulator_poweroff_remove(__maybe_unused struct platform_device *pdev)
-+{
-+	if (pm_power_off == &regulator_poweroff_do_poweroff)
-+		pm_power_off = NULL;
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id of_regulator_poweroff_match[] = {
-+	{ .compatible = "regulator-poweroff", },
-+	{},
-+};
-+
-+static struct platform_driver regulator_poweroff_driver = {
-+	.probe = regulator_poweroff_probe,
-+	.remove = regulator_poweroff_remove,
-+	.driver = {
-+		.name = "poweroff-regulator",
-+		.of_match_table = of_regulator_poweroff_match,
-+	},
-+};
-+
-+module_platform_driver(regulator_poweroff_driver);
-+
-+MODULE_AUTHOR("Michael Klein <michael@fossekall.de>");
-+MODULE_DESCRIPTION("Regulator poweroff driver");
-+MODULE_LICENSE("GPL v2");
-+MODULE_ALIAS("platform:poweroff-regulator");
--- 
-2.29.2
+platform   | arch  | lab     | compiler | defconfig | regressions
+-----------+-------+---------+----------+-----------+------------
+imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
 
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
+7-87-g960e625edeb5/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.10-rc7-87-g960e625edeb5
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      960e625edeb5932009c1e687adae37447fdf69d8 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform   | arch  | lab     | compiler | defconfig | regressions
+-----------+-------+---------+----------+-----------+------------
+imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fce3e448ccfc7d4cbc94cd7
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc7-87-g960e6=
+25edeb5/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc7-87-g960e6=
+25edeb5/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/arm64/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/5fce3e448ccfc7d4cbc94=
+cd8
+        new failure (last pass: v5.10-rc6-90-gc35cc6e0cf05) =
+
+ =20
