@@ -2,91 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5C653C433FE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:41:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20D3FC433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:56 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2630D233ED
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:41:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C8FD62343F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:55 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726112AbgLGNl4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 08:41:56 -0500
-Received: from mail-ot1-f67.google.com ([209.85.210.67]:33642 "EHLO
-        mail-ot1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726007AbgLGNl4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:41:56 -0500
-Received: by mail-ot1-f67.google.com with SMTP id b18so12469595ots.0;
-        Mon, 07 Dec 2020 05:41:35 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=Sajsa5hnD4/l7bV/fF2j2mLOSef/O2Ms1lr8tdESjSo=;
-        b=K/w/A7eLcqbSNTzQIZKEt83wwglQ241ARxP16ueFuuRJ5pAX6KC9Kqbo42Kn3gB/K7
-         yJSUGkapkoIyd6tm1uQTUAehOU124VhgFA5LPlv8IoY6SNKib8dFHC9hnzUrfXwfYq4v
-         CdzUWeBRSDGfpQcmtpegHw4bnhfLZ/PBRSPFKI+nV9XSSRRZ7HikYux6hA28/K28yDqm
-         nuY0WdLdqfJezLZM93IZ/Xyk4k4yuRVKVzVSxvhcyJ8t7PyZE7AGuSIOyJss1RBIHhT+
-         ND/j8Ro4CUaf1vG/OAclmFjy33lyU4NPi7rdB0g7GcaJ5Cwn2p2CG7pOs4oPev1YphuE
-         o33A==
-X-Gm-Message-State: AOAM532RuwTrjzdh+t3U+07Xk+CxvU7penk9LipqH0AhgzPHaYtvO55e
-        5U4vgsepMNMefdaW7ziljjQ6Y2CtCEqBonQCzwo=
-X-Google-Smtp-Source: ABdhPJx3dLzEghwd0BjIRF1O1W3UAcd1cMqWifXAspvtKG8rUP90q4qF3kjF3M3XCqG2meUkVW9siofXR2718aVuTcA=
-X-Received: by 2002:a9d:67da:: with SMTP id c26mr6057544otn.321.1607348469598;
- Mon, 07 Dec 2020 05:41:09 -0800 (PST)
+        id S1726146AbgLGNrz (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 08:47:55 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33564 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726122AbgLGNrz (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:47:55 -0500
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E5ED7C0613D1
+        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 05:47:14 -0800 (PST)
+Date:   Mon, 07 Dec 2020 13:47:12 -0000
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020; t=1607348833;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=H5GyNcDdrtWIkbkgB5h9SW32h0q18cUEmAfdXCjCuBE=;
+        b=kd3rMPq5YZ78lS/9hL2vo4aNSE9kOXh+1UaG3UTlaKTXOdE/gWtrQ0bsTGliP86nIGJka8
+        +0oBrqJmU069tYGIaNJyH15YNq54lv377p+geoUdT0Cptpp0vaHkIqVkXSTGMkiPQSYvC/
+        kT5wTKomS+x798NjOfPjoOiMnFrDkQsDUY7PPDATEx+/sVJcTyQnf0hP/4L6z7ZgPZO8HI
+        m/XfZUBcbImSXpmkiVN/1kTqG38WPQVIE9nNsXsnpUudeGlPBY0oTrXlLvlU/rds/4TzJl
+        1IGcTDq1UcrSJUjLCautD3zrAonWcNSKXoS0DY636tGRZgC0ZlICD3jKNQmu6A==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+        s=2020e; t=1607348833;
+        h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
+         message-id:message-id:to:to:cc:cc:mime-version:mime-version:
+         content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=H5GyNcDdrtWIkbkgB5h9SW32h0q18cUEmAfdXCjCuBE=;
+        b=YC3kqHIAjDFd+yiH6ySZW5Ok0dbGebrcAkqj7gIYdAN81JRBNp+7a6hmn7CAA6iwZOu4y2
+        CnVKJsUAro5pePDw==
+From:   "thermal-bot for Fabio Estevam" <tip-bot2@linutronix.de>
+Sender: tip-bot2@linutronix.de
+Reply-to: linux-pm@vger.kernel.org
+To:     linux-pm@vger.kernel.org
+Subject: [thermal: thermal/next] thermal: imx8mm: Disable the clock on probe failure
+Cc:     Fabio Estevam <festevam@gmail.com>,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20201202232448.2692-2-festevam@gmail.com>
+References: <20201202232448.2692-2-festevam@gmail.com>
 MIME-Version: 1.0
-References: <1817571.2o5Kk4Ohv2@kreacher> <2174134.tL5yAn4CWt@kreacher> <20201207074615.kmvy5afoolhv5cgq@vireshk-i7>
-In-Reply-To: <20201207074615.kmvy5afoolhv5cgq@vireshk-i7>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Mon, 7 Dec 2020 14:40:52 +0100
-Message-ID: <CAJZ5v0havcy_SZ6yUqjn4KK8=8SMJRSkhgaTm==eMeEinxDN2w@mail.gmail.com>
-Subject: Re: [RFC][PATCH 1/2] cpufreq: Add special-purpose fast-switching
- callback for drivers
-To:     Viresh Kumar <viresh.kumar@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Doug Smythies <dsmythies@telus.net>,
-        Giovanni Gherdovich <ggherdovich@suse.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-ID: <160734883220.3364.9536508391090819279.tip-bot2@tip-bot2>
+Robot-ID: <tip-bot2@linutronix.de>
+Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 7, 2020 at 8:47 AM Viresh Kumar <viresh.kumar@linaro.org> wrote:
->
-> On 30-11-20, 19:37, Rafael J. Wysocki wrote:
-> > Index: linux-pm/include/linux/cpufreq.h
-> > ===================================================================
-> > --- linux-pm.orig/include/linux/cpufreq.h
-> > +++ linux-pm/include/linux/cpufreq.h
-> > @@ -320,6 +320,15 @@ struct cpufreq_driver {
-> >                                       unsigned int index);
-> >       unsigned int    (*fast_switch)(struct cpufreq_policy *policy,
-> >                                      unsigned int target_freq);
-> > +     /*
-> > +      * ->fast_switch() replacement for drivers that use an internal
-> > +      * representation of performance levels and can pass hints other than
-> > +      * the target performance level to the hardware.
-> > +      */
-> > +     void            (*adjust_perf)(unsigned int cpu, bool busy,
->
-> Maybe this should still take policy as an argument (like other calls)
-> instead of CPU, even if it is going to be used for single-cpu per
-> policy case for now.
+The following commit has been merged into the thermal/next branch of thermal:
 
-That can be changed in the future if need be.
+Commit-ID:     e57eb8b5050c9b6d63eea26b194d96744fe4018a
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//e57eb8b5050c9b6d63eea26b194d96744fe4018a
+Author:        Fabio Estevam <festevam@gmail.com>
+AuthorDate:    Wed, 02 Dec 2020 20:24:48 -03:00
+Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
+CommitterDate: Fri, 04 Dec 2020 20:46:03 +01:00
 
-Otherwise this path doesn't need to look at the policy object at all
-and I'd rather keep it this way.
+thermal: imx8mm: Disable the clock on probe failure
 
->
-> > +                                    unsigned long min_perf,
-> > +                                    unsigned long target_perf,
-> > +                                    unsigned long capacity);
->
-> --
+Prior to returning an error in probe, disable the previously
+enabled clock.
+
+Signed-off-by: Fabio Estevam <festevam@gmail.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Link: https://lore.kernel.org/r/20201202232448.2692-2-festevam@gmail.com
+---
+ drivers/thermal/imx8mm_thermal.c | 6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/thermal/imx8mm_thermal.c b/drivers/thermal/imx8mm_thermal.c
+index ce7cb64..7442e01 100644
+--- a/drivers/thermal/imx8mm_thermal.c
++++ b/drivers/thermal/imx8mm_thermal.c
+@@ -170,7 +170,7 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 			dev_err(&pdev->dev,
+ 				"failed to register thermal zone sensor[%d]: %d\n",
+ 				i, ret);
+-			return ret;
++			goto disable_clk;
+ 		}
+ 		tmu->sensors[i].hw_id = i;
+ 	}
+@@ -185,6 +185,10 @@ static int imx8mm_tmu_probe(struct platform_device *pdev)
+ 	imx8mm_tmu_enable(tmu, true);
+ 
+ 	return 0;
++
++disable_clk:
++	clk_disable_unprepare(tmu->clk);
++	return ret;
+ }
+ 
+ static int imx8mm_tmu_remove(struct platform_device *pdev)
