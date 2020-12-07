@@ -2,121 +2,179 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07F55C47434
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 15:51:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 503E0C4361B
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 16:40:32 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DE5F423731
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 15:51:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E5F123877
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 16:40:32 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726101AbgLGPuv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 10:50:51 -0500
-Received: from bhuna.collabora.co.uk ([46.235.227.227]:51704 "EHLO
-        bhuna.collabora.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725814AbgLGPuv (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 10:50:51 -0500
-Received: from [127.0.0.1] (localhost [127.0.0.1])
-        (Authenticated sender: andrzej.p)
-        with ESMTPSA id 79D0D1F44D66
-Subject: Re: [PATCH v4 2/7] Input: use input_device_enabled()
-To:     Marek Szyprowski <m.szyprowski@samsung.com>,
-        linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-iio@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-tegra@vger.kernel.org, patches@opensource.cirrus.com,
-        ibm-acpi-devel@lists.sourceforge.net,
-        platform-driver-x86@vger.kernel.org
-Cc:     "Rafael J . Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        Jonathan Cameron <jic23@kernel.org>,
-        Hartmut Knaack <knaack.h@gmx.de>,
-        Lars-Peter Clausen <lars@metafoo.de>,
-        Peter Meerwald-Stadler <pmeerw@pmeerw.net>,
-        Kukjin Kim <kgene@kernel.org>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Shawn Guo <shawnguo@kernel.org>,
-        Sascha Hauer <s.hauer@pengutronix.de>,
-        Pengutronix Kernel Team <kernel@pengutronix.de>,
-        Fabio Estevam <festevam@gmail.com>,
-        NXP Linux Team <linux-imx@nxp.com>,
-        Vladimir Zapolskiy <vz@mleia.com>,
-        Sylvain Lemieux <slemieux.tyco@gmail.com>,
-        Laxman Dewangan <ldewangan@nvidia.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Barry Song <baohua@kernel.org>,
-        Michael Hennerich <michael.hennerich@analog.com>,
-        Nick Dyer <nick@shmanahar.org>,
-        Hans de Goede <hdegoede@redhat.com>,
-        Ferruh Yigit <fery@cypress.com>,
-        Sangwon Jee <jeesw@melfas.com>,
-        Peter Hutterer <peter.hutterer@redhat.com>,
-        Henrique de Moraes Holschuh <ibm-acpi@hmh.eng.br>,
-        kernel@collabora.com,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
-References: <2336e15d-ff4b-bbb6-c701-dbf3aa110fcd@redhat.com>
- <20200608112211.12125-1-andrzej.p@collabora.com>
- <20200608112211.12125-3-andrzej.p@collabora.com>
- <CGME20201207133237eucas1p26f8484944760a14e51dc7353ed33cd28@eucas1p2.samsung.com>
- <27ce1176-6318-45aa-4e22-3dec9f3df15d@samsung.com>
-From:   Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-Message-ID: <9c784a23-eade-eacd-3e67-d344a5758b83@collabora.com>
-Date:   Mon, 7 Dec 2020 16:50:03 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
- Thunderbird/68.10.0
+        id S1726938AbgLGQkb (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 11:40:31 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:61978 "EHLO
+        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726698AbgLGQkb (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 11:40:31 -0500
+Received: from 89-64-79-106.dynamic.chello.pl (89.64.79.106) (HELO kreacher.localnet)
+ by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.530)
+ id aa4a46705c8d1b84; Mon, 7 Dec 2020 17:39:48 +0100
+From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To:     Linux PM <linux-pm@vger.kernel.org>
+Cc:     LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Doug Smythies <dsmythies@telus.net>,
+        Giovanni Gherdovich <ggherdovich@suse.com>
+Subject: [PATCH v1 4/4] cpufreq: intel_pstate: Implement the ->adjust_perf() callback
+Date:   Mon, 07 Dec 2020 17:38:58 +0100
+Message-ID: <3342398.tGQZsKHvNY@kreacher>
+In-Reply-To: <20360841.iInq7taT2Z@kreacher>
+References: <20360841.iInq7taT2Z@kreacher>
 MIME-Version: 1.0
-In-Reply-To: <27ce1176-6318-45aa-4e22-3dec9f3df15d@samsung.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Marek,
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-W dniu 07.12.2020 o 14:32, Marek Szyprowski pisze:
-> Hi Andrzej,
-> 
-> On 08.06.2020 13:22, Andrzej Pietrasiewicz wrote:
->> Use the newly added helper in relevant input drivers.
->>
->> Signed-off-by: Andrzej Pietrasiewicz <andrzej.p@collabora.com>
-> 
-> This patch landed recently in linux-next as commit d69f0a43c677 ("Input:
-> use input_device_enabled()"). Sadly it causes following warning during
-> system suspend/resume cycle on ARM 32bit Samsung Exynos5250-based Snow
-> Chromebook with kernel compiled from exynos_defconfig:
-> 
-> ------------[ cut here ]------------
-> WARNING: CPU: 0 PID: 1777 at drivers/input/input.c:2230
-> input_device_enabled+0x68/0x6c
-> Modules linked in: cmac bnep mwifiex_sdio mwifiex sha256_generic
-> libsha256 sha256_arm cfg80211 btmrvl_sdio btmrvl bluetooth s5p_mfc
-> exynos_gsc v4l2_mem2mem videob
-> CPU: 0 PID: 1777 Comm: rtcwake Not tainted
-> 5.10.0-rc6-next-20201207-00001-g49a0dc04c46d-dirty #9902
-> Hardware name: Samsung Exynos (Flattened Device Tree)
-> [<c0111718>] (unwind_backtrace) from [<c010d050>] (show_stack+0x10/0x14)
-> [<c010d050>] (show_stack) from [<c0b32810>] (dump_stack+0xb4/0xd4)
-> [<c0b32810>] (dump_stack) from [<c0126e24>] (__warn+0xd8/0x11c)
-> [<c0126e24>] (__warn) from [<c0126f18>] (warn_slowpath_fmt+0xb0/0xb8)
-> [<c0126f18>] (warn_slowpath_fmt) from [<c07fa2fc>]
-> (input_device_enabled+0x68/0x6c)
-> [<c07fa2fc>] (input_device_enabled) from [<c080a0f8>]
+Make intel_pstate expose the ->adjust_perf() callback when it
+operates in the passive mode with HWP enabled which causes the
+schedutil governor to use that callback instead of ->fast_switch().
 
-Apparently you are hitting this line of code in drivers/input/input.c:
+The minimum and target performance-level values passed by the
+governor to ->adjust_perf() are converted to HWP.REQ.MIN and
+HWP.REQ.DESIRED, respectively, which allows the processor to
+adjust its configuration to maximize energy-efficiency while
+providing sufficient capacity.
 
-lockdep_assert_held(&dev->mutex);
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
 
-Inspecting input device's "users" member should happen under dev's lock.
+Changes with respect to the RFC:
+ - Drop the code related to the dropped "busy" argument of
+   ->adjust_perf().
+ - Update the changelog accordingly.
 
-Regards,
+---
+ drivers/cpufreq/intel_pstate.c |   70 +++++++++++++++++++++++++++++++++--------
+ 1 file changed, 58 insertions(+), 12 deletions(-)
 
-Andrzej
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
+===================================================================
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2526,20 +2526,19 @@ static void intel_cpufreq_trace(struct c
+ 		fp_toint(cpu->iowait_boost * 100));
+ }
+ 
+-static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
+-				     bool strict, bool fast_switch)
++static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 min, u32 max,
++				     u32 desired, bool fast_switch)
+ {
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
+ 
+ 	value &= ~HWP_MIN_PERF(~0L);
+-	value |= HWP_MIN_PERF(target_pstate);
++	value |= HWP_MIN_PERF(min);
+ 
+-	/*
+-	 * The entire MSR needs to be updated in order to update the HWP min
+-	 * field in it, so opportunistically update the max too if needed.
+-	 */
+ 	value &= ~HWP_MAX_PERF(~0L);
+-	value |= HWP_MAX_PERF(strict ? target_pstate : cpu->max_perf_ratio);
++	value |= HWP_MAX_PERF(max);
++
++	value &= ~HWP_DESIRED_PERF(~0L);
++	value |= HWP_DESIRED_PERF(desired);
+ 
+ 	if (value == prev)
+ 		return;
+@@ -2569,11 +2568,15 @@ static int intel_cpufreq_update_pstate(s
+ 	int old_pstate = cpu->pstate.current_pstate;
+ 
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+-	if (hwp_active)
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate,
+-					 policy->strict_target, fast_switch);
+-	else if (target_pstate != old_pstate)
++	if (hwp_active) {
++		int max_pstate = policy->strict_target ?
++					target_pstate : cpu->max_perf_ratio;
++
++		intel_cpufreq_adjust_hwp(cpu, target_pstate, max_pstate, 0,
++					 fast_switch);
++	} else if (target_pstate != old_pstate) {
+ 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
++	}
+ 
+ 	cpu->pstate.current_pstate = target_pstate;
+ 
+@@ -2634,6 +2637,47 @@ static unsigned int intel_cpufreq_fast_s
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
++static void intel_cpufreq_adjust_perf(unsigned int cpunum,
++				      unsigned long min_perf,
++				      unsigned long target_perf,
++				      unsigned long capacity)
++{
++	struct cpudata *cpu = all_cpu_data[cpunum];
++	int old_pstate = cpu->pstate.current_pstate;
++	int cap_pstate, min_pstate, max_pstate, target_pstate;
++
++	update_turbo_state();
++	cap_pstate = global.turbo_disabled ? cpu->pstate.max_pstate :
++					     cpu->pstate.turbo_pstate;
++
++	/* Optimization: Avoid unnecessary divisions. */
++
++	target_pstate = cap_pstate;
++	if (target_perf < capacity)
++		target_pstate = DIV_ROUND_UP(cap_pstate * target_perf, capacity);
++
++	min_pstate = cap_pstate;
++	if (min_perf < capacity)
++		min_pstate = DIV_ROUND_UP(cap_pstate * min_perf, capacity);
++
++	if (min_pstate < cpu->pstate.min_pstate)
++		min_pstate = cpu->pstate.min_pstate;
++
++	if (min_pstate < cpu->min_perf_ratio)
++		min_pstate = cpu->min_perf_ratio;
++
++	max_pstate = min(cap_pstate, cpu->max_perf_ratio);
++	if (max_pstate < min_pstate)
++		max_pstate = min_pstate;
++
++	target_pstate = clamp_t(int, target_pstate, min_pstate, max_pstate);
++
++	intel_cpufreq_adjust_hwp(cpu, min_pstate, max_pstate, target_pstate, true);
++
++	cpu->pstate.current_pstate = target_pstate;
++	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
++}
++
+ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	int max_state, turbo_max, min_freq, max_freq, ret;
+@@ -3032,6 +3076,8 @@ static int __init intel_pstate_init(void
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.flags |= CPUFREQ_NEED_UPDATE_LIMITS;
++			intel_cpufreq.fast_switch = NULL;
++			intel_cpufreq.adjust_perf = intel_cpufreq_adjust_perf;
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
+
+
+
