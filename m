@@ -2,118 +2,141 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-15.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4D91EC2BB40
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:12:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2E171C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:30:14 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D68F2395A
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:12:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 005302399C
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:30:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726483AbgLGWMC (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 17:12:02 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56074 "EHLO
+        id S1727646AbgLGW36 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 17:29:58 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58870 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725774AbgLGWMC (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 17:12:02 -0500
-Received: from mail-lf1-x143.google.com (mail-lf1-x143.google.com [IPv6:2a00:1450:4864:20::143])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E1C5EC061749;
-        Mon,  7 Dec 2020 14:11:21 -0800 (PST)
-Received: by mail-lf1-x143.google.com with SMTP id h19so476115lfc.12;
-        Mon, 07 Dec 2020 14:11:21 -0800 (PST)
+        with ESMTP id S1726346AbgLGW36 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 17:29:58 -0500
+Received: from mail-lf1-x142.google.com (mail-lf1-x142.google.com [IPv6:2a00:1450:4864:20::142])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 915E1C061793
+        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 14:29:17 -0800 (PST)
+Received: by mail-lf1-x142.google.com with SMTP id a9so20381500lfh.2
+        for <linux-pm@vger.kernel.org>; Mon, 07 Dec 2020 14:29:17 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=gmail.com; s=20161025;
-        h=subject:to:cc:references:from:message-id:date:user-agent
-         :mime-version:in-reply-to:content-language:content-transfer-encoding;
-        bh=6EwZVkyZDi8giolSpIEZVZKekJNvv34CCb0A7z+ogOo=;
-        b=HHRSWZQViQ36MCqkFBdhwO5WZfuBerDebz8XYis8B/LNgFKFn2zXlsGa3gTscca12P
-         Sk1cLU5iTaC3Ot6LInMNt9xDaBv0NdtLyoCcx5WvXlItb2zXrDUN/drRtvOI78V3IhaU
-         V9HIVSRGLtcur4C3gWyIzH0d6ho6T7qTUnNMHiU96Oths/MkxyGMOM4IKPxE76zrSmQd
-         rXz0O7YLQI5Lwl/Q6/bym18GTrERFgzA+iqUUNeMNi+O9aVtnEmpEe5P40jWpdAuFtaM
-         vAZQvCGUGb3elZtjEfqRiGBDdAygx3UF+nQm58CgWxh0gW4Gqje2TM/DZXjxquKQom4m
-         3FMQ==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=1Z7vXIFm1nN8q1nU0Yw8i5nugjLivvO7Dp4dIDNpOHA=;
+        b=g/HD6zErfhsiIhiKVQYp++lcjqSYaA/bCArI/edpHG+Q+ocCjgIuue31lAm7xdKjKW
+         bRg8N/lWrcCFRdh9GPy2YuaVf5oisA4VP0IL3g2KMCn26MrfMLEJwB1NNXk4vOT2Oa0w
+         iSfYJSlLKveSUs0JB5ufB9N2Q2646YqdJfAjFNkmbCJJKmSzjRc28gI/14Zq6H4C30hg
+         hst1DWx//F11Kabb6Ui42ShkLmQ8wwrwyhceRph9i8LO44I5iaMc2xAMzBh91lUISqc1
+         m0Qxwizk511GTk5FbLh1MEpd7aH2dBsOGefyXpQcn1d6J37xippIUehQAN1ouVzutQmI
+         5DIQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
          :content-transfer-encoding;
-        bh=6EwZVkyZDi8giolSpIEZVZKekJNvv34CCb0A7z+ogOo=;
-        b=Km+LIqcA7GqUFgr5gSRzcmiKMtHX8BN5GosJ0GHA9LcCtsWWkYGQPMVdYpUQG/D8YJ
-         u1cKd3/exp7v08Q/BBvZi5VOL7out6V1gVMaeTSMMvPKxDQLmWcThRRIZyQm3as7OjOJ
-         WtyDGiyQHdv/lMc82Wdi/W57WT4R4mWhkQTVILsrlfJwbrGxmgjkhrmhxQ77JjZdtcAF
-         0fzNU99c59rE/urIwNkEteMZtGWN76rZIASOneQPzBQksAdx3cYxZeCIRlts+Yn5AnNK
-         4pLM52VcM8vRbX1I+LqCHN2RLdn3xgNCLVC0XFEbus+vDRYuW+r+NpRKF8wboNqhXP1/
-         NKJA==
-X-Gm-Message-State: AOAM530zlZLqnyifCpK+1PN6XjS85CXT+SHCRltWml7Se7vud51gV2eE
-        VAZt6RfkfAwwHk3gh2lU3K2ghOtAu/U=
-X-Google-Smtp-Source: ABdhPJw+9jw+AR2uLqB2wed29KybJWtA5Z8pjqyAD8LWAYc2tJiLGiT58naimP05pyR1vLGlW03TAw==
-X-Received: by 2002:a19:6d05:: with SMTP id i5mr8577181lfc.524.1607379080300;
-        Mon, 07 Dec 2020 14:11:20 -0800 (PST)
-Received: from [192.168.2.145] (109-252-192-53.dynamic.spd-mgts.ru. [109.252.192.53])
-        by smtp.googlemail.com with ESMTPSA id y23sm11226ljc.119.2020.12.07.14.11.18
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 07 Dec 2020 14:11:19 -0800 (PST)
-Subject: Re: [PATCH v11 00/10] Introduce memory interconnect for NVIDIA Tegra
- SoCs
-To:     Krzysztof Kozlowski <krzk@kernel.org>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>
-Cc:     linux-tegra@vger.kernel.org, devicetree@vger.kernel.org,
-        dri-devel@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org
-References: <20201203192439.16177-1-digetx@gmail.com>
- <160717730565.9414.18193998919736710677.b4-ty@kernel.org>
-From:   Dmitry Osipenko <digetx@gmail.com>
-Message-ID: <2128b898-ee5f-fd71-77af-4a3d957088a5@gmail.com>
-Date:   Tue, 8 Dec 2020 01:11:18 +0300
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.2
+        bh=1Z7vXIFm1nN8q1nU0Yw8i5nugjLivvO7Dp4dIDNpOHA=;
+        b=sSWOZxKFgn0b0D1Xr1Cr23+Cls6otYX/04vSt3zdoBXzcRYZM7K4UAfMcZH7kUIYIY
+         FV5/Ux9NtFXye1G8OX01AFzh7hCBbO2Te8XtpgeObHTe1ilZr+4/v2m+9zLdorVCEUhM
+         7bW7cjotrl4ZC4YyXKQ4/q1gi+4fTWJlnLxaCoIgOGvvz+se1zqW2dZiLgQGcj0KLOQQ
+         YsW4/q3mPM0ubohl6HNhdfax7aeeaREHJzGcjbiLQDoHJPF4nJDXMqrzptIlV1zk6itI
+         YvGSD99dLWIqZz2r2NFnbAM/Mrxjs7spHbG5x6at+nlfDQdQeGYnRxJDAg4zh1vQA4Bx
+         AQvQ==
+X-Gm-Message-State: AOAM531kDJPANZvPimQjamx+H4W/hTyeKzndujZIJIwzKxSF8tIk7mkM
+        aG/SVsp4WH+9WbOyxT+wOQ==
+X-Google-Smtp-Source: ABdhPJxMYfnISVrV9prkQ+yMPED5UD9XnjBMdMOrVzsaxn/j0xMmInjJsHTk1VQOZB0/xvoVZeLEUA==
+X-Received: by 2002:a19:ec09:: with SMTP id b9mr9607293lfa.178.1607380156120;
+        Mon, 07 Dec 2020 14:29:16 -0800 (PST)
+Received: from localhost.localdomain ([212.180.222.158])
+        by smtp.gmail.com with ESMTPSA id p19sm3012316lfh.82.2020.12.07.14.29.15
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Dec 2020 14:29:15 -0800 (PST)
+From:   Marek Czerski <ma.czerski@gmail.com>
+To:     sre@kernel.org
+Cc:     linux-pm@vger.kernel.org, Marek Czerski <ma.czerski@gmail.com>
+Subject: [PATCH] power: reset: ltc2952: make trigger delay configurable
+Date:   Mon,  7 Dec 2020 23:28:29 +0100
+Message-Id: <20201207222829.13676-1-ma.czerski@gmail.com>
+X-Mailer: git-send-email 2.25.1
 MIME-Version: 1.0
-In-Reply-To: <160717730565.9414.18193998919736710677.b4-ty@kernel.org>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-05.12.2020 17:09, Krzysztof Kozlowski пишет:
-> On Thu, 3 Dec 2020 22:24:29 +0300, Dmitry Osipenko wrote:
->> This series brings initial support for memory interconnect to Tegra20,
->> Tegra30 and Tegra124 SoCs.
->>
->> For the starter only display controllers and devfreq devices are getting
->> interconnect API support, others could be supported later on. The display
->> controllers have the biggest demand for interconnect API right now because
->> dynamic memory frequency scaling can't be done safely without taking into
->> account bandwidth requirement from the displays. In particular this series
->> fixes distorted display output on T30 Ouya and T124 TK1 devices.
->>
->> [...]
-> 
-> Applied, thanks!
-> 
-> [01/10] dt-bindings: memory: tegra20: emc: Document opp-supported-hw property
-> [02/10] memory: tegra20: Support hardware versioning and clean up OPP table initialization
-> [03/10] memory: tegra30: Support interconnect framework
->         commit: 01a51facb74fb337ff9fe734caa85dd6e246ef48
-> 
-> Best regards,
-> 
+Make trigger delay configurable through device tree with
+trigger-delay-ms property.
 
-Awesome, thanks! Good to have the warning splat silenced.
+Trigger delay is the time to wait before starting shutdown
+sequence after trigger line assertion.
+Trigger delay must take into account the OFFT time configured
+with the capacitor connected to OFFT pin of the LTC2952 chip.
+Basically, the higher the capacitance connected to OFFT pin,
+the larger trigger delay must be.
+
+Signed-off-by: Marek Czerski <ma.czerski@gmail.com>
+---
+ .../devicetree/bindings/power/reset/ltc2952-poweroff.txt  | 4 ++++
+ drivers/power/reset/ltc2952-poweroff.c                    | 8 ++++++++
+ 2 files changed, 12 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
+index cd2d7f58a..881f15a78 100644
+--- a/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
++++ b/Documentation/devicetree/bindings/power/reset/ltc2952-poweroff.txt
+@@ -17,6 +17,9 @@ Optional properties:
+ 			chip's trigger line. If this property is not set, the
+ 			trigger function is ignored and the chip is kept alive
+ 			until an explicit kill signal is received
++- trigger-delay-ms	The number of milliseconds to wait after trigger line
++			assertion before executing shut down procedure.
++			The default is 2500ms.
+ 
+ Example:
+ 
+@@ -24,6 +27,7 @@ ltc2952 {
+ 	compatible = "lltc,ltc2952";
+ 
+ 	trigger-gpios = <&gpio0 1 GPIO_ACTIVE_LOW>;
++        trigger-delay-ms = <2000>;
+ 	watchdog-gpios = <&gpio1 2 GPIO_ACTIVE_HIGH>;
+ 	kill-gpios = <&gpio0 2 GPIO_ACTIVE_LOW>;
+ };
+diff --git a/drivers/power/reset/ltc2952-poweroff.c b/drivers/power/reset/ltc2952-poweroff.c
+index 318927938..243811541 100644
+--- a/drivers/power/reset/ltc2952-poweroff.c
++++ b/drivers/power/reset/ltc2952-poweroff.c
+@@ -55,6 +55,7 @@
+ #include <linux/mod_devicetable.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/reboot.h>
++#include <linux/of.h>
+ 
+ struct ltc2952_poweroff {
+ 	struct hrtimer timer_trigger;
+@@ -172,10 +173,17 @@ static void ltc2952_poweroff_default(struct ltc2952_poweroff *data)
+ static int ltc2952_poweroff_init(struct platform_device *pdev)
+ {
+ 	int ret;
++	u32 trigger_delay_ms;
+ 	struct ltc2952_poweroff *data = platform_get_drvdata(pdev);
+ 
+ 	ltc2952_poweroff_default(data);
+ 
++	if (!of_property_read_u32(pdev->dev.of_node, "trigger-delay-ms",
++				  &trigger_delay_ms)) {
++		data->trigger_delay = ktime_set(trigger_delay_ms / MSEC_PER_SEC,
++			(trigger_delay_ms % MSEC_PER_SEC) * NSEC_PER_MSEC);
++	}
++
+ 	data->gpio_watchdog = devm_gpiod_get(&pdev->dev, "watchdog",
+ 					     GPIOD_OUT_LOW);
+ 	if (IS_ERR(data->gpio_watchdog)) {
+-- 
+2.25.1
+
