@@ -7,60 +7,59 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4158C1B087
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 21209C1B0D9
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7418B23441
+	by mail.kernel.org (Postfix) with ESMTP id E850B2343F
 	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726177AbgLGNr5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1725972AbgLGNr5 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 7 Dec 2020 08:47:57 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33570 "EHLO
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33574 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726080AbgLGNr4 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:47:56 -0500
+        with ESMTP id S1726174AbgLGNr5 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:47:57 -0500
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 679DFC0613D3
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 6AC4CC0613D4
         for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 05:47:16 -0800 (PST)
-Date:   Mon, 07 Dec 2020 13:47:14 -0000
+Date:   Mon, 07 Dec 2020 13:47:13 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1607348834;
+        s=2020; t=1607348833;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=XjMHStLz3aHxn+cz/AVxTTnAgCR2nVUA8LcQ7fahf80=;
-        b=sjinzMlKTmhrvHP4NSqSpM+WK7aHsk+VtALaVWnqYWZycYiMAPP+WRt7lxdAsqoN+9WNT0
-        kF6OoFF21ZrWl2eqFPuDG6Ee8Jvsrpn0LFewHh7GW9x2YvQq1w6Vl0Qxj9jeKT8zmXXwO/
-        sJd+RIScN8UU+drtBnYexhUSgWEEyZEcivBHUJj4LQJl2y0kzBs9kmVUkLhyB6OVkARqq3
-        spgkwSFnz7g/576GyG4xfTXZPRmXfzprSkjB2Gb1egXQrAnzj2gOJ3meF0K29PGyS/9+5x
-        sf/SSIaLNZowfqSWIhxhRHX9YEFEQ9HeoPGxy1jlbjWdnjOXUVo2q/ahnp5SGg==
+        bh=lVdu/jEThY9VCnVsDu2R9NQwAXH8HaZZSmrxlQTPAHY=;
+        b=iZLx35MRWCz86rlL0/ERbHFBCU6f/SzLxx3C5iJletOyneGkHpuP/2R+0VcTdsA6YeNSW7
+        UW6hvz04cxxN6Ga1Foe4qEFr4Q6AaatOeixyzJF337sarpgjVseEHjhphd4DBbI+7zmDun
+        OYB5t3SesPmyAwBdpFqYwPRtTCve4zatxGucPIp9LjUxbYhWDVIEJTaOQCF+zo4O6vaSwq
+        1ivm9unMT8hJfWiieag2T6b02NRyTQrZR5C6ZiUWJmhU8TKDvrlHb54rdQqDmNjqdbSwRt
+        3jftJQas+IlVRmnkqeHAn88NjCQOOegHrZDnulxBoOhZlVAalhpQ+xC4CyDf9Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1607348834;
+        s=2020e; t=1607348833;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=XjMHStLz3aHxn+cz/AVxTTnAgCR2nVUA8LcQ7fahf80=;
-        b=CVbsnRZAoddTujP4HLOUO8Ai9W9+jB8HFA/BYxDFHBTcYbStvzwzHY4KhruZA7eETA3mfj
-        XWCR+3XCqIJRzdDQ==
-From:   "thermal-bot for Randy Dunlap" <tip-bot2@linutronix.de>
+        bh=lVdu/jEThY9VCnVsDu2R9NQwAXH8HaZZSmrxlQTPAHY=;
+        b=WgP9xL0muDIvzDxCHTcUeSTztQWR5/UIp6M5iiqIyGGETdbyf+D9owyFLzy5IsMD5t4gXh
+        ywxoxgG5HRON6zBA==
+From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: intel_pch_thermal: fix build for
- ACPI not enabled
-Cc:     Randy Dunlap <rdunlap@infradead.org>,
-        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
+Subject: [thermal: thermal/next] thermal: power allocator: change the 'k_*'
+ always in estimate_pid_constants()
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org
-In-Reply-To: <20201117023807.8266-1-rdunlap@infradead.org>
-References: <20201117023807.8266-1-rdunlap@infradead.org>
+        rui.zhang@intel.com, amitk@kernel.org
+In-Reply-To: <20201124161025.27694-4-lukasz.luba@arm.com>
+References: <20201124161025.27694-4-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Message-ID: <160734883428.3364.5035247709632805604.tip-bot2@tip-bot2>
+Message-ID: <160734883337.3364.2328247855489585620.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -71,50 +70,92 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     be133722df5168d2f304cc59b80d3d21d6ea9433
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//be133722df5168d2f304cc59b80d3d21d6ea9433
-Author:        Randy Dunlap <rdunlap@infradead.org>
-AuthorDate:    Mon, 16 Nov 2020 18:38:07 -08:00
+Commit-ID:     90a996544946d1d4834ec2ec8add586edd905779
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//90a996544946d1d4834ec2ec8add586edd905779
+Author:        Lukasz Luba <lukasz.luba@arm.com>
+AuthorDate:    Tue, 24 Nov 2020 16:10:25 
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Tue, 17 Nov 2020 10:05:43 +01:00
+CommitterDate: Thu, 26 Nov 2020 17:11:59 +01:00
 
-thermal: intel_pch_thermal: fix build for ACPI not enabled
+thermal: power allocator: change the 'k_*' always in estimate_pid_constants()
 
-The reference to acpi_gbl_FADT causes a build error when ACPI is not
-enabled. Fix by making that conditional on CONFIG_ACPI.
+The PID coefficients should be estimated again when there was a change to
+sustainable power value made by user. This change removes unused argument
+'force' and makes the function ready for such updates.
 
-../drivers/thermal/intel/intel_pch_thermal.c: In function 'pch_wpt_suspend':
-../drivers/thermal/intel/intel_pch_thermal.c:217:8: error: 'acpi_gbl_FADT' undeclared (first use in this function); did you mean 'acpi_get_type'?
-  if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
-        ^~~~~~~~~~~~~
-
-Fixes: ef63b043ac86 ("thermal: intel: pch: fix S0ix failure due to PCH temperature above threshold")
-Signed-off-by: Randy Dunlap <rdunlap@infradead.org>
-Cc: Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>
-Cc: Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc: Zhang Rui <rui.zhang@intel.com>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: linux-pm@vger.kernel.org
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201117023807.8266-1-rdunlap@infradead.org
+Link: https://lore.kernel.org/r/20201124161025.27694-4-lukasz.luba@arm.com
 ---
- drivers/thermal/intel/intel_pch_thermal.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/thermal/gov_power_allocator.c | 28 ++++++++------------------
+ 1 file changed, 9 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 32e1b28..d7c05c0 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -214,8 +214,12 @@ static int pch_wpt_suspend(struct pch_thermal_device *ptd)
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index d7e4b9f..7a4170a 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -117,18 +117,13 @@ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
+  * @sustainable_power:	sustainable power for the thermal zone
+  * @trip_switch_on:	trip point number for the switch on temperature
+  * @control_temp:	target temperature for the power allocator governor
+- * @force:	whether to force the update of the constants
+  *
+  * This function is used to update the estimation of the PID
+  * controller constants in struct thermal_zone_parameters.
+- *
+- * If @force is not set, the values in the thermal zone's parameters
+- * are preserved if they are not zero.  If @force is set, the values
+- * in thermal zone's parameters are overwritten.
+  */
+ static void estimate_pid_constants(struct thermal_zone_device *tz,
+ 				   u32 sustainable_power, int trip_switch_on,
+-				   int control_temp, bool force)
++				   int control_temp)
+ {
+ 	int ret;
+ 	int switch_on_temp;
+@@ -151,18 +146,14 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
+ 	if (!temperature_threshold)
+ 		return;
+ 
+-	if (!tz->tzp->k_po || force)
+-		tz->tzp->k_po = int_to_frac(sustainable_power) /
+-			temperature_threshold;
++	tz->tzp->k_po = int_to_frac(sustainable_power) /
++		temperature_threshold;
+ 
+-	if (!tz->tzp->k_pu || force)
+-		tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
+-			temperature_threshold;
++	tz->tzp->k_pu = int_to_frac(2 * sustainable_power) /
++		temperature_threshold;
+ 
+-	if (!tz->tzp->k_i || force) {
+-		k_i = tz->tzp->k_pu / 10;
+-		tz->tzp->k_i = k_i > 0 ? k_i : 1;
+-	}
++	k_i = tz->tzp->k_pu / 10;
++	tz->tzp->k_i = k_i > 0 ? k_i : 1;
+ 
+ 	/*
+ 	 * The default for k_d and integral_cutoff is 0, so we can
+@@ -195,8 +186,7 @@ static u32 get_sustainable_power(struct thermal_zone_device *tz,
+ 	/* Check if it's init value 0 or there was update via sysfs */
+ 	if (sustainable_power != params->sustainable_power) {
+ 		estimate_pid_constants(tz, sustainable_power,
+-				       params->trip_switch_on, control_temp,
+-				       true);
++				       params->trip_switch_on, control_temp);
+ 
+ 		/* Do the estimation only once and make available in sysfs */
+ 		tz->tzp->sustainable_power = sustainable_power;
+@@ -640,7 +630,7 @@ static int power_allocator_bind(struct thermal_zone_device *tz)
+ 		if (!ret)
+ 			estimate_pid_constants(tz, tz->tzp->sustainable_power,
+ 					       params->trip_switch_on,
+-					       control_temp, false);
++					       control_temp);
  	}
  
- 	/* Do not check temperature if it is not a S0ix capable platform */
-+#ifdef CONFIG_ACPI
- 	if (!(acpi_gbl_FADT.flags & ACPI_FADT_LOW_POWER_S0))
- 		return 0;
-+#else
-+	return 0;
-+#endif
- 
- 	/* Do not check temperature if it is not s2idle */
- 	if (pm_suspend_via_firmware())
+ 	reset_pid_controller(params);
