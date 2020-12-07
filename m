@@ -2,311 +2,112 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 918B0C1B0E3
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:19:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E9DC433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:21:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6BC6922D06
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:19:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 338DF22D06
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:21:26 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728582AbgLGBTG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Dec 2020 20:19:06 -0500
-Received: from mailout4.samsung.com ([203.254.224.34]:18917 "EHLO
-        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728564AbgLGBTF (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Dec 2020 20:19:05 -0500
-Received: from epcas1p4.samsung.com (unknown [182.195.41.48])
-        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20201207011821epoutp04b5c527a1fb9670f244bd65900ee9357e~OSmH8emwF2455524555epoutp04b
-        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 01:18:21 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20201207011821epoutp04b5c527a1fb9670f244bd65900ee9357e~OSmH8emwF2455524555epoutp04b
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1607303901;
-        bh=7TfmjyBFgY4gjttvRWrYSs8USIfhnAid8/rgKdYtyDg=;
-        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
-        b=YE3Ivck3wshTTTeYXVSiXoomipJDZm/R/hGge/VqzcA8c7//bVv3jwi7fB8+qcedM
-         V4cNcy+fbNhLG5fpMNpjHEazW/G1YMgmf4tkzWNdhLIb1KjgU2lw0RE9O8VResCSII
-         QgXK4a8zYAVBT5v0GmQuXIM8bMXF9UEbvp/HruJo=
-Received: from epsnrtp4.localdomain (unknown [182.195.42.165]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20201207011821epcas1p1dccd83976be412bbf79f5c64ac2a0eb6~OSmHU-Yf-3249132491epcas1p1W;
-        Mon,  7 Dec 2020 01:18:21 +0000 (GMT)
-Received: from epsmges1p5.samsung.com (unknown [182.195.40.157]) by
-        epsnrtp4.localdomain (Postfix) with ESMTP id 4Cq56L04wdzMqYkl; Mon,  7 Dec
-        2020 01:18:18 +0000 (GMT)
-Received: from epcas1p3.samsung.com ( [182.195.41.47]) by
-        epsmges1p5.samsung.com (Symantec Messaging Gateway) with SMTP id
-        F6.DE.09577.9D28DCF5; Mon,  7 Dec 2020 10:18:17 +0900 (KST)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20201207011817epcas1p294a176e9b21c1536b54c26b38ca8ba30~OSmD-HOBz2471324713epcas1p2F;
-        Mon,  7 Dec 2020 01:18:17 +0000 (GMT)
-Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
-        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20201207011817epsmtrp28c08e29263a94ebbe6cec7968e5ee1a0~OSmD_DjLb0055400554epsmtrp2f;
-        Mon,  7 Dec 2020 01:18:17 +0000 (GMT)
-X-AuditID: b6c32a39-bfdff70000002569-5a-5fcd82d9a43c
-Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
-        AE.02.13470.9D28DCF5; Mon,  7 Dec 2020 10:18:17 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20201207011817epsmtip27d4c4edb43284ecee29be7d2bdafb10b~OSmDmdWiE0365303653epsmtip2Q;
-        Mon,  7 Dec 2020 01:18:17 +0000 (GMT)
-Subject: Re: [PATCH v11 10/10] PM / devfreq: tegra30: Separate
- configurations per-SoC generation
-To:     Dmitry Osipenko <digetx@gmail.com>,
-        Thierry Reding <thierry.reding@gmail.com>,
-        Jonathan Hunter <jonathanh@nvidia.com>,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Peter De Schrijver <pdeschrijver@nvidia.com>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>,
-        Mikko Perttunen <cyndis@kapsi.fi>,
-        Viresh Kumar <vireshk@kernel.org>,
-        Peter Geis <pgwipeout@gmail.com>,
-        Nicolas Chauvet <kwizart@gmail.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
-        devicetree@vger.kernel.org
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Organization: Samsung Electronics
-Message-ID: <1c4f7c6f-7fff-60c1-a7b1-a099a88df1c6@samsung.com>
-Date:   Mon, 7 Dec 2020 10:33:06 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
+        id S1728444AbgLGBVK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Dec 2020 20:21:10 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59748 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728641AbgLGBVK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Dec 2020 20:21:10 -0500
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E58A2C0613D3
+        for <linux-pm@vger.kernel.org>; Sun,  6 Dec 2020 17:20:23 -0800 (PST)
+Received: by mail-ed1-x541.google.com with SMTP id cm17so11982645edb.4
+        for <linux-pm@vger.kernel.org>; Sun, 06 Dec 2020 17:20:23 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc:content-transfer-encoding;
+        bh=bSpze0Ktx1a78HhY8N3JUw4+cmElw0CnjsvykxTs3x0=;
+        b=iGKrqSZX3YAWdjC/ijOceS289SqjnC7RjMIpww70orwiNX3bdmHHiOwsx6de1viBoa
+         NyKzhTyb8lHRisvObhjgqnGJqazeTpH52EWtk262VV5dk1vugJXeelcYLUlXJ1l3fxAr
+         88FTIOV334hX/Z/9Xq9GzdhQXFvsCfM8C1o8tl/acgcdj0TM4IsRFe7Ay79uTgbY5SxS
+         4utTXfsF2rczDIooGdCWppIudduMvgEir/1+3XRCaNAwJYs7aZCY44TG/EBaP1qmJzd+
+         kZa3oFvQX8vhhxPt7hKBSh4xgi/jXdnMFmLxjqkfkS+5+GfBc2tzw0o5eC8y+K/vDKN6
+         uM4A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc:content-transfer-encoding;
+        bh=bSpze0Ktx1a78HhY8N3JUw4+cmElw0CnjsvykxTs3x0=;
+        b=cilGuumKNyDWIKyYMmR06bufW/oA8sME+66bn+UOTStCRn3+w4N/ARnv/yObuwgbHl
+         0Ih5q1HzMtQ70aGHxAWFrO6IOHUy5k5UVTU3XvZMTIe/DMjjwomrZEOK65YsBDk4nPYf
+         oQKMynIyU097Fy8alAi1QZJkTongjBf3lQdGHI5WOPwTHnuU15yPlu7/s50NM2utlcG5
+         qXivOy9PtnkrQBbwN3aJAxAYlyn6dqKNi/OmkCuXUiL2ruKd4xuKVs/h98Fn6zzg6ZoX
+         lvicwXAx1NbeJ4Ze62U2zpNi2KOFJ1gsx+dEM8xW65YFb8Sfp2sP+i417ktPl1jMCgkY
+         V2MQ==
+X-Gm-Message-State: AOAM532Q6g0/f8Z46dQkTdBWUnC3XWMqzzQ1hGt+C1szvOwK5D4OYKAz
+        zZ5ZwtVGmaWo6WlIx+iONxeKPwpktry1RsaHjWyy6w==
+X-Google-Smtp-Source: ABdhPJzobOYaAtrz0mVYekXANYxF4WBTuwyn5F+FgBpi+a+Bzggk4+NE2lxXKPn9ry9YRiXfW0QavF3RQSOdrXNudxE=
+X-Received: by 2002:aa7:c652:: with SMTP id z18mr17190457edr.60.1607304022539;
+ Sun, 06 Dec 2020 17:20:22 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20201203192439.16177-11-digetx@gmail.com>
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA01Te0xTVxz29F5uW0L1rgIea6J4mYggjwLVgxNiAsNGjSMjOrOHtZS7llHa
-        2gtmk2WhIhvlYeaDoaXIZGNUBlM6HsLkEew04EorDkQHDqYypqNokcUHmlGuy/jv+33n953v
-        950HDxP+RYh46ZosWq+RqynCG2++tC4i7OYhuyzSaYtCLvc9L1Rp6/NC3z+6A9CvM1MEKmu3
-        EuiwqQpHDsd5Lmq6V8dB9kN/c9H1NjOBpktsABkfmwh0rfdN9JvBQqBj9aUA2ce3o/x2Gxe9
-        HGzA0dO20zj6cfQyscVXOjWUz5W2mka40v6+WUxqrTUS0uHBi4T096IrHGlJnouQHmmsBdJp
-        68pk/rsZm1W0PI3WB9AahTYtXaOMo7anyBJkkg2R4jBxLNpIBWjkmXQclbgjOSwpXT2XjAo4
-        IFdnz1HJcoahIuI367XZWXSASstkxVG0Lk2ti9WFM/JMJlujDFdoMzeJIyOjJHON+zJUR/Ie
-        Y7rb4R/biobwXFC/phDweZCMgf2OCaIQePOE5AUAK17UvCrcAD5zm7zY4h8Aneeu4YWANy/J
-        Ox3N8u0A3sirB2wxBaDbfAx4mpaSqfC4VeHhfcmbOKyxvCQ8fhh5EsDhi4EeTJAhsHNiaJ5f
-        Qq6GA0/uzGsFZDx87trroXHydThwtJfjwX7kbtjTfBh4sIB8Dfacujs/D5/cCE0PROzuy+Ct
-        u5UcFq+CLZNmzDMCJCv5sL//W8BGToS33J0cFi+F9680clksgtOudoLFOfBsj41gxQUANnY6
-        vdiFaNhZfZzjMcbIdfBcWwRLr4atzysAa7wYumaKvdizEsCCz4VsSyC8PjryynY5/OYLI/El
-        oEwL0pgWRDAtiGD63+xrgNcCf1rHZCppRqyTLLxrK5h/8yGxF0DZ5MPwbsDhgW4AeRjlKwgS
-        2WVCQZr8k4O0XivTZ6tpphtI5s73KCbyU2jnPo0mSyaWREVHR6MY8QaJWEwtE8yGFsiEpFKe
-        RWfQtI7W/6fj8PiiXM75IPL+rM94XdWnBW9/tyhouLxa+WFwYfGl0VRnfJXD0NzyojqpXjk+
-        ae5R0uO5w++5GJVPiGUkIqEiZttg0Ngv/pI3rhoNm/6sCmzZlVAS9kC/4v13muxtVxuGSqmu
-        gt5t+Qbujb71avuBjsyuCdBiKefldlWfka1NLU16FpeSetmmtZQczJF81XvSMbb/9hKfGmGZ
-        UYRjZ3dt7Qhds9hZ1JyD7S3a7f5gEdEUbLRG9s5ErRyzrJ/dF/FZX6JhT+UPK07Fmbf+0XNi
-        v87vqXX5o2I1rO/Q+O/8KeVheY1OUVdMD7y1dtWJYmNo18zPPsozii390r6Pnhip4D0NVdVm
-        71YKZ1RycQimZ+T/AhF2dn98BAAA
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrCIsWRmVeSWpSXmKPExsWy7bCSvO7NprPxBlfWClm8+/SU1WL+kXOs
-        Fqs/Pma0uPL1PZvF9L2b2CxaZi1isTh/fgO7xdana5gszja9Ybe4vGsOm8Xn3iOMFp1fZrFZ
-        XDzlanG7cQWbxaS1Uxktzj7ztmjde4Td4t+1jSwWP3fNY7HY/OAYm4OIx/sbreweO2fdZfe4
-        dO4Ps8emVZ1sHneu7WHzuN99nMmjt/kdm0ffllWMHp83yQVwRnHZpKTmZJalFunbJXBl9DV/
-        YS64p1dxpPsGSwPjWtUuRg4OCQETieZ5xl2MXBxCArsZJR58u8HaxcgJFJeUmHbxKDNEjbDE
-        4cPFIGEhgbeMEs3HPEFsYYEkiX2/l7CA9IoI3GWRmPTjFhuIwywwg1Hiz4aN7BBTtwF1TG5n
-        B2lhE9CS2P/iBhuIzS+gKHH1x2NGkA28AnYSv9/FgYRZBFQkrk48xQRiiwqESexc8hjM5hUQ
-        lDg58wkLSDmngLnErNdSIGFmAXWJP/MuMUPY4hK3nsxngrDlJba/ncM8gVF4FpLuWUhaZiFp
-        mYWkZQEjyypGydSC4tz03GLDAsO81HK94sTc4tK8dL3k/NxNjOCI19Lcwbh91Qe9Q4xMHIyH
-        GCU4mJVEeNWkzsYL8aYkVlalFuXHF5XmpBYfYpTmYFES573QdTJeSCA9sSQ1OzW1ILUIJsvE
-        wSnVwNQY/m+hj5TPjYQT9Yq6LL0uZza9unr6huIyy0M+d/bO5NwSnZ92I1t/yzJnxtbTR1w9
-        e74sYyuI/h+vYmzO7+Ya8SfrtVbUeuuUzX/FKqcpzO5/lr+rrvO/e4pCmkLrksOqBYdlPeVd
-        cq/M1nnJPO97TmTPpN1hZ5IELG/ecfmeHjdv+rRZ+8UZGRbzPRH4H1l8d80NQeOjQXkz5zz8
-        yW2X6Bmo8PrzoWf6HVnlDH/W8ZTFXZJMOhbi9YdPJr5ILeDv9Rqp4OhH92cUb7ead/fXa64C
-        iwsPzmw0T7oknV+4J+0i/+eim4ffMFxQ/BT8lqMqJ+9V/mdB1R0ml6p23Yz/+8XuSO7Rp3vT
-        Vt/NVlBiKc5INNRiLipOBAArhXXnZwMAAA==
-X-CMS-MailID: 20201207011817epcas1p294a176e9b21c1536b54c26b38ca8ba30
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20201203192730epcas1p1005aa9bcd60748dd9ecc0374349aac8b
-References: <20201203192439.16177-1-digetx@gmail.com>
-        <CGME20201203192730epcas1p1005aa9bcd60748dd9ecc0374349aac8b@epcas1p1.samsung.com>
-        <20201203192439.16177-11-digetx@gmail.com>
+References: <20201204075345.5161-1-jun.nie@linaro.org> <20201204075345.5161-2-jun.nie@linaro.org>
+ <022b3f66-ae19-79f5-c59b-0cc703a29f15@somainline.org>
+In-Reply-To: <022b3f66-ae19-79f5-c59b-0cc703a29f15@somainline.org>
+From:   Jun Nie <jun.nie@linaro.org>
+Date:   Mon, 7 Dec 2020 09:20:11 +0800
+Message-ID: <CABymUCOOMdR6EJyc96pVsxKF_hwf96-09NkvW8ftec9Ez63tRQ@mail.gmail.com>
+Subject: Re: [PATCH v2 1/5] interconnect: qcom: Consolidate interconnect RPM support
+To:     AngeloGioacchino Del Regno 
+        <angelogioacchino.delregno@somainline.org>
+Cc:     devicetree@vger.kernel.org,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        agross@kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-msm@vger.kernel.org,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Vincent Knecht <vincent.knecht@mailoo.org>,
+        Shawn Guo <shawn.guo@linaro.org>, martin.botka@somainline.org,
+        marijn.suijten@somainline.org, konrad.dybcio@somainline.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 12/4/20 4:24 AM, Dmitry Osipenko wrote:
-> Previously we were using count-weight of the T124 for T30 in order to
-> get EMC clock rate that was reasonable for T30. In fact the count-weight
-> should be x2 times smaller on T30, but then devfreq was producing a bit
-> too low EMC clock rate for ISO memory clients, like display controller
-> for example.
-> 
-> Now both Tegra ACTMON and Tegra DRM display drivers support interconnect
-> framework and display driver tells to ICC what a minimum memory bandwidth
-> is needed, preventing FIFO underflows. Thus, now we can use a proper
-> count-weight value for Tegra30 and MC_ALL device config needs a bit more
-> aggressive boosting.
-> 
-> Add a separate ACTMON driver configuration that is specific to Tegra30.
-> 
-> Tested-by: Peter Geis <pgwipeout@gmail.com>
-> Tested-by: Nicolas Chauvet <kwizart@gmail.com>
-> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
-> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
-> ---
->  drivers/devfreq/tegra30-devfreq.c | 68 ++++++++++++++++++++++++-------
->  1 file changed, 54 insertions(+), 14 deletions(-)
-> 
-> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
-> index 145ef91ae092..117cad7968ab 100644
-> --- a/drivers/devfreq/tegra30-devfreq.c
-> +++ b/drivers/devfreq/tegra30-devfreq.c
-> @@ -57,13 +57,6 @@
->  #define ACTMON_BELOW_WMARK_WINDOW				3
->  #define ACTMON_BOOST_FREQ_STEP					16000
->  
-> -/*
-> - * Activity counter is incremented every 256 memory transactions, and each
-> - * transaction takes 4 EMC clocks for Tegra124; So the COUNT_WEIGHT is
-> - * 4 * 256 = 1024.
-> - */
-> -#define ACTMON_COUNT_WEIGHT					0x400
-> -
->  /*
->   * ACTMON_AVERAGE_WINDOW_LOG2: default value for @DEV_CTRL_K_VAL, which
->   * translates to 2 ^ (K_VAL + 1). ex: 2 ^ (6 + 1) = 128
-> @@ -111,7 +104,7 @@ enum tegra_actmon_device {
->  	MCCPU,
->  };
->  
-> -static const struct tegra_devfreq_device_config actmon_device_configs[] = {
-> +static const struct tegra_devfreq_device_config tegra124_device_configs[] = {
->  	{
->  		/* MCALL: All memory accesses (including from the CPUs) */
->  		.offset = 0x1c0,
-> @@ -133,6 +126,28 @@ static const struct tegra_devfreq_device_config actmon_device_configs[] = {
->  	},
->  };
->  
-> +static const struct tegra_devfreq_device_config tegra30_device_configs[] = {
-> +	{
-> +		/* MCALL: All memory accesses (including from the CPUs) */
-> +		.offset = 0x1c0,
-> +		.irq_mask = 1 << 26,
-> +		.boost_up_coeff = 200,
-> +		.boost_down_coeff = 50,
-> +		.boost_up_threshold = 20,
-> +		.boost_down_threshold = 10,
-> +	},
-> +	{
-> +		/* MCCPU: memory accesses from the CPUs */
-> +		.offset = 0x200,
-> +		.irq_mask = 1 << 25,
-> +		.boost_up_coeff = 800,
-> +		.boost_down_coeff = 40,
-> +		.boost_up_threshold = 27,
-> +		.boost_down_threshold = 10,
-> +		.avg_dependency_threshold = 16000, /* 16MHz in kHz units */
-> +	},
-> +};
-> +
->  /**
->   * struct tegra_devfreq_device - state specific to an ACTMON device
->   *
-> @@ -155,6 +170,12 @@ struct tegra_devfreq_device {
->  	unsigned long target_freq;
->  };
->  
-> +struct tegra_devfreq_soc_data {
-> +	const struct tegra_devfreq_device_config *configs;
-> +	/* Weight value for count measurements */
-> +	unsigned int count_weight;
-> +};
-> +
->  struct tegra_devfreq {
->  	struct devfreq		*devfreq;
->  	struct opp_table	*opp_table;
-> @@ -171,11 +192,13 @@ struct tegra_devfreq {
->  	struct delayed_work	cpufreq_update_work;
->  	struct notifier_block	cpu_rate_change_nb;
->  
-> -	struct tegra_devfreq_device devices[ARRAY_SIZE(actmon_device_configs)];
-> +	struct tegra_devfreq_device devices[2];
->  
->  	unsigned int		irq;
->  
->  	bool			started;
-> +
-> +	const struct tegra_devfreq_soc_data *soc;
->  };
->  
->  struct tegra_actmon_emc_ratio {
-> @@ -488,7 +511,7 @@ static void tegra_actmon_configure_device(struct tegra_devfreq *tegra,
->  	tegra_devfreq_update_avg_wmark(tegra, dev);
->  	tegra_devfreq_update_wmark(tegra, dev);
->  
-> -	device_writel(dev, ACTMON_COUNT_WEIGHT, ACTMON_DEV_COUNT_WEIGHT);
-> +	device_writel(dev, tegra->soc->count_weight, ACTMON_DEV_COUNT_WEIGHT);
->  	device_writel(dev, ACTMON_INTR_STATUS_CLEAR, ACTMON_DEV_INTR_STATUS);
->  
->  	val |= ACTMON_DEV_CTRL_ENB_PERIODIC;
-> @@ -779,6 +802,8 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  	if (!tegra)
->  		return -ENOMEM;
->  
-> +	tegra->soc = of_device_get_match_data(&pdev->dev);
-> +
->  	tegra->regs = devm_platform_ioremap_resource(pdev, 0);
->  	if (IS_ERR(tegra->regs))
->  		return PTR_ERR(tegra->regs);
-> @@ -852,9 +877,9 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
->  
->  	tegra->max_freq = rate / KHZ;
->  
-> -	for (i = 0; i < ARRAY_SIZE(actmon_device_configs); i++) {
-> +	for (i = 0; i < ARRAY_SIZE(tegra->devices); i++) {
->  		dev = tegra->devices + i;
-> -		dev->config = actmon_device_configs + i;
-> +		dev->config = tegra->soc->configs + i;
->  		dev->regs = tegra->regs + dev->config->offset;
->  	}
->  
-> @@ -916,9 +941,24 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> +static const struct tegra_devfreq_soc_data tegra124_soc = {
-> +	.configs = tegra124_device_configs,
-> +
-> +	/*
-> +	 * Activity counter is incremented every 256 memory transactions,
-> +	 * and each transaction takes 4 EMC clocks.
-> +	 */
-> +	.count_weight = 4 * 256,
-> +};
-> +
-> +static const struct tegra_devfreq_soc_data tegra30_soc = {
-> +	.configs = tegra30_device_configs,
-> +	.count_weight = 2 * 256,
-> +};
-> +
->  static const struct of_device_id tegra_devfreq_of_match[] = {
-> -	{ .compatible = "nvidia,tegra30-actmon" },
-> -	{ .compatible = "nvidia,tegra124-actmon" },
-> +	{ .compatible = "nvidia,tegra30-actmon",  .data = &tegra30_soc, },
-> +	{ .compatible = "nvidia,tegra124-actmon", .data = &tegra124_soc, },
->  	{ },
->  };
->  
-> 
+AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
+=E4=BA=8E2020=E5=B9=B412=E6=9C=885=E6=97=A5=E5=91=A8=E5=85=AD =E4=B8=8A=E5=
+=8D=882:04=E5=86=99=E9=81=93=EF=BC=9A
+>
+> Il 04/12/20 08:53, Jun Nie ha scritto:
+> > Add RPM based interconnect driver implements the set and aggregate
+> > functionalities that translates bandwidth requests into RPM messages.
+> > These modules provide a common set of functionalities for all
+> > Qualcomm RPM based interconnect providers and should help reduce code
+> > duplication when adding new providers.
+> >
+> > Signed-off-by: Jun Nie <jun.nie@linaro.org>
+> Hello!
+> I agree, the RPM based ICC should be commonized... in any case, I think
+> that you should rebase your patch series over mine, where I am adding
+> support for SDM660 and also introducing a mechanism to set QoS, which
+> can actually be used by most platforms managing the ICC over RPM.
+>
+> Please, check it out: https://lore.kernel.org/patchwork/patch/1322131/
+>
+> Thanks,
+> Angelo
+>
 
-Applied it. Thanks.
+Angelo,
 
--- 
-Best Regards,
-Chanwoo Choi
-Samsung Electronics
+Thanks for your contribution! It looks like a great new feature. But
+they are not
+ready for other qnoc icc drivers yet. It should not be included in
+this commonization
+patch set until someone add and test the feature for all qnoc drivers.
+
+Regards,
+Jun
