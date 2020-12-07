@@ -2,160 +2,118 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 482A4C433FE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:08:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 20525C2BB3F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:12:17 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1E19C239A1
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:08:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DCD612395A
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:12:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727874AbgLGWIu (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 17:08:50 -0500
-Received: from mail-bn7nam10on2067.outbound.protection.outlook.com ([40.107.92.67]:15936
-        "EHLO NAM10-BN7-obe.outbound.protection.outlook.com"
-        rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-        id S1725783AbgLGWIu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 7 Dec 2020 17:08:50 -0500
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=Yy69Nray10q0ytir2YPGgdEIYH6UcbOreiZBx4DoqDuhyxTL1P/O5W9vYwOK5tXvkAar1UThZlW2REk4H/axLOlbvsMcqM62c1wd91IpEFs0TYtZWlze/OvugEXa5oj2pK+GW6KX3Wkf89Asd/NOGkVeKb+Vdoh4gMYK5tGZZkjvu/4SvmZINdcmMTu7ajDJjPO6gqCwIFadZrDSg6Xa3Hjue9yOt1Jt2Iflk9KaUwn/C62GfcCMjiRkZ1yo7yo4Yvwuk6UERW+L1u6r24kYD1CVj8KYjQPCp7+8WFjJXA5TcCPj4JChyQ16ut7tGcv2j8TuCUVm6/XLgr6aiJnN/g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zSnHcfgYeyDhdsB1DwIhSvzrSjMS81d2undBT3hnC08=;
- b=UcqQMT65ncVr3pdUPgTLAM3zW3RWpHQODD9YLPilA/j4E1MnUZa4xXTzYikfgO4gRy69zlWooixWwINY6lU+OrvBRMddlBzgXXem/Qj1Jut3rUB+aFJK2GD0NoiFHuR0XvY2ZPqwMo88ujQ78OV+uC9uKdoBp+o3k7KsKSHHL5DJ6FApJzIozZqIfh0aL7Ug4nADpxaWeyEY93ufSPNbm6Fg+oBpsnScLs+JpQDtKh7d9+aE1D/ffMG0rlbK1it33yjtZYilx0D5zn2qSba/sWww3VjjaGLL4Y9/IiBefilH5wU1VZi/4kFAvIsk/WcoQt/Wns7Mu2Y00uIX0jlfvw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
+        id S1728000AbgLGWMF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 17:12:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56082 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725774AbgLGWME (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 17:12:04 -0500
+Received: from mail-lj1-x242.google.com (mail-lj1-x242.google.com [IPv6:2a00:1450:4864:20::242])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 31AB3C061793;
+        Mon,  7 Dec 2020 14:11:24 -0800 (PST)
+Received: by mail-lj1-x242.google.com with SMTP id f11so4915952ljn.2;
+        Mon, 07 Dec 2020 14:11:24 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=amdcloud.onmicrosoft.com; s=selector2-amdcloud-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=zSnHcfgYeyDhdsB1DwIhSvzrSjMS81d2undBT3hnC08=;
- b=mtJang7hPOGPWW1GV21j1HHZS2xhRpi3VmTrV9GPAgVKyHkoSRakXPre4tAMsPeSq3w/RkNPDLMl6ZzI2k7VrDKbJnNl48XmqeAfjDOOrME1oiL59gh3lV4MZDE48DyGx72/f96t2kUQ35F8wmo1mehnSsLYJ1dQ7vmoGq74Ibo=
-Authentication-Results: kernel.org; dkim=none (message not signed)
- header.d=none;kernel.org; dmarc=none action=none header.from=amd.com;
-Received: from CY4PR12MB1494.namprd12.prod.outlook.com (2603:10b6:910:f::22)
- by CY4PR1201MB0149.namprd12.prod.outlook.com (2603:10b6:910:1c::19) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.17; Mon, 7 Dec
- 2020 22:07:56 +0000
-Received: from CY4PR12MB1494.namprd12.prod.outlook.com
- ([fe80::d0ac:8fdb:1968:2818]) by CY4PR12MB1494.namprd12.prod.outlook.com
- ([fe80::d0ac:8fdb:1968:2818%6]) with mapi id 15.20.3632.017; Mon, 7 Dec 2020
- 22:07:56 +0000
-Subject: Re: [RFC PATCH 2/4] cpufreq: acpi-cpufreq: Add processor to the
- ignore PSD override list
-To:     Borislav Petkov <bp@alien8.de>
-Cc:     Punit Agrawal <punitagrawal@gmail.com>, rjw@rjwysocki.net,
-        wei.huang2@amd.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org, x86@kernel.org
-References: <20201125144847.3920-1-punitagrawal@gmail.com>
- <20201125144847.3920-3-punitagrawal@gmail.com>
- <cadb5d57-5aaf-79bc-e30e-502d5e522689@amd.com>
- <20201207202610.GG20489@zn.tnic>
-From:   Wei Huang <whuang2@amd.com>
-Message-ID: <e9b4ae11-1fe3-a660-bb65-d3ba55ffcc56@amd.com>
-Date:   Mon, 7 Dec 2020 16:07:52 -0600
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=MJm4yFBoOOG0Zxihy7qPEaeoKuVX+MClzRO8u7W5XUg=;
+        b=tbSwwhqIuNQzd6L+D2wv6DP3s10F3sQjGFbz9OZUiX32KC7DgE1gCLimps3ZYKpw1O
+         btb4gSIDwLmF8DfMaR7t1MJmpGW3up9U8Yg4lnvwjKc2f1ionNYGvK9aJqwWNCh84DzI
+         Wn2yeourqvFLQWyNQaL4qnZyP2G4GCcOOBP4a7WwMlSWL0o6WD3rO7w9x9d7F06HnH3S
+         3LTCVfnD1bicCQawdSIduxCNwCe31R3Mp6nNjJP+9Cl6TbtPvoTpDB6s8XlH+vWU7/DL
+         H+D8y86H6LXu6eMIf1FL9uRO0Nqqf6mVn9Mgfih/V4T0M3CSd6zTcQAO0PXofQPfWg+C
+         gXCA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=MJm4yFBoOOG0Zxihy7qPEaeoKuVX+MClzRO8u7W5XUg=;
+        b=r+Lk3SzV3im9Z1Cj4oh5Ex+SIsezMEh8i/tSP7fpthnqkNzVbdusd3fvvaaefGvpKb
+         Ra/xaoHMcN4LyWm7Eo2shdFm1DE52FbyehTcdJe77MogIiQAkxuZVPnsPZlRqDhmPEIm
+         QHlryxQTNsAERp+3bWikZzmlYHwAurFRMIKfRDSzy9BVwKUIua5Uq4p1C+K2lh3G69Zj
+         YQzGrHwQ4KC95L3Doa3qg26KVxjq2KfMRcDnb5wDSA+fdd50C+Tdf3Ix7zfYrywFrh/N
+         013gqYfIq10gpEc7RNN0i2ebOPh0eq2NaDbC5nS9rGe2a40b2p8PFO+1w5Ui/8MxNZVW
+         wJjg==
+X-Gm-Message-State: AOAM531Kk95/TQbwYmtyqXpBJjfBh5RQySogUij5U/ofTHklA6JNThG8
+        S51S8dLXp+vMwjJZbL4cbciCyAp0uLA=
+X-Google-Smtp-Source: ABdhPJwHEfUeaYEY6cBzpP/Ij0Zo7ypjRgpkG3KdpX0TNEunlTBMvM1jIpO0BRfGMx711+SK5PytMA==
+X-Received: by 2002:a2e:2a83:: with SMTP id q125mr5672403ljq.436.1607379082627;
+        Mon, 07 Dec 2020 14:11:22 -0800 (PST)
+Received: from [192.168.2.145] (109-252-192-53.dynamic.spd-mgts.ru. [109.252.192.53])
+        by smtp.googlemail.com with ESMTPSA id x25sm3062664lfn.99.2020.12.07.14.11.21
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 07 Dec 2020 14:11:22 -0800 (PST)
+Subject: Re: [PATCH v11 09/10] PM / devfreq: tegra30: Support interconnect and
+ OPPs from device-tree
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+References: <20201203192439.16177-1-digetx@gmail.com>
+ <CGME20201203192723epcas1p372e53c3e1443b7cd3010c44faff735ec@epcas1p3.samsung.com>
+ <20201203192439.16177-10-digetx@gmail.com>
+ <42927892-d4a7-9368-480b-14c0d06e7116@samsung.com>
+From:   Dmitry Osipenko <digetx@gmail.com>
+Message-ID: <6ab55ef7-87bb-9f10-c262-b02430fe7d12@gmail.com>
+Date:   Tue, 8 Dec 2020 01:11:21 +0300
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.4.0
-In-Reply-To: <20201207202610.GG20489@zn.tnic>
+ Thunderbird/78.4.2
+MIME-Version: 1.0
+In-Reply-To: <42927892-d4a7-9368-480b-14c0d06e7116@samsung.com>
 Content-Type: text/plain; charset=utf-8
 Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [165.204.77.11]
-X-ClientProxiedBy: SA9PR13CA0109.namprd13.prod.outlook.com
- (2603:10b6:806:24::24) To CY4PR12MB1494.namprd12.prod.outlook.com
- (2603:10b6:910:f::22)
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from [172.31.10.205] (165.204.77.11) by SA9PR13CA0109.namprd13.prod.outlook.com (2603:10b6:806:24::24) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3654.8 via Frontend Transport; Mon, 7 Dec 2020 22:07:55 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-HT: Tenant
-X-MS-Office365-Filtering-Correlation-Id: b7fc3e13-417d-49d8-4da6-08d89afc8d4d
-X-MS-TrafficTypeDiagnostic: CY4PR1201MB0149:
-X-MS-Exchange-Transport-Forked: True
-X-Microsoft-Antispam-PRVS: <CY4PR1201MB0149D486F8C6598A55EF3B77CFCE0@CY4PR1201MB0149.namprd12.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:4714;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: qUAIQ8b2tcge17z4K/3NiG3A/cOjOtPXoDmKQwWby82o+te0SSbKD88D0n+7bJxSGabwtPeyIl5cIMY1+OkkrrsfHzGfE8TWC3nRLlhbLUaPzB2A84Y9UjjnRpeY/BEccpd+UIH6Rd+9cGo734jTQkDTSuYom03YiKL3NOBiS8axY9ZP7ja7jVYpyJhxprIG1pplZi9f8XVem6ZKCeel/djWofMfDN7gaF/wS1C4U/QLnAf9GzB7ltAmNj63ljOg7D/4tY/pv0ryztg+eRO8p5KBAsyS9ruDKQTDJuXzDJ1KIVxKWUkClRHRgY0gpjO7gsWivBzcYJVeOwFd4+efyKfvYkz6kYw9HX3K4+7Q1z42v/TxBTFhxjYNnX5vqa2F7y5D9NNthK0jgW1RNxLt1WrQj7d18JodWWPPRyFQQx4=
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CY4PR12MB1494.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(4636009)(396003)(366004)(376002)(346002)(39860400002)(136003)(53546011)(2906002)(66556008)(8676002)(4326008)(478600001)(6916009)(8936002)(66476007)(31696002)(31686004)(16526019)(956004)(26005)(36756003)(66946007)(316002)(6486002)(83380400001)(52116002)(5660300002)(186003)(16576012)(2616005)(6666004)(45980500001)(43740500002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?RE50QWR1RmlGZWdWb0t0dk5rTHBuZnc5WGtlVG1RZStQY2RvcWp1UFBGUkZ4?=
- =?utf-8?B?S01pUnJRYzNGWklpcXhsSEVUdzZqamlHdTFnV2piOXR6UG10RHh0MUp4SmNC?=
- =?utf-8?B?M2VRV2wyVVZMOHZ2dHMyZTYxWTVyNnBNVXRkcjNmWEVnR3U4S1kvcUR6VEhx?=
- =?utf-8?B?b3QxN2VKeE5KaTBXMmhlVWlvcEJ6dW5naTI4UjlVcE50d0JsWG9zaG5zU0FK?=
- =?utf-8?B?Wjdrem9NencxNEk3ZWdEZXFkY1o5MDFwU1ZNNTVBbTYwWXdlaXNMNUdYQndp?=
- =?utf-8?B?QlV2aFlYR0phQVhMWEZmUUJ3Ni9kZmY3bzJueCsyMUtmczB2R0dISThuUWkv?=
- =?utf-8?B?NGQ3V1FINWxMYzUzb2JSOW1ZVjM4SUIwb21wb3I1WnZEaU5iN2lFYmFJVVVU?=
- =?utf-8?B?RUI5dUJ0UmZVejI5WDF5RDFJU1hXbmRzZSs3M0s4OHZzVzhUZlNTOXFWMXl4?=
- =?utf-8?B?M0NXMG5JY2tITFFTSGI4YWpsVlE5NjZYeFZHQlY4enlEVWhpbk93UDgxVHpU?=
- =?utf-8?B?cDhaNTZhUnJBL2l4R1FmYTFaTlZaTlhpb3p3SWZoWjFONWpPcDU2S2Nac1lJ?=
- =?utf-8?B?cUFsMzBQK0xtUUlXSmwzREpNN214c0lRNjdCL1Z4THo3RUtMbXh4UE1yZGNj?=
- =?utf-8?B?eHY1REVjZ09Od3BZRU1JcUc4TmIwTEpKT25EKy9LZVRnRnB0YXoyZmpHV1NZ?=
- =?utf-8?B?cXdNdnJVMFVRdDdINnJKcWwwcVhYWW55aUVZQmU0QVRtQjdOWkpXNTl4eGll?=
- =?utf-8?B?cVdXUG9Qb1BQUmU2WUdJV25xWDgyclgrQ0lDQU1JMUJReVNuWTR0b3VaRVd5?=
- =?utf-8?B?eFQ0UVVCVjBNWVZjOHNMQ3k3ZG1MSzJPMWtnTnFmSThZSmVRL0R5ajZ6Z0g0?=
- =?utf-8?B?RjRublVQWWVVYXZyU3lic2w2dlJJazRhNXpBOUZpRitWUzFXb3lFcVMwR05k?=
- =?utf-8?B?RzJZNzFJZTY0d1RNbHdTWWpkSFNXK1NDUkFRZ3JyV3JDa0J3MXlKc2sxRzZ6?=
- =?utf-8?B?NGZWc0pncytJcTg1RFJUU3Rjem4vR1A1Z3owMGpEMUJnZ2ZwNkJYUzJ1ZjlX?=
- =?utf-8?B?dmlrT3F1SEZ6bjBZNkY0eXFpS09nQ0ZoWGNZR0VWbDZJbHVKR2N3ZCtmaDVy?=
- =?utf-8?B?NEczWEc4YkZ0MnZtb2crYUdUVVRoWFpwbVBPME5KQWczaVRXTEZPaWVjbmhP?=
- =?utf-8?B?TXA3d3VYekJmYjl4YXZLNVpncytNRFVCcVZjbUpCVW1pWG9TU3loaWY5VUtQ?=
- =?utf-8?B?aEQwL0dBcjFFY3dYRzRmZ3dwa2lOdE9WdzRRaGhaUTRoVWp3cEFVYjFhdTJu?=
- =?utf-8?Q?tWAqphH3ypaGyDNFzixDxFwWo0YWpgTCER?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-AuthSource: CY4PR12MB1494.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Dec 2020 22:07:56.4635
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-Network-Message-Id: b7fc3e13-417d-49d8-4da6-08d89afc8d4d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: Ul/dNJuezd9/9f9ISlPr7ksyKoyrju3IBdZkcbi29I00MVwsAyimuOEszGBaTitU
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY4PR1201MB0149
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-
-
-On 12/7/20 2:26 PM, Borislav Petkov wrote:
-> On Mon, Dec 07, 2020 at 02:20:55PM -0600, Wei Huang wrote:
->> In summary, this patch is fine if Punit already verified it. My only
->> concern is the list can potentially increase over the time, and we will
->> keep coming back to fix override_acpi_psd() function.
+07.12.2020 04:32, Chanwoo Choi пишет:
+> On 12/4/20 4:24 AM, Dmitry Osipenko wrote:
+>> This patch moves ACTMON driver away from generating OPP table by itself,
+>> transitioning it to use the table which comes from device-tree. This
+>> change breaks compatibility with older device-trees and brings support
+>> for the interconnect framework to the driver. This is a mandatory change
+>> which needs to be done in order to implement interconnect-based memory
+>> DVFS, i.e. device-trees need to be updated. Now ACTMON issues a memory
+>> bandwidth requests using dev_pm_opp_set_bw() instead of driving EMC clock
+>> rate directly.
+>>
+>> Tested-by: Peter Geis <pgwipeout@gmail.com>
+>> Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+>> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+>> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+>> ---
+...
 > 
-> Can the detection be done by looking at those _PSD things instead of
-> comparing f/m/s?
-
-Not I am aware of. I don't know the correlation between _PSD
-configuration and CPU's f/m/s.
-
+> Applied it. Thanks for your work for a long time.
 > 
-> And, alternatively, what is this fixing?
-> 
-> So what if some zen2 boxes have correct _PSD objects? Why do they need
-> to ignore the override?
 
-I think we shouldn't override zen2 if _PSD is correct. In my opinion,
-there are two approaches:
-
-* Keep override_acpi_psd()
-Let us keep the original quirk and override_acpi_psd() function. Over
-the time, people may want to add new CPUs to override_acpi_psd(). The
-maintainer may declare that only CPUs >= family 17h will be fixed, to
-avoid exploding the check-list.
-
-* Remove the quirk completely
-We can completely remove commit acd316248205 ("acpi-cpufreq: Add quirk
-to disable _PSD usage on all AMD CPUs")? I am not sure what "AMD desktop
-boards" was referring to in the original commit message of acd316248205.
-Maybe such machines aren't in use anymore.
-
-> 
-> Hmmm?
-> 
+Thank you!
