@@ -7,179 +7,292 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B096C197BF
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 17C5DC4167B
 	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 19F2A235F9
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DABAA2343F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:56 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726137AbgLGNr4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726042AbgLGNr4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 7 Dec 2020 08:47:56 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:36558 "EHLO
-        galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726080AbgLGNr4 (ORCPT
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:33568 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726137AbgLGNr4 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:47:56 -0500
-Date:   Mon, 07 Dec 2020 13:47:13 -0000
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9ACC9C0613D2
+        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 05:47:15 -0800 (PST)
+Date:   Mon, 07 Dec 2020 13:47:12 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1607348834;
+        s=2020; t=1607348833;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0PgDkGUQdw5kI9gWgdwAqnMTXxuPzeeW92eK6lXX2hQ=;
-        b=dlX0FG905CMmj71m85VXEtq/mBt9uko+YrPzh/yOYDmbYHq0+JqTgNhCARmGmdntBQmK7a
-        JUAIUopmokUERmaoDqICcEt8jF9Sgdc/2emmefNg9yuRlzjHT2Y21KGTfUjIGXYycCXsjm
-        6kJaZB1ku3gXvUuMR/shCTcBTk71zzc0uVGfw3ulkXO1APasFdpPJ9tDBdEwQW3LDr7x4r
-        viXjhaPGG4ZsVcNIF484H8JaoYJQCAD19ljTVbqnjlPDtDJrYucXb2DwHf++kQec62l5AF
-        JPYRndJ+0LCgTWcaRtep3DVJqysmJ7kVpqSjM7NkZXA8PS0C2UsTUH3LyyCIYg==
+        bh=k5dAWGKV6s9PkFPi5bk5H5T6vFag0mKd0Jq/SHwUdNI=;
+        b=B05aYaYuqZUn6oeLCgcxlTvpjVUZHBxXEkqQEc6HYLotSkOvzTDMXjIJr+UNggA6p397xz
+        8KRSP6QtI12bdHrLC/SKaCUhuMCHseDE9jJq3BIULlUllHE+INiY8jDczt2ZCHoy4Ljctl
+        3HqjdwjROnvyMsCghSuhzaU3n+egYfJerXszQt4dYIuHkSOxoWZVyyRnQXMUHXW6CwWcCH
+        9LysSouQ/d9cOPMjqpENpchkgQVKRltk2IGjlKXKVAwRjEpCC4cv+7bGaYOZUVlg5BPMWn
+        Kcfk8dskT3Y9GLhbBB4YTJEZ8JAbLL0LPfFuN6Y5cNq3qWTAhfY+dpC6xWd4sw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1607348834;
+        s=2020e; t=1607348833;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=0PgDkGUQdw5kI9gWgdwAqnMTXxuPzeeW92eK6lXX2hQ=;
-        b=Gm1y4W9xP5xuYTvieLVrQgF3QLTI0Assx3IN+Bcl9U87jZWAxWdEvHuPQtOEyhea6i/rAX
-        FrT6z6cpy6KRGVBQ==
-From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
+        bh=k5dAWGKV6s9PkFPi5bk5H5T6vFag0mKd0Jq/SHwUdNI=;
+        b=7RoJuawBhQ8brbz53zeI7V+9Wja+Ss97ASmB52WNqKCvJnviJdDwh3/SPzqV5X+oSFoQCm
+        xtBz4a23Pjv8hdBg==
+From:   thermal-bot for Niklas =?utf-8?q?S=C3=B6derlund?= 
+        <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: power allocator: refactor
- sustainable power estimation
-Cc:     Lukasz Luba <lukasz.luba@arm.com>,
-        Ionela Voinescu <ionela.voinescu@arm.com>,
+Subject: [thermal: thermal/next] thermal: rcar_gen3_thermal: Do not use
+ interrupts for normal operation
+Cc:     niklas.soderlund+renesas@ragnatech.se,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201124161025.27694-3-lukasz.luba@arm.com>
-References: <20201124161025.27694-3-lukasz.luba@arm.com>
+In-Reply-To: <20201126220923.3107213-1-niklas.soderlund+renesas@ragnatech.se>
+References: <20201126220923.3107213-1-niklas.soderlund+renesas@ragnatech.se>
 MIME-Version: 1.0
-Message-ID: <160734883371.3364.3234203704313614987.tip-bot2@tip-bot2>
+Message-ID: <160734883281.3364.5930229521034807240.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: quoted-printable
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     eda1ecfa772f11b68b0ddb8d1c3948451fcff5d6
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//eda1ecfa772f11b68b0ddb8d1c3948451fcff5d6
-Author:        Lukasz Luba <lukasz.luba@arm.com>
-AuthorDate:    Tue, 24 Nov 2020 16:10:24 
+Commit-ID:     1b57b9597c779f0a20c5837abec31f600240496b
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.=
+git//1b57b9597c779f0a20c5837abec31f600240496b
+Author:        Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
+AuthorDate:    Thu, 26 Nov 2020 23:09:23 +01:00
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Thu, 26 Nov 2020 17:11:59 +01:00
+CommitterDate: Mon, 30 Nov 2020 16:38:27 +01:00
 
-thermal: power allocator: refactor sustainable power estimation
+thermal: rcar_gen3_thermal: Do not use interrupts for normal operation
 
-The sustainable power value might come from the Device Tree or can be
-estimated in run time. The sustainable power might be updated by the user
-via sysfs interface, which should trigger new estimation of PID
-coefficients. There is no need to estimate it every time when the
-governor is called and temperature is high. Instead, store the estimated
-value and make it available via standard sysfs interface, so it can be
-checked from the user-space.
+Remove the usage of interrupts for the normal temperature operation and
+depend on the polling performed by the thermal core. This is done to
+prepare to use the interrupts as they are intended to trigger once
+specific trip points are passed and not to react to temperature changes
+in the normal operational range.
 
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
+Signed-off-by: Niklas S=C3=B6derlund <niklas.soderlund+renesas@ragnatech.se>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201124161025.27694-3-lukasz.luba@arm.com
+Link: https://lore.kernel.org/r/20201126220923.3107213-1-niklas.soderlund+ren=
+esas@ragnatech.se
 ---
- drivers/thermal/gov_power_allocator.c | 52 ++++++++++++++++++++------
- 1 file changed, 40 insertions(+), 12 deletions(-)
+ drivers/thermal/rcar_gen3_thermal.c | 108 +---------------------------
+ 1 file changed, 2 insertions(+), 106 deletions(-)
 
-diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
-index 2e20085..d7e4b9f 100644
---- a/drivers/thermal/gov_power_allocator.c
-+++ b/drivers/thermal/gov_power_allocator.c
-@@ -63,6 +63,8 @@ static inline s64 div_frac(s64 x, s64 y)
-  * @trip_max_desired_temperature:	last passive trip point of the thermal
-  *					zone.  The temperature we are
-  *					controlling for.
-+ * @sustainable_power:	Sustainable power (heat) that this thermal zone can
-+ *			dissipate
-  */
- struct power_allocator_params {
- 	bool allocated_tzp;
-@@ -70,6 +72,7 @@ struct power_allocator_params {
- 	s32 prev_err;
- 	int trip_switch_on;
- 	int trip_max_desired_temperature;
-+	u32 sustainable_power;
- };
- 
- /**
-@@ -118,10 +121,6 @@ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
-  *
-  * This function is used to update the estimation of the PID
-  * controller constants in struct thermal_zone_parameters.
-- * Sustainable power is provided in case it was estimated.  The
-- * estimated sustainable_power should not be stored in the
-- * thermal_zone_parameters so it has to be passed explicitly to this
-- * function.
-  *
-  * If @force is not set, the values in the thermal zone's parameters
-  * are preserved if they are not zero.  If @force is set, the values
-@@ -172,6 +171,42 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
+diff --git a/drivers/thermal/rcar_gen3_thermal.c b/drivers/thermal/rcar_gen3_=
+thermal.c
+index 0dd47dc..94f2c13 100644
+--- a/drivers/thermal/rcar_gen3_thermal.c
++++ b/drivers/thermal/rcar_gen3_thermal.c
+@@ -188,70 +188,10 @@ static int rcar_gen3_thermal_get_temp(void *devdata, in=
+t *temp)
+ 	return 0;
  }
- 
- /**
-+ * get_sustainable_power() - Get the right sustainable power
-+ * @tz:		thermal zone for which to estimate the constants
-+ * @params:	parameters for the power allocator governor
-+ * @control_temp:	target temperature for the power allocator governor
-+ *
-+ * This function is used for getting the proper sustainable power value based
-+ * on variables which might be updated by the user sysfs interface. If that
-+ * happen the new value is going to be estimated and updated. It is also used
-+ * after thermal zone binding, where the initial values where set to 0.
-+ */
-+static u32 get_sustainable_power(struct thermal_zone_device *tz,
-+				 struct power_allocator_params *params,
-+				 int control_temp)
-+{
-+	u32 sustainable_power;
-+
-+	if (!tz->tzp->sustainable_power)
-+		sustainable_power = estimate_sustainable_power(tz);
-+	else
-+		sustainable_power = tz->tzp->sustainable_power;
-+
-+	/* Check if it's init value 0 or there was update via sysfs */
-+	if (sustainable_power != params->sustainable_power) {
-+		estimate_pid_constants(tz, sustainable_power,
-+				       params->trip_switch_on, control_temp,
-+				       true);
-+
-+		/* Do the estimation only once and make available in sysfs */
-+		tz->tzp->sustainable_power = sustainable_power;
-+		params->sustainable_power = sustainable_power;
-+	}
-+
-+	return sustainable_power;
-+}
-+
-+/**
-  * pid_controller() - PID controller
-  * @tz:	thermal zone we are operating in
-  * @control_temp:	the target temperature in millicelsius
-@@ -200,14 +235,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
- 
- 	max_power_frac = int_to_frac(max_allocatable_power);
- 
--	if (tz->tzp->sustainable_power) {
--		sustainable_power = tz->tzp->sustainable_power;
--	} else {
--		sustainable_power = estimate_sustainable_power(tz);
--		estimate_pid_constants(tz, sustainable_power,
--				       params->trip_switch_on, control_temp,
--				       true);
+=20
+-static int rcar_gen3_thermal_mcelsius_to_temp(struct rcar_gen3_thermal_tsc *=
+tsc,
+-					      int mcelsius)
+-{
+-	int celsius, val;
+-
+-	celsius =3D DIV_ROUND_CLOSEST(mcelsius, 1000);
+-	if (celsius <=3D INT_FIXPT(tsc->tj_t))
+-		val =3D celsius * tsc->coef.a1 + tsc->coef.b1;
+-	else
+-		val =3D celsius * tsc->coef.a2 + tsc->coef.b2;
+-
+-	return INT_FIXPT(val);
+-}
+-
+-static int rcar_gen3_thermal_update_range(struct rcar_gen3_thermal_tsc *tsc)
+-{
+-	int temperature, low, high;
+-
+-	rcar_gen3_thermal_get_temp(tsc, &temperature);
+-
+-	low =3D temperature - MCELSIUS(1);
+-	high =3D temperature + MCELSIUS(1);
+-
+-	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP1,
+-				rcar_gen3_thermal_mcelsius_to_temp(tsc, low));
+-
+-	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQTEMP2,
+-				rcar_gen3_thermal_mcelsius_to_temp(tsc, high));
+-
+-	return 0;
+-}
+-
+ static const struct thermal_zone_of_device_ops rcar_gen3_tz_of_ops =3D {
+ 	.get_temp	=3D rcar_gen3_thermal_get_temp,
+ };
+=20
+-static void rcar_thermal_irq_set(struct rcar_gen3_thermal_priv *priv, bool o=
+n)
+-{
+-	unsigned int i;
+-	u32 val =3D on ? IRQ_TEMPD1 | IRQ_TEMP2 : 0;
+-
+-	for (i =3D 0; i < priv->num_tscs; i++)
+-		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQMSK, val);
+-}
+-
+-static irqreturn_t rcar_gen3_thermal_irq(int irq, void *data)
+-{
+-	struct rcar_gen3_thermal_priv *priv =3D data;
+-	u32 status;
+-	int i;
+-
+-	for (i =3D 0; i < priv->num_tscs; i++) {
+-		status =3D rcar_gen3_thermal_read(priv->tscs[i], REG_GEN3_IRQSTR);
+-		rcar_gen3_thermal_write(priv->tscs[i], REG_GEN3_IRQSTR, 0);
+-		if (status) {
+-			rcar_gen3_thermal_update_range(priv->tscs[i]);
+-			thermal_zone_device_update(priv->tscs[i]->zone,
+-						   THERMAL_EVENT_UNSPECIFIED);
+-		}
 -	}
-+	sustainable_power = get_sustainable_power(tz, params, control_temp);
- 
- 	err = control_temp - tz->temperature;
- 	err = int_to_frac(err);
+-
+-	return IRQ_HANDLED;
+-}
+-
+ static const struct soc_device_attribute r8a7795es1[] =3D {
+ 	{ .soc_id =3D "r8a7795", .revision =3D "ES1.*" },
+ 	{ /* sentinel */ }
+@@ -268,7 +208,6 @@ static void rcar_gen3_thermal_init_r8a7795es1(struct rcar=
+_gen3_thermal_tsc *tsc)
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0x3F);
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
+-	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_CTSR,
+ 				CTSR_PONM | CTSR_AOUT | CTSR_THBGR | CTSR_VMEN);
+@@ -294,7 +233,6 @@ static void rcar_gen3_thermal_init(struct rcar_gen3_therm=
+al_tsc *tsc)
+=20
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQCTL, 0);
+ 	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQMSK, 0);
+-	rcar_gen3_thermal_write(tsc, REG_GEN3_IRQEN, IRQ_TEMPD1 | IRQ_TEMP2);
+=20
+ 	reg_val =3D rcar_gen3_thermal_read(tsc, REG_GEN3_THCTR);
+ 	reg_val |=3D THCTR_THSST;
+@@ -345,9 +283,6 @@ MODULE_DEVICE_TABLE(of, rcar_gen3_thermal_dt_ids);
+ static int rcar_gen3_thermal_remove(struct platform_device *pdev)
+ {
+ 	struct device *dev =3D &pdev->dev;
+-	struct rcar_gen3_thermal_priv *priv =3D dev_get_drvdata(dev);
+-
+-	rcar_thermal_irq_set(priv, false);
+=20
+ 	pm_runtime_put(dev);
+ 	pm_runtime_disable(dev);
+@@ -369,8 +304,7 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 	const int *rcar_gen3_ths_tj_1 =3D of_device_get_match_data(dev);
+ 	struct resource *res;
+ 	struct thermal_zone_device *zone;
+-	int ret, irq, i;
+-	char *irqname;
++	int ret, i;
+=20
+ 	/* default values if FUSEs are missing */
+ 	/* TODO: Read values from hardware on supported platforms */
+@@ -386,28 +320,6 @@ static int rcar_gen3_thermal_probe(struct platform_devic=
+e *pdev)
+=20
+ 	platform_set_drvdata(pdev, priv);
+=20
+-	/*
+-	 * Request 2 (of the 3 possible) IRQs, the driver only needs to
+-	 * to trigger on the low and high trip points of the current
+-	 * temp window at this point.
+-	 */
+-	for (i =3D 0; i < 2; i++) {
+-		irq =3D platform_get_irq(pdev, i);
+-		if (irq < 0)
+-			return irq;
+-
+-		irqname =3D devm_kasprintf(dev, GFP_KERNEL, "%s:ch%d",
+-					 dev_name(dev), i);
+-		if (!irqname)
+-			return -ENOMEM;
+-
+-		ret =3D devm_request_threaded_irq(dev, irq, NULL,
+-						rcar_gen3_thermal_irq,
+-						IRQF_ONESHOT, irqname, priv);
+-		if (ret)
+-			return ret;
+-	}
+-
+ 	pm_runtime_enable(dev);
+ 	pm_runtime_get_sync(dev);
+=20
+@@ -459,8 +371,6 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 		if (ret < 0)
+ 			goto error_unregister;
+=20
+-		rcar_gen3_thermal_update_range(tsc);
+-
+ 		dev_info(dev, "TSC%d: Loaded %d trip points\n", i, ret);
+ 	}
+=20
+@@ -471,8 +381,6 @@ static int rcar_gen3_thermal_probe(struct platform_device=
+ *pdev)
+ 		goto error_unregister;
+ 	}
+=20
+-	rcar_thermal_irq_set(priv, true);
+-
+ 	return 0;
+=20
+ error_unregister:
+@@ -481,15 +389,6 @@ error_unregister:
+ 	return ret;
+ }
+=20
+-static int __maybe_unused rcar_gen3_thermal_suspend(struct device *dev)
+-{
+-	struct rcar_gen3_thermal_priv *priv =3D dev_get_drvdata(dev);
+-
+-	rcar_thermal_irq_set(priv, false);
+-
+-	return 0;
+-}
+-
+ static int __maybe_unused rcar_gen3_thermal_resume(struct device *dev)
+ {
+ 	struct rcar_gen3_thermal_priv *priv =3D dev_get_drvdata(dev);
+@@ -499,15 +398,12 @@ static int __maybe_unused rcar_gen3_thermal_resume(stru=
+ct device *dev)
+ 		struct rcar_gen3_thermal_tsc *tsc =3D priv->tscs[i];
+=20
+ 		priv->thermal_init(tsc);
+-		rcar_gen3_thermal_update_range(tsc);
+ 	}
+=20
+-	rcar_thermal_irq_set(priv, true);
+-
+ 	return 0;
+ }
+=20
+-static SIMPLE_DEV_PM_OPS(rcar_gen3_thermal_pm_ops, rcar_gen3_thermal_suspend,
++static SIMPLE_DEV_PM_OPS(rcar_gen3_thermal_pm_ops, NULL,
+ 			 rcar_gen3_thermal_resume);
+=20
+ static struct platform_driver rcar_gen3_thermal_driver =3D {
