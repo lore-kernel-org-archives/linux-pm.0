@@ -7,55 +7,56 @@ X-Spam-Status: No, score=-20.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
 	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id E17FDC0018C
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4B096C197BF
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9C51423440
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:56 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 19F2A235F9
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 13:47:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726167AbgLGNr4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        id S1726137AbgLGNr4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
         Mon, 7 Dec 2020 08:47:56 -0500
-Received: from Galois.linutronix.de ([193.142.43.55]:36532 "EHLO
+Received: from Galois.linutronix.de ([193.142.43.55]:36558 "EHLO
         galois.linutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726042AbgLGNr4 (ORCPT
+        with ESMTP id S1726080AbgLGNr4 (ORCPT
         <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 08:47:56 -0500
 Date:   Mon, 07 Dec 2020 13:47:13 -0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020; t=1607348833;
+        s=2020; t=1607348834;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=64RzUOtY+loPMkTbF/FjH+RXVYzZBIzgqL86y1HVHWc=;
-        b=cBZcZRFnM3F41gp6wOx2Lmf4k7ni956/3xU6rbt+ojj/4J0/YdiRpq+gViuEJn6wTDuZDJ
-        Yrp3IKLluTgUvHObsSnRfRqiwoxILtSgHFVz6zr8fQpk/yEd8dMXhB57/AN3kHCmVZwOkp
-        wOpA1voVx1auHlyAGbvtDrF13C16V50CibcVthUJCSdd6nFDe8ggo9D4IH4VhyGv1XuEgq
-        EC51rTVqA7BSBg7bzQMhntcsewRn3KPUBpXXM+OfbFnpzsjm4/bLdqq7qJdroH816eMxPB
-        Ig2HpHuVNaKzs4iRgRkS+qoGU6vYC7xBz3ub6zQhqaXgNkvPJFUyFwUkrf2rVw==
+        bh=0PgDkGUQdw5kI9gWgdwAqnMTXxuPzeeW92eK6lXX2hQ=;
+        b=dlX0FG905CMmj71m85VXEtq/mBt9uko+YrPzh/yOYDmbYHq0+JqTgNhCARmGmdntBQmK7a
+        JUAIUopmokUERmaoDqICcEt8jF9Sgdc/2emmefNg9yuRlzjHT2Y21KGTfUjIGXYycCXsjm
+        6kJaZB1ku3gXvUuMR/shCTcBTk71zzc0uVGfw3ulkXO1APasFdpPJ9tDBdEwQW3LDr7x4r
+        viXjhaPGG4ZsVcNIF484H8JaoYJQCAD19ljTVbqnjlPDtDJrYucXb2DwHf++kQec62l5AF
+        JPYRndJ+0LCgTWcaRtep3DVJqysmJ7kVpqSjM7NkZXA8PS0C2UsTUH3LyyCIYg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-        s=2020e; t=1607348833;
+        s=2020e; t=1607348834;
         h=from:from:sender:sender:reply-to:reply-to:subject:subject:date:date:
          message-id:message-id:to:to:cc:cc:mime-version:mime-version:
          content-type:content-type:
          content-transfer-encoding:content-transfer-encoding:
          in-reply-to:in-reply-to:references:references;
-        bh=64RzUOtY+loPMkTbF/FjH+RXVYzZBIzgqL86y1HVHWc=;
-        b=iIhl0CQTPsVrziMcGI/fX0AWOz4RENq5cCFM58NvcLRGjBcUfHZaPi12fOC7OVxYXI3Hpc
-        8kL5vdQ8WF72GkCg==
-From:   "thermal-bot for Rikard Falkeborn" <tip-bot2@linutronix.de>
+        bh=0PgDkGUQdw5kI9gWgdwAqnMTXxuPzeeW92eK6lXX2hQ=;
+        b=Gm1y4W9xP5xuYTvieLVrQgF3QLTI0Assx3IN+Bcl9U87jZWAxWdEvHuPQtOEyhea6i/rAX
+        FrT6z6cpy6KRGVBQ==
+From:   "thermal-bot for Lukasz Luba" <tip-bot2@linutronix.de>
 Sender: tip-bot2@linutronix.de
 Reply-to: linux-pm@vger.kernel.org
 To:     linux-pm@vger.kernel.org
-Subject: [thermal: thermal/next] thermal: core: Constify static
- attribute_group structs
-Cc:     Rikard Falkeborn <rikard.falkeborn@gmail.com>,
+Subject: [thermal: thermal/next] thermal: power allocator: refactor
+ sustainable power estimation
+Cc:     Lukasz Luba <lukasz.luba@arm.com>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
         Daniel Lezcano <daniel.lezcano@linaro.org>,
         rui.zhang@intel.com, amitk@kernel.org
-In-Reply-To: <20201128234342.36684-1-rikard.falkeborn@gmail.com>
-References: <20201128234342.36684-1-rikard.falkeborn@gmail.com>
+In-Reply-To: <20201124161025.27694-3-lukasz.luba@arm.com>
+References: <20201124161025.27694-3-lukasz.luba@arm.com>
 MIME-Version: 1.0
-Message-ID: <160734883309.3364.10066479522798087490.tip-bot2@tip-bot2>
+Message-ID: <160734883371.3364.3234203704313614987.tip-bot2@tip-bot2>
 Robot-ID: <tip-bot2@linutronix.de>
 Robot-Unsubscribe: Contact <mailto:tglx@linutronix.de> to get blacklisted from these emails
 Content-Type: text/plain; charset="utf-8"
@@ -66,55 +67,119 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 The following commit has been merged into the thermal/next branch of thermal:
 
-Commit-ID:     f74bed6a4e0d7f51da7f624e47f6e9423920e1e0
-Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//f74bed6a4e0d7f51da7f624e47f6e9423920e1e0
-Author:        Rikard Falkeborn <rikard.falkeborn@gmail.com>
-AuthorDate:    Sun, 29 Nov 2020 00:43:42 +01:00
+Commit-ID:     eda1ecfa772f11b68b0ddb8d1c3948451fcff5d6
+Gitweb:        https://git.kernel.org/pub/scm/linux/kernel/git/thermal/linux.git//eda1ecfa772f11b68b0ddb8d1c3948451fcff5d6
+Author:        Lukasz Luba <lukasz.luba@arm.com>
+AuthorDate:    Tue, 24 Nov 2020 16:10:24 
 Committer:     Daniel Lezcano <daniel.lezcano@linaro.org>
-CommitterDate: Mon, 30 Nov 2020 09:09:12 +01:00
+CommitterDate: Thu, 26 Nov 2020 17:11:59 +01:00
 
-thermal: core: Constify static attribute_group structs
+thermal: power allocator: refactor sustainable power estimation
 
-The only usage of these structs is to assign their address to the
-thermal_zone_attribute_groups array, which consists of pointers to
-const, so make them const to allow the compiler to put them in read-only
-memory.
+The sustainable power value might come from the Device Tree or can be
+estimated in run time. The sustainable power might be updated by the user
+via sysfs interface, which should trigger new estimation of PID
+coefficients. There is no need to estimate it every time when the
+governor is called and temperature is high. Instead, store the estimated
+value and make it available via standard sysfs interface, so it can be
+checked from the user-space.
 
-Signed-off-by: Rikard Falkeborn <rikard.falkeborn@gmail.com>
+Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
+Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Link: https://lore.kernel.org/r/20201128234342.36684-1-rikard.falkeborn@gmail.com
+Link: https://lore.kernel.org/r/20201124161025.27694-3-lukasz.luba@arm.com
 ---
- drivers/thermal/thermal_sysfs.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/thermal/gov_power_allocator.c | 52 ++++++++++++++++++++------
+ 1 file changed, 40 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index a6f371f..0866e94 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -425,7 +425,7 @@ static struct attribute *thermal_zone_dev_attrs[] = {
- 	NULL,
+diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+index 2e20085..d7e4b9f 100644
+--- a/drivers/thermal/gov_power_allocator.c
++++ b/drivers/thermal/gov_power_allocator.c
+@@ -63,6 +63,8 @@ static inline s64 div_frac(s64 x, s64 y)
+  * @trip_max_desired_temperature:	last passive trip point of the thermal
+  *					zone.  The temperature we are
+  *					controlling for.
++ * @sustainable_power:	Sustainable power (heat) that this thermal zone can
++ *			dissipate
+  */
+ struct power_allocator_params {
+ 	bool allocated_tzp;
+@@ -70,6 +72,7 @@ struct power_allocator_params {
+ 	s32 prev_err;
+ 	int trip_switch_on;
+ 	int trip_max_desired_temperature;
++	u32 sustainable_power;
  };
  
--static struct attribute_group thermal_zone_attribute_group = {
-+static const struct attribute_group thermal_zone_attribute_group = {
- 	.attrs = thermal_zone_dev_attrs,
- };
- 
-@@ -434,7 +434,7 @@ static struct attribute *thermal_zone_mode_attrs[] = {
- 	NULL,
- };
- 
--static struct attribute_group thermal_zone_mode_attribute_group = {
-+static const struct attribute_group thermal_zone_mode_attribute_group = {
- 	.attrs = thermal_zone_mode_attrs,
- };
- 
-@@ -468,7 +468,7 @@ static umode_t thermal_zone_passive_is_visible(struct kobject *kobj,
- 	return 0;
+ /**
+@@ -118,10 +121,6 @@ static u32 estimate_sustainable_power(struct thermal_zone_device *tz)
+  *
+  * This function is used to update the estimation of the PID
+  * controller constants in struct thermal_zone_parameters.
+- * Sustainable power is provided in case it was estimated.  The
+- * estimated sustainable_power should not be stored in the
+- * thermal_zone_parameters so it has to be passed explicitly to this
+- * function.
+  *
+  * If @force is not set, the values in the thermal zone's parameters
+  * are preserved if they are not zero.  If @force is set, the values
+@@ -172,6 +171,42 @@ static void estimate_pid_constants(struct thermal_zone_device *tz,
  }
  
--static struct attribute_group thermal_zone_passive_attribute_group = {
-+static const struct attribute_group thermal_zone_passive_attribute_group = {
- 	.attrs = thermal_zone_passive_attrs,
- 	.is_visible = thermal_zone_passive_is_visible,
- };
+ /**
++ * get_sustainable_power() - Get the right sustainable power
++ * @tz:		thermal zone for which to estimate the constants
++ * @params:	parameters for the power allocator governor
++ * @control_temp:	target temperature for the power allocator governor
++ *
++ * This function is used for getting the proper sustainable power value based
++ * on variables which might be updated by the user sysfs interface. If that
++ * happen the new value is going to be estimated and updated. It is also used
++ * after thermal zone binding, where the initial values where set to 0.
++ */
++static u32 get_sustainable_power(struct thermal_zone_device *tz,
++				 struct power_allocator_params *params,
++				 int control_temp)
++{
++	u32 sustainable_power;
++
++	if (!tz->tzp->sustainable_power)
++		sustainable_power = estimate_sustainable_power(tz);
++	else
++		sustainable_power = tz->tzp->sustainable_power;
++
++	/* Check if it's init value 0 or there was update via sysfs */
++	if (sustainable_power != params->sustainable_power) {
++		estimate_pid_constants(tz, sustainable_power,
++				       params->trip_switch_on, control_temp,
++				       true);
++
++		/* Do the estimation only once and make available in sysfs */
++		tz->tzp->sustainable_power = sustainable_power;
++		params->sustainable_power = sustainable_power;
++	}
++
++	return sustainable_power;
++}
++
++/**
+  * pid_controller() - PID controller
+  * @tz:	thermal zone we are operating in
+  * @control_temp:	the target temperature in millicelsius
+@@ -200,14 +235,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+ 
+ 	max_power_frac = int_to_frac(max_allocatable_power);
+ 
+-	if (tz->tzp->sustainable_power) {
+-		sustainable_power = tz->tzp->sustainable_power;
+-	} else {
+-		sustainable_power = estimate_sustainable_power(tz);
+-		estimate_pid_constants(tz, sustainable_power,
+-				       params->trip_switch_on, control_temp,
+-				       true);
+-	}
++	sustainable_power = get_sustainable_power(tz, params, control_temp);
+ 
+ 	err = control_temp - tz->temperature;
+ 	err = int_to_frac(err);
