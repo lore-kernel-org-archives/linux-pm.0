@@ -2,112 +2,170 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-3.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 58E9DC433FE
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:21:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0AA65C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 05:37:45 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 338DF22D06
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:21:26 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CCD8820867
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 05:37:44 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728444AbgLGBVK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Dec 2020 20:21:10 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59748 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728641AbgLGBVK (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Dec 2020 20:21:10 -0500
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E58A2C0613D3
-        for <linux-pm@vger.kernel.org>; Sun,  6 Dec 2020 17:20:23 -0800 (PST)
-Received: by mail-ed1-x541.google.com with SMTP id cm17so11982645edb.4
-        for <linux-pm@vger.kernel.org>; Sun, 06 Dec 2020 17:20:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=bSpze0Ktx1a78HhY8N3JUw4+cmElw0CnjsvykxTs3x0=;
-        b=iGKrqSZX3YAWdjC/ijOceS289SqjnC7RjMIpww70orwiNX3bdmHHiOwsx6de1viBoa
-         NyKzhTyb8lHRisvObhjgqnGJqazeTpH52EWtk262VV5dk1vugJXeelcYLUlXJ1l3fxAr
-         88FTIOV334hX/Z/9Xq9GzdhQXFvsCfM8C1o8tl/acgcdj0TM4IsRFe7Ay79uTgbY5SxS
-         4utTXfsF2rczDIooGdCWppIudduMvgEir/1+3XRCaNAwJYs7aZCY44TG/EBaP1qmJzd+
-         kZa3oFvQX8vhhxPt7hKBSh4xgi/jXdnMFmLxjqkfkS+5+GfBc2tzw0o5eC8y+K/vDKN6
-         uM4A==
+        id S1726537AbgLGFhY convert rfc822-to-8bit (ORCPT
+        <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 00:37:24 -0500
+Received: from youngberry.canonical.com ([91.189.89.112]:51827 "EHLO
+        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725881AbgLGFhY (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 00:37:24 -0500
+Received: from mail-pf1-f198.google.com ([209.85.210.198])
+        by youngberry.canonical.com with esmtps (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
+        (Exim 4.86_2)
+        (envelope-from <kai.heng.feng@canonical.com>)
+        id 1km9CT-0000KG-NT
+        for linux-pm@vger.kernel.org; Mon, 07 Dec 2020 05:36:41 +0000
+Received: by mail-pf1-f198.google.com with SMTP id z68so8481871pfc.0
+        for <linux-pm@vger.kernel.org>; Sun, 06 Dec 2020 21:36:41 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=bSpze0Ktx1a78HhY8N3JUw4+cmElw0CnjsvykxTs3x0=;
-        b=cilGuumKNyDWIKyYMmR06bufW/oA8sME+66bn+UOTStCRn3+w4N/ARnv/yObuwgbHl
-         0Ih5q1HzMtQ70aGHxAWFrO6IOHUy5k5UVTU3XvZMTIe/DMjjwomrZEOK65YsBDk4nPYf
-         oQKMynIyU097Fy8alAi1QZJkTongjBf3lQdGHI5WOPwTHnuU15yPlu7/s50NM2utlcG5
-         qXivOy9PtnkrQBbwN3aJAxAYlyn6dqKNi/OmkCuXUiL2ruKd4xuKVs/h98Fn6zzg6ZoX
-         lvicwXAx1NbeJ4Ze62U2zpNi2KOFJ1gsx+dEM8xW65YFb8Sfp2sP+i417ktPl1jMCgkY
-         V2MQ==
-X-Gm-Message-State: AOAM532Q6g0/f8Z46dQkTdBWUnC3XWMqzzQ1hGt+C1szvOwK5D4OYKAz
-        zZ5ZwtVGmaWo6WlIx+iONxeKPwpktry1RsaHjWyy6w==
-X-Google-Smtp-Source: ABdhPJzobOYaAtrz0mVYekXANYxF4WBTuwyn5F+FgBpi+a+Bzggk4+NE2lxXKPn9ry9YRiXfW0QavF3RQSOdrXNudxE=
-X-Received: by 2002:aa7:c652:: with SMTP id z18mr17190457edr.60.1607304022539;
- Sun, 06 Dec 2020 17:20:22 -0800 (PST)
-MIME-Version: 1.0
-References: <20201204075345.5161-1-jun.nie@linaro.org> <20201204075345.5161-2-jun.nie@linaro.org>
- <022b3f66-ae19-79f5-c59b-0cc703a29f15@somainline.org>
-In-Reply-To: <022b3f66-ae19-79f5-c59b-0cc703a29f15@somainline.org>
-From:   Jun Nie <jun.nie@linaro.org>
-Date:   Mon, 7 Dec 2020 09:20:11 +0800
-Message-ID: <CABymUCOOMdR6EJyc96pVsxKF_hwf96-09NkvW8ftec9Ez63tRQ@mail.gmail.com>
-Subject: Re: [PATCH v2 1/5] interconnect: qcom: Consolidate interconnect RPM support
-To:     AngeloGioacchino Del Regno 
-        <angelogioacchino.delregno@somainline.org>
-Cc:     devicetree@vger.kernel.org,
-        Georgi Djakov <georgi.djakov@linaro.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        agross@kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Rob Herring <robh@kernel.org>,
-        Vincent Knecht <vincent.knecht@mailoo.org>,
-        Shawn Guo <shawn.guo@linaro.org>, martin.botka@somainline.org,
-        marijn.suijten@somainline.org, konrad.dybcio@somainline.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        h=x-gm-message-state:mime-version:subject:from:in-reply-to:date:cc
+         :content-transfer-encoding:message-id:references:to;
+        bh=YwGMi9iNd6O/Jb8LuzDIfb7n8JTTcq96cUgR5LZJ6ho=;
+        b=KL6akK31KJ+djJ70OzkxKohIdBJ3mb08wZ2Ubxt7OsaiMhEXHRffiCcVmBrQfC9sLu
+         RQ+VVf6vn12QcEawEQeHi8VyXs6yRiIPrTGckWQXdHFJau2gueWidWAh2JjhPcz2MVF5
+         apvCzkLe+E1K6n5uMsU9yi6im25mh9xIr0D5Fl3SsCJXUXDhKcxiZLFLF1bZQRIUebkr
+         1aK6fG1jD4t1KVZX2lAZAOKCKKI4RvdbC9f+tueXBu+HelhxfQ/hi8FqWi0Yw0Alb42m
+         zVdGfSVCgAWC4p0Kybf7XJUpKdpP6xD4BEL4JRnwGTVB7Vxq9GV0Ufcm+emFagIQCe3d
+         X9OA==
+X-Gm-Message-State: AOAM532ota1S0AfhFCQNfL1iMNi+mpiDm4f5c4ujHnRneOprRER3FEFP
+        Qd5fraTZVEROf+PGSV4XuLK6v4WXRxEy+JyLRvbGvdZHO5Oj5UMaispbm3bHypBMWC38wdulDAM
+        RluTYFWU/5fgAlzihmFuNSV21t7FHXxadLJbq
+X-Received: by 2002:a17:902:830a:b029:da:df3b:459a with SMTP id bd10-20020a170902830ab02900dadf3b459amr8931036plb.75.1607319399824;
+        Sun, 06 Dec 2020 21:36:39 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJyOvWqW1KGPx37vxNpQuOkkh0LYbbhwGCUnQvxzO9fmn844rtNnaDBgPn+0nSp9WkuOTdXViQ==
+X-Received: by 2002:a17:902:830a:b029:da:df3b:459a with SMTP id bd10-20020a170902830ab02900dadf3b459amr8931014plb.75.1607319399534;
+        Sun, 06 Dec 2020 21:36:39 -0800 (PST)
+Received: from [192.168.1.208] (220-133-187-190.HINET-IP.hinet.net. [220.133.187.190])
+        by smtp.gmail.com with ESMTPSA id 22sm12021202pfn.190.2020.12.06.21.36.37
+        (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
+        Sun, 06 Dec 2020 21:36:38 -0800 (PST)
+Content-Type: text/plain;
+        charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 14.0 \(3654.20.0.2.21\))
+Subject: Re: [PATCH 1/3] thermal: core: Add indication for userspace usage
+From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
+In-Reply-To: <f863f2e1e322a8819c660f5eefbbc4acf7522990.camel@linux.intel.com>
+Date:   Mon, 7 Dec 2020 13:36:35 +0800
+Cc:     Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Zhang Rui <rui.zhang@intel.com>, amitk@kernel.org,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+Content-Transfer-Encoding: 8BIT
+Message-Id: <FCFE1F21-2EC6-4D3A-8B2E-32C653816D58@canonical.com>
+References: <20201128175450.12456-1-kai.heng.feng@canonical.com>
+ <004fe225-1009-06d8-b297-c03a4c67550f@linaro.org>
+ <860126B8-1152-4EE3-B15E-B4E45EFE879F@canonical.com>
+ <fc67ad02826fb3adfd8457e1a0baf234a8fa3fce.camel@linux.intel.com>
+ <34348B03-5E27-49A0-A704-6332BAC00758@canonical.com>
+ <585bb5d3ee5bea063795682108576c3464ba72b6.camel@linux.intel.com>
+ <D53454A1-5ED0-4B4D-B22F-8663C9970ECD@canonical.com>
+ <f863f2e1e322a8819c660f5eefbbc4acf7522990.camel@linux.intel.com>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+X-Mailer: Apple Mail (2.3654.20.0.2.21)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-AngeloGioacchino Del Regno <angelogioacchino.delregno@somainline.org>
-=E4=BA=8E2020=E5=B9=B412=E6=9C=885=E6=97=A5=E5=91=A8=E5=85=AD =E4=B8=8A=E5=
-=8D=882:04=E5=86=99=E9=81=93=EF=BC=9A
->
-> Il 04/12/20 08:53, Jun Nie ha scritto:
-> > Add RPM based interconnect driver implements the set and aggregate
-> > functionalities that translates bandwidth requests into RPM messages.
-> > These modules provide a common set of functionalities for all
-> > Qualcomm RPM based interconnect providers and should help reduce code
-> > duplication when adding new providers.
-> >
-> > Signed-off-by: Jun Nie <jun.nie@linaro.org>
-> Hello!
-> I agree, the RPM based ICC should be commonized... in any case, I think
-> that you should rebase your patch series over mine, where I am adding
-> support for SDM660 and also introducing a mechanism to set QoS, which
-> can actually be used by most platforms managing the ICC over RPM.
->
-> Please, check it out: https://lore.kernel.org/patchwork/patch/1322131/
->
+
+
+> On Dec 1, 2020, at 02:39, Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com> wrote:
+> 
+> On Tue, 2020-12-01 at 02:22 +0800, Kai-Heng Feng wrote:
+>>> On Dec 1, 2020, at 02:13, Srinivas Pandruvada <
+>>> srinivas.pandruvada@linux.intel.com> wrote:
+>> 
+>> [snipped] 
+>> 
+>>>>> What about creating an new callback
+>>>>> 
+>>>>> enum thermal_trip_status {
+>>>>> 	THERMAL_TRIP_DISABLED = 0,
+>>>>> 	THERMAL_TRIP_ENABLED,
+>>>>> };
+>>>>> 
+>>>>> int get_trip_status(struct thermal_zone_device *, int trip,
+>>>>> enum
+>>>>> thermal_trip_status *state);
+>>>>> 
+>>>>> Then in 
+>>>>> static void handle_thermal_trip(struct thermal_zone_device *tz,
+>>>>> int
+>>>>> trip)
+>>>>> {
+>>>>> 
+>>>>> /* before tz->ops->get_trip_temp(tz, trip, &trip_temp); */
+>>>>> if (tz->ops->get_trip_status) {
+>>>>> 	enum thermal_trip_status *status;
+>>>>> 
+>>>>> 	if (!tz->ops->get_trip_status(tz, trip, &status)) {
+>>>>> 		if (status == THERMAL_TRIP_DISABLED)
+>>>>> 			return;	
+>>>>> 	}
+>>>>> }
+>>>>> ...
+>>>>> ...
+>>>>> 
+>>>>> }
+>>>>> 
+>>>>> 
+>>>>> This callback will help the cases:
+>>>>> - Allows drivers to selectively disable certain trips during
+>>>>> init
+>>>>> state
+>>>>> or system resume where there can be spikes or always. int340x
+>>>>> drivers
+>>>>> can disable always.
+>>>> 
+>>>> This sounds really great. This is indeed can happen on system
+>>>> resume,
+>>>> before userspace process thaw.
+>>>> 
+>>>>> - Still give options for drivers to handle critical trip even
+>>>>> if
+>>>>> they
+>>>>> are bound to user space governors. User space process may be
+>>>>> dead,
+>>>>> so
+>>>>> still allow kernel to process graceful shutdown
+>>>> 
+>>>> To make the scenario happen, do we need a new sysfs to let
+>>>> usespace
+>>>> enable it with THERMAL_TRIP_ENABLED?
+>>> This should be drivers call not user space.
+>> 
+>> Understood. So after thermal_zone_device_register(), the driver can
+>> decide to what to return on get_trip_temp().
+> get_trip_status()
+> 
+>> Let me work on a new patch if there's no other concern.
+> Better to wait for confirmation from Daniel and others.
+
+Daniel,
+
+Do you like Srinivas' proposed solution?
+
+I hope we can find a solution in upstream kernel soon.
+
+Kai-Heng
+
+> 
 > Thanks,
-> Angelo
->
+> Srinivas
+> 
+>> 
+>> Kai-Heng
+>> 
+>>> Thanks,
+>>> Srinivas
 
-Angelo,
-
-Thanks for your contribution! It looks like a great new feature. But
-they are not
-ready for other qnoc icc drivers yet. It should not be included in
-this commonization
-patch set until someone add and test the feature for all qnoc drivers.
-
-Regards,
-Jun
