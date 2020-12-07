@@ -2,166 +2,137 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 521F4C1B087
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:31:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 01860C4361B
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:37:26 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 278C823601
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:31:06 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BFF362337F
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 14:37:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726611AbgLGOa6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 09:30:58 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40248 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726636AbgLGOa6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 09:30:58 -0500
-Received: from mail-pj1-x1030.google.com (mail-pj1-x1030.google.com [IPv6:2607:f8b0:4864:20::1030])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E84D1C0613D1
-        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 06:30:11 -0800 (PST)
-Received: by mail-pj1-x1030.google.com with SMTP id f14so7435171pju.4
-        for <linux-pm@vger.kernel.org>; Mon, 07 Dec 2020 06:30:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=Gy9xDeC7zH2SLO6k43yQydOWdkEDOtU5OrOnFrHQ7o0=;
-        b=vNOfNSqVwsTrhftYIdLdBSSb9iLPi8z1zHtHXWGWTgDYb7+zdEXJuQW6hdgH7tE4LM
-         zwwGzeSHyAb7uXoUOdUnwoTUWHgaKM5+sYnt5r67zeldvmO6129XiSM7E1sK9Wnb+QCd
-         SOEGwzQrDUo0XsUD6puLlkx9SnoMzbXspZ0pWrFgjHopc0xdmFMyTlh/SkjdPhkhVTU5
-         52nPSoUMIumiiECANnVAAnjeQ2ZGRvrhPCNpL2fc5aGQRrKIGOmW87h7fMeXkO+mCahM
-         Qtz5OGXah0BBocvU+JBZGDzPKmclweKEPG01Iw/uXU72lundhGDYgS26KiRI8OYPIWc3
-         umXg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=Gy9xDeC7zH2SLO6k43yQydOWdkEDOtU5OrOnFrHQ7o0=;
-        b=iix+O6FrX8vRKSGjoYW3FYf/sBY+sqm7rXFcblRBnJQxCY/vMHcwu+V+u0iA5TXO4r
-         fhhG6LHGVoTywIygT8v4+Lalg9CWDAzJ8BU5pHy/BvRtUINTGlchOdAC+maLnzcsQnx0
-         7YrNGwwtZIWI1r0K79Dfkiviaosheu0UOnb3kgwWDDKxaQX1FSVbtCkj09+A/iSIkkh2
-         KBQaCMTzXnomww/kWOm6eufSLtqazeDWJdkNf2eK/iBigH2j2Z2iUbSyo5R+jI2476bw
-         KSktmHYv9oqnyuhMYGHRA7Vyf/7FfhY6A/DTDheVxJIPvrAh0b3j2CQpkECjtWld25jT
-         aN3A==
-X-Gm-Message-State: AOAM5323M8ArFfwYN3GkGnNb5mi4OPS+E0hnw0s77pjTiKxcv5wwuc5u
-        nTqDdn3u1yMJGHOnT0frY6R85wOdL269+A==
-X-Google-Smtp-Source: ABdhPJxCr27mus90zSLqwbJebw3dJ7dI4+KWQOJBNb4gk3mc5Q1fq9/CQ+bbmolcxjfZBAkAjoxeSQ==
-X-Received: by 2002:a17:90a:ab8e:: with SMTP id n14mr16184224pjq.96.1607351411496;
-        Mon, 07 Dec 2020 06:30:11 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id z27sm12907431pfq.70.2020.12.07.06.30.10
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Dec 2020 06:30:10 -0800 (PST)
-Message-ID: <5fce3c72.1c69fb81.9465b.e85c@mx.google.com>
-Date:   Mon, 07 Dec 2020 06:30:10 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S1726439AbgLGOhK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 09:37:10 -0500
+Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.50]:21910 "EHLO
+        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726182AbgLGOhK (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 09:37:10 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607351658;
+        s=strato-dkim-0002; d=fossekall.de;
+        h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:
+        X-RZG-CLASS-ID:X-RZG-AUTH:From:Subject:Sender;
+        bh=9SYLzlFgBXzuvKKzJL8JRRj5vw51OfuroQA/clOun08=;
+        b=KK79hKHlUYATG2KA8lAb3b14Uk8W/Wc6mmW5PIHDXgU5fTgXvlWLPjHrqIIqDI3z8j
+        Gu56Rud7omTG2HFPJ5Ln+eOnL9RDHdZpkvOKs2N7jZNLaFLfSGpVpbQhojVrOGEpoYjE
+        fhgJ2k/ZsvT3UqotJgblyvPu2F8GtKc3Ch9fAOC3Jev/cs39RCyhMB1vK2tS90TUSlc0
+        WC0UI0cpZDc8DOadx3jTx+JvuG0RncuaQz2HWay9VXJFj5t4MN3QBLN9an/+jdhzn8JL
+        sAFnH+Alp9WaeLvbmBq0IvMbZNU2zXCFoOK6bZ+BUENCzEkwxMvBp/i6YGHLOm9FISnm
+        dG5w==
+X-RZG-AUTH: ":O2kGeEG7b/pS1EzgE2y7nF0STYsSLflpbjNKxx7cGrBOdI6BL9pkS3QW19mO7I+/JwRspuzJFZuRzQ=="
+X-RZG-CLASS-ID: mo00
+Received: from aerfugl
+        by smtp.strato.de (RZmta 47.3.4 AUTH)
+        with ESMTPSA id g02087wB7ES9OVc
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
+        (Client did not present a certificate);
+        Mon, 7 Dec 2020 15:28:09 +0100 (CET)
+Received: from koltrast.a98shuttle.de ([192.168.1.27] helo=a98shuttle.de)
+        by aerfugl with smtp (Exim 4.89)
+        (envelope-from <michael@a98shuttle.de>)
+        id 1kmHUh-0001TH-CZ; Mon, 07 Dec 2020 15:28:03 +0100
+Received: (nullmailer pid 17908 invoked by uid 502);
+        Mon, 07 Dec 2020 14:28:03 -0000
+From:   Michael Klein <michael@fossekall.de>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@siol.net>,
+        Michael Klein <michael@fossekall.de>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v3 2/3] Documentation: DT: binding documentation for regulator-poweroff
+Date:   Mon,  7 Dec 2020 15:27:55 +0100
+Message-Id: <20201207142756.17819-3-michael@fossekall.de>
+X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201207142756.17819-1-michael@fossekall.de>
+References: <20201128103958.q6glewhhch7vtczr@gilmour>
+ <20201207142756.17819-1-michael@fossekall.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.10-rc7-87-g960e625edeb5
-X-Kernelci-Report-Type: build
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 3 warnings (v5.10-rc7-87-g960e625edeb5)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 3 warnings (v5.10-rc7-87-g9=
-60e625edeb5)
+Add devicetree binding documentation for regulator-poweroff driver.
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-10-rc7-87-g960e625edeb5/
-
-Tree: pm
-Branch: testing
-Git Describe: v5.10-rc7-87-g960e625edeb5
-Git Commit: 960e625edeb5932009c1e687adae37447fdf69d8
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
-
-Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-    multi_v7_defconfig (gcc-8): 3 warnings
-
-i386:
-
-mips:
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge)=
-: /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI bus
-    1    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge)=
-: /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SPI bus
-    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
-iled prerequisite 'spi_bus_bridge'
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
-tion mismatches
-
-Warnings:
-    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge): /so=
-c/apb@d4000000/spi@d4037000: incorrect #address-cells for SPI bus
-    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge): /so=
-c/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI bus
-    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
-prerequisite 'spi_bus_bridge'
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
+Signed-off-by: Michael Klein <michael@fossekall.de>
 ---
-For more info write to <info@kernelci.org>
+ .../power/reset/regulator-poweroff.yaml       | 53 +++++++++++++++++++
+ 1 file changed, 53 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+
+diff --git a/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml b/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+new file mode 100644
+index 000000000000..8c8ce6bb031a
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+@@ -0,0 +1,53 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/regulator-poweroff.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Force-disable power regulators to turn the power off.
++
++maintainers:
++  - Michael Klein <michael@fossekall.de>
++
++description: |
++  When the power-off handler is called, one more regulators are disabled
++  by calling regulator_force_disable(). If the power is still on and the
++  CPU still running after a 3000ms delay, a WARN_ON(1) is emitted.
++
++properties:
++  compatible:
++    const: "regulator-poweroff"
++
++  regulator-names:
++    description:
++      Array of regulator names
++    $ref: /schemas/types.yaml#/definitions/string-array
++
++  REGULATOR-supply:
++    description:
++      For any REGULATOR listed in regulator-names, a phandle
++      to the corresponding regulator node
++    $ref: /schemas/types.yaml#/definitions/phandle
++
++  timeout-ms:
++    description:
++      Time to wait before asserting a WARN_ON(1). If nothing is
++      specified, 3000 ms is used.
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++required:
++  - compatible
++  - regulator-names
++  - REGULATOR-supply
++
++additionalProperties: false
++
++examples:
++  - |
++    regulator-poweroff {
++        compatible = "regulator-poweroff";
++        regulator-names = "vcc1v2", "vcc-dram";
++        vcc1v2-supply = <&reg_vcc1v2>;
++        vcc-dram-supply = <&reg_vcc_dram>;
++    };
++...
+-- 
+2.29.2
+
