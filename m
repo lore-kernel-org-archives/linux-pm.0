@@ -2,280 +2,341 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3824DC4361B
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Dec 2020 20:59:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4E216C19425
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:19:13 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 029C522D08
-	for <linux-pm@archiver.kernel.org>; Sun,  6 Dec 2020 20:59:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1D8082312E
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 01:19:13 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727474AbgLFU7y (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Sun, 6 Dec 2020 15:59:54 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48106 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726731AbgLFU7y (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Dec 2020 15:59:54 -0500
-Received: from mail-io1-xd41.google.com (mail-io1-xd41.google.com [IPv6:2607:f8b0:4864:20::d41])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B367CC0613D0;
-        Sun,  6 Dec 2020 12:59:13 -0800 (PST)
-Received: by mail-io1-xd41.google.com with SMTP id q137so11388789iod.9;
-        Sun, 06 Dec 2020 12:59:13 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
-         :cc:content-transfer-encoding;
-        bh=d6BRn7qihcauXjMDGzCvXnL71Mb/VmGjXDz8MROhlHk=;
-        b=m+rm8fkK8CPvVFookoUg7lSnLJD5HvqLaOzuUKEyIW9guDx7K3wLm45UHfWwrmsdOX
-         zm/d61/jfJL7QDyQxMPfp13kVRhlEcNDmce7pV6Tu2iIZcUcLpeVR6oJCcnBOPGzwW7I
-         Z5q1F1Efpfn3wdQ902cCE+nmPK5KCj53LyNsHieHbJbHX1pAP38j9CGiVcm63KR7kmdt
-         VyePJmXIqPU4CftiNwTO3mLZIGF3aw6YgXg/+6Y+mj2Rs2OnMBgo9gdouVCT8O25v13X
-         OQ8oXrQuJ//j0744PqnV6zIXkI6ttDHZ2Gax/TlnGwXV1qMiCXFj1CBzjvhyuCpsZgtk
-         uQcQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc:content-transfer-encoding;
-        bh=d6BRn7qihcauXjMDGzCvXnL71Mb/VmGjXDz8MROhlHk=;
-        b=hiZ/FmQXp4UdBxogYoQB8nDl545c35w1/jms9T3VHefqLVYNutchjobgqjRsyHd5eL
-         M3B+vgeaUSH9tbqtdXnsvUG4PXej0jShZx1HzU/9m3sOEJ22zYwslg5gn19zE+/7tIqm
-         vEGtXFj9SuNvXv7QsdnwMQHlGUKKompu7v7qvKVMRyE569EyFmTjvJxI5uz5rJnVKdNC
-         L3+CdM5s+k7my1T0RH6Euch3viw82Vdl50mAb2I2/Je0PHRKL6tTjDx11EaMW7Sirqfl
-         /sH/By5oDMcCdX4bQfRPN8imH4KmD9+yD3V366Cj6dirPeYUBORpyBT39OhRVI7gUYpI
-         UNZw==
-X-Gm-Message-State: AOAM532fPxkKS1w29MhWZLCRqgzvTdVTqOYHDgL3qcjvb0KnuM6JQMAn
-        xfgAH9PcvyFU+66OhC8cl37hbcwq8ANKiApiBjE=
-X-Google-Smtp-Source: ABdhPJzE54kWFUqCTS6AEHWQBP4v9lcCjLyuSTiIvnhN7o6HJIPZn0iDKhK7hYQJu2j9WmeX/FVlAMVOazhd2DeZRtk=
-X-Received: by 2002:a5d:9b97:: with SMTP id r23mr14654441iom.123.1607288352988;
- Sun, 06 Dec 2020 12:59:12 -0800 (PST)
-MIME-Version: 1.0
-References: <20201204070901.24592-1-huangshuosheng@allwinnertech.com> <388512ba-9e2b-acad-8487-5c26a6eb101b@gmail.com>
-In-Reply-To: <388512ba-9e2b-acad-8487-5c26a6eb101b@gmail.com>
-From:   =?UTF-8?B?Q2zDqW1lbnQgUMOpcm9u?= <peron.clem@gmail.com>
-Date:   Sun, 6 Dec 2020 21:59:01 +0100
-Message-ID: <CAJiuCcf3r_ThavkXtHaRujZOthvRK2_+Esa_5BG-fk5xBN6fxQ@mail.gmail.com>
-Subject: Re: [PATCH 1/2] cpufreq: sun50i: add a100 cpufreq support
-To:     Shuosheng Huang <huangshuosheng@allwinnertech.com>,
+        id S1728549AbgLGBS7 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Sun, 6 Dec 2020 20:18:59 -0500
+Received: from mailout4.samsung.com ([203.254.224.34]:18822 "EHLO
+        mailout4.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726046AbgLGBS6 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Sun, 6 Dec 2020 20:18:58 -0500
+Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
+        by mailout4.samsung.com (KnoxPortal) with ESMTP id 20201207011813epoutp049288c28e3c26007ae4aba146c0e4bd2a~OSmAfMi-u2542125421epoutp04F
+        for <linux-pm@vger.kernel.org>; Mon,  7 Dec 2020 01:18:13 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout4.samsung.com 20201207011813epoutp049288c28e3c26007ae4aba146c0e4bd2a~OSmAfMi-u2542125421epoutp04F
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+        s=mail20170921; t=1607303893;
+        bh=R6YhQOE3M+CfVudE0G4ymskj0c0R7p2I/IAq/vW4XxI=;
+        h=Subject:To:Cc:From:Date:In-Reply-To:References:From;
+        b=jsKcwaOqewN9pEw5Wy/AXPgFXxnwiLlhkJoN3L6kqCw08+Av6jKIAFuQ/hqxODZXa
+         j4uDvI36+2KDlq89dpOmetGIcTDMSTrT2gpOVkNNIRGL222taQX65bo831kp81i8rD
+         EcVQd8hAFPhKkhKhg8znJ+ZsrXq9UMsNA7DWd2tw=
+Received: from epsnrtp2.localdomain (unknown [182.195.42.163]) by
+        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
+        20201207011812epcas1p106676f3a6f58b6282cff82413a11ab1d~OSl-vXCos3244732447epcas1p1J;
+        Mon,  7 Dec 2020 01:18:12 +0000 (GMT)
+Received: from epsmges1p1.samsung.com (unknown [182.195.40.157]) by
+        epsnrtp2.localdomain (Postfix) with ESMTP id 4Cq56B1N2dzMqYkv; Mon,  7 Dec
+        2020 01:18:10 +0000 (GMT)
+Received: from epcas1p4.samsung.com ( [182.195.41.48]) by
+        epsmges1p1.samsung.com (Symantec Messaging Gateway) with SMTP id
+        91.04.02418.2D28DCF5; Mon,  7 Dec 2020 10:18:10 +0900 (KST)
+Received: from epsmtrp1.samsung.com (unknown [182.195.40.13]) by
+        epcas1p3.samsung.com (KnoxPortal) with ESMTPA id
+        20201207011809epcas1p3124acd8fe6ffd2eb9ff34267e8939e75~OSl8m_cUv1075810758epcas1p37;
+        Mon,  7 Dec 2020 01:18:09 +0000 (GMT)
+Received: from epsmgms1p1new.samsung.com (unknown [182.195.42.41]) by
+        epsmtrp1.samsung.com (KnoxPortal) with ESMTP id
+        20201207011809epsmtrp1472f329c13c1e28a72c18fcfa7343d7e~OSl8lGBd71882218822epsmtrp15;
+        Mon,  7 Dec 2020 01:18:09 +0000 (GMT)
+X-AuditID: b6c32a35-c23ff70000010972-36-5fcd82d227f1
+Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
+        epsmgms1p1new.samsung.com (Symantec Messaging Gateway) with SMTP id
+        55.02.13470.1D28DCF5; Mon,  7 Dec 2020 10:18:09 +0900 (KST)
+Received: from [10.113.221.102] (unknown [10.113.221.102]) by
+        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
+        20201207011809epsmtip2247c50f337957e050ac5783d70302f82~OSl8Px-xL0365903659epsmtip2R;
+        Mon,  7 Dec 2020 01:18:09 +0000 (GMT)
+Subject: Re: [PATCH v11 09/10] PM / devfreq: tegra30: Support interconnect
+ and OPPs from device-tree
+To:     Dmitry Osipenko <digetx@gmail.com>,
+        Thierry Reding <thierry.reding@gmail.com>,
+        Jonathan Hunter <jonathanh@nvidia.com>,
+        Georgi Djakov <georgi.djakov@linaro.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@siol.net>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Yangtao Li <tiny.windzz@gmail.com>
-Cc:     devicetree <devicetree@vger.kernel.org>,
-        linux-kernel <linux-kernel@vger.kernel.org>,
-        linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-        "open list:ALLWINNER CPUFREQ DRIVER" <linux-pm@vger.kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Peter De Schrijver <pdeschrijver@nvidia.com>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Kyungmin Park <kyungmin.park@samsung.com>,
+        Mikko Perttunen <cyndis@kapsi.fi>,
+        Viresh Kumar <vireshk@kernel.org>,
+        Peter Geis <pgwipeout@gmail.com>,
+        Nicolas Chauvet <kwizart@gmail.com>,
+        Krzysztof Kozlowski <krzk@kernel.org>
+Cc:     linux-tegra@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, dri-devel@lists.freedesktop.org,
+        devicetree@vger.kernel.org
+From:   Chanwoo Choi <cw00.choi@samsung.com>
+Organization: Samsung Electronics
+Message-ID: <42927892-d4a7-9368-480b-14c0d06e7116@samsung.com>
+Date:   Mon, 7 Dec 2020 10:32:58 +0900
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
+        Thunderbird/59.0
+MIME-Version: 1.0
+In-Reply-To: <20201203192439.16177-10-digetx@gmail.com>
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrFJsWRmVeSWpSXmKPExsWy7bCmge6lprPxBkePslq8+/SU1WL+kXOs
+        Fqs/Pma0uPL1PZvF9L2b2CxaZi1isTh/fgO7xdana5gszja9Ybe4vGsOm8Xn3iOMFp1fZrFZ
+        XDzlanG7cQWbxaS1Uxktzj7ztmjde4Td4t+1jSwWP3fNY7HY/OAYm4OIx/sbreweO2fdZfe4
+        dO4Ps8emVZ1sHneu7WHzuN99nMmjt/kdm0ffllWMHp83yQVwRmXbZKQmpqQWKaTmJeenZOal
+        2yp5B8c7x5uaGRjqGlpamCsp5CXmptoqufgE6Lpl5gB9pqRQlphTChQKSCwuVtK3synKLy1J
+        VcjILy6xVUotSMkpsCzQK07MLS7NS9dLzs+1MjQwMDIFKkzIzvi2sY25YINRRfdCnwbGWRpd
+        jJwcEgImEotPb2fvYuTiEBLYwSgx9cJqKOcTo8Tns9NYIZxvjBLX5y1mhWm5evkDVNVeRonf
+        U78xQTjvGSWWXFkNVMXBISyQJjGhpxgkLiJwk0Vi+Yp/bCDdzAIzGCXu7FEGsdkEtCT2v7gB
+        FucXUJS4+uMxI4jNK2An8XxDE1icRUBFom/XcyYQW1QgTOLkthaoGkGJkzOfsIDYnALmEp+3
+        zGSEmC8ucevJfCYIW15i+9s5zBBXz+aUOHIqE8J2kTjffw0qLizx6vgWdghbSuJlfxuUXS2x
+        8uQRNpAHJAQ6GCW27L8A9b6xxP6lk5lAnmQW0JRYv0sfIqwosfP3XKgb+CTefe0Bh4OEAK9E
+        R5sQRImyxOUHd5kgbEmJxe2dbBMYlWYh+WYWkg9mIflgFsKyBYwsqxjFUguKc9NTiw0LDJEj
+        exMjONFrme5gnPj2g94hRiYOxkOMEhzMSiK8alJn44V4UxIrq1KL8uOLSnNSiw8xmgLDdyKz
+        lGhyPjDX5JXEG5oaGRsbW5gYmpkaGiqJ8/7R7ogXEkhPLEnNTk0tSC2C6WPi4JRqYIqZqvbW
+        QyPNeFpn3ZKXC6ynzpVJbDu0d4rfDNGH7pfq18zjn7rmwafJMyVjBJzeesVmFTx/5buuTf6p
+        5V3uVx/aFOx31ljxVOqlt156anH7gdQ92yab2ORVf2/Hb+H48+yyo+vnn/s2bpJfblg8sf05
+        Z/jlkhwZV46rcidbj97o7PP7uGylYI0MB2cI97lnXfMCInemO03sD/q51dzorKd/1bLGcgHR
+        c68Ywk7WtbI+yo7IaDHjDRPYxBJ4j3fXDa001UpN+cnsUVIpHH9qSkJmaZoxfzUL3p4rEZBi
+        ePl5hW7/6dabAZ0GL3KU+P+tOL9zffJsFlXPvpOx2QF6nf1zC6eJMCWLGc7/bR+nxFKckWio
+        xVxUnAgA0XZZXH0EAAA=
+X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFrrOIsWRmVeSWpSXmKPExsWy7bCSvO7FprPxBiuPSFi8+/SU1WL+kXOs
+        Fqs/Pma0uPL1PZvF9L2b2CxaZi1isTh/fgO7xdana5gszja9Ybe4vGsOm8Xn3iOMFp1fZrFZ
+        XDzlanG7cQWbxaS1Uxktzj7ztmjde4Td4t+1jSwWP3fNY7HY/OAYm4OIx/sbreweO2fdZfe4
+        dO4Ps8emVZ1sHneu7WHzuN99nMmjt/kdm0ffllWMHp83yQVwRnHZpKTmZJalFunbJXBlfNvY
+        xlywwaiie6FPA+MsjS5GTg4JAROJq5c/sHcxcnEICexmlPjQs5wJIiEpMe3iUeYuRg4gW1ji
+        8OFiiJq3jBI7d+5gA6kRFkiTaJg4lwUkISJwl0Vi0o9bbCAOs8AMRok/GzZCjd3GKHHwRS8r
+        SAubgJbE/hc3wNr5BRQlrv54zAhi8wrYSTzf0AQWZxFQkejb9RzsDFGBMImdSx4zQdQISpyc
+        +YQFxOYUMJf4vGUmWC+zgLrEn3mXmCFscYlbT+YzQdjyEtvfzmGewCg8C0n7LCQts5C0zELS
+        soCRZRWjZGpBcW56brFhgWFearlecWJucWleul5yfu4mRnDca2nuYNy+6oPeIUYmDsZDjBIc
+        zEoivGpSZ+OFeFMSK6tSi/Lji0pzUosPMUpzsCiJ817oOhkvJJCeWJKanZpakFoEk2Xi4JRq
+        YGrTU3NiYKnPyTm2oz/+RUOt3otLtY3XZm09dur0uy+vXysdkrqkOif0xifxPT/3zdb4+/Nz
+        b2iBr5jP8l0KFWxNBg+lPxUVvzm53mrF05YHsmGn/BONP6h0iF/Y1GMWp/zIa0d8zy1Z6YJT
+        jwvms+wxib1yZtEPY5Y7zWY/px3tmHjdx3vTHpMjcp/anOYKM7atqvu60fOERscm8YOd0bGv
+        mvuKlog/O96joNLEx7Gf6eSN6E//PicxXy09WL2qz/pwzbNiblOh1G7J5dYz2TdPqXiX7Jmh
+        rKNx4fOz16L/UlV/LGF8Iih1bfKdQ/O4u6bItvlNudTelCnFoKXn7Ttdzebz31kuV+N8D3ne
+        VVdiKc5INNRiLipOBABoDeQ/agMAAA==
+X-CMS-MailID: 20201207011809epcas1p3124acd8fe6ffd2eb9ff34267e8939e75
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-Sendblock-Type: SVC_REQ_APPROVE
+CMS-TYPE: 101P
+DLP-Filter: Pass
+X-CFilter-Loop: Reflected
+X-CMS-RootMailID: 20201203192723epcas1p372e53c3e1443b7cd3010c44faff735ec
+References: <20201203192439.16177-1-digetx@gmail.com>
+        <CGME20201203192723epcas1p372e53c3e1443b7cd3010c44faff735ec@epcas1p3.samsung.com>
+        <20201203192439.16177-10-digetx@gmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi Shuosheng,
+On 12/4/20 4:24 AM, Dmitry Osipenko wrote:
+> This patch moves ACTMON driver away from generating OPP table by itself,
+> transitioning it to use the table which comes from device-tree. This
+> change breaks compatibility with older device-trees and brings support
+> for the interconnect framework to the driver. This is a mandatory change
+> which needs to be done in order to implement interconnect-based memory
+> DVFS, i.e. device-trees need to be updated. Now ACTMON issues a memory
+> bandwidth requests using dev_pm_opp_set_bw() instead of driving EMC clock
+> rate directly.
+> 
+> Tested-by: Peter Geis <pgwipeout@gmail.com>
+> Tested-by: Nicolas Chauvet <kwizart@gmail.com>
+> Acked-by: Chanwoo Choi <cw00.choi@samsung.com>
+> Signed-off-by: Dmitry Osipenko <digetx@gmail.com>
+> ---
+>  drivers/devfreq/tegra30-devfreq.c | 79 +++++++++++++++----------------
+>  1 file changed, 37 insertions(+), 42 deletions(-)
+> 
+> diff --git a/drivers/devfreq/tegra30-devfreq.c b/drivers/devfreq/tegra30-devfreq.c
+> index 38cc0d014738..145ef91ae092 100644
+> --- a/drivers/devfreq/tegra30-devfreq.c
+> +++ b/drivers/devfreq/tegra30-devfreq.c
+> @@ -19,6 +19,8 @@
+>  #include <linux/reset.h>
+>  #include <linux/workqueue.h>
+>  
+> +#include <soc/tegra/fuse.h>
+> +
+>  #include "governor.h"
+>  
+>  #define ACTMON_GLB_STATUS					0x0
+> @@ -155,6 +157,7 @@ struct tegra_devfreq_device {
+>  
+>  struct tegra_devfreq {
+>  	struct devfreq		*devfreq;
+> +	struct opp_table	*opp_table;
+>  
+>  	struct reset_control	*reset;
+>  	struct clk		*clock;
+> @@ -612,34 +615,19 @@ static void tegra_actmon_stop(struct tegra_devfreq *tegra)
+>  static int tegra_devfreq_target(struct device *dev, unsigned long *freq,
+>  				u32 flags)
+>  {
+> -	struct tegra_devfreq *tegra = dev_get_drvdata(dev);
+> -	struct devfreq *devfreq = tegra->devfreq;
+>  	struct dev_pm_opp *opp;
+> -	unsigned long rate;
+> -	int err;
+> +	int ret;
+>  
+>  	opp = devfreq_recommended_opp(dev, freq, flags);
+>  	if (IS_ERR(opp)) {
+>  		dev_err(dev, "Failed to find opp for %lu Hz\n", *freq);
+>  		return PTR_ERR(opp);
+>  	}
+> -	rate = dev_pm_opp_get_freq(opp);
+> -	dev_pm_opp_put(opp);
+> -
+> -	err = clk_set_min_rate(tegra->emc_clock, rate * KHZ);
+> -	if (err)
+> -		return err;
+> -
+> -	err = clk_set_rate(tegra->emc_clock, 0);
+> -	if (err)
+> -		goto restore_min_rate;
+>  
+> -	return 0;
+> -
+> -restore_min_rate:
+> -	clk_set_min_rate(tegra->emc_clock, devfreq->previous_freq);
+> +	ret = dev_pm_opp_set_bw(dev, opp);
+> +	dev_pm_opp_put(opp);
+>  
+> -	return err;
+> +	return ret;
+>  }
+>  
+>  static int tegra_devfreq_get_dev_status(struct device *dev,
+> @@ -655,7 +643,7 @@ static int tegra_devfreq_get_dev_status(struct device *dev,
+>  	stat->private_data = tegra;
+>  
+>  	/* The below are to be used by the other governors */
+> -	stat->current_frequency = cur_freq;
+> +	stat->current_frequency = cur_freq * KHZ;
+>  
+>  	actmon_dev = &tegra->devices[MCALL];
+>  
+> @@ -705,7 +693,12 @@ static int tegra_governor_get_target(struct devfreq *devfreq,
+>  		target_freq = max(target_freq, dev->target_freq);
+>  	}
+>  
+> -	*freq = target_freq;
+> +	/*
+> +	 * tegra-devfreq driver operates with KHz units, while OPP table
+> +	 * entries use Hz units. Hence we need to convert the units for the
+> +	 * devfreq core.
+> +	 */
+> +	*freq = target_freq * KHZ;
+>  
+>  	return 0;
+>  }
+> @@ -774,6 +767,7 @@ static struct devfreq_governor tegra_devfreq_governor = {
+>  
+>  static int tegra_devfreq_probe(struct platform_device *pdev)
+>  {
+> +	u32 hw_version = BIT(tegra_sku_info.soc_speedo_id);
+>  	struct tegra_devfreq_device *dev;
+>  	struct tegra_devfreq *tegra;
+>  	struct devfreq *devfreq;
+> @@ -822,11 +816,25 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  		return err;
+>  	}
+>  
+> +	tegra->opp_table = dev_pm_opp_set_supported_hw(&pdev->dev,
+> +						       &hw_version, 1);
+> +	err = PTR_ERR_OR_ZERO(tegra->opp_table);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "Failed to set supported HW: %d\n", err);
+> +		return err;
+> +	}
+> +
+> +	err = dev_pm_opp_of_add_table(&pdev->dev);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "Failed to add OPP table: %d\n", err);
+> +		goto put_hw;
+> +	}
+> +
+>  	err = clk_prepare_enable(tegra->clock);
+>  	if (err) {
+>  		dev_err(&pdev->dev,
+>  			"Failed to prepare and enable ACTMON clock\n");
+> -		return err;
+> +		goto remove_table;
+>  	}
+>  
+>  	err = reset_control_reset(tegra->reset);
+> @@ -850,23 +858,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  		dev->regs = tegra->regs + dev->config->offset;
+>  	}
+>  
+> -	for (rate = 0; rate <= tegra->max_freq * KHZ; rate++) {
+> -		rate = clk_round_rate(tegra->emc_clock, rate);
+> -
+> -		if (rate < 0) {
+> -			dev_err(&pdev->dev,
+> -				"Failed to round clock rate: %ld\n", rate);
+> -			err = rate;
+> -			goto remove_opps;
+> -		}
+> -
+> -		err = dev_pm_opp_add(&pdev->dev, rate / KHZ, 0);
+> -		if (err) {
+> -			dev_err(&pdev->dev, "Failed to add OPP: %d\n", err);
+> -			goto remove_opps;
+> -		}
+> -	}
+> -
+>  	platform_set_drvdata(pdev, tegra);
+>  
+>  	tegra->clk_rate_change_nb.notifier_call = tegra_actmon_clk_notify_cb;
+> @@ -882,7 +873,6 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	}
+>  
+>  	tegra_devfreq_profile.initial_freq = clk_get_rate(tegra->emc_clock);
+> -	tegra_devfreq_profile.initial_freq /= KHZ;
+>  
+>  	devfreq = devfreq_add_device(&pdev->dev, &tegra_devfreq_profile,
+>  				     "tegra_actmon", NULL);
+> @@ -902,6 +892,10 @@ static int tegra_devfreq_probe(struct platform_device *pdev)
+>  	reset_control_reset(tegra->reset);
+>  disable_clk:
+>  	clk_disable_unprepare(tegra->clock);
+> +remove_table:
+> +	dev_pm_opp_of_remove_table(&pdev->dev);
+> +put_hw:
+> +	dev_pm_opp_put_supported_hw(tegra->opp_table);
+>  
+>  	return err;
+>  }
+> @@ -913,11 +907,12 @@ static int tegra_devfreq_remove(struct platform_device *pdev)
+>  	devfreq_remove_device(tegra->devfreq);
+>  	devfreq_remove_governor(&tegra_devfreq_governor);
+>  
+> -	dev_pm_opp_remove_all_dynamic(&pdev->dev);
+> -
+>  	reset_control_reset(tegra->reset);
+>  	clk_disable_unprepare(tegra->clock);
+>  
+> +	dev_pm_opp_of_remove_table(&pdev->dev);
+> +	dev_pm_opp_put_supported_hw(tegra->opp_table);
+> +
+>  	return 0;
+>  }
+>  
+> 
 
-On Sun, 6 Dec 2020 at 21:49, Cl=C3=A9ment P=C3=A9ron <peron.clem@gmail.com>=
- wrote:
->
-> Hi Shuosheng,
->
-> On 04/12/2020 08:09, Shuosheng Huang wrote:
-> > Let's add cpufreq nvmem based for allwinner a100 soc. It's similar to h=
-6,
-> > let us use efuse_xlate to extract the differentiated part.
->
-> So you introduce 2 modifications here.
-> In this case it's better to have 2 patches.
-> One to introduce the efuse_xlate
-> And one to introduce the A100 support.
->
-> Regards,
-> Clement
->
-> >
-> > Signed-off-by: Shuosheng Huang <huangshuosheng@allwinnertech.com>
-> > ---
-> >   drivers/cpufreq/cpufreq-dt-platdev.c   |  1 +
-> >   drivers/cpufreq/sun50i-cpufreq-nvmem.c | 81 ++++++++++++++++++++-----=
--
-> >   2 files changed, 64 insertions(+), 18 deletions(-)
-> >
-> > diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpu=
-freq-dt-platdev.c
-> > index 3776d960f405..2ebf5d9cb616 100644
-> > --- a/drivers/cpufreq/cpufreq-dt-platdev.c
-> > +++ b/drivers/cpufreq/cpufreq-dt-platdev.c
-> > @@ -102,6 +102,7 @@ static const struct of_device_id whitelist[] __init=
-const =3D {
-> >    */
-> >   static const struct of_device_id blacklist[] __initconst =3D {
-> >       { .compatible =3D "allwinner,sun50i-h6", },
-> > +     { .compatible =3D "allwinner,sun50i-a100", },
-> >
-> >       { .compatible =3D "calxeda,highbank", },
-> >       { .compatible =3D "calxeda,ecx-2000", },
-> > diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/s=
-un50i-cpufreq-nvmem.c
-> > index 9907a165135b..044e44a763f5 100644
-> > --- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> > +++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
-> > @@ -21,21 +21,63 @@
-> >
-> >   #define NVMEM_MASK  0x7
-> >   #define NVMEM_SHIFT 5
-> > +#define SUN50I_A100_NVMEM_MASK               0xf
-> > +#define SUN50I_A100_NVMEM_SHIFT              12
-> > +
-> > +#define SUN50I_H6_NVMEM_MASK         0x7
-> > +#define SUN50I_H6_NVMEM_SHIFT                5
-> > +
-> > +struct sunxi_cpufreq_soc_data {
-> > +     u32 (*efuse_xlate)(void *efuse);
+Applied it. Thanks for your work for a long time.
 
-Maybe it's better to pass the speedbin_nvmem.
-And call nvmem_cell_read_u16 or nvmem_cell_read_u32 regarding the SoC.
-
-But I'm not a Maintainer.
-
-Clement
-
-
-> > +};
-> >
-> >   static struct platform_device *cpufreq_dt_pdev, *sun50i_cpufreq_pdev;
-> >
-> > +static u32 sun50i_a100_efuse_xlate(void *efuse)
-> > +{
-> > +     u32 efuse_value =3D (*(u16 *)efuse >> SUN50I_A100_NVMEM_SHIFT) &
-> > +                       SUN50I_A100_NVMEM_MASK;
-> > +
-> > +     switch (efuse_value) {
-> > +     case 0b100:
-> > +             return 2;
-> > +     case 0b010:
-> > +             return 1;
-> > +     default:
-> > +             return 0;
-> > +     }
-> > +}
-> > +
-> > +static u32 sun50i_h6_efuse_xlate(void *efuse)
-> > +{
-> > +     u32 efuse_value =3D (*(u32 *)efuse >> SUN50I_H6_NVMEM_SHIFT) &
-> > +                       SUN50I_H6_NVMEM_MASK;
-> > +
-> > +     /*
-> > +      * We treat unexpected efuse values as if the SoC was from
-> > +      * the slowest bin. Expected efuse values are 1-3, slowest
-> > +      * to fastest.
-> > +      */
-> > +     if (efuse_value >=3D 1 && efuse_value <=3D 3)
-> > +             return efuse_value - 1;
-> > +     else
-> > +             return 0;
-> > +}
-> > +
-> >   /**
-> >    * sun50i_cpufreq_get_efuse() - Determine speed grade from efuse valu=
-e
-> > + * @soc_data: pointer to sunxi_cpufreq_soc_data context
-> >    * @versions: Set to the value parsed from efuse
-> >    *
-> >    * Returns 0 if success.
-> >    */
-> > -static int sun50i_cpufreq_get_efuse(u32 *versions)
-> > +static int sun50i_cpufreq_get_efuse(const struct sunxi_cpufreq_soc_dat=
-a *soc_data,
-> > +                                 u32 *versions)
-> >   {
-> >       struct nvmem_cell *speedbin_nvmem;
-> >       struct device_node *np;
-> >       struct device *cpu_dev;
-> > -     u32 *speedbin, efuse_value;
-> > +     u32 *speedbin;
-> >       size_t len;
-> >       int ret;
-> >
-> > @@ -68,17 +110,7 @@ static int sun50i_cpufreq_get_efuse(u32 *versions)
-> >       if (IS_ERR(speedbin))
-> >               return PTR_ERR(speedbin);
-> >
-> > -     efuse_value =3D (*speedbin >> NVMEM_SHIFT) & NVMEM_MASK;
-> > -
-> > -     /*
-> > -      * We treat unexpected efuse values as if the SoC was from
-> > -      * the slowest bin. Expected efuse values are 1-3, slowest
-> > -      * to fastest.
-> > -      */
-> > -     if (efuse_value >=3D 1 && efuse_value <=3D 3)
-> > -             *versions =3D efuse_value - 1;
-> > -     else
-> > -             *versions =3D 0;
-> > +     *versions =3D soc_data->efuse_xlate(speedbin);
-> >
-> >       kfree(speedbin);
-> >       return 0;
-> > @@ -86,18 +118,23 @@ static int sun50i_cpufreq_get_efuse(u32 *versions)
-> >
-> >   static int sun50i_cpufreq_nvmem_probe(struct platform_device *pdev)
-> >   {
-> > +     const struct of_device_id *match;
-> >       struct opp_table **opp_tables;
-> >       char name[MAX_NAME_LEN];
-> >       unsigned int cpu;
-> >       u32 speed =3D 0;
-> >       int ret;
-> >
-> > +     match =3D dev_get_platdata(&pdev->dev);
-> > +     if (!match)
-> > +             return -EINVAL;
-> > +
-> >       opp_tables =3D kcalloc(num_possible_cpus(), sizeof(*opp_tables),
-> >                            GFP_KERNEL);
-> >       if (!opp_tables)
-> >               return -ENOMEM;
-> >
-> > -     ret =3D sun50i_cpufreq_get_efuse(&speed);
-> > +     ret =3D sun50i_cpufreq_get_efuse(match->data, &speed);
-> >       if (ret)
-> >               return ret;
-> >
-> > @@ -163,8 +200,17 @@ static struct platform_driver sun50i_cpufreq_drive=
-r =3D {
-> >       },
-> >   };
-> >
-> > +static const struct sunxi_cpufreq_soc_data sun50i_a100_data =3D {
-> > +     .efuse_xlate =3D sun50i_a100_efuse_xlate,
-> > +};
-> > +
-> > +static const struct sunxi_cpufreq_soc_data sun50i_h6_data =3D {
-> > +     .efuse_xlate =3D sun50i_h6_efuse_xlate,
-> > +};
-> > +
-> >   static const struct of_device_id sun50i_cpufreq_match_list[] =3D {
-> > -     { .compatible =3D "allwinner,sun50i-h6" },
-> > +     { .compatible =3D "allwinner,sun50i-h6", .data =3D &sun50i_h6_dat=
-a },
-> > +     { .compatible =3D "allwinner,sun50i-a100", .data =3D &sun50i_a100=
-_data >    {}
-> >   };
-> >
-> > @@ -198,9 +244,8 @@ static int __init sun50i_cpufreq_init(void)
-> >       if (unlikely(ret < 0))
-> >               return ret;
-> >
-> > -     sun50i_cpufreq_pdev =3D
-> > -             platform_device_register_simple("sun50i-cpufreq-nvmem",
-> > -                                             -1, NULL, 0);
-> > +     sun50i_cpufreq_pdev =3D platform_device_register_data(NULL,
-> > +             "sun50i-cpufreq-nvmem", -1, match, sizeof(*match));
-> >       ret =3D PTR_ERR_OR_ZERO(sun50i_cpufreq_pdev);
-> >       if (ret =3D=3D 0)
-> >               return 0;
-> >
+-- 
+Best Regards,
+Chanwoo Choi
+Samsung Electronics
