@@ -2,188 +2,107 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 87E66C1B087
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 16:41:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F236C433FE
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 17:04:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 51F92206C1
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 16:41:13 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 4280323888
+	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 17:04:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727009AbgLGQke (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 11:40:34 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:50168 "EHLO
-        cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727673AbgLGQke (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 11:40:34 -0500
-Received: from 89-64-79-106.dynamic.chello.pl (89.64.79.106) (HELO kreacher.localnet)
- by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.530)
- id db8c3b154aa71968; Mon, 7 Dec 2020 17:39:51 +0100
-From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To:     Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Doug Smythies <dsmythies@telus.net>,
-        Giovanni Gherdovich <ggherdovich@suse.com>
-Subject: [PATCH v1 1/4] cpufreq: schedutil: Add util to struct sg_cpu
-Date:   Mon, 07 Dec 2020 17:28:25 +0100
-Message-ID: <2344038.BgO4qI7qUv@kreacher>
-In-Reply-To: <20360841.iInq7taT2Z@kreacher>
-References: <20360841.iInq7taT2Z@kreacher>
+        id S1726311AbgLGREg (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 12:04:36 -0500
+Received: from mail-oi1-f194.google.com ([209.85.167.194]:35842 "EHLO
+        mail-oi1-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725774AbgLGREg (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 12:04:36 -0500
+Received: by mail-oi1-f194.google.com with SMTP id x16so16168591oic.3;
+        Mon, 07 Dec 2020 09:04:20 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=19119qT55jo1E4qrWnIhabF5L38EkieKkqJe7d3pVh4=;
+        b=h6XDpKm0p1bCQ89j4bVamFTzcD2zQoq332clhIM+R8wHIA9GNodsalF/wgOUBzhjJS
+         k2mLONLUCBCvgy7WaWrCWQ++gHmFqBmyGNKtsDpZx9V8axx76fLCKUc65r1QLC1QKB/q
+         RO9eIXH0zXfAvMNDP7RSQnRjnEuntt1zjNUwS3xKKvloNsY5sPO+9KmIq2EqLbQ0sVZa
+         9UkTdg8n5/A4AQfs5g3+QnmMj0cIvcKLJnKFdGGMWMTaKF6jxPg3G4m67AOnY3XUZ7NC
+         wQU1ZENAI7UJoJnggKbiqtaImp/ISYsSsarVsq2cFBp18j0LW4aZBd26QPEbYjmx4skd
+         aQ4A==
+X-Gm-Message-State: AOAM532FfXhn7msFSK0JnEgTRHbxHnNN3UcD2kvOYq0s95/0QxQxCrnf
+        b4aeTH2M+U8oRSJ8ugvKfQ==
+X-Google-Smtp-Source: ABdhPJyBNmiiAD7WrCmET03nS+b6iaipwxbjuAnKKBQf6mUm+C30OUOrc++vnzrLL/+G5RhWs05D6Q==
+X-Received: by 2002:aca:5711:: with SMTP id l17mr6127842oib.53.1607360635005;
+        Mon, 07 Dec 2020 09:03:55 -0800 (PST)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id m81sm3037226oib.37.2020.12.07.09.03.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Dec 2020 09:03:54 -0800 (PST)
+Received: (nullmailer pid 439974 invoked by uid 1000);
+        Mon, 07 Dec 2020 17:03:52 -0000
+Date:   Mon, 7 Dec 2020 11:03:52 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Michael Kao <michael.kao@mediatek.com>
+Cc:     Rob Herring <robh+dt@kernel.org>,
+        linux-mediatek@lists.infradead.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        linux-arm-kernel@lists.infradead.org, srv_heupstream@mediatek.com,
+        hsinyi@chromium.org, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, Mark Rutland <mark.rutland@arm.com>,
+        ethan.chang@mediatek.com, Zhang Rui <rui.zhang@intel.com>,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-pm@vger.kernel.org
+Subject: Re: [PATCH 3/3] dt-bindings: thermal: Add binding document for
+ mt6873 thermal controller
+Message-ID: <20201207170352.GA439416@robh.at.kernel.org>
+References: <20201207063127.28051-1-michael.kao@mediatek.com>
+ <20201207063127.28051-4-michael.kao@mediatek.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7Bit
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201207063127.28051-4-michael.kao@mediatek.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-
-Instead of passing util and max between functions while computing the
-utilization and capacity, store the former in struct sg_cpu (along
-with the latter and bw_dl).
-
-This will allow the current utilization value to be compared with the
-one obtained previously (which is requisite for some code changes to
-follow this one), but also it makes the code look slightly more
-consistent and clean.
-
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- kernel/sched/cpufreq_schedutil.c |   42 ++++++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 22 deletions(-)
-
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
-===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -53,6 +53,7 @@ struct sugov_cpu {
- 	unsigned int		iowait_boost;
- 	u64			last_update;
- 
-+	unsigned long		util;
- 	unsigned long		bw_dl;
- 	unsigned long		max;
- 
-@@ -276,16 +277,15 @@ unsigned long schedutil_cpu_util(int cpu
- 	return min(max, util);
- }
- 
--static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-+static void sugov_get_util(struct sugov_cpu *sg_cpu)
- {
- 	struct rq *rq = cpu_rq(sg_cpu->cpu);
--	unsigned long util = cpu_util_cfs(rq);
- 	unsigned long max = arch_scale_cpu_capacity(sg_cpu->cpu);
- 
- 	sg_cpu->max = max;
- 	sg_cpu->bw_dl = cpu_bw_dl(rq);
--
--	return schedutil_cpu_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL, NULL);
-+	sg_cpu->util = schedutil_cpu_util(sg_cpu->cpu, cpu_util_cfs(rq), max,
-+					  FREQUENCY_UTIL, NULL);
- }
- 
- /**
-@@ -362,8 +362,6 @@ static void sugov_iowait_boost(struct su
-  * sugov_iowait_apply() - Apply the IO boost to a CPU.
-  * @sg_cpu: the sugov data for the cpu to boost
-  * @time: the update time from the caller
-- * @util: the utilization to (eventually) boost
-- * @max: the maximum value the utilization can be boosted to
-  *
-  * A CPU running a task which woken up after an IO operation can have its
-  * utilization boosted to speed up the completion of those IO operations.
-@@ -377,18 +375,17 @@ static void sugov_iowait_boost(struct su
-  * This mechanism is designed to boost high frequently IO waiting tasks, while
-  * being more conservative on tasks which does sporadic IO operations.
-  */
--static unsigned long sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
--					unsigned long util, unsigned long max)
-+static void sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time)
- {
- 	unsigned long boost;
- 
- 	/* No boost currently required */
- 	if (!sg_cpu->iowait_boost)
--		return util;
-+		return;
- 
- 	/* Reset boost if the CPU appears to have been idle enough */
- 	if (sugov_iowait_reset(sg_cpu, time, false))
--		return util;
-+		return;
- 
- 	if (!sg_cpu->iowait_boost_pending) {
- 		/*
-@@ -397,18 +394,19 @@ static unsigned long sugov_iowait_apply(
- 		sg_cpu->iowait_boost >>= 1;
- 		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
- 			sg_cpu->iowait_boost = 0;
--			return util;
-+			return;
- 		}
- 	}
- 
- 	sg_cpu->iowait_boost_pending = false;
- 
- 	/*
--	 * @util is already in capacity scale; convert iowait_boost
-+	 * sg_cpu->util is already in capacity scale; convert iowait_boost
- 	 * into the same scale so we can compare.
- 	 */
--	boost = (sg_cpu->iowait_boost * max) >> SCHED_CAPACITY_SHIFT;
--	return max(boost, util);
-+	boost = (sg_cpu->iowait_boost * sg_cpu->max) >> SCHED_CAPACITY_SHIFT;
-+	if (sg_cpu->util < boost)
-+		sg_cpu->util = boost;
- }
- 
- #ifdef CONFIG_NO_HZ_COMMON
-@@ -439,9 +437,8 @@ static void sugov_update_single(struct u
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
--	unsigned long util, max;
--	unsigned int next_f;
- 	unsigned int cached_freq = sg_policy->cached_raw_freq;
-+	unsigned int next_f;
- 
- 	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
-@@ -451,10 +448,10 @@ static void sugov_update_single(struct u
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
--	util = sugov_get_util(sg_cpu);
--	max = sg_cpu->max;
--	util = sugov_iowait_apply(sg_cpu, time, util, max);
--	next_f = get_next_freq(sg_policy, util, max);
-+	sugov_get_util(sg_cpu);
-+	sugov_iowait_apply(sg_cpu, time);
-+
-+	next_f = get_next_freq(sg_policy, sg_cpu->util, sg_cpu->max);
- 	/*
- 	 * Do not reduce the frequency if the CPU has not been idle
- 	 * recently, as the reduction is likely to be premature then.
-@@ -491,9 +488,10 @@ static unsigned int sugov_next_freq_shar
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long j_util, j_max;
- 
--		j_util = sugov_get_util(j_sg_cpu);
-+		sugov_get_util(j_sg_cpu);
-+		sugov_iowait_apply(j_sg_cpu, time);
-+		j_util = j_sg_cpu->util;
- 		j_max = j_sg_cpu->max;
--		j_util = sugov_iowait_apply(j_sg_cpu, time, j_util, j_max);
- 
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
+On Mon, 07 Dec 2020 14:31:27 +0800, Michael Kao wrote:
+> This patch adds binding document for mt6873 thermal controller.
+> 
+> Signed-off-by: Michael Kao <michael.kao@mediatek.com>
+> ---
+>  .../thermal/mediatek-thermal-lvts.yaml        | 80 +++++++++++++++++++
+>  1 file changed, 80 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.yaml
+> 
 
 
+My bot found errors running 'make dt_binding_check' on your patch:
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.example.dts:21:18: fatal error: dt-bindings/clock/mt8192-clk.h: No such file or directory
+   21 |         #include <dt-bindings/clock/mt8192-clk.h>
+      |                  ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make[1]: *** [scripts/Makefile.lib:342: Documentation/devicetree/bindings/thermal/mediatek-thermal-lvts.example.dt.yaml] Error 1
+make[1]: *** Waiting for unfinished jobs....
+make: *** [Makefile:1364: dt_binding_check] Error 2
+
+
+See https://patchwork.ozlabs.org/patch/1411898
+
+The base for the patch is generally the last rc1. Any dependencies
+should be noted.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit.
 
