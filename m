@@ -2,95 +2,132 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 56E92C4361B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 18:19:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A060C2BBD5
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:25:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 08AC723B51
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 18:19:33 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2ECF923A79
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:25:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730495AbgLHSTc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 13:19:32 -0500
-Received: from mail.kernel.org ([198.145.29.99]:49972 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730231AbgLHSTc (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Dec 2020 13:19:32 -0500
-Date:   Tue, 8 Dec 2020 10:18:49 -0800
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1607451531;
-        bh=rbe/rLwaT+iw+/a/kAhtCx9Bs+M3BMplKpLq931S3ik=;
-        h=From:To:Cc:Subject:In-Reply-To:References:From;
-        b=GYeuq0TVNdvP60qxpoB8pa6y7uf4ONnRgH/64Q80F7jlM8+qeUsJC84qjSdjV1/JY
-         oicbiju9CG5bAGD++JD2DmXF3lCu8fgWwCfyWELsjRR0f0AsY3dH+CoXo/DuSbj5EY
-         lXdXDInTQDZfUF0A83qPGyzivhowMA7xSLK7k6X7hCKFVL6U5Hj6B3gqMaiFTA7LJ4
-         5kS8tDbsoWi/biWaj+W939ZAXyG5N7Fl9PCy15PoBg4Vvr2XTzRbr+7cptZ4cpfoc1
-         KfpUsNhbT6xXNK4GWjJX7HGKzFJen9oBlCO9UoBFGn43io87nvV7HEuvKnrB9BzmVT
-         xBFJfbcCbyDhg==
-From:   Jakub Kicinski <kuba@kernel.org>
-To:     Mario Limonciello <Mario.Limonciello@dell.com>
-Cc:     Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-        Tony Nguyen <anthony.l.nguyen@intel.com>,
-        intel-wired-lan@lists.osuosl.org,
-        David Miller <davem@davemloft.net>,
-        linux-kernel@vger.kernel.org, Linux PM <linux-pm@vger.kernel.org>,
-        Netdev <netdev@vger.kernel.org>,
-        Alexander Duyck <alexander.duyck@gmail.com>,
-        Sasha Netfin <sasha.neftin@intel.com>,
-        Aaron Brown <aaron.f.brown@intel.com>,
-        Stefan Assmann <sassmann@redhat.com>, darcari@redhat.com,
-        Yijun.Shen@dell.com, Perry.Yuan@dell.com,
-        anthony.wong@canonical.com,
-        Vitaly Lifshits <vitaly.lifshits@intel.com>
-Subject: Re: [PATCH v3 1/7] e1000e: fix S0ix flow to allow S0i3.2 subset
- entry
-Message-ID: <20201208101849.5a17b469@kicinski-fedora-pc1c0hjn.DHCP.thefacebook.com>
-In-Reply-To: <354075ae-f605-eb01-4cf9-a66e4eb7b192@dell.com>
-References: <20201204200920.133780-1-mario.limonciello@dell.com>
-        <20201204200920.133780-2-mario.limonciello@dell.com>
-        <354075ae-f605-eb01-4cf9-a66e4eb7b192@dell.com>
+        id S1726483AbgLHUY2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 15:24:28 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38388 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1728241AbgLHUY1 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 15:24:27 -0500
+Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8DBC1C06179C
+        for <linux-pm@vger.kernel.org>; Tue,  8 Dec 2020 12:23:41 -0800 (PST)
+Received: by mail-pg1-x52c.google.com with SMTP id v29so109794pgk.12
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2020 12:23:41 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=jlKNfCJ5wtw6PhwJmq7JYl5WY/+ZkN5WRMR1UTTUqD8=;
+        b=R6OdE0EbCppenuCPrnCjc/xtxfu/oDnTjNmF0NyOAJjH72hVCZBat5CSVIc0Sb3y57
+         Q1zO8PQpxzS7NIfT5DtZ24OvJ9TI13TTLAthhLqgRjibgdvOXaqVwNKn6kxvQHAMwqOz
+         vcOlZNHiB/SUnaClqG6ogLJOWQ8VQTwvXI/VifLZeekbZLgJ+31VhOG6qwa2MMXr8aqK
+         gqfe4jQroScwJOFYYhQ3D5+opledZPuMuF2QK6xvEDgUda0rRJ7F1jkwW62+Voov44vi
+         0OPwtVm7wMEVyD86J3TGObX53wqTuXEotOmIqGWrB2xRZpV/VrU9lQuUl1nHs4ZILBeN
+         EPtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=jlKNfCJ5wtw6PhwJmq7JYl5WY/+ZkN5WRMR1UTTUqD8=;
+        b=tz3nwMm7VgsKVj1lCn5JBAL5w1egNjaydHI+GBmVInXRvzwusNEhuvZl5ISz6upttr
+         06qfQ1jdKpZALYp7qxSO4s6oTpSkm5dnGSnMlJGZBpeWv+t2d4lZGb4cnlqE8MXnBCdP
+         8j7/dIyeCkcPo7kJIpUs8MEZZCy7vNPzSLTK4H84Vu/1HLrpLjniUwYIu9h0LAaeQstA
+         9ToJz8LpnvXTRA947ETzc20U7WupMVUKI7PxSUaueUG/qkg4/hrVz3h6/BibVt+k/k5z
+         zg07J8U0DZjNHP0MCeA6gjoauGJBAuC3cYsM4wgLfb23YnGlwqxxvb83OFsWae6SbNZH
+         8aqw==
+X-Gm-Message-State: AOAM533MlsrBdkeYFtAyVp896qUBI7UB3/mxw+GaD6wR7t1tfboZfEld
+        xmtj++8pP/bhozoOJyq8cWUxuA==
+X-Google-Smtp-Source: ABdhPJzOASpRvV8XZxpZKTK9Kz7C8PcebKuhfcfZU6/CcO3v/lrPLjSc64eMpb0ha4dTrVfpc+CguA==
+X-Received: by 2002:a63:f308:: with SMTP id l8mr24487830pgh.68.1607459021184;
+        Tue, 08 Dec 2020 12:23:41 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id n5sm16796980pgm.29.2020.12.08.12.23.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Dec 2020 12:23:40 -0800 (PST)
+Message-ID: <5fcfe0cc.1c69fb81.c6f23.5860@mx.google.com>
+Date:   Tue, 08 Dec 2020 12:23:40 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.10-rc7-92-g717f8fce803b
+X-Kernelci-Report-Type: test
+Subject: pm/testing baseline: 97 runs,
+ 1 regressions (v5.10-rc7-92-g717f8fce803b)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Tue, 8 Dec 2020 11:24:17 -0600 Mario Limonciello wrote:
-> On 12/4/20 2:09 PM, Mario Limonciello wrote:
-> > From: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> >
-> > Changed a configuration in the flows to align with
-> > architecture requirements to achieve S0i3.2 substate.
-> >
-> > Also fixed a typo in the previous commit 632fbd5eb5b0
-> > ("e1000e: fix S0ix flows for cable connected case").
-> >
-> > Signed-off-by: Vitaly Lifshits <vitaly.lifshits@intel.com>
-> > Tested-by: Aaron Brown <aaron.f.brown@intel.com>
-> > Signed-off-by: Tony Nguyen <anthony.l.nguyen@intel.com>
-> > ---
-> >   drivers/net/ethernet/intel/e1000e/netdev.c | 8 ++++----
-> >   1 file changed, 4 insertions(+), 4 deletions(-) =20
->=20
-> I realize that the series is still under discussion, but I intentionally=
-=20
-> moved this
-> patch to the front of the series so it can be pulled in even if the=20
-> others are still
-> discussed.
->=20
-> @David Miller:
-> This particular patch is more important than the rest.=C2=A0 It actually=
-=20
-> fixes issues
-> on the non-ME i219V as well.=C2=A0 Can this one be queued up and we can k=
-eep
-> discussing the rest?
+pm/testing baseline: 97 runs, 1 regressions (v5.10-rc7-92-g717f8fce803b)
 
-Not sure Dave will notice this discussion, best if you repost this patch
-separately. If it's a fix that should be backported to stable make sure
-you add a Fixes tag.
+Regressions Summary
+-------------------
+
+platform    | arch   | lab          | compiler | defconfig        | regress=
+ions
+------------+--------+--------------+----------+------------------+--------=
+----
+qemu_x86_64 | x86_64 | lab-baylibre | gcc-8    | x86_64_defconfig | 1      =
+    =
+
+
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
+7-92-g717f8fce803b/plan/baseline/
+
+  Test:     baseline
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.10-rc7-92-g717f8fce803b
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      717f8fce803b9501e192fef85d508e3d592f1c16 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform    | arch   | lab          | compiler | defconfig        | regress=
+ions
+------------+--------+--------------+----------+------------------+--------=
+----
+qemu_x86_64 | x86_64 | lab-baylibre | gcc-8    | x86_64_defconfig | 1      =
+    =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fcfd42ece898bb2a2c94ce7
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: x86_64_defconfig
+  Compiler:    gcc-8 (gcc (Debian 8.3.0-6) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc7-92-g717f8=
+fce803b/x86_64/x86_64_defconfig/gcc-8/lab-baylibre/baseline-qemu_x86_64.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc7-92-g717f8=
+fce803b/x86_64/x86_64_defconfig/gcc-8/lab-baylibre/baseline-qemu_x86_64.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
+.05-4-g97706c5d9567/x86/baseline/rootfs.cpio.gz =
+
+
+
+  * baseline.login: https://kernelci.org/test/case/id/5fcfd42ece898bb2a2c94=
+ce8
+        new failure (last pass: v5.10-rc7-87-g960e625edeb5) =
+
+ =20
