@@ -7,24 +7,24 @@ X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7671FC4167B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 415A5C2BB9A
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4127C23B51
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1A2E923B6E
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730674AbgLHRmO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 12:42:14 -0500
-Received: from foss.arm.com ([217.140.110.172]:52392 "EHLO foss.arm.com"
+        id S1730345AbgLHRmW (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 12:42:22 -0500
+Received: from foss.arm.com ([217.140.110.172]:52420 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1730678AbgLHRmO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Dec 2020 12:42:14 -0500
+        id S1727998AbgLHRmW (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Dec 2020 12:42:22 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5238231B;
-        Tue,  8 Dec 2020 09:41:28 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 532A61424;
+        Tue,  8 Dec 2020 09:41:36 -0800 (PST)
 Received: from ubuntu.cambridge.arm.com (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 24CC53F68F;
-        Tue,  8 Dec 2020 09:41:26 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B75BE3F68F;
+        Tue,  8 Dec 2020 09:41:33 -0800 (PST)
 From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
@@ -32,9 +32,9 @@ To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com
 Cc:     daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
         chris.redpath@arm.com, nicola.mazzucato@arm.com
-Subject: [PATCH v5 1/4] dt-bindings: opp: Allow empty OPP tables
-Date:   Tue,  8 Dec 2020 17:42:26 +0000
-Message-Id: <20201208174229.24323-2-nicola.mazzucato@arm.com>
+Subject: [PATCH v5 3/4] scmi-cpufreq: get opp_shared_cpus from opp-v2 for EM
+Date:   Tue,  8 Dec 2020 17:42:28 +0000
+Message-Id: <20201208174229.24323-4-nicola.mazzucato@arm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201208174229.24323-1-nicola.mazzucato@arm.com>
 References: <20201208174229.24323-1-nicola.mazzucato@arm.com>
@@ -44,90 +44,139 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Currently the optional property opp-shared is used within an opp table
-to tell that a set of devices share their clock/voltage lines (and the
-OPP points).
-It is therefore possible to use an empty OPP table to convey only that
-information, useful in situations where the opp points are provided via
-other means (hardware. firmware, etc).
+By design, SCMI performance domains define the granularity of
+performance controls, they do not describe any underlying hardware
+dependencies (although they may match in many cases).
 
-Update the documentation to remark this additional case and provide an
-example.
+It is therefore possible to have some platforms where hardware may have
+the ability to control CPU performance at different granularity and choose
+to describe fine-grained performance control through SCMI.
+
+In such situations, the energy model would be provided with inaccurate
+information based on controls, while it still needs to know the
+performance boundaries.
+
+To restore correct functionality, retrieve information of CPUs under the
+same performance domain from operating-points-v2 in DT, and pass it on to
+EM.
+
+As part of the rework, the deferred probe is also removed as this
+condition should never occur.
 
 Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
 ---
- Documentation/devicetree/bindings/opp/opp.txt | 54 ++++++++++++++++++-
- 1 file changed, 53 insertions(+), 1 deletion(-)
+ drivers/cpufreq/scmi-cpufreq.c | 69 ++++++++++++++++++++++++----------
+ 1 file changed, 50 insertions(+), 19 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
-index 9847dfeeffcb..08b3da4736cf 100644
---- a/Documentation/devicetree/bindings/opp/opp.txt
-+++ b/Documentation/devicetree/bindings/opp/opp.txt
-@@ -65,7 +65,9 @@ Required properties:
+diff --git a/drivers/cpufreq/scmi-cpufreq.c b/drivers/cpufreq/scmi-cpufreq.c
+index 491a0a24fb1e..88ebfd47c5de 100644
+--- a/drivers/cpufreq/scmi-cpufreq.c
++++ b/drivers/cpufreq/scmi-cpufreq.c
+@@ -127,6 +127,7 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	struct cpufreq_frequency_table *freq_table;
+ 	struct em_data_callback em_cb = EM_DATA_CB(scmi_get_cpu_power);
+ 	bool power_scale_mw;
++	cpumask_var_t opp_shared_cpus;
  
- - OPP nodes: One or more OPP nodes describing voltage-current-frequency
-   combinations. Their name isn't significant but their phandle can be used to
--  reference an OPP.
-+  reference an OPP. These are mandatory except for the case where the OPP table
-+  is present only to indicate dependency between devices using the opp-shared
-+  property.
+ 	cpu_dev = get_cpu_device(policy->cpu);
+ 	if (!cpu_dev) {
+@@ -134,30 +135,62 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 		return -ENODEV;
+ 	}
  
- Optional properties:
- - opp-shared: Indicates that device nodes using this OPP Table Node's phandle
-@@ -568,3 +570,53 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
- 		};
- 	};
- };
+-	ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
+-	if (ret) {
+-		dev_warn(cpu_dev, "failed to add opps to the device\n");
+-		return ret;
+-	}
++	if (!zalloc_cpumask_var(&opp_shared_cpus, GFP_KERNEL))
++		return -ENOMEM;
+ 
+ 	ret = scmi_get_sharing_cpus(cpu_dev, policy->cpus);
+ 	if (ret) {
+ 		dev_warn(cpu_dev, "failed to get sharing cpumask\n");
+-		return ret;
++		goto out_free_cpumask;
+ 	}
+ 
+-	ret = dev_pm_opp_set_sharing_cpus(cpu_dev, policy->cpus);
+-	if (ret) {
+-		dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
+-			__func__, ret);
+-		return ret;
++	/*
++	 * The OPP 'sharing cpus' info may come from dt through an empty opp
++	 * table and opp-shared. If found, it takes precedence over the SCMI
++	 * domain IDs info.
++	 */
++	ret = dev_pm_opp_of_get_sharing_cpus(cpu_dev, opp_shared_cpus);
++	if (ret || !cpumask_weight(opp_shared_cpus)) {
++		/*
++		 * Either opp-table is not set or no opp-shared was found,
++		 * use the information from SCMI domain IDs.
++		 */
++		cpumask_copy(opp_shared_cpus, policy->cpus);
+ 	}
+ 
++	/*
++	 * For a given opp_shared_cpus, add OPPs only for the 'first' CPU and
++	 * mark the other ones as shared.
++	 */
+ 	nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
+ 	if (nr_opp <= 0) {
+-		dev_dbg(cpu_dev, "OPP table is not ready, deferring probe\n");
+-		ret = -EPROBE_DEFER;
+-		goto out_free_opp;
++		ret = handle->perf_ops->device_opps_add(handle, cpu_dev);
++		if (ret) {
++			dev_warn(cpu_dev, "failed to add OPPs to the device\n");
++			goto out_free_cpumask;
++		}
 +
-+Example 7: Single cluster Quad-core ARM cortex A53, OPP points from firmware,
-+distinct clock controls but two sets of clock/voltage/current lines.
++		ret = dev_pm_opp_set_sharing_cpus(cpu_dev, opp_shared_cpus);
++		if (ret) {
++			dev_err(cpu_dev, "%s: failed to mark OPPs as shared: %d\n",
++				__func__, ret);
++			goto out_free_cpumask;
++		}
 +
-+/ {
-+	cpus {
-+		#address-cells = <2>;
-+		#size-cells = <0>;
++		/*
++		 * To correctly register EM, get the number of OPPs just added
++		 * for this CPU.
++		 */
++		nr_opp = dev_pm_opp_get_opp_count(cpu_dev);
++		if (nr_opp <= 0) {
++			dev_err(cpu_dev, "%s: No OPPs for this device: %d\n",
++				__func__, ret);
++			goto out_free_cpumask;
++		}
 +
-+		cpu@0 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x0 0x100>;
-+			next-level-cache = <&A53_L2>;
-+			clocks = <&dvfs_controller 0>;
-+			operating-points-v2 = <&cpu_opp0_table>;
-+		};
-+		cpu@1 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x0 0x101>;
-+			next-level-cache = <&A53_L2>;
-+			clocks = <&dvfs_controller 1>;
-+			operating-points-v2 = <&cpu_opp0_table>;
-+		};
-+		cpu@2 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x0 0x102>;
-+			next-level-cache = <&A53_L2>;
-+			clocks = <&dvfs_controller 2>;
-+			operating-points-v2 = <&cpu_opp1_table>;
-+		};
-+		cpu@3 {
-+			compatible = "arm,cortex-a53";
-+			reg = <0x0 0x103>;
-+			next-level-cache = <&A53_L2>;
-+			clocks = <&dvfs_controller 3>;
-+			operating-points-v2 = <&cpu_opp1_table>;
-+		};
-+
-+	};
-+
-+	cpu_opp0_table: opp0_table {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+	};
-+
-+	cpu_opp1_table: opp1_table {
-+		compatible = "operating-points-v2";
-+		opp-shared;
-+	};
-+};
++		power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
++		em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb,
++					    opp_shared_cpus, power_scale_mw);
+ 	}
+ 
+ 	priv = kzalloc(sizeof(*priv), GFP_KERNEL);
+@@ -190,16 +223,14 @@ static int scmi_cpufreq_init(struct cpufreq_policy *policy)
+ 	policy->fast_switch_possible =
+ 		handle->perf_ops->fast_switch_possible(handle, cpu_dev);
+ 
+-	power_scale_mw = handle->perf_ops->power_scale_mw_get(handle);
+-	em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb, policy->cpus,
+-				    power_scale_mw);
+-
+-	return 0;
++	goto out_free_cpumask;
+ 
+ out_free_priv:
+ 	kfree(priv);
+ out_free_opp:
+ 	dev_pm_opp_remove_all_dynamic(cpu_dev);
++out_free_cpumask:
++	free_cpumask_var(opp_shared_cpus);
+ 
+ 	return ret;
+ }
 -- 
 2.27.0
 
