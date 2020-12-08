@@ -2,149 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-7.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MSGID_FROM_MTA_HEADER,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_2 autolearn=no
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 67B53C4361B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 16:32:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C2798C4167B
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 16:43:35 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1FEAC23AC8
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 16:32:04 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8CB4423B02
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 16:43:35 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730162AbgLHQbs (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 11:31:48 -0500
-Received: from de-smtp-delivery-102.mimecast.com ([51.163.158.102]:32948 "EHLO
-        de-smtp-delivery-102.mimecast.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1728602AbgLHQbs (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 11:31:48 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=mimecast20200619;
-        t=1607445040;
-        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-         content-transfer-encoding:content-transfer-encoding:
-         in-reply-to:in-reply-to:references:references;
-        bh=d0GJtz0zOfg3ilKmpm5pbT1rah50qJjsOnh8T+hQ2lk=;
-        b=OnnrSj4/0hoFABNZyT/rjst3e4Z+yZsw1c2eJWYf7SAYowEsp2tHi9VDQkYjg2Zl4E8f/h
-        hJPuPB1Edlbw8xxBAsc0YIpK9Eev9z21Pwv4uT6lFXZ+OMGZLm9JZP3+YL+ow7RvpJyYFV
-        njZBd6CAn4eyxQVmeXZNeF60HFHeXow=
-Received: from EUR05-AM6-obe.outbound.protection.outlook.com
- (mail-am6eur05lp2112.outbound.protection.outlook.com [104.47.18.112])
- (Using TLS) by relay.mimecast.com with ESMTP id
- de-mta-19-oO2uXQ7ROW26YyaIrkdVmA-1; Tue, 08 Dec 2020 17:30:38 +0100
-X-MC-Unique: oO2uXQ7ROW26YyaIrkdVmA-1
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector9901; d=microsoft.com; cv=none;
- b=UZT89CxLFJcY8Tp4yAZpRkVbsx88SBIJ//bdXG5NpgriDYC7oGkVyhZd+ukTOGR8cTjkx2VlTm4fTUxH3IoYXG+fIghdvsXth2NU0gqmqlBPdukvM9J37U8MJHi62cr965BpRJ19FDbeCLPqnpaeEQuYOsg9zaH3+dqadBP/BoF+EXDtv/kISPfWi41h9XBGuqx2leedsxQRtgG7tB8TyzfmlbpP/FHwQWMKRuP4ra7kPw+05tD1yCCulYma1wgNxwWC5ROAPg3XN3jaZ8TUYXxjoDQfUnq69/ypnUU8BHO114+ESJPNRXk15yTiyS62nRBZeGrFSskZAgFqNAcb9Q==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector9901;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=d0GJtz0zOfg3ilKmpm5pbT1rah50qJjsOnh8T+hQ2lk=;
- b=IeDqaqZMSQAkmIkxneuvaa/RHOwI2g1gkVQyM29S+hFsmFSy2qk2B5ObBmsZ4VnTYg2yCrSIGbsDdTXflejIQA44x6bwJ6j/4EhT6Jp96XTtQPv7cEWJWI7L+uQd5Afof7igTPOimcGjh1LLD7pT8KGLS86DWiV4qd26JMm4KcJYEjp2LpQON4Xvsuxp11gqbomdFlDSQoGjLsBnr8j0/0RhIwGKDBAu2vwAXiVu8Sd2ZI+zFT0NT6ODJ/5ZXKLgoRmT4pc5PbA+NDCctoxL4vBZ/kch9PMtOpUJo5yjOwoJbQ7FtZO6RN01fq5NHITG4hUbTn51tpLn2Iz+4D4BmQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=suse.com; dmarc=pass action=none header.from=suse.com;
- dkim=pass header.d=suse.com; arc=none
-Authentication-Results: rjwysocki.net; dkim=none (message not signed)
- header.d=none;rjwysocki.net; dmarc=none action=none header.from=suse.com;
-Received: from AM0PR04MB4530.eurprd04.prod.outlook.com (2603:10a6:208:70::28)
- by AM8PR04MB7297.eurprd04.prod.outlook.com (2603:10a6:20b:1c5::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.17; Tue, 8 Dec
- 2020 16:30:38 +0000
-Received: from AM0PR04MB4530.eurprd04.prod.outlook.com
- ([fe80::797c:6e40:f893:4082]) by AM0PR04MB4530.eurprd04.prod.outlook.com
- ([fe80::797c:6e40:f893:4082%6]) with mapi id 15.20.3654.012; Tue, 8 Dec 2020
- 16:30:37 +0000
-Message-ID: <1607445035.2673.64.camel@suse.com>
-Subject: Re: [PATCH v1 0/4] cpufreq: Allow drivers to receive more
- information from the governor
-From:   Giovanni Gherdovich <ggherdovich@suse.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>
-Cc:     LKML <linux-kernel@vger.kernel.org>,
-        Viresh Kumar <viresh.kumar@linaro.org>,
-        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Doug Smythies <dsmythies@telus.net>
-Date:   Tue, 08 Dec 2020 17:30:35 +0100
-In-Reply-To: <20360841.iInq7taT2Z@kreacher>
-References: <20360841.iInq7taT2Z@kreacher>
-Content-Type: text/plain; charset="UTF-8"
-X-Mailer: Evolution 3.26.6 
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [195.250.132.148]
-X-ClientProxiedBy: AM0PR03CA0057.eurprd03.prod.outlook.com (2603:10a6:208::34)
- To AM0PR04MB4530.eurprd04.prod.outlook.com (2603:10a6:208:70::28)
-MIME-Version: 1.0
-X-MS-Exchange-MessageSentRepresentingType: 1
-Received: from linux-ni6k.dhcp.prg.suse.com (195.250.132.148) by AM0PR03CA0057.eurprd03.prod.outlook.com (2603:10a6:208::34) with Microsoft SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.3632.18 via Frontend Transport; Tue, 8 Dec 2020 16:30:37 +0000
-X-MS-PublicTrafficType: Email
-X-MS-Office365-Filtering-Correlation-Id: 4a84e458-c33b-424d-8fc7-08d89b969889
-X-MS-TrafficTypeDiagnostic: AM8PR04MB7297:
-X-Microsoft-Antispam-PRVS: <AM8PR04MB729745A48FF0EFEB8F34581093CD0@AM8PR04MB7297.eurprd04.prod.outlook.com>
-X-MS-Oob-TLC-OOBClassifiers: OLM:8273;
-X-MS-Exchange-SenderADCheck: 1
-X-Microsoft-Antispam: BCL:0;
-X-Microsoft-Antispam-Message-Info: 3JAZa7TyD5Ndh33bHfi0crW6C/jxWPkJltmGQEZSb2j3pY9u5LlPNKqUiVdaclmckMt2iF9u1MQ8JWzIQu2gf/+s2kr9ymZT3wwO/lDpUFjHOkqZ3tC4ZzVQ+HcU3RbYxr85GsXMPLBmIU8MscgNvVN0UpjMaH2ISaNzrh+0bHOaiIRJUqro6ZrgNZMg9lBgvPi/K8jIUYyRZUUel3/HXcAlYZeZRdf5endTO6KC54WXoXdSoUb4U6CdP+3SqMFgsnMkkdYtHo4RWTKaCUC+G7JH8SX03U0O2ydIvYWxpA9zaAuDJTbxrTbt2x40GX8/8EbWUJfI3QmOXbphmzq1VVhSUghT13OTCqMiig2ps+JIpRJXLwuJBkPWSxnNNNJRyZuaWVPiW95cWcGT8WnZsJ5hAjDCe8Xrd1khNidCK4o84C21ijJAVWxKdqsNHn6vnKusqY6kfwFkpCkCG3mJpw==
-X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB4530.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(136003)(366004)(376002)(346002)(54906003)(52116002)(103116003)(4744005)(2906002)(110136005)(8676002)(36756003)(956004)(66946007)(6486002)(5660300002)(26005)(8936002)(66556008)(4326008)(2616005)(186003)(966005)(66476007)(16526019)(7696005)(508600001)(99106002);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData: =?utf-8?B?S0E2Z25pQlZYaTJSQjhRQmFqRDAvQVdvNHNRZmowaFpTSjZvbXlxcjFiZ1dk?=
- =?utf-8?B?YXdxbEYvNU4xT0V6bXhEZHQ2NHZFdGh4MlhQOXk2bGdLbUdIOXdoTitlcTVY?=
- =?utf-8?B?S282ZlRrNmJkeHlmS1JlQllBSGk4VExySGJHSnlhRFVUWEV4akZreGlxVE5X?=
- =?utf-8?B?OU5oNUd5Y0E3UkJ6ODFjUzhaWnBXY3J1anRyVnF4OEtvSlFoeEFjOEtPOXpz?=
- =?utf-8?B?SmxFcGhiTEpCTThFNkFWWnU3Q1p2NkhtYVJ1VEZqU0dTZHpUMUdIK3huclZn?=
- =?utf-8?B?TFZuRFVXcmJQLzd0YXZRZFA2REU3ZGdZc2Z1WlBBZjNDU3FncjcyTzFPb1Mx?=
- =?utf-8?B?TnpMWFd6dDIxN1J2WE1nRk9nVEFtaVpvK3kxQ1J0VjZCV084QTI2eGRTaU8x?=
- =?utf-8?B?NlFWWFRUOFdEMlBxS0tWZ0Q3SG43SEdyd1Z3cjBMcXhQbWs5aWVIUlBQSGV5?=
- =?utf-8?B?UjRIVzZLSzJJdGROeDlpNTl5SFVPa2VuMXVQTWlKUitjTWQrUzRLbTkxVGFD?=
- =?utf-8?B?TUQ2VmN6bnZvZ2J1YVJDb1VKd09RaUlVNXkyL0YrbGk2SFlKOXJWWDR1RHY0?=
- =?utf-8?B?VmVDc2dVWWFFQkVSODFraVBlbE9WWDBCNkNSMjBzSUpKT3A2dWp0RUZjRVFj?=
- =?utf-8?B?U1lSMlRsREVJSlh4S0ZXL1k3azZ3aE9mWm0xVGMrRmpPUHRGWVZWOVIyMFNT?=
- =?utf-8?B?dlBabmwxWGFmK2d3bndOdW9TblRsNW4zZ2dsaTlLOHNDK25xWnl5VkhLenJJ?=
- =?utf-8?B?TmJBVHFHRjFGaTJUcFl6eW45U1BpazY2NHQrb0NUVE1SNUdUeXliaUo0T1li?=
- =?utf-8?B?OWQwLzB5VkVhME4vL0cycWJnMzFVdVZoZVJtUUFrR281UnUyMW8zQlA0dDRq?=
- =?utf-8?B?SWFkQ3FUb1FyOGU3TC9pUi9zVGhrU0ZmcEdUWVZIOUtodlBxNWVkaHd6QVdH?=
- =?utf-8?B?eUxZbXhzTFpNand6TExFdmozU2Z2YVFnb1l5cWJqQ0x4YzZSUE5ZMzdTT3po?=
- =?utf-8?B?OW1HWXhkUXlTZWZjVHArVVUxK28vcVFyWnc0OHA1QVk5dHljZVRxamQvOWZR?=
- =?utf-8?B?NGl1eEFCNEFDanRRaHJlc0NmVkVLa2pMSHM0bUoxQUUvY2w4Wk9XVWRGVDdW?=
- =?utf-8?B?Zi9TRitmY3cwZlhCODRsalZjTkh6d3prb1p0Q0VDVDY5aUpqYk1kdjZCNHNu?=
- =?utf-8?B?STl5RVlhazBocFNqNnRPTEJYVDVnRXdGR0IxWGh0UzBVN0ZkVWl1VHYvTVor?=
- =?utf-8?B?M3E4Mnk2K3VWN3ZpMG5JSzJ1K0RrL2VoN1AvUWJtZ3NxSlRGcE11dGlzR2oy?=
- =?utf-8?Q?msfbp8oKq5rYJduoOBNaqOwx0OSRAjry/x?=
-X-OriginatorOrg: suse.com
-X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB4530.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 08 Dec 2020 16:30:37.7797
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: f7a17af6-1c5c-4a36-aa8b-f5be247aa4ba
-X-MS-Exchange-CrossTenant-Network-Message-Id: 4a84e458-c33b-424d-8fc7-08d89b969889
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: a0FRkjW8wndOihe7NuNqmK6ZafIyVO0TwP/ni2LbbYzDaNs8hYGcD1YB7CTuJK2hl59wN4pFQrMXKvPOZtedl3/MQFTphXJA5Ty+35w8Vcg=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: AM8PR04MB7297
+        id S1730481AbgLHQnI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 11:43:08 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:58262 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1730474AbgLHQnI (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 11:43:08 -0500
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id EF760C06179C
+        for <linux-pm@vger.kernel.org>; Tue,  8 Dec 2020 08:42:21 -0800 (PST)
+Received: by mail-ed1-x541.google.com with SMTP id q16so18201469edv.10
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2020 08:42:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=B8ZqKyFHGH5C+QdIaLYiAJfgSlK2HoPCxGbkd1rkjtU=;
+        b=YJGXosdLUTFfXiLJhGUn7kcaKGyWwlL+NNVTDbQa1EmRHBT7VYNdOSoTOo+4/pO7Rv
+         f67HYgSUuN/zNwg8creeABtACtEh35QesqX+DtjL7f9RLkZMLQMmOqK/f1LSzENWvRdy
+         2RhNgiZznYQaDa34tLeh3z1qy8oUPpp2RMFmqNZs9uSqhsGJfm33k5EwJLjg5NRwCwQX
+         e5q9PodIkfLUCoXywx+sArD+xGAC3GhatjyWilLx7BUAFtnIFYeqnodo8s7XG7bvhXeo
+         LEeA3SL41D2ENjNej6A8tEzJULIHEhLjNJ598yPvyB0HQMU46EF2LbQFZAoFxYRBz5NL
+         08mg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=B8ZqKyFHGH5C+QdIaLYiAJfgSlK2HoPCxGbkd1rkjtU=;
+        b=XJiKecPkRzyMmcL0AuBFrFAF+OBF+Of1Xc8pUOMRaTCfI8ges3d8gJju9RSMhe4a8U
+         pwTTHPw+gTqvLc8okrTewc7P6r5LxbgYMI0OI/Xv4cnaafiFMojUohXlf7rWFUqyFcMn
+         vpE+6fbbamR6fuFbyKhIB7TW7hSca0mpXWWBEEae+XW3bTQd863LIMzBpAK2u29pBV/U
+         Dvj1BOVZ3BqAr8oZo5uVqu6iXThJKeefPZWbcuFRCQAlMWk/CpFHF5nxpK6V0gbLQvAz
+         CdwOT9aEoSPEpkmngd7YWreLJH+CP/33pcliNiRq4wkx0DGsla1blGN5lMVv0N01JUrS
+         5ulw==
+X-Gm-Message-State: AOAM533OkCANsXLjAGOsOaIl9LVmjF2Z7AQSfSyqt4owordgTTe9t8Uw
+        v7XrR5FuPlaMVnMVsIjUgOQIJg==
+X-Google-Smtp-Source: ABdhPJzsje/g6gUZ+/m6qEO4sipKpj2XfNKA+0bsFwkdBQMj+67enVK+bcuHNopCvhldU3J6mYF1WA==
+X-Received: by 2002:a05:6402:139a:: with SMTP id b26mr7346573edv.47.1607445740668;
+        Tue, 08 Dec 2020 08:42:20 -0800 (PST)
+Received: from localhost.localdomain (lns-bzn-59-82-252-158-132.adsl.proxad.net. [82.252.158.132])
+        by smtp.gmail.com with ESMTPSA id t19sm16150546eje.86.2020.12.08.08.42.19
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 08 Dec 2020 08:42:20 -0800 (PST)
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+To:     rjw@rjwysocki.net
+Cc:     linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
+        Daniel Lezcano <daniel.lezcano@linaro.org>,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Lina Iyer <ilina@codeaurora.org>,
+        Ram Chandrasekar <rkumbako@codeaurora.org>,
+        Zhang Rui <rui.zhang@intel.com>
+Subject: [PATCH v5 1/4] units: Add Watt units
+Date:   Tue,  8 Dec 2020 17:41:42 +0100
+Message-Id: <20201208164145.19493-2-daniel.lezcano@linaro.org>
+X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201208164145.19493-1-daniel.lezcano@linaro.org>
+References: <20201208164145.19493-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, 2020-12-07 at 17:25 +0100, Rafael J. Wysocki wrote:
-> Hi,
-> 
-> This is based on the RFC posted a few days ago:
-> 
-> https://lore.kernel.org/linux-pm/1817571.2o5Kk4Ohv2@kreacher/
-> 
-> The majority of the original cover letter still applies, so let me quote it
-> here:
-> [...]
+As there are the temperature units, let's add the Watt macros definition.
 
-Hello Rafael,
+Cc: Thara Gopinath <thara.gopinath@linaro.org>
+Cc: Lina Iyer <ilina@codeaurora.org>
+Cc: Ram Chandrasekar <rkumbako@codeaurora.org>
+Cc: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+---
+ include/linux/units.h | 4 ++++
+ 1 file changed, 4 insertions(+)
 
-I'd like to test this patch, as I have concerns on how it performs against the
-current intel_pstate passive + HWP + schedutil (which leaves HWP.REQ.DESIRED
-untouched).
-
-I'll get results within a week. Do you mind holding back the merge until then?
-
-
-Thanks!
-Giovanni Gherdovich
+diff --git a/include/linux/units.h b/include/linux/units.h
+index aaf716364ec3..92c234e71cab 100644
+--- a/include/linux/units.h
++++ b/include/linux/units.h
+@@ -4,6 +4,10 @@
+ 
+ #include <linux/kernel.h>
+ 
++#define MILLIWATT_PER_WATT	1000L
++#define MICROWATT_PER_MILLIWATT	1000L
++#define MICROWATT_PER_WATT	1000000L
++
+ #define ABSOLUTE_ZERO_MILLICELSIUS -273150
+ 
+ static inline long milli_kelvin_to_millicelsius(long t)
+-- 
+2.17.1
 
