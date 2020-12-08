@@ -2,166 +2,101 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-23.2 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_IN_DEF_DKIM_WL autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F0AFCC433FE
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9BB94C433FE
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:41:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id B65BA22582
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:41:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 74E5E239FD
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:41:49 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728068AbgLHUlY (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 15:41:24 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41104 "EHLO
+        id S1729581AbgLHUlt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 15:41:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41166 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728064AbgLHUlY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 15:41:24 -0500
-Received: from mail-pg1-x52b.google.com (mail-pg1-x52b.google.com [IPv6:2607:f8b0:4864:20::52b])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id D0201C0613CF
-        for <linux-pm@vger.kernel.org>; Tue,  8 Dec 2020 12:40:43 -0800 (PST)
-Received: by mail-pg1-x52b.google.com with SMTP id o4so13273860pgj.0
-        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2020 12:40:43 -0800 (PST)
+        with ESMTP id S1729571AbgLHUls (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 15:41:48 -0500
+Received: from mail-pf1-x441.google.com (mail-pf1-x441.google.com [IPv6:2607:f8b0:4864:20::441])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8CF46C0613D6
+        for <linux-pm@vger.kernel.org>; Tue,  8 Dec 2020 12:41:08 -0800 (PST)
+Received: by mail-pf1-x441.google.com with SMTP id c12so7949291pfo.10
+        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2020 12:41:08 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=J12rizzNJpvDHeBDK+JooIwKeN2M6waJYpLkDHkzQgc=;
-        b=yZPn9wSKPOA4t0DXsi6A+CopXG1/dKiK9mqYDhFkIGRv66VMxL7YIZCJBBbpoeLbq0
-         xCP+OQgwUq+T96nG+gsj5+2S+pFCFnMO+zxXdBveRrFsiP5DESV8L6kEUyEJ6If5zV5m
-         2Ifm1012bTBS+px43ImT8UU0pQBxOMEMZTf+fZ64R/hmII5+P+dax825Bt9w3suU6Kb7
-         njcptB0t+y84pxU41chu6JVX1l1eT84TGblTkaQs0oI+napVYctgkDEixrxJDj9zpvqS
-         xINu8XhYMb1LWhO3HH0iRnHTT35yjOaxmqoyOhvcckQ0BTyaqJ5vjrCF4yjhALEQdpbf
-         DQdg==
+        d=google.com; s=20161025;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=yIIDS5UbHS+iP04X9nwjtge3+yYkdmmw5G2DdkBGrYg=;
+        b=IVkX5Ca68BCKcdF2xOkQaKNZb1DQ8/6Z6QNaWS1Uq8AEKzm/gAAsk/yGJ+ee2LV99y
+         HpjaYuc8GNVPiaO4QpZTVlts1t17P3M1LJ2DYu5lW/yXfOYfXRp3tfppkOCpAplRqN8I
+         r1tPZx1xvaU5cB76H0VfDTIDF889g469HO1ssh2Mttt6XKRoG4eCefn/YdNAgwWwqfeT
+         O4gHqZBaNgf1uqxs5iKVEn1zSMAjxmVo5iLALFSkBim+58yk5TUhwNypIxfibqBGy9+3
+         fQuDOHw8l/lxThSVFhEgoV2Sb8thNrsKrloY4ePA31BOt4obNo8yC9ZQScECRqOzsKpY
+         Bb5Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=J12rizzNJpvDHeBDK+JooIwKeN2M6waJYpLkDHkzQgc=;
-        b=XaAxpXEGMWGK+65K17AX9/QpGhOYWC3QCIXQQN5KlODJY0LKkn6viR4mkRy3BSBFhG
-         tohIlqegmsgJawIhv0BclfF6JwBlm9rtU4ON9Snx/TYvjPVQtbQiNQJOMM35/M8pCs6G
-         r+Pti+FoW11vZ5LAzymh/ycMCePwy1p4WNmqMVMMnbj4JyQC4iR9XZO1HbD3iFD0c6aS
-         4u1dlQjXlwRwyND9FyV2WC6CC/FPM+ykBGuWm1nOy0AAVp6rVE6RKEaV+UDGX2NDwvSK
-         tTF4aVYf7QBJwupQgL3Quq8owMdTPUsmju8ee6tBvYLK8ByzTZXQX7BYKNp2vEIhSk/5
-         /s8w==
-X-Gm-Message-State: AOAM533784GJW+pRn9iTUAqibaCg2J1JGzxfJRe/hrcvjze7ApwxH9tg
-        0uDfQsUQ+fXR9OI7LvM+Nw8y0NiOsKC9Kw==
-X-Google-Smtp-Source: ABdhPJxSo+6wdMxyLS3PJfTGHeO48VKCxYNRk00cI3aurfcIU//UN6UrGTE9iDOCngFwll8mJOCvJg==
-X-Received: by 2002:a17:902:ee0b:b029:db:c808:ccef with SMTP id z11-20020a170902ee0bb02900dbc808ccefmr3336545plb.85.1607456401564;
-        Tue, 08 Dec 2020 11:40:01 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id oc13sm4104288pjb.5.2020.12.08.11.40.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 08 Dec 2020 11:40:00 -0800 (PST)
-Message-ID: <5fcfd690.1c69fb81.da367.9073@mx.google.com>
-Date:   Tue, 08 Dec 2020 11:40:00 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=yIIDS5UbHS+iP04X9nwjtge3+yYkdmmw5G2DdkBGrYg=;
+        b=fFXiwA05yKxaHc7M0esLtLNblFE4x7njmjF2pV218rJ9sFGGMdjgAmfT9mRitypsqq
+         K1HY/rtnuovZJwUksUhzXzMVOhMppFQXlYlA1ZyN0r4MBDdCPKuw0PxKf5EAr4xELi0n
+         is14RLIgcSIo2PYxVy2hvUlIA1HwyKBY5zyTCyGUOrc2/+zf+EIxRRIdPMr6UJgnL4oG
+         qgsO2+sEwE5roTdN2akHMiHBd9mSHgL9T9B/RydeZzRaqxKuV7ye0YrPqJzLBynzxW7M
+         ghNzxwb6euJK/BBoqsrfKFpIHLQNM1fRR+a6C5zVJkYMItZnPoijuPJkiLNNKFmra2pt
+         1+yw==
+X-Gm-Message-State: AOAM531PhLCTLC8xcuI32xL9HBAPcQq/lXPmM4qPCImWaFSnAwraIcZP
+        hIHX7jpMaCd51dqFcx1eqBZR24WeuJAYxOnckWM4aw==
+X-Google-Smtp-Source: ABdhPJwcshoPsolxrwGrcprrx9t7RVw9VxrK2Lo5vn2Ta5pum1EyTJxBSNXZtrI+Y62Yt9JecxgZ4MO4aWMdSO/IDgc=
+X-Received: by 2002:a17:90b:16cd:: with SMTP id iy13mr5907977pjb.182.1607460067950;
+ Tue, 08 Dec 2020 12:41:07 -0800 (PST)
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.10-rc7-92-g717f8fce803b
-X-Kernelci-Report-Type: build
-Subject: pm/testing build: 7 builds: 0 failed, 7 passed,
- 3 warnings (v5.10-rc7-92-g717f8fce803b)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+References: <20201208191955.2466057-1-tstrudel@google.com> <X8/ZM7Vm/aD9FdlG@kroah.com>
+In-Reply-To: <X8/ZM7Vm/aD9FdlG@kroah.com>
+From:   Thierry Strudel <tstrudel@google.com>
+Date:   Tue, 8 Dec 2020 12:40:56 -0800
+Message-ID: <CAMGPabUpDKsVHDtVi=Nyir2Si8cgUCvyeX5OcGyKri+6NWu2uw@mail.gmail.com>
+Subject: Re: [PATCH v4] PM: domains: create debugfs nodes when adding power domains
+To:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Kevin Hilman <khilman@kernel.org>,
+        Ulf Hansson <ulf.hansson@linaro.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing build: 7 builds: 0 failed, 7 passed, 3 warnings (v5.10-rc7-92-g7=
-17f8fce803b)
+Sorry about that.
+Thanks for the reviews
 
-Full Build Summary: https://kernelci.org/build/pm/branch/testing/kernel/v5.=
-10-rc7-92-g717f8fce803b/
-
-Tree: pm
-Branch: testing
-Git Describe: v5.10-rc7-92-g717f8fce803b
-Git Commit: 717f8fce803b9501e192fef85d508e3d592f1c16
-Git URL: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git
-Built: 7 unique architectures
-
-Warnings Detected:
-
-arc:
-
-arm64:
-
-arm:
-    multi_v7_defconfig (gcc-8): 3 warnings
-
-i386:
-
-mips:
-
-riscv:
-
-x86_64:
-
-
-Warnings summary:
-
-    1    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge)=
-: /soc/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI bus
-    1    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge)=
-: /soc/apb@d4000000/spi@d4037000: incorrect #address-cells for SPI bus
-    1    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Fa=
-iled prerequisite 'spi_bus_bridge'
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D
-
-Detailed per-defconfig build reports:
-
----------------------------------------------------------------------------=
------
-32r2el_defconfig (mips, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sect=
-ion mismatches
-
----------------------------------------------------------------------------=
------
-defconfig (arm64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-defconfig (riscv, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 section mi=
-smatches
-
----------------------------------------------------------------------------=
------
-haps_hs_smp_defconfig (arc, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 =
-section mismatches
-
----------------------------------------------------------------------------=
------
-i386_defconfig (i386, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 sectio=
-n mismatches
-
----------------------------------------------------------------------------=
------
-multi_v7_defconfig (arm, gcc-8) =E2=80=94 PASS, 0 errors, 3 warnings, 0 sec=
-tion mismatches
-
-Warnings:
-    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge): /so=
-c/apb@d4000000/spi@d4037000: incorrect #address-cells for SPI bus
-    arch/arm/boot/dts/mmp2.dtsi:472.23-480.6: Warning (spi_bus_bridge): /so=
-c/apb@d4000000/spi@d4037000: incorrect #size-cells for SPI bus
-    arch/arm/boot/dts/mmp2-olpc-xo-1-75.dtb: Warning (spi_bus_reg): Failed =
-prerequisite 'spi_bus_bridge'
-
----------------------------------------------------------------------------=
------
-x86_64_defconfig (x86_64, gcc-8) =E2=80=94 PASS, 0 errors, 0 warnings, 0 se=
-ction mismatches
-
----
-For more info write to <info@kernelci.org>
+On Tue, Dec 8, 2020 at 11:49 AM Greg Kroah-Hartman
+<gregkh@linuxfoundation.org> wrote:
+>
+> On Tue, Dec 08, 2020 at 11:19:55AM -0800, Thierry Strudel wrote:
+> > debugfs nodes were created in genpd_debug_init alled in late_initcall
+> > preventing power domains registered though loadable modules to have
+> > a debugfs entry.
+> >
+> > Create/remove debugfs nodes when the power domain is added/removed
+> > to/from the internal gpd_list.
+> >
+> > Signed-off-by: Thierry Strudel <tstrudel@google.com>
+> > Change-Id: I8a2e0616746afe2a6bbd9c24bc3a0eaa84725a75
+>
+> You don't need this, checkpatch.pl should have warned you :)
+>
+> > ---
+> > v2: fix forward declaration and genpd_debugfs_dir being NULL - Ulf
+> > v3: remove extra trailing char added by mistake in v2 - kernel test robot
+> > v4: cleanup includes and regroup CONFIG_DEBUG_FS CPP blocks - Greg
+> >  drivers/base/power/domain.c | 73 +++++++++++++++++++++++--------------
+> >  1 file changed, 45 insertions(+), 28 deletions(-)
+>
+> Looks good to me, thanks for fixing it up.  Rafael, will this go through
+> your tree?
+>
+> Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
