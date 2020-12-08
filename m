@@ -2,28 +2,29 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
-	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FBB7C4361B
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B7904C2BB40
 	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 06D3923B4B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8527223B4B
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729558AbgLHRmK (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 12:42:10 -0500
-Received: from foss.arm.com ([217.140.110.172]:52378 "EHLO foss.arm.com"
+        id S1730762AbgLHRmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 12:42:17 -0500
+Received: from foss.arm.com ([217.140.110.172]:52406 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727998AbgLHRmK (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Dec 2020 12:42:10 -0500
+        id S1727998AbgLHRmR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Dec 2020 12:42:17 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 378C21FB;
-        Tue,  8 Dec 2020 09:41:24 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DE93C13D5;
+        Tue,  8 Dec 2020 09:41:31 -0800 (PST)
 Received: from ubuntu.cambridge.arm.com (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 04A0A3F68F;
-        Tue,  8 Dec 2020 09:41:21 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8EF073F68F;
+        Tue,  8 Dec 2020 09:41:29 -0800 (PST)
 From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
@@ -31,74 +32,55 @@ To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com
 Cc:     daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
         chris.redpath@arm.com, nicola.mazzucato@arm.com
-Subject: [PATCH v5 0/4] CPUFreq: Add support for opp-sharing cpus
-Date:   Tue,  8 Dec 2020 17:42:25 +0000
-Message-Id: <20201208174229.24323-1-nicola.mazzucato@arm.com>
+Subject: [PATCH v5 2/4] opp/of: Allow empty opp-table with opp-shared
+Date:   Tue,  8 Dec 2020 17:42:27 +0000
+Message-Id: <20201208174229.24323-3-nicola.mazzucato@arm.com>
 X-Mailer: git-send-email 2.27.0
+In-Reply-To: <20201208174229.24323-1-nicola.mazzucato@arm.com>
+References: <20201208174229.24323-1-nicola.mazzucato@arm.com>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Hi All,
+The opp binding now allows to have an empty opp table and shared-opp to
+still describe that devices share v/f lines.
 
-In this V5 posting I have addressed suggestions on opp/of and scmi-cpufreq
-driver.
+When initialising an empty opp table, allow such case by:
+- treating such conditions with warnings in place of errors
+- don't fail on empty table
 
-This is to support systems where exposed cpu performance controls are more
-fine-grained that the platform's ability to scale cpus independently.
+Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
+---
+ drivers/opp/of.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Many thanks,
-Nicola
-
-[v5]
-  * Rework documentation of opp-shared within OPP node
-  * Register EM only for the first CPU within cpumask in driver
-  * Add check for nr_opp in driver before registering EM
-  * Add comments on both dev_pm_opp_get_opp_count in driver
-  * Remove redundant ret=0 in driver
-
-This v5 is rebased on top of:
-next-20201208 + Lukasz Luba's patches [1]
-
-[v4]
-  * Remove unconditional set of opp_table->shared_opp to exclusive
-  * Add implementation for scmi-cpufreq
-  * Change subject
-
-These patches are on top of:
-next-20201201 + Lukasz Luba's patches (waiting for Rafael) [1]
-
-[v3]
-  * Remove proposal for new 'cpu-performance-dependencies' as we instead
-    can reuse the opp table.
-  * Update documentation for devicetree/bindings/opp
-  * Minor changes within opp to support empty opp table
-  * Rework the RFC by adding a second proposal
-
-[v2]
-  * Fix errors when running make dt_binding_check
-  * Improve commit message description for the dt-binding
-  * Add RFC for implementation in cpufreq-core and one of its
-    drivers.
-
-Nicola Mazzucato (3):
-  dt-bindings: opp: Allow empty OPP tables
-  opp/of: Allow empty opp-table with opp-shared
-  scmi-cpufreq: get opp_shared_cpus from opp-v2 for EM
-
-Sudeep Holla (1):
-  cpufreq: blacklist Arm Vexpress platforms in cpufreq-dt-platdev
-
- Documentation/devicetree/bindings/opp/opp.txt | 54 ++++++++++++++-
- drivers/cpufreq/cpufreq-dt-platdev.c          |  2 +
- drivers/cpufreq/scmi-cpufreq.c                | 69 ++++++++++++++-----
- drivers/opp/of.c                              |  7 +-
- 4 files changed, 110 insertions(+), 22 deletions(-)
-
-[1] https://lore.kernel.org/linux-pm/20201124104346.27167-1-lukasz.luba@arm.com/
-
+diff --git a/drivers/opp/of.c b/drivers/opp/of.c
+index ffd937af8089..03cb387236c4 100644
+--- a/drivers/opp/of.c
++++ b/drivers/opp/of.c
+@@ -170,7 +170,8 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
+ 	/* Traversing the first OPP node is all we need */
+ 	np = of_get_next_available_child(opp_np, NULL);
+ 	if (!np) {
+-		dev_err(dev, "Empty OPP table\n");
++		dev_warn(dev, "Empty OPP table\n");
++
+ 		return;
+ 	}
+ 
+@@ -378,7 +379,9 @@ int dev_pm_opp_of_find_icc_paths(struct device *dev,
+ 	struct icc_path **paths;
+ 
+ 	ret = _bandwidth_supported(dev, opp_table);
+-	if (ret <= 0)
++	if (ret == -EINVAL)
++		return 0; /* Empty OPP table is a valid corner-case, let's not fail */
++	else if (ret <= 0)
+ 		return ret;
+ 
+ 	ret = 0;
 -- 
 2.27.0
 
