@@ -2,101 +2,122 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UNPARSEABLE_RELAY,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 04E39C1B0D8
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 07C6DC19437
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 02:38:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C6C84239FF
-	for <linux-pm@archiver.kernel.org>; Mon,  7 Dec 2020 22:55:24 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C463B235F9
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 02:38:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726667AbgLGWzR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 7 Dec 2020 17:55:17 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:34560 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725931AbgLGWzQ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 17:55:16 -0500
-Received: from mail-ej1-x642.google.com (mail-ej1-x642.google.com [IPv6:2a00:1450:4864:20::642])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8033DC061749;
-        Mon,  7 Dec 2020 14:54:36 -0800 (PST)
-Received: by mail-ej1-x642.google.com with SMTP id ce23so18129309ejb.8;
-        Mon, 07 Dec 2020 14:54:36 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=ikuMuHs5sNrFUz6htSqwiN7XutHKhUqKTs5+seLKDDA=;
-        b=r4XXVvTtW8qVgdH+lr2X9o/eRIuTnkCt6Rp0UoXKX1NE7nHP6zvVXglUtB/hDsqMdP
-         keR9QtEzzz3D57O8YTD2FlsKga3f8PXU0FauTx3jIDiLXTLl7efVTVJqFsseqKkQ+7x2
-         q9mVXgVaNcxg86oZp/cuTjfwHyf/WaKmfsh7QPRzvPYZp+MMkBdFf02eeJK1xp3UdObq
-         eyZDdW8aET630dobxC9DGrlACletOgaDmmubGilIqTYT8uzKfnBwtb4+fyVB1ukY1/i9
-         HSxh7uwe961T3IQ+4798UaGssMrbV/OYajzqd8IW3286+mmNdIDTpRUQxCnjH6iNaSSi
-         DSeQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=ikuMuHs5sNrFUz6htSqwiN7XutHKhUqKTs5+seLKDDA=;
-        b=ahiTcMngWypZcz/Lv5VbjOWM8i6xcnsikfAsPZJbBv6gBYe7iMWfunJDCeGhE8KYr+
-         MEhoSMFK+/lPYeDq+BHJogWMTl4RQUYZy+zqvK/2VO0fsbqfLGjZgLtAnvP7QdxuvKJj
-         +BBc3KIzR5bnni1v18H+3gwt/yeVF1rC4Z98/0SPwgduBLtGhfWviqtPMtSCI5PM2NUo
-         oGD+u1UgGpQktLSFwr5jwXSvHgjISXD/3xRf3+dKeSeVBp2nWEzE1qLpIIZxQ35yslb5
-         p836PICRKCilM5BgyfYaFdgLu2w5WonSsixK7eMSTD1wjsM/rN1hPa5ZF9B5ex2m6gFh
-         kYAA==
-X-Gm-Message-State: AOAM5305ecA8GZwudgJvkS3XXcLJT/xOm0RHLdqIOhvo6cjhClHyLJvt
-        FekbFFPl6ThiWK1XRt6QiEU=
-X-Google-Smtp-Source: ABdhPJwKktBwILNOPx2MY3e6qTpMPX89oQ4E9201+o8jMaTceW9TCfOW/PzMI0qbLyYCwJ15zqcrTQ==
-X-Received: by 2002:a17:906:d8a1:: with SMTP id qc1mr20361704ejb.294.1607381675127;
-        Mon, 07 Dec 2020 14:54:35 -0800 (PST)
-Received: from ubuntu2004 ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id t26sm15197371edt.69.2020.12.07.14.54.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 07 Dec 2020 14:54:34 -0800 (PST)
-Date:   Tue, 8 Dec 2020 00:54:38 +0200
-From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-To:     Mark Brown <broonie@kernel.org>
-Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
-        linux-actions@lists.infradead.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-        linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 4/7] regulator: Add regulator driver for ATC260x PMICs
-Message-ID: <20201207225438.GB250758@ubuntu2004>
-References: <cover.1607216141.git.cristian.ciocaltea@gmail.com>
- <f001986493a51fe591cb09a544770651bf589d35.1607216141.git.cristian.ciocaltea@gmail.com>
- <20201207133003.GC5694@sirena.org.uk>
+        id S1728050AbgLHCiR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 7 Dec 2020 21:38:17 -0500
+Received: from smtp2207-205.mail.aliyun.com ([121.197.207.205]:46370 "EHLO
+        smtp2207-205.mail.aliyun.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1727702AbgLHCiR (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 7 Dec 2020 21:38:17 -0500
+X-Alimail-AntiSpam: AC=CONTINUE;BC=0.09102429|-1;CH=green;DM=|CONTINUE|false|;DS=CONTINUE|ham_regular_dialog|0.259475-0.000416156-0.740109;FP=13177509390828733794|2|2|9|0|-1|-1|-1;HT=ay29a033018047190;MF=huangshuosheng@allwinnertech.com;NM=1;PH=DS;RN=10;RT=10;SR=0;TI=SMTPD_---.J4MSblz_1607395050;
+Received: from allwinnertech.com(mailfrom:huangshuosheng@allwinnertech.com fp:SMTPD_---.J4MSblz_1607395050)
+          by smtp.aliyun-inc.com(10.147.40.200);
+          Tue, 08 Dec 2020 10:37:32 +0800
+From:   Shuosheng Huang <huangshuosheng@allwinnertech.com>
+To:     tiny.windzz@gmail.com, rjw@rjwysocki.net, viresh.kumar@linaro.org,
+        mripard@kernel.org, wens@csie.org, jernej.skrabec@siol.net
+Cc:     linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org,
+        Shuosheng Huang <huangshuosheng@allwinnertech.com>
+Subject: [PATCH v3 2/6] cpufreq: sun50i: add a100 cpufreq support
+Date:   Tue,  8 Dec 2020 10:37:28 +0800
+Message-Id: <20201208023728.22603-1-huangshuosheng@allwinnertech.com>
+X-Mailer: git-send-email 2.28.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20201207133003.GC5694@sirena.org.uk>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 07, 2020 at 01:30:03PM +0000, Mark Brown wrote:
-> On Sun, Dec 06, 2020 at 03:27:04AM +0200, Cristian Ciocaltea wrote:
-> 
-> > +/*
-> > + * ATC2603C notes:
-> > + * - LDO8 is not documented in datasheet (v2.4), but supported
-> > + *   in the vendor's driver implementation (xapp-le-kernel).
-> > + * - LDO12 mentioned in datasheet is not programmable, hence not
-> > + *   handled in this driver.
-> > + */
-> 
-> No reason not to include LDO12 here, the framework supports fixed
-> regulators fine and the bindings should reflect the physical structure
-> of the hardware - if something is being supplied by LDO12 on the PMIC
-> then you'd expect the binding showing a connection from LDO12.
+Add cpufreq nvmem based for allwinner a100 SoC, it's similar to h6.
 
-Totally agree, I will handle this in the next revision.
+Signed-off-by: Shuosheng Huang <huangshuosheng@allwinnertech.com>
+---
+ drivers/cpufreq/cpufreq-dt-platdev.c   |  1 +
+ drivers/cpufreq/sun50i-cpufreq-nvmem.c | 32 ++++++++++++++++++++++++++
+ 2 files changed, 33 insertions(+)
 
-Thanks,
-Cristi
+diff --git a/drivers/cpufreq/cpufreq-dt-platdev.c b/drivers/cpufreq/cpufreq-dt-platdev.c
+index 3776d960f405..2ebf5d9cb616 100644
+--- a/drivers/cpufreq/cpufreq-dt-platdev.c
++++ b/drivers/cpufreq/cpufreq-dt-platdev.c
+@@ -102,6 +102,7 @@ static const struct of_device_id whitelist[] __initconst = {
+  */
+ static const struct of_device_id blacklist[] __initconst = {
+ 	{ .compatible = "allwinner,sun50i-h6", },
++	{ .compatible = "allwinner,sun50i-a100", },
+ 
+ 	{ .compatible = "calxeda,highbank", },
+ 	{ .compatible = "calxeda,ecx-2000", },
+diff --git a/drivers/cpufreq/sun50i-cpufreq-nvmem.c b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+index da23d581a4b4..def4a19abe16 100644
+--- a/drivers/cpufreq/sun50i-cpufreq-nvmem.c
++++ b/drivers/cpufreq/sun50i-cpufreq-nvmem.c
+@@ -25,6 +25,9 @@
+ #define SUN50I_H6_NVMEM_MASK		0x7
+ #define SUN50I_H6_NVMEM_SHIFT		5
+ 
++#define SUN50I_A100_NVMEM_MASK		0xf
++#define SUN50I_A100_NVMEM_SHIFT		12
++
+ struct sunxi_cpufreq_soc_data {
+ 	u32 (*efuse_xlate)(void *efuse);
+ };
+@@ -55,6 +58,30 @@ static u32 sun50i_h6_efuse_xlate(struct nvmem_cell *speedbin_nvmem)
+ 		return 0;
+ }
+ 
++static u32 sun50i_a100_efuse_xlate(struct nvmem_cell *speedbin_nvmem)
++{
++	size_t len;
++	u32 *speedbin;
++	u32 efuse_value;
++
++	speedbin = nvmem_cell_read(speedbin_nvmem, &len);
++	if (IS_ERR(speedbin))
++		return PTR_ERR(speedbin);
++
++	efuse_value = (*(u16 *)efuse >> SUN50I_A100_NVMEM_SHIFT) &
++			  SUN50I_A100_NVMEM_MASK;
++	kfree(speedbin);
++
++	switch (efuse_value) {
++	case 0b100:
++		return 2;
++	case 0b010:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
+ /**
+  * sun50i_cpufreq_get_efuse() - Determine speed grade from efuse value
+  * @soc_data: pointer to sunxi_cpufreq_soc_data context
+@@ -188,8 +215,13 @@ static const struct sunxi_cpufreq_soc_data sun50i_h6_data = {
+ 	.efuse_xlate = sun50i_h6_efuse_xlate,
+ };
+ 
++static const struct sunxi_cpufreq_soc_data sun50i_a100_data = {
++	.efuse_xlate = sun50i_a100_efuse_xlate,
++};
++
+ static const struct of_device_id sun50i_cpufreq_match_list[] = {
+ 	{ .compatible = "allwinner,sun50i-h6", .data = &sun50i_h6_data },
++	{ .compatible = "allwinner,sun50i-a100", .data = &sun50i_a100_data },
+ 	{}
+ };
+ 
+-- 
+2.28.0
+
