@@ -2,225 +2,186 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-23.5 required=3.0 tests=BAYES_00,DKIMWL_WL_MED,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
-	UNWANTED_LANGUAGE_BODY,USER_AGENT_GIT,USER_IN_DEF_DKIM_WL autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ADE18C2BBD4
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:26:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CFEBEC1B0D9
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:30:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 9610C23A7B
-	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:26:54 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A7E3823AC9
+	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 20:30:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729029AbgLHU0n (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 15:26:43 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:38774 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728748AbgLHU0m (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 8 Dec 2020 15:26:42 -0500
-Received: from mail-yb1-xb4a.google.com (mail-yb1-xb4a.google.com [IPv6:2607:f8b0:4864:20::b4a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 42FF3C06179C
-        for <linux-pm@vger.kernel.org>; Tue,  8 Dec 2020 12:25:56 -0800 (PST)
-Received: by mail-yb1-xb4a.google.com with SMTP id c9so23858521ybs.8
-        for <linux-pm@vger.kernel.org>; Tue, 08 Dec 2020 12:25:56 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20161025;
-        h=sender:date:message-id:mime-version:subject:from:to:cc;
-        bh=GVBCj7++kadYslQEKiUiOvXrT6u8C535LweeV3vmr3w=;
-        b=GpYQ3QJDvynec7G8eavuJvRKmeokXYwUk/DvyDC3rQCo/JzL2hcmyvtT1WwRGq8Lmy
-         TvllJRWIfWUzwn3OnjP1wF9jAfazM/mHTaMU/s1zmWuAUVNodHwc0n1dWMhXio7aUxEO
-         PMx0pHNYbALD8pWiIGYiCWiQvYvP7ILmIER+SxFtR1oIsqgPsKeQNrDHXLRQ6zfaIlHN
-         CIFmnrE3RtuUSUHW1vk8gNefCJXG1SfDqGOdY5j0xptgOnB9UHUu/gP1saxNS6Ok9ui5
-         ols2KlUjDbo8F6agl1LN0ziyQv7ectxlEvOAbQ0rNWDudDW74lmyuAHw71C4de4CQctE
-         clAA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:sender:date:message-id:mime-version:subject:from
-         :to:cc;
-        bh=GVBCj7++kadYslQEKiUiOvXrT6u8C535LweeV3vmr3w=;
-        b=X7yM12bQq1Uek/MTKBgLuDaK47iuO/BbtMZTVeG5zsmCVc1vKaZQbr47kzBtfns0mP
-         i/DqRwY0zlEH5/JOKrCvA2cNRYmDMQSkeU8a8zeYvqbu4SJOo1RlCxLmHp3mj5Gs5I5g
-         XP8n3XZAlMcipUwZpZLY/Zgc7c1j+DJN4SVUEK/nN8hS9P7mYXknIljJhN5xIRdc6v6w
-         ktcZqDwW1lAr8ZmxaKmj4IqX3Dh45zdG4C0nyvxaQ9bDw50zivQDARjC7CekQlN+TtZ3
-         HMLUwntEN1W1y8tTuORsVbssyUyoVxkRI/NADc/tCS7Uuf0XqoyguwI8hSbj5T+KByZp
-         bw1w==
-X-Gm-Message-State: AOAM531IGJZ58x6eimO7FIj2Yrzb5Ln5XXSJl27Awm+wPbnUeddij6er
-        GPrxXQO8BzXkUGu8Ba5Href9qHjm30z+og==
-X-Google-Smtp-Source: ABdhPJxrfnJgi+EoEPqJXFI0NQkBlW/M60oMpPttVL+nDa9ZdrF2cemzNk1oPOuI5AUEOsRmwN6J+aV3XRjjQA==
-Sender: "tstrudel via sendgmr" <tstrudel@legoland2.mtv.corp.google.com>
-X-Received: from legoland2.mtv.corp.google.com ([2620:15c:211:1:7220:84ff:fe09:fd20])
- (user=tstrudel job=sendgmr) by 2002:a25:bb8f:: with SMTP id
- y15mr98605ybg.451.1607455204168; Tue, 08 Dec 2020 11:20:04 -0800 (PST)
-Date:   Tue,  8 Dec 2020 11:19:55 -0800
-Message-Id: <20201208191955.2466057-1-tstrudel@google.com>
-Mime-Version: 1.0
-X-Mailer: git-send-email 2.29.2.576.ga3fc446d84-goog
-Subject: [PATCH v4] PM: domains: create debugfs nodes when adding power domains
-From:   Thierry Strudel <tstrudel@google.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        Thierry Strudel <tstrudel@google.com>
-Content-Type: text/plain; charset="UTF-8"
+        id S1729601AbgLHUaS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 15:30:18 -0500
+Received: from cmta17.telus.net ([209.171.16.90]:50436 "EHLO cmta17.telus.net"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729527AbgLHUaS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Dec 2020 15:30:18 -0500
+Received: from dougxps ([173.180.45.4])
+        by cmsmtp with SMTP
+        id miRZk7Fszm62rmiRakESsv; Tue, 08 Dec 2020 12:14:40 -0700
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=telus.net; s=neo;
+        t=1607454880; bh=cjeXmSSc2tCRBmt6xapT5IwcYBqI1AcxtK+LuUehyIA=;
+        h=From:To:Cc:References:In-Reply-To:Subject:Date;
+        b=5ZI3NdnPf1Rik4TxgG+mX/qkq1P/Z8eZoPemnHDeRjyKA/qxgNBUogcitopo05YgM
+         gYVet+DPnE2o5StkufEN28JXhqV1NYplwCjAM2KRQfPtBpQeBqZFr1tOnY4xnwEhDU
+         HYSM5DnM7Yn5F4R+IOyxqNqI2jila1n48YbEuQZX5rSUuc29/N758LrqlfluxK8HXa
+         nAddANFqjNFNl4UPIRSyhqmJufs6s1tvOfrl5Y16blCSjeZ4iiOwk1lXMEpUA4GfPT
+         CGlTXtUZ0Ox8Q2CLHEFNMcirtgBNjp0K5cWlxIvn0sF4daAJYlYC0l/y3Ozc0bFPJ8
+         Wk7Gx+3TJ91EQ==
+X-Telus-Authed: none
+X-Authority-Analysis: v=2.4 cv=D4iCltdj c=1 sm=1 tr=0 ts=5fcfd0a0
+ a=zJWegnE7BH9C0Gl4FFgQyA==:117 a=zJWegnE7BH9C0Gl4FFgQyA==:17
+ a=Pyq9K9CWowscuQLKlpiwfMBGOR0=:19 a=IkcTkHD0fZMA:10 a=iox4zFpeAAAA:8
+ a=VwQbUJbxAAAA:8 a=gu6fZOg2AAAA:8 a=4Jbuw8ktRrBCy4-7u88A:9 a=QEXdDO2ut3YA:10
+ a=-FEs8UIgK8oA:10 a=NWVoK91CQyQA:10 a=WzC6qhA0u3u7Ye7llzcV:22
+ a=AjGcO6oz07-iQ99wixmX:22 a=2RSlZUUhi9gRBrsHwhhZ:22
+From:   "Doug Smythies" <dsmythies@telus.net>
+To:     "'Rafael J. Wysocki'" <rafael@kernel.org>,
+        "'Giovanni Gherdovich'" <ggherdovich@suse.com>
+Cc:     "'Rafael J. Wysocki'" <rjw@rjwysocki.net>,
+        "'Linux PM'" <linux-pm@vger.kernel.org>,
+        "'LKML'" <linux-kernel@vger.kernel.org>,
+        "'Viresh Kumar'" <viresh.kumar@linaro.org>,
+        "'Srinivas Pandruvada'" <srinivas.pandruvada@linux.intel.com>,
+        "'Peter Zijlstra'" <peterz@infradead.org>
+References: <20360841.iInq7taT2Z@kreacher> <1607445035.2673.64.camel@suse.com> <CAJZ5v0j2u7MrO82+ubx01kvyhDUKo11mfyofF-TAqdSLx_i3Ng@mail.gmail.com>
+In-Reply-To: <CAJZ5v0j2u7MrO82+ubx01kvyhDUKo11mfyofF-TAqdSLx_i3Ng@mail.gmail.com>
+Subject: RE: [PATCH v1 0/4] cpufreq: Allow drivers to receive more information from the governor
+Date:   Tue, 8 Dec 2020 11:14:36 -0800
+Message-ID: <001d01d6cd96$601c8a80$20559f80$@net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+        charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Content-Language: en-ca
+Thread-Index: AdbNhYnI6l7ez4eQRjiDzyQ3pYiW9QABrdRQ
+X-CMAE-Envelope: MS4xfNLEs3/CV44UYR9bsW93NdqFMR+RW4quJlygVKVFVpB5RDrMwtMRZYFzkYB3ZHLBn1hacK2BsqpbgPEIG1PMiHSucXp7eOQ5jtb0FC6lj0ADxBMFRQ/2
+ 4cktii8b1D761lCAdEwBYg+u/FaQadeq+lkzeIBvzQ6jDTlOB/q/JT+ytcRjToCCvHz+d6vUdduf+k3+/RxhEA10ZKxbbOi9t1EN1IV8K4zV7p+9QrLWvH0/
+ vnNOpwGQXKsEt/43yMJPc+pnO9d/RHredhLq0yYXk7tmaMEjE8Rpb5s7SZGxddqF3U5B3Zgeq0H9GLYNmkbFQkYPMznDQA+EO6ofHOGnFRNhHDiiqBUU4j5/
+ R6/nK2lL5UTWz8RFuuQrH6LE7QmgaijYbttsrEo2WsZL/zfd10pp3Z/UJjssVcjY8tN+rcclBwnW4xeehYVQa4Htd5PjvA==
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-debugfs nodes were created in genpd_debug_init alled in late_initcall
-preventing power domains registered though loadable modules to have
-a debugfs entry.
+On 2020.12.08 09:14 Rafael J. Wysocki wrote: 
+> On Tue, Dec 8, 2020 at 5:31 PM Giovanni Gherdovich <ggherdovich@suse.com> wrote:
+>> On Mon, 2020-12-07 at 17:25 +0100, Rafael J. Wysocki wrote:
+>>> Hi,
+>>>
+>>> This is based on the RFC posted a few days ago:
+>>>
+>>> https://lore.kernel.org/linux-pm/1817571.2o5Kk4Ohv2@kreacher/
+>>>
+>>> The majority of the original cover letter still applies, so let me quote it
+>>> here:
+>>> [...]
+>>
+>> Hello Rafael,
+>>
+>> I'd like to test this patch, as I have concerns on how it performs against the
+>> current intel_pstate passive + HWP + schedutil (which leaves HWP.REQ.DESIRED
+>> untouched).
+> 
+>The performance will be worse in some cases, which is to be expected,
 
-Create/remove debugfs nodes when the power domain is added/removed
-to/from the internal gpd_list.
+Agreed. More further below.
 
-Signed-off-by: Thierry Strudel <tstrudel@google.com>
-Change-Id: I8a2e0616746afe2a6bbd9c24bc3a0eaa84725a75
----
-v2: fix forward declaration and genpd_debugfs_dir being NULL - Ulf
-v3: remove extra trailing char added by mistake in v2 - kernel test robot
-v4: cleanup includes and regroup CONFIG_DEBUG_FS CPP blocks - Greg
- drivers/base/power/domain.c | 73 +++++++++++++++++++++++--------------
- 1 file changed, 45 insertions(+), 28 deletions(-)
+>but the point here is to counter the problem that in some cases the
+>frequency is excessive now.
 
-diff --git a/drivers/base/power/domain.c b/drivers/base/power/domain.c
-index 2cb5e04cf86c..49c87607cba7 100644
---- a/drivers/base/power/domain.c
-+++ b/drivers/base/power/domain.c
-@@ -21,6 +21,7 @@
- #include <linux/suspend.h>
- #include <linux/export.h>
- #include <linux/cpu.h>
-+#include <linux/debugfs.h>
- 
- #include "power.h"
- 
-@@ -210,6 +211,18 @@ static void genpd_sd_counter_inc(struct generic_pm_domain *genpd)
- }
- 
- #ifdef CONFIG_DEBUG_FS
-+static struct dentry *genpd_debugfs_dir;
-+
-+static void genpd_debug_add(struct generic_pm_domain *genpd);
-+
-+static void genpd_debug_remove(struct generic_pm_domain *genpd)
-+{
-+	struct dentry *d;
-+
-+	d = debugfs_lookup(genpd->name, genpd_debugfs_dir);
-+	debugfs_remove(d);
-+}
-+
- static void genpd_update_accounting(struct generic_pm_domain *genpd)
- {
- 	ktime_t delta, now;
-@@ -234,6 +247,8 @@ static void genpd_update_accounting(struct generic_pm_domain *genpd)
- 	genpd->accounting_time = now;
- }
- #else
-+static inline void genpd_debug_add(struct generic_pm_domain *genpd) {}
-+static inline void genpd_debug_remove(struct generic_pm_domain *genpd) {}
- static inline void genpd_update_accounting(struct generic_pm_domain *genpd) {}
- #endif
- 
-@@ -1827,6 +1842,7 @@ int pm_genpd_init(struct generic_pm_domain *genpd,
- 
- 	mutex_lock(&gpd_list_lock);
- 	list_add(&genpd->gpd_list_node, &gpd_list);
-+	genpd_debug_add(genpd);
- 	mutex_unlock(&gpd_list_lock);
- 
- 	return 0;
-@@ -1860,6 +1876,7 @@ static int genpd_remove(struct generic_pm_domain *genpd)
- 		kfree(link);
- 	}
- 
-+	genpd_debug_remove(genpd);
- 	list_del(&genpd->gpd_list_node);
- 	genpd_unlock(genpd);
- 	cancel_work_sync(&genpd->power_off_work);
-@@ -2764,14 +2781,6 @@ core_initcall(genpd_bus_init);
- /***        debugfs support        ***/
- 
- #ifdef CONFIG_DEBUG_FS
--#include <linux/pm.h>
--#include <linux/device.h>
--#include <linux/debugfs.h>
--#include <linux/seq_file.h>
--#include <linux/init.h>
--#include <linux/kobject.h>
--static struct dentry *genpd_debugfs_dir;
--
- /*
-  * TODO: This function is a slightly modified version of rtpm_status_show
-  * from sysfs.c, so generalize it.
-@@ -3047,9 +3056,34 @@ DEFINE_SHOW_ATTRIBUTE(total_idle_time);
- DEFINE_SHOW_ATTRIBUTE(devices);
- DEFINE_SHOW_ATTRIBUTE(perf_state);
- 
--static int __init genpd_debug_init(void)
-+static void genpd_debug_add(struct generic_pm_domain *genpd)
- {
- 	struct dentry *d;
-+
-+	if (!genpd_debugfs_dir)
-+		return;
-+
-+	d = debugfs_create_dir(genpd->name, genpd_debugfs_dir);
-+
-+	debugfs_create_file("current_state", 0444,
-+			    d, genpd, &status_fops);
-+	debugfs_create_file("sub_domains", 0444,
-+			    d, genpd, &sub_domains_fops);
-+	debugfs_create_file("idle_states", 0444,
-+			    d, genpd, &idle_states_fops);
-+	debugfs_create_file("active_time", 0444,
-+			    d, genpd, &active_time_fops);
-+	debugfs_create_file("total_idle_time", 0444,
-+			    d, genpd, &total_idle_time_fops);
-+	debugfs_create_file("devices", 0444,
-+			    d, genpd, &devices_fops);
-+	if (genpd->set_performance_state)
-+		debugfs_create_file("perf_state", 0444,
-+				    d, genpd, &perf_state_fops);
-+}
-+
-+static int __init genpd_debug_init(void)
-+{
- 	struct generic_pm_domain *genpd;
- 
- 	genpd_debugfs_dir = debugfs_create_dir("pm_genpd", NULL);
-@@ -3057,25 +3091,8 @@ static int __init genpd_debug_init(void)
- 	debugfs_create_file("pm_genpd_summary", S_IRUGO, genpd_debugfs_dir,
- 			    NULL, &summary_fops);
- 
--	list_for_each_entry(genpd, &gpd_list, gpd_list_node) {
--		d = debugfs_create_dir(genpd->name, genpd_debugfs_dir);
--
--		debugfs_create_file("current_state", 0444,
--				d, genpd, &status_fops);
--		debugfs_create_file("sub_domains", 0444,
--				d, genpd, &sub_domains_fops);
--		debugfs_create_file("idle_states", 0444,
--				d, genpd, &idle_states_fops);
--		debugfs_create_file("active_time", 0444,
--				d, genpd, &active_time_fops);
--		debugfs_create_file("total_idle_time", 0444,
--				d, genpd, &total_idle_time_fops);
--		debugfs_create_file("devices", 0444,
--				d, genpd, &devices_fops);
--		if (genpd->set_performance_state)
--			debugfs_create_file("perf_state", 0444,
--					    d, genpd, &perf_state_fops);
--	}
-+	list_for_each_entry(genpd, &gpd_list, gpd_list_node)
-+		genpd_debug_add(genpd);
- 
- 	return 0;
- }
--- 
-2.29.2.576.ga3fc446d84-goog
+Agreed.
+
+I retested with this new version with my load sweep test,
+and my results were the pretty similar to previously reported, [1].
+If anything, there might be a perceptible difference between the RFC
+version and this version as a function of work/sleep frequency.
+
+73 Hertz: RFC was 0.8% less power
+113 Hertz: RFC was 1.5% less power
+211 Hertz: RFC was 0.8% less power
+347 Hertz: RFC was 1.2% more power
+401 Hertz: RFC was 1.6% more power
+
+Of course, let us not lose site of the original gains that were in the 13 to 17% range.
+
+Now, for the "worse in some cases, which is to be expected" part:
+
+At least on my system, it is most evident for some of the pipe type tests,
+where the schedutil governor has never really known what to do. This patch
+set seems to add enough of a downward bias that this version of the schedutil
+governor now behaves much like the other versions
+
+Here is an example (no forced CPU affinity, 2 pipes):
+
+Legend:
+hwp: Kernel 5.10-rc6, HWP enabled; intel_cpufreq; schedutil (always)
+rjw: Kernel 5.10-rc6 + this patch set, HWP enabled; intel_cpu-freq; schedutil
+no-hwp: Kernel 5.10-rc6, HWP disabled; intel_cpu-freq; schedutil
+acpi-cpufreq (or just acpi): Kernel 5.10-rc6, HWP disabled; acpi-cpufreq; schedutil
+patch: Kernel 5.10-rc7 + the non RFC 4 patch version of this is patch set, HWP enabled; intel_cpu-freq; schedutil
+
+hwp: 3.295 uSec/loop (steady); average power: 62.78 Watts (steady); freq: 4.60GHz (steady).
+rjw: 3.6 uSec/loop (noisey) (9.3% worse); average power: 44.13 Watts (noisey); freq: ?.??GHz (noisey).
+no-hwp: 3.35 uSec/loop (noisey); average power: 59.17 Watts (noisey); freq: ?.??GHz (much less noisey).
+acpi-cpufreq: 3.4 uSec/loop (noisey); average power: 56.93 Watts (noisey); freq: ?.??GHz (less noisey).
+patch: 3.6 uSec/loop (noisey) (9.3% worse); average power: 43.36 Watts (noisey); freq: ?.??GHz (noisey).
+
+One could argue that this patch set might be driving the frequency down a little too hard in this case,
+but this is one of those difficult rotating through the CPUs cases anyhow.
+As a side note, all other governors (well, not powersave) pin the CPU frequency at max (4.6 GHz).
+
+For my version of the "Alex" pipe test (a token is passed around and around via 6 named pipes,
+with a bit of work to do per token stop)
+I get (more power = better performance):
+
+hwp: average power: 17.16 Watts (very noisey)
+rjw: average power: 3.18 (noisey)
+no-hwp: average power: 2.45 (less noisey)
+acpi-cpufreq: average power: 2.46 (less noisey)
+patch: average power: 2.47 (less noisey)
+
+The "hwp" case is misleading. It is really bouncing around at about 0.2 hertz
+and can't seem to make up its mind. If nothing else, all the other versions
+are a little more deterministic in their response.
+
+> 
+>> I'll get results within a week. Do you mind holding back the merge until then?
+
+On my system that git "make test" is broken, so I can not do the high PIDs per second test that way.
+My own PIDs per second test also has issues on this computer.
+I am not sure when I'll get these type of tests working, but will try for within a week.
+
+... Doug
+
+References:
+
+[1] https://marc.info/?l=linux-kernel&m=160692480907696&w=2
+
+My tests results graphs (updated):
+Note: I have to code the web site, or I get hammered by bots.
+Note: it is .com only because it was less expensive than .org
+
+73 Hertz (10 samples per second):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/su73/ 
+113 Hertz (10 samples per second):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/su113/
+211 Hertz (10 samples per second):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/su211/
+347 Hertz (10 samples per second):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/su347/
+401 Hertz (10 samples per second):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/su401/
+
+Note: The below graphs are mislabelled, because I made hacker use of a tool dedicated
+to graphing, and HTML wrapping, the load sweep test. The test conditions are steady state
+operation, no variable changes.
+
+pipe-test (5 seconds per sample):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/pipe/
+Alex test (5 seconds per sample):
+Double u double u double u dot smythies dot .com/~doug/linux/s18/hwp/k510-rc6/alex/
+
 
