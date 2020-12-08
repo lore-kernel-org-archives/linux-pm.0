@@ -5,26 +5,26 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id B7904C2BB40
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7671FC4167B
 	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 8527223B4B
+	by mail.kernel.org (Postfix) with ESMTP id 4127C23B51
 	for <linux-pm@archiver.kernel.org>; Tue,  8 Dec 2020 17:42:28 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730762AbgLHRmR (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 8 Dec 2020 12:42:17 -0500
-Received: from foss.arm.com ([217.140.110.172]:52406 "EHLO foss.arm.com"
+        id S1730674AbgLHRmO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 8 Dec 2020 12:42:14 -0500
+Received: from foss.arm.com ([217.140.110.172]:52392 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1727998AbgLHRmR (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Tue, 8 Dec 2020 12:42:17 -0500
+        id S1730678AbgLHRmO (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Tue, 8 Dec 2020 12:42:14 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DE93C13D5;
-        Tue,  8 Dec 2020 09:41:31 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 5238231B;
+        Tue,  8 Dec 2020 09:41:28 -0800 (PST)
 Received: from ubuntu.cambridge.arm.com (unknown [172.31.20.19])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 8EF073F68F;
-        Tue,  8 Dec 2020 09:41:29 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 24CC53F68F;
+        Tue,  8 Dec 2020 09:41:26 -0800 (PST)
 From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
@@ -32,9 +32,9 @@ To:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
         robh+dt@kernel.org, sboyd@kernel.org, nm@ti.com
 Cc:     daniel.lezcano@linaro.org, morten.rasmussen@arm.com,
         chris.redpath@arm.com, nicola.mazzucato@arm.com
-Subject: [PATCH v5 2/4] opp/of: Allow empty opp-table with opp-shared
-Date:   Tue,  8 Dec 2020 17:42:27 +0000
-Message-Id: <20201208174229.24323-3-nicola.mazzucato@arm.com>
+Subject: [PATCH v5 1/4] dt-bindings: opp: Allow empty OPP tables
+Date:   Tue,  8 Dec 2020 17:42:26 +0000
+Message-Id: <20201208174229.24323-2-nicola.mazzucato@arm.com>
 X-Mailer: git-send-email 2.27.0
 In-Reply-To: <20201208174229.24323-1-nicola.mazzucato@arm.com>
 References: <20201208174229.24323-1-nicola.mazzucato@arm.com>
@@ -44,43 +44,90 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The opp binding now allows to have an empty opp table and shared-opp to
-still describe that devices share v/f lines.
+Currently the optional property opp-shared is used within an opp table
+to tell that a set of devices share their clock/voltage lines (and the
+OPP points).
+It is therefore possible to use an empty OPP table to convey only that
+information, useful in situations where the opp points are provided via
+other means (hardware. firmware, etc).
 
-When initialising an empty opp table, allow such case by:
-- treating such conditions with warnings in place of errors
-- don't fail on empty table
+Update the documentation to remark this additional case and provide an
+example.
 
 Signed-off-by: Nicola Mazzucato <nicola.mazzucato@arm.com>
 ---
- drivers/opp/of.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ Documentation/devicetree/bindings/opp/opp.txt | 54 ++++++++++++++++++-
+ 1 file changed, 53 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/opp/of.c b/drivers/opp/of.c
-index ffd937af8089..03cb387236c4 100644
---- a/drivers/opp/of.c
-+++ b/drivers/opp/of.c
-@@ -170,7 +170,8 @@ static void _opp_table_alloc_required_tables(struct opp_table *opp_table,
- 	/* Traversing the first OPP node is all we need */
- 	np = of_get_next_available_child(opp_np, NULL);
- 	if (!np) {
--		dev_err(dev, "Empty OPP table\n");
-+		dev_warn(dev, "Empty OPP table\n");
+diff --git a/Documentation/devicetree/bindings/opp/opp.txt b/Documentation/devicetree/bindings/opp/opp.txt
+index 9847dfeeffcb..08b3da4736cf 100644
+--- a/Documentation/devicetree/bindings/opp/opp.txt
++++ b/Documentation/devicetree/bindings/opp/opp.txt
+@@ -65,7 +65,9 @@ Required properties:
+ 
+ - OPP nodes: One or more OPP nodes describing voltage-current-frequency
+   combinations. Their name isn't significant but their phandle can be used to
+-  reference an OPP.
++  reference an OPP. These are mandatory except for the case where the OPP table
++  is present only to indicate dependency between devices using the opp-shared
++  property.
+ 
+ Optional properties:
+ - opp-shared: Indicates that device nodes using this OPP Table Node's phandle
+@@ -568,3 +570,53 @@ Example 6: opp-microvolt-<name>, opp-microamp-<name>:
+ 		};
+ 	};
+ };
 +
- 		return;
- 	}
- 
-@@ -378,7 +379,9 @@ int dev_pm_opp_of_find_icc_paths(struct device *dev,
- 	struct icc_path **paths;
- 
- 	ret = _bandwidth_supported(dev, opp_table);
--	if (ret <= 0)
-+	if (ret == -EINVAL)
-+		return 0; /* Empty OPP table is a valid corner-case, let's not fail */
-+	else if (ret <= 0)
- 		return ret;
- 
- 	ret = 0;
++Example 7: Single cluster Quad-core ARM cortex A53, OPP points from firmware,
++distinct clock controls but two sets of clock/voltage/current lines.
++
++/ {
++	cpus {
++		#address-cells = <2>;
++		#size-cells = <0>;
++
++		cpu@0 {
++			compatible = "arm,cortex-a53";
++			reg = <0x0 0x100>;
++			next-level-cache = <&A53_L2>;
++			clocks = <&dvfs_controller 0>;
++			operating-points-v2 = <&cpu_opp0_table>;
++		};
++		cpu@1 {
++			compatible = "arm,cortex-a53";
++			reg = <0x0 0x101>;
++			next-level-cache = <&A53_L2>;
++			clocks = <&dvfs_controller 1>;
++			operating-points-v2 = <&cpu_opp0_table>;
++		};
++		cpu@2 {
++			compatible = "arm,cortex-a53";
++			reg = <0x0 0x102>;
++			next-level-cache = <&A53_L2>;
++			clocks = <&dvfs_controller 2>;
++			operating-points-v2 = <&cpu_opp1_table>;
++		};
++		cpu@3 {
++			compatible = "arm,cortex-a53";
++			reg = <0x0 0x103>;
++			next-level-cache = <&A53_L2>;
++			clocks = <&dvfs_controller 3>;
++			operating-points-v2 = <&cpu_opp1_table>;
++		};
++
++	};
++
++	cpu_opp0_table: opp0_table {
++		compatible = "operating-points-v2";
++		opp-shared;
++	};
++
++	cpu_opp1_table: opp1_table {
++		compatible = "operating-points-v2";
++		opp-shared;
++	};
++};
 -- 
 2.27.0
 
