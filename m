@@ -2,166 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 76112C4167B
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 08:44:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D1EBC19425
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 09:19:55 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D26323406
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 08:44:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CD2DC23B79
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 09:19:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728427AbgLIIn4 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Dec 2020 03:43:56 -0500
-Received: from mga02.intel.com ([134.134.136.20]:20100 "EHLO mga02.intel.com"
+        id S1727505AbgLIJTU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Dec 2020 04:19:20 -0500
+Received: from foss.arm.com ([217.140.110.172]:59866 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1728179AbgLIInv (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Dec 2020 03:43:51 -0500
-IronPort-SDR: fN450IapBiHPPqKxhCvRFdxchci4047AdS3/UEQi6FsCqLsl9LBz1WI8J6Kto91A9R7euVujtm
- bIs/7yiyTxNg==
-X-IronPort-AV: E=McAfee;i="6000,8403,9829"; a="161093952"
-X-IronPort-AV: E=Sophos;i="5.78,405,1599548400"; 
-   d="scan'208";a="161093952"
-Received: from orsmga005.jf.intel.com ([10.7.209.41])
-  by orsmga101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 09 Dec 2020 00:43:05 -0800
-IronPort-SDR: NK3+4N7P4orNvAirTXXVrwL0+T8oBxh+ZV6fnhW87ba+yQ92x4+1ufYOqLV8ADrSOVphlrCUeV
- 5cqTF+okSw4w==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="5.78,405,1599548400"; 
-   d="scan'208";a="552551835"
-Received: from lkp-server01.sh.intel.com (HELO 2bbb63443648) ([10.239.97.150])
-  by orsmga005.jf.intel.com with ESMTP; 09 Dec 2020 00:43:03 -0800
-Received: from kbuild by 2bbb63443648 with local (Exim 4.92)
-        (envelope-from <lkp@intel.com>)
-        id 1kmv3u-0000An-Tl; Wed, 09 Dec 2020 08:43:02 +0000
-Date:   Wed, 09 Dec 2020 16:42:07 +0800
-From:   kernel test robot <lkp@intel.com>
-To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Cc:     linux-pm@vger.kernel.org, devel@acpica.org,
-        linux-acpi@vger.kernel.org
-Subject: [pm:bleeding-edge] BUILD SUCCESS
- bea64589d9432e630e98f3d0089b5bb697f25cbb
-Message-ID: <5fd08ddf.etLo2RPy/wXNw8ih%lkp@intel.com>
-User-Agent: Heirloom mailx 12.5 6/20/10
+        id S1728916AbgLIJTS (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Dec 2020 04:19:18 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id EE5AF1FB;
+        Wed,  9 Dec 2020 01:18:31 -0800 (PST)
+Received: from [10.57.54.135] (unknown [10.57.54.135])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CF69D3F718;
+        Wed,  9 Dec 2020 01:18:29 -0800 (PST)
+Subject: Re: [PATCH v4 3/4] scmi-cpufreq: get opp_shared_cpus from opp-v2 for
+ EM
+To:     Viresh Kumar <viresh.kumar@linaro.org>,
+        Sudeep Holla <sudeep.holla@arm.com>
+Cc:     linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        rjw@rjwysocki.net, vireshk@kernel.org, robh+dt@kernel.org,
+        sboyd@kernel.org, nm@ti.com, daniel.lezcano@linaro.org,
+        morten.rasmussen@arm.com, chris.redpath@arm.com
+References: <20201202172356.10508-1-nicola.mazzucato@arm.com>
+ <20201202172356.10508-4-nicola.mazzucato@arm.com>
+ <20201208055053.kggxw26kxtnpneua@vireshk-i7>
+ <0e4d3134-f9b2-31fa-b454-fb30265a80b5@arm.com>
+ <20201208072611.ptsqupv4y2wybs6p@vireshk-i7>
+ <20201208112008.niesjrunxq2jz3kt@bogus>
+ <20201209054502.ajomw6glcxx5hue2@vireshk-i7>
+From:   Nicola Mazzucato <nicola.mazzucato@arm.com>
+Message-ID: <a70cfb32-1a5f-d12f-f466-321d60e58204@arm.com>
+Date:   Wed, 9 Dec 2020 09:20:33 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.8.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20201209054502.ajomw6glcxx5hue2@vireshk-i7>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
 Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git  bleeding-edge
-branch HEAD: bea64589d9432e630e98f3d0089b5bb697f25cbb  Merge branch 'acpi-scan' into bleeding-edge
+Hi both,
 
-elapsed time: 720m
+thanks for looking into this.
 
-configs tested: 95
-configs skipped: 2
+On 12/9/20 5:45 AM, Viresh Kumar wrote:
+> On 08-12-20, 11:20, Sudeep Holla wrote:
+>> It is because of per-CPU vs per domain drama here. Imagine a system with
+>> 4 CPUs which the firmware puts in individual domains while they all are
+>> in the same perf domain and hence OPP is marked shared in DT.
+>>
+>> Since this probe gets called for all the cpus, we need to skip adding
+>> OPPs for the last 3(add only for 1st one and mark others as shared).
+> 
+> Okay and this wasn't happening before this series because the firmware
+> was only returning the current CPU from scmi_get_sharing_cpus() ?
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+yes
 
-gcc tested configs:
-arm                                 defconfig
-arm64                            allyesconfig
-arm64                               defconfig
-arm                              allyesconfig
-arm                              allmodconfig
-powerpc                       maple_defconfig
-arm                             rpc_defconfig
-parisc                generic-32bit_defconfig
-arm                   milbeaut_m10v_defconfig
-powerpc                        warp_defconfig
-sh                          lboxre2_defconfig
-sh                         apsh4a3a_defconfig
-x86_64                           alldefconfig
-powerpc                         wii_defconfig
-powerpc                     mpc83xx_defconfig
-sh                          rsk7264_defconfig
-arc                     haps_hs_smp_defconfig
-sh                           se7724_defconfig
-powerpc                     ep8248e_defconfig
-arm                         assabet_defconfig
-powerpc                      mgcoge_defconfig
-arc                            hsdk_defconfig
-xtensa                              defconfig
-powerpc                      pmac32_defconfig
-sh                           se7721_defconfig
-ia64                             allmodconfig
-ia64                                defconfig
-ia64                             allyesconfig
-m68k                             allmodconfig
-m68k                                defconfig
-m68k                             allyesconfig
-nds32                               defconfig
-nios2                            allyesconfig
-csky                                defconfig
-alpha                               defconfig
-alpha                            allyesconfig
-xtensa                           allyesconfig
-h8300                            allyesconfig
-arc                                 defconfig
-sh                               allmodconfig
-parisc                              defconfig
-s390                             allyesconfig
-parisc                           allyesconfig
-s390                                defconfig
-nios2                               defconfig
-arc                              allyesconfig
-nds32                             allnoconfig
-c6x                              allyesconfig
-i386                             allyesconfig
-sparc                            allyesconfig
-sparc                               defconfig
-i386                               tinyconfig
-i386                                defconfig
-mips                             allyesconfig
-mips                             allmodconfig
-powerpc                          allyesconfig
-powerpc                          allmodconfig
-powerpc                           allnoconfig
-i386                 randconfig-a004-20201208
-i386                 randconfig-a005-20201208
-i386                 randconfig-a001-20201208
-i386                 randconfig-a002-20201208
-i386                 randconfig-a006-20201208
-i386                 randconfig-a003-20201208
-i386                 randconfig-a013-20201208
-i386                 randconfig-a014-20201208
-i386                 randconfig-a011-20201208
-i386                 randconfig-a015-20201208
-i386                 randconfig-a012-20201208
-i386                 randconfig-a016-20201208
-x86_64               randconfig-a004-20201208
-x86_64               randconfig-a006-20201208
-x86_64               randconfig-a005-20201208
-x86_64               randconfig-a001-20201208
-x86_64               randconfig-a002-20201208
-x86_64               randconfig-a003-20201208
-riscv                    nommu_k210_defconfig
-riscv                            allyesconfig
-riscv                    nommu_virt_defconfig
-riscv                             allnoconfig
-riscv                               defconfig
-riscv                          rv32_defconfig
-riscv                            allmodconfig
-x86_64                                   rhel
-x86_64                           allyesconfig
-x86_64                    rhel-7.6-kselftests
-x86_64                              defconfig
-x86_64                               rhel-8.3
-x86_64                                  kexec
+> 
+> Is this driver also used for the cases where we have multiple CPUs in
+> a policy ? Otherwise we won't be required to call
+> dev_pm_opp_set_sharing_cpus().
+> 
+> So I assume that we want to support both the cases here ?
 
-clang tested configs:
-x86_64               randconfig-a016-20201208
-x86_64               randconfig-a012-20201208
-x86_64               randconfig-a013-20201208
-x86_64               randconfig-a014-20201208
-x86_64               randconfig-a015-20201208
-x86_64               randconfig-a011-20201208
+yes, we want to support existing platforms (n cpus in a policy) + the per-cpu case.
 
----
-0-DAY CI Kernel Test Service, Intel Corporation
-https://lists.01.org/hyperkitty/list/kbuild-all@lists.01.org
+> 
+>> If we attempt to add OPPs on second cpu probe, it *will* shout as duplicate
+>> OPP as we would have already marked it as shared table with the first cpu.
+>> Am I missing anything ? I suggested this as Nicola saw OPP duplicate
+>> warnings when he was hacking up this patch.
+> 
+> The common stuff (for all the CPUs) is better moved to probe() in this
+> case, instead of the ->init() callback. Otherwise it will always be
+> messy. You can initialize the OPP and cpufreq tables in probe()
+> itself, save the pointer somewhere and then just use it here in
+> ->init().
+> 
+> Also do EM registration from there.
+>
+
+ok, will rework
+
+>>>> otherwise no need as they would be duplicated.
+>>>>> And we don't check the return value of
+>>>>> the below call anymore, moreover we have to call it twice now.
+>>
+>> Yes, that looks wrong, we need to add the check for non zero values, but ....
+>>
+>>>>
+>>>> This second get_opp_count is required such that we register em with the correct
+>>>> opp number after having added them. Without this the opp_count would not be correct.
+>>>
+>>
+>> ... I have a question here. Why do you need to call
+>>
+>> em_dev_register_perf_domain(cpu_dev, nr_opp, &em_cb, opp_shared_cpus..)
+>>
+>> on each CPU ? Why can't that be done once for unique opp_shared_cpus ?
+>>
+>> The whole drama of per-CPU vs perf domain is to have energy model and
+>> if feeding it opp_shared_cpus once is not sufficient, then something is
+>> wrong or simply duplicated or just not necessary IMO.
+>>
+>>> What if the count is still 0 ? What about deferred probe we were doing earlier ?
+>>
+>> OK, you made me think with that question. I think the check was original
+>> added for deferred probe but then scmi core was changed to add the cpufreq
+>> device only after everything needed is ready. So the condition must never
+>> occur now.
+> 
+> The deferred probe shall be handled in a different patch in that case.
+> 
+> Nicola, please break the patch into multiple patches, with one patch
+> dealing only with one task.
+
+Sure, I had the doubt and thanks for confirming. will do, thanks
+
+> 
+
+Cheers,
+Nicola
