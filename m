@@ -2,165 +2,104 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id EDBB1C4167B
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 10:33:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 273D4C433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 10:37:41 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id AAF4323B5D
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 10:33:09 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id D45AB23B77
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 10:37:40 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729962AbgLIKbr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Dec 2020 05:31:47 -0500
-Received: from foss.arm.com ([217.140.110.172]:60652 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1729945AbgLIKbr (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Wed, 9 Dec 2020 05:31:47 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC5531424;
-        Wed,  9 Dec 2020 02:31:01 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.57.24.55])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 84F313F718;
-        Wed,  9 Dec 2020 02:30:58 -0800 (PST)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
-        daniel.lezcano@linaro.org, lukasz.luba@arm.com, orjan.eide@arm.com,
-        robh@kernel.org, alyssa.rosenzweig@collabora.com,
-        steven.price@arm.com, airlied@linux.ie, daniel@ffwll.ch,
-        ionela.voinescu@arm.com
-Subject: [PATCH v3 2/5] thermal: devfreq_cooling: use a copy of device status
-Date:   Wed,  9 Dec 2020 10:30:13 +0000
-Message-Id: <20201209103016.10442-3-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201209103016.10442-1-lukasz.luba@arm.com>
-References: <20201209103016.10442-1-lukasz.luba@arm.com>
+        id S1730152AbgLIKhk (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Dec 2020 05:37:40 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:57130 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1729964AbgLIKhk (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 05:37:40 -0500
+Received: from mail-vk1-xa44.google.com (mail-vk1-xa44.google.com [IPv6:2607:f8b0:4864:20::a44])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C584BC0613CF
+        for <linux-pm@vger.kernel.org>; Wed,  9 Dec 2020 02:36:59 -0800 (PST)
+Received: by mail-vk1-xa44.google.com with SMTP id a4so213709vko.11
+        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2020 02:36:59 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google;
+        h=mime-version:references:in-reply-to:from:date:message-id:subject:to
+         :cc;
+        bh=PQKNw4rve2IFVJSgF3l1spNsP6KxWxPlzjeFvHTILG0=;
+        b=Y9L1cuKMRxS6cqV7wccn+NGMdFdyyON6mLbp2AaqFKahxop11+l8k+S2xRnJl1SqG9
+         h+VQO9T8cqjEN875Om5IIf3Dhi8u0yEMgFb6U55SgOXP/b2oguHH6zG8Digs/B7beMf/
+         AbIydlLEu/lsB9iQIFGVR7RFVrd0H8kif/Tv7R2GgE4LBBHZcbMekWESIBSZ9/C6t7Ef
+         2JbODYxFSb49yTmLnC8ZCbSmqn1QtYhTxTueeb7PU+mz1aromoxyVU3VOTk0YuDznu2o
+         rDji9mX0/1/SfgNsOIRUBjOhHZ290apmetlnIqPWZm2M8K/FxgEF+rJMuISWwAkpSHqI
+         L9rQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=PQKNw4rve2IFVJSgF3l1spNsP6KxWxPlzjeFvHTILG0=;
+        b=SlSxtWJ41zEqTuZPs5Ej3OXblb9ACYJqfDnVgFhqnlKbmE3Ue+SMrZSRswkgQx8lb8
+         0KH+Pr23LtaWzKfWyfgOVlDpr0ax2Mbfd19ys5Tn991mNECYSfX2QotLuW+ncLc3XKOc
+         /I3cE4Fmj2ve5PLnSyQe4wXf/9BiPY1KXKM9tzsBH+OseDIgZqT0fBPjR7kb3sXdS+MT
+         mjLVy/KAjWG785+MssJLyk4gR+rwbmZbT7BYEp8g4Tmba2Zy67WvYFjlct+SrggK/GBz
+         r/obk3Fkr8FwGOKVWiau11aASXCIUrRX0H46h2pZ9aQI7qqc/GS6N/WUdkLY6cue4sNz
+         2hug==
+X-Gm-Message-State: AOAM532fRjNpQGyfVJbPPdRi0BDLzRe/np6dQ7D45pBoCUT6Jik/p9Uc
+        +fdDRp6WQlJT568I7QijUF+FSna2dnY08idKRKmdVA==
+X-Google-Smtp-Source: ABdhPJyVitP1UALU6m5dkizscGddpcIFL9RAOWmFm2lsp2l4uQK1PzcUJ9Hmx5fd+n7WoWWzxgjxgn7yBsdYJ8tEZlE=
+X-Received: by 2002:a1f:dec2:: with SMTP id v185mr1196976vkg.8.1607510219009;
+ Wed, 09 Dec 2020 02:36:59 -0800 (PST)
+MIME-Version: 1.0
+References: <20201130225039.15981-1-ilina@codeaurora.org> <CAJZ5v0g+nK+jV+Gy+BKEALRtsXDK0HnDbz07Nv3KPK5L3V3OKg@mail.gmail.com>
+In-Reply-To: <CAJZ5v0g+nK+jV+Gy+BKEALRtsXDK0HnDbz07Nv3KPK5L3V3OKg@mail.gmail.com>
+From:   Ulf Hansson <ulf.hansson@linaro.org>
+Date:   Wed, 9 Dec 2020 11:36:22 +0100
+Message-ID: <CAPDyKFpD6L0r=YBEEjfjc85gx_7p5cVw20fwUxecpQp2dNU-0g@mail.gmail.com>
+Subject: Re: [PATCH v6 0/3] Better domain idle from device wakeup patterns
+To:     "Rafael J. Wysocki" <rafael@kernel.org>
+Cc:     Lina Iyer <ilina@codeaurora.org>,
+        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        linux-arm-msm <linux-arm-msm@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Devfreq cooling needs to now the correct status of the device in order
-to operate. Devfreq framework can change the device status in the
-background. To mitigate issues make a copy of the status structure and use
-it for internal calculations.
+On Tue, 8 Dec 2020 at 18:26, Rafael J. Wysocki <rafael@kernel.org> wrote:
+>
+> On Mon, Nov 30, 2020 at 11:51 PM Lina Iyer <ilina@codeaurora.org> wrote:
+> >
+> > Hi,
+> >
+> > The v5[1] of the series brought out some interesting discussions. The
+> > most important being is it worth adding the additional expense to all PM
+> > domains even if no wakeup pattern is available. It seems like
+> > maintaining a domain specific flag that the governor could check is a
+> > generic enough option. That should disable additional overhead for
+> > domains that do not need this feature.
+> >
+> > Ulf suggested that we could allow wakeups only if any of the domain idle
+> > state specifies a residency. However, we don't want to check for next
+> > wakeup everytime the domain enters idle just because the domain
+> > specifies an idle state with residency. This is also not desired.
+> >
+> > Also, if the domain checks for next wakeup, should the parent domains of
+> > the domain also check for next wakeup? And when do we set that up? These
+> > are questions that we don't know the answers yet. So, let's enable the
+> > domain governor only if the domain sets up the flag or when the device
+> > in the domain specifies the next wakeup.
+> >
+> > The previous post of the series explaining why this is a useful feature
+> > is v5[1]. Please let me know what you think.
+>
+> Ulf had comments on the previous versions, so waiting for him to
+> respond here, thanks!
 
-In addition this patch adds normalization function, which also makes sure
-that whatever data comes from the device, the load will be in range from 1
-to 1024.
+Yes, I will have a look, but please allow me some more time - it's a
+busy period for me.
 
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/devfreq_cooling.c | 47 ++++++++++++++++++++++++-------
- 1 file changed, 37 insertions(+), 10 deletions(-)
-
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 659c0143c9f0..afcebadbad24 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -227,20 +227,39 @@ static inline unsigned long get_total_power(struct devfreq_cooling_device *dfc,
- 							       voltage);
- }
- 
-+static void _normalize_load(struct devfreq_dev_status *status)
-+{
-+	if (status->total_time > 0xfffff) {
-+		status->total_time >>= 10;
-+		status->busy_time >>= 10;
-+	}
-+
-+	status->busy_time <<= 10;
-+	status->busy_time /= status->total_time ? : 1;
-+
-+	status->busy_time = status->busy_time ? : 1;
-+	status->total_time = 1024;
-+}
- 
- static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cdev,
- 					       u32 *power)
- {
- 	struct devfreq_cooling_device *dfc = cdev->devdata;
- 	struct devfreq *df = dfc->devfreq;
--	struct devfreq_dev_status *status = &df->last_status;
-+	struct devfreq_dev_status status;
- 	unsigned long state;
--	unsigned long freq = status->current_frequency;
-+	unsigned long freq;
- 	unsigned long voltage;
- 	u32 dyn_power = 0;
- 	u32 static_power = 0;
- 	int res;
- 
-+	mutex_lock(&df->lock);
-+	status = df->last_status;
-+	mutex_unlock(&df->lock);
-+
-+	freq = status.current_frequency;
-+
- 	state = freq_get_state(dfc, freq);
- 	if (state == THERMAL_CSTATE_INVALID) {
- 		res = -EAGAIN;
-@@ -268,16 +287,18 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	} else {
- 		dyn_power = dfc->power_table[state];
- 
-+		_normalize_load(&status);
-+
- 		/* Scale dynamic power for utilization */
--		dyn_power *= status->busy_time;
--		dyn_power /= status->total_time;
-+		dyn_power *= status.busy_time;
-+		dyn_power >>= 10;
- 		/* Get static power */
- 		static_power = get_static_power(dfc, freq);
- 
- 		*power = dyn_power + static_power;
- 	}
- 
--	trace_thermal_power_devfreq_get_power(cdev, status, freq, *power);
-+	trace_thermal_power_devfreq_get_power(cdev, &status, freq, *power);
- 
- 	return 0;
- fail:
-@@ -309,14 +330,19 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- {
- 	struct devfreq_cooling_device *dfc = cdev->devdata;
- 	struct devfreq *df = dfc->devfreq;
--	struct devfreq_dev_status *status = &df->last_status;
--	unsigned long freq = status->current_frequency;
--	unsigned long busy_time;
-+	struct devfreq_dev_status status;
-+	unsigned long freq;
- 	s32 dyn_power;
- 	u32 static_power;
- 	s32 est_power;
- 	int i;
- 
-+	mutex_lock(&df->lock);
-+	status = df->last_status;
-+	mutex_unlock(&df->lock);
-+
-+	freq = status.current_frequency;
-+
- 	if (dfc->power_ops->get_real_power) {
- 		/* Scale for resource utilization */
- 		est_power = power * dfc->res_util;
-@@ -328,8 +354,9 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 		dyn_power = dyn_power > 0 ? dyn_power : 0;
- 
- 		/* Scale dynamic power for utilization */
--		busy_time = status->busy_time ?: 1;
--		est_power = (dyn_power * status->total_time) / busy_time;
-+		_normalize_load(&status);
-+		dyn_power <<= 10;
-+		est_power = dyn_power / status.busy_time;
- 	}
- 
- 	/*
--- 
-2.17.1
-
+Kind regards
+Uffe
