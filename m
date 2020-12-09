@@ -2,47 +2,48 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC3AC433FE
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 4FDBCC19425
 	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:07:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DD02F22CB1
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:07:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1E66B2388B
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:07:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728968AbgLIVGp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Dec 2020 16:06:45 -0500
-Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.54]:27895 "EHLO
-        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725968AbgLIVGp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 16:06:45 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607547832;
+        id S2387651AbgLIVHI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Dec 2020 16:07:08 -0500
+Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.82]:27763 "EHLO
+        mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1732923AbgLIVG7 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 16:06:59 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607547836;
         s=strato-dkim-0002; d=fossekall.de;
-        h=Message-Id:Date:Subject:Cc:To:From:From:Subject:Sender;
-        bh=Yv3BisX3VSbCqFQLA4ar1BwG3T8m1Bk8ItATVLb6B/A=;
-        b=isEvdXqRuahkZiE4PEREE3/32hxkwMb9MkEqXaf7S4lag83P4e87iiDlwJQezhPUKy
-        aU+yW7ljxQQurJuu9c/BRFfRbJFPXmky6YXKc3Vr4EfaQyfC1hiAK8tEjrMT9XBRh+8t
-        sNs0qqkn6A/ZfsVycn9s+YTMEzydy9RDcS8bv7X/7l5YoZRMNId3cy2fZtYByUhvMq38
-        INdF+z3paYVrclIO8HK21clF8lKspYs2vJ0FeUcTMNWOSiUchqGq97DOxi5pf4Rg9sVs
-        D62jtM/b1siQoQWWWKq6vaMStP2pVD2twhtav1z/C8Jc4tFy7RE0U2+07etaMB9fNJbH
-        BtXg==
+        h=References:In-Reply-To:Message-Id:Date:Subject:Cc:To:From:From:
+        Subject:Sender;
+        bh=e3IJY+YEVfqqtF6U/npVItLV8pI44Dnssy1P4IIS0WY=;
+        b=avYFFKS2XpXl05nU/T/vF9eSwqGb5gozXtVic1HK6EpX2JQj1DYl3sHc7nu5wqCP3G
+        nliIw8JPQrdnsunEBXro69n00CmI0byPGdVhkp2Kfh0nxIN+yh2vrINKI7JmK285mOY4
+        sbA3j9yDlxoSTmqcXyQKze54m4fRQO8enCODGXED/jzeqxm0Biupbm+lVI/zyIH/SkHZ
+        hHEMjxff+n0tYX7QXZrHlT+vG8tBhJm1JMmdJidiJZTNpHHhVZNPpDQFL3ZVWWd9+yH9
+        UBop1riKfjw2bmISVPTVsk+rebTHe0glyE7cYFZhmLHVLFroFHYmus+BkW4hwaFppHbI
+        nREQ==
 X-RZG-AUTH: ":O2kGeEG7b/pS1EzgE2y7nF0STYsSLflpbjNKxx7cGrBOdI6BL9pkS3QW19mO7I+/JwRspuzJFZuRzQ=="
 X-RZG-CLASS-ID: mo00
 Received: from aerfugl
         by smtp.strato.de (RZmta 47.6.2 AUTH)
-        with ESMTPSA id e07b38wB9L3mB1V
+        with ESMTPSA id e07b38wB9L3qB1r
         (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
         (Client did not present a certificate);
-        Wed, 9 Dec 2020 22:03:48 +0100 (CET)
+        Wed, 9 Dec 2020 22:03:52 +0100 (CET)
 Received: from koltrast.a98shuttle.de ([192.168.1.27] helo=a98shuttle.de)
         by aerfugl with smtp (Exim 4.89)
         (envelope-from <michael@a98shuttle.de>)
-        id 1kn6cj-0008CT-7V; Wed, 09 Dec 2020 22:03:45 +0100
-Received: (nullmailer pid 385332 invoked by uid 502);
-        Wed, 09 Dec 2020 21:03:45 -0000
+        id 1kn6ck-0008Cl-DP; Wed, 09 Dec 2020 22:03:46 +0100
+Received: (nullmailer pid 385358 invoked by uid 502);
+        Wed, 09 Dec 2020 21:03:46 -0000
 From:   Michael Klein <michael@fossekall.de>
 To:     Sebastian Reichel <sre@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -52,42 +53,69 @@ To:     Sebastian Reichel <sre@kernel.org>,
         Michael Klein <michael@fossekall.de>
 Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v4 0/3] BPi M2 Zero poweroff support via new regulator-poweroff driver
-Date:   Wed,  9 Dec 2020 22:02:18 +0100
-Message-Id: <20201209210221.385188-1-michael@fossekall.de>
+Subject: [PATCH v4 2/3] Documentation: DT: binding documentation for regulator-poweroff
+Date:   Wed,  9 Dec 2020 22:02:20 +0100
+Message-Id: <20201209210221.385188-3-michael@fossekall.de>
 X-Mailer: git-send-email 2.29.2
+In-Reply-To: <20201209210221.385188-1-michael@fossekall.de>
+References: <20201209210221.385188-1-michael@fossekall.de>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v2:
-  - rename DT node
+Add devicetree binding documentation for regulator-poweroff driver.
 
-Changes in v3:
-  - add regulator-poweroff driver
-  - use regulator-poweroff driver instead of gpio-poweroff
-
-Changes in v4:
-  - hardcode poweroff timeout to 3000ms, not configurable any more
-  - remove support for multiple regulators
-  - fix Documentation issues
-
-Michael Klein (3):
-  power: reset: new driver regulator-poweroff
-  Documentation: DT: binding documentation for regulator-poweroff
-  ARM: dts: sun8i-h2-plus-bananapi-m2-zero: add poweroff node
-
- .../power/reset/regulator-poweroff.yaml       | 37 ++++++++
- .../dts/sun8i-h2-plus-bananapi-m2-zero.dts    |  5 ++
- drivers/power/reset/Kconfig                   |  7 ++
- drivers/power/reset/Makefile                  |  1 +
- drivers/power/reset/regulator-poweroff.c      | 86 +++++++++++++++++++
- 5 files changed, 136 insertions(+)
+Signed-off-by: Michael Klein <michael@fossekall.de>
+---
+ .../power/reset/regulator-poweroff.yaml       | 37 +++++++++++++++++++
+ 1 file changed, 37 insertions(+)
  create mode 100644 Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
- create mode 100644 drivers/power/reset/regulator-poweroff.c
 
+diff --git a/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml b/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+new file mode 100644
+index 000000000000..c74ac247ab70
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+@@ -0,0 +1,37 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/reset/regulator-poweroff.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Force-disable power regulator to turn the power off.
++
++maintainers:
++  - Michael Klein <michael@fossekall.de>
++
++description: |
++  When the power-off handler is called, a power regulator is disabled by
++  calling regulator_force_disable(). If the power is still on and the
++  CPU still running after a 3000ms delay, a warning is emitted.
++
++properties:
++  compatible:
++    const: "regulator-poweroff"
++
++  power-supply:
++    description:
++      regulator to disable on power-down
++
++required:
++  - compatible
++  - power-supply
++
++additionalProperties: false
++
++examples:
++  - |
++    regulator-poweroff {
++        compatible = "regulator-poweroff";
++        power-supply = <&reg_vcc1v2>;
++    };
++...
 -- 
 2.29.2
 
