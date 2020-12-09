@@ -2,126 +2,92 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 59ABCC4361B
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:05:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1BC3AC433FE
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:07:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 194632388B
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:05:08 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DD02F22CB1
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 21:07:23 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726777AbgLIVEw (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Dec 2020 16:04:52 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:41188 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1727013AbgLIVEq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 16:04:46 -0500
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 89A42C0613CF
-        for <linux-pm@vger.kernel.org>; Wed,  9 Dec 2020 13:04:06 -0800 (PST)
-Received: by mail-pl1-x635.google.com with SMTP id t18so1628006plo.0
-        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2020 13:04:06 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=HAF+MtGPGSckJw1f8j1/jJwu/W6o8SZyYg3S9iUWJF8=;
-        b=OJYbElOL6CE5DrXE82ff7+AqiQejJ9yy/HYpvM1KFH2UWKi3V2wRWO47U5Wnxlrvbu
-         exfwlV6t4EhrdqGlMLnb4YrlMcOP4hyos5LYaGwKDQj7s1mAEYJ1sFi27cbJtPh9g82k
-         FwpcpTT3ms+hjNhmi+aRnY6sAWR082nE2oo1k1KuAVCH9pynxk6jI6Zp8q0LrHpy7FLZ
-         hk6NgzsmFvlkhFfZQwQfYNXdQ7QDASnifOXPyTVE2EkshAtNQPlSoi7qsvaoKAYscwWx
-         XxYNEkewhX+UkJl/X0caN1NRztb75H9yOhgRCOd6R4VjzoOnVuFZSVXCrXxZonPUPGG8
-         3i0w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=HAF+MtGPGSckJw1f8j1/jJwu/W6o8SZyYg3S9iUWJF8=;
-        b=qRy4oxwS3USV2b/7I9BIVOimLShJy1v7AwFL55OPnoJn29Nrrin5MdlisafKrM0rNt
-         SCsuHI0uCdhUbD3zPmVK0rjcx79LfoOyck68eHpS60TCVr5/ptXpjtc+DhgTSkh+5oaL
-         /O5kaXSgUwfivYvtdD0xirLAB/KcPZA8qpnZPsFUD6JFPocN5a3uC/3GK+6WUc+y1kGV
-         T56Q+IbPOeyszxFB608xlzG4s+i+HKh/wCpQ9Yb6J9pEwAycvgUehWOgZ3r9BOQBW0B/
-         aAu4frGmpA19T/RkHRyJR4CAHE5gHOXjqEL7cwbTBqNsJBDzthyzkZUbtS/EoxBsLITb
-         mqcw==
-X-Gm-Message-State: AOAM532X8S/5F+Ge7WJN0VPDyLaqccy/47+Gu0pDuHVMBjcxOw/wlFyO
-        5Cyf9HRcL0e8VjJLbAAX7YSNLA==
-X-Google-Smtp-Source: ABdhPJxj0IaXdChMsTVOKCYpKVYmJPm21/4iCY0oTwsGJmU2vN+cTRra97KYou4daSkkkrFc0hTebw==
-X-Received: by 2002:a17:902:e98c:b029:da:cb88:f11d with SMTP id f12-20020a170902e98cb02900dacb88f11dmr3604844plb.17.1607547846114;
-        Wed, 09 Dec 2020 13:04:06 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id 6sm3542610pfj.216.2020.12.09.13.04.04
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Dec 2020 13:04:05 -0800 (PST)
-Message-ID: <5fd13bc5.1c69fb81.10b86.6c15@mx.google.com>
-Date:   Wed, 09 Dec 2020 13:04:05 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        id S1728968AbgLIVGp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Dec 2020 16:06:45 -0500
+Received: from mo4-p01-ob.smtp.rzone.de ([85.215.255.54]:27895 "EHLO
+        mo4-p01-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725968AbgLIVGp (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 16:06:45 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607547832;
+        s=strato-dkim-0002; d=fossekall.de;
+        h=Message-Id:Date:Subject:Cc:To:From:From:Subject:Sender;
+        bh=Yv3BisX3VSbCqFQLA4ar1BwG3T8m1Bk8ItATVLb6B/A=;
+        b=isEvdXqRuahkZiE4PEREE3/32hxkwMb9MkEqXaf7S4lag83P4e87iiDlwJQezhPUKy
+        aU+yW7ljxQQurJuu9c/BRFfRbJFPXmky6YXKc3Vr4EfaQyfC1hiAK8tEjrMT9XBRh+8t
+        sNs0qqkn6A/ZfsVycn9s+YTMEzydy9RDcS8bv7X/7l5YoZRMNId3cy2fZtYByUhvMq38
+        INdF+z3paYVrclIO8HK21clF8lKspYs2vJ0FeUcTMNWOSiUchqGq97DOxi5pf4Rg9sVs
+        D62jtM/b1siQoQWWWKq6vaMStP2pVD2twhtav1z/C8Jc4tFy7RE0U2+07etaMB9fNJbH
+        BtXg==
+X-RZG-AUTH: ":O2kGeEG7b/pS1EzgE2y7nF0STYsSLflpbjNKxx7cGrBOdI6BL9pkS3QW19mO7I+/JwRspuzJFZuRzQ=="
+X-RZG-CLASS-ID: mo00
+Received: from aerfugl
+        by smtp.strato.de (RZmta 47.6.2 AUTH)
+        with ESMTPSA id e07b38wB9L3mB1V
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
+        (Client did not present a certificate);
+        Wed, 9 Dec 2020 22:03:48 +0100 (CET)
+Received: from koltrast.a98shuttle.de ([192.168.1.27] helo=a98shuttle.de)
+        by aerfugl with smtp (Exim 4.89)
+        (envelope-from <michael@a98shuttle.de>)
+        id 1kn6cj-0008CT-7V; Wed, 09 Dec 2020 22:03:45 +0100
+Received: (nullmailer pid 385332 invoked by uid 502);
+        Wed, 09 Dec 2020 21:03:45 -0000
+From:   Michael Klein <michael@fossekall.de>
+To:     Sebastian Reichel <sre@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Maxime Ripard <mripard@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        Jernej Skrabec <jernej.skrabec@siol.net>,
+        Michael Klein <michael@fossekall.de>
+Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH v4 0/3] BPi M2 Zero poweroff support via new regulator-poweroff driver
+Date:   Wed,  9 Dec 2020 22:02:18 +0100
+Message-Id: <20201209210221.385188-1-michael@fossekall.de>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.10-rc7-96-ga834ecc967a3
-X-Kernelci-Report-Type: test
-Subject: pm/testing baseline: 90 runs,
- 1 regressions (v5.10-rc7-96-ga834ecc967a3)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing baseline: 90 runs, 1 regressions (v5.10-rc7-96-ga834ecc967a3)
+Changes in v2:
+  - rename DT node
 
-Regressions Summary
--------------------
+Changes in v3:
+  - add regulator-poweroff driver
+  - use regulator-poweroff driver instead of gpio-poweroff
 
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
+Changes in v4:
+  - hardcode poweroff timeout to 3000ms, not configurable any more
+  - remove support for multiple regulators
+  - fix Documentation issues
 
+Michael Klein (3):
+  power: reset: new driver regulator-poweroff
+  Documentation: DT: binding documentation for regulator-poweroff
+  ARM: dts: sun8i-h2-plus-bananapi-m2-zero: add poweroff node
 
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
-7-96-ga834ecc967a3/plan/baseline/
+ .../power/reset/regulator-poweroff.yaml       | 37 ++++++++
+ .../dts/sun8i-h2-plus-bananapi-m2-zero.dts    |  5 ++
+ drivers/power/reset/Kconfig                   |  7 ++
+ drivers/power/reset/Makefile                  |  1 +
+ drivers/power/reset/regulator-poweroff.c      | 86 +++++++++++++++++++
+ 5 files changed, 136 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+ create mode 100644 drivers/power/reset/regulator-poweroff.c
 
-  Test:     baseline
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.10-rc7-96-ga834ecc967a3
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      a834ecc967a356eabe764b7439b3877e93822dca =
+-- 
+2.29.2
 
-
-
-Test Regressions
----------------- =
-
-
-
-platform   | arch  | lab     | compiler | defconfig | regressions
------------+-------+---------+----------+-----------+------------
-imx8mp-evk | arm64 | lab-nxp | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/5fd1332cc2df117e8fc94cb9
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc7-96-ga834e=
-cc967a3/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc7-96-ga834e=
-cc967a3/arm64/defconfig/gcc-8/lab-nxp/baseline-imx8mp-evk.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/buildroot/kci-2020=
-.05-4-g97706c5d9567/arm64/baseline/rootfs.cpio.gz =
-
-
-
-  * baseline.login: https://kernelci.org/test/case/id/5fd1332cc2df117e8fc94=
-cba
-        new failure (last pass: v5.10-rc7-92-g717f8fce803b) =
-
- =20
