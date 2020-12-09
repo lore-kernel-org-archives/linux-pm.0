@@ -2,136 +2,163 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=ham
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 330F1C19425
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 15:36:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 199FFC4361B
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 15:56:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E9DC42256F
-	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 15:36:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E960922B47
+	for <linux-pm@archiver.kernel.org>; Wed,  9 Dec 2020 15:56:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726526AbgLIPgZ (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Wed, 9 Dec 2020 10:36:25 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46754 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726110AbgLIPgR (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Wed, 9 Dec 2020 10:36:17 -0500
-Received: from mail-wr1-x441.google.com (mail-wr1-x441.google.com [IPv6:2a00:1450:4864:20::441])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 72632C0617A6
-        for <linux-pm@vger.kernel.org>; Wed,  9 Dec 2020 07:35:00 -0800 (PST)
-Received: by mail-wr1-x441.google.com with SMTP id c1so2197543wrq.6
-        for <linux-pm@vger.kernel.org>; Wed, 09 Dec 2020 07:35:00 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references;
-        bh=yGhkI0Nvl2v1YOr6xjZSuObttiQ410GAIRH2LwhmlJc=;
-        b=HIV7WPtc6ODm6QVuYGg+4MlniUYOUmab4M0+KgvZTziefWPzKbXetKC6+2XxCh/QvQ
-         yFFp9VMJskrFNXe9up7lz2BfTZBEFYIERLOPdASA4UmOnKc0A5GNTUeIyvINYia65JwX
-         Arwx3Yw7nHDTwELwR6HndyRfHZgHrxTBDWrTgXXlxshFmzCgU6qRdiePdIMJgpVvXRY/
-         PXRs7AIaJc1z4PV+2GQmLrr/++ZMZnoYqG3mO+lsvOSM+0N1x7kiuMpoa5HB9o4XzdrB
-         clLbxNpZ6XGOAkwdJwnrqpPcWvVXb6q/tGhBSwLoNhjVt7OrMy95bCc9xMryxswNsUQr
-         /ACw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references;
-        bh=yGhkI0Nvl2v1YOr6xjZSuObttiQ410GAIRH2LwhmlJc=;
-        b=VUrh6NZuyS1OdQgIzj3CIGrTHF9p/JmsOAPUTzRDPkOIb+QTKoFCjP0znCsP6oKT1v
-         2Xnm3HLsfjAshBhDjrkHQrQSBytUXlF2B30qelsCXbMSaV1kfslCEpFLqcHjx5C+KN/9
-         UiOwVI+6iYOcevHP7gWZJMCIlxqDHg4Mwj46iVuR3E47jAuyCxTLwAqVFlykK5BQts5a
-         NW49Sv1Pt+xMynMmJtk10oUw5EqB/V7RGmik2zy2Cc6aR1dNaU9zkDPvI/ZioAks2fDW
-         R/kCMxS5LXLTKSXMFvkf5kj4wY8+doQUKpopix+ETySutmBwNzibPWkX5CmloxMkW8uM
-         mKgA==
-X-Gm-Message-State: AOAM5322+byMUcj3uDGvQ2Vhl1p3uT6OqUbM/0rMd1UDU0LsMljoz0iZ
-        sf22se4URGf1CC0GWicqC4Ifrg==
-X-Google-Smtp-Source: ABdhPJz6gU5xD/gRysIsVm+tHKwkF8lM/5eMp/A7FEeiUsG2WSS7WGfZbSTg6zJL78GM440gEGkUqA==
-X-Received: by 2002:a5d:684b:: with SMTP id o11mr3351145wrw.157.1607528099091;
-        Wed, 09 Dec 2020 07:34:59 -0800 (PST)
-Received: from localhost.localdomain (lns-bzn-59-82-252-158-132.adsl.proxad.net. [82.252.158.132])
-        by smtp.gmail.com with ESMTPSA id l8sm4208382wmf.35.2020.12.09.07.34.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 09 Dec 2020 07:34:58 -0800 (PST)
-From:   Daniel Lezcano <daniel.lezcano@linaro.org>
-To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        lukasz.luba@arm.com, srinivas.pandruvada@linux.intel.com,
-        kai.heng.feng@canonical.com
-Subject: [PATCH RFC 3/4] thermal/drivers/acpi: Use hot and critical ops
-Date:   Wed,  9 Dec 2020 16:34:39 +0100
-Message-Id: <20201209153440.27643-3-daniel.lezcano@linaro.org>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201209153440.27643-1-daniel.lezcano@linaro.org>
-References: <20201209153440.27643-1-daniel.lezcano@linaro.org>
+        id S1726576AbgLIP42 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Wed, 9 Dec 2020 10:56:28 -0500
+Received: from foss.arm.com ([217.140.110.172]:36524 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S1729694AbgLIP4W (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Wed, 9 Dec 2020 10:56:22 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 071471FB;
+        Wed,  9 Dec 2020 07:55:36 -0800 (PST)
+Received: from [10.57.24.55] (unknown [10.57.24.55])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C20013F68F;
+        Wed,  9 Dec 2020 07:55:34 -0800 (PST)
+Subject: Re: [PATCH] thermal/core: Emit a warning if the thermal zone is
+ updated without ops
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rui.zhang@intel.com, Thara Gopinath <thara.gopinath@linaro.org>,
+        Amit Kucheria <amitk@kernel.org>, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20201207190530.30334-1-daniel.lezcano@linaro.org>
+ <2b8ce280-cb91-fb23-d19a-00dcee2a3e5a@arm.com>
+ <81e25f27-344e-f6c2-5f08-68068348f7ba@linaro.org>
+ <dd5f9f97-ab30-5bb0-1211-66d211035968@arm.com>
+ <7dff767d-3089-584e-f77d-33018faa38ea@linaro.org>
+ <90989e59-f880-93df-7fbf-74c26fa8258f@arm.com>
+ <652ae54b-45aa-eef2-bf96-b4eae941ef04@linaro.org>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <aa40f440-7b1e-1220-1719-e396ea7390ae@arm.com>
+Date:   Wed, 9 Dec 2020 15:55:33 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
+MIME-Version: 1.0
+In-Reply-To: <652ae54b-45aa-eef2-bf96-b4eae941ef04@linaro.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The acpi driver wants to do a netlink notification in case of a hot or
-critical trip point. Implement the corresponding ops to be used for
-the thermal zone and use them instead of the notify ops.
 
-Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
----
- drivers/acpi/thermal.c | 30 ++++++++++++++----------------
- 1 file changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-index 12c0ece746f0..b5e4bc9e3282 100644
---- a/drivers/acpi/thermal.c
-+++ b/drivers/acpi/thermal.c
-@@ -677,27 +677,24 @@ static int thermal_get_trend(struct thermal_zone_device *thermal,
- 	return 0;
- }
- 
--
--static int thermal_notify(struct thermal_zone_device *thermal, int trip,
--			   enum thermal_trip_type trip_type)
-+static void acpi_thermal_zone_device_hot(struct thermal_zone_device *thermal)
- {
--	u8 type = 0;
- 	struct acpi_thermal *tz = thermal->devdata;
- 
--	if (trip_type == THERMAL_TRIP_CRITICAL)
--		type = ACPI_THERMAL_NOTIFY_CRITICAL;
--	else if (trip_type == THERMAL_TRIP_HOT)
--		type = ACPI_THERMAL_NOTIFY_HOT;
--	else
--		return 0;
--
- 	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
--					dev_name(&tz->device->dev), type, 1);
-+					dev_name(&tz->device->dev),
-+					ACPI_THERMAL_NOTIFY_HOT, 1);
-+}
- 
--	if (trip_type == THERMAL_TRIP_CRITICAL && nocrt)
--		return 1;
-+static void acpi_thermal_zone_device_critical(struct thermal_zone_device *thermal)
-+{
-+	struct acpi_thermal *tz = thermal->devdata;
- 
--	return 0;
-+	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
-+					dev_name(&tz->device->dev),
-+					ACPI_THERMAL_NOTIFY_CRITICAL, 1);
-+
-+	thermal_zone_device_critical(thermal);
- }
- 
- static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
-@@ -812,7 +809,8 @@ static struct thermal_zone_device_ops acpi_thermal_zone_ops = {
- 	.get_trip_temp = thermal_get_trip_temp,
- 	.get_crit_temp = thermal_get_crit_temp,
- 	.get_trend = thermal_get_trend,
--	.notify = thermal_notify,
-+	.hot = acpi_thermal_zone_device_hot,
-+	.critical = acpi_thermal_zone_device_critical,
- };
- 
- static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
--- 
-2.17.1
+On 12/9/20 12:20 PM, Daniel Lezcano wrote:
+> On 09/12/2020 11:41, Lukasz Luba wrote:
+>>
+>>
+>> On 12/8/20 3:19 PM, Daniel Lezcano wrote:
+>>> On 08/12/2020 15:37, Lukasz Luba wrote:
+>>>>
+>>>>
+>>>> On 12/8/20 1:51 PM, Daniel Lezcano wrote:
+>>>>>
+>>>>> Hi Lukasz,
+>>>>>
+>>>>> On 08/12/2020 10:36, Lukasz Luba wrote:
+>>>>>> Hi Daniel,
+>>>>>
+>>>>> [ ... ]
+>>>>>
+>>>>>>>        static void thermal_zone_device_init(struct thermal_zone_device
+>>>>>>> *tz)
+>>>>>>> @@ -553,11 +555,9 @@ void thermal_zone_device_update(struct
+>>>>>>> thermal_zone_device *tz,
+>>>>>>>          if (atomic_read(&in_suspend))
+>>>>>>>              return;
+>>>>>>>      -    if (!tz->ops->get_temp)
+>>>>>>> +    if (update_temperature(tz))
+>>>>>>>              return;
+>>>>>>>      -    update_temperature(tz);
+>>>>>>> -
+>>>>>>
+>>>>>> I think the patch does a bit more. Previously we continued running the
+>>>>>> code below even when the thermal_zone_get_temp() returned an error
+>>>>>> (due
+>>>>>> to various reasons). Now we stop and probably would not schedule next
+>>>>>> polling, not calling:
+>>>>>> handle_thermal_trip() and monitor_thermal_zone()
+>>>>>
+>>>>> I agree there is a change in the behavior.
+>>>>>
+>>>>>> I would left update_temperature(tz) as it was and not check the
+>>>>>> return.
+>>>>>> The function thermal_zone_get_temp() can protect itself from missing
+>>>>>> tz->ops->get_temp(), so we should be safe.
+>>>>>>
+>>>>>> What do you think?
+>>>>>
+>>>>> Does it make sense to handle the trip point if we are unable to read
+>>>>> the
+>>>>> temperature?
+>>>>>
+>>>>> The lines following the update_temperature() are:
+>>>>>
+>>>>>     - thermal_zone_set_trips() which needs a correct tz->temperature
+>>>>>
+>>>>>     - handle_thermal_trip() which needs a correct tz->temperature to
+>>>>> compare with
+>>>>>
+>>>>>     - monitor_thermal_zone() which needs a consistent tz->passive.
+>>>>> This one
+>>>>> is updated by the governor which is in an inconsistent state because
+>>>>> the
+>>>>> temperature is not updated.
+>>>>>
+>>>>> The problem I see here is how the interrupt mode and the polling mode
+>>>>> are existing in the same code path.
+>>>>>
+>>>>> The interrupt mode can call thermal_notify_framework() for critical/hot
+>>>>> trip points without being followed by a monitoring. But for the other
+>>>>> trip points, the get_temp is needed.
+>>>>
+>>>> Yes, I agree that we can bail out when there is no .get_temp() callback
+>>>> and even not schedule next polling in such case.
+>>>> But I am just not sure if we can bail out and not schedule the next
+>>>> polling, when there is .get_temp() populated and the driver returned
+>>>> an error only at that moment, e.g. indicating some internal temporary,
+>>>> issue like send queue full, so such as -EBUSY, or -EAGAIN, etc.
+>>>> The thermal_zone_get_temp() would pass the error to update_temperature()
+>>>> but we return, losing the next try. We would not check the temperature
+>>>> again.
+>>>
+>>> Hmm, right. I agree with your point.
+>>>
+>>> What about the following changes:
+>>>
+>>>    - Add the new APIs:
+>>>
+>>>      thermal_zone_device_critical(struct thermal_zone_device *tz);
+>>>        => emergency poweroff
+>>>
+>>>      thermal_zone_device_hot(struct thermal_zone_device *tz);
+>>>        => userspace notification
+>>
+>> They look promising, I have to look into the existing code.
+>> When they would be called?
+> 
+> They can be called directly by the driver when there is no get_temp
+> callback instead of calling thermal_zone_device_update, and by the usual
+> code path via handle_critical_trip function.
+> 
+> Also that can solve the issue [1] when registering a device which is
+> already too hot [1] by adding the ops in the thermal zone.
+> 
+> [1] https://lkml.org/lkml/2020/11/28/166
+> 
+
+
+Thank you for the link. I went through these discussions. Let me add
+some comment below your posted RFC.
 
