@@ -2,93 +2,142 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.3 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E026C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 15:57:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CC0C8C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:11:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id E113A23D50
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 15:57:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9F80E23E1F
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:11:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391137AbgLJOiO (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 09:38:14 -0500
-Received: from foss.arm.com ([217.140.110.172]:45598 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2391130AbgLJOiF (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 09:38:05 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BB5B01FB;
-        Thu, 10 Dec 2020 06:37:19 -0800 (PST)
-Received: from [10.57.1.60] (unknown [10.57.1.60])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 33D433F718;
-        Thu, 10 Dec 2020 06:37:18 -0800 (PST)
-Subject: Re: [PATCH 5/5] thermal/core: Remove notify ops
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
-Cc:     kai.heng.feng@canonical.com, srinivas.pandruvada@linux.intel.com,
+        id S2392381AbgLJQLX (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 11:11:23 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48162 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392339AbgLJQLG (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 11:11:06 -0500
+Received: from mail-lj1-x241.google.com (mail-lj1-x241.google.com [IPv6:2a00:1450:4864:20::241])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id B361DC0613CF
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 08:10:25 -0800 (PST)
+Received: by mail-lj1-x241.google.com with SMTP id q8so7250559ljc.12
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 08:10:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ragnatech-se.20150623.gappssmtp.com; s=20150623;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:content-transfer-encoding:in-reply-to;
+        bh=H9hu18o8blyYnuGKEqmYi2M2JSTcn+jz8VPPMy11ti4=;
+        b=lNRhSz8ocGlUwD8y8ViOXXVooVExftagV4HO67zreuF9Gcwf0muXj3BAEe2SNdveEh
+         SiHtD0xTEs3cNV3n3F/i+JOYw0sVuw5mvCW9gush2rBTN2mtQjDfY09eVtMDib5gRpIa
+         08M6jtNWrOP5ByjMa1OyHD99vMNw7mYO+LuuACjJ8DqJjNNIqUcOt1Q60Ts9RsFvX2Ud
+         XkhGReqgTAJPQxIwl3jacDDoSNvkxfQ4AjYZn66yhjlkFmpnJoKkAfkdWSIVtYEio8HP
+         AoOzrF5yuKrI6DTBj2+JMPej6pWzkbcKQxwO5kTL1QSMcGBCZ7SZlv/b37BO2assl+sY
+         hrNQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:content-transfer-encoding
+         :in-reply-to;
+        bh=H9hu18o8blyYnuGKEqmYi2M2JSTcn+jz8VPPMy11ti4=;
+        b=bOIfEXJTGkfpxIdqcRwnV6biMSZ4FsJn5fhiPuV27TxrVcWBV+CNWrkB3IDZvwGLln
+         PExnmayKGq/1oCGm0fxM85y7KASqtkh6y4ZdujatQw6UXA3tkE1TsQJUDF5NYta9BAtR
+         hdS5pQUKYDr2sRO0Thyp+SRbUj4PKxLok6p+jJq0vhQvuOJxaa2UwevzPyT8v/KOatbo
+         XFi8X3ucROZBaybTLfjADS2U8vKgdRL36pjUABoxSonOHGj5U/IRy2aMbAVdYRkVEJ1m
+         dL/Nh/LE5qqNsvWR7Vs9Zco6MWdkONdMR8AXzeydiwp+SCJ9h/47GLK6tIrwAOTfPGDM
+         qqBA==
+X-Gm-Message-State: AOAM533ulNMFeH91KAUN4AxjC+j6FCqxHWK0E9niajYAsPWNQzxjscAF
+        1024QUEyGfkbGmqPHC6qVqg40w==
+X-Google-Smtp-Source: ABdhPJxki6iAMIariQR3jYj9FL7Xs9sJEhAYXN+TrJRnE/LaDVlBKXLs+X5q+IwJjIVoTni7Xdpdsg==
+X-Received: by 2002:a2e:3308:: with SMTP id d8mr3182165ljc.183.1607616624255;
+        Thu, 10 Dec 2020 08:10:24 -0800 (PST)
+Received: from localhost (h-209-203.A463.priv.bahnhof.se. [155.4.209.203])
+        by smtp.gmail.com with ESMTPSA id j27sm568194lfm.178.2020.12.10.08.10.22
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Dec 2020 08:10:23 -0800 (PST)
+Date:   Thu, 10 Dec 2020 17:10:22 +0100
+From:   Niklas =?iso-8859-1?Q?S=F6derlund?= 
+        <niklas.soderlund@ragnatech.se>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rui.zhang@intel.com, kai.heng.feng@canonical.com,
+        lukasz.luba@arm.com, srinivas.pandruvada@linux.intel.com,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        Amit Kucheria <amitk@kernel.org>
+        Amit Kucheria <amitk@kernel.org>,
+        "open list:RENESAS R-CAR THERMAL DRIVERS" 
+        <linux-renesas-soc@vger.kernel.org>
+Subject: Re: [PATCH 4/5] thermal/drivers/rcar: Remove notification usage
+Message-ID: <20201210161022.GE4186812@oden.dyn.berto.se>
 References: <20201210121514.25760-1-daniel.lezcano@linaro.org>
- <20201210121514.25760-5-daniel.lezcano@linaro.org>
-From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <9f6eb881-5be5-fa91-e087-0b899c0cf639@arm.com>
-Date:   Thu, 10 Dec 2020 14:37:16 +0000
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
- Thunderbird/60.9.0
+ <20201210121514.25760-4-daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <20201210121514.25760-5-daniel.lezcano@linaro.org>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201210121514.25760-4-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Daniel,
 
+Thanks for your work.
 
-On 12/10/20 12:15 PM, Daniel Lezcano wrote:
-> With the remove of the notify user in a previous patch, the ops is no
-> longer needed, remove it.
+On 2020-12-10 13:15:13 +0100, Daniel Lezcano wrote:
+> The ops is only showing a trace telling a critical trip point is
+> crossed. The same information is given by the thermal framework.
+> 
+> This is redundant, remove the code.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+
+Reviewed-by: Niklas Söderlund <niklas.soderlund+renesas@ragnatech.se>
+
 > ---
->   drivers/thermal/thermal_core.c | 3 ---
->   include/linux/thermal.h        | 2 --
->   2 files changed, 5 deletions(-)
+>  drivers/thermal/rcar_thermal.c | 19 -------------------
+>  1 file changed, 19 deletions(-)
 > 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index cee0b31b5cd7..d7481fdf4e4c 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -407,9 +407,6 @@ static void handle_critical_trips(struct thermal_zone_device *tz,
->   
->   	trace_thermal_zone_trip(tz, trip, trip_type);
->   
-> -	if (tz->ops->notify)
-> -		tz->ops->notify(tz, trip, trip_type);
+> diff --git a/drivers/thermal/rcar_thermal.c b/drivers/thermal/rcar_thermal.c
+> index 6ae757d66f46..b49f04daaf47 100644
+> --- a/drivers/thermal/rcar_thermal.c
+> +++ b/drivers/thermal/rcar_thermal.c
+> @@ -323,24 +323,6 @@ static int rcar_thermal_get_trip_temp(struct thermal_zone_device *zone,
+>  	return 0;
+>  }
+>  
+> -static int rcar_thermal_notify(struct thermal_zone_device *zone,
+> -			       int trip, enum thermal_trip_type type)
+> -{
+> -	struct rcar_thermal_priv *priv = rcar_zone_to_priv(zone);
+> -	struct device *dev = rcar_priv_to_dev(priv);
 > -
->   	if (trip_type == THERMAL_TRIP_HOT && tz->ops->hot)
->   		tz->ops->hot(tz);
->   	else if (trip_type == THERMAL_TRIP_CRITICAL)
-> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
-> index 125c8a4d52e6..7e051b4cf715 100644
-> --- a/include/linux/thermal.h
-> +++ b/include/linux/thermal.h
-> @@ -77,8 +77,6 @@ struct thermal_zone_device_ops {
->   	int (*set_emul_temp) (struct thermal_zone_device *, int);
->   	int (*get_trend) (struct thermal_zone_device *, int,
->   			  enum thermal_trend *);
-> -	int (*notify) (struct thermal_zone_device *, int,
-> -		       enum thermal_trip_type);
->   	void (*hot)(struct thermal_zone_device *);
->   	void (*critical)(struct thermal_zone_device *);
->   };
+> -	switch (type) {
+> -	case THERMAL_TRIP_CRITICAL:
+> -		/* FIXME */
+> -		dev_warn(dev, "Thermal reached to critical temperature\n");
+> -		break;
+> -	default:
+> -		break;
+> -	}
+> -
+> -	return 0;
+> -}
+> -
+>  static const struct thermal_zone_of_device_ops rcar_thermal_zone_of_ops = {
+>  	.get_temp	= rcar_thermal_of_get_temp,
+>  };
+> @@ -349,7 +331,6 @@ static struct thermal_zone_device_ops rcar_thermal_zone_ops = {
+>  	.get_temp	= rcar_thermal_get_temp,
+>  	.get_trip_type	= rcar_thermal_get_trip_type,
+>  	.get_trip_temp	= rcar_thermal_get_trip_temp,
+> -	.notify		= rcar_thermal_notify,
+>  };
+>  
+>  /*
+> -- 
+> 2.17.1
 > 
 
-I couldn't find other users apart from those in patch 3/5 and 4/5.
-I will leave to someone else to review those patches.
-This patch looks good
-
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
+-- 
+Regards,
+Niklas Söderlund
