@@ -2,88 +2,84 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-9.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 30BB5C4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:26:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 643E5C4167B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:37:29 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DDDE02310D
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:26:43 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 1636923E21
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:37:29 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390924AbgLJR0H (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 12:26:07 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:59680 "EHLO
-        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2388162AbgLJRYP (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 12:24:15 -0500
-Received: from mail-pg1-x535.google.com (mail-pg1-x535.google.com [IPv6:2607:f8b0:4864:20::535])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 06CE5C0613CF;
-        Thu, 10 Dec 2020 09:23:35 -0800 (PST)
-Received: by mail-pg1-x535.google.com with SMTP id o5so4807865pgm.10;
-        Thu, 10 Dec 2020 09:23:35 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=subject:to:references:from:message-id:date:user-agent:mime-version
-         :in-reply-to:content-language:content-transfer-encoding;
-        bh=+LIa9ilbcIDe7I5GjNGlnS7I8eoClTdzZMGkmPCk9uI=;
-        b=peqmHg5V1XarqOftCJXiXDAPDhTKsa75nNNSERs4fJKyWV6OJcYaqdN6rD1ZjUW2ia
-         4MGcJBVW+aM1TOnvEbVbPuhd/tCVxptojIfeBCsGLuDLLhBdpT3dITduQfrLUHz1aPHl
-         +WLc9x3pZrES+UnSxjTipGdJ5lRwyv63yLt69Mli+IZDx9KUTZ9CPy6e5bAVC0k2X4SA
-         7LuJ8y/oM79wT5iwUYtO2GgIQ8pGNQJrZpKsjCK39V77qwwfuhERvmI+0ZAL+MByDu2O
-         5ZhoC+za3fbpbeeYeHIF1IXpklYGUHMC/J0XoYrPUPefFm6swHq0MVqMvICWlEp6y6Fz
-         D2tg==
+        id S2390735AbgLJSgf (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 13:36:35 -0500
+Received: from mail-oo1-f65.google.com ([209.85.161.65]:42039 "EHLO
+        mail-oo1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1733295AbgLJOdB (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 09:33:01 -0500
+Received: by mail-oo1-f65.google.com with SMTP id x203so1315217ooa.9;
+        Thu, 10 Dec 2020 06:32:45 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:subject:to:references:from:message-id:date
-         :user-agent:mime-version:in-reply-to:content-language
-         :content-transfer-encoding;
-        bh=+LIa9ilbcIDe7I5GjNGlnS7I8eoClTdzZMGkmPCk9uI=;
-        b=f/XfCHwMKkth0g49eGw+7W1Eg04IEuWQaVXkch+We2rgyOyIrPKbK1KakxQ9BpQr+w
-         9DXswu+o0T8prDBQ50Mn9M0/JPkoLDNlmLJf5F+RLM+IHvBf6Z5f4GRKFdGq4b9Acqh+
-         x2H56jXQ5uCd3cDoslpqVObSQXbhSZeH3VQwu7sfq1GXvjUgZGe287cbHHUEmRRo02rR
-         s5DdgNDDkLNNp76y6x/5F2N4lvMNgwLXq6bAI9ACS/MwF2ylNHtqUwAkwAtAp0DRlLp/
-         O2sbEc1SpsiWTc2VxJazo1KvhCcejUJ+zlmK2lymxBgVLNuGZCffHDNYA3yOFqAGaGPh
-         UfkA==
-X-Gm-Message-State: AOAM532+rgXwI6RjthkSeI7pPIlE3O9OTcdO/JG8TLytSGG6pLNw0Js4
-        XamBUeib6lqMRbNFRKa+PKI=
-X-Google-Smtp-Source: ABdhPJz+sNoa4IauymiO0QPYoGU3qEZ+1oxwE2kF+OyKboio7NNBxS5o2iKbDI/RYlo6BENrQ4ErhQ==
-X-Received: by 2002:a63:ef15:: with SMTP id u21mr7606542pgh.56.1607621014536;
-        Thu, 10 Dec 2020 09:23:34 -0800 (PST)
-Received: from [10.230.29.166] ([192.19.223.252])
-        by smtp.gmail.com with ESMTPSA id 193sm7070169pfz.36.2020.12.10.09.23.32
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 10 Dec 2020 09:23:33 -0800 (PST)
-Subject: Re: [PATCH -next] thermal: broadcom: simplify the return expression
- of bcm2711_thermal_probe()
-To:     Zheng Yongjun <zhengyongjun3@huawei.com>, nsaenzjulienne@suse.de,
-        linux-pm@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-References: <20201210135432.1249-1-zhengyongjun3@huawei.com>
-From:   Florian Fainelli <f.fainelli@gmail.com>
-Message-ID: <168fadb8-85b9-3d9f-42dc-e9d7fb3ce6ec@gmail.com>
-Date:   Thu, 10 Dec 2020 09:23:32 -0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:78.0) Gecko/20100101
- Firefox/78.0 Thunderbird/78.5.1
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=k62Ve7mlBGGKYnLuZVHB8mMB87DGHB1By9AKQqAliVw=;
+        b=TS2XoujjUkgV1LYJ4nbdQV0XfPv+mJcZ/uGt7DU4uM4ozF1FnhyKGsQvN0nCG15JgF
+         lCoNNHzXKzZ/ia6ZBk1z+P2PziGAANbx5RBw5F+FZsazJuuSIsyDem7ps4I5Z3dTJW4l
+         02PMjKj6903sUetAlQfDReaAHU50+jcYNNg2sYXW8xALP9kWghymnkiEFL3+lOLGdcb4
+         50DXf2W4jMf+qvHlBJdalOGnCjezPzRkUS8bQO28xWIWjmW2oc2lCV8dnxfH6G349UWO
+         JJhso9kEZoV0raQPLZFOIRITbSS8/yRK+G2+gsoJApERC8VzDv5ZI5VA3fgC/hEKLDNW
+         eu/A==
+X-Gm-Message-State: AOAM5310CcSl5riaffpNtK0yw5WBIUOalwllsrLf+HJfyZ4Vx722CDzC
+        7yEslr8pPfNBUqLV1x3m7A67BGAXjokGi/q/RIY=
+X-Google-Smtp-Source: ABdhPJxsInWkuQMARndOZonBEuc0OjkBD+vUgPSyChtLKlr7QodvM1uxGMaD4o5So/hwQumvATutmKPpcaCfcxSFQK4=
+X-Received: by 2002:a4a:aac4:: with SMTP id e4mr6089606oon.2.1607610740318;
+ Thu, 10 Dec 2020 06:32:20 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <20201210135432.1249-1-zhengyongjun3@huawei.com>
-Content-Type: text/plain; charset=utf-8
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
+References: <20201210142139.20490-1-yousaf.kaukab@suse.com>
+In-Reply-To: <20201210142139.20490-1-yousaf.kaukab@suse.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 10 Dec 2020 15:32:09 +0100
+Message-ID: <CAJZ5v0hWxLrXCS+X15hnLZ2enBsSJ0aEfnxK2kL+n9k4gkg17Q@mail.gmail.com>
+Subject: Re: [PATCH 1/2] acpi: cppc: add cpufreq device
+To:     Mian Yousaf Kaukab <yousaf.kaukab@suse.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Ionela Voinescu <ionela.voinescu@arm.com>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Mian Yousaf Kaukab <ykaukab@suse.de>,
+        Petr Cervinka <pcervinka@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, Dec 10, 2020 at 3:23 PM Mian Yousaf Kaukab
+<yousaf.kaukab@suse.com> wrote:
+>
+> From: Mian Yousaf Kaukab <ykaukab@suse.de>
+>
+> Since commit 28f06f770454 ("cppc_cpufreq: replace per-cpu structures with
+> lists"), cppc-cpufreq driver doesn't check availability of PSD data before
+> registering with cpufreq core. As a result on a ThunderX2 platform when
+> CPPC is disabled from BIOS, kernel log is spammed with following messages:
+>
+> [  180.974166] CPPC Cpufreq: Error in acquiring _CPC/_PSD data for CPUxx
+>
+> acpi_cppc_processor_probe() never succeed in this case because
+> acpi_evaluate_object_typed("_CPC") always returns AE_NOT_FOUND. When
+> cpufreq core calls cppc_cpufreq_cpu_init(), driver fails to obtain PSD data
+> and print error messages.
+>
+> Convert cppc-cpufreq driver to a platform driver (done in a separate patch)
+> and add cppc-cpufreq device when acpi_cppc_processor_probe() succeeds.
 
+Honestly, I prefer to drop 28f06f770454 (along with its follower)
+instead of making this change.
 
-On 12/10/2020 5:54 AM, Zheng Yongjun wrote:
-> Simplify the return expression.
-> 
-> Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+> Fixes: 28f06f770454 ("cppc_cpufreq: replace per-cpu structures with lists")
 
-Reviewed-by: Florian Fainelli <f.fainelli@gmail.com>
--- 
-Florian
+Thanks!
