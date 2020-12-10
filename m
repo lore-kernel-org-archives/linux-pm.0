@@ -6,18 +6,18 @@ X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D7DF8C4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F64CC4167B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:49 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 95B6423DE3
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:37 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id F11BE23E23
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:48 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404911AbgLJV1e (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 16:27:34 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38670 "EHLO mail.kernel.org"
+        id S2404887AbgLJV1b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 16:27:31 -0500
+Received: from mail.kernel.org ([198.145.29.99]:38458 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404895AbgLJV1c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 16:27:32 -0500
+        id S2404881AbgLJV1T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Dec 2020 16:27:19 -0500
 From:   Krzysztof Kozlowski <krzk@kernel.org>
 Authentication-Results: mail.kernel.org; dkim=permerror (bad message/signature format)
 To:     Chanwoo Choi <cw00.choi@samsung.com>,
@@ -44,9 +44,9 @@ Cc:     Iskren Chernev <iskren.chernev@gmail.com>,
         Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
         Angus Ainslie <angus@akkea.ca>,
         Hans de Goede <hdegoede@redhat.com>
-Subject: [RFC 13/18] mfd: max77686: Do not enforce (incorrect) interrupt trigger type
-Date:   Thu, 10 Dec 2020 22:25:29 +0100
-Message-Id: <20201210212534.216197-13-krzk@kernel.org>
+Subject: [PATCH 08/18] ARM: dts: exynos: correct PMIC interrupt trigger level on SMDK5250
+Date:   Thu, 10 Dec 2020 22:25:24 +0100
+Message-Id: <20201210212534.216197-8-krzk@kernel.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201210212534.216197-1-krzk@kernel.org>
 References: <20201210212534.216197-1-krzk@kernel.org>
@@ -56,94 +56,33 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Interrupt line can be configured on different hardware in different way,
-even inverted.  Therefore driver should not enforce specific trigger
-type - edge falling - but instead rely on Devicetree to configure it.
+The Maxim PMIC datasheets describe the interrupt line as active low
+with a requirement of acknowledge from the CPU.  Without specifying the
+interrupt type in Devicetree, kernel might apply some fixed
+configuration, not necessarily working for this hardware.
 
-The Maxim 77686 datasheet describes the interrupt line as active low
-with a requirement of acknowledge from the CPU therefore the edge
-falling is not correct.
+Additionally, the interrupt line is shared so using level sensitive
+interrupt is here especially important to avoid races.
 
-The interrupt line is shared between PMIC and RTC driver, so using level
-sensitive interrupt is here especially important to avoid races.  With
-an edge configuration in case if first PMIC signals interrupt followed
-shortly after by the RTC, the interrupt might not be yet cleared/acked
-thus the second one would not be noticed.
-
+Fixes: 47580e8d94c2 ("ARM: dts: Specify MAX77686 pmic interrupt for exynos5250-smdk5250")
 Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
-
 ---
+ arch/arm/boot/dts/exynos5250-smdk5250.dts | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-This patch should wait till DTS changes are merged, as it relies on
-proper Devicetree.
----
- Documentation/devicetree/bindings/clock/maxim,max77686.txt | 4 ++--
- Documentation/devicetree/bindings/mfd/max77686.txt         | 2 +-
- Documentation/devicetree/bindings/regulator/max77686.txt   | 2 +-
- drivers/mfd/max77686.c                                     | 3 +--
- 4 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/clock/maxim,max77686.txt b/Documentation/devicetree/bindings/clock/maxim,max77686.txt
-index 3472b461ca93..c10849efb444 100644
---- a/Documentation/devicetree/bindings/clock/maxim,max77686.txt
-+++ b/Documentation/devicetree/bindings/clock/maxim,max77686.txt
-@@ -49,7 +49,7 @@ Example:
- 		max77686: max77686@9 {
- 			compatible = "maxim,max77686";
- 			interrupt-parent = <&wakeup_eint>;
--			interrupts = <26 0>;
-+			interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
- 			reg = <0x09>;
- 			#clock-cells = <1>;
- 
-@@ -74,7 +74,7 @@ Example:
- 		max77802: max77802@9 {
- 			compatible = "maxim,max77802";
- 			interrupt-parent = <&wakeup_eint>;
--			interrupts = <26 0>;
-+			interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
- 			reg = <0x09>;
- 			#clock-cells = <1>;
- 
-diff --git a/Documentation/devicetree/bindings/mfd/max77686.txt b/Documentation/devicetree/bindings/mfd/max77686.txt
-index 42968b7144e0..4447d074894a 100644
---- a/Documentation/devicetree/bindings/mfd/max77686.txt
-+++ b/Documentation/devicetree/bindings/mfd/max77686.txt
-@@ -21,6 +21,6 @@ Example:
- 	max77686: pmic@9 {
+diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
+index 8b5a79a8720c..39bbe18145cf 100644
+--- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
++++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
+@@ -134,7 +134,7 @@ max77686: pmic@9 {
  		compatible = "maxim,max77686";
- 		interrupt-parent = <&wakeup_eint>;
--		interrupts = <26 0>;
-+		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
  		reg = <0x09>;
- 	};
-diff --git a/Documentation/devicetree/bindings/regulator/max77686.txt b/Documentation/devicetree/bindings/regulator/max77686.txt
-index e9f7578ca09a..ff3d2dec8c4b 100644
---- a/Documentation/devicetree/bindings/regulator/max77686.txt
-+++ b/Documentation/devicetree/bindings/regulator/max77686.txt
-@@ -43,7 +43,7 @@ Example:
- 	max77686: pmic@9 {
- 		compatible = "maxim,max77686";
- 		interrupt-parent = <&wakeup_eint>;
--		interrupts = <26 IRQ_TYPE_NONE>;
-+		interrupts = <26 IRQ_TYPE_LEVEL_LOW>;
- 		reg = <0x09>;
- 
- 		voltage-regulators {
-diff --git a/drivers/mfd/max77686.c b/drivers/mfd/max77686.c
-index 2ad554b921d9..f9e12ab2bc75 100644
---- a/drivers/mfd/max77686.c
-+++ b/drivers/mfd/max77686.c
-@@ -209,8 +209,7 @@ static int max77686_i2c_probe(struct i2c_client *i2c)
- 
- 	ret = devm_regmap_add_irq_chip(&i2c->dev, max77686->regmap,
- 				       max77686->irq,
--				       IRQF_TRIGGER_FALLING | IRQF_ONESHOT |
--				       IRQF_SHARED, 0, irq_chip,
-+				       IRQF_ONESHOT | IRQF_SHARED, 0, irq_chip,
- 				       &max77686->irq_data);
- 	if (ret < 0) {
- 		dev_err(&i2c->dev, "failed to add PMIC irq chip: %d\n", ret);
+ 		interrupt-parent = <&gpx3>;
+-		interrupts = <2 IRQ_TYPE_NONE>;
++		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+ 		pinctrl-names = "default";
+ 		pinctrl-0 = <&max77686_irq>;
+ 		#clock-cells = <1>;
 -- 
 2.25.1
 
