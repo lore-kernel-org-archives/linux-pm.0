@@ -2,87 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 34910C3527E
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 22:31:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id CED77C0018C
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 22:59:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 10528223E0
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 22:31:49 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 8852523CD0
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 22:59:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404952AbgLJVpI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 16:45:08 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38062 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404849AbgLJV0l (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 16:26:41 -0500
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Authentication-Results: mail.kernel.org; dkim=permerror (bad message/signature format)
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-rtc@vger.kernel.org
-Cc:     Iskren Chernev <iskren.chernev@gmail.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Angus Ainslie <angus@akkea.ca>,
-        Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 04/18] ARM: dts: exynos: correct MUIC interrupt trigger level on Midas family
-Date:   Thu, 10 Dec 2020 22:25:20 +0100
-Message-Id: <20201210212534.216197-4-krzk@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201210212534.216197-1-krzk@kernel.org>
-References: <20201210212534.216197-1-krzk@kernel.org>
+        id S1729955AbgLJW6E (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 17:58:04 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42256 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388817AbgLJW5f (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 17:57:35 -0500
+Received: from mail-pf1-x443.google.com (mail-pf1-x443.google.com [IPv6:2607:f8b0:4864:20::443])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9608CC0613D3;
+        Thu, 10 Dec 2020 14:56:55 -0800 (PST)
+Received: by mail-pf1-x443.google.com with SMTP id f9so5582815pfc.11;
+        Thu, 10 Dec 2020 14:56:55 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=PVjxVtqxXgYN9c2nHomeMFAAgnOeXuzABonf9BV14U4=;
+        b=b90aCyK61/PhANWhccytnEiZPgLJrXVSS+yOEGGXTBUCtYbkJCYkXR9nogJn9FnUkd
+         0soQ+hgDOs3C612CbD0SSN5bE6yztYah41jTPp8UircUNHegNkyxfmJAS8QK27NxgANw
+         BthxfuEnhu1e5vMHr1PgOd3cA2i5nGw7GRwwXZ7v1WLlIGewPsMFktyMn26qgJnc4cQx
+         jKGgJSi1g6wkd+3KtyYCWGuElgw9CuSa55WIhMoFq0moDWtxq/wtYpnW/rheR/OqpxLw
+         YQ9cltTQrdvS2vvclz+f8jnDN4imBKSplrJvzGaLR8IM2uv63Kp9mXq+c4yOFMH6/3Ss
+         EZ7A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=PVjxVtqxXgYN9c2nHomeMFAAgnOeXuzABonf9BV14U4=;
+        b=sd+oKS4IFMXZkurvmHV1KECTlQEsKYdQxrHyt7QY9M3h4sn2XCwN/XiyJBz7fHplHQ
+         bi7EQZ7QSyq3rsyDNtBSipcioo0TAcn8uDwFnwtcjWk1QaO/LvqRo78cRmj9Zl2fVyYn
+         93zaltLc4iSejLJ70Rk4yJzD6GTqMVwQxZAUF+/y6t6IgJIpEimb1WziMY0EHI/DgoLH
+         G3vwZSCz9GUZvoIz1SLdY987nYLXTGAPlummSUoqk7BFYxfO3cDZLKDJQqugzpIReN7D
+         PCNricSBiWnD/32tD1e15c5kjx8pBSvukGVs4y8j9R9WpkDqlG6MzTxz/lc+3XjqnH9e
+         X0vw==
+X-Gm-Message-State: AOAM530Eu6WP9RRaYwdMLuUm33YLAV0Pa/bbS4yycTfLB1WcxsTdrayw
+        Z+wBCD38lP1s/klCXnXuFds7udJbpPXcJKno
+X-Google-Smtp-Source: ABdhPJyWRuFdUjfzV/+3SCLci1wxl4ir7wcOCxaVg+zFHV0Di0MAWqIYw3A4X8eW2b/u2+e7NxTtVA==
+X-Received: by 2002:a62:8205:0:b029:19e:717c:d647 with SMTP id w5-20020a6282050000b029019e717cd647mr8859674pfd.50.1607641015100;
+        Thu, 10 Dec 2020 14:56:55 -0800 (PST)
+Received: from localhost ([2405:6580:31a1:500:1ac0:4dff:fe39:5426])
+        by smtp.gmail.com with ESMTPSA id w63sm7429996pfc.20.2020.12.10.14.56.53
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Dec 2020 14:56:54 -0800 (PST)
+From:   Punit Agrawal <punitagrawal@gmail.com>
+To:     rjw@rjwysocki.net
+Cc:     Punit Agrawal <punitagrawal@gmail.com>, wei.huang2@amd.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        bp@alien8.de
+Subject: [PATCH 0/2] Add processor to the ignore PSD override list
+Date:   Fri, 11 Dec 2020 07:56:38 +0900
+Message-Id: <20201210225640.317719-1-punitagrawal@gmail.com>
+X-Mailer: git-send-email 2.29.2
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Maxim MUIC datasheets describe the interrupt line as active low
-with a requirement of acknowledge from the CPU.  Without specifying the
-interrupt type in Devicetree, kernel might apply some fixed
-configuration, not necessarily working for this hardware.
+Hi,
 
-Additionally, the interrupt line is shared so using level sensitive
-interrupt is here especially important to avoid races.
+Here's an update of the previously posted patches at [0].
 
-Fixes: 7eec1266751b ("ARM: dts: Add Maxim 77693 PMIC to exynos4412-trats2")
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- arch/arm/boot/dts/exynos4412-midas.dtsi | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Patch 1 refactors the test to ignore firmware provided frequency
+domain into a separate function.
 
-diff --git a/arch/arm/boot/dts/exynos4412-midas.dtsi b/arch/arm/boot/dts/exynos4412-midas.dtsi
-index b8b75dc81aa1..d75f554efde0 100644
---- a/arch/arm/boot/dts/exynos4412-midas.dtsi
-+++ b/arch/arm/boot/dts/exynos4412-midas.dtsi
-@@ -173,7 +173,7 @@ i2c_max77693: i2c-gpio-1 {
- 		pmic@66 {
- 			compatible = "maxim,max77693";
- 			interrupt-parent = <&gpx1>;
--			interrupts = <5 IRQ_TYPE_EDGE_FALLING>;
-+			interrupts = <5 IRQ_TYPE_LEVEL_LOW>;
- 			pinctrl-names = "default";
- 			pinctrl-0 = <&max77693_irq>;
- 			reg = <0x66>;
+Patch 2 adds the APU (Family: 0x17, Model: 0x60, Stepping: 0x01) to
+the list of CPUs for which the PSD override is ignored. In the absence
+of clarity regarding the affected CPUs, the patch adds the CPU by
+model numbers.
+
+Thanks,
+Punit
+
+Changes since RFC:
+* Dropped patches 3 and 4 to add macros for AMD processor families due
+  to lack of interest
+* Patch 1
+  - renamed override_acpi_psd() to amd_override_acpi_psd()
+  - Changed return value of the function to bool
+
+Punit Agrawal (2):
+  cpufreq: acpi-cpufreq: Re-factor overriding ACPI PSD
+  cpufreq: acpi-cpufreq: Add processor to the ignore PSD override list
+
+ drivers/cpufreq/acpi-cpufreq.c | 22 ++++++++++++++++++++--
+ 1 file changed, 20 insertions(+), 2 deletions(-)
+
 -- 
-2.25.1
+2.29.2
 
