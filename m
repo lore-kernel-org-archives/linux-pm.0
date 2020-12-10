@@ -2,165 +2,121 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 91590C4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:55:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9A48CC433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:55:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4691A23118
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:55:18 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7298323D56
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:55:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391340AbgLJSzG (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 13:55:06 -0500
-Received: from foss.arm.com ([217.140.110.172]:45258 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390517AbgLJObu (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 09:31:50 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id DE42C1396;
-        Thu, 10 Dec 2020 06:30:35 -0800 (PST)
-Received: from e123648.arm.com (unknown [10.57.1.60])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id C374A3F718;
-        Thu, 10 Dec 2020 06:30:32 -0800 (PST)
-From:   Lukasz Luba <lukasz.luba@arm.com>
-To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        dri-devel@lists.freedesktop.org
-Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
-        daniel.lezcano@linaro.org, lukasz.luba@arm.com, orjan.eide@arm.com,
-        robh@kernel.org, alyssa.rosenzweig@collabora.com,
-        steven.price@arm.com, airlied@linux.ie, daniel@ffwll.ch,
-        ionela.voinescu@arm.com
-Subject: [PATCH v4 2/5] thermal: devfreq_cooling: use a copy of device status
-Date:   Thu, 10 Dec 2020 14:30:11 +0000
-Message-Id: <20201210143014.24685-3-lukasz.luba@arm.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201210143014.24685-1-lukasz.luba@arm.com>
-References: <20201210143014.24685-1-lukasz.luba@arm.com>
+        id S2393195AbgLJSz2 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 13:55:28 -0500
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:37464 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2393138AbgLJSz0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 13:55:26 -0500
+Received: by mail-oi1-f193.google.com with SMTP id l207so6904618oib.4;
+        Thu, 10 Dec 2020 10:55:10 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=twsPwbVO8yn8zyqZUdboWjPQ7cI0ykoSS/wwbkutNEI=;
+        b=WK5LbfxAs06m91B7c1sJE4alF1KAfiCPw/lwyICalBrZFPaPi64xZAT5qT2swj0dnX
+         UbO8tONF4nZVbiBp5r/86RmlA/sX9o/qFjllCbZNJVkyjGfPLpai9i+rD+6Nw1gflcm/
+         GeolyZ3crbw1nzo2wHZPD+wdJpq4FHmFel36Uw5tpZ4eXNL6uYZrxi25JFIxv/HVK0yy
+         ERqnLi3G9MfyZ8HmtwSJU/NGgAjRWCc+9cNAqAnHNvkt2xI6YiDovOX/E7mX4vybbqB9
+         6dsUZM71i/animyxqJuehdNf9nAHvxoG0F4waqTxBBC0Qn6e0uhZVkODXnVVUUgaimN4
+         /Kpg==
+X-Gm-Message-State: AOAM532NBKI2A8Q5omc3Q3OwahsT+TN9FkguZit3IJFl3Mhg0ZROK5+u
+        P0R7lIHe/CFsi7IZtEuPGpYctUifoY3igRumvzU=
+X-Google-Smtp-Source: ABdhPJxLClO2crsAIA3P40gP2Nb793PFJLMAKdyrDqX8zhIEkjenPnNDK1rWmD8vPcW48zPM+UzHKVaWiHz5yaKb0uc=
+X-Received: by 2002:aca:cf4a:: with SMTP id f71mr6681750oig.157.1607626485427;
+ Thu, 10 Dec 2020 10:54:45 -0800 (PST)
+MIME-Version: 1.0
+References: <20201210142139.20490-1-yousaf.kaukab@suse.com>
+ <CAJZ5v0hWxLrXCS+X15hnLZ2enBsSJ0aEfnxK2kL+n9k4gkg17Q@mail.gmail.com>
+ <20201210150417.GA24136@suse.de> <1916679.syIRshJoYJ@kreacher> <20201210172339.GA2828@arm.com>
+In-Reply-To: <20201210172339.GA2828@arm.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Thu, 10 Dec 2020 19:54:34 +0100
+Message-ID: <CAJZ5v0hx46VUj+FueGKLDNtn-H9Mk9vFSa5RXv6KrpPwcsD=cg@mail.gmail.com>
+Subject: Re: [PATCH 1/2] acpi: cppc: add cpufreq device
+To:     Ionela Voinescu <ionela.voinescu@arm.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Mian Yousaf Kaukab <ykaukab@suse.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Mian Yousaf Kaukab <yousaf.kaukab@suse.com>,
+        Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Petr Cervinka <pcervinka@suse.com>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Devfreq cooling needs to now the correct status of the device in order
-to operate. Devfreq framework can change the device status in the
-background. To mitigate issues make a copy of the status structure and use
-it for internal calculations.
+On Thu, Dec 10, 2020 at 6:23 PM Ionela Voinescu <ionela.voinescu@arm.com> wrote:
+>
+> Hi Rafael,
+>
+> On Thursday 10 Dec 2020 at 17:55:56 (+0100), Rafael J. Wysocki wrote:
+> > On Thursday, December 10, 2020 4:04:40 PM CET Mian Yousaf Kaukab wrote:
+> > > On Thu, Dec 10, 2020 at 03:32:09PM +0100, Rafael J. Wysocki wrote:
+> > > > On Thu, Dec 10, 2020 at 3:23 PM Mian Yousaf Kaukab
+> > > > <yousaf.kaukab@suse.com> wrote:
+> > > > >
+> > > > > Convert cppc-cpufreq driver to a platform driver (done in a separate patch)
+> > > > > and add cppc-cpufreq device when acpi_cppc_processor_probe() succeeds.
+> > > >
+> > > > Honestly, I prefer to drop 28f06f770454 (along with its follower)
+> > > > instead of making this change.
+> > > >
+> > > Even if we revert 28f06f770454 there is still one more small issue that these
+> > > patches fix. Currently, ACPI_PROCESSOR_DEVICE_HID is used to load cppc-cpufreq
+> > > module. In case when CPPC is disabled, some cycles will be wasted in loading
+> > > cppc-cpufreq module. The module will return error from the init call though
+> > > so no memory is wasted.
+> > >
+> > > After converting to platform-driver, cppc-cpufreq module will only be loaded
+> > > when the platform-device is available.
+> >
+> > Even so, that issue is low-impact AFAICS and may be addressed later and I'd
+> > rather not let known breakage go into the mainline.
+> >
+> > I'm going to do drop the problematic commit now and please work with Ionela
+> > to produce a clean series of patches in the right order to avoid introducing
+> > issues between them.
+> >
+>
+> The following commit will be easy to drop:
+> a37afa60de38  cppc_cpufreq: optimise memory allocation for HW and NONE coordination (2 weeks ago)
+>
+> 28f06f770454  will be more difficult to drop as it's embedded in the
+> series, and removing that one will produce conflicts in the patches
+> that follow it:
+>
+> f9f5baa8b2a8  ACPI: processor: fix NONE coordination for domain mapping failure (3 weeks ago)
+> cdb4ae5de6f7  cppc_cpufreq: expose information on frequency domains (3 weeks ago)
+> c783a4d94848  cppc_cpufreq: clarify support for coordination types (3 weeks ago)
+> 3bd412fb2c7f  cppc_cpufreq: use policy->cpu as driver of frequency setting (3 weeks ago)
+> 28f06f770454  cppc_cpufreq: replace per-cpu structures with lists (3 weeks ago)
 
-In addition this patch adds normalization function, which also makes sure
-that whatever data comes from the device, the load will be in range from 1
-to 1024.
+I dropped the commits above along with a37afa60de38 (and regenerated
+my pm-cpufreq branch).
 
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/thermal/devfreq_cooling.c | 47 ++++++++++++++++++++++++-------
- 1 file changed, 37 insertions(+), 10 deletions(-)
+> bb025fb6c276  cppc_cpufreq: simplify use of performance capabilities (3 weeks ago)
+> 48ad8dc94032  cppc_cpufreq: clean up cpu, cpu_num and cpunum variable use (3 weeks ago)
+> 63087265c288  cppc_cpufreq: fix misspelling, code style and readability issues (3 weeks ago)
+>
+> Let me know how you want to proceed and I can either send a replacement
+> series or reverts with conflicts fixed.
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index 659c0143c9f0..afcebadbad24 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -227,20 +227,39 @@ static inline unsigned long get_total_power(struct devfreq_cooling_device *dfc,
- 							       voltage);
- }
- 
-+static void _normalize_load(struct devfreq_dev_status *status)
-+{
-+	if (status->total_time > 0xfffff) {
-+		status->total_time >>= 10;
-+		status->busy_time >>= 10;
-+	}
-+
-+	status->busy_time <<= 10;
-+	status->busy_time /= status->total_time ? : 1;
-+
-+	status->busy_time = status->busy_time ? : 1;
-+	status->total_time = 1024;
-+}
- 
- static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cdev,
- 					       u32 *power)
- {
- 	struct devfreq_cooling_device *dfc = cdev->devdata;
- 	struct devfreq *df = dfc->devfreq;
--	struct devfreq_dev_status *status = &df->last_status;
-+	struct devfreq_dev_status status;
- 	unsigned long state;
--	unsigned long freq = status->current_frequency;
-+	unsigned long freq;
- 	unsigned long voltage;
- 	u32 dyn_power = 0;
- 	u32 static_power = 0;
- 	int res;
- 
-+	mutex_lock(&df->lock);
-+	status = df->last_status;
-+	mutex_unlock(&df->lock);
-+
-+	freq = status.current_frequency;
-+
- 	state = freq_get_state(dfc, freq);
- 	if (state == THERMAL_CSTATE_INVALID) {
- 		res = -EAGAIN;
-@@ -268,16 +287,18 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 	} else {
- 		dyn_power = dfc->power_table[state];
- 
-+		_normalize_load(&status);
-+
- 		/* Scale dynamic power for utilization */
--		dyn_power *= status->busy_time;
--		dyn_power /= status->total_time;
-+		dyn_power *= status.busy_time;
-+		dyn_power >>= 10;
- 		/* Get static power */
- 		static_power = get_static_power(dfc, freq);
- 
- 		*power = dyn_power + static_power;
- 	}
- 
--	trace_thermal_power_devfreq_get_power(cdev, status, freq, *power);
-+	trace_thermal_power_devfreq_get_power(cdev, &status, freq, *power);
- 
- 	return 0;
- fail:
-@@ -309,14 +330,19 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- {
- 	struct devfreq_cooling_device *dfc = cdev->devdata;
- 	struct devfreq *df = dfc->devfreq;
--	struct devfreq_dev_status *status = &df->last_status;
--	unsigned long freq = status->current_frequency;
--	unsigned long busy_time;
-+	struct devfreq_dev_status status;
-+	unsigned long freq;
- 	s32 dyn_power;
- 	u32 static_power;
- 	s32 est_power;
- 	int i;
- 
-+	mutex_lock(&df->lock);
-+	status = df->last_status;
-+	mutex_unlock(&df->lock);
-+
-+	freq = status.current_frequency;
-+
- 	if (dfc->power_ops->get_real_power) {
- 		/* Scale for resource utilization */
- 		est_power = power * dfc->res_util;
-@@ -328,8 +354,9 @@ static int devfreq_cooling_power2state(struct thermal_cooling_device *cdev,
- 		dyn_power = dyn_power > 0 ? dyn_power : 0;
- 
- 		/* Scale dynamic power for utilization */
--		busy_time = status->busy_time ?: 1;
--		est_power = (dyn_power * status->total_time) / busy_time;
-+		_normalize_load(&status);
-+		dyn_power <<= 10;
-+		est_power = dyn_power / status.busy_time;
- 	}
- 
- 	/*
--- 
-2.17.1
+Please feel free to resubmit with the issue at hand addressed.
 
+Thanks!
