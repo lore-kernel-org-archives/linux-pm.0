@@ -2,29 +2,28 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-11.8 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,
+	SPF_PASS,USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B2CEC4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:58:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 00FD6C4361B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 19:02:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A67AF23E22
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:58:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id AA51A23440
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 19:02:57 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2393225AbgLJS5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 13:57:44 -0500
-Received: from foss.arm.com ([217.140.110.172]:45100 "EHLO foss.arm.com"
+        id S2393236AbgLJS5u (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 13:57:50 -0500
+Received: from foss.arm.com ([217.140.110.172]:45090 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390495AbgLJOba (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 09:31:30 -0500
+        id S2390488AbgLJOb0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Dec 2020 09:31:26 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D999A1596;
-        Thu, 10 Dec 2020 06:30:46 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 06B161FB;
+        Thu, 10 Dec 2020 06:30:29 -0800 (PST)
 Received: from e123648.arm.com (unknown [10.57.1.60])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B90A23F718;
-        Thu, 10 Dec 2020 06:30:43 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id D0F173F718;
+        Thu, 10 Dec 2020 06:30:25 -0800 (PST)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         dri-devel@lists.freedesktop.org
@@ -33,42 +32,76 @@ Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
         robh@kernel.org, alyssa.rosenzweig@collabora.com,
         steven.price@arm.com, airlied@linux.ie, daniel@ffwll.ch,
         ionela.voinescu@arm.com
-Subject: [PATCH v4 5/5] drm/panfrost: Register devfreq cooling and attempt to add Energy Model
-Date:   Thu, 10 Dec 2020 14:30:14 +0000
-Message-Id: <20201210143014.24685-6-lukasz.luba@arm.com>
+Subject: [PATCH v4 0/5] Thermal devfreq cooling improvements with Energy Model
+Date:   Thu, 10 Dec 2020 14:30:09 +0000
+Message-Id: <20201210143014.24685-1-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201210143014.24685-1-lukasz.luba@arm.com>
-References: <20201210143014.24685-1-lukasz.luba@arm.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Register devfreq cooling device and attempt to register Energy Model. This
-will add the devfreq device to the Energy Model framework. It will create
-a dedicated and unified data structures used i.e. in thermal framework.
-It uses simplified Energy Model, created based on voltage, frequency
-and DT 'dynamic-power-coefficient'.
+Hi all,
 
-Reviewed-by: Steven Price <steven.price@arm.com>
-Reviewed-by: Alyssa Rosenzweig <alyssa.rosenzweig@collabora.com>
-Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
----
- drivers/gpu/drm/panfrost/panfrost_devfreq.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+This patch set is a continuation of my previous work, which aimed
+to add Energy Model to all devices [1]. This series is a follow up
+for the patches which got merged to v5.9-rc1. It aims to change
+the thermal devfreq cooling and use the Energy Model instead of
+private power table and structures. The power model is now simplified,
+static power and dynamic power are removed. The new registration interface
+in the patch 3/5 helps to register devfreq cooling and the EM in one call.
+There is also small improvement, patch 2/5 is changing the way how
+thermal gets the device status (now uses a copy) and normalize the values.
+The last patch is here for consistency and will probably go through drm tree.
 
-diff --git a/drivers/gpu/drm/panfrost/panfrost_devfreq.c b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-index 78e9d82f7318..f44d28fad085 100644
---- a/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-+++ b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
-@@ -138,7 +138,7 @@ int panfrost_devfreq_init(struct panfrost_device *pfdev)
- 	}
- 	pfdevfreq->devfreq = devfreq;
- 
--	cooling = of_devfreq_cooling_register(dev->of_node, devfreq);
-+	cooling = devfreq_cooling_em_register(devfreq, NULL);
- 	if (IS_ERR(cooling))
- 		DRM_DEV_INFO(dev, "Failed to register cooling device\n");
- 	else
+The patch set should apply on top of thermal/testing. It does not depend on
+new EM API change which is queued in the pm/linux-next tree as v5.11 material.
+Thus, could go in parallel. That was the main motiviation for this v4.
+
+changes:
+v4:
+- patch 3/5 - removed dependency on the EM API change
+-- removed em_dev_register_perf_domain() and just use
+   dev_pm_opp_of_register_em() which API has not changed
+-- removed a helper registration function and renamed
+   devfreq_cooling_em_register_power() to devfreq_cooling_em_register()
+   (was actually suggested by Ionela during review)
+-- moved energy_model.h to include in devfreq_cooling.c not .h, since
+   there is no EM structure in there anymore
+- adjusted comments and commit messages
+v3 [4]:
+- dropped direct check of device status and used just a copy of 'status';
+  a separate patch set will be proposed to address this issue
+- modified _normalize_load() and used 1024 scale to handle ms, us, ns
+- removed 'em_registered' and called em_dev_unregister_perf_domain()
+  unconditionally, so the drivers will have to make sure the right order of
+  all unregister calls to frameworks which might use EM; this call must be last
+  one; a proper comment added
+- removed 'em' pointer from struct devfreq_cooling_device, 'dev->em_pd' is used
+- removed of_node_get/put(), since the code can handle it
+- removed dfc_em_get_requested_power() (as missed to do it in v2)
+- collected all Reviewed-by tags
+v2 [3]:
+- renamed freq_get_state() and related to perf_idx pattern as
+  suggested by Ionela
+v1 [2]
+
+Regards,
+Lukasz Luba
+
+Lukasz Luba (5):
+  thermal: devfreq_cooling: change tracing function and arguments
+  thermal: devfreq_cooling: use a copy of device status
+  thermal: devfreq_cooling: add new registration functions with Energy
+    Model
+  thermal: devfreq_cooling: remove old power model and use EM
+  drm/panfrost: Register devfreq cooling and attempt to add Energy Model
+
+ drivers/gpu/drm/panfrost/panfrost_devfreq.c |   2 +-
+ drivers/thermal/devfreq_cooling.c           | 391 +++++++++-----------
+ include/linux/devfreq_cooling.h             |  27 +-
+ include/trace/events/thermal.h              |  19 +-
+ 4 files changed, 198 insertions(+), 241 deletions(-)
+
 -- 
 2.17.1
 
