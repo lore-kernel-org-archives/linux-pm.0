@@ -2,87 +2,125 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3F64CC4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 26FE0C4361B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:42:38 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id F11BE23E23
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:41:48 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DD32323E23
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 21:42:37 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2404887AbgLJV1b (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 16:27:31 -0500
-Received: from mail.kernel.org ([198.145.29.99]:38458 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2404881AbgLJV1T (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 16:27:19 -0500
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-Authentication-Results: mail.kernel.org; dkim=permerror (bad message/signature format)
-To:     Chanwoo Choi <cw00.choi@samsung.com>,
-        Krzysztof Kozlowski <krzk@kernel.org>,
-        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
-        Michael Turquette <mturquette@baylibre.com>,
-        Stephen Boyd <sboyd@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Andy Gross <agross@kernel.org>,
-        Bjorn Andersson <bjorn.andersson@linaro.org>,
-        Alessandro Zummo <a.zummo@towertech.it>,
-        Alexandre Belloni <alexandre.belloni@bootlin.com>,
-        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
-        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-rtc@vger.kernel.org
-Cc:     Iskren Chernev <iskren.chernev@gmail.com>,
-        Matheus Castello <matheus@castello.eng.br>,
-        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
-        Angus Ainslie <angus@akkea.ca>,
-        Hans de Goede <hdegoede@redhat.com>
-Subject: [PATCH 08/18] ARM: dts: exynos: correct PMIC interrupt trigger level on SMDK5250
-Date:   Thu, 10 Dec 2020 22:25:24 +0100
-Message-Id: <20201210212534.216197-8-krzk@kernel.org>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20201210212534.216197-1-krzk@kernel.org>
-References: <20201210212534.216197-1-krzk@kernel.org>
+        id S2394015AbgLJVmS (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 16:42:18 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:43478 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2404806AbgLJVmQ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 16:42:16 -0500
+Received: from mail-pg1-x530.google.com (mail-pg1-x530.google.com [IPv6:2607:f8b0:4864:20::530])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9AA13C0613CF
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 13:41:35 -0800 (PST)
+Received: by mail-pg1-x530.google.com with SMTP id t3so5464675pgi.11
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 13:41:35 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
+        h=message-id:date:mime-version:content-transfer-encoding:subject:to
+         :from;
+        bh=Z2wdL9jqI2r1uDOPgQ92ltr8RTr1l8pwzTxhZnzDFcQ=;
+        b=b4RFm7vhnqE2br7L/3DJC+kYG8yeGzcVhfa9OLeS984yCJyO/TD7IhJfqzxI5T3wzj
+         VbHWC82fwhW1NZ8DdKz0aNG+BOJ2DXbI5Ug2FBjDSSYQDe5U7TwsLqZOrIJDOFFkPKIy
+         Dk7ArBOswrC48rsuKvJQN2PyIG/SUXA9jEaEMBeT+EBovEu2u9xi6O2r26GDgXUP5JQt
+         ZkzWPjAcgxxv8HoSiVsasNxBwmQTRPq/Q/1CxFrVp/A7jOVltXGfhCD8A85qSOrsfPyY
+         Ul42kknjt+6hIEYcT/fkTdpTbR3Dv4gdgdRsBck1B3vNpztXQ0vO5k2zIEE+DI7xhRbq
+         JohA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:message-id:date:mime-version
+         :content-transfer-encoding:subject:to:from;
+        bh=Z2wdL9jqI2r1uDOPgQ92ltr8RTr1l8pwzTxhZnzDFcQ=;
+        b=lFGy+w54R2P1P7LUaRGemS7T4EBKe+HLwnx3lH1PfXZ9A7DfCn55vSi8Dtfqj9xhXn
+         3Qa/IYdBl+Ds48fpn5fNQqtBqQU1tZrFSXgwuqf7XcQPYYBC+B9Tf8fHkZKhIftz3RSO
+         7YUsbo7qSneJ9ysMHwS+bSsBUQB1JYFGiU+Jj9HK3NEQSzl5m+oMsL3qiZO8SyrsRK6l
+         8nhkZsX4KUdLHTAZmKckrwfQsPwn49A+Iuc1BZ0jr6PpzbL2RAF+OkoicKxjP5xq9PCR
+         2JIO7bP2xV4ejMURzKYfTUYvHH8h/C8wsYicYNafgym58j4DPx/ZwZqBuA+vunnz4hTm
+         RGrg==
+X-Gm-Message-State: AOAM530t0QTZOSTtNP9nxvuxee5p9Wb2EJvc/9bVr4UaTPvz427re2jD
+        nkpVtfXtbAQbyILTs13GyNroNmgCogYC4Q==
+X-Google-Smtp-Source: ABdhPJw3xCtkTf5KdzjLxbi0rkqXIrmfp2yKJ/PYZwmJsYVny7VnRWIkoRfXC/Ht4lOBy1B/fUBe5A==
+X-Received: by 2002:a65:52c1:: with SMTP id z1mr8516622pgp.46.1607636495213;
+        Thu, 10 Dec 2020 13:41:35 -0800 (PST)
+Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
+        by smtp.gmail.com with ESMTPSA id g202sm7208707pfb.196.2020.12.10.13.41.34
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Dec 2020 13:41:34 -0800 (PST)
+Message-ID: <5fd2960e.1c69fb81.e480.d960@mx.google.com>
+Date:   Thu, 10 Dec 2020 13:41:34 -0800 (PST)
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: quoted-printable
+X-Kernelci-Branch: testing
+X-Kernelci-Tree: pm
+X-Kernelci-Kernel: v5.10-rc7-88-g58dfa0fa290bb
+X-Kernelci-Report-Type: test
+Subject: pm/testing sleep: 5 runs, 1 regressions (v5.10-rc7-88-g58dfa0fa290bb)
+To:     rafael@kernel.org, linux-pm@vger.kernel.org,
+        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
+From:   "kernelci.org bot" <bot@kernelci.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Maxim PMIC datasheets describe the interrupt line as active low
-with a requirement of acknowledge from the CPU.  Without specifying the
-interrupt type in Devicetree, kernel might apply some fixed
-configuration, not necessarily working for this hardware.
+pm/testing sleep: 5 runs, 1 regressions (v5.10-rc7-88-g58dfa0fa290bb)
 
-Additionally, the interrupt line is shared so using level sensitive
-interrupt is here especially important to avoid races.
+Regressions Summary
+-------------------
 
-Fixes: 47580e8d94c2 ("ARM: dts: Specify MAX77686 pmic interrupt for exynos5250-smdk5250")
-Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
----
- arch/arm/boot/dts/exynos5250-smdk5250.dts | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
 
-diff --git a/arch/arm/boot/dts/exynos5250-smdk5250.dts b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-index 8b5a79a8720c..39bbe18145cf 100644
---- a/arch/arm/boot/dts/exynos5250-smdk5250.dts
-+++ b/arch/arm/boot/dts/exynos5250-smdk5250.dts
-@@ -134,7 +134,7 @@ max77686: pmic@9 {
- 		compatible = "maxim,max77686";
- 		reg = <0x09>;
- 		interrupt-parent = <&gpx3>;
--		interrupts = <2 IRQ_TYPE_NONE>;
-+		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
- 		pinctrl-names = "default";
- 		pinctrl-0 = <&max77686_irq>;
- 		#clock-cells = <1>;
--- 
-2.25.1
 
+  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
+7-88-g58dfa0fa290bb/plan/sleep/
+
+  Test:     sleep
+  Tree:     pm
+  Branch:   testing
+  Describe: v5.10-rc7-88-g58dfa0fa290bb
+  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
+.git
+  SHA:      58dfa0fa290bb4c04c0dc3838b5cbce2caec7775 =
+
+
+
+Test Regressions
+---------------- =
+
+
+
+platform        | arch  | lab           | compiler | defconfig | regressions
+----------------+-------+---------------+----------+-----------+------------
+mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
+
+
+  Details:     https://kernelci.org/test/plan/id/5fd289dd87528dbcbcc94cc7
+
+  Results:     0 PASS, 1 FAIL, 0 SKIP
+  Full config: defconfig
+  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
+  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc7-88-g58dfa=
+0fa290bb/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
+  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc7-88-g58dfa=
+0fa290bb/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
+  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
+1130.0/arm64/rootfs.cpio.gz =
+
+
+
+  * sleep.login: https://kernelci.org/test/case/id/5fd289dd87528dbcbcc94cc8
+        failing since 113 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
+il: v5.9-rc1-4-g1f08d51cd57f) =
+
+ =20
