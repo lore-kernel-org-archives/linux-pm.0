@@ -5,26 +5,26 @@ X-Spam-Level:
 X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
 	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2493EC4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:57:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0B2CEC4361B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:58:11 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id CED1D23C18
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:57:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id A67AF23E22
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 18:58:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390500AbgLJObe (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 09:31:34 -0500
-Received: from foss.arm.com ([217.140.110.172]:45086 "EHLO foss.arm.com"
+        id S2393225AbgLJS5o (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 13:57:44 -0500
+Received: from foss.arm.com ([217.140.110.172]:45100 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390490AbgLJOb0 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 09:31:26 -0500
+        id S2390495AbgLJOba (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Dec 2020 09:31:30 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 635C631B;
-        Thu, 10 Dec 2020 06:30:32 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D999A1596;
+        Thu, 10 Dec 2020 06:30:46 -0800 (PST)
 Received: from e123648.arm.com (unknown [10.57.1.60])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 5D69E3F718;
-        Thu, 10 Dec 2020 06:30:29 -0800 (PST)
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id B90A23F718;
+        Thu, 10 Dec 2020 06:30:43 -0800 (PST)
 From:   Lukasz Luba <lukasz.luba@arm.com>
 To:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
         dri-devel@lists.freedesktop.org
@@ -33,9 +33,9 @@ Cc:     rui.zhang@intel.com, amit.kucheria@verdurent.com,
         robh@kernel.org, alyssa.rosenzweig@collabora.com,
         steven.price@arm.com, airlied@linux.ie, daniel@ffwll.ch,
         ionela.voinescu@arm.com
-Subject: [PATCH v4 1/5] thermal: devfreq_cooling: change tracing function and arguments
-Date:   Thu, 10 Dec 2020 14:30:10 +0000
-Message-Id: <20201210143014.24685-2-lukasz.luba@arm.com>
+Subject: [PATCH v4 5/5] drm/panfrost: Register devfreq cooling and attempt to add Energy Model
+Date:   Thu, 10 Dec 2020 14:30:14 +0000
+Message-Id: <20201210143014.24685-6-lukasz.luba@arm.com>
 X-Mailer: git-send-email 2.17.1
 In-Reply-To: <20201210143014.24685-1-lukasz.luba@arm.com>
 References: <20201210143014.24685-1-lukasz.luba@arm.com>
@@ -43,77 +43,32 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Prepare for deleting the static and dynamic power calculation and clean
-the trace function. These two fields are going to be removed in the next
-changes.
+Register devfreq cooling device and attempt to register Energy Model. This
+will add the devfreq device to the Energy Model framework. It will create
+a dedicated and unified data structures used i.e. in thermal framework.
+It uses simplified Energy Model, created based on voltage, frequency
+and DT 'dynamic-power-coefficient'.
 
-Reviewed-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Reviewed-by: Steven Rostedt (VMware) <rostedt@goodmis.org> # for tracing code
+Reviewed-by: Steven Price <steven.price@arm.com>
+Reviewed-by: Alyssa Rosenzweig <alyssa.rosenzweig@collabora.com>
 Signed-off-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/devfreq_cooling.c |  3 +--
- include/trace/events/thermal.h    | 19 +++++++++----------
- 2 files changed, 10 insertions(+), 12 deletions(-)
+ drivers/gpu/drm/panfrost/panfrost_devfreq.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/drivers/thermal/devfreq_cooling.c b/drivers/thermal/devfreq_cooling.c
-index dfab49a67252..659c0143c9f0 100644
---- a/drivers/thermal/devfreq_cooling.c
-+++ b/drivers/thermal/devfreq_cooling.c
-@@ -277,8 +277,7 @@ static int devfreq_cooling_get_requested_power(struct thermal_cooling_device *cd
- 		*power = dyn_power + static_power;
+diff --git a/drivers/gpu/drm/panfrost/panfrost_devfreq.c b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
+index 78e9d82f7318..f44d28fad085 100644
+--- a/drivers/gpu/drm/panfrost/panfrost_devfreq.c
++++ b/drivers/gpu/drm/panfrost/panfrost_devfreq.c
+@@ -138,7 +138,7 @@ int panfrost_devfreq_init(struct panfrost_device *pfdev)
  	}
+ 	pfdevfreq->devfreq = devfreq;
  
--	trace_thermal_power_devfreq_get_power(cdev, status, freq, dyn_power,
--					      static_power, *power);
-+	trace_thermal_power_devfreq_get_power(cdev, status, freq, *power);
- 
- 	return 0;
- fail:
-diff --git a/include/trace/events/thermal.h b/include/trace/events/thermal.h
-index 135e5421f003..8a5f04888abd 100644
---- a/include/trace/events/thermal.h
-+++ b/include/trace/events/thermal.h
-@@ -153,31 +153,30 @@ TRACE_EVENT(thermal_power_cpu_limit,
- TRACE_EVENT(thermal_power_devfreq_get_power,
- 	TP_PROTO(struct thermal_cooling_device *cdev,
- 		 struct devfreq_dev_status *status, unsigned long freq,
--		u32 dynamic_power, u32 static_power, u32 power),
-+		u32 power),
- 
--	TP_ARGS(cdev, status,  freq, dynamic_power, static_power, power),
-+	TP_ARGS(cdev, status,  freq, power),
- 
- 	TP_STRUCT__entry(
- 		__string(type,         cdev->type    )
- 		__field(unsigned long, freq          )
--		__field(u32,           load          )
--		__field(u32,           dynamic_power )
--		__field(u32,           static_power  )
-+		__field(u32,           busy_time)
-+		__field(u32,           total_time)
- 		__field(u32,           power)
- 	),
- 
- 	TP_fast_assign(
- 		__assign_str(type, cdev->type);
- 		__entry->freq = freq;
--		__entry->load = (100 * status->busy_time) / status->total_time;
--		__entry->dynamic_power = dynamic_power;
--		__entry->static_power = static_power;
-+		__entry->busy_time = status->busy_time;
-+		__entry->total_time = status->total_time;
- 		__entry->power = power;
- 	),
- 
--	TP_printk("type=%s freq=%lu load=%u dynamic_power=%u static_power=%u power=%u",
-+	TP_printk("type=%s freq=%lu load=%u power=%u",
- 		__get_str(type), __entry->freq,
--		__entry->load, __entry->dynamic_power, __entry->static_power,
-+		__entry->total_time == 0 ? 0 :
-+			(100 * __entry->busy_time) / __entry->total_time,
- 		__entry->power)
- );
- 
+-	cooling = of_devfreq_cooling_register(dev->of_node, devfreq);
++	cooling = devfreq_cooling_em_register(devfreq, NULL);
+ 	if (IS_ERR(cooling))
+ 		DRM_DEV_INFO(dev, "Failed to register cooling device\n");
+ 	else
 -- 
 2.17.1
 
