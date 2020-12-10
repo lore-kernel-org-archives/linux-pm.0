@@ -2,43 +2,43 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-15.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_SANE_1 autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 33E64C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:36:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F0818C0018C
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:43:46 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id DB16A23D39
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:36:10 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id ACCC12388B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 16:43:46 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2390903AbgLJQDc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 11:03:32 -0500
-Received: from foss.arm.com ([217.140.110.172]:49990 "EHLO foss.arm.com"
+        id S2391956AbgLJP7T (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 10:59:19 -0500
+Received: from foss.arm.com ([217.140.110.172]:49748 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2389812AbgLJQD3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 11:03:29 -0500
+        id S2391175AbgLJP7S (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Dec 2020 10:59:18 -0500
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3E2B51FB;
-        Thu, 10 Dec 2020 08:02:42 -0800 (PST)
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 6882B1FB;
+        Thu, 10 Dec 2020 07:58:32 -0800 (PST)
 Received: from [10.57.1.60] (unknown [10.57.1.60])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E05B33F68F;
-        Thu, 10 Dec 2020 08:02:40 -0800 (PST)
-Subject: Re: [PATCH v2 3/4] thermal/core: Use precomputed jiffies for the
- polling
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 3AE103F68F;
+        Thu, 10 Dec 2020 07:58:31 -0800 (PST)
+Subject: Re: [PATCH v2 2/4] thermal/core: Precompute the delays from msecs to
+ jiffies
 To:     Daniel Lezcano <daniel.lezcano@linaro.org>
 Cc:     rui.zhang@intel.com, amitk@kernel.org,
         linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
 References: <20201207190902.30464-1-daniel.lezcano@linaro.org>
- <20201207190902.30464-3-daniel.lezcano@linaro.org>
+ <20201207190902.30464-2-daniel.lezcano@linaro.org>
 From:   Lukasz Luba <lukasz.luba@arm.com>
-Message-ID: <76044831-8bdb-ad27-ccb4-73523cad757a@arm.com>
-Date:   Thu, 10 Dec 2020 16:02:39 +0000
+Message-ID: <5b440656-3f89-c6fc-652a-6538e82ee71f@arm.com>
+Date:   Thu, 10 Dec 2020 15:58:29 +0000
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
  Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <20201207190902.30464-3-daniel.lezcano@linaro.org>
+In-Reply-To: <20201207190902.30464-2-daniel.lezcano@linaro.org>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
 Content-Transfer-Encoding: 7bit
@@ -49,48 +49,13 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 
 On 12/7/20 7:09 PM, Daniel Lezcano wrote:
-> The delays are also stored in jiffies based unit. Use them instead of
-> the ms.
+> The delays are stored in ms units and when the polling function is
+> called this delay is converted into jiffies at each call.
+> 
+> Instead of doing the conversion again and again, compute the jiffies
+> at init time and use the value directly when setting the polling.
 > 
 > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > ---
->   drivers/thermal/thermal_core.c | 13 ++++---------
->   1 file changed, 4 insertions(+), 9 deletions(-)
-> 
-> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-> index 08c6e4e36896..16ef5d652d85 100644
-> --- a/drivers/thermal/thermal_core.c
-> +++ b/drivers/thermal/thermal_core.c
-> @@ -291,14 +291,9 @@ static int __init thermal_register_governors(void)
->   static void thermal_zone_device_set_polling(struct thermal_zone_device *tz,
->   					    int delay)
->   {
-> -	if (delay > 1000)
-> +	if (delay)
->   		mod_delayed_work(system_freezable_power_efficient_wq,
-> -				 &tz->poll_queue,
-> -				 round_jiffies(msecs_to_jiffies(delay)));
-> -	else if (delay)
-> -		mod_delayed_work(system_freezable_power_efficient_wq,
-> -				 &tz->poll_queue,
-> -				 msecs_to_jiffies(delay));
-> +				 &tz->poll_queue, delay);
->   	else
->   		cancel_delayed_work(&tz->poll_queue);
->   }
-> @@ -317,9 +312,9 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
->   	mutex_lock(&tz->lock);
->   
->   	if (!stop && tz->passive)
-> -		thermal_zone_device_set_polling(tz, tz->passive_delay_ms);
-> +		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
->   	else if (!stop && tz->polling_delay_ms)
-> -		thermal_zone_device_set_polling(tz, tz->polling_delay_ms);
-> +		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
->   	else
->   		thermal_zone_device_set_polling(tz, 0);
->   
-> 
-
 
 Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
