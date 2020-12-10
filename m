@@ -7,109 +7,133 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 48C3FC4167B
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DBB4C4361B
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:51 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EF88F23D20
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2962E23D6C
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 12:18:51 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2387406AbgLJMQ0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 07:16:26 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40036 "EHLO
+        id S1728163AbgLJMSq (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 07:18:46 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40064 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1731010AbgLJMQM (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 07:16:12 -0500
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 8A8BEC0617A6
-        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 04:15:23 -0800 (PST)
-Received: by mail-wm1-x342.google.com with SMTP id a6so4459852wmc.2
-        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 04:15:23 -0800 (PST)
+        with ESMTP id S1732802AbgLJMQU (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 07:16:20 -0500
+Received: from mail-wr1-x444.google.com (mail-wr1-x444.google.com [IPv6:2a00:1450:4864:20::444])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 35AECC061282
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 04:15:27 -0800 (PST)
+Received: by mail-wr1-x444.google.com with SMTP id l9so5221469wrt.13
+        for <linux-pm@vger.kernel.org>; Thu, 10 Dec 2020 04:15:27 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id;
-        bh=wWauJdDE029YC8Y+yIe9jMzg8qCBhdzScMeoKibGnOs=;
-        b=vgszwTHwXKWqOF0ocWWs9BDB0fhJW0g/L4FInCzZg9O1Gn1XdVp6H3XNzsGzEkE3Ww
-         qoJ8SLKt9uFFvp/v63bnE5ZDv4cO4j2C0uDBQVaSelhwfCqLNFikkDBcvT0s/6/etzow
-         Ycy8rcq5QyPeyygBFoZS1vNUYSJG/Fm+84Pj3WBNHJJ/k20P2QaBqDd39i3tiidkbf6B
-         1KLOSAMBbBBQp/6mJfPr96yt/GyZn70bIkeFpBD8N/PRvgJmLbzCEtJBsvL0oh0HnxAD
-         s0EqdB/FlCw/mL8rHvsrya2AK6I+h4CwTxGHqPMSU5+nEvzhgnHZ0gPqIjK+ohx+uFtX
-         jmOw==
+        h=from:to:cc:subject:date:message-id:in-reply-to:references;
+        bh=yGhkI0Nvl2v1YOr6xjZSuObttiQ410GAIRH2LwhmlJc=;
+        b=ZMSbcIK2yxYS9l9B2GzHVfejc6B3rHRV5UJ8q7VdYPEqRXff2fFPPNksU5fw71fG+N
+         8SxBatY1FqP9r6q5mokjvTVNEIwohT1PByGJvTI+G4zF0+2HSXRdY0OvzSqzTqx9SzpJ
+         qa7VGWE6IrLf01CFNxpX3TxHAUPjm/+l4ZJFpe5N7g147LMQw1O5VvhB8aEBl5mMZVx+
+         /utICSCyTaGdxzTCb2V9uuc1QtwKd79tR0FZgqtXwccqAmpb7Qx/hwlXD0/0DUEoqagH
+         5w9fGIncchXp+PQgeoXk5QaDKIbk8P7fojCg8mIS2Djb3DyBCvXQ0MPETTUi2jBZvrcs
+         JMvw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id;
-        bh=wWauJdDE029YC8Y+yIe9jMzg8qCBhdzScMeoKibGnOs=;
-        b=m490azx0P3BMY4BI4IQ8iEYwTfqDWK1R06Iu/iRlEFUfxkK+Fng6Crw4Wikkj3ZPig
-         WdvTw2xUszD4O4YVQWWyiSmZVcWRxiyIT/u/4eEOZqMeM0eQY2yCde3uolOsjhFTpi4W
-         SDPL7Wr5W+gTgnGXQX6zAIIF8ElFHKjih8GrtFIHllR7tXXClmq3ZDUbWz0Xj9ORz7zw
-         X25srOh4e8l3CDm8fP5IeH81aMmG44TWa3fWAv+5Hjmq/O5qLyrWOR7VWs8WOrGPIyo3
-         ohX2+vYdqIEpKaudpP7Lj9yT37NvMDo/xxIZcxC6IluD2TlI2P3oNYd3rbwtn7lqXNZy
-         +7gA==
-X-Gm-Message-State: AOAM531D/0g5bQN0f978O/64KqDowFjzmXWIdpgSvNJ7sPWTvDC8Crqz
-        AgvlUeNulJhMFuLq5wGJeAbMQw==
-X-Google-Smtp-Source: ABdhPJyJjEN3VJvRUYYKAJlErYRFonZu+sAZtxiJbJSR6V+0ZNn5+wGcE9vWgE1CNMZdbV1ZbHqdlw==
-X-Received: by 2002:a1c:9949:: with SMTP id b70mr8014199wme.85.1607602522205;
-        Thu, 10 Dec 2020 04:15:22 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
+         :references;
+        bh=yGhkI0Nvl2v1YOr6xjZSuObttiQ410GAIRH2LwhmlJc=;
+        b=mbKANTjBTpksCVGyjd+rO63lG679qmcxvop/O27t/ipBoplV0RSexDcaenPR+pGBSe
+         kT6jIRXs+sIICATPGSZmXSOBAboEJBEKRM33EjUr3hOWfPD9ulzzB5U9lKYBmx/BKZXh
+         /l9ZQrfA6JvsyCCsDK8NvO7V26R4REn8vzST9bGPEErqDuOX1I8ZMsqLCQHj4WjB6/6d
+         0K1N22FjKGICNG8dkGgLNdWnL9jZ3HnC4F7yFnC8pnCBDIgQ562jhEF5rw2tMYcNp8db
+         vPQp7ZO6qobN3/7YK1Q0aWBbdZhq0kZjjLdhBj9YI4LnOc/qkdtDZRpQq+LGMj2i3QVv
+         R50w==
+X-Gm-Message-State: AOAM5311LFhnvITh6BhSsjzuRXFvWX69HvK4zR/hpmgWVroitPWUPbRQ
+        cO6rZEFnfRdH4RoBKy67R2NqAQ==
+X-Google-Smtp-Source: ABdhPJzC6fHz0zlOfRNX6yvMC9xfzXa3iLgr9OQlhLhSpdGtJ9K+/7DPtUdbQsYL+We2Zv1Kh+3FBA==
+X-Received: by 2002:a5d:5105:: with SMTP id s5mr7684847wrt.136.1607602525876;
+        Thu, 10 Dec 2020 04:15:25 -0800 (PST)
 Received: from localhost.localdomain (lns-bzn-59-82-252-158-132.adsl.proxad.net. [82.252.158.132])
-        by smtp.gmail.com with ESMTPSA id k6sm8412863wmf.25.2020.12.10.04.15.20
+        by smtp.gmail.com with ESMTPSA id k6sm8412863wmf.25.2020.12.10.04.15.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Dec 2020 04:15:21 -0800 (PST)
+        Thu, 10 Dec 2020 04:15:25 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
 Cc:     kai.heng.feng@canonical.com, lukasz.luba@arm.com,
         srinivas.pandruvada@linux.intel.com, linux-kernel@vger.kernel.org,
-        linux-pm@vger.kernel.org,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Amit Kucheria <amitk@kernel.org>
-Subject: [PATCH 1/5] thermal/core: Emit a warning if the thermal zone is updated without ops
-Date:   Thu, 10 Dec 2020 13:15:10 +0100
-Message-Id: <20201210121514.25760-1-daniel.lezcano@linaro.org>
+        linux-pm@vger.kernel.org, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Len Brown <lenb@kernel.org>,
+        linux-acpi@vger.kernel.org (open list:ACPI THERMAL DRIVER)
+Subject: [PATCH 3/5] thermal/drivers/acpi: Use hot and critical ops
+Date:   Thu, 10 Dec 2020 13:15:12 +0100
+Message-Id: <20201210121514.25760-3-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.17.1
+In-Reply-To: <20201210121514.25760-1-daniel.lezcano@linaro.org>
+References: <20201210121514.25760-1-daniel.lezcano@linaro.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The actual code is silently ignoring a thermal zone update when a
-driver is requesting it without a get_temp ops set.
+The acpi driver wants to do a netlink notification in case of a hot or
+critical trip point. Implement the corresponding ops to be used for
+the thermal zone and use them instead of the notify ops.
 
-That looks not correct, as the caller should not have called this
-function if the thermal zone is unable to read the temperature.
-
-That makes the code less robust as the check won't detect the driver
-is inconsistently using the thermal API and that does not help to
-improve the framework as these circumvolutions hide the problem at the
-source.
-
-In order to detect the situation when it happens, let's add a warning
-when the update is requested without the get_temp() ops set.
-
-Any warning emitted will have to be fixed at the source of the
-problem: the caller must not call thermal_zone_device_update if there
-is not get_temp callback set.
-
-Cc: Thara Gopinath <thara.gopinath@linaro.org>
-Cc: Amit Kucheria <amitk@kernel.org>
-Cc: linux-pm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
-Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 ---
- drivers/thermal/thermal_core.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/acpi/thermal.c | 30 ++++++++++++++----------------
+ 1 file changed, 14 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
-index dee40ff41177..e6771e5aeedb 100644
---- a/drivers/thermal/thermal_core.c
-+++ b/drivers/thermal/thermal_core.c
-@@ -548,7 +548,8 @@ void thermal_zone_device_update(struct thermal_zone_device *tz,
- 	if (atomic_read(&in_suspend))
- 		return;
+diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
+index 12c0ece746f0..b5e4bc9e3282 100644
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -677,27 +677,24 @@ static int thermal_get_trend(struct thermal_zone_device *thermal,
+ 	return 0;
+ }
  
--	if (!tz->ops->get_temp)
-+	if (WARN_ONCE(!tz->ops->get_temp, "'%s' must not be called without "
-+		      "'get_temp' ops set\n", __func__))
- 		return;
+-
+-static int thermal_notify(struct thermal_zone_device *thermal, int trip,
+-			   enum thermal_trip_type trip_type)
++static void acpi_thermal_zone_device_hot(struct thermal_zone_device *thermal)
+ {
+-	u8 type = 0;
+ 	struct acpi_thermal *tz = thermal->devdata;
  
- 	update_temperature(tz);
+-	if (trip_type == THERMAL_TRIP_CRITICAL)
+-		type = ACPI_THERMAL_NOTIFY_CRITICAL;
+-	else if (trip_type == THERMAL_TRIP_HOT)
+-		type = ACPI_THERMAL_NOTIFY_HOT;
+-	else
+-		return 0;
+-
+ 	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
+-					dev_name(&tz->device->dev), type, 1);
++					dev_name(&tz->device->dev),
++					ACPI_THERMAL_NOTIFY_HOT, 1);
++}
+ 
+-	if (trip_type == THERMAL_TRIP_CRITICAL && nocrt)
+-		return 1;
++static void acpi_thermal_zone_device_critical(struct thermal_zone_device *thermal)
++{
++	struct acpi_thermal *tz = thermal->devdata;
+ 
+-	return 0;
++	acpi_bus_generate_netlink_event(tz->device->pnp.device_class,
++					dev_name(&tz->device->dev),
++					ACPI_THERMAL_NOTIFY_CRITICAL, 1);
++
++	thermal_zone_device_critical(thermal);
+ }
+ 
+ static int acpi_thermal_cooling_device_cb(struct thermal_zone_device *thermal,
+@@ -812,7 +809,8 @@ static struct thermal_zone_device_ops acpi_thermal_zone_ops = {
+ 	.get_trip_temp = thermal_get_trip_temp,
+ 	.get_crit_temp = thermal_get_crit_temp,
+ 	.get_trend = thermal_get_trend,
+-	.notify = thermal_notify,
++	.hot = acpi_thermal_zone_device_hot,
++	.critical = acpi_thermal_zone_device_critical,
+ };
+ 
+ static int acpi_thermal_register_thermal_zone(struct acpi_thermal *tz)
 -- 
 2.17.1
 
