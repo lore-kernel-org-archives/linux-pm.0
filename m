@@ -2,77 +2,116 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,
+	URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 64FF2C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:02:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id F07A2C433FE
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:25:25 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1F236230FC
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:02:44 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C4F372310D
+	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 17:25:25 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2389128AbgLJOfi (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 09:35:38 -0500
-Received: from mx2.suse.de ([195.135.220.15]:40886 "EHLO mx2.suse.de"
+        id S2391930AbgLJRZN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 12:25:13 -0500
+Received: from foss.arm.com ([217.140.110.172]:54690 "EHLO foss.arm.com"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2390905AbgLJOfh (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 09:35:37 -0500
-X-Virus-Scanned: by amavisd-new at test-mx.suse.de
-Received: from relay2.suse.de (unknown [195.135.221.27])
-        by mx2.suse.de (Postfix) with ESMTP id EB46BAC6A;
-        Thu, 10 Dec 2020 14:34:55 +0000 (UTC)
-Message-ID: <ffeda0e13e9469414a9861a9f873a9c424aadd2a.camel@suse.de>
-Subject: Re: [PATCH -next] thermal: broadcom: simplify the return expression
- of bcm2711_thermal_probe()
-From:   Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
-To:     Zheng Yongjun <zhengyongjun3@huawei.com>, linux-pm@vger.kernel.org,
-        bcm-kernel-feedback-list@broadcom.com,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Date:   Thu, 10 Dec 2020 15:34:54 +0100
-In-Reply-To: <20201210135432.1249-1-zhengyongjun3@huawei.com>
-References: <20201210135432.1249-1-zhengyongjun3@huawei.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
-        protocol="application/pgp-signature"; boundary="=-gtoCt9I00z2tBY4meywD"
-User-Agent: Evolution 3.38.2 
+        id S1728969AbgLJRY3 (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 10 Dec 2020 12:24:29 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CEFC730E;
+        Thu, 10 Dec 2020 09:23:41 -0800 (PST)
+Received: from localhost (unknown [10.1.198.32])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6F2EB3F66B;
+        Thu, 10 Dec 2020 09:23:41 -0800 (PST)
+Date:   Thu, 10 Dec 2020 17:23:40 +0000
+From:   Ionela Voinescu <ionela.voinescu@arm.com>
+To:     "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc:     Mian Yousaf Kaukab <ykaukab@suse.de>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Mian Yousaf Kaukab <yousaf.kaukab@suse.com>,
+        Len Brown <lenb@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        Petr Cervinka <pcervinka@suse.com>
+Subject: Re: [PATCH 1/2] acpi: cppc: add cpufreq device
+Message-ID: <20201210172339.GA2828@arm.com>
+References: <20201210142139.20490-1-yousaf.kaukab@suse.com>
+ <CAJZ5v0hWxLrXCS+X15hnLZ2enBsSJ0aEfnxK2kL+n9k4gkg17Q@mail.gmail.com>
+ <20201210150417.GA24136@suse.de>
+ <1916679.syIRshJoYJ@kreacher>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1916679.syIRshJoYJ@kreacher>
+User-Agent: Mutt/1.9.4 (2018-02-28)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+Hi Rafael,
 
---=-gtoCt9I00z2tBY4meywD
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+On Thursday 10 Dec 2020 at 17:55:56 (+0100), Rafael J. Wysocki wrote:
+> On Thursday, December 10, 2020 4:04:40 PM CET Mian Yousaf Kaukab wrote:
+> > On Thu, Dec 10, 2020 at 03:32:09PM +0100, Rafael J. Wysocki wrote:
+> > > On Thu, Dec 10, 2020 at 3:23 PM Mian Yousaf Kaukab
+> > > <yousaf.kaukab@suse.com> wrote:
+> > > >
+> > > > Convert cppc-cpufreq driver to a platform driver (done in a separate patch)
+> > > > and add cppc-cpufreq device when acpi_cppc_processor_probe() succeeds.
+> > > 
+> > > Honestly, I prefer to drop 28f06f770454 (along with its follower)
+> > > instead of making this change.
+> > > 
+> > Even if we revert 28f06f770454 there is still one more small issue that these
+> > patches fix. Currently, ACPI_PROCESSOR_DEVICE_HID is used to load cppc-cpufreq
+> > module. In case when CPPC is disabled, some cycles will be wasted in loading
+> > cppc-cpufreq module. The module will return error from the init call though
+> > so no memory is wasted.
+> > 
+> > After converting to platform-driver, cppc-cpufreq module will only be loaded
+> > when the platform-device is available.
+> 
+> Even so, that issue is low-impact AFAICS and may be addressed later and I'd
+> rather not let known breakage go into the mainline.
+> 
+> I'm going to do drop the problematic commit now and please work with Ionela
+> to produce a clean series of patches in the right order to avoid introducing
+> issues between them.
+> 
 
-On Thu, 2020-12-10 at 21:54 +0800, Zheng Yongjun wrote:
-> Simplify the return expression.
->=20
-> Signed-off-by: Zheng Yongjun <zhengyongjun3@huawei.com>
+The following commit will be easy to drop:
+a37afa60de38  cppc_cpufreq: optimise memory allocation for HW and NONE coordination (2 weeks ago)
 
-Reviewed-by: Nicolas Saenz Julienne <nsaenzjulienne@suse.de>
+28f06f770454  will be more difficult to drop as it's embedded in the
+series, and removing that one will produce conflicts in the patches
+that follow it:
 
-Regards,
-Nicolas
+f9f5baa8b2a8  ACPI: processor: fix NONE coordination for domain mapping failure (3 weeks ago)
+cdb4ae5de6f7  cppc_cpufreq: expose information on frequency domains (3 weeks ago)
+c783a4d94848  cppc_cpufreq: clarify support for coordination types (3 weeks ago)
+3bd412fb2c7f  cppc_cpufreq: use policy->cpu as driver of frequency setting (3 weeks ago)
+28f06f770454  cppc_cpufreq: replace per-cpu structures with lists (3 weeks ago)
+bb025fb6c276  cppc_cpufreq: simplify use of performance capabilities (3 weeks ago)
+48ad8dc94032  cppc_cpufreq: clean up cpu, cpu_num and cpunum variable use (3 weeks ago)
+63087265c288  cppc_cpufreq: fix misspelling, code style and readability issues (3 weeks ago)
 
+Let me know how you want to proceed and I can either send a replacement
+series or reverts with conflicts fixed.
 
---=-gtoCt9I00z2tBY4meywD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+Also, if you want you can drop all 5 (all before and including 28f06f770454),
+and I can add them again in the series that fixes the problem that Yousaf
+reported.
 
------BEGIN PGP SIGNATURE-----
+Thanks,
+Ionela.
 
-iQEzBAABCAAdFiEErOkkGDHCg2EbPcGjlfZmHno8x/4FAl/SMg4ACgkQlfZmHno8
-x/7cGAf9EoBpHapjbF9x/REMgp6jja82UzHDSxBQA7PfMaptdlHj90Bf9WO/719u
-V63jbZt3+kGcLZ3CzJvObmxIcE8P25V+s31wXij9p/RbrcxL0oHrYKtIKJHIQ9T/
-nkJ+C001Kh0Hljjo4uSBa2YXUobRQJLvChuS448I32elgvgTf2gLZ5nnOdvakeiL
-PP8D/CjvY580gg972Ty8bi1HgbdsKpfFhtP+p/STZfYEsaEpj35ovBjDksJlA+wZ
-CnVRQLyaI4uwLDiZImUjGUNp7HEua66jli8H9yaPBJNXeWDHiGgFtfe21N3QbGzG
-8x0/88gVf8FviCYQt4Ky78krkjit3Q==
-=9/IH
------END PGP SIGNATURE-----
-
---=-gtoCt9I00z2tBY4meywD--
-
+> If that is done timely enough, it may still be possible to push those patches
+> for 5.11-rc1.
+> 
+> Thanks!
+> 
+> 
+> 
