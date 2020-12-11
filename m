@@ -2,125 +2,102 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-8.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
-	MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57930C4361B
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 00:59:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 28187C1B0D8
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 01:01:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 16A6623406
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 00:59:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id EA7B42343E
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 01:00:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2391865AbgLLA6J (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 19:58:09 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56988 "EHLO
+        id S2405939AbgLKOSt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 09:18:49 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42910 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2391213AbgLLA6G (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 19:58:06 -0500
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1E0D0C0613CF
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2020 16:57:26 -0800 (PST)
-Received: by mail-pf1-x429.google.com with SMTP id p4so8089477pfg.0
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2020 16:57:26 -0800 (PST)
+        with ESMTP id S2405940AbgLKOSf (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 09:18:35 -0500
+Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com [IPv6:2a00:1450:4864:20::544])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 136F8C061793;
+        Fri, 11 Dec 2020 06:17:55 -0800 (PST)
+Received: by mail-ed1-x544.google.com with SMTP id r5so9496054eda.12;
+        Fri, 11 Dec 2020 06:17:55 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=kernelci-org.20150623.gappssmtp.com; s=20150623;
-        h=message-id:date:mime-version:content-transfer-encoding:subject:to
-         :from;
-        bh=yHKnAsbP8RdUa6JdUWBeFEeeqQE63fNIMADE2EgwWPI=;
-        b=mPgWSXeGtmtdJUmV1/gNdC2AQTMY9l2pXkJdAC4KIjVOlyuc4qavj7VDJSVw0HWptj
-         7V7MbUFTD7ECpdIIbsSCLXHktujFbccrJLHE6f56qWaefs0s/Mu8WdyQ3cCV+EBMzblX
-         1sSRfroB53TCL5CBLBxv147mrUF4uteDxMjqDx5xaVhDZbnz0HfEy7MnOTCa6K8J3tKR
-         v93z5Hs3Zi5grW2lgo+K+4GIBHVPzs7YIzcHqpc63H5AJITXd/oOpQiu5lUhUCBuh1Zw
-         a/IyfjGhs/slMzELNbbaT5l5LY1+O9tORaL0kWHmVHX733JuvEUz3lniAygZ3SIiLid7
-         GC4g==
+        d=gmail.com; s=20161025;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-disposition:in-reply-to;
+        bh=+NgxUEH5uFqT7GDJPbuM1Ogf8MzS8XSgNJtKE+wwyRM=;
+        b=eH3w6NcIrC4xR4v4M3keq2M/BL0t2cwI16kEboijRZfq6Z/BTQ+ESL3w5hoKKkEOXT
+         SLBYPbGknhUXI16fYN9cYVb8fLhLhfvs6R9mrEutwyx7Leat26hRcjZuKVPppQnZ+vK+
+         sN87DmWq2PAz8rYhe2QDmSf8szPzK3boRvTQbTKcHfYziRcji01nlYxnPhd+asjkO9ps
+         FSbyVfVTGUtBUm1ijk6YSRiCdEMDJ8O1yx5ATtbTYGAP95CY9uXt4+gh3Oyby42kzViW
+         5h9VDu+eDbtUek/2d0uKETiIWxaMDwuy1GT9rLoHSM7/8Uwrm+S4S2lq7GI6M/klKKSc
+         duHQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:message-id:date:mime-version
-         :content-transfer-encoding:subject:to:from;
-        bh=yHKnAsbP8RdUa6JdUWBeFEeeqQE63fNIMADE2EgwWPI=;
-        b=Yf+yOq0myoiQJepp1bdQpjGICqcqioNfjHr3ZJ5+GIWnG+xSP/dy/QI0ar2ceZupej
-         0TL4ebmoUlO9MSSnfXJel0QRX8gGUhZpZ1TSkS82q+AjlGd8T3FMNuKowcqpTs8NRwBC
-         dwnHWKxAekL1WAiNi2Njt2EUr49t6ZAvx6CJuOHiaEij+p03D4FIUhlixysahR+J0tEb
-         27eKMFJwg5eVcOFND/ReqfHP5sr3cF5X3ZxrO9/4oDoETiCfA4uLShj6D0Iu2QndM1BU
-         Q2rQKx/lnIdrfcN0y+EphI1xb5NK15ehTU32FMBez/QyHQ/pVUz/j7gYErDvUBfyTcoh
-         UDdQ==
-X-Gm-Message-State: AOAM5323B6ER0Rln7qq+Er4ZpAF4BVoguK5irrt3VtkOEyt1TtLoq0gc
-        JridxQxUzlEhyEWl4qVDpqDsVZD/kasOEw==
-X-Google-Smtp-Source: ABdhPJxFGyfMa+axytNyVtDqe80df9LBtMwMwHIA9Ru6+IrB1JVUOE2TfXDGpWWw66k+r/jHZKf9ug==
-X-Received: by 2002:a63:3111:: with SMTP id x17mr14317503pgx.329.1607734645727;
-        Fri, 11 Dec 2020 16:57:25 -0800 (PST)
-Received: from kernelci-production.internal.cloudapp.net ([52.250.1.28])
-        by smtp.gmail.com with ESMTPSA id l23sm11460479pff.194.2020.12.11.16.57.24
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=+NgxUEH5uFqT7GDJPbuM1Ogf8MzS8XSgNJtKE+wwyRM=;
+        b=YRxjb5mXaEvdxRfI/sBZQDRJ5NviS+gbGFmKMank8/GqAl2Y58+mz61mUWy7Sq3M7/
+         MvCjQ7VeRxret0kBsH1GezX1mKJR8AnfxY7ewsaCoE2XfYGFE0ZWc814JltyFy0xFbUe
+         3tyQbq+Zf65L2HBR8vMUjYecDUF94YAiwkIhMfNI6/IXuASFw5a+T25/ml9rEGinZ2Og
+         2C8bPVPZk/25Ptggpix1TjQBGiH35ozgA+ZvC/lErKuSRXnPCqglS5mqAYiXmIwvGy5b
+         TMms+dxIGSA/gaxhwaI2IStI6estS0xGvU4qd1K5AIoUQnQzkwO2MYKWN9QmQ3iGUcXc
+         jfMQ==
+X-Gm-Message-State: AOAM5304AKAeH9ZM2RzSKcNjuk1zrv3rjCeyHOjzel+Q7beow/brN/hy
+        LMde0pvT4UOTR8PoyfLXSOI=
+X-Google-Smtp-Source: ABdhPJyCV4eEUT00ElKYzI3O1FRpkgysz4KnZm/C8ZHCZfpvl64Ch2HD0rRzWxhHGWhbIETRq831mQ==
+X-Received: by 2002:a05:6402:388:: with SMTP id o8mr11821809edv.359.1607696273795;
+        Fri, 11 Dec 2020 06:17:53 -0800 (PST)
+Received: from ubuntu2004 ([188.24.159.61])
+        by smtp.gmail.com with ESMTPSA id o11sm6865675ejh.55.2020.12.11.06.17.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Dec 2020 16:57:25 -0800 (PST)
-Message-ID: <5fd41575.1c69fb81.df8fd.626b@mx.google.com>
-Date:   Fri, 11 Dec 2020 16:57:25 -0800 (PST)
-Content-Type: text/plain; charset="utf-8"
+        Fri, 11 Dec 2020 06:17:53 -0800 (PST)
+Date:   Fri, 11 Dec 2020 16:17:51 +0200
+From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+To:     Rob Herring <robh@kernel.org>
+Cc:     Lee Jones <lee.jones@linaro.org>, devicetree@vger.kernel.org,
+        linux-input@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+        linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>,
+        linux-actions@lists.infradead.org,
+        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>
+Subject: Re: [PATCH v3 2/7] dt-bindings: mfd: Add Actions Semi ATC260x PMIC
+ binding
+Message-ID: <20201211141751.GA360406@ubuntu2004>
+References: <cover.1607216141.git.cristian.ciocaltea@gmail.com>
+ <fe0ab8ef20813a2623cd1e543b16bb21c5b63367.1607216141.git.cristian.ciocaltea@gmail.com>
+ <20201211031743.GA3562977@robh.at.kernel.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-X-Kernelci-Branch: testing
-X-Kernelci-Tree: pm
-X-Kernelci-Kernel: v5.10-rc7-106-g97756044ce06
-X-Kernelci-Report-Type: test
-Subject: pm/testing sleep: 6 runs, 1 regressions (v5.10-rc7-106-g97756044ce06)
-To:     rafael@kernel.org, linux-pm@vger.kernel.org,
-        kernel-build-reports@lists.linaro.org, kernelci-results@groups.io
-From:   "kernelci.org bot" <bot@kernelci.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201211031743.GA3562977@robh.at.kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-pm/testing sleep: 6 runs, 1 regressions (v5.10-rc7-106-g97756044ce06)
+On Thu, Dec 10, 2020 at 09:17:43PM -0600, Rob Herring wrote:
+> On Sun, 06 Dec 2020 03:27:02 +0200, Cristian Ciocaltea wrote:
+> > Add devicetree binding for Actions Semi ATC260x PMICs.
+> > 
+> > Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > ---
+> > Changes in v3 (according to Rob's review):
+> >  - Dropped the 'pwrc' and 'onkey' nodes
+> >  - Used a common 'reset-time-sec' property
+> > 
+> >  .../bindings/mfd/actions,atc260x.yaml         | 181 ++++++++++++++++++
+> >  1 file changed, 181 insertions(+)
+> >  create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
+> > 
+> 
+> Reviewed-by: Rob Herring <robh@kernel.org>
 
-Regressions Summary
--------------------
-
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
-
-
-  Details:  https://kernelci.org/test/job/pm/branch/testing/kernel/v5.10-rc=
-7-106-g97756044ce06/plan/sleep/
-
-  Test:     sleep
-  Tree:     pm
-  Branch:   testing
-  Describe: v5.10-rc7-106-g97756044ce06
-  URL:      https://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm=
-.git
-  SHA:      97756044ce0645570f22b356174ed0c811458ca7 =
-
-
-
-Test Regressions
----------------- =
-
-
-
-platform        | arch  | lab           | compiler | defconfig | regressions
-----------------+-------+---------------+----------+-----------+------------
-mt8173-elm-hana | arm64 | lab-collabora | gcc-8    | defconfig | 1          =
-
-
-  Details:     https://kernelci.org/test/plan/id/5fd4069ce29173c8c1c94cc3
-
-  Results:     0 PASS, 1 FAIL, 0 SKIP
-  Full config: defconfig
-  Compiler:    gcc-8 (aarch64-linux-gnu-gcc (Debian 8.3.0-2) 8.3.0)
-  Plain log:   https://storage.kernelci.org//pm/testing/v5.10-rc7-106-g9775=
-6044ce06/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.txt
-  HTML log:    https://storage.kernelci.org//pm/testing/v5.10-rc7-106-g9775=
-6044ce06/arm64/defconfig/gcc-8/lab-collabora/sleep-mt8173-elm-hana.html
-  Rootfs:      http://storage.kernelci.org/images/rootfs/debian/buster/2020=
-1130.0/arm64/rootfs.cpio.gz =
-
-
-
-  * sleep.login: https://kernelci.org/test/case/id/5fd4069de29173c8c1c94cc4
-        failing since 114 days (last pass: v5.8-107-gb72b3ea38c81, first fa=
-il: v5.9-rc1-4-g1f08d51cd57f) =
-
- =20
+Thanks for reviewing,
+Cristi
