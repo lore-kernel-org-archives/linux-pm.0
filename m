@@ -2,98 +2,103 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-11.0 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_PATCH,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id F1E90C433FE
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 23:10:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3BA5DC4361B
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 02:53:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C01802332A
-	for <linux-pm@archiver.kernel.org>; Thu, 10 Dec 2020 23:10:41 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DB8E623EAF
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 02:53:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1730292AbgLJXJo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 10 Dec 2020 18:09:44 -0500
-Received: from mail.kernel.org ([198.145.29.99]:48806 "EHLO mail.kernel.org"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1733150AbgLJXJd (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 10 Dec 2020 18:09:33 -0500
-Date:   Thu, 10 Dec 2020 23:16:00 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-        s=k20201202; t=1607638562;
-        bh=InnSGIQoWR6QhFli0iW2GzxPT5iVHTIFBv4lpfQDlT0=;
-        h=From:To:Cc:Subject:References:In-Reply-To:From;
-        b=VJu2cLgWJ9GVKSxQCsn3Kw05GOCZ44uJCk9Q8kC/DlWIeyUEGAP4ZL1X+D/srj4H6
-         ud3qrrkyaV1kCo4aKLI7765NPeQf2njkFWFbAw6aEupNu5U7+NFbyBlKmIk3SM3v2Y
-         m2Qtl8C3bUxlIP99OIVqHq6j517eDI7UNByQqe/YG09wgCDxo8/RgHayUX+b+WxbJh
-         wcfi7YnyOu4hnZt5zaPC6ozw1T52su5zbCRpxueusqIx8nlHWg+Himxmir2FneKjc3
-         YJsOgQlyU6m/GwCTRrpD8I7oqrESdOjacrtum/014Q0qTbUsPtyyvLUN3fxL4891p5
-         QSYws4EyxeNLw==
-From:   Sebastian Reichel <sre@kernel.org>
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org
-Subject: Re: [RFC 18/18] power: supply: max17040: Do not enforce (incorrect)
- interrupt trigger type
-Message-ID: <20201210221600.anob3tojbawjhehs@earth.universe>
-References: <20201210212534.216197-1-krzk@kernel.org>
- <20201210212534.216197-18-krzk@kernel.org>
+        id S2391168AbgLKCx0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 10 Dec 2020 21:53:26 -0500
+Received: from mail-ot1-f66.google.com ([209.85.210.66]:38236 "EHLO
+        mail-ot1-f66.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2390721AbgLKCxZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 10 Dec 2020 21:53:25 -0500
+Received: by mail-ot1-f66.google.com with SMTP id j20so2517707otq.5;
+        Thu, 10 Dec 2020 18:53:10 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=u730lB6v0y2irZRjPgn18dAMkQ87hO91KDEoZMKd5FM=;
+        b=KzvBG2QNrwLXVueZ/2MyvoC4b6XnKBEvN57MZtzR9PRxew+0ZfTWPW+ERlqIZ8VAUO
+         dx9sqnwTJ5patWmW85xduMXHCstTuA4HoTz6R/M6EZLkyBDJ91L5PIRKmZnbsGvIa/dA
+         NrMWAO3f6sL0viGP4I/ZtqMJlL37jw2EjSm+gV6+enwQtZnaNTyx90/AvKp2o+dOHXnn
+         i7XxNsWIiwR5iezmhrsVPW3L7QSaR6qNKceYxV/ud5Wk6988ksIK3SXF2jz4ZW681eEZ
+         tXu8Z1OF8rcyESWlv9L2TbW7UvRro5HYLwQI52XdwB0hzcWvAj5spijTmPHHs4iEks6E
+         JwRA==
+X-Gm-Message-State: AOAM533z+RWfoe6tqMKNAvs6qVp60F/L6+eoqFnmidsoea+QMun2WBvU
+        kQHQAfFYq1Nas9u16yVt5Q==
+X-Google-Smtp-Source: ABdhPJyQrHbhg+o5ePEtwFe/gxJay541KZcQ7oM/4+PltW0Q7qTn20f08qBYHe84hCLamudqakGgCg==
+X-Received: by 2002:a05:6830:240d:: with SMTP id j13mr8344090ots.319.1607655164861;
+        Thu, 10 Dec 2020 18:52:44 -0800 (PST)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id y84sm1570664oig.36.2020.12.10.18.52.43
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Dec 2020 18:52:43 -0800 (PST)
+Received: (nullmailer pid 3524654 invoked by uid 1000);
+        Fri, 11 Dec 2020 02:52:42 -0000
+Date:   Thu, 10 Dec 2020 20:52:42 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Hector Yuan <hector.yuan@mediatek.com>
+Cc:     wsd_upstream@mediatek.com, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        linux-kernel@vger.kernel.org,
+        Matthias Brugger <matthias.bgg@gmail.com>,
+        linux-mediatek@lists.infradead.org,
+        Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v9 2/2] dt-bindings: cpufreq: add bindings for MediaTek
+ cpufreq HW
+Message-ID: <20201211025242.GA3523811@robh.at.kernel.org>
+References: <1607586516-6547-1-git-send-email-hector.yuan@mediatek.com>
+ <1607586516-6547-3-git-send-email-hector.yuan@mediatek.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-        protocol="application/pgp-signature"; boundary="wjfwdwkje3lnes45"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201210212534.216197-18-krzk@kernel.org>
+In-Reply-To: <1607586516-6547-3-git-send-email-hector.yuan@mediatek.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
+On Thu, 10 Dec 2020 15:48:36 +0800, Hector Yuan wrote:
+> From: "Hector.Yuan" <hector.yuan@mediatek.com>
+> 
+> Add devicetree bindings for MediaTek HW driver.
+> 
+> Signed-off-by: Hector.Yuan <hector.yuan@mediatek.com>
+> ---
+>  .../bindings/cpufreq/cpufreq-mediatek-hw.yaml      |  112 ++++++++++++++++++++
+>  1 file changed, 112 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
+> 
 
---wjfwdwkje3lnes45
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-(I shortened the Cc)
+My bot found errors running 'make dt_binding_check' on your patch:
 
-Hi,
+yamllint warnings/errors:
 
-On Thu, Dec 10, 2020 at 10:25:34PM +0100, Krzysztof Kozlowski wrote:
-> [...]
-> index d956c67d5155..f737de0470de 100644
-> --- a/drivers/power/supply/max17040_battery.c
-> +++ b/drivers/power/supply/max17040_battery.c
-> @@ -367,7 +367,7 @@ static int max17040_enable_alert_irq(struct max17040_=
-chip *chip)
-> =20
->  	flags =3D IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
->  	ret =3D devm_request_threaded_irq(&client->dev, client->irq, NULL,
-> -					max17040_thread_handler, flags,
-> +					max17040_thread_handler, IRQF_ONESHOT,
->  					chip->battery->desc->name, chip);
-> =20
->  	return ret;
+dtschema/dtc warnings/errors:
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml: 'additionalProperties' is a required property
+/builds/robherring/linux-dt-review/Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml: ignoring, error in schema: 
+warning: no schema found in file: ./Documentation/devicetree/bindings/cpufreq/cpufreq-mediatek-hw.yaml
 
-'flags' is unused after this change.
 
--- Sebastian
+See https://patchwork.ozlabs.org/patch/1413865
 
---wjfwdwkje3lnes45
-Content-Type: application/pgp-signature; name="signature.asc"
+The base for the patch is generally the last rc1. Any dependencies
+should be noted.
 
------BEGIN PGP SIGNATURE-----
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
-iQIzBAABCgAdFiEE72YNB0Y/i3JqeVQT2O7X88g7+poFAl/SnhQACgkQ2O7X88g7
-+pr4mA//ThZw9o3bxNVLKIhusIwVAAxXVR/2ZZmiceJJQcbRLwemoYH0y/G9XqbE
-P0FTl1qiLS8A5AHvwcTIS8aTnBqDE2edT42qa5RcBczdB/sZYoBYI2BODuJs8BfD
-EGqeyPkxATjKIA2Domnc+yzgJ1pSuXWWU7X1cJvEHhcyD02lKHVXcPMy0lzvdqhC
-Tv2xHqEoeUqGNQjlivv8Iv6z9TwwBuGd03U2QLBWJChsCrLXf4jOR8Q0hebuDe2J
-58Z+9LslQ9FnUmd1aI9To0LLa8TuDQ2Wqxpw+Hd2RgghzFZ/kwiYHoOKV8kwlEnD
-j1TtLnchP7G2eR2q8/JFeqq9Z1lIfDr1V9XGgE1LspGrpmjgYkbdzVSQQSn2mNVF
-42x8jIs9zpDdzWBDrF9JQXTqC25MiQ/HI5Y2YuB5PbQOK5tBJ/WMpmfG2PHjClO/
-wBpGMZNpF+TbhOhRaADWv3etS+ffBJ3YRW38evN9yJFbWBbNA/gE3DRzsODcbhgh
-QonCtVtnAAl/NLLleGMBD5HbTdAWaRK37nAK35wK/CHshp1kfEK8RQ3ua5bP7kPx
-Aaj5ZLBk/GHBWtOHNaYesHNvBruVkTrVOb0SbnTaPCpMUkfJEFiOBdX4WZsna4Lw
-IDKMNFL+Z5a6pew2eVfLynKAenQWZ7gfEZ8yU3z2Dh2lf56QLfU=
-=8NRK
------END PGP SIGNATURE-----
+pip3 install dtschema --upgrade
 
---wjfwdwkje3lnes45--
+Please check and re-submit.
+
