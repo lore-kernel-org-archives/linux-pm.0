@@ -2,95 +2,133 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-14.2 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 536BEC4361B
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 16:08:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 2A833C4361B
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 16:13:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1918F23BF0
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 16:08:27 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id E1C7423BF0
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 16:13:02 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2406632AbgLKPTh (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 10:19:37 -0500
-Received: from mo4-p02-ob.smtp.rzone.de ([85.215.255.83]:13540 "EHLO
-        mo4-p02-ob.smtp.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2437682AbgLKPTG (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 10:19:06 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1607699768;
-        s=strato-dkim-0002; d=fossekall.de;
-        h=Message-Id:Date:Subject:Cc:To:From:From:Subject:Sender;
-        bh=NCsW77FbQ1B3gPrsvuKFRFGs+rTfq3kJjuPpOkHykKY=;
-        b=gHyX06VEezUlEoSxYyFkmFgQUQHCJYgBv7j/3d7dVuMiUJEXXKKRutgaGZjt5zKls1
-        vQYmXRWZadJzAqym7HWtE01SoG9+ct8XuXK4do99Z3Z69EY6VxgWxF0DHDD2+7voHAbA
-        sRBiyr5pAd8dU78v1QoLjihWyugK0eYmUzXRro+a3jyszjG8tEVRkwSq9SUOy9lPr7c2
-        DPb2xnb6/SpprfzmthLkkgAwjULxreFzUKkBRnHXuqldzYzrl9KYgV6WFO9QRKB5fliQ
-        eq046dfsHCm+KHBDQ5e/3J7eZvyVPDIzVtYtHsWTsacsKDC1jptVH6my+tK4bJku6OGp
-        ZOVA==
-X-RZG-AUTH: ":O2kGeEG7b/pS1EzgE2y7nF0STYsSLflpbjNKxx7cGrBOdI6BL9pkS3QW19mO7I+/JwRspuzJFZuRzQ=="
-X-RZG-CLASS-ID: mo00
-Received: from aerfugl
-        by smtp.strato.de (RZmta 47.7.1 AUTH)
-        with ESMTPSA id L0a6acwBBFG61AH
-        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (curve X9_62_prime256v1 with 256 ECDH bits, eq. 3072 bits RSA))
-        (Client did not present a certificate);
-        Fri, 11 Dec 2020 16:16:06 +0100 (CET)
-Received: from koltrast.a98shuttle.de ([192.168.1.27] helo=a98shuttle.de)
-        by aerfugl with smtp (Exim 4.89)
-        (envelope-from <michael@a98shuttle.de>)
-        id 1knk8G-0005RX-4w; Fri, 11 Dec 2020 16:14:56 +0100
-Received: (nullmailer pid 116008 invoked by uid 502);
-        Fri, 11 Dec 2020 15:14:56 -0000
-From:   Michael Klein <michael@fossekall.de>
-To:     Sebastian Reichel <sre@kernel.org>,
+        id S2437892AbgLKP0B (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 10:26:01 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53400 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2437886AbgLKPZx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 10:25:53 -0500
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id BC564C0613CF;
+        Fri, 11 Dec 2020 07:25:12 -0800 (PST)
+Received: by mail-wm1-x343.google.com with SMTP id 3so8939154wmg.4;
+        Fri, 11 Dec 2020 07:25:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20161025;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-transfer-encoding:content-language;
+        bh=my0v3tsRd/Mz4EIypIj37zNMuhiMI5SF6h5TpgmxpB4=;
+        b=UrzvvXJ0cz0zGNOSqpro4dW33KOVtYPq4hM2Aw+imIHgxrPqJSXTEIZSc8GjmEZ6Cl
+         9ikTpG7cWdOnKFpctkZDvJbLYS13DDwDC4/Rar1X/To9YrL4IfK0q+UQpvTv6HklUzIz
+         fiRD3G772ooaDOM2lnJ8LdsAT9gF3DcWZMPrwT2b1cZgCG3vpzQiuVs7cX7NrRnjDMEt
+         9aPhBfxpqJ/D3DmxnJbBBH+ynO61KPPpZjRx+D99HTic9fG8e5v+KmQMrYNXdATGmArc
+         5FgPiAZhUOtPK6xTTWmsB2zrqZnhL9sJL6eVj6cIqgDM4evCIOmvqkgo7neeZK92bIze
+         bBsA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-transfer-encoding
+         :content-language;
+        bh=my0v3tsRd/Mz4EIypIj37zNMuhiMI5SF6h5TpgmxpB4=;
+        b=DDtwJ2cwffE70QgpDP7+qBaZQUYfQSzDp2twg587gSMqH9/cah7tftmvxLp96Fhtl4
+         9SMiPGApIP3HRqlzrM1wlOBMmZxah4hFu2X1RyRUWQFSmAkpJilbikfo9JXF+50XA7gW
+         WW8FBS0VhO/BswrIY74vfSa9D3CMrdm0IuHVGe9/xUMNmMSXK19uAh65meVO1WYsAbG3
+         bYoFBLw/T0mQw/8UaAFPGPHET9fetXvAm8OPsaVFwPPhckd+f70/7zV8vvvHAX9oFQLZ
+         +pbYEUtmR4HCbViTaVfHl1XKZk/s9OEWvyo4Ar0ecplkq6M6GF8vNldXjdpOwfapFvHs
+         3fGw==
+X-Gm-Message-State: AOAM531URbv4WN7p0ZHusto26W6O80IlWVcZBY3k6ah3uOTpVYrG1AuF
+        2PzWoFRj6dN1IvipPvkMqq8=
+X-Google-Smtp-Source: ABdhPJxfnTaSUGMt3qD4TxCyZ9BhVYl6DKFHubfh7itAEtAANKosHG7tXoFwD4N88bBatphcZVq9qw==
+X-Received: by 2002:a1c:a344:: with SMTP id m65mr13965395wme.108.1607700311561;
+        Fri, 11 Dec 2020 07:25:11 -0800 (PST)
+Received: from [192.168.74.106] (178-169-161-196.razgrad.ddns.bulsat.com. [178.169.161.196])
+        by smtp.gmail.com with ESMTPSA id b14sm15403083wrx.77.2020.12.11.07.25.09
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 11 Dec 2020 07:25:10 -0800 (PST)
+Subject: Re: [PATCH 12/18] ARM: dts: qcom: msm8974-samsung-klte: correct fuel
+ gauge interrupt trigger level
+To:     Krzysztof Kozlowski <krzk@kernel.org>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
-        Maxime Ripard <mripard@kernel.org>,
-        Chen-Yu Tsai <wens@csie.org>,
-        Jernej Skrabec <jernej.skrabec@siol.net>,
-        Michael Klein <michael@fossekall.de>
-Cc:     linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: [PATCH v5 0/3] BPi M2 Zero poweroff support via new regulator-poweroff driver
-Date:   Fri, 11 Dec 2020 16:14:42 +0100
-Message-Id: <20201211151445.115943-1-michael@fossekall.de>
-X-Mailer: git-send-email 2.29.2
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-rtc@vger.kernel.org
+Cc:     Matheus Castello <matheus@castello.eng.br>,
+        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+        Angus Ainslie <angus@akkea.ca>,
+        Hans de Goede <hdegoede@redhat.com>
+References: <20201210212534.216197-1-krzk@kernel.org>
+ <20201210212534.216197-12-krzk@kernel.org>
+From:   Iskren Chernev <iskren.chernev@gmail.com>
+Message-ID: <9a896342-cc0b-5cdf-aefd-6fe13c540c69@gmail.com>
+Date:   Fri, 11 Dec 2020 17:25:07 +0200
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.12.0
 MIME-Version: 1.0
+In-Reply-To: <20201210212534.216197-12-krzk@kernel.org>
+Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
+Content-Language: en-US
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Changes in v2:
-  - rename DT node
 
-Changes in v3:
-  - add regulator-poweroff driver
-  - use regulator-poweroff driver instead of gpio-poweroff
+On 12/10/20 11:25 PM, Krzysztof Kozlowski wrote:
+ > The Maxim fuel gauge datasheets describe the interrupt line as active
+ > low with a requirement of acknowledge from the CPU.  The falling edge
+ > interrupt will mostly work but it's not correct.
+ >
+ > Fixes: da8d46992e67 ("ARM: dts: qcom: msm8974-klte: Add fuel gauge")
+ > Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+ > ---
+ >  arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts | 2 +-
+ >  1 file changed, 1 insertion(+), 1 deletion(-)
+ >
+ > diff --git a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts 
+b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+ > index 97352de91314..64a3fdb79539 100644
+ > --- a/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+ > +++ b/arch/arm/boot/dts/qcom-msm8974-samsung-klte.dts
+ > @@ -691,7 +691,7 @@ fuelgauge@36 {
+ >              maxim,rcomp = /bits/ 8 <0x56>;
+ >
+ >              interrupt-parent = <&pma8084_gpios>;
+ > -            interrupts = <21 IRQ_TYPE_EDGE_FALLING>;
+ > +            interrupts = <21 IRQ_TYPE_LEVEL_LOW>;
+ >
+ >              pinctrl-names = "default";
+ >              pinctrl-0 = <&fuelgauge_pin>;
 
-Changes in v4:
-  - hardcode poweroff timeout to 3000ms, not configurable any more
-  - remove support for multiple regulators
-  - fix Documentation issues
+After testing this patch + the rfc modifying 17040 driver I can confirm it
+works on the klte. Also, according to the max17048 datasheet, the ALRT pin
+is active low, so everything is in order.
 
-Changes in v5:
-  - rename DT property 'power-supply' -> 'cpu-supply'
-
-Michael Klein (3):
-  power: reset: new driver regulator-poweroff
-  Documentation: DT: binding documentation for regulator-poweroff
-  ARM: dts: sun8i-h2-plus-bananapi-m2-zero: add poweroff node
-
- .../power/reset/regulator-poweroff.yaml       | 37 +++++++++
- .../dts/sun8i-h2-plus-bananapi-m2-zero.dts    |  5 ++
- drivers/power/reset/Kconfig                   |  7 ++
- drivers/power/reset/Makefile                  |  1 +
- drivers/power/reset/regulator-poweroff.c      | 82 +++++++++++++++++++
- 5 files changed, 132 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
- create mode 100644 drivers/power/reset/regulator-poweroff.c
-
--- 
-2.29.2
+Acked-By: Iskren Chernev <iskren.chernev@gmail.com>
+Tested-By: Iskren Chernev <iskren.chernev@gmail.com>
 
