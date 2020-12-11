@@ -2,243 +2,135 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-22.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
-	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
-	INCLUDES_PATCH,INCLUDES_PULL_REQUEST,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,
-	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=ham autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 96748C4361B
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 07:45:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 69579C1B0D9
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 07:49:16 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 2D10923E24
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 07:45:14 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 2783523C82
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 07:49:16 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727216AbgLKHo1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 02:44:27 -0500
-Received: from mailout3.samsung.com ([203.254.224.33]:25947 "EHLO
-        mailout3.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2389127AbgLKHoY (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 02:44:24 -0500
-Received: from epcas1p1.samsung.com (unknown [182.195.41.45])
-        by mailout3.samsung.com (KnoxPortal) with ESMTP id 20201211074340epoutp03ec68f7a7eda74b4f7db6553e8a5ea10e~PmbsCBRIX0577605776epoutp03K
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2020 07:43:40 +0000 (GMT)
-DKIM-Filter: OpenDKIM Filter v2.11.0 mailout3.samsung.com 20201211074340epoutp03ec68f7a7eda74b4f7db6553e8a5ea10e~PmbsCBRIX0577605776epoutp03K
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
-        s=mail20170921; t=1607672620;
-        bh=G2N39l3fVZYX0q/DnFoGPUJPUawid4RL234JBKugQks=;
-        h=To:Cc:From:Subject:Date:References:From;
-        b=Cov1WxPtHZDdcNcfg0kSUbxJttNmB7tEffMPJI2qcoT7u98VMCMyJxqy4+ghUdqkz
-         rND4zN1C5fuq+cnMrKmm5roaca4e2DBWkNy1jg1YeftNof4zVw/wN/OPeZI/yVU0Y9
-         NCM75GAdZLOnrMNf2g3VWRkXZX4g/a4b4PUeKKK8=
-Received: from epsnrtp1.localdomain (unknown [182.195.42.162]) by
-        epcas1p1.samsung.com (KnoxPortal) with ESMTP id
-        20201211074339epcas1p1e9512eacb7f216019127f583fae97fd3~PmbrJppib2652826528epcas1p1m;
-        Fri, 11 Dec 2020 07:43:39 +0000 (GMT)
-Received: from epsmges1p4.samsung.com (unknown [182.195.40.157]) by
-        epsnrtp1.localdomain (Postfix) with ESMTP id 4CsjT34KTKz4x9Q1; Fri, 11 Dec
-        2020 07:43:35 +0000 (GMT)
-Received: from epcas1p2.samsung.com ( [182.195.41.46]) by
-        epsmges1p4.samsung.com (Symantec Messaging Gateway) with SMTP id
-        9F.AC.10463.52323DF5; Fri, 11 Dec 2020 16:43:33 +0900 (KST)
-Received: from epsmtrp2.samsung.com (unknown [182.195.40.14]) by
-        epcas1p2.samsung.com (KnoxPortal) with ESMTPA id
-        20201211074332epcas1p27c7057fae84f6b6535a7bc4e89737c20~Pmbk7tL9E1787317873epcas1p2r;
-        Fri, 11 Dec 2020 07:43:32 +0000 (GMT)
-Received: from epsmgms1p2.samsung.com (unknown [182.195.42.42]) by
-        epsmtrp2.samsung.com (KnoxPortal) with ESMTP id
-        20201211074332epsmtrp26881c68cb6ac389c53a8dbeb925c17de~Pmbk4A5kl2971629716epsmtrp2B;
-        Fri, 11 Dec 2020 07:43:32 +0000 (GMT)
-X-AuditID: b6c32a38-f11ff700000028df-a8-5fd3232574fa
-Received: from epsmtip2.samsung.com ( [182.195.34.31]) by
-        epsmgms1p2.samsung.com (Symantec Messaging Gateway) with SMTP id
-        3E.37.08745.42323DF5; Fri, 11 Dec 2020 16:43:32 +0900 (KST)
-Received: from [10.113.221.102] (unknown [10.113.221.102]) by
-        epsmtip2.samsung.com (KnoxPortal) with ESMTPA id
-        20201211074329epsmtip2af86aaabc4bef33c1067d94e0b2463db~PmbiKnM4m1700517005epsmtip2i;
-        Fri, 11 Dec 2020 07:43:29 +0000 (GMT)
-To:     "Rafael J. Wysocki <rjw@rjwysocki.net>" <rjw@rjwysocki.net>
-Cc:     "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        "Chanwoo Choi (samsung.com)" <cw00.choi@samsung.com>,
-        "Chanwoo Choi (chanwoo@kernel.org)" <chanwoo@kernel.org>,
-        =?UTF-8?B?7ZWo66qF7KO8?= <myungjoo.ham@samsung.com>,
-        Kyungmin Park <kyungmin.park@samsung.com>
-From:   Chanwoo Choi <cw00.choi@samsung.com>
-Subject: [GIT PULL] devfreq next for v5.11
-Organization: Samsung Electronics
-Message-ID: <56c09abc-da54-5e53-3313-3185fb84bb71@samsung.com>
-Date:   Fri, 11 Dec 2020 16:58:15 +0900
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:59.0) Gecko/20100101
-        Thunderbird/59.0
+        id S2436818AbgLKHsn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 02:48:43 -0500
+Received: from mail-ed1-f67.google.com ([209.85.208.67]:39435 "EHLO
+        mail-ed1-f67.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2388543AbgLKHsl (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 02:48:41 -0500
+Received: by mail-ed1-f67.google.com with SMTP id c7so8343856edv.6;
+        Thu, 10 Dec 2020 23:48:23 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=P0wPTNnTMMvMYQoXIJsxDc+GGcUdhHlmPr5EHW78xzw=;
+        b=mezpfFhm+fgbJylmhl7dWQ9OmYRZESoDJ6ZeK8aBYf9ayecJqbKvJ3KzeAY1eoHDN9
+         3wokP5Gb+LqU/vOAlClr861ILhKDcptK9Rg9mdZ9Cfmj1gWf5ZfluFILH7KDXCu76unI
+         12PN3urktFUhOTcFcEh9y2m/6TSbg/TwNH/NHjjt0WayzJt1ypXHQ/K0vCGg2MS2bVmU
+         u1SQh9Tn58bNzsT7f+MNG7oeQcxgnBKa4mdQqdNvIIm2Vw632yiQjX3tMgwjwbCrc8Xl
+         FOCM5fiRJGUogkcv+l7fz51Y0nTKultUqOipAjchhntwKrSw1jBJlpyORy6WzEAzulSg
+         UUlw==
+X-Gm-Message-State: AOAM532wnUX8gR25rqGgdkAUPJEw8hP6MXLoF/ho9VfVqcwXuTQlcBpW
+        SlL4BI/4yGxTinAPfDuWI9cj9OTMbDXxGg==
+X-Google-Smtp-Source: ABdhPJx/k/HGToQvr22UR3Xq7vPsj2TvNmpm8kE7Hr4dtKfaS9AYncLFODFCgjOBi92luTKLln+RDw==
+X-Received: by 2002:a50:e688:: with SMTP id z8mr10777681edm.129.1607672878059;
+        Thu, 10 Dec 2020 23:47:58 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id qn4sm6333309ejb.50.2020.12.10.23.47.56
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 10 Dec 2020 23:47:57 -0800 (PST)
+Date:   Fri, 11 Dec 2020 08:47:55 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Chanwoo Choi <cw00.choi@samsung.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd <sboyd@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Andy Gross <agross@kernel.org>,
+        Bjorn Andersson <bjorn.andersson@linaro.org>,
+        Alessandro Zummo <a.zummo@towertech.it>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        linux-kernel@vger.kernel.org, linux-clk@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-pm@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-rtc@vger.kernel.org
+Cc:     Iskren Chernev <iskren.chernev@gmail.com>,
+        Matheus Castello <matheus@castello.eng.br>,
+        Sebastian Krzyszkowiak <sebastian.krzyszkowiak@puri.sm>,
+        Angus Ainslie <angus@akkea.ca>,
+        Hans de Goede <hdegoede@redhat.com>
+Subject: Re: [RFC 18/18] power: supply: max17040: Do not enforce (incorrect)
+ interrupt trigger type
+Message-ID: <20201211074755.GA4346@kozik-lap>
+References: <20201210212534.216197-1-krzk@kernel.org>
+ <20201210212534.216197-18-krzk@kernel.org>
 MIME-Version: 1.0
-Content-Language: en-US
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFprCJsWRmVeSWpSXmKPExsWy7bCmnq6q8uV4g307rC0m3rjCYnH9y3NW
-        i7NNb9gtLu+aw2bxufcIo8XtxhVsFmdOX2J1YPfYtKqTzWPL1XYWj74tqxg9Pm+SC2CJyrbJ
-        SE1MSS1SSM1Lzk/JzEu3VfIOjneONzUzMNQ1tLQwV1LIS8xNtVVy8QnQdcvMAbpASaEsMacU
-        KBSQWFyspG9nU5RfWpKqkJFfXGKrlFqQklNgWaBXnJhbXJqXrpecn2tlaGBgZApUmJCd0Xrq
-        FVvBbN2KmTM7GBsYW5W7GDk5JARMJFo/T2HsYuTiEBLYwSjxu38eG4TziVHi3fK3rBDOZ0aJ
-        L9Mus8K0PHg/H6plF6PEqyPz2SGc94wSi09+YOpi5OAQEbCX6PiQCRJnFrjAJHFxUxtYN5uA
-        lsT+FzfYQGxhIPv91v/sIDa/gKLE1R+PGUFsXgE7if3dfUwgNouAqkTr60ssILaoQJjEyW0t
-        UDWCEidnPgGLMwuIS9x6Mp8JwpaX2P52DjPIYgmBn+wSe7ZNZIc420XixJkXUC8IS7w6vgUq
-        LiXx+d1eNgi7WmLlySNsEM0djBJb9l+AajCW2L90MthnzAKaEut36UOEFSV2/p7LCLGYT+Ld
-        1x5WkBIJAV6JjjYhiBJlicsP7jJB2JISi9s7oVZ5SJxavJ5pAqPiLCTvzELyziwk78xCWLyA
-        kWUVo1hqQXFuemqxYYEJcnRvYgQnTy2LHYxz337QO8TIxMF4iFGCg1lJhFeW5VK8EG9KYmVV
-        alF+fFFpTmrxIUZTYABPZJYSTc4Hpu+8knhDUyNjY2MLE0MzU0NDJXHeP9od8UIC6Yklqdmp
-        qQWpRTB9TBycUg1MptVW01NzFX71ZU7gyOhv9r2rHNc+6YaFfHpy2lZb7zs+7SaTPnvPEWNk
-        eF+wQvlp6VQp9u9zX8i++jd/WcYt0+03uNsYnxgsWxEnWZr6y9MoOlLwcMT0Sa/jHxi+2zq3
-        8NHp5qSDEmbvDJ+s/hXMFb39zrGYiaJxW37miWuEb/vd4Z8+j/9VVsCspfWRB3WMFlRyHJiY
-        VH5xpf2/baqTUz8nBrE6sYQEKK05NePP01J17t63G1dLGnBPbuxIeuojPK9cy9J5xZWmO9Un
-        VZssraddKM2975x3OcuaZb15xQ2lry/UL6yf/VzWaKuyi4D45veP1py5XXxVftk3je/N2V5H
-        RCuc+Kdw79XiYXygxFKckWioxVxUnAgAqRdCeycEAAA=
-X-Brightmail-Tracker: H4sIAAAAAAAAA+NgFnrKLMWRmVeSWpSXmKPExsWy7bCSvK6K8uV4g6MnNCwm3rjCYnH9y3NW
-        i7NNb9gtLu+aw2bxufcIo8XtxhVsFmdOX2J1YPfYtKqTzWPL1XYWj74tqxg9Pm+SC2CJ4rJJ
-        Sc3JLEst0rdL4MpoPfWKrWC2bsXMmR2MDYytyl2MnBwSAiYSD97PZ+xi5OIQEtjBKLG08xg7
-        REJSYtrFo8xdjBxAtrDE4cPFEDVvGSWmHJrFDhIXEbCX6PiQCRJnFrjEJLHxzA2wXjYBLYn9
-        L26wgdjCQPb7rf/B4vwCihJXfzxmBLF5Bewk9nf3MYHYLAKqEq2vL7GA2KICYRI7lzxmgqgR
-        lDg58wlYnFlAXeLPvEvMELa4xK0n85kgbHmJ7W/nME9gFJyFpGUWkpZZSFpmIWlZwMiyilEy
-        taA4Nz232LDAKC+1XK84Mbe4NC9dLzk/dxMjOCa0tHYw7ln1Qe8QIxMH4yFGCQ5mJRFeWZZL
-        8UK8KYmVValF+fFFpTmpxYcYpTlYlMR5L3SdjBcSSE8sSc1OTS1ILYLJMnFwSjUwWR089Tgu
-        pN64LkqD6zz703UfDlzr+OyRrH5Ee8+vsuyXbOwzxLWU1yo7+RXsVrd+/TrYtfNfWEe/g/Xb
-        mJ6kZo5VTvOXTNYu/zL3mZSIudC9z3fzDu5e+5ilo03t+CPG5MzjUX2HeLTmsp8Wn/HR1ZYr
-        5JzPtrt5r+KaHhSkzPkg7BV7QMIw4sD8fr7wueLKETsPrbu5JLyz+Pzfkz/2TmLtu1x8/2mr
-        3OXd3Q/XXrLTmfbNwcX4q0vBO1nJymddyzTyxI4budd8X+gjfvW+cLKt9/elW2RWc/s/splT
-        rC7L/0u/eMmTx/EP3237kTp1iujRJFU/iyVK3jMavH8wPDi00a+Wv6Nn6urVm3TslViKMxIN
-        tZiLihMByjYasvgCAAA=
-X-CMS-MailID: 20201211074332epcas1p27c7057fae84f6b6535a7bc4e89737c20
-X-Msg-Generator: CA
-Content-Type: text/plain; charset="utf-8"
-X-Sendblock-Type: SVC_REQ_APPROVE
-CMS-TYPE: 101P
-DLP-Filter: Pass
-X-CFilter-Loop: Reflected
-X-CMS-RootMailID: 20201211074332epcas1p27c7057fae84f6b6535a7bc4e89737c20
-References: <CGME20201211074332epcas1p27c7057fae84f6b6535a7bc4e89737c20@epcas1p2.samsung.com>
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20201210212534.216197-18-krzk@kernel.org>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Dear Rafael,
+On Thu, Dec 10, 2020 at 10:25:34PM +0100, Krzysztof Kozlowski wrote:
+> Interrupt line can be configured on different hardware in different way,
+> even inverted.  Therefore driver should not enforce specific trigger
+> type - edge falling - but instead rely on Devicetree to configure it.
+> 
+> The Maxim 14577/77836 datasheets describe the interrupt line as active
+> low with a requirement of acknowledge from the CPU therefore the edge
+> falling is not correct.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzk@kernel.org>
+> 
+> ---
+> 
+> This patch should wait till DTS changes are merged, as it relies on
+> proper Devicetree.
+> ---
+>  .../devicetree/bindings/power/supply/max17040_battery.txt       | 2 +-
+>  drivers/power/supply/max17040_battery.c                         | 2 +-
+>  2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> index c802f664b508..194eb9fe574d 100644
+> --- a/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> +++ b/Documentation/devicetree/bindings/power/supply/max17040_battery.txt
+> @@ -39,7 +39,7 @@ Example:
+>  		reg = <0x36>;
+>  		maxim,alert-low-soc-level = <10>;
+>  		interrupt-parent = <&gpio7>;
+> -		interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+> +		interrupts = <2 IRQ_TYPE_LEVEL_LOW>;
+>  		wakeup-source;
+>  	};
+>  
+> diff --git a/drivers/power/supply/max17040_battery.c b/drivers/power/supply/max17040_battery.c
+> index d956c67d5155..f737de0470de 100644
+> --- a/drivers/power/supply/max17040_battery.c
+> +++ b/drivers/power/supply/max17040_battery.c
+> @@ -367,7 +367,7 @@ static int max17040_enable_alert_irq(struct max17040_chip *chip)
+>  
+>  	flags = IRQF_TRIGGER_FALLING | IRQF_ONESHOT;
 
-This is devfreq-next pull request for v5.11-rc1. I add detailed description of
-this pull request on the following tag. Please pull devfreq with following updates.
-- tag name : devfreq-next-for-5.11
+This has to be removed. I will fix it in v2.
 
-Best Regards,
-Chanwoo Choi
+Best regards,
+Krzysztof
 
 
-The following changes since commit 3650b228f83adda7e5ee532e2b90429c03f7b9ec:
-
-  Linux 5.10-rc1 (2020-10-25 15:14:11 -0700)
-
-are available in the Git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/chanwoo/linux.git tags/devfreq-next-for-5.11
-
-for you to fetch changes up to 6a575e84f11e15078629f0d16bff2bc354a6bfc0:
-
-  PM / devfreq: tegra30: Separate configurations per-SoC generation (2020-12-07 10:25:51 +0900)
-
-----------------------------------------------------------------
-
-Update devfreq for 5.11
-
-Detailed description for this pull request:
-
-1. Update devfreq core
-- Add new devfreq_frequency tracepoint to show the frequency change
-information.
-
-- Add governor feature flag. The devfreq governor is able to
-have the specific flag in order to contain the non-common feature.
-For example, if governor contains the 'immutable' feature, don't allow
-user to change the governor via sysfs.
-
-- Add governor sysfs attribute flag for each sysfs file. Prior to that
-devfreq subsystem show the all sysfs files regardless of governor type.
-But, some sysfs fils are not supported on the specific devfreq governor.
-In order to show the only supported sysfs files according to the governor,
-clarify the access permission of sysfs attributes according to governor.
-When adding the devfreq governor, can specify the available attribute
-information by using DEVFREQ_GOV_ATTR_* constant variable. The user can
-read or write the sysfs attributes in accordance to the specified attributes.
-
-- Clean-up the code to remove the duplicate code for the devfreq tracepoint
-and to remove redundant governor_name field from struct devfreq
-
-2. Update exynos-bus.c devfreq driver
-- Add interconnect API support for the Samsung Exynos Bus Frequency driver
-of exynos-bus.c. Complementing the devfreq driver with an interconnect
-functionality allows to ensure the QoS requirements of devices accessing
-the system memory (e.g. video processing devices) are fulfilled
-and allows to avoid issues like the DMA underrun.
-
-3. Update tegra devfreq driver
-- Add interconnect support and OPP interface for tegra30-devfreq.c.
-Also, it is to guarantee the QoS requirement of some devices like
-display controller.
-
-- Move tegra20-devfreq.c from drivers/devfreq/ into driver/memory/tegra/
-in order to use the more proper monitoring feature such as EMC_STAT
-which is based in driver/memory/tegra/.
-
-- Separate the configuration information for different SoC on
-tegra30-devfrqe.c. The tegra30-devfreq.c had been supported both
-tegra30-actmon and tegra124-actmon devices. In order to use
-the more correct configuration data, separate them.
-
-- Use dev_err_probe() to handle the deferred probe error on tegra30-devfreq.c.
-
-4. Pull the request of 'Tegra SoC and clock controller changes for v5.11'
-sent by Krzysztof Kozlowski <krzk@kernel.org> in order to prevent the
-build error.
-
-----------------------------------------------------------------
-Chanwoo Choi (6):
-      trace: events: devfreq: Use fixed indentation size to improve readability
-      PM / devfreq: Unify frequency change to devfreq_update_target func
-      PM / devfreq: Add governor feature flag
-      PM / devfreq: Add governor attribute flag for specifc sysfs nodes
-      PM / devfreq: Remove redundant governor_name from struct devfreq
-      Merge tag 'tegra-soc-clk-drivers-5.11' of https://git.kernel.org/.../krzk/linux-mem-ctrl into devfreq-next
-
-Dmitry Osipenko (9):
-      PM / devfreq: tegra20: Silence deferred probe error
-      PM / devfreq: tegra20: Relax Kconfig dependency
-      PM / devfreq: tegra30: Silence deferred probe error
-      clk: tegra: Export Tegra20 EMC kernel symbols
-      soc/tegra: fuse: Export tegra_read_ram_code()
-      soc/tegra: fuse: Add stub for tegra_sku_info
-      PM / devfreq: tegra20: Deprecate in a favor of emc-stat based driver
-      PM / devfreq: tegra30: Support interconnect and OPPs from device-tree
-      PM / devfreq: tegra30: Separate configurations per-SoC generation
-
-Matthias Kaehlcke (1):
-      PM / devfreq: Add tracepoint for frequency changes
-
-Sylwester Nawrocki (2):
-      dt-bindings: devfreq: Add documentation for the interconnect properties
-      PM / devfreq: exynos-bus: Add registration of interconnect child device
-
- Documentation/ABI/testing/sysfs-class-devfreq      |  54 +++--
- .../devicetree/bindings/devfreq/exynos-bus.txt     |  71 +++++-
- MAINTAINERS                                        |   1 -
- drivers/clk/tegra/clk-tegra20-emc.c                |   3 +
- drivers/devfreq/Kconfig                            |  10 -
- drivers/devfreq/Makefile                           |   1 -
- drivers/devfreq/devfreq.c                          | 242 ++++++++++++++-------
- drivers/devfreq/exynos-bus.c                       |  17 ++
- drivers/devfreq/governor.h                         |  33 ++-
- drivers/devfreq/governor_passive.c                 |  44 +---
- drivers/devfreq/governor_simpleondemand.c          |   2 +
- drivers/devfreq/tegra20-devfreq.c                  | 212 ------------------
- drivers/devfreq/tegra30-devfreq.c                  | 159 ++++++++------
- drivers/soc/tegra/fuse/tegra-apbmisc.c             |   2 +
- include/linux/devfreq.h                            |   4 -
- include/soc/tegra/fuse.h                           |   4 +
- include/trace/events/devfreq.h                     |  30 ++-
- 17 files changed, 456 insertions(+), 433 deletions(-)
- delete mode 100644 drivers/devfreq/tegra20-devfreq.c
-
+>  	ret = devm_request_threaded_irq(&client->dev, client->irq, NULL,
+> -					max17040_thread_handler, flags,
+> +					max17040_thread_handler, IRQF_ONESHOT,
+>  					chip->battery->desc->name, chip);
+>  
+>  	return ret;
+> -- 
+> 2.25.1
+> 
