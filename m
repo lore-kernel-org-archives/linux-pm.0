@@ -2,73 +2,77 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
-	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id AC0BFC433FE
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 20:58:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 8099EC433FE
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 22:05:00 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 7224123D97
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 20:58:17 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3314E23D50
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 22:05:00 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2392806AbgLKTQ6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 14:16:58 -0500
-Received: from mail-ot1-f65.google.com ([209.85.210.65]:40700 "EHLO
-        mail-ot1-f65.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2392722AbgLKTQq (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 14:16:46 -0500
-Received: by mail-ot1-f65.google.com with SMTP id j12so9214009ota.7;
-        Fri, 11 Dec 2020 11:16:31 -0800 (PST)
+        id S2405281AbgLKVNU (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 16:13:20 -0500
+Received: from mail-oi1-f193.google.com ([209.85.167.193]:37452 "EHLO
+        mail-oi1-f193.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2392323AbgLKVNH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 16:13:07 -0500
+Received: by mail-oi1-f193.google.com with SMTP id l207so11436780oib.4;
+        Fri, 11 Dec 2020 13:12:51 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
-         :message-id:subject:to:cc;
-        bh=/xb5kc10vkM8dae1+GQbeQe8Yxiquajq/zv40ysf09E=;
-        b=ODJcj02Sj32x6hXbgLFmm0J67l3vXWF8DTOZLH9mynvidEfBjO26K571owfnW8AJ/1
-         6HBKi2FSPXBLUPtrFUiQgm0iif0kX4chGE6FmP8gvgj9mzGXM73kWuJs5QFheGq5UPw3
-         ZJwQ3E9rFkBCxq8+i5xVzQTZVw2LTQpjtE0U5bcGgnb8fIASP24cLbktIWvvPzXF4s2S
-         xc4nwHTRj/QwhlG2Ic8wjAIenJJNmStRvD4XWS+lvonkEHd/EM9eJDck4syE4eAnq5tc
-         xPAreOlzArgqJ/fFyIruYgcRiyemKUNNHQiqG3GPQWschVaGWK/NwgBUXKT/qWOhY7qJ
-         Z/xw==
-X-Gm-Message-State: AOAM532nyy/njTx4cYddee8C6rswk6i5GhvNusn6wd5OkLixbSHmKicI
-        jwyxekY/ypYGi/ITH0ZhjFuIEdV4jV6choorQew=
-X-Google-Smtp-Source: ABdhPJzRDR6GG3eZV2qJ1AJS21py7Hw4lkBANMjZcns4OwLpfEx7tM60fIIZ2oMaPhpOXxAR29Z/OEYTHKMjtO9wNfs=
-X-Received: by 2002:a9d:208a:: with SMTP id x10mr9220961ota.260.1607714165855;
- Fri, 11 Dec 2020 11:16:05 -0800 (PST)
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=kDEarIT6QtyZ9leo9UW3n9PcaYOZGBRD8Q7A2EVH/bk=;
+        b=AE+wjKpAgFX4dk/uPSFnGjZGddJlbd35kt/n5WsuqY0x/lgVMLnAZrDkB7wgnUC0f6
+         sD/WsRTORcFsUu/uSk6A0AS2ZctjO4oLJvW9j3jLxsLXUVVo7IbT398CaBvHN74lKJqX
+         Z6guxEKXOBi/0scocf3DuLrIHvgWoNWyjpYBl/OWHN9sorrcv8eyDg8yc8vluQT6aoFQ
+         BZSB3Bd1OrUVrY1R0pOiJCCc8kVWbcvKxOmaGJDR7lSJxxqjGZt6E5Hzjpbu7n3wum16
+         EnIiUggwXYHhysebAmyKzkWYcnjWy+Z/2t4QrfoY8fPB49m5DkzLALfyj8kV+u2Ukv5Q
+         my1g==
+X-Gm-Message-State: AOAM531Ffr72aAz9mjqYquyZMpZmRw4txkIXOtVpTBJfhtwX7DC0OwFv
+        1q4CA2CTiaNs5jEBJMjvRg==
+X-Google-Smtp-Source: ABdhPJzqwk8wLvsKy9ZMUr39mu3rcViIH1BQblnHU+cgFQ7mmj3SP4h6lGTWuefOzrIYXDGsgZrdPQ==
+X-Received: by 2002:a05:6808:96:: with SMTP id s22mr3204268oic.153.1607721146017;
+        Fri, 11 Dec 2020 13:12:26 -0800 (PST)
+Received: from xps15 (24-155-109-49.dyn.grandenetworks.net. [24.155.109.49])
+        by smtp.gmail.com with ESMTPSA id 8sm2193586oii.45.2020.12.11.13.12.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 11 Dec 2020 13:12:24 -0800 (PST)
+Received: (nullmailer pid 953910 invoked by uid 1000);
+        Fri, 11 Dec 2020 21:12:23 -0000
+Date:   Fri, 11 Dec 2020 15:12:23 -0600
+From:   Rob Herring <robh@kernel.org>
+To:     Michael Klein <michael@fossekall.de>
+Cc:     linux-kernel@vger.kernel.org,
+        Jernej Skrabec <jernej.skrabec@siol.net>,
+        Sebastian Reichel <sre@kernel.org>, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, Maxime Ripard <mripard@kernel.org>,
+        Chen-Yu Tsai <wens@csie.org>,
+        linux-arm-kernel@lists.infradead.org,
+        Rob Herring <robh+dt@kernel.org>
+Subject: Re: [PATCH v5 2/3] Documentation: DT: binding documentation for
+ regulator-poweroff
+Message-ID: <20201211211223.GA953171@robh.at.kernel.org>
+References: <20201211151445.115943-1-michael@fossekall.de>
+ <20201211151445.115943-3-michael@fossekall.de>
 MIME-Version: 1.0
-References: <20201208164145.19493-1-daniel.lezcano@linaro.org> <ba9c6f75-3964-3ee9-c849-17db5ae51501@linaro.org>
-In-Reply-To: <ba9c6f75-3964-3ee9-c849-17db5ae51501@linaro.org>
-From:   "Rafael J. Wysocki" <rafael@kernel.org>
-Date:   Fri, 11 Dec 2020 20:15:54 +0100
-Message-ID: <CAJZ5v0infKumCmn77nzAN80G4bmF+_ZzgGkdaeMvczC_VyjyGg@mail.gmail.com>
-Subject: Re: [PATCH v5 0/4] powercap/dtpm: Add the DTPM framework
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>
-Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Linux PM <linux-pm@vger.kernel.org>,
-        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-        Thara Gopinath <thara.gopinath@linaro.org>,
-        Lina Iyer <ilina@codeaurora.org>,
-        Ram Chandrasekar <rkumbako@codeaurora.org>,
-        Zhang Rui <rui.zhang@intel.com>,
-        Lukasz Luba <lukasz.luba@arm.com>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20201211151445.115943-3-michael@fossekall.de>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Fri, Dec 11, 2020 at 11:41 AM Daniel Lezcano
-<daniel.lezcano@linaro.org> wrote:
->
->
-> Hi Rafael,
->
-> I believe I took into account all the comments, do you think it is
-> possible to merge this series ?
+On Fri, 11 Dec 2020 16:14:44 +0100, Michael Klein wrote:
+> Add devicetree binding documentation for regulator-poweroff driver.
+> 
+> Signed-off-by: Michael Klein <michael@fossekall.de>
+> ---
+>  .../power/reset/regulator-poweroff.yaml       | 37 +++++++++++++++++++
+>  1 file changed, 37 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/power/reset/regulator-poweroff.yaml
+> 
 
-It should be, unless more changes are requested.
-
-I will be taking care of it next week and, if all goes well, it should
-be possible to push it during the second half of the merge window.
-
-Thanks!
+Reviewed-by: Rob Herring <robh@kernel.org>
