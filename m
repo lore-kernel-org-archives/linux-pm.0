@@ -2,155 +2,120 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-5.2 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,
-	SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=no autolearn_force=no
-	version=3.4.0
+X-Spam-Status: No, score=-10.3 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 699DDC4361B
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 14:04:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id C68FFC4361B
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 15:58:10 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 3C54F23EF1
-	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 14:04:40 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 5583B23B85
+	for <linux-pm@archiver.kernel.org>; Fri, 11 Dec 2020 15:58:10 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2394842AbgLKODx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 09:03:53 -0500
-Received: from 5.mo5.mail-out.ovh.net ([87.98.173.103]:49598 "EHLO
-        5.mo5.mail-out.ovh.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2406130AbgLKODn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 09:03:43 -0500
-X-Greylist: delayed 8910 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Dec 2020 09:03:42 EST
-Received: from player738.ha.ovh.net (unknown [10.108.20.107])
-        by mo5.mail-out.ovh.net (Postfix) with ESMTP id B96C52A2A5E
-        for <linux-pm@vger.kernel.org>; Fri, 11 Dec 2020 12:34:30 +0100 (CET)
-Received: from milecki.pl (ip-194-187-74-233.konfederacka.maverick.com.pl [194.187.74.233])
-        (Authenticated sender: rafal@milecki.pl)
-        by player738.ha.ovh.net (Postfix) with ESMTPSA id 6968B192F2835;
-        Fri, 11 Dec 2020 11:34:18 +0000 (UTC)
-Authentication-Results: garm.ovh; auth=pass (GARM-98R002455e66b5-f0f1-47e4-b964-e90a4cfbea73,
-                    DDBB76C1C8392C31EFBEE9FEDF413D15A2A340D3) smtp.auth=rafal@milecki.pl
-X-OVh-ClientIp: 194.187.74.233
-Subject: Re: [PATCH V2 2/2] reset: brcm-pmb: add driver for Broadcom's PMB
-To:     Philipp Zabel <p.zabel@pengutronix.de>,
-        Florian Fainelli <f.fainelli@gmail.com>,
-        =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <zajec5@gmail.com>,
-        Rob Herring <robh+dt@kernel.org>,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Kevin Hilman <khilman@kernel.org>,
-        Ulf Hansson <ulf.hansson@linaro.org>
-Cc:     devicetree@vger.kernel.org, bcm-kernel-feedback-list@broadcom.com,
-        linux-pm@vger.kernel.org
-References: <20201119125600.8559-1-zajec5@gmail.com>
- <20201119125600.8559-3-zajec5@gmail.com>
- <d5162eae806f21f583c6dbdf7bb79384a3d9d5cf.camel@pengutronix.de>
- <4eeb0a1c-75e4-94ad-8fbb-aeb347aea5d0@gmail.com>
- <3a42f4638ce6b2916eea07adf5822b06e2d1ca02.camel@pengutronix.de>
-From:   =?UTF-8?B?UmFmYcWCIE1pxYJlY2tp?= <rafal@milecki.pl>
-Message-ID: <6d4554fd-04ba-65f5-6715-988d2517350e@milecki.pl>
-Date:   Fri, 11 Dec 2020 12:34:17 +0100
-User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
- Thunderbird/78.5.1
+        id S2392763AbgLKPNN (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 10:13:13 -0500
+Received: from foss.arm.com ([217.140.110.172]:34458 "EHLO foss.arm.com"
+        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+        id S2392751AbgLKPMw (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Fri, 11 Dec 2020 10:12:52 -0500
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 35BA931B;
+        Fri, 11 Dec 2020 07:12:03 -0800 (PST)
+Received: from [10.57.25.185] (unknown [10.57.25.185])
+        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 81A923F66B;
+        Fri, 11 Dec 2020 07:12:00 -0800 (PST)
+Subject: Re: [PATCH v4 0/5] Thermal devfreq cooling improvements with Energy
+ Model
+To:     daniel.lezcano@linaro.org
+Cc:     linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        dri-devel@lists.freedesktop.org, rui.zhang@intel.com,
+        amit.kucheria@verdurent.com, orjan.eide@arm.com, robh@kernel.org,
+        alyssa.rosenzweig@collabora.com, steven.price@arm.com,
+        airlied@linux.ie, daniel@ffwll.ch, ionela.voinescu@arm.com
+References: <20201210143014.24685-1-lukasz.luba@arm.com>
+From:   Lukasz Luba <lukasz.luba@arm.com>
+Message-ID: <04bdcc7a-c264-ffd2-89a2-5606e59ff786@arm.com>
+Date:   Fri, 11 Dec 2020 15:11:58 +0000
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:60.0) Gecko/20100101
+ Thunderbird/60.9.0
 MIME-Version: 1.0
-In-Reply-To: <3a42f4638ce6b2916eea07adf5822b06e2d1ca02.camel@pengutronix.de>
+In-Reply-To: <20201210143014.24685-1-lukasz.luba@arm.com>
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Language: en-US
-Content-Transfer-Encoding: 8bit
-X-Ovh-Tracer-Id: 6432829120779947569
-X-VR-SPAMSTATE: OK
-X-VR-SPAMSCORE: -100
-X-VR-SPAMCAUSE: gggruggvucftvghtrhhoucdtuddrgedujedrudekvddgfedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuqfggjfdpvefjgfevmfevgfenuceurghilhhouhhtmecuhedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepuffvfhfhkffffgggjggtgfesthekredttdefjeenucfhrhhomheptfgrfhgrlhcuofhilhgvtghkihcuoehrrghfrghlsehmihhlvggtkhhirdhplheqnecuggftrfgrthhtvghrnhepkeduheejheffudefhffghfegjeejleetkeevueelveegkefhhfffieehleelgfevnecukfhppedtrddtrddtrddtpdduleegrddukeejrdejgedrvdeffeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhhouggvpehsmhhtphdqohhuthdphhgvlhhopehplhgrhigvrhejfeekrdhhrgdrohhvhhdrnhgvthdpihhnvghtpedtrddtrddtrddtpdhmrghilhhfrhhomheprhgrfhgrlhesmhhilhgvtghkihdrphhlpdhrtghpthhtoheplhhinhhugidqphhmsehvghgvrhdrkhgvrhhnvghlrdhorhhg
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On 09.12.2020 12:24, Philipp Zabel wrote:
-> On Tue, 2020-12-08 at 12:20 -0800, Florian Fainelli wrote:
->> On 12/8/20 3:02 AM, Philipp Zabel wrote:
->>> Hi Rafał,
->>>
->>> On Thu, 2020-11-19 at 13:56 +0100, Rafał Miłecki wrote:
->>>> From: Rafał Miłecki <rafal@milecki.pl>
->>>>
->>>> PMB can be found on BCM4908 and many other chipsets (e.g. BCM63138).
->>>> It's needed to power on and off SoC blocks like PCIe, SATA, USB.
->>>
->>> This sentence, the register names, and
->>> the brcm_pmb_power_on/off_device/zone functions below make me worry that
->>> this should be a power domain controller (pm_genpd in drivers/soc)
->>> instead.
->>> Does PM in PMB stand for power management by chance?
->>
->> It does, PMB stands for Power Management Bus.
->>
->>> If this actually cuts power to the USB and PCIe cores instead of just
->>> controlling reset lines, it would be better to implement this
->>> differently.
->>
->> What is tricky is this is a combined reset/clock/power zones controller.
->> You rarely turn off/assert one of those without also turning
->> off/asserting the others.
+Hi Daniel,
+
+Do you think it has chance to go to as material for v5.11?
+
+Regards,
+Lukasz
+
+
+On 12/10/20 2:30 PM, Lukasz Luba wrote:
+> Hi all,
 > 
-> It is common to have power management controllers also control clocks
-> and resets.
-> If the PMB controlled clocks and resets are only required for the power
-> on/off sequences, you should be able to move the current .(de)assert
-> implementations into a generic_pm_domain's .power_on and .power_off
-> methods.
-
-Thanks for your comments Philipp! I just took a look at generic PM domains.
-While I accept you know better that this hw support should be implemented
-using generic PM domains, I'm not sure how to correctly proceed with that.
-
-***
-
-One great thing about reset controllers is that they have:
-1. xlate function retuning int
-2. (de)assert functions taking unsigned long id argument
-
-That fits PMB hardware design very nicely as I can specify in DT:
-1. Type of device to reset
-2. ID of device to reset
-
-Basically: I can use:
-#reset-cells = <2>;
-and then sth like:
-resets = <&pmb BRCM_PMB_USB 17>;
-
-***
-
-In the struct generic_pm_domain we have "power_off" and "power_on" that take
-no extra arguments however. Also its xlate has to return a single "struct
-generic_pm_domain".
-
-Please note that PMB can support for up 256 devices.
-
-If I try to use generic PM domains to handle PMB hw in the same way I'll hit
-two problems:
-
-1. I'll have to register 256 "struct generic_pm_domain"s.
-2. I won't have a clean way of passing device type (xlate limitation).
-
-I can try to workaround the later just like in case of "ti,sci-pm-domain"
-which uses #power-domain-cells = <2>. It seems hacky though as its "xlate"
-handler stores args[1] in internal struct and hopes no another xlate call
-will get executed before "power_on" or "power_off" call.
-
-***
-
-So I guess my real option is to store info about SoC devices in the PM
-driver and create one "struct generic_pm_domain" for each known device only.
-
-Then have something like:
-#define BRCM_PMB_HOST_USB		0x01
-#define BRCM_PMB_HOST_USB2		0x02
-#define BRCM_PMB_HOST_USB3		0x03
-#define BRCM_PMB_PCIE0			0x04
-#define BRCM_PMB_PCIE1			0x05
-#define BRCM_PMB_PCIE2			0x06
-
-And finally:
-power-domains = <&pmb0 BRCM_PMB_HOST_USB>;
-power-domains = <&pmb0 BRCM_PMB_PCIE0>;
-power-domains = <&pmb0 BRCM_PMB_PCIE1>;
-
-What do you think about it? Is it the way to go?
+> This patch set is a continuation of my previous work, which aimed
+> to add Energy Model to all devices [1]. This series is a follow up
+> for the patches which got merged to v5.9-rc1. It aims to change
+> the thermal devfreq cooling and use the Energy Model instead of
+> private power table and structures. The power model is now simplified,
+> static power and dynamic power are removed. The new registration interface
+> in the patch 3/5 helps to register devfreq cooling and the EM in one call.
+> There is also small improvement, patch 2/5 is changing the way how
+> thermal gets the device status (now uses a copy) and normalize the values.
+> The last patch is here for consistency and will probably go through drm tree.
+> 
+> The patch set should apply on top of thermal/testing. It does not depend on
+> new EM API change which is queued in the pm/linux-next tree as v5.11 material.
+> Thus, could go in parallel. That was the main motiviation for this v4.
+> 
+> changes:
+> v4:
+> - patch 3/5 - removed dependency on the EM API change
+> -- removed em_dev_register_perf_domain() and just use
+>     dev_pm_opp_of_register_em() which API has not changed
+> -- removed a helper registration function and renamed
+>     devfreq_cooling_em_register_power() to devfreq_cooling_em_register()
+>     (was actually suggested by Ionela during review)
+> -- moved energy_model.h to include in devfreq_cooling.c not .h, since
+>     there is no EM structure in there anymore
+> - adjusted comments and commit messages
+> v3 [4]:
+> - dropped direct check of device status and used just a copy of 'status';
+>    a separate patch set will be proposed to address this issue
+> - modified _normalize_load() and used 1024 scale to handle ms, us, ns
+> - removed 'em_registered' and called em_dev_unregister_perf_domain()
+>    unconditionally, so the drivers will have to make sure the right order of
+>    all unregister calls to frameworks which might use EM; this call must be last
+>    one; a proper comment added
+> - removed 'em' pointer from struct devfreq_cooling_device, 'dev->em_pd' is used
+> - removed of_node_get/put(), since the code can handle it
+> - removed dfc_em_get_requested_power() (as missed to do it in v2)
+> - collected all Reviewed-by tags
+> v2 [3]:
+> - renamed freq_get_state() and related to perf_idx pattern as
+>    suggested by Ionela
+> v1 [2]
+> 
+> Regards,
+> Lukasz Luba
+> 
+> Lukasz Luba (5):
+>    thermal: devfreq_cooling: change tracing function and arguments
+>    thermal: devfreq_cooling: use a copy of device status
+>    thermal: devfreq_cooling: add new registration functions with Energy
+>      Model
+>    thermal: devfreq_cooling: remove old power model and use EM
+>    drm/panfrost: Register devfreq cooling and attempt to add Energy Model
+> 
+>   drivers/gpu/drm/panfrost/panfrost_devfreq.c |   2 +-
+>   drivers/thermal/devfreq_cooling.c           | 391 +++++++++-----------
+>   include/linux/devfreq_cooling.h             |  27 +-
+>   include/trace/events/thermal.h              |  19 +-
+>   4 files changed, 198 insertions(+), 241 deletions(-)
+> 
