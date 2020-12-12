@@ -2,102 +2,67 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS autolearn=unavailable
+X-Spam-Status: No, score=-10.2 required=3.0 tests=BAYES_00,
+	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,USER_AGENT_SANE_1 autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 28187C1B0D8
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 01:01:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 0D36EC4167B
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 03:59:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id EA7B42343E
-	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 01:00:59 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DAA192343E
+	for <linux-pm@archiver.kernel.org>; Sat, 12 Dec 2020 03:59:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2405939AbgLKOSt (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Fri, 11 Dec 2020 09:18:49 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:42910 "EHLO
+        id S2405339AbgLLD7F (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Fri, 11 Dec 2020 22:59:05 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56314 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2405940AbgLKOSf (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 09:18:35 -0500
-Received: from mail-ed1-x544.google.com (mail-ed1-x544.google.com [IPv6:2a00:1450:4864:20::544])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 136F8C061793;
-        Fri, 11 Dec 2020 06:17:55 -0800 (PST)
-Received: by mail-ed1-x544.google.com with SMTP id r5so9496054eda.12;
-        Fri, 11 Dec 2020 06:17:55 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=+NgxUEH5uFqT7GDJPbuM1Ogf8MzS8XSgNJtKE+wwyRM=;
-        b=eH3w6NcIrC4xR4v4M3keq2M/BL0t2cwI16kEboijRZfq6Z/BTQ+ESL3w5hoKKkEOXT
-         SLBYPbGknhUXI16fYN9cYVb8fLhLhfvs6R9mrEutwyx7Leat26hRcjZuKVPppQnZ+vK+
-         sN87DmWq2PAz8rYhe2QDmSf8szPzK3boRvTQbTKcHfYziRcji01nlYxnPhd+asjkO9ps
-         FSbyVfVTGUtBUm1ijk6YSRiCdEMDJ8O1yx5ATtbTYGAP95CY9uXt4+gh3Oyby42kzViW
-         5h9VDu+eDbtUek/2d0uKETiIWxaMDwuy1GT9rLoHSM7/8Uwrm+S4S2lq7GI6M/klKKSc
-         duHQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=+NgxUEH5uFqT7GDJPbuM1Ogf8MzS8XSgNJtKE+wwyRM=;
-        b=YRxjb5mXaEvdxRfI/sBZQDRJ5NviS+gbGFmKMank8/GqAl2Y58+mz61mUWy7Sq3M7/
-         MvCjQ7VeRxret0kBsH1GezX1mKJR8AnfxY7ewsaCoE2XfYGFE0ZWc814JltyFy0xFbUe
-         3tyQbq+Zf65L2HBR8vMUjYecDUF94YAiwkIhMfNI6/IXuASFw5a+T25/ml9rEGinZ2Og
-         2C8bPVPZk/25Ptggpix1TjQBGiH35ozgA+ZvC/lErKuSRXnPCqglS5mqAYiXmIwvGy5b
-         TMms+dxIGSA/gaxhwaI2IStI6estS0xGvU4qd1K5AIoUQnQzkwO2MYKWN9QmQ3iGUcXc
-         jfMQ==
-X-Gm-Message-State: AOAM5304AKAeH9ZM2RzSKcNjuk1zrv3rjCeyHOjzel+Q7beow/brN/hy
-        LMde0pvT4UOTR8PoyfLXSOI=
-X-Google-Smtp-Source: ABdhPJyCV4eEUT00ElKYzI3O1FRpkgysz4KnZm/C8ZHCZfpvl64Ch2HD0rRzWxhHGWhbIETRq831mQ==
-X-Received: by 2002:a05:6402:388:: with SMTP id o8mr11821809edv.359.1607696273795;
-        Fri, 11 Dec 2020 06:17:53 -0800 (PST)
-Received: from ubuntu2004 ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id o11sm6865675ejh.55.2020.12.11.06.17.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 11 Dec 2020 06:17:53 -0800 (PST)
-Date:   Fri, 11 Dec 2020 16:17:51 +0200
-From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-To:     Rob Herring <robh@kernel.org>
-Cc:     Lee Jones <lee.jones@linaro.org>, devicetree@vger.kernel.org,
-        linux-input@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
-        linux-pm@vger.kernel.org, Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, Mark Brown <broonie@kernel.org>,
-        linux-actions@lists.infradead.org,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>
-Subject: Re: [PATCH v3 2/7] dt-bindings: mfd: Add Actions Semi ATC260x PMIC
- binding
-Message-ID: <20201211141751.GA360406@ubuntu2004>
-References: <cover.1607216141.git.cristian.ciocaltea@gmail.com>
- <fe0ab8ef20813a2623cd1e543b16bb21c5b63367.1607216141.git.cristian.ciocaltea@gmail.com>
- <20201211031743.GA3562977@robh.at.kernel.org>
+        with ESMTP id S2405302AbgLLD6p (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Fri, 11 Dec 2020 22:58:45 -0500
+X-Greylist: delayed 424 seconds by postgrey-1.37 at lindbergh.monkeyblade.net; Fri, 11 Dec 2020 19:58:04 PST
+Received: from cavan.codon.org.uk (cavan.codon.org.uk [IPv6:2a00:1098:84:22e::1])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E7489C0613CF;
+        Fri, 11 Dec 2020 19:58:04 -0800 (PST)
+Received: by cavan.codon.org.uk (Postfix, from userid 1000)
+        id 6E4CB41572; Sat, 12 Dec 2020 03:50:12 +0000 (UTC)
+Date:   Sat, 12 Dec 2020 03:50:12 +0000
+From:   Matthew Garrett <mjg59@codon.org.uk>
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>
+Cc:     rui.zhang@intel.com, linux-pm@vger.kernel.org,
+        linux-kernel@vger.kernel.org, amitk@kernel.org,
+        Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: [PATCH] thermal/core: Make 'forced_passive' as obsolete candidate
+Message-ID: <20201212035012.GA11926@codon.org.uk>
+References: <20201208153046.297456-1-daniel.lezcano@linaro.org>
+ <cc2085ca-ada9-d616-eed5-3496889da3bb@linaro.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20201211031743.GA3562977@robh.at.kernel.org>
+In-Reply-To: <cc2085ca-ada9-d616-eed5-3496889da3bb@linaro.org>
+User-Agent: Mutt/1.10.1 (2018-07-13)
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, Dec 10, 2020 at 09:17:43PM -0600, Rob Herring wrote:
-> On Sun, 06 Dec 2020 03:27:02 +0200, Cristian Ciocaltea wrote:
-> > Add devicetree binding for Actions Semi ATC260x PMICs.
+On Fri, Dec 11, 2020 at 02:17:55PM +0100, Daniel Lezcano wrote:
+> On 08/12/2020 16:30, Daniel Lezcano wrote:
+> > The passive file in sysfs forces the usage of a passive trip point set
+> > by the userspace when a broken BIOS does not provide the mitigation
+> > temperature for such thermal zone. The hardware evolved a lot since
+> > 2008 as a good thermal management is no longer an option.
 > > 
-> > Signed-off-by: Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
+> > Linux on the other side also provides now a way to load fixed ACPI
+> > table via the option ACPI_TABLE_UPGRADE, so additionnal trip point
+> > could be added there.
+> > 
+> > Set the option obsolete and plan to remove it, so the corresponding
+> > code can be removed from the core code and allow more cleanups the
+> > thermal framework deserves.
+> > 
+> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 > > ---
-> > Changes in v3 (according to Rob's review):
-> >  - Dropped the 'pwrc' and 'onkey' nodes
-> >  - Used a common 'reset-time-sec' property
-> > 
-> >  .../bindings/mfd/actions,atc260x.yaml         | 181 ++++++++++++++++++
-> >  1 file changed, 181 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/mfd/actions,atc260x.yaml
-> > 
 > 
-> Reviewed-by: Rob Herring <robh@kernel.org>
+> Is there any concern about this change ?
 
-Thanks for reviewing,
-Cristi
+Yes - what's the reason to do so? The code isn't specific to ACPI,
+so being able to override ACPI tables doesn't seem to justify it.
