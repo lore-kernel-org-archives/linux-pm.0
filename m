@@ -7,62 +7,62 @@ X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
 	USER_AGENT_GIT autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5201BC4361B
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 23:41:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 323EAC2BB40
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 23:41:44 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1317222510
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 23:41:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id BCC0822510
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 23:41:43 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726769AbgLNXlF (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Dec 2020 18:41:05 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46692 "EHLO
+        id S1727228AbgLNXl1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Dec 2020 18:41:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:46724 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726686AbgLNXlD (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2020 18:41:03 -0500
-Received: from mail-wm1-x342.google.com (mail-wm1-x342.google.com [IPv6:2a00:1450:4864:20::342])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id E882DC061285
-        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2020 15:40:01 -0800 (PST)
-Received: by mail-wm1-x342.google.com with SMTP id a3so16793499wmb.5
-        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2020 15:40:01 -0800 (PST)
+        with ESMTP id S1727136AbgLNXlJ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2020 18:41:09 -0500
+Received: from mail-wm1-x343.google.com (mail-wm1-x343.google.com [IPv6:2a00:1450:4864:20::343])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 597B6C0611CD
+        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2020 15:40:06 -0800 (PST)
+Received: by mail-wm1-x343.google.com with SMTP id 190so5044345wmz.0
+        for <linux-pm@vger.kernel.org>; Mon, 14 Dec 2020 15:40:06 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
         h=from:to:cc:subject:date:message-id:in-reply-to:references
          :mime-version:content-transfer-encoding;
-        bh=Vw6zXAVb14wYNaSbzDr0/nxXdw6EsBX7NJU8sXRM6aI=;
-        b=f0g8Uw1Cgwv+yIrfOsY4jCzbXBoIw7JjgtgY4EsnRINvE1qvXl5DzItAGzHfavvWmx
-         Jek0Anymic0OdGaHMyxPP5Uw0jxtUhK6dZG5a16Mzm8Jkfgijq/Og0uYX0oMIYdZRqAS
-         Cg3ufEp08+FpYgua4YJFKbz8GYbDkDWzUZDOHQrEW3hPRsDcxK/2Hw3BSw8jVyYOoHUe
-         VW2sGsh7HDRnK6lpYze7a5TdkAJAr5zfoMBnIyAjhjq6TpZHM3TCznwmZgd4Zw/flG7H
-         8xCdoJqi3YisO6ynAePqxRm2qHhVd3qTGvMsPj8aG4SSE5oHfkvf+GIWMxtpwIkfTv1L
-         UG+Q==
+        bh=AjsclEsqT88jpSQ7xfg3w1NdJS1z7YOg80HC0xXR68s=;
+        b=Yhypwya/g0XFvAC4yF97ofNejTZRbDAMPY6R5qH7pFRe2VEtAvsN3ZMtHKnjIXapNO
+         XPeUEGcNll8vn1LjHAEBpljNv4jLfxle0gMFoSDHEMzFjl9GqTgxunbevV6CjZ7ZI/2E
+         ywP5U13diSRGlrJHkbYwmHFMzP7MSLmOygLiBBtmnYFGCYK1smRUlC+Xp9yxLbaGYqup
+         e4JPMH5ac/9fYLUkXEb9qCr3ETN74hYLnxIfRLBjdE4efkH9qOVug0Gr3x8lZqFFHjn+
+         FYg9hVfnEh0qKxOzHIpP0fiWoO4QlKvUVPdYeQ22ouRz7Y7L/MpTIV7795yW8S/ntYRn
+         flyA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
         h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
          :references:mime-version:content-transfer-encoding;
-        bh=Vw6zXAVb14wYNaSbzDr0/nxXdw6EsBX7NJU8sXRM6aI=;
-        b=gO7+7umcLFqHXZlsHCA5y9C3XonnwNnV/oam/14elCmojQYwLqJfSDjTwa5BQBtm9Z
-         t5BIpEbvJbp82ZtypSmxNkMunq+JCEFSEZzGHgIToi9kw8v084sx24AQN/K+S/Z1m+EZ
-         NWF8j6x9O7jbWJ0UO0MJGa7sEEkBDTSlB0Ik+bvdW2GJSyUPKiVoEQ18Kh7o81fbLB07
-         qZjlLn1r08NBBBUigo8b4JmoqswJe95qKeu7UcgtF2fkg0+4J44jyq395PnG9AC8t/Ue
-         x4uXJ8xwouVRVhTzT3Eec/7N+/8LfFP8nE26fZ333+sdyl9YD5vN8Ig1ATtnZlbU9wvy
-         gk3g==
-X-Gm-Message-State: AOAM533Jfm/BAcGJzhKc2CagVGEj6UBRUZwyQAxZ8VlbHYrC5mkaI3ES
-        SLFYkWsoXNk4bldmtV9ZeDoybw==
-X-Google-Smtp-Source: ABdhPJz/TXdVSmSV9uuN9MKZOBy/WrOLpNpW4epEuhuCbLNQk+aSlDQU3niNx/VMxzXzAl4huVGIUA==
-X-Received: by 2002:a7b:cd90:: with SMTP id y16mr30789973wmj.115.1607989200619;
-        Mon, 14 Dec 2020 15:40:00 -0800 (PST)
+        bh=AjsclEsqT88jpSQ7xfg3w1NdJS1z7YOg80HC0xXR68s=;
+        b=Q1Gu5953XHaeYXKIz3KidPEI0GNVoXoGs++FdExeJHiFA42CmsuLlyveHwehuR6Gp7
+         jzD7JdCuwcdQS8BnSCS2aH02PZZrufxsZIX/5bDqSPRDd+7zfbD6XZFxjkJLuRuCXMoz
+         Bfg62iiVuZdtmE4ktEq0QHsUZ+oGopToqeWcIaEypyzQbjsFpEeYqvV3Way08k/EOWm7
+         dbT2w1VqnR+ym5D0r9YxCtLVdan/tvR6HqOOItlNFW58kmASlsP9Az+Akyh62mScA9GR
+         HqzuNz4FSrndgxLbl9xk6QAkupJPNZ2xBS/X4N3fAPBHU+NDgO2anXZhuyklsP6KwAKA
+         w99w==
+X-Gm-Message-State: AOAM530qc9KjFwwiY47UGkbbdQgGXplEkTKps7pojdU8x8yKT1KKLmVU
+        5C5cG01kqWfJeByCHINigkKafA==
+X-Google-Smtp-Source: ABdhPJyTPOduhar+VS6zDewwhwiUxZs6e511iBQDuRYXqghCcIYvkDimf8rE3Iy6mvlypHGijwcM0g==
+X-Received: by 2002:a1c:e084:: with SMTP id x126mr29921117wmg.109.1607989205027;
+        Mon, 14 Dec 2020 15:40:05 -0800 (PST)
 Received: from mai.imgcgcw.net ([2a01:e34:ed2f:f020:e842:4086:6f24:55a6])
-        by smtp.gmail.com with ESMTPSA id h3sm34145075wmm.4.2020.12.14.15.39.59
+        by smtp.gmail.com with ESMTPSA id h3sm34145075wmm.4.2020.12.14.15.40.03
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 14 Dec 2020 15:39:59 -0800 (PST)
+        Mon, 14 Dec 2020 15:40:04 -0800 (PST)
 From:   Daniel Lezcano <daniel.lezcano@linaro.org>
 To:     daniel.lezcano@linaro.org, rui.zhang@intel.com
 Cc:     mjg59@codon.org.uk, linux-pm@vger.kernel.org,
         linux-kernel@vger.kernel.org, amitk@kernel.org,
         thara.gopinath@linaro.org
-Subject: [PATCH 3/6] thermal/core: Remove pointless test with the THERMAL_TRIPS_NONE macro
-Date:   Tue, 15 Dec 2020 00:38:06 +0100
-Message-Id: <20201214233811.485669-3-daniel.lezcano@linaro.org>
+Subject: [PATCH 6/6] thermal/core: Remove unused macro THERMAL_TRIPS_NONE
+Date:   Tue, 15 Dec 2020 00:38:09 +0100
+Message-Id: <20201214233811.485669-6-daniel.lezcano@linaro.org>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20201214233811.485669-1-daniel.lezcano@linaro.org>
 References: <20201214233811.485669-1-daniel.lezcano@linaro.org>
@@ -72,30 +72,25 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The THERMAL_TRIPS_NONE is equal to -1, it is pointless to do a
-conversion in this function.
+The macro THERMAL_TRIPS_NONE is no longer used, remove it.
 
 Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
 ---
- drivers/thermal/thermal_sysfs.c | 5 +----
- 1 file changed, 1 insertion(+), 4 deletions(-)
+ include/linux/thermal.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/drivers/thermal/thermal_sysfs.c b/drivers/thermal/thermal_sysfs.c
-index 4e7f9e880d76..345917a58f2f 100644
---- a/drivers/thermal/thermal_sysfs.c
-+++ b/drivers/thermal/thermal_sysfs.c
-@@ -875,10 +875,7 @@ trip_point_show(struct device *dev, struct device_attribute *attr, char *buf)
- 	instance =
- 	    container_of(attr, struct thermal_instance, attr);
+diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+index a57232a9a6f9..060a2160add4 100644
+--- a/include/linux/thermal.h
++++ b/include/linux/thermal.h
+@@ -17,7 +17,6 @@
+ #include <linux/workqueue.h>
+ #include <uapi/linux/thermal.h>
  
--	if (instance->trip == THERMAL_TRIPS_NONE)
--		return sprintf(buf, "-1\n");
--	else
--		return sprintf(buf, "%d\n", instance->trip);
-+	return sprintf(buf, "%d\n", instance->trip);
- }
+-#define THERMAL_TRIPS_NONE	-1
+ #define THERMAL_MAX_TRIPS	12
  
- ssize_t
+ /* invalid cooling state */
 -- 
 2.25.1
 
