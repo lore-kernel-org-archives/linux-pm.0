@@ -2,105 +2,87 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-5.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS autolearn=no autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2D788C2BB40
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 12:41:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id AD3CDC4361B
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 12:41:59 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id D6C9E2250E
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 12:41:31 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 61D54206FB
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 12:41:59 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2407357AbgLNMkI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Dec 2020 07:40:08 -0500
-Received: from foss.arm.com ([217.140.110.172]:46750 "EHLO foss.arm.com"
-        rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S2407235AbgLNMkA (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Mon, 14 Dec 2020 07:40:00 -0500
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-        by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC63C11FB;
-        Mon, 14 Dec 2020 04:39:14 -0800 (PST)
-Received: from e108754-lin.cambridge.arm.com (unknown [10.1.198.32])
-        by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 3AACB3F66B;
-        Mon, 14 Dec 2020 04:39:13 -0800 (PST)
-From:   Ionela Voinescu <ionela.voinescu@arm.com>
-To:     rjw@rjwysocki.net, viresh.kumar@linaro.org, lenb@kernel.org
-Cc:     yousaf.kaukab@suse.com, jeremy.linton@arm.com, lukasz.luba@arm.com,
-        valentin.schneider@arm.com, linux-acpi@vger.kernel.org,
-        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org,
-        ionela.voinescu@arm.com
-Subject: [PATCH v2 3/4] cppc_cpufreq: expose information on frequency domains
-Date:   Mon, 14 Dec 2020 12:38:22 +0000
-Message-Id: <20201214123823.3949-4-ionela.voinescu@arm.com>
-X-Mailer: git-send-email 2.29.2.dirty
-In-Reply-To: <20201214123823.3949-1-ionela.voinescu@arm.com>
-References: <20201214123823.3949-1-ionela.voinescu@arm.com>
+        id S2407519AbgLNMl1 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Dec 2020 07:41:27 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:56604 "EHLO
+        lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S2407257AbgLNMlS (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2020 07:41:18 -0500
+Received: from mail.skyhub.de (mail.skyhub.de [IPv6:2a01:4f8:190:11c2::b:1457])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 1EE7BC0613CF;
+        Mon, 14 Dec 2020 04:40:38 -0800 (PST)
+Received: from zn.tnic (p200300ec2f0a470045f2ad4f8d5ac204.dip0.t-ipconnect.de [IPv6:2003:ec:2f0a:4700:45f2:ad4f:8d5a:c204])
+        (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+        (No client certificate requested)
+        by mail.skyhub.de (SuperMail on ZX Spectrum 128k) with ESMTPSA id A62F51EC0518;
+        Mon, 14 Dec 2020 13:40:36 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=dkim;
+        t=1607949636;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:in-reply-to:in-reply-to:  references:references;
+        bh=GEjtONQLztM4l6fqlu0/p/U/N6XQIhTzVwLg91ABImU=;
+        b=BENNIPNsDRYudHYbN0ot904umrFe64GAJovJIb9gbrPuMgUsbXmNIfrhti6TgbsIVQmDCV
+        fNCewDuF45fiMtsoPpNEjqbYPIxcJHhYv9EZGoiJdRzG/Sbaok8Pcby3/F4/WzzRVt9Xq/
+        G/FcXZK8QfehzOTIBFKFMme0p3S2qvw=
+Date:   Mon, 14 Dec 2020 13:40:23 +0100
+From:   Borislav Petkov <bp@alien8.de>
+To:     Punit Agrawal <punitagrawal@gmail.com>
+Cc:     Wei Huang <whuang2@amd.com>, rjw@rjwysocki.net, wei.huang2@amd.com,
+        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
+        x86@kernel.org
+Subject: Re: [RFC PATCH 2/4] cpufreq: acpi-cpufreq: Add processor to the
+ ignore PSD override list
+Message-ID: <20201214124023.GA25916@zn.tnic>
+References: <20201125144847.3920-1-punitagrawal@gmail.com>
+ <20201125144847.3920-3-punitagrawal@gmail.com>
+ <cadb5d57-5aaf-79bc-e30e-502d5e522689@amd.com>
+ <20201207202610.GG20489@zn.tnic>
+ <e9b4ae11-1fe3-a660-bb65-d3ba55ffcc56@amd.com>
+ <20201207223057.GJ20489@zn.tnic>
+ <87a6unq3xv.fsf@stealth>
+ <20201208233216.GH27920@zn.tnic>
+ <871rfvoqy7.fsf@stealth>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <871rfvoqy7.fsf@stealth>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Use the existing sysfs attribute "freqdomain_cpus" to expose
-information to userspace about CPUs in the same frequency domain.
+On Sat, Dec 12, 2020 at 08:36:48AM +0900, Punit Agrawal wrote:
+> To me it suggests, that there are likely more systems from the family
+> that show the characteristic described below.
 
-Signed-off-by: Ionela Voinescu <ionela.voinescu@arm.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Rafael J. Wysocki <rjw@rjwysocki.net>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>
----
- Documentation/ABI/testing/sysfs-devices-system-cpu |  3 ++-
- drivers/cpufreq/cppc_cpufreq.c                     | 14 ++++++++++++++
- 2 files changed, 16 insertions(+), 1 deletion(-)
+Until we find a *single* system with a broken BIOS which has those
+objects kaputt and then this heuristic would need an exception.
 
-diff --git a/Documentation/ABI/testing/sysfs-devices-system-cpu b/Documentation/ABI/testing/sysfs-devices-system-cpu
-index 1a04ca8162ad..0eee30b27ab6 100644
---- a/Documentation/ABI/testing/sysfs-devices-system-cpu
-+++ b/Documentation/ABI/testing/sysfs-devices-system-cpu
-@@ -264,7 +264,8 @@ Description:	Discover CPUs in the same CPU frequency coordination domain
- 		attribute is useful for user space DVFS controllers to get better
- 		power/performance results for platforms using acpi-cpufreq.
- 
--		This file is only present if the acpi-cpufreq driver is in use.
-+		This file is only present if the acpi-cpufreq or the cppc-cpufreq
-+		drivers are in use.
- 
- 
- What:		/sys/devices/system/cpu/cpu*/cache/index3/cache_disable_{0,1}
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index f15a44c8b6b7..40b58d2dbbc6 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -402,6 +402,19 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- 	return 0;
- }
- 
-+static ssize_t show_freqdomain_cpus(struct cpufreq_policy *policy, char *buf)
-+{
-+	unsigned int cpu = policy->cpu;
-+
-+	return cpufreq_show_cpus(all_cpu_data[cpu]->shared_cpu_map, buf);
-+}
-+cpufreq_freq_attr_ro(freqdomain_cpus);
-+
-+static struct freq_attr *cppc_cpufreq_attr[] = {
-+	&freqdomain_cpus,
-+	NULL,
-+};
-+
- static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.flags = CPUFREQ_CONST_LOOPS,
- 	.verify = cppc_verify_policy,
-@@ -410,6 +423,7 @@ static struct cpufreq_driver cppc_cpufreq_driver = {
- 	.init = cppc_cpufreq_cpu_init,
- 	.stop_cpu = cppc_cpufreq_stop_cpu,
- 	.set_boost = cppc_cpufreq_set_boost,
-+	.attr = cppc_cpufreq_attr,
- 	.name = "cppc_cpufreq",
- };
- 
+VS the clear statement from AMD that from zen3 onwards, all BIOS will be
+tested. I hope they boot Linux at least before they ship.
+
+> In all these systems, the override causes this topology information to
+> be ignored - treating each core to be a separate domain. The proposed
+> patch removes the override so that _PSD is taken into account.
+
+You're still not answering my question: what does the coupling of the
+SMT threads bring on those systems? Power savings? Perf improvement?
+Anything palpable or measurable?
+
+Thx.
+
 -- 
-2.29.2.dirty
+Regards/Gruss,
+    Boris.
 
+https://people.kernel.org/tglx/notes-about-netiquette
