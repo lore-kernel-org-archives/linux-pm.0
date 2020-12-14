@@ -4,24 +4,24 @@ X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 X-Spam-Level: 
 X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
 	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id BDA09C2BB40
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 20:11:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1D4FDC4361B
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 20:17:18 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 6E77E2168B
-	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 20:11:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id DAF72207A2
+	for <linux-pm@archiver.kernel.org>; Mon, 14 Dec 2020 20:17:17 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S2502986AbgLNUKv (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 14 Dec 2020 15:10:51 -0500
-Received: from cloudserver094114.home.pl ([79.96.170.134]:55000 "EHLO
+        id S2502900AbgLNUKr (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 14 Dec 2020 15:10:47 -0500
+Received: from cloudserver094114.home.pl ([79.96.170.134]:49690 "EHLO
         cloudserver094114.home.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S2502853AbgLNUKn (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2020 15:10:43 -0500
+        with ESMTP id S2388148AbgLNUK0 (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 14 Dec 2020 15:10:26 -0500
 Received: from 89-77-60-66.dynamic.chello.pl (89.77.60.66) (HELO kreacher.localnet)
  by serwer1319399.home.pl (79.96.170.134) with SMTP (IdeaSmtpServer 0.83.530)
- id ed48d699427488a5; Mon, 14 Dec 2020 21:09:40 +0100
+ id ab5e17d3a5fb2745; Mon, 14 Dec 2020 21:09:37 +0100
 From:   "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To:     Linux PM <linux-pm@vger.kernel.org>
 Cc:     LKML <linux-kernel@vger.kernel.org>,
@@ -30,9 +30,9 @@ Cc:     LKML <linux-kernel@vger.kernel.org>,
         Peter Zijlstra <peterz@infradead.org>,
         Doug Smythies <dsmythies@telus.net>,
         Giovanni Gherdovich <ggherdovich@suse.com>
-Subject: [PATCH v2 1/3] cpufreq: schedutil: Add util to struct sg_cpu
-Date:   Mon, 14 Dec 2020 21:04:11 +0100
-Message-ID: <12570124.nDbfvnBycr@kreacher>
+Subject: [PATCH v2 3/3] cpufreq: intel_pstate: Implement the ->adjust_perf() callback
+Date:   Mon, 14 Dec 2020 21:09:26 +0100
+Message-ID: <1770942.kMzID5dSeU@kreacher>
 In-Reply-To: <3827230.0GnL3RTcl1@kreacher>
 References: <20360841.iInq7taT2Z@kreacher> <3827230.0GnL3RTcl1@kreacher>
 MIME-Version: 1.0
@@ -44,152 +44,135 @@ X-Mailing-List: linux-pm@vger.kernel.org
 
 From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-Instead of passing util and max between functions while computing the
-utilization and capacity, store the former in struct sg_cpu (along
-with the latter and bw_dl).
+Make intel_pstate expose the ->adjust_perf() callback when it
+operates in the passive mode with HWP enabled which causes the
+schedutil governor to use that callback instead of ->fast_switch().
 
-This will allow the current utilization value to be compared with the
-one obtained previously (which is requisite for some code changes to
-follow this one), but also it causes the code to look slightly more
-consistent and cleaner.
+The minimum and target performance-level values passed by the
+governor to ->adjust_perf() are converted to HWP.REQ.MIN and
+HWP.REQ.DESIRED, respectively, which allows the processor to
+adjust its configuration to maximize energy-efficiency while
+providing sufficient capacity.
 
 Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 ---
 
 v1 -> v2:
-   * Added the tag from Viresh.
+ - No changes.
 
 ---
- kernel/sched/cpufreq_schedutil.c |   42 ++++++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 22 deletions(-)
+ drivers/cpufreq/intel_pstate.c |   70 +++++++++++++++++++++++++++++++++--------
+ 1 file changed, 58 insertions(+), 12 deletions(-)
 
-Index: linux-pm/kernel/sched/cpufreq_schedutil.c
+Index: linux-pm/drivers/cpufreq/intel_pstate.c
 ===================================================================
---- linux-pm.orig/kernel/sched/cpufreq_schedutil.c
-+++ linux-pm/kernel/sched/cpufreq_schedutil.c
-@@ -53,6 +53,7 @@ struct sugov_cpu {
- 	unsigned int		iowait_boost;
- 	u64			last_update;
- 
-+	unsigned long		util;
- 	unsigned long		bw_dl;
- 	unsigned long		max;
- 
-@@ -276,16 +277,15 @@ unsigned long schedutil_cpu_util(int cpu
- 	return min(max, util);
+--- linux-pm.orig/drivers/cpufreq/intel_pstate.c
++++ linux-pm/drivers/cpufreq/intel_pstate.c
+@@ -2526,20 +2526,19 @@ static void intel_cpufreq_trace(struct c
+ 		fp_toint(cpu->iowait_boost * 100));
  }
  
--static unsigned long sugov_get_util(struct sugov_cpu *sg_cpu)
-+static void sugov_get_util(struct sugov_cpu *sg_cpu)
+-static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 target_pstate,
+-				     bool strict, bool fast_switch)
++static void intel_cpufreq_adjust_hwp(struct cpudata *cpu, u32 min, u32 max,
++				     u32 desired, bool fast_switch)
  {
- 	struct rq *rq = cpu_rq(sg_cpu->cpu);
--	unsigned long util = cpu_util_cfs(rq);
- 	unsigned long max = arch_scale_cpu_capacity(sg_cpu->cpu);
+ 	u64 prev = READ_ONCE(cpu->hwp_req_cached), value = prev;
  
- 	sg_cpu->max = max;
- 	sg_cpu->bw_dl = cpu_bw_dl(rq);
--
--	return schedutil_cpu_util(sg_cpu->cpu, util, max, FREQUENCY_UTIL, NULL);
-+	sg_cpu->util = schedutil_cpu_util(sg_cpu->cpu, cpu_util_cfs(rq), max,
-+					  FREQUENCY_UTIL, NULL);
- }
+ 	value &= ~HWP_MIN_PERF(~0L);
+-	value |= HWP_MIN_PERF(target_pstate);
++	value |= HWP_MIN_PERF(min);
  
- /**
-@@ -362,8 +362,6 @@ static void sugov_iowait_boost(struct su
-  * sugov_iowait_apply() - Apply the IO boost to a CPU.
-  * @sg_cpu: the sugov data for the cpu to boost
-  * @time: the update time from the caller
-- * @util: the utilization to (eventually) boost
-- * @max: the maximum value the utilization can be boosted to
-  *
-  * A CPU running a task which woken up after an IO operation can have its
-  * utilization boosted to speed up the completion of those IO operations.
-@@ -377,18 +375,17 @@ static void sugov_iowait_boost(struct su
-  * This mechanism is designed to boost high frequently IO waiting tasks, while
-  * being more conservative on tasks which does sporadic IO operations.
-  */
--static unsigned long sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time,
--					unsigned long util, unsigned long max)
-+static void sugov_iowait_apply(struct sugov_cpu *sg_cpu, u64 time)
- {
- 	unsigned long boost;
- 
- 	/* No boost currently required */
- 	if (!sg_cpu->iowait_boost)
--		return util;
-+		return;
- 
- 	/* Reset boost if the CPU appears to have been idle enough */
- 	if (sugov_iowait_reset(sg_cpu, time, false))
--		return util;
-+		return;
- 
- 	if (!sg_cpu->iowait_boost_pending) {
- 		/*
-@@ -397,18 +394,19 @@ static unsigned long sugov_iowait_apply(
- 		sg_cpu->iowait_boost >>= 1;
- 		if (sg_cpu->iowait_boost < IOWAIT_BOOST_MIN) {
- 			sg_cpu->iowait_boost = 0;
--			return util;
-+			return;
- 		}
- 	}
- 
- 	sg_cpu->iowait_boost_pending = false;
- 
- 	/*
--	 * @util is already in capacity scale; convert iowait_boost
-+	 * sg_cpu->util is already in capacity scale; convert iowait_boost
- 	 * into the same scale so we can compare.
- 	 */
--	boost = (sg_cpu->iowait_boost * max) >> SCHED_CAPACITY_SHIFT;
--	return max(boost, util);
-+	boost = (sg_cpu->iowait_boost * sg_cpu->max) >> SCHED_CAPACITY_SHIFT;
-+	if (sg_cpu->util < boost)
-+		sg_cpu->util = boost;
- }
- 
- #ifdef CONFIG_NO_HZ_COMMON
-@@ -439,9 +437,8 @@ static void sugov_update_single(struct u
- {
- 	struct sugov_cpu *sg_cpu = container_of(hook, struct sugov_cpu, update_util);
- 	struct sugov_policy *sg_policy = sg_cpu->sg_policy;
--	unsigned long util, max;
--	unsigned int next_f;
- 	unsigned int cached_freq = sg_policy->cached_raw_freq;
-+	unsigned int next_f;
- 
- 	sugov_iowait_boost(sg_cpu, time, flags);
- 	sg_cpu->last_update = time;
-@@ -451,10 +448,10 @@ static void sugov_update_single(struct u
- 	if (!sugov_should_update_freq(sg_policy, time))
- 		return;
- 
--	util = sugov_get_util(sg_cpu);
--	max = sg_cpu->max;
--	util = sugov_iowait_apply(sg_cpu, time, util, max);
--	next_f = get_next_freq(sg_policy, util, max);
-+	sugov_get_util(sg_cpu);
-+	sugov_iowait_apply(sg_cpu, time);
+-	/*
+-	 * The entire MSR needs to be updated in order to update the HWP min
+-	 * field in it, so opportunistically update the max too if needed.
+-	 */
+ 	value &= ~HWP_MAX_PERF(~0L);
+-	value |= HWP_MAX_PERF(strict ? target_pstate : cpu->max_perf_ratio);
++	value |= HWP_MAX_PERF(max);
 +
-+	next_f = get_next_freq(sg_policy, sg_cpu->util, sg_cpu->max);
- 	/*
- 	 * Do not reduce the frequency if the CPU has not been idle
- 	 * recently, as the reduction is likely to be premature then.
-@@ -491,9 +488,10 @@ static unsigned int sugov_next_freq_shar
- 		struct sugov_cpu *j_sg_cpu = &per_cpu(sugov_cpu, j);
- 		unsigned long j_util, j_max;
++	value &= ~HWP_DESIRED_PERF(~0L);
++	value |= HWP_DESIRED_PERF(desired);
  
--		j_util = sugov_get_util(j_sg_cpu);
-+		sugov_get_util(j_sg_cpu);
-+		sugov_iowait_apply(j_sg_cpu, time);
-+		j_util = j_sg_cpu->util;
- 		j_max = j_sg_cpu->max;
--		j_util = sugov_iowait_apply(j_sg_cpu, time, j_util, j_max);
+ 	if (value == prev)
+ 		return;
+@@ -2569,11 +2568,15 @@ static int intel_cpufreq_update_pstate(s
+ 	int old_pstate = cpu->pstate.current_pstate;
  
- 		if (j_util * max > j_max * util) {
- 			util = j_util;
+ 	target_pstate = intel_pstate_prepare_request(cpu, target_pstate);
+-	if (hwp_active)
+-		intel_cpufreq_adjust_hwp(cpu, target_pstate,
+-					 policy->strict_target, fast_switch);
+-	else if (target_pstate != old_pstate)
++	if (hwp_active) {
++		int max_pstate = policy->strict_target ?
++					target_pstate : cpu->max_perf_ratio;
++
++		intel_cpufreq_adjust_hwp(cpu, target_pstate, max_pstate, 0,
++					 fast_switch);
++	} else if (target_pstate != old_pstate) {
+ 		intel_cpufreq_adjust_perf_ctl(cpu, target_pstate, fast_switch);
++	}
+ 
+ 	cpu->pstate.current_pstate = target_pstate;
+ 
+@@ -2634,6 +2637,47 @@ static unsigned int intel_cpufreq_fast_s
+ 	return target_pstate * cpu->pstate.scaling;
+ }
+ 
++static void intel_cpufreq_adjust_perf(unsigned int cpunum,
++				      unsigned long min_perf,
++				      unsigned long target_perf,
++				      unsigned long capacity)
++{
++	struct cpudata *cpu = all_cpu_data[cpunum];
++	int old_pstate = cpu->pstate.current_pstate;
++	int cap_pstate, min_pstate, max_pstate, target_pstate;
++
++	update_turbo_state();
++	cap_pstate = global.turbo_disabled ? cpu->pstate.max_pstate :
++					     cpu->pstate.turbo_pstate;
++
++	/* Optimization: Avoid unnecessary divisions. */
++
++	target_pstate = cap_pstate;
++	if (target_perf < capacity)
++		target_pstate = DIV_ROUND_UP(cap_pstate * target_perf, capacity);
++
++	min_pstate = cap_pstate;
++	if (min_perf < capacity)
++		min_pstate = DIV_ROUND_UP(cap_pstate * min_perf, capacity);
++
++	if (min_pstate < cpu->pstate.min_pstate)
++		min_pstate = cpu->pstate.min_pstate;
++
++	if (min_pstate < cpu->min_perf_ratio)
++		min_pstate = cpu->min_perf_ratio;
++
++	max_pstate = min(cap_pstate, cpu->max_perf_ratio);
++	if (max_pstate < min_pstate)
++		max_pstate = min_pstate;
++
++	target_pstate = clamp_t(int, target_pstate, min_pstate, max_pstate);
++
++	intel_cpufreq_adjust_hwp(cpu, min_pstate, max_pstate, target_pstate, true);
++
++	cpu->pstate.current_pstate = target_pstate;
++	intel_cpufreq_trace(cpu, INTEL_PSTATE_TRACE_FAST_SWITCH, old_pstate);
++}
++
+ static int intel_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	int max_state, turbo_max, min_freq, max_freq, ret;
+@@ -3032,6 +3076,8 @@ static int __init intel_pstate_init(void
+ 			intel_pstate.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.attr = hwp_cpufreq_attrs;
+ 			intel_cpufreq.flags |= CPUFREQ_NEED_UPDATE_LIMITS;
++			intel_cpufreq.fast_switch = NULL;
++			intel_cpufreq.adjust_perf = intel_cpufreq_adjust_perf;
+ 			if (!default_driver)
+ 				default_driver = &intel_pstate;
+ 
 
 
 
