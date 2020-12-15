@@ -2,342 +2,117 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.8 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,USER_AGENT_GIT
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 57921C2BBCA
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Dec 2020 11:18:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 9C750C4361B
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Dec 2020 11:26:30 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 12FE822258
-	for <linux-pm@archiver.kernel.org>; Tue, 15 Dec 2020 11:18:53 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3B91A2228A
+	for <linux-pm@archiver.kernel.org>; Tue, 15 Dec 2020 11:26:30 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1728606AbgLOLSo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 15 Dec 2020 06:18:44 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40916 "EHLO
+        id S1728595AbgLOL0R (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 15 Dec 2020 06:26:17 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:40894 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1728613AbgLOLSZ (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2020 06:18:25 -0500
-Received: from mail-pl1-x641.google.com (mail-pl1-x641.google.com [IPv6:2607:f8b0:4864:20::641])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 9E875C0617A7
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2020 03:17:33 -0800 (PST)
-Received: by mail-pl1-x641.google.com with SMTP id x18so4754640pln.6
-        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2020 03:17:33 -0800 (PST)
+        with ESMTP id S1728541AbgLOLSN (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 15 Dec 2020 06:18:13 -0500
+Received: from mail-pj1-x1041.google.com (mail-pj1-x1041.google.com [IPv6:2607:f8b0:4864:20::1041])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id C6017C061282
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2020 03:17:26 -0800 (PST)
+Received: by mail-pj1-x1041.google.com with SMTP id lj6so1033289pjb.0
+        for <linux-pm@vger.kernel.org>; Tue, 15 Dec 2020 03:17:26 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=linaro.org; s=google;
-        h=from:to:cc:subject:date:message-id:in-reply-to:references
-         :mime-version:content-transfer-encoding;
-        bh=6++dMGM1FCC5pOaCFzsM+Us3BSilGScrEfoUSQ6anmM=;
-        b=vMn03ETfI15mhXTc/u6kRPMA7u+C9RVBlTviPSBGG78sPfY/32VWaY8PoT8hn718hR
-         5bfFCcFvM/b3aImkJ/gYzidODEHpiQcfW61I77yZBG5xjOTC82Wa6kjpHkejtt1mqOR5
-         Aa1abKCgqrGK9fymjybug0aw/ZNLNXkr6QsAx6iz+t4yM/Yq8rRKxSY5T5iCvfNoM2bQ
-         KYbE5l7n/Aju8gsYGYIDeOOepdyBWFXT+VTb6Fk0lrPaRGSpLwxms+2OlzrWXgizEoYh
-         xrJNS4Nc2Io0LasuDjqIzfRRIzDmZ9YSXGfe6jT6G11kBbe8cYZggSe8y44kzv1xrk8k
-         BWww==
+        h=from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=znqjVcIUohDW9byeGOeLaaO4J3p/ISagnyXoutieqQM=;
+        b=ejEKIWte6vShA1V5GcY+GH0Mrck0B5OCU2WR6/iX4Ky7NJzg4Opv+uxsU5ACKWlQZY
+         CPU6dQ58qPSRzfHCIT8bkrUKVz4Qnsr6eSIEmrV8w2fcqFfhvJw4+s/Od+gNcBS4t05Y
+         oe0xWb9ecbp7DJQxjRRnL4o7NNr4gD7tjFG9BsUTExjgaDbnF4d/6eEBMQzrTC4V2+yA
+         N2IaqjrgHKsnBqCev9jG7WmYC9ZcAhlzI+Vw/cDu0fGyLXzuHCJaeZrX+oOeVXz+mvVZ
+         l4yQWaUM1b8xgnQNHtvNkL1x2zpbXW7cCGE/n33gechYhxpnAlfIKzeqLuZNpjoq3kbW
+         paJg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:from:to:cc:subject:date:message-id:in-reply-to
-         :references:mime-version:content-transfer-encoding;
-        bh=6++dMGM1FCC5pOaCFzsM+Us3BSilGScrEfoUSQ6anmM=;
-        b=tyTo0l0n1UTyKSiXhRPZd9Osq0gAL0WWj6/c6aYy7MULQuaaQ6P1X1js5FjsAJ1TQk
-         ++MX1Ao+G17UHG8sj2krIxkrt6JysBxKV570Vx5VoxT967mP/BxWPww3QnTDtdPKdSPT
-         ZO6Fu3HOLV6P5F9wtTCqs30IxCZxVDuU0msU+7IjbfYEKwBRdz7vhoOMYR6oE4NqUEb3
-         tD7wz+ltMOMZ42BTvWIeujjR8/HYDiq7kr0uB69rG4JMVyyWiGfQ084OJq6tr4rQhiR2
-         GwdBvinkqVirlSYuqg8lEPkG5CEmtkR1ykLaTVbm0vaIEgf/6ZP0V+TDaE7asJa+8uU6
-         Ihyw==
-X-Gm-Message-State: AOAM530KxQzbUhb1OiGWm/ClDyndzQtmvVJt/w/9PXMENbjtvLvD1mGL
-        FTFu36cQ2lruF1SUokE1pkBx2g==
-X-Google-Smtp-Source: ABdhPJxekiCucfTOMCe9TtyUvabyXTd1Y7OA4VDtveI+/WBlY9GEOHLKr+dPSXZco+Q2ITWzqDzKEw==
-X-Received: by 2002:a17:90a:6604:: with SMTP id l4mr12001617pjj.119.1608031053176;
-        Tue, 15 Dec 2020 03:17:33 -0800 (PST)
+        h=x-gm-message-state:from:to:cc:subject:date:message-id:mime-version
+         :content-transfer-encoding;
+        bh=znqjVcIUohDW9byeGOeLaaO4J3p/ISagnyXoutieqQM=;
+        b=rnwQC29AUrUB3jmuMS8A7LXE+KsFzbMfehK+bfRa7pVqvbXZJEjJqMNwcMEC4K+1qi
+         IV0az9+OOBHPc2Ag8X05KCgS5UYJDrAJ38laNbx4KzqVnquuCbbo5LVK30YA0t3fkpsc
+         EZS2JpmLNLlZfWZ/Ra1dDA2pF94T77wqpXOvPBPcmPJgmlKfNd+4woksxRkq4hYMAG1x
+         gRclg6bsaPJ4womqG0KUI726k0utx4SOn8jF1uIK623D5RTocBCrhHyjteN9kfOO5i8i
+         MKoKxTbHjKdMgOsKTDGY3OvjFL9AdNd8LRHQx6XB12vpNNcEd2Q3LhJKpigcbw6I9oRE
+         eVYQ==
+X-Gm-Message-State: AOAM531908lC+FTStpPGJsfEpelcSAfpY/XGy+JJRlzbnW7/glqdPX5H
+        UgDSWnoq+iqA1eTymVhEtyVRKA==
+X-Google-Smtp-Source: ABdhPJyQGdP/zFJ+DNvgHPRi6JX9qraZ+XeSeuKDm/MOq8nFWxRk5VkZ0WX3+S5ZQJ4nqi15SfsZ1Q==
+X-Received: by 2002:a17:90a:77c2:: with SMTP id e2mr3347228pjs.224.1608031046305;
+        Tue, 15 Dec 2020 03:17:26 -0800 (PST)
 Received: from localhost ([122.172.20.109])
-        by smtp.gmail.com with ESMTPSA id n68sm24405883pfn.161.2020.12.15.03.17.31
+        by smtp.gmail.com with ESMTPSA id n127sm24278414pfd.143.2020.12.15.03.17.24
         (version=TLS1_2 cipher=ECDHE-ECDSA-AES128-GCM-SHA256 bits=128/128);
-        Tue, 15 Dec 2020 03:17:32 -0800 (PST)
+        Tue, 15 Dec 2020 03:17:25 -0800 (PST)
 From:   Viresh Kumar <viresh.kumar@linaro.org>
 To:     Rafael Wysocki <rjw@rjwysocki.net>,
         Ionela Voinescu <ionela.voinescu@arm.com>
 Cc:     Viresh Kumar <viresh.kumar@linaro.org>, linux-pm@vger.kernel.org,
         Vincent Guittot <vincent.guittot@linaro.org>,
         Peter Puhov <peter.puhov@linaro.org>,
-        linux-kernel@vger.kernel.org
-Subject: [RFC V2 2/2] cpufreq: cppc: Add support for frequency invariance
-Date:   Tue, 15 Dec 2020 16:46:36 +0530
-Message-Id: <069c40c173fc391116d13d60f4c1382c47e1a05a.1608030508.git.viresh.kumar@linaro.org>
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: [RFC V2 0/2] cpufreq: cppc: Add support for frequency invariance
+Date:   Tue, 15 Dec 2020 16:46:34 +0530
+Message-Id: <cover.1608030508.git.viresh.kumar@linaro.org>
 X-Mailer: git-send-email 2.25.0.rc1.19.g042ed3e048af
-In-Reply-To: <cover.1608030508.git.viresh.kumar@linaro.org>
-References: <cover.1608030508.git.viresh.kumar@linaro.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-The Frequency Invariance Engine (FIE) is providing a frequency scaling
-correction factor that helps achieve more accurate load-tracking.
+Hello,
 
-Normally, this scaling factor can be obtained directly with the help of
-the cpufreq drivers as they know the exact frequency the hardware is
-running at. But that isn't the case for CPPC cpufreq driver.
+CPPC cpufreq driver is used for ARM servers and this patch series tries
+to provide frequency invariance support for them.
 
-Another way of obtaining that is using the AMU counter support, which is
-already present in kernel, but that hardware is optional for platforms.
+This is tested with some hacks, as I didn't have access to the right
+hardware, on the ARM64 hikey board to check the overall functionality
+and that works fine.
 
-This patch thus obtains this scaling factor using the existing logic
-present in the cppc driver. Note that the AMUs have higher priority than
-CPPC counters if available, though the CPPC driver doesn't need to have
-any special handling for that.
+Ionela/Peter Puhov, it would be nice if you guys can give this a shot.
 
-This also exports sched_setattr_nocheck() as the CPPC driver can be
-built as a module.
+This is based of pm/linux-next and patches [1] and [2] which I sent
+recently to cleanup arm64 topology stuff.
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
----
- drivers/cpufreq/cppc_cpufreq.c | 140 ++++++++++++++++++++++++++++++++-
- include/linux/arch_topology.h  |   1 +
- kernel/sched/core.c            |   1 +
- 3 files changed, 140 insertions(+), 2 deletions(-)
+Changes since V1:
+- The interface for setting the callbacks is improved, so different
+  parts looking to provide their callbacks don't need to think about
+  each other.
 
-diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufreq.c
-index 7cc9bd8568de..a739e20aefd6 100644
---- a/drivers/cpufreq/cppc_cpufreq.c
-+++ b/drivers/cpufreq/cppc_cpufreq.c
-@@ -10,14 +10,18 @@
- 
- #define pr_fmt(fmt)	"CPPC Cpufreq:"	fmt
- 
-+#include <linux/arch_topology.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/delay.h>
- #include <linux/cpu.h>
- #include <linux/cpufreq.h>
- #include <linux/dmi.h>
-+#include <linux/irq_work.h>
-+#include <linux/kthread.h>
- #include <linux/time.h>
- #include <linux/vmalloc.h>
-+#include <uapi/linux/sched/types.h>
- 
- #include <asm/unaligned.h>
- 
-@@ -39,6 +43,15 @@
- static struct cppc_cpudata **all_cpu_data;
- static bool boost_supported;
- 
-+struct cppc_freq_invariance {
-+	struct kthread_worker *worker;
-+	struct irq_work irq_work;
-+	struct kthread_work work;
-+	struct cppc_perf_fb_ctrs prev_perf_fb_ctrs;
-+	unsigned int max_freq;
-+};
-+static DEFINE_PER_CPU(struct cppc_freq_invariance, cppc_f_i);
-+
- struct cppc_workaround_oem_info {
- 	char oem_id[ACPI_OEM_ID_SIZE + 1];
- 	char oem_table_id[ACPI_OEM_TABLE_ID_SIZE + 1];
-@@ -243,7 +256,7 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 	struct cppc_cpudata *cpu_data = all_cpu_data[policy->cpu];
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
- 	unsigned int cpu = policy->cpu;
--	int ret = 0;
-+	int ret = 0, i;
- 
- 	cpu_data->cpu = cpu;
- 	ret = cppc_get_perf_caps(cpu, caps);
-@@ -300,6 +313,9 @@ static int cppc_cpufreq_cpu_init(struct cpufreq_policy *policy)
- 
- 	cpu_data->cur_policy = policy;
- 
-+	for_each_cpu(i, policy->cpus)
-+		per_cpu(cppc_f_i, i).max_freq = policy->cpuinfo.max_freq;
-+
- 	/*
- 	 * If 'highest_perf' is greater than 'nominal_perf', we assume CPU Boost
- 	 * is supported.
-@@ -374,7 +390,7 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- {
- 	struct cppc_cpudata *cpu_data = all_cpu_data[policy->cpu];
- 	struct cppc_perf_caps *caps = &cpu_data->perf_caps;
--	int ret;
-+	int ret, i;
- 
- 	if (!boost_supported) {
- 		pr_err("BOOST not supported by CPU or firmware\n");
-@@ -389,6 +405,9 @@ static int cppc_cpufreq_set_boost(struct cpufreq_policy *policy, int state)
- 						       caps->nominal_perf);
- 	policy->cpuinfo.max_freq = policy->max;
- 
-+	for_each_cpu(i, policy->related_cpus)
-+		per_cpu(cppc_f_i, i).max_freq = policy->cpuinfo.max_freq;
-+
- 	ret = freq_qos_update_request(policy->max_freq_req, policy->max);
- 	if (ret < 0)
- 		return ret;
-@@ -449,6 +468,120 @@ static void cppc_check_hisi_workaround(void)
- 	acpi_put_table(tbl);
- }
- 
-+static void cppc_scale_freq_tick_workfn(struct kthread_work *work)
-+{
-+	struct cppc_freq_invariance *cppc_fi;
-+	struct cppc_perf_fb_ctrs fb_ctrs = {0};
-+	int cpu = raw_smp_processor_id();
-+	struct cppc_cpudata *cpudata = all_cpu_data[cpu];
-+	u64 rate;
-+
-+	cppc_fi = container_of(work, struct cppc_freq_invariance, work);
-+
-+	if (cppc_get_perf_ctrs(cpu, &fb_ctrs)) {
-+		pr_info("%s: cppc_get_perf_ctrs() failed\n", __func__);
-+		return;
-+	}
-+
-+	rate = cppc_get_rate_from_fbctrs(cpudata, cppc_fi->prev_perf_fb_ctrs, fb_ctrs);
-+	cppc_fi->prev_perf_fb_ctrs = fb_ctrs;
-+
-+	rate <<= SCHED_CAPACITY_SHIFT;
-+	per_cpu(freq_scale, cpu) = div64_u64(rate, cppc_fi->max_freq);
-+}
-+
-+static void cppc_irq_work(struct irq_work *irq_work)
-+{
-+	struct cppc_freq_invariance *cppc_fi;
-+
-+	cppc_fi = container_of(irq_work, struct cppc_freq_invariance, irq_work);
-+	kthread_queue_work(cppc_fi->worker, &cppc_fi->work);
-+}
-+
-+static void cppc_scale_freq_tick(void)
-+{
-+	struct cppc_freq_invariance *cppc_fi = &per_cpu(cppc_f_i, raw_smp_processor_id());
-+
-+	/*
-+	 * cppc_get_perf_ctrs() can potentially sleep, call that from the right
-+	 * context.
-+	 */
-+	irq_work_queue(&cppc_fi->irq_work);
-+}
-+
-+static struct scale_freq_tick_data cppc_sftd = {
-+	.source = SCALE_FREQ_SOURCE_CPPC,
-+	.scale_freq = cppc_scale_freq_tick,
-+};
-+
-+static void cppc_freq_invariance_exit(void)
-+{
-+	struct cppc_freq_invariance *cppc_fi;
-+	int i;
-+
-+	if (cppc_cpufreq_driver.get == hisi_cppc_cpufreq_get_rate)
-+		return;
-+
-+	topology_clear_scale_freq_tick(SCALE_FREQ_SOURCE_CPPC, cpu_present_mask);
-+
-+	for_each_possible_cpu(i) {
-+		cppc_fi = &per_cpu(cppc_f_i, i);
-+		if (cppc_fi->worker) {
-+			irq_work_sync(&cppc_fi->irq_work);
-+			kthread_destroy_worker(cppc_fi->worker);
-+			cppc_fi->worker = NULL;
-+		}
-+	}
-+}
-+
-+static void __init cppc_freq_invariance_init(void)
-+{
-+	struct cppc_perf_fb_ctrs fb_ctrs = {0};
-+	struct cppc_freq_invariance *cppc_fi;
-+	struct sched_attr attr = {
-+		.size		= sizeof(struct sched_attr),
-+		.sched_policy	= SCHED_DEADLINE,
-+		.sched_nice	= 0,
-+		.sched_priority	= 0,
-+		/*
-+		 * Fake (unused) bandwidth; workaround to "fix"
-+		 * priority inheritance.
-+		 */
-+		.sched_runtime	= 1000000,
-+		.sched_deadline = 10000000,
-+		.sched_period	= 10000000,
-+	};
-+	struct kthread_worker *worker;
-+	int i, ret;
-+
-+	if (cppc_cpufreq_driver.get == hisi_cppc_cpufreq_get_rate)
-+		return;
-+
-+	for_each_possible_cpu(i) {
-+		cppc_fi = &per_cpu(cppc_f_i, i);
-+
-+		kthread_init_work(&cppc_fi->work, cppc_scale_freq_tick_workfn);
-+		init_irq_work(&cppc_fi->irq_work, cppc_irq_work);
-+		worker = kthread_create_worker_on_cpu(i, 0, "cppc:%d", i);
-+		if (IS_ERR(worker))
-+			return cppc_freq_invariance_exit();
-+
-+		cppc_fi->worker = worker;
-+		ret = sched_setattr_nocheck(worker->task, &attr);
-+		if (ret) {
-+			pr_warn("%s: failed to set SCHED_DEADLINE\n", __func__);
-+			return cppc_freq_invariance_exit();
-+		}
-+
-+		ret = cppc_get_perf_ctrs(i, &fb_ctrs);
-+		if (!ret)
-+			per_cpu(cppc_fi->prev_perf_fb_ctrs, i) = fb_ctrs;
-+	}
-+
-+	/* Register for freq-invariance */
-+	topology_set_scale_freq_tick(&cppc_sftd, cpu_present_mask);
-+}
-+
- static int __init cppc_cpufreq_init(void)
- {
- 	struct cppc_cpudata *cpu_data;
-@@ -484,6 +617,8 @@ static int __init cppc_cpufreq_init(void)
- 	if (ret)
- 		goto out;
- 
-+	cppc_freq_invariance_init();
-+
- 	return ret;
- 
- out:
-@@ -504,6 +639,7 @@ static void __exit cppc_cpufreq_exit(void)
- 	struct cppc_cpudata *cpu_data;
- 	int i;
- 
-+	cppc_freq_invariance_exit();
- 	cpufreq_unregister_driver(&cppc_cpufreq_driver);
- 
- 	for_each_possible_cpu(i) {
-diff --git a/include/linux/arch_topology.h b/include/linux/arch_topology.h
-index b2422ebef2dd..09205b584ca5 100644
---- a/include/linux/arch_topology.h
-+++ b/include/linux/arch_topology.h
-@@ -36,6 +36,7 @@ bool topology_scale_freq_invariant(void);
- 
- enum scale_freq_tick_source {
- 	SCALE_FREQ_SOURCE_AMU,
-+	SCALE_FREQ_SOURCE_CPPC,
- };
- 
- struct scale_freq_tick_data {
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 51514eef0a9d..76b2fa1a7aaa 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -6075,6 +6075,7 @@ int sched_setattr_nocheck(struct task_struct *p, const struct sched_attr *attr)
- {
- 	return __sched_setscheduler(p, attr, false, true);
- }
-+EXPORT_SYMBOL_GPL(sched_setattr_nocheck);
- 
- /**
-  * sched_setscheduler_nocheck - change the scheduling policy and/or RT priority of a thread from kernelspace.
+- Moved to per-cpu storage for storing the callback related data, AMU
+  counters have higher priority with this.
+
+--
+viresh
+
+[1] https://lore.kernel.org/lkml/7a171f710cdc0f808a2bfbd7db839c0d265527e7.1607579234.git.viresh.kumar@linaro.org/
+[2] https://lore.kernel.org/lkml/5ffc7b9ed03c6301ac2f710f609282959491b526.1608010334.git.viresh.kumar@linaro.org/
+
+Viresh Kumar (2):
+  topology: Allow multiple entities to provide sched_freq_tick()
+    callback
+  cpufreq: cppc: Add support for frequency invariance
+
+ arch/arm64/include/asm/topology.h |   8 +-
+ arch/arm64/kernel/topology.c      |  89 +++++++++----------
+ drivers/base/arch_topology.c      |  56 +++++++++++-
+ drivers/cpufreq/cppc_cpufreq.c    | 140 +++++++++++++++++++++++++++++-
+ include/linux/arch_topology.h     |  14 ++-
+ kernel/sched/core.c               |   1 +
+ 6 files changed, 244 insertions(+), 64 deletions(-)
+
 -- 
 2.25.0.rc1.19.g042ed3e048af
 
