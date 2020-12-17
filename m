@@ -2,147 +2,271 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-13.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.5 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,UPPERCASE_50_75,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7CF38C4361B
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 11:40:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 18459C4361B
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 11:57:34 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 4DB0F23741
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 11:40:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id CB274238E9
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 11:57:33 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1727062AbgLQLkE (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Dec 2020 06:40:04 -0500
-Received: from mga01.intel.com ([192.55.52.88]:39362 "EHLO mga01.intel.com"
+        id S1727275AbgLQL5d (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Dec 2020 06:57:33 -0500
+Received: from mail.kernel.org ([198.145.29.99]:48902 "EHLO mail.kernel.org"
         rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-        id S1725950AbgLQLkE (ORCPT <rfc822;linux-pm@vger.kernel.org>);
-        Thu, 17 Dec 2020 06:40:04 -0500
-IronPort-SDR: gwF42mwfUe7+aNoPFak9/3MSFPr8iKP8XwJfz0U4VmMdM47oew2FrKmpgX5Wc+3NtTF74I863E
- BmCI+a0kRPAw==
-X-IronPort-AV: E=McAfee;i="6000,8403,9837"; a="193627701"
-X-IronPort-AV: E=Sophos;i="5.78,426,1599548400"; 
-   d="scan'208";a="193627701"
-Received: from orsmga008.jf.intel.com ([10.7.209.65])
-  by fmsmga101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Dec 2020 03:38:18 -0800
-IronPort-SDR: rS1dboMDN0OT6i+6FVNVvoiE84tOwqhHGfp6zqCghlG+KnaMBBNBrp0aoIYQv6WEN2EnzogLgb
- stQSQoV0Yv6A==
-X-IronPort-AV: E=Sophos;i="5.78,426,1599548400"; 
-   d="scan'208";a="369798936"
-Received: from pvelur-mobl1.amr.corp.intel.com ([10.209.179.212])
-  by orsmga008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Dec 2020 03:38:13 -0800
-Message-ID: <2b101b07aa18e06a32b26add651a3d2e009e6d18.camel@linux.intel.com>
-Subject: Re: [PATCH 3/5] thermal/drivers/acpi: Use hot and critical ops
-From:   Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>
-To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
-Cc:     kai.heng.feng@canonical.com, lukasz.luba@arm.com,
-        linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
-        "Rafael J. Wysocki" <rjw@rjwysocki.net>,
-        Len Brown <lenb@kernel.org>,
-        "open list:ACPI THERMAL DRIVER" <linux-acpi@vger.kernel.org>
-Date:   Thu, 17 Dec 2020 03:38:08 -0800
-In-Reply-To: <c20d9077-66e8-f947-6422-c48e2f679cc5@linaro.org>
-References: <20201210121514.25760-1-daniel.lezcano@linaro.org>
-         <20201210121514.25760-3-daniel.lezcano@linaro.org>
-         <c20d9077-66e8-f947-6422-c48e2f679cc5@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
-User-Agent: Evolution 3.38.2 (3.38.2-1.fc33) 
+        id S1726533AbgLQL5c (ORCPT <rfc822;linux-pm@vger.kernel.org>);
+        Thu, 17 Dec 2020 06:57:32 -0500
+Date:   Thu, 17 Dec 2020 12:56:48 +0100
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+        s=k20201202; t=1608206211;
+        bh=ZlvnWKymHnBYHinCjOusZ1u2BAq6UeVSRExX1hOKcnI=;
+        h=From:To:Cc:Subject:References:In-Reply-To:From;
+        b=TyuX3Wh+dsRIgk0KKYt8cc0cXiwpvj/MbjIFDV5/5j/nfv1861mrOsZJVM4cFkBiw
+         9fqB/RHKxrKZayPNQlN+0oyKmzNhWpmU72j527F/YjR5dFV02Bf6OXp9a+Yn0uhgO9
+         TXFdW7xeNLmY4rEXLFz4wQombO23tmNn0WHLh2Nk+6DAY0IkrSg1ORK1ilWwzqkAE+
+         DQ0MM4c5uXlnOtf8L82ZeYfZTcevw9dtkYIiDUfxtbJ/OGiehOSqYhbpcp0nfzrTJX
+         GNErOn3xwvChZfTAaAi8ImJCRjRD1R2+fgDUooEdbZbn/5olBUw5fnq2tn4q59o28J
+         UgpoBL0zXY6og==
+From:   Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>
+To:     Hermes Zhang <chenhui.zhang@axis.com>
+Cc:     Dan Murphy <dmurphy@ti.com>, Sebastian Reichel <sre@kernel.org>,
+        kernel@axis.com, Hermes Zhang <chenhuiz@axis.com>,
+        linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] power: supply: bq27xxx: Supporrt CHARGE_NOW for
+ bq27z561/bq28z610/bq34z100
+Message-ID: <20201217115648.iiferqyvg7tlnmln@pali>
+References: <20201217114737.7263-1-chenhui.zhang@axis.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20201217114737.7263-1-chenhui.zhang@axis.com>
+User-Agent: NeoMutt/20180716
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Thu, 2020-12-17 at 07:28 +0100, Daniel Lezcano wrote:
-> On 10/12/2020 13:15, Daniel Lezcano wrote:
-> > The acpi driver wants to do a netlink notification in case of a hot
-> > or
-> > critical trip point. Implement the corresponding ops to be used for
-> > the thermal zone and use them instead of the notify ops.
-> > 
-> > Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+On Thursday 17 December 2020 19:47:37 Hermes Zhang wrote:
+> From: Hermes Zhang <chenhuiz@axis.com>
 > 
-> Is there any comment on this patch ?
+> The CHARGE_NOW is map to REG_NAC for all the gauge chips beofre. But for
+> some chips (e.g. bq27z561) which doesn't have the REG_NAC, we use REG_RC
+> (remaining capacity) for CHARGE_NOW.
 
-Looks good to me.
+Hello! What is the difference between NAC and RC? Is not it same thing?
+I'm asking because for me from this patch for power supply API purpose
+it is the same thing... And therefore if it does not make sense to
+define for bq27z561 chip BQ27XXX_REG_NAC reg value to value which you
+used in BQ27XXX_REG_RC (to simplify whole implementation).
 
-Thanks,
-Srinivas
-
+> Signed-off-by: Hermes Zhang <chenhuiz@axis.com>
+> ---
+>  drivers/power/supply/bq27xxx_battery.c | 35 +++++++++++++++++++++++++-
+>  1 file changed, 34 insertions(+), 1 deletion(-)
 > 
-> > ---
-> >  drivers/acpi/thermal.c | 30 ++++++++++++++----------------
-> >  1 file changed, 14 insertions(+), 16 deletions(-)
-> > 
-> > diff --git a/drivers/acpi/thermal.c b/drivers/acpi/thermal.c
-> > index 12c0ece746f0..b5e4bc9e3282 100644
-> > --- a/drivers/acpi/thermal.c
-> > +++ b/drivers/acpi/thermal.c
-> > @@ -677,27 +677,24 @@ static int thermal_get_trend(struct
-> > thermal_zone_device *thermal,
-> >         return 0;
-> >  }
-> >  
-> > -
-> > -static int thermal_notify(struct thermal_zone_device *thermal, int
-> > trip,
-> > -                          enum thermal_trip_type trip_type)
-> > +static void acpi_thermal_zone_device_hot(struct
-> > thermal_zone_device *thermal)
-> >  {
-> > -       u8 type = 0;
-> >         struct acpi_thermal *tz = thermal->devdata;
-> >  
-> > -       if (trip_type == THERMAL_TRIP_CRITICAL)
-> > -               type = ACPI_THERMAL_NOTIFY_CRITICAL;
-> > -       else if (trip_type == THERMAL_TRIP_HOT)
-> > -               type = ACPI_THERMAL_NOTIFY_HOT;
-> > -       else
-> > -               return 0;
-> > -
-> >         acpi_bus_generate_netlink_event(tz->device-
-> > >pnp.device_class,
-> > -                                       dev_name(&tz->device->dev),
-> > type, 1);
-> > +                                       dev_name(&tz->device->dev),
-> > +                                       ACPI_THERMAL_NOTIFY_HOT,
-> > 1);
-> > +}
-> >  
-> > -       if (trip_type == THERMAL_TRIP_CRITICAL && nocrt)
-> > -               return 1;
-> > +static void acpi_thermal_zone_device_critical(struct
-> > thermal_zone_device *thermal)
-> > +{
-> > +       struct acpi_thermal *tz = thermal->devdata;
-> >  
-> > -       return 0;
-> > +       acpi_bus_generate_netlink_event(tz->device-
-> > >pnp.device_class,
-> > +                                       dev_name(&tz->device->dev),
-> > +                                       ACPI_THERMAL_NOTIFY_CRITICA
-> > L, 1);
-> > +
-> > +       thermal_zone_device_critical(thermal);
-> >  }
-> >  
-> >  static int acpi_thermal_cooling_device_cb(struct
-> > thermal_zone_device *thermal,
-> > @@ -812,7 +809,8 @@ static struct thermal_zone_device_ops
-> > acpi_thermal_zone_ops = {
-> >         .get_trip_temp = thermal_get_trip_temp,
-> >         .get_crit_temp = thermal_get_crit_temp,
-> >         .get_trend = thermal_get_trend,
-> > -       .notify = thermal_notify,
-> > +       .hot = acpi_thermal_zone_device_hot,
-> > +       .critical = acpi_thermal_zone_device_critical,
-> >  };
-> >  
-> >  static int acpi_thermal_register_thermal_zone(struct acpi_thermal
-> > *tz)
-> > 
+> diff --git a/drivers/power/supply/bq27xxx_battery.c b/drivers/power/supply/bq27xxx_battery.c
+> index 315e0909e6a4..c1a49a598e9b 100644
+> --- a/drivers/power/supply/bq27xxx_battery.c
+> +++ b/drivers/power/supply/bq27xxx_battery.c
+> @@ -110,6 +110,7 @@ enum bq27xxx_reg_index {
+>  	BQ27XXX_REG_TTES,	/* Time-to-Empty Standby */
+>  	BQ27XXX_REG_TTECP,	/* Time-to-Empty at Constant Power */
+>  	BQ27XXX_REG_NAC,	/* Nominal Available Capacity */
+> +	BQ27XXX_REG_RC,		/* Remaining Capacity */
+>  	BQ27XXX_REG_FCC,	/* Full Charge Capacity */
+>  	BQ27XXX_REG_CYCT,	/* Cycle Count */
+>  	BQ27XXX_REG_AE,		/* Available Energy */
+> @@ -145,6 +146,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -169,6 +171,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -193,6 +196,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1a,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -215,6 +219,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -237,6 +242,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1a,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x1e,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -257,6 +263,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -277,6 +284,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -297,6 +305,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = 0x26,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -317,6 +326,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1c,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x1e,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -337,6 +347,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -361,6 +372,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -382,6 +394,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -405,6 +418,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x0c,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -425,6 +439,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = 0x08,
+> +		[BQ27XXX_REG_RC] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_FCC] = 0x0e,
+>  		[BQ27XXX_REG_CYCT] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_AE] = INVALID_REG_ADDR,
+> @@ -450,6 +465,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_RC] = 0x10,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -470,6 +486,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_RC] = 0x10,
+>  		[BQ27XXX_REG_FCC] = 0x12,
+>  		[BQ27XXX_REG_CYCT] = 0x2a,
+>  		[BQ27XXX_REG_AE] = 0x22,
+> @@ -490,6 +507,7 @@ static u8
+>  		[BQ27XXX_REG_TTES] = 0x1e,
+>  		[BQ27XXX_REG_TTECP] = INVALID_REG_ADDR,
+>  		[BQ27XXX_REG_NAC] = INVALID_REG_ADDR,
+> +		[BQ27XXX_REG_RC] = 0x04,
+>  		[BQ27XXX_REG_FCC] = 0x06,
+>  		[BQ27XXX_REG_CYCT] = 0x2c,
+>  		[BQ27XXX_REG_AE] = 0x24,
+> @@ -745,6 +763,7 @@ static enum power_supply_property bq27z561_props[] = {
+>  	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+>  	POWER_SUPPLY_PROP_TECHNOLOGY,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL,
+> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>  	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>  	POWER_SUPPLY_PROP_POWER_AVG,
+> @@ -764,6 +783,7 @@ static enum power_supply_property bq28z610_props[] = {
+>  	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+>  	POWER_SUPPLY_PROP_TECHNOLOGY,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL,
+> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>  	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>  	POWER_SUPPLY_PROP_POWER_AVG,
+> @@ -784,6 +804,7 @@ static enum power_supply_property bq34z100_props[] = {
+>  	POWER_SUPPLY_PROP_TIME_TO_FULL_NOW,
+>  	POWER_SUPPLY_PROP_TECHNOLOGY,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL,
+> +	POWER_SUPPLY_PROP_CHARGE_NOW,
+>  	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
+>  	POWER_SUPPLY_PROP_CYCLE_COUNT,
+>  	POWER_SUPPLY_PROP_ENERGY_NOW,
+> @@ -1518,6 +1539,15 @@ static inline int bq27xxx_battery_read_nac(struct bq27xxx_device_info *di)
+>  	return bq27xxx_battery_read_charge(di, BQ27XXX_REG_NAC);
+>  }
+>  
+> +/*
+> + * Return the battery Remaining Capacity in µAh
+> + * Or < 0 if something fails.
+> + */
+> +static inline int bq27xxx_battery_read_rc(struct bq27xxx_device_info *di)
+> +{
+> +	return bq27xxx_battery_read_charge(di, BQ27XXX_REG_RC);
+> +}
+> +
+>  /*
+>   * Return the battery Full Charge Capacity in µAh
+>   * Or < 0 if something fails.
+> @@ -1965,7 +1995,10 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
+>  			val->intval = POWER_SUPPLY_TECHNOLOGY_LION;
+>  		break;
+>  	case POWER_SUPPLY_PROP_CHARGE_NOW:
+> -		ret = bq27xxx_simple_value(bq27xxx_battery_read_nac(di), val);
+> +		if (di->regs[BQ27XXX_REG_NAC] != INVALID_REG_ADDR)
+> +			ret = bq27xxx_simple_value(bq27xxx_battery_read_nac(di), val);
+> +		else
+> +			ret = bq27xxx_simple_value(bq27xxx_battery_read_rc(di), val);
+>  		break;
+>  	case POWER_SUPPLY_PROP_CHARGE_FULL:
+>  		ret = bq27xxx_simple_value(di->cache.charge_full, val);
+> -- 
+> 2.20.1
 > 
-> 
-
-
