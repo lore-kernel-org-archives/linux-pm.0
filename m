@@ -2,356 +2,247 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-18.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
-	USER_AGENT_GIT autolearn=unavailable autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-17.3 required=3.0 tests=BAYES_00,DKIMWL_WL_HIGH,
+	DKIM_SIGNED,DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,
+	INCLUDES_CR_TRAILER,INCLUDES_PATCH,MAILING_LIST_MULTI,NICE_REPLY_A,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_SANE_1 autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id D9B17C2BB9A
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 17:47:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id E509FC2BBCF
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 18:33:53 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A6BF2239CF
-	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 17:47:51 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id C5B1023975
+	for <linux-pm@archiver.kernel.org>; Thu, 17 Dec 2020 18:33:53 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1729045AbgLQRrl (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Thu, 17 Dec 2020 12:47:41 -0500
-Received: from mx0b-0016f401.pphosted.com ([67.231.156.173]:24544 "EHLO
-        mx0b-0016f401.pphosted.com" rhost-flags-OK-OK-OK-OK)
-        by vger.kernel.org with ESMTP id S1729070AbgLQRrl (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2020 12:47:41 -0500
-Received: from pps.filterd (m0045851.ppops.net [127.0.0.1])
-        by mx0b-0016f401.pphosted.com (8.16.0.43/8.16.0.43) with SMTP id 0BHHfDdj008161;
-        Thu, 17 Dec 2020 09:46:51 -0800
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=marvell.com; h=from : to : cc :
- subject : date : message-id : in-reply-to : references : mime-version :
- content-type; s=pfpt0220; bh=eFDjoveljCQQJKcxDvUtCMV2TbXj5Ak0PinCMDmx6Uk=;
- b=C4hTiDoJVOPR28MshCZi3ZOZrYX1PcVDSq0q+6Z8E6JkJU6CZP5p8gB25kDQsFDgyK/Y
- eYZU5EXT/nFYJMHmrjMIXV1Fjkj2bpoZtJPFs3dDzoPvdGp4td+Z3a0sbGk8i1V5Fo5w
- vxq1IuFPizX5W95bnngyrnPkW+8Wj+6/1Ymi7Hj2/AXwqeHnJb7lTzjMfdWa+cz35Gw5
- NWOalDEo8D+Z/O17eUwXcKSJoeIx99uk/CsXgd31W5ZYJQ6+wEhaykALx8B515B1X7pW
- Vi6/Syk9CB2oC7sMLQhGvs9rPENDSSCocy+gPdjlRrdkv7ryfiEFdNw1XZHzEBm//Iso Bw== 
-Received: from sc-exch02.marvell.com ([199.233.58.182])
-        by mx0b-0016f401.pphosted.com with ESMTP id 35cx8tgfjp-1
-        (version=TLSv1.2 cipher=ECDHE-RSA-AES256-SHA384 bits=256 verify=NOT);
-        Thu, 17 Dec 2020 09:46:51 -0800
-Received: from DC5-EXCH01.marvell.com (10.69.176.38) by SC-EXCH02.marvell.com
- (10.93.176.82) with Microsoft SMTP Server (TLS) id 15.0.1497.2; Thu, 17 Dec
- 2020 09:46:49 -0800
-Received: from maili.marvell.com (10.69.176.80) by DC5-EXCH01.marvell.com
- (10.69.176.38) with Microsoft SMTP Server id 15.0.1497.2 via Frontend
- Transport; Thu, 17 Dec 2020 09:46:49 -0800
-Received: from vb-cavnet.porotchkin.lan (PT-LT0319.marvell.com [10.6.202.166])
-        by maili.marvell.com (Postfix) with ESMTP id 5A63F3F7040;
-        Thu, 17 Dec 2020 09:46:46 -0800 (PST)
-From:   <kostap@marvell.com>
-To:     <linux-clk@vger.kernel.org>, <linux-pm@vger.kernel.org>
-CC:     <mturquette@baylibre.com>, <sboyd@kernel.org>,
-        <miquel.raynal@bootlin.com>, <rui.zhang@intel.com>,
-        <daniel.lezcano@linaro.org>, <amitk@kernel.org>, <mw@semihalf.com>,
-        <jaz@semihalf.com>, <nadavh@marvell.com>, <bpeled@marvell.com>,
-        <stefanc@marvell.com>, Konstantin Porotchkin <kostap@marvell.com>
-Subject: [PATCH 1/2] thermal: armada: ap806: use firmware SiP services for thermal operations
-Date:   Thu, 17 Dec 2020 19:46:01 +0200
-Message-ID: <20201217174602.22212-2-kostap@marvell.com>
-X-Mailer: git-send-email 2.17.1
-In-Reply-To: <20201217174602.22212-1-kostap@marvell.com>
-References: <20201217174602.22212-1-kostap@marvell.com>
+        id S1730275AbgLQSdn (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Thu, 17 Dec 2020 13:33:43 -0500
+Received: from us-smtp-delivery-124.mimecast.com ([63.128.21.124]:20731 "EHLO
+        us-smtp-delivery-124.mimecast.com" rhost-flags-OK-OK-OK-OK)
+        by vger.kernel.org with ESMTP id S1730167AbgLQSdn (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Thu, 17 Dec 2020 13:33:43 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+        s=mimecast20190719; t=1608229935;
+        h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+         to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+         content-transfer-encoding:content-transfer-encoding:
+         in-reply-to:in-reply-to:references:references;
+        bh=4H+T4/ehKqHlXqfjsULM9/21wYN2wzFe2ggxW0HinS4=;
+        b=GqyisB/lrCAqkRNCm/cSbOi9L+2r52QCE9knFMCfKqro87EAamQhtCdPOutdzqF+3WIBBQ
+        8Ud5ZpTipy/DiFNcuCnxIctTAJNxZXDVKLWFZwW4XuAUT/bdPFINAjHEfgjdP5j1owvRXE
+        UAV+q3/Yadc6+ez6pFY+abeMH4CkOYI=
+Received: from mail-ed1-f71.google.com (mail-ed1-f71.google.com
+ [209.85.208.71]) (Using TLS) by relay.mimecast.com with ESMTP id
+ us-mta-542-hV9QAL83NkK6tI5a-4az2g-1; Thu, 17 Dec 2020 13:32:13 -0500
+X-MC-Unique: hV9QAL83NkK6tI5a-4az2g-1
+Received: by mail-ed1-f71.google.com with SMTP id u18so13743981edy.5
+        for <linux-pm@vger.kernel.org>; Thu, 17 Dec 2020 10:32:13 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=4H+T4/ehKqHlXqfjsULM9/21wYN2wzFe2ggxW0HinS4=;
+        b=PMZWVvUNTyopz9MFoLhLkkUwZaA6T5JCcIOZc+jWbRWHSW/9ulXjB+RxnC1VD5F5ce
+         29EgPitfwDJQvCKNsbJH+OjtZj4yY80vze1+E55nS/pMK6sQnvQuyxyJ8z4PF+Pf/goW
+         PAriBS8haTL289/FJJHtKRBvGVZsB1K5CF9sUzYkA+3zSQ3Qs7HfF+ExB4p30M1pO5Fh
+         LO6wigof/3Jw/uoRLnhSOJUVV8BmliflNKEL+NtHMJG/QIbLXqDKZK4teyNF2bAZgjuq
+         A+Ljzk8GIFHFCGybje5x+fHe1dIiKufVbTHzv13TOxUW+9XhT6e2w5Gj5vcg5DuyRmT9
+         rw+g==
+X-Gm-Message-State: AOAM531h7PiksngcBnIIS2Ur6H04HEIczmNuO2CwQsTBMHGVSjIGULVk
+        JbU5hHu3BqaUjcS9tRstl8s+oazNFCAwoRdXrOkBhhZg5xuwXudk6QWXADcWiEwebBrz8fv42Rl
+        o3REjlhM0Jnb5E/7xSxk=
+X-Received: by 2002:a17:906:d28f:: with SMTP id ay15mr281978ejb.327.1608229931313;
+        Thu, 17 Dec 2020 10:32:11 -0800 (PST)
+X-Google-Smtp-Source: ABdhPJxYNmNzi4ooXQlZs0+dHUSydf+1N5hkD/y0UInohgkrdZRIo0iBrrKbj1RMZ8Nu7pCC+u4qsw==
+X-Received: by 2002:a17:906:d28f:: with SMTP id ay15mr281966ejb.327.1608229931158;
+        Thu, 17 Dec 2020 10:32:11 -0800 (PST)
+Received: from x1.localdomain (2001-1c00-0c0c-fe00-d2ea-f29d-118b-24dc.cable.dynamic.v6.ziggo.nl. [2001:1c00:c0c:fe00:d2ea:f29d:118b:24dc])
+        by smtp.gmail.com with ESMTPSA id b17sm4403946eju.76.2020.12.17.10.32.10
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 17 Dec 2020 10:32:10 -0800 (PST)
+Subject: Re: [PATCH v2 3/3] thermal/core: Remove ms based delay fields
+To:     Daniel Lezcano <daniel.lezcano@linaro.org>, rui.zhang@intel.com
+Cc:     amitk@kernel.org, linux-kernel@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Thara Gopinath <thara.gopinath@linaro.org>,
+        Lukasz Luba <lukasz.luba@arm.com>,
+        Peter Kaestle <peter@piie.net>,
+        Mark Gross <mgross@linux.intel.com>,
+        Support Opensource <support.opensource@diasemi.com>,
+        Eduardo Valentin <edubezval@gmail.com>,
+        Keerthy <j-keerthy@ti.com>,
+        "open list:ACER ASPIRE ONE TEMPERATURE AND FAN DRIVER" 
+        <platform-driver-x86@vger.kernel.org>,
+        "open list:TI BANDGAP AND THERMAL DRIVER" 
+        <linux-omap@vger.kernel.org>
+References: <20201216220337.839878-1-daniel.lezcano@linaro.org>
+ <20201216220337.839878-3-daniel.lezcano@linaro.org>
+From:   Hans de Goede <hdegoede@redhat.com>
+Message-ID: <c575c7bc-cf53-bfdf-ea42-e8661d714699@redhat.com>
+Date:   Thu, 17 Dec 2020 19:32:09 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:78.0) Gecko/20100101
+ Thunderbird/78.4.0
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Proofpoint-Virus-Version: vendor=fsecure engine=2.50.10434:6.0.343,18.0.737
- definitions=2020-12-17_13:2020-12-15,2020-12-17 signatures=0
+In-Reply-To: <20201216220337.839878-3-daniel.lezcano@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 7bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-From: Grzegorz Jaszczyk <jaz@semihalf.com>
+Hi Daniel,
 
-This patch introduces support for ap806 thermal driver in case when SoC
-DFX region is marked as secure by the firmware. In such case accessing
-thermal registers, which are part of dfx register set, will not be
-possible from non-secure world. Due to above the ARM Trusted Firmware
-exposes thermal driver as a SiP service.  This allows Linux thermal
-driver to initialise and perform various operations on thermal sensor
-with use of SMC calls.
+On 12/16/20 11:03 PM, Daniel Lezcano wrote:
+> The code does no longer use the ms unit based fields to set the
+> delays as they are replaced by the jiffies.
+> 
+> Remove them and replace their user to use the jiffies version instead.
+> 
+> Cc: Thara Gopinath <thara.gopinath@linaro.org>
+> Signed-off-by: Daniel Lezcano <daniel.lezcano@linaro.org>
+> Reviewed-by: Lukasz Luba <lukasz.luba@arm.com>
 
-If during ap806 thermal initialisation the SMC is unhandled (old fw
-case), fallback to regmap handling.
+I assume that you will merge this through the thermal tree,
+here is my ack for doing so for the pdx86 bits:
 
-Signed-off-by: Grzegorz Jaszczyk <jaz@semihalf.com>
-Signed-off-by: Konstantin Porotchkin <kostap@marvell.com>
----
- drivers/thermal/armada_thermal.c  | 125 +++++++++++++++++++-
- include/soc/marvell/armada8k/fw.h |  19 +++
- 2 files changed, 141 insertions(+), 3 deletions(-)
- create mode 100644 include/soc/marvell/armada8k/fw.h
+Acked-by: Hans de Goede <hdegoede@redhat.com>
 
-diff --git a/drivers/thermal/armada_thermal.c b/drivers/thermal/armada_thermal.c
-index c2ebfb5be4b3..ec077e834c85 100644
---- a/drivers/thermal/armada_thermal.c
-+++ b/drivers/thermal/armada_thermal.c
-@@ -4,6 +4,7 @@
-  *
-  * Copyright (C) 2013 Marvell
-  */
-+#include <linux/arm-smccc.h>
- #include <linux/device.h>
- #include <linux/err.h>
- #include <linux/io.h>
-@@ -18,6 +19,8 @@
- #include <linux/mfd/syscon.h>
- #include <linux/regmap.h>
- #include <linux/interrupt.h>
-+#include <linux/time.h>
-+#include "soc/marvell/armada8k/fw.h"
- 
- #include "thermal_core.h"
- 
-@@ -62,6 +65,8 @@
- #define STATUS_POLL_TIMEOUT_US		100000
- #define OVERHEAT_INT_POLL_DELAY_MS	1000
- 
-+#define THERMAL_SUPPORTED_IN_FIRMWARE(priv) (priv->data->is_smc_supported)
-+
- struct armada_thermal_data;
- 
- /* Marvell EBU Thermal Sensor Dev Structure */
-@@ -111,6 +116,12 @@ struct armada_thermal_data {
- 
- 	/* One sensor is in the thermal IC, the others are in the CPUs if any */
- 	unsigned int cpu_nr;
-+
-+	/*
-+	 * Thermal sensor operations exposed as firmware SIP services and
-+	 * accessed via SMC
-+	 */
-+	bool is_smc_supported;
- };
- 
- struct armada_drvdata {
-@@ -135,6 +146,18 @@ struct armada_thermal_sensor {
- 	int id;
- };
- 
-+static int thermal_smc(u32 addr, u32 *reg, u32 val1, u32 val2)
-+{
-+	struct arm_smccc_res res;
-+
-+	arm_smccc_smc(MV_SIP_DFX, addr, val1, val2, 0, 0, 0, 0, &res);
-+
-+	if (res.a0 == 0 && reg != NULL)
-+		*reg = res.a1;
-+
-+	return res.a0;
-+}
-+
- static void armadaxp_init(struct platform_device *pdev,
- 			  struct armada_thermal_priv *priv)
- {
-@@ -206,6 +229,27 @@ static void armada375_init(struct platform_device *pdev,
- static int armada_wait_sensor_validity(struct armada_thermal_priv *priv)
- {
- 	u32 reg;
-+	int ret;
-+	ktime_t timeout;
-+
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		timeout = ktime_add_us(ktime_get(), STATUS_POLL_TIMEOUT_US);
-+		do {
-+			ret = thermal_smc(MV_SIP_DFX_THERMAL_IS_VALID,
-+					  &reg, 0, 0);
-+			if (ret || reg)
-+				break;
-+
-+			usleep_range((STATUS_POLL_PERIOD_US >> 2) + 1,
-+				     STATUS_POLL_PERIOD_US);
-+
-+		} while (ktime_before(ktime_get(), timeout));
-+
-+		if (ret == SMCCC_RET_SUCCESS)
-+			return reg ? 0 : -ETIMEDOUT;
-+
-+		return ret;
-+	}
- 
- 	return regmap_read_poll_timeout(priv->syscon,
- 					priv->data->syscon_status_off, reg,
-@@ -238,6 +282,22 @@ static void armada_ap806_init(struct platform_device *pdev,
- {
- 	struct armada_thermal_data *data = priv->data;
- 	u32 reg;
-+	int ret;
-+
-+	/*
-+	 * The ap806 thermal sensor registers are part of DFX which is secured
-+	 * by latest firmware, therefore accessing relevant registers from
-+	 * not-secure world will not be possible. In that case Arm Trusted
-+	 * Firmware exposes thermal operations as firmware run-time service. If
-+	 * SMC initialization succeeds, perform other thermal operations using
-+	 * SMC, otherwise (old fw case) fallback to regmap handling.
-+	 */
-+	ret = thermal_smc(MV_SIP_DFX_THERMAL_INIT, 0x0, 0, 0);
-+	if (ret == SMCCC_RET_SUCCESS) {
-+		dev_info(&pdev->dev, "firmware support\n");
-+		THERMAL_SUPPORTED_IN_FIRMWARE(priv) = true;
-+		return;
-+	}
- 
- 	regmap_read(priv->syscon, data->syscon_control0_off, &reg);
- 	reg &= ~CONTROL0_TSEN_RESET;
-@@ -274,11 +334,17 @@ static void armada_cp110_init(struct platform_device *pdev,
- 
- static bool armada_is_valid(struct armada_thermal_priv *priv)
- {
-+	int ret;
- 	u32 reg;
- 
- 	if (!priv->data->is_valid_bit)
- 		return true;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		ret = thermal_smc(MV_SIP_DFX_THERMAL_IS_VALID, &reg, 0, 0);
-+		return ret ? false : reg;
-+	}
-+
- 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
- 
- 	return reg & priv->data->is_valid_bit;
-@@ -324,6 +390,7 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- {
- 	struct armada_thermal_data *data = priv->data;
- 	u32 ctrl0;
-+	int ret;
- 
- 	if (channel < 0 || channel > priv->data->cpu_nr)
- 		return -EINVAL;
-@@ -331,6 +398,16 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- 	if (priv->current_channel == channel)
- 		return 0;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		ret = thermal_smc(MV_SIP_DFX_THERMAL_SEL_CHANNEL,
-+				  NULL, channel, 0);
-+		if (ret)
-+			return ret;
-+
-+		priv->current_channel = channel;
-+		goto is_valid;
-+	}
-+
- 	/* Stop the measurements */
- 	regmap_read(priv->syscon, data->syscon_control0_off, &ctrl0);
- 	ctrl0 &= ~CONTROL0_TSEN_START;
-@@ -357,6 +434,7 @@ static int armada_select_channel(struct armada_thermal_priv *priv, int channel)
- 	ctrl0 |= CONTROL0_TSEN_START;
- 	regmap_write(priv->syscon, data->syscon_control0_off, ctrl0);
- 
-+is_valid:
- 	/*
- 	 * The IP has a latency of ~15ms, so after updating the selected source,
- 	 * we must absolutely wait for the sensor validity bit to ensure we read
-@@ -376,6 +454,9 @@ static int armada_read_sensor(struct armada_thermal_priv *priv, int *temp)
- 	u32 reg, div;
- 	s64 sample, b, m;
- 
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv))
-+		return thermal_smc(MV_SIP_DFX_THERMAL_READ, temp, 0, 0);
-+
- 	regmap_read(priv->syscon, priv->data->syscon_status_off, &reg);
- 	reg = (reg >> priv->data->temp_shift) & priv->data->temp_mask;
- 	if (priv->data->signed_sample)
-@@ -559,7 +640,13 @@ static irqreturn_t armada_overheat_isr_thread(int irq, void *blob)
- 			goto enable_irq;
- 	} while (temperature >= low_threshold);
- 
--	regmap_read(priv->syscon, priv->data->dfx_irq_cause_off, &dummy);
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		if (thermal_smc(MV_SIP_DFX_THERMAL_IRQ, 0, 0, 0))
-+			return IRQ_NONE;
-+	} else {
-+		regmap_read(priv->syscon, priv->data->dfx_irq_cause_off,
-+			    &dummy);
-+	}
- 
- 	/* Notify the thermal core that the temperature is acceptable again */
- 	thermal_zone_device_update(priv->overheat_sensor,
-@@ -772,6 +859,27 @@ static void armada_set_sane_name(struct platform_device *pdev,
- 	} while (insane_char);
- }
- 
-+/*
-+ * Let the firmware configure the thermal overheat threshold, hysteresis and
-+ * enable overheat interrupt
-+ */
-+static int armada_fw_overheat_settings(struct armada_thermal_priv *priv,
-+				       int thresh_mc, int hyst_mc)
-+{
-+	int ret;
-+
-+	ret = thermal_smc(MV_SIP_DFX_THERMAL_THRESH, NULL, thresh_mc, hyst_mc);
-+	if (ret)
-+		return ret;
-+
-+	if (thresh_mc >= 0)
-+		priv->current_threshold = thresh_mc;
-+	if (hyst_mc >= 0)
-+		priv->current_hysteresis = hyst_mc;
-+
-+	return 0;
-+}
-+
- /*
-  * The IP can manage to trigger interrupts on overheat situation from all the
-  * sensors. However, the interrupt source changes along with the last selected
-@@ -803,11 +911,22 @@ static int armada_configure_overheat_int(struct armada_thermal_priv *priv,
- 	if (ret)
- 		return ret;
- 
-+	priv->overheat_sensor = tz;
-+	priv->interrupt_source = sensor_id;
-+
-+	if (THERMAL_SUPPORTED_IN_FIRMWARE(priv)) {
-+		/*
-+		 * When thermal supported in firmware the configuring overheat
-+		 * threshold and enabling overheat interrupt is done in one
-+		 * step.
-+		 */
-+		return armada_fw_overheat_settings(priv, trips[i].temperature,
-+						   trips[i].hysteresis);
-+	}
-+
- 	armada_set_overheat_thresholds(priv,
- 				       trips[i].temperature,
- 				       trips[i].hysteresis);
--	priv->overheat_sensor = tz;
--	priv->interrupt_source = sensor_id;
- 
- 	armada_enable_overheat_interrupt(priv);
- 
-diff --git a/include/soc/marvell/armada8k/fw.h b/include/soc/marvell/armada8k/fw.h
-new file mode 100644
-index 000000000000..2a80f26cbf6f
---- /dev/null
-+++ b/include/soc/marvell/armada8k/fw.h
-@@ -0,0 +1,19 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright (C) 2019 Marvell International Ltd.
-+ */
-+
-+#ifndef _SOC_MARVELL_ARMADA8K_FW_H
-+#define _SOC_MARVELL_ARMADA8K_FW_H
-+
-+/* FW related definitions */
-+#define MV_SIP_DFX			0x82000014
-+
-+#define MV_SIP_DFX_THERMAL_INIT		1
-+#define MV_SIP_DFX_THERMAL_READ		2
-+#define MV_SIP_DFX_THERMAL_IS_VALID	3
-+#define MV_SIP_DFX_THERMAL_IRQ		4
-+#define MV_SIP_DFX_THERMAL_THRESH	5
-+#define MV_SIP_DFX_THERMAL_SEL_CHANNEL	6
-+
-+#endif /* _SOC_MARVELL_ARMADA8K_FW_H */
--- 
-2.17.1
+Regards,
+
+Hans
+
+> ---
+>  drivers/platform/x86/acerhdf.c                     | 3 ++-
+>  drivers/thermal/da9062-thermal.c                   | 4 ++--
+>  drivers/thermal/gov_power_allocator.c              | 2 +-
+>  drivers/thermal/thermal_core.c                     | 4 +---
+>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 6 ++++--
+>  include/linux/thermal.h                            | 7 -------
+>  6 files changed, 10 insertions(+), 16 deletions(-)
+> 
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> index b6aa6e5514f4..6b8b3ab8db48 100644
+> --- a/drivers/platform/x86/acerhdf.c
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -336,7 +336,8 @@ static void acerhdf_check_param(struct thermal_zone_device *thermal)
+>  			pr_notice("interval changed to: %d\n", interval);
+>  
+>  		if (thermal)
+> -			thermal->polling_delay = interval*1000;
+> +			thermal->polling_delay_jiffies =
+> +				round_jiffies(msecs_to_jiffies(interval * 1000));
+>  
+>  		prev_interval = interval;
+>  	}
+> diff --git a/drivers/thermal/da9062-thermal.c b/drivers/thermal/da9062-thermal.c
+> index 4d74994f160a..180edec34e07 100644
+> --- a/drivers/thermal/da9062-thermal.c
+> +++ b/drivers/thermal/da9062-thermal.c
+> @@ -95,7 +95,7 @@ static void da9062_thermal_poll_on(struct work_struct *work)
+>  		thermal_zone_device_update(thermal->zone,
+>  					   THERMAL_EVENT_UNSPECIFIED);
+>  
+> -		delay = msecs_to_jiffies(thermal->zone->passive_delay);
+> +		delay = thermal->zone->passive_delay_jiffies;
+>  		queue_delayed_work(system_freezable_wq, &thermal->work, delay);
+>  		return;
+>  	}
+> @@ -245,7 +245,7 @@ static int da9062_thermal_probe(struct platform_device *pdev)
+>  
+>  	dev_dbg(&pdev->dev,
+>  		"TJUNC temperature polling period set at %d ms\n",
+> -		thermal->zone->passive_delay);
+> +		jiffies_to_msecs(thermal->zone->passive_delay_jiffies));
+>  
+>  	ret = platform_get_irq_byname(pdev, "THERMAL");
+>  	if (ret < 0) {
+> diff --git a/drivers/thermal/gov_power_allocator.c b/drivers/thermal/gov_power_allocator.c
+> index 7a4170a0b51f..f8c3d1e40b86 100644
+> --- a/drivers/thermal/gov_power_allocator.c
+> +++ b/drivers/thermal/gov_power_allocator.c
+> @@ -258,7 +258,7 @@ static u32 pid_controller(struct thermal_zone_device *tz,
+>  	 * power being applied, slowing down the controller)
+>  	 */
+>  	d = mul_frac(tz->tzp->k_d, err - params->prev_err);
+> -	d = div_frac(d, tz->passive_delay);
+> +	d = div_frac(d, jiffies_to_msecs(tz->passive_delay_jiffies));
+>  	params->prev_err = err;
+>  
+>  	power_range = p + i + d;
+> diff --git a/drivers/thermal/thermal_core.c b/drivers/thermal/thermal_core.c
+> index d96c515af3cb..b2615449b18f 100644
+> --- a/drivers/thermal/thermal_core.c
+> +++ b/drivers/thermal/thermal_core.c
+> @@ -313,7 +313,7 @@ static void monitor_thermal_zone(struct thermal_zone_device *tz)
+>  
+>  	if (!stop && tz->passive)
+>  		thermal_zone_device_set_polling(tz, tz->passive_delay_jiffies);
+> -	else if (!stop && tz->polling_delay)
+> +	else if (!stop && tz->polling_delay_jiffies)
+>  		thermal_zone_device_set_polling(tz, tz->polling_delay_jiffies);
+>  	else
+>  		thermal_zone_device_set_polling(tz, 0);
+> @@ -1307,8 +1307,6 @@ thermal_zone_device_register(const char *type, int trips, int mask,
+>  	tz->device.class = &thermal_class;
+>  	tz->devdata = devdata;
+>  	tz->trips = trips;
+> -	tz->passive_delay = passive_delay;
+> -	tz->polling_delay = polling_delay;
+>  
+>  	thermal_set_delay_jiffies(&tz->passive_delay_jiffies, passive_delay);
+>  	thermal_set_delay_jiffies(&tz->polling_delay_jiffies, polling_delay);
+> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> index 2ce4b19f312a..f84375865c97 100644
+> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+> @@ -166,6 +166,7 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+>  			     char *domain)
+>  {
+>  	struct ti_thermal_data *data;
+> +	int interval;
+>  
+>  	data = ti_bandgap_get_sensor_data(bgp, id);
+>  
+> @@ -183,9 +184,10 @@ int ti_thermal_expose_sensor(struct ti_bandgap *bgp, int id,
+>  		return PTR_ERR(data->ti_thermal);
+>  	}
+>  
+> +	interval = jiffies_to_msecs(data->ti_thermal->polling_delay_jiffies);
+> +
+>  	ti_bandgap_set_sensor_data(bgp, id, data);
+> -	ti_bandgap_write_update_interval(bgp, data->sensor_id,
+> -					data->ti_thermal->polling_delay);
+> +	ti_bandgap_write_update_interval(bgp, data->sensor_id, interval);
+>  
+>  	return 0;
+>  }
+> diff --git a/include/linux/thermal.h b/include/linux/thermal.h
+> index d1b82c70de69..1e686404951b 100644
+> --- a/include/linux/thermal.h
+> +++ b/include/linux/thermal.h
+> @@ -115,13 +115,8 @@ struct thermal_cooling_device {
+>   * @devdata:	private pointer for device private data
+>   * @trips:	number of trip points the thermal zone supports
+>   * @trips_disabled;	bitmap for disabled trips
+> - * @passive_delay:	number of milliseconds to wait between polls when
+> - *			performing passive cooling.
+>   * @passive_delay_jiffies: number of jiffies to wait between polls when
+>   *			performing passive cooling.
+> - * @polling_delay:	number of milliseconds to wait between polls when
+> - *			checking whether trip points have been crossed (0 for
+> - *			interrupt driven systems)
+>   * @polling_delay_jiffies: number of jiffies to wait between polls when
+>   *			checking whether trip points have been crossed (0 for
+>   *			interrupt driven systems)
+> @@ -162,8 +157,6 @@ struct thermal_zone_device {
+>  	unsigned long trips_disabled;	/* bitmap for disabled trips */
+>  	unsigned long passive_delay_jiffies;
+>  	unsigned long polling_delay_jiffies;
+> -	int passive_delay;
+> -	int polling_delay;
+>  	int temperature;
+>  	int last_temperature;
+>  	int emul_temperature;
+> 
 
