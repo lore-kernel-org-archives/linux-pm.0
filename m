@@ -2,86 +2,82 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-16.7 required=3.0 tests=BAYES_00,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,USER_AGENT_GIT
-	autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-9.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=unavailable
+	autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id ED174C433E9
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 13:53:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B6E6AC433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 14:11:58 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id C447F22BE8
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 13:53:23 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 7A2C222BEA
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 14:11:58 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725807AbgLUNxI (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Dec 2020 08:53:08 -0500
-Received: from youngberry.canonical.com ([91.189.89.112]:56942 "EHLO
-        youngberry.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726302AbgLUNxH (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 08:53:07 -0500
-Received: from 36-229-229-222.dynamic-ip.hinet.net ([36.229.229.222] helo=localhost)
-        by youngberry.canonical.com with esmtpsa (TLS1.2:ECDHE_RSA_AES_128_GCM_SHA256:128)
-        (Exim 4.86_2)
-        (envelope-from <kai.heng.feng@canonical.com>)
-        id 1krLbm-0004ub-GD; Mon, 21 Dec 2020 13:52:19 +0000
-From:   Kai-Heng Feng <kai.heng.feng@canonical.com>
-To:     rui.zhang@intel.com, daniel.lezcano@linaro.org, amitk@kernel.org
-Cc:     andrzej.p@collabora.com, mjg59@google.com,
-        srinivas.pandruvada@linux.intel.com,
-        Kai-Heng Feng <kai.heng.feng@canonical.com>,
-        Sumeet Pawnikar <sumeet.r.pawnikar@intel.com>,
-        Andy Shevchenko <andriy.shevchenko@intel.com>,
-        Andres Freund <andres@anarazel.de>,
-        Chuhong Yuan <hslester96@gmail.com>,
-        Randy Dunlap <rdunlap@infradead.org>,
-        Gayatri Kammela <gayatri.kammela@intel.com>,
-        Akinobu Mita <akinobu.mita@gmail.com>,
-        linux-pm@vger.kernel.org (open list:THERMAL),
-        linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH 2/2] thermal: intel_pch_thermal: Add critical callback to override default shutdown behavior
-Date:   Mon, 21 Dec 2020 21:52:03 +0800
-Message-Id: <20201221135206.17671-2-kai.heng.feng@canonical.com>
-X-Mailer: git-send-email 2.29.2
-In-Reply-To: <20201221135206.17671-1-kai.heng.feng@canonical.com>
-References: <20201221135206.17671-1-kai.heng.feng@canonical.com>
+        id S1727053AbgLUOLy (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Dec 2020 09:11:54 -0500
+Received: from mail-wr1-f48.google.com ([209.85.221.48]:36688 "EHLO
+        mail-wr1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726499AbgLUOLy (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 09:11:54 -0500
+Received: by mail-wr1-f48.google.com with SMTP id t16so11216170wra.3;
+        Mon, 21 Dec 2020 06:11:37 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=dRfOKrfA9+95u+JXeBdqaPk9bb6AjAjfiGZH9/kyq2c=;
+        b=M0QOpyz/8oKG+z7q63bM+70j1zVSh03FIt3UYxATetsdhc/ijqoJ1llBLjQPrRyHYu
+         0J8nGlLvzrCVjHMe/7r+jHoqz7wL1jsP7duS97Iwqy5B5lPPMRG0E1jI2XGhkcT4AZB+
+         wZPEW94Ib1XfK7O2l7vj+1RmJJUVjvtSb3bGhrFlsohZ9YiDA0VtubyqIA1FgDkPBSDt
+         6mG77HrK2Yd1R7wraBAkD6QVqKxxQMUAiYBHzMtswzXnBIBt48sOT0fzqUEB390Hbo7g
+         UuKgn48275vlSJDsq3HHx9q6n6L4LRz23PjKfMLObe5pHWSl/GiXsbpAvJ9FsOQLTVs2
+         W+JA==
+X-Gm-Message-State: AOAM533yB8cxrXxTQ81vn08BZfPk/GOHK8eOnR4zr4ow8hENdblN3wuX
+        IHeidVPZEWcaNsFd0yx8bhc=
+X-Google-Smtp-Source: ABdhPJyFLbp2yFuolPYyYG9a3FRmCo6x2YzonajYXCyggm4h4pdL5U1JaFWZ8VXC5yerC0BwjDtKoQ==
+X-Received: by 2002:adf:ee90:: with SMTP id b16mr18953642wro.221.1608559871621;
+        Mon, 21 Dec 2020 06:11:11 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id j59sm28021679wrj.13.2020.12.21.06.11.10
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 21 Dec 2020 06:11:10 -0800 (PST)
+Date:   Mon, 21 Dec 2020 15:11:09 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Timon Baetz <timon.baetz@protonmail.com>
+Cc:     Liam Girdwood <lgirdwood@gmail.com>,
+        Mark Brown <broonie@kernel.org>,
+        Rob Herring <robh+dt@kernel.org>,
+        MyungJoo Ham <myungjoo.ham@samsung.com>,
+        Chanwoo Choi <cw00.choi@samsung.com>,
+        Lee Jones <lee.jones@linaro.org>,
+        Sebastian Reichel <sre@kernel.org>,
+        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH v2 1/6] extcon: max8997: Add CHGINS and CHGRM interrupt
+ handling
+Message-ID: <20201221141109.GA33797@kozik-lap>
+References: <20201202203516.43053-1-timon.baetz@protonmail.com>
+ <20201221095001.595366-1-timon.baetz@protonmail.com>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20201221095001.595366-1-timon.baetz@protonmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Like previous patch, the intel_pch_thermal device is not in ACPI
-ThermalZone namespace, so a critical trip doesn't mean shutdown.
+On Mon, Dec 21, 2020 at 09:53:08AM +0000, Timon Baetz wrote:
+> This allows the MAX8997 charger to set the current limit depending on
+> the detected extcon charger type.
+> 
+> Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
 
-Override the default .critical callback to prevent surprising thermal
-shutdoown.
+Don't do this:
+	In-Reply-To: <20201202203516.43053-1-timon.baetz@protonmail.com>
 
-Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
----
- drivers/thermal/intel/intel_pch_thermal.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+It's a v2, so new thread. If you want to reference previous work, paste
+a link from lore.kernel.org.
 
-diff --git a/drivers/thermal/intel/intel_pch_thermal.c b/drivers/thermal/intel/intel_pch_thermal.c
-index 41723c6c6c0c..527c91f5960b 100644
---- a/drivers/thermal/intel/intel_pch_thermal.c
-+++ b/drivers/thermal/intel/intel_pch_thermal.c
-@@ -326,10 +326,16 @@ static int pch_get_trip_temp(struct thermal_zone_device *tzd, int trip, int *tem
- 	return 0;
- }
- 
-+static void pch_critical(struct thermal_zone_device *tzd)
-+{
-+	dev_dbg(&tzd->device, "%s: critical temperature reached\n", tzd->type);
-+}
-+
- static struct thermal_zone_device_ops tzd_ops = {
- 	.get_temp = pch_thermal_get_temp,
- 	.get_trip_type = pch_get_trip_type,
- 	.get_trip_temp = pch_get_trip_temp,
-+	.critical = pch_critical,
- };
- 
- enum board_ids {
--- 
-2.29.2
-
+Best regards,
+Krzysztof
