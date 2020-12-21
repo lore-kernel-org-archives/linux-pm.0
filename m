@@ -2,199 +2,300 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-19.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
-	INCLUDES_PATCH,MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,
-	URIBL_BLOCKED autolearn=ham autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-4.0 required=3.0 tests=BAYES_00,MAILING_LIST_MULTI,
+	SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=no autolearn_force=no
+	version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 5A01EC433DB
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 15:44:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 7F6D0C433DB
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 16:12:54 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1006122CA1
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 15:44:15 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 33B9B22B51
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 16:12:54 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725783AbgLUPn6 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Dec 2020 10:43:58 -0500
-Received: from mail-wm1-f52.google.com ([209.85.128.52]:55604 "EHLO
-        mail-wm1-f52.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725777AbgLUPn6 (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 10:43:58 -0500
-Received: by mail-wm1-f52.google.com with SMTP id x22so10255726wmc.5;
-        Mon, 21 Dec 2020 07:43:40 -0800 (PST)
+        id S1725825AbgLUQMx (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Dec 2020 11:12:53 -0500
+Received: from mail-oi1-f178.google.com ([209.85.167.178]:46022 "EHLO
+        mail-oi1-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725816AbgLUQMx (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 11:12:53 -0500
+Received: by mail-oi1-f178.google.com with SMTP id f132so11685694oib.12;
+        Mon, 21 Dec 2020 08:12:37 -0800 (PST)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=eBXm2ENZyMbUD/+MQkl1th7hjWBElaB2QBhgzFuNMgk=;
-        b=pvUIYUflpCpo4w0XbAUkdVv5GcbXNhFxmhUHGm3HGJ8gV0VklfPOSl7O6ZjtIBxVOP
-         tiVW3maPf6bPvn5xvBjgHjNlw0GhEMZ/fXIQigkrIQ8nrvGQHxBqSeXF360+W4q6tvIn
-         j5eg/UpeAh+tkjTIlygBIHcSMKGnp7DqVHXuhkLsIR6TDZf+6BvU2QWRQEVykPTTKS4f
-         VJff0FNvpuC/vFXFuyq3Xrs/Oy9ERsXHBix/nEGDHrgmkbIqgA3+SskPQ5mVPTY2X/vI
-         w2zPT5vnlH5pvCo0tMhMhfNpXYewm//TJgTuo/dvojEdZdVquWHI8PeSfyJTa01wfqGz
-         nR/A==
-X-Gm-Message-State: AOAM531gMTXX2H86YZcc0pA43XNG1VsZwDunJAGRuAk7/0OJ32OMv7tF
-        J3aZuedHC84r/PexZSHirog=
-X-Google-Smtp-Source: ABdhPJzNKXswqKaexwUhV0ogVLvDGB0INsUBzTOsZEnTRDA4tEoNmgFKAq6a4KamldZzTxW0jAU7vg==
-X-Received: by 2002:a05:600c:313:: with SMTP id q19mr17067442wmd.126.1608565394608;
-        Mon, 21 Dec 2020 07:43:14 -0800 (PST)
-Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
-        by smtp.googlemail.com with ESMTPSA id v4sm24840766wrw.42.2020.12.21.07.43.13
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Dec 2020 07:43:13 -0800 (PST)
-Date:   Mon, 21 Dec 2020 16:43:11 +0100
-From:   Krzysztof Kozlowski <krzk@kernel.org>
-To:     Timon Baetz <timon.baetz@protonmail.com>
-Cc:     Liam Girdwood <lgirdwood@gmail.com>,
-        Mark Brown <broonie@kernel.org>,
-        Rob Herring <robh+dt@kernel.org>,
-        MyungJoo Ham <myungjoo.ham@samsung.com>,
-        Chanwoo Choi <cw00.choi@samsung.com>,
-        Lee Jones <lee.jones@linaro.org>,
-        Sebastian Reichel <sre@kernel.org>,
-        linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org,
-        linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht
-Subject: Re: [PATCH v2 2/6] power: supply: max8997_charger: Set CHARGER
- current limit
-Message-ID: <20201221154311.GA43240@kozik-lap>
-References: <20201202203516.43053-1-timon.baetz@protonmail.com>
- <20201221095001.595366-1-timon.baetz@protonmail.com>
- <20201221095001.595366-2-timon.baetz@protonmail.com>
- <20201221141627.GB33797@kozik-lap>
- <20201221163455.2c3f095d.timon.baetz@protonmail.com>
+        h=x-gm-message-state:mime-version:references:in-reply-to:from:date
+         :message-id:subject:to:cc;
+        bh=hRk2AFQYlWxWo/NpbZ7IksLBNZ8aNd1stHsai1MrXF8=;
+        b=rLW6yWeY1RzcsFgwCJb8IOo8ik5sIolv2M+oyDB5JqvEqinG4X5C3sIwhfw6cYzR0j
+         m9cTQpC3thjON0EwdGQK5hpx6oXOnWu1wUroHQ9YkCWLSrJ3N8M0BD9vm/eZYnpvludo
+         P3sWbiaP1ruM1VqYjp7bt0DcNO8kN8bdbo57ODevkWr7bHzJmAB3ZkdGO8tBdRGLQ7ph
+         Tz1ahY1FUAtm6MGxSup4slJOQsjcfkq4kHZIi07tZExLQ6FI+1eo68MDedhZb32oQahR
+         efqC1r94JM/IYmVfChEUTEeehFF95nMPvoFxijuN2jAoYN2+5M2VRzR3ewHVfUApNOQH
+         QzTg==
+X-Gm-Message-State: AOAM533P0nUQshAES+a+XSufKxaWGb08ttMpv7715JBiii61sHKA/IyF
+        160m9puaTEz3q7dI55v9APr+omnFV0DJbYbVUV8=
+X-Google-Smtp-Source: ABdhPJxQsny2WXWz8Op2WKwnVpmoUNB6jDMkz19SY8tMq89no2meDRTgYqlrsPoZ9GKT55rAL9cBhD2cRTBpquZFilI=
+X-Received: by 2002:aca:4892:: with SMTP id v140mr11504292oia.71.1608567131470;
+ Mon, 21 Dec 2020 08:12:11 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20201221163455.2c3f095d.timon.baetz@protonmail.com>
+References: <20360841.iInq7taT2Z@kreacher> <3827230.0GnL3RTcl1@kreacher> <1608307905.26567.46.camel@suse.com>
+In-Reply-To: <1608307905.26567.46.camel@suse.com>
+From:   "Rafael J. Wysocki" <rafael@kernel.org>
+Date:   Mon, 21 Dec 2020 17:11:59 +0100
+Message-ID: <CAJZ5v0jfgFRqXisWQUH0J-Xfvh_jjWw8mC_AKyd-tAgRNamj9Q@mail.gmail.com>
+Subject: Re: [PATCH v2 0/3] cpufreq: Allow drivers to receive more information
+ from the governor
+To:     Giovanni Gherdovich <ggherdovich@suse.com>
+Cc:     "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+        Linux PM <linux-pm@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Doug Smythies <dsmythies@telus.net>
+Content-Type: text/plain; charset="UTF-8"
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 21, 2020 at 03:35:07PM +0000, Timon Baetz wrote:
-> On Mon, 21 Dec 2020 15:16:27 +0100, Krzysztof Kozlowski wrote:
-> > On Mon, Dec 21, 2020 at 09:53:15AM +0000, Timon Baetz wrote:
-> > > Register for extcon notification and set charging current depending on
-> > > the detected cable type. Current values are taken from vendor kernel,
-> > > where most charger types end up setting 650mA [0].
-> > >
-> > > Also enable and disable the CHARGER regulator based on extcon events.
-> > >
-> > > [0] https://github.com/krzk/linux-vendor-backup/blob/samsung/galaxy-s2-epic-4g-touch-sph-d710-exynos4210-dump/drivers/misc/max8997-muic.c#L1675-L1678
-> > >
-> > > Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
-> > > ---
-> > >  drivers/mfd/max8997.c                  |  4 +-
-> > >  drivers/power/supply/max8997_charger.c | 94 ++++++++++++++++++++++++++
-> > >  2 files changed, 96 insertions(+), 2 deletions(-)
-> > >
-> > > diff --git a/drivers/mfd/max8997.c b/drivers/mfd/max8997.c
-> > > index 68d8f2b95287..55d3a6f97783 100644
-> > > --- a/drivers/mfd/max8997.c
-> > > +++ b/drivers/mfd/max8997.c
-> > > @@ -29,9 +29,9 @@
-> > >  static const struct mfd_cell max8997_devs[] = {
-> > >  	{ .name = "max8997-pmic", },
-> > >  	{ .name = "max8997-rtc", },
-> > > -	{ .name = "max8997-battery", },
-> > > +	{ .name = "max8997-battery", .of_compatible = "maxim,max8997-battery", },
-> > >  	{ .name = "max8997-haptic", },
-> > > -	{ .name = "max8997-muic", },
-> > > +	{ .name = "max8997-muic", .of_compatible = "maxim,max8997-muic", },  
-> > 
-> > Undocumented bindings. The checkpatch should complain about it, so I
-> > assume you did not run it. Please run the checkpatch.
-> > 
-> > >  	{ .name = "max8997-led", .id = 1 },
-> > >  	{ .name = "max8997-led", .id = 2 },
-> > >  };
-> > > diff --git a/drivers/power/supply/max8997_charger.c b/drivers/power/supply/max8997_charger.c
-> > > index 1947af25879a..6e8750e455ea 100644
-> > > --- a/drivers/power/supply/max8997_charger.c
-> > > +++ b/drivers/power/supply/max8997_charger.c
-> > > @@ -6,12 +6,14 @@
-> > >  //  MyungJoo Ham <myungjoo.ham@samsung.com>
-> > >
-> > >  #include <linux/err.h>
-> > > +#include <linux/extcon.h>
-> > >  #include <linux/module.h>
-> > >  #include <linux/slab.h>
-> > >  #include <linux/platform_device.h>
-> > >  #include <linux/power_supply.h>
-> > >  #include <linux/mfd/max8997.h>
-> > >  #include <linux/mfd/max8997-private.h>
-> > > +#include <linux/regulator/consumer.h>
-> > >
-> > >  /* MAX8997_REG_STATUS4 */
-> > >  #define DCINOK_SHIFT		1
-> > > @@ -31,6 +33,10 @@ struct charger_data {
-> > >  	struct device *dev;
-> > >  	struct max8997_dev *iodev;
-> > >  	struct power_supply *battery;
-> > > +	struct regulator *reg;
-> > > +	struct extcon_dev *edev;
-> > > +	struct notifier_block extcon_nb;
-> > > +	struct work_struct extcon_work;
-> > >  };
-> > >
-> > >  static enum power_supply_property max8997_battery_props[] = {
-> > > @@ -88,6 +94,67 @@ static int max8997_battery_get_property(struct power_supply *psy,
-> > >  	return 0;
-> > >  }
-> > >
-> > > +static void max8997_battery_extcon_evt_stop_work(void *data)
-> > > +{
-> > > +	struct charger_data *charger = data;
-> > > +
-> > > +	cancel_work_sync(&charger->extcon_work);
-> > > +}
-> > > +
-> > > +static void max8997_battery_extcon_evt_worker(struct work_struct *work)
-> > > +{
-> > > +	struct charger_data *charger =
-> > > +	    container_of(work, struct charger_data, extcon_work);
-> > > +	struct extcon_dev *edev = charger->edev;
-> > > +	int current_limit, ret;
-> > > +
-> > > +	if (extcon_get_state(edev, EXTCON_CHG_USB_SDP) > 0) {
-> > > +		dev_dbg(charger->dev, "USB SDP charger is connected\n");
-> > > +		current_limit = 450000;
-> > > +	} else if (extcon_get_state(edev, EXTCON_CHG_USB_DCP) > 0) {
-> > > +		dev_dbg(charger->dev, "USB DCP charger is connected\n");
-> > > +		current_limit = 650000;
-> > > +	} else if (extcon_get_state(edev, EXTCON_CHG_USB_FAST) > 0) {
-> > > +		dev_dbg(charger->dev, "USB FAST charger is connected\n");
-> > > +		current_limit = 650000;
-> > > +	} else if (extcon_get_state(edev, EXTCON_CHG_USB_SLOW) > 0) {
-> > > +		dev_dbg(charger->dev, "USB SLOW charger is connected\n");
-> > > +		current_limit = 650000;
-> > > +	} else if (extcon_get_state(edev, EXTCON_CHG_USB_CDP) > 0) {
-> > > +		dev_dbg(charger->dev, "USB CDP charger is connected\n");
-> > > +		current_limit = 650000;
-> > > +	} else {
-> > > +		dev_dbg(charger->dev, "USB charger is diconnected\n");
-> > > +		current_limit = -1;
-> > > +	}
-> > > +
-> > > +	if (current_limit > 0) {
-> > > +		ret = regulator_set_current_limit(charger->reg, current_limit, current_limit);
-> > > +		if (ret) {
-> > > +			dev_err(charger->dev, "failed to set current limit: %d\n", ret);
-> > > +			goto regulator_disable;  
-> > 
-> > Unusual error path... if regulator was not enabled before and
-> > regulator_set_current_limit() failed, you disable the regulator? Why?
-> > Wasn't it already disabled?
-> 
-> Because I thought you asked me to in v1 of this patch:
-> > Failure of setting the current should rather disable the charging.
-> 
-> I probably misunderstood you comment then. So I guess it should just
-> return?
+Hi,
 
-Yes, I was not specific enough. In v1 you enabled the charging even in
-case of regulator_set_current_limit() error. Instead, the charging
-should not be enabled, so just return here with error.
+On Fri, Dec 18, 2020 at 5:22 PM Giovanni Gherdovich
+<ggherdovich@suse.com> wrote:
+>
+> On Mon, 2020-12-14 at 21:01 +0100, Rafael J. Wysocki wrote:
+> > Hi,
+> >
+> > The timing of this is not perfect (sorry about that), but here's a refresh
+> > of this series.
+> >
+> > The majority of the previous cover letter still applies:
+> > [...]
+>
+> Hello,
+>
+> the series is tested using
+>
+> -> tbench (packets processing with loopback networking, measures throughput)
+> -> dbench (filesystem operations, measures average latency)
+> -> kernbench (kernel compilation, elapsed time)
+> -> and gitsource (long-running shell script, elapsed time)
+>
+> These are chosen because none of them is bound by compute and all are
+> sensitive to freq scaling decisions. The machines are a Cascade Lake based
+> server, a client Skylake and a Coffee Lake laptop.
 
-Best regards,
-Krzysztof
+First of all, many thanks for the results!
 
+Any test results input is always much appreciated for all of the
+changes under consideration.
+
+> What's being compared:
+>
+> sugov-HWP.desired : the present series;  intel_pstate=passive,  governor=schedutil
+> sugov-HWP.min     : mainline;            intel_pstate=passive,  governor=schedutil
+> powersave-HWP     : mainline;            intel_pstate=active,   governor=powersave
+> perfgov-HWP       : mainline;            intel_pstate=active,   governor=performance
+> sugov-no-HWP      : HWP disabled;        intel_pstate=passive,  governor=schedutil
+>
+> Dbench and Kernbench have neutral results, but Tbench has sugov-HWP.desired
+> lose in both performance and performance-per-watt, while Gitsource show the
+> series as faster in raw performance but again worse than the competition in
+> efficiency.
+
+Well, AFAICS tbench "likes" high turbo and is sensitive to the
+response time (as indicated by the fact that it is also sensitive to
+the polling limit value in cpuidle).
+
+Using the target perf to set HWP_REQ.DESIRED (instead of using it to
+set HWP_REQ.MIN) generally causes the turbo to be less aggressive and
+the response time to go up, so the tbench result is not a surprise at
+all.  This case represents the tradeoff being made here (as noted by
+Doug in one of his previous messages).
+
+The gitsource result is a bit counter-intuitive, but my conclusions
+drawn from it are quite different from yours (more on that below).
+
+> 1. SUMMARY BY BENCHMARK
+>    1.1. TBENCH
+>    1.2. DBENCH
+>    1.3. KERNBENCH
+>    1.4. GITSOURCE
+> 2. SUMMARY BY USER PROFILE
+>    2.1. PERFORMANCE USER: what if I switch pergov -> schedutil?
+>    2.2. DEFAULT USER: what if I switch powersave -> schedutil?
+>    2.3. DEVELOPER: what if I switch sugov-HWP.min -> sugov-HWP.desired?
+> 3. RESULTS TABLES
+>    PERFORMANCE RATIOS
+>    PERFORMANCE-PER-WATT RATIOS
+>
+>
+> 1. SUMMARY BY BENCHMARK
+> ~~~~~~~~~~~~~~~~~~~~~~~
+>
+> Tbench: sugov-HWP.desired is the worst performance on all three
+>     machines. sugov-HWP.min is between 20% and 90% better. The baseline
+>     sugov-HWP.desired offers a lower throughput, but does it increase
+>     efficiency? It actually doesn't: on two out of three machines the
+>     incumbent code (current sugov, or intel_pstate=active) has 10% to 35%
+>     better efficiency. In other word, the status quo is both faster and more
+>     efficient than the proposed series on this benchmark.
+>     The absolute power consumption is lower, but the delivered performance is
+>     "even more lower", and that's why performance-per-watt shows a net loss.
+
+This benchmark is best off when run under the performance governor and
+the observation that sugov-HWP.min is almost as good as the
+performance governor for it is a consequence of a bias towards
+performance in the former (which need not be regarded as a good
+thing).
+
+The drop in energy-efficiency is somewhat disappointing, but not
+entirely unexpected too.
+
+> Dbench: generally neutral, in both performance and efficiency. Powersave is
+>     occasionally behind the pack in performance, 5% to 15%. A 15% performance
+>     loss on the Coffe Lake is compensated by an 80% improved efficiency. To be
+>     noted that on the same Coffee Lake sugov-no-HWP is 20% ahead of the pack
+>     in efficiency.
+>
+> Kernbench: neutral, in both performance and efficiency. powersave looses 14%
+>     to the pack in performance on the Cascade Lake.
+>
+> Gitsource: this test show the most compelling case against the
+>     sugov-HWP.desired series: on the Cascade Lake sugov-HWP.desired is 10%
+>     faster than sugov-HWP.min (it was expected to be slower!) and 35% less
+>     efficient (we expected more performance-per-watt, not less).
+
+This is a bit counter-intuitive, so it is good to try to understand
+what's going on instead of drawing conclusions right away from pure
+numbers.
+
+My interpretation of the available data is that gitsource benefits
+from the "race-to-idle" effect in terms of energy-efficiency which
+also causes it to suffer in terms of performance.  Namely, completing
+the given piece of work faster causes some CPU idle time to become
+available and that effectively reduces power, but it also increases
+the response time (by the idle state exit latency) which causes
+performance to drop. Whether or not this effect can be present depends
+on what CPU idle states are available etc. and it may be a pure
+coincidence.
+
+What sugov-HWP.desired really does is to bias the frequency towards
+whatever is perceived by schedutil as sufficient to run the workload
+(which is a key property of it - see below) and it appears to do the
+job here quite well, but it eliminates the "race-to-idle" effect that
+the workload benefited from originally and, like it or not, schedutil
+cannot know about that effect.
+
+That effect can only be present if the frequencies used for running
+the workload are too high and by a considerable margin (sufficient for
+a deep enough idle state to be entered).  In some cases running the
+workload too fast helps (like in this one, although this time it
+happens to hurt performance), but in some cases it really hurts
+energy-efficiency and the question is whether or not this should be
+always done.
+
+There is a whole broad category of workloads involving periodic tasks
+that do the same amount of work in every period regardless of the
+frequency they run at (as long as the frequency is sufficient to avoid
+"overrunning" the period) and they almost never benefit from
+"race-to-idle".There is zero benefit from running them too fast and
+the energy-efficiency goes down the sink when that happens.
+
+Now the problem is that with sugov-HWP.min the users who care about
+these workloads don't even have an option to use the task utilization
+history recorded by the scheduler to bias the frequency towards the
+"sufficient" level, because sugov-HWP.min only sets a lower bound on
+the frequency selection to improve the situation, so the choice
+between it and sugov-HWP.desired boils down to whether or not to give
+that option to them and my clear preference is for that option to
+exist.  Sorry about that.  [Note that it really is an option, though,
+because "pure" HWP is still the default for HWP-enabled systems.]
+
+It may be possible to restore some "race-to-idle" benefits by tweaking
+HWP_REQ.EPP in the future, but that needs to be investigated.
+
+BTW, what EPP value was there on the system where you saw better
+performance under sugov-HWP.desired?  If it was greater than zero, it
+would be useful to decrease EPP (by adjusting the
+energy_performance_preference attributes in sysfs for all CPUs) and
+see what happens to the performance difference then.
+
+
+>
+> 2. SUMMARY BY USER PROFILE
+> ~~~~~~~~~~~~~~~~~~~~~~~~~~
+>
+> If I was a perfgov-HWP user, I would be 20%-90% faster than with other governors
+> on tbench an gitsource. This speed gap comes with an unexpected efficiency
+> bonus on both test. Since dbench and kernbench have a flat profile across the
+> board, there is no incentive to try another governor.
+>
+> If I was a powersave-HWP user, I'd be the slower of the bunch. The lost
+> performance is not, in general, balanced by better efficiency. This only
+> happens on Coffee Lake, which is a CPU for the mobile market and possibly HWP
+> has efficiency-oriented tuning there. Any flavor of schedutil would be an
+> improvement.
+>
+> From a developer perspective, the obstacles to move from HWP.min to
+> HWP.desired are tbench, where HWP.desired is worse than having no HWP support
+> at all, and gitsource, where HWP.desired has the opposite properties than
+> those advertised (it's actually faster but less efficient).
+>
+>
+> 3. RESULTS TABLES
+> ~~~~~~~~~~~~~~~~~
+>
+> Tilde (~) means the result is the same as baseline (or, the ratio is close to 1).
+> The double asterisk (**) is a visual aid and means the result is better than
+> baseline (higher or lower depending on the case).
+>
+>
+> | 80x_CASCADELAKE_NUMA: Intel Cascade Lake, 40 cores / 80 threads, NUMA, SATA SSD storage
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |            sugov-HWP.des  sugov-HWP.min  powersave-HWP  perfgov-HWP  sugov-no-HWP   better if
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                         PERFORMANCE RATIOS
+> | tbench         1.00           1.89**         1.88**        1.89**        1.17**       higher
+> | dbench         1.00           ~              1.06          ~             ~            lower
+> | kernbench      1.00           ~              1.14          ~             ~            lower
+> | gitsource      1.00           1.11           2.70          0.80**        ~            lower
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                    PERFORMANCE-PER-WATT RATIOS
+> | tbench         1.00           1.36**         1.38**        1.33**        1.04**       higher
+> | dbench         1.00           ~              ~             ~             ~            higher
+> | kernbench      1.00           ~              ~             ~             ~            higher
+> | gitsource      1.00           1.36**         0.63          1.22**        1.02**       higher
+>
+>
+> | 8x_COFFEELAKE_UMA: Intel Coffee Lake, 4 cores / 8 threads, UMA, NVMe SSD storage
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |            sugov-HWP.des  sugov-HWP.min  powersave-HWP  perfgov-HWP  sugov-no-HWP   better if
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                         PERFORMANCE RATIOS
+> | tbench         1.00           1.27**         1.30**        1.30**        1.31**       higher
+> | dbench         1.00           ~              1.15          ~             ~            lower
+> | kernbench      1.00           ~              ~             ~             ~            lower
+> | gitsource      1.00           ~              2.09          ~             ~            lower
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                    PERFORMANCE-PER-WATT RATIOS
+> | tbench         1.00           ~              ~             ~             ~            higher
+> | dbench         1.00           ~              1.82**        ~             1.22**       higher
+> | kernbench      1.00           ~              ~             ~             ~            higher
+> | gitsource      1.00           ~              1.56**        ~             1.17**       higher
+>
+>
+> | 8x_SKYLAKE_UMA: Intel Skylake (client), 4 cores / 8 threads, UMA, SATA SSD storage
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |            sugov-HWP.des  sugov-HWP.min  powersave-HWP  perfgov-HWP  sugov-no-HWP   better if
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                         PERFORMANCE RATIOS
+> | tbench         1.00           1.21**         1.22**        1.20**        1.06**       higher
+> | dbench         1.00           ~              ~             ~             ~            lower
+> | kernbench      1.00           ~              ~             ~             ~            lower
+> | gitsource      1.00           ~              1.71          0.96**        ~            lower
+> + - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> |                                    PERFORMANCE-PER-WATT RATIOS
+> | tbench         1.00           1.11**         1.12**        1.10**        1.03**       higher
+> | dbench         1.00           ~              ~             ~             ~            higher
+> | kernbench      1.00           ~              ~             ~             ~            higher
+> | gitsource      1.00           ~              0.75          ~             ~            higher
