@@ -2,32 +2,32 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-12.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
 	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
 	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED autolearn=ham
-	autolearn_force=no version=3.4.0
+	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 55C92C433E0
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 09:54:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id B14FAC4332E
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 09:54:52 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 241C522CB8
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 09:54:20 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 821F222CE3
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 09:54:52 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1725958AbgLUJyT (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Dec 2020 04:54:19 -0500
-Received: from mail-40131.protonmail.ch ([185.70.40.131]:57635 "EHLO
-        mail-40131.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1725953AbgLUJyT (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 04:54:19 -0500
-Date:   Mon, 21 Dec 2020 09:53:28 +0000
+        id S1726095AbgLUJy0 (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Dec 2020 04:54:26 -0500
+Received: from mail-40133.protonmail.ch ([185.70.40.133]:29554 "EHLO
+        mail-40133.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1726015AbgLUJyZ (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 04:54:25 -0500
+Date:   Mon, 21 Dec 2020 09:53:35 +0000
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1608544417;
-        bh=j9J3/8H1qa8Wh29MrZMYkdOvgangYejK1lwToq6kgws=;
+        s=protonmail; t=1608544423;
+        bh=lMTed07VcT7T0YUoIUAKzmhbdR3XsUYZxtCX7qlhSQI=;
         h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=akGsdgo2jCkS5X2KQnXW+RtE0Wt1gqLvtOlDrXoIqMsNGz7AsEDH4okDjlWZOrEQd
-         3CEiPHJe44mTXEejfv3S+CfccmxRYbC4wbmfiC3bKXhpKMJxpI0x5QYmYavGBxtqnp
-         QbDYi/FJVDqC9o8M9alh9A0ZxRJ5H6i+2CL3tqpk=
+        b=U0xd98YGkV34L+q+jpVQkCYraQL6H3GAOf8zCIHMaTLKbJBeks0Y2Md7lFQeiL2Vp
+         zj1yDfqQHCL7PvIQljLpcMFDSb4sA0pulQ/6ujw9HZLEHUHOtmkDxAa352a2/CLoOz
+         QI6exa/e+rtGicQMsfA1nvOz5BCK76zN894aNp78=
 To:     Krzysztof Kozlowski <krzk@kernel.org>
 From:   Timon Baetz <timon.baetz@protonmail.com>
 Cc:     Liam Girdwood <lgirdwood@gmail.com>,
@@ -43,8 +43,8 @@ Cc:     Liam Girdwood <lgirdwood@gmail.com>,
         ~postmarketos/upstreaming@lists.sr.ht,
         Timon Baetz <timon.baetz@protonmail.com>
 Reply-To: Timon Baetz <timon.baetz@protonmail.com>
-Subject: [PATCH v2 4/6] ARM: dts: exynos: Added muic and charger nodes for i9100
-Message-ID: <20201221095001.595366-4-timon.baetz@protonmail.com>
+Subject: [PATCH v2 5/6] ARM: dts: exynos: Added top-off charging regulator node for i9100
+Message-ID: <20201221095001.595366-5-timon.baetz@protonmail.com>
 In-Reply-To: <20201221095001.595366-1-timon.baetz@protonmail.com>
 References: <20201202203516.43053-1-timon.baetz@protonmail.com> <20201221095001.595366-1-timon.baetz@protonmail.com>
 MIME-Version: 1.0
@@ -54,36 +54,58 @@ Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-muic node is only used for extcon consumers.
-charger node is used to specify muic and regulator.
+Value taken from Galaxy S2 vendor kernel [0] which always sets 200mA.
+
+Also rearrange regulators based on definition in max8997.h.
+
+[0] https://github.com/krzk/linux-vendor-backup/blob/samsung/galaxy-s2-epic=
+-4g-touch-sph-d710-exynos4210-dump/drivers/power/sec_battery_u1.c#L1525
 
 Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
 ---
- arch/arm/boot/dts/exynos4210-i9100.dts | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+ arch/arm/boot/dts/exynos4210-i9100.dts | 21 ++++++++++++++-------
+ 1 file changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/arch/arm/boot/dts/exynos4210-i9100.dts b/arch/arm/boot/dts/exy=
 nos4210-i9100.dts
-index 56ae534402bb..586d801af0b5 100644
+index 586d801af0b5..fec6da64f7c1 100644
 --- a/arch/arm/boot/dts/exynos4210-i9100.dts
 +++ b/arch/arm/boot/dts/exynos4210-i9100.dts
-@@ -583,6 +583,16 @@ EN32KHZ_CP {
+@@ -560,6 +560,16 @@ safe2_sreg: ESAFEOUT2 {
+ =09=09=09=09regulator-boot-on;
+ =09=09=09};
+=20
++=09=09=09EN32KHZ_AP {
++=09=09=09=09regulator-name =3D "EN32KHZ_AP";
++=09=09=09=09regulator-always-on;
++=09=09=09};
++
++=09=09=09EN32KHZ_CP {
++=09=09=09=09regulator-name =3D "EN32KHZ_CP";
++=09=09=09=09regulator-always-on;
++=09=09=09};
++
+ =09=09=09charger_reg: CHARGER {
+ =09=09=09=09regulator-name =3D "CHARGER";
+ =09=09=09=09regulator-min-microamp =3D <200000>;
+@@ -573,13 +583,10 @@ chargercv_reg: CHARGER_CV {
+ =09=09=09=09regulator-always-on;
+ =09=09=09};
+=20
+-=09=09=09EN32KHZ_AP {
+-=09=09=09=09regulator-name =3D "EN32KHZ_AP";
+-=09=09=09=09regulator-always-on;
+-=09=09=09};
+-
+-=09=09=09EN32KHZ_CP {
+-=09=09=09=09regulator-name =3D "EN32KHZ_CP";
++=09=09=09chargertopoff_reg: CHARGER_TOPOFF {
++=09=09=09=09regulator-name =3D "CHARGER_TOPOFF";
++=09=09=09=09regulator-min-microamp =3D <200000>;
++=09=09=09=09regulator-max-microamp =3D <200000>;
  =09=09=09=09regulator-always-on;
  =09=09=09};
  =09=09};
-+
-+=09=09muic: max8997-muic {
-+=09=09=09compatible =3D "maxim,max8997-muic";
-+=09=09};
-+
-+=09=09charger {
-+=09=09=09compatible =3D "maxim,max8997-battery";
-+=09=09=09charger-supply =3D <&charger_reg>;
-+=09=09=09extcon =3D <&muic>;
-+=09=09};
- =09};
- };
-=20
 --=20
 2.25.1
 
