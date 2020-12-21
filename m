@@ -2,127 +2,138 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-2.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS
-	autolearn=no autolearn_force=no version=3.4.0
+X-Spam-Status: No, score=-13.5 required=3.0 tests=BAYES_00,DKIM_SIGNED,
+	DKIM_VALID,DKIM_VALID_AU,HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,
+	MAILING_LIST_MULTI,NICE_REPLY_A,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED,
+	USER_AGENT_SANE_1 autolearn=ham autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 45D32C432C3
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 18:06:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6E7ECC433E0
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 18:35:03 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id 1DDF123105
-	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 18:06:39 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 3A98B230FC
+	for <linux-pm@archiver.kernel.org>; Mon, 21 Dec 2020 18:35:03 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726547AbgLUSGc (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Mon, 21 Dec 2020 13:06:32 -0500
-Received: from lindbergh.monkeyblade.net ([23.128.96.19]:48990 "EHLO
+        id S1726260AbgLUSeo (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Mon, 21 Dec 2020 13:34:44 -0500
+Received: from lindbergh.monkeyblade.net ([23.128.96.19]:53562 "EHLO
         lindbergh.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726161AbgLUSGc (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 13:06:32 -0500
-Received: from mail-ed1-x52a.google.com (mail-ed1-x52a.google.com [IPv6:2a00:1450:4864:20::52a])
-        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 67C8DC061257;
-        Mon, 21 Dec 2020 10:05:51 -0800 (PST)
-Received: by mail-ed1-x52a.google.com with SMTP id cw27so10466750edb.5;
-        Mon, 21 Dec 2020 10:05:51 -0800 (PST)
+        with ESMTP id S1726286AbgLUSen (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Mon, 21 Dec 2020 13:34:43 -0500
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+        by lindbergh.monkeyblade.net (Postfix) with ESMTPS id 433B2C0613D3
+        for <linux-pm@vger.kernel.org>; Mon, 21 Dec 2020 10:34:03 -0800 (PST)
+Received: by mail-ej1-x634.google.com with SMTP id g20so14840001ejb.1
+        for <linux-pm@vger.kernel.org>; Mon, 21 Dec 2020 10:34:03 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20161025;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-disposition:in-reply-to;
-        bh=FSZkKhzHB5oPtFD1NoCpx7ZpbuV2rtwGLaArd+W21OE=;
-        b=KgWFZbOA5nKSEpIRubD6StP/F8CNCij5ocd00gmgwW+G9bAJ1qs+p2/dxPVqm4sATg
-         pPiOLUwwuJstWn83a5BC868iedfKFcwa/wWRjtBwVWM1Gmr2Fp4Hm4LxhTj8FjNWCaaG
-         Hqa+ZSyYumIJSai/arw1XTPrn0DZH3zh2yI9Tp+EL9ay3pd7AYxbsJvNlDl72nJ2GZ9T
-         KaZBq8i17fBChj9HjwUt9Ub4y68+MzA/Xzex4833u+mpiv7eic5w5+dFf5Rxkg1lMbM1
-         V+7AaAq2sReymtp6f/xUYhIPnlj9JeTmTv+WTOivWwRNANplNaKZl91Gyci7dP/2XIFu
-         2iDg==
+        d=linaro.org; s=google;
+        h=subject:to:cc:references:from:message-id:date:user-agent
+         :mime-version:in-reply-to:content-language:content-transfer-encoding;
+        bh=OvIy+je2Kd/cJewHk0Cl2/RLAuIPuaVK5CnveLEJtgI=;
+        b=eHh3zez2PVNKgy+jqoJDRazYYbYiy5Pa9+iHkqYOTiIOZPapU4B70l4sk5o0iMubws
+         lSCJ7rc9lKMVelN7k1EHtCPunP59l7VDgEaU8rJy5u94JZkoK1VhuxeM/Jjgt+w8vrG8
+         A/vqHZX9yN8Y3eGG8ssBiMg232/dISo0WnUEnkA66p0OR+bBfw2LGXIQvAeXPDtMQ6j1
+         Kybj2VXzL3XPkbgnl1NzE0g70mQj8iFROyiarp1Hs0JugMsG6L+ogj8myrKaoMe2JM1O
+         vz/fOQAd9taWQ1IwBCC65MB8mkH55qoZ2r1td2LZSI2fJQURFZTWYSoPD9G38iXLqqth
+         jg1w==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
         d=1e100.net; s=20161025;
-        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
-         :mime-version:content-disposition:in-reply-to;
-        bh=FSZkKhzHB5oPtFD1NoCpx7ZpbuV2rtwGLaArd+W21OE=;
-        b=CJgsZFv2ElSg/LvY9oz/OLzAIrVrUg3NHZDc6TZZpNEKMC5HtQyd/dzHcJKXtVMPed
-         n6J8X4dSZvNldb5aRQLmdhYRPPJAPkuY69gNqBi6k7AHH+LsVgjXgirTYZPzS6UOa5SE
-         9KbQy7tMbj3YYltPG4ybIEyJzICyKpb6865JbPbuv8X8900VWFfcS+9asHESQV7NVulz
-         p0IZ69G3NvB0jmh2p9jGAYKxxHKYf2z6GbE+8R7QBFAzkyw07y009qzNCgyl6VPhR7Rz
-         buowCDd3PezhgZ8ejq5GzW2yWsBNKLsqW/QKWuYRW5OIYeoE+NNkOqSvbnFb2fP/KJiv
-         mMjg==
-X-Gm-Message-State: AOAM530uQc88G80zGoqXpEF7UWu6QuqKw/bJ8tcETuT6bIQAFn/O4E+G
-        16jIDU4P/4blSTpKD8hkk/pAG4sMdpawbA==
-X-Google-Smtp-Source: ABdhPJxf5vVBTWWi7cEcw7L3Kc2Hb4EKU2dkSDia/lfY40NMg+a4f90T47QjR7OSO5yeL2odwgRidg==
-X-Received: by 2002:aa7:d354:: with SMTP id m20mr15737547edr.195.1608558248769;
-        Mon, 21 Dec 2020 05:44:08 -0800 (PST)
-Received: from ubuntu2004 ([188.24.159.61])
-        by smtp.gmail.com with ESMTPSA id f11sm29405290edy.59.2020.12.21.05.44.06
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 21 Dec 2020 05:44:07 -0800 (PST)
-Date:   Mon, 21 Dec 2020 15:44:13 +0200
-From:   Cristian Ciocaltea <cristian.ciocaltea@gmail.com>
-To:     Linus Walleij <linus.walleij@linaro.org>
-Cc:     Lee Jones <lee.jones@linaro.org>, Rob Herring <robh+dt@kernel.org>,
-        Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-        Sebastian Reichel <sre@kernel.org>,
-        Mark Brown <broonie@kernel.org>,
-        Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-        Liam Girdwood <lgirdwood@gmail.com>,
-        Andreas =?iso-8859-1?Q?F=E4rber?= <afaerber@suse.de>,
-        linux-actions@lists.infradead.org,
-        "open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" 
-        <devicetree@vger.kernel.org>,
-        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-        Linux Input <linux-input@vger.kernel.org>,
-        Linux PM list <linux-pm@vger.kernel.org>
-Subject: Re: [PATCH v3 3/7] mfd: Add MFD driver for ATC260x PMICs
-Message-ID: <20201221134413.GA678185@ubuntu2004>
-References: <cover.1607216141.git.cristian.ciocaltea@gmail.com>
- <f538c21de556c66390614bad778f7dc095222e8c.1607216141.git.cristian.ciocaltea@gmail.com>
- <20201216101000.GD207743@dell>
- <20201217231731.GA104305@BV030612LT>
- <20201218132139.GR207743@dell>
- <20201218160710.GA134686@BV030612LT>
- <20201221081015.GA4825@dell>
- <20201221115713.GA155203@BV030612LT>
- <CACRpkdau=KfOeP5gM2bfLaAEa4U_GrCA=kNR0P6H5_Eov6B25g@mail.gmail.com>
+        h=x-gm-message-state:subject:to:cc:references:from:message-id:date
+         :user-agent:mime-version:in-reply-to:content-language
+         :content-transfer-encoding;
+        bh=OvIy+je2Kd/cJewHk0Cl2/RLAuIPuaVK5CnveLEJtgI=;
+        b=ppKrZprNGWj1DfZXMKZXC38jFUVse6Ohi4dWWg0zc4x43yzWwXLJGE8/gE+0pnaX83
+         X1pdnnbyxhCF+dZUXPTdfcc1k8z7wcsxy5Ujin/+X3AVjFIMtUoXGun1JBhcoPijgliw
+         btRObKhqQe3kTC3iyboFItgrYLYC509ob37PNX21m5q1F20G4wF4AydW0lmPPblIBMu2
+         tr8p3qIMEiiNuOKOIwAbz5JwuxgREE7GLmG1zg0DiBK1hzJtq+VeFwzxL1/SPcAGWqiO
+         NyCF0yUib1k8JzcFl8pwS8e7yJG9YVoL2tjTVR3ROoNoZgGzZPr2493H/BtCXjW3+BaW
+         z6UA==
+X-Gm-Message-State: AOAM5326Ei6+Pft6R+PpUwzv1TuJpn8IsM4TxqNZZyzNkx0ar4cPoiPf
+        a1T61CyJ/enzo5gzHdOSSwhvWEs5+Be5sw==
+X-Google-Smtp-Source: ABdhPJyo3Azp+6BoCc6hfTxxuk687uLFXzXvFwFxUrKnlCzmKZ2/y/o7AR8tHJsBbBVXw11VTjH1lg==
+X-Received: by 2002:a17:907:971c:: with SMTP id jg28mr15987408ejc.85.1608566620722;
+        Mon, 21 Dec 2020 08:03:40 -0800 (PST)
+Received: from [192.168.0.41] (lns-bzn-59-82-252-148-164.adsl.proxad.net. [82.252.148.164])
+        by smtp.googlemail.com with ESMTPSA id b7sm9146492ejp.5.2020.12.21.08.03.39
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 21 Dec 2020 08:03:40 -0800 (PST)
+Subject: Re: [PATCH 1/2] thermal: int340x: Add critical callback to override
+ default shutdown behavior
+To:     Kai-Heng Feng <kai.heng.feng@canonical.com>
+Cc:     "Zhang, Rui" <rui.zhang@intel.com>, amitk@kernel.org,
+        Andrzej Pietrasiewicz <andrzej.p@collabora.com>,
+        Matthew Garrett <mjg59@google.com>,
+        Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+        Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>,
+        Peter Kaestle <peter@piie.net>,
+        Gayatri Kammela <gayatri.kammela@intel.com>,
+        Akinobu Mita <akinobu.mita@gmail.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        "open list:THERMAL" <linux-pm@vger.kernel.org>,
+        open list <linux-kernel@vger.kernel.org>
+References: <20201221135206.17671-1-kai.heng.feng@canonical.com>
+ <20e74dc1-1f1d-6dee-19a7-e9a975b66606@linaro.org>
+ <CAAd53p5WRVMgSquOC69Yq3DO+itSR44273bLWiF7wXUxFZMDhg@mail.gmail.com>
+From:   Daniel Lezcano <daniel.lezcano@linaro.org>
+Message-ID: <9e4dc22e-e912-8410-945c-f802f3959028@linaro.org>
+Date:   Mon, 21 Dec 2020 17:03:38 +0100
+User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:68.0) Gecko/20100101
+ Thunderbird/68.10.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CACRpkdau=KfOeP5gM2bfLaAEa4U_GrCA=kNR0P6H5_Eov6B25g@mail.gmail.com>
+In-Reply-To: <CAAd53p5WRVMgSquOC69Yq3DO+itSR44273bLWiF7wXUxFZMDhg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Content-Language: en-US
+Content-Transfer-Encoding: 8bit
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-On Mon, Dec 21, 2020 at 01:18:01PM +0100, Linus Walleij wrote:
-> On Mon, Dec 21, 2020 at 12:59 PM Cristian Ciocaltea
-> <cristian.ciocaltea@gmail.com> wrote:
+On 21/12/2020 16:00, Kai-Heng Feng wrote:
+> On Mon, Dec 21, 2020 at 9:59 PM Daniel Lezcano
+> <daniel.lezcano@linaro.org> wrote:
+>>
+>> On 21/12/2020 14:52, Kai-Heng Feng wrote:
+>>> We are seeing thermal shutdown on Intel based mobile workstations, the
+>>> shutdown happens during the first trip handle in
+>>> thermal_zone_device_register():
+>>> kernel: thermal thermal_zone15: critical temperature reached (101 C), shutting down
+>>>
+>>> However, we shouldn't do a thermal shutdown here, since
+>>> 1) We may want to use a dedicated daemon, Intel's thermald in this case,
+>>> to handle thermal shutdown.
+>>>
+>>> 2) For ACPI based system, _CRT doesn't mean shutdown unless it's inside
+>>> ThermalZone namespace. ACPI Spec, 11.4.4 _CRT (Critical Temperature):
+>>> "... If this object it present under a device, the device’s driver
+>>> evaluates this object to determine the device’s critical cooling
+>>> temperature trip point. This value may then be used by the device’s
+>>> driver to program an internal device temperature sensor trip point."
+>>>
+>>> So a "critical trip" here merely means we should take a more aggressive
+>>> cooling method.
+>>>
+>>> As int340x device isn't present under ACPI ThermalZone, override the
+>>> default .critical callback to prevent surprising thermal shutdown.
+>>>
+>>> Signed-off-by: Kai-Heng Feng <kai.heng.feng@canonical.com>
+>>
+>> I'll submit those changes for v5.11-rc1 and change the subject by:
+>>
+>> thermal: int340x: Fix unexpected shutdown at critical temperature
+>> thermal: pch: Fix unexpected shutdown at critical temperature
+>>
+>> Sounds good ?
 > 
-> > enum atc260x_ver {
-> >         ATC260X_A = 0,
-> >         ATC260X_B,
-> >         ATC260X_C,
-> >         ATC260X_D,
-> >         ATC260X_E,
-> >         ATC260X_F,
-> >         ATC260X_G,
-> >         ATC260X_H,
-> > };
+> Sounds good to me. Thanks!
 > 
-> This makes it look like the driver is actually so generic that it makes space
-> for all revisions back to ATC2603A which is in the Ainol Hero 10 tablet.
+> Kai-Heng
 
-For ATC2603A we need an SPI driver, currently only the I2C interface is
-supported.
+Rui, Srinivas? Are you ok with the changes ?
 
-> This is nice because there are millions of these devices (especially in
-> China) that people want to get to run the latest Linux.
-> 
-> I even wonder how much different the ATM7029 is from S500, I suspect
-> not super much apart from the ARM cores.
 
-Cannot tell, for the moment I can only "play" with the S500..
+-- 
+<http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-> Good work overall! I'll be happy to deal with the GPIO
-> driver when you get there.
-
-Great, thanks!
-
-> Yours,
-> Linus Walleij
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
