@@ -2,34 +2,47 @@ Return-Path: <linux-pm-owner@kernel.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 X-Spam-Level: 
-X-Spam-Status: No, score=-17.7 required=3.0 tests=BAYES_00,DKIM_SIGNED,
-	DKIM_VALID,DKIM_VALID_AU,FREEMAIL_FORGED_FROMDOMAIN,FREEMAIL_FROM,
-	HEADER_FROM_DIFFERENT_DOMAINS,INCLUDES_CR_TRAILER,INCLUDES_PATCH,
-	MAILING_LIST_MULTI,MENTIONS_GIT_HOSTING,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
+X-Spam-Status: No, score=-14.0 required=3.0 tests=BAYES_00,INCLUDES_CR_TRAILER,
+	INCLUDES_PATCH,MAILING_LIST_MULTI,SPF_HELO_NONE,SPF_PASS,URIBL_BLOCKED
 	autolearn=unavailable autolearn_force=no version=3.4.0
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.99])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id CB55AC433DB
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Dec 2020 07:32:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id D1026C433E0
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Dec 2020 08:38:24 +0000 (UTC)
 Received: from vger.kernel.org (vger.kernel.org [23.128.96.18])
-	by mail.kernel.org (Postfix) with ESMTP id A9CE72079A
-	for <linux-pm@archiver.kernel.org>; Tue, 22 Dec 2020 07:32:57 +0000 (UTC)
+	by mail.kernel.org (Postfix) with ESMTP id 9811023124
+	for <linux-pm@archiver.kernel.org>; Tue, 22 Dec 2020 08:38:24 +0000 (UTC)
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-        id S1726350AbgLVHcp (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
-        Tue, 22 Dec 2020 02:32:45 -0500
-Received: from mail-40136.protonmail.ch ([185.70.40.136]:36846 "EHLO
-        mail-40136.protonmail.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-        with ESMTP id S1726336AbgLVHcp (ORCPT
-        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2020 02:32:45 -0500
-Date:   Tue, 22 Dec 2020 07:31:56 +0000
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=protonmail.com;
-        s=protonmail; t=1608622322;
-        bh=2J2HkMO1x6s17YhUEXyxsyS33PdVMCQ5VOjC6KfqhmA=;
-        h=Date:To:From:Cc:Reply-To:Subject:In-Reply-To:References:From;
-        b=aVvdIMuIvl9eX60Lfs0XVBeA8wxoTq79qCCHbtgWNN2LIDx8wYCCLLPisQtc/cvnl
-         2r4rbweGSMJxxe2US2etcOFm3x8xbv7fkLEWMZ1tQffs8yivInZ5b32Z7Awi53ZuHC
-         ztbw1nW2kF8XXfLIjc9S1Htnfl1zwodil54vGk2M=
-To:     Krzysztof Kozlowski <krzk@kernel.org>
-From:   Timon Baetz <timon.baetz@protonmail.com>
+        id S1725870AbgLVIiH (ORCPT <rfc822;linux-pm@archiver.kernel.org>);
+        Tue, 22 Dec 2020 03:38:07 -0500
+Received: from mail-wr1-f48.google.com ([209.85.221.48]:39475 "EHLO
+        mail-wr1-f48.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+        with ESMTP id S1725818AbgLVIiH (ORCPT
+        <rfc822;linux-pm@vger.kernel.org>); Tue, 22 Dec 2020 03:38:07 -0500
+Received: by mail-wr1-f48.google.com with SMTP id c5so13649002wrp.6;
+        Tue, 22 Dec 2020 00:37:51 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20161025;
+        h=x-gm-message-state:date:from:to:cc:subject:message-id:references
+         :mime-version:content-disposition:in-reply-to;
+        bh=L7VUupdwNKXioiFOmlRnQkfKJa6jZJuHBhu7Vo4dJ4M=;
+        b=k8X+ap1wCDfTMtAw4UVTaE6C4r1uAtRl7EAfoQ/yMyiBMgxUxkd4GBiDuCpC1+5vbN
+         ZLr8YnB74NWJbLF7JcG4e+PHrU2FC5qeIqs6y/t9DQ5sKCrILLpnZy9iDhK3J6f5otG4
+         y/JOcRW7Cu6Aj/bBN/VjXcSAGbSt1lYHPnFLNx3OzElyjvdYem6kVOxqNbwlaBB7vHTj
+         Hn4DRGgEFfKMdGM6iILHpUpg5isLZNJ9aOsxB5xr+m2wdhuWzv01JPdWuvdIrb9XK2kH
+         3ZNXan8E2Q8PO/P/4frFBhk1swhotxHy0WkOqPBkmo4tZp6VVMmqblJEOMLiRc5EQsd/
+         k7Zw==
+X-Gm-Message-State: AOAM533uYJyb50uDPlTSARL3jg3xKnoUA5nL9SYyHoWByvzJ7UgTCymZ
+        UcwrzZUD7P063pLp4lnxWQg=
+X-Google-Smtp-Source: ABdhPJy4bDDXomIKstNtdXKh1RyDFfWuauh6UN/7NZ8qIwAkneojarrmfS4jrRmwLK5kMW83KV+cAw==
+X-Received: by 2002:adf:c14d:: with SMTP id w13mr22491009wre.383.1608626245596;
+        Tue, 22 Dec 2020 00:37:25 -0800 (PST)
+Received: from kozik-lap (adsl-84-226-167-205.adslplus.ch. [84.226.167.205])
+        by smtp.googlemail.com with ESMTPSA id w18sm31476679wrn.2.2020.12.22.00.37.24
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 22 Dec 2020 00:37:24 -0800 (PST)
+Date:   Tue, 22 Dec 2020 09:37:23 +0100
+From:   Krzysztof Kozlowski <krzk@kernel.org>
+To:     Timon Baetz <timon.baetz@protonmail.com>
 Cc:     Liam Girdwood <lgirdwood@gmail.com>,
         Mark Brown <broonie@kernel.org>,
         Rob Herring <robh+dt@kernel.org>,
@@ -40,64 +53,30 @@ Cc:     Liam Girdwood <lgirdwood@gmail.com>,
         linux-kernel@vger.kernel.org, devicetree@vger.kernel.org,
         linux-arm-kernel@lists.infradead.org,
         linux-samsung-soc@vger.kernel.org, linux-pm@vger.kernel.org,
-        ~postmarketos/upstreaming@lists.sr.ht,
-        Timon Baetz <timon.baetz@protonmail.com>
-Reply-To: Timon Baetz <timon.baetz@protonmail.com>
-Subject: [PATCH v3 6/7] ARM: dts: exynos: Fix charging regulator voltage and current for i9100
-Message-ID: <20201222070520.710096-6-timon.baetz@protonmail.com>
-In-Reply-To: <20201222070520.710096-1-timon.baetz@protonmail.com>
+        ~postmarketos/upstreaming@lists.sr.ht
+Subject: Re: [PATCH v3 2/7] regulator: dt-bindings: Document max8997-pmic
+ nodes
+Message-ID: <20201222083723.GB5026@kozik-lap>
 References: <20201222070520.710096-1-timon.baetz@protonmail.com>
+ <20201222070520.710096-2-timon.baetz@protonmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
+In-Reply-To: <20201222070520.710096-2-timon.baetz@protonmail.com>
 Precedence: bulk
 List-ID: <linux-pm.vger.kernel.org>
 X-Mailing-List: linux-pm@vger.kernel.org
 
-Set CHARGER current and CHARGER_CV voltage according to Galaxy S2 Epic
-4G Touch SPH-D710 Android vendor sources [0,1].
+On Tue, Dec 22, 2020 at 07:31:21AM +0000, Timon Baetz wrote:
+> Add maxim,max8997-battery and maxim,max8997-muic optional nodes.
+> 
+> Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
+> ---
+>  .../bindings/regulator/max8997-regulator.txt          | 11 +++++++++++
+>  1 file changed, 11 insertions(+)
+> 
 
-Remove regulator-always-on. The regulator can be enabled and disabled
-based on extcon events.
+Acked-by: Krzysztof Kozlowski <krzk@kernel.org>
 
-[0] https://github.com/krzk/linux-vendor-backup/blob/samsung/galaxy-s2-epic=
--4g-touch-sph-d710-exynos4210-dump/drivers/power/max8997_charger_u1.c#L169-=
-L170
-[1] https://github.com/krzk/linux-vendor-backup/blob/samsung/galaxy-s2-epic=
--4g-touch-sph-d710-exynos4210-dump/drivers/power/max8997_charger_u1.c#L390-=
-L391
-
-Signed-off-by: Timon Baetz <timon.baetz@protonmail.com>
----
- arch/arm/boot/dts/exynos4210-i9100.dts | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/arm/boot/dts/exynos4210-i9100.dts b/arch/arm/boot/dts/exy=
-nos4210-i9100.dts
-index 8fa704babd5e..586d801af0b5 100644
---- a/arch/arm/boot/dts/exynos4210-i9100.dts
-+++ b/arch/arm/boot/dts/exynos4210-i9100.dts
-@@ -562,15 +562,14 @@ safe2_sreg: ESAFEOUT2 {
-=20
- =09=09=09charger_reg: CHARGER {
- =09=09=09=09regulator-name =3D "CHARGER";
--=09=09=09=09regulator-min-microamp =3D <60000>;
--=09=09=09=09regulator-max-microamp =3D <2580000>;
--=09=09=09=09regulator-always-on;
-+=09=09=09=09regulator-min-microamp =3D <200000>;
-+=09=09=09=09regulator-max-microamp =3D <950000>;
- =09=09=09};
-=20
- =09=09=09chargercv_reg: CHARGER_CV {
- =09=09=09=09regulator-name =3D "CHARGER_CV";
--=09=09=09=09regulator-min-microvolt =3D <3800000>;
--=09=09=09=09regulator-max-microvolt =3D <4100000>;
-+=09=09=09=09regulator-min-microvolt =3D <4200000>;
-+=09=09=09=09regulator-max-microvolt =3D <4200000>;
- =09=09=09=09regulator-always-on;
- =09=09=09};
-=20
---=20
-2.25.1
-
-
+Best regards,
+Krzysztof
